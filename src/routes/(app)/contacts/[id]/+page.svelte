@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -18,15 +19,14 @@
 	<a href="/contacts" class="text-sm text-fg-muted hover:text-fg">← Contacts</a>
 
 	<header class="flex items-center gap-4">
-		<span class="grid size-16 shrink-0 place-items-center rounded-full bg-bg-sunken text-2xl font-medium text-fg-muted">
-			{c.displayName.slice(0, 1).toUpperCase()}
-		</span>
+		<AvatarUploader contactId={c.id} name={c.displayName} avatarPhotoId={c.avatarPhotoId} size={64} />
 		<div class="min-w-0">
 			<h1 class="truncate text-2xl font-semibold text-fg">{c.displayName}</h1>
 			{#if c.description}<p class="truncate text-fg-muted">{c.description}</p>{/if}
 			{#if c.visibility === 'private'}
 				<span class="text-xs text-fg-subtle">Private — only you can see this contact</span>
 			{/if}
+			{#if form?.avatarError}<p class="mt-1 text-xs text-danger">{form.avatarError}</p>{/if}
 		</div>
 	</header>
 

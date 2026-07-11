@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Avatar from '$lib/components/Avatar.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -59,11 +60,12 @@
 						href="/contacts/{contact.id}"
 						class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2.5 transition-colors hover:border-border hover:bg-card"
 					>
-						<span
-							class="grid size-9 shrink-0 place-items-center rounded-full bg-bg-sunken text-sm font-medium text-fg-muted"
-						>
-							{contact.displayName.slice(0, 1).toUpperCase()}
-						</span>
+						<Avatar
+							id={contact.id}
+							name={contact.displayName}
+							avatarPhotoId={contact.avatarPhotoId}
+							size={36}
+						/>
 						<span class="min-w-0 flex-1">
 							<span class="block truncate text-fg">{contact.displayName}</span>
 							{#if contact.description}

@@ -7,6 +7,7 @@ import {
 	listContactFields
 } from '$lib/server/domain/contact-fields/contact-fields';
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
+import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import { renderMarkdown } from '$lib/server/domain/notes/markdown';
 import { createNote, listNotesForContact } from '$lib/server/domain/notes/notes';
 import {
@@ -22,6 +23,7 @@ import {
 import {
 	getContactDeps,
 	getContactFieldDeps,
+	getAvatarDeps,
 	getContactFields,
 	getNoteDeps,
 	getRelationshipDeps,
@@ -265,6 +267,42 @@ export const actions: Actions = {
 		if (!contact) throw error(404, 'Contact not found');
 
 		await unassignTag(getTagDeps(), params.id, tagId);
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	setAvatar: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		const form = await request.formData();
+		const image = form.get('image');
+		const thumb = form.get('thumb');
+		if (!(image instanceof File) || !(thumb instanceof File)) {
+			return fail(400, { avatarError: 'Please choose an image.' });
+		}
+
+		const upload = {
+			image: new Uint8Array(await image.arrayBuffer()),
+			thumb: new Uint8Array(await thumb.arrayBuffer()),
+			width: Number(form.get('width')),
+			height: Number(form.get('height'))
+		};
+
+		try {
+			await setContactAvatar(
+				getAvatarDeps(),
+				{ userId: locals.user.id, householdId: locals.user.householdId },
+				params.id,
+				upload
+			);
+		} catch (err) {
+			if (err instanceof InvalidAvatarError) return fail(400, { avatarError: err.message });
+			return fail(400, { avatarError: 'Could not save the photo.' });
+		}
+
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 };

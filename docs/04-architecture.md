@@ -23,7 +23,7 @@
 | Styling | **Tailwind CSS** + CSS variables | Utility-first; Catppuccin tokens as CSS vars (see design doc). |
 | Auth (local) | Custom sessions + **Argon2id** | No heavy dependency; full control. |
 | Auth (SSO) | **OIDC** relying party (`oslo`/`arctic`-style OIDC + `jose` for JWT/JWKS) | Standard Authorization Code + PKCE against Authelia. |
-| Images | **sharp** | Thumbnails, EXIF strip/orient on ingest. |
+| Images (avatars, M1) | **Browser canvas** | Crop/resize/thumbnail + EXIF strip client-side; server only validates & stores — no native image dep. A server-side pipeline (e.g. sharp) may return for the M2 gallery. |
 | Graph | **Cytoscape.js** (lazy-loaded) | Purpose-built relationship graph; only loaded on the graph route. |
 | Markdown | `markdown-it` + sanitizer | Notes rendering. |
 | PWA | Vite PWA (Workbox) or hand-rolled SW | App shell + read-through cache. |

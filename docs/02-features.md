@@ -418,10 +418,14 @@ at-a-glance overview of recent household life and acting as a launchpad into the
 ## 2.14 Photos & media **[M1 avatar / M2 gallery]**
 
 - Each contact has an **avatar** and a **photo gallery**.
-- Upload from desktop or mobile camera/roll; images are stored on a media volume, with
-  generated **thumbnails**; metadata (caption, taken-at, dimensions) in the DB.
-- EXIF orientation respected; EXIF GPS/personal metadata **stripped** on ingest by
-  default (privacy).
+- Upload from desktop or mobile camera/roll. **Avatars are processed in the browser** (M1):
+  the client applies EXIF orientation, centre-crops to a square, and produces a full + a
+  thumbnail JPEG; re-encoding via canvas **drops all EXIF/GPS metadata** (privacy) and keeps
+  uploads small, so the server needs no native image library. The server validates (magic
+  bytes, size) and stores both variants on the media volume; dimensions/size in the DB.
+- EXIF orientation respected; EXIF GPS/personal metadata **stripped** (by the client re-encode
+  for avatars; on ingest for gallery photos). Server-side processing for the M2 gallery
+  (thumbnails, captions, taken-at) is a later choice — see `docs/04` §4.6.
 - Photos have their own visibility (2.10) and can be captioned.
 - Basic gallery: grid, lightbox, set-as-avatar, delete. Reordering **[M3]**.
 
