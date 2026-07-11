@@ -222,9 +222,15 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
      `buildEgoNetwork(centerId, depth)`, `expandNode(model, contactId)`,
      `findConnectionPath(fromId, toId)` (BFS over relationships + circle co-membership),
      `applyFilters(model, filters)`.
-   - Data arrives through a **port** — a `GraphDataSource` interface (e.g. "give me the
-     visible relationships and circle memberships of contact X"). The Drizzle adapter
-     implements it and applies access scoping (§3.7). The pure builders never touch the DB.
+   - Data arrives through a **port** — a `GraphDataSource` interface ("give me the visible
+     neighbourhood of node X"). The builders never touch the DB or the network directly.
+   - **The builders run in the browser.** The server does one bulk, access-scoped read
+     (`GraphRepository.loadVisibleGraph`, §3.7) and ships a slim `GraphModel` snapshot of the
+     whole *visible* graph to the client; the client wraps it in an **in-memory
+     `GraphDataSource`** and runs `buildEgoNetwork` / `expandNode` / `findConnectionPath`
+     locally — no per-interaction requests. The same pure code also runs server-side over
+     any source; only the source implementation differs (in-memory in the browser). This
+     deliberately pushes load to the client and fits family scale.
    - Derived kinship (§2.4.1) is computed by the same engine and merged as its own edge
      kind — added without changing existing node/edge handling.
 

@@ -4,22 +4,26 @@
 	import { toCytoscapeElements } from '$lib/graph/cytoscape/elements';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
 	import { paletteFromDom } from '$lib/graph/cytoscape/theme';
-	import { applyFilters, mergeModels } from '$lib/graph/model/graph-model';
+	import { applyFilters, emptyModel, mergeModels } from '$lib/graph/model/graph-model';
 	import { buildEgoNetwork, expandNode } from '$lib/graph/model/ego-network';
 	import { findConnectionPath } from '$lib/graph/model/connection-path';
-	import { createHttpGraphSource } from '$lib/graph/model/http-source';
+	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
 	import type { ConnectionPath, GraphFilters, GraphModel } from '$lib/graph/model/types';
 
-	interface ContactRef {
-		id: string;
-		displayName: string;
-	}
 	interface Props {
-		model: GraphModel;
+		/** The whole visible graph, delivered once by the server; explored entirely client-side. */
+		graph: GraphModel;
 		centerId: string | null;
-		contacts: ContactRef[];
 	}
-	let { model: initialModel, centerId, contacts }: Props = $props();
+	let { graph, centerId }: Props = $props();
+
+	// All exploration runs against this in-memory source — no further requests to the server.
+	// `graph` is fixed for the component's life (the route remounts via {#key centerId}).
+	const source = inMemoryGraphSource(untrack(() => graph));
+	const contacts = untrack(() => graph).nodes
+		.filter((n) => n.kind === 'person')
+		.map((n) => ({ id: n.id, displayName: n.label }))
+		.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
 	// The filterable connection kinds, each tied to its category colour (docs/05 §5.6).
 	const FILTERS = [
@@ -31,7 +35,6 @@
 		{ key: 'kinship', label: 'Kinship', ctp: 'overlay2' }
 	] as const;
 
-	const source = createHttpGraphSource();
 	const reducedMotion =
 		typeof window !== 'undefined' &&
 		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -40,7 +43,8 @@
 	let controller: ExplorerController | null = null;
 	let ready = $state(false);
 
-	let model = $state<GraphModel>(untrack(() => initialModel));
+	// Starts empty; the ego view around the centre is built client-side on mount.
+	let model = $state<GraphModel>(emptyModel());
 	let selected = $state<string | null>(untrack(() => centerId));
 	let active = $state<Set<string>>(new Set(FILTERS.map((f) => f.key)));
 	let query = $state('');
@@ -171,6 +175,9 @@
 	let colorScheme: MediaQueryList | null = null;
 
 	onMount(async () => {
+		// Build the initial ego view around the centre from the in-memory snapshot.
+		if (centerId) model = await buildEgoNetwork(source, centerId, 1);
+
 		controller = await createExplorer({
 			container,
 			elements: toCytoscapeElements(model, { centerId: centerId ?? undefined }),

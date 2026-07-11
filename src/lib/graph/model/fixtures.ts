@@ -1,23 +1,14 @@
-import type { GraphDataSource, GraphEdge, GraphNode, Neighborhood } from './types';
+import type { GraphDataSource, GraphEdge, GraphNode } from './types';
+import { inMemoryGraphSource } from './in-memory-source';
 
 /*
- * Test support: an in-memory GraphDataSource over plain node/edge arrays, plus a small
- * family fixture mirroring the explorer mockup. Kept out of *.test.ts so several test files
- * can share it; imported only by tests (never by the app).
+ * Test support: a family fixture mirroring the explorer mockup, plus a convenience wrapper
+ * over the real in-memory source. Kept out of *.test.ts so several test files can share it.
  */
 
-/** Build a fake data source whose neighbourhood scan mimics a visibility-scoped adapter. */
+/** A data source over plain node/edge arrays (thin wrapper on the production in-memory source). */
 export function fakeGraphSource(nodes: GraphNode[], edges: GraphEdge[]): GraphDataSource {
-	return {
-		async neighborhood(nodeId: string): Promise<Neighborhood | null> {
-			const center = nodes.find((n) => n.id === nodeId);
-			if (!center) return null;
-			const incident = edges.filter((e) => e.source === nodeId || e.target === nodeId);
-			const neighborIds = new Set(incident.map((e) => (e.source === nodeId ? e.target : e.source)));
-			const neighbors = nodes.filter((n) => neighborIds.has(n.id));
-			return { center, nodes: neighbors, edges: incident };
-		}
-	};
+	return inMemoryGraphSource({ nodes, edges });
 }
 
 const P = (id: string, label: string): GraphNode => ({ id, kind: 'person', label });
