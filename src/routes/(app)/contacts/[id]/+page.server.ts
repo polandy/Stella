@@ -14,12 +14,19 @@ import {
 	DuplicateRelationshipError
 } from '$lib/server/domain/relationships/relationships';
 import {
+	assignTagByName,
+	listTagsForContact,
+	TAG_COLORS,
+	unassignTag
+} from '$lib/server/domain/tags/tags';
+import {
 	getContactDeps,
 	getContactFieldDeps,
 	getContactFields,
 	getNoteDeps,
 	getRelationshipDeps,
-	getRelationships
+	getRelationships,
+	getTagDeps
 } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -33,18 +40,21 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		throw error(404, 'Contact not found');
 	}
 
-	const [relationships, types, allContacts, notes, fields] = await Promise.all([
+	const [relationships, types, allContacts, notes, fields, tags] = await Promise.all([
 		getRelationships().listForContactVisibleTo(viewer, params.id),
 		getRelationships().listTypes(),
 		listContacts(getContactDeps(), viewer),
 		listNotesForContact(getNoteDeps(), viewer, params.id),
-		listContactFields(getContactFieldDeps(), viewer, params.id)
+		listContactFields(getContactFieldDeps(), viewer, params.id),
+		listTagsForContact(getTagDeps(), viewer, params.id)
 	]);
 
 	return {
 		contact,
 		relationships,
 		relationshipTypes: types,
+		tags,
+		tagColors: TAG_COLORS,
 		fieldKinds: CONTACT_FIELD_KINDS,
 		fields: fields.map((f) => ({
 			id: f.id,
@@ -83,6 +93,11 @@ const AddFieldSchema = v.object({
 	kind: v.picklist(CONTACT_FIELD_KINDS),
 	label: v.optional(v.pipe(v.string(), v.trim())),
 	value: v.pipe(v.string(), v.trim(), v.minLength(1))
+});
+
+const AddTagSchema = v.object({
+	name: v.pipe(v.string(), v.trim(), v.minLength(1)),
+	color: v.optional(v.picklist(TAG_COLORS))
 });
 
 export const actions: Actions = {
@@ -206,6 +221,50 @@ export const actions: Actions = {
 		if (!contact) throw error(404, 'Contact not found');
 
 		await getContactFields().remove(params.id, fieldId);
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	addTag: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const parsed = v.safeParse(AddTagSchema, {
+			name: form.get('name'),
+			color: form.get('color') || undefined
+		});
+		if (!parsed.success) return fail(400, { tagError: 'Please enter a tag name.' });
+
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		try {
+			await assignTagByName(
+				getTagDeps(),
+				locals.user.householdId,
+				params.id,
+				parsed.output.name,
+				parsed.output.color
+			);
+		} catch {
+			return fail(400, { tagError: 'Could not add the tag.' });
+		}
+
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	removeTag: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const tagId = form.get('tagId');
+		if (typeof tagId !== 'string') return fail(400, {});
+
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		await unassignTag(getTagDeps(), params.id, tagId);
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 };
