@@ -162,9 +162,11 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 
 ## 4.7 Security
 
-- httpOnly, SameSite=Lax, Secure cookies; CSRF protection on form actions (SvelteKit
-  origin checks + token); strict security headers (CSP, HSTS, X-Content-Type-Options,
-  Referrer-Policy) set in `hooks.server.ts`.
+- httpOnly, SameSite=Lax cookies. The Secure attribute is set only when `STELLA_URL` uses
+  `https://` — over plain HTTP to a non-localhost host (e.g. a LAN IP) browsers silently drop
+  Secure cookies, which would make login appear to fail. Deploy behind HTTPS for Secure cookies.
+- CSRF protection on form actions (SvelteKit origin checks + token); strict security headers
+  (CSP, HSTS, X-Content-Type-Options, Referrer-Policy) set in `hooks.server.ts`.
 - Argon2id for local passwords; OIDC secrets and session secret from env only.
 - Rate limiting on auth endpoints; login/SSO audit entries.
 - Media EXIF (incl. GPS) stripped on ingest by default.
