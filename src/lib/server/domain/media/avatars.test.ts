@@ -86,7 +86,8 @@ function fakeDeps() {
 		setContactAvatar: async (contactId, photoId) => {
 			avatarSet = { contactId, photoId };
 		},
-		getVisiblePhotoFile: async () => null
+		getVisiblePhotoFile: async () => null,
+		listJournalPhotos: async () => []
 	};
 	const deps: AvatarDeps = { photos, media, ids: idGen, clock };
 	return {

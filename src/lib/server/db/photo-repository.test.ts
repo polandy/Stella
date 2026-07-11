@@ -30,6 +30,7 @@ const photo = (over: Partial<StoredPhoto> = {}): StoredPhoto => ({
 	id: 'p1',
 	householdId: H,
 	contactId: 'mara',
+	journalEntryId: null,
 	createdBy: U1,
 	visibility: 'shared',
 	filePath: 'p1.jpg',
