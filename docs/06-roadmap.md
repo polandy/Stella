@@ -74,7 +74,9 @@ moved with one action.
 Goal: sand the edges and add the nice-to-haves.
 
 - **Localization:** German (structure already externalized); language switcher.
-- **Local 2FA** (TOTP) for non-SSO accounts; email reminders/digests (opt-in).
+- **Local 2FA** (TOTP) for non-SSO accounts; opt-in email reminders.
+- **Change digests:** per-member frequency (daily/weekly/monthly), delivered by email
+  and/or signed webhook (HTTP POST). Needs a background scheduler + SMTP config (docs/04).
 - **Graph & UX polish:** "haven't seen in a while" hints, photo reordering, saved graph
   filters, density/appearance refinements.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.

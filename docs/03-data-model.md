@@ -25,6 +25,7 @@ implementation of record.
 household 1───* user
 user      1───* session
 user      1───* identity        (federated OIDC logins, e.g. Authelia)
+user      1───1 notification_preference   (digest schedule + delivery) [M3]
 user      1───* invitation (created_by)
 
 contact   *───1 user            (created_by)
@@ -107,6 +108,21 @@ password, one or more federated identities, or both.
 
 Constraints: unique on `(issuer, subject)`. Login matches an incoming token to a user
 via this pair first; email-based linking is a configurable fallback for first login only.
+
+### notification_preference  [M3]
+Per-member digest schedule and delivery config (docs/02 §2.11.1). One row per user.
+
+| column | type | notes |
+|---|---|---|
+| id | text pk | |
+| user_id | text fk → user.id | cascade delete; unique |
+| frequency | text | `'none' \| 'daily' \| 'weekly' \| 'monthly'` (default `'none'`) |
+| email_enabled | int | 0/1 |
+| webhook_url | text null | HTTP POST target for the digest JSON |
+| webhook_secret | text null | HMAC signing secret for webhook authenticity |
+| last_digest_at | int null | end of the last delivered window (idempotency) |
+| next_digest_at | int null | when the next digest is due |
+| created_at / updated_at | int | |
 
 ### invitation
 Single-use invite to join the household.

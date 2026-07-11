@@ -245,3 +245,22 @@ operations (e.g. "highlight all within 2 hops") are added as pure functions with
 tests, without disturbing rendering; the renderer can change without risking the logic; and
 each piece is small and named for intent. **Test-first targets:** `buildEgoNetwork`,
 `expandNode`, `findConnectionPath`, `applyFilters` — pure, deterministic, no DB.
+
+## 4.12 Background jobs & delivery (M3)
+
+The change digests (`02-features.md` §2.11.1) need periodic work, kept as lean as the rest:
+
+- **Scheduler:** a single in-process interval timer started at server boot (no external cron
+  or job queue). On each tick it finds members whose `next_digest_at` is due and processes
+  them. State (`last_digest_at` / `next_digest_at`) lives in `notification_preference`, so a
+  restart resumes correctly and a crash/retry never double-sends a window (idempotent).
+- **Digest assembly is pure & test-first:** given a member, a time window, and the visible
+  activity, a pure function produces the digest payload — unit-tested without I/O. Delivery
+  is the edge.
+- **Delivery adapters (ports):** an `EmailSender` (SMTP via env config — the only new
+  infra) and a `WebhookSender` (HTTP POST with an HMAC signature header, a few retries).
+  Both behind ports so the assembly logic stays framework-agnostic and the channels are
+  independently testable/fakeable.
+- **Config:** SMTP host/credentials and a default from-address via environment; email and
+  webhook are each opt-in per member. No delivery infrastructure runs unless a member has a
+  non-`none` frequency and at least one channel enabled.
