@@ -84,6 +84,55 @@
 		{/if}
 	</section>
 
+	<!-- Notes -->
+	<section class="flex flex-col gap-3">
+		<h2 class="text-sm font-medium text-fg-muted">Notes</h2>
+
+		{#if data.notes.length > 0}
+			<ul class="flex flex-col gap-2">
+				{#each data.notes as note (note.id)}
+					<li class="rounded-app border border-border bg-card p-4">
+						<div class="mb-1 flex items-center gap-2">
+							{#if note.isPinned}<span class="text-xs text-primary">★ pinned</span>{/if}
+							{#if note.title}<span class="font-medium text-fg">{note.title}</span>{/if}
+							{#if note.visibility === 'private'}
+								<span class="ml-auto text-xs text-fg-subtle">private</span>
+							{/if}
+						</div>
+						<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
+						<div class="note-body text-fg">{@html note.bodyHtml}</div>
+					</li>
+				{/each}
+			</ul>
+		{:else}
+			<p class="text-sm text-fg-subtle">No notes yet.</p>
+		{/if}
+
+		<form method="POST" action="?/addNote" class="flex flex-col gap-3 rounded-app border border-dashed border-border p-4">
+			{#if form?.noteError}
+				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.noteError}</p>
+			{/if}
+			<textarea
+				name="body"
+				rows="3"
+				placeholder="Write a note… (Markdown supported)"
+				class="rounded-md border border-border bg-bg px-3 py-2 text-fg"
+			></textarea>
+			<div class="flex flex-wrap items-center gap-4 text-sm">
+				<label class="flex items-center gap-1.5"><input type="checkbox" name="isPinned" /> Pin</label>
+				<label class="flex items-center gap-1.5">
+					<input type="radio" name="visibility" value="shared" checked /> Shared
+				</label>
+				<label class="flex items-center gap-1.5">
+					<input type="radio" name="visibility" value="private" /> Private
+				</label>
+				<button class="ml-auto rounded-app bg-primary px-4 py-2 font-medium text-primary-fg transition-opacity hover:opacity-90">
+					Add note
+				</button>
+			</div>
+		</form>
+	</section>
+
 	<!-- How you met -->
 	<section class="rounded-app border border-border bg-card p-6">
 		<h2 class="mb-3 text-sm font-medium text-fg-muted">How you met</h2>

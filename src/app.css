@@ -159,6 +159,41 @@ body {
 	outline-offset: 2px;
 }
 
+/* Rendered note Markdown (docs/02 §2.5). Preflight resets defaults, so restore the basics. */
+.note-body p {
+	margin: 0 0 0.5rem;
+}
+.note-body p:last-child {
+	margin-bottom: 0;
+}
+.note-body a {
+	color: var(--link);
+	text-decoration: underline;
+}
+.note-body ul,
+.note-body ol {
+	margin: 0 0 0.5rem;
+	padding-left: 1.25rem;
+}
+.note-body ul {
+	list-style: disc;
+}
+.note-body ol {
+	list-style: decimal;
+}
+.note-body code {
+	background: var(--bg-sunken);
+	border-radius: 0.25rem;
+	padding: 0.1em 0.35em;
+	font-size: 0.9em;
+}
+.note-body strong {
+	font-weight: 600;
+}
+.note-body em {
+	font-style: italic;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,
