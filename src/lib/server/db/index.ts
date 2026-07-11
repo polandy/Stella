@@ -3,6 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { getConfig } from '../config';
 import * as schema from './schema';
+import { ensureSearchIndex } from './search-index';
 import { seedRelationshipTypes } from './seed';
 
 /*
@@ -41,6 +42,7 @@ export function getDb(): BunSQLiteDatabase<typeof schema> {
 	// the app and is resolved relative to the working directory.
 	migrate(instance, { migrationsFolder: './drizzle' });
 	seedRelationshipTypes(instance);
+	ensureSearchIndex(sqlite);
 
 	return instance;
 }

@@ -18,11 +18,13 @@ import { createDrizzleIdentityStore } from './db/identity-store';
 import { createDrizzleContactFieldRepository } from './db/contact-field-repository';
 import { createDrizzleNoteRepository } from './db/note-repository';
 import { createDrizzleRelationshipRepository } from './db/relationship-repository';
+import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
 import type {
 	ContactFieldDeps,
 	ContactFieldRepository
 } from './domain/contact-fields/contact-fields';
+import type { SearchDeps, SearchRepository } from './domain/search/search';
 import type { ContactDeps, ContactRepository } from './domain/contacts/contacts';
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
@@ -143,4 +145,14 @@ export function getContactFields(): ContactFieldRepository {
 
 export function getContactFieldDeps(): ContactFieldDeps {
 	return { fields: getContactFields(), ids: ulidGenerator, clock: systemClock };
+}
+
+let searchRepository: SearchRepository | null = null;
+
+export function getSearch(): SearchRepository {
+	return (searchRepository ??= createDrizzleSearchRepository(getDb()));
+}
+
+export function getSearchDeps(): SearchDeps {
+	return { search: getSearch() };
 }
