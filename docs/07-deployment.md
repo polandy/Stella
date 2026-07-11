@@ -27,6 +27,27 @@ Stella is a single container. It keeps its state in one mounted volume (`/data`)
 the SQLite database file and the media directory. It expects to sit **behind** a
 reverse proxy that terminates TLS and also fronts Authelia.
 
+## 7.1.1 Quick local trial (no proxy, no SSO)
+
+To run the current build on your own machine for testing/review — no reverse proxy, no
+Authelia — use the committed `Dockerfile` + `docker-compose.yml`:
+
+```bash
+cp .env.example .env                 # then set SESSION_SECRET and STELLA_URL=http://localhost:3000
+openssl rand -hex 32                 # paste into SESSION_SECRET
+./deploy.sh                          # build image + start; waits until healthy
+```
+
+`./deploy.sh` (also `bun run deploy`) rebuilds the image from the working tree and
+restarts the container, so re-running it redeploys the latest code. `./deploy.sh logs`
+follows logs, `./deploy.sh down` stops it. Open `http://localhost:3000` — the first visit
+lands on `/setup` to create the local admin. State lives in `./data` (SQLite + media);
+delete it to start clean.
+
+> `docker-compose.yml` sets `ORIGIN=${STELLA_URL}`. adapter-node checks the browser's
+> `Origin` header against `ORIGIN` on every POST, so if it doesn't match the URL you open,
+> **all form submissions fail with 403**. Keep `STELLA_URL` equal to the address you browse to.
+
 ## 7.2 Prerequisites
 
 - A host with Docker + Docker Compose.
@@ -100,6 +121,8 @@ services:
     container_name: stella
     restart: unless-stopped
     env_file: .env
+    environment:
+      - ORIGIN=${STELLA_URL}    # adapter-node CSRF: must equal the public URL (7.6)
     volumes:
       - ./data:/data
     expose:
@@ -142,6 +165,8 @@ If you use Traefik, add labels instead of a separate proxy config:
 - Terminate TLS at the proxy; forward plain HTTP to the container on port 3000.
 - Pass through the `Host` header and `X-Forwarded-*` headers; Stella builds redirect URIs
   from `STELLA_URL`, so that must match the public URL exactly (scheme + host).
+- adapter-node validates the browser `Origin` on POSTs against `ORIGIN` (compose sets it to
+  `STELLA_URL`). A mismatch yields 403 on every form submit — keep the two in lockstep.
 - Ensure both `stella.example.home` and `auth.example.home` are reachable from the user's
   browser (OIDC redirects happen in the browser).
 

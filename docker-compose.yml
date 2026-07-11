@@ -7,6 +7,10 @@ services:
     container_name: stella
     restart: unless-stopped
     env_file: .env
+    environment:
+      # adapter-node checks the browser Origin header against this on every POST.
+      # Must equal the URL you open in the browser or all form submissions 403.
+      - ORIGIN=${STELLA_URL:-http://localhost:3000}
     volumes:
       - ./data:/data
     ports:
