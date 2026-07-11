@@ -303,8 +303,11 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   circle, tag, or "living only".
 - **Layouts:** force-directed by default; tidy **tree** layout for family hierarchies and
   **clustered** layout grouping circle members **[M2]**.
-- **Performance:** lazy expansion; graceful with hundreds of nodes; progressive loading of
-  neighborhoods rather than the whole household at once.
+- **Performance:** the server sends the whole *visible* graph once as a slim, access-scoped
+  snapshot (ids/labels + typed edges — not full records); the browser then builds the ego view
+  and does every expand/focus/path **client-side with no further requests**. This pushes the
+  work to the client and suits family scale (hundreds of nodes); per-neighborhood server
+  streaming can return later for very large households (§4.11).
 - **Access-scoped:** only nodes/edges the viewer may see appear (§2.10 / §3.7).
 - **Beautiful & accessible:** Catppuccin-themed in light/dark, smooth but
   `prefers-reduced-motion`-aware, keyboard-operable, with a list-based fallback view.

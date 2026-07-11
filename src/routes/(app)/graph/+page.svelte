@@ -23,7 +23,7 @@
 	<div class="relative flex-1">
 		{#if data.centerId}
 			{#key data.centerId}
-				<GraphExplorer model={data.model} centerId={data.centerId} contacts={data.contacts} />
+				<GraphExplorer graph={data.graph} centerId={data.centerId} />
 			{/key}
 		{:else}
 			<div class="grid h-full place-items-center text-center">

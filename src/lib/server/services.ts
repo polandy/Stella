@@ -14,7 +14,7 @@ import { getConfig } from './config';
 import { getDb } from './db';
 import { createDrizzleAccountRepository } from './db/account-repository';
 import { createDrizzleContactRepository } from './db/contact-repository';
-import { createDrizzleGraphDataSource } from './db/graph-data-source';
+import { createDrizzleGraphRepository } from './db/graph-repository';
 import { createDrizzleIdentityStore } from './db/identity-store';
 import { createDrizzleContactFieldRepository } from './db/contact-field-repository';
 import { createDrizzleNoteRepository } from './db/note-repository';
@@ -31,8 +31,7 @@ import type { ContactDeps, ContactRepository } from './domain/contacts/contacts'
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
 import type { TagDeps, TagRepository } from './domain/tags/tags';
-import type { Viewer } from './access/visibility';
-import type { GraphDataSource } from '../graph/model/types';
+import type { GraphRepository } from './db/graph-repository';
 import { ulidGenerator } from './id';
 
 /*
@@ -172,11 +171,12 @@ export function getTagDeps(): TagDeps {
 	return { tags: getTags(), ids: ulidGenerator, clock: systemClock };
 }
 
+let graphRepository: GraphRepository | null = null;
+
 /**
- * Per-request factory for the explorer's data source (docs/04 §4.11). Bound to the viewer so
- * every neighbourhood the pure graph builders fetch is already access-scoped — not memoized,
- * since the scope differs per user.
+ * Repository for the explorer's one-shot visible-graph load (docs/04 §4.11). The route hands
+ * the resulting slim snapshot to the browser, which explores it entirely client-side.
  */
-export function getGraphDataSource(viewer: Viewer): GraphDataSource {
-	return createDrizzleGraphDataSource(getDb(), viewer);
+export function getGraphRepository(): GraphRepository {
+	return (graphRepository ??= createDrizzleGraphRepository(getDb()));
 }
