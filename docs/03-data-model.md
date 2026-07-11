@@ -202,9 +202,41 @@ Defines a directional, reciprocal relationship kind.
 | symmetric | int | 0/1 (partner/sibling/friend = 1) |
 | sort_order | int | |
 
-Built-in seed set: parent↔child, grandparent↔grandchild, sibling (sym), partner (sym),
-spouse (sym), friend (sym), colleague (sym), mentor↔mentee, neighbor (sym),
-acquaintance (sym), **knows** (sym — generic "connected/associated"), other (sym). See 3.6.
+**Built-in seed set.** Shipped with `household_id = NULL`; a household may add custom
+types [M2]. `sym` = symmetric (one label, same both ways). Non-symmetric types are
+stored once and rendered from whichever side you view. The relationship's free-text
+`note` carries the specifics ("second cousin", "manager at Acme").
+
+| key | category | forward label | reverse label | sym |
+|---|---|---|---|---|
+| `parent_child` | family | Parent of | Child of | — |
+| `grandparent_grandchild` | family | Grandparent of | Grandchild of | — |
+| `sibling` | family | Sibling of | — | ✓ |
+| `pibling_nibling` | family | Aunt / Uncle of | Niece / Nephew of | — |
+| `cousin` | family | Cousin of | — | ✓ |
+| `step_parent_child` | family | Step-parent of | Step-child of | — |
+| `guardian_ward` | family | Guardian of | Ward of | — |
+| `godparent_godchild` | family | Godparent of | Godchild of | — |
+| `in_law` | family | In-law of | — | ✓ |
+| `spouse` | romantic | Spouse of | — | ✓ |
+| `partner` | romantic | Partner of | — | ✓ |
+| `ex_partner` | romantic | Ex-partner of | — | ✓ |
+| `friend` | social | Friend of | — | ✓ |
+| `neighbor` | social | Neighbor of | — | ✓ |
+| `roommate` | social | Roommate of | — | ✓ |
+| `acquaintance` | social | Acquaintance of | — | ✓ |
+| `colleague` | professional | Colleague of | — | ✓ |
+| `manager_report` | professional | Manager of | Reports to | — |
+| `mentor_mentee` | professional | Mentor of | Mentee of | — |
+| `teacher_student` | professional | Teacher of | Student of | — |
+| `business_partner` | professional | Business partner of | — | ✓ |
+| `client_provider` | professional | Client of | Provider to | — |
+| `knows` | other | Knows | — | ✓ |
+| `other` | other | Connected to | — | ✓ |
+
+The **Add person** flow surfaces the common family types as one-tap shortcuts
+(mother, father, sister, brother, child, partner); **Other** opens a picker over the
+full set above, grouped by `category`. See `docs/02-features.md` §2.4.
 
 ### relationship
 An instance connecting two contacts.
@@ -225,6 +257,11 @@ An instance connecting two contacts.
 Constraints: `from != to`; unique on `(from_contact_id, to_contact_id, type_id)`.
 Direction is stored canonically for asymmetric types (from = forward-label side).
 Visibility is **derived** from the two endpoints (see 2.10), not stored.
+
+**Reciprocity is implicit — never a second row.** A relationship is stored once and
+rendered from whichever contact you view: the `forward_label` on the `from` side, the
+`reverse_label` on the `to` side. Adding "Julia is Anna's mother" therefore makes Anna
+appear as Julia's child automatically; the app must not create an inverse row.
 
 ### note
 | column | type | notes |
