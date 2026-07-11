@@ -14,6 +14,7 @@ import { getConfig } from './config';
 import { getDb } from './db';
 import { createDrizzleAccountRepository } from './db/account-repository';
 import { createDrizzleContactRepository } from './db/contact-repository';
+import { createDrizzleDashboardRepository } from './db/dashboard-repository';
 import { createDrizzleGraphRepository } from './db/graph-repository';
 import { createDrizzleIdentityStore } from './db/identity-store';
 import { createDrizzleContactFieldRepository } from './db/contact-field-repository';
@@ -34,6 +35,7 @@ import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
 import type { TagDeps, TagRepository } from './domain/tags/tags';
 import type { GraphRepository } from './db/graph-repository';
+import type { DashboardDeps, DashboardRepository } from './domain/dashboard/dashboard';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
 import { ulidGenerator } from './id';
 
@@ -197,4 +199,10 @@ export function getMediaStore(): MediaStore {
 
 export function getAvatarDeps(): AvatarDeps {
 	return { photos: getPhotos(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
+}
+
+let dashboardRepository: DashboardRepository | null = null;
+
+export function getDashboardDeps(): DashboardDeps {
+	return { dashboard: (dashboardRepository ??= createDrizzleDashboardRepository(getDb())) };
 }
