@@ -247,7 +247,8 @@ are shared memberships with roles and time that *connect* people.
 - A note belongs to **one contact**, has an optional **title** and a **Markdown body**.
 - Notes show author and timestamp; they can be **pinned** to the top of a profile.
 - Markdown supports basic formatting, lists, links, and **@mentions** of other
-  contacts **[M2]** (a mention creates a soft link, surfaced on the mentioned contact).
+  contacts **[M2]** (a mention creates a soft link, surfaced on the mentioned contact —
+  same id-based, visibility-safe mechanism specified for the journal in §2.20.1).
 - Notes are individually **shared or private** (see 2.10).
 - Full-text searchable (2.9).
 
@@ -527,6 +528,46 @@ steps in the garden").
   port; visibility-scoped reads live in the Drizzle adapter; the route is a thin edge.
 - Monica's **journal** entries map here on import (§2.16); other Monica free-text falls back to
   notes.
+
+### 2.20.1 @-mentions of people (passive references) **[M2]**
+
+Inside a journal entry you can reference another person already in Stella. The reference is
+**clickable** when rendered, and it surfaces on the referenced person as a **passive entry** —
+they didn't get an entry of their own, they were *mentioned* in someone else's — showing which
+person's journal it came from. Example: in *Beat*'s journal you write "hiked with `@SandraBrunner`";
+on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s journal, 12 Jul".
+
+- **Authoring.** Typing `@` opens an autocomplete over the contacts you may see (§2.10),
+  filtered by name as you type; picking one inserts the mention. The on-screen form is
+  `@FirstnameLastname` with no space, e.g. `@AnnaWeber`. Write `\@` for a literal "@".
+- **Stored form is id-based, not name-based.** A confirmed mention is saved as a stable token
+  that embeds the contact **id** — so it survives a later rename and never resolves to the wrong
+  person when two people share a name. The typed `@AnnaWeber` is only the lookup key. A raw,
+  unconfirmed `@FirstnameLastname` (e.g. pasted text) is resolved best-effort when the entry is
+  saved: a single exact first+last match becomes a mention; anything ambiguous or unmatched is
+  left as literal text.
+- **Rendering.** A mention renders as a chip/link to `/contacts/{id}`, labelled with the
+  person's **current** display name (looked up at render time). It goes through the same
+  safe-render pipeline as the rest of the body (raw HTML escaped, unsafe links dropped); the
+  mention chip is the only non-Markdown token the renderer injects.
+- **Passive appearance on the referenced person.** On the mentioned contact's profile a
+  **"Mentioned in"** list shows every entry that references them, newest first. Each item names
+  the **source person** (whose journal — "in *Beat Steiner*'s journal"), the **author**, the
+  **entry date**, and a title/snippet, and links to that entry. It is **read-only** here: the
+  entry is owned and edited on the source person's journal. A self-mention (an entry in a
+  person's own journal that references that same person) creates no passive item.
+- **Visibility (§2.10) — a mention never widens access.** A passive item is shown only to
+  viewers who may already see the **source entry** (a private entry ⇒ only its author), the
+  **source contact**, and the **referenced contact**. To stop a mention leaking a private
+  person's existence, a **shared** entry may reference only contacts the whole household can
+  see; a **private** entry may reference anyone its author can see. The autocomplete only offers
+  contacts allowed for the entry's current audience.
+- **Lifecycle.** Saving or editing an entry re-parses its body and rebuilds that entry's mention
+  links to match (`journal_mention`, §3.3); deleting the entry removes them (cascade). Because
+  only the id is stored, renaming the referenced person updates every chip automatically.
+- **One shared pipeline.** Notes carry the same soft-link idea (§2.5, `note_mention`); the
+  parser, id-resolver, and chip renderer are shared between notes and journal rather than
+  duplicated. Framework-agnostic domain module, test-first (`docs/08` §8.3).
 
 ## 2.21 Feature ↔ milestone summary
 
