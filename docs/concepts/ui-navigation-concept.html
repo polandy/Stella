@@ -1,0 +1,996 @@
+<title>Stella — UI & Navigation Concept</title>
+<style>
+  /* ── Catppuccin tokens, straight from src/app.css (Latte / Mocha) ─────── */
+  :root, :root[data-theme='light'] {
+    --bg:#eff1f5; --bg-elevated:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff;
+    --border:#ccd0da; --border-soft:#dce0e8;
+    --fg:#4c4f69; --fg-muted:#6c6f85; --fg-subtle:#8c8fa1;
+    --primary:#8839ef; --primary-fg:#ffffff; --link:#1e66f5;
+    --green:#40a02b; --peach:#fe640b; --teal:#179299; --blue:#1e66f5;
+    --pink:#ea76cb; --yellow:#df8e1d; --sky:#04a5e5;
+    --shadow:0 1px 2px rgba(76,79,105,.06), 0 8px 24px rgba(76,79,105,.08);
+    --shadow-sm:0 1px 2px rgba(76,79,105,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+      --border:#313244; --border-soft:#26263a;
+      --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+      --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+      --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --blue:#89b4fa;
+      --pink:#f5c2e7; --yellow:#f9e2af; --sky:#89dceb;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+    --border:#313244; --border-soft:#26263a;
+    --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --blue:#89b4fa;
+    --pink:#f5c2e7; --yellow:#f9e2af; --sky:#89dceb;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing:border-box; }
+  html { color-scheme: light dark; }
+  body {
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.55;
+  }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+  a { color:var(--link); text-decoration:none; cursor:pointer; }
+  h1,h2,h3 { text-wrap:balance; margin:0; }
+
+  .wrap { max-width:1140px; margin:0 auto; padding:clamp(28px,5vw,64px) clamp(18px,4vw,40px) 96px; }
+
+  /* Doc header */
+  .doc-head { display:flex; flex-direction:column; gap:14px; margin-bottom:48px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); display:flex; align-items:center; gap:9px; }
+  .kicker .star { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; background:var(--primary); color:var(--primary-fg); font-size:13px; }
+  .doc-head h1 { font-size:clamp(28px,4.4vw,44px); font-weight:700; letter-spacing:-.02em; line-height:1.08; }
+  .doc-head p.lede { font-size:clamp(15px,1.7vw,18px); color:var(--fg-muted); max-width:64ch; }
+  .theme-btn { position:fixed; top:16px; right:16px; z-index:50; display:inline-flex; align-items:center; gap:7px; cursor:pointer; background:var(--card); color:var(--fg-muted); border:1px solid var(--border); border-radius:999px; padding:7px 14px; font:inherit; font-size:13px; box-shadow:var(--shadow-sm); }
+  .theme-btn:hover { color:var(--fg); }
+
+  .eyebrow { font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-subtle); }
+  section.block { margin-top:56px; }
+  section.block > .eyebrow { margin-bottom:10px; display:block; }
+  section.block > h2 { font-size:clamp(20px,2.6vw,26px); font-weight:650; letter-spacing:-.01em; margin-bottom:8px; }
+  section.block > p.intro { color:var(--fg-muted); max-width:66ch; margin:0 0 22px; }
+
+  .problems { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); }
+  .prob { background:var(--card); border:1px solid var(--border-soft); border-radius:14px; padding:18px 18px 20px; display:flex; flex-direction:column; gap:8px; box-shadow:var(--shadow-sm); }
+  .prob .tag { font-size:12px; font-weight:600; color:var(--peach); letter-spacing:.02em; }
+  .prob h3 { font-size:15px; font-weight:640; }
+  .prob p { margin:0; font-size:13.5px; color:var(--fg-muted); }
+  .prob code { font-size:12px; background:var(--bg-sunken); padding:1px 6px; border-radius:5px; color:var(--fg); }
+
+  .principles { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+  .princ { display:flex; gap:13px; align-items:flex-start; }
+  .princ .ic { flex:none; width:34px; height:34px; border-radius:9px; display:grid; place-items:center; background:color-mix(in srgb, var(--primary) 14%, transparent); color:var(--primary); }
+  .princ h3 { font-size:14.5px; font-weight:640; margin-bottom:3px; }
+  .princ p { margin:0; font-size:13px; color:var(--fg-muted); }
+
+  /* Prototype frame */
+  .proto-shell { border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); background:var(--bg); }
+  .browserbar { display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--bg-elevated); border-bottom:1px solid var(--border); }
+  .dots { display:flex; gap:6px; }
+  .dots i { width:11px; height:11px; border-radius:50%; display:block; }
+  .urlbar { flex:1; margin-left:8px; background:var(--bg); border:1px solid var(--border-soft); border-radius:8px; padding:5px 12px; font-size:12.5px; color:var(--fg-subtle); font-variant-numeric:tabular-nums; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .urlbar b { color:var(--fg-muted); font-weight:500; }
+
+  .app { display:grid; grid-template-columns:232px 1fr; min-height:580px; }
+
+  /* Sidebar */
+  .side { background:var(--bg-elevated); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:16px 12px; gap:4px; }
+  .brand { display:flex; align-items:center; gap:10px; padding:6px 8px 14px; cursor:pointer; border:0; background:none; width:100%; text-align:left; font:inherit; color:var(--fg); }
+  .brand .logo { width:32px; height:32px; border-radius:9px; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; font-size:17px; box-shadow:var(--shadow-sm); }
+  .brand .name { font-weight:680; font-size:16px; letter-spacing:-.01em; }
+  .brand .name small { display:block; font-weight:500; font-size:11px; color:var(--fg-subtle); letter-spacing:.01em; }
+  .navlabel { font-size:10.5px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-subtle); padding:12px 10px 4px; }
+  .navitem { display:flex; align-items:center; gap:11px; width:100%; text-align:left; padding:9px 10px; border-radius:9px; border:0; background:none; cursor:pointer; font:inherit; font-size:14px; color:var(--fg-muted); position:relative; }
+  .navitem svg { flex:none; width:18px; height:18px; }
+  .navitem:hover { background:var(--bg-sunken); color:var(--fg); }
+  .navitem[aria-current='page'] { background:color-mix(in srgb, var(--primary) 15%, transparent); color:var(--primary); font-weight:600; }
+  .navitem[aria-current='page']::before { content:''; position:absolute; left:-12px; top:8px; bottom:8px; width:3px; border-radius:0 3px 3px 0; background:var(--primary); }
+  .navitem .badge { margin-left:auto; font-size:11px; font-weight:600; background:var(--bg-sunken); color:var(--fg-muted); border-radius:999px; padding:1px 8px; }
+  .side .spacer { flex:1; }
+  .accountcard { display:flex; align-items:center; gap:10px; padding:8px; border-radius:10px; cursor:pointer; border:1px solid var(--border-soft); background:var(--card); }
+  .accountcard:hover { border-color:var(--border); }
+  .accountcard .meta { min-width:0; }
+  .accountcard .meta b { font-size:13px; font-weight:600; display:block; }
+  .accountcard .meta span { font-size:11.5px; color:var(--fg-subtle); }
+  .accountcard .chev { margin-left:auto; color:var(--fg-subtle); }
+
+  /* Main column */
+  .main { display:flex; flex-direction:column; min-width:0; background:var(--bg); }
+  .topbar { display:flex; align-items:center; gap:14px; padding:12px 20px; border-bottom:1px solid var(--border-soft); background:var(--bg); position:sticky; top:0; z-index:5; }
+  .crumbs { display:flex; align-items:center; gap:7px; font-size:13.5px; min-width:0; flex-wrap:wrap; }
+  .crumbs button { background:none; border:0; font:inherit; font-size:13.5px; color:var(--fg-subtle); cursor:pointer; padding:2px; border-radius:5px; }
+  .crumbs button:hover { color:var(--fg); }
+  .crumbs .sep { color:var(--fg-subtle); opacity:.6; }
+  .crumbs .current { color:var(--fg); font-weight:600; }
+  .searchbox { margin-left:auto; display:flex; align-items:center; gap:8px; width:min(280px,34vw); background:var(--bg-sunken); border:1px solid var(--border-soft); border-radius:9px; padding:7px 11px; color:var(--fg-subtle); font-size:13px; cursor:pointer; }
+  .searchbox:hover { border-color:var(--border); }
+  .searchbox .kbd { margin-left:auto; font-size:11px; border:1px solid var(--border); border-radius:5px; padding:1px 6px; color:var(--fg-subtle); }
+  .addbtn { display:inline-flex; align-items:center; gap:7px; background:var(--primary); color:var(--primary-fg); border:0; border-radius:9px; padding:8px 14px; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; }
+  .addbtn:hover { opacity:.92; }
+  .ghostbtn { display:inline-flex; align-items:center; gap:7px; background:var(--card); color:var(--fg-muted); border:1px solid var(--border); border-radius:9px; padding:8px 13px; font:inherit; font-size:13.5px; font-weight:500; cursor:pointer; }
+  .ghostbtn:hover { border-color:var(--primary); color:var(--fg); }
+
+  .canvas { padding:24px 24px 32px; overflow:auto; }
+  .screen { display:none; animation:fade .22s ease; }
+  .screen.active { display:block; }
+  @keyframes fade { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce) { .screen, .screen.active { animation:none; } }
+
+  .pagehead { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:wrap; }
+  .pagehead h2 { font-size:22px; font-weight:680; letter-spacing:-.01em; }
+  .pagehead p { margin:2px 0 0; font-size:13.5px; color:var(--fg-muted); }
+
+  .cards { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); }
+  .card { background:var(--card); border:1px solid var(--border-soft); border-radius:13px; padding:16px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:12px; }
+  .card .ch { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .card .ch h3 { font-size:11px; font-weight:650; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-subtle); }
+  .card .ch a { font-size:11.5px; }
+  .row { display:flex; align-items:center; gap:11px; padding:7px 8px; border-radius:9px; cursor:pointer; }
+  .row:hover { background:var(--bg-sunken); }
+  .row .txt { min-width:0; flex:1; }
+  .row .txt b { font-size:13.5px; font-weight:550; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .row .txt span { font-size:12px; color:var(--fg-subtle); display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .row .when { font-size:11.5px; color:var(--fg-subtle); flex:none; font-variant-numeric:tabular-nums; }
+
+  .av { flex:none; border-radius:50%; display:grid; place-items:center; font-weight:600; color:#fff; font-size:13px; }
+
+  .list { display:flex; flex-direction:column; gap:2px; }
+  .tags { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:16px; }
+  .chip { font-size:12.5px; padding:5px 12px; border-radius:999px; border:1px solid var(--border); color:var(--fg-muted); cursor:pointer; background:var(--card); }
+  .chip:hover { border-color:var(--primary); color:var(--fg); }
+  .chip.on { background:var(--primary); color:var(--primary-fg); border-color:var(--primary); }
+
+  /* ── Dashboard metrics (stat tiles + sparklines) ──────────────────────── */
+  .stats { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); margin-bottom:20px; }
+  .stat { background:var(--card); border:1px solid var(--border-soft); border-radius:13px; padding:16px 16px 12px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:6px; position:relative; overflow:hidden; }
+  .stat .sk { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:650; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); }
+  .stat .sk svg { width:15px; height:15px; color:var(--primary); }
+  .stat .sv { font-size:32px; font-weight:720; letter-spacing:-.02em; line-height:1; font-variant-numeric:tabular-nums; }
+  .stat .sd { font-size:12px; color:var(--fg-muted); display:flex; align-items:center; gap:5px; }
+  .stat .sd .up { color:var(--green); font-weight:650; display:inline-flex; align-items:center; gap:2px; }
+  .stat .spark { margin-top:4px; height:34px; }
+  .stat .spark svg { display:block; width:100%; height:34px; overflow:visible; }
+
+  /* Relations (ego graph + list) */
+  .rel { display:grid; grid-template-columns:1.05fr .95fr; gap:6px; }
+  @media (max-width:560px) { .rel { grid-template-columns:1fr; } }
+  .egostage { border-radius:11px; border:1px solid var(--border-soft); overflow:hidden; background:radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 0) 0 0/20px 20px, var(--bg-sunken); }
+  .egostage svg text { pointer-events:none; }
+  .egostage svg .node { cursor:pointer; }
+  .egostage svg .node:hover circle { filter:brightness(1.08); }
+  .rellist { display:flex; flex-direction:column; gap:1px; }
+  .relrow { display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:9px; cursor:pointer; }
+  .relrow:hover { background:var(--bg-sunken); }
+  .relrow .txt { flex:1; min-width:0; }
+  .relrow .txt b { font-size:13.5px; font-weight:550; display:block; }
+  .rellabel { font-size:11px; font-weight:600; color:var(--primary); background:color-mix(in srgb,var(--primary) 13%,transparent); border-radius:999px; padding:2px 9px; flex:none; }
+  .addrel { margin-top:6px; display:inline-flex; align-items:center; gap:7px; align-self:flex-start; background:none; border:1px dashed var(--border); color:var(--fg-muted); border-radius:9px; padding:7px 12px; font:inherit; font-size:13px; cursor:pointer; }
+  .addrel:hover { border-color:var(--primary); color:var(--fg); }
+
+  /* Chips row for circle membership */
+  .memchips { display:flex; flex-wrap:wrap; gap:7px; align-items:center; }
+  .memchip { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; padding:4px 11px; border-radius:999px; background:var(--bg-sunken); border:1px solid var(--border-soft); color:var(--fg); }
+  .memchip .x { cursor:pointer; color:var(--fg-subtle); font-weight:700; }
+  .memchip .x:hover { color:var(--danger); }
+  .addchip { display:inline-flex; align-items:center; gap:5px; font-size:12.5px; padding:4px 11px; border-radius:999px; border:1px dashed var(--border); color:var(--fg-muted); background:none; cursor:pointer; font:inherit; }
+  .addchip:hover { border-color:var(--primary); color:var(--fg); }
+
+  /* Dropdown / picker (relationships, add-to-circle) */
+  .pop { position:relative; display:inline-block; }
+  .menu { position:absolute; z-index:20; top:calc(100% + 6px); left:0; min-width:220px; max-height:280px; overflow:auto; background:var(--card); border:1px solid var(--border); border-radius:11px; box-shadow:var(--shadow); padding:7px; display:none; }
+  .menu.open { display:block; }
+  .menu .grp { font-size:10px; font-weight:650; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-subtle); padding:8px 8px 3px; }
+  .menu button { display:flex; width:100%; align-items:center; gap:8px; text-align:left; background:none; border:0; font:inherit; font-size:13px; color:var(--fg); padding:7px 8px; border-radius:8px; cursor:pointer; }
+  .menu button:hover { background:var(--bg-sunken); }
+
+  /* Journal (inline, week-by-week infinite scroll) */
+  .journal-wrap { margin-top:22px; }
+  .journal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .journal-head h3 { font-size:16px; font-weight:660; }
+  .journal-head .add { font-size:13px; color:var(--link); background:none; border:0; font:inherit; cursor:pointer; display:inline-flex; gap:6px; align-items:center; }
+  .journal-scroll { max-height:320px; overflow:auto; border:1px solid var(--border-soft); border-radius:13px; background:var(--card); padding:6px 14px 4px; }
+  .week { padding:12px 0; border-top:1px solid var(--border-soft); }
+  .week:first-child { border-top:0; }
+  .week .wk { font-size:11px; font-weight:650; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); margin-bottom:8px; }
+  .entry { padding:8px 2px; }
+  .entry b { font-size:13.5px; font-weight:600; display:block; }
+  .entry p { margin:2px 0 0; font-size:13px; color:var(--fg-muted); }
+  .loader { display:flex; align-items:center; justify-content:center; gap:9px; padding:16px 0 10px; color:var(--fg-subtle); font-size:12.5px; }
+  .spin { width:15px; height:15px; border-radius:50%; border:2px solid var(--border); border-top-color:var(--primary); animation:spin .7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation-duration:2s; } }
+
+  /* Forms */
+  .field { display:flex; flex-direction:column; gap:5px; flex:1; min-width:0; position:relative; }
+  .field > label { font-size:11.5px; font-weight:600; color:var(--fg-subtle); }
+  .field input { background:var(--bg-sunken); border:1px solid var(--border-soft); border-radius:9px; padding:9px 12px; font:inherit; font-size:14px; color:var(--fg); width:100%; }
+  .field input::placeholder { color:var(--fg-subtle); }
+  .field input:focus { outline:2px solid var(--primary); outline-offset:1px; border-color:transparent; }
+  .formrow { display:flex; gap:12px; }
+  @media (max-width:520px) { .formrow { flex-direction:column; } }
+  .shortcuts { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .shortcut { display:inline-flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:6px 13px; font:inherit; font-size:13px; color:var(--fg-muted); cursor:pointer; }
+  .shortcut:hover { border-color:var(--primary); color:var(--fg); }
+  .shortcut .p { color:var(--primary); font-weight:700; }
+  .relperson { border:1px solid var(--border-soft); border-radius:12px; padding:12px 12px 14px; background:var(--bg-sunken); display:flex; flex-direction:column; gap:10px; animation:fade .2s ease; }
+  .relperson .rp-head { display:flex; align-items:center; gap:9px; }
+  .relperson .rp-head .rm { margin-left:auto; background:none; border:0; color:var(--fg-subtle); cursor:pointer; font:inherit; font-size:13px; padding:4px; border-radius:6px; }
+  .relperson .rp-head .rm:hover { color:var(--danger); }
+
+  /* Autocomplete suggestions */
+  .suggest { position:absolute; z-index:20; top:calc(100% + 4px); left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); padding:5px; display:none; max-height:200px; overflow:auto; }
+  .suggest.open { display:block; }
+  .suggest button { display:flex; width:100%; align-items:center; gap:8px; text-align:left; background:none; border:0; font:inherit; font-size:13.5px; color:var(--fg); padding:7px 9px; border-radius:7px; cursor:pointer; }
+  .suggest button:hover, .suggest button.hi { background:var(--bg-sunken); }
+  .suggest .mut { color:var(--fg-subtle); font-size:12px; margin-left:auto; }
+
+  /* Circle member picker */
+  .pickrow { display:flex; align-items:center; gap:11px; padding:8px; border-radius:9px; border:1px solid transparent; }
+  .pickrow.sel { border-color:var(--border-soft); background:var(--bg-sunken); }
+  .pickrow .toggle { margin-left:auto; font-size:12.5px; font-weight:600; border-radius:8px; padding:5px 12px; cursor:pointer; border:1px solid var(--border); background:var(--card); color:var(--fg-muted); font:inherit; }
+  .pickrow.sel .toggle { background:var(--primary); border-color:var(--primary); color:var(--primary-fg); }
+
+  .graphstage { height:340px; border:1px solid var(--border-soft); border-radius:13px; background:radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 0) 0 0/22px 22px, var(--card); position:relative; overflow:hidden; }
+  .kv { display:flex; gap:10px; padding:9px 8px; border-radius:8px; font-size:13.5px; }
+  .kv:hover { background:var(--bg-sunken); }
+  .kv .k { color:var(--fg-subtle); width:88px; flex:none; }
+  .kv .v { color:var(--fg); }
+  .profile { display:flex; align-items:center; gap:16px; }
+  .profile .name { font-size:22px; font-weight:680; }
+  .profile .sub { font-size:13.5px; color:var(--fg-muted); }
+  .hint { font-size:12.5px; color:var(--fg-subtle); margin-top:14px; display:flex; align-items:flex-start; gap:7px; }
+  .hint svg { flex:none; margin-top:1px; }
+
+  /* Mobile mock */
+  .mobile-wrap { display:flex; gap:32px; align-items:center; flex-wrap:wrap; }
+  .phone { width:280px; flex:none; border:1px solid var(--border); border-radius:30px; overflow:hidden; box-shadow:var(--shadow); background:var(--bg); }
+  .phone .status { height:22px; background:var(--bg-elevated); }
+  .phone .mtop { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border-soft); }
+  .phone .mtop .logo { width:26px; height:26px; border-radius:7px; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; font-size:14px; }
+  .phone .mtop b { font-size:15px; font-weight:680; }
+  .phone .mbody { padding:14px 16px; display:flex; flex-direction:column; gap:9px; min-height:280px; }
+  .mline { height:11px; border-radius:6px; background:var(--bg-sunken); }
+  .mcard { border:1px solid var(--border-soft); border-radius:11px; padding:12px; display:flex; align-items:center; gap:10px; }
+  .mcard .txt { flex:1; display:flex; flex-direction:column; gap:6px; }
+  .tabbar { display:flex; border-top:1px solid var(--border); background:var(--bg-elevated); }
+  .tabbar button { flex:1; border:0; background:none; padding:9px 0 11px; display:flex; flex-direction:column; align-items:center; gap:3px; font:inherit; font-size:10px; color:var(--fg-subtle); cursor:pointer; }
+  .tabbar button svg { width:21px; height:21px; }
+  .tabbar button.on { color:var(--primary); }
+  .tabbar button.fab { position:relative; }
+  .tabbar .fab .plus { width:38px; height:38px; margin-top:-14px; border-radius:12px; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; box-shadow:var(--shadow); }
+  .mobile-note { flex:1; min-width:240px; }
+  .mobile-note h3 { font-size:16px; font-weight:650; margin-bottom:10px; }
+  .mobile-note ul { margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:11px; }
+  .mobile-note li { display:flex; gap:11px; font-size:14px; color:var(--fg-muted); }
+  .mobile-note li b { color:var(--fg); font-weight:600; }
+  .mobile-note .dot { flex:none; width:7px; height:7px; border-radius:50%; background:var(--primary); margin-top:8px; }
+
+  /* Implementation */
+  .steps { display:flex; flex-direction:column; gap:2px; }
+  .step { display:flex; gap:16px; padding:16px 0; border-top:1px solid var(--border-soft); }
+  .step:first-child { border-top:0; }
+  .step .num { flex:none; width:30px; height:30px; border-radius:8px; background:var(--bg-sunken); color:var(--primary); font-weight:680; font-size:14px; display:grid; place-items:center; font-variant-numeric:tabular-nums; }
+  .step .body { flex:1; }
+  .step .body h3 { font-size:15px; font-weight:640; margin-bottom:4px; }
+  .step .body p { margin:0; font-size:13.5px; color:var(--fg-muted); }
+  .step .body code { font-size:12.5px; background:var(--bg-sunken); padding:1px 6px; border-radius:5px; color:var(--fg); }
+
+  @media (max-width:720px) {
+    .app { grid-template-columns:1fr; }
+    .side { display:none; }
+    .searchbox { display:none; }
+  }
+</style>
+
+<button class="theme-btn" id="themeToggle" aria-label="Toggle theme">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  <span>Theme</span>
+</button>
+
+<div class="wrap">
+
+  <header class="doc-head">
+    <span class="kicker"><span class="star">★</span> Stella · UI Concept</span>
+    <h1>A persistent app shell for Stella</h1>
+    <p class="lede">
+      Today the navigation lives only on the dashboard — every sub-page improvises its own
+      back link. This concept replaces that with a <b>persistent shell</b>: a fixed sidebar, a
+      header with a breadcrumb trail and global search, and a bottom tab bar on mobile. Around
+      that, the app becomes <b>relationship-first</b>: people, their connections, where they work,
+      and a household at a glance. The prototype below is clickable.
+    </p>
+  </header>
+
+  <!-- ── PROBLEM ─────────────────────────────────────────────────────── -->
+  <section class="block">
+    <span class="eyebrow">Starting point</span>
+    <h2>What doesn't work today</h2>
+    <p class="intro">Observed straight from the code (<code>src/routes/(app)/</code>): there is no shared layout shell, only a server-side <code>+layout.server.ts</code>.</p>
+    <div class="problems">
+      <div class="prob"><span class="tag">Dead end</span><h3>No way back to the dashboard</h3><p>From a contact, the graph or search there is <b>no link</b> home — only sideways to "Contacts".</p></div>
+      <div class="prob"><span class="tag">Inconsistent</span><h3>Every page reinvents "back"</h3><p>Sometimes <code>← Home</code>, sometimes <code>← Contacts</code>; the contact list even links to <code>/search</code>. No reliable pattern.</p></div>
+      <div class="prob"><span class="tag">Hidden</span><h3>Navigation only on the dashboard</h3><p>Contacts / Circles / Graph live in the dashboard header alone. Everywhere else you have to guess.</p></div>
+      <div class="prob"><span class="tag">Orientation</span><h3>"Where am I?" goes unanswered</h3><p>No active marker, no trail. On deeper pages the context is lost.</p></div>
+    </div>
+  </section>
+
+  <!-- ── PRINCIPLES ──────────────────────────────────────────────────── -->
+  <section class="block">
+    <span class="eyebrow">Guiding ideas</span>
+    <h2>Four principles</h2>
+    <div class="principles">
+      <div class="princ"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg></span><div><h3>Always home</h3><p>The logo and first breadcrumb take you to the dashboard from any page in one click.</p></div></div>
+      <div class="princ"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="6" height="16" rx="1.5"/><path d="M13 7h8M13 12h8M13 17h5"/></svg></span><div><h3>Destinations always visible</h3><p>A fixed sidebar shows every main area — nothing has to be guessed.</p></div></div>
+      <div class="princ"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h7"/></svg></span><div><h3>Where am I?</h3><p>An active marker plus a breadcrumb trail answer the question on every level.</p></div></div>
+      <div class="princ"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><div><h3>Search & add everywhere</h3><p>Global search and "Add person" sit fixed in the header — reachable from any context.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ── PROTOTYPE ───────────────────────────────────────────────────── -->
+  <section class="block">
+    <span class="eyebrow">Interactive prototype · Desktop</span>
+    <h2>Click through the shell</h2>
+    <p class="intro">The sidebar, breadcrumbs and links inside the content are live. Things to try: the <b>dashboard metrics</b>, <b>open a person</b> (relationship graph, work, circles, journal), <b>Add person</b> (relationship shortcuts + an "Other" picker) and <b>New circle</b> (add members while creating).</p>
+
+    <div class="proto-shell">
+      <div class="browserbar">
+        <div class="dots"><i style="background:#ed6a5e"></i><i style="background:#f4bf4f"></i><i style="background:#61c554"></i></div>
+        <div class="urlbar" id="url">stella.home.lan<b id="urlpath">/</b></div>
+      </div>
+
+      <div class="app">
+        <!-- Sidebar -->
+        <aside class="side">
+          <button class="brand" data-go="dashboard">
+            <span class="logo">★</span>
+            <span class="name">Stella<small>Weber household</small></span>
+          </button>
+          <span class="navlabel">Overview</span>
+          <button class="navitem" data-go="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>Dashboard</button>
+          <span class="navlabel">People</span>
+          <button class="navitem" data-go="contacts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.6-3.2 3-5 5.5-5s4.9 1.8 5.5 5"/><path d="M16 5.2A3.2 3.2 0 0 1 16 11M17.5 15c2 .4 3.6 2.1 4 5"/></svg>Contacts <span class="badge">24</span></button>
+          <button class="navitem" data-go="circles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="9" r="4.5"/><circle cx="15.5" cy="14" r="4.5"/></svg>Circles <span class="badge">5</span></button>
+          <button class="navitem" data-go="graph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="8" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.8 7.6 10.5 16M8 6.6 15.6 7.5M16.7 10 13 16"/></svg>Graph</button>
+          <div class="spacer"></div>
+          <button class="accountcard" data-go="dashboard" title="Account & settings">
+            <span class="av" style="width:30px;height:30px;background:#8839ef;font-size:12px">AW</span>
+            <span class="meta"><b>Andy Weber</b><span>Settings</span></span>
+            <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 9 4-4 4 4M8 15l4 4 4-4"/></svg></span>
+          </button>
+        </aside>
+
+        <!-- Main -->
+        <div class="main">
+          <div class="topbar">
+            <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
+            <div class="searchbox" data-go="search">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              Search…<span class="kbd">⌘K</span>
+            </div>
+            <button class="addbtn" data-go="new"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add person</button>
+          </div>
+
+          <div class="canvas">
+
+            <!-- Dashboard -->
+            <div class="screen active" data-screen="dashboard">
+              <div class="pagehead"><div><h2>Hello, Andy</h2><p>Here's your household at a glance.</p></div></div>
+              <div class="stats" id="stats">
+                <div class="stat" data-metric="people"><div class="sk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.6-3.2 3-5 5.5-5s4.9 1.8 5.5 5"/></svg>People</div><div class="sv">24</div><div class="sd"><span class="up">▲ +3</span> this month</div><div class="spark"></div></div>
+                <div class="stat" data-metric="rel"><div class="sk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M7.6 7.6 16.4 16.4"/></svg>Relationships</div><div class="sv">38</div><div class="sd"><span class="up">▲ +5</span> this month</div><div class="spark"></div></div>
+                <div class="stat" data-metric="journal"><div class="sk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16M9 20V9"/></svg>Journal entries</div><div class="sv">112</div><div class="sd"><span class="up">▲ +12</span> this month</div><div class="spark"></div></div>
+                <div class="stat" data-metric="circles"><div class="sk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="9" r="4.5"/><circle cx="15.5" cy="14" r="4.5"/></svg>Circles</div><div class="sv">5</div><div class="sd"><span class="up">▲ +1</span> this month</div><div class="spark"></div></div>
+              </div>
+              <div class="cards">
+                <div class="card">
+                  <div class="ch"><h3>New people</h3><a data-go="contacts">All contacts</a></div>
+                  <div class="list">
+                    <div class="row" data-go="contact"><span class="av" style="width:34px;height:34px;background:#1e66f5">AW</span><span class="txt"><b>Anna Weber</b><span>Sister · Munich</span></span><span class="when">2d</span></div>
+                    <div class="row" data-go="contacts"><span class="av" style="width:34px;height:34px;background:#40a02b">TL</span><span class="txt"><b>Thomas Lang</b><span>Neighbor</span></span><span class="when">5d</span></div>
+                    <div class="row" data-go="contacts"><span class="av" style="width:34px;height:34px;background:#fe640b">MK</span><span class="txt"><b>Marie Klein</b><span>Colleague</span></span><span class="when">1w</span></div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="ch"><h3>Recent notes</h3></div>
+                  <div class="list">
+                    <div class="row" data-go="contact"><span class="txt"><b>★ Birthday on Aug 3</b><span>Anna Weber</span></span><span class="when">1d</span></div>
+                    <div class="row" data-go="contact"><span class="txt"><b>Coffee on Saturday</b><span>Thomas Lang</span></span><span class="when">3d</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contacts -->
+            <div class="screen" data-screen="contacts">
+              <div class="pagehead"><div><h2>Contacts</h2><p>24 people · sorted by name</p></div></div>
+              <div class="tags"><span class="chip on">All</span><span class="chip">Friends</span><span class="chip">Work</span><span class="chip">Neighbors</span><span class="chip">Munich</span></div>
+              <div class="card">
+                <div class="list">
+                  <div class="row" data-go="contact"><span class="av" style="width:34px;height:34px;background:#1e66f5">AW</span><span class="txt"><b>Anna Weber</b><span>Sister · Munich</span></span><span class="when">Munich</span></div>
+                  <div class="row" data-go="contact"><span class="av" style="width:34px;height:34px;background:#ea76cb">JW</span><span class="txt"><b>Julia Weber</b><span>Mother</span></span><span class="when">Munich</span></div>
+                  <div class="row" data-go="contact"><span class="av" style="width:34px;height:34px;background:#40a02b">TL</span><span class="txt"><b>Thomas Lang</b><span>Neighbor</span></span><span class="when">Neighbors</span></div>
+                  <div class="row" data-go="contact"><span class="av" style="width:34px;height:34px;background:#fe640b">MK</span><span class="txt"><b>Marie Klein</b><span>Colleague</span></span><span class="when">Work</span></div>
+                  <div class="row" data-go="contact"><span class="av" style="width:34px;height:34px;background:#179299">DS</span><span class="txt"><b>David Schmitt</b><span>University friend</span></span><span class="when">Friends</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact detail -->
+            <div class="screen" data-screen="contact">
+              <div class="pagehead">
+                <div class="profile"><span class="av" style="width:64px;height:64px;background:#1e66f5;font-size:22px">AW</span><div><div class="name">Anna Weber</div><div class="sub">Sister · lives in Munich</div></div></div>
+                <button class="addbtn" data-go="new"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add related person</button>
+              </div>
+
+              <div class="cards">
+                <!-- Relationships: ego graph + list -->
+                <div class="card" style="grid-column:1/-1">
+                  <div class="ch"><h3>Relationships</h3><a data-go="graph">Open in full graph</a></div>
+                  <div class="rel">
+                    <div class="egostage">
+                      <svg width="100%" height="230" viewBox="0 0 440 230" preserveAspectRatio="xMidYMid meet" font-size="11" font-weight="600" text-anchor="middle">
+                        <line x1="220" y1="115" x2="105" y2="52"  stroke="var(--border)" stroke-width="2"/>
+                        <line x1="220" y1="115" x2="335" y2="52"  stroke="var(--border)" stroke-width="2"/>
+                        <line x1="220" y1="115" x2="70"  y2="150" stroke="var(--border)" stroke-width="2"/>
+                        <line x1="220" y1="115" x2="220" y2="200" stroke="var(--border)" stroke-width="2"/>
+                        <line x1="220" y1="115" x2="370" y2="150" stroke="var(--border)" stroke-width="2"/>
+                        <g class="node"><circle cx="220" cy="115" r="30" fill="#8839ef"/><text x="220" y="119" fill="#fff">Anna</text></g>
+                        <g class="node" data-go="contact"><circle cx="105" cy="52" r="21" fill="#ea76cb"/><text x="105" y="56" fill="#fff">Julia</text><text x="105" y="20" fill="var(--fg-subtle)">Mother</text></g>
+                        <g class="node" data-go="contact"><circle cx="335" cy="52" r="21" fill="#df8e1d"/><text x="335" y="56" fill="#fff">Peter</text><text x="335" y="20" fill="var(--fg-subtle)">Father</text></g>
+                        <g class="node" data-go="contact"><circle cx="70"  cy="150" r="21" fill="#40a02b"/><text x="70" y="154" fill="#fff">Andy</text><text x="70" y="188" fill="var(--fg-subtle)">Brother</text></g>
+                        <g class="node" data-go="contact"><circle cx="220" cy="200" r="21" fill="#04a5e5"/><text x="220" y="204" fill="#fff">Leo</text><text x="220" y="228" fill="var(--fg-subtle)">Son</text></g>
+                        <g class="node" data-go="contact"><circle cx="370" cy="150" r="21" fill="#179299"/><text x="370" y="154" fill="#fff">Marc</text><text x="370" y="188" fill="var(--fg-subtle)">Partner</text></g>
+                      </svg>
+                    </div>
+                    <div>
+                      <div class="rellist">
+                        <div class="relrow" data-go="contact"><span class="av" style="width:30px;height:30px;background:#ea76cb;font-size:11px">JW</span><span class="txt"><b>Julia Weber</b></span><span class="rellabel">Mother</span></div>
+                        <div class="relrow" data-go="contact"><span class="av" style="width:30px;height:30px;background:#df8e1d;font-size:11px">PW</span><span class="txt"><b>Peter Weber</b></span><span class="rellabel">Father</span></div>
+                        <div class="relrow" data-go="contact"><span class="av" style="width:30px;height:30px;background:#40a02b;font-size:11px">AW</span><span class="txt"><b>Andy Weber</b></span><span class="rellabel">Brother</span></div>
+                        <div class="relrow" data-go="contact"><span class="av" style="width:30px;height:30px;background:#04a5e5;font-size:11px">LW</span><span class="txt"><b>Leo Weber</b></span><span class="rellabel">Son</span></div>
+                        <div class="relrow" data-go="contact"><span class="av" style="width:30px;height:30px;background:#179299;font-size:11px">MB</span><span class="txt"><b>Marc Berger</b></span><span class="rellabel">Partner</span></div>
+                      </div>
+                      <button class="addrel" data-go="new"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Add relationship</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Work -->
+                <div class="card">
+                  <div class="ch"><h3>Work</h3></div>
+                  <div class="formrow">
+                    <div class="field"><label for="jt">Job title</label><input id="jt" value="UX Designer" placeholder="e.g. UX Designer"></div>
+                    <div class="field">
+                      <label for="co">Company</label>
+                      <input id="co" placeholder="Start typing…" autocomplete="off">
+                      <div class="suggest" id="coSuggest"></div>
+                    </div>
+                  </div>
+                  <p style="margin:0;font-size:12px;color:var(--fg-subtle)">Suggestions come from companies already on other people — start typing "T" or "M".</p>
+                </div>
+
+                <!-- Circles -->
+                <div class="card">
+                  <div class="ch"><h3>Circles</h3></div>
+                  <div class="memchips" id="contactCircles">
+                    <span class="memchip">Book club <span class="x" title="Remove">×</span></span>
+                    <div class="pop">
+                      <button class="addchip" id="addCircleBtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Add to circle</button>
+                      <div class="menu" id="addCircleMenu"></div>
+                    </div>
+                  </div>
+                  <p style="margin:0;font-size:12px;color:var(--fg-subtle)">Circles are chosen groups (club, team, neighborhood) — not family. Family comes from relationships.</p>
+                </div>
+
+                <!-- Contact details -->
+                <div class="card" style="grid-column:1/-1">
+                  <div class="ch"><h3>Contact details</h3></div>
+                  <div class="formrow" style="flex-wrap:wrap">
+                    <div class="kv"><span class="k">Email</span><span class="v">anna.weber@example.com</span></div>
+                    <div class="kv"><span class="k">Phone</span><span class="v">+49 151 2345678</span></div>
+                    <div class="kv"><span class="k">Birthday</span><span class="v">Aug 3, 1994</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Journal (lower area, week-by-week infinite scroll) -->
+              <div class="journal-wrap">
+                <div class="journal-head">
+                  <h3>Journal</h3>
+                  <button class="add"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> Write entry</button>
+                </div>
+                <div class="journal-scroll" id="journalScroll">
+                  <div class="loader" id="journalLoader"><span class="spin"></span> Loading more weeks…</div>
+                </div>
+                <p class="hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg> Scroll inside the journal — it loads week by week (W28, W27, W26 …) without leaving the page.</p>
+              </div>
+            </div>
+
+            <!-- Circles overview -->
+            <div class="screen" data-screen="circles">
+              <div class="pagehead">
+                <div><h2>Circles</h2><p>Chosen groups — not for family (that comes from relationships)</p></div>
+                <button class="addbtn" data-go="circleNew"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>New circle</button>
+              </div>
+              <div class="cards">
+                <div class="card" data-go="circle" style="cursor:pointer"><div class="ch"><h3>Book club</h3></div><p style="margin:0;font-size:13px;color:var(--fg-muted)">6 people</p></div>
+                <div class="card" style="cursor:pointer"><div class="ch"><h3>Neighborhood</h3></div><p style="margin:0;font-size:13px;color:var(--fg-muted)">9 people</p></div>
+                <div class="card" style="cursor:pointer"><div class="ch"><h3>Work</h3></div><p style="margin:0;font-size:13px;color:var(--fg-muted)">7 people</p></div>
+                <div class="card" style="cursor:pointer"><div class="ch"><h3>University friends</h3></div><p style="margin:0;font-size:13px;color:var(--fg-muted)">5 people</p></div>
+              </div>
+            </div>
+
+            <!-- Circle create -->
+            <div class="screen" data-screen="circleNew">
+              <div class="pagehead"><div><h2>New circle</h2><p>Name it and add people right away.</p></div></div>
+              <div style="max-width:560px; display:flex; flex-direction:column; gap:16px">
+                <div class="card">
+                  <div class="formrow">
+                    <div class="field"><label for="cname">Circle name</label><input id="cname" placeholder="e.g. Hiking group" value="Hiking group"></div>
+                    <div class="field"><label for="ckind">Type</label><input id="ckind" placeholder="club, team, neighborhood…" value="club"></div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="ch"><h3>Members <span id="memCount" style="color:var(--primary)"></span></h3></div>
+                  <div class="list" id="memberPicker">
+                    <!-- filled by JS -->
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px">
+                  <button class="addbtn" data-go="circle">Create circle</button>
+                  <button class="ghostbtn" data-go="circles">Cancel</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Circle detail -->
+            <div class="screen" data-screen="circle">
+              <div class="pagehead"><div><h2>Book club</h2><p>6 people in this group</p></div><button class="ghostbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Add member</button></div>
+              <div class="card">
+                <div class="list">
+                  <div class="row" data-go="contact"><span class="av" style="width:34px;height:34px;background:#40a02b">TL</span><span class="txt"><b>Thomas Lang</b><span>Neighbor</span></span></div>
+                  <div class="row"><span class="av" style="width:34px;height:34px;background:#fe640b">MK</span><span class="txt"><b>Marie Klein</b><span>Colleague</span></span></div>
+                  <div class="row"><span class="av" style="width:34px;height:34px;background:#179299">DS</span><span class="txt"><b>David Schmitt</b><span>University friend</span></span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Graph -->
+            <div class="screen" data-screen="graph">
+              <div class="pagehead"><div><h2>Graph</h2><p>Relationship network · centered on Anna Weber</p></div></div>
+              <div class="graphstage">
+                <svg width="100%" height="100%" viewBox="0 0 600 340" preserveAspectRatio="xMidYMid meet">
+                  <line x1="300" y1="170" x2="160" y2="90" stroke="var(--border)" stroke-width="2"/>
+                  <line x1="300" y1="170" x2="450" y2="90" stroke="var(--border)" stroke-width="2"/>
+                  <line x1="300" y1="170" x2="150" y2="250" stroke="var(--border)" stroke-width="2"/>
+                  <line x1="300" y1="170" x2="450" y2="255" stroke="var(--border)" stroke-width="2"/>
+                  <line x1="450" y1="90" x2="450" y2="255" stroke="var(--border)" stroke-width="2"/>
+                  <g font-size="12" font-weight="600" text-anchor="middle" fill="#fff">
+                    <circle cx="300" cy="170" r="30" fill="#8839ef"/><text x="300" y="174">Anna</text>
+                    <circle cx="160" cy="90" r="23" fill="#1e66f5"/><text x="160" y="94">Julia</text>
+                    <circle cx="450" cy="90" r="23" fill="#40a02b"/><text x="450" y="94">Peter</text>
+                    <circle cx="150" cy="250" r="23" fill="#fe640b"/><text x="150" y="254">Marie</text>
+                    <circle cx="450" cy="255" r="23" fill="#179299"/><text x="450" y="259">David</text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Search -->
+            <div class="screen" data-screen="search">
+              <div class="pagehead"><div><h2>Search</h2><p>Search people, notes and circles</p></div></div>
+              <div class="searchbox" style="margin:0 0 16px;width:100%;cursor:text;color:var(--fg)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg> weber</div>
+              <div class="card">
+                <div class="ch"><h3>People</h3></div>
+                <div class="list">
+                  <div class="row" data-go="contact"><span class="av" style="width:32px;height:32px;background:#1e66f5">AW</span><span class="txt"><b>Anna Weber</b><span>Sister</span></span></div>
+                  <div class="row"><span class="av" style="width:32px;height:32px;background:#ea76cb">JW</span><span class="txt"><b>Julia Weber</b><span>Mother</span></span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- New person(s) -->
+            <div class="screen" data-screen="new">
+              <div class="pagehead"><div><h2>New person</h2><p>Add a person — and directly connected people at the same time.</p></div></div>
+              <div style="max-width:560px; display:flex; flex-direction:column; gap:16px">
+                <div class="card">
+                  <div class="ch"><h3>Main person</h3></div>
+                  <div class="formrow">
+                    <div class="field"><label for="fn">First name</label><input id="fn" placeholder="Anna" value="Anna"></div>
+                    <div class="field"><label for="ln">Last name</label><input id="ln" placeholder="Weber" value="Weber"></div>
+                  </div>
+                </div>
+                <div>
+                  <p style="margin:0 0 9px; font-size:13px; color:var(--fg-muted)">Add a directly connected person — the last name is carried over (editable):</p>
+                  <div class="shortcuts" id="shortcuts">
+                    <button class="shortcut" data-rel="Mother"><span class="p">+</span> Mother</button>
+                    <button class="shortcut" data-rel="Father"><span class="p">+</span> Father</button>
+                    <button class="shortcut" data-rel="Sister"><span class="p">+</span> Sister</button>
+                    <button class="shortcut" data-rel="Brother"><span class="p">+</span> Brother</button>
+                    <button class="shortcut" data-rel="Child"><span class="p">+</span> Child</button>
+                    <button class="shortcut" data-rel="Partner"><span class="p">+</span> Partner</button>
+                    <div class="pop">
+                      <button class="shortcut" id="otherBtn"><span class="p">+</span> Other ▾</button>
+                      <div class="menu" id="otherMenu"></div>
+                    </div>
+                  </div>
+                </div>
+                <div id="relPeople" style="display:flex; flex-direction:column; gap:12px"></div>
+                <div style="display:flex; align-items:center; gap:12px">
+                  <button class="addbtn" data-go="contact">Save all</button>
+                  <span id="saveCount" style="font-size:13px; color:var(--fg-subtle)"></span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg> Tip: open a person, then click "Home" or "Contacts" in the trail — the old dead-end is gone.</p>
+  </section>
+
+  <!-- ── MOBILE ──────────────────────────────────────────────────────── -->
+  <section class="block">
+    <span class="eyebrow">Prototype · Mobile</span>
+    <h2>On the phone: bottom tab bar</h2>
+    <p class="intro">On narrow screens the sidebar becomes a bottom tab bar — thumb-reachable and always visible.</p>
+    <div class="mobile-wrap">
+      <div class="phone">
+        <div class="status"></div>
+        <div class="mtop"><span class="logo">★</span><b>Dashboard</b></div>
+        <div class="mbody">
+          <div class="mline" style="width:55%"></div>
+          <div class="mcard"><span class="av" style="width:34px;height:34px;background:#1e66f5">AW</span><span class="txt"><span class="mline" style="width:70%"></span><span class="mline" style="width:45%"></span></span></div>
+          <div class="mcard"><span class="av" style="width:34px;height:34px;background:#40a02b">TL</span><span class="txt"><span class="mline" style="width:60%"></span><span class="mline" style="width:40%"></span></span></div>
+          <div class="mcard"><span class="av" style="width:34px;height:34px;background:#fe640b">MK</span><span class="txt"><span class="mline" style="width:65%"></span><span class="mline" style="width:38%"></span></span></div>
+        </div>
+        <div class="tabbar">
+          <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>Home</button>
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.6-3.2 3-5 5.5-5s4.9 1.8 5.5 5"/></svg>People</button>
+          <button class="fab"><span class="plus"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></span></button>
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="9" r="4.5"/><circle cx="15.5" cy="14" r="4.5"/></svg>Circles</button>
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search</button>
+        </div>
+      </div>
+      <div class="mobile-note">
+        <h3>Why this split</h3>
+        <ul>
+          <li><span class="dot"></span><span><b>Four fixed tabs + one action.</b> Home, People, Circles, Search cover the whole product; the center plus button creates a person instantly.</span></li>
+          <li><span class="dot"></span><span><b>The title names the place.</b> Together with the active tab it replaces the breadcrumb trail in tight space.</span></li>
+          <li><span class="dot"></span><span><b>Back stays consistent.</b> The contact detail gets a real back arrow; the journal lives inside it and is kept on scroll.</span></li>
+          <li><span class="dot"></span><span><b>Same destinations as desktop.</b> You learn the structure once — it holds on both devices.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RELATIONSHIPS AT THE CENTER ─────────────────────────────────── -->
+  <section class="block">
+    <span class="eyebrow">Model decisions</span>
+    <h2>Relationships are the core — not circles</h2>
+    <p class="intro">From the review: a family is never declared as a group; it emerges from relations between people. That shapes the person page and the add flow.</p>
+    <div class="principles">
+      <div class="princ"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="8" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.8 7.6 10.5 16M8 6.6 15.6 7.5M16.7 10 13 16"/></svg></span><div><h3>Relationships on the person</h3><p>A mini ego-graph plus a list shows everyone directly connected, with their role (mother, brother, partner …).</p></div></div>
+      <div class="princ"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span><div><h3>Add & assign inline</h3><p>Add a related person, put someone in a circle, or record where they work — all from the person page.</p></div></div>
+      <div class="princ"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M18 15v6M15 18h6"/></svg></span><div><h3>Create several at once</h3><p>Enter first / last name, then add mother, father, child … via shortcuts or the full type picker. Last name carries over.</p></div></div>
+      <div class="princ"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 4-6"/></svg></span><div><h3>A household at a glance</h3><p>The dashboard leads with metrics — people, relationships, journal entries, circles — each with a 8-week trend.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ── RELATIONSHIP TYPES ──────────────────────────────────────────── -->
+  <section class="block">
+    <span class="eyebrow">Proposal · added to docs/03-data-model.md §3.3</span>
+    <h2>Supported relationship types</h2>
+    <p class="intro">Built-in set shipped with the household. "Other" in the add flow opens a picker over all of these, grouped by category. Non-symmetric types store one row and render the right label per side.</p>
+    <div class="cards">
+      <div class="card"><div class="ch"><h3>Family</h3></div><p style="margin:0;font-size:13px;color:var(--fg-muted)">Parent · Child · Grandparent · Grandchild · Sibling · Aunt/Uncle · Niece/Nephew · Cousin · Step-parent · Step-child · Guardian · Godparent · In-law</p></div>
+      <div class="card"><div class="ch"><h3>Romantic</h3></div><p style="margin:0;font-size:13px;color:var(--fg-muted)">Spouse · Partner · Ex-partner</p></div>
+      <div class="card"><div class="ch"><h3>Social</h3></div><p style="margin:0;font-size:13px;color:var(--fg-muted)">Friend · Neighbor · Roommate · Acquaintance</p></div>
+      <div class="card"><div class="ch"><h3>Professional</h3></div><p style="margin:0;font-size:13px;color:var(--fg-muted)">Colleague · Manager · Report · Mentor · Mentee · Teacher · Student · Business partner · Client / Provider</p></div>
+      <div class="card"><div class="ch"><h3>Other</h3></div><p style="margin:0;font-size:13px;color:var(--fg-muted)">Knows · Connected to (free text on the relationship carries the specifics)</p></div>
+    </div>
+  </section>
+
+  <!-- ── IMPLEMENTATION ──────────────────────────────────────────────── -->
+  <section class="block">
+    <span class="eyebrow">Implementation</span>
+    <h2>From concept to code</h2>
+    <p class="intro">Mapped onto the existing SvelteKit structure — all within the golden rules (shell only at the edge, domain untouched).</p>
+    <div class="steps">
+      <div class="step"><span class="num">1</span><div class="body"><h3>Introduce the shell: <code>src/routes/(app)/+layout.svelte</code></h3><p>A shared layout with sidebar + header wraps every app page via <code>{@render children()}</code> — navigation exists exactly once instead of per page.</p></div></div>
+      <div class="step"><span class="num">2</span><div class="body"><h3>Remove ad-hoc headers from pages</h3><p>The individual <code>&lt;header&gt;</code>/<code>← Back</code> blocks in <code>contacts</code>, <code>circles</code>, <code>graph</code>, <code>search</code> and contact detail go away. Each page renders only its content.</p></div></div>
+      <div class="step"><span class="num">3</span><div class="body"><h3>Derive breadcrumbs from the route</h3><p>A <code>Breadcrumbs</code> component reads <code>$page.route</code> + <code>load</code> data (e.g. the contact name), so the trail is always correct with no per-page upkeep.</p></div></div>
+      <div class="step"><span class="num">4</span><div class="body"><h3>Mark the active state</h3><p>The sidebar compares <code>$page.url.pathname</code> against each target and sets <code>aria-current="page"</code> — visible and accessible at once.</p></div></div>
+      <div class="step"><span class="num">5</span><div class="body"><h3>Dashboard metrics</h3><p>A <code>load</code> returns four counts (people, relationships, journal entries, circles) + an 8-week series; render as stat tiles with inline-SVG sparklines. Cheap <code>COUNT</code> queries via the access layer.</p></div></div>
+      <div class="step"><span class="num">6</span><div class="body"><h3>Ego network on the person page</h3><p>The pure graph core (<code>src/lib/graph/model</code>, <code>buildEgoNetwork</code>) yields direct neighbors; the Cytoscape adapter renders them compactly in the contact detail, plus a list with role labels.</p></div></div>
+      <div class="step"><span class="num">7</span><div class="body"><h3>Relationship type picker</h3><p>Load the built-in <code>relationship_type</code> rows (see §3.3); shortcuts map to the common family types, "Other" opens a picker grouped by <code>category</code>.</p></div></div>
+      <div class="step"><span class="num">8</span><div class="body"><h3>Create several people in one transaction</h3><p>The create use-case takes a main person plus connected people and writes contacts <b>and</b> relationships in one step (last name pre-filled, role editable per card). Each relationship is stored as a <b>single directional row</b>, so the <b>reciprocal side is automatic</b> — adding Julia as Anna's mother makes Anna show as Julia's child, no second row.</p></div></div>
+      <div class="step"><span class="num">9</span><div class="body"><h3>Work fields with autocomplete</h3><p><code>job_title</code> and <code>company</code> already exist on <code>contact</code>. A tiny <code>+server.ts</code> returns distinct companies for typeahead — no new table.</p></div></div>
+      <div class="step"><span class="num">10</span><div class="body"><h3>Circles: create-with-members & assign</h3><p>"New circle" writes the circle + <code>circle_membership</code> rows together; the person page assigns membership inline. Circle field is <b>removed</b> from person-create (family ≠ circle).</p></div></div>
+      <div class="step"><span class="num">11</span><div class="body"><h3>Journal inline with week pagination</h3><p>A journal section in the contact detail loads per calendar week (<code>?before=W</code>) and appends on scroll — instead of a separate <code>/journal</code> route.</p></div></div>
+    </div>
+  </section>
+
+  <p class="hint" style="margin-top:40px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> Design concept only. The relationship-type table has been added to <code>docs/03-data-model.md §3.3</code>; no app code changed yet. Say the word to build the shell (steps 1–4).</p>
+
+</div>
+
+<script>
+  // ── Theme toggle (overrides prefers-color-scheme both ways) ────────────
+  const root = document.documentElement;
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+    const cur = root.getAttribute('data-theme') || (dark ? 'dark' : 'light');
+    root.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+  });
+
+  // ── Prototype navigation ───────────────────────────────────────────────
+  const SCREENS = {
+    dashboard: { path:'/',                   nav:'dashboard', crumbs:[{label:'Home'}] },
+    contacts:  { path:'/contacts',           nav:'contacts',  crumbs:[{label:'Home',go:'dashboard'},{label:'Contacts'}] },
+    contact:   { path:'/contacts/anna-weber',nav:'contacts',  crumbs:[{label:'Home',go:'dashboard'},{label:'Contacts',go:'contacts'},{label:'Anna Weber'}] },
+    circles:   { path:'/circles',            nav:'circles',   crumbs:[{label:'Home',go:'dashboard'},{label:'Circles'}] },
+    circleNew: { path:'/circles/new',        nav:'circles',   crumbs:[{label:'Home',go:'dashboard'},{label:'Circles',go:'circles'},{label:'New circle'}] },
+    circle:    { path:'/circles/book-club',  nav:'circles',   crumbs:[{label:'Home',go:'dashboard'},{label:'Circles',go:'circles'},{label:'Book club'}] },
+    graph:     { path:'/graph?center=anna',  nav:'graph',     crumbs:[{label:'Home',go:'dashboard'},{label:'Graph'}] },
+    search:    { path:'/search?q=weber',     nav:null,        crumbs:[{label:'Home',go:'dashboard'},{label:'Search'}] },
+    new:       { path:'/contacts/new',       nav:'contacts',  crumbs:[{label:'Home',go:'dashboard'},{label:'Contacts',go:'contacts'},{label:'New person'}] },
+  };
+
+  const screens = document.querySelectorAll('[data-screen]');
+  const navitems = document.querySelectorAll('.side .navitem');
+  const crumbsEl = document.getElementById('crumbs');
+  const urlPath = document.getElementById('urlpath');
+
+  function go(name) {
+    const s = SCREENS[name];
+    if (!s) return;
+    closeMenus();
+    screens.forEach(el => el.classList.toggle('active', el.dataset.screen === name));
+    navitems.forEach(el => {
+      if (s.nav && el.dataset.go === s.nav) el.setAttribute('aria-current','page');
+      else el.removeAttribute('aria-current');
+    });
+    crumbsEl.innerHTML = '';
+    s.crumbs.forEach((c, i) => {
+      if (i) { const sep = document.createElement('span'); sep.className='sep'; sep.textContent='/'; crumbsEl.appendChild(sep); }
+      if (c.go) { const b = document.createElement('button'); b.textContent = c.label; b.onclick = () => go(c.go); crumbsEl.appendChild(b); }
+      else { const span = document.createElement('span'); span.className='current'; span.textContent = c.label; crumbsEl.appendChild(span); }
+    });
+    urlPath.textContent = s.path;
+    document.querySelector('.canvas').scrollTop = 0;
+    if (name === 'contact') resetJournal();
+    if (name === 'circleNew') resetMemberPicker();
+  }
+  document.querySelectorAll('[data-go]').forEach(el => {
+    el.addEventListener('click', e => { e.preventDefault(); go(el.dataset.go); });
+  });
+
+  function closeMenus() { document.querySelectorAll('.menu.open').forEach(m => m.classList.remove('open')); }
+  document.addEventListener('click', e => { if (!e.target.closest('.pop')) closeMenus(); });
+
+  // ── Dashboard sparklines ────────────────────────────────────────────────
+  const SERIES = {
+    people:  [12,14,15,17,18,20,21,24],
+    rel:     [18,20,23,26,29,32,35,38],
+    journal: [40,52,63,71,84,95,104,112],
+    circles: [1,2,2,3,4,4,5,5],
+  };
+  function sparkline(el, data) {
+    const W = 150, H = 34, min = Math.min(...data), max = Math.max(...data), rng = (max - min) || 1;
+    const x = i => (i / (data.length - 1)) * W;
+    const y = v => H - 3 - ((v - min) / rng) * (H - 6);
+    const pts = data.map((v,i) => [x(i), y(v)]);
+    const line = pts.map((p,i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    const area = 'M0 ' + H + ' ' + pts.map(p => 'L' + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ') + ' L' + W + ' ' + H + ' Z';
+    const last = pts[pts.length - 1];
+    el.innerHTML =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
+      '<defs><linearGradient id="g' + el.dataset.id + '" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="var(--primary)" stop-opacity="0.28"/>' +
+      '<stop offset="1" stop-color="var(--primary)" stop-opacity="0"/></linearGradient></defs>' +
+      '<path d="' + area + '" fill="url(#g' + el.dataset.id + ')"/>' +
+      '<path d="' + line + '" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' +
+      '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="2.6" fill="var(--primary)"/></svg>';
+  }
+  document.querySelectorAll('#stats .stat').forEach((tile, i) => {
+    const spark = tile.querySelector('.spark');
+    spark.dataset.id = i;
+    sparkline(spark, SERIES[tile.dataset.metric]);
+  });
+
+  // ── Journal: week-by-week infinite scroll ───────────────────────────────
+  const jScroll = document.getElementById('journalScroll');
+  const jLoader = document.getElementById('journalLoader');
+  const J_ENTRIES = {
+    28: [['Sunday · Walk along the Isar','Talked about her new job — she is relieved.']],
+    27: [['Wednesday · Quick call','Dentist appointment moved.'],['Monday · Planned birthday','Gift idea: hiking backpack.']],
+    26: [['Friday · Video call','Got the flat in Schwabing! 🎉']],
+    25: [['Saturday · Brunch','Met Marc.']],
+    24: [['Tuesday · Message','Sent photos from the weekend.']],
+    23: [['Sunday · Family dinner','Everyone was there.']],
+  };
+  const WEEK_LABEL = { 28:'This week', 27:'W27 · Jun 29 – Jul 5', 26:'W26 · Jun 22–28',
+                       25:'W25 · Jun 15–21', 24:'W24 · Jun 8–14', 23:'W23 · Jun 1–7' };
+  let nextWeek, loadingJ;
+  function resetJournal() {
+    jScroll.querySelectorAll('.week').forEach(w => w.remove());
+    nextWeek = 28; loadingJ = false;
+    jLoader.innerHTML = '<span class="spin"></span> Loading more weeks…';
+    loadWeek(); loadWeek();
+  }
+  function loadWeek() {
+    if (nextWeek < 23) { jLoader.textContent = 'Beginning of the journal.'; return; }
+    const wk = nextWeek--;
+    const div = document.createElement('div');
+    div.className = 'week';
+    div.innerHTML = '<div class="wk">' + WEEK_LABEL[wk] + '</div>' +
+      (J_ENTRIES[wk] || []).map(([t,b]) => '<div class="entry"><b>' + t + '</b><p>' + b + '</p></div>').join('');
+    jScroll.insertBefore(div, jLoader);
+  }
+  jScroll.addEventListener('scroll', () => {
+    if (loadingJ) return;
+    if (jScroll.scrollTop + jScroll.clientHeight >= jScroll.scrollHeight - 40) {
+      loadingJ = true;
+      setTimeout(() => { loadWeek(); loadingJ = false; }, 450);
+    }
+  });
+
+  // ── Add person: shortcuts + "Other" relationship-type picker ────────────
+  const REL_TYPES = {
+    Family:      ['Grandparent','Grandchild','Aunt / Uncle','Niece / Nephew','Cousin','Step-parent','Step-child','Guardian','Godparent','In-law'],
+    Romantic:    ['Spouse','Ex-partner'],
+    Social:      ['Friend','Neighbor','Roommate','Acquaintance'],
+    Professional:['Colleague','Manager','Report','Mentor','Mentee','Teacher','Student','Business partner','Client'],
+    Other:       ['Knows','Connected to'],
+  };
+  const relPeople = document.getElementById('relPeople');
+  const saveCount = document.getElementById('saveCount');
+  const AV = ['#1e66f5','#40a02b','#fe640b','#179299','#ea76cb','#df8e1d','#04a5e5'];
+  let relIdx = 0;
+  function refreshCount() {
+    const n = relPeople.children.length;
+    saveCount.textContent = n ? ('1 main person + ' + n + ' connected') : '';
+  }
+  const ROLE_GROUPS = Object.assign({ Common:['Mother','Father','Sister','Brother','Child','Partner'] }, REL_TYPES);
+  function addRelPerson(rel) {
+    const lastName = document.getElementById('ln').value.trim();
+    const color = AV[relIdx++ % AV.length];
+    const card = document.createElement('div');
+    card.className = 'relperson';
+    card.innerHTML =
+      '<div class="rp-head"><span class="av" style="width:26px;height:26px;background:' + color + ';font-size:10px">?</span>' +
+      '<div class="pop"><button class="rellabel" style="cursor:pointer;border:0;font:inherit">' + rel + ' ▾</button><div class="menu"></div></div>' +
+      '<button class="rm" title="Remove">Remove</button></div>' +
+      '<div class="formrow">' +
+        '<div class="field"><label>First name</label><input placeholder="First name"></div>' +
+        '<div class="field"><label>Last name</label><input value="' + lastName + '"></div>' +
+      '</div>';
+    // Editable role: dropdown over all types (the reciprocal side is derived automatically)
+    const roleBtn = card.querySelector('.rellabel');
+    const roleMenu = card.querySelector('.menu');
+    for (const [grp, list] of Object.entries(ROLE_GROUPS)) {
+      const h = document.createElement('div'); h.className = 'grp'; h.textContent = grp; roleMenu.appendChild(h);
+      list.forEach(r => { const b = document.createElement('button'); b.textContent = r;
+        b.onclick = () => { roleBtn.textContent = r + ' ▾'; closeMenus(); }; roleMenu.appendChild(b); });
+    }
+    roleBtn.addEventListener('click', e => { e.stopPropagation();
+      const open = roleMenu.classList.contains('open'); closeMenus(); if (!open) roleMenu.classList.add('open'); });
+    card.querySelector('.rm').addEventListener('click', () => { card.remove(); refreshCount(); });
+    const fn = card.querySelector('.formrow input'), av = card.querySelector('.av');
+    fn.addEventListener('input', () => { av.textContent = (fn.value.trim()[0] || '?').toUpperCase(); });
+    relPeople.appendChild(card); fn.focus(); refreshCount();
+  }
+  document.querySelectorAll('#shortcuts .shortcut[data-rel]').forEach(btn => {
+    btn.addEventListener('click', () => addRelPerson(btn.dataset.rel));
+  });
+  // Build the "Other" picker
+  const otherMenu = document.getElementById('otherMenu');
+  for (const [grp, list] of Object.entries(REL_TYPES)) {
+    const h = document.createElement('div'); h.className = 'grp'; h.textContent = grp; otherMenu.appendChild(h);
+    list.forEach(rel => {
+      const b = document.createElement('button'); b.textContent = rel;
+      b.onclick = () => { addRelPerson(rel); closeMenus(); };
+      otherMenu.appendChild(b);
+    });
+  }
+  document.getElementById('otherBtn').addEventListener('click', e => {
+    e.stopPropagation(); const open = otherMenu.classList.contains('open'); closeMenus();
+    if (!open) otherMenu.classList.add('open');
+  });
+
+  // ── Work: company autocomplete from existing people ─────────────────────
+  const COMPANIES = ['Allianz','BMW Group','Google Munich','Klinikum München','LMU Munich',
+                     'SAP','Siemens','Stadtwerke München','TU Munich','Acme GmbH'];
+  const coInput = document.getElementById('co');
+  const coSuggest = document.getElementById('coSuggest');
+  function renderSuggest(q) {
+    const matches = COMPANIES.filter(c => c.toLowerCase().includes(q.toLowerCase())).slice(0, 6);
+    if (!matches.length) { coSuggest.classList.remove('open'); return; }
+    coSuggest.innerHTML = matches.map(c =>
+      '<button type="button">' + c + '<span class="mut">existing</span></button>').join('');
+    coSuggest.querySelectorAll('button').forEach((b, i) => {
+      b.onclick = () => { coInput.value = matches[i]; coSuggest.classList.remove('open'); };
+    });
+    coSuggest.classList.add('open');
+  }
+  coInput.addEventListener('focus', () => renderSuggest(coInput.value));
+  coInput.addEventListener('input', () => renderSuggest(coInput.value));
+  coInput.addEventListener('blur', () => setTimeout(() => coSuggest.classList.remove('open'), 150));
+
+  // ── Contact page: add-to-circle dropdown ────────────────────────────────
+  const ALL_CIRCLES = ['Neighborhood','Work','University friends','Hiking group'];
+  const contactCircles = document.getElementById('contactCircles');
+  const addCircleBtn = document.getElementById('addCircleBtn');
+  const addCircleMenu = document.getElementById('addCircleMenu');
+  function currentCircles() { return [...contactCircles.querySelectorAll('.memchip')].map(c => c.firstChild.textContent.trim()); }
+  function buildCircleMenu() {
+    const has = currentCircles();
+    const avail = ALL_CIRCLES.filter(c => !has.includes(c));
+    addCircleMenu.innerHTML = avail.length
+      ? avail.map(c => '<button type="button">' + c + '</button>').join('')
+      : '<div class="grp">In all circles</div>';
+    addCircleMenu.querySelectorAll('button').forEach((b, i) => {
+      b.onclick = () => {
+        const chip = document.createElement('span'); chip.className = 'memchip';
+        chip.innerHTML = avail[i] + ' <span class="x" title="Remove">×</span>';
+        chip.querySelector('.x').onclick = () => chip.remove();
+        contactCircles.insertBefore(chip, addCircleBtn.parentElement);
+        closeMenus();
+      };
+    });
+  }
+  contactCircles.querySelectorAll('.memchip .x').forEach(x => x.onclick = () => x.parentElement.remove());
+  addCircleBtn.addEventListener('click', e => {
+    e.stopPropagation(); const open = addCircleMenu.classList.contains('open'); closeMenus();
+    if (!open) { buildCircleMenu(); addCircleMenu.classList.add('open'); }
+  });
+
+  // ── Create circle: member picker ────────────────────────────────────────
+  const PEOPLE = [
+    ['Anna Weber','#1e66f5','Sister'],['Thomas Lang','#40a02b','Neighbor'],
+    ['Marie Klein','#fe640b','Colleague'],['David Schmitt','#179299','University friend'],
+    ['Julia Weber','#ea76cb','Mother'],['Peter Weber','#df8e1d','Father'],
+  ];
+  const memberPicker = document.getElementById('memberPicker');
+  const memCount = document.getElementById('memCount');
+  function refreshMem() {
+    const n = memberPicker.querySelectorAll('.pickrow.sel').length;
+    memCount.textContent = n ? '· ' + n + ' selected' : '';
+  }
+  function resetMemberPicker() {
+    memberPicker.innerHTML = '';
+    PEOPLE.forEach(([name, color, role]) => {
+      const initials = name.split(' ').map(w => w[0]).join('');
+      const row = document.createElement('div'); row.className = 'pickrow';
+      row.innerHTML =
+        '<span class="av" style="width:32px;height:32px;background:' + color + ';font-size:12px">' + initials + '</span>' +
+        '<span class="txt" style="flex:1"><b style="font-size:13.5px;font-weight:550;display:block">' + name + '</b>' +
+        '<span style="font-size:12px;color:var(--fg-subtle)">' + role + '</span></span>' +
+        '<button class="toggle">Add</button>';
+      const btn = row.querySelector('.toggle');
+      btn.onclick = () => {
+        const on = row.classList.toggle('sel');
+        btn.textContent = on ? 'Added ✓' : 'Add';
+        refreshMem();
+      };
+      memberPicker.appendChild(row);
+    });
+    refreshMem();
+  }
+
+  go('dashboard');
+</script>
