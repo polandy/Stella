@@ -143,6 +143,12 @@ Tailwind is configured so utilities reference these variables (e.g.
     a top bar with global search (`/` or ⌘K) and the quick-add button, content area.
   - **Mobile:** bottom tab bar (Contacts, Graph, Add, Feed, Search); quick-add is the
     prominent center action. Sidebar collapses to a drawer.
+  - **Breadcrumb trail** in the top bar, derived from the route + loaded data
+    (`Home / Contacts / {name} / Journal`). Every segment links, so Home is always one
+    click away; the active destination is marked with `aria-current="page"` in the
+    sidebar and tab bar. The account menu (theme + sign out) lives in the shell, not per page.
+  - The shell is a single `(app)/+layout.svelte`; pages render content only — no per-page
+    headers or back links.
 - **Responsive, mobile-first.** Capture flows are optimized for one-handed phone use.
 - **Global search palette** (⌘K): fuzzy across contacts/notes with keyboard nav.
 

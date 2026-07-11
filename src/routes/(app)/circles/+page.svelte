@@ -7,12 +7,9 @@
 
 <svelte:head><title>Circles · Stella</title></svelte:head>
 
-<main class="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-6 px-6 py-10">
+<main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
 	<header class="flex items-center justify-between">
-		<div class="flex items-center gap-3">
-			<a href="/" class="text-sm text-fg-muted hover:text-fg">← Home</a>
-			<h1 class="text-2xl font-semibold text-fg">Circles</h1>
-		</div>
+		<h1 class="text-2xl font-semibold text-fg">Circles</h1>
 		<button
 			onclick={() => (showForm = !showForm)}
 			class="rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90"
