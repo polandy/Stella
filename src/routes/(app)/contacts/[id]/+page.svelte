@@ -1,5 +1,7 @@
 <script lang="ts">
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
+	import EgoGraph from '$lib/components/EgoGraph.svelte';
+	import JournalTimeline from '$lib/components/JournalTimeline.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -13,6 +15,19 @@
 		professional: 'var(--ctp-peach)',
 		other: 'var(--fg-subtle)'
 	};
+
+	// One ego-graph node per connected person (a person may hold several relationship
+	// types; the graph shows them once, keeping the first label).
+	const egoNodes = $derived.by(() => {
+		const seen = new Set<string>();
+		const out: { id: string; name: string; label: string; category: string }[] = [];
+		for (const r of data.relationships) {
+			if (seen.has(r.otherContactId)) continue;
+			seen.add(r.otherContactId);
+			out.push({ id: r.otherContactId, name: r.otherDisplayName, label: r.label, category: r.category });
+		}
+		return out;
+	});
 </script>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
@@ -166,6 +181,10 @@
 			</a>
 		</div>
 
+		{#if egoNodes.length > 0}
+			<EgoGraph centerName={c.displayName} nodes={egoNodes} />
+		{/if}
+
 		{#if data.relationships.length > 0}
 			<ul class="flex flex-col gap-1">
 				{#each data.relationships as rel (rel.id)}
@@ -263,6 +282,22 @@
 				</button>
 			</div>
 		</form>
+	</section>
+
+	<!-- Journal (inline timeline, week by week; writing with photos lives on the full page) -->
+	<section class="flex flex-col gap-3">
+		<div class="flex items-center justify-between">
+			<h2 class="text-sm font-medium text-fg-muted">Journal</h2>
+			<a
+				href="/contacts/{c.id}/journal"
+				class="inline-flex items-center gap-1.5 rounded-app border border-border px-3 py-1.5 text-sm text-fg-muted transition-colors hover:text-fg"
+			>
+				<span aria-hidden="true">✎</span> Write entry
+			</a>
+		</div>
+		{#key c.id}
+			<JournalTimeline contactId={c.id} initial={data.journal} />
+		{/key}
 	</section>
 
 	<!-- How you met -->

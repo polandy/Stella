@@ -50,6 +50,23 @@ function fakeRepo(seed: JournalEntry[] = []) {
 		async listForContactVisibleTo(_v: Viewer, contactId: string) {
 			return rows.filter((r) => r.contactId === contactId);
 		},
+		async listPageForContactVisibleTo(
+			_v: Viewer,
+			contactId: string,
+			opts: { limit: number; before?: { entryDate: string; createdAt: number } }
+		) {
+			const sorted = rows
+				.filter((r) => r.contactId === contactId)
+				.sort((a, b) => (b.entryDate < a.entryDate ? -1 : b.entryDate > a.entryDate ? 1 : b.createdAt - a.createdAt));
+			const after = opts.before
+				? sorted.filter(
+						(r) =>
+							r.entryDate < opts.before!.entryDate ||
+							(r.entryDate === opts.before!.entryDate && r.createdAt < opts.before!.createdAt)
+					)
+				: sorted;
+			return after.slice(0, opts.limit);
+		},
 		async deleteOwn(p: { authorId: string; id: string }) {
 			const i = rows.findIndex((r) => r.id === p.id && r.createdBy === p.authorId);
 			if (i < 0) return false;

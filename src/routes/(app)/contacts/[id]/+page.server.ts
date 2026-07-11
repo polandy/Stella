@@ -13,6 +13,7 @@ import {
 	removeMember
 } from '$lib/server/domain/circles/circles';
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
+import { listJournalPage } from '$lib/server/domain/journal/journal';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import { renderMarkdown } from '$lib/server/domain/notes/markdown';
 import { createNote, listNotesForContact } from '$lib/server/domain/notes/notes';
@@ -32,11 +33,16 @@ import {
 	getAvatarDeps,
 	getCircleDeps,
 	getContactFields,
+	getJournalDeps,
 	getNoteDeps,
+	getPhotos,
 	getRelationshipDeps,
 	getRelationships,
 	getTagDeps
 } from '$lib/server/services';
+
+/** First page of the inline journal timeline; older weeks stream in via the entries endpoint. */
+const JOURNAL_PAGE = 8;
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -49,19 +55,51 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		throw error(404, 'Contact not found');
 	}
 
-	const [relationships, types, allContacts, notes, fields, tags, contactCircles, allCircles] =
-		await Promise.all([
-			getRelationships().listForContactVisibleTo(viewer, params.id),
-			getRelationships().listTypes(),
-			listContacts(getContactDeps(), viewer),
-			listNotesForContact(getNoteDeps(), viewer, params.id),
-			listContactFields(getContactFieldDeps(), viewer, params.id),
-			listTagsForContact(getTagDeps(), viewer, params.id),
-			listCirclesForContact(getCircleDeps(), viewer, params.id),
-			listCircles(getCircleDeps(), viewer)
-		]);
+	const [
+		relationships,
+		types,
+		allContacts,
+		notes,
+		fields,
+		tags,
+		contactCircles,
+		allCircles,
+		journalPage,
+		journalPhotos
+	] = await Promise.all([
+		getRelationships().listForContactVisibleTo(viewer, params.id),
+		getRelationships().listTypes(),
+		listContacts(getContactDeps(), viewer),
+		listNotesForContact(getNoteDeps(), viewer, params.id),
+		listContactFields(getContactFieldDeps(), viewer, params.id),
+		listTagsForContact(getTagDeps(), viewer, params.id),
+		listCirclesForContact(getCircleDeps(), viewer, params.id),
+		listCircles(getCircleDeps(), viewer),
+		listJournalPage(getJournalDeps(), viewer, params.id, { limit: JOURNAL_PAGE }),
+		getPhotos().listJournalPhotos(viewer, params.id)
+	]);
+
+	// Group visible journal photo ids by entry so the inline timeline renders each gallery.
+	const journalPhotosByEntry = new Map<string, string[]>();
+	for (const p of journalPhotos) {
+		const list = journalPhotosByEntry.get(p.journalEntryId) ?? [];
+		list.push(p.id);
+		journalPhotosByEntry.set(p.journalEntryId, list);
+	}
 
 	return {
+		journal: {
+			entries: journalPage.entries.map((e) => ({
+				id: e.id,
+				entryDate: e.entryDate,
+				title: e.title,
+				bodyHtml: renderMarkdown(e.body),
+				visibility: e.visibility,
+				mine: e.createdBy === locals.user!.id,
+				photos: journalPhotosByEntry.get(e.id) ?? []
+			})),
+			nextCursor: journalPage.nextCursor
+		},
 		contact,
 		relationships,
 		relationshipTypes: types,

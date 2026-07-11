@@ -47,8 +47,30 @@ export interface JournalRepository {
 	updateBody(params: { id: string; title: string | null; body: string; updatedAt: number }): Promise<void>;
 	/** Entries on a contact the viewer may see, newest day first. */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<JournalEntry[]>;
+	/**
+	 * One keyset page of visible entries, newest day first. `before` excludes everything at or
+	 * after that (entryDate, createdAt) point, so passing the previous page's last entry walks
+	 * backwards through time without gaps or repeats.
+	 */
+	listPageForContactVisibleTo(
+		viewer: Viewer,
+		contactId: string,
+		opts: { limit: number; before?: JournalCursor }
+	): Promise<JournalEntry[]>;
 	/** Delete an entry the viewer authored; returns whether a row was removed. */
 	deleteOwn(params: { authorId: string; id: string }): Promise<boolean>;
+}
+
+/** Opaque-ish cursor: the (entryDate, createdAt) of the last entry a client has seen. */
+export interface JournalCursor {
+	entryDate: string;
+	createdAt: number;
+}
+
+export interface JournalPage {
+	entries: JournalEntry[];
+	/** Cursor to fetch the next (older) page, or null when the beginning is reached. */
+	nextCursor: JournalCursor | null;
 }
 
 export interface JournalDeps {
@@ -128,6 +150,31 @@ export async function listJournalForContact(
 	contactId: string
 ): Promise<JournalEntry[]> {
 	return deps.journal.listForContactVisibleTo(viewer, contactId);
+}
+
+/**
+ * One page of a contact's journal for the viewer, newest first, for infinite scroll. Fetches
+ * one extra row to decide whether an older page exists and to hand back the next cursor. The
+ * caller must have verified the contact is visible.
+ */
+export async function listJournalPage(
+	deps: Pick<JournalDeps, 'journal'>,
+	viewer: Viewer,
+	contactId: string,
+	opts: { limit: number; before?: JournalCursor }
+): Promise<JournalPage> {
+	const limit = Math.max(1, Math.min(Math.trunc(opts.limit), 100));
+	const rows = await deps.journal.listPageForContactVisibleTo(viewer, contactId, {
+		limit: limit + 1,
+		before: opts.before
+	});
+	const hasMore = rows.length > limit;
+	const entries = hasMore ? rows.slice(0, limit) : rows;
+	const last = entries.at(-1);
+	return {
+		entries,
+		nextCursor: hasMore && last ? { entryDate: last.entryDate, createdAt: last.createdAt } : null
+	};
 }
 
 /** Delete one of the viewer's own journal entries. Returns whether a row was removed. */

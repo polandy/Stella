@@ -3,7 +3,12 @@ import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
-import { saveJournalEntry, listJournalForContact, type JournalAuthor } from '../domain/journal/journal';
+import {
+	saveJournalEntry,
+	listJournalForContact,
+	listJournalPage,
+	type JournalAuthor
+} from '../domain/journal/journal';
 import { createDrizzleJournalRepository } from './journal-repository';
 import { systemClock } from '../clock';
 import * as schema from './schema';
@@ -112,6 +117,41 @@ describe('journal repository + upsert', () => {
 
 		expect(await listJournalForContact(deps(), viewerU2, 'secret')).toHaveLength(0);
 		expect(await listJournalForContact(deps(), viewerU1, 'secret')).toHaveLength(1);
+	});
+
+	it('paginates newest-first via keyset cursor without gaps or repeats', async () => {
+		for (const d of ['2026-06-20', '2026-06-27', '2026-07-04', '2026-07-11', '2026-07-18']) {
+			await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: d, body: `entry ${d}` });
+		}
+
+		const page1 = await listJournalPage(deps(), viewerU1, 'kid', { limit: 2 });
+		expect(page1.entries.map((e) => e.entryDate)).toEqual(['2026-07-18', '2026-07-11']);
+		expect(page1.nextCursor).not.toBeNull();
+
+		const page2 = await listJournalPage(deps(), viewerU1, 'kid', { limit: 2, before: page1.nextCursor! });
+		expect(page2.entries.map((e) => e.entryDate)).toEqual(['2026-07-04', '2026-06-27']);
+
+		const page3 = await listJournalPage(deps(), viewerU1, 'kid', { limit: 2, before: page2.nextCursor! });
+		expect(page3.entries.map((e) => e.entryDate)).toEqual(['2026-06-20']);
+		expect(page3.nextCursor).toBeNull(); // reached the beginning
+	});
+
+	it('pagination applies the same visibility scoping', async () => {
+		await saveJournalEntry(deps(), author1, {
+			contactId: 'kid',
+			entryDate: '2026-07-11',
+			body: 'private thought',
+			visibility: 'private'
+		});
+		await saveJournalEntry(deps(), author1, {
+			contactId: 'kid',
+			entryDate: '2026-07-04',
+			body: 'shared moment',
+			visibility: 'shared'
+		});
+
+		const asOther = await listJournalPage(deps(), viewerU2, 'kid', { limit: 10 });
+		expect(asOther.entries.map((e) => e.body)).toEqual(['shared moment']);
 	});
 
 	it('deleteOwn removes only the author’s own entry', async () => {
