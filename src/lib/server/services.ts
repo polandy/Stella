@@ -20,6 +20,7 @@ import { createDrizzleNoteRepository } from './db/note-repository';
 import { createDrizzleRelationshipRepository } from './db/relationship-repository';
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
+import { createDrizzleTagRepository } from './db/tag-repository';
 import type {
 	ContactFieldDeps,
 	ContactFieldRepository
@@ -28,6 +29,7 @@ import type { SearchDeps, SearchRepository } from './domain/search/search';
 import type { ContactDeps, ContactRepository } from './domain/contacts/contacts';
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
+import type { TagDeps, TagRepository } from './domain/tags/tags';
 import { ulidGenerator } from './id';
 
 /*
@@ -155,4 +157,14 @@ export function getSearch(): SearchRepository {
 
 export function getSearchDeps(): SearchDeps {
 	return { search: getSearch() };
+}
+
+let tagRepository: TagRepository | null = null;
+
+export function getTags(): TagRepository {
+	return (tagRepository ??= createDrizzleTagRepository(getDb()));
+}
+
+export function getTagDeps(): TagDeps {
+	return { tags: getTags(), ids: ulidGenerator, clock: systemClock };
 }

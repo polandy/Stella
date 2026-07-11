@@ -20,6 +20,30 @@
 		</div>
 	</header>
 
+	{#if data.tags.length > 0}
+		<div class="flex flex-wrap items-center gap-2">
+			<a
+				href="/contacts"
+				class="rounded-full border px-3 py-1 text-sm transition-colors"
+				class:border-primary={!data.activeTag}
+				class:text-primary={!data.activeTag}
+				class:border-border={data.activeTag}
+				class:text-fg-muted={data.activeTag}
+			>
+				All
+			</a>
+			{#each data.tags as tag (tag.id)}
+				<a
+					href="/contacts?tag={tag.id}"
+					class="rounded-full px-3 py-1 text-sm"
+					style="background:color-mix(in srgb, var(--ctp-{tag.color}) {data.activeTag === tag.id ? 30 : 14}%, transparent); color:var(--ctp-{tag.color})"
+				>
+					{tag.name}
+				</a>
+			{/each}
+		</div>
+	{/if}
+
 	{#if data.contacts.length === 0}
 		<div class="rounded-app border border-border bg-card p-8 text-center">
 			<p class="text-fg-muted">No people yet.</p>

@@ -30,6 +30,39 @@
 		</div>
 	</header>
 
+	<!-- Tags -->
+	<section class="flex flex-wrap items-center gap-2">
+		{#each data.tags as tag (tag.id)}
+			<span
+				class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm"
+				style="background:color-mix(in srgb, var(--ctp-{tag.color}) 18%, transparent); color:var(--ctp-{tag.color})"
+			>
+				{tag.name}
+				<form method="POST" action="?/removeTag" class="contents">
+					<input type="hidden" name="tagId" value={tag.id} />
+					<button class="opacity-70 hover:opacity-100" aria-label="Remove tag">×</button>
+				</form>
+			</span>
+		{/each}
+
+		<form method="POST" action="?/addTag" class="inline-flex items-center gap-1">
+			<input
+				name="name"
+				placeholder="+ tag"
+				class="w-24 rounded-full border border-border bg-bg px-3 py-1 text-sm text-fg"
+			/>
+			<select name="color" class="rounded-full border border-border bg-bg px-2 py-1 text-sm text-fg">
+				{#each data.tagColors as color (color)}
+					<option value={color}>{color}</option>
+				{/each}
+			</select>
+			<button class="rounded-full border border-border px-2 py-1 text-sm text-fg-muted hover:text-fg">Add</button>
+		</form>
+	</section>
+	{#if form?.tagError}
+		<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.tagError}</p>
+	{/if}
+
 	<!-- Contact details -->
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">Contact details</h2>
