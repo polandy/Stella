@@ -499,7 +499,36 @@ included) it is the very first thing they will do.
 - Copy is externalized to enable localization later; **English** ships first, with the
   structure ready for **German** **[M3]**.
 
-## 2.20 Feature ↔ milestone summary
+## 2.20 Personal journal (per-person diary) **[M2]**
+
+A **journal** is a per-person diary: household members chronicle a contact's life day by day —
+a child's milestones, a friend's big moments — in a warm, readable timeline. It is distinct
+from **notes** (§2.5): notes are reference facts about a person ("allergic to peanuts",
+"met at Anna's wedding"); journal entries are dated diary moments ("today she took her first
+steps in the garden").
+
+- **Per day.** Each entry is *about* a specific day (`entry_date`, an ISO date), separate from
+  when it was written. The profile shows entries as a timeline, newest day first, grouped by
+  date and rendered from Markdown (safe render, same pipeline as notes — raw HTML escaped,
+  unsafe links dropped).
+- **Markdown, rendered beautifully.** Authors write in Markdown; it is server-rendered to safe
+  HTML for a nice reading view.
+- **Photos.** An entry can carry photos (§2.14 media pipeline: browser-side downscale + EXIF/GPS
+  strip on upload, stored on the media volume, served through the authenticated `/media` route).
+  Images render inline in the entry.
+- **Visibility (§2.10).** Each entry is **shared** (the whole household sees this person's
+  journal) or **private** (only the author). Default is the author's household default. A
+  private entry is a genuine diary — no one else, admin included, can read it.
+- **One entry per slot.** Uniqueness is per **(contact, author, day, visibility)**: saving the
+  same day again *edits* that entry rather than duplicating, so "one entry per day" holds while
+  still letting a member keep both a shared and a separate private entry for the same day.
+- **Ownership.** Entries are attributed to their author; you may edit and delete **your own**.
+- Implemented as a pure, test-first domain module (`domain/journal`) over a `JournalRepository`
+  port; visibility-scoped reads live in the Drizzle adapter; the route is a thin edge.
+- Monica's **journal** entries map here on import (§2.16); other Monica free-text falls back to
+  notes.
+
+## 2.21 Feature ↔ milestone summary
 
 | Feature | Milestone |
 |---|---|
@@ -510,6 +539,7 @@ included) it is the very first thing they will do.
 | Relationships (built-in types, incl. generic "knows") | M1 |
 | Per-relationship description ("how they connect") | M1 |
 | Notes (Markdown, pin) | M1 |
+| Personal journal (per-person diary, Markdown, photos, per-day) | M2 |
 | Explorer: ego network from a profile (core feature, basic) | M1 |
 | Tags | M1 |
 | Search (FTS5) | M1 |

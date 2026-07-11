@@ -31,6 +31,7 @@ user      1───* invitation (created_by)
 contact   *───1 user            (created_by)
 contact   1───* contact_field
 contact   1───* note
+contact   1───* journal_entry    (per-person diary)      [M2]
 contact   1───* interaction
 contact   1───* important_date
 contact   1───* photo
@@ -245,6 +246,24 @@ FTS: `title, body` indexed (3.5).
 | note_id | text fk → note.id | cascade |
 | contact_id | text fk → contact.id | cascade |
 | pk (note_id, contact_id) | | |
+
+### journal_entry  [M2]
+Per-person diary (§2.20). Distinct from `note`: a note is a reference fact, a journal entry
+is a dated diary moment. Child record of a contact; visibility per §3.7.
+
+| column | type | notes |
+|---|---|---|
+| id | text pk | |
+| contact_id | text fk → contact.id | cascade delete |
+| created_by | text fk → user.id | the author |
+| visibility | text | `'shared' \| 'private'` (private ⇒ only the author) |
+| entry_date | text | ISO `YYYY-MM-DD`; the day the entry is *about* |
+| title | text null | |
+| body | text | Markdown |
+| created_at / updated_at | int | |
+
+Unique `(contact_id, created_by, entry_date, visibility)` — one shared and one private entry
+per author per contact per day; re-saving a slot edits it. Photos attach via `photo` (§2.14).
 
 ### interaction  [M2]
 | column | type | notes |

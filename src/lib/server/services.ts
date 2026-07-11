@@ -17,6 +17,7 @@ import { createDrizzleCircleRepository } from './db/circle-repository';
 import { createDrizzleContactRepository } from './db/contact-repository';
 import { createDrizzleDashboardRepository } from './db/dashboard-repository';
 import { createDrizzleGraphRepository } from './db/graph-repository';
+import { createDrizzleJournalRepository } from './db/journal-repository';
 import { createDrizzleIdentityStore } from './db/identity-store';
 import { createDrizzleContactFieldRepository } from './db/contact-field-repository';
 import { createDrizzleNoteRepository } from './db/note-repository';
@@ -33,6 +34,7 @@ import type {
 import type { SearchDeps, SearchRepository } from './domain/search/search';
 import type { ContactDeps, ContactRepository } from './domain/contacts/contacts';
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
+import type { JournalDeps, JournalRepository } from './domain/journal/journal';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
 import type { TagDeps, TagRepository } from './domain/tags/tags';
 import type { GraphRepository } from './db/graph-repository';
@@ -146,6 +148,16 @@ export function getNotes(): NoteRepository {
 
 export function getNoteDeps(): NoteDeps {
 	return { notes: getNotes(), ids: ulidGenerator, clock: systemClock };
+}
+
+let journalRepository: JournalRepository | null = null;
+
+export function getJournal(): JournalRepository {
+	return (journalRepository ??= createDrizzleJournalRepository(getDb()));
+}
+
+export function getJournalDeps(): JournalDeps {
+	return { journal: getJournal(), ids: ulidGenerator, clock: systemClock };
 }
 
 let contactFieldRepository: ContactFieldRepository | null = null;

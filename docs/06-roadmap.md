@@ -54,6 +54,8 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   with create-on-the-fly, a circle overview page, and a member/circle visualization.
 - **Important dates & reminders** view (birthdays/anniversaries).
 - **Photo gallery** (grid, lightbox, captions, set-as-avatar) with per-photo visibility.
+- **Personal journal:** per-person diary — dated Markdown entries with photos, per-entry
+  visibility (shared/private), rendered as a timeline on the profile (§2.20).
 - **Explorer (rich, core feature):** in-place node expansion, in-graph search-to-focus,
   connection-path finding between two people, circle + derived-kinship edges, filters and
   tree/clustered layouts. Built as a pure graph-model domain + a confined Cytoscape
