@@ -1,5 +1,11 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
+import {
+	addContactField,
+	CONTACT_FIELD_KINDS,
+	fieldHref,
+	listContactFields
+} from '$lib/server/domain/contact-fields/contact-fields';
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
 import { renderMarkdown } from '$lib/server/domain/notes/markdown';
 import { createNote, listNotesForContact } from '$lib/server/domain/notes/notes';
@@ -9,6 +15,8 @@ import {
 } from '$lib/server/domain/relationships/relationships';
 import {
 	getContactDeps,
+	getContactFieldDeps,
+	getContactFields,
 	getNoteDeps,
 	getRelationshipDeps,
 	getRelationships
@@ -25,17 +33,26 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		throw error(404, 'Contact not found');
 	}
 
-	const [relationships, types, allContacts, notes] = await Promise.all([
+	const [relationships, types, allContacts, notes, fields] = await Promise.all([
 		getRelationships().listForContactVisibleTo(viewer, params.id),
 		getRelationships().listTypes(),
 		listContacts(getContactDeps(), viewer),
-		listNotesForContact(getNoteDeps(), viewer, params.id)
+		listNotesForContact(getNoteDeps(), viewer, params.id),
+		listContactFields(getContactFieldDeps(), viewer, params.id)
 	]);
 
 	return {
 		contact,
 		relationships,
 		relationshipTypes: types,
+		fieldKinds: CONTACT_FIELD_KINDS,
+		fields: fields.map((f) => ({
+			id: f.id,
+			kind: f.kind,
+			label: f.label,
+			value: f.value,
+			href: fieldHref(f.kind, f.value)
+		})),
 		// candidate targets for a new relationship: everyone visible except this contact
 		otherContacts: allContacts.filter((c) => c.id !== params.id),
 		// render Markdown server-side; the output is already safe (docs/02 §2.5)
@@ -60,6 +77,12 @@ const AddNoteSchema = v.object({
 	body: v.pipe(v.string(), v.trim(), v.minLength(1)),
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
 	isPinned: v.optional(v.boolean(), false)
+});
+
+const AddFieldSchema = v.object({
+	kind: v.picklist(CONTACT_FIELD_KINDS),
+	label: v.optional(v.pipe(v.string(), v.trim())),
+	value: v.pipe(v.string(), v.trim(), v.minLength(1))
 });
 
 export const actions: Actions = {
@@ -137,6 +160,52 @@ export const actions: Actions = {
 			return fail(400, { noteError: 'Could not save the note.' });
 		}
 
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	addField: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const parsed = v.safeParse(AddFieldSchema, {
+			kind: form.get('kind'),
+			label: form.get('label') || undefined,
+			value: form.get('value')
+		});
+		if (!parsed.success) {
+			return fail(400, { fieldError: 'Please choose a type and enter a value.' });
+		}
+
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		try {
+			await addContactField(getContactFieldDeps(), {
+				contactId: params.id,
+				kind: parsed.output.kind,
+				label: parsed.output.label ?? null,
+				value: parsed.output.value
+			});
+		} catch {
+			return fail(400, { fieldError: 'Could not add the field.' });
+		}
+
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	removeField: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const fieldId = form.get('fieldId');
+		if (typeof fieldId !== 'string') return fail(400, {});
+
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		await getContactFields().remove(params.id, fieldId);
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 };

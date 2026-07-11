@@ -30,6 +30,48 @@
 		</div>
 	</header>
 
+	<!-- Contact details -->
+	<section class="flex flex-col gap-3">
+		<h2 class="text-sm font-medium text-fg-muted">Contact details</h2>
+
+		{#if data.fields.length > 0}
+			<ul class="flex flex-col gap-1">
+				{#each data.fields as f (f.id)}
+					<li class="flex items-center gap-3 rounded-app border border-border bg-card px-3 py-2">
+						<span class="w-16 shrink-0 text-xs uppercase tracking-wide text-fg-subtle">
+							{f.label ?? f.kind}
+						</span>
+						{#if f.href}
+							<a href={f.href} class="flex-1 truncate text-link hover:underline">{f.value}</a>
+						{:else}
+							<span class="flex-1 truncate text-fg">{f.value}</span>
+						{/if}
+						<form method="POST" action="?/removeField">
+							<input type="hidden" name="fieldId" value={f.id} />
+							<button class="text-fg-subtle hover:text-danger" title="Remove" aria-label="Remove field">×</button>
+						</form>
+					</li>
+				{/each}
+			</ul>
+		{:else}
+			<p class="text-sm text-fg-subtle">No phone, email, or address yet.</p>
+		{/if}
+
+		<form method="POST" action="?/addField" class="flex flex-wrap items-end gap-2 rounded-app border border-dashed border-border p-4">
+			{#if form?.fieldError}
+				<p class="w-full rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.fieldError}</p>
+			{/if}
+			<select name="kind" class="rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg">
+				{#each data.fieldKinds as kind (kind)}
+					<option value={kind}>{kind}</option>
+				{/each}
+			</select>
+			<input name="label" placeholder="Label (optional)" class="w-32 rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg" />
+			<input name="value" placeholder="Value" class="flex-1 rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg" />
+			<button class="rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90">Add</button>
+		</form>
+	</section>
+
 	<!-- Relationships -->
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">Relationships</h2>
