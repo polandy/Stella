@@ -107,7 +107,15 @@
 
 	<!-- Relationships -->
 	<section class="flex flex-col gap-3">
-		<h2 class="text-sm font-medium text-fg-muted">Relationships</h2>
+		<div class="flex items-center justify-between">
+			<h2 class="text-sm font-medium text-fg-muted">Relationships</h2>
+			<a
+				href="/graph?center={c.id}"
+				class="inline-flex items-center gap-1.5 rounded-app border border-border px-3 py-1.5 text-sm text-fg-muted transition-colors hover:text-fg"
+			>
+				<span aria-hidden="true">🕸️</span> Explore connections
+			</a>
+		</div>
 
 		{#if data.relationships.length > 0}
 			<ul class="flex flex-col gap-1">
