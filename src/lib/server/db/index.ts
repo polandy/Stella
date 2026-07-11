@@ -3,6 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { getConfig } from '../config';
 import * as schema from './schema';
+import { seedRelationshipTypes } from './seed';
 
 /*
  * Lazy, memoized database handle.
@@ -39,6 +40,7 @@ export function getDb(): BunSQLiteDatabase<typeof schema> {
 	// Apply pending migrations on startup (forward-only). The `drizzle/` folder ships with
 	// the app and is resolved relative to the working directory.
 	migrate(instance, { migrationsFolder: './drizzle' });
+	seedRelationshipTypes(instance);
 
 	return instance;
 }
