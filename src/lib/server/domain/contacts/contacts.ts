@@ -46,7 +46,9 @@ export interface NewContact {
 }
 
 /** Full contact as read back for a profile. */
-export interface Contact extends NewContact {}
+export interface Contact extends NewContact {
+	avatarPhotoId: string | null;
+}
 
 /** Row shape for list views. */
 export interface ContactSummary {
@@ -54,6 +56,7 @@ export interface ContactSummary {
 	displayName: string;
 	description: string | null;
 	visibility: Visibility;
+	avatarPhotoId: string | null;
 }
 
 export interface ContactRepository {

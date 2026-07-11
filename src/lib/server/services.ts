@@ -18,6 +18,8 @@ import { createDrizzleGraphRepository } from './db/graph-repository';
 import { createDrizzleIdentityStore } from './db/identity-store';
 import { createDrizzleContactFieldRepository } from './db/contact-field-repository';
 import { createDrizzleNoteRepository } from './db/note-repository';
+import { createDrizzlePhotoRepository } from './db/photo-repository';
+import { createFileMediaStore } from './media/file-store';
 import { createDrizzleRelationshipRepository } from './db/relationship-repository';
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
@@ -32,6 +34,7 @@ import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
 import type { TagDeps, TagRepository } from './domain/tags/tags';
 import type { GraphRepository } from './db/graph-repository';
+import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
 import { ulidGenerator } from './id';
 
 /*
@@ -179,4 +182,19 @@ let graphRepository: GraphRepository | null = null;
  */
 export function getGraphRepository(): GraphRepository {
 	return (graphRepository ??= createDrizzleGraphRepository(getDb()));
+}
+
+let photoRepository: PhotoRepository | null = null;
+let mediaStore: MediaStore | null = null;
+
+export function getPhotos(): PhotoRepository {
+	return (photoRepository ??= createDrizzlePhotoRepository(getDb()));
+}
+
+export function getMediaStore(): MediaStore {
+	return (mediaStore ??= createFileMediaStore(getConfig().mediaDir));
+}
+
+export function getAvatarDeps(): AvatarDeps {
+	return { photos: getPhotos(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
 }

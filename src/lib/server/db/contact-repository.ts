@@ -17,6 +17,7 @@ const contactColumns = {
 	createdBy: contactTable.createdBy,
 	visibility: contactTable.visibility,
 	displayName: contactTable.displayName,
+	avatarPhotoId: contactTable.avatarPhotoId,
 	firstName: contactTable.firstName,
 	lastName: contactTable.lastName,
 	nickname: contactTable.nickname,
@@ -51,7 +52,8 @@ export function createDrizzleContactRepository(
 					id: contactTable.id,
 					displayName: contactTable.displayName,
 					description: contactTable.description,
-					visibility: contactTable.visibility
+					visibility: contactTable.visibility,
+					avatarPhotoId: contactTable.avatarPhotoId
 				})
 				.from(contactTable)
 				.where(contactVisibleTo(viewer))
