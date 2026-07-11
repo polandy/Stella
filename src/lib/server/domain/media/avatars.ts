@@ -78,6 +78,8 @@ export interface StoredPhoto {
 	id: string;
 	householdId: string;
 	contactId: string;
+	/** Set when the photo belongs to a journal entry rather than the gallery (§2.20). */
+	journalEntryId: string | null;
 	createdBy: string;
 	visibility: 'shared' | 'private';
 	filePath: string;
@@ -95,11 +97,19 @@ export interface PhotoFile {
 	mime: string;
 }
 
+/** A journal photo reference resolved for rendering (media id + which entry it belongs to). */
+export interface JournalPhotoRef {
+	id: string;
+	journalEntryId: string;
+}
+
 export interface PhotoRepository {
 	insert(photo: StoredPhoto): Promise<void>;
 	setContactAvatar(contactId: string, photoId: string): Promise<void>;
 	/** The avatar file (full or thumb) for a photo, only if the viewer may see it (docs/03 §3.7). */
 	getVisiblePhotoFile(viewer: Viewer, photoId: string, variant: 'full' | 'thumb'): Promise<PhotoFile | null>;
+	/** Journal photos on a contact the viewer may see, oldest first (docs/02 §2.20). */
+	listJournalPhotos(viewer: Viewer, contactId: string): Promise<JournalPhotoRef[]>;
 }
 
 /** Byte storage under the media volume; paths returned are what the DB records. */
@@ -145,6 +155,7 @@ export async function setContactAvatar(
 		id,
 		householdId: uploader.householdId,
 		contactId,
+		journalEntryId: null,
 		createdBy: uploader.userId,
 		visibility: 'shared',
 		filePath,

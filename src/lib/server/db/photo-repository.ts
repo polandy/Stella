@@ -1,8 +1,13 @@
-import { and, eq } from 'drizzle-orm';
+import { and, asc, eq, isNotNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import type { PhotoFile, PhotoRepository, StoredPhoto } from '../domain/media/avatars';
+import type {
+	JournalPhotoRef,
+	PhotoFile,
+	PhotoRepository,
+	StoredPhoto
+} from '../domain/media/avatars';
 import type * as schema from './schema';
 import { contact, photo } from './schema';
 
@@ -21,6 +26,7 @@ export function createDrizzlePhotoRepository(
 					id: p.id,
 					householdId: p.householdId,
 					contactId: p.contactId,
+					journalEntryId: p.journalEntryId,
 					createdBy: p.createdBy,
 					visibility: p.visibility,
 					filePath: p.filePath,
@@ -62,6 +68,24 @@ export function createDrizzlePhotoRepository(
 				.get();
 			if (!row) return null;
 			return { path: variant === 'thumb' ? row.thumbPath : row.filePath, mime: row.mime };
+		},
+
+		async listJournalPhotos(viewer: Viewer, contactId: string): Promise<JournalPhotoRef[]> {
+			const rows = db
+				.select({ id: photo.id, journalEntryId: photo.journalEntryId })
+				.from(photo)
+				.innerJoin(contact, eq(photo.contactId, contact.id))
+				.where(
+					and(
+						eq(photo.contactId, contactId),
+						isNotNull(photo.journalEntryId),
+						childRecordVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy })
+					)
+				)
+				.orderBy(asc(photo.createdAt))
+				.all();
+			// journalEntryId is non-null here by the isNotNull filter.
+			return rows.map((r) => ({ id: r.id, journalEntryId: r.journalEntryId as string }));
 		}
 	};
 }

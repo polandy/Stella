@@ -41,6 +41,7 @@ import type { GraphRepository } from './db/graph-repository';
 import type { CircleDeps, CircleRepository } from './domain/circles/circles';
 import type { DashboardDeps, DashboardRepository } from './domain/dashboard/dashboard';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
+import type { JournalPhotoDeps } from './domain/media/journal-photos';
 import { ulidGenerator } from './id';
 
 /*
@@ -212,6 +213,10 @@ export function getMediaStore(): MediaStore {
 }
 
 export function getAvatarDeps(): AvatarDeps {
+	return { photos: getPhotos(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
+}
+
+export function getJournalPhotoDeps(): JournalPhotoDeps {
 	return { photos: getPhotos(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
 }
 

@@ -1,10 +1,51 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
+	import { processImage } from '$lib/image/process-image';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	const c = $derived(data.contact);
+
+	// Selected images for the entry being composed (processed in the browser on submit).
+	let picked = $state<File[]>([]);
+	let uploading = $state(false);
+	let uploadError = $state<string | null>(null);
+
+	function onFiles(event: Event) {
+		picked = Array.from((event.currentTarget as HTMLInputElement).files ?? []);
+	}
+
+	// Progressive enhancement: with no images, let the form post natively (text-only). With
+	// images, process them client-side (downscale + EXIF strip) and post everything via fetch.
+	async function onSubmit(event: SubmitEvent) {
+		if (picked.length === 0) return; // native submit handles the text
+		event.preventDefault();
+		const formEl = event.currentTarget as HTMLFormElement;
+		uploading = true;
+		uploadError = null;
+		try {
+			const body = new FormData(formEl);
+			for (const file of picked) {
+				const { image, thumb, width, height } = await processImage(file);
+				body.append('image', image, 'photo.jpg');
+				body.append('thumb', thumb, 'thumb.jpg');
+				body.append('width', String(width));
+				body.append('height', String(height));
+			}
+			const res = await fetch(`/contacts/${c.id}/journal?/save`, { method: 'POST', body });
+			if (!res.ok) throw new Error();
+			formEl.reset();
+			picked = [];
+			composing = false;
+			await invalidateAll();
+		} catch {
+			uploadError = 'Could not save. Try standard JPEG or PNG images.';
+		} finally {
+			uploading = false;
+		}
+	}
 
 	// Group the (already newest-first) entries by their day for the timeline.
 	const days = $derived.by(() => {
@@ -60,10 +101,15 @@
 		<form
 			method="POST"
 			action="?/save"
+			enctype="multipart/form-data"
+			onsubmit={onSubmit}
 			class="flex flex-col gap-3 rounded-app border border-border bg-card p-5"
 		>
 			{#if form?.journalError}
 				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.journalError}</p>
+			{/if}
+			{#if uploadError}
+				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{uploadError}</p>
 			{/if}
 			<div class="flex flex-wrap items-end gap-3">
 				<label class="flex flex-col gap-1 text-sm">
@@ -93,6 +139,15 @@
 				placeholder="What happened today? (Markdown supported)"
 				class="rounded-md border border-border bg-bg px-3 py-2 text-fg"
 			></textarea>
+			<div class="flex flex-wrap items-center gap-3">
+				<label class="inline-flex cursor-pointer items-center gap-2 rounded-app border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg">
+					<span aria-hidden="true">🖼️</span> Add photos
+					<input type="file" accept="image/*" multiple onchange={onFiles} class="hidden" />
+				</label>
+				{#if picked.length}
+					<span class="text-sm text-fg-subtle">{picked.length} photo{picked.length > 1 ? 's' : ''} ready</span>
+				{/if}
+			</div>
 			<div class="flex flex-wrap items-center gap-4 text-sm">
 				<label class="flex items-center gap-1.5">
 					<input type="radio" name="visibility" value="shared" checked /> Shared
@@ -100,8 +155,11 @@
 				<label class="flex items-center gap-1.5">
 					<input type="radio" name="visibility" value="private" /> Private — only you
 				</label>
-				<button class="ml-auto rounded-app bg-primary px-4 py-2 font-medium text-primary-fg transition-opacity hover:opacity-90">
-					Save entry
+				<button
+					disabled={uploading}
+					class="ml-auto rounded-app bg-primary px-4 py-2 font-medium text-primary-fg transition-opacity hover:opacity-90 disabled:opacity-60"
+				>
+					{uploading ? 'Saving…' : 'Save entry'}
 				</button>
 			</div>
 			<p class="text-xs text-fg-subtle">
@@ -148,6 +206,26 @@
 							</div>
 							<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
 							<div class="note-body text-fg">{@html entry.bodyHtml}</div>
+
+							{#if entry.photos.length}
+								<div class="mt-3 flex flex-wrap gap-2">
+									{#each entry.photos as photoId (photoId)}
+										<a
+											href="/media/{photoId}"
+											target="_blank"
+											rel="noreferrer"
+											class="block overflow-hidden rounded-app border border-border"
+										>
+											<img
+												src="/media/{photoId}?thumb"
+												alt="{c.displayName}, {day.date}"
+												loading="lazy"
+												class="h-28 w-28 object-cover transition-transform hover:scale-105"
+											/>
+										</a>
+									{/each}
+								</div>
+							{/if}
 						</article>
 					{/each}
 				</li>

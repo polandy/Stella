@@ -336,6 +336,11 @@ export const photo = sqliteTable(
 			.notNull()
 			.references(() => household.id, { onDelete: 'cascade' }),
 		contactId: text('contact_id').references(() => contact.id, { onDelete: 'cascade' }),
+		// When set, this photo belongs to a journal entry (docs/02 §2.20) rather than the
+		// gallery; it is removed with the entry.
+		journalEntryId: text('journal_entry_id').references(() => journalEntry.id, {
+			onDelete: 'cascade'
+		}),
 		createdBy: text('created_by')
 			.notNull()
 			.references(() => user.id),
@@ -351,7 +356,10 @@ export const photo = sqliteTable(
 		sortOrder: integer('sort_order').notNull().default(0),
 		createdAt: integer('created_at').notNull().default(now)
 	},
-	(t) => [index('photo_contact_idx').on(t.contactId)]
+	(t) => [
+		index('photo_contact_idx').on(t.contactId),
+		index('photo_journal_idx').on(t.journalEntryId)
+	]
 );
 
 export const tag = sqliteTable(
