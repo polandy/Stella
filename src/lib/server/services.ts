@@ -15,9 +15,11 @@ import { getDb } from './db';
 import { createDrizzleAccountRepository } from './db/account-repository';
 import { createDrizzleContactRepository } from './db/contact-repository';
 import { createDrizzleIdentityStore } from './db/identity-store';
+import { createDrizzleNoteRepository } from './db/note-repository';
 import { createDrizzleRelationshipRepository } from './db/relationship-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
 import type { ContactDeps, ContactRepository } from './domain/contacts/contacts';
+import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
 import { ulidGenerator } from './id';
 
@@ -116,4 +118,14 @@ export function getRelationships(): RelationshipRepository {
 
 export function getRelationshipDeps(): RelationshipDeps {
 	return { relationships: getRelationships(), ids: ulidGenerator, clock: systemClock };
+}
+
+let noteRepository: NoteRepository | null = null;
+
+export function getNotes(): NoteRepository {
+	return (noteRepository ??= createDrizzleNoteRepository(getDb()));
+}
+
+export function getNoteDeps(): NoteDeps {
+	return { notes: getNotes(), ids: ulidGenerator, clock: systemClock };
 }
