@@ -34,11 +34,14 @@
 		</div>
 	</header>
 
-	<div class="rounded-app border border-border bg-card p-6">
-		<p class="text-fg-muted">
-			Your household is set up. Contacts, relationships, and the explorer arrive with M1 —
-			see <code>docs/06-roadmap.md</code>.
-		</p>
+	<div class="flex items-center justify-between rounded-app border border-border bg-card p-6">
+		<p class="text-fg-muted">Your household is set up.</p>
+		<a
+			href="/contacts"
+			class="rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90"
+		>
+			Go to contacts
+		</a>
 	</div>
 
 	<div class="flex items-center justify-between">
