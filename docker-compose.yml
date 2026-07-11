@@ -13,8 +13,10 @@ services:
       - ORIGIN=${STELLA_URL:-http://localhost:3000}
     volumes:
       - ./data:/data
+    # Bound on all interfaces so the container is reachable on the LAN (host firewall
+    # opens TCP 3000). STELLA_URL/ORIGIN in .env must match the address browsed to.
     ports:
-      - '127.0.0.1:3000:3000'
+      - '3000:3000'
     healthcheck:
       test:
         [
