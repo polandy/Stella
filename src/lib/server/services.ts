@@ -14,6 +14,7 @@ import { getConfig } from './config';
 import { getDb } from './db';
 import { createDrizzleAccountRepository } from './db/account-repository';
 import { createDrizzleContactRepository } from './db/contact-repository';
+import { createDrizzleGraphDataSource } from './db/graph-data-source';
 import { createDrizzleIdentityStore } from './db/identity-store';
 import { createDrizzleContactFieldRepository } from './db/contact-field-repository';
 import { createDrizzleNoteRepository } from './db/note-repository';
@@ -30,6 +31,8 @@ import type { ContactDeps, ContactRepository } from './domain/contacts/contacts'
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
 import type { TagDeps, TagRepository } from './domain/tags/tags';
+import type { Viewer } from './access/visibility';
+import type { GraphDataSource } from '../graph/model/types';
 import { ulidGenerator } from './id';
 
 /*
@@ -167,4 +170,13 @@ export function getTags(): TagRepository {
 
 export function getTagDeps(): TagDeps {
 	return { tags: getTags(), ids: ulidGenerator, clock: systemClock };
+}
+
+/**
+ * Per-request factory for the explorer's data source (docs/04 §4.11). Bound to the viewer so
+ * every neighbourhood the pure graph builders fetch is already access-scoped — not memoized,
+ * since the scope differs per user.
+ */
+export function getGraphDataSource(viewer: Viewer): GraphDataSource {
+	return createDrizzleGraphDataSource(getDb(), viewer);
 }
