@@ -20,7 +20,7 @@
 
 	<header class="flex items-center gap-4">
 		<AvatarUploader contactId={c.id} name={c.displayName} avatarPhotoId={c.avatarPhotoId} size={64} />
-		<div class="min-w-0">
+		<div class="min-w-0 flex-1">
 			<h1 class="truncate text-2xl font-semibold text-fg">{c.displayName}</h1>
 			{#if c.description}<p class="truncate text-fg-muted">{c.description}</p>{/if}
 			{#if c.visibility === 'private'}
@@ -28,6 +28,12 @@
 			{/if}
 			{#if form?.avatarError}<p class="mt-1 text-xs text-danger">{form.avatarError}</p>{/if}
 		</div>
+		<a
+			href="/contacts/{c.id}/journal"
+			class="inline-flex shrink-0 items-center gap-1.5 rounded-app border border-border px-3 py-1.5 text-sm text-fg-muted transition-colors hover:text-fg"
+		>
+			<span aria-hidden="true">📔</span> Journal
+		</a>
 	</header>
 
 	<!-- Tags -->

@@ -242,6 +242,36 @@ export const noteMention = sqliteTable(
 	(t) => [primaryKey({ columns: [t.noteId, t.contactId] })]
 );
 
+/*
+ * A per-person diary (docs/02 §2.20). Each entry belongs to a contact, is authored by a
+ * household member, and is *about* a specific day (`entry_date`, an ISO YYYY-MM-DD string,
+ * distinct from the created_at timestamp). Body is Markdown. Visibility follows the child-record
+ * rule (private ⇒ only the author). One entry per (contact, author, day, visibility) slot, so a
+ * member keeps at most one shared and one private entry for a contact on any given day.
+ */
+export const journalEntry = sqliteTable(
+	'journal_entry',
+	{
+		id: text('id').primaryKey(),
+		contactId: text('contact_id')
+			.notNull()
+			.references(() => contact.id, { onDelete: 'cascade' }),
+		createdBy: text('created_by')
+			.notNull()
+			.references(() => user.id),
+		visibility: text('visibility').$type<Visibility>().notNull().default('shared'),
+		entryDate: text('entry_date').notNull(),
+		title: text('title'),
+		body: text('body').notNull(),
+		createdAt: integer('created_at').notNull().default(now),
+		updatedAt: integer('updated_at').notNull().default(now)
+	},
+	(t) => [
+		index('journal_contact_idx').on(t.contactId),
+		unique('journal_day_slot').on(t.contactId, t.createdBy, t.entryDate, t.visibility)
+	]
+);
+
 export const interaction = sqliteTable(
 	'interaction',
 	{
