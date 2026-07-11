@@ -78,9 +78,7 @@
 
 <svelte:head><title>{c.displayName}’s journal · Stella</title></svelte:head>
 
-<main class="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-6 py-10">
-	<a href="/contacts/{c.id}" class="text-sm text-fg-muted hover:text-fg">← {c.displayName}</a>
-
+<main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header class="flex items-center justify-between gap-4">
 		<div class="flex items-center gap-3">
 			<Avatar id={c.id} name={c.displayName} avatarPhotoId={c.avatarPhotoId} size={44} />

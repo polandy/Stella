@@ -15,9 +15,7 @@
 	};
 </script>
 
-<main class="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-6 py-10">
-	<a href="/contacts" class="text-sm text-fg-muted hover:text-fg">← Contacts</a>
-
+<main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header class="flex items-center gap-4">
 		<AvatarUploader contactId={c.id} name={c.displayName} avatarPhotoId={c.avatarPhotoId} size={64} />
 		<div class="min-w-0 flex-1">

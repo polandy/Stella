@@ -5,21 +5,6 @@
 	let { data }: { data: PageData } = $props();
 	const d = $derived(data.dashboard);
 
-	type ThemeChoice = 'light' | 'dark' | 'system';
-	let theme = $state<ThemeChoice>('system');
-
-	function applyTheme(choice: ThemeChoice) {
-		theme = choice;
-		const root = document.documentElement;
-		if (choice === 'system') {
-			root.removeAttribute('data-theme');
-			localStorage.removeItem('stella-theme');
-		} else {
-			root.setAttribute('data-theme', choice);
-			localStorage.setItem('stella-theme', choice);
-		}
-	}
-
 	// Relative "time ago" for panel timestamps.
 	function ago(ms: number): string {
 		const s = Math.max(1, Math.round((Date.now() - ms) / 1000));
@@ -33,23 +18,13 @@
 
 <svelte:head><title>Home · Stella</title></svelte:head>
 
-<main class="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-8 px-6 py-10">
-	<header class="flex flex-wrap items-center justify-between gap-4">
-		<div class="flex items-center gap-3">
-			<div class="grid size-11 place-items-center rounded-app bg-primary text-xl text-primary-fg shadow">
-				★
-			</div>
-			<div>
-				<h1 class="text-2xl font-semibold text-fg">Hello, {data.user.name}</h1>
-				<p class="text-sm text-fg-muted">Here’s what’s new in your household.</p>
-			</div>
+<main class="mx-auto flex w-full max-w-4xl flex-col gap-8 px-6 py-10">
+	<header class="flex items-center gap-3">
+		<div class="grid size-11 place-items-center rounded-app bg-primary text-xl text-primary-fg shadow">★</div>
+		<div>
+			<h1 class="text-2xl font-semibold text-fg">Hello, {data.user.name}</h1>
+			<p class="text-sm text-fg-muted">Here’s what’s new in your household.</p>
 		</div>
-		<nav class="flex items-center gap-2">
-			<a href="/contacts" class="rounded-app border border-border px-4 py-2 text-sm text-fg-muted transition-colors hover:text-fg">Contacts</a>
-			<a href="/circles" class="rounded-app border border-border px-4 py-2 text-sm text-fg-muted transition-colors hover:text-fg">Circles</a>
-			<a href="/graph" class="rounded-app border border-border px-4 py-2 text-sm text-fg-muted transition-colors hover:text-fg">Graph</a>
-			<a href="/contacts/new" class="rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90">Add person</a>
-		</nav>
 	</header>
 
 	<div class="grid gap-6 md:grid-cols-2">
@@ -124,25 +99,4 @@
 			{/if}
 		</section>
 	</div>
-
-	<footer class="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
-		<div class="flex gap-1 rounded-app border border-border bg-card p-1">
-			{#each ['light', 'system', 'dark'] as const as choice (choice)}
-				<button
-					onclick={() => applyTheme(choice)}
-					class="rounded-md px-3 py-1.5 text-sm capitalize transition-colors"
-					class:bg-primary={theme === choice}
-					class:text-primary-fg={theme === choice}
-					class:text-fg-muted={theme !== choice}
-				>
-					{choice}
-				</button>
-			{/each}
-		</div>
-		<form method="POST" action="/logout">
-			<button class="rounded-app border border-border px-4 py-2 text-sm text-fg-muted transition-colors hover:text-fg">
-				Sign out
-			</button>
-		</form>
-	</footer>
 </main>
