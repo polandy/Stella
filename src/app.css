@@ -1,0 +1,170 @@
+@import 'tailwindcss';
+
+/*
+ * Stella design system — Catppuccin.
+ * Light = Latte, Dark = Mocha. See docs/05-ui-design-system.md.
+ * Components consume the semantic tokens (--bg, --fg, --primary, …),
+ * never the raw --ctp-* flavor colors.
+ */
+
+:root,
+:root[data-theme='light'] {
+	/* Latte */
+	--ctp-base: #eff1f5;
+	--ctp-mantle: #e6e9ef;
+	--ctp-crust: #dce0e8;
+	--ctp-surface0: #ccd0da;
+	--ctp-surface1: #bcc0cc;
+	--ctp-surface2: #acb0be;
+	--ctp-overlay0: #9ca0b0;
+	--ctp-overlay1: #8c8fa1;
+	--ctp-overlay2: #7c7f93;
+	--ctp-text: #4c4f69;
+	--ctp-subtext1: #5c5f77;
+	--ctp-subtext0: #6c6f85;
+	--ctp-rosewater: #dc8a78;
+	--ctp-flamingo: #dd7878;
+	--ctp-pink: #ea76cb;
+	--ctp-mauve: #8839ef;
+	--ctp-red: #d20f39;
+	--ctp-maroon: #e64553;
+	--ctp-peach: #fe640b;
+	--ctp-yellow: #df8e1d;
+	--ctp-green: #40a02b;
+	--ctp-teal: #179299;
+	--ctp-sky: #04a5e5;
+	--ctp-sapphire: #209fb5;
+	--ctp-blue: #1e66f5;
+	--ctp-lavender: #7287fd;
+	--primary-fg: #ffffff;
+}
+
+:root[data-theme='dark'] {
+	/* Mocha */
+	--ctp-base: #1e1e2e;
+	--ctp-mantle: #181825;
+	--ctp-crust: #11111b;
+	--ctp-surface0: #313244;
+	--ctp-surface1: #45475a;
+	--ctp-surface2: #585b70;
+	--ctp-overlay0: #6c7086;
+	--ctp-overlay1: #7f849c;
+	--ctp-overlay2: #9399b2;
+	--ctp-text: #cdd6f4;
+	--ctp-subtext1: #bac2de;
+	--ctp-subtext0: #a6adc8;
+	--ctp-rosewater: #f5e0dc;
+	--ctp-flamingo: #f2cdcd;
+	--ctp-pink: #f5c2e7;
+	--ctp-mauve: #cba6f7;
+	--ctp-red: #f38ba8;
+	--ctp-maroon: #eba0ac;
+	--ctp-peach: #fab387;
+	--ctp-yellow: #f9e2af;
+	--ctp-green: #a6e3a1;
+	--ctp-teal: #94e2d5;
+	--ctp-sky: #89dceb;
+	--ctp-sapphire: #74c7ec;
+	--ctp-blue: #89b4fa;
+	--ctp-lavender: #b4befe;
+	--primary-fg: #1e1e2e;
+}
+
+/* Follow the OS when the user hasn't explicitly chosen light. */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		--ctp-base: #1e1e2e;
+		--ctp-mantle: #181825;
+		--ctp-crust: #11111b;
+		--ctp-surface0: #313244;
+		--ctp-surface1: #45475a;
+		--ctp-surface2: #585b70;
+		--ctp-overlay0: #6c7086;
+		--ctp-overlay1: #7f849c;
+		--ctp-overlay2: #9399b2;
+		--ctp-text: #cdd6f4;
+		--ctp-subtext1: #bac2de;
+		--ctp-subtext0: #a6adc8;
+		--ctp-rosewater: #f5e0dc;
+		--ctp-flamingo: #f2cdcd;
+		--ctp-pink: #f5c2e7;
+		--ctp-mauve: #cba6f7;
+		--ctp-red: #f38ba8;
+		--ctp-maroon: #eba0ac;
+		--ctp-peach: #fab387;
+		--ctp-yellow: #f9e2af;
+		--ctp-green: #a6e3a1;
+		--ctp-teal: #94e2d5;
+		--ctp-sky: #89dceb;
+		--ctp-sapphire: #74c7ec;
+		--ctp-blue: #89b4fa;
+		--ctp-lavender: #b4befe;
+		--primary-fg: #1e1e2e;
+	}
+}
+
+/* Semantic layer — the only tokens components should use. */
+:root {
+	--bg: var(--ctp-base);
+	--bg-elevated: var(--ctp-mantle);
+	--bg-sunken: var(--ctp-crust);
+	--card: var(--ctp-mantle);
+	--border: var(--ctp-surface0);
+	--fg: var(--ctp-text);
+	--fg-muted: var(--ctp-subtext0);
+	--fg-subtle: var(--ctp-overlay1);
+	--primary: var(--ctp-mauve);
+	--focus-ring: var(--ctp-lavender);
+	--success: var(--ctp-green);
+	--warning: var(--ctp-yellow);
+	--danger: var(--ctp-red);
+	--link: var(--ctp-blue);
+	--radius: 0.75rem;
+}
+
+/* Expose semantic tokens as Tailwind color/utility names. */
+@theme inline {
+	--color-bg: var(--bg);
+	--color-bg-elevated: var(--bg-elevated);
+	--color-bg-sunken: var(--bg-sunken);
+	--color-card: var(--card);
+	--color-border: var(--border);
+	--color-fg: var(--fg);
+	--color-fg-muted: var(--fg-muted);
+	--color-fg-subtle: var(--fg-subtle);
+	--color-primary: var(--primary);
+	--color-primary-fg: var(--primary-fg);
+	--color-success: var(--success);
+	--color-warning: var(--warning);
+	--color-danger: var(--danger);
+	--color-link: var(--link);
+	--radius-app: var(--radius);
+}
+
+html {
+	background-color: var(--bg);
+	color: var(--fg);
+	color-scheme: light dark;
+}
+
+body {
+	min-height: 100vh;
+	font-family:
+		'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	-webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+	outline: 2px solid var(--focus-ring);
+	outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+	}
+}

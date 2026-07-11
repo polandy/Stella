@@ -1,0 +1,5 @@
+# Dependency policy: exact, pinned versions only (no ^ / ~ ranges).
+# `bun add` writes exact versions; the committed bun.lock carries integrity hashes.
+# CI/Docker installs use `bun install --frozen-lockfile` for reproducibility.
+[install]
+exact = true
