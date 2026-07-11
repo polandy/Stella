@@ -345,7 +345,35 @@ Keeps the family in the loop — directly serving the core goal.
   new notes/photos/interactions, and notable edits.
 - Each item shows **who**, **what**, **which contact**, and **when**, and links to it.
 - Private records **never** appear in another member's feed.
-- Feed is filterable by member and by type. Optional per-member **digest** later **[M3]**.
+- Feed is filterable by member and by type.
+
+### 2.11.1 Change digests & delivery **[M3]**
+
+Each member can choose to be notified about recent household changes on a schedule, so you
+don't have to open the app to stay in the loop.
+
+- **Per-member frequency:** `none` (default), `daily`, `weekly`, or `monthly`. Purely a
+  personal preference — it does not affect what others receive.
+- **What's in a digest:** a summary of the **shared** activity since that member's last
+  digest (new people, relationships, notes, photos, interactions, gifts), plus upcoming
+  important dates. It is assembled per-member and **respects visibility** (§2.10) — another
+  member's private records never appear. If nothing changed, no digest is sent.
+- **Delivery channels** (independently toggleable per member):
+  - **Email** — a formatted summary to the member's address (requires SMTP configured for
+    the deployment).
+  - **Webhook (HTTP POST)** — a JSON payload of the digest POSTed to a member-configured
+    URL, for wiring into other systems (a home dashboard, Ntfy/Gotify, a chat bridge,
+    an automation). Signed with a per-webhook secret (HMAC header) so the receiver can
+    verify authenticity; delivery is retried a few times on failure.
+- **How it runs:** a scheduled job (see docs/04) wakes on an interval, finds members whose
+  next digest is due, computes each digest, delivers it over the enabled channels, and
+  records the send time. Idempotent — a crash/retry never double-sends the same window.
+- **Calm by design:** digests are opt-in, batched (never per-change spam), and a member can
+  change frequency or turn everything off at any time in settings.
+
+> Real-time, per-change notifications are intentionally out of scope — the digest is the
+> notification surface. The webhook channel lets power users build their own real-time
+> flows if they want.
 
 ## 2.12 Personal dashboard (Home) **[M2]**
 
@@ -494,6 +522,7 @@ included) it is the very first thing they will do.
 | **Guided migration from Monica** (JSON/SQL/vCard, mapping, preview) | M2 |
 | PWA install + offline shell | M2 |
 | RP-initiated single logout | M2 |
-| 2FA (local), email reminders, digests | M3 |
+| 2FA (local), email reminders | M3 |
+| Change digests (daily/weekly/monthly) via email + webhook | M3 |
 | @mentions, photo reordering, "haven't seen" hints | M3 |
 | German localization | M3 |
