@@ -84,6 +84,10 @@ TZ=Europe/Zurich
 AUTH_LOCAL_ENABLED=true                       # keep true for a break-glass admin
 AUTH_OIDC_ENABLED=true
 
+# --- Test phase (leave off for real use) ---
+SEED_DEMO=false                               # true → seed the Brunner demo dataset on startup (idempotent);
+                                              # on a fresh DB also creates admin demo@stella.local / stella-demo-1234
+
 # --- OIDC / Authelia ---
 OIDC_ISSUER=https://auth.example.home         # discovery: {issuer}/.well-known/openid-configuration
 OIDC_CLIENT_ID=stella

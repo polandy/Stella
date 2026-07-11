@@ -31,6 +31,9 @@ const RawSchema = v.object({
 	AUTH_LOCAL_ENABLED: boolFrom(true),
 	AUTH_OIDC_ENABLED: boolFrom(false),
 
+	// Populate the database with the demo dataset on startup (test phase only). Idempotent.
+	SEED_DEMO: boolFrom(false),
+
 	OIDC_ISSUER: v.optional(v.string(), ''),
 	OIDC_CLIENT_ID: v.optional(v.string(), ''),
 	OIDC_CLIENT_SECRET: v.optional(v.string(), ''),
@@ -72,6 +75,7 @@ function build() {
 		mediaDir: raw.MEDIA_DIR,
 		sessionSecret: raw.SESSION_SECRET,
 		isProd,
+		seedDemo: raw.SEED_DEMO,
 		auth: {
 			local: raw.AUTH_LOCAL_ENABLED,
 			oidc: raw.AUTH_OIDC_ENABLED

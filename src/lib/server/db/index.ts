@@ -3,6 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { getConfig } from '../config';
 import * as schema from './schema';
+import { seedDemoData } from './demo-seed';
 import { ensureSearchIndex } from './search-index';
 import { seedRelationshipTypes } from './seed';
 
@@ -42,7 +43,11 @@ export function getDb(): BunSQLiteDatabase<typeof schema> {
 	// the app and is resolved relative to the working directory.
 	migrate(instance, { migrationsFolder: './drizzle' });
 	seedRelationshipTypes(instance);
+	// Create the FTS tables + triggers before demo seeding so seeded contacts/notes index.
 	ensureSearchIndex(sqlite);
+	if (config.seedDemo) {
+		seedDemoData(instance);
+	}
 
 	return instance;
 }
