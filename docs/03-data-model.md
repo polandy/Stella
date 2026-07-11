@@ -41,8 +41,9 @@ circle    0───1 circle          (parent_circle_id, optional nesting)
 contact   *───* contact         (relationship, via from/to + type)
 
 relationship_type 1───* relationship
-interaction *───* contact       (interaction_participant)
-note        *───* contact       (note_mention)          [M2]
+interaction   *───* contact     (interaction_participant)
+note          *───* contact     (note_mention)          [M2]
+journal_entry *───* contact     (journal_mention → passive @-references) [M2]
 
 activity_log *───1 user
 activity_log  ───? (entity_type, entity_id)  polymorphic reference
@@ -302,6 +303,21 @@ is a dated diary moment. Child record of a contact; visibility per §3.7.
 Unique `(contact_id, created_by, entry_date, visibility)` — one shared and one private entry
 per author per contact per day; re-saving a slot edits it. Photos attach via `photo` (§2.14).
 
+### journal_mention  [M2]
+A person referenced from a journal entry via an `@`-mention (§2.20.1). Powers the reverse
+"Mentioned in" list on the referenced person — the *passive* side of the reference.
+
+| column | type | notes |
+|---|---|---|
+| journal_entry_id | text fk → journal_entry.id | cascade delete |
+| contact_id | text fk → contact.id | cascade delete — the **referenced** person |
+| pk (journal_entry_id, contact_id) | | at most one link per (entry, person) |
+
+Indexed on `contact_id` for the reverse lookup. The **source** person (whose journal) and the
+**author** are read from the parent `journal_entry`, so they are not duplicated here. A
+self-reference (`contact_id` = the entry's own `contact_id`) is **not** stored. Mirrors
+`note_mention`; both should be produced by one shared mention parser/resolver (§2.20.1).
+
 ### interaction  [M2]
 | column | type | notes |
 |---|---|---|
@@ -472,8 +488,12 @@ Contact visibility is the root: a `private` contact is visible only to its creat
 shared contact. Relationships require **both** endpoints visible. A **circle** follows the
 same contact-like rule (shared to the household, or private to its owner); a
 **circle_membership** — and any derived shared-context link — is visible only when both
-its circle and the member contact are visible. Admins gain no special access to `private`
-records.
+its circle and the member contact are visible. A **journal_mention** (and the passive
+"Mentioned in" item it drives) is visible only when its parent `journal_entry` is visible to
+the viewer (child-record rule — a private entry ⇒ only its author) **and** the referenced
+contact is visible; a **shared** entry may reference only household-visible contacts, so a
+mention never widens access nor reveals a `private` contact's existence. Admins gain no special
+access to `private` records.
 
 These rules are enforced centrally in the data-access layer (see
 [04-architecture.md](04-architecture.md)), never ad hoc in UI code.
