@@ -13,8 +13,10 @@ import { systemClock } from './clock';
 import { getConfig } from './config';
 import { getDb } from './db';
 import { createDrizzleAccountRepository } from './db/account-repository';
+import { createDrizzleContactRepository } from './db/contact-repository';
 import { createDrizzleIdentityStore } from './db/identity-store';
 import { createDrizzleSessionRepository } from './db/session-repository';
+import type { ContactDeps, ContactRepository } from './domain/contacts/contacts';
 import { ulidGenerator } from './id';
 
 /*
@@ -92,4 +94,14 @@ export function getCompleteLoginDeps(): CompleteLoginDeps {
 		policy: getOidcPolicy(),
 		clock: systemClock
 	};
+}
+
+let contactRepository: ContactRepository | null = null;
+
+export function getContacts(): ContactRepository {
+	return (contactRepository ??= createDrizzleContactRepository(getDb()));
+}
+
+export function getContactDeps(): ContactDeps {
+	return { contacts: getContacts(), ids: ulidGenerator, clock: systemClock };
 }
