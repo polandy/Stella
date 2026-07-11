@@ -2,10 +2,15 @@ import { eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { GraphEdge, GraphModel, GraphNode } from '../../graph/model/types';
-import { contactVisibleTo, relationshipVisibleTo } from '../access/query-scoping';
+import {
+	circleColumnsVisibleTo,
+	contactVisibleTo,
+	membershipVisibleTo,
+	relationshipVisibleTo
+} from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type * as schema from './schema';
-import { contact, relationship, relationshipType } from './schema';
+import { circle, circleMembership, contact, relationship, relationshipType } from './schema';
 
 /*
  * Loads the whole *visible* graph for a viewer in one slim, access-scoped snapshot (docs/04
@@ -66,6 +71,37 @@ export function createDrizzleGraphRepository(
 				label: r.forwardLabel,
 				directed: r.symmetric !== 1
 			}));
+
+			// Circles (shared contexts) become their own node kind; memberships become edges
+			// connecting a contact to its circle (docs/02 §2.4.2). Both are visibility-scoped.
+			const circleRows = db
+				.select({ id: circle.id, name: circle.name })
+				.from(circle)
+				.where(circleColumnsVisibleTo(viewer, circle))
+				.all();
+			for (const c of circleRows) nodes.push({ id: c.id, kind: 'circle', label: c.name });
+
+			const membershipRows = db
+				.select({
+					id: circleMembership.id,
+					circleId: circleMembership.circleId,
+					contactId: circleMembership.contactId,
+					role: circleMembership.role
+				})
+				.from(circleMembership)
+				.innerJoin(circle, eq(circleMembership.circleId, circle.id))
+				.innerJoin(contact, eq(circleMembership.contactId, contact.id))
+				.where(membershipVisibleTo(viewer, circle, contact))
+				.all();
+			for (const m of membershipRows) {
+				edges.push({
+					id: m.id,
+					source: m.circleId,
+					target: m.contactId,
+					kind: 'membership',
+					label: m.role ?? undefined
+				});
+			}
 
 			return { nodes, edges };
 		}

@@ -90,3 +90,39 @@ describe('loadVisibleGraph', () => {
 		expect(path?.nodeIds).toEqual(['jonas', 'mara', 'lio']);
 	});
 });
+
+describe('loadVisibleGraph — circles', () => {
+	function seedCircle(id: string, name: string, visibility: 'shared' | 'private' = 'shared', createdBy = U1) {
+		db.insert(schema.circle).values({ id, householdId: H, createdBy, visibility, name }).run();
+	}
+	function seedMembership(id: string, circleId: string, contactId: string, role: string | null = null) {
+		db.insert(schema.circleMembership).values({ id, circleId, contactId, role, createdBy: U1 }).run();
+	}
+
+	it('includes visible circles as circle nodes and memberships as edges', async () => {
+		seedCircle('kegel', 'Kegelclub');
+		seedMembership('m-mara', 'kegel', 'mara', 'captain');
+		seedMembership('m-jonas', 'kegel', 'jonas');
+
+		const graph = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
+		expect(graph.nodes.find((n) => n.id === 'kegel')).toMatchObject({ kind: 'circle', label: 'Kegelclub' });
+		const edge = graph.edges.find((e) => e.id === 'm-mara');
+		expect(edge).toMatchObject({ source: 'kegel', target: 'mara', kind: 'membership', label: 'captain' });
+
+		// two members reachable through the circle via co-membership
+		const source = inMemoryGraphSource(graph);
+		const path = await findConnectionPath(source, 'mara', 'jonas');
+		// mara↔jonas are also partners (direct); the point is the circle node exists and links both
+		expect(graph.edges.filter((e) => e.kind === 'membership').map((e) => e.id).sort()).toEqual(['m-jonas', 'm-mara']);
+		expect(path).not.toBeNull();
+	});
+
+	it('excludes a private circle and its memberships from another member', async () => {
+		seedCircle('secret-club', 'Secret Club', 'private', U1);
+		seedMembership('m-secret', 'secret-club', 'mara');
+
+		const forU2 = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU2);
+		expect(forU2.nodes.some((n) => n.id === 'secret-club')).toBe(false);
+		expect(forU2.edges.some((e) => e.id === 'm-secret')).toBe(false);
+	});
+});
