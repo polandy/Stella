@@ -6,6 +6,12 @@ import {
 	fieldHref,
 	listContactFields
 } from '$lib/server/domain/contact-fields/contact-fields';
+import {
+	joinCircleByName,
+	listCircles,
+	listCirclesForContact,
+	removeMember
+} from '$lib/server/domain/circles/circles';
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import { renderMarkdown } from '$lib/server/domain/notes/markdown';
@@ -24,6 +30,7 @@ import {
 	getContactDeps,
 	getContactFieldDeps,
 	getAvatarDeps,
+	getCircleDeps,
 	getContactFields,
 	getNoteDeps,
 	getRelationshipDeps,
@@ -42,20 +49,25 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		throw error(404, 'Contact not found');
 	}
 
-	const [relationships, types, allContacts, notes, fields, tags] = await Promise.all([
-		getRelationships().listForContactVisibleTo(viewer, params.id),
-		getRelationships().listTypes(),
-		listContacts(getContactDeps(), viewer),
-		listNotesForContact(getNoteDeps(), viewer, params.id),
-		listContactFields(getContactFieldDeps(), viewer, params.id),
-		listTagsForContact(getTagDeps(), viewer, params.id)
-	]);
+	const [relationships, types, allContacts, notes, fields, tags, contactCircles, allCircles] =
+		await Promise.all([
+			getRelationships().listForContactVisibleTo(viewer, params.id),
+			getRelationships().listTypes(),
+			listContacts(getContactDeps(), viewer),
+			listNotesForContact(getNoteDeps(), viewer, params.id),
+			listContactFields(getContactFieldDeps(), viewer, params.id),
+			listTagsForContact(getTagDeps(), viewer, params.id),
+			listCirclesForContact(getCircleDeps(), viewer, params.id),
+			listCircles(getCircleDeps(), viewer)
+		]);
 
 	return {
 		contact,
 		relationships,
 		relationshipTypes: types,
 		tags,
+		circles: contactCircles,
+		circleNames: allCircles.map((c) => c.name),
 		tagColors: TAG_COLORS,
 		fieldKinds: CONTACT_FIELD_KINDS,
 		fields: fields.map((f) => ({
@@ -303,6 +315,49 @@ export const actions: Actions = {
 			return fail(400, { avatarError: 'Could not save the photo.' });
 		}
 
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	joinCircle: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		const form = await request.formData();
+		const name = form.get('circleName');
+		if (typeof name !== 'string' || name.trim() === '') {
+			return fail(400, { circleError: 'Please enter a circle name.' });
+		}
+
+		try {
+			await joinCircleByName(
+				getCircleDeps(),
+				{ userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: 'shared' },
+				params.id,
+				name,
+				typeof form.get('role') === 'string' ? String(form.get('role')) : undefined
+			);
+		} catch {
+			return fail(400, { circleError: 'Could not add the circle.' });
+		}
+
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	leaveCircle: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		const form = await request.formData();
+		const circleId = form.get('circleId');
+		if (typeof circleId !== 'string') return fail(400, {});
+
+		await removeMember(getCircleDeps(), circleId, params.id);
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 };

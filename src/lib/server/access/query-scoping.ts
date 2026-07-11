@@ -64,3 +64,23 @@ export function relationshipVisibleTo(
 		contactColumnsVisibleTo(viewer, toContact)
 	)!;
 }
+
+/**
+ * Condition for a circle being visible — same rule as a contact (household + shared-or-owned),
+ * expressed over the circle's columns so it works on the base table or an alias.
+ */
+export function circleColumnsVisibleTo(viewer: Viewer, columns: ContactColumns): SQL {
+	return contactColumnsVisibleTo(viewer, columns);
+}
+
+/**
+ * Condition for a membership being visible: its circle and its contact must both be visible.
+ * Pass the circle columns and the joined contact columns.
+ */
+export function membershipVisibleTo(
+	viewer: Viewer,
+	circle: ContactColumns,
+	contact: ContactColumns
+): SQL {
+	return and(circleColumnsVisibleTo(viewer, circle), contactColumnsVisibleTo(viewer, contact))!;
+}
