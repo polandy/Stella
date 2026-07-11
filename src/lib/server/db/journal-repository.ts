@@ -1,8 +1,13 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, lt, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo } from '../access/query-scoping';
 import type { Visibility, Viewer } from '../access/visibility';
-import type { JournalEntry, JournalRepository, NewJournalEntry } from '../domain/journal/journal';
+import type {
+	JournalCursor,
+	JournalEntry,
+	JournalRepository,
+	NewJournalEntry
+} from '../domain/journal/journal';
 import type * as schema from './schema';
 import { contact, journalEntry } from './schema';
 
@@ -88,6 +93,38 @@ export function createDrizzleJournalRepository(
 					)
 				)
 				.orderBy(desc(journalEntry.entryDate), desc(journalEntry.createdAt))
+				.all();
+		},
+
+		async listPageForContactVisibleTo(
+			viewer: Viewer,
+			contactId: string,
+			opts: { limit: number; before?: JournalCursor }
+		): Promise<JournalEntry[]> {
+			const conditions = [
+				eq(journalEntry.contactId, contactId),
+				childRecordVisibleTo(viewer, {
+					visibility: journalEntry.visibility,
+					createdBy: journalEntry.createdBy
+				})
+			];
+			if (opts.before) {
+				const { entryDate, createdAt } = opts.before;
+				// Keyset: strictly older than the cursor in (entryDate, createdAt) order.
+				conditions.push(
+					or(
+						lt(journalEntry.entryDate, entryDate),
+						and(eq(journalEntry.entryDate, entryDate), lt(journalEntry.createdAt, createdAt))
+					)!
+				);
+			}
+			return db
+				.select(columns)
+				.from(journalEntry)
+				.innerJoin(contact, eq(journalEntry.contactId, contact.id))
+				.where(and(...conditions))
+				.orderBy(desc(journalEntry.entryDate), desc(journalEntry.createdAt))
+				.limit(opts.limit)
 				.all();
 		},
 

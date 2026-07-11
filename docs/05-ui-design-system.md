@@ -160,9 +160,11 @@ Tailwind is configured so utilities reference these variables (e.g.
 - **Contacts list** — searchable, filterable (tag, category, living), avatar-led rows or
   cards; density toggle.
 - **Contact profile** — hero header (avatar, name, description, key dates, tags, quick
-  actions), then sections: Relationships (grouped, with a mini-graph), Notes (pinned
-  first), Interactions timeline, Photos gallery, Contact fields. "Added by / last edited"
-  footer.
+  actions), then sections: Relationships (a mini **ego-graph** of directly connected people
+  over the grouped list), Notes (pinned first), a **journal timeline** inline (entries
+  grouped by week, older weeks lazy-loaded on scroll via a keyset cursor; composing with
+  photos on the full journal page), Interactions timeline, Photos gallery, Contact fields.
+  "Added by / last edited" footer.
 - **Quick add** — a focused sheet: name, optional photo, "how we met", optional first
   relationship. Everything else deferred.
 - **Graph** — full-screen canvas with filter chips, search-to-focus, ego/full toggle,
