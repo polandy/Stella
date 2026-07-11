@@ -1,18 +1,28 @@
 import type { Cookies } from '@sveltejs/kit';
+import { getConfig } from '$lib/server/config';
 
 /*
  * Session cookie helpers. The cookie holds the raw session token; it is httpOnly,
- * SameSite=Lax, and Secure in production (docs/04 §4.7).
+ * SameSite=Lax, and Secure only when served over HTTPS (docs/04 §4.7).
  */
 
 export const SESSION_COOKIE = 'stella_session';
+
+/*
+ * The Secure attribute is derived from the configured URL scheme, not NODE_ENV: browsers
+ * silently drop a Secure cookie sent over plain HTTP to any non-localhost host (e.g. a LAN
+ * IP), which would make login appear to fail with no error. Serving over HTTPS re-enables it.
+ */
+function cookieSecure(): boolean {
+	return getConfig().url.startsWith('https://');
+}
 
 export function setSessionCookie(cookies: Cookies, token: string, expiresAt: number): void {
 	cookies.set(SESSION_COOKIE, token, {
 		path: '/',
 		httpOnly: true,
 		sameSite: 'lax',
-		secure: process.env.NODE_ENV === 'production',
+		secure: cookieSecure(),
 		expires: new Date(expiresAt)
 	});
 }
@@ -39,7 +49,7 @@ export function setOidcTransaction(cookies: Cookies, tx: OidcTransaction): void 
 		path: '/',
 		httpOnly: true,
 		sameSite: 'lax',
-		secure: process.env.NODE_ENV === 'production',
+		secure: cookieSecure(),
 		maxAge: 600
 	});
 }
