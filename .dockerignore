@@ -1,0 +1,14 @@
+.git
+.github
+node_modules
+.svelte-kit
+build
+data
+*.db
+*.db-*
+.env
+.env.*
+!.env.example
+docs
+scratchpad
+.vscode
