@@ -1,0 +1,25 @@
+# Simple, self-contained setup: builds the image and binds the port to localhost.
+# For the reverse-proxy + Authelia SSO deployment, see docs/07-deployment.md §7.5.
+services:
+  stella:
+    build: .
+    image: stella:latest
+    container_name: stella
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/data
+    ports:
+      - '127.0.0.1:3000:3000'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'bun',
+          '-e',
+          "fetch('http://localhost:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
