@@ -13,6 +13,7 @@ import { systemClock } from './clock';
 import { getConfig } from './config';
 import { getDb } from './db';
 import { createDrizzleAccountRepository } from './db/account-repository';
+import { createDrizzleCircleRepository } from './db/circle-repository';
 import { createDrizzleContactRepository } from './db/contact-repository';
 import { createDrizzleDashboardRepository } from './db/dashboard-repository';
 import { createDrizzleGraphRepository } from './db/graph-repository';
@@ -35,6 +36,7 @@ import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
 import type { TagDeps, TagRepository } from './domain/tags/tags';
 import type { GraphRepository } from './db/graph-repository';
+import type { CircleDeps, CircleRepository } from './domain/circles/circles';
 import type { DashboardDeps, DashboardRepository } from './domain/dashboard/dashboard';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
 import { ulidGenerator } from './id';
@@ -205,4 +207,14 @@ let dashboardRepository: DashboardRepository | null = null;
 
 export function getDashboardDeps(): DashboardDeps {
 	return { dashboard: (dashboardRepository ??= createDrizzleDashboardRepository(getDb())) };
+}
+
+let circleRepository: CircleRepository | null = null;
+
+export function getCircleDeps(): CircleDeps {
+	return {
+		circles: (circleRepository ??= createDrizzleCircleRepository(getDb())),
+		ids: ulidGenerator,
+		clock: systemClock
+	};
 }

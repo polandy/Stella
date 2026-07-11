@@ -63,3 +63,25 @@ export function canViewRelationship(
 ): boolean {
 	return canViewContact(viewer, endpoints.from) && canViewContact(viewer, endpoints.to);
 }
+
+/** A circle (shared context) is a first-class shareable record, scoped like a contact. */
+export interface CircleAccess {
+	householdId: HouseholdId;
+	/** `created_by` — the household member who owns the circle. */
+	ownerId: UserId;
+	visibility: Visibility;
+}
+
+export function canViewCircle(viewer: Viewer, circle: CircleAccess): boolean {
+	if (circle.householdId !== viewer.householdId) return false;
+	if (circle.visibility === 'shared') return true;
+	return circle.ownerId === viewer.id;
+}
+
+/** A membership is visible only when the viewer can see both its circle and its contact. */
+export function canViewMembership(
+	viewer: Viewer,
+	membership: { circle: CircleAccess; contact: ContactAccess }
+): boolean {
+	return canViewCircle(viewer, membership.circle) && canViewContact(viewer, membership.contact);
+}

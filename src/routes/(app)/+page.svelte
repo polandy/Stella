@@ -46,6 +46,7 @@
 		</div>
 		<nav class="flex items-center gap-2">
 			<a href="/contacts" class="rounded-app border border-border px-4 py-2 text-sm text-fg-muted transition-colors hover:text-fg">Contacts</a>
+			<a href="/circles" class="rounded-app border border-border px-4 py-2 text-sm text-fg-muted transition-colors hover:text-fg">Circles</a>
 			<a href="/graph" class="rounded-app border border-border px-4 py-2 text-sm text-fg-muted transition-colors hover:text-fg">Graph</a>
 			<a href="/contacts/new" class="rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90">Add person</a>
 		</nav>

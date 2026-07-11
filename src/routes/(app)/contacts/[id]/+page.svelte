@@ -63,6 +63,51 @@
 		<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.tagError}</p>
 	{/if}
 
+	<!-- Circles (shared contexts) -->
+	<section class="flex flex-col gap-3">
+		<div class="flex items-center justify-between">
+			<h2 class="text-sm font-medium text-fg-muted">Circles</h2>
+			<a href="/circles" class="text-xs text-link hover:underline">All circles</a>
+		</div>
+
+		{#if data.circles.length}
+			<ul class="flex flex-wrap gap-2">
+				{#each data.circles as circle (circle.membershipId)}
+					<li>
+						<span class="inline-flex items-center gap-1.5 rounded-full border border-border py-1 pl-2.5 pr-1.5 text-sm">
+							<span class="size-2 rounded-full" style="background:var(--ctp-{circle.color})"></span>
+							<a href="/circles/{circle.circleId}" class="text-fg hover:underline">{circle.name}</a>
+							{#if circle.role}<span class="text-xs text-fg-subtle">· {circle.role}</span>{/if}
+							<form method="POST" action="?/leaveCircle" class="contents">
+								<input type="hidden" name="circleId" value={circle.circleId} />
+								<button class="opacity-70 hover:opacity-100" aria-label="Leave circle">×</button>
+							</form>
+						</span>
+					</li>
+				{/each}
+			</ul>
+		{:else}
+			<p class="text-sm text-fg-subtle">Not in any circle yet.</p>
+		{/if}
+
+		<form method="POST" action="?/joinCircle" class="flex flex-wrap items-end gap-2">
+			{#if form?.circleError}
+				<p class="w-full rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.circleError}</p>
+			{/if}
+			<input
+				name="circleName"
+				list="circle-names"
+				placeholder="Join or create a circle…"
+				class="flex-1 rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg"
+			/>
+			<datalist id="circle-names">
+				{#each data.circleNames as name (name)}<option value={name}></option>{/each}
+			</datalist>
+			<input name="role" placeholder="role (optional)" class="w-32 rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg" />
+			<button class="rounded-app border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg">Add</button>
+		</form>
+	</section>
+
 	<!-- Contact details -->
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">Contact details</h2>
