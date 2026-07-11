@@ -12,7 +12,9 @@ services:
       # Must equal the URL you open in the browser or all form submissions 403.
       - ORIGIN=${STELLA_URL:-http://localhost:3000}
     volumes:
-      - ./data:/data
+      # Named volume (not a host folder) so state is easy to wipe:
+      #   docker compose down -v   →   removes the DB + media for a clean slate.
+      - stella-data:/data
     # Bound on all interfaces so the container is reachable on the LAN (host firewall
     # opens TCP 3000). STELLA_URL/ORIGIN in .env must match the address browsed to.
     ports:
@@ -29,3 +31,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
+
+volumes:
+  stella-data:
