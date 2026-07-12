@@ -54,6 +54,8 @@ export interface Contact extends NewContact {
 export interface ContactSummary {
 	id: string;
 	displayName: string;
+	firstName: string | null;
+	lastName: string | null;
 	description: string | null;
 	visibility: Visibility;
 	avatarPhotoId: string | null;

@@ -51,6 +51,8 @@ export function createDrizzleContactRepository(
 				.select({
 					id: contactTable.id,
 					displayName: contactTable.displayName,
+					firstName: contactTable.firstName,
+					lastName: contactTable.lastName,
 					description: contactTable.description,
 					visibility: contactTable.visibility,
 					avatarPhotoId: contactTable.avatarPhotoId

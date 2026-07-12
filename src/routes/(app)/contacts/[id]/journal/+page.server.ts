@@ -1,19 +1,41 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { getContact } from '$lib/server/domain/contacts/contacts';
+import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
 import {
 	deleteJournalEntry,
 	listJournalForContact,
-	saveJournalEntry
+	saveJournalEntry,
+	setJournalMentions
 } from '$lib/server/domain/journal/journal';
 import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
-import { renderMarkdown } from '$lib/server/domain/notes/markdown';
+import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
+import { createHandleResolver, resolveMentions } from '$lib/mentions/mentions';
 import {
 	getContactDeps,
 	getJournalDeps,
 	getJournalPhotoDeps,
 	getPhotos
 } from '$lib/server/services';
+
+/** People an entry may reference: a shared entry only household-visible contacts, a private
+ * entry anyone the author can see (docs/02 §2.20.1) — so a mention never widens access. */
+function mentionCandidates(
+	all: {
+		id: string;
+		displayName: string;
+		firstName: string | null;
+		lastName: string | null;
+		visibility: 'shared' | 'private';
+	}[],
+	visibility: 'shared' | 'private'
+) {
+	return (visibility === 'shared' ? all.filter((c) => c.visibility === 'shared') : all).map((c) => ({
+		id: c.id,
+		firstName: c.firstName,
+		lastName: c.lastName,
+		displayName: c.displayName
+	}));
+}
 import type { Actions, PageServerLoad } from './$types';
 
 /** Local calendar date as YYYY-MM-DD, for the compose form's default. */
@@ -28,9 +50,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const contact = await getContact(getContactDeps(), viewer, params.id);
 	if (!contact) throw error(404, 'Contact not found'); // never reveal existence
 
-	const [entries, journalPhotos] = await Promise.all([
+	const [entries, journalPhotos, allContacts] = await Promise.all([
 		listJournalForContact(getJournalDeps(), viewer, params.id),
-		getPhotos().listJournalPhotos(viewer, params.id)
+		getPhotos().listJournalPhotos(viewer, params.id),
+		listContacts(getContactDeps(), viewer)
 	]);
 
 	// Group visible photo ids by their entry so each entry renders its own gallery.
@@ -41,15 +64,19 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		photosByEntry.set(p.journalEntryId, list);
 	}
 
+	// Name lookup for @-mention chips, scoped to what the viewer may see.
+	const nameById = new Map(allContacts.map((c) => [c.id, c.displayName]));
+	const nameOf = (id: string) => nameById.get(id) ?? null;
+
 	return {
 		contact: { id: contact.id, displayName: contact.displayName, avatarPhotoId: contact.avatarPhotoId },
 		today: today(),
-		// render Markdown server-side; the output is already safe (docs/02 §2.5)
+		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5, §2.20.1)
 		entries: entries.map((e) => ({
 			id: e.id,
 			entryDate: e.entryDate,
 			title: e.title,
-			bodyHtml: renderMarkdown(e.body),
+			bodyHtml: renderMarkdownWithMentions(e.body, nameOf),
 			visibility: e.visibility,
 			mine: e.createdBy === locals.user!.id,
 			photos: photosByEntry.get(e.id) ?? [],
@@ -93,18 +120,35 @@ export const actions: Actions = {
 			defaultVisibility: 'shared' as const
 		};
 
+		// Resolve @-mentions against the contacts allowed for this entry's audience, so the stored
+		// body carries stable id-based tokens and we know who to link (docs/02 §2.20.1).
+		const resolver = createHandleResolver(
+			mentionCandidates(
+				await listContacts(getContactDeps(), viewer),
+				parsed.output.visibility
+			)
+		);
+		const resolved = resolveMentions(parsed.output.body, resolver);
+
 		let entryId: string;
 		try {
 			entryId = await saveJournalEntry(getJournalDeps(), author, {
 				contactId: params.id,
 				entryDate: parsed.output.entryDate,
 				title: parsed.output.title ?? null,
-				body: parsed.output.body,
+				body: resolved.body,
 				visibility: parsed.output.visibility
 			});
 		} catch (err) {
 			return fail(400, { journalError: err instanceof Error ? err.message : 'Could not save the entry.' });
 		}
+
+		// Persist the reverse links, dropping a self-reference (docs/02 §2.20.1).
+		await setJournalMentions(
+			getJournalDeps(),
+			entryId,
+			resolved.ids.filter((id) => id !== params.id)
+		);
 
 		// Attach any browser-processed photos (parallel image/thumb/width/height arrays), inheriting
 		// the entry's visibility so a private entry's photos stay private (§2.20).

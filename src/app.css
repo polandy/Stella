@@ -170,6 +170,23 @@ body {
 	color: var(--link);
 	text-decoration: underline;
 }
+/* @-mention chips (docs/02 §2.20.1): a person reference, not a plain link. */
+.mention {
+	color: var(--primary);
+	background: color-mix(in srgb, var(--primary) 12%, transparent);
+	border-radius: 0.375rem;
+	padding: 0 0.25rem;
+	text-decoration: none;
+	font-weight: 500;
+	white-space: nowrap;
+}
+.mention:hover {
+	background: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+.mention-unknown {
+	color: var(--fg-subtle);
+	background: color-mix(in srgb, var(--fg-subtle) 12%, transparent);
+}
 .note-body ul,
 .note-body ol {
 	margin: 0 0 0.5rem;

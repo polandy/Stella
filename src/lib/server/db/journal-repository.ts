@@ -9,7 +9,7 @@ import type {
 	NewJournalEntry
 } from '../domain/journal/journal';
 import type * as schema from './schema';
-import { contact, journalEntry } from './schema';
+import { contact, journalEntry, journalMention } from './schema';
 
 /*
  * Drizzle adapter for the JournalRepository port (docs/08 §8.3). Reads join the parent contact
@@ -135,6 +135,26 @@ export function createDrizzleJournalRepository(
 				.returning({ id: journalEntry.id })
 				.all();
 			return removed.length > 0;
+		},
+
+		async replaceMentions(journalEntryId: string, contactIds: string[]): Promise<void> {
+			db.transaction((tx) => {
+				tx.delete(journalMention).where(eq(journalMention.journalEntryId, journalEntryId)).run();
+				if (contactIds.length > 0) {
+					tx.insert(journalMention)
+						.values(contactIds.map((contactId) => ({ journalEntryId, contactId })))
+						.run();
+				}
+			});
+		},
+
+		async listMentionedContactIds(journalEntryId: string): Promise<string[]> {
+			return db
+				.select({ contactId: journalMention.contactId })
+				.from(journalMention)
+				.where(eq(journalMention.journalEntryId, journalEntryId))
+				.all()
+				.map((r) => r.contactId);
 		}
 	};
 }

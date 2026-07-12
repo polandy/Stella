@@ -114,9 +114,24 @@ assemble concretes **only at the edge**.
   run with `bun test`, no I/O, dependencies faked.
 - **Integration tests**: domain against a real in-memory SQLite (`new Database(':memory:')`
   + migrations) to verify queries and constraints.
-- **End-to-end** (later, M2): a few Playwright flows for critical paths (login, quick-add).
+- **End-to-end** (Playwright): browser flows for user-facing features, in `e2e/*.spec.ts`,
+  run with `bun run test:e2e` against the production build under Bun (not the dev server).
 
 Test files are `*.test.ts`, colocated with the code under test.
+
+### 8.4.1 Feature delivery loop (implement → verify → e2e)
+
+Unit/integration tests stay **test-first** (§8.1). The **e2e** test is written **after the
+change is confirmed working**, so it locks in behaviour we've actually agreed on rather than a
+guess. Each user-facing change follows:
+
+1. **Implement** the change with its unit/integration tests (test-first, `bun test` green).
+2. **Hand off for manual verification** — the change is exercised in the running app (rebuild
+   the container / drive the flow) and the outcome reported.
+3. **On the user's OK, add the Playwright e2e** for that flow (`e2e/*.spec.ts`), then run it.
+
+Don't write the e2e in step 1: an unverified e2e can encode a wrong expectation and pass, giving
+false confidence. Steps 1–2 are never skipped; step 3 waits for sign-off.
 
 ## 8.5 What is and isn't unit-tested
 

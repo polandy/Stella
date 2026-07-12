@@ -78,6 +78,8 @@ export function createDrizzleTagRepository(db: BunSQLiteDatabase<typeof schema>)
 				.select({
 					id: contact.id,
 					displayName: contact.displayName,
+					firstName: contact.firstName,
+					lastName: contact.lastName,
 					description: contact.description,
 					visibility: contact.visibility,
 					avatarPhotoId: contact.avatarPhotoId

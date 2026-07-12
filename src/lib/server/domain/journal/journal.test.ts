@@ -24,6 +24,7 @@ const viewer: Viewer = { id: 'u1', householdId: 'h1' };
 /** In-memory fake of the JournalRepository, enough to exercise the pure use-cases. */
 function fakeRepo(seed: JournalEntry[] = []) {
 	const rows = [...seed];
+	const mentions = new Map<string, string[]>();
 	const repo = {
 		rows,
 		async findDay(p: { authorId: string; contactId: string; entryDate: string; visibility: string }) {
@@ -72,6 +73,12 @@ function fakeRepo(seed: JournalEntry[] = []) {
 			if (i < 0) return false;
 			rows.splice(i, 1);
 			return true;
+		},
+		async replaceMentions(journalEntryId: string, contactIds: string[]) {
+			mentions.set(journalEntryId, [...contactIds]);
+		},
+		async listMentionedContactIds(journalEntryId: string) {
+			return mentions.get(journalEntryId) ?? [];
 		}
 	};
 	return repo;

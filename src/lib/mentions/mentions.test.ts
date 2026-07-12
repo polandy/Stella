@@ -45,6 +45,16 @@ describe('resolveMentions', () => {
 		expect(resolveMentions('@SabineMüller', resolve).ids).toEqual(['sabine-mueller']);
 	});
 
+	it('matches @FirstnameLastname even when the display name is a hyphenated/married form', () => {
+		const r = createHandleResolver([
+			{ id: 'sandra', firstName: 'Sandra', lastName: 'Brunner', displayName: 'Sandra Brunner-Keller' }
+		]);
+		// first+last handle resolves…
+		expect(resolveMentions('@SandraBrunner', r).ids).toEqual(['sandra']);
+		// …and so does the full display name
+		expect(resolveMentions('@SandraBrunnerKeller', r).ids).toEqual(['sandra']);
+	});
+
 	it('passes existing canonical tokens through and still collects their id', () => {
 		const { body, ids } = resolveMentions('saw @{contact:anna} at lunch', resolve);
 		expect(body).toBe('saw @{contact:anna} at lunch');

@@ -1,7 +1,7 @@
 import { error, json, redirect } from '@sveltejs/kit';
-import { getContact } from '$lib/server/domain/contacts/contacts';
+import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
 import { listJournalPage } from '$lib/server/domain/journal/journal';
-import { renderMarkdown } from '$lib/server/domain/notes/markdown';
+import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { getContactDeps, getJournalDeps, getPhotos } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
@@ -41,12 +41,17 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 		photosByEntry.set(p.journalEntryId, list);
 	}
 
+	// Name lookup for @-mention chips, scoped to what the viewer may see.
+	const allContacts = await listContacts(getContactDeps(), viewer);
+	const nameById = new Map(allContacts.map((c) => [c.id, c.displayName]));
+	const nameOf = (id: string) => nameById.get(id) ?? null;
+
 	return json({
 		entries: page.entries.map((e) => ({
 			id: e.id,
 			entryDate: e.entryDate,
 			title: e.title,
-			bodyHtml: renderMarkdown(e.body),
+			bodyHtml: renderMarkdownWithMentions(e.body, nameOf),
 			visibility: e.visibility,
 			mine: e.createdBy === locals.user!.id,
 			photos: photosByEntry.get(e.id) ?? []

@@ -59,6 +59,10 @@ export interface JournalRepository {
 	): Promise<JournalEntry[]>;
 	/** Delete an entry the viewer authored; returns whether a row was removed. */
 	deleteOwn(params: { authorId: string; id: string }): Promise<boolean>;
+	/** Replace an entry's @-mention links with exactly these contact ids (docs/02 §2.20.1). */
+	replaceMentions(journalEntryId: string, contactIds: string[]): Promise<void>;
+	/** Contact ids an entry mentions. */
+	listMentionedContactIds(journalEntryId: string): Promise<string[]>;
 }
 
 /** Opaque-ish cursor: the (entryDate, createdAt) of the last entry a client has seen. */
@@ -175,6 +179,19 @@ export async function listJournalPage(
 		entries,
 		nextCursor: hasMore && last ? { entryDate: last.entryDate, createdAt: last.createdAt } : null
 	};
+}
+
+/**
+ * Persist the people an entry references (docs/02 §2.20.1). The caller resolves the body to
+ * contact ids with the shared mention module, scoping candidates to the entry's audience, and
+ * drops any self-reference before calling this. Rebuilds the entry's mention links wholesale.
+ */
+export async function setJournalMentions(
+	deps: Pick<JournalDeps, 'journal'>,
+	journalEntryId: string,
+	contactIds: string[]
+): Promise<void> {
+	await deps.journal.replaceMentions(journalEntryId, [...new Set(contactIds)]);
 }
 
 /** Delete one of the viewer's own journal entries. Returns whether a row was removed. */

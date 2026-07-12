@@ -272,6 +272,28 @@ export const journalEntry = sqliteTable(
 	]
 );
 
+/*
+ * A person referenced from a journal entry via an @-mention (docs/02 §2.20.1). Denormalises the
+ * mention for the reverse "Mentioned in" lookup on the referenced contact; the source person and
+ * author are read from the parent entry. Rebuilt from the entry body on each save; cascades away
+ * with the entry or the contact. Self-references are not stored.
+ */
+export const journalMention = sqliteTable(
+	'journal_mention',
+	{
+		journalEntryId: text('journal_entry_id')
+			.notNull()
+			.references(() => journalEntry.id, { onDelete: 'cascade' }),
+		contactId: text('contact_id')
+			.notNull()
+			.references(() => contact.id, { onDelete: 'cascade' })
+	},
+	(t) => [
+		primaryKey({ columns: [t.journalEntryId, t.contactId] }),
+		index('journal_mention_contact_idx').on(t.contactId)
+	]
+);
+
 export const interaction = sqliteTable(
 	'interaction',
 	{
