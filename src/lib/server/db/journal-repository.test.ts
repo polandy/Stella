@@ -154,6 +154,38 @@ describe('journal repository + upsert', () => {
 		expect(asOther.entries.map((e) => e.body)).toEqual(['shared moment']);
 	});
 
+	it('replaceMentions stores links and overwrites them wholesale', async () => {
+		db.insert(schema.contact)
+			.values([
+				{ id: 'ada', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Ada' },
+				{ id: 'bo', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Bo' }
+			])
+			.run();
+		const repo = createDrizzleJournalRepository(db);
+		const id = await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: '2026-07-11', body: 'x' });
+
+		await repo.replaceMentions(id, ['ada', 'bo']);
+		expect((await repo.listMentionedContactIds(id)).sort()).toEqual(['ada', 'bo']);
+
+		await repo.replaceMentions(id, ['ada']); // wholesale replace, not append
+		expect(await repo.listMentionedContactIds(id)).toEqual(['ada']);
+
+		await repo.replaceMentions(id, []); // clear
+		expect(await repo.listMentionedContactIds(id)).toEqual([]);
+	});
+
+	it('deleting an entry cascades its mention links away', async () => {
+		db.insert(schema.contact)
+			.values({ id: 'ada', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Ada' })
+			.run();
+		const repo = createDrizzleJournalRepository(db);
+		const id = await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: '2026-07-11', body: 'x' });
+		await repo.replaceMentions(id, ['ada']);
+
+		await repo.deleteOwn({ authorId: U1, id });
+		expect(await repo.listMentionedContactIds(id)).toEqual([]);
+	});
+
 	it('deleteOwn removes only the author’s own entry', async () => {
 		const repo = createDrizzleJournalRepository(db);
 		const id = await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: '2026-07-11', body: 'mine' });

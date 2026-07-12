@@ -9,6 +9,9 @@ The `docs/` suite is the **source of truth**; this file is only a router — kee
 ## Golden rules — full text: `docs/08-coding-guidelines.md` (read once, then follow)
 
 - **Test-first**: failing test → minimal impl → refactor. Run `bun test`.
+- **Delivery loop**: implement (+ unit/integration tests) → user verifies in the app →
+  **on their OK**, add the Playwright **e2e** (`e2e/*.spec.ts`). Never write the e2e before
+  sign-off. (`docs/08` §8.4.1)
 - **Framework-agnostic domain**: business logic in `src/lib/server/{domain,access}`,
   plain TS, no SvelteKit/`$env`/`$app` imports. SvelteKit only at the edges (routes/hooks).
 - **Ports & Adapters + DI**: domain owns narrow interfaces (ports); use-cases take a

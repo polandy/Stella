@@ -15,7 +15,7 @@ import {
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
 import { listJournalPage } from '$lib/server/domain/journal/journal';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
-import { renderMarkdown } from '$lib/server/domain/notes/markdown';
+import { renderMarkdown, renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { createNote, listNotesForContact } from '$lib/server/domain/notes/notes';
 import {
 	createRelationship,
@@ -87,13 +87,17 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		journalPhotosByEntry.set(p.journalEntryId, list);
 	}
 
+	// Name lookup for @-mention chips in journal bodies, scoped to what the viewer may see.
+	const journalNameById = new Map(allContacts.map((c) => [c.id, c.displayName]));
+	const journalNameOf = (id: string) => journalNameById.get(id) ?? null;
+
 	return {
 		journal: {
 			entries: journalPage.entries.map((e) => ({
 				id: e.id,
 				entryDate: e.entryDate,
 				title: e.title,
-				bodyHtml: renderMarkdown(e.body),
+				bodyHtml: renderMarkdownWithMentions(e.body, journalNameOf),
 				visibility: e.visibility,
 				mine: e.createdBy === locals.user!.id,
 				photos: journalPhotosByEntry.get(e.id) ?? []

@@ -37,12 +37,17 @@ export interface MentionCandidate {
  */
 export function createHandleResolver(contacts: MentionCandidate[]): (handle: string) => string | null {
 	const byKey = new Map<string, string | null>(); // key -> id, or null once ambiguous
+	const add = (raw: string, id: string) => {
+		const key = mentionKey(raw);
+		if (!key) return;
+		if (!byKey.has(key)) byKey.set(key, id);
+		else if (byKey.get(key) !== id) byKey.set(key, null); // two contacts share the handle
+	};
 	for (const c of contacts) {
-		const name = c.firstName || c.lastName ? `${c.firstName ?? ''}${c.lastName ?? ''}` : c.displayName;
-		const key = mentionKey(name);
-		if (!key) continue;
-		if (!byKey.has(key)) byKey.set(key, c.id);
-		else if (byKey.get(key) !== c.id) byKey.set(key, null); // two contacts share the handle
+		// Index both `@FirstnameLastname` and the display name, so a handle matches whether the
+		// display name is a nickname or a hyphenated/married form that differs from first+last.
+		if (c.firstName || c.lastName) add(`${c.firstName ?? ''}${c.lastName ?? ''}`, c.id);
+		add(c.displayName, c.id);
 	}
 	return (handle: string) => byKey.get(mentionKey(handle)) ?? null;
 }
