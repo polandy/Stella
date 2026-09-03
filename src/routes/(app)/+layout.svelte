@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
+import { page } from '$app/state';
 	import type { Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 
@@ -8,7 +9,7 @@
 
 	// Primary destinations. `match` decides the active state from the pathname.
 	const nav = [
-		{ href: '/', label: 'Dashboard', icon: 'home' as const, match: (p: string) => p === '/' },
+		{ href: '/', label: 'Home', icon: 'home' as const, match: (p: string) => p === '/' },
 		{ href: '/contacts', label: 'Contacts', icon: 'people' as const, match: (p: string) => p.startsWith('/contacts') },
 		{ href: '/circles', label: 'Circles', icon: 'circles' as const, match: (p: string) => p.startsWith('/circles') },
 		{ href: '/graph', label: 'Graph', icon: 'graph' as const, match: (p: string) => p.startsWith('/graph') }
@@ -44,6 +45,15 @@
 		return trail;
 	});
 
+	// ⌘K / Ctrl+K jumps to the "What happened?" field from anywhere (docs/02 §2.22.1).
+	function onGlobalKeydown(event: KeyboardEvent) {
+		if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return;
+		event.preventDefault();
+		const field = document.querySelector<HTMLTextAreaElement>('[data-moment-body]');
+		if (field) field.focus();
+		else void goto('/?compose');
+	}
+
 	// Theme: same contract as the no-flash init in app.html (stella-theme).
 	type ThemeChoice = 'light' | 'system' | 'dark';
 	let theme = $state<ThemeChoice>('system');
@@ -72,6 +82,8 @@
 			.toUpperCase()
 	);
 </script>
+
+<svelte:window onkeydown={onGlobalKeydown} />
 
 {#snippet navIcon(name: string)}
 	{#if name === 'home'}

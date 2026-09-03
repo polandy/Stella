@@ -15,7 +15,7 @@ import { getDb } from './db';
 import { createDrizzleAccountRepository } from './db/account-repository';
 import { createDrizzleCircleRepository } from './db/circle-repository';
 import { createDrizzleContactRepository } from './db/contact-repository';
-import { createDrizzleDashboardRepository } from './db/dashboard-repository';
+import { createDrizzleStreamRepository } from './db/stream-repository';
 import { createDrizzleGraphRepository } from './db/graph-repository';
 import { createDrizzleJournalRepository } from './db/journal-repository';
 import { createDrizzleIdentityStore } from './db/identity-store';
@@ -39,7 +39,8 @@ import type { RelationshipDeps, RelationshipRepository } from './domain/relation
 import type { TagDeps, TagRepository } from './domain/tags/tags';
 import type { GraphRepository } from './db/graph-repository';
 import type { CircleDeps, CircleRepository } from './domain/circles/circles';
-import type { DashboardDeps, DashboardRepository } from './domain/dashboard/dashboard';
+import type { StreamDeps, StreamRepository } from './domain/stream/stream';
+import type { CaptureMomentDeps } from './domain/moments/moments';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
 import type { JournalPhotoDeps } from './domain/media/journal-photos';
 import { ulidGenerator } from './id';
@@ -220,10 +221,14 @@ export function getJournalPhotoDeps(): JournalPhotoDeps {
 	return { photos: getPhotos(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
 }
 
-let dashboardRepository: DashboardRepository | null = null;
+let streamRepository: StreamRepository | null = null;
 
-export function getDashboardDeps(): DashboardDeps {
-	return { dashboard: (dashboardRepository ??= createDrizzleDashboardRepository(getDb())) };
+export function getStreamDeps(): StreamDeps {
+	return { stream: (streamRepository ??= createDrizzleStreamRepository(getDb())) };
+}
+
+export function getCaptureMomentDeps(): CaptureMomentDeps {
+	return { contacts: getContacts(), journal: getJournal(), ids: ulidGenerator, clock: systemClock };
 }
 
 let circleRepository: CircleRepository | null = null;

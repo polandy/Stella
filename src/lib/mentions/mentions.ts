@@ -82,6 +82,20 @@ export function resolveMentions(
 	return { body: out, ids };
 }
 
+/**
+ * The typed, still-unresolved `@Handle`s in a body (unique, in order), ignoring canonical tokens
+ * and escaped `\@`. Lets a caller know which names the author is *trying* to reference before
+ * resolution — e.g. to create only the queued people that actually appear in the text.
+ */
+export function extractHandles(body: string): string[] {
+	const handles: string[] = [];
+	for (const m of body.matchAll(TOKEN_OR_HANDLE)) {
+		const handle = m[3];
+		if (handle && !handles.includes(handle)) handles.push(handle);
+	}
+	return handles;
+}
+
 /** Unique contact ids referenced by the canonical tokens already in a body (in order). */
 export function extractMentionIds(body: string): string[] {
 	const ids: string[] = [];
