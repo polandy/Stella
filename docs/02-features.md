@@ -597,16 +597,16 @@ entry and a household update, without leaving the page. Concept + clickable prot
   the browser).
 - **Create people inline.** When the typed `@name` matches nobody, the picker offers
   *"Create “Name”"*. Picking it inserts the handle and queues the name; on save the server
-  creates that contact first (quick-add with just a display name, the author's default
-  visibility) and then resolves the handle to it. Everything else about the person is filled
+  creates that contact first (quick-add with just a display name, taking the **moment's
+  visibility**) and then resolves the handle to it. Everything else about the person is filled
   in later on their profile.
 - **Relationships are offered, not parsed.** Free text is never interpreted. After saving a
   moment that mentions two or more people, Home shows a quiet, dismissible hint —
   *"Link Julia and Marco?"* — whose one action opens Julia's profile with the relationship form
   pre-filled with Marco (`/contacts/{a}?relate={b}`). A wrong guess costs nothing.
 - **Visibility (§2.10).** A shared moment may mention only household-visible people; a private
-  moment anyone the author can see — the journal rule. A person created inline from a private
-  moment is created private.
+  moment anyone the author can see — the journal rule. A person created inline takes the
+  moment's visibility, so a private moment never introduces a shared person.
 - **Progressive.** The form posts natively; the picker, the inline-create queue and the photo
   processing are enhancements.
 
