@@ -349,7 +349,9 @@ Keeps the family in the loop — directly serving the core goal.
   new notes/photos/interactions, and notable edits.
 - Each item shows **who**, **what**, **which contact**, and **when**, and links to it.
 - Private records **never** appear in another member's feed.
-- Feed is filterable by member and by type.
+- Feed is filterable by member and by type **[later]**.
+- **Shipped as the household stream on Home (§2.22.2):** a scoped query over existing tables,
+  no event table; the feed's filters and "notable edits" come later.
 
 ### 2.11.1 Change digests & delivery **[M3]**
 
@@ -383,6 +385,10 @@ don't have to open the app to stay in the loop.
 
 The personal landing view — the first thing a member sees after signing in — giving an
 at-a-glance overview of recent household life and acting as a launchpad into the details.
+
+> **Current state:** Home is the capture field + household stream of §2.22. The panel layout
+> below is where feature-specific summaries (upcoming dates, gifts) slot in once those exist;
+> "new people", "recent notes" and "your contributions" are covered by the stream.
 
 - Composed of **panels**, each summarizing one dimension and linking deeper:
   - **Recent activity** — who added or changed what lately (drawn from the activity feed,
@@ -569,6 +575,60 @@ on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s jou
   parser, id-resolver, and chip renderer are shared between notes and journal rather than
   duplicated. Framework-agnostic domain module, test-first (`docs/08` §8.3).
 
+## 2.22 Moments & the household stream **[M2]**
+
+The fastest way to record a memory, and the way the family stays in the loop. Where Monica
+asks you to fill in modules, Stella asks **"what happened?"** — one field on Home turns a
+sentence like *"met @Julia at the lake, she's @Marco's sister"* into a person, a journal
+entry and a household update, without leaving the page. Concept + clickable prototype:
+`docs/concepts/moments-capture-concept.html`.
+
+### 2.22.1 Capture ("What happened?")
+
+- **One field, on Home.** A plain text field (Markdown allowed) with the same `@`-mention
+  autocomplete as the journal (§2.20.1). On desktop it sits at the top of Home; on a phone it
+  is pinned above the tab bar like a messenger composer. `⌘K` / `Ctrl+K` from anywhere jumps to
+  it.
+- **A moment *is* a journal entry.** Nothing new is stored: the first person mentioned becomes
+  the entry's contact (the *anchor*, whose journal it lands in); every other mention is stored
+  as a `journal_mention` exactly as today. The composer shows the anchor while typing
+  ("Goes to *Julia*'s journal, mentions 1"). A moment therefore needs **at least one mention**.
+  Day, visibility and photos behave as in §2.20 (default: today, shared; photos processed in
+  the browser).
+- **Create people inline.** When the typed `@name` matches nobody, the picker offers
+  *"Create “Name”"*. Picking it inserts the handle and queues the name; on save the server
+  creates that contact first (quick-add with just a display name, the author's default
+  visibility) and then resolves the handle to it. Everything else about the person is filled
+  in later on their profile.
+- **Relationships are offered, not parsed.** Free text is never interpreted. After saving a
+  moment that mentions two or more people, Home shows a quiet, dismissible hint —
+  *"Link Julia and Marco?"* — whose one action opens Julia's profile with the relationship form
+  pre-filled with Marco (`/contacts/{a}?relate={b}`). A wrong guess costs nothing.
+- **Visibility (§2.10).** A shared moment may mention only household-visible people; a private
+  moment anyone the author can see — the journal rule. A person created inline from a private
+  moment is created private.
+- **Progressive.** The form posts natively; the picker, the inline-create queue and the photo
+  processing are enhancements.
+
+### 2.22.2 Household stream (Home)
+
+- Home is a single **reverse-chronological stream**, grouped by day, of what the household
+  did: **moments** (journal entries, with author, anchor, mentioned people as chips, photos),
+  **new people** ("Lena added *Thomas Lang*") and **new relationships** ("Leo linked *Marie*
+  → colleague of *Andy*"). Every item links to the person it is about.
+- **Visibility is the filter.** The stream is a *query* over the existing tables, scoped by the
+  central rules (§3.7): a private moment appears only in its author's stream, marked with a
+  lock; a private person only in their creator's; a relationship only when both ends are
+  visible. There is no event/log table and nothing is written twice.
+- **Deliberately not in the MVP:** filters by member or type, moments without any person
+  ("family trip"), interaction kinds (call, visit, gift), parsing relationships out of text,
+  reactions or comments. The previous dashboard panels (new people, recent notes, your
+  contributions) are folded into the stream; dedicated panels (upcoming dates, gifts) return
+  with their base features (§2.12).
+- Implemented as a pure, test-first domain (`domain/moments`: capture orchestration over the
+  contact + journal ports; `domain/stream`: merge/limit of scoped reads over a
+  `StreamRepository` port); the Drizzle adapter owns the scoped queries; Home is a thin edge.
+
 ## 2.21 Feature ↔ milestone summary
 
 | Feature | Milestone |
@@ -589,7 +649,8 @@ on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s jou
 | Custom relationship types, merge/archive/delete | M2 |
 | Interactions timeline | M2 |
 | Explorer rich: in-place expand, in-graph search, connection path, circles + kinship edges, filters, layouts | M2 |
-| Activity feed | M2 |
+| Activity feed → household stream on Home | M2 |
+| **Moments**: one-sentence capture with inline person creation + link hint | M2 |
 | Personal dashboard (Home, panels, drill-down) | M2 |
 | Name-based duplicate & relative suggestions | M2 |
 | Relationship intelligence (derived kinship, propagation) | M2 |
