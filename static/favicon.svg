@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Stella">
+	<style>
+		.thread { stroke: #179299; }
+		.n-mauve { fill: #8839ef; }
+		.n-blue { fill: #1e66f5; }
+		.n-pink { fill: #ea76cb; }
+		@media (prefers-color-scheme: dark) {
+			.thread { stroke: #94e2d5; }
+			.n-mauve { fill: #cba6f7; }
+			.n-blue { fill: #89b4fa; }
+			.n-pink { fill: #f5c2e7; }
+		}
+	</style>
+	<g class="thread" fill="none" stroke-width="7" stroke-linecap="round">
+		<path d="M26,66 Q40,58 52,60" />
+		<path d="M52,60 Q62,44 58,28" />
+	</g>
+	<circle class="n-mauve" cx="26" cy="66" r="10" />
+	<circle class="n-blue" cx="58" cy="28" r="10" />
+	<circle class="n-pink" cx="52" cy="60" r="12" />
+</svg>

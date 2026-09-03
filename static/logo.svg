@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Stella">
+	<style>
+		.thread { stroke: #179299; }
+		.n-mauve { fill: #8839ef; }
+		.n-yellow { fill: #df8e1d; }
+		.n-blue { fill: #1e66f5; }
+		.n-peach { fill: #fe640b; }
+		.n-pink { fill: #ea76cb; }
+		@media (prefers-color-scheme: dark) {
+			.thread { stroke: #94e2d5; }
+			.n-mauve { fill: #cba6f7; }
+			.n-yellow { fill: #f9e2af; }
+			.n-blue { fill: #89b4fa; }
+			.n-peach { fill: #fab387; }
+			.n-pink { fill: #f5c2e7; }
+		}
+	</style>
+	<g class="thread" fill="none" stroke-width="3.6" stroke-linecap="round">
+		<path d="M18,62 Q30,60 42,50" />
+		<path d="M42,50 Q54,44 66,60" />
+		<path d="M66,60 Q76,54 84,40" />
+		<path d="M42,50 Q42,34 48,22" />
+	</g>
+	<circle class="n-mauve" cx="18" cy="62" r="6.5" />
+	<circle class="n-yellow" cx="48" cy="22" r="6.5" />
+	<circle class="n-blue" cx="66" cy="60" r="6.5" />
+	<circle class="n-peach" cx="84" cy="40" r="6.5" />
+	<circle class="n-pink" cx="42" cy="50" r="8.5" />
+</svg>
