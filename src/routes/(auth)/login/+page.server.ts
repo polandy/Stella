@@ -4,6 +4,7 @@ import { authenticateLocal } from '$lib/server/auth/accounts';
 import { setSessionCookie } from '$lib/server/auth/cookies';
 import { createSession } from '$lib/server/auth/session';
 import { getConfig } from '$lib/server/config';
+import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD } from '$lib/server/db/demo-seed';
 import { getAccountDeps, getAccounts, getSessionDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -30,6 +31,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	return {
 		localEnabled: config.auth.local,
 		oidcEnabled: config.auth.oidc,
+		// One-click demo sign-in, only while the demo seed is on (the credentials are public anyway).
+		demoLogin:
+			config.seedDemo && config.auth.local
+				? { email: DEMO_ADMIN_EMAIL, password: DEMO_ADMIN_PASSWORD }
+				: null,
 		ssoError: errorKey ? (SSO_ERRORS[errorKey] ?? SSO_ERRORS.sso) : null
 	};
 };
