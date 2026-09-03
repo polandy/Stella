@@ -87,6 +87,7 @@ AUTH_OIDC_ENABLED=true
 # --- Test phase (leave off for real use) ---
 SEED_DEMO=false                               # true → seed the Brunner demo dataset on startup (idempotent);
                                               # on a fresh DB also creates admin demo@stella.local / stella-demo-1234
+                                              # and shows a one-click "Sign in as demo user" button on /login
 
 # --- OIDC / Authelia ---
 OIDC_ISSUER=https://auth.example.home         # discovery: {issuer}/.well-known/openid-configuration

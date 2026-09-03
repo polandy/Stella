@@ -50,4 +50,15 @@
 			</button>
 		</form>
 	{/if}
+
+	{#if data.demoLogin}
+		<form method="POST" class="flex flex-col items-center gap-1">
+			<input type="hidden" name="email" value={data.demoLogin.email} />
+			<input type="hidden" name="password" value={data.demoLogin.password} />
+			<button class="rounded-app border border-dashed border-border px-4 py-2 text-sm font-medium text-fg-muted transition-colors hover:border-primary hover:text-fg">
+				Sign in as demo user
+			</button>
+			<span class="text-xs text-fg-subtle">Demo data is on (SEED_DEMO). {data.demoLogin.email}</span>
+		</form>
+	{/if}
 </main>
