@@ -27,8 +27,12 @@ import {
  * are created so there is a known login. Credentials are logged once on creation.
  */
 
-const DEMO_ADMIN_EMAIL = 'demo@stella.local';
-const DEMO_ADMIN_PASSWORD = 'stella-demo-1234';
+/**
+ * Credentials of the demo admin the seed creates. Exported so the login page can offer a
+ * one-click demo sign-in while SEED_DEMO is on — never in a real deployment.
+ */
+export const DEMO_ADMIN_EMAIL = 'demo@stella.local';
+export const DEMO_ADMIN_PASSWORD = 'stella-demo-1234';
 
 type Gender = 'male' | 'female';
 
