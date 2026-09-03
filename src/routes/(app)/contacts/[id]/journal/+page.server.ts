@@ -10,6 +10,7 @@ import {
 import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { createHandleResolver, resolveMentions } from '$lib/mentions/mentions';
+import { audienceCandidates } from '$lib/server/domain/moments/moments';
 import {
 	getContactDeps,
 	getJournalDeps,
@@ -17,25 +18,6 @@ import {
 	getPhotos
 } from '$lib/server/services';
 
-/** People an entry may reference: a shared entry only household-visible contacts, a private
- * entry anyone the author can see (docs/02 §2.20.1) — so a mention never widens access. */
-function mentionCandidates(
-	all: {
-		id: string;
-		displayName: string;
-		firstName: string | null;
-		lastName: string | null;
-		visibility: 'shared' | 'private';
-	}[],
-	visibility: 'shared' | 'private'
-) {
-	return (visibility === 'shared' ? all.filter((c) => c.visibility === 'shared') : all).map((c) => ({
-		id: c.id,
-		firstName: c.firstName,
-		lastName: c.lastName,
-		displayName: c.displayName
-	}));
-}
 import type { Actions, PageServerLoad } from './$types';
 
 /** Local calendar date as YYYY-MM-DD, for the compose form's default. */
@@ -123,10 +105,7 @@ export const actions: Actions = {
 		// Resolve @-mentions against the contacts allowed for this entry's audience, so the stored
 		// body carries stable id-based tokens and we know who to link (docs/02 §2.20.1).
 		const resolver = createHandleResolver(
-			mentionCandidates(
-				await listContacts(getContactDeps(), viewer),
-				parsed.output.visibility
-			)
+			audienceCandidates(await listContacts(getContactDeps(), viewer), parsed.output.visibility)
 		);
 		const resolved = resolveMentions(parsed.output.body, resolver);
 

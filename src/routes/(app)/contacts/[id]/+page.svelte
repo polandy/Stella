@@ -170,7 +170,7 @@
 	</section>
 
 	<!-- Relationships -->
-	<section class="flex flex-col gap-3">
+	<section id="relationships" class="flex flex-col gap-3">
 		<div class="flex items-center justify-between">
 			<h2 class="text-sm font-medium text-fg-muted">Relationships</h2>
 			<a
@@ -224,7 +224,7 @@
 					<span class="text-fg-muted">Person</span>
 					<select name="targetId" class="rounded-md border border-border bg-bg px-3 py-2 text-fg">
 						{#each data.otherContacts as other (other.id)}
-							<option value={other.id}>{other.displayName}</option>
+							<option value={other.id} selected={other.id === data.relateTo}>{other.displayName}</option>
 						{/each}
 					</select>
 				</label>

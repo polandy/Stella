@@ -1,0 +1,520 @@
+<title>Stella Moments</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap">
+<style>
+  /* ── Catppuccin tokens, straight from src/app.css (Latte / Mocha) ─────── */
+  :root, :root[data-theme='light'] {
+    --bg:#eff1f5; --bg-elevated:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff;
+    --border:#ccd0da; --border-soft:#dce0e8;
+    --fg:#4c4f69; --fg-muted:#6c6f85; --fg-subtle:#8c8fa1;
+    --primary:#8839ef; --primary-fg:#ffffff; --link:#1e66f5;
+    --green:#40a02b; --peach:#fe640b; --teal:#179299; --blue:#1e66f5;
+    --pink:#ea76cb; --yellow:#df8e1d; --sky:#04a5e5; --lavender:#7287fd;
+    --shadow:0 1px 2px rgba(76,79,105,.06), 0 8px 24px rgba(76,79,105,.08);
+    --shadow-sm:0 1px 2px rgba(76,79,105,.08);
+    --phone:#11111b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+      --border:#313244; --border-soft:#26263a;
+      --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+      --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+      --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --blue:#89b4fa;
+      --pink:#f5c2e7; --yellow:#f9e2af; --sky:#89dceb; --lavender:#b4befe;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+      --phone:#45475a;
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+    --border:#313244; --border-soft:#26263a;
+    --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --blue:#89b4fa;
+    --pink:#f5c2e7; --yellow:#f9e2af; --sky:#89dceb; --lavender:#b4befe;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    --phone:#45475a;
+  }
+  * { box-sizing:border-box; }
+  html { color-scheme: light dark; }
+  body {
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.55; font-size:14px;
+  }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+  a { color:var(--link); text-decoration:none; }
+  h1,h2,h3 { text-wrap:balance; margin:0; }
+  button { font:inherit; cursor:pointer; }
+  .wrap { max-width:1140px; margin:0 auto; padding:clamp(28px,5vw,64px) clamp(18px,4vw,40px) 96px; }
+
+  .doc-head { display:flex; flex-direction:column; gap:14px; margin-bottom:44px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); display:flex; align-items:center; gap:9px; }
+  .kicker .star { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; background:var(--primary); color:var(--primary-fg); font-size:13px; }
+  .doc-head h1 { font-family:'Fraunces', Georgia, serif; font-size:clamp(30px,4.6vw,46px); font-weight:500; letter-spacing:-.015em; line-height:1.08; }
+  .doc-head p.lede { font-size:clamp(15px,1.7vw,17.5px); color:var(--fg-muted); max-width:64ch; margin:0; }
+  .theme-btn { position:fixed; top:16px; right:16px; z-index:50; display:inline-flex; align-items:center; gap:7px; background:var(--card); color:var(--fg-muted); border:1px solid var(--border); border-radius:999px; padding:7px 14px; font-size:13px; box-shadow:var(--shadow-sm); }
+  .eyebrow { font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-subtle); }
+  section.block { margin-top:56px; }
+  section.block > .eyebrow { margin-bottom:10px; display:block; }
+  section.block > h2 { font-size:clamp(20px,2.6vw,26px); font-weight:650; letter-spacing:-.01em; margin-bottom:8px; }
+  section.block > p.intro { color:var(--fg-muted); max-width:66ch; margin:0 0 22px; }
+
+  .compare { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
+  .cmp { background:var(--card); border:1px solid var(--border-soft); border-radius:14px; padding:18px 18px 20px; display:flex; flex-direction:column; gap:8px; box-shadow:var(--shadow-sm); }
+  .cmp .tag { font-size:12px; font-weight:600; letter-spacing:.02em; }
+  .cmp.monica .tag { color:var(--peach); }
+  .cmp.stella .tag { color:var(--green); }
+  .cmp h3 { font-size:15px; font-weight:640; }
+  .cmp p { margin:0; font-size:13.5px; color:var(--fg-muted); }
+  .steps { display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+  .steps span { font-size:12px; padding:2px 9px; border-radius:999px; background:var(--bg-sunken); color:var(--fg-muted); }
+
+  .try { display:flex; gap:10px; align-items:flex-start; background:color-mix(in srgb, var(--primary) 9%, transparent); border:1px solid color-mix(in srgb, var(--primary) 30%, transparent); border-radius:12px; padding:12px 14px; margin-bottom:18px; font-size:13.5px; color:var(--fg); }
+  .try b { color:var(--primary); }
+  .try code { font-size:12.5px; background:var(--card); padding:1px 6px; border-radius:5px; }
+
+  /* ── App shell prototype ─────────────────────────────────────────────── */
+  .proto-shell { border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); background:var(--bg); }
+  .browserbar { display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--bg-elevated); border-bottom:1px solid var(--border); }
+  .dots { display:flex; gap:6px; }
+  .dots i { width:11px; height:11px; border-radius:50%; display:block; background:var(--border); }
+  .urlbar { flex:1; margin-left:8px; background:var(--bg); border:1px solid var(--border-soft); border-radius:8px; padding:5px 12px; font-size:12.5px; color:var(--fg-subtle); }
+  .urlbar b { color:var(--fg-muted); font-weight:500; }
+  .app { display:grid; grid-template-columns:232px 1fr; min-height:620px; }
+  @media (max-width:760px) { .app { grid-template-columns:1fr; } .side { display:none; } }
+  .side { background:var(--bg-elevated); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:16px 12px; gap:4px; }
+  .brand { display:flex; align-items:center; gap:10px; padding:6px 8px 14px; color:var(--fg); }
+  .brand .logo { width:32px; height:32px; border-radius:9px; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; font-size:17px; }
+  .brand .name { font-weight:680; font-size:16px; letter-spacing:-.01em; line-height:1.15; }
+  .brand .name small { display:block; font-weight:500; font-size:11px; color:var(--fg-subtle); }
+  .navlabel { font-size:10.5px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-subtle); padding:12px 10px 4px; }
+  .navitem { display:flex; align-items:center; gap:11px; width:100%; text-align:left; padding:9px 10px; border-radius:9px; border:0; background:none; font-size:14px; color:var(--fg-muted); position:relative; }
+  .navitem svg { flex:none; width:18px; height:18px; }
+  .navitem[aria-current='page'] { background:color-mix(in srgb, var(--primary) 15%, transparent); color:var(--primary); font-weight:600; }
+  .navitem[aria-current='page']::before { content:''; position:absolute; left:-12px; top:8px; bottom:8px; width:3px; border-radius:0 3px 3px 0; background:var(--primary); }
+  .navitem .badge { margin-left:auto; font-size:11px; font-weight:600; background:var(--bg-sunken); color:var(--fg-muted); border-radius:999px; padding:1px 8px; }
+  .side .spacer { flex:1; }
+  .accountcard { display:flex; align-items:center; gap:10px; padding:8px; border-radius:10px; border:1px solid var(--border-soft); background:var(--card); }
+  .accountcard b { font-size:13px; font-weight:600; display:block; }
+  .accountcard span { font-size:11.5px; color:var(--fg-subtle); }
+  .main { display:flex; flex-direction:column; min-width:0; }
+  .topbar { display:flex; align-items:center; gap:14px; padding:12px 20px; border-bottom:1px solid var(--border-soft); }
+  .crumbs { font-size:13.5px; color:var(--fg); font-weight:600; }
+  .searchbox { margin-left:auto; display:flex; align-items:center; gap:8px; width:min(280px,34vw); background:var(--bg-sunken); border:1px solid var(--border-soft); border-radius:9px; padding:7px 11px; color:var(--fg-subtle); font-size:13px; }
+  .searchbox .kbd { margin-left:auto; font-size:11px; border:1px solid var(--border); border-radius:5px; padding:1px 6px; }
+  .ghostbtn { display:inline-flex; align-items:center; gap:7px; background:var(--card); color:var(--fg-muted); border:1px solid var(--border); border-radius:9px; padding:8px 13px; font-size:13.5px; font-weight:500; }
+  .canvas { padding:24px 24px 32px; overflow:auto; }
+  .home { max-width:640px; margin:0 auto; display:flex; flex-direction:column; gap:22px; }
+  .home h2 { font-family:'Fraunces', Georgia, serif; font-weight:500; font-size:24px; letter-spacing:-.01em; }
+  .home .sub { color:var(--fg-muted); font-size:13.5px; margin-top:2px; }
+
+  /* Avatars */
+  .av { flex:none; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; font-size:11.5px; font-weight:600; color:#fff; overflow:hidden; }
+  .av.sm { width:22px; height:22px; font-size:9.5px; }
+  .av.lg { width:40px; height:40px; font-size:13.5px; }
+  .c-mauve { background:var(--primary); color:var(--primary-fg); } .c-teal { background:var(--teal); } .c-peach { background:var(--peach); }
+  .c-blue { background:var(--blue); } .c-pink { background:var(--pink); } .c-green { background:var(--green); } .c-lav { background:var(--lavender); }
+
+  /* Capture */
+  .capture { background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow-sm); position:relative; }
+  .capture:focus-within { border-color:var(--primary); box-shadow:0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent); }
+  .capture .row { display:flex; gap:12px; padding:14px 14px 10px; align-items:flex-start; }
+  .editor { flex:1; min-height:52px; outline:none; font-size:15px; line-height:1.5; color:var(--fg); white-space:pre-wrap; word-break:break-word; }
+  .editor:empty::before { content:attr(data-placeholder); color:var(--fg-subtle); pointer-events:none; }
+  .editor .m { color:var(--primary); font-weight:600; background:color-mix(in srgb, var(--primary) 12%, transparent); border-radius:5px; padding:0 3px; }
+  .editor .m.new { color:var(--teal); background:color-mix(in srgb, var(--teal) 14%, transparent); }
+  .cap-foot { display:flex; align-items:center; gap:8px; padding:8px 12px 12px; border-top:1px solid var(--border-soft); flex-wrap:wrap; }
+  .chip { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; padding:5px 10px; border-radius:999px; border:1px solid var(--border-soft); background:var(--bg); color:var(--fg-muted); }
+  .chip svg { width:14px; height:14px; }
+  .chip.on { border-color:transparent; background:color-mix(in srgb, var(--primary) 14%, transparent); color:var(--primary); font-weight:600; }
+  .cap-foot .save { margin-left:auto; background:var(--primary); color:var(--primary-fg); border:0; border-radius:9px; padding:8px 16px; font-size:13.5px; font-weight:600; display:inline-flex; gap:8px; align-items:center; }
+  .cap-foot .save:disabled { opacity:.45; cursor:default; }
+  .cap-foot .save kbd { font-size:10.5px; opacity:.75; font-weight:500; border:1px solid color-mix(in srgb, var(--primary-fg) 40%, transparent); border-radius:4px; padding:0 5px; }
+  .anchor { font-size:12px; color:var(--fg-subtle); }
+  .anchor b { color:var(--fg-muted); font-weight:600; }
+
+  /* Suggestions popover */
+  .sugg { position:absolute; z-index:10; left:14px; top:calc(100% - 46px); width:min(320px,calc(100% - 28px)); background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); padding:6px; display:none; }
+  .sugg.open { display:block; }
+  .sugg .head { font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-subtle); padding:6px 10px 4px; font-weight:600; }
+  .sugg button { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:7px 10px; border-radius:8px; border:0; background:none; color:var(--fg); font-size:13.5px; }
+  .sugg button:hover, .sugg button.sel { background:color-mix(in srgb, var(--primary) 12%, transparent); }
+  .sugg button small { color:var(--fg-subtle); font-size:12px; margin-left:auto; }
+  .sugg .create { color:var(--teal); font-weight:600; }
+  .sugg .create .plus { width:26px; height:26px; border-radius:50%; border:1.5px dashed var(--teal); display:grid; place-items:center; font-size:15px; }
+
+  /* Follow-up hint */
+  .hint { display:flex; align-items:center; gap:12px; background:color-mix(in srgb, var(--teal) 10%, transparent); border:1px solid color-mix(in srgb, var(--teal) 35%, transparent); border-radius:12px; padding:10px 14px; font-size:13.5px; animation:fade .25s ease; }
+  .hint .txt { flex:1; }
+  .hint .txt b { font-weight:600; }
+  .hint .txt small { display:block; color:var(--fg-muted); font-size:12.5px; }
+  .hint button { border-radius:8px; padding:6px 11px; font-size:13px; font-weight:600; border:1px solid transparent; }
+  .hint .yes { background:var(--teal); color:#fff; }
+  .hint .no { background:none; color:var(--fg-muted); }
+  .hint[hidden] { display:none; }
+
+  /* Stream */
+  .stream { display:flex; flex-direction:column; gap:4px; }
+  .day { font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); padding:14px 0 6px; display:flex; align-items:center; gap:10px; }
+  .day::after { content:''; flex:1; height:1px; background:var(--border-soft); }
+  .item { display:grid; grid-template-columns:32px 1fr; gap:12px; padding:10px 10px; border-radius:12px; }
+  .item:hover { background:var(--card); }
+  .item.fresh { animation:pop .35s ease; background:color-mix(in srgb, var(--primary) 7%, transparent); }
+  .who { font-size:13px; color:var(--fg-muted); display:flex; gap:6px; align-items:baseline; flex-wrap:wrap; }
+  .who b { color:var(--fg); font-weight:600; }
+  .who .t { margin-left:auto; color:var(--fg-subtle); font-size:12px; white-space:nowrap; }
+  .who .lock { color:var(--fg-subtle); font-size:11px; display:inline-flex; align-items:center; gap:3px; }
+  .body { font-size:14.5px; line-height:1.5; margin-top:2px; }
+  .body .m { color:var(--primary); font-weight:600; }
+  .body .m.new { color:var(--teal); }
+  .meta { display:flex; gap:8px; margin-top:6px; flex-wrap:wrap; align-items:center; }
+  .pill { display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:3px 9px 3px 4px; border-radius:999px; background:var(--bg-sunken); color:var(--fg-muted); }
+  .pill.rel { padding-left:9px; }
+  .pill .arrow { color:var(--fg-subtle); }
+  .photos { display:flex; gap:6px; margin-top:8px; }
+  .photos i { width:64px; height:64px; border-radius:8px; display:block; background:linear-gradient(135deg, var(--sky), var(--lavender)); }
+  .photos i:nth-child(2) { background:linear-gradient(135deg, var(--peach), var(--yellow)); }
+  .kind { font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; padding:2px 7px; border-radius:5px; }
+  .kind.person { background:color-mix(in srgb, var(--teal) 16%, transparent); color:var(--teal); }
+  .kind.rel { background:color-mix(in srgb, var(--blue) 16%, transparent); color:var(--blue); }
+
+  @keyframes fade { from { opacity:0; transform:translateY(4px);} to { opacity:1; transform:none;} }
+  @keyframes pop { from { opacity:0; transform:translateY(-6px);} to { opacity:1; transform:none;} }
+  @media (prefers-reduced-motion: reduce) { .hint, .item.fresh { animation:none; } }
+
+  /* ── Mobile mock ─────────────────────────────────────────────────────── */
+  .mobile-wrap { display:grid; grid-template-columns:minmax(0,380px) 1fr; gap:36px; align-items:start; }
+  @media (max-width:820px) { .mobile-wrap { grid-template-columns:1fr; } }
+  .phone { border:10px solid var(--phone); border-radius:44px; background:var(--bg); overflow:hidden; box-shadow:var(--shadow); height:760px; display:flex; flex-direction:column; position:relative; }
+  .phone .status { display:flex; justify-content:space-between; padding:12px 22px 0; font-size:12px; font-weight:600; color:var(--fg-muted); }
+  .phone .notch { position:absolute; top:8px; left:50%; transform:translateX(-50%); width:110px; height:26px; border-radius:999px; background:var(--phone); }
+  .phone .phead { padding:20px 18px 8px; display:flex; align-items:center; gap:10px; }
+  .phone .phead .logo { width:28px; height:28px; border-radius:8px; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; font-size:15px; }
+  .phone .phead h3 { font-family:'Fraunces', Georgia, serif; font-weight:500; font-size:20px; }
+  .phone .phead .srch { margin-left:auto; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:var(--bg-sunken); color:var(--fg-muted); }
+  .phone .pscroll { flex:1; overflow:auto; padding:0 12px 12px; }
+  .phone .stream .item { grid-template-columns:28px 1fr; gap:10px; padding:9px 6px; }
+  .phone .body { font-size:14px; }
+  .phone .pcap { border-top:1px solid var(--border-soft); background:var(--bg-elevated); padding:8px 10px 6px; }
+  .phone .capture { border-radius:12px; }
+  .phone .capture .row { padding:10px 12px 6px; }
+  .phone .editor { min-height:24px; font-size:14.5px; }
+  .phone .cap-foot { padding:6px 8px 8px; gap:6px; }
+  .phone .chip { padding:4px 8px; font-size:12px; }
+  .phone .sugg { top:auto; bottom:calc(100% - 6px); left:8px; width:calc(100% - 16px); }
+  .phone .tabs { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--border-soft); background:var(--bg-elevated); padding:8px 6px 18px; }
+  .phone .tab { display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10.5px; color:var(--fg-subtle); font-weight:500; }
+  .phone .tab svg { width:22px; height:22px; }
+  .phone .tab.on { color:var(--primary); font-weight:600; }
+  .phone .hint { font-size:12.5px; padding:8px 10px; margin:0 6px 6px; }
+  .phone .hint .txt small { display:none; }
+  .notes { display:flex; flex-direction:column; gap:14px; padding-top:8px; }
+  .note { display:flex; gap:12px; }
+  .note .n { flex:none; width:26px; height:26px; border-radius:50%; background:var(--bg-sunken); color:var(--fg-muted); font-size:12px; font-weight:600; display:grid; place-items:center; }
+  .note h4 { margin:0 0 2px; font-size:14px; font-weight:640; }
+  .note p { margin:0; font-size:13.5px; color:var(--fg-muted); }
+
+  /* Scope table */
+  .scope { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; }
+  .scope .col { background:var(--card); border:1px solid var(--border-soft); border-radius:14px; padding:16px 18px; }
+  .scope h3 { font-size:13px; letter-spacing:.08em; text-transform:uppercase; font-weight:600; margin-bottom:10px; }
+  .scope .in h3 { color:var(--green); } .scope .later h3 { color:var(--peach); } .scope .reuse h3 { color:var(--blue); }
+  .scope ul { margin:0; padding-left:18px; color:var(--fg-muted); font-size:13.5px; display:flex; flex-direction:column; gap:5px; }
+  .scope li b { color:var(--fg); font-weight:600; }
+</style>
+
+<button class="theme-btn" id="themeBtn" type="button">◐ Theme</button>
+
+<div class="wrap">
+  <header class="doc-head">
+    <div class="kicker"><span class="star">★</span> Stella · UI Concept</div>
+    <h1>Moments: capture a memory in one sentence</h1>
+    <p class="lede">Monica asks you to fill in modules. Stella asks you what happened. One field on Home turns
+      "met Julia at the lake, she's @Marco's sister" into a person, a journal entry and a household update —
+      without leaving the page. The two prototypes below are live: type in them.</p>
+  </header>
+
+  <section class="block">
+    <span class="eyebrow">Why this feature first</span>
+    <h2>The same moment, in Monica and in Stella</h2>
+    <p class="intro">Recording a new acquaintance is the most common thing a family member does, and the
+      place where Monica's form-first design costs the most.</p>
+    <div class="compare">
+      <div class="cmp monica">
+        <span class="tag">Monica today</span>
+        <h3>Six screens, four modals</h3>
+        <p>Create contact → open it → Relationships module → pick Marco → Notes module → write → save.
+          Nothing tells the rest of the household anything happened.</p>
+        <div class="steps"><span>Contacts</span><span>Create</span><span>Show</span><span>Relationships</span><span>Notes</span><span>Save</span></div>
+      </div>
+      <div class="cmp stella">
+        <span class="tag">Stella with Moments</span>
+        <h3>One sentence, one field</h3>
+        <p>Type what happened, mention people with @, create the unknown ones inline. The entry lands in the
+          stream for everyone allowed to see it, and Stella offers the relationship afterwards.</p>
+        <div class="steps"><span>Home</span><span>Type</span><span>Save</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Interactive prototype · Desktop</span>
+    <h2>Home becomes the household stream</h2>
+    <p class="intro">The dashboard panels give way to a single reverse-chronological stream of shared changes,
+      with the capture field on top. Everything below is what the family actually did this week.</p>
+    <div class="try"><b>Try it:</b>&nbsp;click the field, type <code>@ju</code> and pick "Create Julia", then finish the sentence
+      and press <code>⌘/Ctrl + Enter</code>. Watch the stream and the follow-up hint.</div>
+
+    <div class="proto-shell">
+      <div class="browserbar"><div class="dots"><i></i><i></i><i></i></div><div class="urlbar"><b>stella.home.lan</b> /</div></div>
+      <div class="app">
+        <aside class="side">
+          <div class="brand"><div class="logo">★</div><div class="name">Stella<small>Weber household</small></div></div>
+          <div class="navlabel">Overview</div>
+          <button class="navitem" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
+          <div class="navlabel">People</div>
+          <button class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>Contacts<span class="badge">24</span></button>
+          <button class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>Circles<span class="badge">5</span></button>
+          <button class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="8" r="2.5"/><circle cx="10" cy="18" r="2.5"/><path d="M8 7l8 1M7.5 8l2 8M16.5 10l-5 7"/></svg>Graph</button>
+          <div class="spacer"></div>
+          <div class="accountcard"><span class="av c-mauve">AW</span><div><b>Andy Weber</b><span>Settings</span></div></div>
+        </aside>
+        <div class="main">
+          <div class="topbar">
+            <div class="crumbs">Home</div>
+            <div class="searchbox">⌕ Search or jump to…<span class="kbd">⌘K</span></div>
+            <button class="ghostbtn" type="button">＋ Add person</button>
+          </div>
+          <div class="canvas">
+            <div class="home">
+              <div>
+                <h2>What happened?</h2>
+                <div class="sub">Write it down once. Everyone in the household sees it, unless you keep it private.</div>
+              </div>
+              <div id="capDesk"></div>
+              <div class="stream" id="streamDesk"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Interactive prototype · Mobile</span>
+    <h2>The field lives at your thumb</h2>
+    <p class="intro">On a phone the capture field sits directly above the tab bar, like a messenger composer.
+      The stream scrolls behind it. A photo attaches with one tap, processed in the browser like journal photos today.</p>
+    <div class="mobile-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>09:41</span><span>●●● ᯤ ▮</span></div>
+        <div class="phead"><div class="logo">★</div><h3>Stella</h3><div class="srch">⌕</div></div>
+        <div class="pscroll"><div class="stream" id="streamMob"></div></div>
+        <div class="pcap"><div id="capMob"></div></div>
+        <div class="tabs">
+          <div class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>People</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>Circles</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="8" r="2.5"/><circle cx="10" cy="18" r="2.5"/><path d="M8 7l8 1M7.5 8l2 8M16.5 10l-5 7"/></svg>Graph</div>
+        </div>
+      </div>
+      <div class="notes">
+        <div class="note"><div class="n">@</div><div><h4>Mentions do the linking</h4><p>The existing @-mention parser and picker are reused. A mention that matches nobody offers "Create …" inline, which is the quick-add form reduced to its one required field.</p></div></div>
+        <div class="note"><div class="n">1</div><div><h4>The first person is the anchor</h4><p>A journal entry needs one contact today. The first mention becomes that contact; the others are stored as mentions, exactly as the journal already does. No schema change for the MVP.</p></div></div>
+        <div class="note"><div class="n">?</div><div><h4>Relationships are offered, not parsed</h4><p>"She's Marco's sister" is not interpreted. After saving, a quiet hint asks whether to link the two people; one tap opens the relationship picker pre-filled. Wrong guesses cost nothing.</p></div></div>
+        <div class="note"><div class="n">◐</div><div><h4>Private stays private</h4><p>The visibility chip mirrors the journal. A private moment appears only in its author's stream, marked with a lock, and never in anyone else's.</p></div></div>
+        <div class="note"><div class="n">▤</div><div><h4>The stream is a query, not a table</h4><p>New people, new relationships and new moments come from the existing tables, ordered by time and filtered through the central visibility rules. Nothing is logged twice.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Scope</span>
+    <h2>What the MVP contains</h2>
+    <div class="scope">
+      <div class="col in"><h3>In</h3><ul>
+        <li><b>Capture field</b> on Home and as a ⌘K action, with @-autocomplete and inline create.</li>
+        <li><b>Household stream</b>: moments, new people, new relationships, newest first, visibility-scoped.</li>
+        <li><b>Follow-up hint</b> after a moment with two or more people: "Link A and B?".</li>
+        <li><b>Photo attach</b> using the existing browser-side processing.</li>
+        <li><b>Mobile composer</b> above the tab bar.</li>
+      </ul></div>
+      <div class="col reuse"><h3>Reused as is</h3><ul>
+        <li>Journal entries, day slots and visibility.</li>
+        <li>@-mention parser, resolver and picker.</li>
+        <li>Quick-add contact use-case.</li>
+        <li>Avatars, relative timestamps, app shell.</li>
+      </ul></div>
+      <div class="col later"><h3>Deliberately later</h3><ul>
+        <li>Parsing relationships out of the sentence.</li>
+        <li>Moments without any person ("family trip").</li>
+        <li>Stream filters by member or type.</li>
+        <li>Interaction kinds (call, visit, gift).</li>
+        <li>Reactions or comments. This is not a social network.</li>
+      </ul></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  // Theme toggle
+  var root = document.documentElement, btn = document.getElementById('themeBtn');
+  function cur() { var t = root.getAttribute('data-theme'); if (t) return t; return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+  btn.addEventListener('click', function () { root.setAttribute('data-theme', cur() === 'dark' ? 'light' : 'dark'); });
+
+  // Demo data
+  var people = [
+    { id: 'marco', name: 'Marco Berger', first: 'Marco', color: 'c-blue', hint: 'Anna\'s partner' },
+    { id: 'anna', name: 'Anna Weber', first: 'Anna', color: 'c-pink', hint: 'Sister' },
+    { id: 'thomas', name: 'Thomas Lang', first: 'Thomas', color: 'c-teal', hint: 'Neighbor' },
+    { id: 'marie', name: 'Marie Klein', first: 'Marie', color: 'c-peach', hint: 'Colleague' },
+    { id: 'leo', name: 'Leo Weber', first: 'Leo', color: 'c-green', hint: 'Son' },
+    { id: 'julia-h', name: 'Julian Hofer', first: 'Julian', color: 'c-lav', hint: 'Book club' }
+  ];
+  var me = { name: 'Andy', color: 'c-mauve', initials: 'AW' };
+  function initials(n) { return n.split(' ').map(function (p) { return p[0]; }).join('').slice(0, 2).toUpperCase(); }
+  function av(p, cls) { return '<span class="av ' + (cls || '') + ' ' + p.color + '">' + (p.initials || initials(p.name)) + '</span>'; }
+  function esc(s) { return s.replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
+
+  var seed = [
+    { day: 'Yesterday', items: [
+      { by: { name: 'Lena Weber', color: 'c-pink', initials: 'LW' }, t: '18:40', kind: 'moment',
+        html: 'Coffee with <span class="m">@Thomas</span> after school pickup. He offered to lend us the trailer for the move.',
+        pills: ['thomas'] },
+      { by: { name: 'Lena Weber', color: 'c-pink', initials: 'LW' }, t: '18:32', kind: 'person', who: 'thomas',
+        html: 'added <b>Thomas Lang</b>', pills: [] }
+    ] },
+    { day: 'Sunday', items: [
+      { by: me, t: '20:15', kind: 'moment', priv: true,
+        html: 'Long call with <span class="m">@Anna</span>. She\'s thinking about moving back to Munich next spring.', pills: ['anna'] },
+      { by: { name: 'Leo Weber', color: 'c-green', initials: 'LW' }, t: '16:02', kind: 'rel',
+        html: 'linked <b>Marie Klein</b> <span class="arrow">→</span> colleague of <b>Andy Weber</b>', pills: [] },
+      { by: me, t: '11:20', kind: 'moment', photos: true,
+        html: 'Birthday brunch for <span class="m">@Leo</span>. <span class="m">@Anna</span> and <span class="m">@Marco</span> came, Marco brought the lemon cake again.', pills: ['leo', 'anna', 'marco'] }
+    ] }
+  ];
+
+  function itemHtml(it, fresh) {
+    var p = people.filter(function (x) { return it.pills.indexOf(x.id) >= 0; });
+    var pills = p.map(function (x) { return '<span class="pill">' + av(x, 'sm') + esc(x.first) + '</span>'; }).join('');
+    var verb = it.kind === 'moment' ? 'wrote a moment' : '';
+    var kind = it.kind === 'person' ? '<span class="kind person">New person</span>' : it.kind === 'rel' ? '<span class="kind rel">Relationship</span>' : '';
+    return '<div class="item' + (fresh ? ' fresh' : '') + '">' + av(it.by) +
+      '<div><div class="who"><b>' + esc(it.by.name) + '</b>' + (verb ? '<span>' + verb + '</span>' : '') + kind +
+      (it.priv ? '<span class="lock">🔒 private</span>' : '') + '<span class="t">' + it.t + '</span></div>' +
+      '<div class="body">' + it.html + '</div>' +
+      (it.photos ? '<div class="photos"><i></i><i></i></div>' : '') +
+      (pills ? '<div class="meta">' + pills + '</div>' : '') + '</div></div>';
+  }
+  function renderStream(el, today) {
+    var h = '';
+    if (today.length) { h += '<div class="day">Today</div>' + today.map(function (it, i) { return itemHtml(it, i === 0); }).join(''); }
+    seed.forEach(function (d) { h += '<div class="day">' + d.day + '</div>' + d.items.map(function (it) { return itemHtml(it, false); }).join(''); });
+    el.innerHTML = h;
+  }
+
+  // Capture component — same logic on desktop and phone.
+  function capture(host, streamEl) {
+    var today = [];
+    var created = [];
+    host.innerHTML =
+      '<div class="capture">' +
+      ' <div class="row">' + av(me, 'lg') + '<div class="editor" contenteditable="true" spellcheck="false" data-placeholder="Met someone? Type it here, mention people with @"></div></div>' +
+      ' <div class="sugg" role="listbox"></div>' +
+      ' <div class="cap-foot">' +
+      '  <span class="chip on" data-vis><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.5"/><path d="M2.5 19a6.5 6.5 0 0 1 13 0M14 18.5a4.5 4.5 0 0 1 7.5 0"/></svg>Shared</span>' +
+      '  <span class="chip" data-photo><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg>Photo</span>' +
+      '  <span class="chip" data-date>Today</span>' +
+      '  <span class="anchor" data-anchor></span>' +
+      '  <button class="save" type="button" disabled>Save <kbd>⌘⏎</kbd></button>' +
+      ' </div></div>' +
+      '<div class="hint" hidden></div>';
+    var ed = host.querySelector('.editor'), sugg = host.querySelector('.sugg'), save = host.querySelector('.save'),
+        anchor = host.querySelector('[data-anchor]'), vis = host.querySelector('[data-vis]'), hint = host.querySelector('.hint');
+    var priv = false, sel = 0, list = [];
+
+    vis.addEventListener('click', function () { priv = !priv; vis.classList.toggle('on', !priv); vis.lastChild.textContent = priv ? 'Private' : 'Shared'; });
+
+    function known(name) { return people.concat(created).filter(function (p) { return p.first.toLowerCase() === name.toLowerCase(); })[0]; }
+    function tokens(text) { return text.match(/@[\p{L}][\p{L}\-]*/gu) || []; }
+    function mentions(text) { return tokens(text).map(function (t) { return known(t.slice(1)); }).filter(Boolean); }
+    function highlight() {
+      var text = ed.textContent;
+      var html = esc(text).replace(/@([\p{L}][\p{L}\-]*)/gu, function (m, n) {
+        var p = known(n); if (!p) return m;
+        return '<span class="m' + (created.indexOf(p) >= 0 ? ' new' : '') + '">' + m + '</span>';
+      });
+      if (ed.innerHTML !== html) { var c = caret(); ed.innerHTML = html; setCaret(c); }
+      var ms = mentions(text);
+      save.disabled = !text.trim() || !ms.length;
+      anchor.innerHTML = ms.length ? 'Goes to <b>' + esc(ms[0].first) + '</b>’s journal' + (ms.length > 1 ? ', mentions ' + (ms.length - 1) : '') : (text.trim() ? 'Mention at least one person' : '');
+    }
+    function caret() { var s = getSelection(); if (!s.rangeCount) return 0; var r = s.getRangeAt(0).cloneRange(); r.selectNodeContents(ed); r.setEnd(getSelection().getRangeAt(0).endContainer, getSelection().getRangeAt(0).endOffset); return r.toString().length; }
+    function setCaret(n) { var walker = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT), node, acc = 0; while ((node = walker.nextNode())) { if (acc + node.length >= n) { var r = document.createRange(); r.setStart(node, n - acc); r.collapse(true); var s = getSelection(); s.removeAllRanges(); s.addRange(r); return; } acc += node.length; } ed.focus(); }
+
+    function query() { var text = ed.textContent.slice(0, caret()); var m = text.match(/@([\p{L}\-]*)$/u); return m ? m[1] : null; }
+    function showSugg() {
+      var q = query(); if (q === null) { sugg.classList.remove('open'); return; }
+      var ql = q.toLowerCase();
+      list = people.concat(created).filter(function (p) { return !ql || p.name.toLowerCase().indexOf(ql) >= 0; }).slice(0, 4).map(function (p) { return { p: p }; });
+      if (q && !known(q)) list.push({ create: q.charAt(0).toUpperCase() + q.slice(1) });
+      sel = 0;
+      sugg.innerHTML = '<div class="head">People</div>' + list.map(function (e, i) {
+        if (e.create) return '<button type="button" class="create' + (i === sel ? ' sel' : '') + '" data-i="' + i + '"><span class="plus">+</span>Create “' + esc(e.create) + '”<small>new person</small></button>';
+        return '<button type="button"' + (i === sel ? ' class="sel"' : '') + ' data-i="' + i + '">' + av(e.p, 'sm') + esc(e.p.name) + '<small>' + esc(e.p.hint) + '</small></button>';
+      }).join('');
+      sugg.classList.toggle('open', list.length > 0);
+    }
+    function pick(i) {
+      var e = list[i]; if (!e) return;
+      var p = e.p;
+      if (e.create) { p = { id: 'new-' + e.create.toLowerCase(), name: e.create, first: e.create, color: 'c-teal', hint: 'just created' }; created.push(p); }
+      var c = caret(), text = ed.textContent, before = text.slice(0, c).replace(/@[\p{L}\-]*$/u, '@' + p.first + ' ');
+      ed.textContent = before + text.slice(c); setCaret(before.length);
+      sugg.classList.remove('open'); highlight();
+    }
+    sugg.addEventListener('mousedown', function (ev) { var b = ev.target.closest('button'); if (b) { ev.preventDefault(); pick(+b.dataset.i); } });
+    ed.addEventListener('input', function () { highlight(); showSugg(); });
+    ed.addEventListener('keydown', function (ev) {
+      if (sugg.classList.contains('open')) {
+        if (ev.key === 'ArrowDown') { ev.preventDefault(); sel = (sel + 1) % list.length; showSel(); return; }
+        if (ev.key === 'ArrowUp') { ev.preventDefault(); sel = (sel - 1 + list.length) % list.length; showSel(); return; }
+        if (ev.key === 'Enter' || ev.key === 'Tab') { ev.preventDefault(); pick(sel); return; }
+        if (ev.key === 'Escape') { sugg.classList.remove('open'); return; }
+      }
+      if (ev.key === 'Enter' && (ev.metaKey || ev.ctrlKey)) { ev.preventDefault(); submit(); }
+      if (ev.key === 'Enter' && !ev.shiftKey && !sugg.classList.contains('open')) { ev.preventDefault(); }
+    });
+    function showSel() { sugg.querySelectorAll('button').forEach(function (b, i) { b.classList.toggle('sel', i === sel); }); }
+    ed.addEventListener('blur', function () { setTimeout(function () { sugg.classList.remove('open'); }, 120); });
+    save.addEventListener('click', submit);
+
+    function submit() {
+      var text = ed.textContent.trim(), ms = mentions(text); if (!text || !ms.length) return;
+      var now = new Date(), t = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+      var html = esc(text).replace(/@([\p{L}][\p{L}\-]*)/gu, function (m, n) { var p = known(n); return p ? '<span class="m' + (created.indexOf(p) >= 0 ? ' new' : '') + '">' + m + '</span>' : m; });
+      var fresh = created.filter(function (p) { return ms.indexOf(p) >= 0 && !p.announced; });
+      fresh.forEach(function (p) { p.announced = true; people.push(p); today.unshift({ by: me, t: t, kind: 'person', html: 'added <b>' + esc(p.name) + '</b>', pills: [] }); });
+      today.unshift({ by: me, t: t, kind: 'moment', priv: priv, html: html, pills: ms.map(function (p) { return p.id; }) });
+      renderStream(streamEl, today);
+      ed.textContent = ''; highlight();
+      if (ms.length > 1) {
+        hint.hidden = false;
+        hint.innerHTML = '<div class="txt"><b>Link ' + esc(ms[0].first) + ' and ' + esc(ms[1].first) + '?</b><small>They appear together in this moment. One tap opens the relationship picker with both filled in.</small></div>' +
+          '<button type="button" class="yes">Link</button><button type="button" class="no">Not now</button>';
+        hint.querySelector('.yes').addEventListener('click', function () { hint.innerHTML = '<div class="txt"><b>Relationship picker opens</b><small>' + esc(ms[0].first) + ' is … of ' + esc(ms[1].first) + ' — pick a type. (Not built in this prototype.)</small></div><button type="button" class="no">Close</button>'; hint.querySelector('.no').addEventListener('click', function () { hint.hidden = true; }); });
+        hint.querySelector('.no').addEventListener('click', function () { hint.hidden = true; });
+      } else { hint.hidden = true; }
+    }
+    renderStream(streamEl, today);
+  }
+
+  capture(document.getElementById('capDesk'), document.getElementById('streamDesk'));
+  capture(document.getElementById('capMob'), document.getElementById('streamMob'));
+})();
+</script>

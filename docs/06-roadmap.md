@@ -43,7 +43,11 @@ from their phone in under a minute, and anyone can look them up.
 
 Goal: the family "gets it" — shared awareness, history, and visualization.
 
-- **Activity feed** ("What's new") with visibility filtering.
+- **Moments & household stream** (§2.22): one-sentence capture on Home with @-mentions,
+  inline person creation and a post-save "link these two?" hint; Home becomes the
+  visibility-scoped household stream (moments, new people, new relationships).
+- **Activity feed** ("What's new") with visibility filtering — filters and notable edits on
+  top of the stream.
 - **Personal dashboard (Home):** panels for recent activity, new people, recent notes,
   gifts given, upcoming dates, "your contributions" — each drilling down to the detail.
 - **Interactions timeline** + "last contacted".

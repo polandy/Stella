@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+	extractHandles,
 	createHandleResolver,
 	extractMentionIds,
 	mentionKey,
@@ -99,6 +100,19 @@ describe('resolveMentions', () => {
 	it('is idempotent on an already-normalised body', () => {
 		const first = resolveMentions('with @AnnaWeber', resolve).body;
 		expect(resolveMentions(first, resolve).body).toBe(first);
+	});
+});
+
+describe('extractHandles', () => {
+	it('lists typed handles once each, in order, skipping tokens and escapes', () => {
+		expect(extractHandles('with @Julia and @Marco, @Julia again, @{contact:c1}, \\@literal')).toEqual([
+			'Julia',
+			'Marco'
+		]);
+	});
+
+	it('ignores e-mail-like text', () => {
+		expect(extractHandles('mail anna@example.com')).toEqual([]);
 	});
 });
 

@@ -45,7 +45,7 @@ import {
 const JOURNAL_PAGE = 8;
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load: PageServerLoad = async ({ locals, params, url }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
@@ -121,6 +121,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		})),
 		// candidate targets for a new relationship: everyone visible except this contact
 		otherContacts: allContacts.filter((c) => c.id !== params.id),
+		// `?relate=<id>` pre-selects a person in the relationship form (the stream's link hint, §2.22.1).
+		relateTo: url.searchParams.get('relate'),
 		// render Markdown server-side; the output is already safe (docs/02 §2.5)
 		notes: notes.map((note) => ({
 			id: note.id,
