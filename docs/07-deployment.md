@@ -79,6 +79,7 @@ DATABASE_PATH=/data/stella.db
 MEDIA_DIR=/data/media
 SESSION_SECRET=change-me-64-hex-chars        # `openssl rand -hex 32`
 TZ=Europe/Zurich
+BODY_SIZE_LIMIT=25M                           # request cap (uploads: Monica dump, photos); the image sets it
 
 # --- Auth toggles ---
 AUTH_LOCAL_ENABLED=true                       # keep true for a break-glass admin

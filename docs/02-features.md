@@ -531,6 +531,17 @@ included) it is the very first thing they will do.
 > takes a parsed export and emits Stella entities — pure and unit-testable (test-first),
 > with the file upload/UI as a thin edge. See `docs/08-coding-guidelines.md`.
 
+- **Shipped (SQL dump):** *Settings → Data → Import from Monica* takes a `mariadb-dump` of
+  the Monica database, plain or gzipped, and walks three steps: **preview** (counts per
+  entity, the custom relationship types it will create, and a "left out, and why" list),
+  **import** (one transaction), then **photos** — the admin points the browser's folder
+  picker at Monica's `storage/app/public/photos`; each file is matched by name, downscaled
+  in the browser like every other upload, and stored, with Monica's avatar choice carried
+  over. Everything gets a **stable source id** (`monica:contact:12`), so importing the same
+  dump twice writes nothing new and the report says so. The mapping table is
+  [monica-mapping.md](monica-mapping.md). Monica's JSON export and vCard are not read yet;
+  the wizard is the same for them once they are.
+
 ## 2.17 Settings **[M1/M2]**
 
 - **Account:** profile, password, theme, default visibility, sessions/2FA.

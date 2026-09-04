@@ -62,6 +62,9 @@
 		uploading = false;
 	}
 
+	/** "1 address", "4 addresses", "2 notes". */
+	const plural = (what: string, n: number) => (n === 1 ? what : what.endsWith('s') ? `${what}es` : `${what}s`);
+
 	const fieldClass = 'rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg';
 	const primaryButton = 'rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90 disabled:opacity-50';
 </script>
@@ -122,7 +125,7 @@
 					<h3 class="mb-2 text-sm font-medium text-fg-muted">Left out, and why</h3>
 					<ul class="flex flex-col gap-1 text-sm text-fg">
 						{#each form.report.skipped as s (s.what + s.why)}
-							<li><span class="font-medium">{s.count} {s.what}{s.count === 1 ? '' : 's'}</span> <span class="text-fg-muted">— {s.why}</span></li>
+							<li><span class="font-medium">{s.count} {plural(s.what, s.count)}</span> <span class="text-fg-muted">— {s.why}</span></li>
 						{/each}
 					</ul>
 				</div>

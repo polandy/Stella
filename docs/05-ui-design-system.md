@@ -182,6 +182,10 @@ Tailwind is configured so utilities reference these variables (e.g.
   birthday row replaces it (docs/02 §2.13.2).
 - **Settings** — account, appearance (theme + accent + reduced motion), household
   (members, invitations, relationship types, tags), data (export/import/backup), auth.
+  *Today:* a landing page with the **Data** section, and the **Import from Monica** wizard
+  (§2.16) as a three-step page — numbered step strip, a count-tile preview with a
+  "left out, and why" card, then the import result and a folder picker with a progress bar
+  for photos. Admin only; members see why.
 - **Auth** — clean login offering **"Sign in with SSO"** (Authelia) and, if enabled, a
   local email/password form; invite-accept screen.
 
