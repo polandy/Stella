@@ -12,7 +12,8 @@ import { page } from '$app/state';
 		{ href: '/', label: 'Home', icon: 'home' as const, match: (p: string) => p === '/' },
 		{ href: '/contacts', label: 'Contacts', icon: 'people' as const, match: (p: string) => p.startsWith('/contacts') },
 		{ href: '/circles', label: 'Circles', icon: 'circles' as const, match: (p: string) => p.startsWith('/circles') },
-		{ href: '/graph', label: 'Graph', icon: 'graph' as const, match: (p: string) => p.startsWith('/graph') }
+		{ href: '/graph', label: 'Graph', icon: 'graph' as const, match: (p: string) => p.startsWith('/graph') },
+		{ href: '/settings', label: 'Settings', icon: 'settings' as const, match: (p: string) => p.startsWith('/settings') }
 	];
 	const isActive = (item: (typeof nav)[number]) => item.match(page.url.pathname);
 
@@ -41,6 +42,9 @@ import { page } from '$app/state';
 			trail.push({ label: 'Graph' });
 		} else if (id.startsWith('/(app)/search')) {
 			trail.push({ label: 'Search' });
+		} else if (id.startsWith('/(app)/settings')) {
+			trail.push({ label: 'Settings', href: '/settings' });
+			if (id.startsWith('/(app)/settings/import')) trail.push({ label: 'Import from Monica' });
 		}
 		return trail;
 	});
@@ -94,6 +98,8 @@ import { page } from '$app/state';
 		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="9" r="4.5" /><circle cx="15.5" cy="14" r="4.5" /></svg>
 	{:else if name === 'graph'}
 		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5" /><circle cx="18" cy="8" r="2.5" /><circle cx="12" cy="18" r="2.5" /><path d="M7.8 7.6 10.5 16M8 6.6 15.6 7.5M16.7 10 13 16" /></svg>
+	{:else if name === 'settings'}
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg>
 	{:else if name === 'search'}
 		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
 	{:else if name === 'plus'}
