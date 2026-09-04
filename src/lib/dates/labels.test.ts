@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { dayLabel, occasionLabel, whenLabel, withoutYear } from './labels';
+import { dayLabel, occasionLabel, whenLabel, withoutYear, quietLabel } from './labels';
 
 describe('whenLabel', () => {
 	test('says today and tomorrow rather than a date', () => {
@@ -65,5 +65,16 @@ describe('withoutYear', () => {
 
 	test('leaves an already year-less day alone', () => {
 		expect(withoutYear('--05-20')).toBe('--05-20');
+	});
+});
+
+describe('quietLabel', () => {
+	test('rounds a silence to the unit someone would say out loud', () => {
+		expect(quietLabel(90)).toBe('3 months');
+		expect(quietLabel(120)).toBe('4 months');
+		expect(quietLabel(365)).toBe('a year');
+		expect(quietLabel(730)).toBe('2 years');
+		expect(quietLabel(45)).toBe('6 weeks');
+		expect(quietLabel(12)).toBe('12 days');
 	});
 });

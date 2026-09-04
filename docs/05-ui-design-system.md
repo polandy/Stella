@@ -158,10 +158,11 @@ They must be edited together; `app.css` says so at both blocks.
 ## 5.4 Layout & navigation
 
 - **App shell:**
-  - **Desktop:** left sidebar (Home/Dashboard, Contacts, Graph, Circles, Reminders, Search, Settings),
-    a top bar with global search (`/` or ⌘K) and the quick-add button, content area.
-  - **Mobile:** bottom tab bar (Contacts, Graph, Add, Feed, Search); quick-add is the
-    prominent center action. Sidebar collapses to a drawer.
+  - **Desktop:** left sidebar (Home, People, Circles, Graph), a top bar with the search
+    button that opens the ⌘K palette and the *Add person* button, content area.
+  - **Mobile:** bottom tab bar (Home, People, *pencil*, Circles, Graph). The centre action is
+    the **pencil** — writing a moment is the verb the app is built around, adding a record
+    is not — and it opens the composer as a sheet over Home (§2.22.1).
   - **Breadcrumb trail** in the top bar, derived from the route + loaded data
     (`Home / Contacts / {name} / Journal`). Every segment links, so Home is always one
     click away; the active destination is marked with `aria-current="page"` in the
@@ -169,18 +170,27 @@ They must be edited together; `app.css` says so at both blocks.
   - The shell is a single `(app)/+layout.svelte`; pages render content only — no per-page
     headers or back links.
 - **Responsive, mobile-first.** Capture flows are optimized for one-handed phone use.
-- **Global search palette** (⌘K): fuzzy across contacts/notes with keyboard nav.
+- **Command palette** (⌘K / Ctrl+K, or the search button): a native `<dialog>` listing
+  actions (*Write a moment*, *Add person*) and the people the viewer may see, narrowed as
+  you type with arrow keys and Enter; a typed query always ends in *Search everything*, which
+  is the full-text search over notes the palette itself does not read. The rows come from a
+  pure `paletteRows`; the people arrive with the app shell's `load`, so the first keystroke
+  answers without a round trip.
 
 ## 5.5 Key screens
 
-- **Home** — the capture field over the household stream (§2.22). Above the stream sits the
-  **Coming up** band (§2.13.3): the next 30 days, soonest first, capped at five, each row an
-  avatar, the person, the occasion and a countdown, with one action — *Write a moment*. The
-  band is **absent entirely when nothing is due**; there is no empty state for it, because a
-  permanently empty panel teaches people to stop looking. The panelled dashboard of §2.12 is
-  the longer-term shape; the stream is what stands today.
-- **Contacts list** — searchable, filterable (tag, category, living), avatar-led rows or
-  cards; density toggle.
+- **Home** — the capture field over the household stream (§2.22), with a **rail** on the
+  right from `lg` up: **Coming up** (§2.13.3) and **Quiet lately** (§2.12.1), each row an
+  avatar, the person, one line of context and the one action — *Write a moment*. Below `lg`
+  the rail sits between the heading and the stream as a horizontal strip of cards, so two
+  bands never push the stream off a phone screen. Both bands are **absent entirely when
+  empty**; there is no empty state for them, because a permanently empty panel teaches people
+  to stop looking. On a phone the composer is a **sheet** opened from the *What happened?*
+  bar or the tab-bar pencil.
+- **People** — a find-as-you-type field, tag chips, then **letter groups** by surname with a
+  sticky letter heading; each row is avatar, name (lock for private), description, and
+  **last written about** on the right (`—` when nothing has been). The heading counts people;
+  *Add person* lives in the shell, not on the page.
 - **Contact profile** — **who on the left, what happened on the right.**
   - **Hero:** avatar, name, description, then the facts you came for on one line — when you
     were last in touch, how you met, whether the person is private. Two actions: *Write* (a

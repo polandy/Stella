@@ -195,6 +195,17 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **OIDC-standard SSO, provider-agnostic** — targets Authelia but avoids provider lock-in.
 - **Cytoscape.js for the graph** — mature, purpose-built; lazy-loaded to protect the
   bundle. D3-force considered as a lighter alt if bundle size demands it.
+- **"Quiet lately" measures recorded attention, not contact** — the band lists people with
+  no journal entry or touchpoint in 90 days, counting an untouched person from the day they
+  were added, and puts a story that went silent before one that never began. The
+  alternative (a `last_contacted_at` column maintained on write) was rejected: it would be
+  the second copy of a fact the story already holds, and would drift on every delete. The
+  cost is three grouped reads per Home load, which at household scale is nothing.
+- **The palette's people ride with the app shell** — `(app)/+layout.server.ts` loads every
+  person the viewer may see on each navigation so ⌘K answers on the first keystroke. A
+  fetch-on-open would spare that read on pages that never open the palette, at the price of
+  a visible wait in the one place the shortcut has to feel instant; a household has a few
+  hundred people at most, so the read is cheap and the wait is not.
 - **Birthdays derived, not duplicated** — a birthday is read off `contact.birth_date` rather
   than written as an `important_date` row, so the two can never disagree. The cost is that
   "a person's dates" is assembled from two sources at read time; the alternative (a row per

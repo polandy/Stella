@@ -13,6 +13,7 @@ import { systemClock } from './clock';
 import { getConfig } from './config';
 import { getDb } from './db';
 import { createDrizzleAccountRepository } from './db/account-repository';
+import { createDrizzleAttentionRepository } from './db/attention-repository';
 import { createDrizzleCircleRepository } from './db/circle-repository';
 import { createDrizzleContactRepository } from './db/contact-repository';
 import { createDrizzleStreamRepository } from './db/stream-repository';
@@ -35,6 +36,7 @@ import type {
 } from './domain/contact-fields/contact-fields';
 import type { SearchDeps, SearchRepository } from './domain/search/search';
 import type { StoryDeps } from './domain/story/story';
+import type { AttentionRepository } from './domain/attention/quiet';
 import type { ContactDeps, ContactRepository } from './domain/contacts/contacts';
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { JournalDeps, JournalRepository } from './domain/journal/journal';
@@ -270,4 +272,10 @@ export function getCircleDeps(): CircleDeps {
 		ids: ulidGenerator,
 		clock: systemClock
 	};
+}
+
+let attentionRepository: AttentionRepository | null = null;
+
+export function getAttention(): AttentionRepository {
+	return (attentionRepository ??= createDrizzleAttentionRepository(getDb()));
 }

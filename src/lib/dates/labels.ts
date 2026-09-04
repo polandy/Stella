@@ -58,3 +58,18 @@ export function dayLabel(value: string, locale = 'en-GB'): string {
 export function withoutYear(isoDay: string): string {
 	return isoDay.replace(/^\d{4}-/, '--');
 }
+
+const WEEK_DAYS = 7;
+const MONTH_DAYS = 30;
+const YEAR_DAYS = 365;
+
+/** How long a silence has lasted, in the coarsest unit that still reads honestly. */
+export function quietLabel(days: number): string {
+	if (days >= YEAR_DAYS) {
+		const years = Math.round(days / YEAR_DAYS);
+		return years === 1 ? 'a year' : `${years} years`;
+	}
+	if (days >= MONTH_DAYS * 2) return `${Math.round(days / MONTH_DAYS)} months`;
+	if (days >= WEEK_DAYS * 2) return `${Math.round(days / WEEK_DAYS)} weeks`;
+	return `${days} days`;
+}

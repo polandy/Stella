@@ -1,5 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
+import { quietContacts } from '$lib/server/domain/attention/quiet';
 import { listContacts } from '$lib/server/domain/contacts/contacts';
 import { upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
@@ -8,6 +9,7 @@ import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { buildStream } from '$lib/server/domain/stream/stream';
 import { handleFor } from '$lib/mentions/picker';
 import {
+	getAttention,
 	getCaptureMomentDeps,
 	getContactDeps,
 	getImportantDates,
@@ -17,9 +19,10 @@ import {
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * Home (docs/02 §2.22): the "What happened?" capture field and the household stream. The
- * stream is a scoped query over existing tables; capture is the moments use-case. The layout
- * guard already ensures `locals.user`.
+ * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
+ * the rail beside it — what is coming up and who has gone quiet. Everything on it is a scoped
+ * query over existing tables; capture is the moments use-case. The layout guard already
+ * ensures `locals.user`.
  */
 
 /** Query param carrying the post-save "link these two?" hint: `?link=<a>,<b>`. */
@@ -36,10 +39,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
-	const [items, contacts, dateSources] = await Promise.all([
+	const [items, contacts, dateSources, quietSources] = await Promise.all([
 		buildStream(getStreamDeps(), viewer),
 		listContacts(getContactDeps(), viewer),
-		getImportantDates().listSourcesVisibleTo(viewer)
+		getImportantDates().listSourcesVisibleTo(viewer),
+		getAttention().listQuietSourcesVisibleTo(viewer)
 	]);
 	const nameById = new Map(contacts.map((c) => [c.id, c.displayName]));
 	const nameOf = (id: string) => nameById.get(id) ?? null;
@@ -62,6 +66,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		compose: url.searchParams.has('compose') || about !== undefined,
 		draft: about ? `${handleFor(about)} ` : null,
 		upcoming: upcomingDates(dateSources, day),
+		quiet: quietContacts(quietSources, day),
 		linkSuggestion,
 		candidates: contacts.map((c) => ({
 			id: c.id,
