@@ -2,7 +2,7 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import { quietLabel } from '$lib/dates/labels';
+	import { sinceLabel } from '$lib/dates/labels';
 	import { accentChipStyle } from '$lib/design/tokens';
 	import { groupByLetter, matchesQuery } from '$lib/people/directory';
 	import type { PageData } from './$types';
@@ -13,18 +13,6 @@
 
 	const found = $derived(data.contacts.filter((c) => matchesQuery(c, query)));
 	const groups = $derived(groupByLetter(found));
-
-	const DAY_MS = 86_400_000;
-	const today = $derived(Date.parse(`${data.today}T00:00:00Z`));
-
-	/** How long since anything was written, or nothing when there is nothing to say. */
-	function sinceLabel(lastTouchedOn: string | null): string | null {
-		if (lastTouchedOn === null) return null;
-		const days = Math.round((today - Date.parse(`${lastTouchedOn}T00:00:00Z`)) / DAY_MS);
-		if (days <= 0) return 'today';
-		if (days === 1) return 'yesterday';
-		return `${quietLabel(days)} ago`;
-	}
 </script>
 
 <svelte:head><title>People · Stella</title></svelte:head>
@@ -93,7 +81,7 @@
 					</h2>
 					<ul class="flex flex-col">
 						{#each group.people as contact (contact.id)}
-							{@const since = sinceLabel(contact.lastTouchedOn)}
+							{@const since = sinceLabel(contact.lastTouchedOn, data.today)}
 							<li>
 								<a
 									href="/contacts/{contact.id}"

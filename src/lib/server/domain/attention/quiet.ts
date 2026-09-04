@@ -16,6 +16,7 @@ export const QUIET_AFTER_DAYS = 90;
 /** Most quiet people Home shows at once. */
 export const QUIET_LIMIT = 5;
 
+/** One person the viewer may see, with the latest day they may see anything about. */
 export interface QuietSource {
 	contactId: string;
 	contactName: string;
@@ -27,6 +28,7 @@ export interface QuietSource {
 	lastTouchedOn: string | null;
 }
 
+/** A person the band names, with how long the silence has lasted. */
 export interface QuietContact {
 	contactId: string;
 	contactName: string;
@@ -37,6 +39,7 @@ export interface QuietContact {
 	quietForDays: number;
 }
 
+/** Threshold and cap; the defaults are what Home uses. */
 export interface QuietOptions {
 	afterDays?: number;
 	limit?: number;

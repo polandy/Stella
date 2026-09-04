@@ -8,6 +8,7 @@ import { matchesQuery, startsWithQuery } from '$lib/people/directory';
  * an action. Notes are not searched here; a typed query always ends in the full search.
  */
 
+/** A person as the palette needs them: names to match on, an avatar to draw. */
 export interface PalettePerson {
 	id: string;
 	displayName: string;
@@ -17,6 +18,7 @@ export interface PalettePerson {
 	avatarPhotoId: string | null;
 }
 
+/** One row of the palette; `href` is where Enter goes. */
 export type PaletteRow =
 	| { kind: 'action'; id: string; label: string; icon: IconName; href: string }
 	| { kind: 'person'; id: string; label: string; avatarPhotoId: string | null; href: string }

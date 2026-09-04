@@ -4,6 +4,7 @@
  * calendar entry, and a named anniversary says more than a bare count.
  */
 
+/** What an upcoming date is, as the label functions need it. */
 export interface Occasion {
 	kind: 'birthday' | 'anniversary' | 'custom';
 	label: string | null;
@@ -59,6 +60,7 @@ export function withoutYear(isoDay: string): string {
 	return isoDay.replace(/^\d{4}-/, '--');
 }
 
+const DAY_MS = 86_400_000;
 const WEEK_DAYS = 7;
 const MONTH_DAYS = 30;
 const YEAR_DAYS = 365;
@@ -72,4 +74,18 @@ export function quietLabel(days: number): string {
 	if (days >= MONTH_DAYS * 2) return `${Math.round(days / MONTH_DAYS)} months`;
 	if (days >= WEEK_DAYS * 2) return `${Math.round(days / WEEK_DAYS)} weeks`;
 	return `${days} days`;
+}
+
+/**
+ * How long ago something was last written about someone, for the People directory: `null`
+ * when nothing ever was, so the screen can show a dash rather than a made-up date.
+ */
+export function sinceLabel(lastTouchedOn: string | null, today: string): string | null {
+	if (lastTouchedOn === null) return null;
+	const days = Math.round(
+		(Date.parse(`${today}T00:00:00Z`) - Date.parse(`${lastTouchedOn}T00:00:00Z`)) / DAY_MS
+	);
+	if (days <= 0) return 'today';
+	if (days === 1) return 'yesterday';
+	return `${quietLabel(days)} ago`;
 }

@@ -164,7 +164,7 @@ They must be edited together; `app.css` says so at both blocks.
     the **pencil** — writing a moment is the verb the app is built around, adding a record
     is not — and it opens the composer as a sheet over Home (§2.22.1).
   - **Breadcrumb trail** in the top bar, derived from the route + loaded data
-    (`Home / Contacts / {name} / Journal`). Every segment links, so Home is always one
+    (`Home / People / {name} / Journal`). Every segment links, so Home is always one
     click away; the active destination is marked with `aria-current="page"` in the
     sidebar and tab bar. The account menu (theme + sign out) lives in the shell, not per page.
   - The shell is a single `(app)/+layout.svelte`; pages render content only — no per-page

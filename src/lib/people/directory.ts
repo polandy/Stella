@@ -4,6 +4,7 @@
  * rule has to live where both the server render and the browser can run it.
  */
 
+/** What the directory files and finds a person by. */
 export interface DirectoryPerson {
 	id: string;
 	displayName: string;
@@ -13,6 +14,7 @@ export interface DirectoryPerson {
 	description: string | null;
 }
 
+/** The people under one letter heading. */
 export interface LetterGroup<T extends DirectoryPerson> {
 	/** `A`–`Z`, or `#` for names that start with anything else. */
 	letter: string;
