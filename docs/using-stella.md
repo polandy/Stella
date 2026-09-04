@@ -50,15 +50,25 @@ behalf. If it isn't the moment for that, dismiss it; nothing is lost.
 **Adding someone** takes a name and nothing else. Everything beyond that — description,
 phone, email, address, birthday — is optional and can be filled in whenever.
 
-**A person's page** gathers what you know about them: their details, the circles they
-belong to, the people they are connected to, their journal, and notes.
+**A person's page** puts who they are on the left — details, dates, circles, tags, how you
+met — and what has happened on the right, under three tabs: **Story**, **People** and
+**Notes**. On a phone the two stack, with the story first.
+
+Every card on the left holds one **+ Add** button. Nothing is an open form until you ask for
+it, so the page reads as a person rather than as a stack of empty fields.
 
 **Notes** are for things that stay true — "allergic to hazelnuts", "always calls on
 Sundays". Moments are for things that happened. Notes can be pinned to the top, and have
 their own shared-or-private switch.
 
-**The journal** is the person's own timeline, one entry per day. A moment written on Home
-lands here; you can also write directly into it from their page.
+**The story** is everything that has happened with this person in one list: the journal
+entries someone wrote and the times someone was in touch, newest first, day by day. They used
+to be two separate lists and you had to merge them in your head. Older entries load when you
+ask for them with *Show earlier*.
+
+**The journal** is the writing half of that story, one entry per day. A moment written on Home
+lands here; *Write* on the person's page opens the full journal, where an entry can carry
+photos.
 
 ## Dates worth remembering
 
@@ -84,16 +94,17 @@ Two small mercies: people who have died are left out, and a 29 February annivers
 
 ## Keeping track of when you were last in touch
 
-Every person's page has an **Interactions** section. When you have called Oma, met a friend
-for lunch or posted a parcel, log it there: pick what it was (met in person, call, video call,
-message, letter, gift, other), the day, and if you like a line about it. If other people were
-there, tick them too and the entry links to each of them.
+When you have called Oma, met a friend for lunch or posted a parcel, press **Log contact** at
+the top of their page. Pick what it was (met in person, call, video call, message, letter,
+gift, other), the day, and if you like a line about it. If other people were there, tick them
+too and the entry links to each of them. It lands on the story alongside the journal, marked
+with its own colour.
 
-The most recent of these shows up under the person's name as **Last contacted**, so the
-answer to "when did we last speak?" is right there without scrolling. Logged interactions
-also appear on Home, so the rest of the household sees that you were in touch. As
-everywhere in Stella, an interaction marked *private* stays yours alone, and only the person
-who logged one can remove it.
+The most recent of these shows up under the person's name as **Last contact**, so the answer
+to "when did we last speak?" is right there without scrolling. Logged interactions also appear
+on Home, so the rest of the household sees that you were in touch. As everywhere in Stella,
+an interaction marked *private* stays yours alone, and only the person who logged one — or
+wrote it — can remove it from the story.
 
 ## Relationships
 
