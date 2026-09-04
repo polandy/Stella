@@ -26,7 +26,11 @@ done
 curl -sf "$BASE_URL/healthz" >/dev/null || { echo "Test server never became healthy." >&2; exit 1; }
 echo "▶ Server healthy at $BASE_URL"
 
+# Run as the invoking user, otherwise Playwright's report/trace output lands in the
+# working tree owned by root and the worktree can only be cleaned up with sudo.
 docker run --rm --network host \
+  --user "$(id -u):$(id -g)" \
   -v "$PWD:/work" -w /work \
+  -e HOME=/tmp \
   -e CI=1 \
   "$IMAGE" npx playwright test "$@"
