@@ -13,14 +13,17 @@ import { FULL_DATE_SHAPE, isRealCalendarDay } from '../dates/calendar';
  * to keep in sync.
  */
 
+/** The kinds a touchpoint can have; shared with the UI (see `$lib/interactions/kinds`). */
 export { INTERACTION_KINDS, type InteractionKind };
 
+/** The member logging an interaction, with the visibility their entries default to. */
 export interface InteractionAuthor {
 	userId: string;
 	householdId: string;
 	defaultVisibility: Visibility;
 }
 
+/** An interaction as handed to the repository for storage. */
 export interface NewInteraction {
 	id: string;
 	contactId: string;
@@ -49,6 +52,7 @@ export interface Interaction extends Omit<NewInteraction, 'participantIds'> {
 	participants: InteractionParticipant[];
 }
 
+/** Port the domain owns; the Drizzle adapter implements it with visibility-scoped reads. */
 export interface InteractionRepository {
 	insert(interaction: NewInteraction): Promise<void>;
 	/** Interactions on a contact the viewer may see, most recent day first. */
@@ -57,12 +61,14 @@ export interface InteractionRepository {
 	deleteOwn(params: { authorId: string; id: string }): Promise<boolean>;
 }
 
+/** Collaborators the use-cases need, injected by the composition root. */
 export interface InteractionDeps {
 	interactions: InteractionRepository;
 	ids: IdGenerator;
 	clock: Clock;
 }
 
+/** What the form provides; everything optional is normalised to null or the default. */
 export interface LogInteractionInput {
 	contactId: string;
 	kind: InteractionKind;

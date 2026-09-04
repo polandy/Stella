@@ -33,6 +33,7 @@ const columns = {
 	updatedAt: interaction.updatedAt
 };
 
+/** Build the InteractionRepository adapter over a Drizzle handle. */
 export function createDrizzleInteractionRepository(
 	db: BunSQLiteDatabase<typeof schema>
 ): InteractionRepository {

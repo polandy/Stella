@@ -55,6 +55,7 @@ export interface RelationshipRow {
 	label: string;
 }
 
+/** A logged interaction as the stream shows it (docs/02 §2.6). */
 export interface InteractionRow {
 	id: string;
 	at: number;

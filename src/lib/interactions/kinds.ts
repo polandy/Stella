@@ -4,6 +4,7 @@
  * Accents follow docs/05 §5.6: a fixed hue per kind, consistent across timeline and stream.
  */
 
+/** Every kind an interaction can have, in the order the form offers them. */
 export const INTERACTION_KINDS = [
 	'met',
 	'call',
@@ -14,8 +15,10 @@ export const INTERACTION_KINDS = [
 	'other'
 ] as const;
 
+/** One of `INTERACTION_KINDS`. */
 export type InteractionKind = (typeof INTERACTION_KINDS)[number];
 
+/** How a kind reads on screen. */
 export interface KindPresentation {
 	label: string;
 	/** A glyph for the timeline dot; decorative, always paired with the label. */
@@ -24,6 +27,7 @@ export interface KindPresentation {
 	accent: string;
 }
 
+/** Label, glyph and accent per kind — the single table both timeline and stream render from. */
 export const KIND_PRESENTATION: Record<InteractionKind, KindPresentation> = {
 	met: { label: 'Met in person', icon: '🤝', accent: 'var(--ctp-green)' },
 	call: { label: 'Call', icon: '📞', accent: 'var(--ctp-blue)' },
