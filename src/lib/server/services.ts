@@ -21,6 +21,7 @@ import { createDrizzleJournalRepository } from './db/journal-repository';
 import { createDrizzleIdentityStore } from './db/identity-store';
 import { createDrizzleContactFieldRepository } from './db/contact-field-repository';
 import { createDrizzleImportantDateRepository } from './db/important-date-repository';
+import { createDrizzleImportRepository } from './db/import-repository';
 import { createDrizzleInteractionRepository } from './db/interaction-repository';
 import { createDrizzleNoteRepository } from './db/note-repository';
 import { createDrizzlePhotoRepository } from './db/photo-repository';
@@ -44,6 +45,7 @@ import type { CircleDeps, CircleRepository } from './domain/circles/circles';
 import type { StreamDeps, StreamRepository } from './domain/stream/stream';
 import type { CaptureMomentDeps } from './domain/moments/moments';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
+import type { ImportDeps, ImportRepository } from './domain/import/monica/apply';
 import type { InteractionDeps, InteractionRepository } from './domain/interactions/interactions';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
 import type { JournalPhotoDeps } from './domain/media/journal-photos';
@@ -194,6 +196,16 @@ export function getInteractions(): InteractionRepository {
 
 export function getInteractionDeps(): InteractionDeps {
 	return { interactions: getInteractions(), ids: ulidGenerator, clock: systemClock };
+}
+
+let importRepository: ImportRepository | null = null;
+
+/** Deps for the Monica import (docs/02 §2.16); the wizard is the only caller. */
+export function getImportDeps(): ImportDeps {
+	return {
+		importer: (importRepository ??= createDrizzleImportRepository(getDb())),
+		clock: systemClock
+	};
 }
 
 let searchRepository: SearchRepository | null = null;

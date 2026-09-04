@@ -183,8 +183,15 @@
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">Dates</h2>
 
-		{#if data.derivedBirthday || data.dates.length > 0}
+		{#if data.derivedBirthday || data.estimatedBirthYear || data.dates.length > 0}
 			<ul class="flex flex-col gap-1">
+				{#if data.estimatedBirthYear}
+					<li class="flex items-center gap-3 rounded-app border border-border bg-card px-3 py-2">
+						<span class="w-24 shrink-0 text-xs uppercase tracking-wide text-fg-subtle">born</span>
+						<span class="flex-1 truncate text-fg">around {data.estimatedBirthYear}</span>
+						<span class="text-xs text-fg-subtle">estimated</span>
+					</li>
+				{/if}
 				{#if data.derivedBirthday}
 					<li class="flex items-center gap-3 rounded-app border border-border bg-card px-3 py-2">
 						<span class="w-24 shrink-0 text-xs uppercase tracking-wide text-fg-subtle">birthday</span>
