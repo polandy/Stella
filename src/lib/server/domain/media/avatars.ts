@@ -105,6 +105,8 @@ export interface JournalPhotoRef {
 
 export interface PhotoRepository {
 	insert(photo: StoredPhoto): Promise<void>;
+	/** Whether a photo with this id is already stored (imports use stable ids). */
+	exists(id: string): Promise<boolean>;
 	setContactAvatar(contactId: string, photoId: string): Promise<void>;
 	/** The avatar file (full or thumb) for a photo, only if the viewer may see it (docs/03 §3.7). */
 	getVisiblePhotoFile(viewer: Viewer, photoId: string, variant: 'full' | 'thumb'): Promise<PhotoFile | null>;

@@ -46,6 +46,7 @@ import type { StreamDeps, StreamRepository } from './domain/stream/stream';
 import type { CaptureMomentDeps } from './domain/moments/moments';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
 import type { ImportDeps, ImportRepository } from './domain/import/monica/apply';
+import type { ImportedPhotoDeps } from './domain/import/monica/photos';
 import type { InteractionDeps, InteractionRepository } from './domain/interactions/interactions';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
 import type { JournalPhotoDeps } from './domain/media/journal-photos';
@@ -251,6 +252,10 @@ export function getMediaStore(): MediaStore {
 
 export function getAvatarDeps(): AvatarDeps {
 	return { photos: getPhotos(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
+}
+
+export function getImportedPhotoDeps(): ImportedPhotoDeps {
+	return { photos: getPhotos(), media: getMediaStore(), clock: systemClock };
 }
 
 export function getJournalPhotoDeps(): JournalPhotoDeps {
