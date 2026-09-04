@@ -4,6 +4,7 @@ import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo, contactVisibleTo, relationshipVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
+	InteractionRow,
 	MomentRow,
 	PersonRow,
 	RelationshipRow,
@@ -11,14 +12,25 @@ import type {
 	StreamRepository
 } from '../domain/stream/stream';
 import type * as schema from './schema';
-import { contact, journalEntry, journalMention, photo, relationship, relationshipType, user } from './schema';
+import {
+	contact,
+	interaction,
+	interactionParticipant,
+	journalEntry,
+	journalMention,
+	photo,
+	relationship,
+	relationshipType,
+	user
+} from './schema';
 
 /*
  * Drizzle adapter for the StreamRepository port (docs/02 §2.22.2). Every read is scoped by the
  * central conditions (docs/03 §3.7): moments via `childRecordVisibleTo` (anchor contact visible
  * + shared-or-own entry), people via `contactVisibleTo`, relationships via
- * `relationshipVisibleTo` (both ends visible). A moment's mention chips are limited to people
- * the viewer may see, so a mention never widens access.
+ * `relationshipVisibleTo` (both ends visible), interactions via `childRecordVisibleTo` on the
+ * subject. A moment's mention chips and an interaction's participants are limited to people
+ * the viewer may see, so neither ever widens access.
  */
 export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schema>): StreamRepository {
 	return {
@@ -157,6 +169,68 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				from: { id: r.fromId, name: r.fromName, avatarPhotoId: r.fromAvatar },
 				to: { id: r.toId, name: r.toName, avatarPhotoId: r.toAvatar },
 				label: r.label
+			}));
+		},
+
+		async recentInteractions(viewer: Viewer, limit: number): Promise<InteractionRow[]> {
+			const rows = db
+				.select({
+					id: interaction.id,
+					at: interaction.createdAt,
+					actorId: user.id,
+					actorName: user.name,
+					subjectId: contact.id,
+					subjectName: contact.displayName,
+					subjectAvatar: contact.avatarPhotoId,
+					interactionKind: interaction.kind,
+					happenedAt: interaction.happenedAt,
+					title: interaction.title,
+					visibility: interaction.visibility
+				})
+				.from(interaction)
+				.innerJoin(contact, eq(interaction.contactId, contact.id))
+				.innerJoin(user, eq(interaction.createdBy, user.id))
+				.where(
+					childRecordVisibleTo(viewer, {
+						visibility: interaction.visibility,
+						createdBy: interaction.createdBy
+					})
+				)
+				.orderBy(desc(interaction.createdAt))
+				.limit(limit)
+				.all();
+			if (rows.length === 0) return [];
+
+			const ids = rows.map((r) => r.id);
+			const participantRows = db
+				.select({
+					interactionId: interactionParticipant.interactionId,
+					id: contact.id,
+					name: contact.displayName,
+					avatarPhotoId: contact.avatarPhotoId
+				})
+				.from(interactionParticipant)
+				.innerJoin(contact, eq(interactionParticipant.contactId, contact.id))
+				.where(and(inArray(interactionParticipant.interactionId, ids), contactVisibleTo(viewer)))
+				.orderBy(contact.displayName)
+				.all();
+			const participantsByInteraction = new Map<string, StreamPerson[]>();
+			for (const p of participantRows) {
+				const list = participantsByInteraction.get(p.interactionId) ?? [];
+				list.push({ id: p.id, name: p.name, avatarPhotoId: p.avatarPhotoId });
+				participantsByInteraction.set(p.interactionId, list);
+			}
+
+			return rows.map((r) => ({
+				id: r.id,
+				at: r.at,
+				actor: { id: r.actorId, name: r.actorName },
+				subject: { id: r.subjectId, name: r.subjectName, avatarPhotoId: r.subjectAvatar },
+				interactionKind: r.interactionKind,
+				happenedAt: r.happenedAt,
+				title: r.title,
+				visibility: r.visibility,
+				participants: participantsByInteraction.get(r.id) ?? []
 			}));
 		}
 	};

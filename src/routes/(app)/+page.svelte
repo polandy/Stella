@@ -2,6 +2,7 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
 	import { occasionLabel, whenLabel } from '$lib/dates/labels';
+	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -161,6 +162,30 @@
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago(item.at)}</span>
 									</div>
 									{#if item.description}<p class="mt-0.5 text-sm text-fg-muted">{item.description}</p>{/if}
+								</div>
+							{:else if item.kind === 'interaction'}
+								{@const kind = KIND_PRESENTATION[item.interactionKind]}
+								<Avatar id={item.subject.id} name={item.subject.name} avatarPhotoId={item.subject.avatarPhotoId} size={32} />
+								<div class="min-w-0">
+									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
+										<b class="font-semibold text-fg">{item.mine ? 'You' : item.actor.name}</b>
+										<span>logged</span>
+										<span class="font-medium" style="color:{kind.accent}">{kind.icon} {kind.label.toLowerCase()}</span>
+										<span>with</span>
+										<a href="/contacts/{item.subject.id}#interactions" class="font-medium text-fg hover:underline">{item.subject.name}</a>
+										{#if item.visibility === 'private'}<span class="text-[11px]" title="Only you can see this">🔒 private</span>{/if}
+										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.happenedAt}>{ago(item.at)}</span>
+									</div>
+									{#if item.title}<p class="mt-0.5 text-sm text-fg">{item.title}</p>{/if}
+									{#if item.participants.length}
+										<div class="mt-1.5 flex flex-wrap gap-1.5">
+											{#each item.participants as m (m.id)}
+												<a href="/contacts/{m.id}" class="inline-flex items-center gap-1.5 rounded-full bg-bg-sunken py-0.5 pl-1 pr-2 text-xs text-fg-muted hover:text-fg">
+													<Avatar id={m.id} name={m.name} avatarPhotoId={m.avatarPhotoId} size={18} />{m.name}
+												</a>
+											{/each}
+										</div>
+									{/if}
 								</div>
 							{:else}
 								<Avatar id={item.from.id} name={item.from.name} avatarPhotoId={item.from.avatarPhotoId} size={32} />

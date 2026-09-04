@@ -261,6 +261,15 @@ A lightweight journal of contact touchpoints, distinct from notes.
   optional **participants** (other contacts present).
 - Rendered as a reverse-chronological **timeline** on the profile.
 - Powers "**last contacted**" on the profile and "haven't seen in a while" hints **[M3]**.
+- **Shipped:** the timeline and the *Log interaction* form live in the **Interactions**
+  section of the person page. An interaction is about one **subject** and records a **day**
+  (not a time); participants are chosen from the people the member can see, and the subject
+  cannot be their own participant. Visibility follows the child-record rule (§2.10): a
+  private interaction is only ever listed to its author, and a participant the viewer may
+  not see is left out rather than named. Only the member who logged it can remove it.
+  **"Last contacted"** in the profile header is derived from the timeline *as the viewer
+  sees it*, so it never betrays a private touchpoint. Logging one also posts to the
+  household stream (§2.22.2). The "haven't seen in a while" hint is still M3.
 
 ## 2.7 Relationship & context explorer **[M1 basic / M2 rich]** — core feature
 
@@ -652,14 +661,15 @@ entry and a household update, without leaving the page. Concept + clickable prot
 
 - Home is a single **reverse-chronological stream**, grouped by day, of what the household
   did: **moments** (journal entries, with author, anchor, mentioned people as chips, photos),
-  **new people** ("Lena added *Thomas Lang*") and **new relationships** ("Leo linked *Marie*
-  → colleague of *Andy*"). Every item links to the person it is about.
+  **new people** ("Lena added *Thomas Lang*"), **new relationships** ("Leo linked *Marie*
+  → colleague of *Andy*") and **logged interactions** ("Lena logged a call with *Oma*",
+  §2.6). Every item links to the person it is about.
 - **Visibility is the filter.** The stream is a *query* over the existing tables, scoped by the
-  central rules (§3.7): a private moment appears only in its author's stream, marked with a
-  lock; a private person only in their creator's; a relationship only when both ends are
-  visible. There is no event/log table and nothing is written twice.
+  central rules (§3.7): a private moment or interaction appears only in its author's stream,
+  marked with a lock; a private person only in their creator's; a relationship only when both
+  ends are visible. There is no event/log table and nothing is written twice.
 - **Deliberately not in the MVP:** filters by member or type, moments without any person
-  ("family trip"), interaction kinds (call, visit, gift), parsing relationships out of text,
+  ("family trip"), parsing relationships out of text,
   reactions or comments. The previous dashboard panels (new people, recent notes, your
   contributions) are folded into the stream; dedicated panels (upcoming dates, gifts) return
   with their base features (§2.12).
