@@ -350,8 +350,10 @@ self-reference (`contact_id` = the entry's own `contact_id`) is **not** stored. 
 | remind | int | 0/1 |
 | created_at / updated_at | int | |
 
-Birthdays may be **derived** from `contact.birth_date` rather than duplicated; an
-explicit `important_date` is used for anniversaries/custom and for opting into reminders.
+Birthdays are **derived** from `contact.birth_date`, never duplicated as a row. An explicit
+`important_date` of kind `birthday` **overrides** the derived one for that contact — which
+is how a birthday is corrected without touching the profile, and how it is muted (an
+explicit row with `remind = 0`). See docs/02 §2.13.
 
 ### photo
 | column | type | notes |

@@ -33,6 +33,8 @@ function contactInput(over: Partial<NewContact>): NewContact {
 		lastName: null,
 		nickname: null,
 		description: null,
+		birthDate: null,
+		birthDatePrecision: 'full',
 		howWeMet: null,
 		metDate: null,
 		metPlace: null,

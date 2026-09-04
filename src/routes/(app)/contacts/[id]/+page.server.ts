@@ -13,6 +13,12 @@ import {
 	removeMember
 } from '$lib/server/domain/circles/circles';
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
+import {
+	addImportantDate,
+	InvalidImportantDateError,
+	listImportantDates
+} from '$lib/server/domain/dates/important-dates';
+import { IMPORTANT_DATE_KINDS } from '$lib/server/domain/dates/upcoming';
 import { listJournalPage } from '$lib/server/domain/journal/journal';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import { renderMarkdown, renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
@@ -33,6 +39,8 @@ import {
 	getAvatarDeps,
 	getCircleDeps,
 	getContactFields,
+	getImportantDateDeps,
+	getImportantDates,
 	getJournalDeps,
 	getNoteDeps,
 	getPhotos,
@@ -65,7 +73,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		contactCircles,
 		allCircles,
 		journalPage,
-		journalPhotos
+		journalPhotos,
+		dates
 	] = await Promise.all([
 		getRelationships().listForContactVisibleTo(viewer, params.id),
 		getRelationships().listTypes(),
@@ -76,7 +85,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		listCirclesForContact(getCircleDeps(), viewer, params.id),
 		listCircles(getCircleDeps(), viewer),
 		listJournalPage(getJournalDeps(), viewer, params.id, { limit: JOURNAL_PAGE }),
-		getPhotos().listJournalPhotos(viewer, params.id)
+		getPhotos().listJournalPhotos(viewer, params.id),
+		listImportantDates(getImportantDateDeps(), viewer, params.id)
 	]);
 
 	// Group visible journal photo ids by entry so the inline timeline renders each gallery.
@@ -105,6 +115,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			nextCursor: journalPage.nextCursor
 		},
 		contact,
+		dates,
+		dateKinds: IMPORTANT_DATE_KINDS,
 		relationships,
 		relationshipTypes: types,
 		tags,
@@ -151,6 +163,14 @@ const AddFieldSchema = v.object({
 	kind: v.picklist(CONTACT_FIELD_KINDS),
 	label: v.optional(v.pipe(v.string(), v.trim())),
 	value: v.pipe(v.string(), v.trim(), v.minLength(1))
+});
+
+const AddDateSchema = v.object({
+	kind: v.picklist(IMPORTANT_DATE_KINDS),
+	label: v.optional(v.pipe(v.string(), v.trim())),
+	date: v.pipe(v.string(), v.minLength(1)),
+	recursYearly: v.optional(v.boolean(), true),
+	remind: v.optional(v.boolean(), true)
 });
 
 const AddTagSchema = v.object({
@@ -264,6 +284,62 @@ export const actions: Actions = {
 			return fail(400, { fieldError: 'Could not add the field.' });
 		}
 
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	addDate: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		// `<input type="date">` always yields a year; "Year unknown" drops it to `--MM-DD`.
+		const raw = String(form.get('date') ?? '');
+		const date = form.get('yearUnknown') !== null ? raw.replace(/^\d{4}-/, '--') : raw;
+		const parsed = v.safeParse(AddDateSchema, {
+			kind: form.get('kind'),
+			label: form.get('label') || undefined,
+			date,
+			recursYearly: form.get('recursYearly') !== null,
+			remind: form.get('remind') !== null
+		});
+		if (!parsed.success) {
+			return fail(400, { dateError: 'Please choose a kind and a day.' });
+		}
+
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		try {
+			await addImportantDate(getImportantDateDeps(), {
+				contactId: params.id,
+				kind: parsed.output.kind,
+				label: parsed.output.label ?? null,
+				date: parsed.output.date,
+				recursYearly: parsed.output.recursYearly,
+				remind: parsed.output.remind
+			});
+		} catch (err) {
+			return fail(400, {
+				dateError:
+					err instanceof InvalidImportantDateError ? err.message : 'Could not add the date.'
+			});
+		}
+
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	removeDate: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const dateId = form.get('dateId');
+		if (typeof dateId !== 'string') return fail(400, {});
+
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		await getImportantDates().remove(params.id, dateId);
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 

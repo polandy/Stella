@@ -1,5 +1,5 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { eq } from 'drizzle-orm';
+import { eq, like } from 'drizzle-orm';
 import type * as schema from './schema';
 import {
 	circle,
@@ -296,6 +296,25 @@ const NOTES: readonly Note[] = [
 	{ person: 'thomas', title: 'Kennengelernt', body: 'Thomas und Markus kennen sich seit dem Zivildienst. Treffen sich regelmässig am FC-Training.' }
 ];
 
+interface ImportantDateSeed {
+	person: string;
+	kind: 'anniversary' | 'custom';
+	label?: string;
+	date: string;
+	/** One-off rather than yearly. */
+	once?: boolean;
+}
+
+/* Only what a birth date cannot express — birthdays come from `contact.birth_date`. */
+const IMPORTANT_DATES: readonly ImportantDateSeed[] = [
+	{ person: 'markus', kind: 'anniversary', label: 'Hochzeitstag', date: '2009-06-13' },
+	{ person: 'sandra', kind: 'anniversary', label: 'Hochzeitstag', date: '2009-06-13' },
+	{ person: 'hans', kind: 'anniversary', label: 'Goldene Hochzeit', date: '1980-09-13' },
+	{ person: 'rosa', kind: 'anniversary', label: 'Goldene Hochzeit', date: '1980-09-13' },
+	{ person: 'thomas', kind: 'custom', label: 'Jubiläum FC Länggasse', date: '2015-09-20' },
+	{ person: 'vreni', kind: 'custom', label: 'Letzter Schultag der 5b', date: '2027-07-02' }
+];
+
 const cid = (key: string) => `demo-c-${key}`;
 const circleId = (key: string) => `demo-circle-${key}`;
 const SYMMETRIC_TYPES = new Set(['sibling', 'spouse', 'partner', 'friend', 'colleague', 'neighbor', 'acquaintance', 'knows']);
@@ -399,15 +418,23 @@ export function seedDemoData(db: BunSQLiteDatabase<typeof schema>): {
 		.onConflictDoNothing()
 		.run();
 
+	// An earlier version of this seed wrote a birthday row per person, which now shadows the
+	// derived birthday and silences it (docs/02 §2.13.2). Drop those; they are demo rows.
+	db.delete(importantDate).where(like(importantDate.id, 'demo-date-bday-%')).run();
+
+	// No birthday rows: a birthday is derived from `contact.birth_date` and duplicating it
+	// here would shadow the derived one (docs/02 §2.13.2). Only the dates a birth date
+	// cannot express are seeded.
 	db.insert(importantDate)
 		.values(
-			PEOPLE.filter((p) => p.birth).map((p) => ({
-				id: `demo-date-bday-${p.key}`,
-				contactId: cid(p.key),
-				kind: 'birthday' as const,
-				label: 'Geburtstag',
-				date: p.birth as string,
-				recursYearly: 1
+			IMPORTANT_DATES.map((d, i) => ({
+				id: `demo-date-${d.person}-${i}`,
+				contactId: cid(d.person),
+				kind: d.kind,
+				label: d.label ?? null,
+				date: d.date,
+				recursYearly: d.once ? 0 : 1,
+				remind: 1
 			}))
 		)
 		.onConflictDoNothing()
