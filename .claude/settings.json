@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun test:*)",
+      "Bash(bun run check:*)",
+      "Bash(bun run build:*)",
+      "Bash(bun run test:e2e:*)",
+      "Bash(bun install)",
+      "Bash(bun install --frozen-lockfile)",
+      "Bash(bunx playwright:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git worktree list)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr checks:*)"
+    ],
+    "deny": [
+      "Edit(node_modules/**)",
+      "Edit(drizzle/**)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/format-file.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
