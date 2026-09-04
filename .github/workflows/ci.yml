@@ -15,4 +15,16 @@ jobs:
           bun-version: 1.3.13
       - run: bun install --frozen-lockfile
       - run: bun run check
-      - run: bun test
+      - run: bun run test
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.13
+      - run: bun install --frozen-lockfile
+      # The runner can drive Chromium directly, so CI skips e2e/run.sh's container.
+      - run: bunx playwright install --with-deps chromium
+      - run: bunx playwright test

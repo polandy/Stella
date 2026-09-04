@@ -25,6 +25,7 @@ The `docs/` suite is the **source of truth**; this file is only a router — kee
 ```
 bun run dev        # dev server (http://localhost:5173)
 bun test           # unit tests (Bun's built-in runner)
+bun run test:e2e   # Playwright e2e (builds, serves, runs in the pinned container)
 bun run check      # svelte-check + types
 bun run build      # production build   |  bun run start  → bun ./build/index.js
 bun run db:generate | db:migrate | db:push | db:studio
