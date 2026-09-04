@@ -1,6 +1,7 @@
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import { INTERACTION_KINDS, type InteractionKind } from '../../../interactions/kinds';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../dates/calendar';
 
 /*
@@ -12,17 +13,7 @@ import { FULL_DATE_SHAPE, isRealCalendarDay } from '../dates/calendar';
  * to keep in sync.
  */
 
-export const INTERACTION_KINDS = [
-	'met',
-	'call',
-	'video',
-	'message',
-	'letter',
-	'gift',
-	'other'
-] as const;
-
-export type InteractionKind = (typeof INTERACTION_KINDS)[number];
+export { INTERACTION_KINDS, type InteractionKind };
 
 export interface InteractionAuthor {
 	userId: string;

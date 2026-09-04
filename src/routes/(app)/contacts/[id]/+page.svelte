@@ -1,12 +1,16 @@
 <script lang="ts">
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import EgoGraph from '$lib/components/EgoGraph.svelte';
+	import InteractionTimeline from '$lib/components/InteractionTimeline.svelte';
 	import JournalTimeline from '$lib/components/JournalTimeline.svelte';
+	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { dayLabel } from '$lib/dates/labels';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	const c = $derived(data.contact);
+	// Today in the browser's zone, as the default day for a new interaction.
+	const today = new Date().toLocaleDateString('en-CA');
 
 	// Accent per relationship category, matching the design system (docs/05 §5.6).
 	const categoryColor: Record<string, string> = {
@@ -39,6 +43,11 @@
 			{#if c.description}<p class="truncate text-fg-muted">{c.description}</p>{/if}
 			{#if c.visibility === 'private'}
 				<span class="text-xs text-fg-subtle">Private — only you can see this contact</span>
+			{/if}
+			{#if data.lastContactedAt}
+				<p class="text-xs text-fg-subtle" data-testid="last-contacted">
+					Last contacted <time datetime={data.lastContactedAt}>{dayLabel(data.lastContactedAt)}</time>
+				</p>
 			{/if}
 			{#if form?.avatarError}<p class="mt-1 text-xs text-danger">{form.avatarError}</p>{/if}
 		</div>
@@ -336,6 +345,55 @@
 				</label>
 				<button class="ml-auto rounded-app bg-primary px-4 py-2 font-medium text-primary-fg transition-opacity hover:opacity-90">
 					Add note
+				</button>
+			</div>
+		</form>
+	</section>
+
+	<!-- Interactions (docs/02 §2.6): the touchpoints "last contacted" is derived from -->
+	<section id="interactions" class="flex flex-col gap-3">
+		<h2 class="text-sm font-medium text-fg-muted">Interactions</h2>
+
+		<InteractionTimeline items={data.interactions} />
+
+		<form method="POST" action="?/logInteraction" class="flex flex-col gap-3 rounded-app border border-dashed border-border p-4">
+			{#if form?.interactionError}
+				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.interactionError}</p>
+			{/if}
+			<div class="flex flex-wrap items-end gap-2">
+				<select name="kind" aria-label="Kind" class="rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg">
+					{#each data.interactionKinds as kind (kind)}
+						<option value={kind}>{KIND_PRESENTATION[kind].label}</option>
+					{/each}
+				</select>
+				<input type="date" name="happenedAt" value={today} required aria-label="Day" class="rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg" />
+				<input name="title" placeholder="What happened? (optional)" class="min-w-48 flex-1 rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg" />
+			</div>
+			<textarea
+				name="description"
+				rows="2"
+				placeholder="Details… (optional)"
+				class="rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg"
+			></textarea>
+			{#if data.otherContacts.length > 0}
+				<label class="flex flex-col gap-1 text-sm text-fg-muted">
+					Who else was there?
+					<select name="participants" multiple size="3" class="rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg">
+						{#each data.otherContacts as other (other.id)}
+							<option value={other.id}>{other.displayName}</option>
+						{/each}
+					</select>
+				</label>
+			{/if}
+			<div class="flex flex-wrap items-center gap-4 text-sm">
+				<label class="flex items-center gap-1.5">
+					<input type="radio" name="visibility" value="shared" checked /> Shared
+				</label>
+				<label class="flex items-center gap-1.5">
+					<input type="radio" name="visibility" value="private" /> Private
+				</label>
+				<button class="ml-auto rounded-app bg-primary px-4 py-2 font-medium text-primary-fg transition-opacity hover:opacity-90">
+					Log interaction
 				</button>
 			</div>
 		</form>
