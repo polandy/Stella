@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
+	import Button from '$lib/components/Button.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import { processImage } from '$lib/image/process-image';
 	import type { ActionData, PageData } from './$types';
 
@@ -87,12 +89,9 @@
 				<p class="text-sm text-fg-muted">Moments in {c.displayName}’s life, day by day.</p>
 			</div>
 		</div>
-		<button
-			onclick={() => (composing = !composing)}
-			class="rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90"
-		>
+		<Button variant="primary" type="button" onclick={() => (composing = !composing)}>
 			{showForm ? 'Close' : 'New entry'}
-		</button>
+		</Button>
 	</header>
 
 	{#if showForm}
@@ -101,7 +100,7 @@
 			action="?/save"
 			enctype="multipart/form-data"
 			onsubmit={onSubmit}
-			class="flex flex-col gap-3 rounded-app border border-border bg-card p-5"
+			class="flex flex-col gap-3 rounded-app bg-card p-5 shadow-card"
 		>
 			{#if form?.journalError}
 				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.journalError}</p>
@@ -139,7 +138,7 @@
 			></textarea>
 			<div class="flex flex-wrap items-center gap-3">
 				<label class="inline-flex cursor-pointer items-center gap-2 rounded-app border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg">
-					<span aria-hidden="true">🖼️</span> Add photos
+					<Icon name="photo" size={15} /> Add photos
 					<input type="file" accept="image/*" multiple onchange={onFiles} class="hidden" />
 				</label>
 				{#if picked.length}
@@ -153,12 +152,9 @@
 				<label class="flex items-center gap-1.5">
 					<input type="radio" name="visibility" value="private" /> Private — only you
 				</label>
-				<button
-					disabled={uploading}
-					class="ml-auto rounded-app bg-primary px-4 py-2 font-medium text-primary-fg transition-opacity hover:opacity-90 disabled:opacity-60"
-				>
+				<Button variant="primary" disabled={uploading} class="ml-auto">
 					{uploading ? 'Saving…' : 'Save entry'}
-				</button>
+				</Button>
 			</div>
 			<p class="text-xs text-fg-subtle">
 				One entry per day — saving the same day again updates it. Private and shared are separate.
@@ -178,15 +174,14 @@
 					</div>
 
 					{#each day.items as entry (entry.id)}
-						<article class="rounded-app border border-border bg-card p-5">
+						<article class="rounded-app bg-card p-5 shadow-card">
 							<div class="mb-2 flex items-center gap-2">
 								{#if entry.title}<h3 class="font-medium text-fg">{entry.title}</h3>{/if}
 								{#if entry.visibility === 'private'}
 									<span
-										class="rounded-full px-2 py-0.5 text-xs"
-										style="background:color-mix(in srgb, var(--ctp-mauve) 18%, transparent); color:var(--ctp-mauve)"
+										class="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary"
 									>
-										private
+										<Icon name="private" size={11} />private
 									</span>
 								{/if}
 								{#if entry.mine}
@@ -197,7 +192,7 @@
 											aria-label="Delete entry"
 											title="Delete entry"
 										>
-											×
+											<Icon name="remove" size={15} />
 										</button>
 									</form>
 								{/if}

@@ -68,8 +68,8 @@ test('creates the people it mentions and offers to link the first two', async ({
 });
 
 test('keeps a private moment marked as private', async ({ page }) => {
-	await page.getByText('👥 Shared').click();
-	await expect(page.getByText('🔒 Private')).toBeVisible();
+	await page.getByText('Shared', { exact: true }).click();
+	await expect(page.getByText('Private', { exact: true })).toBeVisible();
 
 	await page.getByLabel('What happened?').pressSequentially('Coffee with ');
 	await mention(page, 'Quill', /Create.*Quill/);

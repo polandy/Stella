@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Avatar from '$lib/components/Avatar.svelte';
+	import Button from '$lib/components/Button.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
 	import { occasionLabel, whenLabel } from '$lib/dates/labels';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
@@ -73,13 +75,14 @@
 				<b class="font-semibold">Link {data.linkSuggestion.a.name} and {data.linkSuggestion.b.name}?</b>
 				<span class="block text-xs text-fg-muted">They appear together in that moment. Pick how they are related.</span>
 			</div>
-			<a
+			<Button
+				variant="primary"
+				size="sm"
 				href="/contacts/{data.linkSuggestion.a.id}?relate={data.linkSuggestion.b.id}#relationships"
-				class="rounded-md bg-success px-3 py-1.5 text-xs font-semibold text-bg"
 			>
 				Link
-			</a>
-			<a href="/" onclick={() => (hintDismissed = true)} class="rounded-md px-2 py-1.5 text-xs text-fg-muted hover:text-fg">Not now</a>
+			</Button>
+			<Button variant="ghost" size="sm" href="/" onclick={() => (hintDismissed = true)}>Not now</Button>
 		</div>
 	{/if}
 
@@ -99,12 +102,9 @@
 							<span>{occasionLabel(item)}</span>
 							<span class="text-fg-subtle">· {whenLabel(item.daysUntil, item.date)}</span>
 						</div>
-						<a
-							href="/?about={item.contactId}"
-							class="rounded-md border border-border px-2.5 py-1 text-xs text-fg-muted transition-colors hover:border-primary hover:text-fg"
-						>
+						<Button variant="ghost" size="sm" icon="write" href="/?about={item.contactId}">
 							Write a moment
-						</a>
+						</Button>
 					</li>
 				{/each}
 			</ul>
@@ -127,10 +127,10 @@
 										<b class="font-semibold text-fg">{item.mine ? 'You' : item.actor.name}</b>
 										<span>wrote in</span>
 										<a href="/contacts/{item.anchor.id}/journal" class="font-medium text-fg hover:underline">{item.anchor.name}</a>’s journal
-										{#if item.visibility === 'private'}<span class="text-[11px]" title="Only you can see this">🔒 private</span>{/if}
+										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title="Only you can see this"><Icon name="private" size={11} />private</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.entryDate}>{ago(item.at)}</span>
 									</div>
-									<div class="note-body mt-0.5 text-[14.5px] text-fg">{@html item.bodyHtml}</div>
+									<div class="note-body mt-1 text-fg">{@html item.bodyHtml}</div>
 									{#if item.photoIds.length}
 										<div class="mt-2 flex gap-1.5">
 											{#each item.photoIds as photoId (photoId)}
@@ -158,7 +158,7 @@
 										<span>added</span>
 										<a href="/contacts/{item.person.id}" class="font-medium text-fg hover:underline">{item.person.name}</a>
 										<span class="rounded bg-success/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-success">New person</span>
-										{#if item.visibility === 'private'}<span class="text-[11px]">🔒 private</span>{/if}
+										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title="Only you can see this"><Icon name="private" size={11} />private</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago(item.at)}</span>
 									</div>
 									{#if item.description}<p class="mt-0.5 text-sm text-fg-muted">{item.description}</p>{/if}
@@ -170,10 +170,10 @@
 									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 										<b class="font-semibold text-fg">{item.mine ? 'You' : item.actor.name}</b>
 										<span>logged</span>
-										<span class="font-medium" style="color:{kind.accent}">{kind.icon} {kind.label.toLowerCase()}</span>
+										<span class="inline-flex items-center gap-1 font-semibold" style="color:{kind.accent}"><Icon name={kind.icon} size={12} />{kind.label.toLowerCase()}</span>
 										<span>with</span>
 										<a href="/contacts/{item.subject.id}#interactions" class="font-medium text-fg hover:underline">{item.subject.name}</a>
-										{#if item.visibility === 'private'}<span class="text-[11px]" title="Only you can see this">🔒 private</span>{/if}
+										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title="Only you can see this"><Icon name="private" size={11} />private</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.happenedAt}>{ago(item.at)}</span>
 									</div>
 									{#if item.title}<p class="mt-0.5 text-sm text-fg">{item.title}</p>{/if}

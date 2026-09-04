@@ -24,7 +24,7 @@
 	>
 		<g
 			fill="none"
-			stroke="var(--ctp-teal)"
+			stroke="var(--accent-teal)"
 			stroke-width="3.6"
 			stroke-linecap="round"
 		>
@@ -33,11 +33,11 @@
 			<path d="M66,60 Q76,54 84,40" />
 			<path d="M42,50 Q42,34 48,22" />
 		</g>
-		<circle cx="18" cy="62" r="6.5" fill="var(--ctp-mauve)" />
-		<circle cx="48" cy="22" r="6.5" fill="var(--ctp-yellow)" />
-		<circle cx="66" cy="60" r="6.5" fill="var(--ctp-blue)" />
-		<circle cx="84" cy="40" r="6.5" fill="var(--ctp-peach)" />
-		<circle cx="42" cy="50" r="8.5" fill="var(--ctp-pink)" />
+		<circle cx="18" cy="62" r="6.5" fill="var(--accent-mauve)" />
+		<circle cx="48" cy="22" r="6.5" fill="var(--accent-yellow)" />
+		<circle cx="66" cy="60" r="6.5" fill="var(--accent-blue)" />
+		<circle cx="84" cy="40" r="6.5" fill="var(--accent-peach)" />
+		<circle cx="42" cy="50" r="8.5" fill="var(--accent-pink)" />
 	</svg>
 
 	{#if showWord}

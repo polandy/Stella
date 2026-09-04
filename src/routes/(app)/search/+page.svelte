@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Avatar from '$lib/components/Avatar.svelte';
+	import Button from '$lib/components/Button.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -16,9 +18,7 @@
 			placeholder="Search people and notes…"
 			class="flex-1 rounded-app border border-border bg-bg px-4 py-2.5 text-fg"
 		/>
-		<button class="rounded-app bg-primary px-5 py-2.5 font-medium text-primary-fg transition-opacity hover:opacity-90">
-			Search
-		</button>
+		<Button variant="primary">Search</Button>
 	</form>
 
 	{#if hasQuery}
@@ -31,11 +31,10 @@
 					{#each data.results.contacts as c (c.id)}
 						<a
 							href="/contacts/{c.id}"
-							class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
+							class="flex items-center gap-3 rounded-app px-3 py-2 transition-colors hover:bg-card hover:shadow-card"
 						>
-							<span class="grid size-8 shrink-0 place-items-center rounded-full bg-bg-sunken text-sm text-fg-muted">
-								{c.displayName.slice(0, 1).toUpperCase()}
-							</span>
+							<!-- Initials only: the search port does not carry the avatar photo yet (docs/02 §2.10). -->
+							<Avatar id={c.id} name={c.displayName} size={32} />
 							<span class="text-fg">{c.displayName}</span>
 							{#if c.description}<span class="truncate text-sm text-fg-muted">· {c.description}</span>{/if}
 						</a>
