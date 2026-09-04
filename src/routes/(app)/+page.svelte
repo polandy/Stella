@@ -137,7 +137,7 @@
 										<span>linked</span>
 										<a href="/contacts/{item.from.id}" class="font-medium text-fg hover:underline">{item.from.name}</a>
 										<span class="text-fg-subtle">→</span>
-										<span>{item.label} of</span>
+										<span>{item.label}</span>
 										<a href="/contacts/{item.to.id}" class="font-medium text-fg hover:underline">{item.to.name}</a>
 										<span class="rounded bg-link/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-link">Relationship</span>
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago(item.at)}</span>

@@ -1,0 +1,102 @@
+# Using Stella
+
+Stella has one habit at its centre: when something happens with someone, write one
+sentence about it. Everything else in the app exists to make that sentence useful later.
+
+## The home screen
+
+Home is a text field with the household's stream underneath it. Newest first, grouped by
+day, showing three kinds of thing: moments someone wrote, people someone added, and
+connections someone made.
+
+### Writing a moment
+
+Type what happened and mention the people in it with `@`:
+
+> Met `@ThomasWidmer` at the game — `@NoahBrunner` kept a clean sheet
+
+As you type `@`, Stella suggests people you already know. **A moment has to mention at
+least one person**, because the person is what makes it findable a year from now. It lands
+in the journal of the first person mentioned; everyone else is attached to it as a
+mention, and it shows up on their page too.
+
+A few things worth knowing:
+
+- **`⌘K` / `Ctrl-K`** from anywhere puts the cursor in the field. **`⌘⏎` / `Ctrl-⏎`** saves.
+- **Someone new?** Just mention them. The suggestion list offers *Create "…"*, and the
+  person is created with the moment — no form, no detour.
+- **Photos** can be attached; they are resized in your browser before upload, which also
+  strips location data out of them.
+- **The day** defaults to today. Change it if you are writing something down late.
+
+### Shared or private
+
+The chip next to the field says **Shared** by default: the household sees it. Tap it and
+it says **Private**: only you do. Private is genuine — a private moment, and any person
+you create inside one, is invisible to the rest of the household, including in search,
+in the stream and on other people's pages.
+
+Mentioning someone never widens access. A shared moment can only mention people the
+household can already see.
+
+### "Link these two?"
+
+When a moment brings two people together for the first time, Stella asks afterwards
+whether they are related — and lets you say how. It never guesses a relationship on your
+behalf. If it isn't the moment for that, dismiss it; nothing is lost.
+
+## People
+
+**Adding someone** takes a name and nothing else. Everything beyond that — description,
+phone, email, address, birthday — is optional and can be filled in whenever.
+
+**A person's page** gathers what you know about them: their details, the circles they
+belong to, the people they are connected to, their journal, and notes.
+
+**Notes** are for things that stay true — "allergic to hazelnuts", "always calls on
+Sundays". Moments are for things that happened. Notes can be pinned to the top, and have
+their own shared-or-private switch.
+
+**The journal** is the person's own timeline, one entry per day. A moment written on Home
+lands here; you can also write directly into it from their page.
+
+## Relationships
+
+Say once that Lena is Markus's child, and Stella knows the other half of it too — Markus
+is Lena's parent. Relationships have a direction and a label, and the reverse reads
+correctly without you entering it twice.
+
+Every profile shows the person at the centre of their own small constellation. **Explore
+connections** opens the bigger picture, where you can follow the web outward from one
+person and trace how any two people are linked.
+
+## Circles
+
+A circle is a context people share: a school class, a football team, a choir, a street.
+Add someone to a circle with an optional role ("goalkeeper", "class teacher") and, if it
+matters, the years they were part of it — so a circle stays truthful as people come and
+go.
+
+Circles are also the answer to "who else was there?", which is usually the question you
+have when you are trying to remember someone's name.
+
+## Finding things
+
+The search field at the top looks through people and notes at once and matches partial
+words. It only ever returns what you are allowed to see.
+
+(`⌘K` is taken — it belongs to the capture field, since writing something down is the
+thing you do most.)
+
+## Privacy, in one paragraph
+
+Stella assumes a household that trusts each other, so sharing is the default and there is
+no per-person permission matrix to maintain. Anything can be made private, and private
+means only its author — never "hidden but discoverable". People, moments, notes and photos
+each carry their own setting, and the rule is enforced in one place in the code rather
+than screen by screen, so there is no corner of the app where it silently doesn't apply.
+
+## Light and dark
+
+Stella follows whatever your device is set to, and both themes are designed rather than
+inverted. There is nothing to configure.

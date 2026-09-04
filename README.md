@@ -1,75 +1,107 @@
+<div align="center">
+
+<img src="static/logo.svg" width="88" height="88" alt="">
+
 # Stella
 
-> A calm, self-hosted personal CRM for families.
-> Working product title: **Stella** — *stella*, Latin for "star": every person is a star,
-> and their relationships form constellations. Repository codename: `ross`.
+**The people in your life, remembered — together.**
 
-Stella helps a family keep track of the people in their lives — existing contacts and
-new acquaintances alike — in one shared, private place. Add people, describe how they
-relate to each other, write notes, attach photos, and see the whole web of
-relationships at a glance. Everything a family member adds is visible to the rest of
-the household (unless explicitly marked private), so everyone stays in the loop.
+A calm, self-hosted personal CRM for a family. One shared memory of everyone you know,
+running on your own hardware, seen by nobody else.
 
-It is a lighter, more focused, and more intuitive alternative to
-[Monica](https://github.com/monicahq/monica).
+</div>
 
-## Why another personal CRM?
+<br>
 
-Monica is powerful but, in our experience, cluttered and not especially pleasant to
-use day to day. Stella optimizes for a different set of goals:
+<img src="docs/images/home-light.png" alt="Stella's home screen: a capture field above the household stream">
 
-- **Family-first, not individual-first** — a shared household pool is the default,
-  with per-record privacy when you want it.
-- **Intuitive & uncluttered UI** — a small number of well-designed screens instead of
-  many sparsely-used features.
-- **Relationship visualization** — see people and how they connect as an interactive graph.
-- **Lean to self-host** — a single small container, an SQLite file, minimal RAM.
-- **Beautiful in light and dark** — a Catppuccin-inspired design system.
+<br>
 
-## Tech stack (at a glance)
+## The idea
 
-| Layer | Choice |
-|---|---|
-| Runtime | **Bun** |
-| Framework | **SvelteKit** (Svelte 5), SSR + form actions + JSON endpoints |
-| Database | **SQLite** (WAL mode) via **Drizzle ORM** (`bun:sqlite`) |
-| Styling | **Tailwind CSS** with Catppuccin design tokens (Latte / Mocha) |
-| Auth | Custom session-based auth (httpOnly cookies, Argon2id hashing) + OIDC/Authelia SSO |
-| Graph | Cytoscape.js (relationship visualization) |
-| Delivery | Responsive web + installable **PWA** |
-| Hosting | **Self-hosted**, single **Docker** image + volume |
+Most of what a family knows about the people in its life never gets written down. Who
+Lena's best friend is. That the neighbour is moving in spring. Which of the kids' teachers
+is which. It lives in one person's head, and it fades.
 
-See [`docs/04-architecture.md`](docs/04-architecture.md) for the full rationale.
+Stella is a single, quiet place to put those things — and it asks for almost nothing in
+return. You write one sentence, mention the people in it, and you are done. Everyone in
+the household sees it, unless you decide otherwise.
 
-## Specification suite
+It is a lighter, warmer alternative to [Monica](https://github.com/monicahq/monica):
+fewer screens, no forms to fill before you can save a thought, and built for a household
+rather than a single user.
 
-The project is fully specified before implementation. Read in order:
+## What it feels like
 
-1. [Vision & Scope](docs/01-vision-and-scope.md) — what we are building and, importantly, what we are not.
-2. [Feature Specification](docs/02-features.md) — every feature, described in behavioral detail.
-3. [Data Model](docs/03-data-model.md) — entities, fields, relationships, and the privacy model.
-4. [Architecture](docs/04-architecture.md) — stack, structure, deployment, and key decisions.
-5. [UI & Design System](docs/05-ui-design-system.md) — Catppuccin theming, layout, and interaction patterns.
-6. [Roadmap](docs/06-roadmap.md) — milestones from MVP to full release.
-7. [Deployment Guide](docs/07-deployment.md) — Docker, reverse proxy, and Authelia SSO setup.
+**Write it down in one sentence.** The first thing on the home screen is a text field, not
+a dashboard. Type what happened, mention people with `@`, press save. Someone you mention
+who isn't in Stella yet is created on the spot — no detour, no empty form.
 
-## Development
+**One household memory.** Everything anyone writes is shared with the family by default,
+so nobody has to relay news twice. Anything can be made private with one tap, and private
+stays private — including the people you add privately.
 
-Requires **Bun** (≥ 1.3). On NixOS: `nix profile add nixpkgs#bun`.
+**See how everyone connects.** Every person carries their own little constellation: who
+they belong to, who they grew up with, who they play football with.
+
+<img src="docs/images/relationships.png" width="620" alt="A person's relationships shown as a small graph of connected people">
+
+**Circles for the contexts people share.** A class, a team, a choir. People come and go
+from them over the years, and Stella remembers who was there when.
+
+**A journal per person.** Small entries, one day at a time, so you can look back at a
+whole year with someone.
+
+**Made for the phone too.** The capture field sits above your thumb; the rest of the app
+gets out of the way.
+
+<div align="center">
+<img src="docs/images/mobile.png" width="300" alt="Stella on a phone: the stream with the capture field pinned above the tab bar">
+</div>
+
+**Light and dark, both done properly.**
+
+<img src="docs/images/home-dark.png" alt="The same home screen in dark mode">
+
+## Yours, on your own hardware
+
+Stella is one small container and one file. It runs happily on a Raspberry Pi, a NAS or an
+old laptop in a cupboard. There is no account to create with anyone, no telemetry, and
+nothing leaves the machine you put it on. Back it up by copying a folder.
 
 ```sh
-bun install          # install dependencies
-bun run dev          # start the dev server (http://localhost:5173)
-bun run build        # production build
-bun run preview      # preview the production build
-bun run db:push      # apply the Drizzle schema to the local SQLite db
-bun run db:studio    # open Drizzle Studio
+git clone https://github.com/polandy/Stella.git stella
+cd stella
+cp .env.example .env      # set SESSION_SECRET and STELLA_URL
+./deploy.sh               # builds and starts it; open http://localhost:3000
 ```
 
-Environment: copy `.env.example` to `.env` and adjust. See the
-[Deployment Guide](docs/07-deployment.md) for the full list and Authelia SSO setup.
+The [installation guide](docs/install.md) walks through it properly, including running it
+behind your own domain and signing in with your existing single sign-on.
 
-## Status
+## Documentation
 
-🚧 **Milestone M0 — Foundations** (walking skeleton). The specification suite above is
-the source of truth; the application is being scaffolded.
+**For everyone**
+
+- [Installation & first run](docs/install.md) — get Stella running and keep it running.
+- [Using Stella](docs/using-stella.md) — moments, people, privacy, circles, the journal.
+
+**For contributors** — the specification suite the project is built from:
+[vision](docs/01-vision-and-scope.md) ·
+[features](docs/02-features.md) ·
+[data model](docs/03-data-model.md) ·
+[architecture](docs/04-architecture.md) ·
+[design system](docs/05-ui-design-system.md) ·
+[roadmap](docs/06-roadmap.md) ·
+[deployment reference](docs/07-deployment.md) ·
+[coding guidelines](docs/08-coding-guidelines.md)
+
+## Where it stands
+
+The core loop is in place: add people, relate them, find them, and capture moments into a
+shared household stream. Important dates, a photo gallery and an import from Monica are
+next. See the [roadmap](docs/06-roadmap.md).
+
+<div align="center">
+<sub><em>stella</em> — Latin for “star”. Every person is one; their relationships are the constellations.</sub>
+</div>
