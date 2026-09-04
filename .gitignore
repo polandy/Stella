@@ -33,3 +33,6 @@ vite.config.ts.timestamp-*
 
 # Local Claude Code settings (per-machine, never shared)
 .claude/settings.local.json
+
+# Per-feature git worktrees (the working agreement puts them here)
+.claude/worktrees/

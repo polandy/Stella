@@ -17,6 +17,8 @@ The `docs/` suite is the **source of truth**; this file is only a router — kee
 - **Ports & Adapters + DI**: domain owns narrow interfaces (ports); use-cases take a
   `deps` arg (repository / `clock` / `idGenerator`) — never a singleton or concrete DB.
   Pure logic takes no deps. Only the SvelteKit edge wires concretes. (`docs/08` §8.3)
+- **Working agreement**: worktree → PR → `/pr-review` verdict → wait for the go-ahead;
+  a feature PR includes UI + docs; English throughout. (`docs/08` §8.10)
 - **Minimal exposure & minimal deps**: export as little as possible; prefer Bun/Web APIs.
 - **Strict TS (no `any`), fail loud, descriptive names, comments explain _why_.**
 

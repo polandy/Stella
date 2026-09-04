@@ -207,3 +207,23 @@ A change is done when:
   changelog and version are generated from it, so an accurate type matters.
 - Config lives in `release-please-config.json` + `.release-please-manifest.json`; the
   workflow is `.github/workflows/release-please.yml` (GitHub Actions).
+
+## 8.10 Working agreement
+
+How a change travels from idea to `main`. The global rules (no direct commits to `main`, no
+magic literals, no timing-based tests) apply on top of this.
+
+- **One git worktree per feature** under `.claude/worktrees/`, branched from `origin/main` →
+  PR → green CI → **wait for the merge go-ahead**. Merge as a squash with a hand-written
+  Conventional Commit subject; release-please derives the changelog from it.
+- **A feature PR is complete**: the domain/access change, the UI that exposes it, the matching
+  `docs/` page and `using-stella.md` when a user can see it. Never "UI in a follow-up", never
+  "docs later".
+- **Run `/pr-review` on your own PR before asking for the go-ahead** — every PR, and its verdict
+  comment is the evidence it happened. A missing verdict is a blocker, not a formality.
+- **A UI change ships a running Playwright case**, added after the owner's OK (§8.4.1). It
+  asserts what is *rendered*, never only the URL, and never waits on a timeout: if nothing
+  observable exists to wait on, that absence is the defect — give the production code a signal.
+- **English throughout** — specs, code comments, commit messages and PR text. A request made in
+  German is *translated*, never pasted in as a quote. German is fine only as **content**: UI copy
+  being specified, sample and seed data.
