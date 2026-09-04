@@ -1,8 +1,8 @@
 import { error, json, redirect } from '@sveltejs/kit';
-import * as v from 'valibot';
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
-import { listStoryPage, type StoryCursor } from '$lib/server/domain/story/story';
+import { listStoryPage } from '$lib/server/domain/story/story';
 import { getContactDeps, getPhotos, getStoryDeps } from '$lib/server/services';
+import { parseStoryCursor } from '$lib/story/cursor';
 import { toStoryItem } from '../story-view';
 import type { RequestHandler } from './$types';
 
@@ -18,13 +18,6 @@ import type { RequestHandler } from './$types';
 
 const PAGE_SIZE = 12;
 
-const PointSchema = v.object({
-	day: v.pipe(v.string(), v.minLength(1)),
-	recordedAt: v.number()
-});
-const ResumeSchema = v.union([v.literal('top'), v.literal('finished'), PointSchema]);
-const CursorSchema = v.object({ journal: ResumeSchema, interactions: ResumeSchema });
-
 export const POST: RequestHandler = async ({ locals, params, request }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
@@ -33,9 +26,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	if (!contact) throw error(404, 'Contact not found'); // never reveal existence
 
 	const body: unknown = await request.json().catch(() => null);
-	const parsed = v.safeParse(CursorSchema, body);
-	if (!parsed.success) throw error(400, 'Malformed story cursor');
-	const cursor: StoryCursor = parsed.output;
+	const cursor = parseStoryCursor(body);
+	if (cursor === null) throw error(400, 'Malformed story cursor');
 
 	const page = await listStoryPage(getStoryDeps(), viewer, params.id, {
 		limit: PAGE_SIZE,

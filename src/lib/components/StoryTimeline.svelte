@@ -4,6 +4,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
+	import { groupStoryByDay } from '$lib/story/grouping';
 	import type { StoryCursorView, StoryItemView, StoryPageView } from '$lib/story/item';
 
 	/*
@@ -48,19 +49,7 @@
 		}
 	}
 
-	/** Group the flat, already-ordered list into consecutive days. */
-	const days = $derived.by(() => {
-		const groups: { day: string; items: StoryItemView[] }[] = [];
-		for (const item of items) {
-			let group = groups.at(-1);
-			if (!group || group.day !== item.day) {
-				group = { day: item.day, items: [] };
-				groups.push(group);
-			}
-			group.items.push(item);
-		}
-		return groups;
-	});
+	const days = $derived(groupStoryByDay(items));
 
 	/** The form action that removes an item, by what kind of thing it is. */
 	const removeAction = (item: StoryItemView) =>

@@ -208,6 +208,16 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   creates and maintains for no gain at family scale. Revisit if per-date lead times or email
   delivery (M3) turn the flag into something with real structure.
 
+- **The story is merged at read time, not stored** — a person's journal entries and touchpoints
+  stay two tables and are merged into one timeline per request (docs/02 §2.23). Rejected: a
+  third table holding a unified timeline, which would have to be kept in step on every write
+  and would duplicate the visibility rules the two sources already enforce; and a SQL `UNION`
+  view, which cannot be keyset-paginated across two different sort keys without materialising
+  it. The cost is that each page reads a page from *both* sources even when one of them fills
+  it alone, and that each carries its own resume point — a source can contribute nothing to a
+  page and still have rows waiting, so "read me from the top" and "I am finished" have to be
+  distinguishable. The merge is pure and owns those rules, which is what keeps them testable.
+
 ## 4.10 Deployment
 
 - **Single Docker image** (multi-stage: build with Bun, run on a slim Bun base).
