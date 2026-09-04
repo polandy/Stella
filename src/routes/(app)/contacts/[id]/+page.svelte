@@ -1,5 +1,8 @@
 <script lang="ts">
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
+	import Button from '$lib/components/Button.svelte';
+	import Icon from '$lib/components/Icon.svelte';
+	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import EgoGraph from '$lib/components/EgoGraph.svelte';
 	import InteractionTimeline from '$lib/components/InteractionTimeline.svelte';
 	import JournalTimeline from '$lib/components/JournalTimeline.svelte';
@@ -11,15 +14,6 @@
 	const c = $derived(data.contact);
 	// Today in the browser's zone, as the default day for a new interaction.
 	const today = new Date().toLocaleDateString('en-CA');
-
-	// Accent per relationship category, matching the design system (docs/05 §5.6).
-	const categoryColor: Record<string, string> = {
-		family: 'var(--ctp-green)',
-		romantic: 'var(--ctp-pink)',
-		social: 'var(--ctp-blue)',
-		professional: 'var(--ctp-peach)',
-		other: 'var(--fg-subtle)'
-	};
 
 	// One ego-graph node per connected person (a person may hold several relationship
 	// types; the graph shows them once, keeping the first label).
@@ -51,25 +45,22 @@
 			{/if}
 			{#if form?.avatarError}<p class="mt-1 text-xs text-danger">{form.avatarError}</p>{/if}
 		</div>
-		<a
-			href="/contacts/{c.id}/journal"
-			class="inline-flex shrink-0 items-center gap-1.5 rounded-app border border-border px-3 py-1.5 text-sm text-fg-muted transition-colors hover:text-fg"
-		>
-			<span aria-hidden="true">📔</span> Journal
-		</a>
+		<Button icon="journal" href="/contacts/{c.id}/journal" class="shrink-0">Journal</Button>
 	</header>
 
 	<!-- Tags -->
 	<section class="flex flex-wrap items-center gap-2">
 		{#each data.tags as tag (tag.id)}
 			<span
-				class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm"
-				style="background:color-mix(in srgb, var(--ctp-{tag.color}) 18%, transparent); color:var(--ctp-{tag.color})"
+				class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-medium"
+				style={accentChipStyle(tag.color)}
 			>
 				{tag.name}
 				<form method="POST" action="?/removeTag" class="contents">
 					<input type="hidden" name="tagId" value={tag.id} />
-					<button class="opacity-70 hover:opacity-100" aria-label="Remove tag">×</button>
+					<button class="opacity-60 transition-opacity hover:opacity-100" aria-label="Remove tag">
+						<Icon name="remove" size={13} />
+					</button>
 				</form>
 			</span>
 		{/each}
@@ -85,7 +76,7 @@
 					<option value={color}>{color}</option>
 				{/each}
 			</select>
-			<button class="rounded-full border border-border px-2 py-1 text-sm text-fg-muted hover:text-fg">Add</button>
+			<Button size="sm">Add</Button>
 		</form>
 	</section>
 	{#if form?.tagError}
@@ -95,7 +86,7 @@
 	<!-- Circles (shared contexts) -->
 	<section class="flex flex-col gap-3">
 		<div class="flex items-center justify-between">
-			<h2 class="text-sm font-medium text-fg-muted">Circles</h2>
+			<h2 class="text-sm font-semibold text-fg-muted">Circles</h2>
 			<a href="/circles" class="text-xs text-link hover:underline">All circles</a>
 		</div>
 
@@ -104,12 +95,14 @@
 				{#each data.circles as circle (circle.membershipId)}
 					<li>
 						<span class="inline-flex items-center gap-1.5 rounded-full border border-border py-1 pl-2.5 pr-1.5 text-sm">
-							<span class="size-2 rounded-full" style="background:var(--ctp-{circle.color})"></span>
+							<span class="size-2 rounded-full" style={accentDotStyle(circle.color)}></span>
 							<a href="/circles/{circle.circleId}" class="text-fg hover:underline">{circle.name}</a>
 							{#if circle.role}<span class="text-xs text-fg-subtle">· {circle.role}</span>{/if}
 							<form method="POST" action="?/leaveCircle" class="contents">
 								<input type="hidden" name="circleId" value={circle.circleId} />
-								<button class="opacity-70 hover:opacity-100" aria-label="Leave circle">×</button>
+								<button class="text-fg-subtle transition-colors hover:text-fg" aria-label="Leave circle">
+									<Icon name="remove" size={13} />
+								</button>
 							</form>
 						</span>
 					</li>
@@ -133,18 +126,18 @@
 				{#each data.circleNames as name (name)}<option value={name}></option>{/each}
 			</datalist>
 			<input name="role" placeholder="role (optional)" class="w-32 rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg" />
-			<button class="rounded-app border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg">Add</button>
+			<Button size="sm">Add</Button>
 		</form>
 	</section>
 
 	<!-- Contact details -->
 	<section class="flex flex-col gap-3">
-		<h2 class="text-sm font-medium text-fg-muted">Contact details</h2>
+		<h2 class="text-sm font-semibold text-fg-muted">Contact details</h2>
 
 		{#if data.fields.length > 0}
 			<ul class="flex flex-col gap-1">
 				{#each data.fields as f (f.id)}
-					<li class="flex items-center gap-3 rounded-app border border-border bg-card px-3 py-2">
+					<li class="flex items-center gap-3 rounded-app bg-card px-3 py-2 shadow-card">
 						<span class="w-16 shrink-0 text-xs uppercase tracking-wide text-fg-subtle">
 							{f.label ?? f.kind}
 						</span>
@@ -155,7 +148,7 @@
 						{/if}
 						<form method="POST" action="?/removeField">
 							<input type="hidden" name="fieldId" value={f.id} />
-							<button class="text-fg-subtle hover:text-danger" title="Remove" aria-label="Remove field">×</button>
+							<Button variant="danger" size="sm" icon="remove" label="Remove field" title="Remove" />
 						</form>
 					</li>
 				{/each}
@@ -175,25 +168,25 @@
 			</select>
 			<input name="label" placeholder="Label (optional)" class="w-32 rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg" />
 			<input name="value" placeholder="Value" class="flex-1 rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg" />
-			<button class="rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90">Add</button>
+			<Button variant="primary" size="sm">Add</Button>
 		</form>
 	</section>
 
 	<!-- Dates -->
 	<section class="flex flex-col gap-3">
-		<h2 class="text-sm font-medium text-fg-muted">Dates</h2>
+		<h2 class="text-sm font-semibold text-fg-muted">Dates</h2>
 
 		{#if data.derivedBirthday || data.dates.length > 0}
 			<ul class="flex flex-col gap-1">
 				{#if data.derivedBirthday}
-					<li class="flex items-center gap-3 rounded-app border border-border bg-card px-3 py-2">
+					<li class="flex items-center gap-3 rounded-app bg-card px-3 py-2 shadow-card">
 						<span class="w-24 shrink-0 text-xs uppercase tracking-wide text-fg-subtle">birthday</span>
 						<span class="flex-1 truncate text-fg">{dayLabel(data.derivedBirthday)}</span>
 						<span class="text-xs text-fg-subtle">from the profile</span>
 					</li>
 				{/if}
 				{#each data.dates as d (d.id)}
-					<li class="flex items-center gap-3 rounded-app border border-border bg-card px-3 py-2">
+					<li class="flex items-center gap-3 rounded-app bg-card px-3 py-2 shadow-card">
 						<span class="w-24 shrink-0 text-xs uppercase tracking-wide text-fg-subtle">
 							{d.label ?? d.kind}
 						</span>
@@ -202,7 +195,7 @@
 						{#if !d.remind}<span class="text-xs text-fg-subtle" title="Kept, but never surfaced on Home">muted</span>{/if}
 						<form method="POST" action="?/removeDate">
 							<input type="hidden" name="dateId" value={d.id} />
-							<button class="text-fg-subtle hover:text-danger" title="Remove" aria-label="Remove date">×</button>
+							<Button variant="danger" size="sm" icon="remove" label="Remove date" title="Remove" />
 						</form>
 					</li>
 				{/each}
@@ -231,20 +224,15 @@
 			<label class="flex items-center gap-1.5 text-sm text-fg-muted">
 				<input type="checkbox" name="remind" checked /> Show on Home
 			</label>
-			<button class="rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90">Add</button>
+			<Button variant="primary" size="sm">Add</Button>
 		</form>
 	</section>
 
 	<!-- Relationships -->
 	<section id="relationships" class="flex flex-col gap-3">
 		<div class="flex items-center justify-between">
-			<h2 class="text-sm font-medium text-fg-muted">Relationships</h2>
-			<a
-				href="/graph?center={c.id}"
-				class="inline-flex items-center gap-1.5 rounded-app border border-border px-3 py-1.5 text-sm text-fg-muted transition-colors hover:text-fg"
-			>
-				<span aria-hidden="true">🕸️</span> Explore connections
-			</a>
+			<h2 class="text-sm font-semibold text-fg-muted">Relationships</h2>
+			<Button icon="explore" size="sm" href="/graph?center={c.id}">Explore connections</Button>
 		</div>
 
 		{#if egoNodes.length > 0}
@@ -254,8 +242,8 @@
 		{#if data.relationships.length > 0}
 			<ul class="flex flex-col gap-1">
 				{#each data.relationships as rel (rel.id)}
-					<li class="flex items-center gap-3 rounded-app border border-border bg-card px-3 py-2.5">
-						<span class="size-2 shrink-0 rounded-full" style="background:{categoryColor[rel.category]}"></span>
+					<li class="flex items-center gap-3 rounded-app bg-card px-3 py-2.5 shadow-card">
+						<span class="size-2 shrink-0 rounded-full" style="background:{categoryVar(rel.category)}"></span>
 						<span class="text-sm text-fg-muted">{rel.label}</span>
 						<a href="/contacts/{rel.otherContactId}" class="font-medium text-fg hover:underline">
 							{rel.otherDisplayName}
@@ -294,23 +282,21 @@
 						{/each}
 					</select>
 				</label>
-				<button class="rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90">
-					Add
-				</button>
+				<Button variant="primary" size="sm">Add</Button>
 			</form>
 		{/if}
 	</section>
 
 	<!-- Notes -->
 	<section class="flex flex-col gap-3">
-		<h2 class="text-sm font-medium text-fg-muted">Notes</h2>
+		<h2 class="text-sm font-semibold text-fg-muted">Notes</h2>
 
 		{#if data.notes.length > 0}
 			<ul class="flex flex-col gap-2">
 				{#each data.notes as note (note.id)}
-					<li class="rounded-app border border-border bg-card p-4">
+					<li class="rounded-app bg-card p-4 shadow-card">
 						<div class="mb-1 flex items-center gap-2">
-							{#if note.isPinned}<span class="text-xs text-primary">★ pinned</span>{/if}
+							{#if note.isPinned}<span class="inline-flex items-center gap-1 text-xs font-medium text-primary"><Icon name="pinned" size={12} />pinned</span>{/if}
 							{#if note.title}<span class="font-medium text-fg">{note.title}</span>{/if}
 							{#if note.visibility === 'private'}
 								<span class="ml-auto text-xs text-fg-subtle">private</span>
@@ -343,16 +329,14 @@
 				<label class="flex items-center gap-1.5">
 					<input type="radio" name="visibility" value="private" /> Private
 				</label>
-				<button class="ml-auto rounded-app bg-primary px-4 py-2 font-medium text-primary-fg transition-opacity hover:opacity-90">
-					Add note
-				</button>
+				<Button variant="primary" class="ml-auto">Add note</Button>
 			</div>
 		</form>
 	</section>
 
 	<!-- Interactions (docs/02 §2.6): the touchpoints "last contacted" is derived from -->
 	<section id="interactions" class="flex flex-col gap-3">
-		<h2 class="text-sm font-medium text-fg-muted">Interactions</h2>
+		<h2 class="text-sm font-semibold text-fg-muted">Interactions</h2>
 
 		<InteractionTimeline items={data.interactions} />
 
@@ -392,9 +376,7 @@
 				<label class="flex items-center gap-1.5">
 					<input type="radio" name="visibility" value="private" /> Private
 				</label>
-				<button class="ml-auto rounded-app bg-primary px-4 py-2 font-medium text-primary-fg transition-opacity hover:opacity-90">
-					Log interaction
-				</button>
+				<Button variant="primary" class="ml-auto">Log interaction</Button>
 			</div>
 		</form>
 	</section>
@@ -402,13 +384,8 @@
 	<!-- Journal (inline timeline, week by week; writing with photos lives on the full page) -->
 	<section class="flex flex-col gap-3">
 		<div class="flex items-center justify-between">
-			<h2 class="text-sm font-medium text-fg-muted">Journal</h2>
-			<a
-				href="/contacts/{c.id}/journal"
-				class="inline-flex items-center gap-1.5 rounded-app border border-border px-3 py-1.5 text-sm text-fg-muted transition-colors hover:text-fg"
-			>
-				<span aria-hidden="true">✎</span> Write entry
-			</a>
+			<h2 class="text-sm font-semibold text-fg-muted">Journal</h2>
+			<Button icon="write" size="sm" href="/contacts/{c.id}/journal">Write entry</Button>
 		</div>
 		{#key c.id}
 			<JournalTimeline contactId={c.id} initial={data.journal} />
@@ -416,8 +393,8 @@
 	</section>
 
 	<!-- How you met -->
-	<section class="rounded-app border border-border bg-card p-6">
-		<h2 class="mb-3 text-sm font-medium text-fg-muted">How you met</h2>
+	<section class="rounded-app bg-card p-6 shadow-card">
+		<h2 class="mb-3 text-sm font-semibold text-fg-muted">How you met</h2>
 		{#if c.howWeMet || c.metPlace || c.metDate}
 			<p class="text-fg">
 				{c.howWeMet ?? ''}{#if c.metPlace}<span class="text-fg-muted"> · {c.metPlace}</span>{/if}{#if c.metDate}<span class="text-fg-muted"> · {c.metDate}</span>{/if}

@@ -119,7 +119,7 @@
 			<section class="flex flex-col gap-2">
 				<h3 class="text-xs font-semibold uppercase tracking-wide text-fg-subtle">{week.label}</h3>
 				{#each week.entries as e (e.id)}
-					<article class="rounded-app border border-border bg-card p-4">
+					<article class="rounded-app bg-card p-4 shadow-card">
 						<div class="mb-1 flex flex-wrap items-center gap-2">
 							<span class="text-sm font-medium text-fg">{entryDay(e.entryDate)}</span>
 							{#if e.title}<span class="text-sm text-fg-muted">· {e.title}</span>{/if}

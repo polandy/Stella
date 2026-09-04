@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Button from '$lib/components/Button.svelte';
+	import Logo from '$lib/components/Logo.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { form, data }: { form: ActionData; data: PageData } = $props();
@@ -6,9 +8,7 @@
 
 <main class="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-8 px-6 py-16">
 	<div class="flex flex-col items-center gap-3 text-center">
-		<div class="grid size-14 place-items-center rounded-app bg-primary text-2xl text-primary-fg shadow-lg">
-			★
-		</div>
+		<Logo size={56} />
 		<h1 class="text-2xl font-semibold text-fg">Sign in to Stella</h1>
 	</div>
 
@@ -17,10 +17,7 @@
 	{/if}
 
 	{#if data.oidcEnabled}
-		<a href="/login/sso"
-			class="rounded-app bg-primary px-4 py-2 text-center font-medium text-primary-fg transition-opacity hover:opacity-90">
-			Sign in with SSO
-		</a>
+		<Button variant="primary" href="/login/sso" class="justify-center">Sign in with SSO</Button>
 		{#if data.localEnabled}
 			<div class="flex items-center gap-3 text-xs text-fg-subtle">
 				<span class="h-px flex-1 bg-border"></span>or<span class="h-px flex-1 bg-border"></span>
@@ -29,7 +26,7 @@
 	{/if}
 
 	{#if data.localEnabled}
-		<form method="POST" class="flex flex-col gap-4 rounded-app border border-border bg-card p-6">
+		<form method="POST" class="flex flex-col gap-4 rounded-app bg-card p-6 shadow-card">
 			{#if form?.error}
 				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
 			{/if}
@@ -45,9 +42,7 @@
 					class="rounded-md border border-border bg-bg px-3 py-2 text-fg" />
 			</label>
 
-			<button class="mt-2 rounded-app bg-primary px-4 py-2 font-medium text-primary-fg transition-opacity hover:opacity-90">
-				Sign in
-			</button>
+			<Button variant="primary" class="mt-2">Sign in</Button>
 		</form>
 	{/if}
 

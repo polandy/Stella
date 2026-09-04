@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Button from '$lib/components/Button.svelte';
+	import { accentDotStyle } from '$lib/design/tokens';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -10,12 +12,9 @@
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
 	<header class="flex items-center justify-between">
 		<h1 class="text-2xl font-semibold text-fg">Circles</h1>
-		<button
-			onclick={() => (showForm = !showForm)}
-			class="rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90"
-		>
+		<Button variant="primary" type="button" onclick={() => (showForm = !showForm)}>
 			{showForm ? 'Cancel' : 'New circle'}
-		</button>
+		</Button>
 	</header>
 
 	<p class="text-sm text-fg-muted">
@@ -23,7 +22,7 @@
 	</p>
 
 	{#if showForm}
-		<form method="POST" action="?/create" class="flex flex-col gap-4 rounded-app border border-border bg-card p-5">
+		<form method="POST" action="?/create" class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card">
 			{#if form?.error}<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>{/if}
 
 			<label class="flex flex-col gap-1 text-sm">
@@ -52,21 +51,19 @@
 							<input type="radio" name="color" value={color} checked={color === data.suggestedColor} class="peer sr-only" />
 							<span
 								class="block size-7 rounded-full ring-offset-2 ring-offset-[var(--card)] transition-all peer-checked:ring-2 peer-checked:ring-[var(--fg)] hover:scale-110"
-								style="background:var(--ctp-{color})"
+								style={accentDotStyle(color)}
 							></span>
 						</label>
 					{/each}
 				</div>
 			</fieldset>
 
-			<button class="self-start rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90">
-				Create circle
-			</button>
+			<Button variant="primary" class="self-start">Create circle</Button>
 		</form>
 	{/if}
 
 	{#if data.circles.length === 0}
-		<div class="rounded-app border border-border bg-card p-8 text-center">
+		<div class="rounded-app bg-card p-8 text-center shadow-card">
 			<p class="text-fg-muted">No circles yet.</p>
 		</div>
 	{:else}
@@ -77,7 +74,7 @@
 						href="/circles/{circle.id}"
 						class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2.5 transition-colors hover:border-border hover:bg-card"
 					>
-						<span class="size-3 shrink-0 rounded-full" style="background:var(--ctp-{circle.color})"></span>
+						<span class="size-3 shrink-0 rounded-full" style={accentDotStyle(circle.color)}></span>
 						<span class="min-w-0 flex-1">
 							<span class="block truncate text-fg">{circle.name}</span>
 							{#if circle.description}<span class="block truncate text-sm text-fg-subtle">{circle.description}</span>{/if}

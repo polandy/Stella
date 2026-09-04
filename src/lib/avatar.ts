@@ -1,15 +1,10 @@
+import { AVATAR_ACCENTS, type Accent } from './design/tokens';
+
 /*
  * Avatar fallback helpers (docs/05 §5.10): when a contact has no photo, show their initials on
  * a colour deterministically derived from their id, so the same person always gets the same
  * accent across the list, profile, and graph. Pure and framework-free.
  */
-
-const ACCENTS = [
-	'mauve', 'blue', 'green', 'peach', 'pink', 'teal', 'sky', 'yellow', 'maroon', 'rosewater',
-	'sapphire', 'lavender', 'flamingo'
-] as const;
-
-export type AvatarAccent = (typeof ACCENTS)[number];
 
 /** Up to two uppercase initials from a display name; '?' when there's nothing usable. */
 export function initials(name: string): string {
@@ -19,9 +14,9 @@ export function initials(name: string): string {
 	return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 }
 
-/** A stable Catppuccin accent name for a contact id. */
-export function avatarAccent(id: string): AvatarAccent {
+/** A stable accent for a contact id, drawn from the accents avatars may use. */
+export function avatarAccent(id: string): Accent {
 	let hash = 0;
 	for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-	return ACCENTS[hash % ACCENTS.length];
+	return AVATAR_ACCENTS[hash % AVATAR_ACCENTS.length];
 }

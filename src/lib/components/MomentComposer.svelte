@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
+	import Button from '$lib/components/Button.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import { processImage } from '$lib/image/process-image';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
 	import { tick } from 'svelte';
@@ -163,7 +165,7 @@
 	action="/?/capture"
 	enctype="multipart/form-data"
 	onsubmit={onSubmit}
-	class="relative flex flex-col rounded-app border border-border bg-card shadow-sm transition-shadow focus-within:border-primary focus-within:ring-3 focus-within:ring-primary/20"
+	class="relative flex flex-col rounded-app bg-card shadow-card transition-shadow focus-within:ring-2 focus-within:ring-primary/40"
 >
 	{#if error || localError}
 		<p class="mx-3 mt-3 rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{error ?? localError}</p>
@@ -185,14 +187,14 @@
 			onclick={refreshPicker}
 			onkeyup={(e) => (e.key.startsWith('Arrow') ? refreshPicker() : undefined)}
 			onblur={() => setTimeout(() => (active = null), 120)}
-			class="min-h-14 flex-1 resize-y bg-transparent text-[15px] leading-relaxed text-fg outline-none placeholder:text-fg-subtle"
+			class="min-h-14 flex-1 resize-y bg-transparent font-serif text-[17px] leading-relaxed text-fg outline-none placeholder:text-fg-subtle"
 		></textarea>
 	</div>
 
 	{#if active && rows.length > 0}
 		<ul
 			role="listbox"
-			class="absolute left-14 top-16 z-10 w-[min(320px,calc(100%-4rem))] rounded-app border border-border bg-card p-1 shadow-lg"
+			class="absolute left-14 top-16 z-10 w-[min(320px,calc(100%-4rem))] rounded-app border border-border bg-card p-1 shadow-pop"
 		>
 			<li class="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">People</li>
 			{#each rows as row, i (row.kind === 'person' ? row.person.id : 'create')}
@@ -206,7 +208,7 @@
 							void choose(i);
 						}}
 						onmouseenter={() => (selected = i)}
-						class="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary/12"
+						class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
 					>
 						{#if row.kind === 'person'}
 							<Avatar id={row.person.id} name={row.person.displayName} size={22} />
@@ -227,14 +229,16 @@
 		<input type="hidden" name="newPeople" value={name} />
 	{/each}
 
-	<div class="flex flex-wrap items-center gap-2 border-t border-border px-3 py-2">
-		<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted has-checked:border-transparent has-checked:bg-primary/14 has-checked:font-semibold has-checked:text-primary">
+	<div class="flex flex-wrap items-center gap-2 border-t border-border-subtle px-3 py-2">
+		<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted has-checked:border-transparent has-checked:bg-primary-soft has-checked:font-semibold has-checked:text-primary">
 			<input type="checkbox" class="sr-only" checked={visibility === 'shared'} onchange={(e) => (visibility = (e.currentTarget as HTMLInputElement).checked ? 'shared' : 'private')} />
-			{visibility === 'shared' ? '👥 Shared' : '🔒 Private'}
+			<Icon name={visibility === 'shared' ? 'shared' : 'private'} size={13} />
+			{visibility === 'shared' ? 'Shared' : 'Private'}
 		</label>
 		<input type="hidden" name="visibility" value={visibility} />
 		<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted hover:text-fg">
-			🖼️ {picked.length ? `${picked.length} photo${picked.length > 1 ? 's' : ''}` : 'Photo'}
+			<Icon name="photo" size={13} />
+			{picked.length ? `${picked.length} photo${picked.length > 1 ? 's' : ''}` : 'Photo'}
 			<input type="file" accept="image/*" multiple onchange={onFiles} class="hidden" />
 		</label>
 		<label class="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted">
@@ -247,12 +251,9 @@
 				Mention at least one person with @
 			{/if}
 		</span>
-		<button
-			disabled={!canSave}
-			class="ml-auto inline-flex items-center gap-2 rounded-app bg-primary px-4 py-1.5 text-sm font-semibold text-primary-fg transition-opacity hover:opacity-90 disabled:cursor-default disabled:opacity-45"
-		>
+		<Button variant="primary" disabled={!canSave} class="ml-auto">
 			{saving ? 'Saving…' : 'Save'}
 			<kbd class="rounded border border-primary-fg/40 px-1 text-[10px] font-medium opacity-75">⌘⏎</kbd>
-		</button>
+		</Button>
 	</div>
 </form>

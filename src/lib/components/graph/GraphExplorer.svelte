@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { onDestroy, onMount, untrack } from 'svelte';
-	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
+	import Button from '$lib/components/Button.svelte';
+	import { categoryVar } from '$lib/design/tokens';
 	import { toCytoscapeElements } from '$lib/graph/cytoscape/elements';
+	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
 	import { paletteFromDom } from '$lib/graph/cytoscape/theme';
-	import { applyFilters, emptyModel, mergeModels } from '$lib/graph/model/graph-model';
-	import { buildEgoNetwork, expandNode } from '$lib/graph/model/ego-network';
 	import { findConnectionPath } from '$lib/graph/model/connection-path';
+	import { buildEgoNetwork, expandNode } from '$lib/graph/model/ego-network';
+	import { applyFilters, emptyModel, mergeModels } from '$lib/graph/model/graph-model';
 	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
 	import type { ConnectionPath, GraphFilters, GraphModel } from '$lib/graph/model/types';
 
@@ -26,13 +28,15 @@
 		.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
 	// The filterable connection kinds, each tied to its category colour (docs/05 §5.6).
+	// Each filter carries the same token the canvas draws that edge kind with (docs/05 §5.6),
+	// so a chip and the line it toggles can never drift apart.
 	const FILTERS = [
-		{ key: 'family', label: 'Family', ctp: 'green' },
-		{ key: 'romantic', label: 'Romantic', ctp: 'pink' },
-		{ key: 'social', label: 'Social', ctp: 'blue' },
-		{ key: 'professional', label: 'Work', ctp: 'peach' },
-		{ key: 'circles', label: 'Circles', ctp: 'lavender' },
-		{ key: 'kinship', label: 'Kinship', ctp: 'overlay2' }
+		{ key: 'family', label: 'Family', token: categoryVar('family') },
+		{ key: 'romantic', label: 'Romantic', token: categoryVar('romantic') },
+		{ key: 'social', label: 'Social', token: categoryVar('social') },
+		{ key: 'professional', label: 'Work', token: categoryVar('professional') },
+		{ key: 'circles', label: 'Circles', token: 'var(--edge-membership)' },
+		{ key: 'kinship', label: 'Kinship', token: 'var(--edge-kinship)' }
 	] as const;
 
 	const reducedMotion =
@@ -233,7 +237,7 @@
 			/>
 			{#if suggestions.length}
 				<ul
-					class="absolute left-0 top-full mt-1 w-full overflow-hidden rounded-app border border-border bg-card shadow-lg"
+					class="absolute left-0 top-full mt-1 w-full overflow-hidden rounded-app border border-border bg-card shadow-pop"
 				>
 					{#each suggestions as c (c.id)}
 						<li>
@@ -256,11 +260,11 @@
 					aria-pressed={active.has(f.key)}
 					class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium backdrop-blur transition-opacity"
 					class:opacity-40={!active.has(f.key)}
-					style="border-color:color-mix(in srgb, var(--ctp-{f.ctp}) 45%, transparent); background:color-mix(in srgb, var(--ctp-{f.ctp}) 12%, var(--card)); color:var(--fg)"
+					style="border-color:color-mix(in srgb, {f.token} 45%, transparent); background:color-mix(in srgb, {f.token} 12%, var(--card)); color:var(--fg)"
 				>
 					<span
 						class="size-2 rounded-full"
-						style="background:{active.has(f.key) ? `var(--ctp-${f.ctp})` : 'var(--fg-subtle)'}"
+						style="background:{active.has(f.key) ? f.token : 'var(--fg-subtle)'}"
 					></span>
 					{f.label}
 				</button>
@@ -273,10 +277,10 @@
 			class="pointer-events-auto rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-fg-muted backdrop-blur transition-colors hover:text-fg"
 			class:!border-transparent={pathMode}
 			style={pathMode
-				? 'background:color-mix(in srgb, var(--ctp-yellow) 22%, transparent); color:var(--ctp-yellow)'
+				? 'background:color-mix(in srgb, var(--warning) 22%, transparent); color:var(--warning)'
 				: ''}
 		>
-			🧭 Connection path
+			Connection path
 		</button>
 	</div>
 
@@ -289,7 +293,7 @@
 				class="rounded-full border border-border bg-card/90 px-4 py-1.5 text-xs text-fg-muted backdrop-blur"
 			>
 				{#if path}
-					🧭 {pathChain.join(' → ')}
+					{pathChain.join(' → ')}
 				{:else if pathMissing}
 					No connection found between those two.
 				{:else if pathFrom}
@@ -307,19 +311,19 @@
 	>
 		<div class="mb-1.5 font-semibold uppercase tracking-wide text-fg-subtle">Connections</div>
 		<div class="flex flex-col gap-1 text-fg-muted">
-			<span><span class="mr-2 inline-block w-4 border-t-2" style="border-color:var(--ctp-green)"></span>Family</span>
-			<span><span class="mr-2 inline-block w-4 border-t-2" style="border-color:var(--ctp-pink)"></span>Romantic</span>
-			<span><span class="mr-2 inline-block w-4 border-t-2" style="border-color:var(--ctp-blue)"></span>Social</span>
-			<span><span class="mr-2 inline-block w-4 border-t-2" style="border-color:var(--ctp-peach)"></span>Professional</span>
-			<span><span class="mr-2 inline-block w-4 border-t-2 border-dashed" style="border-color:var(--ctp-lavender)"></span>Circle</span>
-			<span><span class="mr-2 inline-block w-4 border-t-2 border-dotted" style="border-color:var(--fg-subtle)"></span>Kinship</span>
+			<span><span class="mr-2 inline-block w-4 border-t-2" style="border-color:var(--cat-family)"></span>Family</span>
+			<span><span class="mr-2 inline-block w-4 border-t-2" style="border-color:var(--cat-romantic)"></span>Romantic</span>
+			<span><span class="mr-2 inline-block w-4 border-t-2" style="border-color:var(--cat-social)"></span>Social</span>
+			<span><span class="mr-2 inline-block w-4 border-t-2" style="border-color:var(--cat-professional)"></span>Professional</span>
+			<span><span class="mr-2 inline-block w-4 border-t-2 border-dashed" style="border-color:var(--edge-membership)"></span>Circle</span>
+			<span><span class="mr-2 inline-block w-4 border-t-2 border-dotted" style="border-color:var(--edge-kinship)"></span>Kinship</span>
 		</div>
 	</div>
 
 	<!-- Peek panel -->
 	{#if peekNode && !pathMode}
 		<aside
-			class="absolute right-3 top-3 bottom-3 w-64 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-lg backdrop-blur"
+			class="absolute right-3 top-3 bottom-3 w-64 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur"
 		>
 			<button
 				onclick={() => (selected = null)}
@@ -332,19 +336,9 @@
 				{#if peekNode.deceased}· deceased{/if}
 			</div>
 			<div class="flex flex-col gap-2">
-				<button
-					onclick={() => expand(peekNode.id)}
-					class="rounded-app border border-border px-3 py-2 text-sm text-fg-muted transition-colors hover:text-fg"
-				>
-					Expand connections
-				</button>
+				<Button type="button" onclick={() => expand(peekNode.id)}>Expand connections</Button>
 				{#if peekNode.kind === 'person'}
-					<a
-						href="/contacts/{peekNode.id}"
-						class="rounded-app bg-primary px-3 py-2 text-center text-sm font-medium text-primary-fg transition-opacity hover:opacity-90"
-					>
-						Open profile
-					</a>
+					<Button variant="primary" href="/contacts/{peekNode.id}">Open profile</Button>
 				{/if}
 			</div>
 			<p class="mt-4 text-xs text-fg-subtle">

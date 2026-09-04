@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/Button.svelte';
 	import type { ActionData } from './$types';
 
 	let { form }: { form: ActionData } = $props();
@@ -10,7 +11,7 @@
 <main class="mx-auto flex w-full max-w-lg flex-col gap-6 px-6 py-10">
 	<h1 class="text-2xl font-semibold text-fg">Add a person</h1>
 
-	<form method="POST" class="flex flex-col gap-4 rounded-app border border-border bg-card p-6">
+	<form method="POST" class="flex flex-col gap-4 rounded-app bg-card p-6 shadow-card">
 		{#if form?.error}
 			<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
 		{/if}
@@ -62,10 +63,6 @@
 			</label>
 		</fieldset>
 
-		<button
-			class="mt-2 rounded-app bg-primary px-4 py-2 font-medium text-primary-fg transition-opacity hover:opacity-90"
-		>
-			Add person
-		</button>
+		<Button variant="primary" class="mt-2">Add person</Button>
 	</form>
 </main>
