@@ -6,7 +6,9 @@ contract and changes with it.
 
 Every imported row gets a **stable source id** of the form `monica:<what>:<monica id>`, so
 importing the same dump again inserts nothing new. Everything is attributed to the importing
-member and gets the visibility chosen in the wizard.
+member and gets the visibility chosen in the wizard. The ids assume **one household per
+deployment** (docs/03 §household): two households importing two Monicas into one database
+would collide on them — scope the ids by household before multi-tenancy (docs/06).
 
 ## People
 

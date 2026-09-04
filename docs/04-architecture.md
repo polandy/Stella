@@ -213,7 +213,8 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **Monica import writes stable source ids, not ULIDs** — every imported row's id is
   `monica:<table>:<id>`, so the import is idempotent by construction (insert-or-ignore) and a
   re-run reports zero writes instead of duplicating; the cost is a second id shape in the
-  tables, which nothing else depends on (docs/02 §2.16).
+  tables, which nothing else depends on, and an assumption of one household per deployment
+  that multi-tenancy would have to lift (docs/02 §2.16, docs/monica-mapping.md).
 - **Imported photos travel through the browser, not a server path** — the wizard's folder
   picker reads Monica's photo directory on the admin's machine and downscales each file with
   the same canvas pipeline as avatars and journal photos. Rejected: a server-side

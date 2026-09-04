@@ -4,7 +4,13 @@ import { requireAdmin } from '$lib/server/auth/guards';
 import { getConfig } from '$lib/server/config';
 import { importMonicaDump, previewMonicaDump } from '$lib/server/domain/import/monica/apply';
 import { SqlDumpError } from '$lib/server/domain/import/monica/sql-dump';
-import { discardStagedDump, readStagedDump, stageDump } from '$lib/server/import/staging';
+import {
+	discardStagedDump,
+	pruneStagedDumps,
+	readStagedDump,
+	stageDump,
+	STAGED_DUMP_MAX_AGE_MS
+} from '$lib/server/import/staging';
 import { getImportDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -66,6 +72,7 @@ export const actions: Actions = {
 				userId: user.id,
 				visibility
 			});
+			await pruneStagedDumps(getConfig().importDir, STAGED_DUMP_MAX_AGE_MS);
 			const token = await stageDump(getConfig().importDir, text);
 			return {
 				step: 'preview' as const,
