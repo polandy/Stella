@@ -21,6 +21,14 @@ import {
 } from '$lib/server/domain/dates/important-dates';
 import { withoutYear } from '$lib/dates/labels';
 import { IMPORTANT_DATE_KINDS } from '$lib/server/domain/dates/upcoming';
+import {
+	deleteInteraction,
+	INTERACTION_KINDS,
+	InvalidInteractionError,
+	lastContactedAt,
+	listInteractions,
+	logInteraction
+} from '$lib/server/domain/interactions/interactions';
 import { listJournalPage } from '$lib/server/domain/journal/journal';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import { renderMarkdown, renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
@@ -43,6 +51,7 @@ import {
 	getContactFields,
 	getImportantDateDeps,
 	getImportantDates,
+	getInteractionDeps,
 	getJournalDeps,
 	getNoteDeps,
 	getPhotos,
@@ -76,7 +85,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		allCircles,
 		journalPage,
 		journalPhotos,
-		dates
+		dates,
+		interactions
 	] = await Promise.all([
 		getRelationships().listForContactVisibleTo(viewer, params.id),
 		getRelationships().listTypes(),
@@ -88,7 +98,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		listCircles(getCircleDeps(), viewer),
 		listJournalPage(getJournalDeps(), viewer, params.id, { limit: JOURNAL_PAGE }),
 		getPhotos().listJournalPhotos(viewer, params.id),
-		listImportantDates(getImportantDateDeps(), viewer, params.id)
+		listImportantDates(getImportantDateDeps(), viewer, params.id),
+		listInteractions(getInteractionDeps(), viewer, params.id)
 	]);
 
 	// Group visible journal photo ids by entry so the inline timeline renders each gallery.
@@ -117,6 +128,19 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			nextCursor: journalPage.nextCursor
 		},
 		contact,
+		interactions: interactions.map((i) => ({
+			id: i.id,
+			kind: i.kind,
+			happenedAt: i.happenedAt,
+			title: i.title,
+			description: i.description,
+			visibility: i.visibility,
+			mine: i.createdBy === locals.user!.id,
+			participants: i.participants.map((p) => ({ contactId: p.contactId, displayName: p.displayName }))
+		})),
+		// Derived from the list *this viewer* sees, so a private touchpoint never shows here.
+		lastContactedAt: lastContactedAt(interactions),
+		interactionKinds: INTERACTION_KINDS,
 		dates,
 		// The birthday derived from the profile, unless an explicit row takes over (§2.13.2).
 		derivedBirthday: overridesDerivedBirthday(dates) ? null : contact.birthDate,
@@ -175,6 +199,15 @@ const AddDateSchema = v.object({
 	date: v.pipe(v.string(), v.minLength(1)),
 	recursYearly: v.optional(v.boolean(), true),
 	remind: v.optional(v.boolean(), true)
+});
+
+const LogInteractionSchema = v.object({
+	kind: v.picklist(INTERACTION_KINDS),
+	happenedAt: v.pipe(v.string(), v.minLength(1)),
+	title: v.optional(v.pipe(v.string(), v.trim())),
+	description: v.optional(v.pipe(v.string(), v.trim())),
+	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
+	participantIds: v.array(v.pipe(v.string(), v.minLength(1)))
 });
 
 const AddTagSchema = v.object({
@@ -329,6 +362,75 @@ export const actions: Actions = {
 			});
 		}
 
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	logInteraction: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const parsed = v.safeParse(LogInteractionSchema, {
+			kind: form.get('kind'),
+			happenedAt: form.get('happenedAt'),
+			title: form.get('title') || undefined,
+			description: form.get('description') || undefined,
+			visibility: form.get('visibility') || undefined,
+			participantIds: form.getAll('participants').filter((p) => typeof p === 'string')
+		});
+		if (!parsed.success) {
+			return fail(400, { interactionError: 'Please choose what happened and on which day.' });
+		}
+
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		// A participant must be someone the viewer may see; an unknown id is refused rather
+		// than stored, so nothing outside the viewer's view ever gets attached.
+		const visibleIds = new Set((await listContacts(getContactDeps(), viewer)).map((c) => c.id));
+		if (!parsed.output.participantIds.every((id) => visibleIds.has(id))) {
+			return fail(400, { interactionError: 'One of the participants could not be found.' });
+		}
+
+		const author = {
+			userId: locals.user.id,
+			householdId: locals.user.householdId,
+			defaultVisibility: 'shared' as const // TODO: user default (settings, §2.16)
+		};
+		try {
+			await logInteraction(getInteractionDeps(), author, {
+				contactId: params.id,
+				kind: parsed.output.kind,
+				happenedAt: parsed.output.happenedAt,
+				title: parsed.output.title ?? null,
+				description: parsed.output.description ?? null,
+				visibility: parsed.output.visibility,
+				participantIds: parsed.output.participantIds
+			});
+		} catch (err) {
+			return fail(400, {
+				interactionError:
+					err instanceof InvalidInteractionError ? err.message : 'Could not log the interaction.'
+			});
+		}
+
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	removeInteraction: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const interactionId = form.get('interactionId');
+		if (typeof interactionId !== 'string') return fail(400, {});
+
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: 'shared' as const };
+		const removed = await deleteInteraction(getInteractionDeps(), author, interactionId);
+		if (!removed) return fail(403, { interactionError: 'Only the person who logged it can remove it.' });
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 

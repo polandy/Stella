@@ -1,6 +1,7 @@
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import { DATE_SHAPE, isRealCalendarDay } from './calendar';
 import { IMPORTANT_DATE_KINDS, type ImportantDateKind, type UpcomingSource } from './upcoming';
 
 /*
@@ -47,25 +48,6 @@ export interface AddImportantDateInput {
 	date: string;
 	recursYearly?: boolean;
 	remind?: boolean;
-}
-
-/** A full ISO day, or a year-less `--MM-DD`. */
-const DATE_SHAPE = /^(?:(\d{4})-(\d{2})-(\d{2})|--(\d{2})-(\d{2}))$/;
-
-/**
- * A shape check is not enough: `--02-30` and `--99-99` both match it, and the date maths
- * downstream would silently roll them into some other day rather than refuse them. A
- * year-less date is validated against a leap year so 29 February stays legal.
- */
-function isRealCalendarDay(value: string): boolean {
-	const m = DATE_SHAPE.exec(value);
-	if (!m) return false;
-	const year = m[1] ? Number(m[1]) : 2000;
-	const month = Number(m[2] ?? m[4]);
-	const day = Number(m[3] ?? m[5]);
-	if (month < 1 || month > 12 || day < 1) return false;
-	const lastDayOfMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-	return day <= lastDayOfMonth;
 }
 
 /** Thrown when a date is malformed or its kind is unknown. */

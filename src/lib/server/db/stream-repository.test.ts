@@ -36,6 +36,12 @@ function seedEntry(id: string, contactId: string, at: number, visibility: Vis = 
 		.run();
 	for (const m of mentions) db.insert(schema.journalMention).values({ journalEntryId: id, contactId: m }).run();
 }
+function seedInteraction(id: string, contactId: string, at: number, visibility: Vis = 'shared', createdBy = U1, participants: string[] = []) {
+	db.insert(schema.interaction)
+		.values({ id, contactId, createdBy, visibility, kind: 'call', happenedAt: '2026-09-03', title: `call ${id}`, createdAt: at })
+		.run();
+	for (const c of participants) db.insert(schema.interactionParticipant).values({ interactionId: id, contactId: c }).run();
+}
 function seedRelationship(id: string, from: string, to: string, at: number) {
 	db.insert(schema.relationship)
 		.values({ id, householdId: H, fromContactId: from, toContactId: to, typeId: 'sister', createdBy: U1, createdAt: at })
@@ -89,6 +95,38 @@ describe('recentMoments', () => {
 
 		expect((await repo.recentMoments(asU2, 10)).map((r) => r.id)).toEqual(['shared']);
 		expect((await repo.recentMoments(asU1, 10)).map((r) => r.id)).toEqual(['shared', 'on-secret', 'mine-private']);
+	});
+});
+
+describe('recentInteractions', () => {
+	it('returns visible interactions newest-first with who logged them and visible participants', async () => {
+		seedContact('oma', 1);
+		seedContact('opa', 1);
+		seedContact('secret', 1, 'private', U1);
+		seedInteraction('old', 'oma', 100);
+		seedInteraction('new', 'oma', 200, 'shared', U2, ['opa', 'secret']);
+
+		const rows = await repo.recentInteractions(asU2, 10);
+		expect(rows.map((r) => r.id)).toEqual(['new', 'old']);
+		expect(rows[0]).toMatchObject({
+			actor: { id: U2, name: 'Two' },
+			subject: { id: 'oma', name: 'oma' },
+			interactionKind: 'call',
+			happenedAt: '2026-09-03',
+			title: 'call new'
+		});
+		expect(rows[0]!.participants.map((p) => p.id)).toEqual(['opa']);
+	});
+
+	it('hides another member’s private interaction and interactions on a private person', async () => {
+		seedContact('oma', 1);
+		seedContact('secret', 1, 'private', U1);
+		seedInteraction('mine-private', 'oma', 100, 'private', U1);
+		seedInteraction('on-secret', 'secret', 200);
+		seedInteraction('shared', 'oma', 300);
+
+		expect((await repo.recentInteractions(asU2, 10)).map((r) => r.id)).toEqual(['shared']);
+		expect((await repo.recentInteractions(asU1, 10)).map((r) => r.id)).toEqual(['shared', 'on-secret', 'mine-private']);
 	});
 });
 

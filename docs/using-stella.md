@@ -82,6 +82,19 @@ same gesture.
 Two small mercies: people who have died are left out, and a 29 February anniversary lands on
 1 March in the years that have no 29th, instead of quietly skipping.
 
+## Keeping track of when you were last in touch
+
+Every person's page has an **Interactions** section. When you have called Oma, met a friend
+for lunch or posted a parcel, log it there: pick what it was (met in person, call, video call,
+message, letter, gift, other), the day, and if you like a line about it. If other people were
+there, tick them too and the entry links to each of them.
+
+The most recent of these shows up under the person's name as **Last contacted**, so the
+answer to "when did we last speak?" is right there without scrolling. Logged interactions
+also appear on Home, so the rest of the household sees that you were in touch. As
+everywhere in Stella, an interaction marked *private* stays yours alone, and only the person
+who logged one can remove it.
+
 ## Relationships
 
 Say once that Lena is Markus's child, and Stella knows the other half of it too — Markus

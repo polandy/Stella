@@ -197,6 +197,7 @@ Consistent everywhere (chips, edges, timeline dots):
 | Social / friends | blue |
 | Professional | peach |
 | Other | overlay/subtext (neutral) |
+| Interaction kinds | met green · call blue · video sapphire · message teal · letter peach · gift pink · other neutral (one table, `src/lib/interactions/kinds.ts`, used by the profile timeline and the stream) |
 | Success | green · **Warning** yellow · **Danger** red · **Link** blue |
 
 Tags choose from the full accent set. All pairings are verified for AA contrast on their

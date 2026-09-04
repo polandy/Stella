@@ -21,6 +21,7 @@ import { createDrizzleJournalRepository } from './db/journal-repository';
 import { createDrizzleIdentityStore } from './db/identity-store';
 import { createDrizzleContactFieldRepository } from './db/contact-field-repository';
 import { createDrizzleImportantDateRepository } from './db/important-date-repository';
+import { createDrizzleInteractionRepository } from './db/interaction-repository';
 import { createDrizzleNoteRepository } from './db/note-repository';
 import { createDrizzlePhotoRepository } from './db/photo-repository';
 import { createFileMediaStore } from './media/file-store';
@@ -43,6 +44,7 @@ import type { CircleDeps, CircleRepository } from './domain/circles/circles';
 import type { StreamDeps, StreamRepository } from './domain/stream/stream';
 import type { CaptureMomentDeps } from './domain/moments/moments';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
+import type { InteractionDeps, InteractionRepository } from './domain/interactions/interactions';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
 import type { JournalPhotoDeps } from './domain/media/journal-photos';
 import { ulidGenerator } from './id';
@@ -182,6 +184,16 @@ export function getImportantDates(): ImportantDateRepository {
 
 export function getImportantDateDeps(): ImportantDateDeps {
 	return { dates: getImportantDates(), ids: ulidGenerator, clock: systemClock };
+}
+
+let interactionRepository: InteractionRepository | null = null;
+
+export function getInteractions(): InteractionRepository {
+	return (interactionRepository ??= createDrizzleInteractionRepository(getDb()));
+}
+
+export function getInteractionDeps(): InteractionDeps {
+	return { interactions: getInteractions(), ids: ulidGenerator, clock: systemClock };
 }
 
 let searchRepository: SearchRepository | null = null;
