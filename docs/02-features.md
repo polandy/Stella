@@ -259,7 +259,8 @@ A lightweight journal of contact touchpoints, distinct from notes.
 - An interaction has: a **type** (met in person, call, video, message, letter, gift,
   other), a **date**, an optional **title/summary**, an optional **description**, and
   optional **participants** (other contacts present).
-- Rendered as a reverse-chronological **timeline** on the profile.
+- Rendered on the profile as part of the person's **story** (§2.23), interleaved with journal
+  entries in one chronological read.
 - Powers "**last contacted**" on the profile and "haven't seen in a while" hints **[M3]**.
 - **Shipped:** the timeline and the *Log interaction* form live in the **Interactions**
   section of the person page. An interaction is about one **subject** and records a **day**
@@ -677,6 +678,34 @@ entry and a household update, without leaving the page. Concept + clickable prot
   contact + journal ports; `domain/stream`: merge/limit of scoped reads over a
   `StreamRepository` port); the Drizzle adapter owns the scoped queries; Home is a thin edge.
 
+## 2.23 The story timeline **[M2]**
+
+Two things are recorded against a person and both are chronological: the **journal** someone
+wrote about them (§2.20) and the **touchpoints** someone had with them (§2.6). They used to be
+two lists, one under the other, each with its own dates — leaving the reader to merge them by
+eye to answer the only question the page is really asked: *what has been going on with this
+person?*
+
+The **story** is that merge, done once, server-side.
+
+- **One order.** Newest day first; within a day, the later recording first. A dead heat orders
+  by kind, so a page boundary always falls in the same place and paging can neither repeat nor
+  swallow an item.
+- **One page at a time.** Both sources are keyset-paginated on `(day, recorded_at)` and merged
+  into pages of twelve. Each source carries its own resume point, because a page can be filled
+  entirely by one of them while the other still has rows waiting. *Show earlier* fetches the
+  next page from `POST /contacts/:id/story`, which takes the previous cursor back verbatim.
+- **Visibility is unchanged (§2.10).** Each source is read through its own scoped query before
+  the merge, so a private entry or touchpoint reaches its author and nobody else. The merge
+  never sees a row the viewer may not.
+- **Removing.** An item can be removed from the story by whoever wrote it — previously a
+  journal entry could only be removed from the full journal page.
+- **Writing** still happens where it did: the journal page for an entry with photos, the
+  *Log contact* form on the person page for a touchpoint.
+- Implemented as a pure merge (`domain/story`: `mergeStory`, unit-tested for every ordering
+  and cursor rule) plus a thin read that fetches one page of each source; both Drizzle
+  adapters own their scoped keyset queries.
+
 ## 2.21 Feature ↔ milestone summary
 
 | Feature | Milestone |
@@ -698,6 +727,7 @@ entry and a household update, without leaving the page. Concept + clickable prot
 | Interactions timeline | M2 |
 | Explorer rich: in-place expand, in-graph search, connection path, circles + kinship edges, filters, layouts | M2 |
 | Activity feed → household stream on Home | M2 |
+| Story timeline (journal + touchpoints merged, per person) | M2 |
 | **Moments**: one-sentence capture with inline person creation + link hint | M2 |
 | Personal dashboard (Home, panels, drill-down) | M2 |
 | Name-based duplicate & relative suggestions | M2 |

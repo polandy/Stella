@@ -172,7 +172,7 @@
 										<span>logged</span>
 										<span class="inline-flex items-center gap-1 font-semibold" style="color:{kind.accent}"><Icon name={kind.icon} size={12} />{kind.label.toLowerCase()}</span>
 										<span>with</span>
-										<a href="/contacts/{item.subject.id}#interactions" class="font-medium text-fg hover:underline">{item.subject.name}</a>
+										<a href="/contacts/{item.subject.id}" class="font-medium text-fg hover:underline">{item.subject.name}</a>
 										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title="Only you can see this"><Icon name="private" size={11} />private</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.happenedAt}>{ago(item.at)}</span>
 									</div>

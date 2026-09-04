@@ -35,6 +35,7 @@ function fakeRepo() {
 			inserted = i;
 		},
 		listForContactVisibleTo: async () => [],
+		listPageForContactVisibleTo: async () => [],
 		deleteOwn: async (params) => {
 			deleted.push(params);
 			return true;
