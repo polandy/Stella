@@ -195,6 +195,18 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **OIDC-standard SSO, provider-agnostic** — targets Authelia but avoids provider lock-in.
 - **Cytoscape.js for the graph** — mature, purpose-built; lazy-loaded to protect the
   bundle. D3-force considered as a lighter alt if bundle size demands it.
+- **Birthdays derived, not duplicated** — a birthday is read off `contact.birth_date` rather
+  than written as an `important_date` row, so the two can never disagree. The cost is that
+  "a person's dates" is assembled from two sources at read time; the alternative (a row per
+  birthday, kept in sync on every profile edit) was rejected after the demo seed did exactly
+  that and silently shadowed every birthday. An explicit `birthday` row **overrides** the
+  derived one, which is the single mechanism behind correcting and muting a birthday.
+  (docs/02 §2.13.2.)
+- **No reminder objects and no reminders screen** — `important_date.remind` is a flag on the
+  date itself, and what is due appears at the top of the Home stream. Rejected: a separate
+  reminder entity with its own schedule (Monica's model), which doubles the things a user
+  creates and maintains for no gain at family scale. Revisit if per-date lead times or email
+  delivery (M3) turn the flag into something with real structure.
 
 ## 4.10 Deployment
 

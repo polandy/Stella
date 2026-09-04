@@ -36,6 +36,11 @@
 			<input name="description" class={input} placeholder="Marco's sister, met at the lake" />
 		</label>
 
+		<label class="flex flex-col gap-1 text-sm">
+			<span class="text-fg-muted">Birthday <span class="text-fg-subtle">(optional)</span></span>
+			<input type="date" name="birthDate" class={input} />
+		</label>
+
 		<div class="flex gap-3">
 			<label class="{field} flex-1">
 				<span class="text-fg-muted">How we met</span>

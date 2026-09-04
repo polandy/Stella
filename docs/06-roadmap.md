@@ -56,7 +56,9 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   suggestions (e.g. mother of a sibling) — a pure, test-first kinship-inference engine.
 - **Circles & shared contexts:** circles with time-bounded memberships, name autocomplete
   with create-on-the-fly, a circle overview page, and a member/circle visualization.
-- **Important dates & reminders** view (birthdays/anniversaries).
+- **Important dates & reminders** (§2.13): dates on a person, birthdays derived from the
+  birth date, and a "Coming up" band at the top of the Home stream that offers to write a
+  moment — no reminder objects and no separate reminders screen.
 - **Photo gallery** (grid, lightbox, captions, set-as-avatar) with per-photo visibility.
 - **Personal journal:** per-person diary — dated Markdown entries with photos, per-entry
   visibility (shared/private), rendered as a timeline on the profile (§2.20).

@@ -1,13 +1,16 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { listContacts } from '$lib/server/domain/contacts/contacts';
+import { upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
 import { captureMoment, MomentNeedsPersonError } from '$lib/server/domain/moments/moments';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { buildStream } from '$lib/server/domain/stream/stream';
+import { handleFor } from '$lib/mentions/picker';
 import {
 	getCaptureMomentDeps,
 	getContactDeps,
+	getImportantDates,
 	getJournalPhotoDeps,
 	getStreamDeps
 } from '$lib/server/services';
@@ -22,6 +25,9 @@ import type { Actions, PageServerLoad } from './$types';
 /** Query param carrying the post-save "link these two?" hint: `?link=<a>,<b>`. */
 const LINK_PARAM = 'link';
 
+/** Query param that opens the composer pre-filled with one person's handle: `?about=<id>`. */
+const ABOUT_PARAM = 'about';
+
 function today(): string {
 	return new Date().toLocaleDateString('en-CA'); // ISO YYYY-MM-DD
 }
@@ -30,9 +36,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
-	const [items, contacts] = await Promise.all([
+	const [items, contacts, dateSources] = await Promise.all([
 		buildStream(getStreamDeps(), viewer),
-		listContacts(getContactDeps(), viewer)
+		listContacts(getContactDeps(), viewer),
+		getImportantDates().listSourcesVisibleTo(viewer)
 	]);
 	const nameById = new Map(contacts.map((c) => [c.id, c.displayName]));
 	const nameOf = (id: string) => nameById.get(id) ?? null;
@@ -44,9 +51,17 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			? { a: { id: a, name: nameById.get(a)! }, b: { id: b, name: nameById.get(b)! } }
 			: null;
 
+	// "Write a moment" on an upcoming date opens the composer with that person already in it.
+	const about = contacts.find((c) => c.id === url.searchParams.get(ABOUT_PARAM));
+
+	// One reading of the clock, so the composer's day and the horizon cannot straddle midnight.
+	const day = today();
+
 	return {
-		today: today(),
-		compose: url.searchParams.has('compose'),
+		today: day,
+		compose: url.searchParams.has('compose') || about !== undefined,
+		draft: about ? `${handleFor(about)} ` : null,
+		upcoming: upcomingDates(dateSources, day),
 		linkSuggestion,
 		candidates: contacts.map((c) => ({
 			id: c.id,

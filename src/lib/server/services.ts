@@ -20,6 +20,7 @@ import { createDrizzleGraphRepository } from './db/graph-repository';
 import { createDrizzleJournalRepository } from './db/journal-repository';
 import { createDrizzleIdentityStore } from './db/identity-store';
 import { createDrizzleContactFieldRepository } from './db/contact-field-repository';
+import { createDrizzleImportantDateRepository } from './db/important-date-repository';
 import { createDrizzleNoteRepository } from './db/note-repository';
 import { createDrizzlePhotoRepository } from './db/photo-repository';
 import { createFileMediaStore } from './media/file-store';
@@ -41,6 +42,7 @@ import type { GraphRepository } from './db/graph-repository';
 import type { CircleDeps, CircleRepository } from './domain/circles/circles';
 import type { StreamDeps, StreamRepository } from './domain/stream/stream';
 import type { CaptureMomentDeps } from './domain/moments/moments';
+import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
 import type { JournalPhotoDeps } from './domain/media/journal-photos';
 import { ulidGenerator } from './id';
@@ -170,6 +172,16 @@ export function getContactFields(): ContactFieldRepository {
 
 export function getContactFieldDeps(): ContactFieldDeps {
 	return { fields: getContactFields(), ids: ulidGenerator, clock: systemClock };
+}
+
+let importantDateRepository: ImportantDateRepository | null = null;
+
+export function getImportantDates(): ImportantDateRepository {
+	return (importantDateRepository ??= createDrizzleImportantDateRepository(getDb()));
+}
+
+export function getImportantDateDeps(): ImportantDateDeps {
+	return { dates: getImportantDates(), ids: ulidGenerator, clock: systemClock };
 }
 
 let searchRepository: SearchRepository | null = null;

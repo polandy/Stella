@@ -416,11 +416,49 @@ at-a-glance overview of recent household life and acting as a launchpad into the
 
 ## 2.13 Important dates & reminders **[M2]**
 
-- Contacts can have **important dates** (birthday, anniversary, custom), with optional
-  yearly recurrence.
-- A **reminders** view surfaces upcoming dates (e.g. next 30 days) across the household.
+A date is either on the household's radar or it is not — there is no separate reminder
+object to create, schedule and maintain. And there is no reminders *screen*: what is coming
+up appears where the household already looks, at the top of the Home stream (§2.22.2), so
+the stream reads as one timeline with the future above the past.
+
+### 2.13.1 The dates themselves
+
+- A contact can have **important dates**: `birthday`, `anniversary` or `custom` (a custom
+  one must be named, or it means nothing three months later). Each carries whether it
+  **recurs yearly** and whether it should **remind** — the "show it on Home" switch.
+- A date may be a full ISO day or a year-less `--MM-DD` when the year is unknown; the age
+  or count is then simply omitted rather than guessed.
+- Dates are **child records of a contact** with no visibility of their own: they inherit
+  the contact's, enforced by the adapter's scoped reads (§2.10).
+- Dates are listed, added and removed in a **Dates** section on the person page.
+
+### 2.13.2 Birthdays are derived, never duplicated
+
+A birthday comes from `contact.birth_date`, captured on the contact form. No
+`important_date` row is written for it, so the two can never disagree.
+
+An **explicit `birthday` row overrides the derived one** for that contact. That is the one
+mechanism behind two features: correcting a birthday without touching the profile, and
+**muting** one — an explicit birthday row with `remind` off silences it.
+
+### 2.13.3 What Home shows
+
+- The **Coming up** band lists the next occurrences inside a 30-day horizon, soonest
+  first, capped at five. It is **absent entirely when nothing is due** — a permanently
+  empty panel teaches people to stop looking.
+- Each entry reads as a countdown ("today", "tomorrow", "in 4 days") rather than a
+  calendar entry, and says what the occasion is ("turns 11", "12 years together").
+- Each entry offers exactly **one action: write a moment about it** — `/?about=<contactId>`
+  opens the capture field with that person's handle already in it (§2.22.1). This is the
+  point of a reminder: it closes back into the app's core verb instead of just informing.
+- **Deceased contacts are excluded** (§2.2), and a one-off date disappears once it passes.
+- 29 February falls on **1 March** in a common year, so an anniversary is never skipped.
+
+### 2.13.4 Later
+
 - Optional **email reminders** to members who opt in **[M3]**. No push spam.
-- Birthdays derive automatically from a contact's birthdate.
+- Custom lead times ("two weeks before"), snoozing, and an ICS feed are deliberately out
+  of scope until the simple version has been lived with.
 
 ## 2.14 Photos & media **[M1 avatar / M2 gallery]**
 
