@@ -1,4 +1,4 @@
-import type { Palette } from './theme';
+import { mixHex, type Palette } from './theme';
 
 /*
  * Build the Cytoscape stylesheet from a resolved Palette (docs/05 §5.8). Pure: palette in,
@@ -13,9 +13,6 @@ export interface CyStyle {
 }
 
 export function buildStylesheet(p: Palette): CyStyle[] {
-	const mix = (accent: string, pct: number, base: string) =>
-		`color-mix(in srgb, ${accent} ${pct}%, ${base})`;
-
 	return [
 		// ── People ────────────────────────────────────────────────────────────
 		{
@@ -44,7 +41,7 @@ export function buildStylesheet(p: Palette): CyStyle[] {
 		// deterministic accent per person (data(accent) → --ctp-<accent>, resolved into hex)
 		...Object.entries(p.accents).map(([name, hex]) => ({
 			selector: `node.person[accent = "${name}"]`,
-			style: { 'background-color': hex, 'border-color': mix(hex, 45, p.card) }
+			style: { 'background-color': hex, 'border-color': mixHex(hex, 45, p.card) }
 		})),
 		{
 			selector: 'node.center',
@@ -59,7 +56,7 @@ export function buildStylesheet(p: Palette): CyStyle[] {
 			selector: 'node.circle',
 			style: {
 				shape: 'round-rectangle',
-				'background-color': mix(p.membership, 20, p.card),
+				'background-color': mixHex(p.membership, 20, p.card),
 				'border-color': p.membership,
 				'border-width': 2,
 				width: 'label',
