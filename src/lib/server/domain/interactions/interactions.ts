@@ -52,11 +52,28 @@ export interface Interaction extends Omit<NewInteraction, 'participantIds'> {
 	participants: InteractionParticipant[];
 }
 
+/** The (happenedAt, createdAt) of the last interaction a client has seen. */
+export interface InteractionCursor {
+	happenedAt: string;
+	createdAt: number;
+}
+
 /** Port the domain owns; the Drizzle adapter implements it with visibility-scoped reads. */
 export interface InteractionRepository {
 	insert(interaction: NewInteraction): Promise<void>;
 	/** Interactions on a contact the viewer may see, most recent day first. */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Interaction[]>;
+	/**
+	 * One keyset page of visible interactions, most recent day first. `before` excludes
+	 * everything at or after that (happenedAt, createdAt) point, so passing the previous page's
+	 * last row walks backwards through time without gaps or repeats. Same contract as the
+	 * journal's page read, because the story timeline merges the two (docs/02 §2.23).
+	 */
+	listPageForContactVisibleTo(
+		viewer: Viewer,
+		contactId: string,
+		opts: { limit: number; before?: InteractionCursor }
+	): Promise<Interaction[]>;
 	/** Delete an interaction the viewer authored; returns whether a row was removed. */
 	deleteOwn(params: { authorId: string; id: string }): Promise<boolean>;
 }

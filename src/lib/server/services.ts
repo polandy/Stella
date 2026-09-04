@@ -34,6 +34,7 @@ import type {
 	ContactFieldRepository
 } from './domain/contact-fields/contact-fields';
 import type { SearchDeps, SearchRepository } from './domain/search/search';
+import type { StoryDeps } from './domain/story/story';
 import type { ContactDeps, ContactRepository } from './domain/contacts/contacts';
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { JournalDeps, JournalRepository } from './domain/journal/journal';
@@ -166,6 +167,7 @@ export function getJournalDeps(): JournalDeps {
 	return { journal: getJournal(), ids: ulidGenerator, clock: systemClock };
 }
 
+
 let contactFieldRepository: ContactFieldRepository | null = null;
 
 export function getContactFields(): ContactFieldRepository {
@@ -194,6 +196,11 @@ export function getInteractions(): InteractionRepository {
 
 export function getInteractionDeps(): InteractionDeps {
 	return { interactions: getInteractions(), ids: ulidGenerator, clock: systemClock };
+}
+
+/** The story timeline reads both sources; it writes nothing, so it needs no clock or ids. */
+export function getStoryDeps(): StoryDeps {
+	return { journal: getJournal(), interactions: getInteractions() };
 }
 
 let searchRepository: SearchRepository | null = null;

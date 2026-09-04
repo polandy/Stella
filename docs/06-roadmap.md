@@ -50,7 +50,8 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   top of the stream.
 - **Personal dashboard (Home):** panels for recent activity, new people, recent notes,
   gifts given, upcoming dates, "your contributions" — each drilling down to the detail.
-- **Interactions timeline** + "last contacted".
+- **Interactions timeline** + "last contacted", read as one **story timeline** per person
+  together with the journal (§2.23).
 - **Name-based suggestions:** duplicate/relative candidates on contact entry (pure ranker).
 - **Relationship intelligence:** derived kinship (grandparent, cousin, …) + propagation
   suggestions (e.g. mother of a sibling) — a pure, test-first kinship-inference engine.

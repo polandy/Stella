@@ -181,12 +181,21 @@ They must be edited together; `app.css` says so at both blocks.
   the longer-term shape; the stream is what stands today.
 - **Contacts list** — searchable, filterable (tag, category, living), avatar-led rows or
   cards; density toggle.
-- **Contact profile** — hero header (avatar, name, description, key dates, tags, quick
-  actions), then sections: Dates (§2.13.1), Relationships (a mini **ego-graph** of directly connected people
-  over the grouped list), Notes (pinned first), a **journal timeline** inline (entries
-  grouped by week, older weeks lazy-loaded on scroll via a keyset cursor; composing with
-  photos on the full journal page), Interactions timeline, Photos gallery, Contact fields.
-  "Added by / last edited" footer.
+- **Contact profile** — **who on the left, what happened on the right.**
+  - **Hero:** avatar, name, description, then the facts you came for on one line — when you
+    were last in touch, how you met, whether the person is private. Two actions: *Write* (a
+    journal entry) and *Log contact* (a touchpoint), the second opening the story's own form.
+  - **Profile column** (`19rem`, sticky from `lg`): Contact fields, Dates (§2.13.1), Circles,
+    Tags, How we met. Each is a card with **one** disclosure — `+ Add` reveals its form and
+    nothing else is open. A form that failed validation opens itself, so the error has a home.
+  - **Right column:** tabs *Story · People · Notes*. **Story** is the merged timeline of
+    §2.23 — journal entries and touchpoints in one order, a rail with a dot per item coloured
+    by kind, *Show earlier* paging back through both sources. **People** lists the
+    relationships and hides the ego-graph behind *Show map*, so a person with no interest in
+    it does not pay for it on every visit. **Notes** are pinned-first.
+  - Below `lg` the two columns stack **story first**: the story is what the page is opened for,
+    and the profile follows underneath.
+  - Counts sit on a tab only where they are exact; the story is paged, so it carries none.
 - **Quick add** — a focused sheet: name, optional photo, "how we met", optional first
   relationship. Everything else deferred.
 - **Graph** — full-screen canvas with filter chips, search-to-focus, ego/full toggle,

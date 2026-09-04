@@ -87,6 +87,85 @@ describe('interaction repository', () => {
 		expect(list[1]!.participants).toEqual([]);
 	});
 
+	it('pages backwards through the timeline without repeating or dropping a row', async () => {
+		// Four days, logged out of order so the cursor cannot lean on insertion order.
+		for (const day of ['2026-08-02', '2026-08-04', '2026-08-01', '2026-08-03']) {
+			await logInteraction(deps(), author1, { contactId: 'oma', kind: 'call', happenedAt: day, title: day });
+		}
+		const repo = createDrizzleInteractionRepository(db);
+
+		const first = await repo.listPageForContactVisibleTo(viewerU1, 'oma', { limit: 2 });
+		expect(first.map((i) => i.happenedAt)).toEqual(['2026-08-04', '2026-08-03']);
+
+		const last = first.at(-1)!;
+		const second = await repo.listPageForContactVisibleTo(viewerU1, 'oma', {
+			limit: 2,
+			before: { happenedAt: last.happenedAt, createdAt: last.createdAt }
+		});
+		expect(second.map((i) => i.happenedAt)).toEqual(['2026-08-02', '2026-08-01']);
+
+		const beyond = second.at(-1)!;
+		expect(
+			await repo.listPageForContactVisibleTo(viewerU1, 'oma', {
+				limit: 2,
+				before: { happenedAt: beyond.happenedAt, createdAt: beyond.createdAt }
+			})
+		).toEqual([]);
+	});
+
+	it('separates two interactions on the same day by when they were logged', async () => {
+		// The cursor is (day, createdAt): without the second half, one of these would be lost.
+		const clock = { now: () => 1_000 };
+		await logInteraction({ ...deps(), clock }, author1, {
+			contactId: 'oma',
+			kind: 'call',
+			happenedAt: '2026-08-01',
+			title: 'morning'
+		});
+		await logInteraction({ ...deps(), clock: { now: () => 2_000 } }, author1, {
+			contactId: 'oma',
+			kind: 'met',
+			happenedAt: '2026-08-01',
+			title: 'afternoon'
+		});
+		const repo = createDrizzleInteractionRepository(db);
+
+		const first = await repo.listPageForContactVisibleTo(viewerU1, 'oma', { limit: 1 });
+		expect(first.map((i) => i.title)).toEqual(['afternoon']);
+
+		const second = await repo.listPageForContactVisibleTo(viewerU1, 'oma', {
+			limit: 1,
+			before: { happenedAt: '2026-08-01', createdAt: first[0]!.createdAt }
+		});
+		expect(second.map((i) => i.title)).toEqual(['morning']);
+	});
+
+	it('keeps a page scoped to what the viewer may see', async () => {
+		await logInteraction(deps(), author1, {
+			contactId: 'oma',
+			kind: 'call',
+			happenedAt: '2026-08-02',
+			title: 'private',
+			visibility: 'private'
+		});
+		await logInteraction(deps(), author1, {
+			contactId: 'oma',
+			kind: 'call',
+			happenedAt: '2026-08-01',
+			title: 'shared'
+		});
+		const repo = createDrizzleInteractionRepository(db);
+
+		// The author sees both; another member's first page skips the private one entirely
+		// rather than returning a short page with a hole in it.
+		expect(
+			(await repo.listPageForContactVisibleTo(viewerU1, 'oma', { limit: 10 })).map((i) => i.title)
+		).toEqual(['private', 'shared']);
+		expect(
+			(await repo.listPageForContactVisibleTo(viewerU2, 'oma', { limit: 10 })).map((i) => i.title)
+		).toEqual(['shared']);
+	});
+
 	it('hides a private interaction from other members but shows it to its author', async () => {
 		await logInteraction(deps(), author1, {
 			contactId: 'oma',

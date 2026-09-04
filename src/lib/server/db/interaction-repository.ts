@@ -1,10 +1,11 @@
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, or } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo, contactColumnsVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
 	Interaction,
+	InteractionCursor,
 	InteractionParticipant,
 	InteractionRepository,
 	NewInteraction
@@ -70,6 +71,22 @@ export function createDrizzleInteractionRepository(
 		return byInteraction;
 	}
 
+	/** The one visibility rule both reads go through (docs/03 §3.7). */
+	const visibleToViewer = (viewer: Viewer) =>
+		childRecordVisibleTo(viewer, {
+			visibility: interaction.visibility,
+			createdBy: interaction.createdBy
+		});
+
+	/** Attach the participants the viewer is allowed to see to each row. */
+	function withParticipants(viewer: Viewer, rows: Omit<Interaction, 'participants'>[]): Interaction[] {
+		const participants = participantsVisibleTo(
+			viewer,
+			rows.map((r) => r.id)
+		);
+		return rows.map((r) => ({ ...r, participants: participants.get(r.id) ?? [] }));
+	}
+
 	return {
 		async insert(i: NewInteraction) {
 			db.transaction((tx) => {
@@ -100,22 +117,37 @@ export function createDrizzleInteractionRepository(
 				.select(columns)
 				.from(interaction)
 				.innerJoin(contact, eq(interaction.contactId, contact.id))
-				.where(
-					and(
-						eq(interaction.contactId, contactId),
-						childRecordVisibleTo(viewer, {
-							visibility: interaction.visibility,
-							createdBy: interaction.createdBy
-						})
-					)
-				)
+				.where(and(eq(interaction.contactId, contactId), visibleToViewer(viewer)))
 				.orderBy(desc(interaction.happenedAt), desc(interaction.createdAt))
 				.all();
-			const participants = participantsVisibleTo(
-				viewer,
-				rows.map((r) => r.id)
-			);
-			return rows.map((r) => ({ ...r, participants: participants.get(r.id) ?? [] }));
+			return withParticipants(viewer, rows);
+		},
+
+		async listPageForContactVisibleTo(
+			viewer: Viewer,
+			contactId: string,
+			opts: { limit: number; before?: InteractionCursor }
+		): Promise<Interaction[]> {
+			const conditions = [eq(interaction.contactId, contactId), visibleToViewer(viewer)];
+			if (opts.before) {
+				const { happenedAt, createdAt } = opts.before;
+				// Keyset: strictly older than the cursor in (happenedAt, createdAt) order.
+				conditions.push(
+					or(
+						lt(interaction.happenedAt, happenedAt),
+						and(eq(interaction.happenedAt, happenedAt), lt(interaction.createdAt, createdAt))
+					)!
+				);
+			}
+			const rows = db
+				.select(columns)
+				.from(interaction)
+				.innerJoin(contact, eq(interaction.contactId, contact.id))
+				.where(and(...conditions))
+				.orderBy(desc(interaction.happenedAt), desc(interaction.createdAt))
+				.limit(opts.limit)
+				.all();
+			return withParticipants(viewer, rows);
 		},
 
 		async deleteOwn(p: { authorId: string; id: string }): Promise<boolean> {
