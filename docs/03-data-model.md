@@ -328,7 +328,7 @@ self-reference (`contact_id` = the entry's own `contact_id`) is **not** stored. 
 | kind | text | `'met' \| 'call' \| 'video' \| 'message' \| 'letter' \| 'gift' \| 'other'` |
 | title | text null | |
 | description | text null | |
-| happened_at | text | ISO date(time) |
+| happened_at | text | ISO date `YYYY-MM-DD` — the day it happened; the timeline orders by it, then `created_at` |
 | created_at / updated_at | int | |
 
 ### interaction_participant  [M2]
