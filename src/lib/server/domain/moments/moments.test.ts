@@ -37,6 +37,8 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 		lastName: c.lastName ?? null,
 		nickname: null,
 		description: null,
+		birthDate: null,
+		birthDatePrecision: 'full',
 		howWeMet: null,
 		metDate: null,
 		metPlace: null,

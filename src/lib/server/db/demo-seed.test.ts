@@ -58,8 +58,34 @@ describe('seedDemoData', () => {
 			expect(klass.parentCircleId).toBe('demo-circle-schule');
 		}
 		expect(db.select().from(schema.circleMembership).all().length).toBeGreaterThan(30);
-		// Birthdays seeded for everyone with a birth date.
-		expect(db.select().from(schema.importantDate).all().length).toBe(25);
+		// Birthdays come from `contact.birth_date`, never from an important_date row
+		// (docs/02 §2.13.2) — only anniversaries and named dates are seeded.
+		const dates = db.select().from(schema.importantDate).all();
+		expect(dates.length).toBeGreaterThan(0);
+		expect(dates.some((d) => d.kind === 'birthday')).toBe(false);
+		expect(db.select().from(schema.contact).all().every((c) => c.birthDate !== null)).toBe(true);
+	});
+
+	it('clears the birthday rows an earlier seed version wrote', () => {
+		// Those rows shadowed the derived birthday and, with remind off, silenced every one.
+		seedDemoData(db); // the contact has to exist before a date can point at it
+		db.insert(schema.importantDate)
+			.values({
+				id: 'demo-date-bday-markus',
+				contactId: 'demo-c-markus',
+				kind: 'birthday',
+				label: 'Geburtstag',
+				date: '1983-03-14',
+				recursYearly: 1,
+				remind: 0
+			})
+			.run();
+		seedDemoData(db);
+
+		const dates = db.select().from(schema.importantDate).all();
+		expect(dates.some((d) => d.id === 'demo-date-bday-markus')).toBe(false);
+		// Positive control: the seeding it does do still happened.
+		expect(dates.some((d) => d.kind === 'anniversary')).toBe(true);
 	});
 
 	it('is idempotent — reseeding does not duplicate rows', () => {

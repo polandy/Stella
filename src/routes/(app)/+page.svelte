@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Avatar from '$lib/components/Avatar.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
+	import { occasionLabel, whenLabel } from '$lib/dates/labels';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -51,14 +52,18 @@
 
 	<!-- On a phone the composer is pinned above the tab bar; on desktop it sits at the top. -->
 	<div class="sticky bottom-16 z-10 -mx-4 bg-bg/95 px-4 py-2 backdrop-blur max-md:order-last md:static md:m-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
-		<MomentComposer
-			candidates={data.candidates}
-			me={{ id: data.user.id, name: data.user.name }}
-			today={data.today}
-			error={form?.momentError ?? null}
-			draft={form?.draft ?? null}
-			autofocus={data.compose}
-		/>
+		<!-- Keyed on the draft so arriving from "Write a moment" (?about=…) remounts the
+		     composer with that person already typed in; a draft is a starting value only. -->
+		{#key data.draft}
+			<MomentComposer
+				candidates={data.candidates}
+				me={{ id: data.user.id, name: data.user.name }}
+				today={data.today}
+				error={form?.momentError ?? null}
+				draft={form?.draft ?? data.draft}
+				autofocus={data.compose}
+			/>
+		{/key}
 	</div>
 
 	{#if data.linkSuggestion && !hintDismissed}
@@ -75,6 +80,34 @@
 			</a>
 			<a href="/" onclick={() => (hintDismissed = true)} class="rounded-md px-2 py-1.5 text-xs text-fg-muted hover:text-fg">Not now</a>
 		</div>
+	{/if}
+
+	<!-- Coming up: the next 30 days, above the past. Absent entirely when nothing is due,
+	     because a box that is permanently empty teaches people to stop looking at it. -->
+	{#if data.upcoming.length}
+		<section>
+			<div class="flex items-center gap-3 pb-1.5 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
+				Coming up<span class="h-px flex-1 bg-border"></span>
+			</div>
+			<ul class="flex flex-col">
+				{#each data.upcoming as item (item.contactId + item.date + item.kind)}
+					<li class="grid grid-cols-[32px_1fr_auto] items-center gap-3 rounded-app px-2.5 py-2 transition-colors hover:bg-card">
+						<Avatar id={item.contactId} name={item.contactName} avatarPhotoId={item.avatarPhotoId} size={32} />
+						<div class="min-w-0 text-[13px] text-fg-muted">
+							<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline">{item.contactName}</a>
+							<span>{occasionLabel(item)}</span>
+							<span class="text-fg-subtle">· {whenLabel(item.daysUntil, item.date)}</span>
+						</div>
+						<a
+							href="/?about={item.contactId}"
+							class="rounded-md border border-border px-2.5 py-1 text-xs text-fg-muted transition-colors hover:border-primary hover:text-fg"
+						>
+							Write a moment
+						</a>
+					</li>
+				{/each}
+			</ul>
+		</section>
 	{/if}
 
 	{#if days.length}

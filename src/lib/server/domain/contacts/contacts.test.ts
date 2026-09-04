@@ -89,3 +89,44 @@ describe('createContact', () => {
 		await expect(createContact(deps(f.repo), creator, {})).rejects.toThrow();
 	});
 });
+
+describe('createContact birth dates', () => {
+	it('stores a full birth date and marks its precision', async () => {
+		const f = fakeRepo();
+		await createContact(
+			{ contacts: f.repo, ids: sequentialIds('c1'), clock },
+			creator,
+			{ firstName: 'Lena', lastName: 'Brunner', birthDate: '2015-05-20' }
+		);
+		expect(f.inserted).toMatchObject({ birthDate: '2015-05-20', birthDatePrecision: 'full' });
+	});
+
+	it('accepts a birthday whose year is unknown', async () => {
+		const f = fakeRepo();
+		await createContact(
+			{ contacts: f.repo, ids: sequentialIds('c1'), clock },
+			creator,
+			{ firstName: 'Mia', birthDate: '--03-11' }
+		);
+		expect(f.inserted).toMatchObject({ birthDate: '--03-11', birthDatePrecision: 'month_day' });
+	});
+
+	it('leaves the birth date null when none is given', async () => {
+		const f = fakeRepo();
+		await createContact({ contacts: f.repo, ids: sequentialIds('c1'), clock }, creator, {
+			firstName: 'Mia'
+		});
+		expect(f.inserted).toMatchObject({ birthDate: null, birthDatePrecision: 'full' });
+	});
+
+	it('refuses a malformed birth date instead of storing a date nobody can read', async () => {
+		const f = fakeRepo();
+		await expect(
+			createContact({ contacts: f.repo, ids: sequentialIds('c1'), clock }, creator, {
+				firstName: 'Mia',
+				birthDate: '11.03.2015'
+			})
+		).rejects.toThrow();
+		expect(f.inserted).toBeNull();
+	});
+});

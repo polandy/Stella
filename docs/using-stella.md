@@ -60,6 +60,28 @@ their own shared-or-private switch.
 **The journal** is the person's own timeline, one entry per day. A moment written on Home
 lands here; you can also write directly into it from their page.
 
+## Dates worth remembering
+
+**Birthdays come from the person's profile.** Put a birth date on someone and Stella works
+out the birthday itself — there is nothing else to set up, and the two can never drift apart.
+
+Anything a birth date cannot express goes in the **Dates** section of their page: a wedding
+anniversary, the day you met, the day the class trip leaves. Each one can repeat every year
+or happen once, and each one has a switch for whether it should show up on Home. If the year
+is unknown, tick *Year unknown* and Stella keeps the day without inventing a year.
+
+**What is coming up appears on Home**, above what already happened — the next 30 days,
+soonest first. Not a separate reminders page you have to remember to open, and no email: it
+is simply at the top of the thing you already look at. When nothing is due in the next
+month, the band is not there at all.
+
+Each entry offers one thing: **Write a moment**. It opens the capture field with that person
+already mentioned, so noticing a birthday and writing down what you did about it are the
+same gesture.
+
+Two small mercies: people who have died are left out, and a 29 February anniversary lands on
+1 March in the years that have no 29th, instead of quietly skipping.
+
 ## Relationships
 
 Say once that Lena is Markus's child, and Stella knows the other half of it too — Markus

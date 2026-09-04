@@ -154,13 +154,16 @@ Tailwind is configured so utilities reference these variables (e.g.
 
 ## 5.5 Key screens
 
-- **Home / Dashboard** — personal overview (§2.12): panels for recent activity, new
-  people, recent notes, gifts given, upcoming dates, "your contributions"; each drills
-  down to the detail. Plus quick-add.
+- **Home** — the capture field over the household stream (§2.22). Above the stream sits the
+  **Coming up** band (§2.13.3): the next 30 days, soonest first, capped at five, each row an
+  avatar, the person, the occasion and a countdown, with one action — *Write a moment*. The
+  band is **absent entirely when nothing is due**; there is no empty state for it, because a
+  permanently empty panel teaches people to stop looking. The panelled dashboard of §2.12 is
+  the longer-term shape; the stream is what stands today.
 - **Contacts list** — searchable, filterable (tag, category, living), avatar-led rows or
   cards; density toggle.
 - **Contact profile** — hero header (avatar, name, description, key dates, tags, quick
-  actions), then sections: Relationships (a mini **ego-graph** of directly connected people
+  actions), then sections: Dates (§2.13.1), Relationships (a mini **ego-graph** of directly connected people
   over the grouped list), Notes (pinned first), a **journal timeline** inline (entries
   grouped by week, older weeks lazy-loaded on scroll via a keyset cursor; composing with
   photos on the full journal page), Interactions timeline, Photos gallery, Contact fields.
@@ -172,7 +175,11 @@ Tailwind is configured so utilities reference these variables (e.g.
 - **Circles** — overview of all circles (§2.4.2): searchable/filterable list with member
   counts and periods, a per-circle member view (roles + dates), and a **visualization** of
   members clustered by circle. Adding a member uses name autocomplete with create-on-the-fly.
-- **Reminders** — upcoming birthdays/anniversaries grouped by timeframe.
+- *(No reminders screen.)* Upcoming dates live in the **Coming up** band on Home, and the
+  dates themselves are edited in the **Dates** section of a person's page — kind, day,
+  "year unknown", whether it repeats, and whether it shows on Home. A birthday derived from
+  the profile is listed there too, marked *from the profile* and not deletable; an explicit
+  birthday row replaces it (docs/02 §2.13.2).
 - **Settings** — account, appearance (theme + accent + reduced motion), household
   (members, invitations, relationship types, tags), data (export/import/backup), auth.
 - **Auth** — clean login offering **"Sign in with SSO"** (Authelia) and, if enabled, a

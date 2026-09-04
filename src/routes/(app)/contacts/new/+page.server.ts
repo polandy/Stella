@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { createContact } from '$lib/server/domain/contacts/contacts';
+import { createContact, InvalidBirthDateError } from '$lib/server/domain/contacts/contacts';
 import { getContactDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -18,6 +18,7 @@ const QuickAddSchema = v.object({
 	description: optional,
 	howWeMet: optional,
 	metPlace: optional,
+	birthDate: optional,
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
 });
 
@@ -38,6 +39,7 @@ export const actions: Actions = {
 			description: form.get('description') || undefined,
 			howWeMet: form.get('howWeMet') || undefined,
 			metPlace: form.get('metPlace') || undefined,
+			birthDate: form.get('birthDate') || undefined,
 			visibility: form.get('visibility') || undefined
 		});
 		if (!parsed.success) {
@@ -53,8 +55,13 @@ export const actions: Actions = {
 		let id: string;
 		try {
 			id = await createContact(getContactDeps(), creator, parsed.output);
-		} catch {
-			return fail(400, { error: 'Please enter at least a name or nickname.' });
+		} catch (err) {
+			return fail(400, {
+				error:
+					err instanceof InvalidBirthDateError
+						? err.message
+						: 'Please enter at least a name or nickname.'
+			});
 		}
 
 		throw redirect(303, `/contacts/${id}`);

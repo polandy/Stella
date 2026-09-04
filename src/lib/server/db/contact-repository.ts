@@ -25,6 +25,9 @@ const contactColumns = {
 	howWeMet: contactTable.howWeMet,
 	metDate: contactTable.metDate,
 	metPlace: contactTable.metPlace,
+	birthDate: contactTable.birthDate,
+	birthDatePrecision: contactTable.birthDatePrecision,
+	isDeceased: contactTable.isDeceased,
 	createdAt: contactTable.createdAt,
 	updatedAt: contactTable.updatedAt
 };
@@ -43,7 +46,8 @@ export function createDrizzleContactRepository(
 				.from(contactTable)
 				.where(and(eq(contactTable.id, id), contactVisibleTo(viewer)))
 				.get();
-			return row ?? null;
+			// SQLite has no boolean; the domain works with one.
+			return row ? { ...row, isDeceased: row.isDeceased === 1 } : null;
 		},
 
 		async listVisibleTo(viewer: Viewer) {
