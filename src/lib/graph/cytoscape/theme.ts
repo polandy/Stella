@@ -1,3 +1,4 @@
+import { ACCENTS, categoryVar } from '../../design/tokens';
 import type { RelationshipCategory } from '../model/types';
 
 /*
@@ -23,16 +24,16 @@ export interface Palette {
 	kinship: string;
 }
 
-const ACCENT_TOKENS = [
-	'mauve', 'blue', 'green', 'peach', 'pink', 'teal', 'sky', 'yellow', 'maroon', 'rosewater',
-	'sapphire', 'lavender'
-] as const;
-
 export type TokenReader = (cssVariable: string) => string;
+
+/** Strip the `var(--x)` wrapper a token helper returns, leaving the bare custom property. */
+function propertyOf(token: string): string {
+	return token.slice('var('.length, -1);
+}
 
 export function resolvePalette(read: TokenReader): Palette {
 	const accents: Record<string, string> = {};
-	for (const name of ACCENT_TOKENS) accents[name] = read(`--ctp-${name}`);
+	for (const name of ACCENTS) accents[name] = read(`--accent-${name}`);
 
 	return {
 		fg: read('--fg'),
@@ -47,14 +48,14 @@ export function resolvePalette(read: TokenReader): Palette {
 		accents,
 		// relationship categories → fixed accents (docs/05 §5.6)
 		categories: {
-			family: accents.green,
-			romantic: accents.pink,
-			social: accents.blue,
-			professional: accents.peach,
-			other: read('--fg-subtle')
+			family: read(propertyOf(categoryVar('family'))),
+			romantic: read(propertyOf(categoryVar('romantic'))),
+			social: read(propertyOf(categoryVar('social'))),
+			professional: read(propertyOf(categoryVar('professional'))),
+			other: read(propertyOf(categoryVar('other')))
 		},
-		membership: accents.lavender, // circle edges
-		kinship: read('--fg-subtle') // derived kinship: neutral, clearly inferred
+		membership: read('--edge-membership'), // circle edges
+		kinship: read('--edge-kinship') // derived kinship: neutral, clearly inferred
 	};
 }
 

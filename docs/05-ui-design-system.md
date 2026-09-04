@@ -63,57 +63,62 @@ lavender `#b4befe`.
 
 ### 5.2.2 Semantic tokens
 
-Components consume **semantic** CSS variables, never raw flavor colors. Each theme maps
-Catppuccin → semantics. Defined in `app.css`:
+Colour lives in three layers, and **components may only touch the third**:
 
-```css
-:root, :root[data-theme="light"] {           /* Latte */
-  --ctp-base: #eff1f5;  --ctp-mantle: #e6e9ef; --ctp-crust: #dce0e8;
-  --ctp-surface0:#ccd0da; --ctp-surface1:#bcc0cc; --ctp-surface2:#acb0be;
-  --ctp-overlay0:#9ca0b0; --ctp-overlay1:#8c8fa1; --ctp-overlay2:#7c7f93;
-  --ctp-text:#4c4f69; --ctp-subtext1:#5c5f77; --ctp-subtext0:#6c6f85;
-  --ctp-mauve:#8839ef; --ctp-blue:#1e66f5; --ctp-green:#40a02b;
-  --ctp-yellow:#df8e1d; --ctp-red:#d20f39; --ctp-peach:#fe640b;
-  /* …remaining accents… */
+| Layer | Where | Example |
+|---|---|---|
+| flavour | `app.css`, once per theme | `--ctp-mauve` |
+| surfaces | `app.css`, once per theme — the values the palette doesn't carry | `--card`, `--shadow-card` |
+| semantic | `app.css` `:root`, theme-independent | `--bg`, `--fg`, `--primary`, `--accent-teal`, `--cat-family`, `--kind-call` |
 
-  /* semantic layer */
-  --bg: var(--ctp-base);
-  --bg-elevated: var(--ctp-mantle);
-  --bg-sunken: var(--ctp-crust);
-  --card: var(--ctp-mantle);
-  --border: var(--ctp-surface0);
-  --fg: var(--ctp-text);
-  --fg-muted: var(--ctp-subtext0);
-  --fg-subtle: var(--ctp-overlay1);
-  --primary: var(--ctp-mauve);           /* brand accent */
-  --primary-fg: #ffffff;
-  --focus-ring: var(--ctp-lavender);
-  --success: var(--ctp-green);
-  --warning: var(--ctp-yellow);
-  --danger:  var(--ctp-red);
-  --link:    var(--ctp-blue);
-}
+The table is mirrored in TypeScript by `src/lib/design/tokens.ts`, so a component that needs a
+colour in an inline style asks for it by meaning (`accentChipStyle(tag.color)`) instead of
+interpolating a variable name. That module is the only place allowed to build a token string.
 
-:root[data-theme="dark"] {                    /* Mocha */
-  --ctp-base:#1e1e2e; --ctp-mantle:#181825; --ctp-crust:#11111b;
-  --ctp-surface0:#313244; --ctp-surface1:#45475a; --ctp-surface2:#585b70;
-  --ctp-overlay0:#6c7086; --ctp-overlay1:#7f849c; --ctp-overlay2:#9399b2;
-  --ctp-text:#cdd6f4; --ctp-subtext1:#bac2de; --ctp-subtext0:#a6adc8;
-  --ctp-mauve:#cba6f7; --ctp-blue:#89b4fa; --ctp-green:#a6e3a1;
-  --ctp-yellow:#f9e2af; --ctp-red:#f38ba8; --ctp-peach:#fab387;
-  /* …remaining accents… */
-  --primary-fg: #1e1e2e;                  /* dark text on light accent */
-  /* semantic vars inherit the same names, now resolving to Mocha */
-}
+**Surfaces.** The elevation order is page → sunken → card:
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { /* apply Mocha when system is dark and no explicit light */ }
-}
-```
+| Token | Latte | Mocha | Used for |
+|---|---|---|---|
+| `--bg` | `mantle` | `mantle` | the page itself |
+| `--bg-sunken` | `crust` | `crust` | sidebar, inputs, wells |
+| `--card` | `#ffffff` | `#232334` | anything that sits above the page |
+| `--card-hover` | `#f7f8fb` | `#2a2a3d` | that surface, hovered |
+| `--border` | `surface0` | `surface0` | inputs and dividers |
+| `--border-subtle` | `#e7e9f0` | `#292939` | hairlines inside a card |
 
-Tailwind is configured so utilities reference these variables (e.g.
-`colors.primary = 'var(--primary)'`), so class names like `bg-card`, `text-fg-muted`,
-`ring-focus` work in both themes automatically.
+The card colour is the one **deliberate departure from the palette**. Latte's lightest step
+(`base`, `#eff1f5`) sits too close to its neighbours to read as raised, and Mocha's `base`
+gives only a six-value step over `mantle`; both leave every card looking sunken. So cards get
+their own value and the page drops beneath them. Cards are separated by `--shadow-card` — a
+shadow tinted with the text colour, never black — rather than by a border.
+
+**Text.** `--fg` (`text`) → `--fg-muted` (`subtext0`) → `--fg-subtle` (`overlay2`), the same
+three steps in both flavours. `--fg-subtle` is supporting meta text only: on the card surface
+it reaches 3.9:1 in Latte, short of AA for body copy, so it never carries meaning alone.
+
+**Brand and state.** `--primary` (mauve) marks the one primary action, the current navigation
+item and focus; `--primary-soft` is its 14 % tint for active chips and hovers. `--success`,
+`--warning`, `--danger`, `--link` are unchanged.
+
+**Accents.** All fourteen Catppuccin accents are published as `--accent-<name>`. Tags, circles
+and generated avatars store one of those names, so the name a household picks survives a
+flavour swap. Avatars draw from the accents **except red**, which stays the danger signal.
+A label on a tint of its own accent is written in `readableAccent()` — the accent mixed 68 %
+towards `--fg` — because the raw accent is chosen to sing against the page, not to be read at
+12px on a pale wash of itself.
+
+**Categories, kinds and edges.** `--cat-family|romantic|social|professional|other`,
+`--kind-met|call|video|message|letter|gift|other` and `--edge-membership|kinship` fix the
+pairings of §5.6 in one place. The graph adapter resolves these same tokens into hex for the
+canvas (`src/lib/graph/cytoscape/theme.ts`), so a chip and the edge it toggles cannot drift.
+
+**Shape.** `--radius` (12px) for cards and panels, `--radius-control` (8px) for buttons,
+inputs and chips, full round for avatars and pills.
+
+**Three theme states.** An explicit choice stamps `data-theme` on `<html>`; the default follows
+`prefers-color-scheme`. The dark palette is therefore written twice — once for
+`[data-theme='dark']` and once inside the media query guarded by `:not([data-theme='light'])`.
+They must be edited together; `app.css` says so at both blocks.
 
 ### 5.2.3 Accent color choice
 
@@ -125,16 +130,24 @@ Tailwind is configured so utilities reference these variables (e.g.
 
 ## 5.3 Typography, spacing, radius, elevation
 
-- **Type:** a friendly humanist sans (e.g. **Inter**), self-hosted (no external CDN, per
-  §4.7). Optional monospaced accents (JetBrains Mono) for dates/keys. System-font
-  fallback stack for a zero-FOIT baseline.
-- **Scale (rem):** 0.75 / 0.875 / 1 / 1.125 / 1.25 / 1.5 / 1.875 / 2.25. Comfortable line
-  length (~65ch) for note bodies.
-- **Spacing:** 4px base grid (Tailwind default).
-- **Radius:** soft, consistent — `--radius: 0.75rem` for cards, full round for avatars
-  and pills.
-- **Elevation:** low, tinted shadows over hard borders; cards sit on `--card` above
-  `--bg`. Dark theme leans on surface steps rather than heavy shadow.
+- **Two typefaces, two jobs.**
+  - **Instrument Sans** (`--font-sans`) carries the interface: navigation, labels, buttons,
+    lists, forms.
+  - **Newsreader** (`--font-serif`) carries what a person wrote: moments, journal entries,
+    notes, and the composer's own field. A written line should never read like a data field —
+    that difference is what separates a moment from a system event in the stream.
+  - Both are **self-hosted**: the `@fontsource-variable/*` packages ship the woff2 files and
+    Vite rewrites the `@font-face` URLs to our own origin (no CDN, per §4.7). They are imported
+    once in the root layout. The system stack stays as the fallback.
+- **Scale (rem):** 0.75 / 0.8125 / 0.875 / 1 / 1.125 / 1.375 / 1.75 / 2.25. Headings tighten to
+  −0.02em; serif body copy sits at 17px/1.5. Comfortable line length (~65ch) for note bodies.
+- **Spacing:** 4px base grid (Tailwind default). Sections 32px, card padding 16–18px,
+  list rows 8–10px.
+- **Radius:** `--radius` 12px for cards, `--radius-control` 8px for buttons and inputs, full
+  round for avatars and pills.
+- **Elevation:** cards sit on `--card` above `--bg` and are lifted by `--shadow-card`, a
+  text-tinted shadow; `--shadow-pop` is for menus and popovers. Borders are for inputs and
+  dividers, not for separating cards.
 
 ## 5.4 Layout & navigation
 
@@ -197,11 +210,12 @@ Consistent everywhere (chips, edges, timeline dots):
 | Social / friends | blue |
 | Professional | peach |
 | Other | overlay/subtext (neutral) |
-| Interaction kinds | met green · call blue · video sapphire · message teal · letter peach · gift pink · other neutral (one table, `src/lib/interactions/kinds.ts`, used by the profile timeline and the stream) |
+| Interaction kinds | met green · call blue · video sapphire · message teal · letter peach · gift pink · other neutral — one table (`src/lib/interactions/kinds.ts`) carrying the label, the icon name and the token, used by the profile timeline and the stream |
 | Success | green · **Warning** yellow · **Danger** red · **Link** blue |
 
-Tags choose from the full accent set. All pairings are verified for AA contrast on their
-backgrounds in both themes.
+Tags choose from the full accent set, minus red for generated avatars. Every pairing is
+declared once as a `--cat-*`, `--kind-*` or `--edge-*` token (§5.2.2); a label on a tint of its
+accent is written with `readableAccent()` so it stays legible in both flavours.
 
 ## 5.7 Components (design-system inventory)
 
@@ -209,6 +223,21 @@ Buttons (primary/secondary/ghost/danger), inputs & selects, tag/chip, avatar (+ 
 card, section header, tabs, modal/sheet, toast, dropdown menu, command palette, empty
 states, timeline item, note card, relationship row, photo grid + lightbox, graph legend,
 skeleton loaders. All themeable via semantic tokens, all keyboard-accessible.
+
+**Buttons** are one component (`src/lib/components/Button.svelte`) with four variants, and the
+variant states the intent:
+
+| Variant | Means | Looks like |
+|---|---|---|
+| `primary` | the one action the screen is for | filled in `--primary` |
+| `secondary` | a real action beside it | card surface, bordered, lifted |
+| `ghost` | a quiet action inside a row or card header | no chrome until hover |
+| `danger` | removes something | neutral until hover, then `--danger` |
+
+It renders an `<a>` when given `href`, so a link that looks like a button still behaves like a
+link, and leaves native submit behaviour alone inside a form. Sizes are `sm` (rows, card
+headers) and `md` (a screen's own actions); an icon with no label becomes a square icon button
+and requires a `label`.
 
 ## 5.8 Relationship & context explorer styling
 
@@ -236,7 +265,9 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 
 ## 5.9 Accessibility checklist
 
-- AA contrast for text and essential UI in both themes (validated against the token map).
+- AA contrast for text and essential UI in both themes. The one known gap is `--fg-subtle`,
+  which reaches 3.9:1 on `--card` in Latte: it is reserved for supporting meta text that is
+  never the only carrier of meaning (§5.2.2).
 - Visible focus rings (`--focus-ring`), logical tab order, skip-to-content.
 - All actions reachable without a pointer; graph has a list-based fallback view.
 - Respect `prefers-reduced-motion`; no motion-only information.
@@ -244,6 +275,15 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 
 ## 5.10 Iconography & imagery
 
-- A single lightweight, self-hosted icon set (e.g. Lucide) for consistency.
-- Avatar fallback: initials on a deterministic accent derived from the contact id.
+- **Lucide**, self-hosted via `@lucide/svelte`, is the only icon set — no emoji in the
+  interface, where they never matched the stroke weight of anything around them.
+- Icons are addressed **by meaning, not by glyph**: `src/lib/components/icons.ts` maps names
+  like `journal`, `explore`, `private` to components, and everything renders through
+  `Icon.svelte` so size and stroke weight stay consistent. Swapping in a better icon for the
+  same job is a one-line change.
+- Icons are decorative by default (`aria-hidden`), because they sit next to a visible label;
+  an icon-only control passes a `label` and gets a real accessible name.
+- **Logo:** the branching-graph mark in `Logo.svelte`, in the sidebar and on the auth screens.
+- **Avatar fallback:** initials on a deterministic accent derived from the contact id, mixed
+  over `--card` so an avatar stays opaque inside a stack, and labelled with `readableAccent()`.
 - Empty states use friendly copy and a clear primary action, never a dead end.

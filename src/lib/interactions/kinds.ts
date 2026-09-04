@@ -21,19 +21,19 @@ export type InteractionKind = (typeof INTERACTION_KINDS)[number];
 /** How a kind reads on screen. */
 export interface KindPresentation {
 	label: string;
-	/** A glyph for the timeline dot; decorative, always paired with the label. */
-	icon: string;
-	/** CSS colour for the dot and kind label; neutral for "other". */
+	/** Name of the icon for the timeline dot; decorative, always paired with the label. */
+	icon: InteractionKind;
+	/** The kind's semantic colour token (docs/05 §5.6), for the dot and the kind label. */
 	accent: string;
 }
 
-/** Label, glyph and accent per kind — the single table both timeline and stream render from. */
+/** Label, icon and accent per kind — the single table both timeline and stream render from. */
 export const KIND_PRESENTATION: Record<InteractionKind, KindPresentation> = {
-	met: { label: 'Met in person', icon: '🤝', accent: 'var(--ctp-green)' },
-	call: { label: 'Call', icon: '📞', accent: 'var(--ctp-blue)' },
-	video: { label: 'Video call', icon: '🎥', accent: 'var(--ctp-sapphire)' },
-	message: { label: 'Message', icon: '💬', accent: 'var(--ctp-teal)' },
-	letter: { label: 'Letter', icon: '✉️', accent: 'var(--ctp-peach)' },
-	gift: { label: 'Gift', icon: '🎁', accent: 'var(--ctp-pink)' },
-	other: { label: 'Other', icon: '•', accent: 'var(--fg-subtle)' }
+	met: { label: 'Met in person', icon: 'met', accent: 'var(--kind-met)' },
+	call: { label: 'Call', icon: 'call', accent: 'var(--kind-call)' },
+	video: { label: 'Video call', icon: 'video', accent: 'var(--kind-video)' },
+	message: { label: 'Message', icon: 'message', accent: 'var(--kind-message)' },
+	letter: { label: 'Letter', icon: 'letter', accent: 'var(--kind-letter)' },
+	gift: { label: 'Gift', icon: 'gift', accent: 'var(--kind-gift)' },
+	other: { label: 'Other', icon: 'other', accent: 'var(--kind-other)' }
 };

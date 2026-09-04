@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Avatar from '$lib/components/Avatar.svelte';
+	import Button from '$lib/components/Button.svelte';
+	import { accentDotStyle } from '$lib/design/tokens';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -12,7 +14,7 @@
 	<a href="/circles" class="text-sm text-fg-muted hover:text-fg">← Circles</a>
 
 	<header class="flex items-center gap-3">
-		<span class="size-5 shrink-0 rounded-full" style="background:var(--ctp-{circle.color})"></span>
+		<span class="size-5 shrink-0 rounded-full" style={accentDotStyle(circle.color)}></span>
 		<div class="min-w-0">
 			<h1 class="truncate text-2xl font-semibold text-fg">{circle.name}</h1>
 			<p class="text-sm text-fg-subtle">
@@ -31,7 +33,7 @@
 		{#if data.members.length}
 			<ul class="flex flex-col gap-1">
 				{#each data.members as m (m.membershipId)}
-					<li class="flex items-center gap-3 rounded-app border border-border bg-card px-3 py-2">
+					<li class="flex items-center gap-3 rounded-app bg-card px-3 py-2 shadow-card">
 						<Avatar id={m.contactId} name={m.displayName} avatarPhotoId={m.avatarPhotoId} size={32} />
 						<a href="/contacts/{m.contactId}" class="min-w-0 flex-1 truncate font-medium text-fg hover:underline">
 							{m.displayName}
@@ -61,9 +63,7 @@
 					<span class="text-fg-muted">Role (optional)</span>
 					<input name="role" placeholder="member" class="w-32 rounded-md border border-border bg-bg px-3 py-2 text-fg" />
 				</label>
-				<button class="rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90">
-					Add
-				</button>
+				<Button variant="primary" size="sm">Add</Button>
 			</form>
 		{/if}
 	</section>

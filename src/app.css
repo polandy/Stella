@@ -1,10 +1,17 @@
 @import 'tailwindcss';
 
 /*
- * Stella design system — Catppuccin.
- * Light = Latte, Dark = Mocha. See docs/05-ui-design-system.md.
- * Components consume the semantic tokens (--bg, --fg, --primary, …),
- * never the raw --ctp-* flavor colors.
+ * Stella design system — Catppuccin (docs/05).
+ * Light = Latte, Dark = Mocha.
+ *
+ * Three layers, and components may only touch the third:
+ *   1. flavour   `--ctp-*`   the raw Catppuccin palette, defined once per theme below
+ *   2. surfaces  per-theme values that the palette does not carry (the card colour, shadows)
+ *   3. semantic  `--bg`, `--fg`, `--primary`, `--accent-*`, `--cat-*`, `--kind-*`
+ *
+ * The dark palette is written twice on purpose — once for the explicit `dark` choice and once
+ * for "system dark, nothing chosen" — because CSS has no way to share one block between a
+ * selector and a media query. Edit them together.
  */
 
 :root,
@@ -36,11 +43,22 @@
 	--ctp-sapphire: #209fb5;
 	--ctp-blue: #1e66f5;
 	--ctp-lavender: #7287fd;
+
+	/*
+	 * Surfaces. Latte's lightest step is #eff1f5, too close to its neighbours to read as a
+	 * raised card, so the card is plain white and the page drops to `mantle` beneath it
+	 * (docs/05 §5.2.2). Shadows are tinted with the text colour, never black.
+	 */
+	--card: #ffffff;
+	--card-hover: #f7f8fb;
+	--border-subtle: #e7e9f0;
+	--shadow-card: 0 1px 2px rgb(76 79 105 / 0.06), 0 6px 20px -8px rgb(76 79 105 / 0.2);
+	--shadow-pop: 0 2px 4px rgb(76 79 105 / 0.06), 0 12px 32px -12px rgb(76 79 105 / 0.28);
 	--primary-fg: #ffffff;
 }
 
 :root[data-theme='dark'] {
-	/* Mocha */
+	/* Mocha — keep in sync with the media query below */
 	--ctp-base: #1e1e2e;
 	--ctp-mantle: #181825;
 	--ctp-crust: #11111b;
@@ -67,12 +85,19 @@
 	--ctp-sapphire: #74c7ec;
 	--ctp-blue: #89b4fa;
 	--ctp-lavender: #b4befe;
+
+	--card: #232334;
+	--card-hover: #2a2a3d;
+	--border-subtle: #292939;
+	--shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 8px 24px -10px rgb(0 0 0 / 0.65);
+	--shadow-pop: 0 2px 6px rgb(0 0 0 / 0.4), 0 16px 40px -14px rgb(0 0 0 / 0.75);
 	--primary-fg: #1e1e2e;
 }
 
 /* Follow the OS when the user hasn't explicitly chosen light. */
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme='light']) {
+		/* Mocha — keep in sync with [data-theme='dark'] above */
 		--ctp-base: #1e1e2e;
 		--ctp-mantle: #181825;
 		--ctp-crust: #11111b;
@@ -99,46 +124,115 @@
 		--ctp-sapphire: #74c7ec;
 		--ctp-blue: #89b4fa;
 		--ctp-lavender: #b4befe;
+
+		--card: #232334;
+		--card-hover: #2a2a3d;
+		--border-subtle: #292939;
+		--shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 8px 24px -10px rgb(0 0 0 / 0.65);
+		--shadow-pop: 0 2px 6px rgb(0 0 0 / 0.4), 0 16px 40px -14px rgb(0 0 0 / 0.75);
 		--primary-fg: #1e1e2e;
 	}
 }
 
-/* Semantic layer — the only tokens components should use. */
+/*
+ * Semantic layer — the only tokens components may use. Everything here resolves through the
+ * flavour variables above, so both themes are served by one definition.
+ */
 :root {
-	--bg: var(--ctp-base);
-	--bg-elevated: var(--ctp-mantle);
+	/* Surfaces, from the page up to what floats above it */
+	--bg: var(--ctp-mantle);
 	--bg-sunken: var(--ctp-crust);
-	--card: var(--ctp-mantle);
 	--border: var(--ctp-surface0);
+
+	/* Text, darkest to lightest. `--fg-subtle` is supporting meta text, never the only
+	   carrier of meaning: on the card surface it clears 3.9:1, short of AA for body copy. */
 	--fg: var(--ctp-text);
 	--fg-muted: var(--ctp-subtext0);
-	--fg-subtle: var(--ctp-overlay1);
+	--fg-subtle: var(--ctp-overlay2);
+
+	/* Brand and state */
 	--primary: var(--ctp-mauve);
+	--primary-soft: color-mix(in srgb, var(--primary) 14%, transparent);
 	--focus-ring: var(--ctp-lavender);
 	--success: var(--ctp-green);
 	--warning: var(--ctp-yellow);
 	--danger: var(--ctp-red);
 	--link: var(--ctp-blue);
+
+	/* Accents, addressable by name: tags, circles and generated avatars pick from these. */
+	--accent-rosewater: var(--ctp-rosewater);
+	--accent-flamingo: var(--ctp-flamingo);
+	--accent-pink: var(--ctp-pink);
+	--accent-mauve: var(--ctp-mauve);
+	--accent-red: var(--ctp-red);
+	--accent-maroon: var(--ctp-maroon);
+	--accent-peach: var(--ctp-peach);
+	--accent-yellow: var(--ctp-yellow);
+	--accent-green: var(--ctp-green);
+	--accent-teal: var(--ctp-teal);
+	--accent-sky: var(--ctp-sky);
+	--accent-sapphire: var(--ctp-sapphire);
+	--accent-blue: var(--ctp-blue);
+	--accent-lavender: var(--ctp-lavender);
+
+	/* Relationship categories → a fixed accent each (docs/05 §5.6) */
+	--cat-family: var(--accent-green);
+	--cat-romantic: var(--accent-pink);
+	--cat-social: var(--accent-blue);
+	--cat-professional: var(--accent-peach);
+	--cat-other: var(--fg-subtle);
+
+	/* Interaction kinds → a fixed accent each (docs/05 §5.6) */
+	--kind-met: var(--accent-green);
+	--kind-call: var(--accent-blue);
+	--kind-video: var(--accent-sapphire);
+	--kind-message: var(--accent-teal);
+	--kind-letter: var(--accent-peach);
+	--kind-gift: var(--accent-pink);
+	--kind-other: var(--fg-subtle);
+
+	/* Circle membership and derived kinship, as drawn in the explorer (docs/05 §5.8) */
+	--edge-membership: var(--accent-lavender);
+	--edge-kinship: var(--fg-subtle);
+
+	/* Shape */
 	--radius: 0.75rem;
+	--radius-control: 0.5rem;
+
+	/* Type: one sans for the interface, one serif for what people wrote (docs/05 §5.3) */
+	--font-sans:
+		'Instrument Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+		sans-serif;
+	--font-serif: 'Newsreader Variable', Georgia, 'Times New Roman', serif;
 }
 
-/* Expose semantic tokens as Tailwind color/utility names. */
+/* Expose the semantic tokens as Tailwind utility names. */
 @theme inline {
 	--color-bg: var(--bg);
-	--color-bg-elevated: var(--bg-elevated);
 	--color-bg-sunken: var(--bg-sunken);
 	--color-card: var(--card);
+	--color-card-hover: var(--card-hover);
 	--color-border: var(--border);
+	--color-border-subtle: var(--border-subtle);
 	--color-fg: var(--fg);
 	--color-fg-muted: var(--fg-muted);
 	--color-fg-subtle: var(--fg-subtle);
 	--color-primary: var(--primary);
 	--color-primary-fg: var(--primary-fg);
+	--color-primary-soft: var(--primary-soft);
 	--color-success: var(--success);
 	--color-warning: var(--warning);
 	--color-danger: var(--danger);
 	--color-link: var(--link);
+
 	--radius-app: var(--radius);
+	--radius-control: var(--radius-control);
+
+	--shadow-card: var(--shadow-card);
+	--shadow-pop: var(--shadow-pop);
+
+	--font-sans: var(--font-sans);
+	--font-serif: var(--font-serif);
 }
 
 html {
@@ -149,8 +243,7 @@ html {
 
 body {
 	min-height: 100vh;
-	font-family:
-		'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	font-family: var(--font-sans);
 	-webkit-font-smoothing: antialiased;
 }
 
@@ -159,7 +252,16 @@ body {
 	outline-offset: 2px;
 }
 
-/* Rendered note Markdown (docs/02 §2.5). Preflight resets defaults, so restore the basics. */
+/*
+ * Prose written by a person — note bodies, journal entries, moments — is set in the serif
+ * (docs/05 §5.3), so a written line never reads like a data field. Preflight resets the
+ * defaults, so restore the basics.
+ */
+.note-body {
+	font-family: var(--font-serif);
+	font-size: 1.0625rem;
+	line-height: 1.5;
+}
 .note-body p {
 	margin: 0 0 0.5rem;
 }
@@ -172,8 +274,10 @@ body {
 }
 /* @-mention chips (docs/02 §2.20.1): a person reference, not a plain link. */
 .mention {
+	font-family: var(--font-sans);
+	font-size: 0.9em;
 	color: var(--primary);
-	background: color-mix(in srgb, var(--primary) 12%, transparent);
+	background: var(--primary-soft);
 	border-radius: 0.375rem;
 	padding: 0 0.25rem;
 	text-decoration: none;
@@ -181,7 +285,7 @@ body {
 	white-space: nowrap;
 }
 .mention:hover {
-	background: color-mix(in srgb, var(--primary) 20%, transparent);
+	background: color-mix(in srgb, var(--primary) 22%, transparent);
 }
 .mention-unknown {
 	color: var(--fg-subtle);
@@ -199,10 +303,11 @@ body {
 	list-style: decimal;
 }
 .note-body code {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 	background: var(--bg-sunken);
 	border-radius: 0.25rem;
 	padding: 0.1em 0.35em;
-	font-size: 0.9em;
+	font-size: 0.85em;
 }
 .note-body strong {
 	font-weight: 600;
