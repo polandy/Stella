@@ -92,9 +92,10 @@ gives only a six-value step over `mantle`; both leave every card looking sunken.
 their own value and the page drops beneath them. Cards are separated by `--shadow-card` — a
 shadow tinted with the text colour, never black — rather than by a border.
 
-**Text.** `--fg` (`text`) → `--fg-muted` (`subtext0`) → `--fg-subtle` (`overlay2`), the same
-three steps in both flavours. `--fg-subtle` is supporting meta text only: on the card surface
-it reaches 3.9:1 in Latte, short of AA for body copy, so it never carries meaning alone.
+**Text.** `--fg` (`text`) → `--fg-muted` (`subtext1`) → `--fg-subtle` (`subtext0`), the same
+three steps in both flavours. All three clear AA on `--card`. On the page ground `--fg-subtle`
+reaches 3.9:1, so there it carries only meta that repeats what is already on screen — a day
+divider, a relative timestamp.
 
 **Brand and state.** `--primary` (mauve) marks the one primary action, the current navigation
 item and focus; `--primary-soft` is its 14 % tint for active chips and hovers. `--success`,
@@ -103,9 +104,14 @@ item and focus; `--primary-soft` is its 14 % tint for active chips and hovers. `
 **Accents.** All fourteen Catppuccin accents are published as `--accent-<name>`. Tags, circles
 and generated avatars store one of those names, so the name a household picks survives a
 flavour swap. Avatars draw from the accents **except red**, which stays the danger signal.
-A label on a tint of its own accent is written in `readableAccent()` — the accent mixed 68 %
-towards `--fg` — because the raw accent is chosen to sing against the page, not to be read at
-12px on a pale wash of itself.
+
+**Colour identifies, the foreground reads.** A tag chip and an initials avatar tint their
+surface with the accent and write on it in `--fg`, never in the accent itself. Catppuccin's
+accents are picked to sing against the page: in Latte most of them measure between 2.6:1 and
+3.7:1 against a tint of themselves, below AA at any size, and no mix that fixes that leaves
+enough hue to be worth having. Tinting the surface keeps the colour identity where it is
+legible and puts the text at 6:1 or better. `src/lib/design/color.test.ts` holds that pairing
+to the AA floor for all fourteen accents in all three theme states.
 
 **Categories, kinds and edges.** `--cat-family|romantic|social|professional|other`,
 `--kind-met|call|video|message|letter|gift|other` and `--edge-membership|kinship` fix the
@@ -214,8 +220,9 @@ Consistent everywhere (chips, edges, timeline dots):
 | Success | green · **Warning** yellow · **Danger** red · **Link** blue |
 
 Tags choose from the full accent set, minus red for generated avatars. Every pairing is
-declared once as a `--cat-*`, `--kind-*` or `--edge-*` token (§5.2.2); a label on a tint of its
-accent is written with `readableAccent()` so it stays legible in both flavours.
+declared once as a `--cat-*`, `--kind-*` or `--edge-*` token (§5.2.2). Where an accent tints a
+surface that carries text — a tag chip, an initials avatar — the text is written in `--fg`, not
+in the accent: colour identifies, the foreground reads (§5.2.2).
 
 ## 5.7 Components (design-system inventory)
 
@@ -265,9 +272,16 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 
 ## 5.9 Accessibility checklist
 
-- AA contrast for text and essential UI in both themes. The one known gap is `--fg-subtle`,
-  which reaches 3.9:1 on `--card` in Latte: it is reserved for supporting meta text that is
-  never the only carrier of meaning (§5.2.2).
+- AA contrast for text in both themes, **enforced by test**: `src/lib/design/color.test.ts`
+  parses `app.css`, resolves each token and holds the pairs the interface actually renders —
+  the three text steps on each surface, and `--fg` on every accent tint — to 4.5:1.
+- Two measured gaps, both stated rather than papered over:
+  - `--fg-subtle` on the page ground is 3.9:1. It is reserved there for meta that repeats what
+    is already on screen (day dividers, relative timestamps).
+  - The explorer's category edges run from 2.2:1 (romantic) to 4.5:1 (social) on the Latte
+    canvas, under the 3:1 non-text bar for two of five, and an edge is the only carrier of its
+    category once the legend is off screen. Re-picking those hues belongs with the explorer's
+    own pass, and is tracked there rather than fixed by lowering the bar here.
 - Visible focus rings (`--focus-ring`), logical tab order, skip-to-content.
 - All actions reachable without a pointer; graph has a list-based fallback view.
 - Respect `prefers-reduced-motion`; no motion-only information.
@@ -285,5 +299,5 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   an icon-only control passes a `label` and gets a real accessible name.
 - **Logo:** the branching-graph mark in `Logo.svelte`, in the sidebar and on the auth screens.
 - **Avatar fallback:** initials on a deterministic accent derived from the contact id, mixed
-  over `--card` so an avatar stays opaque inside a stack, and labelled with `readableAccent()`.
+  over `--card` so an avatar stays opaque inside a stack, with the initials in `--fg` (§5.2.2).
 - Empty states use friendly copy and a clear primary action, never a dead end.

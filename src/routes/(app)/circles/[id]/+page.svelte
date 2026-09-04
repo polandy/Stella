@@ -41,7 +41,7 @@
 						{#if m.role}<span class="shrink-0 text-xs text-fg-subtle">{m.role}</span>{/if}
 						<form method="POST" action="?/removeMember">
 							<input type="hidden" name="contactId" value={m.contactId} />
-							<button class="text-fg-subtle hover:text-danger" title="Remove from circle" aria-label="Remove">×</button>
+							<Button variant="danger" size="sm" icon="remove" label="Remove from circle" title="Remove from circle" />
 						</form>
 					</li>
 				{/each}

@@ -21,7 +21,12 @@ export type InteractionKind = (typeof INTERACTION_KINDS)[number];
 /** How a kind reads on screen. */
 export interface KindPresentation {
 	label: string;
-	/** Name of the icon for the timeline dot; decorative, always paired with the label. */
+	/**
+	 * Name of the icon for the timeline dot; decorative, always paired with the label.
+	 * Typed as the kind rather than as an `IconName` on purpose: the icon registry pulls in
+	 * Svelte components, and this table is imported by the domain, which stays framework-free.
+	 * The registry declares one icon per kind, so `bun run check` still catches a missing one.
+	 */
 	icon: InteractionKind;
 	/** The kind's semantic colour token (docs/05 §5.6), for the dot and the kind label. */
 	accent: string;

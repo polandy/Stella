@@ -1,5 +1,6 @@
 import { describe, expect, it, test } from 'bun:test';
-import { mixHex, resolvePalette } from './theme';
+import { resolvePalette } from './theme';
+import { mixHex } from '../../design/color';
 import { buildStylesheet } from './stylesheet';
 
 /*

@@ -1,4 +1,5 @@
-import { mixHex, type Palette } from './theme';
+import { mixHex } from '../../design/color';
+import type { Palette } from './theme';
 
 /*
  * Build the Cytoscape stylesheet from a resolved Palette (docs/05 §5.8). Pure: palette in,

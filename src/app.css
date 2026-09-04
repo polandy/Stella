@@ -144,11 +144,12 @@
 	--bg-sunken: var(--ctp-crust);
 	--border: var(--ctp-surface0);
 
-	/* Text, darkest to lightest. `--fg-subtle` is supporting meta text, never the only
-	   carrier of meaning: on the card surface it clears 3.9:1, short of AA for body copy. */
+	/* Text, in three steps. All three clear AA on `--card`; `--fg-subtle` reaches only 3.9:1
+	   on the page ground, so there it carries meta that repeats what is already on screen.
+	   `src/lib/design/color.test.ts` holds these ratios to their documented floors. */
 	--fg: var(--ctp-text);
-	--fg-muted: var(--ctp-subtext0);
-	--fg-subtle: var(--ctp-overlay2);
+	--fg-muted: var(--ctp-subtext1);
+	--fg-subtle: var(--ctp-subtext0);
 
 	/* Brand and state */
 	--primary: var(--ctp-mauve);

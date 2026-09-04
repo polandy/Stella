@@ -7,8 +7,7 @@ import {
 	accentChipStyle,
 	accentDotStyle,
 	accentVar,
-	categoryVar,
-	readableAccent
+	categoryVar
 } from './tokens';
 import { CIRCLE_COLORS } from '../server/domain/circles/circles';
 import { TAG_COLORS } from '../server/domain/tags/tags';
@@ -61,21 +60,10 @@ describe('interaction kinds', () => {
 	});
 });
 
-describe('readableAccent', () => {
-	/*
-	 * A pale tint needs a label darker than the accent in Latte and lighter than it in Mocha.
-	 * Mixing toward `--fg` does both, because `--fg` is whichever end of the ramp reads.
-	 */
-	it('pulls the accent towards the foreground colour', () => {
-		expect(readableAccent('yellow')).toBe('color-mix(in srgb, var(--accent-yellow) 68%, var(--fg))');
-	});
-});
-
 describe('accent styles', () => {
-	it('tints a chip in its accent and writes the label in a readable mix of it', () => {
+	it('tints a chip in its accent but writes the label in the foreground colour', () => {
 		expect(accentChipStyle('teal')).toBe(
-			'background:color-mix(in srgb, var(--accent-teal) 16%, transparent);' +
-				'color:color-mix(in srgb, var(--accent-teal) 68%, var(--fg))'
+			'background:color-mix(in srgb, var(--accent-teal) 16%, transparent);color:var(--fg)'
 		);
 	});
 
@@ -85,8 +73,7 @@ describe('accent styles', () => {
 
 	it('mixes an avatar over the card surface, so it stays opaque on any background', () => {
 		expect(accentAvatarStyle('blue')).toBe(
-			'background:color-mix(in srgb, var(--accent-blue) 20%, var(--card));' +
-				'color:color-mix(in srgb, var(--accent-blue) 68%, var(--fg))'
+			'background:color-mix(in srgb, var(--accent-blue) 22%, var(--card));color:var(--fg)'
 		);
 	});
 
