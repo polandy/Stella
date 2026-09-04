@@ -16,8 +16,10 @@ import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
 import {
 	addImportantDate,
 	InvalidImportantDateError,
-	listImportantDates
+	listImportantDates,
+	overridesDerivedBirthday
 } from '$lib/server/domain/dates/important-dates';
+import { withoutYear } from '$lib/dates/labels';
 import { IMPORTANT_DATE_KINDS } from '$lib/server/domain/dates/upcoming';
 import { listJournalPage } from '$lib/server/domain/journal/journal';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
@@ -116,6 +118,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		},
 		contact,
 		dates,
+		// The birthday derived from the profile, unless an explicit row takes over (§2.13.2).
+		derivedBirthday: overridesDerivedBirthday(dates) ? null : contact.birthDate,
 		dateKinds: IMPORTANT_DATE_KINDS,
 		relationships,
 		relationshipTypes: types,
@@ -294,7 +298,7 @@ export const actions: Actions = {
 		const form = await request.formData();
 		// `<input type="date">` always yields a year; "Year unknown" drops it to `--MM-DD`.
 		const raw = String(form.get('date') ?? '');
-		const date = form.get('yearUnknown') !== null ? raw.replace(/^\d{4}-/, '--') : raw;
+		const date = form.get('yearUnknown') !== null ? withoutYear(raw) : raw;
 		const parsed = v.safeParse(AddDateSchema, {
 			kind: form.get('kind'),
 			label: form.get('label') || undefined,

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Avatar from '$lib/components/Avatar.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
+	import { occasionLabel, whenLabel } from '$lib/dates/labels';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -37,26 +38,6 @@
 		}
 		return groups;
 	});
-
-	// Upcoming dates read as a countdown, not as a calendar entry.
-	function whenLabel(daysUntil: number, date: string): string {
-		if (daysUntil === 0) return 'today';
-		if (daysUntil === 1) return 'tomorrow';
-		if (daysUntil < 7) return `in ${daysUntil} days`;
-		return new Date(date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-	}
-
-	function occasion(item: PageData['upcoming'][number]): string {
-		if (item.kind === 'birthday') {
-			return item.turning === null ? 'has a birthday' : `turns ${item.turning}`;
-		}
-		if (item.kind === 'anniversary') {
-			// A named anniversary says it better than a bare count ever could.
-			if (item.label) return item.turning === null ? item.label : `${item.label} · ${item.turning} years`;
-			return item.turning === null ? 'has an anniversary' : `${item.turning} years together`;
-		}
-		return item.label ?? 'has something coming up';
-	}
 
 	let hintDismissed = $state(false);
 </script>
@@ -114,7 +95,7 @@
 						<Avatar id={item.contactId} name={item.contactName} avatarPhotoId={item.avatarPhotoId} size={32} />
 						<div class="min-w-0 text-[13px] text-fg-muted">
 							<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline">{item.contactName}</a>
-							<span>{occasion(item)}</span>
+							<span>{occasionLabel(item)}</span>
 							<span class="text-fg-subtle">· {whenLabel(item.daysUntil, item.date)}</span>
 						</div>
 						<a

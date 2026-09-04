@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
@@ -62,6 +63,30 @@ describe('createDrizzleContactRepository', () => {
 		await repo.insert(contactInput({ id: 'c-1', displayName: 'Hans Müller', firstName: 'Hans', lastName: 'Müller' }));
 		const found = await repo.findByIdVisibleTo(viewerU1, 'c-1');
 		expect(found).toMatchObject({ id: 'c-1', displayName: 'Hans Müller', firstName: 'Hans', createdBy: U1 });
+	});
+
+	it('round-trips the birth date and its precision', async () => {
+		await repo.insert(
+			contactInput({ id: 'c-born', birthDate: '--03-11', birthDatePrecision: 'month_day' })
+		);
+		expect(await repo.findByIdVisibleTo(viewerU1, 'c-born')).toMatchObject({
+			birthDate: '--03-11',
+			birthDatePrecision: 'month_day'
+		});
+	});
+
+	it('reads the deceased flag back as a boolean, not SQLite 0/1', async () => {
+		await repo.insert(contactInput({ id: 'c-alive' }));
+		db.update(schema.contact)
+			.set({ isDeceased: 1 })
+			.where(eq(schema.contact.id, 'c-alive'))
+			.run();
+		const gone = await repo.findByIdVisibleTo(viewerU1, 'c-alive');
+		expect(gone?.isDeceased).toBe(true);
+
+		await repo.insert(contactInput({ id: 'c-living' }));
+		// The positive control: without it, `toBe(true)` would pass against any truthy mapping.
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-living'))?.isDeceased).toBe(false);
 	});
 
 	it('hides another member private contact but shows it to its owner', async () => {

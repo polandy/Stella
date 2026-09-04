@@ -4,6 +4,7 @@ import type { IdGenerator } from '../../id';
 import {
 	addImportantDate,
 	InvalidImportantDateError,
+	overridesDerivedBirthday,
 	removeImportantDate,
 	type ImportantDateRepository,
 	type NewImportantDate
@@ -130,5 +131,47 @@ describe('removeImportantDate', () => {
 		const f = fakeRepo();
 		await removeImportantDate(deps(f.repo), 'c1', 'date-1');
 		expect(f.removed).toEqual([{ contactId: 'c1', dateId: 'date-1' }]);
+	});
+});
+
+describe('calendar validity', () => {
+	it('refuses a day that does not exist, storing nothing', async () => {
+		const f = fakeRepo();
+		for (const date of ['--02-30', '--99-99', '2026-13-01', '2026-04-31', '2026-02-30']) {
+			await expect(
+				addImportantDate(deps(f.repo), { contactId: 'c1', kind: 'anniversary', date })
+			).rejects.toBeInstanceOf(InvalidImportantDateError);
+		}
+		expect(f.inserted).toBeNull();
+	});
+
+	it('keeps 29 February, which a year-less date must still allow', async () => {
+		const f = fakeRepo();
+		await addImportantDate(deps(f.repo), { contactId: 'c1', kind: 'anniversary', date: '--02-29' });
+		expect(f.inserted?.date).toBe('--02-29');
+		await addImportantDate(deps(f.repo), {
+			contactId: 'c1',
+			kind: 'anniversary',
+			date: '2016-02-29'
+		});
+		expect(f.inserted?.date).toBe('2016-02-29');
+	});
+
+	it('refuses 29 February in a common year', async () => {
+		const f = fakeRepo();
+		await expect(
+			addImportantDate(deps(f.repo), { contactId: 'c1', kind: 'anniversary', date: '2026-02-29' })
+		).rejects.toBeInstanceOf(InvalidImportantDateError);
+	});
+});
+
+describe('overridesDerivedBirthday', () => {
+	it('is true once an explicit birthday exists', () => {
+		expect(overridesDerivedBirthday([{ kind: 'birthday' }])).toBe(true);
+	});
+
+	it('is false for other kinds, so the derived birthday still shows', () => {
+		expect(overridesDerivedBirthday([{ kind: 'anniversary' }, { kind: 'custom' }])).toBe(false);
+		expect(overridesDerivedBirthday([])).toBe(false);
 	});
 });

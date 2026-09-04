@@ -2,27 +2,11 @@
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import EgoGraph from '$lib/components/EgoGraph.svelte';
 	import JournalTimeline from '$lib/components/JournalTimeline.svelte';
+	import { dayLabel } from '$lib/dates/labels';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	const c = $derived(data.contact);
-
-	// The birthday derived from the profile's birth date, unless an explicit birthday row
-	// overrides it (docs/02 §2.13) — which is also how one gets muted.
-	const derivedBirthday = $derived(
-		c.birthDate && !data.dates.some((d) => d.kind === 'birthday') ? c.birthDate : null
-	);
-
-	/** Render `YYYY-MM-DD` or a year-less `--MM-DD` for reading. */
-	function dayLabel(value: string): string {
-		const yearless = value.startsWith('--');
-		const d = new Date(yearless ? `2000${value.slice(1)}` : value);
-		return d.toLocaleDateString('en-GB', {
-			day: 'numeric',
-			month: 'long',
-			...(yearless ? {} : { year: 'numeric' })
-		});
-	}
 
 	// Accent per relationship category, matching the design system (docs/05 §5.6).
 	const categoryColor: Record<string, string> = {
@@ -190,12 +174,12 @@
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">Dates</h2>
 
-		{#if derivedBirthday || data.dates.length > 0}
+		{#if data.derivedBirthday || data.dates.length > 0}
 			<ul class="flex flex-col gap-1">
-				{#if derivedBirthday}
+				{#if data.derivedBirthday}
 					<li class="flex items-center gap-3 rounded-app border border-border bg-card px-3 py-2">
 						<span class="w-24 shrink-0 text-xs uppercase tracking-wide text-fg-subtle">birthday</span>
-						<span class="flex-1 truncate text-fg">{dayLabel(derivedBirthday)}</span>
+						<span class="flex-1 truncate text-fg">{dayLabel(data.derivedBirthday)}</span>
 						<span class="text-xs text-fg-subtle">from the profile</span>
 					</li>
 				{/if}

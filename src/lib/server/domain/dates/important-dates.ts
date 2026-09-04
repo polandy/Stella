@@ -49,8 +49,24 @@ export interface AddImportantDateInput {
 	remind?: boolean;
 }
 
-/** Accepts a full ISO day or a year-less `--MM-DD`. */
-const DATE_SHAPE = /^(\d{4}-\d{2}-\d{2}|--\d{2}-\d{2})$/;
+/** A full ISO day, or a year-less `--MM-DD`. */
+const DATE_SHAPE = /^(?:(\d{4})-(\d{2})-(\d{2})|--(\d{2})-(\d{2}))$/;
+
+/**
+ * A shape check is not enough: `--02-30` and `--99-99` both match it, and the date maths
+ * downstream would silently roll them into some other day rather than refuse them. A
+ * year-less date is validated against a leap year so 29 February stays legal.
+ */
+function isRealCalendarDay(value: string): boolean {
+	const m = DATE_SHAPE.exec(value);
+	if (!m) return false;
+	const year = m[1] ? Number(m[1]) : 2000;
+	const month = Number(m[2] ?? m[4]);
+	const day = Number(m[3] ?? m[5]);
+	if (month < 1 || month > 12 || day < 1) return false;
+	const lastDayOfMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+	return day <= lastDayOfMonth;
+}
 
 /** Thrown when a date is malformed or its kind is unknown. */
 export class InvalidImportantDateError extends Error {
@@ -80,6 +96,9 @@ export async function addImportantDate(
 	if (!DATE_SHAPE.test(date)) {
 		throw new InvalidImportantDateError('A date must be YYYY-MM-DD, or --MM-DD without a year.');
 	}
+	if (!isRealCalendarDay(date)) {
+		throw new InvalidImportantDateError(`There is no such day in the calendar: ${date}.`);
+	}
 	const label = orNull(input.label);
 	if (input.kind === 'custom' && label === null) {
 		throw new InvalidImportantDateError('Give the date a name so it means something later.');
@@ -108,6 +127,15 @@ export async function listImportantDates(
 	contactId: string
 ): Promise<ImportantDate[]> {
 	return deps.dates.listForContactVisibleTo(viewer, contactId);
+}
+
+/**
+ * Whether these explicit dates take over the birthday derived from the contact's birth date
+ * (docs/02 §2.13.2). The same rule decides what the person page shows and what `upcomingDates`
+ * keeps, so it is stated once here.
+ */
+export function overridesDerivedBirthday(dates: readonly Pick<ImportantDate, 'kind'>[]): boolean {
+	return dates.some((d) => d.kind === 'birthday');
 }
 
 /** Remove an important date from a contact the viewer may see. */

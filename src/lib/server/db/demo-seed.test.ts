@@ -66,6 +66,28 @@ describe('seedDemoData', () => {
 		expect(db.select().from(schema.contact).all().every((c) => c.birthDate !== null)).toBe(true);
 	});
 
+	it('clears the birthday rows an earlier seed version wrote', () => {
+		// Those rows shadowed the derived birthday and, with remind off, silenced every one.
+		seedDemoData(db); // the contact has to exist before a date can point at it
+		db.insert(schema.importantDate)
+			.values({
+				id: 'demo-date-bday-markus',
+				contactId: 'demo-c-markus',
+				kind: 'birthday',
+				label: 'Geburtstag',
+				date: '1983-03-14',
+				recursYearly: 1,
+				remind: 0
+			})
+			.run();
+		seedDemoData(db);
+
+		const dates = db.select().from(schema.importantDate).all();
+		expect(dates.some((d) => d.id === 'demo-date-bday-markus')).toBe(false);
+		// Positive control: the seeding it does do still happened.
+		expect(dates.some((d) => d.kind === 'anniversary')).toBe(true);
+	});
+
 	it('is idempotent — reseeding does not duplicate rows', () => {
 		seedDemoData(db);
 		const firstContacts = db.select().from(schema.contact).all().length;

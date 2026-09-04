@@ -54,11 +54,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// "Write a moment" on an upcoming date opens the composer with that person already in it.
 	const about = contacts.find((c) => c.id === url.searchParams.get(ABOUT_PARAM));
 
+	// One reading of the clock, so the composer's day and the horizon cannot straddle midnight.
+	const day = today();
+
 	return {
-		today: today(),
+		today: day,
 		compose: url.searchParams.has('compose') || about !== undefined,
 		draft: about ? `${handleFor(about)} ` : null,
-		upcoming: upcomingDates(dateSources, today()),
+		upcoming: upcomingDates(dateSources, day),
 		linkSuggestion,
 		candidates: contacts.map((c) => ({
 			id: c.id,
