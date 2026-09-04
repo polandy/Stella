@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'bun:test';
-import { resolvePalette } from './theme';
+import { describe, expect, it, test } from 'bun:test';
+import { mixHex, resolvePalette } from './theme';
 import { buildStylesheet } from './stylesheet';
 
 /*
@@ -64,5 +64,25 @@ describe('buildStylesheet', () => {
 	it('gives every person accent its own background selector', () => {
 		expect(has('node.person[accent = "mauve"]')).toBe(true);
 		expect(has('node.person[accent = "green"]')).toBe(true);
+	});
+});
+
+describe('mixHex', () => {
+	test('blends two hex colours by percentage', () => {
+		expect(mixHex('#000000', 50, '#ffffff')).toBe('#808080');
+	});
+
+	test('0% is the base colour and 100% is the accent', () => {
+		expect(mixHex('#40a02b', 0, '#e6e9ef')).toBe('#e6e9ef');
+		expect(mixHex('#40a02b', 100, '#e6e9ef')).toBe('#40a02b');
+	});
+
+	test('expands three-digit hex', () => {
+		expect(mixHex('#f00', 100, '#fff')).toBe('#ff0000');
+	});
+
+	test('falls back to the accent when a colour is not hex', () => {
+		// Cytoscape parses the result itself, so an unmixed accent still renders.
+		expect(mixHex('rgb(1 2 3)', 45, '#ffffff')).toBe('rgb(1 2 3)');
 	});
 });

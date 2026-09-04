@@ -210,7 +210,9 @@
 </script>
 
 <div class="relative h-full w-full overflow-hidden">
-	<div bind:this={container} class="absolute inset-0"></div>
+	<!-- Cytoscape stamps `position: relative` on its container, which would cancel an
+	     `absolute inset-0` box and collapse the canvas to zero height — size it directly. -->
+	<div bind:this={container} class="h-full w-full"></div>
 
 	{#if !ready}
 		<div class="absolute inset-0 grid place-items-center text-sm text-fg-subtle">
