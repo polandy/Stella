@@ -30,3 +30,6 @@ vite.config.ts.timestamp-*
 /test-results
 /playwright-report
 /blob-report
+
+# Local Claude Code settings (per-machine, never shared)
+.claude/settings.local.json
