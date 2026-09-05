@@ -219,6 +219,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		relateTo: url.searchParams.get('relate'),
 		// The person's photo gallery (docs/02 §2.14), newest first, already visibility-scoped.
 		gallery,
+		// Who is looking: the gallery only offers caption/remove on your own photos.
+		viewerId: viewer.id,
 		// render Markdown server-side; the output is already safe (docs/02 §2.5)
 		notes: notes.map((note) => ({
 			id: note.id,

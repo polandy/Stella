@@ -6,6 +6,9 @@
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import { processImage } from '$lib/image/process-image';
+	import { mediaUrl, thumbnailUrl } from '$lib/media/urls';
 	import RemoveButton from '$lib/components/RemoveButton.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
@@ -33,7 +36,7 @@
 	const INPUT =
 		'rounded-control border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
 
-	type Tab = 'story' | 'people' | 'notes';
+	type Tab = 'story' | 'people' | 'notes' | 'photos';
 	// Arriving with `?relate=` (a moment's hint, or quick-add's "link as relative") lands
 	// straight on the relationship editor, prefilled — otherwise the hint would be a dead end.
 	// `?propose=` comes back from adding a link and carries its implied ones, which live in
@@ -51,8 +54,57 @@
 	const tabs: { id: Tab; label: string; count?: number }[] = $derived([
 		{ id: 'story', label: 'Story' },
 		{ id: 'people', label: 'People', count: data.relationships.length },
-		{ id: 'notes', label: 'Notes', count: data.notes.length }
+		{ id: 'notes', label: 'Notes', count: data.notes.length },
+		{ id: 'photos', label: 'Photos', count: data.gallery.length }
 	]);
+
+	/*
+	 * The gallery (docs/02 §2.14). Photos are downscaled and EXIF-stripped in the browser
+	 * before upload, so nothing leaves the device carrying a location. The lightbox is one
+	 * overlay reused for whichever photo is open; `openPhoto` is an index into the grid so
+	 * the arrow keys can walk it.
+	 */
+	let picked = $state<File[]>([]);
+	let uploading = $state(false);
+	let uploadError = $state<string | null>(null);
+	let openPhoto = $state<number | null>(null);
+	const openedPhoto = $derived(openPhoto === null ? null : (data.gallery[openPhoto] ?? null));
+
+	async function uploadPhotos(event: SubmitEvent) {
+		event.preventDefault();
+		const formEl = event.currentTarget as HTMLFormElement;
+		if (picked.length === 0) return;
+		uploading = true;
+		uploadError = null;
+		try {
+			const body = new FormData(formEl);
+			body.delete('files');
+			for (const file of picked) {
+				const { image, thumb, width, height } = await processImage(file);
+				body.append('image', image, 'photo.jpg');
+				body.append('thumb', thumb, 'thumb.jpg');
+				body.append('width', String(width));
+				body.append('height', String(height));
+			}
+			const res = await fetch(`/contacts/${c.id}?/addGalleryPhotos`, { method: 'POST', body });
+			if (!res.ok) throw new Error();
+			picked = [];
+			formEl.reset();
+			await invalidateAll();
+		} catch {
+			uploadError = 'Those photos could not be added.';
+		} finally {
+			uploading = false;
+		}
+	}
+
+	function onGalleryKeydown(event: KeyboardEvent) {
+		const at = openPhoto;
+		if (at === null || data.gallery.length === 0) return;
+		if (event.key === 'Escape') openPhoto = null;
+		if (event.key === 'ArrowRight') openPhoto = (at + 1) % data.gallery.length;
+		if (event.key === 'ArrowLeft') openPhoto = (at - 1 + data.gallery.length) % data.gallery.length;
+	}
 
 	function logContact() {
 		tab = 'story';
@@ -100,6 +152,8 @@
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
 	const savedRelationship = savedEnhance(removals, () => (relateOpen = false));
 </script>
+
+<svelte:window onkeydown={onGalleryKeydown} />
 
 <svelte:head><title>{c.displayName} · Stella</title></svelte:head>
 
@@ -618,6 +672,144 @@
 					{/snippet}
 				</Section>
 			</div>
+
+			<div id="panel-photos" role="tabpanel" aria-labelledby="tab-photos" hidden={tab !== 'photos'}>
+				<Section addLabel="Add photos" error={form?.photoError ?? uploadError}>
+					{#if data.gallery.length > 0}
+						<ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="photo-grid">
+							{#each data.gallery as p, index (p.id)}
+								<li class="relative">
+									<button
+										type="button"
+										onclick={() => (openPhoto = index)}
+										class="block w-full overflow-hidden rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+									>
+										<img
+											src={thumbnailUrl(p.id)}
+											alt={p.caption ?? `Photo of ${c.displayName}`}
+											class="aspect-square w-full object-cover"
+											loading="lazy"
+										/>
+									</button>
+									{#if p.visibility === 'private'}
+										<span
+											class="absolute right-1 top-1 rounded-full bg-bg/80 p-1 text-fg-muted"
+											title="Private — only you can see this"
+										>
+											<Icon name="private" size={11} />
+										</span>
+									{/if}
+								</li>
+							{/each}
+						</ul>
+					{:else}
+						<p class="text-sm text-fg-subtle">No photos yet.</p>
+					{/if}
+
+					{#snippet editor()}
+						<form onsubmit={uploadPhotos} class="flex flex-wrap items-end gap-3">
+							<label class="flex flex-1 flex-col gap-1 text-sm">
+								<span class="text-fg-muted">Pictures</span>
+								<input
+									name="files"
+									type="file"
+									accept="image/*"
+									multiple
+									required
+									onchange={(e) => (picked = Array.from(e.currentTarget.files ?? []))}
+									class={INPUT}
+								/>
+							</label>
+							<fieldset class="flex items-center gap-3 text-sm">
+								<label class="flex items-center gap-1.5">
+									<input type="radio" name="visibility" value="shared" checked /> Shared
+								</label>
+								<label class="flex items-center gap-1.5">
+									<input type="radio" name="visibility" value="private" /> Private
+								</label>
+							</fieldset>
+							<Button variant="primary" size="sm" disabled={uploading}>
+								{uploading ? 'Adding…' : 'Add'}
+							</Button>
+						</form>
+					{/snippet}
+				</Section>
+			</div>
 		</div>
 	</div>
 </main>
+
+<!--
+	Lightbox (docs/02 §2.14). One overlay for whichever photo is open: a dimmed backdrop that
+	closes on click, the picture, and the few things you might do with it. Only the person who
+	added a photo can caption, re-scope or remove it; anyone who can see it can make it the
+	avatar. Escape closes, the arrow keys walk the grid.
+-->
+{#if openedPhoto}
+	<div class="fixed inset-0 z-50 flex flex-col" role="dialog" aria-modal="true" aria-label="Photo" data-testid="photo-lightbox">
+		<button
+			type="button"
+			class="absolute inset-0 bg-bg-sunken/90 backdrop-blur-sm"
+			aria-label="Close"
+			onclick={() => (openPhoto = null)}
+		></button>
+
+		<div class="relative m-auto flex w-full max-w-3xl flex-col gap-3 rounded-app bg-card p-4 shadow-pop">
+			<div class="flex items-center justify-between gap-3">
+				<p class="truncate text-sm text-fg">
+					{openedPhoto.caption ?? 'No caption'}
+					{#if openedPhoto.visibility === 'private'}
+						<span class="ml-2 inline-flex items-center gap-1 text-xs text-fg-subtle">
+							<Icon name="private" size={11} />private
+						</span>
+					{/if}
+				</p>
+				<Button variant="ghost" size="sm" onclick={() => (openPhoto = null)}>Close</Button>
+			</div>
+
+			<img
+				src={mediaUrl(openedPhoto.id)}
+				alt={openedPhoto.caption ?? `Photo of ${c.displayName}`}
+				class="max-h-[65vh] w-full rounded-control bg-bg-sunken object-contain"
+			/>
+
+			<div class="flex flex-wrap items-center gap-2">
+				<form method="POST" action="?/usePhotoAsAvatar" class="contents">
+					<input type="hidden" name="photoId" value={openedPhoto.id} />
+					<Button variant="secondary" size="sm" disabled={openedPhoto.isAvatar}>
+						{openedPhoto.isAvatar ? 'Current photo' : 'Use as photo'}
+					</Button>
+				</form>
+
+				{#if openedPhoto.createdBy === data.viewerId}
+					<form method="POST" action="?/captionPhoto" class="flex flex-1 items-center gap-2">
+						<input type="hidden" name="photoId" value={openedPhoto.id} />
+						<input
+							name="caption"
+							value={openedPhoto.caption ?? ''}
+							placeholder="Add a caption"
+							aria-label="Caption"
+							class="min-w-40 flex-1 {INPUT}"
+						/>
+						<Button variant="secondary" size="sm">Save</Button>
+					</form>
+					<form method="POST" action="?/setPhotoVisibility" class="contents">
+						<input type="hidden" name="photoId" value={openedPhoto.id} />
+						<input
+							type="hidden"
+							name="visibility"
+							value={openedPhoto.visibility === 'private' ? 'shared' : 'private'}
+						/>
+						<Button variant="ghost" size="sm">
+							{openedPhoto.visibility === 'private' ? 'Share with the household' : 'Make private'}
+						</Button>
+					</form>
+					<form method="POST" action="?/removePhoto" class="contents">
+						<input type="hidden" name="photoId" value={openedPhoto.id} />
+						<Button variant="danger" size="sm">Remove</Button>
+					</form>
+				{/if}
+			</div>
+		</div>
+	</div>
+{/if}
