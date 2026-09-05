@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { openPerson, signIn } from './app';
 
 /*
  * The photo gallery on a person (docs/02 §2.14). Written after the maintainer verified the
@@ -17,17 +18,9 @@ const PIXEL = readFileSync('e2e/fixtures/monica-photos/photos/ottilie-avatar.png
 
 const file = (name: string) => ({ name, mimeType: 'image/png', buffer: PIXEL });
 
-/** Signs in through the SEED_DEMO one-click button and lands on Home. */
-async function signIn(page: Page): Promise<void> {
-	await page.goto('/login');
-	await page.getByRole('button', { name: 'Sign in as demo user' }).click();
-	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
-}
-
 /** Opens a person and their Photos tab. */
 async function openPhotos(page: Page, person: RegExp): Promise<void> {
-	await page.goto('/contacts');
-	await page.getByRole('link', { name: person }).first().click();
+	await openPerson(page, person);
 	await page.getByRole('tab', { name: /Photos/ }).click();
 }
 
