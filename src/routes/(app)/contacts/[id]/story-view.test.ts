@@ -15,6 +15,7 @@ function context(overrides: Partial<StoryViewContext> = {}): StoryViewContext {
 		userId: VIEWER,
 		photosByEntry: new Map(),
 		nameOf: () => null,
+		nameOfAuthor: () => null,
 		...overrides
 	};
 }
@@ -127,6 +128,41 @@ describe('toStoryItem, touchpoints', () => {
 		expect(view.interactionKind).toBe('gift');
 		expect(view.title).toBe('Quick call');
 		expect(view.participants).toEqual([{ contactId: 'c2', displayName: 'Markus' }]);
+	});
+});
+
+describe('toStoryItem, who wrote it', () => {
+	it('names the viewer "you" on their own entry', () => {
+		const view = toStoryItem(journalItem(), context({ nameOfAuthor: () => 'Markus Brunner' }));
+
+		expect(view.author).toBe('you');
+	});
+
+	it('names the other member on an entry they wrote', () => {
+		const view = toStoryItem(
+			journalItem({ createdBy: 'user-2' }),
+			context({ nameOfAuthor: (id) => (id === 'user-2' ? 'Lena Brunner' : null) })
+		);
+
+		expect(view.author).toBe('Lena');
+	});
+
+	it('names nobody when the author has left the household', () => {
+		const view = toStoryItem(
+			journalItem({ createdBy: 'gone' }),
+			context({ nameOfAuthor: () => null })
+		);
+
+		expect(view.author).toBeNull();
+	});
+
+	it('names the author of a touchpoint the same way', () => {
+		const view = toStoryItem(
+			interactionItem({ createdBy: 'user-2' }),
+			context({ nameOfAuthor: () => 'Lena Brunner' })
+		);
+
+		expect(view.author).toBe('Lena');
 	});
 });
 

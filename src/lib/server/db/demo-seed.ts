@@ -36,6 +36,9 @@ import {
 export const DEMO_ADMIN_EMAIL = 'demo@stella.local';
 export const DEMO_ADMIN_PASSWORD = 'stella-demo-1234';
 
+/** The demo household's second member, who wrote some of the story. Same password. */
+export const DEMO_MEMBER_EMAIL = 'nina@stella.local';
+
 type Gender = 'male' | 'female';
 
 interface Person {
@@ -328,6 +331,8 @@ interface StorySeed {
 	daysAgo: number;
 	kind?: 'met' | 'call' | 'video' | 'message' | 'letter' | 'gift';
 	text: string;
+	/** Written by the household's second member, so the story shows two names (docs/02 §2.23). */
+	byMember?: true;
 }
 
 const STORY: readonly StorySeed[] = [
@@ -335,11 +340,11 @@ const STORY: readonly StorySeed[] = [
 	{ person: 'markus', daysAgo: 2, text: 'Markus fixed the garden gate at last — with Noah holding the screws.' },
 	{ person: 'hans', daysAgo: 8, text: 'Opa Hans told the story about the 1972 flood again, this time with the photo of the bridge.' },
 	{ person: 'hans', daysAgo: 30, kind: 'met', text: 'Lunch at the Bären' },
-	{ person: 'hans', daysAgo: 45, text: 'Hans sharpened every knife in the house and pretended it was nothing.' },
+	{ person: 'hans', daysAgo: 45, byMember: true, text: 'Hans sharpened every knife in the house and pretended it was nothing.' },
 	{ person: 'hans', daysAgo: 60, kind: 'call', text: 'Called about the roof' },
 	{ person: 'hans', daysAgo: 75, text: 'Hans found his old carpentry ledger from 1969. Every chair in the village is in it.' },
-	{ person: 'hans', daysAgo: 90, kind: 'video', text: 'Video call with the kids' },
-	{ person: 'hans', daysAgo: 110, text: 'Hans and Rosa danced in the kitchen. Nobody was supposed to see.' },
+	{ person: 'hans', daysAgo: 90, kind: 'video', byMember: true, text: 'Video call with the kids' },
+	{ person: 'hans', daysAgo: 110, byMember: true, text: 'Hans and Rosa danced in the kitchen. Nobody was supposed to see.' },
 	{ person: 'hans', daysAgo: 130, kind: 'gift', text: 'Brought him the biography he mentioned' },
 	{ person: 'hans', daysAgo: 150, text: 'Hans taught Noah how to whittle a whistle. It even works.' },
 	{ person: 'hans', daysAgo: 170, kind: 'letter', text: 'Postcard from the Engadin' },
@@ -377,7 +382,7 @@ export function seedDemoData(db: BunSQLiteDatabase<typeof schema>): {
 	householdId: string;
 	contacts: number;
 } {
-	const { householdId, authorId, created } = resolveHouseholdAndAuthor(db);
+	const { householdId, authorId, memberId, created } = resolveHouseholdAndAuthor(db);
 
 	const displayName = (p: Person) => `${p.first} ${p.last}`;
 	const now = Date.now();
@@ -513,7 +518,7 @@ export function seedDemoData(db: BunSQLiteDatabase<typeof schema>): {
 			STORY.filter((s) => s.kind === undefined).map((s, i) => ({
 				id: `demo-journal-${s.person}-${i}`,
 				contactId: cid(s.person),
-				createdBy: authorId,
+				createdBy: s.byMember ? memberId : authorId,
 				entryDate: dayBefore(now, s.daysAgo),
 				body: s.text,
 				// Dated when they happened, so the stream does not show a year of "just now".
@@ -529,7 +534,7 @@ export function seedDemoData(db: BunSQLiteDatabase<typeof schema>): {
 			STORY.filter((s) => s.kind !== undefined).map((s, i) => ({
 				id: `demo-touch-${s.person}-${i}`,
 				contactId: cid(s.person),
-				createdBy: authorId,
+				createdBy: s.byMember ? memberId : authorId,
 				kind: s.kind!,
 				happenedAt: dayBefore(now, s.daysAgo),
 				title: s.text,
@@ -551,25 +556,33 @@ export function seedDemoData(db: BunSQLiteDatabase<typeof schema>): {
 function resolveHouseholdAndAuthor(db: BunSQLiteDatabase<typeof schema>): {
 	householdId: string;
 	authorId: string;
+	/** Whoever the second member is; the first one again when the household has only one. */
+	memberId: string;
 	created: boolean;
 } {
 	const existingHousehold = db.select({ id: household.id }).from(household).limit(1).all();
 	if (existingHousehold.length > 0) {
 		const householdId = existingHousehold[0].id;
-		const admin = db
+		const members = db
 			.select({ id: user.id })
 			.from(user)
 			.where(eq(user.householdId, householdId))
-			.limit(1)
+			.limit(2)
 			.all();
-		if (admin.length > 0) {
-			return { householdId, authorId: admin[0].id, created: false };
+		if (members.length > 0) {
+			return {
+				householdId,
+				authorId: members[0].id,
+				memberId: (members[1] ?? members[0]).id,
+				created: false
+			};
 		}
 	}
 
 	// Reached only when no household exists at all, so this is always a fresh creation.
 	const householdId = 'demo-household';
 	const authorId = 'demo-user-admin';
+	const memberId = 'demo-user-member';
 	db.insert(household).values({ id: householdId, name: 'Familie Brunner' }).run();
 	const passwordHash = Bun.password.hashSync(DEMO_ADMIN_PASSWORD, { algorithm: 'argon2id' });
 	db.insert(user)
@@ -584,8 +597,20 @@ function resolveHouseholdAndAuthor(db: BunSQLiteDatabase<typeof schema>): {
 		})
 		.run();
 
+	// A second member so the story has two names on it; they share the demo password.
+	db.insert(user)
+		.values({
+			id: memberId,
+			householdId,
+			email: DEMO_MEMBER_EMAIL,
+			name: 'Nina Brunner',
+			passwordHash,
+			role: 'member'
+		})
+		.run();
+
 	console.log(
 		`[seed] created demo household + admin — login: ${DEMO_ADMIN_EMAIL} / ${DEMO_ADMIN_PASSWORD}`
 	);
-	return { householdId, authorId, created: true };
+	return { householdId, authorId, memberId, created: true };
 }

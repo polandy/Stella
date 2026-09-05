@@ -33,12 +33,40 @@ describe('seedDemoData', () => {
 		expect(households).toHaveLength(1);
 		expect(households[0].name).toBe('Familie Brunner');
 
-		const admins = db.select().from(schema.user).all();
-		expect(admins).toHaveLength(1);
-		expect(admins[0].role).toBe('admin');
-		expect(admins[0].passwordHash).toBeTruthy();
+		const users = db.select().from(schema.user).all();
+		const admin = users.find((u) => u.role === 'admin');
+		expect(admin).toBeDefined();
+		expect(admin!.passwordHash).toBeTruthy();
 		// The break-glass admin must be login-capable with a real Argon2id hash.
-		expect(Bun.password.verifySync('stella-demo-1234', admins[0].passwordHash as string)).toBe(true);
+		expect(Bun.password.verifySync('stella-demo-1234', admin!.passwordHash as string)).toBe(true);
+	});
+
+	it('gives the demo household a second member, so the story shows more than one author', () => {
+		seedDemoData(db);
+
+		const members = db.select().from(schema.user).all();
+		expect(members.map((m) => m.role).sort()).toEqual(['admin', 'member']);
+
+		const second = members.find((m) => m.role === 'member')!;
+		const written = db
+			.select()
+			.from(schema.journalEntry)
+			.where(eq(schema.journalEntry.createdBy, second.id))
+			.all();
+		const touched = db
+			.select()
+			.from(schema.interaction)
+			.where(eq(schema.interaction.createdBy, second.id))
+			.all();
+		expect(written.length + touched.length).toBeGreaterThan(0);
+
+		// positive control: the admin still wrote most of it, so both names appear on the story
+		const byAdmin = db
+			.select()
+			.from(schema.journalEntry)
+			.where(eq(schema.journalEntry.createdBy, members.find((m) => m.role === 'admin')!.id))
+			.all();
+		expect(byAdmin.length).toBeGreaterThan(written.length);
 	});
 
 	it('populates contacts, relationships, circles and memberships', () => {

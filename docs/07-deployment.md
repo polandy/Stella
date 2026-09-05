@@ -88,6 +88,7 @@ AUTH_OIDC_ENABLED=true
 # --- Test phase (leave off for real use) ---
 SEED_DEMO=false                               # true → seed the Brunner demo dataset on startup (idempotent);
                                               # on a fresh DB also creates admin demo@stella.local / stella-demo-1234
+                                              # plus a second member, nina@stella.local (same password), who wrote part of the story
                                               # and shows a one-click "Sign in as demo user" button on /login
 
 # --- OIDC / Authelia ---

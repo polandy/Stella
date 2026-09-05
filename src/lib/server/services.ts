@@ -30,6 +30,8 @@ import { createFileMediaStore } from './media/file-store';
 import { createDrizzleRelationshipRepository } from './db/relationship-repository';
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
+import type { MemberDeps, MemberRepository } from './domain/household/members';
+import { createDrizzleMemberRepository } from './db/member-repository';
 import { createDrizzleTagRepository } from './db/tag-repository';
 import type {
 	ContactFieldDeps,
@@ -232,6 +234,17 @@ export function getSearch(): SearchRepository {
 
 export function getSearchDeps(): SearchDeps {
 	return { search: getSearch() };
+}
+
+let memberRepository: MemberRepository | null = null;
+
+/** The household's members, for putting a name on what each of them wrote (docs/02 §2.23). */
+export function getMembers(): MemberRepository {
+	return (memberRepository ??= createDrizzleMemberRepository(getDb()));
+}
+
+export function getMemberDeps(): MemberDeps {
+	return { members: getMembers() };
 }
 
 let tagRepository: TagRepository | null = null;

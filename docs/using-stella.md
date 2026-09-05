@@ -128,7 +128,9 @@ The most recent of these shows up under the person's name as **Last contact**, s
 to "when did we last speak?" is right there without scrolling. Logged interactions also appear
 on Home, so the rest of the household sees that you were in touch. As everywhere in Stella,
 an interaction marked *private* stays yours alone, and only the person who logged one — or
-wrote it — can remove it from the story. Removing asks no "are you sure?": the item disappears
+wrote it — can remove it from the story. Each item says who wrote it, so in a household of
+several people you can see at a glance that Nina logged the call and you wrote the entry.
+Removing asks no "are you sure?": the item disappears
 and a small **Undo** appears at the bottom of the screen for a few seconds, in case it was
 the wrong one. That goes for everything you can remove — a phone number, a date, a tag, a
 circle you leave — and saving something says *Saved* in the same corner.
