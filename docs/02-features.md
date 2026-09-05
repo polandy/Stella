@@ -743,6 +743,11 @@ The **story** is that merge, done once, server-side.
   removal reaches the server only when that window closes or the page is left, so *Undo*
   simply never sends it (docs/04 §4.9). The same holds for an entry removed on the journal
   page. If the removal fails once it is sent, the item comes back and the toast says so.
+- **Everything removable works this way.** Contact details (§2.3), dates (§2.13.1), tags
+  (§2.9), a circle left on the person page and a member removed on the circle's own page
+  (§2.4) all remove through the same button and the same window; the section's count follows
+  the row, so it never counts something the screen no longer shows. Saving anything says
+  *Saved* in the same place and closes the form it was typed in.
 - **Writing** still happens where it did: the journal page for an entry with photos, the
   *Log contact* form on the person page for a touchpoint.
 - Implemented as a pure merge (`domain/story`: `mergeStory`, unit-tested for every ordering

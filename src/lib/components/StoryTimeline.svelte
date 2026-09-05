@@ -8,6 +8,7 @@
 	import { groupStoryByDay } from '$lib/story/grouping';
 	import type { StoryCursorView, StoryItemView, StoryPageView } from '$lib/story/item';
 	import { useRemovals } from '$lib/undo/context.svelte';
+	import { removalKey as buildKey } from '$lib/undo/keys';
 	import { submitAction } from '$lib/undo/submit-action';
 
 	/*
@@ -55,7 +56,7 @@
 	// Removing is held back for an undo window (docs/02 §2.23): the item leaves the list at
 	// once, the toast offers Undo, and the form is posted only when the window closes.
 	const removals = useRemovals();
-	const removalKey = (item: StoryItemView) => `${item.kind}:${item.id}`;
+	const removalKey = (item: StoryItemView) => buildKey(item.kind, item.id);
 	const shown = $derived(items.filter((item) => !removals.isPending(removalKey(item))));
 	const days = $derived(groupStoryByDay(shown));
 

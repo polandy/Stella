@@ -285,11 +285,13 @@ headers) and `md` (a screen's own actions); an icon with no label becomes a squa
 and requires a `label`.
 
 **Toasts** (`src/lib/components/Toast.svelte`) sit bottom-left of the content column, one
-card per message, announced as a polite live region. A removal's toast reads *Entry removed*
-or *Interaction removed* with an **Undo** button and stays for the whole undo window (eight
-seconds); a plain notice — *Saved*, or why a removal failed — has no button and goes on its
-own. Removing needs no confirmation dialog because every removal can be taken back from here
-(docs/02 §2.23). On a phone the region sits above the tab bar.
+card per message, announced as a polite live region. A removal's toast names what went —
+*Entry removed*, *Tag removed*, *Left the circle* — and carries an **Undo** button for the
+whole window (eight seconds); a plain notice — *Saved*, or why a removal failed — has no
+button and goes on its own. Removing needs no confirmation dialog because every removal can
+be taken back from here (docs/02 §2.23), and every one of them is the same component
+(`RemoveButton`), so no list can quietly opt out. Saving in a section's form says *Saved*
+and closes the form. On a phone the region sits above the tab bar.
 
 ## 5.8 Relationship & context explorer styling
 
