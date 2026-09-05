@@ -12,7 +12,13 @@ import {
 	listCirclesForContact,
 	removeMember
 } from '$lib/server/domain/circles/circles';
-import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
+import {
+	editProfile,
+	EMPTY_CONTACT_NAME_MESSAGE,
+	EmptyContactNameError,
+	getContact,
+	listContacts
+} from '$lib/server/domain/contacts/contacts';
 import {
 	addImportantDate,
 	InvalidImportantDateError,
@@ -204,6 +210,11 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	};
 };
 
+const EditProfileSchema = v.object({
+	displayName: v.pipe(v.string(), v.trim(), v.minLength(1)),
+	description: v.optional(v.pipe(v.string(), v.trim()))
+});
+
 const AddRelationshipSchema = v.object({
 	targetId: v.pipe(v.string(), v.minLength(1)),
 	typeId: v.pipe(v.string(), v.minLength(1)),
@@ -253,6 +264,32 @@ const AddTagSchema = v.object({
 });
 
 export const actions: Actions = {
+	/* The hero's name and description, edited in place (docs/02 §2.2). */
+	editProfile: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const parsed = v.safeParse(EditProfileSchema, {
+			displayName: form.get('displayName'),
+			description: form.get('description') || undefined
+		});
+		if (!parsed.success) return fail(400, { profileError: EMPTY_CONTACT_NAME_MESSAGE });
+
+		try {
+			const saved = await editProfile(getContactDeps(), viewer, params.id, {
+				displayName: parsed.output.displayName,
+				description: parsed.output.description ?? null
+			});
+			if (!saved) throw error(404, 'Contact not found');
+		} catch (err) {
+			if (err instanceof EmptyContactNameError) return fail(400, { profileError: err.message });
+			throw err;
+		}
+
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
 	addRelationship: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };

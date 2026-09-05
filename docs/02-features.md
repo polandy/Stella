@@ -96,6 +96,11 @@ not be an app user.
 - Birthdate (with support for **unknown year** and **age-only** estimates).
 - Deceased flag + date of death.
 - One-line **description** ("Marco's sister, met at the lake").
+- **Name and description are edited where they are read**: click either on the profile, a
+  field takes its place, Enter saves and Escape puts it back. A name may never be emptied —
+  a person with no name is unfindable in every list that sorts by one — so an empty name is
+  refused and the field stays open with the reason. Everything else still lives in its own
+  section's form.
 - **How we met** — free text + optional **date** + optional **place** where you met the
   person (`met_place`). The place is free text (e.g. "at the lake", "Anna's wedding"); it
   may optionally render a **map link** when it looks like a real location. Surfaced on the
@@ -255,6 +260,12 @@ a named group contacts belong to, over a period of time. (A first-class entity, 
   stays distinct from typed pairwise relationships (§2.4).
 - **Feeds suggestions (§2.4.1 / §2.2.1):** e.g. "Hans and Peter are both in Ski Course —
   add a friendship?" — always opt-in.
+- **Finding one among many.** The Circles page filters as you type over name and description,
+  with one chip per kind that is actually there, each carrying its count. The counts follow the
+  query, so no chip ever leads to an empty page, and a kind the query has filtered away falls
+  back to *All*. Both run in the browser over the circles already loaded — a household has few
+  enough of them that a round trip per keystroke would only add latency. The chips appear only
+  when there is more than one kind to choose between.
 - Circles are shareable records under the standard visibility model (§2.10); a membership
   is visible when both its Circle and the contact are visible. Powered by a small,
   test-first domain module over the membership data — extends the graph without touching
@@ -770,6 +781,11 @@ The **story** is that merge, done once, server-side.
   removal reaches the server only when that window closes or the page is left, so *Undo*
   simply never sends it (docs/04 §4.9). The same holds for an entry removed on the journal
   page. If the removal fails once it is sent, the item comes back and the toast says so.
+- **Everything removable works this way.** Contact details (§2.3), dates (§2.13.1), tags
+  (§2.9), a circle left on the person page and a member removed on the circle's own page
+  (§2.4) all remove through the same button and the same window; the section's count follows
+  the row, so it never counts something the screen no longer shows. Saving anything says
+  *Saved* in the same place and closes the form it was typed in.
 - **Writing** still happens where it did: the journal page for an entry with photos, the
   *Log contact* form on the person page for a touchpoint.
 - Implemented as a pure merge (`domain/story`: `mergeStory`, unit-tested for every ordering

@@ -77,6 +77,10 @@ met — and what has happened on the right, under three tabs: **Story**, **Peopl
 Every card on the left holds one **+ Add** button. Nothing is an open form until you ask for
 it, so the page reads as a person rather than as a stack of empty fields.
 
+To change their **name or the line under it**, click the text itself: a field opens where the
+value was, Enter saves it and Escape leaves it as it was. A name cannot be emptied, and Stella
+says so rather than quietly keeping the old one.
+
 **Notes** are for things that stay true — "allergic to hazelnuts", "always calls on
 Sundays". Moments are for things that happened. Notes can be pinned to the top, and have
 their own shared-or-private switch.
@@ -126,7 +130,8 @@ on Home, so the rest of the household sees that you were in touch. As everywhere
 an interaction marked *private* stays yours alone, and only the person who logged one — or
 wrote it — can remove it from the story. Removing asks no "are you sure?": the item disappears
 and a small **Undo** appears at the bottom of the screen for a few seconds, in case it was
-the wrong one.
+the wrong one. That goes for everything you can remove — a phone number, a date, a tag, a
+circle you leave — and saving something says *Saved* in the same corner.
 
 ## Relationships
 
@@ -158,6 +163,10 @@ go.
 
 Circles are also the answer to "who else was there?", which is usually the question you
 have when you are trying to remember someone's name.
+
+Once there are more than a handful, start typing on the Circles page to narrow the list by
+name or description, or tap a kind — *Class*, *Club*, *Team* — to see only those. The number
+beside each kind says how many are left after what you typed.
 
 ## Finding things
 
