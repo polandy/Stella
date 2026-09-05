@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/Button.svelte';
 	import { processImage } from '$lib/image/process-image';
 	import type { ActionData } from './$types';
 
@@ -66,7 +67,6 @@
 	const plural = (what: string, n: number) => (n === 1 ? what : what.endsWith('s') ? `${what}es` : `${what}s`);
 
 	const fieldClass = 'rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg';
-	const primaryButton = 'rounded-app bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-opacity hover:opacity-90 disabled:opacity-50';
 </script>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
@@ -85,12 +85,12 @@
 	</ol>
 
 	{#if step === 'upload'}
-		<form method="POST" action="?/preview" enctype="multipart/form-data" class="flex flex-col gap-4 rounded-app border border-dashed border-border p-5">
+		<form method="POST" action="?/preview" enctype="multipart/form-data" class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card">
 			{#if form?.step === 'upload' && form.error}
 				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
 			{/if}
 			<label class="flex flex-col gap-1 text-sm text-fg-muted">
-				Monica database dump (<code>.sql</code> or <code>.sql.gz</code>)
+				<span>Monica database dump (<code>.sql</code> or <code>.sql.gz</code>)</span>
 				<input type="file" name="dump" accept=".sql,.gz,.sql.gz,application/sql,application/gzip" required class={fieldClass} />
 			</label>
 			<p class="text-xs text-fg-subtle">
@@ -101,14 +101,14 @@
 				<label class="flex items-center gap-1.5"><input type="radio" name="visibility" value="shared" checked /> Shared with the household</label>
 				<label class="flex items-center gap-1.5"><input type="radio" name="visibility" value="private" /> Private to me</label>
 			</fieldset>
-			<button class="self-end {primaryButton}">Preview</button>
+			<Button variant="primary" class="self-end">Preview</Button>
 		</form>
 	{:else if form?.step === 'preview'}
 		<section class="flex flex-col gap-4">
 			<h2 class="text-sm font-medium text-fg-muted">What will be imported</h2>
 			<dl class="grid grid-cols-2 gap-2 sm:grid-cols-4" data-testid="import-preview">
 				{#each Object.entries(form.report.counts) as [what, n] (what)}
-					<div class="rounded-app border border-border bg-card px-3 py-2">
+					<div class="rounded-app bg-card px-3 py-2 shadow-card">
 						<dt class="text-xs uppercase tracking-wide text-fg-subtle">{what.replace(/([A-Z])/g, ' $1').toLowerCase()}</dt>
 						<dd class="text-xl font-semibold text-fg">{n}</dd>
 					</div>
@@ -121,7 +121,7 @@
 				</p>
 			{/if}
 			{#if form.report.skipped.length > 0}
-				<div class="rounded-app border border-border bg-card p-4">
+				<div class="rounded-app bg-card p-4 shadow-card">
 					<h3 class="mb-2 text-sm font-medium text-fg-muted">Left out, and why</h3>
 					<ul class="flex flex-col gap-1 text-sm text-fg">
 						{#each form.report.skipped as s (s.what + s.why)}
@@ -136,8 +136,8 @@
 			<form method="POST" action="?/confirm" class="flex items-center justify-end gap-3">
 				<input type="hidden" name="token" value={form.token} />
 				<input type="hidden" name="visibility" value={form.visibility} />
-				<a href="/settings/import" class="text-sm text-fg-muted hover:text-fg">Start over</a>
-				<button class={primaryButton}>Import now</button>
+				<Button variant="ghost" href="/settings/import">Start over</Button>
+				<Button variant="primary">Import now</Button>
 			</form>
 		</section>
 	{:else if form?.step === 'photos'}
@@ -165,7 +165,7 @@
 
 			<form method="POST" action="?/finish" class="flex justify-end">
 				<input type="hidden" name="token" value={form.token} />
-				<button class={primaryButton} disabled={uploading}>Finish</button>
+				<Button variant="primary" disabled={uploading}>Finish</Button>
 			</form>
 		</section>
 	{/if}

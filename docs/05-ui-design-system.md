@@ -158,11 +158,12 @@ They must be edited together; `app.css` says so at both blocks.
 ## 5.4 Layout & navigation
 
 - **App shell:**
-  - **Desktop:** left sidebar (Home, People, Circles, Graph), a top bar with the search
-    button that opens the ⌘K palette and the *Add person* button, content area.
+  - **Desktop:** left sidebar (Home, People, Circles, Graph, Settings), a top bar with the
+    search button that opens the ⌘K palette and the *Add person* button, content area.
   - **Mobile:** bottom tab bar (Home, People, *pencil*, Circles, Graph). The centre action is
     the **pencil** — writing a moment is the verb the app is built around, adding a record
-    is not — and it opens the composer as a sheet over Home (§2.22.1).
+    is not — and it opens the composer as a sheet over Home (§2.22.1). Settings, rarely
+    opened, sits in the top bar there rather than taking a sixth place.
   - **Breadcrumb trail** in the top bar, derived from the route + loaded data
     (`Home / People / {name} / Journal`). Every segment links, so Home is always one
     click away; the active destination is marked with `aria-current="page"` in the

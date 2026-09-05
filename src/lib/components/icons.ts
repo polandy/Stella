@@ -2,7 +2,9 @@ import {
 	Blend,
 	BookOpen,
 	CalendarDays,
+	ChevronRight,
 	CircleDot,
+	Download,
 	Ellipsis,
 	Gift,
 	Handshake,
@@ -45,6 +47,8 @@ export const ICONS = {
 	graph: Waypoints,
 	search: Search,
 	settings: Settings,
+	import: Download,
+	forward: ChevronRight,
 	// Actions
 	add: Plus,
 	write: SquarePen,
