@@ -39,6 +39,7 @@ import type { SearchDeps, SearchRepository } from './domain/search/search';
 import type { StoryDeps } from './domain/story/story';
 import type { AttentionRepository } from './domain/attention/quiet';
 import type { ContactDeps, ContactRepository } from './domain/contacts/contacts';
+import type { NameCandidateSource, SuggestionDeps } from './domain/contacts/suggestions';
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { JournalDeps, JournalRepository } from './domain/journal/journal';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
@@ -132,14 +133,19 @@ export function getCompleteLoginDeps(): CompleteLoginDeps {
 	};
 }
 
-let contactRepository: ContactRepository | null = null;
+let contactRepository: (ContactRepository & NameCandidateSource) | null = null;
 
-export function getContacts(): ContactRepository {
+export function getContacts(): ContactRepository & NameCandidateSource {
 	return (contactRepository ??= createDrizzleContactRepository(getDb()));
 }
 
 export function getContactDeps(): ContactDeps {
 	return { contacts: getContacts(), ids: ulidGenerator, clock: systemClock };
+}
+
+/** Deps for quick-add's duplicate/relative suggestions (docs/02 §2.2.1). */
+export function getSuggestionDeps(): SuggestionDeps {
+	return { candidates: getContacts() };
 }
 
 let relationshipRepository: RelationshipRepository | null = null;

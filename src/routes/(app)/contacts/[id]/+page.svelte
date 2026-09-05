@@ -13,6 +13,7 @@
 	import { dayLabel } from '$lib/dates/labels';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
+	import { untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 
 	/*
@@ -31,7 +32,10 @@
 		'rounded-control border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
 
 	type Tab = 'story' | 'people' | 'notes';
-	let tab = $state<Tab>('story');
+	// Arriving with `?relate=` (a moment's hint, or quick-add's "link as relative") lands
+	// straight on the relationship editor, prefilled — otherwise the hint would be a dead end.
+	let tab = $state<Tab>(untrack(() => data.relateTo) ? 'people' : 'story');
+	let relateOpen = $state(untrack(() => data.relateTo) !== null);
 	// The hero's "Log contact" opens the story section's form; the section owns the state.
 	let logOpen = $state(false);
 	let showMap = $state(false);
@@ -83,9 +87,11 @@
 	// each section closes itself here instead of on the reload a redirect used to cause.
 	// Logging a touchpoint is the exception: the story timeline owns its paged list, and only
 	// a fresh page gives it the new item, so that form still posts natively.
-	let openSection = $state({ contact: false, dates: false, circles: false, tags: false, relationship: false, note: false });
+	let openSection = $state({ contact: false, dates: false, circles: false, tags: false, note: false });
 	type SectionName = keyof typeof openSection;
 	const saved = (name: SectionName) => savedEnhance(removals, () => (openSection[name] = false));
+	// Relationships keep their own open state: the quick-add flow opens that section by URL.
+	const savedRelationship = savedEnhance(removals, () => (relateOpen = false));
 </script>
 
 <svelte:head><title>{c.displayName} · Stella</title></svelte:head>
@@ -409,7 +415,7 @@
 			</div>
 
 			<div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden={tab !== 'people'}>
-				<Section addLabel="Add relationship" error={form?.error ?? null} bind:open={openSection.relationship}>
+				<Section addLabel="Add relationship" error={form?.error ?? null} bind:open={relateOpen}>
 					{#snippet action()}
 						<a
 							href="/graph?center={c.id}"
@@ -456,7 +462,7 @@
 
 					{#snippet editor()}
 						{#if data.otherContacts.length > 0}
-							<form method="POST" action="?/addRelationship" use:enhance={saved('relationship')} class="flex flex-wrap items-end gap-3">
+							<form method="POST" action="?/addRelationship" use:enhance={savedRelationship} class="flex flex-wrap items-end gap-3">
 								<label class="flex flex-1 flex-col gap-1 text-sm">
 									<span class="text-fg-muted">{c.displayName} is…</span>
 									<select name="typeId" class={INPUT}>

@@ -112,3 +112,34 @@ describe('createDrizzleContactRepository', () => {
 		expect((await repo.listVisibleTo(viewerU1)).find((c) => c.id === 'c-nick')?.nickname).toBe('Leni');
 	});
 });
+
+describe('listNameCandidatesVisibleTo (docs/02 §2.2.1)', () => {
+	const linked = (id: string, from: string, to: string) =>
+		db.insert(schema.relationship).values({ id, householdId: H1, fromContactId: from, toContactId: to, typeId: 't-friend', createdBy: U1 }).run();
+
+	beforeEach(async () => {
+		db.insert(schema.relationshipType)
+			.values({ id: 't-friend', householdId: H1, key: 'friend', forwardLabel: 'Friend', reverseLabel: 'Friend', category: 'social', symmetric: 1 })
+			.run();
+		await repo.insert(contactInput({ id: 'c-hans', displayName: 'Hans Roth', firstName: 'Hans', lastName: 'Roth' }));
+		await repo.insert(contactInput({ id: 'c-lena', displayName: 'Lena Roth', firstName: 'Lena', lastName: 'Roth' }));
+		await repo.insert(contactInput({ id: 'c-secret', displayName: 'Secret Roth', lastName: 'Roth', visibility: 'private', createdBy: U2 }));
+		linked('r-1', 'c-hans', 'c-lena');
+		linked('r-2', 'c-hans', 'c-secret');
+	});
+
+	it('lists only the people the viewer may see, with how many visible relationships each has', async () => {
+		const forU1 = await repo.listNameCandidatesVisibleTo(viewerU1);
+		expect(forU1.map((c) => [c.id, c.relationshipCount])).toEqual([
+			['c-hans', 1], // the link to U2's private person does not count for U1
+			['c-lena', 1]
+		]);
+		// Positive control: the owner of the private person sees them, and the link counts.
+		const forU2 = await repo.listNameCandidatesVisibleTo(viewerU2);
+		expect(forU2.map((c) => [c.id, c.relationshipCount])).toEqual([
+			['c-hans', 2],
+			['c-lena', 1],
+			['c-secret', 1]
+		]);
+	});
+});
