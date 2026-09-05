@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onDestroy, onMount, untrack } from 'svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import { categoryVar } from '$lib/design/tokens';
 	import { toCytoscapeElements } from '$lib/graph/cytoscape/elements';
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
@@ -30,13 +32,14 @@
 	// The filterable connection kinds, each tied to its category colour (docs/05 §5.6).
 	// Each filter carries the same token the canvas draws that edge kind with (docs/05 §5.6),
 	// so a chip and the line it toggles can never drift apart.
+	// Each chip also draws its line style, so the chips are the legend (docs/05 §5.8).
 	const FILTERS = [
-		{ key: 'family', label: 'Family', token: categoryVar('family') },
-		{ key: 'romantic', label: 'Romantic', token: categoryVar('romantic') },
-		{ key: 'social', label: 'Social', token: categoryVar('social') },
-		{ key: 'professional', label: 'Work', token: categoryVar('professional') },
-		{ key: 'circles', label: 'Circles', token: 'var(--edge-membership)' },
-		{ key: 'kinship', label: 'Kinship', token: 'var(--edge-kinship)' }
+		{ key: 'family', label: 'Family', token: categoryVar('family'), line: 'solid' },
+		{ key: 'romantic', label: 'Romantic', token: categoryVar('romantic'), line: 'solid' },
+		{ key: 'social', label: 'Social', token: categoryVar('social'), line: 'solid' },
+		{ key: 'professional', label: 'Work', token: categoryVar('professional'), line: 'solid' },
+		{ key: 'circles', label: 'Circles', token: 'var(--edge-membership)', line: 'dashed' },
+		{ key: 'kinship', label: 'Kinship', token: 'var(--edge-kinship)', line: 'dotted' }
 	] as const;
 
 	const reducedMotion =
@@ -263,8 +266,9 @@
 					style="border-color:color-mix(in srgb, {f.token} 45%, transparent); background:color-mix(in srgb, {f.token} 12%, var(--card)); color:var(--fg)"
 				>
 					<span
-						class="size-2 rounded-full"
-						style="background:{active.has(f.key) ? f.token : 'var(--fg-subtle)'}"
+						class="inline-block w-4 border-t-2"
+						style="border-color:{active.has(f.key) ? f.token : 'var(--fg-subtle)'};border-top-style:{f.line}"
+						aria-hidden="true"
 					></span>
 					{f.label}
 				</button>
@@ -305,31 +309,17 @@
 		</div>
 	{/if}
 
-	<!-- Legend -->
-	<div
-		class="pointer-events-none absolute bottom-3 left-3 rounded-app border border-border bg-card/90 p-3 text-xs backdrop-blur"
-	>
-		<div class="mb-1.5 font-semibold uppercase tracking-wide text-fg-subtle">Connections</div>
-		<div class="flex flex-col gap-1 text-fg-muted">
-			<span><span class="mr-2 inline-block w-4 border-t-2" style="border-color:var(--cat-family)"></span>Family</span>
-			<span><span class="mr-2 inline-block w-4 border-t-2" style="border-color:var(--cat-romantic)"></span>Romantic</span>
-			<span><span class="mr-2 inline-block w-4 border-t-2" style="border-color:var(--cat-social)"></span>Social</span>
-			<span><span class="mr-2 inline-block w-4 border-t-2" style="border-color:var(--cat-professional)"></span>Professional</span>
-			<span><span class="mr-2 inline-block w-4 border-t-2 border-dashed" style="border-color:var(--edge-membership)"></span>Circle</span>
-			<span><span class="mr-2 inline-block w-4 border-t-2 border-dotted" style="border-color:var(--edge-kinship)"></span>Kinship</span>
-		</div>
-	</div>
-
 	<!-- Peek panel -->
 	{#if peekNode && !pathMode}
 		<aside
 			class="absolute right-3 top-3 bottom-3 w-64 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur"
 		>
-			<button
-				onclick={() => (selected = null)}
-				class="float-right text-fg-subtle hover:text-fg"
-				aria-label="Close">×</button
-			>
+			<Button variant="ghost" size="sm" icon="remove" label="Close" class="float-right" onclick={() => (selected = null)} />
+			{#if peekNode.kind === 'person'}
+				<div class="mb-3">
+					<Avatar id={peekNode.id} name={peekNode.label} avatarPhotoId={peekNode.avatarPhotoId ?? null} size={56} deceased={peekNode.deceased} />
+				</div>
+			{/if}
 			<div class="text-lg font-semibold text-fg">{peekNode.label}</div>
 			<div class="mb-4 text-xs capitalize text-fg-subtle">
 				{peekNode.kind === 'circle' ? 'Shared context' : 'Person'}

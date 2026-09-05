@@ -32,7 +32,12 @@ export function createDrizzleGraphRepository(
 	return {
 		async loadVisibleGraph(viewer: Viewer): Promise<GraphModel> {
 			const contactRows = db
-				.select({ id: contact.id, label: contact.displayName, deceased: contact.isDeceased })
+				.select({
+					id: contact.id,
+					label: contact.displayName,
+					deceased: contact.isDeceased,
+					avatarPhotoId: contact.avatarPhotoId
+				})
 				.from(contact)
 				.where(contactVisibleTo(viewer))
 				.all();
@@ -41,7 +46,8 @@ export function createDrizzleGraphRepository(
 				id: r.id,
 				kind: 'person',
 				label: r.label,
-				deceased: r.deceased === 1
+				deceased: r.deceased === 1,
+				avatarPhotoId: r.avatarPhotoId
 			}));
 
 			const fromC = alias(contact, 'from_c');

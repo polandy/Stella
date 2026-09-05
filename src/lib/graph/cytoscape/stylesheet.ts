@@ -1,4 +1,5 @@
 import { mixHex } from '../../design/color';
+import { AVATAR_TINT_PERCENT } from '../../design/tokens';
 import type { Palette } from './theme';
 
 /*
@@ -25,7 +26,7 @@ export function buildStylesheet(p: Palette): CyStyle[] {
 				label: 'data(label)',
 				color: p.fg,
 				'font-size': 11,
-				'font-family': 'Inter, ui-sans-serif, system-ui, sans-serif',
+				'font-family': p.fontSans,
 				'text-valign': 'bottom',
 				'text-margin-y': 6,
 				'text-max-width': '96px',
@@ -39,11 +40,22 @@ export function buildStylesheet(p: Palette): CyStyle[] {
 				'transition-duration': '150ms'
 			}
 		},
-		// deterministic accent per person (data(accent) → --ctp-<accent>, resolved into hex)
+		// The same disc as the avatar component (docs/05 §5.10): the accent tints the card and
+		// rings the node, so a face keeps its colour between the list and the map.
 		...Object.entries(p.accents).map(([name, hex]) => ({
 			selector: `node.person[accent = "${name}"]`,
-			style: { 'background-color': hex, 'border-color': mixHex(hex, 45, p.card) }
+			style: { 'background-color': mixHex(hex, AVATAR_TINT_PERCENT, p.card), 'border-color': hex }
 		})),
+		// A person with a photo wears it, clipped to the disc; the accent stays as the border.
+		{
+			selector: 'node.person.has-photo',
+			style: {
+				'background-image': 'data(photo)',
+				'background-fit': 'cover',
+				'background-clip': 'node',
+				'background-image-crossorigin': 'use-credentials'
+			}
+		},
 		{
 			selector: 'node.center',
 			style: { 'border-color': p.primary, 'border-width': 4, 'font-weight': 600, 'z-index': 10 }
@@ -83,20 +95,21 @@ export function buildStylesheet(p: Palette): CyStyle[] {
 				'transition-duration': '150ms'
 			}
 		},
-		{ selector: 'edge[category = "family"]', style: { 'line-color': p.categories.family } },
-		{ selector: 'edge[category = "romantic"]', style: { 'line-color': p.categories.romantic } },
-		{ selector: 'edge[category = "social"]', style: { 'line-color': p.categories.social } },
+		// Lines take the canvas-safe depth of their token: an edge carries its category alone.
+		{ selector: 'edge[category = "family"]', style: { 'line-color': p.lines.categories.family } },
+		{ selector: 'edge[category = "romantic"]', style: { 'line-color': p.lines.categories.romantic } },
+		{ selector: 'edge[category = "social"]', style: { 'line-color': p.lines.categories.social } },
 		{
 			selector: 'edge[category = "professional"]',
-			style: { 'line-color': p.categories.professional }
+			style: { 'line-color': p.lines.categories.professional }
 		},
 		{
 			selector: 'edge[kind = "membership"]',
-			style: { 'line-color': p.membership, 'line-style': 'dashed', 'line-dash-pattern': [4, 4] }
+			style: { 'line-color': p.lines.membership, 'line-style': 'dashed', 'line-dash-pattern': [4, 4] }
 		},
 		{
 			selector: 'edge[kind = "kinship"]',
-			style: { 'line-color': p.kinship, 'line-style': 'dotted', opacity: 0.45 }
+			style: { 'line-color': p.lines.kinship, 'line-style': 'dotted', opacity: 0.45 }
 		},
 		{
 			selector: 'edge[directed = 1]',

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { sinceLabel } from '$lib/dates/labels';
 	import { accentChipStyle } from '$lib/design/tokens';
@@ -64,11 +65,9 @@
 	{/if}
 
 	{#if data.contacts.length === 0}
-		<div class="rounded-app border border-dashed border-border p-10 text-center">
-			<p class="text-fg-muted">No people yet.</p>
-			<p class="mt-1 text-sm text-fg-subtle">Add the first person — everything else in Stella hangs off someone.</p>
-			<div class="mt-4"><Button variant="primary" icon="add" href="/contacts/new">Add person</Button></div>
-		</div>
+		<EmptyState icon="people" title="No people yet" hint="Add the first person — everything else in Stella hangs off someone.">
+			<Button variant="primary" icon="add" href="/contacts/new">Add person</Button>
+		</EmptyState>
 	{:else if found.length === 0}
 		<p class="px-2 py-6 text-center text-sm text-fg-muted" role="status">Nobody matches “{query}”.</p>
 	{:else}
