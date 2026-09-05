@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/polandy/Stella/compare/v0.0.2...v0.0.3) (2026-09-05)
+
+
+### Features
+
+* **media:** photo gallery on the person page ([0d1c78d](https://github.com/polandy/Stella/commit/0d1c78d2c27a3cafd955e8073057686f2e4e21ec))
+
 ## [0.0.2](https://github.com/polandy/Stella/compare/v0.0.1...v0.0.2) (2026-09-05)
 
 
