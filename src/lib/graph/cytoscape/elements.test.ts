@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { accentFor, toCytoscapeElements } from './elements';
+import { toCytoscapeElements } from './elements';
+import { avatarAccent } from '../../avatar';
 import type { GraphModel } from '../model/types';
 
 /*
@@ -9,7 +10,7 @@ import type { GraphModel } from '../model/types';
 const model: GraphModel = {
 	nodes: [
 		{ id: 'mara', kind: 'person', label: 'Mara' },
-		{ id: 'walter', kind: 'person', label: 'Walter', deceased: true },
+		{ id: 'walter', kind: 'person', label: 'Walter', deceased: true, avatarPhotoId: 'photo-w' },
 		{ id: 'kegel', kind: 'circle', label: 'Kegelclub' }
 	],
 	edges: [
@@ -18,16 +19,6 @@ const model: GraphModel = {
 		{ id: 'dangling', source: 'mara', target: 'ghost', kind: 'relationship', category: 'social' }
 	]
 };
-
-describe('accentFor', () => {
-	it('is deterministic and within the accent set', () => {
-		expect(accentFor('mara')).toBe(accentFor('mara'));
-	});
-	it('varies between different ids', () => {
-		const accents = new Set(['a', 'b', 'c', 'd', 'e'].map(accentFor));
-		expect(accents.size).toBeGreaterThan(1);
-	});
-});
 
 describe('toCytoscapeElements', () => {
 	const els = toCytoscapeElements(model, { centerId: 'mara' });
@@ -43,7 +34,17 @@ describe('toCytoscapeElements', () => {
 	it('flags deceased and gives circles the lavender accent', () => {
 		expect(node('walter')?.classes).toContain('deceased');
 		expect(node('kegel')?.data.accent).toBe('lavender');
-		expect(node('mara')?.data.accent).toBe(accentFor('mara'));
+	});
+
+	it('gives a person the same accent as their avatar everywhere else', () => {
+		expect(node('mara')?.data.accent).toBe(avatarAccent('mara'));
+	});
+
+	it('hands a person with a photo its thumbnail, and one without nothing to draw', () => {
+		expect(node('walter')?.classes).toContain('has-photo');
+		expect(node('walter')?.data.photo).toBe('/media/photo-w?thumb');
+		expect(node('mara')?.classes).not.toContain('has-photo');
+		expect(node('mara')?.data.photo).toBeUndefined();
 	});
 
 	it('encodes edge kind, category, and direction', () => {

@@ -195,6 +195,12 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **OIDC-standard SSO, provider-agnostic** — targets Authelia but avoids provider lock-in.
 - **Cytoscape.js for the graph** — mature, purpose-built; lazy-loaded to protect the
   bundle. D3-force considered as a lighter alt if bundle size demands it.
+- **Explorer lines are deepened for the canvas, not re-picked** — in Latte only five of the
+  fourteen accents clear 3:1 on the page ground, and none of the four category hues do. The
+  alternative (swapping the categories to the five that pass) would have moved family to
+  teal and romantic to maroon everywhere — chips, dots, the timeline — to fix a problem only
+  the canvas has. Instead `resolvePalette` blends each line toward `--fg` until it clears
+  3:1; the hue is kept, and a test holds every line to the floor in both themes.
 - **"Quiet lately" measures recorded attention, not contact** — the band lists people with
   no journal entry or touchpoint in 90 days, counting an untouched person from the day they
   were added, and puts a story that went silent before one that never began. The

@@ -1,25 +1,29 @@
 <script lang="ts">
+	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 	import { accentDotStyle } from '$lib/design/tokens';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
-	let showForm = $state(false);
+
+	let wantForm = $state(false);
+	// A failed submit keeps the form open, so the error has somewhere to be read.
+	const showForm = $derived(wantForm || form?.error !== undefined);
 </script>
 
 <svelte:head><title>Circles · Stella</title></svelte:head>
 
-<main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
-	<header class="flex items-center justify-between">
-		<h1 class="text-2xl font-semibold text-fg">Circles</h1>
-		<Button variant="primary" type="button" onclick={() => (showForm = !showForm)}>
+<main class="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-6 md:px-6 md:py-10">
+	<header class="flex flex-wrap items-end justify-between gap-3">
+		<div>
+			<h1 class="text-2xl font-semibold text-fg">Circles</h1>
+			<p class="text-sm text-fg-muted">The contexts people share — a class, a club, a team, a choir.</p>
+		</div>
+		<Button variant={showForm ? 'secondary' : 'primary'} icon={showForm ? 'remove' : 'add'} type="button" onclick={() => (wantForm = !showForm)}>
 			{showForm ? 'Cancel' : 'New circle'}
 		</Button>
 	</header>
-
-	<p class="text-sm text-fg-muted">
-		Circles are shared contexts — a class, club, team, or friend group people belong to.
-	</p>
 
 	{#if showForm}
 		<form method="POST" action="?/create" class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card">
@@ -63,24 +67,46 @@
 	{/if}
 
 	{#if data.circles.length === 0}
-		<div class="rounded-app bg-card p-8 text-center shadow-card">
-			<p class="text-fg-muted">No circles yet.</p>
-		</div>
+		<EmptyState icon="circles" title="No circles yet" hint="A circle is a context people share. Add the first one and put people in it.">
+			<Button variant="primary" icon="add" type="button" onclick={() => (wantForm = true)}>New circle</Button>
+		</EmptyState>
 	{:else}
-		<ul class="flex flex-col gap-1">
+		<ul class="grid gap-3 sm:grid-cols-2" data-testid="circle-cards">
 			{#each data.circles as circle (circle.id)}
 				<li>
 					<a
 						href="/circles/{circle.id}"
-						class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2.5 transition-colors hover:border-border hover:bg-card"
+						class="flex h-full flex-col gap-3 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
 					>
-						<span class="size-3 shrink-0 rounded-full" style={accentDotStyle(circle.color)}></span>
-						<span class="min-w-0 flex-1">
-							<span class="block truncate text-fg">{circle.name}</span>
-							{#if circle.description}<span class="block truncate text-sm text-fg-subtle">{circle.description}</span>{/if}
-						</span>
-						<span class="shrink-0 text-xs text-fg-subtle capitalize">{circle.kind}</span>
-						<span class="shrink-0 text-xs text-fg-muted">{circle.memberCount} {circle.memberCount === 1 ? 'member' : 'members'}</span>
+						<div class="flex items-start gap-3">
+							<span class="mt-1.5 size-3 shrink-0 rounded-full" style={accentDotStyle(circle.color)}></span>
+							<span class="min-w-0 flex-1">
+								<span class="block truncate font-semibold text-fg">{circle.name}</span>
+								<span class="block text-xs text-fg-subtle">
+									<span class="capitalize">{circle.kind}</span>
+									· {circle.memberCount} {circle.memberCount === 1 ? 'member' : 'members'}
+									{#if circle.visibility === 'private'} · private{/if}
+								</span>
+							</span>
+						</div>
+						{#if circle.description}
+							<p class="line-clamp-2 text-sm text-fg-muted">{circle.description}</p>
+						{/if}
+						<div class="mt-auto flex items-center">
+							{#each circle.preview as member, i (member.contactId)}
+								<span class="rounded-full ring-2 ring-card" class:-ml-1={i > 0}>
+									<Avatar id={member.contactId} name={member.displayName} avatarPhotoId={member.avatarPhotoId} size={28} />
+								</span>
+							{/each}
+							{#if circle.memberCount > circle.preview.length}
+								<span class="-ml-1 grid size-7 place-items-center rounded-full bg-bg-sunken text-[11px] font-semibold text-fg-muted ring-2 ring-card">
+									+{circle.memberCount - circle.preview.length}
+								</span>
+							{/if}
+							{#if circle.memberCount === 0}
+								<span class="text-xs text-fg-subtle">Nobody in it yet</span>
+							{/if}
+						</div>
 					</a>
 				</li>
 			{/each}

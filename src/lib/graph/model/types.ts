@@ -27,6 +27,8 @@ export interface GraphNode {
 	label: string;
 	/** Person only: deceased contacts are rendered subtly desaturated (docs/05 §5.8). */
 	deceased?: boolean;
+	/** Person only: the avatar photo the node wears, when there is one (docs/05 §5.8). */
+	avatarPhotoId?: string | null;
 }
 
 export interface GraphEdge {

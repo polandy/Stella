@@ -83,8 +83,8 @@
 							></span>
 							<div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
 								{#if kind}
-									<span class="inline-flex items-center gap-1.5 font-semibold" style="color:{kind.accent}">
-										<Icon name={kind.icon} size={13} />{kind.label}
+									<span class="inline-flex items-center gap-1.5 font-semibold text-fg">
+										<span style="color:{kind.accent}"><Icon name={kind.icon} size={13} /></span>{kind.label}
 									</span>
 								{:else}
 									<span class="inline-flex items-center gap-1.5 font-semibold text-primary">

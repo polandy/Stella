@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { AA_LARGE, AA_TEXT, contrastRatio, mixHex, relativeLuminance } from './color';
+import { AA_LARGE, AA_TEXT, contrastRatio, ensureContrast, mixHex, relativeLuminance } from './color';
 import { resolveColor, tokensFor, type Theme } from './css-tokens';
 import {
 	ACCENTS,
@@ -40,6 +40,27 @@ describe('contrastRatio', () => {
 
 	it('refuses a value that is not a hex colour', () => {
 		expect(() => contrastRatio('rebeccapurple', '#fff')).toThrow('Not a hex colour');
+	});
+});
+
+describe('ensureContrast', () => {
+	it('leaves a colour alone when it already clears the floor', () => {
+		expect(ensureContrast('#1e66f5', '#e6e9ef', '#4c4f69', AA_LARGE)).toBe('#1e66f5');
+	});
+
+	it('deepens a colour toward the text colour until it clears the floor, and no further', () => {
+		const deepened = ensureContrast('#ea76cb', '#e6e9ef', '#4c4f69', AA_LARGE);
+
+		expect(deepened).not.toBe('#ea76cb');
+		expect(contrastRatio(deepened, '#e6e9ef')).toBeGreaterThanOrEqual(AA_LARGE);
+		// One step back would have failed, so this is the lightest passing blend.
+		expect(contrastRatio(mixHex('#4c4f69', 5, deepened), '#e6e9ef')).toBeGreaterThan(
+			contrastRatio(deepened, '#e6e9ef')
+		);
+	});
+
+	it('ends at the text colour itself when nothing short of it clears the floor', () => {
+		expect(ensureContrast('#ffffff', '#ffffff', '#000000', 21)).toBe('#000000');
 	});
 });
 
@@ -182,13 +203,8 @@ describe('accents as fills', () => {
 		});
 
 		it(`resolves every category to a colour in ${theme}`, () => {
-			/*
-			 * Deliberately no contrast floor here. On the Latte canvas the category edges measure
-			 * 2.2:1 (romantic) to 4.5:1 (social) — below the 3:1 non-text bar for two of them, and
-			 * they are the only carrier of the category once the legend is off screen. Re-picking
-			 * those hues belongs with the explorer's own pass (docs/05 §5.9), not here; this case
-			 * only holds the tokens to existing.
-			 */
+			// No floor here: as chips and dots the categories sit beside a label. On the canvas,
+			// where an edge carries its category alone, `theme.test.ts` holds them to 3:1.
 			for (const category of RELATIONSHIP_CATEGORIES) {
 				expect(resolveColor(tokens, property(categoryVar(category)))).not.toBeNull();
 			}

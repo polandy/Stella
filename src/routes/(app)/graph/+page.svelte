@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Button from '$lib/components/Button.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 	import GraphExplorer from '$lib/components/graph/GraphExplorer.svelte';
 	import type { PageData } from './$types';
 
@@ -20,12 +22,11 @@
 				<GraphExplorer graph={data.graph} centerId={data.centerId} />
 			{/key}
 		{:else}
-			<div class="grid h-full place-items-center text-center">
-				<div>
-					<p class="text-fg-muted">No people to explore yet.</p>
-					<a href="/contacts/new" class="mt-2 inline-block text-sm text-link hover:underline">
-						Add your first contact
-					</a>
+			<div class="grid h-full place-items-center p-6">
+				<div class="w-full max-w-sm">
+					<EmptyState icon="graph" title="Nothing to explore yet" hint="The map draws itself from people and how they are connected. Add someone to begin.">
+						<Button variant="primary" icon="add" href="/contacts/new">Add person</Button>
+					</EmptyState>
 				</div>
 			</div>
 		{/if}

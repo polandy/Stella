@@ -80,10 +80,28 @@ describe('listVisibleTo member counts', () => {
 		expect(forU2.find((c) => c.id === id)?.memberCount).toBe(1);
 	});
 
+	it('carries a few visible faces as a preview, never a hidden one, and stops at the cap', async () => {
+		for (const name of ['ann', 'bea', 'cem', 'dee', 'eve']) seedContact(name, 'shared');
+		seedContact('secret-c', 'private', U1);
+		const id = await createCircle(deps, creatorU1, { name: 'Choir' });
+		for (const name of ['eve', 'dee', 'cem', 'bea', 'ann', 'secret-c']) await addMember(deps, creatorU1, id, name);
+
+		const forU2 = (await deps.circles.listVisibleTo(viewerU2)).find((c) => c.id === id)!;
+		// Alphabetical, capped, and the private contact is not among them for U2 …
+		expect(forU2.preview.map((m) => m.contactId)).toEqual(['ann', 'bea', 'cem', 'dee']);
+		expect(forU2.memberCount).toBe(5);
+
+		// … while its owner does see it, still within the cap.
+		const forU1 = (await deps.circles.listVisibleTo(viewerU1)).find((c) => c.id === id)!;
+		expect(forU1.preview).toHaveLength(4);
+		expect(forU1.memberCount).toBe(6);
+	});
+
 	it('lists a circle with no members as count 0', async () => {
 		const id = await createCircle(deps, creatorU1, { name: 'Empty' });
 		const list = await deps.circles.listVisibleTo(viewerU1);
 		expect(list.find((c) => c.id === id)?.memberCount).toBe(0);
+		expect(list.find((c) => c.id === id)?.preview).toEqual([]);
 	});
 });
 

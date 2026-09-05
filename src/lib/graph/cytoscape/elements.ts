@@ -1,3 +1,5 @@
+import { avatarAccent } from '../../avatar';
+import { thumbnailUrl } from '../../media/urls';
 import type { GraphModel } from '../model/types';
 
 /*
@@ -6,16 +8,8 @@ import type { GraphModel } from '../model/types';
  * unit-tests without loading Cytoscape. No domain rules live here — styling is in stylesheet.ts.
  */
 
-/** A deterministic accent per person, so a face keeps its colour across views (docs/05 §5.10). */
-const NODE_ACCENTS = [
-	'mauve', 'blue', 'green', 'peach', 'pink', 'teal', 'sky', 'yellow', 'maroon', 'rosewater', 'sapphire'
-] as const;
-
-export function accentFor(id: string): string {
-	let hash = 0;
-	for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-	return NODE_ACCENTS[hash % NODE_ACCENTS.length];
-}
+/** The accent a circle node wears; people take the same accent as their avatar (docs/05 §5.10). */
+const CIRCLE_ACCENT = 'lavender';
 
 /** Minimal Cytoscape element shape (avoids importing the library into pure code/tests). */
 export interface CyElement {
@@ -43,14 +37,17 @@ export function toCytoscapeElements(model: GraphModel, options: ElementOptions =
 		const classes = [n.kind === 'circle' ? 'circle' : 'person'];
 		if (n.id === options.centerId) classes.push('center');
 		if (n.deceased) classes.push('deceased');
+		const photo = n.kind === 'person' && n.avatarPhotoId ? thumbnailUrl(n.avatarPhotoId) : null;
+		if (photo) classes.push('has-photo');
 		return {
 			group: 'nodes',
 			data: {
 				id: n.id,
 				label: n.label,
 				kind: n.kind,
-				accent: n.kind === 'circle' ? 'lavender' : accentFor(n.id),
-				degree: degree.get(n.id) ?? 0
+				accent: n.kind === 'circle' ? CIRCLE_ACCENT : avatarAccent(n.id),
+				degree: degree.get(n.id) ?? 0,
+				...(photo ? { photo } : {})
 			},
 			classes: classes.join(' ')
 		};

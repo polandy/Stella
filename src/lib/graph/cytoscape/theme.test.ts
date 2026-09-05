@@ -1,6 +1,8 @@
 import { describe, expect, it, test } from 'bun:test';
 import { resolvePalette } from './theme';
-import { mixHex } from '../../design/color';
+import { AA_LARGE, contrastRatio, mixHex } from '../../design/color';
+import { resolveColor, tokensFor, type Theme } from '../../design/css-tokens';
+import { RELATIONSHIP_CATEGORIES } from '../../design/tokens';
 import { buildStylesheet } from './stylesheet';
 
 /*
@@ -10,6 +12,7 @@ import { buildStylesheet } from './stylesheet';
  */
 
 const TOKENS: Record<string, string> = {
+	'--font-sans': 'Test Sans, sans-serif',
 	'--fg': '#111',
 	'--fg-muted': '#555',
 	'--fg-subtle': '#888',
@@ -57,6 +60,43 @@ describe('resolvePalette', () => {
 		expect(p.membership).toBe('#7287fd');
 		expect(p.kinship).toBe('#888');
 	});
+
+	it('carries the interface font, so canvas labels match the page', () => {
+		expect(p.fontSans).toBe('Test Sans, sans-serif');
+	});
+
+	it('keeps a line colour that already reads on the canvas exactly as its token', () => {
+		expect(p.lines.categories.social).toBe('#1e66f5');
+	});
+
+	it('deepens a line colour that would vanish on the canvas, keeping its hue', () => {
+		expect(p.lines.categories.romantic).not.toBe('#ea76cb');
+		expect(contrastRatio(p.lines.categories.romantic, '#fff')).toBeGreaterThanOrEqual(AA_LARGE);
+	});
+});
+
+/*
+ * The real stylesheet against the real tokens (docs/05 §5.9): on the canvas an edge is the
+ * only carrier of its category once the legend is off screen, so every line the explorer
+ * draws has to clear the 3:1 non-text bar on the page ground in both themes.
+ */
+const css = await Bun.file(new URL('../../../app.css', import.meta.url)).text();
+
+describe('every explorer line clears 3:1 on the canvas', () => {
+	for (const theme of ['light', 'dark', 'system-dark'] as Theme[]) {
+		const tokens = tokensFor(css, theme);
+		const p = resolvePalette((name) => resolveColor(tokens, name) ?? tokens.get(name) ?? '');
+
+		it(`in ${theme}`, () => {
+			const lines = [
+				...RELATIONSHIP_CATEGORIES.map((c) => [c, p.lines.categories[c]] as const),
+				['membership', p.lines.membership] as const,
+				['kinship', p.lines.kinship] as const
+			];
+			const failing = lines.filter(([, hex]) => contrastRatio(hex, p.bg) < AA_LARGE);
+			expect(failing).toEqual([]);
+		});
+	}
 });
 
 describe('buildStylesheet', () => {
@@ -74,6 +114,16 @@ describe('buildStylesheet', () => {
 	it('gives every person accent its own background selector', () => {
 		expect(has('node.person[accent = "mauve"]')).toBe(true);
 		expect(has('node.person[accent = "green"]')).toBe(true);
+	});
+
+	it('draws a photo on a person who has one, clipped to the disc', () => {
+		const photo = styles.find((s) => s.selector === 'node.person.has-photo');
+		expect(photo?.style).toMatchObject({ 'background-image': 'data(photo)', 'background-fit': 'cover' });
+	});
+
+	it('draws edges in their canvas-safe depth, not the raw token', () => {
+		const romantic = styles.find((s) => s.selector === 'edge[category = "romantic"]');
+		expect(romantic?.style['line-color']).toBe(resolvePalette(read).lines.categories.romantic);
 	});
 });
 

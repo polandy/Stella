@@ -61,3 +61,21 @@ export function mixHex(accent: string, pct: number, base: string): string {
 	const out = a.map((v, i) => Math.round(v * w + b[i] * (1 - w)));
 	return '#' + out.map((v) => v.toString(16).padStart(2, '0')).join('');
 }
+
+/** How far each step moves toward `toward` while looking for the floor, in percent. */
+const CONTRAST_STEP_PERCENT = 5;
+
+/**
+ * The colour itself when it already clears `floor` against `ground`, otherwise the nearest
+ * blend toward `toward` that does. Built for the explorer canvas (docs/05 §5.8): in Latte
+ * most accents sit under 3:1 on the page ground, and an edge is the only carrier of its
+ * category once the legend is off screen. The hue survives; only the depth changes.
+ */
+export function ensureContrast(hex: string, ground: string, toward: string, floor: number): string {
+	if (contrastRatio(hex, ground) >= floor) return hex;
+	for (let pct = CONTRAST_STEP_PERCENT; pct < 100; pct += CONTRAST_STEP_PERCENT) {
+		const candidate = mixHex(toward, pct, hex);
+		if (contrastRatio(candidate, ground) >= floor) return candidate;
+	}
+	return toward;
+}

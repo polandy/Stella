@@ -69,8 +69,21 @@ export interface NewCircle extends Circle {
 	updatedAt: number;
 }
 
+/** How many faces a circle card shows before it says "+n". */
+export const CIRCLE_PREVIEW_SIZE = 4;
+
+/** A member as a circle card shows them: a face and a name. */
+export interface MemberPreview {
+	contactId: string;
+	displayName: string;
+	avatarPhotoId: string | null;
+}
+
+/** A circle as the overview lists it: with how many, and which faces, the viewer may see. */
 export interface CircleWithCount extends Circle {
 	memberCount: number;
+	/** The first `CIRCLE_PREVIEW_SIZE` visible members by name (docs/05 §5.5). */
+	preview: MemberPreview[];
 }
 
 export interface NewMembership {

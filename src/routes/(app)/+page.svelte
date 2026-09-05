@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { MediaQuery } from 'svelte/reactivity';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
 	import { occasionLabel, quietLabel, whenLabel } from '$lib/dates/labels';
@@ -54,7 +56,10 @@
 	// On a phone the composer is a sheet over the stream, opened by the pencil in the tab bar
 	// (`/?compose`) and closed by handing the URL back — so the open state lives in the URL
 	// and survives a reload, and there is nothing to keep in sync with the tab bar.
-	const sheetOpen = $derived(data.compose);
+	// Below `md` the composer lives in the sheet; above it, at the top of the stream. One of
+	// them is mounted at a time, so there is exactly one "What happened?" field on the page.
+	const phone = new MediaQuery('(width < 48rem)');
+	const sheetOpen = $derived(data.compose && phone.current);
 	function closeSheet() {
 		void goto('/', { replaceState: true, noScroll: true });
 	}
@@ -85,10 +90,10 @@
 
 	<!-- Desktop: the composer sits at the top. Phone: a sheet over the stream (below). -->
 	<div class="max-md:hidden">
-		{@render composer()}
+		{#if !phone.current}{@render composer()}{/if}
 	</div>
 	<div class="md:hidden">
-		{#if sheetOpen || form?.momentError}
+		{#if sheetOpen || (form?.momentError && phone.current)}
 			<div class="fixed inset-0 z-30 flex flex-col justify-end" data-testid="compose-sheet">
 				<button type="button" class="flex-1 bg-bg-sunken/70 backdrop-blur-sm" aria-label="Close" onclick={closeSheet}></button>
 				<div class="rounded-t-app bg-bg p-3 pb-4 shadow-pop">
@@ -180,7 +185,7 @@
 									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 										<b class="font-semibold text-fg">{item.mine ? 'You' : item.actor.name}</b>
 										<span>logged</span>
-										<span class="inline-flex items-center gap-1 font-semibold" style="color:{kind.accent}"><Icon name={kind.icon} size={12} />{kind.label.toLowerCase()}</span>
+										<span class="inline-flex items-center gap-1 font-semibold text-fg"><span style="color:{kind.accent}"><Icon name={kind.icon} size={12} /></span>{kind.label.toLowerCase()}</span>
 										<span>with</span>
 										<a href="/contacts/{item.subject.id}" class="font-medium text-fg hover:underline">{item.subject.name}</a>
 										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title="Only you can see this"><Icon name="private" size={11} />private</span>{/if}
@@ -218,10 +223,7 @@
 			{/each}
 		</ol>
 	{:else}
-		<div class="rounded-app border border-dashed border-border p-10 text-center">
-			<p class="text-fg-muted">Nothing here yet.</p>
-			<p class="mt-1 text-sm text-fg-subtle">Write the first moment above — mention someone with @ to get started.</p>
-		</div>
+		<EmptyState icon="write" title="Nothing written yet" hint="Write the first moment above and mention someone with @ — that is all it takes." />
 	{/if}
 </div>
 
