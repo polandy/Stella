@@ -1,3 +1,5 @@
+import type { KinshipGraph } from '../../../kinship/kinship';
+import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -90,6 +92,8 @@ export interface RelationshipRepository {
 	exists(fromContactId: string, toContactId: string, typeId: string): Promise<boolean>;
 	insert(relationship: NewRelationship): Promise<void>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<RelationshipView[]>;
+	/** The primary links the viewer may see, as the kinship engine wants them (docs/02 §2.4.1). */
+	loadKinshipGraphVisibleTo(viewer: Viewer): Promise<KinshipGraph>;
 }
 
 export interface RelationshipDeps {
@@ -152,4 +156,16 @@ export async function createRelationship(
 		updatedAt: now
 	});
 	return id;
+}
+
+/**
+ * The relatives Stella infers for a contact rather than storing (docs/02 §2.4.1). Reads
+ * only what the viewer may see, so a derived label can never reveal a private person.
+ */
+export async function listDerivedKin(
+	deps: Pick<RelationshipDeps, 'relationships'>,
+	viewer: Viewer,
+	contactId: string
+): Promise<DerivedKin[]> {
+	return deriveKinship(await deps.relationships.loadKinshipGraphVisibleTo(viewer), contactId);
 }

@@ -37,7 +37,8 @@ import { renderMarkdown } from '$lib/server/domain/notes/markdown';
 import { createNote, listNotesForContact } from '$lib/server/domain/notes/notes';
 import {
 	createRelationship,
-	DuplicateRelationshipError
+	DuplicateRelationshipError,
+	listDerivedKin
 } from '$lib/server/domain/relationships/relationships';
 import {
 	assignTagByName,
@@ -92,7 +93,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		storyPage,
 		journalPhotos,
 		dates,
-		interactions
+		interactions,
+		derivedKin
 	] = await Promise.all([
 		getRelationships().listForContactVisibleTo(viewer, params.id),
 		getRelationships().listTypes(),
@@ -105,7 +107,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		listStoryPage(getStoryDeps(), viewer, params.id, { limit: STORY_PAGE }),
 		getPhotos().listJournalPhotos(viewer, params.id),
 		listImportantDates(getImportantDateDeps(), viewer, params.id),
-		listInteractions(getInteractionDeps(), viewer, params.id)
+		listInteractions(getInteractionDeps(), viewer, params.id),
+		listDerivedKin(getRelationshipDeps(), viewer, params.id)
 	]);
 
 	// Group visible journal photo ids by entry so the story timeline renders each gallery.
@@ -155,6 +158,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		estimatedBirthYear: namesADay(contact.birthDatePrecision) ? null : contact.birthDate,
 		dateKinds: IMPORTANT_DATE_KINDS,
 		relationships,
+		// Inferred, never stored (docs/02 §2.4.1); shown apart from the entered links.
+		derivedKin,
 		relationshipTypes: types,
 		tags,
 		circles: contactCircles,

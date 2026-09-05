@@ -425,6 +425,32 @@
 						<p class="text-sm text-fg-subtle">No relationships yet.</p>
 					{/if}
 
+					<!--
+						Derived kinship (docs/02 §2.4.1): worked out from the entered links, never
+						stored. Kept visually apart and labelled, so nobody mistakes an inference
+						for something the household wrote down.
+					-->
+					{#if data.derivedKin.length > 0}
+						<div class="mt-4 border-t border-border-subtle pt-3" data-testid="derived-kin">
+							<h3 class="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-fg-subtle">
+								<Icon name="explore" size={12} />Also related · worked out, not entered
+							</h3>
+							<ul class="flex flex-col divide-y divide-border-subtle">
+								{#each data.derivedKin as kin (kin.personId)}
+									<li class="flex items-center gap-3 py-2 text-sm">
+										<span class="w-24 shrink-0 truncate text-fg-muted">{kin.label}</span>
+										<a href="/contacts/{kin.personId}" class="font-medium text-fg hover:underline">
+											{kin.displayName}
+										</a>
+										{#if kin.via.length > 0}
+											<span class="truncate text-fg-subtle">· via {kin.via.join(' and ')}</span>
+										{/if}
+									</li>
+								{/each}
+							</ul>
+						</div>
+					{/if}
+
 					{#snippet editor()}
 						{#if data.otherContacts.length > 0}
 							<form method="POST" action="?/addRelationship" class="flex flex-wrap items-end gap-3">

@@ -1,7 +1,8 @@
 import { and, eq, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias } from 'drizzle-orm/sqlite-core';
-import { relationshipVisibleTo } from '../access/query-scoping';
+import type { KinshipGraph, KinPerson, Pair, ParentEdge } from '../../kinship/kinship';
+import { contactVisibleTo, relationshipVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import {
 	describeRelationshipFor,
@@ -18,6 +19,14 @@ import { contact, relationship, relationshipType } from './schema';
  * are scoped through the central `relationshipVisibleTo` (both endpoints must be visible),
  * and per-row labels are resolved with the pure `describeRelationshipFor`.
  */
+
+/*
+ * Relationship type keys the kinship engine reasons from (docs/02 §2.4.1); everything else
+ * is a stored pair it must not re-derive over.
+ */
+const PARENT_CHILD_KEY = 'parent_child';
+const SIBLING_KEY = 'sibling';
+const PARTNER_KEYS: readonly string[] = ['partner', 'spouse'];
 
 type TypeRow = {
 	id: string;
@@ -150,6 +159,42 @@ export function createDrizzleRelationshipRepository(
 					description: row.description
 				};
 			});
+		},
+
+		async loadKinshipGraphVisibleTo(viewer: Viewer): Promise<KinshipGraph> {
+			const people: KinPerson[] = db
+				.select({ id: contact.id, displayName: contact.displayName, gender: contact.gender })
+				.from(contact)
+				.where(contactVisibleTo(viewer))
+				.all();
+
+			const fromC = alias(contact, 'from_c');
+			const toC = alias(contact, 'to_c');
+			const rows = db
+				.select({
+					fromId: relationship.fromContactId,
+					toId: relationship.toContactId,
+					key: relationshipType.key
+				})
+				.from(relationship)
+				.innerJoin(relationshipType, eq(relationship.typeId, relationshipType.id))
+				.innerJoin(fromC, eq(relationship.fromContactId, fromC.id))
+				.innerJoin(toC, eq(relationship.toContactId, toC.id))
+				.where(relationshipVisibleTo(viewer, fromC, toC))
+				.all();
+
+			const parentEdges: ParentEdge[] = [];
+			const siblingEdges: Pair[] = [];
+			const partnerEdges: Pair[] = [];
+			const storedPairs: Pair[] = [];
+			for (const row of rows) {
+				// Every visible pair counts as stored, so an existing link is never re-derived.
+				storedPairs.push({ a: row.fromId, b: row.toId });
+				if (row.key === PARENT_CHILD_KEY) parentEdges.push({ parentId: row.fromId, childId: row.toId });
+				else if (row.key === SIBLING_KEY) siblingEdges.push({ a: row.fromId, b: row.toId });
+				else if (PARTNER_KEYS.includes(row.key)) partnerEdges.push({ a: row.fromId, b: row.toId });
+			}
+			return { people, parentEdges, siblingEdges, partnerEdges, storedPairs };
 		}
 	};
 }
