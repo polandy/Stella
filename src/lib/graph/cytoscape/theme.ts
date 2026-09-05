@@ -9,6 +9,7 @@ import type { RelationshipCategory } from '../model/types';
  * helper wires it to the live computed styles and must be re-run when the theme changes.
  */
 
+/** The semantic tokens the canvas needs, resolved to hex once per theme. */
 export interface Palette {
 	/** The interface font stack, so canvas labels match the page (docs/05 §5.3). */
 	fontSans: string;
@@ -29,6 +30,7 @@ export interface Palette {
 	lines: { categories: Record<RelationshipCategory, string>; membership: string; kinship: string };
 }
 
+/** Reads one custom property's resolved value; the DOM helper and the tests each supply one. */
 export type TokenReader = (cssVariable: string) => string;
 
 /** Strip the `var(--x)` wrapper a token helper returns, leaving the bare custom property. */
@@ -36,6 +38,7 @@ function propertyOf(token: string): string {
 	return token.slice('var('.length, -1);
 }
 
+/** Build the palette from a token reader; pure, so it runs identically in tests and both themes. */
 export function resolvePalette(read: TokenReader): Palette {
 	const accents: Record<string, string> = {};
 	for (const name of ACCENTS) accents[name] = read(`--accent-${name}`);

@@ -79,6 +79,7 @@ export interface MemberPreview {
 	avatarPhotoId: string | null;
 }
 
+/** A circle as the overview lists it: with how many, and which faces, the viewer may see. */
 export interface CircleWithCount extends Circle {
 	memberCount: number;
 	/** The first `CIRCLE_PREVIEW_SIZE` visible members by name (docs/05 §5.5). */
