@@ -5,6 +5,11 @@ import type { KinshipGraph, KinPerson, Pair, ParentEdge } from '../../kinship/ki
 import { contactVisibleTo, relationshipVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import {
+	PARENT_CHILD_TYPE_KEY,
+	PARTNER_TYPE_KEYS,
+	SIBLING_TYPE_KEY
+} from '../../relationships/type-keys';
+import {
 	describeRelationshipFor,
 	type NewRelationship,
 	type RelationshipRepository,
@@ -19,14 +24,6 @@ import { contact, relationship, relationshipType } from './schema';
  * are scoped through the central `relationshipVisibleTo` (both endpoints must be visible),
  * and per-row labels are resolved with the pure `describeRelationshipFor`.
  */
-
-/*
- * Relationship type keys the kinship engine reasons from (docs/02 §2.4.1); everything else
- * is a stored pair it must not re-derive over.
- */
-const PARENT_CHILD_KEY = 'parent_child';
-const SIBLING_KEY = 'sibling';
-const PARTNER_KEYS: readonly string[] = ['partner', 'spouse'];
 
 type TypeRow = {
 	id: string;
@@ -190,9 +187,9 @@ export function createDrizzleRelationshipRepository(
 			for (const row of rows) {
 				// Every visible pair counts as stored, so an existing link is never re-derived.
 				storedPairs.push({ a: row.fromId, b: row.toId });
-				if (row.key === PARENT_CHILD_KEY) parentEdges.push({ parentId: row.fromId, childId: row.toId });
-				else if (row.key === SIBLING_KEY) siblingEdges.push({ a: row.fromId, b: row.toId });
-				else if (PARTNER_KEYS.includes(row.key)) partnerEdges.push({ a: row.fromId, b: row.toId });
+				if (row.key === PARENT_CHILD_TYPE_KEY) parentEdges.push({ parentId: row.fromId, childId: row.toId });
+				else if (row.key === SIBLING_TYPE_KEY) siblingEdges.push({ a: row.fromId, b: row.toId });
+				else if (PARTNER_TYPE_KEYS.includes(row.key)) partnerEdges.push({ a: row.fromId, b: row.toId });
 			}
 			return { people, parentEdges, siblingEdges, partnerEdges, storedPairs };
 		}

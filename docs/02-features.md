@@ -211,7 +211,9 @@ logically implied ones for one-tap confirmation:
 - Adding **Bettina as mother of Hans**, where **Hans and Lisa are siblings**, suggests
   *Bettina as mother of Lisa* (and of every other sibling).
 - Adding a **sibling** suggests **sharing the known parents** on either side.
-- Adding a **partner** suggests **step-relationships** to existing children (opt-in).
+- Adding a **partner** suggests nothing: a tie to their existing children is a *step*
+  relationship, which has no stored type and needs none, because the derived block already
+  names it. (Decided when this shipped; see the two **Shipped** notes below.)
 - Roles are distinguished — **father/mother/parent, sibling, grandparent** — using the
   relationship types and each contact's gender where known.
 

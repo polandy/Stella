@@ -13,6 +13,7 @@
 	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
+	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
@@ -498,11 +499,10 @@
 								<form method="POST" action="?/addProposedRelationship" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
 									<input type="hidden" name="fromId" value={proposal.fromId} />
 									<input type="hidden" name="toId" value={proposal.toId} />
-									<input type="hidden" name="typeId" value={proposal.kind === 'parent' ? 'parent_child' : 'sibling'} />
+									<input type="hidden" name="typeId" value={PARENT_CHILD_TYPE_KEY} />
 									<input type="hidden" name="propose" value={data.proposeFor} />
 									<span class="text-fg">
-										{proposal.fromName} is {proposal.kind === 'parent' ? 'a parent of' : 'a sibling of'}
-										{proposal.toName}
+										{proposal.fromName} is a parent of {proposal.toName}
 									</span>
 									<span class="text-fg-subtle">· {proposal.reason}</span>
 									<Button variant="secondary" size="sm" class="ml-auto">Add this too</Button>

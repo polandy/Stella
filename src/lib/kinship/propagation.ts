@@ -7,8 +7,8 @@ import type { KinshipGraph } from './kinship';
  * of that child's siblings too. Stella works those out and **offers** them — one confirmation
  * each, never a silent write (docs/02 §2.4.1, "suggestions are always opt-in").
  *
- * Only links that have a built-in relationship type are proposed, which means parent and
- * sibling. A partner's tie to existing children is a *step* relationship: it has no stored
+ * What comes back is always a parent link — the one primary type an implication can be
+ * written to. A partner's tie to existing children is a *step* relationship: it has no stored
  * type and needs none, because the kinship engine already names it on the profile.
  *
  * Pure: the caller passes the graph as it stands after storing the new link.
@@ -21,10 +21,14 @@ export interface PrimaryLink {
 	toId: string;
 }
 
-/** A link Stella offers to store, with the sentence explaining why it is offered. */
+/**
+ * A link Stella offers to store, with the sentence explaining why it is offered. Always a
+ * parent link: a new sibling implies the parents each side has, and a new parent implies the
+ * same parent for the siblings — the sibling ties themselves are already there either way.
+ */
 export interface SuggestedLink {
-	kind: 'parent' | 'sibling';
-	/** Parent side for `parent`; either side for `sibling`. */
+	kind: 'parent';
+	/** The parent, and the child the link would be stored against. */
 	fromId: string;
 	toId: string;
 	/** One sentence naming the reason, e.g. "Lisa is Hans's sibling." */
