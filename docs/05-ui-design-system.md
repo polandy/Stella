@@ -219,8 +219,9 @@ They must be edited together; `app.css` says so at both blocks.
   token, so a chip and the line it toggles can never disagree, and there is no second box
   to keep in sync. Search-to-focus, connection path, and a **peek panel** that shows the
   person's avatar, name and two actions.
-- **Circles** — a grid of **cards** (§2.4.2): colour dot, name, kind and member count, the
-  description, and a stack of the first four faces with "+n" for the rest. A circle's page
+- **Circles** — a find-as-you-type field and kind chips over a grid of **cards** (§2.4.2):
+  colour dot, name, kind and member count, the description, and a stack of the first four faces
+  with "+n" for the rest. A query that matches nothing gets the empty state, not a blank page. A circle's page
   puts the members in a **grid** of avatar cards with roles; *Add member* is the card's one
   disclosure, like every other card in the app.
 - **Empty states** are one component (`EmptyState`): a large icon in the subtle colour, a

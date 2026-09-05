@@ -2,6 +2,8 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
+	import Icon from '$lib/components/Icon.svelte';
+	import { ALL_KINDS, filterCircles, kindChips } from '$lib/circles/browse';
 	import { accentDotStyle } from '$lib/design/tokens';
 	import type { ActionData, PageData } from './$types';
 
@@ -10,6 +12,15 @@
 	let wantForm = $state(false);
 	// A failed submit keeps the form open, so the error has somewhere to be read.
 	const showForm = $derived(wantForm || form?.error !== undefined);
+
+	// Find as you type over what is already loaded (docs/02 §2.4): a household has few enough
+	// circles that a round trip per keystroke would only add latency.
+	let query = $state('');
+	let kind = $state<string>(ALL_KINDS);
+	const chips = $derived(kindChips(data.circles, query));
+	// A kind the query has filtered away would leave an empty page, so the row falls back to All.
+	const activeKind = $derived(chips.some((chip) => chip.kind === kind) ? kind : ALL_KINDS);
+	const shown = $derived(filterCircles(data.circles, { query, kind: activeKind }));
 </script>
 
 <svelte:head><title>Circles · Stella</title></svelte:head>
@@ -66,13 +77,45 @@
 		</form>
 	{/if}
 
+	{#if data.circles.length > 0}
+		<label class="flex items-center gap-2 rounded-control border border-border bg-card px-3 py-2 shadow-card focus-within:border-primary">
+			<Icon name="search" size={15} />
+			<span class="sr-only">Find a circle</span>
+			<input
+				type="search"
+				bind:value={query}
+				placeholder="Find a circle…"
+				autocomplete="off"
+				class="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none placeholder:text-fg-subtle"
+			/>
+		</label>
+
+		{#if chips.length > 1}
+			<div class="flex flex-wrap items-center gap-2" data-testid="circle-kinds">
+				{#each chips as chip (chip.kind)}
+					<button
+						type="button"
+						onclick={() => (kind = chip.kind)}
+						aria-pressed={activeKind === chip.kind}
+						class="rounded-full px-3 py-1 text-sm font-medium capitalize transition-colors aria-pressed:bg-primary-soft aria-pressed:text-primary text-fg-muted hover:text-fg"
+					>
+						{chip.label}
+						<span class="text-xs text-fg-subtle">{chip.count}</span>
+					</button>
+				{/each}
+			</div>
+		{/if}
+	{/if}
+
 	{#if data.circles.length === 0}
 		<EmptyState icon="circles" title="No circles yet" hint="A circle is a context people share. Add the first one and put people in it.">
 			<Button variant="primary" icon="add" type="button" onclick={() => (wantForm = true)}>New circle</Button>
 		</EmptyState>
+	{:else if shown.length === 0}
+		<EmptyState icon="search" title="No circle matches" hint="Try part of a name, or a word from a description." />
 	{:else}
 		<ul class="grid gap-3 sm:grid-cols-2" data-testid="circle-cards">
-			{#each data.circles as circle (circle.id)}
+			{#each shown as circle (circle.id)}
 				<li>
 					<a
 						href="/circles/{circle.id}"
