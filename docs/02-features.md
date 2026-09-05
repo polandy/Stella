@@ -216,6 +216,23 @@ possible when the connecting person isn't in Stella yet (e.g. record a grandpare
 directly). Implemented as a **pure kinship-inference engine** over the graph — no new
 tables, fully unit-testable (test-first).
 
+- **Shipped:** the person page's **People** tab lists the entered relationships first, then
+  an **Also related · worked out, not entered** block naming what follows from them —
+  grandparents and great-grandparents, aunts and uncles, nieces and nephews, cousins,
+  siblings and half-siblings, in-laws and step-family — each with *via* the person it comes
+  through, gendered where the gender is on record and neutral where it is not. A pair that
+  already carries any stored relationship keeps the name the household gave it and is never
+  re-derived. Half-sibling is claimed only where both people have two parents recorded, so
+  it is never a guess. Inference reads only the people and links the viewer may see, so a
+  derived label cannot reveal a private person.
+- **Shipped:** storing a parent or sibling link brings back an **Also true?** block with the
+  links it implies — a parent added to one child is offered to that child's siblings, a new
+  sibling link offers the parents each side already has — each with the sentence explaining
+  it and its own *Add this too*. Nothing is written without that click, and the remaining
+  suggestions stay while they are worked through. A partner's tie to existing children is
+  deliberately not offered: it is a step relationship, which the profile already names
+  without storing anything.
+
 ### 2.4.2 Circles & shared contexts **[M2]**
 
 Beyond pairwise relationships, people are connected by **shared contexts** — the same

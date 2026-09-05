@@ -134,6 +134,17 @@ Say once that Lena is Markus's child, and Stella knows the other half of it too 
 is Lena's parent. Relationships have a direction and a label, and the reverse reads
 correctly without you entering it twice.
 
+From the few links you enter, Stella works out the rest and shows them under **Also
+related · worked out, not entered**: grandparents, aunts and uncles, cousins, in-laws,
+step-family. They are never stored and never invented — each says who it comes through, and
+anything you have entered yourself keeps your wording. Where a gender is on record the word
+follows it ("Grandmother"), otherwise it stays neutral ("Grandparent").
+
+Adding a parent or a sibling usually implies more of them. Stella asks rather than assumes:
+say Vreni is Lena's parent and an **Also true?** panel offers her as a parent of Lena's
+brothers, one *Add this too* at a time, each with the reason. Ignore them and nothing
+happens.
+
 Every profile shows the person at the centre of their own small constellation. **Explore
 connections** opens the bigger picture, where you can follow the web outward from one
 person and trace how any two people are linked.
