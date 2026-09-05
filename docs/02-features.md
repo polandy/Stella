@@ -96,6 +96,11 @@ not be an app user.
 - Birthdate (with support for **unknown year** and **age-only** estimates).
 - Deceased flag + date of death.
 - One-line **description** ("Marco's sister, met at the lake").
+- **Name and description are edited where they are read**: click either on the profile, a
+  field takes its place, Enter saves and Escape puts it back. A name may never be emptied —
+  a person with no name is unfindable in every list that sorts by one — so an empty name is
+  refused and the field stays open with the reason. Everything else still lives in its own
+  section's form.
 - **How we met** — free text + optional **date** + optional **place** where you met the
   person (`met_place`). The place is free text (e.g. "at the lake", "Anna's wedding"); it
   may optionally render a **map link** when it looks like a real location. Surfaced on the
