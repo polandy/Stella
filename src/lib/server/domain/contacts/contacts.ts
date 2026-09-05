@@ -67,10 +67,19 @@ export interface ContactSummary {
 	avatarPhotoId: string | null;
 }
 
+/** The fields the hero edits in place, already normalised. */
+export interface ProfilePatch {
+	displayName: string;
+	description: string | null;
+	updatedAt: number;
+}
+
 export interface ContactRepository {
 	insert(contact: NewContact): Promise<void>;
 	findByIdVisibleTo(viewer: Viewer, id: string): Promise<Contact | null>;
 	listVisibleTo(viewer: Viewer): Promise<ContactSummary[]>;
+	/** Write the hero's own fields; the caller has already checked the contact is visible. */
+	updateProfile(id: string, patch: ProfilePatch): Promise<void>;
 }
 
 export interface ContactDeps {
@@ -144,6 +153,48 @@ export async function createContact(
 
 	await deps.contacts.insert(contact);
 	return id;
+}
+
+/** Why a nameless contact is refused; the edge shows this to whoever typed the blank. */
+export const EMPTY_CONTACT_NAME_MESSAGE = 'A name cannot be empty.';
+
+/** Thrown when an edit would leave a contact with no name at all. */
+export class EmptyContactNameError extends Error {
+	constructor() {
+		super(EMPTY_CONTACT_NAME_MESSAGE);
+		this.name = 'EmptyContactNameError';
+	}
+}
+
+/** What the hero may change without opening a form (docs/02 §2.2). */
+export interface ProfileEdit {
+	displayName: string;
+	description: string | null;
+}
+
+/**
+ * Rename a contact or reword their description, in place. Returns false when the contact is
+ * not visible to the viewer, so a route answers 404 the same way it does for a missing one —
+ * the visibility check is the read, exactly as everywhere else (docs/03 §3.7).
+ */
+export async function editProfile(
+	deps: Pick<ContactDeps, 'contacts' | 'clock'>,
+	viewer: Viewer,
+	id: string,
+	edit: ProfileEdit
+): Promise<boolean> {
+	const displayName = (edit.displayName ?? '').trim();
+	if (displayName.length === 0) throw new EmptyContactNameError();
+
+	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
+	if (contact === null) return false;
+
+	await deps.contacts.updateProfile(id, {
+		displayName,
+		description: orNull(edit.description),
+		updatedAt: deps.clock.now()
+	});
+	return true;
 }
 
 /** Fetch a contact the viewer may see, or null. */

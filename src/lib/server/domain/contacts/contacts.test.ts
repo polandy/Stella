@@ -3,9 +3,13 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import {
 	createContact,
+	editProfile,
+	EmptyContactNameError,
+	type Contact,
 	type ContactCreator,
 	type ContactRepository,
-	type NewContact
+	type NewContact,
+	type ProfilePatch
 } from './contacts';
 
 /*
@@ -29,7 +33,8 @@ function fakeRepo() {
 			inserted = contact;
 		},
 		findByIdVisibleTo: async () => null,
-		listVisibleTo: async () => []
+		listVisibleTo: async () => [],
+		updateProfile: async () => {}
 	};
 	return {
 		repo,
@@ -128,5 +133,104 @@ describe('createContact birth dates', () => {
 			})
 		).rejects.toThrow();
 		expect(f.inserted).toBeNull();
+	});
+});
+
+/*
+ * Editing a name or a description in place (docs/02 §2.2): the hero's own fields, saved
+ * without a form. A name may never become empty — display_name is required, and a person
+ * with no name is unreachable in every list that sorts by it.
+ */
+
+function editableRepo(contact: Contact | null) {
+	const patches: { id: string; patch: ProfilePatch }[] = [];
+	const repo: ContactRepository = {
+		insert: async () => {},
+		findByIdVisibleTo: async () => contact,
+		listVisibleTo: async () => [],
+		updateProfile: async (id, patch) => {
+			patches.push({ id, patch });
+		}
+	};
+	return { repo, patches };
+}
+
+const viewer = { id: 'user-1', householdId: 'household-1' };
+
+const existing: Contact = {
+	id: 'contact-1',
+	householdId: 'household-1',
+	createdBy: 'user-1',
+	visibility: 'shared',
+	displayName: 'Hans Müller',
+	firstName: 'Hans',
+	lastName: 'Müller',
+	nickname: null,
+	description: 'Nachbar',
+	howWeMet: null,
+	metDate: null,
+	metPlace: null,
+	birthDate: null,
+	birthDatePrecision: 'full',
+	avatarPhotoId: null,
+	isDeceased: false,
+	createdAt: 1,
+	updatedAt: 1
+};
+
+describe('editProfile', () => {
+	it('saves a trimmed name and description, and stamps the change', async () => {
+		const f = editableRepo(existing);
+
+		const saved = await editProfile(deps(f.repo), viewer, 'contact-1', {
+			displayName: '  Hans Müller-Meier  ',
+			description: '  Nachbar, links  '
+		});
+
+		expect(saved).toBe(true);
+		expect(f.patches).toEqual([
+			{
+				id: 'contact-1',
+				patch: {
+					displayName: 'Hans Müller-Meier',
+					description: 'Nachbar, links',
+					updatedAt: NOW
+				}
+			}
+		]);
+	});
+
+	it('clears a description that was emptied, rather than storing blanks', async () => {
+		const f = editableRepo(existing);
+
+		await editProfile(deps(f.repo), viewer, 'contact-1', { displayName: 'Hans', description: '   ' });
+
+		expect(f.patches[0].patch.description).toBeNull();
+	});
+
+	it('refuses an empty name and writes nothing', async () => {
+		const f = editableRepo(existing);
+
+		await expect(
+			editProfile(deps(f.repo), viewer, 'contact-1', { displayName: '  ', description: null })
+		).rejects.toThrow(EmptyContactNameError);
+		expect(f.patches).toEqual([]);
+	});
+
+	it('writes nothing for a contact the viewer may not see', async () => {
+		const f = editableRepo(null);
+
+		const saved = await editProfile(deps(f.repo), viewer, 'contact-1', {
+			displayName: 'Whoever',
+			description: null
+		});
+
+		// positive control: the same call against a visible contact does write
+		const visible = editableRepo(existing);
+		await editProfile(deps(visible.repo), viewer, 'contact-1', { displayName: 'Whoever', description: null });
+
+		expect(saved).toBe(false);
+		expect(f.patches).toEqual([]);
+		expect(visible.patches).toHaveLength(1);
 	});
 });
