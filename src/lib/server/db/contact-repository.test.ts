@@ -105,4 +105,10 @@ describe('createDrizzleContactRepository', () => {
 		const listForU1 = await repo.listVisibleTo(viewerU1);
 		expect(listForU1.map((c) => c.displayName)).toEqual(['Ada', 'Bea']); // sorted
 	});
+
+	it('carries the nickname in the list summary, which is what the directory finds people by', async () => {
+		await repo.insert(contactInput({ id: 'c-nick', displayName: 'Leonie', nickname: 'Leni' }));
+
+		expect((await repo.listVisibleTo(viewerU1)).find((c) => c.id === 'c-nick')?.nickname).toBe('Leni');
+	});
 });

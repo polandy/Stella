@@ -1,7 +1,10 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
+	import Button from '$lib/components/Button.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
-	import { occasionLabel, whenLabel } from '$lib/dates/labels';
+	import { occasionLabel, quietLabel, whenLabel } from '$lib/dates/labels';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import type { ActionData, PageData } from './$types';
 
@@ -41,30 +44,64 @@
 	});
 
 	let hintDismissed = $state(false);
+
+	// The rail's rows: a list beside the stream from lg, a strip of cards above it below that,
+	// so two bands never push the stream off a phone screen.
+	const RAIL_LIST = 'flex gap-2 max-lg:-mx-4 max-lg:overflow-x-auto max-lg:px-4 max-lg:pb-1 lg:flex-col lg:gap-0';
+	const RAIL_ROW =
+		'grid grid-cols-[28px_1fr] items-center gap-2.5 rounded-app px-1.5 py-1.5 transition-colors hover:bg-card max-lg:w-52 max-lg:shrink-0 max-lg:bg-card max-lg:p-2.5 max-lg:shadow-card';
+
+	// On a phone the composer is a sheet over the stream, opened by the pencil in the tab bar
+	// (`/?compose`) and closed by handing the URL back — so the open state lives in the URL
+	// and survives a reload, and there is nothing to keep in sync with the tab bar.
+	const sheetOpen = $derived(data.compose);
+	function closeSheet() {
+		void goto('/', { replaceState: true, noScroll: true });
+	}
 </script>
 
 <svelte:head><title>Home · Stella</title></svelte:head>
 
-<main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
-	<header>
-		<h1 class="text-2xl font-semibold text-fg">What happened?</h1>
-		<p class="text-sm text-fg-muted">Write it down once. Everyone in the household sees it, unless you keep it private.</p>
-	</header>
+{#snippet composer()}
+	{#key data.draft}
+		<MomentComposer
+			candidates={data.candidates}
+			me={{ id: data.user.id, name: data.user.name }}
+			today={data.today}
+			error={form?.momentError ?? null}
+			draft={form?.draft ?? data.draft}
+			autofocus={data.compose}
+		/>
+	{/key}
+{/snippet}
 
-	<!-- On a phone the composer is pinned above the tab bar; on desktop it sits at the top. -->
-	<div class="sticky bottom-16 z-10 -mx-4 bg-bg/95 px-4 py-2 backdrop-blur max-md:order-last md:static md:m-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
-		<!-- Keyed on the draft so arriving from "Write a moment" (?about=…) remounts the
-		     composer with that person already typed in; a draft is a starting value only. -->
-		{#key data.draft}
-			<MomentComposer
-				candidates={data.candidates}
-				me={{ id: data.user.id, name: data.user.name }}
-				today={data.today}
-				error={form?.momentError ?? null}
-				draft={form?.draft ?? data.draft}
-				autofocus={data.compose}
-			/>
-		{/key}
+<main class="mx-auto grid w-full max-w-6xl gap-x-10 gap-y-6 px-4 py-6 md:px-6 md:py-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:grid-rows-[auto_1fr]">
+<header class="lg:col-start-1 lg:row-start-1">
+	<h1 class="text-2xl font-semibold text-fg">What happened?</h1>
+	<p class="text-sm text-fg-muted">Write it down once. Everyone in the household sees it, unless you keep it private.</p>
+</header>
+
+<div class="flex min-w-0 flex-col gap-6 max-lg:order-1 lg:col-start-1 lg:row-start-2">
+
+	<!-- Desktop: the composer sits at the top. Phone: a sheet over the stream (below). -->
+	<div class="max-md:hidden">
+		{@render composer()}
+	</div>
+	<div class="md:hidden">
+		{#if sheetOpen || form?.momentError}
+			<div class="fixed inset-0 z-30 flex flex-col justify-end" data-testid="compose-sheet">
+				<button type="button" class="flex-1 bg-bg-sunken/70 backdrop-blur-sm" aria-label="Close" onclick={closeSheet}></button>
+				<div class="rounded-t-app bg-bg p-3 pb-4 shadow-pop">
+					<div class="mx-auto mb-2 h-1 w-10 rounded-full bg-border"></div>
+					{@render composer()}
+				</div>
+			</div>
+		{:else}
+			<a href="/?compose" class="flex items-center gap-3 rounded-app bg-card px-3 py-2.5 text-sm text-fg-subtle shadow-card">
+				<Avatar id={data.user.id} name={data.user.name} avatarPhotoId={null} size={28} />
+				What happened?
+			</a>
+		{/if}
 	</div>
 
 	{#if data.linkSuggestion && !hintDismissed}
@@ -73,42 +110,15 @@
 				<b class="font-semibold">Link {data.linkSuggestion.a.name} and {data.linkSuggestion.b.name}?</b>
 				<span class="block text-xs text-fg-muted">They appear together in that moment. Pick how they are related.</span>
 			</div>
-			<a
+			<Button
+				variant="primary"
+				size="sm"
 				href="/contacts/{data.linkSuggestion.a.id}?relate={data.linkSuggestion.b.id}#relationships"
-				class="rounded-md bg-success px-3 py-1.5 text-xs font-semibold text-bg"
 			>
 				Link
-			</a>
-			<a href="/" onclick={() => (hintDismissed = true)} class="rounded-md px-2 py-1.5 text-xs text-fg-muted hover:text-fg">Not now</a>
+			</Button>
+			<Button variant="ghost" size="sm" href="/" onclick={() => (hintDismissed = true)}>Not now</Button>
 		</div>
-	{/if}
-
-	<!-- Coming up: the next 30 days, above the past. Absent entirely when nothing is due,
-	     because a box that is permanently empty teaches people to stop looking at it. -->
-	{#if data.upcoming.length}
-		<section>
-			<div class="flex items-center gap-3 pb-1.5 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
-				Coming up<span class="h-px flex-1 bg-border"></span>
-			</div>
-			<ul class="flex flex-col">
-				{#each data.upcoming as item (item.contactId + item.date + item.kind)}
-					<li class="grid grid-cols-[32px_1fr_auto] items-center gap-3 rounded-app px-2.5 py-2 transition-colors hover:bg-card">
-						<Avatar id={item.contactId} name={item.contactName} avatarPhotoId={item.avatarPhotoId} size={32} />
-						<div class="min-w-0 text-[13px] text-fg-muted">
-							<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline">{item.contactName}</a>
-							<span>{occasionLabel(item)}</span>
-							<span class="text-fg-subtle">· {whenLabel(item.daysUntil, item.date)}</span>
-						</div>
-						<a
-							href="/?about={item.contactId}"
-							class="rounded-md border border-border px-2.5 py-1 text-xs text-fg-muted transition-colors hover:border-primary hover:text-fg"
-						>
-							Write a moment
-						</a>
-					</li>
-				{/each}
-			</ul>
-		</section>
 	{/if}
 
 	{#if days.length}
@@ -126,11 +136,11 @@
 									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 										<b class="font-semibold text-fg">{item.mine ? 'You' : item.actor.name}</b>
 										<span>wrote in</span>
-										<a href="/contacts/{item.anchor.id}/journal" class="font-medium text-fg hover:underline">{item.anchor.name}</a>’s journal
-										{#if item.visibility === 'private'}<span class="text-[11px]" title="Only you can see this">🔒 private</span>{/if}
+										<span><a href="/contacts/{item.anchor.id}/journal" class="font-medium text-fg hover:underline">{item.anchor.name}</a>’s journal</span>
+										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title="Only you can see this"><Icon name="private" size={11} />private</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.entryDate}>{ago(item.at)}</span>
 									</div>
-									<div class="note-body mt-0.5 text-[14.5px] text-fg">{@html item.bodyHtml}</div>
+									<div class="note-body mt-1 text-fg">{@html item.bodyHtml}</div>
 									{#if item.photoIds.length}
 										<div class="mt-2 flex gap-1.5">
 											{#each item.photoIds as photoId (photoId)}
@@ -158,7 +168,7 @@
 										<span>added</span>
 										<a href="/contacts/{item.person.id}" class="font-medium text-fg hover:underline">{item.person.name}</a>
 										<span class="rounded bg-success/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-success">New person</span>
-										{#if item.visibility === 'private'}<span class="text-[11px]">🔒 private</span>{/if}
+										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title="Only you can see this"><Icon name="private" size={11} />private</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago(item.at)}</span>
 									</div>
 									{#if item.description}<p class="mt-0.5 text-sm text-fg-muted">{item.description}</p>{/if}
@@ -170,10 +180,10 @@
 									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 										<b class="font-semibold text-fg">{item.mine ? 'You' : item.actor.name}</b>
 										<span>logged</span>
-										<span class="font-medium" style="color:{kind.accent}">{kind.icon} {kind.label.toLowerCase()}</span>
+										<span class="inline-flex items-center gap-1 font-semibold" style="color:{kind.accent}"><Icon name={kind.icon} size={12} />{kind.label.toLowerCase()}</span>
 										<span>with</span>
-										<a href="/contacts/{item.subject.id}#interactions" class="font-medium text-fg hover:underline">{item.subject.name}</a>
-										{#if item.visibility === 'private'}<span class="text-[11px]" title="Only you can see this">🔒 private</span>{/if}
+										<a href="/contacts/{item.subject.id}" class="font-medium text-fg hover:underline">{item.subject.name}</a>
+										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title="Only you can see this"><Icon name="private" size={11} />private</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.happenedAt}>{ago(item.at)}</span>
 									</div>
 									{#if item.title}<p class="mt-0.5 text-sm text-fg">{item.title}</p>{/if}
@@ -213,4 +223,56 @@
 			<p class="mt-1 text-sm text-fg-subtle">Write the first moment above — mention someone with @ to get started.</p>
 		</div>
 	{/if}
+</div>
+
+<!-- The rail: the future, and the people slipping out of it. Both bands are absent when
+     empty, because a box that is permanently empty teaches people to stop looking at it. -->
+<aside class="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:gap-8 lg:self-start" aria-label="At a glance">
+	{#if data.upcoming.length}
+		<section data-testid="coming-up">
+			<h2 class="flex items-center gap-2 pb-2 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
+				<Icon name="calendar" size={13} />Coming up
+			</h2>
+			<ul class="{RAIL_LIST}">
+				{#each data.upcoming as item (item.contactId + item.date + item.kind)}
+					<li class="{RAIL_ROW}">
+						<Avatar id={item.contactId} name={item.contactName} avatarPhotoId={item.avatarPhotoId} size={28} />
+						<div class="min-w-0 text-[13px] leading-snug text-fg-muted">
+							<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline">{item.contactName}</a>
+							<span>{occasionLabel(item)}</span>
+							<span class="block text-xs text-fg-subtle">
+								{whenLabel(item.daysUntil, item.date)}
+								<span aria-hidden="true">·</span>
+								<a href="/?about={item.contactId}" class="text-link hover:underline">Write a moment</a>
+							</span>
+						</div>
+					</li>
+				{/each}
+			</ul>
+		</section>
+	{/if}
+
+	{#if data.quiet.length}
+		<section data-testid="quiet-lately">
+			<h2 class="flex items-center gap-2 pb-2 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
+				<Icon name="quiet" size={13} />Quiet lately
+			</h2>
+			<ul class="{RAIL_LIST}">
+				{#each data.quiet as item (item.contactId)}
+					<li class="{RAIL_ROW}">
+						<Avatar id={item.contactId} name={item.contactName} avatarPhotoId={item.avatarPhotoId} size={28} />
+						<div class="min-w-0 text-[13px] leading-snug text-fg-muted">
+							<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline">{item.contactName}</a>
+							<span class="block text-xs text-fg-subtle">
+								{item.lastTouchedOn ? `Last written ${quietLabel(item.quietForDays)} ago` : 'Nothing written yet'}
+								<span aria-hidden="true">·</span>
+								<a href="/?about={item.contactId}" class="text-link hover:underline">Write a moment</a>
+							</span>
+						</div>
+					</li>
+				{/each}
+			</ul>
+		</section>
+	{/if}
+</aside>
 </main>

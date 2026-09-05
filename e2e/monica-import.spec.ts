@@ -50,10 +50,13 @@ test('previews the dump, imports it, attaches the photos and shows the people in
 
 	await page.getByRole('link', { name: /Ottilie Vogelsang/ }).first().click();
 	await expect(page.getByRole('heading', { name: 'Ottilie Vogelsang' })).toBeVisible();
-	// The mirrored Monica rows became one relationship; the age-based birthday an estimate.
-	await expect(page.locator('#relationships')).toContainText('Kaspar Vogelsang');
+	// The age-based birthday became an estimate, never a birthday.
 	await expect(page.getByText('around 2016')).toBeVisible();
 	await expect(page.getByText('estimated')).toBeVisible();
+	// The mirrored Monica rows became one relationship, listed under the People tab.
+	await page.getByRole('tab', { name: /People/ }).click();
+	await expect(page.getByRole('link', { name: 'Kaspar Vogelsang' })).toBeVisible();
+	await page.getByRole('tab', { name: /Notes/ }).click();
 	await expect(page.getByText('Prefers the harbour walk in Tallinn.')).toBeVisible();
 	await expect(page.locator('img[alt="Ottilie Vogelsang"]')).toHaveAttribute('src', /monica:photo:1/);
 });

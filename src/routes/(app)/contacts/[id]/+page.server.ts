@@ -29,9 +29,11 @@ import {
 	listInteractions,
 	logInteraction
 } from '$lib/server/domain/interactions/interactions';
-import { listJournalPage } from '$lib/server/domain/journal/journal';
+import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
+import { listStoryPage } from '$lib/server/domain/story/story';
+import { toStoryItem } from './story-view';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
-import { renderMarkdown, renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
+import { renderMarkdown } from '$lib/server/domain/notes/markdown';
 import { createNote, listNotesForContact } from '$lib/server/domain/notes/notes';
 import {
 	createRelationship,
@@ -57,14 +59,15 @@ import {
 	getPhotos,
 	getRelationshipDeps,
 	getRelationships,
+	getStoryDeps,
 	getTagDeps
 } from '$lib/server/services';
 
-/** First page of the inline journal timeline; older weeks stream in via the entries endpoint. */
-const JOURNAL_PAGE = 8;
-
 /** Whether a birth date precision (docs/03 §3.4) names an actual day rather than a year. */
 const namesADay = (precision: string) => precision === 'full' || precision === 'month_day';
+
+/** First page of the story timeline; older items stream in via the story endpoint. */
+const STORY_PAGE = 12;
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
@@ -86,7 +89,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		tags,
 		contactCircles,
 		allCircles,
-		journalPage,
+		storyPage,
 		journalPhotos,
 		dates,
 		interactions
@@ -99,13 +102,13 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		listTagsForContact(getTagDeps(), viewer, params.id),
 		listCirclesForContact(getCircleDeps(), viewer, params.id),
 		listCircles(getCircleDeps(), viewer),
-		listJournalPage(getJournalDeps(), viewer, params.id, { limit: JOURNAL_PAGE }),
+		listStoryPage(getStoryDeps(), viewer, params.id, { limit: STORY_PAGE }),
 		getPhotos().listJournalPhotos(viewer, params.id),
 		listImportantDates(getImportantDateDeps(), viewer, params.id),
 		listInteractions(getInteractionDeps(), viewer, params.id)
 	]);
 
-	// Group visible journal photo ids by entry so the inline timeline renders each gallery.
+	// Group visible journal photo ids by entry so the story timeline renders each gallery.
 	const journalPhotosByEntry = new Map<string, string[]>();
 	for (const p of journalPhotos) {
 		const list = journalPhotosByEntry.get(p.journalEntryId) ?? [];
@@ -114,21 +117,19 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	}
 
 	// Name lookup for @-mention chips in journal bodies, scoped to what the viewer may see.
-	const journalNameById = new Map(allContacts.map((c) => [c.id, c.displayName]));
-	const journalNameOf = (id: string) => journalNameById.get(id) ?? null;
+	const nameById = new Map(allContacts.map((c) => [c.id, c.displayName]));
+	const nameOf = (id: string) => nameById.get(id) ?? null;
 
 	return {
-		journal: {
-			entries: journalPage.entries.map((e) => ({
-				id: e.id,
-				entryDate: e.entryDate,
-				title: e.title,
-				bodyHtml: renderMarkdownWithMentions(e.body, journalNameOf),
-				visibility: e.visibility,
-				mine: e.createdBy === locals.user!.id,
-				photos: journalPhotosByEntry.get(e.id) ?? []
-			})),
-			nextCursor: journalPage.nextCursor
+		story: {
+			items: storyPage.items.map((item) =>
+				toStoryItem(item, {
+					userId: locals.user!.id,
+					photosByEntry: journalPhotosByEntry,
+					nameOf
+				})
+			),
+			nextCursor: storyPage.nextCursor
 		},
 		contact,
 		interactions: interactions.map((i) => ({
@@ -430,7 +431,7 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
-		const interactionId = form.get('interactionId');
+		const interactionId = form.get('id');
 		if (typeof interactionId !== 'string') return fail(400, {});
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
@@ -439,6 +440,31 @@ export const actions: Actions = {
 		const author = { userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: 'shared' as const };
 		const removed = await deleteInteraction(getInteractionDeps(), author, interactionId);
 		if (!removed) return fail(403, { interactionError: 'Only the person who logged it can remove it.' });
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/*
+	 * The story timeline shows journal entries beside touchpoints, so removing one has to be
+	 * possible from here too — previously only the full journal page could.
+	 */
+	removeJournalEntry: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const id = form.get('id');
+		if (typeof id !== 'string') return fail(400, {});
+
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		const author = {
+			userId: locals.user.id,
+			householdId: locals.user.householdId,
+			defaultVisibility: 'shared' as const
+		};
+		const removed = await deleteJournalEntry(getJournalDeps(), author, id);
+		if (!removed) return fail(403, { interactionError: 'Only the person who wrote it can remove it.' });
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 

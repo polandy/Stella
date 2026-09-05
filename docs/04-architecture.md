@@ -198,6 +198,17 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **OIDC-standard SSO, provider-agnostic** — targets Authelia but avoids provider lock-in.
 - **Cytoscape.js for the graph** — mature, purpose-built; lazy-loaded to protect the
   bundle. D3-force considered as a lighter alt if bundle size demands it.
+- **"Quiet lately" measures recorded attention, not contact** — the band lists people with
+  no journal entry or touchpoint in 90 days, counting an untouched person from the day they
+  were added, and puts a story that went silent before one that never began. The
+  alternative (a `last_contacted_at` column maintained on write) was rejected: it would be
+  the second copy of a fact the story already holds, and would drift on every delete. The
+  cost is three grouped reads per Home load, which at household scale is nothing.
+- **The palette's people ride with the app shell** — `(app)/+layout.server.ts` loads every
+  person the viewer may see on each navigation so ⌘K answers on the first keystroke. A
+  fetch-on-open would spare that read on pages that never open the palette, at the price of
+  a visible wait in the one place the shortcut has to feel instant; a household has a few
+  hundred people at most, so the read is cheap and the wait is not.
 - **Birthdays derived, not duplicated** — a birthday is read off `contact.birth_date` rather
   than written as an `important_date` row, so the two can never disagree. The cost is that
   "a person's dates" is assembled from two sources at read time; the alternative (a row per
@@ -220,6 +231,16 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   the same canvas pipeline as avatars and journal photos. Rejected: a server-side
   `MONICA_STORAGE_DIR` (reads arbitrary paths from a web form; needs the volume mounted into
   Stella) and a server-side resizer (a native image dependency, which docs/04 §4.6 avoids).
+
+- **The story is merged at read time, not stored** — a person's journal entries and touchpoints
+  stay two tables and are merged into one timeline per request (docs/02 §2.23). Rejected: a
+  third table holding a unified timeline, which would have to be kept in step on every write
+  and would duplicate the visibility rules the two sources already enforce; and a SQL `UNION`
+  view, which cannot be keyset-paginated across two different sort keys without materialising
+  it. The cost is that each page reads a page from *both* sources even when one of them fills
+  it alone, and that each carries its own resume point — a source can contribute nothing to a
+  page and still have rows waiting, so "read me from the top" and "I am finished" have to be
+  distinguishable. The merge is pure and owns those rules, which is what keeps them testable.
 
 ## 4.10 Deployment
 

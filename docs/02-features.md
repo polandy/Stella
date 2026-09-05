@@ -118,6 +118,12 @@ not be an app user.
   notes, photos, relationships; keeps an audit entry).
 - **Archive** (soft-hide without deleting) and **delete** (with confirmation) **[M2]**.
 - **Who added this** and **last edited by/when** are always visible.
+- **The People directory** lists everyone the viewer may see under **letter groups** by
+  surname (display name when there is none; digits and symbols under `#`), with a
+  **find-as-you-type** field that matches any name they go by, their nickname or their
+  description — accent- and case-insensitive, with no round trip — and a **last written
+  about** column fed by the same read as *Quiet lately* (§2.12.1). Tag chips filter the
+  list as before.
 
 ### 2.2.1 Duplicate & relative suggestions (name-based) **[M2]**
 
@@ -259,7 +265,8 @@ A lightweight journal of contact touchpoints, distinct from notes.
 - An interaction has: a **type** (met in person, call, video, message, letter, gift,
   other), a **date**, an optional **title/summary**, an optional **description**, and
   optional **participants** (other contacts present).
-- Rendered as a reverse-chronological **timeline** on the profile.
+- Rendered on the profile as part of the person's **story** (§2.23), interleaved with journal
+  entries in one chronological read.
 - Powers "**last contacted**" on the profile and "haven't seen in a while" hints **[M3]**.
 - **Shipped:** the timeline and the *Log interaction* form live in the **Interactions**
   section of the person page. An interaction is about one **subject** and records a **day**
@@ -395,9 +402,27 @@ don't have to open the app to stay in the loop.
 The personal landing view — the first thing a member sees after signing in — giving an
 at-a-glance overview of recent household life and acting as a launchpad into the details.
 
-> **Current state:** Home is the capture field + household stream of §2.22. The panel layout
-> below is where feature-specific summaries (upcoming dates, gifts) slot in once those exist;
-> "new people", "recent notes" and "your contributions" are covered by the stream.
+> **Current state:** Home is the capture field + household stream of §2.22, with a **rail**
+> beside it holding two bands: **Coming up** (§2.13.3) and **Quiet lately** (below). The
+> panel layout underneath is where further summaries (gifts) slot in once those exist; "new
+> people", "recent notes" and "your contributions" are covered by the stream.
+
+### 2.12.1 Quiet lately
+
+- The rail names the people **nothing has been written about for 90 days** — no journal
+  entry and no touchpoint the viewer may see — capped at five, each with one action:
+  *Write a moment*. Like *Coming up*, the band is **absent entirely when nobody is quiet**.
+- It measures **recorded attention, not contact**: Stella cannot know about the call nobody
+  logged. The band is a prompt to write something down, which is the same act either way.
+- **Order:** people whose recorded story went silent come first, longest silence first; only
+  then the people nobody has written about at all. A household that has just imported its
+  address book would otherwise see the same five empty records for months.
+- A person never written about counts from **the day they were added**, so someone added
+  yesterday is new, not neglected. **Deceased people are excluded** (§2.2).
+- Visibility is the filter: a private entry counts only for its author, so from another
+  member's chair that person really is quiet.
+- Pure and test-first (`domain/attention`: `quietContacts` over an `AttentionRepository`
+  port whose one scoped read also gives People its *last written about* column).
 
 - Composed of **panels**, each summarizing one dimension and linking deeper:
   - **Recent activity** — who added or changed what lately (drawn from the activity feed,
@@ -452,8 +477,8 @@ mechanism behind two features: correcting a birthday without touching the profil
 
 ### 2.13.3 What Home shows
 
-- The **Coming up** band lists the next occurrences inside a 30-day horizon, soonest
-  first, capped at five. It is **absent entirely when nothing is due** — a permanently
+- The **Coming up** band in Home's rail (§2.12) lists the next occurrences inside a 30-day
+  horizon, soonest first, capped at five. It is **absent entirely when nothing is due** — a permanently
   empty panel teaches people to stop looking.
 - Each entry reads as a countdown ("today", "tomorrow", "in 4 days") rather than a
   calendar entry, and says what the occasion is ("turns 11", "12 years together").
@@ -644,9 +669,12 @@ entry and a household update, without leaving the page. Concept + clickable prot
 ### 2.22.1 Capture ("What happened?")
 
 - **One field, on Home.** A plain text field (Markdown allowed) with the same `@`-mention
-  autocomplete as the journal (§2.20.1). On desktop it sits at the top of Home; on a phone it
-  is pinned above the tab bar like a messenger composer. `⌘K` / `Ctrl+K` from anywhere jumps to
-  it.
+  autocomplete as the journal (§2.20.1). On desktop it sits at the top of Home; on a phone the
+  stream shows a one-line *What happened?* bar and the composer opens as a **sheet** over it,
+  from that bar or from the **pencil in the middle of the tab bar** (`/?compose`, so the open
+  state lives in the URL and survives a reload). `⌘K` / `Ctrl+K` from anywhere opens the
+  **command palette** (docs/05 §5.4), whose first row is *Write a moment* — so `⌘K`, `Enter`
+  still lands here.
 - **A moment *is* a journal entry.** Nothing new is stored: the first person mentioned becomes
   the entry's contact (the *anchor*, whose journal it lands in); every other mention is stored
   as a `journal_mention` exactly as today. The composer shows the anchor while typing
@@ -688,6 +716,34 @@ entry and a household update, without leaving the page. Concept + clickable prot
   contact + journal ports; `domain/stream`: merge/limit of scoped reads over a
   `StreamRepository` port); the Drizzle adapter owns the scoped queries; Home is a thin edge.
 
+## 2.23 The story timeline **[M2]**
+
+Two things are recorded against a person and both are chronological: the **journal** someone
+wrote about them (§2.20) and the **touchpoints** someone had with them (§2.6). They used to be
+two lists, one under the other, each with its own dates — leaving the reader to merge them by
+eye to answer the only question the page is really asked: *what has been going on with this
+person?*
+
+The **story** is that merge, done once, server-side.
+
+- **One order.** Newest day first; within a day, the later recording first. A dead heat orders
+  by kind, so a page boundary always falls in the same place and paging can neither repeat nor
+  swallow an item.
+- **One page at a time.** Both sources are keyset-paginated on `(day, recorded_at)` and merged
+  into pages of twelve. Each source carries its own resume point, because a page can be filled
+  entirely by one of them while the other still has rows waiting. *Show earlier* fetches the
+  next page from `POST /contacts/:id/story`, which takes the previous cursor back verbatim.
+- **Visibility is unchanged (§2.10).** Each source is read through its own scoped query before
+  the merge, so a private entry or touchpoint reaches its author and nobody else. The merge
+  never sees a row the viewer may not.
+- **Removing.** An item can be removed from the story by whoever wrote it — previously a
+  journal entry could only be removed from the full journal page.
+- **Writing** still happens where it did: the journal page for an entry with photos, the
+  *Log contact* form on the person page for a touchpoint.
+- Implemented as a pure merge (`domain/story`: `mergeStory`, unit-tested for every ordering
+  and cursor rule) plus a thin read that fetches one page of each source; both Drizzle
+  adapters own their scoped keyset queries.
+
 ## 2.21 Feature ↔ milestone summary
 
 | Feature | Milestone |
@@ -709,6 +765,7 @@ entry and a household update, without leaving the page. Concept + clickable prot
 | Interactions timeline | M2 |
 | Explorer rich: in-place expand, in-graph search, connection path, circles + kinship edges, filters, layouts | M2 |
 | Activity feed → household stream on Home | M2 |
+| Story timeline (journal + touchpoints merged, per person) | M2 |
 | **Moments**: one-sentence capture with inline person creation + link hint | M2 |
 | Personal dashboard (Home, panels, drill-down) | M2 |
 | Name-based duplicate & relative suggestions | M2 |

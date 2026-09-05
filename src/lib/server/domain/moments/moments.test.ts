@@ -19,6 +19,7 @@ function summary(c: NewContact): ContactSummary {
 		displayName: c.displayName,
 		firstName: c.firstName,
 		lastName: c.lastName,
+		nickname: c.nickname,
 		description: c.description,
 		visibility: c.visibility,
 		avatarPhotoId: null
@@ -198,8 +199,8 @@ describe('captureMoment', () => {
 
 describe('audienceCandidates', () => {
 	const all: ContactSummary[] = [
-		{ id: 'a', displayName: 'A', firstName: null, lastName: null, description: null, visibility: 'shared', avatarPhotoId: null },
-		{ id: 'b', displayName: 'B', firstName: null, lastName: null, description: null, visibility: 'private', avatarPhotoId: null }
+		{ id: 'a', displayName: 'A', firstName: null, lastName: null, nickname: null, description: null, visibility: 'shared', avatarPhotoId: null },
+		{ id: 'b', displayName: 'B', firstName: null, lastName: null, nickname: null, description: null, visibility: 'private', avatarPhotoId: null }
 	];
 	it('limits a shared entry to household-visible people, a private one to everyone visible', () => {
 		expect(audienceCandidates(all, 'shared').map((c) => c.id)).toEqual(['a']);

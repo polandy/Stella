@@ -5,6 +5,12 @@
 	 * loaded — no graph engine, no extra fetch. Nodes link to the connected contact.
 	 * Category accents follow docs/05 §5.6.
 	 */
+	import {
+		RELATIONSHIP_CATEGORIES,
+		categoryVar,
+		type RelationshipCategory
+	} from '$lib/design/tokens';
+
 	interface EgoNode {
 		id: string;
 		name: string;
@@ -13,13 +19,10 @@
 	}
 	let { centerName, nodes }: { centerName: string; nodes: EgoNode[] } = $props();
 
-	const categoryColor: Record<string, string> = {
-		family: 'var(--ctp-green)',
-		romantic: 'var(--ctp-pink)',
-		social: 'var(--ctp-blue)',
-		professional: 'var(--ctp-peach)',
-		other: 'var(--ctp-overlay1)'
-	};
+	const categoryColor = (category: string): string =>
+		(RELATIONSHIP_CATEGORIES as readonly string[]).includes(category)
+			? categoryVar(category as RelationshipCategory)
+			: categoryVar('other');
 
 	function initials(name: string): string {
 		return name
@@ -50,7 +53,7 @@
 				...n,
 				x: CX + RING * Math.cos(angle),
 				y: CY + RING * Math.sin(angle),
-				color: categoryColor[n.category] ?? categoryColor.other
+				color: categoryColor(n.category)
 			};
 		})
 	);
