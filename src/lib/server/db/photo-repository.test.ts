@@ -98,3 +98,80 @@ describe('getVisiblePhotoFile', () => {
 		expect(await repo.getVisiblePhotoFile(viewerU1, 'nope', 'full')).toBeNull();
 	});
 });
+
+describe('the gallery (docs/02 §2.14)', () => {
+	/*
+	 * A gallery photo is one with no journal entry. U1 owns a shared and a private one on
+	 * Mara; U2 owns one of their own. Journal photos must stay out of every gallery read.
+	 */
+	beforeEach(async () => {
+		seedContact('mara');
+		await repo.insert(photo({ id: 'g-shared', createdAt: 100 }));
+		await repo.insert(photo({ id: 'g-private', visibility: 'private', createdAt: 200 }));
+		await repo.insert(photo({ id: 'g-u2', createdBy: U2, createdAt: 300 }));
+		db.insert(schema.journalEntry)
+			.values({ id: 'j1', contactId: 'mara', createdBy: U1, entryDate: '2026-01-01', body: 'x' })
+			.run();
+		await repo.insert(photo({ id: 'in-journal', journalEntryId: 'j1', createdAt: 400 }));
+		// A caption is written after the upload, the way the interface does it.
+		await repo.updateOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared', caption: 'At the lake' });
+	});
+
+	it('lists the gallery newest first, hiding a private photo from everyone but its author', async () => {
+		const forU2 = await repo.listGalleryPhotos(viewerU2, 'mara');
+		expect(forU2.map((p) => p.id)).toEqual(['g-u2', 'g-shared']);
+		// Positive control: the author sees their private one, in the same order.
+		const forU1 = await repo.listGalleryPhotos(viewerU1, 'mara');
+		expect(forU1.map((p) => p.id)).toEqual(['g-u2', 'g-private', 'g-shared']);
+		expect(forU1.find((p) => p.id === 'g-shared')).toMatchObject({
+			caption: 'At the lake',
+			visibility: 'shared',
+			createdBy: U1,
+			contactId: 'mara',
+			isAvatar: false
+		});
+	});
+
+	it('keeps journal photos out of the gallery', async () => {
+		const ids = (await repo.listGalleryPhotos(viewerU1, 'mara')).map((p) => p.id);
+		expect(ids).not.toContain('in-journal');
+	});
+
+	it('marks the photo the contact currently wears', async () => {
+		await repo.setContactAvatar('mara', 'g-shared');
+		const found = await repo.listGalleryPhotos(viewerU1, 'mara');
+		expect(found.filter((p) => p.isAvatar).map((p) => p.id)).toEqual(['g-shared']);
+	});
+
+	it('finds one gallery photo only for the right contact and viewer', async () => {
+		expect(await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'g-shared')).toMatchObject({ id: 'g-shared' });
+		seedContact('otto');
+		expect(await repo.findVisibleGalleryPhoto(viewerU1, 'otto', 'g-shared')).toBeNull();
+		expect(await repo.findVisibleGalleryPhoto(viewerU2, 'mara', 'g-private')).toBeNull();
+		expect(await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'in-journal')).toBeNull();
+	});
+
+	it('updates caption and visibility only on the author’s own photo', async () => {
+		expect(await repo.updateOwnGalleryPhoto({ authorId: U2, photoId: 'g-shared', caption: 'Mine' })).toBe(false);
+		expect(await repo.updateOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared', caption: 'Ours' })).toBe(true);
+		expect(await repo.updateOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared', visibility: 'private' })).toBe(true);
+		const row = db.select().from(schema.photo).where(eq(schema.photo.id, 'g-shared')).get();
+		expect(row).toMatchObject({ caption: 'Ours', visibility: 'private' });
+	});
+
+	it('deletes only the author’s own photo and hands back its files', async () => {
+		expect(await repo.deleteOwnGalleryPhoto({ authorId: U2, photoId: 'g-shared' })).toBeNull();
+		expect(await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared' })).toEqual({
+			filePath: 'p1.jpg',
+			thumbPath: 'p1_thumb.jpg'
+		});
+		expect(db.select().from(schema.photo).where(eq(schema.photo.id, 'g-shared')).get()).toBeUndefined();
+	});
+
+	it('takes the avatar off the contact when the photo it points at is deleted', async () => {
+		await repo.setContactAvatar('mara', 'g-shared');
+		await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared' });
+		const row = db.select().from(schema.contact).where(eq(schema.contact.id, 'mara')).get();
+		expect(row?.avatarPhotoId).toBeNull();
+	});
+});

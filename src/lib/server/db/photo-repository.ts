@@ -1,8 +1,10 @@
-import { and, asc, eq, isNotNull } from 'drizzle-orm';
+import { and, asc, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
+	DeletedPhotoFiles,
+	GalleryPhoto,
 	JournalPhotoRef,
 	PhotoFile,
 	PhotoRepository,
@@ -90,6 +92,128 @@ export function createDrizzlePhotoRepository(
 				.all();
 			// journalEntryId is non-null here by the isNotNull filter.
 			return rows.map((r) => ({ id: r.id, journalEntryId: r.journalEntryId as string }));
+		},
+
+		async listGalleryPhotos(viewer: Viewer, contactId: string): Promise<GalleryPhoto[]> {
+			return db
+				.select(GALLERY_COLUMNS)
+				.from(photo)
+				.innerJoin(contact, eq(photo.contactId, contact.id))
+				.where(and(eq(photo.contactId, contactId), isGalleryPhotoVisibleTo(viewer)))
+				.orderBy(desc(photo.createdAt))
+				.all()
+				.map(toGalleryPhoto);
+		},
+
+		async findVisibleGalleryPhoto(
+			viewer: Viewer,
+			contactId: string,
+			photoId: string
+		): Promise<GalleryPhoto | null> {
+			const row = db
+				.select(GALLERY_COLUMNS)
+				.from(photo)
+				.innerJoin(contact, eq(photo.contactId, contact.id))
+				.where(
+					and(eq(photo.id, photoId), eq(photo.contactId, contactId), isGalleryPhotoVisibleTo(viewer))
+				)
+				.get();
+			return row ? toGalleryPhoto(row) : null;
+		},
+
+		async updateOwnGalleryPhoto(input: {
+			authorId: string;
+			photoId: string;
+			caption?: string | null;
+			visibility?: 'shared' | 'private';
+		}): Promise<boolean> {
+			const changes: { caption?: string | null; visibility?: 'shared' | 'private' } = {};
+			if ('caption' in input) changes.caption = input.caption ?? null;
+			if (input.visibility) changes.visibility = input.visibility;
+			if (Object.keys(changes).length === 0) return false;
+			const updated = db
+				.update(photo)
+				.set(changes)
+				.where(and(eq(photo.id, input.photoId), eq(photo.createdBy, input.authorId), isNull(photo.journalEntryId)))
+				.returning({ id: photo.id })
+				.all();
+			return updated.length > 0;
+		},
+
+		async deleteOwnGalleryPhoto(input: {
+			authorId: string;
+			photoId: string;
+		}): Promise<DeletedPhotoFiles | null> {
+			return db.transaction((tx) => {
+				const removed = tx
+					.delete(photo)
+					.where(
+						and(
+							eq(photo.id, input.photoId),
+							eq(photo.createdBy, input.authorId),
+							isNull(photo.journalEntryId)
+						)
+					)
+					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
+					.all();
+				const files = removed[0];
+				if (!files) return null;
+				// The avatar column carries no foreign key, so a contact would otherwise keep
+				// pointing at bytes that no longer exist.
+				tx.update(contact)
+					.set({ avatarPhotoId: null })
+					.where(eq(contact.avatarPhotoId, input.photoId))
+					.run();
+				return files;
+			});
 		}
 	};
 }
+
+/*
+ * A gallery photo is one that belongs to no journal entry (docs/02 §2.14 vs §2.20). Reads are
+ * scoped through the central `childRecordVisibleTo`, so a private photo reaches only its author.
+ */
+function isGalleryPhotoVisibleTo(viewer: Viewer) {
+	return and(
+		isNull(photo.journalEntryId),
+		childRecordVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy })
+	);
+}
+
+const GALLERY_COLUMNS = {
+	id: photo.id,
+	contactId: photo.contactId,
+	caption: photo.caption,
+	visibility: photo.visibility,
+	createdBy: photo.createdBy,
+	width: photo.width,
+	height: photo.height,
+	createdAt: photo.createdAt,
+	isAvatar: sql<number>`(${contact.avatarPhotoId} = ${photo.id})`
+};
+
+type GalleryRow = {
+	id: string;
+	contactId: string | null;
+	caption: string | null;
+	visibility: 'shared' | 'private';
+	createdBy: string;
+	width: number | null;
+	height: number | null;
+	createdAt: number;
+	isAvatar: number | null;
+};
+
+/** SQLite has no booleans; the avatar flag arrives as 0/1 and is mapped here, at the boundary. */
+const toGalleryPhoto = (row: GalleryRow): GalleryPhoto => ({
+	id: row.id,
+	contactId: row.contactId ?? '',
+	caption: row.caption,
+	visibility: row.visibility,
+	createdBy: row.createdBy,
+	width: row.width,
+	height: row.height,
+	createdAt: row.createdAt,
+	isAvatar: row.isAvatar === 1
+});

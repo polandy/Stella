@@ -55,6 +55,8 @@ import type { ImportDeps, ImportRepository } from './domain/import/monica/apply'
 import type { ImportedPhotoDeps } from './domain/import/monica/photos';
 import type { InteractionDeps, InteractionRepository } from './domain/interactions/interactions';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
+import type { GalleryDeps } from './domain/media/gallery';
+import type { GalleryUploadDeps } from './domain/media/gallery-upload';
 import type { JournalPhotoDeps } from './domain/media/journal-photos';
 import { ulidGenerator } from './id';
 
@@ -284,6 +286,15 @@ export function getAvatarDeps(): AvatarDeps {
 
 export function getImportedPhotoDeps(): ImportedPhotoDeps {
 	return { photos: getPhotos(), media: getMediaStore(), clock: systemClock };
+}
+
+/** Deps for the photo gallery on a person (docs/02 §2.14). */
+export function getGalleryDeps(): GalleryDeps {
+	return { photos: getPhotos(), media: getMediaStore() };
+}
+
+export function getGalleryUploadDeps(): GalleryUploadDeps {
+	return { photos: getPhotos(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
 }
 
 export function getJournalPhotoDeps(): JournalPhotoDeps {
