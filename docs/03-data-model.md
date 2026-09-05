@@ -6,7 +6,8 @@ implementation of record.
 
 ## 3.1 Conventions
 
-- **IDs:** text primary keys using a sortable unique id (UUIDv7 or ULID). Sortable ids
+- **IDs:** text primary keys using a sortable unique id (UUIDv7 or ULID; rows brought in
+  by the Monica import carry `monica:<table>:<id>` instead, see docs/04 §4.9). Sortable ids
   keep inserts local and double as creation-order cursors.
 - **Timestamps:** `created_at`, `updated_at` stored as integer Unix epoch (ms), UTC.
   Application layer maintains `updated_at`.

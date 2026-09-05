@@ -73,6 +73,13 @@ Right now there are two ways in:
   rest of the household is still to come; until then, single sign-on is the way to give
   everyone their own login.
 
+## Coming from Monica?
+
+Sign in as the admin, open **Settings → Import from Monica**, and hand it a dump of your
+Monica database. It shows what it found before writing anything, and afterwards lets you
+bring the photos over from Monica's storage folder. The whole story, including how to make
+the dump, is in [using-stella.md](using-stella.md#moving-in-from-monica).
+
 ## Trying it with demo data first
 
 If you want to look around before deciding, set `SEED_DEMO=true` in `.env` and run

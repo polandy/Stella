@@ -123,6 +123,24 @@ describe('createDrizzleImportantDateRepository', () => {
 		});
 	});
 
+	it('does not derive a birthday from an estimated birth year', async () => {
+		db.insert(schema.contact)
+			.values({
+				id: 'c-estimated',
+				householdId: H,
+				createdBy: U1,
+				visibility: 'shared',
+				displayName: 'Roughly',
+				birthDate: '2016',
+				birthDatePrecision: 'age'
+			})
+			.run();
+		const sources = await repo.listSourcesVisibleTo(viewerU1);
+		expect(sources.some((s) => s.contactId === 'c-estimated')).toBe(false);
+		// positive control: the fully dated contact is still there
+		expect(sources.some((s) => s.contactId === 'c-shared' && s.derived)).toBe(true);
+	});
+
 	it('reports a deceased person so the domain can leave them out', async () => {
 		const sources = await repo.listSourcesVisibleTo(viewerU1);
 		expect(sources.find((s) => s.contactId === 'c-gone')).toMatchObject({ isDeceased: true });

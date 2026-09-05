@@ -1,4 +1,4 @@
-import { and, eq, isNotNull } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { contactVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
@@ -17,8 +17,13 @@ import { contact, importantDate } from './schema';
  *
  * `listSourcesVisibleTo` unions two things the domain treats alike: the explicit rows, and
  * the birthdays derived from `contact.birth_date` — which is why a birthday is never stored
- * twice (docs/02 §2.13).
+ * twice (docs/02 §2.13). Only a birth date that names a day can become a birthday: an
+ * estimated year (`age`/`year` precision, docs/03 §3.4) is a fact about the person, not a
+ * date to look forward to.
  */
+
+/** The precisions under which `contact.birth_date` names an actual day. */
+const DAY_PRECISIONS = ['full', 'month_day'] as const;
 
 /** SQLite has no boolean; these columns are 0/1. */
 const asBool = (value: number) => value === 1;
@@ -92,7 +97,13 @@ export function createDrizzleImportantDateRepository(
 					birthDate: contact.birthDate
 				})
 				.from(contact)
-				.where(and(contactVisibleTo(viewer), isNotNull(contact.birthDate)))
+				.where(
+					and(
+						contactVisibleTo(viewer),
+						isNotNull(contact.birthDate),
+						inArray(contact.birthDatePrecision, [...DAY_PRECISIONS])
+					)
+				)
 				.all();
 
 			return [
