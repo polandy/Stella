@@ -1,3 +1,5 @@
+import type { Viewer } from '../../access/visibility';
+
 /*
  * Duplicate & relative suggestions (docs/02 §2.2.1). Pure ranking over names: no
  * persistence, no visibility — the caller passes only the people the viewer may see.
@@ -123,4 +125,23 @@ export function rankNameCandidates(
 			a.displayName.localeCompare(b.displayName)
 	);
 	return ranked.slice(0, limit).map(({ id, displayName, reason }) => ({ id, displayName, reason }));
+}
+
+/** Where quick-add's candidates come from: only people the viewer may see (docs/02 §2.10). */
+export interface NameCandidateSource {
+	listNameCandidatesVisibleTo(viewer: Viewer): Promise<NameCandidate[]>;
+}
+
+export interface SuggestionDeps {
+	candidates: NameCandidateSource;
+}
+
+/** Likely duplicates and relatives for a name being typed, ranked; nothing without a surname. */
+export async function suggestNameCandidates(
+	deps: SuggestionDeps,
+	viewer: Viewer,
+	input: NameInput
+): Promise<RankedCandidate[]> {
+	if (normalise(input.lastName).length === 0) return [];
+	return rankNameCandidates(input, await deps.candidates.listNameCandidatesVisibleTo(viewer));
 }
