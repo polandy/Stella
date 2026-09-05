@@ -1,6 +1,7 @@
 import {
 	Blend,
 	BookOpen,
+	CalendarDays,
 	CircleDot,
 	Ellipsis,
 	Gift,
@@ -10,6 +11,7 @@ import {
 	Lock,
 	Mail,
 	MessageCircle,
+	Moon,
 	Phone,
 	Plus,
 	Search,
@@ -52,6 +54,8 @@ export const ICONS = {
 	pinned: Star,
 	// States
 	private: Lock,
+	calendar: CalendarDays,
+	quiet: Moon,
 	shared: UsersRound,
 	// Interaction kinds (docs/02 §2.6)
 	met: Handshake,

@@ -61,6 +61,7 @@ export interface ContactSummary {
 	displayName: string;
 	firstName: string | null;
 	lastName: string | null;
+	nickname: string | null;
 	description: string | null;
 	visibility: Visibility;
 	avatarPhotoId: string | null;

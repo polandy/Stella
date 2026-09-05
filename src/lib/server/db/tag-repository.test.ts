@@ -42,7 +42,7 @@ beforeEach(() => {
 		{ id: U2, householdId: H, email: 'u2@x.test', name: 'Two' }
 	]).run();
 	db.insert(schema.contact).values([
-		{ id: 'c-shared', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Shared' },
+		{ id: 'c-shared', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Shared', nickname: 'Sha' },
 		{ id: 'c-priv', householdId: H, createdBy: U1, visibility: 'private', displayName: 'Private' }
 	]).run();
 	repo = createDrizzleTagRepository(db);
@@ -75,6 +75,10 @@ describe('visibility scoping', () => {
 	it('hides tags on a private contact from non-owners', async () => {
 		expect(await repo.listForContactVisibleTo(viewerU2, 'c-priv')).toHaveLength(0);
 		expect(await repo.listForContactVisibleTo(viewerU1, 'c-priv')).toHaveLength(1);
+	});
+
+	it('carries the nickname on a tag-filtered list, so the directory filter still finds people by it', async () => {
+		expect((await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).find((c) => c.id === 'c-shared')?.nickname).toBe('Sha');
 	});
 
 	it('lists only visible contacts for a tag', async () => {

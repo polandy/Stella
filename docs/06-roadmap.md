@@ -48,8 +48,8 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   visibility-scoped household stream (moments, new people, new relationships).
 - **Activity feed** ("What's new") with visibility filtering — filters and notable edits on
   top of the stream.
-- **Personal dashboard (Home):** panels for recent activity, new people, recent notes,
-  gifts given, upcoming dates, "your contributions" — each drilling down to the detail.
+- **Personal dashboard (Home):** the stream plus a rail with "Coming up" and "Quiet lately"
+  (§2.12); further panels (gifts given) as their base features land.
 - **Interactions timeline** + "last contacted", read as one **story timeline** per person
   together with the journal (§2.23).
 - **Name-based suggestions:** duplicate/relative candidates on contact entry (pure ranker).
@@ -58,8 +58,8 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
 - **Circles & shared contexts:** circles with time-bounded memberships, name autocomplete
   with create-on-the-fly, a circle overview page, and a member/circle visualization.
 - **Important dates & reminders** (§2.13): dates on a person, birthdays derived from the
-  birth date, and a "Coming up" band at the top of the Home stream that offers to write a
-  moment — no reminder objects and no separate reminders screen.
+  birth date, and a "Coming up" band in Home's rail that offers to write a moment — no
+  reminder objects and no separate reminders screen.
 - **Photo gallery** (grid, lightbox, captions, set-as-avatar) with per-photo visibility.
 - **Personal journal:** per-person diary — dated Markdown entries with photos, per-entry
   visibility (shared/private), rendered as a timeline on the profile (§2.20).

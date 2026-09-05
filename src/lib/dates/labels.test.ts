@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { dayLabel, occasionLabel, whenLabel, withoutYear } from './labels';
+import { dayLabel, occasionLabel, quietLabel, sinceLabel, whenLabel, withoutYear } from './labels';
 
 describe('whenLabel', () => {
 	test('says today and tomorrow rather than a date', () => {
@@ -65,5 +65,29 @@ describe('withoutYear', () => {
 
 	test('leaves an already year-less day alone', () => {
 		expect(withoutYear('--05-20')).toBe('--05-20');
+	});
+});
+
+describe('quietLabel', () => {
+	test('rounds a silence to the unit someone would say out loud', () => {
+		expect(quietLabel(90)).toBe('3 months');
+		expect(quietLabel(120)).toBe('4 months');
+		expect(quietLabel(365)).toBe('a year');
+		expect(quietLabel(730)).toBe('2 years');
+		expect(quietLabel(45)).toBe('6 weeks');
+		expect(quietLabel(12)).toBe('12 days');
+	});
+});
+
+describe('sinceLabel', () => {
+	test('says nothing when nothing was ever written, so the screen can show a dash', () => {
+		expect(sinceLabel(null, '2026-09-05')).toBeNull();
+	});
+
+	test('names today and yesterday, then falls back to the coarse unit', () => {
+		expect(sinceLabel('2026-09-05', '2026-09-05')).toBe('today');
+		expect(sinceLabel('2026-09-04', '2026-09-05')).toBe('yesterday');
+		expect(sinceLabel('2026-08-26', '2026-09-05')).toBe('10 days ago');
+		expect(sinceLabel('2026-06-05', '2026-09-05')).toBe('3 months ago');
 	});
 });

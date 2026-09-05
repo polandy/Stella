@@ -6,8 +6,14 @@ sentence about it. Everything else in the app exists to make that sentence usefu
 ## The home screen
 
 Home is a text field with the household's stream underneath it. Newest first, grouped by
-day, showing three kinds of thing: moments someone wrote, people someone added, and
+day, showing what someone wrote, who someone added, when someone was in touch, and the
 connections someone made.
+
+Beside the stream (above it on a phone) sit two short lists. **Coming up** is the next
+thirty days of birthdays and anniversaries. **Quiet lately** is the people nobody has written
+about in three months — not "you have not called Oma", which Stella cannot know, but "nothing
+has been written down about Oma", which it can. Each name offers one thing: *Write a moment*.
+Both lists disappear when they have nothing to say.
 
 ### Writing a moment
 
@@ -22,7 +28,10 @@ mention, and it shows up on their page too.
 
 A few things worth knowing:
 
-- **`⌘K` / `Ctrl-K`** from anywhere puts the cursor in the field. **`⌘⏎` / `Ctrl-⏎`** saves.
+- **`⌘K` / `Ctrl-K`** from anywhere opens a small palette; its first row is *Write a
+  moment*, so `⌘K`, `Enter` puts the cursor in the field. **`⌘⏎` / `Ctrl-⏎`** saves.
+- **On a phone**, tap the *What happened?* bar or the pencil in the middle of the bottom bar;
+  the composer slides up over the stream.
 - **Someone new?** Just mention them. The suggestion list offers *Create "…"*, and the
   person is created with the moment — no form, no detour.
 - **Photos** can be attached; they are resized in your browser before upload, which also
@@ -46,6 +55,10 @@ whether they are related — and lets you say how. It never guesses a relationsh
 behalf. If it isn't the moment for that, dismiss it; nothing is lost.
 
 ## People
+
+**The list** is everyone you may see, grouped by surname, with a *Find someone* field at the
+top that matches as you type — by any name, nickname or the description you gave them. On
+the right of each row is when something was last written about that person.
 
 **Adding someone** takes a name and nothing else. Everything beyond that — description,
 phone, email, address, birthday — is optional and can be filled in whenever.
@@ -128,11 +141,11 @@ have when you are trying to remember someone's name.
 
 ## Finding things
 
-The search field at the top looks through people and notes at once and matches partial
-words. It only ever returns what you are allowed to see.
-
-(`⌘K` is taken — it belongs to the capture field, since writing something down is the
-thing you do most.)
+`⌘K` / `Ctrl-K` — or the search button at the top — opens a palette that jumps straight to a
+person as you type, and offers *Write a moment* and *Add person* as its first rows. Notes are
+not in it; the last row, *Search everything*, opens the full search, which looks through
+people and notes at once, matches partial words, and only ever returns what you are allowed
+to see.
 
 ## Privacy, in one paragraph
 
