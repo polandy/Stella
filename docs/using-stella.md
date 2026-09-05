@@ -77,6 +77,10 @@ met — and what has happened on the right, under three tabs: **Story**, **Peopl
 Every card on the left holds one **+ Add** button. Nothing is an open form until you ask for
 it, so the page reads as a person rather than as a stack of empty fields.
 
+To change their **name or the line under it**, click the text itself: a field opens where the
+value was, Enter saves it and Escape leaves it as it was. A name cannot be emptied, and Stella
+says so rather than quietly keeping the old one.
+
 **Notes** are for things that stay true — "allergic to hazelnuts", "always calls on
 Sundays". Moments are for things that happened. Notes can be pinned to the top, and have
 their own shared-or-private switch.

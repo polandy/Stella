@@ -193,7 +193,8 @@ They must be edited together; `app.css` says so at both blocks.
   **last written about** on the right (`—` when nothing has been). The heading counts people;
   *Add person* lives in the shell, not on the page.
 - **Contact profile** — **who on the left, what happened on the right.**
-  - **Hero:** avatar, name, description, then the facts you came for on one line — when you
+  - **Hero:** avatar, name and description (both editable in place), then the facts you came
+    for on one line — when you
     were last in touch, how you met, whether the person is private. Two actions: *Write* (a
     journal entry) and *Log contact* (a touchpoint), the second opening the story's own form.
   - **Profile column** (`19rem`, sticky from `lg`): Contact fields, Dates (§2.13.1), Circles,
@@ -287,6 +288,12 @@ It renders an `<a>` when given `href`, so a link that looks like a button still 
 link, and leaves native submit behaviour alone inside a form. Sizes are `sm` (rows, card
 headers) and `md` (a screen's own actions); an icon with no label becomes a square icon button
 and requires a `label`.
+
+**Inline edit** (`src/lib/components/InlineEdit.svelte`) turns a read value into its own
+editor: the value is a button, clicking it swaps in a focused field with *Save* and *Cancel*,
+Enter saves and Escape reverts. It posts to a real form action, so without JavaScript the
+field is simply always there. A save that failed keeps the editor open with the error under
+it. Used for the person's name and description (docs/02 §2.2).
 
 **Toasts** (`src/lib/components/Toast.svelte`) sit bottom-left of the content column, one
 card per message, announced as a polite live region. A removal's toast reads *Entry removed*

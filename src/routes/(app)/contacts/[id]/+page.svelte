@@ -3,6 +3,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import EgoGraph from '$lib/components/EgoGraph.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
 	import { dayLabel } from '$lib/dates/labels';
@@ -77,8 +78,29 @@
 	<header class="flex flex-wrap items-start gap-4">
 		<AvatarUploader contactId={c.id} name={c.displayName} avatarPhotoId={c.avatarPhotoId} size={72} />
 		<div class="min-w-0 flex-1">
-			<h1 class="truncate text-2xl font-semibold tracking-tight text-fg">{c.displayName}</h1>
-			{#if c.description}<p class="text-fg-muted">{c.description}</p>{/if}
+			<!-- Name and description are edited where they are read (docs/02 §2.2). -->
+			<h1 class="tracking-tight text-fg">
+				<InlineEdit
+					action="?/editProfile"
+					name="displayName"
+					value={c.displayName}
+					extra={{ description: c.description ?? '' }}
+					label="Edit name"
+					error={form?.profileError ?? null}
+					heading
+				/>
+			</h1>
+			<p class="text-fg-muted">
+				<InlineEdit
+					action="?/editProfile"
+					name="description"
+					value={c.description ?? ''}
+					extra={{ displayName: c.displayName }}
+					label="Edit description"
+					placeholder="A line about them"
+					empty="Add a description"
+				/>
+			</p>
 
 			<div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-fg-subtle">
 				{#if data.lastContactedAt}
