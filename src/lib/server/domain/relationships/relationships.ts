@@ -1,5 +1,6 @@
-import type { KinshipGraph } from '../../../kinship/kinship';
+import type { KinshipGraph, Pair } from '../../../kinship/kinship';
 import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';
+import { suggestPropagation, type PrimaryLink, type SuggestedLink } from '../../../kinship/propagation';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -159,13 +160,61 @@ export async function createRelationship(
 }
 
 /**
- * The relatives Stella infers for a contact rather than storing (docs/02 §2.4.1). Reads
- * only what the viewer may see, so a derived label can never reveal a private person.
+ * Everything the person page shows about inferred kinship (docs/02 §2.4.1): the relatives
+ * derived for `subjectId`, and — when a primary link has just been stored between
+ * `proposeFor` — the links that follow from it and are not stored yet.
+ *
+ * One port call serves both, because both read the same graph. Visibility is settled by the
+ * repository, so neither a derived label nor a proposal can name someone the viewer may not see.
  */
-export async function listDerivedKin(
+export interface KinshipRead {
+	derived: DerivedKin[];
+	proposals: ProposedLink[];
+}
+
+/** A propagation suggestion with the names the interface needs to phrase it. */
+export interface ProposedLink extends SuggestedLink {
+	fromName: string;
+	toName: string;
+}
+
+export async function readKinship(
 	deps: Pick<RelationshipDeps, 'relationships'>,
 	viewer: Viewer,
-	contactId: string
-): Promise<DerivedKin[]> {
-	return deriveKinship(await deps.relationships.loadKinshipGraphVisibleTo(viewer), contactId);
+	subjectId: string,
+	proposeFor?: Pair | null
+): Promise<KinshipRead> {
+	const graph = await deps.relationships.loadKinshipGraphVisibleTo(viewer);
+	const derived = deriveKinship(graph, subjectId);
+	const added = proposeFor ? primaryLinkBetween(graph, proposeFor.a, proposeFor.b) : null;
+	if (!added) return { derived, proposals: [] };
+
+	const names = new Map(graph.people.map((person) => [person.id, person.displayName]));
+	const proposals = suggestPropagation(graph, added).map((link) => ({
+		...link,
+		fromName: names.get(link.fromId) ?? link.fromId,
+		toName: names.get(link.toId) ?? link.toId
+	}));
+	return { derived, proposals };
+}
+
+/**
+ * The primary link stored between two people, if any. Reading it back from the graph rather
+ * than trusting the caller means a hand-written URL can only ever name a link that exists
+ * and that the viewer may see.
+ */
+function primaryLinkBetween(graph: KinshipGraph, a: string, b: string): PrimaryLink | null {
+	const joins = (x: string, y: string) => (x === a && y === b) || (x === b && y === a);
+	for (const edge of graph.parentEdges) {
+		if (joins(edge.parentId, edge.childId)) {
+			return { kind: 'parent', fromId: edge.parentId, toId: edge.childId };
+		}
+	}
+	for (const edge of graph.siblingEdges) {
+		if (joins(edge.a, edge.b)) return { kind: 'sibling', fromId: edge.a, toId: edge.b };
+	}
+	for (const edge of graph.partnerEdges) {
+		if (joins(edge.a, edge.b)) return { kind: 'partner', fromId: edge.a, toId: edge.b };
+	}
+	return null;
 }

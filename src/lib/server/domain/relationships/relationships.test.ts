@@ -9,7 +9,7 @@ import {
 	createRelationship,
 	describeRelationshipFor,
 	DuplicateRelationshipError,
-	listDerivedKin,
+	readKinship,
 	type NewRelationship,
 	type RelationshipRepository,
 	type RelationshipType
@@ -192,7 +192,7 @@ function emptyKinshipGraph(): KinshipGraph {
 	return { people: [], parentEdges: [], siblingEdges: [], partnerEdges: [], storedPairs: [] };
 }
 
-describe('listDerivedKin', () => {
+describe('readKinship', () => {
 	/*
 	 * The use-case is a seam, not a rule: it asks the port for the graph *this viewer* may
 	 * see and hands it to the pure engine. The fake records the viewer so the scoping is
@@ -200,7 +200,7 @@ describe('listDerivedKin', () => {
 	 */
 	const viewer: Viewer = { id: 'u1', householdId: 'h1' };
 
-	function kinRepo() {
+	function kinRepo(over: { siblingEdges?: KinshipGraph['siblingEdges']; extraPeople?: KinshipGraph['people'] } = {}) {
 		const asked: Viewer[] = [];
 		const repo: Pick<RelationshipRepository, 'loadKinshipGraphVisibleTo'> = {
 			async loadKinshipGraphVisibleTo(v) {
@@ -209,13 +209,14 @@ describe('listDerivedKin', () => {
 					people: [
 						{ id: 'hans', displayName: 'Hans', gender: 'male' },
 						{ id: 'bettina', displayName: 'Bettina', gender: 'female' },
-						{ id: 'otto', displayName: 'Otto', gender: 'male' }
+						{ id: 'otto', displayName: 'Otto', gender: 'male' },
+						...(over.extraPeople ?? [])
 					],
 					parentEdges: [
 						{ parentId: 'otto', childId: 'bettina' },
 						{ parentId: 'bettina', childId: 'hans' }
 					],
-					siblingEdges: [],
+					siblingEdges: over.siblingEdges ?? [],
 					partnerEdges: [],
 					storedPairs: []
 				};
@@ -224,12 +225,47 @@ describe('listDerivedKin', () => {
 		return { repo, asked };
 	}
 
-	it('derives from the graph the viewer may see', async () => {
+	it('derives from the graph the viewer may see, and proposes nothing unasked', async () => {
 		const { repo, asked } = kinRepo();
-		const found = await listDerivedKin({ relationships: repo as RelationshipRepository }, viewer, 'hans');
-		expect(found).toEqual([
+		const found = await readKinship({ relationships: repo as RelationshipRepository }, viewer, 'hans');
+		expect(found.derived).toEqual([
 			{ personId: 'otto', displayName: 'Otto', term: 'grandparent', label: 'Grandfather', via: ['Bettina'] }
 		]);
+		expect(found.proposals).toEqual([]);
 		expect(asked).toEqual([viewer]);
+	});
+
+	it('proposes the links implied by the pair it is pointed at, named for the interface', async () => {
+		const { repo } = kinRepo({
+			siblingEdges: [{ a: 'hans', b: 'lisa' }],
+			extraPeople: [{ id: 'lisa', displayName: 'Lisa', gender: 'female' }]
+		});
+		const found = await readKinship(
+			{ relationships: repo as RelationshipRepository },
+			viewer,
+			'hans',
+			{ a: 'bettina', b: 'hans' }
+		);
+		expect(found.proposals).toEqual([
+			{
+				kind: 'parent',
+				fromId: 'bettina',
+				toId: 'lisa',
+				fromName: 'Bettina',
+				toName: 'Lisa',
+				reason: 'Lisa is Hans’s sibling.'
+			}
+		]);
+	});
+
+	it('proposes nothing for a pair with no primary link the viewer can see', async () => {
+		const { repo } = kinRepo();
+		const found = await readKinship(
+			{ relationships: repo as RelationshipRepository },
+			viewer,
+			'hans',
+			{ a: 'hans', b: 'nobody' }
+		);
+		expect(found.proposals).toEqual([]);
 	});
 });
