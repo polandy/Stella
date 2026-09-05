@@ -15,6 +15,8 @@ interface StoryItemBase {
 	visibility: 'shared' | 'private';
 	/** Whether the viewer wrote it — only then is removing it offered. */
 	mine: boolean;
+	/** Who wrote it: "you", a member's first name, or null when nobody can be named. */
+	author: string | null;
 }
 
 /** A journal entry: someone wrote about this person on that day. */

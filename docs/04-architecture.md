@@ -258,6 +258,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   means its mentions and photo files too. The cost is that the removal is lost if the tab
   dies inside the window — the item is then simply still there, which is the safe failure.
 
+- **Authors are named from a per-request member lookup, not a join** — the story reads one
+  list of the household's members (`domain/household`, `authorNames`) and turns each item's
+  `created_by` into a name in the view layer. The alternative, joining `user` into both story
+  queries, would put a presentation concern into the two keyset-paginated reads that the
+  merge's cursor rules depend on, and repeat the name on every row. A household has a handful
+  of members, so the lookup is one small query per page.
+
 ## 4.10 Deployment
 
 - **Single Docker image** (multi-stage: build with Bun, run on a slim Bun base).

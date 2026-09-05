@@ -84,7 +84,9 @@ the dump, is in [using-stella.md](using-stella.md#moving-in-from-monica).
 
 If you want to look around before deciding, set `SEED_DEMO=true` in `.env` and run
 `./deploy.sh` again. Stella fills itself with a fictional family — the Brunners — and puts
-a **Sign in as demo user** button on the login page.
+a **Sign in as demo user** button on the login page. The demo household has two members, so
+the story shows more than one name; the second one signs in as `nina@stella.local` with the
+same password.
 
 Turn it back off (`SEED_DEMO=false`) before you put real people in, and start from a clean
 database: `docker compose down -v` removes the demo data for good.

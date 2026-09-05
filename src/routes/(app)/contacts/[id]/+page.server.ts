@@ -30,6 +30,7 @@ import {
 	logInteraction
 } from '$lib/server/domain/interactions/interactions';
 import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
+import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
 import { toStoryItem } from './story-view';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
@@ -60,7 +61,8 @@ import {
 	getRelationshipDeps,
 	getRelationships,
 	getStoryDeps,
-	getTagDeps
+	getTagDeps,
+	getMemberDeps
 } from '$lib/server/services';
 
 /** Whether a birth date precision (docs/03 §3.4) names an actual day rather than a year. */
@@ -119,6 +121,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	// Name lookup for @-mention chips in journal bodies, scoped to what the viewer may see.
 	const nameById = new Map(allContacts.map((c) => [c.id, c.displayName]));
 	const nameOf = (id: string) => nameById.get(id) ?? null;
+	// …and for the member behind each item (docs/02 §2.23).
+	const nameOfAuthor = await authorNames(getMemberDeps(), viewer.householdId);
 
 	return {
 		story: {
@@ -126,7 +130,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 				toStoryItem(item, {
 					userId: locals.user!.id,
 					photosByEntry: journalPhotosByEntry,
-					nameOf
+					nameOf,
+					nameOfAuthor
 				})
 			),
 			nextCursor: storyPage.nextCursor

@@ -1,5 +1,6 @@
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import type { StoryItem } from '$lib/server/domain/story/story';
+import { authorLabel } from '$lib/story/author';
 import type { StoryItemView } from '$lib/story/item';
 
 /*
@@ -10,8 +11,10 @@ import type { StoryItemView } from '$lib/story/item';
  */
 
 export interface StoryViewContext {
-	/** The signed-in user, to decide what they may remove. */
+	/** The signed-in user, to decide what they may remove and who counts as "you". */
 	userId: string;
+	/** Name of the household member behind a user id, or null once they are gone. */
+	nameOfAuthor: (userId: string) => string | null;
 	/** Visible journal photo ids, keyed by entry id. */
 	photosByEntry: Map<string, string[]>;
 	/** Display name for an @-mention target the viewer may see, or null. */
@@ -28,6 +31,7 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 			recordedAt: item.recordedAt,
 			visibility: entry.visibility,
 			mine: entry.createdBy === ctx.userId,
+			author: authorLabel(entry.createdBy === ctx.userId, ctx.nameOfAuthor(entry.createdBy)),
 			title: entry.title,
 			bodyHtml: renderMarkdownWithMentions(entry.body, ctx.nameOf),
 			photos: ctx.photosByEntry.get(entry.id) ?? []
@@ -42,6 +46,7 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 		recordedAt: item.recordedAt,
 		visibility: interaction.visibility,
 		mine: interaction.createdBy === ctx.userId,
+		author: authorLabel(interaction.createdBy === ctx.userId, ctx.nameOfAuthor(interaction.createdBy)),
 		interactionKind: interaction.kind,
 		title: interaction.title,
 		description: interaction.description,

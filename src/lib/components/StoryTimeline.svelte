@@ -115,7 +115,7 @@
 										<Icon name="journal" size={13} />Journal
 									</span>
 								{/if}
-								{#if item.mine}<span class="text-fg-subtle">· you</span>{/if}
+								{#if item.author}<span class="text-fg-subtle">· {item.author}</span>{/if}
 								{#if item.visibility === 'private'}
 									<span
 										class="inline-flex items-center gap-1 text-fg-subtle"
