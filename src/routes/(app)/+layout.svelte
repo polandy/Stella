@@ -82,11 +82,12 @@
 
 	// Removals are held back for an undo window (docs/04 §4.9). Leaving the page ends the
 	// window: a client-side navigation waits for the requests so the next screen cannot read
-	// the item back; a real unload sends them with keepalive and hopes for the best.
+	// the item back; an unload — or a native form post, which must not be replayed as a GET —
+	// sends them with keepalive alongside and hopes for the best.
 	const removals = provideRemovals();
 	beforeNavigate((navigation) => {
 		if (removals.snapshot.removals.length === 0) return;
-		if (navigation.type === 'leave' || !navigation.to) {
+		if (navigation.type === 'leave' || navigation.type === 'form' || !navigation.to) {
 			void removals.flush();
 			return;
 		}

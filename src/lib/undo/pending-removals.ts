@@ -53,6 +53,7 @@ export interface PendingRemovals {
 	subscribe(listener: () => void): () => void;
 }
 
+/** What the store is built from; only the app shell supplies the real timer. */
 export interface PendingRemovalsDeps {
 	scheduler: Scheduler;
 	windowMs?: number;
