@@ -46,7 +46,7 @@ Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) �
 | `src/lib/server/db/schema.ts` | Drizzle schema (impl of `docs/03`) |
 | `src/lib/server/db/index.ts` | `bun:sqlite` client + pragmas |
 | `src/lib/server/access/` | **central** ACL / visibility (`docs/03` §3.7) — the *only* authz path |
-| `src/lib/server/domain/` | use-cases (contacts, relationships, notes, journal, story, circles, feed…) — test-first |
+| `src/lib/server/domain/` | use-cases (contacts, relationships, notes, journal, story, attention, circles, feed…) — test-first |
 | `src/lib/server/auth/` | sessions, password, OIDC relying-party |
 | `src/lib/graph/model/` | **pure** graph domain: `GraphModel`, `buildEgoNetwork`, `expandNode`, `findConnectionPath`, `applyFilters` (test-first) |
 | `src/lib/graph/cytoscape/` | rendering adapter (Cytoscape confined here, lazy-loaded); no domain logic |

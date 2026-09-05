@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import Button from '$lib/components/Button.svelte';
+	import CommandPalette from '$lib/components/CommandPalette.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import type { IconName } from '$lib/components/icons';
 	import Logo from '$lib/components/Logo.svelte';
@@ -13,7 +13,7 @@
 	// Primary destinations. `match` decides the active state from the pathname.
 	const nav: { href: string; label: string; icon: IconName; match: (p: string) => boolean }[] = [
 		{ href: '/', label: 'Home', icon: 'home', match: (p) => p === '/' },
-		{ href: '/contacts', label: 'Contacts', icon: 'people', match: (p) => p.startsWith('/contacts') },
+		{ href: '/contacts', label: 'People', icon: 'people', match: (p) => p.startsWith('/contacts') },
 		{ href: '/circles', label: 'Circles', icon: 'circles', match: (p) => p.startsWith('/circles') },
 		{ href: '/graph', label: 'Graph', icon: 'graph', match: (p) => p.startsWith('/graph') }
 	];
@@ -28,7 +28,7 @@
 		if (id === '/(app)') return [{ label: 'Home' }];
 
 		if (id.startsWith('/(app)/contacts')) {
-			trail.push({ label: 'Contacts', href: '/contacts' });
+			trail.push({ label: 'People', href: '/contacts' });
 			if (id === '/(app)/contacts/new') trail.push({ label: 'New person' });
 			else if (id.startsWith('/(app)/contacts/[id]')) {
 				const name = d.contact?.displayName ?? 'Contact';
@@ -48,13 +48,13 @@
 		return trail;
 	});
 
-	// ⌘K / Ctrl+K jumps to the "What happened?" field from anywhere (docs/02 §2.22.1).
+	// ⌘K / Ctrl+K opens the palette from anywhere (docs/05 §5.4); its first row is the
+	// capture field, so the old "jump to What happened?" is still two keystrokes away.
+	let paletteOpen = $state(false);
 	function onGlobalKeydown(event: KeyboardEvent) {
 		if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return;
 		event.preventDefault();
-		const field = document.querySelector<HTMLTextAreaElement>('[data-moment-body]');
-		if (field) field.focus();
-		else void goto('/?compose');
+		paletteOpen = !paletteOpen;
 	}
 
 	// Theme: same contract as the no-flash init in app.html (stella-theme).
@@ -87,6 +87,8 @@
 </script>
 
 <svelte:window onkeydown={onGlobalKeydown} />
+
+<CommandPalette people={data.people} bind:open={paletteOpen} />
 
 <div class="flex h-screen w-full overflow-hidden bg-bg text-fg">
 	<!-- Sidebar (desktop) -->
@@ -156,14 +158,17 @@
 			</nav>
 
 			<div class="ml-auto flex items-center gap-2">
-				<a
-					href="/search"
+				<button
+					type="button"
+					onclick={() => (paletteOpen = true)}
 					class="flex items-center gap-2 rounded-control bg-card px-3 py-2 text-sm text-fg-subtle shadow-card transition-colors hover:text-fg"
 					aria-label="Search"
+					aria-keyshortcuts="Meta+K Control+K"
 				>
 					<Icon name="search" size={15} />
 					<span class="hidden lg:inline">Search…</span>
-				</a>
+					<kbd class="hidden rounded border border-border px-1 text-[10px] font-medium lg:inline">⌘K</kbd>
+				</button>
 				<Button variant="primary" icon="add" href="/contacts/new" label="Add person">
 					<span class="hidden sm:inline">Add person</span>
 				</Button>
@@ -184,9 +189,9 @@
 				{item.label}
 			</a>
 		{/each}
-		<a href="/contacts/new" class="flex flex-1 flex-col items-center py-2.5" aria-label="Add person">
+		<a href="/?compose" class="flex flex-1 flex-col items-center py-2.5" aria-label="Write a moment">
 			<span class="-mt-4 grid size-11 place-items-center rounded-full bg-primary text-primary-fg shadow-pop">
-				<Icon name="add" size={21} />
+				<Icon name="write" size={21} />
 			</span>
 		</a>
 		{#each nav.slice(2) as item (item.href)}
