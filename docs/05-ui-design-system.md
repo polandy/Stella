@@ -200,7 +200,7 @@ They must be edited together; `app.css` says so at both blocks.
   - **Profile column** (`19rem`, sticky from `lg`): Contact fields, Dates (§2.13.1), Circles,
     Tags, How we met. Each is a card with **one** disclosure — `+ Add` reveals its form and
     nothing else is open. A form that failed validation opens itself, so the error has a home.
-  - **Right column:** tabs *Story · People · Notes*. **Story** is the merged timeline of
+  - **Right column:** tabs *Story · People · Notes · Photos*. **Story** is the merged timeline of
     §2.23 — journal entries and touchpoints in one order, a rail with a dot per item coloured
     by kind, the author's name beside the kind (*you* on your own items), *Show earlier* paging
     back through both sources. **People** lists the
@@ -210,7 +210,12 @@ They must be edited together; `app.css` says so at both blocks.
     *via* clause keep an inference visually distinct from something the household typed.
     After a link is added, an **Also true?** panel sits above them with what it implies, one
     *Add this too* per line: a suggestion is a sentence with a button, never a checkbox list
-    that could be swept in with one click. **Notes** are pinned-first.
+    that could be swept in with one click. **Notes** are pinned-first. **Photos**
+    (§2.14) is a square grid at three columns, four from `sm`, with a lock badge on a private
+    one; a photo opens into a **lightbox** — a solid card over a blurred, dimmed backdrop that
+    closes on click, with the caption above the picture and the actions in one row beneath it.
+    The destructive action sits last in that row and carries the danger style, so it is never
+    the button next to the one you meant.
   - Below `lg` the two columns stack **story first**: the story is what the page is opened for,
     and the profile follows underneath.
   - Counts sit on a tab only where they are exact; the story is paged, so it carries none.
