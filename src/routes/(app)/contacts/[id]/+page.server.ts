@@ -12,7 +12,13 @@ import {
 	listCirclesForContact,
 	removeMember
 } from '$lib/server/domain/circles/circles';
-import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
+import {
+	editProfile,
+	EMPTY_CONTACT_NAME_MESSAGE,
+	EmptyContactNameError,
+	getContact,
+	listContacts
+} from '$lib/server/domain/contacts/contacts';
 import {
 	addImportantDate,
 	InvalidImportantDateError,
@@ -38,7 +44,8 @@ import { renderMarkdown } from '$lib/server/domain/notes/markdown';
 import { createNote, listNotesForContact } from '$lib/server/domain/notes/notes';
 import {
 	createRelationship,
-	DuplicateRelationshipError
+	DuplicateRelationshipError,
+	readKinship
 } from '$lib/server/domain/relationships/relationships';
 import {
 	assignTagByName,
@@ -64,6 +71,18 @@ import {
 	getTagDeps,
 	getMemberDeps
 } from '$lib/server/services';
+
+/*
+ * `?propose=<a>:<b>` names the pair whose new link should be propagated (docs/02 §2.4.1).
+ * The pair is only a pointer: the use-case reads the real link back from the visible graph,
+ * so a hand-written value can never conjure a suggestion out of nothing.
+ */
+const PROPOSE_SEPARATOR = ':';
+
+function parseProposePair(raw: string | null): { a: string; b: string } | null {
+	const [a, b] = (raw ?? '').split(PROPOSE_SEPARATOR);
+	return a && b ? { a, b } : null;
+}
 
 /** Whether a birth date precision (docs/03 §3.4) names an actual day rather than a year. */
 const namesADay = (precision: string) => precision === 'full' || precision === 'month_day';
@@ -94,7 +113,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		storyPage,
 		journalPhotos,
 		dates,
-		interactions
+		interactions,
+		kinship
 	] = await Promise.all([
 		getRelationships().listForContactVisibleTo(viewer, params.id),
 		getRelationships().listTypes(),
@@ -107,7 +127,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		listStoryPage(getStoryDeps(), viewer, params.id, { limit: STORY_PAGE }),
 		getPhotos().listJournalPhotos(viewer, params.id),
 		listImportantDates(getImportantDateDeps(), viewer, params.id),
-		listInteractions(getInteractionDeps(), viewer, params.id)
+		listInteractions(getInteractionDeps(), viewer, params.id),
+		readKinship(getRelationshipDeps(), viewer, params.id, parseProposePair(url.searchParams.get('propose')))
 	]);
 
 	// Group visible journal photo ids by entry so the story timeline renders each gallery.
@@ -160,6 +181,11 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		estimatedBirthYear: namesADay(contact.birthDatePrecision) ? null : contact.birthDate,
 		dateKinds: IMPORTANT_DATE_KINDS,
 		relationships,
+		// Inferred, never stored (docs/02 §2.4.1); shown apart from the entered links.
+		derivedKin: kinship.derived,
+		// Links implied by the one just added, offered for a single confirmation each.
+		proposals: kinship.proposals,
+		proposeFor: url.searchParams.get('propose'),
 		relationshipTypes: types,
 		tags,
 		circles: contactCircles,
@@ -189,10 +215,23 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	};
 };
 
+const EditProfileSchema = v.object({
+	displayName: v.pipe(v.string(), v.trim(), v.minLength(1)),
+	description: v.optional(v.pipe(v.string(), v.trim()))
+});
+
 const AddRelationshipSchema = v.object({
 	targetId: v.pipe(v.string(), v.minLength(1)),
 	typeId: v.pipe(v.string(), v.minLength(1)),
 	description: v.optional(v.pipe(v.string(), v.trim()))
+});
+
+/** One confirmed propagation suggestion (docs/02 §2.4.1). */
+const AddProposedSchema = v.object({
+	fromId: v.pipe(v.string(), v.minLength(1)),
+	toId: v.pipe(v.string(), v.minLength(1)),
+	typeId: v.picklist(['parent_child', 'sibling']),
+	propose: v.optional(v.pipe(v.string(), v.trim()))
 });
 
 const AddNoteSchema = v.object({
@@ -230,6 +269,32 @@ const AddTagSchema = v.object({
 });
 
 export const actions: Actions = {
+	/* The hero's name and description, edited in place (docs/02 §2.2). */
+	editProfile: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const parsed = v.safeParse(EditProfileSchema, {
+			displayName: form.get('displayName'),
+			description: form.get('description') || undefined
+		});
+		if (!parsed.success) return fail(400, { profileError: EMPTY_CONTACT_NAME_MESSAGE });
+
+		try {
+			const saved = await editProfile(getContactDeps(), viewer, params.id, {
+				displayName: parsed.output.displayName,
+				description: parsed.output.description ?? null
+			});
+			if (!saved) throw error(404, 'Contact not found');
+		} catch (err) {
+			if (err instanceof EmptyContactNameError) return fail(400, { profileError: err.message });
+			throw err;
+		}
+
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
 	addRelationship: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
@@ -267,7 +332,49 @@ export const actions: Actions = {
 			return fail(400, { error: 'Could not add the relationship.' });
 		}
 
-		throw redirect(303, `/contacts/${params.id}`);
+		// Come back with the new pair named, so its implied links can be offered.
+		const pair = [params.id, parsed.output.targetId].join(PROPOSE_SEPARATOR);
+		throw redirect(303, `/contacts/${params.id}?propose=${pair}#relationships`);
+	},
+
+	/**
+	 * Store one propagation suggestion (docs/02 §2.4.1). Both endpoints are checked against
+	 * the viewer, and the pair is carried on so the remaining suggestions stay on screen.
+	 */
+	addProposedRelationship: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const parsed = v.safeParse(AddProposedSchema, {
+			fromId: form.get('fromId'),
+			toId: form.get('toId'),
+			typeId: form.get('typeId'),
+			propose: form.get('propose') || undefined
+		});
+		if (!parsed.success) return fail(400, { error: 'That suggestion could not be read.' });
+
+		const [from, to] = await Promise.all([
+			getContact(getContactDeps(), viewer, parsed.output.fromId),
+			getContact(getContactDeps(), viewer, parsed.output.toId)
+		]);
+		if (!from || !to) return fail(400, { error: 'That person could not be found.' });
+
+		try {
+			await createRelationship(getRelationshipDeps(), locals.user.householdId, locals.user.id, {
+				fromContactId: parsed.output.fromId,
+				toContactId: parsed.output.toId,
+				typeId: parsed.output.typeId,
+				description: null
+			});
+		} catch (err) {
+			if (!(err instanceof DuplicateRelationshipError)) {
+				return fail(400, { error: 'Could not add the relationship.' });
+			}
+		}
+
+		const back = parsed.output.propose ? `?propose=${parsed.output.propose}` : '';
+		throw redirect(303, `/contacts/${params.id}${back}#relationships`);
 	},
 
 	addNote: async ({ request, params, locals }) => {

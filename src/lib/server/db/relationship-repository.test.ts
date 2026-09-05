@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
@@ -117,5 +118,50 @@ describe('listForContactVisibleTo', () => {
 		// U1 (owner) sees both.
 		const forHansU1 = await repo.listForContactVisibleTo(viewerU1, 'hans');
 		expect(forHansU1.map((r) => r.id).sort()).toEqual(['rel-pc', 'rel-secret']);
+	});
+});
+
+describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
+	/** Bettina is Otto's child and Hans's parent; the private pair is only U2's to see. */
+	beforeEach(async () => {
+		seedContact('otto', 'Otto', 'shared');
+		seedContact('bettina', 'Bettina', 'shared');
+		seedContact('hans', 'Hans', 'shared');
+		seedContact('kurt', 'Kurt', 'shared');
+		seedContact('secret', 'Secret', 'private', U2);
+		db.update(schema.contact).set({ gender: 'female' }).where(eq(schema.contact.id, 'bettina')).run();
+		const rel = (id: string, from: string, to: string, typeId: string) =>
+			repo.insert({
+				id, householdId: H, fromContactId: from, toContactId: to, typeId,
+				description: null, createdBy: U1, createdAt: 1, updatedAt: 1
+			});
+		await rel('r-1', 'otto', 'bettina', 'parent_child');
+		await rel('r-2', 'bettina', 'hans', 'parent_child');
+		await rel('r-3', 'bettina', 'kurt', 'partner');
+		await rel('r-4', 'otto', 'hans', 'friend'); // a stored pair that is not primary
+		await rel('r-5', 'secret', 'hans', 'parent_child'); // only U2 may see this one
+	});
+
+	it('classifies the primary links and carries gender, for the people the viewer may see', async () => {
+		const graph = await repo.loadKinshipGraphVisibleTo(viewerU1);
+		expect(graph.people.map((p) => p.id).sort()).toEqual(['bettina', 'hans', 'kurt', 'otto']);
+		expect(graph.people.find((p) => p.id === 'bettina')?.gender).toBe('female');
+		expect(graph.parentEdges).toEqual([
+			{ parentId: 'otto', childId: 'bettina' },
+			{ parentId: 'bettina', childId: 'hans' }
+		]);
+		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt' }]);
+		// Every visible pair is a stored pair, so nothing already linked is re-derived.
+		expect(graph.storedPairs).toContainEqual({ a: 'otto', b: 'hans' });
+	});
+
+	it('hides a private person’s links from everyone but their author', async () => {
+		const forU1 = await repo.loadKinshipGraphVisibleTo(viewerU1);
+		expect(forU1.people.map((p) => p.id)).not.toContain('secret');
+		expect(forU1.parentEdges).not.toContainEqual({ parentId: 'secret', childId: 'hans' });
+		// Positive control: the author sees both the person and the link.
+		const forU2 = await repo.loadKinshipGraphVisibleTo(viewerU2);
+		expect(forU2.people.map((p) => p.id)).toContain('secret');
+		expect(forU2.parentEdges).toContainEqual({ parentId: 'secret', childId: 'hans' });
 	});
 });

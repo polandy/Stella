@@ -77,6 +77,10 @@ met — and what has happened on the right, under three tabs: **Story**, **Peopl
 Every card on the left holds one **+ Add** button. Nothing is an open form until you ask for
 it, so the page reads as a person rather than as a stack of empty fields.
 
+To change their **name or the line under it**, click the text itself: a field opens where the
+value was, Enter saves it and Escape leaves it as it was. A name cannot be emptied, and Stella
+says so rather than quietly keeping the old one.
+
 **Notes** are for things that stay true — "allergic to hazelnuts", "always calls on
 Sundays". Moments are for things that happened. Notes can be pinned to the top, and have
 their own shared-or-private switch.
@@ -127,13 +131,25 @@ an interaction marked *private* stays yours alone, and only the person who logge
 wrote it — can remove it from the story. Each item says who wrote it, so in a household of
 several people you can see at a glance that Nina logged the call and you wrote the entry. Removing asks no "are you sure?": the item disappears
 and a small **Undo** appears at the bottom of the screen for a few seconds, in case it was
-the wrong one.
+the wrong one. That goes for everything you can remove — a phone number, a date, a tag, a
+circle you leave — and saving something says *Saved* in the same corner.
 
 ## Relationships
 
 Say once that Lena is Markus's child, and Stella knows the other half of it too — Markus
 is Lena's parent. Relationships have a direction and a label, and the reverse reads
 correctly without you entering it twice.
+
+From the few links you enter, Stella works out the rest and shows them under **Also
+related · worked out, not entered**: grandparents, aunts and uncles, cousins, in-laws,
+step-family. They are never stored and never invented — each says who it comes through, and
+anything you have entered yourself keeps your wording. Where a gender is on record the word
+follows it ("Grandmother"), otherwise it stays neutral ("Grandparent").
+
+Adding a parent or a sibling usually implies more of them. Stella asks rather than assumes:
+say Vreni is Lena's parent and an **Also true?** panel offers her as a parent of Lena's
+brothers, one *Add this too* at a time, each with the reason. Ignore them and nothing
+happens.
 
 Every profile shows the person at the centre of their own small constellation. **Explore
 connections** opens the bigger picture, where you can follow the web outward from one
@@ -148,6 +164,10 @@ go.
 
 Circles are also the answer to "who else was there?", which is usually the question you
 have when you are trying to remember someone's name.
+
+Once there are more than a handful, start typing on the Circles page to narrow the list by
+name or description, or tap a kind — *Class*, *Club*, *Team* — to see only those. The number
+beside each kind says how many are left after what you typed.
 
 ## Finding things
 

@@ -143,3 +143,38 @@ describe('listNameCandidatesVisibleTo (docs/02 §2.2.1)', () => {
 		]);
 	});
 });
+
+describe('editing the hero in place', () => {
+	beforeEach(async () => {
+		await repo.insert(contactInput({ id: 'c-shared', displayName: 'Bea', description: 'was this' }));
+		await repo.insert(contactInput({ id: 'c-priv', visibility: 'private', displayName: 'Private' }));
+	});
+
+	it('renames a contact and rewords the description, leaving the rest alone', async () => {
+		await repo.updateProfile('c-shared', {
+			displayName: 'Renamed Person',
+			description: 'Now says this',
+			updatedAt: 999
+		});
+
+		const after = await repo.findByIdVisibleTo(viewerU1, 'c-shared');
+		expect(after?.displayName).toBe('Renamed Person');
+		expect(after?.description).toBe('Now says this');
+		expect(after?.visibility).toBe('shared');
+		expect(after?.updatedAt).toBe(999);
+	});
+
+	it('clears a description when it is written as null', async () => {
+		await repo.updateProfile('c-shared', { displayName: 'Still Named', description: null, updatedAt: 1 });
+
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-shared'))?.description).toBeNull();
+	});
+
+	it('touches only the contact it names', async () => {
+		const before = await repo.findByIdVisibleTo(viewerU1, 'c-priv');
+
+		await repo.updateProfile('c-shared', { displayName: 'Only me', description: null, updatedAt: 2 });
+
+		expect(await repo.findByIdVisibleTo(viewerU1, 'c-priv')).toEqual(before!);
+	});
+});

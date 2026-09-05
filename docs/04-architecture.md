@@ -257,6 +257,11 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   still there; and re-creating the row from a snapshot on undo, which for a journal entry
   means its mentions and photo files too. The cost is that the removal is lost if the tab
   dies inside the window — the item is then simply still there, which is the safe failure.
+  One removal button (`RemoveButton.svelte`) carries the rule to every list, and the saving
+  forms beside it are enhanced (`savedEnhance`) rather than reloading the page — a reload
+  would end the undo window of anything still on its way out. Enhancing them moves the
+  "close the form after saving" that the reload used to do into the page, which is why each
+  section binds its open state.
 
 - **Authors are named from a per-request member lookup, not a join** — the story reads one
   list of the household's members (`domain/household`, `authorNames`) and turns each item's

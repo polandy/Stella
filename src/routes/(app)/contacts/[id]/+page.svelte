@@ -3,10 +3,17 @@
 	import Button from '$lib/components/Button.svelte';
 	import EgoGraph from '$lib/components/EgoGraph.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import { enhance } from '$app/forms';
+	import RemoveButton from '$lib/components/RemoveButton.svelte';
+	import { useRemovals } from '$lib/undo/context.svelte';
+	import { removalKey, type RemovalKind } from '$lib/undo/keys';
+	import { savedEnhance } from '$lib/undo/saved';
 	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
+	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
@@ -29,7 +36,9 @@
 	type Tab = 'story' | 'people' | 'notes';
 	// Arriving with `?relate=` (a moment's hint, or quick-add's "link as relative") lands
 	// straight on the relationship editor, prefilled — otherwise the hint would be a dead end.
-	let tab = $state<Tab>(untrack(() => data.relateTo) ? 'people' : 'story');
+	// `?propose=` comes back from adding a link and carries its implied ones, which live in
+	// the same tab; both would be invisible under the story otherwise.
+	let tab = $state<Tab>(untrack(() => data.relateTo || data.proposeFor) ? 'people' : 'story');
 	let relateOpen = $state(untrack(() => data.relateTo) !== null);
 	// The hero's "Log contact" opens the story section's form; the section owns the state.
 	let logOpen = $state(false);
@@ -68,6 +77,28 @@
 		const parts = [c.howWeMet, c.metPlace, c.metDate].filter(Boolean);
 		return parts.length > 0 ? parts.join(' · ') : null;
 	});
+
+	// A row on its way out (docs/02 §2.23) is gone from the list while its undo window is open,
+	// and back in it the moment Undo is pressed. The counts follow, so a section never says two
+	// tags over one chip.
+	const removals = useRemovals();
+	const shown = <T extends { id: string }>(kind: RemovalKind, rows: T[]) =>
+		rows.filter((row) => !removals.isPending(removalKey(kind, row.id)));
+	const visibleFields = $derived(shown('field', data.fields));
+	const visibleDates = $derived(shown('date', data.dates));
+	const visibleTags = $derived(shown('tag', data.tags));
+	const visibleCircles = $derived(
+		data.circles.filter((circle) => !removals.isPending(removalKey('membership', circle.membershipId)))
+	);
+	// Saving through `enhance` keeps the page — and with it any open undo window — alive, so
+	// each section closes itself here instead of on the reload a redirect used to cause.
+	// Logging a touchpoint is the exception: the story timeline owns its paged list, and only
+	// a fresh page gives it the new item, so that form still posts natively.
+	let openSection = $state({ contact: false, dates: false, circles: false, tags: false, note: false });
+	type SectionName = keyof typeof openSection;
+	const saved = (name: SectionName) => savedEnhance(removals, () => (openSection[name] = false));
+	// Relationships keep their own open state: the quick-add flow opens that section by URL.
+	const savedRelationship = savedEnhance(removals, () => (relateOpen = false));
 </script>
 
 <svelte:head><title>{c.displayName} · Stella</title></svelte:head>
@@ -77,8 +108,29 @@
 	<header class="flex flex-wrap items-start gap-4">
 		<AvatarUploader contactId={c.id} name={c.displayName} avatarPhotoId={c.avatarPhotoId} size={72} />
 		<div class="min-w-0 flex-1">
-			<h1 class="truncate text-2xl font-semibold tracking-tight text-fg">{c.displayName}</h1>
-			{#if c.description}<p class="text-fg-muted">{c.description}</p>{/if}
+			<!-- Name and description are edited where they are read (docs/02 §2.2). -->
+			<h1 class="tracking-tight text-fg">
+				<InlineEdit
+					action="?/editProfile"
+					name="displayName"
+					value={c.displayName}
+					extra={{ description: c.description ?? '' }}
+					label="Edit name"
+					error={form?.profileError ?? null}
+					heading
+				/>
+			</h1>
+			<p class="text-fg-muted">
+				<InlineEdit
+					action="?/editProfile"
+					name="description"
+					value={c.description ?? ''}
+					extra={{ displayName: c.displayName }}
+					label="Edit description"
+					placeholder="A line about them"
+					empty="Add a description"
+				/>
+			</p>
 
 			<div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-fg-subtle">
 				{#if data.lastContactedAt}
@@ -114,10 +166,10 @@
 	<div class="grid gap-6 lg:grid-cols-[19rem_minmax(0,1fr)] lg:items-start">
 		<!-- Profile. Second on a phone: the story is why you opened the page. -->
 		<div class="order-2 flex min-w-0 flex-col gap-4 lg:sticky lg:top-4 lg:order-1">
-			<Section title="Contact" addLabel="Add" error={form?.fieldError ?? null}>
-				{#if data.fields.length > 0}
+			<Section title="Contact" addLabel="Add" error={form?.fieldError ?? null} bind:open={openSection.contact}>
+				{#if visibleFields.length > 0}
 					<dl class="grid grid-cols-[5rem_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-sm">
-						{#each data.fields as f (f.id)}
+						{#each visibleFields as f (f.id)}
 							<dt class="truncate text-fg-subtle">{f.label ?? f.kind}</dt>
 							<dd class="flex min-w-0 items-center gap-2">
 								{#if f.href}
@@ -125,10 +177,15 @@
 								{:else}
 									<span class="truncate text-fg">{f.value}</span>
 								{/if}
-								<form method="POST" action="?/removeField" class="ml-auto">
-									<input type="hidden" name="fieldId" value={f.id} />
-									<Button variant="danger" size="sm" icon="remove" label="Remove {f.label ?? f.kind}" />
-								</form>
+								<RemoveButton
+									kind="field"
+									id={f.id}
+									action="?/removeField"
+									fields={{ fieldId: f.id }}
+									label="Remove {f.label ?? f.kind}"
+									removed="Contact detail removed"
+									class="ml-auto"
+								/>
 							</dd>
 						{/each}
 					</dl>
@@ -137,7 +194,7 @@
 				{/if}
 
 				{#snippet editor()}
-					<form method="POST" action="?/addField" class="flex flex-wrap items-end gap-2">
+					<form method="POST" action="?/addField" use:enhance={saved('contact')} class="flex flex-wrap items-end gap-2">
 						<select name="kind" aria-label="Kind" class={INPUT}>
 							{#each data.fieldKinds as kind (kind)}<option value={kind}>{kind}</option>{/each}
 						</select>
@@ -148,8 +205,8 @@
 				{/snippet}
 			</Section>
 
-			<Section title="Dates" addLabel="Add" error={form?.dateError ?? null}>
-				{#if data.derivedBirthday || data.estimatedBirthYear || data.dates.length > 0}
+			<Section title="Dates" addLabel="Add" error={form?.dateError ?? null} bind:open={openSection.dates}>
+				{#if data.derivedBirthday || data.estimatedBirthYear || visibleDates.length > 0}
 					<ul class="flex flex-col gap-1.5 text-sm">
 						{#if data.estimatedBirthYear}
 							<li class="flex items-center gap-3">
@@ -165,7 +222,7 @@
 								<span class="text-xs text-fg-subtle">from the profile</span>
 							</li>
 						{/if}
-						{#each data.dates as d (d.id)}
+						{#each visibleDates as d (d.id)}
 							<li class="flex items-center gap-3">
 								<span class="w-20 shrink-0 truncate text-fg-subtle">{d.label ?? d.kind}</span>
 								<span class="flex-1 truncate text-fg">{dayLabel(d.date)}</span>
@@ -175,10 +232,14 @@
 										muted
 									</span>
 								{/if}
-								<form method="POST" action="?/removeDate">
-									<input type="hidden" name="dateId" value={d.id} />
-									<Button variant="danger" size="sm" icon="remove" label="Remove {d.label ?? d.kind}" />
-								</form>
+								<RemoveButton
+									kind="date"
+									id={d.id}
+									action="?/removeDate"
+									fields={{ dateId: d.id }}
+									label="Remove {d.label ?? d.kind}"
+									removed="Date removed"
+								/>
 							</li>
 						{/each}
 					</ul>
@@ -187,7 +248,7 @@
 				{/if}
 
 				{#snippet editor()}
-					<form method="POST" action="?/addDate" class="flex flex-wrap items-end gap-2">
+					<form method="POST" action="?/addDate" use:enhance={saved('dates')} class="flex flex-wrap items-end gap-2">
 						<select name="kind" aria-label="Kind" class={INPUT}>
 							{#each data.dateKinds as kind (kind)}<option value={kind}>{kind}</option>{/each}
 						</select>
@@ -207,14 +268,14 @@
 				{/snippet}
 			</Section>
 
-			<Section title="Circles" count={data.circles.length} addLabel="Join" error={form?.circleError ?? null}>
+			<Section title="Circles" count={visibleCircles.length} addLabel="Join" error={form?.circleError ?? null} bind:open={openSection.circles}>
 				{#snippet action()}
 					<a href="/circles" class="text-xs text-link hover:underline">All circles</a>
 				{/snippet}
 
-				{#if data.circles.length}
+				{#if visibleCircles.length}
 					<ul class="flex flex-wrap gap-1.5">
-						{#each data.circles as circle (circle.membershipId)}
+						{#each visibleCircles as circle (circle.membershipId)}
 							<li class="min-w-0 max-w-full">
 								<span class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border py-1 pl-2.5 pr-1.5 text-sm">
 									<span class="size-2 shrink-0 rounded-full" style={accentDotStyle(circle.color)}></span>
@@ -228,15 +289,16 @@
 									{#if circle.role}
 										<span class="shrink-0 text-xs text-fg-subtle">· {circle.role}</span>
 									{/if}
-									<form method="POST" action="?/leaveCircle" class="contents">
-										<input type="hidden" name="circleId" value={circle.circleId} />
-										<button
-											class="text-fg-subtle transition-colors hover:text-fg"
-											aria-label="Leave {circle.name}"
-										>
-											<Icon name="remove" size={13} />
-										</button>
-									</form>
+									<RemoveButton
+										kind="membership"
+										id={circle.membershipId}
+										action="?/leaveCircle"
+										fields={{ circleId: circle.circleId }}
+										label="Leave {circle.name}"
+										removed="Left the circle"
+										bare
+										class="contents"
+									/>
 								</span>
 							</li>
 						{/each}
@@ -246,7 +308,7 @@
 				{/if}
 
 				{#snippet editor()}
-					<form method="POST" action="?/joinCircle" class="flex flex-wrap items-end gap-2">
+					<form method="POST" action="?/joinCircle" use:enhance={saved('circles')} class="flex flex-wrap items-end gap-2">
 						<input
 							name="circleName"
 							list="circle-names"
@@ -262,24 +324,25 @@
 				{/snippet}
 			</Section>
 
-			<Section title="Tags" count={data.tags.length} addLabel="Add" error={form?.tagError ?? null}>
-				{#if data.tags.length}
+			<Section title="Tags" count={visibleTags.length} addLabel="Add" error={form?.tagError ?? null} bind:open={openSection.tags}>
+				{#if visibleTags.length}
 					<ul class="flex flex-wrap gap-1.5">
-						{#each data.tags as tag (tag.id)}
+						{#each visibleTags as tag (tag.id)}
 							<li
 								class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-medium"
 								style={accentChipStyle(tag.color)}
 							>
 								{tag.name}
-								<form method="POST" action="?/removeTag" class="contents">
-									<input type="hidden" name="tagId" value={tag.id} />
-									<button
-										class="opacity-60 transition-opacity hover:opacity-100"
-										aria-label="Remove tag {tag.name}"
-									>
-										<Icon name="remove" size={13} />
-									</button>
-								</form>
+								<RemoveButton
+									kind="tag"
+									id={tag.id}
+									action="?/removeTag"
+									fields={{ tagId: tag.id }}
+									label="Remove tag {tag.name}"
+									removed="Tag removed"
+									bare
+									class="contents"
+								/>
 							</li>
 						{/each}
 					</ul>
@@ -288,7 +351,7 @@
 				{/if}
 
 				{#snippet editor()}
-					<form method="POST" action="?/addTag" class="flex flex-wrap items-end gap-2">
+					<form method="POST" action="?/addTag" use:enhance={saved('tags')} class="flex flex-wrap items-end gap-2">
 						<input name="name" placeholder="Tag name" required class="min-w-32 flex-1 {INPUT}" />
 						<select name="color" aria-label="Colour" class={INPUT}>
 							{#each data.tagColors as color (color)}<option value={color}>{color}</option>{/each}
@@ -425,9 +488,58 @@
 						<p class="text-sm text-fg-subtle">No relationships yet.</p>
 					{/if}
 
+					<!--
+						Propagation suggestions (docs/02 §2.4.1): what the link just added implies.
+						Each is one confirmation of its own — Stella never writes them by itself.
+					-->
+					{#if data.proposals.length > 0}
+						<div class="mt-4 flex flex-col gap-2 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="kin-proposals">
+							<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle">Also true?</h3>
+							{#each data.proposals as proposal (proposal.fromId + proposal.toId)}
+								<form method="POST" action="?/addProposedRelationship" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+									<input type="hidden" name="fromId" value={proposal.fromId} />
+									<input type="hidden" name="toId" value={proposal.toId} />
+									<input type="hidden" name="typeId" value={PARENT_CHILD_TYPE_KEY} />
+									<input type="hidden" name="propose" value={data.proposeFor} />
+									<span class="text-fg">
+										{proposal.fromName} is a parent of {proposal.toName}
+									</span>
+									<span class="text-fg-subtle">· {proposal.reason}</span>
+									<Button variant="secondary" size="sm" class="ml-auto">Add this too</Button>
+								</form>
+							{/each}
+						</div>
+					{/if}
+
+					<!--
+						Derived kinship (docs/02 §2.4.1): worked out from the entered links, never
+						stored. Kept visually apart and labelled, so nobody mistakes an inference
+						for something the household wrote down.
+					-->
+					{#if data.derivedKin.length > 0}
+						<div class="mt-4 border-t border-border-subtle pt-3" data-testid="derived-kin">
+							<h3 class="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-fg-subtle">
+								<Icon name="explore" size={12} />Also related · worked out, not entered
+							</h3>
+							<ul class="flex flex-col divide-y divide-border-subtle">
+								{#each data.derivedKin as kin (kin.personId)}
+									<li class="flex items-center gap-3 py-2 text-sm">
+										<span class="w-24 shrink-0 truncate text-fg-muted">{kin.label}</span>
+										<a href="/contacts/{kin.personId}" class="font-medium text-fg hover:underline">
+											{kin.displayName}
+										</a>
+										{#if kin.via.length > 0}
+											<span class="truncate text-fg-subtle">· via {kin.via.join(' and ')}</span>
+										{/if}
+									</li>
+								{/each}
+							</ul>
+						</div>
+					{/if}
+
 					{#snippet editor()}
 						{#if data.otherContacts.length > 0}
-							<form method="POST" action="?/addRelationship" class="flex flex-wrap items-end gap-3">
+							<form method="POST" action="?/addRelationship" use:enhance={savedRelationship} class="flex flex-wrap items-end gap-3">
 								<label class="flex flex-1 flex-col gap-1 text-sm">
 									<span class="text-fg-muted">{c.displayName} is…</span>
 									<select name="typeId" class={INPUT}>
@@ -456,7 +568,7 @@
 			</div>
 
 			<div id="panel-notes" role="tabpanel" aria-labelledby="tab-notes" hidden={tab !== 'notes'}>
-				<Section addLabel="Add note" error={form?.noteError ?? null}>
+				<Section addLabel="Add note" error={form?.noteError ?? null} bind:open={openSection.note}>
 					{#if data.notes.length > 0}
 						<ul class="flex flex-col gap-3">
 							{#each data.notes as note (note.id)}
@@ -484,7 +596,7 @@
 					{/if}
 
 					{#snippet editor()}
-						<form method="POST" action="?/addNote" class="flex flex-col gap-3">
+						<form method="POST" action="?/addNote" use:enhance={saved('note')} class="flex flex-col gap-3">
 							<textarea
 								name="body"
 								rows="3"

@@ -193,7 +193,8 @@ They must be edited together; `app.css` says so at both blocks.
   **last written about** on the right (`—` when nothing has been). The heading counts people;
   *Add person* lives in the shell, not on the page.
 - **Contact profile** — **who on the left, what happened on the right.**
-  - **Hero:** avatar, name, description, then the facts you came for on one line — when you
+  - **Hero:** avatar, name and description (both editable in place), then the facts you came
+    for on one line — when you
     were last in touch, how you met, whether the person is private. Two actions: *Write* (a
     journal entry) and *Log contact* (a touchpoint), the second opening the story's own form.
   - **Profile column** (`19rem`, sticky from `lg`): Contact fields, Dates (§2.13.1), Circles,
@@ -204,7 +205,12 @@ They must be edited together; `app.css` says so at both blocks.
     by kind, the author's name beside the kind (*you* on your own items), *Show earlier* paging
     back through both sources. **People** lists the
     relationships and hides the ego-graph behind *Show map*, so a person with no interest in
-    it does not pay for it on every visit. **Notes** are pinned-first.
+    it does not pay for it on every visit. Below them, **Also related · worked out, not
+    entered** (§2.4.1) carries the derived relatives — a divider, a quieter heading and a
+    *via* clause keep an inference visually distinct from something the household typed.
+    After a link is added, an **Also true?** panel sits above them with what it implies, one
+    *Add this too* per line: a suggestion is a sentence with a button, never a checkbox list
+    that could be swept in with one click. **Notes** are pinned-first.
   - Below `lg` the two columns stack **story first**: the story is what the page is opened for,
     and the profile follows underneath.
   - Counts sit on a tab only where they are exact; the story is paged, so it carries none.
@@ -220,8 +226,9 @@ They must be edited together; `app.css` says so at both blocks.
   token, so a chip and the line it toggles can never disagree, and there is no second box
   to keep in sync. Search-to-focus, connection path, and a **peek panel** that shows the
   person's avatar, name and two actions.
-- **Circles** — a grid of **cards** (§2.4.2): colour dot, name, kind and member count, the
-  description, and a stack of the first four faces with "+n" for the rest. A circle's page
+- **Circles** — a find-as-you-type field and kind chips over a grid of **cards** (§2.4.2):
+  colour dot, name, kind and member count, the description, and a stack of the first four faces
+  with "+n" for the rest. A query that matches nothing gets the empty state, not a blank page. A circle's page
   puts the members in a **grid** of avatar cards with roles; *Add member* is the card's one
   disclosure, like every other card in the app.
 - **Empty states** are one component (`EmptyState`): a large icon in the subtle colour, a
@@ -289,12 +296,21 @@ link, and leaves native submit behaviour alone inside a form. Sizes are `sm` (ro
 headers) and `md` (a screen's own actions); an icon with no label becomes a square icon button
 and requires a `label`.
 
+**Inline edit** (`src/lib/components/InlineEdit.svelte`) turns a read value into its own
+editor: the value is a button, clicking it swaps in a focused field with *Save* and *Cancel*,
+Enter saves and Escape reverts. It posts to a real form action, so without JavaScript the
+field is simply always there. A save that failed keeps the editor open with the error under
+it, and one that worked says *Saved* like every other form. Used for the person's name and
+description (docs/02 §2.2).
+
 **Toasts** (`src/lib/components/Toast.svelte`) sit bottom-left of the content column, one
-card per message, announced as a polite live region. A removal's toast reads *Entry removed*
-or *Interaction removed* with an **Undo** button and stays for the whole undo window (eight
-seconds); a plain notice — *Saved*, or why a removal failed — has no button and goes on its
-own. Removing needs no confirmation dialog because every removal can be taken back from here
-(docs/02 §2.23). On a phone the region sits above the tab bar.
+card per message, announced as a polite live region. A removal's toast names what went —
+*Entry removed*, *Tag removed*, *Left the circle* — and carries an **Undo** button for the
+whole window (eight seconds); a plain notice — *Saved*, or why a removal failed — has no
+button and goes on its own. Removing needs no confirmation dialog because every removal can
+be taken back from here (docs/02 §2.23), and every one of them is the same component
+(`RemoveButton`), so no list can quietly opt out. Saving says *Saved* and closes the form it
+was typed in — a section's editor and an inline edit alike. On a phone the region sits above the tab bar.
 
 ## 5.8 Relationship & context explorer styling
 
