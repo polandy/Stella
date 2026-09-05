@@ -15,7 +15,7 @@
 		"test": "bun test src",
 		"test:watch": "bun test src --watch",
 		"test:e2e": "./e2e/run.sh",
-		"e2e:server": "rm -rf ./data/e2e && vite build && NODE_ENV=production PORT=4173 HOST=127.0.0.1 ORIGIN=http://127.0.0.1:4173 STELLA_URL=http://127.0.0.1:4173 DATABASE_PATH=./data/e2e/stella.db MEDIA_DIR=./data/e2e/media SESSION_SECRET=e2e-insecure-secret SEED_DEMO=true BODY_SIZE_LIMIT=25M bun ./build/index.js",
+		"e2e:server": "rm -rf ./data/e2e && vite build && NODE_ENV=production PORT=${E2E_PORT:-4173} HOST=127.0.0.1 ORIGIN=http://127.0.0.1:${E2E_PORT:-4173} STELLA_URL=http://127.0.0.1:${E2E_PORT:-4173} DATABASE_PATH=./data/e2e/stella.db MEDIA_DIR=./data/e2e/media SESSION_SECRET=e2e-insecure-secret SEED_DEMO=true BODY_SIZE_LIMIT=25M bun ./build/index.js",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:push": "drizzle-kit push",

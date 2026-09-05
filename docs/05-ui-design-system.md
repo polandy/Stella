@@ -204,7 +204,12 @@ They must be edited together; `app.css` says so at both blocks.
     §2.23 — journal entries and touchpoints in one order, a rail with a dot per item coloured
     by kind, *Show earlier* paging back through both sources. **People** lists the
     relationships and hides the ego-graph behind *Show map*, so a person with no interest in
-    it does not pay for it on every visit. **Notes** are pinned-first.
+    it does not pay for it on every visit. Below them, **Also related · worked out, not
+    entered** (§2.4.1) carries the derived relatives — a divider, a quieter heading and a
+    *via* clause keep an inference visually distinct from something the household typed.
+    After a link is added, an **Also true?** panel sits above them with what it implies, one
+    *Add this too* per line: a suggestion is a sentence with a button, never a checkbox list
+    that could be swept in with one click. **Notes** are pinned-first.
   - Below `lg` the two columns stack **story first**: the story is what the page is opened for,
     and the profile follows underneath.
   - Counts sit on a tab only where they are exact; the story is paged, so it carries none.
