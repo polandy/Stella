@@ -176,7 +176,10 @@ They must be edited together; `app.css` says so at both blocks.
   you type with arrow keys and Enter; a typed query always ends in *Search everything*, which
   is the full-text search over notes the palette itself does not read. The rows come from a
   pure `paletteRows`; the people arrive with the app shell's `load`, so the first keystroke
-  answers without a round trip.
+  answers without a round trip. It is the one control here that cannot work without
+  JavaScript, so its trigger stays **disabled until the shell has mounted** rather than
+  swallowing a click in the first moments after a load — which is also what lets a test know
+  the page is ready instead of waiting and hoping (`docs/08` §8.4).
 
 ## 5.5 Key screens
 
