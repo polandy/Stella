@@ -780,7 +780,8 @@ The **story** is that merge, done once, server-side.
 - **Who wrote it.** Every item names its author: *you* on your own, otherwise the member's
   first name — which is what makes a shared household legible ("Nina logged that call, not
   me"). An item whose author has left the household names nobody rather than guessing. The
-  journal page names the author the same way.
+  journal page says the same thing, as *by Nina* — it has no kind chip for the name to sit
+  beside.
 - **Removing.** An item can be removed from the story by whoever wrote it — previously a
   journal entry could only be removed from the full journal page. There is no confirmation
   dialog: the item leaves the story at once and a toast offers *Undo* for eight seconds. The
