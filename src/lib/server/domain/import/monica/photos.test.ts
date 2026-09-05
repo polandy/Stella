@@ -25,7 +25,11 @@ function fakes() {
 			avatars.push({ contactId, photoId });
 		},
 		getVisiblePhotoFile: async () => null,
-		listJournalPhotos: async () => []
+		listJournalPhotos: async () => [],
+		listGalleryPhotos: async () => [],
+		findVisibleGalleryPhoto: async () => null,
+		updateOwnGalleryPhoto: async () => false,
+		deleteOwnGalleryPhoto: async () => null
 	};
 	const media: MediaStore = {
 		put: async (key, bytes) => {
