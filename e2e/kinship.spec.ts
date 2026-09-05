@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { openPerson, signIn } from './app';
 
 /*
  * Derived kinship and propagation suggestions (docs/02 §2.4.1). Written after the flow was
@@ -6,17 +7,13 @@ import { expect, test, type Page } from '@playwright/test';
  * Brunner/Keller family carries three generations, as the demo admin.
  */
 
-/** Signs in through the SEED_DEMO one-click button and lands on Home. */
-async function signIn(page: Page): Promise<void> {
-	await page.goto('/login');
-	await page.getByRole('button', { name: 'Sign in as demo user' }).click();
-	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
-}
-
-/** Opens a person from the directory and shows the People tab. */
+/*
+ * Opens a person and their People tab. Going through `openPerson` waits for the shell to be
+ * interactive first: the section's *Add relationship* disclosure is a JavaScript control and
+ * answers nothing before that.
+ */
 async function openPeopleTab(page: Page, name: RegExp): Promise<void> {
-	await page.goto('/contacts');
-	await page.getByRole('link', { name }).first().click();
+	await openPerson(page, name);
 	await page.getByRole('tab', { name: /People/ }).click();
 }
 

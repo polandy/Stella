@@ -39,6 +39,18 @@ function deps() {
 			},
 			async listJournalPhotos() {
 				return [];
+			},
+			async listGalleryPhotos() {
+				return [];
+			},
+			async findVisibleGalleryPhoto() {
+				return null;
+			},
+			async updateOwnGalleryPhoto() {
+				return false;
+			},
+			async deleteOwnGalleryPhoto() {
+				return null;
 			}
 		},
 		media: {

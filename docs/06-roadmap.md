@@ -62,7 +62,8 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
 - **Important dates & reminders** (§2.13): dates on a person, birthdays derived from the
   birth date, and a "Coming up" band in Home's rail that offers to write a moment — no
   reminder objects and no separate reminders screen.
-- **Photo gallery** (grid, lightbox, captions, set-as-avatar) with per-photo visibility.
+- **Photo gallery** (grid, lightbox, captions, set-as-avatar) with per-photo visibility
+  — shipped on the person page (§2.14); reordering stays M3.
 - **Personal journal:** per-person diary — dated Markdown entries with photos, per-entry
   visibility (shared/private), rendered as a timeline on the profile (§2.20).
 - **Explorer (rich, core feature):** in-place node expansion, in-graph search-to-focus,

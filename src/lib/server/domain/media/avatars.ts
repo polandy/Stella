@@ -97,6 +97,26 @@ export interface PhotoFile {
 	mime: string;
 }
 
+/** One photo in a contact's gallery (docs/02 §2.14), resolved for rendering. */
+export interface GalleryPhoto {
+	id: string;
+	contactId: string;
+	caption: string | null;
+	visibility: 'shared' | 'private';
+	createdBy: string;
+	width: number | null;
+	height: number | null;
+	createdAt: number;
+	/** Whether this photo is the contact's current avatar. */
+	isAvatar: boolean;
+}
+
+/** The file paths a deleted photo leaves behind, so the bytes can go too. */
+export interface DeletedPhotoFiles {
+	filePath: string;
+	thumbPath: string;
+}
+
 /** A journal photo reference resolved for rendering (media id + which entry it belongs to). */
 export interface JournalPhotoRef {
 	id: string;
@@ -112,6 +132,23 @@ export interface PhotoRepository {
 	getVisiblePhotoFile(viewer: Viewer, photoId: string, variant: 'full' | 'thumb'): Promise<PhotoFile | null>;
 	/** Journal photos on a contact the viewer may see, oldest first (docs/02 §2.20). */
 	listJournalPhotos(viewer: Viewer, contactId: string): Promise<JournalPhotoRef[]>;
+	/** Gallery photos on a contact the viewer may see, newest first (docs/02 §2.14). */
+	listGalleryPhotos(viewer: Viewer, contactId: string): Promise<GalleryPhoto[]>;
+	/** One gallery photo, only if it belongs to that contact and the viewer may see it. */
+	findVisibleGalleryPhoto(viewer: Viewer, contactId: string, photoId: string): Promise<GalleryPhoto | null>;
+	/** Change the caption and/or visibility of a photo the author uploaded; false if not theirs. */
+	updateOwnGalleryPhoto(input: {
+		authorId: string;
+		photoId: string;
+		caption?: string | null;
+		visibility?: 'shared' | 'private';
+	}): Promise<boolean>;
+	/**
+	 * Remove a gallery photo the author uploaded and return its files. Clearing the avatar
+	 * that pointed at it happens in the same transaction, so a deleted photo can never leave
+	 * a contact wearing a face that no longer exists.
+	 */
+	deleteOwnGalleryPhoto(input: { authorId: string; photoId: string }): Promise<DeletedPhotoFiles | null>;
 }
 
 /** Byte storage under the media volume; paths returned are what the DB records. */

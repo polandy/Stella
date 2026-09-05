@@ -549,6 +549,17 @@ mechanism behind two features: correcting a birthday without touching the profil
 - Photos have their own visibility (2.10) and can be captioned.
 - Basic gallery: grid, lightbox, set-as-avatar, delete. Reordering **[M3]**.
 
+- **Shipped:** the person page carries a **Photos** tab — a square grid, newest first, each
+  private photo wearing a lock. Adding takes several files at once; each is downscaled and
+  re-encoded in the browser first, so no EXIF or GPS ever leaves the device, and the upload
+  carries its own *shared or private* choice. Opening one gives a **lightbox** over a dimmed
+  backdrop: the picture, its caption, *Use as photo* (which makes it the contact's avatar),
+  the shared/private switch and *Remove*. Escape closes it and the arrow keys walk the grid.
+  Captioning, re-scoping and removing appear only on photos you added yourself, the same rule
+  notes follow (§2.10); anyone who can see a photo can make it the avatar. Removing a photo
+  deletes both stored variants and, if the contact was wearing it, clears the avatar in the
+  same transaction. Journal photos (§2.20) stay in the story and never appear here.
+
 ## 2.15 Data portability **[M2]**
 
 - **Export:** a single archive (JSON manifest + media files) of the household's data.
