@@ -13,6 +13,7 @@ const item = (id: string, day: string): StoryItemView => ({
 	id,
 	day,
 	recordedAt: 1,
+	author: 'you',
 	visibility: 'shared',
 	mine: true,
 	interactionKind: 'call',

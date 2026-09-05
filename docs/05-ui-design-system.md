@@ -202,7 +202,8 @@ They must be edited together; `app.css` says so at both blocks.
     nothing else is open. A form that failed validation opens itself, so the error has a home.
   - **Right column:** tabs *Story · People · Notes*. **Story** is the merged timeline of
     §2.23 — journal entries and touchpoints in one order, a rail with a dot per item coloured
-    by kind, *Show earlier* paging back through both sources. **People** lists the
+    by kind, the author's name beside the kind (*you* on your own items), *Show earlier* paging
+    back through both sources. **People** lists the
     relationships and hides the ego-graph behind *Show map*, so a person with no interest in
     it does not pay for it on every visit. Below them, **Also related · worked out, not
     entered** (§2.4.1) carries the derived relatives — a divider, a quieter heading and a

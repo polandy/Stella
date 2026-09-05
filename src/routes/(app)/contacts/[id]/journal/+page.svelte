@@ -197,6 +197,8 @@
 						<article class="rounded-app bg-card p-5 shadow-card">
 							<div class="mb-2 flex items-center gap-2">
 								{#if entry.title}<h3 class="font-medium text-fg">{entry.title}</h3>{/if}
+								<!-- No kind chip here to hang the name off, so it says "by" and reads on its own. -->
+								{#if entry.author}<span class="text-xs text-fg-subtle">by {entry.author}</span>{/if}
 								{#if entry.visibility === 'private'}
 									<span
 										class="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary"

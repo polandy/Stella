@@ -1,7 +1,8 @@
 import { error, json, redirect } from '@sveltejs/kit';
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
+import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
-import { getContactDeps, getPhotos, getStoryDeps } from '$lib/server/services';
+import { getContactDeps, getMemberDeps, getPhotos, getStoryDeps } from '$lib/server/services';
 import { parseStoryCursor } from '$lib/story/cursor';
 import { toStoryItem } from '../story-view';
 import type { RequestHandler } from './$types';
@@ -44,13 +45,15 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 	const allContacts = await listContacts(getContactDeps(), viewer);
 	const nameById = new Map(allContacts.map((c) => [c.id, c.displayName]));
+	const nameOfAuthor = await authorNames(getMemberDeps(), viewer.householdId);
 
 	return json({
 		items: page.items.map((item) =>
 			toStoryItem(item, {
 				userId: locals.user!.id,
 				photosByEntry,
-				nameOf: (id) => nameById.get(id) ?? null
+				nameOf: (id) => nameById.get(id) ?? null,
+				nameOfAuthor
 			})
 		),
 		nextCursor: page.nextCursor
