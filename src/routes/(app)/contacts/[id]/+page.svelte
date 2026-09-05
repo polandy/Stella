@@ -13,6 +13,7 @@
 	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
+	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
@@ -35,7 +36,9 @@
 	type Tab = 'story' | 'people' | 'notes';
 	// Arriving with `?relate=` (a moment's hint, or quick-add's "link as relative") lands
 	// straight on the relationship editor, prefilled — otherwise the hint would be a dead end.
-	let tab = $state<Tab>(untrack(() => data.relateTo) ? 'people' : 'story');
+	// `?propose=` comes back from adding a link and carries its implied ones, which live in
+	// the same tab; both would be invisible under the story otherwise.
+	let tab = $state<Tab>(untrack(() => data.relateTo || data.proposeFor) ? 'people' : 'story');
 	let relateOpen = $state(untrack(() => data.relateTo) !== null);
 	// The hero's "Log contact" opens the story section's form; the section owns the state.
 	let logOpen = $state(false);
@@ -483,6 +486,55 @@
 						{/if}
 					{:else}
 						<p class="text-sm text-fg-subtle">No relationships yet.</p>
+					{/if}
+
+					<!--
+						Propagation suggestions (docs/02 §2.4.1): what the link just added implies.
+						Each is one confirmation of its own — Stella never writes them by itself.
+					-->
+					{#if data.proposals.length > 0}
+						<div class="mt-4 flex flex-col gap-2 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="kin-proposals">
+							<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle">Also true?</h3>
+							{#each data.proposals as proposal (proposal.fromId + proposal.toId)}
+								<form method="POST" action="?/addProposedRelationship" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+									<input type="hidden" name="fromId" value={proposal.fromId} />
+									<input type="hidden" name="toId" value={proposal.toId} />
+									<input type="hidden" name="typeId" value={PARENT_CHILD_TYPE_KEY} />
+									<input type="hidden" name="propose" value={data.proposeFor} />
+									<span class="text-fg">
+										{proposal.fromName} is a parent of {proposal.toName}
+									</span>
+									<span class="text-fg-subtle">· {proposal.reason}</span>
+									<Button variant="secondary" size="sm" class="ml-auto">Add this too</Button>
+								</form>
+							{/each}
+						</div>
+					{/if}
+
+					<!--
+						Derived kinship (docs/02 §2.4.1): worked out from the entered links, never
+						stored. Kept visually apart and labelled, so nobody mistakes an inference
+						for something the household wrote down.
+					-->
+					{#if data.derivedKin.length > 0}
+						<div class="mt-4 border-t border-border-subtle pt-3" data-testid="derived-kin">
+							<h3 class="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-fg-subtle">
+								<Icon name="explore" size={12} />Also related · worked out, not entered
+							</h3>
+							<ul class="flex flex-col divide-y divide-border-subtle">
+								{#each data.derivedKin as kin (kin.personId)}
+									<li class="flex items-center gap-3 py-2 text-sm">
+										<span class="w-24 shrink-0 truncate text-fg-muted">{kin.label}</span>
+										<a href="/contacts/{kin.personId}" class="font-medium text-fg hover:underline">
+											{kin.displayName}
+										</a>
+										{#if kin.via.length > 0}
+											<span class="truncate text-fg-subtle">· via {kin.via.join(' and ')}</span>
+										{/if}
+									</li>
+								{/each}
+							</ul>
+						</div>
 					{/if}
 
 					{#snippet editor()}
