@@ -185,6 +185,15 @@ means only its author — never "hidden but discoverable". People, moments, note
 each carry their own setting, and the rule is enforced in one place in the code rather
 than screen by screen, so there is no corner of the app where it silently doesn't apply.
 
+## The map
+
+**Graph** in the sidebar draws everyone as the same disc you see next to their name
+everywhere else — their photo, or their initials on their colour — connected by the
+relationships and circles you have recorded. The chips along the top switch each kind of line
+on and off and double as the legend. Click a person to see who they are and jump to their
+page; click again to pull in their connections; *Connection path* traces how two people are
+linked.
+
 ## Light and dark
 
 Stella follows whatever your device is set to, and both themes are designed rather than

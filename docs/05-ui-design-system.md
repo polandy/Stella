@@ -206,13 +206,25 @@ They must be edited together; `app.css` says so at both blocks.
   - Below `lg` the two columns stack **story first**: the story is what the page is opened for,
     and the profile follows underneath.
   - Counts sit on a tab only where they are exact; the story is paged, so it carries none.
-- **Quick add** — a focused sheet: name, optional photo, "how we met", optional first
-  relationship. Everything else deferred.
-- **Graph** — full-screen canvas with filter chips, search-to-focus, ego/full toggle,
-  legend.
-- **Circles** — overview of all circles (§2.4.2): searchable/filterable list with member
-  counts and periods, a per-circle member view (roles + dates), and a **visualization** of
-  members clustered by circle. Adding a member uses name autocomplete with create-on-the-fly.
+- **Add a person** — one card: first and last name, description, how and where you met,
+  visibility. Nickname and birthday sit behind a *More* disclosure; everything else waits
+  for the person's page. The heading says so: *a name is enough*.
+- **Graph** — full-screen canvas. The toolbar's filter chips **are the legend**: each draws
+  its own line style (solid per category, dashed for circles, dotted for kinship) in its
+  token, so a chip and the line it toggles can never disagree, and there is no second box
+  to keep in sync. Search-to-focus, connection path, and a **peek panel** that shows the
+  person's avatar, name and two actions.
+- **Circles** — a grid of **cards** (§2.4.2): colour dot, name, kind and member count, the
+  description, and a stack of the first four faces with "+n" for the rest. A circle's page
+  puts the members in a **grid** of avatar cards with roles; *Add member* is the card's one
+  disclosure, like every other card in the app.
+- **Empty states** are one component (`EmptyState`): a large icon in the subtle colour, a
+  line naming what belongs here, and the one action that starts it — never a bare "nothing
+  here". Bands that are absent when empty (Coming up, Quiet lately) do not use it.
+- **Between screens** the app cross-fades (`document.startViewTransition`, 160 ms) so a list
+  and the person it opens read as one place; the shell skips it under
+  `prefers-reduced-motion` and in browsers without the API. No skeleton loaders: pages are
+  server-rendered from a local SQLite file and there is no in-between state to draw.
 - *(No reminders screen.)* Upcoming dates live in the **Coming up** band on Home, and the
   dates themselves are edited in the **Dates** section of a person's page — kind, day,
   "year unknown", whether it repeats, and whether it shows on Home. A birthday derived from
@@ -224,8 +236,10 @@ They must be edited together; `app.css` says so at both blocks.
   (§2.16) as a three-step page — numbered step strip, a count-tile preview with a
   "left out, and why" card, then the import result and a folder picker with a progress bar
   for photos. Admin only; members see why.
-- **Auth** — clean login offering **"Sign in with SSO"** (Authelia) and, if enabled, a
-  local email/password form; invite-accept screen.
+- **Auth** — one split shell for sign-in and first-run setup: the brand and one line of
+  promise on a sunken panel, the form beside it; on a phone the panel shrinks to a header so
+  the form comes first. Sign-in offers **"Sign in with SSO"** (Authelia) and, if enabled, a
+  local email/password form; the demo login sits under them while `SEED_DEMO` is on.
 
 ## 5.6 Color semantics (categories → accents)
 
@@ -251,8 +265,8 @@ in the accent: colour identifies, the foreground reads (§5.2.2).
 
 Buttons (primary/secondary/ghost/danger), inputs & selects, tag/chip, avatar (+ stack),
 card, section header, tabs, modal/sheet, toast, dropdown menu, command palette, empty
-states, timeline item, note card, relationship row, photo grid + lightbox, graph legend,
-skeleton loaders. All themeable via semantic tokens, all keyboard-accessible.
+states, timeline item, note card, relationship row, photo grid + lightbox. All themeable
+via semantic tokens, all keyboard-accessible.
 
 **Buttons** are one component (`src/lib/components/Button.svelte`) with four variants, and the
 variant states the intent:
@@ -273,12 +287,19 @@ and requires a `label`.
 
 The explorer (§2.7, core feature) should feel alive and effortless. Interaction detail:
 
-- **Nodes:** people as circular avatars with a name label; **circle nodes** are a distinct
-  shape (rounded pill) so contexts read differently from people. Node size can encode
-  degree; deceased contacts subtly desaturated.
+- **Nodes:** people as the **same disc as their avatar** — the photo when there is one,
+  otherwise the accent tint over the card with the accent as the ring — so a face keeps its
+  colour between the list and the map (`avatarAccent` is the one hash). A name label sits
+  below in the interface font. **Circle nodes** are a distinct shape (rounded pill) so
+  contexts read differently from people. Node size encodes degree; deceased contacts are
+  subtly desaturated.
 - **Edges:** styled by kind — relationship category (5.6), **circle membership** (dashed /
-  circle-colored), and **derived kinship** (lighter, dotted, clearly "inferred"). Labels
-  on hover/zoom; asymmetric relationship types show subtle direction.
+  circle-colored), and **derived kinship** (lighter, dotted, clearly "inferred"). On the
+  canvas an edge is the only carrier of its category, so each line colour is the token
+  **deepened toward `--fg` until it clears 3:1 on the page ground** (`ensureContrast`; the
+  hue survives, only the depth changes), held there by `theme.test.ts` against the real
+  tokens in both themes. Chips and dots keep the raw token, because they sit beside a label.
+  Labels on hover/zoom; asymmetric relationship types show subtle direction.
 - **Expand affordance:** an unexpanded node hints it can grow (e.g. a small "+" / count of
   hidden connections); clicking expands its neighborhood in place with a gentle animation.
 - **Search & focus:** an in-canvas search field; selecting a result smoothly pans/zooms to
@@ -298,13 +319,13 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - AA contrast for text in both themes, **enforced by test**: `src/lib/design/color.test.ts`
   parses `app.css`, resolves each token and holds the pairs the interface actually renders —
   the three text steps on each surface, and `--fg` on every accent tint — to 4.5:1.
-- Two measured gaps, both stated rather than papered over:
-  - `--fg-subtle` on the page ground is 3.9:1. It is reserved there for meta that repeats what
-    is already on screen (day dividers, relative timestamps).
-  - The explorer's category edges run from 2.2:1 (romantic) to 4.5:1 (social) on the Latte
-    canvas, under the 3:1 non-text bar for two of five, and an edge is the only carrier of its
-    category once the legend is off screen. Re-picking those hues belongs with the explorer's
-    own pass, and is tracked there rather than fixed by lowering the bar here.
+- One measured gap, stated rather than papered over: `--fg-subtle` on the page ground is
+  4.1:1. It cannot go darker without becoming `--fg-muted`, so there it is reserved for meta
+  that repeats what is already on screen (day dividers, relative timestamps), held to the
+  3:1 large-text floor by test.
+- The explorer's lines clear 3:1 on the canvas in both themes (§5.8); the labels of
+  interaction kinds are written in `--fg` with only the icon in the kind's colour, since
+  peach and green text sat at 2.5–2.8:1 on the page ground (§5.6).
 - Visible focus rings (`--focus-ring`), logical tab order, skip-to-content.
 - All actions reachable without a pointer; graph has a list-based fallback view.
 - Respect `prefers-reduced-motion`; no motion-only information.

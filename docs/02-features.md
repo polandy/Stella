@@ -237,9 +237,10 @@ a named group contacts belong to, over a period of time. (A first-class entity, 
   UI suggests **existing circles** (matched fuzzily, visibility-scoped). Pick one to join
   it; if you type a name that doesn't exist yet, **the circle is created on the fly** from
   that input (kind/period can be refined later). No separate "create circle first" step.
-- **Circle overview page:** a dedicated screen listing all circles (filter by kind,
-  active/past, search), each showing member count and period. Opening a circle shows its
-  **members** (with roles and dates) and lets you add/remove members.
+- **Circle overview page:** a dedicated screen of circle **cards**, each with kind, member
+  count, description and the first few faces (docs/05 §5.5). Opening a circle shows its
+  **members** as a grid with roles and lets you add/remove members. Filters by kind and
+  period, and search, are still to come.
 - **Circle visualization:** the overview and each circle are **visualized** — members as
   nodes clustered by circle, with people who belong to multiple circles bridging them.
   Reuses the graph engine (§2.7), theme-aware, filterable by circle/kind. Makes overlaps

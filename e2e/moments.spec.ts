@@ -58,7 +58,9 @@ test('creates the people it mentions and offers to link the first two', async ({
 	await expect(moment.getByRole('link', { name: 'Yorick' }).first()).toBeVisible();
 
 	// Both people were created inline and appear in the stream in their own right.
-	await expect(page.locator('article', { hasText: 'New person' })).toHaveCount(2);
+	const added = page.locator('article', { hasText: 'New person' });
+	await expect(added.filter({ hasText: 'Zelda' })).toHaveCount(1);
+	await expect(added.filter({ hasText: 'Yorick' })).toHaveCount(1);
 
 	// The relationship is offered, never guessed: the hint links to the other person's page.
 	const hint = page.getByRole('status');

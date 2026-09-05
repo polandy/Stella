@@ -52,7 +52,8 @@ export type RelationshipCategory = (typeof RELATIONSHIP_CATEGORIES)[number];
 /** How strongly a tinted surface mixes its accent into the background. */
 const CHIP_TINT_PERCENT = 16;
 const CHIP_ACTIVE_TINT_PERCENT = 28;
-const AVATAR_TINT_PERCENT = 22;
+/** How strongly an avatar accent tints the card, shared with the explorer canvas. */
+export const AVATAR_TINT_PERCENT = 22;
 
 /** The CSS variable that carries an accent. */
 export function accentVar(accent: Accent): string {

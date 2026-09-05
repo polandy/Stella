@@ -2,15 +2,17 @@ import { and, count, eq, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { circleColumnsVisibleTo, contactColumnsVisibleTo, membershipVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import type {
-	Circle,
-	CircleColor,
-	CircleRepository,
-	CircleWithCount,
-	ContactCircleView,
-	MemberView,
-	NewCircle,
-	NewMembership
+import {
+	CIRCLE_PREVIEW_SIZE,
+	type Circle,
+	type CircleColor,
+	type CircleRepository,
+	type CircleWithCount,
+	type ContactCircleView,
+	type MemberPreview,
+	type MemberView,
+	type NewCircle,
+	type NewMembership
 } from '../domain/circles/circles';
 import type * as schema from './schema';
 import { circle, circleMembership, contact } from './schema';
@@ -105,7 +107,32 @@ export function createDrizzleCircleRepository(
 				.groupBy(circle.id)
 				.orderBy(circle.name)
 				.all();
-			return rows.map((r) => ({ ...toCircle(r), memberCount: r.memberCount }));
+			// The faces on each card: every visible membership once, cut per circle below.
+			const faces = db
+				.select({
+					circleId: circleMembership.circleId,
+					contactId: contact.id,
+					displayName: contact.displayName,
+					avatarPhotoId: contact.avatarPhotoId
+				})
+				.from(circleMembership)
+				.innerJoin(circle, eq(circleMembership.circleId, circle.id))
+				.innerJoin(contact, eq(circleMembership.contactId, contact.id))
+				.where(membershipVisibleTo(viewer, circle, contact))
+				.orderBy(contact.displayName)
+				.all();
+			const previews = new Map<string, MemberPreview[]>();
+			for (const { circleId, ...member } of faces) {
+				const list = previews.get(circleId) ?? [];
+				if (list.length < CIRCLE_PREVIEW_SIZE) list.push(member);
+				previews.set(circleId, list);
+			}
+
+			return rows.map((r) => ({
+				...toCircle(r),
+				memberCount: r.memberCount,
+				preview: previews.get(r.id as string) ?? []
+			}));
 		},
 
 		async membershipExists(circleId: string, contactId: string): Promise<boolean> {

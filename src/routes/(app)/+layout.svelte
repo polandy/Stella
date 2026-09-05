@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import Button from '$lib/components/Button.svelte';
 	import CommandPalette from '$lib/components/CommandPalette.svelte';
@@ -60,6 +61,19 @@
 		event.preventDefault();
 		paletteOpen = !paletteOpen;
 	}
+
+	// A cross-fade between screens (docs/05 §5.5), so a list and the person it opens read as
+	// one place. Browsers without the API and people who asked for less motion get a cut.
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 
 	// Theme: same contract as the no-flash init in app.html (stella-theme).
 	type ThemeChoice = 'light' | 'system' | 'dark';
