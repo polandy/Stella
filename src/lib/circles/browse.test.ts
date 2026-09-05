@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test';
-import { ALL_KINDS, filterCircles, kindChips, type BrowsableCircle } from './browse';
+import { ALL_KINDS, activeKind, filterCircles, kindChips, type BrowsableCircle } from './browse';
 
 /*
- * Finding a circle among many (docs/02 §2.4): what a typed query matches and what the kind
+ * Finding a circle among many (docs/02 §2.4.2): what a typed query matches and what the kind
  * chips offer. Pure and client-safe, because the page filters as you type without a round
  * trip — the rule has to run in the browser as well as on the server render.
  */
@@ -61,5 +61,19 @@ describe('kindChips', () => {
 
 	it('offers only All when the query matches nothing', () => {
 		expect(kindChips(circles, 'zzz')).toEqual([{ kind: ALL_KINDS, label: 'All', count: 0 }]);
+	});
+});
+
+describe('activeKind', () => {
+	it('keeps the chosen kind while the query still offers it', () => {
+		expect(activeKind(kindChips(circles, 'buhl'), 'club')).toBe('club');
+	});
+
+	it('falls back to All once the query has filtered that kind away', () => {
+		expect(activeKind(kindChips(circles, 'thursdays'), 'school')).toBe(ALL_KINDS);
+	});
+
+	it('leaves All alone', () => {
+		expect(activeKind(kindChips(circles, ''), ALL_KINDS)).toBe(ALL_KINDS);
 	});
 });

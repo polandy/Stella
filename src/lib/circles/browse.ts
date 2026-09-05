@@ -1,5 +1,5 @@
 /*
- * Browsing circles (docs/02 §2.4): a typed query over name and description, plus one chip per
+ * Browsing circles (docs/02 §2.4.2): a typed query over name and description, plus one chip per
  * kind that is actually there. Pure and client-safe — a household has few enough circles that
  * the page filters what it already has instead of asking the server on every keystroke.
  */
@@ -58,4 +58,12 @@ export function kindChips(circles: BrowsableCircle[], query: string): KindChip[]
 		{ kind: ALL_KINDS, label: 'All', count: matching.length },
 		...kinds.map(([kind, count]) => ({ kind, label: kind, count }))
 	];
+}
+
+/**
+ * The kind actually in force: the chosen one while the chips still offer it, otherwise *All*.
+ * A kind the query has filtered away would leave the page empty with no chip pressed.
+ */
+export function activeKind(chips: KindChip[], chosen: string): string {
+	return chips.some((chip) => chip.kind === chosen) ? chosen : ALL_KINDS;
 }

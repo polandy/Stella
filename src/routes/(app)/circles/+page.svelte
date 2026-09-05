@@ -3,7 +3,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import { ALL_KINDS, filterCircles, kindChips } from '$lib/circles/browse';
+	import { ALL_KINDS, activeKind, filterCircles, kindChips } from '$lib/circles/browse';
 	import { accentDotStyle } from '$lib/design/tokens';
 	import type { ActionData, PageData } from './$types';
 
@@ -13,14 +13,13 @@
 	// A failed submit keeps the form open, so the error has somewhere to be read.
 	const showForm = $derived(wantForm || form?.error !== undefined);
 
-	// Find as you type over what is already loaded (docs/02 §2.4): a household has few enough
+	// Find as you type over what is already loaded (docs/02 §2.4.2): a household has few enough
 	// circles that a round trip per keystroke would only add latency.
 	let query = $state('');
-	let kind = $state<string>(ALL_KINDS);
+	let chosenKind = $state<string>(ALL_KINDS);
 	const chips = $derived(kindChips(data.circles, query));
-	// A kind the query has filtered away would leave an empty page, so the row falls back to All.
-	const activeKind = $derived(chips.some((chip) => chip.kind === kind) ? kind : ALL_KINDS);
-	const shown = $derived(filterCircles(data.circles, { query, kind: activeKind }));
+	const kind = $derived(activeKind(chips, chosenKind));
+	const shown = $derived(filterCircles(data.circles, { query, kind }));
 </script>
 
 <svelte:head><title>Circles · Stella</title></svelte:head>
@@ -95,8 +94,8 @@
 				{#each chips as chip (chip.kind)}
 					<button
 						type="button"
-						onclick={() => (kind = chip.kind)}
-						aria-pressed={activeKind === chip.kind}
+						onclick={() => (chosenKind = chip.kind)}
+						aria-pressed={kind === chip.kind}
 						class="rounded-full px-3 py-1 text-sm font-medium capitalize transition-colors aria-pressed:bg-primary-soft aria-pressed:text-primary text-fg-muted hover:text-fg"
 					>
 						{chip.label}
