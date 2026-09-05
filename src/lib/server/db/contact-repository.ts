@@ -3,7 +3,10 @@ import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { contactColumnsVisibleTo, contactVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import type { Contact, ContactRepository, NewContact,
+import type {
+	Contact,
+	ContactRepository,
+	NewContact,
 	ProfilePatch
 } from '../domain/contacts/contacts';
 import type { NameCandidate, NameCandidateSource } from '../domain/contacts/suggestions';

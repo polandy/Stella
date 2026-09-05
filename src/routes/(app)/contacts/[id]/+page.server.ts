@@ -14,6 +14,7 @@ import {
 } from '$lib/server/domain/circles/circles';
 import {
 	editProfile,
+	EMPTY_CONTACT_NAME_MESSAGE,
 	EmptyContactNameError,
 	getContact,
 	listContacts
@@ -245,7 +246,7 @@ export const actions: Actions = {
 			displayName: form.get('displayName'),
 			description: form.get('description') || undefined
 		});
-		if (!parsed.success) return fail(400, { profileError: 'A name cannot be empty.' });
+		if (!parsed.success) return fail(400, { profileError: EMPTY_CONTACT_NAME_MESSAGE });
 
 		try {
 			const saved = await editProfile(getContactDeps(), viewer, params.id, {

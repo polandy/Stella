@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/Button.svelte';
+	import { useRemovals } from '$lib/undo/context.svelte';
+	import { savedEnhance } from '$lib/undo/saved';
 
 	/*
 	 * Edit one line where it is read (docs/02 §2.2, docs/05 §5.7). Click the value, a field
@@ -46,6 +48,8 @@
 	let draft = $state('');
 	let field = $state<HTMLInputElement | null>(null);
 	const open = $derived(editing || error !== null);
+	// Saving says *Saved* in the toast region like every other form (docs/05 §5.7).
+	const saved = savedEnhance(useRemovals(), () => (editing = false));
 
 	function start() {
 		draft = value;
@@ -74,11 +78,7 @@
 		method="POST"
 		{action}
 		class="flex items-center gap-2"
-		use:enhance={() =>
-			async ({ result, update }) => {
-				await update();
-				if (result.type === 'success' || result.type === 'redirect') editing = false;
-			}}
+		use:enhance={saved}
 	>
 		{#each Object.entries(extra) as [key, val] (key)}
 			<input type="hidden" name={key} value={val} />

@@ -155,10 +155,13 @@ export async function createContact(
 	return id;
 }
 
+/** Why a nameless contact is refused; the edge shows this to whoever typed the blank. */
+export const EMPTY_CONTACT_NAME_MESSAGE = 'A name cannot be empty.';
+
 /** Thrown when an edit would leave a contact with no name at all. */
 export class EmptyContactNameError extends Error {
 	constructor() {
-		super('A name cannot be empty.');
+		super(EMPTY_CONTACT_NAME_MESSAGE);
 		this.name = 'EmptyContactNameError';
 	}
 }
