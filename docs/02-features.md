@@ -738,7 +738,11 @@ The **story** is that merge, done once, server-side.
   the merge, so a private entry or touchpoint reaches its author and nobody else. The merge
   never sees a row the viewer may not.
 - **Removing.** An item can be removed from the story by whoever wrote it — previously a
-  journal entry could only be removed from the full journal page.
+  journal entry could only be removed from the full journal page. There is no confirmation
+  dialog: the item leaves the story at once and a toast offers *Undo* for eight seconds. The
+  removal reaches the server only when that window closes or the page is left, so *Undo*
+  simply never sends it (docs/04 §4.9). The same holds for an entry removed on the journal
+  page. If the removal fails once it is sent, the item comes back and the toast says so.
 - **Writing** still happens where it did: the journal page for an entry with photos, the
   *Log contact* form on the person page for a touchpoint.
 - Implemented as a pure merge (`domain/story`: `mergeStory`, unit-tested for every ordering

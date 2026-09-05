@@ -4,6 +4,8 @@
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { processImage } from '$lib/image/process-image';
+	import { useRemovals } from '$lib/undo/context.svelte';
+	import { submitAction } from '$lib/undo/submit-action';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -49,10 +51,27 @@
 		}
 	}
 
+	// Removing is held back for an undo window (docs/02 §2.23), same as on the story.
+	const removals = useRemovals();
+	const removalKey = (entry: { id: string }) => `journal:${entry.id}`;
+	function deferRemoval(event: SubmitEvent, entry: { id: string }) {
+		event.preventDefault();
+		const body = new FormData(event.currentTarget as HTMLFormElement);
+		removals.remove({
+			key: removalKey(entry),
+			label: 'Entry removed',
+			commit: async () => {
+				await submitAction(fetch, '?/delete', body);
+				await invalidateAll();
+			}
+		});
+	}
+
 	// Group the (already newest-first) entries by their day for the timeline.
 	const days = $derived.by(() => {
 		const groups: { date: string; items: PageData['entries'] }[] = [];
 		for (const e of data.entries) {
+			if (removals.isPending(removalKey(e))) continue;
 			let g = groups.at(-1);
 			if (!g || g.date !== e.entryDate) {
 				g = { date: e.entryDate, items: [] };
@@ -185,7 +204,12 @@
 									</span>
 								{/if}
 								{#if entry.mine}
-									<form method="POST" action="?/delete" class="ml-auto">
+									<form
+										method="POST"
+										action="?/delete"
+										class="ml-auto"
+										onsubmit={(event) => deferRemoval(event, entry)}
+									>
 										<input type="hidden" name="id" value={entry.id} />
 										<button
 											class="text-fg-subtle hover:text-danger"

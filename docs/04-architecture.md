@@ -247,6 +247,16 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   it alone, and that each carries its own resume point — a source can contribute nothing to a
   page and still have rows waiting, so "read me from the top" and "I am finished" have to be
   distinguishable. The merge is pure and owns those rules, which is what keeps them testable.
+- **Undo is a removal held back in the browser, not a soft delete** — a removed story item
+  is hidden and its form is posted only when the eight-second toast closes or the page is
+  left (`src/lib/undo`, a pure store with the timer injected; the app shell flushes it on
+  navigation and `pagehide`, with `keepalive`). Rejected: a `deleted_at` column on the two
+  story tables, which would have put a filter into every read that touches them — story,
+  stream, search, "quiet lately", photos — with a leak whenever one is forgotten, a purge to
+  write, and the journal's one-entry-per-day slot blocked by a row that is invisible but
+  still there; and re-creating the row from a snapshot on undo, which for a journal entry
+  means its mentions and photo files too. The cost is that the removal is lost if the tab
+  dies inside the window — the item is then simply still there, which is the safe failure.
 
 ## 4.10 Deployment
 

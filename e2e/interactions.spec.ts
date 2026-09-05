@@ -117,6 +117,10 @@ test('removes an own interaction and last contacted moves to the remaining one',
 	const timeline = page.getByTestId('story-timeline');
 	await expect(timeline).not.toContainText(TITLE);
 	await expect(timeline).toContainText('Quill lunch, the earlier one');
+
+	// The removal is held back for the undo window (docs/02 §2.23); leaving the page sends it.
+	await openPerson(page, /Lena Brunner/);
+	await expect(timeline).not.toContainText(TITLE);
 	await expect(page.getByTestId('last-contacted')).toContainText('20 August 2026');
 });
 
