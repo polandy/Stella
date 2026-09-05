@@ -16,9 +16,13 @@
 		{ href: '/', label: 'Home', icon: 'home', match: (p) => p === '/' },
 		{ href: '/contacts', label: 'People', icon: 'people', match: (p) => p.startsWith('/contacts') },
 		{ href: '/circles', label: 'Circles', icon: 'circles', match: (p) => p.startsWith('/circles') },
-		{ href: '/graph', label: 'Graph', icon: 'graph', match: (p) => p.startsWith('/graph') }
+		{ href: '/graph', label: 'Graph', icon: 'graph', match: (p) => p.startsWith('/graph') },
+		{ href: '/settings', label: 'Settings', icon: 'settings', match: (p) => p.startsWith('/settings') }
 	];
 	const isActive = (item: (typeof nav)[number]) => item.match(page.url.pathname);
+	// The phone's tab bar has five places and the pencil takes the middle one; Settings is
+	// rarely opened and moves to the top bar there.
+	const tabBar = nav.filter((item) => item.href !== '/settings');
 
 	// Breadcrumbs derived from the route id + merged page data (contact/circle names).
 	type Crumb = { label: string; href?: string };
@@ -45,6 +49,9 @@
 			trail.push({ label: 'Graph' });
 		} else if (id.startsWith('/(app)/search')) {
 			trail.push({ label: 'Search' });
+		} else if (id.startsWith('/(app)/settings')) {
+			trail.push({ label: 'Settings', href: '/settings' });
+			if (id.startsWith('/(app)/settings/import')) trail.push({ label: 'Import from Monica' });
 		}
 		return trail;
 	});
@@ -186,6 +193,8 @@
 				<Button variant="primary" icon="add" href="/contacts/new" label="Add person">
 					<span class="hidden sm:inline">Add person</span>
 				</Button>
+				<!-- Wrapped: the button's own display rule would outrank a utility on the element. -->
+				<span class="md:hidden"><Button variant="ghost" icon="settings" href="/settings" label="Settings" /></span>
 			</div>
 		</header>
 
@@ -197,7 +206,7 @@
 
 	<!-- Bottom tab bar (mobile) -->
 	<nav class="fixed inset-x-0 bottom-0 z-20 flex border-t border-border-subtle bg-card md:hidden">
-		{#each nav.slice(0, 2) as item (item.href)}
+		{#each tabBar.slice(0, 2) as item (item.href)}
 			<a href={item.href} aria-current={isActive(item) ? 'page' : undefined} class="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-fg-subtle aria-[current=page]:text-primary">
 				<Icon name={item.icon} size={20} />
 				{item.label}
@@ -208,7 +217,7 @@
 				<Icon name="write" size={21} />
 			</span>
 		</a>
-		{#each nav.slice(2) as item (item.href)}
+		{#each tabBar.slice(2) as item (item.href)}
 			<a href={item.href} aria-current={isActive(item) ? 'page' : undefined} class="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-fg-subtle aria-[current=page]:text-primary">
 				<Icon name={item.icon} size={20} />
 				{item.label}

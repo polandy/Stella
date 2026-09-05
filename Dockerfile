@@ -17,7 +17,9 @@ ENV NODE_ENV=production \
     PORT=3000 \
     HOST=0.0.0.0 \
     DATABASE_PATH=/data/stella.db \
-    MEDIA_DIR=/data/media
+    MEDIA_DIR=/data/media \
+    # Uploads (Monica dumps, photos) exceed adapter-node's 512 KB default.
+    BODY_SIZE_LIMIT=25M
 
 # Only production dependencies are needed to run the adapter-node output.
 COPY package.json bun.lock ./

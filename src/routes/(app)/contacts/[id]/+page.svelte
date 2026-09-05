@@ -145,8 +145,15 @@
 			</Section>
 
 			<Section title="Dates" addLabel="Add" error={form?.dateError ?? null}>
-				{#if data.derivedBirthday || data.dates.length > 0}
+				{#if data.derivedBirthday || data.estimatedBirthYear || data.dates.length > 0}
 					<ul class="flex flex-col gap-1.5 text-sm">
+						{#if data.estimatedBirthYear}
+							<li class="flex items-center gap-3">
+								<span class="w-20 shrink-0 text-fg-subtle">born</span>
+								<span class="flex-1 truncate text-fg">around {data.estimatedBirthYear}</span>
+								<span class="text-xs text-fg-subtle">estimated</span>
+							</li>
+						{/if}
 						{#if data.derivedBirthday}
 							<li class="flex items-center gap-3">
 								<span class="w-20 shrink-0 text-fg-subtle">birthday</span>

@@ -99,8 +99,9 @@ behind your own domain and signing in with your existing single sign-on.
 ## Where it stands
 
 The core loop is in place: add people, relate them, find them, and capture moments into a
-shared household stream. Important dates, a photo gallery and an import from Monica are
-next. See the [roadmap](docs/06-roadmap.md).
+shared household stream — with important dates, interactions and a guided **import from
+Monica** (people, relationships, notes, activities, tags and photos from a database dump).
+A photo gallery is next. See the [roadmap](docs/06-roadmap.md).
 
 <div align="center">
 <sub><em>stella</em> — Latin for “star”. Every person is one; their relationships are the constellations.</sub>

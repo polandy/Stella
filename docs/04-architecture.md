@@ -116,6 +116,7 @@ STELLA_URL=https://stella.example.home         # public base URL (for redirect U
 DATABASE_PATH=/data/stella.db
 MEDIA_DIR=/data/media
 SESSION_SECRET=…                            # signs/encrypts session + oidc temp cookies
+BODY_SIZE_LIMIT=25M                         # adapter-node request cap; a Monica dump or photo must fit
 
 # Auth toggles
 AUTH_LOCAL_ENABLED=true                     # allow email+password
@@ -142,6 +143,8 @@ OIDC_RP_LOGOUT=true                         # use end_session_endpoint on logout
 
 Notes:
 - If both auth methods are disabled, startup fails loudly.
+- Uploaded Monica dumps wait in `<dirname DATABASE_PATH>/import/` between the wizard's
+  preview and confirm steps (docs/02 §2.16); there is no separate variable for it.
 - A documented **break-glass** path: create/keep one local admin with `role_locked=1`
   so IdP misconfiguration can't lock out the household.
 
@@ -224,6 +227,16 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   reminder entity with its own schedule (Monica's model), which doubles the things a user
   creates and maintains for no gain at family scale. Revisit if per-date lead times or email
   delivery (M3) turn the flag into something with real structure.
+- **Monica import writes stable source ids, not ULIDs** — every imported row's id is
+  `monica:<table>:<id>`, so the import is idempotent by construction (insert-or-ignore) and a
+  re-run reports zero writes instead of duplicating; the cost is a second id shape in the
+  tables, which nothing else depends on, and an assumption of one household per deployment
+  that multi-tenancy would have to lift (docs/02 §2.16, docs/monica-mapping.md).
+- **Imported photos travel through the browser, not a server path** — the wizard's folder
+  picker reads Monica's photo directory on the admin's machine and downscales each file with
+  the same canvas pipeline as avatars and journal photos. Rejected: a server-side
+  `MONICA_STORAGE_DIR` (reads arbitrary paths from a web form; needs the volume mounted into
+  Stella) and a server-side resizer (a native image dependency, which docs/04 §4.6 avoids).
 
 - **The story is merged at read time, not stored** — a person's journal entries and touchpoints
   stay two tables and are merged into one timeline per request (docs/02 §2.23). Rejected: a

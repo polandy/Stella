@@ -30,6 +30,9 @@ function deps() {
 			async insert(p: StoredPhoto) {
 				stored.push(p);
 			},
+			async exists() {
+				return false;
+			},
 			async setContactAvatar() {},
 			async getVisiblePhotoFile() {
 				return null;

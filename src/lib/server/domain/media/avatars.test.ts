@@ -83,6 +83,7 @@ function fakeDeps() {
 		insert: async (p) => {
 			inserted = p;
 		},
+		exists: async () => false,
 		setContactAvatar: async (contactId, photoId) => {
 			avatarSet = { contactId, photoId };
 		},

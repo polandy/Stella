@@ -147,6 +147,36 @@ not in it; the last row, *Search everything*, opens the full search, which looks
 people and notes at once, matches partial words, and only ever returns what you are allowed
 to see.
 
+## Moving in from Monica
+
+If your people already live in Monica, you do not have to type them again. The household
+admin opens **Settings → Import from Monica** and hands it a dump of the Monica database.
+On a self-hosted Monica that is one command on the server:
+
+```
+docker exec monica-db sh -c 'mariadb-dump -u"$MYSQL_USER" "$MYSQL_DATABASE"' | gzip > monica.sql.gz
+```
+
+Stella reads the file and shows what it found — how many people, relationships, notes and
+photos — together with a list of everything it will leave out and why (people deleted in
+Monica, reminders Stella works out itself). Nothing is written until you press *Import
+now*, and it is all or nothing: if anything goes wrong half-way, nothing is kept.
+
+What lands where: people with their names, birthdays (an age-based one becomes "born
+around 2016"), job and how you met; relationships, with Monica's kinds that Stella lacks
+(cousin, godparent, best friend, …) added as new kinds rather than dropped; notes;
+activities as **interactions**; tags; and Monica's gifts, life events and pets as clearly
+labelled notes on the person, so nothing quietly disappears. The full table is in
+[monica-mapping.md](monica-mapping.md).
+
+**Photos** come in a last step. Copy Monica's photo folder (`storage/app/public/photos`)
+somewhere your browser can reach, point the folder picker at it, and Stella matches every
+file to its person, shrinks it in your browser and uploads it. The photo someone used as
+their Monica avatar becomes their avatar here too.
+
+Importing the same dump a second time changes nothing — every imported record remembers
+where it came from — so a retry after a hiccup is safe.
+
 ## Privacy, in one paragraph
 
 Stella assumes a household that trusts each other, so sharing is the default and there is

@@ -63,6 +63,9 @@ import {
 	getTagDeps
 } from '$lib/server/services';
 
+/** Whether a birth date precision (docs/03 §3.4) names an actual day rather than a year. */
+const namesADay = (precision: string) => precision === 'full' || precision === 'month_day';
+
 /** First page of the story timeline; older items stream in via the story endpoint. */
 const STORY_PAGE = 12;
 import type { Actions, PageServerLoad } from './$types';
@@ -143,8 +146,13 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		lastContactedAt: lastContactedAt(interactions),
 		interactionKinds: INTERACTION_KINDS,
 		dates,
-		// The birthday derived from the profile, unless an explicit row takes over (§2.13.2).
-		derivedBirthday: overridesDerivedBirthday(dates) ? null : contact.birthDate,
+		// The birthday derived from the profile, unless an explicit row takes over (§2.13.2) or
+		// the birth date is only an estimated year (docs/03 §3.4), which names no day.
+		derivedBirthday:
+			overridesDerivedBirthday(dates) || !namesADay(contact.birthDatePrecision)
+				? null
+				: contact.birthDate,
+		estimatedBirthYear: namesADay(contact.birthDatePrecision) ? null : contact.birthDate,
 		dateKinds: IMPORTANT_DATE_KINDS,
 		relationships,
 		relationshipTypes: types,

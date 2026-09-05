@@ -1,4 +1,5 @@
 import * as v from 'valibot';
+import { dirname, join } from 'node:path';
 import { env } from '$env/dynamic/private';
 
 /**
@@ -73,6 +74,8 @@ function build() {
 		url: raw.STELLA_URL.replace(/\/$/, ''),
 		databasePath: raw.DATABASE_PATH,
 		mediaDir: raw.MEDIA_DIR,
+		// Uploaded dumps wait here between the wizard's preview and confirm steps (docs/02 §2.16).
+		importDir: join(dirname(raw.DATABASE_PATH), 'import'),
 		sessionSecret: raw.SESSION_SECRET,
 		isProd,
 		seedDemo: raw.SEED_DEMO,

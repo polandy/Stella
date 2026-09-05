@@ -40,6 +40,10 @@ export function createDrizzlePhotoRepository(
 				.run();
 		},
 
+		async exists(id: string) {
+			return db.select({ id: photo.id }).from(photo).where(eq(photo.id, id)).get() !== undefined;
+		},
+
 		async setContactAvatar(contactId: string, photoId: string) {
 			db.update(contact).set({ avatarPhotoId: photoId }).where(eq(contact.id, contactId)).run();
 		},
