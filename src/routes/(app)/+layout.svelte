@@ -1,11 +1,13 @@
 <script lang="ts">
-	import { onNavigate } from '$app/navigation';
+	import { beforeNavigate, goto, onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import Button from '$lib/components/Button.svelte';
 	import CommandPalette from '$lib/components/CommandPalette.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import type { IconName } from '$lib/components/icons';
 	import Logo from '$lib/components/Logo.svelte';
+	import Toast from '$lib/components/Toast.svelte';
+	import { provideRemovals } from '$lib/undo/context.svelte';
 	import { onMount, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 
@@ -78,6 +80,30 @@
 		});
 	});
 
+	// Removals are held back for an undo window (docs/04 §4.9). Leaving the page ends the
+	// window: a client-side navigation waits for the requests so the next screen cannot read
+	// the item back; an unload — or a native form post, which must not be replayed as a GET —
+	// sends them with keepalive alongside and hopes for the best.
+	const removals = provideRemovals();
+	beforeNavigate((navigation) => {
+		if (removals.snapshot.removals.length === 0) return;
+		if (navigation.type === 'leave' || navigation.type === 'form' || !navigation.to) {
+			void removals.flush();
+			return;
+		}
+		const { to, type, delta } = navigation;
+		navigation.cancel();
+		void removals.flush().then(() => {
+			if (type === 'popstate' && delta) history.go(delta);
+			else void goto(to.url);
+		});
+	});
+	onMount(() => {
+		const flush = () => void removals.flush();
+		window.addEventListener('pagehide', flush);
+		return () => window.removeEventListener('pagehide', flush);
+	});
+
 	// Theme: same contract as the no-flash init in app.html (stella-theme).
 	type ThemeChoice = 'light' | 'system' | 'dark';
 	let theme = $state<ThemeChoice>('system');
@@ -110,6 +136,7 @@
 <svelte:window onkeydown={onGlobalKeydown} />
 
 <CommandPalette people={data.people} bind:open={paletteOpen} />
+<Toast />
 
 <div class="flex h-screen w-full overflow-hidden bg-bg text-fg">
 	<!-- Sidebar (desktop) -->

@@ -284,6 +284,13 @@ link, and leaves native submit behaviour alone inside a form. Sizes are `sm` (ro
 headers) and `md` (a screen's own actions); an icon with no label becomes a square icon button
 and requires a `label`.
 
+**Toasts** (`src/lib/components/Toast.svelte`) sit bottom-left of the content column, one
+card per message, announced as a polite live region. A removal's toast reads *Entry removed*
+or *Interaction removed* with an **Undo** button and stays for the whole undo window (eight
+seconds); a plain notice — *Saved*, or why a removal failed — has no button and goes on its
+own. Removing needs no confirmation dialog because every removal can be taken back from here
+(docs/02 §2.23). On a phone the region sits above the tab bar.
+
 ## 5.8 Relationship & context explorer styling
 
 The explorer (§2.7, core feature) should feel alive and effortless. Interaction detail:

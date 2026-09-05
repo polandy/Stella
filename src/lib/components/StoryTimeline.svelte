@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -6,6 +7,8 @@
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { groupStoryByDay } from '$lib/story/grouping';
 	import type { StoryCursorView, StoryItemView, StoryPageView } from '$lib/story/item';
+	import { useRemovals } from '$lib/undo/context.svelte';
+	import { submitAction } from '$lib/undo/submit-action';
 
 	/*
 	 * A person's story (docs/02 §2.23): what people wrote about them and the times they were in
@@ -49,11 +52,32 @@
 		}
 	}
 
-	const days = $derived(groupStoryByDay(items));
+	// Removing is held back for an undo window (docs/02 §2.23): the item leaves the list at
+	// once, the toast offers Undo, and the form is posted only when the window closes.
+	const removals = useRemovals();
+	const removalKey = (item: StoryItemView) => `${item.kind}:${item.id}`;
+	const shown = $derived(items.filter((item) => !removals.isPending(removalKey(item))));
+	const days = $derived(groupStoryByDay(shown));
 
 	/** The form action that removes an item, by what kind of thing it is. */
 	const removeAction = (item: StoryItemView) =>
 		item.kind === 'journal' ? '?/removeJournalEntry' : '?/removeInteraction';
+
+	function deferRemoval(event: SubmitEvent, item: StoryItemView) {
+		event.preventDefault();
+		const body = new FormData(event.currentTarget as HTMLFormElement);
+		const key = removalKey(item);
+		removals.remove({
+			key,
+			label: item.kind === 'journal' ? 'Entry removed' : 'Interaction removed',
+			commit: async () => {
+				await submitAction(fetch, removeAction(item), body);
+				items = items.filter((other) => removalKey(other) !== key);
+				// the hero's "last contact" and the tab counts are the page's, not ours
+				await invalidateAll();
+			}
+		});
+	}
 </script>
 
 {#if items.length === 0}
@@ -101,7 +125,12 @@
 									</span>
 								{/if}
 								{#if item.mine}
-									<form method="POST" action={removeAction(item)} class="ml-auto">
+									<form
+										method="POST"
+										action={removeAction(item)}
+										class="ml-auto"
+										onsubmit={(event) => deferRemoval(event, item)}
+									>
 										<input type="hidden" name="id" value={item.id} />
 										<Button
 											variant="danger"
