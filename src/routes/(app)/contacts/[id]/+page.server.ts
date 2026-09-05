@@ -221,6 +221,9 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		gallery,
 		// Who is looking: the gallery only offers caption/remove on your own photos.
 		viewerId: viewer.id,
+		// Which tab to open on. A form action redirects back with it, so acting on a photo
+		// does not throw the reader back to the story.
+		tab: url.searchParams.get('tab'),
 		// render Markdown server-side; the output is already safe (docs/02 §2.5)
 		notes: notes.map((note) => ({
 			id: note.id,
@@ -719,7 +722,7 @@ export const actions: Actions = {
 				photoError: err instanceof InvalidImageError ? err.message : 'Could not store the photo.'
 			});
 		}
-		throw redirect(303, `/contacts/${params.id}#photos`);
+		throw redirect(303, `/contacts/${params.id}?tab=photos`);
 	},
 
 	/** Caption a gallery photo; blank clears it. Only its uploader may. */
@@ -740,7 +743,7 @@ export const actions: Actions = {
 			if (err instanceof CaptionTooLongError) return fail(400, { photoError: err.message });
 			throw err;
 		}
-		throw redirect(303, `/contacts/${params.id}#photos`);
+		throw redirect(303, `/contacts/${params.id}?tab=photos`);
 	},
 
 	/** Move a gallery photo between shared and private. Only its uploader may. */
@@ -763,7 +766,7 @@ export const actions: Actions = {
 		) {
 			return fail(403, { photoError: 'Only the person who added a photo can change it.' });
 		}
-		throw redirect(303, `/contacts/${params.id}#photos`);
+		throw redirect(303, `/contacts/${params.id}?tab=photos`);
 	},
 
 	/** Wear a gallery photo as this contact's avatar. */
@@ -776,7 +779,7 @@ export const actions: Actions = {
 		if (!(await useAsAvatar(getGalleryDeps(), viewer, params.id, photoId))) {
 			return fail(404, { photoError: 'That photo could not be found.' });
 		}
-		throw redirect(303, `/contacts/${params.id}#photos`);
+		throw redirect(303, `/contacts/${params.id}?tab=photos`);
 	},
 
 	/** Delete a gallery photo and its files. Only its uploader may. */
@@ -789,7 +792,7 @@ export const actions: Actions = {
 		if (!(await removeGalleryPhoto(getGalleryDeps(), viewer, photoId))) {
 			return fail(403, { photoError: 'Only the person who added a photo can remove it.' });
 		}
-		throw redirect(303, `/contacts/${params.id}#photos`);
+		throw redirect(303, `/contacts/${params.id}?tab=photos`);
 	},
 
 	setAvatar: async ({ request, params, locals }) => {

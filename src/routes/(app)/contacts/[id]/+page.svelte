@@ -41,7 +41,13 @@
 	// straight on the relationship editor, prefilled — otherwise the hint would be a dead end.
 	// `?propose=` comes back from adding a link and carries its implied ones, which live in
 	// the same tab; both would be invisible under the story otherwise.
-	let tab = $state<Tab>(untrack(() => data.relateTo || data.proposeFor) ? 'people' : 'story');
+	const TABS: readonly Tab[] = ['story', 'people', 'notes', 'photos'];
+	const requestedTab = (value: string | null): Tab | null =>
+		TABS.find((name) => name === value) ?? null;
+	let tab = $state<Tab>(
+		untrack(() => requestedTab(data.tab)) ??
+			(untrack(() => data.relateTo || data.proposeFor) ? 'people' : 'story')
+	);
 	let relateOpen = $state(untrack(() => data.relateTo) !== null);
 	// The hero's "Log contact" opens the story section's form; the section owns the state.
 	let logOpen = $state(false);
@@ -750,7 +756,7 @@
 		<button
 			type="button"
 			class="absolute inset-0 bg-bg-sunken/90 backdrop-blur-sm"
-			aria-label="Close"
+			aria-label="Close the photo"
 			onclick={() => (openPhoto = null)}
 		></button>
 
