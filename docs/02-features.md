@@ -238,6 +238,12 @@ a named group contacts belong to, over a period of time. (A first-class entity, 
   stays distinct from typed pairwise relationships (§2.4).
 - **Feeds suggestions (§2.4.1 / §2.2.1):** e.g. "Hans and Peter are both in Ski Course —
   add a friendship?" — always opt-in.
+- **Finding one among many.** The Circles page filters as you type over name and description,
+  with one chip per kind that is actually there, each carrying its count. The counts follow the
+  query, so no chip ever leads to an empty page, and a kind the query has filtered away falls
+  back to *All*. Both run in the browser over the circles already loaded — a household has few
+  enough of them that a round trip per keystroke would only add latency. The chips appear only
+  when there is more than one kind to choose between.
 - Circles are shareable records under the standard visibility model (§2.10); a membership
   is visible when both its Circle and the contact are visible. Powered by a small,
   test-first domain module over the membership data — extends the graph without touching
