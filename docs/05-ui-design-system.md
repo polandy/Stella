@@ -209,7 +209,11 @@ They must be edited together; `app.css` says so at both blocks.
   - Counts sit on a tab only where they are exact; the story is paged, so it carries none.
 - **Add a person** — one card: first and last name, description, how and where you met,
   visibility. Nickname and birthday sit behind a *More* disclosure; everything else waits
-  for the person's page. The heading says so: *a name is enough*.
+  for the person's page. The heading says so: *a name is enough*. Once a surname is typed,
+  an **Already in Stella?** box (§2.2.1) slides in under the name fields: a sunken panel,
+  one line per person — name as a link, the reason in muted text, a *Link as relative*
+  radio on the right. It is absent until there is something to say and never steals focus;
+  the form submits exactly as before.
 - **Graph** — full-screen canvas. The toolbar's filter chips **are the legend**: each draws
   its own line style (solid per category, dashed for circles, dotted for kinship) in its
   token, so a chip and the line it toggles can never disagree, and there is no second box

@@ -19,6 +19,8 @@ const QuickAddSchema = v.object({
 	howWeMet: optional,
 	metPlace: optional,
 	birthDate: optional,
+	/** An existing person to link right after creating (docs/02 §2.2.1). */
+	relateTo: optional,
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
 });
 
@@ -40,6 +42,7 @@ export const actions: Actions = {
 			howWeMet: form.get('howWeMet') || undefined,
 			metPlace: form.get('metPlace') || undefined,
 			birthDate: form.get('birthDate') || undefined,
+			relateTo: form.get('relateTo') || undefined,
 			visibility: form.get('visibility') || undefined
 		});
 		if (!parsed.success) {
@@ -52,9 +55,10 @@ export const actions: Actions = {
 			defaultVisibility: 'shared' as const // TODO: use the user's default (settings, §2.16)
 		};
 
+		const { relateTo, ...input } = parsed.output;
 		let id: string;
 		try {
-			id = await createContact(getContactDeps(), creator, parsed.output);
+			id = await createContact(getContactDeps(), creator, input);
 		} catch (err) {
 			return fail(400, {
 				error:
@@ -64,6 +68,6 @@ export const actions: Actions = {
 			});
 		}
 
-		throw redirect(303, `/contacts/${id}`);
+		throw redirect(303, relateTo ? `/contacts/${id}?relate=${encodeURIComponent(relateTo)}` : `/contacts/${id}`);
 	}
 };

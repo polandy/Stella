@@ -8,6 +8,7 @@
 	import { dayLabel } from '$lib/dates/labels';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
+	import { untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 
 	/*
@@ -26,7 +27,10 @@
 		'rounded-control border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
 
 	type Tab = 'story' | 'people' | 'notes';
-	let tab = $state<Tab>('story');
+	// Arriving with `?relate=` (a moment's hint, or quick-add's "link as relative") lands
+	// straight on the relationship editor, prefilled — otherwise the hint would be a dead end.
+	let tab = $state<Tab>(untrack(() => data.relateTo) ? 'people' : 'story');
+	let relateOpen = $state(untrack(() => data.relateTo) !== null);
 	// The hero's "Log contact" opens the story section's form; the section owns the state.
 	let logOpen = $state(false);
 	let showMap = $state(false);
@@ -376,7 +380,7 @@
 			</div>
 
 			<div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden={tab !== 'people'}>
-				<Section addLabel="Add relationship" error={form?.error ?? null}>
+				<Section addLabel="Add relationship" error={form?.error ?? null} bind:open={relateOpen}>
 					{#snippet action()}
 						<a
 							href="/graph?center={c.id}"

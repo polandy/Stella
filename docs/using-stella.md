@@ -63,6 +63,13 @@ the right of each row is when something was last written about that person.
 **Adding someone** takes a name and nothing else. Everything beyond that — description,
 phone, email, address, birthday — is optional and can be filled in whenever.
 
+As soon as you type a surname, Stella checks whether that person might already be here.
+An **Already in Stella?** box lists people with the same or a similar surname — someone
+with exactly the same name comes first, in case you are about to add them twice. Each name
+opens that person's page. If the new person is a relative, pick **Link as relative**: after
+adding, you land straight in their relationship editor with that relative already chosen,
+so "Quill is the child of Sandra" is one more click.
+
 **A person's page** puts who they are on the left — details, dates, circles, tags, how you
 met — and what has happened on the right, under three tabs: **Story**, **People** and
 **Notes**. On a phone the two stack, with the story first.

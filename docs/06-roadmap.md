@@ -52,7 +52,8 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   (§2.12); further panels (gifts given) as their base features land.
 - **Interactions timeline** + "last contacted", read as one **story timeline** per person
   together with the journal (§2.23).
-- **Name-based suggestions:** duplicate/relative candidates on contact entry (pure ranker).
+- **Name-based suggestions:** duplicate/relative candidates on contact entry (pure ranker)
+  — shipped in *Add a person* (§2.2.1).
 - **Relationship intelligence:** derived kinship (grandparent, cousin, …) + propagation
   suggestions (e.g. mother of a sibling) — a pure, test-first kinship-inference engine.
 - **Circles & shared contexts:** circles with time-bounded memberships, name autocomplete
