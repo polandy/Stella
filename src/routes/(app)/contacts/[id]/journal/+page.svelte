@@ -5,6 +5,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { processImage } from '$lib/image/process-image';
 	import { useRemovals } from '$lib/undo/context.svelte';
+	import { removalKey as buildKey } from '$lib/undo/keys';
 	import { submitAction } from '$lib/undo/submit-action';
 	import type { ActionData, PageData } from './$types';
 
@@ -53,7 +54,7 @@
 
 	// Removing is held back for an undo window (docs/02 §2.23), same as on the story.
 	const removals = useRemovals();
-	const removalKey = (entry: { id: string }) => `journal:${entry.id}`;
+	const removalKey = (entry: { id: string }) => buildKey('journal', entry.id);
 	function deferRemoval(event: SubmitEvent, entry: { id: string }) {
 		event.preventDefault();
 		const body = new FormData(event.currentTarget as HTMLFormElement);
