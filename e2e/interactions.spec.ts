@@ -32,6 +32,9 @@ const storyItems = (page: Page) => page.locator('[data-story-item]');
 
 const TITLE = 'Quill call about the harbour trip';
 
+/** One page of the story (docs/02 §2.23); Opa Hans is seeded with more than this. */
+const STORY_PAGE_SIZE = 12;
+
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
@@ -115,4 +118,20 @@ test('removes an own interaction and last contacted moves to the remaining one',
 	await expect(timeline).not.toContainText(TITLE);
 	await expect(timeline).toContainText('Quill lunch, the earlier one');
 	await expect(page.getByTestId('last-contacted')).toContainText('20 August 2026');
+});
+
+test('pages back through both sources with "Show earlier", showing every item once', async ({ page }) => {
+	await openPerson(page, /Hans Brunner/);
+
+	await expect(storyItems(page)).toHaveCount(STORY_PAGE_SIZE);
+	const firstPage = await storyItems(page).allTextContents();
+
+	await page.getByRole('button', { name: 'Show earlier' }).click();
+
+	// The seed gives Hans fourteen items, journal and touchpoints alike: one more page, no repeats.
+	await expect(storyItems(page)).toHaveCount(14);
+	const all = await storyItems(page).allTextContents();
+	expect(all.slice(0, STORY_PAGE_SIZE)).toEqual(firstPage);
+	expect(new Set(all).size).toBe(all.length);
+	await expect(page.getByRole('button', { name: 'Show earlier' })).toHaveCount(0);
 });

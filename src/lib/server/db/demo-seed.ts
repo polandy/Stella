@@ -8,6 +8,8 @@ import {
 	contactField,
 	household,
 	importantDate,
+	interaction,
+	journalEntry,
 	note,
 	relationship,
 	user
@@ -315,6 +317,53 @@ const IMPORTANT_DATES: readonly ImportantDateSeed[] = [
 	{ person: 'vreni', kind: 'custom', label: 'Letzter Schultag der 5b', date: '2027-07-02' }
 ];
 
+/*
+ * The story so far (docs/02 §2.23): journal entries and touchpoints, dated relative to the
+ * day the seed runs so "Quiet lately" and "last written about" always have something to say.
+ * Lena is deliberately left out — the e2e suite writes her story itself and counts it.
+ * Opa Hans carries enough for the timeline to need a second page.
+ */
+interface StorySeed {
+	person: string;
+	daysAgo: number;
+	kind?: 'met' | 'call' | 'video' | 'message' | 'letter' | 'gift';
+	text: string;
+}
+
+const STORY: readonly StorySeed[] = [
+	{ person: 'markus', daysAgo: 1, kind: 'call', text: 'Sunday call' },
+	{ person: 'markus', daysAgo: 2, text: 'Markus fixed the garden gate at last — with Noah holding the screws.' },
+	{ person: 'hans', daysAgo: 8, text: 'Opa Hans told the story about the 1972 flood again, this time with the photo of the bridge.' },
+	{ person: 'hans', daysAgo: 30, kind: 'met', text: 'Lunch at the Bären' },
+	{ person: 'hans', daysAgo: 45, text: 'Hans sharpened every knife in the house and pretended it was nothing.' },
+	{ person: 'hans', daysAgo: 60, kind: 'call', text: 'Called about the roof' },
+	{ person: 'hans', daysAgo: 75, text: 'Hans found his old carpentry ledger from 1969. Every chair in the village is in it.' },
+	{ person: 'hans', daysAgo: 90, kind: 'video', text: 'Video call with the kids' },
+	{ person: 'hans', daysAgo: 110, text: 'Hans and Rosa danced in the kitchen. Nobody was supposed to see.' },
+	{ person: 'hans', daysAgo: 130, kind: 'gift', text: 'Brought him the biography he mentioned' },
+	{ person: 'hans', daysAgo: 150, text: 'Hans taught Noah how to whittle a whistle. It even works.' },
+	{ person: 'hans', daysAgo: 170, kind: 'letter', text: 'Postcard from the Engadin' },
+	{ person: 'hans', daysAgo: 190, text: 'Hans mended the sled runner the night before the first snow.' },
+	{ person: 'hans', daysAgo: 210, kind: 'met', text: 'Sunday roast at theirs' },
+	{ person: 'hans', daysAgo: 230, text: 'Hans told us he was once a very fast skater. Rosa confirmed it, grudgingly.' },
+	{ person: 'hans', daysAgo: 250, kind: 'message', text: 'Sent him the photos from the christening' },
+	{ person: 'nadia', daysAgo: 20, kind: 'met', text: 'Coffee in Bern' },
+	{ person: 'rosa', daysAgo: 100, text: 'Rosa sent the recipe for the plum cake. Written on the back of an envelope, of course.' },
+	{ person: 'peter', daysAgo: 95, kind: 'gift', text: 'Birthday wine' },
+	{ person: 'vreni', daysAgo: 200, text: 'Vreni turned 80. The whole choir came.' },
+	{ person: 'heidi', daysAgo: 240, kind: 'letter', text: 'Christmas card, late' },
+	{ person: 'reto', daysAgo: 300, text: 'Reto helped move the piano. Owe him a dinner.' }
+];
+
+const DAY_MS = 86_400_000;
+
+/**
+ * How long ago the household "added" its people and relationships. Dated back so the stream
+ * opens on the story rather than on forty "You linked …" rows from the moment the seed ran.
+ */
+const SEED_AGE_DAYS = 400;
+const dayBefore = (now: number, days: number) => new Date(now - days * DAY_MS).toISOString().slice(0, 10);
+
 const cid = (key: string) => `demo-c-${key}`;
 const circleId = (key: string) => `demo-circle-${key}`;
 const SYMMETRIC_TYPES = new Set(['sibling', 'spouse', 'partner', 'friend', 'colleague', 'neighbor', 'acquaintance', 'knows']);
@@ -331,6 +380,8 @@ export function seedDemoData(db: BunSQLiteDatabase<typeof schema>): {
 	const { householdId, authorId, created } = resolveHouseholdAndAuthor(db);
 
 	const displayName = (p: Person) => `${p.first} ${p.last}`;
+	const now = Date.now();
+	const seededAt = now - SEED_AGE_DAYS * DAY_MS;
 
 	db.insert(contact)
 		.values(
@@ -346,7 +397,9 @@ export function seedDemoData(db: BunSQLiteDatabase<typeof schema>): {
 				description: p.description ?? null,
 				birthDate: p.birth ?? null,
 				jobTitle: p.job ?? null,
-				company: p.company ?? null
+				company: p.company ?? null,
+				createdAt: seededAt,
+				updatedAt: seededAt
 			}))
 		)
 		.onConflictDoNothing()
@@ -380,7 +433,8 @@ export function seedDemoData(db: BunSQLiteDatabase<typeof schema>): {
 					fromContactId: fromId,
 					toContactId: toId,
 					typeId: r.type,
-					createdBy: authorId
+					createdBy: authorId,
+					createdAt: seededAt
 				};
 			})
 		)
@@ -449,6 +503,38 @@ export function seedDemoData(db: BunSQLiteDatabase<typeof schema>): {
 				title: n.title,
 				body: n.body,
 				isPinned: n.pinned ? 1 : 0
+			}))
+		)
+		.onConflictDoNothing()
+		.run();
+
+	db.insert(journalEntry)
+		.values(
+			STORY.filter((s) => s.kind === undefined).map((s, i) => ({
+				id: `demo-journal-${s.person}-${i}`,
+				contactId: cid(s.person),
+				createdBy: authorId,
+				entryDate: dayBefore(now, s.daysAgo),
+				body: s.text,
+				// Dated when they happened, so the stream does not show a year of "just now".
+				createdAt: now - s.daysAgo * DAY_MS,
+				updatedAt: now - s.daysAgo * DAY_MS
+			}))
+		)
+		.onConflictDoNothing()
+		.run();
+
+	db.insert(interaction)
+		.values(
+			STORY.filter((s) => s.kind !== undefined).map((s, i) => ({
+				id: `demo-touch-${s.person}-${i}`,
+				contactId: cid(s.person),
+				createdBy: authorId,
+				kind: s.kind!,
+				happenedAt: dayBefore(now, s.daysAgo),
+				title: s.text,
+				createdAt: now - s.daysAgo * DAY_MS,
+				updatedAt: now - s.daysAgo * DAY_MS
 			}))
 		)
 		.onConflictDoNothing()

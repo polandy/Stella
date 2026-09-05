@@ -1,23 +1,26 @@
 <script lang="ts">
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
+	import Section from '$lib/components/Section.svelte';
 	import { accentDotStyle } from '$lib/design/tokens';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	const circle = $derived(data.circle);
+	const INPUT = 'rounded-md border border-border bg-bg px-3 py-2 text-fg';
 </script>
 
 <svelte:head><title>{circle.name} · Circles · Stella</title></svelte:head>
 
-<main class="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-6 px-6 py-10">
-	<a href="/circles" class="text-sm text-fg-muted hover:text-fg">← Circles</a>
-
-	<header class="flex items-center gap-3">
-		<span class="size-5 shrink-0 rounded-full" style={accentDotStyle(circle.color)}></span>
+<main class="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
+	<header class="flex items-center gap-4">
+		<span class="grid size-12 shrink-0 place-items-center rounded-full" style={accentDotStyle(circle.color)}>
+			<span class="size-4 rounded-full bg-card/70"></span>
+		</span>
 		<div class="min-w-0">
 			<h1 class="truncate text-2xl font-semibold text-fg">{circle.name}</h1>
-			<p class="text-sm text-fg-subtle">
+			<p class="text-sm text-fg-muted">
 				<span class="capitalize">{circle.kind}</span>
 				{#if circle.description} · {circle.description}{/if}
 				{#if circle.visibility === 'private'} · private{/if}
@@ -25,20 +28,21 @@
 		</div>
 	</header>
 
-	<section class="flex flex-col gap-3">
-		<h2 class="text-sm font-medium text-fg-muted">
-			Members ({data.members.length})
-		</h2>
-
+	<Section
+		title="Members"
+		count={data.members.length}
+		addLabel={data.candidates.length ? 'Add member' : undefined}
+		error={form?.error ?? null}
+	>
 		{#if data.members.length}
-			<ul class="flex flex-col gap-1">
+			<ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="member-grid">
 				{#each data.members as m (m.membershipId)}
-					<li class="flex items-center gap-3 rounded-app bg-card px-3 py-2 shadow-card">
-						<Avatar id={m.contactId} name={m.displayName} avatarPhotoId={m.avatarPhotoId} size={32} />
-						<a href="/contacts/{m.contactId}" class="min-w-0 flex-1 truncate font-medium text-fg hover:underline">
-							{m.displayName}
-						</a>
-						{#if m.role}<span class="shrink-0 text-xs text-fg-subtle">{m.role}</span>{/if}
+					<li class="flex items-center gap-3 rounded-app bg-bg px-3 py-2.5">
+						<Avatar id={m.contactId} name={m.displayName} avatarPhotoId={m.avatarPhotoId} size={40} />
+						<span class="min-w-0 flex-1">
+							<a href="/contacts/{m.contactId}" class="block truncate font-medium text-fg hover:underline">{m.displayName}</a>
+							{#if m.role}<span class="block truncate text-xs text-fg-subtle">{m.role}</span>{/if}
+						</span>
 						<form method="POST" action="?/removeMember">
 							<input type="hidden" name="contactId" value={m.contactId} />
 							<Button variant="danger" size="sm" icon="remove" label="Remove from circle" title="Remove from circle" />
@@ -47,24 +51,23 @@
 				{/each}
 			</ul>
 		{:else}
-			<p class="text-sm text-fg-subtle">No members yet.</p>
+			<EmptyState icon="people" title="Nobody in this circle yet" hint="Add the people who share this context; each of them will show it on their page." />
 		{/if}
 
-		{#if data.candidates.length}
-			<form method="POST" action="?/addMember" class="mt-2 flex flex-wrap items-end gap-3 rounded-app border border-dashed border-border p-4">
-				{#if form?.error}<p class="w-full rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>{/if}
+		{#snippet editor()}
+			<form method="POST" action="?/addMember" class="flex flex-wrap items-end gap-3">
 				<label class="flex flex-1 flex-col gap-1 text-sm">
-					<span class="text-fg-muted">Add member</span>
-					<select name="contactId" class="rounded-md border border-border bg-bg px-3 py-2 text-fg">
+					<span class="text-fg-muted">Person</span>
+					<select name="contactId" class={INPUT}>
 						{#each data.candidates as c (c.id)}<option value={c.id}>{c.displayName}</option>{/each}
 					</select>
 				</label>
 				<label class="flex flex-col gap-1 text-sm">
 					<span class="text-fg-muted">Role (optional)</span>
-					<input name="role" placeholder="member" class="w-32 rounded-md border border-border bg-bg px-3 py-2 text-fg" />
+					<input name="role" placeholder="member" class="w-32 {INPUT}" />
 				</label>
 				<Button variant="primary" size="sm">Add</Button>
 			</form>
-		{/if}
-	</section>
+		{/snippet}
+	</Section>
 </main>

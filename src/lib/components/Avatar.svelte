@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { avatarAccent, initials } from '$lib/avatar';
 	import { accentAvatarStyle } from '$lib/design/tokens';
+	import { thumbnailUrl } from '$lib/media/urls';
 
 	interface Props {
 		id: string;
@@ -17,7 +18,7 @@
 
 {#if avatarPhotoId}
 	<img
-		src="/media/{avatarPhotoId}?thumb"
+		src={thumbnailUrl(avatarPhotoId)}
 		alt={name}
 		width={size}
 		height={size}

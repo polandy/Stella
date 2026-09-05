@@ -326,3 +326,9 @@ body {
 		transition-duration: 0.001ms !important;
 	}
 }
+
+/* Screen-to-screen cross-fade (docs/05 §5.5); the shell opts out under reduced motion. */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 160ms;
+}
