@@ -40,6 +40,16 @@ import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
 import { toStoryItem } from './story-view';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
+import {
+	captionGalleryPhoto,
+	CaptionTooLongError,
+	listGallery,
+	removeGalleryPhoto,
+	setGalleryPhotoVisibility,
+	useAsAvatar
+} from '$lib/server/domain/media/gallery';
+import { addGalleryPhoto } from '$lib/server/domain/media/gallery-upload';
+import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
 import { renderMarkdown } from '$lib/server/domain/notes/markdown';
 import { createNote, listNotesForContact } from '$lib/server/domain/notes/notes';
 import {
@@ -64,6 +74,8 @@ import {
 	getInteractionDeps,
 	getJournalDeps,
 	getNoteDeps,
+	getGalleryDeps,
+	getGalleryUploadDeps,
 	getPhotos,
 	getRelationshipDeps,
 	getRelationships,
@@ -112,6 +124,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		allCircles,
 		storyPage,
 		journalPhotos,
+		gallery,
 		dates,
 		interactions,
 		kinship
@@ -126,6 +139,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		listCircles(getCircleDeps(), viewer),
 		listStoryPage(getStoryDeps(), viewer, params.id, { limit: STORY_PAGE }),
 		getPhotos().listJournalPhotos(viewer, params.id),
+		listGallery(getGalleryDeps(), viewer, params.id),
 		listImportantDates(getImportantDateDeps(), viewer, params.id),
 		listInteractions(getInteractionDeps(), viewer, params.id),
 		readKinship(getRelationshipDeps(), viewer, params.id, parseProposePair(url.searchParams.get('propose')))
@@ -203,6 +217,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		otherContacts: allContacts.filter((c) => c.id !== params.id),
 		// `?relate=<id>` pre-selects a person in the relationship form (the stream's link hint, §2.22.1).
 		relateTo: url.searchParams.get('relate'),
+		// The person's photo gallery (docs/02 §2.14), newest first, already visibility-scoped.
+		gallery,
 		// render Markdown server-side; the output is already safe (docs/02 §2.5)
 		notes: notes.map((note) => ({
 			id: note.id,
@@ -224,6 +240,14 @@ const AddRelationshipSchema = v.object({
 	targetId: v.pipe(v.string(), v.minLength(1)),
 	typeId: v.pipe(v.string(), v.minLength(1)),
 	description: v.optional(v.pipe(v.string(), v.trim()))
+});
+
+/** Visibility of a newly uploaded gallery photo (docs/02 §2.14). */
+const VisibilitySchema = v.optional(v.picklist(['shared', 'private']), 'shared');
+
+const PhotoVisibilitySchema = v.object({
+	photoId: v.pipe(v.string(), v.minLength(1)),
+	visibility: v.picklist(['shared', 'private'])
 });
 
 /** One confirmed propagation suggestion (docs/02 §2.4.1). */
@@ -652,6 +676,118 @@ export const actions: Actions = {
 
 		await unassignTag(getTagDeps(), params.id, tagId);
 		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/** Add one or more photos to the gallery (docs/02 §2.14). */
+	addGalleryPhotos: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const contact = await getContact(getContactDeps(), viewer, params.id);
+		if (!contact) throw error(404, 'Contact not found');
+
+		const form = await request.formData();
+		const images = form.getAll('image').filter((f): f is File => f instanceof File);
+		const thumbs = form.getAll('thumb').filter((f): f is File => f instanceof File);
+		const widths = form.getAll('width');
+		const heights = form.getAll('height');
+		if (images.length === 0 || images.length !== thumbs.length) {
+			return fail(400, { photoError: 'Please choose at least one image.' });
+		}
+		const visibility = v.parse(VisibilitySchema, form.get('visibility') || undefined);
+
+		try {
+			for (const [index, image] of images.entries()) {
+				await addGalleryPhoto(
+					getGalleryUploadDeps(),
+					{ userId: locals.user.id, householdId: locals.user.householdId },
+					{
+						contactId: params.id,
+						visibility,
+						upload: {
+							image: new Uint8Array(await image.arrayBuffer()),
+							thumb: new Uint8Array(await thumbs[index]!.arrayBuffer()),
+							width: Number(widths[index]),
+							height: Number(heights[index])
+						}
+					}
+				);
+			}
+		} catch (err) {
+			return fail(400, {
+				photoError: err instanceof InvalidImageError ? err.message : 'Could not store the photo.'
+			});
+		}
+		throw redirect(303, `/contacts/${params.id}#photos`);
+	},
+
+	/** Caption a gallery photo; blank clears it. Only its uploader may. */
+	captionPhoto: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const form = await request.formData();
+		const photoId = form.get('photoId');
+		const caption = form.get('caption');
+		if (typeof photoId !== 'string' || typeof caption !== 'string') {
+			return fail(400, { photoError: 'Could not read that caption.' });
+		}
+		try {
+			if (!(await captionGalleryPhoto(getGalleryDeps(), viewer, photoId, caption))) {
+				return fail(403, { photoError: 'Only the person who added a photo can caption it.' });
+			}
+		} catch (err) {
+			if (err instanceof CaptionTooLongError) return fail(400, { photoError: err.message });
+			throw err;
+		}
+		throw redirect(303, `/contacts/${params.id}#photos`);
+	},
+
+	/** Move a gallery photo between shared and private. Only its uploader may. */
+	setPhotoVisibility: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const form = await request.formData();
+		const parsed = v.safeParse(PhotoVisibilitySchema, {
+			photoId: form.get('photoId'),
+			visibility: form.get('visibility')
+		});
+		if (!parsed.success) return fail(400, { photoError: 'Could not read that photo.' });
+		if (
+			!(await setGalleryPhotoVisibility(
+				getGalleryDeps(),
+				viewer,
+				parsed.output.photoId,
+				parsed.output.visibility
+			))
+		) {
+			return fail(403, { photoError: 'Only the person who added a photo can change it.' });
+		}
+		throw redirect(303, `/contacts/${params.id}#photos`);
+	},
+
+	/** Wear a gallery photo as this contact's avatar. */
+	usePhotoAsAvatar: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const form = await request.formData();
+		const photoId = form.get('photoId');
+		if (typeof photoId !== 'string') return fail(400, { photoError: 'Could not read that photo.' });
+		if (!(await useAsAvatar(getGalleryDeps(), viewer, params.id, photoId))) {
+			return fail(404, { photoError: 'That photo could not be found.' });
+		}
+		throw redirect(303, `/contacts/${params.id}#photos`);
+	},
+
+	/** Delete a gallery photo and its files. Only its uploader may. */
+	removePhoto: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const form = await request.formData();
+		const photoId = form.get('photoId');
+		if (typeof photoId !== 'string') return fail(400, { photoError: 'Could not read that photo.' });
+		if (!(await removeGalleryPhoto(getGalleryDeps(), viewer, photoId))) {
+			return fail(403, { photoError: 'Only the person who added a photo can remove it.' });
+		}
+		throw redirect(303, `/contacts/${params.id}#photos`);
 	},
 
 	setAvatar: async ({ request, params, locals }) => {
