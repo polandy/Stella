@@ -61,6 +61,11 @@
 	// ⌘K / Ctrl+K opens the palette from anywhere (docs/05 §5.4); its first row is the
 	// capture field, so the old "jump to What happened?" is still two keystrokes away.
 	let paletteOpen = $state(false);
+	// The palette is the one control here that does nothing at all without JavaScript, and the
+	// shortcut only listens once this layout has mounted. Until then the trigger says so by
+	// being disabled, rather than swallowing a click in the first moments after a load.
+	let paletteReady = $state(false);
+	onMount(() => (paletteReady = true));
 	function onGlobalKeydown(event: KeyboardEvent) {
 		if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return;
 		event.preventDefault();
@@ -209,6 +214,7 @@
 				<button
 					type="button"
 					onclick={() => (paletteOpen = true)}
+					disabled={!paletteReady}
 					class="flex items-center gap-2 rounded-control bg-card px-3 py-2 text-sm text-fg-subtle shadow-card transition-colors hover:text-fg"
 					aria-label="Search"
 					aria-keyshortcuts="Meta+K Control+K"

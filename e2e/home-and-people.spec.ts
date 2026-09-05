@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { appReady } from './app';
 
 /*
  * Home's rail, the People directory and the ⌘K palette (docs/02 §2.12.1, §2.2, §2.22.1;
@@ -54,6 +55,9 @@ test('finds a person by the nickname given when they were added', async ({ page 
 
 test('jumps to a person from anywhere with ⌘K, type, Enter', async ({ page }) => {
 	await page.goto('/circles');
+	// The shortcut only listens once the shell has mounted, and the trigger enables itself at
+	// the same moment — so this is the page saying it is ready, not a wait and a hope.
+	await appReady(page);
 	await page.keyboard.press('Control+k');
 	const palette = page.getByRole('dialog', { name: 'Jump to' });
 	await expect(palette).toBeVisible();

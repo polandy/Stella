@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { appReady } from './app';
 
 /*
  * Circles as cards and a member grid (docs/02 §2.4.2, docs/05 §5.5). Written after the
@@ -48,6 +49,8 @@ test('opens a circle, adds a member from the card’s own disclosure and shows t
 
 test('a new circle starts with an invitation rather than an empty list', async ({ page }) => {
 	await page.goto('/circles');
+	// *New circle* is a disclosure, so it only answers once the shell has mounted.
+	await appReady(page);
 	await page.getByRole('button', { name: 'New circle' }).click();
 	await page.getByLabel('Name').fill('Quill Choir');
 	await page.getByRole('button', { name: 'Create circle' }).click();
