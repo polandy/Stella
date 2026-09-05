@@ -140,6 +140,16 @@ names). It respects visibility (§2.10) — only candidates the user may see are
 Powered by the indexed name data behind search (§2.9); a pure, test-first ranking function
 orders candidates by surname match, then shared relationships/household proximity.
 
+- **Shipped:** under the name fields of *Add a person*, an **Already in Stella?** box lists
+  up to five people once a surname is typed: an exact full-name match first (*Same name — is
+  this them?*), then the same surname, then a surname one typo away (*Similar surname*).
+  Matching ignores case and diacritics and looks at each part of a compound surname
+  (*Brunner* finds *Brunner-Keller*); ties go to the better-connected person. Each row links
+  to the existing page (the duplicate check) and offers **Link as relative**: the new person
+  is created and lands on their own page with the relationship editor open and that relative
+  preselected (`?relate=`, the same hand-off a moment's "link these two?" uses). Only people
+  the member may see are proposed, and only their visible relationships count.
+
 ## 2.3 Contact fields **[M1]**
 
 Flexible, repeatable contact methods on a contact:
