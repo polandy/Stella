@@ -6,7 +6,8 @@ import { defineConfig, devices } from '@playwright/test';
  * and a loopback base URL both sides can reach via `--network host`.
  */
 
-const PORT = 4173;
+// Overridable so two worktrees can run the suite at once without silently sharing a server.
+const PORT = Number(process.env.E2E_PORT ?? 4173);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
