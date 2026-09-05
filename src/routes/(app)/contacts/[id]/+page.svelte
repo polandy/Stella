@@ -80,6 +80,9 @@
 	const removals = useRemovals();
 	const shown = <T extends { id: string }>(kind: RemovalKind, rows: T[]) =>
 		rows.filter((row) => !removals.isPending(removalKey(kind, row.id)));
+	const visibleFields = $derived(shown('field', data.fields));
+	const visibleDates = $derived(shown('date', data.dates));
+	const visibleTags = $derived(shown('tag', data.tags));
 	const visibleCircles = $derived(
 		data.circles.filter((circle) => !removals.isPending(removalKey('membership', circle.membershipId)))
 	);
@@ -139,9 +142,9 @@
 		<!-- Profile. Second on a phone: the story is why you opened the page. -->
 		<div class="order-2 flex min-w-0 flex-col gap-4 lg:sticky lg:top-4 lg:order-1">
 			<Section title="Contact" addLabel="Add" error={form?.fieldError ?? null} bind:open={openSection.contact}>
-				{#if data.fields.length > 0}
+				{#if visibleFields.length > 0}
 					<dl class="grid grid-cols-[5rem_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-sm">
-						{#each shown('field', data.fields) as f (f.id)}
+						{#each visibleFields as f (f.id)}
 							<dt class="truncate text-fg-subtle">{f.label ?? f.kind}</dt>
 							<dd class="flex min-w-0 items-center gap-2">
 								{#if f.href}
@@ -178,7 +181,7 @@
 			</Section>
 
 			<Section title="Dates" addLabel="Add" error={form?.dateError ?? null} bind:open={openSection.dates}>
-				{#if data.derivedBirthday || data.estimatedBirthYear || data.dates.length > 0}
+				{#if data.derivedBirthday || data.estimatedBirthYear || visibleDates.length > 0}
 					<ul class="flex flex-col gap-1.5 text-sm">
 						{#if data.estimatedBirthYear}
 							<li class="flex items-center gap-3">
@@ -194,7 +197,7 @@
 								<span class="text-xs text-fg-subtle">from the profile</span>
 							</li>
 						{/if}
-						{#each shown('date', data.dates) as d (d.id)}
+						{#each visibleDates as d (d.id)}
 							<li class="flex items-center gap-3">
 								<span class="w-20 shrink-0 truncate text-fg-subtle">{d.label ?? d.kind}</span>
 								<span class="flex-1 truncate text-fg">{dayLabel(d.date)}</span>
@@ -245,7 +248,7 @@
 					<a href="/circles" class="text-xs text-link hover:underline">All circles</a>
 				{/snippet}
 
-				{#if data.circles.length}
+				{#if visibleCircles.length}
 					<ul class="flex flex-wrap gap-1.5">
 						{#each visibleCircles as circle (circle.membershipId)}
 							<li class="min-w-0 max-w-full">
@@ -296,10 +299,10 @@
 				{/snippet}
 			</Section>
 
-			<Section title="Tags" count={shown('tag', data.tags).length} addLabel="Add" error={form?.tagError ?? null} bind:open={openSection.tags}>
-				{#if data.tags.length}
+			<Section title="Tags" count={visibleTags.length} addLabel="Add" error={form?.tagError ?? null} bind:open={openSection.tags}>
+				{#if visibleTags.length}
 					<ul class="flex flex-wrap gap-1.5">
-						{#each shown('tag', data.tags) as tag (tag.id)}
+						{#each visibleTags as tag (tag.id)}
 							<li
 								class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-medium"
 								style={accentChipStyle(tag.color)}
