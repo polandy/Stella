@@ -97,9 +97,9 @@ test('keeps an archived person in the family, only out of the lists', async ({ p
 test('keeps their name in something already written about them', async ({ page }) => {
 	// A moment naming both Widmers: Thomas anchors it, Franziska rides along as a mention.
 	await page.getByLabel('What happened?').pressSequentially('Walked the Aare with ');
-	await mention(page, 'Thomas Widmer', /Thomas Widmer/);
+	await mention(page, 'Thomas', /Thomas Widmer/);
 	await page.getByLabel('What happened?').pressSequentially('and ');
-	await mention(page, 'Franziska Widmer', new RegExp(WHO));
+	await mention(page, 'Franziska', new RegExp(WHO));
 	await page.getByRole('button', { name: /^Save/ }).click();
 	await expect(page.locator('article').first().getByRole('link', { name: WHO })).toBeVisible();
 
