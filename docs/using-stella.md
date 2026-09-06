@@ -174,6 +174,22 @@ Every profile shows the person at the centre of their own small constellation. *
 connections** opens the bigger picture, where you can follow the web outward from one
 person and trace how any two people are linked.
 
+### When none of the kinds fit
+
+Stella ships with twelve kinds of link, from *Parent of* to the catch-all *Connected to*. If
+your family thinks in one that is missing — godparent, choir mate, landlord — the household
+admin can add it under **Settings → Relationship types**. Give it a label, say whether it
+reads the same from both sides (*Sings with* does; *Godparent of* does not, so it also wants
+*Godchild of*), pick a category for its colour, and it joins the picker on every person's
+page from then on.
+
+Two things are deliberately fixed. The twelve built-in kinds cannot be renamed, because the
+relatives Stella works out for you are read off them — rename *Parent of* and the
+grandparents stop making sense. And once a type exists, whether it reads the same from both
+sides stays as it was, because that is what decides how its links are stored. A type you no
+longer want can be removed once nothing uses it; while links still point at it, the page
+tells you how many instead of offering the button.
+
 ## Circles
 
 A circle is a context people share: a school class, a football team, a choir, a street.

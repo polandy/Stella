@@ -206,6 +206,20 @@ reciprocal** link.
   (§2.4.1), and a divorce does not unmake a stepmother. The status says how the household
   reads the link today; it is not a delete.
 
+- **Shipped:** *Settings → Data → Relationship types* lets the admin name kinds of link the
+  built-in set does not cover — godparent, choir mate, landlord — with a label, the label
+  from the other side where the two differ, and a category. They then appear in the picker on
+  every person page, after the built-in ones. The **machine key is derived from the label**
+  rather than typed, and four keys are refused outright: `parent_child`, `sibling`, `partner`
+  and `spouse` are what the kinship engine reads (§2.4.1), so a custom type carrying one would
+  silently invent grandparents and in-laws. The **built-in twelve are read-only** for the same
+  reason — they are listed on the page as part of the app, not as an editable set. A custom
+  type can be renamed and recategorised at any time; whether it **reads the same from both
+  sides is fixed once it exists**, because that decides how its links are stored. A type that
+  relationships still point at cannot be removed, and the page shows its usage count in place
+  of the remove button rather than offering a removal that would be refused. Types belong to
+  the household: another household's are neither offered nor reachable by id.
+
 ### 2.4.1 Relationship intelligence — derived kinship & propagation **[M2]**
 
 Stella reasons over the relationship graph so members enter as little as possible.

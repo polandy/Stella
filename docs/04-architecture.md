@@ -278,6 +278,15 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   cost is that a path can be longer than the drawn graph suggests; the drawn line is still
   there, and selecting it names the relationship.
 
+- **A custom relationship type's key is derived, and the kinship keys are reserved** — the
+  household types a label; `relationshipTypeKey` slugs it. Letting a key be typed would let a
+  household mint `parent_child`, `sibling`, `partner` or `spouse`, which `kinship-graph-read`
+  switches on to feed the inference engine — a type named for convenience would then invent
+  grandparents and in-laws nobody entered. Rejecting those four keys outright is cheaper than
+  making the inference defend itself, and the built-in set stays read-only so the other end of
+  the same coupling cannot be pulled either. The cost is that two types can never share a
+  label; the message says so.
+
 - **Kinship edges are derived per viewer at read time, not stored** — `loadVisibleGraph`
   infers them from the same visibility-scoped snapshot the person page uses
   (`kinship-graph-read.ts`, shared by both repositories so the two can never disagree).

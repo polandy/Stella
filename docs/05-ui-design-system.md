@@ -258,7 +258,11 @@ They must be edited together; `app.css` says so at both blocks.
   *Today:* a landing page with the **Data** section, and the **Import from Monica** wizard
   (§2.16) as a three-step page — numbered step strip, a count-tile preview with a
   "left out, and why" card, then the import result and a folder picker with a progress bar
-  for photos. Admin only; members see why.
+  for photos, plus **Relationship types** (docs/02 §2.4): the household's own types as rows
+  with a category dot, an *Edit* disclosure and — only where nothing uses the type — a
+  `RemoveButton` with the usual Undo window; a type in use shows `used N×` in its place. The
+  built-in twelve follow as a plain, actionless list under *Built in*, so their absence from
+  the editable set reads as deliberate. Admin only; members see why.
 - **Auth** — one split shell for sign-in and first-run setup: the brand and one line of
   promise on a sunken panel, the form beside it; on a phone the panel shrinks to a header so
   the form comes first. Sign-in offers **"Sign in with SSO"** (Authelia) and, if enabled, a

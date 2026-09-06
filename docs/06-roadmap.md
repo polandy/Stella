@@ -71,7 +71,8 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   tree/clustered layouts. Built as a pure graph-model domain + a confined Cytoscape
   rendering adapter (docs/04 §4.11) — the pure operations are test-first.
 - **Custom relationship types**; relationship note/since/status — the specifics (how they
-  connect, since, current/former), editing and removal shipped (§2.4); custom types still open.
+  connect, since, current/former), editing and removal shipped, and a household names its own
+  types under *Settings → Relationship types* (§2.4).
 - **Contact management:** merge, archive, delete with audit entries.
 - **@mentions** in notes → soft links.
 - **Data portability:** export/import archive; admin "Download backup".

@@ -204,10 +204,21 @@ Defines a directional, reciprocal relationship kind.
 | symmetric | int | 0/1 (partner/sibling/friend = 1) |
 | sort_order | int | |
 
-**Built-in seed set.** Shipped with `household_id = NULL`; a household may add custom
-types [M2]. `sym` = symmetric (one label, same both ways). Non-symmetric types are
+**Built-in seed set.** Shipped with `household_id = NULL`; a household adds custom types
+[M2]. `sym` = symmetric (one label, same both ways). Non-symmetric types are
 stored once and rendered from whichever side you view. The relationship's free-text
 `note` carries the specifics ("second cousin", "manager at Acme").
+
+**Reads are household-scoped.** A type is usable when `household_id` is NULL or equals the
+viewer's household; another household's is neither listed nor resolvable by id, so it can
+never end up on a `relationship` row. Writes go further and match only `household_id =
+viewer's household`, which is what keeps the built-in set read-only in SQL as well as in the
+use-case. `key` is derived from the forward label and may never be one of `parent_child`,
+`sibling`, `partner` or `spouse` — the keys the kinship inference reads (docs/02 §2.4.1).
+`sort_order` is 0…11 for the built-ins and 100 for every custom type, with the forward label
+breaking the tie. A type is not deletable while `relationship` rows still reference it, and
+`symmetric` is not changeable then either, because it decides the canonical storage
+direction of those rows.
 
 | key | category | forward label | reverse label | sym |
 |---|---|---|---|---|
