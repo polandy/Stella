@@ -370,6 +370,15 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 - **Beautiful & accessible:** Catppuccin-themed in light/dark, smooth but
   `prefers-reduced-motion`-aware, keyboard-operable, with a list-based fallback view.
 
+- **Shipped:** the explorer draws derived kinship as its own dotted, neutral-coloured line
+  next to the entered relationships and circle memberships, toggled by the **Kinship** chip.
+  It is inferred per viewer from the links that viewer may see, so an inferred line can never
+  name a hidden person, and a pair the household linked itself keeps its own name. Selecting
+  a person names the lines around them — "Grandfather", "Parent of", "via Kegelclub" —
+  because hundreds of labels at once would be noise. The **connection path** deliberately
+  ignores derived lines: it answers with the chain through the people who connect the two,
+  not with the one-word name for that chain (docs/04 §4.9).
+
 ## 2.8 Tags **[M1]**
 
 - Freely created labels with a name and a color (from the Catppuccin accent set).

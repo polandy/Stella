@@ -10,7 +10,12 @@
 	import { paletteFromDom } from '$lib/graph/cytoscape/theme';
 	import { findConnectionPath } from '$lib/graph/model/connection-path';
 	import { buildEgoNetwork, expandNode } from '$lib/graph/model/ego-network';
-	import { applyFilters, emptyModel, mergeModels } from '$lib/graph/model/graph-model';
+	import {
+		applyFilters,
+		emptyModel,
+		mergeModels,
+		withoutDerivedLinks
+	} from '$lib/graph/model/graph-model';
 	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
 	import type { ConnectionPath, GraphFilters, GraphModel } from '$lib/graph/model/types';
 
@@ -24,6 +29,9 @@
 	// All exploration runs against this in-memory source — no further requests to the server.
 	// `graph` is fixed for the component's life (the route remounts via {#key centerId}).
 	const source = inMemoryGraphSource(untrack(() => graph));
+	// Path finding travels stored links only: a derived edge names a chain rather than being
+	// one, so hopping it would answer "how do we know each other?" with the label (docs/02 §2.7).
+	const pathSource = inMemoryGraphSource(withoutDerivedLinks(untrack(() => graph)));
 	const contacts = untrack(() => graph).nodes
 		.filter((n) => n.kind === 'person')
 		.map((n) => ({ id: n.id, displayName: n.label }))
@@ -155,7 +163,7 @@
 			pathFrom = null;
 			return;
 		}
-		const found = await findConnectionPath(source, pathFrom, id);
+		const found = await findConnectionPath(pathSource, pathFrom, id);
 		if (found) {
 			model = mergeModels(model, found.model);
 			path = found;
@@ -227,9 +235,12 @@
 		</div>
 	{/if}
 
-	<!-- Toolbar -->
+	<!-- Toolbar. It keeps clear of the peek panel while that is open: the chips wrap on a
+	     narrow window, and the row that wraps would otherwise slide underneath it — leaving
+	     the button under there unclickable. -->
 	<div
-		class="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-center gap-2"
+		class="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-center gap-2 transition-[padding]"
+		class:sm:pr-[17rem]={peekNode && !pathMode}
 	>
 		<div class="pointer-events-auto relative">
 			<input
@@ -294,6 +305,7 @@
 			class="pointer-events-none absolute inset-x-0 top-16 flex justify-center"
 		>
 			<div
+				data-testid="path-prompt"
 				class="rounded-full border border-border bg-card/90 px-4 py-1.5 text-xs text-fg-muted backdrop-blur"
 			>
 				{#if path}

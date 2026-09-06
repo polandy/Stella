@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { deriveKinship, type KinshipGraph } from './kinship';
+import { deriveKinship, deriveKinshipForAll, type KinshipGraph } from './kinship';
 
 /*
  * Derived kinship (docs/02 §2.4.1). From the primary links a household actually enters —
@@ -165,5 +165,20 @@ describe('deriveKinship', () => {
 	it('has nothing to say about someone with no primary links', () => {
 		const lonely = family({ people: [...family().people, p('Solo')] });
 		expect(deriveKinship(lonely, 'Solo')).toEqual([]);
+	});
+});
+
+describe('deriveKinshipForAll', () => {
+	it('gives every person exactly what asking about them one by one gives', () => {
+		const graph = family();
+
+		const all = deriveKinshipForAll(graph);
+
+		expect([...all.keys()]).toEqual(graph.people.map((person) => person.id));
+		for (const person of graph.people) {
+			expect(all.get(person.id)).toEqual(deriveKinship(graph, person.id));
+		}
+		// …and the shared set-up really did have something to share.
+		expect(all.get('Hans')?.length).toBeGreaterThan(0);
 	});
 });

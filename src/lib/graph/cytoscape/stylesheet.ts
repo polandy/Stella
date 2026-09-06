@@ -91,6 +91,19 @@ export function buildStylesheet(p: Palette): CyStyle[] {
 				'curve-style': 'bezier',
 				'line-color': p.fgSubtle,
 				opacity: 0.6,
+				// Every line knows its name ("Parent of", "Grandfather"), but hundreds of them at
+				// once would be noise — the label appears only while the edge is highlighted, so
+				// selecting a person names their connections (docs/02 §2.7).
+				label: 'data(label)',
+				'text-opacity': 0,
+				color: p.fgMuted,
+				'font-size': 10,
+				'font-family': p.fontSans,
+				'text-background-color': p.bg,
+				'text-background-opacity': 0.8,
+				'text-background-shape': 'roundrectangle',
+				'text-background-padding': '2px',
+				'text-rotation': 'autorotate',
 				'transition-property': 'opacity, width, line-color',
 				'transition-duration': '150ms'
 			}
@@ -124,6 +137,7 @@ export function buildStylesheet(p: Palette): CyStyle[] {
 			selector: '.highlight',
 			style: { opacity: 1, width: 2.6, 'border-color': p.focusRing, 'z-index': 20 }
 		},
+		{ selector: 'edge.highlight, edge.onpath', style: { 'text-opacity': 1 } },
 		{ selector: 'node.selected', style: { 'border-color': p.focusRing, 'border-width': 5 } },
 		{ selector: '.faded', style: { opacity: 0.12 } },
 		{ selector: '.filtered-out', style: { display: 'none' } },
