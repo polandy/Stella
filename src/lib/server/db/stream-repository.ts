@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray, or } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import {
@@ -13,11 +13,13 @@ import type {
 	MomentRow,
 	PersonRow,
 	RelationshipRow,
+	RemovalRow,
 	StreamPerson,
 	StreamRepository
 } from '../domain/stream/stream';
 import type * as schema from './schema';
 import {
+	activityLog,
 	contact,
 	interaction,
 	interactionParticipant,
@@ -110,6 +112,39 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				body: r.body,
 				mentions: mentionsByEntry.get(r.id) ?? [],
 				photoIds: photosByEntry.get(r.id) ?? []
+			}));
+		},
+
+		async recentRemovals(viewer: Viewer, limit: number): Promise<RemovalRow[]> {
+			// The only source that is not a table of things that still exist: once a contact is
+			// deleted, the log entry is all that is left of them (docs/04 §4.9). Scoped by hand
+			// because there is no contact left to scope through — the row carries the
+			// visibility the deleted record had (docs/03 §activity_log).
+			const rows = db
+				.select({
+					id: activityLog.id,
+					at: activityLog.createdAt,
+					actorId: user.id,
+					actorName: user.name,
+					summary: activityLog.summary
+				})
+				.from(activityLog)
+				.innerJoin(user, eq(activityLog.actorId, user.id))
+				.where(
+					and(
+						eq(activityLog.householdId, viewer.householdId),
+						eq(activityLog.action, 'delete'),
+						or(eq(activityLog.visibility, 'shared'), eq(activityLog.actorId, viewer.id))
+					)
+				)
+				.orderBy(desc(activityLog.createdAt))
+				.limit(limit)
+				.all();
+			return rows.map((r) => ({
+				id: r.id,
+				at: r.at,
+				actor: { id: r.actorId, name: r.actorName },
+				summary: r.summary
 			}));
 		},
 

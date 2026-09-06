@@ -1,5 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
+import { requireAdmin } from '$lib/server/auth/guards';
 import {
 	addContactField,
 	CONTACT_FIELD_KINDS,
@@ -14,6 +15,7 @@ import {
 } from '$lib/server/domain/circles/circles';
 import {
 	archiveContact,
+	deleteContact,
 	editProfile,
 	EMPTY_CONTACT_NAME_MESSAGE,
 	EmptyContactNameError,
@@ -84,6 +86,7 @@ import {
 	getGalleryUploadDeps,
 	getPhotos,
 	getRelationshipDeps,
+	getDeleteContactDeps,
 	getRelationships,
 	getRelationshipTypes,
 	getStoryDeps,
@@ -196,6 +199,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		// Derived from the list *this viewer* sees, so a private touchpoint never shows here.
 		lastContactedAt: lastContactedAt(interactions),
 		interactionKinds: INTERACTION_KINDS,
+		// Deleting a person for good is admin-only (docs/02 §2.2); archiving is for everyone.
+		isAdmin: locals.user.role === 'admin',
 		dates,
 		// The birthday derived from the profile, unless an explicit row takes over (§2.13.2) or
 		// the birth date is only an estimated year (docs/03 §3.4), which names no day.
@@ -345,6 +350,20 @@ export const actions: Actions = {
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/*
+	 * Deleting for good (docs/02 §2.2). Admin only, like the other irreversible tools in
+	 * Settings → Data: archiving is there for everyone, and this is the one that cannot be
+	 * taken back. The visibility scope still applies, so an admin cannot reach another
+	 * member's private contact.
+	 */
+	delete: async ({ params, locals }) => {
+		const user = requireAdmin(locals);
+		const viewer = { id: user.id, householdId: user.householdId };
+		const done = await deleteContact(getDeleteContactDeps(), viewer, params.id);
+		if (!done) throw error(404, 'Contact not found');
+		throw redirect(303, '/contacts');
 	},
 
 	/*

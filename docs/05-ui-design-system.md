@@ -253,6 +253,12 @@ They must be edited together; `app.css` says so at both blocks.
   came for. An archived person carries a quiet *Archived* chip in their header beside
   *Private*, and the directory grows an **Archived (N)** chip at the end of the tag row,
   leading to the same list with the "last written about" column dropped.
+- **Deleting a person** sits under the archive control on the profile and only for an admin
+  (docs/02 §2.2). It is a two-step disclosure, not a `RemoveButton`: the deferred-removal
+  pattern promises Undo, and there is nothing to put back. The second step spells out what
+  goes with them and carries the only `variant="danger"` button on the page. In Home's stream
+  a removal renders without an avatar or a link — a neutral icon, who did it, and what it
+  says — because the person it names no longer has a page.
 - *(No reminders screen.)* Upcoming dates live in the **Coming up** band on Home, and the
   dates themselves are edited in the **Dates** section of a person's page — kind, day,
   "year unknown", whether it repeats, and whether it shows on Home. A birthday derived from

@@ -165,6 +165,8 @@
 	const savedArchive = savedEnhance(removals);
 	/** Archived or not decides the action, the wording and the marker; asked once. */
 	const archived = $derived(c.archivedAt !== null);
+	/** The second click that a deletion asks for; there is no undo after it. */
+	let confirmingDelete = $state(false);
 	/** The day it happened, for the marker's tooltip. */
 	const archivedOn = $derived(
 		c.archivedAt === null ? null : dayLabel(new Date(c.archivedAt).toLocaleDateString('en-CA'))
@@ -470,6 +472,36 @@
 					{/if}
 				</p>
 			</form>
+
+			<!--
+				The irreversible one, so it asks twice and only an admin sees it (docs/02 §2.2).
+				No undo window: there would be nothing left to put back.
+			-->
+			{#if data.isAdmin}
+				<div>
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						icon="remove"
+						aria-expanded={confirmingDelete}
+						onclick={() => (confirmingDelete = !confirmingDelete)}
+					>
+						{confirmingDelete ? 'Keep them' : 'Delete for good'}
+					</Button>
+					{#if confirmingDelete}
+						<form method="POST" action="?/delete" class="mt-2 flex flex-col gap-2 rounded-app bg-bg-sunken p-3">
+							<p class="text-xs text-fg">
+								This removes {c.displayName} and everything about them — notes, photos, dates,
+								their journal and every link to them. It cannot be undone.
+							</p>
+							<div>
+								<Button variant="danger" size="sm">Delete {c.displayName}</Button>
+							</div>
+						</form>
+					{/if}
+				</div>
+			{/if}
 		</div>
 
 		<!-- What has happened, and who this person is connected to -->

@@ -1,6 +1,7 @@
 import { and, desc, eq, lt, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo } from '../access/query-scoping';
+import type { DeletedPhotoFiles } from '../domain/media/avatars';
 import type { Visibility, Viewer } from '../access/visibility';
 import type {
 	JournalCursor,
@@ -9,7 +10,7 @@ import type {
 	NewJournalEntry
 } from '../domain/journal/journal';
 import type * as schema from './schema';
-import { contact, journalEntry, journalMention } from './schema';
+import { contact, journalEntry, journalMention, photo } from './schema';
 
 /*
  * Drizzle adapter for the JournalRepository port (docs/08 §8.3). Reads join the parent contact
@@ -128,13 +129,27 @@ export function createDrizzleJournalRepository(
 				.all();
 		},
 
-		async deleteOwn(p: { authorId: string; id: string }): Promise<boolean> {
-			const removed = db
-				.delete(journalEntry)
-				.where(and(eq(journalEntry.id, p.id), eq(journalEntry.createdBy, p.authorId)))
-				.returning({ id: journalEntry.id })
-				.all();
-			return removed.length > 0;
+		async deleteOwn(p: { authorId: string; id: string }): Promise<DeletedPhotoFiles[] | null> {
+			return db.transaction((tx) => {
+				const own = tx
+					.select({ id: journalEntry.id })
+					.from(journalEntry)
+					.where(and(eq(journalEntry.id, p.id), eq(journalEntry.createdBy, p.authorId)))
+					.get();
+				if (!own) return null;
+
+				// The photos go first and explicitly: the migration that added
+				// `photo.journal_entry_id` never carried the cascade `schema.ts` declares, so
+				// the database refuses to delete an entry that still has them (docs/03 §photo).
+				// Their bytes go back to the caller to unlink.
+				const files = tx
+					.delete(photo)
+					.where(eq(photo.journalEntryId, p.id))
+					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
+					.all();
+				tx.delete(journalEntry).where(eq(journalEntry.id, p.id)).run();
+				return files;
+			});
 		},
 
 		async replaceMentions(journalEntryId: string, contactIds: string[]): Promise<void> {

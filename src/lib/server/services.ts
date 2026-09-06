@@ -151,6 +151,11 @@ export function getContactDeps(): ContactDeps {
 	return { contacts: getContacts(), ids: ulidGenerator, clock: systemClock };
 }
 
+/** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */
+export function getDeleteContactDeps(): ContactDeps & { media: MediaStore } {
+	return { ...getContactDeps(), media: getMediaStore() };
+}
+
 /** Deps for quick-add's duplicate/relative suggestions (docs/02 §2.2.1). */
 export function getSuggestionDeps(): SuggestionDeps {
 	return { candidates: getContacts() };
@@ -204,7 +209,7 @@ export function getJournal(): JournalRepository {
 }
 
 export function getJournalDeps(): JournalDeps {
-	return { journal: getJournal(), ids: ulidGenerator, clock: systemClock };
+	return { journal: getJournal(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
 }
 
 

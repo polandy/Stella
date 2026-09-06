@@ -70,6 +70,13 @@ because Stella works out grandparents and cousins *through* people, and forgetti
 make it name the rest wrongly. The archived people live behind the **Archived** chip above
 the list, and the same button on their page brings them back.
 
+**Removing someone for good.** Archiving is almost always what you want. If a person really
+should not be in Stella at all — someone added by mistake, or who asked to be removed — the
+household admin can delete them from the same place. That takes everything with them: notes,
+photos, dates, their journal and every link to them, and the picture files themselves. It
+asks twice, and there is no undo afterwards. So that nobody simply vanishes without the
+family knowing, the rest of the household sees *"… removed …"* in the stream on Home.
+
 **Adding someone** takes a name and nothing else. Everything beyond that — description,
 phone, email, address, birthday — is optional and can be filled in whenever.
 

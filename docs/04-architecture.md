@@ -278,6 +278,15 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   cost is that a path can be longer than the drawn graph suggests; the drawn line is still
   there, and selecting it names the relationship.
 
+- **Only deletions are logged** — the stream is a query over the tables that still exist, so
+  nothing is written twice and no event table has to be kept in step. A deletion is the one
+  thing that leaves nothing to query: the row, its notes, its photos and its links are gone.
+  So `activity_log` is written for exactly that one action, in the same transaction as the
+  delete, with the summary precomputed because the record it names cannot be read back and
+  the visibility copied from it so the log leaks nothing. Logging creates and updates too
+  would duplicate what the tables already say and put the two out of step; that is the cost
+  of the asymmetry, and it is the cheaper side.
+
 - **Archiving hides from browsing, not from the graph** — `archived_at` could have been
   folded into `contactVisibleTo`, one line in the one place every read already goes through.
   It is a separate condition (`contactBrowsableBy`) applied at six listing surfaces instead,
