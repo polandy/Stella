@@ -70,7 +70,8 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   connection-path finding between two people, circle + derived-kinship edges, filters and
   tree/clustered layouts. Built as a pure graph-model domain + a confined Cytoscape
   rendering adapter (docs/04 §4.11) — the pure operations are test-first.
-- **Custom relationship types**; relationship note/since/status.
+- **Custom relationship types**; relationship note/since/status — the specifics (how they
+  connect, since, current/former), editing and removal shipped (§2.4); custom types still open.
 - **Contact management:** merge, archive, delete with audit entries.
 - **@mentions** in notes → soft links.
 - **Data portability:** export/import archive; admin "Download backup".

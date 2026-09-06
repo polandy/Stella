@@ -11,7 +11,8 @@ export const REMOVAL_KINDS = [
 	'field',
 	'date',
 	'tag',
-	'membership'
+	'membership',
+	'relationship'
 ] as const;
 
 export type RemovalKind = (typeof REMOVAL_KINDS)[number];

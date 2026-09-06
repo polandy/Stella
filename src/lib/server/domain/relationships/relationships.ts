@@ -2,6 +2,8 @@ import type { KinshipGraph, Pair } from '../../../kinship/kinship';
 import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';
 import { suggestPropagation, type PrimaryLink, type SuggestedLink } from '../../../kinship/propagation';
 import type { Viewer } from '../../access/visibility';
+import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../../relationships/status';
+import { FULL_DATE_SHAPE, isRealCalendarDay } from '../dates/calendar';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 
@@ -65,26 +67,72 @@ export function describeRelationshipFor(
 
 // ── Use-case ────────────────────────────────────────────────────────────────
 
-export interface NewRelationship {
+/** The specifics a relationship carries beyond its type (docs/02 §2.4). */
+export interface RelationshipDetails {
+	/** Free text: how these two connect, e.g. "met through Peter at the ski course". */
+	description: string | null;
+	/** A full ISO day the link dates from, or null. */
+	sinceDate: string | null;
+	status: RelationshipStatus | null;
+}
+
+/** The same three as they arrive from a form: absent, blank and null all mean "not said". */
+export interface RelationshipDetailsInput {
+	description?: string | null;
+	sinceDate?: string | null;
+	status?: string | null;
+}
+
+export class InvalidRelationshipDetailsError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'InvalidRelationshipDetailsError';
+	}
+}
+
+const blankToNull = (value: string | null | undefined): string | null => (value ?? '').trim() || null;
+
+/**
+ * Normalise and check the details, so nothing unreal is ever stored. A since-day must be a
+ * whole day that exists: `--06-01` is legal for a birthday but says nothing about *when* a
+ * relationship began, and `2019-02-30` would silently roll into March downstream.
+ */
+export function parseRelationshipDetails(input: RelationshipDetailsInput): RelationshipDetails {
+	const sinceDate = blankToNull(input.sinceDate);
+	if (sinceDate && !(FULL_DATE_SHAPE.test(sinceDate) && isRealCalendarDay(sinceDate))) {
+		throw new InvalidRelationshipDetailsError(`${sinceDate} is not a day that exists.`);
+	}
+
+	const status = blankToNull(input.status);
+	if (status && !RELATIONSHIP_STATUSES.includes(status as RelationshipStatus)) {
+		throw new InvalidRelationshipDetailsError('A relationship is either current or former.');
+	}
+
+	return {
+		description: blankToNull(input.description),
+		sinceDate,
+		status: status as RelationshipStatus | null
+	};
+}
+
+export interface NewRelationship extends RelationshipDetails {
 	id: string;
 	householdId: string;
 	fromContactId: string;
 	toContactId: string;
 	typeId: string;
-	description: string | null;
 	createdBy: string;
 	createdAt: number;
 	updatedAt: number;
 }
 
 /** One relationship as shown on a contact's profile, already resolved to that perspective. */
-export interface RelationshipView {
+export interface RelationshipView extends RelationshipDetails {
 	id: string;
 	otherContactId: string;
 	otherDisplayName: string;
 	label: string;
 	category: RelationshipCategory;
-	description: string | null;
 }
 
 export interface RelationshipRepository {
@@ -93,6 +141,15 @@ export interface RelationshipRepository {
 	exists(fromContactId: string, toContactId: string, typeId: string): Promise<boolean>;
 	insert(relationship: NewRelationship): Promise<void>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<RelationshipView[]>;
+	/** Writes the specifics; false when the viewer may not see the relationship. */
+	updateDetailsVisibleTo(
+		viewer: Viewer,
+		id: string,
+		details: RelationshipDetails,
+		updatedAt: number
+	): Promise<boolean>;
+	/** Deletes the link; false when the viewer may not see it. Nothing is written in that case. */
+	removeVisibleTo(viewer: Viewer, id: string): Promise<boolean>;
 	/** The primary links the viewer may see, as the kinship engine wants them (docs/02 §2.4.1). */
 	loadKinshipGraphVisibleTo(viewer: Viewer): Promise<KinshipGraph>;
 }
@@ -103,11 +160,10 @@ export interface RelationshipDeps {
 	clock: Clock;
 }
 
-export interface CreateRelationshipInput {
+export interface CreateRelationshipInput extends RelationshipDetailsInput {
 	fromContactId: string;
 	toContactId: string;
 	typeId: string;
-	description?: string | null;
 }
 
 export class DuplicateRelationshipError extends Error {
@@ -132,6 +188,7 @@ export async function createRelationship(
 	if (!type) {
 		throw new Error('Unknown relationship type.');
 	}
+	const details = parseRelationshipDetails(input);
 
 	const { fromContactId, toContactId } = canonicalEndpoints(
 		input.fromContactId,
@@ -151,7 +208,7 @@ export async function createRelationship(
 		fromContactId,
 		toContactId,
 		typeId: input.typeId,
-		description: (input.description ?? '').trim() || null,
+		...details,
 		createdBy,
 		createdAt: now,
 		updatedAt: now
@@ -217,4 +274,36 @@ function primaryLinkBetween(graph: KinshipGraph, a: string, b: string): PrimaryL
 		if (joins(edge.a, edge.b)) return { kind: 'partner', fromId: edge.a, toId: edge.b };
 	}
 	return null;
+}
+
+/**
+ * Correct the specifics of a link that is already there (docs/02 §2.4). The type is not
+ * editable: changing it can flip the stored direction and re-opens the duplicate guard, so
+ * that is a removal and a fresh entry, not an edit.
+ *
+ * Returns false when the viewer may not see the relationship — the same answer as for one
+ * that does not exist, so no one learns of a link through a private person by editing it.
+ */
+export async function editRelationshipDetails(
+	deps: RelationshipDeps,
+	viewer: Viewer,
+	relationshipId: string,
+	input: RelationshipDetailsInput
+): Promise<boolean> {
+	const details = parseRelationshipDetails(input);
+	return deps.relationships.updateDetailsVisibleTo(
+		viewer,
+		relationshipId,
+		details,
+		deps.clock.now()
+	);
+}
+
+/** Take back a link that was entered wrong. False when the viewer may not see it. */
+export async function removeRelationship(
+	deps: RelationshipDeps,
+	viewer: Viewer,
+	relationshipId: string
+): Promise<boolean> {
+	return deps.relationships.removeVisibleTo(viewer, relationshipId);
 }

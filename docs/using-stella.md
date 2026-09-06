@@ -152,6 +152,13 @@ Say once that Lena is Markus's child, and Stella knows the other half of it too 
 is Lena's parent. Relationships have a direction and a label, and the reverse reads
 correctly without you entering it twice.
 
+A link can say more than its label. **How they connect** is yours to write — "met through
+Peter at the ski course" — and there is a **since** day and a **current / former** status if
+they help; all three are optional and all three can be changed later with *Edit* on the row.
+Entered someone as the wrong thing? *Remove* takes the link back, and Stella offers Undo for
+a moment in case that was hasty. Only the type itself cannot be edited: pick the wrong one
+and it is a removal and a fresh entry, because the direction hangs on it.
+
 From the few links you enter, Stella works out the rest and shows them under **Also
 related · worked out, not entered**: grandparents, aunts and uncles, cousins, in-laws,
 step-family. They are never stored and never invented — each says who it comes through, and
