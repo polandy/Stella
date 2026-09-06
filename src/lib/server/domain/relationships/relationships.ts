@@ -5,6 +5,7 @@ import type { Viewer } from '../../access/visibility';
 import type { RelationshipCategory } from '../../../relationships/categories';
 import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../../relationships/status';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../dates/calendar';
+import type { RelationshipTypeRepository } from './relationship-types';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 
@@ -15,6 +16,8 @@ import type { IdGenerator } from '../../id';
 
 export interface RelationshipType {
 	id: string;
+	/** null for the built-in set; the owning household for a custom type (docs/03 §3.6). */
+	householdId: string | null;
 	key: string;
 	forwardLabel: string;
 	reverseLabel: string;
@@ -135,10 +138,6 @@ export interface RelationshipView extends RelationshipDetails {
 }
 
 export interface RelationshipRepository {
-	/** The built-in types plus the viewer's own household's; never another household's. */
-	listTypes(viewer: Viewer): Promise<RelationshipType[]>;
-	/** Resolves a type the viewer's household may use, else null (docs/03 §3.6). */
-	getType(viewer: Viewer, typeId: string): Promise<RelationshipType | null>;
 	exists(fromContactId: string, toContactId: string, typeId: string): Promise<boolean>;
 	insert(relationship: NewRelationship): Promise<void>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<RelationshipView[]>;
@@ -157,6 +156,8 @@ export interface RelationshipRepository {
 
 export interface RelationshipDeps {
 	relationships: RelationshipRepository;
+	/** Only the type lookup: creating a link resolves its type, nothing more. */
+	types: Pick<RelationshipTypeRepository, 'getType'>;
 	ids: IdGenerator;
 	clock: Clock;
 }
@@ -184,7 +185,7 @@ export async function createRelationship(
 	viewer: Viewer,
 	input: CreateRelationshipInput
 ): Promise<string> {
-	const type = await deps.relationships.getType(viewer, input.typeId);
+	const type = await deps.types.getType(viewer, input.typeId);
 	if (!type) {
 		throw new Error('Unknown relationship type.');
 	}

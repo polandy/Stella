@@ -6,6 +6,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import * as schema from './schema';
 import { createDrizzleRelationshipRepository } from './relationship-repository';
+import { CUSTOM_TYPE_SORT_ORDER } from '../domain/relationships/relationship-types';
 import { seedRelationshipTypes } from './seed';
 
 /*
@@ -22,6 +23,22 @@ const viewerU2: Viewer = { id: U2, householdId: H };
 
 let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzleRelationshipRepository>;
+
+function newRelationship(id: string, fromContactId: string, toContactId: string, typeId: string) {
+	return {
+		id,
+		householdId: H,
+		fromContactId,
+		toContactId,
+		typeId,
+		description: null,
+		sinceDate: null,
+		status: null,
+		createdBy: U1,
+		createdAt: 0,
+		updatedAt: 0
+	};
+}
 
 function seedContact(id: string, displayName: string, visibility: 'shared' | 'private', createdBy = U1) {
 	db.insert(schema.contact).values({ id, householdId: H, createdBy, visibility, displayName }).run();
@@ -43,6 +60,19 @@ beforeEach(() => {
 
 describe('relationship types', () => {
 	/** A custom type belonging to some other deployment's household. */
+	async function seedOwnType() {
+		await repo.insertType({
+			id: 'type-own',
+			householdId: H,
+			key: 'sings_with',
+			forwardLabel: 'Sings with',
+			reverseLabel: 'Sings with',
+			category: 'social',
+			symmetric: true,
+			sortOrder: CUSTOM_TYPE_SORT_ORDER
+		});
+	}
+
 	function seedForeignType() {
 		db.insert(schema.household).values({ id: 'household-2', name: 'Other' }).run();
 		db.insert(schema.relationshipType)
@@ -91,6 +121,95 @@ describe('relationship types', () => {
 		seedForeignType();
 		expect(await repo.getType(viewerU1, 'parent_child')).not.toBeNull();
 		expect(await repo.getType(viewerU1, 'type-foreign')).toBeNull();
+	});
+
+	it('stores a custom type and offers it beside the built-in ones', async () => {
+		await repo.insertType({
+			id: 'type-own',
+			householdId: H,
+			key: 'godparent_of',
+			forwardLabel: 'Godparent of',
+			reverseLabel: 'Godchild of',
+			category: 'family',
+			symmetric: false,
+			sortOrder: CUSTOM_TYPE_SORT_ORDER
+		});
+		const stored = await repo.getType(viewerU1, 'type-own');
+		expect(stored).toEqual({
+			id: 'type-own',
+			householdId: H,
+			key: 'godparent_of',
+			forwardLabel: 'Godparent of',
+			reverseLabel: 'Godchild of',
+			category: 'family',
+			symmetric: false,
+			sortOrder: CUSTOM_TYPE_SORT_ORDER
+		});
+		// Custom types sort after every built-in one.
+		const listed = await repo.listTypes(viewerU1);
+		expect(listed[listed.length - 1]?.id).toBe('type-own');
+	});
+
+	it("rewrites and deletes this household's custom type", async () => {
+		await seedOwnType();
+		expect(
+			await repo.updateTypeVisibleTo(viewerU1, 'type-own', {
+				forwardLabel: 'Choir friend of',
+				reverseLabel: 'Choir friend of',
+				category: 'social',
+				symmetric: true
+			})
+		).toBe(true);
+		expect((await repo.getType(viewerU1, 'type-own'))?.forwardLabel).toBe('Choir friend of');
+
+		expect(await repo.deleteTypeVisibleTo(viewerU1, 'type-own')).toBe(true);
+		expect(await repo.getType(viewerU1, 'type-own')).toBeNull();
+	});
+
+	it('leaves a built-in type untouched, whatever is asked of it', async () => {
+		expect(
+			await repo.updateTypeVisibleTo(viewerU1, 'parent_child', {
+				forwardLabel: 'Progenitor of',
+				reverseLabel: 'Offspring of',
+				category: 'family',
+				symmetric: false
+			})
+		).toBe(false);
+		expect(await repo.deleteTypeVisibleTo(viewerU1, 'parent_child')).toBe(false);
+		expect((await repo.getType(viewerU1, 'parent_child'))?.forwardLabel).toBe('Parent of');
+	});
+
+	it("leaves another household's custom type untouched", async () => {
+		seedForeignType();
+		expect(
+			await repo.updateTypeVisibleTo(viewerU1, 'type-foreign', {
+				forwardLabel: 'Hijacked',
+				reverseLabel: 'Hijacked',
+				category: 'other',
+				symmetric: true
+			})
+		).toBe(false);
+		expect(await repo.deleteTypeVisibleTo(viewerU1, 'type-foreign')).toBe(false);
+		const row = db
+			.select()
+			.from(schema.relationshipType)
+			.where(eq(schema.relationshipType.id, 'type-foreign'))
+			.get();
+		expect(row?.forwardLabel).toBe('Bridge partner of');
+	});
+
+	it('counts only the relationships of that type the viewer may see', async () => {
+		await seedOwnType();
+		seedContact('mara', 'Mara', 'shared');
+		seedContact('jonas', 'Jonas', 'shared');
+		seedContact('secret', 'Secret', 'private', U2);
+		await repo.insert(newRelationship('rel-visible', 'mara', 'jonas', 'type-own'));
+		await repo.insert(newRelationship('rel-hidden', 'mara', 'secret', 'type-own'));
+
+		expect(await repo.countRelationshipsOfType(viewerU1, 'type-own')).toBe(1);
+		// The positive control: U2 owns the private contact and sees both.
+		expect(await repo.countRelationshipsOfType(viewerU2, 'type-own')).toBe(2);
+		expect(await repo.countRelationshipsOfType(viewerU1, 'parent_child')).toBe(0);
 	});
 });
 

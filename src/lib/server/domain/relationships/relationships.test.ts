@@ -27,6 +27,7 @@ import {
 
 const parentChild: RelationshipType = {
 	id: 'parent_child',
+	householdId: null,
 	key: 'parent_child',
 	forwardLabel: 'Parent of',
 	reverseLabel: 'Child of',
@@ -37,6 +38,7 @@ const parentChild: RelationshipType = {
 
 const sibling: RelationshipType = {
 	id: 'sibling',
+	householdId: null,
 	key: 'sibling',
 	forwardLabel: 'Sibling of',
 	reverseLabel: 'Sibling of',
@@ -94,9 +96,8 @@ function fakeRepo(opts: { type?: RelationshipType | null; exists?: boolean; visi
 	let inserted: NewRelationship | null = null;
 	const updates: { id: string; details: RelationshipDetails; updatedAt: number }[] = [];
 	const removals: string[] = [];
+	const types = { getType: async () => opts.type ?? null };
 	const repo: RelationshipRepository = {
-		listTypes: async () => [],
-		getType: async () => opts.type ?? null,
 		exists: async () => opts.exists ?? false,
 		insert: async (r) => {
 			inserted = r;
@@ -116,6 +117,7 @@ function fakeRepo(opts: { type?: RelationshipType | null; exists?: boolean; visi
 	};
 	return {
 		repo,
+		types,
 		updates,
 		removals,
 		get inserted() {
@@ -131,7 +133,7 @@ describe('createRelationship', () => {
 	it('inserts a relationship for a valid type, returning the id', async () => {
 		const f = fakeRepo({ type: parentChild });
 		const id = await createRelationship(
-			{ relationships: f.repo, ids: idGen('rel-1'), clock },
+			{ relationships: f.repo, types: f.types, ids: idGen('rel-1'), clock },
 			{ id: 'user-1', householdId: 'household-1' },
 			{ fromContactId: 'hans', toContactId: 'bettina', typeId: 'parent_child', description: ' met at reunion ' }
 		);
@@ -149,7 +151,7 @@ describe('createRelationship', () => {
 
 	it('stores symmetric relationships in canonical order', async () => {
 		const f = fakeRepo({ type: sibling });
-		await createRelationship({ relationships: f.repo, ids: idGen('rel-2'), clock }, { id: 'u', householdId: 'h' }, {
+		await createRelationship({ relationships: f.repo, types: f.types, ids: idGen('rel-2'), clock }, { id: 'u', householdId: 'h' }, {
 			fromContactId: 'y',
 			toContactId: 'x',
 			typeId: 'sibling'
@@ -160,7 +162,7 @@ describe('createRelationship', () => {
 	it('rejects an unknown type', async () => {
 		const f = fakeRepo({ type: null });
 		await expect(
-			createRelationship({ relationships: f.repo, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
+			createRelationship({ relationships: f.repo, types: f.types, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
 				fromContactId: 'a',
 				toContactId: 'b',
 				typeId: 'nope'
@@ -171,7 +173,7 @@ describe('createRelationship', () => {
 	it('rejects a duplicate relationship', async () => {
 		const f = fakeRepo({ type: parentChild, exists: true });
 		await expect(
-			createRelationship({ relationships: f.repo, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
+			createRelationship({ relationships: f.repo, types: f.types, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
 				fromContactId: 'a',
 				toContactId: 'b',
 				typeId: 'parent_child'
@@ -182,7 +184,7 @@ describe('createRelationship', () => {
 	it('rejects a self relationship', async () => {
 		const f = fakeRepo({ type: parentChild });
 		await expect(
-			createRelationship({ relationships: f.repo, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
+			createRelationship({ relationships: f.repo, types: f.types, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
 				fromContactId: 'a',
 				toContactId: 'a',
 				typeId: 'parent_child'
@@ -336,6 +338,7 @@ describe('parseRelationshipDetails', () => {
 describe('createRelationship with details', () => {
 	const partner: RelationshipType = {
 		id: 'partner',
+		householdId: null,
 		key: 'partner',
 		forwardLabel: 'Partner of',
 		reverseLabel: 'Partner of',
@@ -347,7 +350,7 @@ describe('createRelationship with details', () => {
 	it('stores the specifics alongside the link', async () => {
 		const f = fakeRepo({ type: partner });
 
-		await createRelationship({ relationships: f.repo, ids: idGen('rel-2'), clock }, { id: 'u1', householdId: 'h1' }, {
+		await createRelationship({ relationships: f.repo, types: f.types, ids: idGen('rel-2'), clock }, { id: 'u1', householdId: 'h1' }, {
 			fromContactId: 'a',
 			toContactId: 'b',
 			typeId: 'partner',
@@ -367,7 +370,7 @@ describe('createRelationship with details', () => {
 		const f = fakeRepo({ type: partner });
 
 		await expect(
-			createRelationship({ relationships: f.repo, ids: idGen('rel-3'), clock }, { id: 'u1', householdId: 'h1' }, {
+			createRelationship({ relationships: f.repo, types: f.types, ids: idGen('rel-3'), clock }, { id: 'u1', householdId: 'h1' }, {
 				fromContactId: 'a',
 				toContactId: 'b',
 				typeId: 'partner',
@@ -385,7 +388,7 @@ describe('editRelationshipDetails', () => {
 		const f = fakeRepo({});
 
 		const written = await editRelationshipDetails(
-			{ relationships: f.repo, ids: idGen('unused'), clock },
+			{ relationships: f.repo, types: f.types, ids: idGen('unused'), clock },
 			viewer,
 			'rel-1',
 			{ description: '  they met skiing ', sinceDate: '2019-06-01', status: 'former' }
@@ -405,7 +408,7 @@ describe('editRelationshipDetails', () => {
 		const f = fakeRepo({});
 
 		await expect(
-			editRelationshipDetails({ relationships: f.repo, ids: idGen('unused'), clock }, viewer, 'rel-1', {
+			editRelationshipDetails({ relationships: f.repo, types: f.types, ids: idGen('unused'), clock }, viewer, 'rel-1', {
 				status: 'complicated'
 			})
 		).rejects.toThrow(InvalidRelationshipDetailsError);
@@ -417,7 +420,7 @@ describe('editRelationshipDetails', () => {
 
 		expect(
 			await editRelationshipDetails(
-				{ relationships: f.repo, ids: idGen('unused'), clock },
+				{ relationships: f.repo, types: f.types, ids: idGen('unused'), clock },
 				viewer,
 				'rel-hidden',
 				{ description: 'x' }
@@ -434,7 +437,7 @@ describe('removeRelationship', () => {
 		const f = fakeRepo({});
 
 		expect(
-			await removeRelationship({ relationships: f.repo, ids: idGen('unused'), clock }, viewer, 'rel-1')
+			await removeRelationship({ relationships: f.repo, types: f.types, ids: idGen('unused'), clock }, viewer, 'rel-1')
 		).toBe(true);
 		expect(f.removals).toEqual(['rel-1']);
 	});
@@ -443,7 +446,7 @@ describe('removeRelationship', () => {
 		const f = fakeRepo({ visible: false });
 
 		expect(
-			await removeRelationship({ relationships: f.repo, ids: idGen('unused'), clock }, viewer, 'rel-x')
+			await removeRelationship({ relationships: f.repo, types: f.types, ids: idGen('unused'), clock }, viewer, 'rel-x')
 		).toBe(false);
 		expect(f.removals).toEqual([]);
 	});

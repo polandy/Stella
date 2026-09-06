@@ -45,6 +45,10 @@ import type { NameCandidateSource, SuggestionDeps } from './domain/contacts/sugg
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { JournalDeps, JournalRepository } from './domain/journal/journal';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
+import type {
+	RelationshipTypeDeps,
+	RelationshipTypeRepository
+} from './domain/relationships/relationship-types';
 import type { TagDeps, TagRepository } from './domain/tags/tags';
 import type { GraphRepository } from './db/graph-repository';
 import type { CircleDeps, CircleRepository } from './domain/circles/circles';
@@ -152,14 +156,35 @@ export function getSuggestionDeps(): SuggestionDeps {
 	return { candidates: getContacts() };
 }
 
-let relationshipRepository: RelationshipRepository | null = null;
+let relationshipRepository:
+	| (RelationshipRepository & RelationshipTypeRepository)
+	| null = null;
 
-export function getRelationships(): RelationshipRepository {
+function getRelationshipRepository(): RelationshipRepository & RelationshipTypeRepository {
 	return (relationshipRepository ??= createDrizzleRelationshipRepository(getDb()));
 }
 
+export function getRelationships(): RelationshipRepository {
+	return getRelationshipRepository();
+}
+
+/** The relationship vocabulary — the built-in types and the household's own (docs/02 §2.4). */
+export function getRelationshipTypes(): RelationshipTypeRepository {
+	return getRelationshipRepository();
+}
+
 export function getRelationshipDeps(): RelationshipDeps {
-	return { relationships: getRelationships(), ids: ulidGenerator, clock: systemClock };
+	return {
+		relationships: getRelationships(),
+		types: getRelationshipTypes(),
+		ids: ulidGenerator,
+		clock: systemClock
+	};
+}
+
+/** Deps for managing the custom relationship types (docs/02 §2.4). */
+export function getRelationshipTypeDeps(): RelationshipTypeDeps {
+	return { types: getRelationshipTypes(), ids: ulidGenerator };
 }
 
 let noteRepository: NoteRepository | null = null;

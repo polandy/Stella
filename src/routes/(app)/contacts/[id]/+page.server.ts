@@ -82,6 +82,7 @@ import {
 	getPhotos,
 	getRelationshipDeps,
 	getRelationships,
+	getRelationshipTypes,
 	getStoryDeps,
 	getTagDeps,
 	getMemberDeps
@@ -133,7 +134,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		kinship
 	] = await Promise.all([
 		getRelationships().listForContactVisibleTo(viewer, params.id),
-		getRelationships().listTypes(viewer),
+		getRelationshipTypes().listTypes(viewer),
 		listContacts(getContactDeps(), viewer),
 		listNotesForContact(getNoteDeps(), viewer, params.id),
 		listContactFields(getContactFieldDeps(), viewer, params.id),
