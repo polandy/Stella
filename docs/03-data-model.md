@@ -308,6 +308,9 @@ FTS: `title, body` indexed (3.5).
 | contact_id | text fk → contact.id | cascade |
 | pk (note_id, contact_id) | | |
 
+Rebuilt from the body every time the note is written (§2.20.1); never carries the note's own
+contact, which is the subject rather than a mention.
+
 ### journal_entry  [M2]
 Per-person diary (§2.20). Distinct from `note`: a note is a reference fact, a journal entry
 is a dated diary moment. Child record of a contact; visibility per §3.7.
@@ -504,6 +507,10 @@ The UI renders accordingly (e.g. age hidden when only month/day known). Reminder
 
 - Two FTS5 virtual tables: `contact_fts` and `note_fts` (contentless / external-content
   linked to base tables), kept in sync via triggers on insert/update/delete.
+- A note's indexed content is **not** its raw body: the `@{contact:<id>}` tokens (§2.20.1) are
+  stripped and the mentioned people's display names appended, so a mention stays findable by
+  name and the word "contact" is not in every note that names someone. Triggers on
+  `note_mention` and on a rename of a mentioned contact keep that current.
 - Query layer unions results, applies visibility filtering **after** the FTS match, and
   returns snippets with highlight.
 - Tokenizer: `unicode61` with diacritics folding (so "Jose" matches "José").
