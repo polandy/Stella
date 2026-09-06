@@ -30,3 +30,8 @@ export interface NewActivityEntry {
 export function describeContactDeletion(displayName: string): string {
 	return `removed ${displayName}`;
 }
+
+/** What the log says about a merge; the record merged away no longer exists to be named. */
+export function describeContactMerge(mergedAway: string, keep: string): string {
+	return `merged ${mergedAway} into ${keep}`;
+}

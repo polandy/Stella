@@ -479,8 +479,10 @@ Feeds the "What's new" household feed and the "last edited by" trails.
 The feed query filters `visibility='shared' OR actor_id = :viewer` and excludes items
 whose subject contact the viewer cannot see.
 
-**In use for deletions only** (docs/04 §4.9): a contact's deletion writes one row, in the
-same transaction as the delete. Nothing else writes here, because everything else can be read
+**In use for deletions and merges** (docs/04 §4.9): a contact's deletion writes one row, in
+the same transaction as the delete, and a merge writes one the same way — both end a name that
+nothing else can report afterwards. A merge's `contact_id` names the survivor, who still has a
+page; a deletion's is null. Nothing else writes here, because everything else can be read
 from the tables it happened to. `summary` is precomputed and `visibility` copied from the
 deleted record, since neither can be recovered afterwards; `entity_id` names a row that no
 longer exists, which is why it carries no foreign key.

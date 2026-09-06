@@ -9,6 +9,8 @@ import {
 	EmptyContactNameError,
 	restoreContact,
 	deleteContact,
+	mergeContacts,
+	type MergePair,
 	type DeletedContactMedia,
 	type Contact,
 	type ContactCreator,
@@ -43,7 +45,9 @@ function fakeRepo() {
 		listNamesVisibleTo: async () => [],
 		updateProfile: async () => {},
 		setArchived: async () => {},
-		deleteVisibleTo: async () => null
+		deleteVisibleTo: async () => null,
+		readForMerge: async () => null,
+		mergeVisibleTo: async () => false
 	};
 	return {
 		repo,
@@ -166,7 +170,9 @@ function editableRepo(contact: Contact | null) {
 		setArchived: async (id, archivedAt) => {
 			archived.push({ id, archivedAt });
 		},
-		deleteVisibleTo: async () => null
+		deleteVisibleTo: async () => null,
+		readForMerge: async () => null,
+		mergeVisibleTo: async () => false
 	};
 	return { repo, patches, archived };
 }
@@ -303,7 +309,9 @@ describe('deleteContact', () => {
 			listNamesVisibleTo: async () => [],
 			updateProfile: async () => {},
 			setArchived: async () => {},
-			deleteVisibleTo: async (_viewer, id, audit) => {
+			readForMerge: async () => null,
+		mergeVisibleTo: async () => false,
+		deleteVisibleTo: async (_viewer, id, audit) => {
 				if (found === null) return null;
 				deleted.push({ id, audit });
 				return media;
@@ -389,5 +397,114 @@ describe('deleteContact', () => {
 		await deleteContact({ ...deps, contacts: visible.repo }, viewer, 'contact-1');
 		expect(visible.deleted).toHaveLength(1);
 		expect(removedFiles).toEqual(['a.jpg', 'a-thumb.jpg']);
+	});
+});
+
+
+/*
+ * Merging duplicates (docs/02 §2.2). The use-case decides what the log says and which record's
+ * answers win; every collision belongs to the repository, which the integration spec covers.
+ */
+describe('mergeContacts', () => {
+	function mergeableRepo(pair: MergePair | null) {
+		const merges: {
+			keepId: string;
+			mergedId: string;
+			profile: unknown;
+			audit: NewActivityEntry;
+		}[] = [];
+		const repo: ContactRepository = {
+			insert: async () => {},
+			findByIdVisibleTo: async () => null,
+			listVisibleTo: async () => [],
+			listArchivedVisibleTo: async () => [],
+			listNamesVisibleTo: async () => [],
+			updateProfile: async () => {},
+			setArchived: async () => {},
+			deleteVisibleTo: async () => null,
+			readForMerge: async () => pair,
+			mergeVisibleTo: async (_v, keepId, mergedId, profile, audit) => {
+				merges.push({ keepId, mergedId, profile, audit });
+				return true;
+			}
+		};
+		return { repo, merges };
+	}
+
+	const blank = {
+		firstName: null,
+		lastName: null,
+		nickname: null,
+		prefix: null,
+		suffix: null,
+		formerName: null,
+		gender: null,
+		pronouns: null,
+		description: null,
+		avatarPhotoId: null,
+		birthDate: null,
+		birthDatePrecision: 'full' as const,
+		isDeceased: false,
+		deathDate: null,
+		jobTitle: null,
+		company: null,
+		howWeMet: null,
+		metDate: null,
+		metPlace: null
+	};
+
+	const pair: MergePair = {
+		keep: { displayName: 'Hans Müller', visibility: 'shared', profile: { ...blank, firstName: 'Hans' } },
+		mergedAway: { displayName: 'Hansueli M.', profile: { ...blank, lastName: 'Müller', jobTitle: 'Schreiner' } }
+	};
+
+	const deps = (repo: ContactRepository) => ({ contacts: repo, ids: sequentialIds('log-1'), clock });
+
+	it('hands the repository the combined profile and a log entry naming both', async () => {
+		const f = mergeableRepo(pair);
+
+		expect(await mergeContacts(deps(f.repo), viewer, 'keep', 'dup')).toBe(true);
+		expect(f.merges).toHaveLength(1);
+		expect(f.merges[0].profile).toMatchObject({ firstName: 'Hans', jobTitle: 'Schreiner' });
+		expect(f.merges[0].audit).toEqual({
+			id: 'log-1',
+			householdId: 'household-1',
+			actorId: 'user-1',
+			action: 'merge',
+			entityType: 'contact',
+			entityId: 'dup',
+			// Unlike a deletion, the survivor still has a page for the item to link to.
+			contactId: 'keep',
+			visibility: 'shared',
+			summary: 'merged Hansueli M. into Hans Müller',
+			createdAt: NOW
+		});
+	});
+
+	it('mirrors the survivor visibility, so the log says no more than they do', async () => {
+		const f = mergeableRepo({ ...pair, keep: { ...pair.keep, visibility: 'private' } });
+
+		await mergeContacts(deps(f.repo), viewer, 'keep', 'dup');
+
+		expect(f.merges[0].audit.visibility).toBe('private');
+	});
+
+	it('refuses a pair the viewer cannot reach, and merges nothing', async () => {
+		const f = mergeableRepo(null);
+
+		expect(await mergeContacts(deps(f.repo), viewer, 'keep', 'dup')).toBe(false);
+		expect(f.merges).toEqual([]);
+
+		// positive control: a reachable pair does merge.
+		const reachable = mergeableRepo(pair);
+		expect(await mergeContacts(deps(reachable.repo), viewer, 'keep', 'dup')).toBe(true);
+		expect(reachable.merges).toHaveLength(1);
+	});
+
+	it('refuses to merge a record into itself before reading anything', async () => {
+		const f = mergeableRepo(pair);
+
+		expect(await mergeContacts(deps(f.repo), viewer, 'same', 'same')).toBe(false);
+		expect(f.merges).toEqual([]);
 	});
 });

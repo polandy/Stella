@@ -117,7 +117,8 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 
 		async recentRemovals(viewer: Viewer, limit: number): Promise<RemovalRow[]> {
 			// The only source that is not a table of things that still exist: once a contact is
-			// deleted, the log entry is all that is left of them (docs/04 §4.9). Scoped by hand
+			// deleted — outright, or by being merged into someone else — the log entry is all
+			// that is left of that name (docs/04 §4.9). Scoped by hand
 			// because there is no contact left to scope through — the row carries the
 			// visibility the deleted record had (docs/03 §activity_log).
 			const rows = db
@@ -133,7 +134,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				.where(
 					and(
 						eq(activityLog.householdId, viewer.householdId),
-						eq(activityLog.action, 'delete'),
+						inArray(activityLog.action, ['delete', 'merge']),
 						or(eq(activityLog.visibility, 'shared'), eq(activityLog.actorId, viewer.id))
 					)
 				)
