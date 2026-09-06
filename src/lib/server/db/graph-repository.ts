@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias } from 'drizzle-orm/sqlite-core';
+import { deriveKinshipEdges } from '../../graph/model/kinship-edges';
 import type { GraphEdge, GraphModel, GraphNode } from '../../graph/model/types';
 import {
 	circleColumnsVisibleTo,
@@ -9,6 +10,7 @@ import {
 	relationshipVisibleTo
 } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
+import { loadKinshipGraph } from './kinship-graph-read';
 import type * as schema from './schema';
 import { circle, circleMembership, contact, relationship, relationshipType } from './schema';
 
@@ -18,8 +20,9 @@ import { circle, circleMembership, contact, relationship, relationshipType } fro
  * expand, path) client-side with no further requests — the server does one bulk read instead
  * of a round-trip per node. Only the projection the graph needs is sent (id/label/kind + typed
  * edges), never full contact records. Scoping matches the app: a contact is visible per §3.7,
- * and a relationship edge appears only when both endpoints are visible. Circle-membership and
- * derived-kinship edges join here in M2 without changing the shape.
+ * and a relationship edge appears only when both endpoints are visible. Circle memberships and
+ * derived kinship ride along as their own edge kinds — kinship is inferred from this same
+ * scoped snapshot, so an inferred line can never name a person the viewer may not see.
  */
 
 export interface GraphRepository {
@@ -108,6 +111,10 @@ export function createDrizzleGraphRepository(
 					label: m.role ?? undefined
 				});
 			}
+
+			// Derived kinship (docs/02 §2.4.1) as its own edge kind: what the primary links imply
+			// but nobody entered — grandparents, aunts, cousins, in-laws — drawn once per pair.
+			edges.push(...deriveKinshipEdges(loadKinshipGraph(db, viewer)));
 
 			return { nodes, edges };
 		}

@@ -111,6 +111,14 @@ describe('buildStylesheet', () => {
 		expect(has('node.center')).toBe(true);
 	});
 
+	it('keeps edge labels hidden until the edge is highlighted or on a path', () => {
+		const edge = styles.find((s) => s.selector === 'edge');
+		expect(edge?.style).toMatchObject({ label: 'data(label)', 'text-opacity': 0 });
+
+		const named = styles.find((s) => s.selector === 'edge.highlight, edge.onpath');
+		expect(named?.style).toEqual({ 'text-opacity': 1 });
+	});
+
 	it('gives every person accent its own background selector', () => {
 		expect(has('node.person[accent = "mauve"]')).toBe(true);
 		expect(has('node.person[accent = "green"]')).toBe(true);

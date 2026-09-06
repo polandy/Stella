@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'bun:test';
-import { applyFilters, emptyModel, mergeModels, neighborsOf, reachableFrom } from './graph-model';
+import {
+	applyFilters,
+	emptyModel,
+	mergeModels,
+	neighborsOf,
+	reachableFrom,
+	withoutDerivedLinks
+} from './graph-model';
 import { buildEgoNetwork } from './ego-network';
-import { familySource } from './fixtures';
+import { familyEdges, familyNodes, familySource } from './fixtures';
 import type { GraphModel } from './types';
 
 /*
@@ -123,5 +130,22 @@ describe('applyFilters', () => {
 		const before = model.nodes.length;
 		applyFilters(model, { edgeKinds: ['relationship'], keepNodeId: 'mara' });
 		expect(model.nodes).toHaveLength(before);
+	});
+});
+
+describe('withoutDerivedLinks', () => {
+	it('drops the inferred edges and keeps every node', () => {
+		const model = { nodes: familyNodes, edges: familyEdges };
+
+		const stored = withoutDerivedLinks(model);
+
+		expect(edgeIds(stored).has('k1')).toBe(false); // Mara's derived grandfather line
+		expect(edgeIds(stored).has('r4')).toBe(true); // the stored chain that explains it
+		expect(stored.nodes).toHaveLength(familyNodes.length);
+	});
+
+	it('leaves a model without derived edges untouched', () => {
+		const stored = { nodes: familyNodes, edges: familyEdges.filter((e) => !e.derived) };
+		expect(withoutDerivedLinks(stored).edges).toHaveLength(stored.edges.length);
 	});
 });

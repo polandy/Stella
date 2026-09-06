@@ -49,3 +49,121 @@ test('opens the peek panel on the centred person with their face, name and a way
 	await peek.getByRole('link', { name: 'Open profile' }).click();
 	await expect(page).toHaveURL(/\/contacts\/demo-c-hans$/);
 });
+
+/*
+ * Derived kinship on the canvas (docs/02 §2.7, §2.4.1). Written after the screen was seen in
+ * the running app (docs/08 §8.4.1).
+ *
+ * A canvas has no DOM to address, so these read the renderer's own state through the instance
+ * Cytoscape registers on its container: which nodes it holds, which it has filtered out, and
+ * where it has drawn them. That is the renderer answering — not the model being re-read — and
+ * it makes clicking a named person deterministic instead of a guess at a coordinate.
+ */
+
+/** The slice of the Cytoscape instance the tests below read from the page. */
+interface CyForTests {
+	$id(id: string): {
+		empty(): boolean;
+		hasClass(name: string): boolean;
+		renderedPosition(): { x: number; y: number };
+	};
+	$(selector: string): { map(fn: (edge: { data(key: string): string }) => string): string[] };
+}
+
+type NodeState = 'absent' | 'filtered-out' | 'drawn';
+
+interface DrawnNode {
+	state: NodeState;
+	/** Page coordinates of the node's centre, or null when it is not drawn. */
+	point: { x: number; y: number } | null;
+}
+
+/** What the renderer is doing with one node right now. */
+async function drawnNode(page: Page, id: string): Promise<DrawnNode> {
+	return page.evaluate((nodeId) => {
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const cy = el ? (el as unknown as { _cyreg: { cy: CyForTests } })._cyreg.cy : null;
+		if (!cy || !el) return { state: 'absent' as const, point: null };
+		const node = cy.$id(nodeId);
+		if (node.empty()) return { state: 'absent' as const, point: null };
+		const box = el.getBoundingClientRect();
+		const p = node.renderedPosition();
+		return node.hasClass('filtered-out')
+			? { state: 'filtered-out' as const, point: null }
+			: { state: 'drawn' as const, point: { x: box.x + p.x, y: box.y + p.y } };
+	}, id);
+}
+
+const stateOf = async (page: Page, id: string) => (await drawnNode(page, id)).state;
+
+/** Clicks a node where the renderer has actually drawn it. */
+async function clickNode(page: Page, id: string): Promise<void> {
+	const { point } = await drawnNode(page, id);
+	if (!point) throw new Error(`the explorer is not drawing ${id}, so it cannot be clicked`);
+	await page.mouse.click(point.x, point.y);
+}
+
+/** The names on the lines the renderer is currently emphasising. */
+async function highlightedLabels(page: Page): Promise<string[]> {
+	return page.evaluate(() => {
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const cy = el ? (el as unknown as { _cyreg: { cy: CyForTests } })._cyreg.cy : null;
+		return cy ? cy.$('edge.highlight').map((edge) => edge.data('label')) : [];
+	});
+}
+
+test('draws the relatives nobody entered, and the Kinship chip takes them away', async ({ page }) => {
+	// Lena's cousin Timo is tied to her by nothing stored: he is in her neighbourhood only
+	// because the cousin line is worked out, through the grandparents they share.
+	await page.goto('/graph?center=demo-c-lena');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('drawn')).toPass();
+
+	await page.getByRole('button', { name: 'Kinship' }).click();
+	await expect(page.getByRole('button', { name: 'Kinship' })).toHaveAttribute('aria-pressed', 'false');
+	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('filtered-out')).toPass();
+	// Her father stays: he is there through an entered relationship, not a derived one.
+	expect(await stateOf(page, 'demo-c-markus')).toBe('drawn');
+
+	await page.getByRole('button', { name: 'Kinship' }).click();
+	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('drawn')).toPass();
+});
+
+test('a connection path answers with the people in between, not with the derived shortcut', async ({ page }) => {
+	await page.goto('/graph?center=demo-c-lena');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('drawn')).toPass();
+
+	// Reachable with the peek panel open — the toolbar keeps clear of it.
+	await page.getByRole('button', { name: 'Connection path' }).click();
+	const prompt = page.getByTestId('path-prompt');
+	await expect(prompt).toHaveText('Pick two people to trace how they’re connected.');
+
+	await expect(async () => {
+		await clickNode(page, 'demo-c-lena');
+		await expect(prompt).toHaveText('Now pick the second person…', { timeout: 1000 });
+	}).toPass();
+	await expect(async () => {
+		await clickNode(page, 'demo-c-timo');
+		await expect(prompt).toContainText('→', { timeout: 1000 });
+	}).toPass();
+
+	// The cousin line would make this a single hop; the answer names the grandfather instead.
+	await expect(prompt).toHaveText('Lena Brunner → Hans Brunner → Timo Brunner');
+});
+
+test('names the lines around the selected person, and only while they are selected', async ({ page }) => {
+	// The explorer opens with the centred person selected, so her lines carry their names at once.
+	await page.goto('/graph?center=demo-c-lena');
+	await expect(page.locator('canvas').first()).toBeVisible();
+
+	await expect(async () => expect(await highlightedLabels(page)).toContain('Cousin')).toPass();
+	const labels = await highlightedLabels(page);
+	expect(labels).toContain('Cousin'); // worked out
+	expect(labels).toContain('Parent of'); // entered
+
+	await page.getByRole('complementary').getByRole('button', { name: 'Close' }).click();
+	await expect(async () => expect(await highlightedLabels(page)).toEqual([])).toPass();
+});

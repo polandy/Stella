@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
+import { withoutDerivedLinks } from '../../graph/model/graph-model';
 import { inMemoryGraphSource } from '../../graph/model/in-memory-source';
 import { buildEgoNetwork } from '../../graph/model/ego-network';
 import { findConnectionPath } from '../../graph/model/connection-path';
@@ -86,7 +87,12 @@ describe('loadVisibleGraph', () => {
 		const ego = await buildEgoNetwork(source, 'mara', 1);
 		expect(new Set(ego.nodes.map((n) => n.id))).toEqual(new Set(['mara', 'jonas', 'lio']));
 
-		const path = await findConnectionPath(source, 'jonas', 'lio');
+		// Path finding runs over stored links only, as the explorer does (docs/02 §2.7).
+		const path = await findConnectionPath(
+			inMemoryGraphSource(withoutDerivedLinks(graph)),
+			'jonas',
+			'lio'
+		);
 		expect(path?.nodeIds).toEqual(['jonas', 'mara', 'lio']);
 	});
 });
@@ -124,5 +130,57 @@ describe('loadVisibleGraph — circles', () => {
 		const forU2 = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU2);
 		expect(forU2.nodes.some((n) => n.id === 'secret-club')).toBe(false);
 		expect(forU2.edges.some((e) => e.id === 'm-secret')).toBe(false);
+	});
+});
+
+/*
+ * Derived kinship (docs/02 §2.4.1) joins the snapshot as its own edge kind, under the same
+ * scoping as everything else: it is inferred from the links the viewer may see, and no further.
+ */
+describe('loadVisibleGraph — derived kinship', () => {
+	beforeEach(() => {
+		// Mara already parents Lio (see the outer setup); give Lio a grandmother and an aunt.
+		seedContact('rosa', 'Rosa');
+		seedContact('nina', 'Nina');
+		rel('r-gran', 'rosa', 'mara', 'parent_child');
+		rel('r-aunt', 'rosa', 'nina', 'parent_child');
+	});
+
+	it('adds the inferred relatives as derived kinship edges', async () => {
+		const graph = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
+		const kinship = graph.edges.filter((e) => e.kind === 'kinship');
+
+		// Lio's grandmother and aunt, plus what follows for Mara's partner Jonas: Lio is his
+		// stepson, Rosa his mother-in-law, Nina his sister-in-law. Mara gains her sister Nina.
+		expect(kinship.map((e) => e.id).sort()).toEqual([
+			'kin:jonas:lio',
+			'kin:jonas:nina',
+			'kin:jonas:rosa',
+			'kin:lio:nina',
+			'kin:lio:rosa',
+			'kin:mara:nina'
+		]);
+		expect(kinship.find((e) => e.id === 'kin:lio:rosa')).toMatchObject({
+			source: 'rosa',
+			target: 'lio',
+			label: 'Grandparent',
+			derived: true
+		});
+		// The stored links keep their own labels and are not duplicated by an inferred one.
+		expect(graph.edges.find((e) => e.id === 'r-child')).toMatchObject({ kind: 'relationship' });
+	});
+
+	it('infers only from the links the viewer may see', async () => {
+		seedContact('hidden', 'Hidden', 'private', U1); // U1's private child of Rosa
+		rel('r-hidden', 'rosa', 'hidden', 'parent_child');
+
+		const forOwner = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
+		expect(forOwner.edges.some((e) => e.id === 'kin:hidden:lio')).toBe(true); // aunt of Lio
+
+		const forOther = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU2);
+		expect(forOther.nodes.some((n) => n.id === 'hidden')).toBe(false);
+		expect(forOther.edges.some((e) => e.id.includes('hidden'))).toBe(false);
+		// The visible part of the family is still derived for U2 — this is scoping, not silence.
+		expect(forOther.edges.some((e) => e.id === 'kin:lio:rosa')).toBe(true);
 	});
 });

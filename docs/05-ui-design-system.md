@@ -336,7 +336,9 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   **deepened toward `--fg` until it clears 3:1 on the page ground** (`ensureContrast`; the
   hue survives, only the depth changes), held there by `theme.test.ts` against the real
   tokens in both themes. Chips and dots keep the raw token, because they sit beside a label.
-  Labels on hover/zoom; asymmetric relationship types show subtle direction.
+  A line carries its name — "Parent of", "Grandfather", the circle role — but only while it
+  is highlighted or on a traced path: selecting a person names their connections, and the
+  rest of the canvas stays quiet. Asymmetric relationships show subtle direction.
 - **Expand affordance:** an unexpanded node hints it can grow (e.g. a small "+" / count of
   hidden connections); clicking expands its neighborhood in place with a gentle animation.
 - **Search & focus:** an in-canvas search field; selecting a result smoothly pans/zooms to

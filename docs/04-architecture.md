@@ -270,6 +270,21 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   merge's cursor rules depend on, and repeat the name on every row. A household has a handful
   of members, so the lookup is one small query per page.
 
+- **A connection path travels stored links only** — derived kinship reaches the explorer as
+  its own edge kind, but the path finder searches the model with derived edges removed
+  (`withoutDerivedLinks`). A derived edge is a *name for a chain that already exists*:
+  letting BFS hop it would answer "how do we know each other?" with "Cousin" instead of the
+  route through the shared grandparent, and the shorter the answer the less it explains. The
+  cost is that a path can be longer than the drawn graph suggests; the drawn line is still
+  there, and selecting it names the relationship.
+
+- **Kinship edges are derived per viewer at read time, not stored** — `loadVisibleGraph`
+  infers them from the same visibility-scoped snapshot the person page uses
+  (`kinship-graph-read.ts`, shared by both repositories so the two can never disagree).
+  Storing them would mean invalidating on every relationship, birth and visibility change,
+  and would let a stale row outlive the link it came from. Inference re-runs per subject,
+  which is quadratic in principle but reads a household-sized graph in a single pass.
+
 ## 4.10 Deployment
 
 - **Single Docker image** (multi-stage: build with Bun, run on a slim Bun base).
@@ -307,8 +322,11 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
      locally — no per-interaction requests. The same pure code also runs server-side over
      any source; only the source implementation differs (in-memory in the browser). This
      deliberately pushes load to the client and fits family scale.
-   - Derived kinship (§2.4.1) is computed by the same engine and merged as its own edge
-     kind — added without changing existing node/edge handling.
+   - Derived kinship (§2.4.1) is computed by the same engine the person page uses and merged
+     as its own edge kind: `deriveKinshipEdges` folds each person's inferred relatives into
+     one edge per pair, which the bulk read appends to the snapshot. Nothing else in the
+     node/edge handling changed. `withoutDerivedLinks` is the projection path finding
+     searches (§4.9).
 
 2. **Rendering adapter** — `lib/graph/cytoscape`:
    - Translates a `GraphModel` into Cytoscape elements, styles them from the **semantic
