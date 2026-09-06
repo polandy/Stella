@@ -5,11 +5,10 @@ import type { KinshipGraph } from '../../kinship/kinship';
 import { relationshipVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import { loadKinshipGraph } from './kinship-graph-read';
+import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../relationships/status';
 import {
 	describeRelationshipFor,
 	type RelationshipDetails,
-	RELATIONSHIP_STATUSES,
-	type RelationshipStatus,
 	type NewRelationship,
 	type RelationshipRepository,
 	type RelationshipType,

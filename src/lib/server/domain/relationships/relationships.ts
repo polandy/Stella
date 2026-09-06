@@ -2,6 +2,7 @@ import type { KinshipGraph, Pair } from '../../../kinship/kinship';
 import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';
 import { suggestPropagation, type PrimaryLink, type SuggestedLink } from '../../../kinship/propagation';
 import type { Viewer } from '../../access/visibility';
+import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../../relationships/status';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../dates/calendar';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -65,11 +66,6 @@ export function describeRelationshipFor(
 }
 
 // ── Use-case ────────────────────────────────────────────────────────────────
-
-/** Whether the link still holds. Free text would make "ex", "former" and "past" three things. */
-export const RELATIONSHIP_STATUSES = ['current', 'former'] as const;
-
-export type RelationshipStatus = (typeof RELATIONSHIP_STATUSES)[number];
 
 /** The specifics a relationship carries beyond its type (docs/02 §2.4). */
 export interface RelationshipDetails {
