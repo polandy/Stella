@@ -101,7 +101,9 @@ test('keeps their name in something already written about them', async ({ page }
 	await page.getByLabel('What happened?').pressSequentially('and ');
 	await mention(page, 'Franziska', new RegExp(WHO));
 	await page.getByRole('button', { name: /^Save/ }).click();
-	await expect(page.locator('article').first().getByRole('link', { name: WHO })).toBeVisible();
+	// `a.mention` is the chip *inside the sentence* — the footer lists her separately, from
+	// the mention row, and would keep saying her name even if the body broke.
+	await expect(page.locator('article').first().locator('a.mention', { hasText: WHO })).toHaveCount(1);
 
 	await openPerson(page, new RegExp(WHO));
 	await archiveOpenPerson(page);
@@ -110,7 +112,7 @@ test('keeps their name in something already written about them', async ({ page }
 	// chip must still read her name and not "@unknown" (docs/02 §2.2).
 	await page.getByRole('link', { name: 'Home' }).first().click();
 	const moment = page.locator('article').filter({ hasText: 'Walked the Aare' }).first();
-	await expect(moment).toContainText(WHO);
+	await expect(moment.locator('a.mention', { hasText: WHO })).toHaveCount(1);
 	await expect(moment).not.toContainText('@unknown');
 
 	await openArchivedPerson(page, WHO);
