@@ -102,24 +102,43 @@ export function parseRelationshipTypeFields(input: RelationshipTypeInput): Relat
 	return { forwardLabel, reverseLabel, category: input.category, symmetric: input.symmetric };
 }
 
-/**
- * The stable machine key for a type, derived from its forward label so nobody has to invent
- * one — accents folded, everything else that is not a letter or digit collapsed to `_`.
- * Rejects a key that is already taken in this household or that the kinship engine owns.
- */
-export function relationshipTypeKey(forwardLabel: string, takenKeys: readonly string[]): string {
-	const key = forwardLabel
+/** What a name has to be free of: the types this household can already use. */
+export type ExistingTypeName = Pick<RelationshipType, 'id' | 'key' | 'forwardLabel'>;
+
+const slugOf = (label: string): string =>
+	label
 		.normalize('NFD')
 		.replace(/\p{M}+/gu, '')
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, '_')
 		.replace(/^_+|_+$/g, '');
+
+/**
+ * Claims a name for a type and returns the machine key derived from it — accents folded,
+ * everything else that is not a letter or digit collapsed to `_` — so nobody has to invent a
+ * key. Refuses a name the household can already use, by its label as well as by its key: a
+ * built-in type's key need not match its label (`friend` is labelled "Friend of"), so
+ * checking only the key would let a second, indistinguishable "Friend of" into the picker.
+ * Refuses the four keys the kinship engine owns, too. `exceptId` is the type being renamed,
+ * which does not collide with itself.
+ */
+export function claimTypeKey(
+	forwardLabel: string,
+	existing: readonly ExistingTypeName[],
+	exceptId: string | null = null
+): string {
+	const key = slugOf(forwardLabel);
 	if (!key) {
 		throw new InvalidRelationshipTypeError(
 			`"${forwardLabel}" has no letters or digits to name it by.`
 		);
 	}
-	if (RESERVED_TYPE_KEYS.includes(key) || takenKeys.includes(key)) {
+	const taken = existing.some(
+		(type) =>
+			type.id !== exceptId &&
+			(type.key === key || type.forwardLabel.toLowerCase() === forwardLabel.toLowerCase())
+	);
+	if (RESERVED_TYPE_KEYS.includes(key) || taken) {
 		throw new InvalidRelationshipTypeError(
 			`A relationship type named like "${forwardLabel}" already exists.`
 		);
@@ -166,8 +185,7 @@ export async function createRelationshipType(
 	input: RelationshipTypeInput
 ): Promise<string> {
 	const fields = parseRelationshipTypeFields(input);
-	const taken = (await deps.types.listTypes(viewer)).map((type) => type.key);
-	const key = relationshipTypeKey(fields.forwardLabel, taken);
+	const key = claimTypeKey(fields.forwardLabel, await deps.types.listTypes(viewer));
 	const id = deps.ids.next();
 	await deps.types.insertType({
 		id,
@@ -194,6 +212,9 @@ export async function editRelationshipType(
 	if (existing.householdId === null) throw new BuiltInRelationshipTypeError();
 
 	const fields = parseRelationshipTypeFields(input);
+	// A rename has to claim its new name too — the key stays as it was, but the label is what
+	// the household reads in the picker, and two of the same would be indistinguishable.
+	claimTypeKey(fields.forwardLabel, await deps.types.listTypes(viewer), typeId);
 	if (fields.symmetric !== existing.symmetric) {
 		// Symmetry decides the canonical storage direction (`canonicalEndpoints`), so flipping
 		// it would strand the rows already written the other way round.

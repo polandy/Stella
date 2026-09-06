@@ -215,7 +215,10 @@ reciprocal** link.
   silently invent grandparents and in-laws. The **built-in twelve are read-only** for the same
   reason — they are listed on the page as part of the app, not as an editable set. A custom
   type can be renamed and recategorised at any time; whether it **reads the same from both
-  sides is fixed once it exists**, because that decides how its links are stored. A type that
+  sides is fixed once it exists**, because that decides how its links are stored. A name the
+  household can already read is refused — by its **label** as much as by its derived key,
+  since a built-in type's key need not match its label (`friend` is labelled "Friend of"), and
+  two identical entries in the picker would be indistinguishable. A type that
   relationships still point at cannot be removed, and the page shows its usage count in place
   of the remove button rather than offering a removal that would be refused. Types belong to
   the household: another household's are neither offered nor reachable by id.

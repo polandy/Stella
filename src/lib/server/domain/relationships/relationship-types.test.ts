@@ -9,7 +9,7 @@ import {
 	createRelationshipType,
 	editRelationshipType,
 	parseRelationshipTypeFields,
-	relationshipTypeKey,
+	claimTypeKey,
 	removeRelationshipType
 } from './relationship-types';
 import type { RelationshipType } from './relationships';
@@ -76,22 +76,41 @@ describe('parseRelationshipTypeFields', () => {
 	});
 });
 
-describe('relationshipTypeKey', () => {
+describe('claimTypeKey', () => {
+	const named = (id: string, key: string, forwardLabel: string) => ({ id, key, forwardLabel });
+
 	it('derives a machine key from the forward label', () => {
-		expect(relationshipTypeKey('Godparent of', [])).toBe('godparent_of');
+		expect(claimTypeKey('Godparent of', [])).toBe('godparent_of');
 	});
 
 	it('folds accents and punctuation rather than dropping the word', () => {
-		expect(relationshipTypeKey('Nähtür & Co.', [])).toBe('nahtur_co');
+		expect(claimTypeKey('Nähtür & Co.', [])).toBe('nahtur_co');
 	});
 
 	it('rejects a label with nothing to build a key from', () => {
-		expect(() => relationshipTypeKey('!!! ???', [])).toThrow(InvalidRelationshipTypeError);
+		expect(() => claimTypeKey('!!! ???', [])).toThrow(InvalidRelationshipTypeError);
 	});
 
 	it('rejects a key another type in this household already uses', () => {
-		expect(() => relationshipTypeKey('Godparent of', ['godparent_of'])).toThrow(
+		expect(() =>
+			claimTypeKey('Godparent of', [named('t1', 'godparent_of', 'Godparent of')])
+		).toThrow(InvalidRelationshipTypeError);
+	});
+
+	it('rejects a label already on offer, even where the derived keys differ', () => {
+		// The built-in `friend` is labelled "Friend of", which slugs to `friend_of`: checking
+		// only the key would put a second, indistinguishable "Friend of" in the picker.
+		expect(() => claimTypeKey('Friend of', [named('friend', 'friend', 'Friend of')])).toThrow(
 			InvalidRelationshipTypeError
+		);
+		expect(() => claimTypeKey('friend OF', [named('friend', 'friend', 'Friend of')])).toThrow(
+			InvalidRelationshipTypeError
+		);
+	});
+
+	it('lets a type keep its own name while being renamed', () => {
+		expect(claimTypeKey('Sings with', [named('t1', 'sings_with', 'Sings with')], 't1')).toBe(
+			'sings_with'
 		);
 	});
 
@@ -99,7 +118,7 @@ describe('relationshipTypeKey', () => {
 		// `kinship-graph-read` switches on these keys; a custom type carrying one would be
 		// read as a parent, sibling or partner link and silently feed derived kinship.
 		for (const label of ['Parent child', 'Sibling', 'Partner', 'Spouse']) {
-			expect(() => relationshipTypeKey(label, [])).toThrow(InvalidRelationshipTypeError);
+			expect(() => claimTypeKey(label, [])).toThrow(InvalidRelationshipTypeError);
 		}
 	});
 });
@@ -207,6 +226,19 @@ describe('editRelationshipType', () => {
 				}
 			}
 		]);
+	});
+
+	it('refuses a rename onto a name the household already reads', async () => {
+		const f = fakeRepo({ types: [custom, builtIn] });
+		await expect(
+			editRelationshipType(f.deps, viewer, 'type-own', {
+				forwardLabel: builtIn.forwardLabel,
+				reverseLabel: builtIn.reverseLabel,
+				category: builtIn.category,
+				symmetric: builtIn.symmetric
+			})
+		).rejects.toThrow(InvalidRelationshipTypeError);
+		expect(f.recorded.updated).toEqual([]);
 	});
 
 	it('refuses to edit a built-in type', async () => {
