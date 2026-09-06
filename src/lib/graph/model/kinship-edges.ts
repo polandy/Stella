@@ -1,4 +1,4 @@
-import { deriveKinship, type KinshipGraph, type KinTerm } from '../../kinship/kinship';
+import { deriveKinshipForAll, type KinshipGraph, type KinTerm } from '../../kinship/kinship';
 import type { GraphEdge } from './types';
 
 /*
@@ -9,8 +9,7 @@ import type { GraphEdge } from './types';
  * per pair: Otto sees a grandchild where Hans sees a grandfather, and that is a single line.
  *
  * Pure and dependency-free — the caller passes an already visibility-scoped graph, so a derived
- * line can never reveal a person the viewer may not see. Inference is re-run per subject, which
- * is quadratic in principle but reads a household-sized graph (hundreds of people) in one pass.
+ * line can never reveal a person the viewer may not see.
  */
 
 /** Terms that read the same from both ends — those lines carry no direction. */
@@ -38,14 +37,14 @@ const edgeId = (x: string, y: string) =>
 export function deriveKinshipEdges(graph: KinshipGraph): GraphEdge[] {
 	const edges = new Map<string, GraphEdge>();
 
-	for (const subject of graph.people) {
-		for (const kin of deriveKinship(graph, subject.id)) {
-			const id = edgeId(subject.id, kin.personId);
+	for (const [subjectId, relatives] of deriveKinshipForAll(graph)) {
+		for (const kin of relatives) {
+			const id = edgeId(subjectId, kin.personId);
 			if (edges.has(id)) continue; // the mirrored view of a pair already drawn
 			edges.set(id, {
 				id,
 				source: kin.personId,
-				target: subject.id,
+				target: subjectId,
 				kind: 'kinship',
 				label: kin.label,
 				derived: true,

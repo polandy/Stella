@@ -2,7 +2,7 @@ import { and, eq, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { KinshipGraph } from '../../kinship/kinship';
-import { contactVisibleTo, relationshipVisibleTo } from '../access/query-scoping';
+import { relationshipVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import { loadKinshipGraph } from './kinship-graph-read';
 import {
