@@ -253,6 +253,10 @@ They must be edited together; `app.css` says so at both blocks.
   came for. An archived person carries a quiet *Archived* chip in their header beside
   *Private*, and the directory grows an **Archived (N)** chip at the end of the tag row,
   leading to the same list with the "last written about" column dropped.
+- **Merging a duplicate** sits with the delete control at the foot of the profile, admin-only,
+  as a disclosure holding one select and one button (docs/02 §2.2). The survivor is always the
+  page you are on, so the form asks a single question — *who is the same person?* — instead of
+  making the household choose which of two records wins.
 - **Deleting a person** sits under the archive control on the profile and only for an admin
   (docs/02 §2.2). It is a two-step disclosure, not a `RemoveButton`: the deferred-removal
   pattern promises Undo, and there is nothing to put back. The second step spells out what

@@ -2,8 +2,10 @@ import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import {
 	describeContactDeletion,
+	describeContactMerge,
 	type NewActivityEntry
 } from '../activity/activity';
+import { mergeProfiles, type MergeableProfile } from './merge-profile';
 import type { MediaStore } from '../media/avatars';
 import type { IdGenerator } from '../../id';
 import { deriveDisplayName } from './display-name';
@@ -113,12 +115,32 @@ export interface ContactRepository {
 		id: string,
 		audit: NewActivityEntry
 	): Promise<DeletedContactMedia[] | null>;
+	/** Both records as a merge needs them, or null when either is out of the viewer's reach. */
+	readForMerge(viewer: Viewer, keepId: string, mergedId: string): Promise<MergePair | null>;
+	/**
+	 * Move everything from one record onto the other, write the merged profile, delete the
+	 * emptied record and log it — all in one transaction. False when either is out of reach.
+	 */
+	mergeVisibleTo(
+		viewer: Viewer,
+		keepId: string,
+		mergedId: string,
+		profile: MergeableProfile,
+		audit: NewActivityEntry,
+		updatedAt: number
+	): Promise<boolean>;
 }
 
 export interface ContactDeps {
 	contacts: ContactRepository;
 	ids: IdGenerator;
 	clock: Clock;
+}
+
+/** The two records a merge is about, with the names the log will have to remember. */
+export interface MergePair {
+	keep: { displayName: string; visibility: Visibility; profile: MergeableProfile };
+	mergedAway: { displayName: string; profile: MergeableProfile };
 }
 
 /** The bytes a deleted contact leaves behind: one pair per photo that hung off them. */
@@ -346,4 +368,46 @@ export async function deleteContact(
 		await deps.media.delete(file.thumbPath);
 	}
 	return true;
+}
+
+/**
+ * Merge one person into another: the survivor keeps their name and their visibility, gains
+ * whatever the other record said that they did not (`mergeProfiles`), and takes over every
+ * note, photo, date, link and journal entry. The emptied record is then deleted and the merge
+ * written to the log — the only trace left of a name that used to exist (docs/02 §2.2).
+ *
+ * Returns false when either record is out of the viewer's reach, or when the two are the same.
+ */
+export async function mergeContacts(
+	deps: Pick<ContactDeps, 'contacts' | 'ids' | 'clock'>,
+	viewer: Viewer,
+	keepId: string,
+	mergedId: string
+): Promise<boolean> {
+	if (keepId === mergedId) return false;
+
+	const pair = await deps.contacts.readForMerge(viewer, keepId, mergedId);
+	if (pair === null) return false;
+
+	const now = deps.clock.now();
+	return deps.contacts.mergeVisibleTo(
+		viewer,
+		keepId,
+		mergedId,
+		mergeProfiles(pair.keep.profile, pair.mergedAway.profile),
+		{
+			id: deps.ids.next(),
+			householdId: viewer.householdId,
+			actorId: viewer.id,
+			action: 'merge',
+			entityType: 'contact',
+			entityId: mergedId,
+			// The survivor is what this is "about", and unlike a deletion they still have a page.
+			contactId: keepId,
+			visibility: pair.keep.visibility,
+			summary: describeContactMerge(pair.mergedAway.displayName, pair.keep.displayName),
+			createdAt: now
+		},
+		now
+	);
 }

@@ -68,6 +68,12 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 		async deleteVisibleTo() {
 			return null;
 		},
+		async readForMerge() {
+			return null;
+		},
+		async mergeVisibleTo() {
+			return false;
+		},
 			async findByIdVisibleTo(v, id) {
 				const c = contacts.find((x) => x.id === id);
 				return c && visible(v, c) ? ({ ...c, avatarPhotoId: null } as Contact) : null;

@@ -167,6 +167,8 @@
 	const archived = $derived(c.archivedAt !== null);
 	/** The second click that a deletion asks for; there is no undo after it. */
 	let confirmingDelete = $state(false);
+	/** Whether the merge picker is open; the survivor is always this page's person. */
+	let merging = $state(false);
 	/** The day it happened, for the marker's tooltip. */
 	const archivedOn = $derived(
 		c.archivedAt === null ? null : dayLabel(new Date(c.archivedAt).toLocaleDateString('en-CA'))
@@ -472,6 +474,46 @@
 					{/if}
 				</p>
 			</form>
+
+			<!--
+				Merging ends a record too, so it lives with the other admin-only tool and asks
+				which duplicate to fold in (docs/02 §2.2). The survivor is the page you are on.
+			-->
+			{#if data.isAdmin}
+				<div>
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						icon="people"
+						aria-expanded={merging}
+						onclick={() => (merging = !merging)}
+					>
+						{merging ? 'Cancel' : 'Merge someone into this person'}
+					</Button>
+					{#if merging}
+						<form method="POST" action="?/merge" class="mt-2 flex flex-col gap-2 rounded-app bg-bg-sunken p-3">
+							<p class="text-xs text-fg">
+								The person you choose is folded into {c.displayName} — everything of theirs
+								comes across, and their record is gone. It cannot be undone.
+							</p>
+							<label class="flex flex-col gap-1">
+								<span class="text-xs text-fg-muted">Who is the same person?</span>
+								<select name="mergedId" class={INPUT} required>
+									<option value="" disabled selected>Choose someone…</option>
+									{#each data.otherContacts as other (other.id)}
+										<option value={other.id}>{other.displayName}</option>
+									{/each}
+								</select>
+							</label>
+							{#if form?.mergeError}<p class="text-xs text-danger">{form.mergeError}</p>{/if}
+							<div>
+								<Button variant="primary" size="sm">Merge into {c.displayName}</Button>
+							</div>
+						</form>
+					{/if}
+				</div>
+			{/if}
 
 			<!--
 				The irreversible one, so it asks twice and only an admin sees it (docs/02 §2.2).
