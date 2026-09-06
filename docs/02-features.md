@@ -193,6 +193,16 @@ reciprocal** link.
 - **Guardrails:** prevent duplicate and self relationships; warn on contradictions
   (e.g. mutual "parent of").
 
+- **Shipped:** entering a link takes the specifics with it — the free text for *how* these two
+  connect, an optional **since** day and a **status** of *current* or *former*, all optional and
+  all editable afterwards from the row itself. The row reads them back inline, with *former*
+  as a quiet chip. A day that never happened (`2019-02-30`) and a status the model does not
+  know are refused rather than stored. A link entered wrongly can be **removed**, with the
+  same Undo window as a tag or a date, and removing one that was standing in for a derived
+  relationship brings the worked-out name back (§2.4.1). The **type** is deliberately not
+  editable: changing it can flip the stored direction and re-opens the duplicate guard, so
+  that is a removal and a fresh entry.
+
 ### 2.4.1 Relationship intelligence — derived kinship & propagation **[M2]**
 
 Stella reasons over the relationship graph so members enter as little as possible.

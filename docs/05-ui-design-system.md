@@ -208,7 +208,9 @@ They must be edited together; `app.css` says so at both blocks.
     by kind, the author's name beside the kind (*you* on your own items), *Show earlier* paging
     back through both sources. **People** lists the
     relationships and hides the ego-graph behind *Show map*, so a person with no interest in
-    it does not pay for it on every visit. Below them, **Also related · worked out, not
+    it does not pay for it on every visit. A relationship row reads *label · name · how they
+    connect · since <day>* with *former* as a quiet chip, and carries **Edit** (revealing the
+    same three fields in place, the type not among them) and the standard remove-with-undo. Below them, **Also related · worked out, not
     entered** (§2.4.1) carries the derived relatives — a divider, a quieter heading and a
     *via* clause keep an inference visually distinct from something the household typed.
     After a link is added, an **Also true?** panel sits above them with what it implies, one

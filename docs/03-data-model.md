@@ -251,10 +251,13 @@ An instance connecting two contacts.
 | to_contact_id | text fk → contact.id | cascade delete |
 | type_id | text fk → relationship_type.id | |
 | description | text null | free-text: how these two connect (see §2.4). Column name `note`. |
-| since_date | text null | [M2] |
-| status | text null | e.g. `'current' \| 'former'` [M2] |
+| since_date | text null | full ISO day, validated against the calendar |
+| status | text null | `'current' \| 'former'`; anything else reads as unset |
 | created_by | text fk → user.id | |
 | created_at / updated_at | int | |
+
+A relationship can be deleted (a link entered by mistake); nothing else references the row,
+so the delete is plain and the graph and derived kinship follow on the next read.
 
 Constraints: `from != to`; unique on `(from_contact_id, to_contact_id, type_id)`.
 Direction is stored canonically for asymmetric types (from = forward-label side).
