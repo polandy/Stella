@@ -145,6 +145,15 @@ export interface RelationshipRepository {
 	exists(fromContactId: string, toContactId: string, typeId: string): Promise<boolean>;
 	insert(relationship: NewRelationship): Promise<void>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<RelationshipView[]>;
+	/** Writes the specifics; false when the viewer may not see the relationship. */
+	updateDetailsVisibleTo(
+		viewer: Viewer,
+		id: string,
+		details: RelationshipDetails,
+		updatedAt: number
+	): Promise<boolean>;
+	/** Deletes the link; false when the viewer may not see it. Nothing is written in that case. */
+	removeVisibleTo(viewer: Viewer, id: string): Promise<boolean>;
 	/** The primary links the viewer may see, as the kinship engine wants them (docs/02 §2.4.1). */
 	loadKinshipGraphVisibleTo(viewer: Viewer): Promise<KinshipGraph>;
 }
@@ -269,4 +278,36 @@ function primaryLinkBetween(graph: KinshipGraph, a: string, b: string): PrimaryL
 		if (joins(edge.a, edge.b)) return { kind: 'partner', fromId: edge.a, toId: edge.b };
 	}
 	return null;
+}
+
+/**
+ * Correct the specifics of a link that is already there (docs/02 §2.4). The type is not
+ * editable: changing it can flip the stored direction and re-opens the duplicate guard, so
+ * that is a removal and a fresh entry, not an edit.
+ *
+ * Returns false when the viewer may not see the relationship — the same answer as for one
+ * that does not exist, so no one learns of a link through a private person by editing it.
+ */
+export async function editRelationshipDetails(
+	deps: RelationshipDeps,
+	viewer: Viewer,
+	relationshipId: string,
+	input: RelationshipDetailsInput
+): Promise<boolean> {
+	const details = parseRelationshipDetails(input);
+	return deps.relationships.updateDetailsVisibleTo(
+		viewer,
+		relationshipId,
+		details,
+		deps.clock.now()
+	);
+}
+
+/** Take back a link that was entered wrong. False when the viewer may not see it. */
+export async function removeRelationship(
+	deps: RelationshipDeps,
+	viewer: Viewer,
+	relationshipId: string
+): Promise<boolean> {
+	return deps.relationships.removeVisibleTo(viewer, relationshipId);
 }

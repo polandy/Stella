@@ -9,8 +9,11 @@ import {
 	createRelationship,
 	describeRelationshipFor,
 	DuplicateRelationshipError,
+	editRelationshipDetails,
 	InvalidRelationshipDetailsError,
 	parseRelationshipDetails,
+	removeRelationship,
+	type RelationshipDetails,
 	readKinship,
 	type NewRelationship,
 	type RelationshipRepository,
@@ -87,8 +90,10 @@ describe('describeRelationshipFor', () => {
 	});
 });
 
-function fakeRepo(opts: { type?: RelationshipType | null; exists?: boolean }) {
+function fakeRepo(opts: { type?: RelationshipType | null; exists?: boolean; visible?: boolean }) {
 	let inserted: NewRelationship | null = null;
+	const updates: { id: string; details: RelationshipDetails; updatedAt: number }[] = [];
+	const removals: string[] = [];
 	const repo: RelationshipRepository = {
 		listTypes: async () => [],
 		getType: async () => opts.type ?? null,
@@ -97,10 +102,22 @@ function fakeRepo(opts: { type?: RelationshipType | null; exists?: boolean }) {
 			inserted = r;
 		},
 		listForContactVisibleTo: async () => [],
+		updateDetailsVisibleTo: async (_viewer, id, details, updatedAt) => {
+			if (opts.visible === false) return false;
+			updates.push({ id, details, updatedAt });
+			return true;
+		},
+		removeVisibleTo: async (_viewer, id) => {
+			if (opts.visible === false) return false;
+			removals.push(id);
+			return true;
+		},
 		loadKinshipGraphVisibleTo: async () => emptyKinshipGraph()
 	};
 	return {
 		repo,
+		updates,
+		removals,
 		get inserted() {
 			return inserted;
 		}
@@ -359,5 +376,76 @@ describe('createRelationship with details', () => {
 			})
 		).rejects.toThrow(InvalidRelationshipDetailsError);
 		expect(f.inserted).toBeNull();
+	});
+});
+
+describe('editRelationshipDetails', () => {
+	const viewer: Viewer = { id: 'u1', householdId: 'h1' };
+
+	it('writes the checked details, stamped from the clock', async () => {
+		const f = fakeRepo({});
+
+		const written = await editRelationshipDetails(
+			{ relationships: f.repo, ids: idGen('unused'), clock },
+			viewer,
+			'rel-1',
+			{ description: '  they met skiing ', sinceDate: '2019-06-01', status: 'former' }
+		);
+
+		expect(written).toBe(true);
+		expect(f.updates).toEqual([
+			{
+				id: 'rel-1',
+				details: { description: 'they met skiing', sinceDate: '2019-06-01', status: 'former' },
+				updatedAt: clock.now()
+			}
+		]);
+	});
+
+	it('refuses an unreal detail without going near the repository', async () => {
+		const f = fakeRepo({});
+
+		await expect(
+			editRelationshipDetails({ relationships: f.repo, ids: idGen('unused'), clock }, viewer, 'rel-1', {
+				status: 'complicated'
+			})
+		).rejects.toThrow(InvalidRelationshipDetailsError);
+		expect(f.updates).toEqual([]);
+	});
+
+	it('reports false for a relationship the viewer may not see', async () => {
+		const f = fakeRepo({ visible: false });
+
+		expect(
+			await editRelationshipDetails(
+				{ relationships: f.repo, ids: idGen('unused'), clock },
+				viewer,
+				'rel-hidden',
+				{ description: 'x' }
+			)
+		).toBe(false);
+		expect(f.updates).toEqual([]);
+	});
+});
+
+describe('removeRelationship', () => {
+	const viewer: Viewer = { id: 'u1', householdId: 'h1' };
+
+	it('takes back the link it was given', async () => {
+		const f = fakeRepo({});
+
+		expect(
+			await removeRelationship({ relationships: f.repo, ids: idGen('unused'), clock }, viewer, 'rel-1')
+		).toBe(true);
+		expect(f.removals).toEqual(['rel-1']);
+	});
+
+	it('reports false for one the viewer may not see, and removes nothing', async () => {
+		const f = fakeRepo({ visible: false });
+
+		expect(
+			await removeRelationship({ relationships: f.repo, ids: idGen('unused'), clock }, viewer, 'rel-x')
+		).toBe(false);
+		expect(f.removals).toEqual([]);
 	});
 });
