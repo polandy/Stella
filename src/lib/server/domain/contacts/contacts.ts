@@ -1,5 +1,10 @@
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
+import {
+	describeContactDeletion,
+	type NewActivityEntry
+} from '../activity/activity';
+import type { MediaStore } from '../media/avatars';
 import type { IdGenerator } from '../../id';
 import { deriveDisplayName } from './display-name';
 
@@ -98,12 +103,28 @@ export interface ContactRepository {
 	updateProfile(id: string, patch: ProfilePatch): Promise<void>;
 	/** Stamp or clear `archived_at`; the caller has already checked the contact is visible. */
 	setArchived(id: string, archivedAt: number | null): Promise<void>;
+	/**
+	 * Delete the contact and everything hanging off it, writing `audit` in the same
+	 * transaction — a deletion that left no trace is the one this log exists to prevent.
+	 * Returns the files to unlink, or null when the viewer may not see the contact.
+	 */
+	deleteVisibleTo(
+		viewer: Viewer,
+		id: string,
+		audit: NewActivityEntry
+	): Promise<DeletedContactMedia[] | null>;
 }
 
 export interface ContactDeps {
 	contacts: ContactRepository;
 	ids: IdGenerator;
 	clock: Clock;
+}
+
+/** The bytes a deleted contact leaves behind: one pair per photo that hung off them. */
+export interface DeletedContactMedia {
+	filePath: string;
+	thumbPath: string;
 }
 
 /** How much of a birth date is actually known (docs/03 §3.2). */
@@ -286,4 +307,43 @@ export async function restoreContact(
 	id: string
 ): Promise<boolean> {
 	return setArchived(deps, viewer, id, null);
+}
+
+/**
+ * Delete a person and everything that hangs off them — notes, photos, dates, relationships,
+ * journal — for good. The row and its log entry go in one transaction; the bytes follow,
+ * because a file left behind is the harmless direction of that failure while a delete with
+ * no trace is not (docs/02 §2.2).
+ *
+ * Returns false when the contact is not visible to the viewer, exactly as for one that is
+ * not there. *Who* may delete is decided at the edge: this is admin-only (docs/02 §2.2).
+ */
+export async function deleteContact(
+	deps: Pick<ContactDeps, 'contacts' | 'ids' | 'clock'> & { media: Pick<MediaStore, 'delete'> },
+	viewer: Viewer,
+	id: string
+): Promise<boolean> {
+	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
+	if (contact === null) return false;
+
+	const files = await deps.contacts.deleteVisibleTo(viewer, id, {
+		id: deps.ids.next(),
+		householdId: viewer.householdId,
+		actorId: viewer.id,
+		action: 'delete',
+		entityType: 'contact',
+		entityId: id,
+		// The person this was "about" is the one being deleted, so there is nothing to link to.
+		contactId: null,
+		visibility: contact.visibility,
+		summary: describeContactDeletion(contact.displayName),
+		createdAt: deps.clock.now()
+	});
+	if (files === null) return false;
+
+	for (const file of files) {
+		await deps.media.delete(file.filePath);
+		await deps.media.delete(file.thumbPath);
+	}
+	return true;
 }

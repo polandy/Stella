@@ -4,6 +4,7 @@ import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
+import type { NewActivityEntry } from '../domain/activity/activity';
 import type { NewContact } from '../domain/contacts/contacts';
 import * as schema from './schema';
 import { createDrizzleContactRepository } from './contact-repository';
@@ -248,5 +249,89 @@ describe('archiving', () => {
 		const candidates = (await repo.listNameCandidatesVisibleTo(viewerU1)).map((c) => c.id);
 		expect(candidates).not.toContain('c-old');
 		expect(candidates).toContain('c-here');
+	});
+});
+
+/*
+ * Deleting a person for good (docs/02 §2.2): the row goes with everything hanging off it,
+ * the bytes to unlink come back, and the log entry is written in the same transaction.
+ */
+describe('deleting a contact', () => {
+	const audit = (over: Partial<NewActivityEntry> = {}): NewActivityEntry => ({
+		id: 'log-1',
+		householdId: H1,
+		actorId: U1,
+		action: 'delete',
+		entityType: 'contact',
+		entityId: 'c-gone',
+		contactId: null,
+		visibility: 'shared',
+		summary: 'removed Gone Person',
+		createdAt: 1_700_000_000_000,
+		...over
+	});
+
+	beforeEach(async () => {
+		await repo.insert(contactInput({ id: 'c-gone', displayName: 'Gone Person' }));
+		await repo.insert(contactInput({ id: 'c-stays', displayName: 'Stays Here' }));
+		db.insert(schema.note)
+			.values({ id: 'n-1', contactId: 'c-gone', createdBy: U1, visibility: 'shared', body: 'a note' })
+			.run();
+		db.insert(schema.journalEntry)
+			.values({ id: 'j-1', contactId: 'c-gone', createdBy: U1, visibility: 'shared', entryDate: '2025-01-01', body: 'an entry' })
+			.run();
+		db.insert(schema.photo)
+			.values([
+				{ id: 'p-gallery', householdId: H1, contactId: 'c-gone', createdBy: U1, filePath: 'g.jpg', thumbPath: 'g-t.jpg', mime: 'image/jpeg' },
+				{ id: 'p-journal', householdId: H1, journalEntryId: 'j-1', createdBy: U1, filePath: 'j.jpg', thumbPath: 'j-t.jpg', mime: 'image/jpeg' },
+				{ id: 'p-other', householdId: H1, contactId: 'c-stays', createdBy: U1, filePath: 'o.jpg', thumbPath: 'o-t.jpg', mime: 'image/jpeg' }
+			])
+			.run();
+	});
+
+	it('takes everything that hung off them, and nobody else', async () => {
+		expect(await repo.deleteVisibleTo(viewerU1, 'c-gone', audit())).not.toBeNull();
+
+		expect(await repo.findByIdVisibleTo(viewerU1, 'c-gone')).toBeNull();
+		expect(db.select().from(schema.note).all()).toHaveLength(0);
+		expect(db.select().from(schema.journalEntry).all()).toHaveLength(0);
+		// positive control: the other person and their photo are untouched.
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-stays'))?.displayName).toBe('Stays Here');
+		expect(db.select().from(schema.photo).all().map((p) => p.id)).toEqual(['p-other']);
+	});
+
+	it('hands back the bytes of their gallery *and* their journal photos', async () => {
+		// The journal entry cascades with the contact, so its photo would leave orphaned
+		// bytes behind if only the gallery were collected.
+		const files = await repo.deleteVisibleTo(viewerU1, 'c-gone', audit());
+
+		expect(files?.map((f) => f.filePath).sort()).toEqual(['g.jpg', 'j.jpg']);
+		expect(files?.map((f) => f.thumbPath).sort()).toEqual(['g-t.jpg', 'j-t.jpg']);
+	});
+
+	it('writes the log entry that outlives the row', async () => {
+		await repo.deleteVisibleTo(viewerU1, 'c-gone', audit());
+
+		const logged = db.select().from(schema.activityLog).all();
+		expect(logged).toHaveLength(1);
+		expect(logged[0]).toMatchObject({
+			action: 'delete',
+			entityType: 'contact',
+			entityId: 'c-gone',
+			summary: 'removed Gone Person',
+			visibility: 'shared'
+		});
+	});
+
+	it('deletes nothing, and logs nothing, for a contact the viewer may not see', async () => {
+		await repo.insert(contactInput({ id: 'c-theirs', visibility: 'private', createdBy: U2, displayName: 'Theirs' }));
+
+		expect(await repo.deleteVisibleTo(viewerU1, 'c-theirs', audit({ entityId: 'c-theirs' }))).toBeNull();
+		expect((await repo.findByIdVisibleTo(viewerU2, 'c-theirs'))?.displayName).toBe('Theirs');
+		expect(db.select().from(schema.activityLog).all()).toHaveLength(0);
+
+		// positive control: their owner can delete them, and that does write a log row.
+		expect(await repo.deleteVisibleTo(viewerU2, 'c-theirs', audit({ entityId: 'c-theirs' }))).not.toBeNull();
+		expect(db.select().from(schema.activityLog).all()).toHaveLength(1);
 	});
 });
