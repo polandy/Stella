@@ -76,7 +76,8 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
 - **Contact management:** merge, archive, delete with audit entries — **archive and delete
   shipped** (§2.2): archiving takes someone out of the browsing surfaces and keeps them in the
   graph; deleting is admin-only, takes everything including the image files, and is the one
-  action written to `activity_log` so the household sees it in the stream. Merge still open.
+  action written to `activity_log` so the household sees it in the stream; merging folds one
+  record into another, settling every collision without losing what anyone wrote.
 - **@mentions** in notes → soft links.
 - **Data portability:** export/import archive; admin "Download backup".
 - **Guided migration from Monica:** upload a Monica export (JSON/SQL/vCard), preview the

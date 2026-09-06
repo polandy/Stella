@@ -121,6 +121,25 @@ not be an app user.
 - **Deceased contacts** are kept, visually marked, and excluded from active reminders.
 - **Merge** two contacts that turn out to be the same person **[M2]** (combines fields,
   notes, photos, relationships; keeps an audit entry).
+
+- **Shipped (merge):** an **admin** folds one record into another from the foot of the
+  survivor's profile — the survivor is always the page you are on. Everything of the other
+  record comes across: fields, notes, dates, photos, interactions, links, circle memberships,
+  @-mentions and the journal. The survivor keeps their **display name and their visibility**;
+  every blank they leave is filled from the other record, so a duplicate that only ever got a
+  job title gives it up. Two pairs move together rather than field by field: the **birth date
+  with its precision** (§3.4), and **deceased with its death date** — if either record says
+  the person has died, the merged one does. What the constraints would refuse is settled
+  without losing anything anybody wrote:
+  - a **link between the two** would now point at one person twice, so it goes; a link to a
+    third person that both records had keeps one;
+  - two **journal entries about the same day** by the same member cannot both survive the
+    day-slot rule, so their bodies are joined and the photos and mentions of the folded-in
+    entry move first;
+  - a **tag, mention, participation or circle** the survivor already had stays as it was.
+
+  The merge is written to the activity log and shows in Home's stream as *"<who> merged <name>
+  into <name>"* — the name that was merged away no longer exists anywhere else.
 - **Archive** (soft-hide without deleting) and **delete** (with confirmation) **[M2]**.
 
 - **Shipped (archive):** a person can be put **out of the way** from the foot of their

@@ -70,6 +70,15 @@ because Stella works out grandparents and cousins *through* people, and forgetti
 make it name the rest wrongly. The archived people live behind the **Archived** chip above
 the list, and the same button on their page brings them back.
 
+**The same person twice.** Imports and quick adds leave duplicates: Hans Müller and Hansueli
+M. turn out to be one man. Open the page of the one you want to keep, and at the foot of it
+*Merge someone into this person* asks a single question — who else is them. Everything of the
+other record comes across: their phone number, the notes, the photos, the birthday, who they
+are related to, the circles they were in. Where both records said something, the one you kept
+wins; where yours was blank, theirs fills it in. Two journal entries about the same day end up
+as one entry with both texts, so nothing anybody wrote is lost. Only an admin can do it, and
+it cannot be undone.
+
 **Removing someone for good.** Archiving is almost always what you want. If a person really
 should not be in Stella at all — someone added by mistake, or who asked to be removed — the
 household admin can delete them from the same place. That takes everything with them: notes,
