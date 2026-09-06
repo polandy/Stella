@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
@@ -48,6 +49,17 @@ const sources = (viewer: Viewer) => createDrizzleAttentionRepository(db).listQui
 const byId = async (viewer: Viewer, id: string) => (await sources(viewer)).find((s) => s.contactId === id);
 
 describe('attention repository, quiet sources', () => {
+	it('stops nagging about someone who has been archived', async () => {
+		db.update(schema.contact)
+			.set({ archivedAt: 1_700_000_000_000 })
+			.where(eq(schema.contact.id, 'oma'))
+			.run();
+
+		expect(await byId(viewerU1, 'oma')).toBeUndefined();
+		// positive control: the private contact this viewer owns is still listed.
+		expect(await byId(viewerU1, 'secret')).toBeDefined();
+	});
+
 	it('hands back a person with no story at all, dated from the day they were added', async () => {
 		expect(await byId(viewerU1, 'oma')).toEqual({
 			contactId: 'oma',

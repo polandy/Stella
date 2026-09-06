@@ -1,4 +1,5 @@
 import {
+	Archive,
 	Blend,
 	BookOpen,
 	CalendarDays,
@@ -58,6 +59,7 @@ export const ICONS = {
 	remove: X,
 	more: Ellipsis,
 	pinned: Star,
+	archive: Archive,
 	// States
 	private: Lock,
 	calendar: CalendarDays,

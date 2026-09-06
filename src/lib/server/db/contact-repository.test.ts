@@ -178,3 +178,75 @@ describe('editing the hero in place', () => {
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-priv')).toEqual(before!);
 	});
 });
+
+describe('archiving', () => {
+	beforeEach(async () => {
+		await repo.insert(contactInput({ id: 'c-old', displayName: 'Old Neighbour' }));
+		await repo.insert(contactInput({ id: 'c-here', displayName: 'Still Here' }));
+	});
+
+	it('stamps and clears archived_at, and reads it back', async () => {
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.archivedAt).toBeNull();
+
+		await repo.setArchived('c-old', 1_700_000_000_000);
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.archivedAt).toBe(1_700_000_000_000);
+
+		await repo.setArchived('c-old', null);
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.archivedAt).toBeNull();
+	});
+
+	it('leaves every other contact where they were', async () => {
+		const before = await repo.findByIdVisibleTo(viewerU1, 'c-here');
+
+		await repo.setArchived('c-old', 1_700_000_000_000);
+
+		expect(await repo.findByIdVisibleTo(viewerU1, 'c-here')).toEqual(before!);
+	});
+
+	// An archived contact still opens: the page is where they are brought back from.
+	it('still finds an archived contact by id', async () => {
+		await repo.setArchived('c-old', 1_700_000_000_000);
+
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.displayName).toBe('Old Neighbour');
+	});
+
+	it('lists the archived ones, which no other list shows', async () => {
+		await repo.setArchived('c-old', 1_700_000_000_000);
+
+		const archived = (await repo.listArchivedVisibleTo(viewerU1)).map((c) => c.id);
+		expect(archived).toEqual(['c-old']);
+		// positive control: it is the same visibility scope, so a private contact of another
+		// member stays out of it even once archived.
+		await repo.insert(contactInput({ id: 'c-theirs', visibility: 'private', createdBy: U2, displayName: 'Theirs' }));
+		await repo.setArchived('c-theirs', 1_700_000_000_000);
+		expect((await repo.listArchivedVisibleTo(viewerU1)).map((c) => c.id)).toEqual(['c-old']);
+		expect((await repo.listArchivedVisibleTo(viewerU2)).map((c) => c.id).sort()).toEqual([
+			'c-old',
+			'c-theirs'
+		]);
+	});
+
+	it('still names an archived contact, so a mention already written keeps their name', async () => {
+		await repo.setArchived('c-old', 1_700_000_000_000);
+
+		const names = await repo.listNamesVisibleTo(viewerU1);
+		expect(names.find((c) => c.id === 'c-old')?.displayName).toBe('Old Neighbour');
+		// It is still the visibility scope: another member's private contact stays out of it.
+		await repo.insert(contactInput({ id: 'c-theirs', visibility: 'private', createdBy: U2, displayName: 'Theirs' }));
+		expect((await repo.listNamesVisibleTo(viewerU1)).some((c) => c.id === 'c-theirs')).toBe(false);
+		expect((await repo.listNamesVisibleTo(viewerU2)).some((c) => c.id === 'c-theirs')).toBe(true);
+	});
+
+	it('takes an archived contact out of the directory and the name suggestions', async () => {
+		await repo.setArchived('c-old', 1_700_000_000_000);
+
+		const listed = (await repo.listVisibleTo(viewerU1)).map((c) => c.id);
+		expect(listed).not.toContain('c-old');
+		// positive control: everyone still in the household is listed.
+		expect(listed).toContain('c-here');
+
+		const candidates = (await repo.listNameCandidatesVisibleTo(viewerU1)).map((c) => c.id);
+		expect(candidates).not.toContain('c-old');
+		expect(candidates).toContain('c-here');
+	});
+});

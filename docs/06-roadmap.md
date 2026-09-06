@@ -73,7 +73,8 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
 - **Custom relationship types**; relationship note/since/status — the specifics (how they
   connect, since, current/former), editing and removal shipped, and a household names its own
   types under *Settings → Relationship types* (§2.4).
-- **Contact management:** merge, archive, delete with audit entries.
+- **Contact management:** merge, archive, delete with audit entries — **archive shipped**
+  (§2.2): out of the browsing surfaces, kept in the graph. Merge and delete still open.
 - **@mentions** in notes → soft links.
 - **Data portability:** export/import archive; admin "Download backup".
 - **Guided migration from Monica:** upload a Monica export (JSON/SQL/vCard), preview the

@@ -53,6 +53,14 @@ export interface NewContact {
 export interface Contact extends NewContact {
 	avatarPhotoId: string | null;
 	isDeceased: boolean;
+	/** When the household put them out of the way, or null while they are in it. */
+	archivedAt: number | null;
+}
+
+/** Just enough to name a contact, for resolving an @-mention. */
+export interface ContactName {
+	id: string;
+	displayName: string;
 }
 
 /** Row shape for list views. */
@@ -78,8 +86,18 @@ export interface ContactRepository {
 	insert(contact: NewContact): Promise<void>;
 	findByIdVisibleTo(viewer: Viewer, id: string): Promise<Contact | null>;
 	listVisibleTo(viewer: Viewer): Promise<ContactSummary[]>;
+	/** The archived ones, which every other list leaves out (docs/02 §2.2). */
+	listArchivedVisibleTo(viewer: Viewer): Promise<ContactSummary[]>;
+	/**
+	 * Id and name of every contact the viewer may see, **archived ones included** — for
+	 * resolving an @-mention already written. Archiving takes someone out of the lists, not
+	 * out of the sentences that name them (docs/02 §2.2).
+	 */
+	listNamesVisibleTo(viewer: Viewer): Promise<ContactName[]>;
 	/** Write the hero's own fields; the caller has already checked the contact is visible. */
 	updateProfile(id: string, patch: ProfilePatch): Promise<void>;
+	/** Stamp or clear `archived_at`; the caller has already checked the contact is visible. */
+	setArchived(id: string, archivedAt: number | null): Promise<void>;
 }
 
 export interface ContactDeps {
@@ -212,4 +230,60 @@ export async function listContacts(
 	viewer: Viewer
 ): Promise<ContactSummary[]> {
 	return deps.contacts.listVisibleTo(viewer);
+}
+
+/**
+ * Resolve @-mentions written in a note, journal entry or moment. Uses the *visibility*
+ * scope, not the browsing one: an archived person is out of the pickers, but a sentence
+ * that already names them must keep naming them rather than reading "@unknown".
+ */
+export async function listContactNames(
+	deps: Pick<ContactDeps, 'contacts'>,
+	viewer: Viewer
+): Promise<ContactName[]> {
+	return deps.contacts.listNamesVisibleTo(viewer);
+}
+
+/** List the archived contacts — the only read that shows them as a list. */
+export async function listArchivedContacts(
+	deps: Pick<ContactDeps, 'contacts'>,
+	viewer: Viewer
+): Promise<ContactSummary[]> {
+	return deps.contacts.listArchivedVisibleTo(viewer);
+}
+
+/**
+ * Put a contact out of the way, or bring them back. Archiving hides someone from the
+ * surfaces the household browses; it does not hide them from the graph or from the
+ * relatives Stella works out (docs/04 §4.9). Returns false when the contact is not visible
+ * to the viewer, so the route answers as it does for one that is not there.
+ */
+async function setArchived(
+	deps: Pick<ContactDeps, 'contacts' | 'clock'>,
+	viewer: Viewer,
+	id: string,
+	archivedAt: number | null
+): Promise<boolean> {
+	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
+	if (contact === null) return false;
+	await deps.contacts.setArchived(id, archivedAt);
+	return true;
+}
+
+/** Archive a contact, stamping the moment it happened. */
+export async function archiveContact(
+	deps: Pick<ContactDeps, 'contacts' | 'clock'>,
+	viewer: Viewer,
+	id: string
+): Promise<boolean> {
+	return setArchived(deps, viewer, id, deps.clock.now());
+}
+
+/** Bring an archived contact back into the household's lists. */
+export async function restoreContact(
+	deps: Pick<ContactDeps, 'contacts' | 'clock'>,
+	viewer: Viewer,
+	id: string
+): Promise<boolean> {
+	return setArchived(deps, viewer, id, null);
 }

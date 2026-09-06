@@ -8,6 +8,7 @@ import * as schema from '../db/schema';
 import { contact, note, relationship } from '../db/schema';
 import {
 	childRecordVisibleTo,
+	contactBrowsableBy,
 	contactVisibleTo,
 	relationshipVisibleTo
 } from './query-scoping';
@@ -127,6 +128,39 @@ describe('contactVisibleTo', () => {
 
 	it('never leaks across households', () => {
 		expect(scopedContactIds(viewerForeign)).toEqual(['c-foreign']);
+	});
+});
+
+describe('contactBrowsableBy (visible and not archived)', () => {
+	function browsableContactIds(viewer: Viewer): string[] {
+		return db
+			.select({ id: contact.id })
+			.from(contact)
+			.where(contactBrowsableBy(viewer))
+			.all()
+			.map((r) => r.id)
+			.sort();
+	}
+
+	// The fixture is built once for the whole file, so this case puts back what it changed.
+	const setArchived = (id: string, at: number | null) =>
+		db.update(contact).set({ archivedAt: at }).where(eq(contact.id, id)).run();
+
+	it('drops an archived contact that is otherwise perfectly visible', () => {
+		setArchived('c-shared', 1_700_000_000_000);
+		try {
+			expect(browsableContactIds(viewerU1)).toEqual(['c-priv-u1']);
+			// The two conditions are not the same question: visibility still says yes, which is
+			// why the graph and the kinship inference keep reading `contactVisibleTo` alone.
+			expect(scopedContactIds(viewerU1)).toEqual(['c-priv-u1', 'c-shared']);
+		} finally {
+			setArchived('c-shared', null);
+		}
+	});
+
+	it('is exactly visibility while nothing is archived', () => {
+		expect(browsableContactIds(viewerU1)).toEqual(scopedContactIds(viewerU1));
+		expect(browsableContactIds(viewerU2)).toEqual(scopedContactIds(viewerU2));
 	});
 });
 

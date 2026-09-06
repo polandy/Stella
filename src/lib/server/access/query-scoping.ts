@@ -1,4 +1,4 @@
-import { and, eq, or, type AnyColumn, type SQL } from 'drizzle-orm';
+import { and, eq, isNull, or, type AnyColumn, type SQL } from 'drizzle-orm';
 import { contact } from '../db/schema';
 import type { Viewer } from './visibility';
 
@@ -33,6 +33,17 @@ export function contactColumnsVisibleTo(viewer: Viewer, columns: ContactColumns)
 /** Condition for the base `contact` table being visible to the viewer. */
 export function contactVisibleTo(viewer: Viewer): SQL {
 	return contactColumnsVisibleTo(viewer, contact);
+}
+
+/**
+ * Condition for the surfaces the household *browses*: visible, and not archived. Archiving
+ * takes someone out of the directory, the search, the pickers and the Home bands — but not
+ * out of the graph or the relatives Stella works out, which keep reading `contactVisibleTo`
+ * (docs/04 §4.9). Anything that lists people to choose from or to be reminded of uses this;
+ * anything that reasons about the household's shape does not.
+ */
+export function contactBrowsableBy(viewer: Viewer): SQL {
+	return and(contactVisibleTo(viewer), isNull(contact.archivedAt))!;
 }
 
 /**
