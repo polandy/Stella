@@ -18,6 +18,18 @@ async function openPeople(page: Page): Promise<void> {
 	await appReady(page);
 }
 
+/*
+ * The way to an archived person's page: through the chip, because the directory no longer
+ * holds them — which is the feature working, and the reason `openPerson` cannot be used.
+ */
+async function openArchivedPerson(page: Page, name: string): Promise<void> {
+	await page.getByRole('link', { name: 'People' }).first().click();
+	await page.getByRole('link', { name: /^Archived \(\d+\)$/ }).click();
+	await page.getByRole('link', { name: new RegExp(name) }).first().click();
+	await expect(page.getByTestId('archived-marker')).toBeVisible();
+	await appReady(page);
+}
+
 /** Archives the person whose page is open, and waits for their header to say so. */
 async function archiveOpenPerson(page: Page): Promise<void> {
 	await page.getByRole('button', { name: 'Archive this person' }).click();
@@ -78,7 +90,7 @@ test('keeps an archived person in the family, only out of the lists', async ({ p
 	await page.getByRole('button', { name: 'Show map' }).click();
 	await expect(page.getByRole('link', { name: new RegExp(`${WHO} —`) })).toBeVisible();
 
-	await openPerson(page, new RegExp(WHO));
+	await openArchivedPerson(page, WHO);
 	await restoreOpenPerson(page);
 });
 
@@ -101,7 +113,7 @@ test('keeps their name in something already written about them', async ({ page }
 	await expect(moment).toContainText(WHO);
 	await expect(moment).not.toContainText('@unknown');
 
-	await openPerson(page, new RegExp(WHO));
+	await openArchivedPerson(page, WHO);
 	await restoreOpenPerson(page);
 });
 
@@ -117,6 +129,6 @@ test('stops suggesting an archived person when a new one is added', async ({ pag
 	await expect(suggestions).toContainText('Thomas Widmer');
 	await expect(suggestions).not.toContainText(WHO);
 
-	await openPerson(page, new RegExp(WHO));
+	await openArchivedPerson(page, WHO);
 	await restoreOpenPerson(page);
 });
