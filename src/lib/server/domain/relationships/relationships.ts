@@ -2,6 +2,7 @@ import type { KinshipGraph, Pair } from '../../../kinship/kinship';
 import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';
 import { suggestPropagation, type PrimaryLink, type SuggestedLink } from '../../../kinship/propagation';
 import type { Viewer } from '../../access/visibility';
+import type { RelationshipCategory } from '../../../relationships/categories';
 import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../../relationships/status';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../dates/calendar';
 import type { Clock } from '../../clock';
@@ -11,8 +12,6 @@ import type { IdGenerator } from '../../id';
  * Relationship domain (docs/02 §2.4). Pure helpers for canonical storage direction and
  * perspective-aware labels, plus the createRelationship use-case over a repository port.
  */
-
-export type RelationshipCategory = 'family' | 'romantic' | 'social' | 'professional' | 'other';
 
 export interface RelationshipType {
 	id: string;

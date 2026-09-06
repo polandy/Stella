@@ -1,6 +1,6 @@
 import { AA_LARGE, ensureContrast, mixHex } from '../../design/color';
 import { ACCENTS, categoryVar } from '../../design/tokens';
-import type { RelationshipCategory } from '../model/types';
+import type { RelationshipCategory } from '../../relationships/categories';
 
 /*
  * Resolve the semantic design tokens (docs/05) into concrete hex values for the Cytoscape

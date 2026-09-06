@@ -2,7 +2,7 @@ import { describe, expect, it, test } from 'bun:test';
 import { resolvePalette } from './theme';
 import { AA_LARGE, contrastRatio, mixHex } from '../../design/color';
 import { resolveColor, tokensFor, type Theme } from '../../design/css-tokens';
-import { RELATIONSHIP_CATEGORIES } from '../../design/tokens';
+import { RELATIONSHIP_CATEGORIES } from '../../relationships/categories';
 import { buildStylesheet } from './stylesheet';
 
 /*
