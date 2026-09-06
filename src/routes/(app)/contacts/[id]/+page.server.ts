@@ -55,6 +55,9 @@ import { createNote, listNotesForContact } from '$lib/server/domain/notes/notes'
 import {
 	createRelationship,
 	DuplicateRelationshipError,
+	editRelationshipDetails,
+	InvalidRelationshipDetailsError,
+	removeRelationship,
 	readKinship
 } from '$lib/server/domain/relationships/relationships';
 import {
@@ -241,10 +244,22 @@ const EditProfileSchema = v.object({
 	description: v.optional(v.pipe(v.string(), v.trim()))
 });
 
+/** The specifics of a link (docs/02 §2.4); the domain has the last word on what is real. */
+const RelationshipDetailsSchema = {
+	description: v.optional(v.pipe(v.string(), v.trim())),
+	sinceDate: v.optional(v.pipe(v.string(), v.trim())),
+	status: v.optional(v.pipe(v.string(), v.trim()))
+};
+
 const AddRelationshipSchema = v.object({
 	targetId: v.pipe(v.string(), v.minLength(1)),
 	typeId: v.pipe(v.string(), v.minLength(1)),
-	description: v.optional(v.pipe(v.string(), v.trim()))
+	...RelationshipDetailsSchema
+});
+
+const EditRelationshipSchema = v.object({
+	relationshipId: v.pipe(v.string(), v.minLength(1)),
+	...RelationshipDetailsSchema
 });
 
 /** Visibility of a newly uploaded gallery photo (docs/02 §2.14). */
@@ -332,7 +347,9 @@ export const actions: Actions = {
 		const parsed = v.safeParse(AddRelationshipSchema, {
 			targetId: form.get('targetId'),
 			typeId: form.get('typeId'),
-			description: form.get('description') || undefined
+			description: form.get('description') || undefined,
+			sinceDate: form.get('sinceDate') || undefined,
+			status: form.get('status') || undefined
 		});
 		if (!parsed.success) {
 			return fail(400, { error: 'Please choose a person and a relationship type.' });
@@ -352,11 +369,16 @@ export const actions: Actions = {
 				fromContactId: params.id,
 				toContactId: parsed.output.targetId,
 				typeId: parsed.output.typeId,
-				description: parsed.output.description ?? null
+				description: parsed.output.description ?? null,
+				sinceDate: parsed.output.sinceDate ?? null,
+				status: parsed.output.status ?? null
 			});
 		} catch (err) {
 			if (err instanceof DuplicateRelationshipError) {
 				return fail(409, { error: 'That relationship already exists.' });
+			}
+			if (err instanceof InvalidRelationshipDetailsError) {
+				return fail(400, { error: err.message });
 			}
 			return fail(400, { error: 'Could not add the relationship.' });
 		}
@@ -364,6 +386,53 @@ export const actions: Actions = {
 		// Come back with the new pair named, so its implied links can be offered.
 		const pair = [params.id, parsed.output.targetId].join(PROPOSE_SEPARATOR);
 		throw redirect(303, `/contacts/${params.id}?propose=${pair}#relationships`);
+	},
+
+	/** Correct the specifics of a link. The type is not editable (docs/02 §2.4). */
+	editRelationship: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const parsed = v.safeParse(EditRelationshipSchema, {
+			relationshipId: form.get('relationshipId'),
+			description: form.get('description') || undefined,
+			sinceDate: form.get('sinceDate') || undefined,
+			status: form.get('status') || undefined
+		});
+		if (!parsed.success) return fail(400, { error: 'Could not save the relationship.' });
+
+		try {
+			const saved = await editRelationshipDetails(
+				getRelationshipDeps(),
+				viewer,
+				parsed.output.relationshipId,
+				parsed.output
+			);
+			if (!saved) return fail(404, { error: 'That relationship could not be found.' });
+		} catch (err) {
+			if (err instanceof InvalidRelationshipDetailsError) {
+				return fail(400, { error: err.message });
+			}
+			throw err;
+		}
+
+		throw redirect(303, `/contacts/${params.id}?tab=people`);
+	},
+
+	/** Take back a link that was entered wrong (docs/02 §2.4). Undo is the page's own. */
+	removeRelationship: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const relationshipId = form.get('relationshipId');
+		if (typeof relationshipId !== 'string') return fail(400, {});
+
+		if (!(await removeRelationship(getRelationshipDeps(), viewer, relationshipId))) {
+			return fail(404, { error: 'That relationship could not be found.' });
+		}
+		throw redirect(303, `/contacts/${params.id}?tab=people`);
 	},
 
 	/**

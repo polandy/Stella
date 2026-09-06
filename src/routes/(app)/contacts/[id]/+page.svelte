@@ -16,6 +16,7 @@
 	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
+	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { untrack } from 'svelte';
@@ -145,6 +146,7 @@
 	const visibleFields = $derived(shown('field', data.fields));
 	const visibleDates = $derived(shown('date', data.dates));
 	const visibleTags = $derived(shown('tag', data.tags));
+	const visibleRelationships = $derived(shown('relationship', data.relationships));
 	const visibleCircles = $derived(
 		data.circles.filter((circle) => !removals.isPending(removalKey('membership', circle.membershipId)))
 	);
@@ -157,6 +159,9 @@
 	const saved = (name: SectionName) => savedEnhance(removals, () => (openSection[name] = false));
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
 	const savedRelationship = savedEnhance(removals, () => (relateOpen = false));
+	/** Which relationship has its details open for correction; one at a time. */
+	let editingRelationship = $state<string | null>(null);
+	const savedRelationshipEdit = savedEnhance(removals, () => (editingRelationship = null));
 </script>
 
 <svelte:window onkeydown={onGalleryKeydown} />
@@ -513,20 +518,86 @@
 						</a>
 					{/snippet}
 
-					{#if data.relationships.length > 0}
+					{#if visibleRelationships.length > 0}
 						<ul class="flex flex-col divide-y divide-border-subtle">
-							{#each data.relationships as rel (rel.id)}
-								<li class="flex items-center gap-3 py-2 text-sm">
-									<span
-										class="size-2 shrink-0 rounded-full"
-										style="background:{categoryVar(rel.category)}"
-									></span>
-									<span class="w-24 shrink-0 truncate text-fg-muted">{rel.label}</span>
-									<a href="/contacts/{rel.otherContactId}" class="font-medium text-fg hover:underline">
-										{rel.otherDisplayName}
-									</a>
-									{#if rel.description}
-										<span class="truncate text-fg-subtle">· {rel.description}</span>
+							{#each visibleRelationships as rel (rel.id)}
+								<li class="flex flex-col gap-1 py-2 text-sm">
+									<div class="flex items-center gap-3">
+										<span
+											class="size-2 shrink-0 rounded-full"
+											style="background:{categoryVar(rel.category)}"
+										></span>
+										<span class="w-24 shrink-0 truncate text-fg-muted">{rel.label}</span>
+										<a href="/contacts/{rel.otherContactId}" class="font-medium text-fg hover:underline">
+											{rel.otherDisplayName}
+										</a>
+										{#if rel.description}
+											<span class="truncate text-fg-subtle">· {rel.description}</span>
+										{/if}
+										{#if rel.sinceDate}
+											<span class="shrink-0 text-fg-subtle">· since {dayLabel(rel.sinceDate)}</span>
+										{/if}
+										{#if rel.status === 'former'}
+											<span class="shrink-0 rounded-full bg-bg-sunken px-2 py-0.5 text-xs text-fg-subtle">
+												former
+											</span>
+										{/if}
+										<div class="ml-auto flex shrink-0 items-center gap-1">
+											<Button
+												type="button"
+												variant="ghost"
+												size="sm"
+												aria-expanded={editingRelationship === rel.id}
+												onclick={() =>
+													(editingRelationship = editingRelationship === rel.id ? null : rel.id)}
+											>
+												{editingRelationship === rel.id ? 'Cancel' : 'Edit'}
+											</Button>
+											<RemoveButton
+												kind="relationship"
+												id={rel.id}
+												action="?/removeRelationship"
+												fields={{ relationshipId: rel.id }}
+												label="Remove the link to {rel.otherDisplayName}"
+												removed="Relationship removed"
+											/>
+										</div>
+									</div>
+
+									{#if editingRelationship === rel.id}
+										<!-- The type is not editable: changing it can flip the stored direction, so
+										     that is a removal and a fresh entry (docs/02 §2.4). -->
+										<form
+											method="POST"
+											action="?/editRelationship"
+											use:enhance={savedRelationshipEdit}
+											class="flex flex-wrap items-end gap-2 pl-5"
+										>
+											<input type="hidden" name="relationshipId" value={rel.id} />
+											<label class="flex flex-1 flex-col gap-1">
+												<span class="text-xs text-fg-muted">How they connect</span>
+												<input
+													name="description"
+													value={rel.description ?? ''}
+													placeholder="met through Peter at the ski course"
+													class={INPUT}
+												/>
+											</label>
+											<label class="flex flex-col gap-1">
+												<span class="text-xs text-fg-muted">Since</span>
+												<input type="date" name="sinceDate" value={rel.sinceDate ?? ''} class={INPUT} />
+											</label>
+											<label class="flex flex-col gap-1">
+												<span class="text-xs text-fg-muted">Status</span>
+												<select name="status" class={INPUT}>
+													<option value="" selected={rel.status === null}>Not said</option>
+													{#each RELATIONSHIP_STATUSES as status (status)}
+														<option value={status} selected={rel.status === status}>{status}</option>
+													{/each}
+												</select>
+											</label>
+											<Button variant="primary" size="sm">Save</Button>
+										</form>
 									{/if}
 								</li>
 							{/each}
@@ -615,6 +686,27 @@
 											<option value={other.id} selected={other.id === data.relateTo}>
 												{other.displayName}
 											</option>
+										{/each}
+									</select>
+								</label>
+								<label class="flex w-full flex-col gap-1 text-sm sm:flex-1">
+									<span class="text-fg-muted">How they connect (optional)</span>
+									<input
+										name="description"
+										placeholder="met through Peter at the ski course"
+										class={INPUT}
+									/>
+								</label>
+								<label class="flex flex-col gap-1 text-sm">
+									<span class="text-fg-muted">Since</span>
+									<input type="date" name="sinceDate" class={INPUT} />
+								</label>
+								<label class="flex flex-col gap-1 text-sm">
+									<span class="text-fg-muted">Status</span>
+									<select name="status" class={INPUT}>
+										<option value="">Not said</option>
+										{#each RELATIONSHIP_STATUSES as status (status)}
+											<option value={status}>{status}</option>
 										{/each}
 									</select>
 								</label>

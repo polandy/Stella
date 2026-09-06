@@ -62,6 +62,8 @@ describe('exists / insert', () => {
 			toContactId: 'hans',
 			typeId: 'parent_child',
 			description: null,
+			sinceDate: null,
+			status: null,
 			createdBy: U1,
 			createdAt: 0,
 			updatedAt: 0
@@ -82,6 +84,8 @@ describe('listForContactVisibleTo', () => {
 			toContactId: 'hans',
 			typeId: 'parent_child',
 			description: null,
+			sinceDate: null,
+			status: null,
 			createdBy: U1,
 			createdAt: 0,
 			updatedAt: 0
@@ -99,6 +103,54 @@ describe('listForContactVisibleTo', () => {
 		expect(forHans[0]).toMatchObject({ otherDisplayName: 'Bettina', label: 'Child of' });
 	});
 
+	it('carries the specifics back out from both sides (docs/02 §2.4)', async () => {
+		seedContact('kurt', 'Kurt', 'shared');
+		await repo.insert({
+			id: 'rel-partner',
+			householdId: H,
+			fromContactId: 'bettina',
+			toContactId: 'kurt',
+			typeId: 'partner',
+			description: 'met at the ski course',
+			sinceDate: '2019-06-01',
+			status: 'former',
+			createdBy: U1,
+			createdAt: 0,
+			updatedAt: 0
+		});
+
+		for (const [who, other] of [
+			['bettina', 'Kurt'],
+			['kurt', 'Bettina']
+		]) {
+			const view = (await repo.listForContactVisibleTo(viewerU1, who)).find(
+				(r) => r.otherDisplayName === other
+			);
+			expect(view).toMatchObject({
+				description: 'met at the ski course',
+				sinceDate: '2019-06-01',
+				status: 'former'
+			});
+		}
+	});
+
+	it('reads a status the domain does not know as nothing said', async () => {
+		// The column is plain text; an older row or an import can hold anything.
+		db.update(schema.relationship)
+			.set({ status: 'complicated' })
+			.where(eq(schema.relationship.id, 'rel-pc'))
+			.run();
+
+		const [view] = await repo.listForContactVisibleTo(viewerU1, 'bettina');
+		expect(view.status).toBeNull();
+		// …and a status it does know still comes through, so this is not blanket blindness.
+		db.update(schema.relationship)
+			.set({ status: 'current' })
+			.where(eq(schema.relationship.id, 'rel-pc'))
+			.run();
+		expect((await repo.listForContactVisibleTo(viewerU1, 'bettina'))[0].status).toBe('current');
+	});
+
 	it('hides a relationship whose other endpoint the viewer cannot see', async () => {
 		seedContact('secret', 'Secret', 'private', U1); // owned by U1, private
 		await repo.insert({
@@ -108,6 +160,8 @@ describe('listForContactVisibleTo', () => {
 			toContactId: 'secret',
 			typeId: 'friend',
 			description: null,
+			sinceDate: null,
+			status: null,
 			createdBy: U1,
 			createdAt: 0,
 			updatedAt: 0
@@ -133,7 +187,7 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 		const rel = (id: string, from: string, to: string, typeId: string) =>
 			repo.insert({
 				id, householdId: H, fromContactId: from, toContactId: to, typeId,
-				description: null, createdBy: U1, createdAt: 1, updatedAt: 1
+				description: null, sinceDate: null, status: null, createdBy: U1, createdAt: 1, updatedAt: 1
 			});
 		await rel('r-1', 'otto', 'bettina', 'parent_child');
 		await rel('r-2', 'bettina', 'hans', 'parent_child');
@@ -155,6 +209,18 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 		expect(graph.storedPairs).toContainEqual({ a: 'otto', b: 'hans' });
 	});
 
+	it('keeps a partner marked former in the graph, because step-family hangs on it', async () => {
+		// docs/02 §2.4: the status says how the household reads the link today, not that it
+		// never happened — a divorce does not unmake a stepmother.
+		db.update(schema.relationship)
+			.set({ status: 'former' })
+			.where(eq(schema.relationship.id, 'r-3'))
+			.run();
+
+		const graph = await repo.loadKinshipGraphVisibleTo(viewerU1);
+		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt' }]);
+	});
+
 	it('hides a private person’s links from everyone but their author', async () => {
 		const forU1 = await repo.loadKinshipGraphVisibleTo(viewerU1);
 		expect(forU1.people.map((p) => p.id)).not.toContain('secret');
@@ -163,5 +229,83 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 		const forU2 = await repo.loadKinshipGraphVisibleTo(viewerU2);
 		expect(forU2.people.map((p) => p.id)).toContain('secret');
 		expect(forU2.parentEdges).toContainEqual({ parentId: 'secret', childId: 'hans' });
+	});
+});
+
+/*
+ * Correcting and taking back a link (docs/02 §2.4). Both are scoped through
+ * `relationshipVisibleTo`, so a relationship touching someone the viewer cannot see is
+ * indistinguishable from one that is not there — and neither writes anything in that case.
+ */
+describe('updateDetailsVisibleTo / removeVisibleTo', () => {
+	beforeEach(async () => {
+		seedContact('hans', 'Hans', 'shared');
+		seedContact('bettina', 'Bettina', 'shared');
+		seedContact('secret', 'Secret', 'private', U2); // U2's own, invisible to U1
+		await repo.insert({
+			id: 'rel-open', householdId: H, fromContactId: 'bettina', toContactId: 'hans',
+			typeId: 'parent_child', description: null, sinceDate: null, status: null,
+			createdBy: U1, createdAt: 0, updatedAt: 0
+		});
+		await repo.insert({
+			id: 'rel-hidden', householdId: H, fromContactId: 'hans', toContactId: 'secret',
+			typeId: 'friend', description: 'quiet', sinceDate: null, status: null,
+			createdBy: U2, createdAt: 0, updatedAt: 0
+		});
+	});
+
+	const detailsOf = async (id: string) =>
+		db.select().from(schema.relationship).where(eq(schema.relationship.id, id)).get();
+
+	it('writes the specifics onto a relationship the viewer can see', async () => {
+		const written = await repo.updateDetailsVisibleTo(
+			viewerU1,
+			'rel-open',
+			{ description: 'she raised him alone', sinceDate: '1994-03-02', status: 'current' },
+			1_700_000_000_000
+		);
+
+		expect(written).toBe(true);
+		expect(await detailsOf('rel-open')).toMatchObject({
+			note: 'she raised him alone',
+			sinceDate: '1994-03-02',
+			status: 'current'
+		});
+	});
+
+	it('refuses to touch one whose other endpoint the viewer cannot see', async () => {
+		const patch = { description: 'changed', sinceDate: null, status: null };
+		expect(await repo.updateDetailsVisibleTo(viewerU1, 'rel-hidden', patch, 1)).toBe(false);
+		expect((await detailsOf('rel-hidden'))?.note).toBe('quiet');
+
+		// The owner of the private endpoint may, so this is scoping and not a blanket refusal.
+		expect(await repo.updateDetailsVisibleTo(viewerU2, 'rel-hidden', patch, 1)).toBe(true);
+		expect((await detailsOf('rel-hidden'))?.note).toBe('changed');
+	});
+
+	it('removes a link the viewer can see', async () => {
+		expect(await repo.removeVisibleTo(viewerU1, 'rel-open')).toBe(true);
+		expect(await detailsOf('rel-open')).toBeUndefined();
+		expect(await repo.listForContactVisibleTo(viewerU1, 'hans')).toEqual([]);
+	});
+
+	it('refuses to remove one it will not show, and leaves the row where it is', async () => {
+		expect(await repo.removeVisibleTo(viewerU1, 'rel-hidden')).toBe(false);
+		expect(await detailsOf('rel-hidden')).toBeDefined();
+
+		expect(await repo.removeVisibleTo(viewerU2, 'rel-hidden')).toBe(true);
+		expect(await detailsOf('rel-hidden')).toBeUndefined();
+	});
+
+	it('says no rather than throwing for a relationship that is not there at all', async () => {
+		expect(await repo.removeVisibleTo(viewerU1, 'no-such-relationship')).toBe(false);
+		expect(
+			await repo.updateDetailsVisibleTo(
+				viewerU1,
+				'no-such-relationship',
+				{ description: null, sinceDate: null, status: null },
+				1
+			)
+		).toBe(false);
 	});
 });
