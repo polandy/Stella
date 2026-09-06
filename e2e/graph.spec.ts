@@ -1,15 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
 
-/** The slice of the Cytoscape instance the tests below read from the page. */
-interface CyForTests {
-	$id(id: string): {
-		empty(): boolean;
-		hasClass(name: string): boolean;
-		renderedPosition(): { x: number; y: number };
-	};
-	$(selector: string): { map(fn: (edge: { data(key: string): string }) => string): string[] };
-}
-
 /*
  * The explorer's toolbar and peek panel (docs/05 §5.8). Written after the screen was seen in
  * the running app (docs/08 §8.4.1). What the canvas draws is held by `theme.test.ts` and
@@ -69,6 +59,16 @@ test('opens the peek panel on the centred person with their face, name and a way
  * where it has drawn them. That is the renderer answering — not the model being re-read — and
  * it makes clicking a named person deterministic instead of a guess at a coordinate.
  */
+
+/** The slice of the Cytoscape instance the tests below read from the page. */
+interface CyForTests {
+	$id(id: string): {
+		empty(): boolean;
+		hasClass(name: string): boolean;
+		renderedPosition(): { x: number; y: number };
+	};
+	$(selector: string): { map(fn: (edge: { data(key: string): string }) => string): string[] };
+}
 
 type NodeState = 'absent' | 'filtered-out' | 'drawn';
 
