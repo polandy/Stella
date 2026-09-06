@@ -1,10 +1,10 @@
+import { RELATIONSHIP_CATEGORIES } from '../relationships/categories';
 import { describe, expect, it } from 'bun:test';
 import { AA_LARGE, AA_TEXT, contrastRatio, ensureContrast, mixHex, relativeLuminance } from './color';
 import { resolveColor, tokensFor, type Theme } from './css-tokens';
 import {
 	ACCENTS,
 	AVATAR_ACCENTS,
-	RELATIONSHIP_CATEGORIES,
 	accentVar,
 	categoryVar
 } from './tokens';

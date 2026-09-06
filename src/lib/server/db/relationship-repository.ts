@@ -1,4 +1,4 @@
-import { and, eq, or } from 'drizzle-orm';
+import { and, eq, isNull, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { KinshipGraph } from '../../kinship/kinship';
@@ -14,6 +14,11 @@ import {
 	type RelationshipType,
 	type RelationshipView
 } from '../domain/relationships/relationships';
+import type {
+	NewRelationshipType,
+	RelationshipTypeFields,
+	RelationshipTypeRepository
+} from '../domain/relationships/relationship-types';
 import type * as schema from './schema';
 import { contact, relationship, relationshipType } from './schema';
 
@@ -25,6 +30,7 @@ import { contact, relationship, relationshipType } from './schema';
 
 type TypeRow = {
 	id: string;
+	householdId: string | null;
 	key: string;
 	forwardLabel: string;
 	reverseLabel: string;
@@ -35,6 +41,7 @@ type TypeRow = {
 
 const toType = (row: TypeRow): RelationshipType => ({
 	id: row.id,
+	householdId: row.householdId,
 	key: row.key,
 	forwardLabel: row.forwardLabel,
 	reverseLabel: row.reverseLabel,
@@ -53,8 +60,21 @@ const toStatus = (value: string | null): RelationshipStatus | null =>
 		? (value as RelationshipStatus)
 		: null;
 
+/**
+ * The types a household may use: the built-in set (`household_id` null, seeded globally) plus
+ * the ones this household defined. Another household's custom type is not merely hidden from
+ * the picker — it cannot be resolved by id either, so it can never be stored (docs/03 §3.6).
+ */
+const typeUsableBy = (viewer: Viewer) =>
+	or(isNull(relationshipType.householdId), eq(relationshipType.householdId, viewer.householdId));
+
+/** One custom type of this household — never a built-in one, whose `household_id` is null. */
+const customTypeOf = (viewer: Viewer, typeId: string) =>
+	and(eq(relationshipType.id, typeId), eq(relationshipType.householdId, viewer.householdId));
+
 const typeColumns = {
 	id: relationshipType.id,
+	householdId: relationshipType.householdId,
 	key: relationshipType.key,
 	forwardLabel: relationshipType.forwardLabel,
 	reverseLabel: relationshipType.reverseLabel,
@@ -87,15 +107,65 @@ function visibleToViewer(
 
 export function createDrizzleRelationshipRepository(
 	db: BunSQLiteDatabase<typeof schema>
-): RelationshipRepository {
+): RelationshipRepository & RelationshipTypeRepository {
 	return {
-		async listTypes() {
-			return db.select(typeColumns).from(relationshipType).orderBy(relationshipType.sortOrder).all().map(toType);
+		async listTypes(viewer: Viewer) {
+			return db
+				.select(typeColumns)
+				.from(relationshipType)
+				.where(typeUsableBy(viewer))
+				.orderBy(relationshipType.sortOrder, relationshipType.forwardLabel)
+				.all()
+				.map(toType);
 		},
 
-		async getType(typeId: string) {
-			const row = db.select(typeColumns).from(relationshipType).where(eq(relationshipType.id, typeId)).get();
+		async getType(viewer: Viewer, typeId: string) {
+			const row = db
+				.select(typeColumns)
+				.from(relationshipType)
+				.where(and(eq(relationshipType.id, typeId), typeUsableBy(viewer)))
+				.get();
 			return row ? toType(row) : null;
+		},
+
+		async insertType(type: NewRelationshipType) {
+			db.insert(relationshipType)
+				.values({ ...type, symmetric: type.symmetric ? 1 : 0 })
+				.run();
+		},
+
+		async updateTypeVisibleTo(viewer: Viewer, typeId: string, fields: RelationshipTypeFields) {
+			// `householdId` in the predicate is what keeps the built-in set (household_id null)
+			// read-only here as well, not only in the use-case.
+			const changed = db
+				.update(relationshipType)
+				.set({ ...fields, symmetric: fields.symmetric ? 1 : 0 })
+				.where(customTypeOf(viewer, typeId))
+				.returning({ id: relationshipType.id })
+				.all();
+			return changed.length > 0;
+		},
+
+		async deleteTypeVisibleTo(viewer: Viewer, typeId: string) {
+			const changed = db
+				.delete(relationshipType)
+				.where(customTypeOf(viewer, typeId))
+				.returning({ id: relationshipType.id })
+				.all();
+			return changed.length > 0;
+		},
+
+		async countRelationshipsOfType(viewer: Viewer, typeId: string) {
+			const fromC = alias(contact, 'from_c');
+			const toC = alias(contact, 'to_c');
+			const rows = db
+				.select({ id: relationship.id })
+				.from(relationship)
+				.innerJoin(fromC, eq(relationship.fromContactId, fromC.id))
+				.innerJoin(toC, eq(relationship.toContactId, toC.id))
+				.where(and(eq(relationship.typeId, typeId), relationshipVisibleTo(viewer, fromC, toC)))
+				.all();
+			return rows.length;
 		},
 
 		async exists(fromContactId: string, toContactId: string, typeId: string) {
@@ -171,6 +241,7 @@ export function createDrizzleRelationshipRepository(
 					{ fromContactId: row.fromContactId, toContactId: row.toContactId },
 					{
 						id: '',
+						householdId: null,
 						key: '',
 						forwardLabel: row.forwardLabel,
 						reverseLabel: row.reverseLabel,

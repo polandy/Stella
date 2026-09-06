@@ -10,6 +10,8 @@
  * read the same table.
  */
 
+import type { RelationshipCategory } from '../relationships/categories';
+
 /** Every accent the palette publishes, in the order the colour pickers offer them. */
 export const ACCENTS = [
 	'rosewater',
@@ -36,18 +38,6 @@ export type Accent = (typeof ACCENTS)[number];
  * signal everywhere else, and a person is never a warning.
  */
 export const AVATAR_ACCENTS = ACCENTS.filter((accent) => accent !== 'red');
-
-/** Relationship categories, each with a fixed accent (docs/05 §5.6). */
-export const RELATIONSHIP_CATEGORIES = [
-	'family',
-	'romantic',
-	'social',
-	'professional',
-	'other'
-] as const;
-
-/** One of `RELATIONSHIP_CATEGORIES`. */
-export type RelationshipCategory = (typeof RELATIONSHIP_CATEGORIES)[number];
 
 /** How strongly a tinted surface mixes its accent into the background. */
 const CHIP_TINT_PERCENT = 16;

@@ -12,7 +12,8 @@ export const REMOVAL_KINDS = [
 	'date',
 	'tag',
 	'membership',
-	'relationship'
+	'relationship',
+	'relationship-type'
 ] as const;
 
 export type RemovalKind = (typeof REMOVAL_KINDS)[number];

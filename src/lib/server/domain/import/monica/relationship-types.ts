@@ -1,4 +1,4 @@
-import type { RelationshipCategory } from '../../relationships/relationships';
+import type { RelationshipCategory } from '../../../../relationships/categories';
 
 /*
  * How Monica's relationship type names land in Stella (docs/02 §2.16; the full table is in

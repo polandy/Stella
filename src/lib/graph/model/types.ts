@@ -16,9 +16,9 @@ export type NodeKind = 'person' | 'circle';
  * clearly-inferred link (docs/02 §2.4.1) — added as its own kind so filters and rendering
  * treat it distinctly without special-casing.
  */
-export type EdgeKind = 'relationship' | 'membership' | 'kinship';
+import type { RelationshipCategory } from '../../relationships/categories';
 
-export type RelationshipCategory = 'family' | 'romantic' | 'social' | 'professional' | 'other';
+export type EdgeKind = 'relationship' | 'membership' | 'kinship';
 
 export interface GraphNode {
 	id: string;
