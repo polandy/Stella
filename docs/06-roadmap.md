@@ -56,7 +56,7 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   — shipped in *Add a person* (§2.2.1).
 - **Relationship intelligence:** derived kinship (grandparent, cousin, …) + propagation
   suggestions (e.g. mother of a sibling) — a pure, test-first kinship-inference engine
-  — shipped on the person page (§2.4.1); kinship edges in the graph explorer still open.
+  — shipped on the person page and as dotted edges in the explorer (§2.4.1).
 - **Circles & shared contexts:** circles with time-bounded memberships, name autocomplete
   with create-on-the-fly, a circle overview page, and a member/circle visualization.
 - **Important dates & reminders** (§2.13): dates on a person, birthdays derived from the

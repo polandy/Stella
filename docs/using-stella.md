@@ -231,10 +231,15 @@ than screen by screen, so there is no corner of the app where it silently doesn'
 
 **Graph** in the sidebar draws everyone as the same disc you see next to their name
 everywhere else — their photo, or their initials on their colour — connected by the
-relationships and circles you have recorded. The chips along the top switch each kind of line
-on and off and double as the legend. Click a person to see who they are and jump to their
-page; click again to pull in their connections; *Connection path* traces how two people are
-linked.
+relationships and circles you have recorded. Alongside them run the **dotted lines of the
+family Stella worked out for itself** — grandparents, aunts, cousins, in-laws — the same ones
+the People tab names, drawn without anyone having entered them. The chips along the top switch
+each kind of line on and off and double as the legend.
+
+Click a person to see who they are and jump to their page; the lines around them are named
+while they are selected, so you can read who is whose grandmother. Click again to pull in
+their connections. *Connection path* traces how two people are linked, and it always answers
+with the people in between rather than the worked-out shortcut — that is the point of asking.
 
 ## Light and dark
 
