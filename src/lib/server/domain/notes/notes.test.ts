@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import { createNote, type NewNote, type NoteCreator, type NoteRepository } from './notes';
+import {
+	createNote,
+	setNoteMentions,
+	type NewNote,
+	type NoteCreator,
+	type NoteRepository
+} from './notes';
 
 /*
  * The createNote use-case: require a body, apply the creator's default visibility,
@@ -14,16 +20,24 @@ const idGen = (v: string): IdGenerator => ({ next: () => v });
 
 function fakeRepo() {
 	let inserted: NewNote | null = null;
+	let mentions: { noteId: string; contactIds: string[] } | null = null;
 	const repo: NoteRepository = {
 		insert: async (note) => {
 			inserted = note;
 		},
-		listForContactVisibleTo: async () => []
+		listForContactVisibleTo: async () => [],
+		replaceMentions: async (noteId, contactIds) => {
+			mentions = { noteId, contactIds };
+		},
+		listMentionedContactIds: async () => mentions?.contactIds ?? []
 	};
 	return {
 		repo,
 		get inserted() {
 			return inserted;
+		},
+		get mentions() {
+			return mentions;
 		}
 	};
 }
@@ -72,5 +86,19 @@ describe('createNote', () => {
 		const f = fakeRepo();
 		await createNote(deps(f.repo), creator, { contactId: 'c', title: '  ', body: 'x' });
 		expect(f.inserted?.title).toBeNull();
+	});
+});
+
+describe('setNoteMentions', () => {
+	it('replaces the links with the unique ids it was given', async () => {
+		const f = fakeRepo();
+		await setNoteMentions({ notes: f.repo }, 'note-1', ['c-a', 'c-b', 'c-a']);
+		expect(f.mentions).toEqual({ noteId: 'note-1', contactIds: ['c-a', 'c-b'] });
+	});
+
+	it('clears the links when nobody is referenced any more', async () => {
+		const f = fakeRepo();
+		await setNoteMentions({ notes: f.repo }, 'note-1', []);
+		expect(f.mentions).toEqual({ noteId: 'note-1', contactIds: [] });
 	});
 });

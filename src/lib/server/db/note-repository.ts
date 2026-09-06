@@ -4,7 +4,7 @@ import { childRecordVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { NewNote, NoteRepository } from '../domain/notes/notes';
 import type * as schema from './schema';
-import { contact, note } from './schema';
+import { contact, note, noteMention } from './schema';
 
 /*
  * Drizzle adapter for the NoteRepository port (docs/08 §8.3). Reads join the parent contact
@@ -55,6 +55,26 @@ export function createDrizzleNoteRepository(db: BunSQLiteDatabase<typeof schema>
 				.all();
 
 			return rows.map((row) => ({ ...row, isPinned: row.isPinned === 1 }));
+		},
+
+		async replaceMentions(noteId: string, contactIds: string[]) {
+			db.transaction((tx) => {
+				tx.delete(noteMention).where(eq(noteMention.noteId, noteId)).run();
+				if (contactIds.length > 0) {
+					tx.insert(noteMention)
+						.values(contactIds.map((contactId) => ({ noteId, contactId })))
+						.run();
+				}
+			});
+		},
+
+		async listMentionedContactIds(noteId: string) {
+			return db
+				.select({ contactId: noteMention.contactId })
+				.from(noteMention)
+				.where(eq(noteMention.noteId, noteId))
+				.all()
+				.map((r) => r.contactId);
 		}
 	};
 }
