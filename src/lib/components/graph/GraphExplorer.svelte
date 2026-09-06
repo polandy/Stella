@@ -235,9 +235,12 @@
 		</div>
 	{/if}
 
-	<!-- Toolbar -->
+	<!-- Toolbar. It keeps clear of the peek panel while that is open: the chips wrap on a
+	     narrow window, and the row that wraps would otherwise slide underneath it — leaving
+	     the button under there unclickable. -->
 	<div
-		class="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-center gap-2"
+		class="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-center gap-2 transition-[padding]"
+		class:sm:pr-[17rem]={peekNode && !pathMode}
 	>
 		<div class="pointer-events-auto relative">
 			<input
@@ -302,6 +305,7 @@
 			class="pointer-events-none absolute inset-x-0 top-16 flex justify-center"
 		>
 			<div
+				data-testid="path-prompt"
 				class="rounded-full border border-border bg-card/90 px-4 py-1.5 text-xs text-fg-muted backdrop-blur"
 			>
 				{#if path}
