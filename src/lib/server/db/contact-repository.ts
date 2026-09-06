@@ -14,6 +14,8 @@ import type {
 	ProfilePatch
 } from '../domain/contacts/contacts';
 import type { NewActivityEntry } from '../domain/activity/activity';
+import type { MergeableProfile } from '../domain/contacts/merge-profile';
+import { mergeContacts } from './contact-merge';
 import type { NameCandidate, NameCandidateSource } from '../domain/contacts/suggestions';
 import type * as schema from './schema';
 import { activityLog, contact as contactTable, journalEntry, photo, relationship } from './schema';
@@ -33,6 +35,29 @@ const summaryColumns = {
 	description: contactTable.description,
 	visibility: contactTable.visibility,
 	avatarPhotoId: contactTable.avatarPhotoId
+};
+
+/** The profile columns a merge combines (docs/02 §2.2) — every one that can be empty. */
+const mergeableColumns = {
+	firstName: contactTable.firstName,
+	lastName: contactTable.lastName,
+	nickname: contactTable.nickname,
+	prefix: contactTable.prefix,
+	suffix: contactTable.suffix,
+	formerName: contactTable.formerName,
+	gender: contactTable.gender,
+	pronouns: contactTable.pronouns,
+	description: contactTable.description,
+	avatarPhotoId: contactTable.avatarPhotoId,
+	birthDate: contactTable.birthDate,
+	birthDatePrecision: contactTable.birthDatePrecision,
+	isDeceased: contactTable.isDeceased,
+	deathDate: contactTable.deathDate,
+	jobTitle: contactTable.jobTitle,
+	company: contactTable.company,
+	howWeMet: contactTable.howWeMet,
+	metDate: contactTable.metDate,
+	metPlace: contactTable.metPlace
 };
 
 const contactColumns = {
@@ -174,6 +199,56 @@ export function createDrizzleContactRepository(
 				tx.insert(activityLog).values(audit).run();
 				return files;
 			});
+		},
+
+		async readForMerge(viewer: Viewer, keepId: string, mergedId: string) {
+			const rows = db
+				.select({ ...mergeableColumns, id: contactTable.id, displayName: contactTable.displayName, visibility: contactTable.visibility })
+				.from(contactTable)
+				.where(and(inArray(contactTable.id, [keepId, mergedId]), contactVisibleTo(viewer)))
+				.all();
+			const keep = rows.find((row) => row.id === keepId);
+			const mergedAway = rows.find((row) => row.id === mergedId);
+			if (!keep || !mergedAway) return null;
+
+			const profileOf = (row: (typeof rows)[number]): MergeableProfile => ({
+				firstName: row.firstName,
+				lastName: row.lastName,
+				nickname: row.nickname,
+				prefix: row.prefix,
+				suffix: row.suffix,
+				formerName: row.formerName,
+				gender: row.gender,
+				pronouns: row.pronouns,
+				description: row.description,
+				avatarPhotoId: row.avatarPhotoId,
+				birthDate: row.birthDate,
+				birthDatePrecision: row.birthDatePrecision,
+				// SQLite has no boolean; the domain works with one.
+				isDeceased: row.isDeceased === 1,
+				deathDate: row.deathDate,
+				jobTitle: row.jobTitle,
+				company: row.company,
+				howWeMet: row.howWeMet,
+				metDate: row.metDate,
+				metPlace: row.metPlace
+			});
+
+			return {
+				keep: { displayName: keep.displayName, visibility: keep.visibility, profile: profileOf(keep) },
+				mergedAway: { displayName: mergedAway.displayName, profile: profileOf(mergedAway) }
+			};
+		},
+
+		async mergeVisibleTo(
+			viewer: Viewer,
+			keepId: string,
+			mergedId: string,
+			profile: MergeableProfile,
+			audit: NewActivityEntry,
+			updatedAt: number
+		) {
+			return mergeContacts(db, viewer, { keepId, mergedId, profile, audit, updatedAt });
 		},
 
 		async setArchived(id: string, archivedAt: number | null) {
