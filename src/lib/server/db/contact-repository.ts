@@ -1,7 +1,11 @@
 import { and, eq, or, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { contactColumnsVisibleTo, contactVisibleTo } from '../access/query-scoping';
+import {
+	contactBrowsableBy,
+	contactColumnsVisibleTo,
+	contactVisibleTo
+} from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
 	Contact,
@@ -71,7 +75,7 @@ export function createDrizzleContactRepository(
 					avatarPhotoId: contactTable.avatarPhotoId
 				})
 				.from(contactTable)
-				.where(contactVisibleTo(viewer))
+				.where(contactBrowsableBy(viewer))
 				.orderBy(contactTable.displayName)
 				.all();
 		},
@@ -105,7 +109,7 @@ export function createDrizzleContactRepository(
 					relationshipCount: sql<number>`(${visibleLinks})`.mapWith(Number)
 				})
 				.from(contactTable)
-				.where(contactVisibleTo(viewer))
+				.where(contactBrowsableBy(viewer))
 				.orderBy(contactTable.displayName)
 				.all();
 		},

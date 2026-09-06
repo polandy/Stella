@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
@@ -154,6 +155,23 @@ describe('createDrizzleImportantDateRepository', () => {
 		expect(theirs.some((s) => s.contactId === 'c-priv')).toBe(false);
 		// The other member still sees the shared people, so this is not an empty-result false pass.
 		expect(theirs.some((s) => s.contactId === 'c-shared')).toBe(true);
+	});
+
+	it('drops both the birthday and the entered dates of an archived contact', async () => {
+		// Two queries feed this list, and archiving has to take the contact out of both.
+		await repo.insert(date({ id: 'd1', kind: 'anniversary', date: '2009-06-13' }));
+		expect((await repo.listSourcesVisibleTo(viewerU1)).filter((s) => s.contactId === 'c-shared'))
+			.toHaveLength(2);
+
+		db.update(schema.contact)
+			.set({ archivedAt: 1_700_000_000_000 })
+			.where(eq(schema.contact.id, 'c-shared'))
+			.run();
+
+		const after = await repo.listSourcesVisibleTo(viewerU1);
+		expect(after.some((s) => s.contactId === 'c-shared')).toBe(false);
+		// positive control: everyone else is still on the list.
+		expect(after.some((s) => s.contactId === 'c-priv')).toBe(true);
 	});
 
 	it('returns explicit rows alongside the derived birthdays', async () => {

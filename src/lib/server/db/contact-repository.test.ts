@@ -209,4 +209,17 @@ describe('archiving', () => {
 
 		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.displayName).toBe('Old Neighbour');
 	});
+
+	it('takes an archived contact out of the directory and the name suggestions', async () => {
+		await repo.setArchived('c-old', 1_700_000_000_000);
+
+		const listed = (await repo.listVisibleTo(viewerU1)).map((c) => c.id);
+		expect(listed).not.toContain('c-old');
+		// positive control: everyone still in the household is listed.
+		expect(listed).toContain('c-here');
+
+		const candidates = (await repo.listNameCandidatesVisibleTo(viewerU1)).map((c) => c.id);
+		expect(candidates).not.toContain('c-old');
+		expect(candidates).toContain('c-here');
+	});
 });

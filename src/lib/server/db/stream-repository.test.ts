@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
@@ -140,6 +141,19 @@ describe('recentPeople', () => {
 			['c', 'Two'],
 			['a', 'One']
 		]);
+	});
+
+	it('drops someone the household has archived', async () => {
+		seedContact('a', 100);
+		seedContact('c', 300);
+		db.update(schema.contact)
+			.set({ archivedAt: 1_700_000_000_000 })
+			.where(eq(schema.contact.id, 'c'))
+			.run();
+
+		const rows = await repo.recentPeople(asU2, 10);
+		// positive control: the one still in the household is there, so this is no empty pass.
+		expect(rows.map((r) => r.id)).toEqual(['a']);
 	});
 });
 

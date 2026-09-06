@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
@@ -168,6 +169,21 @@ describe('loadVisibleGraph — derived kinship', () => {
 		});
 		// The stored links keep their own labels and are not duplicated by an inferred one.
 		expect(graph.edges.find((e) => e.id === 'r-child')).toMatchObject({ kind: 'relationship' });
+	});
+
+	it('keeps an archived contact, because the kinship in between is read through them', async () => {
+		// Archiving takes someone out of the lists the household browses, never out of the
+		// shape of the family (docs/04 §4.9): drop Rosa here and Mara and Nina stop being
+		// sisters, so Stella would not say less — it would say something untrue.
+		db.update(schema.contact)
+			.set({ archivedAt: 1_700_000_000_000 })
+			.where(eq(schema.contact.id, 'rosa'))
+			.run();
+
+		const graph = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
+		expect(graph.nodes.some((n) => n.id === 'rosa')).toBe(true);
+		expect(graph.edges.some((e) => e.id === 'kin:mara:nina')).toBe(true);
+		expect(graph.edges.some((e) => e.id === 'kin:lio:rosa')).toBe(true);
 	});
 
 	it('infers only from the links the viewer may see', async () => {

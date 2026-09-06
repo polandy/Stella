@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
@@ -54,6 +55,17 @@ describe('searchContacts', () => {
 
 	it('does not leak a private contact to other members', async () => {
 		expect(await repo.searchContacts(viewerU2, toFtsQuery('secretina'), 20)).toHaveLength(0);
+		expect(await repo.searchContacts(viewerU1, toFtsQuery('secretina'), 20)).toHaveLength(1);
+	});
+
+	it('stops finding a contact once they are archived', async () => {
+		db.update(schema.contact)
+			.set({ archivedAt: 1_700_000_000_000 })
+			.where(eq(schema.contact.id, 'c-hans'))
+			.run();
+
+		expect(await repo.searchContacts(viewerU1, toFtsQuery('hans'), 20)).toHaveLength(0);
+		// positive control: the same query found them a moment ago, and still finds the rest.
 		expect(await repo.searchContacts(viewerU1, toFtsQuery('secretina'), 20)).toHaveLength(1);
 	});
 });
