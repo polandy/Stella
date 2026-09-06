@@ -59,7 +59,7 @@
 		bind:open={addOpen}
 	>
 		{#if visibleCustom.length > 0}
-			<ul class="flex flex-col divide-y divide-border-subtle">
+			<ul data-testid="custom-types" class="flex flex-col divide-y divide-border-subtle">
 				{#each visibleCustom as type (type.id)}
 					<li class="flex flex-col gap-1 py-2 text-sm">
 						<div class="flex items-center gap-3">
@@ -187,7 +187,7 @@
 				{/if}
 
 				<div>
-					<Button variant="primary" size="sm">Add type</Button>
+					<Button variant="primary" size="sm">Add</Button>
 				</div>
 			</form>
 		{/snippet}
@@ -199,7 +199,10 @@
 			These come with Stella and are the same everywhere, so the family kinship Stella works
 			out — grandparents, cousins, in-laws — keeps meaning the same thing.
 		</p>
-		<ul class="flex flex-col divide-y divide-border-subtle rounded-app bg-card px-4 shadow-card">
+		<ul
+			data-testid="built-in-types"
+			class="flex flex-col divide-y divide-border-subtle rounded-app bg-card px-4 shadow-card"
+		>
 			{#each data.builtIn as type (type.id)}
 				<li class="flex items-center gap-3 py-2 text-sm">
 					<span
