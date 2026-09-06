@@ -65,6 +65,9 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 		async listNamesVisibleTo() {
 			return [];
 		},
+		async deleteVisibleTo() {
+			return null;
+		},
 			async findByIdVisibleTo(v, id) {
 				const c = contacts.find((x) => x.id === id);
 				return c && visible(v, c) ? ({ ...c, avatarPhotoId: null } as Contact) : null;
@@ -100,7 +103,7 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 				return [];
 			},
 			async deleteOwn() {
-				return false;
+				return null;
 			},
 			async replaceMentions(id, ids) {
 				mentions.set(id, ids);

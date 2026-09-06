@@ -136,6 +136,16 @@ not be an app user.
   journal entry saying "walked with @Franziska" still says it. Nothing is deleted and nothing
   is hidden from the person who archived it — this is tidying, not privacy (§2.10 is where
   privacy lives).
+
+- **Shipped (delete):** an **admin** can remove a person for good from the foot of their
+  profile — under the archive control, and asking twice, because it cannot be undone and
+  therefore gets no Undo window. Everything about them goes: notes, photos, dates, their
+  journal, every link to them, and the image files themselves. Archiving stays the one that
+  everyone has and that can be reversed. The visibility scope still applies, so an admin
+  cannot reach another member's private contact. **The household is told**: the deletion is
+  written to the activity log and appears in Home's stream as *"<who> removed <name>"* — the
+  one stream item with nothing to link to, because there is nothing left to open. A private
+  person's deletion is no more visible than they were.
 - **Who added this** and **last edited by/when** are always visible.
 - **The People directory** lists everyone the viewer may see under **letter groups** by
   surname (display name when there is none; digits and symbols under `#`), with a
@@ -460,8 +470,10 @@ Keeps the family in the loop — directly serving the core goal.
 - Each item shows **who**, **what**, **which contact**, and **when**, and links to it.
 - Private records **never** appear in another member's feed.
 - Feed is filterable by member and by type **[later]**.
-- **Shipped as the household stream on Home (§2.22.2):** a scoped query over existing tables,
-  no event table; the feed's filters and "notable edits" come later.
+- **Shipped as the household stream on Home (§2.22.2):** a scoped query over existing tables;
+  the feed's filters and "notable edits" come later. The single exception is a **deletion**,
+  which no table can report once its row is gone — that one item is read from `activity_log`
+  (§2.2, docs/04 §4.9).
 
 ### 2.11.1 Change digests & delivery **[M3]**
 

@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, or, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, or, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import {
@@ -13,9 +13,10 @@ import type {
 	NewContact,
 	ProfilePatch
 } from '../domain/contacts/contacts';
+import type { NewActivityEntry } from '../domain/activity/activity';
 import type { NameCandidate, NameCandidateSource } from '../domain/contacts/suggestions';
 import type * as schema from './schema';
-import { contact as contactTable, relationship } from './schema';
+import { activityLog, contact as contactTable, journalEntry, photo, relationship } from './schema';
 
 /*
  * Drizzle adapter for the ContactRepository port (docs/08 §8.3). Reads are scoped through
@@ -134,6 +135,45 @@ export function createDrizzleContactRepository(
 				.from(contactTable)
 				.where(contactVisibleTo(viewer))
 				.all();
+		},
+
+		async deleteVisibleTo(viewer: Viewer, id: string, audit: NewActivityEntry) {
+			return db.transaction((tx) => {
+				const found = tx
+					.select({ id: contactTable.id })
+					.from(contactTable)
+					.where(and(eq(contactTable.id, id), contactVisibleTo(viewer)))
+					.get();
+				if (!found) return null;
+
+				// Every photo the contact carries — their own and those inside their journal
+				// entries — goes first and explicitly. The entries cascade with the contact, but
+				// `photo.journal_entry_id` carries no cascade in the database (docs/03 §photo),
+				// so the delete below would be refused; and their bytes have to be unlinked.
+				const journalPhotoIds = tx
+					.select({ id: photo.id })
+					.from(photo)
+					.innerJoin(journalEntry, eq(photo.journalEntryId, journalEntry.id))
+					.where(eq(journalEntry.contactId, id))
+					.all()
+					.map((row) => row.id);
+				const files = tx
+					.delete(photo)
+					.where(
+						or(
+							eq(photo.contactId, id),
+							journalPhotoIds.length > 0 ? inArray(photo.id, journalPhotoIds) : undefined
+						)
+					)
+					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
+					.all();
+
+				tx.delete(contactTable).where(eq(contactTable.id, id)).run();
+				// Same transaction as the delete: a removal with no trace is the thing the log
+				// exists to prevent (docs/04 §4.9).
+				tx.insert(activityLog).values(audit).run();
+				return files;
+			});
 		},
 
 		async setArchived(id: string, archivedAt: number | null) {

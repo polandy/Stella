@@ -398,6 +398,13 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 
 Note: `user.avatar_photo_id` and `contact.avatar_photo_id` reference this table.
 
+**`journal_entry_id` carries no cascade.** It was added by migration `0002` as a plain
+`REFERENCES`, and adding one now would mean rebuilding `photo` — which cannot be dropped
+while `contact.avatar_photo_id` points at it. So the database *refuses* to delete a journal
+entry that still has photos, and the repository deletes them itself, first, returning their
+file paths to unlink. Every path that removes an entry or a contact does this; the schema
+declaration matches what is enforced rather than what was intended.
+
 ### tag
 | column | type | notes |
 |---|---|---|
@@ -471,6 +478,12 @@ Feeds the "What's new" household feed and the "last edited by" trails.
 
 The feed query filters `visibility='shared' OR actor_id = :viewer` and excludes items
 whose subject contact the viewer cannot see.
+
+**In use for deletions only** (docs/04 §4.9): a contact's deletion writes one row, in the
+same transaction as the delete. Nothing else writes here, because everything else can be read
+from the tables it happened to. `summary` is precomputed and `visibility` copied from the
+deleted record, since neither can be recovered afterwards; `entity_id` names a row that no
+longer exists, which is why it carries no foreign key.
 
 ## 3.4 Partial & fuzzy dates
 

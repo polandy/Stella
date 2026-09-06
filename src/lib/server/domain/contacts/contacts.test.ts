@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'bun:test';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import type { NewActivityEntry } from '../activity/activity';
 import {
 	archiveContact,
 	createContact,
 	editProfile,
 	EmptyContactNameError,
 	restoreContact,
+	deleteContact,
+	type DeletedContactMedia,
 	type Contact,
 	type ContactCreator,
 	type ContactRepository,
@@ -39,7 +42,8 @@ function fakeRepo() {
 		listArchivedVisibleTo: async () => [],
 		listNamesVisibleTo: async () => [],
 		updateProfile: async () => {},
-		setArchived: async () => {}
+		setArchived: async () => {},
+		deleteVisibleTo: async () => null
 	};
 	return {
 		repo,
@@ -161,7 +165,8 @@ function editableRepo(contact: Contact | null) {
 		},
 		setArchived: async (id, archivedAt) => {
 			archived.push({ id, archivedAt });
-		}
+		},
+		deleteVisibleTo: async () => null
 	};
 	return { repo, patches, archived };
 }
@@ -278,5 +283,111 @@ describe('archiveContact / restoreContact', () => {
 
 		expect(f.archived).toEqual([]);
 		expect(visible.archived).toHaveLength(1);
+	});
+});
+
+
+/*
+ * Deleting a person for good (docs/02 §2.2). The row goes with everything hanging off it, so
+ * the log entry is written in the same breath — once the contact is gone, nothing else can
+ * say they were ever there.
+ */
+describe('deleteContact', () => {
+	function deletableRepo(found: Contact | null, media: DeletedContactMedia[] = []) {
+		const deleted: { id: string; audit: NewActivityEntry }[] = [];
+		const repo: ContactRepository = {
+			insert: async () => {},
+			findByIdVisibleTo: async () => found,
+			listVisibleTo: async () => [],
+			listArchivedVisibleTo: async () => [],
+			listNamesVisibleTo: async () => [],
+			updateProfile: async () => {},
+			setArchived: async () => {},
+			deleteVisibleTo: async (_viewer, id, audit) => {
+				if (found === null) return null;
+				deleted.push({ id, audit });
+				return media;
+			}
+		};
+		return { repo, deleted };
+	}
+
+	const files = [{ filePath: 'a.jpg', thumbPath: 'a-thumb.jpg' }];
+
+	it('deletes the contact and says so in the log, in the household and the viewer name', async () => {
+		const f = deletableRepo(existing);
+		const removedFiles: string[] = [];
+
+		expect(
+			await deleteContact(
+				{ contacts: f.repo, media: { delete: async (p: string) => void removedFiles.push(p) }, ids: sequentialIds('log-1'), clock },
+				viewer,
+				'contact-1'
+			)
+		).toBe(true);
+
+		expect(f.deleted).toEqual([
+			{
+				id: 'contact-1',
+				audit: {
+					id: 'log-1',
+					householdId: 'household-1',
+					actorId: 'user-1',
+					action: 'delete',
+					entityType: 'contact',
+					entityId: 'contact-1',
+					contactId: null,
+					visibility: 'shared',
+					summary: 'removed Hans Müller',
+					createdAt: NOW
+				}
+			}
+		]);
+	});
+
+	it('mirrors a private contact visibility, so the log says no more than the record did', async () => {
+		const f = deletableRepo({ ...existing, visibility: 'private' });
+
+		await deleteContact(
+			{ contacts: f.repo, media: { delete: async () => {} }, ids: sequentialIds('log-1'), clock },
+			viewer,
+			'contact-1'
+		);
+
+		expect(f.deleted[0].audit.visibility).toBe('private');
+	});
+
+	it('removes the bytes of every photo that hung off them, after the row is gone', async () => {
+		const f = deletableRepo(existing, files);
+		const removedFiles: string[] = [];
+
+		await deleteContact(
+			{ contacts: f.repo, media: { delete: async (p: string) => void removedFiles.push(p) }, ids: sequentialIds('log-1'), clock },
+			viewer,
+			'contact-1'
+		);
+
+		expect(removedFiles).toEqual(['a.jpg', 'a-thumb.jpg']);
+	});
+
+	it('deletes nothing for a contact the viewer may not see', async () => {
+		const f = deletableRepo(null);
+		const removedFiles: string[] = [];
+		const deps = {
+			contacts: f.repo,
+			media: { delete: async (p: string) => void removedFiles.push(p) },
+			ids: sequentialIds('log-1'),
+			clock
+		};
+
+		expect(await deleteContact(deps, viewer, 'contact-1')).toBe(false);
+		expect(f.deleted).toEqual([]);
+		expect(removedFiles).toEqual([]);
+
+		// positive control: the same call against a visible contact does delete.
+		const visible = deletableRepo(existing, files);
+		await deleteContact({ ...deps, contacts: visible.repo }, viewer, 'contact-1');
+		expect(visible.deleted).toHaveLength(1);
+		expect(removedFiles).toEqual(['a.jpg', 'a-thumb.jpg']);
 	});
 });

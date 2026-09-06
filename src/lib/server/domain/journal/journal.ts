@@ -1,6 +1,7 @@
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import type { DeletedPhotoFiles, MediaStore } from '../media/avatars';
 
 /*
  * Journal use-cases (docs/02 §2.20). A journal is a per-person diary: household members record
@@ -57,8 +58,11 @@ export interface JournalRepository {
 		contactId: string,
 		opts: { limit: number; before?: JournalCursor }
 	): Promise<JournalEntry[]>;
-	/** Delete an entry the viewer authored; returns whether a row was removed. */
-	deleteOwn(params: { authorId: string; id: string }): Promise<boolean>;
+	/**
+	 * Delete an entry the viewer authored, with the photos it carries. Returns their files to
+	 * unlink, or null when there was no such entry of theirs.
+	 */
+	deleteOwn(params: { authorId: string; id: string }): Promise<DeletedPhotoFiles[] | null>;
 	/** Replace an entry's @-mention links with exactly these contact ids (docs/02 §2.20.1). */
 	replaceMentions(journalEntryId: string, contactIds: string[]): Promise<void>;
 	/** Contact ids an entry mentions. */
@@ -79,6 +83,8 @@ export interface JournalPage {
 
 export interface JournalDeps {
 	journal: JournalRepository;
+	/** Deleting an entry takes the bytes of the photos inside it. */
+	media: Pick<MediaStore, 'delete'>;
 	ids: IdGenerator;
 	clock: Clock;
 }
@@ -105,7 +111,7 @@ const orNull = (value?: string | null): string | null => {
  * contact is visible to the author.
  */
 export async function saveJournalEntry(
-	deps: JournalDeps,
+	deps: Pick<JournalDeps, 'journal' | 'ids' | 'clock'>,
 	author: JournalAuthor,
 	input: SaveJournalEntryInput
 ): Promise<string> {
@@ -194,11 +200,20 @@ export async function setJournalMentions(
 	await deps.journal.replaceMentions(journalEntryId, [...new Set(contactIds)]);
 }
 
-/** Delete one of the viewer's own journal entries. Returns whether a row was removed. */
+/**
+ * Delete one of the viewer's own journal entries, and the bytes of the photos inside it. The
+ * rows go first: a file left behind is the harmless direction of that failure.
+ */
 export async function deleteJournalEntry(
-	deps: Pick<JournalDeps, 'journal'>,
+	deps: Pick<JournalDeps, 'journal' | 'media'>,
 	author: JournalAuthor,
 	id: string
 ): Promise<boolean> {
-	return deps.journal.deleteOwn({ authorId: author.userId, id });
+	const files = await deps.journal.deleteOwn({ authorId: author.userId, id });
+	if (files === null) return false;
+	for (const file of files) {
+		await deps.media.delete(file.filePath);
+		await deps.media.delete(file.thumbPath);
+	}
+	return true;
 }

@@ -359,10 +359,11 @@ export const photo = sqliteTable(
 			.references(() => household.id, { onDelete: 'cascade' }),
 		contactId: text('contact_id').references(() => contact.id, { onDelete: 'cascade' }),
 		// When set, this photo belongs to a journal entry (docs/02 §2.20) rather than the
-		// gallery; it is removed with the entry.
-		journalEntryId: text('journal_entry_id').references(() => journalEntry.id, {
-			onDelete: 'cascade'
-		}),
+		// gallery; it is removed with the entry — by the repository, not by the database.
+		// The migration that added this column (`0002`) could not carry a cascade, and
+		// rebuilding the table to add one would have to drop `photo` while `contact` still
+		// points at it. The declaration says what the database enforces (docs/03 §photo).
+		journalEntryId: text('journal_entry_id').references(() => journalEntry.id),
 		createdBy: text('created_by')
 			.notNull()
 			.references(() => user.id),
