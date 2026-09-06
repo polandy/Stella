@@ -58,6 +58,13 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 			},
 			// The moment capture never edits a profile; present because the port requires it.
 			async updateProfile() {},
+		async setArchived() {},
+		async listArchivedVisibleTo() {
+			return [];
+		},
+		async listNamesVisibleTo() {
+			return [];
+		},
 			async findByIdVisibleTo(v, id) {
 				const c = contacts.find((x) => x.id === id);
 				return c && visible(v, c) ? ({ ...c, avatarPhotoId: null } as Contact) : null;

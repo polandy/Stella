@@ -1,5 +1,5 @@
 import { error, json, redirect } from '@sveltejs/kit';
-import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
+import { getContact, listContactNames } from '$lib/server/domain/contacts/contacts';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
 import { getContactDeps, getMemberDeps, getPhotos, getStoryDeps } from '$lib/server/services';
@@ -43,8 +43,10 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		photosByEntry.set(photo.journalEntryId, list);
 	}
 
-	const allContacts = await listContacts(getContactDeps(), viewer);
-	const nameById = new Map(allContacts.map((c) => [c.id, c.displayName]));
+	// The visibility scope, not the browsing one: an archived person keeps their name in a
+	// sentence that already mentions them (docs/02 §2.2).
+	const names = await listContactNames(getContactDeps(), viewer);
+	const nameById = new Map(names.map((c) => [c.id, c.displayName]));
 	const nameOfAuthor = await authorNames(getMemberDeps(), viewer.householdId);
 
 	return json({

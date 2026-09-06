@@ -1,6 +1,6 @@
 import { and, eq, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo, contactVisibleTo } from '../access/query-scoping';
+import { childRecordVisibleTo, contactBrowsableBy } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { SearchRepository } from '../domain/search/search';
 import { contact, note } from './schema';
@@ -24,7 +24,7 @@ export function createDrizzleSearchRepository(db: BunSQLiteDatabase<typeof schem
 				})
 				.from(contactFts)
 				.innerJoin(contact, eq(contactFts.contactId, contact.id))
-				.where(and(sql`contact_fts MATCH ${ftsQuery}`, contactVisibleTo(viewer)))
+				.where(and(sql`contact_fts MATCH ${ftsQuery}`, contactBrowsableBy(viewer)))
 				.orderBy(sql`bm25(contact_fts)`)
 				.limit(limit)
 				.all();

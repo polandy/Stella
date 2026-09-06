@@ -13,11 +13,14 @@ import {
 	removeMember
 } from '$lib/server/domain/circles/circles';
 import {
+	archiveContact,
 	editProfile,
 	EMPTY_CONTACT_NAME_MESSAGE,
 	EmptyContactNameError,
 	getContact,
-	listContacts
+	listContactNames,
+	listContacts,
+	restoreContact
 } from '$lib/server/domain/contacts/contacts';
 import {
 	addImportantDate,
@@ -121,6 +124,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		relationships,
 		types,
 		allContacts,
+		contactNames,
 		notes,
 		fields,
 		tags,
@@ -136,6 +140,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		getRelationships().listForContactVisibleTo(viewer, params.id),
 		getRelationshipTypes().listTypes(viewer),
 		listContacts(getContactDeps(), viewer),
+		listContactNames(getContactDeps(), viewer),
 		listNotesForContact(getNoteDeps(), viewer, params.id),
 		listContactFields(getContactFieldDeps(), viewer, params.id),
 		listTagsForContact(getTagDeps(), viewer, params.id),
@@ -158,7 +163,9 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	}
 
 	// Name lookup for @-mention chips in journal bodies, scoped to what the viewer may see.
-	const nameById = new Map(allContacts.map((c) => [c.id, c.displayName]));
+	// Archived people are out of `allContacts`, but a mention already written still names
+	// them — so the chip lookup reads the visibility scope (docs/02 §2.2).
+	const nameById = new Map(contactNames.map((c) => [c.id, c.displayName]));
 	const nameOf = (id: string) => nameById.get(id) ?? null;
 	// …and for the member behind each item (docs/02 §2.23).
 	const nameOfAuthor = await authorNames(getMemberDeps(), viewer.householdId);
@@ -337,6 +344,27 @@ export const actions: Actions = {
 			throw err;
 		}
 
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/*
+	 * Archiving (docs/02 §2.2): out of the household's lists, not out of its history. An
+	 * archived person keeps their page — this is where they are brought back from — and stays
+	 * in the graph and the kinship Stella works out (docs/04 §4.9).
+	 */
+	archive: async ({ params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const done = await archiveContact(getContactDeps(), viewer, params.id);
+		if (!done) throw error(404, 'Contact not found');
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	restore: async ({ params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const done = await restoreContact(getContactDeps(), viewer, params.id);
+		if (!done) throw error(404, 'Contact not found');
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 

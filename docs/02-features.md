@@ -122,6 +122,20 @@ not be an app user.
 - **Merge** two contacts that turn out to be the same person **[M2]** (combines fields,
   notes, photos, relationships; keeps an audit entry).
 - **Archive** (soft-hide without deleting) and **delete** (with confirmation) **[M2]**.
+
+- **Shipped (archive):** a person can be put **out of the way** from the foot of their
+  profile. Archiving takes them out of exactly the surfaces the household *browses*: the
+  People directory, the search and ⌘K, the name suggestions when adding someone, *Quiet
+  lately*, *Coming up*, and the new-people items in the stream. It takes them out of nothing
+  else — their page still opens (that is where they are brought back from), their story,
+  photos and notes are untouched, and the **graph and the derived kinship keep them**,
+  because an archived grandmother is what makes two people siblings (§2.4.1, docs/04 §4.9).
+  The directory carries an **Archived (N)** chip that lists them, and their header shows a
+  quiet *Archived* marker. An **@-mention already written keeps their name**: archiving takes
+  someone out of the lists people pick from, not out of the sentences that name them, so a
+  journal entry saying "walked with @Franziska" still says it. Nothing is deleted and nothing
+  is hidden from the person who archived it — this is tidying, not privacy (§2.10 is where
+  privacy lives).
 - **Who added this** and **last edited by/when** are always visible.
 - **The People directory** lists everyone the viewer may see under **letter groups** by
   surname (display name when there is none; digits and symbols under `#`), with a

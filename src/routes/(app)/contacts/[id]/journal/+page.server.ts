@@ -1,6 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
+import { getContact, listContactNames, listContacts } from '$lib/server/domain/contacts/contacts';
 import { authorNames } from '$lib/server/domain/household/members';
 import { authorLabel } from '$lib/story/author';
 import {
@@ -35,10 +35,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const contact = await getContact(getContactDeps(), viewer, params.id);
 	if (!contact) throw error(404, 'Contact not found'); // never reveal existence
 
-	const [entries, journalPhotos, allContacts] = await Promise.all([
+	const [entries, journalPhotos, allContacts, contactNames] = await Promise.all([
 		listJournalForContact(getJournalDeps(), viewer, params.id),
 		getPhotos().listJournalPhotos(viewer, params.id),
-		listContacts(getContactDeps(), viewer)
+		listContacts(getContactDeps(), viewer),
+		listContactNames(getContactDeps(), viewer)
 	]);
 
 	// Group visible photo ids by their entry so each entry renders its own gallery.
@@ -49,8 +50,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		photosByEntry.set(p.journalEntryId, list);
 	}
 
-	// Name lookup for @-mention chips, scoped to what the viewer may see.
-	const nameById = new Map(allContacts.map((c) => [c.id, c.displayName]));
+	// Name lookup for @-mention chips, scoped to what the viewer may see — archived people
+	// included, since a mention already written still names them (docs/02 §2.2).
+	const nameById = new Map(contactNames.map((c) => [c.id, c.displayName]));
 	const nameOf = (id: string) => nameById.get(id) ?? null;
 	// Who wrote each entry, named the same way the story names it (docs/02 §2.23).
 	const nameOfAuthor = await authorNames(getMemberDeps(), viewer.householdId);

@@ -2,9 +2,11 @@ import { describe, expect, it } from 'bun:test';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import {
+	archiveContact,
 	createContact,
 	editProfile,
 	EmptyContactNameError,
+	restoreContact,
 	type Contact,
 	type ContactCreator,
 	type ContactRepository,
@@ -34,7 +36,10 @@ function fakeRepo() {
 		},
 		findByIdVisibleTo: async () => null,
 		listVisibleTo: async () => [],
-		updateProfile: async () => {}
+		listArchivedVisibleTo: async () => [],
+		listNamesVisibleTo: async () => [],
+		updateProfile: async () => {},
+		setArchived: async () => {}
 	};
 	return {
 		repo,
@@ -144,15 +149,21 @@ describe('createContact birth dates', () => {
 
 function editableRepo(contact: Contact | null) {
 	const patches: { id: string; patch: ProfilePatch }[] = [];
+	const archived: { id: string; archivedAt: number | null }[] = [];
 	const repo: ContactRepository = {
 		insert: async () => {},
 		findByIdVisibleTo: async () => contact,
 		listVisibleTo: async () => [],
+		listArchivedVisibleTo: async () => [],
+		listNamesVisibleTo: async () => [],
 		updateProfile: async (id, patch) => {
 			patches.push({ id, patch });
+		},
+		setArchived: async (id, archivedAt) => {
+			archived.push({ id, archivedAt });
 		}
 	};
-	return { repo, patches };
+	return { repo, patches, archived };
 }
 
 const viewer = { id: 'user-1', householdId: 'household-1' };
@@ -174,6 +185,7 @@ const existing: Contact = {
 	birthDatePrecision: 'full',
 	avatarPhotoId: null,
 	isDeceased: false,
+	archivedAt: null,
 	createdAt: 1,
 	updatedAt: 1
 };
@@ -232,5 +244,39 @@ describe('editProfile', () => {
 		expect(saved).toBe(false);
 		expect(f.patches).toEqual([]);
 		expect(visible.patches).toHaveLength(1);
+	});
+});
+
+
+/*
+ * Archiving (docs/02 §2.2): the household puts someone out of the way without losing them.
+ * The stamp comes from the clock port, never from the adapter, so the test can name it.
+ */
+describe('archiveContact / restoreContact', () => {
+	it('stamps the archive with the current time', async () => {
+		const f = editableRepo(existing);
+
+		expect(await archiveContact(deps(f.repo), viewer, 'contact-1')).toBe(true);
+		expect(f.archived).toEqual([{ id: 'contact-1', archivedAt: NOW }]);
+	});
+
+	it('clears the stamp when the contact is brought back', async () => {
+		const f = editableRepo({ ...existing, archivedAt: NOW });
+
+		expect(await restoreContact(deps(f.repo), viewer, 'contact-1')).toBe(true);
+		expect(f.archived).toEqual([{ id: 'contact-1', archivedAt: null }]);
+	});
+
+	it('writes nothing for a contact the viewer may not see', async () => {
+		const f = editableRepo(null);
+		expect(await archiveContact(deps(f.repo), viewer, 'contact-1')).toBe(false);
+		expect(await restoreContact(deps(f.repo), viewer, 'contact-1')).toBe(false);
+
+		// positive control: the same calls against a visible contact do write
+		const visible = editableRepo(existing);
+		await archiveContact(deps(visible.repo), viewer, 'contact-1');
+
+		expect(f.archived).toEqual([]);
+		expect(visible.archived).toHaveLength(1);
 	});
 });

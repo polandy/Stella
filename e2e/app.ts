@@ -29,3 +29,9 @@ export async function openPerson(page: Page, name: RegExp): Promise<void> {
 	await expect(page.getByRole('tab', { name: 'Story' })).toHaveAttribute('aria-selected', 'true');
 	await appReady(page);
 }
+
+/** Types `@query` into the moment composer and picks the suggestion whose label matches. */
+export async function mention(page: Page, query: string, label: RegExp): Promise<void> {
+	await page.getByLabel('What happened?').pressSequentially(`@${query}`);
+	await page.getByRole('option', { name: label }).click();
+}

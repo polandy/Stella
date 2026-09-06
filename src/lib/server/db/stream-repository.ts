@@ -1,7 +1,12 @@
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo, contactVisibleTo, relationshipVisibleTo } from '../access/query-scoping';
+import {
+	childRecordVisibleTo,
+	contactBrowsableBy,
+	contactVisibleTo,
+	relationshipVisibleTo
+} from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
 	InteractionRow,
@@ -122,7 +127,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				})
 				.from(contact)
 				.innerJoin(user, eq(contact.createdBy, user.id))
-				.where(contactVisibleTo(viewer))
+				.where(contactBrowsableBy(viewer))
 				.orderBy(desc(contact.createdAt))
 				.limit(limit)
 				.all();

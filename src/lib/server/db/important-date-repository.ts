@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNotNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { contactVisibleTo } from '../access/query-scoping';
+import { contactBrowsableBy, contactVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
 	ImportantDateRepository,
@@ -85,7 +85,7 @@ export function createDrizzleImportantDateRepository(
 				})
 				.from(importantDate)
 				.innerJoin(contact, eq(importantDate.contactId, contact.id))
-				.where(contactVisibleTo(viewer))
+				.where(contactBrowsableBy(viewer))
 				.all();
 
 			const born = db
@@ -99,7 +99,7 @@ export function createDrizzleImportantDateRepository(
 				.from(contact)
 				.where(
 					and(
-						contactVisibleTo(viewer),
+						contactBrowsableBy(viewer),
 						isNotNull(contact.birthDate),
 						inArray(contact.birthDatePrecision, [...DAY_PRECISIONS])
 					)

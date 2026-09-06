@@ -1,6 +1,6 @@
 import { eq, max } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo, contactVisibleTo } from '../access/query-scoping';
+import { childRecordVisibleTo, contactBrowsableBy } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { AttentionRepository, QuietSource } from '../domain/attention/quiet';
 import type * as schema from './schema';
@@ -35,7 +35,7 @@ export function createDrizzleAttentionRepository(
 					createdAt: contact.createdAt
 				})
 				.from(contact)
-				.where(contactVisibleTo(viewer))
+				.where(contactBrowsableBy(viewer))
 				.all();
 
 			const latestJournal = db
