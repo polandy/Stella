@@ -547,6 +547,7 @@
 												type="button"
 												variant="ghost"
 												size="sm"
+												aria-expanded={editingRelationship === rel.id}
 												onclick={() =>
 													(editingRelationship = editingRelationship === rel.id ? null : rel.id)}
 											>

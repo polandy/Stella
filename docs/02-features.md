@@ -201,7 +201,10 @@ reciprocal** link.
   same Undo window as a tag or a date, and removing one that was standing in for a derived
   relationship brings the worked-out name back (§2.4.1). The **type** is deliberately not
   editable: changing it can flip the stored direction and re-opens the duplicate guard, so
-  that is a removal and a fresh entry.
+  that is a removal and a fresh entry. Marking a partner **former** does *not* withdraw the
+  relatives it explains — step-family and in-laws come precisely from partner history
+  (§2.4.1), and a divorce does not unmake a stepmother. The status says how the household
+  reads the link today; it is not a delete.
 
 ### 2.4.1 Relationship intelligence — derived kinship & propagation **[M2]**
 

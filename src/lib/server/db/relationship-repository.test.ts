@@ -209,6 +209,18 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 		expect(graph.storedPairs).toContainEqual({ a: 'otto', b: 'hans' });
 	});
 
+	it('keeps a partner marked former in the graph, because step-family hangs on it', async () => {
+		// docs/02 §2.4: the status says how the household reads the link today, not that it
+		// never happened — a divorce does not unmake a stepmother.
+		db.update(schema.relationship)
+			.set({ status: 'former' })
+			.where(eq(schema.relationship.id, 'r-3'))
+			.run();
+
+		const graph = await repo.loadKinshipGraphVisibleTo(viewerU1);
+		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt' }]);
+	});
+
 	it('hides a private person’s links from everyone but their author', async () => {
 		const forU1 = await repo.loadKinshipGraphVisibleTo(viewerU1);
 		expect(forU1.people.map((p) => p.id)).not.toContain('secret');
