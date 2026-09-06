@@ -53,6 +53,8 @@ export interface NewContact {
 export interface Contact extends NewContact {
 	avatarPhotoId: string | null;
 	isDeceased: boolean;
+	/** When the household put them out of the way, or null while they are in it. */
+	archivedAt: number | null;
 }
 
 /** Row shape for list views. */
@@ -80,6 +82,8 @@ export interface ContactRepository {
 	listVisibleTo(viewer: Viewer): Promise<ContactSummary[]>;
 	/** Write the hero's own fields; the caller has already checked the contact is visible. */
 	updateProfile(id: string, patch: ProfilePatch): Promise<void>;
+	/** Stamp or clear `archived_at`; the caller has already checked the contact is visible. */
+	setArchived(id: string, archivedAt: number | null): Promise<void>;
 }
 
 export interface ContactDeps {
@@ -212,4 +216,40 @@ export async function listContacts(
 	viewer: Viewer
 ): Promise<ContactSummary[]> {
 	return deps.contacts.listVisibleTo(viewer);
+}
+
+/**
+ * Put a contact out of the way, or bring them back. Archiving hides someone from the
+ * surfaces the household browses; it does not hide them from the graph or from the
+ * relatives Stella works out (docs/04 §4.9). Returns false when the contact is not visible
+ * to the viewer, so the route answers as it does for one that is not there.
+ */
+async function setArchived(
+	deps: Pick<ContactDeps, 'contacts' | 'clock'>,
+	viewer: Viewer,
+	id: string,
+	archivedAt: number | null
+): Promise<boolean> {
+	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
+	if (contact === null) return false;
+	await deps.contacts.setArchived(id, archivedAt);
+	return true;
+}
+
+/** Archive a contact, stamping the moment it happened. */
+export async function archiveContact(
+	deps: Pick<ContactDeps, 'contacts' | 'clock'>,
+	viewer: Viewer,
+	id: string
+): Promise<boolean> {
+	return setArchived(deps, viewer, id, deps.clock.now());
+}
+
+/** Bring an archived contact back into the household's lists. */
+export async function restoreContact(
+	deps: Pick<ContactDeps, 'contacts' | 'clock'>,
+	viewer: Viewer,
+	id: string
+): Promise<boolean> {
+	return setArchived(deps, viewer, id, null);
 }

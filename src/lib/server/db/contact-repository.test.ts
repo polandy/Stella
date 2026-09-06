@@ -178,3 +178,35 @@ describe('editing the hero in place', () => {
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-priv')).toEqual(before!);
 	});
 });
+
+describe('archiving', () => {
+	beforeEach(async () => {
+		await repo.insert(contactInput({ id: 'c-old', displayName: 'Old Neighbour' }));
+		await repo.insert(contactInput({ id: 'c-here', displayName: 'Still Here' }));
+	});
+
+	it('stamps and clears archived_at, and reads it back', async () => {
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.archivedAt).toBeNull();
+
+		await repo.setArchived('c-old', 1_700_000_000_000);
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.archivedAt).toBe(1_700_000_000_000);
+
+		await repo.setArchived('c-old', null);
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.archivedAt).toBeNull();
+	});
+
+	it('leaves every other contact where they were', async () => {
+		const before = await repo.findByIdVisibleTo(viewerU1, 'c-here');
+
+		await repo.setArchived('c-old', 1_700_000_000_000);
+
+		expect(await repo.findByIdVisibleTo(viewerU1, 'c-here')).toEqual(before!);
+	});
+
+	// An archived contact still opens: the page is where they are brought back from.
+	it('still finds an archived contact by id', async () => {
+		await repo.setArchived('c-old', 1_700_000_000_000);
+
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.displayName).toBe('Old Neighbour');
+	});
+});

@@ -35,6 +35,7 @@ const contactColumns = {
 	birthDate: contactTable.birthDate,
 	birthDatePrecision: contactTable.birthDatePrecision,
 	isDeceased: contactTable.isDeceased,
+	archivedAt: contactTable.archivedAt,
 	createdAt: contactTable.createdAt,
 	updatedAt: contactTable.updatedAt
 };
@@ -107,6 +108,10 @@ export function createDrizzleContactRepository(
 				.where(contactVisibleTo(viewer))
 				.orderBy(contactTable.displayName)
 				.all();
+		},
+
+		async setArchived(id: string, archivedAt: number | null) {
+			db.update(contactTable).set({ archivedAt }).where(eq(contactTable.id, id)).run();
 		},
 
 		async updateProfile(id: string, patch: ProfilePatch) {
