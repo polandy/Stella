@@ -62,6 +62,9 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 		async listArchivedVisibleTo() {
 			return [];
 		},
+		async listNamesVisibleTo() {
+			return [];
+		},
 			async findByIdVisibleTo(v, id) {
 				const c = contacts.find((x) => x.id === id);
 				return c && visible(v, c) ? ({ ...c, avatarPhotoId: null } as Contact) : null;

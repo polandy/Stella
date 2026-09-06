@@ -57,6 +57,12 @@ export interface Contact extends NewContact {
 	archivedAt: number | null;
 }
 
+/** Just enough to name a contact, for resolving an @-mention. */
+export interface ContactName {
+	id: string;
+	displayName: string;
+}
+
 /** Row shape for list views. */
 export interface ContactSummary {
 	id: string;
@@ -82,6 +88,12 @@ export interface ContactRepository {
 	listVisibleTo(viewer: Viewer): Promise<ContactSummary[]>;
 	/** The archived ones, which every other list leaves out (docs/02 §2.2). */
 	listArchivedVisibleTo(viewer: Viewer): Promise<ContactSummary[]>;
+	/**
+	 * Id and name of every contact the viewer may see, **archived ones included** — for
+	 * resolving an @-mention already written. Archiving takes someone out of the lists, not
+	 * out of the sentences that name them (docs/02 §2.2).
+	 */
+	listNamesVisibleTo(viewer: Viewer): Promise<ContactName[]>;
 	/** Write the hero's own fields; the caller has already checked the contact is visible. */
 	updateProfile(id: string, patch: ProfilePatch): Promise<void>;
 	/** Stamp or clear `archived_at`; the caller has already checked the contact is visible. */
@@ -218,6 +230,18 @@ export async function listContacts(
 	viewer: Viewer
 ): Promise<ContactSummary[]> {
 	return deps.contacts.listVisibleTo(viewer);
+}
+
+/**
+ * Resolve @-mentions written in a note, journal entry or moment. Uses the *visibility*
+ * scope, not the browsing one: an archived person is out of the pickers, but a sentence
+ * that already names them must keep naming them rather than reading "@unknown".
+ */
+export async function listContactNames(
+	deps: Pick<ContactDeps, 'contacts'>,
+	viewer: Viewer
+): Promise<ContactName[]> {
+	return deps.contacts.listNamesVisibleTo(viewer);
 }
 
 /** List the archived contacts — the only read that shows them as a list. */

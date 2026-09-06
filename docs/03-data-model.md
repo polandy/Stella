@@ -181,7 +181,8 @@ indexed in an FTS5 table (see 3.5).
 `contactBrowsableBy` is their conjunction — applied by the directory, the search, the name
 suggestions, *Quiet lately*, both *Coming up* queries and the stream's new-people read.
 Everything that reasons about the household's shape — `kinship-graph-read`, the graph
-repository — and every read of one named contact keeps using `contactVisibleTo` alone.
+repository — every read of one named contact, and the name lookup that resolves @-mentions
+(`listNamesVisibleTo`) keep using `contactVisibleTo` alone.
 
 ### contact_field
 Repeatable contact methods.

@@ -37,6 +37,7 @@ function fakeRepo() {
 		findByIdVisibleTo: async () => null,
 		listVisibleTo: async () => [],
 		listArchivedVisibleTo: async () => [],
+		listNamesVisibleTo: async () => [],
 		updateProfile: async () => {},
 		setArchived: async () => {}
 	};
@@ -154,6 +155,7 @@ function editableRepo(contact: Contact | null) {
 		findByIdVisibleTo: async () => contact,
 		listVisibleTo: async () => [],
 		listArchivedVisibleTo: async () => [],
+		listNamesVisibleTo: async () => [],
 		updateProfile: async (id, patch) => {
 			patches.push({ id, patch });
 		},

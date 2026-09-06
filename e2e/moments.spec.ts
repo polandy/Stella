@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { mention } from './app';
 
 /*
  * Moments capture and the household stream (docs/02 §2.22). Written after the flow was
@@ -14,12 +15,6 @@ async function signIn(page: Page): Promise<void> {
 	await page.goto('/login');
 	await page.getByRole('button', { name: 'Sign in as demo user' }).click();
 	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
-}
-
-/** Types `@query` and picks the suggestion whose label matches. */
-async function mention(page: Page, query: string, label: RegExp): Promise<void> {
-	await page.getByLabel('What happened?').pressSequentially(`@${query}`);
-	await page.getByRole('option', { name: label }).click();
 }
 
 const composerSave = (page: Page) => page.getByRole('button', { name: /^Save/ });

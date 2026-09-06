@@ -37,7 +37,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		archivedCount: archived.length,
 		showArchived,
 		tags,
-		activeTag,
+		// The archive is its own view; a tag left in the URL would otherwise make the header
+		// claim a filter that is not being applied.
+		activeTag: showArchived ? null : activeTag,
 		today: new Date().toLocaleDateString('en-CA')
 	};
 };

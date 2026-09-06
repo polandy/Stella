@@ -226,6 +226,17 @@ describe('archiving', () => {
 		]);
 	});
 
+	it('still names an archived contact, so a mention already written keeps their name', async () => {
+		await repo.setArchived('c-old', 1_700_000_000_000);
+
+		const names = await repo.listNamesVisibleTo(viewerU1);
+		expect(names.find((c) => c.id === 'c-old')?.displayName).toBe('Old Neighbour');
+		// It is still the visibility scope: another member's private contact stays out of it.
+		await repo.insert(contactInput({ id: 'c-theirs', visibility: 'private', createdBy: U2, displayName: 'Theirs' }));
+		expect((await repo.listNamesVisibleTo(viewerU1)).some((c) => c.id === 'c-theirs')).toBe(false);
+		expect((await repo.listNamesVisibleTo(viewerU2)).some((c) => c.id === 'c-theirs')).toBe(true);
+	});
+
 	it('takes an archived contact out of the directory and the name suggestions', async () => {
 		await repo.setArchived('c-old', 1_700_000_000_000);
 

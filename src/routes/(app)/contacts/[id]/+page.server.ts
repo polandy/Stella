@@ -18,6 +18,7 @@ import {
 	EMPTY_CONTACT_NAME_MESSAGE,
 	EmptyContactNameError,
 	getContact,
+	listContactNames,
 	listContacts,
 	restoreContact
 } from '$lib/server/domain/contacts/contacts';
@@ -123,6 +124,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		relationships,
 		types,
 		allContacts,
+		contactNames,
 		notes,
 		fields,
 		tags,
@@ -138,6 +140,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		getRelationships().listForContactVisibleTo(viewer, params.id),
 		getRelationshipTypes().listTypes(viewer),
 		listContacts(getContactDeps(), viewer),
+		listContactNames(getContactDeps(), viewer),
 		listNotesForContact(getNoteDeps(), viewer, params.id),
 		listContactFields(getContactFieldDeps(), viewer, params.id),
 		listTagsForContact(getTagDeps(), viewer, params.id),
@@ -160,7 +163,9 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	}
 
 	// Name lookup for @-mention chips in journal bodies, scoped to what the viewer may see.
-	const nameById = new Map(allContacts.map((c) => [c.id, c.displayName]));
+	// Archived people are out of `allContacts`, but a mention already written still names
+	// them — so the chip lookup reads the visibility scope (docs/02 §2.2).
+	const nameById = new Map(contactNames.map((c) => [c.id, c.displayName]));
 	const nameOf = (id: string) => nameById.get(id) ?? null;
 	// …and for the member behind each item (docs/02 §2.23).
 	const nameOfAuthor = await authorNames(getMemberDeps(), viewer.householdId);

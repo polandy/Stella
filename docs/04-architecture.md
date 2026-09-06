@@ -284,8 +284,9 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   because the kinship engine infers *through* people: archive the grandmother and her two
   children no longer share a visible parent, so Stella would stop calling them siblings —
   not saying less, but saying something untrue. The cost is that a new listing read has to
-  remember which of the two conditions it wants; the graph test pins the distinction so the
-  six cannot quietly become seven.
+  remember which of the two conditions it wants — resolving an @-mention wants visibility,
+  listing people to pick from wants browsing — and the two are pinned against each other in
+  `query-scoping.test.ts` so the distinction cannot quietly erode.
 
 - **A custom relationship type's key is derived, and the kinship keys are reserved** — the
   household types a label; `relationshipTypeKey` slugs it. Letting a key be typed would let a

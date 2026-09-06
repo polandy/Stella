@@ -162,8 +162,13 @@
 	/** Which relationship has its details open for correction; one at a time. */
 	let editingRelationship = $state<string | null>(null);
 	const savedRelationshipEdit = savedEnhance(removals, () => (editingRelationship = null));
-	/** Archiving reloads the page: every list on it reads differently afterwards. */
-	const savedArchive = savedEnhance(removals, () => {});
+	const savedArchive = savedEnhance(removals);
+	/** Archived or not decides the action, the wording and the marker; asked once. */
+	const archived = $derived(c.archivedAt !== null);
+	/** The day it happened, for the marker's tooltip. */
+	const archivedOn = $derived(
+		c.archivedAt === null ? null : dayLabel(new Date(c.archivedAt).toLocaleDateString('en-CA'))
+	);
 </script>
 
 <svelte:window onkeydown={onGalleryKeydown} />
@@ -216,11 +221,11 @@
 						<Icon name="private" size={11} />Private
 					</span>
 				{/if}
-				{#if c.archivedAt}
+				{#if archived}
 					<span
 						data-testid="archived-marker"
 						class="inline-flex items-center gap-1 rounded-full bg-bg-sunken px-2 py-0.5 text-fg-subtle"
-						title="Archived on {dayLabel(new Date(c.archivedAt).toLocaleDateString('en-CA'))}"
+						title="Archived on {archivedOn}"
 					>
 						<Icon name="archive" size={11} />Archived
 					</span>
@@ -449,14 +454,14 @@
 				Rarely wanted, so it sits at the foot of the profile rather than beside Write:
 				archiving takes someone out of the lists, it does not undo them (docs/02 §2.2).
 			-->
-			<form method="POST" action={c.archivedAt ? '?/restore' : '?/archive'} use:enhance={savedArchive}>
-				{#if c.archivedAt}
+			<form method="POST" action={archived ? '?/restore' : '?/archive'} use:enhance={savedArchive}>
+				{#if archived}
 					<Button variant="ghost" size="sm" icon="archive">Bring back into the lists</Button>
 				{:else}
 					<Button variant="ghost" size="sm" icon="archive">Archive this person</Button>
 				{/if}
 				<p class="mt-1 text-xs text-fg-subtle">
-					{#if c.archivedAt}
+					{#if archived}
 						They are out of the directory, the search and Home's reminders — their page,
 						their story and the family map are untouched.
 					{:else}

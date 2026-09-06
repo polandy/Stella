@@ -126,6 +126,16 @@ export function createDrizzleContactRepository(
 				.all();
 		},
 
+		async listNamesVisibleTo(viewer: Viewer) {
+			// `contactVisibleTo`, not `contactBrowsableBy`: a mention of an archived person still
+			// has to render their name (docs/02 §2.2).
+			return db
+				.select({ id: contactTable.id, displayName: contactTable.displayName })
+				.from(contactTable)
+				.where(contactVisibleTo(viewer))
+				.all();
+		},
+
 		async setArchived(id: string, archivedAt: number | null) {
 			db.update(contactTable).set({ archivedAt }).where(eq(contactTable.id, id)).run();
 		},

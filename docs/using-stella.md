@@ -64,7 +64,8 @@ the right of each row is when something was last written about that person.
 neighbour from two flats ago, the colleague from a job you left. At the foot of their page,
 *Archive this person* takes them out of the directory, out of the search, and out of Home's
 reminders, so they stop coming up. Nothing is deleted: their page, their story and their
-photos stay exactly as they were, and the family map still knows them — which matters,
+photos stay exactly as they were, anything you wrote that mentions them still says their
+name, and the family map still knows them — which matters,
 because Stella works out grandparents and cousins *through* people, and forgetting one would
 make it name the rest wrongly. The archived people live behind the **Archived** chip above
 the list, and the same button on their page brings them back.

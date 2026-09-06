@@ -1,7 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { quietContacts } from '$lib/server/domain/attention/quiet';
-import { listContacts } from '$lib/server/domain/contacts/contacts';
+import { listContactNames, listContacts } from '$lib/server/domain/contacts/contacts';
 import { upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
 import { captureMoment, MomentNeedsPersonError } from '$lib/server/domain/moments/moments';
@@ -39,21 +39,24 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
-	const [items, contacts, dateSources, quietSources] = await Promise.all([
+	const [items, contacts, names, dateSources, quietSources] = await Promise.all([
 		buildStream(getStreamDeps(), viewer),
 		listContacts(getContactDeps(), viewer),
+		listContactNames(getContactDeps(), viewer),
 		getImportantDates().listSourcesVisibleTo(viewer),
 		getAttention().listQuietSourcesVisibleTo(viewer)
 	]);
-	const nameById = new Map(contacts.map((c) => [c.id, c.displayName]));
+	// Two reads, because they answer different questions: what a mention already written is
+	// called (archived people included) and who the household can still act on.
+	const nameById = new Map(names.map((c) => [c.id, c.displayName]));
 	const nameOf = (id: string) => nameById.get(id) ?? null;
 
 	// The hint only names people the viewer may see; anything else is silently dropped.
 	const [a, b] = (url.searchParams.get(LINK_PARAM) ?? '').split(',');
+	const onList = new Map(contacts.map((c) => [c.id, c.displayName]));
+	const [a2, b2] = [onList.get(a), onList.get(b)];
 	const linkSuggestion =
-		a && b && nameById.has(a) && nameById.has(b)
-			? { a: { id: a, name: nameById.get(a)! }, b: { id: b, name: nameById.get(b)! } }
-			: null;
+		a && b && a2 && b2 ? { a: { id: a, name: a2 }, b: { id: b, name: b2 } } : null;
 
 	// "Write a moment" on an upcoming date opens the composer with that person already in it.
 	const about = contacts.find((c) => c.id === url.searchParams.get(ABOUT_PARAM));
