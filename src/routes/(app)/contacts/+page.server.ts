@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { listContacts } from '$lib/server/domain/contacts/contacts';
+import { listArchivedContacts, listContacts } from '$lib/server/domain/contacts/contacts';
 import { listContactsByTag, listTags } from '$lib/server/domain/tags/tags';
 import { getAttention, getContactDeps, getTagDeps } from '$lib/server/services';
 import type { PageServerLoad } from './$types';
@@ -14,9 +14,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 	const activeTag = url.searchParams.get('tag');
+	// `?archived` is its own view: the tag chips filter the household's people, and the
+	// archived ones are by definition not among them.
+	const showArchived = url.searchParams.has('archived');
 
-	const [tags, contacts, touches] = await Promise.all([
+	// The archived list is loaded either way, because its size is what the chip says — and
+	// a chip that leads to an empty room is worse than no chip.
+	const [tags, archived, contacts, touches] = await Promise.all([
 		listTags(getTagDeps(), locals.user.householdId),
+		listArchivedContacts(getContactDeps(), viewer),
 		activeTag
 			? listContactsByTag(getTagDeps(), viewer, activeTag)
 			: listContacts(getContactDeps(), viewer),
@@ -24,8 +30,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	]);
 	const lastTouchedOn = new Map(touches.map((t) => [t.contactId, t.lastTouchedOn]));
 
+	const shown = showArchived ? archived : contacts;
+
 	return {
-		contacts: contacts.map((c) => ({ ...c, lastTouchedOn: lastTouchedOn.get(c.id) ?? null })),
+		contacts: shown.map((c) => ({ ...c, lastTouchedOn: lastTouchedOn.get(c.id) ?? null })),
+		archivedCount: archived.length,
+		showArchived,
 		tags,
 		activeTag,
 		today: new Date().toLocaleDateString('en-CA')

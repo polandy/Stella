@@ -20,10 +20,11 @@
 
 <main class="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-6 md:px-6 md:py-10">
 	<header>
-		<h1 class="text-2xl font-semibold text-fg">People</h1>
+		<h1 class="text-2xl font-semibold text-fg">{data.showArchived ? 'Archived people' : 'People'}</h1>
 		<p class="text-sm text-fg-muted">
 			{data.contacts.length} {data.contacts.length === 1 ? 'person' : 'people'}{#if data.activeTag}
-				with this tag{/if}
+				with this tag{/if}{#if data.showArchived}
+				, out of the lists but not lost{/if}
 		</p>
 	</header>
 
@@ -41,14 +42,14 @@
 		/>
 	</label>
 
-	{#if data.tags.length > 0}
+	{#if data.tags.length > 0 || data.archivedCount > 0}
 		<div class="flex flex-wrap items-center gap-2">
 			<a
 				href="/contacts"
 				class="rounded-full px-3 py-1 text-sm font-medium transition-colors"
-				class:bg-primary-soft={!data.activeTag}
-				class:text-primary={!data.activeTag}
-				class:text-fg-muted={data.activeTag}
+				class:bg-primary-soft={!data.activeTag && !data.showArchived}
+				class:text-primary={!data.activeTag && !data.showArchived}
+				class:text-fg-muted={data.activeTag || data.showArchived}
 			>
 				All
 			</a>
@@ -61,10 +62,26 @@
 					{tag.name}
 				</a>
 			{/each}
+			<!-- The archive needs a door, or the only way back is to remember a name. -->
+			{#if data.archivedCount > 0}
+				<a
+					href="/contacts?archived"
+					class="ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition-colors"
+					class:bg-primary-soft={data.showArchived}
+					class:text-primary={data.showArchived}
+					class:text-fg-muted={!data.showArchived}
+				>
+					<Icon name="archive" size={13} />Archived ({data.archivedCount})
+				</a>
+			{/if}
 		</div>
 	{/if}
 
-	{#if data.contacts.length === 0}
+	{#if data.showArchived && data.contacts.length === 0}
+		<EmptyState icon="archive" title="Nothing archived" hint="Archiving takes someone out of the lists without losing them. Nobody is.">
+			<Button href="/contacts">Back to everyone</Button>
+		</EmptyState>
+	{:else if data.contacts.length === 0}
 		<EmptyState icon="people" title="No people yet" hint="Add the first person — everything else in Stella hangs off someone.">
 			<Button variant="primary" icon="add" href="/contacts/new">Add person</Button>
 		</EmptyState>
@@ -72,7 +89,9 @@
 		<p class="px-2 py-6 text-center text-sm text-fg-muted" role="status">Nobody matches “{query}”.</p>
 	{:else}
 		<div class="flex flex-col gap-4" data-testid="people-directory">
-			<div class="flex justify-end px-2.5 text-[11px] font-medium text-fg-subtle" aria-hidden="true">Last written about</div>
+			{#if !data.showArchived}
+				<div class="flex justify-end px-2.5 text-[11px] font-medium text-fg-subtle" aria-hidden="true">Last written about</div>
+			{/if}
 			{#each groups as group (group.letter)}
 				<section>
 					<h2 class="sticky top-0 z-10 flex items-center gap-3 bg-bg py-1.5 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
@@ -99,9 +118,15 @@
 											<span class="block truncate text-sm text-fg-muted">{contact.description}</span>
 										{/if}
 									</span>
-									<span class="whitespace-nowrap text-xs tabular-nums text-fg-subtle" title={since ? `Last written about ${contact.lastTouchedOn}` : 'Nothing written yet'}>
-										{since ?? '—'}
-									</span>
+									<!-- The "last written about" read leaves archived people out, so claiming
+									     anything here would be claiming they were never written about. -->
+									{#if data.showArchived}
+										<span class="whitespace-nowrap text-xs text-fg-subtle">Archived</span>
+									{:else}
+										<span class="whitespace-nowrap text-xs tabular-nums text-fg-subtle" title={since ? `Last written about ${contact.lastTouchedOn}` : 'Nothing written yet'}>
+											{since ?? '—'}
+										</span>
+									{/if}
 								</a>
 							</li>
 						{/each}

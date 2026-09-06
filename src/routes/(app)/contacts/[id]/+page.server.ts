@@ -13,11 +13,13 @@ import {
 	removeMember
 } from '$lib/server/domain/circles/circles';
 import {
+	archiveContact,
 	editProfile,
 	EMPTY_CONTACT_NAME_MESSAGE,
 	EmptyContactNameError,
 	getContact,
-	listContacts
+	listContacts,
+	restoreContact
 } from '$lib/server/domain/contacts/contacts';
 import {
 	addImportantDate,
@@ -337,6 +339,27 @@ export const actions: Actions = {
 			throw err;
 		}
 
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/*
+	 * Archiving (docs/02 §2.2): out of the household's lists, not out of its history. An
+	 * archived person keeps their page — this is where they are brought back from — and stays
+	 * in the graph and the kinship Stella works out (docs/04 §4.9).
+	 */
+	archive: async ({ params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const done = await archiveContact(getContactDeps(), viewer, params.id);
+		if (!done) throw error(404, 'Contact not found');
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	restore: async ({ params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const done = await restoreContact(getContactDeps(), viewer, params.id);
+		if (!done) throw error(404, 'Contact not found');
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 

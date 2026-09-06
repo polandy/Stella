@@ -210,6 +210,22 @@ describe('archiving', () => {
 		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.displayName).toBe('Old Neighbour');
 	});
 
+	it('lists the archived ones, which no other list shows', async () => {
+		await repo.setArchived('c-old', 1_700_000_000_000);
+
+		const archived = (await repo.listArchivedVisibleTo(viewerU1)).map((c) => c.id);
+		expect(archived).toEqual(['c-old']);
+		// positive control: it is the same visibility scope, so a private contact of another
+		// member stays out of it even once archived.
+		await repo.insert(contactInput({ id: 'c-theirs', visibility: 'private', createdBy: U2, displayName: 'Theirs' }));
+		await repo.setArchived('c-theirs', 1_700_000_000_000);
+		expect((await repo.listArchivedVisibleTo(viewerU1)).map((c) => c.id)).toEqual(['c-old']);
+		expect((await repo.listArchivedVisibleTo(viewerU2)).map((c) => c.id).sort()).toEqual([
+			'c-old',
+			'c-theirs'
+		]);
+	});
+
 	it('takes an archived contact out of the directory and the name suggestions', async () => {
 		await repo.setArchived('c-old', 1_700_000_000_000);
 

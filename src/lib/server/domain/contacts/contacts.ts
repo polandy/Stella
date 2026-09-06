@@ -80,6 +80,8 @@ export interface ContactRepository {
 	insert(contact: NewContact): Promise<void>;
 	findByIdVisibleTo(viewer: Viewer, id: string): Promise<Contact | null>;
 	listVisibleTo(viewer: Viewer): Promise<ContactSummary[]>;
+	/** The archived ones, which every other list leaves out (docs/02 §2.2). */
+	listArchivedVisibleTo(viewer: Viewer): Promise<ContactSummary[]>;
 	/** Write the hero's own fields; the caller has already checked the contact is visible. */
 	updateProfile(id: string, patch: ProfilePatch): Promise<void>;
 	/** Stamp or clear `archived_at`; the caller has already checked the contact is visible. */
@@ -216,6 +218,14 @@ export async function listContacts(
 	viewer: Viewer
 ): Promise<ContactSummary[]> {
 	return deps.contacts.listVisibleTo(viewer);
+}
+
+/** List the archived contacts — the only read that shows them as a list. */
+export async function listArchivedContacts(
+	deps: Pick<ContactDeps, 'contacts'>,
+	viewer: Viewer
+): Promise<ContactSummary[]> {
+	return deps.contacts.listArchivedVisibleTo(viewer);
 }
 
 /**
