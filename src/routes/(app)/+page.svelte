@@ -202,6 +202,21 @@
 										</div>
 									{/if}
 								</div>
+							{:else if item.kind === 'removal'}
+								<!--
+									The only item with nobody to link to: the person is gone, and the log
+									entry is all that is left of them (docs/02 §2.2).
+								-->
+								<span class="grid size-8 shrink-0 place-items-center rounded-full bg-bg-sunken text-fg-subtle" aria-hidden="true">
+									<Icon name="remove" size={14} />
+								</span>
+								<div class="min-w-0">
+									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
+										<b class="font-semibold text-fg">{item.mine ? 'You' : item.actor.name}</b>
+										<span class="font-medium text-fg">{item.summary}</span>
+										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago(item.at)}</span>
+									</div>
+								</div>
 							{:else}
 								<Avatar id={item.from.id} name={item.from.name} avatarPhotoId={item.from.avatarPhotoId} size={32} />
 								<div class="min-w-0">

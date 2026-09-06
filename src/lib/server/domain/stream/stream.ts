@@ -4,9 +4,11 @@ import type { InteractionKind } from '../../../interactions/kinds';
 /*
  * Household stream (docs/02 §2.22.2): what the family did, newest first. It is a *query* over
  * the existing tables — moments (journal entries), new people, new relationships and logged
- * interactions (docs/02 §2.6) — merged
- * here; there is no event table and nothing is logged twice. The adapter owns the
- * visibility-scoped reads; this module only merges, orders and limits, so it stays pure.
+ * interactions (docs/02 §2.6) — merged here; nothing is logged twice.
+ *
+ * The one exception is a **removal**, which no table can report once its row is gone; that
+ * one comes from `activity_log` (docs/04 §4.9). The adapter owns the visibility-scoped reads;
+ * this module only merges, orders and limits, so it stays pure.
  */
 
 /** Default number of items Home shows. */
@@ -70,17 +72,29 @@ export interface InteractionRow {
 	participants: StreamPerson[];
 }
 
+/** A person the household removed for good (docs/02 §2.2); read from the activity log. */
+export interface RemovalRow {
+	id: string;
+	at: number;
+	actor: StreamActor;
+	/** Precomputed when it happened — the record it names no longer exists. */
+	summary: string;
+}
+
 export type StreamItem =
 	| ({ kind: 'moment'; mine: boolean } & MomentRow)
 	| ({ kind: 'person'; mine: boolean } & PersonRow)
 	| ({ kind: 'relationship'; mine: boolean } & RelationshipRow)
-	| ({ kind: 'interaction'; mine: boolean } & InteractionRow);
+	| ({ kind: 'interaction'; mine: boolean } & InteractionRow)
+	| ({ kind: 'removal'; mine: boolean } & RemovalRow);
 
 export interface StreamRepository {
 	recentMoments(viewer: Viewer, limit: number): Promise<MomentRow[]>;
 	recentPeople(viewer: Viewer, limit: number): Promise<PersonRow[]>;
 	recentRelationships(viewer: Viewer, limit: number): Promise<RelationshipRow[]>;
 	recentInteractions(viewer: Viewer, limit: number): Promise<InteractionRow[]>;
+	/** The one thing the other four reads cannot see, because its rows are gone. */
+	recentRemovals(viewer: Viewer, limit: number): Promise<RemovalRow[]>;
 }
 
 export interface StreamDeps {
@@ -98,6 +112,7 @@ export function assembleStream(
 		people: PersonRow[];
 		relationships: RelationshipRow[];
 		interactions: InteractionRow[];
+		removals: RemovalRow[];
 	},
 	viewerId: string,
 	limit = STREAM_LIMIT
@@ -111,13 +126,15 @@ export function assembleStream(
 		),
 		...sources.interactions.map(
 			(i): StreamItem => ({ kind: 'interaction', mine: mine(i.actor), ...i })
-		)
+		),
+		...sources.removals.map((r): StreamItem => ({ kind: 'removal', mine: mine(r.actor), ...r }))
 	];
 	const rank: Record<StreamItem['kind'], number> = {
 		moment: 0,
 		interaction: 1,
 		relationship: 2,
-		person: 3
+		person: 3,
+		removal: 4
 	};
 	items.sort((a, b) => b.at - a.at || rank[a.kind] - rank[b.kind] || a.id.localeCompare(b.id));
 	return items.slice(0, Math.max(0, limit));
@@ -129,11 +146,16 @@ export async function buildStream(
 	viewer: Viewer,
 	limit = STREAM_LIMIT
 ): Promise<StreamItem[]> {
-	const [moments, people, relationships, interactions] = await Promise.all([
+	const [moments, people, relationships, interactions, removals] = await Promise.all([
 		deps.stream.recentMoments(viewer, limit),
 		deps.stream.recentPeople(viewer, limit),
 		deps.stream.recentRelationships(viewer, limit),
-		deps.stream.recentInteractions(viewer, limit)
+		deps.stream.recentInteractions(viewer, limit),
+		deps.stream.recentRemovals(viewer, limit)
 	]);
-	return assembleStream({ moments, people, relationships, interactions }, viewer.id, limit);
+	return assembleStream(
+		{ moments, people, relationships, interactions, removals },
+		viewer.id,
+		limit
+	);
 }

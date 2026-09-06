@@ -1,4 +1,4 @@
-import type { Visibility, Viewer } from '../../access/visibility';
+import type { Visibility } from '../../access/visibility';
 
 /*
  * The household's activity log (docs/03 §activity_log). The stream is otherwise a query over
@@ -24,19 +24,6 @@ export interface NewActivityEntry {
 	/** Precomputed, because the record it describes cannot be read back. */
 	summary: string;
 	createdAt: number;
-}
-
-/** A logged removal, as the household stream shows it. */
-export interface RemovalEntry {
-	id: string;
-	at: number;
-	actorId: string;
-	summary: string;
-}
-
-export interface ActivityRepository {
-	/** Removals the viewer may see, newest first (shared, or their own private ones). */
-	listRemovalsVisibleTo(viewer: Viewer, limit: number): Promise<RemovalEntry[]>;
 }
 
 /** What the log says about a deleted person; the name is kept because the row is not. */

@@ -157,6 +157,44 @@ describe('recentPeople', () => {
 	});
 });
 
+describe('recentRemovals', () => {
+	/** A logged deletion, the only stream source whose subject no longer exists. */
+	function logRemoval(id: string, at: number, actorId: string, visibility: 'shared' | 'private') {
+		db.insert(schema.activityLog)
+			.values({
+				id,
+				householdId: H,
+				actorId,
+				action: 'delete',
+				entityType: 'contact',
+				entityId: `c-${id}`,
+				contactId: null,
+				visibility,
+				summary: `removed Person ${id}`,
+				createdAt: at
+			})
+			.run();
+	}
+
+	it('reports a shared removal to the whole household, newest first', async () => {
+		logRemoval('older', 100, U1, 'shared');
+		logRemoval('newer', 200, U1, 'shared');
+
+		const rows = await repo.recentRemovals(asU2, 10);
+		expect(rows.map((r) => r.id)).toEqual(['newer', 'older']);
+		expect(rows[0]).toMatchObject({ actor: { id: U1, name: 'One' }, summary: 'removed Person newer' });
+	});
+
+	it('keeps a private person private, even in the record of their deletion', async () => {
+		logRemoval('secret', 100, U1, 'private');
+		logRemoval('open', 100, U1, 'shared');
+
+		expect((await repo.recentRemovals(asU2, 10)).map((r) => r.id)).toEqual(['open']);
+		// positive control: the member who deleted them sees both.
+		expect((await repo.recentRemovals(asU1, 10)).map((r) => r.id).sort()).toEqual(['open', 'secret']);
+	});
+});
+
 describe('recentRelationships', () => {
 	it('returns relationships whose both ends are visible, newest-first', async () => {
 		seedContact('julia', 1);
