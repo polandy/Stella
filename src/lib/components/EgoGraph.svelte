@@ -5,11 +5,8 @@
 	 * loaded — no graph engine, no extra fetch. Nodes link to the connected contact.
 	 * Category accents follow docs/05 §5.6.
 	 */
-	import {
-		RELATIONSHIP_CATEGORIES,
-		categoryVar,
-		type RelationshipCategory
-	} from '$lib/design/tokens';
+	import { categoryVar } from '$lib/design/tokens';
+	import { RELATIONSHIP_CATEGORIES, type RelationshipCategory } from '$lib/relationships/categories';
 
 	interface EgoNode {
 		id: string;

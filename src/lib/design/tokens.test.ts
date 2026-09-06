@@ -1,8 +1,8 @@
+import { RELATIONSHIP_CATEGORIES } from '../relationships/categories';
 import { describe, expect, it } from 'bun:test';
 import {
 	ACCENTS,
 	AVATAR_ACCENTS,
-	RELATIONSHIP_CATEGORIES,
 	accentAvatarStyle,
 	accentChipStyle,
 	accentDotStyle,
