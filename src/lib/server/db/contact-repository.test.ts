@@ -309,6 +309,18 @@ describe('deleting a contact', () => {
 		expect(files?.map((f) => f.thumbPath).sort()).toEqual(['g-t.jpg', 'j-t.jpg']);
 	});
 
+	it('deletes someone who is wearing one of their own photos', async () => {
+		// The photos go before the contact, so this is the shape that would break first:
+		// `contact.avatar_photo_id` still points at the row being deleted.
+		db.update(schema.contact)
+			.set({ avatarPhotoId: 'p-gallery' })
+			.where(eq(schema.contact.id, 'c-gone'))
+			.run();
+
+		expect(await repo.deleteVisibleTo(viewerU1, 'c-gone', audit())).not.toBeNull();
+		expect(await repo.findByIdVisibleTo(viewerU1, 'c-gone')).toBeNull();
+	});
+
 	it('writes the log entry that outlives the row', async () => {
 		await repo.deleteVisibleTo(viewerU1, 'c-gone', audit());
 

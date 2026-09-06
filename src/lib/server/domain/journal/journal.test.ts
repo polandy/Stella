@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
+import type { DeletedPhotoFiles } from '../media/avatars';
 import {
+	deleteJournalEntry,
 	saveJournalEntry,
 	listJournalForContact,
 	type JournalAuthor,
@@ -68,7 +70,7 @@ function fakeRepo(seed: JournalEntry[] = []) {
 				: sorted;
 			return after.slice(0, opts.limit);
 		},
-		async deleteOwn(p: { authorId: string; id: string }) {
+		async deleteOwn(p: { authorId: string; id: string }): Promise<DeletedPhotoFiles[] | null> {
 			const i = rows.findIndex((r) => r.id === p.id && r.createdBy === p.authorId);
 			if (i < 0) return null;
 			rows.splice(i, 1);
@@ -174,5 +176,37 @@ describe('listJournalForContact', () => {
 		const list = await listJournalForContact({ journal: repo }, viewer, 'c1');
 		expect(list).toHaveLength(1);
 		expect(list[0].id).toBe('a');
+	});
+});
+
+
+/*
+ * Removing an entry takes the photos inside it (docs/02 §2.20). The rows go in the
+ * repository; the bytes are the use-case's job, and were never unlinked before.
+ */
+describe('deleteJournalEntry', () => {
+	it('unlinks the files of every photo the entry carried', async () => {
+		const d = deps();
+		d.repo.deleteOwn = async () => [
+			{ filePath: 'a.jpg', thumbPath: 'a-t.jpg' },
+			{ filePath: 'b.jpg', thumbPath: 'b-t.jpg' }
+		];
+
+		expect(await deleteJournalEntry(d, author, 'e1')).toBe(true);
+		expect(d.removedFiles).toEqual(['a.jpg', 'a-t.jpg', 'b.jpg', 'b-t.jpg']);
+	});
+
+	it('touches no file when there was no such entry of theirs', async () => {
+		const d = deps();
+		d.repo.deleteOwn = async () => null;
+
+		expect(await deleteJournalEntry(d, author, 'not-theirs')).toBe(false);
+		expect(d.removedFiles).toEqual([]);
+
+		// positive control: the same call against their own entry does unlink.
+		const mine = deps();
+		mine.repo.deleteOwn = async () => [{ filePath: 'c.jpg', thumbPath: 'c-t.jpg' }];
+		expect(await deleteJournalEntry(mine, author, 'e1')).toBe(true);
+		expect(mine.removedFiles).toEqual(['c.jpg', 'c-t.jpg']);
 	});
 });

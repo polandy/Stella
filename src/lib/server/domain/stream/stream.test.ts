@@ -77,12 +77,12 @@ describe('assembleStream', () => {
 		]);
 	});
 
-	it('orders a tie moment → interaction → relationship → person', () => {
+	it('orders a tie moment → interaction → relationship → person → removal', () => {
 		const items = assembleStream(
-			{ moments: [moment('m', 100)], people: [person('p', 100)], relationships: [rel('r', 100)], interactions: [touch('i', 100)], removals: [] },
+			{ moments: [moment('m', 100)], people: [person('p', 100)], relationships: [rel('r', 100)], interactions: [touch('i', 100)], removals: [removal('x', 100)] },
 			'u1'
 		);
-		expect(items.map((i) => i.id)).toEqual(['m', 'i', 'r', 'p']);
+		expect(items.map((i) => i.id)).toEqual(['m', 'i', 'r', 'p', 'x']);
 	});
 
 	it('merges all sources newest first and marks my own items', () => {
