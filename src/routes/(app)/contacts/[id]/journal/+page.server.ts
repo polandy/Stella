@@ -60,6 +60,17 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	return {
 		contact: { id: contact.id, displayName: contact.displayName, avatarPhotoId: contact.avatarPhotoId },
 		today: today(),
+		// People the @-picker may offer, minus the person whose journal this is: naming them
+		// here is not a mention, it is the entry's own subject (docs/02 §2.20.1).
+		candidates: allContacts
+			.filter((c) => c.id !== params.id)
+			.map((c) => ({
+				id: c.id,
+				displayName: c.displayName,
+				firstName: c.firstName,
+				lastName: c.lastName,
+				visibility: c.visibility
+			})),
 		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5, §2.20.1)
 		entries: entries.map((e) => ({
 			id: e.id,
