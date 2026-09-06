@@ -82,3 +82,53 @@ describe('searchNotes', () => {
 		expect(hits.map((h) => h.noteId)).toEqual(['n-shared']);
 	});
 });
+
+/*
+ * A mention is stored as `@{contact:<id>}` (docs/02 §2.20.1), so the raw body is the wrong
+ * thing to index: the person's name is gone from it and the word "contact" is in every note
+ * that names anyone. The index carries the mentioned names instead of the token.
+ */
+describe('searching a note that mentions someone', () => {
+	beforeEach(() => {
+		db.insert(schema.note)
+			.values({
+				id: 'n-mention',
+				contactId: 'c-hans',
+				createdBy: U1,
+				visibility: 'shared',
+				body: 'walked home with @{contact:c-secret}'
+			})
+			.run();
+		db.insert(schema.noteMention).values({ noteId: 'n-mention', contactId: 'c-secret' }).run();
+	});
+
+	it('finds it by the name of the person it mentions', async () => {
+		const hits = await repo.searchNotes(viewerU1, toFtsQuery('secretina'), 20);
+		expect(hits.map((h) => h.noteId)).toEqual(['n-mention']);
+	});
+
+	it('does not turn the token into the searchable word "contact"', async () => {
+		expect(await repo.searchNotes(viewerU1, toFtsQuery('contact'), 20)).toHaveLength(0);
+		// positive control: the rest of that same body is indexed and findable.
+		expect((await repo.searchNotes(viewerU1, toFtsQuery('walked'), 20)).map((h) => h.noteId)).toEqual([
+			'n-mention'
+		]);
+	});
+
+	it('forgets the name once the note stops mentioning them', async () => {
+		db.delete(schema.noteMention).where(eq(schema.noteMention.noteId, 'n-mention')).run();
+		expect(await repo.searchNotes(viewerU1, toFtsQuery('secretina'), 20)).toHaveLength(0);
+		expect(await repo.searchNotes(viewerU1, toFtsQuery('walked'), 20)).toHaveLength(1);
+	});
+
+	it('follows a rename of the mentioned person', async () => {
+		db.update(schema.contact)
+			.set({ displayName: 'Cordelia' })
+			.where(eq(schema.contact.id, 'c-secret'))
+			.run();
+		expect((await repo.searchNotes(viewerU1, toFtsQuery('cordelia'), 20)).map((h) => h.noteId)).toEqual([
+			'n-mention'
+		]);
+		expect(await repo.searchNotes(viewerU1, toFtsQuery('secretina'), 20)).toHaveLength(0);
+	});
+});
