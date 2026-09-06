@@ -133,7 +133,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		kinship
 	] = await Promise.all([
 		getRelationships().listForContactVisibleTo(viewer, params.id),
-		getRelationships().listTypes(),
+		getRelationships().listTypes(viewer),
 		listContacts(getContactDeps(), viewer),
 		listNotesForContact(getNoteDeps(), viewer, params.id),
 		listContactFields(getContactFieldDeps(), viewer, params.id),
@@ -365,7 +365,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			await createRelationship(getRelationshipDeps(), locals.user.householdId, locals.user.id, {
+			await createRelationship(getRelationshipDeps(), viewer, {
 				fromContactId: params.id,
 				toContactId: parsed.output.targetId,
 				typeId: parsed.output.typeId,
@@ -459,7 +459,7 @@ export const actions: Actions = {
 		if (!from || !to) return fail(400, { error: 'That person could not be found.' });
 
 		try {
-			await createRelationship(getRelationshipDeps(), locals.user.householdId, locals.user.id, {
+			await createRelationship(getRelationshipDeps(), viewer, {
 				fromContactId: parsed.output.fromId,
 				toContactId: parsed.output.toId,
 				typeId: parsed.output.typeId,

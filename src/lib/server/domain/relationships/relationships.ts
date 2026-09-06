@@ -136,8 +136,10 @@ export interface RelationshipView extends RelationshipDetails {
 }
 
 export interface RelationshipRepository {
-	listTypes(): Promise<RelationshipType[]>;
-	getType(typeId: string): Promise<RelationshipType | null>;
+	/** The built-in types plus the viewer's own household's; never another household's. */
+	listTypes(viewer: Viewer): Promise<RelationshipType[]>;
+	/** Resolves a type the viewer's household may use, else null (docs/03 §3.6). */
+	getType(viewer: Viewer, typeId: string): Promise<RelationshipType | null>;
 	exists(fromContactId: string, toContactId: string, typeId: string): Promise<boolean>;
 	insert(relationship: NewRelationship): Promise<void>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<RelationshipView[]>;
@@ -180,11 +182,10 @@ export class DuplicateRelationshipError extends Error {
  */
 export async function createRelationship(
 	deps: RelationshipDeps,
-	householdId: string,
-	createdBy: string,
+	viewer: Viewer,
 	input: CreateRelationshipInput
 ): Promise<string> {
-	const type = await deps.relationships.getType(input.typeId);
+	const type = await deps.relationships.getType(viewer, input.typeId);
 	if (!type) {
 		throw new Error('Unknown relationship type.');
 	}
@@ -204,12 +205,12 @@ export async function createRelationship(
 	const id = deps.ids.next();
 	await deps.relationships.insert({
 		id,
-		householdId,
+		householdId: viewer.householdId,
 		fromContactId,
 		toContactId,
 		typeId: input.typeId,
 		...details,
-		createdBy,
+		createdBy: viewer.id,
 		createdAt: now,
 		updatedAt: now
 	});

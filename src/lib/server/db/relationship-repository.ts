@@ -1,4 +1,4 @@
-import { and, eq, or } from 'drizzle-orm';
+import { and, eq, isNull, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { KinshipGraph } from '../../kinship/kinship';
@@ -53,6 +53,14 @@ const toStatus = (value: string | null): RelationshipStatus | null =>
 		? (value as RelationshipStatus)
 		: null;
 
+/**
+ * The types a household may use: the built-in set (`household_id` null, seeded globally) plus
+ * the ones this household defined. Another household's custom type is not merely hidden from
+ * the picker — it cannot be resolved by id either, so it can never be stored (docs/03 §3.6).
+ */
+const typeUsableBy = (viewer: Viewer) =>
+	or(isNull(relationshipType.householdId), eq(relationshipType.householdId, viewer.householdId));
+
 const typeColumns = {
 	id: relationshipType.id,
 	key: relationshipType.key,
@@ -89,12 +97,22 @@ export function createDrizzleRelationshipRepository(
 	db: BunSQLiteDatabase<typeof schema>
 ): RelationshipRepository {
 	return {
-		async listTypes() {
-			return db.select(typeColumns).from(relationshipType).orderBy(relationshipType.sortOrder).all().map(toType);
+		async listTypes(viewer: Viewer) {
+			return db
+				.select(typeColumns)
+				.from(relationshipType)
+				.where(typeUsableBy(viewer))
+				.orderBy(relationshipType.sortOrder)
+				.all()
+				.map(toType);
 		},
 
-		async getType(typeId: string) {
-			const row = db.select(typeColumns).from(relationshipType).where(eq(relationshipType.id, typeId)).get();
+		async getType(viewer: Viewer, typeId: string) {
+			const row = db
+				.select(typeColumns)
+				.from(relationshipType)
+				.where(and(eq(relationshipType.id, typeId), typeUsableBy(viewer)))
+				.get();
 			return row ? toType(row) : null;
 		},
 

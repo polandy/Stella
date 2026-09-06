@@ -42,11 +42,55 @@ beforeEach(() => {
 });
 
 describe('relationship types', () => {
+	/** A custom type belonging to some other deployment's household. */
+	function seedForeignType() {
+		db.insert(schema.household).values({ id: 'household-2', name: 'Other' }).run();
+		db.insert(schema.relationshipType)
+			.values({
+				id: 'type-foreign',
+				householdId: 'household-2',
+				key: 'bridge_partner',
+				forwardLabel: 'Bridge partner of',
+				reverseLabel: 'Bridge partner of',
+				category: 'social',
+				symmetric: 1,
+				sortOrder: 100
+			})
+			.run();
+	}
+
 	it('seeds the built-in types (idempotently)', async () => {
 		seedRelationshipTypes(db); // second call must not duplicate
-		const types = await repo.listTypes();
+		const types = await repo.listTypes(viewerU1);
 		expect(types.find((t) => t.id === 'parent_child')?.forwardLabel).toBe('Parent of');
 		expect(types.find((t) => t.id === 'sibling')?.symmetric).toBe(true);
+	});
+
+	it("lists the built-in types and this household's own, never another household's", async () => {
+		seedForeignType();
+		db.insert(schema.relationshipType)
+			.values({
+				id: 'type-own',
+				householdId: H,
+				key: 'choir_mate',
+				forwardLabel: 'Sings with',
+				reverseLabel: 'Sings with',
+				category: 'social',
+				symmetric: 1,
+				sortOrder: 100
+			})
+			.run();
+
+		const ids = (await repo.listTypes(viewerU1)).map((t) => t.id);
+		expect(ids).toContain('parent_child'); // built-in, household_id null
+		expect(ids).toContain('type-own');
+		expect(ids).not.toContain('type-foreign');
+	});
+
+	it("does not resolve another household's type by id", async () => {
+		seedForeignType();
+		expect(await repo.getType(viewerU1, 'parent_child')).not.toBeNull();
+		expect(await repo.getType(viewerU1, 'type-foreign')).toBeNull();
 	});
 });
 

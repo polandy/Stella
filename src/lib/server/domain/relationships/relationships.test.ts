@@ -132,8 +132,7 @@ describe('createRelationship', () => {
 		const f = fakeRepo({ type: parentChild });
 		const id = await createRelationship(
 			{ relationships: f.repo, ids: idGen('rel-1'), clock },
-			'household-1',
-			'user-1',
+			{ id: 'user-1', householdId: 'household-1' },
 			{ fromContactId: 'hans', toContactId: 'bettina', typeId: 'parent_child', description: ' met at reunion ' }
 		);
 		expect(id).toBe('rel-1');
@@ -150,7 +149,7 @@ describe('createRelationship', () => {
 
 	it('stores symmetric relationships in canonical order', async () => {
 		const f = fakeRepo({ type: sibling });
-		await createRelationship({ relationships: f.repo, ids: idGen('rel-2'), clock }, 'h', 'u', {
+		await createRelationship({ relationships: f.repo, ids: idGen('rel-2'), clock }, { id: 'u', householdId: 'h' }, {
 			fromContactId: 'y',
 			toContactId: 'x',
 			typeId: 'sibling'
@@ -161,7 +160,7 @@ describe('createRelationship', () => {
 	it('rejects an unknown type', async () => {
 		const f = fakeRepo({ type: null });
 		await expect(
-			createRelationship({ relationships: f.repo, ids: idGen('x'), clock }, 'h', 'u', {
+			createRelationship({ relationships: f.repo, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
 				fromContactId: 'a',
 				toContactId: 'b',
 				typeId: 'nope'
@@ -172,7 +171,7 @@ describe('createRelationship', () => {
 	it('rejects a duplicate relationship', async () => {
 		const f = fakeRepo({ type: parentChild, exists: true });
 		await expect(
-			createRelationship({ relationships: f.repo, ids: idGen('x'), clock }, 'h', 'u', {
+			createRelationship({ relationships: f.repo, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
 				fromContactId: 'a',
 				toContactId: 'b',
 				typeId: 'parent_child'
@@ -183,7 +182,7 @@ describe('createRelationship', () => {
 	it('rejects a self relationship', async () => {
 		const f = fakeRepo({ type: parentChild });
 		await expect(
-			createRelationship({ relationships: f.repo, ids: idGen('x'), clock }, 'h', 'u', {
+			createRelationship({ relationships: f.repo, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
 				fromContactId: 'a',
 				toContactId: 'a',
 				typeId: 'parent_child'
@@ -348,7 +347,7 @@ describe('createRelationship with details', () => {
 	it('stores the specifics alongside the link', async () => {
 		const f = fakeRepo({ type: partner });
 
-		await createRelationship({ relationships: f.repo, ids: idGen('rel-2'), clock }, 'h1', 'u1', {
+		await createRelationship({ relationships: f.repo, ids: idGen('rel-2'), clock }, { id: 'u1', householdId: 'h1' }, {
 			fromContactId: 'a',
 			toContactId: 'b',
 			typeId: 'partner',
@@ -368,7 +367,7 @@ describe('createRelationship with details', () => {
 		const f = fakeRepo({ type: partner });
 
 		await expect(
-			createRelationship({ relationships: f.repo, ids: idGen('rel-3'), clock }, 'h1', 'u1', {
+			createRelationship({ relationships: f.repo, ids: idGen('rel-3'), clock }, { id: 'u1', householdId: 'h1' }, {
 				fromContactId: 'a',
 				toContactId: 'b',
 				typeId: 'partner',
