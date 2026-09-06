@@ -220,6 +220,9 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 			...ends,
 			typeId,
 			description: null,
+			// Monica records neither of these, so there is nothing to carry over.
+			sinceDate: null,
+			status: null,
 			createdBy: opts.userId,
 			createdAt: opts.now,
 			updatedAt: opts.now

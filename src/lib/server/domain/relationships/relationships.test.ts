@@ -9,6 +9,8 @@ import {
 	createRelationship,
 	describeRelationshipFor,
 	DuplicateRelationshipError,
+	InvalidRelationshipDetailsError,
+	parseRelationshipDetails,
 	readKinship,
 	type NewRelationship,
 	type RelationshipRepository,
@@ -267,5 +269,95 @@ describe('readKinship', () => {
 			{ a: 'hans', b: 'nobody' }
 		);
 		expect(found.proposals).toEqual([]);
+	});
+});
+
+/*
+ * The specifics a relationship carries (docs/02 §2.4): free text for how these two connect,
+ * an optional since-day and whether the link still holds. Pure — no deps, no clock.
+ */
+describe('parseRelationshipDetails', () => {
+	it('keeps the text as written, trimmed', () => {
+		expect(parseRelationshipDetails({ description: '  met at the ski course ' })).toEqual({
+			description: 'met at the ski course',
+			sinceDate: null,
+			status: null
+		});
+	});
+
+	it('reads nothing given, and nothing but blanks, as nothing said', () => {
+		expect(parseRelationshipDetails({})).toEqual({ description: null, sinceDate: null, status: null });
+		expect(parseRelationshipDetails({ description: '   ', sinceDate: '', status: '' })).toEqual({
+			description: null,
+			sinceDate: null,
+			status: null
+		});
+	});
+
+	it('takes a real day and refuses one that never happened', () => {
+		expect(parseRelationshipDetails({ sinceDate: '2019-06-01' }).sinceDate).toBe('2019-06-01');
+		expect(() => parseRelationshipDetails({ sinceDate: '2019-02-30' })).toThrow(
+			InvalidRelationshipDetailsError
+		);
+	});
+
+	it('wants the whole day, not a recurring one', () => {
+		// `--06-01` is legal for a birthday (docs/03), but "since" names a point in time.
+		expect(() => parseRelationshipDetails({ sinceDate: '--06-01' })).toThrow(
+			InvalidRelationshipDetailsError
+		);
+	});
+
+	it('accepts only the two statuses the model knows', () => {
+		expect(parseRelationshipDetails({ status: 'current' }).status).toBe('current');
+		expect(parseRelationshipDetails({ status: 'former' }).status).toBe('former');
+		expect(() => parseRelationshipDetails({ status: 'complicated' })).toThrow(
+			InvalidRelationshipDetailsError
+		);
+	});
+});
+
+describe('createRelationship with details', () => {
+	const partner: RelationshipType = {
+		id: 'partner',
+		key: 'partner',
+		forwardLabel: 'Partner of',
+		reverseLabel: 'Partner of',
+		category: 'romantic',
+		symmetric: true,
+		sortOrder: 3
+	};
+
+	it('stores the specifics alongside the link', async () => {
+		const f = fakeRepo({ type: partner });
+
+		await createRelationship({ relationships: f.repo, ids: idGen('rel-2'), clock }, 'h1', 'u1', {
+			fromContactId: 'a',
+			toContactId: 'b',
+			typeId: 'partner',
+			description: 'met at the ski course',
+			sinceDate: '2019-06-01',
+			status: 'former'
+		});
+
+		expect(f.inserted).toMatchObject({
+			description: 'met at the ski course',
+			sinceDate: '2019-06-01',
+			status: 'former'
+		});
+	});
+
+	it('writes nothing when a detail is not a real one', async () => {
+		const f = fakeRepo({ type: partner });
+
+		await expect(
+			createRelationship({ relationships: f.repo, ids: idGen('rel-3'), clock }, 'h1', 'u1', {
+				fromContactId: 'a',
+				toContactId: 'b',
+				typeId: 'partner',
+				sinceDate: '2019-02-30'
+			})
+		).rejects.toThrow(InvalidRelationshipDetailsError);
+		expect(f.inserted).toBeNull();
 	});
 });

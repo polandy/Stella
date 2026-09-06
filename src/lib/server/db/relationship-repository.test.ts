@@ -62,6 +62,8 @@ describe('exists / insert', () => {
 			toContactId: 'hans',
 			typeId: 'parent_child',
 			description: null,
+			sinceDate: null,
+			status: null,
 			createdBy: U1,
 			createdAt: 0,
 			updatedAt: 0
@@ -82,6 +84,8 @@ describe('listForContactVisibleTo', () => {
 			toContactId: 'hans',
 			typeId: 'parent_child',
 			description: null,
+			sinceDate: null,
+			status: null,
 			createdBy: U1,
 			createdAt: 0,
 			updatedAt: 0
@@ -99,6 +103,54 @@ describe('listForContactVisibleTo', () => {
 		expect(forHans[0]).toMatchObject({ otherDisplayName: 'Bettina', label: 'Child of' });
 	});
 
+	it('carries the specifics back out from both sides (docs/02 §2.4)', async () => {
+		seedContact('kurt', 'Kurt', 'shared');
+		await repo.insert({
+			id: 'rel-partner',
+			householdId: H,
+			fromContactId: 'bettina',
+			toContactId: 'kurt',
+			typeId: 'partner',
+			description: 'met at the ski course',
+			sinceDate: '2019-06-01',
+			status: 'former',
+			createdBy: U1,
+			createdAt: 0,
+			updatedAt: 0
+		});
+
+		for (const [who, other] of [
+			['bettina', 'Kurt'],
+			['kurt', 'Bettina']
+		]) {
+			const view = (await repo.listForContactVisibleTo(viewerU1, who)).find(
+				(r) => r.otherDisplayName === other
+			);
+			expect(view).toMatchObject({
+				description: 'met at the ski course',
+				sinceDate: '2019-06-01',
+				status: 'former'
+			});
+		}
+	});
+
+	it('reads a status the domain does not know as nothing said', async () => {
+		// The column is plain text; an older row or an import can hold anything.
+		db.update(schema.relationship)
+			.set({ status: 'complicated' })
+			.where(eq(schema.relationship.id, 'rel-pc'))
+			.run();
+
+		const [view] = await repo.listForContactVisibleTo(viewerU1, 'bettina');
+		expect(view.status).toBeNull();
+		// …and a status it does know still comes through, so this is not blanket blindness.
+		db.update(schema.relationship)
+			.set({ status: 'current' })
+			.where(eq(schema.relationship.id, 'rel-pc'))
+			.run();
+		expect((await repo.listForContactVisibleTo(viewerU1, 'bettina'))[0].status).toBe('current');
+	});
+
 	it('hides a relationship whose other endpoint the viewer cannot see', async () => {
 		seedContact('secret', 'Secret', 'private', U1); // owned by U1, private
 		await repo.insert({
@@ -108,6 +160,8 @@ describe('listForContactVisibleTo', () => {
 			toContactId: 'secret',
 			typeId: 'friend',
 			description: null,
+			sinceDate: null,
+			status: null,
 			createdBy: U1,
 			createdAt: 0,
 			updatedAt: 0
@@ -133,7 +187,7 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 		const rel = (id: string, from: string, to: string, typeId: string) =>
 			repo.insert({
 				id, householdId: H, fromContactId: from, toContactId: to, typeId,
-				description: null, createdBy: U1, createdAt: 1, updatedAt: 1
+				description: null, sinceDate: null, status: null, createdBy: U1, createdAt: 1, updatedAt: 1
 			});
 		await rel('r-1', 'otto', 'bettina', 'parent_child');
 		await rel('r-2', 'bettina', 'hans', 'parent_child');

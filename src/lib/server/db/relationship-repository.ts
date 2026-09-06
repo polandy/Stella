@@ -7,6 +7,8 @@ import type { Viewer } from '../access/visibility';
 import { loadKinshipGraph } from './kinship-graph-read';
 import {
 	describeRelationshipFor,
+	RELATIONSHIP_STATUSES,
+	type RelationshipStatus,
 	type NewRelationship,
 	type RelationshipRepository,
 	type RelationshipType,
@@ -40,6 +42,16 @@ const toType = (row: TypeRow): RelationshipType => ({
 	symmetric: row.symmetric === 1,
 	sortOrder: row.sortOrder
 });
+
+/**
+ * The column is plain text, so a row written before the two statuses existed — or by an
+ * import — can hold anything. Anything the domain does not know reads as "not said" rather
+ * than being passed off as a status.
+ */
+const toStatus = (value: string | null): RelationshipStatus | null =>
+	value !== null && RELATIONSHIP_STATUSES.includes(value as RelationshipStatus)
+		? (value as RelationshipStatus)
+		: null;
 
 const typeColumns = {
 	id: relationshipType.id,
@@ -89,6 +101,8 @@ export function createDrizzleRelationshipRepository(
 					toContactId: rel.toContactId,
 					typeId: rel.typeId,
 					note: rel.description,
+					sinceDate: rel.sinceDate,
+					status: rel.status,
 					createdBy: rel.createdBy,
 					createdAt: rel.createdAt,
 					updatedAt: rel.updatedAt
@@ -104,6 +118,8 @@ export function createDrizzleRelationshipRepository(
 				.select({
 					id: relationship.id,
 					description: relationship.note,
+					sinceDate: relationship.sinceDate,
+					status: relationship.status,
 					fromContactId: relationship.fromContactId,
 					toContactId: relationship.toContactId,
 					fromName: fromC.displayName,
@@ -145,6 +161,8 @@ export function createDrizzleRelationshipRepository(
 					description.otherContactId === row.fromContactId ? row.fromName : row.toName;
 				return {
 					id: row.id,
+					sinceDate: row.sinceDate,
+					status: toStatus(row.status),
 					otherContactId: description.otherContactId,
 					otherDisplayName,
 					label: description.label,
