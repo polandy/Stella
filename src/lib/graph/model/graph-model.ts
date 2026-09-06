@@ -28,6 +28,17 @@ function dedupeById<T extends { id: string }>(items: T[]): T[] {
 	return out;
 }
 
+/**
+ * The model stripped of derived links (docs/02 §2.7). A derived edge is a *name for a chain
+ * that already exists* — "Cousin" restates a route through the shared grandparent. Letting a
+ * connection path travel one would answer "how do we know each other?" with the label instead
+ * of the chain, so path finding searches this projection. Nodes are kept: a person is not
+ * removed just because their only line was an inferred one.
+ */
+export function withoutDerivedLinks(model: GraphModel): GraphModel {
+	return { nodes: [...model.nodes], edges: model.edges.filter((e) => !e.derived) };
+}
+
 /** Undirected adjacency: node id → set of directly connected node ids. */
 function adjacency(edges: GraphEdge[]): Map<string, Set<string>> {
 	const adj = new Map<string, Set<string>>();
