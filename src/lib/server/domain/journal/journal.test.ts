@@ -70,9 +70,9 @@ function fakeRepo(seed: JournalEntry[] = []) {
 		},
 		async deleteOwn(p: { authorId: string; id: string }) {
 			const i = rows.findIndex((r) => r.id === p.id && r.createdBy === p.authorId);
-			if (i < 0) return false;
+			if (i < 0) return null;
 			rows.splice(i, 1);
-			return true;
+			return [];
 		},
 		async replaceMentions(journalEntryId: string, contactIds: string[]) {
 			mentions.set(journalEntryId, [...contactIds]);
@@ -84,11 +84,21 @@ function fakeRepo(seed: JournalEntry[] = []) {
 	return repo;
 }
 
-function deps(repo = fakeRepo()): JournalDeps & { repo: ReturnType<typeof fakeRepo> } {
+function deps(repo = fakeRepo()): JournalDeps & {
+	repo: ReturnType<typeof fakeRepo>;
+	removedFiles: string[];
+} {
 	let seq = 0;
+	const removedFiles: string[] = [];
 	return {
 		repo,
+		removedFiles,
 		journal: repo,
+		media: {
+			delete: async (path: string) => {
+				removedFiles.push(path);
+			}
+		},
 		ids: { next: () => `id-${++seq}` },
 		clock: { now: () => 1000 }
 	};

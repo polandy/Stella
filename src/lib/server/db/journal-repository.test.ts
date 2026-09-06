@@ -186,11 +186,27 @@ describe('journal repository + upsert', () => {
 		expect(await repo.listMentionedContactIds(id)).toEqual([]);
 	});
 
+	it('deleteOwn takes the entry’s photos with it, and hands back their files', async () => {
+		// `photo.journal_entry_id` was added by a migration that never carried the cascade
+		// `schema.ts` declares, so the database refuses the delete instead: the rows go
+		// explicitly, and their bytes come back so the caller can unlink them.
+		const repo = createDrizzleJournalRepository(db);
+		const id = await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: '2026-07-11', body: 'with a picture' });
+		db.insert(schema.photo)
+			.values({ id: 'p-1', householdId: H, journalEntryId: id, createdBy: U1, filePath: 'j.jpg', thumbPath: 'j-t.jpg', mime: 'image/jpeg' })
+			.run();
+
+		expect(await repo.deleteOwn({ authorId: U1, id })).toEqual([
+			{ filePath: 'j.jpg', thumbPath: 'j-t.jpg' }
+		]);
+		expect(db.select().from(schema.photo).all()).toHaveLength(0);
+	});
+
 	it('deleteOwn removes only the author’s own entry', async () => {
 		const repo = createDrizzleJournalRepository(db);
 		const id = await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: '2026-07-11', body: 'mine' });
-		expect(await repo.deleteOwn({ authorId: U2, id })).toBe(false); // not U2's
-		expect(await repo.deleteOwn({ authorId: U1, id })).toBe(true);
+		expect(await repo.deleteOwn({ authorId: U2, id })).toBeNull(); // not U2's
+		expect(await repo.deleteOwn({ authorId: U1, id })).toEqual([]);
 		expect(await listJournalForContact(deps(), viewerU1, 'kid')).toHaveLength(0);
 	});
 });

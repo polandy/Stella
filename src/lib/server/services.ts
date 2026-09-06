@@ -204,7 +204,7 @@ export function getJournal(): JournalRepository {
 }
 
 export function getJournalDeps(): JournalDeps {
-	return { journal: getJournal(), ids: ulidGenerator, clock: systemClock };
+	return { journal: getJournal(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
 }
 
 
