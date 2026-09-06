@@ -16,6 +16,7 @@ import {
 import {
 	archiveContact,
 	deleteContact,
+	mergeContacts,
 	editProfile,
 	EMPTY_CONTACT_NAME_MESSAGE,
 	EmptyContactNameError,
@@ -349,6 +350,24 @@ export const actions: Actions = {
 			throw err;
 		}
 
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/*
+	 * Merging a duplicate into this person (docs/02 §2.2). Admin only for the same reason as
+	 * deleting: it ends a record, and there is no way back.
+	 */
+	merge: async ({ request, params, locals }) => {
+		const user = requireAdmin(locals);
+		const viewer = { id: user.id, householdId: user.householdId };
+		const parsed = v.safeParse(
+			v.object({ mergedId: v.pipe(v.string(), v.minLength(1)) }),
+			Object.fromEntries(await request.formData())
+		);
+		if (!parsed.success) return fail(400, { mergeError: 'Choose who to merge in.' });
+
+		const merged = await mergeContacts(getContactDeps(), viewer, params.id, parsed.output.mergedId);
+		if (!merged) return fail(400, { mergeError: 'That person could not be merged in.' });
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 

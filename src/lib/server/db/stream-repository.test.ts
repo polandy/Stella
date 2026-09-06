@@ -159,13 +159,19 @@ describe('recentPeople', () => {
 
 describe('recentRemovals', () => {
 	/** A logged deletion, the only stream source whose subject no longer exists. */
-	function logRemoval(id: string, at: number, actorId: string, visibility: 'shared' | 'private') {
+	function logRemoval(
+		id: string,
+		at: number,
+		actorId: string,
+		visibility: 'shared' | 'private',
+		action: 'delete' | 'merge' = 'delete'
+	) {
 		db.insert(schema.activityLog)
 			.values({
 				id,
 				householdId: H,
 				actorId,
-				action: 'delete',
+				action,
 				entityType: 'contact',
 				entityId: `c-${id}`,
 				contactId: null,
@@ -183,6 +189,12 @@ describe('recentRemovals', () => {
 		const rows = await repo.recentRemovals(asU2, 10);
 		expect(rows.map((r) => r.id)).toEqual(['newer', 'older']);
 		expect(rows[0]).toMatchObject({ actor: { id: U1, name: 'One' }, summary: 'removed Person newer' });
+	});
+
+	it('reports a merge too — a name stops existing either way', async () => {
+		logRemoval('merged', 100, U1, 'shared', 'merge');
+
+		expect((await repo.recentRemovals(asU2, 10)).map((r) => r.id)).toEqual(['merged']);
 	});
 
 	it('keeps a private person private, even in the record of their deletion', async () => {

@@ -72,7 +72,10 @@ export interface InteractionRow {
 	participants: StreamPerson[];
 }
 
-/** A person the household removed for good (docs/02 §2.2); read from the activity log. */
+/**
+ * A name that stopped existing — deleted outright, or merged into someone else (docs/02
+ * §2.2). Read from the activity log, because no table can report it any more.
+ */
 export interface RemovalRow {
 	id: string;
 	at: number;
@@ -93,7 +96,7 @@ export interface StreamRepository {
 	recentPeople(viewer: Viewer, limit: number): Promise<PersonRow[]>;
 	recentRelationships(viewer: Viewer, limit: number): Promise<RelationshipRow[]>;
 	recentInteractions(viewer: Viewer, limit: number): Promise<InteractionRow[]>;
-	/** The one thing the other four reads cannot see, because its rows are gone. */
+	/** The one thing the other four reads cannot see, because those rows are gone. */
 	recentRemovals(viewer: Viewer, limit: number): Promise<RemovalRow[]>;
 }
 
