@@ -248,6 +248,11 @@ They must be edited together; `app.css` says so at both blocks.
   and the person it opens read as one place; the shell skips it under
   `prefers-reduced-motion` and in browsers without the API. No skeleton loaders: pages are
   server-rendered from a local SQLite file and there is no in-between state to draw.
+- **Archiving** (docs/02 §2.2) sits at the foot of the person's profile column, a ghost
+  button with one line saying what it does — never beside *Write*, which is the thing people
+  came for. An archived person carries a quiet *Archived* chip in their header beside
+  *Private*, and the directory grows an **Archived (N)** chip at the end of the tag row,
+  leading to the same list with the "last written about" column dropped.
 - *(No reminders screen.)* Upcoming dates live in the **Coming up** band on Home, and the
   dates themselves are edited in the **Dates** section of a person's page — kind, day,
   "year unknown", whether it repeats, and whether it shows on Home. A birthday derived from

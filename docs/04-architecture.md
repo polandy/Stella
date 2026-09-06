@@ -278,6 +278,15 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   cost is that a path can be longer than the drawn graph suggests; the drawn line is still
   there, and selecting it names the relationship.
 
+- **Archiving hides from browsing, not from the graph** — `archived_at` could have been
+  folded into `contactVisibleTo`, one line in the one place every read already goes through.
+  It is a separate condition (`contactBrowsableBy`) applied at six listing surfaces instead,
+  because the kinship engine infers *through* people: archive the grandmother and her two
+  children no longer share a visible parent, so Stella would stop calling them siblings —
+  not saying less, but saying something untrue. The cost is that a new listing read has to
+  remember which of the two conditions it wants; the graph test pins the distinction so the
+  six cannot quietly become seven.
+
 - **A custom relationship type's key is derived, and the kinship keys are reserved** — the
   household types a label; `relationshipTypeKey` slugs it. Letting a key be typed would let a
   household mint `parent_child`, `sibling`, `partner` or `spouse`, which `kinship-graph-read`

@@ -60,6 +60,15 @@ behalf. If it isn't the moment for that, dismiss it; nothing is lost.
 top that matches as you type — by any name, nickname or the description you gave them. On
 the right of each row is when something was last written about that person.
 
+**Putting someone out of the way.** Not everyone in the list stays part of your life — the
+neighbour from two flats ago, the colleague from a job you left. At the foot of their page,
+*Archive this person* takes them out of the directory, out of the search, and out of Home's
+reminders, so they stop coming up. Nothing is deleted: their page, their story and their
+photos stay exactly as they were, and the family map still knows them — which matters,
+because Stella works out grandparents and cousins *through* people, and forgetting one would
+make it name the rest wrongly. The archived people live behind the **Archived** chip above
+the list, and the same button on their page brings them back.
+
 **Adding someone** takes a name and nothing else. Everything beyond that — description,
 phone, email, address, birthday — is optional and can be filled in whenever.
 
