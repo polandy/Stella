@@ -537,8 +537,8 @@ Contact visibility is the root: a `private` contact is visible only to its creat
 shared contact. Relationships require **both** endpoints visible. A **circle** follows the
 same contact-like rule (shared to the household, or private to its owner); a
 **circle_membership** — and any derived shared-context link — is visible only when both
-its circle and the member contact are visible. A **journal_mention** (and the passive
-"Mentioned in" item it drives) is visible only when its parent `journal_entry` is visible to
+its circle and the member contact are visible. A **journal_mention** or **note_mention** (and the
+passive "Mentioned in" item it drives) is visible only when its parent entry is visible to
 the viewer (child-record rule — a private entry ⇒ only its author) **and** the referenced
 contact is visible; a **shared** entry may reference only household-visible contacts, so a
 mention never widens access nor reveals a `private` contact's existence. Admins gain no special
