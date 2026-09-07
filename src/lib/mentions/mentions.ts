@@ -123,3 +123,12 @@ export function segmentMentions(body: string): MentionSegment[] {
 	if (last < body.length) segments.push({ type: 'text', value: body.slice(last) });
 	return segments;
 }
+
+/**
+ * The people a body references other than the one it is about (docs/02 §2.20.1). Naming the
+ * person whose note or journal entry this is says nothing new — they are its subject, not a
+ * passive reference — so that id never becomes a link.
+ */
+export function mentionsOtherThan(ids: readonly string[], subjectContactId: string): string[] {
+	return ids.filter((id) => id !== subjectContactId);
+}

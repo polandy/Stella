@@ -1,4 +1,5 @@
 import type { Visibility, Viewer } from '../../access/visibility';
+import { allowedForAudience } from '../../../mentions/audience';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import {
@@ -70,9 +71,12 @@ export function audienceCandidates(
 	contacts: ContactSummary[],
 	visibility: Visibility
 ): MentionCandidate[] {
-	return (visibility === 'shared' ? contacts.filter((c) => c.visibility === 'shared') : contacts).map(
-		(c) => ({ id: c.id, firstName: c.firstName, lastName: c.lastName, displayName: c.displayName })
-	);
+	return allowedForAudience(contacts, visibility).map((c) => ({
+		id: c.id,
+		firstName: c.firstName,
+		lastName: c.lastName,
+		displayName: c.displayName
+	}));
 }
 
 /**

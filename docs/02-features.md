@@ -795,7 +795,10 @@ on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s jou
   parser, id-resolver, and chip renderer are shared between notes and journal rather than
   duplicated. Framework-agnostic domain module, test-first (`docs/08` §8.3). The `@`-picker is
   one component too (`MentionTextarea`, `docs/05` §5.7) — the moment composer keeps its own
-  because only a moment may create a person on the fly.
+  because only a moment may create a person on the fly. The two rules that decide *whom* a text
+  may name live there as well, so the browser and the server never drift: the audience rule
+  above (`allowedForAudience`) and the subject rule (`mentionsOtherThan`), which keeps the
+  person a note or entry is about from being a passive reference to themselves.
 - **Search follows the name, not the token.** Because the body stores an id, the search index
   carries the mentioned people's current display names in the token's place, so a note that
   says only "walked home with @Sandra" is still found by *Sandra* — and renaming her moves the

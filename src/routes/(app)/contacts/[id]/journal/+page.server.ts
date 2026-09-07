@@ -11,7 +11,7 @@ import {
 } from '$lib/server/domain/journal/journal';
 import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
-import { createHandleResolver, resolveMentions } from '$lib/mentions/mentions';
+import { createHandleResolver, mentionsOtherThan, resolveMentions } from '$lib/mentions/mentions';
 import { audienceCandidates } from '$lib/server/domain/moments/moments';
 import {
 	getContactDeps,
@@ -145,7 +145,7 @@ export const actions: Actions = {
 		await setJournalMentions(
 			getJournalDeps(),
 			entryId,
-			resolved.ids.filter((id) => id !== params.id)
+			mentionsOtherThan(resolved.ids, params.id)
 		);
 
 		// Attach any browser-processed photos (parallel image/thumb/width/height arrays), inheriting

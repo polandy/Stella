@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Avatar from '$lib/components/Avatar.svelte';
+	import { allowedForAudience } from '$lib/mentions/audience';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
 	import { tick } from 'svelte';
 
@@ -47,7 +48,7 @@
 	let selected = $state(0);
 
 	const audience = $derived(
-		visibility === 'shared' ? candidates.filter((c) => c.visibility === 'shared') : candidates
+		allowedForAudience(candidates, visibility)
 	);
 	const people = $derived(active ? suggest(active.query, audience).people : []);
 
@@ -111,7 +112,8 @@
 			class="absolute left-2 top-full z-10 -mt-1 w-[min(320px,calc(100%-1rem))] rounded-app border border-border bg-card p-1 shadow-pop"
 		>
 			{#each people as person, i (person.id)}
-				<li>
+				<!-- The li is only the list's own markup: a listbox may contain options, not items. -->
+				<li role="none">
 					<button
 						type="button"
 						role="option"

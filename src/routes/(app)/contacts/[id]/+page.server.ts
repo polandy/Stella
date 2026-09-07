@@ -56,7 +56,7 @@ import {
 } from '$lib/server/domain/media/gallery';
 import { addGalleryPhoto } from '$lib/server/domain/media/gallery-upload';
 import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
-import { createHandleResolver, resolveMentions } from '$lib/mentions/mentions';
+import { createHandleResolver, mentionsOtherThan, resolveMentions } from '$lib/mentions/mentions';
 import { audienceCandidates } from '$lib/server/domain/moments/moments';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { createNote, listNotesForContact, setNoteMentions } from '$lib/server/domain/notes/notes';
@@ -588,7 +588,7 @@ export const actions: Actions = {
 
 		// Persist the reverse links, dropping a reference to the person whose note this is:
 		// a note on Sandra that names Sandra is not a passive mention (docs/02 §2.20.1).
-		await setNoteMentions(getNoteDeps(), noteId, resolved.ids.filter((id) => id !== params.id));
+		await setNoteMentions(getNoteDeps(), noteId, mentionsOtherThan(resolved.ids, params.id));
 
 		throw redirect(303, `/contacts/${params.id}`);
 	},
