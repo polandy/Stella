@@ -161,6 +161,19 @@ test('marks a private entry as private in the list of the person it names', asyn
 	await expect(secret).toContainText('private');
 	// The positive control: the shared entry beside it carries no such mark.
 	await expect(references(page).filter({ hasText: ENTRY_MARKER })).not.toContainText('private');
+
+	/*
+	 * Measured rather than read off the markup (docs/05 §5.5): the day ends the row, and the
+	 * private mark must not push it off that edge. Both boxes are laid out by the time the
+	 * assertions above have passed, so there is nothing to wait for.
+	 */
+	const day = secret.locator('span').filter({ hasText: /\d/ }).last();
+	const mark = secret.getByText('private');
+	const dayBox = await day.boundingBox();
+	const markBox = await mark.boundingBox();
+	expect(dayBox).not.toBeNull();
+	expect(markBox).not.toBeNull();
+	expect(dayBox!.x).toBeGreaterThan(markBox!.x);
 });
 
 test('has something to show on a freshly seeded household', async ({ page }) => {
