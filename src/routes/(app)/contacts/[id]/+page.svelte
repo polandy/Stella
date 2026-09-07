@@ -16,6 +16,7 @@
 	import { savedEnhance } from '$lib/undo/saved';
 	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
 	import { dayLabel } from '$lib/dates/labels';
+	import { requestedTab, type ContactTab } from '$lib/contacts/tabs';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
@@ -38,18 +39,26 @@
 	const INPUT =
 		'rounded-control border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
 
-	type Tab = 'story' | 'people' | 'notes' | 'photos';
 	// Arriving with `?relate=` (a moment's hint, or quick-add's "link as relative") lands
 	// straight on the relationship editor, prefilled — otherwise the hint would be a dead end.
 	// `?propose=` comes back from adding a link and carries its implied ones, which live in
 	// the same tab; both would be invisible under the story otherwise.
-	const TABS: readonly Tab[] = ['story', 'people', 'notes', 'photos'];
-	const requestedTab = (value: string | null): Tab | null =>
-		TABS.find((name) => name === value) ?? null;
-	let tab = $state<Tab>(
-		untrack(() => requestedTab(data.tab)) ??
-			(untrack(() => data.relateTo || data.proposeFor) ? 'people' : 'story')
-	);
+	const askedForTab = (): ContactTab =>
+		requestedTab(data.tab) ?? (data.relateTo || data.proposeFor ? 'people' : 'story');
+	let tab = $state<ContactTab>(untrack(askedForTab));
+	/*
+	 * Walking from one person to another reuses this component, so the open tab has to follow
+	 * the page rather than stay where the previous person left it — a link may ask for a tab
+	 * (a passive reference points at the one its entry lives on, docs/02 §2.20.1), and without
+	 * this it would arrive on whatever was open before.
+	 */
+	let shownPerson = untrack(() => data.contact.id);
+	$effect(() => {
+		const id = data.contact.id;
+		if (id === shownPerson) return;
+		shownPerson = id;
+		tab = untrack(askedForTab);
+	});
 	let relateOpen = $state(untrack(() => data.relateTo) !== null);
 	// The hero's "Log contact" opens the story section's form; the section owns the state.
 	let logOpen = $state(false);
@@ -59,11 +68,12 @@
 	 * Counts are shown where they are exact. The story is paged, so its tab carries no number
 	 * rather than one that quietly means "as much as we have fetched".
 	 */
-	const tabs: { id: Tab; label: string; count?: number }[] = $derived([
+	const tabs: { id: ContactTab; label: string; count?: number }[] = $derived([
 		{ id: 'story', label: 'Story' },
 		{ id: 'people', label: 'People', count: data.relationships.length },
 		{ id: 'notes', label: 'Notes', count: data.notes.length },
-		{ id: 'photos', label: 'Photos', count: data.gallery.length }
+		{ id: 'photos', label: 'Photos', count: data.gallery.length },
+		{ id: 'mentions', label: 'Mentioned in', count: data.mentionedIn.length }
 	]);
 
 	/*
@@ -948,6 +958,62 @@
 						</form>
 					{/snippet}
 				</Section>
+			</div>
+
+			<!--
+				Where somebody else names this person (docs/02 §2.20.1). Read-only: each item links
+				to the person whose note or journal it is, because that is where it is written and
+				edited. The list is already scoped to what this viewer may see.
+			-->
+			<div
+				id="panel-mentions"
+				role="tabpanel"
+				aria-labelledby="tab-mentions"
+				hidden={tab !== 'mentions'}
+			>
+				{#if data.mentionedIn.length > 0}
+					<ul class="flex flex-col gap-2" data-testid="mentioned-in">
+						{#each data.mentionedIn as reference (reference.kind + reference.entryId)}
+							<li>
+								<a
+									href={reference.href}
+									data-kind={reference.kind}
+									class="block rounded-control bg-bg-sunken p-3 transition-colors hover:bg-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+								>
+									<div class="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+										<Icon name={reference.kind === 'note' ? 'write' : 'journal'} size={13} />
+										<span class="text-fg-muted">
+											in <span class="font-medium text-fg">{reference.sourceName}</span>’s
+											{reference.kind === 'note' ? 'notes' : 'journal'}
+											{#if reference.author}· by {reference.author}{/if}
+										</span>
+										{#if reference.visibility === 'private'}
+											<span class="ml-auto inline-flex items-center gap-1 text-xs text-fg-subtle">
+												<Icon name="private" size={11} />private
+											</span>
+										{/if}
+										<span
+											class="text-xs text-fg-subtle"
+											class:ml-auto={reference.visibility !== 'private'}
+										>
+											{dayLabel(reference.day)}
+										</span>
+									</div>
+									{#if reference.title}
+										<p class="text-sm font-medium text-fg">{reference.title}</p>
+									{/if}
+									{#if reference.snippet}
+										<p class="text-sm text-fg-muted">{reference.snippet}</p>
+									{/if}
+								</a>
+							</li>
+						{/each}
+					</ul>
+				{:else}
+					<p class="text-sm text-fg-subtle">
+						Nobody has mentioned {c.displayName} anywhere else yet.
+					</p>
+				{/if}
 			</div>
 		</div>
 	</div>

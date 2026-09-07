@@ -129,6 +129,24 @@ describe('seedDemoData', () => {
 		expect(db.select().from(schema.household).all()).toHaveLength(1);
 	});
 
+	it('has people naming each other, so the demo shows a passive reference at all', () => {
+		seedDemoData(db);
+
+		const notes = db.select().from(schema.noteMention).all();
+		const entries = db.select().from(schema.journalMention).all();
+
+		// Both surfaces of the "Mentioned in" list need something to show (docs/02 §2.20.1).
+		expect(notes.length).toBeGreaterThan(0);
+		expect(entries.length).toBeGreaterThan(0);
+
+		// A stored mention is id-based, and points at somebody other than the entry's subject.
+		const bodies = db.select().from(schema.note).all().map((n) => n.body);
+		expect(bodies.some((b) => b.includes('@{contact:demo-c-'))).toBe(true);
+		expect(bodies.some((b) => b.includes('@{person:'))).toBe(false);
+		const subjects = new Map(db.select().from(schema.note).all().map((n) => [n.id, n.contactId]));
+		expect(notes.every((m) => subjects.get(m.noteId) !== m.contactId)).toBe(true);
+	});
+
 	it('attaches to an existing household and its admin instead of creating a demo one', () => {
 		db.insert(schema.household).values({ id: 'real-hh', name: 'Real' }).run();
 		db.insert(schema.user)

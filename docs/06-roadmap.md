@@ -81,7 +81,9 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
 - **@mentions** in notes → soft links — **shipped** (§2.5): notes go through the same picker,
   parser and chip as the journal, `note_mention` records who was named, and the search index
   follows the name rather than the stored id. The passive *"Mentioned in"* list on the
-  referenced person is still open, for notes and journal alike.
+  referenced person is shipped too (§2.20.1): a tab on their page listing every note and journal
+  entry elsewhere that names them, newest first, scoped so a reference never shows an entry the
+  viewer could not have read anyway.
 - **Data portability:** export/import archive; admin "Download backup" — **shipped** (§2.15):
   one `.tar` of `household.yaml` plus the images, arranged around people, everything referring
   to them by id, private records included and marked. *Restore from an archive* reads one back

@@ -1,6 +1,7 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { eq, like } from 'drizzle-orm';
 import type * as schema from './schema';
+import { extractMentionIds, mentionsOtherThan } from '../../mentions/mentions';
 import {
 	circle,
 	circleMembership,
@@ -10,7 +11,9 @@ import {
 	importantDate,
 	interaction,
 	journalEntry,
+	journalMention,
 	note,
+	noteMention,
 	relationship,
 	user
 } from './schema';
@@ -296,7 +299,7 @@ interface Note {
 }
 
 const NOTES: readonly Note[] = [
-	{ person: 'lena', title: 'Klavier-Vorspiel', body: 'Lena hat am Vorspiel der Musikschule *Für Elise* gespielt — hat super geklappt. Nächstes Ziel: ein vierhändiges Stück mit Mia.', pinned: true },
+	{ person: 'lena', title: 'Klavier-Vorspiel', body: 'Lena hat am Vorspiel der Musikschule *Für Elise* gespielt — hat super geklappt. Nächstes Ziel: ein vierhändiges Stück mit @{person:mia}.', pinned: true },
 	{ person: 'noah', title: 'Fussballsaison', body: 'Noah steht neu im Tor bei den Junioren E. Training jeweils Dienstag und Donnerstag, Heimspiele am Samstag auf dem Spitalacker.' },
 	{ person: 'thomas', title: 'Kennengelernt', body: 'Thomas und Markus kennen sich seit dem Zivildienst. Treffen sich regelmässig am FC-Training.' }
 ];
@@ -337,16 +340,16 @@ interface StorySeed {
 
 const STORY: readonly StorySeed[] = [
 	{ person: 'markus', daysAgo: 1, kind: 'call', text: 'Sunday call' },
-	{ person: 'markus', daysAgo: 2, text: 'Markus fixed the garden gate at last — with Noah holding the screws.' },
+	{ person: 'markus', daysAgo: 2, text: 'Markus fixed the garden gate at last — with @{person:noah} holding the screws.' },
 	{ person: 'hans', daysAgo: 8, text: 'Opa Hans told the story about the 1972 flood again, this time with the photo of the bridge.' },
 	{ person: 'hans', daysAgo: 30, kind: 'met', text: 'Lunch at the Bären' },
 	{ person: 'hans', daysAgo: 45, byMember: true, text: 'Hans sharpened every knife in the house and pretended it was nothing.' },
 	{ person: 'hans', daysAgo: 60, kind: 'call', text: 'Called about the roof' },
 	{ person: 'hans', daysAgo: 75, text: 'Hans found his old carpentry ledger from 1969. Every chair in the village is in it.' },
 	{ person: 'hans', daysAgo: 90, kind: 'video', byMember: true, text: 'Video call with the kids' },
-	{ person: 'hans', daysAgo: 110, byMember: true, text: 'Hans and Rosa danced in the kitchen. Nobody was supposed to see.' },
+	{ person: 'hans', daysAgo: 110, byMember: true, text: 'Hans and @{person:rosa} danced in the kitchen. Nobody was supposed to see.' },
 	{ person: 'hans', daysAgo: 130, kind: 'gift', text: 'Brought him the biography he mentioned' },
-	{ person: 'hans', daysAgo: 150, text: 'Hans taught Noah how to whittle a whistle. It even works.' },
+	{ person: 'hans', daysAgo: 150, text: 'Hans taught @{person:noah} how to whittle a whistle. It even works.' },
 	{ person: 'hans', daysAgo: 170, kind: 'letter', text: 'Postcard from the Engadin' },
 	{ person: 'hans', daysAgo: 190, text: 'Hans mended the sled runner the night before the first snow.' },
 	{ person: 'hans', daysAgo: 210, kind: 'met', text: 'Sunday roast at theirs' },
@@ -372,6 +375,18 @@ const dayBefore = (now: number, days: number) => new Date(now - days * DAY_MS).t
 const cid = (key: string) => `demo-c-${key}`;
 const circleId = (key: string) => `demo-circle-${key}`;
 const SYMMETRIC_TYPES = new Set(['sibling', 'spouse', 'partner', 'friend', 'colleague', 'neighbor', 'acquaintance', 'knows']);
+
+/*
+ * Seed texts name people by their key (`@{person:lena}`); the stored form is the id-based
+ * token the app itself writes (docs/02 §2.20.1), so the demo data goes through the same
+ * grammar the parser, the chip and the "Mentioned in" list read.
+ */
+const withMentions = (text: string) =>
+	text.replace(/@\{person:([a-z]+)\}/g, (_match, key: string) => `@{contact:${cid(key)}}`);
+
+/** The people a seeded body names, minus the person it is already about. */
+const mentionedBy = (row: { contactId: string; body: string }) =>
+	mentionsOtherThan(extractMentionIds(row.body), row.contactId);
 
 /**
  * Populate the database with the Brunner demo dataset. Idempotent via stable ids +
@@ -499,35 +514,39 @@ export function seedDemoData(db: BunSQLiteDatabase<typeof schema>): {
 		.onConflictDoNothing()
 		.run();
 
-	db.insert(note)
-		.values(
-			NOTES.map((n, i) => ({
-				id: `demo-note-${n.person}-${i}`,
-				contactId: cid(n.person),
-				createdBy: authorId,
-				title: n.title,
-				body: n.body,
-				isPinned: n.pinned ? 1 : 0
-			}))
-		)
-		.onConflictDoNothing()
-		.run();
+	const notes = NOTES.map((n, i) => ({
+		id: `demo-note-${n.person}-${i}`,
+		contactId: cid(n.person),
+		createdBy: authorId,
+		title: n.title,
+		body: withMentions(n.body),
+		isPinned: n.pinned ? 1 : 0
+	}));
+	db.insert(note).values(notes).onConflictDoNothing().run();
+	const noteMentions = notes.flatMap((n) =>
+		mentionedBy(n).map((contactId) => ({ noteId: n.id, contactId }))
+	);
+	if (noteMentions.length > 0) {
+		db.insert(noteMention).values(noteMentions).onConflictDoNothing().run();
+	}
 
-	db.insert(journalEntry)
-		.values(
-			STORY.filter((s) => s.kind === undefined).map((s, i) => ({
-				id: `demo-journal-${s.person}-${i}`,
-				contactId: cid(s.person),
-				createdBy: s.byMember ? memberId : authorId,
-				entryDate: dayBefore(now, s.daysAgo),
-				body: s.text,
-				// Dated when they happened, so the stream does not show a year of "just now".
-				createdAt: now - s.daysAgo * DAY_MS,
-				updatedAt: now - s.daysAgo * DAY_MS
-			}))
-		)
-		.onConflictDoNothing()
-		.run();
+	const entries = STORY.filter((s) => s.kind === undefined).map((s, i) => ({
+		id: `demo-journal-${s.person}-${i}`,
+		contactId: cid(s.person),
+		createdBy: s.byMember ? memberId : authorId,
+		entryDate: dayBefore(now, s.daysAgo),
+		body: withMentions(s.text),
+		// Dated when they happened, so the stream does not show a year of "just now".
+		createdAt: now - s.daysAgo * DAY_MS,
+		updatedAt: now - s.daysAgo * DAY_MS
+	}));
+	db.insert(journalEntry).values(entries).onConflictDoNothing().run();
+	const journalMentions = entries.flatMap((e) =>
+		mentionedBy(e).map((contactId) => ({ journalEntryId: e.id, contactId }))
+	);
+	if (journalMentions.length > 0) {
+		db.insert(journalMention).values(journalMentions).onConflictDoNothing().run();
+	}
 
 	db.insert(interaction)
 		.values(
