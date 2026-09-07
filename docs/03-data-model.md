@@ -309,7 +309,9 @@ FTS: `title, body` indexed (3.5).
 | pk (note_id, contact_id) | | |
 
 Rebuilt from the body every time the note is written (§2.20.1); never carries the note's own
-contact, which is the subject rather than a mention.
+contact, which is the subject rather than a mention. Read in reverse for the "Mentioned in"
+list, exactly like `journal_mention` — where a journal entry has `entry_date` to be dated by,
+a note has only `created_at`, so the list dates it by the day it was written (UTC).
 
 ### journal_entry  [M2]
 Per-person diary (§2.20). Distinct from `note`: a note is a reference fact, a journal entry
@@ -535,8 +537,8 @@ Contact visibility is the root: a `private` contact is visible only to its creat
 shared contact. Relationships require **both** endpoints visible. A **circle** follows the
 same contact-like rule (shared to the household, or private to its owner); a
 **circle_membership** — and any derived shared-context link — is visible only when both
-its circle and the member contact are visible. A **journal_mention** (and the passive
-"Mentioned in" item it drives) is visible only when its parent `journal_entry` is visible to
+its circle and the member contact are visible. A **journal_mention** or **note_mention** (and the
+passive "Mentioned in" item it drives) is visible only when its parent entry is visible to
 the viewer (child-record rule — a private entry ⇒ only its author) **and** the referenced
 contact is visible; a **shared** entry may reference only household-visible contacts, so a
 mention never widens access nor reveals a `private` contact's existence. Admins gain no special

@@ -24,6 +24,7 @@ import { createDrizzleContactFieldRepository } from './db/contact-field-reposito
 import { createDrizzleImportantDateRepository } from './db/important-date-repository';
 import { createDrizzleImportRepository } from './db/import-repository';
 import { createDrizzleInteractionRepository } from './db/interaction-repository';
+import { createDrizzleMentionedInRepository } from './db/mentioned-in-repository';
 import { createDrizzleNoteRepository } from './db/note-repository';
 import { createDrizzlePhotoRepository } from './db/photo-repository';
 import { createFileMediaStore } from './media/file-store';
@@ -35,6 +36,7 @@ import { createDrizzleRelationshipRepository } from './db/relationship-repositor
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
 import type { MemberDeps, MemberRepository } from './domain/household/members';
+import type { MentionedInDeps, MentionedInRepository } from './domain/mentions/mentioned-in';
 import { createDrizzleMemberRepository } from './db/member-repository';
 import { createDrizzleTagRepository } from './db/tag-repository';
 import type {
@@ -255,6 +257,17 @@ export function getImportDeps(): ImportDeps {
 		importer: (importRepository ??= createDrizzleImportRepository(getDb())),
 		clock: systemClock
 	};
+}
+
+let mentionedInRepository: MentionedInRepository | null = null;
+
+export function getMentionedIn(): MentionedInRepository {
+	return (mentionedInRepository ??= createDrizzleMentionedInRepository(getDb()));
+}
+
+/** The passive "Mentioned in" list only reads, so it needs no clock or ids either. */
+export function getMentionedInDeps(): MentionedInDeps {
+	return { mentions: getMentionedIn() };
 }
 
 /** The story timeline reads both sources; it writes nothing, so it needs no clock or ids. */

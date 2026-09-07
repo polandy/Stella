@@ -203,7 +203,7 @@ They must be edited together; `app.css` says so at both blocks.
   - **Profile column** (`19rem`, sticky from `lg`): Contact fields, Dates (§2.13.1), Circles,
     Tags, How we met. Each is a card with **one** disclosure — `+ Add` reveals its form and
     nothing else is open. A form that failed validation opens itself, so the error has a home.
-  - **Right column:** tabs *Story · People · Notes · Photos*. **Story** is the merged timeline of
+  - **Right column:** tabs *Story · People · Notes · Photos · Mentioned in*. **Story** is the merged timeline of
     §2.23 — journal entries and touchpoints in one order, a rail with a dot per item coloured
     by kind, the author's name beside the kind (*you* on your own items), *Show earlier* paging
     back through both sources. **People** lists the
@@ -215,7 +215,12 @@ They must be edited together; `app.css` says so at both blocks.
     *via* clause keep an inference visually distinct from something the household typed.
     After a link is added, an **Also true?** panel sits above them with what it implies, one
     *Add this too* per line: a suggestion is a sentence with a button, never a checkbox list
-    that could be swept in with one click. **Notes** are pinned-first. **Photos**
+    that could be swept in with one click. **Notes** are pinned-first. **Mentioned in**
+    (§2.20.1) is the passive side: one flat list of the notes and journal entries *elsewhere*
+    that name this person, newest first, each row a single link — the source icon, *in <person>’s
+    journal · by <author>*, the day on the right, and a one-line preview underneath. The whole
+    row is the link, because the only thing to do with a passive item is go to where it is
+    written; nothing here is editable, so there is no button to mistake for one. **Photos**
     (§2.14) is a square grid at three columns, four from `sm`, with a lock badge on a private
     one; a photo opens into a **lightbox** — a solid card over a blurred, dimmed backdrop that
     closes on click, with the caption above the picture and the actions in one row beneath it.
@@ -224,6 +229,9 @@ They must be edited together; `app.css` says so at both blocks.
   - Below `lg` the two columns stack **story first**: the story is what the page is opened for,
     and the profile follows underneath.
   - Counts sit on a tab only where they are exact; the story is paged, so it carries none.
+  - Walking from one person to another keeps the page but not the tab: the open tab is whatever
+    the new page asks for (`?tab=`) and otherwise the story, so a link that points at a tab —
+    a passive reference does — arrives where it meant to rather than on whatever was open.
 - **Add a person** — one card: first and last name, description, how and where you met,
   visibility. Nickname and birthday sit behind a *More* disclosure; everything else waits
   for the person's page. The heading says so: *a name is enough*. Once a surname is typed,
