@@ -20,6 +20,18 @@ import { buildArchiveDocument, type ArchiveDocument } from './document';
 /** The one text file in the archive; everything else beside it is an image. */
 export const DOCUMENT_ENTRY = 'household.yaml';
 
+/** Two spaces per level, the way YAML is usually read. */
+const YAML_INDENT = 2;
+
+/**
+ * The document as the text file the archive carries. Indented block style, not the flow style
+ * `Bun.YAML.stringify` writes by default — a 23 KB single line is valid YAML and useless to the
+ * person this file is for.
+ */
+export function serialiseDocument(document: ArchiveDocument): string {
+	return Bun.YAML.stringify(document, null, YAML_INDENT);
+}
+
 export const MEDIA_PREFIX = 'media/';
 
 /** A media path the archive refuses to carry. */

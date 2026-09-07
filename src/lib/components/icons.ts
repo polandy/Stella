@@ -1,4 +1,5 @@
 import {
+	Upload,
 	Archive,
 	Blend,
 	BookOpen,
@@ -49,6 +50,7 @@ export const ICONS = {
 	search: Search,
 	settings: Settings,
 	import: Download,
+	export: Upload,
 	forward: ChevronRight,
 	// Actions
 	add: Plus,

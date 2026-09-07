@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { HouseholdSnapshot } from './archive';
+import { serialiseDocument, type HouseholdSnapshot } from './archive';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION, buildArchiveDocument } from './document';
 
 /*
@@ -189,8 +189,11 @@ describe('two people with the same name', () => {
 describe('written out as YAML', () => {
 	it('parses back to the same document, so another program reads what we meant', () => {
 		const original = doc();
-		const text = Bun.YAML.stringify(original);
+		const text = serialiseDocument(original);
 		expect(text).toContain('format: stella-archive');
+		// Block style, one thing per line: the file is meant to be read, not just parsed.
+		expect(text.split('\n').length).toBeGreaterThan(50);
+		expect(text).toMatch(/\n  - /);
 		expect(JSON.parse(JSON.stringify(Bun.YAML.parse(text)))).toEqual(
 			JSON.parse(JSON.stringify(original))
 		);
@@ -212,7 +215,7 @@ describe('written out as YAML', () => {
 			},
 			mediaPaths: []
 		};
-		const back = Bun.YAML.parse(Bun.YAML.stringify(buildArchiveDocument(awkward, NOW))) as {
+		const back = Bun.YAML.parse(serialiseDocument(buildArchiveDocument(awkward, NOW))) as {
 			people: Record<string, unknown>[];
 		};
 		expect(back.people[0].display_name).toBe('Étienne "Le Chef" Müller');

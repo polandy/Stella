@@ -22,6 +22,16 @@
 				</span>
 				<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
 			</a>
+			<form method="POST" action="/settings/export" class="contents">
+				<button type="submit" class="flex w-full items-center gap-4 rounded-app bg-card p-4 text-left shadow-card transition-colors hover:bg-card-hover">
+					<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="export" size={18} /></span>
+					<span class="min-w-0 flex-1">
+						<span class="block font-medium text-fg">Download the archive</span>
+						<span class="block text-sm text-fg-muted">Everything the household has, as one readable text file with the photos beside it — yours to keep, and to read with anything.</span>
+					</span>
+					<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
+				</button>
+			</form>
 			<a href="/settings/relationship-types" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
 				<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="people" size={18} /></span>
 				<span class="min-w-0 flex-1">
