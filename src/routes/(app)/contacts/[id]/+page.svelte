@@ -46,10 +46,22 @@
 	const TABS: readonly Tab[] = ['story', 'people', 'notes', 'photos', 'mentions'];
 	const requestedTab = (value: string | null): Tab | null =>
 		TABS.find((name) => name === value) ?? null;
-	let tab = $state<Tab>(
-		untrack(() => requestedTab(data.tab)) ??
-			(untrack(() => data.relateTo || data.proposeFor) ? 'people' : 'story')
-	);
+	const askedForTab = (): Tab =>
+		requestedTab(data.tab) ?? (data.relateTo || data.proposeFor ? 'people' : 'story');
+	let tab = $state<Tab>(untrack(askedForTab));
+	/*
+	 * Walking from one person to another reuses this component, so the open tab has to follow
+	 * the page rather than stay where the previous person left it — a link may ask for a tab
+	 * (a passive reference points at the one its entry lives on, docs/02 §2.20.1), and without
+	 * this it would arrive on whatever was open before.
+	 */
+	let shownPerson = untrack(() => data.contact.id);
+	$effect(() => {
+		const id = data.contact.id;
+		if (id === shownPerson) return;
+		shownPerson = id;
+		tab = untrack(askedForTab);
+	});
 	let relateOpen = $state(untrack(() => data.relateTo) !== null);
 	// The hero's "Log contact" opens the story section's form; the section owns the state.
 	let logOpen = $state(false);

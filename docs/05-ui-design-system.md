@@ -229,6 +229,9 @@ They must be edited together; `app.css` says so at both blocks.
   - Below `lg` the two columns stack **story first**: the story is what the page is opened for,
     and the profile follows underneath.
   - Counts sit on a tab only where they are exact; the story is paged, so it carries none.
+  - Walking from one person to another keeps the page but not the tab: the open tab is whatever
+    the new page asks for (`?tab=`) and otherwise the story, so a link that points at a tab —
+    a passive reference does — arrives where it meant to rather than on whatever was open.
 - **Add a person** — one card: first and last name, description, how and where you met,
   visibility. Nickname and birthday sit behind a *More* disclosure; everything else waits
   for the person's page. The heading says so: *a name is enough*. Once a surname is typed,
