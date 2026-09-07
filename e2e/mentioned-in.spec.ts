@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { appReady, openPerson, signIn } from './app';
+import { dayLabel } from '../src/lib/dates/labels';
 
 /*
  * The passive side of an @-mention (docs/02 §2.20.1): the list on the person who was named.
@@ -118,6 +119,10 @@ test('puts a note on the page of the person it names, not of the person it is ab
 	await expect(references(page, 'note')).toContainText('by you');
 	// The preview reads the stored token as her current name, not as `@{contact:…}`.
 	await expect(references(page, 'note')).toContainText(`${NOTE_MARKER} mit @${NAMED}`);
+	// A note is dated by the day it was written, which is today for one written just now.
+	await expect(references(page, 'note')).toContainText(
+		dayLabel(new Date().toISOString().slice(0, 10))
+	);
 });
 
 test('reads a journal entry into the same list, from the same person', async ({ page }) => {
