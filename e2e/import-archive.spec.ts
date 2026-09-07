@@ -76,7 +76,9 @@ test('takes an archive while the person, their note and their photo are still he
 	await expect(page.locator('#panel-photos img').first()).toBeVisible();
 
 	archive = await takeArchive(page);
-	expect(archive.toString('latin1')).toContain(NOTE);
+	// Read as UTF-8, not byte-for-byte: the document is UTF-8 inside the tar, and "Frühling"
+	// is two bytes that a latin1 reading would show as two characters.
+	expect(archive.toString('utf8')).toContain(NOTE);
 });
 
 test('brings back a person who was deleted, with what was written about them', async ({ page }) => {
