@@ -11,7 +11,7 @@ import {
 } from '$lib/server/domain/journal/journal';
 import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
-import { createHandleResolver, resolveMentions } from '$lib/mentions/mentions';
+import { createHandleResolver, mentionsOtherThan, resolveMentions } from '$lib/mentions/mentions';
 import { audienceCandidates } from '$lib/server/domain/moments/moments';
 import {
 	getContactDeps,
@@ -60,6 +60,17 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	return {
 		contact: { id: contact.id, displayName: contact.displayName, avatarPhotoId: contact.avatarPhotoId },
 		today: today(),
+		// People the @-picker may offer, minus the person whose journal this is: naming them
+		// here is not a mention, it is the entry's own subject (docs/02 §2.20.1).
+		candidates: allContacts
+			.filter((c) => c.id !== params.id)
+			.map((c) => ({
+				id: c.id,
+				displayName: c.displayName,
+				firstName: c.firstName,
+				lastName: c.lastName,
+				visibility: c.visibility
+			})),
 		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5, §2.20.1)
 		entries: entries.map((e) => ({
 			id: e.id,
@@ -134,7 +145,7 @@ export const actions: Actions = {
 		await setJournalMentions(
 			getJournalDeps(),
 			entryId,
-			resolved.ids.filter((id) => id !== params.id)
+			mentionsOtherThan(resolved.ids, params.id)
 		);
 
 		// Attach any browser-processed photos (parallel image/thumb/width/height arrays), inheriting

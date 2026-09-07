@@ -32,6 +32,10 @@ export interface NoteRepository {
 	insert(note: NewNote): Promise<void>;
 	/** Notes on a contact the viewer may see, pinned first then newest. */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Note[]>;
+	/** Rebuild a note's @-mention links to exactly these contacts (docs/02 §2.20.1). */
+	replaceMentions(noteId: string, contactIds: string[]): Promise<void>;
+	/** The people a note references, for the reverse lookup. */
+	listMentionedContactIds(noteId: string): Promise<string[]>;
 }
 
 export interface NoteDeps {
@@ -87,4 +91,17 @@ export async function listNotesForContact(
 	contactId: string
 ): Promise<Note[]> {
 	return deps.notes.listForContactVisibleTo(viewer, contactId);
+}
+
+/**
+ * Point a note's @-mention links at exactly the people its body names (docs/02 §2.20.1). Called
+ * after the note is written, with the ids the shared resolver found; duplicates in the body
+ * collapse to one link.
+ */
+export async function setNoteMentions(
+	deps: Pick<NoteDeps, 'notes'>,
+	noteId: string,
+	contactIds: string[]
+): Promise<void> {
+	await deps.notes.replaceMentions(noteId, [...new Set(contactIds)]);
 }

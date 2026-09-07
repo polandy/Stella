@@ -56,8 +56,10 @@ import {
 } from '$lib/server/domain/media/gallery';
 import { addGalleryPhoto } from '$lib/server/domain/media/gallery-upload';
 import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
-import { renderMarkdown } from '$lib/server/domain/notes/markdown';
-import { createNote, listNotesForContact } from '$lib/server/domain/notes/notes';
+import { createHandleResolver, mentionsOtherThan, resolveMentions } from '$lib/mentions/mentions';
+import { audienceCandidates } from '$lib/server/domain/moments/moments';
+import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
+import { createNote, listNotesForContact, setNoteMentions } from '$lib/server/domain/notes/notes';
 import {
 	createRelationship,
 	DuplicateRelationshipError,
@@ -241,11 +243,11 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		// Which tab to open on. A form action redirects back with it, so acting on a photo
 		// does not throw the reader back to the story.
 		tab: url.searchParams.get('tab'),
-		// render Markdown server-side; the output is already safe (docs/02 §2.5)
+		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5)
 		notes: notes.map((note) => ({
 			id: note.id,
 			title: note.title,
-			bodyHtml: renderMarkdown(note.body),
+			bodyHtml: renderMarkdownWithMentions(note.body, nameOf),
 			isPinned: note.isPinned,
 			visibility: note.visibility,
 			createdAt: note.createdAt
@@ -565,16 +567,28 @@ export const actions: Actions = {
 			householdId: locals.user.householdId,
 			defaultVisibility: 'shared' as const // TODO: user default (settings, §2.16)
 		};
+		// Resolve @-mentions against the contacts allowed for this note's audience, so the stored
+		// body carries stable id-based tokens and we know who to link (docs/02 §2.20.1).
+		const resolver = createHandleResolver(
+			audienceCandidates(await listContacts(getContactDeps(), viewer), parsed.output.visibility)
+		);
+		const resolved = resolveMentions(parsed.output.body, resolver);
+
+		let noteId: string;
 		try {
-			await createNote(getNoteDeps(), creator, {
+			noteId = await createNote(getNoteDeps(), creator, {
 				contactId: params.id,
-				body: parsed.output.body,
+				body: resolved.body,
 				visibility: parsed.output.visibility,
 				isPinned: parsed.output.isPinned
 			});
 		} catch {
 			return fail(400, { noteError: 'Could not save the note.' });
 		}
+
+		// Persist the reverse links, dropping a reference to the person whose note this is:
+		// a note on Sandra that names Sandra is not a passive mention (docs/02 §2.20.1).
+		await setNoteMentions(getNoteDeps(), noteId, mentionsOtherThan(resolved.ids, params.id));
 
 		throw redirect(303, `/contacts/${params.id}`);
 	},

@@ -3,6 +3,7 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
 	import { processImage } from '$lib/image/process-image';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey as buildKey } from '$lib/undo/keys';
@@ -12,6 +13,9 @@
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	const c = $derived(data.contact);
+
+	// The entry's audience narrows whom the @-picker offers (docs/02 §2.20.1).
+	let entryVisibility = $state<'shared' | 'private'>('shared');
 
 	// Selected images for the entry being composed (processed in the browser on submit).
 	let picked = $state<File[]>([]);
@@ -149,13 +153,16 @@
 					/>
 				</label>
 			</div>
-			<textarea
+			<MentionTextarea
 				name="body"
-				rows="5"
+				label="Entry"
+				rows={5}
 				required
-				placeholder="What happened today? (Markdown supported)"
-				class="rounded-md border border-border bg-bg px-3 py-2 text-fg"
-			></textarea>
+				candidates={data.candidates}
+				visibility={entryVisibility}
+				placeholder="What happened today? (Markdown, @ to mention someone)"
+				class="w-full rounded-md border border-border bg-bg px-3 py-2 text-fg"
+			/>
 			<div class="flex flex-wrap items-center gap-3">
 				<label class="inline-flex cursor-pointer items-center gap-2 rounded-app border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg">
 					<Icon name="photo" size={15} /> Add photos
@@ -167,10 +174,10 @@
 			</div>
 			<div class="flex flex-wrap items-center gap-4 text-sm">
 				<label class="flex items-center gap-1.5">
-					<input type="radio" name="visibility" value="shared" checked /> Shared
+					<input type="radio" name="visibility" value="shared" bind:group={entryVisibility} /> Shared
 				</label>
 				<label class="flex items-center gap-1.5">
-					<input type="radio" name="visibility" value="private" /> Private — only you
+					<input type="radio" name="visibility" value="private" bind:group={entryVisibility} /> Private — only you
 				</label>
 				<Button variant="primary" disabled={uploading} class="ml-auto">
 					{uploading ? 'Saving…' : 'Save entry'}

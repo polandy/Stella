@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
+import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
@@ -9,7 +10,8 @@ import { createDrizzleNoteRepository } from './note-repository';
 
 /*
  * Integration spec for the Drizzle NoteRepository: child-record visibility scoping
- * (private notes and notes on private contacts) and pinned-first ordering (docs/03 §3.7).
+ * (private notes and notes on private contacts), pinned-first ordering (docs/03 §3.7), and the
+ * @-mention links a note carries (docs/02 §2.5, §2.20.1).
  */
 
 const H = 'household-1';
@@ -79,5 +81,37 @@ describe('createDrizzleNoteRepository', () => {
 		await repo.insert(note({ id: 'c', isPinned: false, createdAt: 200 }));
 		const list = await repo.listForContactVisibleTo(viewerU1, 'c-shared');
 		expect(list.map((n) => n.id)).toEqual(['b', 'c', 'a']);
+	});
+});
+
+describe('note mentions', () => {
+	it('stores the referenced people and reads them back', async () => {
+		await repo.insert(note({ id: 'n-1' }));
+		await repo.replaceMentions('n-1', ['c-priv', 'c-shared']);
+		expect((await repo.listMentionedContactIds('n-1')).sort()).toEqual(['c-priv', 'c-shared']);
+	});
+
+	it('replaces rather than adds, so an edited body drops the people it no longer names', async () => {
+		await repo.insert(note({ id: 'n-1' }));
+		await repo.replaceMentions('n-1', ['c-priv', 'c-shared']);
+		await repo.replaceMentions('n-1', ['c-shared']);
+		expect(await repo.listMentionedContactIds('n-1')).toEqual(['c-shared']);
+	});
+
+	it('leaves another note’s links alone', async () => {
+		await repo.insert(note({ id: 'n-1' }));
+		await repo.insert(note({ id: 'n-2' }));
+		await repo.replaceMentions('n-1', ['c-shared']);
+		await repo.replaceMentions('n-2', ['c-priv']);
+		await repo.replaceMentions('n-1', []);
+		expect(await repo.listMentionedContactIds('n-1')).toEqual([]);
+		expect(await repo.listMentionedContactIds('n-2')).toEqual(['c-priv']);
+	});
+
+	it('lets the links go with the note', async () => {
+		await repo.insert(note({ id: 'n-1' }));
+		await repo.replaceMentions('n-1', ['c-shared']);
+		db.delete(schema.note).where(eq(schema.note.id, 'n-1')).run();
+		expect(await repo.listMentionedContactIds('n-1')).toEqual([]);
 	});
 });

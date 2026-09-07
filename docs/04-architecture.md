@@ -322,6 +322,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   Storing them would mean invalidating on every relationship, birth and visibility change,
   and would let a stale row outlive the link it came from. Inference re-runs per subject,
   which is quadratic in principle but reads a household-sized graph in a single pass.
+- **A note's search index is built by triggers, not by the repository** — storing mentions as
+  ids means the indexed text has to be assembled from two tables, which the existing SQL
+  triggers can do with a sub-select. Maintaining `note_fts` from the note repository instead
+  would have allowed a proper regex strip of the token, but notes are also written by the
+  Monica importer and the demo seed straight through Drizzle; those rows would have gone
+  unindexed. The cost is that SQLite has no regex, so the strip is two `replace` calls and the
+  opaque id survives in the index as a word nobody searches for.
 
 ## 4.10 Deployment
 

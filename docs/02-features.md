@@ -367,8 +367,9 @@ are shared memberships with roles and time that *connect* people.
 - A note belongs to **one contact**, has an optional **title** and a **Markdown body**.
 - Notes show author and timestamp; they can be **pinned** to the top of a profile.
 - Markdown supports basic formatting, lists, links, and **@mentions** of other
-  contacts **[M2]** (a mention creates a soft link, surfaced on the mentioned contact —
-  same id-based, visibility-safe mechanism specified for the journal in §2.20.1).
+  contacts **[M2] — shipped**: typing `@` in the note field offers the people the note's
+  audience may name, the body stores the id-based token, and `note_mention` records the soft
+  link. Same parser, resolver and chip as the journal (§2.20.1) — nothing note-specific.
 - Notes are individually **shared or private** (see 2.10).
 - Full-text searchable (2.9).
 
@@ -792,7 +793,19 @@ on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s jou
   only the id is stored, renaming the referenced person updates every chip automatically.
 - **One shared pipeline.** Notes carry the same soft-link idea (§2.5, `note_mention`); the
   parser, id-resolver, and chip renderer are shared between notes and journal rather than
-  duplicated. Framework-agnostic domain module, test-first (`docs/08` §8.3).
+  duplicated. Framework-agnostic domain module, test-first (`docs/08` §8.3). The `@`-picker is
+  one component too (`MentionTextarea`, `docs/05` §5.7) — the moment composer keeps its own
+  because only a moment may create a person on the fly. The two rules that decide *whom* a text
+  may name live there as well, so the browser and the server never drift: the audience rule
+  above (`allowedForAudience`) and the subject rule (`mentionsOtherThan`), which keeps the
+  person a note or entry is about from being a passive reference to themselves.
+- **Search follows the name, not the token.** Because the body stores an id, the search index
+  carries the mentioned people's current display names in the token's place, so a note that
+  says only "walked home with @Sandra" is still found by *Sandra* — and renaming her moves the
+  index with her (`docs/03` §3.5).
+- **Still to come:** the passive **"Mentioned in"** list on the referenced person is specified
+  above but not built yet, for notes or for the journal. Today a mention is a chip that links
+  forward; the reverse view is the next change.
 
 ## 2.22 Moments & the household stream **[M2]**
 
