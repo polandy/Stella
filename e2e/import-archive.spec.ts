@@ -28,7 +28,11 @@ async function takeArchive(page: Page): Promise<Buffer> {
 	return bytes;
 }
 
-/** Uploads an archive on the restore screen and waits for the report. */
+/**
+ * Uploads an archive on the restore screen and waits for the report. The first case reaches
+ * the screen through the Settings card, so the way in is covered too; the rest go straight
+ * there, because what they are about is what the restore does.
+ */
 async function restore(page: Page, buffer: Buffer, name = 'stella-household.tar'): Promise<void> {
 	await page.goto('/settings/import/archive');
 	await page
@@ -87,7 +91,14 @@ test('brings back a person who was deleted, with what was written about them', a
 	await page.getByRole('button', { name: `Delete ${WHO}` }).click();
 	await expect(page.getByRole('link', { name: new RegExp(WHO) })).toHaveCount(0);
 
-	await restore(page, archive);
+	// In through the front door once: Settings offers the restore, and it is admin-only.
+	await page.getByRole('link', { name: 'Settings' }).first().click();
+	await page.getByRole('link', { name: 'Restore from an archive' }).click();
+	await expect(page.getByRole('heading', { name: 'Restore from an archive' })).toBeVisible();
+	await page
+		.locator('input[name=archive]')
+		.setInputFiles({ name: 'stella-household.tar', mimeType: 'application/x-tar', buffer: archive });
+	await page.getByRole('button', { name: 'Restore' }).click();
 
 	// One person came back; everybody else was recognised as already here and left alone.
 	await expect(line(page, 'contact')).toContainText('1 added');

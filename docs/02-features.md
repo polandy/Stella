@@ -684,8 +684,12 @@ mechanism behind two features: correcting a birthday without touching the profil
   references that cannot be met — a mention of somebody the file does not contain, a
   relationship of a kind this Stella does not know, a photo path pointing outside the media
   folder — are left out and named in the report afterwards.
+- **There is a ceiling.** The archive is uploaded and read whole, so it must fit through the
+  server's request cap (`BODY_SIZE_LIMIT`, 250M in the Docker image) and under the importer's own
+  200 MB limit, which is what a household over it is told. A larger household restores from the
+  database snapshot instead (`docs/07` §7.9).
 - **The report.** Afterwards the admin sees, per kind, how many records were added and how many
-  were already here; how many photos were stored, were already on disk, or were named by the
+  were were already here; how many photos were stored, were already on disk, or were named by the
   document but missing from the archive; and every warning.
 - **Backups:** the documented procedure is still the SQLite snapshot plus the media directory
   (`docs/07` §7.9). The archive is the portable copy, not a byte-for-byte one — restoring it

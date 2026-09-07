@@ -1,3 +1,4 @@
+import type { SQLQueryBindings } from 'bun:sqlite';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { NewActivityEntry } from '../domain/activity/activity';
 import type { RestoreCounts, RestoreRepository } from '../domain/archive/import';
@@ -52,6 +53,16 @@ export function createDrizzleRestoreRepository(
 
 	const countOf = (table: string): number =>
 		(sqlite.query(`SELECT count(*) AS n FROM "${table}"`).get() as { n: number }).n;
+
+	/** The foreign keys a table has, as the database itself declares them. */
+	const linksOf = (table: string): { column: string; parent: string; parentColumn: string }[] =>
+		(
+			sqlite.query(`PRAGMA foreign_key_list("${table}")`).all() as {
+				table: string;
+				from: string;
+				to: string | null;
+			}[]
+		).map((fk) => ({ column: fk.from, parent: fk.table, parentColumn: fk.to ?? 'id' }));
 
 	/**
 	 * Ids this server already holds for a *different* household. Restoring those would leave
@@ -116,14 +127,41 @@ export function createDrizzleRestoreRepository(
 						if (clash.length > 0) throw new ForeignHouseholdError(table, clash[0]);
 					}
 
+					/*
+					 * A row is only written once everything it points at is really there. The plan
+					 * already drops references the *archive* cannot meet; this catches the ones the
+					 * *database* cannot, and there is one that happens in practice: a journal entry
+					 * whose (person, author, day, visibility) slot is taken by an entry this
+					 * household has written since. That entry is skipped, and its mentions and
+					 * photos have to be skipped with it rather than fail the whole restore.
+					 *
+					 * One statement per foreign key per row — thousands of indexed lookups inside
+					 * one in-process transaction, which is cheaper than the alternative of hand-
+					 * maintaining a dependency map that would drift from the schema.
+					 */
+					const links = linksOf(table).filter((link) => columns.includes(link.column));
+					const exists = new Map(
+						links.map((link) => [
+							link.column,
+							sqlite.query(`SELECT 1 FROM "${link.parent}" WHERE "${link.parentColumn}" = ? LIMIT 1`)
+						])
+					);
+					const writable = rows.filter((row) =>
+						links.every((link) => {
+							const value = row[link.column];
+							if (value === null || value === undefined) return true;
+							return exists.get(link.column)!.get(value as SQLQueryBindings) !== null;
+						})
+					);
+
 					const before = countOf(table);
 					// "Or ignore": a row that is already here — by its id, or by a uniqueness rule
 					// such as a tag's name or a journal day slot — is left exactly as it is.
 					const insert = sqlite.query(
 						`INSERT OR IGNORE INTO "${table}" (${columns.map((c) => `"${c}"`).join(',')}) VALUES (${columns.map(() => '?').join(',')})`
 					);
-					for (const row of rows) {
-						insert.run(...columns.map((column) => row[column] as never));
+					for (const row of writable) {
+						insert.run(...(columns.map((column) => row[column]) as SQLQueryBindings[]));
 					}
 					const added = countOf(table) - before;
 					counts[table] = { added, skipped: rows.length - added };

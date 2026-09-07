@@ -62,6 +62,10 @@ function fillSource(db: BunSQLiteDatabase<typeof schema>): void {
 		.values({ id: 'n-1', contactId: 'c-hans', createdBy: SOURCE_USER, visibility: 'shared', title: 'Allergies', body: 'hazelnuts', createdAt: EXPORTED })
 		.run();
 	db.insert(schema.noteMention).values({ noteId: 'n-1', contactId: 'c-rosa' }).run();
+	db.insert(schema.journalEntry)
+		.values({ id: 'j-1', contactId: 'c-hans', createdBy: SOURCE_USER, visibility: 'shared', entryDate: '2026-07-12', body: 'hiked the Gurten', createdAt: EXPORTED })
+		.run();
+	db.insert(schema.journalMention).values({ journalEntryId: 'j-1', contactId: 'c-rosa' }).run();
 	db.insert(schema.tag)
 		.values({ id: 'tg-1', householdId: SOURCE_HOUSEHOLD, name: 'Bern', color: 'blue' })
 		.run();
@@ -199,6 +203,32 @@ describe('applyRestore', () => {
 		expect(hits.map((h) => h.note_id)).toEqual(['n-1']);
 	});
 
+	it('skips a journal entry whose day is taken here, and keeps the rest of the archive', async () => {
+		/*
+		 * A journal entry is unique on (person, author, day, visibility). If this household has
+		 * since written its own entry for that slot, the archive's entry cannot be inserted —
+		 * and its mentions and photos must go with it rather than take the whole import down
+		 * with a foreign-key error.
+		 */
+		here.db
+			.insert(schema.contact)
+			.values({ id: 'c-hans', householdId: HERE, createdBy: ADMIN, displayName: 'Hans Brunner' })
+			.run();
+		here.db
+			.insert(schema.journalEntry)
+			.values({ id: 'j-ours', contactId: 'c-hans', createdBy: ADMIN, visibility: 'shared', entryDate: '2026-07-12', body: 'our own day' })
+			.run();
+
+		const counts = await repo.applyRestore(await plan());
+
+		expect(counts.journal_entry).toEqual({ added: 0, skipped: 1 });
+		expect(counts.journal_mention).toEqual({ added: 0, skipped: 1 });
+		// The day we already had is untouched, and the rest of the archive still arrived.
+		expect(here.db.select().from(schema.journalEntry).all().map((e) => e.id)).toEqual(['j-ours']);
+		expect(here.db.select().from(schema.note).all()).toHaveLength(1);
+		expect(here.db.select().from(schema.contact).all()).toHaveLength(2);
+	});
+
 	it('refuses an archive already restored into another household on this server', async () => {
 		here.db.insert(schema.household).values({ id: 'h-other', name: 'Other' }).run();
 		here.db
@@ -218,13 +248,24 @@ describe('applyRestore', () => {
 		expect(here.db.select().from(schema.note).all()).toEqual([]);
 	});
 
-	it('writes all of the plan or none of it', async () => {
+	it('leaves out a row pointing at something that is not here, and keeps the rest', async () => {
 		const broken = await plan();
-		// A note pointing at somebody who is not in the archive: the database refuses it, and
-		// the people written before it must go with it.
 		broken.tables.find((t) => t.table === 'note')!.rows[0].contact_id = 'c-nobody';
 
-		await expect(repo.applyRestore(broken)).rejects.toThrow();
+		const counts = await repo.applyRestore(broken);
+
+		expect(counts.note).toEqual({ added: 0, skipped: 1 });
+		// Positive control: the people the note could not be hung on still arrived.
+		expect(here.db.select().from(schema.contact).all()).toHaveLength(2);
+	});
+
+	it('writes all of the plan or none of it', async () => {
+		const broken = await plan();
+		// A column the schema does not have, on a table written after the people: the failure
+		// comes halfway through, and the people written before it must go with it.
+		broken.tables.find((t) => t.table === 'note')!.rows[0].nickname = 'not a note column';
+
+		await expect(repo.applyRestore(broken)).rejects.toThrow('has no column');
 		expect(here.db.select().from(schema.contact).all()).toEqual([]);
 	});
 

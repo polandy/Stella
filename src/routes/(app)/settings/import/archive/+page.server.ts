@@ -20,7 +20,11 @@ import type { Actions, PageServerLoad } from './$types';
  * report exactly what was written (docs/04 §4.9).
  */
 
-/** Largest archive accepted. It is read into memory whole, so this is a real limit. */
+/**
+ * Largest archive accepted. It is read into memory whole, so this is a real limit — and it
+ * sits just under the deployment's `BODY_SIZE_LIMIT` (250M in the image), so a household that
+ * is over it reads this sentence instead of adapter-node's bare 413.
+ */
 const ARCHIVE_MAX_BYTES = 200 * 1024 * 1024;
 
 export const load: PageServerLoad = async ({ locals }) => {

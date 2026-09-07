@@ -116,7 +116,7 @@ STELLA_URL=https://stella.example.home         # public base URL (for redirect U
 DATABASE_PATH=/data/stella.db
 MEDIA_DIR=/data/media
 SESSION_SECRET=…                            # signs/encrypts session + oidc temp cookies
-BODY_SIZE_LIMIT=25M                         # adapter-node request cap; a Monica dump or photo must fit
+BODY_SIZE_LIMIT=250M                        # adapter-node request cap; a restored archive must fit through it
 
 # Auth toggles
 AUTH_LOCAL_ENABLED=true                     # allow email+password
