@@ -21,8 +21,8 @@ function fullHousehold(): HouseholdSnapshot {
 				{ id: 'rt-1', key: 'godparent', forward_label: 'Godparent of', reverse_label: 'Godchild of', category: 'family', symmetric: 0 }
 			],
 			contact: [
-				{ id: 'c-hans', display_name: 'Hans Brunner', first_name: 'Hans', last_name: 'Brunner', visibility: 'shared', is_deceased: 0, created_at: NOW },
-				{ id: 'c-rosa', display_name: 'Rosa Brunner', first_name: 'Rosa', last_name: 'Brunner', visibility: 'private', is_deceased: 0, created_at: NOW }
+				{ id: 'c-hans', display_name: 'Hans Brunner', first_name: 'Hans', last_name: 'Brunner', created_by: 'u-1', visibility: 'shared', is_deceased: 0, created_at: NOW },
+				{ id: 'c-rosa', display_name: 'Rosa Brunner', first_name: 'Rosa', last_name: 'Brunner', created_by: 'u-1', visibility: 'private', is_deceased: 0, created_at: NOW }
 			],
 			contact_field: [{ id: 'f-1', contact_id: 'c-hans', kind: 'phone', label: 'mobile', value: '079' }],
 			important_date: [{ id: 'd-1', contact_id: 'c-hans', kind: 'anniversary', date: '1980-06-01', recurs_yearly: 1 }],
@@ -38,10 +38,10 @@ function fullHousehold(): HouseholdSnapshot {
 			],
 			tag: [{ id: 'tg-1', name: 'Bern', color: 'blue' }],
 			contact_tag: [{ contact_id: 'c-hans', tag_id: 'tg-1' }],
-			circle: [{ id: 'ci-1', name: 'FC Länggasse', kind: 'club', visibility: 'shared' }],
-			circle_membership: [{ id: 'cm-1', circle_id: 'ci-1', contact_id: 'c-hans', role: 'coach', since_date: '2019-06-01', until_date: null }],
+			circle: [{ id: 'ci-1', name: 'FC Länggasse', kind: 'club', created_by: 'u-1', visibility: 'shared' }],
+			circle_membership: [{ id: 'cm-1', circle_id: 'ci-1', contact_id: 'c-hans', role: 'coach', since_date: '2019-06-01', until_date: null, created_by: 'u-1' }],
 			relationship: [
-				{ id: 'r-1', from_contact_id: 'c-hans', to_contact_id: 'c-rosa', type_id: 'rt-1', note: 'married in Thun', since_date: '1980-06-01', status: 'current', created_at: NOW }
+				{ id: 'r-1', from_contact_id: 'c-hans', to_contact_id: 'c-rosa', type_id: 'rt-1', note: 'married in Thun', since_date: '1980-06-01', status: 'current', created_by: 'u-1', created_at: NOW }
 			],
 			activity_log: [
 				{ id: 'a-1', action: 'delete', entity_type: 'contact', entity_id: 'gone', contact_id: null, actor_id: 'u-1', summary: 'removed Someone', visibility: 'shared', created_at: NOW }
@@ -80,9 +80,9 @@ describe('a person', () => {
 
 	it('brings their own records with them rather than leaving them in tables', () => {
 		const p = hans();
-		expect(p.fields).toEqual([{ kind: 'phone', label: 'mobile', value: '079' }]);
+		expect(p.fields).toEqual([{ id: 'f-1', kind: 'phone', label: 'mobile', value: '079' }]);
 		expect(p.important_dates).toEqual([
-			{ kind: 'anniversary', date: '1980-06-01', recurs_yearly: true }
+			{ id: 'd-1', kind: 'anniversary', date: '1980-06-01', recurs_yearly: true }
 		]);
 		expect(p.tags).toEqual(['tg-1']);
 		expect((p.notes as Record<string, unknown>[])[0]).toMatchObject({
@@ -131,6 +131,7 @@ describe('the household around them', () => {
 				description: 'married in Thun',
 				since: '1980-06-01',
 				status: 'current',
+				author: 'u-1',
 				created_at: '2026-09-07T09:30:00.000Z'
 			}
 		]);
@@ -150,6 +151,110 @@ describe('the household around them', () => {
 		expect(member).toMatchObject({ id: 'u-1', name: 'Markus', role: 'admin' });
 		expect(member).not.toHaveProperty('password_hash');
 		expect(member).not.toHaveProperty('totp_secret');
+	});
+});
+
+describe('what a restore would otherwise lose', () => {
+	/*
+	 * Every column that carries meaning is in the document, because whatever is missing here
+	 * is gone for good the day the archive is read back. The `updated_at` bookkeeping columns
+	 * are the deliberate exception (docs/02 §2.15).
+	 */
+	const filled: HouseholdSnapshot = {
+		householdName: 'H',
+		tables: {
+			contact: [
+				{
+					id: 'c-1',
+					display_name: 'Dr. Hans Brunner-Meier',
+					first_name: 'Hans',
+					last_name: 'Brunner-Meier',
+					prefix: 'Dr.',
+					suffix: 'jun.',
+					former_name: 'Hans Meier',
+					gender: 'male',
+					pronouns: 'he/him',
+					job_title: 'Schreiner',
+					company: 'Brunner AG',
+					met_date: '2001-04-02',
+					avatar_photo_id: 'p-1',
+					created_by: 'u-1',
+					visibility: 'shared'
+				}
+			],
+			contact_field: [
+				{ id: 'f-1', contact_id: 'c-1', kind: 'address', value: 'Bern', meta: '{"city":"Bern"}', sort_order: 3 }
+			],
+			important_date: [
+				{ id: 'd-1', contact_id: 'c-1', kind: 'birthday', date: '1980-06-01', recurs_yearly: 1, remind: 1 }
+			],
+			photo: [
+				{ id: 'p-1', contact_id: 'c-1', journal_entry_id: null, file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', width: 1600, height: 1200, size_bytes: 240000, sort_order: 2, created_by: 'u-1', visibility: 'shared' }
+			],
+			circle: [
+				{ id: 'ci-1', name: 'Klasse 5b', kind: 'class', color: 'green', parent_circle_id: 'ci-0', start_date: '2019-08-01', end_date: '2020-07-01', archived_at: NOW, created_by: 'u-1', visibility: 'shared' }
+			],
+			circle_membership: [
+				{ id: 'cm-1', circle_id: 'ci-1', contact_id: 'c-1', role: 'pupil', since_date: '2019-08-01', until_date: null, note: 'sat at the back', created_by: 'u-1' }
+			],
+			relationship: [
+				{ id: 'r-1', from_contact_id: 'c-1', to_contact_id: 'c-1', type_id: 'rt-1', created_by: 'u-1', created_at: NOW }
+			],
+			relationship_type: [
+				{ id: 'rt-1', key: 'godparent', forward_label: 'Godparent of', reverse_label: 'Godchild of', category: 'family', symmetric: 0, sort_order: 100 }
+			]
+		},
+		mediaPaths: []
+	};
+	const built = () => buildArchiveDocument(filled, NOW);
+
+	it('carries every part of a person’s name, their work and how they were met', () => {
+		expect(built().people[0]).toMatchObject({
+			prefix: 'Dr.',
+			suffix: 'jun.',
+			former_name: 'Hans Meier',
+			gender: 'male',
+			pronouns: 'he/him',
+			job_title: 'Schreiner',
+			company: 'Brunner AG',
+			met_date: '2001-04-02',
+			avatar: 'p-1'
+		});
+	});
+
+	it('says who created each thing, because private records belong to their author', () => {
+		// Without this a restored private person has no owner, and visibility means nothing.
+		expect(built().people[0].author).toBe('u-1');
+		expect(built().circles[0]).toMatchObject({ author: 'u-1' });
+		expect(built().relationships[0]).toMatchObject({ author: 'u-1' });
+		expect(
+			(built().circles[0].members as Record<string, unknown>[])[0]
+		).toMatchObject({ id: 'cm-1', author: 'u-1', note: 'sat at the back' });
+	});
+
+	it('keeps the details of a field, a date, a photo and a circle', () => {
+		const person = built().people[0];
+		expect((person.fields as Record<string, unknown>[])[0]).toMatchObject({
+			meta: '{"city":"Bern"}',
+			sort_order: 3
+		});
+		expect((person.important_dates as Record<string, unknown>[])[0]).toMatchObject({
+			remind: true
+		});
+		expect((person.photos as Record<string, unknown>[])[0]).toMatchObject({
+			width: 1600,
+			height: 1200,
+			bytes: 240000,
+			sort_order: 2
+		});
+		expect(built().circles[0]).toMatchObject({
+			color: 'green',
+			parent: 'ci-0',
+			start: '2019-08-01',
+			end: '2020-07-01',
+			archived_at: new Date(NOW).toISOString()
+		});
+		expect(built().relationship_types[0]).toMatchObject({ sort_order: 100 });
 	});
 });
 

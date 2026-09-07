@@ -9,6 +9,11 @@ import type { HouseholdSnapshot, TableRows } from './archive';
  * theirs, and every relationship, mention, participation and membership names people by that id
  * and never by their name.
  *
+ * Every column that carries meaning is in here, because whatever this file drops is lost the
+ * day the archive is read back. The exceptions are deliberate: `updated_at` (bookkeeping, set
+ * afresh on import) and the household's and members' own settings, which belong to the
+ * installation the archive lands in rather than to the archive.
+ *
  * Pure: rows in, a plain object out. The caller turns it into YAML.
  */
 
@@ -30,6 +35,8 @@ const num = (row: Row, column: string): number | null => {
 };
 const flag = (row: Row, column: string): boolean => row[column] === 1 || row[column] === true;
 const id = (row: Row, column = 'id'): string => String(row[column] ?? '');
+/** A count worth writing only when it is not the default; `present` drops the rest. */
+const ordinal = (row: Row, column: string): number | null => num(row, column) || null;
 
 /** An instant as an ISO string, because a millisecond count means nothing to a reader. */
 const moment = (row: Row, column: string): string | null => {
@@ -115,6 +122,10 @@ export function buildArchiveDocument(
 			file: text(row, 'file_path'),
 			thumb: text(row, 'thumb_path'),
 			mime: text(row, 'mime'),
+			width: num(row, 'width'),
+			height: num(row, 'height'),
+			bytes: num(row, 'size_bytes'),
+			sort_order: ordinal(row, 'sort_order'),
 			caption: text(row, 'caption'),
 			taken_at: text(row, 'taken_at'),
 			visibility: text(row, 'visibility'),
@@ -130,31 +141,46 @@ export function buildArchiveDocument(
 			first_name: text(c, 'first_name'),
 			last_name: text(c, 'last_name'),
 			nickname: text(c, 'nickname'),
+			prefix: text(c, 'prefix'),
+			suffix: text(c, 'suffix'),
+			former_name: text(c, 'former_name'),
+			gender: text(c, 'gender'),
+			pronouns: text(c, 'pronouns'),
+			job_title: text(c, 'job_title'),
+			company: text(c, 'company'),
 			description: text(c, 'description'),
 			birth_date: text(c, 'birth_date'),
 			birth_date_precision: text(c, 'birth_date_precision'),
 			deceased: flag(c, 'is_deceased') ? true : null,
 			death_date: text(c, 'death_date'),
 			how_we_met: text(c, 'how_we_met'),
+			met_date: text(c, 'met_date'),
 			met_place: text(c, 'met_place'),
+			avatar: text(c, 'avatar_photo_id'),
 			visibility: text(c, 'visibility'),
+			author: text(c, 'created_by'),
 			archived_at: moment(c, 'archived_at'),
 			created_at: moment(c, 'created_at'),
 			tags: contactTags.get(person) ?? null,
 			fields: (fields.get(person) ?? []).map((f) =>
 				present({
+					id: id(f),
 					kind: text(f, 'kind'),
 					label: text(f, 'label'),
-					value: text(f, 'value')
+					value: text(f, 'value'),
+					meta: text(f, 'meta'),
+					sort_order: ordinal(f, 'sort_order')
 				})
 			),
 			important_dates: (dates.get(person) ?? []).map((d) =>
 				present({
+					id: id(d),
 					kind: text(d, 'kind'),
 					label: text(d, 'label'),
 					date: text(d, 'date'),
 					precision: text(d, 'precision'),
-					recurs_yearly: flag(d, 'recurs_yearly') ? true : null
+					recurs_yearly: flag(d, 'recurs_yearly') ? true : null,
+					remind: flag(d, 'remind') ? true : null
 				})
 			),
 			notes: (notes.get(person) ?? []).map((n) =>
@@ -224,7 +250,8 @@ export function buildArchiveDocument(
 				forward_label: text(r, 'forward_label'),
 				reverse_label: text(r, 'reverse_label'),
 				category: text(r, 'category'),
-				symmetric: flag(r, 'symmetric') ? true : null
+				symmetric: flag(r, 'symmetric') ? true : null,
+				sort_order: ordinal(r, 'sort_order')
 			})
 		),
 		tags: t('tag').map((tag) =>
@@ -236,13 +263,22 @@ export function buildArchiveDocument(
 				name: text(c, 'name'),
 				kind: text(c, 'kind'),
 				description: text(c, 'description'),
+				color: text(c, 'color'),
+				parent: text(c, 'parent_circle_id'),
+				start: text(c, 'start_date'),
+				end: text(c, 'end_date'),
+				archived_at: moment(c, 'archived_at'),
 				visibility: text(c, 'visibility'),
+				author: text(c, 'created_by'),
 				members: (circleMembers.get(id(c)) ?? []).map((m) =>
 					present({
+						id: id(m),
 						person: id(m, 'contact_id'),
 						role: text(m, 'role'),
 						since: text(m, 'since_date'),
-						until: text(m, 'until_date')
+						until: text(m, 'until_date'),
+						note: text(m, 'note'),
+						author: text(m, 'created_by')
 					})
 				)
 			})
@@ -256,6 +292,7 @@ export function buildArchiveDocument(
 				description: text(r, 'note'),
 				since: text(r, 'since_date'),
 				status: text(r, 'status'),
+				author: text(r, 'created_by'),
 				created_at: moment(r, 'created_at')
 			})
 		),
