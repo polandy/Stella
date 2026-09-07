@@ -123,9 +123,14 @@ keeps the Playwright specs out of Bun's runner).
 `bun run test:e2e` (`e2e/run.sh`) builds the app, starts it on `127.0.0.1:4173` against a
 **fresh** `./data/e2e` database with `SEED_DEMO=true`, and drives it from the pinned
 `mcr.microsoft.com/playwright` image with `--network host` — Chromium does not run on the
-NixOS host. The image tag must match the `@playwright/test` version in `package.json`. Specs
-sign in through the one-click demo button and share that one database, so they run serially
-and must not depend on each other's data.
+NixOS host. The image tag must match the `@playwright/test` version in `package.json`.
+
+A `setup` project signs in through the one-click demo button once and stores the session; every
+other spec starts from it, which is a page load and a form post saved per test (`signIn()` in
+`e2e/app.ts` falls back to the button when `--grep` filtered the setup project out). All specs
+in one run share one database, so they run serially and **must not depend on each other's
+data** — CI enforces this by splitting the suite across three runners
+(`bunx playwright test --shard`), each with its own freshly seeded server.
 
 ### 8.4.1 Feature delivery loop (implement → verify → e2e)
 

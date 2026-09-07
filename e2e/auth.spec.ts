@@ -5,6 +5,10 @@ import { expect, test } from '@playwright/test';
  * app (docs/08 §8.4.1). The demo login itself is exercised by every other spec.
  */
 
+// The suite as a whole runs signed in (`playwright.config.ts`); the sign-in screen only
+// exists for a visitor who is not.
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test('shows the brand beside the form on a wide screen', async ({ page }) => {
 	await page.goto('/login');
 	await expect(page.getByText('The people in your life, remembered — together.')).toBeVisible();

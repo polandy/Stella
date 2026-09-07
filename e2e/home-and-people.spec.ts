@@ -1,5 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
-import { appReady } from './app';
+import { expect, test } from '@playwright/test';
+import { appReady, signIn } from './app';
 
 /*
  * Home's rail, the People directory and the ⌘K palette (docs/02 §2.12.1, §2.2, §2.22.1;
@@ -7,13 +7,6 @@ import { appReady } from './app';
  * (docs/08 §8.4.1). Runs against the demo dataset, signed in as the demo admin; the person
  * created here (Xenia Quillford) is absent from the seed.
  */
-
-/** Signs in through the SEED_DEMO one-click button and lands on Home. */
-async function signIn(page: Page): Promise<void> {
-	await page.goto('/login');
-	await page.getByRole('button', { name: 'Sign in as demo user' }).click();
-	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
-}
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
