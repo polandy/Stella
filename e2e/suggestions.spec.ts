@@ -1,17 +1,11 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { signIn } from './app';
 
 /*
  * Duplicate & relative suggestions in quick-add (docs/02 §2.2.1). Written after the flow
  * was verified in the running app (docs/08 §8.4.1). Runs against the demo dataset as the
  * demo admin; the people added here carry a first name (Quill) no seeded person uses.
  */
-
-/** Signs in through the SEED_DEMO one-click button and lands on Home. */
-async function signIn(page: Page): Promise<void> {
-	await page.goto('/login');
-	await page.getByRole('button', { name: 'Sign in as demo user' }).click();
-	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
-}
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);

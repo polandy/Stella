@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { mention } from './app';
+import { mention, signIn } from './app';
 
 /*
  * Moments capture and the household stream (docs/02 §2.22). Written after the flow was
@@ -9,13 +9,6 @@ import { mention } from './app';
  * People invented here (Zelda, Yorick, Quill) are deliberately absent from the demo dataset,
  * so the "Create …" path never collides with a seeded contact.
  */
-
-/** Signs in through the SEED_DEMO one-click button and lands on Home. */
-async function signIn(page: Page): Promise<void> {
-	await page.goto('/login');
-	await page.getByRole('button', { name: 'Sign in as demo user' }).click();
-	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
-}
 
 const composerSave = (page: Page) => page.getByRole('button', { name: /^Save/ });
 

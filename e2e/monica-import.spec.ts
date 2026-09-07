@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { signIn } from './app';
 
 /*
  * The Monica import wizard (docs/02 §2.16, docs/monica-mapping.md). Written after a real
@@ -10,13 +11,6 @@ import { expect, test, type Page } from '@playwright/test';
 
 const DUMP = 'e2e/fixtures/monica-mini.sql';
 const PHOTO_FOLDER = 'e2e/fixtures/monica-photos';
-
-/** Signs in through the SEED_DEMO one-click button and lands on Home. */
-async function signIn(page: Page): Promise<void> {
-	await page.goto('/login');
-	await page.getByRole('button', { name: 'Sign in as demo user' }).click();
-	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
-}
 
 /** Upload → preview: returns once the preview is on screen. */
 async function previewDump(page: Page): Promise<void> {
