@@ -364,6 +364,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   every value is bound. An archive whose ids already belong to another household on this server
   is refused before anything is written, because those rows would otherwise hang off somebody
   else's records.
+- **The passive list reads both sources and merges them, rather than one query over a union** —
+  notes and journal entries are separate tables with separate visibility joins, and a `UNION`
+  would put the ordering rule in SQL where no unit test reaches it. Two scoped reads plus a pure
+  merge (the cut the story timeline already uses) keeps "newest first, an entry about you is not
+  a reference to you" testable without a database. The cost is two round-trips instead of one,
+  which at family scale is nothing, and no paging: the list is read whole, because a household
+  that has been named in more entries than fit on a page does not exist yet.
 
 ## 4.10 Deployment
 

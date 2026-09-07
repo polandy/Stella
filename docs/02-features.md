@@ -846,9 +846,13 @@ on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s jou
   carries the mentioned people's current display names in the token's place, so a note that
   says only "walked home with @Sandra" is still found by *Sandra* — and renaming her moves the
   index with her (`docs/03` §3.5).
-- **Still to come:** the passive **"Mentioned in"** list on the referenced person is specified
-  above but not built yet, for notes or for the journal. Today a mention is a chip that links
-  forward; the reverse view is the next change.
+- **Where it is read.** *Mentioned in* is the fifth tab on a person's page, next to Photos,
+  carrying the exact number of references. Notes and journal entries are listed together, newest
+  first — a reference reads the same whichever it came from — and each item names the source
+  person, who wrote it, the day, and a one-line preview in which the mention tokens read as the
+  people's current names. Following an item opens the source person on the tab the entry lives
+  on; it is not edited here. A private entry is marked as such, and only its author ever sees it
+  in the list at all.
 
 ## 2.22 Moments & the household stream **[M2]**
 

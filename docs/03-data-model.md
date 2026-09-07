@@ -309,7 +309,9 @@ FTS: `title, body` indexed (3.5).
 | pk (note_id, contact_id) | | |
 
 Rebuilt from the body every time the note is written (§2.20.1); never carries the note's own
-contact, which is the subject rather than a mention.
+contact, which is the subject rather than a mention. Read in reverse for the "Mentioned in"
+list, exactly like `journal_mention` — where a journal entry has `entry_date` to be dated by,
+a note has only `created_at`, so the list dates it by the day it was written (UTC).
 
 ### journal_entry  [M2]
 Per-person diary (§2.20). Distinct from `note`: a note is a reference fact, a journal entry

@@ -97,8 +97,8 @@ adding, you land straight in their relationship editor with that relative alread
 so "Quill is the child of Sandra" is one more click.
 
 **A person's page** puts who they are on the left — details, dates, circles, tags, how you
-met — and what has happened on the right, under three tabs: **Story**, **People** and
-**Notes**. On a phone the two stack, with the story first.
+met — and what has happened on the right, under five tabs: **Story**, **People**,
+**Notes**, **Photos** and **Mentioned in**. On a phone the two stack, with the story first.
 
 Every card on the left holds one **+ Add** button. Nothing is an open form until you ask for
 it, so the page reads as a person rather than as a stack of empty fields.
@@ -133,6 +133,14 @@ photo, switch it between shared and private, or remove it. Only whoever added a 
 caption or remove it, but anyone who can see it can make it the person's photo. Removing one
 deletes the file for good and, if the person was wearing it, they go back to their initials.
 Escape closes the view and the arrow keys walk through the rest.
+
+**Mentioned in** is the last tab, and it is the only one that is not really theirs: it lists
+what *other* people's notes and journal entries say about them. Write "hiked with `@Sandra`"
+in Beat's journal and it appears on Sandra's page as *in Beat Steiner's journal*, with the day
+and the first line of what was written. Click it and you land on Beat's page, where the entry
+lives — that is where it is edited, so nothing here can be changed by accident. The number on
+the tab is exact. You only ever see references you could have read anyway: a private entry
+stays with whoever wrote it.
 
 ## Dates worth remembering
 
