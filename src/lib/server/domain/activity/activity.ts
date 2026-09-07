@@ -6,8 +6,8 @@ import type { Visibility } from '../../access/visibility';
  * once the row is gone, nothing else can say a person was ever there.
  */
 
-/** What happened to the entity. Only `delete` is written today. */
-export type ActivityAction = 'create' | 'update' | 'delete' | 'archive' | 'merge';
+/** What happened to the entity. Only `delete`, `merge` and `export` are written today. */
+export type ActivityAction = 'create' | 'update' | 'delete' | 'archive' | 'merge' | 'export';
 
 /** A log row as it is written. */
 export interface NewActivityEntry {

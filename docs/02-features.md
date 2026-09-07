@@ -647,10 +647,26 @@ mechanism behind two features: correcting a birthday without touching the profil
 
 ## 2.15 Data portability **[M2]**
 
-- **Export:** a single archive (JSON manifest + media files) of the household's data.
-- **Import:** the same format, for restore/migration.
-- **Backups:** documented procedure to snapshot the SQLite file (WAL-safe) + media dir;
-  optional built-in "download backup" button for admins.
+- **Export — shipped.** *Settings → Data → Download the archive* gives the admin a single
+  `.tar`: one text file, `household.yaml`, with the images in `media/` beside it. Untar it and
+  you have a readable document and a folder of photos — no Stella required to read either.
+- **The document is arranged around people, not around tables.** Each person carries their
+  fields, important dates, tags, notes, journal entries, touchpoints and photos. Relationships,
+  circles and the household's own relationship types are their own top-level lists.
+- **The id is the key.** Two people can share a first and last name, so every person carries
+  their id and *everything* refers to people by it — relationships, mentions, participants,
+  circle memberships. Nothing in the archive joins on a name.
+- **It carries everything, marked.** Private contacts, notes, journal entries and photos are in
+  it with the `visibility` they were written with: a restore that loses a member's private
+  journal is not a restore. That is why the export is **admin-only** and why it writes itself
+  into `activity_log` — the household sees in its stream that an archive was taken.
+- **Credentials never travel.** Password hashes and TOTP secrets are stripped; live sessions and
+  the links to the identity provider are not exported at all.
+- **Import:** the same format, for restore/migration — **not built yet**. Today the archive is
+  something you can read, keep and take elsewhere; reading one back into Stella is the next
+  change.
+- **Backups:** the documented procedure is still the SQLite snapshot plus the media directory
+  (`docs/07` §7.9). The archive is the portable copy, not a byte-for-byte one.
 
 ## 2.16 Migration from Monica **[M2]**
 
@@ -852,10 +868,15 @@ entry and a household update, without leaving the page. Concept + clickable prot
   **new people** ("Lena added *Thomas Lang*"), **new relationships** ("Leo linked *Marie*
   → colleague of *Andy*") and **logged interactions** ("Lena logged a call with *Oma*",
   §2.6). Every item links to the person it is about.
+- **Notices** are the exception: the few things no table can report, read from `activity_log` —
+  a person deleted or merged away (§2.2), and an archive of the household being taken (§2.15).
+  Everyday edits are not written there and do not appear here; the stream stays a record of what
+  happened in the family, not of what happened to the database.
 - **Visibility is the filter.** The stream is a *query* over the existing tables, scoped by the
   central rules (§3.7): a private moment or interaction appears only in its author's stream,
   marked with a lock; a private person only in their creator's; a relationship only when both
-  ends are visible. There is no event/log table and nothing is written twice.
+  ends are visible. Apart from the notices above, there is no event/log table and nothing is
+  written twice.
 - **Deliberately not in the MVP:** filters by member or type, moments without any person
   ("family trip"), parsing relationships out of text,
   reactions or comments. The previous dashboard panels (new people, recent notes, your

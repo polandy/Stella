@@ -332,6 +332,12 @@ field is simply always there. A save that failed keeps the editor open with the 
 it, and one that worked says *Saved* like every other form. Used for the person's name and
 description (docs/02 §2.2).
 
+**Settings → Data** lists the household's data tools as full-width cards: an icon in a soft
+primary disc, a name, one line of explanation, and a chevron. *Download the archive* is the one
+card that is a form rather than a link — it posts, because taking the archive writes a line into
+the household's activity log, and a link a browser may prefetch is the wrong shape for that. The
+cards show for the admin only; everyone else reads one sentence saying so (docs/02 §2.15).
+
 **Mention field** (`src/lib/components/MentionTextarea.svelte`) is a textarea that offers
 people while you type `@` (docs/02 §2.20.1): a listbox under the caret, arrows to move, Enter
 or Tab to take the highlighted person, Escape to dismiss. The picker is an enhancement — the

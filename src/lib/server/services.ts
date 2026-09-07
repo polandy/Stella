@@ -11,7 +11,7 @@ import { hashPassword, verifyPassword } from './auth/password';
 import type { SessionDeps, SessionRepository } from './auth/session';
 import { systemClock } from './clock';
 import { getConfig } from './config';
-import { getDb } from './db';
+import { getDb, getSqlite } from './db';
 import { createDrizzleAccountRepository } from './db/account-repository';
 import { createDrizzleAttentionRepository } from './db/attention-repository';
 import { createDrizzleCircleRepository } from './db/circle-repository';
@@ -27,6 +27,8 @@ import { createDrizzleInteractionRepository } from './db/interaction-repository'
 import { createDrizzleNoteRepository } from './db/note-repository';
 import { createDrizzlePhotoRepository } from './db/photo-repository';
 import { createFileMediaStore } from './media/file-store';
+import { createDrizzleArchiveRepository } from './db/archive-repository';
+import type { ArchiveDeps, ArchiveRepository } from './domain/archive/archive';
 import { createDrizzleRelationshipRepository } from './db/relationship-repository';
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
@@ -300,6 +302,14 @@ export function getGraphRepository(): GraphRepository {
 }
 
 let photoRepository: PhotoRepository | null = null;
+let archiveRepository: ArchiveRepository | null = null;
+
+/** Deps for exporting the household as one archive (docs/02 §2.15). */
+export function getArchiveDeps(): ArchiveDeps {
+	archiveRepository ??= createDrizzleArchiveRepository(getDb(), getSqlite());
+	return { archive: archiveRepository, ids: ulidGenerator, clock: systemClock };
+}
+
 let mediaStore: MediaStore | null = null;
 
 export function getPhotos(): PhotoRepository {

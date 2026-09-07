@@ -157,7 +157,7 @@ describe('recentPeople', () => {
 	});
 });
 
-describe('recentRemovals', () => {
+describe('recentNotices', () => {
 	/** A logged deletion, the only stream source whose subject no longer exists. */
 	function logRemoval(
 		id: string,
@@ -186,7 +186,7 @@ describe('recentRemovals', () => {
 		logRemoval('older', 100, U1, 'shared');
 		logRemoval('newer', 200, U1, 'shared');
 
-		const rows = await repo.recentRemovals(asU2, 10);
+		const rows = await repo.recentNotices(asU2, 10);
 		expect(rows.map((r) => r.id)).toEqual(['newer', 'older']);
 		expect(rows[0]).toMatchObject({ actor: { id: U1, name: 'One' }, summary: 'removed Person newer' });
 	});
@@ -194,16 +194,48 @@ describe('recentRemovals', () => {
 	it('reports a merge too — a name stops existing either way', async () => {
 		logRemoval('merged', 100, U1, 'shared', 'merge');
 
-		expect((await repo.recentRemovals(asU2, 10)).map((r) => r.id)).toEqual(['merged']);
+		expect((await repo.recentNotices(asU2, 10)).map((r) => r.id)).toEqual(['merged']);
+	});
+
+	it('reports an export, so the household sees that its archive was taken', async () => {
+		// The archive carries every member's private records (docs/02 §2.15). Admin-only is
+		// half of what makes that acceptable; the household being able to see it is the other.
+		db.insert(schema.activityLog)
+			.values({
+				id: 'exported',
+				householdId: H,
+				actorId: U1,
+				action: 'export',
+				entityType: 'household',
+				entityId: H,
+				contactId: null,
+				visibility: 'shared',
+				summary: 'exported the household archive (12 people)',
+				createdAt: 300
+			})
+			.run();
+
+		const rows = await repo.recentNotices(asU2, 10);
+		expect(rows.map((r) => r.summary)).toEqual(['exported the household archive (12 people)']);
+	});
+
+	it('leaves the everyday edits out, so the stream stays what happened in the family', async () => {
+		// Only what no table can report belongs here; an archive or an update is not that.
+		logRemoval('edited', 100, U1, 'shared', 'update' as 'delete');
+
+		expect(await repo.recentNotices(asU2, 10)).toHaveLength(0);
+		// positive control: the same insert with a logged action does come back.
+		logRemoval('gone', 110, U1, 'shared');
+		expect((await repo.recentNotices(asU2, 10)).map((r) => r.id)).toEqual(['gone']);
 	});
 
 	it('keeps a private person private, even in the record of their deletion', async () => {
 		logRemoval('secret', 100, U1, 'private');
 		logRemoval('open', 100, U1, 'shared');
 
-		expect((await repo.recentRemovals(asU2, 10)).map((r) => r.id)).toEqual(['open']);
+		expect((await repo.recentNotices(asU2, 10)).map((r) => r.id)).toEqual(['open']);
 		// positive control: the member who deleted them sees both.
-		expect((await repo.recentRemovals(asU1, 10)).map((r) => r.id).sort()).toEqual(['open', 'secret']);
+		expect((await repo.recentNotices(asU1, 10)).map((r) => r.id).sort()).toEqual(['open', 'secret']);
 	});
 });
 
