@@ -5,6 +5,7 @@ import {
 	extractMentionIds,
 	mentionKey,
 	resolveMentions,
+	mentionsOtherThan,
 	segmentMentions,
 	type MentionCandidate
 } from './mentions';
@@ -140,5 +141,15 @@ describe('segmentMentions', () => {
 
 	it('returns a single text segment when there are no mentions', () => {
 		expect(segmentMentions('nothing here')).toEqual([{ type: 'text', value: 'nothing here' }]);
+	});
+});
+
+describe('mentionsOtherThan', () => {
+	it('drops the person the text is about, who is its subject rather than a reference', () => {
+		expect(mentionsOtherThan(['sandra', 'beat', 'lena'], 'beat')).toEqual(['sandra', 'lena']);
+	});
+
+	it('keeps everyone when the subject is not among them', () => {
+		expect(mentionsOtherThan(['sandra', 'lena'], 'beat')).toEqual(['sandra', 'lena']);
 	});
 });

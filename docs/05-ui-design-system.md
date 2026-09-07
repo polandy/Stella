@@ -332,6 +332,14 @@ field is simply always there. A save that failed keeps the editor open with the 
 it, and one that worked says *Saved* like every other form. Used for the person's name and
 description (docs/02 §2.2).
 
+**Mention field** (`src/lib/components/MentionTextarea.svelte`) is a textarea that offers
+people while you type `@` (docs/02 §2.20.1): a listbox under the caret, arrows to move, Enter
+or Tab to take the highlighted person, Escape to dismiss. The picker is an enhancement — the
+field posts its text either way and the server resolves whatever handles it finds — and it
+narrows to the audience of what is being written, so a shared note never offers a private
+person. Used by the note form and the journal composer. The moment composer keeps its own
+richer picker because only a moment may create a person on the fly (§2.22.1).
+
 **Toasts** (`src/lib/components/Toast.svelte`) sit bottom-left of the content column, one
 card per message, announced as a polite live region. A removal's toast names what went —
 *Entry removed*, *Tag removed*, *Left the circle* — and carries an **Undo** button for the

@@ -4,6 +4,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { processImage } from '$lib/image/process-image';
+	import { allowedForAudience } from '$lib/mentions/audience';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
 	import { tick } from 'svelte';
 
@@ -44,7 +45,7 @@
 	let active = $state<ActiveHandle | null>(null);
 	let selected = $state(0);
 	const audience = $derived(
-		visibility === 'shared' ? candidates.filter((c) => c.visibility === 'shared') : candidates
+		allowedForAudience(candidates, visibility)
 	);
 	const known = $derived([
 		...audience,

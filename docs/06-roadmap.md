@@ -78,7 +78,10 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   graph; deleting is admin-only, takes everything including the image files, and is the one
   action written to `activity_log` so the household sees it in the stream; merging folds one
   record into another, settling every collision without losing what anyone wrote.
-- **@mentions** in notes → soft links.
+- **@mentions** in notes → soft links — **shipped** (§2.5): notes go through the same picker,
+  parser and chip as the journal, `note_mention` records who was named, and the search index
+  follows the name rather than the stored id. The passive *"Mentioned in"* list on the
+  referenced person is still open, for notes and journal alike.
 - **Data portability:** export/import archive; admin "Download backup".
 - **Guided migration from Monica:** upload a Monica export (JSON/SQL/vCard), preview the
   mapping, import atomically. First-class onboarding path (`domain/import/monica`, test-first).

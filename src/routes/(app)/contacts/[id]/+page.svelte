@@ -3,6 +3,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import EgoGraph from '$lib/components/EgoGraph.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { enhance } from '$app/forms';
@@ -155,6 +156,8 @@
 	// Logging a touchpoint is the exception: the story timeline owns its paged list, and only
 	// a fresh page gives it the new item, so that form still posts natively.
 	let openSection = $state({ contact: false, dates: false, circles: false, tags: false, note: false });
+	// The note's audience narrows whom the @-picker offers (docs/02 §2.20.1).
+	let noteVisibility = $state<'shared' | 'private'>('shared');
 	type SectionName = keyof typeof openSection;
 	const saved = (name: SectionName) => savedEnhance(removals, () => (openSection[name] = false));
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
@@ -860,20 +863,22 @@
 
 					{#snippet editor()}
 						<form method="POST" action="?/addNote" use:enhance={saved('note')} class="flex flex-col gap-3">
-							<textarea
+							<MentionTextarea
 								name="body"
-								rows="3"
+								label="Note"
 								required
-								placeholder="Write a note… (Markdown supported)"
+								candidates={data.otherContacts}
+								visibility={noteVisibility}
+								placeholder="Write a note… (Markdown, @ to mention someone)"
 								class={INPUT}
-							></textarea>
+							/>
 							<div class="flex flex-wrap items-center gap-4 text-sm">
 								<label class="flex items-center gap-1.5"><input type="checkbox" name="isPinned" /> Pin</label>
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="shared" checked /> Shared
+									<input type="radio" name="visibility" value="shared" bind:group={noteVisibility} /> Shared
 								</label>
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="private" /> Private
+									<input type="radio" name="visibility" value="private" bind:group={noteVisibility} /> Private
 								</label>
 								<Button variant="primary" size="sm" class="ml-auto">Add note</Button>
 							</div>

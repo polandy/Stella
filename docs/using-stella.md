@@ -109,7 +109,10 @@ says so rather than quietly keeping the old one.
 
 **Notes** are for things that stay true — "allergic to hazelnuts", "always calls on
 Sundays". Moments are for things that happened. Notes can be pinned to the top, and have
-their own shared-or-private switch.
+their own shared-or-private switch. You can name other people in a note with `@`, the same
+way you do on Home: Stella suggests who you mean, the name becomes a link to them, and
+searching for that name finds the note. A shared note only offers people the whole household
+can see. The same picker is now in the journal too.
 
 **The story** is everything that has happened with this person in one list: the journal
 entries someone wrote and the times someone was in touch, newest first, day by day. They used
