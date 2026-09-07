@@ -44,6 +44,7 @@ import {
 import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
+import { authorLabel } from '$lib/story/author';
 import { toStoryItem } from './story-view';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import {
@@ -57,6 +58,8 @@ import {
 import { addGalleryPhoto } from '$lib/server/domain/media/gallery-upload';
 import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
 import { createHandleResolver, mentionsOtherThan, resolveMentions } from '$lib/mentions/mentions';
+import { mentionSnippet } from '$lib/mentions/snippet';
+import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { audienceCandidates } from '$lib/server/domain/moments/moments';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { createNote, listNotesForContact, setNoteMentions } from '$lib/server/domain/notes/notes';
@@ -94,7 +97,8 @@ import {
 	getRelationshipTypes,
 	getStoryDeps,
 	getTagDeps,
-	getMemberDeps
+	getMemberDeps,
+	getMentionedInDeps
 } from '$lib/server/services';
 
 /*
@@ -141,7 +145,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		gallery,
 		dates,
 		interactions,
-		kinship
+		kinship,
+		mentionedIn
 	] = await Promise.all([
 		getRelationships().listForContactVisibleTo(viewer, params.id),
 		getRelationshipTypes().listTypes(viewer),
@@ -157,7 +162,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		listGallery(getGalleryDeps(), viewer, params.id),
 		listImportantDates(getImportantDateDeps(), viewer, params.id),
 		listInteractions(getInteractionDeps(), viewer, params.id),
-		readKinship(getRelationshipDeps(), viewer, params.id, parseProposePair(url.searchParams.get('propose')))
+		readKinship(getRelationshipDeps(), viewer, params.id, parseProposePair(url.searchParams.get('propose'))),
+		listMentionedIn(getMentionedInDeps(), viewer, params.id)
 	]);
 
 	// Group visible journal photo ids by entry so the story timeline renders each gallery.
@@ -243,6 +249,23 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		// Which tab to open on. A form action redirects back with it, so acting on a photo
 		// does not throw the reader back to the story.
 		tab: url.searchParams.get('tab'),
+		/*
+		 * Where this person is named by somebody else (docs/02 §2.20.1). Read-only: the entry
+		 * belongs to the person it is about, so each item links there rather than offering an
+		 * edit that would have to be undone on another page.
+		 */
+		mentionedIn: mentionedIn.map((reference) => ({
+			kind: reference.kind,
+			entryId: reference.entryId,
+			sourceContactId: reference.sourceContactId,
+			sourceName: reference.sourceName,
+			author: authorLabel(reference.authorId === locals.user!.id, nameOfAuthor(reference.authorId)),
+			visibility: reference.visibility,
+			day: reference.day,
+			title: reference.title,
+			snippet: mentionSnippet(reference.body, nameOf),
+			href: `/contacts/${reference.sourceContactId}?tab=${reference.kind === 'note' ? 'notes' : 'story'}`
+		})),
 		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5)
 		notes: notes.map((note) => ({
 			id: note.id,
