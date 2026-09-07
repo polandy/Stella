@@ -1,5 +1,12 @@
 import { SqlDumpError, type SqlDump, type SqlRow, type SqlValue } from './sql-dump';
 
+/**
+ * How a Monica record is identified. The SQL dump keys everything by an auto-increment
+ * number; the JSON export keys the same records by uuid (docs/02 §2.16). Nothing in the
+ * mapping cares which — an id is compared, looked up and printed, never counted with.
+ */
+export type MonicaId = string | number;
+
 /*
  * A typed view over the Monica tables the migration reads (docs/02 §2.16). Nothing is
  * interpreted here — that is the plan's job — this only names columns and narrows types so
@@ -7,39 +14,39 @@ import { SqlDumpError, type SqlDump, type SqlRow, type SqlValue } from './sql-du
  */
 
 export interface MonicaContact {
-	id: number;
+	id: MonicaId;
 	firstName: string | null;
 	middleName: string | null;
 	lastName: string | null;
 	nickname: string | null;
-	genderId: number | null;
+	genderId: MonicaId | null;
 	description: string | null;
 	isPartial: boolean;
 	isDead: boolean;
-	deceasedSpecialDateId: number | null;
-	birthdaySpecialDateId: number | null;
-	firstMetSpecialDateId: number | null;
-	firstMetThroughContactId: number | null;
+	deceasedSpecialDateId: MonicaId | null;
+	birthdaySpecialDateId: MonicaId | null;
+	firstMetSpecialDateId: MonicaId | null;
+	firstMetThroughContactId: MonicaId | null;
 	firstMetWhere: string | null;
 	firstMetAdditionalInfo: string | null;
 	job: string | null;
 	company: string | null;
 	avatarSource: string | null;
-	avatarPhotoId: number | null;
+	avatarPhotoId: MonicaId | null;
 	deletedAt: string | null;
 	createdAt: string | null;
 }
 
 export interface MonicaGender {
-	id: number;
+	id: MonicaId;
 	/** Monica's own type code: `M`, `F` or `O`. */
 	type: string | null;
 	name: string;
 }
 
 export interface MonicaSpecialDate {
-	id: number;
-	contactId: number;
+	id: MonicaId;
+	contactId: MonicaId;
 	isAgeBased: boolean;
 	isYearUnknown: boolean;
 	/** ISO `YYYY-MM-DD`. */
@@ -47,14 +54,14 @@ export interface MonicaSpecialDate {
 }
 
 export interface MonicaRelationshipType {
-	id: number;
+	id: MonicaId;
 	name: string;
 	nameReverse: string;
 }
 
 export interface MonicaRelationship {
-	id: number;
-	typeId: number;
+	id: MonicaId;
+	typeId: MonicaId;
 	/** "contact_is <type> of_contact" — e.g. contact_is is the *parent* of of_contact. */
 	contactIs: number;
 	ofContact: number;
@@ -62,7 +69,7 @@ export interface MonicaRelationship {
 }
 
 export interface MonicaContactFieldType {
-	id: number;
+	id: MonicaId;
 	name: string;
 	/** Monica's builtin classification (`email`, `phone`) or null for user-defined types. */
 	type: string | null;
@@ -70,16 +77,16 @@ export interface MonicaContactFieldType {
 }
 
 export interface MonicaContactField {
-	id: number;
-	contactId: number;
-	typeId: number;
+	id: MonicaId;
+	contactId: MonicaId;
+	typeId: MonicaId;
 	data: string;
 	createdAt: string | null;
 }
 
 export interface MonicaAddress {
-	id: number;
-	contactId: number;
+	id: MonicaId;
+	contactId: MonicaId;
 	name: string | null;
 	street: string | null;
 	city: string | null;
@@ -89,15 +96,15 @@ export interface MonicaAddress {
 }
 
 export interface MonicaNote {
-	id: number;
-	contactId: number;
+	id: MonicaId;
+	contactId: MonicaId;
 	body: string;
 	isFavorited: boolean;
 	createdAt: string | null;
 }
 
 export interface MonicaActivity {
-	id: number;
+	id: MonicaId;
 	summary: string | null;
 	description: string | null;
 	/** ISO `YYYY-MM-DD`. */
@@ -109,24 +116,24 @@ export interface MonicaActivity {
 }
 
 export interface MonicaTag {
-	id: number;
+	id: MonicaId;
 	name: string;
 	contactIds: number[];
 }
 
 export interface MonicaPhoto {
-	id: number;
+	id: MonicaId;
 	/** Path relative to Monica's public storage, e.g. `photos/abc.jpg`. */
 	path: string;
 	mime: string;
 	sizeBytes: number | null;
-	contactId: number | null;
+	contactId: MonicaId | null;
 	createdAt: string | null;
 }
 
 export interface MonicaGift {
-	id: number;
-	contactId: number;
+	id: MonicaId;
+	contactId: MonicaId;
 	name: string;
 	comment: string | null;
 	url: string | null;
@@ -135,8 +142,8 @@ export interface MonicaGift {
 }
 
 export interface MonicaLifeEvent {
-	id: number;
-	contactId: number;
+	id: MonicaId;
+	contactId: MonicaId;
 	name: string | null;
 	note: string | null;
 	typeKey: string | null;
@@ -144,14 +151,14 @@ export interface MonicaLifeEvent {
 }
 
 export interface MonicaPet {
-	id: number;
-	contactId: number;
+	id: MonicaId;
+	contactId: MonicaId;
 	name: string | null;
 	category: string | null;
 }
 
 export interface MonicaJournalEntry {
-	id: number;
+	id: MonicaId;
 	title: string | null;
 	post: string;
 	createdAt: string | null;
