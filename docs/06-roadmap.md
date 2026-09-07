@@ -82,7 +82,9 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   parser and chip as the journal, `note_mention` records who was named, and the search index
   follows the name rather than the stored id. The passive *"Mentioned in"* list on the
   referenced person is still open, for notes and journal alike.
-- **Data portability:** export/import archive; admin "Download backup".
+- **Data portability:** export/import archive; admin "Download backup" — **export shipped**
+  (§2.15): one `.tar` of `household.yaml` plus the images, arranged around people, everything
+  referring to them by id, private records included and marked. Import/restore still open.
 - **Guided migration from Monica:** upload a Monica export (JSON/SQL/vCard), preview the
   mapping, import atomically. First-class onboarding path (`domain/import/monica`, test-first).
 - **PWA offline** app shell + read-through cache; RP-initiated single logout.

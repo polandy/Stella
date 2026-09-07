@@ -329,6 +329,23 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   Monica importer and the demo seed straight through Drizzle; those rows would have gone
   unindexed. The cost is that SQLite has no regex, so the strip is two `replace` calls and the
   opaque id survives in the index as a word nobody searches for.
+- **The export archive is a tar of one YAML file plus the images** — the household's data has
+  to leave in a shape another program can read and a person can still open in ten years, which
+  rules out both a byte-for-byte SQLite copy and a per-table JSON dump. YAML because it reads as
+  text; `Bun.YAML` because it is already in the runtime; a hand-written ustar writer
+  (`src/lib/archive/tar.ts`, ~60 lines) because tar is one 512-byte header per file and a
+  dependency for that is not worth it. The cost is a format we emit ourselves, paid for by a
+  test that hands the bytes to the system's own `tar`.
+- **The export reads outside the access layer, on purpose** — every other read in Stella is
+  scoped by `contactVisibleTo` and friends. An export is not a viewer looking at records; it is
+  the household taking its own data out, and an archive missing a member's private journal is
+  not a backup. The authorisation moves instead of disappearing: the route requires an admin,
+  the repository scopes by household, and the export writes itself into `activity_log` so the
+  household can see it happened. Rejected: exporting only shared rows, which would have made
+  the word "backup" untrue everywhere it appears.
+- **People are identified in the archive by id, never by name** — two people can share a first
+  and last name, and a document that joins on names silently fuses them. Every person carries
+  their id and every relationship, mention, participant and membership refers to it.
 
 ## 4.10 Deployment
 

@@ -3,7 +3,7 @@ import {
 	assembleStream,
 	buildStream,
 	type InteractionRow,
-	type RemovalRow,
+	type NoticeRow,
 	type MomentRow,
 	type PersonRow,
 	type RelationshipRow
@@ -58,7 +58,7 @@ const touch = (id: string, at: number, actor = lena): InteractionRow => ({
 	participants: []
 });
 
-const removal = (id: string, at: number, actor = lena): RemovalRow => ({
+const removal = (id: string, at: number, actor = lena): NoticeRow => ({
 	id,
 	at,
 	actor,
@@ -68,7 +68,7 @@ const removal = (id: string, at: number, actor = lena): RemovalRow => ({
 describe('assembleStream', () => {
 	it('includes interactions and marks my own', () => {
 		const items = assembleStream(
-			{ moments: [], people: [], relationships: [], interactions: [touch('i1', 50, me), touch('i2', 60)], removals: [] },
+			{ moments: [], people: [], relationships: [], interactions: [touch('i1', 50, me), touch('i2', 60)], notices: [] },
 			'u1'
 		);
 		expect(items.map((i) => [i.kind, i.id, i.mine])).toEqual([
@@ -79,7 +79,7 @@ describe('assembleStream', () => {
 
 	it('orders a tie moment → interaction → relationship → person → removal', () => {
 		const items = assembleStream(
-			{ moments: [moment('m', 100)], people: [person('p', 100)], relationships: [rel('r', 100)], interactions: [touch('i', 100)], removals: [removal('x', 100)] },
+			{ moments: [moment('m', 100)], people: [person('p', 100)], relationships: [rel('r', 100)], interactions: [touch('i', 100)], notices: [removal('x', 100)] },
 			'u1'
 		);
 		expect(items.map((i) => i.id)).toEqual(['m', 'i', 'r', 'p', 'x']);
@@ -87,7 +87,7 @@ describe('assembleStream', () => {
 
 	it('merges all sources newest first and marks my own items', () => {
 		const items = assembleStream(
-			{ moments: [moment('m1', 300)], people: [person('c1', 100)], relationships: [rel('r1', 200)], interactions: [], removals: [] },
+			{ moments: [moment('m1', 300)], people: [person('c1', 100)], relationships: [rel('r1', 200)], interactions: [], notices: [] },
 			'u1'
 		);
 		expect(items.map((i) => [i.kind, i.id, i.mine])).toEqual([
@@ -103,7 +103,7 @@ describe('assembleStream', () => {
 				moments: [moment('m', 100)],
 				people: [person('p2', 100), person('p1', 100)],
 				relationships: [rel('r', 100)],
-				interactions: [], removals: []
+				interactions: [], notices: []
 			},
 			'u1'
 		);
@@ -112,7 +112,7 @@ describe('assembleStream', () => {
 
 	it('cuts to the limit after merging', () => {
 		const items = assembleStream(
-			{ moments: [moment('m1', 5), moment('m2', 4)], people: [person('p', 3)], relationships: [], interactions: [], removals: [] },
+			{ moments: [moment('m1', 5), moment('m2', 4)], people: [person('p', 3)], relationships: [], interactions: [], notices: [] },
 			'u1',
 			2
 		);
@@ -142,7 +142,7 @@ describe('buildStream', () => {
 						asked.push(limit);
 						return [touch('i', 3)];
 					},
-					async recentRemovals(_v, limit) {
+					async recentNotices(_v, limit) {
 						asked.push(limit);
 						return [removal('x', 4)];
 					}

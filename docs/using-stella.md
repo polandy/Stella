@@ -271,6 +271,26 @@ their Monica avatar becomes their avatar here too.
 Importing the same dump a second time changes nothing — every imported record remembers
 where it came from — so a retry after a hiccup is safe.
 
+## Taking your data with you
+
+Stella is where the family keeps its memory, so you should be able to walk away with it.
+**Settings → Data → Download the archive** gives the household admin one file. Unpack it —
+`tar -xf stella-….tar`, or a double-click on most systems — and you get two things: a text file
+called `household.yaml`, and a folder of every photo.
+
+The text file is meant to be read. Each person is a block with their details, their notes, their
+journal, the times you were in touch and their photos; relationships, circles and tags follow as
+their own lists. Everybody carries an id, and everything that points at a person points at that
+id — because two people really can be called Peter Keller, and a file that told them apart by
+name would fuse them.
+
+Everything is in there, including the private records, each marked with whether it was shared or
+private. That is why only the admin can take the archive, and why the household sees a line in
+the stream saying it happened. Passwords are never in it.
+
+Reading an archive back into Stella is not built yet. For now it is your copy to keep, to read,
+or to load into something else.
+
 ## Privacy, in one paragraph
 
 Stella assumes a household that trusts each other, so sharing is the default and there is

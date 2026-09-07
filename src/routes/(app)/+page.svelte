@@ -202,7 +202,7 @@
 										</div>
 									{/if}
 								</div>
-							{:else if item.kind === 'removal'}
+							{:else if item.kind === 'notice'}
 								<!--
 									The only item with nobody to link to: the person is gone, and the log
 									entry is all that is left of them (docs/02 §2.2).

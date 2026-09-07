@@ -13,7 +13,7 @@ import type {
 	MomentRow,
 	PersonRow,
 	RelationshipRow,
-	RemovalRow,
+	NoticeRow,
 	StreamPerson,
 	StreamRepository
 } from '../domain/stream/stream';
@@ -115,12 +115,13 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			}));
 		},
 
-		async recentRemovals(viewer: Viewer, limit: number): Promise<RemovalRow[]> {
-			// The only source that is not a table of things that still exist: once a contact is
+		async recentNotices(viewer: Viewer, limit: number): Promise<NoticeRow[]> {
+			// The only source that is not a table of things that still exist. Once a contact is
 			// deleted — outright, or by being merged into someone else — the log entry is all
-			// that is left of that name (docs/04 §4.9). Scoped by hand
-			// because there is no contact left to scope through — the row carries the
-			// visibility the deleted record had (docs/03 §activity_log).
+			// that is left of that name (docs/04 §4.9); an export never had a row at all
+			// (docs/02 §2.15), and the household is meant to see that one was taken. Scoped by
+			// hand because there is no contact to scope through — the row carries the visibility
+			// the affected record had (docs/03 §activity_log).
 			const rows = db
 				.select({
 					id: activityLog.id,
@@ -134,7 +135,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				.where(
 					and(
 						eq(activityLog.householdId, viewer.householdId),
-						inArray(activityLog.action, ['delete', 'merge']),
+						inArray(activityLog.action, ['delete', 'merge', 'export']),
 						or(eq(activityLog.visibility, 'shared'), eq(activityLog.actorId, viewer.id))
 					)
 				)

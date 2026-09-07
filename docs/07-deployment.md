@@ -269,8 +269,11 @@ State is entirely in `/data`.
   ```bash
   docker compose exec stella sqlite3 /data/stella.db ".backup '/data/backup-$(date +%F).db'"
   ```
-  or use the admin **Settings → Data → Download backup** button (produces a single
-  archive of DB + media).
+  This is the byte-for-byte backup, and the one to restore from.
+
+  The admin button **Settings → Data → Download the archive** is a different thing: a portable
+  `.tar` of `household.yaml` plus the images, readable by anything (docs/02 §2.15). Keep it for
+  taking the data elsewhere — reading one back into Stella is not built yet.
 - **Media:** back up `/data/media` (rsync/snapshot).
 - **Whole volume:** stopping the container and copying `./data` is always safe.
 - Automate with a cron job or your existing backup tooling. Test a restore periodically.
