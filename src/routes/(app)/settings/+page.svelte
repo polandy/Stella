@@ -32,6 +32,14 @@
 					<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
 				</button>
 			</form>
+			<a href="/settings/import/archive" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
+				<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="archive" size={18} /></span>
+				<span class="min-w-0 flex-1">
+					<span class="block font-medium text-fg">Restore from an archive</span>
+					<span class="block text-sm text-fg-muted">Read a Stella archive back in. Anything this household already has is left as it is.</span>
+				</span>
+				<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
+			</a>
 			<a href="/settings/relationship-types" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
 				<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="people" size={18} /></span>
 				<span class="min-w-0 flex-1">

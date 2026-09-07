@@ -219,6 +219,28 @@ describe('recentNotices', () => {
 		expect(rows.map((r) => r.summary)).toEqual(['exported the household archive (12 people)']);
 	});
 
+	it('reports an import, because a restore moves the household\u2019s data too', async () => {
+		db.insert(schema.activityLog)
+			.values({
+				id: 'imported',
+				householdId: H,
+				actorId: U1,
+				action: 'import',
+				entityType: 'household',
+				entityId: H,
+				contactId: null,
+				visibility: 'shared',
+				summary: 'restored 12 people from an archive of Familie Brunner',
+				createdAt: 400
+			})
+			.run();
+
+		const rows = await repo.recentNotices(asU2, 10);
+		expect(rows.map((r) => r.summary)).toEqual([
+			'restored 12 people from an archive of Familie Brunner'
+		]);
+	});
+
 	it('leaves the everyday edits out, so the stream stays what happened in the family', async () => {
 		// Only what no table can report belongs here; an archive or an update is not that.
 		logRemoval('edited', 100, U1, 'shared', 'update' as 'delete');

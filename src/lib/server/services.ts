@@ -28,7 +28,9 @@ import { createDrizzleNoteRepository } from './db/note-repository';
 import { createDrizzlePhotoRepository } from './db/photo-repository';
 import { createFileMediaStore } from './media/file-store';
 import { createDrizzleArchiveRepository } from './db/archive-repository';
+import { createDrizzleRestoreRepository } from './db/restore-repository';
 import type { ArchiveDeps, ArchiveRepository } from './domain/archive/archive';
+import type { ImportArchiveDeps, RestoreRepository } from './domain/archive/import';
 import { createDrizzleRelationshipRepository } from './db/relationship-repository';
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
@@ -308,6 +310,19 @@ let archiveRepository: ArchiveRepository | null = null;
 export function getArchiveDeps(): ArchiveDeps {
 	archiveRepository ??= createDrizzleArchiveRepository(getDb(), getSqlite());
 	return { archive: archiveRepository, ids: ulidGenerator, clock: systemClock };
+}
+
+let restoreRepository: RestoreRepository | null = null;
+
+/** Deps for restoring a household from an archive (docs/02 §2.15). */
+export function getImportArchiveDeps(): ImportArchiveDeps {
+	restoreRepository ??= createDrizzleRestoreRepository(getDb(), getSqlite());
+	return {
+		restore: restoreRepository,
+		media: getMediaStore(),
+		ids: ulidGenerator,
+		clock: systemClock
+	};
 }
 
 let mediaStore: MediaStore | null = null;
