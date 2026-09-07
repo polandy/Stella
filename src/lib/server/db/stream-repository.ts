@@ -135,7 +135,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				.where(
 					and(
 						eq(activityLog.householdId, viewer.householdId),
-						inArray(activityLog.action, ['delete', 'merge', 'export']),
+						inArray(activityLog.action, ['delete', 'merge', 'export', 'import']),
 						or(eq(activityLog.visibility, 'shared'), eq(activityLog.actorId, viewer.id))
 					)
 				)

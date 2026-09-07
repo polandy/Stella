@@ -30,6 +30,19 @@ export class ArchiveFormatError extends Error {
 	}
 }
 
+/**
+ * An id in the archive that this server already holds for another household. Restoring it
+ * would hang the archive's records off somebody else's rows, so the import stops instead.
+ */
+export class ForeignHouseholdError extends Error {
+	constructor(table: string, id: string) {
+		super(
+			`This archive has already been restored into another household on this server (${table} “${id}”), so it cannot be restored here.`
+		);
+		this.name = 'ForeignHouseholdError';
+	}
+}
+
 /** An archive written by a newer Stella than this one. */
 export class ArchiveVersionError extends Error {
 	constructor(readonly fileVersion: number) {
@@ -60,6 +73,8 @@ export interface PlannedTable {
 }
 
 export interface RestorePlan {
+	/** The household the rows are being written into. */
+	householdId: string;
 	/** The household the archive came from, for the report — never for matching anything. */
 	household: string;
 	exportedAt: string | null;
@@ -563,6 +578,7 @@ export function planRestore(
 	}
 
 	return {
+		householdId: target.householdId,
 		household: str(document, 'household') ?? 'a household',
 		exportedAt: str(document, 'exported_at'),
 		// Insert order: whatever a row points at comes before it.
