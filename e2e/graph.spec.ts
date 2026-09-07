@@ -1,17 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
+import { signIn } from './app';
 
 /*
  * The explorer's toolbar and peek panel (docs/05 §5.8). Written after the screen was seen in
  * the running app (docs/08 §8.4.1). What the canvas draws is held by `theme.test.ts` and
  * `elements.test.ts`; this covers what surrounds it.
  */
-
-/** Signs in through the SEED_DEMO one-click button and lands on Home. */
-async function signIn(page: Page): Promise<void> {
-	await page.goto('/login');
-	await page.getByRole('button', { name: 'Sign in as demo user' }).click();
-	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
-}
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);

@@ -1,17 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
+import { signIn } from './app';
 
 /*
  * Touchpoints on the story timeline and "last contacted" (docs/02 §2.6, §2.23). Written after
  * the flow was verified in the running app (docs/08 §8.4.1). Runs against the demo dataset,
  * signed in as the demo admin; the touchpoints logged here use a title no seeded data contains.
  */
-
-/** Signs in through the SEED_DEMO one-click button and lands on Home. */
-async function signIn(page: Page): Promise<void> {
-	await page.goto('/login');
-	await page.getByRole('button', { name: 'Sign in as demo user' }).click();
-	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
-}
 
 /** Opens a seeded person's page from the contacts list, on the story tab it opens with. */
 async function openPerson(page: Page, name: RegExp): Promise<void> {

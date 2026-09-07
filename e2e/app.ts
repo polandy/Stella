@@ -9,11 +9,23 @@ import { expect, type Page } from '@playwright/test';
  * rather than a test waiting and hoping.
  */
 
-/** Signs in through the SEED_DEMO one-click button and lands on Home. */
+/** Where an unauthenticated request lands, so `signIn` can tell it needs to sign in. */
+const LOGIN_PATH = '/login';
+
+/**
+ * Opens Home signed in. The `setup` project normally hands every spec a stored session, so
+ * this is one navigation; when that project was filtered out (`--grep`), the app redirects
+ * to the login screen and the SEED_DEMO one-click button gets a session here instead.
+ */
 export async function signIn(page: Page): Promise<void> {
-	await page.goto('/login');
-	await page.getByRole('button', { name: 'Sign in as demo user' }).click();
+	await page.goto('/');
+	if (new URL(page.url()).pathname === LOGIN_PATH) {
+		await page.getByRole('button', { name: 'Sign in as demo user' }).click();
+	}
 	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
+	// Home is served fast enough now that a spec can start typing into the moment composer
+	// before its @-picker is wired up, so hand back a shell that has actually mounted.
+	await appReady(page);
 }
 
 /** Waits until the app shell is interactive, so a JavaScript-only control will answer. */

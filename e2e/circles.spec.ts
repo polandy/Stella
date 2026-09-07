@@ -1,18 +1,11 @@
-import { expect, test, type Page } from '@playwright/test';
-import { appReady } from './app';
+import { expect, test } from '@playwright/test';
+import { appReady, signIn } from './app';
 
 /*
  * Circles as cards and a member grid (docs/02 §2.4.2, docs/05 §5.5). Written after the
  * screens were seen in the running app (docs/08 §8.4.1). Runs against the demo dataset,
  * signed in as the demo admin; the circle created here (Quill Choir) is absent from the seed.
  */
-
-/** Signs in through the SEED_DEMO one-click button and lands on Home. */
-async function signIn(page: Page): Promise<void> {
-	await page.goto('/login');
-	await page.getByRole('button', { name: 'Sign in as demo user' }).click();
-	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
-}
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
