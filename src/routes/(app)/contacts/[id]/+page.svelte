@@ -16,6 +16,7 @@
 	import { savedEnhance } from '$lib/undo/saved';
 	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
 	import { dayLabel } from '$lib/dates/labels';
+	import { requestedTab, type ContactTab } from '$lib/contacts/tabs';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
@@ -38,17 +39,13 @@
 	const INPUT =
 		'rounded-control border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
 
-	type Tab = 'story' | 'people' | 'notes' | 'photos' | 'mentions';
 	// Arriving with `?relate=` (a moment's hint, or quick-add's "link as relative") lands
 	// straight on the relationship editor, prefilled — otherwise the hint would be a dead end.
 	// `?propose=` comes back from adding a link and carries its implied ones, which live in
 	// the same tab; both would be invisible under the story otherwise.
-	const TABS: readonly Tab[] = ['story', 'people', 'notes', 'photos', 'mentions'];
-	const requestedTab = (value: string | null): Tab | null =>
-		TABS.find((name) => name === value) ?? null;
-	const askedForTab = (): Tab =>
+	const askedForTab = (): ContactTab =>
 		requestedTab(data.tab) ?? (data.relateTo || data.proposeFor ? 'people' : 'story');
-	let tab = $state<Tab>(untrack(askedForTab));
+	let tab = $state<ContactTab>(untrack(askedForTab));
 	/*
 	 * Walking from one person to another reuses this component, so the open tab has to follow
 	 * the page rather than stay where the previous person left it — a link may ask for a tab
@@ -71,7 +68,7 @@
 	 * Counts are shown where they are exact. The story is paged, so its tab carries no number
 	 * rather than one that quietly means "as much as we have fetched".
 	 */
-	const tabs: { id: Tab; label: string; count?: number }[] = $derived([
+	const tabs: { id: ContactTab; label: string; count?: number }[] = $derived([
 		{ id: 'story', label: 'Story' },
 		{ id: 'people', label: 'People', count: data.relationships.length },
 		{ id: 'notes', label: 'Notes', count: data.notes.length },
@@ -990,17 +987,24 @@
 											{reference.kind === 'note' ? 'notes' : 'journal'}
 											{#if reference.author}· by {reference.author}{/if}
 										</span>
-										<span class="ml-auto text-xs text-fg-subtle">{dayLabel(reference.day)}</span>
 										{#if reference.visibility === 'private'}
-											<span class="inline-flex items-center gap-1 text-xs text-fg-subtle">
+											<span class="ml-auto inline-flex items-center gap-1 text-xs text-fg-subtle">
 												<Icon name="private" size={11} />private
 											</span>
 										{/if}
+										<span
+											class="text-xs text-fg-subtle"
+											class:ml-auto={reference.visibility !== 'private'}
+										>
+											{dayLabel(reference.day)}
+										</span>
 									</div>
 									{#if reference.title}
 										<p class="text-sm font-medium text-fg">{reference.title}</p>
 									{/if}
-									<p class="text-sm text-fg-muted">{reference.snippet}</p>
+									{#if reference.snippet}
+										<p class="text-sm text-fg-muted">{reference.snippet}</p>
+									{/if}
 								</a>
 							</li>
 						{/each}

@@ -59,6 +59,7 @@ import { addGalleryPhoto } from '$lib/server/domain/media/gallery-upload';
 import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
 import { createHandleResolver, mentionsOtherThan, resolveMentions } from '$lib/mentions/mentions';
 import { mentionSnippet } from '$lib/mentions/snippet';
+import { TAB_FOR_REFERENCE } from '$lib/contacts/tabs';
 import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { audienceCandidates } from '$lib/server/domain/moments/moments';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
@@ -257,14 +258,13 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		mentionedIn: mentionedIn.map((reference) => ({
 			kind: reference.kind,
 			entryId: reference.entryId,
-			sourceContactId: reference.sourceContactId,
 			sourceName: reference.sourceName,
 			author: authorLabel(reference.authorId === locals.user!.id, nameOfAuthor(reference.authorId)),
 			visibility: reference.visibility,
 			day: reference.day,
 			title: reference.title,
 			snippet: mentionSnippet(reference.body, nameOf),
-			href: `/contacts/${reference.sourceContactId}?tab=${reference.kind === 'note' ? 'notes' : 'story'}`
+			href: `/contacts/${reference.sourceContactId}?tab=${TAB_FOR_REFERENCE[reference.kind]}`
 		})),
 		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5)
 		notes: notes.map((note) => ({
