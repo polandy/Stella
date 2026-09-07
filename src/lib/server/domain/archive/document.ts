@@ -178,7 +178,6 @@ export function buildArchiveDocument(
 					kind: text(d, 'kind'),
 					label: text(d, 'label'),
 					date: text(d, 'date'),
-					precision: text(d, 'precision'),
 					recurs_yearly: flag(d, 'recurs_yearly') ? true : null,
 					remind: flag(d, 'remind') ? true : null
 				})
@@ -217,6 +216,7 @@ export function buildArchiveDocument(
 					description: text(i, 'description'),
 					visibility: text(i, 'visibility'),
 					author: text(i, 'created_by'),
+					created_at: moment(i, 'created_at'),
 					participants: participants.get(id(i)) ?? null
 				})
 			),
@@ -255,7 +255,12 @@ export function buildArchiveDocument(
 			})
 		),
 		tags: t('tag').map((tag) =>
-			present({ id: id(tag), name: text(tag, 'name'), color: text(tag, 'color') })
+			present({
+				id: id(tag),
+				name: text(tag, 'name'),
+				color: text(tag, 'color'),
+				created_at: moment(tag, 'created_at')
+			})
 		),
 		circles: t('circle').map((c) =>
 			present({
@@ -270,15 +275,18 @@ export function buildArchiveDocument(
 				archived_at: moment(c, 'archived_at'),
 				visibility: text(c, 'visibility'),
 				author: text(c, 'created_by'),
+				created_at: moment(c, 'created_at'),
 				members: (circleMembers.get(id(c)) ?? []).map((m) =>
 					present({
 						id: id(m),
 						person: id(m, 'contact_id'),
 						role: text(m, 'role'),
-						since: text(m, 'since_date'),
-						until: text(m, 'until_date'),
+						// The columns are start_date/end_date; the reader gets the plainer words.
+						since: text(m, 'start_date'),
+						until: text(m, 'end_date'),
 						note: text(m, 'note'),
-						author: text(m, 'created_by')
+						author: text(m, 'created_by'),
+						created_at: moment(m, 'created_at')
 					})
 				)
 			})

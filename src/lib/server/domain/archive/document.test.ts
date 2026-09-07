@@ -39,7 +39,7 @@ function fullHousehold(): HouseholdSnapshot {
 			tag: [{ id: 'tg-1', name: 'Bern', color: 'blue' }],
 			contact_tag: [{ contact_id: 'c-hans', tag_id: 'tg-1' }],
 			circle: [{ id: 'ci-1', name: 'FC Länggasse', kind: 'club', created_by: 'u-1', visibility: 'shared' }],
-			circle_membership: [{ id: 'cm-1', circle_id: 'ci-1', contact_id: 'c-hans', role: 'coach', since_date: '2019-06-01', until_date: null, created_by: 'u-1' }],
+			circle_membership: [{ id: 'cm-1', circle_id: 'ci-1', contact_id: 'c-hans', role: 'coach', start_date: '2019-06-01', end_date: null, created_by: 'u-1' }],
 			relationship: [
 				{ id: 'r-1', from_contact_id: 'c-hans', to_contact_id: 'c-rosa', type_id: 'rt-1', note: 'married in Thun', since_date: '1980-06-01', status: 'current', created_by: 'u-1', created_at: NOW }
 			],
@@ -195,7 +195,7 @@ describe('what a restore would otherwise lose', () => {
 				{ id: 'ci-1', name: 'Klasse 5b', kind: 'class', color: 'green', parent_circle_id: 'ci-0', start_date: '2019-08-01', end_date: '2020-07-01', archived_at: NOW, created_by: 'u-1', visibility: 'shared' }
 			],
 			circle_membership: [
-				{ id: 'cm-1', circle_id: 'ci-1', contact_id: 'c-1', role: 'pupil', since_date: '2019-08-01', until_date: null, note: 'sat at the back', created_by: 'u-1' }
+				{ id: 'cm-1', circle_id: 'ci-1', contact_id: 'c-1', role: 'pupil', start_date: '2019-08-01', end_date: '2020-07-01', note: 'sat at the back', created_by: 'u-1' }
 			],
 			relationship: [
 				{ id: 'r-1', from_contact_id: 'c-1', to_contact_id: 'c-1', type_id: 'rt-1', created_by: 'u-1', created_at: NOW }
@@ -230,6 +230,11 @@ describe('what a restore would otherwise lose', () => {
 		expect(
 			(built().circles[0].members as Record<string, unknown>[])[0]
 		).toMatchObject({ id: 'cm-1', author: 'u-1', note: 'sat at the back' });
+		// The membership's own dates: read from start_date/end_date, the columns it really has.
+		expect((built().circles[0].members as Record<string, unknown>[])[0]).toMatchObject({
+			since: '2019-08-01',
+			until: '2020-07-01'
+		});
 	});
 
 	it('keeps the details of a field, a date, a photo and a circle', () => {
