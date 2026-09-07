@@ -3,6 +3,7 @@ import * as v from 'valibot';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { getConfig } from '$lib/server/config';
 import { importMonicaDump, previewMonicaDump } from '$lib/server/domain/import/monica/apply';
+import { MonicaJsonError } from '$lib/server/domain/import/monica/json-export';
 import { SqlDumpError } from '$lib/server/domain/import/monica/sql-dump';
 import {
 	discardStagedDump,
@@ -15,12 +16,18 @@ import { getImportDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * The Monica import wizard (docs/02 §2.16): upload → preview → confirm → photos. The dump is
- * staged on disk between steps; every step re-plans from it, so the preview and the import
- * can never disagree. Admin only.
+ * The Monica import wizard (docs/02 §2.16): upload → preview → confirm → photos. Either of
+ * Monica's exports is accepted — the SQL dump or the JSON file — and which one it is comes
+ * from the file itself. It is staged on disk between steps; every step re-plans from it, so
+ * the preview and the import can never disagree. Admin only.
  */
 
-/** Largest dump accepted, uncompressed. A family's Monica is a few MB; this is generous. */
+/** The two errors that mean "this file is not a Monica export I can read", either format. */
+const UNREADABLE = [SqlDumpError, MonicaJsonError] as const;
+const isUnreadable = (err: unknown): err is SqlDumpError | MonicaJsonError =>
+	UNREADABLE.some((kind) => err instanceof kind);
+
+/** Largest export accepted, uncompressed. A family's Monica is a few MB; this is generous. */
 const DUMP_MAX_BYTES = 200 * 1024 * 1024;
 
 const GZIP_MAGIC = [0x1f, 0x8b];
@@ -36,12 +43,12 @@ const StepSchema = v.object({
 	visibility: VisibilitySchema
 });
 
-/** The dump as text, whether it arrived plain or gzipped. */
+/** The export as text, whether it arrived plain or gzipped. */
 async function dumpTextOf(file: File): Promise<string> {
 	const bytes = new Uint8Array(await file.arrayBuffer());
 	const gzipped = bytes[0] === GZIP_MAGIC[0] && bytes[1] === GZIP_MAGIC[1];
 	const plain = gzipped ? Bun.gunzipSync(bytes) : bytes;
-	if (plain.byteLength > DUMP_MAX_BYTES) throw new SqlDumpError('The dump is larger than this importer accepts.');
+	if (plain.byteLength > DUMP_MAX_BYTES) throw new SqlDumpError('The file is larger than this importer accepts.');
 	return new TextDecoder().decode(plain);
 }
 
@@ -82,7 +89,7 @@ export const actions: Actions = {
 				customTypes: plan.relationshipTypes.map((t) => ({ forwardLabel: t.forwardLabel, reverseLabel: t.reverseLabel, category: t.category }))
 			};
 		} catch (err) {
-			if (err instanceof SqlDumpError) return fail(400, { step: 'upload' as const, error: err.message });
+			if (isUnreadable(err)) return fail(400, { step: 'upload' as const, error: err.message });
 			throw err;
 		}
 	},
@@ -105,7 +112,10 @@ export const actions: Actions = {
 			token: parsed.output.token,
 			report: plan.report,
 			inserted: outcome.inserted,
-			photos: photoManifest(plan)
+			photos: photoManifest(plan),
+			// A JSON export carries its pictures; a dump only names them, and the admin has to
+			// point at Monica's folder. The step reads differently for each (docs/02 §2.16).
+			photosAreEmbedded: plan.photos.some((p) => p.dataUrl !== null)
 		};
 	},
 

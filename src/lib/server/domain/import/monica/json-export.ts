@@ -293,6 +293,7 @@ export function readMonicaJsonExport(parsed: unknown): MonicaExport {
 			id,
 			// The JSON export carries the image itself; the "path" is only what it was called.
 			path: str(properties.original_filename) ?? String(id),
+			dataUrl: str(properties.dataUrl),
 			mime: str(properties.mime_type) ?? 'image/jpeg',
 			sizeBytes: num(properties.filesize),
 			contactId: photoContact.get(id) ?? null,

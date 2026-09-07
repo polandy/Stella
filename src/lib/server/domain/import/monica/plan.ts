@@ -59,6 +59,12 @@ export interface ImportedPhoto {
 	sizeBytes: number | null;
 	/** Whether the contact used this photo as their avatar. */
 	isAvatar: boolean;
+	/**
+	 * The picture itself when the export carried it (JSON), so the browser can fetch it back
+	 * and downscale it there — the server has no image library (docs/04 §4.9). Null for a
+	 * dump, where the admin points at Monica's storage folder instead.
+	 */
+	dataUrl: string | null;
 }
 
 export interface ImportCounts {
@@ -352,7 +358,8 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 			sourcePath: p.path,
 			mime: p.mime,
 			sizeBytes: p.sizeBytes,
-			isAvatar: avatarOf.get(p.id) === p.contactId
+			isAvatar: avatarOf.get(p.id) === p.contactId,
+			dataUrl: p.dataUrl
 		});
 	}
 

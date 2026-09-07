@@ -125,6 +125,11 @@ export interface MonicaPhoto {
 	id: MonicaId;
 	/** Path relative to Monica's public storage, e.g. `photos/abc.jpg`. */
 	path: string;
+	/**
+	 * The image itself, as the `data:` URL a JSON export embeds. Null for a SQL dump, which
+	 * names the file and leaves it in Monica's storage folder for the admin to point at.
+	 */
+	dataUrl: string | null;
 	mime: string;
 	sizeBytes: number | null;
 	contactId: MonicaId | null;
@@ -359,6 +364,8 @@ export function readMonicaExport(dump: SqlDump): MonicaExport {
 		photos: optional(dump, 'photos').map((r) => ({
 			id: Number(r.id),
 			path: String(r.new_filename ?? ''),
+			// A dump names the file; the picture itself stays in Monica's storage folder.
+			dataUrl: null,
 			mime: String(r.mime_type ?? 'application/octet-stream'),
 			sizeBytes: num(r.filesize),
 			contactId: photoContact.get(Number(r.id)) ?? null,

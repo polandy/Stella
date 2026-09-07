@@ -293,9 +293,9 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 		const exp = emptyExport();
 		exp.contacts = [contact(1, 'A', null, { avatarSource: 'photo', avatarPhotoId: 10 })];
 		exp.photos = [
-			{ id: 10, path: 'photos/a.jpg', mime: 'image/jpeg', sizeBytes: 100, contactId: 1, createdAt: null },
-			{ id: 11, path: 'photos/b.jpg', mime: 'image/jpeg', sizeBytes: 200, contactId: 1, createdAt: null },
-			{ id: 12, path: 'photos/orphan.jpg', mime: 'image/jpeg', sizeBytes: 5, contactId: null, createdAt: null }
+			{ id: 10, path: 'photos/a.jpg', mime: 'image/jpeg', sizeBytes: 100, contactId: 1, createdAt: null, dataUrl: null },
+			{ id: 11, path: 'photos/b.jpg', mime: 'image/jpeg', sizeBytes: 200, contactId: 1, createdAt: null, dataUrl: null },
+			{ id: 12, path: 'photos/orphan.jpg', mime: 'image/jpeg', sizeBytes: 5, contactId: null, createdAt: null, dataUrl: null }
 		];
 		const plan = planMonicaImport(exp, opts);
 		expect(plan.photos.map((p) => [p.id, p.contactId, p.sourcePath, p.isAvatar])).toEqual([

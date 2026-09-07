@@ -224,7 +224,16 @@ describe('readMonicaJsonExport', () => {
 		);
 
 		expect(exp.photos).toEqual([
-			{ id: 'p-1', path: 'hans.jpg', mime: 'image/jpeg', sizeBytes: 1234, contactId: 'c-hans', createdAt: null }
+			{
+				id: 'p-1',
+				path: 'hans.jpg',
+				mime: 'image/jpeg',
+				sizeBytes: 1234,
+				contactId: 'c-hans',
+				createdAt: null,
+				// The picture travels inside the file; there is no folder to point at.
+				dataUrl: 'data:image/jpeg;base64,AAAA'
+			}
 		]);
 	});
 

@@ -39,7 +39,11 @@ function toJpeg(bitmap: ImageBitmap, w: number, h: number): Promise<Blob> {
 	});
 }
 
-export async function processImage(file: File): Promise<ProcessedImage> {
+/**
+ * Downscale one picture into a full-size and a thumbnail JPEG. Takes any `Blob`, not only a
+ * picked `File`: a Monica JSON import fetches its pictures back from the server (docs/02 §2.16).
+ */
+export async function processImage(file: Blob): Promise<ProcessedImage> {
 	const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
 	try {
 		const full = fit(bitmap.width, bitmap.height, MAX_EDGE);
