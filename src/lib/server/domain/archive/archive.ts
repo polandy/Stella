@@ -145,3 +145,51 @@ export async function exportHousehold(
 		mediaPaths: snapshot.mediaPaths
 	};
 }
+
+/** One thing the archive is made of: the document, or one image. */
+export type ArchivePlanEntry =
+	| { name: typeof DOCUMENT_ENTRY; kind: 'document' }
+	| { name: string; kind: 'media'; path: string };
+
+/**
+ * Name every entry before a byte is written. The names come from the database, so one that the
+ * archive cannot carry has to fail *here* — once the response is on its way the household would
+ * get a truncated file that still looks like a backup.
+ */
+export function planArchive(mediaPaths: readonly string[]): ArchivePlanEntry[] {
+	return [
+		{ name: DOCUMENT_ENTRY, kind: 'document' },
+		...mediaPaths.map((path): ArchivePlanEntry => ({ name: mediaEntryName(path), kind: 'media', path }))
+	];
+}
+
+/** What assembling the archive needs from the world: the text, the bytes, and somewhere to complain. */
+export interface ArchiveSource {
+	documentText: string;
+	read(path: string): Promise<Uint8Array | null>;
+	/** Called for an image the database knows about and the disk does not. */
+	onMissing(path: string): void;
+}
+
+/**
+ * The archive's entries in order, read one at a time so a real photo library is never in memory
+ * at once. An image the database names but the disk has lost is skipped and reported: one
+ * missing file must not cost the household the other two thousand.
+ */
+export async function* archiveEntries(
+	plan: readonly ArchivePlanEntry[],
+	source: ArchiveSource
+): AsyncGenerator<{ name: string; bytes: Uint8Array }> {
+	for (const entry of plan) {
+		if (entry.kind === 'document') {
+			yield { name: entry.name, bytes: new TextEncoder().encode(source.documentText) };
+			continue;
+		}
+		const bytes = await source.read(entry.path);
+		if (!bytes) {
+			source.onMissing(entry.path);
+			continue;
+		}
+		yield { name: entry.name, bytes };
+	}
+}

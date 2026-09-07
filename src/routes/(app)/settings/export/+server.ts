@@ -1,8 +1,8 @@
 import { error, redirect } from '@sveltejs/kit';
 import {
-	DOCUMENT_ENTRY,
+	archiveEntries,
 	exportHousehold,
-	mediaEntryName,
+	planArchive,
 	serialiseDocument
 } from '$lib/server/domain/archive/archive';
 import { tarEntry, tarTrailer } from '$lib/archive/tar';
@@ -32,23 +32,24 @@ export const POST: RequestHandler = async ({ locals }) => {
 		householdId: locals.user.householdId
 	});
 
+	// Named before anything is sent: a path the archive cannot carry must fail as an error,
+	// not as a truncated file that still looks like a backup.
+	const plan = planArchive(mediaPaths);
+
 	const media = getMediaStore();
 	const mtime = Math.floor(Date.now() / 1000);
-	const yaml = new TextEncoder().encode(serialiseDocument(document));
+	const entries = archiveEntries(plan, {
+		documentText: serialiseDocument(document),
+		read: (path) => media.read(path),
+		onMissing: (path) =>
+			console.warn(`[export] ${path} is in the database but not on disk; skipped.`)
+	});
 
 	const body = new ReadableStream<Uint8Array>({
 		async start(controller) {
 			try {
-				controller.enqueue(tarEntry(DOCUMENT_ENTRY, yaml, mtime));
-				for (const path of mediaPaths) {
-					const bytes = await media.read(path);
-					if (!bytes) {
-						// One missing file must not cost the household the other two thousand. It is
-						// absent from the archive, and the server says which one so it can be chased.
-						console.warn(`[export] ${path} is in the database but not on disk; skipped.`);
-						continue;
-					}
-					controller.enqueue(tarEntry(mediaEntryName(path), bytes, mtime));
+				for await (const { name, bytes } of entries) {
+					controller.enqueue(tarEntry(name, bytes, mtime));
 				}
 				controller.enqueue(tarTrailer());
 				controller.close();

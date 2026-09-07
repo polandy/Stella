@@ -4,10 +4,12 @@ import type { IdGenerator } from '../../id';
 import type { NewActivityEntry } from '../activity/activity';
 import {
 	UnsafeMediaPathError,
+	archiveEntries,
 	archiveFileName,
 	describeExport,
 	exportHousehold,
 	mediaEntryName,
+	planArchive,
 	type ArchiveRepository,
 	type HouseholdSnapshot
 } from './archive';
@@ -124,5 +126,67 @@ describe('exportHousehold', () => {
 			summary: 'exported the household archive (2 people)',
 			createdAt: NOW
 		});
+	});
+});
+
+describe('planArchive', () => {
+	it('puts the document first, then the images', () => {
+		expect(planArchive(['photo-1.jpg', 'photo-1-thumb.jpg'])).toEqual([
+			{ name: 'household.yaml', kind: 'document' },
+			{ name: 'media/photo-1.jpg', kind: 'media', path: 'photo-1.jpg' },
+			{ name: 'media/photo-1-thumb.jpg', kind: 'media', path: 'photo-1-thumb.jpg' }
+		]);
+	});
+
+	it('refuses a path it cannot carry before anything is written', () => {
+		// The planning happens before the response is sent, so this throw becomes an error the
+		// household sees — rather than a truncated file that still looks like a backup.
+		expect(() => planArchive(['ok.jpg', '../../etc/passwd'])).toThrow(UnsafeMediaPathError);
+	});
+});
+
+describe('archiveEntries', () => {
+	const utf8 = new TextEncoder();
+
+	/** A media store with the files it was given, and nothing else. */
+	function store(files: Record<string, string>) {
+		const missing: string[] = [];
+		return {
+			missing,
+			source: {
+				documentText: 'format: stella-archive\n',
+				read: async (path: string) =>
+					path in files ? utf8.encode(files[path]) : null,
+				onMissing: (path: string) => missing.push(path)
+			}
+		};
+	}
+
+	async function collect(plan: ReturnType<typeof planArchive>, source: Parameters<typeof archiveEntries>[1]) {
+		const out: { name: string; text: string }[] = [];
+		for await (const entry of archiveEntries(plan, source)) {
+			out.push({ name: entry.name, text: new TextDecoder().decode(entry.bytes) });
+		}
+		return out;
+	}
+
+	it('writes the document and then each image, in the planned order', async () => {
+		const s = store({ 'a.jpg': 'AAA', 'b.jpg': 'BBB' });
+		expect(await collect(planArchive(['a.jpg', 'b.jpg']), s.source)).toEqual([
+			{ name: 'household.yaml', text: 'format: stella-archive\n' },
+			{ name: 'media/a.jpg', text: 'AAA' },
+			{ name: 'media/b.jpg', text: 'BBB' }
+		]);
+	});
+
+	it('skips an image the database knows about and the disk has lost, and says which', async () => {
+		// One missing file must not cost the household the other two thousand — but it must not
+		// vanish silently either, or nobody ever chases it.
+		const s = store({ 'a.jpg': 'AAA', 'b.jpg': 'BBB' });
+		const written = await collect(planArchive(['a.jpg', 'gone.jpg', 'b.jpg']), s.source);
+
+		// The image after the gap is still written — the loop carries on rather than stopping.
+		expect(written.map((e) => e.name)).toEqual(['household.yaml', 'media/a.jpg', 'media/b.jpg']);
+		expect(s.missing).toEqual(['gone.jpg']);
 	});
 });
