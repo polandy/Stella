@@ -868,10 +868,15 @@ entry and a household update, without leaving the page. Concept + clickable prot
   **new people** ("Lena added *Thomas Lang*"), **new relationships** ("Leo linked *Marie*
   → colleague of *Andy*") and **logged interactions** ("Lena logged a call with *Oma*",
   §2.6). Every item links to the person it is about.
+- **Notices** are the exception: the few things no table can report, read from `activity_log` —
+  a person deleted or merged away (§2.2), and an archive of the household being taken (§2.15).
+  Everyday edits are not written there and do not appear here; the stream stays a record of what
+  happened in the family, not of what happened to the database.
 - **Visibility is the filter.** The stream is a *query* over the existing tables, scoped by the
   central rules (§3.7): a private moment or interaction appears only in its author's stream,
   marked with a lock; a private person only in their creator's; a relationship only when both
-  ends are visible. There is no event/log table and nothing is written twice.
+  ends are visible. Apart from the notices above, there is no event/log table and nothing is
+  written twice.
 - **Deliberately not in the MVP:** filters by member or type, moments without any person
   ("family trip"), parsing relationships out of text,
   reactions or comments. The previous dashboard panels (new people, recent notes, your

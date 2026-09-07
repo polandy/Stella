@@ -73,10 +73,12 @@ export interface InteractionRow {
 }
 
 /**
- * A name that stopped existing — deleted outright, or merged into someone else (docs/02
- * §2.2). Read from the activity log, because no table can report it any more.
+ * Something only the activity log can report: a name that stopped existing — deleted outright
+ * or merged into someone else (docs/02 §2.2) — or an archive of the household being taken
+ * (§2.15). In every case the tables cannot say it, either because the row is gone or because
+ * there never was one.
  */
-export interface RemovalRow {
+export interface NoticeRow {
 	id: string;
 	at: number;
 	actor: StreamActor;
@@ -89,15 +91,15 @@ export type StreamItem =
 	| ({ kind: 'person'; mine: boolean } & PersonRow)
 	| ({ kind: 'relationship'; mine: boolean } & RelationshipRow)
 	| ({ kind: 'interaction'; mine: boolean } & InteractionRow)
-	| ({ kind: 'removal'; mine: boolean } & RemovalRow);
+	| ({ kind: 'notice'; mine: boolean } & NoticeRow);
 
 export interface StreamRepository {
 	recentMoments(viewer: Viewer, limit: number): Promise<MomentRow[]>;
 	recentPeople(viewer: Viewer, limit: number): Promise<PersonRow[]>;
 	recentRelationships(viewer: Viewer, limit: number): Promise<RelationshipRow[]>;
 	recentInteractions(viewer: Viewer, limit: number): Promise<InteractionRow[]>;
-	/** The one thing the other four reads cannot see, because those rows are gone. */
-	recentRemovals(viewer: Viewer, limit: number): Promise<RemovalRow[]>;
+	/** The one source that is the log itself, for what no table can report. */
+	recentNotices(viewer: Viewer, limit: number): Promise<NoticeRow[]>;
 }
 
 export interface StreamDeps {
@@ -105,7 +107,7 @@ export interface StreamDeps {
 }
 
 /**
- * Merge the four (already scoped, newest-first) sources into one stream, newest first, cut
+ * Merge the five (already scoped, newest-first) sources into one stream, newest first, cut
  * to `limit`. Ties on time keep a stable kind order so a person created together with their
  * first moment reads "added … / wrote …" consistently. Pure and deterministic.
  */
@@ -115,7 +117,7 @@ export function assembleStream(
 		people: PersonRow[];
 		relationships: RelationshipRow[];
 		interactions: InteractionRow[];
-		removals: RemovalRow[];
+		notices: NoticeRow[];
 	},
 	viewerId: string,
 	limit = STREAM_LIMIT
@@ -130,14 +132,14 @@ export function assembleStream(
 		...sources.interactions.map(
 			(i): StreamItem => ({ kind: 'interaction', mine: mine(i.actor), ...i })
 		),
-		...sources.removals.map((r): StreamItem => ({ kind: 'removal', mine: mine(r.actor), ...r }))
+		...sources.notices.map((r): StreamItem => ({ kind: 'notice', mine: mine(r.actor), ...r }))
 	];
 	const rank: Record<StreamItem['kind'], number> = {
 		moment: 0,
 		interaction: 1,
 		relationship: 2,
 		person: 3,
-		removal: 4
+		notice: 4
 	};
 	items.sort((a, b) => b.at - a.at || rank[a.kind] - rank[b.kind] || a.id.localeCompare(b.id));
 	return items.slice(0, Math.max(0, limit));
@@ -149,15 +151,15 @@ export async function buildStream(
 	viewer: Viewer,
 	limit = STREAM_LIMIT
 ): Promise<StreamItem[]> {
-	const [moments, people, relationships, interactions, removals] = await Promise.all([
+	const [moments, people, relationships, interactions, notices] = await Promise.all([
 		deps.stream.recentMoments(viewer, limit),
 		deps.stream.recentPeople(viewer, limit),
 		deps.stream.recentRelationships(viewer, limit),
 		deps.stream.recentInteractions(viewer, limit),
-		deps.stream.recentRemovals(viewer, limit)
+		deps.stream.recentNotices(viewer, limit)
 	]);
 	return assembleStream(
-		{ moments, people, relationships, interactions, removals },
+		{ moments, people, relationships, interactions, notices },
 		viewer.id,
 		limit
 	);
