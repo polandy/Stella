@@ -1,11 +1,26 @@
 # Monica → Stella mapping
 
-What the Monica import (docs/02 §2.16) does with each table of a Monica 4.x database dump.
-The code is `src/lib/server/domain/import/monica/`; this table is the human-readable
-contract and changes with it.
+What the Monica import (docs/02 §2.16) does with each record of a Monica 4.x export. The code
+is `src/lib/server/domain/import/monica/`; this table is the human-readable contract and
+changes with it.
+
+Monica offers **two** exports and Stella reads both, working out which one a file is from the
+file itself. They carry the same household but not the same shape, so read the table below as
+being about Monica's *records* — the SQL column names are named where they differ:
+
+| | SQL dump (`mariadb-dump`) | JSON export (*Settings → Export data*) |
+|---|---|---|
+| Shape | tables and rows | one document: records with `properties`, children in `{count, type, values}` buckets |
+| A record's key | auto-increment number | `uuid` |
+| Pictures | named; the files stay in Monica's storage folder | embedded in the file as `data:` URLs |
+| Deleted people | present, with `deleted_at`; left out and counted | not in the file at all |
+| Relationship types | a table, with the reverse wording | only the forward name, on each link |
+| "How you met" / where | present | **not exported by Monica**; the import says so |
 
 Every imported row gets a **stable source id** of the form `monica:<what>:<monica id>`, so
-importing the same dump again inserts nothing new. Everything is attributed to the importing
+importing the same export again inserts nothing new. The id is Monica's own key, which the two
+formats spell differently — so importing *both* exports of the same Monica into one household
+writes everything twice. Pick one format and stay with it. Everything is attributed to the importing
 member and gets the visibility chosen in the wizard. The ids assume **one household per
 deployment** (docs/03 §household): two households importing two Monicas into one database
 would collide on them — scope the ids by household before multi-tenancy (docs/06).
@@ -61,11 +76,12 @@ A relationship whose end is a deleted contact is left out and reported.
 | `pets` | `note` titled *Pet*: "🐾 **name**, category" |
 | `activities` + `activity_contact` | `interaction` of kind `met` on the first linked person, the others as participants; summary → title, description + "(Monica activity: type)" |
 | `tags` + `contact_tag` | `tag` (reused by name if the household already has it) + assignments |
-| `photos` + `contact_photo` | `photo` on the person; the file is uploaded in the wizard's photo step |
+| `photos` + `contact_photo` | `photo` on the person; the picture is stored in the wizard's photo step — picked out of Monica's folder for a dump, fetched back out of the file for a JSON export |
 | `reminders` for birthdays / deaths / first met | left out — Stella derives them (docs/02 §2.13) |
 | `entries` (free journal entries not attached to a person) | left out and named in the report |
 | `users` beyond the first | counted in a warning; everything is attributed to the importer |
 
 Not read at all: Monica's `conversations`, `calls`, `tasks`, `debts`, `documents`, audit
-logs, API keys and settings. If your Monica has data there, say so — the report will not
+logs, API keys and settings. From a JSON export, the rated-day journal rows (`type: "day"`)
+are left alongside the written entries the same way. If your Monica has data there, say so — the report will not
 mention them.

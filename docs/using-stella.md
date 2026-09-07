@@ -252,12 +252,19 @@ to see.
 ## Moving in from Monica
 
 If your people already live in Monica, you do not have to type them again. The household
-admin opens **Settings → Import from Monica** and hands it a dump of the Monica database.
-On a self-hosted Monica that is one command on the server:
+admin opens **Settings → Import from Monica** and hands it an export. Monica offers two, and
+Stella takes either — it works out which one you gave it, so there is nothing to choose:
 
-```
-docker exec monica-db sh -c 'mariadb-dump -u"$MYSQL_USER" "$MYSQL_DATABASE"' | gzip > monica.sql.gz
-```
+- **The JSON file** is the easy one, and the one to prefer: in Monica, *Settings → Export
+  data*. It has the pictures inside it.
+- **A database dump**, if you self-host and would rather do it on the server:
+
+  ```
+  docker exec monica-db sh -c 'mariadb-dump -u"$MYSQL_USER" "$MYSQL_DATABASE"' | gzip > monica.sql.gz
+  ```
+
+Gzipped is fine either way. Whichever you pick, **stay with it**: the two files name Monica's
+records differently, so importing both of them would bring everybody in twice.
 
 Stella reads the file and shows what it found — how many people, relationships, notes and
 photos — together with a list of everything it will leave out and why (people deleted in
@@ -271,12 +278,18 @@ activities as **interactions**; tags; and Monica's gifts, life events and pets a
 labelled notes on the person, so nothing quietly disappears. The full table is in
 [monica-mapping.md](monica-mapping.md).
 
-**Photos** come in a last step. Copy Monica's photo folder (`storage/app/public/photos`)
-somewhere your browser can reach, point the folder picker at it, and Stella matches every
-file to its person, shrinks it in your browser and uploads it. The photo someone used as
-their Monica avatar becomes their avatar here too.
+**Photos** come in a last step, and this is where the two files differ. From the **JSON
+file** the pictures are already there: press *Store photos* and they are shrunk in your
+browser one by one. From a **dump** they are not — copy Monica's photo folder
+(`storage/app/public/photos`) somewhere your browser can reach and point the folder picker at
+it, and Stella matches every file to its person. Either way the photo someone used as their
+Monica avatar becomes their avatar here too.
 
-Importing the same dump a second time changes nothing — every imported record remembers
+One thing the JSON file does not carry, and Stella says so on the preview rather than letting
+it go missing quietly: **how you met** someone, and where. If that text matters to you, use
+the dump.
+
+Importing the same export a second time changes nothing — every imported record remembers
 where it came from — so a retry after a hiccup is safe.
 
 ## Taking your data with you

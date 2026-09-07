@@ -736,16 +736,28 @@ included) it is the very first thing they will do.
 > takes a parsed export and emits Stella entities — pure and unit-testable (test-first),
 > with the file upload/UI as a thin edge. See `docs/08-coding-guidelines.md`.
 
-- **Shipped (SQL dump):** *Settings → Data → Import from Monica* takes a `mariadb-dump` of
-  the Monica database, plain or gzipped, and walks three steps: **preview** (counts per
+- **Shipped (both formats):** *Settings → Data → Import from Monica* takes either of Monica's
+  exports — the JSON file from *Settings → Export data*, or a `mariadb-dump` of the database —
+  plain or gzipped, and works out which it is from the file itself. It then walks three steps: **preview** (counts per
   entity, the custom relationship types it will create, and a "left out, and why" list),
   **import** (one transaction), then **photos** — the admin points the browser's folder
   picker at Monica's `storage/app/public/photos`; each file is matched by name, downscaled
   in the browser like every other upload, and stored, with Monica's avatar choice carried
   over. Everything gets a **stable source id** (`monica:contact:12`), so importing the same
-  dump twice writes nothing new and the report says so. The mapping table is
-  [monica-mapping.md](monica-mapping.md). Monica's JSON export and vCard are not read yet;
-  the wizard is the same for them once they are.
+  export twice writes nothing new and the report says so. The mapping table is
+  [monica-mapping.md](monica-mapping.md).
+
+  The **photo step differs by format**, because the formats do: a dump names its files and
+  leaves them in Monica's storage folder, so the admin points the picker at it; a JSON export
+  carries every picture inside the file, so there is nothing to point at — the server hands
+  each one back out and the browser downscales it the same way. Two things the JSON export
+  cannot give, and the report says both rather than letting them vanish: Monica does not put
+  *"how you met"* or where into that file, and it names a relationship type only in the
+  forward direction. And because a source id is Monica's own key, which the two formats spell
+  differently (a number against a uuid), importing *both* exports of one Monica into one
+  household writes everything twice — pick a format and stay with it.
+
+  vCard is not read yet; the wizard is the same for it once it is.
 
 ## 2.17 Settings **[M1/M2]**
 
