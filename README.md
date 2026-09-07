@@ -27,9 +27,19 @@ Stella is a single, quiet place to put those things — and it asks for almost n
 return. You write one sentence, mention the people in it, and you are done. Everyone in
 the household sees it, unless you decide otherwise.
 
-It is a lighter, warmer alternative to [Monica](https://github.com/monicahq/monica):
-fewer screens, no forms to fill before you can save a thought, and built for a household
-rather than a single user.
+## Inspired by Monica
+
+Stella owes its existence to [Monica](https://github.com/monicahq/monica), the personal CRM
+that first made the case that the people in your life deserve the same care a business gives
+its customers. Monica got the idea right; we wanted a lighter, warmer take on it — fewer
+screens, no forms to fill before you can save a thought, and built for a household rather
+than a single user.
+
+So Stella keeps what Monica taught us and leaves the rest: one capture field instead of a
+dashboard, sharing by default within the family, and a graph of relationships you can
+actually see. If you are already using Monica, the guided
+[import](docs/using-stella.md) brings your people, relationships, notes, activities, tags
+and photos across from a database dump.
 
 ## What it feels like
 
