@@ -501,7 +501,7 @@ export const activityLog = sqliteTable(
 		actorId: text('actor_id')
 			.notNull()
 			.references(() => user.id),
-		action: text('action').$type<'create' | 'update' | 'delete' | 'archive' | 'merge'>().notNull(),
+		action: text('action').$type<'create' | 'update' | 'delete' | 'archive' | 'merge' | 'export'>().notNull(),
 		entityType: text('entity_type').notNull(),
 		entityId: text('entity_id').notNull(),
 		contactId: text('contact_id'),
