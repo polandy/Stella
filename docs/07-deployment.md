@@ -79,7 +79,7 @@ DATABASE_PATH=/data/stella.db
 MEDIA_DIR=/data/media
 SESSION_SECRET=change-me-64-hex-chars        # `openssl rand -hex 32`
 TZ=Europe/Zurich
-BODY_SIZE_LIMIT=25M                           # request cap (uploads: Monica dump, photos); the image sets it
+BODY_SIZE_LIMIT=250M                          # request cap (uploads: restored archive, Monica dump, photos); the image sets it
 
 # --- Auth toggles ---
 AUTH_LOCAL_ENABLED=true                       # keep true for a break-glass admin
@@ -273,7 +273,12 @@ State is entirely in `/data`.
 
   The admin button **Settings → Data → Download the archive** is a different thing: a portable
   `.tar` of `household.yaml` plus the images, readable by anything (docs/02 §2.15). Keep it for
-  taking the data elsewhere — reading one back into Stella is not built yet.
+  taking the data elsewhere, or for moving a household to another Stella — **Settings → Restore
+  from an archive** reads one back in. Note what that restore is: it *adds* what the household
+  no longer has and never overwrites what it does have, so it brings deleted records back but
+  does not undo edits. Rolling the whole installation back to a point in time is what the
+  SQLite snapshot above is for. The upload goes through `BODY_SIZE_LIMIT` (250M in the image)
+  and the importer's own 200 MB ceiling; a household bigger than that restores from the snapshot.
 - **Media:** back up `/data/media` (rsync/snapshot).
 - **Whole volume:** stopping the container and copying `./data` is always safe.
 - Automate with a cron job or your existing backup tooling. Test a restore periodically.

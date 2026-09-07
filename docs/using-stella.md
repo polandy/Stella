@@ -288,8 +288,25 @@ Everything is in there, including the private records, each marked with whether 
 private. That is why only the admin can take the archive, and why the household sees a line in
 the stream saying it happened. Passwords are never in it.
 
-Reading an archive back into Stella is not built yet. For now it is your copy to keep, to read,
-or to load into something else.
+### Reading one back in
+
+**Settings → Restore from an archive** takes that same `.tar` and reads it back: the people,
+everything written about them, the relationships, circles, tags and the photos. It is the way to
+move a household to another Stella, and the way to get back something that was deleted.
+
+Two things are worth knowing before you use it. It **adds what is missing and never touches what
+is there** — if a note has been edited since the archive was taken, the edit stays. And so
+restoring the same archive twice changes nothing at all, which means a restore that was
+interrupted can simply be run again.
+
+Afterwards you get a report: how many people, notes, photos and everything else were added, how
+many were already here, and anything the archive could not give back — a photo whose file was
+not in the folder, or a relationship of a kind this Stella does not know. Records that were
+written by somebody who does not have an account here arrive under your name, because an archive
+never carries accounts or passwords.
+
+If what you want is the household exactly as it was on a given day — edits undone and all — that
+is the database backup your admin keeps (`docs/07` §7.9), not the archive.
 
 ## Privacy, in one paragraph
 

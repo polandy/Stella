@@ -1,11 +1,11 @@
 /*
- * A minimal ustar (POSIX tar) writer for the export archive (docs/02 §2.15).
+ * A minimal ustar (POSIX tar) writer and reader for the household archive (docs/02 §2.15).
  *
  * Hand-written rather than pulled in: the format is one 512-byte header per file and the
  * project prefers a Bun/Web API or a few lines of its own over a dependency (docs/08 §8.8).
- * Only what an export needs is here — regular files, no directories, no symlinks, no long
- * names. Everything is a pure function over bytes, so the route can stream entry after entry
- * without ever holding the whole archive.
+ * Only what an archive needs is here — regular files, no symlinks, no long names. Writing is a
+ * pure function over bytes, so the export route can stream entry after entry without ever
+ * holding the whole archive; reading takes the uploaded bytes apart in one go.
  */
 
 /** Every tar structure is a whole number of these. */
@@ -40,6 +40,24 @@ function writeOctal(block: Uint8Array, offset: number, value: number, width: num
 
 const CHECKSUM_OFFSET = 148;
 const CHECKSUM_WIDTH = 8;
+const NAME_WIDTH = 100;
+const SIZE_OFFSET = 124;
+const SIZE_WIDTH = 12;
+const TYPEFLAG_OFFSET = 156;
+
+/**
+ * The header's own checksum: the sum of its bytes with the checksum field itself read as
+ * spaces. Both directions use it — the writer stores it, the reader holds the header against
+ * it — so it lives here once.
+ */
+function checksumOf(block: Uint8Array): number {
+	let sum = 0;
+	for (let at = 0; at < TAR_BLOCK; at++) {
+		const inField = at >= CHECKSUM_OFFSET && at < CHECKSUM_OFFSET + CHECKSUM_WIDTH;
+		sum += inField ? 0x20 : block[at];
+	}
+	return sum;
+}
 
 /** The 512-byte header for one regular file. */
 export function tarHeader(name: string, size: number, mtimeSeconds: number): Uint8Array {
@@ -59,9 +77,8 @@ export function tarHeader(name: string, size: number, mtimeSeconds: number): Uin
 	writeText(block, 257, 'ustar\0');
 	writeText(block, 263, '00');
 
-	const sum = block.reduce((total, byte) => total + byte, 0);
 	// Six octal digits, a NUL and a space — the layout every reader accepts.
-	writeText(block, CHECKSUM_OFFSET, sum.toString(8).padStart(6, '0') + '\0 ');
+	writeText(block, CHECKSUM_OFFSET, checksumOf(block).toString(8).padStart(6, '0') + '\0 ');
 	return block;
 }
 
@@ -82,4 +99,98 @@ export function tarEntry(name: string, bytes: Uint8Array, mtimeSeconds: number):
 /** The two zero blocks that mark the end of an archive. */
 export function tarTrailer(): Uint8Array {
 	return new Uint8Array(TAR_BLOCK * 2);
+}
+
+// ── Reading ──────────────────────────────────────────────────────────────
+
+/** One file taken out of an archive. */
+export interface TarEntry {
+	name: string;
+	bytes: Uint8Array;
+}
+
+/** Bytes that are not an archive this reader can take apart. */
+export class TarFormatError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'TarFormatError';
+	}
+}
+
+const decoder = new TextDecoder();
+
+/** A NUL-terminated string field. */
+function readText(block: Uint8Array, offset: number, width: number): string {
+	const field = block.subarray(offset, offset + width);
+	const end = field.indexOf(0);
+	return decoder.decode(end === -1 ? field : field.subarray(0, end));
+}
+
+/** An octal number field, however the writer padded it. */
+function readOctal(block: Uint8Array, offset: number, width: number): number {
+	const raw = readText(block, offset, width).trim();
+	const value = raw.length === 0 ? 0 : Number.parseInt(raw, 8);
+	if (!Number.isFinite(value) || value < 0) {
+		throw new TarFormatError('The archive has a header field that is not a number.');
+	}
+	return value;
+}
+
+/** Whether a block is all zeroes — two of them in a row end the archive. */
+function isZeroBlock(block: Uint8Array): boolean {
+	return block.every((byte) => byte === 0);
+}
+
+/** Regular file; the NUL form is what older writers use for the same thing. */
+const REGULAR_TYPEFLAGS = ['0', '\0'];
+const DIRECTORY_TYPEFLAG = '5';
+
+/**
+ * The files in an archive, in the order they were written.
+ *
+ * Deliberately strict about what it accepts and lenient about what an ordinary `tar` adds:
+ * every header is held against its own checksum and an archive that stops mid-file is refused
+ * — a restore reading half a photo, or a header it guessed at, is worse than one that fails —
+ * while directory entries and the `./` prefixes `tar` writes when a folder is repacked are
+ * accepted, because the household may well hand back an archive it unpacked and packed again.
+ * Anything else (long-name and pax extensions, symlinks) is refused rather than skipped: those
+ * entries change the meaning of the entry after them, so skipping one corrupts a name silently.
+ */
+export function readTar(archive: Uint8Array): TarEntry[] {
+	if (archive.length < TAR_BLOCK) throw new TarFormatError('This file is not an archive.');
+
+	const entries: TarEntry[] = [];
+	let at = 0;
+
+	while (at + TAR_BLOCK <= archive.length) {
+		const header = archive.subarray(at, at + TAR_BLOCK);
+		if (isZeroBlock(header)) break;
+
+		if (readOctal(header, CHECKSUM_OFFSET, CHECKSUM_WIDTH) !== checksumOf(header)) {
+			throw new TarFormatError('This file is not a Stella archive, or it was damaged in transit.');
+		}
+
+		const name = readText(header, 0, NAME_WIDTH).replace(/^\.\//, '');
+		const size = readOctal(header, SIZE_OFFSET, SIZE_WIDTH);
+		const typeflag = String.fromCharCode(header[TYPEFLAG_OFFSET]);
+		at += TAR_BLOCK;
+
+		if (at + size > archive.length) {
+			throw new TarFormatError(`The archive ends in the middle of "${name}".`);
+		}
+
+		if (REGULAR_TYPEFLAGS.includes(typeflag)) {
+			// Sliced to the size field, not to the block boundary: the padding after a file is
+			// not part of it.
+			entries.push({ name, bytes: archive.slice(at, at + size) });
+		} else if (typeflag !== DIRECTORY_TYPEFLAG) {
+			throw new TarFormatError(
+				`"${name}" is a kind of archive entry (type ${typeflag}) this reader does not accept.`
+			);
+		}
+
+		at += size + paddingFor(size);
+	}
+
+	return entries;
 }

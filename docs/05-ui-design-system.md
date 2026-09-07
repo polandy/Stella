@@ -338,6 +338,12 @@ card that is a form rather than a link — it posts, because taking the archive 
 the household's activity log, and a link a browser may prefetch is the wrong shape for that. The
 cards show for the admin only; everyone else reads one sentence saying so (docs/02 §2.15).
 
+**Restore from an archive** (`/settings/import/archive`) is one card and one screen: a file
+field, a *Restore* button, and — afterwards — the report. The report is a list of kinds with
+*n added* and, where it applies, *n already here*, then a line about the photos and one panel
+per warning. No preview step: a restore only ever adds, so what would be previewed is the
+household's own data (docs/04 §4.9).
+
 **Mention field** (`src/lib/components/MentionTextarea.svelte`) is a textarea that offers
 people while you type `@` (docs/02 §2.20.1): a listbox under the caret, arrows to move, Enter
 or Tab to take the highlighted person, Escape to dismiss. The picker is an enhancement — the

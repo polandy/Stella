@@ -55,17 +55,22 @@ export interface HouseholdSnapshot {
 }
 
 /**
- * The entry name for a media file. Media keys come from the database, so a poisoned row must
- * not be able to reach outside the media directory — on the way out or, later, on the way back
- * in. Anything absolute, empty, or climbing with `..` is refused rather than sanitised.
+ * Whether a media key stays inside the media directory. Keys travel in both directions — out
+ * of the database into the archive, and back out of a file somebody uploaded — so anything
+ * absolute, empty, or climbing with `..` is rejected rather than sanitised.
  */
+export function isSafeMediaPath(path: string): boolean {
+	return (
+		path.length > 0 &&
+		!path.startsWith('/') &&
+		!path.includes('\\') &&
+		!path.split('/').some((segment) => segment === '..' || segment === '.' || segment === '')
+	);
+}
+
+/** The entry name for a media file, or a refusal if the key is not one we can carry. */
 export function mediaEntryName(path: string): string {
-	const bad =
-		path.length === 0 ||
-		path.startsWith('/') ||
-		path.includes('\\') ||
-		path.split('/').some((segment) => segment === '..' || segment === '.' || segment === '');
-	if (bad) throw new UnsafeMediaPathError(path);
+	if (!isSafeMediaPath(path)) throw new UnsafeMediaPathError(path);
 	return MEDIA_PREFIX + path;
 }
 

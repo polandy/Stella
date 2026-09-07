@@ -37,7 +37,6 @@ const viaContact = (column = 'contact_id') =>
 export const EXPORTED_TABLES: readonly Scoped[] = [
 	{ table: 'household', where: 't.id = ?' },
 	{ table: 'user', where: 't.household_id = ?' },
-	{ table: 'invitation', where: 't.household_id = ?' },
 	{ table: 'relationship_type', where: 't.household_id = ?' },
 	{ table: 'contact', where: 't.household_id = ?' },
 	{ table: 'contact_field', where: viaContact() },
@@ -63,6 +62,8 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
  */
 export const EXCLUDED_TABLES: Readonly<Record<string, string>> = {
 	session: 'live logins; a restored archive should not resurrect somebody’s browser session',
+	invitation:
+		'a pending invite is a live token, not household memory — and its hash has no business in a file that gets copied around',
 	identity: 'the link to the identity provider, which belongs to that provider and not to us'
 };
 
