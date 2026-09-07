@@ -1,17 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
+import { signIn } from './app';
 
 /*
  * Removing with undo (docs/02 §2.23, docs/05 §5.7). Written after the flow was verified in the
  * running app (docs/08 §8.4.1). The touchpoint removed here is logged by the test itself, on
  * a title no seeded data uses, so no other case's counts move.
  */
-
-/** Signs in through the SEED_DEMO one-click button and lands on Home. */
-async function signIn(page: Page): Promise<void> {
-	await page.goto('/login');
-	await page.getByRole('button', { name: 'Sign in as demo user' }).click();
-	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
-}
 
 /** Opens a seeded person's page from the contacts list, through the app's own links. */
 async function openPerson(page: Page, name: RegExp): Promise<void> {
