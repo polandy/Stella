@@ -366,6 +366,13 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 	if (exp.userCount > 1) {
 		warnings.push(`Monica had ${exp.userCount} user accounts; everything is attributed to the importing member.`);
 	}
+	if (exp.source === 'json') {
+		// Monica's export resource for a contact lists neither field, so they are not in the
+		// file at all — nothing the mapping can do but say so (docs/02 §2.16).
+		warnings.push(
+			'Monica’s JSON export does not carry “how you met” or where; that free text is not in the file.'
+		);
+	}
 
 	const relationshipTypes = [...customTypes.values()];
 	return {

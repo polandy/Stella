@@ -18,6 +18,7 @@ const opts: ImportOptions = {
 
 function emptyExport(): MonicaExport {
 	return {
+		source: 'sql',
 		contacts: [],
 		genders: [
 			{ id: 1, type: 'M', name: 'Männlich' },
@@ -312,6 +313,17 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 		expect(plan.report.skipped).toContainEqual({ what: 'journal entry', count: 1, why: 'not attached to a person (Besuch Schuum)' });
 		expect(plan.report.skipped).toContainEqual({ what: 'reminder', count: 32, why: 'Stella derives birthday reminders itself' });
 		expect(plan.report.warnings).toContainEqual('Monica had 2 user accounts; everything is attributed to the importing member.');
+	});
+
+	it('says out loud that a JSON export cannot carry how you met', () => {
+		const sql = { ...emptyExport(), contacts: [contact(1, 'Ada', null)] };
+		const json = { ...sql, source: 'json' as const };
+
+		const message =
+			'Monica’s JSON export does not carry “how you met” or where; that free text is not in the file.';
+		expect(planMonicaImport(json, opts).report.warnings).toContainEqual(message);
+		// The positive control: read from a dump, the same household loses nothing and says nothing.
+		expect(planMonicaImport(sql, opts).report.warnings).not.toContainEqual(message);
 	});
 
 	it('summarises counts for the preview', () => {

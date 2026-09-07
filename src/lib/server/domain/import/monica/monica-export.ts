@@ -63,8 +63,8 @@ export interface MonicaRelationship {
 	id: MonicaId;
 	typeId: MonicaId;
 	/** "contact_is <type> of_contact" — e.g. contact_is is the *parent* of of_contact. */
-	contactIs: number;
-	ofContact: number;
+	contactIs: MonicaId;
+	ofContact: MonicaId;
 	createdAt: string | null;
 }
 
@@ -111,14 +111,14 @@ export interface MonicaActivity {
 	happenedAt: string;
 	typeKey: string | null;
 	/** Contacts linked to the activity, in link order. */
-	contactIds: number[];
+	contactIds: MonicaId[];
 	createdAt: string | null;
 }
 
 export interface MonicaTag {
 	id: MonicaId;
 	name: string;
-	contactIds: number[];
+	contactIds: MonicaId[];
 }
 
 export interface MonicaPhoto {
@@ -164,7 +164,12 @@ export interface MonicaJournalEntry {
 	createdAt: string | null;
 }
 
+/** Which of Monica's two export formats a reading came from. */
+export type MonicaSource = 'sql' | 'json';
+
 export interface MonicaExport {
+	/** The format this was read from; the mapping reports what that format cannot carry. */
+	source: MonicaSource;
 	contacts: MonicaContact[];
 	genders: MonicaGender[];
 	specialDates: MonicaSpecialDate[];
@@ -278,6 +283,7 @@ export function readMonicaExport(dump: SqlDump): MonicaExport {
 	}
 
 	return {
+		source: 'sql',
 		contacts,
 		genders: optional(dump, 'genders').map((r) => ({
 			id: Number(r.id),
