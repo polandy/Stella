@@ -662,11 +662,34 @@ mechanism behind two features: correcting a birthday without touching the profil
   into `activity_log` — the household sees in its stream that an archive was taken.
 - **Credentials never travel.** Password hashes and TOTP secrets are stripped; live sessions and
   the links to the identity provider are not exported at all.
-- **Import:** the same format, for restore/migration — **not built yet**. Today the archive is
-  something you can read, keep and take elsewhere; reading one back into Stella is the next
-  change.
+- **What it deliberately leaves out.** `updated_at` (bookkeeping, set afresh on import), the
+  installation's own settings (the household's and each member's preferences), pending
+  invitations, live sessions and identity-provider links. Everything else that carries meaning
+  is in the file, and the round trip is held to that by a test.
+- **Import — shipped.** *Settings → Restore from an archive* reads a `.tar` back in: the people,
+  everything written about them, the relationships, circles and tags, and the photos. Admin
+  only, for the same reason the export is, and logged the same way — the household sees in its
+  stream that an archive was restored.
+- **It adds; it never overwrites.** A record whose id is already here is left exactly as it is,
+  down to an edit made since the export. So restoring the same archive twice changes nothing,
+  and a half-finished import can simply be run again. Stella does not merge two versions of a
+  note, and does not pretend to.
+- **It fits itself into the installation it lands in.** Everything moves into the importing
+  household; a record whose author is a member here keeps them, everything else is attributed to
+  the admin doing the import (an archive carries no credentials, so its members cannot be
+  recreated as accounts). A tag the household already has is reused by name.
+- **What it refuses, and what it drops.** A file that is not a Stella archive, one from a newer
+  Stella, and one whose ids already belong to another household on this server are refused
+  outright — nothing is half-written, because the whole restore is one transaction. Individual
+  references that cannot be met — a mention of somebody the file does not contain, a
+  relationship of a kind this Stella does not know, a photo path pointing outside the media
+  folder — are left out and named in the report afterwards.
+- **The report.** Afterwards the admin sees, per kind, how many records were added and how many
+  were already here; how many photos were stored, were already on disk, or were named by the
+  document but missing from the archive; and every warning.
 - **Backups:** the documented procedure is still the SQLite snapshot plus the media directory
-  (`docs/07` §7.9). The archive is the portable copy, not a byte-for-byte one.
+  (`docs/07` §7.9). The archive is the portable copy, not a byte-for-byte one — restoring it
+  into a *running* household adds what is missing rather than resetting it to the file.
 
 ## 2.16 Migration from Monica **[M2]**
 

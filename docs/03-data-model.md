@@ -471,7 +471,7 @@ Feeds the "What's new" household feed and the "last edited by" trails.
 | id | text pk | sortable id doubles as feed cursor |
 | household_id | text fk | |
 | actor_id | text fk → user.id | who did it |
-| action | text | `'create' \| 'update' \| 'delete' \| 'archive' \| 'merge' \| 'export'` |
+| action | text | `'create' \| 'update' \| 'delete' \| 'archive' \| 'merge' \| 'export' \| 'import'` |
 | entity_type | text | `'contact' \| 'note' \| 'relationship' \| 'photo' \| 'interaction' \| 'household' \| ...` |
 | entity_id | text | polymorphic (no FK; entity may be deleted) |
 | contact_id | text null | the contact this change is "about", for grouping/links |

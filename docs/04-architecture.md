@@ -346,6 +346,24 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **People are identified in the archive by id, never by name** — two people can share a first
   and last name, and a document that joins on names silently fuses them. Every person carries
   their id and every relationship, mention, participant and membership refers to it.
+- **An import adds and never overwrites** — the alternatives were replacing a record the archive
+  also has, or asking the admin field by field. Replacing loses whatever was written since the
+  export and makes an import unrepeatable; asking turns a restore into a merge tool nobody asked
+  for. Adding only means the id is enough to recognise a record, importing twice is a no-op, and
+  a failed import can simply be run again. The cost is that an archive cannot be used to *undo*
+  edits: for that, restore the SQLite snapshot (`docs/07` §7.9).
+- **The restore is one step, not a wizard** — the Monica import previews first because it maps a
+  foreign model onto ours and the admin has to agree with the mapping. A restore writes records
+  that are already the household's, in our own format, and cannot overwrite anything; a preview
+  would ask them to approve their own data. The report afterwards carries the same information
+  the preview would have, and it is a report of what actually happened.
+- **Restored rows are written as columns and values, not through the ORM** — the plan comes out
+  of the document as table-and-row, mirroring how the export reads it, so one mapping layer is
+  gone rather than duplicated in reverse. Nothing in the SQL comes from the uploaded file: table
+  names are held against the export's own list, column names against `PRAGMA table_info`, and
+  every value is bound. An archive whose ids already belong to another household on this server
+  is refused before anything is written, because those rows would otherwise hang off somebody
+  else's records.
 
 ## 4.10 Deployment
 
