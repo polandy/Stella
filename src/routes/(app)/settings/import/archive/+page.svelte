@@ -62,7 +62,7 @@
 
 			<dl class="flex flex-col gap-px overflow-hidden rounded-app bg-card shadow-card">
 				{#each lines as line (line.table)}
-					<div class="flex items-baseline justify-between gap-4 px-4 py-2">
+					<div class="flex items-baseline justify-between gap-4 px-4 py-2" data-kind={line.table}>
 						<dt class="text-sm text-fg">{line.label}</dt>
 						<dd class="text-sm text-fg-muted">
 							<span class="font-medium text-fg">{line.added} added</span>
