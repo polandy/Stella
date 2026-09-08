@@ -192,6 +192,24 @@ describe('readVCard', () => {
 		expect(exp.addresses[0]).toMatchObject({ name: 'home;postal', street: 'Bahnhofstrasse 3' });
 	});
 
+	it('keys a card whose UID would not survive a URL by its contents instead', () => {
+		// The id ends up in /contacts/<id> and /media/<id>; a slash or hash there is not a name.
+		const exp = readVCard([card('UID:with/slash', 'FN:Severin'), card('UID:with#hash', 'FN:Marlis')].join('\r\n'));
+
+		const ids = exp.contacts.map((c) => String(c.id));
+		expect(ids.every((id) => /^[A-Za-z0-9._~:@+-]+$/.test(id))).toBe(true);
+		expect(new Set(ids).size).toBe(2);
+	});
+
+	it('gives every id it mints a shape a URL can carry', () => {
+		const exp = readVCard(card('UID:u1', 'FN:Severin', 'NOTE:x', 'EMAIL:a@b.ch', 'PHOTO:data:image/png;base64,AAECAw=='));
+
+		const urlSafe = /^[A-Za-z0-9._~:@+-]+$/;
+		expect(String(exp.photos[0]!.id)).toMatch(urlSafe);
+		expect(String(exp.notes[0]!.id)).toMatch(urlSafe);
+		expect(String(exp.contactFields[0]!.id)).toMatch(urlSafe);
+	});
+
 	it('strips the urn:uuid a card puts in front of its UID', () => {
 		const exp = readVCard(card('UID:urn:uuid:0a1b2c3d', 'FN:Severin'));
 

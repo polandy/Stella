@@ -42,6 +42,13 @@ const GENDER_CODES = ['M', 'F', 'O'];
 /** vCard 2.1's text encoding, named in an `ENCODING` parameter and folded with a trailing `=`. */
 const QUOTED_PRINTABLE = /QUOTED-PRINTABLE/i;
 
+/**
+ * What a source id may be made of. It ends up in `/contacts/<id>` and `/media/<id>`, so a UID
+ * carrying a slash, a hash or a query mark is not usable as one — such a card is keyed by its
+ * contents instead, exactly like a card with no UID at all.
+ */
+const URL_SAFE_ID = /^[A-Za-z0-9._~:@+-]+$/;
+
 const BEGIN = 'BEGIN:VCARD';
 const END = 'END:VCARD';
 
@@ -276,9 +283,10 @@ export function readVCard(text: string): SourceExport {
 		const all = (name: string) => card.filter((p) => p.name === name);
 
 		const uid = orNull(first('UID')?.raw)?.replace(/^urn:uuid:/i, '');
-		// Without a UID the card must still get a *stable* id, and its position is not one: two
-		// address books would then collide and the second one's people be dropped as duplicates.
-		const id = uid ?? `card-${fingerprint(card)}`;
+		// Without a usable UID the card must still get a *stable* id, and its position is not
+		// one: two address books would then collide and the second one's people be dropped as
+		// duplicates.
+		const id = uid !== undefined && uid !== null && URL_SAFE_ID.test(uid) ? uid : `card-${fingerprint(card)}`;
 
 		const structured = first('N') ? splitEscaped(first('N')!.raw, ';').map(unescape) : [];
 		const formatted = orNull(unescape(first('FN')?.raw ?? ''));
@@ -291,7 +299,7 @@ export function readVCard(text: string): SourceExport {
 		const birthday = first('BDAY') ? parseDay(unescape(first('BDAY')!.raw)) : null;
 		let birthdaySpecialDateId: string | null = null;
 		if (birthday) {
-			birthdaySpecialDateId = `${id}#bday`;
+			birthdaySpecialDateId = `${id}~bday`;
 			specialDates.push({
 				id: birthdaySpecialDateId,
 				contactId: id,
@@ -304,7 +312,7 @@ export function readVCard(text: string): SourceExport {
 		let fieldIndex = 0;
 		const addField = (typeId: string, data: string | null) => {
 			if (data === null) return;
-			contactFields.push({ id: `${id}#${fieldIndex++}`, contactId: id, typeId, data, createdAt: null });
+			contactFields.push({ id: `${id}~${fieldIndex++}`, contactId: id, typeId, data, createdAt: null });
 		};
 		for (const p of all('EMAIL')) addField('email', orNull(unescape(p.raw)));
 		for (const p of all('TEL')) addField('phone', orNull(unescape(p.raw)));
@@ -315,7 +323,7 @@ export function readVCard(text: string): SourceExport {
 			// RFC 6350 §6.3.1: po box; extended; street; locality; region; postal code; country.
 			const parts = splitEscaped(p.raw, ';').map(unescape);
 			addresses.push({
-				id: `${id}#adr${addressIndex++}`,
+				id: `${id}~adr${addressIndex++}`,
 				contactId: id,
 				name: orNull(p.params.get('TYPE')?.[0]),
 				street: orNull([parts[2], parts[1]].filter(Boolean).join(', ')),
@@ -329,7 +337,7 @@ export function readVCard(text: string): SourceExport {
 		let noteIndex = 0;
 		for (const p of all('NOTE')) {
 			const body = orNull(unescape(p.raw));
-			if (body) notes.push({ id: `${id}#note${noteIndex++}`, contactId: id, body, isFavorited: false, createdAt: null });
+			if (body) notes.push({ id: `${id}~note${noteIndex++}`, contactId: id, body, isFavorited: false, createdAt: null });
 		}
 
 		for (const p of all('CATEGORIES')) {
@@ -344,7 +352,7 @@ export function readVCard(text: string): SourceExport {
 		let avatarPhotoId: string | null = null;
 		let photoIndex = 0;
 		for (const p of all('PHOTO')) {
-			const photo = readPhoto(p, `${id}#photo${photoIndex++}`, id);
+			const photo = readPhoto(p, `${id}~photo${photoIndex++}`, id);
 			if (!photo) continue;
 			photos.push(photo);
 			avatarPhotoId ??= String(photo.id);
