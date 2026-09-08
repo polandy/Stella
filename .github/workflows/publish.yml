@@ -1,11 +1,16 @@
 name: publish
 
 # Releases are cut by release-please, which pushes a `vX.Y.Z` tag; that tag is what a
-# deployment pins. Manual runs exist for re-publishing a tag whose build failed.
+# deployment pins. A manual run re-publishes a tag whose build failed — pick the tag as the
+# ref, not a branch.
 on:
   push:
     tags: ['v*.*.*']
   workflow_dispatch:
+
+# A second tag pushed while the first is still building must not race it for `latest`.
+concurrency:
+  group: publish-${{ github.ref }}
 
 env:
   IMAGE: ghcr.io/${{ github.repository_owner }}/stella
@@ -31,11 +36,13 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE }}
-          # `latest` follows the newest release; the version tags are what deployments pin.
+          # `latest` follows the newest release, so it is tied to a tag ref: a manual run
+          # from a branch produces no tags at all and fails here rather than publishing an
+          # unreleased commit as `latest`. Run a dispatch against the tag itself.
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
 
       - id: build
         uses: docker/build-push-action@v6
@@ -55,6 +62,6 @@ jobs:
             echo "### Image published"
             echo
             echo '```'
-            echo "${{ env.IMAGE }}:${{ github.ref_name }}@${{ steps.build.outputs.digest }}"
+            echo "${{ env.IMAGE }}:${{ steps.meta.outputs.version }}@${{ steps.build.outputs.digest }}"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
