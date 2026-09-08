@@ -225,7 +225,7 @@ export function readVCard(text: string): MonicaExport {
 		const birthday = first('BDAY') ? parseDay(unescape(first('BDAY')!.raw)) : null;
 		let birthdaySpecialDateId: string | null = null;
 		if (birthday) {
-			birthdaySpecialDateId = `${id}:bday`;
+			birthdaySpecialDateId = `${id}#bday`;
 			specialDates.push({
 				id: birthdaySpecialDateId,
 				contactId: id,
@@ -238,7 +238,7 @@ export function readVCard(text: string): MonicaExport {
 		let fieldIndex = 0;
 		const addField = (typeId: string, data: string | null) => {
 			if (data === null) return;
-			contactFields.push({ id: `${id}:${fieldIndex++}`, contactId: id, typeId, data, createdAt: null });
+			contactFields.push({ id: `${id}#${fieldIndex++}`, contactId: id, typeId, data, createdAt: null });
 		};
 		for (const p of all('EMAIL')) addField('email', orNull(unescape(p.raw)));
 		for (const p of all('TEL')) addField('phone', orNull(unescape(p.raw)));
@@ -249,7 +249,7 @@ export function readVCard(text: string): MonicaExport {
 			// RFC 6350 §6.3.1: po box; extended; street; locality; region; postal code; country.
 			const parts = splitEscaped(p.raw, ';').map(unescape);
 			addresses.push({
-				id: `${id}:adr:${addressIndex++}`,
+				id: `${id}#adr${addressIndex++}`,
 				contactId: id,
 				name: orNull(p.params.get('TYPE')?.[0]),
 				street: orNull([parts[2], parts[1]].filter(Boolean).join(', ')),
@@ -263,7 +263,7 @@ export function readVCard(text: string): MonicaExport {
 		let noteIndex = 0;
 		for (const p of all('NOTE')) {
 			const body = orNull(unescape(p.raw));
-			if (body) notes.push({ id: `${id}:note:${noteIndex++}`, contactId: id, body, isFavorited: false, createdAt: null });
+			if (body) notes.push({ id: `${id}#note${noteIndex++}`, contactId: id, body, isFavorited: false, createdAt: null });
 		}
 
 		for (const p of all('CATEGORIES')) {
@@ -278,7 +278,7 @@ export function readVCard(text: string): MonicaExport {
 		let avatarPhotoId: string | null = null;
 		let photoIndex = 0;
 		for (const p of all('PHOTO')) {
-			const photo = readPhoto(p, `${id}:photo:${photoIndex++}`, id);
+			const photo = readPhoto(p, `${id}#photo${photoIndex++}`, id);
 			if (!photo) continue;
 			photos.push(photo);
 			avatarPhotoId ??= String(photo.id);
