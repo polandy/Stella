@@ -1,3 +1,4 @@
+import { isLocale, type Locale } from '../../i18n/locales';
 import type { IdGenerator } from '../id';
 
 /*
@@ -15,6 +16,8 @@ export interface AuthUser {
 	email: string;
 	name: string;
 	role: Role;
+	/** The language this user reads Stella in (docs/02 §2.19). */
+	locale: Locale;
 }
 
 export interface StoredCredentials {
@@ -34,6 +37,8 @@ export interface AccountRepository {
 	findById(id: string): Promise<AuthUser | null>;
 	/** Atomically create the household and its first admin. */
 	insertHouseholdWithAdmin(data: NewAdmin): Promise<void>;
+	/** Persist the user's interface language. */
+	updateLocale(userId: string, locale: Locale): Promise<void>;
 }
 
 export interface AccountDeps {
@@ -48,6 +53,31 @@ export interface FirstAdminInput {
 	name: string;
 	email: string;
 	password: string;
+	/** The language the setup form was filled in, kept as the admin's preference. */
+	locale: Locale;
+}
+
+/** Thrown when a language outside `LOCALES` is offered for a profile. */
+export class UnsupportedLocaleError extends Error {
+	constructor(readonly requested: string) {
+		super(`Unsupported locale: ${requested}`);
+		this.name = 'UnsupportedLocaleError';
+	}
+}
+
+/**
+ * Change the language a user reads Stella in (docs/02 §2.19). An unsupported language is
+ * refused rather than stored: a value nothing can translate would leave the interface
+ * silently English on every later request.
+ */
+export async function changeLocale(
+	deps: Pick<AccountDeps, 'accounts'>,
+	userId: string,
+	locale: string
+): Promise<Locale> {
+	if (!isLocale(locale)) throw new UnsupportedLocaleError(locale);
+	await deps.accounts.updateLocale(userId, locale);
+	return locale;
 }
 
 /**
@@ -69,7 +99,8 @@ export async function registerFirstAdmin(
 		householdId: household.id,
 		email: input.email,
 		name: input.name,
-		role: 'admin'
+		role: 'admin',
+		locale: input.locale
 	};
 	const passwordHash = await deps.hashPassword(input.password);
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { isHttpError, isRedirect } from '@sveltejs/kit';
+import { DEFAULT_LOCALE } from '../../i18n/locales';
 import { requireAdmin } from './guards';
 import type { AuthUser } from './accounts';
 
@@ -13,8 +14,12 @@ const user = (role: AuthUser['role']): AuthUser => ({
 	householdId: 'h1',
 	email: 'p@example.org',
 	name: 'P',
-	role
+	role,
+	locale: DEFAULT_LOCALE
 });
+
+/** The guard only reads `user`; the language rides along on every request's locals. */
+const locals = (user: AuthUser | null): App.Locals => ({ user, locale: DEFAULT_LOCALE });
 
 function thrownBy(locals: App.Locals): unknown {
 	try {
@@ -27,17 +32,17 @@ function thrownBy(locals: App.Locals): unknown {
 
 describe('requireAdmin', () => {
 	it('returns the signed-in admin', () => {
-		expect(requireAdmin({ user: user('admin') })).toMatchObject({ id: 'u1', role: 'admin' });
+		expect(requireAdmin(locals(user('admin')))).toMatchObject({ id: 'u1', role: 'admin' });
 	});
 
 	it('sends an anonymous visitor to the login page', () => {
-		const e = thrownBy({ user: null });
+		const e = thrownBy(locals(null));
 		expect(isRedirect(e)).toBe(true);
 		expect(e).toMatchObject({ status: 302, location: '/login' });
 	});
 
 	it('answers a signed-in member with 403 instead of hiding the page', () => {
-		const e = thrownBy({ user: user('member') });
+		const e = thrownBy(locals(user('member')));
 		expect(isHttpError(e)).toBe(true);
 		expect(e).toMatchObject({ status: 403 });
 	});

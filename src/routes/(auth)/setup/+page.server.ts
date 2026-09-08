@@ -1,5 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
+import type { MessageKey } from '$lib/i18n/translate';
 import { registerFirstAdmin } from '$lib/server/auth/accounts';
 import { setSessionCookie } from '$lib/server/auth/cookies';
 import { createSession } from '$lib/server/auth/session';
@@ -11,12 +12,21 @@ import type { Actions, PageServerLoad } from './$types';
  * no account exists yet (docs/02 §2.1).
  */
 
+/*
+ * Validation messages are message keys (docs/02 §2.19): the page turns them into the
+ * visitor's language, so the schema stays a single, language-free description of the form.
+ */
 const SetupSchema = v.object({
-	householdName: v.pipe(v.string(), v.trim(), v.minLength(1, 'Please name your household.')),
-	name: v.pipe(v.string(), v.trim(), v.minLength(1, 'Please enter your name.')),
-	email: v.pipe(v.string(), v.trim(), v.email('Please enter a valid email.')),
-	password: v.pipe(v.string(), v.minLength(8, 'Use at least 8 characters.'))
+	householdName: v.pipe(v.string(), v.trim(), v.minLength(1, key('auth.setup.needHousehold'))),
+	name: v.pipe(v.string(), v.trim(), v.minLength(1, key('auth.setup.needName'))),
+	email: v.pipe(v.string(), v.trim(), v.email(key('auth.setup.needEmail'))),
+	password: v.pipe(v.string(), v.minLength(8, key('auth.setup.needPassword')))
 });
+
+/** Identity on a message key, so a typo in a validation message is a compile error. */
+function key(name: MessageKey): MessageKey {
+	return name;
+}
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) throw redirect(302, '/');
@@ -24,7 +34,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies }) => {
+	default: async ({ request, cookies, locals }) => {
 		const form = await request.formData();
 		const parsed = v.safeParse(SetupSchema, {
 			householdName: form.get('householdName'),
@@ -33,14 +43,21 @@ export const actions: Actions = {
 			password: form.get('password')
 		});
 		if (!parsed.success) {
-			return fail(400, { error: parsed.issues[0]?.message ?? 'Invalid input.' });
+			// Every message in the schema above is a key; anything else would be a valibot default.
+			const issue = parsed.issues[0]?.message;
+			const error = (issue as MessageKey | undefined) ?? key('auth.setup.invalidInput');
+			return fail(400, { error });
 		}
 
 		if ((await getAccounts().countUsers()) > 0) {
-			return fail(409, { error: 'Setup has already been completed.' });
+			return fail(409, { error: key('auth.setup.alreadyDone') });
 		}
 
-		const user = await registerFirstAdmin(getAccountDeps(), parsed.output);
+		// The language the form was read in becomes the admin's stored preference.
+		const user = await registerFirstAdmin(getAccountDeps(), {
+			...parsed.output,
+			locale: locals.locale
+		});
 		const { token, session } = await createSession(getSessionDeps(), user.id);
 		setSessionCookie(cookies, token, session.expiresAt);
 		throw redirect(303, '/');

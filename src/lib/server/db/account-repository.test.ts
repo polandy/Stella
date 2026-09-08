@@ -28,7 +28,8 @@ const admin: AuthUser = {
 	householdId: 'household-1',
 	email: 'andy@example.test',
 	name: 'Andy',
-	role: 'admin'
+	role: 'admin',
+	locale: 'en'
 };
 
 async function seedAdmin(passwordHash: string | null = 'hashed:pw') {
@@ -59,5 +60,16 @@ describe('createDrizzleAccountRepository', () => {
 
 	it('returns null for an unknown email', async () => {
 		expect(await repo.findCredentialsByEmail('nobody@example.test')).toBeNull();
+	});
+
+	it('stores and reads back the interface language', async () => {
+		await seedAdmin();
+		await repo.updateLocale('user-1', 'de');
+		expect(await repo.findById('user-1')).toEqual({ ...admin, locale: 'de' });
+	});
+
+	it('defaults a user with no stored preference to English', async () => {
+		await seedAdmin();
+		expect((await repo.findById('user-1'))?.locale).toBe('en');
 	});
 });

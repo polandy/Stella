@@ -1,5 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
+import type { MessageKey } from '$lib/i18n/translate';
 import { authenticateLocal } from '$lib/server/auth/accounts';
 import { setSessionCookie } from '$lib/server/auth/cookies';
 import { createSession } from '$lib/server/auth/session';
@@ -17,10 +18,14 @@ const LoginSchema = v.object({
 	password: v.pipe(v.string(), v.minLength(1))
 });
 
-const SSO_ERRORS: Record<string, string> = {
-	sso: 'Single sign-on failed. Please try again.',
-	'not-authorized': 'Your account is not permitted to sign in here.',
-	'no-account': 'No account exists for you yet. Ask an admin to invite you.'
+/*
+ * The provider's failure reasons, as message keys: the page renders them in the visitor's
+ * language, which is settled per request rather than when this module is loaded.
+ */
+const SSO_ERRORS: Record<string, MessageKey> = {
+	sso: 'auth.sso.failed',
+	'not-authorized': 'auth.sso.notAuthorized',
+	'no-account': 'auth.sso.noAccount'
 };
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -48,12 +53,14 @@ export const actions: Actions = {
 			password: form.get('password')
 		});
 		if (!parsed.success) {
-			return fail(400, { error: 'Please enter a valid email and password.' });
+			const error: MessageKey = 'auth.invalidInput';
+			return fail(400, { error });
 		}
 
 		const user = await authenticateLocal(getAccountDeps(), parsed.output);
 		if (!user) {
-			return fail(400, { error: 'Invalid email or password.' });
+			const error: MessageKey = 'auth.invalidCredentials';
+			return fail(400, { error });
 		}
 
 		const { token, session } = await createSession(getSessionDeps(), user.id);

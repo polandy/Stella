@@ -1,5 +1,6 @@
 import { count, eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
+import type { Locale } from '../../i18n/locales';
 import type { AccountRepository, AuthUser, StoredCredentials } from '../auth/accounts';
 import type * as schema from './schema';
 import { household as householdTable, user as userTable } from './schema';
@@ -15,12 +16,14 @@ const toAuthUser = (row: {
 	email: string;
 	name: string;
 	role: 'admin' | 'member';
+	localePref: Locale;
 }): AuthUser => ({
 	id: row.id,
 	householdId: row.householdId,
 	email: row.email,
 	name: row.name,
-	role: row.role
+	role: row.role,
+	locale: row.localePref
 });
 
 export function createDrizzleAccountRepository(
@@ -40,6 +43,7 @@ export function createDrizzleAccountRepository(
 					email: userTable.email,
 					name: userTable.name,
 					role: userTable.role,
+					localePref: userTable.localePref,
 					passwordHash: userTable.passwordHash
 				})
 				.from(userTable)
@@ -56,7 +60,8 @@ export function createDrizzleAccountRepository(
 					householdId: userTable.householdId,
 					email: userTable.email,
 					name: userTable.name,
-					role: userTable.role
+					role: userTable.role,
+					localePref: userTable.localePref
 				})
 				.from(userTable)
 				.where(eq(userTable.id, id))
@@ -75,10 +80,15 @@ export function createDrizzleAccountRepository(
 						name: data.user.name,
 						passwordHash: data.user.passwordHash,
 						role: data.user.role,
-						roleLocked: data.user.roleLocked
+						roleLocked: data.user.roleLocked,
+						localePref: data.user.locale
 					})
 					.run();
 			});
+		},
+
+		async updateLocale(userId: string, locale: Locale) {
+			db.update(userTable).set({ localePref: locale }).where(eq(userTable.id, userId)).run();
 		}
 	};
 }
