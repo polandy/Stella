@@ -123,7 +123,11 @@ export interface MonicaTag {
 
 export interface MonicaPhoto {
 	id: MonicaId;
-	/** Path relative to Monica's public storage, e.g. `photos/abc.jpg`. */
+	/**
+	 * What the picture is called: a path relative to Monica's public storage from a dump
+	 * (`photos/abc.jpg`), the original filename from a JSON export. Only the last segment is
+	 * ever used — to match a file the admin picked out of that folder.
+	 */
 	path: string;
 	/**
 	 * The image itself, as the `data:` URL a JSON export embeds. Null for a SQL dump, which

@@ -1,5 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import { decodeDataUrl } from '$lib/media/data-url';
+import type { Visibility } from '$lib/server/access/visibility';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { getConfig } from '$lib/server/config';
 import { previewMonicaDump } from '$lib/server/domain/import/monica/apply';
@@ -23,13 +24,17 @@ import type { RequestHandler } from './$types';
  */
 
 /** The plan behind a staging token, or the HTTP error that says why there is none. */
-async function planFor(token: string, user: { householdId: string; id: string }) {
+async function planFor(
+	token: string,
+	user: { householdId: string; id: string },
+	visibility: Visibility
+) {
 	const text = await readStagedDump(getConfig().importDir, token);
 	if (text === null) throw error(410, 'The import session is over; start again from the export.');
 	return previewMonicaDump(getImportDeps(), text, {
 		householdId: user.householdId,
 		userId: user.id,
-		visibility: 'shared'
+		visibility
 	});
 }
 
@@ -39,7 +44,9 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	const photoId = url.searchParams.get('photoId');
 	if (!token || !photoId) throw error(400, 'Missing token or photo id.');
 
-	const planned = (await planFor(token, user)).photos.find((p) => p.id === photoId);
+	// Nothing about a picture depends on the visibility the admin chose, so reading one asks
+	// for the household default rather than carrying a setting through the URL.
+	const planned = (await planFor(token, user, 'shared')).photos.find((p) => p.id === photoId);
 	if (!planned) throw error(404, 'This photo is not part of the import.');
 	if (planned.dataUrl === null) {
 		throw error(409, 'This export does not carry the picture; point at Monica’s photo folder.');
@@ -62,9 +69,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		throw error(400, 'Missing photo upload fields.');
 	}
 
-	const text = await readStagedDump(getConfig().importDir, token);
-	if (text === null) throw error(410, 'The import session is over; start again from the export.');
-	const plan = previewMonicaDump(getImportDeps(), text, { householdId: user.householdId, userId: user.id, visibility });
+	const plan = await planFor(token, user, visibility);
 	const planned = plan.photos.find((p) => p.id === photoId);
 	if (!planned) throw error(404, 'This photo is not part of the import.');
 

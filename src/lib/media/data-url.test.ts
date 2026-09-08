@@ -21,6 +21,16 @@ describe('decodeDataUrl', () => {
 		expect(() => decodeDataUrl('')).toThrow(DataUrlError);
 	});
 
+	test('reads the media type out of a header that also carries parameters', () => {
+		expect(decodeDataUrl('data:image/png;charset=binary;base64,SGk=').mime).toBe('image/png');
+	});
+
+	test('refuses a long header that never says base64, rather than working through it', () => {
+		// The shape that would make a backtracking regular expression hang; it is a plain
+		// rejection here, which is the point of parsing this by hand.
+		expect(() => decodeDataUrl(`data:${';a'.repeat(5000)},payload`)).toThrow(DataUrlError);
+	});
+
 	test('refuses payload that is not valid base64', () => {
 		expect(() => decodeDataUrl('data:image/jpeg;base64,####')).toThrow(DataUrlError);
 	});
