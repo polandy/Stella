@@ -119,12 +119,30 @@ openssl rand -hex 32   # OIDC_CLIENT_SECRET (plaintext; Authelia stores its hash
 
 ## 7.5 `docker-compose.yml`
 
+### 7.5.0 Where the image comes from
+
+Releases are cut by release-please, which pushes a `vX.Y.Z` tag; that tag triggers the
+`publish` workflow, which builds the image and pushes it to
+`ghcr.io/polandy/stella` as `X.Y.Z`, `X.Y` and `latest`. The run's summary prints the
+line to pin.
+
+Pin the **digest**, not a tag — a tag can be moved, a digest cannot:
+
+```yaml
+image: ghcr.io/polandy/stella:0.0.3@sha256:…
+```
+
+`latest` is fine for a hobby setup where an unattended restart may pick up a new version;
+anywhere the running version matters, pin the digest and bump it deliberately.
+
+### 7.5.1 The file
+
 Minimal, proxy-agnostic version (expose the port to your proxy network):
 
 ```yaml
 services:
   stella:
-    image: ghcr.io/andypollari/stella:latest   # or build: .
+    image: ghcr.io/polandy/stella:latest       # pin the digest — see 7.5.0
     container_name: stella
     restart: unless-stopped
     env_file: .env
@@ -150,7 +168,7 @@ networks:
     external: true            # the network your reverse proxy already uses
 ```
 
-### 7.5.1 Traefik labels (optional)
+### 7.5.2 Traefik labels (optional)
 
 If you use Traefik, add labels instead of a separate proxy config:
 
@@ -319,7 +337,7 @@ admin. Everything else works identically.
 | Redirect loop / "invalid redirect_uri" | `OIDC_REDIRECT_URI` ≠ the URI registered in Authelia, or `STELLA_URL` mismatch. |
 | "You are not authorized" after SSO login | User not in `OIDC_ALLOWED_GROUPS` (`stella-users`). |
 | Logged in but not admin | User missing from `OIDC_ADMIN_GROUPS`, or `OIDC_SYNC_ROLES=false`. |
-| Asked to log in twice | A `forwardauth` middleware is wrongly in front of Stella (7.5.1). |
+| Asked to log in twice | A `forwardauth` middleware is wrongly in front of Stella (7.5.2). |
 | "invalid_client" at token exchange | `OIDC_CLIENT_SECRET` plaintext ≠ the hash stored in Authelia. |
 | Signed out of Stella but still signed in to Authelia | `OIDC_RP_LOGOUT=false`, or the provider advertises no `end_session_endpoint`. |
 | Logout ends on an Authelia error page | `post_logout_redirect_uris` missing the `https://…/login?signedOut=1` entry. |
