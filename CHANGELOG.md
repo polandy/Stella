@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.0.3](https://github.com/polandy/Stella/compare/v0.0.2...v0.0.3) (2026-09-08)
+
+
+### Features
+
+* **archive:** read the household archive back in ([1df8246](https://github.com/polandy/Stella/commit/1df8246bafe188a62294fcc9ac1a601ec383ec59))
+* **contacts:** archiving — out of the lists, not out of the family ([ab6849a](https://github.com/polandy/Stella/commit/ab6849a6697a162a9552c479f72cd48992a52085))
+* **contacts:** deleting a person, and the one thing the activity log is for ([6b4f92b](https://github.com/polandy/Stella/commit/6b4f92b337179f57300fbda863b3178625cd6ea0))
+* **contacts:** merging two people into one ([7133f82](https://github.com/polandy/Stella/commit/7133f82cd2f5c6859d2e48068086ae3d3de7bb36))
+* **export:** the household as one readable file, and the photos beside it ([825830b](https://github.com/polandy/Stella/commit/825830b6eaf0dde3c8a562605ae17ee706c0b6ec))
+* **graph:** derived kinship in the explorer ([55b1ced](https://github.com/polandy/Stella/commit/55b1cedf3b6bfcb366412c6719bce1a23d4158ad))
+* **import:** read a vCard ([f309254](https://github.com/polandy/Stella/commit/f30925455db2bd3e80e7a4fb46181c786eeeab94))
+* **import:** read Monica's JSON export ([331e010](https://github.com/polandy/Stella/commit/331e0104a424f8615bf49f61f68de3097de87e0e))
+* **media:** photo gallery on the person page ([0d1c78d](https://github.com/polandy/Stella/commit/0d1c78d2c27a3cafd955e8073057686f2e4e21ec))
+* **mentions:** the passive "Mentioned in" list ([67b7b14](https://github.com/polandy/Stella/commit/67b7b14fcaabd81ec0a4880efce7dc3d49490854))
+* **notes:** a note names people, and the name is a link ([949650f](https://github.com/polandy/Stella/commit/949650f4ab8a93a4086f695734e5a41f2e5f982d))
+* **relationships:** a household names its own kinds of link ([df5ca6a](https://github.com/polandy/Stella/commit/df5ca6a0f151c30537601bb444d4d872b28439c9))
+* **relationships:** the specifics of a link, and taking one back ([5129242](https://github.com/polandy/Stella/commit/5129242635ff01fa00117335ddf9429fff27c842))
+
 ## [0.0.2](https://github.com/polandy/Stella/compare/v0.0.1...v0.0.2) (2026-09-05)
 
 
