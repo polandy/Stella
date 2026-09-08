@@ -13,6 +13,11 @@ export interface SessionRecord {
 	id: string;
 	userId: string;
 	expiresAt: number;
+	/**
+	 * The ID token of the OIDC sign-in that opened this session, kept as the
+	 * `id_token_hint` for RP-initiated logout (docs/02 §2.1); null for a local sign-in.
+	 */
+	oidcIdToken: string | null;
 }
 
 /** Persistence port for sessions; implemented by a Drizzle adapter at the edge. */
@@ -30,16 +35,21 @@ export interface SessionDeps {
 	generateToken?: () => string;
 }
 
-/** Create a new session for a user and return the raw token to put in the cookie. */
+/**
+ * Create a new session for a user and return the raw token to put in the cookie.
+ * `oidcIdToken` is the ID token of a federated sign-in; local sign-ins pass nothing.
+ */
 export async function createSession(
 	deps: SessionDeps,
-	userId: string
+	userId: string,
+	oidcIdToken: string | null = null
 ): Promise<{ token: string; session: SessionRecord }> {
 	const token = (deps.generateToken ?? generateSessionToken)();
 	const session: SessionRecord = {
 		id: hashSessionToken(token),
 		userId,
-		expiresAt: newExpiry(deps.clock.now())
+		expiresAt: newExpiry(deps.clock.now()),
+		oidcIdToken
 	};
 	await deps.sessions.create(session);
 	return { token, session };

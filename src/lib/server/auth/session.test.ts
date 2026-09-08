@@ -73,6 +73,23 @@ describe('createSession', () => {
 		expect(session.expiresAt).toBe(NOW + SESSION_DURATION_MS);
 		expect(d.store.get(session.id)?.userId).toBe(USER_ID);
 	});
+
+	it('carries no OIDC ID token for a local sign-in', async () => {
+		const d = deps();
+		const { session } = await createSession(d.base, USER_ID);
+
+		expect(session.oidcIdToken).toBeNull();
+		expect(d.store.get(session.id)?.oidcIdToken).toBeNull();
+	});
+
+	it('stores the OIDC ID token of a federated sign-in for the logout hint', async () => {
+		const d = deps();
+		const { token, session } = await createSession(d.base, USER_ID, 'id-token-jwt');
+
+		expect(session.oidcIdToken).toBe('id-token-jwt');
+		expect(d.store.get(session.id)?.oidcIdToken).toBe('id-token-jwt');
+		expect((await validateSessionToken(d.base, token))?.oidcIdToken).toBe('id-token-jwt');
+	});
 });
 
 describe('validateSessionToken', () => {

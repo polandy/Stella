@@ -12,15 +12,24 @@ import type { OidcClaims, OidcPolicy, ProfilePatch } from './types';
  * the identity store — so the whole flow is unit-testable with fakes.
  */
 
+/** The result of a token exchange: the verified claims plus the ID token they came from. */
+export interface TokenExchange {
+	claims: OidcClaims;
+	/** The raw, verified ID token — kept on the session as the logout hint (docs/02 §2.1). */
+	idToken: string;
+}
+
 /** Provider port: everything that requires talking to the IdP over HTTP. */
 export interface OidcProvider {
 	authorizationEndpoint(): Promise<string>;
-	/** Exchange the code and return the verified ID-token claims (iss/aud/exp/nonce checked). */
+	/** Exchange the code and return the verified ID token (iss/aud/exp/nonce checked). */
 	exchangeCode(params: {
 		code: string;
 		codeVerifier: string;
 		expectedNonce: string;
-	}): Promise<OidcClaims>;
+	}): Promise<TokenExchange>;
+	/** The provider's `end_session_endpoint`, or null when it advertises none. */
+	endSessionEndpoint(): Promise<string | null>;
 }
 
 /** Identity-store port: maps OIDC identities to Stella users and provisions/links them. */
@@ -104,7 +113,7 @@ export interface CompleteLoginDeps {
 }
 
 export type OidcLoginResult =
-	| { ok: true; userId: string }
+	| { ok: true; userId: string; idToken: string }
 	| { ok: false; reason: 'not-authorized' | 'no-account' };
 
 /** Handle the callback: verify, authorize, resolve/provision the account, report the user. */
@@ -112,7 +121,7 @@ export async function completeOidcLogin(
 	deps: CompleteLoginDeps,
 	params: { code: string; codeVerifier: string; expectedNonce: string }
 ): Promise<OidcLoginResult> {
-	const claims = await deps.provider.exchangeCode(params);
+	const { claims, idToken } = await deps.provider.exchangeCode(params);
 
 	if (!isAuthorized(claims, deps.policy)) {
 		return { ok: false, reason: 'not-authorized' };
@@ -139,7 +148,7 @@ export async function completeOidcLogin(
 				name: plan.profile.name,
 				role: plan.role
 			});
-			return { ok: true, userId };
+			return { ok: true, userId, idToken };
 		}
 
 		case 'link':
@@ -153,7 +162,7 @@ export async function completeOidcLogin(
 				profile: plan.profile
 			});
 			await deps.identities.touchIdentity(claims.issuer, claims.subject, deps.clock.now());
-			return { ok: true, userId: plan.userId };
+			return { ok: true, userId: plan.userId, idToken };
 
 		case 'use-existing':
 			await deps.identities.updateRoleAndProfile(plan.userId, {
@@ -161,6 +170,6 @@ export async function completeOidcLogin(
 				profile: plan.profile
 			});
 			await deps.identities.touchIdentity(claims.issuer, claims.subject, deps.clock.now());
-			return { ok: true, userId: plan.userId };
+			return { ok: true, userId: plan.userId, idToken };
 	}
 }

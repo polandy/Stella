@@ -15,7 +15,12 @@ export function createDrizzleSessionRepository(
 	return {
 		async create(session: SessionRecord) {
 			db.insert(sessionTable)
-				.values({ id: session.id, userId: session.userId, expiresAt: session.expiresAt })
+				.values({
+					id: session.id,
+					userId: session.userId,
+					expiresAt: session.expiresAt,
+					oidcIdToken: session.oidcIdToken
+				})
 				.run();
 		},
 
@@ -24,7 +29,8 @@ export function createDrizzleSessionRepository(
 				.select({
 					id: sessionTable.id,
 					userId: sessionTable.userId,
-					expiresAt: sessionTable.expiresAt
+					expiresAt: sessionTable.expiresAt,
+					oidcIdToken: sessionTable.oidcIdToken
 				})
 				.from(sessionTable)
 				.where(eq(sessionTable.id, id))

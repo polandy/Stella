@@ -31,8 +31,18 @@ beforeEach(() => {
 
 describe('createDrizzleSessionRepository', () => {
 	it('creates a session and reads it back by id', async () => {
-		await repo.create({ id: 'sess-1', userId: USER, expiresAt: 123456 });
-		expect(await repo.findById('sess-1')).toEqual({ id: 'sess-1', userId: USER, expiresAt: 123456 });
+		await repo.create({ id: 'sess-1', userId: USER, expiresAt: 123456, oidcIdToken: null });
+		expect(await repo.findById('sess-1')).toEqual({
+			id: 'sess-1',
+			userId: USER,
+			expiresAt: 123456,
+			oidcIdToken: null
+		});
+	});
+
+	it('round-trips the OIDC ID token kept for single logout', async () => {
+		await repo.create({ id: 'sess-1', userId: USER, expiresAt: 123456, oidcIdToken: 'id.token.jwt' });
+		expect((await repo.findById('sess-1'))?.oidcIdToken).toBe('id.token.jwt');
 	});
 
 	it('returns null for an unknown id', async () => {
@@ -40,13 +50,13 @@ describe('createDrizzleSessionRepository', () => {
 	});
 
 	it('updates the expiry in place', async () => {
-		await repo.create({ id: 'sess-1', userId: USER, expiresAt: 100 });
+		await repo.create({ id: 'sess-1', userId: USER, expiresAt: 100, oidcIdToken: null });
 		await repo.updateExpiry('sess-1', 999);
 		expect((await repo.findById('sess-1'))?.expiresAt).toBe(999);
 	});
 
 	it('deletes a session', async () => {
-		await repo.create({ id: 'sess-1', userId: USER, expiresAt: 100 });
+		await repo.create({ id: 'sess-1', userId: USER, expiresAt: 100, oidcIdToken: null });
 		await repo.delete('sess-1');
 		expect(await repo.findById('sess-1')).toBeNull();
 	});
