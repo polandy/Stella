@@ -22,6 +22,14 @@ export interface KindChip {
 	count: number;
 }
 
+/** How the chips are worded, in the viewer's language. */
+export interface KindLabels {
+	/** The chip that turns the filter off. */
+	all: string;
+	/** One kind, by its stored value. */
+	kind: (kind: string) => string;
+}
+
 /** Lower-case with accents stripped, so `Bühl` is found by `buhl`. */
 function fold(value: string): string {
 	return value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -48,15 +56,22 @@ export function filterCircles<T extends BrowsableCircle>(
  * One chip per kind present in what the query left, counted so no chip leads to an empty
  * page, and *All* first with the total. Kinds are listed alphabetically: the set is small and
  * a stable order matters more than frequency, which would make the row jump as you type.
+ *
+ * The wording comes from the caller (`labels`), which keeps this module language-free while
+ * the chips still read in the viewer's language (docs/02 §2.19).
  */
-export function kindChips(circles: BrowsableCircle[], query: string): KindChip[] {
+export function kindChips(
+	circles: BrowsableCircle[],
+	query: string,
+	labels: KindLabels
+): KindChip[] {
 	const matching = filterCircles(circles, { query, kind: ALL_KINDS });
 	const counts = new Map<string, number>();
 	for (const circle of matching) counts.set(circle.kind, (counts.get(circle.kind) ?? 0) + 1);
 	const kinds = [...counts.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1));
 	return [
-		{ kind: ALL_KINDS, label: 'All', count: matching.length },
-		...kinds.map(([kind, count]) => ({ kind, label: kind, count }))
+		{ kind: ALL_KINDS, label: labels.all, count: matching.length },
+		...kinds.map(([kind, count]) => ({ kind, label: labels.kind(kind), count }))
 	];
 }
 

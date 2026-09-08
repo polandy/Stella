@@ -15,10 +15,12 @@ export type Messages = typeof en;
 export type MessageKey = keyof Messages;
 
 /** The parameters a message takes: none for a plain string, one object for a function. */
-type Params<K extends MessageKey> = Messages[K] extends (params: infer P) => string ? [P] : [];
+export type MessageParams<K extends MessageKey> = Messages[K] extends (params: infer P) => string
+	? [P]
+	: [];
 
 /** Looks a message up in the viewer's language and fills in its parameters. */
-export type Translate = <K extends MessageKey>(key: K, ...params: Params<K>) => string;
+export type Translate = <K extends MessageKey>(key: K, ...params: MessageParams<K>) => string;
 
 const CATALOGS: Record<Locale, Messages> = { en, de };
 
@@ -34,7 +36,7 @@ export function createTranslator(locale: Locale): Translate {
 	if (cached) return cached;
 
 	const catalog = CATALOGS[locale] ?? CATALOGS[DEFAULT_LOCALE];
-	const translate = (<K extends MessageKey>(key: K, ...params: Params<K>): string => {
+	const translate = (<K extends MessageKey>(key: K, ...params: MessageParams<K>): string => {
 		const message = catalog[key] ?? CATALOGS[DEFAULT_LOCALE][key];
 		if (message === undefined) throw new Error(`Unknown message key: ${String(key)}`);
 		return typeof message === 'function'
@@ -44,4 +46,9 @@ export function createTranslator(locale: Locale): Translate {
 
 	translators.set(locale, translate);
 	return translate;
+}
+
+/** Whether a name — often built from a database value — is a message Stella knows. */
+export function hasMessage(name: string): name is MessageKey {
+	return Object.hasOwn(en, name);
 }

@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../errors/translatable';
+import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -51,10 +53,9 @@ export interface AddImportantDateInput {
 }
 
 /** Thrown when a date is malformed or its kind is unknown. */
-export class InvalidImportantDateError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'InvalidImportantDateError';
+export class InvalidImportantDateError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'InvalidImportantDateError');
 	}
 }
 
@@ -72,18 +73,18 @@ export async function addImportantDate(
 	input: AddImportantDateInput
 ): Promise<string> {
 	if (!IMPORTANT_DATE_KINDS.includes(input.kind)) {
-		throw new InvalidImportantDateError(`Unknown important date kind: ${input.kind}`);
+		throw new InvalidImportantDateError(phrase('errors.date.unknownKind', { kind: input.kind }));
 	}
 	const date = input.date.trim();
 	if (!DATE_SHAPE.test(date)) {
-		throw new InvalidImportantDateError('A date must be YYYY-MM-DD, or --MM-DD without a year.');
+		throw new InvalidImportantDateError(phrase('errors.date.format'));
 	}
 	if (!isRealCalendarDay(date)) {
-		throw new InvalidImportantDateError(`There is no such day in the calendar: ${date}.`);
+		throw new InvalidImportantDateError(phrase('errors.date.noSuchDay', { day: date }));
 	}
 	const label = orNull(input.label);
 	if (input.kind === 'custom' && label === null) {
-		throw new InvalidImportantDateError('Give the date a name so it means something later.');
+		throw new InvalidImportantDateError(phrase('errors.date.needsLabel'));
 	}
 
 	const now = deps.clock.now();

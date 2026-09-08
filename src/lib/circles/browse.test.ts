@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'bun:test';
-import { ALL_KINDS, activeKind, filterCircles, kindChips, type BrowsableCircle } from './browse';
+import {
+	ALL_KINDS,
+	activeKind,
+	filterCircles,
+	kindChips,
+	type BrowsableCircle,
+	type KindLabels
+} from './browse';
+
+/** English wording, as the page passes it in an English session. */
+const labels: KindLabels = { all: 'All', kind: (kind) => kind };
 
 /*
  * Finding a circle among many (docs/02 §2.4.2): what a typed query matches and what the kind
@@ -43,7 +53,7 @@ describe('filterCircles', () => {
 
 describe('kindChips', () => {
 	it('offers All first, then only the kinds that exist, with their counts', () => {
-		expect(kindChips(circles, '')).toEqual([
+		expect(kindChips(circles, '', labels)).toEqual([
 			{ kind: ALL_KINDS, label: 'All', count: 4 },
 			{ kind: 'club', label: 'club', count: 2 },
 			{ kind: 'neighbourhood', label: 'neighbourhood', count: 1 },
@@ -52,7 +62,7 @@ describe('kindChips', () => {
 	});
 
 	it('counts what the query leaves, so a chip never leads to an empty page', () => {
-		expect(kindChips(circles, 'buhl')).toEqual([
+		expect(kindChips(circles, 'buhl', labels)).toEqual([
 			{ kind: ALL_KINDS, label: 'All', count: 2 },
 			{ kind: 'club', label: 'club', count: 1 },
 			{ kind: 'neighbourhood', label: 'neighbourhood', count: 1 }
@@ -60,20 +70,20 @@ describe('kindChips', () => {
 	});
 
 	it('offers only All when the query matches nothing', () => {
-		expect(kindChips(circles, 'zzz')).toEqual([{ kind: ALL_KINDS, label: 'All', count: 0 }]);
+		expect(kindChips(circles, 'zzz', labels)).toEqual([{ kind: ALL_KINDS, label: 'All', count: 0 }]);
 	});
 });
 
 describe('activeKind', () => {
 	it('keeps the chosen kind while the query still offers it', () => {
-		expect(activeKind(kindChips(circles, 'buhl'), 'club')).toBe('club');
+		expect(activeKind(kindChips(circles, 'buhl', labels), 'club')).toBe('club');
 	});
 
 	it('falls back to All once the query has filtered that kind away', () => {
-		expect(activeKind(kindChips(circles, 'thursdays'), 'school')).toBe(ALL_KINDS);
+		expect(activeKind(kindChips(circles, 'thursdays', labels), 'school')).toBe(ALL_KINDS);
 	});
 
 	it('leaves All alone', () => {
-		expect(activeKind(kindChips(circles, ''), ALL_KINDS)).toBe(ALL_KINDS);
+		expect(activeKind(kindChips(circles, '', labels), ALL_KINDS)).toBe(ALL_KINDS);
 	});
 });

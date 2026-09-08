@@ -4,6 +4,8 @@
  * Accents follow docs/05 §5.6: a fixed hue per kind, consistent across timeline and stream.
  */
 
+import type { MessageKey } from '$lib/i18n/translate';
+
 /** Every kind an interaction can have, in the order the form offers them. */
 export const INTERACTION_KINDS = [
 	'met',
@@ -20,7 +22,8 @@ export type InteractionKind = (typeof INTERACTION_KINDS)[number];
 
 /** How a kind reads on screen. */
 export interface KindPresentation {
-	label: string;
+	/** The message naming the kind; the wording lives in the catalogue (docs/02 §2.19). */
+	label: MessageKey;
 	/**
 	 * Name of the icon for the timeline dot; decorative, always paired with the label.
 	 * Typed as the kind rather than as an `IconName` on purpose: the icon registry pulls in
@@ -34,11 +37,11 @@ export interface KindPresentation {
 
 /** Label, icon and accent per kind — the single table both timeline and stream render from. */
 export const KIND_PRESENTATION: Record<InteractionKind, KindPresentation> = {
-	met: { label: 'Met in person', icon: 'met', accent: 'var(--kind-met)' },
-	call: { label: 'Call', icon: 'call', accent: 'var(--kind-call)' },
-	video: { label: 'Video call', icon: 'video', accent: 'var(--kind-video)' },
-	message: { label: 'Message', icon: 'message', accent: 'var(--kind-message)' },
-	letter: { label: 'Letter', icon: 'letter', accent: 'var(--kind-letter)' },
-	gift: { label: 'Gift', icon: 'gift', accent: 'var(--kind-gift)' },
-	other: { label: 'Other', icon: 'other', accent: 'var(--kind-other)' }
+	met: { label: 'interactions.kind.met', icon: 'met', accent: 'var(--kind-met)' },
+	call: { label: 'interactions.kind.call', icon: 'call', accent: 'var(--kind-call)' },
+	video: { label: 'interactions.kind.video', icon: 'video', accent: 'var(--kind-video)' },
+	message: { label: 'interactions.kind.message', icon: 'message', accent: 'var(--kind-message)' },
+	letter: { label: 'interactions.kind.letter', icon: 'letter', accent: 'var(--kind-letter)' },
+	gift: { label: 'interactions.kind.gift', icon: 'gift', accent: 'var(--kind-gift)' },
+	other: { label: 'interactions.kind.other', icon: 'other', accent: 'var(--kind-other)' }
 };

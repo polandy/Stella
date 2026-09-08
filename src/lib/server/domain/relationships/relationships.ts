@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../errors/translatable';
+import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { KinshipGraph, Pair } from '../../../kinship/kinship';
 import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';
 import { suggestPropagation, type PrimaryLink, type SuggestedLink } from '../../../kinship/propagation';
@@ -85,10 +87,9 @@ export interface RelationshipDetailsInput {
 	status?: string | null;
 }
 
-export class InvalidRelationshipDetailsError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'InvalidRelationshipDetailsError';
+export class InvalidRelationshipDetailsError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'InvalidRelationshipDetailsError');
 	}
 }
 
@@ -102,12 +103,14 @@ const blankToNull = (value: string | null | undefined): string | null => (value 
 export function parseRelationshipDetails(input: RelationshipDetailsInput): RelationshipDetails {
 	const sinceDate = blankToNull(input.sinceDate);
 	if (sinceDate && !(FULL_DATE_SHAPE.test(sinceDate) && isRealCalendarDay(sinceDate))) {
-		throw new InvalidRelationshipDetailsError(`${sinceDate} is not a day that exists.`);
+		throw new InvalidRelationshipDetailsError(
+			phrase('errors.relationship.noSuchDay', { day: sinceDate })
+		);
 	}
 
 	const status = blankToNull(input.status);
 	if (status && !RELATIONSHIP_STATUSES.includes(status as RelationshipStatus)) {
-		throw new InvalidRelationshipDetailsError('A relationship is either current or former.');
+		throw new InvalidRelationshipDetailsError(phrase('errors.relationship.currentOrFormer'));
 	}
 
 	return {
@@ -168,10 +171,9 @@ export interface CreateRelationshipInput extends RelationshipDetailsInput {
 	typeId: string;
 }
 
-export class DuplicateRelationshipError extends Error {
+export class DuplicateRelationshipError extends TranslatableError {
 	constructor() {
-		super('That relationship already exists.');
-		this.name = 'DuplicateRelationshipError';
+		super(phrase('errors.relationship.duplicate'), 'DuplicateRelationshipError');
 	}
 }
 

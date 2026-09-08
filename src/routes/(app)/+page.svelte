@@ -6,28 +6,32 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
-	import { occasionLabel, quietLabel, whenLabel } from '$lib/dates/labels';
+	import { agoLabel, occasionLabel, whenLabel } from '$lib/dates/labels';
+	import { useI18n } from '$lib/i18n/context.svelte';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
+	const i18n = useI18n();
+	const t = i18n.t;
+
 	function ago(ms: number): string {
 		const s = Math.max(1, Math.round((Date.now() - ms) / 1000));
-		if (s < 60) return 'just now';
-		if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-		if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-		if (s < 604800) return `${Math.floor(s / 86400)}d ago`;
-		return `${Math.floor(s / 604800)}w ago`;
+		if (s < 60) return t('home.justNow');
+		if (s < 3600) return t('home.minutesAgo', { minutes: Math.floor(s / 60) });
+		if (s < 86400) return t('home.hoursAgo', { hours: Math.floor(s / 3600) });
+		if (s < 604800) return t('home.daysAgo', { days: Math.floor(s / 86400) });
+		return t('home.weeksAgo', { weeks: Math.floor(s / 604800) });
 	}
 
 	function dayLabel(ms: number): string {
 		const d = new Date(ms);
 		const today = new Date();
 		const diff = Math.round((today.setHours(0, 0, 0, 0) - new Date(d).setHours(0, 0, 0, 0)) / 86400000);
-		if (diff === 0) return 'Today';
-		if (diff === 1) return 'Yesterday';
-		return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+		if (diff === 0) return t('home.today');
+		if (diff === 1) return t('home.yesterday');
+		return d.toLocaleDateString(i18n.intlLocale, { weekday: 'long', day: 'numeric', month: 'long' });
 	}
 
 	// Group the newest-first stream by calendar day.
@@ -65,7 +69,7 @@
 	}
 </script>
 
-<svelte:head><title>Home · Stella</title></svelte:head>
+<svelte:head><title>{t('home.title')}</title></svelte:head>
 
 {#snippet composer()}
 	{#key data.draft}
@@ -82,8 +86,8 @@
 
 <main class="mx-auto grid w-full max-w-6xl gap-x-10 gap-y-6 px-4 py-6 md:px-6 md:py-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:grid-rows-[auto_1fr]">
 <header class="lg:col-start-1 lg:row-start-1">
-	<h1 class="text-2xl font-semibold text-fg">What happened?</h1>
-	<p class="text-sm text-fg-muted">Write it down once. Everyone in the household sees it, unless you keep it private.</p>
+	<h1 class="text-2xl font-semibold text-fg">{t('home.heading')}</h1>
+	<p class="text-sm text-fg-muted">{t('home.intro')}</p>
 </header>
 
 <div class="flex min-w-0 flex-col gap-6 max-lg:order-1 lg:col-start-1 lg:row-start-2">
@@ -95,7 +99,7 @@
 	<div class="md:hidden">
 		{#if sheetOpen || (form?.momentError && phone.current)}
 			<div class="fixed inset-0 z-30 flex flex-col justify-end" data-testid="compose-sheet">
-				<button type="button" class="flex-1 bg-bg-sunken/70 backdrop-blur-sm" aria-label="Close" onclick={closeSheet}></button>
+				<button type="button" class="flex-1 bg-bg-sunken/70 backdrop-blur-sm" aria-label={t('common.close')} onclick={closeSheet}></button>
 				<div class="rounded-t-app bg-bg p-3 pb-4 shadow-pop">
 					<div class="mx-auto mb-2 h-1 w-10 rounded-full bg-border"></div>
 					{@render composer()}
@@ -104,7 +108,7 @@
 		{:else}
 			<a href="/?compose" class="flex items-center gap-3 rounded-app bg-card px-3 py-2.5 text-sm text-fg-subtle shadow-card">
 				<Avatar id={data.user.id} name={data.user.name} avatarPhotoId={null} size={28} />
-				What happened?
+				{t('home.heading')}
 			</a>
 		{/if}
 	</div>
@@ -112,17 +116,24 @@
 	{#if data.linkSuggestion && !hintDismissed}
 		<div class="flex items-center gap-3 rounded-app border border-success/35 bg-success/10 px-4 py-2.5 text-sm text-fg" role="status">
 			<div class="flex-1">
-				<b class="font-semibold">Link {data.linkSuggestion.a.name} and {data.linkSuggestion.b.name}?</b>
-				<span class="block text-xs text-fg-muted">They appear together in that moment. Pick how they are related.</span>
+				<b class="font-semibold">
+					{t('home.link.question', {
+						a: data.linkSuggestion.a.name,
+						b: data.linkSuggestion.b.name
+					})}
+				</b>
+				<span class="block text-xs text-fg-muted">{t('home.link.hint')}</span>
 			</div>
 			<Button
 				variant="primary"
 				size="sm"
 				href="/contacts/{data.linkSuggestion.a.id}?relate={data.linkSuggestion.b.id}#relationships"
 			>
-				Link
+				{t('home.link.confirm')}
 			</Button>
-			<Button variant="ghost" size="sm" href="/" onclick={() => (hintDismissed = true)}>Not now</Button>
+			<Button variant="ghost" size="sm" href="/" onclick={() => (hintDismissed = true)}>
+				{t('home.link.notNow')}
+			</Button>
 		</div>
 	{/if}
 
@@ -139,10 +150,10 @@
 								<Avatar id={item.anchor.id} name={item.anchor.name} avatarPhotoId={item.anchor.avatarPhotoId} size={32} />
 								<div class="min-w-0">
 									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
-										<b class="font-semibold text-fg">{item.mine ? 'You' : item.actor.name}</b>
-										<span>wrote in</span>
-										<span><a href="/contacts/{item.anchor.id}/journal" class="font-medium text-fg hover:underline">{item.anchor.name}</a>’s journal</span>
-										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title="Only you can see this"><Icon name="private" size={11} />private</span>{/if}
+										<b class="font-semibold text-fg">{item.mine ? t('home.you') : item.actor.name}</b>
+										<span>{t('home.stream.wroteIn')}</span>
+										<span><a href="/contacts/{item.anchor.id}/journal" class="font-medium text-fg hover:underline">{item.anchor.name}</a>{t('home.stream.wroteInJournal')}</span>
+										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('home.onlyYouSee')}><Icon name="private" size={11} />{t('home.private')}</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.entryDate}>{ago(item.at)}</span>
 									</div>
 									<div class="note-body mt-1 text-fg">{@html item.bodyHtml}</div>
@@ -169,11 +180,12 @@
 								<Avatar id={item.person.id} name={item.person.name} avatarPhotoId={item.person.avatarPhotoId} size={32} />
 								<div class="min-w-0">
 									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
-										<b class="font-semibold text-fg">{item.mine ? 'You' : item.actor.name}</b>
-										<span>added</span>
+										<b class="font-semibold text-fg">{item.mine ? t('home.you') : item.actor.name}</b>
+										<span>{t('home.stream.added')}</span>
 										<a href="/contacts/{item.person.id}" class="font-medium text-fg hover:underline">{item.person.name}</a>
-										<span class="rounded bg-success/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-success">New person</span>
-										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title="Only you can see this"><Icon name="private" size={11} />private</span>{/if}
+										{#if t('home.stream.addedAfter')}<span>{t('home.stream.addedAfter')}</span>{/if}
+										<span class="rounded bg-success/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-success">{t('home.stream.newPerson')}</span>
+										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('home.onlyYouSee')}><Icon name="private" size={11} />{t('home.private')}</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago(item.at)}</span>
 									</div>
 									{#if item.description}<p class="mt-0.5 text-sm text-fg-muted">{item.description}</p>{/if}
@@ -183,12 +195,13 @@
 								<Avatar id={item.subject.id} name={item.subject.name} avatarPhotoId={item.subject.avatarPhotoId} size={32} />
 								<div class="min-w-0">
 									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
-										<b class="font-semibold text-fg">{item.mine ? 'You' : item.actor.name}</b>
-										<span>logged</span>
-										<span class="inline-flex items-center gap-1 font-semibold text-fg"><span style="color:{kind.accent}"><Icon name={kind.icon} size={12} /></span>{kind.label.toLowerCase()}</span>
-										<span>with</span>
+										<b class="font-semibold text-fg">{item.mine ? t('home.you') : item.actor.name}</b>
+										<span>{t('home.stream.logged')}</span>
+										<span class="inline-flex items-center gap-1 font-semibold text-fg"><span style="color:{kind.accent}"><Icon name={kind.icon} size={12} /></span>{t(kind.label)}</span>
+										<span>{t('home.stream.loggedWith')}</span>
 										<a href="/contacts/{item.subject.id}" class="font-medium text-fg hover:underline">{item.subject.name}</a>
-										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title="Only you can see this"><Icon name="private" size={11} />private</span>{/if}
+										{#if t('home.stream.loggedAfter')}<span>{t('home.stream.loggedAfter')}</span>{/if}
+										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('home.onlyYouSee')}><Icon name="private" size={11} />{t('home.private')}</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.happenedAt}>{ago(item.at)}</span>
 									</div>
 									{#if item.title}<p class="mt-0.5 text-sm text-fg">{item.title}</p>{/if}
@@ -212,7 +225,7 @@
 								</span>
 								<div class="min-w-0">
 									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
-										<b class="font-semibold text-fg">{item.mine ? 'You' : item.actor.name}</b>
+										<b class="font-semibold text-fg">{item.mine ? t('home.you') : item.actor.name}</b>
 										<span class="font-medium text-fg">{item.summary}</span>
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago(item.at)}</span>
 									</div>
@@ -221,13 +234,14 @@
 								<Avatar id={item.from.id} name={item.from.name} avatarPhotoId={item.from.avatarPhotoId} size={32} />
 								<div class="min-w-0">
 									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
-										<b class="font-semibold text-fg">{item.mine ? 'You' : item.actor.name}</b>
-										<span>linked</span>
+										<b class="font-semibold text-fg">{item.mine ? t('home.you') : item.actor.name}</b>
+										<span>{t('home.stream.linked')}</span>
 										<a href="/contacts/{item.from.id}" class="font-medium text-fg hover:underline">{item.from.name}</a>
 										<span class="text-fg-subtle">→</span>
 										<span>{item.label}</span>
 										<a href="/contacts/{item.to.id}" class="font-medium text-fg hover:underline">{item.to.name}</a>
-										<span class="rounded bg-link/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-link">Relationship</span>
+										{#if t('home.stream.linkedAfter')}<span>{t('home.stream.linkedAfter')}</span>{/if}
+										<span class="rounded bg-link/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-link">{t('home.stream.relationship')}</span>
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago(item.at)}</span>
 									</div>
 								</div>
@@ -238,17 +252,17 @@
 			{/each}
 		</ol>
 	{:else}
-		<EmptyState icon="write" title="Nothing written yet" hint="Write the first moment above and mention someone with @ — that is all it takes." />
+		<EmptyState icon="write" title={t('home.empty.title')} hint={t('home.empty.hint')} />
 	{/if}
 </div>
 
 <!-- The rail: the future, and the people slipping out of it. Both bands are absent when
      empty, because a box that is permanently empty teaches people to stop looking at it. -->
-<aside class="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:gap-8 lg:self-start" aria-label="At a glance">
+<aside class="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:gap-8 lg:self-start" aria-label={t('home.atAGlance')}>
 	{#if data.upcoming.length}
 		<section data-testid="coming-up">
 			<h2 class="flex items-center gap-2 pb-2 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
-				<Icon name="calendar" size={13} />Coming up
+				<Icon name="calendar" size={13} />{t('home.comingUp')}
 			</h2>
 			<ul class="{RAIL_LIST}">
 				{#each data.upcoming as item (item.contactId + item.date + item.kind)}
@@ -256,11 +270,11 @@
 						<Avatar id={item.contactId} name={item.contactName} avatarPhotoId={item.avatarPhotoId} size={28} />
 						<div class="min-w-0 text-[13px] leading-snug text-fg-muted">
 							<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline">{item.contactName}</a>
-							<span>{occasionLabel(item)}</span>
+							<span>{occasionLabel(i18n, item)}</span>
 							<span class="block text-xs text-fg-subtle">
-								{whenLabel(item.daysUntil, item.date)}
+								{whenLabel(i18n, item.daysUntil, item.date)}
 								<span aria-hidden="true">·</span>
-								<a href="/?about={item.contactId}" class="text-link hover:underline">Write a moment</a>
+								<a href="/?about={item.contactId}" class="text-link hover:underline">{t('home.writeMoment')}</a>
 							</span>
 						</div>
 					</li>
@@ -272,7 +286,7 @@
 	{#if data.quiet.length}
 		<section data-testid="quiet-lately">
 			<h2 class="flex items-center gap-2 pb-2 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
-				<Icon name="quiet" size={13} />Quiet lately
+				<Icon name="quiet" size={13} />{t('home.quietLately')}
 			</h2>
 			<ul class="{RAIL_LIST}">
 				{#each data.quiet as item (item.contactId)}
@@ -281,9 +295,11 @@
 						<div class="min-w-0 text-[13px] leading-snug text-fg-muted">
 							<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline">{item.contactName}</a>
 							<span class="block text-xs text-fg-subtle">
-								{item.lastTouchedOn ? `Last written ${quietLabel(item.quietForDays)} ago` : 'Nothing written yet'}
+								{item.lastTouchedOn
+									? t('home.lastWritten', { ago: agoLabel(i18n, item.quietForDays) })
+									: t('home.nothingWrittenYet')}
 								<span aria-hidden="true">·</span>
-								<a href="/?about={item.contactId}" class="text-link hover:underline">Write a moment</a>
+								<a href="/?about={item.contactId}" class="text-link hover:underline">{t('home.writeMoment')}</a>
 							</span>
 						</div>
 					</li>

@@ -13,8 +13,12 @@ describe('message catalogues', () => {
 		expect(Object.keys(de).sort()).toEqual(Object.keys(en).sort());
 	});
 
-	it('leave no message empty', () => {
-		const empty = Object.entries(de).filter(([, value]) => value === '');
+	it('leave a message empty only where English leaves it empty too', () => {
+		// A few messages are the words *around* a link in a sentence, and a language may not
+		// need one of them ("linked A → B" has no tail in English).
+		const empty = Object.entries(de)
+			.filter(([, value]) => value === '')
+			.filter(([key]) => en[key as keyof typeof en] !== '');
 		expect(empty).toEqual([]);
 	});
 

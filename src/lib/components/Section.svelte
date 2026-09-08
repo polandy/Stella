@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { Snippet } from 'svelte';
 	import Button from './Button.svelte';
 	import type { IconName } from './icons';
@@ -40,6 +41,7 @@
 		editor
 	}: Props = $props();
 
+	const t = useTranslate();
 	const expanded = $derived(open || error !== null);
 </script>
 
@@ -60,7 +62,7 @@
 				onclick={() => (open = !expanded)}
 				aria-expanded={expanded}
 			>
-				{expanded ? 'Cancel' : addLabel}
+				{expanded ? t('common.cancel') : addLabel}
 			</Button>
 		{/if}
 	</header>

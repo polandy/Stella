@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'bun:test';
-import { SAVED_NOTICE, savedEnhance } from './saved';
+import { savedEnhance } from './saved';
+
+/** Whatever the caller's language calls it; the rule under test does not care. */
+const SAVED_NOTICE = 'Saved';
 
 /*
  * The "Saved" toast (docs/05 §5.7): a form that succeeded says so, a form that came back with
@@ -10,7 +13,9 @@ function run(resultType: string) {
 	const notices: string[] = [];
 	const updates: number[] = [];
 	const closed: number[] = [];
-	const handler = savedEnhance({ notify: (text) => notices.push(text) }, () => closed.push(1));
+	const handler = savedEnhance({ notify: (text) => notices.push(text) }, SAVED_NOTICE, () =>
+		closed.push(1)
+	);
 	return {
 		notices,
 		updates,

@@ -4,10 +4,14 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { ALL_KINDS, activeKind, filterCircles, kindChips } from '$lib/circles/browse';
+	import { circleKindLabel } from '$lib/circles/labels';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { accentDotStyle } from '$lib/design/tokens';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+
+	const t = useTranslate();
 
 	let wantForm = $state(false);
 	// A failed submit keeps the form open, so the error has somewhere to be read.
@@ -17,21 +21,26 @@
 	// circles that a round trip per keystroke would only add latency.
 	let query = $state('');
 	let chosenKind = $state<string>(ALL_KINDS);
-	const chips = $derived(kindChips(data.circles, query));
+	const chips = $derived(
+		kindChips(data.circles, query, {
+			all: t('circles.kind.all'),
+			kind: (kind) => circleKindLabel(t, kind)
+		})
+	);
 	const kind = $derived(activeKind(chips, chosenKind));
 	const shown = $derived(filterCircles(data.circles, { query, kind }));
 </script>
 
-<svelte:head><title>Circles · Stella</title></svelte:head>
+<svelte:head><title>{t('circles.title')}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-6 md:px-6 md:py-10">
 	<header class="flex flex-wrap items-end justify-between gap-3">
 		<div>
-			<h1 class="text-2xl font-semibold text-fg">Circles</h1>
-			<p class="text-sm text-fg-muted">The contexts people share — a class, a club, a team, a choir.</p>
+			<h1 class="text-2xl font-semibold text-fg">{t('circles.heading')}</h1>
+			<p class="text-sm text-fg-muted">{t('circles.intro')}</p>
 		</div>
 		<Button variant={showForm ? 'secondary' : 'primary'} icon={showForm ? 'remove' : 'add'} type="button" onclick={() => (wantForm = !showForm)}>
-			{showForm ? 'Cancel' : 'New circle'}
+			{showForm ? t('common.cancel') : t('circles.new')}
 		</Button>
 	</header>
 
@@ -40,25 +49,25 @@
 			{#if form?.error}<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>{/if}
 
 			<label class="flex flex-col gap-1 text-sm">
-				<span class="text-fg-muted">Name</span>
-				<input name="name" placeholder="e.g. Kegelclub Bühl" required class="rounded-md border border-border bg-bg px-3 py-2 text-fg" />
+				<span class="text-fg-muted">{t('circles.name')}</span>
+				<input name="name" placeholder={t('circles.namePlaceholder')} required class="rounded-md border border-border bg-bg px-3 py-2 text-fg" />
 			</label>
 
 			<div class="flex flex-wrap gap-4">
 				<label class="flex flex-1 flex-col gap-1 text-sm">
-					<span class="text-fg-muted">Kind</span>
+					<span class="text-fg-muted">{t('circles.kindLabel')}</span>
 					<select name="kind" class="rounded-md border border-border bg-bg px-3 py-2 text-fg">
-						{#each data.kinds as kind (kind)}<option value={kind}>{kind}</option>{/each}
+						{#each data.kinds as kind (kind)}<option value={kind}>{circleKindLabel(t, kind)}</option>{/each}
 					</select>
 				</label>
 				<label class="flex flex-[2] flex-col gap-1 text-sm">
-					<span class="text-fg-muted">Description (optional)</span>
+					<span class="text-fg-muted">{t('circles.descriptionLabel')}</span>
 					<input name="description" class="rounded-md border border-border bg-bg px-3 py-2 text-fg" />
 				</label>
 			</div>
 
 			<fieldset class="flex flex-col gap-2">
-				<span class="text-sm text-fg-muted">Colour</span>
+				<span class="text-sm text-fg-muted">{t('circles.colour')}</span>
 				<div class="flex flex-wrap gap-2">
 					{#each data.colors as color (color)}
 						<label class="cursor-pointer" title={color}>
@@ -72,18 +81,18 @@
 				</div>
 			</fieldset>
 
-			<Button variant="primary" class="self-start">Create circle</Button>
+			<Button variant="primary" class="self-start">{t('circles.create')}</Button>
 		</form>
 	{/if}
 
 	{#if data.circles.length > 0}
 		<label class="flex items-center gap-2 rounded-control border border-border bg-card px-3 py-2 shadow-card focus-within:border-primary">
 			<Icon name="search" size={15} />
-			<span class="sr-only">Find a circle</span>
+			<span class="sr-only">{t('circles.find')}</span>
 			<input
 				type="search"
 				bind:value={query}
-				placeholder="Find a circle…"
+				placeholder={t('circles.findPlaceholder')}
 				autocomplete="off"
 				class="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none placeholder:text-fg-subtle"
 			/>
@@ -96,7 +105,7 @@
 						type="button"
 						onclick={() => (chosenKind = chip.kind)}
 						aria-pressed={kind === chip.kind}
-						class="rounded-full px-3 py-1 text-sm font-medium capitalize transition-colors aria-pressed:bg-primary-soft aria-pressed:text-primary text-fg-muted hover:text-fg"
+						class="rounded-full px-3 py-1 text-sm font-medium transition-colors aria-pressed:bg-primary-soft aria-pressed:text-primary text-fg-muted hover:text-fg"
 					>
 						{chip.label}
 						<span class="text-xs text-fg-subtle">{chip.count}</span>
@@ -107,11 +116,13 @@
 	{/if}
 
 	{#if data.circles.length === 0}
-		<EmptyState icon="circles" title="No circles yet" hint="A circle is a context people share. Add the first one and put people in it.">
-			<Button variant="primary" icon="add" type="button" onclick={() => (wantForm = true)}>New circle</Button>
+		<EmptyState icon="circles" title={t('circles.empty.title')} hint={t('circles.empty.hint')}>
+			<Button variant="primary" icon="add" type="button" onclick={() => (wantForm = true)}>
+				{t('circles.new')}
+			</Button>
 		</EmptyState>
 	{:else if shown.length === 0}
-		<EmptyState icon="search" title="No circle matches" hint="Try part of a name, or a word from a description." />
+		<EmptyState icon="search" title={t('circles.noMatch.title')} hint={t('circles.noMatch.hint')} />
 	{:else}
 		<ul class="grid gap-3 sm:grid-cols-2" data-testid="circle-cards">
 			{#each shown as circle (circle.id)}
@@ -125,9 +136,9 @@
 							<span class="min-w-0 flex-1">
 								<span class="block truncate font-semibold text-fg">{circle.name}</span>
 								<span class="block text-xs text-fg-subtle">
-									<span class="capitalize">{circle.kind}</span>
-									· {circle.memberCount} {circle.memberCount === 1 ? 'member' : 'members'}
-									{#if circle.visibility === 'private'} · private{/if}
+									<span>{circleKindLabel(t, circle.kind)}</span>
+									· {t('circles.memberCount', { count: circle.memberCount })}
+									{#if circle.visibility === 'private'} · {t('circles.private')}{/if}
 								</span>
 							</span>
 						</div>
@@ -146,7 +157,7 @@
 								</span>
 							{/if}
 							{#if circle.memberCount === 0}
-								<span class="text-xs text-fg-subtle">Nobody in it yet</span>
+								<span class="text-xs text-fg-subtle">{t('circles.nobodyYet')}</span>
 							{/if}
 						</div>
 					</a>
