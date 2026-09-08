@@ -3,7 +3,7 @@ import { resolvePalette } from './theme';
 import { AA_LARGE, contrastRatio, mixHex } from '../../design/color';
 import { resolveColor, tokensFor, type Theme } from '../../design/css-tokens';
 import { RELATIONSHIP_CATEGORIES } from '../../relationships/categories';
-import { buildStylesheet } from './stylesheet';
+import { buildStylesheet, EDGE_LABEL_MIN_ZOOMED_FONT_SIZE } from './stylesheet';
 
 /*
  * Palette resolution + stylesheet building (docs/05 §5.6/§5.8), tested with a fake token
@@ -117,6 +117,21 @@ describe('buildStylesheet', () => {
 
 		const named = styles.find((s) => s.selector === 'edge.highlight, edge.onpath');
 		expect(named?.style).toEqual({ 'text-opacity': 1 });
+	});
+
+	it('names every edge at once when edge labels are asked for', () => {
+		const shown = buildStylesheet(resolvePalette(read), { edgeLabels: true });
+		const edge = shown.find((s) => s.selector === 'edge');
+		expect(edge?.style).toMatchObject({ label: 'data(label)', 'text-opacity': 1 });
+	});
+
+	it('drops edge labels that zoom out too small to read, in either mode', () => {
+		for (const on of [false, true]) {
+			const edge = buildStylesheet(resolvePalette(read), { edgeLabels: on }).find(
+				(s) => s.selector === 'edge'
+			);
+			expect(edge?.style['min-zoomed-font-size']).toBe(EDGE_LABEL_MIN_ZOOMED_FONT_SIZE);
+		}
 	});
 
 	it('gives every person accent its own background selector', () => {
