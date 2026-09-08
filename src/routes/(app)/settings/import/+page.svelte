@@ -23,44 +23,70 @@
 	let progress = $state<PhotoProgress | null>(null);
 	let uploading = $state(false);
 
-	async function onPhotosPicked(event: Event) {
-		if (form?.step !== 'photos') return;
-		const files = (event.currentTarget as HTMLInputElement).files;
-		if (!files) return;
-		const byName = new Map<string, File>();
-		for (const f of files) byName.set(f.name, f);
+	/**
+	 * Store one picture: downscale it here (the server has no image library) and post both
+	 * renditions with the staging token. The server decides whose photo it is.
+	 */
+	async function storePhoto(id: string, file: Blob, token: string): Promise<'stored' | 'already'> {
+		const { image, thumb, width, height } = await processImage(file);
+		const body = new FormData();
+		body.append('token', token);
+		body.append('photoId', id);
+		body.append('image', image, 'image.jpg');
+		body.append('thumb', thumb, 'thumb.jpg');
+		body.append('width', String(width));
+		body.append('height', String(height));
+		const res = await fetch('/settings/import/photos', { method: 'POST', body });
+		if (!res.ok) throw new Error(`The server refused this photo (${res.status}).`);
+		return ((await res.json()) as { status: 'stored' | 'already' }).status;
+	}
 
+	/**
+	 * Walk the planned photos, asking `pictureFor` where each one's bytes come from — a file
+	 * the admin picked out of Monica's folder, or the export itself. Returning null means the
+	 * picture is not there, which is counted rather than failed.
+	 */
+	async function storeAll(pictureFor: (photo: { id: string; file: string }) => Promise<Blob | null>) {
+		if (form?.step !== 'photos') return;
 		uploading = true;
 		const p: PhotoProgress = { total: form.photos.length, done: 0, stored: 0, already: 0, missing: 0, failed: 0 };
 		progress = p;
 		for (const expected of form.photos) {
-			const file = byName.get(expected.file);
-			if (!file) p.missing++;
-			else {
-				try {
-					const { image, thumb, width, height } = await processImage(file);
-					const body = new FormData();
-					body.append('token', form.token);
-					body.append('photoId', expected.id);
-					body.append('image', image, 'image.jpg');
-					body.append('thumb', thumb, 'thumb.jpg');
-					body.append('width', String(width));
-					body.append('height', String(height));
-					const res = await fetch('/settings/import/photos', { method: 'POST', body });
-					if (!res.ok) p.failed++;
-					else {
-						const { status } = (await res.json()) as { status: 'stored' | 'already' };
-						if (status === 'stored') p.stored++;
-						else p.already++;
-					}
-				} catch {
-					p.failed++;
-				}
+			try {
+				const picture = await pictureFor(expected);
+				if (picture === null) p.missing++;
+				else if ((await storePhoto(expected.id, picture, form.token)) === 'stored') p.stored++;
+				else p.already++;
+			} catch {
+				p.failed++;
 			}
 			p.done++;
 			progress = { ...p };
 		}
 		uploading = false;
+	}
+
+	/** A SQL dump names its files; the admin points at the folder and they are matched by name. */
+	async function onPhotosPicked(event: Event) {
+		const files = (event.currentTarget as HTMLInputElement).files;
+		if (!files) return;
+		const byName = new Map<string, File>();
+		for (const f of files) byName.set(f.name, f);
+		await storeAll(async (photo) => byName.get(photo.file) ?? null);
+	}
+
+	/** A JSON export carries the pictures inside it; the server hands each one back out. */
+	async function fetchEmbeddedPhotos() {
+		if (form?.step !== 'photos') return;
+		const token = form.token;
+		await storeAll(async (photo) => {
+			const res = await fetch(
+				`/settings/import/photos?token=${encodeURIComponent(token)}&photoId=${encodeURIComponent(photo.id)}`
+			);
+			if (res.status === 404 || res.status === 409) return null;
+			if (!res.ok) throw new Error(`The picture could not be read (${res.status}).`);
+			return await res.blob();
+		});
 	}
 
 	/** "1 address", "4 addresses", "2 notes". */
@@ -72,7 +98,7 @@
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header>
 		<h1 class="text-2xl font-semibold text-fg">Import from Monica</h1>
-		<p class="text-fg-muted">A database dump of your Monica becomes people, relationships, notes, interactions, tags and photos here. Nothing is written until you confirm.</p>
+		<p class="text-fg-muted">An export of your Monica becomes people, relationships, notes, interactions, tags and photos here. Stella works out which of Monica's two formats you uploaded. Nothing is written until you confirm.</p>
 	</header>
 
 	<ol class="flex gap-2 text-xs uppercase tracking-wide text-fg-subtle" aria-label="Steps">
@@ -90,11 +116,12 @@
 				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
 			{/if}
 			<label class="flex flex-col gap-1 text-sm text-fg-muted">
-				<span>Monica database dump (<code>.sql</code> or <code>.sql.gz</code>)</span>
-				<input type="file" name="dump" accept=".sql,.gz,.sql.gz,application/sql,application/gzip" required class={fieldClass} />
+				<span>Monica export — JSON (<code>.json</code>) or database dump (<code>.sql</code>), plain or gzipped</span>
+				<input type="file" name="dump" accept=".sql,.json,.gz,.sql.gz,.json.gz,application/sql,application/json,application/gzip" required class={fieldClass} />
 			</label>
 			<p class="text-xs text-fg-subtle">
-				On a self-hosted Monica: <code>docker exec monica-db sh -c 'mariadb-dump -u"$MYSQL_USER" "$MYSQL_DATABASE"' | gzip &gt; monica.sql.gz</code>
+				In Monica: <em>Settings → Export data</em> gives you the JSON file, pictures included. For a dump instead, on a self-hosted Monica:
+				<code>docker exec monica-db sh -c 'mariadb-dump -u"$MYSQL_USER" "$MYSQL_DATABASE"' | gzip &gt; monica.sql.gz</code>
 			</p>
 			<fieldset class="flex flex-wrap items-center gap-4 text-sm">
 				<legend class="mb-1 text-fg-muted">Everything imported is</legend>
@@ -149,10 +176,20 @@
 
 			{#if form.photos.length > 0}
 				<h2 class="text-sm font-medium text-fg-muted">Photos ({form.photos.length})</h2>
-				<p class="text-sm text-fg-muted">
-					Point the picker at Monica's photo folder (<code>storage/app/public/photos</code>). Each file is resized in your browser and uploaded; you can close this page once it says done.
-				</p>
-				<input type="file" webkitdirectory multiple accept="image/*" onchange={onPhotosPicked} disabled={uploading} class={fieldClass} aria-label="Monica photo folder" />
+				{#if form.photosAreEmbedded}
+					<p class="text-sm text-fg-muted">
+						Your JSON export carries the pictures inside it, so there is no folder to point at. Each one is resized in your browser as it arrives; you can close this page once it says done.
+					</p>
+					<!-- The count is in the heading right above; the button says what it does. -->
+					<Button variant="primary" onclick={fetchEmbeddedPhotos} disabled={uploading}>
+						{uploading ? 'Storing…' : 'Store photos'}
+					</Button>
+				{:else}
+					<p class="text-sm text-fg-muted">
+						Point the picker at Monica's photo folder (<code>storage/app/public/photos</code>). Each file is resized in your browser and uploaded; you can close this page once it says done.
+					</p>
+					<input type="file" webkitdirectory multiple accept="image/*" onchange={onPhotosPicked} disabled={uploading} class={fieldClass} aria-label="Monica photo folder" />
+				{/if}
 				{#if progress}
 					<div class="flex flex-col gap-1" data-testid="photo-progress">
 						<progress max={progress.total} value={progress.done} class="w-full"></progress>

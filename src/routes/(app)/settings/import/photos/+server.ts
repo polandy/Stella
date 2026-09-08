@@ -1,4 +1,6 @@
 import { error, json } from '@sveltejs/kit';
+import { decodeDataUrl } from '$lib/media/data-url';
+import type { Visibility } from '$lib/server/access/visibility';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { getConfig } from '$lib/server/config';
 import { previewMonicaDump } from '$lib/server/domain/import/monica/apply';
@@ -9,11 +11,52 @@ import { getImportDeps, getImportedPhotoDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 /*
- * One imported photo per request (docs/02 §2.16): the browser matched a file in Monica's
- * storage folder to a photo of the plan, downscaled it, and sends image + thumb with the
- * staging token. The plan is re-derived from the staged dump, so the photo id decides which
- * contact it belongs to and whether it becomes the avatar — the browser cannot choose that.
+ * One imported photo per request (docs/02 §2.16). The plan is re-derived from the staged
+ * export on every request, so the photo id decides which contact it belongs to and whether it
+ * becomes the avatar — the browser cannot choose that.
+ *
+ * POST takes the finished renditions: the browser found the picture (in Monica's storage
+ * folder for a dump, or from GET below for a JSON export) and downscaled it, because the
+ * server has no image library.
+ *
+ * GET hands the original back out for exactly that: a JSON export carries its pictures inside
+ * the file, so there is no folder for the admin to point at.
  */
+
+/** The plan behind a staging token, or the HTTP error that says why there is none. */
+async function planFor(
+	token: string,
+	user: { householdId: string; id: string },
+	visibility: Visibility
+) {
+	const text = await readStagedDump(getConfig().importDir, token);
+	if (text === null) throw error(410, 'The import session is over; start again from the export.');
+	return previewMonicaDump(getImportDeps(), text, {
+		householdId: user.householdId,
+		userId: user.id,
+		visibility
+	});
+}
+
+export const GET: RequestHandler = async ({ url, locals }) => {
+	const user = requireAdmin(locals);
+	const token = url.searchParams.get('token');
+	const photoId = url.searchParams.get('photoId');
+	if (!token || !photoId) throw error(400, 'Missing token or photo id.');
+
+	// Nothing about a picture depends on the visibility the admin chose, so reading one asks
+	// for the household default rather than carrying a setting through the URL.
+	const planned = (await planFor(token, user, 'shared')).photos.find((p) => p.id === photoId);
+	if (!planned) throw error(404, 'This photo is not part of the import.');
+	if (planned.dataUrl === null) {
+		throw error(409, 'This export does not carry the picture; point at Monica’s photo folder.');
+	}
+
+	const { bytes, mime } = decodeDataUrl(planned.dataUrl);
+	return new Response(bytes.buffer as ArrayBuffer, {
+		headers: { 'content-type': mime, 'cache-control': 'no-store' }
+	});
+};
 export const POST: RequestHandler = async ({ request, locals }) => {
 	const user = requireAdmin(locals);
 	const form = await request.formData();
@@ -26,9 +69,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		throw error(400, 'Missing photo upload fields.');
 	}
 
-	const text = await readStagedDump(getConfig().importDir, token);
-	if (text === null) throw error(410, 'The import session is over; start again from the dump.');
-	const plan = previewMonicaDump(getImportDeps(), text, { householdId: user.householdId, userId: user.id, visibility });
+	const plan = await planFor(token, user, visibility);
 	const planned = plan.photos.find((p) => p.id === photoId);
 	if (!planned) throw error(404, 'This photo is not part of the import.');
 

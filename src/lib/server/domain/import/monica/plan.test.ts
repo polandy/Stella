@@ -18,6 +18,7 @@ const opts: ImportOptions = {
 
 function emptyExport(): MonicaExport {
 	return {
+		source: 'sql',
 		contacts: [],
 		genders: [
 			{ id: 1, type: 'M', name: 'Männlich' },
@@ -292,9 +293,9 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 		const exp = emptyExport();
 		exp.contacts = [contact(1, 'A', null, { avatarSource: 'photo', avatarPhotoId: 10 })];
 		exp.photos = [
-			{ id: 10, path: 'photos/a.jpg', mime: 'image/jpeg', sizeBytes: 100, contactId: 1, createdAt: null },
-			{ id: 11, path: 'photos/b.jpg', mime: 'image/jpeg', sizeBytes: 200, contactId: 1, createdAt: null },
-			{ id: 12, path: 'photos/orphan.jpg', mime: 'image/jpeg', sizeBytes: 5, contactId: null, createdAt: null }
+			{ id: 10, path: 'photos/a.jpg', mime: 'image/jpeg', sizeBytes: 100, contactId: 1, createdAt: null, dataUrl: null },
+			{ id: 11, path: 'photos/b.jpg', mime: 'image/jpeg', sizeBytes: 200, contactId: 1, createdAt: null, dataUrl: null },
+			{ id: 12, path: 'photos/orphan.jpg', mime: 'image/jpeg', sizeBytes: 5, contactId: null, createdAt: null, dataUrl: null }
 		];
 		const plan = planMonicaImport(exp, opts);
 		expect(plan.photos.map((p) => [p.id, p.contactId, p.sourcePath, p.isAvatar])).toEqual([
@@ -312,6 +313,17 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 		expect(plan.report.skipped).toContainEqual({ what: 'journal entry', count: 1, why: 'not attached to a person (Besuch Schuum)' });
 		expect(plan.report.skipped).toContainEqual({ what: 'reminder', count: 32, why: 'Stella derives birthday reminders itself' });
 		expect(plan.report.warnings).toContainEqual('Monica had 2 user accounts; everything is attributed to the importing member.');
+	});
+
+	it('says out loud that a JSON export cannot carry how you met', () => {
+		const sql = { ...emptyExport(), contacts: [contact(1, 'Ada', null)] };
+		const json = { ...sql, source: 'json' as const };
+
+		const message =
+			'Monica’s JSON export does not carry “how you met” or where; that free text is not in the file.';
+		expect(planMonicaImport(json, opts).report.warnings).toContainEqual(message);
+		// The positive control: read from a dump, the same household loses nothing and says nothing.
+		expect(planMonicaImport(sql, opts).report.warnings).not.toContainEqual(message);
 	});
 
 	it('summarises counts for the preview', () => {
