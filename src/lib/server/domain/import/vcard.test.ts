@@ -111,6 +111,18 @@ describe('readVCard', () => {
 		expect(exp.contacts[0]).toMatchObject({ company: 'Kantonsspital', job: 'Oberarzt' });
 	});
 
+	it('keys a tag by its name, so two address books cannot swap each other’s tags', () => {
+		// The id is positional no more: with `tag-1` per file, importing a second book gave its
+		// people the first book's tag, because the adapter reuses whatever row holds that id.
+		const jass = readVCard(card('UID:u1', 'FN:Severin', 'CATEGORIES:Jassrunde')).tags[0]!;
+		const other = readVCard(card('UID:u2', 'FN:Marlis', 'CATEGORIES:Wanderclub')).tags[0]!;
+		expect(other.id).not.toBe(jass.id);
+
+		// And the same name is the same tag wherever it turns up, so it is never duplicated.
+		const again = readVCard(card('UID:u3', 'FN:Odile', 'CATEGORIES:Nachbarn,Jassrunde')).tags;
+		expect(again.find((t) => t.name === 'Jassrunde')!.id).toBe(jass.id);
+	});
+
 	it('collects the categories of every card into shared tags', () => {
 		const exp = readVCard(
 			[

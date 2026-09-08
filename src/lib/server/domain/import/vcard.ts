@@ -205,12 +205,11 @@ function splitCards(text: string): Property[][] {
 }
 
 /**
- * A short, stable fingerprint of a card's contents. Two 32-bit FNV-1a rounds rather than a
+ * A short, stable, URL-safe fingerprint of a string. Two 32-bit FNV-1a rounds rather than a
  * digest: this has to be synchronous and dependency-free, and 64 bits is far more than an
- * address book needs to keep two people apart.
+ * address book needs to keep two records apart.
  */
-function fingerprint(properties: Property[]): string {
-	const text = properties.map((p) => `${p.name}:${p.raw}`).join('\n');
+function fingerprint(text: string): string {
 	const round = (seed: number) => {
 		let hash = seed;
 		for (let i = 0; i < text.length; i++) {
@@ -220,6 +219,10 @@ function fingerprint(properties: Property[]): string {
 	};
 	return round(0x811c9dc5) + round(0x9dc5811c);
 }
+
+/** What a card is, for the times it does not say who it is: every property it carries. */
+const cardFingerprint = (properties: Property[]) =>
+	fingerprint(properties.map((p) => `${p.name}:${p.raw}`).join('\n'));
 
 const orNull = (value: string | undefined): string | null => {
 	const trimmed = (value ?? '').trim();
@@ -286,7 +289,7 @@ export function readVCard(text: string): SourceExport {
 		// Without a usable UID the card must still get a *stable* id, and its position is not
 		// one: two address books would then collide and the second one's people be dropped as
 		// duplicates.
-		const id = uid !== undefined && uid !== null && URL_SAFE_ID.test(uid) ? uid : `card-${fingerprint(card)}`;
+		const id = uid !== undefined && URL_SAFE_ID.test(uid) ? uid : `card-${cardFingerprint(card)}`;
 
 		const structured = first('N') ? splitEscaped(first('N')!.raw, ';').map(unescape) : [];
 		const formatted = orNull(unescape(first('FN')?.raw ?? ''));
@@ -388,8 +391,10 @@ export function readVCard(text: string): SourceExport {
 		});
 	});
 
-	const tags: MonicaTag[] = [...tagContacts.entries()].map(([name, contactIds], i) => ({
-		id: `tag-${i + 1}`,
+	// A tag is its name, and the id has to say so: numbering them per file made the id mean
+	// "the first tag in whichever file this was", which two address books cannot both be.
+	const tags: MonicaTag[] = [...tagContacts.entries()].map(([name, contactIds]) => ({
+		id: `tag-${fingerprint(name)}`,
 		name,
 		contactIds
 	}));

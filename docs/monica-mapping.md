@@ -105,7 +105,7 @@ sparsely. `src/lib/server/domain/import/vcard.ts` reads it; unknown properties a
 | `EMAIL`, `TEL`, `URL` | `contact_field` `email` / `phone` / `url` |
 | `ADR` | `contact_field` `address`, labelled with its `TYPE` |
 | `NOTE` | `note` |
-| `CATEGORIES` | `tag`, shared across every card that names it |
+| `CATEGORIES` | `tag`, shared across every card that names it; keyed by the name, so two address books never swap each other's tags |
 | `PHOTO` with `ENCODING=b` or a `data:` URL | `photo`, and the person's avatar |
 | `PHOTO` that is only a URI | left out — the picture is not in the file |
 | `RELATED`, and everything else | not read; the report says a vCard carries no relationships |
