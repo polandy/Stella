@@ -73,12 +73,13 @@ Right now there are two ways in:
   rest of the household is still to come; until then, single sign-on is the way to give
   everyone their own login.
 
-## Coming from Monica?
+## Coming from Monica, or from an address book?
 
-Sign in as the admin, open **Settings → Import from Monica**, and hand it a dump of your
-Monica database. It shows what it found before writing anything, and afterwards lets you
-bring the photos over from Monica's storage folder. The whole story, including how to make
-the dump, is in [using-stella.md](using-stella.md#moving-in-from-monica).
+Sign in as the admin, open **Settings → Import people**, and hand it an export of your Monica
+— the JSON file or a database dump — or a vCard from any address book. It shows what it found
+before writing anything, and afterwards brings the photos over. The whole story, including how
+to make a dump, is in
+[using-stella.md](using-stella.md#moving-in-from-monica-or-from-an-address-book).
 
 ## Trying it with demo data first
 
