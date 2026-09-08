@@ -249,11 +249,11 @@ not in it; the last row, *Search everything*, opens the full search, which looks
 people and notes at once, matches partial words, and only ever returns what you are allowed
 to see.
 
-## Moving in from Monica
+## Moving in from Monica, or from an address book
 
-If your people already live in Monica, you do not have to type them again. The household
-admin opens **Settings → Import from Monica** and hands it an export. Monica offers two, and
-Stella takes either — it works out which one you gave it, so there is nothing to choose:
+If your people already live somewhere else, you do not have to type them again. The household
+admin opens **Settings → Import people** and hands it a file. There are three Stella takes —
+it works out which one you gave it, so there is nothing to choose:
 
 - **The JSON file** is the easy one, and the one to prefer: in Monica, *Settings → Export
   data*. It has the pictures inside it.
@@ -263,8 +263,13 @@ Stella takes either — it works out which one you gave it, so there is nothing 
   docker exec monica-db sh -c 'mariadb-dump -u"$MYSQL_USER" "$MYSQL_DATABASE"' | gzip > monica.sql.gz
   ```
 
-Gzipped is fine either way. Whichever you pick, **stay with it**: the two files name Monica's
-records differently, so importing both of them would bring everybody in twice.
+- **A vCard** (`.vcf`), if your people are in a phone, a mail client or Google Contacts rather
+  than in Monica. It brings the people themselves — names, birthdays, phone numbers, addresses,
+  notes, categories and their pictures — but nothing about how they are connected, because a
+  vCard does not record that. You can add the relationships afterwards.
+
+Gzipped is fine for any of them. Whichever you pick, **stay with it**: each file names its
+records in its own way, so importing two of them would bring everybody in twice.
 
 Stella reads the file and shows what it found — how many people, relationships, notes and
 photos — together with a list of everything it will leave out and why (people deleted in

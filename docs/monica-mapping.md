@@ -5,7 +5,8 @@ is `src/lib/server/domain/import/monica/`; this table is the human-readable cont
 changes with it.
 
 Monica offers **two** exports and Stella reads both, working out which one a file is from the
-file itself. They carry the same household but not the same shape, so read the table below as
+file itself. A **vCard** is accepted through the same wizard and is described at the end of
+this file; the table below is about Monica. They carry the same household but not the same shape, so read the table below as
 being about Monica's *records* — the SQL column names are named where they differ:
 
 | | SQL dump (`mariadb-dump`) | JSON export (*Settings → Export data*) |
@@ -17,7 +18,8 @@ being about Monica's *records* — the SQL column names are named where they dif
 | Relationship types | a table, with the reverse wording | only the forward name, on each link |
 | "How you met" / where | present | **not exported by Monica**; the import says so |
 
-Every imported row gets a **stable source id** of the form `monica:<what>:<monica id>`, so
+Every imported row gets a **stable source id** of the form `<source>:<what>:<key>` — `monica:`
+for either Monica export, `vcard:` for a vCard — so
 importing the same export again inserts nothing new. The id is Monica's own key, which the two
 formats spell differently — so importing *both* exports of the same Monica into one household
 writes everything twice. Pick one format and stay with it. Everything is attributed to the importing
@@ -67,6 +69,7 @@ A relationship whose end is a deleted contact is left out and reported.
 | Monica | Stella |
 |---|---|
 | `contact_fields` of type `email` / `phone` | `contact_field` `email` / `phone` |
+| a field type of `url` (a vCard's `URL`; Monica has no such type) | `contact_field` `url`, value kept as written |
 | `contact_fields` whose type has an `http…` protocol (WhatsApp, Telegram, …) | `contact_field` `url` labelled with the type name, value = protocol + data |
 | other `contact_fields` | `contact_field` `custom` labelled with the type name |
 | `addresses` + `places` | `contact_field` `address`: "street, postal city, province, country" |
@@ -85,3 +88,30 @@ Not read at all: Monica's `conversations`, `calls`, `tasks`, `debts`, `documents
 logs, API keys and settings. From a JSON export, the rated-day journal rows (`type: "day"`)
 are left alongside the written entries the same way. If your Monica has data there, say so — the report will not
 mention them.
+
+## vCard
+
+A vCard (RFC 6350 for 4.0, RFC 2426 for 3.0) is contacts only, so it fills the same mapping
+sparsely. `src/lib/server/domain/import/vcard.ts` reads it; unknown properties are ignored.
+
+| vCard | Stella |
+|---|---|
+| `UID` | the record's key; `urn:uuid:` stripped. A card without one — or with one that could not survive a URL, since the id ends up in `/contacts/<id>` — is keyed by a fingerprint of its own contents, so the same card imported from two files is one person and two different cards never collide |
+| `FN`, `N` | display name, given / additional / family name — `FN` alone when there is no `N` |
+| `NICKNAME` | nickname (the first, if the card lists several) |
+| `BDAY` | birth date; `--MMDD` becomes a birthday whose year is unknown; free text is ignored |
+| `GENDER` | `M` / `F` mapped as Monica's codes are; anything else left empty |
+| `ORG`, `TITLE` | company (first component) and job title |
+| `EMAIL`, `TEL`, `URL` | `contact_field` `email` / `phone` / `url` |
+| `ADR` | `contact_field` `address`, labelled with its `TYPE` |
+| `NOTE` | `note` |
+| `CATEGORIES` | `tag`, shared across every card that names it; keyed by the name, so two address books never swap each other's tags |
+| `PHOTO` with `ENCODING=b` or a `data:` URL | `photo`, and the person's avatar |
+| `PHOTO` that is only a URI | left out — the picture is not in the file |
+| `RELATED`, and everything else | not read; the report says a vCard carries no relationships |
+
+vCard 2.1's `ENCODING=QUOTED-PRINTABLE` is decoded, soft line breaks included, so a name like
+`Ren=C3=A9` arrives as *René* rather than as itself.
+
+A card with neither `FN` nor `N` is refused rather than imported as a nameless person, and so
+is a file with no `BEGIN:VCARD` or a card that is never closed.

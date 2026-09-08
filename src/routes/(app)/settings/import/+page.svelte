@@ -4,9 +4,10 @@
 	import type { ActionData } from './$types';
 
 	/*
-	 * Monica import wizard (docs/02 §2.16). Steps 1–3 are plain form posts; step 4 runs in the
-	 * browser: the admin points the file picker at Monica's `photos` folder, each expected file
-	 * is downscaled here (no native image library on the server) and sent one at a time.
+	 * The import wizard (docs/02 §2.16), which takes either Monica export or a vCard. Steps 1–3
+	 * are plain form posts; step 4 runs in the browser: the pictures come either from the file
+	 * itself or from Monica's `photos` folder, and each is downscaled here (no native image
+	 * library on the server) and sent one at a time.
 	 */
 	let { form }: { form: ActionData } = $props();
 
@@ -66,7 +67,7 @@
 		uploading = false;
 	}
 
-	/** A SQL dump names its files; the admin points at the folder and they are matched by name. */
+	/** A SQL dump only names its files; the admin points at the folder and they are matched by name. */
 	async function onPhotosPicked(event: Event) {
 		const files = (event.currentTarget as HTMLInputElement).files;
 		if (!files) return;
@@ -75,7 +76,7 @@
 		await storeAll(async (photo) => byName.get(photo.file) ?? null);
 	}
 
-	/** A JSON export carries the pictures inside it; the server hands each one back out. */
+	/** A JSON export and a vCard carry their pictures; the server hands each one back out. */
 	async function fetchEmbeddedPhotos() {
 		if (form?.step !== 'photos') return;
 		const token = form.token;
@@ -97,8 +98,8 @@
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header>
-		<h1 class="text-2xl font-semibold text-fg">Import from Monica</h1>
-		<p class="text-fg-muted">An export of your Monica becomes people, relationships, notes, interactions, tags and photos here. Stella works out which of Monica's two formats you uploaded. Nothing is written until you confirm.</p>
+		<h1 class="text-2xl font-semibold text-fg">Import people</h1>
+		<p class="text-fg-muted">An export of your Monica becomes people, relationships, notes, interactions, tags and photos here; a vCard brings the people alone. Stella works out which of the three you uploaded. Nothing is written until you confirm.</p>
 	</header>
 
 	<ol class="flex gap-2 text-xs uppercase tracking-wide text-fg-subtle" aria-label="Steps">
@@ -116,11 +117,11 @@
 				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
 			{/if}
 			<label class="flex flex-col gap-1 text-sm text-fg-muted">
-				<span>Monica export — JSON (<code>.json</code>) or database dump (<code>.sql</code>), plain or gzipped</span>
-				<input type="file" name="dump" accept=".sql,.json,.gz,.sql.gz,.json.gz,application/sql,application/json,application/gzip" required class={fieldClass} />
+				<span>Monica export — JSON (<code>.json</code>) or database dump (<code>.sql</code>) — or a vCard (<code>.vcf</code>), plain or gzipped</span>
+				<input type="file" name="dump" accept=".sql,.json,.vcf,.gz,.sql.gz,.json.gz,.vcf.gz,application/sql,application/json,text/vcard,application/gzip" required class={fieldClass} />
 			</label>
 			<p class="text-xs text-fg-subtle">
-				In Monica: <em>Settings → Export data</em> gives you the JSON file, pictures included. For a dump instead, on a self-hosted Monica:
+				In Monica: <em>Settings → Export data</em> gives you the JSON file, pictures included. A vCard comes from any address book — phone, mail client, Google Contacts — and carries the people only. For a dump instead, on a self-hosted Monica:
 				<code>docker exec monica-db sh -c 'mariadb-dump -u"$MYSQL_USER" "$MYSQL_DATABASE"' | gzip &gt; monica.sql.gz</code>
 			</p>
 			<fieldset class="flex flex-wrap items-center gap-4 text-sm">
@@ -178,7 +179,7 @@
 				<h2 class="text-sm font-medium text-fg-muted">Photos ({form.photos.length})</h2>
 				{#if form.photosAreEmbedded}
 					<p class="text-sm text-fg-muted">
-						Your JSON export carries the pictures inside it, so there is no folder to point at. Each one is resized in your browser as it arrives; you can close this page once it says done.
+						Your export carries the pictures inside it, so there is no folder to point at. Each one is resized in your browser as it arrives; you can close this page once it says done.
 					</p>
 					<!-- The count is in the heading right above; the button says what it does. -->
 					<Button variant="primary" onclick={fetchEmbeddedPhotos} disabled={uploading}>

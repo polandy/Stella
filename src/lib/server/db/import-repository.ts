@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import type { ImportOutcome, ImportRepository } from '../domain/import/monica/apply';
+import type { ImportOutcome, ImportRepository } from '../domain/import/apply';
 import type { ImportPlan } from '../domain/import/monica/plan';
 import type * as schema from './schema';
 import {

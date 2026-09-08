@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { MonicaExport } from './monica-export';
+import type { SourceExport } from './monica-export';
 import { planMonicaImport, type ImportOptions } from './plan';
 
 /*
@@ -16,7 +16,7 @@ const opts: ImportOptions = {
 	now: NOW
 };
 
-function emptyExport(): MonicaExport {
+function emptyExport(): SourceExport {
 	return {
 		source: 'sql',
 		contacts: [],
@@ -57,7 +57,7 @@ function emptyExport(): MonicaExport {
 	};
 }
 
-const contact = (id: number, first: string, last: string | null, extra: Partial<MonicaExport['contacts'][0]> = {}) => ({
+const contact = (id: number, first: string, last: string | null, extra: Partial<SourceExport['contacts'][0]> = {}) => ({
 	id,
 	firstName: first,
 	middleName: null,
@@ -324,6 +324,39 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 		expect(planMonicaImport(json, opts).report.warnings).toContainEqual(message);
 		// The positive control: read from a dump, the same household loses nothing and says nothing.
 		expect(planMonicaImport(sql, opts).report.warnings).not.toContainEqual(message);
+	});
+
+	it('keys a vCard import under its own source, so it is never mistaken for Monica’s', () => {
+		const exp = { ...emptyExport(), source: 'vcard' as const, contacts: [contact(1, 'Ada', null)] };
+		exp.notes = [{ id: 1, contactId: 1, body: 'x', isFavorited: false, createdAt: null }];
+
+		const plan = planMonicaImport(exp, opts);
+		expect(plan.contacts[0]?.id).toBe('vcard:contact:1');
+		expect(plan.notes[0]?.id).toBe('vcard:note:1');
+		// The positive control: the same records read from a dump keep Monica's own ids.
+		expect(planMonicaImport({ ...exp, source: 'sql' }, opts).contacts[0]?.id).toBe('monica:contact:1');
+	});
+
+	it('says out loud that a vCard carries people but not how they are connected', () => {
+		const exp = { ...emptyExport(), source: 'vcard' as const, contacts: [contact(1, 'Ada', null)] };
+
+		const message =
+			'A vCard carries people only — no relationships, interactions or journal entries are read from it.';
+		expect(planMonicaImport(exp, opts).report.warnings).toContainEqual(message);
+		expect(planMonicaImport({ ...exp, source: 'sql' }, opts).report.warnings).not.toContainEqual(message);
+	});
+
+	it('keeps a website as a link, without pasting a protocol in front of it', () => {
+		const exp = emptyExport();
+		exp.contacts = [contact(1, 'Ada', null)];
+		exp.contactFieldTypes = [...exp.contactFieldTypes, { id: 7, name: 'Website', type: 'url', protocol: null }];
+		exp.contactFields = [{ id: 1, contactId: 1, typeId: 7, data: 'https://ada.example', createdAt: null }];
+
+		expect(planMonicaImport(exp, opts).contactFields[0]).toMatchObject({
+			kind: 'url',
+			label: null,
+			value: 'https://ada.example'
+		});
 	});
 
 	it('summarises counts for the preview', () => {

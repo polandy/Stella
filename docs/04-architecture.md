@@ -196,6 +196,10 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **Custom sessions over an auth framework** — Lucia is sunsetting; our needs (sessions
   + one OIDC RP) are small and better owned directly with `jose`/`oslo` primitives.
 - **OIDC-standard SSO, provider-agnostic** — targets Authelia but avoids provider lock-in.
+- **A hand-rolled vCard reader over a package** — the subset a contacts export uses is small
+  and frozen (RFC 6350 / RFC 2426): unfolding, escaping, structured values. Every published
+  parser weighs far more than the two dozen lines that saves, against the minimal-deps rule
+  (§8.8). Revisit if calendar or full-round-trip vCard support is ever wanted.
 - **Cytoscape.js for the graph** — mature, purpose-built; lazy-loaded to protect the
   bundle. D3-force considered as a lighter alt if bundle size demands it.
 - **Explorer lines are deepened for the canvas, not re-picked** — in Latte only five of the

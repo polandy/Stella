@@ -2,9 +2,10 @@ import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { getConfig } from '$lib/server/config';
-import { importMonicaDump, previewMonicaDump } from '$lib/server/domain/import/monica/apply';
+import { applyImport, previewImport } from '$lib/server/domain/import/apply';
 import { MonicaJsonError } from '$lib/server/domain/import/monica/json-export';
 import { SqlDumpError } from '$lib/server/domain/import/monica/sql-dump';
+import { VCardError } from '$lib/server/domain/import/vcard';
 import {
 	discardStagedDump,
 	pruneStagedDumps,
@@ -16,15 +17,15 @@ import { getImportDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * The Monica import wizard (docs/02 §2.16): upload → preview → confirm → photos. Either of
- * Monica's exports is accepted — the SQL dump or the JSON file — and which one it is comes
- * from the file itself. It is staged on disk between steps; every step re-plans from it, so
+ * The import wizard (docs/02 §2.16): upload → preview → confirm → photos. Either of Monica's
+ * exports is accepted — the SQL dump or the JSON file — and a vCard besides, and which one it
+ * is comes from the file itself. It is staged on disk between steps; every step re-plans from it, so
  * the preview and the import can never disagree. Admin only.
  */
 
-/** The two errors that mean "this file is not a Monica export I can read", either format. */
-const UNREADABLE = [SqlDumpError, MonicaJsonError] as const;
-const isUnreadable = (err: unknown): err is SqlDumpError | MonicaJsonError =>
+/** The errors that mean "this file is not an export I can read", whichever format it claimed. */
+const UNREADABLE = [SqlDumpError, MonicaJsonError, VCardError] as const;
+const isUnreadable = (err: unknown): err is SqlDumpError | MonicaJsonError | VCardError =>
 	UNREADABLE.some((kind) => err instanceof kind);
 
 /** Largest export accepted, uncompressed. A family's Monica is a few MB; this is generous. */
@@ -53,7 +54,7 @@ async function dumpTextOf(file: File): Promise<string> {
 }
 
 /** The photo list the browser needs to match files in Monica's storage folder. */
-function photoManifest(plan: ReturnType<typeof previewMonicaDump>) {
+function photoManifest(plan: ReturnType<typeof previewImport>) {
 	const names = new Map(plan.contacts.map((c) => [c.id, c.displayName]));
 	return plan.photos.map((p) => ({
 		id: p.id,
@@ -70,11 +71,11 @@ export const actions: Actions = {
 		const file = form.get('dump');
 		const visibility = v.parse(VisibilitySchema, form.get('visibility') || undefined);
 		if (!(file instanceof File) || file.size === 0) {
-			return fail(400, { step: 'upload' as const, error: 'Please choose the .sql or .sql.gz dump file.' });
+			return fail(400, { step: 'upload' as const, error: 'Please choose the Monica export or vCard file to import.' });
 		}
 		try {
 			const text = await dumpTextOf(file);
-			const plan = previewMonicaDump(getImportDeps(), text, {
+			const plan = previewImport(getImportDeps(), text, {
 				householdId: user.householdId,
 				userId: user.id,
 				visibility
@@ -102,7 +103,7 @@ export const actions: Actions = {
 		const text = await readStagedDump(getConfig().importDir, parsed.output.token);
 		if (text === null) return fail(410, { step: 'upload' as const, error: 'The uploaded dump is no longer available. Please upload it again.' });
 
-		const { plan, outcome } = await importMonicaDump(getImportDeps(), text, {
+		const { plan, outcome } = await applyImport(getImportDeps(), text, {
 			householdId: user.householdId,
 			userId: user.id,
 			visibility: parsed.output.visibility

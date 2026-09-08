@@ -39,7 +39,8 @@ So Stella keeps what Monica taught us and leaves the rest: one capture field ins
 dashboard, sharing by default within the family, and a graph of relationships you can
 actually see. If you are already using Monica, the guided
 [import](docs/using-stella.md) brings your people, relationships, notes, activities, tags
-and photos across from a database dump.
+and photos across — from either of Monica's own exports, or from a vCard if your people live
+in an address book instead.
 
 ## What it feels like
 
@@ -109,8 +110,9 @@ behind your own domain and signing in with your existing single sign-on.
 ## Where it stands
 
 The core loop is in place: add people, relate them, find them, and capture moments into a
-shared household stream — with important dates, interactions and a guided **import from
-Monica** (people, relationships, notes, activities, tags and photos from a database dump).
+shared household stream — with important dates, interactions and a guided **import** of
+people, relationships, notes, activities, tags and photos from either Monica export, or of
+contacts from a vCard.
 A photo gallery is next. See the [roadmap](docs/06-roadmap.md).
 
 <div align="center">

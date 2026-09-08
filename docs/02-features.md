@@ -701,7 +701,7 @@ A **first-class, guided migration** so a user coming from Monica can bring their
 with the least possible friction. This is a priority feature — for many users (the author
 included) it is the very first thing they will do.
 
-- **Guided wizard**, not a raw import: Settings → Data → *Import from Monica*. The user
+- **Guided wizard**, not a raw import: Settings → Data → *Import people*. The user
   uploads a Monica export; Stella parses it, shows a **preview & mapping summary** (e.g.
   "312 contacts, 540 relationships, 1 208 notes, 87 activities, 96 photos"), lets them
   confirm, then imports inside a single transaction with a progress indicator.
@@ -736,7 +736,7 @@ included) it is the very first thing they will do.
 > takes a parsed export and emits Stella entities — pure and unit-testable (test-first),
 > with the file upload/UI as a thin edge. See `docs/08-coding-guidelines.md`.
 
-- **Shipped (both formats):** *Settings → Data → Import from Monica* takes either of Monica's
+- **Shipped (all three formats):** *Settings → Data → Import people* takes either of Monica's
   exports — the JSON file from *Settings → Export data*, or a `mariadb-dump` of the database —
   plain or gzipped, and works out which it is from the file itself. It then walks three steps: **preview** (counts per
   entity, the custom relationship types it will create, and a "left out, and why" list),
@@ -757,7 +757,15 @@ included) it is the very first thing they will do.
   differently (a number against a uuid), importing *both* exports of one Monica into one
   household writes everything twice — pick a format and stay with it.
 
-  vCard is not read yet; the wizard is the same for it once it is.
+  **A vCard is read too**, and the wizard is the same for it: `.vcf` from any address book —
+  a phone, a mail client, Google Contacts — recognised by its `BEGIN:VCARD` line. It carries
+  people and no more: names, nicknames, birthdays, emails, phones, websites, addresses, notes,
+  categories (which become tags) and an embedded picture, which is stored the same way a JSON
+  export's is. What it cannot carry, and the report says so, is how those people are connected
+  — no relationships, interactions or journal entries are read from a vCard. Its source ids are
+  its own (`vcard:contact:<uid>`, or the card's position when it has no `UID`), so a vCard
+  import is never mistaken for a re-run of a Monica one — and, by the same token, importing a
+  vCard *and* a Monica export of the same people brings them in twice.
 
 ## 2.17 Settings **[M1/M2]**
 

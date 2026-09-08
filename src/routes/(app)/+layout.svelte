@@ -53,7 +53,7 @@
 			trail.push({ label: 'Search' });
 		} else if (id.startsWith('/(app)/settings')) {
 			trail.push({ label: 'Settings', href: '/settings' });
-			if (id.startsWith('/(app)/settings/import')) trail.push({ label: 'Import from Monica' });
+			if (id.startsWith('/(app)/settings/import')) trail.push({ label: 'Import people' });
 		}
 		return trail;
 	});
