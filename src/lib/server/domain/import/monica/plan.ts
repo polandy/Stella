@@ -10,14 +10,14 @@ import type { NewRelationship } from '../../relationships/relationships';
 import { BUILT_IN_RELATIONSHIP_TYPES } from '../../relationships/built-in-types';
 import { canonicalEndpoints } from '../../relationships/relationships';
 import { resolveTagColor, type NewTag } from '../../tags/tags';
-import type { MonicaContact, MonicaExport, MonicaId, MonicaSpecialDate } from './monica-export';
+import type { MonicaContact, MonicaExport, MonicaId, MonicaSource, MonicaSpecialDate } from './monica-export';
 import { mapRelationshipType } from './relationship-types';
 
 /*
  * The Monica → Stella mapping (docs/02 §2.16; the table is docs/monica-mapping.md). Pure:
  * given the typed export it decides every row the import will write and reports what it
  * approximated or left out. Ids are stable *source ids* (`monica:contact:12`), so importing
- * the same dump twice cannot duplicate — the adapter inserts with "do nothing on conflict".
+ * the same export twice cannot duplicate — the adapter inserts with "do nothing on conflict".
  */
 
 export interface ImportOptions {
@@ -103,7 +103,12 @@ export interface ImportPlan {
 	report: ImportReport;
 }
 
-const contactId = (monicaId: MonicaId) => `monica:contact:${monicaId}`;
+/**
+ * Where a record came from, as the prefix of every source id it gets. The two Monica exports
+ * key the same records the same way, so they share one; a vCard is a different source and
+ * must not be mistaken for a re-run of a Monica import (docs/02 §2.16).
+ */
+const sourcePrefix = (source: MonicaSource): string => (source === 'vcard' ? 'vcard' : 'monica');
 
 const orNull = (value: string | null | undefined): string | null => {
 	const trimmed = (value ?? '').trim();
@@ -137,6 +142,8 @@ const humanise = (key: string) => key.replace(/_/g, ' ');
 
 /** Plan the import of a Monica export. Pure; see the module comment. */
 export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): ImportPlan {
+	const prefix = sourcePrefix(exp.source);
+	const contactId = (sourceId: MonicaId) => `${prefix}:contact:${sourceId}`;
 	const warnings: string[] = [];
 	const skipped: SkippedRecords[] = [];
 	const skip = (what: string, why: string, count = 1) => {
@@ -204,7 +211,7 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 		const mapped = mapRelationshipType(name);
 		let typeId = mapped.key;
 		if (mapped.custom) {
-			typeId = `monica:reltype:${mapped.key}`;
+			typeId = `${prefix}:reltype:${mapped.key}`;
 			if (!customTypes.has(typeId)) {
 				customTypes.set(typeId, {
 					id: typeId,
@@ -222,7 +229,7 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 		if (seenRelationships.has(dedupeKey)) continue;
 		seenRelationships.add(dedupeKey);
 		relationships.push({
-			id: `monica:relationship:${r.id}`,
+			id: `${prefix}:relationship:${r.id}`,
 			householdId: opts.householdId,
 			...ends,
 			typeId,
@@ -250,9 +257,11 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 			continue;
 		}
 		const type = fieldTypes.get(f.typeId);
-		const base = { id: `monica:field:${f.id}`, contactId: contactId(f.contactId), sortOrder: sortOrder++, ...fieldStamp };
+		const base = { id: `${prefix}:field:${f.id}`, contactId: contactId(f.contactId), sortOrder: sortOrder++, ...fieldStamp };
 		if (type?.type === 'email') contactFields.push({ ...base, kind: 'email', label: null, value: f.data });
 		else if (type?.type === 'phone') contactFields.push({ ...base, kind: 'phone', label: null, value: f.data });
+		// A vCard's URL already carries its scheme; only Monica's own types need one prefixed.
+		else if (type?.type === 'url') contactFields.push({ ...base, kind: 'url', label: null, value: f.data });
 		else if (type?.protocol?.startsWith('http')) {
 			contactFields.push({ ...base, kind: 'url', label: type.name, value: `${type.protocol}${f.data}` });
 		} else contactFields.push({ ...base, kind: 'custom', label: type?.name ?? null, value: f.data });
@@ -269,7 +278,7 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 			continue;
 		}
 		contactFields.push({
-			id: `monica:address:${a.id}`,
+			id: `${prefix}:address:${a.id}`,
 			contactId: contactId(a.contactId),
 			kind: 'address',
 			label: orNull(a.name),
@@ -288,19 +297,19 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 		}
 		notes.push({ id, contactId: contactId(monicaContactId), ...stamp, title, body, isPinned });
 	};
-	for (const n of exp.notes) noteFor(`monica:note:${n.id}`, n.contactId, null, n.body, n.isFavorited);
+	for (const n of exp.notes) noteFor(`${prefix}:note:${n.id}`, n.contactId, null, n.body, n.isFavorited);
 	for (const g of exp.gifts) {
 		const meta = [g.status, g.date ? dayLabel(g.date) : null].filter(Boolean).join(', ');
 		const lines = [`🎁 **${g.name}**${meta ? ` — ${meta}` : ''}`, orNull(g.comment), orNull(g.url)].filter(Boolean);
-		noteFor(`monica:gift:${g.id}`, g.contactId, 'Gift', lines.join('\n\n'), false, 'gift');
+		noteFor(`${prefix}:gift:${g.id}`, g.contactId, 'Gift', lines.join('\n\n'), false, 'gift');
 	}
 	for (const e of exp.lifeEvents) {
 		const head = `📅 **${e.name ?? (e.typeKey ? humanise(e.typeKey) : 'Life event')}**${e.typeKey && e.name ? ` (${humanise(e.typeKey)})` : ''}`;
 		const when = e.happenedAt ? ` — ${dayLabel(e.happenedAt)}` : '';
-		noteFor(`monica:lifeevent:${e.id}`, e.contactId, 'Life event', [head + when, orNull(e.note)].filter(Boolean).join('\n\n'), false, 'life event');
+		noteFor(`${prefix}:lifeevent:${e.id}`, e.contactId, 'Life event', [head + when, orNull(e.note)].filter(Boolean).join('\n\n'), false, 'life event');
 	}
 	for (const p of exp.pets) {
-		noteFor(`monica:pet:${p.id}`, p.contactId, 'Pet', `🐾 **${p.name ?? 'Pet'}**${p.category ? `, ${p.category}` : ''}`, false, 'pet');
+		noteFor(`${prefix}:pet:${p.id}`, p.contactId, 'Pet', `🐾 **${p.name ?? 'Pet'}**${p.category ? `, ${p.category}` : ''}`, false, 'pet');
 	}
 
 	// ── Activities → interactions ───────────────────────────────────────────
@@ -316,7 +325,7 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 			.filter(Boolean)
 			.join('\n\n');
 		interactions.push({
-			id: `monica:activity:${a.id}`,
+			id: `${prefix}:activity:${a.id}`,
 			contactId: contactId(subject!),
 			...stamp,
 			kind: 'met',
@@ -331,7 +340,7 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 	const tags: NewTag[] = [];
 	const contactTags: { contactId: string; tagId: string }[] = [];
 	for (const t of exp.tags) {
-		const tagId = `monica:tag:${t.id}`;
+		const tagId = `${prefix}:tag:${t.id}`;
 		tags.push({ id: tagId, householdId: opts.householdId, name: t.name, color: resolveTagColor(null), createdAt: opts.now, updatedAt: opts.now });
 		for (const c of t.contactIds) {
 			if (liveIds.has(c)) contactTags.push({ contactId: contactId(c), tagId });
@@ -353,7 +362,7 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 			continue;
 		}
 		photos.push({
-			id: `monica:photo:${p.id}`,
+			id: `${prefix}:photo:${p.id}`,
 			contactId: contactId(p.contactId),
 			sourcePath: p.path,
 			mime: p.mime,
@@ -372,6 +381,11 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 	}
 	if (exp.userCount > 1) {
 		warnings.push(`Monica had ${exp.userCount} user accounts; everything is attributed to the importing member.`);
+	}
+	if (exp.source === 'vcard') {
+		warnings.push(
+			'A vCard carries people only — no relationships, interactions or journal entries are read from it.'
+		);
 	}
 	if (exp.source === 'json') {
 		// Monica's export resource for a contact lists neither field, so they are not in the
