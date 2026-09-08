@@ -174,7 +174,7 @@ export interface MonicaJournalEntry {
 }
 
 /** Which of Monica's two export formats a reading came from. */
-export type MonicaSource = 'sql' | 'json';
+export type MonicaSource = 'sql' | 'json' | 'vcard';
 
 export interface MonicaExport {
 	/** The format this was read from; the mapping reports what that format cannot carry. */
