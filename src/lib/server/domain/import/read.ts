@@ -1,5 +1,6 @@
 import { MonicaJsonError, readMonicaJsonExport } from './monica/json-export';
-import { readMonicaExport, type MonicaExport, type MonicaSource } from './monica/monica-export';
+import { readMonicaExport, type SourceExport } from './monica/monica-export';
+import type { ImportSource } from './source';
 import { parseSqlDump } from './monica/sql-dump';
 import { readVCard } from './vcard';
 
@@ -11,7 +12,7 @@ import { readVCard } from './vcard';
  */
 
 /** The format a file is, decided by its first meaningful characters. */
-export function detectImportFormat(text: string): MonicaSource {
+export function detectImportFormat(text: string): ImportSource {
 	const start = text.trimStart();
 	if (start.startsWith('{')) return 'json';
 	if (start.slice(0, 11).toUpperCase() === 'BEGIN:VCARD') return 'vcard';
@@ -19,7 +20,7 @@ export function detectImportFormat(text: string): MonicaSource {
 }
 
 /** Read any accepted export into the one typed view the mapping works on. */
-export function readImportFile(text: string): MonicaExport {
+export function readImportFile(text: string): SourceExport {
 	switch (detectImportFormat(text)) {
 		case 'sql':
 			return readMonicaExport(parseSqlDump(text));

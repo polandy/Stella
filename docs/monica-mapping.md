@@ -96,7 +96,7 @@ sparsely. `src/lib/server/domain/import/vcard.ts` reads it; unknown properties a
 
 | vCard | Stella |
 |---|---|
-| `UID` | the record's key; `urn:uuid:` stripped. A card without one is keyed by its position |
+| `UID` | the record's key; `urn:uuid:` stripped. A card without one is keyed by a fingerprint of its own contents, so the same card imported from two files is one person and two different cards never collide |
 | `FN`, `N` | display name, given / additional / family name — `FN` alone when there is no `N` |
 | `NICKNAME` | nickname (the first, if the card lists several) |
 | `BDAY` | birth date; `--MMDD` becomes a birthday whose year is unknown; free text is ignored |
@@ -109,6 +109,9 @@ sparsely. `src/lib/server/domain/import/vcard.ts` reads it; unknown properties a
 | `PHOTO` with `ENCODING=b` or a `data:` URL | `photo`, and the person's avatar |
 | `PHOTO` that is only a URI | left out — the picture is not in the file |
 | `RELATED`, and everything else | not read; the report says a vCard carries no relationships |
+
+vCard 2.1's `ENCODING=QUOTED-PRINTABLE` is decoded, soft line breaks included, so a name like
+`Ren=C3=A9` arrives as *René* rather than as itself.
 
 A card with neither `FN` nor `N` is refused rather than imported as a nameless person, and so
 is a file with no `BEGIN:VCARD` or a card that is never closed.

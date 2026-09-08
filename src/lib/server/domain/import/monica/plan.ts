@@ -10,8 +10,9 @@ import type { NewRelationship } from '../../relationships/relationships';
 import { BUILT_IN_RELATIONSHIP_TYPES } from '../../relationships/built-in-types';
 import { canonicalEndpoints } from '../../relationships/relationships';
 import { resolveTagColor, type NewTag } from '../../tags/tags';
-import type { MonicaContact, MonicaExport, MonicaId, MonicaSource, MonicaSpecialDate } from './monica-export';
+import type { MonicaContact, SourceExport, MonicaId, MonicaSpecialDate } from './monica-export';
 import { mapRelationshipType } from './relationship-types';
+import { sourcePrefix } from '../source';
 
 /*
  * The Monica → Stella mapping (docs/02 §2.16; the table is docs/monica-mapping.md). Pure:
@@ -103,12 +104,7 @@ export interface ImportPlan {
 	report: ImportReport;
 }
 
-/**
- * Where a record came from, as the prefix of every source id it gets. The two Monica exports
- * key the same records the same way, so they share one; a vCard is a different source and
- * must not be mistaken for a re-run of a Monica import (docs/02 §2.16).
- */
-const sourcePrefix = (source: MonicaSource): string => (source === 'vcard' ? 'vcard' : 'monica');
+
 
 const orNull = (value: string | null | undefined): string | null => {
 	const trimmed = (value ?? '').trim();
@@ -141,7 +137,7 @@ function howWeMetOf(c: MonicaContact, nameOf: (id: MonicaId) => string | null): 
 const humanise = (key: string) => key.replace(/_/g, ' ');
 
 /** Plan the import of a Monica export. Pure; see the module comment. */
-export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): ImportPlan {
+export function planMonicaImport(exp: SourceExport, opts: ImportOptions): ImportPlan {
 	const prefix = sourcePrefix(exp.source);
 	const contactId = (sourceId: MonicaId) => `${prefix}:contact:${sourceId}`;
 	const warnings: string[] = [];

@@ -1,3 +1,4 @@
+import type { ImportSource } from '../source';
 import { SqlDumpError, type SqlDump, type SqlRow, type SqlValue } from './sql-dump';
 
 /**
@@ -173,12 +174,9 @@ export interface MonicaJournalEntry {
 	createdAt: string | null;
 }
 
-/** Which of Monica's two export formats a reading came from. */
-export type MonicaSource = 'sql' | 'json' | 'vcard';
-
-export interface MonicaExport {
+export interface SourceExport {
 	/** The format this was read from; the mapping reports what that format cannot carry. */
-	source: MonicaSource;
+	source: ImportSource;
 	contacts: MonicaContact[];
 	genders: MonicaGender[];
 	specialDates: MonicaSpecialDate[];
@@ -223,7 +221,7 @@ function optional(dump: SqlDump, table: string): SqlRow[] {
 }
 
 /** Read a parsed Monica dump into the typed export. Throws `SqlDumpError` if it is not one. */
-export function readMonicaExport(dump: SqlDump): MonicaExport {
+export function readMonicaExport(dump: SqlDump): SourceExport {
 	for (const t of ['contacts', 'relationships', 'relationship_types']) {
 		if (!dump.hasTable(t)) {
 			throw new SqlDumpError(`This dump has no ${t} table — is it really a Monica database?`);

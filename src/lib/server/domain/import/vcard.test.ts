@@ -156,6 +156,42 @@ describe('readVCard', () => {
 		expect(new Set(ids).size).toBe(2);
 	});
 
+	it('keys a card without a UID by what is on it, not by where it sits in the file', () => {
+		const severin = card('FN:Severin', 'EMAIL:severin@example.ch');
+		const alone = readVCard(severin).contacts[0]!.id;
+		// The same card, now second in a different file: it is the same person, so the same id.
+		const second = readVCard([card('FN:Marlis'), severin].join('\r\n')).contacts[1]!.id;
+
+		expect(second).toBe(alone);
+		// The positive control: a different card must not land on that id.
+		expect(readVCard(card('FN:Marlis')).contacts[0]!.id).not.toBe(alone);
+	});
+
+	it('reads a vCard 2.1 line encoded as quoted-printable, soft line breaks included', () => {
+		const exp = readVCard(
+			[
+				'BEGIN:VCARD',
+				'VERSION:2.1',
+				'UID:u1',
+				'N;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:Hauenstein;Ren=C3=A9;;;',
+				'FN:Rene Hauenstein',
+				// 2.1 continues a soft-broken line at column one, not indented like RFC 6350 does.
+				'NOTE;ENCODING=QUOTED-PRINTABLE:Traf ihn in Z=C3=BCrich, an einem =',
+				'sehr langen Tag.',
+				'END:VCARD'
+			].join('\r\n')
+		);
+
+		expect(exp.contacts[0]?.firstName).toBe('René');
+		expect(exp.notes[0]?.body).toBe('Traf ihn in Zürich, an einem sehr langen Tag.');
+	});
+
+	it('keeps a semicolon a parameter put in quotes out of the parameter split', () => {
+		const exp = readVCard(card('UID:u1', 'FN:Severin', 'ADR;TYPE="home;postal":;;Bahnhofstrasse 3;Bern;;3011;'));
+
+		expect(exp.addresses[0]).toMatchObject({ name: 'home;postal', street: 'Bahnhofstrasse 3' });
+	});
+
 	it('strips the urn:uuid a card puts in front of its UID', () => {
 		const exp = readVCard(card('UID:urn:uuid:0a1b2c3d', 'FN:Severin'));
 

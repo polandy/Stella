@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { MonicaExport } from './monica-export';
+import type { SourceExport } from './monica-export';
 import { planMonicaImport, type ImportOptions } from './plan';
 
 /*
@@ -16,7 +16,7 @@ const opts: ImportOptions = {
 	now: NOW
 };
 
-function emptyExport(): MonicaExport {
+function emptyExport(): SourceExport {
 	return {
 		source: 'sql',
 		contacts: [],
@@ -57,7 +57,7 @@ function emptyExport(): MonicaExport {
 	};
 }
 
-const contact = (id: number, first: string, last: string | null, extra: Partial<MonicaExport['contacts'][0]> = {}) => ({
+const contact = (id: number, first: string, last: string | null, extra: Partial<SourceExport['contacts'][0]> = {}) => ({
 	id,
 	firstName: first,
 	middleName: null,

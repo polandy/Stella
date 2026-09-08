@@ -3,7 +3,7 @@ import type {
 	MonicaContact,
 	MonicaContactField,
 	MonicaContactFieldType,
-	MonicaExport,
+	SourceExport,
 	MonicaGender,
 	MonicaNote,
 	MonicaPhoto,
@@ -39,6 +39,9 @@ const FIELD_TYPES: MonicaContactFieldType[] = [
 /** vCard's three gender codes; the mapping turns them into Stella's free text. */
 const GENDER_CODES = ['M', 'F', 'O'];
 
+/** vCard 2.1's text encoding, named in an `ENCODING` parameter and folded with a trailing `=`. */
+const QUOTED_PRINTABLE = /QUOTED-PRINTABLE/i;
+
 const BEGIN = 'BEGIN:VCARD';
 const END = 'END:VCARD';
 
@@ -50,19 +53,39 @@ interface Property {
 }
 
 /**
- * Fold continuation lines back into the line they belong to (RFC 6350 §3.2): a line starting
- * with a space or tab continues the one before it, with that one character dropped.
+ * Fold continuation lines back into the line they belong to: a line starting with a space or
+ * tab continues the one before it, with that one character dropped (RFC 6350 §3.2). vCard 2.1
+ * folds a second way — a quoted-printable value breaks with a trailing `=` and continues on a
+ * line of its own — so that is joined here too, before anything reads the value.
  */
 function unfold(text: string): string[] {
 	const lines: string[] = [];
+	const last = () => lines[lines.length - 1] ?? '';
 	for (const line of text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')) {
 		if ((line.startsWith(' ') || line.startsWith('\t')) && lines.length > 0) {
 			lines[lines.length - 1] += line.slice(1);
+		} else if (last().endsWith('=') && QUOTED_PRINTABLE.test(last())) {
+			lines[lines.length - 1] = last().slice(0, -1) + line;
 		} else if (line.length > 0) {
 			lines.push(line);
 		}
 	}
 	return lines;
+}
+
+/** Decode a vCard 2.1 quoted-printable value: `=C3=BC` is the UTF-8 for `ü`. */
+function decodeQuotedPrintable(value: string): string {
+	const bytes: number[] = [];
+	for (let i = 0; i < value.length; i++) {
+		const hex = value[i] === '=' ? value.slice(i + 1, i + 3) : null;
+		if (hex !== null && /^[0-9a-f]{2}$/i.test(hex)) {
+			bytes.push(parseInt(hex, 16));
+			i += 2;
+		} else {
+			bytes.push(value.charCodeAt(i));
+		}
+	}
+	return new TextDecoder().decode(Uint8Array.from(bytes));
 }
 
 /** Split on a separator the value may escape with a backslash. */
@@ -80,6 +103,27 @@ function splitEscaped(value: string, separator: string): string[] {
 		} else {
 			current += char;
 		}
+	}
+	parts.push(current);
+	return parts;
+}
+
+/**
+ * Split a property's name and parameters on `;`. Unlike a value's separators, one inside
+ * double quotes is part of the parameter (RFC 6350 §3.3) — `TYPE="home;postal"` is one type.
+ */
+function splitParams(head: string): string[] {
+	const parts: string[] = [];
+	let current = '';
+	let quoted = false;
+	for (const char of head) {
+		if (char === '"') quoted = !quoted;
+		else if (char === ';' && !quoted) {
+			parts.push(current);
+			current = '';
+			continue;
+		}
+		current += char;
 	}
 	parts.push(current);
 	return parts;
@@ -105,7 +149,7 @@ function parseLine(line: string): Property | null {
 	}
 	if (colon === -1) return null;
 
-	const [head, ...paramParts] = splitEscaped(line.slice(0, colon), ';');
+	const [head, ...paramParts] = splitParams(line.slice(0, colon));
 	// A group prefix ("item1.EMAIL") only ties properties together for display; drop it.
 	const name = head!.split('.').pop()!.trim().toUpperCase();
 	const params = new Map<string, string[]>();
@@ -113,14 +157,17 @@ function parseLine(line: string): Property | null {
 		const eq = part.indexOf('=');
 		const key = (eq === -1 ? part : part.slice(0, eq)).trim().toUpperCase();
 		const rawValue = eq === -1 ? part : part.slice(eq + 1);
-		const values = rawValue
-			.split(',')
-			.map((v) => v.trim().replace(/^"|"$/g, ''))
-			.filter((v) => v.length > 0)
-			.flatMap((v) => v.split(','));
-		params.set(key, values);
+		params.set(
+			key,
+			rawValue
+				.split(',')
+				.map((v) => v.trim().replace(/^"|"$/g, ''))
+				.filter((v) => v.length > 0)
+		);
 	}
-	return { name, params, raw: line.slice(colon + 1) };
+	const value = line.slice(colon + 1);
+	const encoding = params.get('ENCODING')?.[0] ?? '';
+	return { name, params, raw: QUOTED_PRINTABLE.test(encoding) ? decodeQuotedPrintable(value) : value };
 }
 
 /** Split the file into cards, rejecting anything that is not one. */
@@ -148,6 +195,23 @@ function splitCards(text: string): Property[][] {
 	if (current) throw new VCardError('A card in this file was never closed with END:VCARD.');
 	if (cards.length === 0) throw new VCardError('This file is not a vCard — it contains no BEGIN:VCARD.');
 	return cards;
+}
+
+/**
+ * A short, stable fingerprint of a card's contents. Two 32-bit FNV-1a rounds rather than a
+ * digest: this has to be synchronous and dependency-free, and 64 bits is far more than an
+ * address book needs to keep two people apart.
+ */
+function fingerprint(properties: Property[]): string {
+	const text = properties.map((p) => `${p.name}:${p.raw}`).join('\n');
+	const round = (seed: number) => {
+		let hash = seed;
+		for (let i = 0; i < text.length; i++) {
+			hash = Math.imul(hash ^ text.charCodeAt(i), 0x01000193);
+		}
+		return (hash >>> 0).toString(16).padStart(8, '0');
+	};
+	return round(0x811c9dc5) + round(0x9dc5811c);
 }
 
 const orNull = (value: string | undefined): string | null => {
@@ -197,7 +261,7 @@ function readPhoto(property: Property, id: string, contactId: string): MonicaPho
 }
 
 /** Read a vCard file into the typed view the mapping works on. Pure; see the module comment. */
-export function readVCard(text: string): MonicaExport {
+export function readVCard(text: string): SourceExport {
 	const contacts: MonicaContact[] = [];
 	const specialDates: MonicaSpecialDate[] = [];
 	const contactFields: MonicaContactField[] = [];
@@ -212,7 +276,9 @@ export function readVCard(text: string): MonicaExport {
 		const all = (name: string) => card.filter((p) => p.name === name);
 
 		const uid = orNull(first('UID')?.raw)?.replace(/^urn:uuid:/i, '');
-		const id = uid ?? `card-${index + 1}`;
+		// Without a UID the card must still get a *stable* id, and its position is not one: two
+		// address books would then collide and the second one's people be dropped as duplicates.
+		const id = uid ?? `card-${fingerprint(card)}`;
 
 		const structured = first('N') ? splitEscaped(first('N')!.raw, ';').map(unescape) : [];
 		const formatted = orNull(unescape(first('FN')?.raw ?? ''));
