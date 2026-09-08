@@ -31,6 +31,7 @@ function fixture(): MonicaExport {
 		job: null, company: null, avatarSource: 'default', avatarPhotoId: null, deletedAt: null, createdAt: null, ...extra
 	});
 	return {
+		source: 'sql',
 		contacts: [contact(1, 'Ada', { job: 'Engineer', birthdaySpecialDateId: 5 }), contact(2, 'Bo'), contact(3, 'Cy')],
 		genders: [],
 		specialDates: [{ id: 5, contactId: 1, isAgeBased: true, isYearUnknown: false, date: '2016-01-01' }],

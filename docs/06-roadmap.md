@@ -89,8 +89,11 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   to them by id, private records included and marked. *Restore from an archive* reads one back
   in — it adds what is missing and never overwrites what is there, so importing the same archive
   twice is a no-op.
-- **Guided migration from Monica:** upload a Monica export (JSON/SQL/vCard), preview the
-  mapping, import atomically. First-class onboarding path (`domain/import/monica`, test-first).
+- **Guided migration from Monica:** upload a Monica export, preview the mapping, import
+  atomically. First-class onboarding path (`domain/import/monica`, test-first). **Both of
+  Monica's own exports are shipped** (§2.16) — the JSON file and the SQL dump, told apart from
+  the file itself and read into one typed view so the mapping exists once. vCard, which is
+  contacts only, is still open.
 - **PWA offline** app shell + read-through cache; RP-initiated single logout.
 
 **Exit:** the household actively uses the feed and graph; data can be backed up and

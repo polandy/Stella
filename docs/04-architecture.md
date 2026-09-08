@@ -371,6 +371,14 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   a reference to you" testable without a database. The cost is two round-trips instead of one,
   which at family scale is nothing, and no paging: the list is read whole, because a household
   that has been named in more entries than fit on a page does not exist yet.
+- **Both Monica exports are read into one typed view, not two mappings** — the SQL dump and the
+  JSON export carry the same household in different shapes, and the mapping (`plan.ts`) is the
+  part with judgement in it: which relationship type is which, what becomes a note, what is left
+  out. A second mapping would have to keep every one of those decisions in step. So each format
+  gets only a reader, both producing `MonicaExport`, and the mapping never learns which file it
+  came from. The cost is a lowest common denominator: a Monica id widens to `string | number`
+  because one format counts and the other uuids, and the view carries a `source` so the mapping
+  can report what a format could not give.
 
 ## 4.10 Deployment
 

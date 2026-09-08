@@ -10,7 +10,7 @@ import type { NewRelationship } from '../../relationships/relationships';
 import { BUILT_IN_RELATIONSHIP_TYPES } from '../../relationships/built-in-types';
 import { canonicalEndpoints } from '../../relationships/relationships';
 import { resolveTagColor, type NewTag } from '../../tags/tags';
-import type { MonicaContact, MonicaExport, MonicaSpecialDate } from './monica-export';
+import type { MonicaContact, MonicaExport, MonicaId, MonicaSpecialDate } from './monica-export';
 import { mapRelationshipType } from './relationship-types';
 
 /*
@@ -59,6 +59,12 @@ export interface ImportedPhoto {
 	sizeBytes: number | null;
 	/** Whether the contact used this photo as their avatar. */
 	isAvatar: boolean;
+	/**
+	 * The picture itself when the export carried it (JSON), so the browser can fetch it back
+	 * and downscale it there — the server has no image library (docs/04 §4.9). Null for a
+	 * dump, where the admin points at Monica's storage folder instead.
+	 */
+	dataUrl: string | null;
 }
 
 export interface ImportCounts {
@@ -97,7 +103,7 @@ export interface ImportPlan {
 	report: ImportReport;
 }
 
-const contactId = (monicaId: number) => `monica:contact:${monicaId}`;
+const contactId = (monicaId: MonicaId) => `monica:contact:${monicaId}`;
 
 const orNull = (value: string | null | undefined): string | null => {
 	const trimmed = (value ?? '').trim();
@@ -118,7 +124,7 @@ function birthDateOf(date: MonicaSpecialDate | undefined): {
 	return { birthDate: date.date, birthDatePrecision: 'full' };
 }
 
-function howWeMetOf(c: MonicaContact, nameOf: (id: number) => string | null): string | null {
+function howWeMetOf(c: MonicaContact, nameOf: (id: MonicaId) => string | null): string | null {
 	const info = orNull(c.firstMetAdditionalInfo);
 	const through = c.firstMetThroughContactId === null ? null : nameOf(c.firstMetThroughContactId);
 	if (info && through) return `${info} (through ${through})`;
@@ -147,7 +153,7 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 	const liveIds = new Set(live.map((c) => c.id));
 	const specialDates = new Map(exp.specialDates.map((d) => [d.id, d]));
 	const genders = new Map(exp.genders.map((g) => [g.id, g.type]));
-	const nameOf = (id: number): string | null => {
+	const nameOf = (id: MonicaId): string | null => {
 		const c = exp.contacts.find((x) => x.id === id);
 		return c ? deriveDisplayName({ firstName: c.firstName, lastName: c.lastName, nickname: c.nickname }) : null;
 	};
@@ -275,7 +281,7 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 
 	// ── Notes, plus the Monica modules Stella has no home for ───────────────
 	const notes: NewNote[] = [];
-	const noteFor = (id: string, monicaContactId: number, title: string | null, body: string, isPinned = false, what = 'note') => {
+	const noteFor = (id: string, monicaContactId: MonicaId, title: string | null, body: string, isPinned = false, what = 'note') => {
 		if (!liveIds.has(monicaContactId)) {
 			skip(what, 'belongs to a deleted contact');
 			return;
@@ -352,7 +358,8 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 			sourcePath: p.path,
 			mime: p.mime,
 			sizeBytes: p.sizeBytes,
-			isAvatar: avatarOf.get(p.id) === p.contactId
+			isAvatar: avatarOf.get(p.id) === p.contactId,
+			dataUrl: p.dataUrl
 		});
 	}
 
@@ -365,6 +372,13 @@ export function planMonicaImport(exp: MonicaExport, opts: ImportOptions): Import
 	}
 	if (exp.userCount > 1) {
 		warnings.push(`Monica had ${exp.userCount} user accounts; everything is attributed to the importing member.`);
+	}
+	if (exp.source === 'json') {
+		// Monica's export resource for a contact lists neither field, so they are not in the
+		// file at all — nothing the mapping can do but say so (docs/02 §2.16).
+		warnings.push(
+			'Monica’s JSON export does not carry “how you met” or where; that free text is not in the file.'
+		);
 	}
 
 	const relationshipTypes = [...customTypes.values()];
