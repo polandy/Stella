@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
-import { detectMonicaFormat, readMonicaFile } from './read';
-import { MonicaJsonError } from './json-export';
-import { SqlDumpError } from './sql-dump';
+import { detectImportFormat, readImportFile } from './read';
+import { MonicaJsonError } from './monica/json-export';
+import { SqlDumpError } from './monica/sql-dump';
 
 /* Which of Monica's two exports a file is, decided from the file itself (docs/02 §2.16). */
 
@@ -25,32 +25,32 @@ const SQL_DUMP =
 	table('relationship_types');
 
 
-describe('detectMonicaFormat', () => {
+describe('detectImportFormat', () => {
 	test('calls a document that opens with a brace JSON, whatever comes before it', () => {
-		expect(detectMonicaFormat(JSON_EXPORT)).toBe('json');
-		expect(detectMonicaFormat('\n\n  ' + JSON_EXPORT)).toBe('json');
+		expect(detectImportFormat(JSON_EXPORT)).toBe('json');
+		expect(detectImportFormat('\n\n  ' + JSON_EXPORT)).toBe('json');
 	});
 
 	test('calls anything else a dump, because that is what mariadb-dump writes', () => {
-		expect(detectMonicaFormat(SQL_DUMP)).toBe('sql');
-		expect(detectMonicaFormat('')).toBe('sql');
+		expect(detectImportFormat(SQL_DUMP)).toBe('sql');
+		expect(detectImportFormat('')).toBe('sql');
 	});
 });
 
-describe('readMonicaFile', () => {
+describe('readImportFile', () => {
 	test('reads a JSON export and says where it came from', () => {
-		expect(readMonicaFile(JSON_EXPORT).source).toBe('json');
+		expect(readImportFile(JSON_EXPORT).source).toBe('json');
 	});
 
 	test('reads a dump and says where it came from', () => {
-		expect(readMonicaFile(SQL_DUMP).source).toBe('sql');
+		expect(readImportFile(SQL_DUMP).source).toBe('sql');
 	});
 
 	test('refuses a file that opens like JSON but is not', () => {
-		expect(() => readMonicaFile('{ not json at all')).toThrow(MonicaJsonError);
+		expect(() => readImportFile('{ not json at all')).toThrow(MonicaJsonError);
 	});
 
 	test('refuses a dump that is not Monica’s', () => {
-		expect(() => readMonicaFile(table('widgets'))).toThrow(SqlDumpError);
+		expect(() => readImportFile(table('widgets'))).toThrow(SqlDumpError);
 	});
 });

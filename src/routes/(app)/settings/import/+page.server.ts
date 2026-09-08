@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { getConfig } from '$lib/server/config';
-import { importMonicaDump, previewMonicaDump } from '$lib/server/domain/import/monica/apply';
+import { applyImport, previewImport } from '$lib/server/domain/import/apply';
 import { MonicaJsonError } from '$lib/server/domain/import/monica/json-export';
 import { SqlDumpError } from '$lib/server/domain/import/monica/sql-dump';
 import {
@@ -53,7 +53,7 @@ async function dumpTextOf(file: File): Promise<string> {
 }
 
 /** The photo list the browser needs to match files in Monica's storage folder. */
-function photoManifest(plan: ReturnType<typeof previewMonicaDump>) {
+function photoManifest(plan: ReturnType<typeof previewImport>) {
 	const names = new Map(plan.contacts.map((c) => [c.id, c.displayName]));
 	return plan.photos.map((p) => ({
 		id: p.id,
@@ -74,7 +74,7 @@ export const actions: Actions = {
 		}
 		try {
 			const text = await dumpTextOf(file);
-			const plan = previewMonicaDump(getImportDeps(), text, {
+			const plan = previewImport(getImportDeps(), text, {
 				householdId: user.householdId,
 				userId: user.id,
 				visibility
@@ -102,7 +102,7 @@ export const actions: Actions = {
 		const text = await readStagedDump(getConfig().importDir, parsed.output.token);
 		if (text === null) return fail(410, { step: 'upload' as const, error: 'The uploaded dump is no longer available. Please upload it again.' });
 
-		const { plan, outcome } = await importMonicaDump(getImportDeps(), text, {
+		const { plan, outcome } = await applyImport(getImportDeps(), text, {
 			householdId: user.householdId,
 			userId: user.id,
 			visibility: parsed.output.visibility

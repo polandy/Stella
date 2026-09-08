@@ -1,6 +1,6 @@
-import { MonicaJsonError, readMonicaJsonExport } from './json-export';
-import { readMonicaExport, type MonicaExport, type MonicaSource } from './monica-export';
-import { parseSqlDump } from './sql-dump';
+import { MonicaJsonError, readMonicaJsonExport } from './monica/json-export';
+import { readMonicaExport, type MonicaExport, type MonicaSource } from './monica/monica-export';
+import { parseSqlDump } from './monica/sql-dump';
 
 /*
  * Which of Monica's exports an uploaded file is, and reading it either way (docs/02 §2.16).
@@ -10,13 +10,13 @@ import { parseSqlDump } from './sql-dump';
  */
 
 /** The format a file is, decided by its first meaningful character. */
-export function detectMonicaFormat(text: string): MonicaSource {
+export function detectImportFormat(text: string): MonicaSource {
 	return text.trimStart().startsWith('{') ? 'json' : 'sql';
 }
 
 /** Read either export into the one typed view the mapping works on. */
-export function readMonicaFile(text: string): MonicaExport {
-	if (detectMonicaFormat(text) === 'sql') return readMonicaExport(parseSqlDump(text));
+export function readImportFile(text: string): MonicaExport {
+	if (detectImportFormat(text) === 'sql') return readMonicaExport(parseSqlDump(text));
 
 	let parsed: unknown;
 	try {
