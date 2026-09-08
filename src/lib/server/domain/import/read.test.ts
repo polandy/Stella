@@ -5,6 +5,8 @@ import { SqlDumpError } from './monica/sql-dump';
 
 /* Which of Monica's two exports a file is, decided from the file itself (docs/02 §2.16). */
 
+const VCARD = ['BEGIN:VCARD', 'VERSION:4.0', 'UID:u1', 'FN:Severin Hauenstein', 'END:VCARD'].join('\r\n');
+
 const JSON_EXPORT = JSON.stringify({
 	version: '1.0-preview.1',
 	account: { uuid: 'a-1', data: [], instance: {}, properties: {} }
@@ -31,6 +33,11 @@ describe('detectImportFormat', () => {
 		expect(detectImportFormat('\n\n  ' + JSON_EXPORT)).toBe('json');
 	});
 
+	test('knows a vCard by the line it opens with, whatever its case', () => {
+		expect(detectImportFormat(VCARD)).toBe('vcard');
+		expect(detectImportFormat('begin:vcard\r\nFN:Severin\r\nEND:VCARD')).toBe('vcard');
+	});
+
 	test('calls anything else a dump, because that is what mariadb-dump writes', () => {
 		expect(detectImportFormat(SQL_DUMP)).toBe('sql');
 		expect(detectImportFormat('')).toBe('sql');
@@ -48,6 +55,12 @@ describe('readImportFile', () => {
 
 	test('refuses a file that opens like JSON but is not', () => {
 		expect(() => readImportFile('{ not json at all')).toThrow(MonicaJsonError);
+	});
+
+	test('reads a vCard and says where it came from', () => {
+		const exp = readImportFile(VCARD);
+		expect(exp.source).toBe('vcard');
+		expect(exp.contacts).toHaveLength(1);
 	});
 
 	test('refuses a dump that is not Monica’s', () => {
