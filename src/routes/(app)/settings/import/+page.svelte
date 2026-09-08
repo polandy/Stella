@@ -180,8 +180,9 @@
 					<p class="text-sm text-fg-muted">
 						Your JSON export carries the pictures inside it, so there is no folder to point at. Each one is resized in your browser as it arrives; you can close this page once it says done.
 					</p>
+					<!-- The count is in the heading right above; the button says what it does. -->
 					<Button variant="primary" onclick={fetchEmbeddedPhotos} disabled={uploading}>
-						{uploading ? 'Storing…' : `Store ${form.photos.length} photos`}
+						{uploading ? 'Storing…' : 'Store photos'}
 					</Button>
 				{:else}
 					<p class="text-sm text-fg-muted">
