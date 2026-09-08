@@ -4,7 +4,7 @@ import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { count, eq } from 'drizzle-orm';
 import type { SQLiteTable } from 'drizzle-orm/sqlite-core';
-import type { MonicaExport } from '../domain/import/monica/monica-export';
+import type { SourceExport } from '../domain/import/monica/monica-export';
 import { planMonicaImport, type ImportPlan } from '../domain/import/monica/plan';
 import { createDrizzleImportRepository } from './import-repository';
 import * as schema from './schema';
@@ -23,8 +23,8 @@ const NOW = 1_700_000_000_000;
 let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzleImportRepository>;
 
-function fixture(): MonicaExport {
-	const contact = (id: number, first: string, extra: Partial<MonicaExport['contacts'][0]> = {}) => ({
+function fixture(): SourceExport {
+	const contact = (id: number, first: string, extra: Partial<SourceExport['contacts'][0]> = {}) => ({
 		id, firstName: first, middleName: null, lastName: 'Test', nickname: null, genderId: null, description: null,
 		isPartial: false, isDead: false, deceasedSpecialDateId: null, birthdaySpecialDateId: null,
 		firstMetSpecialDateId: null, firstMetThroughContactId: null, firstMetWhere: null, firstMetAdditionalInfo: null,

@@ -1,11 +1,11 @@
-import type { Clock } from '../../../clock';
-import type { Visibility } from '../../../access/visibility';
-import { planMonicaImport, type ImportCounts, type ImportPlan } from './plan';
-import { readMonicaFile } from './read';
+import type { Clock } from '../../clock';
+import type { Visibility } from '../../access/visibility';
+import { planMonicaImport, type ImportCounts, type ImportPlan } from './monica/plan';
+import { readImportFile } from './read';
 
 /*
  * Import use-cases (docs/02 §2.16): preview an export, then apply its plan. Either of
- * Monica's formats arrives here as text and is recognised by `readMonicaFile`. The plan is pure;
+ * Monica's formats arrives here as text and is recognised by `readImportFile`. The plan is pure;
  * writing it is the repository's job and happens in one transaction, so a failure half-way
  * leaves nothing behind. Because every row carries a stable source id, applying the same
  * dump again inserts only what is new — the outcome reports what was actually written so a
@@ -37,21 +37,21 @@ export interface ImportRequest {
  * Parse and plan a Monica export without writing anything. Throws `SqlDumpError` or
  * `MonicaJsonError` when the file is not one Monica wrote.
  */
-export function previewMonicaDump(
+export function previewImport(
 	deps: Pick<ImportDeps, 'clock'>,
 	fileText: string,
 	request: ImportRequest
 ): ImportPlan {
-	return planMonicaImport(readMonicaFile(fileText), { ...request, now: deps.clock.now() });
+	return planMonicaImport(readImportFile(fileText), { ...request, now: deps.clock.now() });
 }
 
 /** Plan and apply a Monica export. Returns the plan (for the report) and what was written. */
-export async function importMonicaDump(
+export async function applyImport(
 	deps: ImportDeps,
 	fileText: string,
 	request: ImportRequest
 ): Promise<{ plan: ImportPlan; outcome: ImportOutcome }> {
-	const plan = previewMonicaDump(deps, fileText, request);
+	const plan = previewImport(deps, fileText, request);
 	const outcome = await deps.importer.applyPlan(plan);
 	return { plan, outcome };
 }

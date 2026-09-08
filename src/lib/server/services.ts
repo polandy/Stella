@@ -61,7 +61,7 @@ import type { CircleDeps, CircleRepository } from './domain/circles/circles';
 import type { StreamDeps, StreamRepository } from './domain/stream/stream';
 import type { CaptureMomentDeps } from './domain/moments/moments';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
-import type { ImportDeps, ImportRepository } from './domain/import/monica/apply';
+import type { ImportDeps, ImportRepository } from './domain/import/apply';
 import type { ImportedPhotoDeps } from './domain/import/monica/photos';
 import type { InteractionDeps, InteractionRepository } from './domain/interactions/interactions';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';

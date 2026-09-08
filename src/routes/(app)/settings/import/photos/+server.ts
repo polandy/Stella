@@ -3,7 +3,7 @@ import { decodeDataUrl } from '$lib/media/data-url';
 import type { Visibility } from '$lib/server/access/visibility';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { getConfig } from '$lib/server/config';
-import { previewMonicaDump } from '$lib/server/domain/import/monica/apply';
+import { previewImport } from '$lib/server/domain/import/apply';
 import { attachImportedPhoto } from '$lib/server/domain/import/monica/photos';
 import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
 import { readStagedDump } from '$lib/server/import/staging';
@@ -31,7 +31,7 @@ async function planFor(
 ) {
 	const text = await readStagedDump(getConfig().importDir, token);
 	if (text === null) throw error(410, 'The import session is over; start again from the export.');
-	return previewMonicaDump(getImportDeps(), text, {
+	return previewImport(getImportDeps(), text, {
 		householdId: user.householdId,
 		userId: user.id,
 		visibility

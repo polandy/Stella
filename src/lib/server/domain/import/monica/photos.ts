@@ -17,7 +17,7 @@ export interface ImportedPhotoDeps {
 }
 
 export interface AttachImportedPhotoInput {
-	/** The plan's stable id (`monica:photo:<id>`). */
+	/** The plan's stable id (`monica:photo:<id>`, `vcard:photo:<id>`). */
 	photoId: string;
 	contactId: string;
 	householdId: string;

@@ -278,12 +278,12 @@ They must be edited together; `app.css` says so at both blocks.
   birthday row replaces it (docs/02 §2.13.2).
 - **Settings** — account, appearance (theme + accent + reduced motion), household
   (members, invitations, relationship types, tags), data (export/import/backup), auth.
-  *Today:* a landing page with the **Data** section, and the **Import from Monica** wizard
+  *Today:* a landing page with the **Data** section, and the **Import people** wizard
   (§2.16) as a three-step page — numbered step strip, a count-tile preview with a
   "left out, and why" card, then the import result and the photos, under one progress bar but
-  two ways in, because Monica's two exports differ: a folder picker for a dump, whose pictures
-  are still on the Monica server, and a single *Store photos* button for a JSON export, which
-  carries them inside the file, plus **Relationship types** (docs/02 §2.4): the household's own types as rows
+  two ways in, because the accepted formats differ: a folder picker for a Monica dump, whose
+  pictures are still on the Monica server, and a single *Store photos* button for a JSON export
+  or a vCard, which carry them inside the file, plus **Relationship types** (docs/02 §2.4): the household's own types as rows
   with a category dot, an *Edit* disclosure and — only where nothing uses the type — a
   `RemoveButton` with the usual Undo window; a type in use shows `used N×` in its place. The
   built-in twelve follow as a plain, actionless list under *Built in*, so their absence from

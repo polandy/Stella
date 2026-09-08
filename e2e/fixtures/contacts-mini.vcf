@@ -1,0 +1,40 @@
+BEGIN:VCARD
+VERSION:4.0
+UID:urn:uuid:5e2a7c10-3333-4b8f-9d22-000000000001
+FN:Odile Trachsel
+N:Trachsel;Odile;Margrit;;
+NICKNAME:Odi
+GENDER:F
+BDAY:19840519
+ORG:Bibliothek Thun;Ausleihe
+TITLE:Leiterin
+EMAIL;TYPE=home:odile@example.ch
+TEL;TYPE=cell:+41 79 444 55 66
+URL:https://trachsel.example.ch
+ADR;TYPE=home:;;Seestrasse 12;Thun;BE;3600;Switzerland
+NOTE:Leiht mir jedes Jahr das Zelt\, ohne zu fragen.\nMag keine Ueberrasch
+ ungsfeste; Kuchen schon.
+CATEGORIES:Jodlerchoerli,Quartierverein
+PHOTO;ENCODING=b;TYPE=PNG:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAA
+ DUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==
+END:VCARD
+BEGIN:VCARD
+VERSION:2.1
+UID:5e2a7c10-3333-4b8f-9d22-000000000002
+FN:Bruno Trachsel
+N:Trachsel;Bruno;;;
+BDAY:--0903
+GENDER:M
+EMAIL;TYPE=INTERNET:bruno@example.ch
+ADR;TYPE=HOME:;;Seestrasse 12;Thun;BE;3600;Switzerland
+NOTE;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:Fischt am liebsten fr=C3=BCh am =
+Morgen im Thunersee.
+CATEGORIES:Jodlerchoerli
+PHOTO;VALUE=uri:https://example.ch/bruno.jpg
+END:VCARD
+BEGIN:VCARD
+VERSION:4.0
+FN:Quartierverein Lerchenfeld
+EMAIL:vorstand@example.ch
+CATEGORIES:Quartierverein
+END:VCARD

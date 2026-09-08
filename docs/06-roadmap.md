@@ -91,9 +91,9 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   twice is a no-op.
 - **Guided migration from Monica:** upload a Monica export, preview the mapping, import
   atomically. First-class onboarding path (`domain/import/monica`, test-first). **Both of
-  Monica's own exports are shipped** (§2.16) — the JSON file and the SQL dump, told apart from
-  the file itself and read into one typed view so the mapping exists once. vCard, which is
-  contacts only, is still open.
+  Monica's own exports are shipped**, **and vCard with them** (§2.16) — the JSON file, the SQL
+  dump and a `.vcf`, told apart from the file itself and read into one typed view so the
+  mapping exists once. A vCard fills that view sparsely: people, but not how they connect.
 - **PWA offline** app shell + read-through cache; RP-initiated single logout.
 
 **Exit:** the household actively uses the feed and graph; data can be backed up and

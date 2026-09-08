@@ -17,8 +17,8 @@
 			<a href="/settings/import" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
 				<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="import" size={18} /></span>
 				<span class="min-w-0 flex-1">
-					<span class="block font-medium text-fg">Import from Monica</span>
-					<span class="block text-sm text-fg-muted">Bring your people, relationships, notes and photos over from a Monica database dump.</span>
+					<span class="block font-medium text-fg">Import people</span>
+					<span class="block text-sm text-fg-muted">Bring your people, relationships, notes and photos over from a Monica export, or contacts from a vCard.</span>
 				</span>
 				<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
 			</a>
