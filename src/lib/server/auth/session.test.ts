@@ -4,7 +4,7 @@ import { SESSION_DURATION_MS } from './session-policy';
 import { hashSessionToken } from './tokens';
 import {
 	createSession,
-	invalidateSession,
+	signOut,
 	validateSessionToken,
 	type SessionRecord,
 	type SessionRepository
@@ -133,13 +133,34 @@ describe('validateSessionToken', () => {
 	});
 });
 
-describe('invalidateSession', () => {
+describe('signOut', () => {
 	it('removes the session for the given token', async () => {
 		const d = deps();
 		const { token, session } = await createSession(d.base, USER_ID);
 
-		await invalidateSession(d.base, token);
+		await signOut(d.base, token);
 
 		expect(d.store.has(session.id)).toBe(false);
+	});
+
+	it('reports the OIDC ID token of the session it just revoked', async () => {
+		const d = deps();
+		const { token } = await createSession(d.base, USER_ID, 'id-token-jwt');
+
+		expect(await signOut(d.base, token)).toEqual({ oidcIdToken: 'id-token-jwt' });
+	});
+
+	it('reports no ID token for a local session', async () => {
+		const d = deps();
+		const { token } = await createSession(d.base, USER_ID);
+
+		expect(await signOut(d.base, token)).toEqual({ oidcIdToken: null });
+	});
+
+	it('is a no-op for a token with no session behind it', async () => {
+		const d = deps();
+
+		expect(await signOut(d.base, 'stale-token')).toEqual({ oidcIdToken: null });
+		expect(d.store.size).toBe(0);
 	});
 });

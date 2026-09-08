@@ -5,6 +5,7 @@ import type {
 	IdentityStore,
 	OidcProvider
 } from './auth/oidc/login';
+import { SIGNED_OUT_PATH, type RpLogoutDeps } from './auth/oidc/logout';
 import { createOidcProvider } from './auth/oidc/provider';
 import type { OidcPolicy } from './auth/oidc/types';
 import { hashPassword, verifyPassword } from './auth/password';
@@ -135,6 +136,17 @@ export function getAuthorizationRequestDeps(): AuthorizationRequestDeps {
 	return {
 		provider: getOidcProvider(),
 		config: { clientId: oidc.clientId, redirectUri: oidc.redirectUri, scopes: oidc.scopes }
+	};
+}
+
+/** Deps for RP-initiated logout; the redirect target must be registered at the provider. */
+export function getRpLogoutDeps(): RpLogoutDeps {
+	const config = getConfig();
+	return {
+		provider: getOidcProvider(),
+		enabled: config.auth.oidc && config.oidc.rpLogout,
+		clientId: config.oidc.clientId,
+		postLogoutRedirectUri: `${config.url}${SIGNED_OUT_PATH}`
 	};
 }
 

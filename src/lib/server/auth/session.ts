@@ -79,7 +79,17 @@ export async function validateSessionToken(
 	return stored;
 }
 
-/** Invalidate the session identified by a cookie token (sign out). */
-export async function invalidateSession(deps: SessionDeps, token: string): Promise<void> {
-	await deps.sessions.delete(hashSessionToken(token));
+/**
+ * Sign out: revoke the session behind a cookie token and report the OIDC ID token it
+ * carried, which the caller needs as the `id_token_hint` for RP-initiated logout
+ * (docs/02 §2.1). A token with no session behind it is a no-op.
+ */
+export async function signOut(
+	deps: SessionDeps,
+	token: string
+): Promise<{ oidcIdToken: string | null }> {
+	const id = hashSessionToken(token);
+	const stored = await deps.sessions.findById(id);
+	await deps.sessions.delete(id);
+	return { oidcIdToken: stored?.oidcIdToken ?? null };
 }
