@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.4](https://github.com/polandy/Stella/compare/v0.0.3...v0.0.4) (2026-09-09)
+
+
+### Features
+
+* **auth:** end the provider session on sign-out too ([f7c1413](https://github.com/polandy/Stella/commit/f7c1413e3e2ced5cfdd1e0f08b5fcbe0f850e343))
+
+
+### Bug Fixes
+
+* **ci:** call the image build from the release job ([634186f](https://github.com/polandy/Stella/commit/634186ffae5b2d587d7fc3995a0457a21c5f5e1f))
+
 ## [0.0.3](https://github.com/polandy/Stella/compare/v0.0.2...v0.0.3) (2026-09-08)
 
 
