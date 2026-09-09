@@ -288,7 +288,9 @@
 <!-- The rail: the future, and the people slipping out of it. Both bands are absent when
      empty, because a box that is permanently empty teaches people to stop looking at it. -->
 <aside
-	class="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:gap-8 lg:self-start {railOrder}" aria-label={t('home.atAGlance')}>
+	class="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:gap-8 lg:self-start {railOrder}"
+	aria-label={t('home.atAGlance')}
+>
 	{#if data.upcoming.length}
 		<section data-testid="coming-up">
 			<h2 class="flex items-center gap-2 pb-2 text-xs font-semibold uppercase tracking-wider text-fg-subtle">

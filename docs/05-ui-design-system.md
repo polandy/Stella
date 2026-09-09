@@ -191,8 +191,8 @@ They must be edited together; `app.css` says so at both blocks.
   each band stops after **three rows** with *Show all N* beneath it, and the rail only sits
   **above** the stream while a date is due **within 14 days** (`IMMINENT_HORIZON_DAYS`);
   otherwise it follows the stream, where it is still one scroll away. Both bands are
-  **absent entirely when empty**; there is no empty state for them, because a permanently empty panel teaches people
-  to stop looking. On a phone the composer is a **sheet** opened from the *What happened?*
+  **absent entirely when empty**; there is no empty state for them, because a permanently
+  empty panel teaches people to stop looking. On a phone the composer is a **sheet** opened from the *What happened?*
   bar or the tab-bar pencil.
 - **People** — a find-as-you-type field, tag chips, then **letter groups** by surname with a
   sticky letter heading; each row is avatar, name (lock for private), description, and

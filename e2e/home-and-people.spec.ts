@@ -17,12 +17,16 @@ test.beforeEach(async ({ page }) => {
  * phone's three-row cap and something is inside the 14-day horizon — whatever the seeded
  * calendar looks like on the day the suite runs. Each caller brings its own names, so two
  * tests never fight over the same person.
+ *
+ * The band itself holds only `UPCOMING_LIMIT` people, and everything these tests add stays in
+ * the database for the ones that follow — so a caller that has to see *its own* person listed
+ * takes `firstInDays: 1` and is sorted in front of everybody else's.
  */
-async function addBirthdaysSoon(page: Page, names: string[]): Promise<void> {
+async function addBirthdaysSoon(page: Page, names: string[], firstInDays = 2): Promise<void> {
 	for (const [i, name] of names.entries()) {
 		const [first, last] = name.split(' ');
 		// A leap year, so a 29 February birthday is a real date to type into the field.
-		const soon = new Date(Date.now() + (i + 2) * 86_400_000).toISOString().slice(5, 10);
+		const soon = new Date(Date.now() + (i + firstInDays) * 86_400_000).toISOString().slice(5, 10);
 		await page.goto('/contacts/new');
 		await page.getByLabel('First name').fill(first);
 		await page.getByLabel('Last name').fill(last);
@@ -90,7 +94,12 @@ test.describe('on a phone', () => {
 
 	test('lays the rail out as one vertical list, with nothing off the right edge', async ({ page }) => {
 		// The bands used to be a strip of cards scrolling sideways, so most of them sat off
-		// the screen with nothing to say so (docs/05 §5.5).
+		// the screen with nothing to say so (docs/05 §5.5). Enough people to fill the strip,
+		// because an empty band cannot overflow and would pass this without the fix.
+		await addBirthdaysSoon(page, ['Ilona Weber', 'Jonas Xavier', 'Karin Yerly', 'Livio Zbinden']);
+		await expect(page.getByTestId('coming-up')).toBeVisible();
+		await expect(page.getByTestId('quiet-lately')).toBeVisible();
+
 		const sideways = await page.evaluate(() => {
 			const scrolls = (el: Element) => el.scrollWidth > el.clientWidth + 1;
 			return {
@@ -120,6 +129,9 @@ test.describe('on a phone', () => {
 
 	test('keeps the capture field above the rail', async ({ page }) => {
 		// The rail is worth the top of a phone screen; the field it would push off is worth more.
+		// The birthdays put the rail in front of the stream, which is the only arrangement in
+		// which it can push the field down — without them this would pass on the broken layout.
+		await addBirthdaysSoon(page, ['Mara Aebi']);
 		const bar = await page.getByRole('link', { name: 'What happened?' }).boundingBox();
 		const rail = await page.getByRole('complementary', { name: 'At a glance' }).boundingBox();
 		expect(bar!.y).toBeLessThan(rail!.y);
@@ -129,7 +141,7 @@ test.describe('on a phone', () => {
 		// Seeded dates drift with the calendar, so this makes its own. The other side of the
 		// rule — the rail below the stream — is `hasImminentDate`'s unit tests: nothing here
 		// can empty a household's calendar deterministically.
-		await addBirthdaysSoon(page, ['Yannick Zwahlen']);
+		await addBirthdaysSoon(page, ['Yannick Zwahlen'], 1);
 
 		await expect(page.getByTestId('coming-up').getByRole('link', { name: 'Yannick Zwahlen' })).toBeVisible();
 
