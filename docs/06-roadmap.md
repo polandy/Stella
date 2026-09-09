@@ -94,7 +94,9 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   Monica's own exports are shipped**, **and vCard with them** (§2.16) — the JSON file, the SQL
   dump and a `.vcf`, told apart from the file itself and read into one typed view so the
   mapping exists once. A vCard fills that view sparsely: people, but not how they connect.
-- **PWA offline** app shell + read-through cache; RP-initiated single logout.
+- **PWA offline** app shell + read-through cache. **RP-initiated single logout is
+  shipped** (§2.1): signing out revokes the Stella session first, then ends the provider's
+  session too when it advertises an `end_session_endpoint` — and never fails when it does not.
 
 **Exit:** the household actively uses the feed and graph; data can be backed up and
 moved with one action.

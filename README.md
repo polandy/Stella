@@ -87,6 +87,8 @@ cp .env.example .env      # set SESSION_SECRET and STELLA_URL
 ./deploy.sh               # builds and starts it; open http://localhost:3000
 ```
 
+Or skip the build: every release is published to `ghcr.io/polandy/stella`.
+
 The [installation guide](docs/install.md) walks through it properly, including running it
 behind your own domain and signing in with your existing single sign-on.
 

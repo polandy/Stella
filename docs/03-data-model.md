@@ -94,6 +94,7 @@ Server-side sessions referenced by cookie.
 | expires_at | int | |
 | created_at | int | |
 | user_agent / ip | text null | for the "active sessions" view |
+| oidc_id_token | text null | ID token of the SSO sign-in behind this session; the `id_token_hint` for RP-initiated logout (§2.1). Null for a local sign-in, and gone with the session on sign-out. |
 
 ### identity
 Links a Stella user to an external OIDC identity (e.g. Authelia). A user may have a local

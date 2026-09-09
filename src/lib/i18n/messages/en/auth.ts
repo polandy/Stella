@@ -7,6 +7,7 @@ export const auth = {
 	'auth.or': 'or',
 	'auth.email': 'Email',
 	'auth.password': 'Password',
+	'auth.signedOut': 'You have been signed out.',
 	'auth.signInAsDemo': 'Sign in as demo user',
 	'auth.demoHint': (p: { email: string }) => `Demo data is on (SEED_DEMO). ${p.email}`,
 	'auth.invalidInput': 'Please enter a valid email and password.',

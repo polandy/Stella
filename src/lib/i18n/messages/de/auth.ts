@@ -8,6 +8,7 @@ export const auth: AuthMessages = {
 	'auth.or': 'oder',
 	'auth.email': 'E-Mail',
 	'auth.password': 'Passwort',
+	'auth.signedOut': 'Du bist abgemeldet.',
 	'auth.signInAsDemo': 'Als Demo-Benutzer anmelden',
 	'auth.demoHint': (p) => `Demodaten sind aktiv (SEED_DEMO). ${p.email}`,
 	'auth.invalidInput': 'Bitte gib eine gültige E-Mail-Adresse und ein Passwort ein.',

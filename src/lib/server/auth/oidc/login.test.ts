@@ -30,10 +30,13 @@ const policy: OidcPolicy = {
 
 const clock: Clock = { now: () => 1_700_000_000_000 };
 
+const ID_TOKEN = 'header.payload.signature';
+
 function fakeProvider(resolved: OidcClaims): OidcProvider {
 	return {
 		authorizationEndpoint: async () => 'https://auth.example.home/authorize',
-		exchangeCode: async () => resolved
+		endSessionEndpoint: async () => 'https://auth.example.home/logout',
+		exchangeCode: async () => ({ claims: resolved, idToken: ID_TOKEN })
 	};
 }
 
@@ -84,7 +87,7 @@ describe('completeOidcLogin', () => {
 			codeVerifier: 'v',
 			expectedNonce: 'n'
 		});
-		expect(result).toEqual({ ok: true, userId: 'new-user' });
+		expect(result).toEqual({ ok: true, userId: 'new-user', idToken: ID_TOKEN });
 		expect(f.calls).toContain('provision');
 	});
 
@@ -95,7 +98,7 @@ describe('completeOidcLogin', () => {
 			codeVerifier: 'v',
 			expectedNonce: 'n'
 		});
-		expect(result).toEqual({ ok: true, userId: 'user-9' });
+		expect(result).toEqual({ ok: true, userId: 'user-9', idToken: ID_TOKEN });
 		expect(f.calls).toEqual(['update', 'touch']);
 	});
 
@@ -106,7 +109,7 @@ describe('completeOidcLogin', () => {
 			codeVerifier: 'v',
 			expectedNonce: 'n'
 		});
-		expect(result).toEqual({ ok: true, userId: 'user-3' });
+		expect(result).toEqual({ ok: true, userId: 'user-3', idToken: ID_TOKEN });
 		expect(f.calls).toEqual(['link', 'update', 'touch']);
 	});
 });

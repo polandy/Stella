@@ -356,6 +356,14 @@ while they are selected, so you can read who is whose grandmother. Click again t
 their connections. *Connection path* traces how two people are linked, and it always answers
 with the people in between rather than the worked-out shortcut — that is the point of asking.
 
+## Signing out
+
+*Sign out* in the account menu ends your Stella session immediately. If your household
+signs in through single sign-on, Stella also asks the login provider to end that session,
+so signing out of Stella does not leave you one click away from signing back in. Either
+way you land back on the sign-in page — and if the provider cannot be reached, you are
+still signed out of Stella.
+
 ## Light and dark
 
 Stella follows whatever your device is set to, and both themes are designed rather than

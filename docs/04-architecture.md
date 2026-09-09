@@ -116,8 +116,11 @@ codes rather than sentences. The edge renders them — `say(locals, key)` in a r
    configured, update `identity.last_login_at`.
 7. Create a Stella `session` and set the cookie. From here, requests are session-based.
 
-Logout clears the local session; if the provider advertises `end_session_endpoint` and
-RP-logout is enabled, redirect there too **[M2]**.
+Logout revokes the local session and clears its cookie first and unconditionally; only
+then, if the session came from SSO, `OIDC_RP_LOGOUT` is on and the provider advertises an
+`end_session_endpoint`, the browser is redirected there with the sign-in's `id_token_hint`.
+Anything that goes wrong on that second half degrades to the local sign-out that already
+happened — signing out never fails.
 
 ## 4.5 Configuration (environment)
 
@@ -151,7 +154,7 @@ OIDC_JIT_PROVISION=true                     # auto-create users on first login
 OIDC_LINK_BY_EMAIL=true                     # link to existing local user by verified email (first login only)
 OIDC_SYNC_ROLES=true                        # re-apply group→role mapping each login
 OIDC_SYNC_PROFILE=true                      # refresh name/email each login
-OIDC_RP_LOGOUT=true                         # use end_session_endpoint on logout [M2]
+OIDC_RP_LOGOUT=true                         # also end the provider session on logout
 ```
 
 Notes:
@@ -213,6 +216,12 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   and frozen (RFC 6350 / RFC 2426): unfolding, escaping, structured values. Every published
   parser weighs far more than the two dozen lines that saves, against the minimal-deps rule
   (§8.8). Revisit if calendar or full-round-trip vCard support is ever wanted.
+- **The ID token is kept on the session row, not in a cookie** — RP-initiated logout needs
+  an `id_token_hint`, so the token has to survive from sign-in to sign-out. The alternative
+  (a second httpOnly cookie) would put a JWT carrying the user's email and groups on every
+  request to every route, and would go stale independently of the session it belongs to.
+  On the session row it is deleted by the same statement that ends the session, and shares
+  the database's blast radius rather than widening it.
 - **Our own message catalogue over an i18n library** — two languages and no plural rules
   beyond "one or many" do not pay for Paraglide's compiler or a runtime store. Typed area
   modules give the same guarantee more cheaply: German is typed against English, so a

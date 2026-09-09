@@ -42,7 +42,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			config.seedDemo && config.auth.local
 				? { email: DEMO_ADMIN_EMAIL, password: DEMO_ADMIN_PASSWORD }
 				: null,
-		ssoError: errorKey ? t(SSO_ERRORS[errorKey] ?? SSO_ERRORS.sso) : null
+		ssoError: errorKey ? t(SSO_ERRORS[errorKey] ?? SSO_ERRORS.sso) : null,
+		// Set by the sign-out redirect, directly or on the way back from the provider.
+		signedOut: url.searchParams.has('signedOut')
 	};
 };
 
