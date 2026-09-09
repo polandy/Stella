@@ -76,7 +76,9 @@ credentials and MFA.
   `end_session_endpoint` (with the sign-in's `id_token_hint`) when the provider advertises
   one and `OIDC_RP_LOGOUT` is on, so the SSO session ends too; both landings return to
   `/login?signedOut=1`. A provider that is unreachable or advertises no endpoint leaves the
-  user signed out of Stella regardless — sign-out never fails.
+  user signed out of Stella regardless — sign-out never fails. Authelia 4.39, the version
+  this was built against, is exactly that case: it implements no RP-initiated logout at all,
+  so sign-out there is the local one.
 - **Security specifics:** `state` + `nonce` + PKCE verifier stored in a short-lived,
   httpOnly cookie; strict redirect-URI matching; clock-skew tolerance; ID-token
   signature verified against cached JWKS with rotation support.

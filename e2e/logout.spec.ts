@@ -29,8 +29,12 @@ async function signInAsDemo(page: Page): Promise<void> {
 }
 
 async function signOut(page: Page): Promise<void> {
-	await page.getByText('Demo Admin').click(); // opens the account menu
-	await page.getByRole('button', { name: 'Sign out' }).click();
+	// Scoped to the account menu rather than matching the name page-wide: the stream renders
+	// author names too, and only writes the signed-in user, so a page-wide match would depend
+	// on that detail rather than on anything this spec is about.
+	const accountMenu = page.locator('details', { hasText: 'Sign out' });
+	await accountMenu.locator('summary').click();
+	await accountMenu.getByRole('button', { name: 'Sign out' }).click();
 }
 
 test('signing out returns to the sign-in page and locks the app behind it', async ({ page }) => {
