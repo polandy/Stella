@@ -157,7 +157,7 @@
 	{/if}
 
 	{#if days.length}
-		<ol class="flex flex-col">
+		<ol class="flex flex-col" data-testid="stream">
 			{#each days as day (day.label)}
 				<li>
 					<div class="flex items-center gap-3 pb-1.5 pt-4 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
