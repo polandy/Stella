@@ -1,4 +1,5 @@
 import type { Database } from 'bun:sqlite';
+import { MENTION_TOKEN_PREFIX } from '../../mentions/mentions';
 
 /*
  * Full-text search index (docs/03 §3.5). Creates the FTS5 virtual tables and the triggers that
@@ -10,9 +11,6 @@ import type { Database } from 'bun:sqlite';
 
 const contactContent = (t: string) =>
 	`coalesce(${t}.display_name,'')||' '||coalesce(${t}.first_name,'')||' '||coalesce(${t}.last_name,'')||' '||coalesce(${t}.nickname,'')||' '||coalesce(${t}.description,'')||' '||coalesce(${t}.how_we_met,'')||' '||coalesce(${t}.met_place,'')`;
-
-/** The mention token's opening, whose closing `}` ends it (docs/02 §2.20.1). */
-const MENTION_OPEN = '@{contact:';
 
 /*
  * A body with its @-mention tokens cut out, as one SQL expression. The tokens are the wrong
@@ -27,9 +25,9 @@ const MENTION_OPEN = '@{contact:';
 const strippedBody = (t: string) => `(WITH RECURSIVE strip(s) AS (
 			SELECT coalesce(${t}.body,'')
 			UNION ALL
-			SELECT substr(s,1,instr(s,'${MENTION_OPEN}')-1)||' '||substr(s,instr(s,'${MENTION_OPEN}')+instr(substr(s,instr(s,'${MENTION_OPEN}')),'}'))
-			FROM strip WHERE instr(s,'${MENTION_OPEN}')>0 AND instr(substr(s,instr(s,'${MENTION_OPEN}')),'}')>0
-		) SELECT s FROM strip WHERE instr(s,'${MENTION_OPEN}')=0 OR instr(substr(s,instr(s,'${MENTION_OPEN}')),'}')=0 LIMIT 1)`;
+			SELECT substr(s,1,instr(s,'${MENTION_TOKEN_PREFIX}')-1)||' '||substr(s,instr(s,'${MENTION_TOKEN_PREFIX}')+instr(substr(s,instr(s,'${MENTION_TOKEN_PREFIX}')),'}'))
+			FROM strip WHERE instr(s,'${MENTION_TOKEN_PREFIX}')>0 AND instr(substr(s,instr(s,'${MENTION_TOKEN_PREFIX}')),'}')>0
+		) SELECT s FROM strip WHERE instr(s,'${MENTION_TOKEN_PREFIX}')=0 OR instr(substr(s,instr(s,'${MENTION_TOKEN_PREFIX}')),'}')=0 LIMIT 1)`;
 
 /*
  * What of a note is searchable: its title, its body without the mention tokens, and the

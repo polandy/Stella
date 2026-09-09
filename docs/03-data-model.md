@@ -508,8 +508,9 @@ The UI renders accordingly (e.g. age hidden when only month/day known). Reminder
 
 ## 3.5 Full-text search (FTS5)
 
-- Two FTS5 virtual tables: `contact_fts` and `note_fts` (contentless / external-content
-  linked to base tables), kept in sync via triggers on insert/update/delete.
+- Two FTS5 virtual tables: `contact_fts` and `note_fts`, each storing its own indexed text
+  (not `content=`-linked to the base tables, since what is indexed is assembled rather than
+  copied — see below), kept in sync via triggers on insert/update/delete.
 - A note's indexed content is **not** its raw body: the `@{contact:<id>}` tokens (§2.20.1) are
   **cut out whole** — id included, since an imported contact's id is a source id like
   `monica:contact:9` (§2.16) whose parts are words people search for — and the mentioned

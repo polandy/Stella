@@ -209,6 +209,17 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   request to every route, and would go stale independently of the session it belongs to.
   On the session row it is deleted by the same statement that ends the session, and shares
   the database's blast radius rather than widening it.
+- **The search index fingerprints its own definitions** — what an SQLite trigger writes is
+  fixed when the trigger is created, so `CREATE TRIGGER IF NOT EXISTS` plus a backfill that
+  only ran on an empty index made every change to *what gets indexed* invisible to the
+  databases that already had one: the fix would ship and nothing would happen. The index now
+  stores a hash of the SQL that built it and rebuilds when that moves (docs/03 §3.5). The
+  alternatives were a hand-maintained version number, which is a step someone forgets exactly
+  once, and folding the index into Drizzle's migrations, which cannot express "re-run when
+  this expression changes". The cost is one full rebuild on the first start after any such
+  change — seconds at household scale — and a small non-Drizzle table, `search_index_meta`,
+  which sits with the FTS tables that are already outside the schema.
+
 - **Cytoscape.js for the graph** — mature, purpose-built; lazy-loaded to protect the
   bundle. D3-force considered as a lighter alt if bundle size demands it.
 - **Explorer lines are deepened for the canvas, not re-picked** — in Latte only five of the
@@ -243,8 +254,12 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **Monica import writes stable source ids, not ULIDs** — every imported row's id is
   `monica:<table>:<id>`, so the import is idempotent by construction (insert-or-ignore) and a
   re-run reports zero writes instead of duplicating; the cost is a second id shape in the
-  tables, which nothing else depends on, and an assumption of one household per deployment
-  that multi-tenancy would have to lift (docs/02 §2.16, docs/monica-mapping.md).
+  tables and an assumption of one household per deployment that multi-tenancy would have to
+  lift (docs/02 §2.16, docs/monica-mapping.md). That cost was first written down as "nothing
+  else depends on it", which was wrong: every place that reads an id back **out of text**
+  does. The `@{contact:<id>}` mention grammar rejected the `:` and stopped recognising its
+  own tokens, and the search index read the id's parts as the words "monica" and "contact".
+  Anything new that parses an id out of a string has to accept this shape (docs/02 §2.20.1).
 - **Imported photos travel through the browser, not a server path** — the wizard's folder
   picker reads Monica's photo directory on the admin's machine and downscales each file with
   the same canvas pipeline as avatars and journal photos. Rejected: a server-side
