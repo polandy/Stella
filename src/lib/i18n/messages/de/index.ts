@@ -3,6 +3,7 @@
  * Adding an area means adding its module here and in the other language's barrel.
  */
 
+import { archive } from './archive';
 import { auth } from './auth';
 import { circles } from './circles';
 import { common } from './common';
@@ -23,6 +24,7 @@ import { story } from './story';
 
 /** Every message Stella can say in German. */
 export const de = {
+	...archive,
 	...auth,
 	...circles,
 	...common,

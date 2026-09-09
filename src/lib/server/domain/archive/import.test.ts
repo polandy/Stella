@@ -11,9 +11,16 @@ import {
 	splitArchive,
 	type ImportArchiveDeps,
 	type RestoreCounts,
-	type RestoreRepository
+	type RestoreRepository,
+	type ArchiveWording
 } from './import';
 import { ArchiveFormatError, type RestorePlan } from './restore';
+
+/** English wording, as the route hands it in an English session. */
+const wording: ArchiveWording = {
+	restored: (people, household) =>
+		`restored ${people === 1 ? '1 person' : `${people} people`} from an archive of ${household}`
+};
 
 /*
  * Restoring an archive (docs/02 §2.15). Orchestration over fakes: what the admin is told
@@ -123,7 +130,7 @@ describe('importing', () => {
 	it('plans against this household and this admin, not the ones in the file', async () => {
 		const restore = fakeRestore();
 		const { store } = fakeMedia();
-		await importArchive(depsWith(restore.repo, store), actor, archiveFile());
+		await importArchive(depsWith(restore.repo, store), actor, archiveFile(), wording);
 
 		const contacts = restore.applied!.tables.find((t) => t.table === 'contact')!.rows;
 		expect(contacts[0]).toMatchObject({ household_id: 'h-here', created_by: 'u-admin' });
@@ -132,7 +139,7 @@ describe('importing', () => {
 	it('tells the admin what was written and what was already here', async () => {
 		const restore = fakeRestore({ contact: { added: 3, skipped: 2 } });
 		const { store } = fakeMedia();
-		const report = await importArchive(depsWith(restore.repo, store), actor, archiveFile());
+		const report = await importArchive(depsWith(restore.repo, store), actor, archiveFile(), wording);
 
 		expect(report.added.contact).toBe(3);
 		expect(report.skipped.contact).toBe(2);
@@ -145,7 +152,8 @@ describe('importing', () => {
 		const report = await importArchive(
 			depsWith(restore.repo, store),
 			actor,
-			archiveFile({ 'p1.jpg': new Uint8Array([1, 2]), 't1.jpg': new Uint8Array([3]) })
+			archiveFile({ 'p1.jpg': new Uint8Array([1, 2]), 't1.jpg': new Uint8Array([3]) }),
+			wording
 		);
 
 		expect(report.media).toEqual({ stored: 2, alreadyThere: 0, missing: 0 });
@@ -159,7 +167,8 @@ describe('importing', () => {
 		const report = await importArchive(
 			depsWith(restore.repo, store),
 			actor,
-			archiveFile({ 'p1.jpg': new Uint8Array([1, 2]), 't1.jpg': new Uint8Array([3]) })
+			archiveFile({ 'p1.jpg': new Uint8Array([1, 2]), 't1.jpg': new Uint8Array([3]) }),
+			wording
 		);
 
 		expect([...files.get('p1.jpg')!]).toEqual([9, 9]);
@@ -172,11 +181,12 @@ describe('importing', () => {
 		const report = await importArchive(
 			depsWith(restore.repo, store),
 			actor,
-			archiveFile({ 'p1.jpg': new Uint8Array([1]) })
+			archiveFile({ 'p1.jpg': new Uint8Array([1]) }),
+			wording
 		);
 
 		expect(report.media.missing).toBe(1);
-		expect(report.warnings.join(' ')).toContain('not in the archive');
+		expect(report.warnings).toContainEqual({ code: 'imagesMissing', count: 1 });
 	});
 
 	it('writes the images only after the rows, so a failed restore leaves no files behind', async () => {
@@ -193,7 +203,8 @@ describe('importing', () => {
 			importArchive(
 				depsWith(failing, store),
 				actor,
-				archiveFile({ 'p1.jpg': new Uint8Array([1]) })
+				archiveFile({ 'p1.jpg': new Uint8Array([1]) }),
+				wording
 			)
 		).rejects.toThrow('constraint failed');
 		expect(files.size).toBe(0);
@@ -202,7 +213,7 @@ describe('importing', () => {
 	it('leaves the trail the household sees in its stream', async () => {
 		const restore = fakeRestore({ contact: { added: 1, skipped: 0 } });
 		const { store } = fakeMedia();
-		await importArchive(depsWith(restore.repo, store), actor, archiveFile());
+		await importArchive(depsWith(restore.repo, store), actor, archiveFile(), wording);
 
 		expect(restore.recorded).toMatchObject({
 			action: 'import',
@@ -219,10 +230,12 @@ describe('importing', () => {
 		const restore = fakeRestore();
 		const { store } = fakeMedia();
 		await expect(
-			importArchive(depsWith(restore.repo, store), actor, {
-				documentText: 'shopping: [milk, bread]',
-				media: new Map()
-			})
+			importArchive(
+				depsWith(restore.repo, store),
+				actor,
+				{ documentText: 'shopping: [milk, bread]', media: new Map() },
+				wording
+			)
 		).rejects.toThrow(ArchiveFormatError);
 		// Positive control: nothing was applied and nothing was logged.
 		expect(restore.applied).toBeNull();
@@ -232,10 +245,15 @@ describe('importing', () => {
 	it('reads an archive that is only a header without failing', async () => {
 		const restore = fakeRestore({});
 		const { store } = fakeMedia();
-		const report = await importArchive(depsWith(restore.repo, store), actor, {
-			documentText: `format: ${ARCHIVE_FORMAT}\nversion: ${ARCHIVE_VERSION}\nhousehold: Empty\n`,
-			media: new Map()
-		});
+		const report = await importArchive(
+			depsWith(restore.repo, store),
+			actor,
+			{
+				documentText: `format: ${ARCHIVE_FORMAT}\nversion: ${ARCHIVE_VERSION}\nhousehold: Empty\n`,
+				media: new Map()
+			},
+			wording
+		);
 		expect(report.added).toEqual({});
 		expect(report.warnings).toEqual([]);
 	});
@@ -243,9 +261,9 @@ describe('importing', () => {
 
 describe('what the log says', () => {
 	it('counts the people, because that is what the household recognises', () => {
-		expect(describeImport({ contact: 12 }, 'Familie Brunner')).toBe(
+		expect(describeImport({ contact: 12 }, 'Familie Brunner', wording)).toBe(
 			'restored 12 people from an archive of Familie Brunner'
 		);
-		expect(describeImport({ contact: 1 }, 'H')).toContain('1 person');
+		expect(describeImport({ contact: 1 }, 'H', wording)).toContain('1 person');
 	});
 });
