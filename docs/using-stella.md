@@ -9,11 +9,14 @@ Home is a text field with the household's stream underneath it. Newest first, gr
 day, showing what someone wrote, who someone added, when someone was in touch, and the
 connections someone made.
 
-Beside the stream (above it on a phone) sit two short lists. **Coming up** is the next
-thirty days of birthdays and anniversaries. **Quiet lately** is the people nobody has written
+Beside the stream sit two short lists. **Coming up** is the next thirty days of birthdays
+and anniversaries. **Quiet lately** is the people nobody has written
 about in three months — not "you have not called Oma", which Stella cannot know, but "nothing
 has been written down about Oma", which it can. Each name offers one thing: *Write a moment*.
-Both lists disappear when they have nothing to say.
+Both lists disappear when they have nothing to say. On a phone there is no room beside the
+stream, so they go under it — and above it only while something is due within a fortnight,
+which is when they are worth the top of the screen. Each list shows three people there, with
+*Show all* underneath when there are more.
 
 ### Writing a moment
 
@@ -152,7 +155,7 @@ anniversary, the day you met, the day the class trip leaves. Each one can repeat
 or happen once, and each one has a switch for whether it should show up on Home. If the year
 is unknown, tick *Year unknown* and Stella keeps the day without inventing a year.
 
-**What is coming up appears on Home**, above what already happened — the next 30 days,
+**What is coming up appears on Home**, beside what already happened — the next 30 days,
 soonest first. Not a separate reminders page you have to remember to open, and no email: it
 is simply at the top of the thing you already look at. When nothing is due in the next
 month, the band is not there at all.
