@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.6](https://github.com/polandy/Stella/compare/v0.0.5...v0.0.6) (2026-09-09)
+
+
+### Features
+
+* **home:** drop the phone rail's sideways scroll ([#51](https://github.com/polandy/Stella/issues/51)) ([40af4c9](https://github.com/polandy/Stella/commit/40af4c9e66136a09dd57edefc121e59b0949c015))
+
 ## [0.0.5](https://github.com/polandy/Stella/compare/v0.0.4...v0.0.5) (2026-09-09)
 
 
