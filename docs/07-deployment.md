@@ -121,10 +121,11 @@ openssl rand -hex 32   # OIDC_CLIENT_SECRET (plaintext; Authelia stores its hash
 
 ### 7.5.0 Where the image comes from
 
-Releases are cut by release-please, which pushes a `vX.Y.Z` tag; that tag triggers the
-`publish` workflow, which builds the image and pushes it to
-`ghcr.io/polandy/stella` as `X.Y.Z`, `X.Y` and `latest`. The run's summary prints the
-line to pin.
+Releases are cut by release-please. When it publishes a release, the same workflow run
+calls `publish`, which builds the image and pushes it to `ghcr.io/polandy/stella` as
+`X.Y.Z`, `X.Y` and `latest`. The run's summary prints the line to pin. (The release tag
+cannot trigger a build by itself: release-please pushes it with the run's `GITHUB_TOKEN`,
+and GitHub does not start workflows from events a token creates.)
 
 Pin the **digest**, not a tag — a tag can be moved, a digest cannot:
 
