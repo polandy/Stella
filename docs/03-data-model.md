@@ -509,12 +509,19 @@ The UI renders accordingly (e.g. age hidden when only month/day known). Reminder
 
 ## 3.5 Full-text search (FTS5)
 
-- Two FTS5 virtual tables: `contact_fts` and `note_fts` (contentless / external-content
-  linked to base tables), kept in sync via triggers on insert/update/delete.
+- Two FTS5 virtual tables: `contact_fts` and `note_fts`, each storing its own indexed text
+  (not `content=`-linked to the base tables, since what is indexed is assembled rather than
+  copied — see below), kept in sync via triggers on insert/update/delete.
 - A note's indexed content is **not** its raw body: the `@{contact:<id>}` tokens (§2.20.1) are
-  stripped and the mentioned people's display names appended, so a mention stays findable by
-  name and the word "contact" is not in every note that names someone. Triggers on
-  `note_mention` and on a rename of a mentioned contact keep that current.
+  **cut out whole** — id included, since an imported contact's id is a source id like
+  `monica:contact:9` (§2.16) whose parts are words people search for — and the mentioned
+  people's display names appended, so a mention stays findable by name and neither "contact"
+  nor "monica" sits in every note that names someone. Triggers on `note_mention` and on a
+  rename of a mentioned contact keep that current.
+- What a trigger writes is fixed when the trigger is created, so the index carries a
+  **fingerprint** of the definitions that built it (`search_index_meta`). A startup whose
+  definitions hash differently re-creates the triggers and rebuilds the rows; an unchanged one
+  touches nothing. That is the upgrade path — no version number to bump by hand.
 - Query layer unions results, applies visibility filtering **after** the FTS match, and
   returns snippets with highlight.
 - Tokenizer: `unicode61` with diacritics folding (so "Jose" matches "José").

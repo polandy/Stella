@@ -856,7 +856,8 @@ on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s jou
   person when two people share a name. The typed `@AnnaWeber` is only the lookup key. A raw,
   unconfirmed `@FirstnameLastname` (e.g. pasted text) is resolved best-effort when the entry is
   saved: a single exact first+last match becomes a mention; anything ambiguous or unmatched is
-  left as literal text.
+  left as literal text. The id inside the token may be a *source id* from an import
+  (`monica:contact:9`, §2.16), so the token grammar accepts `:` in it.
 - **Rendering.** A mention renders as a chip/link to `/contacts/{id}`, labelled with the
   person's **current** display name (looked up at render time). It goes through the same
   safe-render pipeline as the rest of the body (raw HTML escaped, unsafe links dropped); the

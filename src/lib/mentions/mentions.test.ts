@@ -21,7 +21,9 @@ import {
 const CONTACTS: MentionCandidate[] = [
 	{ id: 'anna', firstName: 'Anna', lastName: 'Weber', displayName: 'Anna Weber' },
 	{ id: 'sandra', firstName: 'Sandra', lastName: 'Brunner', displayName: 'Sandra Brunner' },
-	{ id: 'sabine-mueller', firstName: 'Sabine', lastName: 'Müller', displayName: 'Sabine Müller' }
+	{ id: 'sabine-mueller', firstName: 'Sabine', lastName: 'Müller', displayName: 'Sabine Müller' },
+	// An imported contact keeps its source id, which carries ':' separators (docs/02 §2.16).
+	{ id: 'monica:contact:9', firstName: 'Janosch', lastName: 'Rohdewald', displayName: 'Janosch Rohdewald' }
 ];
 
 describe('mentionKey', () => {
@@ -98,6 +100,14 @@ describe('resolveMentions', () => {
 		expect(resolveMentions(once.body, resolve).ids).toEqual([]);
 	});
 
+	it('round-trips a mention of an imported contact, whose id contains colons', () => {
+		const { body, ids } = resolveMentions('@JanoschRohdewald versucht anzurufen', resolve);
+		expect(body).toBe('@{contact:monica:contact:9} versucht anzurufen');
+		expect(ids).toEqual(['monica:contact:9']);
+		// …and the token it wrote is recognised as canonical on the next save.
+		expect(resolveMentions(body, resolve)).toEqual({ body, ids });
+	});
+
 	it('is idempotent on an already-normalised body', () => {
 		const first = resolveMentions('with @AnnaWeber', resolve).body;
 		expect(resolveMentions(first, resolve).body).toBe(first);
@@ -125,6 +135,10 @@ describe('extractMentionIds', () => {
 		]);
 	});
 
+	it('reads a source id with colons as one id', () => {
+		expect(extractMentionIds('@{contact:monica:contact:9} rief an')).toEqual(['monica:contact:9']);
+	});
+
 	it('ignores typed handles that were never resolved', () => {
 		expect(extractMentionIds('just @AnnaWeber text')).toEqual([]);
 	});
@@ -136,6 +150,13 @@ describe('segmentMentions', () => {
 			{ type: 'text', value: 'hi ' },
 			{ type: 'mention', id: 'anna' },
 			{ type: 'text', value: '!' }
+		]);
+	});
+
+	it('segments a mention of an imported contact, whose id contains colons', () => {
+		expect(segmentMentions('@{contact:monica:contact:9} rief an')).toEqual([
+			{ type: 'mention', id: 'monica:contact:9' },
+			{ type: 'text', value: ' rief an' }
 		]);
 	});
 
