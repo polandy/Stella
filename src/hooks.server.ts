@@ -1,7 +1,7 @@
 import type { Handle } from '@sveltejs/kit';
 import { LOCALE_COOKIE } from '$lib/i18n/locales';
 import { resolveLocale } from '$lib/i18n/resolve';
-import { clearSessionCookie, SESSION_COOKIE } from '$lib/server/auth/cookies';
+import { clearSessionCookie, SESSION_COOKIE, setLocaleCookie } from '$lib/server/auth/cookies';
 import { validateSessionToken } from '$lib/server/auth/session';
 import { getAccounts, getSessionDeps } from '$lib/server/services';
 
@@ -29,11 +29,18 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	}
 
+	const cookieLocale = event.cookies.get(LOCALE_COOKIE);
 	event.locals.locale = resolveLocale({
 		user: event.locals.user?.locale,
-		cookie: event.cookies.get(LOCALE_COOKIE),
+		cookie: cookieLocale,
 		acceptLanguage: event.request.headers.get('accept-language')
 	});
+	// The cookie carries a *choice*, so only a stored preference writes it: it is what the
+	// sign-in screen reads, and a language changed on another device would otherwise greet
+	// this browser in the old one. A visitor who has chosen nothing keeps following their
+	// browser, which is free to change its mind.
+	const chosen = event.locals.user?.locale;
+	if (chosen && chosen !== cookieLocale) setLocaleCookie(event.cookies, chosen);
 
 	const response = await resolve(event, {
 		// Screen readers and the browser's own translation prompt both go by `<html lang>`.
