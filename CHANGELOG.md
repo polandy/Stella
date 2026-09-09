@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.5](https://github.com/polandy/Stella/compare/v0.0.4...v0.0.5) (2026-09-09)
+
+
+### Features
+
+* **i18n:** English and German, chosen per member ([b9401c3](https://github.com/polandy/Stella/commit/b9401c3016838578799e5c9f34a02642d0feffd4))
+
+
+### Bug Fixes
+
+* **mentions:** render mentions of imported contacts ([#47](https://github.com/polandy/Stella/issues/47)) ([3ff74ca](https://github.com/polandy/Stella/commit/3ff74cac215728c21ca7a35bd1a87d5cb445742a))
+
 ## [0.0.4](https://github.com/polandy/Stella/compare/v0.0.3...v0.0.4) (2026-09-09)
 
 
