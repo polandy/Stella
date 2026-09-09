@@ -12,7 +12,9 @@ import { contacts } from './contacts';
 import { dates } from './dates';
 import { errors } from './errors';
 import { home } from './home';
+import { importer } from './import';
 import { interactions } from './interactions';
+import { journal } from './journal';
 import { nav } from './nav';
 import { relationships } from './relationships';
 import { search } from './search';
@@ -30,7 +32,9 @@ export const de = {
 	...dates,
 	...errors,
 	...home,
+	...importer,
 	...interactions,
+	...journal,
 	...nav,
 	...relationships,
 	...search,

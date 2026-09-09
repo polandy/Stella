@@ -9,7 +9,8 @@ import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
 import { readStagedDump } from '$lib/server/import/staging';
 import { getImportDeps, getImportedPhotoDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
-import { translator } from '$lib/server/i18n/say';
+import { importWording } from '$lib/server/i18n/import-wording';
+import { say, translator } from '$lib/server/i18n/say';
 
 /*
  * One imported photo per request (docs/02 §2.16). The plan is re-derived from the staged
@@ -28,14 +29,16 @@ import { translator } from '$lib/server/i18n/say';
 async function planFor(
 	token: string,
 	user: { householdId: string; id: string },
-	visibility: Visibility
+	visibility: Visibility,
+	locals: App.Locals
 ) {
 	const text = await readStagedDump(getConfig().importDir, token);
-	if (text === null) throw error(410, 'The import session is over; start again from the export.');
+	if (text === null) throw error(410, say(locals, 'import.error.sessionOver'));
 	return previewImport(getImportDeps(), text, {
 		householdId: user.householdId,
 		userId: user.id,
-		visibility
+		visibility,
+		wording: importWording(locals)
 	});
 }
 
@@ -43,14 +46,14 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	const user = requireAdmin(locals);
 	const token = url.searchParams.get('token');
 	const photoId = url.searchParams.get('photoId');
-	if (!token || !photoId) throw error(400, 'Missing token or photo id.');
+	if (!token || !photoId) throw error(400, say(locals, 'import.error.missingToken'));
 
 	// Nothing about a picture depends on the visibility the admin chose, so reading one asks
 	// for the household default rather than carrying a setting through the URL.
-	const planned = (await planFor(token, user, 'shared')).photos.find((p) => p.id === photoId);
-	if (!planned) throw error(404, 'This photo is not part of the import.');
+	const planned = (await planFor(token, user, 'shared', locals)).photos.find((p) => p.id === photoId);
+	if (!planned) throw error(404, say(locals, 'import.error.photoNotInImport'));
 	if (planned.dataUrl === null) {
-		throw error(409, 'This export does not carry the picture; point at Monica’s photo folder.');
+		throw error(409, say(locals, 'import.error.pictureNotCarried'));
 	}
 
 	const { bytes, mime } = decodeDataUrl(planned.dataUrl);
@@ -67,12 +70,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	const thumb = form.get('thumb');
 	const visibility = form.get('visibility') === 'private' ? 'private' : 'shared';
 	if (typeof token !== 'string' || typeof photoId !== 'string' || !(image instanceof File) || !(thumb instanceof File)) {
-		throw error(400, 'Missing photo upload fields.');
+		throw error(400, say(locals, 'import.error.missingPhotoFields'));
 	}
 
-	const plan = await planFor(token, user, visibility);
+	const plan = await planFor(token, user, visibility, locals);
 	const planned = plan.photos.find((p) => p.id === photoId);
-	if (!planned) throw error(404, 'This photo is not part of the import.');
+	if (!planned) throw error(404, say(locals, 'import.error.photoNotInImport'));
 
 	try {
 		const status = await attachImportedPhoto(getImportedPhotoDeps(), {

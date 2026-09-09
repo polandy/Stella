@@ -1,6 +1,11 @@
 import type { Clock } from '../../clock';
 import type { Visibility } from '../../access/visibility';
-import { planMonicaImport, type ImportCounts, type ImportPlan } from './monica/plan';
+import {
+	planMonicaImport,
+	type ImportCounts,
+	type ImportPlan,
+	type ImportWording
+} from './monica/plan';
 import { readImportFile } from './read';
 
 /*
@@ -31,6 +36,8 @@ export interface ImportRequest {
 	householdId: string;
 	userId: string;
 	visibility: Visibility;
+	/** The words the plan writes into the imported records (docs/02 §2.19). */
+	wording: ImportWording;
 }
 
 /**
