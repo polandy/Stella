@@ -53,6 +53,17 @@ to run again at any time — that is also how you apply changes.
 - `./deploy.sh logs` — follow what it is doing
 - `./deploy.sh down` — stop it
 
+Building takes a few minutes the first time. If you would rather not build at all, every
+release is published as a container image and you can point `docker-compose.yml` at it
+instead of `build: .`:
+
+```yaml
+image: ghcr.io/polandy/stella:latest
+```
+
+[07 — Deployment §7.5.0](07-deployment.md#750-where-the-image-comes-from) explains why it is
+worth pinning a digest rather than following a tag.
+
 ## 4. Create the first account
 
 Open the address you put in `STELLA_URL`. The first visit lands on a setup page where you
