@@ -368,3 +368,15 @@ still signed out of Stella.
 
 Stella follows whatever your device is set to, and both themes are designed rather than
 inverted. There is nothing to configure.
+
+## English or German
+
+Stella speaks both, and the whole of it — screens, buttons, dates, the messages a form gives
+back when something is wrong. Pick your language under **Settings → Language**, or on the
+sign-in screen before you are signed in at all. The choice belongs to you rather than to the
+household: it is kept with your profile, so every device you sign in on follows it, and the
+person beside you can read Stella in the other language at the same time.
+
+What the household wrote stays as written. Names, notes, journal entries, your own
+relationship types and circle names are yours, and switching language never touches them —
+only the words Stella itself says change.

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Avatar from '$lib/components/Avatar.svelte';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { allowedForAudience } from '$lib/mentions/audience';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
 	import { tick } from 'svelte';
@@ -42,6 +43,8 @@
 		label,
 		class: className = ''
 	}: Props = $props();
+
+	const t = useTranslate();
 
 	let textarea: HTMLTextAreaElement | undefined = $state();
 	let active = $state<ActiveHandle | null>(null);
@@ -107,7 +110,7 @@
 	{#if active && people.length > 0}
 		<ul
 			role="listbox"
-			aria-label="People"
+			aria-label={t('composer.people')}
 			data-testid="mention-picker"
 			class="absolute left-2 top-full z-10 -mt-1 w-[min(320px,calc(100%-1rem))] rounded-app border border-border bg-card p-1 shadow-pop"
 		>

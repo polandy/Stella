@@ -6,6 +6,7 @@
 	 * Category accents follow docs/05 §5.6.
 	 */
 	import { categoryVar } from '$lib/design/tokens';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { RELATIONSHIP_CATEGORIES, type RelationshipCategory } from '$lib/relationships/categories';
 
 	interface EgoNode {
@@ -15,6 +16,8 @@
 		category: string;
 	}
 	let { centerName, nodes }: { centerName: string; nodes: EgoNode[] } = $props();
+
+	const t = useTranslate();
 
 	const categoryColor = (category: string): string =>
 		(RELATIONSHIP_CATEGORIES as readonly string[]).includes(category)
@@ -61,7 +64,7 @@
 	viewBox="0 0 {W} {H}"
 	preserveAspectRatio="xMidYMid meet"
 	role="img"
-	aria-label="Relationship network for {centerName}"
+	aria-label={t('contact.egoGraphLabel', { name: centerName })}
 	style="font-size:{13 * fontScale}px"
 >
 	<!-- edges first so nodes sit on top -->

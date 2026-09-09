@@ -18,7 +18,6 @@ import {
 	deleteContact,
 	mergeContacts,
 	editProfile,
-	EMPTY_CONTACT_NAME_MESSAGE,
 	EmptyContactNameError,
 	getContact,
 	listContactNames,
@@ -120,6 +119,7 @@ const namesADay = (precision: string) => precision === 'full' || precision === '
 /** First page of the story timeline; older items stream in via the story endpoint. */
 const STORY_PAGE = 12;
 import type { Actions, PageServerLoad } from './$types';
+import { say, translator } from '$lib/server/i18n/say';
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
 	if (!locals.user) throw redirect(302, '/login');
@@ -128,7 +128,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	const contact = await getContact(getContactDeps(), viewer, params.id);
 	if (!contact) {
 		// 404 for both "missing" and "not visible to you" — never reveal existence.
-		throw error(404, 'Contact not found');
+		throw error(404, say(locals, 'errors.contact.notFound'));
 	}
 
 	const [
@@ -362,16 +362,17 @@ export const actions: Actions = {
 			displayName: form.get('displayName'),
 			description: form.get('description') || undefined
 		});
-		if (!parsed.success) return fail(400, { profileError: EMPTY_CONTACT_NAME_MESSAGE });
+		if (!parsed.success) return fail(400, { profileError: say(locals, 'errors.contact.emptyName') });
 
 		try {
 			const saved = await editProfile(getContactDeps(), viewer, params.id, {
 				displayName: parsed.output.displayName,
 				description: parsed.output.description ?? null
 			});
-			if (!saved) throw error(404, 'Contact not found');
+			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
 		} catch (err) {
-			if (err instanceof EmptyContactNameError) return fail(400, { profileError: err.message });
+			if (err instanceof EmptyContactNameError)
+				return fail(400, { profileError: err.phrase(translator(locals)) });
 			throw err;
 		}
 
@@ -389,10 +390,10 @@ export const actions: Actions = {
 			v.object({ mergedId: v.pipe(v.string(), v.minLength(1)) }),
 			Object.fromEntries(await request.formData())
 		);
-		if (!parsed.success) return fail(400, { mergeError: 'Choose who to merge in.' });
+		if (!parsed.success) return fail(400, { mergeError: say(locals, 'errors.merge.choose') });
 
 		const merged = await mergeContacts(getContactDeps(), viewer, params.id, parsed.output.mergedId);
-		if (!merged) return fail(400, { mergeError: 'That person could not be merged in.' });
+		if (!merged) return fail(400, { mergeError: say(locals, 'errors.merge.failed') });
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
@@ -406,7 +407,7 @@ export const actions: Actions = {
 		const user = requireAdmin(locals);
 		const viewer = { id: user.id, householdId: user.householdId };
 		const done = await deleteContact(getDeleteContactDeps(), viewer, params.id);
-		if (!done) throw error(404, 'Contact not found');
+		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		throw redirect(303, '/contacts');
 	},
 
@@ -419,7 +420,7 @@ export const actions: Actions = {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		const done = await archiveContact(getContactDeps(), viewer, params.id);
-		if (!done) throw error(404, 'Contact not found');
+		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
@@ -427,7 +428,7 @@ export const actions: Actions = {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		const done = await restoreContact(getContactDeps(), viewer, params.id);
-		if (!done) throw error(404, 'Contact not found');
+		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
@@ -444,7 +445,7 @@ export const actions: Actions = {
 			status: form.get('status') || undefined
 		});
 		if (!parsed.success) {
-			return fail(400, { error: 'Please choose a person and a relationship type.' });
+			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
 
 		// Both endpoints must be visible to the viewer.
@@ -453,7 +454,7 @@ export const actions: Actions = {
 			getContact(getContactDeps(), viewer, parsed.output.targetId)
 		]);
 		if (!self || !target) {
-			return fail(400, { error: 'That person could not be found.' });
+			return fail(400, { error: say(locals, 'errors.person.notFound') });
 		}
 
 		try {
@@ -467,12 +468,12 @@ export const actions: Actions = {
 			});
 		} catch (err) {
 			if (err instanceof DuplicateRelationshipError) {
-				return fail(409, { error: 'That relationship already exists.' });
+				return fail(409, { error: say(locals, 'errors.relationship.duplicate') });
 			}
 			if (err instanceof InvalidRelationshipDetailsError) {
-				return fail(400, { error: err.message });
+				return fail(400, { error: err.phrase(translator(locals)) });
 			}
-			return fail(400, { error: 'Could not add the relationship.' });
+			return fail(400, { error: say(locals, 'errors.relationship.couldNotAdd') });
 		}
 
 		// Come back with the new pair named, so its implied links can be offered.
@@ -492,7 +493,7 @@ export const actions: Actions = {
 			sinceDate: form.get('sinceDate') || undefined,
 			status: form.get('status') || undefined
 		});
-		if (!parsed.success) return fail(400, { error: 'Could not save the relationship.' });
+		if (!parsed.success) return fail(400, { error: say(locals, 'errors.relationship.couldNotSave') });
 
 		try {
 			const saved = await editRelationshipDetails(
@@ -501,10 +502,10 @@ export const actions: Actions = {
 				parsed.output.relationshipId,
 				parsed.output
 			);
-			if (!saved) return fail(404, { error: 'That relationship could not be found.' });
+			if (!saved) return fail(404, { error: say(locals, 'errors.relationship.notFound') });
 		} catch (err) {
 			if (err instanceof InvalidRelationshipDetailsError) {
-				return fail(400, { error: err.message });
+				return fail(400, { error: err.phrase(translator(locals)) });
 			}
 			throw err;
 		}
@@ -522,7 +523,7 @@ export const actions: Actions = {
 		if (typeof relationshipId !== 'string') return fail(400, {});
 
 		if (!(await removeRelationship(getRelationshipDeps(), viewer, relationshipId))) {
-			return fail(404, { error: 'That relationship could not be found.' });
+			return fail(404, { error: say(locals, 'errors.relationship.notFound') });
 		}
 		throw redirect(303, `/contacts/${params.id}?tab=people`);
 	},
@@ -542,13 +543,13 @@ export const actions: Actions = {
 			typeId: form.get('typeId'),
 			propose: form.get('propose') || undefined
 		});
-		if (!parsed.success) return fail(400, { error: 'That suggestion could not be read.' });
+		if (!parsed.success) return fail(400, { error: say(locals, 'errors.relationship.badSuggestion') });
 
 		const [from, to] = await Promise.all([
 			getContact(getContactDeps(), viewer, parsed.output.fromId),
 			getContact(getContactDeps(), viewer, parsed.output.toId)
 		]);
-		if (!from || !to) return fail(400, { error: 'That person could not be found.' });
+		if (!from || !to) return fail(400, { error: say(locals, 'errors.person.notFound') });
 
 		try {
 			await createRelationship(getRelationshipDeps(), viewer, {
@@ -559,7 +560,7 @@ export const actions: Actions = {
 			});
 		} catch (err) {
 			if (!(err instanceof DuplicateRelationshipError)) {
-				return fail(400, { error: 'Could not add the relationship.' });
+				return fail(400, { error: say(locals, 'errors.relationship.couldNotAdd') });
 			}
 		}
 
@@ -578,12 +579,12 @@ export const actions: Actions = {
 			isPinned: form.get('isPinned') === 'on'
 		});
 		if (!parsed.success) {
-			return fail(400, { noteError: 'Please write something before saving.' });
+			return fail(400, { noteError: say(locals, 'errors.note.empty') });
 		}
 
 		// The contact must be visible to add a note to it.
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const creator = {
 			userId: locals.user.id,
@@ -606,7 +607,7 @@ export const actions: Actions = {
 				isPinned: parsed.output.isPinned
 			});
 		} catch {
-			return fail(400, { noteError: 'Could not save the note.' });
+			return fail(400, { noteError: say(locals, 'errors.note.couldNotSave') });
 		}
 
 		// Persist the reverse links, dropping a reference to the person whose note this is:
@@ -627,11 +628,11 @@ export const actions: Actions = {
 			value: form.get('value')
 		});
 		if (!parsed.success) {
-			return fail(400, { fieldError: 'Please choose a type and enter a value.' });
+			return fail(400, { fieldError: say(locals, 'errors.field.needKindAndValue') });
 		}
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		try {
 			await addContactField(getContactFieldDeps(), {
@@ -641,7 +642,7 @@ export const actions: Actions = {
 				value: parsed.output.value
 			});
 		} catch {
-			return fail(400, { fieldError: 'Could not add the field.' });
+			return fail(400, { fieldError: say(locals, 'errors.field.couldNotAdd') });
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);
@@ -663,11 +664,11 @@ export const actions: Actions = {
 			remind: form.get('remind') !== null
 		});
 		if (!parsed.success) {
-			return fail(400, { dateError: 'Please choose a kind and a day.' });
+			return fail(400, { dateError: say(locals, 'errors.date.needKindAndDay') });
 		}
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		try {
 			await addImportantDate(getImportantDateDeps(), {
@@ -681,7 +682,7 @@ export const actions: Actions = {
 		} catch (err) {
 			return fail(400, {
 				dateError:
-					err instanceof InvalidImportantDateError ? err.message : 'Could not add the date.'
+					err instanceof InvalidImportantDateError ? err.phrase(translator(locals)) : say(locals, 'errors.date.couldNotAdd')
 			});
 		}
 
@@ -702,17 +703,17 @@ export const actions: Actions = {
 			participantIds: form.getAll('participants').filter((p) => typeof p === 'string')
 		});
 		if (!parsed.success) {
-			return fail(400, { interactionError: 'Please choose what happened and on which day.' });
+			return fail(400, { interactionError: say(locals, 'errors.interaction.needKindAndDay') });
 		}
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		// A participant must be someone the viewer may see; an unknown id is refused rather
 		// than stored, so nothing outside the viewer's view ever gets attached.
 		const visibleIds = new Set((await listContacts(getContactDeps(), viewer)).map((c) => c.id));
 		if (!parsed.output.participantIds.every((id) => visibleIds.has(id))) {
-			return fail(400, { interactionError: 'One of the participants could not be found.' });
+			return fail(400, { interactionError: say(locals, 'errors.interaction.participantNotFound') });
 		}
 
 		const author = {
@@ -733,7 +734,7 @@ export const actions: Actions = {
 		} catch (err) {
 			return fail(400, {
 				interactionError:
-					err instanceof InvalidInteractionError ? err.message : 'Could not log the interaction.'
+					err instanceof InvalidInteractionError ? err.phrase(translator(locals)) : say(locals, 'errors.interaction.couldNotLog')
 			});
 		}
 
@@ -749,11 +750,11 @@ export const actions: Actions = {
 		if (typeof interactionId !== 'string') return fail(400, {});
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const author = { userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: 'shared' as const };
 		const removed = await deleteInteraction(getInteractionDeps(), author, interactionId);
-		if (!removed) return fail(403, { interactionError: 'Only the person who logged it can remove it.' });
+		if (!removed) return fail(403, { interactionError: say(locals, 'errors.interaction.onlyLogger') });
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
@@ -770,7 +771,7 @@ export const actions: Actions = {
 		if (typeof id !== 'string') return fail(400, {});
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const author = {
 			userId: locals.user.id,
@@ -778,7 +779,7 @@ export const actions: Actions = {
 			defaultVisibility: 'shared' as const
 		};
 		const removed = await deleteJournalEntry(getJournalDeps(), author, id);
-		if (!removed) return fail(403, { interactionError: 'Only the person who wrote it can remove it.' });
+		if (!removed) return fail(403, { interactionError: say(locals, 'errors.journal.onlyAuthor') });
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
@@ -791,7 +792,7 @@ export const actions: Actions = {
 		if (typeof dateId !== 'string') return fail(400, {});
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		await getImportantDates().remove(params.id, dateId);
 		throw redirect(303, `/contacts/${params.id}`);
@@ -806,7 +807,7 @@ export const actions: Actions = {
 		if (typeof fieldId !== 'string') return fail(400, {});
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		await getContactFields().remove(params.id, fieldId);
 		throw redirect(303, `/contacts/${params.id}`);
@@ -821,10 +822,10 @@ export const actions: Actions = {
 			name: form.get('name'),
 			color: form.get('color') || undefined
 		});
-		if (!parsed.success) return fail(400, { tagError: 'Please enter a tag name.' });
+		if (!parsed.success) return fail(400, { tagError: say(locals, 'errors.tag.needName') });
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		try {
 			await assignTagByName(
@@ -835,7 +836,7 @@ export const actions: Actions = {
 				parsed.output.color
 			);
 		} catch {
-			return fail(400, { tagError: 'Could not add the tag.' });
+			return fail(400, { tagError: say(locals, 'errors.tag.couldNotAdd') });
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);
@@ -850,7 +851,7 @@ export const actions: Actions = {
 		if (typeof tagId !== 'string') return fail(400, {});
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		await unassignTag(getTagDeps(), params.id, tagId);
 		throw redirect(303, `/contacts/${params.id}`);
@@ -861,7 +862,7 @@ export const actions: Actions = {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const form = await request.formData();
 		const images = form.getAll('image').filter((f): f is File => f instanceof File);
@@ -869,7 +870,7 @@ export const actions: Actions = {
 		const widths = form.getAll('width');
 		const heights = form.getAll('height');
 		if (images.length === 0 || images.length !== thumbs.length) {
-			return fail(400, { photoError: 'Please choose at least one image.' });
+			return fail(400, { photoError: say(locals, 'errors.image.chooseSome') });
 		}
 		const visibility = v.parse(VisibilitySchema, form.get('visibility') || undefined);
 
@@ -892,7 +893,7 @@ export const actions: Actions = {
 			}
 		} catch (err) {
 			return fail(400, {
-				photoError: err instanceof InvalidImageError ? err.message : 'Could not store the photo.'
+				photoError: err instanceof InvalidImageError ? err.phrase(translator(locals)) : say(locals, 'errors.image.couldNotStore')
 			});
 		}
 		throw redirect(303, `/contacts/${params.id}?tab=photos`);
@@ -906,14 +907,14 @@ export const actions: Actions = {
 		const photoId = form.get('photoId');
 		const caption = form.get('caption');
 		if (typeof photoId !== 'string' || typeof caption !== 'string') {
-			return fail(400, { photoError: 'Could not read that caption.' });
+			return fail(400, { photoError: say(locals, 'errors.caption.unreadable') });
 		}
 		try {
 			if (!(await captionGalleryPhoto(getGalleryDeps(), viewer, photoId, caption))) {
-				return fail(403, { photoError: 'Only the person who added a photo can caption it.' });
+				return fail(403, { photoError: say(locals, 'errors.photo.onlyOwnerCaption') });
 			}
 		} catch (err) {
-			if (err instanceof CaptionTooLongError) return fail(400, { photoError: err.message });
+			if (err instanceof CaptionTooLongError) return fail(400, { photoError: err.phrase(translator(locals)) });
 			throw err;
 		}
 		throw redirect(303, `/contacts/${params.id}?tab=photos`);
@@ -928,7 +929,7 @@ export const actions: Actions = {
 			photoId: form.get('photoId'),
 			visibility: form.get('visibility')
 		});
-		if (!parsed.success) return fail(400, { photoError: 'Could not read that photo.' });
+		if (!parsed.success) return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
 		if (
 			!(await setGalleryPhotoVisibility(
 				getGalleryDeps(),
@@ -937,7 +938,7 @@ export const actions: Actions = {
 				parsed.output.visibility
 			))
 		) {
-			return fail(403, { photoError: 'Only the person who added a photo can change it.' });
+			return fail(403, { photoError: say(locals, 'errors.photo.onlyOwnerChange') });
 		}
 		throw redirect(303, `/contacts/${params.id}?tab=photos`);
 	},
@@ -948,9 +949,9 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		const form = await request.formData();
 		const photoId = form.get('photoId');
-		if (typeof photoId !== 'string') return fail(400, { photoError: 'Could not read that photo.' });
+		if (typeof photoId !== 'string') return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
 		if (!(await useAsAvatar(getGalleryDeps(), viewer, params.id, photoId))) {
-			return fail(404, { photoError: 'That photo could not be found.' });
+			return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
 		}
 		throw redirect(303, `/contacts/${params.id}?tab=photos`);
 	},
@@ -961,9 +962,9 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		const form = await request.formData();
 		const photoId = form.get('photoId');
-		if (typeof photoId !== 'string') return fail(400, { photoError: 'Could not read that photo.' });
+		if (typeof photoId !== 'string') return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
 		if (!(await removeGalleryPhoto(getGalleryDeps(), viewer, photoId))) {
-			return fail(403, { photoError: 'Only the person who added a photo can remove it.' });
+			return fail(403, { photoError: say(locals, 'errors.photo.onlyOwnerRemove') });
 		}
 		throw redirect(303, `/contacts/${params.id}?tab=photos`);
 	},
@@ -973,13 +974,13 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const form = await request.formData();
 		const image = form.get('image');
 		const thumb = form.get('thumb');
 		if (!(image instanceof File) || !(thumb instanceof File)) {
-			return fail(400, { avatarError: 'Please choose an image.' });
+			return fail(400, { avatarError: say(locals, 'errors.image.chooseOne') });
 		}
 
 		const upload = {
@@ -997,8 +998,8 @@ export const actions: Actions = {
 				upload
 			);
 		} catch (err) {
-			if (err instanceof InvalidAvatarError) return fail(400, { avatarError: err.message });
-			return fail(400, { avatarError: 'Could not save the photo.' });
+			if (err instanceof InvalidAvatarError) return fail(400, { avatarError: err.phrase(translator(locals)) });
+			return fail(400, { avatarError: say(locals, 'errors.image.couldNotSave') });
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);
@@ -1009,12 +1010,12 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const form = await request.formData();
 		const name = form.get('circleName');
 		if (typeof name !== 'string' || name.trim() === '') {
-			return fail(400, { circleError: 'Please enter a circle name.' });
+			return fail(400, { circleError: say(locals, 'errors.circle.needName') });
 		}
 
 		try {
@@ -1026,7 +1027,7 @@ export const actions: Actions = {
 				typeof form.get('role') === 'string' ? String(form.get('role')) : undefined
 			);
 		} catch {
-			return fail(400, { circleError: 'Could not add the circle.' });
+			return fail(400, { circleError: say(locals, 'errors.circle.couldNotAdd') });
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);
@@ -1037,7 +1038,7 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const form = await request.formData();
 		const circleId = form.get('circleId');

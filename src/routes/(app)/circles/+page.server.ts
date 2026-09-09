@@ -9,6 +9,7 @@ import {
 } from '$lib/server/domain/circles/circles';
 import { getCircleDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
+import { say } from '$lib/server/i18n/say';
 
 /*
  * Circles overview (docs/02 §2.4.2, docs/05 §5.5): all visible circles with member counts,
@@ -47,7 +48,7 @@ export const actions: Actions = {
 			color: form.get('color') || undefined,
 			description: form.get('description') || undefined
 		});
-		if (!parsed.success) return fail(400, { error: 'Please name the circle.' });
+		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.needCircleName') });
 
 		const id = await createCircle(
 			getCircleDeps(),

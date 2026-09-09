@@ -1,3 +1,4 @@
+import { phrase } from '../../../../i18n/phrase';
 import type { ImportSource } from '../source';
 import { SqlDumpError, type SqlDump, type SqlRow, type SqlValue } from './sql-dump';
 
@@ -207,7 +208,7 @@ const num = (v: SqlValue | undefined): number | null =>
 const bool = (v: SqlValue | undefined): boolean => Number(v) === 1;
 const need = (row: SqlRow, col: string, table: string): SqlValue => {
 	const v = row[col];
-	if (v === undefined) throw new SqlDumpError(`Table ${table} has no column ${col}.`);
+	if (v === undefined) throw new SqlDumpError(phrase('import.error.noSuchColumn', { table, column: col }));
 	return v;
 };
 const dayOf = (v: SqlValue | undefined): string | null => {
@@ -224,7 +225,7 @@ function optional(dump: SqlDump, table: string): SqlRow[] {
 export function readMonicaExport(dump: SqlDump): SourceExport {
 	for (const t of ['contacts', 'relationships', 'relationship_types']) {
 		if (!dump.hasTable(t)) {
-			throw new SqlDumpError(`This dump has no ${t} table — is it really a Monica database?`);
+			throw new SqlDumpError(phrase('import.error.notMonicaDump', { table: t }));
 		}
 	}
 

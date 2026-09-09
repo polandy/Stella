@@ -775,7 +775,7 @@ included) it is the very first thing they will do.
 
 ## 2.17 Settings **[M1/M2]**
 
-- **Account:** profile, password, theme, default visibility, sessions/2FA.
+- **Account:** profile, password, **language** (§2.19), theme, default visibility, sessions/2FA.
 - **Household** (admin): name, members & roles, invitations, relationship types, tags.
 - **Data** (admin): export, import, backup.
 - **Appearance:** theme (system/light/dark), accent color choice from Catppuccin set,
@@ -788,12 +788,28 @@ included) it is the very first thing they will do.
   offline messaging. Full offline write/sync is **out of scope** for v1.
 - "Add to Home Screen" prompts handled tastefully.
 
-## 2.19 Accessibility & i18n **[M1 baseline]**
+## 2.19 Accessibility & i18n
 
 - Keyboard navigable, focus-visible, ARIA where needed, WCAG **AA** contrast in both
   themes, `prefers-reduced-motion` respected.
-- Copy is externalized to enable localization later; **English** ships first, with the
-  structure ready for **German** **[M3]**.
+- **English and German are both fully supported.** Every string a person reads — screens,
+  form errors, domain refusals, the import and archive reports — comes from a typed message
+  catalogue (`src/lib/i18n/messages/{en,de}`), one module per area, with the German module
+  typed against the English one so neither can drift.
+- **Choosing the language.** A picker in **Settings → Language** and on the sign-in screen;
+  it is a plain form post to `/locale`, so it works without JavaScript. The choice is stored
+  on the profile (`user.locale_pref`) and mirrored into a year-long cookie.
+- **Which language a request gets.** The signed-in profile wins; failing that the cookie
+  (the same choice, made before signing in); failing that the browser's `Accept-Language`;
+  failing that English. Settled once per request in `hooks.server.ts` and carried on
+  `locals.locale`, which also fills `<html lang>`.
+- **Dates and numbers** follow the language through `Intl` (`en-GB` / `de-DE`), and wording
+  that declines — "3 months" vs "vor 3 Monaten" — has its own messages rather than being
+  glued together.
+- **What is not translated:** what the household wrote (names, notes, journal entries, its
+  own relationship types and circle names). The built-in relationship vocabulary *is*
+  translated, because Stella owns it. Text the importer writes into the data — a gift note's
+  title, a restore's log entry — is written in the language of the member who ran it.
 
 ## 2.20 Personal journal (per-person diary) **[M2]**
 

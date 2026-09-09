@@ -2,18 +2,21 @@
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import GraphExplorer from '$lib/components/graph/GraphExplorer.svelte';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+
+	const t = useTranslate();
 </script>
 
 <svelte:head>
-	<title>Graph · Stella</title>
+	<title>{t('graph.title')}</title>
 </svelte:head>
 
 <div class="flex h-full flex-col">
 	<p class="hidden border-b border-border px-6 py-3 text-sm text-fg-subtle sm:block">
-		Click to focus · click again to expand · trace a connection path
+		{t('graph.hint')}
 	</p>
 
 	<div class="relative flex-1">
@@ -24,8 +27,8 @@
 		{:else}
 			<div class="grid h-full place-items-center p-6">
 				<div class="w-full max-w-sm">
-					<EmptyState icon="graph" title="Nothing to explore yet" hint="The map draws itself from people and how they are connected. Add someone to begin.">
-						<Button variant="primary" icon="add" href="/contacts/new">Add person</Button>
+					<EmptyState icon="graph" title={t('graph.empty.title')} hint={t('graph.empty.hint')}>
+						<Button variant="primary" icon="add" href="/contacts/new">{t('nav.addPerson')}</Button>
 					</EmptyState>
 				</div>
 			</div>

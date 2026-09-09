@@ -5,7 +5,9 @@
 	import RemoveButton from '$lib/components/RemoveButton.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { categoryVar } from '$lib/design/tokens';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { RELATIONSHIP_CATEGORIES } from '$lib/relationships/categories';
+	import { relationshipCategoryLabel, relationshipTypeLabel } from '$lib/relationships/labels';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
@@ -18,6 +20,8 @@
 	 */
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
+	const t = useTranslate();
+
 	/** One class for every text input on the page, so they cannot drift apart. */
 	const INPUT =
 		'rounded-control border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
@@ -28,11 +32,11 @@
 	let addSymmetric = $state(true);
 
 	const removals = useRemovals();
-	const savedAdd = savedEnhance(removals, () => {
+	const savedAdd = savedEnhance(removals, t('components.saved'), () => {
 		addOpen = false;
 		addSymmetric = true;
 	});
-	const savedEdit = savedEnhance(removals, () => (editing = null));
+	const savedEdit = savedEnhance(removals, t('components.saved'), () => (editing = null));
 
 	const visibleCustom = $derived(
 		data.custom.filter((type) => !removals.isPending(removalKey('relationship-type', type.id)))
@@ -42,19 +46,16 @@
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header class="flex flex-col gap-1">
 		<a href="/settings" class="flex items-center gap-1 text-sm text-link hover:underline">
-			<Icon name="forward" size={12} />Settings
+			<Icon name="forward" size={12} />{t('nav.settings')}
 		</a>
-		<h1 class="text-2xl font-semibold text-fg">Relationship types</h1>
-		<p class="text-fg-muted">
-			The kinds of link your household can record. Add your own where the built-in ones do not
-			say it — godparent, choir mate, landlord.
-		</p>
+		<h1 class="text-2xl font-semibold text-fg">{t('relationshipTypes.title')}</h1>
+		<p class="text-fg-muted">{t('relationshipTypes.intro')}</p>
 	</header>
 
 	<Section
-		title="Your own"
+		title={t('relationshipTypes.own')}
 		count={visibleCustom.length}
-		addLabel="Add type"
+		addLabel={t('relationshipTypes.addType')}
 		error={form?.error ?? null}
 		bind:open={addOpen}
 	>
@@ -69,9 +70,13 @@
 							></span>
 							<span class="font-medium text-fg">{type.forwardLabel}</span>
 							{#if !type.symmetric}
-								<span class="text-fg-subtle">· from the other side: {type.reverseLabel}</span>
+								<span class="text-fg-subtle">
+									· {t('relationshipTypes.otherSide', { label: type.reverseLabel })}
+								</span>
 							{/if}
-							<span class="shrink-0 text-fg-subtle">· {type.category}</span>
+							<span class="shrink-0 text-fg-subtle">
+								· {relationshipCategoryLabel(t, type.category)}
+							</span>
 							<div class="ml-auto flex shrink-0 items-center gap-1">
 								<Button
 									type="button"
@@ -80,7 +85,7 @@
 									aria-expanded={editing === type.id}
 									onclick={() => (editing = editing === type.id ? null : type.id)}
 								>
-									{editing === type.id ? 'Cancel' : 'Edit'}
+									{editing === type.id ? t('common.cancel') : t('common.edit')}
 								</Button>
 								{#if type.usageCount === 0}
 									<RemoveButton
@@ -88,12 +93,12 @@
 										id={type.id}
 										action="?/remove"
 										fields={{ typeId: type.id }}
-										label="Remove the type {type.forwardLabel}"
-										removed="Relationship type removed"
+										label={t('relationshipTypes.remove', { label: type.forwardLabel })}
+										removed={t('relationshipTypes.removed')}
 									/>
 								{:else}
 									<span class="text-xs text-fg-subtle">
-										used {type.usageCount}×
+										{t('relationshipTypes.used', { count: type.usageCount })}
 									</span>
 								{/if}
 							</div>
@@ -111,15 +116,15 @@
 								<input type="hidden" name="typeId" value={type.id} />
 								<div class="flex flex-wrap items-end gap-2">
 									<label class="flex flex-1 flex-col gap-1">
-										<span class="text-xs text-fg-muted">Label</span>
+										<span class="text-xs text-fg-muted">{t('relationshipTypes.label')}</span>
 										<input name="forwardLabel" value={type.forwardLabel} class={INPUT} required />
 									</label>
 									<label class="flex flex-col gap-1">
-										<span class="text-xs text-fg-muted">Category</span>
+										<span class="text-xs text-fg-muted">{t('relationshipTypes.category')}</span>
 										<select name="category" class={INPUT}>
 											{#each RELATIONSHIP_CATEGORIES as category (category)}
 												<option value={category} selected={category === type.category}>
-													{category}
+													{relationshipCategoryLabel(t, category)}
 												</option>
 											{/each}
 										</select>
@@ -127,7 +132,7 @@
 								</div>
 								{#if !type.symmetric}
 									<label class="flex flex-col gap-1">
-										<span class="text-xs text-fg-muted">From the other side</span>
+										<span class="text-xs text-fg-muted">{t('relationshipTypes.fromOtherSide')}</span>
 										<input name="reverseLabel" value={type.reverseLabel} class={INPUT} required />
 									</label>
 								{/if}
@@ -136,7 +141,7 @@
 									<input type="hidden" name="symmetric" value="on" />
 								{/if}
 								<div>
-									<Button variant="primary" size="sm">Save</Button>
+									<Button variant="primary" size="sm">{t('common.save')}</Button>
 								</div>
 							</form>
 						{/if}
@@ -144,7 +149,7 @@
 				{/each}
 			</ul>
 		{:else}
-			<p class="text-sm text-fg-subtle">No types of your own yet.</p>
+			<p class="text-sm text-fg-subtle">{t('relationshipTypes.none')}</p>
 		{/if}
 
 		{#snippet editor()}
@@ -156,19 +161,21 @@
 			>
 				<div class="flex flex-wrap items-end gap-2">
 					<label class="flex flex-1 flex-col gap-1">
-						<span class="text-xs text-fg-muted">Label</span>
+						<span class="text-xs text-fg-muted">{t('relationshipTypes.label')}</span>
 						<input
 							name="forwardLabel"
-							placeholder="Godparent of"
+							placeholder={t('relationshipTypes.labelPlaceholder')}
 							class={INPUT}
 							required
 						/>
 					</label>
 					<label class="flex flex-col gap-1">
-						<span class="text-xs text-fg-muted">Category</span>
+						<span class="text-xs text-fg-muted">{t('relationshipTypes.category')}</span>
 						<select name="category" class={INPUT}>
 							{#each RELATIONSHIP_CATEGORIES as category (category)}
-								<option value={category} selected={category === 'social'}>{category}</option>
+								<option value={category} selected={category === 'social'}>
+									{relationshipCategoryLabel(t, category)}
+								</option>
 							{/each}
 						</select>
 					</label>
@@ -176,29 +183,31 @@
 
 				<label class="flex items-center gap-2 text-sm text-fg-muted">
 					<input type="checkbox" name="symmetric" bind:checked={addSymmetric} />
-					Reads the same from both sides
+					{t('relationshipTypes.symmetric')}
 				</label>
 
 				{#if !addSymmetric}
 					<label class="flex flex-col gap-1">
-						<span class="text-xs text-fg-muted">From the other side</span>
-						<input name="reverseLabel" placeholder="Godchild of" class={INPUT} required />
+						<span class="text-xs text-fg-muted">{t('relationshipTypes.fromOtherSide')}</span>
+						<input
+							name="reverseLabel"
+							placeholder={t('relationshipTypes.reversePlaceholder')}
+							class={INPUT}
+							required
+						/>
 					</label>
 				{/if}
 
 				<div>
-					<Button variant="primary" size="sm">Add</Button>
+					<Button variant="primary" size="sm">{t('common.add')}</Button>
 				</div>
 			</form>
 		{/snippet}
 	</Section>
 
 	<section class="flex flex-col gap-3">
-		<h2 class="text-sm font-medium text-fg-muted">Built in</h2>
-		<p class="text-sm text-fg-subtle">
-			These come with Stella and are the same everywhere, so the family kinship Stella works
-			out — grandparents, cousins, in-laws — keeps meaning the same thing.
-		</p>
+		<h2 class="text-sm font-medium text-fg-muted">{t('relationshipTypes.builtIn')}</h2>
+		<p class="text-sm text-fg-subtle">{t('relationshipTypes.builtInHint')}</p>
 		<ul
 			data-testid="built-in-types"
 			class="flex flex-col divide-y divide-border-subtle rounded-app bg-card px-4 shadow-card"
@@ -209,11 +218,17 @@
 						class="size-2 shrink-0 rounded-full"
 						style="background:{categoryVar(type.category)}"
 					></span>
-					<span class="text-fg">{type.forwardLabel}</span>
+					<span class="text-fg">{relationshipTypeLabel(t, type)}</span>
 					{#if !type.symmetric}
-						<span class="text-fg-subtle">· from the other side: {type.reverseLabel}</span>
+						<span class="text-fg-subtle">
+							· {t('relationshipTypes.otherSide', {
+								label: relationshipTypeLabel(t, type, 'reverse')
+							})}
+						</span>
 					{/if}
-					<span class="ml-auto shrink-0 text-fg-subtle">{type.category}</span>
+					<span class="ml-auto shrink-0 text-fg-subtle">
+						{relationshipCategoryLabel(t, type.category)}
+					</span>
 				</li>
 			{/each}
 		</ul>

@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../errors/translatable';
+import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { IdGenerator } from '../../id';
 import type { Viewer } from '../../access/visibility';
 import {
@@ -53,23 +55,23 @@ export interface RelationshipTypeFields {
 }
 
 /** A relationship type could not be accepted as entered; the message names what is wrong. */
-export class InvalidRelationshipTypeError extends Error {}
+export class InvalidRelationshipTypeError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'InvalidRelationshipTypeError');
+	}
+}
 
 /** The built-in types are part of the app, not of a household's data. */
-export class BuiltInRelationshipTypeError extends Error {
+export class BuiltInRelationshipTypeError extends TranslatableError {
 	constructor() {
-		super('The built-in relationship types cannot be changed or removed.');
+		super(phrase('errors.relationshipType.builtIn'), 'BuiltInRelationshipTypeError');
 	}
 }
 
 /** Relationships still point at this type, so it cannot be removed or reshaped. */
-export class RelationshipTypeInUseError extends Error {
+export class RelationshipTypeInUseError extends TranslatableError {
 	constructor(readonly count: number) {
-		super(
-			`${count} relationship${count === 1 ? '' : 's'} still use this type. Change ${
-				count === 1 ? 'it' : 'them'
-			} first.`
-		);
+		super(phrase('errors.relationshipType.inUse', { count }), 'RelationshipTypeInUseError');
 	}
 }
 
@@ -84,20 +86,20 @@ export function parseRelationshipTypeFields(input: RelationshipTypeInput): Relat
 	const forwardLabel = input.forwardLabel.trim();
 	const reverseLabel = input.symmetric ? forwardLabel : input.reverseLabel.trim();
 	if (!forwardLabel) {
-		throw new InvalidRelationshipTypeError('A relationship type needs a label.');
+		throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.needsLabel'));
 	}
 	if (!reverseLabel) {
-		throw new InvalidRelationshipTypeError(
-			'A type that reads differently from each side needs both labels.'
-		);
+		throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.needsBothLabels'));
 	}
 	if (forwardLabel.length > MAX_LABEL_LENGTH || reverseLabel.length > MAX_LABEL_LENGTH) {
 		throw new InvalidRelationshipTypeError(
-			`A label is at most ${MAX_LABEL_LENGTH} characters.`
+			phrase('errors.relationshipType.labelTooLong', { max: MAX_LABEL_LENGTH })
 		);
 	}
 	if (!isCategory(input.category)) {
-		throw new InvalidRelationshipTypeError(`${input.category} is not a relationship category.`);
+		throw new InvalidRelationshipTypeError(
+			phrase('errors.relationshipType.unknownCategory', { category: input.category })
+		);
 	}
 	return { forwardLabel, reverseLabel, category: input.category, symmetric: input.symmetric };
 }
@@ -130,7 +132,7 @@ export function claimTypeKey(
 	const key = slugOf(forwardLabel);
 	if (!key) {
 		throw new InvalidRelationshipTypeError(
-			`"${forwardLabel}" has no letters or digits to name it by.`
+			phrase('errors.relationshipType.unnameable', { label: forwardLabel })
 		);
 	}
 	const taken = existing.some(
@@ -140,7 +142,7 @@ export function claimTypeKey(
 	);
 	if (RESERVED_TYPE_KEYS.includes(key) || taken) {
 		throw new InvalidRelationshipTypeError(
-			`A relationship type named like "${forwardLabel}" already exists.`
+			phrase('errors.relationshipType.taken', { label: forwardLabel })
 		);
 	}
 	return key;

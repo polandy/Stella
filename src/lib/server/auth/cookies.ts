@@ -1,4 +1,5 @@
 import type { Cookies } from '@sveltejs/kit';
+import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, type Locale } from '$lib/i18n/locales';
 import { getConfig } from '$lib/server/config';
 
 /*
@@ -76,4 +77,20 @@ export function readOidcTransaction(cookies: Cookies): OidcTransaction | null {
 
 export function clearOidcTransaction(cookies: Cookies): void {
 	cookies.delete(OIDC_COOKIE, { path: '/' });
+}
+
+/*
+ * The language cookie (docs/02 §2.19). A signed-in user's profile is the real preference;
+ * this remembers the same choice for the pages seen before signing in — the login screen
+ * above all — and for the very first byte of a request, where `<html lang>` is decided.
+ */
+
+export function setLocaleCookie(cookies: Cookies, locale: Locale): void {
+	cookies.set(LOCALE_COOKIE, locale, {
+		path: '/',
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: cookieSecure(),
+		maxAge: LOCALE_COOKIE_MAX_AGE
+	});
 }

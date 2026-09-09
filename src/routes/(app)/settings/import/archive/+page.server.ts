@@ -9,6 +9,7 @@ import {
 } from '$lib/server/domain/archive/restore';
 import { getImportArchiveDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
+import { say, translator } from '$lib/server/i18n/say';
 
 /*
  * Restoring the household from an archive (docs/02 §2.15). Admin only, like the export: the
@@ -33,14 +34,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 /** The messages a bad file earns, kept apart from the ones that mean a bug. */
-function messageFor(error: unknown): string | null {
+function messageFor(error: unknown, locals: App.Locals): string | null {
 	if (
 		error instanceof TarFormatError ||
 		error instanceof ArchiveFormatError ||
 		error instanceof ArchiveVersionError ||
 		error instanceof ForeignHouseholdError
 	) {
-		return error.message;
+		return error.phrase(translator(locals));
 	}
 	return null;
 }
@@ -52,11 +53,13 @@ export const actions: Actions = {
 		const file = form.get('archive');
 
 		if (!(file instanceof File) || file.size === 0) {
-			return fail(400, { error: 'Please choose the .tar archive to restore.' });
+			return fail(400, { error: say(locals, 'archive.restore.chooseFile') });
 		}
 		if (file.size > ARCHIVE_MAX_BYTES) {
 			return fail(400, {
-				error: `That archive is larger than the ${Math.round(ARCHIVE_MAX_BYTES / (1024 * 1024))} MB this importer accepts.`
+				error: say(locals, 'archive.restore.tooLarge', {
+					megabytes: Math.round(ARCHIVE_MAX_BYTES / (1024 * 1024))
+				})
 			});
 		}
 
@@ -65,11 +68,18 @@ export const actions: Actions = {
 			const report = await importArchive(
 				getImportArchiveDeps(),
 				{ userId: user.id, householdId: user.householdId },
-				archive
+				archive,
+				{
+					restored: (people, household) =>
+						say(locals, 'archive.restoredSummary', {
+							people: say(locals, 'archive.peopleCount', { count: people }),
+							household
+						})
+				}
 			);
 			return { report };
 		} catch (error) {
-			const message = messageFor(error);
+			const message = messageFor(error, locals);
 			// Anything else is a bug or a broken database, and must not be dressed up as advice.
 			if (message === null) throw error;
 			return fail(400, { error: message });

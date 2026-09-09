@@ -1,3 +1,5 @@
+import { TranslatableError } from '$lib/errors/translatable';
+import { phrase, type Phrase } from '$lib/i18n/phrase';
 /*
  * A minimal ustar (POSIX tar) writer and reader for the household archive (docs/02 §2.15).
  *
@@ -110,10 +112,9 @@ export interface TarEntry {
 }
 
 /** Bytes that are not an archive this reader can take apart. */
-export class TarFormatError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'TarFormatError';
+export class TarFormatError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'TarFormatError');
 	}
 }
 
@@ -131,7 +132,7 @@ function readOctal(block: Uint8Array, offset: number, width: number): number {
 	const raw = readText(block, offset, width).trim();
 	const value = raw.length === 0 ? 0 : Number.parseInt(raw, 8);
 	if (!Number.isFinite(value) || value < 0) {
-		throw new TarFormatError('The archive has a header field that is not a number.');
+		throw new TarFormatError(phrase('archive.error.badHeaderField'));
 	}
 	return value;
 }
@@ -157,7 +158,7 @@ const DIRECTORY_TYPEFLAG = '5';
  * entries change the meaning of the entry after them, so skipping one corrupts a name silently.
  */
 export function readTar(archive: Uint8Array): TarEntry[] {
-	if (archive.length < TAR_BLOCK) throw new TarFormatError('This file is not an archive.');
+	if (archive.length < TAR_BLOCK) throw new TarFormatError(phrase('archive.error.notATar'));
 
 	const entries: TarEntry[] = [];
 	let at = 0;
@@ -167,7 +168,7 @@ export function readTar(archive: Uint8Array): TarEntry[] {
 		if (isZeroBlock(header)) break;
 
 		if (readOctal(header, CHECKSUM_OFFSET, CHECKSUM_WIDTH) !== checksumOf(header)) {
-			throw new TarFormatError('This file is not a Stella archive, or it was damaged in transit.');
+			throw new TarFormatError(phrase('archive.error.damaged'));
 		}
 
 		const name = readText(header, 0, NAME_WIDTH).replace(/^\.\//, '');
@@ -176,7 +177,7 @@ export function readTar(archive: Uint8Array): TarEntry[] {
 		at += TAR_BLOCK;
 
 		if (at + size > archive.length) {
-			throw new TarFormatError(`The archive ends in the middle of "${name}".`);
+			throw new TarFormatError(phrase('archive.error.truncated', { name }));
 		}
 
 		if (REGULAR_TYPEFLAGS.includes(typeflag)) {
@@ -184,9 +185,7 @@ export function readTar(archive: Uint8Array): TarEntry[] {
 			// not part of it.
 			entries.push({ name, bytes: archive.slice(at, at + size) });
 		} else if (typeflag !== DIRECTORY_TYPEFLAG) {
-			throw new TarFormatError(
-				`"${name}" is a kind of archive entry (type ${typeflag}) this reader does not accept.`
-			);
+			throw new TarFormatError(phrase('archive.error.unsupportedEntry', { name, typeflag }));
 		}
 
 		at += size + paddingFor(size);

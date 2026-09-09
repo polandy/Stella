@@ -4,6 +4,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { dayLabel } from '$lib/dates/labels';
+	import { useI18n } from '$lib/i18n/context.svelte';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { groupStoryByDay } from '$lib/story/grouping';
 	import type { StoryCursorView, StoryItemView, StoryPageView } from '$lib/story/item';
@@ -21,6 +22,9 @@
 		initial: StoryPageView;
 	}
 	let { contactId, initial }: Props = $props();
+
+	const i18n = useI18n();
+	const t = i18n.t;
 
 	// Seeded once per contact; the page wraps this in {#key contactId} so navigating to another
 	// person makes a fresh instance with fresh state.
@@ -70,7 +74,7 @@
 		const key = removalKey(item);
 		removals.remove({
 			key,
-			label: item.kind === 'journal' ? 'Entry removed' : 'Interaction removed',
+			label: item.kind === 'journal' ? t('story.entryRemoved') : t('story.interactionRemoved'),
 			commit: async () => {
 				await submitAction(fetch, removeAction(item), body);
 				items = items.filter((other) => removalKey(other) !== key);
@@ -83,17 +87,15 @@
 
 {#if items.length === 0}
 	<div class="rounded-app border border-dashed border-border px-6 py-10 text-center">
-		<p class="text-fg-muted">Nothing written down yet.</p>
-		<p class="mt-1 text-sm text-fg-subtle">
-			Log a call or a visit, or write what happened — it all lands here.
-		</p>
+		<p class="text-fg-muted">{t('story.empty.title')}</p>
+		<p class="mt-1 text-sm text-fg-subtle">{t('story.empty.hint')}</p>
 	</div>
 {:else}
 	<ol class="flex flex-col" data-testid="story-timeline">
 		{#each days as group (group.day)}
 			<li>
 				<div class="flex items-center gap-3 pb-2 pt-5 first:pt-0">
-					<h3 class="text-xs font-semibold text-fg-subtle">{dayLabel(group.day)}</h3>
+					<h3 class="text-xs font-semibold text-fg-subtle">{dayLabel(i18n, group.day)}</h3>
 					<span class="h-px flex-1 bg-border-subtle"></span>
 				</div>
 
@@ -109,20 +111,20 @@
 							<div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
 								{#if kind}
 									<span class="inline-flex items-center gap-1.5 font-semibold text-fg">
-										<span style="color:{kind.accent}"><Icon name={kind.icon} size={13} /></span>{kind.label}
+										<span style="color:{kind.accent}"><Icon name={kind.icon} size={13} /></span>{t(kind.label)}
 									</span>
 								{:else}
 									<span class="inline-flex items-center gap-1.5 font-semibold text-primary">
-										<Icon name="journal" size={13} />Journal
+										<Icon name="journal" size={13} />{t('story.journal')}
 									</span>
 								{/if}
 								{#if item.author}<span class="text-fg-subtle">· {item.author}</span>{/if}
 								{#if item.visibility === 'private'}
 									<span
 										class="inline-flex items-center gap-1 text-fg-subtle"
-										title="Only you can see this"
+										title={t('common.onlyYouSee')}
 									>
-										<Icon name="private" size={11} />private
+										<Icon name="private" size={11} />{t('common.privateInline')}
 									</span>
 								{/if}
 								{#if item.mine}
@@ -137,7 +139,9 @@
 											variant="danger"
 											size="sm"
 											icon="remove"
-											label={item.kind === 'journal' ? 'Remove entry' : 'Remove interaction'}
+											label={item.kind === 'journal'
+												? t('story.removeEntry')
+												: t('story.removeInteraction')}
 											class="opacity-0 transition-opacity group-hover/item:opacity-100 focus-visible:opacity-100"
 										/>
 									</form>
@@ -198,11 +202,11 @@
 	{#if !done}
 		<div class="mt-4 flex flex-col items-center gap-2">
 			<Button type="button" size="sm" onclick={loadOlder} disabled={loading}>
-				{loading ? 'Loading…' : 'Show earlier'}
+				{loading ? t('common.loading') : t('story.showEarlier')}
 			</Button>
 			{#if failed}
 				<p class="text-xs text-danger" role="status">
-					Could not load the earlier entries. Try again.
+					{t('story.loadFailed')}
 				</p>
 			{/if}
 		</div>

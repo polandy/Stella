@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { processAvatar } from '$lib/image/process-avatar';
 	import Avatar from './Avatar.svelte';
 
@@ -10,6 +11,8 @@
 		size?: number;
 	}
 	let { contactId, name, avatarPhotoId = null, size = 64 }: Props = $props();
+
+	const t = useTranslate();
 
 	let input: HTMLInputElement;
 	let busy = $state(false);
@@ -32,7 +35,7 @@
 			if (!res.ok) throw new Error();
 			await invalidateAll();
 		} catch {
-			error = 'Could not upload the photo. Try a JPEG or PNG image.';
+			error = t('components.photo.failed');
 		} finally {
 			busy = false;
 			if (input) input.value = '';
@@ -46,15 +49,15 @@
 		onclick={() => input.click()}
 		disabled={busy}
 		class="group relative rounded-full outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)]"
-		aria-label={avatarPhotoId ? 'Change photo' : 'Add a photo'}
-		title={avatarPhotoId ? 'Change photo' : 'Add a photo'}
+		aria-label={avatarPhotoId ? t('components.photo.change') : t('components.photo.add')}
+		title={avatarPhotoId ? t('components.photo.change') : t('components.photo.add')}
 	>
 		<Avatar id={contactId} {name} {avatarPhotoId} {size} />
 		<span
 			class="absolute inset-0 grid place-items-center rounded-full bg-black/45 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100"
 			class:opacity-100={busy}
 		>
-			{busy ? '…' : avatarPhotoId ? 'Change' : 'Add'}
+			{busy ? '…' : avatarPhotoId ? t('components.photo.changeShort') : t('components.photo.addShort')}
 		</span>
 	</button>
 	<input bind:this={input} onchange={onPick} type="file" accept="image/*" class="hidden" />

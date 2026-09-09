@@ -87,6 +87,8 @@ cp .env.example .env      # set SESSION_SECRET and STELLA_URL
 ./deploy.sh               # builds and starts it; open http://localhost:3000
 ```
 
+Or skip the build: every release is published to `ghcr.io/polandy/stella`.
+
 The [installation guide](docs/install.md) walks through it properly, including running it
 behind your own domain and signing in with your existing single sign-on.
 
@@ -113,6 +115,7 @@ The core loop is in place: add people, relate them, find them, and capture momen
 shared household stream — with important dates, interactions and a guided **import** of
 people, relationships, notes, activities, tags and photos from either Monica export, or of
 contacts from a vCard.
+Stella speaks **English and German**, chosen per family member and kept with their profile.
 A photo gallery is next. See the [roadmap](docs/06-roadmap.md).
 
 <div align="center">

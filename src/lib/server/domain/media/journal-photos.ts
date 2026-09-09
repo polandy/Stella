@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../errors/translatable';
+import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Visibility } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -21,10 +23,9 @@ const EXT: Record<ImageMime, string> = {
 	'image/webp': 'webp'
 };
 
-export class InvalidImageError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'InvalidImageError';
+export class InvalidImageError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'InvalidImageError');
 	}
 }
 
@@ -37,21 +38,21 @@ export interface ImageUpload {
 
 /** Validate a journal image upload and return its true (sniffed) mime; throws InvalidImageError. */
 export function validateImageUpload(upload: ImageUpload): ImageMime {
-	if (upload.image.byteLength === 0) throw new InvalidImageError('The image is empty.');
-	if (upload.image.byteLength > JOURNAL_IMAGE_MAX_BYTES) throw new InvalidImageError('The image is too large.');
-	if (upload.thumb.byteLength === 0) throw new InvalidImageError('The thumbnail is empty.');
-	if (upload.thumb.byteLength > JOURNAL_THUMB_MAX_BYTES) throw new InvalidImageError('The thumbnail is too large.');
+	if (upload.image.byteLength === 0) throw new InvalidImageError(phrase('errors.image.empty'));
+	if (upload.image.byteLength > JOURNAL_IMAGE_MAX_BYTES) throw new InvalidImageError(phrase('errors.image.tooLarge'));
+	if (upload.thumb.byteLength === 0) throw new InvalidImageError(phrase('errors.image.thumbEmpty'));
+	if (upload.thumb.byteLength > JOURNAL_THUMB_MAX_BYTES) throw new InvalidImageError(phrase('errors.image.thumbTooLarge'));
 
 	const mime = sniffImageMime(upload.image);
-	if (!mime) throw new InvalidImageError('Unsupported image format.');
-	if (sniffImageMime(upload.thumb) !== mime) throw new InvalidImageError('Thumbnail format mismatch.');
+	if (!mime) throw new InvalidImageError(phrase('errors.image.unsupportedFormat'));
+	if (sniffImageMime(upload.thumb) !== mime) throw new InvalidImageError(phrase('errors.image.formatMismatch'));
 	if (
 		!Number.isInteger(upload.width) ||
 		!Number.isInteger(upload.height) ||
 		upload.width <= 0 ||
 		upload.height <= 0
 	) {
-		throw new InvalidImageError('Invalid image dimensions.');
+		throw new InvalidImageError(phrase('errors.image.dimensions'));
 	}
 	return mime;
 }

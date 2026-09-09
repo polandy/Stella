@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'bun:test';
 import type { IdGenerator } from '../id';
+import { DEFAULT_LOCALE } from '../../i18n/locales';
 import {
 	authenticateLocal,
+	changeLocale,
 	registerFirstAdmin,
 	type AccountRepository,
 	type AuthUser,
 	type NewAdmin,
-	type StoredCredentials
+	type StoredCredentials,
+	UnsupportedLocaleError
 } from './accounts';
 
 /*
@@ -18,6 +21,7 @@ import {
 function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) {
 	const users = [...seed];
 	let inserted: NewAdmin | null = null;
+	const localeWrites: { userId: string; locale: string }[] = [];
 	const repo: AccountRepository = {
 		countUsers: async () => users.length,
 		findCredentialsByEmail: async (email): Promise<StoredCredentials | null> => {
@@ -28,9 +32,12 @@ function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) 
 		insertHouseholdWithAdmin: async (data) => {
 			inserted = data;
 			users.push({ user: data.user, passwordHash: data.user.passwordHash });
+		},
+		updateLocale: async (userId, locale) => {
+			localeWrites.push({ userId, locale });
 		}
 	};
-	return { repo, get inserted() { return inserted; } };
+	return { repo, localeWrites, get inserted() { return inserted; } };
 }
 
 function sequentialIds(...values: string[]): IdGenerator {
@@ -52,7 +59,8 @@ describe('registerFirstAdmin', () => {
 			householdName: 'Pollari',
 			name: 'Andy',
 			email: 'andy@example.test',
-			password: 'a-good-passphrase'
+			password: 'a-good-passphrase',
+			locale: 'de'
 		});
 
 		expect(admin).toEqual({
@@ -60,7 +68,8 @@ describe('registerFirstAdmin', () => {
 			householdId: 'household-id',
 			email: 'andy@example.test',
 			name: 'Andy',
-			role: 'admin'
+			role: 'admin',
+			locale: 'de'
 		});
 		expect(f.inserted?.household).toEqual({ id: 'household-id', name: 'Pollari' });
 		expect(f.inserted?.user.passwordHash).toBe('hashed:a-good-passphrase');
@@ -74,7 +83,8 @@ describe('registerFirstAdmin', () => {
 			householdId: 'h0',
 			email: 'x@example.test',
 			name: 'X',
-			role: 'admin'
+			role: 'admin',
+			locale: DEFAULT_LOCALE
 		};
 		const f = fakeRepo([{ user: existing, passwordHash: 'hashed:x' }]);
 		await expect(
@@ -82,7 +92,8 @@ describe('registerFirstAdmin', () => {
 				householdName: 'H',
 				name: 'N',
 				email: 'n@example.test',
-				password: 'pw'
+				password: 'pw',
+				locale: DEFAULT_LOCALE
 			})
 		).rejects.toThrow();
 	});
@@ -94,7 +105,8 @@ describe('authenticateLocal', () => {
 		householdId: 'h1',
 		email: 'andy@example.test',
 		name: 'Andy',
-		role: 'admin'
+		role: 'admin',
+		locale: DEFAULT_LOCALE
 	};
 
 	it('returns the user for correct credentials', async () => {
@@ -121,5 +133,30 @@ describe('authenticateLocal', () => {
 		expect(
 			await authenticateLocal(deps(f.repo), { email: user.email, password: 'anything' })
 		).toBeNull();
+	});
+});
+
+describe('changeLocale', () => {
+	const user: AuthUser = {
+		id: 'u1',
+		householdId: 'h1',
+		email: 'andy@example.test',
+		name: 'Andy',
+		role: 'admin',
+		locale: 'en'
+	};
+
+	it('stores a supported language and reports it back', async () => {
+		const f = fakeRepo([{ user, passwordHash: null }]);
+		expect(await changeLocale({ accounts: f.repo }, 'u1', 'de')).toBe('de');
+		expect(f.localeWrites).toEqual([{ userId: 'u1', locale: 'de' }]);
+	});
+
+	it('refuses a language Stella does not speak, and writes nothing', async () => {
+		const f = fakeRepo([{ user, passwordHash: null }]);
+		await expect(changeLocale({ accounts: f.repo }, 'u1', 'fr')).rejects.toBeInstanceOf(
+			UnsupportedLocaleError
+		);
+		expect(f.localeWrites).toEqual([]);
 	});
 });

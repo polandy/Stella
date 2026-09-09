@@ -35,7 +35,7 @@ describe('deriveKinshipEdges', () => {
 			source: 'otto',
 			target: 'hans',
 			kind: 'kinship',
-			label: 'Grandfather',
+			kin: { term: 'grandparent', variant: 'male' },
 			derived: true,
 			directed: true
 		});
@@ -67,7 +67,8 @@ describe('deriveKinshipEdges', () => {
 
 		expect(edges).toHaveLength(1);
 		expect(edges[0]).toMatchObject({ id: 'kin:hans:lisa', directed: false });
-		expect(edges[0].label).toBe('Brother'); // source Hans, in his role towards Lisa
+		// Source Hans, in his role towards Lisa; the word for it is the interface's business.
+		expect(edges[0].kin).toEqual({ term: 'sibling', variant: 'male' });
 	});
 
 	it('never re-derives a pair the household has already linked itself', () => {
