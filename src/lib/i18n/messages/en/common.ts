@@ -32,6 +32,7 @@ export const common = {
 	'common.privateHint': 'Only you can see this.',
 	'common.privateInline': 'private',
 	'common.onlyYouSee': 'Only you can see this',
+	'common.removeFailed': 'Could not remove it. It is back on the page.',
 	'common.somethingWentWrong': 'Something went wrong. Please try again.'
 };
 

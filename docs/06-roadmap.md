@@ -103,7 +103,8 @@ moved with one action.
 
 Goal: sand the edges and add the nice-to-haves.
 
-- **Localization:** German (structure already externalized); language switcher.
+- ~~**Localization:** German with a language switcher~~ — shipped: English and German are
+  both fully supported, chosen per member and kept with the profile (§2.19).
 - **Local 2FA** (TOTP) for non-SSO accounts; opt-in email reminders.
 - **Change digests:** per-member frequency (daily/weekly/monthly), delivered by email
   and/or signed webhook (HTTP POST). Needs a background scheduler + SMTP config (docs/04).

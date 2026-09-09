@@ -113,6 +113,7 @@ The core loop is in place: add people, relate them, find them, and capture momen
 shared household stream — with important dates, interactions and a guided **import** of
 people, relationships, notes, activities, tags and photos from either Monica export, or of
 contacts from a vCard.
+Stella speaks **English and German**, chosen per family member and kept with their profile.
 A photo gallery is next. See the [roadmap](docs/06-roadmap.md).
 
 <div align="center">

@@ -29,5 +29,6 @@ export const common: CommonMessages = {
 	'common.privateHint': 'Nur du siehst das.',
 	'common.privateInline': 'privat',
 	'common.onlyYouSee': 'Das sieht nur du',
+	'common.removeFailed': 'Konnte nicht entfernt werden. Es ist wieder auf der Seite.',
 	'common.somethingWentWrong': 'Da ist etwas schiefgegangen. Bitte versuche es erneut.'
 };

@@ -44,7 +44,10 @@ src/
       access/        # central visibility/ACL enforcement (see 3.7)
       media/         # sharp pipeline, storage paths
       search/        # FTS5 sync + query
+      i18n/          # say(locals, key): a message in the language of the request
       config.ts      # env parsing/validation (valibot)
+    i18n/             # locales, message catalogues (en/de), translator, context
+    errors/           # TranslatableError: a domain error carrying its message untranslated
     components/       # Svelte UI components (design system)
     stores/           # client state (theme, ui)
     graph/            # cytoscape setup, layouts, styling
@@ -58,7 +61,7 @@ src/
       search/…
       settings/…
     api/              # +server.ts JSON endpoints (graph data, upload, search)
-  hooks.server.ts     # session resolution, auth guard, security headers
+  hooks.server.ts     # session resolution, language of the request, security headers
   app.css             # tailwind + theme tokens
 static/               # manifest, icons, offline shell
 ```
@@ -81,8 +84,18 @@ static/               # manifest, icons, offline shell
 
 1. `hooks.server.ts` reads the session cookie → resolves `session` + `user` (or none).
 2. It attaches `locals.user` and enforces route guards (`(app)` requires a user).
-3. Load functions / actions receive `locals.user` and pass it to the domain layer,
+3. It settles `locals.locale` — profile, else the language cookie, else `Accept-Language`,
+   else English (docs/02 §2.19) — and stamps it into `<html lang>`.
+4. Load functions / actions receive `locals.user` and pass it to the domain layer,
    which scopes every query by household + visibility.
+
+### Language
+
+The domain never speaks a language: a use-case that refuses something throws a
+`TranslatableError` carrying a `Phrase` (a message key plus its values), and a report names
+codes rather than sentences. The edge renders them — `say(locals, key)` in a route, the
+`useI18n()` context in a component — so one request is answered end to end in one language.
+`Error.message` stays English, for logs and stack traces.
 
 ### Local login
 `POST` credentials → verify Argon2id → create `session` row → set cookie.

@@ -75,6 +75,7 @@ A family member with an account.
 | password_hash | text null | Argon2id; **null** for SSO-only users |
 | role | text | `'admin' \| 'member'` |
 | role_locked | int | 0/1; if 1, IdP group-sync will not override the role (protects break-glass admin) |
+| locale_pref | text | interface language: `'en' \| 'de'`, default `'en'` (§2.19) |
 | avatar_photo_id | text fk → photo.id null | |
 | theme_pref | text | `'system' \| 'light' \| 'dark'` |
 | accent_pref | text | Catppuccin accent name, e.g. `'mauve'` |
