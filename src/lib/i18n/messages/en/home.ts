@@ -17,6 +17,7 @@ export const home = {
 	'home.comingUp': 'Coming up',
 	'home.quietLately': 'Quiet lately',
 	'home.writeMoment': 'Write a moment',
+	'home.showAll': (p: { count: number }) => `Show all ${p.count}`,
 	'home.lastWritten': (p: { ago: string }) => `Last written ${p.ago}`,
 	'home.nothingWrittenYet': 'Nothing written yet',
 	'home.empty.title': 'Nothing written yet',

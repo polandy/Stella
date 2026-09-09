@@ -52,11 +52,26 @@
 
 	let hintDismissed = $state(false);
 
-	// The rail's rows: a list beside the stream from lg, a strip of cards above it below that,
-	// so two bands never push the stream off a phone screen.
-	const RAIL_LIST = 'flex gap-2 max-lg:-mx-4 max-lg:overflow-x-auto max-lg:px-4 max-lg:pb-1 lg:flex-col lg:gap-0';
+	// The rail's rows: one vertical list at every width — beside the stream from lg, above or
+	// below it on a phone. Nothing scrolls sideways, so nothing hides off the right edge.
+	const RAIL_LIST = 'flex flex-col';
 	const RAIL_ROW =
-		'grid grid-cols-[28px_1fr] items-center gap-2.5 rounded-app px-1.5 py-1.5 transition-colors hover:bg-card max-lg:w-52 max-lg:shrink-0 max-lg:bg-card max-lg:p-2.5 max-lg:shadow-card';
+		'grid grid-cols-[28px_1fr] items-center gap-2.5 rounded-app px-1.5 py-1.5 transition-colors hover:bg-card';
+
+	// A phone shows the first few rows of a band and keeps the rest one tap away, so two full
+	// bands never push the stream off the screen; from lg the whole band is there (docs/05 §5.5).
+	const RAIL_CAP = 3;
+	const RAIL_OVERFLOW = 'max-lg:hidden';
+
+	// Below `lg` the page is one column: heading, capture field, then either the rail and the
+	// stream or the stream and the rail — the rail earns the place above the stream only while
+	// a date is close (`railFirst`, docs/05 §5.5). The capture field stays on top either way.
+	const RAIL_BEFORE_STREAM = 'max-lg:order-2';
+	const RAIL_AFTER_STREAM = 'max-lg:order-4';
+	const railOrder = $derived(data.railFirst ? RAIL_BEFORE_STREAM : RAIL_AFTER_STREAM);
+
+	let showAllUpcoming = $state(false);
+	let showAllQuiet = $state(false);
 
 	// On a phone the composer is a sheet over the stream, opened by the pencil in the tab bar
 	// (`/?compose`) and closed by handing the URL back — so the open state lives in the URL
@@ -85,13 +100,13 @@
 	{/key}
 {/snippet}
 
-<main class="mx-auto grid w-full max-w-6xl gap-x-10 gap-y-6 px-4 py-6 md:px-6 md:py-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:grid-rows-[auto_1fr]">
+<main class="mx-auto grid w-full max-w-6xl gap-x-10 gap-y-6 px-4 py-6 md:px-6 md:py-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:grid-rows-[auto_auto_1fr]">
 <header class="lg:col-start-1 lg:row-start-1">
 	<h1 class="text-2xl font-semibold text-fg">{t('home.heading')}</h1>
 	<p class="text-sm text-fg-muted">{t('home.intro')}</p>
 </header>
 
-<div class="flex min-w-0 flex-col gap-6 max-lg:order-1 lg:col-start-1 lg:row-start-2">
+<div class="flex min-w-0 flex-col max-lg:order-1 lg:col-start-1 lg:row-start-2">
 
 	<!-- Desktop: the composer sits at the top. Phone: a sheet over the stream (below). -->
 	<div class="max-md:hidden">
@@ -114,6 +129,9 @@
 		{/if}
 	</div>
 
+</div>
+
+<div class="flex min-w-0 flex-col gap-6 max-lg:order-3 lg:col-start-1 lg:row-start-3">
 	{#if data.linkSuggestion && !hintDismissed}
 		<div class="flex items-center gap-3 rounded-app border border-success/35 bg-success/10 px-4 py-2.5 text-sm text-fg" role="status">
 			<div class="flex-1">
@@ -139,7 +157,7 @@
 	{/if}
 
 	{#if days.length}
-		<ol class="flex flex-col">
+		<ol class="flex flex-col" data-testid="stream">
 			{#each days as day (day.label)}
 				<li>
 					<div class="flex items-center gap-3 pb-1.5 pt-4 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
@@ -257,17 +275,30 @@
 	{/if}
 </div>
 
+{#snippet showAll(total: number, reveal: () => void)}
+	<button
+		type="button"
+		class="self-start px-1.5 pt-1.5 text-xs font-medium text-link hover:underline lg:hidden"
+		onclick={reveal}
+	>
+		{t('home.showAll', { count: total })}
+	</button>
+{/snippet}
+
 <!-- The rail: the future, and the people slipping out of it. Both bands are absent when
      empty, because a box that is permanently empty teaches people to stop looking at it. -->
-<aside class="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:gap-8 lg:self-start" aria-label={t('home.atAGlance')}>
+<aside
+	class="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:gap-8 lg:self-start {railOrder}"
+	aria-label={t('home.atAGlance')}
+>
 	{#if data.upcoming.length}
 		<section data-testid="coming-up">
 			<h2 class="flex items-center gap-2 pb-2 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
 				<Icon name="calendar" size={13} />{t('home.comingUp')}
 			</h2>
 			<ul class="{RAIL_LIST}">
-				{#each data.upcoming as item (item.contactId + item.date + item.kind)}
-					<li class="{RAIL_ROW}">
+				{#each data.upcoming as item, i (item.contactId + item.date + item.kind)}
+					<li class="{RAIL_ROW} {i >= RAIL_CAP && !showAllUpcoming ? RAIL_OVERFLOW : ''}">
 						<Avatar id={item.contactId} name={item.contactName} avatarPhotoId={item.avatarPhotoId} size={28} />
 						<div class="min-w-0 text-[13px] leading-snug text-fg-muted">
 							<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline">{item.contactName}</a>
@@ -281,6 +312,9 @@
 					</li>
 				{/each}
 			</ul>
+			{#if data.upcoming.length > RAIL_CAP && !showAllUpcoming}
+				{@render showAll(data.upcoming.length, () => (showAllUpcoming = true))}
+			{/if}
 		</section>
 	{/if}
 
@@ -290,8 +324,8 @@
 				<Icon name="quiet" size={13} />{t('home.quietLately')}
 			</h2>
 			<ul class="{RAIL_LIST}">
-				{#each data.quiet as item (item.contactId)}
-					<li class="{RAIL_ROW}">
+				{#each data.quiet as item, i (item.contactId)}
+					<li class="{RAIL_ROW} {i >= RAIL_CAP && !showAllQuiet ? RAIL_OVERFLOW : ''}">
 						<Avatar id={item.contactId} name={item.contactName} avatarPhotoId={item.avatarPhotoId} size={28} />
 						<div class="min-w-0 text-[13px] leading-snug text-fg-muted">
 							<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline">{item.contactName}</a>
@@ -306,6 +340,9 @@
 					</li>
 				{/each}
 			</ul>
+			{#if data.quiet.length > RAIL_CAP && !showAllQuiet}
+				{@render showAll(data.quiet.length, () => (showAllQuiet = true))}
+			{/if}
 		</section>
 	{/if}
 </aside>
