@@ -1,6 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { appReady, openPerson, signIn } from './app';
-import { dayLabel } from '../src/lib/dates/labels';
+import { dayLabel, type DateLanguage } from '../src/lib/dates/labels';
+import { INTL_LOCALES } from '../src/lib/i18n/locales';
+import { createTranslator } from '../src/lib/i18n/translate';
 
 /*
  * The passive side of an @-mention (docs/02 §2.20.1): the list on the person who was named.
@@ -20,6 +22,9 @@ import { dayLabel } from '../src/lib/dates/labels';
 // The list is built up case by case, so a failure early on must stop the file rather than
 // report four more failures about entries that were never written.
 test.describe.configure({ mode: 'serial' });
+
+/** The suite runs in English, so the dates it asserts are read the English way. */
+const english: DateLanguage = { t: createTranslator('en'), intlLocale: INTL_LOCALES.en };
 
 /** Whose journal and notes do the naming. */
 const WRITER = 'Fabian Ineichen';
@@ -121,7 +126,7 @@ test('puts a note on the page of the person it names, not of the person it is ab
 	await expect(references(page, 'note')).toContainText(`${NOTE_MARKER} mit @${NAMED}`);
 	// A note is dated by the day it was written, which is today for one written just now.
 	await expect(references(page, 'note')).toContainText(
-		dayLabel(new Date().toISOString().slice(0, 10))
+		dayLabel(english, new Date().toISOString().slice(0, 10))
 	);
 });
 
