@@ -40,7 +40,7 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 		throw redirect(302, `/login?error=${result.reason}`);
 	}
 
-	const { token, session } = await createSession(getSessionDeps(), result.userId);
+	const { token, session } = await createSession(getSessionDeps(), result.userId, result.idToken);
 	setSessionCookie(cookies, token, session.expiresAt);
 	throw redirect(303, '/');
 };

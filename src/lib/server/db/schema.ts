@@ -58,6 +58,8 @@ export const session = sqliteTable('session', {
 	expiresAt: integer('expires_at').notNull(),
 	userAgent: text('user_agent'),
 	ip: text('ip'),
+	// ID token of the OIDC sign-in behind this session; the `id_token_hint` for single logout.
+	oidcIdToken: text('oidc_id_token'),
 	createdAt: integer('created_at').notNull().default(now)
 });
 
