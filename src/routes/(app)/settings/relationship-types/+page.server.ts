@@ -12,7 +12,7 @@ import {
 } from '$lib/server/domain/relationships/relationship-types';
 import { getRelationshipTypeDeps, getRelationshipTypes } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
-import { translator } from '$lib/server/i18n/say';
+import { say, translator } from '$lib/server/i18n/say';
 
 /*
  * The household's relationship vocabulary (docs/02 §2.4). Admin only: a type is shared by
@@ -99,7 +99,7 @@ export const actions: Actions = {
 				parsed.output.typeId,
 				inputOf(parsed.output)
 			);
-			if (!changed) return fail(404, { error: 'That relationship type is gone.' });
+			if (!changed) return fail(404, { error: say(locals, 'errors.relationshipType.gone') });
 		} catch (err) {
 			const message = messageOf(err, locals);
 			if (!message) throw err;

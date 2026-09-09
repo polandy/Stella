@@ -55,6 +55,16 @@ export const errors: ErrorsMessages = {
 	'errors.image.couldNotStore': 'Das Foto konnte nicht gespeichert werden.',
 	'errors.caption.tooLong': (p) => `Eine Bildunterschrift darf höchstens ${p.max} Zeichen haben.`,
 
+	'errors.moment.needText': 'Schreib zuerst, was passiert ist.',
+	'errors.moment.badDay': 'Bitte wähle einen gültigen Tag.',
+	'errors.moment.photoFailed':
+		'Der Moment wurde gespeichert, ein Foto ließ sich aber nicht hinzufügen.',
+	'errors.journal.badDay': 'Bitte wähle ein gültiges Datum.',
+	'errors.journal.photoFailed':
+		'Der Eintrag wurde gespeichert, ein Foto ließ sich aber nicht hinzufügen.',
+	'errors.circle.needCircleName': 'Bitte gib dem Kreis einen Namen.',
+	'errors.circle.choosePerson': 'Bitte wähle eine Person.',
+	'errors.relationshipType.gone': 'Diese Beziehungsart gibt es nicht mehr.',
 	'errors.notFound': 'Nicht gefunden',
 	'errors.notSignedIn': 'Nicht angemeldet',
 	'errors.person.notFound': 'Diese Person war nicht zu finden.',

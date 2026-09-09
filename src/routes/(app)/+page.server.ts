@@ -18,6 +18,7 @@ import {
 } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
+import type { MessageKey } from '$lib/i18n/translate';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
@@ -34,6 +35,11 @@ const ABOUT_PARAM = 'about';
 
 function today(): string {
 	return new Date().toLocaleDateString('en-CA'); // ISO YYYY-MM-DD
+}
+
+/** Identity on a message key, so a typo in a validation message is a compile error. */
+function key(name: MessageKey): MessageKey {
+	return name;
 }
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -88,8 +94,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 const CaptureSchema = v.object({
-	body: v.pipe(v.string(), v.trim(), v.minLength(1, 'Write what happened first.')),
-	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Please pick a valid day.')),
+	body: v.pipe(v.string(), v.trim(), v.minLength(1, key('errors.moment.needText'))),
+	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, key('errors.moment.badDay'))),
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
 	newPeople: v.array(v.pipe(v.string(), v.trim(), v.minLength(1)))
 });
@@ -112,7 +118,10 @@ export const actions: Actions = {
 		});
 		if (!parsed.success) {
 			return fail(400, {
-				momentError: say(locals, 'errors.moment.couldNotSave'),
+				momentError: say(
+					locals,
+					(parsed.issues[0]?.message as MessageKey | undefined) ?? 'errors.moment.couldNotSave'
+				),
 				draft: String(form.get('body') ?? '')
 			});
 		}
@@ -153,7 +162,10 @@ export const actions: Actions = {
 					}
 				});
 			} catch {
-				return fail(400, { momentError: 'The moment was saved, but a photo could not be added.', draft: '' });
+				return fail(400, {
+					momentError: say(locals, 'errors.moment.photoFailed'),
+					draft: ''
+				});
 			}
 		}
 

@@ -24,10 +24,16 @@ import {
 import type { Actions, PageServerLoad } from './$types';
 import { TranslatableError } from '$lib/errors/translatable';
 import { say, translator } from '$lib/server/i18n/say';
+import type { MessageKey } from '$lib/i18n/translate';
 
 /** Local calendar date as YYYY-MM-DD, for the compose form's default. */
 function today(): string {
 	return new Date().toLocaleDateString('en-CA'); // en-CA formats as ISO YYYY-MM-DD
+}
+
+/** Identity on a message key, so a typo in a validation message is a compile error. */
+function key(name: MessageKey): MessageKey {
+	return name;
 }
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -89,7 +95,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 };
 
 const SaveSchema = v.object({
-	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Please pick a valid date.')),
+	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, key('errors.journal.badDay'))),
 	title: v.optional(v.pipe(v.string(), v.trim())),
 	body: v.pipe(v.string(), v.trim(), v.minLength(1)),
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
@@ -113,7 +119,10 @@ export const actions: Actions = {
 		});
 		if (!parsed.success) {
 			return fail(400, {
-				journalError: parsed.issues[0]?.message ?? say(locals, 'errors.note.empty')
+				journalError: say(
+					locals,
+					(parsed.issues[0]?.message as MessageKey | undefined) ?? 'errors.note.empty'
+				)
 			});
 		}
 
@@ -178,7 +187,7 @@ export const actions: Actions = {
 					}
 				});
 			} catch {
-				return fail(400, { journalError: 'The entry was saved, but a photo could not be added.' });
+				return fail(400, { journalError: say(locals, 'errors.journal.photoFailed') });
 			}
 		}
 

@@ -49,7 +49,7 @@ export const actions: Actions = {
 			contactId: form.get('contactId'),
 			role: form.get('role') || undefined
 		});
-		if (!parsed.success) return fail(400, { error: 'Please choose a person.' });
+		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
 
 		const contact = await getContact(getContactDeps(), viewer, parsed.output.contactId);
 		if (!contact) return fail(400, { error: say(locals, 'errors.person.notFound') });
