@@ -54,12 +54,14 @@ to run again at any time — that is also how you apply changes.
 - `./deploy.sh down` — stop it
 
 Building takes a few minutes the first time. If you would rather not build at all, every
-release is published as a container image and you can point `docker-compose.yml` at it
-instead of `build: .`:
+release is published as a container image. In `docker-compose.yml`, delete the `build: .`
+line and change the `image:` line beside it to:
 
 ```yaml
-image: ghcr.io/polandy/stella:latest
+    image: ghcr.io/polandy/stella:latest
 ```
+
+Then start it with `docker compose up -d` rather than `./deploy.sh`, which builds by design.
 
 [07 — Deployment §7.5.0](07-deployment.md#750-where-the-image-comes-from) explains why it is
 worth pinning a digest rather than following a tag.
