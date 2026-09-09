@@ -60,8 +60,12 @@ export interface DerivedKin {
 	personId: string;
 	displayName: string;
 	term: KinTerm;
-	/** Gendered where the gender is recorded, neutral otherwise. */
-	label: string;
+	/**
+	 * Which wording the term takes: gendered where the gender is recorded, neutral
+	 * otherwise. The word itself lives in the message catalogue (docs/02 §2.19), so the
+	 * engine stays language-free.
+	 */
+	variant: KinVariant;
 	/** Display names of the people the inference runs through, for "via Bettina". */
 	via: string[];
 }
@@ -85,24 +89,9 @@ const TERM_RANK: Record<KinTerm, number> = {
 	'sibling-in-law': 14
 };
 
-/** Labels per term: [male, female, neutral]. */
-const TERM_LABELS: Record<KinTerm, [string, string, string]> = {
-	sibling: ['Brother', 'Sister', 'Sibling'],
-	'half-sibling': ['Half-brother', 'Half-sister', 'Half-sibling'],
-	grandparent: ['Grandfather', 'Grandmother', 'Grandparent'],
-	grandchild: ['Grandson', 'Granddaughter', 'Grandchild'],
-	'aunt-uncle': ['Uncle', 'Aunt', 'Aunt or uncle'],
-	'niece-nephew': ['Nephew', 'Niece', 'Niece or nephew'],
-	'great-grandparent': ['Great-grandfather', 'Great-grandmother', 'Great-grandparent'],
-	'great-grandchild': ['Great-grandson', 'Great-granddaughter', 'Great-grandchild'],
-	cousin: ['Cousin', 'Cousin', 'Cousin'],
-	'step-parent': ['Stepfather', 'Stepmother', 'Step-parent'],
-	'step-child': ['Stepson', 'Stepdaughter', 'Stepchild'],
-	'step-sibling': ['Stepbrother', 'Stepsister', 'Step-sibling'],
-	'parent-in-law': ['Father-in-law', 'Mother-in-law', 'Parent-in-law'],
-	'child-in-law': ['Son-in-law', 'Daughter-in-law', 'Child-in-law'],
-	'sibling-in-law': ['Brother-in-law', 'Sister-in-law', 'Sibling-in-law']
-};
+/** Which wording a term takes for a person. */
+export type KinVariant = 'male' | 'female' | 'neutral';
+
 
 /** Half-sibling is only claimed when both sides have this many parents on record. */
 const PARENTS_FOR_HALF = 2;
@@ -110,12 +99,11 @@ const PARENTS_FOR_HALF = 2;
 /** Unordered key for a pair. The separator cannot occur in an id, which is generated. */
 const pairKey = (x: string, y: string) => (x < y ? `${x} ${y}` : `${y} ${x}`);
 
-function label(term: KinTerm, person: KinPerson): string {
-	const [male, female, neutral] = TERM_LABELS[term];
+function variantFor(person: KinPerson): KinVariant {
 	const gender = (person.gender ?? '').trim().toLowerCase();
-	if (gender === 'male') return male;
-	if (gender === 'female') return female;
-	return neutral;
+	if (gender === 'male') return 'male';
+	if (gender === 'female') return 'female';
+	return 'neutral';
 }
 
 /** Adjacency built once per call; every lookup below reads from these. */
@@ -282,7 +270,7 @@ class Inference {
 		return [...best.entries()]
 			.map(([personId, { term, via }]) => {
 				const person = byId.get(personId)!;
-				return { personId, displayName: person.displayName, term, label: label(term, person), via };
+				return { personId, displayName: person.displayName, term, variant: variantFor(person), via };
 			})
 			.sort(
 				(x, y) => TERM_RANK[x.term] - TERM_RANK[y.term] || x.displayName.localeCompare(y.displayName)

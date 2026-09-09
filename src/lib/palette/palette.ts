@@ -6,6 +6,9 @@ import { matchesQuery, startsWithQuery } from '$lib/people/directory';
  * empty query is always "Write a moment", which keeps the shortcut's original promise —
  * ⌘K then Enter lands in the capture field — while letting the same keys reach a person or
  * an action. Notes are not searched here; a typed query always ends in the full search.
+ *
+ * The wording arrives as `PaletteLabels` rather than being written here: this module is
+ * pure and language-free, and the component hands it the viewer's language (docs/02 §2.19).
  */
 
 /** A person as the palette needs them: names to match on, an avatar to draw. */
@@ -27,19 +30,36 @@ export type PaletteRow =
 /** Most people shown at once; the query narrows the rest. */
 export const PALETTE_PEOPLE_LIMIT = 6;
 
-const ACTIONS: readonly { id: string; label: string; icon: IconName; href: string }[] = [
-	{ id: 'write', label: 'Write a moment', icon: 'write', href: '/?compose' },
-	{ id: 'add-person', label: 'Add person', icon: 'add', href: '/contacts/new' }
-];
+/** The rows Stella offers on top of the people, in the viewer's language. */
+export interface PaletteLabels {
+	write: string;
+	addPerson: string;
+	/** The last row of a non-empty query: "Search everything for …". */
+	searchEverything: (query: string) => string;
+}
+
+/** The label of an action row, by the field of `PaletteLabels` that words it. */
+type ActionLabel = Exclude<keyof PaletteLabels, 'searchEverything'>;
+
+const ACTIONS: readonly { id: string; label: ActionLabel; icon: IconName; href: string }[] =
+	[
+		{ id: 'write', label: 'write', icon: 'write', href: '/?compose' },
+		{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new' }
+	];
 
 /** The rows for a query, in the order they are shown. */
-export function paletteRows(query: string, people: PalettePerson[]): PaletteRow[] {
+export function paletteRows(
+	query: string,
+	people: PalettePerson[],
+	labels: PaletteLabels
+): PaletteRow[] {
 	const q = query.trim();
 	const rows: PaletteRow[] = [];
 
 	for (const action of ACTIONS) {
-		if (q === '' || action.label.toLowerCase().includes(q.toLowerCase())) {
-			rows.push({ kind: 'action', ...action });
+		const label = labels[action.label];
+		if (q === '' || label.toLowerCase().includes(q.toLowerCase())) {
+			rows.push({ kind: 'action', id: action.id, label, icon: action.icon, href: action.href });
 		}
 	}
 
@@ -56,7 +76,7 @@ export function paletteRows(query: string, people: PalettePerson[]): PaletteRow[
 		rows.push({
 			kind: 'search',
 			id: 'search',
-			label: `Search everything for “${q}”`,
+			label: labels.searchEverything(q),
 			icon: 'search',
 			href: `/search?q=${encodeURIComponent(q)}`
 		});

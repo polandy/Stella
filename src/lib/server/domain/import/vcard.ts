@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../errors/translatable';
+import { phrase, type Phrase } from '../../../i18n/phrase';
 import type {
 	MonicaAddress,
 	MonicaContact,
@@ -22,10 +24,9 @@ import type {
  */
 
 /** The file is not a vCard, or a card in it is broken. Carries a message meant for the admin. */
-export class VCardError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'VCardError';
+export class VCardError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'VCardError');
 	}
 }
 
@@ -185,12 +186,12 @@ function splitCards(text: string): Property[][] {
 	for (const line of lines) {
 		const upper = line.trim().toUpperCase();
 		if (upper === BEGIN) {
-			if (current) throw new VCardError('A card in this file begins before the one before it ended.');
+			if (current) throw new VCardError(phrase('import.error.vcardOverlap'));
 			current = [];
 			continue;
 		}
 		if (upper === END) {
-			if (!current) throw new VCardError('This file ends a card that never began.');
+			if (!current) throw new VCardError(phrase('import.error.vcardEndWithoutBegin'));
 			cards.push(current);
 			current = null;
 			continue;
@@ -199,8 +200,8 @@ function splitCards(text: string): Property[][] {
 		const property = parseLine(line);
 		if (property) current.push(property);
 	}
-	if (current) throw new VCardError('A card in this file was never closed with END:VCARD.');
-	if (cards.length === 0) throw new VCardError('This file is not a vCard — it contains no BEGIN:VCARD.');
+	if (current) throw new VCardError(phrase('import.error.vcardUnclosed'));
+	if (cards.length === 0) throw new VCardError(phrase('import.error.notVcard'));
 	return cards;
 }
 
@@ -296,7 +297,7 @@ export function readVCard(text: string): SourceExport {
 		const lastName = orNull(structured[0]);
 		const firstName = orNull(structured[1]) ?? (lastName === null ? formatted : null);
 		if (firstName === null && lastName === null) {
-			throw new VCardError(`A card in this file names nobody — it has neither FN nor N (card ${index + 1}).`);
+			throw new VCardError(phrase('import.error.vcardNameless', { index: index + 1 }));
 		}
 
 		const birthday = first('BDAY') ? parseDay(unescape(first('BDAY')!.raw)) : null;

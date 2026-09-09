@@ -244,7 +244,7 @@ describe('an archive that does not add up', () => {
 			target()
 		);
 		expect(rowsOf(plan, 'relationship')).toEqual([]);
-		expect(plan.warnings.join(' ')).toContain('relationships');
+		expect(plan.warnings).toContainEqual({ code: 'relationshipsMissingPeople' });
 		// Positive control: the person who *is* in the file still arrives.
 		expect(rowsOf(plan, 'contact').map((c) => c.id)).toEqual(['c-hans']);
 	});
@@ -256,7 +256,7 @@ describe('an archive that does not add up', () => {
 			target()
 		);
 		expect(rowsOf(plan, 'relationship')).toEqual([]);
-		expect(plan.warnings.join(' ')).toContain('does not know');
+		expect(plan.warnings).toContainEqual({ code: 'relationshipUnknownType' });
 	});
 
 	it('keeps a relationship of a built-in kind, which every installation has', () => {
@@ -280,7 +280,7 @@ describe('an archive that does not add up', () => {
 			target()
 		);
 		expect(rowsOf(plan, 'note_mention')).toEqual([{ note_id: 'n-1', contact_id: 'c-rosa' }]);
-		expect(plan.warnings.join(' ')).toContain('note mentions');
+		expect(plan.warnings).toContainEqual({ code: 'pointedAtMissingPeople', what: 'noteMentions' });
 	});
 
 	it('refuses a photo whose file path climbs out of the media directory', () => {
@@ -291,7 +291,7 @@ describe('an archive that does not add up', () => {
 		);
 		expect(rowsOf(plan, 'photo').map((p) => p.id)).toEqual(['p-journal']);
 		expect(plan.mediaPaths).not.toContain('../../etc/passwd');
-		expect(plan.warnings.join(' ')).toContain('unusable file path');
+		expect(plan.warnings).toContainEqual({ code: 'photoBadPath', file: '../../etc/passwd' });
 	});
 
 	it('drops one broken record and keeps the rest of the person’s', () => {
@@ -305,7 +305,7 @@ describe('an archive that does not add up', () => {
 			target()
 		);
 		expect(rowsOf(plan, 'note').map((n) => n.id)).toEqual(['n-1']);
-		expect(plan.warnings.join(' ')).toContain('note');
+		expect(plan.warnings).toContainEqual({ code: 'noteWithoutText' });
 	});
 
 	it('gives a record with no id of its own a fresh one rather than dropping it', () => {

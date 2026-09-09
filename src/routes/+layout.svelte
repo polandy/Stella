@@ -8,8 +8,14 @@
 	import '@fontsource-variable/newsreader';
 	import '@fontsource-variable/newsreader/wght-italic.css';
 	import '../app.css';
+	import { provideI18n } from '$lib/i18n/context.svelte';
+	import type { LayoutData } from './$types';
 
-	let { children } = $props();
+	let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();
+
+	// The viewer's language, provided once for the whole tree. A getter, not the value, so a
+	// change of language re-renders the copy rather than needing a full reload.
+	provideI18n(() => data.locale);
 </script>
 
 {@render children()}

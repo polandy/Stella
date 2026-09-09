@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../errors/translatable';
+import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { KinshipGraph, Pair } from '../../../kinship/kinship';
 import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';
 import { suggestPropagation, type PrimaryLink, type SuggestedLink } from '../../../kinship/propagation';
@@ -49,6 +51,8 @@ export function canonicalEndpoints(fromId: string, toId: string, symmetric: bool
 export interface RelationshipDescription {
 	otherContactId: string;
 	label: string;
+	/** Which of the type's two labels was read; the edge needs it to translate a built-in. */
+	side: 'forward' | 'reverse';
 	category: RelationshipCategory;
 }
 
@@ -59,10 +63,20 @@ export function describeRelationshipFor(
 	type: RelationshipType
 ): RelationshipDescription {
 	if (viewedContactId === endpoints.fromContactId) {
-		return { otherContactId: endpoints.toContactId, label: type.forwardLabel, category: type.category };
+		return {
+			otherContactId: endpoints.toContactId,
+			label: type.forwardLabel,
+			side: 'forward',
+			category: type.category
+		};
 	}
 	if (viewedContactId === endpoints.toContactId) {
-		return { otherContactId: endpoints.fromContactId, label: type.reverseLabel, category: type.category };
+		return {
+			otherContactId: endpoints.fromContactId,
+			label: type.reverseLabel,
+			side: 'reverse',
+			category: type.category
+		};
 	}
 	throw new Error('The viewed contact is not an endpoint of this relationship.');
 }
@@ -85,10 +99,9 @@ export interface RelationshipDetailsInput {
 	status?: string | null;
 }
 
-export class InvalidRelationshipDetailsError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'InvalidRelationshipDetailsError';
+export class InvalidRelationshipDetailsError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'InvalidRelationshipDetailsError');
 	}
 }
 
@@ -102,12 +115,14 @@ const blankToNull = (value: string | null | undefined): string | null => (value 
 export function parseRelationshipDetails(input: RelationshipDetailsInput): RelationshipDetails {
 	const sinceDate = blankToNull(input.sinceDate);
 	if (sinceDate && !(FULL_DATE_SHAPE.test(sinceDate) && isRealCalendarDay(sinceDate))) {
-		throw new InvalidRelationshipDetailsError(`${sinceDate} is not a day that exists.`);
+		throw new InvalidRelationshipDetailsError(
+			phrase('errors.relationship.noSuchDay', { day: sinceDate })
+		);
 	}
 
 	const status = blankToNull(input.status);
 	if (status && !RELATIONSHIP_STATUSES.includes(status as RelationshipStatus)) {
-		throw new InvalidRelationshipDetailsError('A relationship is either current or former.');
+		throw new InvalidRelationshipDetailsError(phrase('errors.relationship.currentOrFormer'));
 	}
 
 	return {
@@ -133,7 +148,11 @@ export interface RelationshipView extends RelationshipDetails {
 	id: string;
 	otherContactId: string;
 	otherDisplayName: string;
+	/** The label as stored on the type; a built-in one is translated at the edge by its key. */
 	label: string;
+	/** The type's machine key, and which of its two labels this row reads. */
+	typeKey: string;
+	side: 'forward' | 'reverse';
 	category: RelationshipCategory;
 }
 
@@ -168,10 +187,9 @@ export interface CreateRelationshipInput extends RelationshipDetailsInput {
 	typeId: string;
 }
 
-export class DuplicateRelationshipError extends Error {
+export class DuplicateRelationshipError extends TranslatableError {
 	constructor() {
-		super('That relationship already exists.');
-		this.name = 'DuplicateRelationshipError';
+		super(phrase('errors.relationship.duplicate'), 'DuplicateRelationshipError');
 	}
 }
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/Button.svelte';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
 
@@ -27,7 +28,7 @@
 		error?: string | null;
 		/** Larger type for the person's name; the description stays body-sized. */
 		heading?: boolean;
-		/** Shown in place of an empty value, e.g. "Add a description". */
+		/** Shown in place of an empty value, e.g. "Add a description"; defaults to *Add*. */
 		empty?: string;
 	}
 	let {
@@ -39,8 +40,11 @@
 		placeholder = '',
 		error = null,
 		heading = false,
-		empty = 'Add'
+		empty
 	}: Props = $props();
+
+	const t = useTranslate();
+	const emptyLabel = $derived(empty ?? t('common.add'));
 
 	let editing = $state(false);
 	// Seeded on each open, not from the prop: the draft is this control's own state, and a page
@@ -49,7 +53,7 @@
 	let field = $state<HTMLInputElement | null>(null);
 	const open = $derived(editing || error !== null);
 	// Saving says *Saved* in the toast region like every other form (docs/05 §5.7).
-	const saved = savedEnhance(useRemovals(), () => (editing = false));
+	const saved = savedEnhance(useRemovals(), t('components.saved'), () => (editing = false));
 
 	function start() {
 		draft = value;
@@ -94,8 +98,8 @@
 			class:text-2xl={heading}
 			class:font-semibold={heading}
 		/>
-		<Button variant="primary" size="sm">Save</Button>
-		<Button variant="ghost" size="sm" type="button" onclick={cancel}>Cancel</Button>
+		<Button variant="primary" size="sm">{t('common.save')}</Button>
+		<Button variant="ghost" size="sm" type="button" onclick={cancel}>{t('common.cancel')}</Button>
 	</form>
 	{#if error}<p class="mt-1 text-sm text-danger">{error}</p>{/if}
 {:else}
@@ -113,7 +117,7 @@
 		{#if value}
 			<span class="truncate" class:text-2xl={heading} class:font-semibold={heading}>{value}</span>
 		{:else}
-			<span class="text-fg-subtle">{empty}</span>
+			<span class="text-fg-subtle">{emptyLabel}</span>
 		{/if}
 	</button>
 {/if}

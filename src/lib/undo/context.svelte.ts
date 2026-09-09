@@ -1,5 +1,6 @@
 import { getContext, setContext } from 'svelte';
 import { createPendingRemovals, type Removal, type RemovalsSnapshot } from './pending-removals';
+import { useTranslate } from '$lib/i18n/context.svelte';
 
 /*
  * The app shell owns one removals store per tab and hands it down through context, so a
@@ -21,14 +22,15 @@ export interface Removals {
 	notify(text: string): void;
 }
 
-/** What the toast says when a removal did not reach the server. */
-const REMOVAL_FAILED_NOTICE = 'Could not remove it. It is back on the page.';
-
-/** Creates the store for this tab and puts it in context. Call once, from the app shell. */
+/**
+ * Creates the store for this tab and puts it in context. Call once, from the app shell —
+ * which is inside the root layout, so the toast's wording comes from the viewer's language.
+ */
 export function provideRemovals(): Removals {
+	const t = useTranslate();
 	const store = createPendingRemovals({
 		scheduler: globalThis,
-		onCommitFailed: () => store.notify(REMOVAL_FAILED_NOTICE)
+		onCommitFailed: () => store.notify(t('common.removeFailed'))
 	});
 	let snapshot = $state.raw(store.snapshot());
 	store.subscribe(() => (snapshot = store.snapshot()));

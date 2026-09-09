@@ -5,13 +5,16 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import RemoveButton from '$lib/components/RemoveButton.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import { circleKindLabel } from '$lib/circles/labels';
 	import { accentDotStyle } from '$lib/design/tokens';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	const t = useTranslate();
 	const circle = $derived(data.circle);
 
 	// A member on their way out of the circle is off the grid while the undo window is open.
@@ -20,11 +23,11 @@
 		data.members.filter((m) => !removals.isPending(removalKey('membership', m.membershipId)))
 	);
 	let addOpen = $state(false);
-	const saved = savedEnhance(removals, () => (addOpen = false));
+	const saved = savedEnhance(removals, t('components.saved'), () => (addOpen = false));
 	const INPUT = 'rounded-md border border-border bg-bg px-3 py-2 text-fg';
 </script>
 
-<svelte:head><title>{circle.name} · Circles · Stella</title></svelte:head>
+<svelte:head><title>{t('circles.detail.title', { name: circle.name })}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
 	<header class="flex items-center gap-4">
@@ -34,17 +37,17 @@
 		<div class="min-w-0">
 			<h1 class="truncate text-2xl font-semibold text-fg">{circle.name}</h1>
 			<p class="text-sm text-fg-muted">
-				<span class="capitalize">{circle.kind}</span>
+				<span>{circleKindLabel(t, circle.kind)}</span>
 				{#if circle.description} · {circle.description}{/if}
-				{#if circle.visibility === 'private'} · private{/if}
+				{#if circle.visibility === 'private'} · {t('circles.private')}{/if}
 			</p>
 		</div>
 	</header>
 
 	<Section
-		title="Members"
+		title={t('circles.members')}
 		count={visibleMembers.length}
-		addLabel={data.candidates.length ? 'Add member' : undefined}
+		addLabel={data.candidates.length ? t('circles.addMember') : undefined}
 		error={form?.error ?? null}
 		bind:open={addOpen}
 	>
@@ -62,29 +65,33 @@
 							id={m.membershipId}
 							action="?/removeMember"
 							fields={{ contactId: m.contactId }}
-							label="Remove {m.displayName} from circle"
-							removed="Removed from the circle"
+							label={t('circles.removeMember', { name: m.displayName })}
+							removed={t('circles.removedFromCircle')}
 						/>
 					</li>
 				{/each}
 			</ul>
 		{:else}
-			<EmptyState icon="people" title="Nobody in this circle yet" hint="Add the people who share this context; each of them will show it on their page." />
+			<EmptyState
+				icon="people"
+				title={t('circles.noMembers.title')}
+				hint={t('circles.noMembers.hint')}
+			/>
 		{/if}
 
 		{#snippet editor()}
 			<form method="POST" action="?/addMember" use:enhance={saved} class="flex flex-wrap items-end gap-3">
 				<label class="flex flex-1 flex-col gap-1 text-sm">
-					<span class="text-fg-muted">Person</span>
+					<span class="text-fg-muted">{t('circles.person')}</span>
 					<select name="contactId" class={INPUT}>
 						{#each data.candidates as c (c.id)}<option value={c.id}>{c.displayName}</option>{/each}
 					</select>
 				</label>
 				<label class="flex flex-col gap-1 text-sm">
-					<span class="text-fg-muted">Role (optional)</span>
-					<input name="role" placeholder="member" class="w-32 {INPUT}" />
+					<span class="text-fg-muted">{t('circles.roleLabel')}</span>
+					<input name="role" placeholder={t('circles.rolePlaceholder')} class="w-32 {INPUT}" />
 				</label>
-				<Button variant="primary" size="sm">Add</Button>
+				<Button variant="primary" size="sm">{t('common.add')}</Button>
 			</form>
 		{/snippet}
 	</Section>

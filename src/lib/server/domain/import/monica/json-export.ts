@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../../errors/translatable';
+import { phrase, type Phrase } from '../../../../i18n/phrase';
 import type {
 	MonicaActivity,
 	MonicaAddress,
@@ -35,10 +37,9 @@ import type {
  */
 
 /** A file that is not a Monica JSON export, or is one this reader cannot take apart. */
-export class MonicaJsonError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'MonicaJsonError';
+export class MonicaJsonError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'MonicaJsonError');
 	}
 }
 
@@ -62,7 +63,7 @@ const dayOf = (v: unknown): string | null => str(v)?.slice(0, 10) ?? null;
 /** The uuid a record is keyed by; every exported record has one except the day-journal rows. */
 function uuidOf(record: unknown, what: string): MonicaId {
 	const id = str(obj(record).uuid);
-	if (id === null) throw new MonicaJsonError(`A ${what} in this export has no uuid.`);
+	if (id === null) throw new MonicaJsonError(phrase('import.error.jsonNoUuid', { what }));
 	return id;
 }
 
@@ -82,11 +83,14 @@ const bucketCount = (container: unknown, type: string): number => bucket(contain
 /** The account object, or a refusal that says what the file is missing. */
 function accountOf(parsed: unknown): Json {
 	if (!isObject(parsed) || !isObject(parsed.account)) {
-		throw new MonicaJsonError('This file is not a Monica JSON export.');
+		throw new MonicaJsonError(phrase('import.error.notMonicaJson'));
 	}
 	if (str(parsed.version) === null) {
 		throw new MonicaJsonError(
-			'This file has an account but no export version, so it is not one of Monica’s own exports.'
+			phrase('import.error.jsonUnsupported', {
+				detail:
+					'This file has an account but no export version, so it is not one of Monica’s own exports.'
+			})
 		);
 	}
 	return parsed.account;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { SourceExport } from './monica-export';
 import { planMonicaImport, type ImportOptions } from './plan';
+import { englishWording } from './wording.fixture';
 
 /*
  * Monica → Stella mapping (docs/02 §2.16, docs/monica-mapping.md). The plan is pure: given
@@ -13,7 +14,8 @@ const opts: ImportOptions = {
 	householdId: 'h1',
 	userId: 'u1',
 	visibility: 'shared',
-	now: NOW
+	now: NOW,
+	wording: englishWording
 };
 
 function emptyExport(): SourceExport {
@@ -113,7 +115,7 @@ describe('planMonicaImport — contacts', () => {
 		exp.contacts = [contact(1, 'Sia', null), contact(2, 'Gone', null, { deletedAt: '2023-06-21 12:55:36' })];
 		const plan = planMonicaImport(exp, opts);
 		expect(plan.contacts.map((c) => c.displayName)).toEqual(['Sia']);
-		expect(plan.report.skipped).toContainEqual({ what: 'contact', count: 1, why: 'deleted in Monica' });
+		expect(plan.report.skipped).toContainEqual({ what: 'contact', count: 1, why: 'deletedInMonica' });
 	});
 
 	it('reads a full birthday, a year-less one, and an age-based estimate', () => {
@@ -196,9 +198,7 @@ describe('planMonicaImport — relationships', () => {
 		expect(plan.relationshipTypes.every((t) => t.householdId === 'h1')).toBe(true);
 		const uncle = plan.relationships.find((r) => r.typeId === 'monica:reltype:uncle_nephew');
 		expect(uncle).toMatchObject({ fromContactId: 'monica:contact:1', toContactId: 'monica:contact:3' });
-		expect(plan.report.warnings).toContainEqual(
-			'Relationship type "Skipartner" has no Stella equivalent; created as a custom type.'
-		);
+		expect(plan.report.warnings).toContainEqual({ code: 'customType', name: 'Skipartner' });
 	});
 
 	it('drops a relationship whose end is a deleted contact and reports it', () => {
@@ -207,7 +207,7 @@ describe('planMonicaImport — relationships', () => {
 		exp.relationships = [{ id: 1, typeId: 10, contactIs: 1, ofContact: 2, createdAt: null }];
 		const plan = planMonicaImport(exp, opts);
 		expect(plan.relationships).toEqual([]);
-		expect(plan.report.skipped).toContainEqual({ what: 'relationship', count: 1, why: 'refers to a deleted contact' });
+		expect(plan.report.skipped).toContainEqual({ what: 'relationship', count: 1, why: 'refersToDeletedContact' });
 	});
 });
 
@@ -286,7 +286,7 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 			createdBy: 'u1',
 			visibility: 'shared'
 		});
-		expect(plan.report.skipped).toContainEqual({ what: 'activity', count: 1, why: 'linked to no person' });
+		expect(plan.report.skipped).toContainEqual({ what: 'activity', count: 1, why: 'linkedToNoPerson' });
 	});
 
 	it('plans photos per contact and marks the one used as avatar', () => {
@@ -302,7 +302,7 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 			['monica:photo:10', 'monica:contact:1', 'photos/a.jpg', true],
 			['monica:photo:11', 'monica:contact:1', 'photos/b.jpg', false]
 		]);
-		expect(plan.report.skipped).toContainEqual({ what: 'photo', count: 1, why: 'attached to no person' });
+		expect(plan.report.skipped).toContainEqual({ what: 'photo', count: 1, why: 'attachedToNoPerson' });
 	});
 
 	it('reports free journal entries, derived reminders and extra users instead of losing them silently', () => {
@@ -310,17 +310,21 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 		exp.journalEntries = [{ id: 1, title: 'Besuch Schuum', post: 'fell', createdAt: null }];
 		exp.derivedReminderCount = 32;
 		const plan = planMonicaImport(exp, opts);
-		expect(plan.report.skipped).toContainEqual({ what: 'journal entry', count: 1, why: 'not attached to a person (Besuch Schuum)' });
-		expect(plan.report.skipped).toContainEqual({ what: 'reminder', count: 32, why: 'Stella derives birthday reminders itself' });
-		expect(plan.report.warnings).toContainEqual('Monica had 2 user accounts; everything is attributed to the importing member.');
+		expect(plan.report.skipped).toContainEqual({
+			what: 'journalEntry',
+			count: 1,
+			why: 'notAttachedToPerson',
+			detail: 'Besuch Schuum'
+		});
+		expect(plan.report.skipped).toContainEqual({ what: 'reminder', count: 32, why: 'remindersDerived' });
+		expect(plan.report.warnings).toContainEqual({ code: 'manyUsers', count: 2 });
 	});
 
 	it('says out loud that a JSON export cannot carry how you met', () => {
 		const sql = { ...emptyExport(), contacts: [contact(1, 'Ada', null)] };
 		const json = { ...sql, source: 'json' as const };
 
-		const message =
-			'Monica’s JSON export does not carry “how you met” or where; that free text is not in the file.';
+		const message = { code: 'jsonNoHowWeMet' as const };
 		expect(planMonicaImport(json, opts).report.warnings).toContainEqual(message);
 		// The positive control: read from a dump, the same household loses nothing and says nothing.
 		expect(planMonicaImport(sql, opts).report.warnings).not.toContainEqual(message);
@@ -340,8 +344,7 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 	it('says out loud that a vCard carries people but not how they are connected', () => {
 		const exp = { ...emptyExport(), source: 'vcard' as const, contacts: [contact(1, 'Ada', null)] };
 
-		const message =
-			'A vCard carries people only — no relationships, interactions or journal entries are read from it.';
+		const message = { code: 'vcardPeopleOnly' as const };
 		expect(planMonicaImport(exp, opts).report.warnings).toContainEqual(message);
 		expect(planMonicaImport({ ...exp, source: 'sql' }, opts).report.warnings).not.toContainEqual(message);
 	});

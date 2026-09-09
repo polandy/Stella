@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../errors/translatable';
+import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -42,10 +44,9 @@ export function sniffImageMime(bytes: Uint8Array): ImageMime | null {
 	return null;
 }
 
-export class InvalidAvatarError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'InvalidAvatarError';
+export class InvalidAvatarError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'InvalidAvatarError');
 	}
 }
 
@@ -58,16 +59,16 @@ export interface AvatarUpload {
 
 /** Validate an avatar upload and return its true (sniffed) mime; throws InvalidAvatarError. */
 export function validateAvatarUpload(upload: AvatarUpload): ImageMime {
-	if (upload.image.byteLength === 0) throw new InvalidAvatarError('The image is empty.');
-	if (upload.image.byteLength > AVATAR_MAX_BYTES) throw new InvalidAvatarError('The image is too large.');
-	if (upload.thumb.byteLength === 0) throw new InvalidAvatarError('The thumbnail is empty.');
-	if (upload.thumb.byteLength > THUMB_MAX_BYTES) throw new InvalidAvatarError('The thumbnail is too large.');
+	if (upload.image.byteLength === 0) throw new InvalidAvatarError(phrase('errors.image.empty'));
+	if (upload.image.byteLength > AVATAR_MAX_BYTES) throw new InvalidAvatarError(phrase('errors.image.tooLarge'));
+	if (upload.thumb.byteLength === 0) throw new InvalidAvatarError(phrase('errors.image.thumbEmpty'));
+	if (upload.thumb.byteLength > THUMB_MAX_BYTES) throw new InvalidAvatarError(phrase('errors.image.thumbTooLarge'));
 
 	const mime = sniffImageMime(upload.image);
-	if (!mime) throw new InvalidAvatarError('Unsupported image format.');
-	if (sniffImageMime(upload.thumb) !== mime) throw new InvalidAvatarError('Thumbnail format mismatch.');
+	if (!mime) throw new InvalidAvatarError(phrase('errors.image.unsupportedFormat'));
+	if (sniffImageMime(upload.thumb) !== mime) throw new InvalidAvatarError(phrase('errors.image.formatMismatch'));
 	if (!Number.isInteger(upload.width) || !Number.isInteger(upload.height) || upload.width <= 0 || upload.height <= 0) {
-		throw new InvalidAvatarError('Invalid image dimensions.');
+		throw new InvalidAvatarError(phrase('errors.image.dimensions'));
 	}
 	return mime;
 }

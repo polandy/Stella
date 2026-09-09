@@ -1,9 +1,16 @@
+import { phrase } from '../../../i18n/phrase';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { NewActivityEntry } from '../activity/activity';
 import type { MediaStore } from '../media/avatars';
 import { DOCUMENT_ENTRY, MEDIA_PREFIX, isSafeMediaPath } from './archive';
-import { ArchiveFormatError, planRestore, type RestorePlan, type RestoreTarget } from './restore';
+import {
+	ArchiveFormatError,
+	planRestore,
+	type RestorePlan,
+	type RestoreTarget,
+	type RestoreWarning
+} from './restore';
 
 /*
  * Reading an archive back into the household (docs/02 §2.15) — the other half of the export.
@@ -60,7 +67,7 @@ export interface ImportReport {
 	added: Record<string, number>;
 	skipped: Record<string, number>;
 	media: { stored: number; alreadyThere: number; missing: number };
-	warnings: string[];
+	warnings: RestoreWarning[];
 }
 
 /** One file in an archive, however it was unpacked. */
@@ -87,24 +94,36 @@ export function splitArchive(entries: readonly ArchiveEntry[]): ArchiveFile {
 		if (!entry.name.startsWith(MEDIA_PREFIX)) continue;
 		const key = entry.name.slice(MEDIA_PREFIX.length);
 		if (!isSafeMediaPath(key)) {
-			throw new ArchiveFormatError(`This archive contains an unusable file name: “${entry.name}”.`);
+			throw new ArchiveFormatError(phrase('archive.error.unusableFileName', { name: entry.name }));
 		}
 		media.set(key, entry.bytes);
 	}
 
 	if (documentText === null) {
 		throw new ArchiveFormatError(
-			`This archive has no ${DOCUMENT_ENTRY} in it, so it is not a Stella archive.`
+			phrase('archive.error.noDocument', { document: DOCUMENT_ENTRY })
 		);
 	}
 	return { documentText, media };
 }
 
 /** What the log says about an import; there is no entity left over to name. */
-export function describeImport(added: Record<string, number>, household: string): string {
-	const people = added.contact ?? 0;
-	const what = people === 1 ? '1 person' : `${people} people`;
-	return `restored ${what} from an archive of ${household}`;
+export function describeImport(
+	added: Record<string, number>,
+	household: string,
+	wording: ArchiveWording
+): string {
+	return wording.restored(added.contact ?? 0, household);
+}
+
+/**
+ * The words a restore writes into the household's own record of it. The log entry is data
+ * the household keeps, so it is written in the language of the member who ran the restore
+ * (docs/02 §2.19).
+ */
+export interface ArchiveWording {
+	/** "restored 12 people from an archive of Pollari". */
+	restored: (people: number, household: string) => string;
 }
 
 /**
@@ -114,7 +133,8 @@ export function describeImport(added: Record<string, number>, household: string)
 export async function importArchive(
 	deps: ImportArchiveDeps,
 	actor: { userId: string; householdId: string },
-	file: ArchiveFile
+	file: ArchiveFile,
+	wording: ArchiveWording
 ): Promise<ImportReport> {
 	const known = await deps.restore.readTarget(actor.householdId);
 	const plan = planRestore(deps, Bun.YAML.parse(file.documentText), {
@@ -150,9 +170,7 @@ export async function importArchive(
 		media.stored++;
 	}
 	if (media.missing > 0) {
-		warnings.push(
-			`${media.missing} image${media.missing === 1 ? '' : 's'} named in the document ${media.missing === 1 ? 'was' : 'were'} not in the archive; those photos will show as missing.`
-		);
+		warnings.push({ code: 'imagesMissing', count: media.missing });
 	}
 
 	await deps.restore.recordImport({
@@ -165,7 +183,7 @@ export async function importArchive(
 		contactId: null,
 		// The household is meant to see that an import happened; that is the point of it.
 		visibility: 'shared',
-		summary: describeImport(added, plan.household),
+		summary: describeImport(added, plan.household, wording),
 		createdAt: deps.clock.now()
 	});
 

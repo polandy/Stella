@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../../errors/translatable';
+import { phrase, type Phrase } from '../../../../i18n/phrase';
 /*
  * A minimal reader for `mariadb-dump` / `mysqldump` output (docs/02 §2.16, "SQL dump").
  * It recovers each table's rows keyed by column name and nothing else: `CREATE TABLE` gives
@@ -13,10 +15,9 @@ export type SqlValue = string | number | null;
 export type SqlRow = Record<string, SqlValue>;
 
 /** Thrown when the text is not a dump we can read, or a table is inconsistent. */
-export class SqlDumpError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'SqlDumpError';
+export class SqlDumpError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'SqlDumpError');
 	}
 }
 
@@ -53,7 +54,7 @@ function readTuples(text: string, start: number, table: string): { tuples: SqlVa
 	let i = start;
 	const n = text.length;
 	const fail = (what: string): never => {
-		throw new SqlDumpError(`Malformed INSERT for table ${table}: ${what}.`);
+		throw new SqlDumpError(phrase('import.error.dumpMalformedInsert', { table, what }));
 	};
 
 	for (;;) {
@@ -124,7 +125,7 @@ export function parseSqlDump(text: string): SqlDump {
 		columns.set(m[1]!, cols);
 	}
 	if (columns.size === 0) {
-		throw new SqlDumpError('This does not look like a MariaDB/MySQL dump: no CREATE TABLE found.');
+		throw new SqlDumpError(phrase('import.error.notSqlDump'));
 	}
 
 	const rows = new Map<string, SqlRow[]>();
@@ -132,13 +133,15 @@ export function parseSqlDump(text: string): SqlDump {
 	for (const m of text.matchAll(INSERT_HEAD)) {
 		const table = m[1]!;
 		const cols = columns.get(table);
-		if (!cols) throw new SqlDumpError(`INSERT into ${table} without a CREATE TABLE for it.`);
+		if (!cols) throw new SqlDumpError(phrase('import.error.insertWithoutCreate', { table }));
 		const { tuples } = readTuples(text, m.index! + m[0].length, table);
 		const target = rows.get(table)!;
 		for (const tuple of tuples) {
 			if (tuple.length !== cols.length) {
 				throw new SqlDumpError(
-					`Table ${table} declares ${cols.length} columns but a row has ${tuple.length} values.`
+					phrase('import.error.columnCountMismatch', {
+						detail: `Table ${table} declares ${cols.length} columns but a row has ${tuple.length} values.`
+					})
 				);
 			}
 			const row: SqlRow = {};
@@ -151,7 +154,7 @@ export function parseSqlDump(text: string): SqlDump {
 		hasTable: (name) => rows.has(name),
 		rows(name) {
 			const r = rows.get(name);
-			if (!r) throw new SqlDumpError(`The dump has no table named ${name}.`);
+			if (!r) throw new SqlDumpError(phrase('import.error.noSuchTable', { name }));
 			return r;
 		}
 	};

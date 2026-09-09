@@ -1,5 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
+import { phrase } from '$lib/i18n/phrase';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { getConfig } from '$lib/server/config';
 import { applyImport, previewImport } from '$lib/server/domain/import/apply';
@@ -13,6 +14,8 @@ import {
 	stageDump,
 	STAGED_DUMP_MAX_AGE_MS
 } from '$lib/server/import/staging';
+import { importWording } from '$lib/server/i18n/import-wording';
+import { say, translator } from '$lib/server/i18n/say';
 import { getImportDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -49,7 +52,7 @@ async function dumpTextOf(file: File): Promise<string> {
 	const bytes = new Uint8Array(await file.arrayBuffer());
 	const gzipped = bytes[0] === GZIP_MAGIC[0] && bytes[1] === GZIP_MAGIC[1];
 	const plain = gzipped ? Bun.gunzipSync(bytes) : bytes;
-	if (plain.byteLength > DUMP_MAX_BYTES) throw new SqlDumpError('The file is larger than this importer accepts.');
+	if (plain.byteLength > DUMP_MAX_BYTES) throw new SqlDumpError(phrase('import.error.tooLarge'));
 	return new TextDecoder().decode(plain);
 }
 
@@ -71,14 +74,18 @@ export const actions: Actions = {
 		const file = form.get('dump');
 		const visibility = v.parse(VisibilitySchema, form.get('visibility') || undefined);
 		if (!(file instanceof File) || file.size === 0) {
-			return fail(400, { step: 'upload' as const, error: 'Please choose the Monica export or vCard file to import.' });
+			return fail(400, {
+				step: 'upload' as const,
+				error: say(locals, 'import.error.chooseFile')
+			});
 		}
 		try {
 			const text = await dumpTextOf(file);
 			const plan = previewImport(getImportDeps(), text, {
 				householdId: user.householdId,
 				userId: user.id,
-				visibility
+				visibility,
+				wording: importWording(locals)
 			});
 			await pruneStagedDumps(getConfig().importDir, STAGED_DUMP_MAX_AGE_MS);
 			const token = await stageDump(getConfig().importDir, text);
@@ -90,7 +97,8 @@ export const actions: Actions = {
 				customTypes: plan.relationshipTypes.map((t) => ({ forwardLabel: t.forwardLabel, reverseLabel: t.reverseLabel, category: t.category }))
 			};
 		} catch (err) {
-			if (isUnreadable(err)) return fail(400, { step: 'upload' as const, error: err.message });
+			if (isUnreadable(err))
+				return fail(400, { step: 'upload' as const, error: err.phrase(translator(locals)) });
 			throw err;
 		}
 	},
@@ -99,14 +107,23 @@ export const actions: Actions = {
 		const user = requireAdmin(locals);
 		const form = await request.formData();
 		const parsed = v.safeParse(StepSchema, { token: form.get('token'), visibility: form.get('visibility') || undefined });
-		if (!parsed.success) return fail(400, { step: 'upload' as const, error: 'The import session is missing. Please upload the dump again.' });
+		if (!parsed.success)
+			return fail(400, {
+				step: 'upload' as const,
+				error: say(locals, 'import.error.sessionMissing')
+			});
 		const text = await readStagedDump(getConfig().importDir, parsed.output.token);
-		if (text === null) return fail(410, { step: 'upload' as const, error: 'The uploaded dump is no longer available. Please upload it again.' });
+		if (text === null)
+			return fail(410, {
+				step: 'upload' as const,
+				error: say(locals, 'import.error.sessionGone')
+			});
 
 		const { plan, outcome } = await applyImport(getImportDeps(), text, {
 			householdId: user.householdId,
 			userId: user.id,
-			visibility: parsed.output.visibility
+			visibility: parsed.output.visibility,
+			wording: importWording(locals)
 		});
 		return {
 			step: 'photos' as const,

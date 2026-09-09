@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 
 	/*
@@ -10,6 +11,7 @@
 	 * "Entry removed" without losing focus.
 	 */
 	const removals = useRemovals();
+	const t = useTranslate();
 </script>
 
 <div
@@ -20,7 +22,7 @@
 	{#each removals.snapshot.removals as removal (removal.key)}
 		<div class="toast" data-testid="toast-undo">
 			<span class="pl-2">{removal.label}</span>
-			<Button variant="secondary" size="sm" onclick={() => removals.undo(removal.key)}>Undo</Button>
+			<Button variant="secondary" size="sm" onclick={() => removals.undo(removal.key)}>{t('common.undo')}</Button>
 		</div>
 	{/each}
 	{#each removals.snapshot.notices as notice (notice.id)}

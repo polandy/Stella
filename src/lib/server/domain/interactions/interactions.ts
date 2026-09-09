@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../errors/translatable';
+import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -97,10 +99,9 @@ export interface LogInteractionInput {
 }
 
 /** Thrown when an interaction's kind, day or participants are not acceptable. */
-export class InvalidInteractionError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'InvalidInteractionError';
+export class InvalidInteractionError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'InvalidInteractionError');
 	}
 }
 
@@ -120,18 +121,20 @@ export async function logInteraction(
 	input: LogInteractionInput
 ): Promise<string> {
 	if (!INTERACTION_KINDS.includes(input.kind)) {
-		throw new InvalidInteractionError(`Unknown interaction kind: ${input.kind}`);
+		throw new InvalidInteractionError(phrase('errors.interaction.unknownKind', { kind: input.kind }));
 	}
 	const happenedAt = input.happenedAt.trim();
 	if (!FULL_DATE_SHAPE.test(happenedAt)) {
-		throw new InvalidInteractionError('The day must be YYYY-MM-DD.');
+		throw new InvalidInteractionError(phrase('errors.interaction.dayFormat'));
 	}
 	if (!isRealCalendarDay(happenedAt)) {
-		throw new InvalidInteractionError(`There is no such day in the calendar: ${happenedAt}.`);
+		throw new InvalidInteractionError(
+			phrase('errors.interaction.noSuchDay', { day: happenedAt })
+		);
 	}
 	const participantIds = [...new Set(input.participantIds ?? [])];
 	if (participantIds.includes(input.contactId)) {
-		throw new InvalidInteractionError('The person the interaction is about cannot also be a participant.');
+		throw new InvalidInteractionError(phrase('errors.interaction.selfParticipant'));
 	}
 
 	const now = deps.clock.now();

@@ -22,10 +22,18 @@ import {
 } from '$lib/server/services';
 
 import type { Actions, PageServerLoad } from './$types';
+import { TranslatableError } from '$lib/errors/translatable';
+import { say, translator } from '$lib/server/i18n/say';
+import type { MessageKey } from '$lib/i18n/translate';
 
 /** Local calendar date as YYYY-MM-DD, for the compose form's default. */
 function today(): string {
 	return new Date().toLocaleDateString('en-CA'); // en-CA formats as ISO YYYY-MM-DD
+}
+
+/** Identity on a message key, so a typo in a validation message is a compile error. */
+function key(name: MessageKey): MessageKey {
+	return name;
 }
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -33,7 +41,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 	const contact = await getContact(getContactDeps(), viewer, params.id);
-	if (!contact) throw error(404, 'Contact not found'); // never reveal existence
+	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
 
 	const [entries, journalPhotos, allContacts, contactNames] = await Promise.all([
 		listJournalForContact(getJournalDeps(), viewer, params.id),
@@ -87,7 +95,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 };
 
 const SaveSchema = v.object({
-	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Please pick a valid date.')),
+	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, key('errors.journal.badDay'))),
 	title: v.optional(v.pipe(v.string(), v.trim())),
 	body: v.pipe(v.string(), v.trim(), v.minLength(1)),
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
@@ -100,7 +108,7 @@ export const actions: Actions = {
 
 		// The contact must be visible to journal about it.
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const form = await request.formData();
 		const parsed = v.safeParse(SaveSchema, {
@@ -111,7 +119,10 @@ export const actions: Actions = {
 		});
 		if (!parsed.success) {
 			return fail(400, {
-				journalError: parsed.issues[0]?.message ?? 'Please write something before saving.'
+				journalError: say(
+					locals,
+					(parsed.issues[0]?.message as MessageKey | undefined) ?? 'errors.note.empty'
+				)
 			});
 		}
 
@@ -138,7 +149,12 @@ export const actions: Actions = {
 				visibility: parsed.output.visibility
 			});
 		} catch (err) {
-			return fail(400, { journalError: err instanceof Error ? err.message : 'Could not save the entry.' });
+			return fail(400, {
+				journalError:
+					err instanceof TranslatableError
+						? err.phrase(translator(locals))
+						: say(locals, 'errors.journal.couldNotSave')
+			});
 		}
 
 		// Persist the reverse links, dropping a self-reference (docs/02 §2.20.1).
@@ -171,7 +187,7 @@ export const actions: Actions = {
 					}
 				});
 			} catch {
-				return fail(400, { journalError: 'The entry was saved, but a photo could not be added.' });
+				return fail(400, { journalError: say(locals, 'errors.journal.photoFailed') });
 			}
 		}
 

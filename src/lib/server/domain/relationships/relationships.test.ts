@@ -69,6 +69,7 @@ describe('describeRelationshipFor', () => {
 		expect(describeRelationshipFor('hans', endpoints, parentChild)).toEqual({
 			otherContactId: 'bettina',
 			label: 'Parent of',
+			side: 'forward',
 			category: 'family'
 		});
 	});
@@ -77,6 +78,7 @@ describe('describeRelationshipFor', () => {
 		expect(describeRelationshipFor('bettina', endpoints, parentChild)).toEqual({
 			otherContactId: 'hans',
 			label: 'Child of',
+			side: 'reverse',
 			category: 'family'
 		});
 	});
@@ -249,7 +251,13 @@ describe('readKinship', () => {
 		const { repo, asked } = kinRepo();
 		const found = await readKinship({ relationships: repo as RelationshipRepository }, viewer, 'hans');
 		expect(found.derived).toEqual([
-			{ personId: 'otto', displayName: 'Otto', term: 'grandparent', label: 'Grandfather', via: ['Bettina'] }
+			{
+				personId: 'otto',
+				displayName: 'Otto',
+				term: 'grandparent',
+				variant: 'male',
+				via: ['Bettina']
+			}
 		]);
 		expect(found.proposals).toEqual([]);
 		expect(asked).toEqual([viewer]);

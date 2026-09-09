@@ -12,6 +12,7 @@ import {
 } from '$lib/server/domain/relationships/relationship-types';
 import { getRelationshipTypeDeps, getRelationshipTypes } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
+import { say, translator } from '$lib/server/i18n/say';
 
 /*
  * The household's relationship vocabulary (docs/02 §2.4). Admin only: a type is shared by
@@ -37,14 +38,14 @@ const inputOf = (parsed: v.InferOutput<typeof TypeSchema>) => ({
 	symmetric: parsed.symmetric === 'on'
 });
 
-/** The messages a household should see; anything else is a bug and stays loud. */
-function messageOf(err: unknown): string | null {
+/** The messages a household should see, in its language; anything else is a bug and stays loud. */
+function messageOf(err: unknown, locals: App.Locals): string | null {
 	if (
 		err instanceof InvalidRelationshipTypeError ||
 		err instanceof RelationshipTypeInUseError ||
 		err instanceof BuiltInRelationshipTypeError
 	) {
-		return err.message;
+		return err.phrase(translator(locals));
 	}
 	return null;
 }
@@ -80,7 +81,7 @@ export const actions: Actions = {
 				inputOf(parsed.output)
 			);
 		} catch (err) {
-			const message = messageOf(err);
+			const message = messageOf(err, locals);
 			if (!message) throw err;
 			return fail(400, { error: message });
 		}
@@ -98,9 +99,9 @@ export const actions: Actions = {
 				parsed.output.typeId,
 				inputOf(parsed.output)
 			);
-			if (!changed) return fail(404, { error: 'That relationship type is gone.' });
+			if (!changed) return fail(404, { error: say(locals, 'errors.relationshipType.gone') });
 		} catch (err) {
-			const message = messageOf(err);
+			const message = messageOf(err, locals);
 			if (!message) throw err;
 			return fail(400, { error: message });
 		}
@@ -118,7 +119,7 @@ export const actions: Actions = {
 				parsed.output.typeId
 			);
 		} catch (err) {
-			const message = messageOf(err);
+			const message = messageOf(err, locals);
 			if (!message) throw err;
 			return fail(400, { error: message });
 		}

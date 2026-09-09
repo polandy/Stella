@@ -1,5 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
+import { createTranslator } from '$lib/i18n/translate';
 import { createContact, InvalidBirthDateError } from '$lib/server/domain/contacts/contacts';
 import { getContactDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
@@ -45,8 +46,11 @@ export const actions: Actions = {
 			relateTo: form.get('relateTo') || undefined,
 			visibility: form.get('visibility') || undefined
 		});
+		// The reader's language: everything this action can say back is a message key rendered
+		// here, where the request's locale is known (docs/02 §2.19).
+		const t = createTranslator(locals.locale);
 		if (!parsed.success) {
-			return fail(400, { error: 'Please check the form and try again.' });
+			return fail(400, { error: t('errors.form.checkAndRetry') });
 		}
 
 		const creator = {
@@ -63,8 +67,8 @@ export const actions: Actions = {
 			return fail(400, {
 				error:
 					err instanceof InvalidBirthDateError
-						? err.message
-						: 'Please enter at least a name or nickname.'
+						? err.phrase(t)
+						: t('errors.contact.needAName')
 			});
 		}
 

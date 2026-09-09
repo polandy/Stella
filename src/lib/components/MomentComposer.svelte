@@ -3,6 +3,7 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { processImage } from '$lib/image/process-image';
 	import { allowedForAudience } from '$lib/mentions/audience';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
@@ -31,6 +32,8 @@
 		autofocus?: boolean;
 	}
 	let { candidates, me, today, error = null, draft = null, autofocus = false }: Props = $props();
+
+	const t = useTranslate();
 
 	// svelte-ignore state_referenced_locally -- the draft is only a starting value on purpose
 	let body = $state(draft ?? '');
@@ -150,7 +153,7 @@
 			formEl.reset();
 			await invalidateAll();
 		} catch {
-			localError = 'Could not save. Try standard JPEG or PNG images.';
+			localError = t('composer.saveFailed');
 		} finally {
 			saving = false;
 		}
@@ -180,8 +183,8 @@
 			rows="2"
 			required
 			data-moment-body
-			placeholder="Met someone? Type it here, mention people with @"
-			aria-label="What happened?"
+			placeholder={t('composer.placeholder')}
+			aria-label={t('composer.label')}
 			aria-autocomplete="list"
 			onkeydown={onKeydown}
 			oninput={refreshPicker}
@@ -197,7 +200,7 @@
 			role="listbox"
 			class="absolute left-14 top-16 z-10 w-[min(320px,calc(100%-4rem))] rounded-app border border-border bg-card p-1 shadow-pop"
 		>
-			<li class="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">People</li>
+			<li class="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">{t('composer.people')}</li>
 			{#each rows as row, i (row.kind === 'person' ? row.person.id : 'create')}
 				<li>
 					<button
@@ -214,11 +217,11 @@
 						{#if row.kind === 'person'}
 							<Avatar id={row.person.id} name={row.person.displayName} size={22} />
 							<span class="truncate">{row.person.displayName}</span>
-							{#if row.person.id.startsWith('new:')}<span class="ml-auto text-xs text-fg-subtle">just created</span>{/if}
+							{#if row.person.id.startsWith('new:')}<span class="ml-auto text-xs text-fg-subtle">{t('composer.justCreated')}</span>{/if}
 						{:else}
 							<span class="grid size-[22px] place-items-center rounded-full border border-dashed border-success text-success">+</span>
-							<span class="font-semibold text-success">Create “{row.name}”</span>
-							<span class="ml-auto text-xs text-fg-subtle">new person</span>
+							<span class="font-semibold text-success">{t('composer.create', { name: row.name })}</span>
+							<span class="ml-auto text-xs text-fg-subtle">{t('composer.newPerson')}</span>
 						{/if}
 					</button>
 				</li>
@@ -234,26 +237,31 @@
 		<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted has-checked:border-transparent has-checked:bg-primary-soft has-checked:font-semibold has-checked:text-primary">
 			<input type="checkbox" class="sr-only" checked={visibility === 'shared'} onchange={(e) => (visibility = (e.currentTarget as HTMLInputElement).checked ? 'shared' : 'private')} />
 			<Icon name={visibility === 'shared' ? 'shared' : 'private'} size={13} />
-			{visibility === 'shared' ? 'Shared' : 'Private'}
+			{visibility === 'shared' ? t('common.shared') : t('common.private')}
 		</label>
 		<input type="hidden" name="visibility" value={visibility} />
 		<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted hover:text-fg">
 			<Icon name="photo" size={13} />
-			{picked.length ? `${picked.length} photo${picked.length > 1 ? 's' : ''}` : 'Photo'}
+			{picked.length ? t('composer.photoCount', { count: picked.length }) : t('composer.photo')}
 			<input type="file" accept="image/*" multiple onchange={onFiles} class="hidden" />
 		</label>
 		<label class="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted">
-			<input type="date" name="entryDate" value={today} max={today} required class="bg-transparent text-fg-muted" aria-label="Day" />
+			<input type="date" name="entryDate" value={today} max={today} required class="bg-transparent text-fg-muted" aria-label={t('composer.day')} />
 		</label>
 		<span class="text-xs text-fg-subtle" aria-live="polite">
 			{#if referenced.length}
-				Goes to <b class="font-semibold text-fg-muted">{referenced[0].displayName}</b>’s journal{referenced.length > 1 ? `, mentions ${referenced.length - 1}` : ''}
+				{t('composer.goesTo')}
+				<b class="font-semibold text-fg-muted">{referenced[0].displayName}</b>{t(
+					'composer.goesToJournal'
+				)}{referenced.length > 1
+					? t('composer.alsoMentions', { count: referenced.length - 1 })
+					: ''}
 			{:else if body.trim()}
-				Mention at least one person with @
+				{t('composer.needMention')}
 			{/if}
 		</span>
 		<Button variant="primary" disabled={!canSave} class="ml-auto">
-			{saving ? 'Saving…' : 'Save'}
+			{saving ? t('common.saving') : t('common.save')}
 			<kbd class="rounded border border-primary-fg/40 px-1 text-[10px] font-medium opacity-75">⌘⏎</kbd>
 		</Button>
 	</div>
