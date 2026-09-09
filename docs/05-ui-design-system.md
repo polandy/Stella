@@ -371,6 +371,13 @@ be taken back from here (docs/02 §2.23), and every one of them is the same comp
 (`RemoveButton`), so no list can quietly opt out. Saving says *Saved* and closes the form it
 was typed in — a section's editor and an inline edit alike. On a phone the region sits above the tab bar.
 
+**Language picker** (`src/lib/components/LanguagePicker.svelte`) is a segmented control of
+plain submit buttons, one per language, each naming itself in itself (*English*, *Deutsch*).
+It posts to `/locale` and comes back on the page it was pressed on, now in that language, so
+it works with JavaScript off. It appears twice: in **Settings → Language**, and small under
+the sign-in form — the first screen has to be readable before there is a profile to remember
+anything in (docs/02 §2.19).
+
 ## 5.8 Relationship & context explorer styling
 
 The explorer (§2.7, core feature) should feel alive and effortless. Interaction detail:
@@ -420,6 +427,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - All actions reachable without a pointer; graph has a list-based fallback view.
 - Respect `prefers-reduced-motion`; no motion-only information.
 - Form fields labeled; errors announced; adequate touch targets (≥44px).
+- `<html lang>` carries the language the page was rendered in, so a screen reader speaks
+  German with German phonemes rather than reading it as English (docs/02 §2.19).
 
 ## 5.10 Iconography & imagery
 
