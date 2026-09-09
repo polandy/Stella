@@ -213,6 +213,21 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   and frozen (RFC 6350 / RFC 2426): unfolding, escaping, structured values. Every published
   parser weighs far more than the two dozen lines that saves, against the minimal-deps rule
   (§8.8). Revisit if calendar or full-round-trip vCard support is ever wanted.
+- **Our own message catalogue over an i18n library** — two languages and no plural rules
+  beyond "one or many" do not pay for Paraglide's compiler or a runtime store. Typed area
+  modules give the same guarantee more cheaply: German is typed against English, so a
+  missing key is a compile error, and a message with values is a function whose parameters
+  are checked at every call site (minimal-deps rule, §8.8). Revisit if a third language or
+  ICU plural forms arrive.
+- **The domain names messages, the edge says them** — a use-case that refuses something
+  throws a `TranslatableError` carrying a `Phrase` (key + values), and the import and
+  restore reports carry codes rather than sentences. It keeps `domain/` free of a language
+  and of a translator dependency, and it is what lets one request be answered end to end in
+  one language; the cost is a mapping at the edge. `Error.message` stays English so logs and
+  stack traces read the same everywhere.
+- **`user.locale_pref` is nullable** — NULL means "has not chosen", which is not the same
+  as choosing English. A stored default would outrank a German browser for every account the
+  seed, an invitation or SSO created, and there would be no way to tell the two apart later.
 - **Cytoscape.js for the graph** — mature, purpose-built; lazy-loaded to protect the
   bundle. D3-force considered as a lighter alt if bundle size demands it.
 - **Explorer lines are deepened for the canvas, not re-picked** — in Latte only five of the

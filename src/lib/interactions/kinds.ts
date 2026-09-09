@@ -4,7 +4,7 @@
  * Accents follow docs/05 §5.6: a fixed hue per kind, consistent across timeline and stream.
  */
 
-import type { MessageKey } from '$lib/i18n/translate';
+import type { MessageKey } from '../i18n/translate';
 
 /** Every kind an interaction can have, in the order the form offers them. */
 export const INTERACTION_KINDS = [
