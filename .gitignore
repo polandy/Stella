@@ -22,6 +22,10 @@ drizzle/*.db
 !.env.example
 !.env.test
 
+# Deployment specifics belong to the machine, not the repo: docker-compose.yml stays the
+# generic example and anything site-specific goes in an override beside it.
+docker-compose.override.yml
+
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
