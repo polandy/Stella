@@ -16,6 +16,7 @@ import { home } from './home';
 import { importer } from './import';
 import { interactions } from './interactions';
 import { journal } from './journal';
+import { kinship } from './kinship';
 import { nav } from './nav';
 import { relationships } from './relationships';
 import { search } from './search';
@@ -37,6 +38,7 @@ export const en = {
 	...importer,
 	...interactions,
 	...journal,
+	...kinship,
 	...nav,
 	...relationships,
 	...search,

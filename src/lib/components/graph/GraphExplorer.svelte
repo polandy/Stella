@@ -5,6 +5,8 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { categoryVar } from '$lib/design/tokens';
 	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { kinshipLabel } from '$lib/kinship/labels';
+	import { relationshipRowLabel } from '$lib/relationships/labels';
 	import { toCytoscapeElements } from '$lib/graph/cytoscape/elements';
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
@@ -18,7 +20,7 @@
 		withoutDerivedLinks
 	} from '$lib/graph/model/graph-model';
 	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
-	import type { ConnectionPath, GraphFilters, GraphModel } from '$lib/graph/model/types';
+	import type { ConnectionPath, GraphEdge, GraphFilters, GraphModel } from '$lib/graph/model/types';
 
 	interface Props {
 		/** The whole visible graph, delivered once by the server; explored entirely client-side. */
@@ -28,6 +30,15 @@
 	let { graph, centerId }: Props = $props();
 
 	const t = useTranslate();
+
+	// A built-in relationship type reads in the viewer's language; a household's own type
+	// reads as somebody typed it (docs/02 §2.19).
+	const edgeLabel = (edge: GraphEdge): string => {
+		if (edge.kin) return kinshipLabel(t, edge.kin);
+		if (edge.typeKey)
+			return relationshipRowLabel(t, { typeKey: edge.typeKey, label: edge.label ?? '' });
+		return edge.label ?? '';
+	};
 
 	// All exploration runs against this in-memory source — no further requests to the server.
 	// `graph` is fixed for the component's life (the route remounts via {#key centerId}).
@@ -98,7 +109,7 @@
 	// Push the full (expanded) element set to the renderer whenever the model grows.
 	$effect(() => {
 		if (!ready || !controller) return;
-		controller.setGraph(toCytoscapeElements(model, { centerId: centerId ?? undefined }));
+		controller.setGraph(toCytoscapeElements(model, { centerId: centerId ?? undefined, edgeLabel }));
 	});
 	// Apply filtering as show/hide (no re-layout).
 	$effect(() => {
@@ -198,7 +209,7 @@
 
 		controller = await createExplorer({
 			container,
-			elements: toCytoscapeElements(model, { centerId: centerId ?? undefined }),
+			elements: toCytoscapeElements(model, { centerId: centerId ?? undefined, edgeLabel }),
 			stylesheet: buildStylesheet(paletteFromDom()),
 			reducedMotion,
 			onTapNode,

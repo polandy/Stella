@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { deriveKinship, deriveKinshipForAll, type KinshipGraph } from './kinship';
+import { createTranslator } from '$lib/i18n/translate';
+import { kinshipLabel } from './labels';
 
 /*
  * Derived kinship (docs/02 §2.4.1). From the primary links a household actually enters —
@@ -49,19 +51,22 @@ function family(over: Partial<KinshipGraph> = {}): KinshipGraph {
 	};
 }
 
+/** The English catalogue, so the terms below are the words a reader actually sees. */
+const en = createTranslator('en');
+
 /** Terms derived for `subject`, as `[person, label]` pairs. */
 const kinOf = (subject: string, graph: KinshipGraph = family()) =>
-	deriveKinship(graph, subject).map((k) => [k.personId, k.label]);
+	deriveKinship(graph, subject).map((k) => [k.personId, kinshipLabel(en, k)]);
 
 describe('deriveKinship', () => {
 	it('names grandparents by gender and says who they come through', () => {
 		const found = deriveKinship(family(), 'Hans');
 		expect(found.find((k) => k.personId === 'Otto')).toMatchObject({
 			term: 'grandparent',
-			label: 'Grandfather',
+			variant: 'male',
 			via: ['Bettina']
 		});
-		expect(found.find((k) => k.personId === 'Rosa')).toMatchObject({ label: 'Grandmother' });
+		expect(kinOf('Hans')).toContainEqual(['Rosa', 'Grandmother']);
 	});
 
 	it('names grandchildren from the other end', () => {
@@ -180,5 +185,15 @@ describe('deriveKinshipForAll', () => {
 		}
 		// …and the shared set-up really did have something to share.
 		expect(all.get('Hans')?.length).toBeGreaterThan(0);
+	});
+});
+
+describe('kinshipLabel', () => {
+	it('says the same relative in German', () => {
+		const de = createTranslator('de');
+		const found = deriveKinship(family(), 'Hans');
+
+		expect(kinshipLabel(de, found.find((k) => k.personId === 'Otto')!)).toBe('Großvater');
+		expect(kinshipLabel(de, found.find((k) => k.personId === 'Rosa')!)).toBe('Großmutter');
 	});
 });

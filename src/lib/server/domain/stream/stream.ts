@@ -55,6 +55,8 @@ export interface RelationshipRow {
 	to: StreamPerson;
 	/** Reads "from is <label> of to" — the type's forward label. */
 	label: string;
+	/** The type's machine key, so a built-in label reads in the viewer's language. */
+	typeKey: string;
 }
 
 /** A logged interaction as the stream shows it (docs/02 §2.6). */

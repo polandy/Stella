@@ -63,7 +63,7 @@ describe('loadVisibleGraph', () => {
 		expect(graph.nodes.every((n) => n.kind === 'person')).toBe(true);
 
 		const child = graph.edges.find((e) => e.id === 'r-child');
-		expect(child).toMatchObject({ source: 'mara', target: 'lio', category: 'family', label: 'Parent of', directed: true });
+		expect(child).toMatchObject({ source: 'mara', target: 'lio', category: 'family', label: 'Parent of', typeKey: 'parent_child', directed: true });
 		const partner = graph.edges.find((e) => e.id === 'r-partner');
 		expect(partner).toMatchObject({ category: 'romantic', directed: false });
 	});
@@ -164,7 +164,7 @@ describe('loadVisibleGraph — derived kinship', () => {
 		expect(kinship.find((e) => e.id === 'kin:lio:rosa')).toMatchObject({
 			source: 'rosa',
 			target: 'lio',
-			label: 'Grandparent',
+			kin: { term: 'grandparent', variant: 'neutral' },
 			derived: true
 		});
 		// The stored links keep their own labels and are not duplicated by an inferred one.

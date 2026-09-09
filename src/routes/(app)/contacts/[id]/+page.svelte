@@ -18,8 +18,13 @@
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { hasMessage } from '$lib/i18n/translate';
-	import { relationshipStatusLabel, relationshipTypeLabel } from '$lib/relationships/labels';
+	import {
+		relationshipRowLabel,
+		relationshipStatusLabel,
+		relationshipTypeLabel
+	} from '$lib/relationships/labels';
 	import { requestedTab, type ContactTab } from '$lib/contacts/tabs';
+	import { kinshipLabel } from '$lib/kinship/labels';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
@@ -149,7 +154,12 @@
 		for (const r of data.relationships) {
 			if (seen.has(r.otherContactId)) continue;
 			seen.add(r.otherContactId);
-			out.push({ id: r.otherContactId, name: r.otherDisplayName, label: r.label, category: r.category });
+			out.push({
+				id: r.otherContactId,
+				name: r.otherDisplayName,
+				label: relationshipRowLabel(t, r),
+				category: r.category
+			});
 		}
 		return out;
 	});
@@ -674,7 +684,9 @@
 											class="size-2 shrink-0 rounded-full"
 											style="background:{categoryVar(rel.category)}"
 										></span>
-										<span class="w-24 shrink-0 truncate text-fg-muted">{rel.label}</span>
+										<span class="w-24 shrink-0 truncate text-fg-muted">
+											{relationshipRowLabel(t, rel)}
+										</span>
 										<a href="/contacts/{rel.otherContactId}" class="font-medium text-fg hover:underline">
 											{rel.otherDisplayName}
 										</a>
@@ -817,7 +829,7 @@
 							<ul class="flex flex-col divide-y divide-border-subtle">
 								{#each data.derivedKin as kin (kin.personId)}
 									<li class="flex items-center gap-3 py-2 text-sm">
-										<span class="w-24 shrink-0 truncate text-fg-muted">{kin.label}</span>
+										<span class="w-24 shrink-0 truncate text-fg-muted">{kinshipLabel(t, kin)}</span>
 										<a href="/contacts/{kin.personId}" class="font-medium text-fg hover:underline">
 											{kin.displayName}
 										</a>

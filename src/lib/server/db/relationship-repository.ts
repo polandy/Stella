@@ -216,6 +216,7 @@ export function createDrizzleRelationshipRepository(
 					toContactId: relationship.toContactId,
 					fromName: fromC.displayName,
 					toName: toC.displayName,
+					typeKey: relationshipType.key,
 					forwardLabel: relationshipType.forwardLabel,
 					reverseLabel: relationshipType.reverseLabel,
 					category: relationshipType.category,
@@ -242,7 +243,7 @@ export function createDrizzleRelationshipRepository(
 					{
 						id: '',
 						householdId: null,
-						key: '',
+						key: row.typeKey,
 						forwardLabel: row.forwardLabel,
 						reverseLabel: row.reverseLabel,
 						category: row.category,
@@ -259,6 +260,8 @@ export function createDrizzleRelationshipRepository(
 					otherContactId: description.otherContactId,
 					otherDisplayName,
 					label: description.label,
+					typeKey: row.typeKey,
+					side: description.side,
 					category: description.category,
 					description: row.description
 				};

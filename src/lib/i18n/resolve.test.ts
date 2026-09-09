@@ -6,6 +6,10 @@ describe('resolveLocale', () => {
 		expect(resolveLocale({ user: 'de', cookie: 'en', acceptLanguage: 'en-GB' })).toBe('de');
 	});
 
+	it('lets the browser decide for a member who has not picked a language yet', () => {
+		expect(resolveLocale({ user: null, acceptLanguage: 'de-DE,de;q=0.9' })).toBe('de');
+	});
+
 	it('uses the cookie when nobody is signed in', () => {
 		expect(resolveLocale({ cookie: 'de', acceptLanguage: 'en-GB' })).toBe('de');
 	});

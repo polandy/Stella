@@ -32,10 +32,13 @@ const admin: AuthUser = {
 	locale: 'en'
 };
 
-async function seedAdmin(passwordHash: string | null = 'hashed:pw') {
+async function seedAdmin(
+	options: { passwordHash?: string | null; locale?: AuthUser['locale'] } = {}
+) {
+	const { passwordHash = 'hashed:pw', locale = admin.locale } = options;
 	await repo.insertHouseholdWithAdmin({
 		household: { id: admin.householdId, name: 'Pollari' },
-		user: { ...admin, roleLocked: 1, passwordHash: passwordHash ?? '' }
+		user: { ...admin, locale, roleLocked: 1, passwordHash: passwordHash ?? '' }
 	});
 }
 
@@ -51,7 +54,7 @@ describe('createDrizzleAccountRepository', () => {
 	});
 
 	it('reads credentials back by email', async () => {
-		await seedAdmin('hashed:secret');
+		await seedAdmin({ passwordHash: 'hashed:secret' });
 		expect(await repo.findCredentialsByEmail('andy@example.test')).toEqual({
 			user: admin,
 			passwordHash: 'hashed:secret'
@@ -68,8 +71,8 @@ describe('createDrizzleAccountRepository', () => {
 		expect(await repo.findById('user-1')).toEqual({ ...admin, locale: 'de' });
 	});
 
-	it('defaults a user with no stored preference to English', async () => {
-		await seedAdmin();
-		expect((await repo.findById('user-1'))?.locale).toBe('en');
+	it('leaves the language unset until somebody picks one, so the browser still decides', async () => {
+		await seedAdmin({ locale: null });
+		expect((await repo.findById('user-1'))?.locale).toBeNull();
 	});
 });

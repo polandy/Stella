@@ -16,7 +16,7 @@ const toAuthUser = (row: {
 	email: string;
 	name: string;
 	role: 'admin' | 'member';
-	localePref: Locale;
+	localePref: Locale | null;
 }): AuthUser => ({
 	id: row.id,
 	householdId: row.householdId,

@@ -8,7 +8,7 @@ import {
 	text,
 	unique
 } from 'drizzle-orm/sqlite-core';
-import { DEFAULT_LOCALE, type Locale } from '../../i18n/locales';
+import type { Locale } from '../../i18n/locales';
 
 /*
  * Drizzle schema — implementation of docs/03-data-model.md.
@@ -42,7 +42,8 @@ export const user = sqliteTable('user', {
 	role: text('role').$type<Role>().notNull().default('member'),
 	roleLocked: integer('role_locked').notNull().default(0),
 	avatarPhotoId: text('avatar_photo_id'),
-	localePref: text('locale_pref').$type<Locale>().notNull().default(DEFAULT_LOCALE),
+	// Null until the member picks one: an unchosen language must not outrank the browser's.
+	localePref: text('locale_pref').$type<Locale>(),
 	themePref: text('theme_pref').$type<'system' | 'light' | 'dark'>().notNull().default('system'),
 	accentPref: text('accent_pref').notNull().default('mauve'),
 	defaultVisibility: text('default_visibility').$type<Visibility>().notNull().default('shared'),

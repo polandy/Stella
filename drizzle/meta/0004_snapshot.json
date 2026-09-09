@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "73f4f989-eea1-43f9-9e2b-fd67cbbd6a93",
+  "id": "f42e6db7-8fe6-49aa-8181-4322495e2079",
   "prevId": "9ff87313-464b-4157-a279-814fbdf0cb03",
   "tables": {
     "activity_log": {
@@ -2362,9 +2362,8 @@
           "name": "locale_pref",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'en'"
+          "notNull": false,
+          "autoincrement": false
         },
         "theme_pref": {
           "name": "theme_pref",

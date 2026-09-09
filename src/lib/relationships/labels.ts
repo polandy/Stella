@@ -26,6 +26,25 @@ export function relationshipTypeLabel(
 	return hasMessage(key) ? t(key) : stored;
 }
 
+/** One row of a person's relationships, as the reads hand it over. */
+export interface LabelledRelationship {
+	/** The type's machine key; empty for a row that does not carry one. */
+	typeKey: string;
+	/** Which of the type's two labels this row reads; forward when it does not say. */
+	side?: 'forward' | 'reverse';
+	/** The label as stored, and the fallback for a household's own type. */
+	label: string;
+}
+
+/**
+ * How one relationship row reads: a type Stella ships with is translated by its key, a
+ * household's own type is shown exactly as somebody typed it.
+ */
+export function relationshipRowLabel(t: Translate, row: LabelledRelationship): string {
+	const key = `relationships.type.${row.typeKey}.${row.side ?? 'forward'}`;
+	return hasMessage(key) ? t(key) : row.label;
+}
+
 /** What a relationship category is called. */
 export function relationshipCategoryLabel(t: Translate, category: string): string {
 	const key = `relationships.category.${category}`;

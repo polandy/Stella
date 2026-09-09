@@ -16,8 +16,8 @@ export interface AuthUser {
 	email: string;
 	name: string;
 	role: Role;
-	/** The language this user reads Stella in (docs/02 §2.19). */
-	locale: Locale;
+	/** The language this user reads Stella in, or null while they have not picked one. */
+	locale: Locale | null;
 }
 
 export interface StoredCredentials {

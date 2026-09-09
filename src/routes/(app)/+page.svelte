@@ -8,6 +8,7 @@
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
 	import { agoLabel, occasionLabel, whenLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { relationshipRowLabel } from '$lib/relationships/labels';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import type { ActionData, PageData } from './$types';
 
@@ -238,7 +239,7 @@
 										<span>{t('home.stream.linked')}</span>
 										<a href="/contacts/{item.from.id}" class="font-medium text-fg hover:underline">{item.from.name}</a>
 										<span class="text-fg-subtle">→</span>
-										<span>{item.label}</span>
+										<span>{relationshipRowLabel(t, item)}</span>
 										<a href="/contacts/{item.to.id}" class="font-medium text-fg hover:underline">{item.to.name}</a>
 										{#if t('home.stream.linkedAfter')}<span>{t('home.stream.linkedAfter')}</span>{/if}
 										<span class="rounded bg-link/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-link">{t('home.stream.relationship')}</span>
