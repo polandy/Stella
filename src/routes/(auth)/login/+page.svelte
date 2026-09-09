@@ -13,7 +13,7 @@
 <h1 class="text-2xl font-semibold text-fg">{t('auth.signIn')}</h1>
 
 {#if data.ssoError}
-	<p class="rounded-app bg-danger/10 px-3 py-2 text-sm text-danger">{t(data.ssoError)}</p>
+	<p class="rounded-app bg-danger/10 px-3 py-2 text-sm text-danger">{data.ssoError}</p>
 {/if}
 
 {#if data.oidcEnabled}
@@ -28,7 +28,7 @@
 {#if data.localEnabled}
 	<form method="POST" class="flex flex-col gap-4 rounded-app bg-card p-6 shadow-card">
 		{#if form?.error}
-			<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{t(form.error)}</p>
+			<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
 		{/if}
 
 		<label class="flex flex-col gap-1 text-sm">

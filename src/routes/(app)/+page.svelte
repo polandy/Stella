@@ -153,7 +153,7 @@
 										<b class="font-semibold text-fg">{item.mine ? t('home.you') : item.actor.name}</b>
 										<span>{t('home.stream.wroteIn')}</span>
 										<span><a href="/contacts/{item.anchor.id}/journal" class="font-medium text-fg hover:underline">{item.anchor.name}</a>{t('home.stream.wroteInJournal')}</span>
-										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('home.onlyYouSee')}><Icon name="private" size={11} />{t('home.private')}</span>{/if}
+										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('common.onlyYouSee')}><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.entryDate}>{ago(item.at)}</span>
 									</div>
 									<div class="note-body mt-1 text-fg">{@html item.bodyHtml}</div>
@@ -185,7 +185,7 @@
 										<a href="/contacts/{item.person.id}" class="font-medium text-fg hover:underline">{item.person.name}</a>
 										{#if t('home.stream.addedAfter')}<span>{t('home.stream.addedAfter')}</span>{/if}
 										<span class="rounded bg-success/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-success">{t('home.stream.newPerson')}</span>
-										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('home.onlyYouSee')}><Icon name="private" size={11} />{t('home.private')}</span>{/if}
+										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('common.onlyYouSee')}><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago(item.at)}</span>
 									</div>
 									{#if item.description}<p class="mt-0.5 text-sm text-fg-muted">{item.description}</p>{/if}
@@ -201,7 +201,7 @@
 										<span>{t('home.stream.loggedWith')}</span>
 										<a href="/contacts/{item.subject.id}" class="font-medium text-fg hover:underline">{item.subject.name}</a>
 										{#if t('home.stream.loggedAfter')}<span>{t('home.stream.loggedAfter')}</span>{/if}
-										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('home.onlyYouSee')}><Icon name="private" size={11} />{t('home.private')}</span>{/if}
+										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('common.onlyYouSee')}><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.happenedAt}>{ago(item.at)}</span>
 									</div>
 									{#if item.title}<p class="mt-0.5 text-sm text-fg">{item.title}</p>{/if}

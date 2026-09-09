@@ -27,5 +27,7 @@ export const common: CommonMessages = {
 	'common.private': 'Privat',
 	'common.sharedHint': 'Der ganze Haushalt sieht das.',
 	'common.privateHint': 'Nur du siehst das.',
+	'common.privateInline': 'privat',
+	'common.onlyYouSee': 'Das sieht nur du',
 	'common.somethingWentWrong': 'Da ist etwas schiefgegangen. Bitte versuche es erneut.'
 };

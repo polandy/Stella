@@ -22,6 +22,8 @@ import {
 } from '$lib/server/services';
 
 import type { Actions, PageServerLoad } from './$types';
+import { TranslatableError } from '$lib/errors/translatable';
+import { say, translator } from '$lib/server/i18n/say';
 
 /** Local calendar date as YYYY-MM-DD, for the compose form's default. */
 function today(): string {
@@ -33,7 +35,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 	const contact = await getContact(getContactDeps(), viewer, params.id);
-	if (!contact) throw error(404, 'Contact not found'); // never reveal existence
+	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
 
 	const [entries, journalPhotos, allContacts, contactNames] = await Promise.all([
 		listJournalForContact(getJournalDeps(), viewer, params.id),
@@ -100,7 +102,7 @@ export const actions: Actions = {
 
 		// The contact must be visible to journal about it.
 		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, 'Contact not found');
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const form = await request.formData();
 		const parsed = v.safeParse(SaveSchema, {
@@ -111,7 +113,7 @@ export const actions: Actions = {
 		});
 		if (!parsed.success) {
 			return fail(400, {
-				journalError: parsed.issues[0]?.message ?? 'Please write something before saving.'
+				journalError: parsed.issues[0]?.message ?? say(locals, 'errors.note.empty')
 			});
 		}
 
@@ -138,7 +140,12 @@ export const actions: Actions = {
 				visibility: parsed.output.visibility
 			});
 		} catch (err) {
-			return fail(400, { journalError: err instanceof Error ? err.message : 'Could not save the entry.' });
+			return fail(400, {
+				journalError:
+					err instanceof TranslatableError
+						? err.phrase(translator(locals))
+						: say(locals, 'errors.journal.couldNotSave')
+			});
 		}
 
 		// Persist the reverse links, dropping a self-reference (docs/02 §2.20.1).

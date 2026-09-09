@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import type { MessageKey } from '$lib/i18n/translate';
+import { createTranslator, type MessageKey } from '$lib/i18n/translate';
 import { authenticateLocal } from '$lib/server/auth/accounts';
 import { setSessionCookie } from '$lib/server/auth/cookies';
 import { createSession } from '$lib/server/auth/session';
@@ -29,6 +29,7 @@ const SSO_ERRORS: Record<string, MessageKey> = {
 };
 
 export const load: PageServerLoad = async ({ locals, url }) => {
+	const t = createTranslator(locals.locale);
 	if (locals.user) throw redirect(302, '/');
 	if ((await getAccounts().countUsers()) === 0) throw redirect(302, '/setup');
 	const config = getConfig();
@@ -41,26 +42,25 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			config.seedDemo && config.auth.local
 				? { email: DEMO_ADMIN_EMAIL, password: DEMO_ADMIN_PASSWORD }
 				: null,
-		ssoError: errorKey ? (SSO_ERRORS[errorKey] ?? SSO_ERRORS.sso) : null
+		ssoError: errorKey ? t(SSO_ERRORS[errorKey] ?? SSO_ERRORS.sso) : null
 	};
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies }) => {
+	default: async ({ request, cookies, locals }) => {
+		const t = createTranslator(locals.locale);
 		const form = await request.formData();
 		const parsed = v.safeParse(LoginSchema, {
 			email: form.get('email'),
 			password: form.get('password')
 		});
 		if (!parsed.success) {
-			const error: MessageKey = 'auth.invalidInput';
-			return fail(400, { error });
+			return fail(400, { error: t('auth.invalidInput') });
 		}
 
 		const user = await authenticateLocal(getAccountDeps(), parsed.output);
 		if (!user) {
-			const error: MessageKey = 'auth.invalidCredentials';
-			return fail(400, { error });
+			return fail(400, { error: t('auth.invalidCredentials') });
 		}
 
 		const { token, session } = await createSession(getSessionDeps(), user.id);

@@ -4,6 +4,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { categoryVar } from '$lib/design/tokens';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { toCytoscapeElements } from '$lib/graph/cytoscape/elements';
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
@@ -26,6 +27,8 @@
 	}
 	let { graph, centerId }: Props = $props();
 
+	const t = useTranslate();
+
 	// All exploration runs against this in-memory source — no further requests to the server.
 	// `graph` is fixed for the component's life (the route remounts via {#key centerId}).
 	const source = inMemoryGraphSource(untrack(() => graph));
@@ -42,12 +45,12 @@
 	// so a chip and the line it toggles can never drift apart.
 	// Each chip also draws its line style, so the chips are the legend (docs/05 §5.8).
 	const FILTERS = [
-		{ key: 'family', label: 'Family', token: categoryVar('family'), line: 'solid' },
-		{ key: 'romantic', label: 'Romantic', token: categoryVar('romantic'), line: 'solid' },
-		{ key: 'social', label: 'Social', token: categoryVar('social'), line: 'solid' },
-		{ key: 'professional', label: 'Work', token: categoryVar('professional'), line: 'solid' },
-		{ key: 'circles', label: 'Circles', token: 'var(--edge-membership)', line: 'dashed' },
-		{ key: 'kinship', label: 'Kinship', token: 'var(--edge-kinship)', line: 'dotted' }
+		{ key: 'family', label: 'relationships.category.family', token: categoryVar('family'), line: 'solid' },
+		{ key: 'romantic', label: 'relationships.category.romantic', token: categoryVar('romantic'), line: 'solid' },
+		{ key: 'social', label: 'relationships.category.social', token: categoryVar('social'), line: 'solid' },
+		{ key: 'professional', label: 'relationships.category.professional', token: categoryVar('professional'), line: 'solid' },
+		{ key: 'circles', label: 'graph.filter.circles', token: 'var(--edge-membership)', line: 'dashed' },
+		{ key: 'kinship', label: 'graph.filter.kinship', token: 'var(--edge-kinship)', line: 'dotted' }
 	] as const;
 
 	const reducedMotion =
@@ -245,8 +248,8 @@
 		<div class="pointer-events-auto relative">
 			<input
 				bind:value={query}
-				placeholder="Find a person…"
-				aria-label="Find a person"
+				placeholder={t('graph.findPlaceholder')}
+				aria-label={t('graph.find')}
 				class="w-56 rounded-app border border-border bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
 			/>
 			{#if suggestions.length}
@@ -281,7 +284,7 @@
 						style="border-color:{active.has(f.key) ? f.token : 'var(--fg-subtle)'};border-top-style:{f.line}"
 						aria-hidden="true"
 					></span>
-					{f.label}
+					{t(f.label)}
 				</button>
 			{/each}
 		</div>
@@ -295,7 +298,7 @@
 				? 'background:color-mix(in srgb, var(--warning) 22%, transparent); color:var(--warning)'
 				: ''}
 		>
-			Connection path
+			{t('graph.connectionPath')}
 		</button>
 	</div>
 
@@ -311,11 +314,11 @@
 				{#if path}
 					{pathChain.join(' → ')}
 				{:else if pathMissing}
-					No connection found between those two.
+					{t('graph.path.none')}
 				{:else if pathFrom}
-					Now pick the second person…
+					{t('graph.path.pickSecond')}
 				{:else}
-					Pick two people to trace how they’re connected.
+					{t('graph.path.pickTwo')}
 				{/if}
 			</div>
 		</div>
@@ -326,26 +329,25 @@
 		<aside
 			class="absolute right-3 top-3 bottom-3 w-64 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur"
 		>
-			<Button variant="ghost" size="sm" icon="remove" label="Close" class="float-right" onclick={() => (selected = null)} />
+			<Button variant="ghost" size="sm" icon="remove" label={t('common.close')} class="float-right" onclick={() => (selected = null)} />
 			{#if peekNode.kind === 'person'}
 				<div class="mb-3">
 					<Avatar id={peekNode.id} name={peekNode.label} avatarPhotoId={peekNode.avatarPhotoId ?? null} size={56} deceased={peekNode.deceased} />
 				</div>
 			{/if}
 			<div class="text-lg font-semibold text-fg">{peekNode.label}</div>
-			<div class="mb-4 text-xs capitalize text-fg-subtle">
-				{peekNode.kind === 'circle' ? 'Shared context' : 'Person'}
-				{#if peekNode.deceased}· deceased{/if}
+			<div class="mb-4 text-xs text-fg-subtle">
+				{peekNode.kind === 'circle' ? t('graph.peek.sharedContext') : t('graph.peek.person')}
+				{#if peekNode.deceased}· {t('graph.peek.deceased')}{/if}
 			</div>
 			<div class="flex flex-col gap-2">
-				<Button type="button" onclick={() => expand(peekNode.id)}>Expand connections</Button>
+				<Button type="button" onclick={() => expand(peekNode.id)}>{t('graph.peek.expand')}</Button>
 				{#if peekNode.kind === 'person'}
-					<Button variant="primary" href="/contacts/{peekNode.id}">Open profile</Button>
+					<Button variant="primary" href="/contacts/{peekNode.id}">{t('graph.peek.openProfile')}</Button>
 				{/if}
 			</div>
 			<p class="mt-4 text-xs text-fg-subtle">
-				Tip: click a selected node to expand it, or use the connection path to see how two
-				people are linked.
+				{t('graph.peek.tip')}
 			</p>
 		</aside>
 	{/if}

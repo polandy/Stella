@@ -9,6 +9,7 @@ import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
 import { readStagedDump } from '$lib/server/import/staging';
 import { getImportDeps, getImportedPhotoDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
+import { translator } from '$lib/server/i18n/say';
 
 /*
  * One imported photo per request (docs/02 §2.16). The plan is re-derived from the staged
@@ -90,7 +91,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		});
 		return json({ status });
 	} catch (err) {
-		if (err instanceof InvalidImageError) throw error(400, err.message);
+		if (err instanceof InvalidImageError) throw error(400, err.phrase(translator(locals)));
 		throw err;
 	}
 };

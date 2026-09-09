@@ -17,6 +17,7 @@ import {
 	getStreamDeps
 } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
+import { say, translator } from '$lib/server/i18n/say';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
@@ -111,7 +112,7 @@ export const actions: Actions = {
 		});
 		if (!parsed.success) {
 			return fail(400, {
-				momentError: parsed.issues[0]?.message ?? 'Could not save the moment.',
+				momentError: say(locals, 'errors.moment.couldNotSave'),
 				draft: String(form.get('body') ?? '')
 			});
 		}
@@ -120,10 +121,13 @@ export const actions: Actions = {
 		try {
 			captured = await captureMoment(getCaptureMomentDeps(), author, parsed.output);
 		} catch (err) {
+			// A moment with nobody in it is the one failure the writer can act on; anything
+			// else is ours to fix, and says so in the reader's language rather than in a
+			// message meant for a log.
 			const message =
-				err instanceof MomentNeedsPersonError || err instanceof Error
-					? err.message
-					: 'Could not save the moment.';
+				err instanceof MomentNeedsPersonError
+					? err.phrase(translator(locals))
+					: say(locals, 'errors.moment.couldNotSave');
 			return fail(400, { momentError: message, draft: parsed.output.body });
 		}
 

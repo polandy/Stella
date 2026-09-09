@@ -4,6 +4,7 @@ import { addMember, getCircle, listMembers, removeMember } from '$lib/server/dom
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
 import { getCircleDeps, getContactDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
+import { say } from '$lib/server/i18n/say';
 
 /*
  * Circle detail (docs/02 §2.4.2): the circle, its visible members (with roles), and a picker to
@@ -14,7 +15,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 	const circle = await getCircle(getCircleDeps(), viewer, params.id);
-	if (!circle) throw error(404, 'Circle not found');
+	if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 	const [members, allContacts] = await Promise.all([
 		listMembers(getCircleDeps(), viewer, params.id),
@@ -41,7 +42,7 @@ export const actions: Actions = {
 
 		// Both the circle and the contact must be visible to the actor.
 		const circle = await getCircle(getCircleDeps(), viewer, params.id);
-		if (!circle) throw error(404, 'Circle not found');
+		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 		const form = await request.formData();
 		const parsed = v.safeParse(AddSchema, {
@@ -51,7 +52,7 @@ export const actions: Actions = {
 		if (!parsed.success) return fail(400, { error: 'Please choose a person.' });
 
 		const contact = await getContact(getContactDeps(), viewer, parsed.output.contactId);
-		if (!contact) return fail(400, { error: 'That person could not be found.' });
+		if (!contact) return fail(400, { error: say(locals, 'errors.person.notFound') });
 
 		await addMember(getCircleDeps(), { userId: locals.user.id }, params.id, parsed.output.contactId, parsed.output.role);
 		throw redirect(303, `/circles/${params.id}`);
@@ -62,7 +63,7 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const circle = await getCircle(getCircleDeps(), viewer, params.id);
-		if (!circle) throw error(404, 'Circle not found');
+		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 		const form = await request.formData();
 		const contactId = form.get('contactId');

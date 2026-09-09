@@ -22,8 +22,6 @@ export const home = {
 	'home.empty.title': 'Nothing written yet',
 	'home.empty.hint':
 		'Write the first moment above and mention someone with @ — that is all it takes.',
-	'home.onlyYouSee': 'Only you can see this',
-	'home.private': 'private',
 	'home.link.question': (p: { a: string; b: string }) => `Link ${p.a} and ${p.b}?`,
 	'home.link.hint': 'They appear together in that moment. Pick how they are related.',
 	'home.link.confirm': 'Link',

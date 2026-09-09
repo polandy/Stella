@@ -16,8 +16,6 @@ export const home: HomeMessages = {
 	'home.empty.title': 'Noch nichts geschrieben',
 	'home.empty.hint':
 		'Schreib oben den ersten Moment und erwähne jemanden mit @ — mehr braucht es nicht.',
-	'home.onlyYouSee': 'Das sieht nur du',
-	'home.private': 'privat',
 	'home.link.question': (p) => `${p.a} und ${p.b} verknüpfen?`,
 	'home.link.hint': 'Sie kommen in diesem Moment zusammen vor. Wähle, wie sie zueinander stehen.',
 	'home.link.confirm': 'Verknüpfen',

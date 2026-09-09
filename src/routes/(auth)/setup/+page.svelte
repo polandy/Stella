@@ -17,7 +17,7 @@
 
 <form method="POST" class="flex flex-col gap-4 rounded-app bg-card p-6 shadow-card">
 	{#if form?.error}
-		<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{t(form.error)}</p>
+		<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
 	{/if}
 
 	<label class="flex flex-col gap-1 text-sm">

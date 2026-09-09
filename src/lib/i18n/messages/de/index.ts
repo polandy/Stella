@@ -7,14 +7,17 @@ import { auth } from './auth';
 import { circles } from './circles';
 import { common } from './common';
 import { components } from './components';
+import { contact } from './contact';
 import { contacts } from './contacts';
 import { dates } from './dates';
 import { errors } from './errors';
 import { home } from './home';
 import { interactions } from './interactions';
 import { nav } from './nav';
+import { relationships } from './relationships';
 import { search } from './search';
 import { settings } from './settings';
+import { story } from './story';
 
 /** Every message Stella can say in German. */
 export const de = {
@@ -22,12 +25,15 @@ export const de = {
 	...circles,
 	...common,
 	...components,
+	...contact,
 	...contacts,
 	...dates,
 	...errors,
 	...home,
 	...interactions,
 	...nav,
+	...relationships,
 	...search,
-	...settings
+	...settings,
+	...story
 };

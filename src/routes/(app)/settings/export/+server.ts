@@ -8,6 +8,7 @@ import {
 import { tarEntry, tarTrailer } from '$lib/archive/tar';
 import { getArchiveDeps, getMediaStore } from '$lib/server/services';
 import type { RequestHandler } from './$types';
+import { say } from '$lib/server/i18n/say';
 
 /*
  * Downloading the household archive (docs/02 §2.15).
@@ -25,7 +26,7 @@ export const POST: RequestHandler = async ({ locals }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	// The archive carries every member's private records, so only the household admin may take
 	// it (docs/02 §2.15). This is the authorisation; the repository scopes by household.
-	if (locals.user.role !== 'admin') throw error(403, 'Only the household admin can export.');
+	if (locals.user.role !== 'admin') throw error(403, say(locals, 'errors.export.adminOnly'));
 
 	const { fileName, document, mediaPaths } = await exportHousehold(getArchiveDeps(), {
 		userId: locals.user.id,

@@ -16,6 +16,9 @@
 	import { savedEnhance } from '$lib/undo/saved';
 	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
 	import { dayLabel } from '$lib/dates/labels';
+	import { useI18n } from '$lib/i18n/context.svelte';
+	import { hasMessage } from '$lib/i18n/translate';
+	import { relationshipStatusLabel, relationshipTypeLabel } from '$lib/relationships/labels';
 	import { requestedTab, type ContactTab } from '$lib/contacts/tabs';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
@@ -31,7 +34,16 @@
 	 * open a person for — and the profile follows underneath.
 	 */
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+
+	const i18n = useI18n();
+	const t = i18n.t;
 	const c = $derived(data.contact);
+
+	/** A stored vocabulary value — a field or date kind — in the viewer's language. */
+	const kindLabel = (group: 'fieldKind' | 'dateKind', kind: string): string => {
+		const key = `contact.${group}.${kind}`;
+		return hasMessage(key) ? t(key) : kind;
+	};
 	// Today in the browser's zone, as the default day for a new interaction.
 	const today = new Date().toLocaleDateString('en-CA');
 
@@ -69,11 +81,11 @@
 	 * rather than one that quietly means "as much as we have fetched".
 	 */
 	const tabs: { id: ContactTab; label: string; count?: number }[] = $derived([
-		{ id: 'story', label: 'Story' },
-		{ id: 'people', label: 'People', count: data.relationships.length },
-		{ id: 'notes', label: 'Notes', count: data.notes.length },
-		{ id: 'photos', label: 'Photos', count: data.gallery.length },
-		{ id: 'mentions', label: 'Mentioned in', count: data.mentionedIn.length }
+		{ id: 'story', label: t('contact.tab.story') },
+		{ id: 'people', label: t('contact.tab.people'), count: data.relationships.length },
+		{ id: 'notes', label: t('contact.tab.notes'), count: data.notes.length },
+		{ id: 'photos', label: t('contact.tab.photos'), count: data.gallery.length },
+		{ id: 'mentions', label: t('contact.tab.mentions'), count: data.mentionedIn.length }
 	]);
 
 	/*
@@ -110,7 +122,7 @@
 			formEl.reset();
 			await invalidateAll();
 		} catch {
-			uploadError = 'Those photos could not be added.';
+			uploadError = t('contact.photos.uploadFailed');
 		} finally {
 			uploading = false;
 		}
@@ -169,13 +181,18 @@
 	// The note's audience narrows whom the @-picker offers (docs/02 §2.20.1).
 	let noteVisibility = $state<'shared' | 'private'>('shared');
 	type SectionName = keyof typeof openSection;
-	const saved = (name: SectionName) => savedEnhance(removals, () => (openSection[name] = false));
+	const saved = (name: SectionName) =>
+		savedEnhance(removals, t('components.saved'), () => (openSection[name] = false));
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
-	const savedRelationship = savedEnhance(removals, () => (relateOpen = false));
+	const savedRelationship = savedEnhance(removals, t('components.saved'), () => (relateOpen = false));
 	/** Which relationship has its details open for correction; one at a time. */
 	let editingRelationship = $state<string | null>(null);
-	const savedRelationshipEdit = savedEnhance(removals, () => (editingRelationship = null));
-	const savedArchive = savedEnhance(removals);
+	const savedRelationshipEdit = savedEnhance(
+		removals,
+		t('components.saved'),
+		() => (editingRelationship = null)
+	);
+	const savedArchive = savedEnhance(removals, t('components.saved'));
 	/** Archived or not decides the action, the wording and the marker; asked once. */
 	const archived = $derived(c.archivedAt !== null);
 	/** The second click that a deletion asks for; there is no undo after it. */
@@ -184,13 +201,13 @@
 	let merging = $state(false);
 	/** The day it happened, for the marker's tooltip. */
 	const archivedOn = $derived(
-		c.archivedAt === null ? null : dayLabel(new Date(c.archivedAt).toLocaleDateString('en-CA'))
+		c.archivedAt === null ? null : dayLabel(i18n, new Date(c.archivedAt).toLocaleDateString('en-CA'))
 	);
 </script>
 
 <svelte:window onkeydown={onGalleryKeydown} />
 
-<svelte:head><title>{c.displayName} · Stella</title></svelte:head>
+<svelte:head><title>{t('contact.title', { name: c.displayName })}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
 	<!-- Hero: who this is, when you last spoke, and the two things you came to do -->
@@ -204,7 +221,7 @@
 					name="displayName"
 					value={c.displayName}
 					extra={{ description: c.description ?? '' }}
-					label="Edit name"
+					label={t('contact.editName')}
 					error={form?.profileError ?? null}
 					heading
 				/>
@@ -215,36 +232,36 @@
 					name="description"
 					value={c.description ?? ''}
 					extra={{ displayName: c.displayName }}
-					label="Edit description"
-					placeholder="A line about them"
-					empty="Add a description"
+					label={t('contact.editDescription')}
+					placeholder={t('contact.descriptionPlaceholder')}
+					empty={t('contact.addDescription')}
 				/>
 			</p>
 
 			<div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-fg-subtle">
 				{#if data.lastContactedAt}
 					<span data-testid="last-contacted">
-						Last contact
+						{t('contact.lastContact')}
 						<time datetime={data.lastContactedAt} class="font-medium text-fg-muted">
-							{dayLabel(data.lastContactedAt)}
+							{dayLabel(i18n, data.lastContactedAt)}
 						</time>
 					</span>
 				{:else}
-					<span data-testid="last-contacted">No contact logged yet</span>
+					<span data-testid="last-contacted">{t('contact.noContactYet')}</span>
 				{/if}
-				{#if metLine}<span>Met <span class="font-medium text-fg-muted">{metLine}</span></span>{/if}
+				{#if metLine}<span>{t('contact.met')} <span class="font-medium text-fg-muted">{metLine}</span></span>{/if}
 				{#if c.visibility === 'private'}
-					<span class="inline-flex items-center gap-1" title="Only you can see this contact">
-						<Icon name="private" size={11} />Private
+					<span class="inline-flex items-center gap-1" title={t('contact.privateContact')}>
+						<Icon name="private" size={11} />{t('contact.private')}
 					</span>
 				{/if}
 				{#if archived}
 					<span
 						data-testid="archived-marker"
 						class="inline-flex items-center gap-1 rounded-full bg-bg-sunken px-2 py-0.5 text-fg-subtle"
-						title="Archived on {archivedOn}"
+						title={t('contact.archivedOn', { day: archivedOn ?? '' })}
 					>
-						<Icon name="archive" size={11} />Archived
+						<Icon name="archive" size={11} />{t('contact.archived')}
 					</span>
 				{/if}
 			</div>
@@ -253,10 +270,10 @@
 
 		<div class="flex w-full gap-2 sm:w-auto">
 			<Button variant="primary" icon="write" href="/contacts/{c.id}/journal" class="flex-1 sm:flex-none">
-				Write
+				{t('contact.write')}
 			</Button>
 			<Button icon="met" type="button" onclick={logContact} class="flex-1 sm:flex-none">
-				Log contact
+				{t('contact.logContact')}
 			</Button>
 		</div>
 	</header>
@@ -264,11 +281,11 @@
 	<div class="grid gap-6 lg:grid-cols-[19rem_minmax(0,1fr)] lg:items-start">
 		<!-- Profile. Second on a phone: the story is why you opened the page. -->
 		<div class="order-2 flex min-w-0 flex-col gap-4 lg:sticky lg:top-4 lg:order-1">
-			<Section title="Contact" addLabel="Add" error={form?.fieldError ?? null} bind:open={openSection.contact}>
+			<Section title={t('contact.section.contact')} addLabel={t('common.add')} error={form?.fieldError ?? null} bind:open={openSection.contact}>
 				{#if visibleFields.length > 0}
 					<dl class="grid grid-cols-[5rem_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-sm">
 						{#each visibleFields as f (f.id)}
-							<dt class="truncate text-fg-subtle">{f.label ?? f.kind}</dt>
+							<dt class="truncate text-fg-subtle">{f.label ?? kindLabel('fieldKind', f.kind)}</dt>
 							<dd class="flex min-w-0 items-center gap-2">
 								{#if f.href}
 									<a href={f.href} class="truncate text-link hover:underline">{f.value}</a>
@@ -280,54 +297,60 @@
 									id={f.id}
 									action="?/removeField"
 									fields={{ fieldId: f.id }}
-									label="Remove {f.label ?? f.kind}"
-									removed="Contact detail removed"
+									label={t('contact.removeField', { what: f.label ?? kindLabel('fieldKind', f.kind) })}
+									removed={t('contact.fieldRemoved')}
 									class="ml-auto"
 								/>
 							</dd>
 						{/each}
 					</dl>
 				{:else}
-					<p class="text-sm text-fg-subtle">No phone, email, or address yet.</p>
+					<p class="text-sm text-fg-subtle">{t('contact.noFields')}</p>
 				{/if}
 
 				{#snippet editor()}
 					<form method="POST" action="?/addField" use:enhance={saved('contact')} class="flex flex-wrap items-end gap-2">
-						<select name="kind" aria-label="Kind" class={INPUT}>
-							{#each data.fieldKinds as kind (kind)}<option value={kind}>{kind}</option>{/each}
+						<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
+							{#each data.fieldKinds as kind (kind)}
+								<option value={kind}>{kindLabel('fieldKind', kind)}</option>
+							{/each}
 						</select>
-						<input name="label" placeholder="Label (optional)" class="w-28 {INPUT}" />
-						<input name="value" placeholder="Value" required class="min-w-40 flex-1 {INPUT}" />
-						<Button variant="primary" size="sm">Add</Button>
+						<input name="label" placeholder={t('contact.labelOptional')} class="w-28 {INPUT}" />
+						<input name="value" placeholder={t('contact.value')} required class="min-w-40 flex-1 {INPUT}" />
+						<Button variant="primary" size="sm">{t('common.add')}</Button>
 					</form>
 				{/snippet}
 			</Section>
 
-			<Section title="Dates" addLabel="Add" error={form?.dateError ?? null} bind:open={openSection.dates}>
+			<Section title={t('contact.section.dates')} addLabel={t('common.add')} error={form?.dateError ?? null} bind:open={openSection.dates}>
 				{#if data.derivedBirthday || data.estimatedBirthYear || visibleDates.length > 0}
 					<ul class="flex flex-col gap-1.5 text-sm">
 						{#if data.estimatedBirthYear}
 							<li class="flex items-center gap-3">
-								<span class="w-20 shrink-0 text-fg-subtle">born</span>
-								<span class="flex-1 truncate text-fg">around {data.estimatedBirthYear}</span>
-								<span class="text-xs text-fg-subtle">estimated</span>
+								<span class="w-20 shrink-0 text-fg-subtle">{t('contact.born')}</span>
+								<span class="flex-1 truncate text-fg">
+									{t('contact.around', { year: data.estimatedBirthYear })}
+								</span>
+								<span class="text-xs text-fg-subtle">{t('contact.estimated')}</span>
 							</li>
 						{/if}
 						{#if data.derivedBirthday}
 							<li class="flex items-center gap-3">
-								<span class="w-20 shrink-0 text-fg-subtle">birthday</span>
-								<span class="flex-1 truncate text-fg">{dayLabel(data.derivedBirthday)}</span>
-								<span class="text-xs text-fg-subtle">from the profile</span>
+								<span class="w-20 shrink-0 text-fg-subtle">{t('contact.birthday')}</span>
+								<span class="flex-1 truncate text-fg">{dayLabel(i18n, data.derivedBirthday)}</span>
+								<span class="text-xs text-fg-subtle">{t('contact.fromProfile')}</span>
 							</li>
 						{/if}
 						{#each visibleDates as d (d.id)}
 							<li class="flex items-center gap-3">
-								<span class="w-20 shrink-0 truncate text-fg-subtle">{d.label ?? d.kind}</span>
-								<span class="flex-1 truncate text-fg">{dayLabel(d.date)}</span>
-								{#if !d.recursYearly}<span class="text-xs text-fg-subtle">once</span>{/if}
+								<span class="w-20 shrink-0 truncate text-fg-subtle">
+									{d.label ?? kindLabel('dateKind', d.kind)}
+								</span>
+								<span class="flex-1 truncate text-fg">{dayLabel(i18n, d.date)}</span>
+								{#if !d.recursYearly}<span class="text-xs text-fg-subtle">{t('contact.once')}</span>{/if}
 								{#if !d.remind}
-									<span class="text-xs text-fg-subtle" title="Kept, but never surfaced on Home">
-										muted
+									<span class="text-xs text-fg-subtle" title={t('contact.mutedHint')}>
+										{t('contact.muted')}
 									</span>
 								{/if}
 								<RemoveButton
@@ -335,40 +358,42 @@
 									id={d.id}
 									action="?/removeDate"
 									fields={{ dateId: d.id }}
-									label="Remove {d.label ?? d.kind}"
-									removed="Date removed"
+									label={t('contact.removeDate', { what: d.label ?? kindLabel('dateKind', d.kind) })}
+									removed={t('contact.dateRemoved')}
 								/>
 							</li>
 						{/each}
 					</ul>
 				{:else}
-					<p class="text-sm text-fg-subtle">No birthday or anniversary yet.</p>
+					<p class="text-sm text-fg-subtle">{t('contact.noDates')}</p>
 				{/if}
 
 				{#snippet editor()}
 					<form method="POST" action="?/addDate" use:enhance={saved('dates')} class="flex flex-wrap items-end gap-2">
-						<select name="kind" aria-label="Kind" class={INPUT}>
-							{#each data.dateKinds as kind (kind)}<option value={kind}>{kind}</option>{/each}
+						<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
+							{#each data.dateKinds as kind (kind)}
+								<option value={kind}>{kindLabel('dateKind', kind)}</option>
+							{/each}
 						</select>
-						<input type="date" name="date" required class={INPUT} aria-label="Day" />
-						<input name="label" placeholder="Name (for custom)" class="w-full {INPUT}" />
+						<input type="date" name="date" required class={INPUT} aria-label={t('contact.day')} />
+						<input name="label" placeholder={t('contact.dateNameForCustom')} class="w-full {INPUT}" />
 						<label class="flex items-center gap-1.5 text-sm text-fg-muted">
-							<input type="checkbox" name="yearUnknown" /> Year unknown
+							<input type="checkbox" name="yearUnknown" /> {t('contact.yearUnknown')}
 						</label>
 						<label class="flex items-center gap-1.5 text-sm text-fg-muted">
-							<input type="checkbox" name="recursYearly" checked /> Every year
+							<input type="checkbox" name="recursYearly" checked /> {t('contact.everyYear')}
 						</label>
 						<label class="flex items-center gap-1.5 text-sm text-fg-muted">
-							<input type="checkbox" name="remind" checked /> Show on Home
+							<input type="checkbox" name="remind" checked /> {t('contact.showOnHome')}
 						</label>
-						<Button variant="primary" size="sm" class="ml-auto">Add</Button>
+						<Button variant="primary" size="sm" class="ml-auto">{t('common.add')}</Button>
 					</form>
 				{/snippet}
 			</Section>
 
-			<Section title="Circles" count={visibleCircles.length} addLabel="Join" error={form?.circleError ?? null} bind:open={openSection.circles}>
+			<Section title={t('contact.section.circles')} count={visibleCircles.length} addLabel={t('contact.join')} error={form?.circleError ?? null} bind:open={openSection.circles}>
 				{#snippet action()}
-					<a href="/circles" class="text-xs text-link hover:underline">All circles</a>
+					<a href="/circles" class="text-xs text-link hover:underline">{t('contact.allCircles')}</a>
 				{/snippet}
 
 				{#if visibleCircles.length}
@@ -392,8 +417,8 @@
 										id={circle.membershipId}
 										action="?/leaveCircle"
 										fields={{ circleId: circle.circleId }}
-										label="Leave {circle.name}"
-										removed="Left the circle"
+										label={t('contact.leaveCircle', { name: circle.name })}
+										removed={t('contact.leftCircle')}
 										bare
 										class="contents"
 									/>
@@ -402,7 +427,7 @@
 						{/each}
 					</ul>
 				{:else}
-					<p class="text-sm text-fg-subtle">Not in any circle yet.</p>
+					<p class="text-sm text-fg-subtle">{t('contact.noCircles')}</p>
 				{/if}
 
 				{#snippet editor()}
@@ -410,19 +435,19 @@
 						<input
 							name="circleName"
 							list="circle-names"
-							placeholder="Join or create a circle…"
+							placeholder={t('contact.joinOrCreate')}
 							class="min-w-40 flex-1 {INPUT}"
 						/>
 						<datalist id="circle-names">
 							{#each data.circleNames as name (name)}<option value={name}></option>{/each}
 						</datalist>
-						<input name="role" placeholder="role (optional)" class="w-28 {INPUT}" />
-						<Button variant="primary" size="sm">Add</Button>
+						<input name="role" placeholder={t('contact.roleOptional')} class="w-28 {INPUT}" />
+						<Button variant="primary" size="sm">{t('common.add')}</Button>
 					</form>
 				{/snippet}
 			</Section>
 
-			<Section title="Tags" count={visibleTags.length} addLabel="Add" error={form?.tagError ?? null} bind:open={openSection.tags}>
+			<Section title={t('contact.section.tags')} count={visibleTags.length} addLabel={t('common.add')} error={form?.tagError ?? null} bind:open={openSection.tags}>
 				{#if visibleTags.length}
 					<ul class="flex flex-wrap gap-1.5">
 						{#each visibleTags as tag (tag.id)}
@@ -436,8 +461,8 @@
 									id={tag.id}
 									action="?/removeTag"
 									fields={{ tagId: tag.id }}
-									label="Remove tag {tag.name}"
-									removed="Tag removed"
+									label={t('contact.removeTag', { name: tag.name })}
+									removed={t('contact.tagRemoved')}
 									bare
 									class="contents"
 								/>
@@ -445,25 +470,25 @@
 						{/each}
 					</ul>
 				{:else}
-					<p class="text-sm text-fg-subtle">No tags yet.</p>
+					<p class="text-sm text-fg-subtle">{t('contact.noTags')}</p>
 				{/if}
 
 				{#snippet editor()}
 					<form method="POST" action="?/addTag" use:enhance={saved('tags')} class="flex flex-wrap items-end gap-2">
-						<input name="name" placeholder="Tag name" required class="min-w-32 flex-1 {INPUT}" />
-						<select name="color" aria-label="Colour" class={INPUT}>
+						<input name="name" placeholder={t('contact.tagName')} required class="min-w-32 flex-1 {INPUT}" />
+						<select name="color" aria-label={t('contact.colour')} class={INPUT}>
 							{#each data.tagColors as color (color)}<option value={color}>{color}</option>{/each}
 						</select>
-						<Button variant="primary" size="sm">Add</Button>
+						<Button variant="primary" size="sm">{t('common.add')}</Button>
 					</form>
 				{/snippet}
 			</Section>
 
-			<Section title="How we met">
+			<Section title={t('contact.section.howWeMet')}>
 				{#if metLine}
 					<p class="font-serif text-[15px] leading-relaxed text-fg">{metLine}</p>
 				{:else}
-					<p class="text-sm text-fg-subtle">Not recorded yet.</p>
+					<p class="text-sm text-fg-subtle">{t('contact.notRecorded')}</p>
 				{/if}
 			</Section>
 
@@ -473,18 +498,12 @@
 			-->
 			<form method="POST" action={archived ? '?/restore' : '?/archive'} use:enhance={savedArchive}>
 				{#if archived}
-					<Button variant="ghost" size="sm" icon="archive">Bring back into the lists</Button>
+					<Button variant="ghost" size="sm" icon="archive">{t('contact.archive.bringBack')}</Button>
 				{:else}
-					<Button variant="ghost" size="sm" icon="archive">Archive this person</Button>
+					<Button variant="ghost" size="sm" icon="archive">{t('contact.archive.archive')}</Button>
 				{/if}
 				<p class="mt-1 text-xs text-fg-subtle">
-					{#if archived}
-						They are out of the directory, the search and Home's reminders — their page,
-						their story and the family map are untouched.
-					{:else}
-						Takes them out of the directory, the search and Home's reminders. Nothing is
-						deleted, and the family map keeps them.
-					{/if}
+					{archived ? t('contact.archive.archivedHint') : t('contact.archive.hint')}
 				</p>
 			</form>
 
@@ -502,18 +521,17 @@
 						aria-expanded={merging}
 						onclick={() => (merging = !merging)}
 					>
-						{merging ? 'Cancel' : 'Merge someone into this person'}
+						{merging ? t('common.cancel') : t('contact.merge.open')}
 					</Button>
 					{#if merging}
 						<form method="POST" action="?/merge" class="mt-2 flex flex-col gap-2 rounded-app bg-bg-sunken p-3">
 							<p class="text-xs text-fg">
-								The person you choose is folded into {c.displayName} — everything of theirs
-								comes across, and their record is gone. It cannot be undone.
+								{t('contact.merge.explain', { name: c.displayName })}
 							</p>
 							<label class="flex flex-col gap-1">
-								<span class="text-xs text-fg-muted">Who is the same person?</span>
+								<span class="text-xs text-fg-muted">{t('contact.merge.who')}</span>
 								<select name="mergedId" class={INPUT} required>
-									<option value="" disabled selected>Choose someone…</option>
+									<option value="" disabled selected>{t('contact.merge.choose')}</option>
 									{#each data.otherContacts as other (other.id)}
 										<option value={other.id}>{other.displayName}</option>
 									{/each}
@@ -521,7 +539,9 @@
 							</label>
 							{#if form?.mergeError}<p class="text-xs text-danger">{form.mergeError}</p>{/if}
 							<div>
-								<Button variant="primary" size="sm">Merge into {c.displayName}</Button>
+								<Button variant="primary" size="sm">
+									{t('contact.merge.submit', { name: c.displayName })}
+								</Button>
 							</div>
 						</form>
 					{/if}
@@ -542,16 +562,17 @@
 						aria-expanded={confirmingDelete}
 						onclick={() => (confirmingDelete = !confirmingDelete)}
 					>
-						{confirmingDelete ? 'Keep them' : 'Delete for good'}
+						{confirmingDelete ? t('contact.delete.keep') : t('contact.delete.open')}
 					</Button>
 					{#if confirmingDelete}
 						<form method="POST" action="?/delete" class="mt-2 flex flex-col gap-2 rounded-app bg-bg-sunken p-3">
 							<p class="text-xs text-fg">
-								This removes {c.displayName} and everything about them — notes, photos, dates,
-								their journal and every link to them. It cannot be undone.
+								{t('contact.delete.explain', { name: c.displayName })}
 							</p>
 							<div>
-								<Button variant="danger" size="sm">Delete {c.displayName}</Button>
+								<Button variant="danger" size="sm">
+									{t('contact.delete.submit', { name: c.displayName })}
+								</Button>
 							</div>
 						</form>
 					{/if}
@@ -561,7 +582,7 @@
 
 		<!-- What has happened, and who this person is connected to -->
 		<div class="order-1 flex min-w-0 flex-col gap-3 lg:order-2">
-			<div class="flex gap-1 border-b border-border" role="tablist" aria-label="This person">
+			<div class="flex gap-1 border-b border-border" role="tablist" aria-label={t('contact.tablist')}>
 				{#each tabs as t (t.id)}
 					<button
 						role="tab"
@@ -585,7 +606,7 @@
 
 			<div id="panel-story" role="tabpanel" aria-labelledby="tab-story" hidden={tab !== 'story'}>
 				<Section
-					addLabel="Log contact"
+					addLabel={t('contact.logContact')}
 					addIcon="met"
 					bind:open={logOpen}
 					error={form?.interactionError ?? null}
@@ -597,19 +618,19 @@
 					{#snippet editor()}
 						<form method="POST" action="?/logInteraction" class="flex flex-col gap-3">
 							<div class="flex flex-wrap items-end gap-2">
-								<select name="kind" aria-label="Kind" class={INPUT}>
+								<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
 									{#each data.interactionKinds as kind (kind)}
-										<option value={kind}>{KIND_PRESENTATION[kind].label}</option>
+										<option value={kind}>{t(KIND_PRESENTATION[kind].label)}</option>
 									{/each}
 								</select>
-								<input type="date" name="happenedAt" value={today} required aria-label="Day" class={INPUT} />
-								<input name="title" placeholder="What happened? (optional)" class="min-w-48 flex-1 {INPUT}" />
+								<input type="date" name="happenedAt" value={today} required aria-label={t('contact.day')} class={INPUT} />
+								<input name="title" placeholder={t('contact.interaction.titlePlaceholder')} class="min-w-48 flex-1 {INPUT}" />
 							</div>
-							<textarea name="description" rows="2" placeholder="Details… (optional)" class={INPUT}
+							<textarea name="description" rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} class={INPUT}
 							></textarea>
 							{#if data.otherContacts.length > 0}
 								<label class="flex flex-col gap-1 text-sm text-fg-muted">
-									Who else was there?
+									{t('contact.interaction.whoElse')}
 									<select name="participants" multiple size="3" class={INPUT}>
 										{#each data.otherContacts as other (other.id)}
 											<option value={other.id}>{other.displayName}</option>
@@ -619,12 +640,14 @@
 							{/if}
 							<div class="flex flex-wrap items-center gap-4 text-sm">
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="shared" checked /> Shared
+									<input type="radio" name="visibility" value="shared" checked /> {t('common.shared')}
 								</label>
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="private" /> Private
+									<input type="radio" name="visibility" value="private" /> {t('common.private')}
 								</label>
-								<Button variant="primary" size="sm" class="ml-auto">Log interaction</Button>
+								<Button variant="primary" size="sm" class="ml-auto">
+									{t('contact.interaction.submit')}
+								</Button>
 							</div>
 						</form>
 					{/snippet}
@@ -632,13 +655,13 @@
 			</div>
 
 			<div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden={tab !== 'people'}>
-				<Section addLabel="Add relationship" error={form?.error ?? null} bind:open={relateOpen}>
+				<Section addLabel={t('contact.relationships.add')} error={form?.error ?? null} bind:open={relateOpen}>
 					{#snippet action()}
 						<a
 							href="/graph?center={c.id}"
 							class="inline-flex items-center gap-1 text-xs text-link hover:underline"
 						>
-							<Icon name="explore" size={12} />Explore in graph
+							<Icon name="explore" size={12} />{t('contact.relationships.explore')}
 						</a>
 					{/snippet}
 
@@ -659,11 +682,13 @@
 											<span class="truncate text-fg-subtle">· {rel.description}</span>
 										{/if}
 										{#if rel.sinceDate}
-											<span class="shrink-0 text-fg-subtle">· since {dayLabel(rel.sinceDate)}</span>
+											<span class="shrink-0 text-fg-subtle">
+												· {t('contact.relationships.since', { day: dayLabel(i18n, rel.sinceDate) })}
+											</span>
 										{/if}
 										{#if rel.status === 'former'}
 											<span class="shrink-0 rounded-full bg-bg-sunken px-2 py-0.5 text-xs text-fg-subtle">
-												former
+												{relationshipStatusLabel(t, rel.status)}
 											</span>
 										{/if}
 										<div class="ml-auto flex shrink-0 items-center gap-1">
@@ -675,15 +700,15 @@
 												onclick={() =>
 													(editingRelationship = editingRelationship === rel.id ? null : rel.id)}
 											>
-												{editingRelationship === rel.id ? 'Cancel' : 'Edit'}
+												{editingRelationship === rel.id ? t('common.cancel') : t('common.edit')}
 											</Button>
 											<RemoveButton
 												kind="relationship"
 												id={rel.id}
 												action="?/removeRelationship"
 												fields={{ relationshipId: rel.id }}
-												label="Remove the link to {rel.otherDisplayName}"
-												removed="Relationship removed"
+												label={t('contact.relationships.remove', { name: rel.otherDisplayName })}
+												removed={t('contact.relationships.removed')}
 											/>
 										</div>
 									</div>
@@ -699,28 +724,32 @@
 										>
 											<input type="hidden" name="relationshipId" value={rel.id} />
 											<label class="flex flex-1 flex-col gap-1">
-												<span class="text-xs text-fg-muted">How they connect</span>
+												<span class="text-xs text-fg-muted">{t('contact.relationships.howConnect')}</span>
 												<input
 													name="description"
 													value={rel.description ?? ''}
-													placeholder="met through Peter at the ski course"
+													placeholder={t('contact.relationships.howConnectPlaceholder')}
 													class={INPUT}
 												/>
 											</label>
 											<label class="flex flex-col gap-1">
-												<span class="text-xs text-fg-muted">Since</span>
+												<span class="text-xs text-fg-muted">{t('contact.relationships.sinceLabel')}</span>
 												<input type="date" name="sinceDate" value={rel.sinceDate ?? ''} class={INPUT} />
 											</label>
 											<label class="flex flex-col gap-1">
-												<span class="text-xs text-fg-muted">Status</span>
+												<span class="text-xs text-fg-muted">{t('contact.relationships.status')}</span>
 												<select name="status" class={INPUT}>
-													<option value="" selected={rel.status === null}>Not said</option>
+													<option value="" selected={rel.status === null}>
+														{relationshipStatusLabel(t, null)}
+													</option>
 													{#each RELATIONSHIP_STATUSES as status (status)}
-														<option value={status} selected={rel.status === status}>{status}</option>
+														<option value={status} selected={rel.status === status}>
+															{relationshipStatusLabel(t, status)}
+														</option>
 													{/each}
 												</select>
 											</label>
-											<Button variant="primary" size="sm">Save</Button>
+											<Button variant="primary" size="sm">{t('common.save')}</Button>
 										</form>
 									{/if}
 								</li>
@@ -730,7 +759,9 @@
 						{#if egoNodes.length > 0}
 							<div class="mt-3">
 								<Button type="button" variant="ghost" size="sm" onclick={() => (showMap = !showMap)}>
-									{showMap ? 'Hide map' : 'Show map'}
+									{showMap
+										? t('contact.relationships.hideMap')
+										: t('contact.relationships.showMap')}
 								</Button>
 								{#if showMap}
 									<div class="mt-2">
@@ -740,7 +771,7 @@
 							</div>
 						{/if}
 					{:else}
-						<p class="text-sm text-fg-subtle">No relationships yet.</p>
+						<p class="text-sm text-fg-subtle">{t('contact.relationships.none')}</p>
 					{/if}
 
 					<!--
@@ -749,7 +780,9 @@
 					-->
 					{#if data.proposals.length > 0}
 						<div class="mt-4 flex flex-col gap-2 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="kin-proposals">
-							<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle">Also true?</h3>
+							<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle">
+								{t('contact.relationships.alsoTrue')}
+							</h3>
 							{#each data.proposals as proposal (proposal.fromId + proposal.toId)}
 								<form method="POST" action="?/addProposedRelationship" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
 									<input type="hidden" name="fromId" value={proposal.fromId} />
@@ -757,10 +790,15 @@
 									<input type="hidden" name="typeId" value={PARENT_CHILD_TYPE_KEY} />
 									<input type="hidden" name="propose" value={data.proposeFor} />
 									<span class="text-fg">
-										{proposal.fromName} is a parent of {proposal.toName}
+										{t('contact.relationships.parentProposal', {
+											parent: proposal.fromName,
+											child: proposal.toName
+										})}
 									</span>
 									<span class="text-fg-subtle">· {proposal.reason}</span>
-									<Button variant="secondary" size="sm" class="ml-auto">Add this too</Button>
+									<Button variant="secondary" size="sm" class="ml-auto">
+										{t('contact.relationships.addThisToo')}
+									</Button>
 								</form>
 							{/each}
 						</div>
@@ -774,7 +812,7 @@
 					{#if data.derivedKin.length > 0}
 						<div class="mt-4 border-t border-border-subtle pt-3" data-testid="derived-kin">
 							<h3 class="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-fg-subtle">
-								<Icon name="explore" size={12} />Also related · worked out, not entered
+								<Icon name="explore" size={12} />{t('contact.relationships.derived')}
 							</h3>
 							<ul class="flex flex-col divide-y divide-border-subtle">
 								{#each data.derivedKin as kin (kin.personId)}
@@ -784,7 +822,11 @@
 											{kin.displayName}
 										</a>
 										{#if kin.via.length > 0}
-											<span class="truncate text-fg-subtle">· via {kin.via.join(' and ')}</span>
+											<span class="truncate text-fg-subtle">
+												· {t('contact.relationships.via', {
+													people: kin.via.join(t('contact.relationships.viaAnd'))
+												})}
+											</span>
 										{/if}
 									</li>
 								{/each}
@@ -796,15 +838,17 @@
 						{#if data.otherContacts.length > 0}
 							<form method="POST" action="?/addRelationship" use:enhance={savedRelationship} class="flex flex-wrap items-end gap-3">
 								<label class="flex flex-1 flex-col gap-1 text-sm">
-									<span class="text-fg-muted">{c.displayName} is…</span>
+									<span class="text-fg-muted">
+										{t('contact.relationships.is', { name: c.displayName })}
+									</span>
 									<select name="typeId" class={INPUT}>
 										{#each data.relationshipTypes as type (type.id)}
-											<option value={type.id}>{type.forwardLabel}</option>
+											<option value={type.id}>{relationshipTypeLabel(t, type)}</option>
 										{/each}
 									</select>
 								</label>
 								<label class="flex flex-1 flex-col gap-1 text-sm">
-									<span class="text-fg-muted">Person</span>
+									<span class="text-fg-muted">{t('contact.relationships.person')}</span>
 									<select name="targetId" class={INPUT}>
 										{#each data.otherContacts as other (other.id)}
 											<option value={other.id} selected={other.id === data.relateTo}>
@@ -814,37 +858,37 @@
 									</select>
 								</label>
 								<label class="flex w-full flex-col gap-1 text-sm sm:flex-1">
-									<span class="text-fg-muted">How they connect (optional)</span>
+									<span class="text-fg-muted">{t('contact.relationships.howConnectOptional')}</span>
 									<input
 										name="description"
-										placeholder="met through Peter at the ski course"
+										placeholder={t('contact.relationships.howConnectPlaceholder')}
 										class={INPUT}
 									/>
 								</label>
 								<label class="flex flex-col gap-1 text-sm">
-									<span class="text-fg-muted">Since</span>
+									<span class="text-fg-muted">{t('contact.relationships.sinceLabel')}</span>
 									<input type="date" name="sinceDate" class={INPUT} />
 								</label>
 								<label class="flex flex-col gap-1 text-sm">
-									<span class="text-fg-muted">Status</span>
+									<span class="text-fg-muted">{t('contact.relationships.status')}</span>
 									<select name="status" class={INPUT}>
-										<option value="">Not said</option>
+										<option value="">{relationshipStatusLabel(t, null)}</option>
 										{#each RELATIONSHIP_STATUSES as status (status)}
-											<option value={status}>{status}</option>
+											<option value={status}>{relationshipStatusLabel(t, status)}</option>
 										{/each}
 									</select>
 								</label>
-								<Button variant="primary" size="sm">Add</Button>
+								<Button variant="primary" size="sm">{t('common.add')}</Button>
 							</form>
 						{:else}
-							<p class="text-sm text-fg-subtle">Add another person first, then link them here.</p>
+							<p class="text-sm text-fg-subtle">{t('contact.relationships.addSomeoneFirst')}</p>
 						{/if}
 					{/snippet}
 				</Section>
 			</div>
 
 			<div id="panel-notes" role="tabpanel" aria-labelledby="tab-notes" hidden={tab !== 'notes'}>
-				<Section addLabel="Add note" error={form?.noteError ?? null} bind:open={openSection.note}>
+				<Section addLabel={t('contact.notes.add')} error={form?.noteError ?? null} bind:open={openSection.note}>
 					{#if data.notes.length > 0}
 						<ul class="flex flex-col gap-3">
 							{#each data.notes as note (note.id)}
@@ -852,13 +896,13 @@
 									<div class="mb-1 flex items-center gap-2">
 										{#if note.isPinned}
 											<span class="inline-flex items-center gap-1 text-xs font-medium text-primary">
-												<Icon name="pinned" size={12} />pinned
+												<Icon name="pinned" size={12} />{t('contact.notes.pinned')}
 											</span>
 										{/if}
 										{#if note.title}<span class="font-medium text-fg">{note.title}</span>{/if}
 										{#if note.visibility === 'private'}
 											<span class="ml-auto inline-flex items-center gap-1 text-xs text-fg-subtle">
-												<Icon name="private" size={11} />private
+												<Icon name="private" size={11} />{t('common.privateInline')}
 											</span>
 										{/if}
 									</div>
@@ -868,29 +912,33 @@
 							{/each}
 						</ul>
 					{:else}
-						<p class="text-sm text-fg-subtle">No notes yet.</p>
+						<p class="text-sm text-fg-subtle">{t('contact.notes.none')}</p>
 					{/if}
 
 					{#snippet editor()}
 						<form method="POST" action="?/addNote" use:enhance={saved('note')} class="flex flex-col gap-3">
 							<MentionTextarea
 								name="body"
-								label="Note"
+								label={t('contact.notes.label')}
 								required
 								candidates={data.otherContacts}
 								visibility={noteVisibility}
-								placeholder="Write a note… (Markdown, @ to mention someone)"
+								placeholder={t('contact.notes.placeholder')}
 								class={INPUT}
 							/>
 							<div class="flex flex-wrap items-center gap-4 text-sm">
-								<label class="flex items-center gap-1.5"><input type="checkbox" name="isPinned" /> Pin</label>
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="shared" bind:group={noteVisibility} /> Shared
+									<input type="checkbox" name="isPinned" /> {t('contact.notes.pin')}
 								</label>
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="private" bind:group={noteVisibility} /> Private
+									<input type="radio" name="visibility" value="shared" bind:group={noteVisibility} />
+									{t('common.shared')}
 								</label>
-								<Button variant="primary" size="sm" class="ml-auto">Add note</Button>
+								<label class="flex items-center gap-1.5">
+									<input type="radio" name="visibility" value="private" bind:group={noteVisibility} />
+									{t('common.private')}
+								</label>
+								<Button variant="primary" size="sm" class="ml-auto">{t('contact.notes.add')}</Button>
 							</div>
 						</form>
 					{/snippet}
@@ -898,7 +946,7 @@
 			</div>
 
 			<div id="panel-photos" role="tabpanel" aria-labelledby="tab-photos" hidden={tab !== 'photos'}>
-				<Section addLabel="Add photos" error={form?.photoError ?? uploadError}>
+				<Section addLabel={t('contact.photos.add')} error={form?.photoError ?? uploadError}>
 					{#if data.gallery.length > 0}
 						<ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="photo-grid">
 							{#each data.gallery as p, index (p.id)}
@@ -910,7 +958,7 @@
 									>
 										<img
 											src={thumbnailUrl(p.id)}
-											alt={p.caption ?? `Photo of ${c.displayName}`}
+											alt={p.caption ?? t('contact.photos.of', { name: c.displayName })}
 											class="aspect-square w-full object-cover"
 											loading="lazy"
 										/>
@@ -918,7 +966,7 @@
 									{#if p.visibility === 'private'}
 										<span
 											class="absolute right-1 top-1 rounded-full bg-bg/80 p-1 text-fg-muted"
-											title="Private — only you can see this"
+											title={t('contact.photos.privateHint')}
 										>
 											<Icon name="private" size={11} />
 										</span>
@@ -927,13 +975,13 @@
 							{/each}
 						</ul>
 					{:else}
-						<p class="text-sm text-fg-subtle">No photos yet.</p>
+						<p class="text-sm text-fg-subtle">{t('contact.photos.none')}</p>
 					{/if}
 
 					{#snippet editor()}
 						<form onsubmit={uploadPhotos} class="flex flex-wrap items-end gap-3">
 							<label class="flex flex-1 flex-col gap-1 text-sm">
-								<span class="text-fg-muted">Pictures</span>
+								<span class="text-fg-muted">{t('contact.photos.pictures')}</span>
 								<input
 									name="files"
 									type="file"
@@ -946,14 +994,14 @@
 							</label>
 							<fieldset class="flex items-center gap-3 text-sm">
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="shared" checked /> Shared
+									<input type="radio" name="visibility" value="shared" checked /> {t('common.shared')}
 								</label>
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="private" /> Private
+									<input type="radio" name="visibility" value="private" /> {t('common.private')}
 								</label>
 							</fieldset>
 							<Button variant="primary" size="sm" disabled={uploading}>
-								{uploading ? 'Adding…' : 'Add'}
+								{uploading ? t('contact.photos.adding') : t('common.add')}
 							</Button>
 						</form>
 					{/snippet}
@@ -983,20 +1031,23 @@
 									<div class="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
 										<Icon name={reference.kind === 'note' ? 'write' : 'journal'} size={13} />
 										<span class="text-fg-muted">
-											in <span class="font-medium text-fg">{reference.sourceName}</span>’s
-											{reference.kind === 'note' ? 'notes' : 'journal'}
-											{#if reference.author}· by {reference.author}{/if}
+											{t('contact.mentions.in')}
+											<span class="font-medium text-fg">{reference.sourceName}</span>’s
+											{reference.kind === 'note'
+												? t('contact.mentions.notes')
+												: t('contact.mentions.journal')}
+											{#if reference.author}· {t('contact.mentions.by', { author: reference.author })}{/if}
 										</span>
 										{#if reference.visibility === 'private'}
 											<span class="ml-auto inline-flex items-center gap-1 text-xs text-fg-subtle">
-												<Icon name="private" size={11} />private
+												<Icon name="private" size={11} />{t('common.privateInline')}
 											</span>
 										{/if}
 										<span
 											class="text-xs text-fg-subtle"
 											class:ml-auto={reference.visibility !== 'private'}
 										>
-											{dayLabel(reference.day)}
+											{dayLabel(i18n, reference.day)}
 										</span>
 									</div>
 									{#if reference.title}
@@ -1011,7 +1062,7 @@
 					</ul>
 				{:else}
 					<p class="text-sm text-fg-subtle">
-						Nobody has mentioned {c.displayName} anywhere else yet.
+						{t('contact.mentions.none', { name: c.displayName })}
 					</p>
 				{/if}
 			</div>
@@ -1026,30 +1077,30 @@
 	avatar. Escape closes, the arrow keys walk the grid.
 -->
 {#if openedPhoto}
-	<div class="fixed inset-0 z-50 flex flex-col" role="dialog" aria-modal="true" aria-label="Photo" data-testid="photo-lightbox">
+	<div class="fixed inset-0 z-50 flex flex-col" role="dialog" aria-modal="true" aria-label={t('contact.photos.dialog')} data-testid="photo-lightbox">
 		<button
 			type="button"
 			class="absolute inset-0 bg-bg-sunken/90 backdrop-blur-sm"
-			aria-label="Close the photo"
+			aria-label={t('contact.photos.closePhoto')}
 			onclick={() => (openPhoto = null)}
 		></button>
 
 		<div class="relative m-auto flex w-full max-w-3xl flex-col gap-3 rounded-app bg-card p-4 shadow-pop">
 			<div class="flex items-center justify-between gap-3">
 				<p class="truncate text-sm text-fg">
-					{openedPhoto.caption ?? 'No caption'}
+					{openedPhoto.caption ?? t('contact.photos.noCaption')}
 					{#if openedPhoto.visibility === 'private'}
 						<span class="ml-2 inline-flex items-center gap-1 text-xs text-fg-subtle">
-							<Icon name="private" size={11} />private
+							<Icon name="private" size={11} />{t('common.privateInline')}
 						</span>
 					{/if}
 				</p>
-				<Button variant="ghost" size="sm" onclick={() => (openPhoto = null)}>Close</Button>
+				<Button variant="ghost" size="sm" onclick={() => (openPhoto = null)}>{t('common.close')}</Button>
 			</div>
 
 			<img
 				src={mediaUrl(openedPhoto.id)}
-				alt={openedPhoto.caption ?? `Photo of ${c.displayName}`}
+				alt={openedPhoto.caption ?? t('contact.photos.of', { name: c.displayName })}
 				class="max-h-[65vh] w-full rounded-control bg-bg-sunken object-contain"
 			/>
 
@@ -1057,7 +1108,7 @@
 				<form method="POST" action="?/usePhotoAsAvatar" class="contents">
 					<input type="hidden" name="photoId" value={openedPhoto.id} />
 					<Button variant="secondary" size="sm" disabled={openedPhoto.isAvatar}>
-						{openedPhoto.isAvatar ? 'Current photo' : 'Use as photo'}
+						{openedPhoto.isAvatar ? t('contact.photos.currentPhoto') : t('contact.photos.useAsPhoto')}
 					</Button>
 				</form>
 
@@ -1067,11 +1118,11 @@
 						<input
 							name="caption"
 							value={openedPhoto.caption ?? ''}
-							placeholder="Add a caption"
-							aria-label="Caption"
+							placeholder={t('contact.photos.captionPlaceholder')}
+							aria-label={t('contact.photos.caption')}
 							class="min-w-40 flex-1 {INPUT}"
 						/>
-						<Button variant="secondary" size="sm">Save</Button>
+						<Button variant="secondary" size="sm">{t('common.save')}</Button>
 					</form>
 					<form method="POST" action="?/setPhotoVisibility" class="contents">
 						<input type="hidden" name="photoId" value={openedPhoto.id} />
@@ -1081,12 +1132,14 @@
 							value={openedPhoto.visibility === 'private' ? 'shared' : 'private'}
 						/>
 						<Button variant="ghost" size="sm">
-							{openedPhoto.visibility === 'private' ? 'Share with the household' : 'Make private'}
+							{openedPhoto.visibility === 'private'
+								? t('contact.photos.share')
+								: t('contact.photos.makePrivate')}
 						</Button>
 					</form>
 					<form method="POST" action="?/removePhoto" class="contents">
 						<input type="hidden" name="photoId" value={openedPhoto.id} />
-						<Button variant="danger" size="sm">Remove</Button>
+						<Button variant="danger" size="sm">{t('common.remove')}</Button>
 					</form>
 				{/if}
 			</div>

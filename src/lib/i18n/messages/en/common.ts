@@ -30,6 +30,8 @@ export const common = {
 	'common.private': 'Private',
 	'common.sharedHint': 'The whole household can see this.',
 	'common.privateHint': 'Only you can see this.',
+	'common.privateInline': 'private',
+	'common.onlyYouSee': 'Only you can see this',
 	'common.somethingWentWrong': 'Something went wrong. Please try again.'
 };
 

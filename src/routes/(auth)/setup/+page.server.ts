@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import type { MessageKey } from '$lib/i18n/translate';
+import { createTranslator, type MessageKey } from '$lib/i18n/translate';
 import { registerFirstAdmin } from '$lib/server/auth/accounts';
 import { setSessionCookie } from '$lib/server/auth/cookies';
 import { createSession } from '$lib/server/auth/session';
@@ -35,6 +35,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
 	default: async ({ request, cookies, locals }) => {
+		// Everything this action says back is rendered here, in the language of the request.
+		const t = createTranslator(locals.locale);
 		const form = await request.formData();
 		const parsed = v.safeParse(SetupSchema, {
 			householdName: form.get('householdName'),
@@ -44,13 +46,12 @@ export const actions: Actions = {
 		});
 		if (!parsed.success) {
 			// Every message in the schema above is a key; anything else would be a valibot default.
-			const issue = parsed.issues[0]?.message;
-			const error = (issue as MessageKey | undefined) ?? key('auth.setup.invalidInput');
-			return fail(400, { error });
+			const issue = parsed.issues[0]?.message as MessageKey | undefined;
+			return fail(400, { error: t(issue ?? 'auth.setup.invalidInput') });
 		}
 
 		if ((await getAccounts().countUsers()) > 0) {
-			return fail(409, { error: key('auth.setup.alreadyDone') });
+			return fail(409, { error: t('auth.setup.alreadyDone') });
 		}
 
 		// The language the form was read in becomes the admin's stored preference.

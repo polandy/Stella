@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { getMediaStore, getPhotos } from '$lib/server/services';
 import type { RequestHandler } from './$types';
+import { say } from '$lib/server/i18n/say';
 
 /*
  * Authenticated media delivery (docs/04 §4.6). Media is never exposed as static files; every
@@ -9,15 +10,15 @@ import type { RequestHandler } from './$types';
  * id-addressed and immutable, so they cache aggressively but privately.
  */
 export const GET: RequestHandler = async ({ locals, params, url }) => {
-	if (!locals.user) throw error(401, 'Not signed in');
+	if (!locals.user) throw error(401, say(locals, 'errors.notSignedIn'));
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 	const variant = url.searchParams.has('thumb') ? 'thumb' : 'full';
 
 	const file = await getPhotos().getVisiblePhotoFile(viewer, params.id, variant);
-	if (!file) throw error(404, 'Not found');
+	if (!file) throw error(404, say(locals, 'errors.notFound'));
 
 	const bytes = await getMediaStore().read(file.path);
-	if (!bytes) throw error(404, 'Not found');
+	if (!bytes) throw error(404, say(locals, 'errors.notFound'));
 
 	// The bytes are a Uint8Array; Bun's Response accepts it at runtime (the DOM lib type for
 	// BodyInit is stricter about the backing buffer, hence the cast).
