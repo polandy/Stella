@@ -1,5 +1,5 @@
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
-import type { OidcProvider } from './login';
+import type { OidcProvider, TokenExchange } from './login';
 import type { OidcClaims } from './types';
 
 /*
@@ -54,7 +54,11 @@ export function createOidcProvider(config: OidcProviderConfig): OidcProvider {
 			return (await discover()).authorization_endpoint;
 		},
 
-		async exchangeCode({ code, codeVerifier, expectedNonce }) {
+		async endSessionEndpoint() {
+			return (await discover()).end_session_endpoint ?? null;
+		},
+
+		async exchangeCode({ code, codeVerifier, expectedNonce }): Promise<TokenExchange> {
 			const document = await discover();
 
 			const res = await fetch(document.token_endpoint, {
@@ -83,7 +87,7 @@ export function createOidcProvider(config: OidcProviderConfig): OidcProvider {
 				throw new Error('OIDC nonce mismatch');
 			}
 
-			return toClaims(payload);
+			return { claims: toClaims(payload), idToken: tokens.id_token };
 		}
 	};
 }

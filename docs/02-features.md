@@ -71,8 +71,14 @@ credentials and MFA.
   IdP misconfiguration can't lock everyone out.
 - **Profile sync:** name/email/avatar may be refreshed from claims on each login
   (configurable), while Stella-specific settings (theme, default visibility) stay local.
-- **Single Logout:** local logout always clears the Stella session; **RP-initiated
-  logout** to the provider's `end_session_endpoint` is supported when advertised **[M2]**.
+- **Single Logout:** local logout always clears the Stella session — first and
+  unconditionally. **RP-initiated logout** then redirects to the provider's
+  `end_session_endpoint` (with the sign-in's `id_token_hint`) when the provider advertises
+  one and `OIDC_RP_LOGOUT` is on, so the SSO session ends too; both landings return to
+  `/login?signedOut=1`. A provider that is unreachable or advertises no endpoint leaves the
+  user signed out of Stella regardless — sign-out never fails. Authelia 4.39, the version
+  this was built against, is exactly that case: it implements no RP-initiated logout at all,
+  so sign-out there is the local one.
 - **Security specifics:** `state` + `nonce` + PKCE verifier stored in a short-lived,
   httpOnly cookie; strict redirect-URI matching; clock-skew tolerance; ID-token
   signature verified against cached JWKS with rotation support.
@@ -1011,7 +1017,7 @@ The **story** is that merge, done once, server-side.
 | Export / import / backup | M2 |
 | **Guided migration from Monica** (JSON/SQL/vCard, mapping, preview) | M2 |
 | PWA install + offline shell | M2 |
-| RP-initiated single logout | M2 |
+| RP-initiated single logout | M2 — shipped |
 | 2FA (local), email reminders | M3 |
 | Change digests (daily/weekly/monthly) via email + webhook | M3 |
 | @mentions, photo reordering, "haven't seen" hints | M3 |

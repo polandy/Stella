@@ -10,6 +10,10 @@
 
 <h1 class="text-2xl font-semibold text-fg">Sign in</h1>
 
+{#if data.signedOut}
+	<p class="rounded-app bg-card px-3 py-2 text-sm text-fg-muted">You have been signed out.</p>
+{/if}
+
 {#if data.ssoError}
 	<p class="rounded-app bg-danger/10 px-3 py-2 text-sm text-danger">{data.ssoError}</p>
 {/if}
