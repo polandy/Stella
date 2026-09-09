@@ -612,6 +612,8 @@ mechanism behind two features: correcting a birthday without touching the profil
 - The **Coming up** band in Home's rail (§2.12) lists the next occurrences inside a 30-day
   horizon, soonest first, capped at five. It is **absent entirely when nothing is due** — a permanently
   empty panel teaches people to stop looking.
+- Whether a date is **within 14 days** also decides where the rail stands on a phone: above
+  the stream while something is that close, below it otherwise (docs/05 §5.5).
 - Each entry reads as a countdown ("today", "tomorrow", "in 4 days") rather than a
   calendar entry, and says what the occasion is ("turns 11", "12 years together").
 - Each entry offers exactly **one action: write a moment about it** — `/?about=<contactId>`

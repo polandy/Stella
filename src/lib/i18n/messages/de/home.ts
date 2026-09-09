@@ -11,6 +11,7 @@ export const home: HomeMessages = {
 	'home.comingUp': 'Kommt bald',
 	'home.quietLately': 'Zuletzt still',
 	'home.writeMoment': 'Moment festhalten',
+	'home.showAll': (p) => `Alle ${p.count} anzeigen`,
 	'home.lastWritten': (p) => `Zuletzt geschrieben ${p.ago}`,
 	'home.nothingWrittenYet': 'Noch nichts geschrieben',
 	'home.empty.title': 'Noch nichts geschrieben',

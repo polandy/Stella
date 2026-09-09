@@ -186,9 +186,12 @@ They must be edited together; `app.css` says so at both blocks.
 - **Home** — the capture field over the household stream (§2.22), with a **rail** on the
   right from `lg` up: **Coming up** (§2.13.3) and **Quiet lately** (§2.12.1), each row an
   avatar, the person, one line of context and the one action — *Write a moment*. Below `lg`
-  the rail sits between the heading and the stream as a horizontal strip of cards, so two
-  bands never push the stream off a phone screen. Both bands are **absent entirely when
-  empty**; there is no empty state for them, because a permanently empty panel teaches people
+  it is the **same vertical list**, full width — nothing scrolls sideways, because what lies
+  off the right edge of a phone is not read. Two things keep it from pushing the stream away:
+  each band stops after **three rows** with *Show all N* beneath it, and the rail only sits
+  **above** the stream while a date is due **within 14 days** (`IMMINENT_HORIZON_DAYS`);
+  otherwise it follows the stream, where it is still one scroll away. Both bands are
+  **absent entirely when empty**; there is no empty state for them, because a permanently empty panel teaches people
   to stop looking. On a phone the composer is a **sheet** opened from the *What happened?*
   bar or the tab-bar pencil.
 - **People** — a find-as-you-type field, tag chips, then **letter groups** by surname with a

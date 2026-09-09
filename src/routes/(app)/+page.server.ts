@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { quietContacts } from '$lib/server/domain/attention/quiet';
 import { listContactNames, listContacts } from '$lib/server/domain/contacts/contacts';
-import { upcomingDates } from '$lib/server/domain/dates/upcoming';
+import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
 import { captureMoment, MomentNeedsPersonError } from '$lib/server/domain/moments/moments';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
@@ -70,12 +70,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	// One reading of the clock, so the composer's day and the horizon cannot straddle midnight.
 	const day = today();
+	const upcoming = upcomingDates(dateSources, day);
 
 	return {
 		today: day,
 		compose: url.searchParams.has('compose') || about !== undefined,
 		draft: about ? `${handleFor(about)} ` : null,
-		upcoming: upcomingDates(dateSources, day),
+		upcoming,
+		// Below `lg` the rail only precedes the stream when a date is close (docs/05 §5.5).
+		railFirst: hasImminentDate(upcoming),
 		quiet: quietContacts(quietSources, day),
 		linkSuggestion,
 		candidates: contacts.map((c) => ({
