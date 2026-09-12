@@ -58,7 +58,6 @@ export const contact = {
 	'contact.dateRemoved': 'Date removed',
 	'contact.day': 'Day',
 	'contact.dateNameForCustom': 'Name (for custom)',
-	'contact.yearUnknown': 'Year unknown',
 	'contact.everyYear': 'Every year',
 	'contact.showOnHome': 'Show on Home',
 	'contact.dateKind.birthday': 'Birthday',

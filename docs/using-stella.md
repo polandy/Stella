@@ -155,7 +155,7 @@ out the birthday itself — there is nothing else to set up, and the two can nev
 Anything a birth date cannot express goes in the **Dates** section of their page: a wedding
 anniversary, the day you met, the day the class trip leaves. Each one can repeat every year
 or happen once, and each one has a switch for whether it should show up on Home. If the year
-is unknown, tick *Year unknown* and Stella keeps the day without inventing a year.
+is unknown, just leave the year box empty and Stella keeps the day without inventing a year.
 
 **What is coming up appears on Home**, beside what already happened — the next 30 days,
 soonest first. Not a separate reminders page you have to remember to open, and no email: it

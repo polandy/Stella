@@ -68,14 +68,6 @@ export function dayLabel(lang: DateLanguage, value: string): string {
 	});
 }
 
-/**
- * Strip the year off a full ISO day, for "the year is unknown" on an `<input type="date">`
- * that can only ever produce one.
- */
-export function withoutYear(isoDay: string): string {
-	return isoDay.replace(/^\d{4}-/, '--');
-}
-
 const DAY_MS = 86_400_000;
 const WEEK_DAYS = 7;
 const MONTH_DAYS = 30;

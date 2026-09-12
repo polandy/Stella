@@ -1,6 +1,7 @@
 <script lang="ts">
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import DateField from '$lib/components/DateField.svelte';
 	import EgoGraph from '$lib/components/EgoGraph.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
@@ -431,11 +432,8 @@
 								<option value={kind}>{kindLabel('dateKind', kind)}</option>
 							{/each}
 						</select>
-						<input type="date" name="date" required class={INPUT} aria-label={t('contact.day')} />
+						<DateField name="date" required allowYearUnknown label={t('contact.day')} />
 						<input name="label" placeholder={t('contact.dateNameForCustom')} class="w-full {INPUT}" />
-						<label class="flex items-center gap-1.5 text-sm text-fg-muted">
-							<input type="checkbox" name="yearUnknown" /> {t('contact.yearUnknown')}
-						</label>
 						<label class="flex items-center gap-1.5 text-sm text-fg-muted">
 							<input type="checkbox" name="recursYearly" checked /> {t('contact.everyYear')}
 						</label>
@@ -691,7 +689,7 @@
 										<option value={kind}>{t(KIND_PRESENTATION[kind].label)}</option>
 									{/each}
 								</select>
-								<input type="date" name="happenedAt" value={today} required aria-label={t('contact.day')} class={INPUT} />
+								<DateField name="happenedAt" value={today} required label={t('contact.day')} />
 								<input name="title" placeholder={t('contact.interaction.titlePlaceholder')} class="min-w-48 flex-1 {INPUT}" />
 							</div>
 							<textarea name="description" rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} class={INPUT}
@@ -805,7 +803,11 @@
 											</label>
 											<label class="flex flex-col gap-1">
 												<span class="text-xs text-fg-muted">{t('contact.relationships.sinceLabel')}</span>
-												<input type="date" name="sinceDate" value={rel.sinceDate ?? ''} class={INPUT} />
+												<DateField
+													name="sinceDate"
+													value={rel.sinceDate ?? ''}
+													label={t('contact.relationships.sinceLabel')}
+												/>
 											</label>
 											<label class="flex flex-col gap-1">
 												<span class="text-xs text-fg-muted">{t('contact.relationships.status')}</span>
@@ -930,7 +932,7 @@
 								</label>
 								<label class="flex flex-col gap-1 text-sm">
 									<span class="text-fg-muted">{t('contact.relationships.sinceLabel')}</span>
-									<input type="date" name="sinceDate" class={INPUT} />
+									<DateField name="sinceDate" label={t('contact.relationships.sinceLabel')} />
 								</label>
 								<label class="flex flex-col gap-1 text-sm">
 									<span class="text-fg-muted">{t('contact.relationships.status')}</span>

@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import DateField from '$lib/components/DateField.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { processImage } from '$lib/image/process-image';
@@ -245,9 +246,7 @@
 			{picked.length ? t('composer.photoCount', { count: picked.length }) : t('composer.photo')}
 			<input type="file" accept="image/*" multiple onchange={onFiles} class="hidden" />
 		</label>
-		<label class="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted">
-			<input type="date" name="entryDate" value={today} max={today} required class="bg-transparent text-fg-muted" aria-label={t('composer.day')} />
-		</label>
+		<DateField name="entryDate" value={today} max={today} required label={t('composer.day')} />
 		<span class="text-xs text-fg-subtle" aria-live="polite">
 			{#if referenced.length}
 				{t('composer.goesTo')}

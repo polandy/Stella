@@ -7,7 +7,6 @@ import {
 	quietLabel,
 	sinceLabel,
 	whenLabel,
-	withoutYear,
 	type DateLanguage
 } from './labels';
 
@@ -69,16 +68,6 @@ describe('dayLabel', () => {
 
 	test('renders 29 February, which needs a leap year to exist', () => {
 		expect(dayLabel(en, '--02-29')).toBe('29 February');
-	});
-});
-
-describe('withoutYear', () => {
-	test('drops the year a date input always supplies', () => {
-		expect(withoutYear('2015-05-20')).toBe('--05-20');
-	});
-
-	test('leaves an already year-less day alone', () => {
-		expect(withoutYear('--05-20')).toBe('--05-20');
 	});
 });
 

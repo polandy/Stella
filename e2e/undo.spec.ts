@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { signIn } from './app';
+import { fillDate, signIn } from './app';
 
 /*
  * Removing with undo (docs/02 §2.23, docs/05 §5.7). Written after the flow was verified in the
@@ -24,7 +24,7 @@ test('a removed touchpoint comes back with Undo and is only sent when the page i
 	const panel = page.locator('#panel-story');
 	await panel.getByRole('button', { name: 'Log contact' }).click();
 	await panel.getByLabel('Kind').selectOption('call');
-	await panel.getByLabel('Day').fill('2026-09-02');
+	await fillDate(panel, 'Day', '2026-09-02');
 	await panel.getByPlaceholder('What happened? (optional)').fill(TITLE);
 	await panel.getByRole('button', { name: 'Log interaction' }).click();
 

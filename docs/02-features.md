@@ -622,7 +622,9 @@ the stream reads as one timeline with the future above the past.
   one must be named, or it means nothing three months later). Each carries whether it
   **recurs yearly** and whether it should **remind** — the "show it on Home" switch.
 - A date may be a full ISO day or a year-less `--MM-DD` when the year is unknown; the age
-  or count is then simply omitted rather than guessed.
+  or count is then simply omitted rather than guessed. **Leaving the year blank** in the date
+  field is how that is said — there is no separate "year unknown" switch, because the empty
+  segment already means it (§5.7).
 - Dates are **child records of a contact** with no visibility of their own: they inherit
   the contact's, enforced by the adapter's scoped reads (§2.10).
 - Dates are listed, added and removed in a **Dates** section on the person page.
