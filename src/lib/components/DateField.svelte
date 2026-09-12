@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import {
+		dateProblem,
 		isoToParts,
 		monthNames,
 		partsToIso,
@@ -57,19 +58,16 @@
 
 	const months = $derived(monthNames(i18n.intlLocale));
 	const order = $derived(segmentOrder(i18n.intlLocale));
-	const iso = $derived(partsToIso(parts));
-	/** A year left blank is an answer in itself only where the caller allows it. */
-	const yearAnswered = $derived(allowYearUnknown || parts.year.trim() !== '');
-	const complete = $derived(parts.day !== '' && parts.month !== '' && yearAnswered);
-	const problem = $derived.by(() => {
-		// While a segment is still blank the browser's own `required` does the complaining.
-		if (!complete) return null;
-		if (iso === '') return i18n.t('components.dateField.noSuchDay');
-		if (max !== undefined && !iso.startsWith('--') && iso > max) {
-			return i18n.t('components.dateField.notInFuture');
-		}
-		return null;
-	});
+	const problem = $derived(dateProblem(parts, { allowYearUnknown, max }));
+	/*
+	 * Nothing is posted while the segments are faulted. `partsToIso` does not know whether this
+	 * caller allows a year-less day, so on a field that requires the year it would otherwise
+	 * hand the form a `--MM-DD` the field has just called incomplete.
+	 */
+	const iso = $derived(problem === null ? partsToIso(parts) : '');
+	const problemText = $derived(
+		problem === null ? null : i18n.t(`components.dateField.${problem}`)
+	);
 
 	/*
 	 * The segments are separate controls, so the browser cannot see that together they make an
@@ -77,7 +75,7 @@
 	 * way it would for any other invalid field, instead of quietly posting a blank.
 	 */
 	$effect(() => {
-		dayInput?.setCustomValidity(problem ?? '');
+		dayInput?.setCustomValidity(problemText ?? '');
 	});
 </script>
 
@@ -132,7 +130,7 @@
 	{#if allowYearUnknown}
 		<p class="mt-1 text-xs text-fg-subtle">{i18n.t('components.dateField.yearOptional')}</p>
 	{/if}
-	{#if problem}
-		<p class="mt-1 text-xs text-danger" role="alert">{problem}</p>
+	{#if problemText}
+		<p class="mt-1 text-xs text-danger" role="alert">{problemText}</p>
 	{/if}
 </fieldset>

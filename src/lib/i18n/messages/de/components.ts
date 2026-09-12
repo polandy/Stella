@@ -28,5 +28,6 @@ export const components: ComponentsMessages = {
 	'components.dateField.monthEmpty': 'Monat…',
 	'components.dateField.yearOptional': 'Lass das Jahr leer, wenn du es nicht weißt.',
 	'components.dateField.noSuchDay': 'Diesen Tag gibt es im Kalender nicht.',
-	'components.dateField.notInFuture': 'Dieser Tag ist noch nicht gewesen.'
+	'components.dateField.incomplete': 'Gib das ganze Datum ein oder lösche es.',
+	'components.dateField.inFuture': 'Dieser Tag ist noch nicht gewesen.'
 };

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { isoToParts, monthNames, partsToIso, segmentOrder, type DateParts } from './field';
+import {
+	dateProblem,
+	isoToParts,
+	monthNames,
+	partsToIso,
+	segmentOrder,
+	type DateParts
+} from './field';
 
 const parts = (overrides: Partial<DateParts> = {}): DateParts => ({
 	day: '',
@@ -81,8 +88,57 @@ describe('isoToParts', () => {
 	});
 
 	it('round-trips what partsToIso produced', () => {
-		for (const iso of ['1987-03-05', '--12-24', '--02-29', '2026-02-29'.replace('2026', '2024')]) {
+		for (const iso of ['1987-03-05', '--12-24', '--02-29', '2024-02-29']) {
 			expect(partsToIso(isoToParts(iso))).toBe(iso);
 		}
+	});
+});
+
+describe('dateProblem', () => {
+	it('says nothing about a field nobody has touched', () => {
+		expect(dateProblem(parts())).toBe(null);
+	});
+
+	it('says nothing about a complete, real day', () => {
+		expect(dateProblem(parts({ day: '5', month: '3', year: '1987' }))).toBe(null);
+	});
+
+	/*
+	 * The case splitting one control into three introduced: a day and a month with no year is
+	 * not a date, but nothing native complains about it on an optional field — so it would
+	 * submit and be stored as nothing at all.
+	 */
+	it('refuses a half-filled date rather than letting it be posted as blank', () => {
+		expect(dateProblem(parts({ day: '24', month: '12' }))).toBe('incomplete');
+	});
+
+	it('accepts the missing year where the caller allows it', () => {
+		expect(dateProblem(parts({ day: '24', month: '12' }), { allowYearUnknown: true })).toBe(null);
+	});
+
+	it('refuses a year typed on its own', () => {
+		expect(dateProblem(parts({ year: '1987' }), { allowYearUnknown: true })).toBe('incomplete');
+	});
+
+	it('names a day that does not exist', () => {
+		expect(dateProblem(parts({ day: '30', month: '2', year: '1987' }))).toBe('noSuchDay');
+	});
+
+	it('names a day past the latest one allowed', () => {
+		expect(dateProblem(parts({ day: '2', month: '1', year: '2030' }), { max: '2026-09-13' })).toBe(
+			'inFuture'
+		);
+	});
+
+	it('allows the latest day itself', () => {
+		expect(dateProblem(parts({ day: '13', month: '9', year: '2026' }), { max: '2026-09-13' })).toBe(
+			null
+		);
+	});
+
+	it('never calls a year-less day a future one, having no year to judge it by', () => {
+		expect(
+			dateProblem(parts({ day: '31', month: '12' }), { allowYearUnknown: true, max: '2026-09-13' })
+		).toBe(null);
 	});
 });

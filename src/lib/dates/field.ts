@@ -67,6 +67,41 @@ export function partsToIso(parts: DateParts): string {
 	return isRealCalendarDay(value) ? value : '';
 }
 
+/** What is wrong with the segments as they stand, in the field's own terms. */
+export type DateProblem = 'incomplete' | 'noSuchDay' | 'inFuture';
+
+/** What the field may be told about the date it is asking for. */
+export interface DateExpectation {
+	/** The year may be left blank, making the value a year-less `--MM-DD`. */
+	allowYearUnknown?: boolean;
+	/** The latest day allowed, as a full ISO day. */
+	max?: string;
+}
+
+/**
+ * What is wrong with what has been typed, or null when it is usable — including the untouched
+ * field, whose emptiness is the edge's own `required` to complain about.
+ *
+ * The half-filled case is the one that matters: three separate controls can hold a day and a
+ * month with no year, which is not a date and which nothing native objects to. Left unsaid, an
+ * optional field would submit and store nothing at all, losing what someone just typed.
+ */
+export function dateProblem(parts: DateParts, expected: DateExpectation = {}): DateProblem | null {
+	const day = parts.day.trim();
+	const month = parts.month.trim();
+	const year = parts.year.trim();
+	if (day === '' && month === '' && year === '') return null;
+
+	const yearAnswered = expected.allowYearUnknown === true || year !== '';
+	if (day === '' || month === '' || !yearAnswered) return 'incomplete';
+
+	const iso = partsToIso(parts);
+	if (iso === '') return 'noSuchDay';
+	// A year-less day has no year to be later than anything.
+	if (expected.max !== undefined && !iso.startsWith('--') && iso > expected.max) return 'inFuture';
+	return null;
+}
+
 /** What a stored value looks like in the three segments; empty parts for no value. */
 export function isoToParts(value: string): DateParts {
 	const yearless = value.startsWith('--');

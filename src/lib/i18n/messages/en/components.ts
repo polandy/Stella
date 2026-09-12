@@ -27,7 +27,8 @@ export const components = {
 	'components.dateField.monthEmpty': 'Month…',
 	'components.dateField.yearOptional': 'Leave the year blank if you do not know it.',
 	'components.dateField.noSuchDay': 'There is no such day in the calendar.',
-	'components.dateField.notInFuture': 'That day has not happened yet.'
+	'components.dateField.incomplete': 'Fill in the whole date, or clear it.',
+	'components.dateField.inFuture': 'That day has not happened yet.'
 };
 
 /** The key set every translation of this area has to provide. */
