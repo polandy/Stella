@@ -101,5 +101,6 @@ export const errors: ErrorsMessages = {
 	'errors.circle.notFound': 'Kreis nicht gefunden',
 	'errors.export.adminOnly': 'Nur die Haushalts-Administration kann exportieren.',
 	'errors.story.badCursor': 'Fehlerhafter Verlaufs-Cursor',
-	'errors.journal.couldNotSave': 'Der Eintrag konnte nicht gespeichert werden.'
+	'errors.journal.couldNotSave': 'Der Eintrag konnte nicht gespeichert werden.',
+	'errors.journal.editFailed': 'Die Änderungen konnten nicht gespeichert werden.'
 };

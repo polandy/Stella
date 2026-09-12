@@ -79,6 +79,26 @@ export function createDrizzleJournalRepository(
 				.run();
 		},
 
+		async updateOwn(p: {
+			authorId: string;
+			id: string;
+			title: string | null;
+			body: string;
+			updatedAt: number;
+		}): Promise<boolean> {
+			const own = db
+				.select({ id: journalEntry.id })
+				.from(journalEntry)
+				.where(and(eq(journalEntry.id, p.id), eq(journalEntry.createdBy, p.authorId)))
+				.get();
+			if (!own) return false;
+			db.update(journalEntry)
+				.set({ title: p.title, body: p.body, updatedAt: p.updatedAt })
+				.where(eq(journalEntry.id, p.id))
+				.run();
+			return true;
+		},
+
 		async listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<JournalEntry[]> {
 			return db
 				.select(columns)

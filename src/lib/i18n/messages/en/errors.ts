@@ -102,7 +102,8 @@ export const errors = {
 	'errors.circle.notFound': 'Circle not found',
 	'errors.export.adminOnly': 'Only the household admin can export.',
 	'errors.story.badCursor': 'Malformed story cursor',
-	'errors.journal.couldNotSave': 'Could not save the entry.'
+	'errors.journal.couldNotSave': 'Could not save the entry.',
+	'errors.journal.editFailed': 'Could not save the changes.'
 };
 
 /** The key set every translation of this area has to provide. */

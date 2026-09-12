@@ -5,13 +5,14 @@ import { authorNames } from '$lib/server/domain/household/members';
 import { authorLabel } from '$lib/story/author';
 import {
 	deleteJournalEntry,
+	editJournalEntry,
 	listJournalForContact,
 	saveJournalEntry,
 	setJournalMentions
 } from '$lib/server/domain/journal/journal';
 import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
-import { createHandleResolver, mentionsOtherThan, resolveMentions } from '$lib/mentions/mentions';
+import { createHandleResolver, mentionsOtherThan, resolveMentions, MENTION_TOKEN_RE } from '$lib/mentions/mentions';
 import { audienceCandidates } from '$lib/server/domain/moments/moments';
 import {
 	getContactDeps,
@@ -34,6 +35,18 @@ function today(): string {
 /** Identity on a message key, so a typo in a validation message is a compile error. */
 function key(name: MessageKey): MessageKey {
 	return name;
+}
+
+/**
+ * Turn a stored body's canonical mention tokens back into typed `@Handle` text, so editing an
+ * entry starts from something a person actually wrote rather than raw `@{contact:<id>}` tokens.
+ * Round-trips fine: `resolveMentions` re-resolves the handle to the same canonical token.
+ */
+function bodyForEditing(body: string, nameOf: (id: string) => string | null): string {
+	return body.replace(MENTION_TOKEN_RE, (match, id: string) => {
+		const name = nameOf(id);
+		return name ? `@${name.replace(/\s+/g, '')}` : match;
+	});
 }
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -85,6 +98,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			entryDate: e.entryDate,
 			title: e.title,
 			bodyHtml: renderMarkdownWithMentions(e.body, nameOf),
+			// plain text for the edit form, with tokens turned back into typed handles
+			bodyForEdit: bodyForEditing(e.body, nameOf),
 			visibility: e.visibility,
 			mine: e.createdBy === locals.user!.id,
 			author: authorLabel(e.createdBy === locals.user!.id, nameOfAuthor(e.createdBy)),
@@ -99,6 +114,12 @@ const SaveSchema = v.object({
 	title: v.optional(v.pipe(v.string(), v.trim())),
 	body: v.pipe(v.string(), v.trim(), v.minLength(1)),
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
+});
+
+const EditSchema = v.object({
+	id: v.pipe(v.string(), v.minLength(1)),
+	title: v.optional(v.pipe(v.string(), v.trim())),
+	body: v.pipe(v.string(), v.trim(), v.minLength(1))
 });
 
 export const actions: Actions = {
@@ -190,6 +211,72 @@ export const actions: Actions = {
 				return fail(400, { journalError: say(locals, 'errors.journal.photoFailed') });
 			}
 		}
+
+		throw redirect(303, `/contacts/${params.id}/journal`);
+	},
+
+	edit: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const parsed = v.safeParse(EditSchema, {
+			id: form.get('id'),
+			title: form.get('title') || undefined,
+			body: form.get('body')
+		});
+		if (!parsed.success) {
+			return fail(400, {
+				journalError: say(
+					locals,
+					(parsed.issues[0]?.message as MessageKey | undefined) ?? 'errors.note.empty'
+				)
+			});
+		}
+
+		// Need the entry's own visibility to scope the @-picker candidates the same way `save`
+		// does — editing never changes the day/visibility slot (docs/02 §2.20).
+		const entries = await listJournalForContact(getJournalDeps(), viewer, params.id);
+		const entry = entries.find((e) => e.id === parsed.output.id);
+		if (!entry || entry.createdBy !== locals.user.id) {
+			return fail(404, { journalError: say(locals, 'errors.journal.editFailed') });
+		}
+
+		const resolver = createHandleResolver(
+			audienceCandidates(await listContacts(getContactDeps(), viewer), entry.visibility)
+		);
+		const resolved = resolveMentions(parsed.output.body, resolver);
+
+		const author = {
+			userId: locals.user.id,
+			householdId: locals.user.householdId,
+			defaultVisibility: 'shared' as const
+		};
+
+		let ok: boolean;
+		try {
+			ok = await editJournalEntry(getJournalDeps(), author, {
+				id: parsed.output.id,
+				title: parsed.output.title ?? null,
+				body: resolved.body
+			});
+		} catch (err) {
+			return fail(400, {
+				journalError:
+					err instanceof TranslatableError
+						? err.phrase(translator(locals))
+						: say(locals, 'errors.journal.editFailed')
+			});
+		}
+		if (!ok) {
+			return fail(404, { journalError: say(locals, 'errors.journal.editFailed') });
+		}
+
+		await setJournalMentions(
+			getJournalDeps(),
+			parsed.output.id,
+			mentionsOtherThan(resolved.ids, params.id)
+		);
 
 		throw redirect(303, `/contacts/${params.id}/journal`);
 	},

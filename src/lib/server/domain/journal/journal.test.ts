@@ -3,6 +3,7 @@ import type { Viewer } from '../../access/visibility';
 import type { DeletedPhotoFiles } from '../media/avatars';
 import {
 	deleteJournalEntry,
+	editJournalEntry,
 	saveJournalEntry,
 	listJournalForContact,
 	type JournalAuthor,
@@ -49,6 +50,20 @@ function fakeRepo(seed: JournalEntry[] = []) {
 			row.title = p.title;
 			row.body = p.body;
 			row.updatedAt = p.updatedAt;
+		},
+		async updateOwn(p: {
+			authorId: string;
+			id: string;
+			title: string | null;
+			body: string;
+			updatedAt: number;
+		}) {
+			const row = rows.find((r) => r.id === p.id && r.createdBy === p.authorId);
+			if (!row) return false;
+			row.title = p.title;
+			row.body = p.body;
+			row.updatedAt = p.updatedAt;
+			return true;
 		},
 		async listForContactVisibleTo(_v: Viewer, contactId: string) {
 			return rows.filter((r) => r.contactId === contactId);
@@ -176,6 +191,44 @@ describe('listJournalForContact', () => {
 		const list = await listJournalForContact({ journal: repo }, viewer, 'c1');
 		expect(list).toHaveLength(1);
 		expect(list[0].id).toBe('a');
+	});
+});
+
+/*
+ * Editing changes the text of an existing entry in place; the day and visibility stay put,
+ * since those are the slot the entry occupies (docs/02 §2.20).
+ */
+describe('editJournalEntry', () => {
+	it('updates the title and body of an owned entry', async () => {
+		const d = deps(
+			fakeRepo([
+				{ id: 'e1', contactId: 'c1', createdBy: 'u1', visibility: 'shared', entryDate: '2026-07-11', title: 'Old', body: 'draft', createdAt: 1, updatedAt: 1 }
+			])
+		);
+		const ok = await editJournalEntry(d, author, { id: 'e1', title: 'New', body: 'expanded draft' });
+		expect(ok).toBe(true);
+		expect(d.repo.rows[0]).toMatchObject({ title: 'New', body: 'expanded draft', updatedAt: 1000 });
+		// the slot itself is untouched
+		expect(d.repo.rows[0]).toMatchObject({ entryDate: '2026-07-11', visibility: 'shared' });
+	});
+
+	it('returns false for an entry that is not the author’s own', async () => {
+		const d = deps(
+			fakeRepo([
+				{ id: 'e1', contactId: 'c1', createdBy: 'someone-else', visibility: 'shared', entryDate: '2026-07-11', title: null, body: 'draft', createdAt: 1, updatedAt: 1 }
+			])
+		);
+		expect(await editJournalEntry(d, author, { id: 'e1', body: 'hijacked' })).toBe(false);
+		expect(d.repo.rows[0].body).toBe('draft');
+	});
+
+	it('rejects an empty body', async () => {
+		const d = deps(
+			fakeRepo([
+				{ id: 'e1', contactId: 'c1', createdBy: 'u1', visibility: 'shared', entryDate: '2026-07-11', title: null, body: 'draft', createdAt: 1, updatedAt: 1 }
+			])
+		);
+		await expect(editJournalEntry(d, author, { id: 'e1', body: '   ' })).rejects.toThrow();
 	});
 });
 
