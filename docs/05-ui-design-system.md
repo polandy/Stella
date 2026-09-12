@@ -167,7 +167,9 @@ They must be edited together; `app.css` says so at both blocks.
   - **Breadcrumb trail** in the top bar, derived from the route + loaded data
     (`Home / People / {name} / Journal`). Every segment links, so Home is always one
     click away; the active destination is marked with `aria-current="page"` in the
-    sidebar and tab bar. The account menu (theme + sign out) lives in the shell, not per page.
+    sidebar and tab bar. The desktop shell's account menu (theme + sign out) lives in the
+    shell, not per page; sign out is repeated as a plain button on **Settings** so it is
+    reachable on mobile, where that menu is not rendered.
   - The shell is a single `(app)/+layout.svelte`; pages render content only — no per-page
     headers or back links.
 - **Responsive, mobile-first.** Capture flows are optimized for one-handed phone use.
@@ -279,9 +281,10 @@ They must be edited together; `app.css` says so at both blocks.
   "year unknown", whether it repeats, and whether it shows on Home. A birthday derived from
   the profile is listed there too, marked *from the profile* and not deletable; an explicit
   birthday row replaces it (docs/02 §2.13.2).
-- **Settings** — account, appearance (theme + accent + reduced motion), household
-  (members, invitations, relationship types, tags), data (export/import/backup), auth.
-  *Today:* a landing page with the **Data** section, and the **Import people** wizard
+- **Settings** — account (incl. sign out), appearance (theme + accent + reduced motion),
+  household (members, invitations, relationship types, tags), data (export/import/backup), auth.
+  *Today:* a landing page with the **Data** section and an **Account** section (sign out only
+  so far), and the **Import people** wizard
   (§2.16) as a three-step page — numbered step strip, a count-tile preview with a
   "left out, and why" card, then the import result and the photos, under one progress bar but
   two ways in, because the accepted formats differ: a folder picker for a Monica dump, whose
