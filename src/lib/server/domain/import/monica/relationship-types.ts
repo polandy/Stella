@@ -11,7 +11,10 @@ import type { RelationshipCategory } from '../../../../relationships/categories'
 export interface MappedRelationshipType {
 	/** A built-in id from `built-in-types.ts`, or a custom key the import creates. */
 	key: string;
-	/** Whether `contact_is` is the forward-label side of the Stella type. */
+	/**
+	 * Whether `of_contact` (the person the type name is naming a role for) is the
+	 * forward-label side of the Stella type. `contact_is` is always the implicit other end.
+	 */
 	forward: boolean;
 	/** Present only for types Stella does not have built in. */
 	custom?: {

@@ -280,7 +280,13 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 			}
 		}
 		const symmetric = mapped.custom?.symmetric ?? isBuiltInSymmetric(mapped.key);
-		const [a, b] = mapped.forward ? [r.contactIs, r.ofContact] : [r.ofContact, r.contactIs];
+		// Monica's own migration that built this table (`migrate_offsprings`, 2018) proves the
+		// row reads backwards from how it looks: "contact_is <type> of_contact" really means
+		// of_contact holds the named role and contact_is is the implicit other end — a "child"
+		// row has contact_is as the *parent* and of_contact as the child. `mapped.forward` says
+		// whether Monica's type name is Stella's forward-label side, and that role belongs to
+		// of_contact, not contact_is.
+		const [a, b] = mapped.forward ? [r.ofContact, r.contactIs] : [r.contactIs, r.ofContact];
 		const ends = canonicalEndpoints(contactId(a), contactId(b), symmetric);
 		const dedupeKey = `${typeId}|${ends.fromContactId}|${ends.toContactId}`;
 		if (seenRelationships.has(dedupeKey)) continue;
