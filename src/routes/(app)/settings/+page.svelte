@@ -66,4 +66,13 @@
 			<p class="text-sm text-fg-subtle">{t('settings.data.adminOnly')}</p>
 		{/if}
 	</section>
+
+	<section class="flex flex-col gap-3">
+		<h2 class="text-sm font-medium text-fg-muted">{t('settings.account.heading')}</h2>
+		<form method="POST" action="/logout" class="rounded-app bg-card p-4 shadow-card">
+			<button type="submit" class="w-full text-left text-sm font-medium text-fg transition-colors hover:text-fg-muted">
+				{t('nav.signOut')}
+			</button>
+		</form>
+	</section>
 </main>
