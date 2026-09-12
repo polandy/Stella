@@ -44,7 +44,10 @@ src/
       access/        # central visibility/ACL enforcement (see 3.7)
       media/         # sharp pipeline, storage paths
       search/        # FTS5 sync + query
+      i18n/          # say(locals, key): a message in the language of the request
       config.ts      # env parsing/validation (valibot)
+    i18n/             # locales, message catalogues (en/de), translator, context
+    errors/           # TranslatableError: a domain error carrying its message untranslated
     components/       # Svelte UI components (design system)
     stores/           # client state (theme, ui)
     graph/            # cytoscape setup, layouts, styling
@@ -58,7 +61,7 @@ src/
       search/…
       settings/…
     api/              # +server.ts JSON endpoints (graph data, upload, search)
-  hooks.server.ts     # session resolution, auth guard, security headers
+  hooks.server.ts     # session resolution, language of the request, security headers
   app.css             # tailwind + theme tokens
 static/               # manifest, icons, offline shell
 ```
@@ -81,8 +84,18 @@ static/               # manifest, icons, offline shell
 
 1. `hooks.server.ts` reads the session cookie → resolves `session` + `user` (or none).
 2. It attaches `locals.user` and enforces route guards (`(app)` requires a user).
-3. Load functions / actions receive `locals.user` and pass it to the domain layer,
+3. It settles `locals.locale` — profile, else the language cookie, else `Accept-Language`,
+   else English (docs/02 §2.19) — and stamps it into `<html lang>`.
+4. Load functions / actions receive `locals.user` and pass it to the domain layer,
    which scopes every query by household + visibility.
+
+### Language
+
+The domain never speaks a language: a use-case that refuses something throws a
+`TranslatableError` carrying a `Phrase` (a message key plus its values), and a report names
+codes rather than sentences. The edge renders them — `say(locals, key)` in a route, the
+`useI18n()` context in a component — so one request is answered end to end in one language.
+`Error.message` stays English, for logs and stack traces.
 
 ### Local login
 `POST` credentials → verify Argon2id → create `session` row → set cookie.
@@ -103,8 +116,11 @@ static/               # manifest, icons, offline shell
    configured, update `identity.last_login_at`.
 7. Create a Stella `session` and set the cookie. From here, requests are session-based.
 
-Logout clears the local session; if the provider advertises `end_session_endpoint` and
-RP-logout is enabled, redirect there too **[M2]**.
+Logout revokes the local session and clears its cookie first and unconditionally; only
+then, if the session came from SSO, `OIDC_RP_LOGOUT` is on and the provider advertises an
+`end_session_endpoint`, the browser is redirected there with the sign-in's `id_token_hint`.
+Anything that goes wrong on that second half degrades to the local sign-out that already
+happened — signing out never fails.
 
 ## 4.5 Configuration (environment)
 
@@ -138,7 +154,7 @@ OIDC_JIT_PROVISION=true                     # auto-create users on first login
 OIDC_LINK_BY_EMAIL=true                     # link to existing local user by verified email (first login only)
 OIDC_SYNC_ROLES=true                        # re-apply group→role mapping each login
 OIDC_SYNC_PROFILE=true                      # refresh name/email each login
-OIDC_RP_LOGOUT=true                         # use end_session_endpoint on logout [M2]
+OIDC_RP_LOGOUT=true                         # also end the provider session on logout
 ```
 
 Notes:
@@ -200,6 +216,38 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   and frozen (RFC 6350 / RFC 2426): unfolding, escaping, structured values. Every published
   parser weighs far more than the two dozen lines that saves, against the minimal-deps rule
   (§8.8). Revisit if calendar or full-round-trip vCard support is ever wanted.
+- **The ID token is kept on the session row, not in a cookie** — RP-initiated logout needs
+  an `id_token_hint`, so the token has to survive from sign-in to sign-out. The alternative
+  (a second httpOnly cookie) would put a JWT carrying the user's email and groups on every
+  request to every route, and would go stale independently of the session it belongs to.
+  On the session row it is deleted by the same statement that ends the session, and shares
+  the database's blast radius rather than widening it.
+- **Our own message catalogue over an i18n library** — two languages and no plural rules
+  beyond "one or many" do not pay for Paraglide's compiler or a runtime store. Typed area
+  modules give the same guarantee more cheaply: German is typed against English, so a
+  missing key is a compile error, and a message with values is a function whose parameters
+  are checked at every call site (minimal-deps rule, §8.8). Revisit if a third language or
+  ICU plural forms arrive.
+- **The domain names messages, the edge says them** — a use-case that refuses something
+  throws a `TranslatableError` carrying a `Phrase` (key + values), and the import and
+  restore reports carry codes rather than sentences. It keeps `domain/` free of a language
+  and of a translator dependency, and it is what lets one request be answered end to end in
+  one language; the cost is a mapping at the edge. `Error.message` stays English so logs and
+  stack traces read the same everywhere.
+- **`user.locale_pref` is nullable** — NULL means "has not chosen", which is not the same
+  as choosing English. A stored default would outrank a German browser for every account the
+  seed, an invitation or SSO created, and there would be no way to tell the two apart later.
+- **The search index fingerprints its own definitions** — what an SQLite trigger writes is
+  fixed when the trigger is created, so `CREATE TRIGGER IF NOT EXISTS` plus a backfill that
+  only ran on an empty index made every change to *what gets indexed* invisible to the
+  databases that already had one: the fix would ship and nothing would happen. The index now
+  stores a hash of the SQL that built it and rebuilds when that moves (docs/03 §3.5). The
+  alternatives were a hand-maintained version number, which is a step someone forgets exactly
+  once, and folding the index into Drizzle's migrations, which cannot express "re-run when
+  this expression changes". The cost is one full rebuild on the first start after any such
+  change — seconds at household scale — and a small non-Drizzle table, `search_index_meta`,
+  which sits with the FTS tables that are already outside the schema.
+
 - **Cytoscape.js for the graph** — mature, purpose-built; lazy-loaded to protect the
   bundle. D3-force considered as a lighter alt if bundle size demands it.
 - **Explorer lines are deepened for the canvas, not re-picked** — in Latte only five of the
@@ -234,8 +282,12 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **Monica import writes stable source ids, not ULIDs** — every imported row's id is
   `monica:<table>:<id>`, so the import is idempotent by construction (insert-or-ignore) and a
   re-run reports zero writes instead of duplicating; the cost is a second id shape in the
-  tables, which nothing else depends on, and an assumption of one household per deployment
-  that multi-tenancy would have to lift (docs/02 §2.16, docs/monica-mapping.md).
+  tables and an assumption of one household per deployment that multi-tenancy would have to
+  lift (docs/02 §2.16, docs/monica-mapping.md). That cost was first written down as "nothing
+  else depends on it", which was wrong: every place that reads an id back **out of text**
+  does. The `@{contact:<id>}` mention grammar rejected the `:` and stopped recognising its
+  own tokens, and the search index read the id's parts as the words "monica" and "contact".
+  Anything new that parses an id out of a string has to accept this shape (docs/02 §2.20.1).
 - **Imported photos travel through the browser, not a server path** — the wizard's folder
   picker reads Monica's photo directory on the admin's machine and downscales each file with
   the same canvas pipeline as avatars and journal photos. Rejected: a server-side

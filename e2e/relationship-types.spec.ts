@@ -53,7 +53,8 @@ test('names a kind of link of its own, and every person page offers it', async (
 
 	const row = customRow(page, 'Godparent of');
 	await expect(row).toContainText('from the other side: Godchild of');
-	await expect(row).toContainText('family');
+	// The category reads as a word now that it is translated, not as the stored value.
+	await expect(row).toContainText('Family');
 
 	// The promise is that it reaches the picker on a person's page, not just this list.
 	await openPerson(page, /Thomas Widmer/);

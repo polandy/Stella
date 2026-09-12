@@ -61,6 +61,7 @@ export function createDrizzleGraphRepository(
 					fromContactId: relationship.fromContactId,
 					toContactId: relationship.toContactId,
 					category: relationshipType.category,
+					typeKey: relationshipType.key,
 					forwardLabel: relationshipType.forwardLabel,
 					symmetric: relationshipType.symmetric
 				})
@@ -78,6 +79,7 @@ export function createDrizzleGraphRepository(
 				kind: 'relationship',
 				category: r.category,
 				label: r.forwardLabel,
+				typeKey: r.typeKey,
 				directed: r.symmetric !== 1
 			}));
 

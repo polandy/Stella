@@ -1,3 +1,4 @@
+import { phrase } from '../../../i18n/phrase';
 import { MonicaJsonError, readMonicaJsonExport } from './monica/json-export';
 import { readMonicaExport, type SourceExport } from './monica/monica-export';
 import type { ImportSource } from './source';
@@ -31,7 +32,7 @@ export function readImportFile(text: string): SourceExport {
 			try {
 				parsed = JSON.parse(text);
 			} catch {
-				throw new MonicaJsonError('This file starts like JSON but could not be read as JSON.');
+				throw new MonicaJsonError(phrase('import.error.notJson'));
 			}
 			return readMonicaJsonExport(parsed);
 		}

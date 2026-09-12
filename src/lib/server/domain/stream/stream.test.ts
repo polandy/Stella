@@ -43,7 +43,8 @@ const rel = (id: string, at: number): RelationshipRow => ({
 	actor: lena,
 	from: p('a'),
 	to: p('b'),
-	label: 'sister'
+	label: 'sister',
+	typeKey: 'sibling'
 });
 
 const touch = (id: string, at: number, actor = lena): InteractionRow => ({

@@ -1,6 +1,6 @@
 import { avatarAccent } from '../../avatar';
 import { thumbnailUrl } from '../../media/urls';
-import type { GraphModel } from '../model/types';
+import type { GraphEdge, GraphModel } from '../model/types';
 
 /*
  * Translate the neutral GraphModel into Cytoscape element definitions (docs/04 §4.11). This
@@ -20,6 +20,11 @@ export interface CyElement {
 
 export interface ElementOptions {
 	centerId?: string;
+	/**
+	 * How an edge is worded. The model carries the label as it is stored; the caller knows
+	 * the viewer's language and can translate a built-in relationship type (docs/02 §2.19).
+	 */
+	edgeLabel?: (edge: GraphEdge) => string;
 }
 
 export function toCytoscapeElements(model: GraphModel, options: ElementOptions = {}): CyElement[] {
@@ -63,7 +68,7 @@ export function toCytoscapeElements(model: GraphModel, options: ElementOptions =
 				target: e.target,
 				kind: e.kind,
 				category: e.category ?? '',
-				label: e.label ?? '',
+				label: options.edgeLabel ? options.edgeLabel(e) : (e.label ?? ''),
 				directed: e.directed ? 1 : 0
 			},
 			classes: e.derived ? 'derived' : ''

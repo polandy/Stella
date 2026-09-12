@@ -1,8 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 import {
+	hasImminentDate,
+	IMMINENT_HORIZON_DAYS,
 	UPCOMING_HORIZON_DAYS,
 	UPCOMING_LIMIT,
 	upcomingDates,
+	type UpcomingDate,
 	type UpcomingSource
 } from './upcoming';
 
@@ -121,5 +124,49 @@ describe('one-off dates', () => {
 
 	test('disappears once it has passed', () => {
 		expect(upcomingDates([once('2026-09-03')], TODAY)).toEqual([]);
+	});
+});
+
+describe('hasImminentDate', () => {
+	function upcoming(daysUntil: number): UpcomingDate {
+		return {
+			contactId: 'c1',
+			contactName: 'Lena Brunner',
+			avatarPhotoId: null,
+			kind: 'birthday',
+			label: null,
+			date: '2026-09-20',
+			daysUntil,
+			turning: 11
+		};
+	}
+
+	test('is false without any upcoming date', () => {
+		expect(hasImminentDate([])).toBe(false);
+	});
+
+	test('is true for a date inside the horizon', () => {
+		expect(hasImminentDate([upcoming(3)])).toBe(true);
+	});
+
+	test('is true for a date today', () => {
+		expect(hasImminentDate([upcoming(0)])).toBe(true);
+	});
+
+	test('includes the last day of the horizon', () => {
+		expect(hasImminentDate([upcoming(IMMINENT_HORIZON_DAYS)])).toBe(true);
+	});
+
+	test('is false one day beyond the horizon', () => {
+		expect(hasImminentDate([upcoming(IMMINENT_HORIZON_DAYS + 1)])).toBe(false);
+	});
+
+	test('looks at every date, not only the first', () => {
+		expect(hasImminentDate([upcoming(20), upcoming(2)])).toBe(true);
+	});
+
+	test('honours a caller-given horizon', () => {
+		expect(hasImminentDate([upcoming(20)], 21)).toBe(true);
+		expect(hasImminentDate([upcoming(20)], 19)).toBe(false);
 	});
 });

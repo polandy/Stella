@@ -71,8 +71,14 @@ credentials and MFA.
   IdP misconfiguration can't lock everyone out.
 - **Profile sync:** name/email/avatar may be refreshed from claims on each login
   (configurable), while Stella-specific settings (theme, default visibility) stay local.
-- **Single Logout:** local logout always clears the Stella session; **RP-initiated
-  logout** to the provider's `end_session_endpoint` is supported when advertised **[M2]**.
+- **Single Logout:** local logout always clears the Stella session — first and
+  unconditionally. **RP-initiated logout** then redirects to the provider's
+  `end_session_endpoint` (with the sign-in's `id_token_hint`) when the provider advertises
+  one and `OIDC_RP_LOGOUT` is on, so the SSO session ends too; both landings return to
+  `/login?signedOut=1`. A provider that is unreachable or advertises no endpoint leaves the
+  user signed out of Stella regardless — sign-out never fails. Authelia 4.39, the version
+  this was built against, is exactly that case: it implements no RP-initiated logout at all,
+  so sign-out there is the local one.
 - **Security specifics:** `state` + `nonce` + PKCE verifier stored in a short-lived,
   httpOnly cookie; strict redirect-URI matching; clock-skew tolerance; ID-token
   signature verified against cached JWKS with rotation support.
@@ -606,6 +612,8 @@ mechanism behind two features: correcting a birthday without touching the profil
 - The **Coming up** band in Home's rail (§2.12) lists the next occurrences inside a 30-day
   horizon, soonest first, capped at five. It is **absent entirely when nothing is due** — a permanently
   empty panel teaches people to stop looking.
+- Whether a date is **within 14 days** also decides where the rail stands on a phone: above
+  the stream while something is that close, below it otherwise (docs/05 §5.5).
 - Each entry reads as a countdown ("today", "tomorrow", "in 4 days") rather than a
   calendar entry, and says what the occasion is ("turns 11", "12 years together").
 - Each entry offers exactly **one action: write a moment about it** — `/?about=<contactId>`
@@ -769,7 +777,7 @@ included) it is the very first thing they will do.
 
 ## 2.17 Settings **[M1/M2]**
 
-- **Account:** profile, password, theme, default visibility, sessions/2FA.
+- **Account:** profile, password, **language** (§2.19), theme, default visibility, sessions/2FA.
 - **Household** (admin): name, members & roles, invitations, relationship types, tags.
 - **Data** (admin): export, import, backup.
 - **Appearance:** theme (system/light/dark), accent color choice from Catppuccin set,
@@ -782,12 +790,28 @@ included) it is the very first thing they will do.
   offline messaging. Full offline write/sync is **out of scope** for v1.
 - "Add to Home Screen" prompts handled tastefully.
 
-## 2.19 Accessibility & i18n **[M1 baseline]**
+## 2.19 Accessibility & i18n
 
 - Keyboard navigable, focus-visible, ARIA where needed, WCAG **AA** contrast in both
   themes, `prefers-reduced-motion` respected.
-- Copy is externalized to enable localization later; **English** ships first, with the
-  structure ready for **German** **[M3]**.
+- **English and German are both fully supported.** Every string a person reads — screens,
+  form errors, domain refusals, the import and archive reports — comes from a typed message
+  catalogue (`src/lib/i18n/messages/{en,de}`), one module per area, with the German module
+  typed against the English one so neither can drift.
+- **Choosing the language.** A picker in **Settings → Language** and on the sign-in screen;
+  it is a plain form post to `/locale`, so it works without JavaScript. The choice is stored
+  on the profile (`user.locale_pref`) and mirrored into a year-long cookie.
+- **Which language a request gets.** The signed-in profile wins; failing that the cookie
+  (the same choice, made before signing in); failing that the browser's `Accept-Language`;
+  failing that English. Settled once per request in `hooks.server.ts` and carried on
+  `locals.locale`, which also fills `<html lang>`.
+- **Dates and numbers** follow the language through `Intl` (`en-GB` / `de-DE`), and wording
+  that declines — "3 months" vs "vor 3 Monaten" — has its own messages rather than being
+  glued together.
+- **What is not translated:** what the household wrote (names, notes, journal entries, its
+  own relationship types and circle names). The built-in relationship vocabulary *is*
+  translated, because Stella owns it. Text the importer writes into the data — a gift note's
+  title, a restore's log entry — is written in the language of the member who ran it.
 
 ## 2.20 Personal journal (per-person diary) **[M2]**
 
@@ -813,6 +837,9 @@ steps in the garden").
   same day again *edits* that entry rather than duplicating, so "one entry per day" holds while
   still letting a member keep both a shared and a separate private entry for the same day.
 - **Ownership.** Entries are attributed to their author; you may edit and delete **your own**.
+  Editing changes the title/body in place — the day and visibility stay put, since they are
+  part of the entry's identity (its day-slot, above); to move an entry to another day or change
+  its audience, delete it and write a new one.
 - Implemented as a pure, test-first domain module (`domain/journal`) over a `JournalRepository`
   port; visibility-scoped reads live in the Drizzle adapter; the route is a thin edge.
 - Monica's **journal** entries map here on import (§2.16); other Monica free-text falls back to
@@ -834,7 +861,8 @@ on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s jou
   person when two people share a name. The typed `@AnnaWeber` is only the lookup key. A raw,
   unconfirmed `@FirstnameLastname` (e.g. pasted text) is resolved best-effort when the entry is
   saved: a single exact first+last match becomes a mention; anything ambiguous or unmatched is
-  left as literal text.
+  left as literal text. The id inside the token may be a *source id* from an import
+  (`monica:contact:9`, §2.16), so the token grammar accepts `:` in it.
 - **Rendering.** A mention renders as a chip/link to `/contacts/{id}`, labelled with the
   person's **current** display name (looked up at render time). It goes through the same
   safe-render pipeline as the rest of the body (raw HTML escaped, unsafe links dropped); the
@@ -1011,7 +1039,7 @@ The **story** is that merge, done once, server-side.
 | Export / import / backup | M2 |
 | **Guided migration from Monica** (JSON/SQL/vCard, mapping, preview) | M2 |
 | PWA install + offline shell | M2 |
-| RP-initiated single logout | M2 |
+| RP-initiated single logout | M2 — shipped |
 | 2FA (local), email reminders | M3 |
 | Change digests (daily/weekly/monthly) via email + webhook | M3 |
 | @mentions, photo reordering, "haven't seen" hints | M3 |

@@ -46,6 +46,17 @@ export interface JournalRepository {
 	}): Promise<JournalEntry | null>;
 	insert(entry: NewJournalEntry): Promise<void>;
 	updateBody(params: { id: string; title: string | null; body: string; updatedAt: number }): Promise<void>;
+	/**
+	 * Edit the title/body of an entry the author owns; the day and visibility are part of an
+	 * entry's identity (docs/02 §2.20) and stay put here. Returns whether such an entry existed.
+	 */
+	updateOwn(params: {
+		authorId: string;
+		id: string;
+		title: string | null;
+		body: string;
+		updatedAt: number;
+	}): Promise<boolean>;
 	/** Entries on a contact the viewer may see, newest day first. */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<JournalEntry[]>;
 	/**
@@ -151,6 +162,37 @@ export async function saveJournalEntry(
 		updatedAt: now
 	});
 	return id;
+}
+
+export interface EditJournalEntryInput {
+	id: string;
+	body: string;
+	title?: string | null;
+}
+
+/**
+ * Edit the text of one of the author's own journal entries in place. The day and visibility are
+ * part of an entry's identity (docs/02 §2.20) — changing either means writing a new entry
+ * instead — so only the title and body change here. Returns whether such an owned entry
+ * existed.
+ */
+export async function editJournalEntry(
+	deps: Pick<JournalDeps, 'journal' | 'clock'>,
+	author: JournalAuthor,
+	input: EditJournalEntryInput
+): Promise<boolean> {
+	const body = input.body.trim();
+	if (body.length === 0) {
+		throw new Error('A journal entry needs some content.');
+	}
+	const title = orNull(input.title);
+	return deps.journal.updateOwn({
+		authorId: author.userId,
+		id: input.id,
+		title,
+		body,
+		updatedAt: deps.clock.now()
+	});
 }
 
 /** List the journal entries on a contact that the viewer may see (newest day first). */

@@ -8,15 +8,37 @@
  * the contacts visible to the entry's audience, keeping the visibility rule out of here).
  */
 
+/**
+ * A token's fixed opening, up to the id; the next `}` closes it. Exported because the search
+ * index has to find and cut these tokens in SQL, where this grammar cannot be reused
+ * (`search-index.ts`) — the two must not drift.
+ */
+export const MENTION_TOKEN_PREFIX = '@{contact:';
+
+/**
+ * The character set a contact id can use inside a token. Colons are part of it because an
+ * imported contact keeps its source id (`monica:contact:9`, docs/02 §2.16) — without them a
+ * mention of an imported person would be written but never read back as a token.
+ */
+const ID_CHARS = '[A-Za-z0-9_:-]+';
+
 /** Canonical, id-based mention token as stored in an entry/note body. */
-export const MENTION_TOKEN_RE = /@\{contact:([A-Za-z0-9_-]+)\}/g;
+export const MENTION_TOKEN_RE = new RegExp(`@\\{contact:(${ID_CHARS})\\}`, 'g');
+
+/** The stored form of a mention of `id` — the one place a token is written. */
+export function mentionToken(id: string): string {
+	return `${MENTION_TOKEN_PREFIX}${id}}`;
+}
 
 /**
  * Matches, in one pass: an escaped `\@` (kept literal), a canonical token, or a typed handle.
  * The handle's `@` must sit at a boundary — the negative lookbehind rejects a letter/number
  * (so `anna@example.com` is not a mention), another `@`, and a backslash (the escape case).
  */
-const TOKEN_OR_HANDLE = /(\\@)|@\{contact:([A-Za-z0-9_-]+)\}|(?<![\p{L}\p{N}@\\])@(\p{L}[\p{L}\p{N}]*)/gu;
+const TOKEN_OR_HANDLE = new RegExp(
+	`(\\\\@)|@\\{contact:(${ID_CHARS})\\}|(?<![\\p{L}\\p{N}@\\\\])@(\\p{L}[\\p{L}\\p{N}]*)`,
+	'gu'
+);
 
 /** Normalise a name or typed handle to a comparison key: lowercase letters/numbers only. */
 export function mentionKey(name: string): string {
@@ -75,7 +97,7 @@ export function resolveMentions(
 		const id = resolve(handle);
 		if (id) {
 			pushId(id);
-			return `@{contact:${id}}`;
+			return mentionToken(id);
 		}
 		return match; // unresolved handle → literal text
 	});

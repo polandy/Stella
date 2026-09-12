@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { quietContacts } from '$lib/server/domain/attention/quiet';
 import { listContactNames, listContacts } from '$lib/server/domain/contacts/contacts';
-import { upcomingDates } from '$lib/server/domain/dates/upcoming';
+import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
 import { captureMoment, MomentNeedsPersonError } from '$lib/server/domain/moments/moments';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
@@ -17,6 +17,8 @@ import {
 	getStreamDeps
 } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
+import { say, translator } from '$lib/server/i18n/say';
+import type { MessageKey } from '$lib/i18n/translate';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
@@ -33,6 +35,11 @@ const ABOUT_PARAM = 'about';
 
 function today(): string {
 	return new Date().toLocaleDateString('en-CA'); // ISO YYYY-MM-DD
+}
+
+/** Identity on a message key, so a typo in a validation message is a compile error. */
+function key(name: MessageKey): MessageKey {
+	return name;
 }
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -63,12 +70,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	// One reading of the clock, so the composer's day and the horizon cannot straddle midnight.
 	const day = today();
+	const upcoming = upcomingDates(dateSources, day);
 
 	return {
 		today: day,
 		compose: url.searchParams.has('compose') || about !== undefined,
 		draft: about ? `${handleFor(about)} ` : null,
-		upcoming: upcomingDates(dateSources, day),
+		upcoming,
+		// Below `lg` the rail only precedes the stream when a date is close (docs/05 §5.5).
+		railFirst: hasImminentDate(upcoming),
 		quiet: quietContacts(quietSources, day),
 		linkSuggestion,
 		candidates: contacts.map((c) => ({
@@ -87,8 +97,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 const CaptureSchema = v.object({
-	body: v.pipe(v.string(), v.trim(), v.minLength(1, 'Write what happened first.')),
-	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Please pick a valid day.')),
+	body: v.pipe(v.string(), v.trim(), v.minLength(1, key('errors.moment.needText'))),
+	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, key('errors.moment.badDay'))),
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
 	newPeople: v.array(v.pipe(v.string(), v.trim(), v.minLength(1)))
 });
@@ -111,7 +121,10 @@ export const actions: Actions = {
 		});
 		if (!parsed.success) {
 			return fail(400, {
-				momentError: parsed.issues[0]?.message ?? 'Could not save the moment.',
+				momentError: say(
+					locals,
+					(parsed.issues[0]?.message as MessageKey | undefined) ?? 'errors.moment.couldNotSave'
+				),
 				draft: String(form.get('body') ?? '')
 			});
 		}
@@ -120,10 +133,13 @@ export const actions: Actions = {
 		try {
 			captured = await captureMoment(getCaptureMomentDeps(), author, parsed.output);
 		} catch (err) {
+			// A moment with nobody in it is the one failure the writer can act on; anything
+			// else is ours to fix, and says so in the reader's language rather than in a
+			// message meant for a log.
 			const message =
-				err instanceof MomentNeedsPersonError || err instanceof Error
-					? err.message
-					: 'Could not save the moment.';
+				err instanceof MomentNeedsPersonError
+					? err.phrase(translator(locals))
+					: say(locals, 'errors.moment.couldNotSave');
 			return fail(400, { momentError: message, draft: parsed.output.body });
 		}
 
@@ -149,7 +165,10 @@ export const actions: Actions = {
 					}
 				});
 			} catch {
-				return fail(400, { momentError: 'The moment was saved, but a photo could not be added.', draft: '' });
+				return fail(400, {
+					momentError: say(locals, 'errors.moment.photoFailed'),
+					draft: ''
+				});
 			}
 		}
 

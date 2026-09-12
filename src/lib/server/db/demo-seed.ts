@@ -1,7 +1,7 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { eq, like } from 'drizzle-orm';
 import type * as schema from './schema';
-import { extractMentionIds, mentionsOtherThan } from '../../mentions/mentions';
+import { extractMentionIds, mentionToken, mentionsOtherThan } from '../../mentions/mentions';
 import {
 	circle,
 	circleMembership,
@@ -382,7 +382,7 @@ const SYMMETRIC_TYPES = new Set(['sibling', 'spouse', 'partner', 'friend', 'coll
  * grammar the parser, the chip and the "Mentioned in" list read.
  */
 const withMentions = (text: string) =>
-	text.replace(/@\{person:([a-z]+)\}/g, (_match, key: string) => `@{contact:${cid(key)}}`);
+	text.replace(/@\{person:([a-z]+)\}/g, (_match, key: string) => mentionToken(cid(key)));
 
 /** The people a seeded body names, minus the person it is already about. */
 const mentionedBy = (row: { contactId: string; body: string }) =>

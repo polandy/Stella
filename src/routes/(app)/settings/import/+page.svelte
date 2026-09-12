@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
+	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { hasMessage } from '$lib/i18n/translate';
 	import { processImage } from '$lib/image/process-image';
 	import type { ActionData } from './$types';
 
@@ -10,6 +12,8 @@
 	 * library on the server) and sent one at a time.
 	 */
 	let { form }: { form: ActionData } = $props();
+
+	const t = useTranslate();
 
 	const step = $derived(form?.step ?? 'upload');
 
@@ -90,23 +94,37 @@
 		});
 	}
 
-	/** "1 address", "4 addresses", "2 notes". */
-	const plural = (what: string, n: number) => (n === 1 ? what : what.endsWith('s') ? `${what}es` : `${what}s`);
+	/** "1 address", "4 addresses", "2 notes" — the plan names the kind, the catalogue counts it. */
+	const thing = (what: string, count: number): string => {
+		// Every `import.thing.*` message counts; the cast picks one of them as the shape.
+		const key = `import.thing.${what}`;
+		return hasMessage(key) ? t(key as 'import.thing.note', { count }) : what;
+	};
+
+	/** The heading over a count in the preview, by the plan's own field name. */
+	const countLabel = (what: string): string => {
+		const key = `import.count.${what}`;
+		return hasMessage(key) ? t(key) : what.replace(/([A-Z])/g, ' $1').toLowerCase();
+	};
 
 	const fieldClass = 'rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg';
 </script>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header>
-		<h1 class="text-2xl font-semibold text-fg">Import people</h1>
-		<p class="text-fg-muted">An export of your Monica becomes people, relationships, notes, interactions, tags and photos here; a vCard brings the people alone. Stella works out which of the three you uploaded. Nothing is written until you confirm.</p>
+		<h1 class="text-2xl font-semibold text-fg">{t('import.title')}</h1>
+		<p class="text-fg-muted">{t('import.intro')}</p>
 	</header>
 
-	<ol class="flex gap-2 text-xs uppercase tracking-wide text-fg-subtle" aria-label="Steps">
+	<ol class="flex gap-2 text-xs uppercase tracking-wide text-fg-subtle" aria-label={t('import.steps')}>
 		{#each ['upload', 'preview', 'photos'] as name, i (name)}
 			<li class="flex items-center gap-2" aria-current={step === name ? 'step' : undefined}>
 				<span class="grid size-5 place-items-center rounded-full border border-border text-[11px]" class:bg-primary={step === name} class:text-primary-fg={step === name}>{i + 1}</span>
-				{name === 'photos' ? 'Import & photos' : name}
+				{name === 'photos'
+					? t('import.step.photos')
+					: name === 'upload'
+						? t('import.step.upload')
+						: t('import.step.preview')}
 			</li>
 		{/each}
 	</ol>
@@ -117,93 +135,116 @@
 				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
 			{/if}
 			<label class="flex flex-col gap-1 text-sm text-fg-muted">
-				<span>Monica export — JSON (<code>.json</code>) or database dump (<code>.sql</code>) — or a vCard (<code>.vcf</code>), plain or gzipped</span>
+				<span>{t('import.fileLabel')}</span>
 				<input type="file" name="dump" accept=".sql,.json,.vcf,.gz,.sql.gz,.json.gz,.vcf.gz,application/sql,application/json,text/vcard,application/gzip" required class={fieldClass} />
 			</label>
 			<p class="text-xs text-fg-subtle">
-				In Monica: <em>Settings → Export data</em> gives you the JSON file, pictures included. A vCard comes from any address book — phone, mail client, Google Contacts — and carries the people only. For a dump instead, on a self-hosted Monica:
+				{t('import.fileHint.monica')}
 				<code>docker exec monica-db sh -c 'mariadb-dump -u"$MYSQL_USER" "$MYSQL_DATABASE"' | gzip &gt; monica.sql.gz</code>
 			</p>
 			<fieldset class="flex flex-wrap items-center gap-4 text-sm">
-				<legend class="mb-1 text-fg-muted">Everything imported is</legend>
-				<label class="flex items-center gap-1.5"><input type="radio" name="visibility" value="shared" checked /> Shared with the household</label>
-				<label class="flex items-center gap-1.5"><input type="radio" name="visibility" value="private" /> Private to me</label>
+				<legend class="mb-1 text-fg-muted">{t('import.visibilityLegend')}</legend>
+				<label class="flex items-center gap-1.5">
+					<input type="radio" name="visibility" value="shared" checked />
+					{t('import.visibility.shared')}
+				</label>
+				<label class="flex items-center gap-1.5">
+					<input type="radio" name="visibility" value="private" />
+					{t('import.visibility.private')}
+				</label>
 			</fieldset>
-			<Button variant="primary" class="self-end">Preview</Button>
+			<Button variant="primary" class="self-end">{t('import.preview')}</Button>
 		</form>
 	{:else if form?.step === 'preview'}
 		<section class="flex flex-col gap-4">
-			<h2 class="text-sm font-medium text-fg-muted">What will be imported</h2>
+			<h2 class="text-sm font-medium text-fg-muted">{t('import.whatWillBeImported')}</h2>
 			<dl class="grid grid-cols-2 gap-2 sm:grid-cols-4" data-testid="import-preview">
 				{#each Object.entries(form.report.counts) as [what, n] (what)}
 					<div class="rounded-app bg-card px-3 py-2 shadow-card">
-						<dt class="text-xs uppercase tracking-wide text-fg-subtle">{what.replace(/([A-Z])/g, ' $1').toLowerCase()}</dt>
+						<dt class="text-xs uppercase tracking-wide text-fg-subtle">{countLabel(what)}</dt>
 						<dd class="text-xl font-semibold text-fg">{n}</dd>
 					</div>
 				{/each}
 			</dl>
 			{#if form.customTypes.length > 0}
 				<p class="text-sm text-fg-muted">
-					New relationship types, because Stella has no built-in equivalent:
+					{t('import.newTypes')}
 					{#each form.customTypes as t, i (t.forwardLabel)}{i > 0 ? ', ' : ''}<span class="text-fg">{t.forwardLabel}{t.reverseLabel !== t.forwardLabel ? ` / ${t.reverseLabel}` : ''}</span>{/each}.
 				</p>
 			{/if}
 			{#if form.report.skipped.length > 0}
 				<div class="rounded-app bg-card p-4 shadow-card">
-					<h3 class="mb-2 text-sm font-medium text-fg-muted">Left out, and why</h3>
+					<h3 class="mb-2 text-sm font-medium text-fg-muted">{t('import.leftOut')}</h3>
 					<ul class="flex flex-col gap-1 text-sm text-fg">
 						{#each form.report.skipped as s (s.what + s.why)}
-							<li><span class="font-medium">{s.count} {plural(s.what, s.count)}</span> <span class="text-fg-muted">— {s.why}</span></li>
+							<li>
+								<span class="font-medium">{s.count} {thing(s.what, s.count)}</span>
+								<span class="text-fg-muted">
+									— {t(`import.why.${s.why}` as 'import.why.empty')}{s.detail ? ` (${s.detail})` : ''}
+								</span>
+							</li>
 						{/each}
 					</ul>
 				</div>
 			{/if}
-			{#each form.report.warnings as w (w)}
-				<p class="rounded-md bg-warning/10 px-3 py-2 text-sm text-fg">{w}</p>
+			{#each form.report.warnings as w, i (i)}
+				<p class="rounded-md bg-warning/10 px-3 py-2 text-sm text-fg">
+					{w.code === 'customType'
+						? t('import.warning.customType', { name: w.name })
+						: w.code === 'manyUsers'
+							? t('import.warning.manyUsers', { count: w.count })
+							: w.code === 'vcardPeopleOnly'
+								? t('import.warning.vcardPeopleOnly')
+								: t('import.warning.jsonNoHowWeMet')}
+				</p>
 			{/each}
 			<form method="POST" action="?/confirm" class="flex items-center justify-end gap-3">
 				<input type="hidden" name="token" value={form.token} />
 				<input type="hidden" name="visibility" value={form.visibility} />
-				<Button variant="ghost" href="/settings/import">Start over</Button>
-				<Button variant="primary">Import now</Button>
+				<Button variant="ghost" href="/settings/import">{t('import.startOver')}</Button>
+				<Button variant="primary">{t('import.importNow')}</Button>
 			</form>
 		</section>
 	{:else if form?.step === 'photos'}
 		<section class="flex flex-col gap-4">
 			<p class="rounded-md bg-success/10 px-3 py-2 text-sm text-fg" data-testid="import-done">
-				Imported {form.inserted.contacts} people, {form.inserted.relationships} relationships, {form.inserted.notes} notes, {form.inserted.interactions} interactions and {form.inserted.tags} tags.
-				{#if form.inserted.contacts === 0 && form.report.counts.contacts > 0}Everything was already there, so nothing was written twice.{/if}
+				{t('import.done', {
+					contacts: form.inserted.contacts,
+					relationships: form.inserted.relationships,
+					notes: form.inserted.notes,
+					interactions: form.inserted.interactions,
+					tags: form.inserted.tags
+				})}
+				{#if form.inserted.contacts === 0 && form.report.counts.contacts > 0}{t(
+						'import.nothingTwice'
+					)}{/if}
 			</p>
 
 			{#if form.photos.length > 0}
-				<h2 class="text-sm font-medium text-fg-muted">Photos ({form.photos.length})</h2>
+				<h2 class="text-sm font-medium text-fg-muted">
+					{t('import.photos', { count: form.photos.length })}
+				</h2>
 				{#if form.photosAreEmbedded}
-					<p class="text-sm text-fg-muted">
-						Your export carries the pictures inside it, so there is no folder to point at. Each one is resized in your browser as it arrives; you can close this page once it says done.
-					</p>
+					<p class="text-sm text-fg-muted">{t('import.photos.embedded')}</p>
 					<!-- The count is in the heading right above; the button says what it does. -->
 					<Button variant="primary" onclick={fetchEmbeddedPhotos} disabled={uploading}>
-						{uploading ? 'Storing…' : 'Store photos'}
+						{uploading ? t('import.photos.storing') : t('import.photos.store')}
 					</Button>
 				{:else}
-					<p class="text-sm text-fg-muted">
-						Point the picker at Monica's photo folder (<code>storage/app/public/photos</code>). Each file is resized in your browser and uploaded; you can close this page once it says done.
-					</p>
-					<input type="file" webkitdirectory multiple accept="image/*" onchange={onPhotosPicked} disabled={uploading} class={fieldClass} aria-label="Monica photo folder" />
+					<p class="text-sm text-fg-muted">{t('import.photos.folder')}</p>
+					<input type="file" webkitdirectory multiple accept="image/*" onchange={onPhotosPicked} disabled={uploading} class={fieldClass} aria-label={t('import.photos.folderLabel')} />
 				{/if}
 				{#if progress}
 					<div class="flex flex-col gap-1" data-testid="photo-progress">
 						<progress max={progress.total} value={progress.done} class="w-full"></progress>
-						<p class="text-sm text-fg-muted">
-							{progress.done} of {progress.total} · {progress.stored} stored{progress.already ? `, ${progress.already} already there` : ''}{progress.missing ? `, ${progress.missing} not in the folder` : ''}{progress.failed ? `, ${progress.failed} failed` : ''}
-						</p>
+						<p class="text-sm text-fg-muted">{t('import.progress', progress)}</p>
 					</div>
 				{/if}
 			{/if}
 
 			<form method="POST" action="?/finish" class="flex justify-end">
 				<input type="hidden" name="token" value={form.token} />
-				<Button variant="primary" disabled={uploading}>Finish</Button>
+				<Button variant="primary" disabled={uploading}>{t('import.finish')}</Button>
 			</form>
 		</section>
 	{/if}

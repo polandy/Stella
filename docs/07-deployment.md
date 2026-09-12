@@ -48,6 +48,15 @@ delete it to start clean.
 > `Origin` header against `ORIGIN` on every POST, so if it doesn't match the URL you open,
 > **all form submissions fail with 403**. Keep `STELLA_URL` equal to the address you browse to.
 
+## 7.1.2 Trying an unreleased branch/PR on the real family instance
+
+Sometimes the fastest way to sign off on a feature is to try it where it's actually used,
+before it's merged/released — as opposed to the local trial above, which needs no special
+care. The procedure (host layout, safe steps, guardrails) is the **`prod-trial` skill**
+(`.claude/commands/prod-trial.md`) — that file is the single source of truth for it, kept
+there rather than here so an agent session finds it by intent ("test this on prod/the
+family instance") without needing a pointer into this doc first.
+
 ## 7.2 Prerequisites
 
 - A host with Docker + Docker Compose.
@@ -107,7 +116,7 @@ OIDC_JIT_PROVISION=true                       # auto-create users on first SSO l
 OIDC_LINK_BY_EMAIL=true                       # link to an existing local user by verified email (first login only)
 OIDC_SYNC_ROLES=true                          # re-apply group→role each login
 OIDC_SYNC_PROFILE=true                        # refresh name/email each login
-OIDC_RP_LOGOUT=true                           # redirect to Authelia end_session on logout [M2]
+OIDC_RP_LOGOUT=true                           # also end the Authelia session on logout (needs the post-logout URI below)
 ```
 
 Generate secrets:
@@ -119,12 +128,31 @@ openssl rand -hex 32   # OIDC_CLIENT_SECRET (plaintext; Authelia stores its hash
 
 ## 7.5 `docker-compose.yml`
 
+### 7.5.0 Where the image comes from
+
+Releases are cut by release-please. When it publishes a release, the same workflow run
+calls `publish`, which builds the image and pushes it to `ghcr.io/polandy/stella` as
+`X.Y.Z`, `X.Y` and `latest`. The run's summary prints the line to pin. (The release tag
+cannot trigger a build by itself: release-please pushes it with the run's `GITHUB_TOKEN`,
+and GitHub does not start workflows from events a token creates.)
+
+Pin the **digest**, not a tag — a tag can be moved, a digest cannot:
+
+```yaml
+image: ghcr.io/polandy/stella:0.0.3@sha256:…
+```
+
+`latest` is fine for a hobby setup where an unattended restart may pick up a new version;
+anywhere the running version matters, pin the digest and bump it deliberately.
+
+### 7.5.1 The file
+
 Minimal, proxy-agnostic version (expose the port to your proxy network):
 
 ```yaml
 services:
   stella:
-    image: ghcr.io/andypollari/stella:latest   # or build: .
+    image: ghcr.io/polandy/stella:latest       # pin the digest — see 7.5.0
     container_name: stella
     restart: unless-stopped
     env_file: .env
@@ -150,7 +178,7 @@ networks:
     external: true            # the network your reverse proxy already uses
 ```
 
-### 7.5.1 Traefik labels (optional)
+### 7.5.2 Traefik labels (optional)
 
 If you use Traefik, add labels instead of a separate proxy config:
 
@@ -206,6 +234,11 @@ identity_providers:
         pkce_challenge_method: S256
         redirect_uris:
           - https://stella.example.home/login/sso/callback
+        # Only on an Authelia that implements RP-initiated logout. 4.39 does not: it has no
+        # end-session endpoint, rejects this key outright ("configuration key not expected")
+        # and then refuses to start. Leave it out there — Stella signs out locally anyway.
+        # post_logout_redirect_uris:
+        #   - https://stella.example.home/login?signedOut=1
         scopes:
           - openid
           - profile
@@ -316,7 +349,10 @@ admin. Everything else works identically.
 | Redirect loop / "invalid redirect_uri" | `OIDC_REDIRECT_URI` ≠ the URI registered in Authelia, or `STELLA_URL` mismatch. |
 | "You are not authorized" after SSO login | User not in `OIDC_ALLOWED_GROUPS` (`stella-users`). |
 | Logged in but not admin | User missing from `OIDC_ADMIN_GROUPS`, or `OIDC_SYNC_ROLES=false`. |
-| Asked to log in twice | A `forwardauth` middleware is wrongly in front of Stella (7.5.1). |
+| Asked to log in twice | A `forwardauth` middleware is wrongly in front of Stella (7.5.2). |
 | "invalid_client" at token exchange | `OIDC_CLIENT_SECRET` plaintext ≠ the hash stored in Authelia. |
+| Signed out of Stella but still signed in to Authelia | `OIDC_RP_LOGOUT=false`, or the provider advertises no `end_session_endpoint` — Authelia 4.39 advertises none, so this is expected there. |
+| Authelia will not start after adding the client | `post_logout_redirect_uris` on a version that does not know it (4.39): remove the key. |
+| Logout ends on a provider error page | `post_logout_redirect_uris` set but missing the `https://…/login?signedOut=1` entry. |
 | Images 404 / not persisted | `/data` volume not mounted, or `MEDIA_DIR` misconfigured. |
 | Locked out (IdP misconfig) | Sign in with the local break-glass admin (7.11 / `AUTH_LOCAL_ENABLED`). |

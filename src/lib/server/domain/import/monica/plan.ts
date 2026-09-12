@@ -1,4 +1,3 @@
-import { dayLabel } from '../../../../dates/labels';
 import type { Visibility } from '../../../access/visibility';
 import type { NewContactField } from '../../contact-fields/contact-fields';
 import type { BirthDatePrecision, NewContact } from '../../contacts/contacts';
@@ -28,6 +27,27 @@ export interface ImportOptions {
 	visibility: Visibility;
 	/** Import time, stamped as createdAt/updatedAt on every row. */
 	now: number;
+	/**
+	 * The words the importer *writes into the data* — a gift note's title, the day a life
+	 * event happened. Unlike the report, this is content the household keeps, so it is
+	 * written in the language of the member running the import (docs/02 §2.19).
+	 */
+	wording: ImportWording;
+}
+
+/** The handful of phrases the plan puts into imported records. */
+export interface ImportWording {
+	gift: string;
+	lifeEvent: string;
+	pet: string;
+	/** A Monica activity kind, as the note's trailing note. */
+	monicaActivity: (kind: string) => string;
+	/** "Through Peter", when Monica only knows who introduced them. */
+	metThrough: (name: string) => string;
+	/** "…, met at the lake (through Peter)". */
+	metThroughInfo: (info: string, name: string) => string;
+	/** One day, spelled out. */
+	day: (isoDay: string) => string;
 }
 
 /** A contact row as the import writes it — the profile fields Stella's create form lacks included. */
@@ -79,15 +99,51 @@ export interface ImportCounts {
 	photos: number;
 }
 
+/** What kind of record was left out; the wizard names it in the reader's language. */
+export type SkippedKind =
+	| 'contact'
+	| 'relationship'
+	| 'contactField'
+	| 'address'
+	| 'note'
+	| 'gift'
+	| 'lifeEvent'
+	| 'pet'
+	| 'activity'
+	| 'photo'
+	| 'journalEntry'
+	| 'reminder';
+
+/** Why it was left out. */
+export type SkippedReason =
+	| 'deletedInMonica'
+	| 'refersToDeletedContact'
+	| 'belongsToDeletedContact'
+	| 'empty'
+	| 'linkedToNoPerson'
+	| 'linkedOnlyToDeletedContacts'
+	| 'attachedToNoPerson'
+	| 'notAttachedToPerson'
+	| 'remindersDerived';
+
 export interface SkippedRecords {
-	what: string;
+	what: SkippedKind;
 	count: number;
-	why: string;
+	why: SkippedReason;
+	/** Whatever identifies the records, verbatim from the export; not translated. */
+	detail?: string;
 }
+
+/** Something worth saying about the export, as a code the wizard words (docs/02 §2.19). */
+export type ImportWarning =
+	| { code: 'customType'; name: string }
+	| { code: 'manyUsers'; count: number }
+	| { code: 'vcardPeopleOnly' }
+	| { code: 'jsonNoHowWeMet' };
 
 export interface ImportReport {
 	counts: ImportCounts;
-	warnings: string[];
+	warnings: ImportWarning[];
 	skipped: SkippedRecords[];
 }
 
@@ -125,11 +181,15 @@ function birthDateOf(date: MonicaSpecialDate | undefined): {
 	return { birthDate: date.date, birthDatePrecision: 'full' };
 }
 
-function howWeMetOf(c: MonicaContact, nameOf: (id: MonicaId) => string | null): string | null {
+function howWeMetOf(
+	c: MonicaContact,
+	nameOf: (id: MonicaId) => string | null,
+	wording: ImportWording
+): string | null {
 	const info = orNull(c.firstMetAdditionalInfo);
 	const through = c.firstMetThroughContactId === null ? null : nameOf(c.firstMetThroughContactId);
-	if (info && through) return `${info} (through ${through})`;
-	if (through) return `Through ${through}`;
+	if (info && through) return wording.metThroughInfo(info, through);
+	if (through) return wording.metThrough(through);
 	return info;
 }
 
@@ -140,19 +200,20 @@ const humanise = (key: string) => key.replace(/_/g, ' ');
 export function planMonicaImport(exp: SourceExport, opts: ImportOptions): ImportPlan {
 	const prefix = sourcePrefix(exp.source);
 	const contactId = (sourceId: MonicaId) => `${prefix}:contact:${sourceId}`;
-	const warnings: string[] = [];
+	const warnings: ImportWarning[] = [];
 	const skipped: SkippedRecords[] = [];
-	const skip = (what: string, why: string, count = 1) => {
+	const skip = (what: SkippedKind, why: SkippedReason, count = 1, detail?: string) => {
 		const existing = skipped.find((s) => s.what === what && s.why === why);
 		if (existing) existing.count += count;
-		else skipped.push({ what, count, why });
+		else skipped.push({ what, count, why, ...(detail === undefined ? {} : { detail }) });
 	};
+	const wording = opts.wording;
 	const stamp = { createdBy: opts.userId, visibility: opts.visibility, createdAt: opts.now, updatedAt: opts.now };
 
 	// ── Contacts ────────────────────────────────────────────────────────────
 	const live = exp.contacts.filter((c) => c.deletedAt === null);
 	const deleted = exp.contacts.length - live.length;
-	if (deleted > 0) skip('contact', 'deleted in Monica', deleted);
+	if (deleted > 0) skip('contact', 'deletedInMonica', deleted);
 	const liveIds = new Set(live.map((c) => c.id));
 	const specialDates = new Map(exp.specialDates.map((d) => [d.id, d]));
 	const genders = new Map(exp.genders.map((g) => [g.id, g.type]));
@@ -180,7 +241,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 			lastName,
 			nickname,
 			description: orNull(c.description),
-			howWeMet: howWeMetOf(c, nameOf),
+			howWeMet: howWeMetOf(c, nameOf, wording),
 			metDate: met?.date ?? null,
 			metPlace: orNull(c.firstMetWhere),
 			...birthday,
@@ -200,7 +261,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 	const unknownTypeNames = new Set<string>();
 	for (const r of exp.relationships) {
 		if (!liveIds.has(r.contactIs) || !liveIds.has(r.ofContact)) {
-			skip('relationship', 'refers to a deleted contact');
+			skip('relationship', 'refersToDeletedContact');
 			continue;
 		}
 		const name = typeNames.get(r.typeId) ?? `type ${r.typeId}`;
@@ -239,7 +300,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 		});
 	}
 	for (const name of unknownTypeNames) {
-		warnings.push(`Relationship type "${name}" has no Stella equivalent; created as a custom type.`);
+		warnings.push({ code: 'customType', name });
 	}
 
 	// ── Contact fields ──────────────────────────────────────────────────────
@@ -249,7 +310,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 	const fieldStamp = { createdAt: opts.now, updatedAt: opts.now, meta: null };
 	for (const f of exp.contactFields) {
 		if (!liveIds.has(f.contactId)) {
-			skip('contact field', 'belongs to a deleted contact');
+			skip('contactField', 'belongsToDeletedContact');
 			continue;
 		}
 		const type = fieldTypes.get(f.typeId);
@@ -264,7 +325,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 	}
 	for (const a of exp.addresses) {
 		if (!liveIds.has(a.contactId)) {
-			skip('address', 'belongs to a deleted contact');
+			skip('address', 'belongsToDeletedContact');
 			continue;
 		}
 		const cityLine = orNull([a.postalCode, a.city].filter(Boolean).join(' '));
@@ -286,26 +347,26 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 
 	// ── Notes, plus the Monica modules Stella has no home for ───────────────
 	const notes: NewNote[] = [];
-	const noteFor = (id: string, monicaContactId: MonicaId, title: string | null, body: string, isPinned = false, what = 'note') => {
+	const noteFor = (id: string, monicaContactId: MonicaId, title: string | null, body: string, isPinned = false, what: SkippedKind = 'note') => {
 		if (!liveIds.has(monicaContactId)) {
-			skip(what, 'belongs to a deleted contact');
+			skip(what, 'belongsToDeletedContact');
 			return;
 		}
 		notes.push({ id, contactId: contactId(monicaContactId), ...stamp, title, body, isPinned });
 	};
 	for (const n of exp.notes) noteFor(`${prefix}:note:${n.id}`, n.contactId, null, n.body, n.isFavorited);
 	for (const g of exp.gifts) {
-		const meta = [g.status, g.date ? dayLabel(g.date) : null].filter(Boolean).join(', ');
+		const meta = [g.status, g.date ? wording.day(g.date) : null].filter(Boolean).join(', ');
 		const lines = [`🎁 **${g.name}**${meta ? ` — ${meta}` : ''}`, orNull(g.comment), orNull(g.url)].filter(Boolean);
-		noteFor(`${prefix}:gift:${g.id}`, g.contactId, 'Gift', lines.join('\n\n'), false, 'gift');
+		noteFor(`${prefix}:gift:${g.id}`, g.contactId, wording.gift, lines.join('\n\n'), false, 'gift');
 	}
 	for (const e of exp.lifeEvents) {
-		const head = `📅 **${e.name ?? (e.typeKey ? humanise(e.typeKey) : 'Life event')}**${e.typeKey && e.name ? ` (${humanise(e.typeKey)})` : ''}`;
-		const when = e.happenedAt ? ` — ${dayLabel(e.happenedAt)}` : '';
-		noteFor(`${prefix}:lifeevent:${e.id}`, e.contactId, 'Life event', [head + when, orNull(e.note)].filter(Boolean).join('\n\n'), false, 'life event');
+		const head = `📅 **${e.name ?? (e.typeKey ? humanise(e.typeKey) : wording.lifeEvent)}**${e.typeKey && e.name ? ` (${humanise(e.typeKey)})` : ''}`;
+		const when = e.happenedAt ? ` — ${wording.day(e.happenedAt)}` : '';
+		noteFor(`${prefix}:lifeevent:${e.id}`, e.contactId, wording.lifeEvent, [head + when, orNull(e.note)].filter(Boolean).join('\n\n'), false, 'lifeEvent');
 	}
 	for (const p of exp.pets) {
-		noteFor(`${prefix}:pet:${p.id}`, p.contactId, 'Pet', `🐾 **${p.name ?? 'Pet'}**${p.category ? `, ${p.category}` : ''}`, false, 'pet');
+		noteFor(`${prefix}:pet:${p.id}`, p.contactId, wording.pet, `🐾 **${p.name ?? wording.pet}**${p.category ? `, ${p.category}` : ''}`, false, 'pet');
 	}
 
 	// ── Activities → interactions ───────────────────────────────────────────
@@ -313,11 +374,14 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 	for (const a of exp.activities) {
 		const people = a.contactIds.filter((id) => liveIds.has(id));
 		if (people.length === 0) {
-			skip('activity', a.contactIds.length === 0 ? 'linked to no person' : 'linked only to deleted contacts');
+			skip(
+				'activity',
+				a.contactIds.length === 0 ? 'linkedToNoPerson' : 'linkedOnlyToDeletedContacts'
+			);
 			continue;
 		}
 		const [subject, ...participants] = people;
-		const description = [orNull(a.description), a.typeKey ? `(Monica activity: ${humanise(a.typeKey)})` : null]
+		const description = [orNull(a.description), a.typeKey ? wording.monicaActivity(humanise(a.typeKey)) : null]
 			.filter(Boolean)
 			.join('\n\n');
 		interactions.push({
@@ -350,11 +414,11 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 	const photos: ImportedPhoto[] = [];
 	for (const p of exp.photos) {
 		if (p.contactId === null) {
-			skip('photo', 'attached to no person');
+			skip('photo', 'attachedToNoPerson');
 			continue;
 		}
 		if (!liveIds.has(p.contactId)) {
-			skip('photo', 'belongs to a deleted contact');
+			skip('photo', 'belongsToDeletedContact');
 			continue;
 		}
 		photos.push({
@@ -370,25 +434,21 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 
 	// ── What has no place in Stella ─────────────────────────────────────────
 	for (const j of exp.journalEntries) {
-		skip('journal entry', `not attached to a person (${j.title ?? j.post.slice(0, 40)})`);
+		skip('journalEntry', 'notAttachedToPerson', 1, j.title ?? j.post.slice(0, 40));
 	}
 	if (exp.derivedReminderCount > 0) {
-		skip('reminder', 'Stella derives birthday reminders itself', exp.derivedReminderCount);
+		skip('reminder', 'remindersDerived', exp.derivedReminderCount);
 	}
 	if (exp.userCount > 1) {
-		warnings.push(`Monica had ${exp.userCount} user accounts; everything is attributed to the importing member.`);
+		warnings.push({ code: 'manyUsers', count: exp.userCount });
 	}
 	if (exp.source === 'vcard') {
-		warnings.push(
-			'A vCard carries people only — no relationships, interactions or journal entries are read from it.'
-		);
+		warnings.push({ code: 'vcardPeopleOnly' });
 	}
 	if (exp.source === 'json') {
 		// Monica's export resource for a contact lists neither field, so they are not in the
 		// file at all — nothing the mapping can do but say so (docs/02 §2.16).
-		warnings.push(
-			'Monica’s JSON export does not carry “how you met” or where; that free text is not in the file.'
-		);
+		warnings.push({ code: 'jsonNoHowWeMet' });
 	}
 
 	const relationshipTypes = [...customTypes.values()];

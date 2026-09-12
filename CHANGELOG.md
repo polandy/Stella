@@ -1,5 +1,56 @@
 # Changelog
 
+## [0.0.6](https://github.com/polandy/Stella/compare/v0.0.5...v0.0.6) (2026-09-09)
+
+
+### Features
+
+* **home:** drop the phone rail's sideways scroll ([#51](https://github.com/polandy/Stella/issues/51)) ([40af4c9](https://github.com/polandy/Stella/commit/40af4c9e66136a09dd57edefc121e59b0949c015))
+
+## [0.0.5](https://github.com/polandy/Stella/compare/v0.0.4...v0.0.5) (2026-09-09)
+
+
+### Features
+
+* **i18n:** English and German, chosen per member ([b9401c3](https://github.com/polandy/Stella/commit/b9401c3016838578799e5c9f34a02642d0feffd4))
+
+
+### Bug Fixes
+
+* **mentions:** render mentions of imported contacts ([#47](https://github.com/polandy/Stella/issues/47)) ([3ff74ca](https://github.com/polandy/Stella/commit/3ff74cac215728c21ca7a35bd1a87d5cb445742a))
+
+## [0.0.4](https://github.com/polandy/Stella/compare/v0.0.3...v0.0.4) (2026-09-09)
+
+
+### Features
+
+* **auth:** end the provider session on sign-out too ([f7c1413](https://github.com/polandy/Stella/commit/f7c1413e3e2ced5cfdd1e0f08b5fcbe0f850e343))
+
+
+### Bug Fixes
+
+* **ci:** call the image build from the release job ([634186f](https://github.com/polandy/Stella/commit/634186ffae5b2d587d7fc3995a0457a21c5f5e1f))
+
+## [0.0.3](https://github.com/polandy/Stella/compare/v0.0.2...v0.0.3) (2026-09-08)
+
+
+### Features
+
+* **archive:** read the household archive back in ([bf44d0d](https://github.com/polandy/Stella/commit/bf44d0dcddac746cd40e04f6c23615e29fa636f9))
+* **contacts:** archiving — out of the lists, not out of the family ([aa6782b](https://github.com/polandy/Stella/commit/aa6782b8cb67ef301b7d46755a90c42aac2e838d))
+* **contacts:** deleting a person, and the one thing the activity log is for ([2d315f8](https://github.com/polandy/Stella/commit/2d315f899dfeb90fc02fa82061df7ecf5443578c))
+* **contacts:** merging two people into one ([4fa3204](https://github.com/polandy/Stella/commit/4fa32045502fdee8e48eb7955f4b8e5795ba1219))
+* **deploy:** publish a container image on every release ([538be96](https://github.com/polandy/Stella/commit/538be968aa234fc7c238fddb1157874fcd6e359d))
+* **export:** the household as one readable file, and the photos beside it ([4af817c](https://github.com/polandy/Stella/commit/4af817c0e2f904cfa1aca20474ea1facf9f10f9d))
+* **graph:** derived kinship in the explorer ([ea4e1f8](https://github.com/polandy/Stella/commit/ea4e1f8630de3f3e8819ebb962f1ba619573c726))
+* **import:** read a vCard ([64ad17c](https://github.com/polandy/Stella/commit/64ad17c2aefdf6a3839150f5fb36b1768e366e99))
+* **import:** read Monica's JSON export ([d47657d](https://github.com/polandy/Stella/commit/d47657d9a448aa72ba9bff19e6caec75ee20b49e))
+* **media:** photo gallery on the person page ([0997977](https://github.com/polandy/Stella/commit/0997977413a7b811b238b2d4e979ab674fc3378d))
+* **mentions:** the passive "Mentioned in" list ([f5dadfb](https://github.com/polandy/Stella/commit/f5dadfb6355f6b3272a3dc0aaa37366d67a973e9))
+* **notes:** a note names people, and the name is a link ([19e639b](https://github.com/polandy/Stella/commit/19e639b163fe6c8d2eaef3f9643dbbe2f7b51b25))
+* **relationships:** a household names its own kinds of link ([aa10eae](https://github.com/polandy/Stella/commit/aa10eae6f9b94b0837c3a61c45a6e8b8e08942c5))
+* **relationships:** the specifics of a link, and taking one back ([8e14354](https://github.com/polandy/Stella/commit/8e14354818fd56e9629254e78ce076dd32530074))
+
 ## [0.0.2](https://github.com/polandy/Stella/compare/v0.0.1...v0.0.2) (2026-09-05)
 
 

@@ -193,7 +193,8 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 					toId: toC.id,
 					toName: toC.displayName,
 					toAvatar: toC.avatarPhotoId,
-					label: relationshipType.forwardLabel
+					label: relationshipType.forwardLabel,
+					typeKey: relationshipType.key
 				})
 				.from(relationship)
 				.innerJoin(relationshipType, eq(relationship.typeId, relationshipType.id))
@@ -210,7 +211,8 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				actor: { id: r.actorId, name: r.actorName },
 				from: { id: r.fromId, name: r.fromName, avatarPhotoId: r.fromAvatar },
 				to: { id: r.toId, name: r.toName, avatarPhotoId: r.toAvatar },
-				label: r.label
+				label: r.label,
+				typeKey: r.typeKey
 			}));
 		},
 

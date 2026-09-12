@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../errors/translatable';
+import { phrase } from '../../../i18n/phrase';
 import type { Visibility, Viewer } from '../../access/visibility';
 import { allowedForAudience } from '../../../mentions/audience';
 import type { Clock } from '../../clock';
@@ -55,10 +57,9 @@ export interface CapturedMoment {
 }
 
 /** Thrown when a moment references nobody — a moment needs at least one person. */
-export class MomentNeedsPersonError extends Error {
+export class MomentNeedsPersonError extends TranslatableError {
 	constructor() {
-		super('Mention at least one person with @ so the moment has a place to go.');
-		this.name = 'MomentNeedsPersonError';
+		super(phrase('errors.moment.needsPerson'), 'MomentNeedsPersonError');
 	}
 }
 

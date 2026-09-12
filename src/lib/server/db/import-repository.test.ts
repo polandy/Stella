@@ -5,6 +5,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { count, eq } from 'drizzle-orm';
 import type { SQLiteTable } from 'drizzle-orm/sqlite-core';
 import type { SourceExport } from '../domain/import/monica/monica-export';
+import { englishWording } from '../domain/import/monica/wording.fixture';
 import { planMonicaImport, type ImportPlan } from '../domain/import/monica/plan';
 import { createDrizzleImportRepository } from './import-repository';
 import * as schema from './schema';
@@ -63,7 +64,13 @@ function fixture(): SourceExport {
 }
 
 const plan = (): ImportPlan =>
-	planMonicaImport(fixture(), { householdId: H, userId: U1, visibility: 'shared', now: NOW });
+	planMonicaImport(fixture(), {
+		householdId: H,
+		userId: U1,
+		visibility: 'shared',
+		now: NOW,
+		wording: englishWording
+	});
 
 beforeEach(() => {
 	const sqlite = new Database(':memory:');

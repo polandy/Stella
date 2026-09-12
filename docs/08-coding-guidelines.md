@@ -174,7 +174,20 @@ A change is done when:
 - Public surface is minimal and documented where non-obvious.
 - Access control is enforced through the central layer for any new data access.
 - Accessibility basics hold for any UI (keyboard, contrast, labels).
+- **No English in the interface.** Every string a person reads goes through the message
+  catalogue in both languages (docs/02 §2.19): components call `t('…')` from `useI18n()`,
+  routes call `say(locals, '…')`, and a domain refusal carries a `Phrase` instead of a
+  sentence. `messages/de/*` is typed against `messages/en/*`, so a missing translation is a
+  compile error rather than a screen half in English.
 - Relevant docs (this suite) are updated if behavior or model changed.
+
+### Adding a message
+
+1. Add the key to the right area module in `src/lib/i18n/messages/en/`; a message that
+   needs values is a function, so its parameters are checked at every call site.
+2. Add the same key to `messages/de/` — the compiler insists.
+3. A new area needs its module in both barrels (`messages/{en,de}/index.ts`); the parity
+   spec in `messages/catalogs.test.ts` catches a barrel that forgot one.
 
 ## 8.8 Dependency policy
 

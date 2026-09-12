@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../errors/translatable';
+import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { isSafeMediaPath } from './archive';
@@ -23,10 +25,9 @@ import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from './document';
  */
 
 /** A file that is not a Stella archive, or one this reader cannot make sense of. */
-export class ArchiveFormatError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'ArchiveFormatError';
+export class ArchiveFormatError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'ArchiveFormatError');
 	}
 }
 
@@ -34,24 +35,50 @@ export class ArchiveFormatError extends Error {
  * An id in the archive that this server already holds for another household. Restoring it
  * would hang the archive's records off somebody else's rows, so the import stops instead.
  */
-export class ForeignHouseholdError extends Error {
+export class ForeignHouseholdError extends TranslatableError {
 	constructor(table: string, id: string) {
-		super(
-			`This archive has already been restored into another household on this server (${table} “${id}”), so it cannot be restored here.`
-		);
-		this.name = 'ForeignHouseholdError';
+		super(phrase('archive.error.foreignHousehold', { table, id }), 'ForeignHouseholdError');
 	}
 }
 
 /** An archive written by a newer Stella than this one. */
-export class ArchiveVersionError extends Error {
+export class ArchiveVersionError extends TranslatableError {
 	constructor(readonly fileVersion: number) {
 		super(
-			`This archive was written by a newer version of Stella (format ${fileVersion}, this one reads ${ARCHIVE_VERSION}). Update Stella first.`
+			phrase('archive.error.newerVersion', { fileVersion, reads: ARCHIVE_VERSION }),
+			'ArchiveVersionError'
 		);
-		this.name = 'ArchiveVersionError';
 	}
 }
+
+/** The kinds of pointer a restore can find dangling. */
+export type MentionKind = 'noteMentions' | 'journalMentions' | 'touchpointParticipants';
+
+/**
+ * Something the restore left out, as a code the page words (docs/02 §2.19). The plan is a
+ * domain module and has no language of its own; the report says *what* happened and the
+ * wizard says it in the reader's.
+ */
+export type RestoreWarning =
+	| { code: 'personWithoutName' }
+	| { code: 'photoWithoutFile' }
+	| { code: 'photoBadPath'; file: string }
+	| { code: 'pointedAtMissingPeople'; what: MentionKind }
+	| { code: 'contactFieldIncomplete' }
+	| { code: 'importantDateIncomplete' }
+	| { code: 'noteWithoutText' }
+	| { code: 'journalEntryIncomplete' }
+	| { code: 'touchpointIncomplete' }
+	| { code: 'tagWithoutName' }
+	| { code: 'tagsNotInList' }
+	| { code: 'circleWithoutName' }
+	| { code: 'circleMissingParent'; name: string }
+	| { code: 'circleMemberMissing'; name: string }
+	| { code: 'relationshipTypeWithoutName' }
+	| { code: 'relationshipMissingEnd' }
+	| { code: 'relationshipsMissingPeople' }
+	| { code: 'relationshipUnknownType' }
+	| { code: 'imagesMissing'; count: number };
 
 /** What this installation already has, so the plan can fit itself into it. */
 export interface RestoreTarget {
@@ -83,7 +110,7 @@ export interface RestorePlan {
 	/** The media files the plan's photos need, as relative keys. */
 	mediaPaths: string[];
 	/** What was left out, in words the admin can act on. */
-	warnings: string[];
+	warnings: RestoreWarning[];
 }
 
 export interface RestorePlanDeps {
@@ -145,15 +172,13 @@ const visibilityOf = (row: Row): 'shared' | 'private' =>
  */
 export function readArchiveDocument(parsed: unknown): Row {
 	const document = record(parsed);
-	if (!document) throw new ArchiveFormatError('This file does not contain a Stella archive.');
+	if (!document) throw new ArchiveFormatError(phrase('archive.error.notAnArchive'));
 	if (str(document, 'format') !== ARCHIVE_FORMAT) {
-		throw new ArchiveFormatError(
-			'This file is not a Stella archive — it has no “format: stella-archive” line.'
-		);
+		throw new ArchiveFormatError(phrase('archive.error.noFormatLine'));
 	}
 	const version = int(document, 'version');
 	if (version === null) {
-		throw new ArchiveFormatError('This archive does not say which format version it is.');
+		throw new ArchiveFormatError(phrase('archive.error.noVersion'));
 	}
 	if (version > ARCHIVE_VERSION) throw new ArchiveVersionError(version);
 	return document;
@@ -170,9 +195,11 @@ export function planRestore(
 ): RestorePlan {
 	const document = readArchiveDocument(parsed);
 	const now = deps.clock.now();
-	const warnings: string[] = [];
-	const warn = (message: string) => {
-		if (!warnings.includes(message)) warnings.push(message);
+	const warnings: RestoreWarning[] = [];
+	const warn = (warning: RestoreWarning) => {
+		const same = (a: RestoreWarning, b: RestoreWarning) =>
+			JSON.stringify(a) === JSON.stringify(b);
+		if (!warnings.some((existing) => same(existing, warning))) warnings.push(warning);
 	};
 
 	const members = new Set(target.memberIds);
@@ -208,7 +235,7 @@ export function planRestore(
 		const id = str(person, 'id');
 		const displayName = str(person, 'display_name');
 		if (id === null || displayName === null) {
-			warn('A person without an id or a name was left out.');
+			warn({ code: 'personWithoutName' });
 			continue;
 		}
 		knownPeople.add(id);
@@ -247,13 +274,13 @@ export function planRestore(
 		const file = str(row, 'file');
 		const thumb = str(row, 'thumb');
 		if (file === null || thumb === null) {
-			warn('A photo without a file was left out.');
+			warn({ code: 'photoWithoutFile' });
 			return;
 		}
 		if (!isSafeMediaPath(file) || !isSafeMediaPath(thumb)) {
 			// A path out of the media directory is the one thing in an archive that could reach
 			// the rest of the disk. It is refused, not cleaned up.
-			warn(`A photo naming an unusable file path (“${file}”) was left out.`);
+			warn({ code: 'photoBadPath', file });
 			return;
 		}
 		mediaPaths.add(file);
@@ -279,10 +306,10 @@ export function planRestore(
 	};
 
 	/** Mentions and participants can only point at people this archive brought along. */
-	const knownOnly = (candidates: string[], what: string): string[] =>
+	const knownOnly = (candidates: string[], what: MentionKind): string[] =>
 		candidates.filter((id) => {
 			if (knownPeople.has(id)) return true;
-			warn(`Some ${what} pointed at people the archive does not contain and were left out.`);
+			warn({ code: 'pointedAtMissingPeople', what });
 			return false;
 		});
 
@@ -294,7 +321,7 @@ export function planRestore(
 			const value = str(field, 'value');
 			const kind = str(field, 'kind');
 			if (value === null || kind === null) {
-				warn('A contact detail without a kind or a value was left out.');
+				warn({ code: 'contactFieldIncomplete' });
 				return;
 			}
 			contactFields.push({
@@ -315,7 +342,7 @@ export function planRestore(
 			const day = str(date, 'date');
 			const kind = str(date, 'kind');
 			if (day === null || kind === null) {
-				warn('An important date without a day or a kind was left out.');
+				warn({ code: 'importantDateIncomplete' });
 				continue;
 			}
 			importantDates.push({
@@ -334,7 +361,7 @@ export function planRestore(
 		for (const note of records(person, 'notes')) {
 			const body = str(note, 'body');
 			if (body === null) {
-				warn('A note with no text was left out.');
+				warn({ code: 'noteWithoutText' });
 				continue;
 			}
 			const noteId = str(note, 'id') ?? deps.ids.next();
@@ -348,7 +375,7 @@ export function planRestore(
 				is_pinned: bool(note, 'pinned') ? 1 : 0,
 				...stamps(note)
 			});
-			for (const mentioned of knownOnly(ids(note, 'mentions'), 'note mentions')) {
+			for (const mentioned of knownOnly(ids(note, 'mentions'), 'noteMentions')) {
 				noteMentions.push({ note_id: noteId, contact_id: mentioned });
 			}
 		}
@@ -357,7 +384,7 @@ export function planRestore(
 			const body = str(entry, 'body');
 			const day = str(entry, 'date');
 			if (body === null || day === null) {
-				warn('A journal entry without a day or any text was left out.');
+				warn({ code: 'journalEntryIncomplete' });
 				continue;
 			}
 			const entryId = str(entry, 'id') ?? deps.ids.next();
@@ -371,7 +398,7 @@ export function planRestore(
 				body,
 				...stamps(entry)
 			});
-			for (const mentioned of knownOnly(ids(entry, 'mentions'), 'journal mentions')) {
+			for (const mentioned of knownOnly(ids(entry, 'mentions'), 'journalMentions')) {
 				journalMentions.push({ journal_entry_id: entryId, contact_id: mentioned });
 			}
 			for (const image of records(entry, 'photos')) addPhoto(image, contactId, entryId);
@@ -381,7 +408,7 @@ export function planRestore(
 			const kind = str(touch, 'kind');
 			const happenedAt = str(touch, 'happened_at');
 			if (kind === null || happenedAt === null) {
-				warn('A touchpoint without a kind or a date was left out.');
+				warn({ code: 'touchpointIncomplete' });
 				continue;
 			}
 			const interactionId = str(touch, 'id') ?? deps.ids.next();
@@ -396,7 +423,7 @@ export function planRestore(
 				happened_at: happenedAt,
 				...stamps(touch)
 			});
-			for (const other of knownOnly(ids(touch, 'participants'), 'touchpoint participants')) {
+			for (const other of knownOnly(ids(touch, 'participants'), 'touchpointParticipants')) {
 				participants.push({ interaction_id: interactionId, contact_id: other });
 			}
 		}
@@ -414,7 +441,7 @@ export function planRestore(
 		const id = str(tag, 'id');
 		const name = str(tag, 'name');
 		if (id === null || name === null) {
-			warn('A tag without a name was left out.');
+			warn({ code: 'tagWithoutName' });
 			continue;
 		}
 		const existing = tagIdByName.get(name);
@@ -439,7 +466,7 @@ export function planRestore(
 		for (const archiveTagId of ids(person, 'tags')) {
 			const tagId = tagIdByArchiveId.get(archiveTagId);
 			if (tagId === undefined) {
-				warn('Some tags on people are not in the archive’s tag list and were left out.');
+				warn({ code: 'tagsNotInList' });
 				continue;
 			}
 			contactTags.push({ contact_id: contactId, tag_id: tagId });
@@ -457,12 +484,12 @@ export function planRestore(
 		const id = str(circle, 'id');
 		const name = str(circle, 'name');
 		if (id === null || name === null) {
-			warn('A circle without a name was left out.');
+			warn({ code: 'circleWithoutName' });
 			continue;
 		}
 		const parent = str(circle, 'parent');
 		if (parent !== null && !knownCircles.has(parent)) {
-			warn(`“${name}” sat inside a circle the archive does not contain; it is restored on its own.`);
+			warn({ code: 'circleMissingParent', name });
 		}
 		circles.push({
 			id,
@@ -483,7 +510,7 @@ export function planRestore(
 		for (const member of records(circle, 'members')) {
 			const person = str(member, 'person');
 			if (person === null || !knownPeople.has(person)) {
-				warn(`A member of “${name}” is not in the archive and was left out.`);
+				warn({ code: 'circleMemberMissing', name });
 				continue;
 			}
 			memberships.push({
@@ -508,7 +535,7 @@ export function planRestore(
 		const key = str(type, 'key');
 		const forward = str(type, 'forward_label');
 		if (id === null || key === null || forward === null) {
-			warn('A relationship type without a name was left out.');
+			warn({ code: 'relationshipTypeWithoutName' });
 			return;
 		}
 		knownTypes.add(id);
@@ -530,17 +557,15 @@ export function planRestore(
 		const to = str(link, 'to');
 		const type = str(link, 'type');
 		if (from === null || to === null || type === null) {
-			warn('A relationship missing one of its ends was left out.');
+			warn({ code: 'relationshipMissingEnd' });
 			continue;
 		}
 		if (!knownPeople.has(from) || !knownPeople.has(to)) {
-			warn('Some relationships joined people the archive does not contain and were left out.');
+			warn({ code: 'relationshipsMissingPeople' });
 			continue;
 		}
 		if (!knownTypes.has(type)) {
-			warn(
-				'Some relationships were of a kind this Stella does not know and were left out. Add the relationship type, then import again.'
-			);
+			warn({ code: 'relationshipUnknownType' });
 			continue;
 		}
 		relationships.push({

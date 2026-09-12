@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { paletteRows, type PalettePerson } from '$lib/palette/palette';
 	import { tick } from 'svelte';
 
@@ -23,7 +24,14 @@
 	let query = $state('');
 	let selected = $state(0);
 
-	const rows = $derived(paletteRows(query, people));
+	const t = useTranslate();
+	const rows = $derived(
+		paletteRows(query, people, {
+			write: t('components.palette.write'),
+			addPerson: t('components.palette.addPerson'),
+			searchEverything: (q) => t('components.palette.searchEverything', { query: q })
+		})
+	);
 
 	$effect(() => {
 		if (!dialog) return;
@@ -66,7 +74,7 @@
 	bind:this={dialog}
 	onclose={() => (open = false)}
 	onclick={(e) => e.target === dialog && (open = false)}
-	aria-label="Jump to"
+	aria-label={t('components.palette.jumpTo')}
 	class="m-0 w-full max-w-lg self-start justify-self-center rounded-app border border-border bg-card p-0 text-fg shadow-pop backdrop:bg-bg-sunken/70 backdrop:backdrop-blur-sm max-sm:max-w-none max-sm:rounded-b-none sm:mt-[12vh]"
 >
 	<div class="flex items-center gap-2.5 border-b border-border-subtle px-3.5 py-3">
@@ -77,8 +85,8 @@
 			oninput={() => (selected = 0)}
 			onkeydown={onKeydown}
 			type="text"
-			placeholder="Jump to a person, or do something…"
-			aria-label="Jump to"
+			placeholder={t('components.palette.placeholder')}
+			aria-label={t('components.palette.jumpTo')}
 			aria-controls="palette-rows"
 			aria-activedescendant={rows[selected] ? `palette-${rows[selected].kind}-${rows[selected].id}` : undefined}
 			autocomplete="off"
@@ -107,11 +115,11 @@
 						<span class="grid size-6 place-items-center text-fg-subtle"><Icon name={row.icon} size={15} /></span>
 					{/if}
 					<span class="truncate">{row.label}</span>
-					{#if row.kind !== 'person'}<span class="ml-auto text-xs text-fg-subtle">{row.kind === 'search' ? 'search' : 'action'}</span>{/if}
+					{#if row.kind !== 'person'}<span class="ml-auto text-xs text-fg-subtle">{row.kind === 'search' ? t('components.palette.kindSearch') : t('components.palette.kindAction')}</span>{/if}
 				</a>
 			</li>
 		{:else}
-			<li class="px-2.5 py-4 text-center text-sm text-fg-muted">Nobody by that name.</li>
+			<li class="px-2.5 py-4 text-center text-sm text-fg-muted">{t('components.palette.empty')}</li>
 		{/each}
 	</ul>
 </dialog>

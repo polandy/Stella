@@ -1,3 +1,4 @@
+import type { KinTerm, KinVariant } from '../../kinship/kinship';
 /*
  * Pure graph domain — value types (docs/04 §4.11, docs/02 §2.7).
  *
@@ -41,6 +42,10 @@ export interface GraphEdge {
 	category?: RelationshipCategory;
 	/** Perspective-neutral label, e.g. "Mother", "via Ski Course", or a derived-kinship term. */
 	label?: string;
+	/** The relationship type's machine key, so a built-in label can be translated. */
+	typeKey?: string;
+	/** For a derived kinship edge: the term and how it is worded, translated at the edge. */
+	kin?: { term: KinTerm; variant: KinVariant };
 	/** `true` when the link is derived/inferred rather than stored (docs/02 §2.4.1). */
 	derived?: boolean;
 	/** `true` when direction is meaningful (asymmetric relationship, source → target). */

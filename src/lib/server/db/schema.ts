@@ -8,6 +8,7 @@ import {
 	text,
 	unique
 } from 'drizzle-orm/sqlite-core';
+import type { Locale } from '../../i18n/locales';
 
 /*
  * Drizzle schema — implementation of docs/03-data-model.md.
@@ -41,6 +42,8 @@ export const user = sqliteTable('user', {
 	role: text('role').$type<Role>().notNull().default('member'),
 	roleLocked: integer('role_locked').notNull().default(0),
 	avatarPhotoId: text('avatar_photo_id'),
+	// Null until the member picks one: an unchosen language must not outrank the browser's.
+	localePref: text('locale_pref').$type<Locale>(),
 	themePref: text('theme_pref').$type<'system' | 'light' | 'dark'>().notNull().default('system'),
 	accentPref: text('accent_pref').notNull().default('mauve'),
 	defaultVisibility: text('default_visibility').$type<Visibility>().notNull().default('shared'),
@@ -58,6 +61,8 @@ export const session = sqliteTable('session', {
 	expiresAt: integer('expires_at').notNull(),
 	userAgent: text('user_agent'),
 	ip: text('ip'),
+	// ID token of the OIDC sign-in behind this session; the `id_token_hint` for single logout.
+	oidcIdToken: text('oidc_id_token'),
 	createdAt: integer('created_at').notNull().default(now)
 });
 

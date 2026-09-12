@@ -4,11 +4,15 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { sinceLabel } from '$lib/dates/labels';
+	import { useI18n } from '$lib/i18n/context.svelte';
 	import { accentChipStyle } from '$lib/design/tokens';
 	import { groupByLetter, matchesQuery } from '$lib/people/directory';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+
+	const i18n = useI18n();
+	const t = i18n.t;
 
 	let query = $state('');
 
@@ -16,15 +20,18 @@
 	const groups = $derived(groupByLetter(found));
 </script>
 
-<svelte:head><title>People · Stella</title></svelte:head>
+<svelte:head><title>{t('contacts.title')}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-6 md:px-6 md:py-10">
 	<header>
-		<h1 class="text-2xl font-semibold text-fg">{data.showArchived ? 'Archived people' : 'People'}</h1>
+		<h1 class="text-2xl font-semibold text-fg">
+			{data.showArchived ? t('contacts.headingArchived') : t('contacts.heading')}
+		</h1>
 		<p class="text-sm text-fg-muted">
-			{data.contacts.length} {data.contacts.length === 1 ? 'person' : 'people'}{#if data.activeTag}
-				with this tag{/if}{#if data.showArchived}
-				, out of the lists but not lost{/if}
+			{t('contacts.count', { count: data.contacts.length })}{#if data.activeTag}
+				{' '}{t('contacts.withThisTag')}{/if}{#if data.showArchived}{t(
+					'contacts.archivedSuffix'
+				)}{/if}
 		</p>
 	</header>
 
@@ -32,11 +39,11 @@
 	     and no wait between the keystroke and the list. -->
 	<label class="flex items-center gap-2 rounded-control border border-border bg-card px-3 py-2 shadow-card focus-within:border-primary">
 		<Icon name="search" size={15} />
-		<span class="sr-only">Find someone</span>
+		<span class="sr-only">{t('contacts.find')}</span>
 		<input
 			type="search"
 			bind:value={query}
-			placeholder="Find someone…"
+			placeholder={t('contacts.findPlaceholder')}
 			autocomplete="off"
 			class="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none placeholder:text-fg-subtle"
 		/>
@@ -51,7 +58,7 @@
 				class:text-primary={!data.activeTag && !data.showArchived}
 				class:text-fg-muted={data.activeTag || data.showArchived}
 			>
-				All
+				{t('contacts.all')}
 			</a>
 			{#each data.tags as tag (tag.id)}
 				<a
@@ -71,26 +78,32 @@
 					class:text-primary={data.showArchived}
 					class:text-fg-muted={!data.showArchived}
 				>
-					<Icon name="archive" size={13} />Archived ({data.archivedCount})
+					<Icon name="archive" size={13} />{t('contacts.archivedChip', {
+						count: data.archivedCount
+					})}
 				</a>
 			{/if}
 		</div>
 	{/if}
 
 	{#if data.showArchived && data.contacts.length === 0}
-		<EmptyState icon="archive" title="Nothing archived" hint="Archiving takes someone out of the lists without losing them. Nobody is.">
-			<Button href="/contacts">Back to everyone</Button>
+		<EmptyState
+			icon="archive"
+			title={t('contacts.emptyArchive.title')}
+			hint={t('contacts.emptyArchive.hint')}
+		>
+			<Button href="/contacts">{t('contacts.emptyArchive.back')}</Button>
 		</EmptyState>
 	{:else if data.contacts.length === 0}
-		<EmptyState icon="people" title="No people yet" hint="Add the first person — everything else in Stella hangs off someone.">
-			<Button variant="primary" icon="add" href="/contacts/new">Add person</Button>
+		<EmptyState icon="people" title={t('contacts.empty.title')} hint={t('contacts.empty.hint')}>
+			<Button variant="primary" icon="add" href="/contacts/new">{t('nav.addPerson')}</Button>
 		</EmptyState>
 	{:else if found.length === 0}
-		<p class="px-2 py-6 text-center text-sm text-fg-muted" role="status">Nobody matches “{query}”.</p>
+		<p class="px-2 py-6 text-center text-sm text-fg-muted" role="status">{t('contacts.noMatch', { query })}</p>
 	{:else}
 		<div class="flex flex-col gap-4" data-testid="people-directory">
 			{#if !data.showArchived}
-				<div class="flex justify-end px-2.5 text-[11px] font-medium text-fg-subtle" aria-hidden="true">Last written about</div>
+				<div class="flex justify-end px-2.5 text-[11px] font-medium text-fg-subtle" aria-hidden="true">{t('contacts.lastWrittenAbout')}</div>
 			{/if}
 			{#each groups as group (group.letter)}
 				<section>
@@ -99,7 +112,7 @@
 					</h2>
 					<ul class="flex flex-col">
 						{#each group.people as contact (contact.id)}
-							{@const since = sinceLabel(contact.lastTouchedOn, data.today)}
+							{@const since = sinceLabel(i18n, contact.lastTouchedOn, data.today)}
 							<li>
 								<a
 									href="/contacts/{contact.id}"
@@ -111,7 +124,7 @@
 											<span class="truncate font-medium text-fg">{contact.displayName}</span>
 											{#if contact.visibility === 'private'}
 												<Icon name="private" size={12} />
-												<span class="sr-only">private</span>
+												<span class="sr-only">{t('contacts.private')}</span>
 											{/if}
 										</span>
 										{#if contact.description}
@@ -121,9 +134,11 @@
 									<!-- The "last written about" read leaves archived people out, so claiming
 									     anything here would be claiming they were never written about. -->
 									{#if data.showArchived}
-										<span class="whitespace-nowrap text-xs text-fg-subtle">Archived</span>
+										<span class="whitespace-nowrap text-xs text-fg-subtle">{t('contacts.archived')}</span>
 									{:else}
-										<span class="whitespace-nowrap text-xs tabular-nums text-fg-subtle" title={since ? `Last written about ${contact.lastTouchedOn}` : 'Nothing written yet'}>
+										<span class="whitespace-nowrap text-xs tabular-nums text-fg-subtle" title={since
+												? t('contacts.lastWrittenAboutOn', { date: contact.lastTouchedOn ?? '' })
+												: t('contacts.nothingWrittenYet')}>
 											{since ?? '—'}
 										</span>
 									{/if}

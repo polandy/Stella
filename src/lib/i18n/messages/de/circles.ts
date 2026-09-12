@@ -1,0 +1,47 @@
+import type { CirclesMessages } from '../en/circles';
+
+/** German for `messages/en/circles.ts`. */
+export const circles: CirclesMessages = {
+	'circles.title': 'Kreise · Stella',
+	'circles.heading': 'Kreise',
+	'circles.intro': 'Die Zusammenhänge, die Menschen teilen — eine Klasse, ein Verein, ein Team, ein Chor.',
+	'circles.new': 'Neuer Kreis',
+	'circles.create': 'Kreis anlegen',
+	'circles.name': 'Name',
+	'circles.namePlaceholder': 'z. B. Kegelclub Bühl',
+	'circles.kindLabel': 'Art',
+	'circles.descriptionLabel': 'Beschreibung (optional)',
+	'circles.colour': 'Farbe',
+	'circles.find': 'Kreis finden',
+	'circles.findPlaceholder': 'Kreis finden…',
+	'circles.empty.title': 'Noch keine Kreise',
+	'circles.empty.hint':
+		'Ein Kreis ist ein Zusammenhang, den Menschen teilen. Lege den ersten an und setze Menschen hinein.',
+	'circles.noMatch.title': 'Kein Kreis passt',
+	'circles.noMatch.hint': 'Versuche einen Teil des Namens oder ein Wort aus der Beschreibung.',
+	'circles.memberCount': (p) => (p.count === 1 ? '1 Mitglied' : `${p.count} Mitglieder`),
+	'circles.nobodyYet': 'Noch niemand darin',
+	'circles.private': 'privat',
+	'circles.detail.title': (p) => `${p.name} · Kreise · Stella`,
+	'circles.members': 'Mitglieder',
+	'circles.addMember': 'Mitglied hinzufügen',
+	'circles.person': 'Person',
+	'circles.roleLabel': 'Rolle (optional)',
+	'circles.rolePlaceholder': 'Mitglied',
+	'circles.removeMember': (p) => `${p.name} aus dem Kreis entfernen`,
+	'circles.removedFromCircle': 'Aus dem Kreis entfernt',
+	'circles.noMembers.title': 'Noch niemand in diesem Kreis',
+	'circles.noMembers.hint':
+		'Füge die Menschen hinzu, die diesen Zusammenhang teilen; bei jedem von ihnen erscheint er auf der Seite.',
+	'circles.kind.all': 'Alle',
+	'circles.kind.friends': 'Freundeskreis',
+	'circles.kind.family': 'Familie',
+	'circles.kind.school': 'Schule',
+	'circles.kind.class': 'Klasse',
+	'circles.kind.course': 'Kurs',
+	'circles.kind.club': 'Verein',
+	'circles.kind.team': 'Team',
+	'circles.kind.work': 'Arbeit',
+	'circles.kind.neighborhood': 'Nachbarschaft',
+	'circles.kind.other': 'Sonstiges'
+};

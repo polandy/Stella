@@ -4,7 +4,9 @@
 	import Button from '$lib/components/Button.svelte';
 	import CommandPalette from '$lib/components/CommandPalette.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { IconName } from '$lib/components/icons';
+	import type { MessageKey } from '$lib/i18n/translate';
 	import Logo from '$lib/components/Logo.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
@@ -13,13 +15,16 @@
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
-	// Primary destinations. `match` decides the active state from the pathname.
-	const nav: { href: string; label: string; icon: IconName; match: (p: string) => boolean }[] = [
-		{ href: '/', label: 'Home', icon: 'home', match: (p) => p === '/' },
-		{ href: '/contacts', label: 'People', icon: 'people', match: (p) => p.startsWith('/contacts') },
-		{ href: '/circles', label: 'Circles', icon: 'circles', match: (p) => p.startsWith('/circles') },
-		{ href: '/graph', label: 'Graph', icon: 'graph', match: (p) => p.startsWith('/graph') },
-		{ href: '/settings', label: 'Settings', icon: 'settings', match: (p) => p.startsWith('/settings') }
+	const t = useTranslate();
+
+	// Primary destinations. `match` decides the active state from the pathname; the label is
+	// a message key so the sidebar follows the viewer's language.
+	const nav: { href: string; label: MessageKey; icon: IconName; match: (p: string) => boolean }[] = [
+		{ href: '/', label: 'nav.home', icon: 'home', match: (p) => p === '/' },
+		{ href: '/contacts', label: 'nav.people', icon: 'people', match: (p) => p.startsWith('/contacts') },
+		{ href: '/circles', label: 'nav.circles', icon: 'circles', match: (p) => p.startsWith('/circles') },
+		{ href: '/graph', label: 'nav.graph', icon: 'graph', match: (p) => p.startsWith('/graph') },
+		{ href: '/settings', label: 'nav.settings', icon: 'settings', match: (p) => p.startsWith('/settings') }
 	];
 	const isActive = (item: (typeof nav)[number]) => item.match(page.url.pathname);
 	// The phone's tab bar has five places and the pencil takes the middle one; Settings is
@@ -31,29 +36,30 @@
 	const crumbs = $derived.by((): Crumb[] => {
 		const id = page.route.id ?? '';
 		const d = page.data as { contact?: { displayName?: string }; circle?: { name?: string } };
-		const trail: Crumb[] = [{ label: 'Home', href: '/' }];
-		if (id === '/(app)') return [{ label: 'Home' }];
+		const trail: Crumb[] = [{ label: t('nav.home'), href: '/' }];
+		if (id === '/(app)') return [{ label: t('nav.home') }];
 
 		if (id.startsWith('/(app)/contacts')) {
-			trail.push({ label: 'People', href: '/contacts' });
-			if (id === '/(app)/contacts/new') trail.push({ label: 'New person' });
+			trail.push({ label: t('nav.people'), href: '/contacts' });
+			if (id === '/(app)/contacts/new') trail.push({ label: t('nav.newPerson') });
 			else if (id.startsWith('/(app)/contacts/[id]')) {
-				const name = d.contact?.displayName ?? 'Contact';
+				const name = d.contact?.displayName ?? t('nav.contact');
 				if (id.endsWith('/journal')) {
 					trail.push({ label: name, href: `/contacts/${page.params.id}` });
-					trail.push({ label: 'Journal' });
+					trail.push({ label: t('nav.journal') });
 				} else trail.push({ label: name });
 			}
 		} else if (id.startsWith('/(app)/circles')) {
-			trail.push({ label: 'Circles', href: '/circles' });
-			if (id.startsWith('/(app)/circles/[id]')) trail.push({ label: d.circle?.name ?? 'Circle' });
+			trail.push({ label: t('nav.circles'), href: '/circles' });
+			if (id.startsWith('/(app)/circles/[id]'))
+				trail.push({ label: d.circle?.name ?? t('nav.circle') });
 		} else if (id.startsWith('/(app)/graph')) {
-			trail.push({ label: 'Graph' });
+			trail.push({ label: t('nav.graph') });
 		} else if (id.startsWith('/(app)/search')) {
-			trail.push({ label: 'Search' });
+			trail.push({ label: t('nav.search') });
 		} else if (id.startsWith('/(app)/settings')) {
-			trail.push({ label: 'Settings', href: '/settings' });
-			if (id.startsWith('/(app)/settings/import')) trail.push({ label: 'Import people' });
+			trail.push({ label: t('nav.settings'), href: '/settings' });
+			if (id.startsWith('/(app)/settings/import')) trail.push({ label: t('nav.importPeople') });
 		}
 		return trail;
 	});
@@ -111,6 +117,11 @@
 
 	// Theme: same contract as the no-flash init in app.html (stella-theme).
 	type ThemeChoice = 'light' | 'system' | 'dark';
+	const THEME_CHOICES: { value: ThemeChoice; label: MessageKey }[] = [
+		{ value: 'light', label: 'nav.theme.light' },
+		{ value: 'system', label: 'nav.theme.system' },
+		{ value: 'dark', label: 'nav.theme.dark' }
+	];
 	let theme = $state<ThemeChoice>('system');
 	onMount(() => {
 		const t = localStorage.getItem('stella-theme');
@@ -146,7 +157,7 @@
 <div class="flex h-screen w-full overflow-hidden bg-bg text-fg">
 	<!-- Sidebar (desktop) -->
 	<aside class="hidden w-60 shrink-0 flex-col gap-1 bg-bg-sunken p-3 md:flex">
-		<a href="/" class="mb-3 flex items-center px-2 py-1.5" aria-label="Stella home">
+		<a href="/" class="mb-3 flex items-center px-2 py-1.5" aria-label={t('nav.stellaHome')}>
 			<Logo size={26} wordmark />
 		</a>
 
@@ -157,7 +168,7 @@
 				class="flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium text-fg-muted transition-colors hover:bg-card hover:text-fg aria-[current=page]:bg-card aria-[current=page]:font-semibold aria-[current=page]:text-fg aria-[current=page]:shadow-card [&_svg]:text-fg-subtle aria-[current=page]:[&_svg]:text-primary"
 			>
 				<Icon name={item.icon} size={17} />
-				{item.label}
+				{t(item.label)}
 			</a>
 		{/each}
 
@@ -174,21 +185,21 @@
 			</summary>
 			<div class="absolute bottom-full left-0 mb-2 w-full rounded-app border border-border bg-card p-2 shadow-pop">
 				<div class="flex gap-1 rounded-control border border-border p-1">
-					{#each ['light', 'system', 'dark'] as const as choice (choice)}
+					{#each THEME_CHOICES as choice (choice.value)}
 						<button
-							onclick={() => applyTheme(choice)}
-							class="flex-1 rounded-md px-2 py-1 text-xs font-medium capitalize transition-colors"
-							class:bg-primary={theme === choice}
-							class:text-primary-fg={theme === choice}
-							class:text-fg-muted={theme !== choice}
+							onclick={() => applyTheme(choice.value)}
+							class="flex-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
+							class:bg-primary={theme === choice.value}
+							class:text-primary-fg={theme === choice.value}
+							class:text-fg-muted={theme !== choice.value}
 						>
-							{choice}
+							{t(choice.label)}
 						</button>
 					{/each}
 				</div>
 				<form method="POST" action="/logout" class="mt-1">
 					<button class="w-full rounded-md px-3 py-2 text-left text-sm text-fg-muted transition-colors hover:bg-card-hover hover:text-fg">
-						Sign out
+						{t('nav.signOut')}
 					</button>
 				</form>
 			</div>
@@ -199,7 +210,7 @@
 	<div class="flex min-w-0 flex-1 flex-col">
 		<!-- Top bar -->
 		<header class="flex items-center gap-3 px-4 py-3 md:px-6">
-			<nav aria-label="Breadcrumb" class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
+			<nav aria-label={t('nav.breadcrumb')} class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
 				{#each crumbs as crumb, i (i)}
 					{#if i > 0}<span class="text-fg-subtle/60" aria-hidden="true">/</span>{/if}
 					{#if crumb.href && i < crumbs.length - 1}
@@ -216,18 +227,18 @@
 					onclick={() => (paletteOpen = true)}
 					disabled={!paletteReady}
 					class="flex items-center gap-2 rounded-control bg-card px-3 py-2 text-sm text-fg-subtle shadow-card transition-colors hover:text-fg"
-					aria-label="Search"
+					aria-label={t('nav.search')}
 					aria-keyshortcuts="Meta+K Control+K"
 				>
 					<Icon name="search" size={15} />
-					<span class="hidden lg:inline">Search…</span>
+					<span class="hidden lg:inline">{t('common.searchPlaceholder')}</span>
 					<kbd class="hidden rounded border border-border px-1 text-[10px] font-medium lg:inline">⌘K</kbd>
 				</button>
-				<Button variant="primary" icon="add" href="/contacts/new" label="Add person">
-					<span class="hidden sm:inline">Add person</span>
+				<Button variant="primary" icon="add" href="/contacts/new" label={t('nav.addPerson')}>
+					<span class="hidden sm:inline">{t('nav.addPerson')}</span>
 				</Button>
 				<!-- Wrapped: the button's own display rule would outrank a utility on the element. -->
-				<span class="md:hidden"><Button variant="ghost" icon="settings" href="/settings" label="Settings" /></span>
+				<span class="md:hidden"><Button variant="ghost" icon="settings" href="/settings" label={t('nav.settings')} /></span>
 			</div>
 		</header>
 
@@ -242,10 +253,10 @@
 		{#each tabBar.slice(0, 2) as item (item.href)}
 			<a href={item.href} aria-current={isActive(item) ? 'page' : undefined} class="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-fg-subtle aria-[current=page]:text-primary">
 				<Icon name={item.icon} size={20} />
-				{item.label}
+				{t(item.label)}
 			</a>
 		{/each}
-		<a href="/?compose" class="flex flex-1 flex-col items-center py-2.5" aria-label="Write a moment">
+		<a href="/?compose" class="flex flex-1 flex-col items-center py-2.5" aria-label={t('nav.writeMoment')}>
 			<span class="-mt-4 grid size-11 place-items-center rounded-full bg-primary text-primary-fg shadow-pop">
 				<Icon name="write" size={21} />
 			</span>
@@ -253,7 +264,7 @@
 		{#each tabBar.slice(2) as item (item.href)}
 			<a href={item.href} aria-current={isActive(item) ? 'page' : undefined} class="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-fg-subtle aria-[current=page]:text-primary">
 				<Icon name={item.icon} size={20} />
-				{item.label}
+				{t(item.label)}
 			</a>
 		{/each}
 	</nav>

@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../errors/translatable';
+import { phrase } from '../../../i18n/phrase';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import {
@@ -156,10 +158,9 @@ export type BirthDatePrecision = 'full' | 'month_day' | 'year' | 'age';
 const BIRTH_DATE = /^(\d{4}-\d{2}-\d{2}|--\d{2}-\d{2})$/;
 
 /** Thrown when a birth date is not a shape we can compute a birthday from. */
-export class InvalidBirthDateError extends Error {
+export class InvalidBirthDateError extends TranslatableError {
 	constructor() {
-		super('A birth date must be YYYY-MM-DD, or --MM-DD when the year is unknown.');
-		this.name = 'InvalidBirthDateError';
+		super(phrase('errors.contact.birthDateFormat'), 'InvalidBirthDateError');
 	}
 }
 
@@ -217,13 +218,10 @@ export async function createContact(
 }
 
 /** Why a nameless contact is refused; the edge shows this to whoever typed the blank. */
-export const EMPTY_CONTACT_NAME_MESSAGE = 'A name cannot be empty.';
-
 /** Thrown when an edit would leave a contact with no name at all. */
-export class EmptyContactNameError extends Error {
+export class EmptyContactNameError extends TranslatableError {
 	constructor() {
-		super(EMPTY_CONTACT_NAME_MESSAGE);
-		this.name = 'EmptyContactNameError';
+		super(phrase('errors.contact.emptyName'), 'EmptyContactNameError');
 	}
 }
 

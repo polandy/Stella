@@ -1,48 +1,51 @@
+import { hasMessage, type Translate } from '$lib/i18n/translate';
+
 /*
  * What a restored table is called on screen (docs/02 §2.15). The report comes back keyed by
- * table name, and "journal_entry: 4" is not something to show a household. Pure and outside
- * `server/` so the page can read it.
+ * table name, and "journal_entry: 4" is not something to show a household. The order lives
+ * here; the words live in the message catalogue, so the report reads in the viewer's
+ * language (docs/02 §2.19).
  */
 
-interface Label {
-	one: string;
-	many: string;
-}
-
-/** Table name → the words for it, in the order a report reads best. */
-const LABELS: Record<string, Label> = {
-	contact: { one: 'person', many: 'people' },
-	relationship: { one: 'relationship', many: 'relationships' },
-	relationship_type: { one: 'relationship type', many: 'relationship types' },
-	contact_field: { one: 'contact detail', many: 'contact details' },
-	important_date: { one: 'important date', many: 'important dates' },
-	note: { one: 'note', many: 'notes' },
-	note_mention: { one: 'note mention', many: 'note mentions' },
-	journal_entry: { one: 'journal entry', many: 'journal entries' },
-	journal_mention: { one: 'journal mention', many: 'journal mentions' },
-	interaction: { one: 'touchpoint', many: 'touchpoints' },
-	interaction_participant: { one: 'participant', many: 'participants' },
-	photo: { one: 'photo', many: 'photos' },
-	tag: { one: 'tag', many: 'tags' },
-	contact_tag: { one: 'tagged person', many: 'tagged people' },
-	circle: { one: 'circle', many: 'circles' },
-	circle_membership: { one: 'circle member', many: 'circle members' },
-	activity_log: { one: 'log entry', many: 'log entries' }
-};
+/** Every table a report can mention, in the order a report reads best. */
+export const RESTORE_TABLES: readonly string[] = [
+	'contact',
+	'relationship',
+	'relationship_type',
+	'contact_field',
+	'important_date',
+	'note',
+	'note_mention',
+	'journal_entry',
+	'journal_mention',
+	'interaction',
+	'interaction_participant',
+	'photo',
+	'tag',
+	'contact_tag',
+	'circle',
+	'circle_membership',
+	'activity_log'
+];
 
 /** One line of the report: what it is, how many arrived, how many were already there. */
 export interface RestoreLine {
 	table: string;
-	label: string;
 	added: number;
 	skipped: number;
 }
 
+/** What a table is called, for `count` of them; the raw name for one Stella has no words for. */
+export function tableLabel(t: Translate, table: string, count: number): string {
+	const key = `archive.table.${table}`;
+	// Every `archive.table.*` message counts; the cast picks one of them as the shape.
+	return hasMessage(key) ? t(key as 'archive.table.note', { count }) : table;
+}
+
 /** "3 people", "1 note" — the count with the right word for it. */
-export function countLabel(table: string, count: number): string {
-	const label = LABELS[table];
-	if (!label) return `${count} × ${table}`;
-	return `${count} ${count === 1 ? label.one : label.many}`;
+export function countLabel(t: Translate, table: string, count: number): string {
+	if (!hasMessage(`archive.table.${table}`)) return `${count} × ${table}`;
+	return t('archive.count', { count, what: tableLabel(t, table, count) });
 }
 
 /**
@@ -54,12 +57,9 @@ export function summariseRestore(
 	added: Readonly<Record<string, number>>,
 	skipped: Readonly<Record<string, number>>
 ): RestoreLine[] {
-	return Object.keys(LABELS)
-		.map((table) => ({
-			table,
-			label: LABELS[table].many,
-			added: added[table] ?? 0,
-			skipped: skipped[table] ?? 0
-		}))
-		.filter((line) => line.added > 0 || line.skipped > 0);
+	return RESTORE_TABLES.map((table) => ({
+		table,
+		added: added[table] ?? 0,
+		skipped: skipped[table] ?? 0
+	})).filter((line) => line.added > 0 || line.skipped > 0);
 }

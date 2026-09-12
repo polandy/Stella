@@ -1,0 +1,58 @@
+import type { HomeMessages } from '../en/home';
+
+/** German for `messages/en/home.ts`. */
+export const home: HomeMessages = {
+	'home.title': 'Start · Stella',
+	'home.heading': 'Was ist passiert?',
+	'home.intro':
+		'Einmal aufschreiben. Alle im Haushalt sehen es — außer du behältst es für dich.',
+	'home.you': 'Du',
+	'home.atAGlance': 'Auf einen Blick',
+	'home.comingUp': 'Kommt bald',
+	'home.quietLately': 'Zuletzt still',
+	'home.writeMoment': 'Moment festhalten',
+	'home.showAll': (p) => `Alle ${p.count} anzeigen`,
+	'home.lastWritten': (p) => `Zuletzt geschrieben ${p.ago}`,
+	'home.nothingWrittenYet': 'Noch nichts geschrieben',
+	'home.empty.title': 'Noch nichts geschrieben',
+	'home.empty.hint':
+		'Schreib oben den ersten Moment und erwähne jemanden mit @ — mehr braucht es nicht.',
+	'home.link.question': (p) => `${p.a} und ${p.b} verknüpfen?`,
+	'home.link.hint': 'Sie kommen in diesem Moment zusammen vor. Wähle, wie sie zueinander stehen.',
+	'home.link.confirm': 'Verknüpfen',
+	'home.link.notNow': 'Jetzt nicht',
+	'home.stream.wroteIn': 'schrieb in',
+	'home.stream.wroteInJournal': 's Tagebuch',
+	'home.stream.added': 'legte',
+	'home.stream.addedAfter': 'an',
+	'home.stream.newPerson': 'Neue Person',
+	'home.stream.logged': 'hielt',
+	'home.stream.loggedWith': 'mit',
+	'home.stream.loggedAfter': 'fest',
+	'home.stream.linked': 'verknüpfte',
+	'home.stream.linkedAfter': '',
+	'home.stream.relationship': 'Beziehung',
+	'home.today': 'Heute',
+	'home.yesterday': 'Gestern',
+	'home.justNow': 'gerade eben',
+	'home.minutesAgo': (p) => `vor ${p.minutes} Min.`,
+	'home.hoursAgo': (p) => `vor ${p.hours} Std.`,
+	'home.daysAgo': (p) => `vor ${p.days} T.`,
+	'home.weeksAgo': (p) => `vor ${p.weeks} Wo.`,
+
+	'composer.placeholder': 'Jemanden getroffen? Schreib es hier, erwähne Menschen mit @',
+	'composer.label': 'Was ist passiert?',
+	'composer.people': 'Menschen',
+	'composer.justCreated': 'gerade angelegt',
+	'composer.create': (p) => `„${p.name}“ anlegen`,
+	'composer.newPerson': 'neue Person',
+	'composer.photo': 'Foto',
+	'composer.photoCount': (p) => (p.count === 1 ? '1 Foto' : `${p.count} Fotos`),
+	'composer.day': 'Tag',
+	'composer.goesTo': 'Kommt in',
+	'composer.goesToJournal': 's Tagebuch',
+	'composer.alsoMentions': (p) => `, erwähnt ${p.count}`,
+	'composer.needMention': 'Erwähne mit @ mindestens eine Person',
+	'composer.saveFailed':
+		'Konnte nicht gespeichert werden. Versuche es mit üblichen JPEG- oder PNG-Bildern.'
+};

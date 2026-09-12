@@ -75,6 +75,7 @@ A family member with an account.
 | password_hash | text null | Argon2id; **null** for SSO-only users |
 | role | text | `'admin' \| 'member'` |
 | role_locked | int | 0/1; if 1, IdP group-sync will not override the role (protects break-glass admin) |
+| locale_pref | text | interface language: `'en' \| 'de'`, default `'en'` (§2.19) |
 | avatar_photo_id | text fk → photo.id null | |
 | theme_pref | text | `'system' \| 'light' \| 'dark'` |
 | accent_pref | text | Catppuccin accent name, e.g. `'mauve'` |
@@ -93,6 +94,7 @@ Server-side sessions referenced by cookie.
 | expires_at | int | |
 | created_at | int | |
 | user_agent / ip | text null | for the "active sessions" view |
+| oidc_id_token | text null | ID token of the SSO sign-in behind this session; the `id_token_hint` for RP-initiated logout (§2.1). Null for a local sign-in, and gone with the session on sign-out. |
 
 ### identity
 Links a Stella user to an external OIDC identity (e.g. Authelia). A user may have a local
@@ -507,12 +509,19 @@ The UI renders accordingly (e.g. age hidden when only month/day known). Reminder
 
 ## 3.5 Full-text search (FTS5)
 
-- Two FTS5 virtual tables: `contact_fts` and `note_fts` (contentless / external-content
-  linked to base tables), kept in sync via triggers on insert/update/delete.
+- Two FTS5 virtual tables: `contact_fts` and `note_fts`, each storing its own indexed text
+  (not `content=`-linked to the base tables, since what is indexed is assembled rather than
+  copied — see below), kept in sync via triggers on insert/update/delete.
 - A note's indexed content is **not** its raw body: the `@{contact:<id>}` tokens (§2.20.1) are
-  stripped and the mentioned people's display names appended, so a mention stays findable by
-  name and the word "contact" is not in every note that names someone. Triggers on
-  `note_mention` and on a rename of a mentioned contact keep that current.
+  **cut out whole** — id included, since an imported contact's id is a source id like
+  `monica:contact:9` (§2.16) whose parts are words people search for — and the mentioned
+  people's display names appended, so a mention stays findable by name and neither "contact"
+  nor "monica" sits in every note that names someone. Triggers on `note_mention` and on a
+  rename of a mentioned contact keep that current.
+- What a trigger writes is fixed when the trigger is created, so the index carries a
+  **fingerprint** of the definitions that built it (`search_index_meta`). A startup whose
+  definitions hash differently re-creates the triggers and rebuilds the rows; an unchanged one
+  touches nothing. That is the upgrade path — no version number to bump by hand.
 - Query layer unions results, applies visibility filtering **after** the FTS match, and
   returns snippets with highlight.
 - Tokenizer: `unicode61` with diacritics folding (so "Jose" matches "José").

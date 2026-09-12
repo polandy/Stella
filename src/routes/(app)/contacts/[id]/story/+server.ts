@@ -6,6 +6,7 @@ import { getContactDeps, getMemberDeps, getPhotos, getStoryDeps } from '$lib/ser
 import { parseStoryCursor } from '$lib/story/cursor';
 import { toStoryItem } from '../story-view';
 import type { RequestHandler } from './$types';
+import { say } from '$lib/server/i18n/say';
 
 /*
  * Older pages of the story timeline (docs/02 §2.23). The first page comes with the person's
@@ -24,11 +25,11 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 	const contact = await getContact(getContactDeps(), viewer, params.id);
-	if (!contact) throw error(404, 'Contact not found'); // never reveal existence
+	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
 
 	const body: unknown = await request.json().catch(() => null);
 	const cursor = parseStoryCursor(body);
-	if (cursor === null) throw error(400, 'Malformed story cursor');
+	if (cursor === null) throw error(400, say(locals, 'errors.story.badCursor'));
 
 	const page = await listStoryPage(getStoryDeps(), viewer, params.id, {
 		limit: PAGE_SIZE,

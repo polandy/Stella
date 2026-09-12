@@ -167,7 +167,9 @@ They must be edited together; `app.css` says so at both blocks.
   - **Breadcrumb trail** in the top bar, derived from the route + loaded data
     (`Home / People / {name} / Journal`). Every segment links, so Home is always one
     click away; the active destination is marked with `aria-current="page"` in the
-    sidebar and tab bar. The account menu (theme + sign out) lives in the shell, not per page.
+    sidebar and tab bar. The desktop shell's account menu (theme + sign out) lives in the
+    shell, not per page; sign out is repeated as a plain button on **Settings** so it is
+    reachable on mobile, where that menu is not rendered.
   - The shell is a single `(app)/+layout.svelte`; pages render content only — no per-page
     headers or back links.
 - **Responsive, mobile-first.** Capture flows are optimized for one-handed phone use.
@@ -186,10 +188,13 @@ They must be edited together; `app.css` says so at both blocks.
 - **Home** — the capture field over the household stream (§2.22), with a **rail** on the
   right from `lg` up: **Coming up** (§2.13.3) and **Quiet lately** (§2.12.1), each row an
   avatar, the person, one line of context and the one action — *Write a moment*. Below `lg`
-  the rail sits between the heading and the stream as a horizontal strip of cards, so two
-  bands never push the stream off a phone screen. Both bands are **absent entirely when
-  empty**; there is no empty state for them, because a permanently empty panel teaches people
-  to stop looking. On a phone the composer is a **sheet** opened from the *What happened?*
+  it is the **same vertical list**, full width — nothing scrolls sideways, because what lies
+  off the right edge of a phone is not read. Two things keep it from pushing the stream away:
+  each band stops after **three rows** with *Show all N* beneath it, and the rail only sits
+  **above** the stream while a date is due **within 14 days** (`IMMINENT_HORIZON_DAYS`);
+  otherwise it follows the stream, where it is still one scroll away. Both bands are
+  **absent entirely when empty**; there is no empty state for them, because a permanently
+  empty panel teaches people to stop looking. On a phone the composer is a **sheet** opened from the *What happened?*
   bar or the tab-bar pencil.
 - **People** — a find-as-you-type field, tag chips, then **letter groups** by surname with a
   sticky letter heading; each row is avatar, name (lock for private), description, and
@@ -277,9 +282,10 @@ They must be edited together; `app.css` says so at both blocks.
   "year unknown", whether it repeats, and whether it shows on Home. A birthday derived from
   the profile is listed there too, marked *from the profile* and not deletable; an explicit
   birthday row replaces it (docs/02 §2.13.2).
-- **Settings** — account, appearance (theme + accent + reduced motion), household
-  (members, invitations, relationship types, tags), data (export/import/backup), auth.
-  *Today:* a landing page with the **Data** section, and the **Import people** wizard
+- **Settings** — account (incl. sign out), appearance (theme + accent + reduced motion),
+  household (members, invitations, relationship types, tags), data (export/import/backup), auth.
+  *Today:* a landing page with the **Data** section and an **Account** section (sign out only
+  so far), and the **Import people** wizard
   (§2.16) as a three-step page — numbered step strip, a count-tile preview with a
   "left out, and why" card, then the import result and the photos, under one progress bar but
   two ways in, because the accepted formats differ: a folder picker for a Monica dump, whose
@@ -372,6 +378,13 @@ be taken back from here (docs/02 §2.23), and every one of them is the same comp
 (`RemoveButton`), so no list can quietly opt out. Saving says *Saved* and closes the form it
 was typed in — a section's editor and an inline edit alike. On a phone the region sits above the tab bar.
 
+**Language picker** (`src/lib/components/LanguagePicker.svelte`) is a segmented control of
+plain submit buttons, one per language, each naming itself in itself (*English*, *Deutsch*).
+It posts to `/locale` and comes back on the page it was pressed on, now in that language, so
+it works with JavaScript off. It appears twice: in **Settings → Language**, and small under
+the sign-in form — the first screen has to be readable before there is a profile to remember
+anything in (docs/02 §2.19).
+
 ## 5.8 Relationship & context explorer styling
 
 The explorer (§2.7, core feature) should feel alive and effortless. Interaction detail:
@@ -424,6 +437,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - All actions reachable without a pointer; graph has a list-based fallback view.
 - Respect `prefers-reduced-motion`; no motion-only information.
 - Form fields labeled; errors announced; adequate touch targets (≥44px).
+- `<html lang>` carries the language the page was rendered in, so a screen reader speaks
+  German with German phonemes rather than reading it as English (docs/02 §2.19).
 
 ## 5.10 Iconography & imagery
 

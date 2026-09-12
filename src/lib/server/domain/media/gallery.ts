@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../errors/translatable';
+import { phrase } from '../../../i18n/phrase';
 import type { Viewer, Visibility } from '../../access/visibility';
 import type { GalleryPhoto, MediaStore, PhotoRepository } from './avatars';
 
@@ -12,10 +14,9 @@ import type { GalleryPhoto, MediaStore, PhotoRepository } from './avatars';
 /** Longest caption accepted; a caption is a line under a photo, not a note. */
 export const CAPTION_MAX_LENGTH = 280;
 
-export class CaptionTooLongError extends Error {
+export class CaptionTooLongError extends TranslatableError {
 	constructor() {
-		super(`A caption can be at most ${CAPTION_MAX_LENGTH} characters.`);
-		this.name = 'CaptionTooLongError';
+		super(phrase('errors.caption.tooLong', { max: CAPTION_MAX_LENGTH }), 'CaptionTooLongError');
 	}
 }
 

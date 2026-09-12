@@ -209,4 +209,31 @@ describe('journal repository + upsert', () => {
 		expect(await repo.deleteOwn({ authorId: U1, id })).toEqual([]);
 		expect(await listJournalForContact(deps(), viewerU1, 'kid')).toHaveLength(0);
 	});
+
+	it('updateOwn edits only the author’s own entry, leaving day/visibility untouched', async () => {
+		const repo = createDrizzleJournalRepository(db);
+		const id = await saveJournalEntry(deps(), author1, {
+			contactId: 'kid',
+			entryDate: '2026-07-11',
+			body: 'draft',
+			title: 'Old'
+		});
+
+		expect(
+			await repo.updateOwn({ authorId: U2, id, title: 'Hijacked', body: 'nope', updatedAt: 2000 })
+		).toBe(false); // not U2's
+
+		expect(
+			await repo.updateOwn({ authorId: U1, id, title: 'New title', body: 'expanded', updatedAt: 2000 })
+		).toBe(true);
+
+		const [entry] = await listJournalForContact(deps(), viewerU1, 'kid');
+		expect(entry).toMatchObject({
+			title: 'New title',
+			body: 'expanded',
+			updatedAt: 2000,
+			entryDate: '2026-07-11',
+			visibility: 'shared'
+		});
+	});
 });
