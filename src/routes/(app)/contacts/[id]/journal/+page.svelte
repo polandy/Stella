@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import DateField from '$lib/components/DateField.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
 	import { processImage } from '$lib/image/process-image';
@@ -174,17 +175,16 @@
 				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{uploadError}</p>
 			{/if}
 			<div class="flex flex-wrap items-end gap-3">
-				<label class="flex flex-col gap-1 text-sm">
+				<div class="flex flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('journal.day')}</span>
-					<input
-						type="date"
+					<DateField
 						name="entryDate"
 						value={data.today}
 						max={data.today}
 						required
-						class="rounded-md border border-border bg-bg px-3 py-2 text-fg"
+						label={t('journal.day')}
 					/>
-				</label>
+				</div>
 				<label class="flex flex-1 flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('journal.titleOptional')}</span>
 					<input

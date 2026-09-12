@@ -19,5 +19,14 @@ export const components: ComponentsMessages = {
 	'components.palette.kindAction': 'Aktion',
 	'components.personSearch.placeholder': 'Personen suchen…',
 	'components.personSearch.empty': 'Niemand gefunden.',
-	'components.personSearch.remove': (p) => `${p.name} entfernen`
+	'components.personSearch.remove': (p) => `${p.name} entfernen`,
+	'components.dateField.day': 'Tag',
+	'components.dateField.month': 'Monat',
+	'components.dateField.year': 'Jahr',
+	'components.dateField.dayPlaceholder': 'TT',
+	'components.dateField.yearPlaceholder': 'JJJJ',
+	'components.dateField.monthEmpty': 'Monat…',
+	'components.dateField.yearOptional': 'Lass das Jahr leer, wenn du es nicht weißt.',
+	'components.dateField.noSuchDay': 'Diesen Tag gibt es im Kalender nicht.',
+	'components.dateField.notInFuture': 'Dieser Tag ist noch nicht gewesen.'
 };

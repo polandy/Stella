@@ -57,7 +57,6 @@ export const contact: ContactMessages = {
 	'contact.dateRemoved': 'Datum entfernt',
 	'contact.day': 'Tag',
 	'contact.dateNameForCustom': 'Name (für Eigenes)',
-	'contact.yearUnknown': 'Jahr unbekannt',
 	'contact.everyYear': 'Jedes Jahr',
 	'contact.showOnHome': 'Auf der Startseite zeigen',
 	'contact.dateKind.birthday': 'Geburtstag',

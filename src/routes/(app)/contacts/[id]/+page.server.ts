@@ -30,7 +30,6 @@ import {
 	listImportantDates,
 	overridesDerivedBirthday
 } from '$lib/server/domain/dates/important-dates';
-import { withoutYear } from '$lib/dates/labels';
 import { IMPORTANT_DATE_KINDS } from '$lib/server/domain/dates/upcoming';
 import {
 	deleteInteraction,
@@ -653,9 +652,8 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
-		// `<input type="date">` always yields a year; "Year unknown" drops it to `--MM-DD`.
-		const raw = String(form.get('date') ?? '');
-		const date = form.get('yearUnknown') !== null ? withoutYear(raw) : raw;
+		// The date field posts `--MM-DD` itself when the year was left blank (docs/02 §2.13).
+		const date = String(form.get('date') ?? '');
 		const parsed = v.safeParse(AddDateSchema, {
 			kind: form.get('kind'),
 			label: form.get('label') || undefined,

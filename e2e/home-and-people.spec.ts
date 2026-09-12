@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { appReady, signIn } from './app';
+import { appReady, fillDate, signIn } from './app';
 
 /*
  * Home's rail, the People directory and the ⌘K palette (docs/02 §2.12.1, §2.2, §2.22.1;
@@ -31,7 +31,7 @@ async function addBirthdaysSoon(page: Page, names: string[], firstInDays = 2): P
 		await page.getByLabel('First name').fill(first);
 		await page.getByLabel('Last name').fill(last);
 		await page.getByText('More — nickname, birthday').click();
-		await page.getByLabel('Birthday').fill(`1992-${soon}`);
+		await fillDate(page.locator('form'), 'Birthday', `1992-${soon}`);
 		await page.getByRole('button', { name: 'Add person' }).click();
 		await expect(page.getByRole('heading', { name })).toBeVisible();
 	}

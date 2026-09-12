@@ -212,6 +212,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **Custom sessions over an auth framework** — Lucia is sunsetting; our needs (sessions
   + one OIDC RP) are small and better owned directly with `jose`/`oslo` primitives.
 - **OIDC-standard SSO, provider-agnostic** — targets Authelia but avoids provider lock-in.
+- **Our own date field over `<input type="date">`** — the native control formats itself from
+  the *browser's* locale, which is not the language Stella is being read in, and nothing in
+  HTML overrides that. Assembling the field from the app's locale costs us the native picker
+  and its mobile date keyboard; it buys a field that reads correctly in both languages, month
+  names instead of an ambiguous number, and a year that can be left blank — which is how a
+  birthday without a year (`--MM-DD`, §2.13.1) becomes expressible at all, something the
+  native input cannot represent. (docs/05 §5.7.)
 - **A hand-rolled vCard reader over a package** — the subset a contacts export uses is small
   and frozen (RFC 6350 / RFC 2426): unfolding, escaping, structured values. Every published
   parser weighs far more than the two dozen lines that saves, against the minimal-deps rule

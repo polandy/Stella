@@ -2,6 +2,9 @@
  * Calendar-day validation shared by everything that stores a day as text (important dates,
  * interactions). A shape check alone lets `2026-02-30` through, and the date maths downstream
  * would silently roll it into March rather than refuse it.
+ *
+ * Client-safe on purpose: the date field refuses an impossible day while it is being typed,
+ * and it has to refuse exactly the days the server would, not a second opinion.
  */
 
 /** A full ISO day, or a year-less `--MM-DD`. */

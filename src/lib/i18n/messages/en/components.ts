@@ -18,7 +18,16 @@ export const components = {
 	'components.palette.kindAction': 'action',
 	'components.personSearch.placeholder': 'Search people…',
 	'components.personSearch.empty': 'No one found.',
-	'components.personSearch.remove': (p: { name: string }) => `Remove ${p.name}`
+	'components.personSearch.remove': (p: { name: string }) => `Remove ${p.name}`,
+	'components.dateField.day': 'Day',
+	'components.dateField.month': 'Month',
+	'components.dateField.year': 'Year',
+	'components.dateField.dayPlaceholder': 'DD',
+	'components.dateField.yearPlaceholder': 'YYYY',
+	'components.dateField.monthEmpty': 'Month…',
+	'components.dateField.yearOptional': 'Leave the year blank if you do not know it.',
+	'components.dateField.noSuchDay': 'There is no such day in the calendar.',
+	'components.dateField.notInFuture': 'That day has not happened yet.'
 };
 
 /** The key set every translation of this area has to provide. */

@@ -343,6 +343,25 @@ would, so it drops into an existing form action unchanged. Single mode replaces 
 choosing someone; multiple mode (interaction participants) keeps chosen people as removable
 chips and lets you keep adding.
 
+**Date field** (`src/lib/components/DateField.svelte`) replaces `<input type="date">`
+everywhere a day is entered: birthday, important date, the day an interaction happened, a
+relationship's *Since*, a journal or moment day. A native date input takes its segment order,
+its separators and its month names from the **browser's** locale, not the app's — so a German
+household reading Stella in German on an English browser is asked for `mm/dd/yyyy` and handed
+an English calendar, and no attribute on the page can change that. This field is assembled
+from the app's own locale instead: the order comes from `Intl.DateTimeFormat` (day first in
+German, month first in American English), and the month is a **named choice** rather than a
+number, which also ends the day/month ambiguity.
+
+Two consequences worth knowing. The year is a segment like any other, so a birthday whose year
+nobody remembers is simply one left blank — that is what produces `--MM-DD` (§2.13.1), and it
+is why there is no "year unknown" checkbox any more. And because the three segments are
+separate controls, the browser cannot see that together they name 30 February; the verdict
+from `src/lib/dates/calendar.ts` — the same predicate the server applies — is hung on the day
+segment with `setCustomValidity`, so the form refuses to submit exactly as it would for any
+other invalid field. It posts one hidden field holding the ISO value, so it drops into an
+existing form action unchanged.
+
 **Buttons** are one component (`src/lib/components/Button.svelte`) with four variants, and the
 variant states the intent:
 
