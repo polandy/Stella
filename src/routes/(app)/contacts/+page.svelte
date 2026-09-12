@@ -122,6 +122,14 @@
 									<span class="min-w-0">
 										<span class="flex items-center gap-1.5">
 											<span class="truncate font-medium text-fg">{contact.displayName}</span>
+											{#if contact.id === data.user.selfContactId}
+												<span
+													data-testid="self-marker"
+													class="rounded-full bg-primary-soft px-1.5 py-0.5 text-[11px] font-medium text-primary"
+												>
+													{t('common.you')}
+												</span>
+											{/if}
 											{#if contact.visibility === 'private'}
 												<Icon name="private" size={12} />
 												<span class="sr-only">{t('contacts.private')}</span>

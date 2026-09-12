@@ -443,6 +443,15 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   because one format counts and the other uuids, and the view carries a `source` so the mapping
   can report what a format could not give.
 
+- **`user.self_contact_id` carries no foreign key** — the column points a member at the contact
+  they are (§2.1.3), and the obvious `REFERENCES contact(id) ON DELETE SET NULL` cannot be added
+  by `ALTER TABLE` in SQLite: the action is silently dropped, leaving a plain reference that
+  *refuses* to delete that person. The alternatives were a twelve-step table rebuild on every
+  future column, or no key. We took no key and made the two cases explicit instead — deleting a
+  contact clears the link in the same transaction, merging repoints it at the survivor — each
+  with a persistence test that fails without it. The cost is an invariant held in code rather
+  than by the database, in exchange for `delete person` staying a single statement.
+
 ## 4.10 Deployment
 
 - **Single Docker image** (multi-stage: build with Bun, run on a slim Bun base).

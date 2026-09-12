@@ -44,7 +44,9 @@ const REPOINTED: readonly { table: string; column: string }[] = [
 	{ table: 'interaction', column: 'contact_id' },
 	{ table: 'important_date', column: 'contact_id' },
 	{ table: 'photo', column: 'contact_id' },
-	{ table: 'activity_log', column: 'contact_id' }
+	{ table: 'activity_log', column: 'contact_id' },
+	// A member who said "I am this person" follows the record that survives the merge.
+	{ table: 'user', column: 'self_contact_id' }
 ];
 
 /**
