@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import { isoToParts } from '../src/lib/dates/field';
 
 /*
  * Shared steps for driving the signed-in app.
@@ -38,7 +39,7 @@ export async function openPerson(page: Page, name: RegExp): Promise<void> {
 	await page.getByRole('link', { name: 'People' }).first().click();
 	await expect(page.getByRole('heading', { name: 'People' })).toBeVisible();
 	await page.getByRole('link', { name }).first().click();
-	await expect(page.getByRole('tab', { name: 'Story' })).toHaveAttribute('aria-selected', 'true');
+	await expect(page.getByRole('tab', { name: 'People' })).toHaveAttribute('aria-selected', 'true');
 	await appReady(page);
 }
 
@@ -63,4 +64,17 @@ export async function pickPerson(field: Locator, name: string): Promise<void> {
 	// is focused rather than re-resolving `field` — its own actionability check can stall
 	// while the just-added chip is still shifting the input's layout.
 	await field.page().keyboard.press('Escape');
+}
+
+/**
+ * Fills a `DateField` with an ISO day. The field is three controls in the reader's own
+ * language rather than one native `<input type="date">`, so a spec names the day it wants
+ * and this puts it in the right segments — `--MM-DD` leaving the year blank.
+ */
+export async function fillDate(scope: Locator, groupName: string, iso: string): Promise<void> {
+	const parts = isoToParts(iso);
+	const group = scope.getByRole('group', { name: groupName });
+	await group.getByLabel('Month', { exact: true }).selectOption(parts.month);
+	await group.getByLabel('Day', { exact: true }).fill(parts.day);
+	await group.getByLabel('Year', { exact: true }).fill(parts.year);
 }

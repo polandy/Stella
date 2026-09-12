@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
+	import DateField from '$lib/components/DateField.svelte';
 	import type { ActionData } from './$types';
 
 	import Icon from '$lib/components/Icon.svelte';
@@ -129,10 +130,10 @@
 					<span class="text-fg-muted">{t('contacts.new.nickname')}</span>
 					<input name="nickname" class={input} autocomplete="off" />
 				</label>
-				<label class={field}>
+				<div class={field}>
 					<span class="text-fg-muted">{t('contacts.new.birthday')}</span>
-					<input type="date" name="birthDate" class={input} />
-				</label>
+					<DateField name="birthDate" label={t('contacts.new.birthday')} allowYearUnknown />
+				</div>
 			</div>
 		</details>
 

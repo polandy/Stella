@@ -2,6 +2,7 @@
 	import { tick } from 'svelte';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import DateField from '$lib/components/DateField.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { isNameWorthCreating, splitTypedName } from '$lib/people/new-person';
@@ -299,14 +300,14 @@
 								class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 							/>
 						</label>
-						<label class="flex flex-col gap-1">
+						<div class="flex flex-col gap-1">
 							{t('components.personSearch.birthDate')}
-							<input
+							<DateField
 								bind:value={draft.birthDate}
-								type="date"
-								class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+								label={t('components.personSearch.birthDate')}
+								allowYearUnknown
 							/>
-						</label>
+						</div>
 					</div>
 				</details>
 

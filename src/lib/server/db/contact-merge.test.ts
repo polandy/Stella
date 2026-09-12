@@ -103,6 +103,20 @@ describe('what follows the person', () => {
 		expect(db.select().from(schema.contact).all()[0].description).toBe('the merged one');
 	});
 
+	it('keeps a member pointing at themselves when their record is the one merged away', () => {
+		db.update(schema.user).set({ selfContactId: 'dup' }).where(eq(schema.user.id, U1)).run();
+		db.update(schema.user).set({ selfContactId: 'keep' }).where(eq(schema.user.id, U2)).run();
+
+		expect(merge()).toBe(true);
+
+		const byUser = new Map(
+			db.select().from(schema.user).all().map((u) => [u.id, u.selfContactId])
+		);
+		expect(byUser.get(U1)).toBe('keep');
+		// positive control: the member already on the survivor is left where they were.
+		expect(byUser.get(U2)).toBe('keep');
+	});
+
 	it('writes the merge to the log, in the same transaction', () => {
 		expect(merge()).toBe(true);
 

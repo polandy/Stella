@@ -33,7 +33,17 @@ export const components = {
 	'components.personSearch.cancel': 'Cancel',
 	'components.personSearch.submit': 'Add & select',
 	'components.personSearch.submitting': 'Adding…',
-	'components.personSearch.created': (p: { name: string }) => `${p.name} was added`
+	'components.personSearch.created': (p: { name: string }) => `${p.name} was added`,
+	'components.dateField.day': 'Day',
+	'components.dateField.month': 'Month',
+	'components.dateField.year': 'Year',
+	'components.dateField.dayPlaceholder': 'DD',
+	'components.dateField.yearPlaceholder': 'YYYY',
+	'components.dateField.monthEmpty': 'Month…',
+	'components.dateField.yearOptional': 'Leave the year blank if you do not know it.',
+	'components.dateField.noSuchDay': 'There is no such day in the calendar.',
+	'components.dateField.incomplete': 'Fill in the whole date, or clear it.',
+	'components.dateField.inFuture': 'That day has not happened yet.'
 };
 
 /** The key set every translation of this area has to provide. */

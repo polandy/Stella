@@ -205,22 +205,29 @@ They must be edited together; `app.css` says so at both blocks.
     for on one line — when you
     were last in touch, how you met, whether the person is private. Two actions: *Write* (a
     journal entry) and *Log contact* (a touchpoint), the second opening the story's own form.
+  - **Quick overview:** one line beneath the hero, above the tabs and shared by all of
+    them — relationship count and encounter count, so *how things stand* with this person is
+    read before opening any tab. Numbers only, taken from data the page already loaded; it adds
+    no query of its own.
   - **Profile column** (`19rem`, sticky from `lg`): Contact fields, Dates (§2.13.1), Circles,
     Tags, How we met. Each is a card with **one** disclosure — `+ Add` reveals its form and
     nothing else is open. A form that failed validation opens itself, so the error has a home.
-  - **Right column:** tabs *Story · People · Notes · Photos · Mentioned in*. **Story** is the merged timeline of
-    §2.23 — journal entries and touchpoints in one order, a rail with a dot per item coloured
-    by kind, the author's name beside the kind (*you* on your own items), *Show earlier* paging
-    back through both sources. **People** lists the
-    relationships and hides the ego-graph behind *Show map*, so a person with no interest in
-    it does not pay for it on every visit. A relationship row reads *label · name · how they
-    connect · since <day>* with *former* as a quiet chip, and carries **Edit** (revealing the
-    same three fields in place, the type not among them) and the standard remove-with-undo. Below them, **Also related · worked out, not
+  - **Right column:** tabs *People · Story · Notes · Photos · Mentioned in*, People leading —
+    who this person is connected to is what opening their page answers first. **People** lists
+    the relationships, each row *label · name · how they connect · since <day>* with *former* as
+    a quiet chip, and carries **Edit** (revealing the same three fields in place, the type not
+    among them) and the standard remove-with-undo. Beneath the list, the **ego graph** (pure SVG
+    over the relationships already on the page — no extra fetch, no graph engine) sits open by
+    default; *Explore in graph* still reaches the full, interactive map for whoever wants more
+    than a glance. Below them, **Also related · worked out, not
     entered** (§2.4.1) carries the derived relatives — a divider, a quieter heading and a
     *via* clause keep an inference visually distinct from something the household typed.
     After a link is added, an **Also true?** panel sits above them with what it implies, one
     *Add this too* per line: a suggestion is a sentence with a button, never a checkbox list
-    that could be swept in with one click. **Notes** are pinned-first. **Mentioned in**
+    that could be swept in with one click. **Story**, titled *Activity* on its own panel, is the
+    merged timeline of §2.23 — journal entries and touchpoints in one order, a rail with a dot
+    per item coloured by kind, the author's name beside the kind (*you* on your own items),
+    *Show earlier* paging back through both sources. **Notes** are pinned-first. **Mentioned in**
     (§2.20.1) is the passive side: one flat list of the notes and journal entries *elsewhere*
     that name this person, newest first, each row a single link — the source icon, *in <person>’s
     journal · by <author>*, the day on the right, and a one-line preview underneath. The whole
@@ -231,11 +238,11 @@ They must be edited together; `app.css` says so at both blocks.
     closes on click, with the caption above the picture and the actions in one row beneath it.
     The destructive action sits last in that row and carries the danger style, so it is never
     the button next to the one you meant.
-  - Below `lg` the two columns stack **story first**: the story is what the page is opened for,
-    and the profile follows underneath.
+  - Below `lg` the two columns stack **tabs first**: the People tab they open on is what the
+    page is opened for, and the profile follows underneath.
   - Counts sit on a tab only where they are exact; the story is paged, so it carries none.
   - Walking from one person to another keeps the page but not the tab: the open tab is whatever
-    the new page asks for (`?tab=`) and otherwise the story, so a link that points at a tab —
+    the new page asks for (`?tab=`) and otherwise People, so a link that points at a tab —
     a passive reference does — arrives where it meant to rather than on whatever was open.
 - **Add a person** — one card: first and last name, description, how and where you met,
   visibility. Nickname and birthday sit behind a *More* disclosure; everything else waits
@@ -267,6 +274,14 @@ They must be edited together; `app.css` says so at both blocks.
   came for. An archived person carries a quiet *Archived* chip in their header beside
   *Private*, and the directory grows an **Archived (N)** chip at the end of the tag row,
   leading to the same list with the "last written about" column dropped.
+- **Which of these people you are** (docs/02 §2.1.3) is set in two places and looks the same
+  in both: Settings carries a **You** section with a labelled person search select, and the
+  foot of a person's profile column carries a ghost *This is me* — the same button reading
+  *This is not me* once it is set, beside *Archive*, because both are quiet, rare and about the
+  record rather than the person. The person you are wears a **You** chip in `--primary-soft`
+  on `--primary`: in their header beside *Private* and *Archived*, and next to their name in
+  the People directory. Exactly one row in the household can ever wear it, which is what makes
+  it readable at a glance rather than a second lock icon.
 - **Merging a duplicate** sits with the delete control at the foot of the profile, admin-only,
   as a disclosure holding a person search select and one button (docs/02 §2.2). The survivor is always the
   page you are on, so the form asks a single question — *who is the same person?* — instead of
@@ -284,8 +299,8 @@ They must be edited together; `app.css` says so at both blocks.
   birthday row replaces it (docs/02 §2.13.2).
 - **Settings** — account (incl. sign out), appearance (theme + accent + reduced motion),
   household (members, invitations, relationship types, tags), data (export/import/backup), auth.
-  *Today:* a landing page with the **Data** section and an **Account** section (sign out only
-  so far), and the **Import people** wizard
+  *Today:* a landing page with the **Data** section, a **You** section (docs/02 §2.1.3) and an
+  **Account** section (sign out only so far), and the **Import people** wizard
   (§2.16) as a three-step page — numbered step strip, a count-tile preview with a
   "left out, and why" card, then the import result and the photos, under one progress bar but
   two ways in, because the accepted formats differ: a folder picker for a Monica dump, whose
@@ -337,13 +352,35 @@ choosing someone; multiple mode (interaction participants) keeps chosen people a
 chips and lets you keep adding.
 
 With `allowCreate`, the picker also ends a fruitless search: from two typed characters on, a
-last option offers *Add "<what you typed>" as a new person* — the same listbox row as a hit,
-but with a `+` mark and the accent colour so it never reads as one. Choosing it swaps the
-dropdown for a compact create panel in the same position (first/last name pre-filled from the
-query, nickname and birthday collapsed, visibility pills), which posts to `/contacts/quick-add`
-and selects the new person on success (§2.2.2). The panel is plain inputs and `type="button"`
-buttons, never a nested `<form>` — the picker sits inside the caller's form, and Enter inside
-the panel saves the person rather than submitting that form.
+row under the list offers *Add "<what you typed>" as a new person*, with a `+` mark and the
+accent colour. It sits **outside** the listbox on purpose — it is an action, not a person, and
+keeping it out means "the options" stays a list of people for a screen reader and for anything
+locating someone by name. *No one found.* stays above it. Choosing it swaps the dropdown for a
+compact create panel in the same position (first/last name pre-filled from the query, nickname
+and birthday collapsed, visibility pills), which posts to `/contacts/quick-add` and selects the
+new person on success (§2.2.2). The panel is plain inputs and `type="button"` buttons, never a
+nested `<form>` — the picker sits inside the caller's form, and Enter inside the panel saves
+the person rather than submitting that form. Its birthday is a `DateField` bound by value, not
+a form field, since the panel sends JSON.
+
+**Date field** (`src/lib/components/DateField.svelte`) replaces `<input type="date">`
+everywhere a day is entered: birthday, important date, the day an interaction happened, a
+relationship's *Since*, a journal or moment day. A native date input takes its segment order,
+its separators and its month names from the **browser's** locale, not the app's — so a German
+household reading Stella in German on an English browser is asked for `mm/dd/yyyy` and handed
+an English calendar, and no attribute on the page can change that. This field is assembled
+from the app's own locale instead: the order comes from `Intl.DateTimeFormat` (day first in
+German, month first in American English), and the month is a **named choice** rather than a
+number, which also ends the day/month ambiguity.
+
+Two consequences worth knowing. The year is a segment like any other, so a birthday whose year
+nobody remembers is simply one left blank — that is what produces `--MM-DD` (§2.13.1), and it
+is why there is no "year unknown" checkbox any more. And because the three segments are
+separate controls, the browser cannot see that together they name 30 February; the verdict
+from `src/lib/dates/calendar.ts` — the same predicate the server applies — is hung on the day
+segment with `setCustomValidity`, so the form refuses to submit exactly as it would for any
+other invalid field. It posts one hidden field holding the ISO value, so it drops into an
+existing form action unchanged.
 
 **Buttons** are one component (`src/lib/components/Button.svelte`) with four variants, and the
 variant states the intent:

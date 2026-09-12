@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openPerson, pickPerson, signIn } from './app';
+import { fillDate, openPerson, pickPerson, signIn } from './app';
 
 /*
  * What a relationship carries beyond its type, and taking one back (docs/02 §2.4). Written
@@ -32,7 +32,7 @@ async function addLink(
 	await form.locator('select[name=typeId]').selectOption({ label: fields.type });
 	await pickPerson(form.getByLabel('Person'), fields.person);
 	if (fields.how) await form.locator('input[name=description]').fill(fields.how);
-	if (fields.since) await form.locator('input[name=sinceDate]').fill(fields.since);
+	if (fields.since) await fillDate(form, 'Since', fields.since);
 	if (fields.status) await form.locator('select[name=status]').selectOption(fields.status);
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 }

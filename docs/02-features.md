@@ -88,6 +88,32 @@ credentials and MFA.
 > Although Authelia is the primary target, the implementation uses **standard OIDC**
 > only, so any compliant provider (Keycloak, Authentik, Zitadel, Google, etc.) works.
 
+### 2.1.3 Which of these people am I **[M1]**
+
+A household member may point their account at the contact that **is them** — the record
+with their own birthday, their own relatives, their own photo. The link is per member, not
+per household: two people sharing a Stella are two different contacts, and neither choice
+shows to the other as anything but a badge.
+
+- **Where it is set:** in Settings ("You", a searchable person picker), and from the
+  person's own page ("This is me"). The same button on the profile lets go of the link
+  again, so a wrong pick is undone where it was made.
+- **What it may point at:** only a contact that member can already see. A private record
+  belonging to somebody else is refused rather than stored — a link they could never
+  verify or undo, and one that would give away that the record exists.
+- **What it changes:**
+  - the **graph** (2.7) opens on that person instead of the first visible one, unless the
+    link asks for somebody in particular;
+  - the record is marked **"You"** on its own page and in the People directory;
+  - adding a relationship on somebody else's page starts with **you** as the other end —
+    "how is this person related to me" is the link a household records most. It stays a
+    default: the kind of relationship is always chosen by hand before anything is saved.
+- **When that person goes:** deleting the contact clears the link; merging them into a
+  duplicate moves it to the record that survives. A member is never left pointing at a row
+  that is gone.
+- It is **not** a second account. Nothing about permissions, authorship or visibility
+  follows from it — it is Stella knowing whose story it is showing.
+
 ## 2.2 Contacts (people) **[M1]**
 
 The central entity. A contact is any person the family wants to remember — they need
@@ -436,7 +462,8 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 
 - From **a person's profile**: "Explore connections" opens the explorer centered on that
   contact, showing all of their relationships and circles at once.
-- As a **standalone screen** (nav → Graph) starting from search or the household overview.
+- As a **standalone screen** (nav → Graph). It opens on **your own person** when you have
+  said who that is (§2.1.3), and otherwise on the first person the household has.
 
 **What is shown**
 
@@ -620,7 +647,9 @@ the stream reads as one timeline with the future above the past.
   one must be named, or it means nothing three months later). Each carries whether it
   **recurs yearly** and whether it should **remind** — the "show it on Home" switch.
 - A date may be a full ISO day or a year-less `--MM-DD` when the year is unknown; the age
-  or count is then simply omitted rather than guessed.
+  or count is then simply omitted rather than guessed. **Leaving the year blank** in the date
+  field is how that is said — there is no separate "year unknown" switch, because the empty
+  segment already means it (§5.7).
 - Dates are **child records of a contact** with no visibility of their own: they inherit
   the contact's, enforced by the adapter's scoped reads (§2.10).
 - Dates are listed, added and removed in a **Dates** section on the person page.
@@ -804,7 +833,8 @@ included) it is the very first thing they will do.
 
 ## 2.17 Settings **[M1/M2]**
 
-- **Account:** profile, password, **language** (§2.19), theme, default visibility, sessions/2FA.
+- **Account:** profile, password, **language** (§2.19), **which of these people you are**
+  (§2.1.3), theme, default visibility, sessions/2FA.
 - **Household** (admin): name, members & roles, invitations, relationship types, tags.
 - **Data** (admin): export, import, backup.
 - **Appearance:** theme (system/light/dark), accent color choice from Catppuccin set,

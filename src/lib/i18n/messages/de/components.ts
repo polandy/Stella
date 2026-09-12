@@ -34,5 +34,15 @@ export const components: ComponentsMessages = {
 	'components.personSearch.cancel': 'Abbrechen',
 	'components.personSearch.submit': 'Anlegen & auswählen',
 	'components.personSearch.submitting': 'Wird angelegt…',
-	'components.personSearch.created': (p) => `${p.name} wurde angelegt`
+	'components.personSearch.created': (p) => `${p.name} wurde angelegt`,
+	'components.dateField.day': 'Tag',
+	'components.dateField.month': 'Monat',
+	'components.dateField.year': 'Jahr',
+	'components.dateField.dayPlaceholder': 'TT',
+	'components.dateField.yearPlaceholder': 'JJJJ',
+	'components.dateField.monthEmpty': 'Monat…',
+	'components.dateField.yearOptional': 'Lass das Jahr leer, wenn du es nicht weißt.',
+	'components.dateField.noSuchDay': 'Diesen Tag gibt es im Kalender nicht.',
+	'components.dateField.incomplete': 'Gib das ganze Datum ein oder lösche es.',
+	'components.dateField.inFuture': 'Dieser Tag ist noch nicht gewesen.'
 };

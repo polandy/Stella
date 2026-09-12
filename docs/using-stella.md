@@ -100,8 +100,10 @@ adding, you land straight in their relationship editor with that relative alread
 so "Quill is the child of Sandra" is one more click.
 
 **A person's page** puts who they are on the left — details, dates, circles, tags, how you
-met — and what has happened on the right, under five tabs: **Story**, **People**,
-**Notes**, **Photos** and **Mentioned in**. On a phone the two stack, with the story first.
+met — and who they're connected to and what has happened on the right, under five tabs:
+**People**, **Story**, **Notes**, **Photos** and **Mentioned in**, People first. A line above
+the tabs gives the numbers at a glance — how many relationships, how many times you've been in
+touch — before you open any of them. On a phone the two stack, with the tabs first.
 
 Every card on the left holds one **+ Add** button. Nothing is an open form until you ask for
 it, so the page reads as a person rather than as a stack of empty fields.
@@ -153,7 +155,7 @@ out the birthday itself — there is nothing else to set up, and the two can nev
 Anything a birth date cannot express goes in the **Dates** section of their page: a wedding
 anniversary, the day you met, the day the class trip leaves. Each one can repeat every year
 or happen once, and each one has a switch for whether it should show up on Home. If the year
-is unknown, tick *Year unknown* and Stella keeps the day without inventing a year.
+is unknown, just leave the year box empty and Stella keeps the day without inventing a year.
 
 **What is coming up appears on Home**, beside what already happened — the next 30 days,
 soonest first. Not a separate reminders page you have to remember to open, and no email: it
@@ -344,6 +346,18 @@ no per-person permission matrix to maintain. Anything can be made private, and p
 means only its author — never "hidden but discoverable". People, moments, notes and photos
 each carry their own setting, and the rule is enforced in one place in the code rather
 than screen by screen, so there is no corner of the app where it silently doesn't apply.
+
+## Which of these people is you
+
+Stella keeps a record for everyone the household wants to remember, and one of them is
+probably you. Say so and the app stops guessing: **Settings → You** has a search field for
+picking your own entry, and the foot of any person's page has *This is me* for the same
+thing. From then on the map opens around you rather than whoever happens to come first,
+your row wears a small **You** in the list and on your page, and when you record how
+somebody is related, Stella already assumes you are the other end — you still say *how*.
+
+It is only a pointer. Nothing changes about what you may see or what belongs to you, and
+you can take it back with the same button, or with *None of them is me* in Settings.
 
 ## The map
 

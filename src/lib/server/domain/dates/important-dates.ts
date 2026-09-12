@@ -3,7 +3,7 @@ import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import { DATE_SHAPE, isRealCalendarDay } from './calendar';
+import { DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { IMPORTANT_DATE_KINDS, type ImportantDateKind, type UpcomingSource } from './upcoming';
 
 /*

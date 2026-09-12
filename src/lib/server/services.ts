@@ -37,6 +37,7 @@ import { createDrizzleRelationshipRepository } from './db/relationship-repositor
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
 import type { MemberDeps, MemberRepository } from './domain/household/members';
+import type { SelfContactDeps } from './domain/household/self-contact';
 import type { MentionedInDeps, MentionedInRepository } from './domain/mentions/mentioned-in';
 import { createDrizzleMemberRepository } from './db/member-repository';
 import { createDrizzleTagRepository } from './db/tag-repository';
@@ -172,6 +173,11 @@ export function getContactDeps(): ContactDeps {
 /** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */
 export function getDeleteContactDeps(): ContactDeps & { media: MediaStore } {
 	return { ...getContactDeps(), media: getMediaStore() };
+}
+
+/** Deps for "which of these people am I" (docs/02 §2.1.3). */
+export function getSelfContactDeps(): SelfContactDeps {
+	return { contacts: getContacts(), accounts: getAccounts() };
 }
 
 /** Deps for quick-add's duplicate/relative suggestions (docs/02 §2.2.1). */

@@ -7,6 +7,7 @@ export const errors: ErrorsMessages = {
 	'errors.contact.emptyName': 'Ein Name darf nicht leer sein.',
 	'errors.contact.needAName': 'Bitte gib wenigstens einen Namen oder Spitznamen ein.',
 	'errors.contact.couldNotCreate': 'Die Person konnte nicht angelegt werden.',
+	'errors.self.notFound': 'Diese Person kannst du nicht als dich selbst wählen.',
 	'errors.form.checkAndRetry': 'Bitte prüfe das Formular und versuche es erneut.',
 
 	'errors.relationship.duplicate': 'Diese Beziehung gibt es schon.',

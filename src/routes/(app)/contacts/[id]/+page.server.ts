@@ -30,7 +30,6 @@ import {
 	listImportantDates,
 	overridesDerivedBirthday
 } from '$lib/server/domain/dates/important-dates';
-import { withoutYear } from '$lib/dates/labels';
 import { IMPORTANT_DATE_KINDS } from '$lib/server/domain/dates/upcoming';
 import {
 	deleteInteraction,
@@ -98,8 +97,13 @@ import {
 	getStoryDeps,
 	getTagDeps,
 	getMemberDeps,
-	getMentionedInDeps
+	getMentionedInDeps,
+	getSelfContactDeps
 } from '$lib/server/services';
+import {
+	setSelfContact,
+	UnknownSelfContactError
+} from '$lib/server/domain/household/self-contact';
 
 /*
  * `?propose=<a>:<b>` names the pair whose new link should be propagated (docs/02 §2.4.1).
@@ -424,6 +428,26 @@ export const actions: Actions = {
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
+	/*
+	 * "This is me" (docs/02 §2.1.3), from the page of the person it is about. It toggles: the
+	 * same button lets go of the link again, so a wrong pick is undone where it was made.
+	 */
+	setSelf: async ({ params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const alreadyMe = locals.user.selfContactId === params.id;
+
+		try {
+			await setSelfContact(getSelfContactDeps(), viewer, alreadyMe ? null : params.id);
+		} catch (err) {
+			if (err instanceof UnknownSelfContactError)
+				return fail(400, { error: err.phrase(translator(locals)) });
+			throw err;
+		}
+
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
 	restore: async ({ params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
@@ -653,9 +677,8 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
-		// `<input type="date">` always yields a year; "Year unknown" drops it to `--MM-DD`.
-		const raw = String(form.get('date') ?? '');
-		const date = form.get('yearUnknown') !== null ? withoutYear(raw) : raw;
+		// The date field posts `--MM-DD` itself when the year was left blank (docs/02 §2.13).
+		const date = String(form.get('date') ?? '');
 		const parsed = v.safeParse(AddDateSchema, {
 			kind: form.get('kind'),
 			label: form.get('label') || undefined,
@@ -738,7 +761,10 @@ export const actions: Actions = {
 			});
 		}
 
-		throw redirect(303, `/contacts/${params.id}`);
+		// `?tab=story`: this form posts natively (see the comment on the story panel in
+		// +page.svelte), so the reload that follows has to be told which tab held it — People
+		// is the page's default now, and a touchpoint is logged from Story.
+		throw redirect(303, `/contacts/${params.id}?tab=story`);
 	},
 
 	removeInteraction: async ({ request, params, locals }) => {

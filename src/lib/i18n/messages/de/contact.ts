@@ -17,6 +17,9 @@ export const contact: ContactMessages = {
 	'contact.write': 'Schreiben',
 	'contact.logContact': 'Kontakt festhalten',
 	'contact.egoGraphLabel': (p) => `Beziehungsnetz von ${p.name}`,
+	'contact.overview.relationships': (p) => (p.count === 1 ? '1 Beziehung' : `${p.count} Beziehungen`),
+	'contact.overview.encounters': (p) => (p.count === 1 ? '1 Begegnung' : `${p.count} Begegnungen`),
+	'contact.story.title': 'Aktivität',
 
 	'contact.tab.story': 'Verlauf',
 	'contact.tab.people': 'Menschen',
@@ -54,7 +57,6 @@ export const contact: ContactMessages = {
 	'contact.dateRemoved': 'Datum entfernt',
 	'contact.day': 'Tag',
 	'contact.dateNameForCustom': 'Name (für Eigenes)',
-	'contact.yearUnknown': 'Jahr unbekannt',
 	'contact.everyYear': 'Jedes Jahr',
 	'contact.showOnHome': 'Auf der Startseite zeigen',
 	'contact.dateKind.birthday': 'Geburtstag',
@@ -81,6 +83,12 @@ export const contact: ContactMessages = {
 	'contact.notRecorded': 'Noch nicht festgehalten.',
 
 	'contact.archive.bringBack': 'Zurück in die Listen holen',
+	'contact.self.thisIsMe': 'Das bin ich',
+	'contact.self.notMe': 'Das bin ich nicht',
+	'contact.self.hint':
+		'Sag Stella, dass dieser Eintrag du bist — dann öffnet die Karte bei deinen eigenen Leuten.',
+	'contact.self.isMeHint': 'Stella hält diesen Eintrag für dich.',
+	'contact.self.badgeHint': 'Die Person, die du laut deiner Angabe bist.',
 	'contact.archive.archive': 'Diese Person archivieren',
 	'contact.archive.archivedHint':
 		'Sie ist aus dem Verzeichnis, der Suche und den Erinnerungen auf der Startseite verschwunden — ihre Seite, ihr Verlauf und die Familienkarte bleiben unberührt.',
@@ -120,8 +128,6 @@ export const contact: ContactMessages = {
 	'contact.relationships.person': 'Person',
 	'contact.relationships.addSomeoneFirst':
 		'Lege zuerst eine weitere Person an, dann kannst du sie hier verknüpfen.',
-	'contact.relationships.showMap': 'Karte zeigen',
-	'contact.relationships.hideMap': 'Karte ausblenden',
 	'contact.relationships.alsoTrue': 'Stimmt das auch?',
 	'contact.relationships.parentProposal': (p) => `${p.parent} ist ein Elternteil von ${p.child}`,
 	'contact.relationships.addThisToo': 'Das auch hinzufügen',

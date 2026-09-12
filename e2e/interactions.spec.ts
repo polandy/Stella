@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { pickPerson, signIn } from './app';
+import { fillDate, pickPerson, signIn } from './app';
 
 /*
  * Touchpoints on the story timeline and "last contacted" (docs/02 §2.6, §2.23). Written after
@@ -7,10 +7,11 @@ import { pickPerson, signIn } from './app';
  * signed in as the demo admin; the touchpoints logged here use a title no seeded data contains.
  */
 
-/** Opens a seeded person's page from the contacts list, on the story tab it opens with. */
+/** Opens a seeded person's page from the contacts list, then switches to the story tab. */
 async function openPerson(page: Page, name: RegExp): Promise<void> {
 	await page.goto('/contacts');
 	await page.getByRole('link', { name }).first().click();
+	await page.getByRole('tab', { name: 'Story' }).click();
 	await expect(page.getByRole('tab', { name: 'Story' })).toHaveAttribute('aria-selected', 'true');
 }
 
@@ -40,7 +41,7 @@ test('logs a call with a participant, shows it on the timeline and derives last 
 
 	const section = await openLogForm(page);
 	await section.getByLabel('Kind').selectOption('call');
-	await section.getByLabel('Day').fill('2026-09-01');
+	await fillDate(section, 'Day', '2026-09-01');
 	await section.getByPlaceholder('What happened? (optional)').fill(TITLE);
 	await section.getByPlaceholder('Details… (optional)').fill('She wants Oma to come along.');
 	await pickPerson(section.getByLabel('Who else was there?'), 'Markus Brunner');
@@ -62,7 +63,7 @@ test('orders the timeline most recent day first and last contacted follows the n
 	const section = await openLogForm(page);
 
 	await section.getByLabel('Kind').selectOption('met');
-	await section.getByLabel('Day').fill('2026-08-20');
+	await fillDate(section, 'Day', '2026-08-20');
 	await section.getByPlaceholder('What happened? (optional)').fill('Quill lunch, the earlier one');
 	await section.getByRole('button', { name: 'Log interaction' }).click();
 
@@ -90,10 +91,9 @@ test('refuses a day that does not exist and keeps the timeline unchanged', async
 	const section = await openLogForm(page);
 	const before = await storyItems(page).count();
 
-	// The date input cannot produce 30 February, so the guard is exercised through the form's
-	// raw value: type into the field via the DOM the way a scripted client would.
-	await section.getByLabel('Day').evaluate((el: HTMLInputElement) => {
-		el.type = 'text';
+	// The field refuses 30 February before it can be submitted, so the server's own guard is
+	// exercised past it: write the posted value directly, the way a scripted client would.
+	await section.locator('input[name=happenedAt]').evaluate((el: HTMLInputElement) => {
 		el.value = '2026-02-30';
 	});
 	await section.getByRole('button', { name: 'Log interaction' }).click();

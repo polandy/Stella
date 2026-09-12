@@ -212,6 +212,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **Custom sessions over an auth framework** — Lucia is sunsetting; our needs (sessions
   + one OIDC RP) are small and better owned directly with `jose`/`oslo` primitives.
 - **OIDC-standard SSO, provider-agnostic** — targets Authelia but avoids provider lock-in.
+- **Our own date field over `<input type="date">`** — the native control formats itself from
+  the *browser's* locale, which is not the language Stella is being read in, and nothing in
+  HTML overrides that. Assembling the field from the app's locale costs us the native picker
+  and its mobile date keyboard; it buys a field that reads correctly in both languages, month
+  names instead of an ambiguous number, and a year that can be left blank — which is how a
+  birthday without a year (`--MM-DD`, §2.13.1) becomes expressible at all, something the
+  native input cannot represent. (docs/05 §5.7.)
 - **A hand-rolled vCard reader over a package** — the subset a contacts export uses is small
   and frozen (RFC 6350 / RFC 2426): unfolding, escaping, structured values. Every published
   parser weighs far more than the two dozen lines that saves, against the minimal-deps rule
@@ -435,6 +442,15 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   came from. The cost is a lowest common denominator: a Monica id widens to `string | number`
   because one format counts and the other uuids, and the view carries a `source` so the mapping
   can report what a format could not give.
+
+- **`user.self_contact_id` carries no foreign key** — the column points a member at the contact
+  they are (§2.1.3), and the obvious `REFERENCES contact(id) ON DELETE SET NULL` cannot be added
+  by `ALTER TABLE` in SQLite: the action is silently dropped, leaving a plain reference that
+  *refuses* to delete that person. The alternatives were a twelve-step table rebuild on every
+  future column, or no key. We took no key and made the two cases explicit instead — deleting a
+  contact clears the link in the same transaction, merging repoints it at the survivor — each
+  with a persistence test that fails without it. The cost is an invariant held in code rather
+  than by the database, in exchange for `delete person` staying a single statement.
 
 ## 4.10 Deployment
 

@@ -18,6 +18,7 @@ export const common: CommonMessages = {
 	'common.undo': 'Rückgängig',
 	'common.undone': 'Rückgängig gemacht',
 	'common.more': 'Mehr',
+	'common.you': 'Du',
 	'common.none': 'Keine',
 	'common.optional': 'optional',
 	'common.today': 'heute',

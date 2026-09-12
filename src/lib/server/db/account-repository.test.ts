@@ -29,7 +29,8 @@ const admin: AuthUser = {
 	email: 'andy@example.test',
 	name: 'Andy',
 	role: 'admin',
-	locale: 'en'
+	locale: 'en',
+	selfContactId: null
 };
 
 async function seedAdmin(
@@ -69,6 +70,44 @@ describe('createDrizzleAccountRepository', () => {
 		await seedAdmin();
 		await repo.updateLocale('user-1', 'de');
 		expect(await repo.findById('user-1')).toEqual({ ...admin, locale: 'de' });
+	});
+
+	it('stores which contact the member is, and reads it back on both paths', async () => {
+		await seedAdmin();
+		db.insert(schema.contact)
+			.values({
+				id: 'c-me',
+				householdId: admin.householdId,
+				createdBy: admin.id,
+				displayName: 'Andy Pollari'
+			})
+			.run();
+
+		await repo.updateSelfContact('user-1', 'c-me');
+
+		// Both reads carry it: the session hook goes through findById, signing in through
+		// findCredentialsByEmail, and a member is "you" on either route into the app.
+		expect(await repo.findById('user-1')).toEqual({ ...admin, selfContactId: 'c-me' });
+		expect((await repo.findCredentialsByEmail(admin.email))?.user.selfContactId).toBe('c-me');
+	});
+
+	it('lets the member take the link back', async () => {
+		await seedAdmin();
+		db.insert(schema.contact)
+			.values({
+				id: 'c-me',
+				householdId: admin.householdId,
+				createdBy: admin.id,
+				displayName: 'Andy Pollari'
+			})
+			.run();
+		await repo.updateSelfContact('user-1', 'c-me');
+		// positive control: it really was stored before it was cleared
+		expect((await repo.findById('user-1'))?.selfContactId).toBe('c-me');
+
+		await repo.updateSelfContact('user-1', null);
+
+		expect((await repo.findById('user-1'))?.selfContactId).toBeNull();
 	});
 
 	it('leaves the language unset until somebody picks one, so the browser still decides', async () => {

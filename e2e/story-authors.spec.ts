@@ -15,6 +15,7 @@ const MY_ENTRY = '1972 flood';
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
 	await openPerson(page, /Hans Brunner/);
+	await page.getByRole('tab', { name: 'Story' }).click();
 });
 
 test('names the member who wrote each item, and calls the viewer you', async ({ page }) => {
