@@ -48,6 +48,62 @@ delete it to start clean.
 > `Origin` header against `ORIGIN` on every POST, so if it doesn't match the URL you open,
 > **all form submissions fail with 403**. Keep `STELLA_URL` equal to the address you browse to.
 
+## 7.1.2 Trying an unreleased branch/PR on the real family instance
+
+Sometimes the fastest way to sign off on a feature is to try it where it's actually used,
+before it's merged/released. The family instance runs on a host managed by NixOS + a
+GitOps agent (`skipper-cd`) that reconciles a docker-compose module from a git-tracked
+source of truth — **not** the generic `docker-compose.yml` in this repo. On that host:
+
+- The deployed compose file lives at `/etc/nixos/modules/stella/docker-compose.yml`
+  (root-owned), normally pinned to a released `ghcr.io/polandy/stella:<version>@sha256:…`
+  digest.
+- That path *is* the git working tree (remote: the homelab's own git server) — it is the
+  source of truth, not something to `git pull`/reset behind the scenes.
+- `skipper-cd`'s own checkout (e.g. `/var/lib/skipper/repo/...`) is a separate, internal
+  working copy for its reconciliation loop — never edit it directly, it isn't the source.
+- A dedicated systemd unit runs the compose module: `docker-compose-<name>.service` (e.g.
+  `docker-compose-stella.service`). Restarting *that unit* re-runs `docker compose up -d`
+  against the current file on disk — a full `nixos-rebuild switch` is **not** needed for a
+  compose-file-only change (a plain `nixos-rebuild test` also works and, unlike `switch`,
+  doesn't change what a reboot boots into — useful when the change is meant to be temporary).
+
+**Procedure** (safe, reversible, no registry push needed — the build host *is* the deploy host):
+
+1. **Backup first.** Check for an existing recent DB snapshot before touching anything
+   (e.g. Stella's own `/data/db-dump/*.db`, or the paired backup container/service).
+   Don't skip this even though branch code is usually just app logic — a branch can carry
+   a migration.
+2. **Build the image locally**, tagged distinctly from anything real:
+   `docker build -t <app>:pr-<n>-test .` from the branch's working tree.
+3. **Point the module at it, temporarily.** Edit the module's `docker-compose.yml`
+   (needs `sudo`): comment out the pinned `image:` line (leave it in place, commented, so
+   reverting is a one-line diff) and add:
+   ```yaml
+   image: <app>:pr-<n>-test
+   pull_policy: never   # local-only tag; never try to pull it from a registry
+   ```
+4. **Apply it** with `sudo systemctl restart docker-compose-<name>.service` — no rebuild,
+   no push. (A full `sudo nixos-rebuild test|switch` also works if the change touches more
+   than the compose file, e.g. `default.nix`.)
+5. **Verify**: `docker ps --filter name=<name>` shows the new image and `healthy`; check
+   `docker logs <name>` and hit its `/healthz` from inside the container if the image has
+   no `wget`/`curl` (`docker exec <name> bun -e "fetch('http://localhost:3000/healthz')…"`).
+6. **Revert when done** (or before merging for real): uncomment the pinned `image:` line,
+   delete the two temporary lines, `sudo systemctl restart docker-compose-<name>.service`
+   again. The real rollout then happens the normal way once merged/released (7.10).
+
+**Do not**, in the course of this:
+- Read or print a running container's full environment (e.g. `docker inspect <name>
+  --format '{{json .Config.Env}}'` or similar) — compose resolves secrets (session/OIDC
+  client secrets, etc.) into the container's env, and a broad env dump leaks them into
+  command output/logs. Inspect narrowly (image, networks, mounts, health) instead. If a
+  secret is ever printed by mistake, rotate it and say so — don't just move on.
+- Push the temporary test image/tag anywhere, or commit the temporary compose edit to the
+  infra repo — it's a local, host-only, throwaway state.
+- Let a "quick trial" linger: revert (step 6) once the person trying it is done, so the
+  instance is never left running unreleased code longer than the trial itself.
+
 ## 7.2 Prerequisites
 
 - A host with Docker + Docker Compose.
