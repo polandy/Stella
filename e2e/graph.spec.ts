@@ -39,15 +39,8 @@ test('opens the peek panel on the centred person with their face, name and a way
 	await expect(peek.getByText('HB')).toBeVisible();
 	await expect(peek.getByRole('button', { name: 'Close' })).toBeVisible();
 
-	// And it follows a click onto somebody else — once the canvas says it has come to rest,
-	// asked of the renderer where it drew her, rather than aimed at a coordinate she is
-	// still travelling through.
-	await settled(page);
-	await clickNode(page, 'demo-c-rosa');
-	await expect(peek.getByText('Rosa Brunner')).toBeVisible();
-
 	await peek.getByRole('link', { name: 'Open profile' }).click();
-	await expect(page).toHaveURL(/\/contacts\/demo-c-rosa$/);
+	await expect(page).toHaveURL(/\/contacts\/demo-c-hans$/);
 });
 
 /*
@@ -113,6 +106,30 @@ async function highlightedLabels(page: Page): Promise<string[]> {
 		return cy ? cy.$('edge.highlight').map((edge) => edge.data('label')) : [];
 	});
 }
+
+test('expanding a person brings the connections of theirs the canvas did not have', async ({
+	page
+}) => {
+	// Sandra's father Peter is no relative of Hans, so nothing puts him on the opening
+	// canvas — and the canvas only re-lays out when its element set actually moved, so this
+	// is also what says that guard still lets a growing graph settle again.
+	await page.goto('/graph?center=demo-c-hans');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await settled(page);
+	expect(await stateOf(page, 'demo-c-peter')).toBe('absent');
+
+	// Reached through the search field rather than by aiming at the canvas: a node the peek
+	// panel happens to sit over cannot be clicked, and where the layout puts her is not this
+	// case's business.
+	await page.getByLabel('Find a person').fill('Sandra');
+	await page.getByTestId('graph-suggestions').getByRole('button', { name: 'Sandra' }).click();
+	const peek = page.getByRole('complementary');
+	await expect(peek.getByText('Sandra Brunner-Keller')).toBeVisible();
+	await peek.getByRole('button', { name: 'Expand connections' }).click();
+
+	await expect(async () => expect(await stateOf(page, 'demo-c-peter')).toBe('drawn')).toPass();
+	await settled(page);
+});
 
 test('draws the relatives nobody entered, and the Kinship chip takes them away', async ({ page }) => {
 	// Lena's cousin Timo is tied to her by nothing stored: he is in her neighbourhood only

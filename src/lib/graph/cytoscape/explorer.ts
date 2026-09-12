@@ -88,15 +88,25 @@ export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerCon
 	return {
 		setGraph(elements) {
 			const incoming = new Set(elements.map((e) => e.data.id as string));
+			let changed = false;
 			cy.batch(() => {
 				cy.elements().forEach((el) => {
-					if (!incoming.has(el.id())) el.remove();
+					if (!incoming.has(el.id())) {
+						el.remove();
+						changed = true;
+					}
 				});
 				const existing = new Set(cy.elements().map((el) => el.id()));
 				const toAdd = elements.filter((e) => !existing.has(e.data.id as string));
-				if (toAdd.length) cy.add(toAdd as unknown as ElementDefinition[]);
+				if (toAdd.length) {
+					cy.add(toAdd as unknown as ElementDefinition[]);
+					changed = true;
+				}
 			});
-			cy.layout(layout(opts.reducedMotion)).run();
+			// Only when the element set actually moved. The component pushes the same set again
+			// on mount, and re-laying out for that threw every node across the canvas a second
+			// time — a settled graph that jumps for no reason the viewer can see.
+			if (changed) cy.layout(layout(opts.reducedMotion)).run();
 		},
 
 		setVisible(nodeIds, edgeIds) {
