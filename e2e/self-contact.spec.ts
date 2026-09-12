@@ -37,6 +37,10 @@ async function centredPersonId(page: Page): Promise<string | null> {
 	});
 }
 
+/** The other end of the *Add relationship* form on whichever person's page is open. */
+const otherEndField = (page: Page) =>
+	page.locator('form[action="?/addRelationship"]').getByLabel('Person');
+
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
@@ -84,24 +88,22 @@ test('opens the map on you instead of whoever comes first', async ({ page }) => 
 });
 
 test('starts a new relationship with you as the other end', async ({ page }) => {
+	// `openPerson` lands on the People tab, which is where the form lives.
 	await openPerson(page, /Bettina Roth/);
-	await page.getByRole('tab', { name: /People/ }).click();
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	// Nothing is filled in for a household that has not said who anybody is.
-	await expect(page.locator('form[action="?/addRelationship"]').getByLabel('Person')).toHaveValue('');
+	await expect(otherEndField(page)).toHaveValue('');
 
 	await sayIAm(page, ME);
 
 	await openPerson(page, /Bettina Roth/);
-	await page.getByRole('tab', { name: /People/ }).click();
 	await page.getByRole('button', { name: 'Add relationship' }).click();
-	await expect(page.locator('form[action="?/addRelationship"]').getByLabel('Person')).toHaveValue(ME);
+	await expect(otherEndField(page)).toHaveValue(ME);
 
 	// Your own page is the one place it would be nonsense, so it is left empty there.
 	await openPerson(page, new RegExp(ME));
-	await page.getByRole('tab', { name: /People/ }).click();
 	await page.getByRole('button', { name: 'Add relationship' }).click();
-	await expect(page.locator('form[action="?/addRelationship"]').getByLabel('Person')).toHaveValue('');
+	await expect(otherEndField(page)).toHaveValue('');
 });
 
 test('says it, and takes it back, from the person’s own page', async ({ page }) => {

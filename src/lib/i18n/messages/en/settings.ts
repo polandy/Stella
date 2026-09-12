@@ -17,7 +17,6 @@ export const settings = {
 	'settings.self.placeholder': 'Search for yourself by name',
 	'settings.self.clear': 'None of them is me',
 	'settings.self.saved': 'Saved.',
-	'settings.self.badge': 'You',
 	'settings.data.heading': 'Data',
 	'settings.data.importPeople': 'Import people',
 	'settings.data.importPeopleBlurb':

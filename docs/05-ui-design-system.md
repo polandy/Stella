@@ -274,6 +274,14 @@ They must be edited together; `app.css` says so at both blocks.
   came for. An archived person carries a quiet *Archived* chip in their header beside
   *Private*, and the directory grows an **Archived (N)** chip at the end of the tag row,
   leading to the same list with the "last written about" column dropped.
+- **Which of these people you are** (docs/02 §2.1.3) is set in two places and looks the same
+  in both: Settings carries a **You** section with a labelled person search select, and the
+  foot of a person's profile column carries a ghost *This is me* — the same button reading
+  *This is not me* once it is set, beside *Archive*, because both are quiet, rare and about the
+  record rather than the person. The person you are wears a **You** chip in `--primary-soft`
+  on `--primary`: in their header beside *Private* and *Archived*, and next to their name in
+  the People directory. Exactly one row in the household can ever wear it, which is what makes
+  it readable at a glance rather than a second lock icon.
 - **Merging a duplicate** sits with the delete control at the foot of the profile, admin-only,
   as a disclosure holding a person search select and one button (docs/02 §2.2). The survivor is always the
   page you are on, so the form asks a single question — *who is the same person?* — instead of
@@ -291,8 +299,8 @@ They must be edited together; `app.css` says so at both blocks.
   birthday row replaces it (docs/02 §2.13.2).
 - **Settings** — account (incl. sign out), appearance (theme + accent + reduced motion),
   household (members, invitations, relationship types, tags), data (export/import/backup), auth.
-  *Today:* a landing page with the **Data** section and an **Account** section (sign out only
-  so far), and the **Import people** wizard
+  *Today:* a landing page with the **Data** section, a **You** section (docs/02 §2.1.3) and an
+  **Account** section (sign out only so far), and the **Import people** wizard
   (§2.16) as a three-step page — numbered step strip, a count-tile preview with a
   "left out, and why" card, then the import result and the photos, under one progress bar but
   two ways in, because the accepted formats differ: a folder picker for a Monica dump, whose

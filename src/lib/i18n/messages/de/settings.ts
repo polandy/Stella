@@ -18,7 +18,6 @@ export const settings: SettingsMessages = {
 	'settings.self.placeholder': 'Dich selbst über den Namen suchen',
 	'settings.self.clear': 'Keine davon bin ich',
 	'settings.self.saved': 'Gespeichert.',
-	'settings.self.badge': 'Du',
 	'settings.data.heading': 'Daten',
 	'settings.data.importPeople': 'Menschen importieren',
 	'settings.data.importPeopleBlurb':

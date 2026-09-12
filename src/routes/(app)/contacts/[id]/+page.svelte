@@ -289,7 +289,7 @@
 						class="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-primary"
 						title={t('contact.self.badgeHint')}
 					>
-						<Icon name="self" size={11} />{t('settings.self.badge')}
+						<Icon name="self" size={11} />{t('common.you')}
 					</span>
 				{/if}
 				{#if c.visibility === 'private'}

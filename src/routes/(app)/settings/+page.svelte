@@ -58,9 +58,7 @@
 			</form>
 			{#if data.user.selfContactId}
 				<form method="POST" action="?/setSelf">
-					<button type="submit" class="text-sm text-link hover:underline">
-						{t('settings.self.clear')}
-					</button>
+					<Button variant="ghost" size="sm">{t('settings.self.clear')}</Button>
 				</form>
 			{/if}
 			{#if form?.selfError}
