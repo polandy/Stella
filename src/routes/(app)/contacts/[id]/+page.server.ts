@@ -738,7 +738,10 @@ export const actions: Actions = {
 			});
 		}
 
-		throw redirect(303, `/contacts/${params.id}`);
+		// `?tab=story`: this form posts natively (see the comment on the story panel in
+		// +page.svelte), so the reload that follows has to be told which tab held it — People
+		// is the page's default now, and a touchpoint is logged from Story.
+		throw redirect(303, `/contacts/${params.id}?tab=story`);
 	},
 
 	removeInteraction: async ({ request, params, locals }) => {

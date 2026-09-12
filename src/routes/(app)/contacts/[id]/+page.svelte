@@ -60,7 +60,12 @@
 	// first (docs/05 §5.5). `?tab=` always wins, so a link that points at another tab — the
 	// passive "Mentioned in" list does — still arrives where it meant to.
 	const askedForTab = (): ContactTab => requestedTab(data.tab) ?? 'people';
-	let tab = $state<ContactTab>(untrack(askedForTab));
+	// The story panel's log-interaction form posts natively rather than through `enhance`, so a
+	// failed validation reloads the page with no `?tab=` to say where it was opened — its own
+	// error is the only sign this should still be Story rather than the default.
+	let tab = $state<ContactTab>(
+		untrack(() => (form?.interactionError ? 'story' : askedForTab()))
+	);
 	/*
 	 * Walking from one person to another reuses this component, so the open tab has to follow
 	 * the page rather than stay where the previous person left it — a link may ask for a tab

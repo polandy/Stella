@@ -60,7 +60,7 @@ test('imports a JSON export, stores the pictures it carries and shows the people
 	await expect(page.locator('section', { has: page.getByText('Tags', { exact: true }) }).first()).toContainText('Jassrunde');
 	// The link names its type in words only, and still found Stella's built-in type.
 	await page.getByRole('tab', { name: /People/ }).click();
-	await expect(page.getByRole('link', { name: 'Marlis Hauenstein' })).toBeVisible();
+	await expect(page.getByRole('link', { name: 'Marlis Hauenstein', exact: true })).toBeVisible();
 	await page.getByRole('tab', { name: /Notes/ }).click();
 	await expect(page.getByText('Bringt an Silvester immer die Rösti mit.')).toBeVisible();
 	// The embedded picture went through the browser's resize pipeline and became the avatar.
