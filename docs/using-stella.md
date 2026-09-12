@@ -100,8 +100,10 @@ adding, you land straight in their relationship editor with that relative alread
 so "Quill is the child of Sandra" is one more click.
 
 **A person's page** puts who they are on the left — details, dates, circles, tags, how you
-met — and what has happened on the right, under five tabs: **Story**, **People**,
-**Notes**, **Photos** and **Mentioned in**. On a phone the two stack, with the story first.
+met — and who they're connected to and what has happened on the right, under five tabs:
+**People**, **Story**, **Notes**, **Photos** and **Mentioned in**, People first. A line above
+the tabs gives the numbers at a glance — how many relationships, how many times you've been in
+touch — before you open any of them. On a phone the two stack, with the tabs first.
 
 Every card on the left holds one **+ Add** button. Nothing is an open form until you ask for
 it, so the page reads as a person rather than as a stack of empty fields.

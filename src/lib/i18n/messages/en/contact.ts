@@ -16,6 +16,11 @@ export const contact = {
 	'contact.write': 'Write',
 	'contact.logContact': 'Log contact',
 	'contact.egoGraphLabel': (p: { name: string }) => `Relationship network for ${p.name}`,
+	'contact.overview.relationships': (p: { count: number }) =>
+		p.count === 1 ? '1 relationship' : `${p.count} relationships`,
+	'contact.overview.encounters': (p: { count: number }) =>
+		p.count === 1 ? '1 encounter' : `${p.count} encounters`,
+	'contact.story.title': 'Activity',
 
 	'contact.tab.story': 'Story',
 	'contact.tab.people': 'People',
@@ -123,8 +128,6 @@ export const contact = {
 	'contact.relationships.is': (p: { name: string }) => `${p.name} is…`,
 	'contact.relationships.person': 'Person',
 	'contact.relationships.addSomeoneFirst': 'Add another person first, then link them here.',
-	'contact.relationships.showMap': 'Show map',
-	'contact.relationships.hideMap': 'Hide map',
 	'contact.relationships.alsoTrue': 'Also true?',
 	'contact.relationships.parentProposal': (p: { parent: string; child: string }) =>
 		`${p.parent} is a parent of ${p.child}`,

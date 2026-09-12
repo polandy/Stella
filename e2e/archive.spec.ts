@@ -86,8 +86,6 @@ test('keeps an archived person in the family, only out of the lists', async ({ p
 	// And the map still draws them: Stella works out grandparents and cousins *through*
 	// people, so forgetting one would make it name the rest wrongly (docs/04 §4.9).
 	await openPerson(page, /Thomas Widmer/);
-	await page.getByRole('tab', { name: /People/ }).click();
-	await page.getByRole('button', { name: 'Show map' }).click();
 	await expect(page.getByRole('link', { name: new RegExp(`${WHO} —`) })).toBeVisible();
 
 	await openArchivedPerson(page, WHO);

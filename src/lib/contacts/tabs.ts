@@ -5,8 +5,8 @@
  * "notes" in two files would drift on the first rename.
  */
 
-/** Every tab, in the order they are shown. */
-export const CONTACT_TABS = ['story', 'people', 'notes', 'photos', 'mentions'] as const;
+/** Every tab, in the order they are shown. People leads: who this is comes before what happened. */
+export const CONTACT_TABS = ['people', 'story', 'notes', 'photos', 'mentions'] as const;
 
 export type ContactTab = (typeof CONTACT_TABS)[number];
 
