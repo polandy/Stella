@@ -3,6 +3,7 @@ import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { eq } from 'drizzle-orm';
+import { ARGON2ID_PREFIX } from '../auth/password';
 import { DEMO_ADMIN_PASSWORD, seedDemoData } from './demo-seed';
 import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
@@ -59,7 +60,7 @@ describe('seedDemoData', () => {
 
 		const admin = db.select().from(schema.user).all().find((u) => u.role === 'admin');
 		const hash = admin!.passwordHash as string;
-		expect(hash.startsWith('$argon2id$')).toBe(true);
+		expect(hash.startsWith(ARGON2ID_PREFIX)).toBe(true);
 		expect(hash).not.toBe(DEMO_ADMIN_PASSWORD);
 	});
 

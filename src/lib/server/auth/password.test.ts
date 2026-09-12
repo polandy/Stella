@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { hashPassword, hashPasswordSync, verifyPassword } from './password';
+import { ARGON2ID_PREFIX, hashPassword, hashPasswordSync, verifyPassword } from './password';
 
 /*
  * Local password hashing (Argon2id via Bun.password — no extra dependency, docs/04 §4.2).
@@ -11,7 +11,7 @@ describe('password hashing', () => {
 	it('produces an Argon2id hash that is not the plaintext', async () => {
 		const hash = await hashPassword('correct horse battery staple');
 		expect(hash).not.toBe('correct horse battery staple');
-		expect(hash.startsWith('$argon2id$')).toBe(true);
+		expect(hash.startsWith(ARGON2ID_PREFIX)).toBe(true);
 	});
 
 	it('verifies the correct password and rejects a wrong one', async () => {
@@ -22,7 +22,7 @@ describe('password hashing', () => {
 
 	it('hashes the same way synchronously, for the startup paths that cannot await', async () => {
 		const hash = hashPasswordSync('seeded-passphrase');
-		expect(hash.startsWith('$argon2id$')).toBe(true);
+		expect(hash.startsWith(ARGON2ID_PREFIX)).toBe(true);
 		expect(await verifyPassword(hash, 'seeded-passphrase')).toBe(true);
 		expect(await verifyPassword(hash, 'wrong-passphrase')).toBe(false);
 	});

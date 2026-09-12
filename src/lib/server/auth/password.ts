@@ -4,6 +4,9 @@
  * clearly and the algorithm can change in one place.
  */
 
+/** How every hash this module writes begins — the algorithm is readable from the hash. */
+export const ARGON2ID_PREFIX = '$argon2id$';
+
 /** Hash a plaintext password for storage (Argon2id, random salt). */
 export async function hashPassword(password: string): Promise<string> {
 	return Bun.password.hash(password, { algorithm: 'argon2id' });
