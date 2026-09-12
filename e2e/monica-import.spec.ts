@@ -49,7 +49,7 @@ test('previews the dump, imports it, attaches the photos and shows the people in
 	await expect(page.getByText('estimated')).toBeVisible();
 	// The mirrored Monica rows became one relationship, listed under the People tab.
 	await page.getByRole('tab', { name: /People/ }).click();
-	await expect(page.getByRole('link', { name: 'Kaspar Vogelsang' })).toBeVisible();
+	await expect(page.getByRole('link', { name: 'Kaspar Vogelsang', exact: true })).toBeVisible();
 	await page.getByRole('tab', { name: /Notes/ }).click();
 	await expect(page.getByText('Prefers the harbour walk in Tallinn.')).toBeVisible();
 	await expect(page.locator('img[alt="Ottilie Vogelsang"]')).toHaveAttribute('src', /monica:photo:1/);

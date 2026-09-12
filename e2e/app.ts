@@ -38,7 +38,7 @@ export async function openPerson(page: Page, name: RegExp): Promise<void> {
 	await page.getByRole('link', { name: 'People' }).first().click();
 	await expect(page.getByRole('heading', { name: 'People' })).toBeVisible();
 	await page.getByRole('link', { name }).first().click();
-	await expect(page.getByRole('tab', { name: 'Story' })).toHaveAttribute('aria-selected', 'true');
+	await expect(page.getByRole('tab', { name: 'People' })).toHaveAttribute('aria-selected', 'true');
 	await appReady(page);
 }
 

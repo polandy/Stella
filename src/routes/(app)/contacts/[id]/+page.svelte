@@ -36,8 +36,8 @@
 	/*
 	 * A person's page (docs/05 §5.5): who they are on the left, what has happened on the right.
 	 * Every form is closed until asked for, so the page reads as a person rather than as a stack
-	 * of empty inputs. Below `md` the two columns stack with the story first — that is what you
-	 * open a person for — and the profile follows underneath.
+	 * of empty inputs. Below `md` the two columns stack with the tabs first — who this person is
+	 * connected to is what opening their page answers first — and the profile follows underneath.
 	 */
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -57,13 +57,16 @@
 	const INPUT =
 		'rounded-control border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
 
-	// Arriving with `?relate=` (a moment's hint, or quick-add's "link as relative") lands
-	// straight on the relationship editor, prefilled — otherwise the hint would be a dead end.
-	// `?propose=` comes back from adding a link and carries its implied ones, which live in
-	// the same tab; both would be invisible under the story otherwise.
-	const askedForTab = (): ContactTab =>
-		requestedTab(data.tab) ?? (data.relateTo || data.proposeFor ? 'people' : 'story');
-	let tab = $state<ContactTab>(untrack(askedForTab));
+	// People is the default: who this person is connected to is what opening their page answers
+	// first (docs/05 §5.5). `?tab=` always wins, so a link that points at another tab — the
+	// passive "Mentioned in" list does — still arrives where it meant to.
+	const askedForTab = (): ContactTab => requestedTab(data.tab) ?? 'people';
+	// The story panel's log-interaction form posts natively rather than through `enhance`, so a
+	// failed validation reloads the page with no `?tab=` to say where it was opened — its own
+	// error is the only sign this should still be Story rather than the default.
+	let tab = $state<ContactTab>(
+		untrack(() => (form?.interactionError ? 'story' : askedForTab()))
+	);
 	/*
 	 * Walking from one person to another reuses this component, so the open tab has to follow
 	 * the page rather than stay where the previous person left it — a link may ask for a tab
@@ -80,15 +83,14 @@
 	let relateOpen = $state(untrack(() => data.relateTo) !== null);
 	// The hero's "Log contact" opens the story section's form; the section owns the state.
 	let logOpen = $state(false);
-	let showMap = $state(false);
 
 	/*
 	 * Counts are shown where they are exact. The story is paged, so its tab carries no number
 	 * rather than one that quietly means "as much as we have fetched".
 	 */
 	const tabs: { id: ContactTab; label: string; count?: number }[] = $derived([
-		{ id: 'story', label: t('contact.tab.story') },
 		{ id: 'people', label: t('contact.tab.people'), count: data.relationships.length },
+		{ id: 'story', label: t('contact.tab.story') },
 		{ id: 'notes', label: t('contact.tab.notes'), count: data.notes.length },
 		{ id: 'photos', label: t('contact.tab.photos'), count: data.gallery.length },
 		{ id: 'mentions', label: t('contact.tab.mentions'), count: data.mentionedIn.length }
@@ -195,7 +197,19 @@
 	const saved = (name: SectionName) =>
 		savedEnhance(removals, t('components.saved'), () => (openSection[name] = false));
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
-	let relationshipTargetId = $state<string[]>(untrack(() => (data.relateTo ? [data.relateTo] : [])));
+	/*
+	 * The other end of a new relationship. Prefilled with whoever the page was opened for, and
+	 * otherwise with your own person (docs/02 §2.1.3): "how is this person related to me" is
+	 * the link a household records most, and it is still a default — the type is always chosen
+	 * by hand before anything is saved.
+	 */
+	let relationshipTargetId = $state<string[]>(
+		untrack(() => {
+			if (data.relateTo) return [data.relateTo];
+			const self = data.user.selfContactId;
+			return self && self !== data.contact.id ? [self] : [];
+		})
+	);
 	const savedRelationship = savedEnhance(removals, t('components.saved'), () => {
 		relateOpen = false;
 		relationshipTargetId = [];
@@ -210,6 +224,8 @@
 	const savedArchive = savedEnhance(removals, t('components.saved'));
 	/** Archived or not decides the action, the wording and the marker; asked once. */
 	const archived = $derived(c.archivedAt !== null);
+	/** This record is the viewer's own person (docs/02 §2.1.3). */
+	const isSelf = $derived(data.user.selfContactId === c.id);
 	/** The second click that a deletion asks for; there is no undo after it. */
 	let confirmingDelete = $state(false);
 	/** Whether the merge picker is open; the survivor is always this page's person. */
@@ -267,6 +283,15 @@
 					<span data-testid="last-contacted">{t('contact.noContactYet')}</span>
 				{/if}
 				{#if metLine}<span>{t('contact.met')} <span class="font-medium text-fg-muted">{metLine}</span></span>{/if}
+				{#if isSelf}
+					<span
+						data-testid="self-marker"
+						class="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-primary"
+						title={t('contact.self.badgeHint')}
+					>
+						<Icon name="self" size={11} />{t('common.you')}
+					</span>
+				{/if}
 				{#if c.visibility === 'private'}
 					<span class="inline-flex items-center gap-1" title={t('contact.privateContact')}>
 						<Icon name="private" size={11} />{t('contact.private')}
@@ -295,8 +320,22 @@
 		</div>
 	</header>
 
+	<!--
+		The quick overview (docs/05 §5.5): how things stand with this person, in numbers, before
+		the tabs go into any of them. Sits above every tab rather than just the story's, since it
+		is useful context no matter which one is open.
+	-->
+	<div
+		data-testid="contact-overview"
+		class="flex flex-wrap gap-x-3 gap-y-1 rounded-control border border-primary/30 bg-primary-soft px-3 py-2 text-xs text-fg"
+	>
+		<span>{t('contact.overview.relationships', { count: data.relationships.length })}</span>
+		<span class="text-fg-subtle" aria-hidden="true">·</span>
+		<span>{t('contact.overview.encounters', { count: data.interactions.length })}</span>
+	</div>
+
 	<div class="grid gap-6 lg:grid-cols-[19rem_minmax(0,1fr)] lg:items-start">
-		<!-- Profile. Second on a phone: the story is why you opened the page. -->
+		<!-- Profile. Second on a phone: the tabs are why you opened the page. -->
 		<div class="order-2 flex min-w-0 flex-col gap-4 lg:sticky lg:top-4 lg:order-1">
 			<Section title={t('contact.section.contact')} addLabel={t('common.add')} error={form?.fieldError ?? null} bind:open={openSection.contact}>
 				{#if visibleFields.length > 0}
@@ -513,6 +552,16 @@
 				Rarely wanted, so it sits at the foot of the profile rather than beside Write:
 				archiving takes someone out of the lists, it does not undo them (docs/02 §2.2).
 			-->
+			<!-- Which of these people you are (docs/02 §2.1.3); the same button lets go again. -->
+			<form method="POST" action="?/setSelf">
+				<Button variant="ghost" size="sm" icon="self">
+					{isSelf ? t('contact.self.notMe') : t('contact.self.thisIsMe')}
+				</Button>
+				<p class="mt-1 text-xs text-fg-subtle">
+					{isSelf ? t('contact.self.isMeHint') : t('contact.self.hint')}
+				</p>
+			</form>
+
 			<form method="POST" action={archived ? '?/restore' : '?/archive'} use:enhance={savedArchive}>
 				{#if archived}
 					<Button variant="ghost" size="sm" icon="archive">{t('contact.archive.bringBack')}</Button>
@@ -624,6 +673,7 @@
 
 			<div id="panel-story" role="tabpanel" aria-labelledby="tab-story" hidden={tab !== 'story'}>
 				<Section
+					title={t('contact.story.title')}
 					addLabel={t('contact.logContact')}
 					addIcon="met"
 					bind:open={logOpen}
@@ -778,17 +828,11 @@
 						</ul>
 
 						{#if egoNodes.length > 0}
+							<!-- Pure SVG over relationships already on the page (no extra fetch, no
+							     graph engine), so it can stay on rather than wait behind a toggle now
+							     that People is the tab this page opens on (docs/05 §5.5). -->
 							<div class="mt-3">
-								<Button type="button" variant="ghost" size="sm" onclick={() => (showMap = !showMap)}>
-									{showMap
-										? t('contact.relationships.hideMap')
-										: t('contact.relationships.showMap')}
-								</Button>
-								{#if showMap}
-									<div class="mt-2">
-										<EgoGraph centerName={c.displayName} nodes={egoNodes} />
-									</div>
-								{/if}
+								<EgoGraph centerName={c.displayName} nodes={egoNodes} />
 							</div>
 						{/if}
 					{:else}
