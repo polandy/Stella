@@ -6,7 +6,7 @@ import { suggestPropagation, type PrimaryLink, type SuggestedLink } from '../../
 import type { Viewer } from '../../access/visibility';
 import type { RelationshipCategory } from '../../../relationships/categories';
 import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../../relationships/status';
-import { FULL_DATE_SHAPE, isRealCalendarDay } from '../dates/calendar';
+import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import type { RelationshipTypeRepository } from './relationship-types';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';

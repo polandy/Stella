@@ -4,7 +4,7 @@ import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { INTERACTION_KINDS, type InteractionKind } from '../../../interactions/kinds';
-import { FULL_DATE_SHAPE, isRealCalendarDay } from '../dates/calendar';
+import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 
 /*
  * Interaction use-cases (docs/02 §2.6). An interaction is a touchpoint with a person — a

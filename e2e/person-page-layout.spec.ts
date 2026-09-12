@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openPerson, signIn } from './app';
+import { fillDate, openPerson, signIn } from './app';
 
 /*
  * The landing view of a person's page (docs/05 §5.5): People leads, a quick-overview line
@@ -48,7 +48,7 @@ test('the quick overview\'s encounter count rises the moment a touchpoint is log
 	const section = page.locator('#panel-story');
 	await section.getByRole('button', { name: 'Log contact' }).click();
 	await section.getByLabel('Kind').selectOption('call');
-	await section.getByLabel('Day').fill('2026-01-05');
+	await fillDate(section, 'Day', '2026-01-05');
 	await section.getByRole('button', { name: 'Log interaction' }).click();
 
 	// The form posts natively; the page it comes back on is still Story, not the default People
