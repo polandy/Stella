@@ -7,10 +7,11 @@ import { signIn } from './app';
  * signed in as the demo admin; the touchpoints logged here use a title no seeded data contains.
  */
 
-/** Opens a seeded person's page from the contacts list, on the story tab it opens with. */
+/** Opens a seeded person's page from the contacts list, then switches to the story tab. */
 async function openPerson(page: Page, name: RegExp): Promise<void> {
 	await page.goto('/contacts');
 	await page.getByRole('link', { name }).first().click();
+	await page.getByRole('tab', { name: 'Story' }).click();
 	await expect(page.getByRole('tab', { name: 'Story' })).toHaveAttribute('aria-selected', 'true');
 }
 
