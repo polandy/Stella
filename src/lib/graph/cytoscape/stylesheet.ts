@@ -14,7 +14,22 @@ export interface CyStyle {
 	style: Record<string, unknown>;
 }
 
-export function buildStylesheet(p: Palette): CyStyle[] {
+/**
+ * Below this rendered font size (in screen pixels) Cytoscape drops a label. Zoomed far out,
+ * edge names would otherwise pile into unreadable smudges over the lines they belong to.
+ */
+export const EDGE_LABEL_MIN_ZOOMED_FONT_SIZE = 7;
+
+/** How the caller wants the canvas drawn, beyond the colours. */
+export interface StylesheetOptions {
+	/**
+	 * Name every edge at once, not just the highlighted ones. Off by default: on a dense
+	 * graph hundreds of names are noise, so the reader opts in (docs/05 §5.8).
+	 */
+	edgeLabels?: boolean;
+}
+
+export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): CyStyle[] {
 	return [
 		// ── People ────────────────────────────────────────────────────────────
 		{
@@ -92,10 +107,13 @@ export function buildStylesheet(p: Palette): CyStyle[] {
 				'line-color': p.fgSubtle,
 				opacity: 0.6,
 				// Every line knows its name ("Parent of", "Grandfather"), but hundreds of them at
-				// once would be noise — the label appears only while the edge is highlighted, so
-				// selecting a person names their connections (docs/02 §2.7).
+				// once would be noise — so by default the label appears only while the edge is
+				// highlighted, and selecting a person names their connections (docs/02 §2.7).
+				// The toolbar's "Labels" toggle names them all for those who want the map read
+				// at a glance.
 				label: 'data(label)',
-				'text-opacity': 0,
+				'text-opacity': options.edgeLabels ? 1 : 0,
+				'min-zoomed-font-size': EDGE_LABEL_MIN_ZOOMED_FONT_SIZE,
 				color: p.fgMuted,
 				'font-size': 10,
 				'font-family': p.fontSans,

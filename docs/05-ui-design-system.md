@@ -247,8 +247,9 @@ They must be edited together; `app.css` says so at both blocks.
 - **Graph** — full-screen canvas. The toolbar's filter chips **are the legend**: each draws
   its own line style (solid per category, dashed for circles, dotted for kinship) in its
   token, so a chip and the line it toggles can never disagree, and there is no second box
-  to keep in sync. Search-to-focus, connection path, and a **peek panel** that shows the
-  person's avatar, name and two actions.
+  to keep in sync. Search-to-focus, a **"Labels" toggle** that names every line at once
+  (§5.8), connection path, and a **peek panel** that shows the person's avatar, name and two
+  actions.
 - **Circles** — a find-as-you-type field and kind chips over a grid of **cards** (§2.4.2):
   colour dot, name, kind and member count, the description, and a stack of the first four faces
   with "+n" for the rest. A query that matches nothing gets the empty state, not a blank page. A circle's page
@@ -402,7 +403,10 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   tokens in both themes. Chips and dots keep the raw token, because they sit beside a label.
   A line carries its name — "Parent of", "Grandfather", the circle role — but only while it
   is highlighted or on a traced path: selecting a person names their connections, and the
-  rest of the canvas stays quiet. Asymmetric relationships show subtle direction.
+  rest of the canvas stays quiet. A **"Labels" toggle** in the toolbar names every line at
+  once, for reading the whole map at a glance; it is off by default, because on a dense graph
+  hundreds of names are noise. Either way a name that would render below 7 px is dropped
+  rather than drawn as a smudge. Asymmetric relationships show subtle direction.
 - **Expand affordance:** an unexpanded node hints it can grow (e.g. a small "+" / count of
   hidden connections); clicking expands its neighborhood in place with a gentle animation.
 - **Search & focus:** an in-canvas search field; selecting a result smoothly pans/zooms to

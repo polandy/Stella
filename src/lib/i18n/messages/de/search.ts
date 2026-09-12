@@ -19,6 +19,8 @@ export const search: SearchMessages = {
 	'graph.filter.circles': 'Kreise',
 	'graph.filter.kinship': 'Verwandtschaft',
 	'graph.connectionPath': 'Verbindungsweg',
+	'graph.labels': 'Bezeichnungen',
+	'graph.labels.hint': 'Jede Linie mit ihrer Beziehung benennen',
 	'graph.path.none': 'Zwischen diesen beiden ist keine Verbindung zu finden.',
 	'graph.path.pickSecond': 'Wähle jetzt die zweite Person…',
 	'graph.path.pickTwo': 'Wähle zwei Menschen, um ihre Verbindung zu verfolgen.',

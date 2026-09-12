@@ -81,6 +81,9 @@
 	let pathFrom = $state<string | null>(null);
 	let path = $state<ConnectionPath | null>(null);
 	let pathMissing = $state(false);
+	// Off by default: the canvas stays quiet, and whoever wants the map read at a glance
+	// turns every line's name on from the toolbar (docs/05 §5.8).
+	let edgeLabels = $state(false);
 
 	function buildFilters(): GraphFilters {
 		const categories = (['family', 'romantic', 'social', 'professional'] as const).filter((c) =>
@@ -124,6 +127,12 @@
 		if (!ready || !controller) return;
 		if (path) controller.highlightPath(path.nodeIds);
 		else controller.highlightNeighborhood(selected);
+	});
+	// Naming every line is a re-style, not a re-layout.
+	$effect(() => {
+		const sheet = stylesheet();
+		if (!ready || !controller) return;
+		controller.setStylesheet(sheet);
 	});
 
 	async function onTapNode(id: string) {
@@ -196,8 +205,14 @@
 		active = next;
 	}
 
+	// The one place a stylesheet is built: theme changes and the label toggle share it, so
+	// re-theming can never drop the toggle and vice versa.
+	function stylesheet() {
+		return buildStylesheet(paletteFromDom(), { edgeLabels });
+	}
+
 	function retheme() {
-		controller?.setStylesheet(buildStylesheet(paletteFromDom()));
+		controller?.setStylesheet(stylesheet());
 	}
 
 	let themeObserver: MutationObserver | null = null;
@@ -210,7 +225,7 @@
 		controller = await createExplorer({
 			container,
 			elements: toCytoscapeElements(model, { centerId: centerId ?? undefined, edgeLabel }),
-			stylesheet: buildStylesheet(paletteFromDom()),
+			stylesheet: stylesheet(),
 			reducedMotion,
 			onTapNode,
 			onTapBackground
@@ -299,6 +314,19 @@
 				</button>
 			{/each}
 		</div>
+
+		<button
+			onclick={() => (edgeLabels = !edgeLabels)}
+			aria-pressed={edgeLabels}
+			title={t('graph.labels.hint')}
+			class="pointer-events-auto rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-fg-muted backdrop-blur transition-colors hover:text-fg"
+			class:!border-transparent={edgeLabels}
+			style={edgeLabels
+				? 'background:color-mix(in srgb, var(--primary) 22%, transparent); color:var(--primary)'
+				: ''}
+		>
+			{t('graph.labels')}
+		</button>
 
 		<button
 			onclick={togglePath}
