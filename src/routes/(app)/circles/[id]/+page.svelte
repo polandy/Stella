@@ -92,6 +92,7 @@
 						people={data.candidates}
 						name="contactId"
 						bind:selectedIds={newMemberId}
+						allowCreate
 						required
 					/>
 				</label>
