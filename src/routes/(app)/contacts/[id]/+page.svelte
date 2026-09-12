@@ -296,6 +296,7 @@
 		is useful context no matter which one is open.
 	-->
 	<div
+		data-testid="contact-overview"
 		class="flex flex-wrap gap-x-3 gap-y-1 rounded-control border border-primary/30 bg-primary-soft px-3 py-2 text-xs text-fg"
 	>
 		<span>{t('contact.overview.relationships', { count: data.relationships.length })}</span>
