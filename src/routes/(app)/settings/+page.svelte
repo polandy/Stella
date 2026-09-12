@@ -42,7 +42,7 @@
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.self.heading')}</h2>
 		<div class="flex flex-col gap-3 rounded-app bg-card p-4 shadow-card">
 			<div>
-				<p class="font-medium text-fg">{t('settings.self.label')}</p>
+				<label for="self-contact" class="font-medium text-fg">{t('settings.self.label')}</label>
 				<p class="text-sm text-fg-muted">{t('settings.self.hint')}</p>
 			</div>
 			<form method="POST" action="?/setSelf" class="flex flex-wrap items-center gap-2">
