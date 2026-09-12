@@ -157,8 +157,8 @@ describe('planMonicaImport — relationships', () => {
 		const exp = emptyExport();
 		exp.contacts = [contact(1, 'Mum', null), contact(2, 'Kid', null), contact(3, 'Sis', null)];
 		exp.relationships = [
-			{ id: 1, typeId: 8, contactIs: 1, ofContact: 2, createdAt: null }, // Mum is parent of Kid
-			{ id: 2, typeId: 9, contactIs: 2, ofContact: 1, createdAt: null }, // Kid is child of Mum
+			{ id: 1, typeId: 8, contactIs: 2, ofContact: 1, createdAt: null }, // Mum is parent of Kid
+			{ id: 2, typeId: 9, contactIs: 1, ofContact: 2, createdAt: null }, // Kid is child of Mum
 			{ id: 3, typeId: 10, contactIs: 3, ofContact: 2, createdAt: null }, // Sis sibling of Kid
 			{ id: 4, typeId: 10, contactIs: 2, ofContact: 3, createdAt: null }
 		];
@@ -184,8 +184,8 @@ describe('planMonicaImport — relationships', () => {
 		exp.relationships = [
 			{ id: 1, typeId: 15, contactIs: 1, ofContact: 2, createdAt: null },
 			{ id: 2, typeId: 15, contactIs: 2, ofContact: 1, createdAt: null },
-			{ id: 3, typeId: 14, contactIs: 3, ofContact: 1, createdAt: null }, // C is nephew of A
-			{ id: 4, typeId: 13, contactIs: 1, ofContact: 3, createdAt: null }, // A is uncle of C
+			{ id: 3, typeId: 13, contactIs: 3, ofContact: 1, createdAt: null }, // A is uncle of C
+			{ id: 4, typeId: 14, contactIs: 1, ofContact: 3, createdAt: null }, // C is nephew of A
 			{ id: 5, typeId: 99, contactIs: 2, ofContact: 3, createdAt: null },
 			{ id: 6, typeId: 99, contactIs: 3, ofContact: 2, createdAt: null }
 		];

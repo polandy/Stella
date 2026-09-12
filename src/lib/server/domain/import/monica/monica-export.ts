@@ -64,7 +64,11 @@ export interface MonicaRelationshipType {
 export interface MonicaRelationship {
 	id: MonicaId;
 	typeId: MonicaId;
-	/** "contact_is <type> of_contact" — e.g. contact_is is the *parent* of of_contact. */
+	/**
+	 * Reads backwards from how the column names look: on a "parent"-typed row, `of_contact`
+	 * is the *parent* and `contact_is` is the implicit other end (the child) — confirmed
+	 * against Monica's own `migrate_offsprings` migration, which built this table.
+	 */
 	contactIs: MonicaId;
 	ofContact: MonicaId;
 	createdAt: string | null;
