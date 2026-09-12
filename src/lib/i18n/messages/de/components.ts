@@ -16,5 +16,8 @@ export const components: ComponentsMessages = {
 	'components.palette.addPerson': 'Person hinzufügen',
 	'components.palette.searchEverything': (p) => `Überall nach „${p.query}“ suchen`,
 	'components.palette.kindSearch': 'Suche',
-	'components.palette.kindAction': 'Aktion'
+	'components.palette.kindAction': 'Aktion',
+	'components.personSearch.placeholder': 'Personen suchen…',
+	'components.personSearch.empty': 'Niemand gefunden.',
+	'components.personSearch.remove': (p) => `${p.name} entfernen`
 };

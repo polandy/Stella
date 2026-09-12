@@ -268,7 +268,7 @@ They must be edited together; `app.css` says so at both blocks.
   *Private*, and the directory grows an **Archived (N)** chip at the end of the tag row,
   leading to the same list with the "last written about" column dropped.
 - **Merging a duplicate** sits with the delete control at the foot of the profile, admin-only,
-  as a disclosure holding one select and one button (docs/02 §2.2). The survivor is always the
+  as a disclosure holding a person search select and one button (docs/02 §2.2). The survivor is always the
   page you are on, so the form asks a single question — *who is the same person?* — instead of
   making the household choose which of two records wins.
 - **Deleting a person** sits under the archive control on the profile and only for an admin
@@ -322,10 +322,19 @@ in the accent: colour identifies, the foreground reads (§5.2.2).
 
 ## 5.7 Components (design-system inventory)
 
-Buttons (primary/secondary/ghost/danger), inputs & selects, tag/chip, avatar (+ stack),
-card, section header, tabs, modal/sheet, toast, dropdown menu, command palette, empty
-states, timeline item, note card, relationship row, photo grid + lightbox. All themeable
-via semantic tokens, all keyboard-accessible.
+Buttons (primary/secondary/ghost/danger), inputs & selects, person search select, tag/chip,
+avatar (+ stack), card, section header, tabs, modal/sheet, toast, dropdown menu, command
+palette, empty states, timeline item, note card, relationship row, photo grid + lightbox.
+All themeable via semantic tokens, all keyboard-accessible.
+
+**Person search select** (`src/lib/components/PersonSearchSelect.svelte`) replaces a plain
+`<select>` everywhere a form asks for a person from a list too long to scan: relationship
+target, interaction participants, circle member, merge duplicate. It filters by name as you
+type (same match/rank rules as the People directory and command palette — case- and
+diacritic-insensitive, prefix matches first), and posts the same hidden field(s) a `<select>`
+would, so it drops into an existing form action unchanged. Single mode replaces the pick on
+choosing someone; multiple mode (interaction participants) keeps chosen people as removable
+chips and lets you keep adding.
 
 **Buttons** are one component (`src/lib/components/Button.svelte`) with four variants, and the
 variant states the intent:
