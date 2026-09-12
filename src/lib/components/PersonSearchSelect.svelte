@@ -347,59 +347,64 @@
 			</div>
 		</div>
 	{:else if open}
-		<ul
-			id="{id}-listbox"
-			role="listbox"
-			data-testid="person-search-listbox"
-			class="{panelClass} max-h-56 overflow-y-auto p-1"
-		>
-			{#if matches.length === 0 && !showCreate}
-				<li class="px-2.5 py-1.5 text-sm text-fg-subtle">{t('components.personSearch.empty')}</li>
-			{:else}
-				{#each matches as person, i (person.id)}
-					<li role="none">
-						<button
-							type="button"
-							role="option"
-							aria-selected={i === highlighted}
-							onmousedown={(e) => {
-								e.preventDefault();
-								choose(person);
-							}}
-							onmouseenter={() => (highlighted = i)}
-							class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
-						>
-							<Avatar id={person.id} name={person.displayName} size={22} />
-							<span class="truncate">{person.displayName}</span>
-						</button>
-					</li>
-				{/each}
-			{/if}
+		<div class={panelClass}>
+			<ul
+				id="{id}-listbox"
+				role="listbox"
+				data-testid="person-search-listbox"
+				class="max-h-56 overflow-y-auto p-1"
+			>
+				{#if matches.length === 0}
+					<li class="px-2.5 py-1.5 text-sm text-fg-subtle">{t('components.personSearch.empty')}</li>
+				{:else}
+					{#each matches as person, i (person.id)}
+						<li role="none">
+							<button
+								type="button"
+								role="option"
+								aria-selected={i === highlighted}
+								onmousedown={(e) => {
+									e.preventDefault();
+									choose(person);
+								}}
+								onmouseenter={() => (highlighted = i)}
+								class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
+							>
+								<Avatar id={person.id} name={person.displayName} size={22} />
+								<span class="truncate">{person.displayName}</span>
+							</button>
+						</li>
+					{/each}
+				{/if}
+			</ul>
 
+			<!--
+				An action, not an option: it sits outside the listbox so that "the options" stays a
+				list of people — for a screen reader as much as for a test locating someone by name.
+			-->
 			{#if showCreate}
-				<li role="none" class={matches.length > 0 ? 'mt-1 border-t border-border pt-1' : ''}>
-					<button
-						type="button"
-						role="option"
-						data-testid="person-search-create-option"
-						aria-selected={highlighted === createIndex}
-						onmousedown={(e) => {
-							e.preventDefault();
-							startCreate();
-						}}
-						onmouseenter={() => (highlighted = createIndex)}
-						class="flex w-full items-start gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
-					>
-						<span class="mt-px grid size-[22px] shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
-							<Icon name="add" size={13} />
-						</span>
-						<!-- Wraps rather than truncates: the name is the whole point of the row. -->
-						<span class="min-w-0 leading-snug">
-							{t('components.personSearch.create', { name: query.trim() })}
-						</span>
-					</button>
-				</li>
+				<button
+					type="button"
+					data-testid="person-search-create-option"
+					onmousedown={(e) => {
+						e.preventDefault();
+						startCreate();
+					}}
+					onmouseenter={() => (highlighted = createIndex)}
+					class="flex w-full items-start gap-2.5 border-t border-border p-2.5 text-left text-sm text-fg {highlighted ===
+					createIndex
+						? 'bg-primary-soft'
+						: ''}"
+				>
+					<span class="mt-px grid size-[22px] shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+						<Icon name="add" size={13} />
+					</span>
+					<!-- Wraps rather than truncates: the name is the whole point of the row. -->
+					<span class="min-w-0 leading-snug">
+						{t('components.personSearch.create', { name: query.trim() })}
+					</span>
+				</button>
 			{/if}
-		</ul>
+		</div>
 	{/if}
 </div>
