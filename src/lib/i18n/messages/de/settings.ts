@@ -4,7 +4,7 @@ import type { SettingsMessages } from '../en/settings';
 export const settings: SettingsMessages = {
 	'settings.title': 'Einstellungen',
 	'settings.intro':
-		'Konto- und Darstellungseinstellungen kommen noch; Sprache, Datenwerkzeuge und das Beziehungs-Vokabular findest du schon hier.',
+		'Darstellungseinstellungen kommen noch; Sprache, Datenwerkzeuge, das Beziehungs-Vokabular und dein Konto findest du schon hier.',
 	'settings.language.heading': 'Sprache',
 	'settings.language.label': 'Sprache der Oberfläche',
 	'settings.language.hint':
@@ -25,5 +25,6 @@ export const settings: SettingsMessages = {
 	'settings.data.relationshipTypesBlurb':
 		'Benenne die Arten von Verbindungen, die dein Haushalt festhält — über die hinaus, die Stella mitbringt.',
 	'settings.data.adminOnly':
-		'Import, Sicherungen und die Beziehungsarten sind der Haushalts-Administration vorbehalten.'
+		'Import, Sicherungen und die Beziehungsarten sind der Haushalts-Administration vorbehalten.',
+	'settings.account.heading': 'Konto'
 };
