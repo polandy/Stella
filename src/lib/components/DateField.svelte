@@ -89,7 +89,8 @@
 	<legend class="sr-only">{label}</legend>
 	{#if name}<input type="hidden" {name} value={iso} />{/if}
 
-	<div class="flex items-end gap-1.5">
+	<!-- Wraps: in a narrow container the month must keep its name, not collapse to its arrow. -->
+	<div class="flex flex-wrap items-end gap-1.5">
 		{#each order as segment (segment)}
 			{#if segment === 'month'}
 				<select

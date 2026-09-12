@@ -300,7 +300,7 @@
 								class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 							/>
 						</label>
-						<div class="flex flex-col gap-1">
+						<div class="col-span-2 flex flex-col gap-1">
 							{t('components.personSearch.birthDate')}
 							<DateField
 								bind:value={draft.birthDate}
