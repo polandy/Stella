@@ -11,6 +11,11 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
+/** Waits for the renderer's own signal that its layout has stopped moving the nodes. */
+async function settled(page: Page): Promise<void> {
+	await expect(page.locator('[data-layout]')).toHaveAttribute('data-layout', 'settled');
+}
+
 test('the filter chips are the legend, and there is no second one', async ({ page }) => {
 	await page.goto('/graph?center=demo-c-hans');
 	await expect(page.locator('canvas').first()).toBeVisible();
@@ -26,22 +31,23 @@ test('the filter chips are the legend, and there is no second one', async ({ pag
 
 test('opens the peek panel on the centred person with their face, name and a way to their page', async ({ page }) => {
 	await page.goto('/graph?center=demo-c-hans');
-	const canvas = page.locator('canvas').first();
-	await expect(canvas).toBeVisible();
+	await expect(page.locator('canvas').first()).toBeVisible();
 
-	// The centre node sits in the middle of the canvas once the layout has settled.
-	await expect(async () => {
-		const box = await canvas.boundingBox();
-		if (!box) throw new Error('no canvas');
-		await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-		await expect(page.getByRole('complementary').getByText('Hans Brunner')).toBeVisible({ timeout: 800 });
-	}).toPass();
-
+	// The explorer opens with the centred person selected, so the panel is his from the start.
 	const peek = page.getByRole('complementary');
+	await expect(peek.getByText('Hans Brunner')).toBeVisible();
 	await expect(peek.getByText('HB')).toBeVisible();
 	await expect(peek.getByRole('button', { name: 'Close' })).toBeVisible();
+
+	// And it follows a click onto somebody else — once the canvas says it has come to rest,
+	// asked of the renderer where it drew her, rather than aimed at a coordinate she is
+	// still travelling through.
+	await settled(page);
+	await clickNode(page, 'demo-c-rosa');
+	await expect(peek.getByText('Rosa Brunner')).toBeVisible();
+
 	await peek.getByRole('link', { name: 'Open profile' }).click();
-	await expect(page).toHaveURL(/\/contacts\/demo-c-hans$/);
+	await expect(page).toHaveURL(/\/contacts\/demo-c-rosa$/);
 });
 
 /*

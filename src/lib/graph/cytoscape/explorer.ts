@@ -38,6 +38,15 @@ export interface ExplorerController {
 	destroy(): void;
 }
 
+/**
+ * Written onto the container while a layout runs and when it has finished, so a caller can
+ * tell a canvas that is still moving from one that has come to rest. The nodes travel for as
+ * long as the animation lasts, and their drawn positions mean nothing until it stops.
+ */
+const LAYOUT_STATE_ATTRIBUTE = 'data-layout';
+const SETTLING = 'settling';
+const SETTLED = 'settled';
+
 function layout(reducedMotion: boolean): LayoutOptions {
 	return {
 		name: 'cose',
@@ -64,6 +73,10 @@ export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerCon
 		wheelSensitivity: 0.25,
 		boxSelectionEnabled: false
 	});
+
+	opts.container.setAttribute(LAYOUT_STATE_ATTRIBUTE, SETTLING);
+	cy.on('layoutstart', () => opts.container.setAttribute(LAYOUT_STATE_ATTRIBUTE, SETTLING));
+	cy.on('layoutstop', () => opts.container.setAttribute(LAYOUT_STATE_ATTRIBUTE, SETTLED));
 
 	cy.on('tap', 'node', (e) => opts.onTapNode(e.target.id()));
 	cy.on('tap', (e) => {
