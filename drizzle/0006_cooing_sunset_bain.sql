@@ -1,0 +1,1 @@
+ALTER TABLE `user` ADD `self_contact_id` text;

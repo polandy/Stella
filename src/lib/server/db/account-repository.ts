@@ -17,13 +17,15 @@ const toAuthUser = (row: {
 	name: string;
 	role: 'admin' | 'member';
 	localePref: Locale | null;
+	selfContactId: string | null;
 }): AuthUser => ({
 	id: row.id,
 	householdId: row.householdId,
 	email: row.email,
 	name: row.name,
 	role: row.role,
-	locale: row.localePref
+	locale: row.localePref,
+	selfContactId: row.selfContactId
 });
 
 export function createDrizzleAccountRepository(
@@ -44,6 +46,7 @@ export function createDrizzleAccountRepository(
 					name: userTable.name,
 					role: userTable.role,
 					localePref: userTable.localePref,
+					selfContactId: userTable.selfContactId,
 					passwordHash: userTable.passwordHash
 				})
 				.from(userTable)
@@ -61,7 +64,8 @@ export function createDrizzleAccountRepository(
 					email: userTable.email,
 					name: userTable.name,
 					role: userTable.role,
-					localePref: userTable.localePref
+					localePref: userTable.localePref,
+					selfContactId: userTable.selfContactId
 				})
 				.from(userTable)
 				.where(eq(userTable.id, id))
@@ -89,6 +93,10 @@ export function createDrizzleAccountRepository(
 
 		async updateLocale(userId: string, locale: Locale) {
 			db.update(userTable).set({ localePref: locale }).where(eq(userTable.id, userId)).run();
+		},
+
+		async updateSelfContact(userId: string, contactId: string | null) {
+			db.update(userTable).set({ selfContactId: contactId }).where(eq(userTable.id, userId)).run();
 		}
 	};
 }

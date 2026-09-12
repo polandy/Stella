@@ -35,7 +35,8 @@ function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) 
 		},
 		updateLocale: async (userId, locale) => {
 			localeWrites.push({ userId, locale });
-		}
+		},
+		updateSelfContact: async () => {}
 	};
 	return { repo, localeWrites, get inserted() { return inserted; } };
 }
@@ -69,7 +70,8 @@ describe('registerFirstAdmin', () => {
 			email: 'andy@example.test',
 			name: 'Andy',
 			role: 'admin',
-			locale: 'de'
+			locale: 'de',
+			selfContactId: null
 		});
 		expect(f.inserted?.household).toEqual({ id: 'household-id', name: 'Pollari' });
 		expect(f.inserted?.user.passwordHash).toBe('hashed:a-good-passphrase');
@@ -84,7 +86,8 @@ describe('registerFirstAdmin', () => {
 			email: 'x@example.test',
 			name: 'X',
 			role: 'admin',
-			locale: DEFAULT_LOCALE
+			locale: DEFAULT_LOCALE,
+			selfContactId: null
 		};
 		const f = fakeRepo([{ user: existing, passwordHash: 'hashed:x' }]);
 		await expect(
@@ -106,7 +109,8 @@ describe('authenticateLocal', () => {
 		email: 'andy@example.test',
 		name: 'Andy',
 		role: 'admin',
-		locale: DEFAULT_LOCALE
+		locale: DEFAULT_LOCALE,
+		selfContactId: null
 	};
 
 	it('returns the user for correct credentials', async () => {
@@ -143,7 +147,8 @@ describe('changeLocale', () => {
 		email: 'andy@example.test',
 		name: 'Andy',
 		role: 'admin',
-		locale: 'en'
+		locale: 'en',
+		selfContactId: null
 	};
 
 	it('stores a supported language and reports it back', async () => {

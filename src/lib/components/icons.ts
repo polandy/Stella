@@ -24,6 +24,7 @@ import {
 	SquarePen,
 	Star,
 	Users,
+	UserRound,
 	UsersRound,
 	Video,
 	Waypoints,
@@ -66,6 +67,8 @@ export const ICONS = {
 	archive: Archive,
 	// States
 	private: Lock,
+	// The member's own person (docs/02 §2.1.3).
+	self: UserRound,
 	calendar: CalendarDays,
 	quiet: Moon,
 	shared: UsersRound,

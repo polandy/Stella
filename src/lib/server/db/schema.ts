@@ -42,6 +42,12 @@ export const user = sqliteTable('user', {
 	role: text('role').$type<Role>().notNull().default('member'),
 	roleLocked: integer('role_locked').notNull().default(0),
 	avatarPhotoId: text('avatar_photo_id'),
+	// The contact this member *is*, or null while they have not said (docs/02 §2.1.3).
+	// No foreign key, like `avatar_photo_id` above: SQLite cannot add one with an ON DELETE
+	// action through ALTER TABLE, and a plain reference would refuse to delete that person.
+	// Deleting the contact clears the link and a merge repoints it (contact-repository.ts,
+	// contact-merge.ts), so a member never points at a record that is gone.
+	selfContactId: text('self_contact_id'),
 	// Null until the member picks one: an unchosen language must not outrank the browser's.
 	localePref: text('locale_pref').$type<Locale>(),
 	themePref: text('theme_pref').$type<'system' | 'light' | 'dark'>().notNull().default('system'),

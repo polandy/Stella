@@ -85,6 +85,11 @@ export const contact = {
 	'contact.notRecorded': 'Not recorded yet.',
 
 	'contact.archive.bringBack': 'Bring back into the lists',
+	'contact.self.thisIsMe': 'This is me',
+	'contact.self.notMe': 'This is not me',
+	'contact.self.hint': 'Tell Stella that this record is you, and the map opens on your own people.',
+	'contact.self.isMeHint': 'Stella takes this record to be you.',
+	'contact.self.badgeHint': 'The person you told Stella you are.',
 	'contact.archive.archive': 'Archive this person',
 	'contact.archive.archivedHint':
 		'They are out of the directory, the search and Home’s reminders — their page, their story and the family map are untouched.',

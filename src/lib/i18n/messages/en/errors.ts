@@ -8,6 +8,7 @@ export const errors = {
 		'A birth date must be YYYY-MM-DD, or --MM-DD when the year is unknown.',
 	'errors.contact.emptyName': 'A name cannot be empty.',
 	'errors.contact.needAName': 'Please enter at least a name or nickname.',
+	'errors.self.notFound': 'That person is not one you can pick as yourself.',
 	'errors.form.checkAndRetry': 'Please check the form and try again.',
 
 	'errors.relationship.duplicate': 'That relationship already exists.',

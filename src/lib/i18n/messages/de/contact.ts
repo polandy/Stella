@@ -84,6 +84,12 @@ export const contact: ContactMessages = {
 	'contact.notRecorded': 'Noch nicht festgehalten.',
 
 	'contact.archive.bringBack': 'Zurück in die Listen holen',
+	'contact.self.thisIsMe': 'Das bin ich',
+	'contact.self.notMe': 'Das bin ich nicht',
+	'contact.self.hint':
+		'Sag Stella, dass dieser Eintrag du bist — dann öffnet die Karte bei deinen eigenen Leuten.',
+	'contact.self.isMeHint': 'Stella hält diesen Eintrag für dich.',
+	'contact.self.badgeHint': 'Die Person, die du laut deiner Angabe bist.',
 	'contact.archive.archive': 'Diese Person archivieren',
 	'contact.archive.archivedHint':
 		'Sie ist aus dem Verzeichnis, der Suche und den Erinnerungen auf der Startseite verschwunden — ihre Seite, ihr Verlauf und die Familienkarte bleiben unberührt.',
