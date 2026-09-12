@@ -3,6 +3,7 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
+	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import RemoveButton from '$lib/components/RemoveButton.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { circleKindLabel } from '$lib/circles/labels';
@@ -23,7 +24,11 @@
 		data.members.filter((m) => !removals.isPending(removalKey('membership', m.membershipId)))
 	);
 	let addOpen = $state(false);
-	const saved = savedEnhance(removals, t('components.saved'), () => (addOpen = false));
+	let newMemberId = $state<string[]>([]);
+	const saved = savedEnhance(removals, t('components.saved'), () => {
+		addOpen = false;
+		newMemberId = [];
+	});
 	const INPUT = 'rounded-md border border-border bg-bg px-3 py-2 text-fg';
 </script>
 
@@ -83,9 +88,12 @@
 			<form method="POST" action="?/addMember" use:enhance={saved} class="flex flex-wrap items-end gap-3">
 				<label class="flex flex-1 flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.person')}</span>
-					<select name="contactId" class={INPUT}>
-						{#each data.candidates as c (c.id)}<option value={c.id}>{c.displayName}</option>{/each}
-					</select>
+					<PersonSearchSelect
+						people={data.candidates}
+						name="contactId"
+						bind:selectedIds={newMemberId}
+						required
+					/>
 				</label>
 				<label class="flex flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.roleLabel')}</span>

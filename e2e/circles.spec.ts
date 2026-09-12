@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { appReady, signIn } from './app';
+import { appReady, pickPerson, signIn } from './app';
 
 /*
  * Circles as cards and a member grid (docs/02 §2.4.2, docs/05 §5.5). Written after the
@@ -32,12 +32,32 @@ test('opens a circle, adds a member from the card’s own disclosure and shows t
 
 	await page.getByRole('button', { name: 'Add member' }).click();
 	const form = page.locator('form[action="?/addMember"]');
-	await form.getByLabel('Person').selectOption({ label: 'Noah Brunner' });
+	await pickPerson(form.getByLabel('Person'), 'Noah Brunner');
 	await form.getByLabel('Role (optional)').fill('Blockflöte');
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 
 	await expect(grid.getByRole('link', { name: 'Noah Brunner' })).toBeVisible();
 	await expect(grid.getByText('Blockflöte')).toBeVisible();
+});
+
+test('narrows the person picker to matching names as you type, rather than listing everyone', async ({ page }) => {
+	await page.goto('/circles');
+	await page.getByTestId('circle-cards').getByRole('link', { name: /Musikschule/ }).click();
+	await page.getByRole('button', { name: 'Add member' }).click();
+
+	const form = page.locator('form[action="?/addMember"]');
+	const field = form.getByLabel('Person');
+	await field.click();
+	const options = page.getByRole('option');
+	const fullCount = await options.count();
+
+	await field.fill('bettina');
+	await expect(options).toHaveCount(1);
+	await expect(options).toContainText('Bettina Roth');
+	expect(fullCount).toBeGreaterThan(1); // the query really did narrow something down
+
+	await field.fill('nobody has this name');
+	await expect(page.getByText('No one found.')).toBeVisible();
 });
 
 test('a new circle starts with an invitation rather than an empty list', async ({ page }) => {

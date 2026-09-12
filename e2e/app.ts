@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 /*
  * Shared steps for driving the signed-in app.
@@ -46,4 +46,21 @@ export async function openPerson(page: Page, name: RegExp): Promise<void> {
 export async function mention(page: Page, query: string, label: RegExp): Promise<void> {
 	await page.getByLabel('What happened?').pressSequentially(`@${query}`);
 	await page.getByRole('option', { name: label }).click();
+}
+
+/**
+ * Types a name into a `PersonSearchSelect` combobox (relationship target, circle member,
+ * interaction participant, merge duplicate) and picks the matching option. Replaces a plain
+ * `<select>` interaction: the field filters as you type, so it needs a query first.
+ */
+export async function pickPerson(field: Locator, name: string): Promise<void> {
+	await field.click();
+	await field.fill(name);
+	await field.page().getByRole('option', { name }).click();
+	// Multi-select keeps the list open for adding another person; close it so it cannot
+	// overlap and intercept the next click (the single-select case is already closed). The
+	// input keeps focus through the option's mousedown handler, so send the key to whatever
+	// is focused rather than re-resolving `field` — its own actionability check can stall
+	// while the just-added chip is still shifting the input's layout.
+	await field.page().keyboard.press('Escape');
 }

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { appReady, openPerson, signIn } from './app';
+import { appReady, openPerson, pickPerson, signIn } from './app';
 
 /*
  * A household naming its own kinds of link (docs/02 §2.4). Written after the flow was
@@ -75,7 +75,7 @@ test('will not remove a type while links still use it', async ({ page }) => {
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	const form = page.locator('form[action="?/addRelationship"]');
 	await form.locator('select[name=typeId]').selectOption({ label: 'Godparent of' });
-	await form.locator('select[name=targetId]').selectOption({ label: 'Bettina Roth' });
+	await pickPerson(form.getByLabel('Person'), 'Bettina Roth');
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 	await expect(page.locator('#panel-people')).toContainText('Bettina Roth');
 

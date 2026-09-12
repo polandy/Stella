@@ -15,7 +15,10 @@ export const components = {
 	'components.palette.searchEverything': (p: { query: string }) =>
 		`Search everything for “${p.query}”`,
 	'components.palette.kindSearch': 'search',
-	'components.palette.kindAction': 'action'
+	'components.palette.kindAction': 'action',
+	'components.personSearch.placeholder': 'Search people…',
+	'components.personSearch.empty': 'No one found.',
+	'components.personSearch.remove': (p: { name: string }) => `Remove ${p.name}`
 };
 
 /** The key set every translation of this area has to provide. */

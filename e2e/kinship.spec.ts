@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openPerson, signIn } from './app';
+import { openPerson, pickPerson, signIn } from './app';
 
 /*
  * Derived kinship and propagation suggestions (docs/02 §2.4.1). Written after the flow was
@@ -54,7 +54,7 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	const editor = page.locator('form[action="?/addRelationship"]');
 	await editor.locator('select[name=typeId]').selectOption({ label: 'Parent of' });
-	await editor.locator('select[name=targetId]').selectOption({ label: 'Lena Brunner' });
+	await pickPerson(editor.getByLabel('Person'), 'Lena Brunner');
 	await editor.getByRole('button', { name: 'Add', exact: true }).click();
 
 	// Lena's brothers follow from it, each with the reason and its own confirmation.

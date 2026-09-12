@@ -5,6 +5,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
+	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
@@ -194,7 +195,11 @@
 	const saved = (name: SectionName) =>
 		savedEnhance(removals, t('components.saved'), () => (openSection[name] = false));
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
-	const savedRelationship = savedEnhance(removals, t('components.saved'), () => (relateOpen = false));
+	let relationshipTargetId = $state<string[]>(untrack(() => (data.relateTo ? [data.relateTo] : [])));
+	const savedRelationship = savedEnhance(removals, t('components.saved'), () => {
+		relateOpen = false;
+		relationshipTargetId = [];
+	});
 	/** Which relationship has its details open for correction; one at a time. */
 	let editingRelationship = $state<string | null>(null);
 	const savedRelationshipEdit = savedEnhance(
@@ -209,6 +214,8 @@
 	let confirmingDelete = $state(false);
 	/** Whether the merge picker is open; the survivor is always this page's person. */
 	let merging = $state(false);
+	let mergeTargetId = $state<string[]>([]);
+	let participantIds = $state<string[]>([]);
 	/** The day it happened, for the marker's tooltip. */
 	const archivedOn = $derived(
 		c.archivedAt === null ? null : dayLabel(i18n, new Date(c.archivedAt).toLocaleDateString('en-CA'))
@@ -540,12 +547,13 @@
 							</p>
 							<label class="flex flex-col gap-1">
 								<span class="text-xs text-fg-muted">{t('contact.merge.who')}</span>
-								<select name="mergedId" class={INPUT} required>
-									<option value="" disabled selected>{t('contact.merge.choose')}</option>
-									{#each data.otherContacts as other (other.id)}
-										<option value={other.id}>{other.displayName}</option>
-									{/each}
-								</select>
+								<PersonSearchSelect
+									people={data.otherContacts}
+									name="mergedId"
+									bind:selectedIds={mergeTargetId}
+									placeholder={t('contact.merge.choose')}
+									required
+								/>
 							</label>
 							{#if form?.mergeError}<p class="text-xs text-danger">{form.mergeError}</p>{/if}
 							<div>
@@ -641,11 +649,12 @@
 							{#if data.otherContacts.length > 0}
 								<label class="flex flex-col gap-1 text-sm text-fg-muted">
 									{t('contact.interaction.whoElse')}
-									<select name="participants" multiple size="3" class={INPUT}>
-										{#each data.otherContacts as other (other.id)}
-											<option value={other.id}>{other.displayName}</option>
-										{/each}
-									</select>
+									<PersonSearchSelect
+										people={data.otherContacts}
+										name="participants"
+										bind:selectedIds={participantIds}
+										multiple
+									/>
 								</label>
 							{/if}
 							<div class="flex flex-wrap items-center gap-4 text-sm">
@@ -861,13 +870,11 @@
 								</label>
 								<label class="flex flex-1 flex-col gap-1 text-sm">
 									<span class="text-fg-muted">{t('contact.relationships.person')}</span>
-									<select name="targetId" class={INPUT}>
-										{#each data.otherContacts as other (other.id)}
-											<option value={other.id} selected={other.id === data.relateTo}>
-												{other.displayName}
-											</option>
-										{/each}
-									</select>
+									<PersonSearchSelect
+										people={data.otherContacts}
+										name="targetId"
+										bind:selectedIds={relationshipTargetId}
+									/>
 								</label>
 								<label class="flex w-full flex-col gap-1 text-sm sm:flex-1">
 									<span class="text-fg-muted">{t('contact.relationships.howConnectOptional')}</span>
