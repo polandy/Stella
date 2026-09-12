@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { signIn } from './app';
+import { pickPerson, signIn } from './app';
 
 /*
  * Touchpoints on the story timeline and "last contacted" (docs/02 §2.6, §2.23). Written after
@@ -43,7 +43,7 @@ test('logs a call with a participant, shows it on the timeline and derives last 
 	await section.getByLabel('Day').fill('2026-09-01');
 	await section.getByPlaceholder('What happened? (optional)').fill(TITLE);
 	await section.getByPlaceholder('Details… (optional)').fill('She wants Oma to come along.');
-	await section.getByLabel('Who else was there?').selectOption({ label: 'Markus Brunner' });
+	await pickPerson(section.getByLabel('Who else was there?'), 'Markus Brunner');
 	await section.getByRole('button', { name: 'Log interaction' }).click();
 
 	const timeline = page.getByTestId('story-timeline');
