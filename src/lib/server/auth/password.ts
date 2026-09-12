@@ -9,6 +9,15 @@ export async function hashPassword(password: string): Promise<string> {
 	return Bun.password.hash(password, { algorithm: 'argon2id' });
 }
 
+/**
+ * Hash a plaintext password synchronously. Only for startup work that cannot await — the
+ * demo seed writes its user rows inside a synchronous transaction; everything serving a
+ * request uses {@link hashPassword}.
+ */
+export function hashPasswordSync(password: string): string {
+	return Bun.password.hashSync(password, { algorithm: 'argon2id' });
+}
+
 /** Verify a plaintext password against a stored hash. */
 export async function verifyPassword(hash: string, password: string): Promise<boolean> {
 	return Bun.password.verify(password, hash);
