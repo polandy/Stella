@@ -318,14 +318,14 @@
 		<button
 			onclick={() => (edgeLabels = !edgeLabels)}
 			aria-pressed={edgeLabels}
-			title="Name every line with its relationship"
+			title={t('graph.labels.hint')}
 			class="pointer-events-auto rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-fg-muted backdrop-blur transition-colors hover:text-fg"
 			class:!border-transparent={edgeLabels}
 			style={edgeLabels
 				? 'background:color-mix(in srgb, var(--primary) 22%, transparent); color:var(--primary)'
 				: ''}
 		>
-			Labels
+			{t('graph.labels')}
 		</button>
 
 		<button

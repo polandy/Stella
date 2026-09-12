@@ -18,6 +18,8 @@ export const search = {
 	'graph.filter.circles': 'Circles',
 	'graph.filter.kinship': 'Kinship',
 	'graph.connectionPath': 'Connection path',
+	'graph.labels': 'Labels',
+	'graph.labels.hint': 'Name every line with its relationship',
 	'graph.path.none': 'No connection found between those two.',
 	'graph.path.pickSecond': 'Now pick the second person…',
 	'graph.path.pickTwo': 'Pick two people to trace how they’re connected.',
