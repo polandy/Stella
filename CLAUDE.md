@@ -6,6 +6,10 @@ The `docs/` suite is the **source of truth**; this file is only a router — kee
 > Efficiency contract: open **only** the doc/source file your task touches (map below).
 > Don't re-read the whole tree. Keep CLAUDE.md and docs free of duplication.
 
+> Agent-agnostic: this file is the shared instruction set for every coding agent working on
+> this repo (Claude Code, GitHub Copilot CLI, Gemini CLI, …). Copilot reads it directly;
+> `GEMINI.md` imports it so Gemini CLI does too — don't fork the rules per tool.
+
 ## Golden rules — full text: `docs/08-coding-guidelines.md` (read once, then follow)
 
 - **Test-first**: failing test → minimal impl → refactor. Run `bun test`.
