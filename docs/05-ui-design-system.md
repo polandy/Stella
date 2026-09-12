@@ -336,6 +336,15 @@ would, so it drops into an existing form action unchanged. Single mode replaces 
 choosing someone; multiple mode (interaction participants) keeps chosen people as removable
 chips and lets you keep adding.
 
+With `allowCreate`, the picker also ends a fruitless search: from two typed characters on, a
+last option offers *Add "<what you typed>" as a new person* — the same listbox row as a hit,
+but with a `+` mark and the accent colour so it never reads as one. Choosing it swaps the
+dropdown for a compact create panel in the same position (first/last name pre-filled from the
+query, nickname and birthday collapsed, visibility pills), which posts to `/contacts/quick-add`
+and selects the new person on success (§2.2.2). The panel is plain inputs and `type="button"`
+buttons, never a nested `<form>` — the picker sits inside the caller's form, and Enter inside
+the panel saves the person rather than submitting that form.
+
 **Buttons** are one component (`src/lib/components/Button.svelte`) with four variants, and the
 variant states the intent:
 

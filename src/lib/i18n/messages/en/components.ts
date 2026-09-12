@@ -18,7 +18,22 @@ export const components = {
 	'components.palette.kindAction': 'action',
 	'components.personSearch.placeholder': 'Search people…',
 	'components.personSearch.empty': 'No one found.',
-	'components.personSearch.remove': (p: { name: string }) => `Remove ${p.name}`
+	'components.personSearch.remove': (p: { name: string }) => `Remove ${p.name}`,
+	'components.personSearch.create': (p: { name: string }) => `Add “${p.name}” as a new person`,
+	'components.personSearch.createTitle': 'New person',
+	'components.personSearch.createBack': 'Back to search',
+	'components.personSearch.firstName': 'First name',
+	'components.personSearch.lastName': 'Last name',
+	'components.personSearch.nickname': 'Nickname',
+	'components.personSearch.birthDate': 'Birthday',
+	'components.personSearch.more': 'More details',
+	'components.personSearch.visibility': 'Who can see them',
+	'components.personSearch.shared': 'Shared',
+	'components.personSearch.private': 'Private',
+	'components.personSearch.cancel': 'Cancel',
+	'components.personSearch.submit': 'Add & select',
+	'components.personSearch.submitting': 'Adding…',
+	'components.personSearch.created': (p: { name: string }) => `${p.name} was added`
 };
 
 /** The key set every translation of this area has to provide. */
