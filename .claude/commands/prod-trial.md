@@ -4,9 +4,8 @@ sometimes means the real app, not a local build. Use this when asked to deploy, 
 a feature/branch/PR "on prod", "auf der family-instanz", "live", or similar — as opposed to a
 local trial (`docs/07` §7.1.1), which needs no special care.
 
-The full runbook, guardrails and rollback steps live in `docs/07-deployment.md` §7.1.2 — read it
-before doing this, it is the source of truth and may have grown since this summary was written.
-Short version:
+This file is the source of truth for the procedure; `docs/07-deployment.md` §7.1.2 just points
+here for anyone reading the deployment guide top to bottom.
 
 1. **Backup first.** Confirm a recent DB snapshot exists (the app's own `/data/db-dump/*.db`, or
    the paired backup service) before touching anything — a branch can carry a migration.
