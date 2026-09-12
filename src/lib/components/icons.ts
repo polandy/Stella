@@ -13,6 +13,7 @@ import {
 	House,
 	Image,
 	Lock,
+	LogOut,
 	Mail,
 	MessageCircle,
 	Moon,
@@ -52,6 +53,7 @@ export const ICONS = {
 	import: Download,
 	export: Upload,
 	forward: ChevronRight,
+	signOut: LogOut,
 	// Actions
 	add: Plus,
 	write: SquarePen,

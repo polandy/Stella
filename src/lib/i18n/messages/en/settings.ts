@@ -3,7 +3,7 @@
 export const settings = {
 	'settings.title': 'Settings',
 	'settings.intro':
-		'Account and appearance settings are on their way; the language, the data tools and the relationship vocabulary live here already.',
+		'Appearance settings are on their way; the language, the data tools, the relationship vocabulary and your account live here already.',
 	'settings.language.heading': 'Language',
 	'settings.language.label': 'Interface language',
 	'settings.language.hint':
@@ -23,7 +23,8 @@ export const settings = {
 	'settings.data.relationshipTypes': 'Relationship types',
 	'settings.data.relationshipTypesBlurb':
 		'Name the kinds of link your household records, beyond the ones Stella ships with.',
-	'settings.data.adminOnly': 'Importing, backups and the relationship types are for the household admin.'
+	'settings.data.adminOnly': 'Importing, backups and the relationship types are for the household admin.',
+	'settings.account.heading': 'Account'
 };
 
 /** The key set every translation of this area has to provide. */
