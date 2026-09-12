@@ -321,6 +321,20 @@ describe('deleting a contact', () => {
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-gone')).toBeNull();
 	});
 
+	it('lets go of the member who said they are this person, and only them', async () => {
+		db.update(schema.user).set({ selfContactId: 'c-gone' }).where(eq(schema.user.id, U1)).run();
+		db.update(schema.user).set({ selfContactId: 'c-stays' }).where(eq(schema.user.id, U2)).run();
+
+		expect(await repo.deleteVisibleTo(viewerU1, 'c-gone', audit())).not.toBeNull();
+
+		const byUser = new Map(
+			db.select().from(schema.user).all().map((u) => [u.id, u.selfContactId])
+		);
+		expect(byUser.get(U1)).toBeNull();
+		// positive control: the member pointing at somebody else still does.
+		expect(byUser.get(U2)).toBe('c-stays');
+	});
+
 	it('writes the log entry that outlives the row', async () => {
 		await repo.deleteVisibleTo(viewerU1, 'c-gone', audit());
 

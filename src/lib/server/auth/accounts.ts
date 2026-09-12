@@ -18,6 +18,8 @@ export interface AuthUser {
 	role: Role;
 	/** The language this user reads Stella in, or null while they have not picked one. */
 	locale: Locale | null;
+	/** The contact this user *is*, or null while they have not said (docs/02 §2.1.3). */
+	selfContactId: string | null;
 }
 
 export interface StoredCredentials {
@@ -39,6 +41,8 @@ export interface AccountRepository {
 	insertHouseholdWithAdmin(data: NewAdmin): Promise<void>;
 	/** Persist the user's interface language. */
 	updateLocale(userId: string, locale: Locale): Promise<void>;
+	/** Persist which contact the user is, or clear it with `null` (docs/02 §2.1.3). */
+	updateSelfContact(userId: string, contactId: string | null): Promise<void>;
 }
 
 export interface AccountDeps {
@@ -100,7 +104,8 @@ export async function registerFirstAdmin(
 		email: input.email,
 		name: input.name,
 		role: 'admin',
-		locale: input.locale
+		locale: input.locale,
+		selfContactId: null
 	};
 	const passwordHash = await deps.hashPassword(input.password);
 

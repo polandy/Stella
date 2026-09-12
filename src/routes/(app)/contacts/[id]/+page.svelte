@@ -195,7 +195,19 @@
 	const saved = (name: SectionName) =>
 		savedEnhance(removals, t('components.saved'), () => (openSection[name] = false));
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
-	let relationshipTargetId = $state<string[]>(untrack(() => (data.relateTo ? [data.relateTo] : [])));
+	/*
+	 * The other end of a new relationship. Prefilled with whoever the page was opened for, and
+	 * otherwise with your own person (docs/02 §2.1.3): "how is this person related to me" is
+	 * the link a household records most, and it is still a default — the type is always chosen
+	 * by hand before anything is saved.
+	 */
+	let relationshipTargetId = $state<string[]>(
+		untrack(() => {
+			if (data.relateTo) return [data.relateTo];
+			const self = data.user.selfContactId;
+			return self && self !== data.contact.id ? [self] : [];
+		})
+	);
 	const savedRelationship = savedEnhance(removals, t('components.saved'), () => {
 		relateOpen = false;
 		relationshipTargetId = [];
@@ -210,6 +222,8 @@
 	const savedArchive = savedEnhance(removals, t('components.saved'));
 	/** Archived or not decides the action, the wording and the marker; asked once. */
 	const archived = $derived(c.archivedAt !== null);
+	/** This record is the viewer's own person (docs/02 §2.1.3). */
+	const isSelf = $derived(data.user.selfContactId === c.id);
 	/** The second click that a deletion asks for; there is no undo after it. */
 	let confirmingDelete = $state(false);
 	/** Whether the merge picker is open; the survivor is always this page's person. */
@@ -267,6 +281,15 @@
 					<span data-testid="last-contacted">{t('contact.noContactYet')}</span>
 				{/if}
 				{#if metLine}<span>{t('contact.met')} <span class="font-medium text-fg-muted">{metLine}</span></span>{/if}
+				{#if isSelf}
+					<span
+						data-testid="self-marker"
+						class="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-primary"
+						title={t('contact.self.badgeHint')}
+					>
+						<Icon name="self" size={11} />{t('settings.self.badge')}
+					</span>
+				{/if}
 				{#if c.visibility === 'private'}
 					<span class="inline-flex items-center gap-1" title={t('contact.privateContact')}>
 						<Icon name="private" size={11} />{t('contact.private')}
@@ -513,6 +536,16 @@
 				Rarely wanted, so it sits at the foot of the profile rather than beside Write:
 				archiving takes someone out of the lists, it does not undo them (docs/02 §2.2).
 			-->
+			<!-- Which of these people you are (docs/02 §2.1.3); the same button lets go again. -->
+			<form method="POST" action="?/setSelf">
+				<Button variant="ghost" size="sm" icon="self">
+					{isSelf ? t('contact.self.notMe') : t('contact.self.thisIsMe')}
+				</Button>
+				<p class="mt-1 text-xs text-fg-subtle">
+					{isSelf ? t('contact.self.isMeHint') : t('contact.self.hint')}
+				</p>
+			</form>
+
 			<form method="POST" action={archived ? '?/restore' : '?/archive'} use:enhance={savedArchive}>
 				{#if archived}
 					<Button variant="ghost" size="sm" icon="archive">{t('contact.archive.bringBack')}</Button>

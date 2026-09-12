@@ -1,11 +1,24 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
+	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import LanguagePicker from '$lib/components/LanguagePicker.svelte';
+	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { PageData } from './$types';
+	import type { ActionData, PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 	const t = useTranslate();
+
+	/* Who the member says they are (docs/02 §2.1.3) — the picker follows what is stored. */
+	let selfIds = $state<string[]>(
+		untrack(() => (data.user.selfContactId ? [data.user.selfContactId] : []))
+	);
+	// The shell's list carries no description; the picker's shape wants the field present.
+	const pickable = $derived(data.people.map((person) => ({ ...person, description: null })));
+	$effect(() => {
+		selfIds = data.user.selfContactId ? [data.user.selfContactId] : [];
+	});
 </script>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
@@ -22,6 +35,39 @@
 				<p class="text-sm text-fg-muted">{t('settings.language.hint')}</p>
 			</div>
 			<LanguagePicker />
+		</div>
+	</section>
+
+	<section class="flex flex-col gap-3">
+		<h2 class="text-sm font-medium text-fg-muted">{t('settings.self.heading')}</h2>
+		<div class="flex flex-col gap-3 rounded-app bg-card p-4 shadow-card">
+			<div>
+				<p class="font-medium text-fg">{t('settings.self.label')}</p>
+				<p class="text-sm text-fg-muted">{t('settings.self.hint')}</p>
+			</div>
+			<form method="POST" action="?/setSelf" class="flex flex-wrap items-center gap-2">
+				<PersonSearchSelect
+					people={pickable}
+					name="contactId"
+					bind:selectedIds={selfIds}
+					id="self-contact"
+					placeholder={t('settings.self.placeholder')}
+					class="min-w-[14rem] flex-1"
+				/>
+				<Button type="submit">{t('common.save')}</Button>
+			</form>
+			{#if data.user.selfContactId}
+				<form method="POST" action="?/setSelf">
+					<button type="submit" class="text-sm text-link hover:underline">
+						{t('settings.self.clear')}
+					</button>
+				</form>
+			{/if}
+			{#if form?.selfError}
+				<p class="text-sm text-danger">{form.selfError}</p>
+			{:else if form?.selfSaved}
+				<p class="text-sm text-fg-muted">{form.selfSaved}</p>
+			{/if}
 		</div>
 	</section>
 

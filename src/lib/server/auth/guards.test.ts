@@ -15,7 +15,8 @@ const user = (role: AuthUser['role']): AuthUser => ({
 	email: 'p@example.org',
 	name: 'P',
 	role,
-	locale: DEFAULT_LOCALE
+	locale: DEFAULT_LOCALE,
+	selfContactId: null
 });
 
 /** The guard only reads `user`; the language rides along on every request's locals. */

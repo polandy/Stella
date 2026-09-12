@@ -98,8 +98,13 @@ import {
 	getStoryDeps,
 	getTagDeps,
 	getMemberDeps,
-	getMentionedInDeps
+	getMentionedInDeps,
+	getSelfContactDeps
 } from '$lib/server/services';
+import {
+	setSelfContact,
+	UnknownSelfContactError
+} from '$lib/server/domain/household/self-contact';
 
 /*
  * `?propose=<a>:<b>` names the pair whose new link should be propagated (docs/02 §2.4.1).
@@ -421,6 +426,26 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		const done = await archiveContact(getContactDeps(), viewer, params.id);
 		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/*
+	 * "This is me" (docs/02 §2.1.3), from the page of the person it is about. It toggles: the
+	 * same button lets go of the link again, so a wrong pick is undone where it was made.
+	 */
+	setSelf: async ({ params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const alreadyMe = locals.user.selfContactId === params.id;
+
+		try {
+			await setSelfContact(getSelfContactDeps(), viewer, alreadyMe ? null : params.id);
+		} catch (err) {
+			if (err instanceof UnknownSelfContactError)
+				return fail(400, { error: err.phrase(translator(locals)) });
+			throw err;
+		}
+
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 

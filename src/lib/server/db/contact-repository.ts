@@ -18,7 +18,14 @@ import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import { mergeContacts } from './contact-merge';
 import type { NameCandidate, NameCandidateSource } from '../domain/contacts/suggestions';
 import type * as schema from './schema';
-import { activityLog, contact as contactTable, journalEntry, photo, relationship } from './schema';
+import {
+	activityLog,
+	contact as contactTable,
+	journalEntry,
+	photo,
+	relationship,
+	user as userTable
+} from './schema';
 
 /*
  * Drizzle adapter for the ContactRepository port (docs/08 §8.3). Reads are scoped through
@@ -192,6 +199,13 @@ export function createDrizzleContactRepository(
 					)
 					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
 					.all();
+
+				// `user.self_contact_id` carries no cascade (docs/03 §user), so a member who said
+				// they are this person has to be let go of explicitly.
+				tx.update(userTable)
+					.set({ selfContactId: null })
+					.where(eq(userTable.selfContactId, id))
+					.run();
 
 				tx.delete(contactTable).where(eq(contactTable.id, id)).run();
 				// Same transaction as the delete: a removal with no trace is the thing the log

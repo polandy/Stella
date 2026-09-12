@@ -29,7 +29,8 @@ const admin: AuthUser = {
 	email: 'andy@example.test',
 	name: 'Andy',
 	role: 'admin',
-	locale: 'en'
+	locale: 'en',
+	selfContactId: null
 };
 
 async function seedAdmin(

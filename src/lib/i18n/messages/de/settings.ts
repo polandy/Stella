@@ -11,6 +11,14 @@ export const settings: SettingsMessages = {
 		'Stella spricht Deutsch und Englisch. Deine Wahl wird in deinem Profil gespeichert und gilt damit auf jedem Gerät, auf dem du dich anmeldest.',
 	'settings.language.saved': 'Sprache geändert.',
 	'settings.language.unsupported': 'Diese Sprache spricht Stella nicht.',
+	'settings.self.heading': 'Du',
+	'settings.self.label': 'Welche dieser Personen bist du',
+	'settings.self.hint':
+		'Sag Stella, welcher Eintrag du bist — dann weiss Stella, auf wessen Geschichte die Karte öffnet und welche Zeile du bist.',
+	'settings.self.placeholder': 'Dich selbst über den Namen suchen',
+	'settings.self.clear': 'Keine davon bin ich',
+	'settings.self.saved': 'Gespeichert.',
+	'settings.self.badge': 'Du',
 	'settings.data.heading': 'Daten',
 	'settings.data.importPeople': 'Menschen importieren',
 	'settings.data.importPeopleBlurb':
