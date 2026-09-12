@@ -59,6 +59,7 @@
 	let open = $state(false);
 	let highlighted = $state(0);
 	let input: HTMLInputElement | undefined = $state();
+	let root: HTMLDivElement | undefined = $state();
 
 	/** People named through this picker: the `people` prop is whatever the last load carried. */
 	let addedHere = $state<SelectablePerson[]>([]);
@@ -86,6 +87,22 @@
 	/** The keyboard's world: the people, then the create row when it is offered. */
 	const optionCount = $derived(matches.length + (showCreate ? 1 : 0));
 	const createIndex = $derived(matches.length);
+
+	/*
+	 * The search list closes when the input loses focus, but the create panel has to survive
+	 * that — the caret moves into it. So while it is open, a pointer landing anywhere outside
+	 * this picker is what closes it.
+	 */
+	$effect(() => {
+		if (!creating) return;
+		const closeOnOutside = (event: PointerEvent) => {
+			if (root?.contains(event.target as Node)) return;
+			creating = false;
+			open = false;
+		};
+		document.addEventListener('pointerdown', closeOnOutside, true);
+		return () => document.removeEventListener('pointerdown', closeOnOutside, true);
+	});
 
 	function choose(person: SelectablePerson) {
 		selectedIds = multiple ? [...selectedIds, person.id] : [person.id];
@@ -189,7 +206,7 @@
 		'absolute left-0 top-full z-10 mt-1 w-full min-w-[16rem] rounded-app border border-border bg-card shadow-pop';
 </script>
 
-<div class="relative">
+<div class="relative" bind:this={root}>
 	{#each selectedIds as pid (pid)}
 		<input type="hidden" {name} value={pid} />
 	{/each}
