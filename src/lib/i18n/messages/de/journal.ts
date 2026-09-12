@@ -18,6 +18,9 @@ export const journal: JournalMessages = {
 	'journal.oneEntryPerDay':
 		'Ein Eintrag pro Tag — speicherst du denselben Tag erneut, wird er aktualisiert. Privat und geteilt zählen getrennt.',
 	'journal.by': (p) => `von ${p.author}`,
+	'journal.editEntry': 'Eintrag bearbeiten',
+	'journal.saveChanges': 'Änderungen speichern',
+	'journal.editSaveFailed': 'Die Änderungen konnten nicht gespeichert werden. Versuche es erneut.',
 	'journal.deleteEntry': 'Eintrag löschen',
 	'journal.entryRemoved': 'Eintrag entfernt',
 	'journal.photoAlt': (p) => `${p.name}, ${p.day}`,

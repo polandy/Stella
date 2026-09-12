@@ -76,6 +76,43 @@
 		});
 	}
 
+	// Editing an entry in place: only one at a time, prefilled from the entry being edited.
+	let editingId = $state<string | null>(null);
+	let editTitle = $state('');
+	let editBody = $state('');
+	let editSaving = $state(false);
+	let editError = $state<string | null>(null);
+
+	function startEdit(entry: PageData['entries'][number]) {
+		editingId = entry.id;
+		editTitle = entry.title ?? '';
+		editBody = entry.bodyForEdit;
+		editError = null;
+	}
+	function cancelEdit() {
+		editingId = null;
+		editError = null;
+	}
+	async function onEditSubmit(event: SubmitEvent) {
+		event.preventDefault();
+		const formEl = event.currentTarget as HTMLFormElement;
+		editSaving = true;
+		editError = null;
+		try {
+			const res = await fetch(`/contacts/${c.id}/journal?/edit`, {
+				method: 'POST',
+				body: new FormData(formEl)
+			});
+			if (!res.ok) throw new Error();
+			editingId = null;
+			await invalidateAll();
+		} catch {
+			editError = t('journal.editSaveFailed');
+		} finally {
+			editSaving = false;
+		}
+	}
+
 	// Group the (already newest-first) entries by their day for the timeline.
 	const days = $derived.by(() => {
 		const groups: { date: string; items: PageData['entries'] }[] = [];
@@ -226,25 +263,77 @@
 									</span>
 								{/if}
 								{#if entry.mine}
-									<form
-										method="POST"
-										action="?/delete"
-										class="ml-auto"
-										onsubmit={(event) => deferRemoval(event, entry)}
-									>
-										<input type="hidden" name="id" value={entry.id} />
+									<div class="ml-auto flex items-center gap-2">
 										<button
-											class="text-fg-subtle hover:text-danger"
-											aria-label={t('journal.deleteEntry')}
-											title={t('journal.deleteEntry')}
+											type="button"
+											class="text-fg-subtle hover:text-fg"
+											aria-label={t('journal.editEntry')}
+											title={t('journal.editEntry')}
+											onclick={() => (editingId === entry.id ? cancelEdit() : startEdit(entry))}
 										>
-											<Icon name="remove" size={15} />
+											<Icon name="write" size={15} />
 										</button>
-									</form>
+										<form
+											method="POST"
+											action="?/delete"
+											onsubmit={(event) => deferRemoval(event, entry)}
+										>
+											<input type="hidden" name="id" value={entry.id} />
+											<button
+												class="text-fg-subtle hover:text-danger"
+												aria-label={t('journal.deleteEntry')}
+												title={t('journal.deleteEntry')}
+											>
+												<Icon name="remove" size={15} />
+											</button>
+										</form>
+									</div>
 								{/if}
 							</div>
-							<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
-							<div class="note-body text-fg">{@html entry.bodyHtml}</div>
+							{#if editingId === entry.id}
+								<form
+									method="POST"
+									action="?/edit"
+									onsubmit={onEditSubmit}
+									class="flex flex-col gap-3"
+								>
+									<input type="hidden" name="id" value={entry.id} />
+									{#if editError}
+										<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{editError}</p>
+									{/if}
+									<label class="flex flex-col gap-1 text-sm">
+										<span class="text-fg-muted">{t('journal.titleOptional')}</span>
+										<input
+											name="title"
+											bind:value={editTitle}
+											placeholder={t('journal.titlePlaceholder')}
+											class="rounded-md border border-border bg-bg px-3 py-2 text-fg"
+										/>
+									</label>
+									<MentionTextarea
+										name="body"
+										label={t('journal.entry')}
+										rows={5}
+										required
+										bind:value={editBody}
+										candidates={data.candidates}
+										visibility={entry.visibility}
+										placeholder={t('journal.bodyPlaceholder')}
+										class="w-full rounded-md border border-border bg-bg px-3 py-2 text-fg"
+									/>
+									<div class="flex items-center gap-3">
+										<Button variant="primary" disabled={editSaving}>
+											{editSaving ? t('common.saving') : t('journal.saveChanges')}
+										</Button>
+										<Button variant="ghost" type="button" onclick={cancelEdit}>
+											{t('common.cancel')}
+										</Button>
+									</div>
+								</form>
+							{:else}
+								<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
+								<div class="note-body text-fg">{@html entry.bodyHtml}</div>
+							{/if}
 
 							{#if entry.photos.length}
 								<div class="mt-3 flex flex-wrap gap-2">

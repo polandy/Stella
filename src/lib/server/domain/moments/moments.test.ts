@@ -102,6 +102,14 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 				e.body = p.body;
 				e.updatedAt = p.updatedAt;
 			},
+			async updateOwn(p) {
+				const e = entries.find((x) => x.id === p.id && x.createdBy === p.authorId);
+				if (!e) return false;
+				e.title = p.title;
+				e.body = p.body;
+				e.updatedAt = p.updatedAt;
+				return true;
+			},
 			async listForContactVisibleTo() {
 				return [];
 			},

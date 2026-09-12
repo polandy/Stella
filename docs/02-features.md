@@ -837,6 +837,9 @@ steps in the garden").
   same day again *edits* that entry rather than duplicating, so "one entry per day" holds while
   still letting a member keep both a shared and a separate private entry for the same day.
 - **Ownership.** Entries are attributed to their author; you may edit and delete **your own**.
+  Editing changes the title/body in place — the day and visibility stay put, since they are
+  part of the entry's identity (its day-slot, above); to move an entry to another day or change
+  its audience, delete it and write a new one.
 - Implemented as a pure, test-first domain module (`domain/journal`) over a `JournalRepository`
   port; visibility-scoped reads live in the Drizzle adapter; the route is a thin edge.
 - Monica's **journal** entries map here on import (§2.16); other Monica free-text falls back to

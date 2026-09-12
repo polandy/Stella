@@ -18,6 +18,9 @@ export const journal = {
 	'journal.oneEntryPerDay':
 		'One entry per day — saving the same day again updates it. Private and shared are separate.',
 	'journal.by': (p: { author: string }) => `by ${p.author}`,
+	'journal.editEntry': 'Edit entry',
+	'journal.saveChanges': 'Save changes',
+	'journal.editSaveFailed': 'Could not save the changes. Try again.',
 	'journal.deleteEntry': 'Delete entry',
 	'journal.entryRemoved': 'Entry removed',
 	'journal.photoAlt': (p: { name: string; day: string }) => `${p.name}, ${p.day}`,
