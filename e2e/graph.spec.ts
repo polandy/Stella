@@ -161,3 +161,61 @@ test('names the lines around the selected person, and only while they are select
 	await page.getByRole('complementary').getByRole('button', { name: 'Close' }).click();
 	await expect(async () => expect(await highlightedLabels(page)).toEqual([])).toPass();
 });
+
+/*
+ * The toolbar's search (docs/05 §5.8). On a narrow window the chip row wraps under the field,
+ * and the suggested names were painted behind the chips — so this reads what is actually on
+ * top at each name's own position, not merely whether the list is in the DOM.
+ */
+
+/** The owner of the topmost element at each page point — a positive reading, never a nothing. */
+async function ownersAt(page: Page, points: { x: number; y: number }[]): Promise<string[]> {
+	return page.evaluate(
+		(pts) =>
+			pts.map(({ x, y }) => {
+				const el = document.elementFromPoint(x, y);
+				if (!el) return 'nothing';
+				if (el.closest('[data-testid="graph-suggestions"]')) return 'suggestions';
+				const button = el.closest('button');
+				return button ? `chip: ${button.textContent?.trim()}` : el.tagName.toLowerCase();
+			}),
+		points
+	);
+}
+
+test('keeps the suggested names on top when the filter chips wrap under the search field', async ({
+	page
+}) => {
+	await page.setViewportSize({ width: 640, height: 800 });
+	await page.goto('/graph?center=demo-c-hans');
+	await expect(page.locator('canvas').first()).toBeVisible();
+
+	const field = page.getByLabel('Find a person');
+	await field.fill('bru');
+	const list = page.getByTestId('graph-suggestions');
+	await expect(list.getByRole('button', { name: 'Hans Brunner' })).toBeVisible();
+
+	// The chips have to overlap the list here, or the rest of this proves nothing.
+	const fieldBox = await field.boundingBox();
+	const chipBox = await page.getByRole('button', { name: 'Family' }).boundingBox();
+	const listBox = await list.boundingBox();
+	if (!fieldBox || !chipBox || !listBox) throw new Error('the toolbar has no layout');
+	expect(chipBox.y).toBeGreaterThan(fieldBox.y + fieldBox.height);
+	expect(chipBox.y).toBeLessThan(listBox.y + listBox.height);
+
+	// Every name answers for its own position.
+	const rows = await list.getByRole('button').all();
+	const points = await Promise.all(
+		rows.map(async (row) => {
+			const box = await row.boundingBox();
+			if (!box) throw new Error('a suggested name has no layout');
+			return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+		})
+	);
+	expect(points.length).toBeGreaterThan(0);
+	expect(await ownersAt(page, points)).toEqual(points.map(() => 'suggestions'));
+
+	// And the name takes the click, rather than a chip swallowing it.
+	await list.getByRole('button', { name: 'Hans Brunner' }).click();
+	await expect(page.getByRole('complementary').getByText('Hans Brunner')).toBeVisible();
+});

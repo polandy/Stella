@@ -282,6 +282,7 @@
 			/>
 			{#if suggestions.length}
 				<ul
+					data-testid="graph-suggestions"
 					class="absolute left-0 top-full mt-1 w-full overflow-hidden rounded-app border border-border bg-card shadow-pop"
 				>
 					{#each suggestions as c (c.id)}
