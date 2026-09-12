@@ -17,6 +17,9 @@ export const contact: ContactMessages = {
 	'contact.write': 'Schreiben',
 	'contact.logContact': 'Kontakt festhalten',
 	'contact.egoGraphLabel': (p) => `Beziehungsnetz von ${p.name}`,
+	'contact.overview.relationships': (p) => (p.count === 1 ? '1 Beziehung' : `${p.count} Beziehungen`),
+	'contact.overview.encounters': (p) => (p.count === 1 ? '1 Begegnung' : `${p.count} Begegnungen`),
+	'contact.story.title': 'Aktivität',
 
 	'contact.tab.story': 'Verlauf',
 	'contact.tab.people': 'Menschen',
@@ -120,8 +123,6 @@ export const contact: ContactMessages = {
 	'contact.relationships.person': 'Person',
 	'contact.relationships.addSomeoneFirst':
 		'Lege zuerst eine weitere Person an, dann kannst du sie hier verknüpfen.',
-	'contact.relationships.showMap': 'Karte zeigen',
-	'contact.relationships.hideMap': 'Karte ausblenden',
 	'contact.relationships.alsoTrue': 'Stimmt das auch?',
 	'contact.relationships.parentProposal': (p) => `${p.parent} ist ein Elternteil von ${p.child}`,
 	'contact.relationships.addThisToo': 'Das auch hinzufügen',
