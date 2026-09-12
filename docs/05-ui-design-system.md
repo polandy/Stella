@@ -434,7 +434,9 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - **Expand affordance:** an unexpanded node hints it can grow (e.g. a small "+" / count of
   hidden connections); clicking expands its neighborhood in place with a gentle animation.
 - **Search & focus:** an in-canvas search field; selecting a result smoothly pans/zooms to
-  that node and pulses it.
+  that node and pulses it. The suggested names are drawn above the rest of the toolbar: on a
+  narrow window the chip row wraps underneath the field, and a name a chip covers cannot be
+  read or clicked.
 - **Connection path:** choosing a second person animates the connecting nodes/edges into
   view and de-emphasizes everything else, so the chain reads instantly.
 - **Selection & peek:** selecting a node dims the rest, highlights its neighborhood, and
