@@ -271,7 +271,9 @@
 		class="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-center gap-2 transition-[padding]"
 		class:sm:pr-[17rem]={peekNode && !pathMode}
 	>
-		<div class="pointer-events-auto relative">
+		<!-- Above the chips: on a narrow window the chip row wraps under the field, and the
+		     suggestion list would otherwise be hidden behind it. -->
+		<div class="pointer-events-auto relative z-20">
 			<input
 				bind:value={query}
 				placeholder={t('graph.findPlaceholder')}
@@ -280,6 +282,7 @@
 			/>
 			{#if suggestions.length}
 				<ul
+					data-testid="graph-suggestions"
 					class="absolute left-0 top-full mt-1 w-full overflow-hidden rounded-app border border-border bg-card shadow-pop"
 				>
 					{#each suggestions as c (c.id)}
