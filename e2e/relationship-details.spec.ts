@@ -100,7 +100,7 @@ test('refuses a generation claimed in both directions, and writes nothing', asyn
 	await expect(enteredRow(page, 'Heidi Lehmann')).not.toContainText('Child of');
 });
 
-test('corrects the specifics from the row, and never offers the type', async ({ page }) => {
+test('corrects the specifics from the row, the type picker preset to the link', async ({ page }) => {
 	await openPeopleTab(page, /Bettina Roth/);
 	await addLink(page, { type: 'Knows', person: 'Jan Steiner', how: HOW, since: '2019-06-01', status: 'former' });
 
@@ -108,8 +108,11 @@ test('corrects the specifics from the row, and never offers the type', async ({ 
 	await row.getByRole('button', { name: 'Edit' }).click();
 
 	const editor = page.locator('form[action="?/editRelationship"]');
-	// Changing the type could flip the stored direction, so it is not on offer here.
-	await expect(editor.locator('select[name=typeChoice]')).toHaveCount(0);
+	// The type is on offer again, preset to what the link says today (docs/02 §2.4).
+	await expect(editor.locator('select[name=typeChoice]')).toHaveValue(/./);
+	await expect(
+		editor.locator('select[name=typeChoice] option:checked')
+	).toHaveText('Knows');
 	await expect(editor.locator('input[name=description]')).toHaveValue(HOW);
 
 	await editor.locator('input[name=description]').fill('walked the Gurten every spring');
