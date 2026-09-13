@@ -29,7 +29,13 @@ export const search = {
 	'graph.peek.expand': 'Expand connections',
 	'graph.peek.openProfile': 'Open profile',
 	'graph.peek.tip':
-		'Tip: click a selected node to expand it, or use the connection path to see how two people are linked.'
+		'Tip: click a selected node to expand it, or use the connection path to see how two people are linked.',
+	// The map on a person's page reaches two steps and no further (docs/05 §5.5).
+	'graph.peek.inFullGraph': 'Open in the graph',
+	'graph.peek.tipCompact': 'Tip: tap a selected person again to open up their own connections.',
+	'graph.peek.edgeOfMap': 'This is as far as this map goes. The graph carries the rest.',
+	'graph.onPerson.label': (p: { name: string }) => `The people around ${p.name}`,
+	'graph.onPerson.loading': 'Drawing the map…'
 };
 
 /** The key set every translation of this area has to provide. */

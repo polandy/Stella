@@ -6,6 +6,7 @@
 	 * Category accents follow docs/05 §5.6.
 	 */
 	import { categoryVar } from '$lib/design/tokens';
+	import { thumbnailUrl } from '$lib/media/urls';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { RELATIONSHIP_CATEGORIES, type RelationshipCategory } from '$lib/relationships/categories';
 
@@ -14,8 +15,14 @@
 		name: string;
 		label: string;
 		category: string;
+		/** A face where there is one, so this reads like the interactive map it precedes. */
+		avatarPhotoId?: string | null;
 	}
-	let { centerName, nodes }: { centerName: string; nodes: EgoNode[] } = $props();
+	let {
+		centerName,
+		centerPhotoId = null,
+		nodes
+	}: { centerName: string; centerPhotoId?: string | null; nodes: EgoNode[] } = $props();
 
 	const t = useTranslate();
 
@@ -67,6 +74,17 @@
 	aria-label={t('contact.egoGraphLabel', { name: centerName })}
 	style="font-size:{13 * fontScale}px"
 >
+	<!--
+		One clip per disc: an SVG image is a rectangle until something rounds it, and the
+		interactive map draws the same faces as circles (docs/05 §5.8).
+	-->
+	<defs>
+		<clipPath id="ego-clip-center"><circle cx={CX} cy={CY} r={CENTER_R} /></clipPath>
+		{#each placed as n (n.id)}
+			<clipPath id="ego-clip-{n.id}"><circle cx={n.x} cy={n.y} r={NODE_R} /></clipPath>
+		{/each}
+	</defs>
+
 	<!-- edges first so nodes sit on top -->
 	{#each placed as n (n.id)}
 		<line x1={CX} y1={CY} x2={n.x} y2={n.y} stroke="var(--border)" stroke-width="2" />
@@ -75,9 +93,21 @@
 	<!-- centre -->
 	<g class="center">
 		<circle cx={CX} cy={CY} r={CENTER_R} fill="var(--primary)" />
-		<text x={CX} y={CY} dy="0.35em" text-anchor="middle" fill="var(--primary-fg)" font-weight="700">
-			{initials(centerName)}
-		</text>
+		{#if centerPhotoId}
+			<image
+				href={thumbnailUrl(centerPhotoId)}
+				x={CX - CENTER_R}
+				y={CY - CENTER_R}
+				width={CENTER_R * 2}
+				height={CENTER_R * 2}
+				preserveAspectRatio="xMidYMid slice"
+				clip-path="url(#ego-clip-center)"
+			/>
+		{:else}
+			<text x={CX} y={CY} dy="0.35em" text-anchor="middle" fill="var(--primary-fg)" font-weight="700">
+				{initials(centerName)}
+			</text>
+		{/if}
 	</g>
 
 	<!-- neighbours -->
@@ -87,9 +117,21 @@
 				{n.label}
 			</text>
 			<circle cx={n.x} cy={n.y} r={NODE_R} fill={n.color} />
-			<text x={n.x} y={n.y} dy="0.35em" text-anchor="middle" fill="#fff" font-weight="600">
-				{initials(n.name)}
-			</text>
+			{#if n.avatarPhotoId}
+				<image
+					href={thumbnailUrl(n.avatarPhotoId)}
+					x={n.x - NODE_R}
+					y={n.y - NODE_R}
+					width={NODE_R * 2}
+					height={NODE_R * 2}
+					preserveAspectRatio="xMidYMid slice"
+					clip-path="url(#ego-clip-{n.id})"
+				/>
+			{:else}
+				<text x={n.x} y={n.y} dy="0.35em" text-anchor="middle" fill="#fff" font-weight="600">
+					{initials(n.name)}
+				</text>
+			{/if}
 			<text x={n.x} y={n.y + NODE_R + 15} text-anchor="middle" fill="var(--fg)" class="who">
 				{n.name}
 			</text>

@@ -82,10 +82,12 @@ test('keeps an archived person in the family, only out of the lists', async ({ p
 	// Their own page is untouched — it is where they are brought back from.
 	await expect(page.locator('#section-relationships')).toContainText('Thomas Widmer');
 
-	// And the map still draws them: Stella works out grandparents and cousins *through*
-	// people, so forgetting one would make it name the rest wrongly (docs/04 §4.9).
+	// And they are still on the other side of the link: Stella works out grandparents and
+	// cousins *through* people, so forgetting one would make it name the rest wrongly
+	// (docs/04 §4.9). The map is a canvas now (docs/05 §5.8), so the list is where this is
+	// read — it is drawn from the same relationships.
 	await openPerson(page, /Thomas Widmer/);
-	await expect(page.getByRole('link', { name: new RegExp(`${WHO} —`) })).toBeVisible();
+	await expect(page.locator('#section-relationships')).toContainText(WHO);
 
 	await openArchivedPerson(page, WHO);
 	await restoreOpenPerson(page);

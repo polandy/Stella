@@ -2,7 +2,7 @@
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
-	import EgoGraph from '$lib/components/EgoGraph.svelte';
+	import RelationshipMap from '$lib/components/graph/RelationshipMap.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
@@ -119,11 +119,22 @@
 		logOpen = true;
 	}
 
-	// One ego-graph node per connected person (a person may hold several relationship
-	// types; the graph shows them once, keeping the first label).
+	// One map node per connected person (a person may hold several relationship types; the
+	// map shows them once, keeping the first label). The face comes from the graph slice,
+	// which already carries every visible person's avatar — so the first paint wears the same
+	// faces the interactive map does, rather than swapping initials for photos as it loads.
+	const photoById = $derived(
+		new Map(data.graph.nodes.map((node) => [node.id, node.avatarPhotoId ?? null]))
+	);
 	const egoNodes = $derived.by(() => {
 		const seen = new Set<string>();
-		const out: { id: string; name: string; label: string; category: string }[] = [];
+		const out: {
+			id: string;
+			name: string;
+			label: string;
+			category: string;
+			avatarPhotoId: string | null;
+		}[] = [];
 		for (const r of data.relationships) {
 			if (seen.has(r.otherContactId)) continue;
 			seen.add(r.otherContactId);
@@ -131,7 +142,8 @@
 				id: r.otherContactId,
 				name: r.otherDisplayName,
 				label: relationshipRowLabel(t, r),
-				category: r.category
+				category: r.category,
+				avatarPhotoId: photoById.get(r.otherContactId) ?? null
 			});
 		}
 		return out;
@@ -654,12 +666,19 @@
 						<!--
 							The map first, the list under it: who this person is connected to is a shape
 							before it is twelve rows, and the rows are what you come back to in order to
-							correct one (docs/05 §5.5). Pure SVG over relationships already on the page —
-							no extra fetch, no graph engine.
+							correct one (docs/05 §5.5). It draws as plain SVG and becomes the interactive
+							explorer once the engine has loaded.
 						-->
 						{#if egoNodes.length > 0}
 							<div class="mb-3">
-								<EgoGraph centerName={c.displayName} nodes={egoNodes} />
+								<RelationshipMap
+									centerId={c.id}
+									centerName={c.displayName}
+									centerPhotoId={c.avatarPhotoId}
+									graph={data.graph}
+									nodes={egoNodes}
+									fullGraphHref={(nodeId) => `/graph?center=${nodeId}`}
+								/>
 							</div>
 						{/if}
 

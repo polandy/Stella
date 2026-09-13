@@ -213,9 +213,10 @@ They must be edited together; `app.css` says so at both blocks.
     friends) so a link can point at one; the passive references of §2.20.1 do, and a form action
     redirects back to the card it acted on. Bookmarks holding the old `?tab=` are answered with
     the card they meant.
-  - **People** opens with the **ego graph** (pure SVG over the relationships already on the
-    page — no extra fetch, no graph engine), because who someone is connected to is a shape
-    before it is a dozen rows; *Explore in graph* reaches the full, interactive map. The list
+  - **People** opens with the **map** — the same explorer the graph route runs, with this
+    person locked in the middle and a reach of two hops (§5.8) — because who someone is
+    connected to is a shape before it is a dozen rows; *Explore in graph* reaches the whole
+    household. The list
     follows, each row *label · name · how they connect · since <day>* with *former* as a quiet
     chip, carrying **Edit** (revealing the same three fields in place, the type not among them)
     and the standard remove-with-undo. Below it, **Also related · worked out, not entered**
@@ -500,6 +501,23 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - **Theme-aware:** all node/edge/label colors read from the semantic tokens so it matches
   Latte/Mocha; respects reduced motion (no continuous physics; expansion animations become
   instant when set). Keyboard-operable with a list-based fallback (§5.9).
+- **Embedded on a person's page** (§5.5) the same component runs with a narrower brief
+  (`compact`, `maxRings`): this person stays in the middle, the map reaches **two hops**
+  (`PERSON_MAP_RINGS`) and a node on the last ring offers *Open in the graph* where it would
+  otherwise offer *Expand* — a card-sized map is not a way to walk the household. The toolbar
+  keeps the filter chips (which are the legend) and the Labels toggle, and drops what is about
+  travelling elsewhere: the find-a-person field, because the page has its own search, and the
+  connection path. Nothing is selected on arrival, since the page's header already names the
+  person and the peek panel would cover the map; circles start switched **off**, because they
+  double the node count for something the profile lists anyway.
+- **What the page is handed:** its own slice, not the household. `personMap` cuts two hops out
+  of the same access-scoped snapshot the route reads (kinship is inferred over the whole
+  visible graph, so a slice cut earlier could name the wrong relative), and the browser gets
+  only that. Enough that expanding a neighbour needs no round-trip.
+- **How it arrives:** the plain SVG ego graph is server-rendered and shown first; the engine is
+  fetched afterwards and takes its place when ready (`RelationshipMap`). The map is never an
+  empty box waiting on 400 KB, and a browser that never finishes the fetch keeps the SVG —
+  which is the fallback rather than an error state.
 
 ## 5.9 Accessibility checklist
 
