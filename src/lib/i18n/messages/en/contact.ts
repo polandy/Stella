@@ -110,7 +110,6 @@ export const contact = {
 	'contact.interaction.submit': 'Log interaction',
 
 	'contact.relationships.add': 'Add relationship',
-	'contact.relationships.explore': 'Explore in graph',
 	'contact.relationships.none': 'No relationships yet.',
 	'contact.relationships.remove': (p: { name: string }) => `Remove the link to ${p.name}`,
 	'contact.relationships.removed': 'Relationship removed',

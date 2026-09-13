@@ -9,6 +9,18 @@ export interface CentrableNode {
 	kind: string;
 }
 
+/** Who the explorer opens on, and whether a link asked for them. */
+export interface Center {
+	id: string | null;
+	/**
+	 * True only when the centre is the one the link named. A profile links here with its own
+	 * person (docs/05 §5.5), so this is also what says a way back to that page is owed — the
+	 * member's own person, chosen because nothing was asked for, is not somewhere they came
+	 * from.
+	 */
+	asked: boolean;
+}
+
 /**
  * The asked-for person wins; otherwise the member's own person (docs/02 §2.1.3), which is the
  * view they almost always want; otherwise the first visible person, so the page is never
@@ -19,9 +31,9 @@ export function chooseCenter(
 	nodes: readonly CentrableNode[],
 	requested: string | null,
 	selfContactId: string | null
-): string | null {
+): Center {
 	const ids = new Set(nodes.map((node) => node.id));
-	if (requested && ids.has(requested)) return requested;
-	if (selfContactId && ids.has(selfContactId)) return selfContactId;
-	return nodes.find((node) => node.kind === 'person')?.id ?? null;
+	if (requested && ids.has(requested)) return { id: requested, asked: true };
+	if (selfContactId && ids.has(selfContactId)) return { id: selfContactId, asked: false };
+	return { id: nodes.find((node) => node.kind === 'person')?.id ?? null, asked: false };
 }

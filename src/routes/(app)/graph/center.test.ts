@@ -12,25 +12,33 @@ const nodes: CentrableNode[] = [
 ];
 
 describe('chooseCenter', () => {
-	it('opens on the person the link asks for', () => {
-		expect(chooseCenter(nodes, 'c-anna', 'c-me')).toBe('c-anna');
+	it('opens on the person the link asks for, and remembers that it was asked', () => {
+		expect(chooseCenter(nodes, 'c-anna', 'c-me')).toEqual({ id: 'c-anna', asked: true });
 	});
 
 	it('opens on my own person when nothing was asked for', () => {
-		expect(chooseCenter(nodes, null, 'c-me')).toBe('c-me');
+		expect(chooseCenter(nodes, null, 'c-me')).toEqual({ id: 'c-me', asked: false });
 	});
 
 	it('falls back to the first visible person when I have not said who I am', () => {
-		expect(chooseCenter(nodes, null, null)).toBe('c-anna');
+		expect(chooseCenter(nodes, null, null)).toEqual({ id: 'c-anna', asked: false });
 	});
 
 	it('ignores anyone outside the visible graph, asked for or not', () => {
 		// A stale link, and a "me" whose record this member may no longer see.
-		expect(chooseCenter(nodes, 'c-hidden', 'c-me')).toBe('c-me');
-		expect(chooseCenter(nodes, null, 'c-hidden')).toBe('c-anna');
+		expect(chooseCenter(nodes, 'c-hidden', 'c-me')).toEqual({ id: 'c-me', asked: false });
+		expect(chooseCenter(nodes, null, 'c-hidden')).toEqual({ id: 'c-anna', asked: false });
+	});
+
+	it('owes no way back when the link named somebody the viewer cannot see', () => {
+		// Falling back must not offer "back to" a page the member could not have come from.
+		expect(chooseCenter(nodes, 'c-hidden', 'c-me').asked).toBe(false);
 	});
 
 	it('answers null when there is no person to open on', () => {
-		expect(chooseCenter([{ id: 'circle-1', kind: 'circle' }], null, 'c-me')).toBeNull();
+		expect(chooseCenter([{ id: 'circle-1', kind: 'circle' }], null, 'c-me')).toEqual({
+			id: null,
+			asked: false
+		});
 	});
 });

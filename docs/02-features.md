@@ -484,10 +484,15 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 
 **Entry points**
 
-- From **a person's profile**: "Explore connections" opens the explorer centered on that
-  contact, showing all of their relationships and circles at once.
+- From **a person's profile**: the map on their page *is* this explorer, with a two-hop reach
+  (docs/05 §5.5). **Open in the graph** carries that person here as the centre — from the
+  card's header, and from the peek panel of any node the embedded map cannot expand.
 - As a **standalone screen** (nav → Graph). It opens on **your own person** when you have
   said who that is (§2.1.3), and otherwise on the first person the household has.
+- **The way back.** When a link named the centre, the explorer carries *Back to <person>* to
+  the page it was opened from. It is offered only for a centre that was asked for and could be
+  honoured: falling back to your own person is not somewhere you came from, and neither is a
+  stale link naming somebody this member cannot see.
 
 **What is shown**
 

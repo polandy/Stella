@@ -654,12 +654,11 @@
 					bind:open={relateOpen}
 				>
 					{#snippet action()}
-						<a
-							href="/graph?center={c.id}"
-							class="inline-flex items-center gap-1 text-xs text-link hover:underline"
-						>
-							<Icon name="explore" size={12} />{t('contact.relationships.explore')}
-						</a>
+						<!-- The way out of this person's two hops and into the household (docs/05 §5.5).
+						     A button, not a 12px text link: it is the second thing this card offers. -->
+						<Button size="sm" icon="graph" href="/graph?center={c.id}">
+							{t('graph.openInGraph')}
+						</Button>
 					{/snippet}
 
 					{#if visibleRelationships.length > 0}

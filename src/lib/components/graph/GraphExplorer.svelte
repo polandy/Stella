@@ -444,7 +444,7 @@
 					<Button type="button" onclick={() => expand(peekNode.id)}>{t('graph.peek.expand')}</Button>
 				{:else if fullGraphHref}
 					<!-- The map ends here, so the honest offer is the one place that goes further. -->
-					<Button icon="graph" href={fullGraphHref(peekNode.id)}>{t('graph.peek.inFullGraph')}</Button>
+					<Button icon="graph" href={fullGraphHref(peekNode.id)}>{t('graph.openInGraph')}</Button>
 				{/if}
 				{#if peekNode.kind === 'person'}
 					<Button variant="primary" href="/contacts/{peekNode.id}">{t('graph.peek.openProfile')}</Button>
