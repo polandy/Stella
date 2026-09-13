@@ -230,6 +230,12 @@ A change is done when:
   changelog and version are generated from it, so an accurate type matters.
 - Config lives in `release-please-config.json` + `.release-please-manifest.json`; the
   workflow is `.github/workflows/release-please.yml` (GitHub Actions).
+- **The release PR runs no CI**, by design: `ci.yml`'s `pull_request` trigger ignores
+  `release-please--**`. The PR only bumps the version, the changelog and the manifest —
+  content already verified on `main` — and its branch is authored by `github-actions[bot]`,
+  a `CONTRIBUTOR`, so each run would wait forever on "Approve and run" and then be reported
+  as a workflow-file failure once the merge deleted the branch. So merge it on `main`'s
+  green run; an empty check list there is expected, not a skipped gate.
 
 ## 8.10 Working agreement
 

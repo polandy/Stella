@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   pull_request:
+    # release-please's PR only bumps the version, the changelog and the manifest — content
+    # that already passed CI on main. Its branch is authored by github-actions[bot], whose
+    # association is CONTRIBUTOR, so every run on it needs a manual "Approve and run" and
+    # otherwise sits in `action_required` until the merge deletes the branch — at which
+    # point GitHub flips the abandoned run to a failure blaming the workflow file.
+    branches-ignore: ['release-please--**']
 
 # A push that supersedes an earlier one on the same branch cancels its run; on main every
 # commit is kept, because release-please and the deploy read those results.
