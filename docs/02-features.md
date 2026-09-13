@@ -299,6 +299,12 @@ reciprocal** link.
 - **Guardrails:** prevent duplicate and self relationships; warn on contradictions
   (e.g. mutual "parent of").
 
+- **Shipped:** the picker offers an asymmetric type **from both sides** — "Parent of" *and*
+  "Child of", "Mentor of" *and* "Mentee of" — so a link can be entered from whichever profile
+  is open, in the words that fit the sentence. The chosen side decides which endpoint is
+  stored as `from`; the row itself is the same one either way, and the other person sees the
+  opposite label as before. A symmetric type reads the same both ways and is listed once.
+
 - **Shipped:** entering a link takes the specifics with it — the free text for *how* these two
   connect, an optional **since** day and a **status** of *current* or *former*, all optional and
   all editable afterwards from the row itself. The row reads them back inline, with *former*

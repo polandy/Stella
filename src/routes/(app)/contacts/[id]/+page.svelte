@@ -30,6 +30,7 @@
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
+	import { relationshipTypeOptions } from '$lib/relationships/type-options';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
@@ -911,9 +912,13 @@
 									<span class="text-fg-muted">
 										{t('contact.relationships.is', { name: c.displayName })}
 									</span>
-									<select name="typeId" class={INPUT}>
-										{#each data.relationshipTypes as type (type.id)}
-											<option value={type.id}>{relationshipTypeLabel(t, type)}</option>
+									<!-- Both directions of an asymmetric type, so "is a child of" needs no
+										 detour via the other profile (docs/02 §2.4). -->
+									<select name="typeChoice" class={INPUT}>
+										{#each relationshipTypeOptions(data.relationshipTypes) as option (option.value)}
+											<option value={option.value}>
+												{relationshipTypeLabel(t, option.type, option.side)}
+											</option>
 										{/each}
 									</select>
 								</label>
