@@ -202,6 +202,10 @@
 			if (showCreate && highlighted === createIndex) startCreate();
 			else choose(matches[highlighted]);
 		} else if (event.key === 'Escape') {
+			// Consumed, so the form around the picker keeps its own Escape for itself: the
+			// section's disclosure closes on Escape (docs/05 §5.7), and dismissing a suggestion
+			// list must not throw away the half-filled form behind it.
+			event.preventDefault();
 			open = false;
 		}
 	}

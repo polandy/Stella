@@ -84,6 +84,9 @@
 			event.preventDefault();
 			void choose(selected);
 		} else if (event.key === 'Escape') {
+			// Consumed — see PersonSearchSelect: Escape closes the suggestion list, not the
+			// form it sits in (docs/05 §5.7).
+			event.preventDefault();
 			active = null;
 		}
 	}
