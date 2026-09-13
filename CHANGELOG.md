@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.8](https://github.com/polandy/Stella/compare/v0.0.7...v0.0.8) (2026-09-13)
+
+
+### Features
+
+* **relationships:** offer both directions of a type when adding a link ([#72](https://github.com/polandy/Stella/issues/72)) ([d7d0b2f](https://github.com/polandy/Stella/commit/d7d0b2fb301ede9c47298ec01d941c70666e8fd9))
+
+
+### Bug Fixes
+
+* **relationships:** refuse a generation claimed in both directions ([#74](https://github.com/polandy/Stella/issues/74)) ([c073a2c](https://github.com/polandy/Stella/commit/c073a2cb05a472996f30497bf1f127c8e8e132f6))
+
 ## [0.0.7](https://github.com/polandy/Stella/compare/v0.0.6...v0.0.7) (2026-09-13)
 
 
