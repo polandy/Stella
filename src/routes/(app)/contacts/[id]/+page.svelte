@@ -30,7 +30,7 @@
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
-	import { encodeRelationshipChoice, relationshipTypeOptions } from '$lib/relationships/type-options';
+	import { isChoiceOfLink, relationshipTypeOptions } from '$lib/relationships/type-options';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
@@ -802,7 +802,7 @@
 													{#each relationshipTypeOptions(data.relationshipTypes) as option (option.value)}
 														<option
 															value={option.value}
-															selected={option.value === encodeRelationshipChoice(rel.typeId, rel.side)}
+															selected={isChoiceOfLink(option, rel)}
 														>
 															{relationshipTypeLabel(t, option.type, option.side)}
 														</option>

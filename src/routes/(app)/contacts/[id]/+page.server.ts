@@ -545,10 +545,12 @@ export const actions: Actions = {
 
 		try {
 			const saved = await editRelationship(getRelationshipDeps(), viewer, {
-				...parsed.output,
 				relationshipId: parsed.output.relationshipId,
 				perspectiveContactId: params.id,
-				typeChoice: choice
+				typeChoice: choice,
+				description: parsed.output.description ?? null,
+				sinceDate: parsed.output.sinceDate ?? null,
+				status: parsed.output.status ?? null
 			});
 			if (!saved) return fail(404, { error: say(locals, 'errors.relationship.notFound') });
 		} catch (err) {
