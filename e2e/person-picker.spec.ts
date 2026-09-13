@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { pickPerson, signIn } from './app';
+import { openPerson, pickPerson, signIn } from './app';
 
 /*
  * What the person picker promises a screen reader (docs/05 §5.7, §5.9).
@@ -14,12 +14,14 @@ test('keeps its name once a chip is in it, where a wrapping label would have los
 	page
 }) => {
 	await signIn(page);
-	await page.goto('/contacts');
-	await page.getByRole('link', { name: 'Lena Brunner' }).first().click();
+	// `openPerson` waits for the shell to mount; *Log contact* is a disclosure that does
+	// nothing until it has.
+	await openPerson(page, /Lena Brunner/);
 	await page.getByRole('tab', { name: /Story/ }).click();
 	await page.getByRole('button', { name: 'Log contact' }).first().click();
 
 	const form = page.locator('form[action="?/logInteraction"]');
+	await expect(form).toBeVisible();
 	const field = form.getByLabel('Who else was there?');
 
 	// The positive control: with no chip there is nothing to steal the name, so a failure
