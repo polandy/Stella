@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.0.7](https://github.com/polandy/Stella/compare/v0.0.6...v0.0.7) (2026-09-13)
+
+
+### Features
+
+* allow editing a journal entry's title and body in place ([#54](https://github.com/polandy/Stella/issues/54)) ([4afa7ab](https://github.com/polandy/Stella/commit/4afa7abb41fcd45ee2b3fd3bd9acd8a708885e97))
+* **contacts:** open a person on People, name the story panel ([35e1d01](https://github.com/polandy/Stella/commit/35e1d0181872b131a6977bf396610e9788093145))
+* create a person from inside a person picker ([#65](https://github.com/polandy/Stella/issues/65)) ([34ce56b](https://github.com/polandy/Stella/commit/34ce56b4ec592da3ff47e6d21e5290512aac766d))
+* enter dates in the language Stella is read in ([#68](https://github.com/polandy/Stella/issues/68)) ([0d8f2ac](https://github.com/polandy/Stella/commit/0d8f2acf608f6059e965aad8cef85fcfcbd7180b))
+* **graph:** name every edge from a toolbar toggle ([a40d7b1](https://github.com/polandy/Stella/commit/a40d7b10f382d7e7dabdf89816a220c05ba5ad5c))
+* let each member say which person they are ([6eaf1f2](https://github.com/polandy/Stella/commit/6eaf1f2569dc25887965891075d36ca420663769))
+* make every person picker searchable by name ([973536f](https://github.com/polandy/Stella/commit/973536fc05cc2a892a640031692938861cd64686))
+
+
+### Bug Fixes
+
+* **a11y:** keep the person picker named once a chip is in it ([#70](https://github.com/polandy/Stella/issues/70)) ([365fc89](https://github.com/polandy/Stella/commit/365fc896f1048671c5919f1a7a282635d80e2c59))
+* add account sign-out to Settings for mobile ([be57c23](https://github.com/polandy/Stella/commit/be57c2346b4c8fd362091fc53a62d1531b546666))
+* **graph:** keep the search suggestions above the filter chips ([364217c](https://github.com/polandy/Stella/commit/364217cbd0882fc2abc9e949b011da7a9e02eba1))
+* **import:** correct the direction of asymmetric Monica relationships ([1aca3c0](https://github.com/polandy/Stella/commit/1aca3c021a7f2f502527ab1f448fd76926d5a23d))
+
 ## [0.0.6](https://github.com/polandy/Stella/compare/v0.0.5...v0.0.6) (2026-09-09)
 
 
