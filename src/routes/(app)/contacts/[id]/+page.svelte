@@ -592,9 +592,10 @@
 							<p class="text-xs text-fg">
 								{t('contact.merge.explain', { name: c.displayName })}
 							</p>
-							<label class="flex flex-col gap-1">
+							<label for="merge-target" class="flex flex-col gap-1">
 								<span class="text-xs text-fg-muted">{t('contact.merge.who')}</span>
 								<PersonSearchSelect
+									id="merge-target"
 									people={data.otherContacts}
 									name="mergedId"
 									bind:selectedIds={mergeTargetId}
@@ -695,9 +696,10 @@
 							<textarea name="description" rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} class={INPUT}
 							></textarea>
 							{#if data.otherContacts.length > 0}
-								<label class="flex flex-col gap-1 text-sm text-fg-muted">
+								<label for="interaction-participants" class="flex flex-col gap-1 text-sm text-fg-muted">
 									{t('contact.interaction.whoElse')}
 									<PersonSearchSelect
+										id="interaction-participants"
 										people={data.otherContacts}
 										name="participants"
 										bind:selectedIds={participantIds}
@@ -914,9 +916,10 @@
 										{/each}
 									</select>
 								</label>
-								<label class="flex flex-1 flex-col gap-1 text-sm">
+								<label for="relationship-target" class="flex flex-1 flex-col gap-1 text-sm">
 									<span class="text-fg-muted">{t('contact.relationships.person')}</span>
 									<PersonSearchSelect
+										id="relationship-target"
 										people={data.otherContacts}
 										name="targetId"
 										bind:selectedIds={relationshipTargetId}
