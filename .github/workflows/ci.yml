@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+    # The release PR carries nothing CI can verify and its bot-authored branch can never
+    # get a run approved, so it is skipped deliberately — docs/08 §8.9.
+    branches-ignore: ['release-please--**']
 
 # A push that supersedes an earlier one on the same branch cancels its run; on main every
 # commit is kept, because release-please and the deploy read those results.
