@@ -296,8 +296,20 @@ reciprocal** link.
   (e.g. current/former for partners) **[M2]**.
 - Relationships are shown on each contact's profile, grouped by category (description
   inline), and drive the graph (2.7).
-- **Guardrails:** prevent duplicate and self relationships; warn on contradictions
+- **Guardrails:** prevent duplicate and self relationships; refuse contradictions
   (e.g. mutual "parent of").
+
+- **Shipped:** a **generation claimed in both directions is refused**. `parent_child` and
+  `grandparent_grandchild` run one way — nobody is their own parent's parent — so once such a
+  link is stored, entering it flipped between the same two people is turned away with the
+  reason and nothing is written. It matters twice over: the picker offers both sides of a type
+  from one screen (below), which puts the flipped pair one wrong click away, and the kinship
+  engine reads exactly these types to work out grandparents, cousins and in-laws, so a
+  contradictory pair would quietly poison what it derives. A household's **own** directed type
+  is deliberately left permissive — two people really can each be the other's landlord, and
+  Stella does not know enough about a type somebody named to call that a mistake. Symmetric
+  types are unaffected: they are stored order-independently, so the duplicate guard already
+  covers them.
 
 - **Shipped:** the picker offers an asymmetric type **from both sides** — "Parent of" *and*
   "Child of", "Mentor of" *and* "Mentee of" — so a link can be entered from whichever profile

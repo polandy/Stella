@@ -200,6 +200,11 @@ the way you are thinking it, instead of going to find the other person to put it
 other way. Kinds that read the same from both sides, like *Sibling of* or *Partner of*, are
 listed once, because there is nothing to choose.
 
+One thing Stella will not let you write down: that two people are each other's parent, or each
+other's grandparent. A generation runs one way, and the relatives Stella works out for you are
+read off exactly those links — so pick the direction the wrong way round and it says so instead
+of saving it. Remove the link that is already there and enter it the way you meant.
+
 A link can say more than its label. **How they connect** is yours to write — "met through
 Peter at the ski course" — and there is a **since** day and a **current / former** status if
 they help; all three are optional and all three can be changed later with *Edit* on the row.
