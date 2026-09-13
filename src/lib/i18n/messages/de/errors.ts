@@ -11,6 +11,8 @@ export const errors: ErrorsMessages = {
 	'errors.form.checkAndRetry': 'Bitte prüfe das Formular und versuche es erneut.',
 
 	'errors.relationship.duplicate': 'Diese Beziehung gibt es schon.',
+	'errors.relationship.contradiction':
+		'Diese beiden sind bereits andersherum verbunden, und das kann nicht in beide Richtungen stimmen. Entferne zuerst die bestehende Verbindung.',
 	'errors.relationship.noSuchDay': (p) => `${p.day} ist kein Tag, den es gibt.`,
 	'errors.relationship.currentOrFormer': 'Eine Beziehung ist entweder aktuell oder ehemalig.',
 

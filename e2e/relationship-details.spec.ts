@@ -76,6 +76,30 @@ test('enters a link from the other side: "child of" needs no detour via the othe
 	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Parent of');
 });
 
+/*
+ * The contradiction guard (docs/02 §2.4). Runs on Nicole Frei and Heidi Lehmann, who are not
+ * linked to each other by the seed or by any other case, and enters the link it contradicts
+ * itself rather than leaning on the case above.
+ */
+test('refuses a generation claimed in both directions, and writes nothing', async ({ page }) => {
+	await openPeopleTab(page, /Nicole Frei/);
+	await addLink(page, { type: 'Parent of', person: 'Heidi Lehmann' });
+	await expect(enteredRow(page, 'Heidi Lehmann')).toContainText('Parent of');
+
+	// The same two people, the same type, the other way round: nobody is their own parent's
+	// parent, so this is turned away with the reason rather than stored.
+	await addLink(page, { type: 'Child of', person: 'Heidi Lehmann' });
+	await expect(page.locator('#panel-people')).toContainText('already linked the other way round');
+
+	// The positive signal: exactly one row still names Heidi and it reads the way it was
+	// entered. Reloading proves the server wrote nothing, not just that the page did not move.
+	await page.reload();
+	await page.getByRole('tab', { name: /People/ }).click();
+	await expect(enteredRow(page, 'Heidi Lehmann')).toHaveCount(1);
+	await expect(enteredRow(page, 'Heidi Lehmann')).toContainText('Parent of');
+	await expect(enteredRow(page, 'Heidi Lehmann')).not.toContainText('Child of');
+});
+
 test('corrects the specifics from the row, and never offers the type', async ({ page }) => {
 	await openPeopleTab(page, /Bettina Roth/);
 	await addLink(page, { type: 'Knows', person: 'Jan Steiner', how: HOW, since: '2019-06-01', status: 'former' });

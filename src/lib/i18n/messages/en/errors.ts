@@ -13,6 +13,8 @@ export const errors = {
 	'errors.form.checkAndRetry': 'Please check the form and try again.',
 
 	'errors.relationship.duplicate': 'That relationship already exists.',
+	'errors.relationship.contradiction':
+		'These two are already linked the other way round, and that cannot hold in both directions. Remove the existing link first.',
 	'errors.relationship.noSuchDay': (p: { day: string }) => `${p.day} is not a day that exists.`,
 	'errors.relationship.currentOrFormer': 'A relationship is either current or former.',
 

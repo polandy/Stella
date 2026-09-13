@@ -65,6 +65,7 @@ import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { createNote, listNotesForContact, setNoteMentions } from '$lib/server/domain/notes/notes';
 import {
 	createRelationship,
+	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
 	editRelationshipDetails,
 	InvalidRelationshipDetailsError,
@@ -503,6 +504,9 @@ export const actions: Actions = {
 			if (err instanceof DuplicateRelationshipError) {
 				return fail(409, { error: say(locals, 'errors.relationship.duplicate') });
 			}
+			if (err instanceof ContradictoryRelationshipError) {
+				return fail(409, { error: say(locals, 'errors.relationship.contradiction') });
+			}
 			if (err instanceof InvalidRelationshipDetailsError) {
 				return fail(400, { error: err.phrase(translator(locals)) });
 			}
@@ -592,6 +596,11 @@ export const actions: Actions = {
 				description: null
 			});
 		} catch (err) {
+			// A suggestion the household already contradicted says why; a duplicate is silent,
+			// since the link it offered is there either way.
+			if (err instanceof ContradictoryRelationshipError) {
+				return fail(409, { error: say(locals, 'errors.relationship.contradiction') });
+			}
 			if (!(err instanceof DuplicateRelationshipError)) {
 				return fail(400, { error: say(locals, 'errors.relationship.couldNotAdd') });
 			}

@@ -16,3 +16,14 @@ export const SIBLING_TYPE_KEY = 'sibling';
 
 /** Either of these makes someone a partner for kinship purposes. */
 export const PARTNER_TYPE_KEYS: readonly string[] = ['partner', 'spouse'];
+
+/**
+ * The types that run down the generations, where the flipped pair cannot be true: nobody is
+ * their own parent's parent (docs/02 §2.4). A household's own directed type is left out on
+ * purpose — two people really can each be the other's landlord, and Stella does not know
+ * enough about a type somebody named to call that a mistake.
+ */
+export const GENERATION_TYPE_KEYS: readonly string[] = [
+	PARENT_CHILD_TYPE_KEY,
+	'grandparent_grandchild'
+];

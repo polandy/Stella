@@ -6,6 +6,7 @@ import { suggestPropagation, type PrimaryLink, type SuggestedLink } from '../../
 import type { Viewer } from '../../access/visibility';
 import type { RelationshipCategory } from '../../../relationships/categories';
 import type { Endpoints } from '../../../relationships/endpoints';
+import { GENERATION_TYPE_KEYS } from '../../../relationships/type-keys';
 import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../../relationships/status';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import type { RelationshipTypeRepository } from './relationship-types';
@@ -191,10 +192,18 @@ export class DuplicateRelationshipError extends TranslatableError {
 	}
 }
 
+/** The same two people, already linked the other way round by a type that runs one way. */
+export class ContradictoryRelationshipError extends TranslatableError {
+	constructor() {
+		super(phrase('errors.relationship.contradiction'), 'ContradictoryRelationshipError');
+	}
+}
+
 /**
  * Create a relationship between two contacts. Validates the type, rejects self links,
- * stores in canonical direction, and prevents duplicates. Endpoint visibility must be
- * checked by the caller (the route loads both contacts through the visibility scope).
+ * stores in canonical direction, prevents duplicates and refuses a generation claimed in
+ * both directions. Endpoint visibility must be checked by the caller (the route loads both
+ * contacts through the visibility scope).
  */
 export async function createRelationship(
 	deps: RelationshipDeps,
@@ -215,6 +224,15 @@ export async function createRelationship(
 
 	if (await deps.relationships.exists(fromContactId, toContactId, input.typeId)) {
 		throw new DuplicateRelationshipError();
+	}
+
+	// A generation runs one way, and the picker offers both of its sides from one screen, so
+	// the flipped pair is one wrong click away (docs/02 §2.4).
+	if (
+		GENERATION_TYPE_KEYS.includes(type.key) &&
+		(await deps.relationships.exists(toContactId, fromContactId, input.typeId))
+	) {
+		throw new ContradictoryRelationshipError();
 	}
 
 	const now = deps.clock.now();

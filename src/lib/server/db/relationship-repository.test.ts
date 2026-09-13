@@ -233,6 +233,20 @@ describe('exists / insert', () => {
 		});
 		expect(await repo.exists('bettina', 'hans', 'parent_child')).toBe(true);
 	});
+
+	/*
+	 * The contradiction guard asks the same question with the endpoints swapped (docs/02 §2.4),
+	 * so the query must answer per direction rather than per pair — a normalising `where` would
+	 * make the guard fire on every second link instead of on a real contradiction.
+	 */
+	it('answers per direction: the stored way round is found, the flipped one is not', async () => {
+		seedContact('hans', 'Hans', 'shared');
+		seedContact('bettina', 'Bettina', 'shared');
+		await repo.insert(newRelationship('rel-1', 'hans', 'bettina', 'parent_child'));
+
+		expect(await repo.exists('hans', 'bettina', 'parent_child')).toBe(true);
+		expect(await repo.exists('bettina', 'hans', 'parent_child')).toBe(false);
+	});
 });
 
 describe('listForContactVisibleTo', () => {

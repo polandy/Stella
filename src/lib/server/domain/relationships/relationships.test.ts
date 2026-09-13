@@ -8,6 +8,7 @@ import {
 	canonicalEndpoints,
 	createRelationship,
 	describeRelationshipFor,
+	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
 	editRelationshipDetails,
 	InvalidRelationshipDetailsError,
@@ -45,6 +46,29 @@ const sibling: RelationshipType = {
 	category: 'family',
 	symmetric: true,
 	sortOrder: 1
+};
+
+const grandparent: RelationshipType = {
+	id: 'grandparent_grandchild',
+	householdId: null,
+	key: 'grandparent_grandchild',
+	forwardLabel: 'Grandparent of',
+	reverseLabel: 'Grandchild of',
+	category: 'family',
+	symmetric: false,
+	sortOrder: 2
+};
+
+/** A household's own asymmetric type: directed, but no generation and nothing inferred from it. */
+const landlord: RelationshipType = {
+	id: 'landlord_of',
+	householdId: 'h',
+	key: 'landlord_of',
+	forwardLabel: 'Landlord of',
+	reverseLabel: 'Tenant of',
+	category: 'other',
+	symmetric: false,
+	sortOrder: 100
 };
 
 describe('canonicalEndpoints', () => {
@@ -94,13 +118,20 @@ describe('describeRelationshipFor', () => {
 	});
 });
 
-function fakeRepo(opts: { type?: RelationshipType | null; exists?: boolean; visible?: boolean }) {
+function fakeRepo(opts: {
+	type?: RelationshipType | null;
+	exists?: boolean;
+	/** Answers `exists` per pair, where a test needs one stored direction but not the other. */
+	existsFor?: (fromContactId: string, toContactId: string, typeId: string) => boolean;
+	visible?: boolean;
+}) {
 	let inserted: NewRelationship | null = null;
 	const updates: { id: string; details: RelationshipDetails; updatedAt: number }[] = [];
 	const removals: string[] = [];
 	const types = { getType: async () => opts.type ?? null };
 	const repo: RelationshipRepository = {
-		exists: async () => opts.exists ?? false,
+		exists: async (from, to, typeId) =>
+			opts.existsFor ? opts.existsFor(from, to, typeId) : (opts.exists ?? false),
 		insert: async (r) => {
 			inserted = r;
 		},
@@ -181,6 +212,70 @@ describe('createRelationship', () => {
 				typeId: 'parent_child'
 			})
 		).rejects.toBeInstanceOf(DuplicateRelationshipError);
+	});
+
+	/*
+	 * The contradiction guard (docs/02 §2.4). A generation runs one way: nobody is their own
+	 * parent's parent. The picker offers both sides of a type from one screen, so the flipped
+	 * pair is one wrong click away and has to be refused rather than stored as nonsense the
+	 * kinship engine then reads.
+	 */
+	describe('the flipped pair of a generation type', () => {
+		/** Answers `exists` for one stored direction only, so the guard cannot pass by accident. */
+		const withStoredPair = (type: RelationshipType, from: string, to: string) =>
+			fakeRepo({
+				type,
+				existsFor: (f, t, typeId) => f === from && t === to && typeId === type.id
+			});
+
+		it('is refused: A is already a parent of B, so B cannot be a parent of A', async () => {
+			const f = withStoredPair(parentChild, 'a', 'b');
+			await expect(
+				createRelationship({ relationships: f.repo, types: f.types, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
+					fromContactId: 'b',
+					toContactId: 'a',
+					typeId: 'parent_child'
+				})
+			).rejects.toBeInstanceOf(ContradictoryRelationshipError);
+			expect(f.inserted).toBeNull();
+		});
+
+		it('is refused for grandparents too', async () => {
+			const f = withStoredPair(grandparent, 'a', 'b');
+			await expect(
+				createRelationship({ relationships: f.repo, types: f.types, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
+					fromContactId: 'b',
+					toContactId: 'a',
+					typeId: 'grandparent_grandchild'
+				})
+			).rejects.toBeInstanceOf(ContradictoryRelationshipError);
+			expect(f.inserted).toBeNull();
+		});
+
+		// The positive control: the same fake, the same stored pair, the direction that is fine.
+		it('leaves a third person alone — only the two ends of the stored link are refused', async () => {
+			const f = withStoredPair(parentChild, 'a', 'b');
+			await createRelationship({ relationships: f.repo, types: f.types, ids: idGen('rel-9'), clock }, { id: 'u', householdId: 'h' }, {
+				fromContactId: 'c',
+				toContactId: 'a',
+				typeId: 'parent_child'
+			});
+			expect(f.inserted).toMatchObject({ id: 'rel-9', fromContactId: 'c', toContactId: 'a' });
+		});
+
+		/*
+		 * A household's own asymmetric type is not a generation and is left permissive: two
+		 * people can each be the other's landlord, and Stella does not know they cannot.
+		 */
+		it("does not touch a household's own asymmetric type", async () => {
+			const f = withStoredPair(landlord, 'a', 'b');
+			await createRelationship({ relationships: f.repo, types: f.types, ids: idGen('rel-8'), clock }, { id: 'u', householdId: 'h' }, {
+				fromContactId: 'b',
+				toContactId: 'a',
+				typeId: 'landlord_of'
+			});
+			expect(f.inserted).toMatchObject({ id: 'rel-8', fromContactId: 'b', toContactId: 'a' });
+		});
 	});
 
 	it('rejects a self relationship', async () => {
