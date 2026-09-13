@@ -9,11 +9,17 @@ import type { Endpoints } from './endpoints';
  * offered once.
  */
 
+/** The two labels a type carries, in the order the picker offers them. */
+export const RELATIONSHIP_SIDES = ['forward', 'reverse'] as const;
+
 /** Which of a type's two labels a choice reads. */
-export type RelationshipSide = 'forward' | 'reverse';
+export type RelationshipSide = (typeof RELATIONSHIP_SIDES)[number];
 
 /** Separates the side from the type id in a posted choice; the side never contains it. */
 const CHOICE_SEPARATOR = ':';
+
+const isRelationshipSide = (value: string): value is RelationshipSide =>
+	RELATIONSHIP_SIDES.some((side) => side === value);
 
 /** What a type needs to carry to be offered in the picker. */
 export interface SelectableType {
@@ -44,7 +50,7 @@ export function decodeRelationshipChoice(
 	const side = value.slice(0, separator);
 	const typeId = value.slice(separator + CHOICE_SEPARATOR.length);
 	if (typeId.length === 0) return null;
-	if (side !== 'forward' && side !== 'reverse') return null;
+	if (!isRelationshipSide(side)) return null;
 
 	return { typeId, side };
 }
