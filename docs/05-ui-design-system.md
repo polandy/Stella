@@ -215,8 +215,8 @@ They must be edited together; `app.css` says so at both blocks.
   - **Right column:** tabs *People · Story · Notes · Photos · Mentioned in*, People leading —
     who this person is connected to is what opening their page answers first. **People** lists
     the relationships, each row *label · name · how they connect · since <day>* with *former* as
-    a quiet chip, and carries **Edit** (revealing the same three fields in place, the type not
-    among them) and the standard remove-with-undo. Beneath the list, the **ego graph** (pure SVG
+    a quiet chip, and carries **Edit** (revealing the same three fields in place, plus the
+    type picker preset to what the link reads today) and the standard remove-with-undo. Beneath the list, the **ego graph** (pure SVG
     over the relationships already on the page — no extra fetch, no graph engine) sits open by
     default; *Explore in graph* still reaches the full, interactive map for whoever wants more
     than a glance. Below them, **Also related · worked out, not

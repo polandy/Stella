@@ -247,6 +247,19 @@ describe('exists / insert', () => {
 		expect(await repo.exists('hans', 'bettina', 'parent_child')).toBe(true);
 		expect(await repo.exists('bettina', 'hans', 'parent_child')).toBe(false);
 	});
+
+	/* Retyping a link asks the guards about its own pair, so it must be left out (docs/02 §2.4). */
+	it('leaves the named relationship out of the answer', async () => {
+		seedContact('hans', 'Hans', 'shared');
+		seedContact('bettina', 'Bettina', 'shared');
+		await repo.insert(newRelationship('rel-1', 'hans', 'bettina', 'parent_child'));
+		await repo.insert(newRelationship('rel-2', 'hans', 'bettina', 'friend'));
+
+		expect(await repo.exists('hans', 'bettina', 'parent_child', 'rel-1')).toBe(false);
+		// Another row of the same pair still counts, and so does the same row under another type.
+		expect(await repo.exists('hans', 'bettina', 'friend', 'rel-1')).toBe(true);
+		expect(await repo.exists('hans', 'bettina', 'parent_child', 'rel-2')).toBe(true);
+	});
 });
 
 describe('listForContactVisibleTo', () => {
@@ -414,7 +427,7 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
  * `relationshipVisibleTo`, so a relationship touching someone the viewer cannot see is
  * indistinguishable from one that is not there — and neither writes anything in that case.
  */
-describe('updateDetailsVisibleTo / removeVisibleTo', () => {
+describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 	beforeEach(async () => {
 		seedContact('hans', 'Hans', 'shared');
 		seedContact('bettina', 'Bettina', 'shared');
@@ -435,10 +448,15 @@ describe('updateDetailsVisibleTo / removeVisibleTo', () => {
 		db.select().from(schema.relationship).where(eq(schema.relationship.id, id)).get();
 
 	it('writes the specifics onto a relationship the viewer can see', async () => {
-		const written = await repo.updateDetailsVisibleTo(
+		const written = await repo.updateVisibleTo(
 			viewerU1,
 			'rel-open',
-			{ description: 'she raised him alone', sinceDate: '1994-03-02', status: 'current' },
+			{
+				description: 'she raised him alone',
+				sinceDate: '1994-03-02',
+				status: 'current',
+				retype: null
+			},
 			1_700_000_000_000
 		);
 
@@ -451,12 +469,12 @@ describe('updateDetailsVisibleTo / removeVisibleTo', () => {
 	});
 
 	it('refuses to touch one whose other endpoint the viewer cannot see', async () => {
-		const patch = { description: 'changed', sinceDate: null, status: null };
-		expect(await repo.updateDetailsVisibleTo(viewerU1, 'rel-hidden', patch, 1)).toBe(false);
+		const patch = { description: 'changed', sinceDate: null, status: null, retype: null };
+		expect(await repo.updateVisibleTo(viewerU1, 'rel-hidden', patch, 1)).toBe(false);
 		expect((await detailsOf('rel-hidden'))?.note).toBe('quiet');
 
 		// The owner of the private endpoint may, so this is scoping and not a blanket refusal.
-		expect(await repo.updateDetailsVisibleTo(viewerU2, 'rel-hidden', patch, 1)).toBe(true);
+		expect(await repo.updateVisibleTo(viewerU2, 'rel-hidden', patch, 1)).toBe(true);
 		expect((await detailsOf('rel-hidden'))?.note).toBe('changed');
 	});
 
@@ -474,13 +492,67 @@ describe('updateDetailsVisibleTo / removeVisibleTo', () => {
 		expect(await detailsOf('rel-hidden')).toBeUndefined();
 	});
 
+	it('reads a link back for the viewer who may see it, and not for the one who may not', async () => {
+		expect(await repo.findVisibleTo(viewerU1, 'rel-open')).toEqual({
+			id: 'rel-open',
+			fromContactId: 'bettina',
+			toContactId: 'hans',
+			typeId: 'parent_child'
+		});
+		expect(await repo.findVisibleTo(viewerU1, 'rel-hidden')).toBeNull();
+		// The owner of the private endpoint may, so this is scoping and not a blanket refusal.
+		expect(await repo.findVisibleTo(viewerU2, 'rel-hidden')).not.toBeNull();
+		expect(await repo.findVisibleTo(viewerU1, 'no-such-relationship')).toBeNull();
+	});
+
+	/* A retype can move the row's endpoints as well as its type (docs/02 §2.4). */
+	it('writes the new type and stored direction together with the specifics', async () => {
+		const written = await repo.updateVisibleTo(
+			viewerU1,
+			'rel-open',
+			{
+				description: null,
+				sinceDate: null,
+				status: null,
+				retype: {
+					endpoints: { fromContactId: 'hans', toContactId: 'bettina' },
+					typeId: 'grandparent_grandchild'
+				}
+			},
+			1_700_000_000_000
+		);
+
+		expect(written).toBe(true);
+		expect(await detailsOf('rel-open')).toMatchObject({
+			fromContactId: 'hans',
+			toContactId: 'bettina',
+			typeId: 'grandparent_grandchild'
+		});
+	});
+
+	it('leaves the type and direction untouched when the update carries no retype', async () => {
+		await repo.updateVisibleTo(
+			viewerU1,
+			'rel-open',
+			{ description: 'unchanged type', sinceDate: null, status: null, retype: null },
+			1
+		);
+
+		expect(await detailsOf('rel-open')).toMatchObject({
+			fromContactId: 'bettina',
+			toContactId: 'hans',
+			typeId: 'parent_child',
+			note: 'unchanged type'
+		});
+	});
+
 	it('says no rather than throwing for a relationship that is not there at all', async () => {
 		expect(await repo.removeVisibleTo(viewerU1, 'no-such-relationship')).toBe(false);
 		expect(
-			await repo.updateDetailsVisibleTo(
+			await repo.updateVisibleTo(
 				viewerU1,
 				'no-such-relationship',
-				{ description: null, sinceDate: null, status: null },
+				{ description: null, sinceDate: null, status: null, retype: null },
 				1
 			)
 		).toBe(false);
