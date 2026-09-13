@@ -56,6 +56,24 @@ test('offers the typed name only once it is long enough to be one, and never as 
 	await expect(createRow(page)).toContainText('Wendelin Pfyffer');
 });
 
+test('is what Enter reaches once the search has found nobody', async ({ page }) => {
+	await addPerson(page, 'Jeremias', 'Blatter');
+	const form = await openRelationshipForm(page);
+	const field = form.getByLabel('Person');
+
+	await field.click();
+	await field.fill('Nuria Bircher');
+	await expect(page.getByText('No one found.')).toBeVisible();
+
+	// Nothing else is there to reach, so the shortest path from a name Stella does not know
+	// to a person it does is one key.
+	await field.press('Enter');
+	await expect(page.getByTestId('person-search-create')).toBeVisible();
+	await expect(page.getByTestId('person-search-create').getByLabel('First name')).toHaveValue(
+		'Nuria'
+	);
+});
+
 test('names a stranger from the relationship picker and links them without leaving the page', async ({
 	page
 }) => {
