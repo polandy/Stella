@@ -62,7 +62,7 @@ test('link as relative creates the person and opens their relationship editor wi
 	await expect(target).toBeVisible();
 	await expect(target).toHaveValue('Lena Brunner');
 
-	await editor.locator('select[name=typeId]').selectOption({ label: 'Sibling of' });
+	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Sibling of' });
 	await editor.getByRole('button', { name: 'Add', exact: true }).click();
 	await expect(page.getByRole('tab', { name: /People/ })).toContainText('1');
 	await page.getByRole('tab', { name: /People/ }).click();

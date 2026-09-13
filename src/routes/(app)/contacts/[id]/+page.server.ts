@@ -43,6 +43,7 @@ import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
 import { authorLabel } from '$lib/story/author';
+import { decodeRelationshipChoice, endpointsForSide } from '$lib/relationships/type-options';
 import { toStoryItem } from './story-view';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import {
@@ -296,7 +297,8 @@ const RelationshipDetailsSchema = {
 
 const AddRelationshipSchema = v.object({
 	targetId: v.pipe(v.string(), v.minLength(1)),
-	typeId: v.pipe(v.string(), v.minLength(1)),
+	/** Type *and* direction, as `relationshipTypeOptions` encodes them. */
+	typeChoice: v.pipe(v.string(), v.minLength(1)),
 	...RelationshipDetailsSchema
 });
 
@@ -463,7 +465,7 @@ export const actions: Actions = {
 		const form = await request.formData();
 		const parsed = v.safeParse(AddRelationshipSchema, {
 			targetId: form.get('targetId'),
-			typeId: form.get('typeId'),
+			typeChoice: form.get('typeChoice'),
 			description: form.get('description') || undefined,
 			sinceDate: form.get('sinceDate') || undefined,
 			status: form.get('status') || undefined
@@ -471,6 +473,14 @@ export const actions: Actions = {
 		if (!parsed.success) {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
+
+		// The picker offers an asymmetric type from both sides; the side says which endpoint
+		// is stored as `from` (docs/02 §2.4).
+		const choice = decodeRelationshipChoice(parsed.output.typeChoice);
+		if (!choice) {
+			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
+		}
+		const endpoints = endpointsForSide(params.id, parsed.output.targetId, choice.side);
 
 		// Both endpoints must be visible to the viewer.
 		const [self, target] = await Promise.all([
@@ -483,9 +493,8 @@ export const actions: Actions = {
 
 		try {
 			await createRelationship(getRelationshipDeps(), viewer, {
-				fromContactId: params.id,
-				toContactId: parsed.output.targetId,
-				typeId: parsed.output.typeId,
+				...endpoints,
+				typeId: choice.typeId,
 				description: parsed.output.description ?? null,
 				sinceDate: parsed.output.sinceDate ?? null,
 				status: parsed.output.status ?? null

@@ -60,7 +60,7 @@ test('names a kind of link of its own, and every person page offers it', async (
 	await openPerson(page, /Thomas Widmer/);
 	await page.getByRole('tab', { name: /People/ }).click();
 	await page.getByRole('button', { name: 'Add relationship' }).click();
-	const typePicker = page.locator('form[action="?/addRelationship"] select[name=typeId]');
+	const typePicker = page.locator('form[action="?/addRelationship"] select[name=typeChoice]');
 	await expect(typePicker.locator('option', { hasText: 'Godparent of' })).toHaveCount(1);
 });
 
@@ -74,7 +74,7 @@ test('will not remove a type while links still use it', async ({ page }) => {
 	await page.getByRole('tab', { name: /People/ }).click();
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	const form = page.locator('form[action="?/addRelationship"]');
-	await form.locator('select[name=typeId]').selectOption({ label: 'Godparent of' });
+	await form.locator('select[name=typeChoice]').selectOption({ label: 'Godparent of' });
 	await pickPerson(form.getByLabel('Person'), 'Bettina Roth');
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 	await expect(page.locator('#panel-people')).toContainText('Bettina Roth');

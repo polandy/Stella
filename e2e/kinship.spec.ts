@@ -53,7 +53,7 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 	await openPeopleTab(page, /Vreni Zbinden/);
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	const editor = page.locator('form[action="?/addRelationship"]');
-	await editor.locator('select[name=typeId]').selectOption({ label: 'Parent of' });
+	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Parent of' });
 	await pickPerson(editor.getByLabel('Person'), 'Lena Brunner');
 	await editor.getByRole('button', { name: 'Add', exact: true }).click();
 

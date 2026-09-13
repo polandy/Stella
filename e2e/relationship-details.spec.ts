@@ -29,7 +29,7 @@ async function addLink(
 ): Promise<void> {
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	const form = page.locator('form[action="?/addRelationship"]');
-	await form.locator('select[name=typeId]').selectOption({ label: fields.type });
+	await form.locator('select[name=typeChoice]').selectOption({ label: fields.type });
 	await pickPerson(form.getByLabel('Person'), fields.person);
 	if (fields.how) await form.locator('input[name=description]').fill(fields.how);
 	if (fields.since) await fillDate(form, 'Since', fields.since);
@@ -64,6 +64,18 @@ test('enters a link with how they connect, since when, and whether it still hold
 	await expect(enteredRow(page, 'Heidi Lehmann')).toContainText('since 1 June 2019');
 });
 
+test('enters a link from the other side: "child of" needs no detour via the other profile', async ({ page }) => {
+	await openPeopleTab(page, /Bettina Roth/);
+	// The reverse side of an asymmetric type is on offer, so the sentence can be said the way
+	// round it is being read here (docs/02 §2.4).
+	await addLink(page, { type: 'Child of', person: 'Kurt Lehmann' });
+	await expect(enteredRow(page, 'Kurt Lehmann')).toContainText('Child of');
+
+	// One canonical row, not a second kind of link: from Kurt it reads as the forward side.
+	await openPeopleTab(page, /Kurt Lehmann/);
+	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Parent of');
+});
+
 test('corrects the specifics from the row, and never offers the type', async ({ page }) => {
 	await openPeopleTab(page, /Bettina Roth/);
 	await addLink(page, { type: 'Knows', person: 'Jan Steiner', how: HOW, since: '2019-06-01', status: 'former' });
@@ -73,7 +85,7 @@ test('corrects the specifics from the row, and never offers the type', async ({ 
 
 	const editor = page.locator('form[action="?/editRelationship"]');
 	// Changing the type could flip the stored direction, so it is not on offer here.
-	await expect(editor.locator('select[name=typeId]')).toHaveCount(0);
+	await expect(editor.locator('select[name=typeChoice]')).toHaveCount(0);
 	await expect(editor.locator('input[name=description]')).toHaveValue(HOW);
 
 	await editor.locator('input[name=description]').fill('walked the Gurten every spring');
