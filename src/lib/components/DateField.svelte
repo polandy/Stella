@@ -19,14 +19,15 @@
 	 * attribute on the page can change that. Here the order comes from the app's own locale and
 	 * the month is a named choice, which also ends the day/month ambiguity for good.
 	 *
-	 * Posts a single hidden field holding the ISO value, so it drops into an existing form
-	 * action without changing what the server reads.
+	 * Given a `name` it posts a single hidden field holding the ISO value, so it drops into an
+	 * existing form action without changing what the server reads. Where there is no form to
+	 * post to — a panel that sends JSON — bind `value` instead and leave `name` off.
 	 */
 
 	interface Props {
-		/** The form field the ISO value is posted under. */
-		name: string;
-		/** The stored value, `YYYY-MM-DD` or a year-less `--MM-DD`. */
+		/** The form field the ISO value is posted under; omit it when binding `value` instead. */
+		name?: string;
+		/** The stored value, `YYYY-MM-DD` or a year-less `--MM-DD`. Bindable. */
 		value?: string;
 		/** Names the group for a screen reader; each segment is labelled on its own besides. */
 		label: string;
@@ -40,7 +41,7 @@
 	}
 	let {
 		name,
-		value = '',
+		value = $bindable(''),
 		label,
 		allowYearUnknown = false,
 		max,
@@ -77,13 +78,19 @@
 	$effect(() => {
 		dayInput?.setCustomValidity(problemText ?? '');
 	});
+
+	// Hands the ISO value back to a caller that binds it instead of posting a form field.
+	$effect(() => {
+		value = iso;
+	});
 </script>
 
 <fieldset class="min-w-0 {className}">
 	<legend class="sr-only">{label}</legend>
-	<input type="hidden" {name} value={iso} />
+	{#if name}<input type="hidden" {name} value={iso} />{/if}
 
-	<div class="flex items-end gap-1.5">
+	<!-- Wraps: in a narrow container the month must keep its name, not collapse to its arrow. -->
+	<div class="flex flex-wrap items-end gap-1.5">
 		{#each order as segment (segment)}
 			{#if segment === 'month'}
 				<select

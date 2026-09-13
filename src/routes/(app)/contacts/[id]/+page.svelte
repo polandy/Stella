@@ -704,6 +704,7 @@
 										name="participants"
 										bind:selectedIds={participantIds}
 										multiple
+										allowCreate
 									/>
 								</label>
 							{/if}
@@ -923,6 +924,7 @@
 										people={data.otherContacts}
 										name="targetId"
 										bind:selectedIds={relationshipTargetId}
+										allowCreate
 									/>
 								</label>
 								<label class="flex w-full flex-col gap-1 text-sm sm:flex-1">

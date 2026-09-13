@@ -351,6 +351,18 @@ would, so it drops into an existing form action unchanged. Single mode replaces 
 choosing someone; multiple mode (interaction participants) keeps chosen people as removable
 chips and lets you keep adding.
 
+With `allowCreate`, the picker also ends a fruitless search: from two typed characters on, a
+row under the list offers *Add "<what you typed>" as a new person*, with a `+` mark and the
+accent colour. It sits **outside** the listbox on purpose — it is an action, not a person, and
+keeping it out means "the options" stays a list of people for a screen reader and for anything
+locating someone by name. *No one found.* stays above it. Choosing it swaps the dropdown for a
+compact create panel in the same position (first/last name pre-filled from the query, nickname
+and birthday collapsed, visibility pills), which posts to `/contacts/quick-add` and selects the
+new person on success (§2.2.2). The panel is plain inputs and `type="button"` buttons, never a
+nested `<form>` — the picker sits inside the caller's form, and Enter inside the panel saves
+the person rather than submitting that form. Its birthday is a `DateField` bound by value, not
+a form field, since the panel sends JSON.
+
 **Callers give it an `id` and point their label at it with `for`** — never a label that merely
 wraps it. A `<label>` names its first labelable descendant, and in multiple mode that is a
 chip's remove button, not the search input: the field loses its accessible name the moment
