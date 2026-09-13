@@ -363,6 +363,11 @@ nested `<form>` — the picker sits inside the caller's form, and Enter inside t
 the person rather than submitting that form. Its birthday is a `DateField` bound by value, not
 a form field, since the panel sends JSON.
 
+**Callers give it an `id` and point their label at it with `for`** — never a label that merely
+wraps it. A `<label>` names its first labelable descendant, and in multiple mode that is a
+chip's remove button, not the search input: the field loses its accessible name the moment
+anybody is picked, and a screen reader reaches an unnamed combobox (§5.9).
+
 **Date field** (`src/lib/components/DateField.svelte`) replaces `<input type="date">`
 everywhere a day is entered: birthday, important date, the day an interaction happened, a
 relationship's *Since*, a journal or moment day. A native date input takes its segment order,

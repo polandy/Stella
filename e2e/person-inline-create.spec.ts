@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { signIn } from './app';
+import { appReady, signIn } from './app';
 
 /*
  * Naming a new person from inside a person picker (docs/02 §2.2.2). Written after the panel
@@ -10,20 +10,29 @@ import { signIn } from './app';
  * writes lands on a seeded person another case asserts about.
  */
 
-/** Adds a person through the quick-add page and lands on their page. */
+/**
+ * Adds a person through the quick-add page and lands on their page, ready to be driven —
+ * the section disclosures below do nothing until the shell has mounted, so the heading alone
+ * is not enough to start clicking on.
+ */
 async function addPerson(page: Page, first: string, last: string): Promise<void> {
 	await page.goto('/contacts/new');
 	await page.getByLabel('First name').fill(first);
 	await page.getByLabel('Last name').fill(last);
 	await page.getByRole('button', { name: 'Add person' }).click();
 	await expect(page.getByRole('heading', { name: `${first} ${last}` })).toBeVisible();
+	await appReady(page);
 }
 
 /** Opens the *Add relationship* form on the person page currently shown. */
 async function openRelationshipForm(page: Page): Promise<Locator> {
 	await page.getByRole('tab', { name: /People/ }).click();
 	await page.getByRole('button', { name: 'Add relationship' }).click();
-	return page.locator('form[action="?/addRelationship"]');
+	// Hand back a form that is actually open, so a caller waits on the form rather than on
+	// whatever it tries to find inside one that never appeared.
+	const form = page.locator('form[action="?/addRelationship"]');
+	await expect(form).toBeVisible();
+	return form;
 }
 
 const createRow = (page: Page) => page.getByTestId('person-search-create-option');

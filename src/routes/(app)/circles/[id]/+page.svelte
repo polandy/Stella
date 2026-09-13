@@ -86,9 +86,10 @@
 
 		{#snippet editor()}
 			<form method="POST" action="?/addMember" use:enhance={saved} class="flex flex-wrap items-end gap-3">
-				<label class="flex flex-1 flex-col gap-1 text-sm">
+				<label for="circle-member" class="flex flex-1 flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.person')}</span>
 					<PersonSearchSelect
+						id="circle-member"
 						people={data.candidates}
 						name="contactId"
 						bind:selectedIds={newMemberId}
