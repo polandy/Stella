@@ -2,6 +2,7 @@ import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { eq, like } from 'drizzle-orm';
 import type * as schema from './schema';
 import { extractMentionIds, mentionToken, mentionsOtherThan } from '../../mentions/mentions';
+import { hashPasswordSync } from '../auth/password';
 import {
 	circle,
 	circleMembership,
@@ -388,16 +389,35 @@ const withMentions = (text: string) =>
 const mentionedBy = (row: { contactId: string; body: string }) =>
 	mentionsOtherThan(extractMentionIds(row.body), row.contactId);
 
+/** How the seed turns the demo password into what it stores. */
+export type HashPassword = (password: string) => string;
+
+/** What the seed needs from the outside world. */
+export interface DemoSeedDeps {
+	/**
+	 * Defaults to the real Argon2id adapter. Tests inject a cheap stub: Argon2id is
+	 * deliberately expensive, and paying for it in every case that only looks at contacts
+	 * or circles made the suite slow enough to trip its own timeout.
+	 */
+	hashPassword?: HashPassword;
+}
+
 /**
  * Populate the database with the Brunner demo dataset. Idempotent via stable ids +
  * `onConflictDoNothing`. Returns a short summary for logging.
  */
-export function seedDemoData(db: BunSQLiteDatabase<typeof schema>): {
+export function seedDemoData(
+	db: BunSQLiteDatabase<typeof schema>,
+	deps: DemoSeedDeps = {}
+): {
 	created: boolean;
 	householdId: string;
 	contacts: number;
 } {
-	const { householdId, authorId, memberId, created } = resolveHouseholdAndAuthor(db);
+	const { householdId, authorId, memberId, created } = resolveHouseholdAndAuthor(
+		db,
+		deps.hashPassword ?? hashPasswordSync
+	);
 
 	const displayName = (p: Person) => `${p.first} ${p.last}`;
 	const now = Date.now();
@@ -572,7 +592,10 @@ export function seedDemoData(db: BunSQLiteDatabase<typeof schema>): {
  * exists; otherwise create a demo household and a break-glass admin with a known login.
  * `created` is true only when this call created the demo household (a fresh database).
  */
-function resolveHouseholdAndAuthor(db: BunSQLiteDatabase<typeof schema>): {
+function resolveHouseholdAndAuthor(
+	db: BunSQLiteDatabase<typeof schema>,
+	hashPassword: HashPassword
+): {
 	householdId: string;
 	authorId: string;
 	/** Whoever the second member is; the first one again when the household has only one. */
@@ -603,7 +626,7 @@ function resolveHouseholdAndAuthor(db: BunSQLiteDatabase<typeof schema>): {
 	const authorId = 'demo-user-admin';
 	const memberId = 'demo-user-member';
 	db.insert(household).values({ id: householdId, name: 'Familie Brunner' }).run();
-	const passwordHash = Bun.password.hashSync(DEMO_ADMIN_PASSWORD, { algorithm: 'argon2id' });
+	const passwordHash = hashPassword(DEMO_ADMIN_PASSWORD);
 	db.insert(user)
 		.values({
 			id: authorId,

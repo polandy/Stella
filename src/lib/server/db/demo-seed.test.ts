@@ -3,7 +3,8 @@ import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { eq } from 'drizzle-orm';
-import { seedDemoData } from './demo-seed';
+import { ARGON2ID_PREFIX } from '../auth/password';
+import { DEMO_ADMIN_PASSWORD, seedDemoData } from './demo-seed';
 import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 
@@ -12,9 +13,21 @@ import { seedRelationshipTypes } from './seed';
  * satisfied), create a known break-glass admin on a fresh database, attach to an existing
  * household when present, and be safe to run repeatedly (idempotent — the test phase reseeds
  * on every boot).
+ *
+ * Hashing is injected. Argon2id costs real CPU by design, and paying for it in every case
+ * that only looks at contacts or circles made this file the slowest in the suite — slow
+ * enough that under a full parallel run it tripped the 5 s per-test budget. `seed` passes a
+ * stub; the one case below that cares about the algorithm asks for the real adapter.
  */
 
+/** A hash nobody has to compute: recognisable, and tied to the password it was made from. */
+const stubHash = (password: string) => `stub-hash:${password}`;
+
 let db: BunSQLiteDatabase<typeof schema>;
+
+/** Seeds without paying for Argon2id. */
+const seed = (database: BunSQLiteDatabase<typeof schema>) =>
+	seedDemoData(database, { hashPassword: stubHash });
 
 beforeEach(() => {
 	const sqlite = new Database(':memory:');
@@ -26,7 +39,7 @@ beforeEach(() => {
 
 describe('seedDemoData', () => {
 	it('creates a demo household with a break-glass admin on an empty database', () => {
-		const result = seedDemoData(db);
+		const result = seed(db);
 
 		expect(result.created).toBe(true);
 		const households = db.select().from(schema.household).all();
@@ -36,13 +49,23 @@ describe('seedDemoData', () => {
 		const users = db.select().from(schema.user).all();
 		const admin = users.find((u) => u.role === 'admin');
 		expect(admin).toBeDefined();
-		expect(admin!.passwordHash).toBeTruthy();
-		// The break-glass admin must be login-capable with a real Argon2id hash.
-		expect(Bun.password.verifySync('stella-demo-1234', admin!.passwordHash as string)).toBe(true);
+		// The break-glass admin is login-capable: the seed hashed the demo password itself
+		// and stored what came back.
+		expect(admin!.passwordHash).toBe(stubHash(DEMO_ADMIN_PASSWORD));
+	});
+
+	it('hashes the break-glass password with the real Argon2id adapter when nothing is injected', () => {
+		// The only case that pays for a real hash: it is what makes the demo login work at all.
+		seedDemoData(db);
+
+		const admin = db.select().from(schema.user).all().find((u) => u.role === 'admin');
+		const hash = admin!.passwordHash as string;
+		expect(hash.startsWith(ARGON2ID_PREFIX)).toBe(true);
+		expect(hash).not.toBe(DEMO_ADMIN_PASSWORD);
 	});
 
 	it('gives the demo household a second member, so the story shows more than one author', () => {
-		seedDemoData(db);
+		seed(db);
 
 		const members = db.select().from(schema.user).all();
 		expect(members.map((m) => m.role).sort()).toEqual(['admin', 'member']);
@@ -70,7 +93,7 @@ describe('seedDemoData', () => {
 	});
 
 	it('populates contacts, relationships, circles and memberships', () => {
-		seedDemoData(db);
+		seed(db);
 
 		expect(db.select().from(schema.contact).all()).toHaveLength(25);
 		// Every relationship references a real, existing type and two existing contacts (FK on).
@@ -96,7 +119,7 @@ describe('seedDemoData', () => {
 
 	it('clears the birthday rows an earlier seed version wrote', () => {
 		// Those rows shadowed the derived birthday and, with remind off, silenced every one.
-		seedDemoData(db); // the contact has to exist before a date can point at it
+		seed(db); // the contact has to exist before a date can point at it
 		db.insert(schema.importantDate)
 			.values({
 				id: 'demo-date-bday-markus',
@@ -108,7 +131,7 @@ describe('seedDemoData', () => {
 				remind: 0
 			})
 			.run();
-		seedDemoData(db);
+		seed(db);
 
 		const dates = db.select().from(schema.importantDate).all();
 		expect(dates.some((d) => d.id === 'demo-date-bday-markus')).toBe(false);
@@ -117,11 +140,11 @@ describe('seedDemoData', () => {
 	});
 
 	it('is idempotent — reseeding does not duplicate rows', () => {
-		seedDemoData(db);
+		seed(db);
 		const firstContacts = db.select().from(schema.contact).all().length;
 		const firstRels = db.select().from(schema.relationship).all().length;
 
-		const second = seedDemoData(db);
+		const second = seed(db);
 
 		expect(second.created).toBe(false);
 		expect(db.select().from(schema.contact).all()).toHaveLength(firstContacts);
@@ -130,7 +153,7 @@ describe('seedDemoData', () => {
 	});
 
 	it('has people naming each other, so the demo shows a passive reference at all', () => {
-		seedDemoData(db);
+		seed(db);
 
 		const notes = db.select().from(schema.noteMention).all();
 		const entries = db.select().from(schema.journalMention).all();
@@ -153,7 +176,7 @@ describe('seedDemoData', () => {
 			.values({ id: 'real-admin', householdId: 'real-hh', email: 'a@x.test', name: 'A', role: 'admin' })
 			.run();
 
-		const result = seedDemoData(db);
+		const result = seed(db);
 
 		expect(result.created).toBe(false);
 		expect(result.householdId).toBe('real-hh');
