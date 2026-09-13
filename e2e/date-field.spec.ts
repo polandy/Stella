@@ -82,8 +82,8 @@ test('keeps a birthday whose year nobody knows, and never invents one', async ({
 
 	await page.getByRole('button', { name: 'Add person' }).click();
 	await expect(page.getByRole('heading', { name: 'Miro Stalder-Amrein' })).toBeVisible();
+	// The day is there — that is the positive signal — and no year has been invented beside it.
 	await expect(page.getByText('29 February', { exact: false })).toBeVisible();
-	// The positive control: a year would have been shown had one been given.
 	await expect(page.getByText(/29 February \d{4}/)).toHaveCount(0);
 });
 
@@ -98,8 +98,16 @@ test('refuses a day the calendar does not have, and will not submit it', async (
 	await birthday.getByLabel('Year', { exact: true }).fill('1987');
 
 	await expect(page.getByText('There is no such day in the calendar.')).toBeVisible();
+
+	// Refused *here*, not by the server afterwards: the field hangs its verdict on the day
+	// segment, so the form is invalid before it is ever sent. Without this the case would
+	// stay green on a server-side rejection and say nothing about the field.
+	const refused = await birthday
+		.getByLabel('Day', { exact: true })
+		.evaluate((el: HTMLInputElement) => el.checkValidity());
+	expect(refused).toBe(false);
+
 	await page.getByRole('button', { name: 'Add person' }).click();
-	// The form did not go through: still on the quick-add page, nobody created.
 	await expect(page.getByRole('heading', { name: 'Add a person' })).toBeVisible();
 	await page.goto('/contacts');
 	await expect(page.getByRole('link', { name: 'Annigna Caviezel' })).toHaveCount(0);
@@ -111,10 +119,12 @@ test('refuses a half-filled date rather than quietly storing nothing', async ({ 
 
 	await birthday.getByLabel('Day', { exact: true }).fill('24');
 	await birthday.getByLabel('Month', { exact: true }).selectOption('12');
-	// The year is left blank on a field that allows exactly that…
+	// The year is left blank on a field that allows exactly that, and the year-less day is
+	// what gets posted — the positive half of this case.
 	await expect(page.getByText('Fill in the whole date, or clear it.')).toHaveCount(0);
+	await expect(page.locator('input[name=birthDate]')).toHaveValue('--12-24');
 
-	// …but a day with no month is not a date in any reading of it.
+	// A day with no month, though, is not a date in any reading of it.
 	await birthday.getByLabel('Month', { exact: true }).selectOption('');
 	await expect(page.getByText('Fill in the whole date, or clear it.')).toBeVisible();
 	await expect(page.locator('input[name=birthDate]')).toHaveValue('');
