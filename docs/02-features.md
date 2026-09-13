@@ -230,6 +230,37 @@ orders candidates by surname match, then shared relationships/household proximit
   preselected (`?relate=`, the same hand-off a moment's "link these two?" uses). Only people
   the member may see are proposed, and only their visible relationships count.
 
+### 2.2.2 Creating a person from a picker **[M2]**
+
+Wherever a form asks for a person by name (§5.7), a search that finds no one is not a dead
+end: the typed name itself becomes the offer **"Add 'Lukas Bauer' as a new person"**, in a row
+beneath the results. It sits *outside* the list rather than at the end of it, because it is an
+action and not a person — which also keeps "the options" a list of people for a screen reader.
+It appears from two typed characters on, and holds its place while the list above it scrolls.
+
+When the search has found nobody it is the only thing there, so Enter reaches it — which is
+the point, and the shortest path from a name that is not in Stella to a person who is.
+
+Choosing it turns the dropdown into a small create panel in the same place — no page change,
+no dialog, nothing typed twice:
+
+- **First and last name**, pre-filled by splitting the query at the first space (so *van der
+  Berg* stays one surname).
+- **Nickname** and **birthday**, collapsed under *More details*. The birthday is the same
+  locale-aware field as everywhere else (§5.7), so the year may be left blank here too —
+  which is common for someone just being named in passing.
+- **Visibility**, shared or private, the same choice the full form offers, defaulting to
+  shared.
+
+Saving creates the person through the same use-case as quick-add (§2.2) and selects them in
+the picker right away; a toast confirms it by name. The duplicate suggestions of §2.2.1 are
+deliberately *not* repeated here — whoever reaches this offer has just seen that the search
+found no one.
+
+Offered on the pickers where a stranger belongs: **relationship target**, **interaction
+participants**, and **circle member**. Not on *merge duplicate*, where a person who did not
+exist a moment ago cannot be the duplicate.
+
 ## 2.3 Contact fields **[M1]**
 
 Flexible, repeatable contact methods on a contact:
