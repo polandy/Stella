@@ -24,6 +24,9 @@
 	/** Where the inline create panel posts; the endpoint answers with the created person. */
 	const QUICK_ADD_ENDPOINT = '/contacts/quick-add';
 
+	/** Long enough for a click on an option to land before the blur closes the list under it. */
+	const BLUR_CLOSE_MS = 120;
+
 	const VISIBILITY_LEVELS = ['shared', 'private'] as const;
 	type Visibility = (typeof VISIBILITY_LEVELS)[number];
 
@@ -131,6 +134,18 @@
 		creating = false;
 		createError = null;
 		input?.focus();
+	}
+
+	/*
+	 * Closing on blur has to survive the focus coming straight back. Cancelling the create panel
+	 * does exactly that — the click blurs the input, then hands it the caret again — and a timer
+	 * that only asked "are we still creating?" would shut the list a moment later, under someone
+	 * who had just returned to it.
+	 */
+	function closeIfFocusLeft() {
+		if (creating) return;
+		if (root?.contains(document.activeElement)) return;
+		open = false;
 	}
 
 	async function submitCreate() {
@@ -254,7 +269,7 @@
 				}}
 				onfocus={() => (open = true)}
 				onkeydown={onKeydown}
-				onblur={() => setTimeout(() => { if (!creating) open = false; }, 120)}
+				onblur={() => setTimeout(closeIfFocusLeft, BLUR_CLOSE_MS)}
 				class="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none"
 			/>
 		</div>
