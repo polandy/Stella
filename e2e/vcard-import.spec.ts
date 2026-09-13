@@ -68,11 +68,8 @@ test('imports a vCard, stores the picture it carries and shows the people', asyn
 	await page.getByRole('link', { name: /Odile Margrit Trachsel/ }).first().click();
 	await expect(page.getByRole('heading', { name: 'Odile Margrit Trachsel' })).toBeVisible();
 	await expect(page.getByText('19 May 1984')).toBeVisible();
-	await expect(
-		page.locator('section', { has: page.getByText('Tags', { exact: true }) }).first()
-	).toContainText('Jodlerchoerli');
+	await expect(page.locator('section[data-row="Tags"]')).toContainText('Jodlerchoerli');
 	// The note was folded across lines and escaped its own comma; both survived.
-	await page.getByRole('tab', { name: /Notes/ }).click();
 	await expect(page.getByText('Leiht mir jedes Jahr das Zelt, ohne zu fragen.')).toBeVisible();
 	// The picture went through the browser's resize pipeline and became the avatar.
 	await expect(page.locator('img[alt="Odile Margrit Trachsel"]')).toHaveAttribute(
@@ -84,7 +81,6 @@ test('imports a vCard, stores the picture it carries and shows the people', asyn
 	await page.goto('/contacts');
 	await page.getByRole('link', { name: /Bruno Trachsel/ }).first().click();
 	await expect(page.getByText('3 September')).toBeVisible();
-	await page.getByRole('tab', { name: /Notes/ }).click();
 	await expect(page.getByText('Fischt am liebsten früh am Morgen im Thunersee.')).toBeVisible();
 
 	// The third card has no UID at all, and is one person rather than none or two.

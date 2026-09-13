@@ -21,7 +21,6 @@ const file = (name: string) => ({ name, mimeType: 'image/png', buffer: PIXEL });
 /** Opens a person and their Photos tab. */
 async function openPhotos(page: Page, person: RegExp): Promise<void> {
 	await openPerson(page, person);
-	await page.getByRole('tab', { name: /Photos/ }).click();
 }
 
 /** Uploads through the disclosure, choosing shared or private. */
@@ -31,7 +30,7 @@ async function addPhotos(
 	visibility: 'shared' | 'private' = 'shared'
 ): Promise<void> {
 	await page.getByRole('button', { name: 'Add photos' }).click();
-	const form = page.locator('#panel-photos form');
+	const form = page.locator('#section-photos form');
 	await form.locator('input[name=files]').setInputFiles(files);
 	if (visibility === 'private') await form.getByText('Private', { exact: true }).click();
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
@@ -48,7 +47,7 @@ test('adds photos, captions one, and keeps the caption on the picture it belongs
 	await addPhotos(page, [file('lake.png'), file('boat.png')]);
 	const grid = page.getByTestId('photo-grid');
 	await expect(grid.locator('img')).toHaveCount(2);
-	await expect(page.getByRole('tab', { name: /Photos/ })).toContainText('2');
+	await await expect(page.locator('#section-photos > header')).toContainText('2');
 
 	await grid.getByRole('button').first().click();
 	const lightbox = page.getByTestId('photo-lightbox');
@@ -84,7 +83,7 @@ test('wears a gallery photo as the avatar, and gives it back when the photo is r
 	const grid = page.getByTestId('photo-grid');
 	// The hero avatar lives inside the uploader button, which is where a chosen photo shows up.
 	const avatar = page.getByRole('button', { name: /Change photo|Add a photo/ }).locator('img');
-	await expect(page.getByRole('tab', { name: /Photos/ })).toContainText('1');
+	await await expect(page.locator('#section-photos > header')).toContainText('1');
 	await expect(avatar).toHaveCount(0); // initials until a photo is chosen
 
 	await grid.getByRole('button').first().click();
@@ -98,7 +97,7 @@ test('wears a gallery photo as the avatar, and gives it back when the photo is r
 
 	// Removing the photo takes the face with it rather than leaving a broken one.
 	await lightbox.getByRole('button', { name: 'Remove' }).click();
-	await expect(page.getByRole('tab', { name: /Photos/ })).toContainText('0');
+	await await expect(page.locator('#section-photos > header')).toContainText('0');
 	await expect(page.getByText('No photos yet.')).toBeVisible();
 	await expect(avatar).toHaveCount(0);
 });

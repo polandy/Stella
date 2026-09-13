@@ -92,7 +92,6 @@ test('carries the private records too, marked as private', async ({ page }) => {
 	await page.getByRole('link', { name: 'People' }).first().click();
 	await page.getByRole('link', { name: /Bettina Roth/ }).first().click();
 	await appReady(page);
-	await page.getByRole('tab', { name: /Notes/ }).click();
 	await page.getByRole('button', { name: 'Add note' }).click();
 	await page.getByRole('textbox', { name: 'Note' }).fill('Schlüssel liegt unter dem Stein.');
 	await page.getByRole('radio', { name: 'Private' }).first().check();

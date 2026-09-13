@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { openPerson, signIn } from './app';
 
 /*
@@ -16,14 +16,27 @@ const PERSON = /Nicole Frei/;
 const TAG_TAKEN_BACK = 'Zzz-undo-tag';
 const TAG_LET_GO = 'Zzz-sent-tag';
 
-/** The profile-column section with this title, e.g. Tags. */
+/** A card with this title, e.g. a circle's Members. */
 function section(page: Page, title: string) {
 	return page.locator('section', { has: page.getByText(title, { exact: true }) }).first();
 }
 
+/**
+ * A row of the person page's profile card, unfolded (docs/05 §5.5). A row holding nothing —
+ * which is where every tag case starts — arrives folded, so the content under test is only on
+ * the page once it has been opened.
+ */
+async function profileRow(page: Page, title: string): Promise<Locator> {
+	const row = page.locator(`section[data-row="${title}"]`);
+	const toggle = row.getByRole('button', { name: new RegExp(`^${title}`) });
+	if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click();
+	await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+	return row;
+}
+
 /** Adds a tag through the section's own form and waits for it to be on the page. */
 async function addTag(page: Page, name: string): Promise<void> {
-	const tags = section(page, 'Tags');
+	const tags = await profileRow(page, 'Tags');
 	await tags.getByRole('button', { name: 'Add' }).click();
 	await tags.getByPlaceholder('Tag name').fill(name);
 	await tags.getByRole('button', { name: 'Add', exact: true }).last().click();
@@ -38,7 +51,7 @@ test('saving a tag says Saved and closes the form, and removing it takes the cou
 	page
 }) => {
 	await openPerson(page, PERSON);
-	const tags = section(page, 'Tags');
+	const tags = await profileRow(page, 'Tags');
 	await expect(tags).toContainText('No tags yet.'); // the seed gives nobody a tag
 
 	await tags.getByRole('button', { name: 'Add' }).click();
@@ -65,7 +78,7 @@ test('saving a tag says Saved and closes the form, and removing it takes the cou
 	await expect(toast).toHaveCount(0);
 	await expect(tags).toContainText(TAG_TAKEN_BACK);
 	await page.reload();
-	await expect(section(page, 'Tags')).toContainText(TAG_TAKEN_BACK);
+	await expect(await profileRow(page, 'Tags')).toContainText(TAG_TAKEN_BACK);
 });
 
 test('a removal left alone is sent when the page is left, and the tag is gone for good', async ({
@@ -80,9 +93,9 @@ test('a removal left alone is sent when the page is left, and the tag is gone fo
 	// Leaving commits it: the next screen loads with the removal already sent.
 	await openPerson(page, PERSON);
 	await expect(page.getByTestId('toast-undo')).toHaveCount(0);
-	await expect(section(page, 'Tags')).not.toContainText(TAG_LET_GO);
+	await expect(await profileRow(page, 'Tags')).not.toContainText(TAG_LET_GO);
 	await page.reload();
-	await expect(section(page, 'Tags')).not.toContainText(TAG_LET_GO);
+	await expect(await profileRow(page, 'Tags')).not.toContainText(TAG_LET_GO);
 });
 
 test('a member removed from a circle leaves the grid and comes back with Undo', async ({ page }) => {

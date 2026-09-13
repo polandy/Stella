@@ -17,7 +17,6 @@ test('keeps its name once a chip is in it, where a wrapping label would have los
 	// `openPerson` waits for the shell to mount; *Log contact* is a disclosure that does
 	// nothing until it has.
 	await openPerson(page, /Lena Brunner/);
-	await page.getByRole('tab', { name: /Story/ }).click();
 	await page.getByRole('button', { name: 'Log contact' }).first().click();
 
 	const form = page.locator('form[action="?/logInteraction"]');

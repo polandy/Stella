@@ -11,13 +11,12 @@ import { fillDate, pickPerson, signIn } from './app';
 async function openPerson(page: Page, name: RegExp): Promise<void> {
 	await page.goto('/contacts');
 	await page.getByRole('link', { name }).first().click();
-	await page.getByRole('tab', { name: 'Story' }).click();
-	await expect(page.getByRole('tab', { name: 'Story' })).toHaveAttribute('aria-selected', 'true');
+	await expect(page.locator('#section-story')).toBeVisible();
 }
 
 /** Opens the "log a touchpoint" form, which the story section keeps closed until asked. */
 async function openLogForm(page: Page) {
-	const panel = page.locator('#panel-story');
+	const panel = page.locator('#section-story');
 	await panel.getByRole('button', { name: 'Log contact' }).click();
 	return panel;
 }

@@ -49,11 +49,7 @@ async function addPerson(page: Page, first: string, last: string): Promise<void>
 
 /** Opens the *Mentioned in* tab of the person whose page is showing. */
 async function openMentions(page: Page): Promise<void> {
-	await page.getByRole('tab', { name: /Mentioned in/ }).click();
-	await expect(page.getByRole('tab', { name: /Mentioned in/ })).toHaveAttribute(
-		'aria-selected',
-		'true'
-	);
+	await expect(page.locator('#section-mentions')).toBeVisible();
 }
 
 /** The rows of the list, optionally only those from one kind of writing. */
@@ -64,7 +60,6 @@ function references(page: Page, kind?: 'note' | 'journal') {
 
 /** Writes a note on the person whose page is showing, naming `NAMED` through the picker. */
 async function writeNote(page: Page, text: string): Promise<void> {
-	await page.getByRole('tab', { name: /Notes/ }).click();
 	await page.getByRole('button', { name: 'Add note' }).click();
 	const field = page.getByRole('textbox', { name: 'Note' });
 	await field.fill(`${text} mit `);
@@ -104,7 +99,7 @@ test('says plainly that nobody has named this person yet', async ({ page }) => {
 	await expect(references(page)).toHaveCount(0);
 	await expect(page.getByText(`Nobody has mentioned ${NAMED} anywhere else yet.`)).toBeVisible();
 	// The count sits on the tab and is exact, so an empty list says zero rather than nothing.
-	await expect(page.getByRole('tab', { name: /Mentioned in/ })).toContainText('0');
+	await await expect(page.locator('#section-mentions > header')).toContainText('0');
 });
 
 test('puts a note on the page of the person it names, not of the person it is about', async ({
@@ -139,7 +134,7 @@ test('reads a journal entry into the same list, from the same person', async ({ 
 	await expect(references(page)).toHaveCount(2);
 	await expect(references(page, 'journal')).toHaveCount(1);
 	await expect(references(page, 'journal')).toContainText(`in ${WRITER}’s journal`);
-	await expect(page.getByRole('tab', { name: /Mentioned in/ })).toContainText('2');
+	await await expect(page.locator('#section-mentions > header')).toContainText('2');
 });
 
 test('follows a reference to where it is written', async ({ page }) => {
@@ -149,7 +144,7 @@ test('follows a reference to where it is written', async ({ page }) => {
 
 	// The writer's page, opened on the tab the note lives on rather than on his story.
 	await expect(page.getByRole('heading', { name: WRITER })).toBeVisible();
-	await expect(page.getByRole('tab', { name: /Notes/ })).toHaveAttribute('aria-selected', 'true');
+	await expect(page.locator('#section-notes')).toBeVisible();
 	await expect(page.getByText(`${NOTE_MARKER} mit`)).toBeVisible();
 });
 

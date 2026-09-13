@@ -99,14 +99,18 @@ opens that person's page. If the new person is a relative, pick **Link as relati
 adding, you land straight in their relationship editor with that relative already chosen,
 so "Quill is the child of Sandra" is one more click.
 
-**A person's page** puts who they are on the left — details, dates, circles, tags, how you
-met — and who they're connected to and what has happened on the right, under five tabs:
-**People**, **Story**, **Notes**, **Photos** and **Mentioned in**, People first. A line above
-the tabs gives the numbers at a glance — how many relationships, how many times you've been in
-touch — before you open any of them. On a phone the two stack, with the tabs first.
+**A person's page** reads top to bottom: **People** — the little map of who they are connected
+to, with the list of those links under it — then **Story**, **Notes**, **Photos** and
+**Mentioned in**, each its own card, all of them already on the page. Nothing is behind a tab,
+so nothing has to be found before it can be read; each card says how many things are in it.
 
-Every card on the left holds one **+ Add** button. Nothing is an open form until you ask for
-it, so the page reads as a person rather than as a stack of empty fields.
+Who they *are* — details, dates, circles, tags, how you met — sits beside it in one quiet
+**Profile** card, as folded rows. A closed row still tells you what is in it, and opening one
+shows the rest. On a phone the two stack, the cards first and the profile underneath.
+
+Every card, and every profile row, holds one **+ Add** button, and the form opens right under
+the heading you pressed it from. Nothing is an open form until you ask for it, so the page reads
+as a person rather than as a stack of empty fields.
 
 To change their **name or the line under it**, click the text itself: a field opens where the
 value was, Enter saves it and Escape leaves it as it was. A name cannot be emptied, and Stella
@@ -139,12 +143,12 @@ caption or remove it, but anyone who can see it can make it the person's photo. 
 deletes the file for good and, if the person was wearing it, they go back to their initials.
 Escape closes the view and the arrow keys walk through the rest.
 
-**Mentioned in** is the last tab, and it is the only one that is not really theirs: it lists
+**Mentioned in** is the last card, and it is the only one that is not really theirs: it lists
 what *other* people's notes and journal entries say about them. Write "hiked with `@Sandra`"
 in Beat's journal and it appears on Sandra's page as *in Beat Steiner's journal*, with the day
 and the first line of what was written. Click it and you land on Beat's page, where the entry
 lives — that is where it is edited, so nothing here can be changed by accident. The number on
-the tab is exact. You only ever see references you could have read anyway: a private entry
+the card is exact. You only ever see references you could have read anyway: a private entry
 stays with whoever wrote it.
 
 ## Dates worth remembering
