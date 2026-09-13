@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { chooseCenter, type CentrableNode } from './center';
+import { chooseCenter, chosenPathTarget, type CentrableNode } from './center';
 
 /*
  * Where the explorer opens (docs/02 §2.7, §2.1.3): what was asked for, else me, else anyone.
@@ -40,5 +40,27 @@ describe('chooseCenter', () => {
 			id: null,
 			asked: false
 		});
+	});
+});
+
+describe('chosenPathTarget', () => {
+	it('names the person a link asks to trace to', () => {
+		expect(chosenPathTarget(nodes, 'c-anna', 'c-me')).toBe('c-anna');
+	});
+
+	it('names nobody when the link asks for nothing', () => {
+		expect(chosenPathTarget(nodes, null, 'c-me')).toBeNull();
+	});
+
+	it('refuses somebody outside the visible graph, as the centre does', () => {
+		expect(chosenPathTarget(nodes, 'c-hidden', 'c-me')).toBeNull();
+	});
+
+	it('refuses the centre itself, which would be a chain of one', () => {
+		expect(chosenPathTarget(nodes, 'c-me', 'c-me')).toBeNull();
+	});
+
+	it('names a circle too: a path may run through a shared context', () => {
+		expect(chosenPathTarget(nodes, 'circle-1', 'c-me')).toBe('circle-1');
 	});
 });

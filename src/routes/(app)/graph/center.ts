@@ -37,3 +37,21 @@ export function chooseCenter(
 	if (selfContactId && ids.has(selfContactId)) return { id: selfContactId, asked: false };
 	return { id: nodes.find((node) => node.kind === 'person')?.id ?? null, asked: false };
 }
+
+/**
+ * The other end of a connection path a link asks to trace (`?path=`), or null.
+ *
+ * A person's page cannot answer "how are we connected?" itself: it holds two hops of the
+ * household, and the answer usually runs further than that. So it hands the question here,
+ * with both ends named (docs/05 §5.5). Anyone the viewer cannot see is refused rather than
+ * traced — the same rule the centre follows — and so is the centre itself, which would trace
+ * a chain of one.
+ */
+export function chosenPathTarget(
+	nodes: readonly CentrableNode[],
+	requested: string | null,
+	centerId: string | null
+): string | null {
+	if (!requested || requested === centerId) return null;
+	return nodes.some((node) => node.id === requested) ? requested : null;
+}

@@ -45,13 +45,20 @@
 		maxRings?: number;
 		/** Where "Open in the graph" leads from the peek panel; absent hides it. */
 		fullGraphHref?: (nodeId: string) => string;
+		/**
+		 * Trace the chain from the centre to this person as soon as the canvas is up. A
+		 * person's page asks for this when somebody wanted to know how they are connected to
+		 * somebody the page's own two hops do not reach (docs/05 §5.5).
+		 */
+		tracePathTo?: string | null;
 	}
 	let {
 		graph,
 		centerId,
 		compact = false,
 		maxRings = Number.POSITIVE_INFINITY,
-		fullGraphHref
+		fullGraphHref,
+		tracePathTo = null
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -267,6 +274,19 @@
 	onMount(async () => {
 		// Build the initial ego view around the centre from the in-memory snapshot.
 		if (centerId) model = await buildEgoNetwork(source, centerId, 1);
+
+		// A link may arrive with the question already asked (docs/05 §5.5): trace it before the
+		// canvas is built, so the chain is what the first layout lays out rather than a jump.
+		if (centerId && tracePathTo) {
+			const found = await findConnectionPath(pathSource, centerId, tracePathTo);
+			if (found) {
+				model = mergeModels(model, found.model);
+				path = found;
+			} else {
+				pathMissing = true;
+			}
+			pathMode = true;
+		}
 
 		controller = await createExplorer({
 			container,

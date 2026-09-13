@@ -489,6 +489,10 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   card's header, and from the peek panel of any node the embedded map cannot expand.
 - As a **standalone screen** (nav → Graph). It opens on **your own person** when you have
   said who that is (§2.1.3), and otherwise on the first person the household has.
+- **From a profile's question.** *How are we connected?* on a person's card asks who, and
+  opens the explorer with both ends named (`?center=…&path=…`), the chain already traced. The
+  question is answered here rather than there because a profile carries two hops and the chain
+  usually runs further; the explorer holds the whole visible graph.
 - **The way back.** When a link named the centre, the explorer carries *Back to <person>* to
   the page it was opened from. It is offered only for a centre that was asked for and could be
   honoured: falling back to your own person is not somewhere you came from, and neither is a

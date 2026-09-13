@@ -109,6 +109,10 @@ export const contact = {
 	'contact.interaction.whoElse': 'Who else was there?',
 	'contact.interaction.submit': 'Log interaction',
 
+	// Asking the explorer how two people are connected, from a page that holds only two hops.
+	'contact.relationships.howConnected': 'How are we connected?',
+	'contact.relationships.howConnectedTo': (p: { name: string }) => `${p.name} and…`,
+	'contact.relationships.tracePath': 'Trace it',
 	'contact.relationships.add': 'Add relationship',
 	'contact.relationships.none': 'No relationships yet.',
 	'contact.relationships.remove': (p: { name: string }) => `Remove the link to ${p.name}`,
