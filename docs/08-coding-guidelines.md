@@ -32,6 +32,11 @@ rule and pragmatism genuinely conflict, favor readability and testability.
    implementations; tests pass fakes.
 10. **Determinism.** No `Date.now()` / `Math.random()` / `crypto.randomUUID()` buried in
     logic. Inject a `Clock` and an `IdGenerator` so tests are deterministic and fast.
+    Deliberately expensive work is injectable for the same reason — the demo seed takes its
+    password hasher, so only the case that is about Argon2id pays for it. Where a test would
+    otherwise wait and hope, the production code publishes the state instead: the explorer's
+    canvas carries `data-layout="settled"` once its layout has stopped moving the nodes, so
+    a click can be aimed rather than retried.
 11. **Fail loud.** Validate at boundaries (Valibot) and throw on misconfiguration/invalid
     state rather than limping on with bad data. No empty `catch {}` that swallows errors.
 12. **Strict typing.** `strict` TypeScript, no `any` (use `unknown` + narrowing). Make

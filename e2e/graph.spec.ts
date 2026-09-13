@@ -11,6 +11,11 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
+/** Waits for the renderer's own signal that its layout has stopped moving the nodes. */
+async function settled(page: Page): Promise<void> {
+	await expect(page.locator('[data-layout]')).toHaveAttribute('data-layout', 'settled');
+}
+
 test('the filter chips are the legend, and there is no second one', async ({ page }) => {
 	await page.goto('/graph?center=demo-c-hans');
 	await expect(page.locator('canvas').first()).toBeVisible();
@@ -26,20 +31,14 @@ test('the filter chips are the legend, and there is no second one', async ({ pag
 
 test('opens the peek panel on the centred person with their face, name and a way to their page', async ({ page }) => {
 	await page.goto('/graph?center=demo-c-hans');
-	const canvas = page.locator('canvas').first();
-	await expect(canvas).toBeVisible();
+	await expect(page.locator('canvas').first()).toBeVisible();
 
-	// The centre node sits in the middle of the canvas once the layout has settled.
-	await expect(async () => {
-		const box = await canvas.boundingBox();
-		if (!box) throw new Error('no canvas');
-		await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-		await expect(page.getByRole('complementary').getByText('Hans Brunner')).toBeVisible({ timeout: 800 });
-	}).toPass();
-
+	// The explorer opens with the centred person selected, so the panel is his from the start.
 	const peek = page.getByRole('complementary');
+	await expect(peek.getByText('Hans Brunner')).toBeVisible();
 	await expect(peek.getByText('HB')).toBeVisible();
 	await expect(peek.getByRole('button', { name: 'Close' })).toBeVisible();
+
 	await peek.getByRole('link', { name: 'Open profile' }).click();
 	await expect(page).toHaveURL(/\/contacts\/demo-c-hans$/);
 });
@@ -108,6 +107,30 @@ async function highlightedLabels(page: Page): Promise<string[]> {
 	});
 }
 
+test('expanding a person brings the connections of theirs the canvas did not have', async ({
+	page
+}) => {
+	// Sandra's father Peter is no relative of Hans, so nothing puts him on the opening
+	// canvas — and the canvas only re-lays out when its element set actually moved, so this
+	// is also what says that guard still lets a growing graph settle again.
+	await page.goto('/graph?center=demo-c-hans');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await settled(page);
+	expect(await stateOf(page, 'demo-c-peter')).toBe('absent');
+
+	// Reached through the search field rather than by aiming at the canvas: a node the peek
+	// panel happens to sit over cannot be clicked, and where the layout puts her is not this
+	// case's business.
+	await page.getByLabel('Find a person').fill('Sandra');
+	await page.getByTestId('graph-suggestions').getByRole('button', { name: 'Sandra' }).click();
+	const peek = page.getByRole('complementary');
+	await expect(peek.getByText('Sandra Brunner-Keller')).toBeVisible();
+	await peek.getByRole('button', { name: 'Expand connections' }).click();
+
+	await expect(async () => expect(await stateOf(page, 'demo-c-peter')).toBe('drawn')).toPass();
+	await settled(page);
+});
+
 test('draws the relatives nobody entered, and the Kinship chip takes them away', async ({ page }) => {
 	// Lena's cousin Timo is tied to her by nothing stored: he is in her neighbourhood only
 	// because the cousin line is worked out, through the grandparents they share.
@@ -160,4 +183,62 @@ test('names the lines around the selected person, and only while they are select
 
 	await page.getByRole('complementary').getByRole('button', { name: 'Close' }).click();
 	await expect(async () => expect(await highlightedLabels(page)).toEqual([])).toPass();
+});
+
+/*
+ * The toolbar's search (docs/05 §5.8). On a narrow window the chip row wraps under the field,
+ * and the suggested names were painted behind the chips — so this reads what is actually on
+ * top at each name's own position, not merely whether the list is in the DOM.
+ */
+
+/** The owner of the topmost element at each page point — a positive reading, never a nothing. */
+async function ownersAt(page: Page, points: { x: number; y: number }[]): Promise<string[]> {
+	return page.evaluate(
+		(pts) =>
+			pts.map(({ x, y }) => {
+				const el = document.elementFromPoint(x, y);
+				if (!el) return 'nothing';
+				if (el.closest('[data-testid="graph-suggestions"]')) return 'suggestions';
+				const button = el.closest('button');
+				return button ? `chip: ${button.textContent?.trim()}` : el.tagName.toLowerCase();
+			}),
+		points
+	);
+}
+
+test('keeps the suggested names on top when the filter chips wrap under the search field', async ({
+	page
+}) => {
+	await page.setViewportSize({ width: 640, height: 800 });
+	await page.goto('/graph?center=demo-c-hans');
+	await expect(page.locator('canvas').first()).toBeVisible();
+
+	const field = page.getByLabel('Find a person');
+	await field.fill('bru');
+	const list = page.getByTestId('graph-suggestions');
+	await expect(list.getByRole('button', { name: 'Hans Brunner' })).toBeVisible();
+
+	// The chips have to overlap the list here, or the rest of this proves nothing.
+	const fieldBox = await field.boundingBox();
+	const chipBox = await page.getByRole('button', { name: 'Family' }).boundingBox();
+	const listBox = await list.boundingBox();
+	if (!fieldBox || !chipBox || !listBox) throw new Error('the toolbar has no layout');
+	expect(chipBox.y).toBeGreaterThan(fieldBox.y + fieldBox.height);
+	expect(chipBox.y).toBeLessThan(listBox.y + listBox.height);
+
+	// Every name answers for its own position.
+	const rows = await list.getByRole('button').all();
+	const points = await Promise.all(
+		rows.map(async (row) => {
+			const box = await row.boundingBox();
+			if (!box) throw new Error('a suggested name has no layout');
+			return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+		})
+	);
+	expect(points.length).toBeGreaterThan(0);
+	expect(await ownersAt(page, points)).toEqual(points.map(() => 'suggestions'));
+
+	// And the name takes the click, rather than a chip swallowing it.
+	await list.getByRole('button', { name: 'Hans Brunner' }).click();
+	await expect(page.getByRole('complementary').getByText('Hans Brunner')).toBeVisible();
 });
