@@ -210,8 +210,8 @@ They must be edited together; `app.css` says so at both blocks.
     read before opening any tab. Numbers only, taken from data the page already loaded; it adds
     no query of its own.
   - **Profile column** (`19rem`, sticky from `lg`): Contact fields, Dates (§2.13.1), Circles,
-    Tags, How we met. Each is a card with **one** disclosure — `+ Add` reveals its form and
-    nothing else is open. A form that failed validation opens itself, so the error has a home.
+    Tags, How we met. Each is a card with **one** disclosure — `+ Add` reveals its form
+    directly under the card's header (§5.7) and nothing else is open. A form that failed validation opens itself, so the error has a home.
   - **Right column:** tabs *People · Story · Notes · Photos · Mentioned in*, People leading —
     who this person is connected to is what opening their page answers first. **People** lists
     the relationships, each row *label · name · how they connect · since <day>* with *former* as
@@ -341,6 +341,18 @@ Buttons (primary/secondary/ghost/danger), inputs & selects, person search select
 avatar (+ stack), card, section header, tabs, modal/sheet, toast, dropdown menu, command
 palette, empty states, timeline item, note card, relationship row, photo grid + lightbox.
 All themeable via semantic tokens, all keyboard-accessible.
+
+**Section** (`src/lib/components/Section.svelte`) is that card: a title, an optional count, at
+most one disclosure, and the thing itself. The form it reveals opens **directly beneath the
+card's header** — above the content, never at the foot of the card. A person with twelve
+relationships pressing *Add* would otherwise watch nothing happen, because the form appeared a
+screen below the button that asked for it. On opening, the card scrolls itself just into view
+and the cursor lands in the form's first control that can hold it — the hidden inputs several
+forms carry their ids in are skipped, since focusing one fails silently
+(`src/lib/components/first-field.ts`). `Escape` closes the form and hands focus back to the
+button that opened it. A form held open by a failed validation is the exception to both: the
+reader has just arrived on the page, so nothing steals the cursor from the error message and
+`Escape` cannot dismiss the form the message lives in.
 
 **Person search select** (`src/lib/components/PersonSearchSelect.svelte`) replaces a plain
 `<select>` everywhere a form asks for a person from a list too long to scan: relationship
