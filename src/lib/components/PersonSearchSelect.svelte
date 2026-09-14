@@ -6,7 +6,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { isNameWorthCreating, splitTypedName } from '$lib/people/new-person';
-	import { filterPeople, type SelectablePerson } from '$lib/people/select';
+	import { filterPeople, stillNeedsAPick, type SelectablePerson } from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';
 
 	/*
@@ -262,7 +262,7 @@
 				aria-controls="{id}-listbox"
 				aria-autocomplete="list"
 				autocomplete="off"
-				{required}
+				required={stillNeedsAPick(required, selectedIds.length)}
 				value={query || singlePicked?.displayName || ''}
 				placeholder={singlePicked ? '' : (placeholder ?? t('components.personSearch.placeholder'))}
 				oninput={(e) => {
