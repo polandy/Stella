@@ -215,8 +215,9 @@ They must be edited together; `app.css` says so at both blocks.
     the card they meant.
   - **People** opens with the **map** — the same explorer the graph route runs, with this
     person locked in the middle and a reach of two hops (§5.8) — because who someone is
-    connected to is a shape before it is a dozen rows; *Explore in graph* reaches the whole
-    household. The list
+    connected to is a shape before it is a dozen rows; *Open in the graph*, a button in the
+    card's header rather than a small text link, reaches the whole household, and the explorer
+    carries a *Back to <person>* link home (§2.7). The list
     follows, each row *label · name · how they connect · since <day>* with *former* as a quiet
     chip, carrying **Edit** (revealing the same three fields in place, the type not among them)
     and the standard remove-with-undo. Below it, **Also related · worked out, not entered**
@@ -507,7 +508,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   otherwise offer *Expand* — a card-sized map is not a way to walk the household. The toolbar
   keeps the filter chips (which are the legend) and the Labels toggle, and drops what is about
   travelling elsewhere: the find-a-person field, because the page has its own search, and the
-  connection path. Nothing is selected on arrival, since the page's header already names the
+  connection path. One label for one action — *Open in the graph* is the same words on the card
+  header and in the peek panel, since it does the same thing in both. Nothing is selected on arrival, since the page's header already names the
   person and the peek panel would cover the map; circles start switched **off**, because they
   double the node count for something the profile lists anyway.
 - **What the page is handed:** its own slice, not the household. `personMap` cuts two hops out

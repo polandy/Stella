@@ -4,6 +4,7 @@ import {
 	Blend,
 	BookOpen,
 	CalendarDays,
+	ChevronLeft,
 	ChevronRight,
 	CircleDot,
 	Download,
@@ -54,6 +55,7 @@ export const ICONS = {
 	import: Download,
 	export: Upload,
 	forward: ChevronRight,
+	back: ChevronLeft,
 	signOut: LogOut,
 	// Actions
 	add: Plus,

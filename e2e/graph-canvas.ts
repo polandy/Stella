@@ -125,14 +125,28 @@ export async function ringsOnCanvas(page: Page, centerId: string): Promise<Map<s
  * can actually reach rather than naming one and hoping.
  */
 export async function firstClickableNode(page: Page, ids: string[]): Promise<string | null> {
+	const owners = await nodeOwners(page, ids);
+	return ids.find((id) => owners[id] === 'canvas') ?? null;
+}
+
+/**
+ * What is on top at each node's drawn point — `canvas` for a node nothing covers, otherwise
+ * the element in the way, or `undrawn`/`offscreen`. A failing case reports this, so "no node
+ * was clickable" says which floating thing was over them.
+ */
+export async function nodeOwners(page: Page, ids: string[]): Promise<Record<string, string>> {
+	const owners: Record<string, string> = {};
 	for (const id of ids) {
 		const { point } = await drawnNode(page, id);
-		if (!point) continue;
-		const onTop = await page.evaluate(
-			(p) => document.elementFromPoint(p.x, p.y)?.tagName.toLowerCase() ?? 'nothing',
-			point
-		);
-		if (onTop === 'canvas') return id;
+		if (!point) {
+			owners[id] = 'undrawn';
+			continue;
+		}
+		owners[id] = await page.evaluate((p) => {
+			if (p.x < 0 || p.y < 0 || p.x > innerWidth || p.y > innerHeight) return 'offscreen';
+			const el = document.elementFromPoint(p.x, p.y);
+			return el ? el.tagName.toLowerCase() : 'nothing';
+		}, point);
 	}
-	return null;
+	return owners;
 }

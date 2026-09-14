@@ -111,7 +111,6 @@ export const contact: ContactMessages = {
 	'contact.interaction.submit': 'Kontakt festhalten',
 
 	'contact.relationships.add': 'Beziehung hinzufügen',
-	'contact.relationships.explore': 'Im Netz erkunden',
 	'contact.relationships.none': 'Noch keine Beziehungen.',
 	'contact.relationships.remove': (p) => `Verbindung zu ${p.name} entfernen`,
 	'contact.relationships.removed': 'Beziehung entfernt',

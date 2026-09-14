@@ -13,7 +13,7 @@ function absorb(model: GraphModel, hood: Neighborhood): GraphModel {
 
 /**
  * Build the network centred on `centerId` out to `depth` hops. `depth` 1 yields the centre
- * plus its immediate relationships and circles (the profile's "Explore connections"); higher
+ * plus its immediate relationships and circles; higher
  * depths fetch each frontier node's neighbourhood in turn. Nodes discovered at the final hop
  * are included, but their onward edges are not — that is what {@link expandNode} is for.
  * An unknown or invisible centre yields an empty model.
