@@ -257,8 +257,15 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		relationships,
 		// Inferred, never stored (docs/02 §2.4.1); shown apart from the entered links.
 		derivedKin: kinship.derived,
-		// Links implied by the one just added, offered for a single confirmation each.
-		proposals: kinship.proposals,
+		/*
+		 * Links implied by the one just added, offered for a single confirmation each. The
+		 * reason arrives as a `Phrase`; here is where it becomes a sentence, in the language
+		 * this request is being read in.
+		 */
+		proposals: kinship.proposals.map((proposal) => ({
+			...proposal,
+			reason: proposal.reason(translator(locals))
+		})),
 		proposeFor: url.searchParams.get('propose'),
 		relationshipTypes: types,
 		tags,

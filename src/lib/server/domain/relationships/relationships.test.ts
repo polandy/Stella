@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { createTranslator } from '../../../i18n/translate';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { BUILT_IN_RELATIONSHIP_TYPES } from './built-in-types';
@@ -383,16 +384,20 @@ describe('readKinship', () => {
 			'hans',
 			{ a: 'bettina', b: 'hans' }
 		);
-		expect(found.proposals).toEqual([
+		expect(found.proposals).toMatchObject([
 			{
-				kind: 'parent',
+				kind: 'link',
+				relation: 'parent',
+				ruleId: 'L1',
+				confidence: 'certain',
 				fromId: 'bettina',
 				toId: 'lisa',
 				fromName: 'Bettina',
-				toName: 'Lisa',
-				reason: 'Lisa is Hans’s sibling.'
+				toName: 'Lisa'
 			}
 		]);
+		// The reason travels unsaid; the route renders it in the reader's language.
+		expect(found.proposals[0]?.reason(createTranslator('en'))).toBe('Lisa is Hans’s sibling.');
 	});
 
 	it('proposes nothing for a pair with no primary link the viewer can see', async () => {

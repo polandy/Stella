@@ -48,7 +48,17 @@ export const kinship = {
 	'kinship.term.child-in-law.neutral': 'Child-in-law',
 	'kinship.term.sibling-in-law.male': 'Brother-in-law',
 	'kinship.term.sibling-in-law.female': 'Sister-in-law',
-	'kinship.term.sibling-in-law.neutral': 'Sibling-in-law'
+	'kinship.term.sibling-in-law.neutral': 'Sibling-in-law',
+
+	/*
+	 * Why a link is being offered (docs/02 §2.4.1). The genitive lives here rather than in
+	 * the domain: a name ending in s keeps the s — "Lukas’s sibling" reads the way it is
+	 * spoken — and German forms the same sentence with a preposition instead.
+	 */
+	'kinship.reason.siblingOf': (p: { sibling: string; of: string }) =>
+		`${p.sibling} is ${p.of}’s sibling.`,
+	'kinship.reason.parentOf': (p: { parent: string; of: string }) =>
+		`${p.parent} is ${p.of}’s parent.`
 };
 
 /** The key set every translation of this area has to provide. */

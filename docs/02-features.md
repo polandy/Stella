@@ -398,10 +398,13 @@ tables, fully unit-testable (test-first).
 - **Shipped:** storing a parent or sibling link brings back an **Also true?** block with the
   links it implies — a parent added to one child is offered to that child's siblings, a new
   sibling link offers the parents each side already has — each with the sentence explaining
-  it and its own *Add this too*. Nothing is written without that click, and the remaining
-  suggestions stay while they are worked through. A partner's tie to existing children is
-  deliberately not offered: it is a step relationship, which the profile already names
-  without storing anything.
+  it, in the reader's own language, and its own *Add this too*. Nothing is written without
+  that click, and the remaining suggestions stay while they are worked through. A partner's
+  tie to existing children is deliberately not offered: it is a step relationship, which the
+  profile already names without storing anything. What is offered is worked out by a rule
+  engine (`src/lib/suggestions/`) that keeps the rules apart from the checks applied to all
+  of them — so Stella never offers a pair the household has already linked, and never offers
+  to *store* a tie it already works out and displays.
 
 A broader catalogue of what else could be proposed — the other parent, surname and address
 prefill, consistency warnings — and the rule set behind it is drafted in
