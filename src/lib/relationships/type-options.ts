@@ -74,6 +74,21 @@ export function relationshipTypeOptions<T extends SelectableType>(
 }
 
 /**
+ * Whether a picker entry is the one a stored link already reads as — what the edit form
+ * preselects. A symmetric type is offered **once**, from its forward side, while a link
+ * carrying it reads as `reverse` on the endpoint it is stored second: matching the side
+ * literally would preselect nothing there, and a select with no match falls back to its
+ * first entry, so saving the specifics alone would quietly retype the link.
+ */
+export function isChoiceOfLink<T extends SelectableType>(
+	option: RelationshipTypeOption<T>,
+	link: { typeId: string; side: RelationshipSide }
+): boolean {
+	if (option.type.id !== link.typeId) return false;
+	return option.type.symmetric || option.side === link.side;
+}
+
+/**
  * The endpoints to store for a link entered from `selfId`'s profile. The reverse side means
  * the sentence was read the other way round ("self is a child of other"), so the other
  * person becomes the from-endpoint and the stored row still reads forward.

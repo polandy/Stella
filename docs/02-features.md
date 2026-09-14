@@ -323,12 +323,21 @@ reciprocal** link.
   as a quiet chip. A day that never happened (`2019-02-30`) and a status the model does not
   know are refused rather than stored. A link entered wrongly can be **removed**, with the
   same Undo window as a tag or a date, and removing one that was standing in for a derived
-  relationship brings the worked-out name back (§2.4.1). The **type** is deliberately not
-  editable: changing it can flip the stored direction and re-opens the duplicate guard, so
-  that is a removal and a fresh entry. Marking a partner **former** does *not* withdraw the
+  relationship brings the worked-out name back (§2.4.1). Marking a partner **former** does *not* withdraw the
   relatives it explains — step-family and in-laws come precisely from partner history
   (§2.4.1), and a divorce does not unmake a stepmother. The status says how the household
   reads the link today; it is not a delete.
+
+- **Shipped:** the **type of a link can be changed** from the row's *Edit*, in the same picker
+  the link was entered with — both sides of an asymmetric type included. A partner who became a
+  spouse, and a generation entered the wrong way round, are one pick rather than a removal and a
+  re-entry that would lose the specifics. Because the type decides how a row is stored, the
+  chosen side is read from the profile the edit is made on and the pair is re-canonicalised, so
+  a symmetric type stays order-independent and an asymmetric one ends up stored the way it now
+  reads. The guards creating a link passes are re-run — the duplicate guard and the refusal of a
+  generation claimed in both directions — with the link itself left out of both, since measured
+  against itself every retype would read as its own duplicate. A link touching someone the
+  viewer may not see cannot be retyped, and answers as if it were not there (docs/03 §3.7).
 
 - **Shipped:** *Settings → Data → Relationship types* lets the admin name kinds of link the
   built-in set does not cover — godparent, choir mate, landlord — with a label, the label
