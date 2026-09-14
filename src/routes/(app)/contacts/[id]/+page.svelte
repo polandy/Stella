@@ -210,7 +210,7 @@
 	});
 	/*
 	 * The specifics of the link being entered, watched so the form can fill in what it already
-	 * knows: a parent–child link began on the child's birthday (docs/02 §2.4).
+	 * knows: a family link began on the younger one's birthday (docs/02 §2.4).
 	 */
 	const relationshipChoices = $derived(relationshipTypeOptions(data.relationshipTypes));
 	let relationshipChoice = $state('');
@@ -228,7 +228,7 @@
 			relationshipChoices[0];
 		if (!chosen) return '';
 		return sinceDateFromBirth(
-			{ typeKey: chosen.type.key, side: chosen.side },
+			{ category: chosen.type.category, symmetric: chosen.type.symmetric, side: chosen.side },
 			data.contact,
 			relationshipTarget
 		);
