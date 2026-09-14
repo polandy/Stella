@@ -112,6 +112,16 @@ describe('createDrizzleContactRepository', () => {
 
 		expect((await repo.listVisibleTo(viewerU1)).find((c) => c.id === 'c-nick')?.nickname).toBe('Leni');
 	});
+
+	it('carries the birth date in the list summary, which is what a family link is dated from', async () => {
+		// The relationship form offers the younger one's birthday as the since day (docs/02
+		// §2.4), and it reads it off this list rather than fetching each person in it.
+		await repo.insert(contactInput({ id: 'c-born', displayName: 'Lena', birthDate: '2015-05-20' }));
+
+		expect((await repo.listVisibleTo(viewerU1)).find((c) => c.id === 'c-born')?.birthDate).toBe(
+			'2015-05-20'
+		);
+	});
 });
 
 describe('listNameCandidatesVisibleTo (docs/02 §2.2.1)', () => {

@@ -328,6 +328,25 @@ reciprocal** link.
   (§2.4.1), and a divorce does not unmake a stepmother. The status says how the household
   reads the link today; it is not a delete.
 
+- **Shipped:** a **family link is dated from the younger one's birthday**. A child gains a
+  parent, a grandparent and a godparent the day they are born, and two siblings become
+  siblings the day the second of them arrives — the day is already on file, so the form fills
+  the **since** day in as soon as the type and the person are chosen, for someone named in the
+  picker itself just as much as for someone already on file.
+
+  The rule reads the type, not a list of names, so a household's **own** family type
+  ("Godparent of") is covered the moment it is filed under *family*. An **asymmetric** family
+  type names the elder role forward and the younger in reverse — *Parent of* / *Child of*,
+  *Godparent of* / *Godchild of* — so the chosen side alone says whose birthday it is, and the
+  elder's own need not be known. A **symmetric** one (sibling) says nothing about age, so it
+  takes the later of the two birthdays and offers nothing while only one is on file. Outside
+  the family nothing is suggested: a partnership, a friendship and a working relationship
+  begin at a meeting, a wedding or a first day, which no birthday knows.
+
+  It stays a suggestion in an ordinary field — clearable and editable before saving — and is
+  only offered when the birthday names a whole day: a day-and-month birthday or an estimated
+  year (docs/03 §3.4) says nothing about *when* the link began.
+
 - **Shipped:** the **type of a link can be changed** from the row's *Edit*, in the same picker
   the link was entered with — both sides of an asymmetric type included. A partner who became a
   spouse, and a generation entered the wrong way round, are one pick rather than a removal and a

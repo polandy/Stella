@@ -31,6 +31,8 @@
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
 	import { isChoiceOfLink, relationshipTypeOptions } from '$lib/relationships/type-options';
+	import { sinceDateFromBirth } from '$lib/relationships/since';
+	import type { SelectablePerson } from '$lib/people/select';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
@@ -205,6 +207,32 @@
 	const savedRelationship = savedEnhance(removals, t('components.saved'), () => {
 		relateOpen = false;
 		relationshipTargetId = [];
+	});
+	/*
+	 * The specifics of the link being entered, watched so the form can fill in what it already
+	 * knows: a family link began on the younger one's birthday (docs/02 §2.4).
+	 */
+	const relationshipChoices = $derived(relationshipTypeOptions(data.relationshipTypes));
+	/** Empty until the picker is touched, which means it stands on its first entry. */
+	let relationshipChoice = $state('');
+	/** Someone named through the picker itself is not in `otherContacts` yet (docs/02 §2.2.2). */
+	let pickedTarget = $state<SelectablePerson | undefined>();
+	const relationshipTarget = $derived.by(() => {
+		const id = relationshipTargetId[0];
+		if (!id) return null;
+		if (pickedTarget?.id === id) return pickedTarget;
+		return data.otherContacts.find((person) => person.id === id) ?? null;
+	});
+	const suggestedSince = $derived.by(() => {
+		const chosen =
+			relationshipChoices.find((option) => option.value === relationshipChoice) ??
+			relationshipChoices[0];
+		if (!chosen) return '';
+		return sinceDateFromBirth(
+			{ category: chosen.type.category, symmetric: chosen.type.symmetric, side: chosen.side },
+			data.contact,
+			relationshipTarget
+		);
 	});
 	/*
 	 * "How are we connected?" — the picker is on the page rather than in the canvas: the map
@@ -920,8 +948,15 @@
 									</span>
 									<!-- Both directions of an asymmetric type, so "is a child of" needs no
 										 detour via the other profile (docs/02 §2.4). -->
-									<select name="typeChoice" class={INPUT}>
-										{#each relationshipTypeOptions(data.relationshipTypes) as option (option.value)}
+									<!-- Read, not bound: binding would hand the select a value of its own before
+										 anybody has chosen, and an unmatched one deselects every option — the form
+										 would then post no type at all. -->
+									<select
+										name="typeChoice"
+										onchange={(event) => (relationshipChoice = event.currentTarget.value)}
+										class={INPUT}
+									>
+										{#each relationshipChoices as option (option.value)}
 											<option value={option.value}>
 												{relationshipTypeLabel(t, option.type, option.side)}
 											</option>
@@ -935,6 +970,7 @@
 										people={data.otherContacts}
 										name="targetId"
 										bind:selectedIds={relationshipTargetId}
+										onPick={(person) => (pickedTarget = person)}
 										allowCreate
 									/>
 								</label>
@@ -948,7 +984,15 @@
 								</label>
 								<label class="flex flex-col gap-1 text-sm">
 									<span class="text-fg-muted">{t('contact.relationships.sinceLabel')}</span>
-									<DateField name="sinceDate" label={t('contact.relationships.sinceLabel')} />
+									<!-- Keyed: the field owns its segments once it is on screen, so a new
+										 suggestion arrives as a fresh field rather than as a silent overwrite. -->
+									{#key suggestedSince}
+										<DateField
+											name="sinceDate"
+											value={suggestedSince}
+											label={t('contact.relationships.sinceLabel')}
+										/>
+									{/key}
 								</label>
 								<label class="flex flex-col gap-1 text-sm">
 									<span class="text-fg-muted">{t('contact.relationships.status')}</span>

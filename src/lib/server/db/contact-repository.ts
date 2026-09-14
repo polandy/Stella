@@ -41,7 +41,8 @@ const summaryColumns = {
 	nickname: contactTable.nickname,
 	description: contactTable.description,
 	visibility: contactTable.visibility,
-	avatarPhotoId: contactTable.avatarPhotoId
+	avatarPhotoId: contactTable.avatarPhotoId,
+	birthDate: contactTable.birthDate
 };
 
 /** The profile columns a merge combines (docs/02 §2.2) — every one that can be empty. */
