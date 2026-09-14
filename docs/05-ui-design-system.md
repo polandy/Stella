@@ -524,6 +524,11 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   fetched afterwards and takes its place when ready (`RelationshipMap`). The map is never an
   empty box waiting on 400 KB, and a browser that never finishes the fetch keeps the SVG —
   which is the fallback rather than an error state.
+- **It follows a save:** adding, retyping or removing a relationship re-runs the page's load,
+  and the map redraws from that fresh slice — the shape beside the list never disagrees with
+  the list. What the reader had expanded stays expanded (`rebuildExplored` replays it against
+  the new snapshot, skipping anything the new slice no longer reaches from the centre); a
+  traced chain is dropped, because it described the links as they were.
 
 ## 5.9 Accessibility checklist
 
