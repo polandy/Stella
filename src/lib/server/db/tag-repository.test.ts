@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
+import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
@@ -85,6 +86,50 @@ describe('visibility scoping', () => {
 
 	it('carries the birth date there too, so a tag-filtered list is the same summary', async () => {
 		expect((await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).find((c) => c.id === 'c-shared')?.birthDate).toBe(BIRTH_DATE);
+	});
+
+	/*
+	 * The safety net for deleting a tag nobody carries: "nobody" has to mean the whole
+	 * household, not the people this member happens to see. Counting through the viewer's
+	 * eyes would let U2 delete a tag that is still on U1's private contact — taking it off
+	 * that contact behind their back.
+	 */
+	it('counts assignments across the household, including contacts the viewer cannot see', async () => {
+		expect(await repo.countAssignments('t-fam')).toBe(2);
+		await repo.unassign('c-shared', 't-fam');
+		expect(await repo.countAssignments('t-fam')).toBe(1);
+		await repo.unassign('c-priv', 't-fam');
+		expect(await repo.countAssignments('t-fam')).toBe(0);
+	});
+
+	it('deletes a tag and, with it, nothing else', async () => {
+		await repo.insert(tag({ id: 't-other', name: 'Other' }));
+		await repo.assign('c-shared', 't-other');
+		await repo.deleteTag('t-fam');
+		expect(await repo.findByName(H, 'Family')).toBeNull();
+		expect((await repo.listByHousehold(H)).map((t) => t.id)).toEqual(['t-other']);
+		expect(await repo.listForContactVisibleTo(viewerU1, 'c-shared')).toHaveLength(1);
+	});
+
+	/*
+	 * A deleted contact takes its assignments with it by cascade, never through `unassign` —
+	 * so the tags it was the last carrier of have to be swept up separately.
+	 */
+	it('sweeps up the tags a deleted contact left behind, and only those', async () => {
+		await repo.insert(tag({ id: 't-solo', name: 'Solo' }));
+		await repo.assign('c-priv', 't-solo');
+		db.delete(schema.contact).where(eq(schema.contact.id, 'c-priv')).run();
+
+		expect(await repo.deleteOrphans(H)).toBe(1);
+		expect((await repo.listByHousehold(H)).map((t) => t.id)).toEqual(['t-fam']);
+	});
+
+	it('leaves a tag of another household alone', async () => {
+		db.insert(schema.household).values({ id: 'household-2', name: 'Other' }).run();
+		await repo.insert(tag({ id: 't-elsewhere', householdId: 'household-2', name: 'Elsewhere' }));
+
+		expect(await repo.deleteOrphans(H)).toBe(0);
+		expect((await repo.listByHousehold('household-2')).map((t) => t.id)).toEqual(['t-elsewhere']);
 	});
 
 	it('lists only visible contacts for a tag', async () => {

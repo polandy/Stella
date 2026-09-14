@@ -80,6 +80,7 @@ import {
 import {
 	assignTagByName,
 	listTagsForContact,
+	pruneOrphanTags,
 	TAG_COLORS,
 	unassignTag
 } from '$lib/server/domain/tags/tags';
@@ -448,6 +449,9 @@ export const actions: Actions = {
 		const viewer = { id: user.id, householdId: user.householdId };
 		const done = await deleteContact(getDeleteContactDeps(), viewer, params.id);
 		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
+		// Their tag assignments went with them by cascade, so a tag they were the last
+		// carrier of is orphaned here rather than by `unassignTag` (docs/02 §2.8).
+		await pruneOrphanTags(getTagDeps(), user.householdId);
 		throw redirect(303, '/contacts');
 	},
 

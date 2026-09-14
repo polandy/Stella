@@ -55,6 +55,11 @@ export interface TagRepository {
 	listByHousehold(householdId: string): Promise<Tag[]>;
 	assign(contactId: string, tagId: string): Promise<void>;
 	unassign(contactId: string, tagId: string): Promise<void>;
+	/** How many contacts carry this tag, across the whole household — never viewer-scoped. */
+	countAssignments(tagId: string): Promise<number>;
+	deleteTag(tagId: string): Promise<void>;
+	/** Delete every tag in the household nobody carries; answers how many went. */
+	deleteOrphans(householdId: string): Promise<number>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Tag[]>;
 	listContactsByTagVisibleTo(viewer: Viewer, tagId: string): Promise<ContactSummary[]>;
 }
@@ -98,12 +103,35 @@ export async function assignTagByName(
 	return tag.id;
 }
 
+/**
+ * Take a tag off a contact, and delete the tag itself once nobody carries it any more.
+ *
+ * Tags come into being by being named on a person, so there is no other way to be rid of one:
+ * an orphan would sit in the household's chip row forever, filtering to an empty page. The
+ * count deliberately spans the whole household rather than what the actor may see — a tag
+ * still on someone else's private contact is still in use, and deleting it there would take
+ * it off that contact behind their back (docs/02 §2.8).
+ */
 export async function unassignTag(
 	deps: Pick<TagDeps, 'tags'>,
 	contactId: string,
 	tagId: string
 ): Promise<void> {
 	await deps.tags.unassign(contactId, tagId);
+	if ((await deps.tags.countAssignments(tagId)) === 0) await deps.tags.deleteTag(tagId);
+}
+
+/**
+ * Sweep up the tags nobody carries any more. A deleted contact takes its assignments with it
+ * by cascade rather than through `unassignTag`, so the tags it was the last carrier of have to
+ * be collected afterwards (docs/02 §2.8). Answers how many went, and is safe to call when
+ * nothing is orphaned.
+ */
+export async function pruneOrphanTags(
+	deps: Pick<TagDeps, 'tags'>,
+	householdId: string
+): Promise<number> {
+	return deps.tags.deleteOrphans(householdId);
 }
 
 export async function listTags(deps: Pick<TagDeps, 'tags'>, householdId: string): Promise<Tag[]> {

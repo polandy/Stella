@@ -586,7 +586,15 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 
 - Freely created labels with a name and a color (from the Catppuccin accent set).
 - Applied to contacts; used for filtering (lists and graph) and grouping.
-- Managed in settings (rename, recolor, merge, delete).
+- **A tag lives as long as someone carries it.** There is no separate place to delete one:
+  taking the last assignment off a person deletes the tag itself, and a deleted contact's
+  assignments — which go by cascade, never through the use-case — are swept up after the
+  delete. A tag is created by naming it on a person, so without this an orphan would sit in
+  the household's chip row forever, leading only to an empty page.
+  - "Nobody carries it" spans the **whole household**, not what the actor may see: a tag still
+    on someone else's private contact is still in use, and deleting it would take it off that
+    contact behind their back (§2.10).
+- Renaming and recolouring a tag is still to come.
 
 ## 2.9 Search **[M1]**
 
