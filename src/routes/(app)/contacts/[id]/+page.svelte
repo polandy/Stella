@@ -720,14 +720,21 @@
 						-->
 						{#if egoNodes.length > 0}
 							<div class="mb-3">
-								<RelationshipMap
-									centerId={c.id}
-									centerName={c.displayName}
-									centerPhotoId={c.avatarPhotoId}
-									graph={data.graph}
-									nodes={egoNodes}
-									fullGraphHref={(nodeId) => `/graph?center=${nodeId}`}
-								/>
+								<!--
+									Keyed on the person: opening a profile from the map's peek panel is a
+									navigation within this same route, so without a remount the explorer would
+									keep the previous person's graph — and its open panel — over the new page.
+								-->
+								{#key c.id}
+									<RelationshipMap
+										centerId={c.id}
+										centerName={c.displayName}
+										centerPhotoId={c.avatarPhotoId}
+										graph={data.graph}
+										nodes={egoNodes}
+										fullGraphHref={(nodeId) => `/graph?center=${nodeId}`}
+									/>
+								{/key}
 							</div>
 						{/if}
 
