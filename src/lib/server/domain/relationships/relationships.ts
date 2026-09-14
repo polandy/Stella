@@ -2,7 +2,9 @@ import { TranslatableError } from '../../../errors/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { KinshipGraph, Pair } from '../../../kinship/kinship';
 import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';
-import { suggestPropagation, type PrimaryLink, type SuggestedLink } from '../../../kinship/propagation';
+import { evaluate } from '../../../suggestions/engine';
+import type { LinkSuggestion, PrimaryLink } from '../../../suggestions/types';
+import { buildView } from '../../../suggestions/view';
 import type { Viewer } from '../../access/visibility';
 import type { RelationshipCategory } from '../../../relationships/categories';
 import type { Endpoints } from '../../../relationships/endpoints';
@@ -298,8 +300,8 @@ export interface KinshipRead {
 	proposals: ProposedLink[];
 }
 
-/** A propagation suggestion with the names the interface needs to phrase it. */
-export interface ProposedLink extends SuggestedLink {
+/** A suggested link with the names the interface needs to phrase it. */
+export interface ProposedLink extends LinkSuggestion {
 	fromName: string;
 	toName: string;
 }
@@ -315,11 +317,11 @@ export async function readKinship(
 	const added = proposeFor ? primaryLinkBetween(graph, proposeFor.a, proposeFor.b) : null;
 	if (!added) return { derived, proposals: [] };
 
-	const names = new Map(graph.people.map((person) => [person.id, person.displayName]));
-	const proposals = suggestPropagation(graph, added).map((link) => ({
-		...link,
-		fromName: names.get(link.fromId) ?? link.fromId,
-		toName: names.get(link.toId) ?? link.toId
+	const view = buildView(graph);
+	const proposals = evaluate({ kind: 'link-stored', link: added }, view).map((suggestion) => ({
+		...suggestion,
+		fromName: view.nameOf(suggestion.fromId),
+		toName: view.nameOf(suggestion.toId)
 	}));
 	return { derived, proposals };
 }
