@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import { getGraphRepository } from '$lib/server/services';
-import { chooseCenter, chosenPathTarget } from './center';
+import { chooseCenter, chosenPathTarget, wayBackTo } from './center';
 import type { PageServerLoad } from './$types';
 
 /*
@@ -27,10 +27,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	 * button. The name comes from the snapshot that is already loaded — no second query — and
 	 * it is offered only for a centre a link actually asked for.
 	 */
-	const cameFrom =
-		center.asked && center.id
-			? (graph.nodes.find((node) => node.id === center.id)?.label ?? null)
-			: null;
+	const cameFrom = wayBackTo(graph.nodes, center);
 
 	/*
 	 * A profile hands its "how are we connected?" here with both ends named: it carries only

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { fillDate, openPerson, pickPerson, signIn } from './app';
 
 /*
@@ -97,7 +97,7 @@ test('refuses a generation claimed in both directions, and writes nothing', asyn
 	await expect(enteredRow(page, 'Heidi Lehmann')).not.toContainText('Child of');
 });
 
-test('corrects the specifics from the row, and never offers the type', async ({ page }) => {
+test('corrects the specifics from the row, the type picker preset to the link', async ({ page }) => {
 	await openPeopleTab(page, /Bettina Roth/);
 	await addLink(page, { type: 'Knows', person: 'Jan Steiner', how: HOW, since: '2019-06-01', status: 'former' });
 
@@ -105,8 +105,11 @@ test('corrects the specifics from the row, and never offers the type', async ({ 
 	await row.getByRole('button', { name: 'Edit' }).click();
 
 	const editor = page.locator('form[action="?/editRelationship"]');
-	// Changing the type could flip the stored direction, so it is not on offer here.
-	await expect(editor.locator('select[name=typeChoice]')).toHaveCount(0);
+	// The type is on offer again, preset to what the link says today (docs/02 §2.4).
+	await expect(editor.locator('select[name=typeChoice]')).toHaveValue(/./);
+	await expect(
+		editor.locator('select[name=typeChoice] option:checked')
+	).toHaveText('Knows');
 	await expect(editor.locator('input[name=description]')).toHaveValue(HOW);
 
 	await editor.locator('input[name=description]').fill('walked the Gurten every spring');
@@ -146,4 +149,104 @@ test('takes a link back with Undo, and the worked-out name returns with it', asy
 	await openPeopleTab(page, /Hans Brunner/);
 	await expect(page.getByTestId('derived-kin')).toContainText('Nadia Brunner-Rossi');
 	await expect(page.locator('#section-relationships ul').first()).not.toContainText('Nadia Brunner-Rossi');
+});
+
+/*
+ * Changing the type of a link that is already there (docs/02 §2.4). Written after the flow
+ * was verified in the running app (docs/08 §8.4.1).
+ */
+
+/** Opens one row's editor and hands back the form inside it. */
+async function openEditor(page: Page, row: Locator): Promise<Locator> {
+	await row.getByRole('button', { name: 'Edit' }).click();
+	return page.locator('form[action="?/editRelationship"]');
+}
+
+/** What the type picker in a row's editor stands on. */
+const presetType = (editor: Locator) => editor.locator('select[name=typeChoice] option:checked');
+
+test('changes the type from the row, keeping what the link said', async ({ page }) => {
+	await openPeopleTab(page, /Bettina Roth/);
+	await addLink(page, {
+		type: 'Partner of',
+		person: 'Reto Hofer',
+		how: HOW,
+		since: '2011-08-20',
+		status: 'current'
+	});
+
+	const editor = await openEditor(page, enteredRow(page, 'Reto Hofer'));
+	await expect(presetType(editor)).toHaveText('Partner of');
+	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Spouse of' });
+	await editor.getByRole('button', { name: 'Save' }).click();
+
+	// The tie changed name; what was written about it did not.
+	const row = enteredRow(page, 'Reto Hofer');
+	await expect(row).toContainText('Spouse of');
+	await expect(row).toContainText(HOW);
+	await expect(row).toContainText('since 20 August 2011');
+
+	// Stored, not just shown.
+	await page.reload();
+	await expect(enteredRow(page, 'Reto Hofer')).toContainText('Spouse of');
+
+	/*
+	 * The same row from the other end. A symmetric type is offered once, from its forward
+	 * side, while the link reads as the reverse side on the endpoint it is stored second — so
+	 * exactly one of these two pages is that endpoint, and the picker must stand on the link
+	 * on both. Preselecting nothing there would let a select fall back to its first entry and
+	 * a save of the specifics alone retype the link.
+	 */
+	await openPeopleTab(page, /Reto Hofer/);
+	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Spouse of');
+	await expect(presetType(await openEditor(page, enteredRow(page, 'Bettina Roth')))).toHaveText(
+		'Spouse of'
+	);
+});
+
+test('turns a generation round from the row, rather than refusing it as its own contradiction', async ({ page }) => {
+	/*
+	 * Nicole and Bettina are linked by neither the seed nor any case above, so the only
+	 * generation between them is the one entered here — the wrong way round on purpose.
+	 */
+	await openPeopleTab(page, /Nicole Frei/);
+	await addLink(page, { type: 'Child of', person: 'Bettina Roth' });
+
+	const editor = await openEditor(page, enteredRow(page, 'Bettina Roth'));
+	await expect(presetType(editor)).toHaveText('Child of');
+	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Parent of' });
+	await editor.getByRole('button', { name: 'Save' }).click();
+
+	// The guard that refuses a generation claimed both ways leaves the link itself out of the
+	// question, so the row turns round instead of being turned away.
+	await expect(page.locator('#section-relationships')).not.toContainText('already linked the other way round');
+	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Parent of');
+
+	// One row, moved — not a second one: from Bettina it now reads as the other side.
+	await openPeopleTab(page, /Bettina Roth/);
+	await expect(enteredRow(page, 'Nicole Frei')).toHaveCount(1);
+	await expect(enteredRow(page, 'Nicole Frei')).toContainText('Child of');
+});
+
+test('refuses a type that would duplicate a link already there, and writes nothing', async ({ page }) => {
+	// Nicole and Jan are linked by neither the seed nor any case above; both links here are
+	// entered by this case.
+	await openPeopleTab(page, /Nicole Frei/);
+	await addLink(page, { type: 'Knows', person: 'Jan Steiner' });
+	await addLink(page, { type: 'Neighbor of', person: 'Jan Steiner', how: 'two floors up' });
+
+	// Two rows now name Jan; the one being retyped is the neighbour link.
+	const neighbourRow = enteredRow(page, 'Jan Steiner').filter({ hasText: 'Neighbor of' });
+	const editor = await openEditor(page, neighbourRow);
+	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Knows' });
+	await editor.getByRole('button', { name: 'Save' }).click();
+	await expect(page.locator('#section-relationships')).toContainText('That relationship already exists.');
+
+	// The positive signal: both links are still there, each reading as it was entered, and a
+	// reload proves the server wrote nothing rather than the page merely not moving.
+	await page.reload();
+	const rows = enteredRow(page, 'Jan Steiner');
+	await expect(rows).toHaveCount(2);
+	await expect(rows.filter({ hasText: 'Neighbor of' })).toContainText('two floors up');
+	await expect(rows.filter({ hasText: 'Knows' })).toHaveCount(1);
 });

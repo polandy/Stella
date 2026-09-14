@@ -124,6 +124,7 @@ export const contact: ContactMessages = {
 	'contact.relationships.sinceLabel': 'Seit',
 	'contact.relationships.status': 'Status',
 	'contact.relationships.is': (p) => `${p.name} ist…`,
+	'contact.relationships.typeLabel': 'Beziehung',
 	'contact.relationships.person': 'Person',
 	'contact.relationships.addSomeoneFirst':
 		'Lege zuerst eine weitere Person an, dann kannst du sie hier verknüpfen.',

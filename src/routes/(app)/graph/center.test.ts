@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'bun:test';
-import { chooseCenter, chosenPathTarget, type CentrableNode } from './center';
+import { chooseCenter, chosenPathTarget, wayBackTo, type CentrableNode } from './center';
 
 /*
  * Where the explorer opens (docs/02 §2.7, §2.1.3): what was asked for, else me, else anyone.
  */
 
 const nodes: CentrableNode[] = [
-	{ id: 'c-anna', kind: 'person' },
-	{ id: 'c-me', kind: 'person' },
-	{ id: 'circle-1', kind: 'circle' }
+	{ id: 'c-anna', kind: 'person', label: 'Anna Roth' },
+	{ id: 'c-me', kind: 'person', label: 'Me' },
+	{ id: 'circle-1', kind: 'circle', label: 'Book club' }
 ];
 
 describe('chooseCenter', () => {
@@ -40,6 +40,25 @@ describe('chooseCenter', () => {
 			id: null,
 			asked: false
 		});
+	});
+});
+
+describe('wayBackTo', () => {
+	it('names the person a link asked to centre, so the page can offer the way back', () => {
+		expect(wayBackTo(nodes, chooseCenter(nodes, 'c-anna', 'c-me'))).toBe('Anna Roth');
+	});
+
+	it('owes nothing for a centre nobody asked for', () => {
+		// Opening the explorer on my own person is not arriving from my own page.
+		expect(wayBackTo(nodes, chooseCenter(nodes, null, 'c-me'))).toBeNull();
+	});
+
+	it('owes nothing for a circle, which has no page of its own to go back to', () => {
+		expect(wayBackTo(nodes, chooseCenter(nodes, 'circle-1', 'c-me'))).toBeNull();
+	});
+
+	it('owes nothing when there is nothing to centre on', () => {
+		expect(wayBackTo([], chooseCenter([], 'c-anna', null))).toBeNull();
 	});
 });
 

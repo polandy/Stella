@@ -10,15 +10,16 @@ import {
 	describeRelationshipFor,
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
-	editRelationshipDetails,
+	editRelationship,
 	InvalidRelationshipDetailsError,
 	parseRelationshipDetails,
 	removeRelationship,
-	type RelationshipDetails,
+	type RelationshipUpdate,
 	readKinship,
 	type NewRelationship,
 	type RelationshipRepository,
-	type RelationshipType
+	type RelationshipType,
+	type StoredRelationship
 } from './relationships';
 
 /*
@@ -120,25 +121,38 @@ describe('describeRelationshipFor', () => {
 
 function fakeRepo(opts: {
 	type?: RelationshipType | null;
+	/** The types a retype can resolve, by id; falls back to `type` for a single-type test. */
+	typesById?: Record<string, RelationshipType>;
 	exists?: boolean;
 	/** Answers `exists` per pair, where a test needs one stored direction but not the other. */
-	existsFor?: (fromContactId: string, toContactId: string, typeId: string) => boolean;
+	existsFor?: (
+		fromContactId: string,
+		toContactId: string,
+		typeId: string,
+		exceptId?: string
+	) => boolean;
 	visible?: boolean;
+	/** The link an edit reads back; null stands for one the viewer may not see. */
+	stored?: StoredRelationship | null;
 }) {
 	let inserted: NewRelationship | null = null;
-	const updates: { id: string; details: RelationshipDetails; updatedAt: number }[] = [];
+	const updates: { id: string; update: RelationshipUpdate; updatedAt: number }[] = [];
 	const removals: string[] = [];
-	const types = { getType: async () => opts.type ?? null };
+	const types = {
+		getType: async (_viewer: Viewer, typeId: string) =>
+			opts.typesById ? (opts.typesById[typeId] ?? null) : (opts.type ?? null)
+	};
 	const repo: RelationshipRepository = {
-		exists: async (from, to, typeId) =>
-			opts.existsFor ? opts.existsFor(from, to, typeId) : (opts.exists ?? false),
+		exists: async (from, to, typeId, exceptId) =>
+			opts.existsFor ? opts.existsFor(from, to, typeId, exceptId) : (opts.exists ?? false),
 		insert: async (r) => {
 			inserted = r;
 		},
 		listForContactVisibleTo: async () => [],
-		updateDetailsVisibleTo: async (_viewer, id, details, updatedAt) => {
+		findVisibleTo: async () => opts.stored ?? null,
+		updateVisibleTo: async (_viewer, id, update, updatedAt) => {
 			if (opts.visible === false) return false;
-			updates.push({ id, details, updatedAt });
+			updates.push({ id, update, updatedAt });
 			return true;
 		},
 		removeVisibleTo: async (_viewer, id) => {
@@ -484,24 +498,36 @@ describe('createRelationship with details', () => {
 	});
 });
 
-describe('editRelationshipDetails', () => {
+describe('editRelationship', () => {
 	const viewer: Viewer = { id: 'u1', householdId: 'h1' };
+	const deps = (f: ReturnType<typeof fakeRepo>) => ({
+		relationships: f.repo,
+		types: f.types,
+		ids: idGen('unused'),
+		clock
+	});
 
-	it('writes the checked details, stamped from the clock', async () => {
+	it('writes the checked details, stamped from the clock, leaving the type alone', async () => {
 		const f = fakeRepo({});
 
-		const written = await editRelationshipDetails(
-			{ relationships: f.repo, types: f.types, ids: idGen('unused'), clock },
-			viewer,
-			'rel-1',
-			{ description: '  they met skiing ', sinceDate: '2019-06-01', status: 'former' }
-		);
+		const written = await editRelationship(deps(f), viewer, {
+			relationshipId: 'rel-1',
+			perspectiveContactId: 'a',
+			description: '  they met skiing ',
+			sinceDate: '2019-06-01',
+			status: 'former'
+		});
 
 		expect(written).toBe(true);
 		expect(f.updates).toEqual([
 			{
 				id: 'rel-1',
-				details: { description: 'they met skiing', sinceDate: '2019-06-01', status: 'former' },
+				update: {
+					description: 'they met skiing',
+					sinceDate: '2019-06-01',
+					status: 'former',
+					retype: null
+				},
 				updatedAt: clock.now()
 			}
 		]);
@@ -511,7 +537,9 @@ describe('editRelationshipDetails', () => {
 		const f = fakeRepo({});
 
 		await expect(
-			editRelationshipDetails({ relationships: f.repo, types: f.types, ids: idGen('unused'), clock }, viewer, 'rel-1', {
+			editRelationship(deps(f), viewer, {
+				relationshipId: 'rel-1',
+				perspectiveContactId: 'a',
 				status: 'complicated'
 			})
 		).rejects.toThrow(InvalidRelationshipDetailsError);
@@ -522,14 +550,180 @@ describe('editRelationshipDetails', () => {
 		const f = fakeRepo({ visible: false });
 
 		expect(
-			await editRelationshipDetails(
-				{ relationships: f.repo, types: f.types, ids: idGen('unused'), clock },
-				viewer,
-				'rel-hidden',
-				{ description: 'x' }
-			)
+			await editRelationship(deps(f), viewer, {
+				relationshipId: 'rel-hidden',
+				perspectiveContactId: 'a',
+				description: 'x'
+			})
 		).toBe(false);
 		expect(f.updates).toEqual([]);
+	});
+
+	describe('changing the type', () => {
+		/** Partner and spouse are both symmetric: the tie moved on, the pair did not. */
+		const partner: RelationshipType = {
+			id: 'partner',
+			householdId: null,
+			key: 'partner',
+			forwardLabel: 'Partner of',
+			reverseLabel: 'Partner of',
+			category: 'romantic',
+			symmetric: true,
+			sortOrder: 3
+		};
+		const spouse: RelationshipType = { ...partner, id: 'spouse', key: 'spouse', sortOrder: 4 };
+		const typesById = { partner, spouse, parent_child: parentChild };
+
+		it('carries a symmetric link over to another type, keeping the canonical pair', async () => {
+			const f = fakeRepo({
+				typesById,
+				stored: { id: 'rel-1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' }
+			});
+
+			const written = await editRelationship(deps(f), viewer, {
+				relationshipId: 'rel-1',
+				perspectiveContactId: 'bert',
+				typeChoice: { typeId: 'spouse', side: 'forward' },
+				description: 'married in June'
+			});
+
+			expect(written).toBe(true);
+			expect(f.updates[0]?.update.retype).toEqual({
+				endpoints: { fromContactId: 'anna', toContactId: 'bert' },
+				typeId: 'spouse'
+			});
+			expect(f.updates[0]?.update.description).toBe('married in June');
+		});
+
+		it('flips the stored direction when the other side of the type is chosen', async () => {
+			const f = fakeRepo({
+				typesById,
+				stored: { id: 'rel-1', fromContactId: 'bettina', toContactId: 'hans', typeId: 'parent_child' }
+			});
+
+			const written = await editRelationship(deps(f), viewer, {
+				relationshipId: 'rel-1',
+				perspectiveContactId: 'hans',
+				typeChoice: { typeId: 'parent_child', side: 'forward' }
+			});
+
+			expect(written).toBe(true);
+			expect(f.updates[0]?.update.retype).toEqual({
+				endpoints: { fromContactId: 'hans', toContactId: 'bettina' },
+				typeId: 'parent_child'
+			});
+		});
+
+		/*
+		 * The link is measured against every other row but itself: asking `exists` without
+		 * leaving it out would make each retype read as its own duplicate, and each flipped
+		 * generation as its own contradiction.
+		 */
+		it('leaves the link itself out of both guards', async () => {
+			const asked: { from: string; to: string; exceptId?: string }[] = [];
+			const f = fakeRepo({
+				typesById,
+				stored: { id: 'rel-1', fromContactId: 'bettina', toContactId: 'hans', typeId: 'parent_child' },
+				existsFor: (from, to, _typeId, exceptId) => {
+					asked.push({ from, to, exceptId });
+					// The stored row, seen by a guard that forgot to exclude it.
+					return from === 'bettina' && to === 'hans' && exceptId === undefined;
+				}
+			});
+
+			expect(
+				await editRelationship(deps(f), viewer, {
+					relationshipId: 'rel-1',
+					perspectiveContactId: 'hans',
+					typeChoice: { typeId: 'parent_child', side: 'forward' }
+				})
+			).toBe(true);
+			expect(asked.every((call) => call.exceptId === 'rel-1')).toBe(true);
+		});
+
+		it('refuses a type that would duplicate another link between the two', async () => {
+			const f = fakeRepo({
+				typesById,
+				stored: { id: 'rel-1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' },
+				exists: true
+			});
+
+			await expect(
+				editRelationship(deps(f), viewer, {
+					relationshipId: 'rel-1',
+					perspectiveContactId: 'bert',
+					typeChoice: { typeId: 'spouse', side: 'forward' }
+				})
+			).rejects.toThrow(DuplicateRelationshipError);
+			expect(f.updates).toEqual([]);
+		});
+
+		it('refuses a generation that another link already claims the other way round', async () => {
+			const f = fakeRepo({
+				typesById,
+				stored: { id: 'rel-1', fromContactId: 'bettina', toContactId: 'hans', typeId: 'partner' },
+				// Hans is already stored as Bettina's parent by some other row.
+				existsFor: (from, to, typeId, exceptId) =>
+					from === 'hans' &&
+					to === 'bettina' &&
+					typeId === 'parent_child' &&
+					exceptId === 'rel-1'
+			});
+
+			await expect(
+				editRelationship(deps(f), viewer, {
+					relationshipId: 'rel-1',
+					perspectiveContactId: 'bettina',
+					typeChoice: { typeId: 'parent_child', side: 'forward' }
+				})
+			).rejects.toThrow(ContradictoryRelationshipError);
+			expect(f.updates).toEqual([]);
+		});
+
+		it('reports false, writing nothing, for a link the viewer may not read back', async () => {
+			const f = fakeRepo({ typesById, stored: null });
+
+			expect(
+				await editRelationship(deps(f), viewer, {
+					relationshipId: 'rel-hidden',
+					perspectiveContactId: 'bert',
+					typeChoice: { typeId: 'spouse', side: 'forward' }
+				})
+			).toBe(false);
+			expect(f.updates).toEqual([]);
+		});
+
+		it('reports false when the edit comes from a profile that is not an endpoint', async () => {
+			const f = fakeRepo({
+				typesById,
+				stored: { id: 'rel-1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' }
+			});
+
+			expect(
+				await editRelationship(deps(f), viewer, {
+					relationshipId: 'rel-1',
+					perspectiveContactId: 'someone-else',
+					typeChoice: { typeId: 'spouse', side: 'forward' }
+				})
+			).toBe(false);
+			expect(f.updates).toEqual([]);
+		});
+
+		it('refuses a type it cannot resolve, and writes nothing', async () => {
+			const f = fakeRepo({
+				typesById,
+				stored: { id: 'rel-1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' }
+			});
+
+			await expect(
+				editRelationship(deps(f), viewer, {
+					relationshipId: 'rel-1',
+					perspectiveContactId: 'bert',
+					typeChoice: { typeId: 'another-households-type', side: 'forward' }
+				})
+			).rejects.toThrow('Unknown relationship type.');
+			expect(f.updates).toEqual([]);
+		});
 	});
 });
 

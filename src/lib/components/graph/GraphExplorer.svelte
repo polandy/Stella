@@ -341,31 +341,31 @@
 		     suggestion list would otherwise be hidden behind it. Embedded, there is nobody to
 		     find: the map holds one person's neighbourhood and the page has its own search. -->
 		{#if !compact}
-		<div class="pointer-events-auto relative z-20">
-			<input
-				bind:value={query}
-				placeholder={t('graph.findPlaceholder')}
-				aria-label={t('graph.find')}
-				class="w-56 rounded-app border border-border bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
-			/>
-			{#if suggestions.length}
-				<ul
-					data-testid="graph-suggestions"
-					class="absolute left-0 top-full mt-1 w-full overflow-hidden rounded-app border border-border bg-card shadow-pop"
-				>
-					{#each suggestions as c (c.id)}
-						<li>
-							<button
-								onclick={() => reveal(c.id)}
-								class="block w-full px-3 py-2 text-left text-sm text-fg hover:bg-bg-sunken"
-							>
-								{c.displayName}
-							</button>
-						</li>
-					{/each}
-				</ul>
-			{/if}
-		</div>
+			<div class="pointer-events-auto relative z-20">
+				<input
+					bind:value={query}
+					placeholder={t('graph.findPlaceholder')}
+					aria-label={t('graph.find')}
+					class="w-56 rounded-app border border-border bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
+				/>
+				{#if suggestions.length}
+					<ul
+						data-testid="graph-suggestions"
+						class="absolute left-0 top-full mt-1 w-full overflow-hidden rounded-app border border-border bg-card shadow-pop"
+					>
+						{#each suggestions as c (c.id)}
+							<li>
+								<button
+									onclick={() => reveal(c.id)}
+									class="block w-full px-3 py-2 text-left text-sm text-fg hover:bg-bg-sunken"
+								>
+									{c.displayName}
+								</button>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</div>
 		{/if}
 
 		<div class="pointer-events-auto flex flex-wrap gap-1.5">
@@ -401,17 +401,17 @@
 		</button>
 
 		{#if !compact}
-		<button
-			onclick={togglePath}
-			aria-pressed={pathMode}
-			class="pointer-events-auto rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-fg-muted backdrop-blur transition-colors hover:text-fg"
-			class:!border-transparent={pathMode}
-			style={pathMode
-				? 'background:color-mix(in srgb, var(--warning) 22%, transparent); color:var(--warning)'
-				: ''}
-		>
-			{t('graph.connectionPath')}
-		</button>
+			<button
+				onclick={togglePath}
+				aria-pressed={pathMode}
+				class="pointer-events-auto rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-fg-muted backdrop-blur transition-colors hover:text-fg"
+				class:!border-transparent={pathMode}
+				style={pathMode
+					? 'background:color-mix(in srgb, var(--warning) 22%, transparent); color:var(--warning)'
+					: ''}
+			>
+				{t('graph.connectionPath')}
+			</button>
 		{/if}
 	</div>
 
