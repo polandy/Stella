@@ -104,9 +104,10 @@ export interface SuggestionView extends KinshipGraph {
 `KinshipGraph.partnerEdges` is a bare `Pair` today. **L3 cannot be written without
 `status` and `sinceDate` on it** — status separates a current partner from a former one, and
 the date is the step-parent discriminator. The column exists on `relationship`
-(`status`, `since_date`); only the graph projection drops it. So: widen `PartnerEdge`, carry
-the two fields through `loadKinshipGraphVisibleTo`, and leave `deriveKinship` reading the
-pair as before. No migration.
+(`status`, `since_date`); the graph projection in `src/lib/server/db/kinship-graph-read.ts`
+does not even select them. So: widen `PartnerEdge`, add the two columns to that select and to
+the `partnerEdges` branch, and leave `deriveKinship` reading the pair as before. Both
+repositories share that one read, so neither can end up with a different answer. No migration.
 
 ---
 
@@ -131,10 +132,11 @@ Then: sort by confidence, rule id, object display name; cap at `SUGGESTION_LIMIT
 `possible` suggestions are returned but flagged `collapsed: true` rather than counted
 against the cap.
 
-Suppression 5 means the guards must be callable without a DB round-trip. Today
-`refuseContradictoryGeneration` lives inside the create use-case; it needs to become a pure
-predicate over the view that both the use-case and the engine call. That refactor is small and
-is the only place the two layers touch.
+Suppression 5 means the guards must be callable without a DB round-trip. Today the generation
+guard is written inline in `createRelationship` — two `deps.relationships.exists()` calls and a
+`ContradictoryRelationshipError` — so it cannot be asked a question, only made to throw. It
+needs to become a pure predicate over the view that both the use-case and the engine call. That
+refactor is small and is the only place the two layers touch.
 
 ---
 

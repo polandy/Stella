@@ -26,8 +26,9 @@ Three kinds of help, deliberately kept apart because they behave differently:
 A fourth is explicitly *not* produced: anything the kinship engine already **derives**
 (grandparent, aunt, cousin, in-law, step-family). Deriving it and offering to store it would
 be the same fact twice, and a stored edge outranks a derived one on the profile, so storing
-it would actually *lose* the "worked out, not entered" marking. **If it can be derived, it is
-never suggested.** This is the single most important rule in this paper.
+it would actually *lose* the "worked out, not entered" marking — and would put back exactly the
+stale row that *Kinship edges are derived per viewer at read time, not stored* (docs/04 §4.9)
+exists to avoid. **If it can be derived, it is never suggested.** This is the single most important rule in this paper.
 
 ---
 
@@ -173,9 +174,11 @@ These produce no proposal. Half of them exist already as guards; the rest are ne
 `K` in C5 is a named constant, not a literal at the call site, and the warning is soft: adoption
 and estimated birth years both produce legitimate violations.
 
-C6 is worth flagging: the shipped guard refuses `A parent-of B` when `B parent-of A` exists,
-but nothing today stops a longer loop, and the kinship engine walks ancestors. A cycle check
-belongs in the same guard, not in the suggestion engine.
+C6 is worth flagging, because the shipped guard is narrower than it reads. It refuses
+`A parent-of B` when `B parent-of A` exists **with the same type id** — so a longer loop
+(`A→B→C→A`) passes, and so does a two-hop contradiction claimed through two different
+generation types. The kinship engine walks ancestor chains over both. A cycle check belongs in
+that guard, not in the suggestion engine.
 
 ---
 
