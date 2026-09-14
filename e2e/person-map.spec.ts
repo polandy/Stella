@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { openPerson, signIn } from './app';
-import { clickNode, ringsOnCanvas, settled } from './graph-canvas';
+import { clickNode, firstClickableNode, ringsOnCanvas, settled } from './graph-canvas';
 
 /*
  * The map on a person's page (docs/05 §5.5, §5.8): the same explorer the graph route runs,
@@ -10,7 +10,7 @@ import { clickNode, ringsOnCanvas, settled } from './graph-canvas';
  */
 
 const LENA = 'demo-c-lena';
-/** Lena's father: one hop out, so the map may still grow through him. */
+/** Lena's father: on her page whatever the layout does, so the no-JS case can name him. */
 const MARKUS = 'demo-c-markus';
 
 /** The embedded explorer, once the engine has taken the place of the SVG the server sent. */
@@ -51,7 +51,17 @@ test.describe('on a person’s page', () => {
 		await expect(map(page).locator('canvas').first()).toBeVisible();
 		await settled(page);
 
-		await clickNode(page, MARKUS);
+		// Somebody one hop out, picked from what the canvas draws in the clear: the toolbar
+		// floats over the drawing, and where the layout puts a given person is not this
+		// case's business.
+		const rings = await ringsOnCanvas(page, LENA);
+		const nearby = await firstClickableNode(
+			page,
+			[...rings].filter(([id, hops]) => hops === 1 && id.startsWith('demo-c-')).map(([id]) => id)
+		);
+		expect(nearby, 'somebody one hop out should be drawn in the clear').not.toBeNull();
+
+		await clickNode(page, nearby!);
 		const peek = map(page).getByRole('complementary');
 		const expand = peek.getByRole('button', { name: 'Expand connections' });
 		await expect(expand).toBeVisible();
@@ -60,23 +70,19 @@ test.describe('on a person’s page', () => {
 		await expand.click();
 		await settled(page);
 
-		// Whoever he brought with him stands two hops from Lena — the edge of what this map
-		// promises. Read off the canvas rather than named, so the case does not depend on the
-		// seed relating any particular pair at any particular distance.
-		const rings = await ringsOnCanvas(page, LENA);
-		const edge = [...rings].find(([id, hops]) => hops === 2 && id.startsWith('demo-c-'))?.[0];
-		expect(edge, 'expanding should have reached two hops out').toBeDefined();
-
+		// Whoever that brought along stands two hops from Lena — the edge of what this map
+		// promises.
 		await peek.getByRole('button', { name: 'Close' }).click();
 		await settled(page);
-		// Retried the way the explorer's own spec clicks a node: the panel just closed may have
-		// been sitting over where this one is drawn, and the click is idempotent.
-		await expect(async () => {
-			await clickNode(page, edge!);
-			await expect(peek.getByRole('link', { name: 'Open in the graph' })).toBeVisible({
-				timeout: 1000
-			});
-		}).toPass();
+		const grown = await ringsOnCanvas(page, LENA);
+		const edge = await firstClickableNode(
+			page,
+			[...grown].filter(([id, hops]) => hops === 2 && id.startsWith('demo-c-')).map(([id]) => id)
+		);
+		expect(edge, 'expanding should have reached two hops out').not.toBeNull();
+
+		await clickNode(page, edge!);
+		await expect(peek.getByRole('link', { name: 'Open in the graph' })).toBeVisible();
 		await expect(peek.getByRole('button', { name: 'Expand connections' })).toHaveCount(0);
 		await expect(peek).toContainText('This is as far as this map goes.');
 	});

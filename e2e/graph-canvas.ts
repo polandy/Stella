@@ -117,3 +117,22 @@ export async function ringsOnCanvas(page: Page, centerId: string): Promise<Map<s
 	}, centerId);
 	return new Map(pairs);
 }
+
+/**
+ * The first of these nodes the renderer draws somewhere the canvas itself answers for — the
+ * toolbar and the peek panel float over the drawing, and a node underneath one of them cannot
+ * be clicked at all. Which nodes those are depends on the layout, so a spec picks a target it
+ * can actually reach rather than naming one and hoping.
+ */
+export async function firstClickableNode(page: Page, ids: string[]): Promise<string | null> {
+	for (const id of ids) {
+		const { point } = await drawnNode(page, id);
+		if (!point) continue;
+		const onTop = await page.evaluate(
+			(p) => document.elementFromPoint(p.x, p.y)?.tagName.toLowerCase() ?? 'nothing',
+			point
+		);
+		if (onTop === 'canvas') return id;
+	}
+	return null;
+}
