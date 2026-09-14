@@ -12,7 +12,7 @@ The `docs/` suite is the **source of truth**; this file is only a router — kee
 
 ## Golden rules — full text: `docs/08-coding-guidelines.md` (read once, then follow)
 
-- **Test-first**: failing test → minimal impl → refactor. Run `bun test`.
+- **Test-first**: failing test → minimal impl → refactor. Run `bun run test`.
 - **Delivery loop**: implement (+ unit/integration tests) → user verifies in the app →
   **on their OK**, add the Playwright **e2e** (`e2e/*.spec.ts`). Never write the e2e before
   sign-off. (`docs/08` §8.4.1)
@@ -30,7 +30,7 @@ The `docs/` suite is the **source of truth**; this file is only a router — kee
 
 ```
 bun run dev        # dev server (http://localhost:5173)
-bun test           # unit tests (Bun's built-in runner)
+bun run test       # unit tests (`bun test src` — bare `bun test` also sweeps up e2e/)
 bun run test:e2e   # Playwright e2e (builds, serves, runs in the pinned container)
 bun run check      # svelte-check + types
 bun run build      # production build   |  bun run start  → bun ./build/index.js
