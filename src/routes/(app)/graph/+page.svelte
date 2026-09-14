@@ -31,8 +31,10 @@
 
 	<div class="relative flex-1">
 		{#if data.centerId}
-			{#key data.centerId}
-				<GraphExplorer graph={data.graph} centerId={data.centerId} />
+			<!-- Both ends decide what is drawn, so a link that only changes the far end still
+			     rebuilds the canvas. -->
+			{#key `${data.centerId}:${data.pathTo}`}
+				<GraphExplorer graph={data.graph} centerId={data.centerId} tracePathTo={data.pathTo} />
 			{/key}
 		{:else}
 			<div class="grid h-full place-items-center p-6">

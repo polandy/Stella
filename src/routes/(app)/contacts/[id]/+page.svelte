@@ -206,6 +206,15 @@
 		relateOpen = false;
 		relationshipTargetId = [];
 	});
+	/*
+	 * "How are we connected?" — the picker is on the page rather than in the canvas: the map
+	 * holds two hops, the household holds the answer, and the app's own person picker is what
+	 * every other "which person?" question on this page uses.
+	 */
+	let tracingPath = $state(false);
+	let pathTargetId = $state<string[]>([]);
+	const pathTarget = $derived(pathTargetId[0] ?? null);
+
 	/** Which relationship has its details open for correction; one at a time. */
 	let editingRelationship = $state<string | null>(null);
 	const savedRelationshipEdit = savedEnhance(
@@ -654,12 +663,53 @@
 					bind:open={relateOpen}
 				>
 					{#snippet action()}
+						{#if data.otherContacts.length > 0}
+							<Button
+								size="sm"
+								icon="connectionPath"
+								type="button"
+								aria-expanded={tracingPath}
+								onclick={() => (tracingPath = !tracingPath)}
+							>
+								{t('contact.relationships.howConnected')}
+							</Button>
+						{/if}
 						<!-- The way out of this person's two hops and into the household (docs/05 §5.5).
 						     A button, not a 12px text link: it is the second thing this card offers. -->
 						<Button size="sm" icon="graph" href="/graph?center={c.id}">
 							{t('graph.openInGraph')}
 						</Button>
 					{/snippet}
+
+					<!--
+						"How are we connected?" is a question this card cannot answer: it holds two hops
+						of the household and the chain usually runs further. So it asks who, and hands
+						both ends to the explorer, which holds the whole graph (docs/05 §5.5).
+					-->
+					{#if tracingPath}
+						<div class="mb-3 flex flex-wrap items-end gap-3 rounded-control bg-bg-sunken p-3">
+							<label for="path-target" class="flex min-w-48 flex-1 flex-col gap-1 text-sm">
+								<span class="text-fg-muted">
+									{t('contact.relationships.howConnectedTo', { name: c.displayName })}
+								</span>
+								<PersonSearchSelect
+									id="path-target"
+									people={data.otherContacts}
+									name="pathTarget"
+									bind:selectedIds={pathTargetId}
+								/>
+							</label>
+							<Button
+								variant="primary"
+								size="sm"
+								icon="connectionPath"
+								href={pathTarget ? `/graph?center=${c.id}&path=${pathTarget}` : undefined}
+								disabled={!pathTarget}
+							>
+								{t('contact.relationships.tracePath')}
+							</Button>
+						</div>
+					{/if}
 
 					{#if visibleRelationships.length > 0}
 						<!--

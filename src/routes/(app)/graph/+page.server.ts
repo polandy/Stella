@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import { getGraphRepository } from '$lib/server/services';
-import { chooseCenter, wayBackTo } from './center';
+import { chooseCenter, chosenPathTarget, wayBackTo } from './center';
 import type { PageServerLoad } from './$types';
 
 /*
@@ -29,5 +29,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	 */
 	const cameFrom = wayBackTo(graph.nodes, center);
 
-	return { graph, centerId: center.id, cameFrom };
+	/*
+	 * A profile hands its "how are we connected?" here with both ends named: it carries only
+	 * two hops of the household, and the answer usually runs further (docs/05 §5.5).
+	 */
+	const pathTo = chosenPathTarget(graph.nodes, url.searchParams.get('path'), center.id);
+
+	return { graph, centerId: center.id, cameFrom, pathTo };
 };

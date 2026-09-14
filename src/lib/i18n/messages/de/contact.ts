@@ -110,6 +110,9 @@ export const contact: ContactMessages = {
 	'contact.interaction.whoElse': 'Wer war noch dabei?',
 	'contact.interaction.submit': 'Kontakt festhalten',
 
+	'contact.relationships.howConnected': 'Wie sind wir verbunden?',
+	'contact.relationships.howConnectedTo': (p) => `${p.name} und…`,
+	'contact.relationships.tracePath': 'Weg zeigen',
 	'contact.relationships.add': 'Beziehung hinzufügen',
 	'contact.relationships.none': 'Noch keine Beziehungen.',
 	'contact.relationships.remove': (p) => `Verbindung zu ${p.name} entfernen`,

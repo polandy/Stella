@@ -20,6 +20,7 @@ import {
 	Moon,
 	Phone,
 	Plus,
+	Route,
 	Search,
 	Settings,
 	SquarePen,
@@ -62,6 +63,9 @@ export const ICONS = {
 	write: SquarePen,
 	journal: BookOpen,
 	explore: Waypoints,
+	// Two points and the way between them: "how are we connected?" (docs/02 §2.7). Its own
+	// glyph, because it sits next to "Open in the graph" and two identical icons say nothing.
+	connectionPath: Route,
 	photo: Image,
 	remove: X,
 	more: Ellipsis,
