@@ -255,6 +255,11 @@ Add someone to a circle with an optional role ("goalkeeper", "class teacher") an
 matters, the years they were part of it — so a circle stays truthful as people come and
 go.
 
+You can add a whole group in one go: keep picking names and each one stays as a chip until
+you press Add. A role you type applies to everyone in that pick, so a team of eleven
+"players" is one form, not eleven — and anyone who needs a different role gets it
+afterwards.
+
 Circles are also the answer to "who else was there?", which is usually the question you
 have when you are trying to remember someone's name.
 

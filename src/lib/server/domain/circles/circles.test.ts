@@ -3,6 +3,7 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import {
 	addMember,
+	addMembers,
 	CIRCLE_COLORS,
 	createCircle,
 	joinCircleByName,
@@ -138,6 +139,32 @@ describe('addMember', () => {
 		f.setExists(true);
 		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
 		await addMember(deps, creator, 'circle-1', 'mara');
+		expect(f.memberships).toHaveLength(0);
+	});
+});
+
+describe('addMembers', () => {
+	it('adds every chosen contact, with the one role on each of them', async () => {
+		const f = fakeRepo();
+		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1', 'm2', 'm3']), clock };
+		await addMembers(deps, creator, 'circle-1', ['mara', 'jonas', 'ida'], ' coach ');
+		expect(f.memberships.map((m) => m.contactId)).toEqual(['mara', 'jonas', 'ida']);
+		expect(f.memberships.every((m) => m.role === 'coach')).toBe(true);
+		expect(f.memberships.every((m) => m.circleId === 'circle-1')).toBe(true);
+	});
+
+	it('adds a contact named twice only once', async () => {
+		const f = fakeRepo();
+		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
+		await addMembers(deps, creator, 'circle-1', ['mara', 'mara']);
+		expect(f.memberships).toHaveLength(1);
+	});
+
+	it('skips those already in the circle', async () => {
+		const f = fakeRepo();
+		f.setExists(true);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
+		await addMembers(deps, creator, 'circle-1', ['mara', 'jonas']);
 		expect(f.memberships).toHaveLength(0);
 	});
 });

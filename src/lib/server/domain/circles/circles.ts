@@ -230,6 +230,23 @@ export async function addMember(
 	});
 }
 
+/**
+ * Add several contacts to a circle in one go (the circle-detail flow). A role, when given,
+ * applies to every one of them — a second role is set per member afterwards. Idempotent per
+ * contact, and someone named twice in the same pick joins once.
+ */
+export async function addMembers(
+	deps: CircleDeps,
+	creator: Pick<CircleCreator, 'userId'>,
+	circleId: string,
+	contactIds: readonly string[],
+	role?: string | null
+): Promise<void> {
+	for (const contactId of new Set(contactIds)) {
+		await addMember(deps, creator, circleId, contactId, role);
+	}
+}
+
 export async function removeMember(
 	deps: Pick<CircleDeps, 'circles'>,
 	circleId: string,

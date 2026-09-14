@@ -24,10 +24,10 @@
 		data.members.filter((m) => !removals.isPending(removalKey('membership', m.membershipId)))
 	);
 	let addOpen = $state(false);
-	let newMemberId = $state<string[]>([]);
+	let newMemberIds = $state<string[]>([]);
 	const saved = savedEnhance(removals, t('components.saved'), () => {
 		addOpen = false;
-		newMemberId = [];
+		newMemberIds = [];
 	});
 	const INPUT = 'rounded-md border border-border bg-bg px-3 py-2 text-fg';
 </script>
@@ -85,14 +85,15 @@
 		{/if}
 
 		{#snippet editor()}
-			<form method="POST" action="?/addMember" use:enhance={saved} class="flex flex-wrap items-end gap-3">
+			<form method="POST" action="?/addMembers" use:enhance={saved} class="flex flex-wrap items-end gap-3">
 				<label for="circle-member" class="flex flex-1 flex-col gap-1 text-sm">
-					<span class="text-fg-muted">{t('circles.person')}</span>
+					<span class="text-fg-muted">{t('circles.people')}</span>
 					<PersonSearchSelect
 						id="circle-member"
 						people={data.candidates}
 						name="contactId"
-						bind:selectedIds={newMemberId}
+						bind:selectedIds={newMemberIds}
+						multiple
 						allowCreate
 						required
 					/>
@@ -100,6 +101,10 @@
 				<label class="flex flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.roleLabel')}</span>
 					<input name="role" placeholder={t('circles.rolePlaceholder')} class="w-32 {INPUT}" />
+					{#if newMemberIds.length > 1}
+						<!-- Only worth saying once the one role really does land on several people. -->
+						<span class="pb-2 text-xs text-fg-subtle">{t('circles.roleAppliesToAll')}</span>
+					{/if}
 				</label>
 				<Button variant="primary" size="sm">{t('common.add')}</Button>
 			</form>
