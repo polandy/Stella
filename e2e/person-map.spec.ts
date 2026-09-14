@@ -1,11 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openPerson, signIn } from './app';
+import { openPerson, pickPerson, signIn } from './app';
 import {
 	clickNode,
 	firstClickableNode,
 	nodeOwners,
 	ringsOnCanvas,
-	settled
+	settled,
+	stateOf
 } from './graph-canvas';
 
 /*
@@ -18,6 +19,13 @@ import {
 const LENA = 'demo-c-lena';
 /** Lena's father: on her page whatever the layout does, so the no-JS case can name him. */
 const MARKUS = 'demo-c-markus';
+/*
+ * Somebody the seed links to nobody, so she cannot already be on Lena's map however the
+ * household grows — and linking her is a change no other case reads. The link is taken back
+ * again at the end, so the shared demo database is left as it was found.
+ */
+const BETTINA = 'demo-c-bettina';
+const BETTINA_NAME = 'Bettina Roth';
 
 /** The embedded explorer, once the engine has taken the place of the SVG the server sent. */
 const map = (page: Page) => page.getByRole('group', { name: 'The people around Lena Brunner' });
@@ -122,6 +130,69 @@ test.describe('on a person’s page', () => {
 		await expect(theirs.locator('canvas').first()).toBeVisible();
 		await settled(page);
 		await expect(theirs.getByRole('complementary')).toHaveCount(0);
+	});
+});
+
+/*
+ * The map follows a save (docs/05 §5.8). The explorer used to hold the snapshot it was mounted
+ * with, so entering a relationship left the list right and the map a version behind until
+ * somebody reloaded the page by hand. Written after the maintainer saw the fix live
+ * (docs/08 §8.4.1).
+ */
+test.describe('when a relationship is entered', () => {
+	test.beforeEach(async ({ page }) => {
+		await signIn(page);
+		await openPerson(page, /Lena Brunner/);
+	});
+
+	test('draws the new person into the map, without reloading the page', async ({ page }) => {
+		await expect(map(page).locator('canvas').first()).toBeVisible();
+		await settled(page);
+
+		// The signal the case is worth anything: she is not on the map to begin with.
+		expect(await stateOf(page, BETTINA)).toBe('absent');
+
+		// Survives an in-page update and is wiped by a navigation, so the assertion at the end
+		// can tell a redrawn map from a reloaded page.
+		await page.evaluate(() => ((window as unknown as { mapStayed: boolean }).mapStayed = true));
+
+		await page.getByRole('button', { name: 'Add relationship' }).click();
+		const form = page.locator('form[action="?/addRelationship"]');
+		await form.locator('select[name=typeChoice]').selectOption({ label: 'Knows' });
+		await pickPerson(form.getByLabel('Person'), BETTINA_NAME);
+		await form.getByRole('button', { name: 'Add', exact: true }).click();
+
+		// The list has her…
+		await expect(page.locator('#section-relationships ul').first()).toContainText(BETTINA_NAME);
+		// …and so does the map: the renderer's own answer for where that node now is.
+		await expect.poll(() => stateOf(page, BETTINA)).toBe('drawn');
+		await settled(page);
+
+		expect(
+			await page.evaluate(() => (window as unknown as { mapStayed?: boolean }).mapStayed),
+			'the map should have redrawn in place, not been rebuilt by a page load'
+		).toBe(true);
+	});
+
+	test.afterEach(async ({ page }) => {
+		// Put the household back: take the link away and leave the page, which is what sends a
+		// pending removal, then read Lena fresh — the map no longer knows her either.
+		await openPerson(page, /Lena Brunner/);
+		const row = page
+			.locator('#section-relationships ul')
+			.first()
+			.locator('li')
+			.filter({ hasText: BETTINA_NAME });
+		if ((await row.count()) === 0) return;
+		await row.getByRole('button', { name: `Remove the link to ${BETTINA_NAME}` }).click();
+		await expect(page.getByTestId('toast-undo')).toBeVisible();
+		await openPerson(page, /Noah Brunner/);
+
+		await openPerson(page, /Lena Brunner/);
+		await expect(page.locator('#section-relationships ul').first()).not.toContainText(BETTINA_NAME);
+		await expect(map(page).locator('canvas').first()).toBeVisible();
+		await settled(page);
+		expect(await stateOf(page, BETTINA)).toBe('absent');
 	});
 });
 
