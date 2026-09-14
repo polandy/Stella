@@ -212,6 +212,10 @@ of saving it. Change the link that is already there to the direction you meant, 
 A link can say more than its label. **How they connect** is yours to write — "met through
 Peter at the ski course" — and there is a **since** day and a **current / former** status if
 they help; all three are optional and all three can be changed later with *Edit* on the row.
+For a parent and a child, the **since** day fills itself in with the child's birthday as soon
+as you have picked the type and the person — that is the day the link began, and Stella has it
+already. Clear it or type over it if you meant something else; it only appears when the
+birthday is a whole day, not a day-and-month or a guessed year.
 *Edit* also offers the **kind of link** again, so a partner who became a spouse — or a *Parent
 of* you picked the wrong way round — is one pick and not a re-entry; what you wrote about the
 link stays with it. Entered someone as the wrong thing altogether? *Remove* takes the link

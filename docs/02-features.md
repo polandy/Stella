@@ -328,6 +328,15 @@ reciprocal** link.
   (§2.4.1), and a divorce does not unmake a stepmother. The status says how the household
   reads the link today; it is not a delete.
 
+- **Shipped:** a **parent–child link is dated from the child's birthday**. That link began the
+  day the child was born, and the day is already on file, so the form fills the **since** day
+  in as soon as the type and the person are chosen — from whichever side the sentence is read
+  ("is a parent of" takes the other person's birthday, "is a child of" takes this person's),
+  and for someone named in the picker itself just as much as for someone already on file. It
+  is a suggestion in an ordinary field: it can be cleared or changed before saving, and it is
+  only offered when the birthday names a whole day — a day-and-month birthday or an estimated
+  year (docs/03 §3.4) says nothing about *when* the link began.
+
 - **Shipped:** the **type of a link can be changed** from the row's *Edit*, in the same picker
   the link was entered with — both sides of an asymmetric type included. A partner who became a
   spouse, and a generation entered the wrong way round, are one pick rather than a removal and a
