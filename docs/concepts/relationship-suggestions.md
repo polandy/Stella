@@ -59,7 +59,8 @@ Rule ids are stable: `L` = link, `F` = field, `C` = consistency.
 | **L1** | parent link `P → C` stored | `P → S` for every sibling `S` of `C` | certain |
 | **L2** | sibling link `A ↔ B` stored | every parent of `A` as parent of `B`, and vice versa | certain |
 
-Both live in `src/lib/kinship/propagation.ts` and are opt-in per suggestion.
+Both live in `src/lib/suggestions/rules/links.ts`, run through the engine described in §6, and
+are opt-in per suggestion.
 
 ### 3.2 The other parent — the gap this concept closes
 

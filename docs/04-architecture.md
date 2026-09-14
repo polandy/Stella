@@ -48,6 +48,8 @@ src/
       config.ts      # env parsing/validation (valibot)
     i18n/             # locales, message catalogues (en/de), translator, context
     errors/           # TranslatableError: a domain error carrying its message untranslated
+    kinship/          # pure: derives the relatives nobody entered (§2.4.1)
+    suggestions/      # pure: what to *offer* — rules, read model, central suppressions (§2.4.1)
     components/       # Svelte UI components (design system)
     stores/           # client state (theme, ui)
     graph/            # cytoscape setup, layouts, styling
@@ -393,6 +395,19 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   Storing them would mean invalidating on every relationship, birth and visibility change,
   and would let a stale row outlive the link it came from. Inference re-runs per subject,
   which is quadratic in principle but reads a household-sized graph in a single pass.
+- **What Stella *offers* lives apart from what it *derives*, and the two are compared by
+  relation, not by pair** — `lib/suggestions/` holds the rules, the read model and the
+  suppressions; `lib/kinship/` stays the answer to what is true. They are separate because
+  kinship is read on every person-page load while suggestions run only after a write or on a
+  form, and because the rule set grows toward company, address and circle rules that have no
+  kinship in them. The suppressions are applied centrally by the engine rather than inside
+  each rule, since a rule that filters is a rule that can forget to. The one that decides the
+  design drops a claim only when derivation names *that pair* with *that relation*: derivation
+  calls a partner the step-parent of their partner's child, which is exactly the pair the
+  "other parent" rule must still offer as **parent**. Comparing pairs instead would silence
+  that offer permanently, and every suggestion wrongly accepted replaces a derived label with
+  an entered row that nothing but a manual delete undoes. The cost is that the engine depends
+  on `deriveKinship`, one-way, and pays a derivation per candidate claim.
 - **A note's search index is built by triggers, not by the repository** — storing mentions as
   ids means the indexed text has to be assembled from two tables, which the existing SQL
   triggers can do with a sub-select. Maintaining `note_fts` from the note repository instead
