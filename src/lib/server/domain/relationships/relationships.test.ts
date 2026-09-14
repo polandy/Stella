@@ -385,7 +385,16 @@ describe('readKinship', () => {
 			{ a: 'bettina', b: 'hans' }
 		);
 		expect(found.proposals).toMatchObject([
-			{ kind: 'parent', fromId: 'bettina', toId: 'lisa', fromName: 'Bettina', toName: 'Lisa' }
+			{
+				kind: 'link',
+				relation: 'parent',
+				ruleId: 'L1',
+				confidence: 'certain',
+				fromId: 'bettina',
+				toId: 'lisa',
+				fromName: 'Bettina',
+				toName: 'Lisa'
+			}
 		]);
 		// The reason travels unsaid; the route renders it in the reader's language.
 		expect(found.proposals[0]?.reason(createTranslator('en'))).toBe('Lisa is Hans’s sibling.');
