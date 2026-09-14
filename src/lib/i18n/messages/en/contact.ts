@@ -121,6 +121,7 @@ export const contact = {
 	'contact.relationships.sinceLabel': 'Since',
 	'contact.relationships.status': 'Status',
 	'contact.relationships.is': (p: { name: string }) => `${p.name} is…`,
+	'contact.relationships.typeLabel': 'Relationship',
 	'contact.relationships.person': 'Person',
 	'contact.relationships.addSomeoneFirst': 'Add another person first, then link them here.',
 	'contact.relationships.alsoTrue': 'Also true?',
