@@ -52,6 +52,7 @@ Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) �
 | `src/lib/server/access/` | **central** ACL / visibility (`docs/03` §3.7) — the *only* authz path |
 | `src/lib/server/domain/` | use-cases (contacts, relationships, notes, journal, story, attention, circles, feed…) — test-first |
 | `src/lib/server/auth/` | sessions, password, OIDC relying-party |
+| `src/lib/suggestions/` | **pure** suggestion engine: rules say what follows, `engine.ts` applies the universal suppressions centrally, reasons are `Phrase`s (test-first) |
 | `src/lib/graph/model/` | **pure** graph domain: `GraphModel`, `buildEgoNetwork`, `expandNode`, `findConnectionPath`, `applyFilters` (test-first) |
 | `src/lib/graph/cytoscape/` | rendering adapter (Cytoscape confined here, lazy-loaded); no domain logic |
 | `src/routes/` | thin edges: `load` / form actions / `+server.ts` |
