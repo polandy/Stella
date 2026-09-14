@@ -213,6 +213,7 @@
 	 * knows: a family link began on the younger one's birthday (docs/02 §2.4).
 	 */
 	const relationshipChoices = $derived(relationshipTypeOptions(data.relationshipTypes));
+	/** Empty until the picker is touched, which means it stands on its first entry. */
 	let relationshipChoice = $state('');
 	/** Someone named through the picker itself is not in `otherContacts` yet (docs/02 §2.2.2). */
 	let pickedTarget = $state<SelectablePerson | undefined>();
@@ -940,7 +941,14 @@
 									</span>
 									<!-- Both directions of an asymmetric type, so "is a child of" needs no
 										 detour via the other profile (docs/02 §2.4). -->
-									<select name="typeChoice" bind:value={relationshipChoice} class={INPUT}>
+									<!-- Read, not bound: binding would hand the select a value of its own before
+										 anybody has chosen, and an unmatched one deselects every option — the form
+										 would then post no type at all. -->
+									<select
+										name="typeChoice"
+										onchange={(event) => (relationshipChoice = event.currentTarget.value)}
+										class={INPUT}
+									>
 										{#each relationshipChoices as option (option.value)}
 											<option value={option.value}>
 												{relationshipTypeLabel(t, option.type, option.side)}
