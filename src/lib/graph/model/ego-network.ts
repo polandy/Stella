@@ -64,3 +64,27 @@ export async function expandNode(
 	if (!hood) return model;
 	return absorb(model, hood);
 }
+
+/**
+ * Rebuild an explored model against a fresh snapshot of the graph: the ego network around
+ * `centerId` out to `depth`, plus the neighbourhood of every node in `expandedIds` the
+ * rebuilt model actually reaches — in the order the reader expanded them, so an expansion
+ * that only a previous one revealed is applied too. A node the new snapshot no longer
+ * reaches from the centre is skipped rather than merged in as an island.
+ *
+ * This is what lets a map already on screen follow a save (a new relationship, a corrected
+ * one) without throwing away what its reader had opened up.
+ */
+export async function rebuildExplored(
+	source: GraphDataSource,
+	centerId: string,
+	expandedIds: Iterable<string>,
+	depth = 1
+): Promise<GraphModel> {
+	let model = await buildEgoNetwork(source, centerId, depth);
+	for (const id of expandedIds) {
+		if (!model.nodes.some((n) => n.id === id)) continue;
+		model = await expandNode(source, model, id);
+	}
+	return model;
+}

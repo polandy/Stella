@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
-import { buildEgoNetwork, expandNode } from './ego-network';
+import { buildEgoNetwork, expandNode, rebuildExplored } from './ego-network';
 import { emptyModel } from './graph-model';
-import { familySource } from './fixtures';
+import { fakeGraphSource, familyEdges, familyNodes, familySource } from './fixtures';
 import type { GraphModel } from './types';
 
 /*
@@ -90,5 +90,48 @@ describe('expandNode', () => {
 		const expanded = await expandNode(familySource(), emptyModel(), 'mara');
 		expect(ids(expanded).has('mara')).toBe(true);
 		expect(ids(expanded).has('jonas')).toBe(true);
+	});
+});
+
+describe('rebuildExplored', () => {
+	it('rebuilds the ego view around the centre when nothing was expanded', async () => {
+		const model = await rebuildExplored(familySource(), 'mara', []);
+
+		expect(ids(model)).toEqual(ids(await buildEgoNetwork(familySource(), 'mara', 1)));
+	});
+
+	it('re-applies an expansion the reader had made', async () => {
+		const model = await rebuildExplored(familySource(), 'mara', ['tobias']);
+
+		expect(ids(model).has('elena')).toBe(true); // only reachable through Tobias
+		expect(edgeIds(model).has('r8')).toBe(true);
+	});
+
+	it('re-applies expansions in order, including one only a previous expansion revealed', async () => {
+		const model = await rebuildExplored(familySource(), 'sarah', ['kegel', 'doris']);
+
+		// Doris is two hops out: she arrives with the circle, and expanding her is only
+		// possible once it has been.
+		expect(ids(model).has('doris')).toBe(true);
+	});
+
+	it('skips an expanded node the fresh snapshot no longer reaches from the centre', async () => {
+		// Mara's link to Tobias is gone, so Elena — revealed only by expanding him — must not
+		// come back as an island.
+		const source = fakeGraphSource(
+			familyNodes,
+			familyEdges.filter((e) => e.id !== 'r7')
+		);
+		const model = await rebuildExplored(source, 'mara', ['tobias']);
+
+		expect(ids(model).has('tobias')).toBe(false);
+		expect(ids(model).has('elena')).toBe(false);
+	});
+
+	it('yields an empty model when the centre itself is gone', async () => {
+		const model = await rebuildExplored(familySource(), 'nobody', ['mara']);
+
+		expect(model.nodes).toHaveLength(0);
+		expect(model.edges).toHaveLength(0);
 	});
 });
