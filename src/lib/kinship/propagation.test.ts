@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { createTranslator } from '$lib/i18n/translate';
 import type { KinshipGraph } from './kinship';
 import { suggestPropagation, type PrimaryLink } from './propagation';
 
@@ -39,7 +40,11 @@ describe('suggestPropagation', () => {
 			['parent', 'Bettina', 'Lisa'],
 			['parent', 'Bettina', 'Nina']
 		]);
-		expect(found[0]?.reason).toBe('Lisa is Hans’s sibling.');
+		// The reason leaves the domain unsaid, so it can be read in either language.
+		expect(found[0]?.reason(createTranslator('en'))).toBe('Lisa is Hans’s sibling.');
+		expect(found[0]?.reason(createTranslator('de'))).toBe(
+			'Lisa ist ein Geschwisterteil von Hans.'
+		);
 	});
 
 	it('offers the known parents of each side when a sibling link is added', () => {

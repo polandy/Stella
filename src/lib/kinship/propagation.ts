@@ -1,3 +1,5 @@
+import type { Phrase } from '$lib/i18n/phrase';
+import { parentOf, siblingOf } from '$lib/suggestions/reasons';
 import type { KinshipGraph } from './kinship';
 
 /*
@@ -31,15 +33,11 @@ export interface SuggestedLink {
 	/** The parent, and the child the link would be stored against. */
 	fromId: string;
 	toId: string;
-	/** One sentence naming the reason, e.g. "Lisa is Hans's sibling." */
-	reason: string;
+	/** One sentence naming the reason, unsaid until the edge knows the reader's language. */
+	reason: Phrase;
 }
 
 const pairKey = (x: string, y: string) => (x < y ? `${x} ${y}` : `${y} ${x}`);
-
-/** Possessive with the typographic apostrophe the interface uses elsewhere. A name ending
- * in s keeps the s — "Hans’s sibling" reads the way the sentence is spoken. */
-const possessive = (name: string) => `${name}’s`;
 
 /** Parents per child and children per parent, plus the sibling sets they imply. */
 function index(graph: KinshipGraph) {
@@ -89,7 +87,7 @@ export function suggestPropagation(graph: KinshipGraph, added: PrimaryLink): Sug
 
 	const found: SuggestedLink[] = [];
 	const seen = new Set<string>();
-	const propose = (parentId: string, childId: string, reason: string): void => {
+	const propose = (parentId: string, childId: string, reason: Phrase): void => {
 		if (parentId === childId) return;
 		if (linked.has(pairKey(parentId, childId)) || seen.has(pairKey(parentId, childId))) return;
 		seen.add(pairKey(parentId, childId));
@@ -100,7 +98,7 @@ export function suggestPropagation(graph: KinshipGraph, added: PrimaryLink): Sug
 		// The new parent belongs to the child's siblings too.
 		const child = added.toId;
 		for (const sibling of siblings.get(child) ?? []) {
-			propose(added.fromId, sibling, `${nameOf(sibling)} is ${possessive(nameOf(child))} sibling.`);
+			propose(added.fromId, sibling, siblingOf(nameOf(sibling), nameOf(child)));
 		}
 	} else {
 		// New siblings share the parents each side already has.
@@ -109,7 +107,7 @@ export function suggestPropagation(graph: KinshipGraph, added: PrimaryLink): Sug
 			[added.toId, added.fromId]
 		] as const) {
 			for (const parent of parents.get(one) ?? []) {
-				propose(parent, other, `${nameOf(parent)} is ${possessive(nameOf(one))} parent.`);
+				propose(parent, other, parentOf(nameOf(parent), nameOf(one)));
 			}
 		}
 	}
