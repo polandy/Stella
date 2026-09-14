@@ -1,4 +1,4 @@
-import { and, eq, isNull, or } from 'drizzle-orm';
+import { and, eq, isNull, ne, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { KinshipGraph } from '../../kinship/kinship';
@@ -8,8 +8,8 @@ import { loadKinshipGraph } from './kinship-graph-read';
 import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../relationships/status';
 import {
 	describeRelationshipFor,
-	type RelationshipDetails,
 	type NewRelationship,
+	type RelationshipUpdate,
 	type RelationshipRepository,
 	type RelationshipType,
 	type RelationshipView
@@ -168,7 +168,12 @@ export function createDrizzleRelationshipRepository(
 			return rows.length;
 		},
 
-		async exists(fromContactId: string, toContactId: string, typeId: string) {
+		async exists(
+			fromContactId: string,
+			toContactId: string,
+			typeId: string,
+			exceptId?: string
+		) {
 			const row = db
 				.select({ id: relationship.id })
 				.from(relationship)
@@ -176,7 +181,8 @@ export function createDrizzleRelationshipRepository(
 					and(
 						eq(relationship.fromContactId, fromContactId),
 						eq(relationship.toContactId, toContactId),
-						eq(relationship.typeId, typeId)
+						eq(relationship.typeId, typeId),
+						exceptId === undefined ? undefined : ne(relationship.id, exceptId)
 					)
 				)
 				.get();
@@ -216,6 +222,7 @@ export function createDrizzleRelationshipRepository(
 					toContactId: relationship.toContactId,
 					fromName: fromC.displayName,
 					toName: toC.displayName,
+					typeId: relationshipType.id,
 					typeKey: relationshipType.key,
 					forwardLabel: relationshipType.forwardLabel,
 					reverseLabel: relationshipType.reverseLabel,
@@ -260,6 +267,7 @@ export function createDrizzleRelationshipRepository(
 					otherContactId: description.otherContactId,
 					otherDisplayName,
 					label: description.label,
+					typeId: row.typeId,
 					typeKey: row.typeKey,
 					side: description.side,
 					category: description.category,
@@ -268,18 +276,41 @@ export function createDrizzleRelationshipRepository(
 			});
 		},
 
-		async updateDetailsVisibleTo(
+		async findVisibleTo(viewer: Viewer, id: string) {
+			if (!visibleToViewer(db, viewer, id)) return null;
+			const row = db
+				.select({
+					id: relationship.id,
+					fromContactId: relationship.fromContactId,
+					toContactId: relationship.toContactId,
+					typeId: relationship.typeId
+				})
+				.from(relationship)
+				.where(eq(relationship.id, id))
+				.get();
+			return row ?? null;
+		},
+
+		async updateVisibleTo(
 			viewer: Viewer,
 			id: string,
-			details: RelationshipDetails,
+			update: RelationshipUpdate,
 			updatedAt: number
 		) {
 			if (!visibleToViewer(db, viewer, id)) return false;
 			db.update(relationship)
 				.set({
-					note: details.description,
-					sinceDate: details.sinceDate,
-					status: details.status,
+					note: update.description,
+					sinceDate: update.sinceDate,
+					status: update.status,
+					// A retype can move the row's endpoints: the type decides the stored direction.
+					...(update.retype
+						? {
+								typeId: update.retype.typeId,
+								fromContactId: update.retype.endpoints.fromContactId,
+								toContactId: update.retype.endpoints.toContactId
+							}
+						: {}),
 					updatedAt
 				})
 				.where(eq(relationship.id, id))

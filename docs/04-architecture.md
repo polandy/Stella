@@ -370,6 +370,14 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   listing people to pick from wants browsing — and the two are pinned against each other in
   `query-scoping.test.ts` so the distinction cannot quietly erode.
 
+- **Retyping a link edits the row rather than replacing it** — the alternative, which shipped
+  first, was to keep the type read-only and make a correction a removal plus a fresh entry. It
+  loses the description, the since day and the status of a tie that did not end but changed
+  name, and *partner → spouse* is the ordinary case. The cost is that the stored direction can
+  move under an id: the edit re-canonicalises the pair for the new type, and both creation
+  guards are re-run with the link excluded from them, since measured against itself every
+  retype reads as its own duplicate (docs/02 §2.4).
+
 - **A custom relationship type's key is derived, and the kinship keys are reserved** — the
   household types a label; `relationshipTypeKey` slugs it. Letting a key be typed would let a
   household mint `parent_child`, `sibling`, `partner` or `spouse`, which `kinship-graph-read`
