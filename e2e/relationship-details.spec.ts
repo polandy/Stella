@@ -188,7 +188,6 @@ test('changes the type from the row, keeping what the link said', async ({ page 
 
 	// Stored, not just shown.
 	await page.reload();
-	await page.getByRole('tab', { name: /People/ }).click();
 	await expect(enteredRow(page, 'Reto Hofer')).toContainText('Spouse of');
 
 	/*
@@ -220,7 +219,7 @@ test('turns a generation round from the row, rather than refusing it as its own 
 
 	// The guard that refuses a generation claimed both ways leaves the link itself out of the
 	// question, so the row turns round instead of being turned away.
-	await expect(page.locator('#panel-people')).not.toContainText('already linked the other way round');
+	await expect(page.locator('#section-relationships')).not.toContainText('already linked the other way round');
 	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Parent of');
 
 	// One row, moved — not a second one: from Bettina it now reads as the other side.
@@ -241,12 +240,11 @@ test('refuses a type that would duplicate a link already there, and writes nothi
 	const editor = await openEditor(page, neighbourRow);
 	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Knows' });
 	await editor.getByRole('button', { name: 'Save' }).click();
-	await expect(page.locator('#panel-people')).toContainText('That relationship already exists.');
+	await expect(page.locator('#section-relationships')).toContainText('That relationship already exists.');
 
 	// The positive signal: both links are still there, each reading as it was entered, and a
 	// reload proves the server wrote nothing rather than the page merely not moving.
 	await page.reload();
-	await page.getByRole('tab', { name: /People/ }).click();
 	const rows = enteredRow(page, 'Jan Steiner');
 	await expect(rows).toHaveCount(2);
 	await expect(rows.filter({ hasText: 'Neighbor of' })).toContainText('two floors up');

@@ -83,3 +83,16 @@ test('logging a touchpoint comes back to the story card it was submitted from', 
 	await expect(page).toHaveURL(/#section-story$/);
 	await expect(entries).toHaveCount(before + 1);
 });
+
+test('a bookmark still holding the old ?tab= is answered with the card it meant', async ({
+	page
+}) => {
+	await openPerson(page, /Lena Brunner/);
+	const id = new URL(page.url()).pathname.split('/').pop()!;
+
+	// The tabs are gone, but the links people saved are not (docs/05 §5.5).
+	await page.goto(`/contacts/${id}?tab=photos`);
+
+	await expect(page).toHaveURL(`/contacts/${id}#section-photos`);
+	await expect(page.locator('#section-photos')).toBeVisible();
+});

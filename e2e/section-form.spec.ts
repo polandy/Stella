@@ -19,7 +19,7 @@ const RELATIONSHIP_FORM = 'form[action="?/addRelationship"]';
 test('opens the add-relationship form under the header and above the list, cursor inside', async ({
 	page
 }) => {
-	const panel = page.locator('#panel-people');
+	const panel = page.locator('#section-relationships');
 	const firstRow = panel.locator('li').first();
 	await expect(firstRow).toBeVisible();
 
@@ -38,7 +38,7 @@ test('opens the add-relationship form under the header and above the list, curso
 test('Escape closes the form and hands the cursor back to the button that opened it', async ({
 	page
 }) => {
-	const panel = page.locator('#panel-people');
+	const panel = page.locator('#section-relationships');
 	const add = panel.getByRole('button', { name: 'Add relationship' });
 	await add.click();
 	await expect(panel.locator(RELATIONSHIP_FORM)).toBeVisible();
@@ -50,7 +50,7 @@ test('Escape closes the form and hands the cursor back to the button that opened
 });
 
 test('dismissing the person picker keeps the half-filled form it sits in', async ({ page }) => {
-	const panel = page.locator('#panel-people');
+	const panel = page.locator('#section-relationships');
 	await panel.getByRole('button', { name: 'Add relationship' }).click();
 	const form = panel.locator(RELATIONSHIP_FORM);
 
