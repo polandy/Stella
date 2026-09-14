@@ -96,7 +96,7 @@ export interface SuggestionView extends KinshipGraph {
   partnerEdges: readonly PartnerEdge[];   // widened: + status, + sinceDate
   attributes: ReadonlyMap<string, PersonAttributes>; // surname, birthDate, company, homeAddress
   circles: ReadonlyMap<string, readonly string[]>;
-  dismissed: ReadonlySet<string>;         // `${ruleId}|${pairKey}`
+  dismissed: ReadonlySet<string>;         // `${relation}|${pairKey}` — the claim, not the rule
 }
 ```
 
