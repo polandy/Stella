@@ -25,7 +25,7 @@
 		relationshipStatusLabel,
 		relationshipTypeLabel
 	} from '$lib/relationships/labels';
-	import { requestedTab, type ContactTab } from '$lib/contacts/tabs';
+	import { sectionAnchor } from '$lib/contacts/sections';
 	import { kinshipLabel } from '$lib/kinship/labels';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
@@ -36,10 +36,13 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * A person's page (docs/05 §5.5): who they are on the left, what has happened on the right.
+	 * A person's page (docs/05 §5.5): what they are to the household in one column, who they are
+	 * in a quieter one beside it. The main column is a stack of cards in a fixed order —
+	 * relationships, story, notes, photos, mentions — rather than tabs: the two that were read
+	 * most were behind a click, and the four profile cards shouted louder than either.
+	 *
 	 * Every form is closed until asked for, so the page reads as a person rather than as a stack
-	 * of empty inputs. Below `md` the two columns stack with the tabs first — who this person is
-	 * connected to is what opening their page answers first — and the profile follows underneath.
+	 * of empty inputs. Below `lg` the columns stack, main column first.
 	 */
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -59,44 +62,9 @@
 	const INPUT =
 		'rounded-control border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
 
-	// People is the default: who this person is connected to is what opening their page answers
-	// first (docs/05 §5.5). `?tab=` always wins, so a link that points at another tab — the
-	// passive "Mentioned in" list does — still arrives where it meant to.
-	const askedForTab = (): ContactTab => requestedTab(data.tab) ?? 'people';
-	// The story panel's log-interaction form posts natively rather than through `enhance`, so a
-	// failed validation reloads the page with no `?tab=` to say where it was opened — its own
-	// error is the only sign this should still be Story rather than the default.
-	let tab = $state<ContactTab>(
-		untrack(() => (form?.interactionError ? 'story' : askedForTab()))
-	);
-	/*
-	 * Walking from one person to another reuses this component, so the open tab has to follow
-	 * the page rather than stay where the previous person left it — a link may ask for a tab
-	 * (a passive reference points at the one its entry lives on, docs/02 §2.20.1), and without
-	 * this it would arrive on whatever was open before.
-	 */
-	let shownPerson = untrack(() => data.contact.id);
-	$effect(() => {
-		const id = data.contact.id;
-		if (id === shownPerson) return;
-		shownPerson = id;
-		tab = untrack(askedForTab);
-	});
 	let relateOpen = $state(untrack(() => data.relateTo) !== null);
 	// The hero's "Log contact" opens the story section's form; the section owns the state.
 	let logOpen = $state(false);
-
-	/*
-	 * Counts are shown where they are exact. The story is paged, so its tab carries no number
-	 * rather than one that quietly means "as much as we have fetched".
-	 */
-	const tabs: { id: ContactTab; label: string; count?: number }[] = $derived([
-		{ id: 'people', label: t('contact.tab.people'), count: data.relationships.length },
-		{ id: 'story', label: t('contact.tab.story') },
-		{ id: 'notes', label: t('contact.tab.notes'), count: data.notes.length },
-		{ id: 'photos', label: t('contact.tab.photos'), count: data.gallery.length },
-		{ id: 'mentions', label: t('contact.tab.mentions'), count: data.mentionedIn.length }
-	]);
 
 	/*
 	 * The gallery (docs/02 §2.14). Photos are downscaled and EXIF-stripped in the browser
@@ -146,8 +114,8 @@
 		if (event.key === 'ArrowLeft') openPhoto = (at - 1 + data.gallery.length) % data.gallery.length;
 	}
 
+	// The hero's second action opens the story card's own form, wherever the reader is.
 	function logContact() {
-		tab = 'story';
 		logOpen = true;
 	}
 
@@ -188,6 +156,16 @@
 	const visibleCircles = $derived(
 		data.circles.filter((circle) => !removals.isPending(removalKey('membership', circle.membershipId)))
 	);
+
+	/** A birthday from the profile counts: the row holds something even with no date rows. */
+	const hasDates = $derived(
+		visibleDates.length > 0 || data.derivedBirthday !== null || data.estimatedBirthYear !== null
+	);
+
+	/** What a folded profile row is worth reading for: the values themselves, not just a count. */
+	const circleSummary = $derived(visibleCircles.map((circle) => circle.name).join(', '));
+	const tagSummary = $derived(visibleTags.map((tag) => tag.name).join(', '));
+
 	// Saving through `enhance` keeps the page — and with it any open undo window — alive, so
 	// each section closes itself here instead of on the reload a redirect used to cause.
 	// Logging a touchpoint is the exception: the story timeline owns its paged list, and only
@@ -322,24 +300,16 @@
 		</div>
 	</header>
 
-	<!--
-		The quick overview (docs/05 §5.5): how things stand with this person, in numbers, before
-		the tabs go into any of them. Sits above every tab rather than just the story's, since it
-		is useful context no matter which one is open.
-	-->
-	<div
-		data-testid="contact-overview"
-		class="flex flex-wrap gap-x-3 gap-y-1 rounded-control border border-primary/30 bg-primary-soft px-3 py-2 text-xs text-fg"
-	>
-		<span>{t('contact.overview.relationships', { count: data.relationships.length })}</span>
-		<span class="text-fg-subtle" aria-hidden="true">·</span>
-		<span>{t('contact.overview.encounters', { count: data.interactions.length })}</span>
-	</div>
-
-	<div class="grid gap-6 lg:grid-cols-[19rem_minmax(0,1fr)] lg:items-start">
-		<!-- Profile. Second on a phone: the tabs are why you opened the page. -->
-		<div class="order-2 flex min-w-0 flex-col gap-4 lg:sticky lg:top-4 lg:order-1">
-			<Section title={t('contact.section.contact')} addLabel={t('common.add')} error={form?.fieldError ?? null} bind:open={openSection.contact}>
+	<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start">
+		<!--
+			Who they are, quietly. Second everywhere now, and one card rather than four: contact
+			details, dates, circles and tags are looked *up*, not read, and four shadowed cards
+			made them shout over the story (docs/05 §5.5).
+		-->
+		<div class="order-2 flex min-w-0 flex-col gap-4 lg:sticky lg:top-4">
+			<section class="flex flex-col rounded-app bg-card p-4 shadow-card">
+				<h2 class="mb-1 text-sm font-semibold text-fg">{t('contact.section.profile')}</h2>
+				<Section as="row" title={t('contact.section.contact')} count={visibleFields.length} startOpen={visibleFields.length > 0} addLabel={t('common.add')} error={form?.fieldError ?? null} bind:open={openSection.contact}>
 				{#if visibleFields.length > 0}
 					<dl class="grid grid-cols-[5rem_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-sm">
 						{#each visibleFields as f (f.id)}
@@ -380,7 +350,7 @@
 				{/snippet}
 			</Section>
 
-			<Section title={t('contact.section.dates')} addLabel={t('common.add')} error={form?.dateError ?? null} bind:open={openSection.dates}>
+				<Section as="row" title={t('contact.section.dates')} count={visibleDates.length} startOpen={hasDates} addLabel={t('common.add')} error={form?.dateError ?? null} bind:open={openSection.dates}>
 				{#if data.derivedBirthday || data.estimatedBirthYear || visibleDates.length > 0}
 					<ul class="flex flex-col gap-1.5 text-sm">
 						{#if data.estimatedBirthYear}
@@ -446,7 +416,7 @@
 				{/snippet}
 			</Section>
 
-			<Section title={t('contact.section.circles')} count={visibleCircles.length} addLabel={t('contact.join')} error={form?.circleError ?? null} bind:open={openSection.circles}>
+				<Section as="row" title={t('contact.section.circles')} count={visibleCircles.length} summary={circleSummary} startOpen={visibleCircles.length > 0} addLabel={t('contact.join')} error={form?.circleError ?? null} bind:open={openSection.circles}>
 				{#snippet action()}
 					<a href="/circles" class="text-xs text-link hover:underline">{t('contact.allCircles')}</a>
 				{/snippet}
@@ -502,7 +472,7 @@
 				{/snippet}
 			</Section>
 
-			<Section title={t('contact.section.tags')} count={visibleTags.length} addLabel={t('common.add')} error={form?.tagError ?? null} bind:open={openSection.tags}>
+				<Section as="row" title={t('contact.section.tags')} count={visibleTags.length} summary={tagSummary} startOpen={visibleTags.length > 0} addLabel={t('common.add')} error={form?.tagError ?? null} bind:open={openSection.tags}>
 				{#if visibleTags.length}
 					<ul class="flex flex-wrap gap-1.5">
 						{#each visibleTags as tag (tag.id)}
@@ -539,14 +509,20 @@
 				{/snippet}
 			</Section>
 
-			<Section title={t('contact.section.howWeMet')}>
-				{#if metLine}
-					<p class="font-serif text-[15px] leading-relaxed text-fg">{metLine}</p>
-				{:else}
-					<p class="text-sm text-fg-subtle">{t('contact.notRecorded')}</p>
-				{/if}
-			</Section>
+				<Section as="row" title={t('contact.section.howWeMet')} summary={metLine ?? undefined} startOpen={metLine !== null}>
+					{#if metLine}
+						<p class="font-serif text-[15px] leading-relaxed text-fg">{metLine}</p>
+					{:else}
+						<p class="text-sm text-fg-subtle">{t('contact.notRecorded')}</p>
+					{/if}
+				</Section>
 
+				<!--
+					The record-keeping actions live at the foot of the profile card, in one quiet
+					stack: they are about the record rather than the person, and none of them is
+					something anybody came here to do (docs/02 §2.2, §2.1.3).
+				-->
+				<div class="mt-3 flex flex-col gap-3 border-t border-border-subtle pt-3">
 			<!--
 				Rarely wanted, so it sits at the foot of the profile rather than beside Write:
 				archiving takes someone out of the lists, it does not undo them (docs/02 §2.2).
@@ -645,88 +621,26 @@
 					{/if}
 				</div>
 			{/if}
+				</div>
+			</section>
+
 		</div>
 
-		<!-- What has happened, and who this person is connected to -->
-		<div class="order-1 flex min-w-0 flex-col gap-3 lg:order-2">
-			<div class="flex gap-1 border-b border-border" role="tablist" aria-label={t('contact.tablist')}>
-				{#each tabs as t (t.id)}
-					<button
-						role="tab"
-						id="tab-{t.id}"
-						aria-selected={tab === t.id}
-						aria-controls="panel-{t.id}"
-						onclick={() => (tab = t.id)}
-						class="-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors"
-						class:border-primary={tab === t.id}
-						class:text-fg={tab === t.id}
-						class:border-transparent={tab !== t.id}
-						class:text-fg-muted={tab !== t.id}
-					>
-						{t.label}
-						{#if t.count !== undefined}
-							<span class="ml-1 text-xs text-fg-subtle">{t.count}</span>
-						{/if}
-					</button>
-				{/each}
-			</div>
-
-			<div id="panel-story" role="tabpanel" aria-labelledby="tab-story" hidden={tab !== 'story'}>
-				<Section
-					title={t('contact.story.title')}
-					addLabel={t('contact.logContact')}
-					addIcon="met"
-					bind:open={logOpen}
-					error={form?.interactionError ?? null}
+		<!--
+			What this person is to the household, in the order it is asked for: who they are
+			connected to, what has happened, what was written down, what was taken, and where
+			somebody else named them. Each card carries its own anchor, so a link can point at
+			one (docs/05 §5.5).
+		-->
+		<div class="order-1 flex min-w-0 flex-col gap-4">
+			<Section
+					id={sectionAnchor('relationships')}
+					title={t('contact.section.relationships')}
+					count={visibleRelationships.length}
+					addLabel={t('contact.relationships.add')}
+					error={form?.error ?? null}
+					bind:open={relateOpen}
 				>
-					{#key c.id}
-						<StoryTimeline contactId={c.id} initial={data.story} />
-					{/key}
-
-					{#snippet editor()}
-						<form method="POST" action="?/logInteraction" class="flex flex-col gap-3">
-							<div class="flex flex-wrap items-end gap-2">
-								<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
-									{#each data.interactionKinds as kind (kind)}
-										<option value={kind}>{t(KIND_PRESENTATION[kind].label)}</option>
-									{/each}
-								</select>
-								<DateField name="happenedAt" value={today} required label={t('contact.day')} />
-								<input name="title" placeholder={t('contact.interaction.titlePlaceholder')} class="min-w-48 flex-1 {INPUT}" />
-							</div>
-							<textarea name="description" rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} class={INPUT}
-							></textarea>
-							{#if data.otherContacts.length > 0}
-								<label for="interaction-participants" class="flex flex-col gap-1 text-sm text-fg-muted">
-									{t('contact.interaction.whoElse')}
-									<PersonSearchSelect
-										id="interaction-participants"
-										people={data.otherContacts}
-										name="participants"
-										bind:selectedIds={participantIds}
-										multiple
-										allowCreate
-									/>
-								</label>
-							{/if}
-							<div class="flex flex-wrap items-center gap-4 text-sm">
-								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="shared" checked /> {t('common.shared')}
-								</label>
-								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="private" /> {t('common.private')}
-								</label>
-								<Button variant="primary" size="sm" class="ml-auto">
-									{t('contact.interaction.submit')}
-								</Button>
-							</div>
-						</form>
-					{/snippet}
-				</Section>
-			</div>
-
-			<div id="panel-people" role="tabpanel" aria-labelledby="tab-people" hidden={tab !== 'people'}>
-				<Section addLabel={t('contact.relationships.add')} error={form?.error ?? null} bind:open={relateOpen}>
 					{#snippet action()}
 						<a
 							href="/graph?center={c.id}"
@@ -737,6 +651,18 @@
 					{/snippet}
 
 					{#if visibleRelationships.length > 0}
+						<!--
+							The map first, the list under it: who this person is connected to is a shape
+							before it is twelve rows, and the rows are what you come back to in order to
+							correct one (docs/05 §5.5). Pure SVG over relationships already on the page —
+							no extra fetch, no graph engine.
+						-->
+						{#if egoNodes.length > 0}
+							<div class="mb-3">
+								<EgoGraph centerName={c.displayName} nodes={egoNodes} />
+							</div>
+						{/if}
+
 						<ul class="flex flex-col divide-y divide-border-subtle">
 							{#each visibleRelationships as rel (rel.id)}
 								<li class="flex flex-col gap-1 py-2 text-sm">
@@ -846,15 +772,7 @@
 							{/each}
 						</ul>
 
-						{#if egoNodes.length > 0}
-							<!-- Pure SVG over relationships already on the page (no extra fetch, no
-							     graph engine), so it can stay on rather than wait behind a toggle now
-							     that People is the tab this page opens on (docs/05 §5.5). -->
-							<div class="mt-3">
-								<EgoGraph centerName={c.displayName} nodes={egoNodes} />
-							</div>
-						{/if}
-					{:else}
+						{:else}
 						<p class="text-sm text-fg-subtle">{t('contact.relationships.none')}</p>
 					{/if}
 
@@ -972,11 +890,69 @@
 							<p class="text-sm text-fg-subtle">{t('contact.relationships.addSomeoneFirst')}</p>
 						{/if}
 					{/snippet}
-				</Section>
-			</div>
+			</Section>
 
-			<div id="panel-notes" role="tabpanel" aria-labelledby="tab-notes" hidden={tab !== 'notes'}>
-				<Section addLabel={t('contact.notes.add')} error={form?.noteError ?? null} bind:open={openSection.note}>
+			<Section
+					id={sectionAnchor('story')}
+					title={t('contact.story.title')}
+					addLabel={t('contact.logContact')}
+					addIcon="met"
+					bind:open={logOpen}
+					error={form?.interactionError ?? null}
+				>
+					{#key c.id}
+						<StoryTimeline contactId={c.id} initial={data.story} />
+					{/key}
+
+					{#snippet editor()}
+						<form method="POST" action="?/logInteraction" class="flex flex-col gap-3">
+							<div class="flex flex-wrap items-end gap-2">
+								<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
+									{#each data.interactionKinds as kind (kind)}
+										<option value={kind}>{t(KIND_PRESENTATION[kind].label)}</option>
+									{/each}
+								</select>
+								<DateField name="happenedAt" value={today} required label={t('contact.day')} />
+								<input name="title" placeholder={t('contact.interaction.titlePlaceholder')} class="min-w-48 flex-1 {INPUT}" />
+							</div>
+							<textarea name="description" rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} class={INPUT}
+							></textarea>
+							{#if data.otherContacts.length > 0}
+								<label for="interaction-participants" class="flex flex-col gap-1 text-sm text-fg-muted">
+									{t('contact.interaction.whoElse')}
+									<PersonSearchSelect
+										id="interaction-participants"
+										people={data.otherContacts}
+										name="participants"
+										bind:selectedIds={participantIds}
+										multiple
+										allowCreate
+									/>
+								</label>
+							{/if}
+							<div class="flex flex-wrap items-center gap-4 text-sm">
+								<label class="flex items-center gap-1.5">
+									<input type="radio" name="visibility" value="shared" checked /> {t('common.shared')}
+								</label>
+								<label class="flex items-center gap-1.5">
+									<input type="radio" name="visibility" value="private" /> {t('common.private')}
+								</label>
+								<Button variant="primary" size="sm" class="ml-auto">
+									{t('contact.interaction.submit')}
+								</Button>
+							</div>
+						</form>
+					{/snippet}
+			</Section>
+
+			<Section
+					id={sectionAnchor('notes')}
+					title={t('contact.section.notes')}
+					count={data.notes.length}
+					addLabel={t('contact.notes.add')}
+					error={form?.noteError ?? null}
+					bind:open={openSection.note}
+				>
 					{#if data.notes.length > 0}
 						<ul class="flex flex-col gap-3">
 							{#each data.notes as note (note.id)}
@@ -1030,11 +1006,15 @@
 							</div>
 						</form>
 					{/snippet}
-				</Section>
-			</div>
+			</Section>
 
-			<div id="panel-photos" role="tabpanel" aria-labelledby="tab-photos" hidden={tab !== 'photos'}>
-				<Section addLabel={t('contact.photos.add')} error={form?.photoError ?? uploadError}>
+			<Section
+					id={sectionAnchor('photos')}
+					title={t('contact.section.photos')}
+					count={data.gallery.length}
+					addLabel={t('contact.photos.add')}
+					error={form?.photoError ?? uploadError}
+				>
 					{#if data.gallery.length > 0}
 						<ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="photo-grid">
 							{#each data.gallery as p, index (p.id)}
@@ -1093,19 +1073,17 @@
 							</Button>
 						</form>
 					{/snippet}
-				</Section>
-			</div>
+			</Section>
 
 			<!--
 				Where somebody else names this person (docs/02 §2.20.1). Read-only: each item links
 				to the person whose note or journal it is, because that is where it is written and
 				edited. The list is already scoped to what this viewer may see.
 			-->
-			<div
-				id="panel-mentions"
-				role="tabpanel"
-				aria-labelledby="tab-mentions"
-				hidden={tab !== 'mentions'}
+			<Section
+				id={sectionAnchor('mentions')}
+				title={t('contact.section.mentions')}
+				count={data.mentionedIn.length}
 			>
 				{#if data.mentionedIn.length > 0}
 					<ul class="flex flex-col gap-2" data-testid="mentioned-in">
@@ -1153,7 +1131,7 @@
 						{t('contact.mentions.none', { name: c.displayName })}
 					</p>
 				{/if}
-			</div>
+			</Section>
 		</div>
 	</div>
 </main>

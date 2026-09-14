@@ -80,8 +80,7 @@ test('keeps an archived person in the family, only out of the lists', async ({ p
 	await archiveOpenPerson(page);
 
 	// Their own page is untouched — it is where they are brought back from.
-	await page.getByRole('tab', { name: /People/ }).click();
-	await expect(page.locator('#panel-people')).toContainText('Thomas Widmer');
+	await expect(page.locator('#section-relationships')).toContainText('Thomas Widmer');
 
 	// And the map still draws them: Stella works out grandparents and cousins *through*
 	// people, so forgetting one would make it name the rest wrongly (docs/04 §4.9).

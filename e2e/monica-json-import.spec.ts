@@ -57,11 +57,9 @@ test('imports a JSON export, stores the pictures it carries and shows the people
 	// The birthday was nested inside the person in the JSON, where the dump had a side table.
 	await expect(page.getByText('11 April 1979')).toBeVisible();
 	// A tag is a bare name in the export; it became a tag of the household's own.
-	await expect(page.locator('section', { has: page.getByText('Tags', { exact: true }) }).first()).toContainText('Jassrunde');
+	await expect(page.locator('section[data-row="Tags"]')).toContainText('Jassrunde');
 	// The link names its type in words only, and still found Stella's built-in type.
-	await page.getByRole('tab', { name: /People/ }).click();
 	await expect(page.getByRole('link', { name: 'Marlis Hauenstein', exact: true })).toBeVisible();
-	await page.getByRole('tab', { name: /Notes/ }).click();
 	await expect(page.getByText('Bringt an Silvester immer die Rösti mit.')).toBeVisible();
 	// The embedded picture went through the browser's resize pipeline and became the avatar.
 	await expect(page.locator('img[alt="Severin Hauenstein"]')).toHaveAttribute(

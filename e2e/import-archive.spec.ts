@@ -64,20 +64,18 @@ test('takes an archive while the person, their note and their photo are still he
 	await expect(page.getByRole('heading', { name: WHO })).toBeVisible();
 	await appReady(page);
 
-	await page.getByRole('tab', { name: /Notes/ }).click();
 	await page.getByRole('button', { name: 'Add note' }).click();
 	await page.getByRole('textbox', { name: 'Note' }).fill(NOTE);
 	await page.getByRole('button', { name: 'Add note' }).click();
 	await expect(page.getByTestId('toast-notice')).toContainText('Saved');
 
-	await page.getByRole('tab', { name: /Photos/ }).click();
 	await page.getByRole('button', { name: 'Add photos' }).click();
-	const form = page.locator('#panel-photos form');
+	const form = page.locator('#section-photos form');
 	await form
 		.locator('input[name=files]')
 		.setInputFiles({ name: 'valentina.png', mimeType: 'image/png', buffer: PIXEL });
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
-	await expect(page.locator('#panel-photos img').first()).toBeVisible();
+	await expect(page.locator('#section-photos img').first()).toBeVisible();
 
 	archive = await takeArchive(page);
 	// Read as UTF-8, not byte-for-byte: the document is UTF-8 inside the tar, and "Frühling"
@@ -106,14 +104,12 @@ test('brings back a person who was deleted, with what was written about them', a
 	await expect(line(page, 'note')).toContainText('1 added');
 
 	await openPerson(page, new RegExp(WHO));
-	await page.getByRole('tab', { name: /Notes/ }).click();
 	await expect(page.getByText(NOTE)).toBeVisible();
 });
 
 test('puts the bytes of their photo back on disk, not just the row', async ({ page }) => {
 	await openPerson(page, new RegExp(WHO));
-	await page.getByRole('tab', { name: /Photos/ }).click();
-	const image = page.locator('#panel-photos img').first();
+	const image = page.locator('#section-photos img').first();
 	await expect(image).toBeVisible();
 
 	// Asking the server for the file itself: a restored row pointing at a file the restore

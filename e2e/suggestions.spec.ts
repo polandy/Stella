@@ -55,7 +55,7 @@ test('link as relative creates the person and opens their relationship editor wi
 	await page.getByRole('button', { name: 'Add person' }).click();
 
 	await expect(page.getByRole('heading', { name: 'Quill Brunner' })).toBeVisible();
-	await expect(page.getByRole('tab', { name: /People/ })).toHaveAttribute('aria-selected', 'true');
+	await expect(page.locator('#section-relationships')).toBeVisible();
 	// The hand-off ends in a real relationship, listed on the new person's page.
 	const editor = page.locator('form[action="?/addRelationship"]');
 	const target = editor.getByLabel('Person');
@@ -64,7 +64,6 @@ test('link as relative creates the person and opens their relationship editor wi
 
 	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Sibling of' });
 	await editor.getByRole('button', { name: 'Add', exact: true }).click();
-	await expect(page.getByRole('tab', { name: /People/ })).toContainText('1');
-	await page.getByRole('tab', { name: /People/ }).click();
+	await await expect(page.locator('#section-relationships > header')).toContainText('1');
 	await expect(page.getByRole('link', { name: 'Lena Brunner', exact: true })).toBeVisible();
 });

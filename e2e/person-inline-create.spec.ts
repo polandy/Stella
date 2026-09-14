@@ -26,7 +26,6 @@ async function addPerson(page: Page, first: string, last: string): Promise<void>
 
 /** Opens the *Add relationship* form on the person page currently shown. */
 async function openRelationshipForm(page: Page): Promise<Locator> {
-	await page.getByRole('tab', { name: /People/ }).click();
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	// Hand back a form that is actually open, so a caller waits on the form rather than on
 	// whatever it tries to find inside one that never appeared.
@@ -105,10 +104,10 @@ test('names a stranger from the relationship picker and links them without leavi
 
 	// Selected, not merely created: submitting the form links the person just named.
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
-	await expect(page.locator('#panel-people')).toContainText('Malia Buchser');
+	await expect(page.locator('#section-relationships')).toContainText('Malia Buchser');
 
 	// And she is a real person with her own page, reachable from the link just written.
-	await page.locator('#panel-people').getByRole('link', { name: 'Malia Buchser' }).first().click();
+	await page.locator('#section-relationships').getByRole('link', { name: 'Malia Buchser' }).first().click();
 	await expect(page.getByRole('heading', { name: 'Malia Buchser' })).toBeVisible();
 });
 

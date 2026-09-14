@@ -58,7 +58,6 @@ test('names a kind of link of its own, and every person page offers it', async (
 
 	// The promise is that it reaches the picker on a person's page, not just this list.
 	await openPerson(page, /Thomas Widmer/);
-	await page.getByRole('tab', { name: /People/ }).click();
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	const typePicker = page.locator('form[action="?/addRelationship"] select[name=typeChoice]');
 	await expect(typePicker.locator('option', { hasText: 'Godparent of' })).toHaveCount(1);
@@ -71,13 +70,12 @@ test('will not remove a type while links still use it', async ({ page }) => {
 	await expect(row.getByRole('button', { name: /^Remove the type/ })).toHaveCount(1);
 
 	await openPerson(page, /Thomas Widmer/);
-	await page.getByRole('tab', { name: /People/ }).click();
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	const form = page.locator('form[action="?/addRelationship"]');
 	await form.locator('select[name=typeChoice]').selectOption({ label: 'Godparent of' });
 	await pickPerson(form.getByLabel('Person'), 'Bettina Roth');
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
-	await expect(page.locator('#panel-people')).toContainText('Bettina Roth');
+	await expect(page.locator('#section-relationships')).toContainText('Bettina Roth');
 
 	await openTypeSettings(page);
 	await expect(row).toContainText('used 1×');
@@ -85,9 +83,8 @@ test('will not remove a type while links still use it', async ({ page }) => {
 
 	// Put Thomas back as he was; the button returns with the last link gone.
 	await openPerson(page, /Thomas Widmer/);
-	await page.getByRole('tab', { name: /People/ }).click();
 	await page
-		.locator('#panel-people')
+		.locator('#section-relationships')
 		.getByRole('button', { name: 'Remove the link to Bettina Roth' })
 		.click();
 	await expect(page.getByTestId('toast-undo')).toBeVisible();

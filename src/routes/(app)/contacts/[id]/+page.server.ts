@@ -58,7 +58,11 @@ import { addGalleryPhoto } from '$lib/server/domain/media/gallery-upload';
 import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
 import { createHandleResolver, mentionsOtherThan, resolveMentions } from '$lib/mentions/mentions';
 import { mentionSnippet } from '$lib/mentions/snippet';
-import { TAB_FOR_REFERENCE } from '$lib/contacts/tabs';
+import {
+	contactSectionPath,
+	SECTION_FOR_REFERENCE,
+	sectionForLegacyTab
+} from '$lib/contacts/sections';
 import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { audienceCandidates } from '$lib/server/domain/moments/moments';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
@@ -130,6 +134,15 @@ import { say, translator } from '$lib/server/i18n/say';
 export const load: PageServerLoad = async ({ locals, params, url }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+	/*
+	 * The page had tabs until its content became one column of cards (docs/05 §5.5). A
+	 * bookmark or a history entry still carrying `?tab=` is answered with the card it meant,
+	 * rather than silently landing at the top of the page. After the sign-in check, so an
+	 * old link cannot bounce a signed-out reader anywhere but the login page.
+	 */
+	const legacy = sectionForLegacyTab(url.searchParams.get('tab'));
+	if (legacy) throw redirect(302, contactSectionPath(params.id, legacy));
 
 	const contact = await getContact(getContactDeps(), viewer, params.id);
 	if (!contact) {
@@ -253,9 +266,6 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		gallery,
 		// Who is looking: the gallery only offers caption/remove on your own photos.
 		viewerId: viewer.id,
-		// Which tab to open on. A form action redirects back with it, so acting on a photo
-		// does not throw the reader back to the story.
-		tab: url.searchParams.get('tab'),
 		/*
 		 * Where this person is named by somebody else (docs/02 §2.20.1). Read-only: the entry
 		 * belongs to the person it is about, so each item links there rather than offering an
@@ -270,7 +280,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			day: reference.day,
 			title: reference.title,
 			snippet: mentionSnippet(reference.body, nameOf),
-			href: `/contacts/${reference.sourceContactId}?tab=${TAB_FOR_REFERENCE[reference.kind]}`
+			href: contactSectionPath(reference.sourceContactId, SECTION_FOR_REFERENCE[reference.kind])
 		})),
 		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5)
 		notes: notes.map((note) => ({
@@ -566,7 +576,7 @@ export const actions: Actions = {
 			throw err;
 		}
 
-		throw redirect(303, `/contacts/${params.id}?tab=people`);
+		throw redirect(303, contactSectionPath(params.id, 'relationships'));
 	},
 
 	/** Take back a link that was entered wrong (docs/02 §2.4). Undo is the page's own. */
@@ -581,7 +591,7 @@ export const actions: Actions = {
 		if (!(await removeRelationship(getRelationshipDeps(), viewer, relationshipId))) {
 			return fail(404, { error: say(locals, 'errors.relationship.notFound') });
 		}
-		throw redirect(303, `/contacts/${params.id}?tab=people`);
+		throw redirect(303, contactSectionPath(params.id, 'relationships'));
 	},
 
 	/**
@@ -798,10 +808,10 @@ export const actions: Actions = {
 			});
 		}
 
-		// `?tab=story`: this form posts natively (see the comment on the story panel in
-		// +page.svelte), so the reload that follows has to be told which tab held it — People
-		// is the page's default now, and a touchpoint is logged from Story.
-		throw redirect(303, `/contacts/${params.id}?tab=story`);
+		// This form posts natively (see the comment on the story card in +page.svelte), so the
+		// reload it causes has to be told where it came from — otherwise logging a touchpoint
+		// throws the reader back to the top of the page.
+		throw redirect(303, contactSectionPath(params.id, 'story'));
 	},
 
 	removeInteraction: async ({ request, params, locals }) => {
@@ -959,7 +969,7 @@ export const actions: Actions = {
 				photoError: err instanceof InvalidImageError ? err.phrase(translator(locals)) : say(locals, 'errors.image.couldNotStore')
 			});
 		}
-		throw redirect(303, `/contacts/${params.id}?tab=photos`);
+		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},
 
 	/** Caption a gallery photo; blank clears it. Only its uploader may. */
@@ -980,7 +990,7 @@ export const actions: Actions = {
 			if (err instanceof CaptionTooLongError) return fail(400, { photoError: err.phrase(translator(locals)) });
 			throw err;
 		}
-		throw redirect(303, `/contacts/${params.id}?tab=photos`);
+		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},
 
 	/** Move a gallery photo between shared and private. Only its uploader may. */
@@ -1003,7 +1013,7 @@ export const actions: Actions = {
 		) {
 			return fail(403, { photoError: say(locals, 'errors.photo.onlyOwnerChange') });
 		}
-		throw redirect(303, `/contacts/${params.id}?tab=photos`);
+		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},
 
 	/** Wear a gallery photo as this contact's avatar. */
@@ -1016,7 +1026,7 @@ export const actions: Actions = {
 		if (!(await useAsAvatar(getGalleryDeps(), viewer, params.id, photoId))) {
 			return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
 		}
-		throw redirect(303, `/contacts/${params.id}?tab=photos`);
+		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},
 
 	/** Delete a gallery photo and its files. Only its uploader may. */
@@ -1029,7 +1039,7 @@ export const actions: Actions = {
 		if (!(await removeGalleryPhoto(getGalleryDeps(), viewer, photoId))) {
 			return fail(403, { photoError: say(locals, 'errors.photo.onlyOwnerRemove') });
 		}
-		throw redirect(303, `/contacts/${params.id}?tab=photos`);
+		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},
 
 	setAvatar: async ({ request, params, locals }) => {

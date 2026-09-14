@@ -2,57 +2,97 @@ import { expect, test } from '@playwright/test';
 import { fillDate, openPerson, signIn } from './app';
 
 /*
- * The landing view of a person's page (docs/05 §5.5): People leads, a quick-overview line
- * names the numbers before any tab is opened, the story panel carries its own name instead of
- * none, and the ego graph draws without a click. Written after the maintainer saw the
- * reordered page live, on the family instance itself (docs/08 §8.4.1).
+ * The landing view of a person's page (docs/05 §5.5). The page is one column of cards in a
+ * fixed order — relationships, story, notes, photos, mentions — with no tabs to open: what a
+ * reader came for is on the page when they arrive, and the profile they look things up in sits
+ * quietly beside it. Written after the maintainer saw the reordered page live, on the family
+ * instance itself (docs/08 §8.4.1).
  */
+
+/** The cards of the main column, in the order the page stacks them. */
+const CARDS = ['relationships', 'story', 'notes', 'photos', 'mentions'] as const;
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('opens on People, with the quick overview and the ego graph both already visible', async ({ page }) => {
+test('lands with every card on the page, relationships first and the map above its list', async ({
+	page
+}) => {
 	await openPerson(page, /Lena Brunner/);
 
-	// openPerson already asserts People is the selected tab; this covers the rest of what
-	// lands with it — no second click needed for any of it.
-	const overview = page.getByTestId('contact-overview');
-	await expect(overview).toBeVisible();
+	// Nothing waits behind a click any more, so there is no tablist left to click.
+	await expect(page.getByRole('tab')).toHaveCount(0);
+	for (const card of CARDS) {
+		await expect(page.locator(`#section-${card}`)).toBeVisible();
+	}
 
-	// The overview's relationship count agrees with the People tab's own count badge — the
-	// same number read two different ways, rather than one hand-typed against the seed.
-	const tabText = await page.getByRole('tab', { name: /People/ }).textContent();
-	const relationshipCount = tabText!.match(/\d+/)![0];
-	await expect(overview).toContainText(`${relationshipCount} relationship`);
+	// The order is what this change is about: relationships lead, the story follows.
+	const tops = await Promise.all(
+		CARDS.map(async (card) => (await page.locator(`#section-${card}`).boundingBox())!.y)
+	);
+	expect(tops).toEqual([...tops].sort((a, b) => a - b));
 
-	// The graph draws on arrival: no "Show map" toggle exists any more.
-	await expect(page.getByRole('button', { name: 'Show map' })).toHaveCount(0);
-	await expect(page.getByRole('img', { name: /Relationship network for Lena Brunner/ })).toBeVisible();
+	// Inside the relationships card, the map is read before the rows it summarises.
+	const graph = page.getByRole('img', { name: /Relationship network for Lena Brunner/ });
+	await expect(graph).toBeVisible();
+	const list = page.locator('#section-relationships ul').first();
+	expect((await graph.boundingBox())!.y).toBeLessThan((await list.boundingBox())!.y);
 
-	// The story panel has its own name now, distinct from both the tab and the overview above it.
-	await page.getByRole('tab', { name: 'Story' }).click();
+	// The story card carries its own name rather than borrowing a tab's.
 	await expect(page.getByRole('heading', { name: 'Activity' })).toBeVisible();
 });
 
-test('the quick overview\'s encounter count rises the moment a touchpoint is logged', async ({ page }) => {
+test('the profile card unfolds what it holds and folds away what it does not', async ({
+	page
+}) => {
 	await openPerson(page, /Lena Brunner/);
 
-	const readEncounters = async () => {
-		const text = await page.getByTestId('contact-overview').textContent();
-		return Number(text!.match(/(\d+) encounters?/)![1]);
-	};
-	const before = await readEncounters();
+	const profile = page.locator('section', { has: page.getByRole('heading', { name: 'Profile' }) });
+	const circles = profile.getByRole('button', { name: /^Circles/ });
+	const tags = profile.getByRole('button', { name: /^Tags/ });
 
-	await page.getByRole('tab', { name: 'Story' }).click();
-	const section = page.locator('#panel-story');
-	await section.getByRole('button', { name: 'Log contact' }).click();
-	await section.getByLabel('Kind').selectOption('call');
-	await fillDate(section, 'Day', '2026-01-05');
-	await section.getByRole('button', { name: 'Log interaction' }).click();
+	// She is in circles, so that row is open and its content is on the page.
+	await expect(circles).toHaveAttribute('aria-expanded', 'true');
+	await expect(profile).toContainText('Klasse 5b');
 
-	// The form posts natively; the page it comes back on is still Story, not the default People
-	// — the thing this case exists to prove, since that redirect is new in this change.
-	await expect(page.getByRole('tab', { name: 'Story' })).toHaveAttribute('aria-selected', 'true');
-	expect(await readEncounters()).toBe(before + 1);
+	// She has no tags, so that row is folded — but adding the first one is still one click,
+	// because the row keeps its Add button while folded.
+	await expect(tags).toHaveAttribute('aria-expanded', 'false');
+	await expect(profile).not.toContainText('No tags yet.');
+
+	await tags.click();
+	await expect(tags).toHaveAttribute('aria-expanded', 'true');
+	await expect(profile).toContainText('No tags yet.');
+});
+
+test('logging a touchpoint comes back to the story card it was submitted from', async ({ page }) => {
+	await openPerson(page, /Lena Brunner/);
+
+	const story = page.locator('#section-story');
+	const entries = story.getByTestId('story-timeline').locator('> li');
+	const before = await entries.count();
+
+	await story.getByRole('button', { name: 'Log contact' }).click();
+	await story.getByLabel('Kind').selectOption('call');
+	await fillDate(story, 'Day', '2026-01-05');
+	await story.getByRole('button', { name: 'Log interaction' }).click();
+
+	// This form posts natively, so the page reloads: the redirect has to land back on the card
+	// it was submitted from rather than at the top of the page.
+	await expect(page).toHaveURL(/#section-story$/);
+	await expect(entries).toHaveCount(before + 1);
+});
+
+test('a bookmark still holding the old ?tab= is answered with the card it meant', async ({
+	page
+}) => {
+	await openPerson(page, /Lena Brunner/);
+	const id = new URL(page.url()).pathname.split('/').pop()!;
+
+	// The tabs are gone, but the links people saved are not (docs/05 §5.5).
+	await page.goto(`/contacts/${id}?tab=photos`);
+
+	await expect(page).toHaveURL(`/contacts/${id}#section-photos`);
+	await expect(page.locator('#section-photos')).toBeVisible();
 });

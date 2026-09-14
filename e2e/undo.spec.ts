@@ -1,5 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
-import { fillDate, signIn } from './app';
+import { expect, test } from '@playwright/test';
+import { fillDate, openPerson, signIn } from './app';
 
 /*
  * Removing with undo (docs/02 §2.23, docs/05 §5.7). Written after the flow was verified in the
@@ -7,21 +7,13 @@ import { fillDate, signIn } from './app';
  * a title no seeded data uses, so no other case's counts move.
  */
 
-/** Opens a seeded person's page from the contacts list, then switches to the story tab. */
-async function openPerson(page: Page, name: RegExp): Promise<void> {
-	await page.getByRole('link', { name: 'People' }).first().click();
-	await page.getByRole('link', { name }).first().click();
-	await page.getByRole('tab', { name: 'Story' }).click();
-	await expect(page.getByRole('tab', { name: 'Story' })).toHaveAttribute('aria-selected', 'true');
-}
-
 const TITLE = 'Quill call that was logged twice';
 
 test('a removed touchpoint comes back with Undo and is only sent when the page is left', async ({ page }) => {
 	await signIn(page);
 	await openPerson(page, /Rosa Brunner/);
 
-	const panel = page.locator('#panel-story');
+	const panel = page.locator('#section-story');
 	await panel.getByRole('button', { name: 'Log contact' }).click();
 	await panel.getByLabel('Kind').selectOption('call');
 	await fillDate(panel, 'Day', '2026-09-02');

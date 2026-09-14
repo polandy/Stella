@@ -14,7 +14,6 @@ import { openPerson, pickPerson, signIn } from './app';
  */
 async function openPeopleTab(page: Page, name: RegExp): Promise<void> {
 	await openPerson(page, name);
-	await page.getByRole('tab', { name: /People/ }).click();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -40,7 +39,7 @@ test('names the relatives nobody entered, saying who each comes through', async 
 
 	// What the household entered keeps its own wording and is never inferred a second time:
 	// Hans is a stored grandparent, so he appears above and not among the derived.
-	await expect(page.locator('#panel-people').getByText('Grandchild of').first()).toBeVisible();
+	await expect(page.locator('#section-relationships').getByText('Grandchild of').first()).toBeVisible();
 	await expect(derived).not.toContainText('Hans Brunner');
 });
 
@@ -72,7 +71,7 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 	// Exactly the confirmed one was written: Elias is now stored, Noah is still only offered.
 	await expect(page.getByTestId('kin-proposals')).not.toContainText('Elias Brunner');
 	await expect(page.getByTestId('kin-proposals')).toContainText('Noah Brunner');
-	const stored = page.locator('#panel-people ul').first();
+	const stored = page.locator('#section-relationships ul').first();
 	await expect(stored).toContainText('Elias Brunner');
 	await expect(stored).not.toContainText('Noah Brunner');
 });

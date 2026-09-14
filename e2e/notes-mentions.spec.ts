@@ -32,8 +32,7 @@ const BODY = `${MARKER} repariert mit `;
 
 /** Opens the Notes tab of the person whose page is showing. */
 async function openNotes(page: Page): Promise<void> {
-	await page.getByRole('tab', { name: /Notes/ }).click();
-	await expect(page.getByRole('tab', { name: /Notes/ })).toHaveAttribute('aria-selected', 'true');
+	await expect(page.locator('#section-notes')).toBeVisible();
 }
 
 /** The chip a mention renders as, inside the note's body rather than anywhere else. */

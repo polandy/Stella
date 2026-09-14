@@ -12,7 +12,6 @@ import { fillDate, openPerson, pickPerson, signIn } from './app';
 
 async function openPeopleTab(page: Page, name: RegExp): Promise<void> {
 	await openPerson(page, name);
-	await page.getByRole('tab', { name: /People/ }).click();
 }
 
 /**
@@ -20,7 +19,7 @@ async function openPeopleTab(page: Page, name: RegExp): Promise<void> {
  * panel: the derived relatives below it are rows too, and only the entered ones are editable.
  */
 const enteredRow = (page: Page, otherName: string) =>
-	page.locator('#panel-people ul').first().locator('li').filter({ hasText: otherName });
+	page.locator('#section-relationships ul').first().locator('li').filter({ hasText: otherName });
 
 /** Fills the *Add relationship* form and submits it. */
 async function addLink(
@@ -60,7 +59,6 @@ test('enters a link with how they connect, since when, and whether it still hold
 
 	// It was stored, not just shown: it survives a reload.
 	await page.reload();
-	await page.getByRole('tab', { name: /People/ }).click();
 	await expect(enteredRow(page, 'Heidi Lehmann')).toContainText('since 1 June 2019');
 });
 
@@ -89,12 +87,11 @@ test('refuses a generation claimed in both directions, and writes nothing', asyn
 	// The same two people, the same type, the other way round: nobody is their own parent's
 	// parent, so this is turned away with the reason rather than stored.
 	await addLink(page, { type: 'Child of', person: 'Heidi Lehmann' });
-	await expect(page.locator('#panel-people')).toContainText('already linked the other way round');
+	await expect(page.locator('#section-relationships')).toContainText('already linked the other way round');
 
 	// The positive signal: exactly one row still names Heidi and it reads the way it was
 	// entered. Reloading proves the server wrote nothing, not just that the page did not move.
 	await page.reload();
-	await page.getByRole('tab', { name: /People/ }).click();
 	await expect(enteredRow(page, 'Heidi Lehmann')).toHaveCount(1);
 	await expect(enteredRow(page, 'Heidi Lehmann')).toContainText('Parent of');
 	await expect(enteredRow(page, 'Heidi Lehmann')).not.toContainText('Child of');
@@ -142,7 +139,6 @@ test('takes a link back with Undo, and the worked-out name returns with it', asy
 	await expect(toast).toContainText('Relationship removed');
 	await toast.getByRole('button', { name: 'Undo' }).click();
 	await page.reload();
-	await page.getByRole('tab', { name: /People/ }).click();
 	await expect(enteredRow(page, 'Nadia Brunner-Rossi')).toHaveCount(1);
 
 	// Remove it for real: leaving the page sends it, and the worked-out name is back.
@@ -152,7 +148,7 @@ test('takes a link back with Undo, and the worked-out name returns with it', asy
 	await expect(page.getByTestId('toast-undo')).toBeVisible();
 	await openPeopleTab(page, /Hans Brunner/);
 	await expect(page.getByTestId('derived-kin')).toContainText('Nadia Brunner-Rossi');
-	await expect(page.locator('#panel-people ul').first()).not.toContainText('Nadia Brunner-Rossi');
+	await expect(page.locator('#section-relationships ul').first()).not.toContainText('Nadia Brunner-Rossi');
 });
 
 /*
@@ -192,7 +188,6 @@ test('changes the type from the row, keeping what the link said', async ({ page 
 
 	// Stored, not just shown.
 	await page.reload();
-	await page.getByRole('tab', { name: /People/ }).click();
 	await expect(enteredRow(page, 'Reto Hofer')).toContainText('Spouse of');
 
 	/*
@@ -224,7 +219,7 @@ test('turns a generation round from the row, rather than refusing it as its own 
 
 	// The guard that refuses a generation claimed both ways leaves the link itself out of the
 	// question, so the row turns round instead of being turned away.
-	await expect(page.locator('#panel-people')).not.toContainText('already linked the other way round');
+	await expect(page.locator('#section-relationships')).not.toContainText('already linked the other way round');
 	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Parent of');
 
 	// One row, moved — not a second one: from Bettina it now reads as the other side.
@@ -245,12 +240,11 @@ test('refuses a type that would duplicate a link already there, and writes nothi
 	const editor = await openEditor(page, neighbourRow);
 	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Knows' });
 	await editor.getByRole('button', { name: 'Save' }).click();
-	await expect(page.locator('#panel-people')).toContainText('That relationship already exists.');
+	await expect(page.locator('#section-relationships')).toContainText('That relationship already exists.');
 
 	// The positive signal: both links are still there, each reading as it was entered, and a
 	// reload proves the server wrote nothing rather than the page merely not moving.
 	await page.reload();
-	await page.getByRole('tab', { name: /People/ }).click();
 	const rows = enteredRow(page, 'Jan Steiner');
 	await expect(rows).toHaveCount(2);
 	await expect(rows.filter({ hasText: 'Neighbor of' })).toContainText('two floors up');

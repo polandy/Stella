@@ -16,18 +16,14 @@ export const contact = {
 	'contact.write': 'Write',
 	'contact.logContact': 'Log contact',
 	'contact.egoGraphLabel': (p: { name: string }) => `Relationship network for ${p.name}`,
-	'contact.overview.relationships': (p: { count: number }) =>
-		p.count === 1 ? '1 relationship' : `${p.count} relationships`,
-	'contact.overview.encounters': (p: { count: number }) =>
-		p.count === 1 ? '1 encounter' : `${p.count} encounters`,
 	'contact.story.title': 'Activity',
 
-	'contact.tab.story': 'Story',
-	'contact.tab.people': 'People',
-	'contact.tab.notes': 'Notes',
-	'contact.tab.photos': 'Photos',
-	'contact.tab.mentions': 'Mentioned in',
-	'contact.tablist': 'This person',
+	// The cards of the main column, in the order the page stacks them (docs/05 §5.5).
+	'contact.section.relationships': 'People',
+	'contact.section.notes': 'Notes',
+	'contact.section.photos': 'Photos',
+	'contact.section.mentions': 'Mentioned in',
+	'contact.section.profile': 'Profile',
 
 	'contact.section.contact': 'Contact',
 	'contact.noFields': 'No phone, email, or address yet.',

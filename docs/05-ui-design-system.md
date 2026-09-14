@@ -200,50 +200,52 @@ They must be edited together; `app.css` says so at both blocks.
   sticky letter heading; each row is avatar, name (lock for private), description, and
   **last written about** on the right (`—` when nothing has been). The heading counts people;
   *Add person* lives in the shell, not on the page.
-- **Contact profile** — **who on the left, what happened on the right.**
+- **Contact profile** — **what they are to the household in one column, who they are beside it.**
   - **Hero:** avatar, name and description (both editable in place), then the facts you came
     for on one line — when you
     were last in touch, how you met, whether the person is private. Two actions: *Write* (a
-    journal entry) and *Log contact* (a touchpoint), the second opening the story's own form.
-  - **Quick overview:** one line beneath the hero, above the tabs and shared by all of
-    them — relationship count and encounter count, so *how things stand* with this person is
-    read before opening any tab. Numbers only, taken from data the page already loaded; it adds
-    no query of its own.
-  - **Profile column** (`19rem`, sticky from `lg`): Contact fields, Dates (§2.13.1), Circles,
-    Tags, How we met. Each is a card with **one** disclosure — `+ Add` reveals its form
-    directly under the card's header (§5.7) and nothing else is open. A form that failed validation opens itself, so the error has a home.
-  - **Right column:** tabs *People · Story · Notes · Photos · Mentioned in*, People leading —
-    who this person is connected to is what opening their page answers first. **People** lists
-    the relationships, each row *label · name · how they connect · since <day>* with *former* as
-    a quiet chip, and carries **Edit** (revealing the same three fields in place, plus the
-    type picker preset to what the link reads today) and the standard remove-with-undo. Beneath the list, the **ego graph** (pure SVG
-    over the relationships already on the page — no extra fetch, no graph engine) sits open by
-    default; *Explore in graph* still reaches the full, interactive map for whoever wants more
-    than a glance. Below them, **Also related · worked out, not
-    entered** (§2.4.1) carries the derived relatives — a divider, a quieter heading and a
-    *via* clause keep an inference visually distinct from something the household typed.
-    After a link is added, an **Also true?** panel sits above them with what it implies, one
-    *Add this too* per line: a suggestion is a sentence with a button, never a checkbox list
-    that could be swept in with one click. **Story**, titled *Activity* on its own panel, is the
-    merged timeline of §2.23 — journal entries and touchpoints in one order, a rail with a dot
-    per item coloured by kind, the author's name beside the kind (*you* on your own items),
-    *Show earlier* paging back through both sources. **Notes** are pinned-first. **Mentioned in**
-    (§2.20.1) is the passive side: one flat list of the notes and journal entries *elsewhere*
-    that name this person, newest first, each row a single link — the source icon, *in <person>’s
-    journal · by <author>*, the day on the right, and a one-line preview underneath. The whole
-    row is the link, because the only thing to do with a passive item is go to where it is
-    written; nothing here is editable, so there is no button to mistake for one. **Photos**
+    journal entry) and *Log contact* (a touchpoint), the second opening the story card's own form.
+  - **Main column** — one stack of cards, no tabs, in a fixed order: **People · Story · Notes ·
+    Photos · Mentioned in**. Tabs hid the two things a page is most often opened for behind a
+    click and, once People and Story led the column, the three that were left were a navigation
+    layer the rest of the page no longer had. Each card carries its own count where the count is
+    exact, its own `+ Add` disclosure (§5.7), and an **anchor** (`#section-relationships` and
+    friends) so a link can point at one; the passive references of §2.20.1 do, and a form action
+    redirects back to the card it acted on. Bookmarks holding the old `?tab=` are answered with
+    the card they meant.
+  - **People** opens with the **ego graph** (pure SVG over the relationships already on the
+    page — no extra fetch, no graph engine), because who someone is connected to is a shape
+    before it is a dozen rows; *Explore in graph* reaches the full, interactive map. The list
+    follows, each row *label · name · how they connect · since <day>* with *former* as a quiet
+    chip, carrying **Edit** (revealing the same three fields in place, the type not among them)
+    and the standard remove-with-undo. Below it, **Also related · worked out, not entered**
+    (§2.4.1) carries the derived relatives — a divider, a quieter heading and a *via* clause
+    keep an inference visually distinct from something the household typed. After a link is
+    added, an **Also true?** panel sits above them with what it implies, one *Add this too* per
+    line: a suggestion is a sentence with a button, never a checkbox list that could be swept in
+    with one click. **Story**, titled *Activity*, is the merged timeline of §2.23 — journal
+    entries and touchpoints in one order, a rail with a dot per item coloured by kind, the
+    author's name beside the kind (*you* on your own items), *Show earlier* paging back through
+    both sources; it is paged, so it carries no count. **Notes** are pinned-first. **Photos**
     (§2.14) is a square grid at three columns, four from `sm`, with a lock badge on a private
     one; a photo opens into a **lightbox** — a solid card over a blurred, dimmed backdrop that
     closes on click, with the caption above the picture and the actions in one row beneath it.
     The destructive action sits last in that row and carries the danger style, so it is never
-    the button next to the one you meant.
-  - Below `lg` the two columns stack **tabs first**: the People tab they open on is what the
-    page is opened for, and the profile follows underneath.
-  - Counts sit on a tab only where they are exact; the story is paged, so it carries none.
-  - Walking from one person to another keeps the page but not the tab: the open tab is whatever
-    the new page asks for (`?tab=`) and otherwise People, so a link that points at a tab —
-    a passive reference does — arrives where it meant to rather than on whatever was open.
+    the button next to the one you meant. **Mentioned in**
+    (§2.20.1) is the passive side: one flat list of the notes and journal entries *elsewhere*
+    that name this person, newest first, each row a single link — the source icon, *in <person>’s
+    journal · by <author>*, the day on the right, and a one-line preview underneath. The whole
+    row is the link, because the only thing to do with a passive item is go to where it is
+    written; nothing here is editable, so there is no button to mistake for one.
+  - **Profile column** (`17rem`, sticky from `lg`, second everywhere): **one** card named
+    *Profile*, holding Contact fields, Dates (§2.13.1), Circles, Tags and How we met as folded
+    **rows** (§5.7) — each shows its count, and a value or two of what is in it, so a folded row
+    is still worth reading; opening one reveals its content and its own `+ Add`. Four shadowed
+    cards used to shout over the story for details that are looked up rather than read. The
+    record-keeping actions — *This is me*, *Archive*, *Merge*, *Delete* — sit in one quiet stack
+    at the card's foot, behind a divider.
+  - Below `lg` the columns stack **main column first**, profile underneath; the order inside
+    each is the same as it is wide, so there is nothing that behaves differently on a phone.
 - **Add a person** — one card: first and last name, description, how and where you met,
   visibility. Nickname and birthday sit behind a *More* disclosure; everything else waits
   for the person's page. The heading says so: *a name is enough*. Once a surname is typed,
@@ -338,12 +340,16 @@ in the accent: colour identifies, the foreground reads (§5.2.2).
 ## 5.7 Components (design-system inventory)
 
 Buttons (primary/secondary/ghost/danger), inputs & selects, person search select, tag/chip,
-avatar (+ stack), card, section header, tabs, modal/sheet, toast, dropdown menu, command
+avatar (+ stack), card, section header, modal/sheet, toast, dropdown menu, command
 palette, empty states, timeline item, note card, relationship row, photo grid + lightbox.
 All themeable via semantic tokens, all keyboard-accessible.
 
 **Section** (`src/lib/components/Section.svelte`) is that card: a title, an optional count, at
-most one disclosure, and the thing itself. The form it reveals opens **directly beneath the
+most one disclosure, and the thing itself. `as="row"` is the same component without the card
+around it — a folded disclosure line inside somebody else's card, showing its count and a
+summary of what it holds while closed. The person page's profile column is five of them in one
+card (§5.5); one component rather than two, so a card and a row cannot come to disagree about
+how a form behaves. The form it reveals opens **directly beneath the
 card's header** — above the content, never at the foot of the card. A person with twelve
 relationships pressing *Add* would otherwise watch nothing happen, because the form appeared a
 screen below the button that asked for it. On opening, the card scrolls itself just into view
