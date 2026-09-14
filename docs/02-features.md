@@ -403,6 +403,11 @@ tables, fully unit-testable (test-first).
   deliberately not offered: it is a step relationship, which the profile already names
   without storing anything.
 
+A broader catalogue of what else could be proposed — the other parent, surname and address
+prefill, consistency warnings — and the rule set behind it is drafted in
+`docs/concepts/relationship-suggestions.md`, with the module layout and PR slicing in
+`docs/concepts/relationship-suggestions-implementation.md` (concepts, not shipped).
+
 ### 2.4.2 Circles & shared contexts **[M2]**
 
 Beyond pairwise relationships, people are connected by **shared contexts** — the same
