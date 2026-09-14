@@ -207,14 +207,15 @@ listed once, because there is nothing to choose.
 One thing Stella will not let you write down: that two people are each other's parent, or each
 other's grandparent. A generation runs one way, and the relatives Stella works out for you are
 read off exactly those links — so pick the direction the wrong way round and it says so instead
-of saving it. Remove the link that is already there and enter it the way you meant.
+of saving it. Change the link that is already there to the direction you meant, or remove it.
 
 A link can say more than its label. **How they connect** is yours to write — "met through
 Peter at the ski course" — and there is a **since** day and a **current / former** status if
 they help; all three are optional and all three can be changed later with *Edit* on the row.
-Entered someone as the wrong thing? *Remove* takes the link back, and Stella offers Undo for
-a moment in case that was hasty. Only the type itself cannot be edited: pick the wrong one
-and it is a removal and a fresh entry, because the direction hangs on it.
+*Edit* also offers the **kind of link** again, so a partner who became a spouse — or a *Parent
+of* you picked the wrong way round — is one pick and not a re-entry; what you wrote about the
+link stays with it. Entered someone as the wrong thing altogether? *Remove* takes the link
+back, and Stella offers Undo for a moment in case that was hasty.
 
 From the few links you enter, Stella works out the rest and shows them under **Also
 related · worked out, not entered**: grandparents, aunts and uncles, cousins, in-laws,

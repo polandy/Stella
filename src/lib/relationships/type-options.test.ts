@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
 	decodeRelationshipChoice,
 	encodeRelationshipChoice,
+	isChoiceOfLink,
 	endpointsForSide,
 	relationshipTypeOptions
 } from './type-options';
@@ -59,6 +60,51 @@ describe('decodeRelationshipChoice', () => {
 		['nothing', '']
 	])('refuses %s', (_case, value) => {
 		expect(decodeRelationshipChoice(value)).toBeNull();
+	});
+});
+
+/*
+ * What the edit form preselects (docs/02 §2.4). A select with no matching option falls back
+ * to its first entry, so a link that points at no entry would be retyped by a save that only
+ * meant to correct the specifics — the symmetric case below is exactly that trap.
+ */
+describe('isChoiceOfLink', () => {
+	const optionsOf = (type: { id: string; symmetric: boolean }) => relationshipTypeOptions([type]);
+
+	it('matches the side an asymmetric link reads as, and only that side', () => {
+		const [forward, reverse] = optionsOf(parentChild);
+		const link = { typeId: 'parent_child', side: 'reverse' as const };
+
+		expect(isChoiceOfLink(reverse, link)).toBe(true);
+		expect(isChoiceOfLink(forward, link)).toBe(false);
+	});
+
+	it('matches a symmetric type read from either endpoint, since it is offered once', () => {
+		const [only] = optionsOf(sibling);
+		expect(only.side).toBe('forward');
+
+		expect(isChoiceOfLink(only, { typeId: 'sibling', side: 'forward' })).toBe(true);
+		// The endpoint the link is stored second reads it as `reverse`; the picker has no
+		// such entry, and preselecting nothing there is what would retype the link.
+		expect(isChoiceOfLink(only, { typeId: 'sibling', side: 'reverse' })).toBe(true);
+	});
+
+	it('never matches an entry of another type', () => {
+		const [forward] = optionsOf(parentChild);
+		expect(isChoiceOfLink(forward, { typeId: 'sibling', side: 'forward' })).toBe(false);
+	});
+
+	it('preselects exactly one entry for every link a row can show', () => {
+		const options = relationshipTypeOptions([parentChild, sibling]);
+
+		for (const link of [
+			{ typeId: 'parent_child', side: 'forward' as const },
+			{ typeId: 'parent_child', side: 'reverse' as const },
+			{ typeId: 'sibling', side: 'forward' as const },
+			{ typeId: 'sibling', side: 'reverse' as const }
+		]) {
+			expect(options.filter((option) => isChoiceOfLink(option, link))).toHaveLength(1);
+		}
 	});
 });
 

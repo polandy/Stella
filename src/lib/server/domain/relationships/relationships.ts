@@ -6,6 +6,7 @@ import { suggestPropagation, type PrimaryLink, type SuggestedLink } from '../../
 import type { Viewer } from '../../access/visibility';
 import type { RelationshipCategory } from '../../../relationships/categories';
 import type { Endpoints } from '../../../relationships/endpoints';
+import { endpointsForSide, type RelationshipSide } from '../../../relationships/type-options';
 import { GENERATION_TYPE_KEYS } from '../../../relationships/type-keys';
 import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../../relationships/status';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
@@ -149,21 +150,54 @@ export interface RelationshipView extends RelationshipDetails {
 	otherDisplayName: string;
 	/** The label as stored on the type; a built-in one is translated at the edge by its key. */
 	label: string;
+	/** The type the link carries; the edit form offers the picker preset to it. */
+	typeId: string;
 	/** The type's machine key, and which of its two labels this row reads. */
 	typeKey: string;
 	side: 'forward' | 'reverse';
 	category: RelationshipCategory;
 }
 
+/** A stored link as the domain reads it back, to work out what changing its type would mean. */
+export interface StoredRelationship {
+	id: string;
+	fromContactId: string;
+	toContactId: string;
+	typeId: string;
+}
+
+/** The new type of a link and the direction it is stored in once it carries that type. */
+export interface Retype {
+	endpoints: Endpoints;
+	typeId: string;
+}
+
+/** What an edit writes: always the specifics, and the type and direction when those change. */
+export interface RelationshipUpdate extends RelationshipDetails {
+	/** Null leaves the type and the stored direction as they are. */
+	retype: Retype | null;
+}
+
 export interface RelationshipRepository {
-	exists(fromContactId: string, toContactId: string, typeId: string): Promise<boolean>;
+	/**
+	 * Whether this exact direction of this type is stored between the two. `exceptId` leaves
+	 * one row out of the answer, so a link being retyped is not measured against itself.
+	 */
+	exists(
+		fromContactId: string,
+		toContactId: string,
+		typeId: string,
+		exceptId?: string
+	): Promise<boolean>;
 	insert(relationship: NewRelationship): Promise<void>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<RelationshipView[]>;
-	/** Writes the specifics; false when the viewer may not see the relationship. */
-	updateDetailsVisibleTo(
+	/** The stored link, or null when the viewer may not see it (or it is not there). */
+	findVisibleTo(viewer: Viewer, id: string): Promise<StoredRelationship | null>;
+	/** Writes the update; false when the viewer may not see the relationship. */
+	updateVisibleTo(
 		viewer: Viewer,
 		id: string,
-		details: RelationshipDetails,
+		update: RelationshipUpdate,
 		updatedAt: number
 	): Promise<boolean>;
 	/** Deletes the link; false when the viewer may not see it. Nothing is written in that case. */
@@ -311,25 +345,110 @@ function primaryLinkBetween(graph: KinshipGraph, a: string, b: string): PrimaryL
 	return null;
 }
 
+/** One edit of a link that is already there: its specifics, and optionally its type. */
+export interface EditRelationshipInput extends RelationshipDetailsInput {
+	relationshipId: string;
+	/** Whose profile the edit was made from — the chosen side is read from their perspective. */
+	perspectiveContactId: string;
+	/** The type and the side it was read from; absent leaves the type alone. */
+	typeChoice?: { typeId: string; side: RelationshipSide } | null;
+}
+
+/** The endpoint of `link` that is not `contactId`, or null when they are not an endpoint. */
+function otherEndpointOf(link: StoredRelationship, contactId: string): string | null {
+	if (contactId === link.fromContactId) return link.toContactId;
+	if (contactId === link.toContactId) return link.fromContactId;
+	return null;
+}
+
 /**
- * Correct the specifics of a link that is already there (docs/02 §2.4). The type is not
- * editable: changing it can flip the stored direction and re-opens the duplicate guard, so
- * that is a removal and a fresh entry, not an edit.
+ * Where a link lands once it carries another type (docs/02 §2.4): the chosen side is read
+ * from the profile the edit was made on, and the type decides whether the pair is stored
+ * order-independently — so a partner becoming a spouse, and a generation entered the wrong
+ * way round, both come out canonical. Null when the viewer is editing from a profile that is
+ * not an endpoint of the link.
+ *
+ * The guards are the ones creating a link passes, with the link itself left out of both:
+ * measured against itself, every retype would read as its own duplicate and every flipped
+ * generation as its own contradiction.
+ */
+async function planRetype(
+	deps: RelationshipDeps,
+	viewer: Viewer,
+	current: StoredRelationship,
+	perspectiveContactId: string,
+	choice: { typeId: string; side: RelationshipSide }
+): Promise<Retype | null> {
+	const type = await deps.types.getType(viewer, choice.typeId);
+	if (!type) {
+		throw new Error('Unknown relationship type.');
+	}
+
+	const otherContactId = otherEndpointOf(current, perspectiveContactId);
+	if (otherContactId === null) return null;
+
+	const asked = endpointsForSide(perspectiveContactId, otherContactId, choice.side);
+	const endpoints = canonicalEndpoints(asked.fromContactId, asked.toContactId, type.symmetric);
+
+	if (
+		await deps.relationships.exists(
+			endpoints.fromContactId,
+			endpoints.toContactId,
+			type.id,
+			current.id
+		)
+	) {
+		throw new DuplicateRelationshipError();
+	}
+	if (
+		GENERATION_TYPE_KEYS.includes(type.key) &&
+		(await deps.relationships.exists(
+			endpoints.toContactId,
+			endpoints.fromContactId,
+			type.id,
+			current.id
+		))
+	) {
+		throw new ContradictoryRelationshipError();
+	}
+
+	return { endpoints, typeId: type.id };
+}
+
+/**
+ * Correct a link that is already there (docs/02 §2.4): its specifics, and its type where a
+ * tie was named wrongly or has moved on — a partner who became a spouse. Changing the type
+ * can flip the stored direction, so the same duplicate and contradiction guards that creating
+ * a link passes are re-run here.
  *
  * Returns false when the viewer may not see the relationship — the same answer as for one
  * that does not exist, so no one learns of a link through a private person by editing it.
  */
-export async function editRelationshipDetails(
+export async function editRelationship(
 	deps: RelationshipDeps,
 	viewer: Viewer,
-	relationshipId: string,
-	input: RelationshipDetailsInput
+	input: EditRelationshipInput
 ): Promise<boolean> {
 	const details = parseRelationshipDetails(input);
-	return deps.relationships.updateDetailsVisibleTo(
+
+	let retype: Retype | null = null;
+	if (input.typeChoice) {
+		const current = await deps.relationships.findVisibleTo(viewer, input.relationshipId);
+		if (!current) return false;
+		retype = await planRetype(
+			deps,
+			viewer,
+			current,
+			input.perspectiveContactId,
+			input.typeChoice
+		);
+		if (!retype) return false;
+	}
+
+	return deps.relationships.updateVisibleTo(
 		viewer,
-		relationshipId,
-		details,
+		input.relationshipId,
+		{ ...details, retype },
 		deps.clock.now()
 	);
 }

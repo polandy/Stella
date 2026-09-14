@@ -30,7 +30,7 @@
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
-	import { relationshipTypeOptions } from '$lib/relationships/type-options';
+	import { isChoiceOfLink, relationshipTypeOptions } from '$lib/relationships/type-options';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
@@ -732,8 +732,6 @@
 									</div>
 
 									{#if editingRelationship === rel.id}
-										<!-- The type is not editable: changing it can flip the stored direction, so
-										     that is a removal and a fresh entry (docs/02 §2.4). -->
 										<form
 											method="POST"
 											action="?/editRelationship"
@@ -741,6 +739,21 @@
 											class="flex flex-wrap items-end gap-2 pl-5"
 										>
 											<input type="hidden" name="relationshipId" value={rel.id} />
+											<label class="flex flex-col gap-1">
+												<span class="text-xs text-fg-muted">{t('contact.relationships.typeLabel')}</span>
+												<!-- Both sides again, so a partner who became a spouse — or a generation
+												     entered the wrong way round — is one pick, not a re-entry (docs/02 §2.4). -->
+												<select name="typeChoice" class={INPUT}>
+													{#each relationshipTypeOptions(data.relationshipTypes) as option (option.value)}
+														<option
+															value={option.value}
+															selected={isChoiceOfLink(option, rel)}
+														>
+															{relationshipTypeLabel(t, option.type, option.side)}
+														</option>
+													{/each}
+												</select>
+											</label>
 											<label class="flex flex-1 flex-col gap-1">
 												<span class="text-xs text-fg-muted">{t('contact.relationships.howConnect')}</span>
 												<input

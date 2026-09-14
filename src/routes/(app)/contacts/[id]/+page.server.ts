@@ -72,7 +72,7 @@ import {
 	createRelationship,
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
-	editRelationshipDetails,
+	editRelationship,
 	InvalidRelationshipDetailsError,
 	removeRelationship,
 	readKinship
@@ -329,6 +329,8 @@ const AddRelationshipSchema = v.object({
 
 const EditRelationshipSchema = v.object({
 	relationshipId: v.pipe(v.string(), v.minLength(1)),
+	/** Type *and* direction, as `relationshipTypeOptions` encodes them; absent leaves the type. */
+	typeChoice: v.optional(v.pipe(v.string(), v.minLength(1))),
 	...RelationshipDetailsSchema
 });
 
@@ -542,7 +544,7 @@ export const actions: Actions = {
 		throw redirect(303, `/contacts/${params.id}?propose=${pair}#relationships`);
 	},
 
-	/** Correct the specifics of a link. The type is not editable (docs/02 §2.4). */
+	/** Correct a link: its specifics, and its type where the tie was named wrongly (docs/02 §2.4). */
 	editRelationship: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
@@ -550,21 +552,38 @@ export const actions: Actions = {
 		const form = await request.formData();
 		const parsed = v.safeParse(EditRelationshipSchema, {
 			relationshipId: form.get('relationshipId'),
+			typeChoice: form.get('typeChoice') || undefined,
 			description: form.get('description') || undefined,
 			sinceDate: form.get('sinceDate') || undefined,
 			status: form.get('status') || undefined
 		});
 		if (!parsed.success) return fail(400, { error: say(locals, 'errors.relationship.couldNotSave') });
 
+		// A choice the picker did not write names no type and no side, so it cannot be stored.
+		const choice = parsed.output.typeChoice
+			? decodeRelationshipChoice(parsed.output.typeChoice)
+			: null;
+		if (parsed.output.typeChoice && !choice) {
+			return fail(400, { error: say(locals, 'errors.relationship.couldNotSave') });
+		}
+
 		try {
-			const saved = await editRelationshipDetails(
-				getRelationshipDeps(),
-				viewer,
-				parsed.output.relationshipId,
-				parsed.output
-			);
+			const saved = await editRelationship(getRelationshipDeps(), viewer, {
+				relationshipId: parsed.output.relationshipId,
+				perspectiveContactId: params.id,
+				typeChoice: choice,
+				description: parsed.output.description ?? null,
+				sinceDate: parsed.output.sinceDate ?? null,
+				status: parsed.output.status ?? null
+			});
 			if (!saved) return fail(404, { error: say(locals, 'errors.relationship.notFound') });
 		} catch (err) {
+			if (err instanceof DuplicateRelationshipError) {
+				return fail(409, { error: say(locals, 'errors.relationship.duplicate') });
+			}
+			if (err instanceof ContradictoryRelationshipError) {
+				return fail(409, { error: say(locals, 'errors.relationship.contradiction') });
+			}
 			if (err instanceof InvalidRelationshipDetailsError) {
 				return fail(400, { error: err.phrase(translator(locals)) });
 			}
