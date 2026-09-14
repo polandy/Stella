@@ -1,5 +1,6 @@
 import type { Phrase } from '$lib/i18n/phrase';
 import { parentOf, siblingOf } from '$lib/suggestions/reasons';
+import { buildView, pairKey } from '$lib/suggestions/view';
 import type { KinshipGraph } from './kinship';
 
 /*
@@ -37,36 +38,6 @@ export interface SuggestedLink {
 	reason: Phrase;
 }
 
-const pairKey = (x: string, y: string) => (x < y ? `${x} ${y}` : `${y} ${x}`);
-
-/** Parents per child and children per parent, plus the sibling sets they imply. */
-function index(graph: KinshipGraph) {
-	const parents = new Map<string, Set<string>>();
-	const children = new Map<string, Set<string>>();
-	const siblings = new Map<string, Set<string>>();
-	const link = (map: Map<string, Set<string>>, key: string, value: string) => {
-		const set = map.get(key);
-		if (set) set.add(value);
-		else map.set(key, new Set([value]));
-	};
-
-	for (const { parentId, childId } of graph.parentEdges) {
-		link(parents, childId, parentId);
-		link(children, parentId, childId);
-	}
-	for (const { a, b } of graph.siblingEdges) {
-		link(siblings, a, b);
-		link(siblings, b, a);
-	}
-	// Sharing a parent makes siblings just as surely as an explicit link does.
-	for (const brood of children.values()) {
-		for (const one of brood) {
-			for (const other of brood) if (one !== other) link(siblings, one, other);
-		}
-	}
-	return { parents, children, siblings };
-}
-
 /**
  * The links implied by `added` that are not stored yet, in a stable order. Empty when the
  * new link stands alone, and empty for a partner link by design.
@@ -74,22 +45,14 @@ function index(graph: KinshipGraph) {
 export function suggestPropagation(graph: KinshipGraph, added: PrimaryLink): SuggestedLink[] {
 	if (added.kind === 'partner') return [];
 
-	const { parents, siblings } = index(graph);
-	const names = new Map(graph.people.map((person) => [person.id, person.displayName]));
-	const nameOf = (id: string) => names.get(id) ?? id;
-
-	// Pairs the household has already spoken about, in any form.
-	const linked = new Set<string>();
-	for (const { parentId, childId } of graph.parentEdges) linked.add(pairKey(parentId, childId));
-	for (const { a, b } of [...graph.siblingEdges, ...graph.partnerEdges, ...graph.storedPairs]) {
-		linked.add(pairKey(a, b));
-	}
+	const view = buildView(graph);
+	const nameOf = (id: string) => view.nameOf(id);
 
 	const found: SuggestedLink[] = [];
 	const seen = new Set<string>();
 	const propose = (parentId: string, childId: string, reason: Phrase): void => {
 		if (parentId === childId) return;
-		if (linked.has(pairKey(parentId, childId)) || seen.has(pairKey(parentId, childId))) return;
+		if (view.isLinked(parentId, childId) || seen.has(pairKey(parentId, childId))) return;
 		seen.add(pairKey(parentId, childId));
 		found.push({ kind: 'parent', fromId: parentId, toId: childId, reason });
 	};
@@ -97,7 +60,7 @@ export function suggestPropagation(graph: KinshipGraph, added: PrimaryLink): Sug
 	if (added.kind === 'parent') {
 		// The new parent belongs to the child's siblings too.
 		const child = added.toId;
-		for (const sibling of siblings.get(child) ?? []) {
+		for (const sibling of view.siblingsOf(child)) {
 			propose(added.fromId, sibling, siblingOf(nameOf(sibling), nameOf(child)));
 		}
 	} else {
@@ -106,7 +69,7 @@ export function suggestPropagation(graph: KinshipGraph, added: PrimaryLink): Sug
 			[added.fromId, added.toId],
 			[added.toId, added.fromId]
 		] as const) {
-			for (const parent of parents.get(one) ?? []) {
+			for (const parent of view.parentsOf(one)) {
 				propose(parent, other, parentOf(nameOf(parent), nameOf(one)));
 			}
 		}
