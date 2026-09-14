@@ -1,6 +1,12 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { addMember, getCircle, listMembers, removeMember } from '$lib/server/domain/circles/circles';
+import {
+	addMember,
+	getCircle,
+	listMembers,
+	removeMember,
+	suggestRoles
+} from '$lib/server/domain/circles/circles';
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
 import { getCircleDeps, getContactDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
@@ -26,6 +32,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	return {
 		circle,
 		members,
+		// What this circle already calls its people, offered while adding the next one.
+		roleSuggestions: suggestRoles(members.map((m) => m.role)),
 		candidates: allContacts.filter((c) => !memberIds.has(c.id))
 	};
 };

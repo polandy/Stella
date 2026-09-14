@@ -99,7 +99,16 @@
 				</label>
 				<label class="flex flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.roleLabel')}</span>
-					<input name="role" placeholder={t('circles.rolePlaceholder')} class="w-32 {INPUT}" />
+					<input
+						name="role"
+						list="circle-roles"
+						placeholder={t('circles.rolePlaceholder')}
+						class="w-32 {INPUT}"
+					/>
+					<!-- The roles this circle already uses; typing something new is still allowed. -->
+					<datalist id="circle-roles">
+						{#each data.roleSuggestions as role (role)}<option value={role}></option>{/each}
+					</datalist>
 				</label>
 				<Button variant="primary" size="sm">{t('common.add')}</Button>
 			</form>

@@ -7,6 +7,7 @@ import {
 	type Circle,
 	type CircleColor,
 	type CircleRepository,
+	type CircleRoleUse,
 	type CircleWithCount,
 	type ContactCircleView,
 	type MemberPreview,
@@ -205,6 +206,17 @@ export function createDrizzleCircleRepository(
 				color: r.color as CircleColor,
 				role: r.role
 			}));
+		},
+
+		async listRoleUsesVisibleTo(viewer: Viewer): Promise<CircleRoleUse[]> {
+			return db
+				.select({ circleName: circle.name, role: circleMembership.role })
+				.from(circleMembership)
+				.innerJoin(circle, eq(circleMembership.circleId, circle.id))
+				.innerJoin(contact, eq(circleMembership.contactId, contact.id))
+				.where(membershipVisibleTo(viewer, circle, contact))
+				.orderBy(circle.name, circleMembership.role)
+				.all();
 		}
 	};
 }

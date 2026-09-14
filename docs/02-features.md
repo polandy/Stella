@@ -445,6 +445,11 @@ a named group contacts belong to, over a period of time. (A first-class entity, 
   UI suggests **existing circles** (matched fuzzily, visibility-scoped). Pick one to join
   it; if you type a name that doesn't exist yet, **the circle is created on the fly** from
   that input (kind/period can be refined later). No separate "create circle first" step.
+- **Roles are suggested from the circle itself:** adding someone offers the roles that circle
+  already uses, most common first (a class offers *student* / *teacher*, a team *captain* /
+  *coach*) — spellings differing only in case count as one role. On a person's page, where the
+  circle is typed by name, the suggestions follow that name. A new role is always free to type;
+  nothing is forced.
 - **Circle overview page:** a dedicated screen of circle **cards**, each with kind, member
   count, description and the first few faces (docs/05 §5.5). Opening a circle shows its
   **members** as a grid with roles and lets you add/remove members. Filters by kind and

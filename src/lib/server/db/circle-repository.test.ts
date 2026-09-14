@@ -142,3 +142,31 @@ describe('memberships', () => {
 		expect(await deps.circles.listForContactVisibleTo(viewerU1, 'mara')).toHaveLength(1);
 	});
 });
+
+describe('role uses', () => {
+	beforeEach(() => {
+		seedContact('mara');
+		seedContact('jonas');
+	});
+
+	it('reports each visible membership’s role with its circle name', async () => {
+		const id = await createCircle(deps, creatorU1, { name: 'Club' });
+		await addMember(deps, creatorU1, id, 'mara', 'captain');
+		await addMember(deps, creatorU1, id, 'jonas');
+
+		const uses = await deps.circles.listRoleUsesVisibleTo(viewerU1);
+		expect(uses).toEqual([
+			{ circleName: 'Club', role: null },
+			{ circleName: 'Club', role: 'captain' }
+		]);
+	});
+
+	it('leaves out roles from a circle the viewer cannot see', async () => {
+		const id = await createCircle(deps, { ...creatorU1, defaultVisibility: 'private' }, { name: 'Secret Club' });
+		await addMember(deps, creatorU1, id, 'mara', 'captain');
+		expect(await deps.circles.listRoleUsesVisibleTo(viewerU2)).toEqual([]);
+		expect(await deps.circles.listRoleUsesVisibleTo(viewerU1)).toEqual([
+			{ circleName: 'Secret Club', role: 'captain' }
+		]);
+	});
+})
