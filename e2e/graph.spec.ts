@@ -1,5 +1,6 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { signIn } from './app';
+import { clickNode, highlightedLabels, settled, stateOf } from './graph-canvas';
 
 /*
  * The explorer's toolbar and peek panel (docs/05 §5.8). Written after the screen was seen in
@@ -10,11 +11,6 @@ import { signIn } from './app';
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
-
-/** Waits for the renderer's own signal that its layout has stopped moving the nodes. */
-async function settled(page: Page): Promise<void> {
-	await expect(page.locator('[data-layout]')).toHaveAttribute('data-layout', 'settled');
-}
 
 test('the filter chips are the legend, and there is no second one', async ({ page }) => {
 	await page.goto('/graph?center=demo-c-hans');
@@ -42,70 +38,6 @@ test('opens the peek panel on the centred person with their face, name and a way
 	await peek.getByRole('link', { name: 'Open profile' }).click();
 	await expect(page).toHaveURL(/\/contacts\/demo-c-hans$/);
 });
-
-/*
- * Derived kinship on the canvas (docs/02 §2.7, §2.4.1). Written after the screen was seen in
- * the running app (docs/08 §8.4.1).
- *
- * A canvas has no DOM to address, so these read the renderer's own state through the instance
- * Cytoscape registers on its container: which nodes it holds, which it has filtered out, and
- * where it has drawn them. That is the renderer answering — not the model being re-read — and
- * it makes clicking a named person deterministic instead of a guess at a coordinate.
- */
-
-/** The slice of the Cytoscape instance the tests below read from the page. */
-interface CyForTests {
-	$id(id: string): {
-		empty(): boolean;
-		hasClass(name: string): boolean;
-		renderedPosition(): { x: number; y: number };
-	};
-	$(selector: string): { map(fn: (edge: { data(key: string): string }) => string): string[] };
-}
-
-type NodeState = 'absent' | 'filtered-out' | 'drawn';
-
-interface DrawnNode {
-	state: NodeState;
-	/** Page coordinates of the node's centre, or null when it is not drawn. */
-	point: { x: number; y: number } | null;
-}
-
-/** What the renderer is doing with one node right now. */
-async function drawnNode(page: Page, id: string): Promise<DrawnNode> {
-	return page.evaluate((nodeId) => {
-		let el: HTMLElement | null = document.querySelector('canvas');
-		while (el && !('_cyreg' in el)) el = el.parentElement;
-		const cy = el ? (el as unknown as { _cyreg: { cy: CyForTests } })._cyreg.cy : null;
-		if (!cy || !el) return { state: 'absent' as const, point: null };
-		const node = cy.$id(nodeId);
-		if (node.empty()) return { state: 'absent' as const, point: null };
-		const box = el.getBoundingClientRect();
-		const p = node.renderedPosition();
-		return node.hasClass('filtered-out')
-			? { state: 'filtered-out' as const, point: null }
-			: { state: 'drawn' as const, point: { x: box.x + p.x, y: box.y + p.y } };
-	}, id);
-}
-
-const stateOf = async (page: Page, id: string) => (await drawnNode(page, id)).state;
-
-/** Clicks a node where the renderer has actually drawn it. */
-async function clickNode(page: Page, id: string): Promise<void> {
-	const { point } = await drawnNode(page, id);
-	if (!point) throw new Error(`the explorer is not drawing ${id}, so it cannot be clicked`);
-	await page.mouse.click(point.x, point.y);
-}
-
-/** The names on the lines the renderer is currently emphasising. */
-async function highlightedLabels(page: Page): Promise<string[]> {
-	return page.evaluate(() => {
-		let el: HTMLElement | null = document.querySelector('canvas');
-		while (el && !('_cyreg' in el)) el = el.parentElement;
-		const cy = el ? (el as unknown as { _cyreg: { cy: CyForTests } })._cyreg.cy : null;
-		return cy ? cy.$('edge.highlight').map((edge) => edge.data('label')) : [];
-	});
-}
 
 test('expanding a person brings the connections of theirs the canvas did not have', async ({
 	page

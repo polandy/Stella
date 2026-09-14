@@ -30,5 +30,11 @@ export const search: SearchMessages = {
 	'graph.peek.expand': 'Verbindungen aufklappen',
 	'graph.peek.openProfile': 'Profil öffnen',
 	'graph.peek.tip':
-		'Tipp: Klicke einen ausgewählten Knoten an, um ihn aufzuklappen — oder nutze den Verbindungsweg, um zu sehen, wie zwei Menschen verbunden sind.'
+		'Tipp: Klicke einen ausgewählten Knoten an, um ihn aufzuklappen — oder nutze den Verbindungsweg, um zu sehen, wie zwei Menschen verbunden sind.',
+	'graph.peek.inFullGraph': 'Im Netz öffnen',
+	'graph.peek.tipCompact':
+		'Tipp: Tippe eine ausgewählte Person nochmal an, um ihre eigenen Verbindungen aufzuklappen.',
+	'graph.peek.edgeOfMap': 'Weiter reicht diese Karte nicht. Das Netz trägt den Rest.',
+	'graph.onPerson.label': (p) => `Die Menschen um ${p.name}`,
+	'graph.onPerson.loading': 'Karte wird gezeichnet…'
 };

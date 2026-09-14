@@ -13,6 +13,7 @@
 	import { paletteFromDom } from '$lib/graph/cytoscape/theme';
 	import { findConnectionPath } from '$lib/graph/model/connection-path';
 	import { buildEgoNetwork, expandNode } from '$lib/graph/model/ego-network';
+	import { canExpand, ringsFrom } from '$lib/graph/model/rings';
 	import {
 		applyFilters,
 		emptyModel,
@@ -23,11 +24,35 @@
 	import type { ConnectionPath, GraphEdge, GraphFilters, GraphModel } from '$lib/graph/model/types';
 
 	interface Props {
-		/** The whole visible graph, delivered once by the server; explored entirely client-side. */
+		/**
+		 * The graph this explorer may reach: the whole visible household on the explorer route,
+		 * one person's slice on their page. Delivered once by the server; explored entirely
+		 * client-side.
+		 */
 		graph: GraphModel;
 		centerId: string | null;
+		/**
+		 * Embedded in somebody's page rather than filling the route: the toolbar drops what is
+		 * about travelling the household (finding a person elsewhere), because the page it sits
+		 * on is about one person (docs/05 §5.5).
+		 */
+		compact?: boolean;
+		/**
+		 * How far from the centre the map may grow. A node on the last ring cannot be expanded;
+		 * its peek panel offers the full graph instead. `Infinity` on the explorer route, where
+		 * walking the household is the point.
+		 */
+		maxRings?: number;
+		/** Where "Open in the graph" leads from the peek panel; absent hides it. */
+		fullGraphHref?: (nodeId: string) => string;
 	}
-	let { graph, centerId }: Props = $props();
+	let {
+		graph,
+		centerId,
+		compact = false,
+		maxRings = Number.POSITIVE_INFINITY,
+		fullGraphHref
+	}: Props = $props();
 
 	const t = useTranslate();
 
@@ -74,8 +99,21 @@
 
 	// Starts empty; the ego view around the centre is built client-side on mount.
 	let model = $state<GraphModel>(emptyModel());
-	let selected = $state<string | null>(untrack(() => centerId));
-	let active = $state<Set<string>>(new Set(FILTERS.map((f) => f.key)));
+	/*
+	 * The route opens with its centre selected, because the peek panel beside a full-screen
+	 * canvas is where that route says who you are looking at. Embedded, the same panel would
+	 * cover half a map the size of a card before anybody has asked anything — the page's own
+	 * header already names the person, so nothing is selected until a node is tapped.
+	 */
+	let selected = $state<string | null>(untrack(() => (compact ? null : centerId)));
+	/*
+	 * Circles are people's shared contexts, not people: on the route they belong in the picture,
+	 * on a person's card they double the node count for something the profile already lists.
+	 * The chip is there either way, so switching them on is one click (docs/05 §5.5).
+	 */
+	let active = $state<Set<string>>(
+		new Set(FILTERS.map((f) => f.key).filter((key) => !(compact && key === 'circles')))
+	);
 	let query = $state('');
 	let pathMode = $state(false);
 	let pathFrom = $state<string | null>(null);
@@ -98,6 +136,11 @@
 
 	const visible = $derived(applyFilters(model, buildFilters()));
 	const peekNode = $derived(selected ? model.nodes.find((n) => n.id === selected) ?? null : null);
+	// How far each node sits from the centre, so the embedded map stops where it promises to.
+	const rings = $derived(centerId ? ringsFrom(model, centerId) : new Map<string, number>());
+	const peekExpandable = $derived(
+		peekNode !== null && (centerId === null || canExpand(rings, peekNode.id, maxRings))
+	);
 	const suggestions = $derived(
 		query.trim()
 			? contacts
@@ -156,6 +199,9 @@
 	}
 
 	async function expand(id: string) {
+		// The embedded map is one person's neighbourhood, not a way into the whole household:
+		// past its last ring the reader is sent to the explorer route instead (docs/02 §2.7).
+		if (centerId !== null && !canExpand(rings, id, maxRings)) return;
 		model = await expandNode(source, model, id);
 	}
 
@@ -272,32 +318,35 @@
 		class:sm:pr-[17rem]={peekNode && !pathMode}
 	>
 		<!-- Above the chips: on a narrow window the chip row wraps under the field, and the
-		     suggestion list would otherwise be hidden behind it. -->
-		<div class="pointer-events-auto relative z-20">
-			<input
-				bind:value={query}
-				placeholder={t('graph.findPlaceholder')}
-				aria-label={t('graph.find')}
-				class="w-56 rounded-app border border-border bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
-			/>
-			{#if suggestions.length}
-				<ul
-					data-testid="graph-suggestions"
-					class="absolute left-0 top-full mt-1 w-full overflow-hidden rounded-app border border-border bg-card shadow-pop"
-				>
-					{#each suggestions as c (c.id)}
-						<li>
-							<button
-								onclick={() => reveal(c.id)}
-								class="block w-full px-3 py-2 text-left text-sm text-fg hover:bg-bg-sunken"
-							>
-								{c.displayName}
-							</button>
-						</li>
-					{/each}
-				</ul>
-			{/if}
-		</div>
+		     suggestion list would otherwise be hidden behind it. Embedded, there is nobody to
+		     find: the map holds one person's neighbourhood and the page has its own search. -->
+		{#if !compact}
+			<div class="pointer-events-auto relative z-20">
+				<input
+					bind:value={query}
+					placeholder={t('graph.findPlaceholder')}
+					aria-label={t('graph.find')}
+					class="w-56 rounded-app border border-border bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
+				/>
+				{#if suggestions.length}
+					<ul
+						data-testid="graph-suggestions"
+						class="absolute left-0 top-full mt-1 w-full overflow-hidden rounded-app border border-border bg-card shadow-pop"
+					>
+						{#each suggestions as c (c.id)}
+							<li>
+								<button
+									onclick={() => reveal(c.id)}
+									class="block w-full px-3 py-2 text-left text-sm text-fg hover:bg-bg-sunken"
+								>
+									{c.displayName}
+								</button>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</div>
+		{/if}
 
 		<div class="pointer-events-auto flex flex-wrap gap-1.5">
 			{#each FILTERS as f (f.key)}
@@ -331,17 +380,19 @@
 			{t('graph.labels')}
 		</button>
 
-		<button
-			onclick={togglePath}
-			aria-pressed={pathMode}
-			class="pointer-events-auto rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-fg-muted backdrop-blur transition-colors hover:text-fg"
-			class:!border-transparent={pathMode}
-			style={pathMode
-				? 'background:color-mix(in srgb, var(--warning) 22%, transparent); color:var(--warning)'
-				: ''}
-		>
-			{t('graph.connectionPath')}
-		</button>
+		{#if !compact}
+			<button
+				onclick={togglePath}
+				aria-pressed={pathMode}
+				class="pointer-events-auto rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-fg-muted backdrop-blur transition-colors hover:text-fg"
+				class:!border-transparent={pathMode}
+				style={pathMode
+					? 'background:color-mix(in srgb, var(--warning) 22%, transparent); color:var(--warning)'
+					: ''}
+			>
+				{t('graph.connectionPath')}
+			</button>
+		{/if}
 	</div>
 
 	<!-- Path prompt / result -->
@@ -368,8 +419,14 @@
 
 	<!-- Peek panel -->
 	{#if peekNode && !pathMode}
+		<!-- Full height beside a full-screen canvas; embedded it is only as tall as what it
+		     says, so it does not sit as an empty panel over half a card-sized map. -->
 		<aside
-			class="absolute right-3 top-3 bottom-3 w-64 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur"
+			class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur"
+			class:bottom-3={!compact}
+			class:w-64={!compact}
+			class:w-52={compact}
+			class:max-h-[calc(100%-1.5rem)]={compact}
 		>
 			<Button variant="ghost" size="sm" icon="remove" label={t('common.close')} class="float-right" onclick={() => (selected = null)} />
 			{#if peekNode.kind === 'person'}
@@ -383,13 +440,22 @@
 				{#if peekNode.deceased}· {t('graph.peek.deceased')}{/if}
 			</div>
 			<div class="flex flex-col gap-2">
-				<Button type="button" onclick={() => expand(peekNode.id)}>{t('graph.peek.expand')}</Button>
+				{#if peekExpandable}
+					<Button type="button" onclick={() => expand(peekNode.id)}>{t('graph.peek.expand')}</Button>
+				{:else if fullGraphHref}
+					<!-- The map ends here, so the honest offer is the one place that goes further. -->
+					<Button icon="graph" href={fullGraphHref(peekNode.id)}>{t('graph.peek.inFullGraph')}</Button>
+				{/if}
 				{#if peekNode.kind === 'person'}
 					<Button variant="primary" href="/contacts/{peekNode.id}">{t('graph.peek.openProfile')}</Button>
 				{/if}
 			</div>
 			<p class="mt-4 text-xs text-fg-subtle">
-				{t('graph.peek.tip')}
+				{#if !peekExpandable}
+					{t('graph.peek.edgeOfMap')}
+				{:else}
+					{compact ? t('graph.peek.tipCompact') : t('graph.peek.tip')}
+				{/if}
 			</p>
 		</aside>
 	{/if}

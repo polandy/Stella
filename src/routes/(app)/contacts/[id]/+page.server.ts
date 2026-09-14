@@ -63,6 +63,7 @@ import {
 	SECTION_FOR_REFERENCE,
 	sectionForLegacyTab
 } from '$lib/contacts/sections';
+import { personMap } from '$lib/graph/model/person-map';
 import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { audienceCandidates } from '$lib/server/domain/moments/moments';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
@@ -95,6 +96,7 @@ import {
 	getNoteDeps,
 	getGalleryDeps,
 	getGalleryUploadDeps,
+	getGraphRepository,
 	getPhotos,
 	getRelationshipDeps,
 	getDeleteContactDeps,
@@ -166,7 +168,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		dates,
 		interactions,
 		kinship,
-		mentionedIn
+		mentionedIn,
+		visibleGraph
 	] = await Promise.all([
 		getRelationships().listForContactVisibleTo(viewer, params.id),
 		getRelationshipTypes().listTypes(viewer),
@@ -183,8 +186,17 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		listImportantDates(getImportantDateDeps(), viewer, params.id),
 		listInteractions(getInteractionDeps(), viewer, params.id),
 		readKinship(getRelationshipDeps(), viewer, params.id, parseProposePair(url.searchParams.get('propose'))),
-		listMentionedIn(getMentionedInDeps(), viewer, params.id)
+		listMentionedIn(getMentionedInDeps(), viewer, params.id),
+		/*
+		 * The map on the page (docs/05 §5.5) is cut from the same access-scoped snapshot the
+		 * explorer route reads, and for the same reason: derived kinship is worked out over the
+		 * whole visible graph, so an inference cut from a slice could name the wrong relative.
+		 * Only the person's own slice is sent to the browser.
+		 */
+		getGraphRepository().loadVisibleGraph(viewer)
 	]);
+
+	const graph = await personMap(visibleGraph, params.id);
 
 	// Group visible journal photo ids by entry so the story timeline renders each gallery.
 	const journalPhotosByEntry = new Map<string, string[]>();
@@ -266,6 +278,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		gallery,
 		// Who is looking: the gallery only offers caption/remove on your own photos.
 		viewerId: viewer.id,
+		/** The person's own slice of the visible graph, for the map on their page (docs/05 §5.5). */
+		graph,
 		/*
 		 * Where this person is named by somebody else (docs/02 §2.20.1). Read-only: the entry
 		 * belongs to the person it is about, so each item links there rather than offering an
