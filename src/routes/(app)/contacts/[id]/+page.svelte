@@ -668,7 +668,7 @@
 						{#if data.otherContacts.length > 0}
 							<Button
 								size="sm"
-								icon="explore"
+								icon="connectionPath"
 								type="button"
 								aria-expanded={tracingPath}
 								onclick={() => (tracingPath = !tracingPath)}
@@ -702,7 +702,7 @@
 							<Button
 								variant="primary"
 								size="sm"
-								icon="explore"
+								icon="connectionPath"
 								href={pathTarget ? `/graph?center=${c.id}&path=${pathTarget}` : undefined}
 								disabled={!pathTarget}
 							>

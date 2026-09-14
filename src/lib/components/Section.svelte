@@ -193,14 +193,19 @@
 	</section>
 {:else}
 	<section {id} bind:this={card} class="scroll-mt-4 rounded-app bg-card p-4 shadow-card">
-		<header class="mb-3 flex items-center gap-2">
+		<header class="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
 			{#if title}
 				<h2 class="text-sm font-semibold text-fg">{title}</h2>
 				{#if count !== undefined}<span class="text-sm text-fg-subtle">{count}</span>{/if}
 			{/if}
 			<span class="flex-1"></span>
-			{@render action?.()}
-			{@render disclosure()}
+			<!-- The actions wrap among themselves and stay together on the right: a card may
+			     offer more than one thing besides its own Add — the relationships card offers
+			     two — and a row that cannot wrap pushes the last one off the card. -->
+			<div class="flex flex-wrap items-center justify-end gap-2">
+				{@render action?.()}
+				{@render disclosure()}
+			</div>
 		</header>
 
 		{@render body()}
