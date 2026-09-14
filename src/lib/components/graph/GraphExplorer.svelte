@@ -12,7 +12,7 @@
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
 	import { paletteFromDom } from '$lib/graph/cytoscape/theme';
 	import { findConnectionPath } from '$lib/graph/model/connection-path';
-	import { buildEgoNetwork, expandNode } from '$lib/graph/model/ego-network';
+	import { buildEgoNetwork, expandNode, rebuildExplored } from '$lib/graph/model/ego-network';
 	import { canExpand, ringsFrom } from '$lib/graph/model/rings';
 	import {
 		applyFilters,
@@ -73,15 +73,18 @@
 	};
 
 	// All exploration runs against this in-memory source — no further requests to the server.
-	// `graph` is fixed for the component's life (the route remounts via {#key centerId}).
-	const source = inMemoryGraphSource(untrack(() => graph));
+	// The snapshot is a prop, not a constant: a person's page hands a fresh one over after a
+	// save, and the map follows it (see the resync effect below).
+	const source = $derived(inMemoryGraphSource(graph));
 	// Path finding travels stored links only: a derived edge names a chain rather than being
 	// one, so hopping it would answer "how do we know each other?" with the label (docs/02 §2.7).
-	const pathSource = inMemoryGraphSource(withoutDerivedLinks(untrack(() => graph)));
-	const contacts = untrack(() => graph).nodes
-		.filter((n) => n.kind === 'person')
-		.map((n) => ({ id: n.id, displayName: n.label }))
-		.sort((a, b) => a.displayName.localeCompare(b.displayName));
+	const pathSource = $derived(inMemoryGraphSource(withoutDerivedLinks(graph)));
+	const contacts = $derived(
+		graph.nodes
+			.filter((n) => n.kind === 'person')
+			.map((n) => ({ id: n.id, displayName: n.label }))
+			.sort((a, b) => a.displayName.localeCompare(b.displayName))
+	);
 
 	// The filterable connection kinds, each tied to its category colour (docs/05 §5.6).
 	// Each filter carries the same token the canvas draws that edge kind with (docs/05 §5.6),
@@ -159,6 +162,39 @@
 		path ? path.nodeIds.map((id) => model.nodes.find((n) => n.id === id)?.label ?? id) : []
 	);
 
+	/*
+	 * What the reader has opened up, in the order they did it. Kept so a fresh snapshot can be
+	 * explored to the same extent instead of collapsing the map back to the first ring.
+	 */
+	let expandedIds = new Set<string>();
+	/** The snapshot the model on screen was built from; a different one means resync. */
+	let synced = untrack(() => graph);
+
+	/*
+	 * Follow a new snapshot. A person's page re-runs its load after every save (a relationship
+	 * added, retyped or removed), so the map beside the list shows the same links the list
+	 * does — without a reload, and keeping whatever the reader had expanded (docs/05 §5.5).
+	 */
+	$effect(() => {
+		const next = graph;
+		// `synced` is a plain variable on purpose: reading it here must not make this effect
+		// depend on it, or assigning it below would re-run the effect forever.
+		if (next === synced) return;
+		synced = next;
+		void resync();
+	});
+
+	async function resync() {
+		if (!centerId) return;
+		// A traced chain belongs to the links as they were; the snapshot may have changed them.
+		path = null;
+		pathFrom = null;
+		pathMissing = false;
+		model = await rebuildExplored(source, centerId, expandedIds);
+		expandedIds = new Set([...expandedIds].filter((id) => model.nodes.some((n) => n.id === id)));
+		if (selected !== null && !model.nodes.some((n) => n.id === selected)) selected = null;
+	}
+
 	// Push the full (expanded) element set to the renderer whenever the model grows.
 	$effect(() => {
 		if (!ready || !controller) return;
@@ -210,12 +246,14 @@
 		// past its last ring the reader is sent to the explorer route instead (docs/02 §2.7).
 		if (centerId !== null && !canExpand(rings, id, maxRings)) return;
 		model = await expandNode(source, model, id);
+		expandedIds.add(id);
 	}
 
 	async function reveal(id: string) {
 		query = '';
 		if (!model.nodes.some((n) => n.id === id)) {
 			model = mergeModels(model, await buildEgoNetwork(source, id, 1));
+			expandedIds.add(id);
 		}
 		selected = id;
 		path = null;
