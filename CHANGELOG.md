@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.0.9](https://github.com/polandy/Stella/compare/v0.0.8...v0.0.9) (2026-09-14)
+
+
+### Features
+
+* **contacts:** ask how two people are connected from a person's page ([#81](https://github.com/polandy/Stella/issues/81)) ([a1596dc](https://github.com/polandy/Stella/commit/a1596dc8a2b4c8282dc15829b535a3d4955671d8))
+* **contacts:** put the relationship map first and drop the tabs ([#78](https://github.com/polandy/Stella/issues/78)) ([f9f47e4](https://github.com/polandy/Stella/commit/f9f47e45005eb2e939fae4e8d85cae032cb20e97))
+* **contacts:** run the real explorer on a person's page ([#79](https://github.com/polandy/Stella/issues/79)) ([de3974d](https://github.com/polandy/Stella/commit/de3974d685d72566fc756213b103e2dfa89fc889))
+* **graph:** carry a person into the graph, and offer the way back ([#80](https://github.com/polandy/Stella/issues/80)) ([a9a6bc8](https://github.com/polandy/Stella/commit/a9a6bc8e60450a6de68cfe708c2b96de5b6a1956))
+* **relationships:** change the type of a link from its row ([#75](https://github.com/polandy/Stella/issues/75)) ([b52c57a](https://github.com/polandy/Stella/commit/b52c57aa5c5efbe8b3db082bbd1beb1eb4c7a31c))
+
+
+### Bug Fixes
+
+* **ui:** open a card's add-form under its header, not below its content ([#76](https://github.com/polandy/Stella/issues/76)) ([9bf53ca](https://github.com/polandy/Stella/commit/9bf53ca3146f065e0dc560f13533f5b94b5392d2))
+
 ## [0.0.8](https://github.com/polandy/Stella/compare/v0.0.7...v0.0.8) (2026-09-13)
 
 
