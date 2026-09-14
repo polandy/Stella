@@ -8,7 +8,7 @@ import { matchesQuery, startsWithQuery, type DirectoryPerson } from './directory
 export interface SelectablePerson extends DirectoryPerson {
 	/**
 	 * The stored birth date (docs/03 §3.4). Carried only by the pickers whose form reads
-	 * something off it — the relationship form dates a parent–child link from it.
+	 * something off it — the relationship form dates a family link from it (docs/02 §2.4).
 	 */
 	birthDate?: string | null;
 }
