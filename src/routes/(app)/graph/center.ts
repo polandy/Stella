@@ -7,6 +7,8 @@
 export interface CentrableNode {
 	id: string;
 	kind: string;
+	/** A person's name, for the way back to their page. */
+	label?: string;
 }
 
 /** Who the explorer opens on, and whether a link asked for them. */
@@ -36,4 +38,15 @@ export function chooseCenter(
 	if (requested && ids.has(requested)) return { id: requested, asked: true };
 	if (selfContactId && ids.has(selfContactId)) return { id: selfContactId, asked: false };
 	return { id: nodes.find((node) => node.kind === 'person')?.id ?? null, asked: false };
+}
+
+/**
+ * The name to offer a way back to, or `null` when none is owed. Only a person the link itself
+ * asked for: a centre the route fell back to is not somewhere the reader came from, and a
+ * circle has no page of its own to go back to — `/contacts/<circle>` is a 404.
+ */
+export function wayBackTo(nodes: readonly CentrableNode[], center: Center): string | null {
+	if (!center.asked || center.id === null) return null;
+	const node = nodes.find((candidate) => candidate.id === center.id);
+	return node?.kind === 'person' ? (node.label ?? null) : null;
 }

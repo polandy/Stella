@@ -1,6 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 import { openPerson, signIn } from './app';
-import { clickNode, firstClickableNode, ringsOnCanvas, settled } from './graph-canvas';
+import {
+	clickNode,
+	firstClickableNode,
+	nodeOwners,
+	ringsOnCanvas,
+	settled
+} from './graph-canvas';
 
 /*
  * The map on a person's page (docs/05 §5.5, §5.8): the same explorer the graph route runs,
@@ -49,17 +55,20 @@ test.describe('on a person’s page', () => {
 		page
 	}) => {
 		await expect(map(page).locator('canvas').first()).toBeVisible();
+		// The nodes are clicked where the renderer draws them, which is a point in the window:
+		// with the card scrolled past, every one of them is off the screen.
+		await map(page).scrollIntoViewIfNeeded();
 		await settled(page);
 
 		// Somebody one hop out, picked from what the canvas draws in the clear: the toolbar
 		// floats over the drawing, and where the layout puts a given person is not this
 		// case's business.
 		const rings = await ringsOnCanvas(page, LENA);
-		const nearby = await firstClickableNode(
-			page,
-			[...rings].filter(([id, hops]) => hops === 1 && id.startsWith('demo-c-')).map(([id]) => id)
-		);
-		expect(nearby, 'somebody one hop out should be drawn in the clear').not.toBeNull();
+		const oneHop = [...rings]
+			.filter(([id, hops]) => hops === 1 && id.startsWith('demo-c-'))
+			.map(([id]) => id);
+		const nearby = await firstClickableNode(page, oneHop);
+		expect(nearby, `nobody one hop out was clickable: ${JSON.stringify(await nodeOwners(page, oneHop))}`).not.toBeNull();
 
 		await clickNode(page, nearby!);
 		const peek = map(page).getByRole('complementary');
