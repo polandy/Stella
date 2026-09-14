@@ -237,11 +237,58 @@ Three options:
   behaviour). Cheapest, and re-offers forever.
 - **(b) Negative fact.** Store "Q is *not* C's parent". Powerful, but it is a new kind of
   truth in the model and every rule would have to consult it.
-- **(c) Dismissal log.** `suggestion_dismissal(household_id, rule_id, pair_key, dismissed_at)`
+- **(c) Dismissal log.** `suggestion_dismissal(household_id, relation, pair_key, dismissed_at)`
   — one small table, a pure filter in the engine, no new semantics.
 
 **Recommendation: (c)**, with dismissals scoped per household (not per user: the household
 decided) and deletable, so a dismissal is not a silent permanent veto.
+
+**Key it by the claim, not by the rule.** An earlier draft of this section keyed the row on
+`rule_id`. That is wrong: when the household declines *“Lisa is Lio’s parent”* they are
+answering the **claim**, not the rule that happened to surface it. Keyed by rule, the same
+claim comes straight back the moment a different rule reaches it — L1 offers a parent to a
+sibling, L3 offers the partner, and both can name that one pair. Keyed by `(relation,
+pair_key)`, one *no* silences the claim however it is reached. It also moves (c) closer to
+(b) than it first appears: a persisted *no* that survives re-runs **is** a weak negative fact.
+The difference that keeps it (c) is that it constrains only what Stella *offers*, never what
+it derives or displays.
+
+### 6.5 On-demand review
+
+The suggestions described so far are all consequences of a write: something was stored, so
+Stella says what follows. That makes them **ephemeral** — the *Also true?* block hangs on a
+`?propose=` pointer, and reloading the page loses it. Everything not acted on in that moment
+is gone until the same link is entered again, which it never is.
+
+So the person page also wants a **deliberate** entry point: a control that runs the whole rule
+set against one person, on request, and shows what stands right now.
+
+- **Trigger:** `{ kind: 'person-reviewed', subjectId }`. It is not tied to a write, so it is
+  the one trigger a member can fire whenever they like.
+- **Scope:** every rule that can name `subjectId` at either end, evaluated against the current
+  graph — not just the rules keyed to one new link. A person-scoped run therefore asks a
+  different question than an event-scoped one (“what follows from *this person*” rather than
+  “what follows from *this link*”), and needs its own entry point in the engine.
+- **Three outcomes per suggestion**, not two: **confirm** (store the link), **dismiss** (write
+  the dismissal row), or **leave it** (do nothing — it will be offered again on the next run).
+  Leaving it alone must stay free of consequence, or members will dismiss things just to clear
+  the list.
+- **Dismissed suggestions stay reachable.** The panel offers *show dismissed*, which lists what
+  was declined with an undo. That has an API consequence: suppression 6 becomes a **marking**
+  rather than a drop when the caller asks for it — `evaluate(trigger, view, { includeDismissed
+  })`, and `Suggestion` carries `dismissedAt`. The other five suppressions stay hard drops;
+  there is no reading in which a self-link or an invisible person should be listed.
+
+This makes the dismissal log **required rather than optional**. A button a member can press
+repeatedly, against a rule set that re-derives everything each time, is unusable without
+persistence: every press would re-offer the same declined claims forever.
+
+An open question this raises, which the event-driven design never had to answer: **does a
+dismissal expire when the graph changes?** If the household declines *“Lisa is Lio’s parent”*
+and later confirms Lisa as the parent of Lio’s sibling, the claim now has evidence it lacked
+when it was declined. The safe reading is that a *no* stays a *no* until withdrawn — a family
+tree that re-litigates settled answers is worse than one that forgets a new argument — and
+*show dismissed* is what keeps the withdrawal within reach.
 
 ---
 

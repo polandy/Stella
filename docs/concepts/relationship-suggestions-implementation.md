@@ -75,7 +75,8 @@ export type Trigger =
   | { kind: 'link-stored'; link: PrimaryLink }
   | { kind: 'link-retyped'; link: PrimaryLink }
   | { kind: 'person-created'; personId: string; viaAnchorId: string | null }
-  | { kind: 'form-opened'; form: 'new-person'; anchorId: string; role: AnchorRole };
+  | { kind: 'form-opened'; form: 'new-person'; anchorId: string; role: AnchorRole }
+  | { kind: 'person-reviewed'; subjectId: string };   // on demand, not after a write
 
 export type Suggestion =
   | { id: RuleId; kind: 'link';    confidence: Confidence; link: PrimaryLink;  reason: Phrase }
@@ -159,6 +160,18 @@ next to an empty input.
 The endpoint reads through `contactVisibleTo` like every other read — a field value must not
 cross a visibility boundary, and that is a test, not a comment.
 
+### The on-demand review — a person-scoped entry point
+`evaluate` selects rules by trigger, so `person-reviewed` needs rules that can answer a
+*person* rather than a link: for L1/L2/L3 that means running them over every primary link the
+subject already has, and keeping the suppressions to collapse the duplicates that produces.
+Worth stating plainly because it is the one place the engine does real work — an event trigger
+looks at one link, a review trigger at a whole neighbourhood.
+
+It surfaces as a control in the person page's relationship section, with the result rendered
+by the same component the *Also true?* block uses, plus the *show dismissed* toggle. Confirm
+posts to `addProposedRelationship` as today; dismiss posts to a new action that writes the
+dismissal row; leaving a suggestion alone writes nothing and it returns on the next run.
+
 ### Warnings
 C1 and C5 surface where the link is entered, as a non-blocking line under the submit button,
 and the submit stays enabled. C6 joins the existing refusals in the create use-case and
@@ -190,16 +203,22 @@ string to migrate.
 One table, one migration:
 
 ```
-suggestion_dismissal(id pk, household_id fk, rule_id text, pair_key text,
+suggestion_dismissal(id pk, household_id fk, relation text, pair_key text,
                      dismissed_at int, dismissed_by fk → user.id)
-unique (household_id, rule_id, pair_key)
+unique (household_id, relation, pair_key)
 ```
 
-`pair_key` is the ordered-pair key the engine already computes. Household-scoped, not
-user-scoped: the household decided. Deletable, so a dismissal is never a permanent silent
-veto — and worth surfacing somewhere in Settings eventually, though not in a first pass.
+`pair_key` is the ordered-pair key the engine already computes. **`relation`, not `rule_id`**:
+the household declines a claim, not the rule that surfaced it, and two rules can name the same
+pair (§6.4 of the rules concept). Household-scoped, not user-scoped: the household decided.
 
-The repository loads the household's dismissals into the view; the engine filters purely.
+The repository loads the household's dismissals into the view; the engine filters purely. For
+the *show dismissed* list, suppression 6 marks instead of dropping —
+`evaluate(trigger, view, { includeDismissed })` and a `dismissedAt` on `Suggestion` — while
+the other five stay hard drops. Undo is a delete of the row, so it needs no second concept.
+
+This table stops being optional once the on-demand review exists: a control a member can press
+repeatedly, against an engine that re-derives everything each time, is unusable without it.
 
 ---
 
@@ -233,12 +252,15 @@ Test-first, and the shape matters more than the count:
 | 3 | widen `PartnerEdge`; **L3 / L3b** | the other parent |
 | 4 | C1 / C5 / C6 + the guard-as-predicate refactor | warnings and the cycle refusal |
 | 5 | fields endpoint + **F1 F1b F2 F3 F6** | surname and gender prefill |
-| 6 | `suggestion_dismissal` + migration + Dismiss control | dismissal |
-| 7 | F4 F5 F7 F8 | the softer prefills |
-| 8 | L5, then L6–L8 behind a household setting | context rules |
+| 6 | `suggestion_dismissal` + migration + Dismiss control | declining sticks |
+| 7 | `person-reviewed` trigger + the review panel + *show dismissed* | **the on-demand button** |
+| 8 | F4 F5 F7 F8 | the softer prefills |
+| 9 | L5, then L6–L8 behind a household setting | context rules |
 
 1 and 2 are pure refactors and should land before anything user-visible. 3 is the PR the
-household will feel.
+household will feel first; 7 is the one that makes the rule set reachable at all, since
+everything before it only appears in the instant after a write. 6 is a hard prerequisite of 7
+and cannot be deferred past it.
 
 ---
 
