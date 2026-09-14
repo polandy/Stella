@@ -6,17 +6,15 @@ import {
 	CIRCLE_COLORS,
 	createCircle,
 	joinCircleByName,
-	listRoleSuggestions,
 	listRoleSuggestionsByCircleName,
 	resolveCircleColor,
 	resolveCircleKind,
 	suggestCircleColor,
 	suggestRoles,
 	type Circle,
-	type CircleRoleUse,
 	type CircleDeps,
 	type CircleRepository,
-	type MemberView,
+	type CircleRoleUse,
 	type NewCircle,
 	type NewMembership
 } from './circles';
@@ -52,7 +50,6 @@ function fakeRepo(existing: Circle | null = null) {
 	const memberships: NewMembership[] = [];
 	const removed: Array<[string, string]> = [];
 	let exists = false;
-	let members: MemberView[] = [];
 	let roleUses: CircleRoleUse[] = [];
 	const repo: CircleRepository = {
 		insert: async (c) => void inserted.push(c),
@@ -62,7 +59,7 @@ function fakeRepo(existing: Circle | null = null) {
 		membershipExists: async () => exists,
 		addMembership: async (m) => void memberships.push(m),
 		removeMembership: async (cid, contactId) => void removed.push([cid, contactId]),
-		listMembersVisibleTo: async () => members,
+		listMembersVisibleTo: async () => [],
 		listForContactVisibleTo: async () => [],
 		listRoleUsesVisibleTo: async () => roleUses
 	};
@@ -72,7 +69,6 @@ function fakeRepo(existing: Circle | null = null) {
 		memberships,
 		removed,
 		setExists: (v: boolean) => (exists = v),
-		setMembers: (v: MemberView[]) => (members = v),
 		setRoleUses: (v: CircleRoleUse[]) => (roleUses = v)
 	};
 }
@@ -176,22 +172,6 @@ describe('suggestRoles', () => {
 	it('folds spellings that differ only in case, keeping the most common one', () => {
 		expect(suggestRoles(['Teacher', 'teacher', 'teacher'])).toEqual(['teacher']);
 		expect(suggestRoles(['Teacher', 'Teacher', 'teacher'])).toEqual(['Teacher']);
-	});
-});
-
-describe('listRoleSuggestions', () => {
-	it('suggests the roles of the circle the person is being added to', async () => {
-		const f = fakeRepo();
-		f.setMembers([
-			{ membershipId: 'm1', contactId: 'c1', displayName: 'Anna', avatarPhotoId: null, role: 'teacher' },
-			{ membershipId: 'm2', contactId: 'c2', displayName: 'Ben', avatarPhotoId: null, role: 'student' },
-			{ membershipId: 'm3', contactId: 'c3', displayName: 'Cleo', avatarPhotoId: null, role: 'student' }
-		]);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
-		expect(await listRoleSuggestions(deps, { id: 'u1', householdId: 'h1' }, 'circle-1')).toEqual([
-			'student',
-			'teacher'
-		]);
 	});
 });
 

@@ -169,4 +169,4 @@ describe('role uses', () => {
 			{ circleName: 'Secret Club', role: 'captain' }
 		]);
 	});
-})
+});

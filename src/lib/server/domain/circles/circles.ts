@@ -305,16 +305,6 @@ export async function listCirclesForContact(
 	return deps.circles.listForContactVisibleTo(viewer, contactId);
 }
 
-/** The roles already used inside one circle, to offer while adding a member to it. */
-export async function listRoleSuggestions(
-	deps: Pick<CircleDeps, 'circles'>,
-	viewer: Viewer,
-	circleId: string
-): Promise<string[]> {
-	const members = await deps.circles.listMembersVisibleTo(viewer, circleId);
-	return suggestRoles(members.map((m) => m.role));
-}
-
 /**
  * The roles already used, per circle, for the join-a-circle-by-name flow where the circle is
  * only known by what was typed. Keyed by the lower-cased circle name, so a name typed with

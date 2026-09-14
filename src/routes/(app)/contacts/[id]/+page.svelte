@@ -194,6 +194,11 @@
 	const joiningCircleRoles = $derived(
 		data.circleRolesByName[joiningCircleName.trim().toLowerCase()] ?? []
 	);
+	// The form is unmounted when the section closes, so the typed name would outlive its own
+	// input and a reopened editor would offer the previous circle's roles beside an empty field.
+	$effect(() => {
+		if (!openSection.circles) joiningCircleName = '';
+	});
 	const saved = (name: SectionName) =>
 		savedEnhance(removals, t('components.saved'), () => (openSection[name] = false));
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
