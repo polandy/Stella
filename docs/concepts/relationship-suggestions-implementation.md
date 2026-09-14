@@ -6,7 +6,7 @@ mockup, not a decision.
 
 Read with: `src/lib/kinship/{kinship,propagation}.ts`,
 `src/lib/server/domain/relationships/relationships.ts` (`readKinship`, ~line 300),
-`src/routes/(app)/contacts/[id]/+page.server.ts` (`?propose=`, `addProposal`),
+`src/routes/(app)/contacts/[id]/+page.server.ts` (`?propose=`, `addProposedRelationship`),
 `src/routes/(app)/contacts/new/+page.svelte`.
 
 ---
@@ -22,7 +22,7 @@ form action: create link
        → loadKinshipGraphVisibleTo(viewer)      // visibility settled here
        → suggestPropagation(graph, primaryLink) // pure, two rules
     → page: "Also true?" block, one form per proposal
-      → form action addProposal: create the parent link
+      → form action addProposedRelationship: create the parent link
 ```
 
 Three things in it do not survive the rule set growing:
@@ -146,7 +146,7 @@ refactor is small and is the only place the two layers touch.
 `readKinship` keeps its signature and its `?propose=` pointer; it builds a
 `link-stored` trigger instead of calling `suggestPropagation` directly, and returns
 `Suggestion[]` instead of `ProposedLink[]`. The page block grows a confidence chip and a
-*Dismiss* control. `addProposal` already re-runs every guard on confirmation — keep that;
+*Dismiss* control. `addProposedRelationship` already re-runs every guard on confirmation — keep that;
 the engine's suppression 5 is a display filter, not a substitute for the write-side guard.
 
 ### Field suggestions — a new endpoint on the add-person flow
