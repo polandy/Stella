@@ -95,6 +95,34 @@ test.describe('on a person’s page', () => {
 		await expect(peek.getByRole('button', { name: 'Expand connections' })).toHaveCount(0);
 		await expect(peek).toContainText('This is as far as this map goes.');
 	});
+
+	test('opening a profile from the panel leaves the next page’s map unselected', async ({
+		page
+	}) => {
+		await expect(map(page).locator('canvas').first()).toBeVisible();
+		await map(page).scrollIntoViewIfNeeded();
+		await settled(page);
+
+		const rings = await ringsOnCanvas(page, LENA);
+		const oneHop = [...rings]
+			.filter(([id, hops]) => hops === 1 && id.startsWith('demo-c-'))
+			.map(([id]) => id);
+		const nearby = await firstClickableNode(page, oneHop);
+		expect(nearby, `nobody one hop out was clickable: ${JSON.stringify(await nodeOwners(page, oneHop))}`).not.toBeNull();
+
+		await clickNode(page, nearby!);
+		await expect(map(page).getByRole('complementary')).toBeVisible();
+		await map(page).getByRole('link', { name: 'Open profile' }).click();
+
+		// That person's own page now, with their own map: the panel belonged to the map we
+		// left, and an explorer carried over from the previous person would still be showing
+		// it — over somebody else's neighbourhood.
+		await expect(page).toHaveURL(new RegExp(`/contacts/${nearby}$`));
+		const theirs = page.getByRole('group', { name: /^The people around / });
+		await expect(theirs.locator('canvas').first()).toBeVisible();
+		await settled(page);
+		await expect(theirs.getByRole('complementary')).toHaveCount(0);
+	});
 });
 
 /*
