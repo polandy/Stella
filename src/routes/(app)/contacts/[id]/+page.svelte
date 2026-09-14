@@ -663,8 +663,6 @@
 					bind:open={relateOpen}
 				>
 					{#snippet action()}
-						<!-- The way out of this person's two hops and into the household (docs/05 §5.5).
-						     A button, not a 12px text link: it is the second thing this card offers. -->
 						{#if data.otherContacts.length > 0}
 							<Button
 								size="sm"
@@ -676,6 +674,8 @@
 								{t('contact.relationships.howConnected')}
 							</Button>
 						{/if}
+						<!-- The way out of this person's two hops and into the household (docs/05 §5.5).
+						     A button, not a 12px text link: it is the second thing this card offers. -->
 						<Button size="sm" icon="graph" href="/graph?center={c.id}">
 							{t('graph.openInGraph')}
 						</Button>
