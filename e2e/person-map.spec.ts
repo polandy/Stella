@@ -149,8 +149,13 @@ test.describe('when a relationship is entered', () => {
 		await expect(map(page).locator('canvas').first()).toBeVisible();
 		await settled(page);
 
-		// The signal the case is worth anything: she is not on the map to begin with.
-		expect(await stateOf(page, BETTINA)).toBe('absent');
+		// The signal the case is worth anything: she is not on the map to begin with. Several
+		// cases borrow her as the household's unlinked person, so say what a failure here
+		// means — one of them left a link behind rather than this map being wrong.
+		expect(
+			await stateOf(page, BETTINA),
+			`${BETTINA_NAME} should be linked to nobody: another case has left a link behind`
+		).toBe('absent');
 
 		// Survives an in-page update and is wiped by a navigation, so the assertion at the end
 		// can tell a redrawn map from a reloaded page.
