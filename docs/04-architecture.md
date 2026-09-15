@@ -249,6 +249,16 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   unique index on `(circle_id, contact_id)` would move the rule back into the schema and let
   `onConflictDoNothing` do the work; that is the better end state, and it needs a migration
   that first resolves any duplicate rows already in the wild.
+- **A tag's lifetime is its assignments, and the carrier count is not viewer-scoped** — tags
+  are created by naming one on a person (§2.8), so there is no management screen to delete one
+  from; the alternative to deleting the last-unassigned tag was leaving an orphan in the
+  household's chip row that filters to an empty page. The count deliberately ignores the
+  actor's visibility: counting through their eyes would let them see zero carriers for a tag
+  still on someone else's private contact and delete it off that contact behind their back
+  (§3.7). The cost is that removal is a household-wide effect decided from one person's page,
+  so the *delete* is scoped to the actor's own household — the `tagId` comes from a form and
+  must not be able to nominate its scope. A contact deleted outright takes its assignments by
+  cascade rather than through the use-case, so that path sweeps orphans afterwards instead.
 - **The release check asks from the server, and only when asked** — "is there a newer
   Stella?" could be answered in the browser, which would cost the server nothing. It is done
   server-side anyway: from the browser it would be one GitHub request per visitor per visit
