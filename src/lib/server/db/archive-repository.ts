@@ -53,7 +53,10 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	{ table: 'contact_tag', where: viaContact() },
 	{ table: 'circle', where: 't.household_id = ?' },
 	{ table: 'circle_membership', where: `t.circle_id IN (SELECT id FROM circle WHERE household_id = ?)` },
-	{ table: 'activity_log', where: 't.household_id = ?' }
+	{ table: 'activity_log', where: 't.household_id = ?' },
+	// The claims the household declined. Left out, a restore would re-offer every suggestion
+	// they have already said no to (docs/concepts/relationship-suggestions.md §6.4).
+	{ table: 'suggestion_dismissal', where: 't.household_id = ?' }
 ];
 
 /**

@@ -3,8 +3,9 @@ import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { KinshipGraph, Pair } from '../../../kinship/kinship';
 import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';
 import { evaluate } from '../../../suggestions/engine';
-import type { LinkSuggestion, PrimaryLink } from '../../../suggestions/types';
+import type { PrimaryLink } from '../../../suggestions/types';
 import { buildView } from '../../../suggestions/view';
+import { nameProposals, type ProposedLink, type SuggestionReviewSource } from './suggestion-review';
 import type { Viewer } from '../../access/visibility';
 import type { RelationshipCategory } from '../../../relationships/categories';
 import type { Endpoints } from '../../../relationships/endpoints';
@@ -295,34 +296,31 @@ export async function createRelationship(
  * One port call serves both, because both read the same graph. Visibility is settled by the
  * repository, so neither a derived label nor a proposal can name someone the viewer may not see.
  */
+export type { ProposedLink };
+
 export interface KinshipRead {
 	derived: DerivedKin[];
 	proposals: ProposedLink[];
 }
 
-/** A suggested link with the names the interface needs to phrase it. */
-export interface ProposedLink extends LinkSuggestion {
-	fromName: string;
-	toName: string;
-}
-
 export async function readKinship(
-	deps: Pick<RelationshipDeps, 'relationships'>,
+	deps: SuggestionReviewSource,
 	viewer: Viewer,
 	subjectId: string,
 	proposeFor?: Pair | null
 ): Promise<KinshipRead> {
-	const graph = await deps.relationships.loadKinshipGraphVisibleTo(viewer);
+	const [graph, dismissals] = await Promise.all([
+		deps.relationships.loadKinshipGraphVisibleTo(viewer),
+		deps.dismissals.listForHousehold(viewer)
+	]);
 	const derived = deriveKinship(graph, subjectId);
 	const added = proposeFor ? primaryLinkBetween(graph, proposeFor.a, proposeFor.b) : null;
 	if (!added) return { derived, proposals: [] };
 
-	const view = buildView(graph);
-	const proposals = evaluate({ kind: 'link-stored', link: added }, view).map((suggestion) => ({
-		...suggestion,
-		fromName: view.nameOf(suggestion.fromId),
-		toName: view.nameOf(suggestion.toId)
-	}));
+	// A claim declined once is not offered again, however it is reached (§6.4) — including
+	// here, in the instant after the write, where it would otherwise slip past the log.
+	const view = buildView(graph, dismissals);
+	const proposals = nameProposals(evaluate({ kind: 'link-stored', link: added }, view), view.nameOf);
 	return { derived, proposals };
 }
 

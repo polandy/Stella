@@ -236,8 +236,19 @@ follows it ("Grandmother"), otherwise it stays neutral ("Grandparent").
 
 Adding a parent or a sibling usually implies more of them. Stella asks rather than assumes:
 say Vreni is Lena's parent and an **Also true?** panel offers her as a parent of Lena's
-brothers, one *Add this too* at a time, each with the reason. Ignore them and nothing
-happens.
+brothers, one *Accept* at a time, each with the reason. Ignore them and nothing happens.
+
+That panel only appears in the moment you save something, though — and most links were
+entered long before. **Check relationships**, at the top of the Relationships card, asks the
+same questions about the person you are looking at, whenever you like: *Wing Kam is a parent
+of Steve*, years after you wrote down that Steve is Andy's brother. Each row has three
+answers. *Accept* stores the link. *Decline* tells Stella it is wrong, and it stops being
+offered — however it comes up again later. And leaving it alone does nothing at all, so there
+is never a reason to decline something just to clear the list.
+
+Declining is not final and is not private: it holds for everyone in the household, and what
+was declined stays one click away under **N declined suggestions**, with who said no and when,
+and *Offer again* to put it back.
 
 Every profile shows the person at the centre of their own small constellation. **Explore
 connections** opens the bigger picture, where you can follow the web outward from one

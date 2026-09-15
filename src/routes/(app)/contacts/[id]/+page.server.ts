@@ -79,6 +79,12 @@ import {
 	readKinship
 } from '$lib/server/domain/relationships/relationships';
 import {
+	dismissSuggestion,
+	restoreSuggestion,
+	reviewPerson,
+	type ProposedLink
+} from '$lib/server/domain/relationships/suggestion-review';
+import {
 	assignTagByName,
 	listTagsForContact,
 	pruneOrphanTags,
@@ -101,6 +107,7 @@ import {
 	getGraphRepository,
 	getPhotos,
 	getRelationshipDeps,
+	getSuggestionReviewDeps,
 	getDeleteContactDeps,
 	getRelationships,
 	getRelationshipTypes,
@@ -127,12 +134,33 @@ function parseProposePair(raw: string | null): { a: string; b: string } | null {
 	return a && b ? { a, b } : null;
 }
 
+/*
+ * The on-demand review (docs/concepts/relationship-suggestions.md §6.5) hangs on the URL
+ * rather than on component state: pressing *Check suggestions* is a page the household can
+ * reload, come back to, and keep after confirming one of the rows. What was declined comes
+ * with it, behind a disclosure — so a *no* is never out of reach and costs no second request.
+ */
+const REVIEW_PARAM = 'review';
+
+/** The person page with the review panel open, back at the relationships card. */
+const reviewPath = (contactId: string) => `/contacts/${contactId}?${REVIEW_PARAM}#relationships`;
+
 /** Whether a birth date precision (docs/03 §3.4) names an actual day rather than a year. */
 const namesADay = (precision: string) => precision === 'full' || precision === 'month_day';
 
 /** First page of the story timeline; older items stream in via the story endpoint. */
 const STORY_PAGE = 12;
 import type { Actions, PageServerLoad } from './$types';
+
+/** The claim a review form is answering: the relation and the two people. */
+async function parseAnswer(request: Request) {
+	const form = await request.formData();
+	return v.safeParse(AnswerSuggestionSchema, {
+		relation: form.get('relation'),
+		fromId: form.get('fromId'),
+		toId: form.get('toId')
+	});
+}
 import { say, translator } from '$lib/server/i18n/say';
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
@@ -154,6 +182,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		throw error(404, say(locals, 'errors.contact.notFound'));
 	}
 
+	const reviewOpen = url.searchParams.has(REVIEW_PARAM);
+
 	const [
 		relationships,
 		types,
@@ -171,6 +201,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		dates,
 		interactions,
 		kinship,
+		reviewed,
 		mentionedIn,
 		visibleGraph
 	] = await Promise.all([
@@ -189,7 +220,10 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		listGallery(getGalleryDeps(), viewer, params.id),
 		listImportantDates(getImportantDateDeps(), viewer, params.id),
 		listInteractions(getInteractionDeps(), viewer, params.id),
-		readKinship(getRelationshipDeps(), viewer, params.id, parseProposePair(url.searchParams.get('propose'))),
+		readKinship(getSuggestionReviewDeps(), viewer, params.id, parseProposePair(url.searchParams.get('propose'))),
+		reviewOpen
+			? reviewPerson(getSuggestionReviewDeps(), viewer, params.id, { includeDismissed: true })
+			: Promise.resolve([]),
 		listMentionedIn(getMentionedInDeps(), viewer, params.id),
 		/*
 		 * The map on the page (docs/05 §5.5) is cut from the same access-scoped snapshot the
@@ -217,6 +251,13 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	const nameOf = (id: string) => nameById.get(id) ?? null;
 	// …and for the member behind each item (docs/02 §2.23).
 	const nameOfAuthor = await authorNames(getMemberDeps(), viewer.householdId);
+
+	/*
+	 * A suggestion's reason arrives as a `Phrase`; here is where it becomes a sentence, in the
+	 * language this request is being read in. A closure cannot cross `load` into `data`.
+	 */
+	const said = (proposals: readonly ProposedLink[]) =>
+		proposals.map((proposal) => ({ ...proposal, reason: proposal.reason(translator(locals)) }));
 
 	return {
 		story: {
@@ -263,11 +304,23 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		 * reason arrives as a `Phrase`; here is where it becomes a sentence, in the language
 		 * this request is being read in.
 		 */
-		proposals: kinship.proposals.map((proposal) => ({
-			...proposal,
-			reason: proposal.reason(translator(locals))
-		})),
+		proposals: said(kinship.proposals),
 		proposeFor: url.searchParams.get('propose'),
+		/*
+		 * The on-demand review (docs/concepts/relationship-suggestions.md §6.5): what stands
+		 * around this person right now, asked for rather than raised by a write. Closed, it
+		 * costs nothing — no rule runs until somebody presses the control.
+		 */
+		review: {
+			open: reviewOpen,
+			suggestions: said(reviewed),
+			// Only the members a declined row actually names — the panel says who said no.
+			memberNames: Object.fromEntries(
+				reviewed
+					.filter((suggestion) => suggestion.dismissed !== null)
+					.map((suggestion) => [suggestion.dismissed!.by, nameOfAuthor(suggestion.dismissed!.by)])
+			)
+		},
 		relationshipTypes: types,
 		tags,
 		circles: contactCircles,
@@ -353,6 +406,13 @@ const VisibilitySchema = v.optional(v.picklist(['shared', 'private']), 'shared')
 const PhotoVisibilitySchema = v.object({
 	photoId: v.pipe(v.string(), v.minLength(1)),
 	visibility: v.picklist(['shared', 'private'])
+});
+
+/** One claim a member is answering on the review panel (§6.4): the relation and the pair. */
+const AnswerSuggestionSchema = v.object({
+	relation: v.picklist(['parent', 'sibling']),
+	fromId: v.pipe(v.string(), v.minLength(1)),
+	toId: v.pipe(v.string(), v.minLength(1))
 });
 
 /** One confirmed propagation suggestion (docs/02 §2.4.1). */
@@ -667,6 +727,37 @@ export const actions: Actions = {
 
 		const back = parsed.output.propose ? `?propose=${parsed.output.propose}` : '';
 		throw redirect(303, `/contacts/${params.id}${back}#relationships`);
+	},
+
+	/**
+	 * Decline a claim, so it stops being offered however a rule reaches it later
+	 * (docs/concepts/relationship-suggestions.md §6.4). The household decided, so the *no*
+	 * holds for every member — and `restoreSuggestion` takes it back.
+	 */
+	dismissSuggestion: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const answer = await parseAnswer(request);
+		if (!answer.success) return fail(400, { error: say(locals, 'errors.relationship.badSuggestion') });
+
+		if (!(await dismissSuggestion(getSuggestionReviewDeps(), viewer, answer.output))) {
+			return fail(400, { error: say(locals, 'errors.person.notFound') });
+		}
+		throw redirect(303, reviewPath(params.id));
+	},
+
+	/** Take a *no* back, so the claim is offered again on the next review (§6.5). */
+	restoreSuggestion: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const answer = await parseAnswer(request);
+		if (!answer.success) return fail(400, { error: say(locals, 'errors.relationship.badSuggestion') });
+
+		// Nothing to take back is not a failure worth a message: the claim is offered either way.
+		await restoreSuggestion(getSuggestionReviewDeps(), viewer, answer.output);
+		throw redirect(303, reviewPath(params.id));
 	},
 
 	addNote: async ({ request, params, locals }) => {

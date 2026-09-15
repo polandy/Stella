@@ -441,10 +441,26 @@ tables, fully unit-testable (test-first).
   and the writing goes through the same checked action as the *Also true?* block, so a
   correction that would contradict the graph is refused like any other entry.
 
+- **Shipped:** the relationships card carries a **Check suggestions** control, and it is what
+  makes all of the above reachable at all. Every suggestion described so far is raised by a
+  *write* — the **Also true?** block lives for one page load and is gone on reload, so a
+  household whose links were entered before the rules existed is never told what follows from
+  them. Pressing *Check suggestions* runs the same rules against the graph as it stands, around
+  this person and their siblings, and shows what still holds: *Wing Kam is a parent of Steve*,
+  years after Steve was entered as Andy's brother. Each row has three answers, not two —
+  **Add this too** stores the link, **Not true** records the *no*, and leaving it alone does
+  nothing and offers it again next time, which is what stops members declining things merely to
+  clear a list. A declined claim stops being offered **however a rule reaches it later**: the
+  household answered the *claim*, not the rule that happened to surface it. It is never a silent
+  veto either — **Show declined** lists what was turned down, each with *Ask again*. Dismissals
+  belong to the household, not to the member who clicked, and they travel in an export, so a
+  restored backup does not re-ask everything the household has already settled.
+
 A broader catalogue of what else could be proposed — the other parent, surname and address
 prefill, consistency warnings — and the rule set behind it is drafted in
 `docs/concepts/relationship-suggestions.md`, with the module layout and PR slicing in
-`docs/concepts/relationship-suggestions-implementation.md` (concepts, not shipped).
+`docs/concepts/relationship-suggestions-implementation.md` (the rule engine, the dismissal log
+and the on-demand review are shipped; the rest of the catalogue is concept).
 
 ### 2.4.2 Circles & shared contexts **[M2]**
 

@@ -1,4 +1,5 @@
 import type { Phrase } from '$lib/i18n/phrase';
+import type { Answer } from './claims';
 import type { SuggestionView } from './view';
 
 /*
@@ -40,9 +41,16 @@ export type Confidence = 'certain' | 'likely' | 'possible';
 /**
  * What the engine is answering. A discriminated union rather than a bare id, because the
  * triggers carry different things: a stored link names two people, while the triggers still
- * to come (`person-created`, `form-opened`, `person-reviewed`) name one and a role.
+ * to come (`person-created`, `form-opened`) name one and a role.
+ *
+ * `person-reviewed` is the one trigger no write raises: a member asks, on request, what stands
+ * around this person right now. It is what makes the rule set reachable at all — every other
+ * trigger only exists in the instant after a link is stored
+ * (docs/concepts/relationship-suggestions.md §6.5).
  */
-export type Trigger = { kind: 'link-stored'; link: PrimaryLink };
+export type Trigger =
+	| { kind: 'link-stored'; link: PrimaryLink }
+	| { kind: 'person-reviewed'; subjectId: string };
 
 /** A link Stella offers to store, with the sentence explaining why it is offered. */
 export interface LinkSuggestion {
@@ -55,6 +63,13 @@ export interface LinkSuggestion {
 	toId: string;
 	/** Why it is offered, unsaid until the edge knows the reader's language. */
 	reason: Phrase;
+	/**
+	 * The household's *no* — who declined this claim and when — or null while it stands. A rule
+	 * never sets it: the engine drops a dismissed suggestion outright, and only fills this in
+	 * when the caller asked to see what was declined
+	 * (docs/concepts/relationship-suggestions.md §6.5).
+	 */
+	dismissed: Answer | null;
 }
 
 /**
