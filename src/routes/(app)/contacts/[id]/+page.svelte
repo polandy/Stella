@@ -27,7 +27,8 @@
 		relationshipTypeLabel
 	} from '$lib/relationships/labels';
 	import { sectionAnchor } from '$lib/contacts/sections';
-	import { kinshipLabel } from '$lib/kinship/labels';
+	import { directClaimLabel, kinshipLabel } from '$lib/kinship/labels';
+	import { directClaimFor } from '$lib/kinship/claims';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
@@ -943,7 +944,14 @@
 							</h3>
 							<ul class="flex flex-col divide-y divide-border-subtle">
 								{#each data.derivedKin as kin (kin.personId)}
-									<li class="flex items-center gap-3 py-2 text-sm">
+									<!--
+										A step term is only as much as Stella can see: the link runs through a
+										partner and no direct one is on record. The household may well mean more
+										than that, and only they can say so — hence the one-tap correction, which
+										is the single way an inference here ever becomes something entered.
+									-->
+									{@const claim = directClaimFor(kin.term)}
+									<li class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2 text-sm">
 										<span class="w-24 shrink-0 truncate text-fg-muted">{kinshipLabel(t, kin)}</span>
 										<a href="/contacts/{kin.personId}" class="font-medium text-fg hover:underline">
 											{kin.displayName}
@@ -954,6 +962,14 @@
 													people: kin.via.join(t('contact.relationships.viaAnd'))
 												})}
 											</span>
+										{/if}
+										{#if claim}
+											<form method="POST" action="?/addProposedRelationship" class="ml-auto shrink-0">
+												<input type="hidden" name="fromId" value={claim.parent === 'relative' ? kin.personId : c.id} />
+												<input type="hidden" name="toId" value={claim.parent === 'relative' ? c.id : kin.personId} />
+												<input type="hidden" name="typeId" value={claim.typeKey} />
+												<Button variant="ghost" size="sm">{directClaimLabel(t, claim)}</Button>
+											</form>
 										{/if}
 									</li>
 								{/each}

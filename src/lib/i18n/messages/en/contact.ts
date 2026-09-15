@@ -132,6 +132,9 @@ export const contact = {
 		`${p.parent} is a parent of ${p.child}`,
 	'contact.relationships.addThisToo': 'Add this too',
 	'contact.relationships.derived': 'Also related · worked out, not entered',
+	'contact.relationships.reallyChild': 'Actually the child',
+	'contact.relationships.reallyParent': 'Actually the parent',
+	'contact.relationships.reallySibling': 'Actually a sibling',
 	'contact.relationships.via': (p: { people: string }) => `via ${p.people}`,
 	'contact.relationships.viaAnd': ' and ',
 
