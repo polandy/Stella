@@ -137,6 +137,14 @@ in one run share one database, so they run serially and **must not depend on eac
 data** — CI enforces this by splitting the suite across three runners
 (`bunx playwright test --shard`), each with its own freshly seeded server.
 
+A second, tiny server runs beside the app: `e2e/release-feed-stub.ts`, the stand-in for
+GitHub's `releases/latest` that the About card reads (`UPDATE_CHECK=true` plus
+`UPDATE_FEED_URL` in the `e2e:server` script). It exists so the card has a fixed release to
+render instead of whatever is published today, and so the suite needs no network. Both
+servers are declared in `playwright.config.ts`, so CI starts them itself; `run.sh` starts
+them on the host, because the container has no Bun. One server means one release state per
+run — the card's *current*, *unreachable* and *off* branches stay unit-covered only.
+
 ### 8.4.1 Feature delivery loop (implement → verify → e2e)
 
 Unit/integration tests stay **test-first** (§8.1). The **e2e** test is written **after the

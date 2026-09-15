@@ -39,6 +39,10 @@ const RawSchema = v.object({
 	// Off by default: it is the only request an instance makes on its own.
 	UPDATE_CHECK: boolFrom(false),
 
+	// Which feed that asks. Empty means Stella's own releases; a fork points this at its
+	// own, and the e2e suite at a local stub (docs/07 §7.4).
+	UPDATE_FEED_URL: v.optional(v.string(), ''),
+
 	OIDC_ISSUER: v.optional(v.string(), ''),
 	OIDC_CLIENT_ID: v.optional(v.string(), ''),
 	OIDC_CLIENT_SECRET: v.optional(v.string(), ''),
@@ -84,6 +88,7 @@ function build() {
 		isProd,
 		seedDemo: raw.SEED_DEMO,
 		updateCheck: raw.UPDATE_CHECK,
+		updateFeedUrl: raw.UPDATE_FEED_URL,
 		auth: {
 			local: raw.AUTH_LOCAL_ENABLED,
 			oidc: raw.AUTH_OIDC_ENABLED

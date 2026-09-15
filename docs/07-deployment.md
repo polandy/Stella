@@ -98,6 +98,8 @@ AUTH_OIDC_ENABLED=true
 UPDATE_CHECK=false                            # true → Settings → About says when a newer Stella has been released;
                                               # the server asks GitHub at most once a day, sends nothing about the
                                               # household, and never installs anything (docs/02 §2.17.1)
+UPDATE_FEED_URL=                              # leave empty: Stella's own releases. A fork points this at its own
+                                              # `releases/latest`; the e2e suite points it at a local stub
 
 # --- Test phase (leave off for real use) ---
 SEED_DEMO=false                               # true → seed the Brunner demo dataset on startup (idempotent);

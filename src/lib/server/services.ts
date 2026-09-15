@@ -188,9 +188,10 @@ export function getDeleteContactDeps(): ContactDeps & { media: MediaStore } {
 let updateCheck: UpdateCheck | null | undefined;
 export function getUpdateCheck(): UpdateCheck | null {
 	if (updateCheck !== undefined) return updateCheck;
-	if (!getConfig().updateCheck || !parseVersion(APP_VERSION)) return (updateCheck = null);
+	const config = getConfig();
+	if (!config.updateCheck || !parseVersion(APP_VERSION)) return (updateCheck = null);
 	return (updateCheck = createUpdateCheck({
-		feed: createGitHubReleaseFeed({ version: APP_VERSION }),
+		feed: createGitHubReleaseFeed({ version: APP_VERSION, url: config.updateFeedUrl || undefined }),
 		clock: systemClock,
 		currentVersion: APP_VERSION
 	}));

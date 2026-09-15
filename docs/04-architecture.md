@@ -142,6 +142,7 @@ AUTH_OIDC_ENABLED=true                      # allow SSO
 
 # Release check (off by default)
 UPDATE_CHECK=false                          # true → ask GitHub once a day whether a newer Stella exists (§2.17.1)
+UPDATE_FEED_URL=                            # which feed that asks; empty = Stella's own releases
 
 # OIDC / Authelia
 OIDC_ISSUER=https://auth.example.home       # discovery via {issuer}/.well-known/openid-configuration

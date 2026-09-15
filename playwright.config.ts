@@ -11,6 +11,10 @@ import { AUTH_STATE_PATH } from './e2e/auth-state';
 const PORT = Number(process.env.E2E_PORT ?? 4173);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 
+// The app asks this instead of GitHub for the release check, so the About card has a fixed
+// answer to render (`e2e/release-feed-stub.ts`).
+const FEED_PORT = Number(process.env.E2E_FEED_PORT ?? 4174);
+
 /** The one spec that belongs to the `setup` project and to no other. */
 const SETUP_SPEC = /auth\.setup\.ts$/;
 
@@ -33,10 +37,19 @@ export default defineConfig({
 			use: { ...devices['Desktop Chrome'], storageState: AUTH_STATE_PATH }
 		}
 	],
-	webServer: {
-		command: 'bun run e2e:server',
-		url: `${BASE_URL}/healthz`,
-		timeout: 180_000,
-		reuseExistingServer: true
-	}
+	webServer: [
+		{
+			command: 'bun run e2e:server',
+			url: `${BASE_URL}/healthz`,
+			timeout: 180_000,
+			reuseExistingServer: true
+		},
+		{
+			command: 'bun e2e/release-feed-stub.ts',
+			url: `http://127.0.0.1:${FEED_PORT}/latest`,
+			env: { PORT: String(FEED_PORT) },
+			timeout: 30_000,
+			reuseExistingServer: true
+		}
+	]
 });
