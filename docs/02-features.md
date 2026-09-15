@@ -925,6 +925,36 @@ included) it is the very first thing they will do.
 - **Data** (admin): export, import, backup.
 - **Appearance:** theme (system/light/dark), accent color choice from Catppuccin set,
   reduced motion.
+- **About:** which version this Stella is, and whether a newer one has been released (§2.17.1).
+
+### 2.17.1 "Is there a newer Stella?" **[M2]**
+
+Settings ends with an **About** card naming the running version. When the operator has
+switched the release check on, the card also says what the newest published release is:
+
+- **A newer release** — a `New` badge, `v0.0.11 is available`, and a link to its release
+  notes. The line is the whole notice: no banner, no dialog, nothing to dismiss.
+- **The newest release** — one quiet sentence, so the answer to "am I behind?" is visible
+  rather than absent.
+- **GitHub unreachable** — said plainly. If an earlier answer is still remembered, that
+  answer is shown with the date it was given, rather than being withdrawn for a day.
+- **The check is off** — the admin is told how to switch it on; other members see only the
+  version, since it is not theirs to change.
+
+Three things this deliberately is not:
+
+- **Not on by default.** It is the only request an instance makes on its own, and a
+  self-hosted household does not expect one. `UPDATE_CHECK=true` asks for it (docs/07 §7.4).
+- **Not per visitor.** The server asks GitHub at most once a day and remembers the answer for
+  everyone; opening Settings ten times is one request, not ten. A failed attempt is retried
+  after an hour rather than the full day, so a moment's trouble does not mute the card until
+  tomorrow.
+- **Not an updater.** Stella never downloads or installs anything; upgrading stays the
+  operator's `docker compose pull`.
+
+What GitHub sees when the check runs: an unauthenticated request for the repository's latest
+release, from the instance's IP address, identifying itself as `Stella/<version>`. No
+household data leaves the instance, and nothing is sent when the check is off.
 
 ## 2.18 Progressive Web App **[M2]**
 

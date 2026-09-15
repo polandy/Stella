@@ -94,6 +94,11 @@ BODY_SIZE_LIMIT=250M                          # request cap (uploads: restored a
 AUTH_LOCAL_ENABLED=true                       # keep true for a break-glass admin
 AUTH_OIDC_ENABLED=true
 
+# --- Release check (optional) ---
+UPDATE_CHECK=false                            # true → Settings → About says when a newer Stella has been released;
+                                              # the server asks GitHub at most once a day, sends nothing about the
+                                              # household, and never installs anything (docs/02 §2.17.1)
+
 # --- Test phase (leave off for real use) ---
 SEED_DEMO=false                               # true → seed the Brunner demo dataset on startup (idempotent);
                                               # on a fresh DB also creates admin demo@stella.local / stella-demo-1234

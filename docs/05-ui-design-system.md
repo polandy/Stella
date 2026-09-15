@@ -318,7 +318,12 @@ They must be edited together; `app.css` says so at both blocks.
   with a category dot, an *Edit* disclosure and — only where nothing uses the type — a
   `RemoveButton` with the usual Undo window; a type in use shows `used N×` in its place. The
   built-in twelve follow as a plain, actionless list under *Built in*, so their absence from
-  the editable set reads as deliberate. Admin only; members see why.
+  the editable set reads as deliberate. Admin only; members see why. The page ends with an **About**
+  card: the running version as the card's own line, and under it — when the release check is
+  on — one line about the newest published release. That line is a notice, not a banner: a
+  small `New` pill in soft primary, the version, and *Release notes* as an ordinary link,
+  laid out to wrap on a narrow screen. Nothing to dismiss, nothing to act on in the app
+  (docs/02 §2.17.1).
 - **Auth** — one split shell for sign-in and first-run setup: the brand and one line of
   promise on a sunken panel, the form beside it; on a phone the panel shrinks to a header so
   the form comes first. Sign-in offers **"Sign in with SSO"** (Authelia) and, if enabled, a

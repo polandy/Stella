@@ -414,6 +414,13 @@ so signing out of Stella does not leave you one click away from signing back in.
 way you land back on the sign-in page — and if the provider cannot be reached, you are
 still signed out of Stella.
 
+## Which Stella is this?
+
+**Settings → About** names the version you are on. If whoever runs your instance has
+switched the release check on, it also tells you when a newer one has been published, with a
+link to what changed — a line, not an interruption, and nothing to dismiss. Stella never
+updates itself; that is the household admin's job.
+
 ## Light and dark
 
 Stella follows whatever your device is set to, and both themes are designed rather than

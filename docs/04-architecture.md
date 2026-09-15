@@ -140,6 +140,9 @@ BODY_SIZE_LIMIT=250M                        # adapter-node request cap; a restor
 AUTH_LOCAL_ENABLED=true                     # allow email+password
 AUTH_OIDC_ENABLED=true                      # allow SSO
 
+# Release check (off by default)
+UPDATE_CHECK=false                          # true → ask GitHub once a day whether a newer Stella exists (§2.17.1)
+
 # OIDC / Authelia
 OIDC_ISSUER=https://auth.example.home       # discovery via {issuer}/.well-known/openid-configuration
 OIDC_CLIENT_ID=stella
@@ -165,6 +168,8 @@ Notes:
   preview and confirm steps (docs/02 §2.16); there is no separate variable for it.
 - A documented **break-glass** path: create/keep one local admin with `role_locked=1`
   so IdP misconfiguration can't lock out the household.
+- `UPDATE_CHECK` is the only switch that lets the instance talk to anything but its own
+  browser clients; with it off, nothing is requested and no state is kept.
 
 ### Authelia side (documented, not shipped)
 The docs will include a ready-to-paste Authelia OIDC client snippet: a confidential
@@ -243,6 +248,18 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   unique index on `(circle_id, contact_id)` would move the rule back into the schema and let
   `onConflictDoNothing` do the work; that is the better end state, and it needs a migration
   that first resolves any duplicate rows already in the wild.
+- **The release check asks from the server, and only when asked** — "is there a newer
+  Stella?" could be answered in the browser, which would cost the server nothing. It is done
+  server-side anyway: from the browser it would be one GitHub request per visitor per visit
+  (a family instance would spend its 60-per-hour unauthenticated budget on nothing), the
+  answer could not be remembered for the next person, and every member's browser would be
+  the one talking to github.com. On the server it is one request a day for the household,
+  cached in memory, and it is off unless the operator switches it on — the alternative,
+  on-by-default, would make a self-hosted instance phone home without being asked, which is
+  the one thing the project promises it does not do. The costs accepted: a restart forgets
+  the cached answer, and the state lives in the process rather than the database, so a second
+  instance would check separately. Revisit if Stella ever runs more than one process.
+  (§2.17.1.)
 - **Our own message catalogue over an i18n library** — two languages and no plural rules
   beyond "one or many" do not pay for Paraglide's compiler or a runtime store. Typed area
   modules give the same guarantee more cheaply: German is typed against English, so a

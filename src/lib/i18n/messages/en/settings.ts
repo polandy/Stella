@@ -31,7 +31,18 @@ export const settings = {
 	'settings.data.relationshipTypesBlurb':
 		'Name the kinds of link your household records, beyond the ones Stella ships with.',
 	'settings.data.adminOnly': 'Importing, backups and the relationship types are for the household admin.',
-	'settings.account.heading': 'Account'
+	'settings.account.heading': 'Account',
+	'settings.about.heading': 'About',
+	'settings.about.version': (p: { version: string }) => `Stella ${p.version}`,
+	'settings.about.checking': 'Looking for a newer release…',
+	'settings.about.badge': 'New',
+	'settings.about.available': (p: { version: string }) => `${p.version} is available`,
+	'settings.about.releaseNotes': 'Release notes',
+	'settings.about.current': 'This is the newest release.',
+	'settings.about.unreachable': 'GitHub could not be reached, so this may not be the newest release.',
+	'settings.about.unreachableSince': (p: { when: string }) => `Last checked ${p.when}.`,
+	'settings.about.off':
+		'Stella is not checking for new releases. Set UPDATE_CHECK=true to switch it on.'
 };
 
 /** The key set every translation of this area has to provide. */

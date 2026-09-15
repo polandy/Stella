@@ -4,13 +4,26 @@ import {
 	setSelfContact,
 	UnknownSelfContactError
 } from '$lib/server/domain/household/self-contact';
-import { getSelfContactDeps } from '$lib/server/services';
+import { getSelfContactDeps, getUpdateCheck } from '$lib/server/services';
+import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
-/** Settings landing (docs/02 §2.17): the language, who you are, and the admin "Data" section. */
+/**
+ * Settings landing (docs/02 §2.17): the language, who you are, the admin "Data" section and
+ * the "About" line.
+ *
+ * The release check is handed over as a promise on purpose (docs/02 §2.17.1): the page is
+ * rendered and sent at once, and the line about a newer version fills itself in when GitHub
+ * answers — so an instance that cannot reach it still opens Settings immediately.
+ */
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) throw redirect(302, '/login');
-	return { isAdmin: locals.user.role === 'admin' };
+	const check = getUpdateCheck();
+	return {
+		isAdmin: locals.user.role === 'admin',
+		version: APP_VERSION,
+		update: check?.status() ?? null
+	};
 };
 
 export const actions: Actions = {

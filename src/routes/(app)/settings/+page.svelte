@@ -4,11 +4,16 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import LanguagePicker from '$lib/components/LanguagePicker.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
-	const t = useTranslate();
+	const i18n = useI18n();
+	const t = i18n.t;
+
+	/* When the release check last got an answer — shown only when today's attempt failed. */
+	const checkedAt = (at: number) =>
+		new Date(at).toLocaleString(i18n.intlLocale, { dateStyle: 'short', timeStyle: 'short' });
 
 	/* Who the member says they are (docs/02 §2.1.3) — the picker follows what is stored. */
 	let selfIds = $state<string[]>(
@@ -121,5 +126,47 @@
 				</span>
 			</button>
 		</form>
+	</section>
+
+	<section class="flex flex-col gap-3">
+		<h2 class="text-sm font-medium text-fg-muted">{t('settings.about.heading')}</h2>
+		<div class="flex flex-col gap-2 rounded-app bg-card p-4 shadow-card">
+			<p class="font-medium text-fg">{t('settings.about.version', { version: data.version })}</p>
+			{#if data.update}
+				{#await data.update}
+					<p class="text-sm text-fg-subtle">{t('settings.about.checking')}</p>
+				{:then update}
+					{#if update.state === 'available'}
+						<p class="flex flex-wrap items-center gap-2 text-sm">
+							<span
+								class="rounded-control bg-primary-soft px-2 py-0.5 text-xs font-medium tracking-wide text-primary uppercase"
+								>{t('settings.about.badge')}</span
+							>
+							<span class="text-fg">{t('settings.about.available', { version: update.latest })}</span>
+							{#if update.releaseUrl}
+								<a
+									class="text-link hover:underline"
+									href={update.releaseUrl}
+									target="_blank"
+									rel="noopener noreferrer">{t('settings.about.releaseNotes')}</a
+								>
+							{/if}
+						</p>
+					{:else if update.state === 'unreachable'}
+						<p class="text-sm text-fg-muted">{t('settings.about.unreachable')}</p>
+					{:else}
+						<p class="text-sm text-fg-muted">{t('settings.about.current')}</p>
+					{/if}
+					{#if update.stale && update.checkedAt !== null}
+						<p class="text-sm text-fg-subtle">
+							{t('settings.about.unreachableSince', { when: checkedAt(update.checkedAt) })}
+						</p>
+					{/if}
+				{/await}
+			{:else if data.isAdmin}
+				<!-- Switching the check on is the operator's business, so only they are told about it. -->
+				<p class="text-sm text-fg-subtle">{t('settings.about.off')}</p>
+			{/if}
+		</div>
 	</section>
 </main>
