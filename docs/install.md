@@ -159,6 +159,14 @@ git pull
 Database changes are applied automatically on startup and only ever move forward. Take a
 backup first if it has been a while since the last one.
 
+### Being told when there is something to update to
+
+Stella can say so itself. Put `UPDATE_CHECK=true` in `.env` and restart; **Settings → About**
+then names the newest published release beside the one you are running, with a link to what
+changed. The server asks GitHub at most once a day on behalf of everyone, sends nothing about
+your household, and never downloads or installs anything — updating stays the two commands
+above. Leave it out and Stella asks nobody anything.
+
 ## Moving to another machine
 
 Stella has no state outside its data volume, so moving house is: back up on the old
