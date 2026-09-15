@@ -621,6 +621,11 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
    - Interaction handlers (expand, focus, hover) call back into the pure operations and
      re-render from the returned `GraphModel` — the adapter holds no domain rules.
    - Swapping Cytoscape for another renderer (or adding a layout) touches only this layer.
+   - The controller owns its **teardown**: it runs the first layout itself (so a layout still
+     moving nodes can be stopped again), stops that layout and any animation before destroying
+     the core, and no-ops on every method afterwards. A page can be left mid-layout, and a call
+     still in flight must reach a closed core rather than a half-demolished one. The controller
+     is split from the core it drives (`explorerFromCore`) so this is unit-tested headless.
 
 3. **UI** — the explorer Svelte component + the `/graph` route and the profile's "Explore"
    entry: layout, search box, filter chips, peek panel, path picker. Thin; delegates all
