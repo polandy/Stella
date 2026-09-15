@@ -261,7 +261,9 @@ tells you how many instead of offering the button.
 A circle is a context people share: a school class, a football team, a choir, a street.
 Add someone to a circle with an optional role ("goalkeeper", "class teacher") and, if it
 matters, the years they were part of it — so a circle stays truthful as people come and
-go.
+go. The role field offers the roles that circle already uses, so the second goalkeeper is
+one click and nobody ends up half "coach" and half "Coach"; anything new is still yours to
+type.
 
 Circles are also the answer to "who else was there?", which is usually the question you
 have when you are trying to remember someone's name. **Open in the graph** on a circle's page
