@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { addPerson, appReady, pickPerson, profileRow, signIn } from './app';
 
 /*
@@ -34,7 +34,7 @@ async function addMember(page: Page, person: string, role: string): Promise<void
 }
 
 /** The role field's suggestions, in the order the reader is offered them. */
-function roleOptions(page: Page) {
+function roleOptions(page: Page): Locator {
 	return page.locator('#circle-roles option');
 }
 
