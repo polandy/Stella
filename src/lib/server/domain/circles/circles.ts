@@ -269,8 +269,9 @@ export async function addMember(
 
 /**
  * Add several contacts to a circle in one go (the circle-detail flow). A role, when given,
- * applies to every one of them — a second role is set per member afterwards. Idempotent per
- * contact, and someone named twice in the same pick joins once.
+ * applies to every one of them. Idempotent per contact, and someone named twice in the same
+ * pick joins once — note that a contact already in the circle keeps the role they joined with,
+ * so this never re-roles an existing member.
  */
 export async function addMembers(
 	deps: CircleDeps,

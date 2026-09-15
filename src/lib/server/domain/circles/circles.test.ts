@@ -51,13 +51,15 @@ function fakeRepo(existing: Circle | null = null) {
 	const memberships: NewMembership[] = [];
 	const removed: Array<[string, string]> = [];
 	let exists = false;
+	// Per-contact membership, for picks that mix people already in the circle with new ones.
+	const existingMembers = new Set<string>();
 	let roleUses: CircleRoleUse[] = [];
 	const repo: CircleRepository = {
 		insert: async (c) => void inserted.push(c),
 		findByNameVisibleTo: async () => existing,
 		getVisibleTo: async () => null,
 		listVisibleTo: async () => [],
-		membershipExists: async () => exists,
+		membershipExists: async (_cid, contactId) => exists || existingMembers.has(contactId),
 		addMembership: async (m) => void memberships.push(m),
 		removeMembership: async (cid, contactId) => void removed.push([cid, contactId]),
 		listMembersVisibleTo: async () => [],
@@ -70,6 +72,7 @@ function fakeRepo(existing: Circle | null = null) {
 		memberships,
 		removed,
 		setExists: (v: boolean) => (exists = v),
+		setExistingMembers: (ids: string[]) => ids.forEach((id) => existingMembers.add(id)),
 		setRoleUses: (v: CircleRoleUse[]) => (roleUses = v)
 	};
 }
@@ -172,6 +175,16 @@ describe('addMembers', () => {
 		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
 		await addMembers(deps, creator, 'circle-1', ['mara', 'jonas']);
 		expect(f.memberships).toHaveLength(0);
+	});
+
+	it('adds only the new people in a mixed pick, leaving an existing member’s role alone', async () => {
+		const f = fakeRepo();
+		f.setExistingMembers(['mara']);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
+		await addMembers(deps, creator, 'circle-1', ['mara', 'jonas'], 'coach');
+		// The positive control for the skip: jonas proves the call did run and did write.
+		expect(f.memberships.map((m) => m.contactId)).toEqual(['jonas']);
+		expect(f.memberships[0].role).toBe('coach');
 	});
 });
 

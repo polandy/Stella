@@ -455,8 +455,8 @@ a named group contacts belong to, over a period of time. (A first-class entity, 
 - **Filling a circle.** A circle's page adds **several people at once**: the picker keeps every
   person chosen as a chip until the form is submitted, so a whole class or team joins in one
   go rather than one round trip per person. A role typed alongside applies to everyone in that
-  pick (the form says so as soon as more than one is chosen); a differing role is set per
-  member afterwards. Someone already in the circle, or named twice in the same pick, joins
+  pick (the form says so as soon as more than one is chosen); someone who needs a different
+  role is removed from the circle and added again with it. Someone already in the circle, or named twice in the same pick, joins
   once — and a person the actor may not see fails the whole pick rather than being dropped
   from it silently.
 - **Finding one among many.** The Circles page filters as you type over name and description,
