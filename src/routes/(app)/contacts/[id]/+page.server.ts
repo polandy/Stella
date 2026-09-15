@@ -456,7 +456,7 @@ export const actions: Actions = {
 		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		// Their tag assignments went with them by cascade, so a tag they were the last
 		// carrier of is orphaned here rather than by `unassignTag` (docs/02 §2.8).
-		// MUTATION PROBE A: orphan sweep removed.
+		await pruneOrphanTags(getTagDeps(), user.householdId);
 		throw redirect(303, '/contacts');
 	},
 
