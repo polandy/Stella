@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prove the dev server actually serves a page.
+# Prove the dev server actually renders a page.
 #
 # It is the one runtime nothing else in CI covers: Vite's module runner under Bun, where a
 # module resolution that works in the built server and in `bun test` can still be dead. It
@@ -28,16 +28,19 @@ for _ in $(seq 1 60); do
     cat "$LOG" >&2
     exit 1
   fi
-  code=$(curl -sS -m 30 -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/login" 2>>"$LOG" || true)
+  # Redirects are followed on purpose: with no account on file the login page sends the
+  # visitor to /setup, and both ends of that prove what this checks — the page rendered,
+  # which it cannot do without a database handle. Only a 500 (or nothing) is the failure.
+  code=$(curl -sS -L -m 30 -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/login" 2>>"$LOG" || true)
   echo "[smoke] /login -> ${code:-no answer}" >>"$LOG"
   if [ "$code" = "200" ]; then
-    echo "▶ dev server served /login on port $PORT"
+    echo "▶ dev server rendered the login page on port $PORT"
     exit 0
   fi
   sleep 2
 done
 
-echo "The dev server never served /login. Last state:" >&2
+echo "The dev server never rendered the login page. Last state:" >&2
 ss -ltnp 2>/dev/null | grep ":$PORT" >&2 || echo "[smoke] nothing listening on $PORT" >&2
 cat "$LOG" >&2
 exit 1
