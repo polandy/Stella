@@ -129,6 +129,14 @@ test('a tag still on someone else survives, and goes only with the last carrier'
 	await expect(marisolTags).not.toContainText(SHARED_TAG);
 
 	await openPeople(page);
+	// DIAGNOSTIC (#101): unwaited counts at the instant the old case asserted, so the log says
+	// whether the row was rendered at all and what the old unscoped locator could see.
+	console.log('PROBE url=%s rows=%d scoped=%d unscoped=%d keeper=%d',
+		page.url(),
+		await chipRow(page).count(),
+		await chip(page, SHARED_TAG).count(),
+		await page.getByRole('link', { name: SHARED_TAG, exact: true }).count(),
+		await chip(page, KEEPER_TAG).count());
 	await expect(chip(page, KEEPER_TAG)).toBeVisible();
 	await expect(chip(page, SHARED_TAG)).toHaveCount(0);
 	await page.reload();
