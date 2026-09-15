@@ -60,6 +60,7 @@ async function deleteForGood(page: Page, who: string): Promise<void> {
 
 const LONE_CARRIER = 'Tamsin Okonkwo';
 const LONE_TAG = 'Zzz-lone-badge';
+const LONE_KEEPER_TAG = 'Zzz-lone-keeper';
 const SHARED_TAG = 'Zzz-shared-crew';
 const KEEPER_TAG = 'Zzz-keeper-crew';
 const FIRST_OF_TWO = 'Rufus Okonkwo';
@@ -72,10 +73,16 @@ test.beforeEach(async ({ page }) => {
 test('the chip goes with the last person carrying it when they are deleted', async ({ page }) => {
 	await addPerson(page, 'Tamsin', 'Okonkwo');
 	await addTag(page, LONE_TAG);
+	// Nobody touches him or his tag again: his chip is what the assertions below are read
+	// against, and it is also what keeps the row on the page at all — a row with no chips is
+	// not rendered, and then a missing chip would say nothing.
+	await addPerson(page, 'Bram', 'Okonkwo');
+	await addTag(page, LONE_KEEPER_TAG);
 
 	// The positive control: while she carries it, the tag really is in the chip row — so the
 	// assertion after the delete is about the tag going, not about the row never showing it.
 	await openPeople(page);
+	await expect(chip(page, LONE_KEEPER_TAG)).toBeVisible();
 	await expect(chip(page, LONE_TAG)).toBeVisible();
 
 	await openPerson(page, new RegExp(LONE_CARRIER));
@@ -83,10 +90,10 @@ test('the chip goes with the last person carrying it when they are deleted', asy
 
 	// Her assignments went by cascade rather than through the use-case, so the tag is swept up
 	// after the delete — otherwise this chip would sit here forever, filtering to nobody.
-	await expect(chipRow(page)).toBeVisible();
+	await expect(chip(page, LONE_KEEPER_TAG)).toBeVisible();
 	await expect(chip(page, LONE_TAG)).toHaveCount(0);
 	await page.reload();
-	await expect(chipRow(page)).toBeVisible();
+	await expect(chip(page, LONE_KEEPER_TAG)).toBeVisible();
 	await expect(chip(page, LONE_TAG)).toHaveCount(0);
 });
 
