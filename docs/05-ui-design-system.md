@@ -268,7 +268,9 @@ They must be edited together; `app.css` says so at both blocks.
   colour dot, name, kind and member count, the description, and a stack of the first four faces
   with "+n" for the rest. A query that matches nothing gets the empty state, not a blank page. A circle's page
   puts the members in a **grid** of avatar cards with roles; *Add member* is the card's one
-  disclosure, like every other card in the app.
+  disclosure, like every other card in the app. Its header carries *Open in the graph* — the
+  same button a person's People card has, because a circle is a node like any other — and the
+  explorer offers *Back to the <name> circle* in return (§2.7).
 - **Empty states** are one component (`EmptyState`): a large icon in the subtle colour, a
   line naming what belongs here, and the one action that starts it — never a bare "nothing
   here". Bands that are absent when empty (Coming up, Quiet lately) do not use it.
@@ -504,7 +506,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - **Connection path:** choosing a second person animates the connecting nodes/edges into
   view and de-emphasizes everything else, so the chain reads instantly.
 - **Selection & peek:** selecting a node dims the rest, highlights its neighborhood, and
-  opens a side peek panel (summary + link to profile).
+  opens a side peek panel (summary + the way to the node's own page: *Open profile* for a
+  person, *Open the circle* for a circle).
 - **Layouts:** force-directed default; tidy tree for family hierarchies and clustered for
   circles (M2).
 - **Theme-aware:** all node/edge/label colors read from the semantic tokens so it matches

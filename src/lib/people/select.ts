@@ -21,3 +21,12 @@ export function filterPeople<T extends SelectablePerson>(query: string, people: 
 		.filter((p) => matchesQuery(p, q))
 		.sort((a, b) => Number(startsWithQuery(b, q)) - Number(startsWithQuery(a, q)));
 }
+
+/**
+ * Whether a picker's text box should still carry `required`. The box is empty once a person is
+ * held as a chip rather than typed, so leaving the constraint on it would refuse to submit a
+ * form that is filled in — the pick itself is what the field is asking for.
+ */
+export function stillNeedsAPick(required: boolean, selectedCount: number): boolean {
+	return required && selectedCount === 0;
+}

@@ -137,27 +137,29 @@ export function createDrizzleCircleRepository(
 			}));
 		},
 
-		async membershipExists(circleId: string, contactId: string): Promise<boolean> {
-			const row = db
-				.select({ id: circleMembership.id })
-				.from(circleMembership)
-				.where(and(eq(circleMembership.circleId, circleId), eq(circleMembership.contactId, contactId)))
-				.get();
-			return row !== undefined && row !== null;
-		},
-
-		async addMembership(m: NewMembership) {
-			db.insert(circleMembership)
-				.values({
-					id: m.id,
-					circleId: m.circleId,
-					contactId: m.contactId,
-					role: m.role,
-					createdBy: m.createdBy,
-					createdAt: m.createdAt,
-					updatedAt: m.updatedAt
-				})
-				.run();
+		async addMemberships(memberships: readonly NewMembership[]): Promise<void> {
+			if (memberships.length === 0) return;
+			db.transaction((tx) => {
+				for (const m of memberships) {
+					const existing = tx
+						.select({ id: circleMembership.id })
+						.from(circleMembership)
+						.where(and(eq(circleMembership.circleId, m.circleId), eq(circleMembership.contactId, m.contactId)))
+						.get();
+					if (existing) continue;
+					tx.insert(circleMembership)
+						.values({
+							id: m.id,
+							circleId: m.circleId,
+							contactId: m.contactId,
+							role: m.role,
+							createdBy: m.createdBy,
+							createdAt: m.createdAt,
+							updatedAt: m.updatedAt
+						})
+						.run();
+				}
+			});
 		},
 
 		async removeMembership(circleId: string, contactId: string) {

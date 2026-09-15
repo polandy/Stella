@@ -265,6 +265,11 @@ go. The role field offers the roles that circle already uses, so the second goal
 one click and nobody ends up half "coach" and half "Coach"; anything new is still yours to
 type.
 
+You can add a whole group in one go: keep picking names and each one stays as a chip until
+you press Add. A role you type applies to everyone in that pick, so a team of eleven
+"players" is one form, not eleven. A role is fixed once someone has joined: to change it,
+remove them from the circle and add them again with the role you want.
+
 Circles are also the answer to "who else was there?", which is usually the question you
 have when you are trying to remember someone's name. **Open in the graph** on a circle's page
 draws that answer: the circle in the middle, everyone in it around it, and their own links
