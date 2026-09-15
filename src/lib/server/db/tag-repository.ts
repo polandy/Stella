@@ -70,8 +70,10 @@ export function createDrizzleTagRepository(db: BunSQLiteDatabase<typeof schema>)
 			return row?.count ?? 0;
 		},
 
-		async deleteTag(tagId: string) {
-			db.delete(tag).where(eq(tag.id, tagId)).run();
+		async deleteTag(householdId: string, tagId: string) {
+			db.delete(tag)
+				.where(and(eq(tag.householdId, householdId), eq(tag.id, tagId)))
+				.run();
 		},
 
 		async deleteOrphans(householdId: string) {

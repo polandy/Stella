@@ -610,7 +610,8 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   the household's chip row forever, leading only to an empty page.
   - "Nobody carries it" spans the **whole household**, not what the actor may see: a tag still
     on someone else's private contact is still in use, and deleting it would take it off that
-    contact behind their back (§2.10).
+    contact behind their back (§2.10). The delete is scoped to the actor's own household, so a
+    tag id submitted from the chip row can never reach another household's tag.
 - Renaming and recolouring a tag is still to come.
 
 ## 2.9 Search **[M1]**

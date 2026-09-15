@@ -57,7 +57,8 @@ export interface TagRepository {
 	unassign(contactId: string, tagId: string): Promise<void>;
 	/** How many contacts carry this tag, across the whole household — never viewer-scoped. */
 	countAssignments(tagId: string): Promise<number>;
-	deleteTag(tagId: string): Promise<void>;
+	/** Delete a tag, scoped to its household so a forged id cannot reach another one's. */
+	deleteTag(householdId: string, tagId: string): Promise<void>;
 	/** Delete every tag in the household nobody carries; answers how many went. */
 	deleteOrphans(householdId: string): Promise<number>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Tag[]>;
@@ -111,14 +112,20 @@ export async function assignTagByName(
  * count deliberately spans the whole household rather than what the actor may see — a tag
  * still on someone else's private contact is still in use, and deleting it there would take
  * it off that contact behind their back (docs/02 §2.8).
+ *
+ * `householdId` is the actor's, and scopes the delete: the caller takes `tagId` from a form,
+ * where a forged id would otherwise reach a tag of an entirely different household.
  */
 export async function unassignTag(
 	deps: Pick<TagDeps, 'tags'>,
+	householdId: string,
 	contactId: string,
 	tagId: string
 ): Promise<void> {
 	await deps.tags.unassign(contactId, tagId);
-	if ((await deps.tags.countAssignments(tagId)) === 0) await deps.tags.deleteTag(tagId);
+	if ((await deps.tags.countAssignments(tagId)) === 0) {
+		await deps.tags.deleteTag(householdId, tagId);
+	}
 }
 
 /**

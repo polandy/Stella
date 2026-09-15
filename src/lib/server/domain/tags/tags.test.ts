@@ -56,8 +56,8 @@ function fakeRepo(existing: Tag | null = null, assignmentsLeft = 0) {
 			calls.push(`prune:${householdId}`);
 			return 0;
 		},
-		deleteTag: async (tagId) => {
-			calls.push(`delete:${tagId}`);
+		deleteTag: async (householdId, tagId) => {
+			calls.push(`delete:${householdId}:${tagId}`);
 		},
 		listForContactVisibleTo: async () => [],
 		listContactsByTagVisibleTo: async () => []
@@ -109,14 +109,24 @@ describe('assignTagByName', () => {
 describe('unassignTag', () => {
 	it('deletes the tag once nobody carries it any more', async () => {
 		const f = fakeRepo(null, 0);
-		await unassignTag(deps(f.repo), 'contact-1', 'tag-1');
-		expect(f.calls).toEqual(['unassign:contact-1:tag-1', 'delete:tag-1']);
+		await unassignTag(deps(f.repo), 'household-1', 'contact-1', 'tag-1');
+		expect(f.calls).toEqual(['unassign:contact-1:tag-1', 'delete:household-1:tag-1']);
 	});
 
 	it('keeps a tag that is still on someone else', async () => {
 		const f = fakeRepo(null, 1);
-		await unassignTag(deps(f.repo), 'contact-1', 'tag-1');
+		await unassignTag(deps(f.repo), 'household-1', 'contact-1', 'tag-1');
 		expect(f.calls).toEqual(['unassign:contact-1:tag-1']);
+	});
+
+	/*
+	 * The actor's own household is what the delete is scoped to, never a household read off
+	 * the tag — a forged `tagId` in the form must not be able to nominate its own scope.
+	 */
+	it('scopes the delete to the actor\'s household', async () => {
+		const f = fakeRepo(null, 0);
+		await unassignTag(deps(f.repo), 'household-1', 'contact-1', 'tag-elsewhere');
+		expect(f.calls).toEqual(['unassign:contact-1:tag-elsewhere', 'delete:household-1:tag-elsewhere']);
 	});
 });
 

@@ -105,7 +105,7 @@ describe('visibility scoping', () => {
 	it('deletes a tag and, with it, nothing else', async () => {
 		await repo.insert(tag({ id: 't-other', name: 'Other' }));
 		await repo.assign('c-shared', 't-other');
-		await repo.deleteTag('t-fam');
+		await repo.deleteTag(H, 't-fam');
 		expect(await repo.findByName(H, 'Family')).toBeNull();
 		expect((await repo.listByHousehold(H)).map((t) => t.id)).toEqual(['t-other']);
 		expect(await repo.listForContactVisibleTo(viewerU1, 'c-shared')).toHaveLength(1);
@@ -122,6 +122,24 @@ describe('visibility scoping', () => {
 
 		expect(await repo.deleteOrphans(H)).toBe(1);
 		expect((await repo.listByHousehold(H)).map((t) => t.id)).toEqual(['t-fam']);
+	});
+
+	/*
+	 * `removeTag` validates the contact but takes `tagId` straight from the form, so a forged
+	 * id reaches the delete. Scoping it to the household is what keeps a member of one
+	 * household from deleting another household's tag through their own contact's chip row.
+	 */
+	it('refuses to delete a tag belonging to another household', async () => {
+		db.insert(schema.household).values({ id: 'household-3', name: 'Theirs' }).run();
+		await repo.insert(tag({ id: 't-theirs', householdId: 'household-3', name: 'Theirs' }));
+
+		await repo.deleteTag(H, 't-theirs');
+
+		expect((await repo.listByHousehold('household-3')).map((t) => t.id)).toEqual(['t-theirs']);
+		// …and the same call still deletes the household's own tag, so the scoping is not
+		// simply making `deleteTag` a no-op.
+		await repo.deleteTag(H, 't-fam');
+		expect(await repo.findByName(H, 'Family')).toBeNull();
 	});
 
 	it('leaves a tag of another household alone', async () => {
