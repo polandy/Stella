@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { Clock } from '../../clock';
 import type { LatestRelease, ReleaseFeed } from './feed';
-import { CHECK_INTERVAL_MS, createUpdateCheck } from './update-check';
+import { CHECK_INTERVAL_MS, createUpdateCheck, RETRY_INTERVAL_MS } from './update-check';
 
 /** A clock the test moves by hand — nothing here waits on wall time. */
 function fakeClock(start = 1_000): Clock & { advance(ms: number): void } {
@@ -98,6 +98,25 @@ describe('createUpdateCheck', () => {
 		await Promise.all([first, second]);
 
 		expect(state.calls).toBe(1);
+	});
+
+	it('tries again within the hour after a failure, rather than waiting out the day', async () => {
+		const clock = fakeClock();
+		const { feed, state } = fakeFeed(undefined, clock);
+		state.fails = true;
+		const check = createUpdateCheck({ feed, clock, currentVersion: '0.0.10' });
+		await check.status();
+
+		// The interval runs from when the feed was asked, not from when it gave up, so the
+		// time the failed request itself took counts towards it.
+		clock.advance(RETRY_INTERVAL_MS - 121);
+		await check.status();
+		expect(state.calls).toBe(1);
+
+		clock.advance(1);
+		state.fails = false;
+		expect((await check.status()).state).toBe('available');
+		expect(state.calls).toBe(2);
 	});
 
 	it('reports unreachable when it has never got an answer', async () => {

@@ -12,6 +12,13 @@ import { isNewerRelease } from './version';
 export const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 /**
+ * How long to wait after a failed attempt. Shorter than the interval above, because a
+ * moment's trouble reaching GitHub should not leave the card saying "unreachable" all day —
+ * and longer than a page load, so an outage is not one request per visitor.
+ */
+export const RETRY_INTERVAL_MS = 60 * 60 * 1000;
+
+/**
  * What Settings can say about the release. An instance that makes no check at all has no
  * status — the edge says that, rather than a fourth state nothing here can produce.
  */
@@ -76,7 +83,8 @@ export function createUpdateCheck({ feed, clock, currentVersion }: UpdateCheckDe
 
 	return {
 		async status(): Promise<UpdateStatus> {
-			const due = askedAt === null || clock.now() - askedAt >= CHECK_INTERVAL_MS;
+			const wait = stale ? RETRY_INTERVAL_MS : CHECK_INTERVAL_MS;
+			const due = askedAt === null || clock.now() - askedAt >= wait;
 			// The latch is cleared where it was set, so a request that fails still frees the
 			// next one: a stale resolved promise here would wedge the check for good.
 			if (due && !asking) asking = ask().finally(() => (asking = null));

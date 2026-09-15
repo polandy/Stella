@@ -939,7 +939,9 @@ Three things this deliberately is not:
 - **Not on by default.** It is the only request an instance makes on its own, and a
   self-hosted household does not expect one. `UPDATE_CHECK=true` asks for it (docs/07 §7.4).
 - **Not per visitor.** The server asks GitHub at most once a day and remembers the answer for
-  everyone; opening Settings ten times is one request, not ten.
+  everyone; opening Settings ten times is one request, not ten. A failed attempt is retried
+  after an hour rather than the full day, so a moment's trouble does not mute the card until
+  tomorrow.
 - **Not an updater.** Stella never downloads or installs anything; upgrading stays the
   operator's `docker compose pull`.
 
