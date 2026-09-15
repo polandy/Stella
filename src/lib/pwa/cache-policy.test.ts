@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { OFFLINE_FALLBACK_PATH, cacheNameFor, isStellaCache, verdictFor } from './cache-policy';
+import {
+	OFFLINE_FALLBACK_PATH,
+	cacheNameFor,
+	endsTheSession,
+	isStellaCache,
+	verdictFor
+} from './cache-policy';
 
 const ORIGIN = 'https://stella.example';
 
@@ -82,5 +88,30 @@ describe('the cache name', () => {
 	it('is not so loose that it claims another app’s cache', () => {
 		expect(isStellaCache('workbox-precache-v2')).toBe(false);
 		expect(isStellaCache('')).toBe(false);
+	});
+});
+
+describe('signing out', () => {
+	it('is recognised, so the device can be emptied as it happens', () => {
+		expect(endsTheSession({ ...page('/logout'), method: 'POST' })).toBe(true);
+	});
+
+	it('is recognised without JavaScript, which is how the form actually posts', () => {
+		// The sign-out button is a plain form post, so there is no client-side hook to hang
+		// the purge on — the request passing through the worker is the only signal there is.
+		expect(endsTheSession({ ...asset('/logout'), method: 'POST', isNavigation: true })).toBe(
+			true
+		);
+	});
+
+	it('is not confused with merely looking at a page', () => {
+		expect(endsTheSession(page('/logout'))).toBe(false);
+		expect(endsTheSession({ ...page('/contacts/abc'), method: 'POST' })).toBe(false);
+	});
+
+	it('is not claimed for another origin that happens to have the same path', () => {
+		expect(
+			endsTheSession({ ...asset('/logout', 'https://elsewhere.example'), method: 'POST' })
+		).toBe(false);
 	});
 });

@@ -71,6 +71,23 @@ export function verdictFor(request: CacheableRequest): CacheVerdict {
 	return 'keep';
 }
 
+/** The route that ends a session. A POST to it is the last thing a signed-in device does. */
+const SIGN_OUT_PATH = '/logout';
+
+/**
+ * Whether this request is somebody signing out.
+ *
+ * The sign-out button is a plain form post with no client-side step to hang a purge on, so
+ * the request passing through the worker is the only signal there is that the pages on this
+ * device have stopped being the reader's to see.
+ */
+export function endsTheSession(request: CacheableRequest): boolean {
+	if (request.method !== 'POST') return false;
+
+	const url = new URL(request.url);
+	return url.origin === request.origin && url.pathname === SIGN_OUT_PATH;
+}
+
 /**
  * The cache holding one build's pages. Named after the app version so a deployed update
  * starts from an empty one rather than mixing new shell with pages the old one rendered.

@@ -7,6 +7,7 @@ import {
 	ChevronLeft,
 	ChevronRight,
 	CircleDot,
+	CloudOff,
 	Download,
 	Ellipsis,
 	Gift,
@@ -73,6 +74,8 @@ export const ICONS = {
 	archive: Archive,
 	// States
 	private: Lock,
+	// The network is gone, not the data (docs/02 §2.18).
+	offline: CloudOff,
 	// The member's own person (docs/02 §2.1.3).
 	self: UserRound,
 	calendar: CalendarDays,
