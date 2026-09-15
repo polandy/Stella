@@ -36,8 +36,9 @@ const RawSchema = v.object({
 	SEED_DEMO: boolFrom(false),
 
 	// Ask GitHub once a day whether a newer Stella has been released (docs/02 §2.17.1).
-	// Off by default: it is the only request an instance makes on its own.
-	UPDATE_CHECK: boolFrom(false),
+	// On by default; it is the only request an instance makes on its own, and a household
+	// can opt out with UPDATE_CHECK=false.
+	UPDATE_CHECK: boolFrom(true),
 
 	// Which feed that asks. Empty means Stella's own releases; a fork points this at its
 	// own, and the e2e suite at a local stub (docs/07 §7.4).

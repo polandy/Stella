@@ -938,8 +938,8 @@ included) it is the very first thing they will do.
 
 ### 2.17.1 "Is there a newer Stella?" **[M2]**
 
-Settings ends with an **About** card naming the running version. When the operator has
-switched the release check on, the card also says what the newest published release is:
+Settings ends with an **About** card naming the running version. Unless the operator has
+switched the release check off, the card also says what the newest published release is:
 
 - **A newer release** — a `New` badge, `v0.0.11 is available`, and a link to its release
   notes. The line is the whole notice: no banner, no dialog, nothing to dismiss.
@@ -952,8 +952,9 @@ switched the release check on, the card also says what the newest published rele
 
 Three things this deliberately is not:
 
-- **Not on by default.** It is the only request an instance makes on its own, and a
-  self-hosted household does not expect one. `UPDATE_CHECK=true` asks for it (docs/07 §7.4).
+- **Opt-out, not silent.** It is the only request an instance makes on its own; a
+  self-hosted household that doesn't want it can turn it off with `UPDATE_CHECK=false`
+  (docs/07 §7.4).
 - **Not per visitor.** The server asks GitHub at most once a day and remembers the answer for
   everyone; opening Settings ten times is one request, not ten. A failed attempt is retried
   after an hour rather than the full day, so a moment's trouble does not mute the card until
