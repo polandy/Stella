@@ -6,12 +6,15 @@ import {
 	CIRCLE_COLORS,
 	createCircle,
 	joinCircleByName,
+	listRoleSuggestionsByCircleName,
 	resolveCircleColor,
 	resolveCircleKind,
 	suggestCircleColor,
+	suggestRoles,
 	type Circle,
 	type CircleDeps,
 	type CircleRepository,
+	type CircleRoleUse,
 	type NewCircle,
 	type NewMembership
 } from './circles';
@@ -47,6 +50,7 @@ function fakeRepo(existing: Circle | null = null) {
 	const memberships: NewMembership[] = [];
 	const removed: Array<[string, string]> = [];
 	let exists = false;
+	let roleUses: CircleRoleUse[] = [];
 	const repo: CircleRepository = {
 		insert: async (c) => void inserted.push(c),
 		findByNameVisibleTo: async () => existing,
@@ -56,14 +60,16 @@ function fakeRepo(existing: Circle | null = null) {
 		addMembership: async (m) => void memberships.push(m),
 		removeMembership: async (cid, contactId) => void removed.push([cid, contactId]),
 		listMembersVisibleTo: async () => [],
-		listForContactVisibleTo: async () => []
+		listForContactVisibleTo: async () => [],
+		listRoleUsesVisibleTo: async () => roleUses
 	};
 	return {
 		repo,
 		inserted,
 		memberships,
 		removed,
-		setExists: (v: boolean) => (exists = v)
+		setExists: (v: boolean) => (exists = v),
+		setRoleUses: (v: CircleRoleUse[]) => (roleUses = v)
 	};
 }
 
@@ -139,5 +145,60 @@ describe('addMember', () => {
 		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
 		await addMember(deps, creator, 'circle-1', 'mara');
 		expect(f.memberships).toHaveLength(0);
+	});
+});
+
+describe('suggestRoles', () => {
+	it('ranks the roles already used in the circle by how common they are', () => {
+		expect(suggestRoles(['student', 'teacher', 'student', 'student', 'teacher', 'coach'])).toEqual([
+			'student',
+			'teacher',
+			'coach'
+		]);
+	});
+
+	it('breaks ties alphabetically so the order is stable', () => {
+		expect(suggestRoles(['captain', 'member', 'assistant'])).toEqual([
+			'assistant',
+			'captain',
+			'member'
+		]);
+	});
+
+	it('ignores members without a role and trims what is left', () => {
+		expect(suggestRoles([null, '  member  ', '   ', 'member'])).toEqual(['member']);
+	});
+
+	it('folds spellings that differ only in case, keeping the most common one', () => {
+		expect(suggestRoles(['Teacher', 'teacher', 'teacher'])).toEqual(['teacher']);
+		expect(suggestRoles(['Teacher', 'Teacher', 'teacher'])).toEqual(['Teacher']);
+	});
+});
+
+describe('listRoleSuggestionsByCircleName', () => {
+	it('groups the roles per circle, keyed by the circle name as typed', async () => {
+		const f = fakeRepo();
+		f.setRoleUses([
+			{ circleName: 'Ski Course', role: 'coach' },
+			{ circleName: 'Ski Course', role: 'pupil' },
+			{ circleName: 'Ski Course', role: 'pupil' },
+			{ circleName: 'Day School', role: 'teacher' },
+			{ circleName: 'Day School', role: null }
+		]);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		const byName = await listRoleSuggestionsByCircleName(deps, { id: 'u1', householdId: 'h1' });
+		expect(byName).toEqual({ 'ski course': ['pupil', 'coach'], 'day school': ['teacher'] });
+	});
+
+	it('is keyed case-insensitively so a differently typed name still matches', async () => {
+		const f = fakeRepo();
+		f.setRoleUses([
+			{ circleName: 'Ski Course', role: 'coach' },
+			{ circleName: 'ski course', role: 'coach' }
+		]);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		expect(await listRoleSuggestionsByCircleName(deps, { id: 'u1', householdId: 'h1' })).toEqual({
+			'ski course': ['coach']
+		});
 	});
 });
