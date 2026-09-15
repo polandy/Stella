@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { circleNameKey } from '$lib/circles/name-key';
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
@@ -188,6 +189,17 @@
 	// The note's audience narrows whom the @-picker offers (docs/02 §2.20.1).
 	let noteVisibility = $state<'shared' | 'private'>('shared');
 	type SectionName = keyof typeof openSection;
+	/*
+	 * Joining a circle is one free-text field, so the role suggestions follow what is typed:
+	 * the roles that very circle already uses, matched on its name regardless of capitalisation.
+	 */
+	let joiningCircleName = $state('');
+	const joiningCircleRoles = $derived(data.circleRolesByName[circleNameKey(joiningCircleName)] ?? []);
+	// The form is unmounted when the section closes, so the typed name would outlive its own
+	// input and a reopened editor would offer the previous circle's roles beside an empty field.
+	$effect(() => {
+		if (!openSection.circles) joiningCircleName = '';
+	});
 	const saved = (name: SectionName) =>
 		savedEnhance(removals, t('components.saved'), () => (openSection[name] = false));
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
@@ -511,11 +523,21 @@
 							list="circle-names"
 							placeholder={t('contact.joinOrCreate')}
 							class="min-w-40 flex-1 {INPUT}"
+							bind:value={joiningCircleName}
 						/>
 						<datalist id="circle-names">
 							{#each data.circleNames as name (name)}<option value={name}></option>{/each}
 						</datalist>
-						<input name="role" placeholder={t('contact.roleOptional')} class="w-28 {INPUT}" />
+						<input
+							name="role"
+							list="circle-roles"
+							placeholder={t('contact.roleOptional')}
+							class="w-28 {INPUT}"
+						/>
+						<!-- The roles the circle being joined already uses; a new one is still free to type. -->
+						<datalist id="circle-roles">
+							{#each joiningCircleRoles as role (role)}<option value={role}></option>{/each}
+						</datalist>
 						<Button variant="primary" size="sm">{t('common.add')}</Button>
 					</form>
 				{/snippet}

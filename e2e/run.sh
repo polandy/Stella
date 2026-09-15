@@ -15,6 +15,11 @@ IMAGE="mcr.microsoft.com/playwright:v1.62.1-noble"
 PORT="${E2E_PORT:-4173}"
 BASE_URL="http://127.0.0.1:$PORT"
 export E2E_PORT="$PORT"
+# The release feed stub the About card reads (see `release-feed-stub.ts`). It runs here on
+# the host beside the app, not inside the container, which has no Bun.
+FEED_PORT="${E2E_FEED_PORT:-$((PORT + 1))}"
+FEED_URL="http://127.0.0.1:$FEED_PORT/latest"
+export E2E_FEED_PORT="$FEED_PORT"
 
 # A server already on this port belongs to somebody else — very likely another worktree's
 # build. Reusing it would run this branch's specs against that branch's app and pass, so
@@ -23,11 +28,20 @@ if curl -sf "$BASE_URL/healthz" >/dev/null 2>&1; then
   echo "Port $PORT is already serving something. Run with E2E_PORT=<free port>." >&2
   exit 1
 fi
+if curl -sf "$FEED_URL" >/dev/null 2>&1; then
+  echo "Port $FEED_PORT is already serving something. Run with E2E_FEED_PORT=<free port>." >&2
+  exit 1
+fi
+
+echo "▶ Starting the release feed stub…"
+PORT="$FEED_PORT" bun e2e/release-feed-stub.ts &
+feed_pid=$!
+trap 'kill "$feed_pid" 2>/dev/null || true' EXIT
 
 echo "▶ Building and starting the test server…"
 bun run e2e:server &
 server_pid=$!
-trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+trap 'kill "$server_pid" "$feed_pid" 2>/dev/null || true' EXIT
 
 for _ in $(seq 1 90); do
   if curl -sf "$BASE_URL/healthz" >/dev/null; then break; fi
@@ -45,4 +59,5 @@ docker run --rm --network host \
   -e HOME=/tmp \
   -e CI=1 \
   -e E2E_PORT="$PORT" \
+  -e E2E_FEED_PORT="$FEED_PORT" \
   "$IMAGE" npx playwright test "$@"

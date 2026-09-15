@@ -452,6 +452,13 @@ a named group contacts belong to, over a period of time. (A first-class entity, 
   stays distinct from typed pairwise relationships (§2.4).
 - **Feeds suggestions (§2.4.1 / §2.2.1):** e.g. "Hans and Peter are both in Ski Course —
   add a friendship?" — always opt-in.
+- **Filling a circle.** A circle's page adds **several people at once**: the picker keeps every
+  person chosen as a chip until the form is submitted, so a whole class or team joins in one
+  go rather than one round trip per person. A role typed alongside applies to everyone in that
+  pick (the form says so as soon as more than one is chosen); someone who needs a different
+  role is removed from the circle and added again with it. Someone already in the circle, or named twice in the same pick, joins
+  once — and a person the actor may not see fails the whole pick rather than being dropped
+  from it silently. The pick is written as one transaction, so it lands whole or not at all.
 - **Finding one among many.** The Circles page filters as you type over name and description,
   with one chip per kind that is actually there, each carrying its count. The counts follow the
   query, so no chip ever leads to an empty page, and a kind the query has filtered away falls
@@ -467,6 +474,11 @@ a named group contacts belong to, over a period of time. (A first-class entity, 
   UI suggests **existing circles** (matched fuzzily, visibility-scoped). Pick one to join
   it; if you type a name that doesn't exist yet, **the circle is created on the fly** from
   that input (kind/period can be refined later). No separate "create circle first" step.
+- **Roles are suggested from the circle itself:** adding someone offers the roles that circle
+  already uses, most common first (a class offers *student* / *teacher*, a team *captain* /
+  *coach*) — spellings differing only in case count as one role. On a person's page, where the
+  circle is typed by name, the suggestions follow that name. A new role is always free to type;
+  nothing is forced.
 - **Circle overview page:** a dedicated screen of circle **cards**, each with kind, member
   count, description and the first few faces (docs/05 §5.5). Opening a circle shows its
   **members** as a grid with roles and lets you add/remove members. Filters by kind and
@@ -523,16 +535,21 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 - From **a person's profile**: the map on their page *is* this explorer, with a two-hop reach
   (docs/05 §5.5). **Open in the graph** carries that person here as the centre — from the
   card's header, and from the peek panel of any node the embedded map cannot expand.
+- From **a circle's page**: **Open in the graph** centres the explorer on the circle itself,
+  which is a node like any other — so the whole group and everyone hanging off its members is
+  one view (§2.4.2). The peek panel of a circle node goes the other way, back to its page.
 - As a **standalone screen** (nav → Graph). It opens on **your own person** when you have
   said who that is (§2.1.3), and otherwise on the first person the household has.
 - **From a profile's question.** *How are we connected?* on a person's card asks who, and
   opens the explorer with both ends named (`?center=…&path=…`), the chain already traced. The
   question is answered here rather than there because a profile carries two hops and the chain
   usually runs further; the explorer holds the whole visible graph.
-- **The way back.** When a link named the centre, the explorer carries *Back to <person>* to
-  the page it was opened from. It is offered only for a centre that was asked for and could be
-  honoured: falling back to your own person is not somewhere you came from, and neither is a
-  stale link naming somebody this member cannot see.
+- **The way back.** When a link named the centre, the explorer carries *Back to <person>* — or
+  *Back to the <name> circle* — to the page it was opened from. It is offered only for a centre
+  that was asked for and could be honoured: falling back to your own person is not somewhere
+  you came from, and neither is a stale link naming somebody this member cannot see. A node of
+  a kind with no page of its own, or with no name to show, is owed nothing rather than linked
+  into a 404.
 
 **What is shown**
 
@@ -916,6 +933,36 @@ included) it is the very first thing they will do.
 - **Data** (admin): export, import, backup.
 - **Appearance:** theme (system/light/dark), accent color choice from Catppuccin set,
   reduced motion.
+- **About:** which version this Stella is, and whether a newer one has been released (§2.17.1).
+
+### 2.17.1 "Is there a newer Stella?" **[M2]**
+
+Settings ends with an **About** card naming the running version. When the operator has
+switched the release check on, the card also says what the newest published release is:
+
+- **A newer release** — a `New` badge, `v0.0.11 is available`, and a link to its release
+  notes. The line is the whole notice: no banner, no dialog, nothing to dismiss.
+- **The newest release** — one quiet sentence, so the answer to "am I behind?" is visible
+  rather than absent.
+- **GitHub unreachable** — said plainly. If an earlier answer is still remembered, that
+  answer is shown with the date it was given, rather than being withdrawn for a day.
+- **The check is off** — the admin is told how to switch it on; other members see only the
+  version, since it is not theirs to change.
+
+Three things this deliberately is not:
+
+- **Not on by default.** It is the only request an instance makes on its own, and a
+  self-hosted household does not expect one. `UPDATE_CHECK=true` asks for it (docs/07 §7.4).
+- **Not per visitor.** The server asks GitHub at most once a day and remembers the answer for
+  everyone; opening Settings ten times is one request, not ten. A failed attempt is retried
+  after an hour rather than the full day, so a moment's trouble does not mute the card until
+  tomorrow.
+- **Not an updater.** Stella never downloads or installs anything; upgrading stays the
+  operator's `docker compose pull`.
+
+What GitHub sees when the check runs: an unauthenticated request for the repository's latest
+release, from the instance's IP address, identifying itself as `Stella/<version>`. No
+household data leaves the instance, and nothing is sent when the check is off.
 
 ## 2.18 Progressive Web App **[M2]**
 

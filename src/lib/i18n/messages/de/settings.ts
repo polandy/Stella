@@ -33,5 +33,17 @@ export const settings: SettingsMessages = {
 		'Benenne die Arten von Verbindungen, die dein Haushalt festhält — über die hinaus, die Stella mitbringt.',
 	'settings.data.adminOnly':
 		'Import, Sicherungen und die Beziehungsarten sind der Haushalts-Administration vorbehalten.',
-	'settings.account.heading': 'Konto'
+	'settings.account.heading': 'Konto',
+	'settings.about.heading': 'Über Stella',
+	'settings.about.version': (p: { version: string }) => `Stella ${p.version}`,
+	'settings.about.checking': 'Suche nach einer neueren Version …',
+	'settings.about.badge': 'Neu',
+	'settings.about.available': (p: { version: string }) => `${p.version} ist verfügbar`,
+	'settings.about.releaseNotes': 'Release Notes',
+	'settings.about.current': 'Das ist die neueste Version.',
+	'settings.about.unreachable':
+		'GitHub war nicht erreichbar, es kann also eine neuere Version geben.',
+	'settings.about.unreachableSince': (p: { when: string }) => `Zuletzt geprüft: ${p.when}.`,
+	'settings.about.off':
+		'Stella sucht nicht nach neuen Versionen. Mit UPDATE_CHECK=true schaltest du die Suche ein.'
 };

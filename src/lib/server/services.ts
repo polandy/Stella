@@ -10,6 +10,7 @@ import { createOidcProvider } from './auth/oidc/provider';
 import type { OidcPolicy } from './auth/oidc/types';
 import { hashPassword, verifyPassword } from './auth/password';
 import type { SessionDeps, SessionRepository } from './auth/session';
+import { APP_VERSION } from '../version';
 import { systemClock } from './clock';
 import { getConfig } from './config';
 import { getDb, getSqlite } from './db';
@@ -29,6 +30,9 @@ import { createDrizzleMentionedInRepository } from './db/mentioned-in-repository
 import { createDrizzleNoteRepository } from './db/note-repository';
 import { createDrizzlePhotoRepository } from './db/photo-repository';
 import { createFileMediaStore } from './media/file-store';
+import { createGitHubReleaseFeed } from './release/github-feed';
+import { createUpdateCheck, type UpdateCheck } from './domain/release/update-check';
+import { parseVersion } from './domain/release/version';
 import { createDrizzleArchiveRepository } from './db/archive-repository';
 import { createDrizzleRestoreRepository } from './db/restore-repository';
 import type { ArchiveDeps, ArchiveRepository } from './domain/archive/archive';
@@ -176,6 +180,23 @@ export function getDeleteContactDeps(): ContactDeps & { media: MediaStore } {
 }
 
 /** Deps for "which of these people am I" (docs/02 §2.1.3). */
+/*
+ * The release check, or null when this instance makes none: either the operator did not ask
+ * for it, or this build carries no readable release number and has nothing to compare.
+ * Built once, because the answer it caches is the whole point (docs/02 §2.17.1).
+ */
+let updateCheck: UpdateCheck | null | undefined;
+export function getUpdateCheck(): UpdateCheck | null {
+	if (updateCheck !== undefined) return updateCheck;
+	const config = getConfig();
+	if (!config.updateCheck || !parseVersion(APP_VERSION)) return (updateCheck = null);
+	return (updateCheck = createUpdateCheck({
+		feed: createGitHubReleaseFeed({ version: APP_VERSION, url: config.updateFeedUrl || undefined }),
+		clock: systemClock,
+		currentVersion: APP_VERSION
+	}));
+}
+
 export function getSelfContactDeps(): SelfContactDeps {
 	return { contacts: getContacts(), accounts: getAccounts() };
 }

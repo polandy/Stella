@@ -35,6 +35,14 @@ const RawSchema = v.object({
 	// Populate the database with the demo dataset on startup (test phase only). Idempotent.
 	SEED_DEMO: boolFrom(false),
 
+	// Ask GitHub once a day whether a newer Stella has been released (docs/02 §2.17.1).
+	// Off by default: it is the only request an instance makes on its own.
+	UPDATE_CHECK: boolFrom(false),
+
+	// Which feed that asks. Empty means Stella's own releases; a fork points this at its
+	// own, and the e2e suite at a local stub (docs/07 §7.4).
+	UPDATE_FEED_URL: v.optional(v.string(), ''),
+
 	OIDC_ISSUER: v.optional(v.string(), ''),
 	OIDC_CLIENT_ID: v.optional(v.string(), ''),
 	OIDC_CLIENT_SECRET: v.optional(v.string(), ''),
@@ -79,6 +87,8 @@ function build() {
 		sessionSecret: raw.SESSION_SECRET,
 		isProd,
 		seedDemo: raw.SEED_DEMO,
+		updateCheck: raw.UPDATE_CHECK,
+		updateFeedUrl: raw.UPDATE_FEED_URL,
 		auth: {
 			local: raw.AUTH_LOCAL_ENABLED,
 			oidc: raw.AUTH_OIDC_ENABLED

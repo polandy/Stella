@@ -261,10 +261,19 @@ tells you how many instead of offering the button.
 A circle is a context people share: a school class, a football team, a choir, a street.
 Add someone to a circle with an optional role ("goalkeeper", "class teacher") and, if it
 matters, the years they were part of it — so a circle stays truthful as people come and
-go.
+go. The role field offers the roles that circle already uses, so the second goalkeeper is
+one click and nobody ends up half "coach" and half "Coach"; anything new is still yours to
+type.
+
+You can add a whole group in one go: keep picking names and each one stays as a chip until
+you press Add. A role you type applies to everyone in that pick, so a team of eleven
+"players" is one form, not eleven. A role is fixed once someone has joined: to change it,
+remove them from the circle and add them again with the role you want.
 
 Circles are also the answer to "who else was there?", which is usually the question you
-have when you are trying to remember someone's name.
+have when you are trying to remember someone's name. **Open in the graph** on a circle's page
+draws that answer: the circle in the middle, everyone in it around it, and their own links
+running on from there. The way back to the circle's page waits at the top of the map.
 
 Once there are more than a handful, start typing on the Circles page to narrow the list by
 name or description, or tap a kind — *Class*, *Club*, *Team* — to see only those. The number
@@ -414,6 +423,13 @@ signs in through single sign-on, Stella also asks the login provider to end that
 so signing out of Stella does not leave you one click away from signing back in. Either
 way you land back on the sign-in page — and if the provider cannot be reached, you are
 still signed out of Stella.
+
+## Which Stella is this?
+
+**Settings → About** names the version you are on. If whoever runs your instance has
+switched the release check on, it also tells you when a newer one has been published, with a
+link to what changed — a line, not an interruption, and nothing to dismiss. Stella never
+updates itself; that is the household admin's job.
 
 ## Light and dark
 

@@ -140,6 +140,10 @@ BODY_SIZE_LIMIT=250M                        # adapter-node request cap; a restor
 AUTH_LOCAL_ENABLED=true                     # allow email+password
 AUTH_OIDC_ENABLED=true                      # allow SSO
 
+# Release check (off by default)
+UPDATE_CHECK=false                          # true → ask GitHub once a day whether a newer Stella exists (§2.17.1)
+UPDATE_FEED_URL=                            # which feed that asks; empty = Stella's own releases
+
 # OIDC / Authelia
 OIDC_ISSUER=https://auth.example.home       # discovery via {issuer}/.well-known/openid-configuration
 OIDC_CLIENT_ID=stella
@@ -165,6 +169,8 @@ Notes:
   preview and confirm steps (docs/02 §2.16); there is no separate variable for it.
 - A documented **break-glass** path: create/keep one local admin with `role_locked=1`
   so IdP misconfiguration can't lock out the household.
+- `UPDATE_CHECK` is the only switch that lets the instance talk to anything but its own
+  browser clients; with it off, nothing is requested and no state is kept.
 
 ### Authelia side (documented, not shipped)
 The docs will include a ready-to-paste Authelia OIDC client snippet: a confidential
@@ -231,6 +237,30 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   request to every route, and would go stale independently of the session it belongs to.
   On the session row it is deleted by the same statement that ends the session, and shares
   the database's blast radius rather than widening it.
+- **Circle membership is inserted as a batch, and the "already a member" check rides inside
+  that transaction** — filling a circle adds several people at once (§2.4.2), so the writes have
+  to land together or not at all. The domain cannot own that: a use-case takes ports, not a
+  database handle, and there is no transaction port. Deciding the skip in the domain and then
+  inserting row by row would also leave a window in which a concurrent join lands between the
+  check and the insert. So `CircleRepository.addMemberships` takes the whole pick and, in one
+  transaction, skips whoever is already a member and inserts the rest. The cost is that one
+  business rule — membership is idempotent — is enforced in the adapter rather than read off
+  the use-case; the domain still owns *what* gets offered to it (dedup, the shared role). A
+  unique index on `(circle_id, contact_id)` would move the rule back into the schema and let
+  `onConflictDoNothing` do the work; that is the better end state, and it needs a migration
+  that first resolves any duplicate rows already in the wild.
+- **The release check asks from the server, and only when asked** — "is there a newer
+  Stella?" could be answered in the browser, which would cost the server nothing. It is done
+  server-side anyway: from the browser it would be one GitHub request per visitor per visit
+  (a family instance would spend its 60-per-hour unauthenticated budget on nothing), the
+  answer could not be remembered for the next person, and every member's browser would be
+  the one talking to github.com. On the server it is one request a day for the household,
+  cached in memory, and it is off unless the operator switches it on — the alternative,
+  on-by-default, would make a self-hosted instance phone home without being asked, which is
+  the one thing the project promises it does not do. The costs accepted: a restart forgets
+  the cached answer, and the state lives in the process rather than the database, so a second
+  instance would check separately. Revisit if Stella ever runs more than one process.
+  (§2.17.1.)
 - **Our own message catalogue over an i18n library** — two languages and no plural rules
   beyond "one or many" do not pay for Paraglide's compiler or a runtime store. Typed area
   modules give the same guarantee more cheaply: German is typed against English, so a
@@ -483,6 +513,17 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   form and a concept to explain — for a suggestion in an editable field. Category is a proxy
   the household already sets, and it costs a wrong offer for a self-named *step-* or *adoptive*
   type filed under family, which is cleared by typing over the day.
+
+- **The dev server runs under Bun, not Node** — `bun run dev` is `bunx --bun vite dev` (and
+  `preview` likewise), because Stella's database handle is `bun:sqlite`, which does not exist
+  in Node: under Vite's default Node runtime the dev server starts and then 500s on every
+  page. The handle is still `require`d lazily so the Node-based build step never links it,
+  but the `require` is *made* with `createRequire` — Vite's module runner hands an ES module
+  none, which is why a bare one worked in the built server and in `bun test` and nowhere
+  else. Rejected: a Node-compatible driver for dev only, which would have meant running
+  development against a different database library than production. The cost is that dev and
+  preview no longer start under Node at all, and `scripts/dev-smoke.sh` in CI is what keeps
+  that runtime from rotting unnoticed again.
 
 ## 4.10 Deployment
 

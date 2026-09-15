@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { filterPeople, type SelectablePerson } from './select';
+import { filterPeople, stillNeedsAPick, type SelectablePerson } from './select';
 
 function person(
 	overrides: Partial<SelectablePerson> & { id: string; displayName: string }
@@ -37,5 +37,25 @@ describe('filterPeople', () => {
 
 	it('excludes people who do not match', () => {
 		expect(filterPeople('xyz', people)).toEqual([]);
+	});
+});
+
+/*
+ * The picker's `required` sits on the text box, which is empty once someone is chosen as a
+ * chip — so asking the browser to keep enforcing it would block a form that is in fact filled
+ * in. Multi-select forms could not be submitted at all before this.
+ */
+describe('stillNeedsAPick', () => {
+	it('stops demanding a name once someone is chosen', () => {
+		expect(stillNeedsAPick(true, 1)).toBe(false);
+		expect(stillNeedsAPick(true, 3)).toBe(false);
+	});
+
+	it('demands one while nobody is chosen', () => {
+		expect(stillNeedsAPick(true, 0)).toBe(true);
+	});
+
+	it('demands nothing from an optional picker', () => {
+		expect(stillNeedsAPick(false, 0)).toBe(false);
 	});
 });

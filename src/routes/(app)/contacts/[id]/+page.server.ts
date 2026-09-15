@@ -11,6 +11,7 @@ import {
 	joinCircleByName,
 	listCircles,
 	listCirclesForContact,
+	listRoleSuggestionsByCircleName,
 	removeMember
 } from '$lib/server/domain/circles/circles';
 import {
@@ -163,6 +164,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		tags,
 		contactCircles,
 		allCircles,
+		circleRolesByName,
 		storyPage,
 		journalPhotos,
 		gallery,
@@ -181,6 +183,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		listTagsForContact(getTagDeps(), viewer, params.id),
 		listCirclesForContact(getCircleDeps(), viewer, params.id),
 		listCircles(getCircleDeps(), viewer),
+		listRoleSuggestionsByCircleName(getCircleDeps(), viewer),
 		listStoryPage(getStoryDeps(), viewer, params.id, { limit: STORY_PAGE }),
 		getPhotos().listJournalPhotos(viewer, params.id),
 		listGallery(getGalleryDeps(), viewer, params.id),
@@ -269,6 +272,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		tags,
 		circles: contactCircles,
 		circleNames: allCircles.map((c) => c.name),
+		// Roles already used per circle, so joining one offers what that circle calls its people.
+		circleRolesByName,
 		tagColors: TAG_COLORS,
 		fieldKinds: CONTACT_FIELD_KINDS,
 		fields: fields.map((f) => ({

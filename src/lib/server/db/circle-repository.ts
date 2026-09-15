@@ -7,6 +7,7 @@ import {
 	type Circle,
 	type CircleColor,
 	type CircleRepository,
+	type CircleRoleUse,
 	type CircleWithCount,
 	type ContactCircleView,
 	type MemberPreview,
@@ -73,6 +74,7 @@ export function createDrizzleCircleRepository(
 				.run();
 		},
 
+		// The SQL spelling of `circleNameKey` (src/lib/circles/name-key.ts) — keep the two in step.
 		async findByNameVisibleTo(viewer: Viewer, name: string): Promise<Circle | null> {
 			const row = db
 				.select(circleCols)
@@ -135,27 +137,29 @@ export function createDrizzleCircleRepository(
 			}));
 		},
 
-		async membershipExists(circleId: string, contactId: string): Promise<boolean> {
-			const row = db
-				.select({ id: circleMembership.id })
-				.from(circleMembership)
-				.where(and(eq(circleMembership.circleId, circleId), eq(circleMembership.contactId, contactId)))
-				.get();
-			return row !== undefined && row !== null;
-		},
-
-		async addMembership(m: NewMembership) {
-			db.insert(circleMembership)
-				.values({
-					id: m.id,
-					circleId: m.circleId,
-					contactId: m.contactId,
-					role: m.role,
-					createdBy: m.createdBy,
-					createdAt: m.createdAt,
-					updatedAt: m.updatedAt
-				})
-				.run();
+		async addMemberships(memberships: readonly NewMembership[]): Promise<void> {
+			if (memberships.length === 0) return;
+			db.transaction((tx) => {
+				for (const m of memberships) {
+					const existing = tx
+						.select({ id: circleMembership.id })
+						.from(circleMembership)
+						.where(and(eq(circleMembership.circleId, m.circleId), eq(circleMembership.contactId, m.contactId)))
+						.get();
+					if (existing) continue;
+					tx.insert(circleMembership)
+						.values({
+							id: m.id,
+							circleId: m.circleId,
+							contactId: m.contactId,
+							role: m.role,
+							createdBy: m.createdBy,
+							createdAt: m.createdAt,
+							updatedAt: m.updatedAt
+						})
+						.run();
+				}
+			});
 		},
 
 		async removeMembership(circleId: string, contactId: string) {
@@ -205,6 +209,17 @@ export function createDrizzleCircleRepository(
 				color: r.color as CircleColor,
 				role: r.role
 			}));
+		},
+
+		async listRoleUsesVisibleTo(viewer: Viewer): Promise<CircleRoleUse[]> {
+			return db
+				.select({ circleName: circle.name, role: circleMembership.role })
+				.from(circleMembership)
+				.innerJoin(circle, eq(circleMembership.circleId, circle.id))
+				.innerJoin(contact, eq(circleMembership.contactId, contact.id))
+				.where(membershipVisibleTo(viewer, circle, contact))
+				.orderBy(circle.name, circleMembership.role)
+				.all();
 		}
 	};
 }

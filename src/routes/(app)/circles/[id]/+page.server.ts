@@ -1,6 +1,12 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { addMember, getCircle, listMembers, removeMember } from '$lib/server/domain/circles/circles';
+import {
+	addMembers,
+	getCircle,
+	listMembers,
+	removeMember,
+	suggestRoles
+} from '$lib/server/domain/circles/circles';
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
 import { getCircleDeps, getContactDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
@@ -8,7 +14,7 @@ import { say } from '$lib/server/i18n/say';
 
 /*
  * Circle detail (docs/02 §2.4.2): the circle, its visible members (with roles), and a picker to
- * add any other visible contact. Both endpoints of a membership must be visible (§3.7).
+ * add one or more other visible contacts at once. Both endpoints of a membership must be visible (§3.7).
  */
 export const load: PageServerLoad = async ({ locals, params }) => {
 	if (!locals.user) throw redirect(302, '/login');
@@ -26,35 +32,50 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	return {
 		circle,
 		members,
+		// What this circle already calls its people, offered while adding the next one.
+		roleSuggestions: suggestRoles(members.map((m) => m.role)),
 		candidates: allContacts.filter((c) => !memberIds.has(c.id))
 	};
 };
 
 const AddSchema = v.object({
-	contactId: v.pipe(v.string(), v.minLength(1)),
+	contactIds: v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.minLength(1)),
 	role: v.optional(v.pipe(v.string(), v.trim()))
 });
 
 export const actions: Actions = {
-	addMember: async ({ request, params, locals }) => {
+	addMembers: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
-		// Both the circle and the contact must be visible to the actor.
+		// The circle must be visible to the actor before anything is added to it.
 		const circle = await getCircle(getCircleDeps(), viewer, params.id);
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 		const form = await request.formData();
 		const parsed = v.safeParse(AddSchema, {
-			contactId: form.get('contactId'),
+			contactIds: form.getAll('contactId'),
 			role: form.get('role') || undefined
 		});
 		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
 
-		const contact = await getContact(getContactDeps(), viewer, parsed.output.contactId);
-		if (!contact) return fail(400, { error: say(locals, 'errors.person.notFound') });
+		// Every chosen person must be visible to the actor — one that is not fails the whole
+		// pick rather than being dropped silently from it (§3.7).
+		const contactDeps = getContactDeps();
+		const contacts = await Promise.all(
+			parsed.output.contactIds.map((id) => getContact(contactDeps, viewer, id))
+		);
+		if (contacts.some((contact) => !contact)) {
+			return fail(400, { error: say(locals, 'errors.person.notFound') });
+		}
 
-		await addMember(getCircleDeps(), { userId: locals.user.id }, params.id, parsed.output.contactId, parsed.output.role);
+		await addMembers(
+			getCircleDeps(),
+			{ userId: locals.user.id },
+			params.id,
+			parsed.output.contactIds,
+			parsed.output.role
+		);
 		throw redirect(303, `/circles/${params.id}`);
 	},
 

@@ -268,7 +268,9 @@ They must be edited together; `app.css` says so at both blocks.
   colour dot, name, kind and member count, the description, and a stack of the first four faces
   with "+n" for the rest. A query that matches nothing gets the empty state, not a blank page. A circle's page
   puts the members in a **grid** of avatar cards with roles; *Add member* is the card's one
-  disclosure, like every other card in the app.
+  disclosure, like every other card in the app. Its header carries *Open in the graph* — the
+  same button a person's People card has, because a circle is a node like any other — and the
+  explorer offers *Back to the <name> circle* in return (§2.7).
 - **Empty states** are one component (`EmptyState`): a large icon in the subtle colour, a
   line naming what belongs here, and the one action that starts it — never a bare "nothing
   here". Bands that are absent when empty (Coming up, Quiet lately) do not use it.
@@ -316,7 +318,12 @@ They must be edited together; `app.css` says so at both blocks.
   with a category dot, an *Edit* disclosure and — only where nothing uses the type — a
   `RemoveButton` with the usual Undo window; a type in use shows `used N×` in its place. The
   built-in twelve follow as a plain, actionless list under *Built in*, so their absence from
-  the editable set reads as deliberate. Admin only; members see why.
+  the editable set reads as deliberate. Admin only; members see why. The page ends with an **About**
+  card: the running version as the card's own line, and under it — when the release check is
+  on — one line about the newest published release. That line is a notice, not a banner: a
+  small `New` pill in soft primary, the version, and *Release notes* as an ordinary link,
+  laid out to wrap on a narrow screen. Nothing to dismiss, nothing to act on in the app
+  (docs/02 §2.17.1).
 - **Auth** — one split shell for sign-in and first-run setup: the brand and one line of
   promise on a sunken panel, the form beside it; on a phone the panel shrinks to a header so
   the form comes first. Sign-in offers **"Sign in with SSO"** (Authelia) and, if enabled, a
@@ -499,7 +506,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - **Connection path:** choosing a second person animates the connecting nodes/edges into
   view and de-emphasizes everything else, so the chain reads instantly.
 - **Selection & peek:** selecting a node dims the rest, highlights its neighborhood, and
-  opens a side peek panel (summary + link to profile).
+  opens a side peek panel (summary + the way to the node's own page: *Open profile* for a
+  person, *Open the circle* for a circle).
 - **Layouts:** force-directed default; tidy tree for family hierarchies and clustered for
   circles (M2).
 - **Theme-aware:** all node/edge/label colors read from the semantic tokens so it matches

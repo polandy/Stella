@@ -24,10 +24,10 @@
 		data.members.filter((m) => !removals.isPending(removalKey('membership', m.membershipId)))
 	);
 	let addOpen = $state(false);
-	let newMemberId = $state<string[]>([]);
+	let newMemberIds = $state<string[]>([]);
 	const saved = savedEnhance(removals, t('components.saved'), () => {
 		addOpen = false;
-		newMemberId = [];
+		newMemberIds = [];
 	});
 	const INPUT = 'rounded-md border border-border bg-bg px-3 py-2 text-fg';
 </script>
@@ -39,7 +39,7 @@
 		<span class="grid size-12 shrink-0 place-items-center rounded-full" style={accentDotStyle(circle.color)}>
 			<span class="size-4 rounded-full bg-card/70"></span>
 		</span>
-		<div class="min-w-0">
+		<div class="min-w-0 flex-1">
 			<h1 class="truncate text-2xl font-semibold text-fg">{circle.name}</h1>
 			<p class="text-sm text-fg-muted">
 				<span>{circleKindLabel(t, circle.kind)}</span>
@@ -47,12 +47,14 @@
 				{#if circle.visibility === 'private'} · {t('circles.private')}{/if}
 			</p>
 		</div>
+		<!-- The circle is a node of the graph, so it opens there like a person does (docs/02 §2.7). -->
+		<Button size="sm" icon="graph" href="/graph?center={circle.id}">{t('graph.openInGraph')}</Button>
 	</header>
 
 	<Section
 		title={t('circles.members')}
 		count={visibleMembers.length}
-		addLabel={data.candidates.length ? t('circles.addMember') : undefined}
+		addLabel={data.candidates.length ? t('circles.addPeople') : undefined}
 		error={form?.error ?? null}
 		bind:open={addOpen}
 	>
@@ -85,21 +87,35 @@
 		{/if}
 
 		{#snippet editor()}
-			<form method="POST" action="?/addMember" use:enhance={saved} class="flex flex-wrap items-end gap-3">
+			<form method="POST" action="?/addMembers" use:enhance={saved} class="flex flex-wrap items-end gap-3">
 				<label for="circle-member" class="flex flex-1 flex-col gap-1 text-sm">
-					<span class="text-fg-muted">{t('circles.person')}</span>
+					<span class="text-fg-muted">{t('circles.people')}</span>
 					<PersonSearchSelect
 						id="circle-member"
 						people={data.candidates}
 						name="contactId"
-						bind:selectedIds={newMemberId}
+						bind:selectedIds={newMemberIds}
+						multiple
 						allowCreate
 						required
 					/>
 				</label>
 				<label class="flex flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.roleLabel')}</span>
-					<input name="role" placeholder={t('circles.rolePlaceholder')} class="w-32 {INPUT}" />
+					<input
+						name="role"
+						list="circle-roles"
+						placeholder={t('circles.rolePlaceholder')}
+						class="w-32 {INPUT}"
+					/>
+					<!-- The roles this circle already uses; typing something new is still allowed. -->
+					<datalist id="circle-roles">
+						{#each data.roleSuggestions as role (role)}<option value={role}></option>{/each}
+					</datalist>
+					{#if newMemberIds.length > 1}
+						<!-- Only worth saying once the one role really does land on several people. -->
+						<span class="pb-2 text-xs text-fg-subtle">{t('circles.roleAppliesToAll')}</span>
+					{/if}
 				</label>
 				<Button variant="primary" size="sm">{t('common.add')}</Button>
 			</form>

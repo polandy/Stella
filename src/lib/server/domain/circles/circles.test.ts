@@ -3,15 +3,19 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import {
 	addMember,
+	addMembers,
 	CIRCLE_COLORS,
 	createCircle,
 	joinCircleByName,
+	listRoleSuggestionsByCircleName,
 	resolveCircleColor,
 	resolveCircleKind,
 	suggestCircleColor,
+	suggestRoles,
 	type Circle,
 	type CircleDeps,
 	type CircleRepository,
+	type CircleRoleUse,
 	type NewCircle,
 	type NewMembership
 } from './circles';
@@ -47,23 +51,33 @@ function fakeRepo(existing: Circle | null = null) {
 	const memberships: NewMembership[] = [];
 	const removed: Array<[string, string]> = [];
 	let exists = false;
+	// Per-contact membership, for picks that mix people already in the circle with new ones.
+	const existingMembers = new Set<string>();
+	let roleUses: CircleRoleUse[] = [];
 	const repo: CircleRepository = {
 		insert: async (c) => void inserted.push(c),
 		findByNameVisibleTo: async () => existing,
 		getVisibleTo: async () => null,
 		listVisibleTo: async () => [],
-		membershipExists: async () => exists,
-		addMembership: async (m) => void memberships.push(m),
+		addMemberships: async (batch) => {
+			// Mirrors the adapter: skip whoever is already a member, insert the rest.
+			const fresh = batch.filter((m) => !exists && !existingMembers.has(m.contactId));
+			memberships.push(...fresh);
+			fresh.forEach((m) => existingMembers.add(m.contactId));
+		},
 		removeMembership: async (cid, contactId) => void removed.push([cid, contactId]),
 		listMembersVisibleTo: async () => [],
-		listForContactVisibleTo: async () => []
+		listForContactVisibleTo: async () => [],
+		listRoleUsesVisibleTo: async () => roleUses
 	};
 	return {
 		repo,
 		inserted,
 		memberships,
 		removed,
-		setExists: (v: boolean) => (exists = v)
+		setExists: (v: boolean) => (exists = v),
+		setExistingMembers: (ids: string[]) => ids.forEach((id) => existingMembers.add(id)),
+		setRoleUses: (v: CircleRoleUse[]) => (roleUses = v)
 	};
 }
 
@@ -139,5 +153,96 @@ describe('addMember', () => {
 		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
 		await addMember(deps, creator, 'circle-1', 'mara');
 		expect(f.memberships).toHaveLength(0);
+	});
+});
+
+describe('addMembers', () => {
+	it('adds every chosen contact, with the one role on each of them', async () => {
+		const f = fakeRepo();
+		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1', 'm2', 'm3']), clock };
+		await addMembers(deps, creator, 'circle-1', ['mara', 'jonas', 'ida'], ' coach ');
+		expect(f.memberships.map((m) => m.contactId)).toEqual(['mara', 'jonas', 'ida']);
+		expect(f.memberships.every((m) => m.role === 'coach')).toBe(true);
+		expect(f.memberships.every((m) => m.circleId === 'circle-1')).toBe(true);
+	});
+
+	it('adds a contact named twice only once', async () => {
+		const f = fakeRepo();
+		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
+		await addMembers(deps, creator, 'circle-1', ['mara', 'mara']);
+		expect(f.memberships).toHaveLength(1);
+	});
+
+	it('skips those already in the circle', async () => {
+		const f = fakeRepo();
+		f.setExists(true);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
+		await addMembers(deps, creator, 'circle-1', ['mara', 'jonas']);
+		expect(f.memberships).toHaveLength(0);
+	});
+
+	it('adds only the new people in a mixed pick, leaving an existing member’s role alone', async () => {
+		const f = fakeRepo();
+		f.setExistingMembers(['mara']);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
+		await addMembers(deps, creator, 'circle-1', ['mara', 'jonas'], 'coach');
+		// The positive control for the skip: jonas proves the call did run and did write.
+		expect(f.memberships.map((m) => m.contactId)).toEqual(['jonas']);
+		expect(f.memberships[0].role).toBe('coach');
+	});
+});
+
+describe('suggestRoles', () => {
+	it('ranks the roles already used in the circle by how common they are', () => {
+		expect(suggestRoles(['student', 'teacher', 'student', 'student', 'teacher', 'coach'])).toEqual([
+			'student',
+			'teacher',
+			'coach'
+		]);
+	});
+
+	it('breaks ties alphabetically so the order is stable', () => {
+		expect(suggestRoles(['captain', 'member', 'assistant'])).toEqual([
+			'assistant',
+			'captain',
+			'member'
+		]);
+	});
+
+	it('ignores members without a role and trims what is left', () => {
+		expect(suggestRoles([null, '  member  ', '   ', 'member'])).toEqual(['member']);
+	});
+
+	it('folds spellings that differ only in case, keeping the most common one', () => {
+		expect(suggestRoles(['Teacher', 'teacher', 'teacher'])).toEqual(['teacher']);
+		expect(suggestRoles(['Teacher', 'Teacher', 'teacher'])).toEqual(['Teacher']);
+	});
+});
+
+describe('listRoleSuggestionsByCircleName', () => {
+	it('groups the roles per circle, keyed by the circle name as typed', async () => {
+		const f = fakeRepo();
+		f.setRoleUses([
+			{ circleName: 'Ski Course', role: 'coach' },
+			{ circleName: 'Ski Course', role: 'pupil' },
+			{ circleName: 'Ski Course', role: 'pupil' },
+			{ circleName: 'Day School', role: 'teacher' },
+			{ circleName: 'Day School', role: null }
+		]);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		const byName = await listRoleSuggestionsByCircleName(deps, { id: 'u1', householdId: 'h1' });
+		expect(byName).toEqual({ 'ski course': ['pupil', 'coach'], 'day school': ['teacher'] });
+	});
+
+	it('is keyed case-insensitively so a differently typed name still matches', async () => {
+		const f = fakeRepo();
+		f.setRoleUses([
+			{ circleName: 'Ski Course', role: 'coach' },
+			{ circleName: 'ski course', role: 'coach' }
+		]);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		expect(await listRoleSuggestionsByCircleName(deps, { id: 'u1', householdId: 'h1' })).toEqual({
+			'ski course': ['coach']
+		});
 	});
 });
