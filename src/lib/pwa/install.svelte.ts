@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import { installStateFrom, type InstallState } from './install-state';
 
 /*
  * Whether this device can be offered an install, and doing it (docs/02 §2.18).
@@ -15,15 +16,6 @@ interface BeforeInstallPromptEvent extends Event {
 	prompt(): Promise<void>;
 	readonly userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
-
-/** How the install offer stands on this device. */
-export type InstallState =
-	/** Already running from a home screen — there is nothing to offer. */
-	| 'installed'
-	/** The browser has offered us a prompt we can raise on demand. */
-	| 'ready'
-	/** No prompt available: Safari, or a browser that has decided against it. */
-	| 'unavailable';
 
 let deferred: BeforeInstallPromptEvent | null = $state(null);
 let installed = $state(false);
@@ -45,8 +37,7 @@ if (browser) {
 /** How the install offer stands, as a rune the Settings card can read. */
 export const install = {
 	get state(): InstallState {
-		if (installed) return 'installed';
-		return deferred ? 'ready' : 'unavailable';
+		return installStateFrom({ installed, hasPrompt: deferred !== null });
 	},
 
 	/** Raise the browser's own install prompt. Only meaningful while the state is `ready`. */
