@@ -74,6 +74,7 @@ export function createDrizzleCircleRepository(
 				.run();
 		},
 
+		// The SQL spelling of `circleNameKey` (src/lib/circles/name-key.ts) — keep the two in step.
 		async findByNameVisibleTo(viewer: Viewer, name: string): Promise<Circle | null> {
 			const row = db
 				.select(circleCols)

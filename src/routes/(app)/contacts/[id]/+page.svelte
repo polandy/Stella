@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { circleNameKey } from '$lib/circles/name-key';
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
@@ -191,9 +192,7 @@
 	 * the roles that very circle already uses, matched on its name regardless of capitalisation.
 	 */
 	let joiningCircleName = $state('');
-	const joiningCircleRoles = $derived(
-		data.circleRolesByName[joiningCircleName.trim().toLowerCase()] ?? []
-	);
+	const joiningCircleRoles = $derived(data.circleRolesByName[circleNameKey(joiningCircleName)] ?? []);
 	// The form is unmounted when the section closes, so the typed name would outlive its own
 	// input and a reopened editor would offer the previous circle's roles beside an empty field.
 	$effect(() => {

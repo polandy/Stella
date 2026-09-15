@@ -1,3 +1,4 @@
+import { circleNameKey } from '../../../circles/name-key';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -307,8 +308,8 @@ export async function listCirclesForContact(
 
 /**
  * The roles already used, per circle, for the join-a-circle-by-name flow where the circle is
- * only known by what was typed. Keyed by the lower-cased circle name, so a name typed with
- * other capitalisation still finds its roles.
+ * only known by what was typed. Keyed by {@link circleNameKey}, the same rule the field that
+ * offers them looks its suggestions up with.
  */
 export async function listRoleSuggestionsByCircleName(
 	deps: Pick<CircleDeps, 'circles'>,
@@ -317,7 +318,7 @@ export async function listRoleSuggestionsByCircleName(
 	const uses = await deps.circles.listRoleUsesVisibleTo(viewer);
 	const rolesByName = new Map<string, string[]>();
 	for (const use of uses) {
-		const key = use.circleName.trim().toLowerCase();
+		const key = circleNameKey(use.circleName);
 		const roles = rolesByName.get(key) ?? [];
 		if (use.role !== null) roles.push(use.role);
 		rolesByName.set(key, roles);
