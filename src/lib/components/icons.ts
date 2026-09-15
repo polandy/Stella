@@ -8,6 +8,7 @@ import {
 	ChevronRight,
 	CircleDot,
 	CloudOff,
+	DownloadCloud,
 	Download,
 	Ellipsis,
 	Gift,
@@ -76,6 +77,8 @@ export const ICONS = {
 	private: Lock,
 	// The network is gone, not the data (docs/02 §2.18).
 	offline: CloudOff,
+	// Adding Stella to a home screen (docs/02 §2.18) — not `import`, which is about data.
+	install: DownloadCloud,
 	// The member's own person (docs/02 §2.1.3).
 	self: UserRound,
 	calendar: CalendarDays,

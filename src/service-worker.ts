@@ -23,6 +23,11 @@ import {
 	isStellaCache,
 	verdictFor
 } from '$lib/pwa/cache-policy';
+import {
+	ASK_REACHABILITY,
+	REPORT_REACHABILITY,
+	type ReachabilityReport
+} from '$lib/pwa/reachability';
 
 const worker = self as unknown as ServiceWorkerGlobalScope;
 const CACHE = cacheNameFor(version);
@@ -58,6 +63,36 @@ worker.addEventListener('activate', (event) => {
 	);
 });
 
+/*
+ * Whether the last request actually reached Stella. The worker is the only party that knows:
+ * `navigator.onLine` in the page answers "is this device on a network", and a phone on mobile
+ * data is online while the household's Stella is entirely out of reach.
+ */
+let reachable = true;
+
+/** Tell every open page where things stand, so the offline banner matches reality. */
+async function report(): Promise<void> {
+	const message: ReachabilityReport = { type: REPORT_REACHABILITY, reachable };
+	const clients = await worker.clients.matchAll({ type: 'window' });
+	for (const client of clients) client.postMessage(message);
+}
+
+/** Record what a request turned out to prove, and tell the pages only when it changed. */
+function noteReachability(nowReachable: boolean): void {
+	if (nowReachable === reachable) return;
+	reachable = nowReachable;
+	void report();
+}
+
+worker.addEventListener('message', (event) => {
+	// A page that has just opened asks rather than waiting to be told: the report it needs was
+	// very likely sent while it was still loading, and there is nothing to poll.
+	if (event.data === ASK_REACHABILITY) {
+		const message: ReachabilityReport = { type: REPORT_REACHABILITY, reachable };
+		event.source?.postMessage(message);
+	}
+});
+
 /** Throw away every page this device is holding. */
 async function purgeCaches(): Promise<void> {
 	const ours = (await caches.keys()).filter(isStellaCache);
@@ -69,11 +104,14 @@ async function networkFirst(request: Request): Promise<Response> {
 	const cache = await caches.open(CACHE);
 	try {
 		const response = await fetch(request);
+		noteReachability(true);
 		// Only a plain success is worth keeping: a redirect to the sign-in page is about this
 		// moment, and an error page cached now would outlive the error.
 		if (response.ok && response.type === 'basic') cache.put(request, response.clone());
 		return response;
 	} catch (networkError) {
+		noteReachability(false);
+
 		const cached = await cache.match(request);
 		if (cached) return cached;
 
