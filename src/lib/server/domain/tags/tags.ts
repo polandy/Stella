@@ -123,7 +123,9 @@ export async function unassignTag(
 	tagId: string
 ): Promise<void> {
 	await deps.tags.unassign(contactId, tagId);
-	// MUTATION PROBE B: delete-on-last-unassign removed.
+	if ((await deps.tags.countAssignments(tagId)) === 0) {
+		await deps.tags.deleteTag(householdId, tagId);
+	}
 }
 
 /**

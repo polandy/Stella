@@ -1,34 +1,26 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, addTag, openPeople, openPerson, profileRow, signIn } from './app';
+import { addPerson, addTag, openPeople, openPerson, signIn } from './app';
 
 /*
  * A tag lives exactly as long as someone carries it (docs/02 §2.8). There is no screen to
- * delete one from — a tag is created by naming it on a person — so the only way to be rid of
- * one is to take it off the last carrier, or to delete that carrier outright. Both halves end
- * at the same place: the household's chip row above the people list, which must not keep a
- * chip that leads to an empty page. Written after the maintainer verified the flow in the
- * running app (docs/08 §8.4.1).
+ * delete one from — a tag is created by naming it on a person — so the last carrier leaving is
+ * the only way one ever goes. This covers the half that is otherwise untested: a deleted
+ * contact takes its assignments by cascade rather than through `unassignTag`, so the tags it
+ * was the last carrier of are swept up afterwards by the route. Dropping that sweep keeps
+ * every unit and integration test green, and only this case goes red.
  *
- * The suite shares one demo database, so every person and tag here is invented: the Okonkwos
- * are in no seed and no other spec, and the tag names are prefixed so they cannot collide with
- * the ones `undo-everywhere.spec.ts` owns. The seed gives nobody a tag, so the chip row starts
- * empty and these cases own every chip they assert on.
+ * The last-unassign half is covered at the layer that can actually discriminate it —
+ * `domain/tags/tags.test.ts` and `db/tag-repository.test.ts`. An e2e for it was written and
+ * withdrawn: see the PR discussion for why its green meant nothing.
+ *
+ * The suite shares one demo database, so everyone here is invented — Tamsin Okonkwo is in no
+ * seed and no other spec, and the tag name is prefixed so it cannot collide with the ones
+ * `undo-everywhere.spec.ts` owns. The seed gives nobody a tag. Written after the maintainer
+ * verified the flow in the running app (docs/08 §8.4.1).
  */
 
 /** The household's tag chip above the people list — a filter link named for the tag. */
 const chip = (page: Page, name: string) => page.getByRole('link', { name, exact: true });
-
-/**
- * Takes a tag off the person whose page is open. The removal is deferred behind the undo
- * toast (docs/02 §2.23), so it is not sent yet when this returns; `openPeople` is what commits
- * it, by navigating client-side. Never wait on the undo window instead — it would be a race.
- */
-async function removeTag(page: Page, name: string): Promise<void> {
-	const tags = await profileRow(page, 'Tags');
-	await page.getByRole('button', { name: `Remove tag ${name}` }).click();
-	await expect(tags).not.toContainText(name);
-	await expect(page.getByTestId('toast-undo')).toBeVisible();
-}
 
 /** Deletes the open person for good, through the two steps the page asks for. */
 async function deleteForGood(page: Page, who: string): Promise<void> {
@@ -39,9 +31,6 @@ async function deleteForGood(page: Page, who: string): Promise<void> {
 
 const LONE_CARRIER = 'Tamsin Okonkwo';
 const LONE_TAG = 'Zzz-lone-badge';
-const SHARED_TAG = 'Zzz-shared-crew';
-const FIRST_OF_TWO = 'Rufus Okonkwo';
-const LAST_OF_TWO = 'Marisol Okonkwo';
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
@@ -64,39 +53,4 @@ test('the chip goes with the last person carrying it when they are deleted', asy
 	await expect(chip(page, LONE_TAG)).toHaveCount(0);
 	await page.reload();
 	await expect(chip(page, LONE_TAG)).toHaveCount(0);
-});
-
-test('a tag still on someone else survives, and goes only with the last carrier', async ({
-	page
-}) => {
-	await addPerson(page, 'Rufus', 'Okonkwo');
-	await addTag(page, SHARED_TAG);
-	await addPerson(page, 'Marisol', 'Okonkwo');
-	await addTag(page, SHARED_TAG); // the same name is the same tag, not a second one
-
-	await openPeople(page);
-	await expect(chip(page, SHARED_TAG)).toBeVisible();
-
-	// Taken off one of the two. The removal really landed — his page says so after a reload,
-	// which is the positive signal the next assertion needs: without it, a chip still on the
-	// screen could just as well mean the removal was never sent.
-	await openPerson(page, new RegExp(FIRST_OF_TWO));
-	await removeTag(page, SHARED_TAG);
-	await openPeople(page);
-	await openPerson(page, new RegExp(FIRST_OF_TWO));
-	await page.reload();
-	await expect(await profileRow(page, 'Tags')).not.toContainText(SHARED_TAG);
-
-	// He has let it go and it is still carried by her, so the chip stays. This is what stops
-	// the delete-when-empty rule from firing on every removal.
-	await openPeople(page);
-	await expect(chip(page, SHARED_TAG)).toBeVisible();
-
-	// Taken off the last one: nobody carries it, so the tag itself goes.
-	await openPerson(page, new RegExp(LAST_OF_TWO));
-	await removeTag(page, SHARED_TAG);
-	await openPeople(page);
-	await expect(chip(page, SHARED_TAG)).toHaveCount(0);
-	await page.reload();
-	await expect(chip(page, SHARED_TAG)).toHaveCount(0);
 });
