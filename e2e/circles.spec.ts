@@ -30,9 +30,9 @@ test('opens a circle, adds a member from the card’s own disclosure and shows t
 	await expect(grid.getByRole('link', { name: 'Lena Brunner' })).toBeVisible();
 	await expect(grid.getByRole('link', { name: 'Noah Brunner' })).toHaveCount(0);
 
-	await page.getByRole('button', { name: 'Add member' }).click();
-	const form = page.locator('form[action="?/addMember"]');
-	await pickPerson(form.getByLabel('Person'), 'Noah Brunner');
+	await page.getByRole('button', { name: 'Add people' }).click();
+	const form = page.locator('form[action="?/addMembers"]');
+	await pickPerson(form.getByLabel('People'), 'Noah Brunner');
 	await form.getByLabel('Role (optional)').fill('Blockflöte');
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 
@@ -43,10 +43,10 @@ test('opens a circle, adds a member from the card’s own disclosure and shows t
 test('narrows the person picker to matching names as you type, rather than listing everyone', async ({ page }) => {
 	await page.goto('/circles');
 	await page.getByTestId('circle-cards').getByRole('link', { name: /Musikschule/ }).click();
-	await page.getByRole('button', { name: 'Add member' }).click();
+	await page.getByRole('button', { name: 'Add people' }).click();
 
-	const form = page.locator('form[action="?/addMember"]');
-	const field = form.getByLabel('Person');
+	const form = page.locator('form[action="?/addMembers"]');
+	const field = form.getByLabel('People');
 	await field.click();
 	const options = page.getByRole('option');
 	const fullCount = await options.count();
@@ -70,5 +70,5 @@ test('a new circle starts with an invitation rather than an empty list', async (
 
 	await expect(page.getByRole('heading', { name: 'Quill Choir' })).toBeVisible();
 	await expect(page.getByText('Nobody in this circle yet')).toBeVisible();
-	await expect(page.getByRole('button', { name: 'Add member' })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Add people' })).toBeVisible();
 });

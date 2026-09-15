@@ -170,3 +170,72 @@ describe('role uses', () => {
 		]);
 	});
 });
+
+/*
+ * `addMemberships` is the atomic seam behind the multi-pick (docs/02 §2.4.2): one transaction
+ * decides who is already a member and inserts the rest, so a pick either lands whole or not at
+ * all. The skip has to happen inside that transaction — deciding it outside would let a
+ * concurrent join slip in between the check and the insert.
+ */
+describe('addMemberships', () => {
+	it('inserts every new member in one go', async () => {
+		const id = await createCircle(deps, creatorU1, { name: 'Team' });
+		seedContact('mara');
+		seedContact('jonas');
+
+		await deps.circles.addMemberships([
+			{ id: 'm1', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW },
+			{ id: 'm2', circleId: id, contactId: 'jonas', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW }
+		]);
+
+		const members = await deps.circles.listMembersVisibleTo(viewerU1, id);
+		expect(members.map((m) => m.contactId).sort()).toEqual(['jonas', 'mara']);
+		expect(members.every((m) => m.role === 'coach')).toBe(true);
+	});
+
+	it('skips a contact already in the circle without touching the role they joined with', async () => {
+		const id = await createCircle(deps, creatorU1, { name: 'Team' });
+		seedContact('mara');
+		seedContact('jonas');
+		await addMember(deps, creatorU1, id, 'mara', 'captain');
+
+		await deps.circles.addMemberships([
+			{ id: 'm1', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW },
+			{ id: 'm2', circleId: id, contactId: 'jonas', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW }
+		]);
+
+		// Only jonas is new — and jonas landing is the positive control for mara being skipped.
+		const members = await deps.circles.listMembersVisibleTo(viewerU1, id);
+		expect(members).toHaveLength(2);
+		expect(members.find((m) => m.contactId === 'mara')?.role).toBe('captain');
+		expect(members.find((m) => m.contactId === 'jonas')?.role).toBe('coach');
+	});
+
+	it('joins a contact named twice in the same batch only once', async () => {
+		const id = await createCircle(deps, creatorU1, { name: 'Team' });
+		seedContact('mara');
+
+		// The skip runs per row inside the transaction, so it sees the row the batch just wrote.
+		await deps.circles.addMemberships([
+			{ id: 'm1', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW },
+			{ id: 'm2', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW }
+		]);
+
+		expect(await deps.circles.listMembersVisibleTo(viewerU1, id)).toHaveLength(1);
+	});
+
+	it('writes nothing at all when one row in the batch fails', async () => {
+		const id = await createCircle(deps, creatorU1, { name: 'Team' });
+		seedContact('mara');
+
+		// 'ghost' has no contact row, so the FK rejects it and the whole transaction rolls back.
+		expect(
+			deps.circles.addMemberships([
+				{ id: 'm1', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW },
+				{ id: 'm2', circleId: id, contactId: 'ghost', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW }
+			])
+		).rejects.toThrow();
+
+		expect(await deps.circles.listMembersVisibleTo(viewerU1, id)).toEqual([]);
+	});
+});
