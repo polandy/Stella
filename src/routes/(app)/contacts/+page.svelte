@@ -50,7 +50,9 @@
 	</label>
 
 	{#if data.tags.length > 0 || data.archivedCount > 0}
-		<div class="flex flex-wrap items-center gap-2">
+		<!-- Named so a test can assert on the row itself rather than on a link's accessible
+		     name, which matches nothing while the page is between renders (#101). -->
+		<div class="flex flex-wrap items-center gap-2" data-testid="tag-chips">
 			<a
 				href="/contacts"
 				class="rounded-full px-3 py-1 text-sm font-medium transition-colors"
