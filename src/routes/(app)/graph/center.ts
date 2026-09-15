@@ -1,13 +1,15 @@
+import type { NodeKind } from '$lib/graph/model/types';
+
 /*
- * Which person the explorer opens on (docs/02 §2.7). Pure, so the order of preference is
- * stated once and tested without a graph or a database.
+ * Which node the explorer opens on — a person or a circle (docs/02 §2.7). Pure, so the order
+ * of preference is stated once and tested without a graph or a database.
  */
 
 /** A node of the visible graph, as far as centring is concerned. */
 export interface CentrableNode {
 	id: string;
-	kind: string;
-	/** A person's name, for the way back to their page. */
+	kind: NodeKind;
+	/** The node's name, for the way back to its page. */
 	label?: string;
 }
 
@@ -24,7 +26,7 @@ export interface Center {
 }
 
 /**
- * The asked-for person wins; otherwise the member's own person (docs/02 §2.1.3), which is the
+ * The asked-for node wins; otherwise the member's own person (docs/02 §2.1.3), which is the
  * view they almost always want; otherwise the first visible person, so the page is never
  * empty for a household that has one. Anyone the viewer cannot see is skipped rather than
  * honoured — a link may name a person this member has no business seeing.
@@ -42,27 +44,25 @@ export function chooseCenter(
 
 /** The page a centre was opened from: where it goes, what it is called, and what it is. */
 export interface WayBack {
-	kind: 'person' | 'circle';
+	kind: NodeKind;
 	href: string;
 	name: string;
 }
 
 /** Where each kind of centre goes back to — the one place those two routes are spelled out. */
-const WAY_BACK_ROUTES = { person: '/contacts', circle: '/circles' } as const;
+const WAY_BACK_ROUTES: Record<NodeKind, string> = { person: '/contacts', circle: '/circles' };
 
 /**
  * The page to offer a way back to, or `null` when none is owed. Only a centre the link itself
  * asked for: one the route fell back to is not somewhere the reader came from. A person goes
- * back to their profile and a circle to its own page — an unnamed node, or one of a kind with
- * no page, is owed nothing rather than linked into a 404.
+ * back to their profile and a circle to its own page — a node with no name is owed nothing
+ * rather than linked under an empty label.
  */
 export function wayBackTo(nodes: readonly CentrableNode[], center: Center): WayBack | null {
 	if (!center.asked || center.id === null) return null;
 	const node = nodes.find((candidate) => candidate.id === center.id);
 	if (!node?.label) return null;
-	const route = WAY_BACK_ROUTES[node.kind as keyof typeof WAY_BACK_ROUTES];
-	if (!route) return null;
-	return { kind: node.kind as WayBack['kind'], href: `${route}/${node.id}`, name: node.label };
+	return { kind: node.kind, href: `${WAY_BACK_ROUTES[node.kind]}/${node.id}`, name: node.label };
 }
 
 /**
