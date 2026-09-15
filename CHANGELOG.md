@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.11](https://github.com/polandy/Stella/compare/v0.0.10...v0.0.11) (2026-09-15)
+
+
+### Features
+
+* **circles:** put several people into a circle in one go ([6da1f0f](https://github.com/polandy/Stella/commit/6da1f0fa5b15cb76828e82e65008e728dc707de5))
+* **circles:** suggest the roles a circle already uses ([#84](https://github.com/polandy/Stella/issues/84)) ([881ada6](https://github.com/polandy/Stella/commit/881ada64eaf01304926e65d4d9d5edf0c0fa2f08))
+* **graph:** open a circle in the graph, and find the way back ([#93](https://github.com/polandy/Stella/issues/93)) ([496e19e](https://github.com/polandy/Stella/commit/496e19e40a37b8cf5b1d37fa4f137b3a2e3eab9d))
+* **settings:** say when a newer Stella has been released ([cae2941](https://github.com/polandy/Stella/commit/cae2941ab5b14e5801bded5cf4d0da3dd86b3c5c))
+* **tags:** let a tag go once nobody carries it ([#92](https://github.com/polandy/Stella/issues/92)) ([5e0c551](https://github.com/polandy/Stella/commit/5e0c551a4b270c01a9c1b1d93c748c573aca5f22))
+
 ## [0.0.10](https://github.com/polandy/Stella/compare/v0.0.9...v0.0.10) (2026-09-14)
 
 
