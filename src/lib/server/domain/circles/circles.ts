@@ -60,7 +60,7 @@ export function suggestRoles(usedRoles: readonly (string | null | undefined)[]):
 	for (const raw of usedRoles) {
 		const role = (raw ?? '').trim();
 		if (role === '') continue;
-		const key = role.toLowerCase();
+		const key = role;
 		const entry = byKey.get(key) ?? { label: role, count: 0, labels: new Map() };
 		entry.count += 1;
 		entry.labels.set(role, (entry.labels.get(role) ?? 0) + 1);
@@ -74,7 +74,7 @@ export function suggestRoles(usedRoles: readonly (string | null | undefined)[]):
 			)[0][0];
 			return { label, count: e.count };
 		})
-		.sort((a, b) => a.label.localeCompare(b.label))
+		.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
 		.map((e) => e.label);
 }
 

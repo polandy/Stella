@@ -92,3 +92,35 @@ test('on a person’s page the roles follow the circle name typed, in any capita
 	await name.fill('Harbour Bridge Club');
 	await expect(roleOptions(page)).toHaveCount(0);
 });
+
+test('one role, not two, when the household has spelled it both ways', async ({ page }) => {
+	await addPerson(page, 'Sieglinde', 'Amrein');
+	await addPerson(page, 'Corin', 'Amrein');
+	await addPerson(page, 'Vreni', 'Amrein');
+
+	await newCircle(page, 'Lantern Kayak Club');
+	await addMember(page, 'Sieglinde Amrein', 'guide');
+	await addMember(page, 'Corin Amrein', 'guide');
+	// The same role, typed the way it starts a sentence.
+	await addMember(page, 'Vreni Amrein', 'Guide');
+
+	await page.getByRole('button', { name: 'Add people' }).click();
+	await expect(roleOptions(page)).toHaveCount(1);
+	// Three memberships fold into one role, under the spelling this household writes most.
+	await expect(roleOptions(page).nth(0)).toHaveAttribute('value', 'guide');
+});
+
+test('a role the circle has never used is still free to type', async ({ page }) => {
+	await addPerson(page, 'Malin', 'Brechbühl');
+	await addPerson(page, 'Joscha', 'Brechbühl');
+
+	await newCircle(page, 'Lantern Sailing Club');
+	await addMember(page, 'Malin Brechbühl', 'helm');
+
+	// Nothing offers "bowman"; it is typed over the suggestion list and saved all the same.
+	await addMember(page, 'Joscha Brechbühl', 'bowman');
+	await expect(page.getByTestId('member-grid')).toContainText('bowman');
+
+	await page.getByRole('button', { name: 'Add people' }).click();
+	await expect(roleOptions(page)).toHaveCount(2);
+});
