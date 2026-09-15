@@ -28,6 +28,9 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run check
       - run: bun run test
+      # The dev server runs in a third runtime — Vite's module runner under Bun — that
+      # neither the unit tests nor the e2e build exercise, so it needs its own check.
+      - run: ./scripts/dev-smoke.sh
 
   e2e:
     runs-on: ubuntu-latest
