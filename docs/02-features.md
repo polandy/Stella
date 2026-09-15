@@ -528,21 +528,16 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 - From **a person's profile**: the map on their page *is* this explorer, with a two-hop reach
   (docs/05 §5.5). **Open in the graph** carries that person here as the centre — from the
   card's header, and from the peek panel of any node the embedded map cannot expand.
-- From **a circle's page**: **Open in the graph** centres the explorer on the circle itself,
-  which is a node like any other — so the whole group and everyone hanging off its members is
-  one view (§2.4.2). The peek panel of a circle node goes the other way, back to its page.
 - As a **standalone screen** (nav → Graph). It opens on **your own person** when you have
   said who that is (§2.1.3), and otherwise on the first person the household has.
 - **From a profile's question.** *How are we connected?* on a person's card asks who, and
   opens the explorer with both ends named (`?center=…&path=…`), the chain already traced. The
   question is answered here rather than there because a profile carries two hops and the chain
   usually runs further; the explorer holds the whole visible graph.
-- **The way back.** When a link named the centre, the explorer carries *Back to <person>* — or
-  *Back to the <name> circle* — to the page it was opened from. It is offered only for a centre
-  that was asked for and could be honoured: falling back to your own person is not somewhere
-  you came from, and neither is a stale link naming somebody this member cannot see. A node of
-  a kind with no page of its own, or with no name to show, is owed nothing rather than linked
-  into a 404.
+- **The way back.** When a link named the centre, the explorer carries *Back to <person>* to
+  the page it was opened from. It is offered only for a centre that was asked for and could be
+  honoured: falling back to your own person is not somewhere you came from, and neither is a
+  stale link naming somebody this member cannot see.
 
 **What is shown**
 

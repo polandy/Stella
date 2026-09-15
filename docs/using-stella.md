@@ -266,9 +266,7 @@ one click and nobody ends up half "coach" and half "Coach"; anything new is stil
 type.
 
 Circles are also the answer to "who else was there?", which is usually the question you
-have when you are trying to remember someone's name. **Open in the graph** on a circle's page
-draws that answer: the circle in the middle, everyone in it around it, and their own links
-running on from there. The way back to the circle's page waits at the top of the map.
+have when you are trying to remember someone's name.
 
 Once there are more than a handful, start typing on the Circles page to narrow the list by
 name or description, or tap a kind — *Class*, *Club*, *Team* — to see only those. The number

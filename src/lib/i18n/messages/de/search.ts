@@ -29,12 +29,10 @@ export const search: SearchMessages = {
 	'graph.peek.deceased': 'verstorben',
 	'graph.peek.expand': 'Verbindungen aufklappen',
 	'graph.peek.openProfile': 'Profil öffnen',
-	'graph.peek.openCircle': 'Kreis öffnen',
 	'graph.peek.tip':
 		'Tipp: Klicke einen ausgewählten Knoten an, um ihn aufzuklappen — oder nutze den Verbindungsweg, um zu sehen, wie zwei Menschen verbunden sind.',
 	'graph.openInGraph': 'Im Netz öffnen',
 	'graph.backToPerson': (p) => `Zurück zu ${p.name}`,
-	'graph.backToCircle': (p) => `Zurück zum Kreis ${p.name}`,
 	'graph.peek.tipCompact':
 		'Tipp: Tippe eine ausgewählte Person nochmal an, um ihre eigenen Verbindungen aufzuklappen.',
 	'graph.peek.edgeOfMap': 'Weiter reicht diese Karte nicht. Das Netz trägt den Rest.',

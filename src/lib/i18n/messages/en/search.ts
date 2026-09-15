@@ -28,14 +28,12 @@ export const search = {
 	'graph.peek.deceased': 'deceased',
 	'graph.peek.expand': 'Expand connections',
 	'graph.peek.openProfile': 'Open profile',
-	'graph.peek.openCircle': 'Open the circle',
 	'graph.peek.tip':
 		'Tip: click a selected node to expand it, or use the connection path to see how two people are linked.',
 	// The map on a person's page reaches two steps and no further (docs/05 §5.5).
 	// The way into the whole household, offered wherever a map stops (docs/05 §5.5, §5.8).
 	'graph.openInGraph': 'Open in the graph',
 	'graph.backToPerson': (p: { name: string }) => `Back to ${p.name}`,
-	'graph.backToCircle': (p: { name: string }) => `Back to the ${p.name} circle`,
 	'graph.peek.tipCompact': 'Tip: tap a selected person again to open up their own connections.',
 	'graph.peek.edgeOfMap': 'This is as far as this map goes. The graph carries the rest.',
 	'graph.onPerson.label': (p: { name: string }) => `The people around ${p.name}`,

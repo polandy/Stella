@@ -506,8 +506,6 @@
 				{/if}
 				{#if peekNode.kind === 'person'}
 					<Button variant="primary" href="/contacts/{peekNode.id}">{t('graph.peek.openProfile')}</Button>
-				{:else if peekNode.kind === 'circle'}
-					<Button variant="primary" href="/circles/{peekNode.id}">{t('graph.peek.openCircle')}</Button>
 				{/if}
 			</div>
 			<p class="mt-4 text-xs text-fg-subtle">

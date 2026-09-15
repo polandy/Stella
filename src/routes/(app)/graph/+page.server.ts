@@ -6,8 +6,8 @@ import type { PageServerLoad } from './$types';
 /*
  * Explorer route (docs/02 §2.7). The server sends the whole *visible* graph once as a slim,
  * access-scoped snapshot; the browser then builds the ego view, expands, focuses, and traces
- * paths entirely client-side (no per-interaction round-trips). `?center=<id>` opens on
- * that person or circle (the "Open in the graph" button on a profile and on a circle's page) — falling back to the member's own
+ * paths entirely client-side (no per-interaction round-trips). `?center=<contactId>` opens on
+ * that person (the profile's "Open in the graph" button) — falling back to the member's own
  * person (docs/02 §2.1.3), and to the first visible one while they have not said who that is.
  */
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -22,11 +22,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	);
 
 	/*
-	 * A profile links here with its own person, and a circle's page with the circle itself
-	 * (docs/05 §5.5), so the way back belongs on the page: without it the only route back to
-	 * what you were reading is the browser's own button. The name comes from the snapshot that
-	 * is already loaded — no second query — and it is offered only for a centre a link actually
-	 * asked for.
+	 * A profile links here with its own person (docs/05 §5.5), so the way back belongs on the
+	 * page: without it the only route back to the person you were reading is the browser's own
+	 * button. The name comes from the snapshot that is already loaded — no second query — and
+	 * it is offered only for a centre a link actually asked for.
 	 */
 	const cameFrom = wayBackTo(graph.nodes, center);
 

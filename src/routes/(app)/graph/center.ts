@@ -23,6 +23,18 @@ export interface Center {
 	asked: boolean;
 }
 
+/** Who the explorer opens on, and whether a link asked for them. */
+export interface Center {
+	id: string | null;
+	/**
+	 * True only when the centre is the one the link named. A profile links here with its own
+	 * person (docs/05 §5.5), so this is also what says a way back to that page is owed — the
+	 * member's own person, chosen because nothing was asked for, is not somewhere they came
+	 * from.
+	 */
+	asked: boolean;
+}
+
 /**
  * The asked-for person wins; otherwise the member's own person (docs/02 §2.1.3), which is the
  * view they almost always want; otherwise the first visible person, so the page is never
@@ -40,29 +52,15 @@ export function chooseCenter(
 	return { id: nodes.find((node) => node.kind === 'person')?.id ?? null, asked: false };
 }
 
-/** The page a centre was opened from: where it goes, what it is called, and what it is. */
-export interface WayBack {
-	kind: 'person' | 'circle';
-	href: string;
-	name: string;
-}
-
-/** Where each kind of centre goes back to — the one place those two routes are spelled out. */
-const WAY_BACK_ROUTES = { person: '/contacts', circle: '/circles' } as const;
-
 /**
- * The page to offer a way back to, or `null` when none is owed. Only a centre the link itself
- * asked for: one the route fell back to is not somewhere the reader came from. A person goes
- * back to their profile and a circle to its own page — an unnamed node, or one of a kind with
- * no page, is owed nothing rather than linked into a 404.
+ * The name to offer a way back to, or `null` when none is owed. Only a person the link itself
+ * asked for: a centre the route fell back to is not somewhere the reader came from, and a
+ * circle has no page of its own to go back to — `/contacts/<circle>` is a 404.
  */
-export function wayBackTo(nodes: readonly CentrableNode[], center: Center): WayBack | null {
+export function wayBackTo(nodes: readonly CentrableNode[], center: Center): string | null {
 	if (!center.asked || center.id === null) return null;
 	const node = nodes.find((candidate) => candidate.id === center.id);
-	if (!node?.label) return null;
-	const route = WAY_BACK_ROUTES[node.kind as keyof typeof WAY_BACK_ROUTES];
-	if (!route) return null;
-	return { kind: node.kind as WayBack['kind'], href: `${route}/${node.id}`, name: node.label };
+	return node?.kind === 'person' ? (node.label ?? null) : null;
 }
 
 /**
