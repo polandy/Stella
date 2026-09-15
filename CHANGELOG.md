@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.12](https://github.com/polandy/Stella/compare/v0.0.11...v0.0.12) (2026-09-15)
+
+
+### Features
+
+* **pwa:** install Stella on a phone, and read it when it is out of reach ([1b0ca47](https://github.com/polandy/Stella/commit/1b0ca47e4641f24715c306765a6fc02aa8bdbdf0))
+* **relationships:** correct a worked-out step relative in place ([#107](https://github.com/polandy/Stella/issues/107)) ([fe9871e](https://github.com/polandy/Stella/commit/fe9871ed90a14d99a0b01f80aa0fd4fce9aebd59))
+* **settings:** make the release check on by default ([0a19bd4](https://github.com/polandy/Stella/commit/0a19bd4a9fe79b2f7dc05909f8bcc8b2dd10f1e6))
+
+
+### Bug Fixes
+
+* **kinship:** derive nothing through a former partnership ([562481e](https://github.com/polandy/Stella/commit/562481ee39d09778940ca3e46ed95b24a59f7026))
+
 ## [0.0.11](https://github.com/polandy/Stella/compare/v0.0.10...v0.0.11) (2026-09-15)
 
 
