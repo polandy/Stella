@@ -137,6 +137,15 @@ in one run share one database, so they run serially and **must not depend on eac
 data** — CI enforces this by splitting the suite across three runners
 (`bunx playwright test --shard`), each with its own freshly seeded server.
 
+**Assert what must still be there before asserting what is gone.** `toHaveCount(0)` is
+satisfied on its first poll, so on its own it passes against a screen that has not rendered
+yet — a helper returns as soon as its heading is up, and the element under test can still be
+missing at that instant. Name a neighbour that must be present and assert it first: that wait
+is what makes the screen the settled one, and a `data-testid` on the container keeps the
+reading inside the element that owns the claim. Without that pair a case passes together with
+its own inverse and says nothing, which is how one came to be withdrawn.
+`e2e/tags.spec.ts` is the worked example.
+
 A second, tiny server runs beside the app: `e2e/release-feed-stub.ts`, the stand-in for
 GitHub's `releases/latest` that the About card reads (`UPDATE_CHECK=true` plus
 `UPDATE_FEED_URL` in the `e2e:server` script). It exists so the card has a fixed release to

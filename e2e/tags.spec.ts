@@ -10,13 +10,9 @@ import { addPerson, addTag, openPeople, openPerson, profileRow, signIn } from '.
  * running app (docs/08 §8.4.1).
  *
  * Every assertion that a chip is *gone* is paired with a chip that must still be there
- * (`KEEPER_TAG`), and the keeper is asserted first. That order is the whole point: `toHaveCount(0)`
- * is satisfied on its very first poll, so on its own it passes against a page that has not
- * rendered the row yet — which is how the first attempt at the second case came to pass
- * together with its own inverse (#101). `openPeople` returns as soon as the People heading is
- * up, and a probe run measured the chip row still absent at that instant and there a moment
- * later. Waiting for the keeper is what makes the row the settled one; the `data-testid` is
- * what keeps the reading inside it.
+ * (`KEEPER_TAG`), asserted first — the settled-screen rule in docs/08 §8.4. Without that pair
+ * this file passes together with its own inverse, which is why an earlier attempt at the
+ * second case was withdrawn (#101).
  *
  * The suite shares one demo database, so every person and tag here is invented: the Okonkwos
  * are in no seed and no other spec, and the tag names are prefixed so they cannot collide with
