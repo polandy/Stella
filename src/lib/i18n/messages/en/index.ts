@@ -18,6 +18,7 @@ import { interactions } from './interactions';
 import { journal } from './journal';
 import { kinship } from './kinship';
 import { nav } from './nav';
+import { pwa } from './pwa';
 import { relationships } from './relationships';
 import { search } from './search';
 import { settings } from './settings';
@@ -40,6 +41,7 @@ export const en = {
 	...journal,
 	...kinship,
 	...nav,
+	...pwa,
 	...relationships,
 	...search,
 	...settings,
