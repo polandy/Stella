@@ -211,6 +211,11 @@ If you use Traefik, add labels instead of a separate proxy config:
   `STELLA_URL`). A mismatch yields 403 on every form submit — keep the two in lockstep.
 - Ensure both `stella.example.home` and `auth.example.home` are reachable from the user's
   browser (OIDC redirects happen in the browser).
+- **Installing Stella on a phone needs TLS.** A browser registers a service worker only in a
+  secure context, so the home-screen install and the offline pages (docs/02 §2.18) work over
+  `https://…` and over `http://localhost`, and nowhere else. Reaching Stella by plain HTTP on
+  a LAN address still works as an ordinary site — it simply cannot be installed and keeps
+  nothing for later. The quick local trial in §7.1.2 is the one case where this shows up.
 
 ## 7.7 Authelia OIDC client configuration
 

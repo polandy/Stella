@@ -596,6 +596,30 @@ tests, without disturbing rendering; the renderer can change without risking the
 each piece is small and named for intent. **Test-first targets:** `buildEgoNetwork`,
 `expandNode`, `findConnectionPath`, `applyFilters` — pure, deterministic, no DB.
 
+## 4.11.1 Service worker & offline shell
+
+The same split as the explorer: a pure domain and a thin adapter confined to one file.
+
+- **`src/lib/pwa/cache-policy.ts`** — the whole judgement, pure and unit-tested: which
+  requests may be cached, which never may, what a build's cache is called, and what a
+  sign-out looks like going past. **Test-first targets:** `verdictFor`, `endsTheSession`,
+  `cacheNameFor`.
+- **`src/lib/pwa/reachability.ts`** — the two messages the worker and the page exchange, and
+  the guard that stops anything else on the channel moving the offline banner.
+- **`src/service-worker.ts`** — the adapter. It asks the policy about real `Request`s and
+  does as it is told; it decides nothing. This is deliberate: a service worker can otherwise
+  only be checked by driving a browser and hoping the right thing was cached.
+- **`src/routes/manifest.webmanifest/+server.ts`** — the manifest, built by
+  `$lib/pwa/manifest.ts` from a translator. A route, not a static file, so it is served in
+  the reader's language.
+- **`src/lib/pwa/icon-art.ts`** — the icon geometry, unit-tested for the maskable safe zone;
+  `scripts/icons/generate.sh` rasterises it through the pinned Playwright image (Chromium
+  does not run on the NixOS host) and the PNGs are committed, so no build needs a container.
+
+Caches are named `stella-<version>`, so a deployed update activates into an empty one rather
+than mixing its shell with pages the previous build rendered, and the stale ones are dropped
+on `activate`.
+
 ## 4.12 Background jobs & delivery (M3)
 
 The change digests (`02-features.md` §2.11.1) need periodic work, kept as lean as the rest:
