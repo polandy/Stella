@@ -74,7 +74,7 @@ export function suggestRoles(usedRoles: readonly (string | null | undefined)[]):
 			)[0][0];
 			return { label, count: e.count };
 		})
-		.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
+		.sort((a, b) => a.label.localeCompare(b.label))
 		.map((e) => e.label);
 }
 
