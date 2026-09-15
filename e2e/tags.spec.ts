@@ -10,11 +10,13 @@ import { addPerson, addTag, openPeople, openPerson, profileRow, signIn } from '.
  * running app (docs/08 §8.4.1).
  *
  * Every assertion that a chip is *gone* is paired with a chip that must still be there
- * (`KEEPER_TAG`). Without that pair the absence holds just as well when the row never rendered
- * at all, which is how the first attempt at the second case came to pass together with its own
- * inverse (#101): it read a link by accessible name anywhere on the page, and a page between
- * renders has no such link whatever the database says. The row is addressed by `data-testid`
- * for the same reason.
+ * (`KEEPER_TAG`), and the keeper is asserted first. That order is the whole point: `toHaveCount(0)`
+ * is satisfied on its very first poll, so on its own it passes against a page that has not
+ * rendered the row yet — which is how the first attempt at the second case came to pass
+ * together with its own inverse (#101). `openPeople` returns as soon as the People heading is
+ * up, and a probe run measured the chip row still absent at that instant and there a moment
+ * later. Waiting for the keeper is what makes the row the settled one; the `data-testid` is
+ * what keeps the reading inside it.
  *
  * The suite shares one demo database, so every person and tag here is invented: the Okonkwos
  * are in no seed and no other spec, and the tag names are prefixed so they cannot collide with
@@ -136,14 +138,6 @@ test('a tag still on someone else survives, and goes only with the last carrier'
 	await expect(marisolTags).not.toContainText(SHARED_TAG);
 
 	await openPeople(page);
-	// DIAGNOSTIC (#101): unwaited counts at the instant the old case asserted, so the log says
-	// whether the row was rendered at all and what the old unscoped locator could see.
-	console.log('PROBE url=%s rows=%d scoped=%d unscoped=%d keeper=%d',
-		page.url(),
-		await chipRow(page).count(),
-		await chip(page, SHARED_TAG).count(),
-		await page.getByRole('link', { name: SHARED_TAG, exact: true }).count(),
-		await chip(page, KEEPER_TAG).count());
 	await expect(chip(page, KEEPER_TAG)).toBeVisible();
 	await expect(chip(page, SHARED_TAG)).toHaveCount(0);
 	await page.reload();
