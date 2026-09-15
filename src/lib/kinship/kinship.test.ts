@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'bun:test';
-import { deriveKinship, deriveKinshipForAll, type KinshipGraph } from './kinship';
+import { deriveKinship, deriveKinshipForAll, type KinshipGraph, type KinTerm } from './kinship';
 import { createTranslator } from '$lib/i18n/translate';
-import { kinshipLabel } from './labels';
+import { directClaimLabel, kinshipLabel } from './labels';
+import { directClaimFor } from './claims';
 
 /*
  * Derived kinship (docs/02 §2.4.1). From the primary links a household actually enters —
@@ -161,6 +162,19 @@ describe('deriveKinship', () => {
 		expect(kinOf('Hans', separated)).toContainEqual(['Otto', 'Grandfather']);
 	});
 
+	it('drops a step-child once the household enters the direct link instead', () => {
+		// Kurt partners Bettina, so her children read as his step-children.
+		expect(kinOf('Kurt')).toContainEqual(['Hans', 'Stepson']);
+		// Confirming that Hans is really his own child settles the pair: it is entered now,
+		// so it is no longer worked out at all, under any term.
+		const confirmed = family({
+			parentEdges: [...family().parentEdges, { parentId: 'Kurt', childId: 'Hans' }]
+		});
+		expect(kinOf('Kurt', confirmed).map(([id]) => id)).not.toContain('Hans');
+		// The sibling who was not confirmed still reads as a step-child.
+		expect(kinOf('Kurt', confirmed)).toContainEqual(['Lisa', 'Stepdaughter']);
+	});
+
 	it('falls back to a neutral term when the gender is not recorded', () => {
 		const neutral = family({ people: family().people.map((x) => ({ ...x, gender: null })) });
 		expect(kinOf('Hans', neutral)).toContainEqual(['Otto', 'Grandparent']);
@@ -218,5 +232,20 @@ describe('kinshipLabel', () => {
 
 		expect(kinshipLabel(de, found.find((k) => k.personId === 'Otto')!)).toBe('Großvater');
 		expect(kinshipLabel(de, found.find((k) => k.personId === 'Rosa')!)).toBe('Großmutter');
+	});
+});
+
+describe('directClaimLabel', () => {
+	it('words the correction each step term offers, in both languages', () => {
+		const de = createTranslator('de');
+		const claim = (term: KinTerm) => directClaimFor(term)!;
+
+		expect(directClaimLabel(en, claim('step-child'))).toBe('Actually the child');
+		expect(directClaimLabel(en, claim('step-parent'))).toBe('Actually the parent');
+		expect(directClaimLabel(en, claim('step-sibling'))).toBe('Actually a sibling');
+		expect(directClaimLabel(de, claim('step-child'))).toBe('Doch das eigene Kind');
+		expect(directClaimLabel(de, claim('step-parent'))).toBe('Doch ein eigener Elternteil');
+		// Singular, as `kinship.reason.siblingOf` already words it — "Geschwister" is the plural.
+		expect(directClaimLabel(de, claim('step-sibling'))).toBe('Doch ein Geschwisterteil');
 	});
 });

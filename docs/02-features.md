@@ -396,9 +396,10 @@ logically implied ones for one-tap confirmation:
 - Adding **Bettina as mother of Hans**, where **Hans and Lisa are siblings**, suggests
   *Bettina as mother of Lisa* (and of every other sibling).
 - Adding a **sibling** suggests **sharing the known parents** on either side.
-- Adding a **partner** suggests nothing: a tie to their existing children is a *step*
-  relationship, which has no stored type and needs none, because the derived block already
-  names it. (Decided when this shipped; see the two **Shipped** notes below.)
+- Adding a **partner** suggests nothing at that moment: a tie to their existing children is
+  a *step* relationship, which has no stored type and needs none, because the derived block
+  already names it. The correction is offered there instead, where it keeps standing rather
+  than passing by once — see the third **Shipped** note below.
 - Roles are distinguished — **father/mother/parent, sibling, grandparent** — using the
   relationship types and each contact's gender where known.
 
@@ -427,6 +428,18 @@ tables, fully unit-testable (test-first).
   engine (`src/lib/suggestions/`) that keeps the rules apart from the checks applied to all
   of them — so Stella never offers a pair the household has already linked, and never offers
   to *store* a tie it already works out and displays.
+- **Shipped:** a worked-out **step** relative can be corrected in place. *Stepchild*,
+  *stepparent* and *stepsibling* are what Stella falls back to when the link runs through a
+  partner and no direct one is on record — but a partner's child is often the person's own
+  child too, and only the household knows which it is. So those rows, and only those, carry
+  a quiet **Actually the child / the parent / a sibling**, which stores the direct link.
+  Every other term is unambiguous and stays read-only: a grandmother is a grandmother, with
+  nothing to decide. Confirming settles the pair for good — an entered link is never
+  re-derived — so the row disappears and the real relationship takes its place in the list
+  above, while the relatives that were *not* corrected keep their step term. Which link a
+  step term would become is decided by a pure, language-free module (`src/lib/kinship/`),
+  and the writing goes through the same checked action as the *Also true?* block, so a
+  correction that would contradict the graph is refused like any other entry.
 
 A broader catalogue of what else could be proposed — the other parent, surname and address
 prefill, consistency warnings — and the rule set behind it is drafted in

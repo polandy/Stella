@@ -132,6 +132,9 @@ export const contact: ContactMessages = {
 	'contact.relationships.parentProposal': (p) => `${p.parent} ist ein Elternteil von ${p.child}`,
 	'contact.relationships.addThisToo': 'Das auch hinzufügen',
 	'contact.relationships.derived': 'Ebenfalls verwandt · hergeleitet, nicht eingetragen',
+	'contact.relationships.reallyChild': 'Doch das eigene Kind',
+	'contact.relationships.reallyParent': 'Doch ein eigener Elternteil',
+	'contact.relationships.reallySibling': 'Doch ein Geschwisterteil',
 	'contact.relationships.via': (p) => `über ${p.people}`,
 	'contact.relationships.viaAnd': ' und ',
 

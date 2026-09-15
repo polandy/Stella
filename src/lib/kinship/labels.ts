@@ -1,4 +1,6 @@
 import { hasMessage, type Translate } from '$lib/i18n/translate';
+import { SIBLING_TYPE_KEY } from '$lib/relationships/type-keys';
+import type { DirectClaim } from './claims';
 import type { KinTerm, KinVariant } from './kinship';
 
 /*
@@ -14,4 +16,12 @@ export function kinshipLabel(
 ): string {
 	const key = `kinship.term.${kin.term}.${kin.variant}`;
 	return hasMessage(key) ? t(key) : kin.term;
+}
+
+/** "Actually the child" — what confirming a step relative's direct link is called. */
+export function directClaimLabel(t: Translate, claim: DirectClaim): string {
+	if (claim.typeKey === SIBLING_TYPE_KEY) return t('contact.relationships.reallySibling');
+	return claim.parent === 'subject'
+		? t('contact.relationships.reallyChild')
+		: t('contact.relationships.reallyParent');
 }
