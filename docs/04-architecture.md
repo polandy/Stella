@@ -140,8 +140,8 @@ BODY_SIZE_LIMIT=250M                        # adapter-node request cap; a restor
 AUTH_LOCAL_ENABLED=true                     # allow email+password
 AUTH_OIDC_ENABLED=true                      # allow SSO
 
-# Release check (off by default)
-UPDATE_CHECK=false                          # true → ask GitHub once a day whether a newer Stella exists (§2.17.1)
+# Release check (on by default)
+UPDATE_CHECK=true                           # false → don't ask GitHub whether a newer Stella exists (§2.17.1)
 UPDATE_FEED_URL=                            # which feed that asks; empty = Stella's own releases
 
 # OIDC / Authelia

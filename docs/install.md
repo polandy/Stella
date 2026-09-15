@@ -161,11 +161,11 @@ backup first if it has been a while since the last one.
 
 ### Being told when there is something to update to
 
-Stella can say so itself. Put `UPDATE_CHECK=true` in `.env` and restart; **Settings → About**
-then names the newest published release beside the one you are running, with a link to what
-changed. The server asks GitHub at most once a day on behalf of everyone, sends nothing about
-your household, and never downloads or installs anything — updating stays the two commands
-above. Leave it out and Stella asks nobody anything.
+Stella does this on its own: **Settings → About** names the newest published release beside
+the one you are running, with a link to what changed. The server asks GitHub at most once a
+day on behalf of everyone, sends nothing about your household, and never downloads or
+installs anything — updating stays the two commands above. Set `UPDATE_CHECK=false` in `.env`
+and restart if you'd rather Stella asked nobody anything.
 
 ## Moving to another machine
 
