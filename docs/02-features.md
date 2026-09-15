@@ -938,8 +938,8 @@ included) it is the very first thing they will do.
 
 ### 2.17.1 "Is there a newer Stella?" **[M2]**
 
-Settings ends with an **About** card naming the running version. When the operator has
-switched the release check on, the card also says what the newest published release is:
+Settings ends with an **About** card naming the running version. Unless the operator has
+switched the release check off, the card also says what the newest published release is:
 
 - **A newer release** — a `New` badge, `v0.0.11 is available`, and a link to its release
   notes. The line is the whole notice: no banner, no dialog, nothing to dismiss.

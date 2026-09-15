@@ -426,8 +426,8 @@ still signed out of Stella.
 
 ## Which Stella is this?
 
-**Settings → About** names the version you are on. If whoever runs your instance has
-switched the release check on, it also tells you when a newer one has been published, with a
+**Settings → About** names the version you are on. Unless whoever runs your instance has
+turned the release check off, it also tells you when a newer one has been published, with a
 link to what changed — a line, not an interruption, and nothing to dismiss. Stella never
 updates itself; that is the household admin's job.
 
