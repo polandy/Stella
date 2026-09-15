@@ -17,6 +17,8 @@ const U1 = 'user-1';
 const U2 = 'user-2';
 const viewerU1: Viewer = { id: U1, householdId: H };
 const viewerU2: Viewer = { id: U2, householdId: H };
+/** The one fixture birthday, asserted where the tag-filtered summary is read back. */
+const BIRTH_DATE = '2015-05-20';
 
 let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzleTagRepository>;
@@ -42,7 +44,7 @@ beforeEach(() => {
 		{ id: U2, householdId: H, email: 'u2@x.test', name: 'Two' }
 	]).run();
 	db.insert(schema.contact).values([
-		{ id: 'c-shared', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Shared', nickname: 'Sha' },
+		{ id: 'c-shared', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Shared', nickname: 'Sha', birthDate: BIRTH_DATE },
 		{ id: 'c-priv', householdId: H, createdBy: U1, visibility: 'private', displayName: 'Private' }
 	]).run();
 	repo = createDrizzleTagRepository(db);
@@ -79,6 +81,10 @@ describe('visibility scoping', () => {
 
 	it('carries the nickname on a tag-filtered list, so the directory filter still finds people by it', async () => {
 		expect((await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).find((c) => c.id === 'c-shared')?.nickname).toBe('Sha');
+	});
+
+	it('carries the birth date there too, so a tag-filtered list is the same summary', async () => {
+		expect((await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).find((c) => c.id === 'c-shared')?.birthDate).toBe(BIRTH_DATE);
 	});
 
 	it('lists only visible contacts for a tag', async () => {

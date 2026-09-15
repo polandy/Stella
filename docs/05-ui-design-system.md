@@ -524,11 +524,13 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   fetched afterwards and takes its place when ready (`RelationshipMap`). The map is never an
   empty box waiting on 400 KB, and a browser that never finishes the fetch keeps the SVG —
   which is the fallback rather than an error state.
-- **It follows a save:** adding, retyping or removing a relationship re-runs the page's load,
-  and the map redraws from that fresh slice — the shape beside the list never disagrees with
-  the list. What the reader had expanded stays expanded (`rebuildExplored` replays it against
-  the new snapshot, skipping anything the new slice no longer reaches from the centre); a
-  traced chain is dropped, because it described the links as they were.
+- **It follows a save:** entering or retyping a relationship re-runs the page's load, and the
+  map redraws from that fresh slice — the shape beside the list never disagrees with the list
+  (`e2e/person-map.spec.ts`). What the reader had expanded stays expanded (`rebuildExplored`
+  replays it against the new snapshot, skipping anything the new slice no longer reaches from
+  the centre); a traced chain is dropped, because it described the links as they were. A
+  removal is the one that waits: the row goes at once but the link is still recallable, so the
+  map drops the node when the undo window commits it (§2.23), not while it is pending.
 
 ## 5.9 Accessibility checklist
 

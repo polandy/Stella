@@ -45,7 +45,11 @@ describe('chooseCenter', () => {
 
 describe('wayBackTo', () => {
 	it('names the person a link asked to centre, so the page can offer the way back', () => {
-		expect(wayBackTo(nodes, chooseCenter(nodes, 'c-anna', 'c-me'))).toBe('Anna Roth');
+		expect(wayBackTo(nodes, chooseCenter(nodes, 'c-anna', 'c-me'))).toEqual({
+			kind: 'person',
+			href: '/contacts/c-anna',
+			name: 'Anna Roth'
+		});
 	});
 
 	it('owes nothing for a centre nobody asked for', () => {
@@ -53,8 +57,17 @@ describe('wayBackTo', () => {
 		expect(wayBackTo(nodes, chooseCenter(nodes, null, 'c-me'))).toBeNull();
 	});
 
-	it('owes nothing for a circle, which has no page of its own to go back to', () => {
-		expect(wayBackTo(nodes, chooseCenter(nodes, 'circle-1', 'c-me'))).toBeNull();
+	it('points a circle back at its own page, not at a person', () => {
+		expect(wayBackTo(nodes, chooseCenter(nodes, 'circle-1', 'c-me'))).toEqual({
+			kind: 'circle',
+			href: '/circles/circle-1',
+			name: 'Book club'
+		});
+	});
+
+	it('owes nothing for a centre with no name to offer', () => {
+		const unnamed: CentrableNode[] = [{ id: 'c-x', kind: 'person' }];
+		expect(wayBackTo(unnamed, chooseCenter(unnamed, 'c-x', null))).toBeNull();
 	});
 
 	it('owes nothing when there is nothing to centre on', () => {

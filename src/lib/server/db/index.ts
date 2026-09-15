@@ -1,5 +1,6 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { mkdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname } from 'node:path';
 import { getConfig } from '../config';
 import * as schema from './schema';
@@ -12,10 +13,17 @@ import { seedRelationshipTypes } from './seed';
  *
  * `bun:sqlite` and Drizzle's Bun driver only exist in the Bun runtime, but the SvelteKit
  * build runs a Node-based route-analysis step that would try to *link* those modules and
- * fail. We therefore import them lazily via `require` inside `getDb`, so the static build
- * graph never references them; at runtime (always Bun) they resolve normally. Only
- * type-only imports remain static — those are erased at build time.
+ * fail. We therefore import them lazily inside `getDb`, so the static build graph never
+ * references them; at runtime (always Bun) they resolve normally. Only type-only imports
+ * remain static — those are erased at build time.
+ *
+ * The `require` has to be *made*, not assumed: this is an ES module, and the one runtime
+ * that does not hand one out anyway is the dev server — Vite's SSR transform leaves a bare
+ * `require` standing and every page then dies on `require is not defined`. `createRequire`
+ * gives the same lazy, synchronous resolution in all three runtimes (dev, the built server,
+ * `bun test`), and `getDb` stays synchronous, which its several hundred callers rely on.
  */
+const requireAtRuntime = createRequire(import.meta.url);
 
 let instance: BunSQLiteDatabase<typeof schema> | null = null;
 let sqliteInstance: import('bun:sqlite').Database | null = null;
@@ -23,9 +31,11 @@ let sqliteInstance: import('bun:sqlite').Database | null = null;
 export function getDb(): BunSQLiteDatabase<typeof schema> {
 	if (instance) return instance;
 
-	const { Database } = require('bun:sqlite') as typeof import('bun:sqlite');
-	const { drizzle } = require('drizzle-orm/bun-sqlite') as typeof import('drizzle-orm/bun-sqlite');
-	const { migrate } = require('drizzle-orm/bun-sqlite/migrator') as typeof import('drizzle-orm/bun-sqlite/migrator');
+	const { Database } = requireAtRuntime('bun:sqlite') as typeof import('bun:sqlite');
+	const { drizzle } = requireAtRuntime('drizzle-orm/bun-sqlite') as typeof import('drizzle-orm/bun-sqlite');
+	const { migrate } = requireAtRuntime(
+		'drizzle-orm/bun-sqlite/migrator'
+	) as typeof import('drizzle-orm/bun-sqlite/migrator');
 
 	const config = getConfig();
 	// Ensure the data directory exists before opening the file.

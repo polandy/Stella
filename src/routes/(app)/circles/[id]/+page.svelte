@@ -39,7 +39,7 @@
 		<span class="grid size-12 shrink-0 place-items-center rounded-full" style={accentDotStyle(circle.color)}>
 			<span class="size-4 rounded-full bg-card/70"></span>
 		</span>
-		<div class="min-w-0">
+		<div class="min-w-0 flex-1">
 			<h1 class="truncate text-2xl font-semibold text-fg">{circle.name}</h1>
 			<p class="text-sm text-fg-muted">
 				<span>{circleKindLabel(t, circle.kind)}</span>
@@ -47,6 +47,8 @@
 				{#if circle.visibility === 'private'} · {t('circles.private')}{/if}
 			</p>
 		</div>
+		<!-- The circle is a node of the graph, so it opens there like a person does (docs/02 §2.7). -->
+		<Button size="sm" icon="graph" href="/graph?center={circle.id}">{t('graph.openInGraph')}</Button>
 	</header>
 
 	<Section

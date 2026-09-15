@@ -328,6 +328,25 @@ reciprocal** link.
   (§2.4.1), and a divorce does not unmake a stepmother. The status says how the household
   reads the link today; it is not a delete.
 
+- **Shipped:** a **family link is dated from the younger one's birthday**. A child gains a
+  parent, a grandparent and a godparent the day they are born, and two siblings become
+  siblings the day the second of them arrives — the day is already on file, so the form fills
+  the **since** day in as soon as the type and the person are chosen, for someone named in the
+  picker itself just as much as for someone already on file.
+
+  The rule reads the type, not a list of names, so a household's **own** family type
+  ("Godparent of") is covered the moment it is filed under *family*. An **asymmetric** family
+  type names the elder role forward and the younger in reverse — *Parent of* / *Child of*,
+  *Godparent of* / *Godchild of* — so the chosen side alone says whose birthday it is, and the
+  elder's own need not be known. A **symmetric** one (sibling) says nothing about age, so it
+  takes the later of the two birthdays and offers nothing while only one is on file. Outside
+  the family nothing is suggested: a partnership, a friendship and a working relationship
+  begin at a meeting, a wedding or a first day, which no birthday knows.
+
+  It stays a suggestion in an ordinary field — clearable and editable before saving — and is
+  only offered when the birthday names a whole day: a day-and-month birthday or an estimated
+  year (docs/03 §3.4) says nothing about *when* the link began.
+
 - **Shipped:** the **type of a link can be changed** from the row's *Edit*, in the same picker
   the link was entered with — both sides of an asymmetric type included. A partner who became a
   spouse, and a generation entered the wrong way round, are one pick rather than a removal and a
@@ -509,16 +528,21 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 - From **a person's profile**: the map on their page *is* this explorer, with a two-hop reach
   (docs/05 §5.5). **Open in the graph** carries that person here as the centre — from the
   card's header, and from the peek panel of any node the embedded map cannot expand.
+- From **a circle's page**: **Open in the graph** centres the explorer on the circle itself,
+  which is a node like any other — so the whole group and everyone hanging off its members is
+  one view (§2.4.2). The peek panel of a circle node goes the other way, back to its page.
 - As a **standalone screen** (nav → Graph). It opens on **your own person** when you have
   said who that is (§2.1.3), and otherwise on the first person the household has.
 - **From a profile's question.** *How are we connected?* on a person's card asks who, and
   opens the explorer with both ends named (`?center=…&path=…`), the chain already traced. The
   question is answered here rather than there because a profile carries two hops and the chain
   usually runs further; the explorer holds the whole visible graph.
-- **The way back.** When a link named the centre, the explorer carries *Back to <person>* to
-  the page it was opened from. It is offered only for a centre that was asked for and could be
-  honoured: falling back to your own person is not somewhere you came from, and neither is a
-  stale link naming somebody this member cannot see.
+- **The way back.** When a link named the centre, the explorer carries *Back to <person>* — or
+  *Back to the <name> circle* — to the page it was opened from. It is offered only for a centre
+  that was asked for and could be honoured: falling back to your own person is not somewhere
+  you came from, and neither is a stale link naming somebody this member cannot see. A node of
+  a kind with no page of its own, or with no name to show, is owed nothing rather than linked
+  into a 404.
 
 **What is shown**
 

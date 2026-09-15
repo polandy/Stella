@@ -475,6 +475,26 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   with a persistence test that fails without it. The cost is an invariant held in code rather
   than by the database, in exchange for `delete person` staying a single statement.
 
+- **A link that begins at a birth is recognised by its category, not by a flag on the type** —
+  the since day of a family link is offered from the younger one's birthday (docs/02 §2.4), and
+  the types this applies to include ones the household names itself, so it cannot be a list of
+  keys. Rejected: a `begins_at_birth` column on `relationship_type`, which is exact and would
+  have let a household say it per type, at the price of a migration, a checkbox in the type
+  form and a concept to explain — for a suggestion in an editable field. Category is a proxy
+  the household already sets, and it costs a wrong offer for a self-named *step-* or *adoptive*
+  type filed under family, which is cleared by typing over the day.
+
+- **The dev server runs under Bun, not Node** — `bun run dev` is `bunx --bun vite dev` (and
+  `preview` likewise), because Stella's database handle is `bun:sqlite`, which does not exist
+  in Node: under Vite's default Node runtime the dev server starts and then 500s on every
+  page. The handle is still `require`d lazily so the Node-based build step never links it,
+  but the `require` is *made* with `createRequire` — Vite's module runner hands an ES module
+  none, which is why a bare one worked in the built server and in `bun test` and nowhere
+  else. Rejected: a Node-compatible driver for dev only, which would have meant running
+  development against a different database library than production. The cost is that dev and
+  preview no longer start under Node at all, and `scripts/dev-smoke.sh` in CI is what keeps
+  that runtime from rotting unnoticed again.
+
 ## 4.10 Deployment
 
 - **Single Docker image** (multi-stage: build with Bun, run on a slim Bun base).

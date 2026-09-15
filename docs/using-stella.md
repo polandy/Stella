@@ -212,6 +212,14 @@ of saving it. Change the link that is already there to the direction you meant, 
 A link can say more than its label. **How they connect** is yours to write — "met through
 Peter at the ski course" — and there is a **since** day and a **current / former** status if
 they help; all three are optional and all three can be changed later with *Edit* on the row.
+For a family link, the **since** day fills itself in with the younger one's birthday as soon
+as you have picked the type and the person — a child gains a parent, a grandparent and a
+godparent the day they are born, and Stella has that day already. It works for a kind of link
+you named yourself, as long as you filed it under *family*; for *Sibling of*, where neither
+side says who is older, both birthdays have to be on file. Outside the family nothing is
+filled in — a friendship or a partnership starts when you met, not when someone was born.
+Clear it or type over it if you meant something else; it only appears when the birthday is a
+whole day, not a day-and-month or a guessed year.
 *Edit* also offers the **kind of link** again, so a partner who became a spouse — or a *Parent
 of* you picked the wrong way round — is one pick and not a re-entry; what you wrote about the
 link stays with it. Entered someone as the wrong thing altogether? *Remove* takes the link
@@ -258,7 +266,9 @@ one click and nobody ends up half "coach" and half "Coach"; anything new is stil
 type.
 
 Circles are also the answer to "who else was there?", which is usually the question you
-have when you are trying to remember someone's name.
+have when you are trying to remember someone's name. **Open in the graph** on a circle's page
+draws that answer: the circle in the middle, everyone in it around it, and their own links
+running on from there. The way back to the circle's page waits at the top of the map.
 
 Once there are more than a handful, start typing on the Circles page to narrow the list by
 name or description, or tap a kind — *Class*, *Club*, *Team* — to see only those. The number

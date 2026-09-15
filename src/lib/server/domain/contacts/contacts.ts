@@ -82,6 +82,11 @@ export interface ContactSummary {
 	description: string | null;
 	visibility: Visibility;
 	avatarPhotoId: string | null;
+	/**
+	 * The stored birth date, at whatever precision it was entered (docs/03 §3.4) — a list
+	 * entry says who somebody is, and for a child that includes when they were born.
+	 */
+	birthDate: string | null;
 }
 
 /** The fields the hero edits in place, already normalised. */
