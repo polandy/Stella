@@ -39,3 +39,25 @@ const DIRECT_CLAIMS: Partial<Record<KinTerm, DirectClaim>> = {
 export function directClaimFor(term: KinTerm): DirectClaim | null {
 	return DIRECT_CLAIMS[term] ?? null;
 }
+
+/** The two ends of the row a confirmed claim writes, in the order it is stored. */
+export interface ClaimEndpoints {
+	/** The `from` end — the parent, where the type is directed. */
+	fromId: string;
+	/** The `to` end — the child, where the type is directed. */
+	toId: string;
+}
+
+/**
+ * Which way round the confirmed row goes: the parent is the `from` end, and a symmetric type
+ * is stored subject-first, since either order says the same thing.
+ */
+export function claimEndpoints(
+	claim: DirectClaim,
+	subjectId: string,
+	relativeId: string
+): ClaimEndpoints {
+	return claim.parent === 'relative'
+		? { fromId: relativeId, toId: subjectId }
+		: { fromId: subjectId, toId: relativeId };
+}

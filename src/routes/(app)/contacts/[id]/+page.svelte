@@ -28,7 +28,7 @@
 	} from '$lib/relationships/labels';
 	import { sectionAnchor } from '$lib/contacts/sections';
 	import { directClaimLabel, kinshipLabel } from '$lib/kinship/labels';
-	import { directClaimFor } from '$lib/kinship/claims';
+	import { claimEndpoints, directClaimFor } from '$lib/kinship/claims';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
@@ -964,9 +964,10 @@
 											</span>
 										{/if}
 										{#if claim}
+											{@const ends = claimEndpoints(claim, c.id, kin.personId)}
 											<form method="POST" action="?/addProposedRelationship" class="ml-auto shrink-0">
-												<input type="hidden" name="fromId" value={claim.parent === 'relative' ? kin.personId : c.id} />
-												<input type="hidden" name="toId" value={claim.parent === 'relative' ? c.id : kin.personId} />
+												<input type="hidden" name="fromId" value={ends.fromId} />
+												<input type="hidden" name="toId" value={ends.toId} />
 												<input type="hidden" name="typeId" value={claim.typeKey} />
 												<Button variant="ghost" size="sm">{directClaimLabel(t, claim)}</Button>
 											</form>

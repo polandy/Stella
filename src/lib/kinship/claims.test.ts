@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { PARENT_CHILD_TYPE_KEY, SIBLING_TYPE_KEY } from '$lib/relationships/type-keys';
-import { directClaimFor } from './claims';
+import { claimEndpoints, directClaimFor } from './claims';
 import type { KinTerm } from './kinship';
 
 /*
@@ -50,5 +50,21 @@ describe('directClaimFor', () => {
 	it('offers a correction for the step terms and nothing else', () => {
 		const offered = ALL_TERMS.filter((term) => directClaimFor(term) !== null);
 		expect(offered).toEqual(['step-parent', 'step-child', 'step-sibling']);
+	});
+});
+
+describe('claimEndpoints', () => {
+	const ends = (term: KinTerm) => claimEndpoints(directClaimFor(term)!, 'subject-id', 'relative-id');
+
+	it('writes the subject as the parent when their step-child is really their own', () => {
+		expect(ends('step-child')).toEqual({ fromId: 'subject-id', toId: 'relative-id' });
+	});
+
+	it('writes the relative as the parent when a step-parent is really a parent', () => {
+		expect(ends('step-parent')).toEqual({ fromId: 'relative-id', toId: 'subject-id' });
+	});
+
+	it('stores a sibling subject-first, since neither end is the parent', () => {
+		expect(ends('step-sibling')).toEqual({ fromId: 'subject-id', toId: 'relative-id' });
 	});
 });
