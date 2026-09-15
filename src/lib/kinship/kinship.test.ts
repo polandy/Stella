@@ -221,5 +221,8 @@ describe('directClaimLabel', () => {
 		expect(directClaimLabel(en, claim('step-parent'))).toBe('Actually the parent');
 		expect(directClaimLabel(en, claim('step-sibling'))).toBe('Actually a sibling');
 		expect(directClaimLabel(de, claim('step-child'))).toBe('Doch das eigene Kind');
+		expect(directClaimLabel(de, claim('step-parent'))).toBe('Doch ein eigener Elternteil');
+		// Singular, as `kinship.reason.siblingOf` already words it — "Geschwister" is the plural.
+		expect(directClaimLabel(de, claim('step-sibling'))).toBe('Doch ein Geschwisterteil');
 	});
 });
