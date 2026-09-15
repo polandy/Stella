@@ -43,6 +43,37 @@ export async function openPerson(page: Page, name: RegExp): Promise<void> {
 	await appReady(page);
 }
 
+/** Adds a person through the real form and lands on their page. */
+export async function addPerson(page: Page, first: string, last: string): Promise<void> {
+	await page.goto('/contacts/new');
+	await page.getByLabel('First name').fill(first);
+	await page.getByLabel('Last name').fill(last);
+	await page.getByRole('button', { name: 'Add person' }).click();
+	await expect(page.getByRole('heading', { name: `${first} ${last}` })).toBeVisible();
+	await appReady(page);
+}
+
+/**
+ * A row of the person page's profile card, unfolded (docs/05 §5.5). A row holding nothing
+ * arrives folded, so the content under test is only on the page once it has been opened.
+ */
+export async function profileRow(page: Page, title: string): Promise<Locator> {
+	const row = page.locator(`section[data-row="${title}"]`);
+	const toggle = row.getByRole('button', { name: new RegExp(`^${title}`) });
+	if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click();
+	await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+	return row;
+}
+
+/** Adds a tag through the section's own form and waits for it to be on the page. */
+export async function addTag(page: Page, name: string): Promise<void> {
+	const tags = await profileRow(page, 'Tags');
+	await tags.getByRole('button', { name: 'Add' }).click();
+	await tags.getByPlaceholder('Tag name').fill(name);
+	await tags.getByRole('button', { name: 'Add', exact: true }).last().click();
+	await expect(tags).toContainText(name);
+}
+
 /** Types `@query` into the moment composer and picks the suggestion whose label matches. */
 export async function mention(page: Page, query: string, label: RegExp): Promise<void> {
 	await page.getByLabel('What happened?').pressSequentially(`@${query}`);

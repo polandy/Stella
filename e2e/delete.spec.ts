@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { appReady, mention, openPerson, signIn } from './app';
+import { addPerson, mention, openPerson, signIn } from './app';
 
 /*
  * Removing a person for good (docs/02 §2.2). Written after the flow was verified in the
@@ -12,16 +12,6 @@ import { appReady, mention, openPerson, signIn } from './app';
  */
 
 const WHO = 'Ophelia Trask';
-
-/** Adds a person through the real form and lands on their page. */
-async function addPerson(page: Page, first: string, last: string): Promise<void> {
-	await page.goto('/contacts/new');
-	await page.getByLabel('First name').fill(first);
-	await page.getByLabel('Last name').fill(last);
-	await page.getByRole('button', { name: 'Add person' }).click();
-	await expect(page.getByRole('heading', { name: `${first} ${last}` })).toBeVisible();
-	await appReady(page);
-}
 
 const deleteDisclosure = (page: Page) => page.getByRole('button', { name: 'Delete for good' });
 

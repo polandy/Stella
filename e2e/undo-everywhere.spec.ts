@@ -1,5 +1,5 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
-import { openPerson, signIn } from './app';
+import { expect, test, type Page } from '@playwright/test';
+import { addTag, openPerson, profileRow, signIn } from './app';
 
 /*
  * Undo for the leaf records, and the *Saved* toast (docs/02 §2.23, docs/05 §5.7). Written
@@ -19,28 +19,6 @@ const TAG_LET_GO = 'Zzz-sent-tag';
 /** A card with this title, e.g. a circle's Members. */
 function section(page: Page, title: string) {
 	return page.locator('section', { has: page.getByText(title, { exact: true }) }).first();
-}
-
-/**
- * A row of the person page's profile card, unfolded (docs/05 §5.5). A row holding nothing —
- * which is where every tag case starts — arrives folded, so the content under test is only on
- * the page once it has been opened.
- */
-async function profileRow(page: Page, title: string): Promise<Locator> {
-	const row = page.locator(`section[data-row="${title}"]`);
-	const toggle = row.getByRole('button', { name: new RegExp(`^${title}`) });
-	if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click();
-	await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-	return row;
-}
-
-/** Adds a tag through the section's own form and waits for it to be on the page. */
-async function addTag(page: Page, name: string): Promise<void> {
-	const tags = await profileRow(page, 'Tags');
-	await tags.getByRole('button', { name: 'Add' }).click();
-	await tags.getByPlaceholder('Tag name').fill(name);
-	await tags.getByRole('button', { name: 'Add', exact: true }).last().click();
-	await expect(tags).toContainText(name);
 }
 
 test.beforeEach(async ({ page }) => {
