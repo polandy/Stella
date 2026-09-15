@@ -96,7 +96,7 @@ test('a tag still on someone else survives, and goes only with the last carrier'
 	await openPerson(page, new RegExp(LAST_OF_TWO));
 	await removeTag(page, SHARED_TAG);
 	await openPeople(page);
-	await expect(chip(page, SHARED_TAG)).toBeVisible(); // DIAGNOSTIC: inverted
+	await expect(chip(page, SHARED_TAG)).toHaveCount(0);
 	await page.reload();
-	await expect(chip(page, SHARED_TAG)).toBeVisible(); // DIAGNOSTIC: inverted
+	await expect(chip(page, SHARED_TAG)).toHaveCount(0);
 });
