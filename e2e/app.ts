@@ -34,13 +34,56 @@ export async function appReady(page: Page): Promise<void> {
 	await expect(page.getByRole('button', { name: 'Search' })).toBeEnabled();
 }
 
-/** Opens a person's page from the directory, through the app's own links. */
-export async function openPerson(page: Page, name: RegExp): Promise<void> {
+/**
+ * Opens the people directory through the app's own nav link.
+ *
+ * Client-side on purpose, where a spec has just removed something: the layout cancels such a
+ * navigation, flushes the deferred removal and only then re-issues it, so the next screen
+ * cannot read the item back ((app)/+layout.svelte). A `page.goto` is a `leave` instead, which
+ * fires the removal with `keepalive` and does not wait for it — a race, not a seam.
+ */
+export async function openPeople(page: Page): Promise<void> {
 	await page.getByRole('link', { name: 'People' }).first().click();
 	await expect(page.getByRole('heading', { name: 'People' })).toBeVisible();
+}
+
+/** Opens a person's page from the directory, through the app's own links. */
+export async function openPerson(page: Page, name: RegExp): Promise<void> {
+	await openPeople(page);
 	await page.getByRole('link', { name }).first().click();
 	await expect(page.locator('#section-relationships')).toBeVisible();
 	await appReady(page);
+}
+
+/** Adds a person through the real form and lands on their page. */
+export async function addPerson(page: Page, first: string, last: string): Promise<void> {
+	await page.goto('/contacts/new');
+	await page.getByLabel('First name').fill(first);
+	await page.getByLabel('Last name').fill(last);
+	await page.getByRole('button', { name: 'Add person' }).click();
+	await expect(page.getByRole('heading', { name: `${first} ${last}` })).toBeVisible();
+	await appReady(page);
+}
+
+/**
+ * A row of the person page's profile card, unfolded (docs/05 §5.5). A row holding nothing
+ * arrives folded, so the content under test is only on the page once it has been opened.
+ */
+export async function profileRow(page: Page, title: string): Promise<Locator> {
+	const row = page.locator(`section[data-row="${title}"]`);
+	const toggle = row.getByRole('button', { name: new RegExp(`^${title}`) });
+	if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click();
+	await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+	return row;
+}
+
+/** Adds a tag through the section's own form and waits for it to be on the page. */
+export async function addTag(page: Page, name: string): Promise<void> {
+	const tags = await profileRow(page, 'Tags');
+	await tags.getByRole('button', { name: 'Add' }).click();
+	await tags.getByPlaceholder('Tag name').fill(name);
+	await tags.getByRole('button', { name: 'Add', exact: true }).last().click();
+	await expect(tags).toContainText(name);
 }
 
 /** Types `@query` into the moment composer and picks the suggestion whose label matches. */
