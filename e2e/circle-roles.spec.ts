@@ -73,7 +73,7 @@ test('on a person’s page the roles follow the circle name typed, in any capita
 	await addMember(page, 'Ruben Kranzler', 'wing');
 
 	// A third person, so the form offers circles they are not in yet.
-	await addPerson(page, 'Marlis', 'Zbinden');
+	await addPerson(page, 'Katia', 'Stucki');
 	const circles = await profileRow(page, 'Circles');
 	await circles.getByRole('button', { name: 'Join' }).click();
 	const name = circles.getByPlaceholder('Join or create a circle…');
@@ -94,15 +94,15 @@ test('on a person’s page the roles follow the circle name typed, in any capita
 });
 
 test('one role, not two, when the household has spelled it both ways', async ({ page }) => {
-	await addPerson(page, 'Sieglinde', 'Amrein');
-	await addPerson(page, 'Corin', 'Amrein');
-	await addPerson(page, 'Vreni', 'Amrein');
+	await addPerson(page, 'Sieglinde', 'Oberholzer');
+	await addPerson(page, 'Corin', 'Oberholzer');
+	await addPerson(page, 'Yann', 'Oberholzer');
 
 	await newCircle(page, 'Lantern Kayak Club');
-	await addMember(page, 'Sieglinde Amrein', 'guide');
-	await addMember(page, 'Corin Amrein', 'guide');
+	await addMember(page, 'Sieglinde Oberholzer', 'guide');
+	await addMember(page, 'Corin Oberholzer', 'guide');
 	// The same role, typed the way it starts a sentence.
-	await addMember(page, 'Vreni Amrein', 'Guide');
+	await addMember(page, 'Yann Oberholzer', 'Guide');
 
 	await page.getByRole('button', { name: 'Add people' }).click();
 	await expect(roleOptions(page)).toHaveCount(1);

@@ -60,7 +60,7 @@ export function suggestRoles(usedRoles: readonly (string | null | undefined)[]):
 	for (const raw of usedRoles) {
 		const role = (raw ?? '').trim();
 		if (role === '') continue;
-		const key = role;
+		const key = role.toLowerCase();
 		const entry = byKey.get(key) ?? { label: role, count: 0, labels: new Map() };
 		entry.count += 1;
 		entry.labels.set(role, (entry.labels.get(role) ?? 0) + 1);
