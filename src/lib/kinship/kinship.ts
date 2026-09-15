@@ -28,12 +28,21 @@ export interface Pair {
 	b: string;
 }
 
+/**
+ * A partner link. `former` says the household has marked the partnership as over: it stays
+ * on record, but nothing is derived through it any more — an ex-partner is no stepparent to
+ * the children and no in-law to the family (docs/02 §2.4).
+ */
+export interface PartnerEdge extends Pair {
+	former?: boolean;
+}
+
 /** The primary links to reason over, plus every pair that must not be re-derived. */
 export interface KinshipGraph {
 	people: readonly KinPerson[];
 	parentEdges: readonly ParentEdge[];
 	siblingEdges: readonly Pair[];
-	partnerEdges: readonly Pair[];
+	partnerEdges: readonly PartnerEdge[];
 	/** Pairs already carrying a stored relationship of any type (docs/02 §2.4). */
 	storedPairs: readonly Pair[];
 }
@@ -118,7 +127,9 @@ class Links {
 			add(this.parents, childId, parentId);
 			add(this.children, parentId, childId);
 		}
-		for (const { a, b } of graph.partnerEdges) {
+		for (const { a, b, former } of graph.partnerEdges) {
+			// A partnership that is over carries no step- or in-law family with it.
+			if (former) continue;
 			add(this.partners, a, b);
 			add(this.partners, b, a);
 		}

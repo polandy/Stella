@@ -139,6 +139,29 @@ describe('deriveKinship', () => {
 		expect(kinOf('Hans', step)).toContainEqual(['Timo', 'Stepbrother']);
 	});
 
+	it('derives nothing at all behind a former partnership', () => {
+		// Bettina and Kurt have separated: he stops being Hans's stepfather, his son Timo
+		// stops being a stepbrother, and Bettina's family stops being Kurt's in-laws.
+		const separated = family({
+			people: [...family().people, p('Timo', 'male')],
+			parentEdges: [...family().parentEdges, { parentId: 'Kurt', childId: 'Timo' }],
+			partnerEdges: [
+				{ a: 'Otto', b: 'Rosa' },
+				{ a: 'Bettina', b: 'Kurt', former: true }
+			]
+		});
+
+		const forHans = kinOf('Hans', separated).map(([id]) => id);
+		expect(forHans).not.toContain('Kurt');
+		expect(forHans).not.toContain('Timo');
+		const forKurt = kinOf('Kurt', separated).map(([id]) => id);
+		expect(forKurt).not.toContain('Otto');
+		expect(forKurt).not.toContain('Peter');
+		// The partnership that still holds keeps deriving, so the emptiness above is the
+		// status talking and not a broken graph.
+		expect(kinOf('Hans', separated)).toContainEqual(['Otto', 'Grandfather']);
+	});
+
 	it('drops a step-child once the household enters the direct link instead', () => {
 		// Kurt partners Bettina, so her children read as his step-children.
 		expect(kinOf('Kurt')).toContainEqual(['Hans', 'Stepson']);

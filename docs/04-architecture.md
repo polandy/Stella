@@ -561,6 +561,16 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   encryption, so a device left signed in holds the pages its owner read — the same bargain as
   the browser's own history, and written down as such in §2.18 rather than left implied.
 
+- **A former partnership derives nothing, rather than keeping the step-family it explained** —
+  the first reading was that status is not history: a divorce does not unmake a stepmother, so
+  `former` kept feeding the kinship engine. Real data settled it the other way — an ex-partner
+  named as the children's stepparent, and offered for confirmation (§2.4.1), reads as a mistake,
+  not as a memory. The cost is real and accepted: a stepparent who did raise the child loses the
+  worked-out term when the partnership ends. It is recoverable, because that household can enter
+  the relationship outright, whereas the wrong suggestion could only be dismissed over and over.
+  Partner edges therefore carry the status into `src/lib/kinship/`, and only the derivation stops
+  — the link itself is stored, shown and still never re-derived.
+
 ## 4.10 Deployment
 
 - **Single Docker image** (multi-stage: build with Bun, run on a slim Bun base).

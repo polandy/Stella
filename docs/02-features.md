@@ -323,10 +323,11 @@ reciprocal** link.
   as a quiet chip. A day that never happened (`2019-02-30`) and a status the model does not
   know are refused rather than stored. A link entered wrongly can be **removed**, with the
   same Undo window as a tag or a date, and removing one that was standing in for a derived
-  relationship brings the worked-out name back (§2.4.1). Marking a partner **former** does *not* withdraw the
-  relatives it explains — step-family and in-laws come precisely from partner history
-  (§2.4.1), and a divorce does not unmake a stepmother. The status says how the household
-  reads the link today; it is not a delete.
+  relationship brings the worked-out name back (§2.4.1). Marking a partner **former** keeps the
+  link on record but stops Stella reasoning through it: the step-family and in-laws it used to
+  explain are no longer derived (§2.4.1), because an ex-partner offered as a stepmother to the
+  children reads as a mistake, not as history. The status is not a delete — the partnership
+  itself stays visible on both profiles.
 
 - **Shipped:** a **family link is dated from the younger one's birthday**. A child gains a
   parent, a grandparent and a godparent the day they are born, and two siblings become
@@ -383,7 +384,9 @@ Stella reasons over the relationship graph so members enter as little as possibl
 (parent/child, partner/spouse, sibling), Stella derives extended kinship *for display*
 without manual entry — **grandparent/grandchild, great-grandparent, aunt/uncle,
 niece/nephew, cousin, sibling-in-law, parent-in-law**, plus half/step variants where
-partner history allows. Example: Hans → parent Bettina, Bettina → parent Otto ⇒ *Otto is
+partner history allows. Only a partnership that still holds carries step-family and in-laws:
+a partner marked **former** stays on record, but nothing is derived through it any more.
+Example: Hans → parent Bettina, Bettina → parent Otto ⇒ *Otto is
 Hans's grandfather* automatically. Derived labels are shown on the profile and graph,
 clearly marked as derived, and never duplicate stored edges.
 

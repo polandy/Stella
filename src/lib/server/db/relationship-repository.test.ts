@@ -8,6 +8,8 @@ import * as schema from './schema';
 import { createDrizzleRelationshipRepository } from './relationship-repository';
 import { CUSTOM_TYPE_SORT_ORDER } from '../domain/relationships/relationship-types';
 import { seedRelationshipTypes } from './seed';
+import { deriveKinship } from '../../kinship/kinship';
+import { FORMER_RELATIONSHIP_STATUS } from '../../relationships/status';
 
 /*
  * Integration spec for the Drizzle RelationshipRepository: type seeding, duplicate checks,
@@ -394,21 +396,23 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 			{ parentId: 'otto', childId: 'bettina' },
 			{ parentId: 'bettina', childId: 'hans' }
 		]);
-		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt' }]);
+		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt', former: false }]);
 		// Every visible pair is a stored pair, so nothing already linked is re-derived.
 		expect(graph.storedPairs).toContainEqual({ a: 'otto', b: 'hans' });
 	});
 
-	it('keeps a partner marked former in the graph, because step-family hangs on it', async () => {
-		// docs/02 §2.4: the status says how the household reads the link today, not that it
-		// never happened — a divorce does not unmake a stepmother.
+	it('marks a former partnership, so nothing is derived through it', async () => {
+		// docs/02 §2.4: the link stays on record — it is the derivation that stops, so the
+		// ex-partner is never offered as a stepparent to the children again.
 		db.update(schema.relationship)
-			.set({ status: 'former' })
+			.set({ status: FORMER_RELATIONSHIP_STATUS })
 			.where(eq(schema.relationship.id, 'r-3'))
 			.run();
 
 		const graph = await repo.loadKinshipGraphVisibleTo(viewerU1);
-		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt' }]);
+		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt', former: true }]);
+		expect(graph.storedPairs).toContainEqual({ a: 'bettina', b: 'kurt' });
+		expect(deriveKinship(graph, 'hans').map((k) => k.personId)).not.toContain('kurt');
 	});
 
 	it('hides a private person’s links from everyone but their author', async () => {
