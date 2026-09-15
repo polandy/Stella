@@ -3,7 +3,9 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import {
 	assignTagByName,
+	pruneOrphanTags,
 	resolveTagColor,
+	unassignTag,
 	type NewTag,
 	type Tag,
 	type TagRepository
@@ -33,7 +35,7 @@ const NOW = 1_700_000_000_000;
 const clock: Clock = { now: () => NOW };
 const idGen = (v: string): IdGenerator => ({ next: () => v });
 
-function fakeRepo(existing: Tag | null = null) {
+function fakeRepo(existing: Tag | null = null, assignmentsLeft = 0) {
 	const calls: string[] = [];
 	let inserted: NewTag | null = null;
 	const repo: TagRepository = {
@@ -46,7 +48,17 @@ function fakeRepo(existing: Tag | null = null) {
 		assign: async (contactId, tagId) => {
 			calls.push(`assign:${contactId}:${tagId}`);
 		},
-		unassign: async () => {},
+		unassign: async (contactId, tagId) => {
+			calls.push(`unassign:${contactId}:${tagId}`);
+		},
+		countAssignments: async () => assignmentsLeft,
+		deleteOrphans: async (householdId) => {
+			calls.push(`prune:${householdId}`);
+			return 0;
+		},
+		deleteTag: async (householdId, tagId) => {
+			calls.push(`delete:${householdId}:${tagId}`);
+		},
 		listForContactVisibleTo: async () => [],
 		listContactsByTagVisibleTo: async () => []
 	};
@@ -91,5 +103,37 @@ describe('assignTagByName', () => {
 	it('rejects an unknown colour', async () => {
 		const f = fakeRepo(null);
 		await expect(assignTagByName(deps(f.repo), 'h', 'c', 'Family', 'octarine')).rejects.toThrow();
+	});
+});
+
+describe('unassignTag', () => {
+	it('deletes the tag once nobody carries it any more', async () => {
+		const f = fakeRepo(null, 0);
+		await unassignTag(deps(f.repo), 'household-1', 'contact-1', 'tag-1');
+		expect(f.calls).toEqual(['unassign:contact-1:tag-1', 'delete:household-1:tag-1']);
+	});
+
+	it('keeps a tag that is still on someone else', async () => {
+		const f = fakeRepo(null, 1);
+		await unassignTag(deps(f.repo), 'household-1', 'contact-1', 'tag-1');
+		expect(f.calls).toEqual(['unassign:contact-1:tag-1']);
+	});
+
+	/*
+	 * The actor's own household is what the delete is scoped to, never a household read off
+	 * the tag — a forged `tagId` in the form must not be able to nominate its own scope.
+	 */
+	it('scopes the delete to the actor\'s household', async () => {
+		const f = fakeRepo(null, 0);
+		await unassignTag(deps(f.repo), 'household-1', 'contact-1', 'tag-elsewhere');
+		expect(f.calls).toEqual(['unassign:contact-1:tag-elsewhere', 'delete:household-1:tag-elsewhere']);
+	});
+});
+
+describe('pruneOrphanTags', () => {
+	it('sweeps the household, for the tags a deleted contact left behind', async () => {
+		const f = fakeRepo();
+		await pruneOrphanTags(deps(f.repo), 'household-1');
+		expect(f.calls).toEqual(['prune:household-1']);
 	});
 });

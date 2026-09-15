@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, notInArray, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { contactVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
@@ -59,6 +59,31 @@ export function createDrizzleTagRepository(db: BunSQLiteDatabase<typeof schema>)
 			db.delete(contactTag)
 				.where(and(eq(contactTag.contactId, contactId), eq(contactTag.tagId, tagId)))
 				.run();
+		},
+
+		async countAssignments(tagId: string) {
+			const row = db
+				.select({ count: sql<number>`count(*)` })
+				.from(contactTag)
+				.where(eq(contactTag.tagId, tagId))
+				.get();
+			return row?.count ?? 0;
+		},
+
+		async deleteTag(householdId: string, tagId: string) {
+			db.delete(tag)
+				.where(and(eq(tag.householdId, householdId), eq(tag.id, tagId)))
+				.run();
+		},
+
+		async deleteOrphans(householdId: string) {
+			const carried = db.select({ id: contactTag.tagId }).from(contactTag);
+			const gone = db
+				.delete(tag)
+				.where(and(eq(tag.householdId, householdId), notInArray(tag.id, carried)))
+				.returning({ id: tag.id })
+				.all();
+			return gone.length;
 		},
 
 		async listForContactVisibleTo(viewer: Viewer, contactId: string) {

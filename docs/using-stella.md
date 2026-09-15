@@ -279,6 +279,16 @@ Once there are more than a handful, start typing on the Circles page to narrow t
 name or description, or tap a kind — *Class*, *Club*, *Team* — to see only those. The number
 beside each kind says how many are left after what you typed.
 
+## Tags
+
+A tag is a label you make up on the spot — *Kegelclub*, *Nachbarn*, *Weihnachtskarte* — by
+typing it on someone's profile. The chips above the people list then filter by it.
+
+There is nothing to tidy up afterwards: a tag exists for as long as someone carries it. Take
+it off the last person and it is gone, chip and all, and the same happens to the tags left
+behind when you delete someone. A tag still on a person you cannot see counts as carried — so
+your removing it never quietly takes it off someone else's private contact.
+
 ## Finding things
 
 `⌘K` / `Ctrl-K` — or the search button at the top — opens a palette that jumps straight to a
