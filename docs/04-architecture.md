@@ -265,12 +265,17 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   (a family instance would spend its 60-per-hour unauthenticated budget on nothing), the
   answer could not be remembered for the next person, and every member's browser would be
   the one talking to github.com. On the server it is one request a day for the household,
-  cached in memory, and it is off unless the operator switches it on — the alternative,
-  on-by-default, would make a self-hosted instance phone home without being asked, which is
-  the one thing the project promises it does not do. The costs accepted: a restart forgets
-  the cached answer, and the state lives in the process rather than the database, so a second
-  instance would check separately. Revisit if Stella ever runs more than one process.
-  (§2.17.1.)
+  cached in memory. The costs accepted: a restart forgets the cached answer, and the state
+  lives in the process rather than the database, so a second instance would check separately.
+  Revisit if Stella ever runs more than one process. (§2.17.1.)
+- **The release check is on by default** — first `UPDATE_CHECK=false` (an opt-in a household
+  had to know to flip), now `UPDATE_CHECK=true` (an opt-out). Off-by-default meant most
+  installs never saw the About card say anything, since almost nobody reaches for an env var
+  they don't know exists; a household is more likely to want to be told about a new release
+  than to want an instance that never checks. The check is still the *only* request an
+  instance makes on its own — it names nothing about the household, is announced in
+  `docs/install.md`, and a household that prefers Stella ask nobody anything sets
+  `UPDATE_CHECK=false`. (§2.17.1.)
 - **Our own message catalogue over an i18n library** — two languages and no plural rules
   beyond "one or many" do not pay for Paraglide's compiler or a runtime store. Typed area
   modules give the same guarantee more cheaply: German is typed against English, so a
