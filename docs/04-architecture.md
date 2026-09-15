@@ -535,6 +535,27 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   preview no longer start under Node at all, and `scripts/dev-smoke.sh` in CI is what keeps
   that runtime from rotting unnoticed again.
 
+- **The offline banner is driven by the service worker, not `navigator.onLine`** — the
+  browser's flag answers "is this device attached to a network", which is not the question
+  Stella needs answered. Stella runs on the household's own network, so a phone on mobile
+  data reports itself online while Stella is completely out of reach — the most likely
+  offline case there is, and the one the feature exists for. Driven from the flag the banner
+  simply never appeared. The worker knows, having just either fetched a page or failed to and
+  fallen back to the cache, so it reports and the page listens; a page that has just opened
+  asks once, because the report it needed was sent while it was still loading. Rejected:
+  polling a health endpoint from the page, which answers the right question but burns a
+  request on a timer forever to catch a state that changes a handful of times a day.
+
+- **Pages are cached, and sign-out throws them away** — a cached person page is household
+  data at rest on somebody's phone, which is the cost of §2.18 being worth anything at all:
+  an offline shell with no content is a splash screen. The alternative, caching only the
+  build's assets and showing the offline screen for every person, was weighed and rejected as
+  making the feature's own promise untrue. The purge is hung on the sign-out POST passing
+  through the worker, since the button is a plain form post with no client-side step to hook.
+  What this buys is a shared or handed-on device; what it explicitly does not buy is
+  encryption, so a device left signed in holds the pages its owner read — the same bargain as
+  the browser's own history, and written down as such in §2.18 rather than left implied.
+
 ## 4.10 Deployment
 
 - **Single Docker image** (multi-stage: build with Bun, run on a slim Bun base).
@@ -595,6 +616,30 @@ operations (e.g. "highlight all within 2 hops") are added as pure functions with
 tests, without disturbing rendering; the renderer can change without risking the logic; and
 each piece is small and named for intent. **Test-first targets:** `buildEgoNetwork`,
 `expandNode`, `findConnectionPath`, `applyFilters` — pure, deterministic, no DB.
+
+## 4.11.1 Service worker & offline shell
+
+The same split as the explorer: a pure domain and a thin adapter confined to one file.
+
+- **`src/lib/pwa/cache-policy.ts`** — the whole judgement, pure and unit-tested: which
+  requests may be cached, which never may, what a build's cache is called, and what a
+  sign-out looks like going past. **Test-first targets:** `verdictFor`, `endsTheSession`,
+  `cacheNameFor`.
+- **`src/lib/pwa/reachability.ts`** — the two messages the worker and the page exchange, and
+  the guard that stops anything else on the channel moving the offline banner.
+- **`src/service-worker.ts`** — the adapter. It asks the policy about real `Request`s and
+  does as it is told; it decides nothing. This is deliberate: a service worker can otherwise
+  only be checked by driving a browser and hoping the right thing was cached.
+- **`src/routes/manifest.webmanifest/+server.ts`** — the manifest, built by
+  `$lib/pwa/manifest.ts` from a translator. A route, not a static file, so it is served in
+  the reader's language.
+- **`src/lib/pwa/icon-art.ts`** — the icon geometry, unit-tested for the maskable safe zone;
+  `scripts/icons/generate.sh` rasterises it through the pinned Playwright image (Chromium
+  does not run on the NixOS host) and the PNGs are committed, so no build needs a container.
+
+Caches are named `stella-<version>`, so a deployed update activates into an empty one rather
+than mixing its shell with pages the previous build rendered, and the stale ones are dropped
+on `activate`.
 
 ## 4.12 Background jobs & delivery (M3)
 

@@ -2,6 +2,7 @@
 	import { untrack } from 'svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import InstallCard from '$lib/components/InstallCard.svelte';
 	import LanguagePicker from '$lib/components/LanguagePicker.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -115,6 +116,8 @@
 			<p class="text-sm text-fg-subtle">{t('settings.data.adminOnly')}</p>
 		{/if}
 	</section>
+
+	<InstallCard />
 
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.account.heading')}</h2>

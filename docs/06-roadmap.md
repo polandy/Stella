@@ -34,7 +34,7 @@ Goal: the core loop — add people, relate them, find them — works and feels g
 - **Tags:** create, apply, filter.
 - **Explorer (basic):** ego-network from a profile — a person with their relationships,
   theme-aware, built on the pure graph-model + Cytoscape-adapter split (docs/04 §4.11).
-- **PWA-ready** shell (installable manifest/icons; offline shell can slip to M2).
+- **PWA-ready** shell (installable manifest/icons; offline shell slipped to M2, §2.18).
 
 **Exit:** a non-technical family member can add a person with a photo and a relationship
 from their phone in under a minute, and anyone can look them up.
@@ -94,7 +94,10 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   Monica's own exports are shipped**, **and vCard with them** (§2.16) — the JSON file, the SQL
   dump and a `.vcf`, told apart from the file itself and read into one typed view so the
   mapping exists once. A vCard fills that view sparsely: people, but not how they connect.
-- **PWA offline** app shell + read-through cache. **RP-initiated single logout is
+- **PWA offline** app shell + read-through cache — **shipped** (§2.18): a manifest and icons
+  make Stella installable, a service worker keeps the shell and the pages already read, and a
+  line above the page says when what is showing came off the device rather than from Stella.
+  Signing out throws the cached pages away. **RP-initiated single logout is
   shipped** (§2.1): signing out revokes the Stella session first, then ends the provider's
   session too when it advertises an `end_session_endpoint` — and never fails when it does not.
 

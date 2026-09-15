@@ -967,10 +967,48 @@ household data leaves the instance, and nothing is sent when the check is off.
 
 ## 2.18 Progressive Web App **[M2]**
 
-- Installable (manifest + icons), responsive, mobile-first capture flows.
-- Offline: read-through cache of recently viewed contacts and the app shell; graceful
-  offline messaging. Full offline write/sync is **out of scope** for v1.
-- "Add to Home Screen" prompts handled tastefully.
+Stella can be added to a phone's home screen and opened as its own window, and what has
+already been read stays readable when it cannot be reached. Full offline *writing* and sync
+is **out of scope** for v1: offline Stella is something you read, not something you add to.
+
+**Installing.** A web app manifest and the icons the platforms ask for — 192 and 512, a
+maskable 512 drawn small enough that a launcher cropping to a circle keeps all of it, and a
+PNG for Safari, which reads no manifest. The manifest is a route rather than a file, because
+the launcher name and description are strings a person reads and so come from the message
+catalogue in their language (§2.19). The mark is re-laid on an opaque ground for this:
+`static/logo.svg` is transparent and swaps palette with the system theme, neither of which
+an icon may do.
+
+**The offer to install** lives in **Settings → This device**, never over the app — an
+install banner on a page somebody opened to read about their aunt is an interruption. It
+says where things stand in each of the three states a device can be in: already installed,
+installable (with the button), or a browser that offers no prompt, where it names the menu
+item instead. Safari is the last of those.
+
+**What a device keeps.** The build's own assets, every page as it is read, and the photos in
+them. Not the pages that describe the session (sign-in, sign-out, first-run setup), not the
+health check, not a page reporting on an import or export run, and not a page carrying a
+query string — a search is a question, not somewhere anyone returns to. Requests go to the
+network first and fall back to the copy on the device: Stella is on the household's own
+network, so the network is normally both reachable and the one telling the truth. A page
+that was never opened, asked for while out of reach, gets a plain offline screen.
+
+**Signing out empties the device.** A cached page is household data at rest on somebody's
+phone, so the moment a session ends every cached page is thrown away. Note what this does
+and does not cover: it protects a shared or handed-on device, and it does not encrypt
+anything — a device left signed in holds the pages its owner has read, which is the same
+bargain as the browser's own history.
+
+**Saying so.** While Stella is out of reach, a line above the page says that what is showing
+came off this device. It is not driven by `navigator.onLine`, which answers "is this device
+on a network" — a phone on mobile data is perfectly online and cannot reach a Stella on the
+household LAN at all, which is exactly the case this exists for. The service worker knows,
+having just either fetched a page or failed to, so it reports and the page listens.
+
+**What degrades.** A cached person page is the page as it was when last read, so anything
+added since is not on it, and the parts that fetch on demand — the relationship map, search
+— come up empty rather than stale. That is the intended trade: readable, and honest about
+being a copy.
 
 ## 2.19 Accessibility & i18n
 

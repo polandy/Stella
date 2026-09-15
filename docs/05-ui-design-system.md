@@ -27,6 +27,14 @@ to avoid flash. An inline head script sets the attribute before paint.
 Frappé and Macchiato are **not** shipped in v1 but the token structure below makes
 adding them trivial.
 
+**The one place a hex literal is allowed outside `app.css`** is
+`src/lib/design/app-colors.ts`, for the two things that live outside the document and cannot
+read a CSS variable: the `theme-color` meta the browser paints its own chrome with, and the
+web app manifest, which is JSON (§2.18). It is a narrow exception like the explorer's in
+§5.8, and it is held to `app.css` by a test that reads the stylesheet, so a flavour swap
+cannot leave the install splash in last season's colour. The `theme-color` meta ships once
+per theme — a single value leaves half the household with a status bar that fights the page.
+
 ### 5.2.1 Palette (hex reference)
 
 **Latte (light)**
@@ -474,6 +482,25 @@ It posts to `/locale` and comes back on the page it was pressed on, now in that 
 it works with JavaScript off. It appears twice: in **Settings → Language**, and small under
 the sign-in form — the first screen has to be readable before there is a profile to remember
 anything in (docs/02 §2.19).
+
+**Offline banner** (`src/lib/components/OfflineBanner.svelte`) is a single quiet line on
+`--bg-sunken` directly above the page content — above the content and not the shell, because
+it is what you are reading that may be out of date, not the navigation around it. It carries
+`role="status"`, so it is announced rather than read only by the sighted, and it appears and
+clears on its own: the service worker reports whether Stella is reachable and the banner
+follows (docs/02 §2.18, docs/04 §4.11.1). There is nothing to dismiss, because dismissing it
+would not restore the connection.
+
+**Install card** (`src/lib/components/InstallCard.svelte`) is an ordinary Settings card, one
+of three sentences depending on what the device can do — installed, installable, or a browser
+with no prompt to offer — with the button present only in the middle case. It is deliberately
+*not* a banner over the app: an install prompt on a page somebody opened to read about their
+aunt is an interruption, and there is no state in which it needs answering now.
+
+**Offline screen** (`/offline`) is the one page with no shell: an `EmptyState` centred in the
+viewport with the `offline` icon, what has happened, and a *Try again* that reloads. It is
+fetched and cached while the connection still works, which is why it loads nothing of its own
+— anything it read then would be stale by the time anybody saw it.
 
 ## 5.8 Relationship & context explorer styling
 

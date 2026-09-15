@@ -431,6 +431,26 @@ switched the release check on, it also tells you when a newer one has been publi
 link to what changed — a line, not an interruption, and nothing to dismiss. Stella never
 updates itself; that is the household admin's job.
 
+## Stella on your phone
+
+Stella can live on your home screen like any other app. Open **Settings → This device** and
+tap *Install* — after that Stella opens in its own window, without the browser's address bar
+across the top. Safari has no such button: use *Share → Add to Home Screen* instead, and the
+card in Settings says so.
+
+Once it is installed, the pages you have already opened stay readable when Stella cannot be
+reached — on the train, or simply away from home, since Stella runs on your own network and
+is not on the internet. A line above the page tells you when that is what you are looking
+at: what is showing came off your phone, so anything somebody added since is not on it, and
+the relationship map and search come up empty rather than pretending. Everything is there
+again the moment you are back.
+
+You cannot *add* anything while Stella is out of reach — no moments, no notes, no people.
+Offline Stella is something to read.
+
+Signing out clears the pages your phone was keeping, so handing a device on does not hand on
+the household with it.
+
 ## Light and dark
 
 Stella follows whatever your device is set to, and both themes are designed rather than

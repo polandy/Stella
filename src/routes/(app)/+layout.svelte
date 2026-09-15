@@ -8,6 +8,7 @@
 	import type { IconName } from '$lib/components/icons';
 	import type { MessageKey } from '$lib/i18n/translate';
 	import Logo from '$lib/components/Logo.svelte';
+	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
 	import { onMount, type Snippet } from 'svelte';
@@ -241,6 +242,10 @@
 				<span class="md:hidden"><Button variant="ghost" icon="settings" href="/settings" label={t('nav.settings')} /></span>
 			</div>
 		</header>
+
+		<!-- Sits above the content rather than over the shell: it is what you are reading that
+		     may be out of date, not the navigation around it. -->
+		<OfflineBanner />
 
 		<!-- Page content -->
 		<div class="flex-1 overflow-y-auto pb-16 md:pb-0">
