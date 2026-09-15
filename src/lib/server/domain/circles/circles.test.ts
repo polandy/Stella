@@ -64,7 +64,6 @@ function fakeRepo(existing: Circle | null = null) {
 			const fresh = batch.filter((m) => !exists && !existingMembers.has(m.contactId));
 			memberships.push(...fresh);
 			fresh.forEach((m) => existingMembers.add(m.contactId));
-			return fresh.length;
 		},
 		removeMembership: async (cid, contactId) => void removed.push([cid, contactId]),
 		listMembersVisibleTo: async () => [],

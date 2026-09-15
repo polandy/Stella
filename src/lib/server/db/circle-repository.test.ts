@@ -178,17 +178,16 @@ describe('role uses', () => {
  * concurrent join slip in between the check and the insert.
  */
 describe('addMemberships', () => {
-	it('inserts every new member in one go and reports how many landed', async () => {
+	it('inserts every new member in one go', async () => {
 		const id = await createCircle(deps, creatorU1, { name: 'Team' });
 		seedContact('mara');
 		seedContact('jonas');
 
-		const inserted = await deps.circles.addMemberships([
+		await deps.circles.addMemberships([
 			{ id: 'm1', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW },
 			{ id: 'm2', circleId: id, contactId: 'jonas', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW }
 		]);
 
-		expect(inserted).toBe(2);
 		const members = await deps.circles.listMembersVisibleTo(viewerU1, id);
 		expect(members.map((m) => m.contactId).sort()).toEqual(['jonas', 'mara']);
 		expect(members.every((m) => m.role === 'coach')).toBe(true);
@@ -200,14 +199,14 @@ describe('addMemberships', () => {
 		seedContact('jonas');
 		await addMember(deps, creatorU1, id, 'mara', 'captain');
 
-		const inserted = await deps.circles.addMemberships([
+		await deps.circles.addMemberships([
 			{ id: 'm1', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW },
 			{ id: 'm2', circleId: id, contactId: 'jonas', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW }
 		]);
 
 		// Only jonas is new — and jonas landing is the positive control for mara being skipped.
-		expect(inserted).toBe(1);
 		const members = await deps.circles.listMembersVisibleTo(viewerU1, id);
+		expect(members).toHaveLength(2);
 		expect(members.find((m) => m.contactId === 'mara')?.role).toBe('captain');
 		expect(members.find((m) => m.contactId === 'jonas')?.role).toBe('coach');
 	});
@@ -217,12 +216,11 @@ describe('addMemberships', () => {
 		seedContact('mara');
 
 		// The skip runs per row inside the transaction, so it sees the row the batch just wrote.
-		const inserted = await deps.circles.addMemberships([
+		await deps.circles.addMemberships([
 			{ id: 'm1', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW },
 			{ id: 'm2', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW }
 		]);
 
-		expect(inserted).toBe(1);
 		expect(await deps.circles.listMembersVisibleTo(viewerU1, id)).toHaveLength(1);
 	});
 

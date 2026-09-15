@@ -137,10 +137,9 @@ export function createDrizzleCircleRepository(
 			}));
 		},
 
-		async addMemberships(memberships: readonly NewMembership[]): Promise<number> {
-			if (memberships.length === 0) return 0;
-			return db.transaction((tx) => {
-				let inserted = 0;
+		async addMemberships(memberships: readonly NewMembership[]): Promise<void> {
+			if (memberships.length === 0) return;
+			db.transaction((tx) => {
 				for (const m of memberships) {
 					const existing = tx
 						.select({ id: circleMembership.id })
@@ -159,9 +158,7 @@ export function createDrizzleCircleRepository(
 							updatedAt: m.updatedAt
 						})
 						.run();
-					inserted += 1;
 				}
-				return inserted;
 			});
 		},
 

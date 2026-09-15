@@ -159,11 +159,11 @@ export interface CircleRepository {
 	listVisibleTo(viewer: Viewer): Promise<CircleWithCount[]>;
 	/**
 	 * Insert those of `memberships` whose contact is not in the circle yet, in **one**
-	 * transaction, and return how many landed. Skipping is decided inside that transaction, so a
-	 * pick either lands whole or not at all and no concurrent join can slip between check and
-	 * insert. An existing member keeps the role they joined with.
+	 * transaction. Skipping is decided inside that transaction, so a pick either lands whole or
+	 * not at all and no concurrent join can slip between check and insert. An existing member
+	 * keeps the role they joined with.
 	 */
-	addMemberships(memberships: readonly NewMembership[]): Promise<number>;
+	addMemberships(memberships: readonly NewMembership[]): Promise<void>;
 	removeMembership(circleId: string, contactId: string): Promise<void>;
 	listMembersVisibleTo(viewer: Viewer, circleId: string): Promise<MemberView[]>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ContactCircleView[]>;
@@ -276,11 +276,12 @@ export async function addMembers(
 	role?: string | null
 ): Promise<void> {
 	const now = deps.clock.now();
+	const memberRole = orNull(role);
 	const memberships = [...new Set(contactIds)].map((contactId) => ({
 		id: deps.ids.next(),
 		circleId,
 		contactId,
-		role: orNull(role),
+		role: memberRole,
 		createdBy: creator.userId,
 		createdAt: now,
 		updatedAt: now
