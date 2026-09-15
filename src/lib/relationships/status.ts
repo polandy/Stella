@@ -10,3 +10,6 @@
 export const RELATIONSHIP_STATUSES = ['current', 'former'] as const;
 
 export type RelationshipStatus = (typeof RELATIONSHIP_STATUSES)[number];
+
+/** The status that stops a link from being reasoned over — kinship derives nothing through it. */
+export const FORMER_RELATIONSHIP_STATUS: RelationshipStatus = 'former';

@@ -138,6 +138,29 @@ describe('deriveKinship', () => {
 		expect(kinOf('Hans', step)).toContainEqual(['Timo', 'Stepbrother']);
 	});
 
+	it('derives nothing at all behind a former partnership', () => {
+		// Bettina and Kurt have separated: he stops being Hans's stepfather, his son Timo
+		// stops being a stepbrother, and Bettina's family stops being Kurt's in-laws.
+		const separated = family({
+			people: [...family().people, p('Timo', 'male')],
+			parentEdges: [...family().parentEdges, { parentId: 'Kurt', childId: 'Timo' }],
+			partnerEdges: [
+				{ a: 'Otto', b: 'Rosa' },
+				{ a: 'Bettina', b: 'Kurt', former: true }
+			]
+		});
+
+		const forHans = kinOf('Hans', separated).map(([id]) => id);
+		expect(forHans).not.toContain('Kurt');
+		expect(forHans).not.toContain('Timo');
+		const forKurt = kinOf('Kurt', separated).map(([id]) => id);
+		expect(forKurt).not.toContain('Otto');
+		expect(forKurt).not.toContain('Peter');
+		// The partnership that still holds keeps deriving, so the emptiness above is the
+		// status talking and not a broken graph.
+		expect(kinOf('Hans', separated)).toContainEqual(['Otto', 'Grandfather']);
+	});
+
 	it('falls back to a neutral term when the gender is not recorded', () => {
 		const neutral = family({ people: family().people.map((x) => ({ ...x, gender: null })) });
 		expect(kinOf('Hans', neutral)).toContainEqual(['Otto', 'Grandparent']);

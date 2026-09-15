@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias } from 'drizzle-orm/sqlite-core';
-import type { KinshipGraph, KinPerson, Pair, ParentEdge } from '../../kinship/kinship';
+import type { KinshipGraph, KinPerson, Pair, ParentEdge, PartnerEdge } from '../../kinship/kinship';
+import { FORMER_RELATIONSHIP_STATUS } from '../../relationships/status';
 import {
 	PARENT_CHILD_TYPE_KEY,
 	PARTNER_TYPE_KEYS,
@@ -36,7 +37,8 @@ export function loadKinshipGraph(
 		.select({
 			fromId: relationship.fromContactId,
 			toId: relationship.toContactId,
-			key: relationshipType.key
+			key: relationshipType.key,
+			status: relationship.status
 		})
 		.from(relationship)
 		.innerJoin(relationshipType, eq(relationship.typeId, relationshipType.id))
@@ -47,14 +49,21 @@ export function loadKinshipGraph(
 
 	const parentEdges: ParentEdge[] = [];
 	const siblingEdges: Pair[] = [];
-	const partnerEdges: Pair[] = [];
+	const partnerEdges: PartnerEdge[] = [];
 	const storedPairs: Pair[] = [];
 	for (const row of rows) {
 		// Every visible pair counts as stored, so an existing link is never re-derived.
 		storedPairs.push({ a: row.fromId, b: row.toId });
 		if (row.key === PARENT_CHILD_TYPE_KEY) parentEdges.push({ parentId: row.fromId, childId: row.toId });
 		else if (row.key === SIBLING_TYPE_KEY) siblingEdges.push({ a: row.fromId, b: row.toId });
-		else if (PARTNER_TYPE_KEYS.includes(row.key)) partnerEdges.push({ a: row.fromId, b: row.toId });
+		else if (PARTNER_TYPE_KEYS.includes(row.key)) {
+			// The link stays on record either way; `former` only stops the derivation.
+			partnerEdges.push({
+				a: row.fromId,
+				b: row.toId,
+				former: row.status === FORMER_RELATIONSHIP_STATUS
+			});
+		}
 	}
 	return { people, parentEdges, siblingEdges, partnerEdges, storedPairs };
 }

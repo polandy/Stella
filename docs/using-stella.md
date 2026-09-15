@@ -212,6 +212,9 @@ of saving it. Change the link that is already there to the direction you meant, 
 A link can say more than its label. **How they connect** is yours to write — "met through
 Peter at the ski course" — and there is a **since** day and a **current / former** status if
 they help; all three are optional and all three can be changed later with *Edit* on the row.
+Marking a partnership **former** keeps it on both profiles, but Stella stops working relatives
+out of it: an ex-partner is no longer named as a stepparent to the children, or as an in-law
+to the family.
 For a family link, the **since** day fills itself in with the younger one's birthday as soon
 as you have picked the type and the person — a child gains a parent, a grandparent and a
 godparent the day they are born, and Stella has that day already. It works for a kind of link
