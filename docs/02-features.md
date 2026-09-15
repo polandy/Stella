@@ -458,7 +458,7 @@ a named group contacts belong to, over a period of time. (A first-class entity, 
   pick (the form says so as soon as more than one is chosen); someone who needs a different
   role is removed from the circle and added again with it. Someone already in the circle, or named twice in the same pick, joins
   once — and a person the actor may not see fails the whole pick rather than being dropped
-  from it silently.
+  from it silently. The pick is written as one transaction, so it lands whole or not at all.
 - **Finding one among many.** The Circles page filters as you type over name and description,
   with one chip per kind that is actually there, each carrying its count. The counts follow the
   query, so no chip ever leads to an empty page, and a kind the query has filtered away falls

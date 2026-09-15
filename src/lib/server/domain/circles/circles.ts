@@ -157,8 +157,13 @@ export interface CircleRepository {
 	findByNameVisibleTo(viewer: Viewer, name: string): Promise<Circle | null>;
 	getVisibleTo(viewer: Viewer, circleId: string): Promise<Circle | null>;
 	listVisibleTo(viewer: Viewer): Promise<CircleWithCount[]>;
-	membershipExists(circleId: string, contactId: string): Promise<boolean>;
-	addMembership(membership: NewMembership): Promise<void>;
+	/**
+	 * Insert those of `memberships` whose contact is not in the circle yet, in **one**
+	 * transaction, and return how many landed. Skipping is decided inside that transaction, so a
+	 * pick either lands whole or not at all and no concurrent join can slip between check and
+	 * insert. An existing member keeps the role they joined with.
+	 */
+	addMemberships(memberships: readonly NewMembership[]): Promise<number>;
 	removeMembership(circleId: string, contactId: string): Promise<void>;
 	listMembersVisibleTo(viewer: Viewer, circleId: string): Promise<MemberView[]>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ContactCircleView[]>;
@@ -254,24 +259,14 @@ export async function addMember(
 	contactId: string,
 	role?: string | null
 ): Promise<void> {
-	if (await deps.circles.membershipExists(circleId, contactId)) return;
-	const now = deps.clock.now();
-	await deps.circles.addMembership({
-		id: deps.ids.next(),
-		circleId,
-		contactId,
-		role: orNull(role),
-		createdBy: creator.userId,
-		createdAt: now,
-		updatedAt: now
-	});
+	await addMembers(deps, creator, circleId, [contactId], role);
 }
 
 /**
  * Add several contacts to a circle in one go (the circle-detail flow). A role, when given,
- * applies to every one of them. Idempotent per contact, and someone named twice in the same
- * pick joins once — note that a contact already in the circle keeps the role they joined with,
- * so this never re-roles an existing member.
+ * applies to every one of them. Someone named twice in the same pick joins once, and a contact
+ * already in the circle keeps the role they joined with, so this never re-roles an existing
+ * member. The whole pick is one transaction: it lands complete or not at all.
  */
 export async function addMembers(
 	deps: CircleDeps,
@@ -280,9 +275,17 @@ export async function addMembers(
 	contactIds: readonly string[],
 	role?: string | null
 ): Promise<void> {
-	for (const contactId of new Set(contactIds)) {
-		await addMember(deps, creator, circleId, contactId, role);
-	}
+	const now = deps.clock.now();
+	const memberships = [...new Set(contactIds)].map((contactId) => ({
+		id: deps.ids.next(),
+		circleId,
+		contactId,
+		role: orNull(role),
+		createdBy: creator.userId,
+		createdAt: now,
+		updatedAt: now
+	}));
+	await deps.circles.addMemberships(memberships);
 }
 
 export async function removeMember(

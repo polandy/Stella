@@ -59,8 +59,13 @@ function fakeRepo(existing: Circle | null = null) {
 		findByNameVisibleTo: async () => existing,
 		getVisibleTo: async () => null,
 		listVisibleTo: async () => [],
-		membershipExists: async (_cid, contactId) => exists || existingMembers.has(contactId),
-		addMembership: async (m) => void memberships.push(m),
+		addMemberships: async (batch) => {
+			// Mirrors the adapter: skip whoever is already a member, insert the rest.
+			const fresh = batch.filter((m) => !exists && !existingMembers.has(m.contactId));
+			memberships.push(...fresh);
+			fresh.forEach((m) => existingMembers.add(m.contactId));
+			return fresh.length;
+		},
 		removeMembership: async (cid, contactId) => void removed.push([cid, contactId]),
 		listMembersVisibleTo: async () => [],
 		listForContactVisibleTo: async () => [],

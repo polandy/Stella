@@ -231,6 +231,18 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   request to every route, and would go stale independently of the session it belongs to.
   On the session row it is deleted by the same statement that ends the session, and shares
   the database's blast radius rather than widening it.
+- **Circle membership is inserted as a batch, and the "already a member" check rides inside
+  that transaction** — filling a circle adds several people at once (§2.4.2), so the writes have
+  to land together or not at all. The domain cannot own that: a use-case takes ports, not a
+  database handle, and there is no transaction port. Deciding the skip in the domain and then
+  inserting row by row would also leave a window in which a concurrent join lands between the
+  check and the insert. So `CircleRepository.addMemberships` takes the whole pick and, in one
+  transaction, skips whoever is already a member and inserts the rest. The cost is that one
+  business rule — membership is idempotent — is enforced in the adapter rather than read off
+  the use-case; the domain still owns *what* gets offered to it (dedup, the shared role). A
+  unique index on `(circle_id, contact_id)` would move the rule back into the schema and let
+  `onConflictDoNothing` do the work; that is the better end state, and it needs a migration
+  that first resolves any duplicate rows already in the wild.
 - **Our own message catalogue over an i18n library** — two languages and no plural rules
   beyond "one or many" do not pay for Paraglide's compiler or a runtime store. Typed area
   modules give the same guarantee more cheaply: German is typed against English, so a
