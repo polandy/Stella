@@ -48,6 +48,8 @@ journal_entry *───* contact     (journal_mention → passive @-references)
 
 activity_log *───1 user
 activity_log  ───? (entity_type, entity_id)  polymorphic reference
+
+household 1───* suggestion_dismissal   (claims the household declined)  [M2]
 ```
 
 ## 3.3 Tables
@@ -494,6 +496,30 @@ page; a deletion's is null. Nothing else writes here, because everything else ca
 from the tables it happened to. `summary` is precomputed and `visibility` copied from the
 deleted record, since neither can be recovered afterwards; `entity_id` names a row that no
 longer exists, which is why it carries no foreign key.
+
+### suggestion_dismissal  [M2]
+The claims the household has declined, so a suggestion answered once is not offered again
+(`docs/concepts/relationship-suggestions.md` §6.4).
+
+| column | type | notes |
+|---|---|---|
+| id | text pk | |
+| household_id | text fk | the household decided, not the member who clicked |
+| relation | text | `'parent' \| 'sibling'` — what the claim would have stored |
+| pair_key | text | the two contact ids, sorted and space-separated |
+| dismissed_by | text fk → user.id | who answered, for the trail |
+| dismissed_at | int | |
+
+Unique on `(household_id, relation, pair_key)`: one claim, one answer.
+
+**Keyed by the claim, never by the rule.** Declining *"Wing Kam is Steve's parent"* answers
+those two people and that relation — keyed by rule, the same claim would come straight back
+the moment another rule reached the pair. `pair_key` carries no foreign keys because it names
+two contacts in one column; the use-case refuses a claim naming anyone the viewer cannot see
+before a row is ever written, and a deleted contact leaves a row that matches nothing.
+
+A row constrains only what Stella **offers**. It never touches what the kinship engine derives
+or what a profile displays, and deleting it (*Ask again*) puts the suggestion back.
 
 ## 3.4 Partial & fuzzy dates
 

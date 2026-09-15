@@ -14,6 +14,16 @@ export const PARENT_CHILD_TYPE_KEY = 'parent_child';
 /** Sibling: undirected, stored one way round. */
 export const SIBLING_TYPE_KEY = 'sibling';
 
+/**
+ * Which type a suggested link is stored as. A rule names a *relation*; the form that confirms
+ * it has to name a type, and this is the one place the two vocabularies meet — so a rule that
+ * starts offering siblings cannot quietly go on writing parent links.
+ */
+export const TYPE_KEY_FOR_RELATION: Readonly<Record<'parent' | 'sibling', string>> = {
+	parent: PARENT_CHILD_TYPE_KEY,
+	sibling: SIBLING_TYPE_KEY
+};
+
 /** Either of these makes someone a partner for kinship purposes. */
 export const PARTNER_TYPE_KEYS: readonly string[] = ['partner', 'spouse'];
 

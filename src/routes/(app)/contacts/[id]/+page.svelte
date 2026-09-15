@@ -2,6 +2,7 @@
 	import { circleNameKey } from '$lib/circles/name-key';
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import KinSuggestions from '$lib/components/KinSuggestions.svelte';
 	import DateField from '$lib/components/DateField.svelte';
 	import RelationshipMap from '$lib/components/graph/RelationshipMap.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -26,12 +27,11 @@
 		relationshipStatusLabel,
 		relationshipTypeLabel
 	} from '$lib/relationships/labels';
-	import { sectionAnchor } from '$lib/contacts/sections';
+	import { contactSectionPath, sectionAnchor } from '$lib/contacts/sections';
 	import { directClaimLabel, kinshipLabel } from '$lib/kinship/labels';
 	import { claimEndpoints, directClaimFor } from '$lib/kinship/claims';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
-	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
 	import { isChoiceOfLink, relationshipTypeOptions } from '$lib/relationships/type-options';
 	import { sinceDateFromBirth } from '$lib/relationships/since';
 	import type { SelectablePerson } from '$lib/people/select';
@@ -725,6 +725,16 @@
 								{t('contact.relationships.howConnected')}
 							</Button>
 						{/if}
+						<!--
+							The on-demand review (docs/concepts/relationship-suggestions.md §6.5). Quiet on
+							purpose: a ghost control, because asking what else might be true is never the
+							thing this card is for. Nothing runs until it is pressed.
+						-->
+						<Button variant="ghost" size="sm" icon="search" href="/contacts/{c.id}?review#relationships">
+							{data.review.open
+								? t('contact.relationships.reviewAgain')
+								: t('contact.relationships.review')}
+						</Button>
 						<!-- The way out of this person's two hops and into the household (docs/05 §5.5).
 						     A button, not a 12px text link: it is the second thing this card offers. -->
 						<Button size="sm" icon="graph" href="/graph?center={c.id}">
@@ -911,24 +921,39 @@
 							<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle">
 								{t('contact.relationships.alsoTrue')}
 							</h3>
-							{#each data.proposals as proposal (proposal.fromId + proposal.toId)}
-								<form method="POST" action="?/addProposedRelationship" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-									<input type="hidden" name="fromId" value={proposal.fromId} />
-									<input type="hidden" name="toId" value={proposal.toId} />
-									<input type="hidden" name="typeId" value={PARENT_CHILD_TYPE_KEY} />
-									<input type="hidden" name="propose" value={data.proposeFor} />
-									<span class="text-fg">
-										{t('contact.relationships.parentProposal', {
-											parent: proposal.fromName,
-											child: proposal.toName
-										})}
-									</span>
-									<span class="text-fg-subtle">· {proposal.reason}</span>
-									<Button variant="secondary" size="sm" class="ml-auto">
-										{t('contact.relationships.addThisToo')}
-									</Button>
-								</form>
-							{/each}
+							<KinSuggestions suggestions={data.proposals} propose={data.proposeFor} />
+						</div>
+					{/if}
+
+					<!--
+						The on-demand review (docs/concepts/relationship-suggestions.md §6.5). Every
+						other suggestion in Stella lives for one page load after a write; this is the
+						control that asks the same rules what stands around this person *now*, which
+						is the only way a household ever sees what follows from links entered years
+						ago. It runs nothing until it is pressed.
+					-->
+					{#if data.review.open}
+						<div class="mt-4 flex flex-col gap-3 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="kin-review">
+							<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+								<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle">
+									{t('contact.relationships.reviewHeading')}
+								</h3>
+								<span class="text-xs text-fg-subtle">
+									{t('contact.relationships.reviewOpenCount', {
+										count: data.review.suggestions.filter((s) => s.dismissed === null).length
+									})}
+								</span>
+							</div>
+							{#if data.review.suggestions.length === 0}
+								<p class="text-sm text-fg-muted">
+									{t('contact.relationships.reviewNothing', { name: c.displayName })}
+								</p>
+							{:else}
+								<KinSuggestions
+									suggestions={data.review.suggestions}
+									nameOfMember={(id) => data.review.memberNames[id] ?? null}
+								/>
+							{/if}
 						</div>
 					{/if}
 

@@ -188,7 +188,7 @@ that guard, not in the suggestion engine.
 ### 6.1 Shape
 
 ```
-evaluate(trigger: Trigger, view: SuggestionView): Suggestion[]
+evaluate(trigger: Trigger, view: SuggestionView, options?: EvaluateOptions): Suggestion[]
 ```
 
 - **Pure.** No repository, no clock beyond an injected one, no `$env`. It belongs in
@@ -199,8 +199,9 @@ evaluate(trigger: Trigger, view: SuggestionView): Suggestion[]
   anchor's company, home address and circles. It contains **only what the viewer may see**
   (§7.2); the engine never filters, because an engine that filters can forget to.
 - **`Trigger`** is a discriminated union: `link-stored`, `link-retyped`, `person-created`,
-  `form-opened`. Every rule declares which triggers it answers, so adding a rule never means
-  editing a switch that three other rules share.
+  `form-opened`, `person-reviewed`. Every rule declares which triggers it answers, so adding a
+  rule never means editing a switch that three other rules share. **Shipped:** `link-stored`
+  and `person-reviewed`, both answered by L1 and L2.
 - **`Suggestion`** carries `ruleId`, `kind` (`link` | `field` | `membership` | `warning`),
   `confidence`, the payload, and a `reason` **Phrase + params**.
 
@@ -229,7 +230,7 @@ candidates; a separate constant here): more than a handful of "also true?" rows 
 as help and starts reading as a chore. `possible`-confidence suggestions are collapsed behind
 a *more* affordance rather than counted against the cap.
 
-### 6.4 Dismissal — the one storage question
+### 6.4 Dismissal — the one storage question — **shipped**
 
 Suggestions are recomputed from the graph, so a suggestion declined today reappears tomorrow.
 Three options:
@@ -244,6 +245,12 @@ Three options:
 **Recommendation: (c)**, with dismissals scoped per household (not per user: the household
 decided) and deletable, so a dismissal is not a silent permanent veto.
 
+**Shipped as (c)**: `suggestion_dismissal` (docs/03 §3.3), unique on `(household_id, relation,
+pair_key)`. `src/lib/suggestions/claims.ts` owns the key both the log and the engine's
+one-row-per-claim de-duplication are built from — one claim has one key, written in one place.
+A row travels in an export (docs/03), because a restored backup that re-asks every settled
+question is worse than no backup of this at all.
+
 **Key it by the claim, not by the rule.** An earlier draft of this section keyed the row on
 `rule_id`. That is wrong: when the household declines *“Lisa is Lio’s parent”* they are
 answering the **claim**, not the rule that happened to surface it. Keyed by rule, the same
@@ -254,7 +261,7 @@ pair_key)`, one *no* silences the claim however it is reached. It also moves (c)
 The difference that keeps it (c) is that it constrains only what Stella *offers*, never what
 it derives or displays.
 
-### 6.5 On-demand review
+### 6.5 On-demand review — **shipped**
 
 The suggestions described so far are all consequences of a write: something was stored, so
 Stella says what follows. That makes them **ephemeral** — the *Also true?* block hangs on a
@@ -266,10 +273,17 @@ set against one person, on request, and shows what stands right now.
 
 - **Trigger:** `{ kind: 'person-reviewed', subjectId }`. It is not tied to a write, so it is
   the one trigger a member can fire whenever they like.
-- **Scope:** every rule that can name `subjectId` at either end, evaluated against the current
-  graph — not just the rules keyed to one new link. A person-scoped run therefore asks a
-  different question than an event-scoped one (“what follows from *this person*” rather than
-  “what follows from *this link*”), and needs its own entry point in the engine.
+- **Scope:** the primary links standing around the subject **and their siblings**, each run
+  through the same rules — not just the rules keyed to one new link. A person-scoped run
+  therefore asks a different question than an event-scoped one (“what follows from *this
+  person*” rather than “what follows from *this link*”).
+
+  The sibling group rather than the subject's own links, because the link rules move a parent
+  across sibling-hood, and read from the other side *“my sister's father is my father”* is a
+  claim about **me** that no link of mine mentions. A scope of the subject's own links alone
+  misses it, and that is exactly the case a household notices. Two rules can now reach one
+  claim from different links, so `oneRowPerClaim` stops being theoretical and is tested on the
+  claims directly rather than through whichever rules a trigger happens to select.
 - **Three outcomes per suggestion**, not two: **confirm** (store the link), **dismiss** (write
   the dismissal row), or **leave it** (do nothing — it will be offered again on the next run).
   Leaving it alone must stay free of consequence, or members will dismiss things just to clear
@@ -279,6 +293,21 @@ set against one person, on request, and shows what stands right now.
   rather than a drop when the caller asks for it — `evaluate(trigger, view, { includeDismissed
   })`, and `Suggestion` carries `dismissedAt`. The other five suppressions stay hard drops;
   there is no reading in which a self-link or an invisible person should be listed.
+
+**As shipped:** a quiet *Check relationships* control in the relationships card header — beside
+*Add*, never instead of it — opens the panel on `?review`. It hangs on the URL rather than on
+component state, so it survives a reload and is still there after confirming one of its rows,
+which is the whole point of a list worked through one claim at a time. Closed, it costs nothing:
+no rule runs until the control is pressed.
+
+Each row is the claim in a sentence, its reason, a confidence chip and the rule id as quiet
+meta, with **Accept** and **Decline** — and leaving it alone as the third answer that writes
+nothing. What was declined sits behind a `<details>` in the same panel, naming the day and the
+member who declined it, with *Offer again*; it rides along in the same request, so a *no* is
+never a second round trip out of reach. Every control is a form action and the drawer is a
+`<details>`, so the panel works with no JavaScript at all. The rows are the same component the
+*Also true?* block uses, and that block grew *Decline* with them — a claim declined in the
+instant after a write is declined for the review too.
 
 This makes the dismissal log **required rather than optional**. A button a member can press
 repeatedly, against a rule set that re-derives everything each time, is unusable without
