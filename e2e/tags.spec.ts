@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, addTag, openPerson, profileRow, signIn } from './app';
+import { addPerson, addTag, openPeople, openPerson, profileRow, signIn } from './app';
 
 /*
  * A tag lives exactly as long as someone carries it (docs/02 §2.8). There is no screen to
@@ -20,8 +20,8 @@ const chip = (page: Page, name: string) => page.getByRole('link', { name, exact:
 
 /**
  * Takes a tag off the person whose page is open. The removal is deferred behind the undo
- * toast (docs/02 §2.23), so it is not sent yet when this returns — leaving the page is what
- * commits it, which is the seam every undo case uses instead of waiting on the window.
+ * toast (docs/02 §2.23), so it is not sent yet when this returns; `openPeople` is what commits
+ * it, by navigating client-side. Never wait on the undo window instead — it would be a race.
  */
 async function removeTag(page: Page, name: string): Promise<void> {
 	const tags = await profileRow(page, 'Tags');
@@ -53,7 +53,7 @@ test('the chip goes with the last person carrying it when they are deleted', asy
 
 	// The positive control: while she carries it, the tag really is in the chip row — so the
 	// assertion after the delete is about the tag going, not about the row never showing it.
-	await page.goto('/contacts');
+	await openPeople(page);
 	await expect(chip(page, LONE_TAG)).toBeVisible();
 
 	await openPerson(page, new RegExp(LONE_CARRIER));
@@ -74,20 +74,28 @@ test('a tag still on someone else survives, and goes only with the last carrier'
 	await addPerson(page, 'Marisol', 'Okonkwo');
 	await addTag(page, SHARED_TAG); // the same name is the same tag, not a second one
 
-	await page.goto('/contacts');
+	await openPeople(page);
 	await expect(chip(page, SHARED_TAG)).toBeVisible();
 
-	// Taken off one of the two: still carried, so the chip stays. This is what stops the
-	// delete-when-empty rule from firing on every removal.
+	// Taken off one of the two. The removal really landed — his page says so after a reload,
+	// which is the positive signal the next assertion needs: without it, a chip still on the
+	// screen could just as well mean the removal was never sent.
 	await openPerson(page, new RegExp(FIRST_OF_TWO));
 	await removeTag(page, SHARED_TAG);
-	await page.goto('/contacts'); // leaving sends the deferred removal
+	await openPeople(page);
+	await openPerson(page, new RegExp(FIRST_OF_TWO));
+	await page.reload();
+	await expect(await profileRow(page, 'Tags')).not.toContainText(SHARED_TAG);
+
+	// He has let it go and it is still carried by her, so the chip stays. This is what stops
+	// the delete-when-empty rule from firing on every removal.
+	await openPeople(page);
 	await expect(chip(page, SHARED_TAG)).toBeVisible();
 
 	// Taken off the last one: nobody carries it, so the tag itself goes.
 	await openPerson(page, new RegExp(LAST_OF_TWO));
 	await removeTag(page, SHARED_TAG);
-	await page.goto('/contacts');
+	await openPeople(page);
 	await expect(chip(page, SHARED_TAG)).toHaveCount(0);
 	await page.reload();
 	await expect(chip(page, SHARED_TAG)).toHaveCount(0);

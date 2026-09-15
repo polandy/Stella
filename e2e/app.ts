@@ -34,10 +34,22 @@ export async function appReady(page: Page): Promise<void> {
 	await expect(page.getByRole('button', { name: 'Search' })).toBeEnabled();
 }
 
-/** Opens a person's page from the directory, through the app's own links. */
-export async function openPerson(page: Page, name: RegExp): Promise<void> {
+/**
+ * Opens the people directory through the app's own nav link.
+ *
+ * Client-side on purpose, where a spec has just removed something: the layout cancels such a
+ * navigation, flushes the deferred removal and only then re-issues it, so the next screen
+ * cannot read the item back ((app)/+layout.svelte). A `page.goto` is a `leave` instead, which
+ * fires the removal with `keepalive` and does not wait for it — a race, not a seam.
+ */
+export async function openPeople(page: Page): Promise<void> {
 	await page.getByRole('link', { name: 'People' }).first().click();
 	await expect(page.getByRole('heading', { name: 'People' })).toBeVisible();
+}
+
+/** Opens a person's page from the directory, through the app's own links. */
+export async function openPerson(page: Page, name: RegExp): Promise<void> {
+	await openPeople(page);
 	await page.getByRole('link', { name }).first().click();
 	await expect(page.locator('#section-relationships')).toBeVisible();
 	await appReady(page);
