@@ -63,7 +63,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		firstName: created.firstName,
 		lastName: created.lastName,
 		nickname: created.nickname,
-		description: created.description
+		description: created.description,
+		birthDate: created.birthDate
 	};
 	return json(person, { status: 201 });
 };

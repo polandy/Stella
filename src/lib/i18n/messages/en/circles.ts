@@ -22,7 +22,7 @@ export const circles = {
 	'circles.private': 'private',
 	'circles.detail.title': (p: { name: string }) => `${p.name} · Circles · Stella`,
 	'circles.members': 'Members',
-	'circles.addMember': 'Add people',
+	'circles.addPeople': 'Add people',
 	'circles.people': 'People',
 	'circles.roleAppliesToAll': 'Applies to everyone you picked.',
 	'circles.roleLabel': 'Role (optional)',

@@ -1,3 +1,4 @@
+import { circleNameKey } from '../../../circles/name-key';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -47,6 +48,34 @@ export function suggestCircleColor(
 	const free = CIRCLE_COLORS.filter((c) => !used.has(c));
 	const pool = free.length > 0 ? free : CIRCLE_COLORS;
 	return pool[Math.floor(rng() * pool.length)];
+}
+
+/**
+ * The roles already in use, most common first and ties broken alphabetically — what to offer
+ * when someone is added to a circle. Blank roles drop out; spellings that differ only in case
+ * fold into the most common one (`Teacher` and `teacher` are one role, not two).
+ */
+export function suggestRoles(usedRoles: readonly (string | null | undefined)[]): string[] {
+	const byKey = new Map<string, { label: string; count: number; labels: Map<string, number> }>();
+	for (const raw of usedRoles) {
+		const role = (raw ?? '').trim();
+		if (role === '') continue;
+		const key = role.toLowerCase();
+		const entry = byKey.get(key) ?? { label: role, count: 0, labels: new Map() };
+		entry.count += 1;
+		entry.labels.set(role, (entry.labels.get(role) ?? 0) + 1);
+		byKey.set(key, entry);
+	}
+	return [...byKey.values()]
+		.map((e) => {
+			// The spelling the household writes most often wins; alphabetical on a tie.
+			const label = [...e.labels.entries()].sort(
+				(a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
+			)[0][0];
+			return { label, count: e.count };
+		})
+		.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
+		.map((e) => e.label);
 }
 
 // ── Value shapes ──────────────────────────────────────────────────────────
@@ -115,6 +144,12 @@ export interface ContactCircleView {
 	role: string | null;
 }
 
+/** One membership's role, as the role suggestions read them: which circle, which role. */
+export interface CircleRoleUse {
+	circleName: string;
+	role: string | null;
+}
+
 // ── Ports ─────────────────────────────────────────────────────────────────
 
 export interface CircleRepository {
@@ -127,6 +162,8 @@ export interface CircleRepository {
 	removeMembership(circleId: string, contactId: string): Promise<void>;
 	listMembersVisibleTo(viewer: Viewer, circleId: string): Promise<MemberView[]>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ContactCircleView[]>;
+	/** Every visible membership's role, with the name of the circle it belongs to. */
+	listRoleUsesVisibleTo(viewer: Viewer): Promise<CircleRoleUse[]>;
 }
 
 export interface CircleDeps {
@@ -284,4 +321,29 @@ export async function listCirclesForContact(
 	contactId: string
 ): Promise<ContactCircleView[]> {
 	return deps.circles.listForContactVisibleTo(viewer, contactId);
+}
+
+/**
+ * The roles already used, per circle, for the join-a-circle-by-name flow where the circle is
+ * only known by what was typed. Keyed by {@link circleNameKey}, the same rule the field that
+ * offers them looks its suggestions up with.
+ */
+export async function listRoleSuggestionsByCircleName(
+	deps: Pick<CircleDeps, 'circles'>,
+	viewer: Viewer
+): Promise<Record<string, string[]>> {
+	const uses = await deps.circles.listRoleUsesVisibleTo(viewer);
+	const rolesByName = new Map<string, string[]>();
+	for (const use of uses) {
+		const key = circleNameKey(use.circleName);
+		const roles = rolesByName.get(key) ?? [];
+		if (use.role !== null) roles.push(use.role);
+		rolesByName.set(key, roles);
+	}
+	const suggestions: Record<string, string[]> = {};
+	for (const [name, roles] of rolesByName) {
+		const ranked = suggestRoles(roles);
+		if (ranked.length > 0) suggestions[name] = ranked;
+	}
+	return suggestions;
 }

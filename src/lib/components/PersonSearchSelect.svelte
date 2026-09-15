@@ -39,6 +39,8 @@
 		multiple?: boolean;
 		/** Offer creating a person from the typed name, for pickers where a stranger belongs. */
 		allowCreate?: boolean;
+		/** Called with the person a pick lands on, for a form that reads more off them than the id. */
+		onPick?: (person: SelectablePerson) => void;
 		id?: string;
 		required?: boolean;
 		placeholder?: string;
@@ -50,6 +52,7 @@
 		selectedIds = $bindable([]),
 		multiple = false,
 		allowCreate = false,
+		onPick,
 		id,
 		required = false,
 		placeholder,
@@ -110,6 +113,7 @@
 
 	function choose(person: SelectablePerson) {
 		selectedIds = multiple ? [...selectedIds, person.id] : [person.id];
+		onPick?.(person);
 		query = '';
 		highlighted = 0;
 		open = multiple;

@@ -17,13 +17,15 @@
 
 <div class="flex h-full flex-col">
 	<div class="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-border px-6 py-3 text-sm">
-		{#if data.cameFrom && data.centerId}
-			<!-- Back to the page this centre was opened from (docs/05 §5.5). -->
+		{#if data.cameFrom}
+			<!-- Back to the page this centre was opened from — a profile or a circle (docs/05 §5.5). -->
 			<a
-				href="/contacts/{data.centerId}"
+				href={data.cameFrom.href}
 				class="inline-flex items-center gap-1 font-medium text-link hover:underline"
 			>
-				<Icon name="back" size={14} />{t('graph.backToPerson', { name: data.cameFrom })}
+				<Icon name="back" size={14} />{data.cameFrom.kind === 'circle'
+					? t('graph.backToCircle', { name: data.cameFrom.name })
+					: t('graph.backToPerson', { name: data.cameFrom.name })}
 			</a>
 		{/if}
 		<p class="hidden text-fg-subtle sm:block">{t('graph.hint')}</p>

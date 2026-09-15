@@ -1,6 +1,12 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { addMembers, getCircle, listMembers, removeMember } from '$lib/server/domain/circles/circles';
+import {
+	addMembers,
+	getCircle,
+	listMembers,
+	removeMember,
+	suggestRoles
+} from '$lib/server/domain/circles/circles';
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
 import { getCircleDeps, getContactDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
@@ -26,6 +32,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	return {
 		circle,
 		members,
+		// What this circle already calls its people, offered while adding the next one.
+		roleSuggestions: suggestRoles(members.map((m) => m.role)),
 		candidates: allContacts.filter((c) => !memberIds.has(c.id))
 	};
 };
@@ -53,10 +61,13 @@ export const actions: Actions = {
 
 		// Every chosen person must be visible to the actor — one that is not fails the whole
 		// pick rather than being dropped silently from it (§3.7).
+		const contactDeps = getContactDeps();
 		const contacts = await Promise.all(
-			parsed.output.contactIds.map((id) => getContact(getContactDeps(), viewer, id))
+			parsed.output.contactIds.map((id) => getContact(contactDeps, viewer, id))
 		);
-		if (contacts.some((contact) => !contact)) return fail(400, { error: say(locals, 'errors.person.notFound') });
+		if (contacts.some((contact) => !contact)) {
+			return fail(400, { error: say(locals, 'errors.person.notFound') });
+		}
 
 		await addMembers(
 			getCircleDeps(),

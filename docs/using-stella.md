@@ -212,6 +212,14 @@ of saving it. Change the link that is already there to the direction you meant, 
 A link can say more than its label. **How they connect** is yours to write — "met through
 Peter at the ski course" — and there is a **since** day and a **current / former** status if
 they help; all three are optional and all three can be changed later with *Edit* on the row.
+For a family link, the **since** day fills itself in with the younger one's birthday as soon
+as you have picked the type and the person — a child gains a parent, a grandparent and a
+godparent the day they are born, and Stella has that day already. It works for a kind of link
+you named yourself, as long as you filed it under *family*; for *Sibling of*, where neither
+side says who is older, both birthdays have to be on file. Outside the family nothing is
+filled in — a friendship or a partnership starts when you met, not when someone was born.
+Clear it or type over it if you meant something else; it only appears when the birthday is a
+whole day, not a day-and-month or a guessed year.
 *Edit* also offers the **kind of link** again, so a partner who became a spouse — or a *Parent
 of* you picked the wrong way round — is one pick and not a re-entry; what you wrote about the
 link stays with it. Entered someone as the wrong thing altogether? *Remove* takes the link
@@ -253,7 +261,9 @@ tells you how many instead of offering the button.
 A circle is a context people share: a school class, a football team, a choir, a street.
 Add someone to a circle with an optional role ("goalkeeper", "class teacher") and, if it
 matters, the years they were part of it — so a circle stays truthful as people come and
-go.
+go. The role field offers the roles that circle already uses, so the second goalkeeper is
+one click and nobody ends up half "coach" and half "Coach"; anything new is still yours to
+type.
 
 You can add a whole group in one go: keep picking names and each one stays as a chip until
 you press Add. A role you type applies to everyone in that pick, so a team of eleven
@@ -261,7 +271,9 @@ you press Add. A role you type applies to everyone in that pick, so a team of el
 afterwards.
 
 Circles are also the answer to "who else was there?", which is usually the question you
-have when you are trying to remember someone's name.
+have when you are trying to remember someone's name. **Open in the graph** on a circle's page
+draws that answer: the circle in the middle, everyone in it around it, and their own links
+running on from there. The way back to the circle's page waits at the top of the map.
 
 Once there are more than a handful, start typing on the Circles page to narrow the list by
 name or description, or tap a kind — *Class*, *Club*, *Team* — to see only those. The number

@@ -24,7 +24,7 @@ export const circles: CirclesMessages = {
 	'circles.private': 'privat',
 	'circles.detail.title': (p) => `${p.name} · Kreise · Stella`,
 	'circles.members': 'Mitglieder',
-	'circles.addMember': 'Personen hinzufügen',
+	'circles.addPeople': 'Personen hinzufügen',
 	'circles.people': 'Personen',
 	'circles.roleAppliesToAll': 'Gilt für alle Gewählten.',
 	'circles.roleLabel': 'Rolle (optional)',

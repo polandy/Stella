@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.10](https://github.com/polandy/Stella/compare/v0.0.9...v0.0.10) (2026-09-14)
+
+
+### Features
+
+* **relationships:** date a family link from the younger one's birthday ([#87](https://github.com/polandy/Stella/issues/87)) ([05d37d8](https://github.com/polandy/Stella/commit/05d37d8a9030daa8a4dab4c269276abb7a281506))
+
+
+### Bug Fixes
+
+* **contacts:** rebuild the person map when the profile changes ([#85](https://github.com/polandy/Stella/issues/85)) ([0fa6053](https://github.com/polandy/Stella/commit/0fa6053fa7562b670518a11c30ca9619f0845f87))
+* **graph:** redraw a person's map when their relationships change ([#86](https://github.com/polandy/Stella/issues/86)) ([4e9a36b](https://github.com/polandy/Stella/commit/4e9a36b802f13636a63cd056332dca7968c2b8a1))
+* **relationships:** say why a link is suggested in the reader's language ([d62ea7f](https://github.com/polandy/Stella/commit/d62ea7f3dab4c957c648ae78bb461c63fa50c18a))
+
 ## [0.0.9](https://github.com/polandy/Stella/compare/v0.0.8...v0.0.9) (2026-09-14)
 
 
