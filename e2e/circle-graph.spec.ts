@@ -5,7 +5,7 @@ import { signIn } from './app';
  * Out of a circle's page into the household's graph, and back again (docs/02 §2.7,
  * docs/05 §5.5, §5.8). A circle is a node of the graph like a person is, so it can be the
  * centre: this is the way there, the way home, and the way a circle node offers back to its
- * own page. Written after the maintainer walked it in the running app (docs/08 §8.4.1).
+ * own page. Written after the maintainer signed the change off, not before (docs/08 §8.4.1).
  *
  * Read-only against the demo household — it opens pages and follows links, and leaves the
  * seed as it found it.
