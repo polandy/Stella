@@ -28,13 +28,16 @@ for _ in $(seq 1 60); do
     cat "$LOG" >&2
     exit 1
   fi
-  if [ "$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/login" || true)" = "200" ]; then
+  code=$(curl -sS -m 30 -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/login" 2>>"$LOG" || true)
+  echo "[smoke] /login -> ${code:-no answer}" >>"$LOG"
+  if [ "$code" = "200" ]; then
     echo "▶ dev server served /login on port $PORT"
     exit 0
   fi
   sleep 2
 done
 
-echo "The dev server never served /login:" >&2
+echo "The dev server never served /login. Last state:" >&2
+ss -ltnp 2>/dev/null | grep ":$PORT" >&2 || echo "[smoke] nothing listening on $PORT" >&2
 cat "$LOG" >&2
 exit 1
