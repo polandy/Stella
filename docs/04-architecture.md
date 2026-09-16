@@ -235,6 +235,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   is idempotent, so the loser of that race gets a duplicate refused rather than a wrong row.
   What persists is the dismissal log alone (docs/03 §3.9, docs/concepts/relationship-
   suggestions.md §6.6).
+- **No cap on what a review lists** — the concept asked for one, and it was refused: the engine
+  evaluates every claim either way, so a cap hides work rather than saving it, and a household
+  opening the review screen has asked to see what stands. The cost is a long page on a large
+  imported household; the answer there is paging or collapsing groups, not truncation. A rule
+  whose output is quadratic (L6, colleagues by company) is bounded in the rule or not built.
+  What keeps a long list safe is that there is no bulk accept and that every answer is stored
+  (docs/concepts/relationship-suggestions.md §6.3).
 - **A hand-rolled vCard reader over a package** — the subset a contacts export uses is small
   and frozen (RFC 6350 / RFC 2426): unfolding, escaping, structured values. Every published
   parser weighs far more than the two dozen lines that saves, against the minimal-deps rule
