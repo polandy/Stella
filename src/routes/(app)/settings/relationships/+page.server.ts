@@ -95,24 +95,24 @@ export const actions: Actions = {
 	addProposedRelationship: async ({ request, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
-		const error = await acceptClaim(locals, viewer, await request.formData());
-		if (error) return fail(400, { error });
+		const refusal = await acceptClaim(locals, viewer, await request.formData());
+		if (refusal) return fail(refusal.status, { error: refusal.message });
 		throw redirect(303, REVIEW_PATH);
 	},
 
 	dismissSuggestion: async ({ request, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
-		const error = await declineClaim(locals, viewer, await request.formData());
-		if (error) return fail(400, { error });
+		const refusal = await declineClaim(locals, viewer, await request.formData());
+		if (refusal) return fail(refusal.status, { error: refusal.message });
 		throw redirect(303, REVIEW_PATH);
 	},
 
 	restoreSuggestion: async ({ request, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
-		const error = await restoreClaim(locals, viewer, await request.formData());
-		if (error) return fail(400, { error });
+		const refusal = await restoreClaim(locals, viewer, await request.formData());
+		if (refusal) return fail(refusal.status, { error: refusal.message });
 		throw redirect(303, REVIEW_PATH);
 	}
 };

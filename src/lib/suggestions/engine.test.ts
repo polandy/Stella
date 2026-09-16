@@ -324,6 +324,26 @@ describe('evaluate, over the whole household', () => {
 		]);
 	});
 
+	/*
+	 * Suppression 4 (§6.2), and the property a household-wide list depends on: the view is
+	 * scoped to one viewer, and a claim that would name somebody outside it is dropped. Asserted
+	 * with a claim that *does* stand beside it — without that control the case would pass on a
+	 * build that answers nothing at all.
+	 */
+	it('never names someone outside the view, while still answering the rest', () => {
+		const v = view({
+			// `hidden` is a parent the viewer may not see: the edge is in the graph, the person
+			// is not. Bettina is the control — visible, and offered.
+			parentEdges: [
+				{ parentId: 'hidden', childId: 'hans' },
+				{ parentId: 'bettina', childId: 'hans' }
+			],
+			siblingEdges: [{ a: 'hans', b: 'lisa' }]
+		});
+		expect(v.has('hidden')).toBe(false);
+		expect(shape(household, v)).toEqual([['L1', 'parent', 'bettina', 'lisa']]);
+	});
+
 	it('says nothing about a household with no primary links', () => {
 		expect(evaluate(household, view())).toEqual([]);
 	});

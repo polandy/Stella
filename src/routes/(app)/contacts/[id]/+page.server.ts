@@ -696,8 +696,8 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
-		const error = await acceptClaim(locals, viewer, form);
-		if (error) return fail(error === say(locals, 'errors.relationship.contradiction') ? 409 : 400, { error });
+		const refusal = await acceptClaim(locals, viewer, form);
+		if (refusal) return fail(refusal.status, { error: refusal.message });
 
 		// The pointer the block hangs on, so confirming one row keeps the others on screen.
 		const propose = form.get('propose');
@@ -714,8 +714,8 @@ export const actions: Actions = {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
-		const error = await declineClaim(locals, viewer, await request.formData());
-		if (error) return fail(400, { error });
+		const refusal = await declineClaim(locals, viewer, await request.formData());
+		if (refusal) return fail(refusal.status, { error: refusal.message });
 		throw redirect(303, reviewPath(params.id));
 	},
 
@@ -724,8 +724,8 @@ export const actions: Actions = {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
-		const error = await restoreClaim(locals, viewer, await request.formData());
-		if (error) return fail(400, { error });
+		const refusal = await restoreClaim(locals, viewer, await request.formData());
+		if (refusal) return fail(refusal.status, { error: refusal.message });
 		throw redirect(303, reviewPath(params.id));
 	},
 
