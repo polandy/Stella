@@ -658,7 +658,10 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
      re-render from the returned `GraphModel` — the adapter holds no domain rules.
    - Swapping Cytoscape for another renderer (or adding a layout) touches only this layer.
    - The controller owns its **teardown**: it runs the first layout itself (so a layout still
-     moving nodes can be stopped again), stops **every** layout still running before destroying
+     moving nodes can be stopped again — which is also why the core is constructed empty and the
+     elements added afterwards, leaving the constructor's own layout nothing to arrange and the
+     controller's cose the same starting positions it always had), stops **every** layout still
+     running before destroying
      the core, and no-ops on every method afterwards. A page can be left mid-layout, and a call
      still in flight must reach a closed core rather than a half-demolished one. Animations need
      no stopping of their own — destroying the core halts the loop that steps them. The

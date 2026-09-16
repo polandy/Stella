@@ -203,15 +203,22 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerController> {
 	const cytoscape = (await import('cytoscape')).default;
 
+	// Built empty on purpose. The constructor arranges whatever it is handed, before there is
+	// anywhere to register `layoutstart`, so giving it the elements would either hide that first
+	// layout from the teardown or — when it is left out — have Cytoscape's default `grid` arrange
+	// them, and the controller's cose would then start from a grid rather than from where the
+	// constructor used to put them, moving the graph a household is used to. An empty graph has
+	// nothing for the default layout to arrange, and the elements go in below at the same
+	// starting positions the constructor gave them, for the controller's own layout to work from.
 	const cy: Core = cytoscape({
 		container: opts.container,
-		elements: opts.elements as unknown as ElementDefinition[],
 		style: opts.stylesheet as unknown as CytoscapeOptions['style'],
 		minZoom: 0.2,
 		maxZoom: 2.5,
 		wheelSensitivity: 0.25,
 		boxSelectionEnabled: false
 	});
+	cy.batch(() => cy.add(opts.elements as unknown as ElementDefinition[]));
 
 	return explorerFromCore(cy, opts);
 }
