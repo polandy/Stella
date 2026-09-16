@@ -18,6 +18,22 @@ const FEED_PORT = Number(process.env.E2E_FEED_PORT ?? 4174);
 /** The one spec that belongs to the `setup` project and to no other. */
 const SETUP_SPEC = /auth\.setup\.ts$/;
 
+/*
+ * No GPU process, for a suite that has no use for one.
+ *
+ * On a CI runner Chromium's GPU process never comes up — `drmGetDevices2() has not found any
+ * devices`, then a sandbox warning about initialising with several threads — and the browser
+ * process that hosts it has been dying with a null dereference (`SIGSEGV`, always at `0x1b0`)
+ * somewhere in its glib main loop. It takes whichever test is running down with it, so the
+ * victim moves between runs and no assertion ever fails: the error is always the next
+ * `newContext` finding the browser gone.
+ *
+ * Nothing here draws through the GPU — the graph is Cytoscape on a 2D canvas — so the process
+ * is pure liability. `--disable-gpu` removes it, and with it the host object that was being
+ * dereferenced.
+ */
+const NO_GPU = ['--disable-gpu'];
+
 export default defineConfig({
 	testDir: 'e2e',
 	// One app instance and one database are shared by the suite, so tests run in order.
@@ -25,7 +41,7 @@ export default defineConfig({
 	workers: 1,
 	forbidOnly: !!process.env.CI,
 	reporter: 'list',
-	use: { baseURL: BASE_URL, trace: 'retain-on-failure' },
+	use: { baseURL: BASE_URL, trace: 'retain-on-failure', launchOptions: { args: NO_GPU } },
 	projects: [
 		// Signs in once; every spec below starts from the session it stores, which is a page
 		// load and a form post saved per test.
