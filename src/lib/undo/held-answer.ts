@@ -28,14 +28,22 @@ export interface HeldAnswer {
 	key: string;
 	/** What the toast says while the window is open. */
 	label: string;
-	/** The window closed and the answer went through: the row may leave for good. */
+	/**
+	 * The window closed and the request is going out. Called before anything is awaited, because
+	 * the store stops holding the answer the moment the window closes: a screen that reads "no
+	 * longer held" as "taken back" would put the row back while its write is in flight.
+	 */
+	onSending: () => void;
+	/** The answer went through: the row may leave for good. */
 	onCommitted: () => void;
+	/** The send failed. The row belongs back in the list; the store says why. */
+	onFailed: () => void;
 }
 
 /**
  * `use:enhance={heldAnswer(deps, answer)}` — cancels the submit, hands the answer to the undo
- * window, and sends it only once that window closes. A failed send is the store's business: it
- * puts the row back and says so, which is why nothing is reported here.
+ * window, and sends it only once that window closes. The three callbacks are the whole of what
+ * a screen needs to keep its own list straight: sending, then arrived or failed.
  */
 export function heldAnswer(deps: HeldAnswerDeps, answer: HeldAnswer): SubmitFunction {
 	return ({ action, formData, cancel }) => {
@@ -45,7 +53,13 @@ export function heldAnswer(deps: HeldAnswerDeps, answer: HeldAnswer): SubmitFunc
 			key: answer.key,
 			label: answer.label,
 			commit: async () => {
-				await submitAction(deps.fetch, `${action.pathname}${action.search}`, formData);
+				answer.onSending();
+				try {
+					await submitAction(deps.fetch, `${action.pathname}${action.search}`, formData);
+				} catch (error) {
+					answer.onFailed();
+					throw error; // The store reports it; this only says where the row belongs.
+				}
 				answer.onCommitted();
 			}
 		});

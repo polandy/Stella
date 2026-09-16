@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { allSent, answeredCount, type AnsweredClaims } from './answered';
+import { allSent, answeredCount, wasTakenBack, type AnsweredClaims } from './answered';
 
 /*
  * Held versus sent (docs/02 §2.4.1). The distinction exists because of one defect: a screen
@@ -7,8 +7,9 @@ import { allSent, answeredCount, type AnsweredClaims } from './answered';
  * since an undone answer is also no longer held.
  */
 
-const held = (answer: 'accept' | 'decline') => ({ answer, committed: false });
-const sent = (answer: 'accept' | 'decline') => ({ answer, committed: true });
+const held = (answer: 'accept' | 'decline') => ({ answer, state: 'held' }) as const;
+const sending = (answer: 'accept' | 'decline') => ({ answer, state: 'sending' }) as const;
+const sent = (answer: 'accept' | 'decline') => ({ answer, state: 'sent' }) as const;
 
 describe('answeredCount', () => {
 	it('counts held and sent alike, because the reader sees no difference', () => {
@@ -38,5 +39,29 @@ describe('allSent', () => {
 	/* An empty group is not a finished one; it is a group that should never have rendered. */
 	it('is false for no claims at all', () => {
 		expect(allSent({}, [])).toBe(false);
+	});
+});
+
+describe('wasTakenBack', () => {
+	it('is true for an answer the store stopped holding before it was ever sent', () => {
+		expect(wasTakenBack(held('accept'), false)).toBe(true);
+	});
+
+	it('is false while the window is still open', () => {
+		expect(wasTakenBack(held('accept'), true)).toBe(false);
+	});
+
+	/*
+	 * The defect this exists for: the store drops a removal from pending *before* the request it
+	 * triggers comes back, so between those two moments an answer on its way to the server looks
+	 * exactly like one that was taken back. Reading it as an undo put the answered row back on
+	 * screen, count and all, while the write was in flight — and it stayed wrong until a reload.
+	 */
+	it('is false for an answer already on its way to the server', () => {
+		expect(wasTakenBack(sending('accept'), false)).toBe(false);
+	});
+
+	it('is false for one that arrived', () => {
+		expect(wasTakenBack(sent('decline'), false)).toBe(false);
 	});
 });

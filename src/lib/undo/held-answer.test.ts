@@ -30,6 +30,9 @@ function fakeFetch(answer: { ok: boolean; body?: unknown }) {
 	return { fetch, calls };
 }
 
+/** The lifecycle callbacks a case does not care about. */
+const noCallbacks = () => ({ onSending: () => {}, onCommitted: () => {}, onFailed: () => {} });
+
 const submitEvent = (action: string, body: Record<string, string>) => {
 	const formData = new FormData();
 	for (const [name, value] of Object.entries(body)) formData.set(name, value);
@@ -53,7 +56,7 @@ describe('heldAnswer', () => {
 		});
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the enhance event shape
-		heldAnswer({ holder, fetch }, { key: 'suggestion:parent|a b', label: 'Declined', onCommitted: () => {} })(event as any);
+		heldAnswer({ holder, fetch }, { key: 'suggestion:parent|a b', label: 'Declined', ...noCallbacks() })(event as any);
 
 		expect(wasCancelled()).toBe(true);
 		// Held, not sent: the positive control is that the removal *was* recorded.
@@ -71,7 +74,7 @@ describe('heldAnswer', () => {
 		});
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the enhance event shape
-		heldAnswer({ holder, fetch }, { key: 'k', label: 'Added', onCommitted: () => (committed += 1) })(event as any);
+		heldAnswer({ holder, fetch }, { key: 'k', label: 'Added', ...noCallbacks(), onCommitted: () => (committed += 1) })(event as any);
 		await held[0]!.commit();
 
 		expect(calls).toHaveLength(1);
@@ -92,9 +95,68 @@ describe('heldAnswer', () => {
 		const { event } = submitEvent('/x?/dismissSuggestion', {});
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the enhance event shape
-		heldAnswer({ holder, fetch }, { key: 'k', label: 'Declined', onCommitted: () => (committed += 1) })(event as any);
+		heldAnswer({ holder, fetch }, { key: 'k', label: 'Declined', ...noCallbacks(), onCommitted: () => (committed += 1) })(event as any);
 
 		await expect(held[0]!.commit()).rejects.toThrow();
 		expect(committed).toBe(0);
+	});
+
+	/*
+	 * The order the screen depends on, and the one defect this file exists to keep out. The
+	 * store stops calling a removal pending the moment the window closes, which is *before* the
+	 * request it triggers comes back — so between those two moments the list has nothing to tell
+	 * an answer in flight from one that was taken back. It read it as taken back: the answered
+	 * row reappeared as an open question while its write was on its way, and stayed wrong until
+	 * the page was reloaded. So the sending mark must be set before anything is awaited.
+	 */
+	it('says the answer is on its way before it awaits the request', async () => {
+		const { holder, held } = recordingHolder();
+		let release = () => {};
+		const inFlight = new Promise<Response>((resolve) => {
+			release = () => resolve({ ok: true, status: 200, json: async () => ({ type: 'success' }) } as Response);
+		});
+		const order: string[] = [];
+		const { event } = submitEvent('/x?/dismissSuggestion', {});
+
+		heldAnswer(
+			{ holder, fetch: () => inFlight },
+			{
+				key: 'k',
+				label: 'Declined',
+				onSending: () => void order.push('sending'),
+				onCommitted: () => void order.push('committed'),
+				onFailed: () => void order.push('failed')
+			}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the enhance event shape
+		)(event as any);
+
+		const commit = held[0]!.commit();
+		// Nothing awaited yet: the mark is already set, so no observer can mistake this for an undo.
+		expect(order).toEqual(['sending']);
+		release();
+		await commit;
+		expect(order).toEqual(['sending', 'committed']);
+	});
+
+	it('puts the claim back where the list can see it when the send failed', async () => {
+		const { holder, held } = recordingHolder();
+		const { fetch } = fakeFetch({ ok: false });
+		const order: string[] = [];
+		const { event } = submitEvent('/x?/dismissSuggestion', {});
+
+		heldAnswer(
+			{ holder, fetch },
+			{
+				key: 'k',
+				label: 'Declined',
+				onSending: () => void order.push('sending'),
+				onCommitted: () => void order.push('committed'),
+				onFailed: () => void order.push('failed')
+			}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the enhance event shape
+		)(event as any);
+
+		await expect(held[0]!.commit()).rejects.toThrow();
+		expect(order).toEqual(['sending', 'failed']);
 	});
 });

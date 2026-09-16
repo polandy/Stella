@@ -6,7 +6,7 @@
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { ANSWER_ANCHOR_FIELD, answerAnchor, answerKey } from '$lib/relationships/answer-key';
-	import type { AnsweredClaims } from '$lib/relationships/answered';
+	import { wasTakenBack, type AnswerState, type AnsweredClaims } from '$lib/relationships/answered';
 	import { RETURN_TO_FIELD } from '$lib/relationships/review-url';
 	import { TYPE_KEY_FOR_RELATION } from '$lib/relationships/type-keys';
 	import { useRemovals } from '$lib/undo/context.svelte';
@@ -109,14 +109,20 @@
 	 */
 	$effect(() => {
 		for (const [key, claim] of Object.entries(answered)) {
-			if (!removals.isPending(key) && !claim.committed) delete answered[key];
+			if (wasTakenBack(claim, removals.isPending(key))) delete answered[key];
 		}
 	});
 
 	const standing = $derived(
-		suggestions.filter((s) => s.dismissed === null && !answered[keyOf(s)]?.committed)
+		suggestions.filter((s) => s.dismissed === null && answered[keyOf(s)]?.state !== 'sent')
 	);
 	const declined = $derived(suggestions.filter((s) => s.dismissed !== null));
+
+	/** Moves an answer along, if it is still one this visit knows about. */
+	function mark(key: string, state: AnswerState) {
+		const claim = answered[key];
+		if (claim) claim.state = state;
+	}
 
 	/** The sentence the toast carries while the answer is held. */
 	function answerNotice(s: Suggestion, answer: 'accept' | 'decline'): string {
@@ -141,15 +147,15 @@
 			{
 				key,
 				label: answerNotice(s, answer),
-				onCommitted: () => {
-					const claim = answered[key];
-					if (claim) claim.committed = true;
-				}
+				onSending: () => void mark(key, 'sending'),
+				onCommitted: () => void mark(key, 'sent'),
+				// A failed send is reported by the store; here the row simply returns to the list.
+				onFailed: () => void delete answered[key]
 			}
 		);
 		return (event: Parameters<typeof submit>[0]) => {
 			const result = submit(event);
-			answered[key] = { answer, committed: false };
+			answered[key] = { answer, state: 'held' };
 			return result;
 		};
 	}
