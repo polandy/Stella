@@ -320,6 +320,31 @@ when it was declined. The safe reading is that a *no* stays a *no* until withdra
 tree that re-litigates settled answers is worse than one that forgets a new argument — and
 *show dismissed* is what keeps the withdrawal within reach.
 
+### 6.6 A household-wide pass — concept, not shipped
+
+§6.5 asks about **one** person. The obvious next question is a run over the whole household
+from Settings, and it is a different design rather than the same panel with a wider `where`:
+
+- **A first pass is `certain`-only.** Forty claims in one list is exactly the screen that
+  invites fast tapping, which §7.1 refuses to design for. `likely` and `possible` can join once
+  there is evidence people read rather than sweep.
+- **Where the run happens.** One form action, or paged. Explicitly **not** a background job
+  with a state of its own: a run nobody is watching that writes nothing is a lot of machinery
+  for a list that can be recomputed on request.
+- **Whether a run is stored**, so two members working the same list do not see it shift under
+  each other — the same question as “is a review a thing, or only a question”.
+- **Where the entry point lives**, given that Settings is where a household-wide action belongs
+  but the person page is where the claims mean something.
+- **Whether a decline expires.** It does not (§6.5), and a batch pass does not change that.
+
+**Settled rows should stay put for the visit.** In a long list, removing a row the moment it is
+answered moves everything under the next tap, and an accidental click has nowhere visible to be
+undone. Four row states — open, confirmed, declined, left alone — with the settled ones muted in
+place and carrying their undo, is the better shape. The person-page panel does not do this yet:
+a confirmed claim becomes a stored link in the list above and a declined one moves to the
+drawer, both recoverable but neither in place. Worth fixing there too, and it is the one piece
+of this section that is not blocked on the batch design.
+
 ---
 
 ## 7. Constraints this must respect
