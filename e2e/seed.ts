@@ -80,8 +80,29 @@ export async function seedHousehold(
 		}
 	});
 	expect(response.status()).toBe(200);
-	// The report, not just a 200: a refused archive renders the same screen with an error on it.
-	const body = await response.text();
-	expect(body).toContain('data-testid="restore-report"');
-	expect(body).toMatch(new RegExp(`\\b${people.length} added\\b`));
+	// A refused archive answers 200 too, with an error where the report would be — so the
+	// report's own counts are the signal, not the status.
+	const report = restoreReportFrom(await response.text());
+	expect(report.added.contact).toBe(people.length);
+	expect(report.added.relationship).toBe(links.length);
+}
+
+/** The counts the restore report carries for the two kinds of record the seed writes. */
+interface RestoreCounts {
+	added: { contact: number; relationship: number };
+}
+
+/**
+ * Playwright's request context asks for JSON, so the form action answers with its result the
+ * way SvelteKit hands it to `use:enhance`: `data` is a devalue-flattened array, where every
+ * object holds indexes into the array instead of values.
+ */
+function restoreReportFrom(body: string): RestoreCounts {
+	const result = JSON.parse(body) as { type: string; data?: string };
+	expect(result.type).toBe('success');
+	const flat = JSON.parse(result.data ?? '[]') as unknown[];
+	const record = (index: unknown) => flat[index as number] as Record<string, number>;
+	const count = (index: unknown) => flat[index as number] as number;
+	const added = record(record(record(0).report).added);
+	return { added: { contact: count(added.contact), relationship: count(added.relationship) } };
 }
