@@ -500,6 +500,37 @@ export const circleMembership = sqliteTable(
 	]
 );
 
+// ── Suggestions ───────────────────────────────────────────────────────────
+
+/**
+ * The claims the household has declined (docs/concepts/relationship-suggestions.md §6.4).
+ *
+ * Keyed by the **claim** — a relation over an unordered pair — and never by the rule that
+ * surfaced it: declining "Wing Kam is Steve's parent" answers those two people, and the answer
+ * has to hold when another rule reaches the same pair tomorrow.
+ *
+ * Household-scoped rather than per user: the household decided. A row constrains only what
+ * Stella *offers*; nothing here touches what the kinship engine derives or what a profile
+ * shows, and deleting the row puts the suggestion back.
+ */
+export const suggestionDismissal = sqliteTable(
+	'suggestion_dismissal',
+	{
+		id: text('id').primaryKey(),
+		householdId: text('household_id')
+			.notNull()
+			.references(() => household.id, { onDelete: 'cascade' }),
+		relation: text('relation').$type<'parent' | 'sibling'>().notNull(),
+		/** The two contact ids, sorted and space-separated, so either end names the same row. */
+		pairKey: text('pair_key').notNull(),
+		dismissedBy: text('dismissed_by')
+			.notNull()
+			.references(() => user.id),
+		dismissedAt: integer('dismissed_at').notNull().default(now)
+	},
+	(t) => [unique('suggestion_dismissal_claim').on(t.householdId, t.relation, t.pairKey)]
+);
+
 // ── Activity feed ─────────────────────────────────────────────────────────
 
 export const activityLog = sqliteTable(

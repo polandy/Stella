@@ -63,9 +63,9 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 	await expect(proposals).toContainText('Vreni Zbinden is a parent of Noah Brunner');
 
 	await proposals
-		.locator('form')
+		.getByTestId('kin-suggestion')
 		.filter({ hasText: 'Elias Brunner' })
-		.getByRole('button', { name: 'Add this too' })
+		.getByRole('button', { name: 'Accept' })
 		.click();
 
 	// Exactly the confirmed one was written: Elias is now stored, Noah is still only offered.

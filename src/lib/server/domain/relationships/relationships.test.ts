@@ -357,9 +357,15 @@ describe('readKinship', () => {
 		return { repo, asked };
 	}
 
+	/** The two ports `readKinship` reads, with nothing declined yet (§6.4). */
+	const kinDeps = (repo: Pick<RelationshipRepository, 'loadKinshipGraphVisibleTo'>) => ({
+		relationships: repo,
+		dismissals: { listForHousehold: async () => [] }
+	});
+
 	it('derives from the graph the viewer may see, and proposes nothing unasked', async () => {
 		const { repo, asked } = kinRepo();
-		const found = await readKinship({ relationships: repo as RelationshipRepository }, viewer, 'hans');
+		const found = await readKinship(kinDeps(repo), viewer, 'hans');
 		expect(found.derived).toEqual([
 			{
 				personId: 'otto',
@@ -378,12 +384,7 @@ describe('readKinship', () => {
 			siblingEdges: [{ a: 'hans', b: 'lisa' }],
 			extraPeople: [{ id: 'lisa', displayName: 'Lisa', gender: 'female' }]
 		});
-		const found = await readKinship(
-			{ relationships: repo as RelationshipRepository },
-			viewer,
-			'hans',
-			{ a: 'bettina', b: 'hans' }
-		);
+		const found = await readKinship(kinDeps(repo), viewer, 'hans', { a: 'bettina', b: 'hans' });
 		expect(found.proposals).toMatchObject([
 			{
 				kind: 'link',
@@ -402,12 +403,7 @@ describe('readKinship', () => {
 
 	it('proposes nothing for a pair with no primary link the viewer can see', async () => {
 		const { repo } = kinRepo();
-		const found = await readKinship(
-			{ relationships: repo as RelationshipRepository },
-			viewer,
-			'hans',
-			{ a: 'hans', b: 'nobody' }
-		);
+		const found = await readKinship(kinDeps(repo), viewer, 'hans', { a: 'hans', b: 'nobody' });
 		expect(found.proposals).toEqual([]);
 	});
 });

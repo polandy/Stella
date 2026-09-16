@@ -130,7 +130,31 @@ export const contact = {
 	'contact.relationships.alsoTrue': 'Also true?',
 	'contact.relationships.parentProposal': (p: { parent: string; child: string }) =>
 		`${p.parent} is a parent of ${p.child}`,
+	'contact.relationships.siblingProposal': (p: { one: string; other: string }) =>
+		`${p.one} and ${p.other} are siblings`,
 	'contact.relationships.addThisToo': 'Add this too',
+	'contact.relationships.accept': 'Accept',
+	'contact.relationships.decline': 'Decline',
+	/*
+	 * The on-demand review (docs/concepts/relationship-suggestions.md §6.5) — the one place a
+	 * member can ask what follows from links entered long ago, rather than being told in the
+	 * instant after a write.
+	 */
+	'contact.relationships.review': 'Check relationships',
+	'contact.relationships.reviewAgain': 'Check again',
+	'contact.relationships.reviewHeading': 'Suggestions',
+	'contact.relationships.reviewOpenCount': (p: { count: number }) => `${p.count} open`,
+	'contact.relationships.reviewNothing': (p: { name: string }) =>
+		`Nothing open. Stella finds nothing around ${p.name} that is not on record already.`,
+	'contact.relationships.confidence.certain': 'certain',
+	'contact.relationships.confidence.likely': 'likely',
+	'contact.relationships.confidence.possible': 'possible',
+	'contact.relationships.declinedCount': (p: { count: number }) =>
+		p.count === 1 ? '1 declined suggestion' : `${p.count} declined suggestions`,
+	'contact.relationships.declinedOn': (p: { day: string }) => `declined on ${p.day}`,
+	'contact.relationships.declinedOnBy': (p: { day: string; who: string }) =>
+		`declined on ${p.day} by ${p.who}`,
+	'contact.relationships.askAgain': 'Offer again',
 	'contact.relationships.derived': 'Also related · worked out, not entered',
 	'contact.relationships.reallyChild': 'Actually the child',
 	'contact.relationships.reallyParent': 'Actually the parent',

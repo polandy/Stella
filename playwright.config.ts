@@ -18,6 +18,26 @@ const FEED_PORT = Number(process.env.E2E_FEED_PORT ?? 4174);
 /** The one spec that belongs to the `setup` project and to no other. */
 const SETUP_SPEC = /auth\.setup\.ts$/;
 
+/*
+ * No service worker, for a suite that never tests one.
+ *
+ * Shard 1 has been dying with a Chromium `SIGSEGV` in the **browser** process — always the
+ * same faulting address, always in its glib main loop — which takes whichever test is running
+ * with it, so the victim moves between runs and no assertion ever fails: the error is always
+ * the next `newContext` finding the browser gone. It reproduces on a re-run of an untouched
+ * green commit, so it is the environment rather than any one change.
+ *
+ * The browser process is also where Chromium keeps the service worker registry, and since the
+ * PWA landed every page registers one (`OfflineBanner` waits on `serviceWorker.ready`) while
+ * the suite creates and destroys a context per test. Blocking registration takes that out of
+ * the crashing process and costs no coverage: there is no PWA spec, and the install and
+ * offline rules are unit-tested as pure policy in `src/lib/pwa/`.
+ *
+ * This is the suspect, not a proven cause. `--disable-gpu` was the previous one and was wrong:
+ * the crash survived it unchanged, down to the address.
+ */
+const NO_SERVICE_WORKER = 'block' as const;
+
 export default defineConfig({
 	testDir: 'e2e',
 	// One app instance and one database are shared by the suite, so tests run in order.
@@ -25,7 +45,7 @@ export default defineConfig({
 	workers: 1,
 	forbidOnly: !!process.env.CI,
 	reporter: 'list',
-	use: { baseURL: BASE_URL, trace: 'retain-on-failure' },
+	use: { baseURL: BASE_URL, trace: 'retain-on-failure', serviceWorkers: NO_SERVICE_WORKER },
 	projects: [
 		// Signs in once; every spec below starts from the session it stores, which is a page
 		// load and a form post saved per test.
