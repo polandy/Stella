@@ -210,12 +210,16 @@ read off exactly those links — so pick the direction the wrong way round and i
 of saving it. Change the link that is already there to the direction you meant, or remove it.
 
 Some kinds of link also stop being offered once they would contradict what you have already
-written down. Pick the other person first, and any kind that cannot hold is **greyed out under a line
-saying why**: somebody with a partnership that still holds gets no second one ("Not possible —
-already with Carl"), two people who are already family or a couple get no second kind of tie,
-with the link that is in the way named as it reads on the page you are on ("Not possible —
-already Godchild of Andy Pollari" — change that link instead), siblings Stella already works
-out from shared parents are not offered again, and nobody gets a third parent. If a
+written down. Pick the other person first, and any kind that cannot hold is **greyed out under
+a line saying why**: somebody with a partnership that still holds gets no second one ("Not
+possible — already with Carl"), a pair that is already a couple gets no second kind of
+partnership, with the link in the way named as it reads on the page you are on ("Not possible —
+already Partner of Bert" — change that link instead), siblings Stella already works out from
+shared parents are not offered again, and nobody gets a third parent.
+
+Family links themselves are never in each other's way. A godparent is often the grandfather
+too, so write down both — Stella takes two kinship links about the same two people as two
+facts, not as a contradiction. If a
 marriage or a partnership has ended, set it to **former** on the row: it stays on both
 profiles, and the next one can then be entered as usual.
 

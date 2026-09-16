@@ -312,22 +312,25 @@ reciprocal** link.
   covers them.
 
 - **Shipped:** a claim the household's own records already rule out is **not offered, and not
-  stored**. Four rules, read from what is on file rather than from a list of names:
+  stored**. Four rules, read from what is on file rather than from a list of names — and all
+  four are about a claim that cannot *hold*, never about a household recording one fact twice:
 
   - **One partnership at a time.** *Partner* and *spouse* are the same claim for this purpose,
     so someone with a partnership that still holds cannot be given a second one — from either
     end, and whoever's profile it is entered from. The way back in is the status: a partnership
     marked **former** stays on record but stops standing in the way, so a marriage that ended
     and a new one are both recorded, in that order and without a deletion.
-  - **One band per pair.** Two people are family *or* a couple, not both, and not two kinds of
-    family at once — a mother is not also a sister. A second such claim about the same two
-    **names the link that is already there** — *"already Godchild of Andy"* — because
-    correcting that one is what was meant (the type of a link can be changed, below), and
-    because a reason that says only *"already linked to Andy"* reads as a claim about the entry
-    it is greying out rather than about the link in the way. The link is described **from the
-    profile the entry is being made on**, which for a symmetric type is regularly not the end it
-    is stored under. Work and social ties are untouched: they say what two people *do*, so a
-    colleague is often a friend as well.
+  - **And one per pair.** *Partner* and *spouse* are the same claim in two words, so
+    the pair carries one of them, not both: a partner who became a spouse is a **change** to
+    the link that is there, not a second row beside it. The refusal names the link in the way
+    — *"already Partner of Bert"* — because correcting that one is what was meant.
+
+    Kinship, by contrast, **stacks**. Two family claims about the same two people are two
+    facts: a godparent is very often the grandfather or the uncle as well, an aunt by marriage
+    is also a neighbour. Stella refuses none of it — the household knows what it means, and
+    the derived kinship (§2.4.1) is worked out from the links it reads, not from a count of
+    them.
+
   - **Nothing that is already worked out.** Where shared parents already make two people
     siblings (§2.4.1), entering it by hand is refused — a stored row permanently replaces the
     derived one, and the derivation is the better record. A **half**-sibling stays enterable:
@@ -338,11 +341,11 @@ reciprocal** link.
 
   The rules live in one pure place and are read twice: the picker **greys the entries out** as
   soon as the other person is chosen and puts the reason **once, above the run it refuses** —
-  *"Not possible — already Godchild of Andy Pollari"* over the family and romantic entries —
+  *"Not possible — already Partner of Bert"* over the two romantic entries —
   so the refusal is visible before anything is saved. The reason deliberately stays out of the
   entry's own label: an entry reads "X of" and so does the link in the way, and the two side by
-  side ("Grandparent of — already Godchild of Andy Pollari") read as one sentence about the
-  entry rather than as a reason for it. The Add button follows the entry the control actually
+  side ("Spouse of — already Partner of Bert") read as one sentence about the entry rather than
+  as a reason for it. The Add button follows the entry the control actually
   stands on, which is the first *pickable* one, not the first one, and the use-case refuses
   the write on exactly the same reading, so a hand-written post gets the same answer as the
   form. Changing the **type** of an existing link is measured with that link left out, so a

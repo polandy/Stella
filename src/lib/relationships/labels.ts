@@ -66,7 +66,7 @@ export function exclusionLabel(
 ): string {
 	const name = nameOf(exclusion.personId);
 	switch (exclusion.reason) {
-		case 'alreadyRelated':
+		case 'alreadyRomantic':
 			// Naming the link is the whole point of the reason; "linked to" is the fallback for
 			// a refusal that reaches here without one rather than a wording anybody should see.
 			return exclusion.tie
@@ -74,7 +74,7 @@ export function exclusionLabel(
 						tie: relationshipRowLabel(t, exclusion.tie),
 						name
 					})
-				: t('relationships.blocked.alreadyRelated', { name });
+				: t('relationships.blocked.alreadyRomantic', { name });
 		case 'siblingDerived':
 			return t('relationships.blocked.siblingDerived');
 		case 'romanticTaken':

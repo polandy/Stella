@@ -21,7 +21,7 @@ const options = relationshipTypeOptions([
 ]);
 
 const tied: Exclusion = {
-	reason: 'alreadyRelated',
+	reason: 'alreadyRomantic',
 	personId: 'andy',
 	tie: { typeKey: 'godparent_of', side: 'reverse', label: 'Godchild of' }
 };
@@ -44,7 +44,7 @@ describe('groupByExclusion', () => {
 			family.has(option.type.id) ? tied : null
 		);
 		expect(groups.map((group) => group.exclusion?.reason ?? null)).toEqual([
-			'alreadyRelated',
+			'alreadyRomantic',
 			null
 		]);
 		expect(ids(groups[0]!)).toEqual(['parent_child', 'parent_child', 'sibling', 'spouse']);
@@ -59,7 +59,7 @@ describe('groupByExclusion', () => {
 		});
 		expect(groups.map((group) => group.exclusion?.reason ?? null)).toEqual([
 			null,
-			'alreadyRelated',
+			'alreadyRomantic',
 			'romanticTaken',
 			null
 		]);

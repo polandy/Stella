@@ -18,8 +18,8 @@ export const errors = {
 	'errors.relationship.alreadyTied': (p: { tie: string; name: string }) =>
 		`That is already on record the other way: ${p.tie} ${p.name}. Correct that link instead of adding a second one.`,
 	/** For a refusal that names no link; the wording above is the one a reader should meet. */
-	'errors.relationship.alreadyRelated': (p: { name: string }) =>
-		`There is already a family or romantic link with ${p.name}. Correct that one instead of adding a second.`,
+	'errors.relationship.alreadyRomantic': (p: { name: string }) =>
+		`There is already a partnership on record with ${p.name}. Correct that one instead of adding a second.`,
 	'errors.relationship.siblingDerived': (p: { name: string }) =>
 		`Stella already works ${p.name} out as a sibling here, from the shared parents. Entering it by hand would replace what is worked out.`,
 	'errors.relationship.romanticTaken': (p: { name: string }) =>

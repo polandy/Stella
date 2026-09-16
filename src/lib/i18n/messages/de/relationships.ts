@@ -30,7 +30,7 @@ export const relationships: RelationshipsMessages = {
 
 	'relationships.blocked.group': (p) => `Nicht möglich — ${p.reason}`,
 	'relationships.blocked.alreadyTied': (p) => `schon ${p.tie} ${p.name}`,
-	'relationships.blocked.alreadyRelated': (p) => `schon mit ${p.name} verbunden`,
+	'relationships.blocked.alreadyRomantic': (p) => `schon mit ${p.name} zusammen`,
 	'relationships.blocked.siblingDerived': 'über die Eltern schon Geschwister',
 	'relationships.blocked.romanticTaken': (p) => `schon mit ${p.name} zusammen`,
 	'relationships.blocked.parentsComplete': (p) => `${p.name} hat schon ${p.max} Elternteile`,

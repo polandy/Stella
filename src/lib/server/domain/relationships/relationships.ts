@@ -258,16 +258,16 @@ export class ContradictoryRelationshipError extends TranslatableError {
  */
 
 /**
- * The sentence each refusal is read as, given what it is about. `alreadyRelated` refuses
+ * The sentence each refusal is read as, given what it is about. `alreadyRomantic` refuses
  * because of a particular link and says which one — from the subject's side, and translated
  * where Stella owns the type — since the person's name alone reads as a claim about the tie
  * that was just refused rather than about the one standing in the way.
  */
 const PHRASE_FOR_REASON: Record<ExclusionReason, (exclusion: Exclusion, name: string) => Phrase> =
 	{
-		alreadyRelated: (exclusion, name) => {
+		alreadyRomantic: (exclusion, name) => {
 			const tie = exclusion.tie;
-			if (!tie) return phrase('errors.relationship.alreadyRelated', { name });
+			if (!tie) return phrase('errors.relationship.alreadyRomantic', { name });
 			return (t) =>
 				t('errors.relationship.alreadyTied', { tie: relationshipRowLabel(t, tie), name });
 		},

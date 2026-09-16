@@ -42,7 +42,7 @@ export const relationships = {
 	'relationships.blocked.alreadyTied': (p: { tie: string; name: string }) =>
 		`already ${p.tie} ${p.name}`,
 	/** For a refusal that names no link — the wording above is the one a reader should meet. */
-	'relationships.blocked.alreadyRelated': (p: { name: string }) => `already linked to ${p.name}`,
+	'relationships.blocked.alreadyRomantic': (p: { name: string }) => `already with ${p.name}`,
 	'relationships.blocked.siblingDerived': 'already siblings through their parents',
 	'relationships.blocked.romanticTaken': (p: { name: string }) => `already with ${p.name}`,
 	'relationships.blocked.parentsComplete': (p: { name: string; max: number }) =>

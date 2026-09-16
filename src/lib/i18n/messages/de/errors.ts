@@ -15,8 +15,8 @@ export const errors: ErrorsMessages = {
 		'Diese beiden sind bereits andersherum verbunden, und das kann nicht in beide Richtungen stimmen. Entferne zuerst die bestehende Verbindung.',
 	'errors.relationship.alreadyTied': (p) =>
 		`Das steht schon anders da: ${p.tie} ${p.name}. Ändere lieber diese Beziehung, statt eine zweite anzulegen.`,
-	'errors.relationship.alreadyRelated': (p) =>
-		`Mit ${p.name} besteht schon eine verwandtschaftliche oder romantische Beziehung. Ändere lieber diese, statt eine zweite anzulegen.`,
+	'errors.relationship.alreadyRomantic': (p) =>
+		`Mit ${p.name} ist schon eine Partnerschaft festgehalten. Ändere lieber diese, statt eine zweite anzulegen.`,
 	'errors.relationship.siblingDerived': (p) =>
 		`Stella leitet ${p.name} hier bereits aus den gemeinsamen Eltern als Geschwister ab. Von Hand eingetragen würde das Abgeleitete ersetzt.`,
 	'errors.relationship.romanticTaken': (p) =>

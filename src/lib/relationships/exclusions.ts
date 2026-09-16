@@ -22,7 +22,7 @@ import type { RelationshipSide } from './type-options';
 
 /** Why a type may not be claimed between two people. */
 export const EXCLUSION_REASONS = [
-	'alreadyRelated',
+	'alreadyRomantic',
 	'siblingDerived',
 	'romanticTaken',
 	'parentsComplete'
@@ -39,11 +39,13 @@ export type ExclusionReason = (typeof EXCLUSION_REASONS)[number];
 export const MAX_PARENTS = 2;
 
 /**
- * The categories that say *how* two people belong together, of which one pair holds exactly
- * one. Work and social ties describe what two people do rather than who they are to each
- * other, so those stack freely: a colleague is often a friend as well.
+ * The one category a pair holds only once. Everything else stacks: a colleague is often a
+ * friend, and — the case that decided this — a godparent is very often the grandfather or
+ * the uncle as well, so kinship a household enters twice about the same two people is
+ * information, not a contradiction. Romance is different: *partner* and *spouse* are the same
+ * claim in two words, and a pair carrying both says the household could not choose.
  */
-const EXCLUSIVE_CATEGORIES: readonly RelationshipCategory[] = ['family', 'romantic'];
+const EXCLUSIVE_CATEGORIES: readonly RelationshipCategory[] = ['romantic'];
 
 /**
  * How a link that is in the way reads, so a refusal can name it rather than say only that
@@ -107,7 +109,7 @@ export interface Exclusion {
 	/** Whoever the reason is about — the existing partner, the child who has two parents. */
 	personId: string;
 	/**
-	 * The link standing in the way, where there is one: `alreadyRelated` refuses *because of*
+	 * The link standing in the way, where there is one: `alreadyRomantic` refuses *because of*
 	 * a particular row, and saying which one is the difference between "these two are already
 	 * connected" and a sentence that reads as a claim about the entry being greyed out.
 	 */
@@ -152,7 +154,7 @@ export function exclusionFor(facts: ExclusionFacts, query: ExclusionQuery): Excl
 		);
 		if (band) {
 			return {
-				reason: 'alreadyRelated',
+				reason: 'alreadyRomantic',
 				personId: targetId,
 				tie: { typeKey: band.typeKey, side: band.side, label: band.label }
 			};
