@@ -189,7 +189,7 @@
 						<Avatar name={group.subjectName} id={group.subjectId} size={32} />
 						<span class="font-medium">{group.subjectName}</span>
 					</a>
-						<KinSuggestions suggestions={group.suggestions} returnTo={data.returnTo} bind:answered />
+					<KinSuggestions suggestions={group.suggestions} returnTo={data.returnTo} bind:answered />
 
 					<!--
 						Fold 2: one imported family can leave dozens of claims about a single person.

@@ -494,9 +494,9 @@ richer picker because only a moment may create a person on the fly (§2.22.1).
 
 **Toasts** (`src/lib/components/Toast.svelte`) sit bottom-left of the content column, one
 card per message, announced as a polite live region. A removal's toast names what went —
-*Entry removed*, *Tag removed*, *Left the circle*, *Added Otto Meier as a parent of Lisa Meier*
-— and carries an **Undo** button for the whole window (eight seconds); a plain notice — *Saved*, or why a removal failed — has no
-button and goes on its own. Removing needs no confirmation dialog because every removal can
+*Entry removed*, *Tag removed*, *Left the circle*, *Added Otto Meier as a parent of Lisa
+Meier* — and carries an **Undo** button for the whole window (eight seconds); a plain notice
+— *Saved*, or why a removal failed — has no button and goes on its own. Removing needs no confirmation dialog because every removal can
 be taken back from here (docs/02 §2.23), and every one of them is the same component
 (`RemoveButton`), so no list can quietly opt out. Saving says *Saved* and closes the form it
 was typed in — a section's editor and an inline edit alike. On a phone the region sits above the tab bar.
