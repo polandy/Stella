@@ -13,6 +13,8 @@ The `docs/` suite is the **source of truth**; this file is only a router — kee
 ## Golden rules — full text: `docs/08-coding-guidelines.md` (read once, then follow)
 
 - **Test-first**: failing test → minimal impl → refactor. Run `bun run test`.
+- **No test may race**: no sleeps, no fixed waits, no wall-clock dependence; a negative
+  assertion needs a positive signal, and every test is seen red once. (`docs/08` §8.4.2)
 - **Delivery loop**: implement (+ unit/integration tests) → user verifies in the app →
   **on their OK**, add the Playwright **e2e** (`e2e/*.spec.ts`). Never write the e2e before
   sign-off. (`docs/08` §8.4.1)
