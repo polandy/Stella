@@ -474,7 +474,10 @@ prefill, consistency warnings — and the rule set behind it is drafted in
 `docs/concepts/relationship-suggestions-implementation.md` (the rule engine, the dismissal log,
 the on-demand review and the household-wide pass are shipped; the rest of the catalogue is
 concept). The household screen was drawn first in
-`docs/concepts/relationship-review-concept.html`.
+`docs/concepts/relationship-review-concept.html`; how that screen stays workable once a
+household carries hundreds of claims — paging by person, folding an oversized group, and
+counts that always describe the household rather than the page — is drawn in
+`docs/concepts/relationship-review-at-scale.html` (proposed, not built).
 
 ### 2.4.2 Circles & shared contexts **[M2]**
 
