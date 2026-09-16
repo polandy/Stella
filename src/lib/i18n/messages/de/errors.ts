@@ -13,6 +13,16 @@ export const errors: ErrorsMessages = {
 	'errors.relationship.duplicate': 'Diese Beziehung gibt es schon.',
 	'errors.relationship.contradiction':
 		'Diese beiden sind bereits andersherum verbunden, und das kann nicht in beide Richtungen stimmen. Entferne zuerst die bestehende Verbindung.',
+	'errors.relationship.alreadyTied': (p) =>
+		`Das steht schon anders da: ${p.tie} ${p.name}. Ändere lieber diese Beziehung, statt eine zweite anzulegen.`,
+	'errors.relationship.alreadyRomantic': (p) =>
+		`Mit ${p.name} ist schon eine Partnerschaft festgehalten. Ändere lieber diese, statt eine zweite anzulegen.`,
+	'errors.relationship.siblingDerived': (p) =>
+		`Stella leitet ${p.name} hier bereits aus den gemeinsamen Eltern als Geschwister ab. Von Hand eingetragen würde das Abgeleitete ersetzt.`,
+	'errors.relationship.romanticTaken': (p) =>
+		`${p.name} ist bereits mit ${p.partner} zusammen, und diese Partnerschaft besteht noch. Setze sie zuerst auf ehemalig.`,
+	'errors.relationship.parentsComplete': (p) =>
+		`${p.name} hat bereits ${p.max} Elternteile. Ändere einen davon, statt einen weiteren anzulegen.`,
 	'errors.relationship.noSuchDay': (p) => `${p.day} ist kein Tag, den es gibt.`,
 	'errors.relationship.currentOrFormer': 'Eine Beziehung ist entweder aktuell oder ehemalig.',
 

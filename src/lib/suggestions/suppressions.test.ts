@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { KinshipGraph } from '$lib/kinship/kinship';
 import { deriveKinship } from '$lib/kinship/kinship';
-import { isDerivable } from './suppressions';
+import { isDerivable, isRefusedByRules } from './suppressions';
 import { buildView } from './view';
 
 /*
@@ -115,5 +115,55 @@ describe('isDerivable', () => {
 	it('is false for a parent offer on a pair that is already an entered parent link', () => {
 		const view = buildView(graph({ parentEdges: [{ parentId: 'bettina', childId: 'hans' }] }));
 		expect(isDerivable(view, 'parent', 'bettina', 'hans')).toBe(false);
+	});
+});
+
+/*
+ * Suppression 5 — what the write would refuse. A claim Stella offers and then rejects on
+ * Accept is worse than one it never made: the household is told a link follows, presses the
+ * one button there is, and is answered with an error about a rule nobody broke. The parent
+ * cap (docs/02 §2.4) is the one such rule an implication can run into, because both rules
+ * offer parent links and a child already has whatever parents it has.
+ */
+describe('isRefusedByRules', () => {
+	const twoParents = () =>
+		buildView(
+			graph({
+				parentEdges: [
+					{ parentId: 'bettina', childId: 'lio' },
+					{ parentId: 'kurt', childId: 'lio' }
+				]
+			}),
+			[]
+		);
+
+	it('refuses a parent for a child who already has two', () => {
+		expect(isRefusedByRules(twoParents(), 'parent', 'hans', 'lio')).toBe(true);
+	});
+
+	it('allows the second parent — the cap is two, not one', () => {
+		const oneParent = buildView(
+			graph({ parentEdges: [{ parentId: 'bettina', childId: 'lio' }] }),
+			[]
+		);
+		expect(isRefusedByRules(oneParent, 'parent', 'kurt', 'lio')).toBe(false);
+	});
+
+	it('says nothing about a sibling claim — no rule caps those', () => {
+		expect(isRefusedByRules(twoParents(), 'sibling', 'hans', 'lio')).toBe(false);
+	});
+
+	it('counts the child named by the claim, not the parent', () => {
+		// Bettina is a parent twice over; that is her business, and says nothing about Hans.
+		const view = buildView(
+			graph({
+				parentEdges: [
+					{ parentId: 'bettina', childId: 'lio' },
+					{ parentId: 'bettina', childId: 'lisa' }
+				]
+			}),
+			[]
+		);
+		expect(isRefusedByRules(view, 'parent', 'hans', 'lisa')).toBe(false);
 	});
 });

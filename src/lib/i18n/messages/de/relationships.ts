@@ -28,6 +28,13 @@ export const relationships: RelationshipsMessages = {
 	'relationships.category.professional': 'Beruflich',
 	'relationships.category.other': 'Sonstiges',
 
+	'relationships.blocked.group': (p) => `Nicht möglich — ${p.reason}`,
+	'relationships.blocked.alreadyTied': (p) => `schon ${p.tie} ${p.name}`,
+	'relationships.blocked.alreadyRomantic': (p) => `schon mit ${p.name} zusammen`,
+	'relationships.blocked.siblingDerived': 'über die Eltern schon Geschwister',
+	'relationships.blocked.romanticTaken': (p) => `${p.name} ist schon mit ${p.partner} zusammen`,
+	'relationships.blocked.parentsComplete': (p) => `${p.name} hat schon ${p.max} Elternteile`,
+
 	'relationships.status.current': 'aktuell',
 	'relationships.status.former': 'ehemalig',
 	'relationships.status.notSaid': 'Nicht gesagt',

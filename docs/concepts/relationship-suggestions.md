@@ -219,7 +219,12 @@ Applied to every rule's output, before ordering:
 3. **Self.** Drop `subject === object`.
 4. **Invisible.** Drop anything naming a person outside the view.
 5. **Guard-refused.** Run the same guards a manual entry passes (C2/C3/C4/C6). A suggestion
-   that would be refused on confirmation must never be shown.
+   that would be refused on confirmation must never be shown — the household would press the
+   one button there is and be answered with an error about a rule it never broke. **Shipped**
+   for the exclusion rule an implication can actually reach: both link rules offer *parent*
+   claims, so a child who already has the two parents Stella allows (docs/02 §2.4) is not
+   offered a third. The pair-level guards are covered by suppression 1, which drops any pair
+   that already carries a link.
 6. **Dismissed.** See §6.4.
 
 ### 6.3 Ordering and volume
