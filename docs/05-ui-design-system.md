@@ -208,10 +208,18 @@ They must be edited together; `app.css` says so at both blocks.
   Closed it is an `EmptyState` with one primary action, because no rule runs until it is asked
   for; asked, it is a count, *Check again*, and one card per person — avatar, name linking to
   the profile, and that person's claims as the **same rows the person page uses**
-  (`KinSuggestions`), so an answer means one thing wherever it is given. What the household
-  declined sits under the same `<details>` drawer, at the foot of the list rather than inside a
-  card, because it spans everybody. Every control is a form or a link: the screen works with
-  JavaScript off.
+  (`KinSuggestions`), so an answer means one thing wherever it is given.
+  - **Nothing is dropped, everything is folded** (concept:
+    `docs/concepts/relationship-review-at-scale.html`). The engine computes the whole household
+    (docs/04 §4.9), so the screen folds at three levels: **ten people to a page** with a pager,
+    **five claims per person** with the remainder named — *1 more for Selina Gerber*, never a
+    bare *more* — and a link to that person's own review panel for the rest, and the declined
+    log moving from a `<details>` drawer to **its own address** once it passes ten.
+  - **The header counts the household, the range counts the page.** *6 open across 1 person*
+    beside *People 1–10 of 96*: how much work is left, and where in it the reader is. A search
+    narrows the range and never the header.
+  - Every control is a form or a link — pager, search and log included — so the screen works
+    with JavaScript off, and an answer returns to the page and search it was given on.
 - **People** — a find-as-you-type field, tag chips, then **letter groups** by surname with a
   sticky letter heading; each row is avatar, name (lock for private), description, and
   **last written about** on the right (`—` when nothing has been). The heading counts people;

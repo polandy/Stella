@@ -48,6 +48,26 @@ export const settings: SettingsMessages = {
 		p.count === 1 ? '1 offener Vorschlag' : `${p.count} offene Vorschläge`,
 	'settings.relationships.nothing':
 		'Nichts Offenes. Stella findet in deinem Haushalt nichts, was nicht schon eingetragen ist.',
+	'settings.relationships.openAcross': (p) =>
+		`${p.claims} offen bei ${p.people === 1 ? '1 Person' : `${p.people} Personen`}`,
+	'settings.relationships.peopleRange': (p) => `Personen ${p.from}–${p.to} von ${p.total}`,
+	'settings.relationships.answerRange': (p) => `Antworten ${p.from}–${p.to} von ${p.total}`,
+	'settings.relationships.nextPeople': (p) => `Nächste ${p.count} Personen`,
+	'settings.relationships.previousPeople': (p) => `Vorherige ${p.count} Personen`,
+	'settings.relationships.nextPage': 'Weiter',
+	'settings.relationships.previousPage': 'Zurück',
+	'settings.relationships.moreForPerson': (p) => `${p.count} weitere für ${p.name}`,
+	'settings.relationships.openAll': (p) => `Alle ${p.count} öffnen`,
+	'settings.relationships.findPerson': 'Person suchen',
+	'settings.relationships.searchSubmit': 'Suchen',
+	'settings.relationships.clearSearch': 'Zurücksetzen',
+	'settings.relationships.noMatch': (p) => `Zu „${p.query}“ ist nichts offen.`,
+	'settings.relationships.declinedLog': (p) =>
+		p.count === 1 ? '1 abgelehnter Vorschlag' : `${p.count} abgelehnte Vorschläge`,
+	'settings.relationships.declinedHeading': 'Abgelehnte Vorschläge',
+	'settings.relationships.declinedBlurb':
+		'Wozu jemand in diesem Haushalt Nein gesagt hat. Wieder anbieten stellt den Vorschlag zurück in die Liste.',
+	'settings.relationships.backToList': 'Zurück zur Liste',
 	'settings.account.heading': 'Konto',
 	'settings.about.heading': 'Über Stella',
 	'settings.about.version': (p: { version: string }) => `Stella ${p.version}`,

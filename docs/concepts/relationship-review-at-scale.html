@@ -257,6 +257,21 @@
   </header>
 
   <div class="standing">
+    <b>Built — and where the build differs</b>
+    <p>
+      All three folds ship (docs/02 §2.4.1): ten people to a page on a cursor that is a person,
+      five claims per group, and the declined log on its own address past ten. Two things came
+      out differently. <b>Fold 2 leads to the person's own review panel</b> at
+      <code>/contacts/&lt;id&gt;?review</code> rather than to a <code>?person=</code> view inside
+      Settings — that screen already exists and already lists everything about one person, and
+      one screen reached two ways beats two screens that must agree. And <b>the place an answer
+      returns to travels in the form body</b>, not on the URL: a form action resolves against the
+      current address, so <code>?/dismissSuggestion</code> replaces the query string and the
+      cursor never reaches the server. The e2e caught that; reading the markup did not.
+    </p>
+  </div>
+
+  <div class="standing">
     <b>The rule this whole page follows</b>
     <p>
       <b>Nothing is dropped. Everything is folded.</b> A cap removes claims and lies about the total;
@@ -464,10 +479,11 @@ export function <b>pageOfGroups</b>(
               between two members working the same import.</td>
           </tr>
           <tr>
-            <td class="k"><code>…?review&amp;person=<i>id</i></code></td>
+            <td class="k"><code>/contacts/&lt;id&gt;?review</code></td>
             <td>One person's claims, all of them</td>
-            <td>Where fold 2 leads. Also what the person page's own <i>Check relationships</i>
-              already produces — one screen, reached two ways.</td>
+            <td>Where fold 2 leads. Drawn as a <code>?person=</code> view inside Settings; built
+              as the person page's own <i>Check relationships</i> panel, which already does
+              exactly this — one screen, reached two ways.</td>
           </tr>
           <tr>
             <td class="k"><code>…?review&amp;q=<i>text</i></code></td>
@@ -665,7 +681,9 @@ export function <b>pageOfGroups</b>(
       <code>docs/concepts/relationship-review-concept.html</code> · rules and prose in
       <code>docs/concepts/relationship-suggestions.md</code> §6.3–6.6 · engine in
       <code>src/lib/suggestions/</code>, rows in
-      <code>src/lib/components/KinSuggestions.svelte</code>. Status: proposed, not built.
+      <code>src/lib/components/KinSuggestions.svelte</code>, folds in
+      <code>src/lib/suggestions/paging.ts</code> and
+      <code>src/lib/relationships/review-url.ts</code>. Status: built (docs/02 §2.4.1).
     </p>
   </section>
 </div>

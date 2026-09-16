@@ -468,6 +468,15 @@ tables, fully unit-testable (test-first).
   household. Anyone's check is scoped to their own graph, so a private person is never named to
   someone who may not see them.
 
+- **Shipped:** the list **folds rather than truncates**. There is no cap on what a check finds
+  (docs/04 §4.9), so the screen carries whatever a large import produces: ten people to a page,
+  five claims per person with the remainder named and one link to that person's own panel for
+  the rest, and the declined log on its own page once it outgrows the drawer. Every count in
+  the header describes the household and only the range describes the page, so a long list is
+  honest about how much is left. *Find a person* narrows it to one family, and an answer returns
+  to the page and search it was given on — a list that loses your place on every answer is a
+  list nobody finishes.
+
 A broader catalogue of what else could be proposed — the other parent, surname and address
 prefill, consistency warnings — and the rule set behind it is drafted in
 `docs/concepts/relationship-suggestions.md`, with the module layout and PR slicing in
@@ -477,7 +486,7 @@ concept). The household screen was drawn first in
 `docs/concepts/relationship-review-concept.html`; how that screen stays workable once a
 household carries hundreds of claims — paging by person, folding an oversized group, and
 counts that always describe the household rather than the page — is drawn in
-`docs/concepts/relationship-review-at-scale.html` (proposed, not built).
+`docs/concepts/relationship-review-at-scale.html`, and built.
 
 ### 2.4.2 Circles & shared contexts **[M2]**
 

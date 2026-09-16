@@ -2,6 +2,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { RETURN_TO_FIELD } from '$lib/relationships/review-url';
 	import { TYPE_KEY_FOR_RELATION } from '$lib/relationships/type-keys';
 
 	/*
@@ -44,8 +45,26 @@
 		propose?: string | null;
 		/** The member behind a dismissal, for the trail on a declined row. */
 		nameOfMember?: (id: string) => string | null;
+		/**
+		 * Whether the declined drawer starts open. A page whose whole purpose *is* the log
+		 * (docs/concepts/relationship-review-at-scale.html, fold 3) would otherwise open on a
+		 * closed disclosure with nothing else on it.
+		 */
+		declinedOpen?: boolean;
+		/**
+		 * The review location to come back to, as a query string. A form action is resolved
+		 * against the current URL, so `?/dismissSuggestion` would drop the search and the cursor
+		 * and answer one claim at the cost of the reader's place in the list.
+		 */
+		returnTo?: string | null;
 	}
-	let { suggestions, propose = null, nameOfMember = () => null }: Props = $props();
+	let {
+		suggestions,
+		propose = null,
+		nameOfMember = () => null,
+		declinedOpen = false,
+		returnTo = null
+	}: Props = $props();
 
 	const i18n = useI18n();
 	const { t } = i18n;
@@ -97,12 +116,14 @@
 					<input type="hidden" name="toId" value={suggestion.toId} />
 					<input type="hidden" name="typeId" value={TYPE_KEY_FOR_RELATION[suggestion.relation]} />
 					{#if propose}<input type="hidden" name="propose" value={propose} />{/if}
+					{#if returnTo}<input type="hidden" name={RETURN_TO_FIELD} value={returnTo} />{/if}
 					<Button variant="primary" size="sm">{t('contact.relationships.accept')}</Button>
 				</form>
 				<form method="POST" action="?/dismissSuggestion">
 					<input type="hidden" name="relation" value={suggestion.relation} />
 					<input type="hidden" name="fromId" value={suggestion.fromId} />
 					<input type="hidden" name="toId" value={suggestion.toId} />
+					{#if returnTo}<input type="hidden" name={RETURN_TO_FIELD} value={returnTo} />{/if}
 					<Button variant="danger" size="sm">{t('contact.relationships.decline')}</Button>
 				</form>
 			</span>
@@ -132,7 +153,7 @@
 	the member and the day on it, and *Ask again* puts the claim back in front of the household.
 -->
 {#if declined.length > 0}
-	<details class="mt-1" data-testid="kin-declined">
+	<details class="mt-1" open={declinedOpen} data-testid="kin-declined">
 		<summary class="cursor-pointer text-sm text-fg-subtle hover:text-fg">
 			{t('contact.relationships.declinedCount', { count: declined.length })}
 		</summary>
@@ -147,6 +168,7 @@
 						<input type="hidden" name="relation" value={suggestion.relation} />
 						<input type="hidden" name="fromId" value={suggestion.fromId} />
 						<input type="hidden" name="toId" value={suggestion.toId} />
+						{#if returnTo}<input type="hidden" name={RETURN_TO_FIELD} value={returnTo} />{/if}
 						<Button variant="ghost" size="sm">{t('contact.relationships.askAgain')}</Button>
 					</form>
 				</li>
