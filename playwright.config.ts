@@ -36,7 +36,8 @@ const SETUP_SPEC = /auth\.setup\.ts$/;
  * This is the suspect, not a proven cause. `--disable-gpu` was the previous one and was wrong:
  * the crash survived it unchanged, down to the address.
  */
-const NO_SERVICE_WORKER = 'block' as const;
+// EXPERIMENT ONLY (tmp/e2e-sw-ab): the A/B control knob. Never merged.
+const NO_SERVICE_WORKER = (process.env.E2E_SERVICE_WORKERS ?? 'block') as 'block' | 'allow';
 
 export default defineConfig({
 	testDir: 'e2e',
