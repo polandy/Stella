@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, openPerson, pickPerson, signIn } from './app';
+import { openPerson, pickPerson, signIn } from './app';
+import { LINK, seedHousehold } from './seed';
 
 /*
  * Derived kinship and propagation suggestions (docs/02 §2.4.1). Written after the flow was
@@ -14,16 +15,6 @@ import { addPerson, openPerson, pickPerson, signIn } from './app';
  */
 async function openPeopleTab(page: Page, name: RegExp): Promise<void> {
 	await openPerson(page, name);
-}
-
-/** Enters one link from the open person's page, the way the form is used by hand. */
-async function addLink(page: Page, type: string, other: string): Promise<void> {
-	await page.getByRole('button', { name: 'Add relationship' }).click();
-	const form = page.locator('form[action="?/addRelationship"]');
-	await form.locator('select[name=typeChoice]').selectOption({ label: type });
-	await pickPerson(form.getByLabel('Person'), other);
-	await form.getByRole('button', { name: 'Add', exact: true }).click();
-	await expect(page.locator('#section-relationships')).toContainText(other);
 }
 
 test.beforeEach(async ({ page }) => {
@@ -62,24 +53,31 @@ test('says nothing it cannot back: no derived relatives for someone with no fami
  * The propagation flow needs a family with room for the parent being added: every Brunner
  * child already has the two parents Stella allows (docs/02 §2.4), and a claim the write would
  * refuse is not offered at all. So this case brings its own siblings — names the demo
- * household does not use, on a page nothing else in the suite opens.
+ * household does not use — seeded through the archive, since they are the setting and the
+ * parent link entered below is the step under test.
  */
 test('offers the links a new parent implies, and writes only the one confirmed', async ({
 	page
 }) => {
-	await addPerson(page, 'Rahel', 'Ammann');
-	await addPerson(page, 'Silvan', 'Ammann');
-	await addPerson(page, 'Thea', 'Ammann');
+	await seedHousehold(
+		page,
+		['Rahel Ammann', 'Silvan Ammann', 'Thea Ammann'],
+		[
+			{ from: 'Rahel Ammann', to: 'Silvan Ammann', type: LINK.siblingOf },
+			{ from: 'Rahel Ammann', to: 'Thea Ammann', type: LINK.siblingOf }
+		]
+	);
 
-	// Three siblings with no parents on record yet.
+	// The one parent, entered by hand from Rahel's page.
 	await openPeopleTab(page, /Rahel Ammann/);
-	await addLink(page, 'Sibling of', 'Silvan Ammann');
-	await addLink(page, 'Sibling of', 'Thea Ammann');
+	await page.getByRole('button', { name: 'Add relationship' }).click();
+	const editor = page.locator('form[action="?/addRelationship"]');
+	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Child of' });
+	await pickPerson(editor.getByLabel('Person'), 'Vreni Zbinden');
+	await editor.getByRole('button', { name: 'Add', exact: true }).click();
+	await expect(page.locator('#section-relationships')).toContainText('Vreni Zbinden');
 
-	// The one parent, entered from Rahel's page.
-	await addLink(page, 'Child of', 'Vreni Zbinden');
-
-	// Rahel's sisters and brother follow from it, each with the reason and its own confirmation.
+	// Rahel's sister and brother follow from it, each with the reason and its own confirmation.
 	const proposals = page.getByTestId('kin-proposals');
 	await expect(proposals).toContainText('Vreni Zbinden is a parent of Silvan Ammann');
 	await expect(proposals).toContainText('Silvan Ammann is Rahel Ammann’s sibling.');
@@ -95,8 +93,7 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 	await expect(page.getByTestId('kin-proposals')).not.toContainText('Silvan Ammann');
 	await expect(page.getByTestId('kin-proposals')).toContainText('Thea Ammann');
 	await openPeopleTab(page, /Silvan Ammann/);
-	const stored = page.locator('#section-relationships ul').first();
-	await expect(stored).toContainText('Vreni Zbinden');
+	await expect(page.locator('#section-relationships')).toContainText('Vreni Zbinden');
 	await openPeopleTab(page, /Thea Ammann/);
 	await expect(page.locator('#section-relationships')).not.toContainText('Vreni Zbinden');
 });
