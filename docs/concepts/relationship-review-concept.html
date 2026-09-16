@@ -235,13 +235,15 @@
   </header>
 
   <div class="standing">
-    <b>Where this sits after #110 (16 September 2026)</b>
+    <b>Built — this is what shipped</b>
     <p>
       Shipped: the <code>person-reviewed</code> trigger, three answers per row (accept / decline /
       leave), <code>suggestion_dismissal</code> keyed by the claim rather than the rule, the declined
       drawer with <i>Offer again</i>, and <code>KinSuggestions.svelte</code> as the one row component
-      for both the <i>Also true?</i> block and the review panel. Not shipped, and drawn here:
-      running that review across every visible person, and where the result lives.
+      for both the <i>Also true?</i> block and the review panel. Drawn here and then built on the
+      same branch: the household-wide pass at <i>Settings → Check relationships</i>, on the
+      <code>household-reviewed</code> trigger. The built screen follows this drawing except where
+      noted below.
     </p>
   </div>
 
@@ -540,7 +542,9 @@
       Concept for <code>docs/02-features.md</code> §2.4.1 · prose for this screen in
       <code>docs/concepts/relationship-suggestions.md</code> §6.6, rules in §6.4–6.5 · engine in
       <code>src/lib/suggestions/</code> · rows in <code>src/lib/components/KinSuggestions.svelte</code>.
-      Status: mockup, not implemented.
+      Status: built (docs/02 §2.4.1). The batch progress bar and the confidence filter are not in
+      the built screen — one form action answers in a single request, and both shipped rules are
+      <i>certain</i>, so there is nothing to filter yet.
     </p>
   </section>
 </div>

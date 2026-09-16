@@ -44,6 +44,12 @@ export interface SuggestionView extends KinshipGraph {
 	 * sister's father is my father" is a claim about *me* that no link of mine mentions.
 	 */
 	primaryLinksAround(personId: string): PrimaryLink[];
+	/**
+	 * Every primary link in the view, for a household-wide pass (§6.6), in the same fixed order
+	 * as `primaryLinksAround`. The view is already scoped to one viewer, so "every" means every
+	 * link this viewer may see and never more.
+	 */
+	allPrimaryLinks(): PrimaryLink[];
 	/** The household's answer to this claim, or null while it stands unanswered (§6.4). */
 	answerTo: AnswerTo;
 }
@@ -61,12 +67,16 @@ function link(map: Map<string, Set<string>>, key: string, value: string): void {
 /**
  * The primary links standing between anyone in `people` and anyone at all, in a fixed order —
  * parents before siblings before partners — so a review lists the same claims in the same
- * order on every run.
+ * order on every run. `people` of `null` means *everyone*, which is the household-wide pass.
  */
-function primaryLinksTouching(graph: KinshipGraph, people: ReadonlySet<string>): PrimaryLink[] {
+function primaryLinksTouching(
+	graph: KinshipGraph,
+	people: ReadonlySet<string> | null
+): PrimaryLink[] {
+	const touches = (...ends: string[]) => people === null || ends.some((end) => people.has(end));
 	const found: PrimaryLink[] = [];
 	for (const { parentId, childId } of graph.parentEdges) {
-		if (people.has(parentId) || people.has(childId)) {
+		if (touches(parentId, childId)) {
 			found.push({ kind: 'parent', fromId: parentId, toId: childId });
 		}
 	}
@@ -75,7 +85,7 @@ function primaryLinksTouching(graph: KinshipGraph, people: ReadonlySet<string>):
 		['partner', graph.partnerEdges]
 	] as const) {
 		for (const { a, b } of edges) {
-			if (people.has(a) || people.has(b)) found.push({ kind, fromId: a, toId: b });
+			if (touches(a, b)) found.push({ kind, fromId: a, toId: b });
 		}
 	}
 	return found;
@@ -121,6 +131,7 @@ export function buildView(
 		has: (personId) => names.has(personId),
 		primaryLinksAround: (personId) =>
 			primaryLinksTouching(graph, new Set([personId, ...(siblings.get(personId) ?? EMPTY)])),
+		allPrimaryLinks: () => primaryLinksTouching(graph, null),
 		answerTo
 	};
 }

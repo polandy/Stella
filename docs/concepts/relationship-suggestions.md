@@ -320,9 +320,20 @@ when it was declined. The safe reading is that a *no* stays a *no* until withdra
 tree that re-litigates settled answers is worse than one that forgets a new argument — and
 *show dismissed* is what keeps the withdrawal within reach.
 
-### 6.6 A household-wide pass — concept, not shipped
+### 6.6 A household-wide pass — shipped
 
-Drawn, clickable, in `docs/concepts/relationship-review-concept.html`.
+Drawn first, clickable, in `docs/concepts/relationship-review-concept.html`; built at
+*Settings → Check relationships* (docs/02 §2.4.1). What the section decided, and what it
+deliberately left alone, is recorded below — the open questions were answered by building
+the smallest thing that works:
+
+- **One form action, no paging and no background job.** One graph read, one evaluation.
+  Paging is the fix if a real household makes it slow, and nobody has measured one yet.
+- **A run is not stored** (docs/04 §4.9); only the answers are.
+- **Every confidence is listed.** L1 and L2 are both `certain`, so the *certain-only first
+  pass* argued for below costs nothing today — it becomes a real decision the day L3 lands,
+  and it is the reason there is still no bulk accept.
+- **Settings is the entry point**, for every member rather than the admin alone.
 
 §6.5 asks about **one** person. The obvious next question is a run over the whole household
 from Settings, and it is a different design rather than the same panel with a wider `where`:

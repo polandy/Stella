@@ -47,10 +47,16 @@ export type Confidence = 'certain' | 'likely' | 'possible';
  * around this person right now. It is what makes the rule set reachable at all — every other
  * trigger only exists in the instant after a link is stored
  * (docs/concepts/relationship-suggestions.md §6.5).
+ *
+ * `household-reviewed` widens that ask to everyone the viewer can see (§6.6). It is a
+ * different question rather than a wider `where`: a per-person review only ever reaches the
+ * people somebody thought to open, and a household that imported its links has opened none of
+ * them.
  */
 export type Trigger =
 	| { kind: 'link-stored'; link: PrimaryLink }
-	| { kind: 'person-reviewed'; subjectId: string };
+	| { kind: 'person-reviewed'; subjectId: string }
+	| { kind: 'household-reviewed' };
 
 /** A link Stella offers to store, with the sentence explaining why it is offered. */
 export interface LinkSuggestion {

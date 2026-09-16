@@ -21,7 +21,8 @@ import type { SuggestionView } from './view';
 /** Which rules answer which trigger. A new rule is a row here, not an edit to a shared switch. */
 const RULES: Record<Trigger['kind'], readonly Rule[]> = {
 	'link-stored': [L1, L2],
-	'person-reviewed': [L1, L2]
+	'person-reviewed': [L1, L2],
+	'household-reviewed': [L1, L2]
 };
 
 /** Closeness of a claim to certainty, most certain first — the order suggestions are shown in. */

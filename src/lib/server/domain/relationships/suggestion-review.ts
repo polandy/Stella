@@ -111,6 +111,29 @@ export async function reviewPerson(
 }
 
 /**
+ * What stands across the whole household right now (§6.6) — the same question `reviewPerson`
+ * asks, about everyone the viewer may see.
+ *
+ * It exists because a per-person review only ever reaches the people somebody thought to open,
+ * and a household that entered or imported its links years ago has opened none of them. One
+ * graph read and one evaluation answer for every family at once; the engine's
+ * `oneRowPerClaim` is what keeps a claim reached from both ends of a sibling group a single
+ * question.
+ */
+export async function reviewHousehold(
+	deps: SuggestionReviewSource,
+	viewer: Viewer,
+	options: { includeDismissed?: boolean } = {}
+): Promise<ProposedLink[]> {
+	const [graph, dismissals] = await Promise.all([
+		deps.relationships.loadKinshipGraphVisibleTo(viewer),
+		deps.dismissals.listForHousehold(viewer)
+	]);
+	const view = buildView(graph, dismissals);
+	return nameProposals(evaluate({ kind: 'household-reviewed' }, view, options), view.nameOf);
+}
+
+/**
  * Decline a claim, so it stops being offered however a rule reaches it later (§6.4).
  *
  * Both people are checked against the graph this viewer may see: a hand-written form can only

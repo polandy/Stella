@@ -79,8 +79,11 @@ import {
 	readKinship
 } from '$lib/server/domain/relationships/relationships';
 import {
-	dismissSuggestion,
-	restoreSuggestion,
+	acceptClaim,
+	declineClaim,
+	restoreClaim
+} from '$lib/server/relationships/suggestion-answers';
+import {
 	reviewPerson,
 	type ProposedLink
 } from '$lib/server/domain/relationships/suggestion-review';
@@ -693,39 +696,12 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
-		const parsed = v.safeParse(AddProposedSchema, {
-			fromId: form.get('fromId'),
-			toId: form.get('toId'),
-			typeId: form.get('typeId'),
-			propose: form.get('propose') || undefined
-		});
-		if (!parsed.success) return fail(400, { error: say(locals, 'errors.relationship.badSuggestion') });
+		const error = await acceptClaim(locals, viewer, form);
+		if (error) return fail(error === say(locals, 'errors.relationship.contradiction') ? 409 : 400, { error });
 
-		const [from, to] = await Promise.all([
-			getContact(getContactDeps(), viewer, parsed.output.fromId),
-			getContact(getContactDeps(), viewer, parsed.output.toId)
-		]);
-		if (!from || !to) return fail(400, { error: say(locals, 'errors.person.notFound') });
-
-		try {
-			await createRelationship(getRelationshipDeps(), viewer, {
-				fromContactId: parsed.output.fromId,
-				toContactId: parsed.output.toId,
-				typeId: parsed.output.typeId,
-				description: null
-			});
-		} catch (err) {
-			// A suggestion the household already contradicted says why; a duplicate is silent,
-			// since the link it offered is there either way.
-			if (err instanceof ContradictoryRelationshipError) {
-				return fail(409, { error: say(locals, 'errors.relationship.contradiction') });
-			}
-			if (!(err instanceof DuplicateRelationshipError)) {
-				return fail(400, { error: say(locals, 'errors.relationship.couldNotAdd') });
-			}
-		}
-
-		const back = parsed.output.propose ? `?propose=${parsed.output.propose}` : '';
+		// The pointer the block hangs on, so confirming one row keeps the others on screen.
+		const propose = form.get('propose');
+		const back = typeof propose === 'string' && propose ? `?propose=${propose}` : '';
 		throw redirect(303, `/contacts/${params.id}${back}#relationships`);
 	},
 
@@ -738,12 +714,8 @@ export const actions: Actions = {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
-		const answer = await parseAnswer(request);
-		if (!answer.success) return fail(400, { error: say(locals, 'errors.relationship.badSuggestion') });
-
-		if (!(await dismissSuggestion(getSuggestionReviewDeps(), viewer, answer.output))) {
-			return fail(400, { error: say(locals, 'errors.person.notFound') });
-		}
+		const error = await declineClaim(locals, viewer, await request.formData());
+		if (error) return fail(400, { error });
 		throw redirect(303, reviewPath(params.id));
 	},
 
@@ -752,11 +724,8 @@ export const actions: Actions = {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
-		const answer = await parseAnswer(request);
-		if (!answer.success) return fail(400, { error: say(locals, 'errors.relationship.badSuggestion') });
-
-		// Nothing to take back is not a failure worth a message: the claim is offered either way.
-		await restoreSuggestion(getSuggestionReviewDeps(), viewer, answer.output);
+		const error = await restoreClaim(locals, viewer, await request.formData());
+		if (error) return fail(400, { error });
 		throw redirect(303, reviewPath(params.id));
 	},
 

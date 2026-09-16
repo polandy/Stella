@@ -40,6 +40,8 @@ const stored = (kind: 'parent' | 'sibling' | 'partner', fromId: string, toId: st
 
 const reviewed = (subjectId: string): Trigger => ({ kind: 'person-reviewed', subjectId });
 
+const household = (): Trigger => ({ kind: 'household-reviewed' });
+
 /** Suggestions as `[ruleId, relation, from, to]`, ignoring the sentence. */
 const shape = (found: { ruleId: string; relation: string; fromId: string; toId: string }[]) =>
 	found.map((s) => [s.ruleId, s.relation, s.fromId, s.toId]);
@@ -161,5 +163,46 @@ describe('a person-scoped review runs the same rules over the links already ther
 	it('says nothing about someone who stands in no primary link', () => {
 		expect(L1(reviewed('kurt'), family())).toEqual([]);
 		expect(L2(reviewed('kurt'), family())).toEqual([]);
+	});
+});
+
+/*
+ * The household pass (docs/concepts/relationship-suggestions.md §6.6). Same rules again —
+ * what changes is the scope: every primary link in the graph rather than the ones around one
+ * person. It is the only scope that reaches a family nobody has thought to open.
+ */
+describe('a household-wide pass runs the same rules over every link there is', () => {
+	/** Two families that share nobody: the Meiers, and the Freis two profiles away. */
+	const twoFamilies = () =>
+		view({
+			people: [p('bettina', 'Bettina'), p('hans', 'Hans'), p('lisa', 'Lisa'), p('walter', 'Walter'), p('jan', 'Jan'), p('nora', 'Nora')],
+			parentEdges: [
+				{ parentId: 'bettina', childId: 'hans' },
+				{ parentId: 'walter', childId: 'jan' }
+			],
+			siblingEdges: [
+				{ a: 'hans', b: 'lisa' },
+				{ a: 'jan', b: 'nora' }
+			]
+		});
+
+	/*
+	 * Neither family mentions anyone in the other, so no person-scoped review reaches both: a
+	 * member would have to open a profile in each, which is exactly what nobody does.
+	 */
+	it('reaches claims in families that share no one', () => {
+		expect(shape(L1(household(), twoFamilies()))).toEqual([
+			['L1', 'parent', 'bettina', 'lisa'],
+			['L1', 'parent', 'walter', 'nora']
+		]);
+		expect(shape(L2(household(), twoFamilies()))).toEqual([
+			['L2', 'parent', 'bettina', 'lisa'],
+			['L2', 'parent', 'walter', 'nora']
+		]);
+	});
+
+	it('says nothing when no primary link is stored at all', () => {
+		expect(L1(household(), view())).toEqual([]);
+		expect(L2(household(), view())).toEqual([]);
 	});
 });

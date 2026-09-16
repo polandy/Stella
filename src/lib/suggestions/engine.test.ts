@@ -281,3 +281,50 @@ describe('evaluate', () => {
 		});
 	});
 });
+
+/*
+ * The household pass (docs/concepts/relationship-suggestions.md §6.6). The suppressions and
+ * the one-row-per-claim rule matter more here than anywhere else: a household run reaches the
+ * same claim from both ends of every sibling group, so without them the list would carry each
+ * question two or three times.
+ */
+describe('evaluate, over the whole household', () => {
+	const household: Trigger = { kind: 'household-reviewed' };
+
+	it('asks about every family at once, each claim exactly once', () => {
+		const v = view({
+			parentEdges: [
+				{ parentId: 'bettina', childId: 'hans' },
+				{ parentId: 'kurt', childId: 'nina' }
+			],
+			siblingEdges: [
+				{ a: 'hans', b: 'lisa' },
+				{ a: 'nina', b: 'kurt' }
+			]
+		});
+		// Bettina/Hans and Kurt/Nina are stored, Kurt/Kurt is a self-claim, and Kurt/Nina is
+		// reached by both rules — one row survives, for the one claim that is news.
+		expect(shape(household, v)).toEqual([['L1', 'parent', 'bettina', 'lisa']]);
+	});
+
+	it('leaves out what the household declined, and marks it when asked', () => {
+		const declined: Dismissal[] = [
+			{ relation: 'parent', pairKey: pairKey('bettina', 'lisa'), dismissedAt: 42, dismissedBy: 'u1' }
+		];
+		const v = view(
+			{
+				parentEdges: [{ parentId: 'bettina', childId: 'hans' }],
+				siblingEdges: [{ a: 'hans', b: 'lisa' }]
+			},
+			declined
+		);
+		expect(evaluate(household, v)).toEqual([]);
+		expect(evaluate(household, v, { includeDismissed: true }).map((s) => s.dismissed)).toEqual([
+			{ at: 42, by: 'u1' }
+		]);
+	});
+
+	it('says nothing about a household with no primary links', () => {
+		expect(evaluate(household, view())).toEqual([]);
+	});
+});
