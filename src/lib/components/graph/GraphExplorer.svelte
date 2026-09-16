@@ -308,6 +308,13 @@
 
 	let themeObserver: MutationObserver | null = null;
 	let colorScheme: MediaQueryList | null = null;
+	/*
+	 * Mounting is asynchronous — the ego network, a traced chain, and the ~400 KB engine are all
+	 * awaited — and a page can be left before any of that lands. The component is then already
+	 * destroyed when the canvas would be built, so the teardown has to be remembered: otherwise
+	 * a live Cytoscape instance is left animating against a container nobody can see any more.
+	 */
+	let disposed = false;
 
 	onMount(async () => {
 		// Build the initial ego view around the centre from the in-memory snapshot.
@@ -326,7 +333,9 @@
 			pathMode = true;
 		}
 
-		controller = await createExplorer({
+		if (disposed) return;
+
+		const explorer = await createExplorer({
 			container,
 			elements: toCytoscapeElements(model, { centerId: centerId ?? undefined, edgeLabel }),
 			stylesheet: stylesheet(),
@@ -334,6 +343,11 @@
 			onTapNode,
 			onTapBackground
 		});
+		if (disposed) {
+			explorer.destroy();
+			return;
+		}
+		controller = explorer;
 		controller.setVisible(
 			new Set(visible.nodes.map((n) => n.id)),
 			new Set(visible.edges.map((e) => e.id))
@@ -351,6 +365,7 @@
 	});
 
 	onDestroy(() => {
+		disposed = true;
 		themeObserver?.disconnect();
 		colorScheme?.removeEventListener('change', retheme);
 		controller?.destroy();

@@ -1,4 +1,4 @@
-import type { Core, CytoscapeOptions, ElementDefinition, LayoutOptions } from 'cytoscape';
+import type { Core, CytoscapeOptions, ElementDefinition, EventObject, Layouts } from 'cytoscape';
 import type { CyElement } from './elements';
 import type { CyStyle } from './stylesheet';
 
@@ -15,11 +15,15 @@ export interface ExplorerHandlers {
 	onTapBackground: () => void;
 }
 
-export interface ExplorerOptions extends ExplorerHandlers {
+/** What the controller needs beyond the core; the core already carries its own container. */
+export interface ControllerOptions extends ExplorerHandlers {
+	reducedMotion: boolean;
+}
+
+export interface ExplorerOptions extends ControllerOptions {
 	container: HTMLElement;
 	elements: CyElement[];
 	stylesheet: CyStyle[];
-	reducedMotion: boolean;
 }
 
 export interface ExplorerController {
@@ -35,6 +39,7 @@ export interface ExplorerController {
 	focus(nodeId: string): void;
 	/** Re-theme the canvas from a freshly-resolved palette. */
 	setStylesheet(stylesheet: CyStyle[]): void;
+	/** Tear the canvas down. Idempotent, and every other method no-ops afterwards. */
 	destroy(): void;
 }
 
@@ -47,7 +52,12 @@ const LAYOUT_STATE_ATTRIBUTE = 'data-layout';
 const SETTLING = 'settling';
 const SETTLED = 'settled';
 
-function layout(reducedMotion: boolean): LayoutOptions {
+/** Cytoscape hands the layout instance along with its own lifecycle events. */
+interface LayoutEvent extends EventObject {
+	layout: Layouts;
+}
+
+function layout(reducedMotion: boolean) {
 	return {
 		name: 'cose',
 		animate: !reducedMotion,
@@ -57,26 +67,33 @@ function layout(reducedMotion: boolean): LayoutOptions {
 		nodeRepulsion: () => 8000,
 		idealEdgeLength: () => 90,
 		nodeDimensionsIncludeLabels: true
-	} as LayoutOptions;
+	};
 }
 
-export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerController> {
-	const cytoscape = (await import('cytoscape')).default;
+/**
+ * The controller over an existing core. Split from {@link createExplorer} so the lifecycle can
+ * be exercised against a headless core: what matters here is not the drawing but that nothing
+ * touches the core once it is gone.
+ */
+export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerController {
+	const container = cy.container();
+	const setLayoutState = (state: string) => container?.setAttribute(LAYOUT_STATE_ATTRIBUTE, state);
 
-	const cy: Core = cytoscape({
-		container: opts.container,
-		elements: opts.elements as unknown as ElementDefinition[],
-		style: opts.stylesheet as unknown as CytoscapeOptions['style'],
-		layout: layout(opts.reducedMotion),
-		minZoom: 0.2,
-		maxZoom: 2.5,
-		wheelSensitivity: 0.25,
-		boxSelectionEnabled: false
+	// The layout currently moving the nodes, if any. Destroying the core does not stop a
+	// layout: its next frame would run against a core whose renderer is already gone, throw
+	// there, and leave a half-demolished canvas behind — which is what a page navigated away
+	// from mid-layout used to do.
+	let running: Layouts | null = null;
+
+	setLayoutState(SETTLING);
+	cy.on('layoutstart', (e) => {
+		running = (e as LayoutEvent).layout;
+		setLayoutState(SETTLING);
 	});
-
-	opts.container.setAttribute(LAYOUT_STATE_ATTRIBUTE, SETTLING);
-	cy.on('layoutstart', () => opts.container.setAttribute(LAYOUT_STATE_ATTRIBUTE, SETTLING));
-	cy.on('layoutstop', () => opts.container.setAttribute(LAYOUT_STATE_ATTRIBUTE, SETTLED));
+	cy.on('layoutstop', () => {
+		running = null;
+		setLayoutState(SETTLED);
+	});
 
 	cy.on('tap', 'node', (e) => opts.onTapNode(e.target.id()));
 	cy.on('tap', (e) => {
@@ -84,9 +101,18 @@ export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerCon
 	});
 
 	const duration = opts.reducedMotion ? 0 : 350;
+	/** Nothing reaches a torn-down core: the calls still in flight at teardown fall away here. */
+	const alive = () => !cy.destroyed();
+	const relayout = () => cy.layout(layout(opts.reducedMotion) as Parameters<Core['layout']>[0]).run();
+
+	// The first arrangement runs here rather than through the constructor's `layout` option,
+	// which lays out before there is anywhere to register `layoutstart` — and so before the
+	// running layout could be caught and stopped again.
+	relayout();
 
 	return {
 		setGraph(elements) {
+			if (!alive()) return;
 			const incoming = new Set(elements.map((e) => e.data.id as string));
 			let changed = false;
 			cy.batch(() => {
@@ -106,10 +132,11 @@ export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerCon
 			// Only when the element set actually moved. The component pushes the same set again
 			// on mount, and re-laying out for that threw every node across the canvas a second
 			// time — a settled graph that jumps for no reason the viewer can see.
-			if (changed) cy.layout(layout(opts.reducedMotion)).run();
+			if (changed) relayout();
 		},
 
 		setVisible(nodeIds, edgeIds) {
+			if (!alive()) return;
 			cy.batch(() => {
 				cy.nodes().forEach((n) => {
 					n.toggleClass('filtered-out', !nodeIds.has(n.id()));
@@ -121,6 +148,7 @@ export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerCon
 		},
 
 		highlightNeighborhood(nodeId) {
+			if (!alive()) return;
 			cy.elements().removeClass('faded highlight selected onpath');
 			if (!nodeId) return;
 			const node = cy.$id(nodeId);
@@ -132,6 +160,7 @@ export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerCon
 		},
 
 		highlightPath(nodeIds) {
+			if (!alive()) return;
 			cy.elements().removeClass('faded highlight selected onpath');
 			if (!nodeIds || nodeIds.length === 0) return;
 			let path = cy.collection();
@@ -145,17 +174,39 @@ export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerCon
 		},
 
 		focus(nodeId) {
+			if (!alive()) return;
 			const node = cy.$id(nodeId);
 			if (node.empty()) return;
 			cy.animate({ center: { eles: node }, zoom: 1.3 }, { duration });
 		},
 
 		setStylesheet(stylesheet) {
+			if (!alive()) return;
 			cy.style(stylesheet as unknown as Parameters<typeof cy.style>[0]);
 		},
 
 		destroy() {
+			if (!alive()) return;
+			running?.stop();
+			running = null;
+			cy.elements().stop(); // the focus() animation, which outlives the page otherwise
 			cy.destroy();
 		}
 	};
+}
+
+export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerController> {
+	const cytoscape = (await import('cytoscape')).default;
+
+	const cy: Core = cytoscape({
+		container: opts.container,
+		elements: opts.elements as unknown as ElementDefinition[],
+		style: opts.stylesheet as unknown as CytoscapeOptions['style'],
+		minZoom: 0.2,
+		maxZoom: 2.5,
+		wheelSensitivity: 0.25,
+		boxSelectionEnabled: false
+	});
+
+	return explorerFromCore(cy, opts);
 }
