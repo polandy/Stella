@@ -35,10 +35,11 @@ const SETUP_SPEC = /auth\.setup\.ts$/;
  *
  * Measured rather than guessed: shard 1 of `63c4e2a` was run eight times in one matrix, four
  * times with this setting and four times without. Two of the four unblocked runs crashed, with
- * the same five stack offsets as every crash before the fix; all four blocked runs passed. One
- * of those two crashes logged no Cytoscape activity at all, which is what rules out the graph
- * canvas — the `notify` error that accompanies some of these runs is a Cytoscape animation
- * frame outliving `destroy()`, a real bug but never this crash's cause.
+ * the same five stack offsets as every crash before the fix; all four blocked runs passed.
+ * Both arms ran the same graph specs, so whatever the canvas contributes, the service worker
+ * is what decides whether the browser survives. One of the two crashes carried no `notify`
+ * error at all, which is how we know that error — a Cytoscape animation frame outliving
+ * `destroy()`, fixed since in #109 — was never this crash's cause.
  *
  * `--disable-gpu` was the previous suspect and was wrong: the crash survived it unchanged,
  * down to the address. If this ever returns — a real PWA e2e spec would have to unblock the
