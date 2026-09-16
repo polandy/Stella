@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { returnedTo, reviewHref, reviewIsOpen, reviewLocationFrom, reviewQuery } from './review-url';
+import {
+	placeOf,
+	returnedTo,
+	reviewHref,
+	reviewIsOpen,
+	reviewLocationFrom,
+	reviewQuery
+} from './review-url';
 
 /*
  * The review's query string (docs/concepts/relationship-review-at-scale.html).
@@ -82,5 +89,26 @@ describe('the place an answer returns to', () => {
 			'/settings/relationships?review&q=x&after=y'
 		);
 		expect(returnedTo('https://elsewhere.example')).toBe('/settings/relationships?review');
+	});
+});
+
+describe('placeOf', () => {
+	/*
+	 * The log pages the household's answers and never filters them, so a `q` on its address
+	 * would describe a filter nothing applies — and would come back onto the list as if the
+	 * reader had searched for it.
+	 */
+	it('drops a search the declined log does not apply', () => {
+		expect(reviewHref(placeOf({ declined: true, query: 'Gerber' }))).toBe(
+			'/settings/relationships?review&declined'
+		);
+		expect(placeOf({ declined: true, query: 'Gerber', after: 'k' }).query).toBeUndefined();
+		expect(placeOf({ declined: true, after: 'k' }).after).toBe('k');
+	});
+
+	/* The list does use it, so there the place comes through untouched. */
+	it("leaves the list's own place alone", () => {
+		const at = { query: 'Gerber', after: 'k', before: null, declined: false };
+		expect(placeOf(at)).toBe(at);
 	});
 });

@@ -76,6 +76,17 @@ export function reviewLocationFrom(params: URLSearchParams): ReviewLocation {
 	};
 }
 
+/**
+ * The place with anything the fold in question does not use dropped.
+ *
+ * The declined log is household-wide history and takes no search — carrying the list's `q`
+ * onto it would put a filter in the address that nothing applies, and then hand it back to the
+ * list as if the reader had searched for it. Normalising here means a hand-typed one is dropped
+ * on the next click rather than quietly describing a list that was never filtered.
+ */
+export const placeOf = (at: ReviewLocation): ReviewLocation =>
+	at.declined ? { declined: true, after: at.after, before: at.before } : at;
+
 /** True when the reader has asked for the pass at all. Closed, the screen runs no rules. */
 export const reviewIsOpen = (params: URLSearchParams): boolean => params.has(REVIEW_PARAM);
 

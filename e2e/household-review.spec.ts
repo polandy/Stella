@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { CLAIMS_PER_GROUP } from '../src/lib/suggestions/paging';
 import { addPerson, openPerson, pickPerson, signIn } from './app';
 
 /*
@@ -201,7 +202,6 @@ test('folds a person carrying more claims than a group renders, and names what i
 	 * five, says how many it is holding back and links to the rest. Nothing is dropped: the
 	 * number in the fold is what the rules actually found, minus what is on the page.
 	 */
-	const CLAIMS_PER_GROUP = 5;
 	const f = family('Gerber', 'Alois', 'Fabio', 'Selina');
 	const parents = ['Alois', 'Brigitte', 'Cornelia', 'Damian', 'Edith', 'Fridolin', 'Gabriela'];
 

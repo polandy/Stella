@@ -10,6 +10,7 @@ import {
 } from '$lib/suggestions/paging';
 import {
 	RETURN_TO_FIELD,
+	placeOf,
 	returnedTo,
 	reviewHref,
 	reviewIsOpen,
@@ -122,7 +123,8 @@ export const load: PageServerLoad = async ({ locals, url }): Promise<ReviewData>
 	// Closed, the page costs a session lookup and nothing else: the rules run on request.
 	if (!reviewIsOpen(url.searchParams)) return NOTHING_CHECKED;
 
-	const at = reviewLocationFrom(url.searchParams);
+	// Normalised, so the log never carries the list's search into an address nothing filters by.
+	const at = placeOf(reviewLocationFrom(url.searchParams));
 	const [found, nameOfAuthor] = await Promise.all([
 		reviewHousehold(getSuggestionReviewDeps(), viewer, { includeDismissed: true }),
 		authorNames(getMemberDeps(), viewer.householdId)

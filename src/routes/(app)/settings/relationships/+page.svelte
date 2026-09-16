@@ -165,7 +165,7 @@
 					-->
 					{#if foldedAway(group) > 0}
 						<div
-							class="flex flex-wrap items-center gap-2 rounded-md border border-dashed border-border bg-bg-subtle px-3 py-2 text-sm text-fg-muted"
+							class="flex flex-wrap items-center gap-2 rounded-md border border-dashed border-border bg-bg-sunken px-3 py-2 text-sm text-fg-muted"
 							data-testid="kin-folded"
 						>
 							<span class="tabular-nums">
@@ -230,7 +230,7 @@
 				/>
 			{:else}
 				<a
-					href={reviewHref({ declined: true, query: data.query })}
+					href={reviewHref({ declined: true })}
 					class="flex items-center gap-1 text-sm text-link hover:underline"
 					data-testid="kin-declined-link"
 				>
