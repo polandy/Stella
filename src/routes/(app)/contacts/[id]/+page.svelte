@@ -35,6 +35,7 @@
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { isChoiceOfLink, relationshipTypeOptions } from '$lib/relationships/type-options';
 	import { exclusionFor, type Exclusion } from '$lib/relationships/exclusions';
+	import { firstPickable, groupByExclusion } from '$lib/relationships/picker-groups';
 	import type { RelationshipCategory } from '$lib/relationships/categories';
 	import { sinceDateFromBirth } from '$lib/relationships/since';
 	import type { SelectablePerson } from '$lib/people/select';
@@ -265,14 +266,19 @@
 			: (data.otherContacts.find((person) => person.id === contactId)?.displayName ?? '');
 	/*
 	 * The entry the form would post: the one that was picked, or — since the select is read
-	 * rather than bound — the first one, which is where an untouched select stands. Blocked,
-	 * the button goes with it, so a greyed-out entry cannot be submitted by pressing Add.
+	 * rather than bound — the first one that *can* be picked, which is where an untouched
+	 * control stands, disabled entries skipped. Refused, the button goes with it, so nothing
+	 * greyed out is submitted by pressing Add; and with every entry refused there is nothing
+	 * to stand on and it stays off.
 	 */
 	const blockedChoice = $derived.by(() => {
-		const chosen =
-			relationshipChoices.find((option) => option.value === relationshipChoice) ??
-			relationshipChoices[0];
-		return chosen ? exclusionOf(chosen, relationshipTargetId[0]) : null;
+		const forTarget = (option: (typeof relationshipChoices)[number]) =>
+			exclusionOf(option, relationshipTargetId[0]);
+		const picked = relationshipChoices.find((option) => option.value === relationshipChoice);
+		if (picked) return forTarget(picked);
+		return firstPickable(relationshipChoices, forTarget) === null && relationshipChoices.length > 0
+			? forTarget(relationshipChoices[0])
+			: null;
 	});
 	const suggestedSince = $derived.by(() => {
 		const chosen =
@@ -899,17 +905,29 @@
 												<!-- Both sides again, so a partner who became a spouse — or a generation
 												     entered the wrong way round — is one pick, not a re-entry (docs/02 §2.4). -->
 												<select name="typeChoice" class={INPUT}>
-													{#each relationshipTypeOptions(data.relationshipTypes) as option (option.value)}
-														{@const blocked = exclusionOf(option, rel.otherContactId, rel.id)}
-														<option
-															value={option.value}
-															selected={isChoiceOfLink(option, rel)}
-															disabled={blocked !== null}
-														>
-															{relationshipTypeLabel(t, option.type, option.side)}{blocked
-																? ` — ${exclusionLabel(t, blocked, nameOfContact)}`
-																: ''}
-														</option>
+													{#each groupByExclusion(relationshipChoices, (option) => exclusionOf(option, rel.otherContactId, rel.id)) as group (group.options[0].value)}
+														{#if group.exclusion}
+															<optgroup
+																label={t('relationships.blocked.group', {
+																	reason: exclusionLabel(t, group.exclusion, nameOfContact)
+																})}
+															>
+																{#each group.options as option (option.value)}
+																	<option value={option.value} disabled>
+																		{relationshipTypeLabel(t, option.type, option.side)}
+																	</option>
+																{/each}
+															</optgroup>
+														{:else}
+															{#each group.options as option (option.value)}
+																<option
+																	value={option.value}
+																	selected={isChoiceOfLink(option, rel)}
+																>
+																	{relationshipTypeLabel(t, option.type, option.side)}
+																</option>
+															{/each}
+														{/if}
 													{/each}
 												</select>
 											</label>
@@ -1062,13 +1080,26 @@
 										onchange={(event) => (relationshipChoice = event.currentTarget.value)}
 										class={INPUT}
 									>
-										{#each relationshipChoices as option (option.value)}
-											{@const blocked = exclusionOf(option, relationshipTargetId[0])}
-											<option value={option.value} disabled={blocked !== null}>
-												{relationshipTypeLabel(t, option.type, option.side)}{blocked
-													? ` — ${exclusionLabel(t, blocked, nameOfContact)}`
-													: ''}
-											</option>
+										{#each groupByExclusion(relationshipChoices, (option) => exclusionOf(option, relationshipTargetId[0])) as group (group.options[0].value)}
+											{#if group.exclusion}
+												<optgroup
+													label={t('relationships.blocked.group', {
+														reason: exclusionLabel(t, group.exclusion, nameOfContact)
+													})}
+												>
+													{#each group.options as option (option.value)}
+														<option value={option.value} disabled>
+															{relationshipTypeLabel(t, option.type, option.side)}
+														</option>
+													{/each}
+												</optgroup>
+											{:else}
+												{#each group.options as option (option.value)}
+													<option value={option.value}>
+														{relationshipTypeLabel(t, option.type, option.side)}
+													</option>
+												{/each}
+											{/if}
 										{/each}
 									</select>
 								</label>

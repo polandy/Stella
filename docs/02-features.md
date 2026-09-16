@@ -336,10 +336,14 @@ reciprocal** link.
     parent, and Stella ships no step- or adoptive-parent type to tell them apart. A household
     that really has a third to record corrects one of the two rather than adding to them.
 
-  The rules live in one pure place and are read twice: the picker **greys the entry out** with
-  the reason beside the label as soon as the other person is chosen — *"Spouse of — already
-  with Carl"*, *"Sibling of — already Godchild of Andy"* — so the refusal is visible before
-  anything is saved, and the use-case refuses
+  The rules live in one pure place and are read twice: the picker **greys the entries out** as
+  soon as the other person is chosen and puts the reason **once, above the run it refuses** —
+  *"Not possible — already Godchild of Andy Pollari"* over the family and romantic entries —
+  so the refusal is visible before anything is saved. The reason deliberately stays out of the
+  entry's own label: an entry reads "X of" and so does the link in the way, and the two side by
+  side ("Grandparent of — already Godchild of Andy Pollari") read as one sentence about the
+  entry rather than as a reason for it. The Add button follows the entry the control actually
+  stands on, which is the first *pickable* one, not the first one, and the use-case refuses
   the write on exactly the same reading, so a hand-written post gets the same answer as the
   form. Changing the **type** of an existing link is measured with that link left out, so a
   partner becoming a spouse is still one pick.

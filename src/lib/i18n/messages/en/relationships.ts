@@ -37,6 +37,8 @@ export const relationships = {
 	 * where the refusal at the write is a whole sentence saying what to do about it
 	 * (`errors.relationship.*`).
 	 */
+	/** The heading over a run of entries that cannot be picked, carrying the reason once. */
+	'relationships.blocked.group': (p: { reason: string }) => `Not possible — ${p.reason}`,
 	'relationships.blocked.alreadyTied': (p: { tie: string; name: string }) =>
 		`already ${p.tie} ${p.name}`,
 	/** For a refusal that names no link — the wording above is the one a reader should meet. */
