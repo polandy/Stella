@@ -31,8 +31,14 @@ const family = (parent: string, one: string, other: string): Family => ({
 /** The sentence the household screen should carry, once the links below are in place. */
 const claimOf = (f: Family) => `${f.parent} is a parent of ${f.other}`;
 
-const first = (name: string) => name.split(' ')[0]!;
-const add = (page: Page, name: string) => addPerson(page, first(name), name.split(' ')[1]!);
+const add = (page: Page, name: string) => addPerson(page, name.split(' ')[0]!, name.split(' ')[1]!);
+
+/**
+ * The sentence the rule gives for its claim: both people in full, read from the subject's side
+ * — *Ronja Ammann is Silvan Ammann's sibling* — which is the claim's direction rather than the
+ * one the links were entered in.
+ */
+const reasonOf = (f: Family) => `${f.other} is ${f.one}’s sibling.`;
 
 /** Fills the *Add relationship* form on the open person and submits it. */
 async function addLink(page: Page, type: string, person: string): Promise<void> {
@@ -67,6 +73,18 @@ async function checkEveryone(page: Page): Promise<void> {
 	await expect(page).toHaveURL(/\/settings\/relationships\?review/);
 }
 
+/**
+ * The declined drawer, open. `open` is set on the element by the browser rather than by Svelte,
+ * so it survives a client-side navigation — and a blind click on the summary would *close* a
+ * drawer that came back open. Asserting the state is what makes this step deterministic.
+ */
+async function openDeclined(page: Page) {
+	const drawer = page.getByTestId('kin-declined');
+	if ((await drawer.getAttribute('open')) === null) await drawer.locator('summary').click();
+	await expect(drawer).toHaveAttribute('open', '');
+	return drawer;
+}
+
 /** The one row this case is about, out of however many the household has. */
 const rowFor = (page: Page, f: Family) =>
 	page.getByTestId('kin-suggestion').filter({ hasText: claimOf(f) });
@@ -87,7 +105,7 @@ test('finds a claim from Settings that no member opened a profile for', async ({
 
 	await page.getByRole('link', { name: 'Check all relationships' }).click();
 	await expect(rowFor(page, f)).toContainText(claimOf(f));
-	await expect(rowFor(page, f)).toContainText(`${first(f.one)} is ${first(f.other)}’s sibling.`);
+	await expect(rowFor(page, f)).toContainText(reasonOf(f));
 
 	// Filed under the person it is about — the child, whose parents were in question — and that
 	// name links to their page.
@@ -105,17 +123,14 @@ test('declining on the household screen holds the no, and offering it again brin
 
 	// In the drawer, with who said no and when — and still gone after the rules run again,
 	// which is the whole point of writing the answer down.
-	const declined = page.getByTestId('kin-declined');
-	await declined.locator('summary').click();
+	const declined = await openDeclined(page);
 	const declinedRow = declined.getByRole('listitem').filter({ hasText: claimOf(f) });
 	await expect(declinedRow).toContainText(/declined on .+ by Demo Admin/);
 
 	await page.getByRole('link', { name: 'Check again' }).click();
 	await expect(rowFor(page, f)).toHaveCount(0);
 
-	await page.getByTestId('kin-declined').locator('summary').click();
-	await page
-		.getByTestId('kin-declined')
+	await (await openDeclined(page))
 		.getByRole('listitem')
 		.filter({ hasText: claimOf(f) })
 		.getByRole('button', { name: 'Offer again' })

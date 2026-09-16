@@ -42,7 +42,15 @@ async function addLink(page: Page, type: string, person: string): Promise<void> 
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 }
 
-const [first, last] = [(name: string) => name.split(' ')[0]!, (name: string) => name.split(' ')[1]!];
+const first = (name: string) => name.split(' ')[0]!;
+const last = (name: string) => name.split(' ')[1]!;
+
+/**
+ * The sentence the rule gives for its claim. It names both people in full and reads from the
+ * subject's side — *Ronja Odermatt is Silvan Odermatt's sibling* — which is the claim's own
+ * direction, not the direction the links were entered in.
+ */
+const reasonOf = (f: Family) => `${f.other} is ${f.one}’s sibling.`;
 
 /** Adds a person from their full name, through the real form. */
 const add = (page: Page, name: string) => addPerson(page, first(name), last(name));
@@ -62,6 +70,18 @@ async function aFamilyWithOneClaimStanding(page: Page, f: Family): Promise<void>
 	await addLink(page, 'Sibling of', f.other);
 	await openPerson(page, new RegExp(f.parent));
 	await addLink(page, 'Parent of', f.one);
+}
+
+/**
+ * The declined drawer, open. `open` is set on the element by the browser, not by Svelte, so a
+ * client-side navigation carries it over — and a blind click on the summary would *close* a
+ * drawer that came back open. Asserting the state is also what makes the step deterministic.
+ */
+async function openDeclined(page: Page) {
+	const drawer = page.getByTestId('kin-declined');
+	if ((await drawer.getAttribute('open')) === null) await drawer.locator('summary').click();
+	await expect(drawer).toHaveAttribute('open', '');
+	return drawer;
 }
 
 /** Opens `other`'s page and presses the control that runs the rules. */
@@ -87,7 +107,7 @@ test('asks what stands around one person when told to, and survives a reload', a
 	await page.getByRole('link', { name: 'Check relationships' }).click();
 	const panel = page.getByTestId('kin-review');
 	await expect(panel).toContainText(claimOf(f));
-	await expect(panel).toContainText(`${first(f.one)} is ${first(f.other)}’s sibling.`);
+	await expect(panel).toContainText(reasonOf(f));
 	await expect(panel).toContainText('certain');
 	await expect(panel).toContainText('1 open');
 
@@ -109,9 +129,8 @@ test('declining holds the no with who said it, and offering it again puts the cl
 
 	// Gone from what is offered, and in the drawer with the member and the day on it.
 	await expect(page.getByTestId('kin-review').getByTestId('kin-suggestion')).toHaveCount(0);
-	const declined = page.getByTestId('kin-declined');
-	await expect(declined).toContainText('1 declined suggestion');
-	await declined.locator('summary').click();
+	await expect(page.getByTestId('kin-declined')).toContainText('1 declined suggestion');
+	const declined = await openDeclined(page);
 	await expect(declined).toContainText(claimOf(f));
 	await expect(declined).toContainText(/declined on .+ by Demo Admin/);
 
@@ -120,7 +139,7 @@ test('declining holds the no with who said it, and offering it again puts the cl
 	await declined.getByRole('button', { name: 'Offer again' }).click();
 	const again = page.getByTestId('kin-review');
 	await expect(again).toContainText(claimOf(f));
-	await expect(again).toContainText(`${first(f.one)} is ${first(f.other)}’s sibling.`);
+	await expect(again).toContainText(reasonOf(f));
 });
 
 test('accepting stores the link and stops offering it', async ({ page }) => {
