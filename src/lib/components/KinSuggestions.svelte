@@ -104,8 +104,8 @@
 
 	/*
 	 * Undo is pressed in the toast, which knows nothing about this block — so the way back is
-	 * observed rather than reported: a claim that stopped being held without ever committing was
-	 * taken back, and its row returns to the open list.
+	 * observed rather than reported: a claim the store no longer holds, and that never went as
+	 * far as *sending*, was taken back, and its row returns to the open list.
 	 */
 	$effect(() => {
 		for (const [key, claim] of Object.entries(answered)) {
