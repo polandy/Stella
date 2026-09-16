@@ -225,10 +225,27 @@ Applied to every rule's output, before ordering:
 ### 6.3 Ordering and volume
 
 Confidence descending, then rule id, then the object's display name — deterministic, so tests
-assert a list rather than a set. A cap is needed (`SUGGESTION_LIMIT` already exists for name
-candidates; a separate constant here): more than a handful of "also true?" rows stops reading
-as help and starts reading as a chore. `possible`-confidence suggestions are collapsed behind
-a *more* affordance rather than counted against the cap.
+assert a list rather than a set.
+
+**No cap — decided 2026-09-16, against this section's original advice.** An earlier draft asked
+for one (`SUGGESTION_LIMIT` already exists for name candidates), on the grounds that more than a
+handful of "also true?" rows stops reading as help and starts reading as a chore. That reasoning
+was about the *person page's* block, where the rows interrupt somebody reading a profile. It
+does not carry to the household pass, which **is** the chore screen: a member opens it to work
+through what stands, and a list cut off at twenty would hide claims while telling nobody. Three
+things make the cap the wrong tool anyway:
+
+- It saves no work. The engine evaluates everything either way; a cap truncates the *display*.
+- Length is a property of a **rule**, not of a screen. L6 ("colleague with every other contact
+  at that company") is quadratic and could raise thousands of claims in one household — which is
+  an argument for bounding that rule, or not building it (§3.4), not for hiding its output
+  behind a number.
+- What protects a household from a long list is that there is **no bulk accept** (§7.1) and that
+  every answer is stored, so the list only ever shrinks. Not its length.
+
+If a real household's list ever becomes unwieldy, the fix is paging or collapsing the
+per-person groups — both of which keep every claim reachable. `possible`-confidence suggestions
+are still collapsed behind a *more* affordance, for the same reason: reachable, not dropped.
 
 ### 6.4 Dismissal — the one storage question — **shipped**
 
@@ -334,6 +351,7 @@ the smallest thing that works:
   pass* argued for below costs nothing today — it becomes a real decision the day L3 lands,
   and it is the reason there is still no bulk accept.
 - **Settings is the entry point**, for every member rather than the admin alone.
+- **No cap on the list** (§6.3). It computes and shows everything that stands.
 
 §6.5 asks about **one** person. The obvious next question is a run over the whole household
 from Settings, and it is a different design rather than the same panel with a wider `where`:

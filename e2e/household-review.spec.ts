@@ -1,32 +1,42 @@
 import { expect, test, type Page } from '@playwright/test';
+import { CLAIMS_PER_GROUP } from '../src/lib/suggestions/paging';
 import { addPerson, openPerson, pickPerson, signIn } from './app';
 
 /*
  * The household-wide relationship review (docs/02 §2.4.1,
- * docs/concepts/relationship-suggestions.md §6.6). Written after the flow was verified in the
+ * docs/concepts/relationship-suggestions.md §6.6), folded for scale in
+ * docs/concepts/relationship-review-at-scale.html. Written after the flow was verified in the
  * running app (docs/08 §8.4.1).
  *
- * The screen answers about *everyone*, so this file never asserts a total: the suite shares one
- * database, and other specs add people whose claims land in the same list. Each case filters
- * the list down to its own claim and asserts on that — which is also how a member reads it.
+ * The screen answers about *everyone*, so this file never asserts a household total: the suite
+ * shares one database, and other specs add people whose claims land in the same list. Since the
+ * list is paged, a case cannot even count on its own family being on the first page — so each
+ * one searches for its own surname, which narrows the pager to that family and is also how a
+ * member with somebody in mind reads the screen.
  *
- * The Ammanns are invented for this file, one family per case, because the answers are stored:
- * two cases working the same three people would have one answering what the other settled.
+ * One family per case, with a surname of its own, because the answers are stored: two cases
+ * working the same people would have one answering what the other settled. None of these
+ * surnames appears in the demo dataset.
  */
 
 const REVIEW = '/settings/relationships';
 
 interface Family {
+	surname: string;
 	parent: string;
 	one: string;
 	other: string;
 }
 
-const family = (parent: string, one: string, other: string): Family => ({
-	parent: `${parent} Ammann`,
-	one: `${one} Ammann`,
-	other: `${other} Ammann`
+const family = (surname: string, parent: string, one: string, other: string): Family => ({
+	surname,
+	parent: `${parent} ${surname}`,
+	one: `${one} ${surname}`,
+	other: `${other} ${surname}`
 });
+
+/** The review, narrowed to one family — the pager's list rather than the household's. */
+const reviewFor = (f: Family) => `${REVIEW}?review&q=${f.surname}`;
 
 /** The sentence the household screen should carry, once the links below are in place. */
 const claimOf = (f: Family) => `${f.parent} is a parent of ${f.other}`;
@@ -66,11 +76,14 @@ async function aFamilyNobodyHasAnsweredFor(page: Page, f: Family): Promise<void>
 	await addLink(page, 'Parent of', f.one);
 }
 
-/** Opens the household screen and runs the rules over everyone. */
-async function checkEveryone(page: Page): Promise<void> {
-	await page.goto(REVIEW);
-	await page.getByRole('link', { name: 'Check all relationships' }).click();
-	await expect(page).toHaveURL(/\/settings\/relationships\?review/);
+/** The one row this case is about, out of however many the household has. */
+const rowFor = (page: Page, f: Family) =>
+	page.getByTestId('kin-suggestion').filter({ hasText: claimOf(f) });
+
+/** Runs the rules over everyone, then narrows the page to this case's family. */
+async function checkEveryone(page: Page, f: Family): Promise<void> {
+	await page.goto(reviewFor(f));
+	await expect(rowFor(page, f)).toContainText(claimOf(f));
 }
 
 /**
@@ -85,16 +98,12 @@ async function openDeclined(page: Page) {
 	return drawer;
 }
 
-/** The one row this case is about, out of however many the household has. */
-const rowFor = (page: Page, f: Family) =>
-	page.getByTestId('kin-suggestion').filter({ hasText: claimOf(f) });
-
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
 test('finds a claim from Settings that no member opened a profile for', async ({ page }) => {
-	const f = family('Marlis', 'Silvan', 'Ronja');
+	const f = family('Ammann', 'Marlis', 'Silvan', 'Ronja');
 	await aFamilyNobodyHasAnsweredFor(page, f);
 
 	// Closed, the screen runs nothing: it offers the one control and says as much.
@@ -104,22 +113,34 @@ test('finds a claim from Settings that no member opened a profile for', async ({
 	await expect(page.getByTestId('kin-suggestion')).toHaveCount(0);
 
 	await page.getByRole('link', { name: 'Check all relationships' }).click();
+	await expect(page).toHaveURL(/\/settings\/relationships\?review/);
+
+	await page.goto(reviewFor(f));
 	await expect(rowFor(page, f)).toContainText(claimOf(f));
 	await expect(rowFor(page, f)).toContainText(reasonOf(f));
 
 	// Filed under the person it is about — the child, whose parents were in question — and that
 	// name links to their page.
 	const card = page.locator('main section').filter({ hasText: claimOf(f) });
-	await expect(card.getByRole('link', { name: new RegExp(f.other) })).toHaveAttribute('href', /\/contacts\//);
+	await expect(card.getByRole('link', { name: new RegExp(f.other) })).toHaveAttribute(
+		'href',
+		/\/contacts\//
+	);
 });
 
-test('declining on the household screen holds the no, and offering it again brings it back', async ({ page }) => {
-	const f = family('Gertrud', 'Timo', 'Nadja');
+test('declining on the household screen holds the no, and offering it again brings it back', async ({
+	page
+}) => {
+	const f = family('Zingg', 'Gertrud', 'Timo', 'Nadja');
 	await aFamilyNobodyHasAnsweredFor(page, f);
-	await checkEveryone(page);
+	await checkEveryone(page, f);
 
 	await rowFor(page, f).getByRole('button', { name: 'Decline' }).click();
 	await expect(rowFor(page, f)).toHaveCount(0);
+
+	// Answering returns to the place it was answered from, search and all: losing your place on
+	// every answer is what makes a long list unfinishable.
+	await expect(page).toHaveURL(new RegExp(`q=${f.surname}`));
 
 	// In the drawer, with who said no and when — and still gone after the rules run again,
 	// which is the whole point of writing the answer down.
@@ -127,7 +148,7 @@ test('declining on the household screen holds the no, and offering it again brin
 	const declinedRow = declined.getByRole('listitem').filter({ hasText: claimOf(f) });
 	await expect(declinedRow).toContainText(/declined on .+ by Demo Admin/);
 
-	await page.getByRole('link', { name: 'Check again' }).click();
+	await page.goto(reviewFor(f));
 	await expect(rowFor(page, f)).toHaveCount(0);
 
 	await (await openDeclined(page))
@@ -139,9 +160,9 @@ test('declining on the household screen holds the no, and offering it again brin
 });
 
 test('accepting on the household screen writes the link onto the person', async ({ page }) => {
-	const f = family('Beatrix', 'Reto', 'Vroni');
+	const f = family('Wyss', 'Beatrix', 'Reto', 'Vroni');
 	await aFamilyNobodyHasAnsweredFor(page, f);
-	await checkEveryone(page);
+	await checkEveryone(page, f);
 
 	await rowFor(page, f).getByRole('button', { name: 'Accept' }).click();
 
@@ -158,16 +179,103 @@ test('asks about a claim once, however many ways the rules reach it', async ({ p
 	 * four or six times — the count is over this family's rows only, since the list spans the
 	 * household.
 	 */
-	const f = family('Ursula', 'Lars', 'Mia');
-	const third = 'Jonas Ammann';
+	const f = family('Eggli', 'Ursula', 'Lars', 'Mia');
+	const third = `Jonas ${f.surname}`;
 	await aFamilyNobodyHasAnsweredFor(page, f);
 	await add(page, third);
 	await openPerson(page, new RegExp(f.one));
 	await addLink(page, 'Sibling of', third);
 
-	await checkEveryone(page);
+	await checkEveryone(page, f);
 	const ours = page.getByTestId('kin-suggestion').filter({ hasText: f.parent });
 	await expect(ours).toHaveCount(2);
 	await expect(ours.filter({ hasText: claimOf(f) })).toHaveCount(1);
 	await expect(ours.filter({ hasText: `${f.parent} is a parent of ${third}` })).toHaveCount(1);
+});
+
+test('folds a person carrying more claims than a group renders, and names what it holds back', async ({
+	page
+}) => {
+	/*
+	 * Fold 2 (docs/concepts/relationship-review-at-scale.html). Seven parents on one sibling
+	 * make seven claims about the other — the shape an import leaves behind. The screen renders
+	 * five, says how many it is holding back and links to the rest. Nothing is dropped: the
+	 * number in the fold is what the rules actually found, minus what is on the page.
+	 */
+	const f = family('Gerber', 'Alois', 'Fabio', 'Selina');
+	const parents = ['Alois', 'Brigitte', 'Cornelia', 'Damian', 'Edith', 'Fridolin', 'Gabriela'];
+
+	await add(page, f.one);
+	await add(page, f.other);
+	for (const first of parents) await add(page, `${first} ${f.surname}`);
+
+	await openPerson(page, new RegExp(f.one));
+	await addLink(page, 'Sibling of', f.other);
+	for (const first of parents) {
+		await openPerson(page, new RegExp(`${first} ${f.surname}`));
+		await addLink(page, 'Parent of', f.one);
+	}
+
+	await page.goto(reviewFor(f));
+	const card = page.locator('main section').filter({ hasText: claimOf(f) });
+	await expect(card.getByTestId('kin-suggestion')).toHaveCount(CLAIMS_PER_GROUP);
+
+	// The fold names the number it is holding back, and the way to the rest is that person's
+	// own review panel — one screen, reached two ways.
+	const folded = card.getByTestId('kin-folded');
+	await expect(folded).toContainText(`${parents.length - CLAIMS_PER_GROUP} more for ${f.other}`);
+	await expect(folded.getByRole('link', { name: `Open all ${parents.length}` })).toHaveAttribute(
+		'href',
+		/\/contacts\/.*\?review/
+	);
+});
+
+test('keeps the declined log answerable at its own address', async ({ page }) => {
+	/*
+	 * Fold 3 (docs/concepts/relationship-review-at-scale.html). Past ten answers the log leaves
+	 * the drawer for its own page; that threshold is a unit case (`declinedFitsInline`), but the
+	 * page it moves to is a screen, and `docs/using-stella.md` promises a member can still offer
+	 * one again from there. Reached by its address rather than by declining eleven claims, so the
+	 * promise is checked without a minute of setup on every run.
+	 */
+	const f = family('Zollinger', 'Ottilia', 'Fabio', 'Selina');
+	await aFamilyNobodyHasAnsweredFor(page, f);
+	await checkEveryone(page, f);
+	await rowFor(page, f).getByRole('button', { name: 'Decline' }).click();
+	await expect(rowFor(page, f)).toHaveCount(0);
+
+	await page.goto(`${REVIEW}?review&declined`);
+	await expect(page.getByRole('heading', { name: 'Declined suggestions' })).toBeVisible();
+	// Open on arrival: a page whose whole purpose is the log must not start on a closed drawer.
+	await expect(page.getByTestId('kin-declined')).toHaveAttribute('open', '');
+	const row = page.getByRole('listitem').filter({ hasText: claimOf(f) });
+	await expect(row).toContainText(/declined on .+ by Demo Admin/);
+
+	// The way back is on every row here too, and taking it returns the claim to the open list.
+	await row.getByRole('button', { name: 'Offer again' }).click();
+	await page.goto(reviewFor(f));
+	await expect(rowFor(page, f)).toContainText(claimOf(f));
+});
+
+test('says where in the list a page is without letting the household count shrink', async ({
+	page
+}) => {
+	/*
+	 * The counting-versus-rendering contract: the header describes the household, the range
+	 * describes the page, and a search moves the second while leaving the first alone. Asserted
+	 * as an invariant rather than against a number, since the suite shares one database.
+	 */
+	const f = family('Hürlimann', 'Verena', 'Andrin', 'Lorena');
+	await aFamilyNobodyHasAnsweredFor(page, f);
+
+	const householdTotal = page.getByText(/\d+ open across \d+ (person|people)/);
+	await page.goto(`${REVIEW}?review`);
+	const wholeHousehold = (await householdTotal.textContent())!;
+	const wholeRange = (await page.getByTestId('kin-pager').textContent())!;
+
+	await page.goto(reviewFor(f));
+	// Same household, a smaller slice of it: the total has not moved, the range has.
+	await expect(householdTotal).toHaveText(wholeHousehold);
+	await expect(page.getByTestId('kin-pager')).toContainText('of 1');
+	expect(await page.getByTestId('kin-pager').textContent()).not.toBe(wholeRange);
 });

@@ -1,0 +1,1020 @@
+<title>Review at Scale</title>
+<style>
+  /* ── Catppuccin tokens, straight from src/app.css (Latte / Mocha) ─────── */
+  :root, :root[data-theme='light'] {
+    --bg:#eff1f5; --bg-elevated:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff;
+    --border:#ccd0da; --border-soft:#dce0e8;
+    --fg:#4c4f69; --fg-muted:#6c6f85; --fg-subtle:#8c8fa1;
+    --primary:#8839ef; --primary-fg:#ffffff; --link:#1e66f5;
+    --green:#40a02b; --peach:#fe640b; --teal:#179299; --blue:#1e66f5;
+    --pink:#ea76cb; --yellow:#df8e1d; --sky:#04a5e5; --red:#d20f39; --maroon:#e64553;
+    --lavender:#7287fd; --sapphire:#209fb5;
+    --success:#40a02b; --warning:#df8e1d; --danger:#d20f39;
+    --shadow:0 1px 2px rgba(76,79,105,.06), 0 8px 24px rgba(76,79,105,.08);
+    --shadow-sm:0 1px 2px rgba(76,79,105,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+      --border:#313244; --border-soft:#26263a;
+      --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+      --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+      --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --blue:#89b4fa;
+      --pink:#f5c2e7; --yellow:#f9e2af; --sky:#89dceb; --red:#f38ba8; --maroon:#eba0ac;
+      --lavender:#b4befe; --sapphire:#74c7ec;
+      --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+    --border:#313244; --border-soft:#26263a;
+    --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --blue:#89b4fa;
+    --pink:#f5c2e7; --yellow:#f9e2af; --sky:#89dceb; --red:#f38ba8; --maroon:#eba0ac;
+    --lavender:#b4befe; --sapphire:#74c7ec;
+    --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing:border-box; }
+  html { color-scheme: light dark; }
+  body {
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.55;
+  }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+  a { color:var(--link); text-decoration:none; cursor:pointer; }
+  h1,h2,h3,h4 { text-wrap:balance; margin:0; }
+  code { font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.88em; background:var(--bg-sunken); padding:1px 6px; border-radius:5px; }
+
+  .wrap { max-width:1140px; margin:0 auto; padding-block:clamp(28px,5vw,64px) 96px; padding-inline:clamp(18px,4vw,40px); }
+
+  .doc-head { display:flex; flex-direction:column; gap:14px; margin-bottom:12px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); display:flex; align-items:center; gap:9px; }
+  .kicker .star { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; background:var(--primary); color:var(--primary-fg); font-size:13px; }
+  .doc-head h1 { font-size:clamp(28px,4.4vw,44px); font-weight:700; letter-spacing:-.02em; line-height:1.08; }
+  .doc-head p.lede { font-size:clamp(15px,1.7vw,18px); color:var(--fg-muted); max-width:64ch; margin:0; }
+  .theme-btn { position:fixed; top:calc(16px + env(safe-area-inset-top, 0px)); right:16px; z-index:50; display:inline-flex; align-items:center; gap:7px; cursor:pointer; background:var(--card); color:var(--fg-muted); border:1px solid var(--border); border-radius:999px; padding:7px 14px; font:inherit; font-size:13px; box-shadow:var(--shadow-sm); }
+  .theme-btn:hover { color:var(--fg); }
+
+  .standing { margin-top:26px; border-left:3px solid var(--primary); background:color-mix(in srgb,var(--primary) 7%,var(--card)); border-radius:0 12px 12px 0; padding:14px 18px; display:flex; flex-direction:column; gap:6px; }
+  .standing b { font-size:13px; }
+  .standing p { margin:0; font-size:13.5px; color:var(--fg-muted); max-width:72ch; }
+
+  .eyebrow { font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-subtle); }
+  section.block { margin-top:56px; }
+  section.block > .eyebrow { margin-bottom:10px; display:block; }
+  section.block > h2 { font-size:clamp(20px,2.6vw,26px); font-weight:650; letter-spacing:-.01em; margin-bottom:8px; }
+  section.block > p.intro { color:var(--fg-muted); max-width:68ch; margin:0 0 22px; }
+
+  /* The three folds, as a diagram */
+  .folds { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); }
+  .fold { background:var(--card); border:1px solid var(--border-soft); border-radius:13px; padding:15px 16px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:7px; }
+  .fold .lvl { font-size:11px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; color:var(--primary); }
+  .fold h3 { font-size:15px; font-weight:650; }
+  .fold p { margin:0; font-size:13px; color:var(--fg-muted); }
+  .fold .num { font-variant-numeric:tabular-nums; font-size:12.5px; color:var(--fg-subtle); border-top:1px solid var(--border-soft); padding-top:8px; margin-top:auto; }
+  .fold .num b { color:var(--fg); font-weight:650; }
+
+  .principles { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); }
+  .princ { display:flex; gap:13px; align-items:flex-start; }
+  .princ .ic { flex:none; width:34px; height:34px; border-radius:9px; display:grid; place-items:center; background:color-mix(in srgb, var(--primary) 14%, transparent); color:var(--primary); font-weight:700; font-size:13px; }
+  .princ h3 { font-size:14.5px; font-weight:640; margin-bottom:3px; }
+  .princ p { margin:0; font-size:13px; color:var(--fg-muted); }
+
+  /* ── Prototype frame ──────────────────────────────────────────────────── */
+  .proto-shell { border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); background:var(--bg); }
+  .browserbar { display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--bg-elevated); border-bottom:1px solid var(--border); }
+  .dots { display:flex; gap:6px; }
+  .dots i { width:11px; height:11px; border-radius:50%; display:block; }
+  .urlbar { flex:1; margin-left:8px; background:var(--bg); border:1px solid var(--border-soft); border-radius:8px; padding:5px 12px; font-size:12.5px; color:var(--fg-subtle); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .urlbar b { color:var(--fg-muted); font-weight:500; }
+
+  .app { display:grid; grid-template-columns:220px 1fr; min-height:640px; }
+  .side { background:var(--bg-elevated); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:16px 12px; gap:3px; }
+  .brand { display:flex; align-items:center; gap:10px; padding:6px 8px 14px; }
+  .brand .logo { width:32px; height:32px; border-radius:9px; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; font-size:17px; box-shadow:var(--shadow-sm); }
+  .brand .name { font-weight:680; font-size:16px; letter-spacing:-.01em; }
+  .brand .name small { display:block; font-weight:500; font-size:11px; color:var(--fg-subtle); }
+  .navitem { display:flex; align-items:center; gap:11px; width:100%; text-align:left; padding:9px 10px; border-radius:9px; border:0; background:none; cursor:pointer; font:inherit; font-size:14px; color:var(--fg-muted); position:relative; }
+  .navitem svg { flex:none; width:18px; height:18px; }
+  .navitem:hover { background:var(--bg-sunken); color:var(--fg); }
+  .navitem[aria-current='page'] { background:color-mix(in srgb, var(--primary) 15%, transparent); color:var(--primary); font-weight:600; }
+  .navitem[aria-current='page']::before { content:''; position:absolute; left:-12px; top:8px; bottom:8px; width:3px; border-radius:0 3px 3px 0; background:var(--primary); }
+  .navitem .badge { margin-left:auto; font-size:11px; font-weight:650; background:color-mix(in srgb,var(--peach) 24%,transparent); color:var(--fg); border-radius:999px; padding:1px 8px; font-variant-numeric:tabular-nums; }
+  .side .spacer { flex:1; }
+
+  .main { display:flex; flex-direction:column; min-width:0; background:var(--bg); }
+  .topbar { display:flex; align-items:center; gap:14px; padding:12px 20px; border-bottom:1px solid var(--border-soft); }
+  .crumbs { display:flex; align-items:center; gap:7px; font-size:13.5px; min-width:0; flex-wrap:wrap; color:var(--fg-subtle); }
+  .crumbs .current { color:var(--fg); font-weight:600; }
+  .canvas { padding:22px 22px 30px; overflow:auto; }
+
+  .pagehead { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+  .pagehead h2 { font-size:21px; font-weight:680; letter-spacing:-.01em; }
+  .pagehead p { margin:3px 0 0; font-size:13.5px; color:var(--fg-muted); max-width:58ch; }
+
+  .btn { display:inline-flex; align-items:center; gap:7px; border-radius:9px; padding:8px 14px; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; border:1px solid transparent; }
+  .btn svg { width:15px; height:15px; }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); }
+  .btn.primary:hover { opacity:.92; }
+  .btn.danger { background:var(--card); color:var(--danger); border-color:color-mix(in srgb,var(--danger) 45%,transparent); }
+  .btn.danger:hover { background:color-mix(in srgb,var(--danger) 12%,var(--card)); }
+  .btn.ghost { background:var(--card); color:var(--fg-muted); border-color:var(--border); font-weight:500; }
+  .btn.ghost:hover { color:var(--fg); border-color:var(--primary); }
+  .btn[disabled] { opacity:.45; cursor:default; }
+  .btn.small { padding:5px 11px; font-size:12.5px; }
+
+  /* The one bar that says how big this is */
+  .scalebar { background:var(--card); border:1px solid var(--border-soft); border-radius:13px; padding:14px 16px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:10px; }
+  .scalebar .row { display:flex; gap:18px; flex-wrap:wrap; align-items:baseline; font-size:12.5px; color:var(--fg-subtle); }
+  .scalebar .row b { color:var(--fg); font-weight:650; font-size:14px; font-variant-numeric:tabular-nums; }
+  .scalebar .track { height:7px; border-radius:999px; background:var(--bg-sunken); overflow:hidden; }
+  .scalebar .fill { height:100%; width:0; background:var(--success); border-radius:999px; transition:width .2s ease; }
+  .scalebar .cap { font-size:12.5px; color:var(--fg-muted); font-variant-numeric:tabular-nums; }
+
+  .toolbar { display:flex; gap:9px; align-items:center; flex-wrap:wrap; margin:18px 0 13px; }
+  .search { flex:1; min-width:180px; display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border); border-radius:9px; padding:6px 11px; }
+  .search svg { width:15px; height:15px; color:var(--fg-subtle); flex:none; }
+  .search input { flex:1; min-width:0; border:0; background:none; font:inherit; font-size:13.5px; color:var(--fg); outline:none; }
+  .chip { font-size:12.5px; padding:5px 12px; border-radius:999px; border:1px solid var(--border); color:var(--fg-muted); cursor:pointer; background:var(--card); font:inherit; }
+  .chip:hover { border-color:var(--primary); color:var(--fg); }
+  .chip[aria-pressed='true'] { background:color-mix(in srgb,var(--primary) 16%,transparent); border-color:var(--primary); color:var(--fg); font-weight:600; }
+
+  /* Claim groups — the rows are KinSuggestions.svelte, unchanged */
+  .group { background:var(--card); border:1px solid var(--border-soft); border-radius:14px; box-shadow:var(--shadow-sm); margin-bottom:12px; overflow:hidden; }
+  .group > header { display:flex; align-items:center; gap:11px; padding:12px 15px; border-bottom:1px solid var(--border-soft); background:var(--bg-elevated); }
+  .group > header .who { min-width:0; flex:1; }
+  .group > header b { font-size:14px; font-weight:650; display:block; }
+  .group > header span.sub { font-size:12px; color:var(--fg-subtle); }
+  .group > header .count { font-size:12px; color:var(--fg-subtle); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .av { flex:none; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-weight:650; font-size:13px; }
+
+  .claims { display:flex; flex-direction:column; gap:8px; padding:12px 15px; }
+  .claim { display:grid; grid-template-columns:1fr auto; align-items:start; gap:4px 12px; border:1px solid var(--border-soft); border-radius:9px; padding:9px 11px; background:var(--card); }
+  .claim .sentence { grid-column:1; grid-row:1; font-size:14px; font-weight:550; min-width:0; }
+  .claim .answers { grid-column:2; grid-row:1; justify-self:end; display:flex; gap:6px; flex-shrink:0; }
+  .claim .foot { grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:center; gap:7px; font-size:12px; color:var(--fg-subtle); }
+  .claim.settled { background:var(--bg-elevated); }
+  .claim.settled .sentence { color:var(--fg-muted); }
+
+  /* Fold 2: the rest of an oversized group, one link to its own page */
+  .more-in-group { display:flex; align-items:center; gap:10px; flex-wrap:wrap; border:1px dashed var(--border); border-radius:9px; padding:9px 11px; font-size:13px; color:var(--fg-muted); background:var(--bg-elevated); }
+  .more-in-group b { color:var(--fg); font-weight:650; font-variant-numeric:tabular-nums; }
+  .more-in-group .btn { margin-left:auto; }
+
+  .conf { border-radius:999px; border:1px solid currentColor; padding:0 7px; font-size:11px; font-weight:650; letter-spacing:.02em; }
+  .conf.certain { color:var(--success); }
+  .conf.likely, .conf.possible { color:var(--warning); }
+  .rule { opacity:.75; }
+  .state { border-radius:999px; padding:1px 9px; font-size:11px; font-weight:650; }
+  .state.added { background:color-mix(in srgb,var(--success) 22%,transparent); color:var(--fg); }
+  .state.declined { background:color-mix(in srgb,var(--danger) 18%,transparent); color:var(--fg); }
+  .state.folded { background:color-mix(in srgb,var(--peach) 22%,transparent); color:var(--fg); }
+
+  /* Fold 1: the pager */
+  .pager { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:16px; padding-top:14px; border-top:1px solid var(--border-soft); }
+  .pager .where { font-size:13px; color:var(--fg-muted); font-variant-numeric:tabular-nums; }
+  .pager .where b { color:var(--fg); font-weight:650; }
+  .pager .grow { flex:1; }
+
+  .empty { text-align:center; padding:46px 20px; border:1px dashed var(--border); border-radius:14px; color:var(--fg-muted); background:var(--card); }
+  .empty .ic { width:46px; height:46px; margin:0 auto 12px; border-radius:13px; display:grid; place-items:center; background:color-mix(in srgb,var(--success) 18%,transparent); color:var(--success); }
+  .empty b { display:block; color:var(--fg); font-size:15px; margin-bottom:4px; }
+  .empty p { margin:0 auto; max-width:48ch; font-size:13.5px; }
+
+  .drawerlink { margin-top:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; border:1px dashed var(--border); border-radius:12px; padding:12px 15px; font-size:13.5px; color:var(--fg-muted); background:var(--card); }
+  .drawerlink .btn { margin-left:auto; }
+
+  .toast { position:absolute; left:50%; bottom:18px; transform:translate(-50%,14px); background:var(--fg); color:var(--bg); font-size:13px; font-weight:550; padding:9px 15px; border-radius:10px; box-shadow:var(--shadow); display:flex; gap:12px; align-items:center; opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; max-width:calc(100% - 32px); }
+  .toast.show { opacity:1; transform:translate(-50%,0); pointer-events:auto; }
+  .toast button { background:none; border:0; color:var(--bg); font:inherit; font-size:12.5px; font-weight:700; text-decoration:underline; cursor:pointer; }
+  .stage { position:relative; }
+
+  /* Phone frames */
+  .phones { display:grid; gap:22px; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); align-items:start; }
+  .phone { border:1px solid var(--border); border-radius:26px; background:var(--bg); box-shadow:var(--shadow); overflow:hidden; max-width:330px; margin:0 auto; width:100%; }
+  .phone .statusbar { display:flex; justify-content:space-between; font-size:11px; color:var(--fg-subtle); padding:9px 16px 4px; font-variant-numeric:tabular-nums; }
+  .phone .pbody { padding:6px 12px 14px; }
+  .phone h4 { font-size:16px; font-weight:680; margin:6px 2px 2px; }
+  .phone .sub { font-size:12px; color:var(--fg-muted); margin:0 2px 10px; }
+  .pbar { height:6px; border-radius:999px; background:var(--bg-sunken); margin:0 2px 12px; overflow:hidden; }
+  .pbar i { display:block; height:100%; background:var(--success); border-radius:999px; }
+  .pcard { background:var(--card); border:1px solid var(--border-soft); border-radius:12px; padding:11px; margin-bottom:9px; box-shadow:var(--shadow-sm); }
+  .pcard .sentence { font-size:13.5px; font-weight:600; }
+  .pcard .foot { display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:11.5px; color:var(--fg-subtle); margin:5px 0 9px; }
+  .pcard .answers { display:flex; gap:7px; }
+  .pcard .answers .btn { flex:1; justify-content:center; }
+  .phone .tabbar { display:flex; border-top:1px solid var(--border-soft); margin-top:6px; }
+  .phone .tabbar span { flex:1; text-align:center; font-size:10.5px; padding:8px 0 4px; color:var(--fg-subtle); }
+  .phone .tabbar span.on { color:var(--primary); font-weight:650; }
+  .caption { font-size:12.5px; color:var(--fg-subtle); text-align:center; margin-top:9px; }
+
+  .tablewrap { overflow-x:auto; border:1px solid var(--border-soft); border-radius:12px; background:var(--card); }
+  table { border-collapse:collapse; width:100%; font-size:13.5px; min-width:560px; }
+  th, td { text-align:left; padding:10px 14px; border-bottom:1px solid var(--border-soft); vertical-align:top; }
+  th { font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--fg-subtle); font-weight:650; }
+  tbody tr:last-child td { border-bottom:0; }
+  td.k { white-space:nowrap; }
+
+  pre.code { margin:0; overflow-x:auto; background:var(--card); border:1px solid var(--border-soft); border-radius:12px; padding:16px 18px; font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; line-height:1.65; color:var(--fg); }
+  pre.code b { color:var(--primary); font-weight:600; }
+  pre.code i { color:var(--fg-subtle); font-style:normal; }
+
+  ul.notes { margin:0; padding-left:20px; color:var(--fg-muted); font-size:14px; display:flex; flex-direction:column; gap:10px; max-width:72ch; }
+  ul.notes b { color:var(--fg); font-weight:620; }
+  .footnote { margin-top:40px; font-size:12.5px; color:var(--fg-subtle); border-top:1px solid var(--border-soft); padding-top:16px; }
+
+  /* One-column breakpoints last, so they win over the rules above */
+  @media (max-width:760px) { .app { grid-template-columns:1fr; } .side { display:none; } }
+  @media (max-width:560px) {
+    .claim { grid-template-columns:1fr; }
+    .claim .sentence, .claim .answers { grid-column:1; grid-row:auto; justify-self:start; }
+    .more-in-group .btn, .drawerlink .btn { margin-left:0; }
+  }
+  @media (max-width:520px) { .canvas { padding:16px 16px 24px; } }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+</style>
+
+<button class="theme-btn" id="theme-toggle" type="button">Theme</button>
+
+<div class="wrap">
+  <header class="doc-head">
+    <div class="kicker"><span class="star">✦</span> Stella · concept</div>
+    <h1>A review that stays flat</h1>
+    <p class="lede">
+      The household review computes everything — that was decided, against this concept's own
+      earlier advice, in <code>docs/04</code> §4.9: <b>no cap</b>. What a run finds is what the
+      screen owes you. This concept is the other half of that decision: how a list of 207 claims
+      across 96 people reaches a phone without the page, the payload or the person reading it
+      falling over.
+    </p>
+  </header>
+
+  <div class="standing">
+    <b>Built — and where the build differs</b>
+    <p>
+      All three folds ship (docs/02 §2.4.1): ten people to a page on a cursor that is a person,
+      five claims per group, and the declined log on its own address past ten. Two things came
+      out differently. <b>Fold 2 leads to the person's own review panel</b> at
+      <code>/contacts/&lt;id&gt;?review</code> rather than to a <code>?person=</code> view inside
+      Settings — that screen already exists and already lists everything about one person, and
+      one screen reached two ways beats two screens that must agree. And <b>the place an answer
+      returns to travels in the form body</b>, not on the URL: a form action resolves against the
+      current address, so <code>?/dismissSuggestion</code> replaces the query string and the
+      cursor never reaches the server. The e2e caught that; reading the markup did not.
+    </p>
+  </div>
+
+  <div class="standing">
+    <b>The rule this whole page follows</b>
+    <p>
+      <b>Nothing is dropped. Everything is folded.</b> A cap removes claims and lies about the total;
+      a fold shows fewer rows and keeps the number honest, with one click to the rest. Every number
+      on the screen below counts the whole household, never the page.
+    </p>
+  </div>
+
+  <section class="block">
+    <span class="eyebrow">The shape</span>
+    <h2>Three folds, one honest count</h2>
+    <p class="intro">
+      Folding happens at three levels, each with its own limit and its own way through. The limits
+      are named constants, not literals scattered across a route and a component.
+    </p>
+    <div class="folds">
+      <div class="fold">
+        <span class="lvl">Fold 1 · the page</span>
+        <h3>10 people at a time</h3>
+        <p>The list is people, not claims, so a person's claims are never split across a page
+          boundary. The pager walks the household in a stable order.</p>
+        <p class="num"><code>PEOPLE_PER_PAGE</code> = <b>10</b></p>
+      </div>
+      <div class="fold">
+        <span class="lvl">Fold 2 · the group</span>
+        <h3>5 claims per person</h3>
+        <p>One imported company or a sibling group of twelve can carry dozens of claims for a single
+          person. Five are shown; the rest are one link away, on that person's own page.</p>
+        <p class="num"><code>CLAIMS_PER_GROUP</code> = <b>5</b></p>
+      </div>
+      <div class="fold">
+        <span class="lvl">Fold 3 · the drawer</span>
+        <h3>Declined lives elsewhere</h3>
+        <p>Past a handful, the declined drawer stops being a <code>&lt;details&gt;</code> inside the
+          list and becomes its own paged route. It is history, not work.</p>
+        <p class="num"><code>DECLINED_INLINE_MAX</code> = <b>10</b></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Why it is designed this way</span>
+    <h2>Four things the API has to get right</h2>
+    <div class="principles">
+      <div class="princ"><div class="ic">1</div><div>
+        <h3>The cursor is a person, not an offset</h3>
+        <p>The list shrinks while you answer it. <code>?after=25</code> would skip the rows that slid
+          up into the gap. The cursor is the sort key of the last group shown, so answering never
+          hides anything.</p>
+      </div></div>
+      <div class="princ"><div class="ic">2</div><div>
+        <h3>The totals are computed, the rows are sliced</h3>
+        <p>One run evaluates the whole graph — that is the no-cap decision and it is cheap. What the
+          page limits is the <i>payload</i>: 10 groups × 5 rows, never the count in the header.</p>
+      </div></div>
+      <div class="princ"><div class="ic">3</div><div>
+        <h3>A fold always names what it hides</h3>
+        <p><i>34 more for Erika Roth</i>, not <i>show more</i>. A number the reader can check is the
+          difference between folding and quietly truncating.</p>
+      </div></div>
+      <div class="princ"><div class="ic">4</div><div>
+        <h3>Still no bulk accept</h3>
+        <p>Paging makes a long list workable, which is exactly when a sweep of <i>yes</i> becomes
+          tempting. The answer is still one claim, one decision.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Prototype · click it</span>
+    <h2>96 people, 207 open claims</h2>
+    <p class="intro">
+      A household after a Monica import that nobody has reviewed. Answer rows, page through the
+      people, search for one, and open a person whose group is folded. The counters in the header
+      always describe the household — watch them move while you work a single page.
+    </p>
+
+    <div class="proto-shell">
+      <div class="browserbar">
+        <div class="dots"><i style="background:#ed8796"></i><i style="background:#eed49f"></i><i style="background:#a6da95"></i></div>
+        <div class="urlbar"><b>stella.1-0.io</b><span id="url-tail">/settings/relationships?review</span></div>
+      </div>
+      <div class="app">
+        <nav class="side">
+          <div class="brand">
+            <div class="logo">✦</div>
+            <div class="name">Stella<small>Meier household</small></div>
+          </div>
+          <button class="navitem" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg> Home</button>
+          <button class="navitem" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.4 6-5.4s6 2.1 6 5.4"/><path d="M16 5.5a3 3 0 0 1 0 5.6"/></svg> People</button>
+          <button class="navitem" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.2"/></svg> Circles</button>
+          <button class="navitem" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="17" r="2.6"/><circle cx="18" cy="17" r="2.6"/><circle cx="12" cy="6" r="2.6"/><path d="M10.6 8.2 7.4 14.8M13.4 8.2l3.2 6.6"/></svg> Graph</button>
+          <div class="spacer"></div>
+          <button class="navitem" aria-current="page" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg> Settings <span class="badge" id="nav-badge">207</span></button>
+        </nav>
+
+        <div class="main stage">
+          <div class="topbar">
+            <div class="crumbs" id="crumbs">Settings <span>›</span> <span class="current">Relationships</span></div>
+          </div>
+
+          <div class="canvas">
+            <div class="pagehead">
+              <div>
+                <h2 id="head-title">Suggestions</h2>
+                <p id="head-sub">Everything Stella can see, checked at once. Nothing is stored until
+                  you accept it, and nothing here is hidden from the count.</p>
+              </div>
+              <button class="btn primary" id="run-btn" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 11a8 8 0 1 0-.7 4.3"/><path d="M20 5v6h-6"/></svg>
+                Check again
+              </button>
+            </div>
+
+            <div class="scalebar">
+              <div class="row">
+                <span>Open <b id="m-open">207</b></span>
+                <span>People <b id="m-people">96</b></span>
+                <span>Answered this visit <b id="m-answered">0</b></span>
+                <span>Declined earlier <b id="m-declined">14</b></span>
+              </div>
+              <div class="track"><div class="fill" id="m-fill"></div></div>
+              <div class="cap" id="m-cap">Nothing answered yet. There is no order you have to do this in.</div>
+            </div>
+
+            <div class="toolbar" id="toolbar">
+              <label class="search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+                <input id="search" type="search" placeholder="Find a person" aria-label="Find a person" />
+              </label>
+              <button class="chip" type="button" data-scope="all" aria-pressed="true">Everyone</button>
+              <button class="chip" type="button" data-scope="many" aria-pressed="false">3+ claims</button>
+            </div>
+
+            <div id="list"></div>
+            <div id="pager"></div>
+            <div id="drawer"></div>
+          </div>
+
+          <div class="toast" id="toast"><span id="toast-text"></span><button type="button" id="toast-undo">Undo</button></div>
+        </div>
+      </div>
+    </div>
+    <p class="caption">
+      The claims are generated from four rules over an invented 96-person household, so the numbers
+      behave like a real import: a few people carry most of the work.
+    </p>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">API</span>
+    <h2>What the <code>load</code> returns</h2>
+    <p class="intro">
+      The engine is untouched: it still evaluates <code>{ kind: 'household-reviewed' }</code> against
+      one view and returns every claim that stands. Paging is a <b>pure function over the grouped
+      result</b>, which keeps it unit-testable without a database and keeps the rule engine the only
+      place that decides what a relationship is.
+    </p>
+    <pre class="code"><i>// src/lib/suggestions/paging.ts — pure, no deps</i>
+export const <b>PEOPLE_PER_PAGE</b> = 10;
+export const <b>CLAIMS_PER_GROUP</b> = 5;
+
+<i>/** One page of subject groups, plus the totals for the whole household. */</i>
+export interface <b>ReviewPage</b> {
+  <i>/** Groups on this page, in the household's stable order. */</i>
+  readonly groups: readonly FoldedGroup[];
+  <i>/** Open claims across the household — the full count, never the page's. */</i>
+  readonly openClaims: number;
+  <i>/** People carrying at least one open claim, household-wide. */</i>
+  readonly people: number;
+  <i>/** 1-based position of this page's first group, for "26–50 of 96". */</i>
+  readonly from: number;
+  <i>/** Sort key to pass back as `after`, or null on the last page. */</i>
+  readonly nextCursor: string | null;
+  <i>/** Sort key to pass back as `before`, or null on the first page. */</i>
+  readonly previousCursor: string | null;
+}
+
+<i>/** A subject's claims, cut to CLAIMS_PER_GROUP with the remainder counted. */</i>
+export interface <b>FoldedGroup</b> {
+  readonly subjectId: string;
+  readonly subjectName: string;
+  readonly claims: readonly NamedClaim[];   <i>// at most CLAIMS_PER_GROUP</i>
+  readonly totalClaims: number;             <i>// what the rules actually found</i>
+}
+
+export function <b>pageOfGroups</b>(
+  groups: readonly ClaimGroup[],
+  cursor: { after?: string; before?: string }
+): ReviewPage;</pre>
+
+    <div class="tablewrap" style="margin-top:18px">
+      <table>
+        <thead><tr><th>Route</th><th>Shows</th><th>Why it is its own address</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="k"><code>/settings/relationships?review</code></td>
+            <td>The first 10 people</td>
+            <td>The entry. Same route and same three form actions as the shipped screen.</td>
+          </tr>
+          <tr>
+            <td class="k"><code>…?review&amp;after=<i>key</i></code></td>
+            <td>The next 10 people</td>
+            <td>A link, not a script — the pager works with JavaScript off, and a page is shareable
+              between two members working the same import.</td>
+          </tr>
+          <tr>
+            <td class="k"><code>/contacts/&lt;id&gt;?review</code></td>
+            <td>One person's claims, all of them</td>
+            <td>Where fold 2 leads. Drawn as a <code>?person=</code> view inside Settings; built
+              as the person page's own <i>Check relationships</i> panel, which already does
+              exactly this — one screen, reached two ways.</td>
+          </tr>
+          <tr>
+            <td class="k"><code>…?review&amp;q=<i>text</i></code></td>
+            <td>Groups whose subject matches</td>
+            <td>Filtering is over the computed groups, so it never runs a second rule pass.</td>
+          </tr>
+          <tr>
+            <td class="k"><code>…?declined</code></td>
+            <td>The declined log, paged</td>
+            <td>Fold 3. History belongs behind its own door once it outgrows a drawer.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">The number that must not lie</span>
+    <h2>Counting vs. rendering</h2>
+    <p class="intro">
+      Every count on the screen is household-wide; every list is a page. Mixing the two is the one
+      way this design can go wrong, so it is written down as a table rather than left to a component.
+    </p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>What the reader sees</th><th>Counts</th><th>Renders</th></tr></thead>
+        <tbody>
+          <tr><td class="k"><b>Open 207</b></td><td>every open claim in the household</td><td>—</td></tr>
+          <tr><td class="k"><b>People 96</b></td><td>every subject with at least one open claim</td><td>—</td></tr>
+          <tr><td class="k"><b>People 1–10 of 96</b></td><td>the household</td><td>this page's 25 groups</td></tr>
+          <tr><td class="k"><b>39 claims</b> in a group header</td><td>that person's open claims</td><td>the first 5</td></tr>
+          <tr><td class="k"><b>34 more for Erika Roth</b></td><td>the remainder, spelled out</td><td>a link to her page</td></tr>
+          <tr><td class="k"><b>Answered this visit</b></td><td>what you did, across pages</td><td>a bar that fills</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Small screen</span>
+    <h2>Where a long list actually hurts</h2>
+    <p class="intro">
+      A phone is the honest test: 207 rows is a scroll with no bottom, and every accepted row that
+      vanishes moves the next tap under your thumb. Ten people per page gives the screen an
+      end, and the answered rows stay in place until you leave it.
+    </p>
+    <div class="phones">
+      <div>
+        <div class="phone">
+          <div class="statusbar"><span>09:41</span><span>●●● ▲ 82%</span></div>
+          <div class="pbody">
+            <h4>Suggestions</h4>
+            <p class="sub">207 open · people 1–10 of 96</p>
+            <div class="pbar"><i style="width:4%"></i></div>
+            <div class="pcard">
+              <div class="sentence">Bettina Meier is a parent of Lisa Meier</div>
+              <div class="foot"><span class="conf certain">certain</span> Lisa is Hans’s sibling. <span class="rule">L1</span></div>
+              <div class="answers">
+                <button class="btn primary small" type="button">Accept</button>
+                <button class="btn danger small" type="button">Decline</button>
+              </div>
+            </div>
+            <div class="pcard">
+              <div class="sentence" style="color:var(--fg-muted);font-weight:500">Otto Meier is a parent of Lisa Meier</div>
+              <div class="foot"><span class="state added">Added</span> stays here until you leave the page</div>
+              <div class="answers"><button class="btn ghost small" type="button">Undo</button></div>
+            </div>
+          </div>
+          <div class="tabbar"><span>Home</span><span>People</span><span>Circles</span><span class="on">Settings</span></div>
+        </div>
+        <p class="caption">One page has an end</p>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="statusbar"><span>09:44</span><span>●●● ▲ 82%</span></div>
+          <div class="pbody">
+            <h4>Erika Roth</h4>
+            <p class="sub">39 open claims · from the Roth import</p>
+            <div class="pcard">
+              <div class="sentence">Klaus Roth and Erika Roth are siblings</div>
+              <div class="foot"><span class="conf likely">likely</span> Both were entered through a parent who is not in Stella. <span class="rule">L5</span></div>
+              <div class="answers">
+                <button class="btn primary small" type="button">Accept</button>
+                <button class="btn danger small" type="button">Decline</button>
+              </div>
+            </div>
+            <div class="more-in-group" style="font-size:12.5px">
+              <span><b>34</b> more below — this is the whole list, nothing is cut</span>
+            </div>
+          </div>
+          <div class="tabbar"><span>Home</span><span>People</span><span>Circles</span><span class="on">Settings</span></div>
+        </div>
+        <p class="caption">Fold 2, opened</p>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="statusbar"><span>09:52</span><span>●●● ▲ 81%</span></div>
+          <div class="pbody">
+            <h4>Suggestions</h4>
+            <p class="sub">People 1–10 of 96 · all answered</p>
+            <div class="pbar"><i style="width:100%"></i></div>
+            <div class="empty" style="padding:26px 14px">
+              <div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+              <b>This page is done</b>
+              <p>168 claims still open across the rest of the household. It keeps for another day.</p>
+            </div>
+            <button class="btn primary" style="width:100%;justify-content:center" type="button">Next 10 people</button>
+          </div>
+          <div class="tabbar"><span>Home</span><span>People</span><span>Circles</span><span class="on">Settings</span></div>
+        </div>
+        <p class="caption">A stopping point, on purpose</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Copy</span>
+    <h2>New keys, both languages</h2>
+    <p class="intro">
+      The row copy is shipped and reused verbatim. Only the folds need words, and each one names a
+      number — the plural forms matter more than usual here.
+    </p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Key</th><th>English</th><th>Deutsch</th></tr></thead>
+        <tbody>
+          <tr><td class="k"><code>settings.relationships.openAcross</code></td><td>{claims} open across {people} people</td><td>{claims} offen bei {people} Personen</td></tr>
+          <tr><td class="k"><code>settings.relationships.peopleRange</code></td><td>People {from}–{to} of {total}</td><td>Personen {from}–{to} von {total}</td></tr>
+          <tr><td class="k"><code>settings.relationships.nextPeople</code></td><td>Next {n} people</td><td>Nächste {n} Personen</td></tr>
+          <tr><td class="k"><code>settings.relationships.previousPeople</code></td><td>Previous {n} people</td><td>Vorherige {n} Personen</td></tr>
+          <tr><td class="k"><code>settings.relationships.moreForPerson</code></td><td>{n} more for {name}</td><td>{n} weitere für {name}</td></tr>
+          <tr><td class="k"><code>settings.relationships.openAll</code></td><td>Open all {n}</td><td>Alle {n} öffnen</td></tr>
+          <tr><td class="k"><code>settings.relationships.answeredThisVisit</code></td><td>{n} answered this visit</td><td>{n} in diesem Besuch beantwortet</td></tr>
+          <tr><td class="k"><code>settings.relationships.pageDone</code></td><td>This page is done. {n} claims still open across the rest of the household.</td><td>Diese Seite ist erledigt. {n} Vorschläge sind im restlichen Haushalt noch offen.</td></tr>
+          <tr><td class="k"><code>settings.relationships.findPerson</code></td><td>Find a person</td><td>Person suchen</td></tr>
+          <tr><td class="k"><code>settings.relationships.declinedLog</code></td><td>Declined suggestions ({n})</td><td>Abgelehnte Vorschläge ({n})</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Build order</span>
+    <h2>What this takes on top of what shipped</h2>
+    <ul class="notes">
+      <li><b><code>paging.ts</code> first, as pure functions.</b> <code>pageOfGroups</code> and the
+        group fold take grouped claims and a cursor and return a <code>ReviewPage</code> — no
+        repository, no viewer, no SvelteKit. Its tests are the whole safety net: a cursor that lands
+        on a group answered away, a household smaller than one page, a group of exactly
+        <code>CLAIMS_PER_GROUP</code>, and the property that the pages of a household concatenate
+        back to every group exactly once.</li>
+      <li><b>A stable sort key.</b> Grouping is by subject today but the order is whatever the
+        engine emitted. Paging needs a total order that does not move between requests — sort name
+        then id, and the id breaks every tie.</li>
+      <li><b>The route reads the cursor, the engine does not.</b>
+        <code>reviewHousehold</code> keeps returning everything; the <code>load</code> groups, pages
+        and hands the component a <code>ReviewPage</code>. The engine stays the one place that
+        decides what a relationship is.</li>
+      <li><b>The counters come from the unpaged result</b>, so they are computed before the slice —
+        a regression here is silent, which is why the counting-vs-rendering table above is a
+        contract and not a note.</li>
+      <li><b>Then the screen</b>, then verification in the running app, then the e2e: a page that
+        answers a claim on page 2 and proves the household count dropped while the page kept its
+        other rows.</li>
+    </ul>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Open questions</span>
+    <h2>What this mockup does not decide</h2>
+    <ul class="notes">
+      <li><b>Is 10 the right page?</b> It started at 25, and rendering the prototype settled it:
+        25 people came to 44 rows and a <b>6,115px</b> page — 9.3 phone screens, the same wall the
+        fold is supposed to remove. At 10 it is 17 rows, <b>2,401px</b> on a laptop and 3.8 phone
+        screens, which is a chore somebody finishes. Both numbers are measured in the prototype at
+        1280×1000 and 390×844, not estimated. It is still a constant in a pure module, and it
+        should move on the next measurement rather than on a feeling.</li>
+      <li><b>Does the run need measuring before any of this?</b> Yes, and it still has not been.
+        Folding fixes the page; it does nothing for a rule pass that takes eight seconds. If
+        <code>evaluate</code> over a 2000-person graph turns out slow, that is a separate problem
+        with a separate answer, and this design does not hide it.</li>
+      <li><b>Should a page remember where you were?</b> The cursor is in the URL, so the back button
+        already works. Storing a "you got to here" marker per member is a different feature — a
+        resumable chore — and it needs a reason beyond convenience before it earns a table.</li>
+      <li><b>Does search belong here at all?</b> It is the one control that is not folding. It earns
+        its place only if people arrive wanting a specific person; if they arrive wanting to work
+        the list down, it is clutter. Worth watching rather than deciding now.</li>
+      <li><b>What about a person with 300 claims?</b> Fold 2 sends them to a page that then has the
+        original problem. The same pager applies there, but the rule producing 300 claims about one
+        person is the actual bug, and the number on screen is what makes it visible.</li>
+    </ul>
+    <p class="footnote">
+      Concept for <code>docs/02-features.md</code> §2.4.1 · the no-cap decision in
+      <code>docs/04-architecture.md</code> §4.9 · the screen it extends in
+      <code>docs/concepts/relationship-review-concept.html</code> · rules and prose in
+      <code>docs/concepts/relationship-suggestions.md</code> §6.3–6.6 · engine in
+      <code>src/lib/suggestions/</code>, rows in
+      <code>src/lib/components/KinSuggestions.svelte</code>, folds in
+      <code>src/lib/suggestions/paging.ts</code> and
+      <code>src/lib/relationships/review-url.ts</code>. Status: built (docs/02 §2.4.1).
+    </p>
+  </section>
+</div>
+
+<script>
+  /* ── Theme toggle ─────────────────────────────────────────────────────── */
+  const root = document.documentElement;
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const dark = root.getAttribute('data-theme') === 'dark'
+      || (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.setAttribute('data-theme', dark ? 'light' : 'dark');
+  });
+
+  /* The three folds, as the route would hold them. */
+  const PEOPLE_PER_PAGE = 10;
+  const CLAIMS_PER_GROUP = 5;
+
+  /*
+   * An invented 96-person household, shaped like a real import: most people carry one or two
+   * claims and a handful carry dozens. Generated rather than written out so the prototype is
+   * honestly long — a hand-written fixture of six rows proves nothing about this design.
+   */
+  const FIRST = ['Erika','Klaus','Lisa','Hans','Otto','Bettina','Mira','Lio','Peter','Jan','Nora','Walter',
+    'Tim','Anna','Mia','Jana','Ruth','Beat','Silvan','Ronja','Kurt','Vreni','Urs','Doris','Fritz','Heidi',
+    'Marco','Sonja','Rolf','Karin','Bruno','Elsa'];
+  const LAST = ['Roth','Meier','Vogt','Frei','Weber','Odermatt','Ammann','Brunner','Steiner','Keller',
+    'Huber','Baumann'];
+  const ACCENTS = ['#ea76cb','#179299','#1e66f5','#df8e1d','#fe640b','#7287fd','#40a02b','#209fb5'];
+  /*
+   * Each reason names a *third* person, the way the shipped rules do — a reason that only
+   * restates its own claim ("Erika is Anna's parent", to support "Erika is a parent of Anna")
+   * would make the prototype argue against the engine it is drawn for.
+   */
+  const RULES = [
+    { id:'L1', conf:'certain', reason:(other, subject, via) => via + ' is ' + subject + '’s sibling.' },
+    { id:'L2', conf:'certain', reason:(other, subject, via) => other + ' is ' + via + '’s parent.' },
+    { id:'L3', conf:'likely',  reason:(other, subject, via) => other + ' is ' + via + '’s only current partner.' },
+    { id:'L5', conf:'likely',  reason:() => 'Both were entered through a parent who is not in Stella.' }
+  ];
+
+  /* A tiny seeded PRNG, so the prototype reads the same on every load and in a screenshot. */
+  function seeded(seed) {
+    let s = seed;
+    return () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; };
+  }
+
+  function buildHousehold() {
+    const rand = seeded(20260916);
+    const people = [];
+    for (let i = 0; i < 96; i += 1) {
+      const first = FIRST[i % FIRST.length];
+      const last = LAST[Math.floor(i / FIRST.length) % LAST.length];
+      const name = first + ' ' + last;
+      /* Two people carry an imported family's worth of claims; everyone else carries one to four. */
+      const heavy = i === 0 || i === 37;
+      const total = heavy ? 39 - (i === 37 ? 12 : 0) : 1 + Math.floor(rand() * 2);
+      const claims = [];
+      /* The engine deduplicates on (relation, pairKey), so the prototype must not show a pair twice. */
+      const seen = new Set();
+      for (let n = 0; claims.length < total && n < total * 6; n += 1) {
+        const rule = RULES[Math.floor(rand() * RULES.length)];
+        const otherFirst = FIRST[Math.floor(rand() * FIRST.length)];
+        const viaFirst = FIRST[Math.floor(rand() * FIRST.length)];
+        if (otherFirst === first || viaFirst === first || viaFirst === otherFirst) continue;
+        const other = otherFirst + ' ' + last;
+        const relation = rule.id === 'L5' ? 'sibling' : 'parent';
+        const pairKey = relation + ':' + [otherFirst, first].sort().join('\u0000');
+        if (seen.has(pairKey)) continue;
+        seen.add(pairKey);
+        claims.push({
+          id: i + '-' + n,
+          sentence: relation === 'sibling'
+            ? other + ' and ' + name + ' are siblings'
+            : other + ' is a parent of ' + name,
+          conf: rule.conf,
+          rule: rule.id,
+          reason: rule.reason(otherFirst, first, viaFirst),
+          state: 'open'
+        });
+      }
+      people.push({
+        id: 'p' + i,
+        name,
+        sub: heavy ? 'from the ' + last + ' import' : 'born ' + (1948 + Math.floor(rand() * 60)),
+        initials: first[0] + last[0],
+        accent: ACCENTS[i % ACCENTS.length],
+        claims
+      });
+    }
+    /* The stable total order paging depends on: name, then id to break every tie. */
+    return people.sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
+  }
+
+  const household = buildHousehold();
+  const DECLINED_EARLIER = 14;
+
+  let cursor = 0;          // index of this page's first group, in the stable order
+  let scope = 'all';
+  let query = '';
+  let personId = null;     // set when fold 2 is opened
+  let answered = 0;
+  let lastAction = null;
+
+  const list = document.getElementById('list');
+  const pagerHost = document.getElementById('pager');
+  const drawerHost = document.getElementById('drawer');
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toast-text');
+
+  const openClaimsOf = (person) => person.claims.filter((c) => c.state === 'open');
+
+  /* Every group with work left, in stable order — the unpaged result the counters read. */
+  function visibleGroups() {
+    return household.filter((p) => {
+      if (query && !p.name.toLowerCase().includes(query)) return false;
+      if (scope === 'many' && openClaimsOf(p).length < 3) return false;
+      /* A group answered away during this visit stays on its page, so the list never jumps. */
+      return openClaimsOf(p).length > 0 || p.touched;
+    });
+  }
+
+  function claimRow(c) {
+    if (c.state === 'open') {
+      return '<div class="claim"><span class="sentence">' + c.sentence + '</span>'
+        + '<span class="answers">'
+        + '<button class="btn primary small" data-act="accept" data-id="' + c.id + '" type="button">Accept</button>'
+        + '<button class="btn danger small" data-act="decline" data-id="' + c.id + '" type="button">Decline</button>'
+        + '</span><span class="foot"><span class="conf ' + c.conf + '">' + c.conf + '</span>'
+        + c.reason + '<span class="rule">' + c.rule + '</span></span></div>';
+    }
+    const added = c.state === 'accepted';
+    return '<div class="claim settled"><span class="sentence">'
+      + (added ? c.sentence : '<s>' + c.sentence + '</s>') + '</span>'
+      + '<span class="answers"><button class="btn ghost small" data-act="restore" data-id="' + c.id
+      + '" type="button">' + (added ? 'Undo' : 'Offer again') + '</button></span>'
+      + '<span class="foot"><span class="state ' + (added ? 'added">Added' : 'declined">Declined')
+      + '</span>stays here until you leave the page</span></div>';
+  }
+
+  function groupCard(person, claims, folded) {
+    const total = person.claims.filter((c) => c.state === 'open' || c.touchedHere).length;
+    return '<section class="group"><header>'
+      + '<span class="av" style="background:color-mix(in srgb,' + person.accent + ' 22%,var(--card));color:var(--fg)">'
+      + person.initials + '</span>'
+      + '<span class="who"><b>' + person.name + '</b><span class="sub">' + person.sub + '</span></span>'
+      + '<span class="count">' + total + (total === 1 ? ' claim' : ' claims') + '</span>'
+      + '</header><div class="claims">'
+      + claims.map(claimRow).join('')
+      + (folded > 0
+        ? '<div class="more-in-group"><span class="state folded">folded</span>'
+          + '<span><b>' + folded + '</b> more for ' + person.name + '</span>'
+          + '<button class="btn ghost small" data-open-person="' + person.id + '" type="button">Open all '
+          + total + '</button></div>'
+        : '')
+      + '</div></section>';
+  }
+
+  function renderPersonPage(person) {
+    document.getElementById('url-tail').textContent = '/settings/relationships?review&person=' + person.id;
+    document.getElementById('crumbs').innerHTML = 'Settings <span>›</span> '
+      + '<a data-back="1">Relationships</a> <span>›</span> <span class="current">' + person.name + '</span>';
+    document.getElementById('head-title').textContent = person.name;
+    document.getElementById('head-sub').textContent =
+      'Every claim about this person, unfolded. This is the same list the person page produces.';
+    document.getElementById('toolbar').hidden = true;
+    const shown = person.claims.filter((c) => c.state === 'open' || c.touchedHere);
+    list.innerHTML = groupCard(person, shown, 0);
+    pagerHost.innerHTML = '<div class="pager"><button class="btn ghost" data-back="1" type="button">'
+      + '← Back to the household list</button></div>';
+    drawerHost.innerHTML = '';
+  }
+
+  function render() {
+    if (personId) {
+      renderPersonPage(household.find((p) => p.id === personId));
+      updateCounters();
+      return;
+    }
+
+    document.getElementById('toolbar').hidden = false;
+    document.getElementById('head-title').textContent = 'Suggestions';
+    document.getElementById('head-sub').textContent =
+      'Everything Stella can see, checked at once. Nothing is stored until you accept it, and '
+      + 'nothing here is hidden from the count.';
+    document.getElementById('crumbs').innerHTML =
+      'Settings <span>›</span> <span class="current">Relationships</span>';
+
+    const groups = visibleGroups();
+    if (cursor >= groups.length) cursor = Math.max(0, (Math.ceil(groups.length / PEOPLE_PER_PAGE) - 1) * PEOPLE_PER_PAGE);
+    const page = groups.slice(cursor, cursor + PEOPLE_PER_PAGE);
+
+    document.getElementById('url-tail').textContent = '/settings/relationships?review'
+      + (cursor > 0 ? '&after=' + encodeURIComponent(groups[cursor - 1].name) : '')
+      + (query ? '&q=' + encodeURIComponent(query) : '');
+
+    if (!page.length) {
+      list.innerHTML = '<div class="empty"><div class="ic">'
+        + '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>'
+        + '<b>' + (query ? 'Nobody by that name has anything open' : 'Nothing open')
+        + '</b><p>' + (query
+          ? 'Clear the search to see the rest of the household.'
+          : 'Stella finds nothing across your household that is not on record already.')
+        + '</p></div>';
+    } else {
+      list.innerHTML = page.map((person) => {
+        const shown = person.claims.filter((c) => c.state === 'open' || c.touchedHere);
+        return groupCard(person, shown.slice(0, CLAIMS_PER_GROUP), Math.max(0, shown.length - CLAIMS_PER_GROUP));
+      }).join('');
+    }
+
+    const to = Math.min(cursor + PEOPLE_PER_PAGE, groups.length);
+    pagerHost.innerHTML = groups.length
+      ? '<div class="pager">'
+        + '<button class="btn ghost" data-page="prev" type="button"' + (cursor === 0 ? ' disabled' : '') + '>← Previous ' + PEOPLE_PER_PAGE + '</button>'
+        + '<span class="where">People <b>' + (cursor + 1) + '–' + to + '</b> of <b>' + groups.length + '</b></span>'
+        + '<span class="grow"></span>'
+        + '<button class="btn primary" data-page="next" type="button"' + (to >= groups.length ? ' disabled' : '') + '>Next ' + PEOPLE_PER_PAGE + ' people →</button>'
+        + '</div>'
+      : '';
+
+    drawerHost.innerHTML = '<div class="drawerlink">'
+      + '<span>Declined earlier — <b>' + DECLINED_EARLIER + '</b> claims somebody in the household said no to.</span>'
+      + '<button class="btn ghost small" type="button" data-declined="1">Open the log</button></div>';
+
+    updateCounters();
+  }
+
+  function updateCounters() {
+    const open = household.reduce((n, p) => n + openClaimsOf(p).length, 0);
+    const people = household.filter((p) => openClaimsOf(p).length > 0).length;
+    document.getElementById('m-open').textContent = open;
+    document.getElementById('m-people').textContent = people;
+    document.getElementById('m-answered').textContent = answered;
+    document.getElementById('m-declined').textContent = DECLINED_EARLIER;
+    document.getElementById('nav-badge').textContent = open;
+    const share = answered / (open + answered || 1);
+    document.getElementById('m-fill').style.width = (share * 100).toFixed(1) + '%';
+    document.getElementById('m-cap').textContent = answered
+      ? answered + ' answered this visit · ' + open + ' still open across the household'
+      : 'Nothing answered yet. There is no order you have to do this in.';
+  }
+
+  function showToast(text, undoable) {
+    toastText.textContent = text;
+    document.getElementById('toast-undo').hidden = !undoable;
+    toast.classList.add('show');
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => toast.classList.remove('show'), 4200);
+  }
+
+  function findClaim(id) {
+    for (const person of household) {
+      const claim = person.claims.find((c) => c.id === id);
+      if (claim) return { person, claim };
+    }
+    return null;
+  }
+
+  /* On `.main`, not `.canvas`: the breadcrumb back-link lives in the topbar. */
+  document.querySelector('.main').addEventListener('click', (event) => {
+    const back = event.target.closest('[data-back]');
+    if (back) { personId = null; render(); return; }
+
+    const openPerson = event.target.closest('[data-open-person]');
+    if (openPerson) { personId = openPerson.dataset.openPerson; render(); return; }
+
+    const pageBtn = event.target.closest('[data-page]');
+    if (pageBtn && !pageBtn.disabled) {
+      cursor = pageBtn.dataset.page === 'next'
+        ? cursor + PEOPLE_PER_PAGE
+        : Math.max(0, cursor - PEOPLE_PER_PAGE);
+      document.querySelector('.canvas').scrollTop = 0;
+      render();
+      return;
+    }
+
+    if (event.target.closest('[data-declined]')) {
+      showToast('The declined log is its own paged screen — fold 3.', false);
+      return;
+    }
+
+    const chip = event.target.closest('.chip');
+    if (chip) {
+      scope = chip.dataset.scope;
+      cursor = 0;
+      document.querySelectorAll('#toolbar .chip').forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+      render();
+      return;
+    }
+
+    const answerBtn = event.target.closest('button[data-act]');
+    if (!answerBtn) return;
+    const hit = findClaim(answerBtn.dataset.id);
+    if (!hit) return;
+    const { person, claim } = hit;
+    const act = answerBtn.dataset.act;
+    if (act === 'restore') {
+      claim.state = 'open';
+      claim.touchedHere = false;
+      answered = Math.max(0, answered - 1);
+      showToast('Back in the open list. Nothing is stored.', false);
+    } else {
+      claim.state = act === 'accept' ? 'accepted' : 'declined';
+      claim.touchedHere = true;   // keeps the row on this page for the visit
+      person.touched = true;
+      answered += 1;
+      lastAction = claim;
+      showToast(act === 'accept' ? 'Added — ' + claim.sentence : 'Declined. It will not be offered again.', true);
+    }
+    render();
+  });
+
+  document.getElementById('toast-undo').addEventListener('click', () => {
+    if (!lastAction) return;
+    lastAction.state = 'open';
+    lastAction.touchedHere = false;
+    answered = Math.max(0, answered - 1);
+    lastAction = null;
+    toast.classList.remove('show');
+    render();
+  });
+
+  document.getElementById('search').addEventListener('input', (event) => {
+    query = event.target.value.trim().toLowerCase();
+    cursor = 0;
+    render();
+  });
+
+  document.getElementById('run-btn').addEventListener('click', () => {
+    showToast('Checked 96 people. Answered claims are not offered again.', false);
+  });
+
+  render();
+</script>

@@ -51,6 +51,35 @@ export const settings = {
 		p.count === 1 ? '1 suggestion open' : `${p.count} suggestions open`,
 	'settings.relationships.nothing':
 		'Nothing open. Stella finds nothing across your household that is not on record already.',
+	/*
+	 * The folds (docs/concepts/relationship-review-at-scale.html). Each one names the number it
+	 * is holding back — "22 more for Bettina Meier", not "show more" — because a number the
+	 * reader can check is the difference between folding a list and quietly truncating it.
+	 */
+	'settings.relationships.openAcross': (p: { claims: number; people: number }) =>
+		`${p.claims} open across ${p.people === 1 ? '1 person' : `${p.people} people`}`,
+	'settings.relationships.peopleRange': (p: { from: number; to: number; total: number }) =>
+		`People ${p.from}–${p.to} of ${p.total}`,
+	'settings.relationships.answerRange': (p: { from: number; to: number; total: number }) =>
+		`Answers ${p.from}–${p.to} of ${p.total}`,
+	'settings.relationships.nextPeople': (p: { count: number }) => `Next ${p.count} people`,
+	'settings.relationships.previousPeople': (p: { count: number }) => `Previous ${p.count} people`,
+	'settings.relationships.nextPage': 'Next',
+	'settings.relationships.previousPage': 'Previous',
+	'settings.relationships.moreForPerson': (p: { count: number; name: string }) =>
+		`${p.count} more for ${p.name}`,
+	'settings.relationships.openAll': (p: { count: number }) => `Open all ${p.count}`,
+	'settings.relationships.findPerson': 'Find a person',
+	'settings.relationships.searchSubmit': 'Search',
+	'settings.relationships.clearSearch': 'Clear',
+	'settings.relationships.noMatch': (p: { query: string }) =>
+		`Nobody called “${p.query}” has anything open.`,
+	'settings.relationships.declinedLog': (p: { count: number }) =>
+		p.count === 1 ? '1 declined suggestion' : `${p.count} declined suggestions`,
+	'settings.relationships.declinedHeading': 'Declined suggestions',
+	'settings.relationships.declinedBlurb':
+		'What somebody in this household said no to. Offering one again puts it back in the list.',
+	'settings.relationships.backToList': 'Back to the list',
 	'settings.account.heading': 'Account',
 	'settings.about.heading': 'About',
 	'settings.about.version': (p: { version: string }) => `Stella ${p.version}`,

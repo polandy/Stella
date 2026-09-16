@@ -235,6 +235,34 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   is idempotent, so the loser of that race gets a duplicate refused rather than a wrong row.
   What persists is the dismissal log alone (docs/03 §3.9, docs/concepts/relationship-
   suggestions.md §6.6).
+- **No cap on what a review lists** — the concept asked for one, and it was refused: the engine
+  evaluates every claim either way, so a cap hides work rather than saving it, and a household
+  opening the review screen has asked to see what stands. The cost is a long page on a large
+  imported household; the answer there is paging or collapsing groups, not truncation. A rule
+  whose output is quadratic (L6, colleagues by company) is bounded in the rule or not built.
+  What keeps a long list safe is that there is no bulk accept and that every answer is stored
+  (docs/concepts/relationship-suggestions.md §6.3).
+- **The review pages by person, and the cursor is a person rather than an offset** — the other
+  half of the decision above (concept:
+  `docs/concepts/relationship-review-at-scale.html`). The list shrinks while it is answered, so
+  `?after=25` would step over exactly the rows that slid up into the gap; the cursor is the sort
+  key of the last group shown, which is stable under answering and under a person being renamed
+  out from under it. Paging is a pure function over the grouped result
+  (`src/lib/suggestions/paging.ts`), not a change to the engine — the rule set stays the one
+  place that decides what a relationship is, and the page can be tested without a graph. The
+  page size (ten) was measured against the prototype rather than picked: twenty-five came to
+  6,115px and 9.3 phone screens, which is the wall the fold exists to remove.
+- **Every total the review shows is counted before the slice** — the header describes the
+  household, the range describes the page, and a search moves only the second. It is written
+  down because the failure is silent: a count taken off the rendered rows looks right on a small
+  household and quietly understates every large one. Hence the totals come out of `reviewPage`
+  rather than off `data.groups`, and a unit case asserts them against a household deliberately
+  larger than one page.
+- **An answer carries its place in the body, not on the URL** — a form action resolves against
+  the current address, so `?/dismissSuggestion` replaces the whole query string and the search
+  and cursor never reach the server. The place travels in a hidden field and the redirect is
+  rebuilt with `reviewHref`, which writes the path itself — so the field cannot be steered
+  anywhere but back into the review. Found by the e2e, not by reading the code.
 - **A hand-rolled vCard reader over a package** — the subset a contacts export uses is small
   and frozen (RFC 6350 / RFC 2426): unfolding, escaping, structured values. Every published
   parser weighs far more than the two dozen lines that saves, against the minimal-deps rule

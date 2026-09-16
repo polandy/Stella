@@ -257,6 +257,16 @@ suggestion is about, with the same three answers on every row. Nothing is stored
 accept it, and a claim you have already answered is not offered again — so checking twice in a
 row is free.
 
+Nothing is left out of that list, however large your household is — but it arrives ten people
+at a time, so there is always an end in sight and a sensible place to stop. The line at the top
+tells you how much is open across the whole household; the line under the list tells you where
+in it you are. If one person has collected more suggestions than fit, the card says how many
+more and links to their profile, where you can work through all of them. **Find a person**
+narrows the list to one family when you have somebody in mind, and answering a suggestion
+leaves you exactly where you were rather than back at the top. Once the household has turned
+down more than a handful, the declined ones move from the drawer at the foot of the list onto a
+page of their own — still with *Offer again* on every row.
+
 Every profile shows the person at the centre of their own small constellation. **Explore
 connections** opens the bigger picture, where you can follow the web outward from one
 person and trace how any two people are linked.
