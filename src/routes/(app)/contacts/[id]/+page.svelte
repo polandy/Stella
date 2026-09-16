@@ -1068,7 +1068,9 @@
 										 detour via the other profile (docs/02 §2.4). -->
 									<!-- Read, not bound: binding would hand the select a value of its own before
 										 anybody has chosen, and an unmatched one deselects every option — the form
-										 would then post no type at all. -->
+										 would then post no type at all. `selected` still has to follow the choice,
+										 because picking the other person regroups the entries and a rebuilt option
+										 loses the selection the DOM was holding. -->
 									<select
 										name="typeChoice"
 										onchange={(event) => (relationshipChoice = event.currentTarget.value)}
@@ -1082,14 +1084,21 @@
 													})}
 												>
 													{#each group.options as option (option.value)}
-														<option value={option.value} disabled>
+														<option
+															value={option.value}
+															selected={option.value === relationshipChoice}
+															disabled
+														>
 															{relationshipTypeLabel(t, option.type, option.side)}
 														</option>
 													{/each}
 												</optgroup>
 											{:else}
 												{#each group.options as option (option.value)}
-													<option value={option.value}>
+													<option
+														value={option.value}
+														selected={option.value === relationshipChoice}
+													>
 														{relationshipTypeLabel(t, option.type, option.side)}
 													</option>
 												{/each}

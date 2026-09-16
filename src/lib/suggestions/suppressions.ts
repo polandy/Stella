@@ -1,4 +1,5 @@
 import { deriveKinship, type KinTerm } from '$lib/kinship/kinship';
+import { MAX_PARENTS } from '$lib/relationships/exclusions';
 import type { Relation } from './types';
 import type { SuggestionView } from './view';
 
@@ -48,4 +49,20 @@ export function isDerivable(
 	return deriveKinship(view, objectId).some(
 		(kin) => kin.personId === subjectId && terms.includes(kin.term)
 	);
+}
+
+/**
+ * Whether storing this claim would be **refused** (suppression 5, docs/02 §2.4). Offering
+ * something and then rejecting it on *Accept* is worse than never offering it: the household
+ * is told a link follows, presses the only button there is, and gets an error about a rule it
+ * never broke. The parent cap is the one such rule an implication can reach, since both link
+ * rules offer parent claims and a child already has whatever parents it has.
+ */
+export function isRefusedByRules(
+	view: SuggestionView,
+	relation: Relation,
+	_subjectId: string,
+	objectId: string
+): boolean {
+	return relation === 'parent' && view.parentsOf(objectId).size >= MAX_PARENTS;
 }
