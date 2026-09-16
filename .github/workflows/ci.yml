@@ -16,9 +16,10 @@ concurrency:
 
 env:
   BUN_VERSION: 1.3.13
-  # The suite compares dates it builds itself against dates the server works out from its own
-  # clock, so the two have to agree on where the day starts. The runner happens to be UTC
-  # already; saying so keeps a changed runner image from moving every date by a day.
+  # Workflow-wide, so the e2e server and the browser driving it cannot end up in different
+  # days: the suite compares dates it builds itself against dates the server works out from
+  # its own clock. The runner happens to be UTC already; saying so keeps a changed runner
+  # image from silently moving every date by a day.
   TZ: UTC
 
 jobs:
