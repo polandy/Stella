@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { CLAIMS_PER_GROUP } from '../src/lib/suggestions/paging';
-import { addPerson, openPerson, pickPerson, signIn } from './app';
+import { openPerson, signIn } from './app';
+import { LINK, seedHousehold } from './seed';
 
 /*
  * The household-wide relationship review (docs/02 §2.4.1,
@@ -41,8 +42,6 @@ const reviewFor = (f: Family) => `${REVIEW}?review&q=${f.surname}`;
 /** The sentence the household screen should carry, once the links below are in place. */
 const claimOf = (f: Family) => `${f.parent} is a parent of ${f.other}`;
 
-const add = (page: Page, name: string) => addPerson(page, name.split(' ')[0]!, name.split(' ')[1]!);
-
 /**
  * The sentence the rule gives for its claim: both people in full, read from the subject's side
  * — *Ronja Ammann is Silvan Ammann's sibling* — which is the claim's direction rather than the
@@ -50,31 +49,22 @@ const add = (page: Page, name: string) => addPerson(page, name.split(' ')[0]!, n
  */
 const reasonOf = (f: Family) => `${f.other} is ${f.one}’s sibling.`;
 
-/** Fills the *Add relationship* form on the open person and submits it. */
-async function addLink(page: Page, type: string, person: string): Promise<void> {
-	await page.getByRole('button', { name: 'Add relationship' }).click();
-	const form = page.locator('form[action="?/addRelationship"]');
-	await form.locator('select[name=typeChoice]').selectOption({ label: type });
-	await pickPerson(form.getByLabel('Person'), person);
-	await form.getByRole('button', { name: 'Add', exact: true }).click();
-}
-
 /**
- * A family whose claim nobody has answered, and whose profiles nobody opens again: `one` and
- * `other` are siblings, `parent` is `one`'s parent, so *parent is a parent of other* follows.
- * The write-time block that offered it is left behind unanswered on purpose — that is the
- * state a household is in when it has never been through its own graph.
+ * A family whose claim nobody has answered, and whose profiles nobody opens: `one` and `other`
+ * are siblings, `parent` is `one`'s parent, so *parent is a parent of other* follows. It arrives
+ * by archive rather than through the forms, so no write ever raised the claim on a page — that
+ * is the state a household is in when it has never been through its own graph, and it is one
+ * request instead of a page load per person and per link.
  */
-async function aFamilyNobodyHasAnsweredFor(page: Page, f: Family): Promise<void> {
-	await add(page, f.one);
-	await add(page, f.other);
-	await add(page, f.parent);
-
-	await openPerson(page, new RegExp(f.one));
-	await addLink(page, 'Sibling of', f.other);
-	await openPerson(page, new RegExp(f.parent));
-	await addLink(page, 'Parent of', f.one);
-}
+const aFamilyNobodyHasAnsweredFor = (page: Page, f: Family) =>
+	seedHousehold(
+		page,
+		[f.one, f.other, f.parent],
+		[
+			{ from: f.one, to: f.other, type: LINK.siblingOf },
+			{ from: f.parent, to: f.one, type: LINK.parentOf }
+		]
+	);
 
 /** The one row this case is about, out of however many the household has. */
 const rowFor = (page: Page, f: Family) =>
@@ -199,10 +189,15 @@ test('asks about a claim once, however many ways the rules reach it', async ({ p
 	 */
 	const f = family('Eggli', 'Ursula', 'Lars', 'Mia');
 	const third = `Jonas ${f.surname}`;
-	await aFamilyNobodyHasAnsweredFor(page, f);
-	await add(page, third);
-	await openPerson(page, new RegExp(f.one));
-	await addLink(page, 'Sibling of', third);
+	await seedHousehold(
+		page,
+		[f.one, f.other, f.parent, third],
+		[
+			{ from: f.one, to: f.other, type: LINK.siblingOf },
+			{ from: f.parent, to: f.one, type: LINK.parentOf },
+			{ from: f.one, to: third, type: LINK.siblingOf }
+		]
+	);
 
 	await checkEveryone(page, f);
 	const ours = page.getByTestId('kin-suggestion').filter({ hasText: f.parent });
@@ -221,27 +216,21 @@ test('folds a person carrying more claims than a group renders, and names what i
 	 * number in the fold is what the rules actually found, minus what is on the page.
 	 */
 	const f = family('Gerber', 'Alois', 'Fabio', 'Selina');
-	/*
-	 * A budget, not a wait: eight people and seven links is the most setup in this file, and on
-	 * a database the whole suite shares it runs past the default 30s. Every assertion below is
-	 * still web-first — nothing here races a condition, it just has more real work to do.
-	 */
-	test.setTimeout(60_000);
-
-	// Six, not seven: one more than a group renders is all the fold needs, and every extra
-	// person here is two form round trips of setup on a database this file shares.
-	const parents = ['Alois', 'Brigitte', 'Cornelia', 'Damian', 'Edith', 'Fridolin'];
-
-	await add(page, f.one);
-	await add(page, f.other);
-	for (const first of parents) await add(page, `${first} ${f.surname}`);
-
-	await openPerson(page, new RegExp(f.one));
-	await addLink(page, 'Sibling of', f.other);
-	for (const first of parents) {
-		await openPerson(page, new RegExp(`${first} ${f.surname}`));
-		await addLink(page, 'Parent of', f.one);
-	}
+	const parents = ['Alois', 'Brigitte', 'Cornelia', 'Damian', 'Edith', 'Fridolin', 'Gabriela'].map(
+		(first) => `${first} ${f.surname}`
+	);
+	await seedHousehold(
+		page,
+		[f.one, f.other, ...parents],
+		[
+			{ from: f.one, to: f.other, type: LINK.siblingOf },
+			...parents.map((parent) => ({
+				from: parent,
+				to: f.one,
+				type: LINK.parentOf
+			}))
+		]
+	);
 
 	await page.goto(reviewFor(f));
 	const card = page.locator('main section').filter({ hasText: claimOf(f) });

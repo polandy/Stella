@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, openPerson, pickPerson, signIn } from './app';
+import { addPerson, openPerson, signIn } from './app';
+import { LINK, seedHousehold } from './seed';
 
 /*
  * The on-demand review on a person page (docs/02 §2.4.1,
@@ -7,9 +8,9 @@ import { addPerson, openPerson, pickPerson, signIn } from './app';
  * running app (docs/08 §8.4.1).
  *
  * Every other suggestion is raised by a write and is gone on the next page load; this one is
- * asked for. So each case enters the links, navigates *away* from the write that raised them,
- * and only then presses the control — which is the only way to tell an answer from an echo of
- * the form that was just submitted.
+ * asked for. So each case brings its links in by archive, where no form ever raised them, and
+ * then presses the control — which is the only way to tell an answer from an echo of the form
+ * that was just submitted.
  *
  * The suite shares one database and the answers are stored, so each case gets a family of its
  * own: two cases working the same three people would have one of them answering a claim the
@@ -33,15 +34,6 @@ const family = (parent: string, one: string, other: string): Family => ({
 /** What the review should say about `other`, once the links below are in place. */
 const claimOf = (f: Family) => `${f.parent} is a parent of ${f.other}`;
 
-/** Fills the *Add relationship* form on the open person and submits it. */
-async function addLink(page: Page, type: string, person: string): Promise<void> {
-	await page.getByRole('button', { name: 'Add relationship' }).click();
-	const form = page.locator('form[action="?/addRelationship"]');
-	await form.locator('select[name=typeChoice]').selectOption({ label: type });
-	await pickPerson(form.getByLabel('Person'), person);
-	await form.getByRole('button', { name: 'Add', exact: true }).click();
-}
-
 const first = (name: string) => name.split(' ')[0]!;
 const last = (name: string) => name.split(' ')[1]!;
 
@@ -57,20 +49,18 @@ const add = (page: Page, name: string) => addPerson(page, first(name), last(name
 
 /**
  * `one` and `other` are siblings and `parent` is `one`'s parent — so *parent is a parent of
- * other* follows, and nothing has stored it. The suggestion the parent link raised on the way
- * is deliberately left unanswered: navigating away from it is what makes the rest about the
- * review rather than about the write.
+ * other* follows, and nothing has stored it. The links arrive by archive rather than through
+ * the form, so no write-time suggestion was ever raised: what the review finds is its own.
  */
-async function aFamilyWithOneClaimStanding(page: Page, f: Family): Promise<void> {
-	await add(page, f.one);
-	await add(page, f.other);
-	await add(page, f.parent);
-
-	await openPerson(page, new RegExp(f.one));
-	await addLink(page, 'Sibling of', f.other);
-	await openPerson(page, new RegExp(f.parent));
-	await addLink(page, 'Parent of', f.one);
-}
+const aFamilyWithOneClaimStanding = (page: Page, f: Family) =>
+	seedHousehold(
+		page,
+		[f.one, f.other, f.parent],
+		[
+			{ from: f.one, to: f.other, type: LINK.siblingOf },
+			{ from: f.parent, to: f.one, type: LINK.parentOf }
+		]
+	);
 
 /**
  * The declined drawer, open. `open` is set on the element by the browser, not by Svelte, so a

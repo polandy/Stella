@@ -134,8 +134,14 @@ A `setup` project signs in through the one-click demo button once and stores the
 other spec starts from it, which is a page load and a form post saved per test (`signIn()` in
 `e2e/app.ts` falls back to the button when `--grep` filtered the setup project out). All specs
 in one run share one database, so they run serially and **must not depend on each other's
-data** — CI enforces this by splitting the suite across three runners
+data** — CI enforces this by splitting the suite across five runners
 (`bunx playwright test --shard`), each with its own freshly seeded server.
+
+**Seed the setting, drive the step.** A case that needs a household's worth of people and
+links before its first assertion brings them in through the archive restore (`seedHousehold`
+in `e2e/seed.ts`, one request) rather than through the forms, which cost a page load and a
+post per person and per link. The forms are covered where they are the subject; the step the
+case is about is always driven through the UI.
 
 **Assert what must still be there before asserting what is gone.** `toHaveCount(0)` is
 satisfied on its first poll, so on its own it passes against a screen that has not rendered
