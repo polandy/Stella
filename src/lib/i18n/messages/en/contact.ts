@@ -133,6 +133,18 @@ export const contact = {
 	'contact.relationships.siblingProposal': (p: { one: string; other: string }) =>
 		`${p.one} and ${p.other} are siblings`,
 	'contact.relationships.addThisToo': 'Add this too',
+	/*
+	 * The undo window's wording (docs/02 §2.23). The toast says what was done rather than that
+	 * something was done — several answers can be in flight at once, and "Saved" four times over
+	 * tells a member nothing about which one they are about to take back.
+	 */
+	'contact.relationships.acceptedParent': (p: { parent: string; child: string }) =>
+		`Added ${p.parent} as a parent of ${p.child}`,
+	'contact.relationships.acceptedSibling': (p: { one: string; other: string }) =>
+		`Added ${p.one} and ${p.other} as siblings`,
+	'contact.relationships.declinedNotice': 'Declined — it will not be offered again',
+	'contact.relationships.added': 'Added',
+	'contact.relationships.declinedMark': 'Declined',
 	'contact.relationships.accept': 'Accept',
 	'contact.relationships.decline': 'Decline',
 	/*

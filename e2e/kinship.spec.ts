@@ -68,9 +68,19 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 		.getByRole('button', { name: 'Accept' })
 		.click();
 
-	// Exactly the confirmed one was written: Elias is now stored, Noah is still only offered.
-	await expect(page.getByTestId('kin-proposals')).not.toContainText('Elias Brunner');
-	await expect(page.getByTestId('kin-proposals')).toContainText('Noah Brunner');
+	/*
+	 * Held rather than written (docs/02 §2.23): the confirmed row keeps its place for one undo
+	 * window while the untouched one stays exactly as it was. Confirming used to reload the page,
+	 * which is what made the block jump away under the reader.
+	 */
+	const rowFor = (name: string) =>
+		page.getByTestId('kin-proposals').getByTestId('kin-suggestion').filter({ hasText: name });
+	await expect(rowFor('Elias Brunner')).toHaveAttribute('data-held', 'accept');
+	await expect(rowFor('Noah Brunner')).not.toHaveAttribute('data-held');
+	await expect(page.getByTestId('toast-undo')).toBeVisible();
+
+	// Leaving closes the window and sends it — and exactly the confirmed one was written.
+	await openPeopleTab(page, /Vreni Zbinden/);
 	const stored = page.locator('#section-relationships ul').first();
 	await expect(stored).toContainText('Elias Brunner');
 	await expect(stored).not.toContainText('Noah Brunner');

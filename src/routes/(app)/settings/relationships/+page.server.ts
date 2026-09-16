@@ -8,6 +8,7 @@ import {
 	reviewPage,
 	type FoldedGroup
 } from '$lib/suggestions/paging';
+import { ANSWER_ANCHOR_FIELD, withAnchor } from '$lib/relationships/answer-key';
 import {
 	RETURN_TO_FIELD,
 	placeOf,
@@ -190,7 +191,12 @@ const answering =
 		const form = await request.formData();
 		const refusal = await answer(locals, viewer, form);
 		if (refusal) return fail(refusal.status, { error: refusal.message });
-		throw redirect(303, returnedTo(form.get(RETURN_TO_FIELD)));
+		// Only the degraded path reaches this: with JavaScript the answer never navigated.
+		// The anchor puts the reload back beside the row rather than at the top of the list.
+		throw redirect(
+			303,
+			withAnchor(returnedTo(form.get(RETURN_TO_FIELD)), form.get(ANSWER_ANCHOR_FIELD))
+		);
 	};
 
 export const actions: Actions = {

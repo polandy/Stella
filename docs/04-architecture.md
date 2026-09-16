@@ -258,6 +258,23 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   household and quietly understates every large one. Hence the totals come out of `reviewPage`
   rather than off `data.groups`, and a unit case asserts them against a household deliberately
   larger than one page.
+- **A suggestion is answered by holding it, not by writing it** — accept and decline go through
+  the same deferred-removal window as every removal (§2.23): the form is cancelled, the answer
+  waits eight seconds, and only then is it sent. The alternative — write immediately and delete
+  on undo — would put a real relationship into the household's history for the length of a
+  mis-tap, and leave a deletion behind for anyone reading the trail later. The cost is that a
+  second member does not see the link for those eight seconds; on a household-scale chore
+  screen that is worth an undo that writes nothing. Nothing new was built for it: the store, the
+  toast and the flush-on-leave already existed, and a suggestion answered is a row leaving a
+  list with something to do when the window closes.
+- **The answer forms are enhanced, and the screen still works without JavaScript** — the jump to
+  the top was a form post plus a redirect, so the fix is to stop navigating, not to add an API:
+  a SvelteKit form action already is the endpoint, `use:enhance` posts to that same action, and
+  with JavaScript off the identical form posts normally. One code path, two behaviours. The
+  tempting middle option — enhance plus `update()` — was rejected: it re-runs the page's `load`,
+  which re-evaluates every visible person *per answered claim*, and how long that takes on a
+  real imported household is still unmeasured. Holding sidesteps the question: the screen
+  already knows what it just did.
 - **An answer carries its place in the body, not on the URL** — a form action resolves against
   the current address, so `?/dismissSuggestion` replaces the whole query string and the search
   and cursor never reach the server. The place travels in a hidden field and the redirect is

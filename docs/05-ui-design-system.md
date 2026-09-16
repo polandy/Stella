@@ -220,6 +220,12 @@ They must be edited together; `app.css` says so at both blocks.
     narrows the range and never the header.
   - Every control is a form or a link — pager, search and log included — so the screen works
     with JavaScript off, and an answer returns to the page and search it was given on.
+  - **An answered row settles in place.** It takes a green or red tint and swaps its two buttons
+    for *Added* / *Declined* — keeping the same three-part shape, because a row that shrinks to
+    one line the instant it is answered moves everything below it by the height it gave up
+    (measured: 65px, under the reader's next tap). *Undo* lives in the toast for eight seconds;
+    when the window closes the row collapses over 260ms, and under `prefers-reduced-motion` it
+    simply goes. Concept: `docs/concepts/relationship-answer-undo.html`.
 - **People** — a find-as-you-type field, tag chips, then **letter groups** by surname with a
   sticky letter heading; each row is avatar, name (lock for private), description, and
   **last written about** on the right (`—` when nothing has been). The heading counts people;
@@ -488,8 +494,8 @@ richer picker because only a moment may create a person on the fly (§2.22.1).
 
 **Toasts** (`src/lib/components/Toast.svelte`) sit bottom-left of the content column, one
 card per message, announced as a polite live region. A removal's toast names what went —
-*Entry removed*, *Tag removed*, *Left the circle* — and carries an **Undo** button for the
-whole window (eight seconds); a plain notice — *Saved*, or why a removal failed — has no
+*Entry removed*, *Tag removed*, *Left the circle*, *Added Otto Meier as a parent of Lisa Meier*
+— and carries an **Undo** button for the whole window (eight seconds); a plain notice — *Saved*, or why a removal failed — has no
 button and goes on its own. Removing needs no confirmation dialog because every removal can
 be taken back from here (docs/02 §2.23), and every one of them is the same component
 (`RemoveButton`), so no list can quietly opt out. Saving says *Saved* and closes the form it
