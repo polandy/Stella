@@ -230,6 +230,33 @@ test('folds a person carrying more claims than a group renders, and names what i
 	);
 });
 
+test('keeps the declined log answerable at its own address', async ({ page }) => {
+	/*
+	 * Fold 3 (docs/concepts/relationship-review-at-scale.html). Past ten answers the log leaves
+	 * the drawer for its own page; that threshold is a unit case (`declinedFitsInline`), but the
+	 * page it moves to is a screen, and `docs/using-stella.md` promises a member can still offer
+	 * one again from there. Reached by its address rather than by declining eleven claims, so the
+	 * promise is checked without a minute of setup on every run.
+	 */
+	const f = family('Zollinger', 'Ottilia', 'Fabio', 'Selina');
+	await aFamilyNobodyHasAnsweredFor(page, f);
+	await checkEveryone(page, f);
+	await rowFor(page, f).getByRole('button', { name: 'Decline' }).click();
+	await expect(rowFor(page, f)).toHaveCount(0);
+
+	await page.goto(`${REVIEW}?review&declined`);
+	await expect(page.getByRole('heading', { name: 'Declined suggestions' })).toBeVisible();
+	// Open on arrival: a page whose whole purpose is the log must not start on a closed drawer.
+	await expect(page.getByTestId('kin-declined')).toHaveAttribute('open', '');
+	const row = page.getByRole('listitem').filter({ hasText: claimOf(f) });
+	await expect(row).toContainText(/declined on .+ by Demo Admin/);
+
+	// The way back is on every row here too, and taking it returns the claim to the open list.
+	await row.getByRole('button', { name: 'Offer again' }).click();
+	await page.goto(reviewFor(f));
+	await expect(rowFor(page, f)).toContainText(claimOf(f));
+});
+
 test('says where in the list a page is without letting the household count shrink', async ({
 	page
 }) => {
