@@ -41,10 +41,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       # The suite is serial within a shard (one server, one database), so the only way to
-      # spend less wall-clock time on it is to give each slice its own server.
+      # spend less wall-clock time on it is to give each slice its own server. Each shard pays
+      # about a minute of fixed cost (runner, install, build) before its first test, which is
+      # what caps the count: at five the tests and the overhead are about even.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -58,9 +60,8 @@ jobs:
           path: ~/.cache/ms-playwright
           # The lockfile pins @playwright/test, and its version decides the browser build.
           key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-      - if: steps.browsers.outputs.cache-hit == 'true'
-        # The browser came from the cache; only its system libraries are still missing.
-        run: bunx playwright install-deps chromium
-      - if: steps.browsers.outputs.cache-hit != 'true'
-        run: bunx playwright install --with-deps chromium
+      # No `--with-deps`: the runner image ships Chrome, so Chromium's system libraries are
+      # already there, and the apt run that installed them again cost 15–30 s on every shard.
+      # A cache hit makes this a no-op.
+      - run: bunx playwright install chromium
       - run: bunx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}

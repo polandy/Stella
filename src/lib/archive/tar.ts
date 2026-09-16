@@ -1,5 +1,7 @@
-import { TranslatableError } from '$lib/errors/translatable';
-import { phrase, type Phrase } from '$lib/i18n/phrase';
+// Relative rather than `$lib`: the e2e suite builds archives with this writer (`e2e/seed.ts`),
+// and Playwright's runner does not know SvelteKit's aliases.
+import { TranslatableError } from '../errors/translatable';
+import { phrase, type Phrase } from '../i18n/phrase';
 /*
  * A minimal ustar (POSIX tar) writer and reader for the household archive (docs/02 §2.15).
  *
