@@ -10,6 +10,13 @@ import type { Viewer } from '../../access/visibility';
 import type { RelationshipCategory } from '../../../relationships/categories';
 import type { Endpoints } from '../../../relationships/endpoints';
 import { endpointsForSide, type RelationshipSide } from '../../../relationships/type-options';
+import {
+	exclusionFor,
+	MAX_PARENTS,
+	type Exclusion,
+	type ExclusionFacts,
+	type ExclusionReason
+} from '../../../relationships/exclusions';
 import { GENERATION_TYPE_KEYS } from '../../../relationships/type-keys';
 import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../../relationships/status';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
@@ -236,6 +243,113 @@ export class ContradictoryRelationshipError extends TranslatableError {
 	}
 }
 
+/*
+ * What is already on record, and what that rules out (docs/02 §2.4). The rules themselves
+ * are pure and live in `$lib/relationships/exclusions`; here they are handed the household's
+ * links. The person page is given the very same reading, so the picker greys out exactly
+ * what this use-case would refuse.
+ */
+
+/** The sentence each refusal is read as, given whoever it is about. */
+const PHRASE_FOR_REASON: Record<ExclusionReason, (name: string) => Phrase> = {
+	alreadyRelated: (name) => phrase('errors.relationship.alreadyRelated', { name }),
+	siblingDerived: (name) => phrase('errors.relationship.siblingDerived', { name }),
+	romanticTaken: (name) => phrase('errors.relationship.romanticTaken', { name }),
+	parentsComplete: (name) =>
+		phrase('errors.relationship.parentsComplete', { name, max: MAX_PARENTS })
+};
+
+/** A tie that cannot hold beside the ties already on record (docs/02 §2.4). */
+export class RelationshipExcludedError extends TranslatableError {
+	/** Which rule refused — a caller reacts to the kind, never to the wording. */
+	readonly reason: ExclusionReason;
+
+	constructor(exclusion: Exclusion, name: string) {
+		super(PHRASE_FOR_REASON[exclusion.reason](name), 'RelationshipExcludedError');
+		this.reason = exclusion.reason;
+	}
+}
+
+/** The facts, plus the names to word a refusal with — both cut from the one graph read. */
+interface ExclusionCheck {
+	facts: ExclusionFacts;
+	nameOf: (contactId: string) => string;
+}
+
+/**
+ * What the exclusion rules need to judge a claim made from `subjectId`'s profile, read from
+ * the two snapshots the repository has already scoped to the viewer. Only partnerships that
+ * still hold are passed on — that is the escape a household needs, because a marriage marked
+ * former stops standing in the way of the next one.
+ */
+async function loadExclusionCheck(
+	deps: Pick<RelationshipDeps, 'relationships'>,
+	viewer: Viewer,
+	subjectId: string
+): Promise<ExclusionCheck> {
+	const [graph, ties] = await Promise.all([
+		deps.relationships.loadKinshipGraphVisibleTo(viewer),
+		deps.relationships.listForContactVisibleTo(viewer, subjectId)
+	]);
+	const facts: ExclusionFacts = {
+		subjectTies: ties.map((tie) => ({
+			relationshipId: tie.id,
+			otherContactId: tie.otherContactId,
+			category: tie.category
+		})),
+		romanticPairs: graph.partnerEdges
+			.filter((edge) => !edge.former)
+			.map((edge) => ({ a: edge.a, b: edge.b })),
+		parentEdges: graph.parentEdges.map((edge) => ({
+			parentId: edge.parentId,
+			childId: edge.childId
+		})),
+		/*
+		 * Full siblings only. A half-sibling is derived from a single shared parent, and saying
+		 * by hand that those two are siblings adds something the parent link does not say — so
+		 * that claim stays offerable.
+		 */
+		derivedSiblingIds: deriveKinship(graph, subjectId)
+			.filter((kin) => kin.term === 'sibling')
+			.map((kin) => kin.personId)
+	};
+	const names = new Map(graph.people.map((person) => [person.id, person.displayName]));
+	return { facts, nameOf: (contactId) => names.get(contactId) ?? '' };
+}
+
+/** The same reading the write is guarded by, for the picker on the person page. */
+export async function readExclusionFacts(
+	deps: Pick<RelationshipDeps, 'relationships'>,
+	viewer: Viewer,
+	subjectId: string
+): Promise<ExclusionFacts> {
+	return (await loadExclusionCheck(deps, viewer, subjectId)).facts;
+}
+
+/**
+ * Refuse a claim the household's own records already rule out. The endpoints arrive
+ * canonical — `from` is the forward side — so the query is always read forward.
+ */
+async function guardExclusions(
+	deps: RelationshipDeps,
+	viewer: Viewer,
+	endpoints: Endpoints,
+	type: RelationshipType,
+	exceptId?: string
+): Promise<void> {
+	const { facts, nameOf } = await loadExclusionCheck(deps, viewer, endpoints.fromContactId);
+	const exclusion = exclusionFor(facts, {
+		subjectId: endpoints.fromContactId,
+		targetId: endpoints.toContactId,
+		type: { key: type.key, category: type.category },
+		side: 'forward',
+		exceptId
+	});
+	if (exclusion) {
+		throw new RelationshipExcludedError(exclusion, nameOf(exclusion.personId));
+	}
+}
+
 /**
  * Create a relationship between two contacts. Validates the type, rejects self links,
  * stores in canonical direction, prevents duplicates and refuses a generation claimed in
@@ -271,6 +385,8 @@ export async function createRelationship(
 	) {
 		throw new ContradictoryRelationshipError();
 	}
+
+	await guardExclusions(deps, viewer, { fromContactId, toContactId }, type);
 
 	const now = deps.clock.now();
 	const id = deps.ids.next();
@@ -411,6 +527,8 @@ async function planRetype(
 	) {
 		throw new ContradictoryRelationshipError();
 	}
+
+	await guardExclusions(deps, viewer, endpoints, type, current.id);
 
 	return { endpoints, typeId: type.id };
 }

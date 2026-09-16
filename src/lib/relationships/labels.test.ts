@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '$lib/i18n/translate';
+import { MAX_PARENTS } from './exclusions';
 import {
+	exclusionLabel,
 	relationshipCategoryLabel,
 	relationshipRowLabel,
 	relationshipStatusLabel,
@@ -69,5 +71,30 @@ describe('relationshipCategoryLabel and relationshipStatusLabel', () => {
 	it('says a value it has no word for rather than nothing', () => {
 		expect(relationshipCategoryLabel(en, 'invented')).toBe('invented');
 		expect(relationshipStatusLabel(en, 'invented')).toBe('invented');
+	});
+});
+
+describe('exclusionLabel', () => {
+	const carl = () => 'Carl';
+
+	it('says in a few words why an entry cannot be picked', () => {
+		expect(exclusionLabel(de, { reason: 'romanticTaken', personId: 'c' }, carl)).toBe(
+			'schon mit Carl zusammen'
+		);
+		expect(exclusionLabel(en, { reason: 'alreadyRelated', personId: 'c' }, carl)).toBe(
+			'already linked to Carl'
+		);
+	});
+
+	it('names the count where the rule is a count', () => {
+		expect(exclusionLabel(en, { reason: 'parentsComplete', personId: 'c' }, carl)).toBe(
+			`Carl already has ${MAX_PARENTS} parents`
+		);
+	});
+
+	it('needs no name where the reason is about neither person alone', () => {
+		expect(exclusionLabel(en, { reason: 'siblingDerived', personId: 'c' }, carl)).toBe(
+			'already siblings through their parents'
+		);
 	});
 });

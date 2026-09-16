@@ -209,6 +209,15 @@ other's grandparent. A generation runs one way, and the relatives Stella works o
 read off exactly those links — so pick the direction the wrong way round and it says so instead
 of saving it. Change the link that is already there to the direction you meant, or remove it.
 
+Some kinds of link also stop being offered once they would contradict what you have already
+written down. Pick the other person first, and any kind that cannot hold is **greyed out with
+the reason beside it**: somebody with a partnership that still holds gets no second one
+("already with Carl"), two people who are already family or a couple get no second kind of tie
+("already linked to Bert" — change the link that is there instead), siblings Stella already
+works out from shared parents are not offered again, and nobody gets a third parent. If a
+marriage or a partnership has ended, set it to **former** on the row: it stays on both
+profiles, and the next one can then be entered as usual.
+
 A link can say more than its label. **How they connect** is yours to write — "met through
 Peter at the ski course" — and there is a **since** day and a **current / former** status if
 they help; all three are optional and all three can be changed later with *Edit* on the row.

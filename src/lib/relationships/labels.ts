@@ -1,4 +1,5 @@
 import { hasMessage, type Translate } from '$lib/i18n/translate';
+import { MAX_PARENTS, type Exclusion } from './exclusions';
 
 /*
  * How a relationship reads in the viewer's language (docs/02 §2.19). The types Stella ships
@@ -49,6 +50,29 @@ export function relationshipRowLabel(t: Translate, row: LabelledRelationship): s
 export function relationshipCategoryLabel(t: Translate, category: string): string {
 	const key = `relationships.category.${category}`;
 	return hasMessage(key) ? t(key) : category;
+}
+
+/**
+ * Why an entry of the picker cannot be chosen (docs/02 §2.4), in the few words that fit
+ * beside the label — `nameOf` resolves the person the reason is about. The sentence saying
+ * what to do instead is the refusal at the write (`errors.relationship.*`).
+ */
+export function exclusionLabel(
+	t: Translate,
+	exclusion: Exclusion,
+	nameOf: (contactId: string) => string
+): string {
+	const name = nameOf(exclusion.personId);
+	switch (exclusion.reason) {
+		case 'alreadyRelated':
+			return t('relationships.blocked.alreadyRelated', { name });
+		case 'siblingDerived':
+			return t('relationships.blocked.siblingDerived');
+		case 'romanticTaken':
+			return t('relationships.blocked.romanticTaken', { name });
+		case 'parentsComplete':
+			return t('relationships.blocked.parentsComplete', { name, max: MAX_PARENTS });
+	}
 }
 
 /** Whether a tie still holds: *current*, *former*, or nothing said. */

@@ -20,6 +20,8 @@ import {
 	type NewRelationship,
 	type RelationshipRepository,
 	type RelationshipType,
+	type RelationshipView,
+	RelationshipExcludedError,
 	type StoredRelationship
 } from './relationships';
 
@@ -135,6 +137,10 @@ function fakeRepo(opts: {
 	visible?: boolean;
 	/** The link an edit reads back; null stands for one the viewer may not see. */
 	stored?: StoredRelationship | null;
+	/** What the subject already carries, for the exclusion rules (docs/02 §2.4). */
+	ties?: RelationshipView[];
+	/** What the household already carries, for the same rules. */
+	graph?: KinshipGraph;
 }) {
 	let inserted: NewRelationship | null = null;
 	const updates: { id: string; update: RelationshipUpdate; updatedAt: number }[] = [];
@@ -149,7 +155,7 @@ function fakeRepo(opts: {
 		insert: async (r) => {
 			inserted = r;
 		},
-		listForContactVisibleTo: async () => [],
+		listForContactVisibleTo: async () => opts.ties ?? [],
 		findVisibleTo: async () => opts.stored ?? null,
 		updateVisibleTo: async (_viewer, id, update, updatedAt) => {
 			if (opts.visible === false) return false;
@@ -161,7 +167,7 @@ function fakeRepo(opts: {
 			removals.push(id);
 			return true;
 		},
-		loadKinshipGraphVisibleTo: async () => emptyKinshipGraph()
+		loadKinshipGraphVisibleTo: async () => opts.graph ?? emptyKinshipGraph()
 	};
 	return {
 		repo,
@@ -747,5 +753,180 @@ describe('removeRelationship', () => {
 			await removeRelationship({ relationships: f.repo, types: f.types, ids: idGen('unused'), clock }, viewer, 'rel-x')
 		).toBe(false);
 		expect(f.removals).toEqual([]);
+	});
+});
+
+/*
+ * The exclusion rules at the write (docs/02 §2.4). The picker greys the entry out, but the
+ * picker is a suggestion — a hand-written POST reaches the same use-case, so the refusal has
+ * to live here as well. The rules themselves are tested in `exclusions.test.ts`; what these
+ * tests hold is that the use-case reads what is on record and refuses on it.
+ */
+const spouse: RelationshipType = {
+	id: 'spouse',
+	householdId: null,
+	key: 'spouse',
+	forwardLabel: 'Spouse of',
+	reverseLabel: 'Spouse of',
+	category: 'romantic',
+	symmetric: true,
+	sortOrder: 4
+};
+
+/** One row of `listForContactVisibleTo`, in the fields the exclusion rules read. */
+const tie = (
+	id: string,
+	otherContactId: string,
+	category: RelationshipType['category']
+): RelationshipView => ({
+	id,
+	otherContactId,
+	otherDisplayName: otherContactId,
+	label: 'Linked to',
+	typeId: 'some_type',
+	typeKey: 'some_type',
+	side: 'forward',
+	category,
+	description: null,
+	sinceDate: null,
+	status: 'current'
+});
+
+const peopleNamed = (...ids: string[]) => ids.map((id) => ({ id, displayName: id }));
+
+describe('createRelationship — what is already on record', () => {
+	const married = (a: string, b: string, former = false): KinshipGraph => ({
+		...emptyKinshipGraph(),
+		people: peopleNamed(a, b),
+		partnerEdges: [{ a, b, former }]
+	});
+
+	const create = (f: ReturnType<typeof fakeRepo>, from: string, to: string, typeId: string) =>
+		createRelationship(
+			{ relationships: f.repo, types: f.types, ids: idGen('rel-x'), clock },
+			{ id: 'u', householdId: 'h' },
+			{ fromContactId: from, toContactId: to, typeId }
+		);
+
+	it('refuses a second spouse while the first marriage still holds', async () => {
+		const f = fakeRepo({ type: spouse, graph: married('anna', 'carl') });
+		await expect(create(f, 'anna', 'bert', 'spouse')).rejects.toBeInstanceOf(
+			RelationshipExcludedError
+		);
+		expect(f.inserted).toBeNull();
+	});
+
+	it('allows it once that marriage is former — the way back in', async () => {
+		const f = fakeRepo({ type: spouse, graph: married('anna', 'carl', true) });
+		await create(f, 'anna', 'bert', 'spouse');
+		expect(f.inserted).toMatchObject({ fromContactId: 'anna', toContactId: 'bert' });
+	});
+
+	it('refuses a second band between the same two', async () => {
+		const f = fakeRepo({ type: sibling, ties: [tie('r1', 'bert', 'family')] });
+		await expect(create(f, 'anna', 'bert', 'sibling')).rejects.toBeInstanceOf(
+			RelationshipExcludedError
+		);
+		expect(f.inserted).toBeNull();
+	});
+
+	it('leaves a loose category alone — a colleague can be a friend as well', async () => {
+		const f = fakeRepo({ type: sibling, ties: [tie('r1', 'bert', 'professional')] });
+		await create(f, 'anna', 'bert', 'sibling');
+		expect(f.inserted).toMatchObject({ fromContactId: 'anna', toContactId: 'bert' });
+	});
+
+	it('refuses a sibling link Stella already works out from shared parents', async () => {
+		const f = fakeRepo({
+			type: sibling,
+			graph: {
+				...emptyKinshipGraph(),
+				people: peopleNamed('anna', 'bert', 'carl', 'dora'),
+				parentEdges: [
+					{ parentId: 'carl', childId: 'anna' },
+					{ parentId: 'dora', childId: 'anna' },
+					{ parentId: 'carl', childId: 'bert' },
+					{ parentId: 'dora', childId: 'bert' }
+				]
+			}
+		});
+		await expect(create(f, 'anna', 'bert', 'sibling')).rejects.toBeInstanceOf(
+			RelationshipExcludedError
+		);
+	});
+
+	it('refuses a third parent', async () => {
+		const f = fakeRepo({
+			type: parentChild,
+			graph: {
+				...emptyKinshipGraph(),
+				people: peopleNamed('bert'),
+				parentEdges: [
+					{ parentId: 'carl', childId: 'bert' },
+					{ parentId: 'dora', childId: 'bert' }
+				]
+			}
+		});
+		await expect(create(f, 'anna', 'bert', 'parent_child')).rejects.toBeInstanceOf(
+			RelationshipExcludedError
+		);
+		expect(f.inserted).toBeNull();
+	});
+
+	it('names the person the refusal is about, in the reader language', async () => {
+		const f = fakeRepo({
+			type: spouse,
+			graph: {
+				...emptyKinshipGraph(),
+				people: [
+					{ id: 'anna', displayName: 'Anna' },
+					{ id: 'carl', displayName: 'Carl Meier' }
+				],
+				partnerEdges: [{ a: 'anna', b: 'carl' }]
+			}
+		});
+		const failure = await create(f, 'anna', 'bert', 'spouse').then(
+			() => null,
+			(e: unknown) => e as RelationshipExcludedError
+		);
+		expect(failure?.reason).toBe('romanticTaken');
+		expect(failure?.phrase(createTranslator('de'))).toContain('Carl Meier');
+		expect(failure?.phrase(createTranslator('de'))).toContain('ehemalig');
+	});
+});
+
+describe('editRelationship — what is already on record', () => {
+	const edit = (f: ReturnType<typeof fakeRepo>, typeId: string) =>
+		editRelationship(
+			{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
+			{ id: 'u', householdId: 'h' },
+			{ relationshipId: 'r1', perspectiveContactId: 'anna', typeChoice: { typeId, side: 'forward' } }
+		);
+
+	it('lets a link be retyped without reading as its own second band', async () => {
+		const f = fakeRepo({
+			typesById: { sibling },
+			stored: { id: 'r1', fromContactId: 'anna', toContactId: 'bert', typeId: 'parent_child' },
+			ties: [tie('r1', 'bert', 'family')]
+		});
+		expect(await edit(f, 'sibling')).toBe(true);
+		expect(f.updates[0]?.update.retype).toEqual({
+			endpoints: { fromContactId: 'anna', toContactId: 'bert' },
+			typeId: 'sibling'
+		});
+	});
+
+	it('refuses a retype that would make a married person married twice', async () => {
+		const f = fakeRepo({
+			typesById: { spouse },
+			stored: { id: 'r1', fromContactId: 'anna', toContactId: 'bert', typeId: 'friend' },
+			graph: {
+				...emptyKinshipGraph(),
+				people: peopleNamed('anna', 'carl'),
+				partnerEdges: [{ a: 'anna', b: 'carl' }]
+			}
+		});
+		await expect(edit(f, 'spouse')).rejects.toBeInstanceOf(RelationshipExcludedError);
+		expect(f.updates).toHaveLength(0);
 	});
 });

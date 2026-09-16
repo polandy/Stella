@@ -15,6 +15,14 @@ export const errors = {
 	'errors.relationship.duplicate': 'That relationship already exists.',
 	'errors.relationship.contradiction':
 		'These two are already linked the other way round, and that cannot hold in both directions. Remove the existing link first.',
+	'errors.relationship.alreadyRelated': (p: { name: string }) =>
+		`There is already a family or romantic link with ${p.name}. Correct that one instead of adding a second.`,
+	'errors.relationship.siblingDerived': (p: { name: string }) =>
+		`Stella already works ${p.name} out as a sibling here, from the shared parents. Entering it by hand would replace what is worked out.`,
+	'errors.relationship.romanticTaken': (p: { name: string }) =>
+		`${p.name} is already in a partnership that still holds. Mark that one as former first.`,
+	'errors.relationship.parentsComplete': (p: { name: string; max: number }) =>
+		`${p.name} already has ${p.max} parents. Correct one of them instead of adding another.`,
 	'errors.relationship.noSuchDay': (p: { day: string }) => `${p.day} is not a day that exists.`,
 	'errors.relationship.currentOrFormer': 'A relationship is either current or former.',
 

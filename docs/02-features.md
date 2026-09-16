@@ -311,6 +311,34 @@ reciprocal** link.
   types are unaffected: they are stored order-independently, so the duplicate guard already
   covers them.
 
+- **Shipped:** a claim the household's own records already rule out is **not offered, and not
+  stored**. Four rules, read from what is on file rather than from a list of names:
+
+  - **One partnership at a time.** *Partner* and *spouse* are the same claim for this purpose,
+    so someone with a partnership that still holds cannot be given a second one — from either
+    end, and whoever's profile it is entered from. The way back in is the status: a partnership
+    marked **former** stays on record but stops standing in the way, so a marriage that ended
+    and a new one are both recorded, in that order and without a deletion.
+  - **One band per pair.** Two people are family *or* a couple, not both, and not two kinds of
+    family at once — a mother is not also a sister. A second such claim about the same two is
+    refused with the link that is already there named, because correcting that one is what was
+    meant (the type of a link can be changed, below). Work and social ties are untouched: they
+    say what two people *do*, so a colleague is often a friend as well.
+  - **Nothing that is already worked out.** Where shared parents already make two people
+    siblings (§2.4.1), entering it by hand is refused — a stored row permanently replaces the
+    derived one, and the derivation is the better record. A **half**-sibling stays enterable:
+    saying those two are full siblings adds something the one shared parent does not say.
+  - **At most two parents.** A third parent is far more often a mistyped link than a third
+    parent, and Stella ships no step- or adoptive-parent type to tell them apart. A household
+    that really has a third to record corrects one of the two rather than adding to them.
+
+  The rules live in one pure place and are read twice: the picker **greys the entry out** with
+  the reason beside the label as soon as the other person is chosen — *"Spouse of — already
+  with Carl"* — so the refusal is visible before anything is saved, and the use-case refuses
+  the write on exactly the same reading, so a hand-written post gets the same answer as the
+  form. Changing the **type** of an existing link is measured with that link left out, so a
+  partner becoming a spouse is still one pick.
+
 - **Shipped:** the picker offers an asymmetric type **from both sides** — "Parent of" *and*
   "Child of", "Mentor of" *and* "Mentee of" — so a link can be entered from whichever profile
   is open, in the words that fit the sentence. The chosen side decides which endpoint is

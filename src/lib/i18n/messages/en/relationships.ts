@@ -32,6 +32,17 @@ export const relationships = {
 	'relationships.category.professional': 'Work',
 	'relationships.category.other': 'Other',
 
+	/*
+	 * Why an entry of the picker is greyed out (docs/02 §2.4) — a few words beside the label,
+	 * where the refusal at the write is a whole sentence saying what to do about it
+	 * (`errors.relationship.*`).
+	 */
+	'relationships.blocked.alreadyRelated': (p: { name: string }) => `already linked to ${p.name}`,
+	'relationships.blocked.siblingDerived': 'already siblings through their parents',
+	'relationships.blocked.romanticTaken': (p: { name: string }) => `already with ${p.name}`,
+	'relationships.blocked.parentsComplete': (p: { name: string; max: number }) =>
+		`${p.name} already has ${p.max} parents`,
+
 	'relationships.status.current': 'current',
 	'relationships.status.former': 'former',
 	'relationships.status.notSaid': 'Not said',

@@ -76,7 +76,9 @@ import {
 	editRelationship,
 	InvalidRelationshipDetailsError,
 	removeRelationship,
-	readKinship
+	readKinship,
+	readExclusionFacts,
+	RelationshipExcludedError
 } from '$lib/server/domain/relationships/relationships';
 import {
 	acceptClaim,
@@ -206,6 +208,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		kinship,
 		reviewed,
 		mentionedIn,
+		exclusionFacts,
 		visibleGraph
 	] = await Promise.all([
 		getRelationships().listForContactVisibleTo(viewer, params.id),
@@ -228,6 +231,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			? reviewPerson(getSuggestionReviewDeps(), viewer, params.id, { includeDismissed: true })
 			: Promise.resolve([]),
 		listMentionedIn(getMentionedInDeps(), viewer, params.id),
+		readExclusionFacts(getRelationshipDeps(), viewer, params.id),
 		/*
 		 * The map on the page (docs/05 §5.5) is cut from the same access-scoped snapshot the
 		 * explorer route reads, and for the same reason: derived kinship is worked out over the
@@ -325,6 +329,12 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			)
 		},
 		relationshipTypes: types,
+		/*
+		 * What the household's own records already rule out (docs/02 §2.4), so the picker can
+		 * grey an entry out with the reason rather than let it be saved and refused. The rules
+		 * are the ones the use-case is guarded by, run over the same facts.
+		 */
+		exclusionFacts,
 		tags,
 		circles: contactCircles,
 		circleNames: allCircles.map((c) => c.name),
@@ -612,6 +622,10 @@ export const actions: Actions = {
 			if (err instanceof ContradictoryRelationshipError) {
 				return fail(409, { error: say(locals, 'errors.relationship.contradiction') });
 			}
+			// The picker greys these out, so this is the hand-written post — refused all the same.
+			if (err instanceof RelationshipExcludedError) {
+				return fail(409, { error: err.phrase(translator(locals)) });
+			}
 			if (err instanceof InvalidRelationshipDetailsError) {
 				return fail(400, { error: err.phrase(translator(locals)) });
 			}
@@ -662,6 +676,10 @@ export const actions: Actions = {
 			}
 			if (err instanceof ContradictoryRelationshipError) {
 				return fail(409, { error: say(locals, 'errors.relationship.contradiction') });
+			}
+			// The picker greys these out, so this is the hand-written post — refused all the same.
+			if (err instanceof RelationshipExcludedError) {
+				return fail(409, { error: err.phrase(translator(locals)) });
 			}
 			if (err instanceof InvalidRelationshipDetailsError) {
 				return fail(400, { error: err.phrase(translator(locals)) });
