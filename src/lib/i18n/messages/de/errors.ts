@@ -13,6 +13,8 @@ export const errors: ErrorsMessages = {
 	'errors.relationship.duplicate': 'Diese Beziehung gibt es schon.',
 	'errors.relationship.contradiction':
 		'Diese beiden sind bereits andersherum verbunden, und das kann nicht in beide Richtungen stimmen. Entferne zuerst die bestehende Verbindung.',
+	'errors.relationship.alreadyTied': (p) =>
+		`Das steht schon anders da: ${p.tie} ${p.name}. Ändere lieber diese Beziehung, statt eine zweite anzulegen.`,
 	'errors.relationship.alreadyRelated': (p) =>
 		`Mit ${p.name} besteht schon eine verwandtschaftliche oder romantische Beziehung. Ändere lieber diese, statt eine zweite anzulegen.`,
 	'errors.relationship.siblingDerived': (p) =>

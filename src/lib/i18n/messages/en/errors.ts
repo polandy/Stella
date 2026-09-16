@@ -15,6 +15,9 @@ export const errors = {
 	'errors.relationship.duplicate': 'That relationship already exists.',
 	'errors.relationship.contradiction':
 		'These two are already linked the other way round, and that cannot hold in both directions. Remove the existing link first.',
+	'errors.relationship.alreadyTied': (p: { tie: string; name: string }) =>
+		`That is already on record the other way: ${p.tie} ${p.name}. Correct that link instead of adding a second one.`,
+	/** For a refusal that names no link; the wording above is the one a reader should meet. */
 	'errors.relationship.alreadyRelated': (p: { name: string }) =>
 		`There is already a family or romantic link with ${p.name}. Correct that one instead of adding a second.`,
 	'errors.relationship.siblingDerived': (p: { name: string }) =>

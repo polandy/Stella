@@ -17,6 +17,7 @@ import {
 	type ExclusionFacts,
 	type ExclusionReason
 } from '../../../relationships/exclusions';
+import { relationshipRowLabel } from '../../../relationships/labels';
 import { GENERATION_TYPE_KEYS } from '../../../relationships/type-keys';
 import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../../relationships/status';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
@@ -228,6 +229,12 @@ export interface CreateRelationshipInput extends RelationshipDetailsInput {
 	fromContactId: string;
 	toContactId: string;
 	typeId: string;
+	/**
+	 * Whose profile the link was entered from. Only the wording of a refusal reads it — which
+	 * of the two people a blocking link is described from — so it may be left out, and the
+	 * stored `from` end stands in.
+	 */
+	perspectiveContactId?: string;
 }
 
 export class DuplicateRelationshipError extends TranslatableError {
@@ -250,14 +257,25 @@ export class ContradictoryRelationshipError extends TranslatableError {
  * what this use-case would refuse.
  */
 
-/** The sentence each refusal is read as, given whoever it is about. */
-const PHRASE_FOR_REASON: Record<ExclusionReason, (name: string) => Phrase> = {
-	alreadyRelated: (name) => phrase('errors.relationship.alreadyRelated', { name }),
-	siblingDerived: (name) => phrase('errors.relationship.siblingDerived', { name }),
-	romanticTaken: (name) => phrase('errors.relationship.romanticTaken', { name }),
-	parentsComplete: (name) =>
-		phrase('errors.relationship.parentsComplete', { name, max: MAX_PARENTS })
-};
+/**
+ * The sentence each refusal is read as, given what it is about. `alreadyRelated` refuses
+ * because of a particular link and says which one — from the subject's side, and translated
+ * where Stella owns the type — since the person's name alone reads as a claim about the tie
+ * that was just refused rather than about the one standing in the way.
+ */
+const PHRASE_FOR_REASON: Record<ExclusionReason, (exclusion: Exclusion, name: string) => Phrase> =
+	{
+		alreadyRelated: (exclusion, name) => {
+			const tie = exclusion.tie;
+			if (!tie) return phrase('errors.relationship.alreadyRelated', { name });
+			return (t) =>
+				t('errors.relationship.alreadyTied', { tie: relationshipRowLabel(t, tie), name });
+		},
+		siblingDerived: (_exclusion, name) => phrase('errors.relationship.siblingDerived', { name }),
+		romanticTaken: (_exclusion, name) => phrase('errors.relationship.romanticTaken', { name }),
+		parentsComplete: (_exclusion, name) =>
+			phrase('errors.relationship.parentsComplete', { name, max: MAX_PARENTS })
+	};
 
 /** A tie that cannot hold beside the ties already on record (docs/02 §2.4). */
 export class RelationshipExcludedError extends TranslatableError {
@@ -265,7 +283,7 @@ export class RelationshipExcludedError extends TranslatableError {
 	readonly reason: ExclusionReason;
 
 	constructor(exclusion: Exclusion, name: string) {
-		super(PHRASE_FOR_REASON[exclusion.reason](name), 'RelationshipExcludedError');
+		super(PHRASE_FOR_REASON[exclusion.reason](exclusion, name), 'RelationshipExcludedError');
 		this.reason = exclusion.reason;
 	}
 }
@@ -295,7 +313,12 @@ async function loadExclusionCheck(
 		subjectTies: ties.map((tie) => ({
 			relationshipId: tie.id,
 			otherContactId: tie.otherContactId,
-			category: tie.category
+			category: tie.category,
+			// Carried so a refusal can name the link it is refusing for, in the words that row
+			// reads in on this profile.
+			typeKey: tie.typeKey,
+			side: tie.side,
+			label: tie.label
 		})),
 		romanticPairs: graph.partnerEdges
 			.filter((edge) => !edge.former)
@@ -327,22 +350,29 @@ export async function readExclusionFacts(
 }
 
 /**
- * Refuse a claim the household's own records already rule out. The endpoints arrive
- * canonical — `from` is the forward side — so the query is always read forward.
+ * Refuse a claim the household's own records already rule out.
+ *
+ * Read from `perspectiveContactId` — the profile the entry was made on — rather than from the
+ * stored `from` endpoint. A symmetric type is canonicalised by id, so the two are often not
+ * the same person, and a refusal read from the wrong end names the link backwards: *Godparent
+ * of Giulio* on Giulio's own page, where what he is is the godchild.
  */
 async function guardExclusions(
 	deps: RelationshipDeps,
 	viewer: Viewer,
 	endpoints: Endpoints,
 	type: RelationshipType,
+	perspectiveContactId: string,
 	exceptId?: string
 ): Promise<void> {
-	const { facts, nameOf } = await loadExclusionCheck(deps, viewer, endpoints.fromContactId);
+	const fromPerspective = perspectiveContactId === endpoints.fromContactId;
+	const targetId = fromPerspective ? endpoints.toContactId : endpoints.fromContactId;
+	const { facts, nameOf } = await loadExclusionCheck(deps, viewer, perspectiveContactId);
 	const exclusion = exclusionFor(facts, {
-		subjectId: endpoints.fromContactId,
-		targetId: endpoints.toContactId,
+		subjectId: perspectiveContactId,
+		targetId,
 		type: { key: type.key, category: type.category },
-		side: 'forward',
+		side: fromPerspective ? 'forward' : 'reverse',
 		exceptId
 	});
 	if (exclusion) {
@@ -386,7 +416,15 @@ export async function createRelationship(
 		throw new ContradictoryRelationshipError();
 	}
 
-	await guardExclusions(deps, viewer, { fromContactId, toContactId }, type);
+	await guardExclusions(
+		deps,
+		viewer,
+		{ fromContactId, toContactId },
+		type,
+		// Whose profile this was entered from, where the caller said; the stored `from` end
+		// otherwise, which is the same person for every asymmetric type.
+		input.perspectiveContactId ?? fromContactId
+	);
 
 	const now = deps.clock.now();
 	const id = deps.ids.next();
@@ -528,7 +566,7 @@ async function planRetype(
 		throw new ContradictoryRelationshipError();
 	}
 
-	await guardExclusions(deps, viewer, endpoints, type, current.id);
+	await guardExclusions(deps, viewer, endpoints, type, perspectiveContactId, current.id);
 
 	return { endpoints, typeId: type.id };
 }

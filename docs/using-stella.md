@@ -212,8 +212,9 @@ of saving it. Change the link that is already there to the direction you meant, 
 Some kinds of link also stop being offered once they would contradict what you have already
 written down. Pick the other person first, and any kind that cannot hold is **greyed out with
 the reason beside it**: somebody with a partnership that still holds gets no second one
-("already with Carl"), two people who are already family or a couple get no second kind of tie
-("already linked to Bert" — change the link that is there instead), siblings Stella already
+("already with Carl"), two people who are already family or a couple get no second kind of tie, with the
+link that is in the way named as it reads on the page you are on ("already Godchild of Andy" —
+change that link instead), siblings Stella already
 works out from shared parents are not offered again, and nobody gets a third parent. If a
 marriage or a partnership has ended, set it to **former** on the row: it stays on both
 profiles, and the next one can then be entered as usual.

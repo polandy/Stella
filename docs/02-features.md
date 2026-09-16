@@ -320,10 +320,14 @@ reciprocal** link.
     marked **former** stays on record but stops standing in the way, so a marriage that ended
     and a new one are both recorded, in that order and without a deletion.
   - **One band per pair.** Two people are family *or* a couple, not both, and not two kinds of
-    family at once — a mother is not also a sister. A second such claim about the same two is
-    refused with the link that is already there named, because correcting that one is what was
-    meant (the type of a link can be changed, below). Work and social ties are untouched: they
-    say what two people *do*, so a colleague is often a friend as well.
+    family at once — a mother is not also a sister. A second such claim about the same two
+    **names the link that is already there** — *"already Godchild of Andy"* — because
+    correcting that one is what was meant (the type of a link can be changed, below), and
+    because a reason that says only *"already linked to Andy"* reads as a claim about the entry
+    it is greying out rather than about the link in the way. The link is described **from the
+    profile the entry is being made on**, which for a symmetric type is regularly not the end it
+    is stored under. Work and social ties are untouched: they say what two people *do*, so a
+    colleague is often a friend as well.
   - **Nothing that is already worked out.** Where shared parents already make two people
     siblings (§2.4.1), entering it by hand is refused — a stored row permanently replaces the
     derived one, and the derivation is the better record. A **half**-sibling stays enterable:
@@ -334,7 +338,8 @@ reciprocal** link.
 
   The rules live in one pure place and are read twice: the picker **greys the entry out** with
   the reason beside the label as soon as the other person is chosen — *"Spouse of — already
-  with Carl"* — so the refusal is visible before anything is saved, and the use-case refuses
+  with Carl"*, *"Sibling of — already Godchild of Andy"* — so the refusal is visible before
+  anything is saved, and the use-case refuses
   the write on exactly the same reading, so a hand-written post gets the same answer as the
   form. Changing the **type** of an existing link is measured with that link left out, so a
   partner becoming a spouse is still one pick.

@@ -611,6 +611,8 @@ export const actions: Actions = {
 			await createRelationship(getRelationshipDeps(), viewer, {
 				...endpoints,
 				typeId: choice.typeId,
+				// This profile: a refusal describes the link in the way from the page it is read on.
+				perspectiveContactId: params.id,
 				description: parsed.output.description ?? null,
 				sinceDate: parsed.output.sinceDate ?? null,
 				status: parsed.output.status ?? null

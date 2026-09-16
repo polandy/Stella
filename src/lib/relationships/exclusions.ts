@@ -45,8 +45,21 @@ export const MAX_PARENTS = 2;
  */
 const EXCLUSIVE_CATEGORIES: readonly RelationshipCategory[] = ['family', 'romantic'];
 
+/**
+ * How a link that is in the way reads, so a refusal can name it rather than say only that
+ * something is there. All three fields together: a household's own type is shown as it was
+ * typed, a built-in one is translated by its key, and the side decides which of the two
+ * labels applies — *Godchild of*, not *Godparent of*.
+ */
+export interface TieReference {
+	typeKey: string;
+	side: RelationshipSide;
+	/** The stored label, and the fallback for a type Stella does not own. */
+	label: string;
+}
+
 /** One link the subject already carries, in the fields the rules read. */
-export interface SubjectTie {
+export interface SubjectTie extends TieReference {
 	/** The row, so a link being retyped can be left out of the answer. */
 	relationshipId: string;
 	otherContactId: string;
@@ -88,11 +101,17 @@ export interface ExclusionQuery {
 	exceptId?: string | null;
 }
 
-/** Why the claim is refused, and the person that reason is about. */
+/** Why the claim is refused, and what makes that reason concrete. */
 export interface Exclusion {
 	reason: ExclusionReason;
-	/** Whoever makes the reason concrete — the existing spouse, the child who has two parents. */
+	/** Whoever the reason is about — the existing partner, the child who has two parents. */
 	personId: string;
+	/**
+	 * The link standing in the way, where there is one: `alreadyRelated` refuses *because of*
+	 * a particular row, and saying which one is the difference between "these two are already
+	 * connected" and a sentence that reads as a claim about the entry being greyed out.
+	 */
+	tie?: TieReference;
 }
 
 const joins = (pair: ExclusionPair, x: string, y: string) =>
@@ -131,7 +150,13 @@ export function exclusionFor(facts: ExclusionFacts, query: ExclusionQuery): Excl
 				tie.relationshipId !== exceptId &&
 				EXCLUSIVE_CATEGORIES.includes(tie.category)
 		);
-		if (band) return { reason: 'alreadyRelated', personId: targetId };
+		if (band) {
+			return {
+				reason: 'alreadyRelated',
+				personId: targetId,
+				tie: { typeKey: band.typeKey, side: band.side, label: band.label }
+			};
+		}
 	}
 
 	if (type.key === SIBLING_TYPE_KEY && facts.derivedSiblingIds.includes(targetId)) {

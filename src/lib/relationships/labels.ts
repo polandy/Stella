@@ -1,4 +1,6 @@
-import { hasMessage, type Translate } from '$lib/i18n/translate';
+// Imported relatively rather than through `$lib`: the domain words its refusals with
+// `exclusionLabel`, and domain code carries no SvelteKit alias in its path (docs/08 §8.3).
+import { hasMessage, type Translate } from '../i18n/translate';
 import { MAX_PARENTS, type Exclusion } from './exclusions';
 
 /*
@@ -65,7 +67,14 @@ export function exclusionLabel(
 	const name = nameOf(exclusion.personId);
 	switch (exclusion.reason) {
 		case 'alreadyRelated':
-			return t('relationships.blocked.alreadyRelated', { name });
+			// Naming the link is the whole point of the reason; "linked to" is the fallback for
+			// a refusal that reaches here without one rather than a wording anybody should see.
+			return exclusion.tie
+				? t('relationships.blocked.alreadyTied', {
+						tie: relationshipRowLabel(t, exclusion.tie),
+						name
+					})
+				: t('relationships.blocked.alreadyRelated', { name });
 		case 'siblingDerived':
 			return t('relationships.blocked.siblingDerived');
 		case 'romanticTaken':

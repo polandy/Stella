@@ -37,6 +37,9 @@ export const relationships = {
 	 * where the refusal at the write is a whole sentence saying what to do about it
 	 * (`errors.relationship.*`).
 	 */
+	'relationships.blocked.alreadyTied': (p: { tie: string; name: string }) =>
+		`already ${p.tie} ${p.name}`,
+	/** For a refusal that names no link — the wording above is the one a reader should meet. */
 	'relationships.blocked.alreadyRelated': (p: { name: string }) => `already linked to ${p.name}`,
 	'relationships.blocked.siblingDerived': 'already siblings through their parents',
 	'relationships.blocked.romanticTaken': (p: { name: string }) => `already with ${p.name}`,

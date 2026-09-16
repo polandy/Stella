@@ -81,6 +81,34 @@ describe('exclusionLabel', () => {
 		expect(exclusionLabel(de, { reason: 'romanticTaken', personId: 'c' }, carl)).toBe(
 			'schon mit Carl zusammen'
 		);
+	});
+
+	/*
+	 * The link in the way is named, and named from the subject's side. Without it every
+	 * family and romantic entry read "already linked to Andy Pollari", which a reader takes
+	 * as a claim about the entry that is greyed out rather than about the link that blocks it.
+	 */
+	it('names the link that is in the way, translated where Stella owns the type', () => {
+		const godchild = {
+			reason: 'alreadyRelated',
+			personId: 'c',
+			tie: { typeKey: 'parent_child', side: 'reverse', label: 'Child of' }
+		} as const;
+		expect(exclusionLabel(en, godchild, carl)).toBe('already Child of Carl');
+		expect(exclusionLabel(de, godchild, carl)).toBe('schon Kind von Carl');
+	});
+
+	it('shows a household’s own type exactly as it was typed', () => {
+		const godchild = {
+			reason: 'alreadyRelated',
+			personId: 'c',
+			tie: { typeKey: 'godparent_of', side: 'reverse', label: 'Godchild of' }
+		} as const;
+		expect(exclusionLabel(en, godchild, carl)).toBe('already Godchild of Carl');
+		expect(exclusionLabel(de, godchild, carl)).toBe('schon Godchild of Carl');
+	});
+
+	it('still says something when the link is not named', () => {
 		expect(exclusionLabel(en, { reason: 'alreadyRelated', personId: 'c' }, carl)).toBe(
 			'already linked to Carl'
 		);

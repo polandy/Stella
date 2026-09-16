@@ -41,7 +41,7 @@ describe('exclusionFor — nothing on record', () => {
 
 describe('exclusionFor — one active romantic tie per person', () => {
 	const marriedToCarl = facts({
-		subjectTies: [{ relationshipId: 'r1', otherContactId: 'carl', category: 'romantic' }],
+		subjectTies: [{ relationshipId: 'r1', otherContactId: 'carl', category: 'romantic', typeKey: 'spouse', side: 'forward', label: 'Spouse of' }],
 		romanticPairs: [{ a: 'anna', b: 'carl' }]
 	});
 
@@ -72,7 +72,7 @@ describe('exclusionFor — one active romantic tie per person', () => {
 
 	it('frees the claim once the marriage is over — a former tie is not in the facts', () => {
 		const divorced = facts({
-			subjectTies: [{ relationshipId: 'r1', otherContactId: 'carl', category: 'romantic' }]
+			subjectTies: [{ relationshipId: 'r1', otherContactId: 'carl', category: 'romantic', typeKey: 'spouse', side: 'forward', label: 'Spouse of' }]
 		});
 		expect(
 			ask(divorced, { subjectId: 'anna', targetId: 'bert', type: spouse, side: 'forward' })
@@ -82,43 +82,47 @@ describe('exclusionFor — one active romantic tie per person', () => {
 
 describe('exclusionFor — one family or romantic band per pair', () => {
 	const annaMothersBert = facts({
-		subjectTies: [{ relationshipId: 'r1', otherContactId: 'bert', category: 'family' }]
+		subjectTies: [{ relationshipId: 'r1', otherContactId: 'bert', category: 'family', typeKey: 'parent_child', side: 'forward', label: 'Parent of' }]
 	});
 
 	it('refuses a second family claim about the same two people', () => {
 		expect(
 			ask(annaMothersBert, { subjectId: 'anna', targetId: 'bert', type: sibling, side: 'forward' })
-		).toEqual({ reason: 'alreadyRelated', personId: 'bert' });
+		).toEqual({
+			reason: 'alreadyRelated',
+			personId: 'bert',
+			tie: { typeKey: 'parent_child', side: 'forward', label: 'Parent of' }
+		});
 	});
 
 	it('refuses a romantic claim over a family one', () => {
 		expect(
 			ask(annaMothersBert, { subjectId: 'anna', targetId: 'bert', type: spouse, side: 'forward' })
-		).toEqual({ reason: 'alreadyRelated', personId: 'bert' });
+		).toEqual({ reason: 'alreadyRelated', personId: 'bert', tie: { typeKey: 'parent_child', side: 'forward', label: 'Parent of' } });
 	});
 
 	it('refuses a second romantic claim — partner becoming spouse is an edit, not a new row', () => {
 		const partnered = facts({
-			subjectTies: [{ relationshipId: 'r1', otherContactId: 'bert', category: 'romantic' }],
+			subjectTies: [{ relationshipId: 'r1', otherContactId: 'bert', category: 'romantic', typeKey: 'partner', side: 'forward', label: 'Partner of' }],
 			romanticPairs: [{ a: 'anna', b: 'bert' }]
 		});
 		expect(
 			ask(partnered, { subjectId: 'anna', targetId: 'bert', type: spouse, side: 'forward' })
-		).toEqual({ reason: 'alreadyRelated', personId: 'bert' });
+		).toEqual({ reason: 'alreadyRelated', personId: 'bert', tie: { typeKey: 'partner', side: 'forward', label: 'Partner of' } });
 	});
 
 	it('still refuses it once the tie is former — an ex-spouse is no sibling', () => {
 		const divorced = facts({
-			subjectTies: [{ relationshipId: 'r1', otherContactId: 'bert', category: 'romantic' }]
+			subjectTies: [{ relationshipId: 'r1', otherContactId: 'bert', category: 'romantic', typeKey: 'partner', side: 'forward', label: 'Partner of' }]
 		});
 		expect(
 			ask(divorced, { subjectId: 'anna', targetId: 'bert', type: sibling, side: 'forward' })
-		).toEqual({ reason: 'alreadyRelated', personId: 'bert' });
+		).toEqual({ reason: 'alreadyRelated', personId: 'bert', tie: { typeKey: 'partner', side: 'forward', label: 'Partner of' } });
 	});
 
 	it('leaves the loose categories combinable — a colleague can be a friend', () => {
 		const colleagues = facts({
-			subjectTies: [{ relationshipId: 'r1', otherContactId: 'bert', category: 'professional' }]
+			subjectTies: [{ relationshipId: 'r1', otherContactId: 'bert', category: 'professional', typeKey: 'colleague', side: 'forward', label: 'Colleague of' }]
 		});
 		expect(
 			ask(colleagues, { subjectId: 'anna', targetId: 'bert', type: friend, side: 'forward' })
@@ -252,7 +256,7 @@ describe('exclusionFor — at most two parents', () => {
 describe('exclusionFor — which reason answers first', () => {
 	it('names the pair before the person: correcting the existing link is the way out', () => {
 		const partnered = facts({
-			subjectTies: [{ relationshipId: 'r1', otherContactId: 'bert', category: 'romantic' }],
+			subjectTies: [{ relationshipId: 'r1', otherContactId: 'bert', category: 'romantic', typeKey: 'partner', side: 'forward', label: 'Partner of' }],
 			romanticPairs: [
 				{ a: 'anna', b: 'bert' },
 				{ a: 'bert', b: 'anna' }
@@ -260,6 +264,60 @@ describe('exclusionFor — which reason answers first', () => {
 		});
 		expect(
 			ask(partnered, { subjectId: 'anna', targetId: 'bert', type: spouse, side: 'forward' })
-		).toEqual({ reason: 'alreadyRelated', personId: 'bert' });
+		).toEqual({ reason: 'alreadyRelated', personId: 'bert', tie: { typeKey: 'partner', side: 'forward', label: 'Partner of' } });
+	});
+});
+
+/*
+ * The case from the family instance: Giulio is a *Godchild of* Andy — a household's own
+ * family type — and every family and romantic entry was greyed out reading only "already
+ * linked to Andy Pollari", which reads as a claim about the entry rather than about the
+ * link that is in the way. A refusal has to carry the link it is refusing *for*.
+ */
+describe('exclusionFor — the link the refusal is about', () => {
+	const godchildOfAndy: ExclusionFacts = {
+		subjectTies: [
+			{
+				relationshipId: 'r-god',
+				otherContactId: 'andy',
+				category: 'family',
+				typeKey: 'godparent_of',
+				side: 'reverse',
+				label: 'Godchild of'
+			}
+		],
+		romanticPairs: [],
+		parentEdges: [],
+		derivedSiblingIds: []
+	};
+
+	const askAndy = (type: { key: string; category: 'family' | 'romantic' | 'professional' }) =>
+		exclusionFor(godchildOfAndy, {
+			subjectId: 'giulio',
+			targetId: 'andy',
+			type,
+			side: 'forward'
+		});
+
+	it('names the household’s own type, read from the subject’s side', () => {
+		expect(askAndy(parentChild)).toEqual({
+			reason: 'alreadyRelated',
+			personId: 'andy',
+			tie: { typeKey: 'godparent_of', side: 'reverse', label: 'Godchild of' }
+		});
+	});
+
+	it('says the same link for every entry it blocks — that link is what they have in common', () => {
+		const blocked = [parentChild, sibling, spouse, partner].map(askAndy);
+		expect(blocked.map((exclusion) => exclusion?.tie?.label)).toEqual([
+			'Godchild of',
+			'Godchild of',
+			'Godchild of',
+			'Godchild of'
+		]);
+	});
+
+	it('blocks nothing outside family and romance — a godparent can be a colleague too', () => {
+		expect(askAndy(colleague)).toBeNull();
 	});
 });

@@ -777,15 +777,20 @@ const spouse: RelationshipType = {
 const tie = (
 	id: string,
 	otherContactId: string,
-	category: RelationshipType['category']
+	category: RelationshipType['category'],
+	named: { typeKey: string; side: 'forward' | 'reverse'; label: string } = {
+		typeKey: 'some_type',
+		side: 'forward',
+		label: 'Linked to'
+	}
 ): RelationshipView => ({
 	id,
 	otherContactId,
 	otherDisplayName: otherContactId,
-	label: 'Linked to',
-	typeId: 'some_type',
-	typeKey: 'some_type',
-	side: 'forward',
+	label: named.label,
+	typeId: named.typeKey,
+	typeKey: named.typeKey,
+	side: named.side,
 	category,
 	description: null,
 	sinceDate: null,
@@ -801,11 +806,12 @@ describe('createRelationship — what is already on record', () => {
 		partnerEdges: [{ a, b, former }]
 	});
 
+	/** Entered from `from`'s profile, the way the person page posts it. */
 	const create = (f: ReturnType<typeof fakeRepo>, from: string, to: string, typeId: string) =>
 		createRelationship(
 			{ relationships: f.repo, types: f.types, ids: idGen('rel-x'), clock },
 			{ id: 'u', householdId: 'h' },
-			{ fromContactId: from, toContactId: to, typeId }
+			{ fromContactId: from, toContactId: to, typeId, perspectiveContactId: from }
 		);
 
 	it('refuses a second spouse while the first marriage still holds', async () => {
@@ -873,6 +879,57 @@ describe('createRelationship — what is already on record', () => {
 		expect(f.inserted).toBeNull();
 	});
 
+	/*
+	 * Seen on the family instance: every family and romantic entry was refused with nothing
+	 * but the other person's name, which reads as a claim about the entry rather than about
+	 * the link in the way. The refusal names the link, from the subject's side.
+	 */
+	it('names the link that is in the way, not just the person', async () => {
+		const f = fakeRepo({
+			type: sibling,
+			ties: [
+				tie('r-god', 'andy', 'family', {
+					typeKey: 'godparent_of',
+					side: 'reverse',
+					label: 'Godchild of'
+				})
+			],
+			graph: {
+				...emptyKinshipGraph(),
+				people: [{ id: 'andy', displayName: 'Andy Pollari' }]
+			}
+		});
+		const failure = await create(f, 'giulio', 'andy', 'sibling').then(
+			() => null,
+			(e: unknown) => e as RelationshipExcludedError
+		);
+		expect(failure?.reason).toBe('alreadyRelated');
+		expect(failure?.phrase(createTranslator('en'))).toContain('Godchild of Andy Pollari');
+		expect(failure?.phrase(createTranslator('de'))).toContain('Godchild of Andy Pollari');
+	});
+
+	it('translates a built-in type in the refusal, read from the subject’s side', async () => {
+		const f = fakeRepo({
+			type: sibling,
+			ties: [
+				tie('r1', 'bert', 'family', {
+					typeKey: 'parent_child',
+					side: 'reverse',
+					label: 'Child of'
+				})
+			],
+			graph: {
+				...emptyKinshipGraph(),
+				people: [{ id: 'bert', displayName: 'Bert' }]
+			}
+		});
+		const failure = await create(f, 'anna', 'bert', 'sibling').then(
+			() => null,
+			(e: unknown) => e as RelationshipExcludedError
+		);
+		expect(failure?.phrase(createTranslator('de'))).toContain('Kind von Bert');
+	});
+
 	it('names the person the refusal is about, in the reader language', async () => {
 		const f = fakeRepo({
 			type: spouse,
@@ -928,5 +985,62 @@ describe('editRelationship — what is already on record', () => {
 		});
 		await expect(edit(f, 'spouse')).rejects.toBeInstanceOf(RelationshipExcludedError);
 		expect(f.updates).toHaveLength(0);
+	});
+});
+
+/*
+ * A symmetric type is stored with its endpoints sorted by id, so the stored `from` end is
+ * regularly *not* the person whose profile the link was entered on. Reading the rules from
+ * that end names the blocking link backwards — "Godparent of Giulio" on Giulio's own page —
+ * so the profile the entry was made on is what the wording follows.
+ */
+describe('createRelationship — the profile a refusal is read from', () => {
+	/** Ids chosen so the symmetric canonical order puts `andy` first, ahead of `giulio`. */
+	const godparentTies = (subject: string, other: string, label: string) =>
+		fakeRepo({
+			type: sibling,
+			ties: [
+				tie(`r-god-${subject}`, other, 'family', {
+					typeKey: 'godparent_of',
+					side: label === 'Godchild of' ? 'reverse' : 'forward',
+					label
+				})
+			],
+			graph: {
+				...emptyKinshipGraph(),
+				people: [
+					{ id: 'andy', displayName: 'Andy Pollari' },
+					{ id: 'giulio', displayName: 'Giulio' }
+				]
+			}
+		});
+
+	const enterFrom = (f: ReturnType<typeof fakeRepo>, profile: string, other: string) =>
+		createRelationship(
+			{ relationships: f.repo, types: f.types, ids: idGen('rel-x'), clock },
+			{ id: 'u', householdId: 'h' },
+			{
+				fromContactId: profile,
+				toContactId: other,
+				typeId: 'sibling',
+				perspectiveContactId: profile
+			}
+		).then(
+			() => null,
+			(e: unknown) => e as RelationshipExcludedError
+		);
+
+	it('reads the blocking link from the page it was entered on, not from the stored end', async () => {
+		// Giulio's page: his row reads "Godchild of Andy Pollari".
+		const onGiulio = godparentTies('giulio', 'andy', 'Godchild of');
+		const refusedOnGiulio = await enterFrom(onGiulio, 'giulio', 'andy');
+		expect(refusedOnGiulio?.phrase(createTranslator('en'))).toContain(
+			'Godchild of Andy Pollari'
+		);
+
+		// Andy's page, same pair the other way: his row reads "Godparent of Giulio".
+		const onAndy = godparentTies('andy', 'giulio', 'Godparent of');
+		const refusedOnAndy = await enterFrom(onAndy, 'andy', 'giulio');
+		expect(refusedOnAndy?.phrase(createTranslator('en'))).toContain('Godparent of Giulio');
 	});
 });
