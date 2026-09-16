@@ -322,6 +322,8 @@ tree that re-litigates settled answers is worse than one that forgets a new argu
 
 ### 6.6 A household-wide pass — concept, not shipped
 
+Drawn, clickable, in `docs/concepts/relationship-review-concept.html`.
+
 §6.5 asks about **one** person. The obvious next question is a run over the whole household
 from Settings, and it is a different design rather than the same panel with a wider `where`:
 

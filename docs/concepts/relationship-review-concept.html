@@ -87,8 +87,6 @@
   .urlbar b { color:var(--fg-muted); font-weight:500; }
 
   .app { display:grid; grid-template-columns:220px 1fr; min-height:600px; }
-  @media (max-width:760px) { .app { grid-template-columns:1fr; } .side { display:none; } }
-
   .side { background:var(--bg-elevated); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:16px 12px; gap:3px; }
   .brand { display:flex; align-items:center; gap:10px; padding:6px 8px 14px; }
   .brand .logo { width:32px; height:32px; border-radius:9px; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; font-size:17px; box-shadow:var(--shadow-sm); }
@@ -101,6 +99,7 @@
   .navitem[aria-current='page']::before { content:''; position:absolute; left:-12px; top:8px; bottom:8px; width:3px; border-radius:0 3px 3px 0; background:var(--primary); }
   .navitem .badge { margin-left:auto; font-size:11px; font-weight:650; background:color-mix(in srgb,var(--peach) 24%,transparent); color:var(--fg); border-radius:999px; padding:1px 8px; font-variant-numeric:tabular-nums; }
   .side .spacer { flex:1; }
+  @media (max-width:760px) { .app { grid-template-columns:1fr; } .side { display:none; } }
 
   .main { display:flex; flex-direction:column; min-width:0; background:var(--bg); }
   .topbar { display:flex; align-items:center; gap:14px; padding:12px 20px; border-bottom:1px solid var(--border-soft); }
@@ -157,9 +156,9 @@
   .claims { display:flex; flex-direction:column; gap:8px; padding:12px 15px; }
   .claim { display:grid; grid-template-columns:1fr auto; align-items:start; gap:4px 12px; border:1px solid var(--border-soft); border-radius:9px; padding:9px 11px; background:var(--card); }
   @media (max-width:560px) { .claim { grid-template-columns:1fr; } }
-  .claim .sentence { font-size:14px; font-weight:550; min-width:0; }
-  .claim .answers { display:flex; gap:6px; flex-shrink:0; grid-row:1; }
-  @media (max-width:560px) { .claim .answers { grid-row:auto; } }
+  .claim .sentence { grid-column:1; grid-row:1; font-size:14px; font-weight:550; min-width:0; }
+  .claim .answers { grid-column:2; grid-row:1; justify-self:end; display:flex; gap:6px; flex-shrink:0; }
+  @media (max-width:560px) { .claim .sentence, .claim .answers { grid-column:1; grid-row:auto; justify-self:start; } }
   .claim .foot { grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:center; gap:7px; font-size:12px; color:var(--fg-subtle); }
   .claim.settled { background:var(--bg-elevated); }
   .claim.settled .sentence { color:var(--fg-muted); }
@@ -372,8 +371,11 @@
     <span class="eyebrow">States</span>
     <h2>What a row looks like at each stage</h2>
     <p class="intro">
-      Four states, and the two settled ones stay in place for the visit rather than vanishing: an
-      accidental click must be visibly recoverable, and the list must not jump under the next tap.
+      Four states, and both settled ones stay in place for the visit rather than vanishing — the shape
+      §6.6 argues for: an accidental click must be visibly recoverable, and the list must not jump
+      under the next tap. The shipped person-page panel does not do this yet (a declined claim moves
+      straight to the drawer); §6.6 calls that worth fixing there too, and it is the one piece not
+      blocked on this design.
     </p>
     <div class="tablewrap">
       <table>
@@ -381,7 +383,7 @@
         <tbody>
           <tr><td class="k"><b>Open</b></td><td>Claim sentence, confidence word, reason, rule id, <i>Accept</i> / <i>Decline</i></td><td>nothing</td></tr>
           <tr><td class="k"><b>Accepted</b></td><td>Sentence muted, <span class="state added">Added</span></td><td>a <code>relationship</code> row, through <code>addProposedRelationship</code> — the same guards as manual entry</td></tr>
-          <tr><td class="k"><b>Declined</b></td><td>Moves into the drawer with <i>declined on 16 September 2026 by Andy</i> and <i>Offer again</i></td><td><code>suggestion_dismissal(household_id, relation, pair_key, dismissed_by, dismissed_at)</code></td></tr>
+          <tr><td class="k"><b>Declined</b></td><td>Sentence struck in place with <i>Offer again</i> for the rest of the visit; on the next one it is in the drawer, with <i>declined on 16 September 2026 by Andy</i></td><td><code>suggestion_dismissal(household_id, relation, pair_key, dismissed_by, dismissed_at)</code></td></tr>
           <tr><td class="k"><b>Left alone</b></td><td>unchanged — no affordance at all</td><td>nothing; the next check offers it again</td></tr>
         </tbody>
       </table>
@@ -428,7 +430,7 @@
           <div class="statusbar"><span>09:43</span><span>●●● ▲ 82%</span></div>
           <div class="pbody">
             <h4>Suggestions</h4>
-            <p class="sub">The declined drawer, open</p>
+            <p class="sub">The drawer: declined in earlier visits</p>
             <div class="pcard">
               <div class="sentence" style="color:var(--fg-muted);font-weight:500">Anna Weber is a parent of Tim Weber</div>
               <div class="foot">declined on 12 September 2026 by Andy</div>
@@ -442,7 +444,7 @@
           </div>
           <div class="tabbar"><span>Home</span><span>People</span><span>Circles</span><span class="on">Settings</span></div>
         </div>
-        <p class="caption">Declined, with the way back</p>
+        <p class="caption">Earlier answers, with the way back</p>
       </div>
       <div>
         <div class="phone">
@@ -535,8 +537,8 @@
         it travels with the export — all settled in #110.</li>
     </ul>
     <p class="footnote">
-      Concept for <code>docs/02-features.md</code> §2.4.1 · rules in
-      <code>docs/concepts/relationship-suggestions.md</code> §6.4–6.5 · engine in
+      Concept for <code>docs/02-features.md</code> §2.4.1 · prose for this screen in
+      <code>docs/concepts/relationship-suggestions.md</code> §6.6, rules in §6.4–6.5 · engine in
       <code>src/lib/suggestions/</code> · rows in <code>src/lib/components/KinSuggestions.svelte</code>.
       Status: mockup, not implemented.
     </p>
@@ -600,14 +602,25 @@
       + '<span class="rule">' + c.rule + '</span></span></div>';
   }
 
-  function acceptedRow(c) {
-    return '<div class="claim settled"><span class="sentence">' + c.sentence + '</span>'
-      + '<span class="answers"><button class="btn ghost small" data-act="undo" data-id="' + c.id + '" type="button">Undo</button></span>'
-      + '<span class="foot"><span class="state added">Added</span>Stored as an entered relationship</span></div>';
+  /*
+   * A row answered in this visit stays where it was, muted, carrying the way back (§6.6): in a
+   * long list, removing it the moment it is answered moves everything under the next tap.
+   */
+  function settledRow(c) {
+    const added = c.state === 'accepted';
+    return '<div class="claim settled"><span class="sentence">'
+      + (added ? c.sentence : '<s>' + c.sentence + '</s>') + '</span>'
+      + '<span class="answers"><button class="btn ghost small" data-act="'
+      + (added ? 'undo' : 'restore') + '" data-id="' + c.id + '" type="button">'
+      + (added ? 'Undo' : 'Offer again') + '</button></span>'
+      + '<span class="foot"><span class="state ' + (added ? 'added">Added</span>Stored as an entered relationship'
+        : 'declined">Declined</span>Waits here for the visit, then moves to the drawer')
+      + '</span></div>';
   }
 
   function render() {
-    const rows = claims.filter((c) => c.state !== 'declined')
+    // `when` is set only on a claim declined in an earlier visit — those live in the drawer.
+    const rows = claims.filter((c) => c.state !== 'declined' || !c.when)
       .filter((c) => confFilter === 'all' || c.conf === confFilter);
 
     if (!rows.length) {
@@ -628,18 +641,19 @@
         + '<span class="who"><b>' + g.person + '</b><span class="sub">' + g.sub + '</span></span>'
         + '<span class="count">' + g.items.length + (g.items.length === 1 ? ' claim' : ' claims') + '</span>'
         + '</header><div class="claims">'
-        + g.items.map((c) => (c.state === 'accepted' ? acceptedRow(c) : openRow(c))).join('')
+        + g.items.map((c) => (c.state === 'open' ? openRow(c) : settledRow(c))).join('')
         + '</div></section>'
       ).join('');
     }
 
-    const declined = claims.filter((c) => c.state === 'declined');
+    const declined = claims.filter((c) => c.state === 'declined' && c.when);
+    const declinedTotal = claims.filter((c) => c.state === 'declined').length;
     drawerHost.innerHTML = declined.length
       ? '<details class="declined"' + (drawerHost.dataset.open === '1' ? ' open' : '') + '>'
         + '<summary>' + (declined.length === 1 ? '1 declined suggestion' : declined.length + ' declined suggestions') + '</summary>'
         + '<ul>' + declined.map((c) =>
             '<li><span>' + c.sentence + '</span>'
-            + '<span class="when">' + (c.when || 'declined just now by you') + '</span>'
+            + '<span class="when">' + c.when + '</span>'
             + '<form><button class="btn ghost small" data-act="restore" data-id="' + c.id + '" type="button">Offer again</button></form></li>'
           ).join('') + '</ul></details>'
       : '';
@@ -649,7 +663,7 @@
     document.getElementById('nav-badge').textContent = open;
     document.getElementById('m-open').textContent = open;
     document.getElementById('m-added').textContent = accepted + 1;
-    document.getElementById('m-declined').textContent = declined.length;
+    document.getElementById('m-declined').textContent = declinedTotal;
   }
 
   function showToast(text, undoable) {
@@ -673,9 +687,7 @@
     } else if (act === 'decline') {
       lastAction = claim;
       claim.state = 'declined';
-      claim.when = null;
-      drawerHost.dataset.open = '1';
-      showToast('Declined. It waits in the drawer until you offer it again.', true);
+      showToast('Declined. It stays here for this visit, then waits in the drawer.', true);
     } else if (act === 'restore' || act === 'undo') {
       claim.state = 'open';
       claim.when = null;
