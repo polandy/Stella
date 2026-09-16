@@ -33,8 +33,16 @@ const SETUP_SPEC = /auth\.setup\.ts$/;
  * the crashing process and costs no coverage: there is no PWA spec, and the install and
  * offline rules are unit-tested as pure policy in `src/lib/pwa/`.
  *
- * This is the suspect, not a proven cause. `--disable-gpu` was the previous one and was wrong:
- * the crash survived it unchanged, down to the address.
+ * Measured rather than guessed: shard 1 of `63c4e2a` was run eight times in one matrix, four
+ * times with this setting and four times without. Two of the four unblocked runs crashed, with
+ * the same five stack offsets as every crash before the fix; all four blocked runs passed. One
+ * of those two crashes logged no Cytoscape activity at all, which is what rules out the graph
+ * canvas — the `notify` error that accompanies some of these runs is a Cytoscape animation
+ * frame outliving `destroy()`, a real bug but never this crash's cause.
+ *
+ * `--disable-gpu` was the previous suspect and was wrong: the crash survived it unchanged,
+ * down to the address. If this ever returns — a real PWA e2e spec would have to unblock the
+ * worker — re-run an untouched commit as a control before blaming the diff under test.
  */
 const NO_SERVICE_WORKER = 'block' as const;
 
