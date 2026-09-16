@@ -4,6 +4,17 @@ import { dayLabel, type DateLanguage } from '../src/lib/dates/labels';
 import { INTL_LOCALES } from '../src/lib/i18n/locales';
 import { createTranslator } from '../src/lib/i18n/translate';
 
+/** The day the server will stamp on something written now; CI pins `TZ` so both agree. */
+const today = () => new Date().toISOString().slice(0, 10);
+
+/**
+ * A pattern matching any one of these literal strings, for a web-first assertion that has more
+ * than one acceptable answer. The parts are escaped because a rendered date carries a `.` in
+ * some languages, and an unescaped one would match a character the screen never showed.
+ */
+const anyOf = (texts: string[]) =>
+	new RegExp(texts.map((text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'));
+
 /*
  * The passive side of an @-mention (docs/02 §2.20.1): the list on the person who was named.
  * Written after the maintainer read it in the running app (docs/08 §8.4.1).
@@ -106,6 +117,7 @@ test('puts a note on the page of the person it names, not of the person it is ab
 	page
 }) => {
 	await openPerson(page, new RegExp(WRITER));
+	const writtenOn = today();
 	await writeNote(page, NOTE_MARKER);
 
 	// The writer's own list stays empty: the note is *about* him, which is not a reference.
@@ -120,8 +132,12 @@ test('puts a note on the page of the person it names, not of the person it is ab
 	// The preview reads the stored token as her current name, not as `@{contact:…}`.
 	await expect(references(page, 'note')).toContainText(`${NOTE_MARKER} mit @${NAMED}`);
 	// A note is dated by the day it was written, which is today for one written just now.
+	// Both sides of the write are accepted: a run that steps over midnight is the one case
+	// where "today" has two honest answers, and pinning it to one would fail for the clock
+	// rather than for the code. Still a retrying assertion on the locator — reading the text
+	// once would trade a clock race for a rendering one.
 	await expect(references(page, 'note')).toContainText(
-		dayLabel(english, new Date().toISOString().slice(0, 10))
+		anyOf([writtenOn, today()].map((day) => dayLabel(english, day)))
 	);
 });
 
