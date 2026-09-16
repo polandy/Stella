@@ -58,6 +58,7 @@ docker run --rm --network host \
   -v "$PWD:/work" -w /work \
   -e HOME=/tmp \
   -e CI=1 \
+  -e TZ=UTC \
   -e E2E_PORT="$PORT" \
   -e E2E_FEED_PORT="$FEED_PORT" \
   "$IMAGE" npx playwright test "$@"
