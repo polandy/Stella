@@ -658,10 +658,17 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
      re-render from the returned `GraphModel` — the adapter holds no domain rules.
    - Swapping Cytoscape for another renderer (or adding a layout) touches only this layer.
    - The controller owns its **teardown**: it runs the first layout itself (so a layout still
-     moving nodes can be stopped again), stops that layout and any animation before destroying
+     moving nodes can be stopped again), stops **every** layout still running before destroying
      the core, and no-ops on every method afterwards. A page can be left mid-layout, and a call
-     still in flight must reach a closed core rather than a half-demolished one. The controller
-     is split from the core it drives (`explorerFromCore`) so this is unit-tested headless.
+     still in flight must reach a closed core rather than a half-demolished one. Animations need
+     no stopping of their own — destroying the core halts the loop that steps them. The
+     controller is split from the core it drives (`explorerFromCore`) so this is unit-tested
+     headless.
+   - Layouts **overlap**: expanding a node re-arranges the graph while the opening arrangement is
+     still travelling, and Cytoscape runs the two side by side. So the canvas is marked
+     `data-layout="settled"` only when the *last* of them has stopped — the signal the e2e suite
+     reads before it takes a node's position (`e2e/graph-canvas.ts`), which an earlier layout
+     finishing first would otherwise give while the nodes are still moving.
 
 3. **UI** — the explorer Svelte component + the `/graph` route and the profile's "Explore"
    entry: layout, search box, filter chips, peek panel, path picker. Thin; delegates all
