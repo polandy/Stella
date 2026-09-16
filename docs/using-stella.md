@@ -257,6 +257,11 @@ suggestion is about, with the same three answers on every row. Nothing is stored
 accept it, and a claim you have already answered is not offered again — so checking twice in a
 row is free.
 
+Each suggestion says what it follows from, underneath it — *Otto Meier is a parent of Fabio
+Meier, and Fabio Meier and Lisa Meier are siblings* — so you can see why Stella is asking before
+you answer. Every name in a suggestion is a link to that person, in the claim and in the reason
+alike, for when you want to look before you decide.
+
 When you accept or decline a suggestion the page stays exactly where it is — the row marks
 itself answered, a message at the bottom offers **Undo** for a few seconds, and only after that
 is anything saved. So taking an accept back does not undo a relationship; it stops one from ever

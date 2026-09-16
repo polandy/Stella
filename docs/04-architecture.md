@@ -258,6 +258,15 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   household and quietly understates every large one. Hence the totals come out of `reviewPage`
   rather than off `data.groups`, and a unit case asserts them against a household deliberately
   larger than one page.
+- **A sentence is handed its names, never assembled from pieces** — a claim and its reason each
+  name two or three people, and every name is a link to that person. Building the sentence out
+  of translated fragments with names in between would put English word order into the domain:
+  German orders the same three names differently and needs a dative apposition where English
+  uses a genitive. So the message stays one whole sentence per language, and `src/lib/i18n/
+  linked.ts` asks it to say itself with markers standing in for the names, then reads back where
+  the language put each one. The cost is one indirection between a message and the screen; what
+  it buys is that a translator writes ordinary prose and the links follow wherever they put the
+  names. Matching on names instead was rejected: a household may hold a person called `1`.
 - **A suggestion is answered by holding it, not by writing it** — accept and decline go through
   the same deferred-removal window as every removal (§2.23): the form is cancelled, the answer
   waits eight seconds, and only then is it sent. The alternative — write immediately and delete

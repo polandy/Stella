@@ -220,6 +220,13 @@ They must be edited together; `app.css` says so at both blocks.
     narrows the range and never the header.
   - Every control is a form or a link — pager, search and log included — so the screen works
     with JavaScript off, and an answer returns to the page and search it was given on.
+  - **A row says what its claim follows from**, in one sentence under the claim, and every name
+    in both is underlined and leads to that person. The underline is drawn in `fg-subtle`, not
+    `border`: measured on the dark theme, a border-coloured rule vanished against the row and
+    the names read as plain text in one theme and as links in the other. Names are *not* set in
+    the link colour — the two buttons beside them are the call to action, and a row carries up
+    to six names. Measured: the full sentence costs the row nothing at the review's own width
+    (66px, unchanged) and one line on a phone. Concept: `docs/concepts/relationship-reasoning.html`.
   - **An answered row settles in place.** It takes a green or red tint and swaps its two buttons
     for *Added* / *Declined* — keeping the same three-part shape, because a row that shrinks to
     one line the instant it is answered moves everything below it by the height it gave up

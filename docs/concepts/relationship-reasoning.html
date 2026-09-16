@@ -1,0 +1,452 @@
+<title>Why Stella Thinks So</title>
+<style>
+  /* ── Catppuccin tokens, straight from src/app.css (Latte / Mocha) ─────── */
+  :root, :root[data-theme='light'] {
+    --bg:#eff1f5; --bg-elevated:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff;
+    --border:#ccd0da; --border-soft:#dce0e8;
+    --fg:#4c4f69; --fg-muted:#6c6f85; --fg-subtle:#8c8fa1;
+    --primary:#8839ef; --primary-fg:#ffffff; --link:#1e66f5;
+    --green:#40a02b; --peach:#fe640b; --teal:#179299; --blue:#1e66f5;
+    --pink:#ea76cb; --yellow:#df8e1d; --sky:#04a5e5; --red:#d20f39; --maroon:#e64553;
+    --lavender:#7287fd; --sapphire:#209fb5;
+    --success:#40a02b; --warning:#df8e1d; --danger:#d20f39;
+    --shadow:0 1px 2px rgba(76,79,105,.06), 0 8px 24px rgba(76,79,105,.08);
+    --shadow-sm:0 1px 2px rgba(76,79,105,.08);
+    --shadow-pop:0 4px 12px rgba(76,79,105,.12), 0 16px 40px rgba(76,79,105,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+      --border:#313244; --border-soft:#26263a;
+      --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+      --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+      --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --blue:#89b4fa;
+      --pink:#f5c2e7; --yellow:#f9e2af; --sky:#89dceb; --red:#f38ba8; --maroon:#eba0ac;
+      --lavender:#b4befe; --sapphire:#74c7ec;
+      --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+      --shadow-pop:0 6px 16px rgba(0,0,0,.45), 0 20px 48px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+    --border:#313244; --border-soft:#26263a;
+    --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --blue:#89b4fa;
+    --pink:#f5c2e7; --yellow:#f9e2af; --sky:#89dceb; --red:#f38ba8; --maroon:#eba0ac;
+    --lavender:#b4befe; --sapphire:#74c7ec;
+    --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    --shadow-pop:0 6px 16px rgba(0,0,0,.45), 0 20px 48px rgba(0,0,0,.5);
+  }
+
+  
+  * { box-sizing:border-box; }
+  html { color-scheme: light dark; }
+  body {
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.55;
+  }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+  h1,h2,h3,h4 { text-wrap:balance; margin:0; }
+  code { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.86em; background:var(--bg-sunken); padding:1px 6px; border-radius:5px; }
+
+  .wrap { max-width:1000px; margin:0 auto; padding-block:clamp(28px,5vw,56px) 96px; padding-inline:clamp(16px,4vw,40px); }
+  .doc-head { display:flex; flex-direction:column; gap:12px; margin-bottom:36px; }
+  .eyebrow { font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-subtle); font-weight:700; }
+  .doc-head h1 { font-size:clamp(26px,4.2vw,40px); font-weight:700; letter-spacing:-.02em; line-height:1.1; }
+  .lede { font-size:clamp(15px,1.7vw,17px); color:var(--fg-muted); max-width:66ch; }
+
+  section.block { margin-top:44px; display:flex; flex-direction:column; gap:14px; }
+  section.block > h2 { font-size:20px; font-weight:650; letter-spacing:-.01em; }
+  section.block > p { margin:0; color:var(--fg-muted); max-width:70ch; font-size:14.5px; }
+  .note { font-size:13.5px; color:var(--fg-subtle); max-width:70ch; margin:0; }
+  .verdict { border-left:3px solid var(--primary); padding:8px 0 8px 14px; font-size:14px; color:var(--fg); max-width:70ch; }
+
+  /* ── the panel, as the app builds it ───────────────────────────────── */
+  .panel { background:var(--card); border-radius:12px; box-shadow:var(--shadow-sm); padding:16px; display:flex; flex-direction:column; gap:10px; max-width:640px; }
+  .panel > .who { display:flex; align-items:center; gap:10px; font-weight:600; font-size:14.5px; }
+  .dot { width:28px; height:28px; border-radius:50%; background:var(--lavender); color:var(--bg); display:grid; place-items:center; font-size:12px; font-weight:700; }
+
+  ul.rows { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  li.row {
+    display:grid; grid-template-columns:1fr auto; align-items:start; column-gap:12px; row-gap:4px;
+    border:1px solid var(--border-soft); background:var(--card); border-radius:8px; padding:8px;
+  }
+  .claim { grid-column:1; grid-row:1; font-size:14px; font-weight:500; color:var(--fg); min-width:0; }
+  .answers { grid-column:2; grid-row:1; display:flex; gap:6px; align-self:start; }
+  .why { grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:12px; color:var(--fg-subtle); min-width:0; }
+
+  .btn { border:1px solid transparent; border-radius:7px; padding:3px 10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); }
+  .btn.danger { background:transparent; color:var(--danger); border-color:var(--danger); }
+  .badge { border:1px solid var(--success); color:var(--success); border-radius:999px; padding:0 6px; font-size:11px; font-weight:700; letter-spacing:.04em; }
+  .badge.warn { border-color:var(--warning); color:var(--warning); }
+  .ruleid { opacity:.75; }
+
+  /* ── the two ways a name can be a link ─────────────────────────────── */
+  a.name-plain { color:inherit; text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px; text-decoration-thickness:1px; }
+  a.name-plain:hover { text-decoration-color:var(--primary); color:var(--primary); }
+  a.name-link { color:var(--link); text-decoration:none; }
+  a.name-link:hover { text-decoration:underline; }
+
+  .chain { display:flex; flex-direction:column; gap:2px; }
+  .chain .premise { display:flex; gap:6px; align-items:baseline; }
+  .chain .lead { color:var(--fg-subtle); opacity:.8; min-width:3.4em; }
+
+  details.foldwhy > summary { cursor:pointer; color:var(--fg-subtle); font-size:12px; list-style:none; display:inline-flex; gap:5px; align-items:center; }
+  details.foldwhy > summary::-webkit-details-marker { display:none; }
+  details.foldwhy > summary::before { content:'›'; display:inline-block; transition:transform .15s; }
+  details.foldwhy[open] > summary::before { transform:rotate(90deg); }
+  details.foldwhy > div { padding-top:4px; }
+
+  .pair { display:flex; flex-direction:column; gap:18px; align-items:stretch; max-width:720px; }
+  .card .panel { max-width:672px; }
+  .card { background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; }
+  .card > h3 { font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-subtle); }
+  .measure { font-size:12px; color:var(--fg-subtle); font-variant-numeric:tabular-nums; }
+  .lang { font-size:11px; font-weight:700; letter-spacing:.08em; color:var(--fg-subtle); text-transform:uppercase; }
+</style>
+
+<div class="wrap">
+  <header class="doc-head">
+    <p class="eyebrow">Stella · concept · relationship suggestions</p>
+    <h1>Why Stella thinks so</h1>
+    <p class="lede">
+      A suggestion currently shows one fact underneath it — and never the one that names the
+      person being offered. This is what the row would say instead, and what happens when every
+      name in it becomes a way to that person.
+    </p>
+  </header>
+
+  <section class="block">
+    <h2>The row today</h2>
+    <p>
+      Stella offers <em>Otto Meier is a parent of Lisa Meier</em> because Otto is already Fabio's
+      parent and Fabio and Lisa are siblings. Two facts. The line under the claim shows one of
+      them, and it is the one that never mentions Otto — so the reader is told a true thing that
+      does not answer the question they asked.
+    </p>
+    <div class="panel">
+      <div class="who"><span class="dot">LM</span> Lisa Meier</div>
+      <ul class="rows">
+        <li class="row">
+          <span class="claim">Otto Meier is a parent of Lisa Meier</span>
+          <span class="answers"><button class="btn primary">Accept</button><button class="btn danger">Decline</button></span>
+          <span class="why">
+            <span class="badge">CERTAIN</span>
+            Fabio Meier is Lisa Meier&rsquo;s sibling.
+            <span class="ruleid">L1</span>
+          </span>
+        </li>
+      </ul>
+    </div>
+    <p class="note">
+      <code>L1</code> is the rule's name in the engine. It is in the markup today, and it means
+      nothing to anyone who did not write it.
+    </p>
+  </section>
+
+  <section class="block">
+    <h2>Three ways to say why</h2>
+    <p>
+      All three carry the whole chain and drop the rule id. They differ in how much room they
+      take on a screen that is built to fold — ten people to a page, five claims each.
+    </p>
+
+    <div class="pair">
+      <div class="card">
+        <h3>A · one sentence</h3>
+        <div class="panel" >
+          <ul class="rows">
+            <li class="row" id="row-a">
+              <span class="claim">Otto Meier is a parent of Lisa Meier</span>
+              <span class="answers"><button class="btn primary">Accept</button><button class="btn danger">Decline</button></span>
+              <span class="why">
+                <span class="badge">CERTAIN</span>
+                <span><a class="name-plain" href="#">Otto Meier</a> is a parent of
+                <a class="name-plain" href="#">Fabio Meier</a>, and
+                <a class="name-plain" href="#">Fabio Meier</a> and
+                <a class="name-plain" href="#">Lisa Meier</a> are siblings.</span>
+              </span>
+            </li>
+          </ul>
+        </div>
+        <p class="measure" data-measure="row-a">height: — </p>
+      </div>
+
+      <div class="card">
+        <h3>B · the chain, stacked</h3>
+        <div class="panel" >
+          <ul class="rows">
+            <li class="row" id="row-b">
+              <span class="claim">Otto Meier is a parent of Lisa Meier</span>
+              <span class="answers"><button class="btn primary">Accept</button><button class="btn danger">Decline</button></span>
+              <span class="why">
+                <span class="badge">CERTAIN</span>
+                <span class="chain">
+                  <span class="premise"><span class="lead">on record</span><span><a class="name-plain" href="#">Otto Meier</a> is a parent of <a class="name-plain" href="#">Fabio Meier</a></span></span>
+                  <span class="premise"><span class="lead">on record</span><span><a class="name-plain" href="#">Fabio Meier</a> and <a class="name-plain" href="#">Lisa Meier</a> are siblings</span></span>
+                </span>
+              </span>
+            </li>
+          </ul>
+        </div>
+        <p class="measure" data-measure="row-b">height: — </p>
+      </div>
+
+      <div class="card">
+        <h3>C · folded behind “Why?”</h3>
+        <div class="panel" >
+          <ul class="rows">
+            <li class="row" id="row-c">
+              <span class="claim">Otto Meier is a parent of Lisa Meier</span>
+              <span class="answers"><button class="btn primary">Accept</button><button class="btn danger">Decline</button></span>
+              <span class="why">
+                <span class="badge">CERTAIN</span>
+                <details class="foldwhy">
+                  <summary>Why this is offered</summary>
+                  <div><a class="name-plain" href="#">Otto Meier</a> is a parent of
+                  <a class="name-plain" href="#">Fabio Meier</a>, and
+                  <a class="name-plain" href="#">Fabio Meier</a> and
+                  <a class="name-plain" href="#">Lisa Meier</a> are siblings.</div>
+                </details>
+              </span>
+            </li>
+          </ul>
+        </div>
+        <p class="measure" data-measure="row-c">height: — </p>
+      </div>
+
+      <div class="card">
+        <h3>D · one sentence, tightened</h3>
+        <div class="panel" >
+          <ul class="rows">
+            <li class="row" id="row-d">
+              <span class="claim">Otto Meier is a parent of Lisa Meier</span>
+              <span class="answers"><button class="btn primary">Accept</button><button class="btn danger">Decline</button></span>
+              <span class="why">
+                <span class="badge">CERTAIN</span>
+                <span>Parent of <a class="name-plain" href="#">Fabio Meier</a>, who is
+                <a class="name-plain" href="#">Lisa Meier</a>&rsquo;s sibling.</span>
+              </span>
+            </li>
+          </ul>
+        </div>
+        <p class="measure" data-measure="row-d">height: — </p>
+      </div>
+
+      <div class="card">
+        <h3>E · two premises, no labels</h3>
+        <div class="panel" >
+          <ul class="rows">
+            <li class="row" id="row-e">
+              <span class="claim">Otto Meier is a parent of Lisa Meier</span>
+              <span class="answers"><button class="btn primary">Accept</button><button class="btn danger">Decline</button></span>
+              <span class="why">
+                <span class="badge">CERTAIN</span>
+                <span class="chain">
+                  <span><a class="name-plain" href="#">Otto Meier</a> is a parent of <a class="name-plain" href="#">Fabio Meier</a></span>
+                  <span><a class="name-plain" href="#">Fabio Meier</a> and <a class="name-plain" href="#">Lisa Meier</a> are siblings</span>
+                </span>
+              </span>
+            </li>
+          </ul>
+        </div>
+        <p class="measure" data-measure="row-e">height: — </p>
+      </div>
+    </div>
+
+    <div class="verdict">
+      <strong>A &mdash; the whole chain, in full names.</strong> At the review&rsquo;s own column
+      width it costs the row <em>nothing</em>: 66px, exactly what stands there today, because the
+      sentence fits the line the reason already occupies. On a phone it is the dearest of the
+      readable options &mdash; 128px against today&rsquo;s 84px &mdash; and D&rsquo;s tightened
+      wording buys 19px of that back by leaving the offered person out of the sentence and naming
+      two people instead of three. B and E spend a whole extra line even on a desktop (86px), and B&rsquo;s
+      <em>on record</em> labels repeat what <em>certain</em> already said. C is free only because
+      it answers nothing until it is tapped &mdash; and this is the one question the reader has.
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Every name, a way to that person</h2>
+    <p>
+      Names appear in three places on this screen: the claim, the reason, and the person the
+      block is about. The third is a link already. Two ways to treat the other two —
+      the question is whether a review row turns into a field of blue.
+    </p>
+    <div class="pair">
+      <div class="card">
+        <h3>Underlined, in the text's own colour</h3>
+        <div class="panel" >
+          <ul class="rows">
+            <li class="row">
+              <span class="claim"><a class="name-plain" href="#">Otto Meier</a> is a parent of <a class="name-plain" href="#">Lisa Meier</a></span>
+              <span class="answers"><button class="btn primary">Accept</button><button class="btn danger">Decline</button></span>
+              <span class="why">
+                <span class="badge">CERTAIN</span>
+                <span><a class="name-plain" href="#">Otto Meier</a> is a parent of
+                <a class="name-plain" href="#">Fabio Meier</a>, and
+                <a class="name-plain" href="#">Fabio Meier</a> and
+                <a class="name-plain" href="#">Lisa Meier</a> are siblings.</span>
+              </span>
+            </li>
+            <li class="row">
+              <span class="claim"><a class="name-plain" href="#">Otto Meier</a> is a parent of <a class="name-plain" href="#">Selina Meier</a></span>
+              <span class="answers"><button class="btn primary">Accept</button><button class="btn danger">Decline</button></span>
+              <span class="why">
+                <span class="badge">CERTAIN</span>
+                <span><a class="name-plain" href="#">Otto Meier</a> is a parent of
+                <a class="name-plain" href="#">Fabio Meier</a>, and
+                <a class="name-plain" href="#">Fabio Meier</a> and
+                <a class="name-plain" href="#">Selina Meier</a> are siblings.</span>
+              </span>
+            </li>
+          </ul>
+        </div>
+        <p class="note">The row still reads as a sentence; the underline says it can be followed.</p>
+      </div>
+
+      <div class="card">
+        <h3>Link colour</h3>
+        <div class="panel" >
+          <ul class="rows">
+            <li class="row">
+              <span class="claim"><a class="name-link" href="#">Otto Meier</a> is a parent of <a class="name-link" href="#">Lisa Meier</a></span>
+              <span class="answers"><button class="btn primary">Accept</button><button class="btn danger">Decline</button></span>
+              <span class="why">
+                <span class="badge">CERTAIN</span>
+                <span><a class="name-link" href="#">Otto Meier</a> is a parent of
+                <a class="name-link" href="#">Fabio Meier</a>, and
+                <a class="name-link" href="#">Fabio Meier</a> and
+                <a class="name-link" href="#">Lisa Meier</a> are siblings.</span>
+              </span>
+            </li>
+            <li class="row">
+              <span class="claim"><a class="name-link" href="#">Otto Meier</a> is a parent of <a class="name-link" href="#">Selina Meier</a></span>
+              <span class="answers"><button class="btn primary">Accept</button><button class="btn danger">Decline</button></span>
+              <span class="why">
+                <span class="badge">CERTAIN</span>
+                <span><a class="name-link" href="#">Otto Meier</a> is a parent of
+                <a class="name-link" href="#">Fabio Meier</a>, and
+                <a class="name-link" href="#">Fabio Meier</a> and
+                <a class="name-link" href="#">Selina Meier</a> are siblings.</span>
+              </span>
+            </li>
+          </ul>
+        </div>
+        <p class="note">Six links to a row, eight per person, up to eighty on a page.</p>
+      </div>
+    </div>
+    <div class="verdict">
+      <strong>Underlined, in the text's own colour.</strong> A name is not a call to action here —
+      the two buttons are. The underline is enough to say it can be followed, and it keeps the
+      claim readable as the sentence it is.
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>German, which is where a spliced sentence breaks</h2>
+    <p>
+      The reason is not built by gluing pieces together: German puts the same three names in a
+      different order, and the genitive the English sentence uses does not exist in it. The
+      sentence is written whole in each language, and the names are placed into it wherever that
+      language puts them.
+    </p>
+    <div class="pair">
+      <div class="card">
+        <h3><span class="lang">EN</span></h3>
+        <div class="panel" >
+          <ul class="rows"><li class="row" id="row-en">
+            <span class="claim"><a class="name-plain" href="#">Otto Meier</a> is a parent of <a class="name-plain" href="#">Lisa Meier</a></span>
+            <span class="answers"><button class="btn primary">Accept</button><button class="btn danger">Decline</button></span>
+            <span class="why"><span class="badge">CERTAIN</span>
+              <span><a class="name-plain" href="#">Otto Meier</a> is a parent of
+              <a class="name-plain" href="#">Fabio Meier</a>, and
+              <a class="name-plain" href="#">Fabio Meier</a> and
+              <a class="name-plain" href="#">Lisa Meier</a> are siblings.</span>
+            </span>
+          </li></ul>
+        </div>
+      </div>
+      <div class="card">
+        <h3><span class="lang">DE</span></h3>
+        <div class="panel" >
+          <ul class="rows"><li class="row" id="row-de">
+            <span class="claim"><a class="name-plain" href="#">Otto Meier</a> ist ein Elternteil von <a class="name-plain" href="#">Lisa Meier</a></span>
+            <span class="answers"><button class="btn primary">Übernehmen</button><button class="btn danger">Ablehnen</button></span>
+            <span class="why"><span class="badge">SICHER</span>
+              <span><a class="name-plain" href="#">Otto Meier</a> ist ein Elternteil von
+              <a class="name-plain" href="#">Fabio Meier</a>, und
+              <a class="name-plain" href="#">Fabio Meier</a> und
+              <a class="name-plain" href="#">Lisa Meier</a> sind Geschwister.</span>
+            </span>
+          </li></ul>
+        </div>
+      </div>
+    </div>
+    <p class="note">
+      Same three people, six links, two languages. English says <em>is a parent of</em> where
+      German says <em>ist ein Elternteil von</em>, and the two halves of the sentence do not sit
+      in the same order &mdash; so whatever builds this hands the finished sentence its names,
+      rather than assembling the sentence out of pieces. That is also why a name inside the
+      reason can be a link at all: the sentence knows where each person landed in it.
+</p>
+  </section>
+
+  <section class="block">
+    <h2>What it costs the page</h2>
+    <p>
+      Rendered in the pinned Playwright container and measured, at the review&rsquo;s own column
+      width (672px) and on a 390px phone. Row heights, not opinions.
+    </p>
+    <div class="card" style="max-width:640px">
+      <table style="border-collapse:collapse; font-size:13.5px; width:100%; text-align:left">
+        <thead>
+          <tr style="text-align:left; color:var(--fg-subtle)">
+            <th style="padding:4px 10px 8px 0; font-weight:600">Variant</th>
+            <th style="padding:4px 10px 8px 0; font-weight:600">672px</th>
+            <th style="padding:4px 0 8px 0; font-weight:600">390px</th>
+          </tr>
+        </thead>
+        <tbody style="font-variant-numeric:tabular-nums">
+          <tr><td style="padding:3px 10px 3px 0; color:var(--fg-muted)">today &mdash; one premise, EN</td><td style="padding-right:18px">66px</td><td>84px</td></tr>
+          <tr><td style="padding:3px 10px 3px 0"><strong>A &middot; full chain, full names, EN</strong></td><td style="padding-right:18px"><strong>66px</strong></td><td>128px</td></tr>
+          <tr><td style="padding:3px 10px 3px 0"><strong>A &middot; full chain, full names, DE</strong></td><td style="padding-right:18px"><strong>66px</strong></td><td>149px</td></tr>
+          <tr><td style="padding:3px 10px 3px 0; color:var(--fg-muted)">D &middot; tightened sentence</td><td style="padding-right:18px">66px</td><td>109px</td></tr>
+          <tr><td style="padding:3px 10px 3px 0; color:var(--fg-muted)">B &middot; stacked, labelled</td><td style="padding-right:18px">86px</td><td>130px</td></tr>
+          <tr><td style="padding:3px 10px 3px 0; color:var(--fg-muted)">E &middot; stacked, unlabelled</td><td style="padding-right:18px">86px</td><td>105px</td></tr>
+          <tr><td style="padding:3px 10px 3px 0; color:var(--fg-muted)">C &middot; folded, closed</td><td style="padding-right:18px">66px</td><td>84px</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Both languages were measured in the column the review really uses (640px of row inside a
+      672px panel), and again at 390px. The German sentence is the longer one &mdash; it needs the
+      dative apposition where English uses a genitive &mdash; and on a desktop it still lands on the
+      same line.
+    </p>
+    <div class="verdict">
+      <strong>There is no German penalty on a desktop</strong> &mdash; 66px, the same as English.
+      An earlier draft of this page reported 105px and argued for shortening the sentence; that
+      number came from this mockup&rsquo;s own comparison cards, which were narrower than the column
+      the review actually renders in. Measured at the real width, full names cost nothing. The
+      phone is where German is dearer: 149px against 84px today, because three names and two
+      premises need three lines at 390px. That is the price of answering the question, and the
+      fold is what keeps the page finite regardless.
+    </div>
+  </section>
+</div>
+
+<script>
+  const px = (el) => Math.round(el.getBoundingClientRect().height);
+  for (const p of document.querySelectorAll('[data-measure]')) {
+    const row = document.getElementById(p.dataset.measure);
+    p.textContent = `row height: ${px(row)}px`;
+  }
+</script>

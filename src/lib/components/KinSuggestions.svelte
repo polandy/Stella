@@ -3,10 +3,13 @@
 	import { MediaQuery } from 'svelte/reactivity';
 	import { slide } from 'svelte/transition';
 	import Button from '$lib/components/Button.svelte';
+	import LinkedNames from '$lib/components/LinkedNames.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { segmentsOf, type Segment } from '$lib/i18n/linked';
 	import { ANSWER_ANCHOR_FIELD, answerAnchor, answerKey } from '$lib/relationships/answer-key';
 	import { wasTakenBack, type AnswerState, type AnsweredClaims } from '$lib/relationships/answered';
+	import { claimSentence } from '$lib/relationships/claim-sentence';
 	import { RETURN_TO_FIELD } from '$lib/relationships/review-url';
 	import { TYPE_KEY_FOR_RELATION } from '$lib/relationships/type-keys';
 	import { useRemovals } from '$lib/undo/context.svelte';
@@ -40,8 +43,11 @@
 		toId: string;
 		fromName: string;
 		toName: string;
-		/** Already said, in the reader's language: the route resolved the `Phrase`. */
-		reason: string;
+		/**
+		 * Why the claim is offered, already said in the reader's language and already cut into
+		 * words and people, so every name in it can be followed (docs/02 §2.4.1).
+		 */
+		reason: readonly Segment[];
 		/** Who declined this claim and when; null while it stands unanswered. */
 		dismissed: { at: number; by: string } | null;
 	}
@@ -160,12 +166,11 @@
 		};
 	}
 
-	/** The sentence the claim makes, in the reader's language. */
-	function sentence(s: Suggestion): string {
-		return s.relation === 'parent'
-			? t('contact.relationships.parentProposal', { parent: s.fromName, child: s.toName })
-			: t('contact.relationships.siblingProposal', { one: s.fromName, other: s.toName });
-	}
+	/** The sentence the claim makes, in the reader's language, with both people followable. */
+	const claimOf = (s: Suggestion) =>
+		segmentsOf(
+			claimSentence(s.relation, { id: s.fromId, name: s.fromName }, { id: s.toId, name: s.toName })(t)
+		);
 
 	/** "declined on 12 September 2026", with the member who declined it when we know them. */
 	function declinedWhen(answer: { at: number; by: string }): string {
@@ -194,7 +199,7 @@
 		>
 			<span class="min-w-0 text-sm font-medium" class:text-fg={!held} class:text-fg-muted={held}>
 				{#if held}<span aria-hidden="true">{held === 'accept' ? '✓' : '✕'}</span>{/if}
-				{sentence(suggestion)}
+				<LinkedNames segments={claimOf(suggestion)} />
 			</span>
 			<!--
 				Both cells are placed explicitly. With only `row-start-1`, the answers take the first
@@ -264,8 +269,7 @@
 				>
 					{t(CONFIDENCE_KEY[suggestion.confidence])}
 				</span>
-				{suggestion.reason}
-				<span class="opacity-75">{suggestion.ruleId}</span>
+				<span class="min-w-0"><LinkedNames segments={suggestion.reason} /></span>
 			</span>
 		</li>
 	{/each}
@@ -283,7 +287,7 @@
 		<ul class="flex list-none flex-col gap-1.5 border-t border-dashed border-border pt-2">
 			{#each declined as suggestion (suggestion.relation + suggestion.fromId + suggestion.toId)}
 				<li class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-fg-muted">
-					<span>{sentence(suggestion)}</span>
+					<span><LinkedNames segments={claimOf(suggestion)} /></span>
 					{#if suggestion.dismissed}
 						<span class="text-xs text-fg-subtle">{declinedWhen(suggestion.dismissed)}</span>
 					{/if}

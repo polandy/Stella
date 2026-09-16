@@ -468,6 +468,14 @@ tables, fully unit-testable (test-first).
   household. Anyone's check is scoped to their own graph, so a private person is never named to
   someone who may not see them.
 
+- **Shipped:** every suggestion **says what it follows from**, and every name in it is a way to
+  that person. A parent claim rests on two facts — the parent is on record for one child, and
+  that child and this one are siblings — and the row states both: *Otto Meier is a parent of
+  Fabio Meier, and Fabio Meier and Lisa Meier are siblings.* It used to state one of them, and
+  the one that never mentions the person being offered. The rule's internal name (`L1`) is gone
+  from the screen; it was never anything a household could read. Claim and reason alike are
+  written whole in each language and handed their names, so German can order them its own way
+  and the names stay separable enough to link (docs/04 §4.9).
 - **Shipped:** answering **never moves the page**. An answer used to be a form post and a
   redirect, which threw the rendered document away and scrolled to the top — on row forty that
   cost the reader their place on every single answer. Now the form is intercepted, nothing

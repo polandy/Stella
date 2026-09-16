@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { textOf } from '$lib/i18n/linked';
 import { createTranslator } from '../../../i18n/translate';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -398,7 +399,9 @@ describe('readKinship', () => {
 			}
 		]);
 		// The reason travels unsaid; the route renders it in the reader's language.
-		expect(found.proposals[0]?.reason(createTranslator('en'))).toBe('Lisa is Hans’s sibling.');
+		expect(textOf(found.proposals[0]!.reason(createTranslator('en')))).toBe(
+			'Bettina is a parent of Hans, and Hans and Lisa are siblings.'
+		);
 	});
 
 	it('proposes nothing for a pair with no primary link the viewer can see', async () => {
