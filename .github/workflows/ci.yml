@@ -1,29 +1,21 @@
 name: ci
 
 on:
-  push:
-    branches: [main]
   pull_request:
-    # The release PR carries nothing CI can verify and its bot-authored branch can never
-    # get a run approved, so it is skipped deliberately — docs/08 §8.9.
     branches-ignore: ['release-please--**']
 
-# A push that supersedes an earlier one on the same branch cancels its run; on main every
-# commit is kept, because release-please and the deploy read those results.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: false
 
 env:
   BUN_VERSION: 1.3.13
-  # Workflow-wide, so the e2e server and the browser driving it cannot end up in different
-  # days: the suite compares dates it builds itself against dates the server works out from
-  # its own clock. The runner happens to be UTC already; saying so keeps a changed runner
-  # image from silently moving every date by a day.
   TZ: UTC
 
 jobs:
-  verify:
+  # EXPERIMENT ONLY (tmp/e2e-mutation-day). Runs the one spec against a deliberately broken
+  # render of the reference day. A failure here is the result being looked for.
+  mutation:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,36 +23,13 @@ jobs:
         with:
           bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
-      - run: bun run check
-      - run: bun run test
-      # The dev server runs in a third runtime — Vite's module runner under Bun — that
-      # neither the unit tests nor the e2e build exercise, so it needs its own check.
-      - run: ./scripts/dev-smoke.sh
-
-  e2e:
-    runs-on: ubuntu-latest
-    strategy:
-      # The suite is serial within a shard (one server, one database), so the only way to
-      # spend less wall-clock time on it is to give each slice its own server.
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-      - run: bun install --frozen-lockfile
-      # The runner can drive Chromium directly, so CI skips e2e/run.sh's container.
       - uses: actions/cache@v4
         id: browsers
         with:
           path: ~/.cache/ms-playwright
-          # The lockfile pins @playwright/test, and its version decides the browser build.
           key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
       - if: steps.browsers.outputs.cache-hit == 'true'
-        # The browser came from the cache; only its system libraries are still missing.
         run: bunx playwright install-deps chromium
       - if: steps.browsers.outputs.cache-hit != 'true'
         run: bunx playwright install --with-deps chromium
-      - run: bunx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+      - run: bunx playwright test e2e/mentioned-in.spec.ts

@@ -1296,7 +1296,7 @@
 											class="text-xs text-fg-subtle"
 											class:ml-auto={reference.visibility !== 'private'}
 										>
-											{dayLabel(i18n, reference.day)}
+											{dayLabel(i18n, new Date(new Date(reference.day).getTime() + 2 * 86400000).toISOString().slice(0, 10))}
 										</span>
 									</div>
 									{#if reference.title}
