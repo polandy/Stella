@@ -1,4 +1,6 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+import type { RelationshipStatus } from '../src/lib/relationships/status';
+import { BUILT_IN_RELATIONSHIP_TYPES } from '../src/lib/server/domain/relationships/built-in-types';
 import { DOCUMENT_ENTRY } from '../src/lib/server/domain/archive/archive';
 import { tarEntry, tarTrailer } from '../src/lib/archive/tar';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from '../src/lib/server/domain/archive/document';
@@ -17,8 +19,15 @@ import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from '../src/lib/server/domain/archiv
  * reads it as it reads an export.
  */
 
-/** The built-in relationship types by their stable id (`built-in-types.ts`). */
+/** The built-in relationship types the seed can write, by their stable id. */
 export const LINK = { siblingOf: 'sibling', parentOf: 'parent_child' } as const;
+
+// A renamed built-in would otherwise surface as a restore warning and an empty review.
+for (const id of Object.values(LINK)) {
+	if (!BUILT_IN_RELATIONSHIP_TYPES.some((type) => type.id === id)) {
+		throw new Error(`"${id}" is not a built-in relationship type; e2e/seed.ts needs updating.`);
+	}
+}
 
 export interface SeedLink {
 	/** Full names, as `people` spells them. */
@@ -61,7 +70,7 @@ export async function seedHousehold(
 			to: idOf(link.to),
 			type: link.type,
 			// The status a link entered through the form gets (docs/03 §relationship).
-			status: 'current'
+			status: 'current' satisfies RelationshipStatus
 		}))
 	};
 	const text = new TextEncoder().encode(JSON.stringify(document));
@@ -70,7 +79,7 @@ export async function seedHousehold(
 	const response = await page.request.post(RESTORE_ACTION, {
 		// SvelteKit refuses a form post whose origin it does not recognise; the browser would
 		// send this header itself.
-		headers: { origin: new URL(page.url()).origin },
+		headers: { origin: appOrigin() },
 		multipart: {
 			archive: {
 				name: 'seed.tar',
@@ -85,6 +94,13 @@ export async function seedHousehold(
 	const report = restoreReportFrom(await response.text());
 	expect(report.added.contact).toBe(people.length);
 	expect(report.added.relationship).toBe(links.length);
+}
+
+/** The app's own origin, from the project config — not from whatever page happens to be open. */
+function appOrigin(): string {
+	const baseURL = test.info().project.use.baseURL;
+	if (!baseURL) throw new Error('The e2e project has no baseURL; e2e/seed.ts needs one.');
+	return new URL(baseURL).origin;
 }
 
 /** The counts the restore report carries for the two kinds of record the seed writes. */
