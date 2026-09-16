@@ -280,7 +280,7 @@ const PHRASE_FOR_REASON: Record<ExclusionReason, (e: Exclusion, nameOf: NameOf) 
 	romanticTaken: (exclusion, nameOf) =>
 		phrase('errors.relationship.romanticTaken', {
 			name: nameOf(exclusion.personId),
-			partner: nameOf(exclusion.partnerId ?? '')
+			partner: exclusion.partnerId ? nameOf(exclusion.partnerId) : ''
 		}),
 	parentsComplete: (exclusion, nameOf) =>
 		phrase('errors.relationship.parentsComplete', {
