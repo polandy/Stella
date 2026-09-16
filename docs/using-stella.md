@@ -250,6 +250,13 @@ Declining is not final and is not private: it holds for everyone in the househol
 was declined stays one click away under **N declined suggestions**, with who said no and when,
 and *Offer again* to put it back.
 
+Going profile by profile only reaches the people you think to open, and most households have
+never opened most of theirs. **Settings → Check relationships** asks the same question about
+everyone at once: it lists what follows from every link on record, grouped by the person each
+suggestion is about, with the same three answers on every row. Nothing is stored until you
+accept it, and a claim you have already answered is not offered again — so checking twice in a
+row is free.
+
 Every profile shows the person at the centre of their own small constellation. **Explore
 connections** opens the bigger picture, where you can follow the web outward from one
 person and trace how any two people are linked.

@@ -1,0 +1,753 @@
+<title>Household Relationship Review</title>
+<style>
+  /* ── Catppuccin tokens, straight from src/app.css (Latte / Mocha) ─────── */
+  :root, :root[data-theme='light'] {
+    --bg:#eff1f5; --bg-elevated:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff;
+    --border:#ccd0da; --border-soft:#dce0e8;
+    --fg:#4c4f69; --fg-muted:#6c6f85; --fg-subtle:#8c8fa1;
+    --primary:#8839ef; --primary-fg:#ffffff; --link:#1e66f5;
+    --green:#40a02b; --peach:#fe640b; --teal:#179299; --blue:#1e66f5;
+    --pink:#ea76cb; --yellow:#df8e1d; --sky:#04a5e5; --red:#d20f39; --maroon:#e64553;
+    --lavender:#7287fd; --sapphire:#209fb5;
+    --success:#40a02b; --warning:#df8e1d; --danger:#d20f39;
+    --shadow:0 1px 2px rgba(76,79,105,.06), 0 8px 24px rgba(76,79,105,.08);
+    --shadow-sm:0 1px 2px rgba(76,79,105,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+      --border:#313244; --border-soft:#26263a;
+      --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+      --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+      --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --blue:#89b4fa;
+      --pink:#f5c2e7; --yellow:#f9e2af; --sky:#89dceb; --red:#f38ba8; --maroon:#eba0ac;
+      --lavender:#b4befe; --sapphire:#74c7ec;
+      --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+    --border:#313244; --border-soft:#26263a;
+    --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --blue:#89b4fa;
+    --pink:#f5c2e7; --yellow:#f9e2af; --sky:#89dceb; --red:#f38ba8; --maroon:#eba0ac;
+    --lavender:#b4befe; --sapphire:#74c7ec;
+    --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing:border-box; }
+  html { color-scheme: light dark; }
+  body {
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.55;
+  }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+  a { color:var(--link); text-decoration:none; cursor:pointer; }
+  h1,h2,h3,h4 { text-wrap:balance; margin:0; }
+  code { font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.88em; background:var(--bg-sunken); padding:1px 6px; border-radius:5px; }
+
+  .wrap { max-width:1140px; margin:0 auto; padding-block:clamp(28px,5vw,64px) 96px; padding-inline:clamp(18px,4vw,40px); }
+
+  .doc-head { display:flex; flex-direction:column; gap:14px; margin-bottom:12px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); display:flex; align-items:center; gap:9px; }
+  .kicker .star { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; background:var(--primary); color:var(--primary-fg); font-size:13px; }
+  .doc-head h1 { font-size:clamp(28px,4.4vw,44px); font-weight:700; letter-spacing:-.02em; line-height:1.08; }
+  .doc-head p.lede { font-size:clamp(15px,1.7vw,18px); color:var(--fg-muted); max-width:64ch; margin:0; }
+  .theme-btn { position:fixed; top:calc(16px + env(safe-area-inset-top, 0px)); right:16px; z-index:50; display:inline-flex; align-items:center; gap:7px; cursor:pointer; background:var(--card); color:var(--fg-muted); border:1px solid var(--border); border-radius:999px; padding:7px 14px; font:inherit; font-size:13px; box-shadow:var(--shadow-sm); }
+  .theme-btn:hover { color:var(--fg); }
+
+  .standing { margin-top:26px; border-left:3px solid var(--primary); background:color-mix(in srgb,var(--primary) 7%,var(--card)); border-radius:0 12px 12px 0; padding:14px 18px; display:flex; flex-direction:column; gap:6px; }
+  .standing b { font-size:13px; }
+  .standing p { margin:0; font-size:13.5px; color:var(--fg-muted); max-width:72ch; }
+
+  .eyebrow { font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-subtle); }
+  section.block { margin-top:56px; }
+  section.block > .eyebrow { margin-bottom:10px; display:block; }
+  section.block > h2 { font-size:clamp(20px,2.6vw,26px); font-weight:650; letter-spacing:-.01em; margin-bottom:8px; }
+  section.block > p.intro { color:var(--fg-muted); max-width:68ch; margin:0 0 22px; }
+
+  .principles { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); }
+  .princ { display:flex; gap:13px; align-items:flex-start; }
+  .princ .ic { flex:none; width:34px; height:34px; border-radius:9px; display:grid; place-items:center; background:color-mix(in srgb, var(--primary) 14%, transparent); color:var(--primary); font-weight:700; font-size:13px; }
+  .princ h3 { font-size:14.5px; font-weight:640; margin-bottom:3px; }
+  .princ p { margin:0; font-size:13px; color:var(--fg-muted); }
+
+  /* ── Prototype frame ──────────────────────────────────────────────────── */
+  .proto-shell { border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); background:var(--bg); }
+  .browserbar { display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--bg-elevated); border-bottom:1px solid var(--border); }
+  .dots { display:flex; gap:6px; }
+  .dots i { width:11px; height:11px; border-radius:50%; display:block; }
+  .urlbar { flex:1; margin-left:8px; background:var(--bg); border:1px solid var(--border-soft); border-radius:8px; padding:5px 12px; font-size:12.5px; color:var(--fg-subtle); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .urlbar b { color:var(--fg-muted); font-weight:500; }
+
+  .app { display:grid; grid-template-columns:220px 1fr; min-height:600px; }
+  .side { background:var(--bg-elevated); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:16px 12px; gap:3px; }
+  .brand { display:flex; align-items:center; gap:10px; padding:6px 8px 14px; }
+  .brand .logo { width:32px; height:32px; border-radius:9px; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; font-size:17px; box-shadow:var(--shadow-sm); }
+  .brand .name { font-weight:680; font-size:16px; letter-spacing:-.01em; }
+  .brand .name small { display:block; font-weight:500; font-size:11px; color:var(--fg-subtle); }
+  .navitem { display:flex; align-items:center; gap:11px; width:100%; text-align:left; padding:9px 10px; border-radius:9px; border:0; background:none; cursor:pointer; font:inherit; font-size:14px; color:var(--fg-muted); position:relative; }
+  .navitem svg { flex:none; width:18px; height:18px; }
+  .navitem:hover { background:var(--bg-sunken); color:var(--fg); }
+  .navitem[aria-current='page'] { background:color-mix(in srgb, var(--primary) 15%, transparent); color:var(--primary); font-weight:600; }
+  .navitem[aria-current='page']::before { content:''; position:absolute; left:-12px; top:8px; bottom:8px; width:3px; border-radius:0 3px 3px 0; background:var(--primary); }
+  .navitem .badge { margin-left:auto; font-size:11px; font-weight:650; background:color-mix(in srgb,var(--peach) 24%,transparent); color:var(--fg); border-radius:999px; padding:1px 8px; font-variant-numeric:tabular-nums; }
+  .side .spacer { flex:1; }
+  @media (max-width:760px) { .app { grid-template-columns:1fr; } .side { display:none; } }
+
+  .main { display:flex; flex-direction:column; min-width:0; background:var(--bg); }
+  .topbar { display:flex; align-items:center; gap:14px; padding:12px 20px; border-bottom:1px solid var(--border-soft); }
+  .crumbs { display:flex; align-items:center; gap:7px; font-size:13.5px; min-width:0; flex-wrap:wrap; color:var(--fg-subtle); }
+  .crumbs .current { color:var(--fg); font-weight:600; }
+  .canvas { padding:22px 22px 30px; overflow:auto; }
+  @media (max-width:520px) { .canvas { padding:16px 16px 24px; } }
+
+  .pagehead { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:wrap; }
+  .pagehead h2 { font-size:21px; font-weight:680; letter-spacing:-.01em; }
+  .pagehead p { margin:3px 0 0; font-size:13.5px; color:var(--fg-muted); max-width:58ch; }
+
+  .btn { display:inline-flex; align-items:center; gap:7px; border-radius:9px; padding:8px 14px; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; border:1px solid transparent; }
+  .btn svg { width:15px; height:15px; }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); }
+  .btn.primary:hover { opacity:.92; }
+  .btn.danger { background:var(--card); color:var(--danger); border-color:color-mix(in srgb,var(--danger) 45%,transparent); }
+  .btn.danger:hover { background:color-mix(in srgb,var(--danger) 12%,var(--card)); }
+  .btn.ghost { background:var(--card); color:var(--fg-muted); border-color:var(--border); font-weight:500; }
+  .btn.ghost:hover { color:var(--fg); border-color:var(--primary); }
+  .btn[disabled] { opacity:.55; cursor:default; }
+  .btn.small { padding:5px 11px; font-size:12.5px; }
+
+  /* Entry card */
+  .runcard { background:var(--card); border:1px solid var(--border-soft); border-radius:14px; padding:18px; box-shadow:var(--shadow-sm); display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+  .runcard .ic { flex:none; width:40px; height:40px; border-radius:11px; display:grid; place-items:center; background:color-mix(in srgb,var(--primary) 14%,transparent); color:var(--primary); }
+  .runcard .body { flex:1; min-width:220px; }
+  .runcard h3 { font-size:15px; font-weight:650; }
+  .runcard p { margin:4px 0 0; font-size:13.5px; color:var(--fg-muted); max-width:58ch; }
+  .runmeta { display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; font-size:12.5px; color:var(--fg-subtle); }
+  .runmeta b { color:var(--fg); font-weight:600; font-variant-numeric:tabular-nums; }
+
+  .progress { margin-top:14px; }
+  .progress .track { height:7px; border-radius:999px; background:var(--bg-sunken); overflow:hidden; }
+  .progress .fill { height:100%; width:0; background:var(--primary); border-radius:999px; transition:width .18s linear; }
+  .progress .cap { margin-top:7px; font-size:12.5px; color:var(--fg-muted); font-variant-numeric:tabular-nums; }
+
+  .filters { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:20px 0 14px; }
+  .chip { font-size:12.5px; padding:5px 12px; border-radius:999px; border:1px solid var(--border); color:var(--fg-muted); cursor:pointer; background:var(--card); font:inherit; }
+  .chip:hover { border-color:var(--primary); color:var(--fg); }
+  .chip[aria-pressed='true'] { background:color-mix(in srgb,var(--primary) 16%,transparent); border-color:var(--primary); color:var(--fg); font-weight:600; }
+  .filters .sep { flex:1; }
+  .filters .note { font-size:12px; color:var(--fg-subtle); }
+
+  /* Claim groups — the rows are KinSuggestions.svelte, unchanged */
+  .group { background:var(--card); border:1px solid var(--border-soft); border-radius:14px; box-shadow:var(--shadow-sm); margin-bottom:12px; overflow:hidden; }
+  .group > header { display:flex; align-items:center; gap:11px; padding:12px 15px; border-bottom:1px solid var(--border-soft); background:var(--bg-elevated); }
+  .group > header .who { min-width:0; flex:1; }
+  .group > header b { font-size:14px; font-weight:650; display:block; }
+  .group > header span.sub { font-size:12px; color:var(--fg-subtle); }
+  .group > header .count { font-size:12px; color:var(--fg-subtle); font-variant-numeric:tabular-nums; }
+  .av { flex:none; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-weight:650; font-size:13px; }
+
+  .claims { display:flex; flex-direction:column; gap:8px; padding:12px 15px; }
+  .claim { display:grid; grid-template-columns:1fr auto; align-items:start; gap:4px 12px; border:1px solid var(--border-soft); border-radius:9px; padding:9px 11px; background:var(--card); }
+  @media (max-width:560px) { .claim { grid-template-columns:1fr; } }
+  .claim .sentence { grid-column:1; grid-row:1; font-size:14px; font-weight:550; min-width:0; }
+  .claim .answers { grid-column:2; grid-row:1; justify-self:end; display:flex; gap:6px; flex-shrink:0; }
+  @media (max-width:560px) { .claim .sentence, .claim .answers { grid-column:1; grid-row:auto; justify-self:start; } }
+  .claim .foot { grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:center; gap:7px; font-size:12px; color:var(--fg-subtle); }
+  .claim.settled { background:var(--bg-elevated); }
+  .claim.settled .sentence { color:var(--fg-muted); }
+
+  .conf { border-radius:999px; border:1px solid currentColor; padding:0 7px; font-size:11px; font-weight:650; letter-spacing:.02em; }
+  .conf.certain { color:var(--success); }
+  .conf.likely, .conf.possible { color:var(--warning); }
+  .rule { opacity:.75; }
+  .state { border-radius:999px; padding:1px 9px; font-size:11px; font-weight:650; }
+  .state.added { background:color-mix(in srgb,var(--success) 22%,transparent); color:var(--fg); }
+  .state.declined { background:color-mix(in srgb,var(--danger) 18%,transparent); color:var(--fg); }
+
+  /* Declined drawer — a <details>, like the shipped panel */
+  details.declined { margin-top:6px; background:var(--card); border:1px dashed var(--border); border-radius:12px; padding:12px 15px; }
+  details.declined > summary { cursor:pointer; font-size:13.5px; color:var(--fg-muted); }
+  details.declined > summary:hover { color:var(--fg); }
+  details.declined ul { list-style:none; margin:10px 0 0; padding:10px 0 0; border-top:1px dashed var(--border); display:flex; flex-direction:column; gap:9px; }
+  details.declined li { display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:13.5px; color:var(--fg-muted); }
+  details.declined li .when { font-size:12px; color:var(--fg-subtle); }
+  details.declined li form { margin-left:auto; }
+
+  .empty { text-align:center; padding:46px 20px; border:1px dashed var(--border); border-radius:14px; color:var(--fg-muted); background:var(--card); }
+  .empty .ic { width:46px; height:46px; margin:0 auto 12px; border-radius:13px; display:grid; place-items:center; background:color-mix(in srgb,var(--success) 18%,transparent); color:var(--success); }
+  .empty b { display:block; color:var(--fg); font-size:15px; margin-bottom:4px; }
+  .empty p { margin:0 auto; max-width:48ch; font-size:13.5px; }
+
+  .toast { position:absolute; left:50%; bottom:18px; transform:translate(-50%,14px); background:var(--fg); color:var(--bg); font-size:13px; font-weight:550; padding:9px 15px; border-radius:10px; box-shadow:var(--shadow); display:flex; gap:12px; align-items:center; opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; max-width:calc(100% - 32px); }
+  .toast.show { opacity:1; transform:translate(-50%,0); pointer-events:auto; }
+  .toast button { background:none; border:0; color:var(--bg); font:inherit; font-size:12.5px; font-weight:700; text-decoration:underline; cursor:pointer; }
+  .stage { position:relative; }
+
+  /* Phone frames */
+  .phones { display:grid; gap:22px; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); align-items:start; }
+  .phone { border:1px solid var(--border); border-radius:26px; background:var(--bg); box-shadow:var(--shadow); overflow:hidden; max-width:330px; margin:0 auto; width:100%; }
+  .phone .statusbar { display:flex; justify-content:space-between; font-size:11px; color:var(--fg-subtle); padding:9px 16px 4px; font-variant-numeric:tabular-nums; }
+  .phone .pbody { padding:6px 12px 14px; }
+  .phone h4 { font-size:16px; font-weight:680; margin:6px 2px 2px; }
+  .phone .sub { font-size:12px; color:var(--fg-muted); margin:0 2px 12px; }
+  .pcard { background:var(--card); border:1px solid var(--border-soft); border-radius:12px; padding:11px; margin-bottom:9px; box-shadow:var(--shadow-sm); }
+  .pcard .sentence { font-size:13.5px; font-weight:600; }
+  .pcard .foot { display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:11.5px; color:var(--fg-subtle); margin:5px 0 9px; }
+  .pcard .answers { display:flex; gap:7px; }
+  .pcard .answers .btn { flex:1; justify-content:center; }
+  .phone .tabbar { display:flex; border-top:1px solid var(--border-soft); margin-top:6px; }
+  .phone .tabbar span { flex:1; text-align:center; font-size:10.5px; padding:8px 0 4px; color:var(--fg-subtle); }
+  .phone .tabbar span.on { color:var(--primary); font-weight:650; }
+  .caption { font-size:12.5px; color:var(--fg-subtle); text-align:center; margin-top:9px; }
+
+  .tablewrap { overflow-x:auto; border:1px solid var(--border-soft); border-radius:12px; background:var(--card); }
+  table { border-collapse:collapse; width:100%; font-size:13.5px; min-width:560px; }
+  th, td { text-align:left; padding:10px 14px; border-bottom:1px solid var(--border-soft); vertical-align:top; }
+  th { font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--fg-subtle); font-weight:650; }
+  tbody tr:last-child td { border-bottom:0; }
+  td.k { white-space:nowrap; }
+
+  ul.notes { margin:0; padding-left:20px; color:var(--fg-muted); font-size:14px; display:flex; flex-direction:column; gap:10px; max-width:72ch; }
+  ul.notes b { color:var(--fg); font-weight:620; }
+  .footnote { margin-top:40px; font-size:12.5px; color:var(--fg-subtle); border-top:1px solid var(--border-soft); padding-top:16px; }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+</style>
+
+<button class="theme-btn" id="theme-toggle" type="button">Theme</button>
+
+<div class="wrap">
+  <header class="doc-head">
+    <div class="kicker"><span class="star">✦</span> Stella · concept</div>
+    <h1>One review for the whole household</h1>
+    <p class="lede">
+      The per-person review shipped in <b>#110</b>: a member opens a profile, presses
+      <i>Check relationships</i>, and answers what the rules find. This concept adds the step that
+      is still missing — <b>one run over everyone</b>, and a screen that collects what came back.
+      The rows, the answers and the dismissal log are the shipped ones, unchanged.
+    </p>
+  </header>
+
+  <div class="standing">
+    <b>Built — this is what shipped</b>
+    <p>
+      Shipped: the <code>person-reviewed</code> trigger, three answers per row (accept / decline /
+      leave), <code>suggestion_dismissal</code> keyed by the claim rather than the rule, the declined
+      drawer with <i>Offer again</i>, and <code>KinSuggestions.svelte</code> as the one row component
+      for both the <i>Also true?</i> block and the review panel. Drawn here and then built on the
+      same branch: the household-wide pass at <i>Settings → Check relationships</i>, on the
+      <code>household-reviewed</code> trigger. The built screen follows this drawing except where
+      noted below.
+    </p>
+  </div>
+
+  <section class="block">
+    <span class="eyebrow">Why a batch</span>
+    <h2>Nobody opens 186 profiles</h2>
+    <p class="intro">
+      A per-person review only reaches the people someone thinks to check, and the households that
+      need it most are exactly the ones with years of imported links nobody has looked at. The rule
+      set is pure and runs against a view the viewer may see, so asking it about everyone is the same
+      work, done once, in one place.
+    </p>
+    <div class="principles">
+      <div class="princ"><div class="ic">1</div><div>
+        <h3>The claim, not the person</h3>
+        <p>A batch reaches the same claim from both ends — Lisa's review and Hans's raise it alike.
+          The list is deduplicated on <code>(relation, pairKey)</code>, the key the dismissal log
+          already uses, so it appears once.</p>
+      </div></div>
+      <div class="princ"><div class="ic">2</div><div>
+        <h3>Three answers, still</h3>
+        <p>Accept stores the link through the checked action, Decline writes the dismissal, and
+          leaving a row alone stays free — the rule that keeps a long list honest.</p>
+      </div></div>
+      <div class="princ"><div class="ic">3</div><div>
+        <h3>No bulk accept, least of all here</h3>
+        <p>A screen with 40 rows is precisely where a sweep of <i>yes</i> would be offered and
+          precisely where it must not be.</p>
+      </div></div>
+      <div class="princ"><div class="ic">4</div><div>
+        <h3>Form actions, no JavaScript needed</h3>
+        <p>Run is a POST; each answer is its own form, like the shipped panel. The progress bar is
+          an enhancement over a request that works without it.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Prototype · click it</span>
+    <h2>Settings → Check all relationships</h2>
+    <p class="intro">
+      The entry sits in Settings beside Export and Import: it is household work, not a person-page
+      action. Press <b>Check all relationships</b>, then answer the claims — accept, decline, undo,
+      and open the drawer to put a declined one back.
+    </p>
+
+    <div class="proto-shell">
+      <div class="browserbar">
+        <div class="dots"><i style="background:#ed8796"></i><i style="background:#eed49f"></i><i style="background:#a6da95"></i></div>
+        <div class="urlbar"><b>stella.1-0.io</b>/settings/relationships?review</div>
+      </div>
+      <div class="app">
+        <nav class="side">
+          <div class="brand">
+            <div class="logo">✦</div>
+            <div class="name">Stella<small>Meier household</small></div>
+          </div>
+          <button class="navitem" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg> Home</button>
+          <button class="navitem" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.4 6-5.4s6 2.1 6 5.4"/><path d="M16 5.5a3 3 0 0 1 0 5.6"/></svg> People</button>
+          <button class="navitem" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.2"/></svg> Circles</button>
+          <button class="navitem" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="17" r="2.6"/><circle cx="18" cy="17" r="2.6"/><circle cx="12" cy="6" r="2.6"/><path d="M10.6 8.2 7.4 14.8M13.4 8.2l3.2 6.6"/></svg> Graph</button>
+          <div class="spacer"></div>
+          <button class="navitem" aria-current="page" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg> Settings <span class="badge" id="nav-badge">5</span></button>
+        </nav>
+
+        <div class="main stage">
+          <div class="topbar">
+            <div class="crumbs">Settings <span>›</span> <span class="current">Relationships</span></div>
+          </div>
+
+          <div class="canvas">
+            <div class="pagehead">
+              <div>
+                <h2>Suggestions</h2>
+                <p>Stella checks everyone you can see and lists the family links that follow from
+                  what is already entered. Nothing is stored until you accept it.</p>
+              </div>
+              <button class="btn primary" id="run-btn" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 11a8 8 0 1 0-.7 4.3"/><path d="M20 5v6h-6"/></svg>
+                Check all relationships
+              </button>
+            </div>
+
+            <div class="runcard">
+              <div class="ic">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v3M12 18v3M4.2 7.5l2.6 1.5M17.2 15l2.6 1.5M4.2 16.5l2.6-1.5M17.2 9l2.6-1.5"/><circle cx="12" cy="12" r="3.4"/></svg>
+              </div>
+              <div class="body">
+                <h3>Last check</h3>
+                <p id="run-desc">Today, 09:41 — 186 people checked. Claims you have already answered are not offered again.</p>
+                <div class="runmeta">
+                  <span>People checked <b id="m-people">186</b></span>
+                  <span>Open <b id="m-open">5</b></span>
+                  <span>Accepted today <b id="m-added">1</b></span>
+                  <span>Declined <b id="m-declined">2</b></span>
+                </div>
+                <div class="progress" id="progress" hidden>
+                  <div class="track"><div class="fill" id="progress-fill"></div></div>
+                  <div class="cap" id="progress-cap">Checking people…</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="filters" id="filters">
+              <button class="chip" type="button" data-conf="all" aria-pressed="true">All</button>
+              <button class="chip" type="button" data-conf="certain" aria-pressed="false">Certain</button>
+              <button class="chip" type="button" data-conf="likely" aria-pressed="false">Likely</button>
+              <span class="sep"></span>
+              <span class="note">Grouped by the person the claim is about</span>
+            </div>
+
+            <div id="list"></div>
+            <div id="declined-drawer"></div>
+          </div>
+
+          <div class="toast" id="toast"><span id="toast-text"></span><button type="button" id="toast-undo">Undo</button></div>
+        </div>
+      </div>
+    </div>
+    <p class="caption">
+      The <i>likely</i> row is an L3 claim — that rule is not built. It is in the prototype so the
+      layout is checked against something the household could reasonably refuse.
+    </p>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">States</span>
+    <h2>What a row looks like at each stage</h2>
+    <p class="intro">
+      Four states, and both settled ones stay in place for the visit rather than vanishing — the shape
+      §6.6 argues for: an accidental click must be visibly recoverable, and the list must not jump
+      under the next tap. The shipped person-page panel does not do this yet (a declined claim moves
+      straight to the drawer); §6.6 calls that worth fixing there too, and it is the one piece not
+      blocked on this design.
+    </p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>State</th><th>Row shows</th><th>Stored</th></tr></thead>
+        <tbody>
+          <tr><td class="k"><b>Open</b></td><td>Claim sentence, confidence word, reason, rule id, <i>Accept</i> / <i>Decline</i></td><td>nothing</td></tr>
+          <tr><td class="k"><b>Accepted</b></td><td>Sentence muted, <span class="state added">Added</span></td><td>a <code>relationship</code> row, through <code>addProposedRelationship</code> — the same guards as manual entry</td></tr>
+          <tr><td class="k"><b>Declined</b></td><td>Sentence struck in place with <i>Offer again</i> for the rest of the visit; on the next one it is in the drawer, with <i>declined on 16 September 2026 by Andy</i></td><td><code>suggestion_dismissal(household_id, relation, pair_key, dismissed_by, dismissed_at)</code></td></tr>
+          <tr><td class="k"><b>Left alone</b></td><td>unchanged — no affordance at all</td><td>nothing; the next check offers it again</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Small screen</span>
+    <h2>The same check on a phone</h2>
+    <p class="intro">
+      The claim is the card and the two answers span it. The run is a server request, so leaving the
+      screen mid-check loses nothing.
+    </p>
+    <div class="phones">
+      <div>
+        <div class="phone">
+          <div class="statusbar"><span>09:41</span><span>●●● ▲ 82%</span></div>
+          <div class="pbody">
+            <h4>Suggestions</h4>
+            <p class="sub">5 open, grouped by person</p>
+            <div class="pcard">
+              <div class="sentence">Bettina Meier is a parent of Lisa Meier</div>
+              <div class="foot"><span class="conf certain">certain</span> Lisa is Hans’s sibling. <span class="rule">L1</span></div>
+              <div class="answers">
+                <button class="btn primary small" type="button">Accept</button>
+                <button class="btn danger small" type="button">Decline</button>
+              </div>
+            </div>
+            <div class="pcard">
+              <div class="sentence">Otto Meier is a parent of Lisa Meier</div>
+              <div class="foot"><span class="conf certain">certain</span> Otto is Hans’s parent. <span class="rule">L2</span></div>
+              <div class="answers">
+                <button class="btn primary small" type="button">Accept</button>
+                <button class="btn danger small" type="button">Decline</button>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar"><span>Home</span><span>People</span><span>Circles</span><span class="on">Settings</span></div>
+        </div>
+        <p class="caption">Open claims</p>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="statusbar"><span>09:43</span><span>●●● ▲ 82%</span></div>
+          <div class="pbody">
+            <h4>Suggestions</h4>
+            <p class="sub">The drawer: declined in earlier visits</p>
+            <div class="pcard">
+              <div class="sentence" style="color:var(--fg-muted);font-weight:500">Anna Weber is a parent of Tim Weber</div>
+              <div class="foot">declined on 12 September 2026 by Andy</div>
+              <div class="answers"><button class="btn ghost small" type="button">Offer again</button></div>
+            </div>
+            <div class="pcard">
+              <div class="sentence" style="color:var(--fg-muted);font-weight:500">Klaus Roth and Erika Roth are siblings</div>
+              <div class="foot">declined on 3 August 2026 by Jana</div>
+              <div class="answers"><button class="btn ghost small" type="button">Offer again</button></div>
+            </div>
+          </div>
+          <div class="tabbar"><span>Home</span><span>People</span><span>Circles</span><span class="on">Settings</span></div>
+        </div>
+        <p class="caption">Earlier answers, with the way back</p>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="statusbar"><span>09:45</span><span>●●● ▲ 81%</span></div>
+          <div class="pbody">
+            <h4>Suggestions</h4>
+            <p class="sub">Last check today, 09:45</p>
+            <div class="empty" style="padding:32px 14px">
+              <div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+              <b>Nothing open</b>
+              <p>Stella finds nothing across your household that is not on record already.</p>
+            </div>
+            <button class="btn ghost" style="width:100%;justify-content:center" type="button">2 declined suggestions</button>
+          </div>
+          <div class="tabbar"><span>Home</span><span>People</span><span>Circles</span><span class="on">Settings</span></div>
+        </div>
+        <p class="caption">Worked through</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Copy</span>
+    <h2>Mostly keys that already exist</h2>
+    <p class="intro">
+      The row copy is shipped and reused verbatim — <code>accept</code>, <code>decline</code>,
+      <code>askAgain</code>, <code>declinedOnBy</code>, the confidence words, and the two claim
+      sentences. Only the household screen needs new keys, and the reasons stay <code>Phrase</code>s
+      resolved at the edge.
+    </p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Key</th><th>English</th><th>Deutsch</th></tr></thead>
+        <tbody>
+          <tr><td class="k"><code>…relationships.accept</code> <span class="state added">shipped</span></td><td>Accept</td><td>Übernehmen</td></tr>
+          <tr><td class="k"><code>…relationships.decline</code> <span class="state added">shipped</span></td><td>Decline</td><td>Ablehnen</td></tr>
+          <tr><td class="k"><code>…relationships.askAgain</code> <span class="state added">shipped</span></td><td>Offer again</td><td>Wieder anbieten</td></tr>
+          <tr><td class="k"><code>…relationships.parentProposal</code> <span class="state added">shipped</span></td><td>{parent} is a parent of {child}</td><td>{parent} ist ein Elternteil von {child}</td></tr>
+          <tr><td class="k"><code>…relationships.declinedOnBy</code> <span class="state added">shipped</span></td><td>declined on {day} by {who}</td><td>abgelehnt am {day} von {who}</td></tr>
+          <tr><td class="k"><code>…relationships.declinedCount</code> <span class="state added">shipped</span></td><td>{n} declined suggestions</td><td>{n} abgelehnte Vorschläge</td></tr>
+          <tr><td class="k"><code>settings.relationships.title</code></td><td>Suggestions</td><td>Vorschläge</td></tr>
+          <tr><td class="k"><code>settings.relationships.checkAll</code></td><td>Check all relationships</td><td>Alle Beziehungen prüfen</td></tr>
+          <tr><td class="k"><code>settings.relationships.checking</code></td><td>Checked {done} of {total} people</td><td>{done} von {total} Personen geprüft</td></tr>
+          <tr><td class="k"><code>settings.relationships.lastCheck</code></td><td>Last check {day}, {time}</td><td>Zuletzt geprüft {day}, {time}</td></tr>
+          <tr><td class="k"><code>settings.relationships.openCount</code></td><td>{n} open</td><td>{n} offen</td></tr>
+          <tr><td class="k"><code>settings.relationships.nothing</code></td><td>Nothing open. Stella finds nothing across your household that is not on record already.</td><td>Nichts Offenes. Stella findet in deinem Haushalt nichts, was nicht schon eingetragen ist.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Build order</span>
+    <h2>What this would take, given #110</h2>
+    <ul class="notes">
+      <li><b>A household trigger in the engine.</b> <code>{ kind: 'household-reviewed' }</code>, or a
+        use-case that walks every visible person through the existing <code>person-reviewed</code>
+        path and deduplicates on <code>(relation, pairKey)</code> — the engine stays pure either way,
+        and the dedup is a pure function with its own test.</li>
+      <li><b>One view, not 186.</b> <code>buildView</code> already takes the whole visible kinship
+        graph; a household run builds it once and evaluates against it, so the cost is one read plus
+        the rules, not a query per person.</li>
+      <li><b>The screen.</b> <code>/settings/relationships</code> reusing
+        <code>KinSuggestions.svelte</code> under a per-person heading, with the same three form
+        actions pointing at the settings route instead of the contact route.</li>
+      <li><b>Unit tests first</b> for the trigger, the dedup and the visibility property (a claim
+        naming a person the viewer cannot see never reaches the list), then the edge, then — after
+        sign-off in the running app — the e2e. The per-person panel is still waiting for its own
+        e2e, so the batch should not overtake it.</li>
+    </ul>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Open questions</span>
+    <h2>What the mockup does not decide</h2>
+    <ul class="notes">
+      <li><b>Does a run get stored?</b> The screen above stores only decisions and recomputes the
+        claims on each visit; <i>last check</i> is then a timestamp. A stored result set would let two
+        members work the same list without it shifting — worth it only if that actually happens.</li>
+      <li><b>How long does one run take?</b> Unmeasured. If a real household makes it slow, the honest
+        fix is paging the run, not a background job with its own state to explain. Measure before
+        designing for it.</li>
+      <li><b>Certain-only in a first pass?</b> L1 and L2 are both <code>certain</code>, so today the
+        question is moot — but a batch is exactly where a <i>likely</i> rule like L3 would produce
+        dozens of rows and invite fast tapping. Worth deciding before L3 lands, not after.</li>
+      <li><b>Does the entry point belong in Settings?</b> It is where Export and Import live, and it is
+        also where members rarely go. A prompt after an import, when a graph full of unreviewed links
+        has just arrived, would reach them at the one moment it matters.</li>
+      <li><b>Answered, not open:</b> a decline does not expire (§6.5), the log is household-scoped, and
+        it travels with the export — all settled in #110.</li>
+    </ul>
+    <p class="footnote">
+      Concept for <code>docs/02-features.md</code> §2.4.1 · prose for this screen in
+      <code>docs/concepts/relationship-suggestions.md</code> §6.6, rules in §6.4–6.5 · engine in
+      <code>src/lib/suggestions/</code> · rows in <code>src/lib/components/KinSuggestions.svelte</code>.
+      Status: built (docs/02 §2.4.1). The batch progress bar and the confidence filter are not in
+      the built screen — one form action answers in a single request, and both shipped rules are
+      <i>certain</i>, so there is nothing to filter yet.
+    </p>
+  </section>
+</div>
+
+<script>
+  /* ── Theme toggle ─────────────────────────────────────────────────────── */
+  const root = document.documentElement;
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const dark = root.getAttribute('data-theme') === 'dark'
+      || (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.setAttribute('data-theme', dark ? 'light' : 'dark');
+  });
+
+  /*
+   * The prototype's claims. A claim is (relation, pair) — never a rule, which is why one *no*
+   * holds however another rule reaches the same pair later.
+   */
+  const ACCENT = { lisa:'#ea76cb', lio:'#179299', mira:'#1e66f5', jan:'#df8e1d', tim:'#fe640b', erika:'#7287fd' };
+  const claims = [
+    { id:'c1', person:'Lisa Meier', initials:'LM', accent:ACCENT.lisa, sub:'born 1986 · sister of Hans',
+      sentence:'Bettina Meier is a parent of Lisa Meier', conf:'certain', rule:'L1',
+      reason:'Lisa is Hans’s sibling.', state:'open' },
+    { id:'c2', person:'Lisa Meier', initials:'LM', accent:ACCENT.lisa, sub:'born 1986 · sister of Hans',
+      sentence:'Otto Meier is a parent of Lisa Meier', conf:'certain', rule:'L2',
+      reason:'Otto is Hans’s parent.', state:'open' },
+    { id:'c3', person:'Mira Vogt', initials:'MV', accent:ACCENT.mira, sub:'born 2016 · sister of Lio',
+      sentence:'Peter Vogt is a parent of Mira Vogt', conf:'certain', rule:'L2',
+      reason:'Peter is Lio’s parent.', state:'open' },
+    { id:'c4', person:'Jan Frei', initials:'JF', accent:ACCENT.jan, sub:'born 1979 · brother of Nora',
+      sentence:'Walter Frei is a parent of Jan Frei', conf:'certain', rule:'L1',
+      reason:'Jan is Nora’s sibling.', state:'open' },
+    { id:'c5', person:'Lio Vogt', initials:'LV', accent:ACCENT.lio, sub:'born 2019 · child of Peter',
+      sentence:'Lisa Meier is a parent of Lio Vogt', conf:'likely', rule:'L3',
+      reason:'Lisa is Peter’s only current partner.', state:'open' },
+    { id:'d1', person:'Tim Weber', initials:'TW', accent:ACCENT.tim, sub:'born 2003',
+      sentence:'Anna Weber is a parent of Tim Weber', conf:'certain', rule:'L1',
+      reason:'Tim is Mia’s sibling.', state:'declined', when:'declined on 12 September 2026 by Andy' },
+    { id:'d2', person:'Erika Roth', initials:'ER', accent:ACCENT.erika, sub:'born 1954',
+      sentence:'Klaus Roth and Erika Roth are siblings', conf:'likely', rule:'L5',
+      reason:'Both were entered through a parent who is not in Stella.', state:'declined',
+      when:'declined on 3 August 2026 by Jana' }
+  ];
+
+  let confFilter = 'all';
+  let lastAction = null;
+
+  const list = document.getElementById('list');
+  const drawerHost = document.getElementById('declined-drawer');
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toast-text');
+
+  function openRow(c) {
+    return '<div class="claim"><span class="sentence">' + c.sentence + '</span>'
+      + '<span class="answers">'
+      + '<button class="btn primary small" data-act="accept" data-id="' + c.id + '" type="button">Accept</button>'
+      + '<button class="btn danger small" data-act="decline" data-id="' + c.id + '" type="button">Decline</button>'
+      + '</span>'
+      + '<span class="foot"><span class="conf ' + c.conf + '">' + c.conf + '</span>' + c.reason
+      + '<span class="rule">' + c.rule + '</span></span></div>';
+  }
+
+  /*
+   * A row answered in this visit stays where it was, muted, carrying the way back (§6.6): in a
+   * long list, removing it the moment it is answered moves everything under the next tap.
+   */
+  function settledRow(c) {
+    const added = c.state === 'accepted';
+    return '<div class="claim settled"><span class="sentence">'
+      + (added ? c.sentence : '<s>' + c.sentence + '</s>') + '</span>'
+      + '<span class="answers"><button class="btn ghost small" data-act="'
+      + (added ? 'undo' : 'restore') + '" data-id="' + c.id + '" type="button">'
+      + (added ? 'Undo' : 'Offer again') + '</button></span>'
+      + '<span class="foot"><span class="state ' + (added ? 'added">Added</span>Stored as an entered relationship'
+        : 'declined">Declined</span>Waits here for the visit, then moves to the drawer')
+      + '</span></div>';
+  }
+
+  function render() {
+    // `when` is set only on a claim declined in an earlier visit — those live in the drawer.
+    const rows = claims.filter((c) => c.state !== 'declined' || !c.when)
+      .filter((c) => confFilter === 'all' || c.conf === confFilter);
+
+    if (!rows.length) {
+      list.innerHTML = '<div class="empty"><div class="ic">'
+        + '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>'
+        + '<b>Nothing open</b><p>Stella finds nothing across your household that is not on record '
+        + 'already. Check again after you add people.</p></div>';
+    } else {
+      const groups = [];
+      rows.forEach((c) => {
+        const last = groups[groups.length - 1];
+        if (last && last.person === c.person) last.items.push(c);
+        else groups.push({ person:c.person, initials:c.initials, accent:c.accent, sub:c.sub, items:[c] });
+      });
+      list.innerHTML = groups.map((g) =>
+        '<section class="group"><header>'
+        + '<span class="av" style="background:color-mix(in srgb,' + g.accent + ' 22%,var(--card));color:var(--fg)">' + g.initials + '</span>'
+        + '<span class="who"><b>' + g.person + '</b><span class="sub">' + g.sub + '</span></span>'
+        + '<span class="count">' + g.items.length + (g.items.length === 1 ? ' claim' : ' claims') + '</span>'
+        + '</header><div class="claims">'
+        + g.items.map((c) => (c.state === 'open' ? openRow(c) : settledRow(c))).join('')
+        + '</div></section>'
+      ).join('');
+    }
+
+    const declined = claims.filter((c) => c.state === 'declined' && c.when);
+    const declinedTotal = claims.filter((c) => c.state === 'declined').length;
+    drawerHost.innerHTML = declined.length
+      ? '<details class="declined"' + (drawerHost.dataset.open === '1' ? ' open' : '') + '>'
+        + '<summary>' + (declined.length === 1 ? '1 declined suggestion' : declined.length + ' declined suggestions') + '</summary>'
+        + '<ul>' + declined.map((c) =>
+            '<li><span>' + c.sentence + '</span>'
+            + '<span class="when">' + c.when + '</span>'
+            + '<form><button class="btn ghost small" data-act="restore" data-id="' + c.id + '" type="button">Offer again</button></form></li>'
+          ).join('') + '</ul></details>'
+      : '';
+
+    const open = claims.filter((c) => c.state === 'open').length;
+    const accepted = claims.filter((c) => c.state === 'accepted').length;
+    document.getElementById('nav-badge').textContent = open;
+    document.getElementById('m-open').textContent = open;
+    document.getElementById('m-added').textContent = accepted + 1;
+    document.getElementById('m-declined').textContent = declinedTotal;
+  }
+
+  function showToast(text, undoable) {
+    toastText.textContent = text;
+    document.getElementById('toast-undo').hidden = !undoable;
+    toast.classList.add('show');
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => toast.classList.remove('show'), 4200);
+  }
+
+  function answer(event) {
+    const button = event.target.closest('button[data-act]');
+    if (!button) return;
+    event.preventDefault();
+    const claim = claims.find((c) => c.id === button.dataset.id);
+    const act = button.dataset.act;
+    if (act === 'accept') {
+      lastAction = claim;
+      claim.state = 'accepted';
+      showToast('Added — ' + claim.sentence, true);
+    } else if (act === 'decline') {
+      lastAction = claim;
+      claim.state = 'declined';
+      showToast('Declined. It stays here for this visit, then waits in the drawer.', true);
+    } else if (act === 'restore' || act === 'undo') {
+      claim.state = 'open';
+      claim.when = null;
+      showToast(act === 'restore' ? 'Back in the open list.' : 'Undone. Nothing is stored.', false);
+    }
+    render();
+  }
+  list.addEventListener('click', answer);
+  drawerHost.addEventListener('click', answer);
+  drawerHost.addEventListener('toggle', (event) => {
+    if (event.target.matches('details')) drawerHost.dataset.open = event.target.open ? '1' : '0';
+  }, true);
+
+  document.getElementById('toast-undo').addEventListener('click', () => {
+    if (!lastAction) return;
+    lastAction.state = 'open';
+    lastAction = null;
+    toast.classList.remove('show');
+    render();
+  });
+
+  document.getElementById('filters').addEventListener('click', (event) => {
+    const chip = event.target.closest('.chip');
+    if (!chip) return;
+    confFilter = chip.dataset.conf;
+    document.querySelectorAll('#filters .chip').forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+    render();
+  });
+
+  /* ── The household run, faked at 186 people ───────────────────────────── */
+  const TOTAL_PEOPLE = 186;
+  const runBtn = document.getElementById('run-btn');
+  runBtn.addEventListener('click', () => {
+    const progress = document.getElementById('progress');
+    const fill = document.getElementById('progress-fill');
+    const cap = document.getElementById('progress-cap');
+    runBtn.disabled = true;
+    progress.hidden = false;
+    let done = 0;
+    const step = () => {
+      done = Math.min(TOTAL_PEOPLE, done + 9);
+      const open = claims.filter((c) => c.state === 'open').length;
+      const found = Math.min(open, Math.round((done / TOTAL_PEOPLE) * open));
+      fill.style.width = (done / TOTAL_PEOPLE * 100) + '%';
+      cap.textContent = 'Checked ' + done + ' of ' + TOTAL_PEOPLE + ' people · ' + found + ' claims so far';
+      if (done < TOTAL_PEOPLE) { setTimeout(step, 90); return; }
+      runBtn.disabled = false;
+      progress.hidden = true;
+      fill.style.width = '0';
+      document.getElementById('run-desc').textContent =
+        'Just now — 186 people checked. Claims you have already answered are not offered again.';
+      showToast(open + ' claims are waiting.', false);
+      render();
+    };
+    step();
+  });
+
+  render();
+</script>

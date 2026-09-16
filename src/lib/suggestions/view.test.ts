@@ -121,6 +121,28 @@ describe('buildView', () => {
 		expect(view.primaryLinksAround('nobody')).toEqual([]);
 	});
 
+	it('collects every primary link in the graph for a household-wide pass', () => {
+		const view = buildView(
+			graph({
+				parentEdges: [
+					{ parentId: 'bettina', childId: 'hans' },
+					{ parentId: 'kurt', childId: 'lisa' }
+				],
+				siblingEdges: [{ a: 'hans', b: 'lisa' }],
+				partnerEdges: [{ a: 'bettina', b: 'kurt' }]
+			})
+		);
+		// The same fixed order as `primaryLinksAround` — parents, then siblings, then partners —
+		// so a household run lists the same claims in the same order every time.
+		expect(view.allPrimaryLinks()).toEqual([
+			{ kind: 'parent', fromId: 'bettina', toId: 'hans' },
+			{ kind: 'parent', fromId: 'kurt', toId: 'lisa' },
+			{ kind: 'sibling', fromId: 'hans', toId: 'lisa' },
+			{ kind: 'partner', fromId: 'bettina', toId: 'kurt' }
+		]);
+		expect(buildView(graph()).allPrimaryLinks()).toEqual([]);
+	});
+
 	it('answers who declined a claim and when, and null while it stands', () => {
 		const view = buildView(graph(), [
 			{ relation: 'parent', pairKey: pairKey('bettina', 'lisa'), dismissedAt: 42, dismissedBy: 'u1' }

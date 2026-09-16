@@ -456,11 +456,25 @@ tables, fully unit-testable (test-first).
   belong to the household, not to the member who clicked, and they travel in an export, so a
   restored backup does not re-ask everything the household has already settled.
 
+- **Shipped:** the same question for the **whole household**, at *Settings → Check relationships*.
+  A per-person check only reaches the people somebody thought to open, and a household that
+  entered or imported its links years ago has opened none of them — so this runs the rules over
+  everyone the member can see, in one pass, and lists what stands grouped by the person each
+  claim is about. The rows are the person page's rows, with the same three answers and the same
+  declined drawer: one place to learn the question, one meaning for each answer. A claim reached
+  from both ends of a sibling group is asked **once**. Nothing about the run is stored — the
+  claims are worked out again on each check, so the only thing that persists is what the
+  household answered. It is for every member, not the admin alone: the answers belong to the
+  household. Anyone's check is scoped to their own graph, so a private person is never named to
+  someone who may not see them.
+
 A broader catalogue of what else could be proposed — the other parent, surname and address
 prefill, consistency warnings — and the rule set behind it is drafted in
 `docs/concepts/relationship-suggestions.md`, with the module layout and PR slicing in
-`docs/concepts/relationship-suggestions-implementation.md` (the rule engine, the dismissal log
-and the on-demand review are shipped; the rest of the catalogue is concept).
+`docs/concepts/relationship-suggestions-implementation.md` (the rule engine, the dismissal log,
+the on-demand review and the household-wide pass are shipped; the rest of the catalogue is
+concept). The household screen was drawn first in
+`docs/concepts/relationship-review-concept.html`.
 
 ### 2.4.2 Circles & shared contexts **[M2]**
 

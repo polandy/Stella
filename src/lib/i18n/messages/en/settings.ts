@@ -31,6 +31,26 @@ export const settings = {
 	'settings.data.relationshipTypesBlurb':
 		'Name the kinds of link your household records, beyond the ones Stella ships with.',
 	'settings.data.adminOnly': 'Importing, backups and the relationship types are for the household admin.',
+	/*
+	 * The household-wide relationship review (docs/02 §2.4.1,
+	 * docs/concepts/relationship-suggestions.md §6.6) — for every member, not only the admin:
+	 * the dismissal log belongs to the household and any member may answer or take one back.
+	 */
+	'settings.relationships.heading': 'Relationships',
+	'settings.relationships.title': 'Check relationships',
+	'settings.relationships.intro':
+		'Stella works through everyone you can see and lists the family links that follow from what is already entered. Nothing is stored until you accept it.',
+	'settings.relationships.blurb':
+		'Go through the whole household at once, rather than a profile at a time.',
+	'settings.relationships.idle': 'Nothing checked yet',
+	'settings.relationships.idleHint':
+		'No rule runs until you ask. On a large household this takes a moment.',
+	'settings.relationships.check': 'Check all relationships',
+	'settings.relationships.checkAgain': 'Check again',
+	'settings.relationships.openCount': (p: { count: number }) =>
+		p.count === 1 ? '1 suggestion open' : `${p.count} suggestions open`,
+	'settings.relationships.nothing':
+		'Nothing open. Stella finds nothing across your household that is not on record already.',
 	'settings.account.heading': 'Account',
 	'settings.about.heading': 'About',
 	'settings.about.version': (p: { version: string }) => `Stella ${p.version}`,

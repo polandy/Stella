@@ -84,7 +84,14 @@
 			data-testid="kin-suggestion"
 		>
 			<span class="min-w-0 text-sm font-medium text-fg">{sentence(suggestion)}</span>
-			<span class="row-start-1 flex shrink-0 gap-1.5 max-[34rem]:row-auto">
+			<!--
+				Both cells are placed explicitly. With only `row-start-1`, the answers take the first
+				free column of that row — grid places definite items before auto ones — and the claim
+				gets pushed to the right edge, read last and ragged against it.
+			-->
+			<span
+				class="col-start-2 row-start-1 flex shrink-0 justify-self-end gap-1.5 max-[34rem]:col-start-1 max-[34rem]:row-auto max-[34rem]:justify-self-start"
+			>
 				<form method="POST" action="?/addProposedRelationship">
 					<input type="hidden" name="fromId" value={suggestion.fromId} />
 					<input type="hidden" name="toId" value={suggestion.toId} />

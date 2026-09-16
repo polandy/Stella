@@ -23,14 +23,20 @@ import type { SuggestionView } from '../view';
  */
 
 /**
- * The primary links a trigger puts in front of the rules: the one that was just stored, or —
- * for a review — the links standing around the subject and their siblings. A review therefore
- * reaches claims that were raised and lost long before anyone thought to look at them.
+ * The primary links a trigger puts in front of the rules: the one that was just stored, the
+ * links standing around one subject and their siblings, or — for a household pass (§6.6) —
+ * every link there is. A review therefore reaches claims that were raised and lost long before
+ * anyone thought to look at them, and a household pass reaches the families nobody opened.
  */
 function linksInScope(trigger: Trigger, view: SuggestionView): readonly PrimaryLink[] {
-	return trigger.kind === 'link-stored'
-		? [trigger.link]
-		: view.primaryLinksAround(trigger.subjectId);
+	switch (trigger.kind) {
+		case 'link-stored':
+			return [trigger.link];
+		case 'person-reviewed':
+			return view.primaryLinksAround(trigger.subjectId);
+		case 'household-reviewed':
+			return view.allPrimaryLinks();
+	}
 }
 
 /** A `certain` parent claim: a logical consequence of what the household entered, not a guess. */

@@ -227,6 +227,14 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   names instead of an ambiguous number, and a year that can be left blank — which is how a
   birthday without a year (`--MM-DD`, §2.13.1) becomes expressible at all, something the
   native input cannot represent. (docs/05 §5.7.)
+- **The household review recomputes, and stores only answers** — a pass over everyone could
+  have stored its result, so two members working the same list would not see it shift under
+  each other. It does not: a run is a question, not a thing, and a stored result set is a
+  second copy of the graph that goes stale the moment anyone adds a link. The cost is that two
+  members answering at once can each be offered a claim the other has just settled — the write
+  is idempotent, so the loser of that race gets a duplicate refused rather than a wrong row.
+  What persists is the dismissal log alone (docs/03 §3.9, docs/concepts/relationship-
+  suggestions.md §6.6).
 - **A hand-rolled vCard reader over a package** — the subset a contacts export uses is small
   and frozen (RFC 6350 / RFC 2426): unfolding, escaping, structured values. Every published
   parser weighs far more than the two dozen lines that saves, against the minimal-deps rule

@@ -33,6 +33,21 @@ export const settings: SettingsMessages = {
 		'Benenne die Arten von Verbindungen, die dein Haushalt festhält — über die hinaus, die Stella mitbringt.',
 	'settings.data.adminOnly':
 		'Import, Sicherungen und die Beziehungsarten sind der Haushalts-Administration vorbehalten.',
+	'settings.relationships.heading': 'Beziehungen',
+	'settings.relationships.title': 'Beziehungen prüfen',
+	'settings.relationships.intro':
+		'Stella geht alle Personen durch, die du sehen kannst, und zeigt die Familienverbindungen, die sich aus dem Eingetragenen ergeben. Gespeichert wird erst, was du übernimmst.',
+	'settings.relationships.blurb':
+		'Den ganzen Haushalt auf einmal durchgehen, statt Profil für Profil.',
+	'settings.relationships.idle': 'Noch nichts geprüft',
+	'settings.relationships.idleHint':
+		'Es läuft keine Regel, bevor du fragst. Bei einem grossen Haushalt dauert das einen Moment.',
+	'settings.relationships.check': 'Alle Beziehungen prüfen',
+	'settings.relationships.checkAgain': 'Erneut prüfen',
+	'settings.relationships.openCount': (p) =>
+		p.count === 1 ? '1 offener Vorschlag' : `${p.count} offene Vorschläge`,
+	'settings.relationships.nothing':
+		'Nichts Offenes. Stella findet in deinem Haushalt nichts, was nicht schon eingetragen ist.',
 	'settings.account.heading': 'Konto',
 	'settings.about.heading': 'Über Stella',
 	'settings.about.version': (p: { version: string }) => `Stella ${p.version}`,

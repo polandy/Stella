@@ -6,6 +6,7 @@ import type { Viewer } from '../../access/visibility';
 import {
 	dismissSuggestion,
 	restoreSuggestion,
+	reviewHousehold,
 	reviewPerson,
 	type NewDismissal,
 	type SuggestionReviewDeps
@@ -129,6 +130,69 @@ describe('reviewPerson', () => {
 		expect(
 			shape(await reviewPerson(deps(family(), log), viewer, 'steve', { includeDismissed: true }))
 		).toEqual([['wingkam', 'steve', 42]]);
+	});
+});
+
+/*
+ * The household-wide pass (docs/concepts/relationship-suggestions.md §6.6). It asks the same
+ * question `reviewPerson` asks, about everyone at once — the only scope that reaches a family
+ * nobody has thought to open, which is every family in a household that imported its links.
+ */
+describe('reviewHousehold', () => {
+	/** Two families that share nobody: Wing Kam's, and the Freis, entered as siblings only. */
+	function twoFamilies(): KinshipGraph {
+		const graph = family();
+		graph.people = [
+			...graph.people,
+			{ id: 'jan', displayName: 'Jan', gender: 'male' },
+			{ id: 'nora', displayName: 'Nora', gender: 'female' },
+			{ id: 'walter', displayName: 'Walter', gender: 'male' }
+		];
+		graph.parentEdges = [...graph.parentEdges, { parentId: 'walter', childId: 'jan' }];
+		graph.siblingEdges = [...graph.siblingEdges, { a: 'jan', b: 'nora' }];
+		return graph;
+	}
+
+	it('answers about families no member has opened, each claim once', async () => {
+		const d = deps(twoFamilies());
+		// Wing Kam/Steve is reached from Andy's sibling group, Walter/Nora from Jan's — two
+		// separate families, in one pass, and neither claim is offered twice.
+		expect(shape(await reviewHousehold(d, viewer))).toEqual([
+			['walter', 'nora', null],
+			['wingkam', 'steve', null]
+		]);
+		expect(d.asked).toEqual([viewer, viewer]);
+	});
+
+	it('names the people, so the interface can phrase the claim', async () => {
+		const [first] = await reviewHousehold(deps(), viewer);
+		expect(first).toMatchObject({ fromName: 'Wing Kam', toName: 'Steve', relation: 'parent' });
+		expect(first?.reason(createTranslator('en'))).toBe('Steve is Andy’s sibling.');
+	});
+
+	it('leaves out a claim the household declined, and lists it when asked', async () => {
+		const log = [declinedClaim()];
+		expect(await reviewHousehold(deps(family(), log), viewer)).toEqual([]);
+		expect(shape(await reviewHousehold(deps(family(), log), viewer, { includeDismissed: true }))).toEqual([
+			['wingkam', 'steve', 42]
+		]);
+	});
+
+	/*
+	 * The graph arrives scoped to the viewer, so a household with nothing visible has nothing
+	 * to answer — the same property that keeps a private person out of every other list.
+	 */
+	it('says nothing when the viewer’s graph is empty', async () => {
+		const empty: KinshipGraph = {
+			people: [],
+			parentEdges: [],
+			siblingEdges: [],
+			partnerEdges: [],
+			storedPairs: []
+		};
+		const d = deps(empty);
+		expect(await reviewHousehold(d, other)).toEqual([]);
+		expect(d.asked).toEqual([other, other]);
 	});
 });
 

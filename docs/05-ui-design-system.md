@@ -204,6 +204,14 @@ They must be edited together; `app.css` says so at both blocks.
   **absent entirely when empty**; there is no empty state for them, because a permanently
   empty panel teaches people to stop looking. On a phone the composer is a **sheet** opened from the *What happened?*
   bar or the tab-bar pencil.
+- **Settings → Check relationships** — the household-wide suggestion review (docs/02 §2.4.1).
+  Closed it is an `EmptyState` with one primary action, because no rule runs until it is asked
+  for; asked, it is a count, *Check again*, and one card per person — avatar, name linking to
+  the profile, and that person's claims as the **same rows the person page uses**
+  (`KinSuggestions`), so an answer means one thing wherever it is given. What the household
+  declined sits under the same `<details>` drawer, at the foot of the list rather than inside a
+  card, because it spans everybody. Every control is a form or a link: the screen works with
+  JavaScript off.
 - **People** — a find-as-you-type field, tag chips, then **letter groups** by surname with a
   sticky letter heading; each row is avatar, name (lock for private), description, and
   **last written about** on the right (`—` when nothing has been). The heading counts people;
