@@ -33,8 +33,17 @@ const SETUP_SPEC = /auth\.setup\.ts$/;
  * the crashing process and costs no coverage: there is no PWA spec, and the install and
  * offline rules are unit-tested as pure policy in `src/lib/pwa/`.
  *
- * This is the suspect, not a proven cause. `--disable-gpu` was the previous one and was wrong:
- * the crash survived it unchanged, down to the address.
+ * Measured rather than guessed: shard 1 of `63c4e2a` was run eight times in one matrix, four
+ * times with this setting and four times without. Two of the four unblocked runs crashed, with
+ * the same five stack offsets as every crash before the fix; all four blocked runs passed.
+ * Both arms ran the same graph specs, so whatever the canvas contributes, the service worker
+ * is what decides whether the browser survives. One of the two crashes carried no `notify`
+ * error at all, which is how we know that error — a Cytoscape animation frame outliving
+ * `destroy()`, fixed since in #109 — was never this crash's cause.
+ *
+ * `--disable-gpu` was the previous suspect and was wrong: the crash survived it unchanged,
+ * down to the address. If this ever returns — a real PWA e2e spec would have to unblock the
+ * worker — re-run an untouched commit as a control before blaming the diff under test.
  */
 const NO_SERVICE_WORKER = 'block' as const;
 
