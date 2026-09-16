@@ -1,5 +1,5 @@
 import { parentOf, siblingOf } from '../reasons';
-import type { LinkSuggestion, Rule, Trigger } from '../types';
+import type { LinkSuggestion, PrimaryLink, Rule, Trigger } from '../types';
 import type { SuggestionView } from '../view';
 
 /*
@@ -16,7 +16,22 @@ import type { SuggestionView } from '../view';
  * Both rules offer a **parent** link — the one relation an implication can be written to. A
  * partner's tie to existing children is a step relationship: it has no stored type and needs
  * none, because the kinship engine already names it on the profile.
+ *
+ * Neither rule knows which trigger pointed it at a link. A write names one link; a review names
+ * the whole neighbourhood of one person (§6.5) — and that difference belongs in `linksInScope`,
+ * not spread through every rule that would otherwise grow a second branch.
  */
+
+/**
+ * The primary links a trigger puts in front of the rules: the one that was just stored, or —
+ * for a review — the links standing around the subject and their siblings. A review therefore
+ * reaches claims that were raised and lost long before anyone thought to look at them.
+ */
+function linksInScope(trigger: Trigger, view: SuggestionView): readonly PrimaryLink[] {
+	return trigger.kind === 'link-stored'
+		? [trigger.link]
+		: view.primaryLinksAround(trigger.subjectId);
+}
 
 /** A `certain` parent claim: a logical consequence of what the household entered, not a guess. */
 function parentLink(
@@ -32,30 +47,34 @@ function parentLink(
 		relation: 'parent',
 		fromId: parentId,
 		toId: childId,
-		reason
+		reason,
+		// Never a rule's to answer: the engine drops or marks a declined claim (§6.4).
+		dismissed: null
 	};
 }
 
 /** L1 — a parent stored for one child is a parent of that child's siblings. */
-export const L1: Rule = (trigger: Trigger, view: SuggestionView): LinkSuggestion[] => {
-	if (trigger.link.kind !== 'parent') return [];
-	const { fromId: parentId, toId: childId } = trigger.link;
-	return [...view.siblingsOf(childId)].map((sibling) =>
-		parentLink('L1', parentId, sibling, siblingOf(view.nameOf(sibling), view.nameOf(childId)))
-	);
-};
+export const L1: Rule = (trigger: Trigger, view: SuggestionView): LinkSuggestion[] =>
+	linksInScope(trigger, view)
+		.filter((link) => link.kind === 'parent')
+		.flatMap(({ fromId: parentId, toId: childId }) =>
+			[...view.siblingsOf(childId)].map((sibling) =>
+				parentLink('L1', parentId, sibling, siblingOf(view.nameOf(sibling), view.nameOf(childId)))
+			)
+		);
 
 /** L2 — a stored sibling link means each side's known parents are the other's parents. */
 export const L2: Rule = (trigger: Trigger, view: SuggestionView): LinkSuggestion[] => {
-	if (trigger.link.kind !== 'sibling') return [];
-	const { fromId, toId } = trigger.link;
 	const found: LinkSuggestion[] = [];
-	for (const [one, other] of [
-		[fromId, toId],
-		[toId, fromId]
-	] as const) {
-		for (const parent of view.parentsOf(one)) {
-			found.push(parentLink('L2', parent, other, parentOf(view.nameOf(parent), view.nameOf(one))));
+	for (const link of linksInScope(trigger, view)) {
+		if (link.kind !== 'sibling') continue;
+		for (const [one, other] of [
+			[link.fromId, link.toId],
+			[link.toId, link.fromId]
+		] as const) {
+			for (const parent of view.parentsOf(one)) {
+				found.push(parentLink('L2', parent, other, parentOf(view.nameOf(parent), view.nameOf(one))));
+			}
 		}
 	}
 	return found;

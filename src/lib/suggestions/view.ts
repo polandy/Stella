@@ -1,4 +1,6 @@
 import type { KinshipGraph } from '$lib/kinship/kinship';
+import { indexDismissals, pairKey, type AnswerTo, type Dismissal } from './claims';
+import type { PrimaryLink } from './types';
 
 /*
  * The read model a suggestion evaluation works over (docs/concepts/relationship-suggestions-
@@ -13,9 +15,6 @@ import type { KinshipGraph } from '$lib/kinship/kinship';
  * Pure, and built from a graph the repository has already scoped to one viewer: a rule cannot
  * reach a person the view was not given, so a suggestion can never name someone hidden.
  */
-
-/** A pair named the same way from either end, for comparing and for keying a dismissal. */
-export const pairKey = (x: string, y: string) => (x < y ? `${x} ${y}` : `${y} ${x}`);
 
 /** The graph as the rules read it: the edges as given, plus the questions they ask of them. */
 export interface SuggestionView extends KinshipGraph {
@@ -37,6 +36,16 @@ export interface SuggestionView extends KinshipGraph {
 	nameOf(personId: string): string;
 	/** Whether this person is in the view at all — and so may be named in a suggestion. */
 	has(personId: string): boolean;
+	/**
+	 * The primary links a review of this person has to read: the ones they stand in, plus the
+	 * ones their siblings stand in. A link-scoped evaluation is handed its one link; a review
+	 * (docs/concepts/relationship-suggestions.md §6.5) is handed the sibling group, because
+	 * that is the group the link rules move a parent across — read from the other side, "my
+	 * sister's father is my father" is a claim about *me* that no link of mine mentions.
+	 */
+	primaryLinksAround(personId: string): PrimaryLink[];
+	/** The household's answer to this claim, or null while it stands unanswered (§6.4). */
+	answerTo: AnswerTo;
 }
 
 const EMPTY: ReadonlySet<string> = new Set();
@@ -49,8 +58,34 @@ function link(map: Map<string, Set<string>>, key: string, value: string): void {
 	else map.set(key, new Set([value]));
 }
 
+/**
+ * The primary links standing between anyone in `people` and anyone at all, in a fixed order —
+ * parents before siblings before partners — so a review lists the same claims in the same
+ * order on every run.
+ */
+function primaryLinksTouching(graph: KinshipGraph, people: ReadonlySet<string>): PrimaryLink[] {
+	const found: PrimaryLink[] = [];
+	for (const { parentId, childId } of graph.parentEdges) {
+		if (people.has(parentId) || people.has(childId)) {
+			found.push({ kind: 'parent', fromId: parentId, toId: childId });
+		}
+	}
+	for (const [kind, edges] of [
+		['sibling', graph.siblingEdges],
+		['partner', graph.partnerEdges]
+	] as const) {
+		for (const { a, b } of edges) {
+			if (people.has(a) || people.has(b)) found.push({ kind, fromId: a, toId: b });
+		}
+	}
+	return found;
+}
+
 /** Indexes one viewer's graph into the view the rules read. */
-export function buildView(graph: KinshipGraph): SuggestionView {
+export function buildView(
+	graph: KinshipGraph,
+	dismissals: readonly Dismissal[] = []
+): SuggestionView {
 	const parents = new Map<string, Set<string>>();
 	const children = new Map<string, Set<string>>();
 	const siblings = new Map<string, Set<string>>();
@@ -74,6 +109,8 @@ export function buildView(graph: KinshipGraph): SuggestionView {
 		for (const one of brood) for (const other of brood) link(siblings, one, other);
 	}
 
+	const answerTo = indexDismissals(dismissals);
+
 	return {
 		...graph,
 		parentsOf: (personId) => parents.get(personId) ?? EMPTY,
@@ -81,6 +118,9 @@ export function buildView(graph: KinshipGraph): SuggestionView {
 		siblingsOf: (personId) => siblings.get(personId) ?? EMPTY,
 		isLinked: (x, y) => linked.has(pairKey(x, y)),
 		nameOf: (personId) => names.get(personId) ?? personId,
-		has: (personId) => names.has(personId)
+		has: (personId) => names.has(personId),
+		primaryLinksAround: (personId) =>
+			primaryLinksTouching(graph, new Set([personId, ...(siblings.get(personId) ?? EMPTY)])),
+		answerTo
 	};
 }

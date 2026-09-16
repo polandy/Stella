@@ -198,17 +198,29 @@ next to an empty input.
 The endpoint reads through `contactVisibleTo` like every other read — a field value must not
 cross a visibility boundary, and that is a test, not a comment.
 
-### The on-demand review — a person-scoped entry point
+### The on-demand review — a person-scoped entry point — **done**
 `evaluate` selects rules by trigger, so `person-reviewed` needs rules that can answer a
-*person* rather than a link: for L1/L2/L3 that means running them over every primary link the
-subject already has, and keeping the suppressions to collapse the duplicates that produces.
-Worth stating plainly because it is the one place the engine does real work — an event trigger
-looks at one link, a review trigger at a whole neighbourhood.
+*person* rather than a link. The rules do not each grow a branch for it: `linksInScope(trigger,
+view)` hands them either the one stored link or `view.primaryLinksAround(subjectId)`, and the
+suppressions collapse the duplicates that produces. Worth stating plainly because it is the one
+place the engine does real work — an event trigger looks at one link, a review trigger at a
+whole neighbourhood.
 
-It surfaces as a control in the person page's relationship section, with the result rendered
-by the same component the *Also true?* block uses, plus the *show dismissed* toggle. Confirm
-posts to `addProposedRelationship` as today; dismiss posts to a new action that writes the
-dismissal row; leaving a suggestion alone writes nothing and it returns on the next run.
+**The neighbourhood is the sibling group, not the subject's own links.** The link rules move a
+parent across sibling-hood, so read from the other side *“my sister's father is my father”* is a
+claim about the subject that no link of theirs mentions — a scope of their own links misses it,
+and that is precisely the case a household notices and reports as a bug.
+
+It surfaces as a ghost control in the person page's relationship card header (`?review`), with
+the result rendered by the same component the *Also true?* block uses and the declined claims
+behind a `<details>` in the same payload. Confirm posts to `addProposedRelationship` as today;
+`dismissSuggestion` writes the row and `restoreSuggestion` deletes it; leaving a suggestion
+alone writes nothing and it returns on the next run.
+
+The use-cases live in `domain/relationships/suggestion-review.ts`, which declares the narrow
+ports it needs (`KinshipGraphSource`, `SuggestionDismissalRepository`) rather than importing
+the full relationship repository — so nothing in the suggestion path holds a port it could
+write a link through.
 
 ### Warnings
 C1 and C5 surface where the link is entered, as a non-blocking line under the submit button,
@@ -238,7 +250,7 @@ added before it would have added another string to migrate.
 
 ---
 
-## 7. Dismissal
+## 7. Dismissal — **done**
 
 One table, one migration:
 
@@ -248,14 +260,18 @@ suggestion_dismissal(id pk, household_id fk, relation text, pair_key text,
 unique (household_id, relation, pair_key)
 ```
 
-`pair_key` is the ordered-pair key the engine already computes. **`relation`, not `rule_id`**:
+`pair_key` is the ordered-pair key the engine already computes — it and the claim key now live
+in `suggestions/claims.ts`, which is also where `oneRowPerClaim` gets its key, so a claim's
+identity is written once. **`relation`, not `rule_id`**:
 the household declines a claim, not the rule that surfaced it, and two rules can name the same
 pair (§6.4 of the rules concept). Household-scoped, not user-scoped: the household decided.
 
 The repository loads the household's dismissals into the view; the engine filters purely. For
 the *show dismissed* list, suppression 6 marks instead of dropping —
-`evaluate(trigger, view, { includeDismissed })` and a `dismissedAt` on `Suggestion` — while
-the other five stay hard drops. Undo is a delete of the row, so it needs no second concept.
+`evaluate(trigger, view, { includeDismissed })` and a `dismissed: { at, by } | null` on
+`Suggestion` — while the other five stay hard drops. Undo is a delete of the row, so it needs
+no second concept. The row also travels in an export (`EXPORTED_TABLES`): a restored backup
+that re-asks every settled question is worse than no backup of this at all.
 
 This table stops being optional once the on-demand review exists: a control a member can press
 repeatedly, against an engine that re-derives everything each time, is unusable without it.
@@ -297,10 +313,13 @@ Test-first, and the shape matters more than the count:
 | 3 | widen `PartnerEdge`; **L3 / L3b** | the other parent |
 | 4 | C1 / C5 / C6 + the guard-as-predicate refactor | warnings and the cycle refusal |
 | 5 | fields endpoint + **F1 F1b F2 F3 F6** | surname and gender prefill |
-| 6 | `suggestion_dismissal` + migration + Dismiss control | declining sticks |
-| 7 | `person-reviewed` trigger + the review panel + *show dismissed* | **the on-demand button** |
+| ~~6~~ | ~~`suggestion_dismissal` + migration + Dismiss control~~ — **done** | declining sticks |
+| ~~7~~ | ~~`person-reviewed` trigger + the review panel + *show dismissed*~~ — **done** | **the on-demand button** |
 | 8 | F4 F5 F7 F8 | the softer prefills |
 | 9 | L5, then L6–L8 behind a household setting | context rules |
+
+6 and 7 shipped together, as §9 said they would have to: a review panel without a dismissal log
+re-offers every declined claim on every press, so neither is usable alone.
 
 1 and 2 were pure refactors and landed before anything user-visible; `kinship/propagation.ts`
 went with them, its rules, filtering and ordering now being the engine's. 3 is the PR the

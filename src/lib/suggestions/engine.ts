@@ -1,7 +1,8 @@
 import { L1, L2 } from './rules/links';
 import { isDerivable } from './suppressions';
 import type { Confidence, Rule, Suggestion, Trigger } from './types';
-import { pairKey, type SuggestionView } from './view';
+import { claimKey } from './claims';
+import type { SuggestionView } from './view';
 
 /*
  * The suggestion engine (docs/concepts/relationship-suggestions.md §6).
@@ -19,7 +20,8 @@ import { pairKey, type SuggestionView } from './view';
 
 /** Which rules answer which trigger. A new rule is a row here, not an edit to a shared switch. */
 const RULES: Record<Trigger['kind'], readonly Rule[]> = {
-	'link-stored': [L1, L2]
+	'link-stored': [L1, L2],
+	'person-reviewed': [L1, L2]
 };
 
 /** Closeness of a claim to certainty, most certain first — the order suggestions are shown in. */
@@ -30,9 +32,20 @@ const CONFIDENCE_RANK: Record<Confidence, number> = {
 };
 
 /**
- * Whether a suggestion must not be shown (docs/concepts/relationship-suggestions.md §6.2).
- * Suppressions 1–4; the guard-refusal and dismissal checks join them with the slices that
- * introduce them.
+ * How a caller wants the run shaped. Only the dismissal suppression can be asked to stand
+ * down, and only into a *marking*: the panel's "show dismissed" list needs the declined rows
+ * to exist so a member can take a *no* back (docs/concepts/relationship-suggestions.md §6.5).
+ */
+export interface EvaluateOptions {
+	/** List declined claims too, each carrying `dismissedAt`, instead of dropping them. */
+	includeDismissed?: boolean;
+}
+
+/**
+ * Whether a suggestion must not be shown at all (docs/concepts/relationship-suggestions.md
+ * §6.2). Suppressions 1–4; the guard-refusal check joins them with the slice that introduces
+ * it. These are hard drops in every run: there is no reading in which a self-link, an
+ * invisible person or an already-stored claim should be listed.
  */
 function suppressed(suggestion: Suggestion, view: SuggestionView): boolean {
 	const { fromId, toId, relation } = suggestion;
@@ -43,6 +56,16 @@ function suppressed(suggestion: Suggestion, view: SuggestionView): boolean {
 		view.isLinked(fromId, toId) ||
 		isDerivable(view, relation, fromId, toId)
 	);
+}
+
+/**
+ * Suppression 6 — the household's answer. Dropped by default; marked with the moment it was
+ * declined when the caller asked to see what was declined, so *show dismissed* has something
+ * to offer an undo on.
+ */
+function answered(suggestion: Suggestion, view: SuggestionView): Suggestion {
+	const dismissed = view.answerTo(suggestion.relation, suggestion.fromId, suggestion.toId);
+	return dismissed === null ? suggestion : { ...suggestion, dismissed };
 }
 
 /**
@@ -63,13 +86,14 @@ function order(x: Suggestion, y: Suggestion, view: SuggestionView): number {
  * many rules reached it. It answers the **claim**, not the rule that happened to surface it,
  * which is the same reason a dismissal is keyed by the claim (§6.4).
  *
- * Exported because with one rule per trigger nothing can reach a claim twice yet; L3 is the
- * first rule that can name a pair L1 also names, and this must already be right when it lands.
+ * Exported so it can be tested on the claims themselves rather than only through whichever
+ * rules a trigger happens to select: a review points L1 and L2 at a whole neighbourhood, and
+ * both can arrive at the same pair from different links.
  */
 export function oneRowPerClaim(suggestions: readonly Suggestion[]): Suggestion[] {
 	const claimed = new Set<string>();
 	return suggestions.filter((suggestion) => {
-		const claim = `${suggestion.relation}|${pairKey(suggestion.fromId, suggestion.toId)}`;
+		const claim = claimKey(suggestion.relation, suggestion.fromId, suggestion.toId);
 		if (claimed.has(claim)) return false;
 		claimed.add(claim);
 		return true;
@@ -81,10 +105,16 @@ export function oneRowPerClaim(suggestions: readonly Suggestion[]): Suggestion[]
  * ever written: a suggestion is a question, and the use-case re-runs every guard when the
  * household answers it.
  */
-export function evaluate(trigger: Trigger, view: SuggestionView): Suggestion[] {
+export function evaluate(
+	trigger: Trigger,
+	view: SuggestionView,
+	options: EvaluateOptions = {}
+): Suggestion[] {
 	const found = RULES[trigger.kind]
 		.flatMap((rule) => rule(trigger, view))
 		.filter((suggestion) => !suppressed(suggestion, view))
+		.map((suggestion) => answered(suggestion, view))
+		.filter((suggestion) => options.includeDismissed || suggestion.dismissed === null)
 		.sort((x, y) => order(x, y, view));
 	// Ordering runs first, so the row that survives a duplicated claim is the most certain one.
 	return oneRowPerClaim(found);

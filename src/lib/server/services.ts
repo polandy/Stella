@@ -38,6 +38,7 @@ import { createDrizzleRestoreRepository } from './db/restore-repository';
 import type { ArchiveDeps, ArchiveRepository } from './domain/archive/archive';
 import type { ImportArchiveDeps, RestoreRepository } from './domain/archive/import';
 import { createDrizzleRelationshipRepository } from './db/relationship-repository';
+import { createDrizzleSuggestionDismissalRepository } from './db/suggestion-dismissal-repository';
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
 import type { MemberDeps, MemberRepository } from './domain/household/members';
@@ -57,6 +58,10 @@ import type { NameCandidateSource, SuggestionDeps } from './domain/contacts/sugg
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { JournalDeps, JournalRepository } from './domain/journal/journal';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
+import type {
+	SuggestionDismissalRepository,
+	SuggestionReviewDeps
+} from './domain/relationships/suggestion-review';
 import type {
 	RelationshipTypeDeps,
 	RelationshipTypeRepository
@@ -227,6 +232,23 @@ export function getRelationshipDeps(): RelationshipDeps {
 	return {
 		relationships: getRelationships(),
 		types: getRelationshipTypes(),
+		ids: ulidGenerator,
+		clock: systemClock
+	};
+}
+
+let suggestionDismissalRepository: SuggestionDismissalRepository | null = null;
+
+/** The claims the household has declined (docs/concepts/relationship-suggestions.md §6.4). */
+export function getSuggestionDismissals(): SuggestionDismissalRepository {
+	return (suggestionDismissalRepository ??= createDrizzleSuggestionDismissalRepository(getDb()));
+}
+
+/** Deps for the on-demand suggestion review and the dismissal log (§6.5). */
+export function getSuggestionReviewDeps(): SuggestionReviewDeps {
+	return {
+		relationships: getRelationships(),
+		dismissals: getSuggestionDismissals(),
 		ids: ulidGenerator,
 		clock: systemClock
 	};

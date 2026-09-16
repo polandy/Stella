@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { KinshipGraph } from '$lib/kinship/kinship';
-import { buildView, pairKey } from './view';
+import { pairKey } from './claims';
+import { buildView } from './view';
 
 /*
  * The read model the rules and suppressions work over (docs/concepts/relationship-
@@ -23,16 +24,6 @@ function graph(over: Partial<KinshipGraph> = {}): KinshipGraph {
 }
 
 const sorted = (ids: Iterable<string>) => [...ids].sort();
-
-describe('pairKey', () => {
-	it('names a pair the same way from either end', () => {
-		expect(pairKey('hans', 'lisa')).toBe(pairKey('lisa', 'hans'));
-	});
-
-	it('tells different pairs apart', () => {
-		expect(pairKey('hans', 'lisa')).not.toBe(pairKey('hans', 'kurt'));
-	});
-});
 
 describe('buildView', () => {
 	it('indexes parents and children in both directions', () => {
@@ -103,5 +94,39 @@ describe('buildView', () => {
 		const view = buildView(graph());
 		expect(view.has('hans')).toBe(true);
 		expect(view.has('nobody')).toBe(false);
+	});
+
+	/*
+	 * What a person-scoped review works from: the links the subject stands in and the links
+	 * their siblings stand in — and nothing running between two people outside that group.
+	 */
+	it('collects the primary links standing around one person and their siblings', () => {
+		const view = buildView(
+			graph({
+				parentEdges: [
+					{ parentId: 'bettina', childId: 'hans' },
+					{ parentId: 'kurt', childId: 'lisa' }
+				],
+				siblingEdges: [{ a: 'hans', b: 'lisa' }],
+				partnerEdges: [{ a: 'bettina', b: 'kurt' }]
+			})
+		);
+		// Kurt's link to Lisa comes along because Lisa is Hans's sibling; the partner link
+		// between two people who are neither Hans nor a sibling of his does not.
+		expect(view.primaryLinksAround('hans')).toEqual([
+			{ kind: 'parent', fromId: 'bettina', toId: 'hans' },
+			{ kind: 'parent', fromId: 'kurt', toId: 'lisa' },
+			{ kind: 'sibling', fromId: 'hans', toId: 'lisa' }
+		]);
+		expect(view.primaryLinksAround('nobody')).toEqual([]);
+	});
+
+	it('answers who declined a claim and when, and null while it stands', () => {
+		const view = buildView(graph(), [
+			{ relation: 'parent', pairKey: pairKey('bettina', 'lisa'), dismissedAt: 42, dismissedBy: 'u1' }
+		]);
+		expect(view.answerTo('parent', 'lisa', 'bettina')).toEqual({ at: 42, by: 'u1' });
+		expect(view.answerTo('sibling', 'lisa', 'bettina')).toBeNull();
+		expect(buildView(graph()).answerTo('parent', 'lisa', 'bettina')).toBeNull();
 	});
 });
