@@ -168,6 +168,38 @@ guess. Each user-facing change follows:
 Don't write the e2e in step 1: an unverified e2e can encode a wrong expectation and pass, giving
 false confidence. Steps 1–2 are never skipped; step 3 waits for sign-off.
 
+### 8.4.2 Determinism: a test may only fail for the behaviour
+
+A test that can fail while the code is right is worse than no test: it teaches the team to
+re-run instead of to read, and the day it catches something real nobody believes it. So a
+test may not race — not in `bun test`, not in Playwright.
+
+- **No sleeps, no fixed waits, no polling for an effect that only *probably* lands.**
+  Playwright's web-first assertions (`await expect(locator)…`) retry until the deadline and
+  are exactly right; `waitForTimeout` is a sleep wearing their clothes. In `bun test`, a
+  bare `await` on something that dispatches work elsewhere is the same mistake.
+- **The fix belongs in the production code, never in a longer wait.** If a test can only
+  pass by waiting and hoping, the code is missing a seam: an injected `clock`, a completion
+  signal, a settled state something can read. `src/lib/graph/cytoscape/explorer.ts` is the
+  worked example — it writes `data-layout="settled"` on the container when a layout stops,
+  because the nodes' drawn positions mean nothing until then, and `settled()` in
+  `e2e/graph-canvas.ts` waits on that attribute instead of guessing how long a layout takes.
+- **A test asserting something did *not* happen needs a positive signal** — recorded calls,
+  a settled state, a counter — or it is false-green by construction. §8.4's rule about
+  asserting the neighbour before asserting the absence is this same rule on a screen.
+- **Prove it can fail.** A test written against an already-working build has never been seen
+  red. Break the behaviour it names — revert the fix, shift the value it renders — and watch
+  that exact case go red and its neighbours stay green. A case that survives is not a test,
+  whatever its name says. `e2e` rebuilds on every run, so a production-side edit is picked up.
+
+**The wall clock is a dependency like any other.** Two clocks are in play whenever a test
+builds a date: the test's and the server's. They agree only because `TZ` is pinned — for the
+CI jobs and for the container `e2e/run.sh` starts — so do not unpin it. And a run that steps
+over midnight is a real case: where a test compares against "today", both sides of the write
+are correct answers, and the assertion accepts either. `e2e/mentioned-in.spec.ts` is the
+worked example. Widening it that far is not a weaker assertion; on any run that does not
+cross midnight the two collapse into the one day it always checked.
+
 ## 8.5 What is and isn't unit-tested
 
 - **Unit-tested (test-first, always):** access-control/visibility rules, session lifecycle
@@ -192,6 +224,8 @@ false confidence. Steps 1–2 are never skipped; step 3 waits for sign-off.
 A change is done when:
 
 - The behavior was driven by tests and all tests pass (`bun test`).
+- No test in the change leans on a sleep, a fixed wait or the calendar, and each one
+  has been seen red for the right reason (§8.4.2).
 - Types check (`bun run check`) and formatting/lint pass.
 - Public surface is minimal and documented where non-obvious.
 - Access control is enforced through the central layer for any new data access.
