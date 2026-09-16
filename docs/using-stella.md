@@ -440,9 +440,10 @@ than screen by screen, so there is no corner of the app where it silently doesn'
 Stella keeps a record for everyone the household wants to remember, and one of them is
 probably you. Say so and the app stops guessing: **Settings → You** has a search field for
 picking your own entry, and the foot of any person's page has *This is me* for the same
-thing. From then on the map opens around you rather than whoever happens to come first,
-your row wears a small **You** in the list and on your page, and when you record how
-somebody is related, Stella already assumes you are the other end — you still say *how*.
+thing. From then on the map opens around you rather than whoever happens to come first, and
+your row wears a small **You** in the list and on your page. The relationship form is not
+filled in for you — the person field starts empty and waits, because a name already sitting
+there reads as an answer rather than as an offer.
 
 It is only a pointer. Nothing changes about what you may see or what belongs to you, and
 you can take it back with the same button, or with *None of them is me* in Settings.

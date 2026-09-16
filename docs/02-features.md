@@ -105,9 +105,6 @@ shows to the other as anything but a badge.
   - the **graph** (2.7) opens on that person instead of the first visible one, unless the
     link asks for somebody in particular;
   - the record is marked **"You"** on its own page and in the People directory;
-  - adding a relationship on somebody else's page starts with **you** as the other end —
-    "how is this person related to me" is the link a household records most. It stays a
-    default: the kind of relationship is always chosen by hand before anything is saved.
 - **When that person goes:** deleting the contact clears the link; merging them into a
   duplicate moves it to the record that survives. A member is never left pointing at a row
   that is gone.

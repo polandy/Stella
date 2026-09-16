@@ -6,8 +6,8 @@ import { openPerson, pickPerson, signIn } from './app';
  * in the running app (docs/08 §8.4.1).
  *
  * The link lives in the profile and the whole suite shares one database, so every case takes
- * it back again — left standing, it would put Sandra in the middle of the map, in the People
- * list and in every relationship form the specs after this file open.
+ * it back again — left standing, it would put Sandra in the middle of the map and in the
+ * People list for every spec after this file.
  *
  * Sandra rather than Markus on purpose: Markus is the first person the demo household has, so
  * a map centred on him would pass whether or not anything here works.
@@ -87,20 +87,20 @@ test('opens the map on you instead of whoever comes first', async ({ page }) => 
 	expect(await centredPersonId(page)).toBe('demo-c-hans');
 });
 
-test('starts a new relationship with you as the other end', async ({ page }) => {
+test('leaves the other end of a new relationship empty, said or not', async ({ page }) => {
 	// `openPerson` lands on the People tab, which is where the form lives.
 	await openPerson(page, /Bettina Roth/);
 	await page.getByRole('button', { name: 'Add relationship' }).click();
-	// Nothing is filled in for a household that has not said who anybody is.
 	await expect(otherEndField(page)).toHaveValue('');
 
+	// Saying who you are changes the map and the badge, but never fills this field in: a name
+	// already sitting there is read as an answer rather than as an offer.
 	await sayIAm(page, ME);
 
 	await openPerson(page, /Bettina Roth/);
 	await page.getByRole('button', { name: 'Add relationship' }).click();
-	await expect(otherEndField(page)).toHaveValue(ME);
+	await expect(otherEndField(page)).toHaveValue('');
 
-	// Your own page is the one place it would be nonsense, so it is left empty there.
 	await openPerson(page, new RegExp(ME));
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	await expect(otherEndField(page)).toHaveValue('');

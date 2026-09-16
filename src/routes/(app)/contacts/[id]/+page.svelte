@@ -209,18 +209,12 @@
 		savedEnhance(removals, t('components.saved'), () => (openSection[name] = false));
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
 	/*
-	 * The other end of a new relationship. Prefilled with whoever the page was opened for, and
-	 * otherwise with your own person (docs/02 §2.1.3): "how is this person related to me" is
-	 * the link a household records most, and it is still a default — the type is always chosen
-	 * by hand before anything is saved.
+	 * The other end of a new relationship. Empty unless the page was *asked* to relate somebody
+	 * (`?relate=`, the stream's link hint — §2.22.1). Nothing else stands in the field: a name
+	 * already sitting there is read as an answer, not as an offer, and the one it used to
+	 * offer — your own person — is wrong at least as often as it is right.
 	 */
-	let relationshipTargetId = $state<string[]>(
-		untrack(() => {
-			if (data.relateTo) return [data.relateTo];
-			const self = data.user.selfContactId;
-			return self && self !== data.contact.id ? [self] : [];
-		})
-	);
+	let relationshipTargetId = $state<string[]>(untrack(() => (data.relateTo ? [data.relateTo] : [])));
 	const savedRelationship = savedEnhance(removals, t('components.saved'), () => {
 		relateOpen = false;
 		relationshipTargetId = [];
