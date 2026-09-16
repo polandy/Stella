@@ -895,15 +895,15 @@ describe('createRelationship — what is already on record', () => {
 	});
 
 	/*
-	 * Seen on the family instance: every family and romantic entry was refused with nothing
-	 * but the other person's name, which reads as a claim about the entry rather than about
-	 * the link in the way. The refusal names the link, from the subject's side.
+	 * A refusal carrying nothing but the other person's name reads as a claim about the entry
+	 * it refuses rather than about the link in the way. It names the link, from the side the
+	 * subject reads it on.
 	 */
 	it('names the link that is in the way, not just the person', async () => {
 		const f = fakeRepo({
 			type: spouse,
 			ties: [
-				tie('r-eng', 'andy', 'romantic', {
+				tie('r-eng', 'bert', 'romantic', {
 					typeKey: 'engaged_to',
 					side: 'forward',
 					label: 'Engaged to'
@@ -911,17 +911,17 @@ describe('createRelationship — what is already on record', () => {
 			],
 			graph: {
 				...emptyKinshipGraph(),
-				people: [{ id: 'andy', displayName: 'Andy Pollari' }]
+				people: [{ id: 'bert', displayName: 'Bert Weber' }]
 			}
 		});
-		const failure = await create(f, 'giulio', 'andy', 'spouse').then(
+		const failure = await create(f, 'nora', 'bert', 'spouse').then(
 			() => null,
 			(e: unknown) => e as RelationshipExcludedError
 		);
 		expect(failure?.reason).toBe('alreadyRomantic');
 		// A household's own type is shown as it was typed, in either language.
-		expect(failure?.phrase(createTranslator('en'))).toContain('Engaged to Andy Pollari');
-		expect(failure?.phrase(createTranslator('de'))).toContain('Engaged to Andy Pollari');
+		expect(failure?.phrase(createTranslator('en'))).toContain('Engaged to Bert Weber');
+		expect(failure?.phrase(createTranslator('de'))).toContain('Engaged to Bert Weber');
 	});
 
 	it('translates a built-in type in the refusal', async () => {
@@ -1018,12 +1018,12 @@ describe('editRelationship — what is already on record', () => {
 /*
  * A symmetric type is stored with its endpoints sorted by id, so the stored `from` end is
  * regularly *not* the person whose profile the link was entered on. Reading the rules from
- * that end names the blocking link backwards — "Suitor of Giulio" on Giulio's own page, where
+ * that end names the blocking link backwards — "Suitor of Nora" on Nora's own page, where
  * what he is is the one being courted — so the profile the entry was made on is what the
  * wording follows.
  */
 describe('createRelationship — the profile a refusal is read from', () => {
-	/** Ids chosen so the symmetric canonical order puts `andy` first, ahead of `giulio`. */
+	/** Ids chosen so the symmetric canonical order puts `bert` first, ahead of `nora`. */
 	const courtshipTies = (subject: string, other: string, label: string) =>
 		fakeRepo({
 			type: spouse,
@@ -1037,8 +1037,8 @@ describe('createRelationship — the profile a refusal is read from', () => {
 			graph: {
 				...emptyKinshipGraph(),
 				people: [
-					{ id: 'andy', displayName: 'Andy Pollari' },
-					{ id: 'giulio', displayName: 'Giulio' }
+					{ id: 'bert', displayName: 'Bert Weber' },
+					{ id: 'nora', displayName: 'Nora' }
 				]
 			}
 		});
@@ -1059,14 +1059,14 @@ describe('createRelationship — the profile a refusal is read from', () => {
 		);
 
 	it('reads the blocking link from the page it was entered on, not from the stored end', async () => {
-		// Giulio's page: his row reads "Courted by Andy Pollari".
-		const onGiulio = courtshipTies('giulio', 'andy', 'Courted by');
-		const refusedOnGiulio = await enterFrom(onGiulio, 'giulio', 'andy');
-		expect(refusedOnGiulio?.phrase(createTranslator('en'))).toContain('Courted by Andy Pollari');
+		// Nora's page: his row reads "Courted by Bert Weber".
+		const onNora = courtshipTies('nora', 'bert', 'Courted by');
+		const refusedOnNora = await enterFrom(onNora, 'nora', 'bert');
+		expect(refusedOnNora?.phrase(createTranslator('en'))).toContain('Courted by Bert Weber');
 
-		// Andy's page, the same pair the other way: his row reads "Suitor of Giulio".
-		const onAndy = courtshipTies('andy', 'giulio', 'Suitor of');
-		const refusedOnAndy = await enterFrom(onAndy, 'andy', 'giulio');
-		expect(refusedOnAndy?.phrase(createTranslator('en'))).toContain('Suitor of Giulio');
+		// Bert's page, the same pair the other way: his row reads "Suitor of Nora".
+		const onBert = courtshipTies('bert', 'nora', 'Suitor of');
+		const refusedOnBert = await enterFrom(onBert, 'bert', 'nora');
+		expect(refusedOnBert?.phrase(createTranslator('en'))).toContain('Suitor of Nora');
 	});
 });

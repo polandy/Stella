@@ -263,27 +263,39 @@ export class ContradictoryRelationshipError extends TranslatableError {
  * where Stella owns the type — since the person's name alone reads as a claim about the tie
  * that was just refused rather than about the one standing in the way.
  */
-const PHRASE_FOR_REASON: Record<ExclusionReason, (exclusion: Exclusion, name: string) => Phrase> =
-	{
-		alreadyRomantic: (exclusion, name) => {
-			const tie = exclusion.tie;
-			if (!tie) return phrase('errors.relationship.alreadyRomantic', { name });
-			return (t) =>
-				t('errors.relationship.alreadyTied', { tie: relationshipRowLabel(t, tie), name });
-		},
-		siblingDerived: (_exclusion, name) => phrase('errors.relationship.siblingDerived', { name }),
-		romanticTaken: (_exclusion, name) => phrase('errors.relationship.romanticTaken', { name }),
-		parentsComplete: (_exclusion, name) =>
-			phrase('errors.relationship.parentsComplete', { name, max: MAX_PARENTS })
-	};
+type NameOf = (contactId: string) => string;
+
+const PHRASE_FOR_REASON: Record<ExclusionReason, (e: Exclusion, nameOf: NameOf) => Phrase> = {
+	alreadyRomantic: (exclusion, nameOf) => {
+		const name = nameOf(exclusion.personId);
+		const tie = exclusion.tie;
+		if (!tie) return phrase('errors.relationship.alreadyRomantic', { name });
+		return (t) =>
+			t('errors.relationship.alreadyTied', { tie: relationshipRowLabel(t, tie), name });
+	},
+	siblingDerived: (exclusion, nameOf) =>
+		phrase('errors.relationship.siblingDerived', { name: nameOf(exclusion.personId) }),
+	// Both people: which of the two is spoken for is the whole answer, and naming only the
+	// partner leaves the sentence to be read as being about whoever's page it arrives on.
+	romanticTaken: (exclusion, nameOf) =>
+		phrase('errors.relationship.romanticTaken', {
+			name: nameOf(exclusion.personId),
+			partner: nameOf(exclusion.partnerId ?? '')
+		}),
+	parentsComplete: (exclusion, nameOf) =>
+		phrase('errors.relationship.parentsComplete', {
+			name: nameOf(exclusion.personId),
+			max: MAX_PARENTS
+		})
+};
 
 /** A tie that cannot hold beside the ties already on record (docs/02 §2.4). */
 export class RelationshipExcludedError extends TranslatableError {
 	/** Which rule refused — a caller reacts to the kind, never to the wording. */
 	readonly reason: ExclusionReason;
 
-	constructor(exclusion: Exclusion, name: string) {
-		super(PHRASE_FOR_REASON[exclusion.reason](exclusion, name), 'RelationshipExcludedError');
+	constructor(exclusion: Exclusion, nameOf: (contactId: string) => string) {
+		super(PHRASE_FOR_REASON[exclusion.reason](exclusion, nameOf), 'RelationshipExcludedError');
 		this.reason = exclusion.reason;
 	}
 }
@@ -376,7 +388,7 @@ async function guardExclusions(
 		exceptId
 	});
 	if (exclusion) {
-		throw new RelationshipExcludedError(exclusion, nameOf(exclusion.personId));
+		throw new RelationshipExcludedError(exclusion, nameOf);
 	}
 }
 

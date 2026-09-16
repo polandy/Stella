@@ -20,7 +20,7 @@ export const errors: ErrorsMessages = {
 	'errors.relationship.siblingDerived': (p) =>
 		`Stella leitet ${p.name} hier bereits aus den gemeinsamen Eltern als Geschwister ab. Von Hand eingetragen würde das Abgeleitete ersetzt.`,
 	'errors.relationship.romanticTaken': (p) =>
-		`${p.name} ist bereits in einer Partnerschaft, die noch besteht. Setze diese zuerst auf ehemalig.`,
+		`${p.name} ist bereits mit ${p.partner} zusammen, und diese Partnerschaft besteht noch. Setze sie zuerst auf ehemalig.`,
 	'errors.relationship.parentsComplete': (p) =>
 		`${p.name} hat bereits ${p.max} Elternteile. Ändere einen davon, statt einen weiteren anzulegen.`,
 	'errors.relationship.noSuchDay': (p) => `${p.day} ist kein Tag, den es gibt.`,

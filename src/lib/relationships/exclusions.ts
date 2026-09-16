@@ -106,8 +106,14 @@ export interface ExclusionQuery {
 /** Why the claim is refused, and what makes that reason concrete. */
 export interface Exclusion {
 	reason: ExclusionReason;
-	/** Whoever the reason is about — the existing partner, the child who has two parents. */
+	/**
+	 * Whoever the reason is *about*: the one who is already spoken for, the child who already
+	 * has two parents, the person at the other end of the link in the way. Never a bystander —
+	 * a reason that names only somebody else lands on whoever's page it is read on.
+	 */
 	personId: string;
+	/** Who that person is already with, for `romanticTaken`. */
+	partnerId?: string;
 	/**
 	 * The link standing in the way, where there is one: `alreadyRomantic` refuses *because of*
 	 * a particular row, and saying which one is the difference between "these two are already
@@ -166,10 +172,16 @@ export function exclusionFor(facts: ExclusionFacts, query: ExclusionQuery): Excl
 	}
 
 	if (PARTNER_TYPE_KEYS.includes(type.key)) {
-		const taken =
-			romanticPartnerOf(facts, subjectId, targetId) ??
-			romanticPartnerOf(facts, targetId, subjectId);
-		if (taken) return { reason: 'romanticTaken', personId: taken };
+		// Which of the two is spoken for is the point of the sentence, so it is carried rather
+		// than left for the reader to guess from whose page they happen to be on.
+		const subjectPartner = romanticPartnerOf(facts, subjectId, targetId);
+		if (subjectPartner) {
+			return { reason: 'romanticTaken', personId: subjectId, partnerId: subjectPartner };
+		}
+		const targetPartner = romanticPartnerOf(facts, targetId, subjectId);
+		if (targetPartner) {
+			return { reason: 'romanticTaken', personId: targetId, partnerId: targetPartner };
+		}
 	}
 
 	if (type.key === PARENT_CHILD_TYPE_KEY) {

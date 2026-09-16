@@ -78,7 +78,10 @@ export function exclusionLabel(
 		case 'siblingDerived':
 			return t('relationships.blocked.siblingDerived');
 		case 'romanticTaken':
-			return t('relationships.blocked.romanticTaken', { name });
+			return t('relationships.blocked.romanticTaken', {
+				name,
+				partner: nameOf(exclusion.partnerId ?? '')
+			});
 		case 'parentsComplete':
 			return t('relationships.blocked.parentsComplete', { name, max: MAX_PARENTS });
 	}

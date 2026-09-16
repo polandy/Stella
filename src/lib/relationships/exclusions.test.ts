@@ -48,20 +48,31 @@ describe('exclusionFor — one active romantic tie per person', () => {
 	it('refuses a second spouse while the first marriage still holds', () => {
 		expect(
 			ask(marriedToCarl, { subjectId: 'anna', targetId: 'bert', type: spouse, side: 'forward' })
-		).toEqual({ reason: 'romanticTaken', personId: 'carl' });
+		).toEqual({ reason: 'romanticTaken', personId: 'anna', partnerId: 'carl' });
 	});
 
 	it('refuses a partner too — partner and spouse are the same claim', () => {
 		expect(
 			ask(marriedToCarl, { subjectId: 'anna', targetId: 'bert', type: partner, side: 'forward' })
-		).toEqual({ reason: 'romanticTaken', personId: 'carl' });
+		).toEqual({ reason: 'romanticTaken', personId: 'anna', partnerId: 'carl' });
 	});
 
-	it('refuses it from the other end as well: the target is the one who is taken', () => {
+	/*
+	 * The reason has to say *who* is spoken for. Naming only the partner — "already with
+	 * Carl", read on Anna's page, about a partnership that is Bert's — puts a stranger in
+	 * Anna's sentence and makes the refusal look like a mistake.
+	 */
+	it('refuses it from the other end as well, and says it is the target who is taken', () => {
 		const bertIsMarried = facts({ romanticPairs: [{ a: 'bert', b: 'carl' }] });
 		expect(
 			ask(bertIsMarried, { subjectId: 'anna', targetId: 'bert', type: spouse, side: 'forward' })
-		).toEqual({ reason: 'romanticTaken', personId: 'carl' });
+		).toEqual({ reason: 'romanticTaken', personId: 'bert', partnerId: 'carl' });
+	});
+
+	it('names the subject when it is the subject who is spoken for', () => {
+		expect(
+			ask(marriedToCarl, { subjectId: 'anna', targetId: 'bert', type: spouse, side: 'forward' })
+		).toMatchObject({ personId: 'anna' });
 	});
 
 	it('leaves every other kind of tie alone — a married person still gains friends', () => {
@@ -130,7 +141,7 @@ describe('exclusionFor — one romantic band per pair', () => {
 	/*
 	 * Kinship stacks. A godparent is very often the grandfather or the uncle too, so two
 	 * family claims about the same two people are two facts, not a contradiction — which is
-	 * what the family instance showed when a godparent link greyed out every other kinship.
+	 * what a godparent link used to do when it greyed out every other kinship for that pair.
 	 */
 	it('lets family stack — a second kinship about the same two is information', () => {
 		const mothers = facts({
@@ -176,7 +187,7 @@ describe('exclusionFor — one romantic band per pair', () => {
 	it('says nothing about a third person — the band is about this pair', () => {
 		expect(
 			ask(partnered, { subjectId: 'anna', targetId: 'dora', type: spouse, side: 'forward' })
-		).toEqual({ reason: 'romanticTaken', personId: 'bert' });
+		).toEqual({ reason: 'romanticTaken', personId: 'anna', partnerId: 'bert' });
 	});
 
 	it('does not measure a link being retyped against itself', () => {
@@ -323,16 +334,16 @@ describe('exclusionFor — which reason answers first', () => {
 });
 
 /*
- * The case from the family instance: Giulio is a *Godchild of* Andy — a household's own
- * family type — and every family and romantic entry was greyed out. A godparent is very
- * often the grandfather or the uncle as well, so kinship stacks and none of it is refused.
+ * A household's own family type — *Godparent of* — used to grey out every other family and
+ * romantic entry for that pair. A godparent is very often the grandfather or the uncle as
+ * well, so kinship stacks and none of it is refused.
  */
 describe('exclusionFor — a godparent blocks no kinship', () => {
-	const godchildOfAndy: ExclusionFacts = {
+	const godchildOfTheOther: ExclusionFacts = {
 		subjectTies: [
 			{
 				relationshipId: 'r-god',
-				otherContactId: 'andy',
+				otherContactId: 'bert',
 				category: 'family',
 				typeKey: 'godparent_of',
 				side: 'reverse',
@@ -344,10 +355,10 @@ describe('exclusionFor — a godparent blocks no kinship', () => {
 		derivedSiblingIds: []
 	};
 
-	const askAndy = (type: { key: string; category: 'family' | 'romantic' | 'professional' }) =>
-		exclusionFor(godchildOfAndy, {
-			subjectId: 'giulio',
-			targetId: 'andy',
+	const askTheOther = (type: { key: string; category: 'family' | 'romantic' | 'professional' }) =>
+		exclusionFor(godchildOfTheOther, {
+			subjectId: 'nora',
+			targetId: 'bert',
 			type,
 			side: 'forward'
 		});
@@ -355,16 +366,16 @@ describe('exclusionFor — a godparent blocks no kinship', () => {
 	it('offers every kinship beside it — grandparent, sibling, the lot', () => {
 		expect(
 			[parentChild, sibling, { key: 'grandparent_grandchild', category: 'family' } as const].map(
-				askAndy
+				askTheOther
 			)
 		).toEqual([null, null, null]);
 	});
 
 	it('offers romance too — the godparent link says nothing about that', () => {
-		expect([spouse, partner].map(askAndy)).toEqual([null, null]);
+		expect([spouse, partner].map(askTheOther)).toEqual([null, null]);
 	});
 
 	it('offers work and social, as it always did', () => {
-		expect(askAndy(colleague)).toBeNull();
+		expect(askTheOther(colleague)).toBeNull();
 	});
 });

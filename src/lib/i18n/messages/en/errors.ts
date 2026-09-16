@@ -22,8 +22,8 @@ export const errors = {
 		`There is already a partnership on record with ${p.name}. Correct that one instead of adding a second.`,
 	'errors.relationship.siblingDerived': (p: { name: string }) =>
 		`Stella already works ${p.name} out as a sibling here, from the shared parents. Entering it by hand would replace what is worked out.`,
-	'errors.relationship.romanticTaken': (p: { name: string }) =>
-		`${p.name} is already in a partnership that still holds. Mark that one as former first.`,
+	'errors.relationship.romanticTaken': (p: { name: string; partner: string }) =>
+		`${p.name} is already with ${p.partner}, and that partnership still holds. Mark it as former first.`,
 	'errors.relationship.parentsComplete': (p: { name: string; max: number }) =>
 		`${p.name} already has ${p.max} parents. Correct one of them instead of adding another.`,
 	'errors.relationship.noSuchDay': (p: { day: string }) => `${p.day} is not a day that exists.`,

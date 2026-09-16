@@ -5,7 +5,7 @@ import { relationshipTypeOptions } from './type-options';
 
 /*
  * Why the reason is not written into the entry (docs/02 §2.4). "Grandparent of — already
- * Godchild of Andy Pollari" puts two "X of Y" phrases in one line, and a reader takes the
+ * Godchild of Bert Weber" puts two "X of Y" phrases in one line, and a reader takes the
  * second as a statement about the first: it looks as though Stella is calling the entry a
  * godchild. The entries keep their own words and the reason is said once, above the run of
  * entries it refuses.
@@ -22,10 +22,10 @@ const options = relationshipTypeOptions([
 
 const tied: Exclusion = {
 	reason: 'alreadyRomantic',
-	personId: 'andy',
+	personId: 'bert',
 	tie: { typeKey: 'godparent_of', side: 'reverse', label: 'Godchild of' }
 };
-const taken: Exclusion = { reason: 'romanticTaken', personId: 'carl' };
+const taken: Exclusion = { reason: 'romanticTaken', personId: 'anna', partnerId: 'carl' };
 
 const ids = (group: { options: { type: { id: string } }[] }) =>
 	group.options.map((option) => option.type.id);
@@ -66,13 +66,28 @@ describe('groupByExclusion', () => {
 	});
 
 	it('splits the same reason about two different people', () => {
-		const otherPerson: Exclusion = { ...taken, personId: 'dora' };
+		const otherPerson: Exclusion = { ...taken, personId: 'dora', partnerId: 'dora' };
 		const groups = groupByExclusion(options, (option) => {
 			if (option.type.id === 'sibling') return taken;
 			if (option.type.id === 'spouse') return otherPerson;
 			return null;
 		});
 		expect(groups.map((group) => group.exclusion?.personId ?? null)).toEqual([
+			null,
+			'anna',
+			'dora',
+			null
+		]);
+	});
+
+	it('splits the same person spoken for by two different partners', () => {
+		const otherPartner: Exclusion = { ...taken, partnerId: 'dora' };
+		const groups = groupByExclusion(options, (option) => {
+			if (option.type.id === 'sibling') return taken;
+			if (option.type.id === 'spouse') return otherPartner;
+			return null;
+		});
+		expect(groups.map((group) => group.exclusion?.partnerId ?? null)).toEqual([
 			null,
 			'carl',
 			'dora',

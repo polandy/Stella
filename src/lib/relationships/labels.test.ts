@@ -77,15 +77,22 @@ describe('relationshipCategoryLabel and relationshipStatusLabel', () => {
 describe('exclusionLabel', () => {
 	const carl = () => 'Carl';
 
-	it('says in a few words why an entry cannot be picked', () => {
-		expect(exclusionLabel(de, { reason: 'romanticTaken', personId: 'c' }, carl)).toBe(
-			'schon mit Carl zusammen'
-		);
+	const named = (id: string) => ({ bert: 'Bert Weber', dora: 'Dora', c: 'Carl' })[id] ?? id;
+
+	/*
+	 * Both people are named. "already with Dora" on Nora's page reads as though Nora were
+	 * the one spoken for, when it is Bert — the entry has to say whose partnership is in the
+	 * way, exactly as the parent rule names the child who already has two.
+	 */
+	it('says who is spoken for, and with whom', () => {
+		const taken = { reason: 'romanticTaken', personId: 'bert', partnerId: 'dora' } as const;
+		expect(exclusionLabel(en, taken, named)).toBe('Bert Weber is already with Dora');
+		expect(exclusionLabel(de, taken, named)).toBe('Bert Weber ist schon mit Dora zusammen');
 	});
 
 	/*
 	 * The link in the way is named, and named from the subject's side. Without it every
-	 * family and romantic entry read "already linked to Andy Pollari", which a reader takes
+	 * family and romantic entry read "already linked to Bert Weber", which a reader takes
 	 * as a claim about the entry that is greyed out rather than about the link that blocks it.
 	 */
 	it('names the link that is in the way, translated where Stella owns the type', () => {

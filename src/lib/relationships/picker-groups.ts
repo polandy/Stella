@@ -6,7 +6,7 @@ import type { RelationshipTypeOption, SelectableType } from './type-options';
  *
  * The reason deliberately does **not** go into the entry's own label. An entry reads "X of",
  * and so does the link standing in the way, so writing both in one line — "Grandparent of —
- * already Godchild of Andy Pollari" — puts two of those phrases side by side and a reader
+ * already Godchild of Bert Weber" — puts two of those phrases side by side and a reader
  * takes the second as a statement about the first. Instead the entries keep their own words
  * and the run they belong to carries the reason once, above them.
  *
@@ -26,6 +26,7 @@ function sameExclusion(a: Exclusion | null, b: Exclusion | null): boolean {
 	return (
 		a.reason === b.reason &&
 		a.personId === b.personId &&
+		a.partnerId === b.partnerId &&
 		a.tie?.typeKey === b.tie?.typeKey &&
 		a.tie?.side === b.tie?.side &&
 		a.tie?.label === b.tie?.label
