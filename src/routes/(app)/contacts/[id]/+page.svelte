@@ -10,6 +10,7 @@
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import SyncBadge from '$lib/components/SyncBadge.svelte';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { processImage } from '$lib/image/process-image';
@@ -18,6 +19,7 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
+	import { trackPending, type PendingSink } from '$lib/sync/pending';
 	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -217,10 +219,25 @@
 			return self && self !== data.contact.id ? [self] : [];
 		})
 	);
-	const savedRelationship = savedEnhance(removals, t('components.saved'), () => {
-		relateOpen = false;
-		relationshipTargetId = [];
-	});
+	/*
+	 * Changing a relationship reloads the person's graph, and on a household with many links
+	 * that reload is slow enough to look like nothing happened. Every path that changes it —
+	 * the add form, a correction, a removal once its undo window has passed — is counted here,
+	 * and the People section wears a badge while the count stands (docs/05 §5.7).
+	 */
+	let graphReloads = $state(0);
+	const graphPending: PendingSink = {
+		begin: () => (graphReloads += 1),
+		end: () => (graphReloads -= 1)
+	};
+	const graphSyncing = $derived(graphReloads > 0);
+	const savedRelationship = trackPending(
+		graphPending,
+		savedEnhance(removals, t('components.saved'), () => {
+			relateOpen = false;
+			relationshipTargetId = [];
+		})
+	);
 	/*
 	 * The specifics of the link being entered, watched so the form can fill in what it already
 	 * knows: a family link began on the younger one's birthday (docs/02 §2.4).
@@ -258,10 +275,9 @@
 
 	/** Which relationship has its details open for correction; one at a time. */
 	let editingRelationship = $state<string | null>(null);
-	const savedRelationshipEdit = savedEnhance(
-		removals,
-		t('components.saved'),
-		() => (editingRelationship = null)
+	const savedRelationshipEdit = trackPending(
+		graphPending,
+		savedEnhance(removals, t('components.saved'), () => (editingRelationship = null))
 	);
 	const savedArchive = savedEnhance(removals, t('components.saved'));
 	/** Archived or not decides the action, the wording and the marker; asked once. */
@@ -714,6 +730,7 @@
 					bind:open={relateOpen}
 				>
 					{#snippet action()}
+						<SyncBadge busy={graphSyncing} label={t('contact.relationships.syncing')} />
 						{#if data.otherContacts.length > 0}
 							<Button
 								size="sm"
@@ -841,6 +858,7 @@
 												kind="relationship"
 												id={rel.id}
 												action="?/removeRelationship"
+												pending={graphPending}
 												fields={{ relationshipId: rel.id }}
 												label={t('contact.relationships.remove', { name: rel.otherDisplayName })}
 												removed={t('contact.relationships.removed')}

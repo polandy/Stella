@@ -5,6 +5,7 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { submitAction } from '$lib/undo/submit-action';
+	import { whilePending, type PendingSink } from '$lib/sync/pending';
 
 	/*
 	 * The one way to remove something with undo (docs/02 §2.23). It is a real form with the
@@ -26,9 +27,25 @@
 		removed: string;
 		/** A bare icon for a chip, where a bordered button would be too much. */
 		bare?: boolean;
+		/**
+		 * Counts the commit — the real request plus the reload behind it — for a section that
+		 * shows how long it is taking. The undo window itself is not counted: nothing is on its
+		 * way to the server yet (docs/05 §5.7).
+		 */
+		pending?: PendingSink;
 		class?: string;
 	}
-	let { kind, id, action, fields, label, removed, bare = false, class: className = '' }: Props = $props();
+	let {
+		kind,
+		id,
+		action,
+		fields,
+		label,
+		removed,
+		bare = false,
+		pending,
+		class: className = ''
+	}: Props = $props();
 
 	const removals = useRemovals();
 
@@ -39,8 +56,11 @@
 			key: removalKey(kind, id),
 			label: removed,
 			commit: async () => {
-				await submitAction(fetch, action, body);
-				await invalidateAll();
+				const remove = async () => {
+					await submitAction(fetch, action, body);
+					await invalidateAll();
+				};
+				await (pending ? whilePending(pending, remove) : remove());
 			}
 		});
 	}

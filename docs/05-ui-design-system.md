@@ -495,6 +495,24 @@ be taken back from here (docs/02 §2.23), and every one of them is the same comp
 (`RemoveButton`), so no list can quietly opt out. Saving says *Saved* and closes the form it
 was typed in — a section's editor and an inline edit alike. On a phone the region sits above the tab bar.
 
+**Sync badge** (`src/lib/components/SyncBadge.svelte`) is what a section wears while it is
+catching up: a small spinner and a word, in the section header, on `--primary-soft`. It marks
+the People section of a person's page, because changing a relationship reloads that person's
+graph and on a household with many links the reload is long enough to read as nothing having
+happened. It deliberately does **not** cover, dim or freeze the map — the shape you were just
+looking at stays readable and the rest of the page stays usable — and it says the wait in
+words rather than replacing the map with a skeleton, which would take the answer away in order
+to announce that the answer is coming. It carries `role="status"` with the live region always
+mounted, so a screen reader hears the badge arrive rather than the region appear, and its
+spinner stops under `prefers-reduced-motion`.
+
+What counts as work in flight is decided away from the screen, by
+`src/lib/sync/pending.ts`: a count, not a flag, so two changes that overlap cannot let the
+first one's answer clear the second one's badge. `trackPending` wraps an enhanced form's
+submit — the add form and a correction — and `RemoveButton`'s optional `pending` counts the
+commit a removal makes once its undo window has passed, never the window itself, during which
+nothing is on its way to the server yet.
+
 **Language picker** (`src/lib/components/LanguagePicker.svelte`) is a segmented control of
 plain submit buttons, one per language, each naming itself in itself (*English*, *Deutsch*).
 It posts to `/locale` and comes back on the page it was pressed on, now in that language, so
