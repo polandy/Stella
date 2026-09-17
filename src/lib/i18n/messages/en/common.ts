@@ -8,6 +8,8 @@ export const common = {
 	'common.save': 'Save',
 	'common.saving': 'Saving…',
 	'common.cancel': 'Cancel',
+	/** Announced by the shell's activity indicator while the app is waiting for something. */
+	'common.updating': 'Updating…',
 	'common.delete': 'Delete',
 	'common.remove': 'Remove',
 	'common.edit': 'Edit',

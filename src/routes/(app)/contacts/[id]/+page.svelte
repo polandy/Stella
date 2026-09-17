@@ -18,6 +18,8 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
+	import { trackPending } from '$lib/sync/pending';
+	import { usePending } from '$lib/sync/context.svelte';
 	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -32,6 +34,7 @@
 	import { directClaimLabel, kinshipLabel } from '$lib/kinship/labels';
 	import { claimEndpoints, directClaimFor } from '$lib/kinship/claims';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
+	import { withoutRelationships } from '$lib/graph/model/without-pending';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { isChoiceOfLink, relationshipTypeOptions } from '$lib/relationships/type-options';
 	import { exclusionFor, type Exclusion } from '$lib/relationships/exclusions';
@@ -134,6 +137,20 @@
 	const photoById = $derived(
 		new Map(data.graph.nodes.map((node) => [node.id, node.avatarPhotoId ?? null]))
 	);
+	/*
+	 * A removal is held for its undo window before it is sent (docs/02 §2.23), and the list
+	 * hides the row for that whole window. The map agrees with the list: were it to keep the
+	 * link, it would vanish by itself eight seconds later, which reads as a slow save rather
+	 * than a window that was there to be used.
+	 */
+	const pendingRelationships = $derived(
+		new Set(
+			data.relationships
+				.filter((r) => removals.isPending(removalKey('relationship', r.id)))
+				.map((r) => r.id)
+		)
+	);
+	const visibleGraph = $derived(withoutRelationships(data.graph, pendingRelationships, c.id));
 	const egoNodes = $derived.by(() => {
 		const seen = new Set<string>();
 		const out: {
@@ -144,6 +161,7 @@
 			avatarPhotoId: string | null;
 		}[] = [];
 		for (const r of data.relationships) {
+			if (pendingRelationships.has(r.id)) continue;
 			if (seen.has(r.otherContactId)) continue;
 			seen.add(r.otherContactId);
 			out.push({
@@ -215,10 +233,21 @@
 	 * offer — your own person — is wrong at least as often as it is right.
 	 */
 	let relationshipTargetId = $state<string[]>(untrack(() => (data.relateTo ? [data.relateTo] : [])));
-	const savedRelationship = savedEnhance(removals, t('components.saved'), () => {
-		relateOpen = false;
-		relationshipTargetId = [];
-	});
+	/*
+	 * Changing a relationship reloads the person's graph, and on a household with many links
+	 * that reload is slow enough to look like nothing happened. Every path that changes it —
+	 * the add form, a correction, a removal once its undo window has passed — is reported to
+	 * the shell, which shows one activity indicator for the whole app (docs/05 §5.7). Nothing
+	 * on this page moves while it runs.
+	 */
+	const graphPending = usePending();
+	const savedRelationship = trackPending(
+		graphPending,
+		savedEnhance(removals, t('components.saved'), () => {
+			relateOpen = false;
+			relationshipTargetId = [];
+		})
+	);
 	/*
 	 * The specifics of the link being entered, watched so the form can fill in what it already
 	 * knows: a family link began on the younger one's birthday (docs/02 §2.4).
@@ -296,10 +325,9 @@
 
 	/** Which relationship has its details open for correction; one at a time. */
 	let editingRelationship = $state<string | null>(null);
-	const savedRelationshipEdit = savedEnhance(
-		removals,
-		t('components.saved'),
-		() => (editingRelationship = null)
+	const savedRelationshipEdit = trackPending(
+		graphPending,
+		savedEnhance(removals, t('components.saved'), () => (editingRelationship = null))
 	);
 	const savedArchive = savedEnhance(removals, t('components.saved'));
 	/** Archived or not decides the action, the wording and the marker; asked once. */
@@ -829,7 +857,7 @@
 										centerId={c.id}
 										centerName={c.displayName}
 										centerPhotoId={c.avatarPhotoId}
-										graph={data.graph}
+										graph={visibleGraph}
 										nodes={egoNodes}
 										fullGraphHref={(nodeId) => `/graph?center=${nodeId}`}
 									/>
@@ -879,6 +907,7 @@
 												kind="relationship"
 												id={rel.id}
 												action="?/removeRelationship"
+												pending={graphPending}
 												fields={{ relationshipId: rel.id }}
 												label={t('contact.relationships.remove', { name: rel.otherDisplayName })}
 												removed={t('contact.relationships.removed')}

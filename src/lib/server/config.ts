@@ -32,6 +32,10 @@ const RawSchema = v.object({
 	AUTH_LOCAL_ENABLED: boolFrom(true),
 	AUTH_OIDC_ENABLED: boolFrom(false),
 
+	// Serve the development-only workbench pages under /settings/debug from a build too.
+	// Off by default: they are diagnostics, untranslated, and of no use to a household.
+	DEBUG_PAGES: boolFrom(false),
+
 	// Populate the database with the demo dataset on startup (test phase only). Idempotent.
 	SEED_DEMO: boolFrom(false),
 
@@ -88,6 +92,7 @@ function build() {
 		sessionSecret: raw.SESSION_SECRET,
 		isProd,
 		seedDemo: raw.SEED_DEMO,
+		debugPages: raw.DEBUG_PAGES,
 		updateCheck: raw.UPDATE_CHECK,
 		updateFeedUrl: raw.UPDATE_FEED_URL,
 		auth: {

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { beforeNavigate, goto, onNavigate } from '$app/navigation';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import Button from '$lib/components/Button.svelte';
+	import ActivityIndicator from '$lib/components/ActivityIndicator.svelte';
 	import CommandPalette from '$lib/components/CommandPalette.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
@@ -11,6 +12,7 @@
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
+	import { providePending } from '$lib/sync/context.svelte';
 	import { onMount, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 
@@ -92,6 +94,20 @@
 		});
 	});
 
+	/*
+	 * Everything the app is waiting for, in one place (docs/05 §5.7): a page still loading, and
+	 * any change a page reported — a relationship save reloads the person's graph, and on a
+	 * large household that takes long enough to read as nothing having happened.
+	 */
+	const pending = providePending();
+	// A navigation is work like any other, and reported the same way, so a short one stays
+	// under the store's own delay instead of flashing the indicator for a frame.
+	$effect(() => {
+		if (!navigating.to) return;
+		pending.begin();
+		return () => pending.end();
+	});
+
 	// Removals are held back for an undo window (docs/04 §4.9). Leaving the page ends the
 	// window: a client-side navigation waits for the requests so the next screen cannot read
 	// the item back; an unload — or a native form post, which must not be replayed as a GET —
@@ -152,6 +168,12 @@
 
 <svelte:window onkeydown={onGlobalKeydown} />
 
+<!--
+	One indicator for the whole app (docs/05 §5.7): a page still loading, and any change a page
+	reported through the pending-work store — a relationship save and the graph reload behind
+	it. It is fixed to the top of the window, so it never moves the page it reports on.
+-->
+<ActivityIndicator busy={pending.busy} label={t('common.updating')} />
 <CommandPalette people={data.people} bind:open={paletteOpen} />
 <Toast />
 

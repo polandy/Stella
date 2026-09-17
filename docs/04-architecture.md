@@ -431,6 +431,17 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   it alone, and that each carries its own resume point — a source can contribute nothing to a
   page and still have rows waiting, so "read me from the top" and "I am finished" have to be
   distinguishable. The merge is pure and owns those rules, which is what keeps them testable.
+- **One activity indicator for the whole app, counted and delayed** — waiting is reported by
+  the shell (`src/lib/sync/pending-work.ts`, provided through context like the undo store) and
+  drawn once, fixed to the viewport, rather than by each section that is waiting. Rejected: a
+  badge in the section header, which made room for itself and pushed the page down under the
+  reader; an overlay or a skeleton over the map, which take the answer away in order to
+  announce that a new one is coming. The store counts rather than flags, so overlapping work
+  cannot let the first answer clear the second one's indicator, and it carries both windows —
+  nothing for work under 250ms, at least 400ms once shown — because the app loads twice on a
+  cold start and a truthful indicator flickered twice with it. The cost is that a fast save is
+  never announced at all: on a local build, where a save takes 30–90ms, the indicator is
+  invisible, and `/settings/debug` exists because of that (docs/05 §5.7).
 - **Undo is a removal held back in the browser, not a soft delete** — a removed story item
   is hidden and its form is posted only when the eight-second toast closes or the page is
   left (`src/lib/undo`, a pure store with the timer injected; the app shell flushes it on
