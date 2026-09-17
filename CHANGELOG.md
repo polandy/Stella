@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.0.12](https://github.com/polandy/Stella/compare/v0.0.11...v0.0.12) (2026-09-17)
+
+
+### Features
+
+* **pwa:** install Stella on a phone, and read it when it is out of reach ([1b0ca47](https://github.com/polandy/Stella/commit/1b0ca47e4641f24715c306765a6fc02aa8bdbdf0))
+* **relationships:** answer a suggestion without losing your place ([74a0eb5](https://github.com/polandy/Stella/commit/74a0eb50c4670894aea90755795834b74a0bbc96)), closes [#123](https://github.com/polandy/Stella/issues/123)
+* **relationships:** ask what else might be true, whenever you like ([#110](https://github.com/polandy/Stella/issues/110)) ([63c4e2a](https://github.com/polandy/Stella/commit/63c4e2a59557933e9b9fc5c2753b0d0201ced046))
+* **relationships:** check the whole household's relationships at once ([988879a](https://github.com/polandy/Stella/commit/988879a809534d29dbf5a95ef55684fac10bcb9d))
+* **relationships:** correct a worked-out step relative in place ([#107](https://github.com/polandy/Stella/issues/107)) ([fe9871e](https://github.com/polandy/Stella/commit/fe9871ed90a14d99a0b01f80aa0fd4fce9aebd59))
+* **relationships:** fold the household review instead of capping it ([31a0e0d](https://github.com/polandy/Stella/commit/31a0e0dc10084e7f14eebae34dd31cbd9d950426)), closes [#120](https://github.com/polandy/Stella/issues/120)
+* **relationships:** refuse the ties the records already rule out ([da4e9ce](https://github.com/polandy/Stella/commit/da4e9ce3acbe1414df2dfdd82bd5a4a4cbf65fc6))
+* **relationships:** say why a suggestion is offered, and let an answered row go at once ([7b6451e](https://github.com/polandy/Stella/commit/7b6451e4ca706bfcdc95743c7e3a8f962c953e41)), closes [#125](https://github.com/polandy/Stella/issues/125)
+* **settings:** make the release check on by default ([0a19bd4](https://github.com/polandy/Stella/commit/0a19bd4a9fe79b2f7dc05909f8bcc8b2dd10f1e6))
+
+
+### Bug Fixes
+
+* **graph:** stop every layout the canvas started, not just the last ([426dfa6](https://github.com/polandy/Stella/commit/426dfa6e6561784408864d3d136a85a761dba711)), closes [#121](https://github.com/polandy/Stella/issues/121)
+* **graph:** tear the canvas down before the page leaves ([#109](https://github.com/polandy/Stella/issues/109)) ([77e2bd8](https://github.com/polandy/Stella/commit/77e2bd89280a5e28d55eba0f85d957e1987c1db1))
+* **kinship:** derive nothing through a former partnership ([562481e](https://github.com/polandy/Stella/commit/562481ee39d09778940ca3e46ed95b24a59f7026))
+
 ## [0.0.11](https://github.com/polandy/Stella/compare/v0.0.10...v0.0.11) (2026-09-15)
 
 
