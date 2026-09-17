@@ -6,6 +6,8 @@
 	 */
 	import Button from '$lib/components/Button.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import { page } from '$app/state';
+	import { ACTIVITY_VARIANTS, parseActivityVariant } from '$lib/sync/activity-variant';
 	import { usePending } from '$lib/sync/context.svelte';
 	import { whilePending } from '$lib/sync/pending';
 	import { MIN_VISIBLE_MS, SHOW_AFTER_MS } from '$lib/sync/pending-work';
@@ -51,6 +53,14 @@
 	});
 
 	const DURATIONS = [100, 200, 400, 1000, 3000];
+	/** The shape on screen, and the link that switches to another one. */
+	const current = $derived(parseActivityVariant(page.url.searchParams.get('bar')));
+	const hrefFor = (variant: string) => `/settings/debug?bar=${variant}`;
+	const VARIANT_BLURB: Record<string, string> = {
+		bar: 'A line travelling across the top edge of the window.',
+		pill: 'A label with a spinner, centred under the top edge.',
+		corner: 'The same label down where the toasts appear.'
+	};
 </script>
 
 <svelte:head><title>Debug · activity bar</title></svelte:head>
@@ -84,6 +94,30 @@
 		</div>
 	</Section>
 
+	<Section title="Shape">
+		<div class="flex flex-col gap-3">
+			<div class="flex flex-wrap gap-2">
+				{#each ACTIVITY_VARIANTS as variant (variant)}
+					<a
+						href={hrefFor(variant)}
+						data-sveltekit-noscroll
+						class="rounded-control border px-3 py-2 text-sm transition-colors {current === variant
+							? 'border-primary bg-primary-soft font-medium text-fg'
+							: 'border-border text-fg-muted hover:text-fg'}"
+						aria-current={current === variant ? 'true' : undefined}
+					>
+						{variant}
+					</a>
+				{/each}
+			</div>
+			<p class="text-sm text-fg-muted">{VARIANT_BLURB[current]}</p>
+			<p class="text-sm text-fg-subtle">
+				The choice rides on the URL, so it holds while you click around the app — open a person
+				from here and the shape stays until you drop the <code>?bar=</code> parameter.
+			</p>
+		</div>
+	</Section>
+
 	<Section title="State">
 		<dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
 			<dt class="text-fg-muted">Jobs running</dt>
@@ -94,6 +128,8 @@
 			<dd class="tabular-nums">{SHOW_AFTER_MS} ms</dd>
 			<dt class="text-fg-muted">Minimum on screen</dt>
 			<dd class="tabular-nums">{MIN_VISIBLE_MS} ms</dd>
+			<dt class="text-fg-muted">Shape</dt>
+			<dd>{current}</dd>
 		</dl>
 	</Section>
 

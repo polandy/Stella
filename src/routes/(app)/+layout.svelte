@@ -13,6 +13,7 @@
 	import Toast from '$lib/components/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
 	import { providePending } from '$lib/sync/context.svelte';
+	import { parseActivityVariant } from '$lib/sync/activity-variant';
 	import { onMount, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 
@@ -104,6 +105,9 @@
 	 * large household that takes long enough to read as nothing having happened.
 	 */
 	const pending = providePending();
+	// Which shape the indicator takes. Off the URL while the shapes are being compared on the
+	// workbench (`?bar=pill`); everywhere else this is simply the default.
+	const activityVariant = $derived(parseActivityVariant(page.url.searchParams.get('bar')));
 	// A navigation is work like any other, and reported the same way, so a short one stays
 	// under the store's own delay instead of flashing the bar for a frame.
 	$effect(() => {
@@ -173,7 +177,7 @@
 	reported through the pending-work store — a relationship save and the graph reload behind
 	it. It is fixed to the top of the window, so it never moves the page it reports on.
 -->
-<ActivityBar busy={pending.busy} label={t('common.updating')} />
+<ActivityBar busy={pending.busy} label={t('common.updating')} variant={activityVariant} />
 <CommandPalette people={data.people} bind:open={paletteOpen} />
 <Toast />
 
