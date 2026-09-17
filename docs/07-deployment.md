@@ -94,6 +94,12 @@ BODY_SIZE_LIMIT=250M                          # request cap (uploads: restored a
 AUTH_LOCAL_ENABLED=true                       # keep true for a break-glass admin
 AUTH_OIDC_ENABLED=true
 
+# --- Diagnostics (off by default) ---
+DEBUG_PAGES=false                             # serves the workbench pages under /settings/debug from a build.
+                                              # Development has them anyway; a household's instance never needs
+                                              # them (they are diagnostics and untranslated), and with this off
+                                              # the routes answer 404 (docs/05 §5.7).
+
 # --- Release check (on by default) ---
 UPDATE_CHECK=true                             # Settings → About says when a newer Stella has been released;
                                               # the server asks GitHub at most once a day, sends nothing about the

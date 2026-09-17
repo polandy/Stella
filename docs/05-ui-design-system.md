@@ -529,6 +529,13 @@ a plain async job, and `RemoveButton`'s optional `pending` counts the commit a r
 once its undo window has passed — never the window itself, during which nothing is on its way
 to the server yet.
 
+The bar is hard to catch in a healthy local build — a save there is over in tens of
+milliseconds, well under the delay — so `/settings/debug` is a workbench for it: jobs of a
+chosen length, two that overlap, and one held open, with the windows and the current state
+written out. It is served in development, and from a build only with `DEBUG_PAGES=true`
+(docs/07); otherwise the route answers 404. Its copy is English in place rather than in the
+message catalogues, because nobody in a household can reach it.
+
 **Language picker** (`src/lib/components/LanguagePicker.svelte`) is a segmented control of
 plain submit buttons, one per language, each naming itself in itself (*English*, *Deutsch*).
 It posts to `/locale` and comes back on the page it was pressed on, now in that language, so
