@@ -271,6 +271,11 @@ suggestion is about, with the same three answers on every row. Nothing is stored
 accept it, and a claim you have already answered is not offered again — so checking twice in a
 row is free.
 
+When you accept or decline a suggestion the page stays exactly where it is — the row marks
+itself answered, a message at the bottom offers **Undo** for a few seconds, and only after that
+is anything saved. So taking an accept back does not undo a relationship; it stops one from ever
+being made. Leaving the page earlier simply saves it sooner.
+
 Nothing is left out of that list, however large your household is — but it arrives ten people
 at a time, so there is always an end in sight and a sensible place to stop. The line at the top
 tells you how much is open across the whole household; the line under the list tells you where

@@ -88,6 +88,18 @@ async function openDeclined(page: Page) {
 	return drawer;
 }
 
+/**
+ * How far the list is scrolled. The app scrolls inside its own element rather than the window
+ * (`+layout.svelte`), so `window.scrollY` is always 0 here — the scrolling ancestor is found at
+ * runtime so this keeps working if the shell's markup moves.
+ */
+const listScrollTop = (page: Page) =>
+	page.evaluate(() => {
+		let node = document.querySelector('[data-testid="kin-suggestion"]')?.parentElement ?? null;
+		while (node && node.scrollHeight <= node.clientHeight) node = node.parentElement;
+		return node ? Math.round(node.scrollTop) : 0;
+	});
+
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
@@ -126,11 +138,17 @@ test('declining on the household screen holds the no, and offering it again brin
 	await checkEveryone(page, f);
 
 	await rowFor(page, f).getByRole('button', { name: 'Decline' }).click();
-	await expect(rowFor(page, f)).toHaveCount(0);
 
-	// Answering returns to the place it was answered from, search and all: losing your place on
-	// every answer is what makes a long list unfinishable.
+	// The answer is held rather than sent: the row keeps its place for the undo window, and the
+	// reader keeps theirs — no navigation happened, so the search is still on the address.
+	await expect(rowFor(page, f)).toHaveAttribute('data-held', 'decline');
 	await expect(page).toHaveURL(new RegExp(`q=${f.surname}`));
+
+	// Leaving closes the window and sends it; a client-side navigation waits for the request,
+	// which is the seam every deferred removal in this suite is tested through.
+	await openPerson(page, new RegExp(f.other));
+	await page.goto(reviewFor(f));
+	await expect(rowFor(page, f)).toHaveCount(0);
 
 	// In the drawer, with who said no and when — and still gone after the rules run again,
 	// which is the whole point of writing the answer down.
@@ -155,9 +173,9 @@ test('accepting on the household screen writes the link onto the person', async 
 	await checkEveryone(page, f);
 
 	await rowFor(page, f).getByRole('button', { name: 'Accept' }).click();
+	await expect(rowFor(page, f)).toHaveAttribute('data-held', 'accept');
 
-	// Not a question any more, here or on the profile — and there, it is an entered link.
-	await expect(rowFor(page, f)).toHaveCount(0);
+	// Leaving sends it, and on the profile it is an entered link rather than a question.
 	await openPerson(page, new RegExp(f.other));
 	await expect(page.locator('#section-relationships ul').first()).toContainText(f.parent);
 });
@@ -240,8 +258,10 @@ test('keeps the declined log answerable at its own address', async ({ page }) =>
 	await aFamilyNobodyHasAnsweredFor(page, f);
 	await checkEveryone(page, f);
 	await rowFor(page, f).getByRole('button', { name: 'Decline' }).click();
-	await expect(rowFor(page, f)).toHaveCount(0);
+	await expect(rowFor(page, f)).toHaveAttribute('data-held', 'decline');
 
+	// Held answers reach the log only once they are sent, and leaving is what sends them.
+	await openPerson(page, new RegExp(f.other));
 	await page.goto(`${REVIEW}?review&declined`);
 	await expect(page.getByRole('heading', { name: 'Declined suggestions' })).toBeVisible();
 	// Open on arrival: a page whose whole purpose is the log must not start on a closed drawer.
@@ -253,6 +273,76 @@ test('keeps the declined log answerable at its own address', async ({ page }) =>
 	await row.getByRole('button', { name: 'Offer again' }).click();
 	await page.goto(reviewFor(f));
 	await expect(rowFor(page, f)).toContainText(claimOf(f));
+});
+
+test('answers a claim without moving the page under the reader', async ({ page }) => {
+	/*
+	 * The defect this file could not catch before: the older cases assert the URL still carries
+	 * `q=`, which proves which *page* of the list you are on and says nothing about where on it.
+	 * A form post plus a redirect threw the document away and scrolled to zero on every answer.
+	 * The viewport is made small on purpose, so a short list still scrolls and the assertion has
+	 * something to measure.
+	 */
+	const f = family('Tanner', 'Jolanda', 'Elia', 'Nuria');
+	await aFamilyNobodyHasAnsweredFor(page, f);
+
+	// A short viewport rather than a taller page: every extra person here is two form round
+	// trips of setup on a database this file shares, and the case only needs *some* scroll to
+	// lose. The assertion below is what keeps that honest.
+	await page.setViewportSize({ width: 800, height: 300 });
+	await page.goto(reviewFor(f));
+	await rowFor(page, f).scrollIntoViewIfNeeded();
+	const before = await listScrollTop(page);
+	// The precondition is the test: with nothing to scroll there is nothing to prove.
+	expect(before).toBeGreaterThan(0);
+
+	await rowFor(page, f).getByRole('button', { name: 'Accept' }).click();
+
+	// Held, not sent, and nothing moved: the row keeps its place and its height.
+	await expect(rowFor(page, f)).toHaveAttribute('data-held', 'accept');
+	await expect(page.getByTestId('toast-undo')).toContainText(f.parent);
+	expect(await listScrollTop(page)).toBe(before);
+	// Still the same address, too — no navigation happened at all.
+	await expect(page).toHaveURL(new RegExp(`q=${f.surname}`));
+});
+
+test('takes an answer back before the window closes, having written nothing', async ({ page }) => {
+	const f = family('Bischof', 'Regula', 'Yves', 'Alina');
+	await aFamilyNobodyHasAnsweredFor(page, f);
+	await checkEveryone(page, f);
+
+	const openBefore = await page.getByText(/\d+ open across/).textContent();
+	await rowFor(page, f).getByRole('button', { name: 'Accept' }).click();
+	// The count follows the row down at once, rather than stating a number nobody can see.
+	await expect(page.getByText(/\d+ open across/)).not.toHaveText(openBefore!);
+
+	await page.getByTestId('toast-undo').getByRole('button', { name: 'Undo' }).click();
+	await expect(page.getByTestId('toast-undo')).toHaveCount(0);
+	await expect(rowFor(page, f)).not.toHaveAttribute('data-held');
+	await expect(page.getByText(/\d+ open across/)).toHaveText(openBefore!);
+
+	// A reload proves it: nothing was ever sent, so the claim still stands.
+	await page.goto(reviewFor(f));
+	await expect(rowFor(page, f)).toContainText(claimOf(f));
+});
+
+test('sends an answer left alone when the page is left', async ({ page }) => {
+	const f = family('Lauber', 'Cornelia', 'Nico', 'Sarina');
+	await aFamilyNobodyHasAnsweredFor(page, f);
+	await checkEveryone(page, f);
+
+	await rowFor(page, f).getByRole('button', { name: 'Accept' }).click();
+	await expect(page.getByTestId('toast-undo')).toBeVisible();
+
+	// Leaving commits it — the same seam every other deferred removal is tested through, so the
+	// suite never waits out the window.
+	await openPerson(page, new RegExp(f.other));
+	await expect(page.getByTestId('toast-undo')).toHaveCount(0);
+	await expect(page.locator('#section-relationships ul').first()).toContainText(f.parent);
+
+	// And it is not a question any more.
+	await page.goto(reviewFor(f));
+	await expect(rowFor(page, f)).toHaveCount(0);
 });
 
 test('says where in the list a page is without letting the household count shrink', async ({

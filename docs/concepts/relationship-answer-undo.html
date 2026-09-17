@@ -1,0 +1,658 @@
+<title>Answering Without Losing Your Place</title>
+<style>
+  /* ── Catppuccin tokens, straight from src/app.css (Latte / Mocha) ─────── */
+  :root, :root[data-theme='light'] {
+    --bg:#eff1f5; --bg-elevated:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff;
+    --border:#ccd0da; --border-soft:#dce0e8;
+    --fg:#4c4f69; --fg-muted:#6c6f85; --fg-subtle:#8c8fa1;
+    --primary:#8839ef; --primary-fg:#ffffff; --link:#1e66f5;
+    --green:#40a02b; --peach:#fe640b; --teal:#179299; --blue:#1e66f5;
+    --pink:#ea76cb; --yellow:#df8e1d; --sky:#04a5e5; --red:#d20f39; --maroon:#e64553;
+    --lavender:#7287fd; --sapphire:#209fb5;
+    --success:#40a02b; --warning:#df8e1d; --danger:#d20f39;
+    --shadow:0 1px 2px rgba(76,79,105,.06), 0 8px 24px rgba(76,79,105,.08);
+    --shadow-sm:0 1px 2px rgba(76,79,105,.08);
+    --shadow-pop:0 4px 12px rgba(76,79,105,.12), 0 16px 40px rgba(76,79,105,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+      --border:#313244; --border-soft:#26263a;
+      --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+      --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+      --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --blue:#89b4fa;
+      --pink:#f5c2e7; --yellow:#f9e2af; --sky:#89dceb; --red:#f38ba8; --maroon:#eba0ac;
+      --lavender:#b4befe; --sapphire:#74c7ec;
+      --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+      --shadow-pop:0 6px 16px rgba(0,0,0,.45), 0 20px 48px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+    --border:#313244; --border-soft:#26263a;
+    --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --blue:#89b4fa;
+    --pink:#f5c2e7; --yellow:#f9e2af; --sky:#89dceb; --red:#f38ba8; --maroon:#eba0ac;
+    --lavender:#b4befe; --sapphire:#74c7ec;
+    --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    --shadow-pop:0 6px 16px rgba(0,0,0,.45), 0 20px 48px rgba(0,0,0,.5);
+  }
+
+  * { box-sizing:border-box; }
+  html { color-scheme: light dark; }
+  body {
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.55;
+  }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+  a { color:var(--link); text-decoration:none; cursor:pointer; }
+  h1,h2,h3,h4 { text-wrap:balance; margin:0; }
+  code { font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.88em; background:var(--bg-sunken); padding:1px 6px; border-radius:5px; }
+
+  .wrap { max-width:1100px; margin:0 auto; padding-block:clamp(28px,5vw,64px) 96px; padding-inline:clamp(18px,4vw,40px); }
+
+  .doc-head { display:flex; flex-direction:column; gap:14px; margin-bottom:12px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); display:flex; align-items:center; gap:9px; }
+  .kicker .star { width:22px; height:22px; border-radius:7px; display:grid; place-items:center; background:var(--primary); color:var(--primary-fg); font-size:13px; }
+  .doc-head h1 { font-size:clamp(28px,4.4vw,42px); font-weight:700; letter-spacing:-.02em; line-height:1.1; }
+  .doc-head p.lede { font-size:clamp(15px,1.7vw,18px); color:var(--fg-muted); max-width:64ch; margin:0; }
+  .theme-btn { position:fixed; top:calc(16px + env(safe-area-inset-top, 0px)); right:16px; z-index:50; display:inline-flex; align-items:center; gap:7px; cursor:pointer; background:var(--card); color:var(--fg-muted); border:1px solid var(--border); border-radius:999px; padding:7px 14px; font:inherit; font-size:13px; box-shadow:var(--shadow-sm); }
+  .theme-btn:hover { color:var(--fg); }
+
+  .standing { margin-top:26px; border-left:3px solid var(--primary); background:color-mix(in srgb,var(--primary) 7%,var(--card)); border-radius:0 12px 12px 0; padding:14px 18px; display:flex; flex-direction:column; gap:6px; }
+  .standing b { font-size:13px; }
+  .standing p { margin:0; font-size:13.5px; color:var(--fg-muted); max-width:72ch; }
+
+  .eyebrow { font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-subtle); }
+  section.block { margin-top:56px; }
+  section.block > .eyebrow { margin-bottom:10px; display:block; }
+  section.block > h2 { font-size:clamp(20px,2.6vw,26px); font-weight:650; letter-spacing:-.01em; margin-bottom:8px; }
+  section.block > p.intro { color:var(--fg-muted); max-width:68ch; margin:0 0 22px; }
+
+  .faults { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); }
+  .fault { background:var(--card); border:1px solid var(--border-soft); border-radius:13px; padding:15px 16px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:8px; }
+  .fault .now { font-size:11px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; color:var(--danger); }
+  .fault h3 { font-size:15px; font-weight:650; }
+  .fault p { margin:0; font-size:13px; color:var(--fg-muted); }
+  .fault .then { border-top:1px solid var(--border-soft); padding-top:9px; margin-top:auto; font-size:13px; color:var(--fg); }
+  .fault .then b { color:var(--success); font-weight:650; }
+
+  /* ── Prototype frame ──────────────────────────────────────────────────── */
+  .proto-shell { border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); background:var(--bg); }
+  .browserbar { display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--bg-elevated); border-bottom:1px solid var(--border); }
+  .dots { display:flex; gap:6px; }
+  .dots i { width:11px; height:11px; border-radius:50%; display:block; }
+  .urlbar { flex:1; margin-left:8px; background:var(--bg); border:1px solid var(--border-soft); border-radius:8px; padding:5px 12px; font-size:12.5px; color:var(--fg-subtle); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .urlbar b { color:var(--fg-muted); font-weight:500; }
+
+  .stage { position:relative; background:var(--bg); }
+  .canvas { padding:20px 22px 26px; max-height:560px; overflow-y:auto; scroll-behavior:smooth; }
+  @media (max-width:520px) { .canvas { padding:16px 14px 22px; } }
+
+  .pagehead { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:14px; flex-wrap:wrap; }
+  .pagehead h2 { font-size:20px; font-weight:680; letter-spacing:-.01em; }
+  .counts { font-size:13px; color:var(--fg-muted); font-variant-numeric:tabular-nums; margin:4px 0 0; }
+  .counts b { color:var(--fg); font-weight:650; }
+  .counts .drop { color:var(--success); font-weight:650; }
+
+  .btn { display:inline-flex; align-items:center; gap:7px; border-radius:9px; padding:7px 13px; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; border:1px solid transparent; }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); }
+  .btn.primary:hover { opacity:.92; }
+  .btn.danger { background:var(--card); color:var(--danger); border-color:color-mix(in srgb,var(--danger) 45%,transparent); }
+  .btn.danger:hover { background:color-mix(in srgb,var(--danger) 12%,var(--card)); }
+  .btn.ghost { background:var(--card); color:var(--fg-muted); border-color:var(--border); font-weight:500; }
+  .btn.ghost:hover { color:var(--fg); border-color:var(--primary); }
+  .btn.small { padding:5px 11px; font-size:12.5px; }
+  .btn.secondary { background:var(--bg-sunken); color:var(--fg); border-color:var(--border); }
+
+  .switch { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:0 0 16px; }
+  .switch .lbl { font-size:12px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--fg-subtle); }
+  .chip { font-size:12.5px; padding:5px 12px; border-radius:999px; border:1px solid var(--border); color:var(--fg-muted); cursor:pointer; background:var(--card); font:inherit; }
+  .chip:hover { border-color:var(--primary); color:var(--fg); }
+  .chip[aria-pressed='true'] { background:color-mix(in srgb,var(--primary) 16%,transparent); border-color:var(--primary); color:var(--fg); font-weight:600; }
+
+  .group { background:var(--card); border:1px solid var(--border-soft); border-radius:14px; box-shadow:var(--shadow-sm); margin-bottom:12px; overflow:hidden; }
+  .group > header { display:flex; align-items:center; gap:11px; padding:11px 14px; border-bottom:1px solid var(--border-soft); background:var(--bg-elevated); }
+  .group > header b { font-size:14px; font-weight:650; }
+  .av { flex:none; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; font-weight:650; font-size:12.5px; }
+  .claims { padding:11px 14px; display:flex; flex-direction:column; gap:0; }
+
+  /*
+   * The row leaves by collapsing its own grid row rather than by disappearing: a 1fr→0fr
+   * transition animates height without anyone measuring it, and the gap goes with it.
+   */
+  .slot { display:grid; grid-template-rows:1fr; transition:grid-template-rows 260ms cubic-bezier(.2,0,0,1), opacity 180ms ease, margin 260ms cubic-bezier(.2,0,0,1); margin-bottom:8px; }
+  .slot > .inner { overflow:hidden; min-height:0; }
+  .slot.leaving { grid-template-rows:0fr; opacity:0; margin-bottom:0; }
+  .slot.settling .claim { background:color-mix(in srgb,var(--success) 12%,var(--card)); border-color:color-mix(in srgb,var(--success) 40%,transparent); }
+  .slot.settling.declined .claim { background:color-mix(in srgb,var(--danger) 10%,var(--card)); border-color:color-mix(in srgb,var(--danger) 35%,transparent); }
+
+  .claim { display:grid; grid-template-columns:1fr auto; align-items:start; gap:4px 12px; border:1px solid var(--border-soft); border-radius:9px; padding:9px 11px; background:var(--card); transition:background 200ms ease, border-color 200ms ease; }
+  .claim .sentence { grid-column:1; grid-row:1; font-size:14px; font-weight:550; min-width:0; }
+  .claim .answers { grid-column:2; grid-row:1; justify-self:end; display:flex; gap:6px; flex-shrink:0; }
+  .claim .foot { grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:center; gap:7px; font-size:12px; color:var(--fg-subtle); }
+  @media (max-width:560px) {
+    .claim { grid-template-columns:1fr; }
+    .claim .sentence, .claim .answers { grid-column:1; grid-row:auto; justify-self:start; }
+  }
+  .conf { border-radius:999px; border:1px solid currentColor; padding:0 7px; font-size:11px; font-weight:650; }
+  .conf.certain { color:var(--success); }
+  .rule { opacity:.75; }
+
+  /* The in-place variant: the row keeps its slot and turns into a settled strip. */
+  .inplace { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:13.5px; }
+  .inplace .mark { flex:none; width:20px; height:20px; border-radius:50%; display:grid; place-items:center; }
+  .inplace .mark.ok { background:color-mix(in srgb,var(--success) 22%,transparent); color:var(--success); }
+  .inplace .mark.no { background:color-mix(in srgb,var(--danger) 20%,transparent); color:var(--danger); }
+  .inplace .what { color:var(--fg-muted); min-width:0; }
+  .inplace .what s { opacity:.8; }
+  .inplace .undo { margin-left:auto; display:flex; align-items:center; gap:8px; }
+  /* Same box as a small button, so the row keeps its height when the controls go. */
+  .settled-label { display:inline-flex; align-items:center; padding:5px 11px; font-size:12.5px;
+    font-weight:650; border-radius:9px; border:1px solid transparent;
+    background:var(--bg-sunken); color:var(--fg-muted); }
+
+  /* The countdown ring, shared by both variants. */
+  .ring { width:18px; height:18px; flex:none; transform:rotate(-90deg); }
+  .ring circle { fill:none; stroke-width:2.5; }
+  .ring .track { stroke:color-mix(in srgb,var(--fg) 15%,transparent); }
+  .ring .lead { stroke:var(--fg-muted); stroke-linecap:round; stroke-dasharray:44; transition:stroke-dashoffset 120ms linear; }
+
+  /* Toast region — bottom-left, exactly where docs/05 §5.7 puts it. */
+  .toasts { position:absolute; left:14px; bottom:14px; display:flex; flex-direction:column; gap:8px; z-index:5; max-width:calc(100% - 28px); }
+  .toast { display:flex; align-items:center; gap:12px; border-radius:11px; border:1px solid var(--border); background:var(--card); padding:6px 6px 6px 12px; font-size:13.5px; color:var(--fg); box-shadow:var(--shadow-pop); animation:toast-in 160ms ease-out; }
+  .toast.out { animation:toast-out 160ms ease-in forwards; }
+  @keyframes toast-in { from { opacity:0; transform:translateY(8px); } }
+  @keyframes toast-out { to { opacity:0; transform:translateY(8px); } }
+  .toast .label { min-width:0; }
+
+  .empty { text-align:center; padding:34px 18px; border:1px dashed var(--border); border-radius:14px; color:var(--fg-muted); background:var(--card); font-size:13.5px; }
+
+  .tablewrap { overflow-x:auto; border:1px solid var(--border-soft); border-radius:12px; background:var(--card); }
+  table { border-collapse:collapse; width:100%; font-size:13.5px; min-width:560px; }
+  th, td { text-align:left; padding:10px 14px; border-bottom:1px solid var(--border-soft); vertical-align:top; }
+  th { font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--fg-subtle); font-weight:650; }
+  tbody tr:last-child td { border-bottom:0; }
+  td.k { white-space:nowrap; }
+
+  pre.code { margin:0; overflow-x:auto; background:var(--card); border:1px solid var(--border-soft); border-radius:12px; padding:16px 18px; font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; line-height:1.65; color:var(--fg); }
+  pre.code b { color:var(--primary); font-weight:600; }
+  pre.code i { color:var(--fg-subtle); font-style:normal; }
+
+  ul.notes { margin:0; padding-left:20px; color:var(--fg-muted); font-size:14px; display:flex; flex-direction:column; gap:10px; max-width:72ch; }
+  ul.notes b { color:var(--fg); font-weight:620; }
+  .caption { font-size:12.5px; color:var(--fg-subtle); text-align:center; margin-top:10px; }
+  .footnote { margin-top:40px; font-size:12.5px; color:var(--fg-subtle); border-top:1px solid var(--border-soft); padding-top:16px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slot, .claim, .ring .lead { transition:none !important; }
+    .toast { animation:none !important; }
+  }
+</style>
+
+<button class="theme-btn" id="theme-toggle" type="button">Theme</button>
+
+<div class="wrap">
+  <header class="doc-head">
+    <div class="kicker"><span class="star">✦</span> Stella · concept</div>
+    <h1>Answering without losing your place</h1>
+    <p class="lede">
+      Found on the family instance, not in a test: accepting a suggestion throws the page back to
+      the top. The list keeps the right <i>page</i> — that part was fixed — but an answer is still a
+      form post and a redirect, so the browser reloads and the scroll goes to zero. This is the
+      other half: answer in place, leave gracefully, and offer the way back for a few seconds.
+    </p>
+  </header>
+
+  <div class="standing">
+    <b>What the test missed, and why</b>
+    <p>
+      The e2e asserts that the URL still carries <code>q=</code> after an answer. That is the
+      <i>proxy</i> for the promise, not the promise: it proves which page you are on, never where on
+      it you are. A case that scrolled down, answered, and asserted the scroll offset had not moved
+      would have caught this on the first run. That case is part of this change.
+    </p>
+  </div>
+
+  <section class="block">
+    <span class="eyebrow">Three faults, three fixes</span>
+    <h2>What goes wrong now</h2>
+    <div class="faults">
+      <div class="fault">
+        <span class="now">Now</span>
+        <h3>The page jumps to the top</h3>
+        <p>Every answer is a POST followed by a 303. The browser throws away the rendered document
+          and scrolls to zero, so on row forty you lose your place on every single answer.</p>
+        <p class="then"><b>Instead:</b> the answer never navigates. The form is enhanced, the row is
+          settled on the spot, and nothing else on the page moves.</p>
+      </div>
+      <div class="fault">
+        <span class="now">Now</span>
+        <h3>The row just vanishes</h3>
+        <p>It is there, then it is not, and everything below snaps up by its height — which is also
+          how the next row ends up under a thumb that was aiming at something else.</p>
+        <p class="then"><b>Instead:</b> the row marks itself answered, holds for a moment, then
+          collapses its own height over 260ms so the list closes rather than snaps.</p>
+      </div>
+      <div class="fault">
+        <span class="now">Now</span>
+        <h3>A mis-tap is permanent</h3>
+        <p>Accept writes the link immediately. Taking it back means finding the person and deleting
+          the relationship by hand — and on a declined claim, digging through the log.</p>
+        <p class="then"><b>Instead:</b> eight seconds of <i>Undo</i>. The request does not go out
+          until the window closes, so undo costs nothing and writes nothing.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Prototype · click it</span>
+    <h2>Accept a row and watch the page hold still</h2>
+    <p class="intro">
+      Scroll down inside the frame first, then accept or decline something — the frame must not move.
+      Two variants of where <i>Undo</i> lives; switch between them and see which one you want. The
+      counter at the top drops the moment a row is answered and comes back if you undo it, because a
+      number that waits for the window to close would be describing a list nobody is looking at.
+    </p>
+
+    <div class="switch">
+      <span class="lbl">Undo appears</span>
+      <button class="chip" type="button" data-variant="toast" aria-pressed="true">In the toast (Stella's existing pattern)</button>
+      <button class="chip" type="button" data-variant="inplace" aria-pressed="false">In the row itself</button>
+    </div>
+
+    <div class="proto-shell">
+      <div class="browserbar">
+        <div class="dots"><i style="background:#ed8796"></i><i style="background:#eed49f"></i><i style="background:#a6da95"></i></div>
+        <div class="urlbar"><b>stella.1-0.io</b>/settings/relationships?review</div>
+      </div>
+      <div class="stage">
+        <div class="canvas" id="canvas">
+          <div class="pagehead">
+            <div>
+              <h2>Suggestions</h2>
+              <p class="counts" id="counts"></p>
+            </div>
+            <button class="btn ghost" type="button">Check again</button>
+          </div>
+          <div id="list"></div>
+        </div>
+        <div class="toasts" id="toasts"></div>
+      </div>
+    </div>
+    <p class="caption">
+      The frame scrolls on its own. If accepting a row moves it, the change has failed.
+    </p>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">What it reuses</span>
+    <h2>The machinery already exists, and is already tested</h2>
+    <p class="intro">
+      Stella has held removals back behind an undo window since the journal work: a store with an
+      injected timer, a toast region, and the rule that <b>the request is not sent when the button is
+      pressed</b>. Nothing here is a second mechanism — a suggestion answered is a row leaving a list
+      with something to do when the window closes, which is exactly what that store already models.
+    </p>
+    <pre class="code"><i>// src/lib/undo/pending-removals.ts — shipped, unit-tested, no Svelte in it</i>
+export const <b>UNDO_WINDOW_MS</b> = 8000;
+
+export interface <b>Removal</b> {
+  key: string;                          <i>// `claim:parent:&lt;pairKey&gt;` — the claim's identity,</i>
+                                        <i>// never the rule, so one answer covers every route to it</i>
+  label: string;                        <i>// what the toast says</i>
+  commit: () =&gt; Promise&lt;void&gt; | void;    <i>// POSTs the accept or the decline</i>
+}</pre>
+    <div class="tablewrap" style="margin-top:18px">
+      <table>
+        <thead><tr><th>Already there</th><th>What this change adds</th></tr></thead>
+        <tbody>
+          <tr><td class="k"><code>pending-removals.ts</code></td><td>nothing — the window, the timer, <code>flush()</code> on leaving and the failure path all apply unchanged</td></tr>
+          <tr><td class="k"><code>Toast.svelte</code></td><td>nothing; it already renders a removal with <i>Undo</i></td></tr>
+          <tr><td class="k"><code>+layout.svelte</code></td><td>nothing; it already flushes on navigation and on unload</td></tr>
+          <tr><td class="k"><code>savedEnhance</code></td><td>a sibling for answers: enhance the three forms so the answer applies without navigating</td></tr>
+          <tr><td class="k"><code>KinSuggestions.svelte</code></td><td>the leave transition, and asking the store to hold the answer instead of posting it</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">How it talks to the server</span>
+    <h2>Not a new endpoint — the form action already is one</h2>
+    <p class="intro">
+      Nothing here needs a hand-written AJAX route. A SvelteKit form action is already the
+      endpoint; <code>use:enhance</code> intercepts the submit, posts to that same action with
+      <code>fetch</code>, and Svelte patches the rows that changed. With JavaScript off the very
+      same form posts normally. One code path, two behaviours — which is why every other screen in
+      Stella already does this and <code>KinSuggestions.svelte</code> is the one that does not.
+    </p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Level</th><th>What crosses the wire per answer</th><th>What it costs</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="k"><b>Today</b><br>form post + 303</td>
+            <td>POST, then a whole document</td>
+            <td>The browser throws the page away. <b>Scroll lost</b>, and the household is
+              re-evaluated to render it.</td>
+          </tr>
+          <tr>
+            <td class="k"><b>Enhanced</b><br><code>use:enhance</code> + <code>update()</code></td>
+            <td>POST, then the page's data re-run as JSON</td>
+            <td>Scroll kept, only changed rows repaint — but <code>load</code> re-runs, so the
+              <i>whole household is evaluated again on every single answer</i>.</td>
+          </tr>
+          <tr>
+            <td class="k"><b>Held</b><br>enhance + the undo window</td>
+            <td>Nothing for eight seconds, then one POST</td>
+            <td>Scroll kept, the row and the counters update locally, and an undo costs
+              <b>no request at all</b>. No re-evaluation until the reader pages or leaves.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="intro" style="margin-top:18px">
+      The middle row is the trap. It looks like the obvious fix and it does solve the jump — but it
+      re-runs the rules over every visible person for each claim answered, and how long that takes
+      on a real imported household <b>has never been measured</b> (it is still an open question in
+      the scale concept). The held version sidesteps the question rather than answering it: the
+      screen already knows what it just did, so it has nothing to ask the server for.
+    </p>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">The window</span>
+    <h2>What happens in those eight seconds</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Moment</th><th>On screen</th><th>On the server</th></tr></thead>
+        <tbody>
+          <tr><td class="k"><b>0ms</b> — pressed</td><td>row turns green (or red), buttons swap for <i>Undo</i>, header count drops by one</td><td>nothing yet</td></tr>
+          <tr><td class="k"><b>0–8s</b> — held</td><td>a ring counts the window down; hovering or focusing <i>Undo</i> pauses it</td><td>nothing yet</td></tr>
+          <tr><td class="k"><i>Undo</i> pressed</td><td>the row returns to exactly where it was, count goes back up</td><td>nothing ever happened</td></tr>
+          <tr><td class="k"><b>8s</b> — window closes</td><td>row collapses over 260ms; the group card closes with it if it was the last one</td><td>the accept or the decline is POSTed</td></tr>
+          <tr><td class="k">Page left first</td><td>—</td><td><code>flush()</code> sends everything still pending before the navigation completes</td></tr>
+          <tr><td class="k">The POST fails</td><td>the row comes back with the error on it — a contradiction (409) is a real answer, not a glitch</td><td>nothing was written</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="intro" style="margin-top:18px">
+      <b>Pausing on hover matters more than it sounds.</b> The classic failure of an undo window is
+      reaching for it as it expires. Pausing while the pointer is on the control, or while it has
+      keyboard focus, costs one line and removes that whole class of frustration.
+    </p>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Without JavaScript</span>
+    <h2>The screen still works, and still lands near you</h2>
+    <p class="intro">
+      Every control here stays a form. With JavaScript off there is no window and no undo — the
+      answer posts and the page reloads, as today. What changes is where it lands: the redirect
+      carries the answered claim's anchor, so the browser restores the position it was at instead of
+      the top. A declined claim is still recoverable from the log; an accepted one from the person's
+      own page. That is a worse experience, honestly stated, rather than a broken one.
+    </p>
+    <pre class="code">redirect(303, <b>reviewHref</b>(place) + '#' + <b>claimAnchor</b>(claim));
+<i>// …&amp;after=Nadja+Ammann|01J#claim-parent-01J-01K</i></pre>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Motion</span>
+    <h2>How the row leaves</h2>
+    <ul class="notes">
+      <li><b>Collapse, not fade-out.</b> The row animates <code>grid-template-rows: 1fr → 0fr</code>
+        on its own wrapper, which animates height without anyone measuring a pixel and takes the
+        gap with it. 260ms on the standard ease — long enough to read as closing, short enough not
+        to be waited on.</li>
+      <li><b>The colour says which answer it was</b> before it goes: a green wash for accepted, a red
+        one for declined. That is the only moment the two answers look different.</li>
+      <li><b>Nothing below moves early.</b> The height comes out during the collapse, so the list
+        closes over the gap instead of snapping up.</li>
+      <li><b>Reduced motion means no motion.</b> Under <code>prefers-reduced-motion</code> the row
+        changes colour, holds the window, then is simply gone — the undo is the point, the animation
+        is not.</li>
+    </ul>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Copy</span>
+    <h2>New keys, both languages</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Key</th><th>English</th><th>Deutsch</th></tr></thead>
+        <tbody>
+          <tr><td class="k"><code>common.undo</code> <b>(exists)</b></td><td>Undo</td><td>Rückgängig</td></tr>
+          <tr><td class="k"><code>…relationships.accepted</code></td><td>Added {parent} as a parent of {child}</td><td>{parent} als Elternteil von {child} übernommen</td></tr>
+          <tr><td class="k"><code>…relationships.acceptedSibling</code></td><td>Added {one} and {other} as siblings</td><td>{one} und {other} als Geschwister übernommen</td></tr>
+          <tr><td class="k"><code>…relationships.declinedNotice</code></td><td>Declined — it will not be offered again</td><td>Abgelehnt — wird nicht mehr vorgeschlagen</td></tr>
+          <tr><td class="k"><code>…relationships.answerFailed</code></td><td>That answer could not be saved. It is back in the list.</td><td>Diese Antwort konnte nicht gespeichert werden. Sie steht wieder in der Liste.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Open questions</span>
+    <h2>What this mockup does not decide</h2>
+    <ul class="notes">
+      <li><b>Toast or in-place?</b> The toast is what Stella already does for removals and keeps one
+        undo language across the app. The in-place strip is where the eye already is, which matters
+        on a long list where the toast sits far from the row you just answered. Switch between them
+        in the prototype above — this is the one decision the mockup is asking for.</li>
+      <li><b>Is eight seconds right here?</b> It is <code>UNDO_WINDOW_MS</code>, shared with journal
+        removals. Answering suggestions is faster work than removing entries, so several rows can be
+        in flight at once — the toast region stacks them, but four countdowns at once may read as
+        clutter. Worth watching on the real instance before tuning.</li>
+      <li><b>Should accepting really be reversible by holding it back?</b> Holding means the link is
+        not written for eight seconds, so a second member looking at the same moment does not see it
+        yet. The alternative — write immediately and delete on undo — is worse: it leaves a real
+        relationship in the household's history for the length of a mis-tap.</li>
+      <li><b>What about the person page?</b> The same rows appear in the <i>Also true?</i> block and
+        in a profile's own review. The behaviour should be identical there, since it is the same
+        component — but that block is short, so the jump nobody noticed there is the same bug.</li>
+    </ul>
+    <p class="footnote">
+      Concept for <code>docs/02-features.md</code> §2.4.1 · the undo window in
+      <code>docs/02</code> §2.23 and <code>docs/05</code> §5.7 · the screen in
+      <code>docs/concepts/relationship-review-at-scale.html</code> · rows in
+      <code>src/lib/components/KinSuggestions.svelte</code> · the store in
+      <code>src/lib/undo/pending-removals.ts</code>, the enhance in
+      <code>src/lib/undo/held-answer.ts</code>. Status: built (docs/02 §2.4.1, §2.23) — with the
+      toast variant, the one this page recommends.
+    </p>
+  </section>
+</div>
+
+<script>
+  const root = document.documentElement;
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const dark = root.getAttribute('data-theme') === 'dark'
+      || (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.setAttribute('data-theme', dark ? 'light' : 'dark');
+  });
+
+  /* The real window, so the prototype is honest about how long eight seconds feels. */
+  const UNDO_WINDOW_MS = 8000;
+  const COLLAPSE_MS = 260;
+  const RING_CIRCUMFERENCE = 44;
+
+  const PEOPLE = [
+    { id:'p1', name:'Lisa Meier', initials:'LM', accent:'#ea76cb', claims:[
+      { id:'c1', sentence:'Bettina Meier is a parent of Lisa Meier', reason:'Lisa is Hans’s sibling.', rule:'L1' },
+      { id:'c2', sentence:'Otto Meier is a parent of Lisa Meier', reason:'Otto is Hans’s parent.', rule:'L2' }
+    ]},
+    { id:'p2', name:'Mira Vogt', initials:'MV', accent:'#1e66f5', claims:[
+      { id:'c3', sentence:'Peter Vogt is a parent of Mira Vogt', reason:'Peter is Lio’s parent.', rule:'L2' }
+    ]},
+    { id:'p3', name:'Jan Frei', initials:'JF', accent:'#df8e1d', claims:[
+      { id:'c4', sentence:'Walter Frei is a parent of Jan Frei', reason:'Jan is Nora’s sibling.', rule:'L1' },
+      { id:'c5', sentence:'Greti Frei is a parent of Jan Frei', reason:'Greti is Nora’s parent.', rule:'L2' }
+    ]},
+    { id:'p4', name:'Ronja Odermatt', initials:'RO', accent:'#179299', claims:[
+      { id:'c6', sentence:'Silvan Odermatt is a parent of Ronja Odermatt', reason:'Ronja is Beat’s sibling.', rule:'L1' },
+      { id:'c7', sentence:'Marlis Odermatt is a parent of Ronja Odermatt', reason:'Marlis is Beat’s parent.', rule:'L2' }
+    ]},
+    { id:'p5', name:'Tim Weber', initials:'TW', accent:'#fe640b', claims:[
+      { id:'c8', sentence:'Anna Weber is a parent of Tim Weber', reason:'Tim is Mia’s sibling.', rule:'L1' }
+    ]}
+  ];
+
+  /* Every claim's live state. `pending` is the held answer, exactly as the store would hold it. */
+  const state = new Map();
+  for (const person of PEOPLE) for (const claim of person.claims) state.set(claim.id, { answer:null, gone:false });
+
+  let variant = 'toast';
+  const pending = new Map(); // claimId -> { answer, startedAt, remaining, timer, paused }
+
+  const list = document.getElementById('list');
+  const toasts = document.getElementById('toasts');
+  const counts = document.getElementById('counts');
+
+  const openClaims = () => [...state.values()].filter((s) => s.answer === null && !s.gone).length;
+  const openPeople = () =>
+    PEOPLE.filter((p) => p.claims.some((c) => state.get(c.id).answer === null && !state.get(c.id).gone)).length;
+
+  function ring(id) {
+    return '<svg class="ring" viewBox="0 0 16 16" aria-hidden="true">'
+      + '<circle class="track" cx="8" cy="8" r="7"></circle>'
+      + '<circle class="lead" cx="8" cy="8" r="7" id="ring-' + id + '" stroke-dashoffset="0"></circle></svg>';
+  }
+
+  function claimMarkup(claim) {
+    const s = state.get(claim.id);
+    if (s.answer === null) {
+      return '<div class="claim"><span class="sentence">' + claim.sentence + '</span>'
+        + '<span class="answers">'
+        + '<button class="btn primary small" data-act="accept" data-id="' + claim.id + '" type="button">Accept</button>'
+        + '<button class="btn danger small" data-act="decline" data-id="' + claim.id + '" type="button">Decline</button>'
+        + '</span>'
+        + '<span class="foot"><span class="conf certain">certain</span>' + claim.reason
+        + '<span class="rule">' + claim.rule + '</span></span></div>';
+    }
+    /*
+     * A settled row keeps the open row's shape — sentence, a control cell, and the reason
+     * underneath — so its height does not change the instant it is answered. Measured: swapping
+     * in a one-line strip instead shortened the list by 65px and moved the page under the
+     * reader's next tap, which is the very thing this change exists to stop.
+     */
+    const accepted = s.answer === 'accept';
+    const control = variant === 'inplace'
+      ? '<span class="undo">' + ring(claim.id)
+        + '<button class="btn secondary small" data-act="undo" data-id="' + claim.id + '" type="button">Undo</button></span>'
+      : '<span class="settled-label">' + (accepted ? 'Added' : 'Declined') + '</span>';
+    return '<div class="claim"><span class="sentence inplace">'
+      + '<span class="mark ' + (accepted ? 'ok' : 'no') + '">' + (accepted ? '✓' : '✕') + '</span>'
+      + '<span class="what">' + (accepted ? claim.sentence : '<s>' + claim.sentence + '</s>') + '</span>'
+      + '</span>'
+      + '<span class="answers">' + control + '</span>'
+      + '<span class="foot"><span class="conf certain">certain</span>' + claim.reason
+      + '<span class="rule">' + claim.rule + '</span></span></div>';
+  }
+
+  function render() {
+    list.innerHTML = PEOPLE.map((person) => {
+      const rows = person.claims.filter((c) => !state.get(c.id).gone);
+      if (!rows.length) return '';
+      return '<section class="group" data-person="' + person.id + '"><header>'
+        + '<span class="av" style="background:color-mix(in srgb,' + person.accent + ' 22%,var(--card));color:var(--fg)">'
+        + person.initials + '</span><b>' + person.name + '</b></header><div class="claims">'
+        + rows.map((c) => '<div class="slot' + (state.get(c.id).answer ? ' settling' : '')
+            + (state.get(c.id).answer === 'decline' ? ' declined' : '') + '" data-slot="' + c.id + '">'
+            + '<div class="inner">' + claimMarkup(c) + '</div></div>').join('')
+        + '</div></section>';
+    }).join('') || '<div class="empty">Everything on this page is answered.</div>';
+    counts.innerHTML = '<b>' + openClaims() + '</b> open across <b>' + openPeople() + '</b> people';
+    paintToasts();
+  }
+
+  function paintToasts() {
+    if (variant !== 'toast') { toasts.innerHTML = ''; return; }
+    toasts.innerHTML = [...pending.entries()].map(([id, p]) => {
+      const claim = PEOPLE.flatMap((x) => x.claims).find((c) => c.id === id);
+      const label = p.answer === 'accept'
+        ? 'Added — ' + claim.sentence
+        : 'Declined — it will not be offered again';
+      return '<div class="toast"><span class="label">' + label + '</span>' + ring(id)
+        + '<button class="btn secondary small" data-act="undo" data-id="' + id + '" type="button">Undo</button></div>';
+    }).join('');
+  }
+
+  /* Drives every open countdown from one rAF loop, so the rings stay in step. */
+  function tick() {
+    const now = performance.now();
+    for (const [id, p] of pending) {
+      if (p.paused) { p.startedAt = now - (UNDO_WINDOW_MS - p.remaining); continue; }
+      p.remaining = Math.max(0, UNDO_WINDOW_MS - (now - p.startedAt));
+      const el = document.getElementById('ring-' + id);
+      if (el) el.setAttribute('stroke-dashoffset', String(RING_CIRCUMFERENCE * (1 - p.remaining / UNDO_WINDOW_MS)));
+      if (p.remaining === 0) close(id);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /** The window closed: the row leaves for good, and this is where the POST would go out. */
+  function close(id) {
+    pending.delete(id);
+    const slot = document.querySelector('[data-slot="' + id + '"]');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (slot && !reduced) {
+      slot.classList.add('leaving');
+      setTimeout(() => { state.get(id).gone = true; render(); }, COLLAPSE_MS);
+    } else {
+      state.get(id).gone = true;
+      render();
+    }
+    paintToasts();
+  }
+
+  function answer(event) {
+    const button = event.target.closest('button[data-act]');
+    if (!button) return;
+    const id = button.dataset.id;
+    const act = button.dataset.act;
+    if (act === 'undo') {
+      pending.delete(id);
+      state.get(id).answer = null;
+      render();
+      return;
+    }
+    state.get(id).answer = act;
+    pending.set(id, { answer:act, startedAt:performance.now(), remaining:UNDO_WINDOW_MS, paused:false });
+    render();
+  }
+
+  document.querySelector('.stage').addEventListener('click', answer);
+
+  /* Reaching for Undo as it expires is the classic failure; hovering or focusing it stops the clock. */
+  for (const eventName of ['pointerover', 'focusin']) {
+    document.querySelector('.stage').addEventListener(eventName, (event) => {
+      const button = event.target.closest?.('button[data-act="undo"]');
+      if (button && pending.has(button.dataset.id)) pending.get(button.dataset.id).paused = true;
+    });
+  }
+  for (const eventName of ['pointerout', 'focusout']) {
+    document.querySelector('.stage').addEventListener(eventName, (event) => {
+      const button = event.target.closest?.('button[data-act="undo"]');
+      if (button && pending.has(button.dataset.id)) pending.get(button.dataset.id).paused = false;
+    });
+  }
+
+  document.querySelector('.switch').addEventListener('click', (event) => {
+    const chip = event.target.closest('.chip');
+    if (!chip) return;
+    variant = chip.dataset.variant;
+    document.querySelectorAll('.switch .chip').forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+    render();
+  });
+
+  render();
+  requestAnimationFrame(tick);
+</script>

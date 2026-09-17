@@ -5,6 +5,8 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import KinSuggestions from '$lib/components/KinSuggestions.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { answerKey } from '$lib/relationships/answer-key';
+	import { allSent, answeredCount, type AnsweredClaims } from '$lib/relationships/answered';
 	import { REVIEW_PARAM, QUERY_PARAM, reviewHref } from '$lib/relationships/review-url';
 	import { PEOPLE_PER_PAGE } from '$lib/suggestions/paging';
 	import type { ActionData, PageData } from './$types';
@@ -33,6 +35,37 @@
 	/** Claims folded away in a group, and therefore only readable on that person's own page. */
 	const foldedAway = (group: { suggestions: unknown[]; totalSuggestions: number }) =>
 		group.totalSuggestions - group.suggestions.length;
+
+	/*
+	 * Claims answered during this visit, shared with every block on the page.
+	 *
+	 * The header counts the household, and an answer held in its undo window has already left
+	 * the list as far as the reader is concerned — so the count follows it down immediately and
+	 * comes back up if it is taken back. Waiting for the window to close would leave the screen
+	 * stating a number nobody can see any more.
+	 */
+	let answered = $state<AnsweredClaims>({});
+	const keyOf = (s: { relation: 'parent' | 'sibling'; fromId: string; toId: string }) =>
+		answerKey(s.relation, s.fromId, s.toId);
+
+	const answeredHere = $derived(answeredCount(answered));
+	const openNow = $derived(Math.max(0, data.openCount - answeredHere));
+
+	/**
+	 * A person leaves the page once every claim of theirs on it has been answered *and sent* —
+	 * never merely answered, or an undo would take the whole card away with the row it restored.
+	 * A folded group keeps claims this page never showed, so it is never finished here.
+	 */
+	const finished = (group: {
+		suggestions: { relation: 'parent' | 'sibling'; fromId: string; toId: string }[];
+		totalSuggestions: number;
+	}) =>
+		group.totalSuggestions === group.suggestions.length &&
+		allSent(answered, group.suggestions.map(keyOf));
+
+	const peopleNow = $derived(
+		Math.max(0, data.peopleCount - data.groups.filter((g) => finished(g)).length)
+	);
 </script>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
@@ -108,8 +141,8 @@
 		<div class="flex flex-wrap items-center justify-between gap-3">
 			<p class="text-sm text-fg-muted tabular-nums">
 				{t('settings.relationships.openAcross', {
-					claims: data.openCount,
-					people: data.peopleCount
+					claims: openNow,
+					people: peopleNow
 				})}
 			</p>
 			<Button variant="ghost" size="sm" icon="search" href={reviewHref()}>
@@ -147,7 +180,7 @@
 					: t('settings.relationships.nothing')}
 			</p>
 		{:else}
-			{#each data.groups as group (group.subjectId)}
+			{#each data.groups.filter((g) => !finished(g)) as group (group.subjectId)}
 				<section class="flex flex-col gap-2 rounded-app bg-card p-4 shadow-card">
 					<a
 						href="/contacts/{group.subjectId}#relationships"
@@ -156,7 +189,7 @@
 						<Avatar name={group.subjectName} id={group.subjectId} size={32} />
 						<span class="font-medium">{group.subjectName}</span>
 					</a>
-					<KinSuggestions suggestions={group.suggestions} returnTo={data.returnTo} />
+					<KinSuggestions suggestions={group.suggestions} returnTo={data.returnTo} bind:answered />
 
 					<!--
 						Fold 2: one imported family can leave dozens of claims about a single person.

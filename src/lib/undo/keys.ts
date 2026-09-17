@@ -13,7 +13,9 @@ export const REMOVAL_KINDS = [
 	'tag',
 	'membership',
 	'relationship',
-	'relationship-type'
+	'relationship-type',
+	/* A suggestion answered on a review screen; its id is the claim's, never the rule's. */
+	'suggestion'
 ] as const;
 
 export type RemovalKind = (typeof REMOVAL_KINDS)[number];

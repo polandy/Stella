@@ -117,7 +117,18 @@ test('declining holds the no with who said it, and offering it again puts the cl
 		.getByRole('button', { name: 'Decline' })
 		.click();
 
-	// Gone from what is offered, and in the drawer with the member and the day on it.
+	/*
+	 * Held rather than sent: the row keeps its place for one undo window, which is what stops
+	 * the panel jumping under the reader (docs/02 §2.23). It reaches the drawer only once the
+	 * answer has gone out, and leaving the page is what sends it.
+	 */
+	await expect(
+		panel.getByTestId('kin-suggestion').filter({ hasText: claimOf(f) })
+	).toHaveAttribute('data-held', 'decline');
+	await expect(page.getByTestId('toast-undo')).toBeVisible();
+
+	await openPerson(page, new RegExp(f.other));
+	await review(page, f);
 	await expect(page.getByTestId('kin-review').getByTestId('kin-suggestion')).toHaveCount(0);
 	await expect(page.getByTestId('kin-declined')).toContainText('1 declined suggestion');
 	const declined = await openDeclined(page);
@@ -143,8 +154,16 @@ test('accepting stores the link and stops offering it', async ({ page }) => {
 		.getByRole('button', { name: 'Accept' })
 		.click();
 
-	// Stored: it stands in the entered list on Vroni's page, and is no longer a question.
+	// Held first, with the way back in the toast, and nothing written yet.
+	await expect(
+		panel.getByTestId('kin-suggestion').filter({ hasText: claimOf(f) })
+	).toHaveAttribute('data-held', 'accept');
+	await expect(page.getByTestId('toast-undo')).toBeVisible();
+
+	// Leaving sends it: then it stands in the entered list and is no longer a question.
+	await openPerson(page, new RegExp(f.other));
 	await expect(page.locator('#section-relationships ul').first()).toContainText(f.parent);
+	await review(page, f);
 	await expect(page.getByTestId('kin-review').getByTestId('kin-suggestion')).toHaveCount(0);
 });
 
