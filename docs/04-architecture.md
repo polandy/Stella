@@ -684,6 +684,16 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
      and before there is anywhere to catch the `layoutstart` it emits. An empty graph leaves
      that layout nothing to arrange, so the first arrangement anyone sees is the controller's
      own cose, from the same starting positions it always had.
+   - **The opening arrangement is not reproducible, and never was.** Elements carry no
+     positions, so every node starts at `(0, 0)` and cose — `randomize: false` or not — breaks
+     that tie at random: three plain reloads of one explorer URL move nodes by up to 457px,
+     about 190% of the drawing's own spread. Measured in the pinned container, 1280×1000.
+     Arranging from a grid first (which is what the constructor's default layout did while the
+     elements were passed to it) is deterministic instead — eight runs, identical to the
+     decimal. Both fill the canvas the same way and neither overlaps or clips a node, so this
+     is a choice about whether the map is the same on every visit, not about quality. Nothing
+     in the product promises a stable map today; if one is ever wanted, the way to get it is to
+     give the elements their positions, not to leave a default layout in the constructor.
    - Layouts **overlap**: expanding a node re-arranges the graph while the opening arrangement is
      still travelling, and Cytoscape runs the two side by side. So the canvas is marked
      `data-layout="settled"` only when the *last* of them has stopped — the signal the e2e suite
