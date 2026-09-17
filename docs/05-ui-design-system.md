@@ -527,8 +527,10 @@ and a wait that announces itself abruptly feels longer than it is.
 It shows for a page that is still loading and for any change a page reports — saving a
 relationship reloads the person's graph, and on a household with many links that takes long
 enough to read as nothing having happened. Nothing is dimmed, covered or disabled while it
-runs: what is on screen is still true until the answer arrives. `role="status"` with the live
-region always mounted, so a screen reader hears the work start rather than the region appear.
+runs: what is on screen is still true until the answer arrives. The live region is always
+mounted, so a screen reader hears the work start rather than the region appear — polite and
+without the `status` role, for the reason the toast region gives below: the role would make it
+the page's second status region.
 
 It does not appear for every wait. Work that is over within **250 ms** is never shown at all —
 below that a save is finished about as soon as the pill could be read, and announcing it only

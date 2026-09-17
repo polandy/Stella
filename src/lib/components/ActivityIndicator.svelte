@@ -13,7 +13,10 @@
 	 * reads as a flash, and a wait that announces itself abruptly feels longer than it is.
 	 *
 	 * The live region is always mounted, so a screen reader hears the work start rather than the
-	 * region appear; the spinner is decorative and `label` is what is announced.
+	 * region appear; the spinner is decorative and `label` is what is announced. Polite, and
+	 * without the `status` role, for the reason the toast region gives: the role would make this
+	 * the page's second status region and take `getByRole('status')` away from the inline hint
+	 * that is actually about what the reader is doing.
 	 */
 	import { cubicOut } from 'svelte/easing';
 	import { fade, fly } from 'svelte/transition';
@@ -26,7 +29,7 @@
 	const leaveMs = $derived(prefersReducedMotion.current ? 0 : 180);
 </script>
 
-<div role="status" aria-live="polite" class="pointer-events-none fixed inset-x-0 top-3 z-40 flex justify-center">
+<div aria-live="polite" class="pointer-events-none fixed inset-x-0 top-3 z-40 flex justify-center">
 	{#if busy}
 		<div
 			in:fly={{ y: -12, duration: enterMs, easing: cubicOut }}
