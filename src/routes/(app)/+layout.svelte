@@ -94,10 +94,6 @@
 		});
 	});
 
-	// Removals are held back for an undo window (docs/04 §4.9). Leaving the page ends the
-	// window: a client-side navigation waits for the requests so the next screen cannot read
-	// the item back; an unload — or a native form post, which must not be replayed as a GET —
-	// sends them with keepalive alongside and hopes for the best.
 	/*
 	 * Everything the app is waiting for, in one place (docs/05 §5.7): a page still loading, and
 	 * any change a page reported — a relationship save reloads the person's graph, and on a
@@ -112,6 +108,10 @@
 		return () => pending.end();
 	});
 
+	// Removals are held back for an undo window (docs/04 §4.9). Leaving the page ends the
+	// window: a client-side navigation waits for the requests so the next screen cannot read
+	// the item back; an unload — or a native form post, which must not be replayed as a GET —
+	// sends them with keepalive alongside and hopes for the best.
 	const removals = provideRemovals();
 	beforeNavigate((navigation) => {
 		if (removals.snapshot.removals.length === 0) return;

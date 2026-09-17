@@ -47,7 +47,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('says it is working while a change is in flight, without moving the page', async ({
-	page,
+	page
 }) => {
 	await seedHousehold(page, [ANNA, BERT]);
 	await openPerson(page, new RegExp(ANNA));

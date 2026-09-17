@@ -49,7 +49,7 @@ const RESTORE_ACTION = '/settings/import/archive?/restore';
 export async function seedHousehold(
 	page: Page,
 	people: readonly string[],
-	links: readonly SeedLink[] = [],
+	links: readonly SeedLink[] = []
 ): Promise<void> {
 	const document = {
 		format: ARCHIVE_FORMAT,
@@ -61,7 +61,7 @@ export async function seedHousehold(
 				id: idOf(name),
 				display_name: name,
 				first_name: first,
-				last_name: rest.join(' '),
+				last_name: rest.join(' ')
 			};
 		}),
 		relationships: links.map((link) => ({
@@ -70,8 +70,8 @@ export async function seedHousehold(
 			to: idOf(link.to),
 			type: link.type,
 			// The status a link entered through the form gets (docs/03 §relationship).
-			status: 'current' satisfies RelationshipStatus,
-		})),
+			status: 'current' satisfies RelationshipStatus
+		}))
 	};
 	const text = new TextEncoder().encode(JSON.stringify(document));
 	const archive = Buffer.concat([tarEntry(DOCUMENT_ENTRY, text, 0), tarTrailer()]);
@@ -84,9 +84,9 @@ export async function seedHousehold(
 			archive: {
 				name: 'seed.tar',
 				mimeType: 'application/x-tar',
-				buffer: archive,
-			},
-		},
+				buffer: archive
+			}
+		}
 	});
 	expect(response.status()).toBe(200);
 	// A refused archive answers 200 too, with an error where the report would be — so the

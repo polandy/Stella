@@ -10,8 +10,8 @@ function recorder(): { calls: string[]; sink: PendingSink } {
 		calls,
 		sink: {
 			begin: () => void calls.push('begin'),
-			end: () => void calls.push('end'),
-		},
+			end: () => void calls.push('end')
+		}
 	};
 }
 
@@ -77,7 +77,7 @@ describe('trackPending', () => {
 
 		const callback = trackPending(sink, inner)(submitInput);
 		await (callback as (o: SubmitOptions) => Promise<void>)(
-			options(async () => void applied.push('update')),
+			options(async () => void applied.push('update'))
 		);
 
 		expect(applied).toEqual(['update']);
@@ -103,7 +103,7 @@ describe('whilePending', () => {
 		await expect(
 			whilePending(sink, async () => {
 				throw new Error('nope');
-			}),
+			})
 		).rejects.toThrow('nope');
 		expect(calls).toEqual(['begin', 'end']);
 	});

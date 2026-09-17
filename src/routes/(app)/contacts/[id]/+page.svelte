@@ -232,7 +232,6 @@
 	 * already sitting there is read as an answer, not as an offer, and the one it used to
 	 * offer — your own person — is wrong at least as often as it is right.
 	 */
-	// main's default: nothing stands in the field unless the page was asked to relate somebody.
 	let relationshipTargetId = $state<string[]>(untrack(() => (data.relateTo ? [data.relateTo] : [])));
 	/*
 	 * Changing a relationship reloads the person's graph, and on a household with many links
