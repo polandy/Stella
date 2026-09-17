@@ -3,7 +3,7 @@
  *
  * Saving something that reloads what is on screen — a relationship change and the graph
  * behind it — can take long enough to read as nothing having happened. One store per tab
- * counts that work, and the shell draws a single activity bar from it, so a section never has
+ * counts that work, and the shell draws a single activity indicator from it, so a section never has
  * to make room for an indicator of its own.
  *
  * A count rather than a flag: two changes that overlap must not let the first one's answer
@@ -17,7 +17,7 @@
  * as it is read, and announcing it only makes the app look busier than it is.
  */
 export const SHOW_AFTER_MS = 250;
-/** Once the bar is up it stays at least this long, so it cannot appear as a blink. */
+/** Once the indicator is up it stays at least this long, so it cannot appear as a blink. */
 export const MIN_VISIBLE_MS = 400;
 
 /** The timer the store schedules on — `globalThis` in the browser, a fake in tests. */
@@ -52,7 +52,7 @@ export function createPendingWork(deps: PendingWorkDeps): PendingWork {
 
 	let inFlight = 0;
 	let visible = false;
-	/** True between showing the bar and its minimum being up; it may not be hidden yet. */
+	/** True between showing the indicator and its minimum being up; it may not be hidden yet. */
 	let held = false;
 	let showTimer: unknown = null;
 	let holdTimer: unknown = null;
@@ -72,7 +72,7 @@ export function createPendingWork(deps: PendingWorkDeps): PendingWork {
 		announce();
 	}
 
-	/** The bar goes only when nothing is in flight *and* it has been up long enough. */
+	/** The indicator goes only when nothing is in flight *and* it has been up long enough. */
 	function hideIfDone(): void {
 		if (!visible || held || inFlight > 0) return;
 		visible = false;
@@ -87,7 +87,7 @@ export function createPendingWork(deps: PendingWorkDeps): PendingWork {
 		},
 		end() {
 			// Fail loud: an unbalanced end would leave the count below idle, and from then on
-			// the bar would stay hidden through work that really is in flight.
+			// the indicator would stay hidden through work that really is in flight.
 			if (inFlight === 0) throw new Error('PendingWork.end() called while nothing was pending');
 			inFlight -= 1;
 			if (inFlight > 0) return;

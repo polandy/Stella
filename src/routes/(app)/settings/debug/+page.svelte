@@ -14,7 +14,7 @@
 
 	/** Jobs this page has started and is still waiting for. */
 	let running = $state(0);
-	/** A job with no end, so the bar can be looked at for as long as it takes. */
+	/** A job with no end, so the indicator can be looked at for as long as it takes. */
 	let holding = $state(false);
 
 	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -28,7 +28,7 @@
 		}
 	}
 
-	/** Two jobs that overlap, to show the bar is counted and not a flag. */
+	/** Two jobs that overlap, to show the indicator is counted and not a flag. */
 	async function overlapping(): Promise<void> {
 		void job(2000);
 		await wait(1000);

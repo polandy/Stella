@@ -3,7 +3,7 @@ import { createPendingWork, type PendingSink } from './pending-work';
 
 /*
  * The app shell owns one pending-work store per tab and hands it down through context, so any
- * page can report that it is waiting for something and the shell's activity bar shows it —
+ * page can report that it is waiting for something and the shell's activity indicator shows it —
  * without the page having to find room for an indicator of its own (docs/05 §5.7).
  *
  * Context rather than a module singleton, for the same reason the removals store uses it: on

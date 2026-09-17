@@ -4,7 +4,7 @@ import { getConfig } from '$lib/server/config';
 import type { PageServerLoad } from './$types';
 
 /**
- * A workbench for things that are hard to catch in the real app — the activity bar only shows
+ * A workbench for things that are hard to catch in the real app — the activity indicator only shows
  * for work that lasts, and a local save is over in tens of milliseconds.
  *
  * In `bun run dev` it is simply there. A build serves it only with `DEBUG_PAGES=true`, which a

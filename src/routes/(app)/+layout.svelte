@@ -105,7 +105,7 @@
 	 */
 	const pending = providePending();
 	// A navigation is work like any other, and reported the same way, so a short one stays
-	// under the store's own delay instead of flashing the bar for a frame.
+	// under the store's own delay instead of flashing the indicator for a frame.
 	$effect(() => {
 		if (!navigating.to) return;
 		pending.begin();
