@@ -529,8 +529,9 @@ relationship reloads the person's graph, and on a household with many links that
 enough to read as nothing having happened. Nothing is dimmed, covered or disabled while it
 runs: what is on screen is still true until the answer arrives. The live region is always
 mounted, so a screen reader hears the work start rather than the region appear — polite and
-without the `status` role, for the reason the toast region gives below: the role would make it
-the page's second status region.
+without the `status` role, for the same reason the toast region omits it: the role would make
+this the page's second status region and take `getByRole('status')` away from the inline hint
+that is actually about what the reader is doing.
 
 It does not appear for every wait. Work that is over within **250 ms** is never shown at all —
 below that a save is finished about as soon as the pill could be read, and announcing it only
