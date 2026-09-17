@@ -510,11 +510,20 @@ runs: what is on screen is still true until the answer arrives. `role="status"` 
 region always mounted, so a screen reader hears the work start rather than the region appear;
 under `prefers-reduced-motion` the bar sits filled instead of travelling.
 
+It does not appear for every wait. Work that is over within **250 ms** is never shown at all —
+below that a save is finished about as soon as the bar could be read, and announcing it only
+makes the app look busier than it is — and once the bar is up it stays for at least **400 ms**,
+so it can never register as a blink. Both windows are the store's, not the bar's, so a page
+that starts two quick loads in a row (the app does, on a cold start) shows nothing rather than
+flickering twice.
+
 What counts as work in flight is decided away from the screen, by
 `src/lib/sync/pending-work.ts`: one store per tab, provided by the shell through context
 (`src/lib/sync/context.svelte.ts`) the way the removals store is, and a **count** rather than a
 flag — two changes that overlap must not let the first one's answer clear the second one's bar,
-and an unbalanced `end()` throws rather than counting below idle. A page reports through
+and an unbalanced `end()` throws rather than counting below idle. Its timer is injected, so
+both windows are unit-tested against a clock the test moves by hand. A navigation is reported
+to the same store, and so obeys the same windows. A page reports through
 `src/lib/sync/pending.ts`: `trackPending` wraps an enhanced form's submit, `whilePending` wraps
 a plain async job, and `RemoveButton`'s optional `pending` counts the commit a removal makes
 once its undo window has passed — never the window itself, during which nothing is on its way

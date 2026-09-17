@@ -104,7 +104,13 @@
 	 * large household that takes long enough to read as nothing having happened.
 	 */
 	const pending = providePending();
-	const working = $derived(pending.busy || navigating.to !== null);
+	// A navigation is work like any other, and reported the same way, so a short one stays
+	// under the store's own delay instead of flashing the bar for a frame.
+	$effect(() => {
+		if (!navigating.to) return;
+		pending.begin();
+		return () => pending.end();
+	});
 
 	const removals = provideRemovals();
 	beforeNavigate((navigation) => {
@@ -167,7 +173,7 @@
 	reported through the pending-work store — a relationship save and the graph reload behind
 	it. It is fixed to the top of the window, so it never moves the page it reports on.
 -->
-<ActivityBar busy={working} label={t('common.updating')} />
+<ActivityBar busy={pending.busy} label={t('common.updating')} />
 <CommandPalette people={data.people} bind:open={paletteOpen} />
 <Toast />
 

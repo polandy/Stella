@@ -20,7 +20,7 @@ export interface Pending extends PendingSink {
 
 /** Creates the store for this tab and puts it in context. Call once, from the app shell. */
 export function providePending(): Pending {
-	const store = createPendingWork();
+	const store = createPendingWork({ scheduler: globalThis });
 	let busy = $state(store.busy());
 	store.subscribe(() => (busy = store.busy()));
 
