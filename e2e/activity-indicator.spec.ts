@@ -106,3 +106,15 @@ test('takes a removed link out of the map at once, before it is sent', async ({ 
 	await openPeople(page);
 	expect(posts.length).toBeGreaterThan(0);
 });
+
+/*
+ * The workbench is development scaffolding: it is served in `bun run dev`, and in a build only
+ * to a server that sets `DEBUG_PAGES` (docs/07). The suite runs a build without it, so here the
+ * route must not exist at all.
+ */
+test('does not serve the workbench from a build that did not ask for it', async ({ page }) => {
+	const response = await page.goto('/settings/debug');
+
+	expect(response?.status()).toBe(404);
+	await expect(page.getByRole('heading', { name: 'Activity indicator' })).toHaveCount(0);
+});

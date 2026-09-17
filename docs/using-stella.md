@@ -190,7 +190,10 @@ several people you can see at a glance that Nina logged the call and you wrote t
 Removing asks no "are you sure?": the item disappears
 and a small **Undo** appears at the bottom of the screen for a few seconds, in case it was
 the wrong one. That goes for everything you can remove — a phone number, a date, a tag, a
-circle you leave — and saving something says *Saved* in the same corner.
+circle you leave — and saving something says *Saved* in the same corner. When a change takes
+a moment to work through — a relationship, say, with the map beside it to redraw — a small
+*Updating…* appears at the top of the window until it is done. Nothing is greyed out or locked
+while it is there: what is on the screen still stands, it is simply not the new answer yet.
 
 ## Relationships
 
