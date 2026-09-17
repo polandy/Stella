@@ -40,6 +40,17 @@ describe('withoutRelationships', () => {
 		expect(left.edges.map((e) => e.id)).toEqual(['m-carl']);
 	});
 
+	it('keeps somebody the household still shares a circle with', () => {
+		// Carl's links to the rest are gone, but he is still in the choir, and the choir is on
+		// this map because Anna is in it too. A person is dropped for having nothing left at
+		// all, not for having no *relationship* left.
+		const left = withoutRelationships(model, new Set(['r-carl', 'r-carl-2']), 'anna');
+
+		expect(left.nodes.map((n) => n.id)).toContain('carl');
+		expect(left.nodes.map((n) => n.id)).toContain('choir');
+		expect(left.edges.map((e) => e.id)).toEqual(['r-bert', 'm-carl']);
+	});
+
 	it('changes nothing when nothing is pending', () => {
 		const left = withoutRelationships(model, new Set(), 'anna');
 
