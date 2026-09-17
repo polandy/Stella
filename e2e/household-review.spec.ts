@@ -274,7 +274,7 @@ test('keeps the declined log answerable at its own address', async ({ page }) =>
 	await aFamilyNobodyHasAnsweredFor(page, f);
 	await checkEveryone(page, f);
 	await rowFor(page, f).getByRole('button', { name: 'Decline' }).click();
-	await expect(rowFor(page, f)).toHaveCount(0);
+	await expect(rowFor(page, f)).toHaveAttribute('data-held', 'decline');
 
 	// Held answers reach the log only once they are sent, and leaving is what sends them.
 	await openPerson(page, new RegExp(f.other));

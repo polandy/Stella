@@ -645,6 +645,21 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   Partner edges therefore carry the status into `src/lib/kinship/`, and only the derivation stops
   — the link itself is stored, shown and still never re-derived.
 
+- **Relationship exclusion rules are one pure module, read twice** (`src/lib/relationships/
+  exclusions.ts`, docs/02 §2.4) — the picker greys an entry out and the use-case refuses the
+  write from the same function over the same facts, rather than the UI guessing what the server
+  will accept. The cost is that the person page's `load` ships the household's romantic pairs
+  and parent edges to the browser; they are already visibility-scoped, and the alternative — a
+  round trip per keystroke, or a picker that disagrees with the server — is worse.
+- **Only romance is exclusive; kinship stacks** — a pair carries one partnership, never two,
+  because *partner* and *spouse* are one claim in two words. Two **family** claims about the
+  same two people are two facts (a godparent is often the grandfather), so nothing refuses
+  them. An earlier cut refused a second family link too and was wrong in the first household
+  that opened it.
+- **A suggestion the write would refuse is not offered** (suppression 5) — the engine asks the
+  same parent cap before listing a claim, because *Accept* is the only button on the row and an
+  error there is a rule the household never broke.
+
 ## 4.10 Deployment
 
 - **Single Docker image** (multi-stage: build with Bun, run on a slim Bun base).

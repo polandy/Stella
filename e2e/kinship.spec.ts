@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { openPerson, pickPerson, signIn } from './app';
+import { LINK, seedHousehold } from './seed';
 
 /*
  * Derived kinship and propagation suggestions (docs/02 §2.4.1). Written after the flow was
@@ -48,25 +49,45 @@ test('says nothing it cannot back: no derived relatives for someone with no fami
 	await expect(page.getByTestId('derived-kin')).toHaveCount(0);
 });
 
-test('offers the links a new parent implies, and writes only the one confirmed', async ({ page }) => {
-	await openPeopleTab(page, /Vreni Zbinden/);
+/*
+ * The propagation flow needs a family with room for the parent being added: every Brunner
+ * child already has the two parents Stella allows (docs/02 §2.4), and a claim the write would
+ * refuse is not offered at all. So this case brings its own siblings — names the demo
+ * household does not use — seeded through the archive, since they are the setting and the
+ * parent link entered below is the step under test.
+ */
+test('offers the links a new parent implies, and writes only the one confirmed', async ({
+	page
+}) => {
+	await seedHousehold(
+		page,
+		['Rahel Ammann', 'Silvan Ammann', 'Thea Ammann'],
+		[
+			{ from: 'Rahel Ammann', to: 'Silvan Ammann', type: LINK.siblingOf },
+			{ from: 'Rahel Ammann', to: 'Thea Ammann', type: LINK.siblingOf }
+		]
+	);
+
+	// The one parent, entered by hand from Rahel's page.
+	await openPeopleTab(page, /Rahel Ammann/);
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	const editor = page.locator('form[action="?/addRelationship"]');
-	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Parent of' });
-	await pickPerson(editor.getByLabel('Person'), 'Lena Brunner');
+	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Child of' });
+	await pickPerson(editor.getByLabel('Person'), 'Vreni Zbinden');
 	await editor.getByRole('button', { name: 'Add', exact: true }).click();
+	await expect(page.locator('#section-relationships')).toContainText('Vreni Zbinden');
 
-	// Lena's brothers follow from it, each with the reason and its own confirmation.
+	// Rahel's sister and brother follow from it, each with the reason and its own confirmation.
 	const proposals = page.getByTestId('kin-proposals');
-	await expect(proposals).toContainText('Vreni Zbinden is a parent of Elias Brunner');
+	await expect(proposals).toContainText('Vreni Zbinden is a parent of Silvan Ammann');
 	await expect(proposals).toContainText(
-		'Vreni Zbinden is a parent of Lena Brunner, and Lena Brunner and Elias Brunner are siblings.'
+		'Vreni Zbinden is a parent of Rahel Ammann, and Rahel Ammann and Silvan Ammann are siblings.'
 	);
-	await expect(proposals).toContainText('Vreni Zbinden is a parent of Noah Brunner');
+	await expect(proposals).toContainText('Vreni Zbinden is a parent of Thea Ammann');
 
 	await proposals
 		.getByTestId('kin-suggestion')
-		.filter({ hasText: 'Elias Brunner' })
+		.filter({ hasText: 'Silvan Ammann' })
 		.getByRole('button', { name: 'Accept' })
 		.click();
 
@@ -77,13 +98,14 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 	 */
 	const rowFor = (name: string) =>
 		page.getByTestId('kin-proposals').getByTestId('kin-suggestion').filter({ hasText: name });
-	await expect(rowFor('Elias Brunner')).toHaveCount(0);
-	await expect(rowFor('Noah Brunner')).toHaveCount(1);
+	await expect(rowFor('Silvan Ammann')).toHaveCount(0);
+	await expect(rowFor('Thea Ammann')).toHaveCount(1);
 	await expect(page.getByTestId('toast-undo')).toBeVisible();
 
-	// Leaving closes the window and sends it — and exactly the confirmed one was written.
-	await openPeopleTab(page, /Vreni Zbinden/);
-	const stored = page.locator('#section-relationships ul').first();
-	await expect(stored).toContainText('Elias Brunner');
-	await expect(stored).not.toContainText('Noah Brunner');
+	// Leaving closes the window and sends it — and exactly the confirmed one was written: the
+	// link stands on Silvan's page and never reached Thea's.
+	await openPeopleTab(page, /Silvan Ammann/);
+	await expect(page.locator('#section-relationships')).toContainText('Vreni Zbinden');
+	await openPeopleTab(page, /Thea Ammann/);
+	await expect(page.locator('#section-relationships')).not.toContainText('Vreni Zbinden');
 });

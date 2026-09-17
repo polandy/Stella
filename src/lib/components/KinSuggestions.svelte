@@ -201,6 +201,10 @@
 				Both cells are placed explicitly. With only `row-start-1`, the answers take the first
 				free column of that row — grid places definite items before auto ones — and the claim
 				gets pushed to the right edge, read last and ragged against it.
+
+				An answered row keeps this shape rather than collapsing to a one-line strip: measured,
+				swapping the shape shortened the list by 65px the instant a row was answered, which
+				moved the page under the reader's next tap — the very thing the hold exists to stop.
 			-->
 			<span
 				class="col-start-2 row-start-1 flex shrink-0 items-center justify-self-end gap-1.5 max-[34rem]:col-start-1 max-[34rem]:row-auto max-[34rem]:justify-self-start"

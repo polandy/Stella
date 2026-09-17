@@ -105,9 +105,6 @@ shows to the other as anything but a badge.
   - the **graph** (2.7) opens on that person instead of the first visible one, unless the
     link asks for somebody in particular;
   - the record is marked **"You"** on its own page and in the People directory;
-  - adding a relationship on somebody else's page starts with **you** as the other end —
-    "how is this person related to me" is the link a household records most. It stays a
-    default: the kind of relationship is always chosen by hand before anything is saved.
 - **When that person goes:** deleting the contact clears the link; merging them into a
   duplicate moves it to the record that survives. A member is never left pointing at a row
   that is gone.
@@ -310,6 +307,46 @@ reciprocal** link.
   Stella does not know enough about a type somebody named to call that a mistake. Symmetric
   types are unaffected: they are stored order-independently, so the duplicate guard already
   covers them.
+
+- **Shipped:** a claim the household's own records already rule out is **not offered, and not
+  stored**. Four rules, read from what is on file rather than from a list of names — and all
+  four are about a claim that cannot *hold*, never about a household recording one fact twice:
+
+  - **One partnership at a time.** *Partner* and *spouse* are the same claim for this purpose,
+    so someone with a partnership that still holds cannot be given a second one — from either
+    end, and whoever's profile it is entered from. The way back in is the status: a partnership
+    marked **former** stays on record but stops standing in the way, so a marriage that ended
+    and a new one are both recorded, in that order and without a deletion.
+  - **And one per pair.** *Partner* and *spouse* are the same claim in two words, so
+    the pair carries one of them, not both: a partner who became a spouse is a **change** to
+    the link that is there, not a second row beside it. The refusal names the link in the way
+    — *"already Partner of Bert"* — because correcting that one is what was meant.
+
+    Kinship, by contrast, **stacks**. Two family claims about the same two people are two
+    facts: a godparent is very often the grandfather or the uncle as well, an aunt by marriage
+    is also a neighbour. Stella refuses none of it — the household knows what it means, and
+    the derived kinship (§2.4.1) is worked out from the links it reads, not from a count of
+    them.
+
+  - **Nothing that is already worked out.** Where shared parents already make two people
+    siblings (§2.4.1), entering it by hand is refused — a stored row permanently replaces the
+    derived one, and the derivation is the better record. A **half**-sibling stays enterable:
+    saying those two are full siblings adds something the one shared parent does not say.
+  - **At most two parents.** A third parent is far more often a mistyped link than a third
+    parent, and Stella ships no step- or adoptive-parent type to tell them apart. A household
+    that really has a third to record corrects one of the two rather than adding to them.
+
+  The rules live in one pure place and are read twice: the picker **greys the entries out** as
+  soon as the other person is chosen and puts the reason **once, above the run it refuses** —
+  *"Not possible — already Partner of Bert"* over the two romantic entries —
+  so the refusal is visible before anything is saved. The reason deliberately stays out of the
+  entry's own label: an entry reads "X of" and so does the link in the way, and the two side by
+  side ("Spouse of — already Partner of Bert") read as one sentence about the entry rather than
+  as a reason for it. The Add button follows the entry the control actually
+  stands on, which is the first *pickable* one, not the first one, and the use-case refuses
+  the write on exactly the same reading, so a hand-written post gets the same answer as the
+  form. Changing the **type** of an existing link is measured with that link left out, so a
+  partner becoming a spouse is still one pick.
 
 - **Shipped:** the picker offers an asymmetric type **from both sides** — "Parent of" *and*
   "Child of", "Mentor of" *and* "Mentee of" — so a link can be entered from whichever profile

@@ -23,6 +23,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { hasMessage } from '$lib/i18n/translate';
 	import {
+		exclusionLabel,
 		relationshipRowLabel,
 		relationshipStatusLabel,
 		relationshipTypeLabel
@@ -33,6 +34,9 @@
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { isChoiceOfLink, relationshipTypeOptions } from '$lib/relationships/type-options';
+	import { exclusionFor, type Exclusion } from '$lib/relationships/exclusions';
+	import { firstPickable, groupByExclusion } from '$lib/relationships/picker-groups';
+	import type { RelationshipCategory } from '$lib/relationships/categories';
 	import { sinceDateFromBirth } from '$lib/relationships/since';
 	import type { SelectablePerson } from '$lib/people/select';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
@@ -205,18 +209,12 @@
 		savedEnhance(removals, t('components.saved'), () => (openSection[name] = false));
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
 	/*
-	 * The other end of a new relationship. Prefilled with whoever the page was opened for, and
-	 * otherwise with your own person (docs/02 §2.1.3): "how is this person related to me" is
-	 * the link a household records most, and it is still a default — the type is always chosen
-	 * by hand before anything is saved.
+	 * The other end of a new relationship. Empty unless the page was *asked* to relate somebody
+	 * (`?relate=`, the stream's link hint — §2.22.1). Nothing else stands in the field: a name
+	 * already sitting there is read as an answer, not as an offer, and the one it used to
+	 * offer — your own person — is wrong at least as often as it is right.
 	 */
-	let relationshipTargetId = $state<string[]>(
-		untrack(() => {
-			if (data.relateTo) return [data.relateTo];
-			const self = data.user.selfContactId;
-			return self && self !== data.contact.id ? [self] : [];
-		})
-	);
+	let relationshipTargetId = $state<string[]>(untrack(() => (data.relateTo ? [data.relateTo] : [])));
 	const savedRelationship = savedEnhance(removals, t('components.saved'), () => {
 		relateOpen = false;
 		relationshipTargetId = [];
@@ -235,6 +233,46 @@
 		if (!id) return null;
 		if (pickedTarget?.id === id) return pickedTarget;
 		return data.otherContacts.find((person) => person.id === id) ?? null;
+	});
+	/*
+	 * What the household's own records rule out (docs/02 §2.4). The same pure rules the
+	 * use-case is guarded by, run over the facts the load sent: an entry that would be refused
+	 * is greyed out with its reason rather than offered and then rejected.
+	 */
+	const exclusionOf = (
+		option: { type: { key: string; category: RelationshipCategory }; side: 'forward' | 'reverse' },
+		targetId: string | null | undefined,
+		exceptId: string | null = null
+	): Exclusion | null =>
+		targetId
+			? exclusionFor(data.exclusionFacts, {
+					subjectId: c.id,
+					targetId,
+					type: { key: option.type.key, category: option.type.category },
+					side: option.side,
+					exceptId
+				})
+			: null;
+	/** Whoever a reason is about; both people are on the page already. */
+	const nameOfContact = (contactId: string): string =>
+		contactId === c.id
+			? c.displayName
+			: (data.otherContacts.find((person) => person.id === contactId)?.displayName ?? '');
+	/*
+	 * The entry the form would post: the one that was picked, or — since the select is read
+	 * rather than bound — the first one that *can* be picked, which is where an untouched
+	 * control stands, disabled entries skipped. Refused, the button goes with it, so nothing
+	 * greyed out is submitted by pressing Add; and with every entry refused there is nothing
+	 * to stand on and it stays off.
+	 */
+	const blockedChoice = $derived.by(() => {
+		const forTarget = (option: (typeof relationshipChoices)[number]) =>
+			exclusionOf(option, relationshipTargetId[0]);
+		const picked = relationshipChoices.find((option) => option.value === relationshipChoice);
+		if (picked) return forTarget(picked);
+		return firstPickable(relationshipChoices, forTarget) === null && relationshipChoices.length > 0
+			? forTarget(relationshipChoices[0])
+			: null;
 	});
 	const suggestedSince = $derived.by(() => {
 		const chosen =
@@ -861,13 +899,29 @@
 												<!-- Both sides again, so a partner who became a spouse — or a generation
 												     entered the wrong way round — is one pick, not a re-entry (docs/02 §2.4). -->
 												<select name="typeChoice" class={INPUT}>
-													{#each relationshipTypeOptions(data.relationshipTypes) as option (option.value)}
-														<option
-															value={option.value}
-															selected={isChoiceOfLink(option, rel)}
-														>
-															{relationshipTypeLabel(t, option.type, option.side)}
-														</option>
+													{#each groupByExclusion(relationshipChoices, (option) => exclusionOf(option, rel.otherContactId, rel.id)) as group (group.options[0].value)}
+														{#if group.exclusion}
+															<optgroup
+																label={t('relationships.blocked.group', {
+																	reason: exclusionLabel(t, group.exclusion, nameOfContact)
+																})}
+															>
+																{#each group.options as option (option.value)}
+																	<option value={option.value} disabled>
+																		{relationshipTypeLabel(t, option.type, option.side)}
+																	</option>
+																{/each}
+															</optgroup>
+														{:else}
+															{#each group.options as option (option.value)}
+																<option
+																	value={option.value}
+																	selected={isChoiceOfLink(option, rel)}
+																>
+																	{relationshipTypeLabel(t, option.type, option.side)}
+																</option>
+															{/each}
+														{/if}
 													{/each}
 												</select>
 											</label>
@@ -1014,16 +1068,41 @@
 										 detour via the other profile (docs/02 §2.4). -->
 									<!-- Read, not bound: binding would hand the select a value of its own before
 										 anybody has chosen, and an unmatched one deselects every option — the form
-										 would then post no type at all. -->
+										 would then post no type at all. `selected` still has to follow the choice,
+										 because picking the other person regroups the entries and a rebuilt option
+										 loses the selection the DOM was holding. -->
 									<select
 										name="typeChoice"
 										onchange={(event) => (relationshipChoice = event.currentTarget.value)}
 										class={INPUT}
 									>
-										{#each relationshipChoices as option (option.value)}
-											<option value={option.value}>
-												{relationshipTypeLabel(t, option.type, option.side)}
-											</option>
+										{#each groupByExclusion(relationshipChoices, (option) => exclusionOf(option, relationshipTargetId[0])) as group (group.options[0].value)}
+											{#if group.exclusion}
+												<optgroup
+													label={t('relationships.blocked.group', {
+														reason: exclusionLabel(t, group.exclusion, nameOfContact)
+													})}
+												>
+													{#each group.options as option (option.value)}
+														<option
+															value={option.value}
+															selected={option.value === relationshipChoice}
+															disabled
+														>
+															{relationshipTypeLabel(t, option.type, option.side)}
+														</option>
+													{/each}
+												</optgroup>
+											{:else}
+												{#each group.options as option (option.value)}
+													<option
+														value={option.value}
+														selected={option.value === relationshipChoice}
+													>
+														{relationshipTypeLabel(t, option.type, option.side)}
+													</option>
+												{/each}
+											{/if}
 										{/each}
 									</select>
 								</label>
@@ -1067,7 +1146,9 @@
 										{/each}
 									</select>
 								</label>
-								<Button variant="primary" size="sm">{t('common.add')}</Button>
+								<Button variant="primary" size="sm" disabled={blockedChoice !== null}>
+									{t('common.add')}
+								</Button>
 							</form>
 						{:else}
 							<p class="text-sm text-fg-subtle">{t('contact.relationships.addSomeoneFirst')}</p>
