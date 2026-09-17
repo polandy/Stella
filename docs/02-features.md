@@ -323,7 +323,10 @@ reciprocal** link.
   as a quiet chip. A day that never happened (`2019-02-30`) and a status the model does not
   know are refused rather than stored. A link entered wrongly can be **removed**, with the
   same Undo window as a tag or a date, and removing one that was standing in for a derived
-  relationship brings the worked-out name back (§2.4.1). Marking a partner **former** keeps the
+  relationship brings the worked-out name back (§2.4.1). The **map follows the list** through
+  that window: the link leaves both the moment the button is pressed, rather than the row going
+  at once and the map keeping it for the eight seconds until the removal is sent — which reads
+  as a slow save rather than as a window that is there to be used. Marking a partner **former** keeps the
   link on record but stops Stella reasoning through it: the step-family and in-laws it used to
   explain are no longer derived (§2.4.1), because an ex-partner offered as a stepmother to the
   children reads as a mistake, not as history. The status is not a delete — the partnership

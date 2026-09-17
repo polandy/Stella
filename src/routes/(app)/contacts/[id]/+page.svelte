@@ -33,6 +33,7 @@
 	import { directClaimLabel, kinshipLabel } from '$lib/kinship/labels';
 	import { claimEndpoints, directClaimFor } from '$lib/kinship/claims';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
+	import { withoutRelationships } from '$lib/graph/model/without-pending';
 	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { isChoiceOfLink, relationshipTypeOptions } from '$lib/relationships/type-options';
 	import { sinceDateFromBirth } from '$lib/relationships/since';
@@ -132,6 +133,20 @@
 	const photoById = $derived(
 		new Map(data.graph.nodes.map((node) => [node.id, node.avatarPhotoId ?? null]))
 	);
+	/*
+	 * A removal is held for its undo window before it is sent (docs/02 §2.23), and the list
+	 * hides the row for that whole window. The map agrees with the list: were it to keep the
+	 * link, it would vanish by itself eight seconds later, which reads as a slow save rather
+	 * than a window that was there to be used.
+	 */
+	const pendingRelationships = $derived(
+		new Set(
+			data.relationships
+				.filter((r) => removals.isPending(removalKey('relationship', r.id)))
+				.map((r) => r.id)
+		)
+	);
+	const visibleGraph = $derived(withoutRelationships(data.graph, pendingRelationships, c.id));
 	const egoNodes = $derived.by(() => {
 		const seen = new Set<string>();
 		const out: {
@@ -142,6 +157,7 @@
 			avatarPhotoId: string | null;
 		}[] = [];
 		for (const r of data.relationships) {
+			if (pendingRelationships.has(r.id)) continue;
 			if (seen.has(r.otherContactId)) continue;
 			seen.add(r.otherContactId);
 			out.push({
@@ -803,7 +819,7 @@
 										centerId={c.id}
 										centerName={c.displayName}
 										centerPhotoId={c.avatarPhotoId}
-										graph={data.graph}
+										graph={visibleGraph}
 										nodes={egoNodes}
 										fullGraphHref={(nodeId) => `/graph?center=${nodeId}`}
 									/>
