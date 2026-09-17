@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { openPerson, pickPerson, signIn } from './app';
+import { LINK, seedHousehold } from './seed';
 
 /*
  * Derived kinship and propagation suggestions (docs/02 §2.4.1). Written after the flow was
@@ -48,30 +49,51 @@ test('says nothing it cannot back: no derived relatives for someone with no fami
 	await expect(page.getByTestId('derived-kin')).toHaveCount(0);
 });
 
-test('offers the links a new parent implies, and writes only the one confirmed', async ({ page }) => {
-	await openPeopleTab(page, /Vreni Zbinden/);
+/*
+ * The propagation flow needs a family with room for the parent being added: every Brunner
+ * child already has the two parents Stella allows (docs/02 §2.4), and a claim the write would
+ * refuse is not offered at all. So this case brings its own siblings — names the demo
+ * household does not use — seeded through the archive, since they are the setting and the
+ * parent link entered below is the step under test.
+ */
+test('offers the links a new parent implies, and writes only the one confirmed', async ({
+	page
+}) => {
+	await seedHousehold(
+		page,
+		['Rahel Ammann', 'Silvan Ammann', 'Thea Ammann'],
+		[
+			{ from: 'Rahel Ammann', to: 'Silvan Ammann', type: LINK.siblingOf },
+			{ from: 'Rahel Ammann', to: 'Thea Ammann', type: LINK.siblingOf }
+		]
+	);
+
+	// The one parent, entered by hand from Rahel's page.
+	await openPeopleTab(page, /Rahel Ammann/);
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	const editor = page.locator('form[action="?/addRelationship"]');
-	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Parent of' });
-	await pickPerson(editor.getByLabel('Person'), 'Lena Brunner');
+	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Child of' });
+	await pickPerson(editor.getByLabel('Person'), 'Vreni Zbinden');
 	await editor.getByRole('button', { name: 'Add', exact: true }).click();
+	await expect(page.locator('#section-relationships')).toContainText('Vreni Zbinden');
 
-	// Lena's brothers follow from it, each with the reason and its own confirmation.
+	// Rahel's sister and brother follow from it, each with the reason and its own confirmation.
 	const proposals = page.getByTestId('kin-proposals');
-	await expect(proposals).toContainText('Vreni Zbinden is a parent of Elias Brunner');
-	await expect(proposals).toContainText('Elias Brunner is Lena Brunner’s sibling.');
-	await expect(proposals).toContainText('Vreni Zbinden is a parent of Noah Brunner');
+	await expect(proposals).toContainText('Vreni Zbinden is a parent of Silvan Ammann');
+	await expect(proposals).toContainText('Silvan Ammann is Rahel Ammann’s sibling.');
+	await expect(proposals).toContainText('Vreni Zbinden is a parent of Thea Ammann');
 
 	await proposals
 		.getByTestId('kin-suggestion')
-		.filter({ hasText: 'Elias Brunner' })
+		.filter({ hasText: 'Silvan Ammann' })
 		.getByRole('button', { name: 'Accept' })
 		.click();
 
-	// Exactly the confirmed one was written: Elias is now stored, Noah is still only offered.
-	await expect(page.getByTestId('kin-proposals')).not.toContainText('Elias Brunner');
-	await expect(page.getByTestId('kin-proposals')).toContainText('Noah Brunner');
-	const stored = page.locator('#section-relationships ul').first();
-	await expect(stored).toContainText('Elias Brunner');
-	await expect(stored).not.toContainText('Noah Brunner');
+	// Exactly the confirmed one was written: Silvan is now stored, Thea is still only offered.
+	await expect(page.getByTestId('kin-proposals')).not.toContainText('Silvan Ammann');
+	await expect(page.getByTestId('kin-proposals')).toContainText('Thea Ammann');
+	await openPeopleTab(page, /Silvan Ammann/);
+	await expect(page.locator('#section-relationships')).toContainText('Vreni Zbinden');
+	await openPeopleTab(page, /Thea Ammann/);
+	await expect(page.locator('#section-relationships')).not.toContainText('Vreni Zbinden');
 });

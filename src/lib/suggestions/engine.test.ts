@@ -110,6 +110,36 @@ describe('evaluate', () => {
 			expect(shape(stored('parent', 'bettina', 'hans'), v)).toEqual([]);
 		});
 
+		/*
+		 * A claim the write would refuse is not offered: the household would press Accept, the
+		 * only button there is, and be answered with an error about the parent cap.
+		 */
+		it('drops a parent claim for a child who already has two parents', () => {
+			const v = view({
+				parentEdges: [
+					{ parentId: 'bettina', childId: 'hans' },
+					{ parentId: 'kurt', childId: 'lisa' },
+					{ parentId: 'lio', childId: 'lisa' }
+				],
+				siblingEdges: [{ a: 'hans', b: 'lisa' }]
+			});
+			expect(shape(stored('parent', 'bettina', 'hans'), v)).toEqual([]);
+		});
+
+		// The positive control for the case above: the same shape with a slot free is offered.
+		it('still offers it while the sibling has room for another parent', () => {
+			const v = view({
+				parentEdges: [
+					{ parentId: 'bettina', childId: 'hans' },
+					{ parentId: 'kurt', childId: 'lisa' }
+				],
+				siblingEdges: [{ a: 'hans', b: 'lisa' }]
+			});
+			expect(shape(stored('parent', 'bettina', 'hans'), v)).toEqual([
+				['L1', 'parent', 'bettina', 'lisa']
+			]);
+		});
+
 		it('never offers a person as their own relative', () => {
 			const v = view({
 				parentEdges: [{ parentId: 'bettina', childId: 'hans' }],

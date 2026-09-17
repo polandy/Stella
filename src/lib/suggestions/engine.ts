@@ -1,5 +1,5 @@
 import { L1, L2 } from './rules/links';
-import { isDerivable } from './suppressions';
+import { isDerivable, isRefusedByRules } from './suppressions';
 import type { Confidence, Rule, Suggestion, Trigger } from './types';
 import { claimKey } from './claims';
 import type { SuggestionView } from './view';
@@ -44,9 +44,9 @@ export interface EvaluateOptions {
 
 /**
  * Whether a suggestion must not be shown at all (docs/concepts/relationship-suggestions.md
- * §6.2). Suppressions 1–4; the guard-refusal check joins them with the slice that introduces
- * it. These are hard drops in every run: there is no reading in which a self-link, an
- * invisible person or an already-stored claim should be listed.
+ * §6.2). Suppressions 1–5. These are hard drops in every run: there is no reading in which a
+ * self-link, an invisible person, an already-stored claim — or one the write would refuse —
+ * should be listed.
  */
 function suppressed(suggestion: Suggestion, view: SuggestionView): boolean {
 	const { fromId, toId, relation } = suggestion;
@@ -55,7 +55,8 @@ function suppressed(suggestion: Suggestion, view: SuggestionView): boolean {
 		!view.has(fromId) ||
 		!view.has(toId) ||
 		view.isLinked(fromId, toId) ||
-		isDerivable(view, relation, fromId, toId)
+		isDerivable(view, relation, fromId, toId) ||
+		isRefusedByRules(view, relation, fromId, toId)
 	);
 }
 
