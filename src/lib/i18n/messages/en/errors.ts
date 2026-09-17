@@ -15,6 +15,17 @@ export const errors = {
 	'errors.relationship.duplicate': 'That relationship already exists.',
 	'errors.relationship.contradiction':
 		'These two are already linked the other way round, and that cannot hold in both directions. Remove the existing link first.',
+	'errors.relationship.alreadyTied': (p: { tie: string; name: string }) =>
+		`That is already on record the other way: ${p.tie} ${p.name}. Correct that link instead of adding a second one.`,
+	/** For a refusal that names no link; the wording above is the one a reader should meet. */
+	'errors.relationship.alreadyRomantic': (p: { name: string }) =>
+		`There is already a partnership on record with ${p.name}. Correct that one instead of adding a second.`,
+	'errors.relationship.siblingDerived': (p: { name: string }) =>
+		`Stella already works ${p.name} out as a sibling here, from the shared parents. Entering it by hand would replace what is worked out.`,
+	'errors.relationship.romanticTaken': (p: { name: string; partner: string }) =>
+		`${p.name} is already with ${p.partner}, and that partnership still holds. Mark it as former first.`,
+	'errors.relationship.parentsComplete': (p: { name: string; max: number }) =>
+		`${p.name} already has ${p.max} parents. Correct one of them instead of adding another.`,
 	'errors.relationship.noSuchDay': (p: { day: string }) => `${p.day} is not a day that exists.`,
 	'errors.relationship.currentOrFormer': 'A relationship is either current or former.',
 

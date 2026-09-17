@@ -527,6 +527,17 @@ viewport with the `offline` icon, what has happened, and a *Try again* that relo
 fetched and cached while the connection still works, which is why it loads nothing of its own
 — anything it read then would be stale by the time anybody saw it.
 
+**A choice that cannot be made says why, once.** Where a picker's entries are refused by what
+is already on record — the relationship type picker is the case (docs/02 §2.4) — the entries
+are `disabled` and the reason is the heading of the `optgroup` they are gathered under (*"Not
+possible — already Partner of Bert"*), never appended to the entry's own label. Two reasons
+make two groups; the entries keep their own words and their order. The label of an entry and
+the label of the link in the way are both of the form "X of Y", so side by side in one line
+they read as a single sentence about the entry — which is how the first attempt was
+misunderstood on a live instance. The control's own default follows: the primary button is
+disabled only while *nothing* can be picked, because a select stands on the first entry that is
+not disabled rather than on the first entry.
+
 ## 5.8 Relationship & context explorer styling
 
 The explorer (§2.7, core feature) should feel alive and effortless. Interaction detail:
