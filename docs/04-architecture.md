@@ -710,11 +710,33 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
    - Interaction handlers (expand, focus, hover) call back into the pure operations and
      re-render from the returned `GraphModel` — the adapter holds no domain rules.
    - Swapping Cytoscape for another renderer (or adding a layout) touches only this layer.
-   - The controller owns its **teardown**: it runs the first layout itself (so a layout still
-     moving nodes can be stopped again), stops that layout and any animation before destroying
-     the core, and no-ops on every method afterwards. A page can be left mid-layout, and a call
-     still in flight must reach a closed core rather than a half-demolished one. The controller
-     is split from the core it drives (`explorerFromCore`) so this is unit-tested headless.
+   - The controller owns its **teardown**: it runs the first layout itself, so a layout still
+     moving nodes can be stopped again, and it stops **every** layout still running before it
+     destroys the core, then no-ops on every method afterwards. A page can be left mid-layout,
+     and a call still in flight must reach a closed core rather than a half-demolished one.
+     Animations need no stopping of their own — destroying the core halts the loop that steps
+     them and empties every element's queue. The controller is split from the core it drives
+     (`explorerFromCore`) so this is unit-tested headless.
+   - The core is **constructed empty** and the elements added afterwards. With a container
+     present, Cytoscape arranges whatever the constructor is handed — under its default `grid`,
+     and before there is anywhere to catch the `layoutstart` it emits. An empty graph leaves
+     that layout nothing to arrange, so the first arrangement anyone sees is the controller's
+     own cose, from the same starting positions it always had.
+   - **The opening arrangement is not reproducible, and never was.** Elements carry no
+     positions, so every node starts at `(0, 0)` and cose — `randomize: false` or not — breaks
+     that tie at random: three plain reloads of one explorer URL move nodes by up to 457px,
+     about 190% of the drawing's own spread. Measured in the pinned container, 1280×1000.
+     Arranging from a grid first (which is what the constructor's default layout did while the
+     elements were passed to it) is deterministic instead — eight runs, identical to the
+     decimal. Both fill the canvas the same way and neither overlaps or clips a node, so this
+     is a choice about whether the map is the same on every visit, not about quality. Nothing
+     in the product promises a stable map today; if one is ever wanted, the way to get it is to
+     give the elements their positions, not to leave a default layout in the constructor.
+   - Layouts **overlap**: expanding a node re-arranges the graph while the opening arrangement is
+     still travelling, and Cytoscape runs the two side by side. So the canvas is marked
+     `data-layout="settled"` only when the *last* of them has stopped — the signal the e2e suite
+     reads before it takes a node's position (`e2e/graph-canvas.ts`), which an earlier layout
+     finishing first would otherwise give while the nodes are still moving.
 
 3. **UI** — the explorer Svelte component + the `/graph` route and the profile's "Explore"
    entry: layout, search box, filter chips, peek panel, path picker. Thin; delegates all

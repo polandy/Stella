@@ -84,20 +84,20 @@ test('a connection path answers with the people in between, not with the derived
 	await page.goto('/graph?center=demo-c-lena');
 	await expect(page.locator('canvas').first()).toBeVisible();
 	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('drawn')).toPass();
+	// Picking a person means clicking where the renderer has drawn them, so the nodes have to
+	// have stopped travelling first. Clicking one mid-flight lands on the background, which
+	// clears the pick that was already made and leaves the prompt back at its first sentence.
+	await settled(page);
 
 	// Reachable with the peek panel open — the toolbar keeps clear of it.
 	await page.getByRole('button', { name: 'Connection path' }).click();
 	const prompt = page.getByTestId('path-prompt');
 	await expect(prompt).toHaveText('Pick two people to trace how they’re connected.');
 
-	await expect(async () => {
-		await clickNode(page, 'demo-c-lena');
-		await expect(prompt).toHaveText('Now pick the second person…', { timeout: 1000 });
-	}).toPass();
-	await expect(async () => {
-		await clickNode(page, 'demo-c-timo');
-		await expect(prompt).toContainText('→', { timeout: 1000 });
-	}).toPass();
+	await clickNode(page, 'demo-c-lena');
+	await expect(prompt).toHaveText('Now pick the second person…');
+	await clickNode(page, 'demo-c-timo');
+	await expect(prompt).toContainText('→');
 
 	// The cousin line would make this a single hop; the answer names the grandfather instead.
 	await expect(prompt).toHaveText('Lena Brunner → Hans Brunner → Timo Brunner');

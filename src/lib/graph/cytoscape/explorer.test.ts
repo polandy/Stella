@@ -9,12 +9,44 @@ import type { CyElement } from './elements';
  * teardown: a graph lives inside a page that can be navigated away from at any moment, and a
  * call still in flight when that happens must find a closed door rather than a half-demolished
  * one. Unguarded, Cytoscape throws on the renderer it no longer has (docs/04 §4.11).
+ *
+ * Layouts overlap: an expand re-arranges the graph while the opening arrangement is still
+ * moving the nodes. Both of them are still running, so both have to be accounted for — at
+ * teardown, and in the settled signal the canvas publishes.
  */
 
 const node = (id: string): CyElement => ({ group: 'nodes', data: { id }, classes: 'person' });
 
-function core(ids: string[] = ['a', 'b']): Core {
-	return cytoscape({ headless: true, elements: ids.map((id) => ({ data: { id } })) });
+/** Reads back the layout state the controller writes onto the container it was given. */
+function containerStub() {
+	const attributes: Record<string, string> = {};
+	return {
+		element: {
+			setAttribute: (name: string, value: string) => {
+				attributes[name] = value;
+			}
+		} as unknown as HTMLElement,
+		layoutState: () => attributes['data-layout']
+	};
+}
+
+function core(): Core {
+	return cytoscape({ headless: true, elements: [{ data: { id: 'a' } }, { data: { id: 'b' } }] });
+}
+
+/**
+ * A core that reports a container and whose layouts do nothing. Cose measures a real container
+ * through the window, which a headless test has none of; these cases are about the signal the
+ * canvas publishes, not about the arrangement, so the layouts are stood down.
+ */
+function coreWithContainer(container: HTMLElement): Core {
+	const cy = cytoscape({
+		headless: true,
+		container,
+		elements: [{ data: { id: 'a' } }]
+	});
+	cy.layout = (() => ({ run: () => {}, stop: () => {} })) as unknown as Core['layout'];
+	return cy;
 }
 
 function controller(cy: Core) {
@@ -25,9 +57,14 @@ function controller(cy: Core) {
 	});
 }
 
-/** Cytoscape carries the layout instance on its own lifecycle events; stand one in here. */
-function announceLayoutStart(cy: Core, layout: Pick<Layouts, 'stop'>) {
-	(cy.emit as unknown as (event: object) => void)({ type: 'layoutstart', layout });
+/** A layout that records being stopped, standing in for one Cytoscape is still running. */
+function layoutStub(name: string, stopped: string[]): Layouts {
+	return { stop: () => stopped.push(name) } as unknown as Layouts;
+}
+
+/** Cytoscape carries the layout instance on both of its lifecycle events; do the same here. */
+function announce(cy: Core, type: 'layoutstart' | 'layoutstop', layout: Layouts) {
+	(cy.emit as unknown as (event: object) => void)({ type, layout });
 }
 
 describe('explorerFromCore', () => {
@@ -78,24 +115,61 @@ describe('explorerFromCore', () => {
 	it('stops a layout that is still running, so no frame lands after the core is gone', () => {
 		const cy = core();
 		const explorer = controller(cy);
-		let stops = 0;
-		announceLayoutStart(cy, { stop: () => ++stops as unknown as Layouts });
+		const stopped: string[] = [];
+		announce(cy, 'layoutstart', layoutStub('running', stopped));
 
 		explorer.destroy();
 
-		expect(stops).toBe(1);
+		expect(stopped).toEqual(['running']);
+	});
+
+	it('stops every layout that has started, not only the most recent one', () => {
+		// An expand re-lays out while the opening arrangement is still moving the nodes, so two
+		// layouts are in flight at once. Tracking only the last one leaves the first ticking
+		// against a core that is already gone — the very thing the teardown exists to prevent.
+		const cy = core();
+		const explorer = controller(cy);
+		const stopped: string[] = [];
+		announce(cy, 'layoutstart', layoutStub('opening', stopped));
+		announce(cy, 'layoutstart', layoutStub('expand', stopped));
+
+		explorer.destroy();
+
+		expect(stopped.sort()).toEqual(['expand', 'opening']);
 	});
 
 	it('leaves a layout that has already come to rest alone', () => {
 		const cy = core();
 		const explorer = controller(cy);
-		let stops = 0;
-		announceLayoutStart(cy, { stop: () => ++stops as unknown as Layouts });
-		cy.emit('layoutstop');
+		const stopped: string[] = [];
+		const settledLayout = layoutStub('settled', stopped);
+		announce(cy, 'layoutstart', settledLayout);
+		announce(cy, 'layoutstop', settledLayout);
 
 		explorer.destroy();
 
-		expect(stops).toBe(0);
+		expect(stopped).toEqual([]);
+	});
+
+	it('keeps the canvas marked as moving until the last layout has stopped', () => {
+		// The e2e suite reads node positions as soon as this says `settled`, so one layout
+		// finishing while another still moves the nodes would hand it a canvas mid-flight.
+		const container = containerStub();
+		const cy = coreWithContainer(container.element);
+		const stopped: string[] = [];
+		const opening = layoutStub('opening', stopped);
+		const expand = layoutStub('expand', stopped);
+
+		controller(cy);
+		expect(container.layoutState()).toBe('settling');
+
+		announce(cy, 'layoutstart', opening);
+		announce(cy, 'layoutstart', expand);
+		announce(cy, 'layoutstop', opening);
+		expect(container.layoutState()).toBe('settling');
+
+		announce(cy, 'layoutstop', expand);
+		expect(container.layoutState()).toBe('settled');
 	});
 
 	it('lets every call that arrives after the teardown fall away', () => {
@@ -105,13 +179,13 @@ describe('explorerFromCore', () => {
 
 		// Each of these reaches Cytoscape through a batch or an animation, and a torn-down core
 		// has no renderer left to notify — unguarded, setGraph alone throws here.
-		explorer.setGraph([node('a'), node('c')]);
-		explorer.setVisible(new Set(['a']), new Set());
-		explorer.highlightNeighborhood('a');
-		explorer.highlightPath(['a', 'b']);
-		explorer.focus('a');
-		explorer.setStylesheet([]);
-
-		expect(cy.destroyed()).toBe(true);
+		expect(() => {
+			explorer.setGraph([node('a'), node('c')]);
+			explorer.setVisible(new Set(['a']), new Set());
+			explorer.highlightNeighborhood('a');
+			explorer.highlightPath(['a', 'b']);
+			explorer.focus('a');
+			explorer.setStylesheet([]);
+		}).not.toThrow();
 	});
 });

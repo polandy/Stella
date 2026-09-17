@@ -79,20 +79,23 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	const container = cy.container();
 	const setLayoutState = (state: string) => container?.setAttribute(LAYOUT_STATE_ATTRIBUTE, state);
 
-	// The layout currently moving the nodes, if any. Destroying the core does not stop a
-	// layout: its next frame would run against a core whose renderer is already gone, throw
-	// there, and leave a half-demolished canvas behind — which is what a page navigated away
-	// from mid-layout used to do.
-	let running: Layouts | null = null;
+	// Every layout still moving the nodes. Destroying the core does not stop a layout: its next
+	// frame would run against a core whose renderer is already gone, throw there, and leave a
+	// half-demolished canvas behind — which is what a page navigated away from mid-layout used
+	// to do. There can be more than one, because expanding a node re-arranges the graph while
+	// the opening arrangement is still travelling, and Cytoscape lets the two run side by side.
+	const running = new Set<Layouts>();
 
 	setLayoutState(SETTLING);
 	cy.on('layoutstart', (e) => {
-		running = (e as LayoutEvent).layout;
+		running.add((e as LayoutEvent).layout);
 		setLayoutState(SETTLING);
 	});
-	cy.on('layoutstop', () => {
-		running = null;
-		setLayoutState(SETTLED);
+	cy.on('layoutstop', (e) => {
+		running.delete((e as LayoutEvent).layout);
+		// Only the last one to finish has brought the canvas to rest; the nodes an earlier
+		// layout left behind are still being moved by a later one.
+		if (running.size === 0) setLayoutState(SETTLED);
 	});
 
 	cy.on('tap', 'node', (e) => opts.onTapNode(e.target.id()));
@@ -187,9 +190,11 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 
 		destroy() {
 			if (!alive()) return;
-			running?.stop();
-			running = null;
-			cy.elements().stop(); // the focus() animation, which outlives the page otherwise
+			// A snapshot: stopping a layout makes it announce itself out of the set.
+			for (const layout of [...running]) layout.stop();
+			running.clear();
+			// Animations need no stopping of their own — destroying the core halts the loop
+			// that steps them and empties every queue.
 			cy.destroy();
 		}
 	};
@@ -198,15 +203,22 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerController> {
 	const cytoscape = (await import('cytoscape')).default;
 
+	// Built empty on purpose. The constructor arranges whatever it is handed, before there is
+	// anywhere to register `layoutstart`, so giving it the elements would either hide that first
+	// layout from the teardown or — when it is left out — have Cytoscape's default `grid` arrange
+	// them, and the controller's cose would then start from a grid rather than from where the
+	// constructor used to put them, moving the graph a household is used to. An empty graph has
+	// nothing for the default layout to arrange, and the elements go in below at the same
+	// starting positions the constructor gave them, for the controller's own layout to work from.
 	const cy: Core = cytoscape({
 		container: opts.container,
-		elements: opts.elements as unknown as ElementDefinition[],
 		style: opts.stylesheet as unknown as CytoscapeOptions['style'],
 		minZoom: 0.2,
 		maxZoom: 2.5,
 		wheelSensitivity: 0.25,
 		boxSelectionEnabled: false
 	});
+	cy.batch(() => cy.add(opts.elements as unknown as ElementDefinition[]));
 
 	return explorerFromCore(cy, opts);
 }
