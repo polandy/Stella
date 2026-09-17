@@ -137,8 +137,6 @@ export const contact: ContactMessages = {
 	'contact.relationships.acceptedSibling': (p) =>
 		`${p.one} und ${p.other} als Geschwister übernommen`,
 	'contact.relationships.declinedNotice': 'Abgelehnt — wird nicht mehr vorgeschlagen',
-	'contact.relationships.added': 'Übernommen',
-	'contact.relationships.declinedMark': 'Abgelehnt',
 	'contact.relationships.accept': 'Übernehmen',
 	'contact.relationships.decline': 'Ablehnen',
 	'contact.relationships.review': 'Beziehungen prüfen',

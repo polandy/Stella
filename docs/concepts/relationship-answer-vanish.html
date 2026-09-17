@@ -1,0 +1,432 @@
+<title>The Row That Leaves</title>
+<style>
+  :root, :root[data-theme='light'] {
+    --bg:#eff1f5; --bg-elevated:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff;
+    --border:#ccd0da; --border-soft:#dce0e8;
+    --fg:#4c4f69; --fg-muted:#6c6f85; --fg-subtle:#8c8fa1;
+    --primary:#8839ef; --primary-fg:#ffffff; --link:#1e66f5;
+    --success:#40a02b; --warning:#df8e1d; --danger:#d20f39;
+    --shadow:0 1px 2px rgba(76,79,105,.06), 0 8px 24px rgba(76,79,105,.08);
+    --shadow-sm:0 1px 2px rgba(76,79,105,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#232334;
+      --border:#313244; --border-soft:#26263a;
+      --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+      --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+      --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#232334;
+    --border:#313244; --border-soft:#26263a;
+    --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing:border-box; }
+  html { color-scheme: light dark; }
+  body {
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.55;
+  }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+  h1,h2,h3 { text-wrap:balance; margin:0; }
+  code { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.86em; background:var(--bg-sunken); padding:1px 6px; border-radius:5px; }
+
+  .wrap { max-width:960px; margin:0 auto; padding-block:clamp(28px,5vw,56px) 96px; padding-inline:clamp(16px,4vw,40px); }
+  .doc-head { display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+  .eyebrow { font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-subtle); font-weight:700; }
+  .doc-head h1 { font-size:clamp(26px,4.2vw,40px); font-weight:700; letter-spacing:-.02em; line-height:1.1; }
+  .lede { font-size:clamp(15px,1.7vw,17px); color:var(--fg-muted); max-width:66ch; margin:0; }
+
+  section.block { margin-top:40px; display:flex; flex-direction:column; gap:14px; }
+  section.block > h2 { font-size:20px; font-weight:650; letter-spacing:-.01em; }
+  section.block > p { margin:0; color:var(--fg-muted); max-width:70ch; font-size:14.5px; }
+  .note { font-size:13.5px; color:var(--fg-subtle); max-width:70ch; margin:0; }
+  .verdict { border-left:3px solid var(--primary); padding:8px 0 8px 14px; font-size:14px; max-width:70ch; }
+
+  .variants { display:flex; flex-direction:column; gap:18px; }
+  .variant { background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .variant > header { display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; }
+  .variant h3 { font-size:15px; font-weight:700; }
+  .variant .timing { font-size:12px; color:var(--fg-subtle); font-variant-numeric:tabular-nums; }
+  .variant > p { margin:0; font-size:13.5px; color:var(--fg-muted); max-width:70ch; }
+
+  /* The review's own column, and a viewport short enough that the list really scrolls. */
+  .screen { position:relative; width:100%; max-width:672px; }
+  .viewport { height:260px; overflow-y:auto; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px; scroll-behavior:auto; }
+  .panel { background:var(--card); border-radius:12px; box-shadow:var(--shadow-sm); padding:12px; display:flex; flex-direction:column; gap:8px; }
+  .who { display:flex; align-items:center; gap:10px; font-weight:600; font-size:14px; }
+  .dot { width:26px; height:26px; border-radius:50%; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; font-size:11px; font-weight:700; }
+  ul.rows { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  li.row {
+    display:grid; grid-template-columns:1fr auto; align-items:start; column-gap:12px; row-gap:4px;
+    border:1px solid var(--border-soft); background:var(--card); border-radius:8px; padding:8px;
+    overflow:hidden;
+  }
+  .claim { grid-column:1; grid-row:1; font-size:14px; font-weight:500; min-width:0; }
+  .answers { grid-column:2; grid-row:1; display:flex; gap:6px; }
+  .why { grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:12px; color:var(--fg-subtle); min-width:0; }
+  .badge { border:1px solid var(--success); color:var(--success); border-radius:999px; padding:0 6px; font-size:11px; font-weight:700; letter-spacing:.04em; }
+  a.name { color:inherit; text-decoration:underline; text-decoration-color:var(--fg-subtle); text-underline-offset:2px; }
+  .btn { border:1px solid transparent; border-radius:7px; padding:3px 10px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); }
+  .btn.danger { background:transparent; color:var(--danger); border-color:var(--danger); }
+  .btn.ghost { background:transparent; color:var(--fg-muted); border-color:var(--border); }
+
+  /* The leaving row: opacity and height are animated together, or one after the other. */
+  li.row.leaving { pointer-events:none; }
+
+  .toast { margin-top:8px; display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px 10px; box-shadow:var(--shadow-sm); font-size:13px; min-height:38px; }
+  .toast[hidden] { display:none; }
+  .toast .what { color:var(--fg-muted); }
+  .toast .btn { margin-left:auto; }
+
+  .readout { margin-top:8px; font-size:12.5px; font-variant-numeric:tabular-nums; color:var(--fg-muted); background:var(--bg-sunken); border-radius:8px; padding:8px 10px; min-height:58px; }
+  .readout strong { color:var(--fg); }
+  .readout .good, td.good { color:var(--success); font-weight:700; }
+  .readout .bad, td.bad { color:var(--danger); font-weight:700; }
+
+  table.cost { border-collapse:collapse; font-size:13.5px; width:100%; max-width:640px; text-align:left; }
+  table.cost th { color:var(--fg-subtle); font-weight:600; padding:4px 14px 8px 0; }
+  table.cost td { padding:3px 14px 3px 0; font-variant-numeric:tabular-nums; }
+</style>
+
+<div class="wrap">
+  <header class="doc-head">
+    <p class="eyebrow">Stella · concept · relationship review</p>
+    <h1>The row that leaves</h1>
+    <p class="lede">
+      An answered suggestion should go at once, softly — not sit there for eight seconds wearing
+      a tick. The catch is what going costs: every row below it moves up by its height, and the
+      next one lands under the finger that was about to tap. Each proposal below is live. Answer
+      a row and watch the readout: it measures where the <em>next</em> row was, and where it is.
+    </p>
+  </header>
+
+  <section class="block">
+    <h2>Why it stands there today</h2>
+    <p>
+      The row settles in place and keeps its shape for the undo window. That came out of a
+      measurement: a row that changed shape the instant it was answered shortened the list by
+      65px and moved the page under the reader's next tap. Holding the shape fixed it — at the
+      price of a list that fills up with answered rows nobody wants to look at any more.
+    </p>
+    <p class="note">
+      What is <em>not</em> at stake: the undo window itself. The accept or the decline is still
+      held eight seconds and still sent only when the window closes, so <em>Undo</em> still
+      prevents a write instead of reversing one. This is only about what the list does meanwhile.
+    </p>
+  </section>
+
+  <section class="block">
+    <h2>Four proposals</h2>
+    <p>
+      All four make the row leave immediately. They differ in what happens to the rows below it.
+    </p>
+
+    <div class="variants" id="variants"></div>
+
+    <div class="verdict" id="verdict">
+      <strong>D</strong> — the row is gone in 120ms, and nothing below it moves while a hand is
+      still over the list. It is the only one that also holds <em>at the top of the list</em>,
+      where there is no scroll to give back and B and C shift the next row by a full 74px like A
+      does. What it costs is a blank gap where the row was, for as long as the reader keeps
+      pointing at that spot — then the gaps close together, softly. Take <strong>B</strong>
+      instead if that gap reads as a hole: it is identical everywhere except at the very top.
+      <strong>A</strong> is what “just make it disappear” gives you on its own — 74px under the
+      finger, on every answer, wherever the reader is.
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>What the readout measures</h2>
+    <p>
+      Not opinions about smoothness: the position of the next row, in the viewport, before the
+      answer and after the animation has finished. Zero means nothing moved under the reader.
+      Answer a few rows in each proposal — scrolled down as well as at the top, since that is
+      where the difference shows.
+    </p>
+    <table class="cost">
+      <thead><tr><th>Proposal</th><th>At the top of the list</th><th>Scrolled</th><th>Row gone after</th></tr></thead>
+      <tbody>
+        <tr><td>A · goes at once</td><td class="bad">74px</td><td class="bad">74px</td><td>207ms</td></tr>
+        <tr><td>B · list holds still</td><td class="bad">74px</td><td class="good">0px</td><td>222ms</td></tr>
+        <tr><td>C · softer, two movements</td><td class="bad">74px</td><td class="good">0px</td><td>430ms</td></tr>
+        <tr><td><strong>D · the gap waits</strong></td><td class="good">0px</td><td class="good">0px</td><td>120ms</td></tr>
+      </tbody>
+    </table>
+    <p class="note">
+      Driven in the pinned Playwright container, not judged by eye: each proposal answers a row
+      with the list at the top and again scrolled, and the position of the <em>same</em> row
+      below it is read before and after. D&rsquo;s gap, when it finally closes, moves that row by
+      74px like everything else — but by then the reader has left the spot, which is the whole
+      point. Under <code>prefers-reduced-motion</code> every variant skips the animation and the
+      row simply goes.
+    </p>
+    <p class="note">
+      Two of these numbers were wrong the first time I took them, in ways only a second look
+      caught: a click below the fold scrolled the page and read as the list moving, and a
+      locator that skipped answered rows handed back a <em>different</em> row afterwards. Both
+      made a still list look like a jumping one.
+    </p>
+  </section>
+</div>
+
+<script>
+  const FAMILIES = [
+    ['Otto Meier', 'Fabio Meier', 'Lisa Meier'],
+    ['Otto Meier', 'Fabio Meier', 'Selina Meier'],
+    ['Bettina Kunz', 'Nico Kunz', 'Alina Kunz'],
+    ['Bettina Kunz', 'Nico Kunz', 'Yves Kunz'],
+    ['Regula Aebi', 'Jolanda Aebi', 'Elia Aebi'],
+    ['Regula Aebi', 'Jolanda Aebi', 'Nuria Aebi'],
+    ['Kurt Steiner', 'Sarina Steiner', 'Livio Steiner'],
+    ['Kurt Steiner', 'Sarina Steiner', 'Timo Steiner']
+  ];
+
+  const VARIANTS = [
+    {
+      key: 'A',
+      title: 'A · goes at once',
+      timing: 'fade 90ms, collapse 200ms',
+      blurb:
+        'The row fades and its height closes in one movement. Everything below slides up by the height it gave back — which is the whole list, every time.',
+      compensate: false,
+      run: (row) => collapse(row, { fade: 90, height: 200, easing: 'cubic-bezier(.4,0,.2,1)' })
+    },
+    {
+      key: 'B',
+      title: 'B · goes at once, list holds still',
+      timing: 'fade 90ms, collapse 200ms, scroll compensated',
+      blurb:
+        'The same movement, but the list scrolls up by exactly the height that left, in step with it. The rows below stay where they were; the page simply gets shorter above.',
+      compensate: true,
+      run: (row) => collapse(row, { fade: 90, height: 200, easing: 'cubic-bezier(.4,0,.2,1)' })
+    },
+    {
+      key: 'C',
+      title: 'C · softer, two movements',
+      timing: 'fade 140ms, then collapse 260ms',
+      blurb:
+        'The row fades out first and only then closes, so the eye sees it leave before the list moves. Twice as long as B and the same protection; the question is whether it reads as calm or as slow.',
+      compensate: true,
+      run: (row) => collapse(row, { fade: 140, height: 260, easing: 'cubic-bezier(.2,0,0,1)', stagger: true })
+    },
+    {
+      key: 'D',
+      title: 'D · goes at once, the gap waits',
+      timing: 'fade 120ms; the space closes when the pointer leaves or the list scrolls',
+      blurb:
+        'The row itself is gone in 120ms — but the space it held stays until the reader is no longer aiming at that spot: on leaving the list, on the next scroll, or after a second of stillness. Then the gaps close together, softly. Nothing below ever moves while a finger is over the list, including at the very top where there is no scroll to give back.',
+      compensate: true,
+      hold: true,
+      run: (row) => fadeOnly(row, 120)
+    }
+  ];
+
+  const MEASURED = {};
+
+  /** Fades a row out and closes its height, resolving when the row is gone. */
+  function collapse(row, { fade, height, easing, stagger = false }) {
+    const start = row.getBoundingClientRect().height;
+    const style = getComputedStyle(row);
+    const gap = parseFloat(getComputedStyle(row.parentElement).rowGap || '0');
+    row.style.overflow = 'hidden';
+    row.classList.add('leaving');
+
+    const fadeStep = row.animate([{ opacity: 1 }, { opacity: 0 }], { duration: fade, easing: 'linear', fill: 'forwards' });
+    const closeAt = stagger ? fade : 0;
+    const close = () =>
+      row.animate(
+        [
+          { height: start + 'px', marginBottom: '0px', paddingTop: style.paddingTop, paddingBottom: style.paddingBottom, borderWidth: '1px' },
+          { height: '0px', marginBottom: -gap + 'px', paddingTop: '0px', paddingBottom: '0px', borderWidth: '0px' }
+        ],
+        { duration: height, easing, fill: 'forwards' }
+      );
+
+    return new Promise((resolve) => {
+      const started = performance.now();
+      const run = () => {
+        const closing = close();
+        closing.onfinish = () => {
+          row.remove();
+          resolve({ took: Math.round(performance.now() - started), height: start + gap });
+        };
+      };
+      if (stagger) fadeStep.onfinish = run;
+      else run();
+    });
+  }
+
+  /** Fades the row out and leaves its space standing, so nothing below it moves yet. */
+  function fadeOnly(row, fade) {
+    const start = row.getBoundingClientRect().height;
+    const gap = parseFloat(getComputedStyle(row.parentElement).rowGap || '0');
+    row.classList.add('leaving');
+    row.style.overflow = 'hidden';
+    const started = performance.now();
+    return new Promise((resolve) => {
+      const fading = row.animate([{ opacity: 1 }, { opacity: 0 }], { duration: fade, easing: 'linear', fill: 'forwards' });
+      fading.onfinish = () => {
+        row.dataset.spent = 'true';
+        row.style.visibility = 'hidden';
+        resolve({ took: Math.round(performance.now() - started), height: 0, spent: start + gap });
+      };
+    });
+  }
+
+  /** Closes every space a spent row is still holding, once the reader has moved on. */
+  function closeGaps(list, viewport) {
+    const spent = [...list.querySelectorAll('li.row[data-spent]')];
+    if (spent.length === 0) return;
+    const gap = parseFloat(getComputedStyle(list).rowGap || '0');
+    const above = spent.filter((row) => row.getBoundingClientRect().bottom < viewport.getBoundingClientRect().top);
+    let given = 0;
+    for (const row of spent) {
+      const height = row.getBoundingClientRect().height + gap;
+      if (above.includes(row)) given += height;
+      const style = getComputedStyle(row);
+      row.style.visibility = 'visible';
+      const closing = row.animate(
+        [
+          { height: row.getBoundingClientRect().height + 'px', opacity: 0, marginBottom: '0px', paddingTop: style.paddingTop, paddingBottom: style.paddingBottom, borderWidth: '1px' },
+          { height: '0px', opacity: 0, marginBottom: -gap + 'px', paddingTop: '0px', paddingBottom: '0px', borderWidth: '0px' }
+        ],
+        { duration: 200, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }
+      );
+      closing.onfinish = () => row.remove();
+    }
+    if (given > 0) {
+      const room = viewport.scrollHeight - viewport.clientHeight;
+      viewport.scrollTop = Math.max(0, Math.min(room, viewport.scrollTop - given));
+    }
+  }
+
+  function rowFor(family, index) {
+    const [parent, via, child] = family;
+    const li = document.createElement('li');
+    li.className = 'row';
+    li.dataset.index = String(index);
+    li.innerHTML = `
+      <span class="claim"><a class="name" href="#">${parent}</a> is a parent of <a class="name" href="#">${child}</a></span>
+      <span class="answers">
+        <button class="btn primary" data-answer="accept">Accept</button>
+        <button class="btn danger" data-answer="decline">Decline</button>
+      </span>
+      <span class="why"><span class="badge">CERTAIN</span>
+        <span><a class="name" href="#">${parent}</a> is a parent of <a class="name" href="#">${via}</a>, and
+        <a class="name" href="#">${via}</a> and <a class="name" href="#">${child}</a> are siblings.</span>
+      </span>`;
+    return li;
+  }
+
+  function build(variant) {
+    const box = document.createElement('div');
+    box.className = 'variant';
+    box.innerHTML = `
+      <header>
+        <h3>${variant.title}</h3>
+        <span class="timing">${variant.timing}</span>
+        <span style="margin-left:auto; display:flex; gap:8px">
+        ${variant.hold ? '<button class="btn ghost" data-settle>Close the gaps now</button>' : ''}
+        <button class="btn ghost" data-reset>Refill the list</button></span>
+      </header>
+      <p>${variant.blurb}</p>
+      <div class="screen">
+        <div class="viewport"><div class="panel">
+          <div class="who"><span class="dot">HH</span> Suggestions across the household</div>
+          <ul class="rows"></ul>
+        </div></div>
+        <div class="toast" hidden><span class="what"></span><button class="btn ghost">Undo</button></div>
+        <div class="readout">Answer a row. Scroll down first and answer one in the middle — that is where a moving list is felt.</div>
+      </div>`;
+
+    const list = box.querySelector('ul.rows');
+    const toast = box.querySelector('.toast');
+    const readout = box.querySelector('.readout');
+    const viewport = box.querySelector('.viewport');
+
+    const fill = () => {
+      list.replaceChildren(...FAMILIES.map((f, i) => rowFor(f, i)));
+      toast.hidden = true;
+    };
+    fill();
+    box.querySelector('[data-reset]').addEventListener('click', fill);
+
+    list.addEventListener('click', async (event) => {
+      const button = event.target.closest('button[data-answer]');
+      if (!button) return;
+      const row = button.closest('li.row');
+      const next = row.nextElementSibling;
+      const before = next ? Math.round(next.getBoundingClientRect().top) : null;
+      const scrollBefore = viewport.scrollTop;
+
+      const answer = button.dataset.answer === 'accept' ? 'Added' : 'Declined';
+      toast.hidden = false;
+      toast.querySelector('.what').textContent =
+        `${answer}: ${row.querySelector('.claim').textContent.trim()}`;
+
+      const { took, height } = await variant.run(row);
+
+      if (variant.compensate) {
+        // Give back exactly what left, so the rows below keep their place on screen.
+        const room = viewport.scrollHeight - viewport.clientHeight;
+        viewport.scrollTop = Math.max(0, Math.min(room, scrollBefore - height));
+      }
+
+      const after = next ? Math.round(next.getBoundingClientRect().top) : null;
+      const moved = before === null ? null : Math.abs(after - before);
+      MEASURED[variant.key] = { moved, took };
+      readout.innerHTML =
+        moved === null
+          ? `Last row in the list — nothing below it to move. <strong>${took}ms</strong>.`
+          : `The next row was at <strong>${before}px</strong>, and is now at <strong>${after}px</strong> — ` +
+            `it moved <span class="${moved === 0 ? 'good' : 'bad'}">${moved}px</span> under the reader. ` +
+            `The row took <strong>${took}ms</strong> to leave.`;
+    });
+
+    if (variant.hold) {
+      let idle;
+      const settle = () => closeGaps(list, viewport);
+      viewport.addEventListener('pointerleave', settle);
+      viewport.addEventListener('scroll', () => {
+        clearTimeout(idle);
+        idle = setTimeout(settle, 150);
+      });
+      list.addEventListener('click', () => {
+        clearTimeout(idle);
+        idle = setTimeout(settle, 1000);
+      });
+      box.querySelector('[data-settle]')?.addEventListener('click', settle);
+    }
+
+    toast.querySelector('button').addEventListener('click', () => (toast.hidden = true));
+    return box;
+  }
+
+  function summarise() {
+    const body = document.querySelector('#summary tbody');
+    body.replaceChildren(
+      ...VARIANTS.map((v) => {
+        const m = MEASURED[v.key];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${v.title}</td><td>${
+          m ? (m.moved === null ? '—' : `${m.moved}px`) : 'not answered yet'
+        }</td><td>${m ? `${m.took}ms` : '—'}</td>`;
+        return tr;
+      })
+    );
+  }
+
+  document.getElementById('variants').append(...VARIANTS.map(build));
+</script>

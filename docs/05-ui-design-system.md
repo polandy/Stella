@@ -227,12 +227,14 @@ They must be edited together; `app.css` says so at both blocks.
     the link colour — the two buttons beside them are the call to action, and a row carries up
     to six names. Measured: the full sentence costs the row nothing at the review's own width
     (66px, unchanged) and one line on a phone. Concept: `docs/concepts/relationship-reasoning.html`.
-  - **An answered row settles in place.** It takes a green or red tint and swaps its two buttons
-    for *Added* / *Declined* — keeping the same three-part shape, because a row that shrinks to
-    one line the instant it is answered moves everything below it by the height it gave up
-    (measured: 65px, under the reader's next tap). *Undo* lives in the toast for eight seconds;
-    when the window closes the row collapses over 260ms, and under `prefers-reduced-motion` it
-    simply goes. Concept: `docs/concepts/relationship-answer-undo.html`.
+  - **An answered row goes at once.** It fades as it closes, over 200ms, and while it closes the
+    list gives the height it loses back to its own scroll offset — so whatever stood below the
+    row stands in the same place when it is gone, and the next row is never pulled up under a
+    finger. Measured: 0px of movement, where a plain collapse moves everything below by a full
+    row (74px). At the top of a list there is nothing to give back and the rows below do move;
+    that is the honest limit. *Undo* lives in the toast for eight seconds, and under
+    `prefers-reduced-motion` the row simply goes. Concept:
+    `docs/concepts/relationship-answer-vanish.html`.
 - **People** — a find-as-you-type field, tag chips, then **letter groups** by surname with a
   sticky letter heading; each row is avatar, name (lock for private), description, and
   **last written about** on the right (`—` when nothing has been). The heading counts people;

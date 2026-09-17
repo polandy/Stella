@@ -258,6 +258,18 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   household and quietly understates every large one. Hence the totals come out of `reviewPage`
   rather than off `data.groups`, and a unit case asserts them against a household deliberately
   larger than one page.
+- **An answered row leaves at once, and the list pays for it** — the row used to stand there
+  answered until its undo window closed, which was the first fix for a list that jumped under the
+  reader. It made the review fill up with rows nobody wanted to look at any more. Now the row
+  goes immediately and the list gives back to its own scroll offset exactly the height it just
+  lost, frame by frame, so the rows below hold still. Read off the list rather than computed from
+  the row: a row's height and the space it takes in a list are not the same number, and the
+  offset is *carried* rather than read back, because at the end of a list the browser shortens
+  `scrollTop` itself and reading that value and subtracting again gave the same pixels back
+  twice. Measured in the running app: 0px of movement, against 74px for a plain collapse. Three
+  other designs were built and measured first — a deferred gap that waits for the pointer to
+  leave holds at the top of a list too, where this one cannot, and was rejected as a hole in the
+  list (`docs/concepts/relationship-answer-vanish.html`).
 - **A sentence is handed its names, never assembled from pieces** — a claim and its reason each
   name two or three people, and every name is a link to that person. Building the sentence out
   of translated fragments with names in between would put English word order into the domain:

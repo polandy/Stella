@@ -143,8 +143,6 @@ export const contact = {
 	'contact.relationships.acceptedSibling': (p: { one: string; other: string }) =>
 		`Added ${p.one} and ${p.other} as siblings`,
 	'contact.relationships.declinedNotice': 'Declined — it will not be offered again',
-	'contact.relationships.added': 'Added',
-	'contact.relationships.declinedMark': 'Declined',
 	'contact.relationships.accept': 'Accept',
 	'contact.relationships.decline': 'Decline',
 	/*

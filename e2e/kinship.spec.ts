@@ -59,7 +59,9 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 	// Lena's brothers follow from it, each with the reason and its own confirmation.
 	const proposals = page.getByTestId('kin-proposals');
 	await expect(proposals).toContainText('Vreni Zbinden is a parent of Elias Brunner');
-	await expect(proposals).toContainText('Elias Brunner is Lena Brunner’s sibling.');
+	await expect(proposals).toContainText(
+		'Vreni Zbinden is a parent of Lena Brunner, and Lena Brunner and Elias Brunner are siblings.'
+	);
 	await expect(proposals).toContainText('Vreni Zbinden is a parent of Noah Brunner');
 
 	await proposals
@@ -69,14 +71,14 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 		.click();
 
 	/*
-	 * Held rather than written (docs/02 §2.23): the confirmed row keeps its place for one undo
-	 * window while the untouched one stays exactly as it was. Confirming used to reload the page,
-	 * which is what made the block jump away under the reader.
+	 * Held rather than written (docs/02 §2.23): the confirmed row leaves the block at once while
+	 * the untouched one stays exactly where it was, and nothing has been stored yet. Confirming
+	 * used to reload the page, which is what made the block jump away under the reader.
 	 */
 	const rowFor = (name: string) =>
 		page.getByTestId('kin-proposals').getByTestId('kin-suggestion').filter({ hasText: name });
-	await expect(rowFor('Elias Brunner')).toHaveAttribute('data-held', 'accept');
-	await expect(rowFor('Noah Brunner')).not.toHaveAttribute('data-held');
+	await expect(rowFor('Elias Brunner')).toHaveCount(0);
+	await expect(rowFor('Noah Brunner')).toHaveCount(1);
 	await expect(page.getByTestId('toast-undo')).toBeVisible();
 
 	// Leaving closes the window and sends it — and exactly the confirmed one was written.

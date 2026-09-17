@@ -38,11 +38,12 @@ const first = (name: string) => name.split(' ')[0]!;
 const last = (name: string) => name.split(' ')[1]!;
 
 /**
- * The sentence the rule gives for its claim. It names both people in full and reads from the
- * subject's side — *Ronja Odermatt is Silvan Odermatt's sibling* — which is the claim's own
- * direction, not the direction the links were entered in.
+ * The sentence the rule gives for its claim: both facts it rests on, and every name in it a way
+ * to that person (docs/02 §2.4.1). Naming only the sibling pair, as it once did, never mentioned
+ * the person being offered — the one name the reader is asking about.
  */
-const reasonOf = (f: Family) => `${f.other} is ${f.one}’s sibling.`;
+const reasonOf = (f: Family) =>
+	`${f.parent} is a parent of ${f.one}, and ${f.one} and ${f.other} are siblings.`;
 
 /** Adds a person from their full name, through the real form. */
 const add = (page: Page, name: string) => addPerson(page, first(name), last(name));
@@ -118,13 +119,11 @@ test('declining holds the no with who said it, and offering it again puts the cl
 		.click();
 
 	/*
-	 * Held rather than sent: the row keeps its place for one undo window, which is what stops
-	 * the panel jumping under the reader (docs/02 §2.23). It reaches the drawer only once the
-	 * answer has gone out, and leaving the page is what sends it.
+	 * The row goes at once, but the answer is only *held*: it reaches the drawer when it is sent,
+	 * and leaving the page is what sends it (docs/02 §2.23). The toast is the positive sign that
+	 * it is waiting rather than written.
 	 */
-	await expect(
-		panel.getByTestId('kin-suggestion').filter({ hasText: claimOf(f) })
-	).toHaveAttribute('data-held', 'decline');
+	await expect(panel.getByTestId('kin-suggestion').filter({ hasText: claimOf(f) })).toHaveCount(0);
 	await expect(page.getByTestId('toast-undo')).toBeVisible();
 
 	await openPerson(page, new RegExp(f.other));
@@ -154,10 +153,8 @@ test('accepting stores the link and stops offering it', async ({ page }) => {
 		.getByRole('button', { name: 'Accept' })
 		.click();
 
-	// Held first, with the way back in the toast, and nothing written yet.
-	await expect(
-		panel.getByTestId('kin-suggestion').filter({ hasText: claimOf(f) })
-	).toHaveAttribute('data-held', 'accept');
+	// Gone from the panel at once, with the way back in the toast and nothing written yet.
+	await expect(panel.getByTestId('kin-suggestion').filter({ hasText: claimOf(f) })).toHaveCount(0);
 	await expect(page.getByTestId('toast-undo')).toBeVisible();
 
 	// Leaving sends it: then it stands in the entered list and is no longer a question.
