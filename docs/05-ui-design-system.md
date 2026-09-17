@@ -495,41 +495,46 @@ be taken back from here (docs/02 §2.23), and every one of them is the same comp
 (`RemoveButton`), so no list can quietly opt out. Saving says *Saved* and closes the form it
 was typed in — a section's editor and an inline edit alike. On a phone the region sits above the tab bar.
 
-**Activity bar** (`src/lib/components/ActivityBar.svelte`) is how the app says it is still
-working, once for the whole app: a two-pixel bar in `--primary` running along the very top of
-the window, over everything. It is **fixed to the viewport and takes no space in the layout** —
-an indicator that appears in the flow pushes the page down as it arrives, and moving the line
-somebody is reading is worse than showing nothing at all. That rules out a banner in the
-column and a badge in a section header alike, and it is why there is one bar rather than an
-indicator per card.
+**Activity indicator** (`src/lib/components/ActivityIndicator.svelte`) is how the app says it
+is still working, once for the whole app: a small pill — a spinner and a word on `--card` —
+centred just under the top edge of the window, over everything. It is **fixed to the viewport
+and takes no space in the layout**; an indicator that appears in the flow pushes the page down
+as it arrives, and moving the line somebody is reading is worse than showing nothing at all.
+That rules out a banner in the column and a badge in a section header alike, and it is why
+there is one indicator rather than one per card. A two-pixel line along the top edge was tried
+first and passed unnoticed: at the size an indicator may take without being in the way, a
+shape with a word in it is read and a line is not.
+
+It arrives on a short fly-and-fade and leaves on a fade (260 ms / 180 ms, both nothing under
+`prefers-reduced-motion`): the pill is quiet enough that appearing outright reads as a flash,
+and a wait that announces itself abruptly feels longer than it is.
 
 It shows for a page that is still loading and for any change a page reports — saving a
 relationship reloads the person's graph, and on a household with many links that takes long
 enough to read as nothing having happened. Nothing is dimmed, covered or disabled while it
 runs: what is on screen is still true until the answer arrives. `role="status"` with the live
-region always mounted, so a screen reader hears the work start rather than the region appear;
-under `prefers-reduced-motion` the bar sits filled instead of travelling.
+region always mounted, so a screen reader hears the work start rather than the region appear.
 
 It does not appear for every wait. Work that is over within **250 ms** is never shown at all —
-below that a save is finished about as soon as the bar could be read, and announcing it only
-makes the app look busier than it is — and once the bar is up it stays for at least **400 ms**,
-so it can never register as a blink. Both windows are the store's, not the bar's, so a page
+below that a save is finished about as soon as the pill could be read, and announcing it only
+makes the app look busier than it is — and once it is up it stays for at least **400 ms**, so
+it can never register as a blink. Both windows are the store's, not the indicator's, so a page
 that starts two quick loads in a row (the app does, on a cold start) shows nothing rather than
 flickering twice.
 
 What counts as work in flight is decided away from the screen, by
 `src/lib/sync/pending-work.ts`: one store per tab, provided by the shell through context
 (`src/lib/sync/context.svelte.ts`) the way the removals store is, and a **count** rather than a
-flag — two changes that overlap must not let the first one's answer clear the second one's bar,
-and an unbalanced `end()` throws rather than counting below idle. Its timer is injected, so
-both windows are unit-tested against a clock the test moves by hand. A navigation is reported
-to the same store, and so obeys the same windows. A page reports through
+flag — two changes that overlap must not let the first one's answer clear the second one's
+indicator, and an unbalanced `end()` throws rather than counting below idle. Its timer is
+injected, so both windows are unit-tested against a clock the test moves by hand. A navigation
+is reported to the same store, and so obeys the same windows. A page reports through
 `src/lib/sync/pending.ts`: `trackPending` wraps an enhanced form's submit, `whilePending` wraps
 a plain async job, and `RemoveButton`'s optional `pending` counts the commit a removal makes
 once its undo window has passed — never the window itself, during which nothing is on its way
 to the server yet.
 
-The bar is hard to catch in a healthy local build — a save there is over in tens of
+The indicator is hard to catch in a healthy local build — a save there is over in tens of
 milliseconds, well under the delay — so `/settings/debug` is a workbench for it: jobs of a
 chosen length, two that overlap, and one held open, with the windows and the current state
 written out. It is served in development, and from a build only with `DEBUG_PAGES=true`
