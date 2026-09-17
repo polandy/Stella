@@ -53,13 +53,18 @@ test('says it is working while a change is in flight, without moving the page', 
 	await openPerson(page, new RegExp(ANNA));
 
 	const heading = page.getByRole('heading', { name: ANNA });
-	const before = await heading.boundingBox();
 	const release = await holdSaves(page);
 
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	const form = page.locator('form[action="?/addRelationship"]');
 	await form.locator('select[name=typeChoice]').selectOption({ label: 'Knows' });
 	await pickPerson(form.getByLabel('Person'), BERT);
+	/*
+	 * Measured here and not earlier: opening the form scrolls its card into view, which is the
+	 * section doing its job. From this point until the answer lands the only thing that changes
+	 * on screen is the indicator, so anything that moves, it moved.
+	 */
+	const before = await heading.boundingBox();
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 
 	const indicator = page.getByTestId('activity-indicator');
