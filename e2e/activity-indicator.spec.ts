@@ -17,10 +17,16 @@ import { stateOf } from './graph-canvas';
  * Its people are seeded for it and named after nobody: the suite shares one database.
  */
 
+/*
+ * A pair per case: the restore is add-only and keyed by an id derived from the name, so two
+ * cases sharing a pair would leave the second one seeding nobody.
+ */
 const ANNA = 'Anna Wildbach';
 const BERT = 'Bert Wildbach';
+const CARL = 'Carl Wildbach';
+const DORA = 'Dora Wildbach';
 /** `seed.ts` derives ids from the name, and the canvas addresses its nodes by contact id. */
-const BERT_ID = 'e2e-bert-wildbach';
+const DORA_ID = 'e2e-dora-wildbach';
 
 /** Holds every form post until the returned `release` is called. */
 async function holdSaves(page: Page): Promise<() => void> {
@@ -68,11 +74,11 @@ test('says it is working while a change is in flight, without moving the page', 
 });
 
 test('takes a removed link out of the map at once, before it is sent', async ({ page }) => {
-	await seedHousehold(page, [ANNA, BERT], [{ from: ANNA, to: BERT, type: LINK.siblingOf }]);
-	await openPerson(page, new RegExp(ANNA));
+	await seedHousehold(page, [CARL, DORA], [{ from: CARL, to: DORA, type: LINK.siblingOf }]);
+	await openPerson(page, new RegExp(CARL));
 
 	// The map is a canvas; this is the renderer answering, not the model being re-read.
-	await expect.poll(() => stateOf(page, BERT_ID)).toBe('drawn');
+	await expect.poll(() => stateOf(page, DORA_ID)).toBe('drawn');
 
 	// Every request the page makes from here, so "nothing has been sent" is something seen
 	// rather than assumed.
@@ -81,13 +87,13 @@ test('takes a removed link out of the map at once, before it is sent', async ({ 
 		if (request.method() === 'POST') posts.push(request.url());
 	});
 
-	await enteredRow(page, BERT)
-		.getByRole('button', { name: `Remove the link to ${BERT}` })
+	await enteredRow(page, DORA)
+		.getByRole('button', { name: `Remove the link to ${DORA}` })
 		.click();
 
-	await expect(enteredRow(page, BERT)).toHaveCount(0);
+	await expect(enteredRow(page, DORA)).toHaveCount(0);
 	await expect(page.getByTestId('toast-undo')).toContainText('Relationship removed');
-	await expect.poll(() => stateOf(page, BERT_ID)).toBe('absent');
+	await expect.poll(() => stateOf(page, DORA_ID)).toBe('absent');
 	// The undo window is still open: the household's copy still has the link.
 	expect(posts).toEqual([]);
 

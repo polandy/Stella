@@ -49,7 +49,7 @@ const RESTORE_ACTION = '/settings/import/archive?/restore';
 export async function seedHousehold(
 	page: Page,
 	people: readonly string[],
-	links: readonly SeedLink[] = []
+	links: readonly SeedLink[] = [],
 ): Promise<void> {
 	const document = {
 		format: ARCHIVE_FORMAT,
@@ -61,7 +61,7 @@ export async function seedHousehold(
 				id: idOf(name),
 				display_name: name,
 				first_name: first,
-				last_name: rest.join(' ')
+				last_name: rest.join(' '),
 			};
 		}),
 		relationships: links.map((link) => ({
@@ -70,8 +70,8 @@ export async function seedHousehold(
 			to: idOf(link.to),
 			type: link.type,
 			// The status a link entered through the form gets (docs/03 §relationship).
-			status: 'current' satisfies RelationshipStatus
-		}))
+			status: 'current' satisfies RelationshipStatus,
+		})),
 	};
 	const text = new TextEncoder().encode(JSON.stringify(document));
 	const archive = Buffer.concat([tarEntry(DOCUMENT_ENTRY, text, 0), tarTrailer()]);
@@ -84,16 +84,18 @@ export async function seedHousehold(
 			archive: {
 				name: 'seed.tar',
 				mimeType: 'application/x-tar',
-				buffer: archive
-			}
-		}
+				buffer: archive,
+			},
+		},
 	});
 	expect(response.status()).toBe(200);
 	// A refused archive answers 200 too, with an error where the report would be — so the
 	// report's own counts are the signal, not the status.
 	const report = restoreReportFrom(await response.text());
-	expect(report.added.contact).toBe(people.length);
-	expect(report.added.relationship).toBe(links.length);
+	// A count the report leaves out is a zero: a household of people with no links between them
+	// is a perfectly good setting, and `toBe(0)` against a missing count would fail on it.
+	expect(report.added.contact ?? 0).toBe(people.length);
+	expect(report.added.relationship ?? 0).toBe(links.length);
 }
 
 /** The app's own origin, from the project config — not from whatever page happens to be open. */
