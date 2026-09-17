@@ -271,10 +271,16 @@ suggestion is about, with the same three answers on every row. Nothing is stored
 accept it, and a claim you have already answered is not offered again — so checking twice in a
 row is free.
 
-When you accept or decline a suggestion the page stays exactly where it is — the row marks
-itself answered, a message at the bottom offers **Undo** for a few seconds, and only after that
-is anything saved. So taking an accept back does not undo a relationship; it stops one from ever
-being made. Leaving the page earlier simply saves it sooner.
+Each suggestion says what it follows from, underneath it — *Otto Meier is a parent of Fabio
+Meier, and Fabio Meier and Lisa Meier are siblings* — so you can see why Stella is asking before
+you answer. Every name in a suggestion is a link to that person, in the claim and in the reason
+alike, for when you want to look before you decide.
+
+When you accept or decline a suggestion the row disappears straight away, and the page stays
+exactly where it is — whatever was below the row stays where you were looking. A message at the
+bottom offers **Undo** for a few seconds, and only after that is anything saved. So taking an
+accept back does not undo a relationship; it stops one from ever being made, and the suggestion
+comes back. Leaving the page earlier simply saves it sooner.
 
 Nothing is left out of that list, however large your household is — but it arrives ten people
 at a time, so there is always an end in sight and a sensible place to stop. The line at the top

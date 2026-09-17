@@ -258,6 +258,27 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   household and quietly understates every large one. Hence the totals come out of `reviewPage`
   rather than off `data.groups`, and a unit case asserts them against a household deliberately
   larger than one page.
+- **An answered row leaves at once, and the list pays for it** — the row used to stand there
+  answered until its undo window closed, which was the first fix for a list that jumped under the
+  reader. It made the review fill up with rows nobody wanted to look at any more. Now the row
+  goes immediately and the list gives back to its own scroll offset exactly the height it just
+  lost, frame by frame, so the rows below hold still. Read off the list rather than computed from
+  the row: a row's height and the space it takes in a list are not the same number, and the
+  offset is *carried* rather than read back, because at the end of a list the browser shortens
+  `scrollTop` itself and reading that value and subtracting again gave the same pixels back
+  twice. Measured in the running app: 0px of movement, against 74px for a plain collapse. Three
+  other designs were built and measured first — a deferred gap that waits for the pointer to
+  leave holds at the top of a list too, where this one cannot, and was rejected as a hole in the
+  list (`docs/concepts/relationship-answer-vanish.html`).
+- **A sentence is handed its names, never assembled from pieces** — a claim and its reason each
+  name two or three people, and every name is a link to that person. Building the sentence out
+  of translated fragments with names in between would put English word order into the domain:
+  German orders the same three names differently and needs a dative apposition where English
+  uses a genitive. So the message stays one whole sentence per language, and `src/lib/i18n/
+  linked.ts` asks it to say itself with markers standing in for the names, then reads back where
+  the language put each one. The cost is one indirection between a message and the screen; what
+  it buys is that a translator writes ordinary prose and the links follow wherever they put the
+  names. Matching on names instead was rejected: a household may hold a person called `1`.
 - **A suggestion is answered by holding it, not by writing it** — accept and decline go through
   the same deferred-removal window as every removal (§2.23): the form is cancelled, the answer
   waits eight seconds, and only then is it sent. The alternative — write immediately and delete

@@ -44,6 +44,7 @@ import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
 import { authorLabel } from '$lib/story/author';
+import { segmentsOf } from '$lib/i18n/linked';
 import { decodeRelationshipChoice, endpointsForSide } from '$lib/relationships/type-options';
 import { toStoryItem } from './story-view';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
@@ -260,11 +261,15 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	const nameOfAuthor = await authorNames(getMemberDeps(), viewer.householdId);
 
 	/*
-	 * A suggestion's reason arrives as a `Phrase`; here is where it becomes a sentence, in the
-	 * language this request is being read in. A closure cannot cross `load` into `data`.
+	 * A suggestion's reason arrives unsaid; here is where it becomes a sentence in the language
+	 * this request is being read in, cut into words and people so the screen can make every name
+	 * a way to that person. A closure cannot cross `load` into `data`.
 	 */
 	const said = (proposals: readonly ProposedLink[]) =>
-		proposals.map((proposal) => ({ ...proposal, reason: proposal.reason(translator(locals)) }));
+		proposals.map((proposal) => ({
+			...proposal,
+			reason: segmentsOf(proposal.reason(translator(locals)))
+		}));
 
 	return {
 		story: {

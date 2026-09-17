@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { textOf } from '$lib/i18n/linked';
 import { createTranslator } from '$lib/i18n/translate';
 import type { KinshipGraph } from '$lib/kinship/kinship';
 import { pairKey, type Dismissal } from './claims';
@@ -56,7 +57,9 @@ describe('evaluate', () => {
 		expect(shape(stored('parent', 'bettina', 'hans'), v)).toEqual([
 			['L1', 'parent', 'bettina', 'lisa']
 		]);
-		expect(found[0]?.reason(createTranslator('de'))).toBe('Lisa ist ein Geschwisterteil von Hans.');
+		expect(textOf(found[0]!.reason(createTranslator('de')))).toBe(
+			'Bettina ist ein Elternteil von Hans, und Hans und Lisa sind Geschwister.'
+		);
 	});
 
 	/*
@@ -282,7 +285,8 @@ describe('evaluate', () => {
 			relation: 'parent',
 			fromId,
 			toId,
-			reason: () => ruleId,
+			// The sentence is not what this case is about; it only has to be one.
+			reason: () => ({ people: {}, say: () => ruleId }),
 			dismissed: null
 		});
 

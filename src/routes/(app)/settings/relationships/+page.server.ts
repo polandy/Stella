@@ -8,6 +8,7 @@ import {
 	reviewPage,
 	type FoldedGroup
 } from '$lib/suggestions/paging';
+import { segmentsOf, type Segment } from '$lib/i18n/linked';
 import { ANSWER_ANCHOR_FIELD, withAnchor } from '$lib/relationships/answer-key';
 import {
 	RETURN_TO_FIELD,
@@ -56,8 +57,8 @@ import type { Actions, PageServerLoad } from './$types';
  * told about a person they may not see.
  */
 
-/** A suggestion whose reason has stopped being a `Phrase` and become a sentence. */
-type SaidSuggestion = Omit<ProposedLink, 'reason'> & { reason: string };
+/** A suggestion whose reason has stopped waiting for a language and become a said sentence. */
+type SaidSuggestion = Omit<ProposedLink, 'reason'> & { reason: Segment[] };
 
 /** What the screen reads, in every state, so they all carry the same shape. */
 interface ReviewData {
@@ -130,9 +131,13 @@ export const load: PageServerLoad = async ({ locals, url }): Promise<ReviewData>
 		reviewHousehold(getSuggestionReviewDeps(), viewer, { includeDismissed: true }),
 		authorNames(getMemberDeps(), viewer.householdId)
 	]);
-	// The reason arrives as a `Phrase`; here is where it becomes a sentence, in the language
-	// this request is being read in.
-	const said: SaidSuggestion[] = found.map((s) => ({ ...s, reason: s.reason(translator(locals)) }));
+	// The reason arrives unsaid; here is where it becomes a sentence in the language this request
+	// is being read in — cut into words and people, because a closure cannot cross into `data`
+	// and the screen has to know where each name landed to make it a link.
+	const said: SaidSuggestion[] = found.map((s) => ({
+		...s,
+		reason: segmentsOf(s.reason(translator(locals)))
+	}));
 	const standing = said.filter((s) => s.dismissed === null);
 	const declined = orderedDeclined(said.filter((s) => s.dismissed !== null));
 	const declinedInline = declinedFitsInline(declined.length);

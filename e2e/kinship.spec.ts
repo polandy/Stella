@@ -80,7 +80,9 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 	// Rahel's sister and brother follow from it, each with the reason and its own confirmation.
 	const proposals = page.getByTestId('kin-proposals');
 	await expect(proposals).toContainText('Vreni Zbinden is a parent of Silvan Ammann');
-	await expect(proposals).toContainText('Silvan Ammann is Rahel Ammann’s sibling.');
+	await expect(proposals).toContainText(
+		'Vreni Zbinden is a parent of Rahel Ammann, and Rahel Ammann and Silvan Ammann are siblings.'
+	);
 	await expect(proposals).toContainText('Vreni Zbinden is a parent of Thea Ammann');
 
 	await proposals
@@ -90,18 +92,18 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 		.click();
 
 	/*
-	 * Held rather than written (docs/02 §2.23): the confirmed row keeps its place for one undo
-	 * window while the untouched one stays exactly as it was. Confirming used to reload the page,
-	 * which is what made the block jump away under the reader.
+	 * Held rather than written (docs/02 §2.23): the confirmed row leaves the block at once while
+	 * the untouched one stays exactly where it was, and nothing has been stored yet. Confirming
+	 * used to reload the page, which is what made the block jump away under the reader.
 	 */
 	const rowFor = (name: string) =>
 		page.getByTestId('kin-proposals').getByTestId('kin-suggestion').filter({ hasText: name });
-	await expect(rowFor('Silvan Ammann')).toHaveAttribute('data-held', 'accept');
-	await expect(rowFor('Thea Ammann')).not.toHaveAttribute('data-held');
+	await expect(rowFor('Silvan Ammann')).toHaveCount(0);
+	await expect(rowFor('Thea Ammann')).toHaveCount(1);
 	await expect(page.getByTestId('toast-undo')).toBeVisible();
 
-	// Leaving closes the window and sends it — and exactly the confirmed one was written: Silvan
-	// is stored and no longer offered, Thea is neither.
+	// Leaving closes the window and sends it — and exactly the confirmed one was written: the
+	// link stands on Silvan's page and never reached Thea's.
 	await openPeopleTab(page, /Silvan Ammann/);
 	await expect(page.locator('#section-relationships')).toContainText('Vreni Zbinden');
 	await openPeopleTab(page, /Thea Ammann/);

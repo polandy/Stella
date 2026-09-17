@@ -1,4 +1,4 @@
-import { parentOf, siblingOf } from '../reasons';
+import { parentThroughSibling } from '../reasons';
 import type { LinkSuggestion, PrimaryLink, Rule, Trigger } from '../types';
 import type { SuggestionView } from '../view';
 
@@ -60,17 +60,25 @@ function parentLink(
 }
 
 /** L1 — a parent stored for one child is a parent of that child's siblings. */
-export const L1: Rule = (trigger: Trigger, view: SuggestionView): LinkSuggestion[] =>
-	linksInScope(trigger, view)
+export const L1: Rule = (trigger: Trigger, view: SuggestionView): LinkSuggestion[] => {
+	const who = (id: string) => ({ id, name: view.nameOf(id) });
+	return linksInScope(trigger, view)
 		.filter((link) => link.kind === 'parent')
 		.flatMap(({ fromId: parentId, toId: childId }) =>
 			[...view.siblingsOf(childId)].map((sibling) =>
-				parentLink('L1', parentId, sibling, siblingOf(view.nameOf(sibling), view.nameOf(childId)))
+				parentLink(
+					'L1',
+					parentId,
+					sibling,
+					parentThroughSibling(who(parentId), who(childId), who(sibling))
+				)
 			)
 		);
+};
 
 /** L2 — a stored sibling link means each side's known parents are the other's parents. */
 export const L2: Rule = (trigger: Trigger, view: SuggestionView): LinkSuggestion[] => {
+	const who = (id: string) => ({ id, name: view.nameOf(id) });
 	const found: LinkSuggestion[] = [];
 	for (const link of linksInScope(trigger, view)) {
 		if (link.kind !== 'sibling') continue;
@@ -79,7 +87,9 @@ export const L2: Rule = (trigger: Trigger, view: SuggestionView): LinkSuggestion
 			[link.toId, link.fromId]
 		] as const) {
 			for (const parent of view.parentsOf(one)) {
-				found.push(parentLink('L2', parent, other, parentOf(view.nameOf(parent), view.nameOf(one))));
+				found.push(
+					parentLink('L2', parent, other, parentThroughSibling(who(parent), who(one), who(other)))
+				);
 			}
 		}
 	}

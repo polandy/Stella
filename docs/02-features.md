@@ -505,12 +505,28 @@ tables, fully unit-testable (test-first).
   household. Anyone's check is scoped to their own graph, so a private person is never named to
   someone who may not see them.
 
+- **Shipped:** every suggestion **says what it follows from**, and every name in it is a way to
+  that person. A parent claim rests on two facts — the parent is on record for one child, and
+  that child and this one are siblings — and the row states both: *Otto Meier is a parent of
+  Fabio Meier, and Fabio Meier and Lisa Meier are siblings.* It used to state one of them, and
+  the one that never mentions the person being offered. The rule's internal name (`L1`) is gone
+  from the screen; it was never anything a household could read. Claim and reason alike are
+  written whole in each language and handed their names, so German can order them its own way
+  and the names stay separable enough to link (docs/04 §4.9).
 - **Shipped:** answering **never moves the page**. An answer used to be a form post and a
   redirect, which threw the rendered document away and scrolled to the top — on row forty that
   cost the reader their place on every single answer. Now the form is intercepted, nothing
   navigates, and the answer waits out an undo window before it is sent (§2.23). Without
   JavaScript the same form still posts and the page still reloads, but the redirect carries the
   answered row's anchor, so it lands beside it rather than at the top.
+- **Shipped:** an answered row **goes at once**, fading as it closes over a fifth of a second —
+  it does not stand there answered for the length of the undo window. What leaves the screen and
+  what reaches the server are two different promises: the row is the reader's, the window is the
+  database's. While the row closes, the list gives the height it loses back to its own scroll
+  offset, so the rows below hold still and the next one is never pulled up under a finger already
+  on its way to *Decline* (docs/04 §4.9,
+  `docs/concepts/relationship-answer-vanish.html`). At the very top of a list there is nothing to
+  give back, and there the rows below do move.
 - **Shipped:** the list **folds rather than truncates**. There is no cap on what a check finds
   (docs/04 §4.9), so the screen carries whatever a large import produces: ten people to a page,
   five claims per person with the remainder named and one link to that person's own panel for
@@ -1319,12 +1335,12 @@ The **story** is that merge, done once, server-side.
   simply never sends it (docs/04 §4.9). The same holds for an entry removed on the journal
   page. If the removal fails once it is sent, the item comes back and the toast says so.
 - **Answering a suggestion works this way too** (§2.4.1). Accept and decline are *held* rather
-  than sent: the row marks itself answered and keeps its place and its height, a toast offers
-  *Undo* for the same eight seconds, and the accept or the decline goes out only when the window
-  closes or the page is left. So an undo prevents a write instead of reversing one — a mis-tapped
-  accept never becomes a relationship in the household's history. When the window closes the row
-  collapses out of the list rather than vanishing, and the header's count falls the moment the
-  row is answered, since a number describing rows nobody can see any more is a number that lies.
+  than sent: the row leaves the list at once, a toast offers *Undo* for eight seconds, and the
+  accept or the decline goes out only when the window closes or the page is left. So an undo
+  prevents a write instead of reversing one — a mis-tapped accept never becomes a relationship in
+  the household's history, and taking it back puts the row straight back where it was. The
+  header's count falls the moment the row is answered, since a number describing rows nobody can
+  see any more is a number that lies.
 - **Everything removable works this way.** Contact details (§2.3), dates (§2.13.1), tags
   (§2.9), a circle left on the person page and a member removed on the circle's own page
   (§2.4) all remove through the same button and the same window; the section's count follows

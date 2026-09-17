@@ -1,14 +1,17 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { MediaQuery } from 'svelte/reactivity';
-	import { slide } from 'svelte/transition';
 	import Button from '$lib/components/Button.svelte';
+	import LinkedNames from '$lib/components/LinkedNames.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { segmentsOf, type Segment } from '$lib/i18n/linked';
 	import { ANSWER_ANCHOR_FIELD, answerAnchor, answerKey } from '$lib/relationships/answer-key';
 	import { wasTakenBack, type AnswerState, type AnsweredClaims } from '$lib/relationships/answered';
+	import { claimSentence } from '$lib/relationships/claim-sentence';
 	import { RETURN_TO_FIELD } from '$lib/relationships/review-url';
 	import { TYPE_KEY_FOR_RELATION } from '$lib/relationships/type-keys';
+	import { LEAVE_MS, leaving } from '$lib/ui/leaving';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { heldAnswer } from '$lib/undo/held-answer';
 
@@ -27,10 +30,11 @@
 	 * written across a tree, and there is no undo for that beyond deleting every link it made.
 	 *
 	 * Every control is a form action and the declined list is a `<details>`, so the whole panel
-	 * works with no JavaScript at all. With JavaScript, accept and decline are *held*: the form
-	 * is cancelled, the answer waits out one undo window in the removals store, and only then is
-	 * it sent (docs/02 §2.23). That is what keeps the page still — an answer that posts and
-	 * redirects throws the document away, and the reader's place with it.
+	 * works with no JavaScript at all. With JavaScript, an answered row *goes at once* — fading
+	 * as it closes, while the list gives its height back to the scroll offset so the rows below
+	 * stay under the reader's hand (`$lib/ui/leaving.ts`). The answer itself is still held for
+	 * one undo window and sent only when that window closes (docs/02 §2.23): what leaves the
+	 * screen and what reaches the server are two different promises.
 	 */
 	interface Suggestion {
 		ruleId: string;
@@ -40,8 +44,11 @@
 		toId: string;
 		fromName: string;
 		toName: string;
-		/** Already said, in the reader's language: the route resolved the `Phrase`. */
-		reason: string;
+		/**
+		 * Why the claim is offered, already said in the reader's language and already cut into
+		 * words and people, so every name in it can be followed (docs/02 §2.4.1).
+		 */
+		reason: readonly Segment[];
 		/** Who declined this claim and when; null while it stands unanswered. */
 		dismissed: { at: number; by: string } | null;
 	}
@@ -96,9 +103,8 @@
 	const removals = useRemovals();
 	const reducedMotion = new MediaQuery('prefers-reduced-motion: reduce');
 
-	/** How long the row takes to close over the gap it leaves. */
-	const COLLAPSE_MS = 260;
-	const collapse = $derived(reducedMotion.current ? 0 : COLLAPSE_MS);
+	/** Under `prefers-reduced-motion` the row simply goes; there is nothing to watch leave. */
+	const leaveMs = $derived(reducedMotion.current ? 0 : LEAVE_MS);
 
 	const keyOf = (s: Suggestion) => answerKey(s.relation, s.fromId, s.toId);
 
@@ -113,9 +119,13 @@
 		}
 	});
 
-	const standing = $derived(
-		suggestions.filter((s) => s.dismissed === null && answered[keyOf(s)]?.state !== 'sent')
-	);
+	/*
+	 * An answered row goes immediately, whether or not its undo window has closed: it is the
+	 * reader's *answer* that takes it out of the list, and the window is a promise about what
+	 * reaches the server, not about what stays on screen (docs/02 §2.23). A claim taken back
+	 * comes straight back here, because `answered` forgets it.
+	 */
+	const standing = $derived(suggestions.filter((s) => s.dismissed === null && !answered[keyOf(s)]));
 	const declined = $derived(suggestions.filter((s) => s.dismissed !== null));
 
 	/** Moves an answer along, if it is still one this visit knows about. */
@@ -160,12 +170,11 @@
 		};
 	}
 
-	/** The sentence the claim makes, in the reader's language. */
-	function sentence(s: Suggestion): string {
-		return s.relation === 'parent'
-			? t('contact.relationships.parentProposal', { parent: s.fromName, child: s.toName })
-			: t('contact.relationships.siblingProposal', { one: s.fromName, other: s.toName });
-	}
+	/** The sentence the claim makes, in the reader's language, with both people followable. */
+	const claimOf = (s: Suggestion) =>
+		segmentsOf(
+			claimSentence(s.relation, { id: s.fromId, name: s.fromName }, { id: s.toId, name: s.toName })(t)
+		);
 
 	/** "declined on 12 September 2026", with the member who declined it when we know them. */
 	function declinedWhen(answer: { at: number; by: string }): string {
@@ -179,22 +188,14 @@
 
 <ul class="flex list-none flex-col gap-2 p-0">
 	{#each standing as suggestion (keyOf(suggestion))}
-		{@const held = answered[keyOf(suggestion)]?.answer}
 		<li
-			class="grid grid-cols-[1fr_auto] items-start gap-x-3 gap-y-1 rounded-md border p-2 transition-colors max-[34rem]:grid-cols-1 {held ===
-			'accept'
-				? 'border-success bg-success/10'
-				: held === 'decline'
-					? 'border-danger bg-danger/10'
-					: 'border-border-subtle bg-card'}"
+			class="grid grid-cols-[1fr_auto] items-start gap-x-3 gap-y-1 rounded-md border border-border-subtle bg-card p-2 max-[34rem]:grid-cols-1"
 			id={answerAnchor(suggestion.relation, suggestion.fromId, suggestion.toId)}
 			data-testid="kin-suggestion"
-			data-held={held ?? null}
-			transition:slide={{ duration: collapse }}
+			out:leaving={{ duration: leaveMs }}
 		>
-			<span class="min-w-0 text-sm font-medium" class:text-fg={!held} class:text-fg-muted={held}>
-				{#if held}<span aria-hidden="true">{held === 'accept' ? '✓' : '✕'}</span>{/if}
-				{sentence(suggestion)}
+			<span class="min-w-0 text-sm font-medium text-fg">
+				<LinkedNames segments={claimOf(suggestion)} />
 			</span>
 			<!--
 				Both cells are placed explicitly. With only `row-start-1`, the answers take the first
@@ -208,47 +209,35 @@
 			<span
 				class="col-start-2 row-start-1 flex shrink-0 items-center justify-self-end gap-1.5 max-[34rem]:col-start-1 max-[34rem]:row-auto max-[34rem]:justify-self-start"
 			>
-				{#if held}
-					<span class="rounded-app bg-bg-sunken px-2.5 py-1 text-xs font-semibold text-fg-muted">
-						{held === 'accept'
-							? t('contact.relationships.added')
-							: t('contact.relationships.declinedMark')}
-					</span>
-				{:else}
-					<form
-						method="POST"
-						action="?/addProposedRelationship"
-						use:enhance={hold(suggestion, 'accept')}
-					>
-						<input type="hidden" name="fromId" value={suggestion.fromId} />
-						<input type="hidden" name="toId" value={suggestion.toId} />
-						<input type="hidden" name="typeId" value={TYPE_KEY_FOR_RELATION[suggestion.relation]} />
-						{#if propose}<input type="hidden" name="propose" value={propose} />{/if}
-						{#if returnTo}<input type="hidden" name={RETURN_TO_FIELD} value={returnTo} />{/if}
-						<input
-							type="hidden"
-							name={ANSWER_ANCHOR_FIELD}
-							value={answerAnchor(suggestion.relation, suggestion.fromId, suggestion.toId)}
-						/>
-						<Button variant="primary" size="sm">{t('contact.relationships.accept')}</Button>
-					</form>
-					<form
-						method="POST"
-						action="?/dismissSuggestion"
-						use:enhance={hold(suggestion, 'decline')}
-					>
-						<input type="hidden" name="relation" value={suggestion.relation} />
-						<input type="hidden" name="fromId" value={suggestion.fromId} />
-						<input type="hidden" name="toId" value={suggestion.toId} />
-						{#if returnTo}<input type="hidden" name={RETURN_TO_FIELD} value={returnTo} />{/if}
-						<input
-							type="hidden"
-							name={ANSWER_ANCHOR_FIELD}
-							value={answerAnchor(suggestion.relation, suggestion.fromId, suggestion.toId)}
-						/>
-						<Button variant="danger" size="sm">{t('contact.relationships.decline')}</Button>
-					</form>
-				{/if}
+				<form
+					method="POST"
+					action="?/addProposedRelationship"
+					use:enhance={hold(suggestion, 'accept')}
+				>
+					<input type="hidden" name="fromId" value={suggestion.fromId} />
+					<input type="hidden" name="toId" value={suggestion.toId} />
+					<input type="hidden" name="typeId" value={TYPE_KEY_FOR_RELATION[suggestion.relation]} />
+					{#if propose}<input type="hidden" name="propose" value={propose} />{/if}
+					{#if returnTo}<input type="hidden" name={RETURN_TO_FIELD} value={returnTo} />{/if}
+					<input
+						type="hidden"
+						name={ANSWER_ANCHOR_FIELD}
+						value={answerAnchor(suggestion.relation, suggestion.fromId, suggestion.toId)}
+					/>
+					<Button variant="primary" size="sm">{t('contact.relationships.accept')}</Button>
+				</form>
+				<form method="POST" action="?/dismissSuggestion" use:enhance={hold(suggestion, 'decline')}>
+					<input type="hidden" name="relation" value={suggestion.relation} />
+					<input type="hidden" name="fromId" value={suggestion.fromId} />
+					<input type="hidden" name="toId" value={suggestion.toId} />
+					{#if returnTo}<input type="hidden" name={RETURN_TO_FIELD} value={returnTo} />{/if}
+					<input
+						type="hidden"
+						name={ANSWER_ANCHOR_FIELD}
+						value={answerAnchor(suggestion.relation, suggestion.fromId, suggestion.toId)}
+					/>
+					<Button variant="danger" size="sm">{t('contact.relationships.decline')}</Button>
+				</form>
 			</span>
 			<span class="col-span-full flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-fg-subtle">
 				<!--
@@ -264,8 +253,7 @@
 				>
 					{t(CONFIDENCE_KEY[suggestion.confidence])}
 				</span>
-				{suggestion.reason}
-				<span class="opacity-75">{suggestion.ruleId}</span>
+				<span class="min-w-0"><LinkedNames segments={suggestion.reason} /></span>
 			</span>
 		</li>
 	{/each}
@@ -283,7 +271,7 @@
 		<ul class="flex list-none flex-col gap-1.5 border-t border-dashed border-border pt-2">
 			{#each declined as suggestion (suggestion.relation + suggestion.fromId + suggestion.toId)}
 				<li class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-fg-muted">
-					<span>{sentence(suggestion)}</span>
+					<span><LinkedNames segments={claimOf(suggestion)} /></span>
 					{#if suggestion.dismissed}
 						<span class="text-xs text-fg-subtle">{declinedWhen(suggestion.dismissed)}</span>
 					{/if}

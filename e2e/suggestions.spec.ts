@@ -65,5 +65,9 @@ test('link as relative creates the person and opens their relationship editor wi
 	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Sibling of' });
 	await editor.getByRole('button', { name: 'Add', exact: true }).click();
 	await await expect(page.locator('#section-relationships > header')).toContainText('1');
-	await expect(page.getByRole('link', { name: 'Lena Brunner', exact: true })).toBeVisible();
+	// In the stored list, not just anywhere on the page: a suggestion's claim and its reason name
+	// the same person too, and every one of those names is a link now (docs/02 §2.4.1).
+	await expect(
+		page.locator('#section-relationships ul').first().getByRole('link', { name: 'Lena Brunner' })
+	).toBeVisible();
 });
