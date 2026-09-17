@@ -117,7 +117,6 @@ export const contact = {
 	'contact.relationships.none': 'No relationships yet.',
 	'contact.relationships.remove': (p: { name: string }) => `Remove the link to ${p.name}`,
 	'contact.relationships.removed': 'Relationship removed',
-	'contact.relationships.syncing': 'Updating the map…',
 	'contact.relationships.since': (p: { day: string }) => `since ${p.day}`,
 	'contact.relationships.howConnect': 'How they connect',
 	'contact.relationships.howConnectOptional': 'How they connect (optional)',

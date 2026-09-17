@@ -10,7 +10,6 @@
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import Section from '$lib/components/Section.svelte';
-	import SyncBadge from '$lib/components/SyncBadge.svelte';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { processImage } from '$lib/image/process-image';
@@ -19,7 +18,8 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
-	import { trackPending, type PendingSink } from '$lib/sync/pending';
+	import { trackPending } from '$lib/sync/pending';
+	import { usePending } from '$lib/sync/context.svelte';
 	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -222,15 +222,11 @@
 	/*
 	 * Changing a relationship reloads the person's graph, and on a household with many links
 	 * that reload is slow enough to look like nothing happened. Every path that changes it —
-	 * the add form, a correction, a removal once its undo window has passed — is counted here,
-	 * and the People section wears a badge while the count stands (docs/05 §5.7).
+	 * the add form, a correction, a removal once its undo window has passed — is reported to
+	 * the shell, which shows one activity bar for the whole app (docs/05 §5.7). Nothing on this
+	 * page moves while it runs.
 	 */
-	let graphReloads = $state(0);
-	const graphPending: PendingSink = {
-		begin: () => (graphReloads += 1),
-		end: () => (graphReloads -= 1)
-	};
-	const graphSyncing = $derived(graphReloads > 0);
+	const graphPending = usePending();
 	const savedRelationship = trackPending(
 		graphPending,
 		savedEnhance(removals, t('components.saved'), () => {
@@ -730,7 +726,6 @@
 					bind:open={relateOpen}
 				>
 					{#snippet action()}
-						<SyncBadge busy={graphSyncing} label={t('contact.relationships.syncing')} />
 						{#if data.otherContacts.length > 0}
 							<Button
 								size="sm"

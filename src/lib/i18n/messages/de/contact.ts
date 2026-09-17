@@ -117,7 +117,6 @@ export const contact: ContactMessages = {
 	'contact.relationships.none': 'Noch keine Beziehungen.',
 	'contact.relationships.remove': (p) => `Verbindung zu ${p.name} entfernen`,
 	'contact.relationships.removed': 'Beziehung entfernt',
-	'contact.relationships.syncing': 'Karte wird aktualisiert…',
 	'contact.relationships.since': (p) => `seit ${p.day}`,
 	'contact.relationships.howConnect': 'Wie sie zusammenhängen',
 	'contact.relationships.howConnectOptional': 'Wie sie zusammenhängen (optional)',

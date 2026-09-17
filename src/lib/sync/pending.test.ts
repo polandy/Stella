@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { SubmitFunction } from '@sveltejs/kit';
-import { trackPending, whilePending, type PendingSink } from './pending';
+import { trackPending, whilePending } from './pending';
+import type { PendingSink } from './pending-work';
 
 /** A sink that writes down what it was told, so a test can assert on the order. */
 function recorder(): { calls: string[]; sink: PendingSink } {

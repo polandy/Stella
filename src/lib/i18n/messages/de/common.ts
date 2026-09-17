@@ -5,6 +5,7 @@ export const common: CommonMessages = {
 	'common.save': 'Speichern',
 	'common.saving': 'Wird gespeichert…',
 	'common.cancel': 'Abbrechen',
+	'common.updating': 'Wird aktualisiert…',
 	'common.delete': 'Löschen',
 	'common.remove': 'Entfernen',
 	'common.edit': 'Bearbeiten',

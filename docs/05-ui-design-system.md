@@ -495,23 +495,30 @@ be taken back from here (docs/02 §2.23), and every one of them is the same comp
 (`RemoveButton`), so no list can quietly opt out. Saving says *Saved* and closes the form it
 was typed in — a section's editor and an inline edit alike. On a phone the region sits above the tab bar.
 
-**Sync badge** (`src/lib/components/SyncBadge.svelte`) is what a section wears while it is
-catching up: a small spinner and a word, in the section header, on `--primary-soft`. It marks
-the People section of a person's page, because changing a relationship reloads that person's
-graph and on a household with many links the reload is long enough to read as nothing having
-happened. It deliberately does **not** cover, dim or freeze the map — the shape you were just
-looking at stays readable and the rest of the page stays usable — and it says the wait in
-words rather than replacing the map with a skeleton, which would take the answer away in order
-to announce that the answer is coming. It carries `role="status"` with the live region always
-mounted, so a screen reader hears the badge arrive rather than the region appear, and its
-spinner stops under `prefers-reduced-motion`.
+**Activity bar** (`src/lib/components/ActivityBar.svelte`) is how the app says it is still
+working, once for the whole app: a two-pixel bar in `--primary` running along the very top of
+the window, over everything. It is **fixed to the viewport and takes no space in the layout** —
+an indicator that appears in the flow pushes the page down as it arrives, and moving the line
+somebody is reading is worse than showing nothing at all. That rules out a banner in the
+column and a badge in a section header alike, and it is why there is one bar rather than an
+indicator per card.
+
+It shows for a page that is still loading and for any change a page reports — saving a
+relationship reloads the person's graph, and on a household with many links that takes long
+enough to read as nothing having happened. Nothing is dimmed, covered or disabled while it
+runs: what is on screen is still true until the answer arrives. `role="status"` with the live
+region always mounted, so a screen reader hears the work start rather than the region appear;
+under `prefers-reduced-motion` the bar sits filled instead of travelling.
 
 What counts as work in flight is decided away from the screen, by
-`src/lib/sync/pending.ts`: a count, not a flag, so two changes that overlap cannot let the
-first one's answer clear the second one's badge. `trackPending` wraps an enhanced form's
-submit — the add form and a correction — and `RemoveButton`'s optional `pending` counts the
-commit a removal makes once its undo window has passed, never the window itself, during which
-nothing is on its way to the server yet.
+`src/lib/sync/pending-work.ts`: one store per tab, provided by the shell through context
+(`src/lib/sync/context.svelte.ts`) the way the removals store is, and a **count** rather than a
+flag — two changes that overlap must not let the first one's answer clear the second one's bar,
+and an unbalanced `end()` throws rather than counting below idle. A page reports through
+`src/lib/sync/pending.ts`: `trackPending` wraps an enhanced form's submit, `whilePending` wraps
+a plain async job, and `RemoveButton`'s optional `pending` counts the commit a removal makes
+once its undo window has passed — never the window itself, during which nothing is on its way
+to the server yet.
 
 **Language picker** (`src/lib/components/LanguagePicker.svelte`) is a segmented control of
 plain submit buttons, one per language, each naming itself in itself (*English*, *Deutsch*).

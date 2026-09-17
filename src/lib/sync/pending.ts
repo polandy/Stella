@@ -1,19 +1,10 @@
 import type { SubmitFunction } from '@sveltejs/kit';
+import type { PendingSink } from './pending-work';
 
 /*
- * Work the page is waiting for, counted (docs/05 §5.7).
- *
- * Saving a relationship reloads the person's graph, and on a large household that reload is
- * long enough to look like nothing happened. The rule is here, framework-free and counted
- * rather than boolean, so two saves that overlap cannot let the first one's answer clear the
- * second one's badge; the page owns the count and draws whatever it likes from it.
+ * Reporting work to the shell's pending-work store (`pending-work.ts`, docs/05 §5.7): the two
+ * shapes it arrives in — an enhanced form's submit, and a plain async job.
  */
-
-/** Somewhere that keeps the count — the page's own reactive state at the edge. */
-export interface PendingSink {
-	begin(): void;
-	end(): void;
-}
 
 /** Runs `work` while the sink counts it. The count ends even when the work fails. */
 export async function whilePending<T>(sink: PendingSink, work: () => Promise<T>): Promise<T> {

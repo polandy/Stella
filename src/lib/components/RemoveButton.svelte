@@ -5,7 +5,8 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { submitAction } from '$lib/undo/submit-action';
-	import { whilePending, type PendingSink } from '$lib/sync/pending';
+	import { whilePending } from '$lib/sync/pending';
+	import type { PendingSink } from '$lib/sync/pending-work';
 
 	/*
 	 * The one way to remove something with undo (docs/02 §2.23). It is a real form with the
