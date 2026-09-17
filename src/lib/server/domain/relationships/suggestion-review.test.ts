@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { textOf } from '$lib/i18n/linked';
 import { createTranslator } from '$lib/i18n/translate';
 import type { KinshipGraph } from '$lib/kinship/kinship';
 import { pairKey, type Dismissal } from '$lib/suggestions/claims';
@@ -104,7 +105,9 @@ describe('reviewPerson', () => {
 		expect(shape(found)).toEqual([['wingkam', 'steve', null]]);
 		expect(found[0]).toMatchObject({ relation: 'parent', fromName: 'Wing Kam', toName: 'Steve' });
 		// Two rules reach this one claim; it is offered once, with the reason of the first.
-		expect(found[0]?.reason(createTranslator('en'))).toBe('Steve is Andy’s sibling.');
+		expect(textOf(found[0]!.reason(createTranslator('en')))).toBe(
+			'Wing Kam is a parent of Andy, and Andy and Steve are siblings.'
+		);
 		expect(d.asked).toEqual([viewer, viewer]);
 	});
 
@@ -167,7 +170,9 @@ describe('reviewHousehold', () => {
 	it('names the people, so the interface can phrase the claim', async () => {
 		const [first] = await reviewHousehold(deps(), viewer);
 		expect(first).toMatchObject({ fromName: 'Wing Kam', toName: 'Steve', relation: 'parent' });
-		expect(first?.reason(createTranslator('en'))).toBe('Steve is Andy’s sibling.');
+		expect(textOf(first!.reason(createTranslator('en')))).toBe(
+			'Wing Kam is a parent of Andy, and Andy and Steve are siblings.'
+		);
 	});
 
 	it('leaves out a claim the household declined, and lists it when asked', async () => {

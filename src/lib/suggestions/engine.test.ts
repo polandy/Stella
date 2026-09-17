@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { textOf } from '$lib/i18n/linked';
 import { createTranslator } from '$lib/i18n/translate';
 import type { KinshipGraph } from '$lib/kinship/kinship';
 import { pairKey, type Dismissal } from './claims';
@@ -56,7 +57,9 @@ describe('evaluate', () => {
 		expect(shape(stored('parent', 'bettina', 'hans'), v)).toEqual([
 			['L1', 'parent', 'bettina', 'lisa']
 		]);
-		expect(found[0]?.reason(createTranslator('de'))).toBe('Lisa ist ein Geschwisterteil von Hans.');
+		expect(textOf(found[0]!.reason(createTranslator('de')))).toBe(
+			'Bettina ist ein Elternteil von Hans, und Hans und Lisa sind Geschwister.'
+		);
 	});
 
 	/*
@@ -108,6 +111,36 @@ describe('evaluate', () => {
 				storedPairs: []
 			});
 			expect(shape(stored('parent', 'bettina', 'hans'), v)).toEqual([]);
+		});
+
+		/*
+		 * A claim the write would refuse is not offered: the household would press Accept, the
+		 * only button there is, and be answered with an error about the parent cap.
+		 */
+		it('drops a parent claim for a child who already has two parents', () => {
+			const v = view({
+				parentEdges: [
+					{ parentId: 'bettina', childId: 'hans' },
+					{ parentId: 'kurt', childId: 'lisa' },
+					{ parentId: 'lio', childId: 'lisa' }
+				],
+				siblingEdges: [{ a: 'hans', b: 'lisa' }]
+			});
+			expect(shape(stored('parent', 'bettina', 'hans'), v)).toEqual([]);
+		});
+
+		// The positive control for the case above: the same shape with a slot free is offered.
+		it('still offers it while the sibling has room for another parent', () => {
+			const v = view({
+				parentEdges: [
+					{ parentId: 'bettina', childId: 'hans' },
+					{ parentId: 'kurt', childId: 'lisa' }
+				],
+				siblingEdges: [{ a: 'hans', b: 'lisa' }]
+			});
+			expect(shape(stored('parent', 'bettina', 'hans'), v)).toEqual([
+				['L1', 'parent', 'bettina', 'lisa']
+			]);
 		});
 
 		it('never offers a person as their own relative', () => {
@@ -252,7 +285,8 @@ describe('evaluate', () => {
 			relation: 'parent',
 			fromId,
 			toId,
-			reason: () => ruleId,
+			// The sentence is not what this case is about; it only has to be one.
+			reason: () => ({ people: {}, say: () => ruleId }),
 			dismissed: null
 		});
 

@@ -48,6 +48,6 @@ export const kinship: KinshipMessages = {
 	'kinship.term.sibling-in-law.female': 'Schwägerin',
 	'kinship.term.sibling-in-law.neutral': 'Schwager oder Schwägerin',
 
-	'kinship.reason.siblingOf': (p) => `${p.sibling} ist ein Geschwisterteil von ${p.of}.`,
-	'kinship.reason.parentOf': (p) => `${p.parent} ist ein Elternteil von ${p.of}.`
+	'kinship.reason.parentThroughSibling': (p) =>
+		`${p.parent} ist ein Elternteil von ${p.via}, und ${p.via} und ${p.child} sind Geschwister.`
 };

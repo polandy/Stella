@@ -43,7 +43,7 @@ one trigger and two rules can address them**; what is left is noted against each
    and `warning` members join it with the rules that raise them, rather than sitting there
    unbuilt.
 2. **`reason` was an English sentence built in the domain** (`possessive()`). It is now a
-   `Phrase`, built by a named builder in `suggestions/reasons.ts`, and the English genitive
+   `LinkedPhrase`, built by a named builder in `suggestions/reasons.ts`, and the English genitive
    lives in the English catalogue where a language that has one can keep it.
 3. **The trigger was implicit.** `readKinship` now builds a `link-stored` trigger explicitly,
    and `Trigger` is the discriminated union that `person-created`, `form-opened` and
@@ -72,7 +72,7 @@ src/lib/suggestions/
     [fields.ts]     F1 F1b F2 F3 F4 F5 F6 F7 F8
     [consistency.ts] C1 C5 C6  (C2 C3 C4 C7 stay where they are — they are guards, not rules)
   engine.ts       evaluate(trigger, view) — runs rules, applies suppressions, orders [caps]
-  reasons.ts      Phrase builders, one per reason shape
+  reasons.ts      sentence builders, one per reason shape
 ```
 
 The suppressions went into a file of their own rather than into `engine.ts` as first drafted.
@@ -105,9 +105,9 @@ export type Trigger =
   | { kind: 'person-reviewed'; subjectId: string };   // on demand, not after a write
 
 export type Suggestion =
-  | { id: RuleId; kind: 'link';    confidence: Confidence; link: PrimaryLink;  reason: Phrase }
-  | { id: RuleId; kind: 'field';   confidence: Confidence; field: FieldFill;   reason: Phrase }
-  | { id: RuleId; kind: 'warning'; severity: 'warn';       subject: Pair;      reason: Phrase };
+  | { id: RuleId; kind: 'link';    confidence: Confidence; link: PrimaryLink;  reason: LinkedPhrase }
+  | { id: RuleId; kind: 'field';   confidence: Confidence; field: FieldFill;   reason: LinkedPhrase }
+  | { id: RuleId; kind: 'warning'; severity: 'warn';       subject: Pair;      reason: LinkedPhrase };
 ```
 
 `FieldFill` is `{ field: 'lastName' | 'company' | 'address' | 'gender' | …; value: string;
@@ -229,20 +229,30 @@ returns a domain error with a `Phrase`, like C2 does today.
 
 ---
 
-## 6. Reasons as Phrases
+## 6. Reasons as sentences that keep their people
 
 `reasons.ts` holds one builder per reason shape, e.g.
 
 ```ts
-export const siblingOf = (sibling: string, of: string): Phrase =>
-  phrase('kinship.reason.siblingOf', { sibling, of });
+export const parentThroughSibling = (parent: PersonRef, via: PersonRef, child: PersonRef)
+  : LinkedPhrase<'parent' | 'via' | 'child'> =>
+  (t) => ({ people: { parent, via, child },
+            say: (names) => t('kinship.reason.parentThroughSibling', names) });
 ```
 
-The catalogue needed by L1–L5 and F1–F8 is about eight sentences; L1 and L2 need two of them.
-The domain returns the `Phrase` and the route resolves it with `translator(locals)` — the same
-helper a domain error's phrase goes through, and not `say(locals, …)`, which takes a key rather
-than a phrase already built. A resolved sentence is what reaches the page: a `Phrase` is a
-closure, and a closure cannot cross `load` into `data`.
+A reason states **every fact the claim rests on**, not one of them. A parent claim follows from
+two — the parent is on record for one child, and that child and this one are siblings — and
+naming only the sibling pair, as the first version did, states something true that never
+mentions the person being offered. That is the one name the reader is asking about.
+
+The builder returns a `LinkedPhrase` rather than a `Phrase`: a sentence that, once said, can
+still be taken apart into words and people, so every name in it is a way to that person's page
+(`src/lib/i18n/linked.ts`, docs/04 §4.9). The sentence is written whole in each language and
+handed its names — German orders the same three differently and needs a dative apposition where
+English uses a genitive — so nothing is ever assembled out of translated fragments.
+
+The domain returns the phrase and the route says it with `translator(locals)`, then cuts it up
+with `segmentsOf`. Segments are what reach the page: a closure cannot cross `load` into `data`.
 
 `possessive()` is gone — an English genitive rule has no business in the domain, and German
 forms it differently anyway. **This was step one of the work**, not a follow-up: every rule
@@ -308,7 +318,7 @@ Test-first, and the shape matters more than the count:
 
 | # | Scope | Ships |
 |---|---|---|
-| ~~1~~ | ~~`reasons.ts`, `Phrase`-based `SuggestedLink`, i18n catalogues~~ — **done** | no new behaviour |
+| ~~1~~ | ~~`reasons.ts`, phrase-based `SuggestedLink`, i18n catalogues~~ — **done** | no new behaviour |
 | ~~2~~ | ~~`suggestions/` skeleton: types, view, engine, L1+L2 moved over, suppressions~~ — **done** | no new behaviour |
 | 3 | widen `PartnerEdge`; **L3 / L3b** | the other parent |
 | 4 | C1 / C5 / C6 + the guard-as-predicate refactor | warnings and the cycle refusal |

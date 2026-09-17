@@ -132,6 +132,11 @@ export const contact: ContactMessages = {
 	'contact.relationships.parentProposal': (p) => `${p.parent} ist ein Elternteil von ${p.child}`,
 	'contact.relationships.siblingProposal': (p) => `${p.one} und ${p.other} sind Geschwister`,
 	'contact.relationships.addThisToo': 'Das auch hinzufügen',
+	'contact.relationships.acceptedParent': (p) =>
+		`${p.parent} als Elternteil von ${p.child} übernommen`,
+	'contact.relationships.acceptedSibling': (p) =>
+		`${p.one} und ${p.other} als Geschwister übernommen`,
+	'contact.relationships.declinedNotice': 'Abgelehnt — wird nicht mehr vorgeschlagen',
 	'contact.relationships.accept': 'Übernehmen',
 	'contact.relationships.decline': 'Ablehnen',
 	'contact.relationships.review': 'Beziehungen prüfen',

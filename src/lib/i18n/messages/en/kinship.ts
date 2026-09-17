@@ -51,14 +51,13 @@ export const kinship = {
 	'kinship.term.sibling-in-law.neutral': 'Sibling-in-law',
 
 	/*
-	 * Why a link is being offered (docs/02 §2.4.1). The genitive lives here rather than in
-	 * the domain: a name ending in s keeps the s — "Lukas’s sibling" reads the way it is
-	 * spoken — and German forms the same sentence with a preposition instead.
+	 * Why a link is being offered (docs/02 §2.4.1). Both facts it follows from, in one
+	 * sentence, written whole here rather than assembled from pieces: German puts the same
+	 * three names in a different order, and every one of them is a link on screen
+	 * (`src/lib/i18n/linked.ts`).
 	 */
-	'kinship.reason.siblingOf': (p: { sibling: string; of: string }) =>
-		`${p.sibling} is ${p.of}’s sibling.`,
-	'kinship.reason.parentOf': (p: { parent: string; of: string }) =>
-		`${p.parent} is ${p.of}’s parent.`
+	'kinship.reason.parentThroughSibling': (p: { parent: string; via: string; child: string }) =>
+		`${p.parent} is a parent of ${p.via}, and ${p.via} and ${p.child} are siblings.`
 };
 
 /** The key set every translation of this area has to provide. */

@@ -1,4 +1,4 @@
-import type { Phrase } from '$lib/i18n/phrase';
+import type { LinkedPhrase } from '$lib/i18n/linked';
 import type { Answer } from './claims';
 import type { SuggestionView } from './view';
 
@@ -67,8 +67,11 @@ export interface LinkSuggestion {
 	/** For a `parent` relation, `fromId` is the parent and `toId` the child. */
 	fromId: string;
 	toId: string;
-	/** Why it is offered, unsaid until the edge knows the reader's language. */
-	reason: Phrase;
+	/**
+	 * Why it is offered, unsaid until the edge knows the reader's language — and still carrying
+	 * the people it names, so every name in it can be followed to that person.
+	 */
+	reason: LinkedPhrase;
 	/**
 	 * The household's *no* — who declined this claim and when — or null while it stands. A rule
 	 * never sets it: the engine drops a dismissed suggestion outright, and only fills this in

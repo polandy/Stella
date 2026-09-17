@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { textOf } from '$lib/i18n/linked';
 import { createTranslator } from '$lib/i18n/translate';
 import type { KinshipGraph } from '$lib/kinship/kinship';
 import { L1, L2 } from './links';
@@ -61,7 +62,10 @@ describe('L1 — a new parent belongs to the child’s siblings too', () => {
 			['L1', 'parent', 'bettina', 'nina']
 		]);
 		expect(found.every((s) => s.confidence === 'certain')).toBe(true);
-		expect(found[0]?.reason(createTranslator('en'))).toBe('Lisa is Hans’s sibling.');
+		// Both facts the claim rests on, and the person being offered is named in it.
+		expect(textOf(found[0]!.reason(createTranslator('en')))).toBe(
+			'Bettina is a parent of Hans, and Hans and Lisa are siblings.'
+		);
 	});
 
 	it('counts a sibling implied by a shared parent, not only an entered one', () => {
@@ -103,7 +107,9 @@ describe('L2 — new siblings share the parents each side already has', () => {
 			['L2', 'parent', 'bettina', 'lisa'],
 			['L2', 'parent', 'kurt', 'hans']
 		]);
-		expect(found[0]?.reason(createTranslator('en'))).toBe('Bettina is Hans’s parent.');
+		expect(textOf(found[0]!.reason(createTranslator('en')))).toBe(
+			'Bettina is a parent of Hans, and Hans and Lisa are siblings.'
+		);
 	});
 
 	it('says nothing when neither side has a parent on record', () => {

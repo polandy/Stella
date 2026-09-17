@@ -105,9 +105,6 @@ shows to the other as anything but a badge.
   - the **graph** (2.7) opens on that person instead of the first visible one, unless the
     link asks for somebody in particular;
   - the record is marked **"You"** on its own page and in the People directory;
-  - adding a relationship on somebody else's page starts with **you** as the other end —
-    "how is this person related to me" is the link a household records most. It stays a
-    default: the kind of relationship is always chosen by hand before anything is saved.
 - **When that person goes:** deleting the contact clears the link; merging them into a
   duplicate moves it to the record that survives. A member is never left pointing at a row
   that is gone.
@@ -311,6 +308,46 @@ reciprocal** link.
   types are unaffected: they are stored order-independently, so the duplicate guard already
   covers them.
 
+- **Shipped:** a claim the household's own records already rule out is **not offered, and not
+  stored**. Four rules, read from what is on file rather than from a list of names — and all
+  four are about a claim that cannot *hold*, never about a household recording one fact twice:
+
+  - **One partnership at a time.** *Partner* and *spouse* are the same claim for this purpose,
+    so someone with a partnership that still holds cannot be given a second one — from either
+    end, and whoever's profile it is entered from. The way back in is the status: a partnership
+    marked **former** stays on record but stops standing in the way, so a marriage that ended
+    and a new one are both recorded, in that order and without a deletion.
+  - **And one per pair.** *Partner* and *spouse* are the same claim in two words, so
+    the pair carries one of them, not both: a partner who became a spouse is a **change** to
+    the link that is there, not a second row beside it. The refusal names the link in the way
+    — *"already Partner of Bert"* — because correcting that one is what was meant.
+
+    Kinship, by contrast, **stacks**. Two family claims about the same two people are two
+    facts: a godparent is very often the grandfather or the uncle as well, an aunt by marriage
+    is also a neighbour. Stella refuses none of it — the household knows what it means, and
+    the derived kinship (§2.4.1) is worked out from the links it reads, not from a count of
+    them.
+
+  - **Nothing that is already worked out.** Where shared parents already make two people
+    siblings (§2.4.1), entering it by hand is refused — a stored row permanently replaces the
+    derived one, and the derivation is the better record. A **half**-sibling stays enterable:
+    saying those two are full siblings adds something the one shared parent does not say.
+  - **At most two parents.** A third parent is far more often a mistyped link than a third
+    parent, and Stella ships no step- or adoptive-parent type to tell them apart. A household
+    that really has a third to record corrects one of the two rather than adding to them.
+
+  The rules live in one pure place and are read twice: the picker **greys the entries out** as
+  soon as the other person is chosen and puts the reason **once, above the run it refuses** —
+  *"Not possible — already Partner of Bert"* over the two romantic entries —
+  so the refusal is visible before anything is saved. The reason deliberately stays out of the
+  entry's own label: an entry reads "X of" and so does the link in the way, and the two side by
+  side ("Spouse of — already Partner of Bert") read as one sentence about the entry rather than
+  as a reason for it. The Add button follows the entry the control actually
+  stands on, which is the first *pickable* one, not the first one, and the use-case refuses
+  the write on exactly the same reading, so a hand-written post gets the same answer as the
+  form. Changing the **type** of an existing link is measured with that link left out, so a
+  partner becoming a spouse is still one pick.
+
 - **Shipped:** the picker offers an asymmetric type **from both sides** — "Parent of" *and*
   "Child of", "Mentor of" *and* "Mentee of" — so a link can be entered from whichever profile
   is open, in the words that fit the sentence. The chosen side decides which endpoint is
@@ -471,6 +508,28 @@ tables, fully unit-testable (test-first).
   household. Anyone's check is scoped to their own graph, so a private person is never named to
   someone who may not see them.
 
+- **Shipped:** every suggestion **says what it follows from**, and every name in it is a way to
+  that person. A parent claim rests on two facts — the parent is on record for one child, and
+  that child and this one are siblings — and the row states both: *Otto Meier is a parent of
+  Fabio Meier, and Fabio Meier and Lisa Meier are siblings.* It used to state one of them, and
+  the one that never mentions the person being offered. The rule's internal name (`L1`) is gone
+  from the screen; it was never anything a household could read. Claim and reason alike are
+  written whole in each language and handed their names, so German can order them its own way
+  and the names stay separable enough to link (docs/04 §4.9).
+- **Shipped:** answering **never moves the page**. An answer used to be a form post and a
+  redirect, which threw the rendered document away and scrolled to the top — on row forty that
+  cost the reader their place on every single answer. Now the form is intercepted, nothing
+  navigates, and the answer waits out an undo window before it is sent (§2.23). Without
+  JavaScript the same form still posts and the page still reloads, but the redirect carries the
+  answered row's anchor, so it lands beside it rather than at the top.
+- **Shipped:** an answered row **goes at once**, fading as it closes over a fifth of a second —
+  it does not stand there answered for the length of the undo window. What leaves the screen and
+  what reaches the server are two different promises: the row is the reader's, the window is the
+  database's. While the row closes, the list gives the height it loses back to its own scroll
+  offset, so the rows below hold still and the next one is never pulled up under a finger already
+  on its way to *Decline* (docs/04 §4.9,
+  `docs/concepts/relationship-answer-vanish.html`). At the very top of a list there is nothing to
+  give back, and there the rows below do move.
 - **Shipped:** the list **folds rather than truncates**. There is no cap on what a check finds
   (docs/04 §4.9), so the screen carries whatever a large import produces: ten people to a page,
   five claims per person with the remainder named and one link to that person's own panel for
@@ -1278,6 +1337,13 @@ The **story** is that merge, done once, server-side.
   removal reaches the server only when that window closes or the page is left, so *Undo*
   simply never sends it (docs/04 §4.9). The same holds for an entry removed on the journal
   page. If the removal fails once it is sent, the item comes back and the toast says so.
+- **Answering a suggestion works this way too** (§2.4.1). Accept and decline are *held* rather
+  than sent: the row leaves the list at once, a toast offers *Undo* for eight seconds, and the
+  accept or the decline goes out only when the window closes or the page is left. So an undo
+  prevents a write instead of reversing one — a mis-tapped accept never becomes a relationship in
+  the household's history, and taking it back puts the row straight back where it was. The
+  header's count falls the moment the row is answered, since a number describing rows nobody can
+  see any more is a number that lies.
 - **Everything removable works this way.** Contact details (§2.3), dates (§2.13.1), tags
   (§2.9), a circle left on the person page and a member removed on the circle's own page
   (§2.4) all remove through the same button and the same window; the section's count follows

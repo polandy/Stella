@@ -220,6 +220,21 @@ They must be edited together; `app.css` says so at both blocks.
     narrows the range and never the header.
   - Every control is a form or a link — pager, search and log included — so the screen works
     with JavaScript off, and an answer returns to the page and search it was given on.
+  - **A row says what its claim follows from**, in one sentence under the claim, and every name
+    in both is underlined and leads to that person. The underline is drawn in `fg-subtle`, not
+    `border`: measured on the dark theme, a border-coloured rule vanished against the row and
+    the names read as plain text in one theme and as links in the other. Names are *not* set in
+    the link colour — the two buttons beside them are the call to action, and a row carries up
+    to six names. Measured: the full sentence costs the row nothing at the review's own width
+    (66px, unchanged) and one line on a phone. Concept: `docs/concepts/relationship-reasoning.html`.
+  - **An answered row goes at once.** It fades as it closes, over 200ms, and while it closes the
+    list gives the height it loses back to its own scroll offset — so whatever stood below the
+    row stands in the same place when it is gone, and the next row is never pulled up under a
+    finger. Measured: 0px of movement, where a plain collapse moves everything below by a full
+    row (74px). At the top of a list there is nothing to give back and the rows below do move;
+    that is the honest limit. *Undo* lives in the toast for eight seconds, and under
+    `prefers-reduced-motion` the row simply goes. Concept:
+    `docs/concepts/relationship-answer-vanish.html`.
 - **People** — a find-as-you-type field, tag chips, then **letter groups** by surname with a
   sticky letter heading; each row is avatar, name (lock for private), description, and
   **last written about** on the right (`—` when nothing has been). The heading counts people;
@@ -488,9 +503,9 @@ richer picker because only a moment may create a person on the fly (§2.22.1).
 
 **Toasts** (`src/lib/components/Toast.svelte`) sit bottom-left of the content column, one
 card per message, announced as a polite live region. A removal's toast names what went —
-*Entry removed*, *Tag removed*, *Left the circle* — and carries an **Undo** button for the
-whole window (eight seconds); a plain notice — *Saved*, or why a removal failed — has no
-button and goes on its own. Removing needs no confirmation dialog because every removal can
+*Entry removed*, *Tag removed*, *Left the circle*, *Added Otto Meier as a parent of Lisa
+Meier* — and carries an **Undo** button for the whole window (eight seconds); a plain notice
+— *Saved*, or why a removal failed — has no button and goes on its own. Removing needs no confirmation dialog because every removal can
 be taken back from here (docs/02 §2.23), and every one of them is the same component
 (`RemoveButton`), so no list can quietly opt out. Saving says *Saved* and closes the form it
 was typed in — a section's editor and an inline edit alike. On a phone the region sits above the tab bar.
@@ -566,6 +581,17 @@ aunt is an interruption, and there is no state in which it needs answering now.
 viewport with the `offline` icon, what has happened, and a *Try again* that reloads. It is
 fetched and cached while the connection still works, which is why it loads nothing of its own
 — anything it read then would be stale by the time anybody saw it.
+
+**A choice that cannot be made says why, once.** Where a picker's entries are refused by what
+is already on record — the relationship type picker is the case (docs/02 §2.4) — the entries
+are `disabled` and the reason is the heading of the `optgroup` they are gathered under (*"Not
+possible — already Partner of Bert"*), never appended to the entry's own label. Two reasons
+make two groups; the entries keep their own words and their order. The label of an entry and
+the label of the link in the way are both of the form "X of Y", so side by side in one line
+they read as a single sentence about the entry — which is how the first attempt was
+misunderstood on a live instance. The control's own default follows: the primary button is
+disabled only while *nothing* can be picked, because a select stands on the first entry that is
+not disabled rather than on the first entry.
 
 ## 5.8 Relationship & context explorer styling
 

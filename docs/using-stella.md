@@ -209,6 +209,20 @@ other's grandparent. A generation runs one way, and the relatives Stella works o
 read off exactly those links — so pick the direction the wrong way round and it says so instead
 of saving it. Change the link that is already there to the direction you meant, or remove it.
 
+Some kinds of link also stop being offered once they would contradict what you have already
+written down. Pick the other person first, and any kind that cannot hold is **greyed out under
+a line saying why**: somebody with a partnership that still holds gets no second one ("Not
+possible — already with Carl"), a pair that is already a couple gets no second kind of
+partnership, with the link in the way named as it reads on the page you are on ("Not possible —
+already Partner of Bert" — change that link instead), siblings Stella already works out from
+shared parents are not offered again, and nobody gets a third parent.
+
+Family links themselves are never in each other's way. A godparent is often the grandfather
+too, so write down both — Stella takes two kinship links about the same two people as two
+facts, not as a contradiction. If a
+marriage or a partnership has ended, set it to **former** on the row: it stays on both
+profiles, and the next one can then be entered as usual.
+
 A link can say more than its label. **How they connect** is yours to write — "met through
 Peter at the ski course" — and there is a **since** day and a **current / former** status if
 they help; all three are optional and all three can be changed later with *Edit* on the row.
@@ -256,6 +270,17 @@ everyone at once: it lists what follows from every link on record, grouped by th
 suggestion is about, with the same three answers on every row. Nothing is stored until you
 accept it, and a claim you have already answered is not offered again — so checking twice in a
 row is free.
+
+Each suggestion says what it follows from, underneath it — *Otto Meier is a parent of Fabio
+Meier, and Fabio Meier and Lisa Meier are siblings* — so you can see why Stella is asking before
+you answer. Every name in a suggestion is a link to that person, in the claim and in the reason
+alike, for when you want to look before you decide.
+
+When you accept or decline a suggestion the row disappears straight away, and the page stays
+exactly where it is — whatever was below the row stays where you were looking. A message at the
+bottom offers **Undo** for a few seconds, and only after that is anything saved. So taking an
+accept back does not undo a relationship; it stops one from ever being made, and the suggestion
+comes back. Leaving the page earlier simply saves it sooner.
 
 Nothing is left out of that list, however large your household is — but it arrives ten people
 at a time, so there is always an end in sight and a sensible place to stop. The line at the top
@@ -426,9 +451,10 @@ than screen by screen, so there is no corner of the app where it silently doesn'
 Stella keeps a record for everyone the household wants to remember, and one of them is
 probably you. Say so and the app stops guessing: **Settings → You** has a search field for
 picking your own entry, and the foot of any person's page has *This is me* for the same
-thing. From then on the map opens around you rather than whoever happens to come first,
-your row wears a small **You** in the list and on your page, and when you record how
-somebody is related, Stella already assumes you are the other end — you still say *how*.
+thing. From then on the map opens around you rather than whoever happens to come first, and
+your row wears a small **You** in the list and on your page. The relationship form is not
+filled in for you — the person field starts empty and waits, because a name already sitting
+there reads as an answer rather than as an offer.
 
 It is only a pointer. Nothing changes about what you may see or what belongs to you, and
 you can take it back with the same button, or with *None of them is me* in Settings.

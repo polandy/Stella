@@ -258,6 +258,44 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   household and quietly understates every large one. Hence the totals come out of `reviewPage`
   rather than off `data.groups`, and a unit case asserts them against a household deliberately
   larger than one page.
+- **An answered row leaves at once, and the list pays for it** — the row used to stand there
+  answered until its undo window closed, which was the first fix for a list that jumped under the
+  reader. It made the review fill up with rows nobody wanted to look at any more. Now the row
+  goes immediately and the list gives back to its own scroll offset exactly the height it just
+  lost, frame by frame, so the rows below hold still. Read off the list rather than computed from
+  the row: a row's height and the space it takes in a list are not the same number, and the
+  offset is *carried* rather than read back, because at the end of a list the browser shortens
+  `scrollTop` itself and reading that value and subtracting again gave the same pixels back
+  twice. Measured in the running app: 0px of movement, against 74px for a plain collapse. Three
+  other designs were built and measured first — a deferred gap that waits for the pointer to
+  leave holds at the top of a list too, where this one cannot, and was rejected as a hole in the
+  list (`docs/concepts/relationship-answer-vanish.html`).
+- **A sentence is handed its names, never assembled from pieces** — a claim and its reason each
+  name two or three people, and every name is a link to that person. Building the sentence out
+  of translated fragments with names in between would put English word order into the domain:
+  German orders the same three names differently and needs a dative apposition where English
+  uses a genitive. So the message stays one whole sentence per language, and `src/lib/i18n/
+  linked.ts` asks it to say itself with markers standing in for the names, then reads back where
+  the language put each one. The cost is one indirection between a message and the screen; what
+  it buys is that a translator writes ordinary prose and the links follow wherever they put the
+  names. Matching on names instead was rejected: a household may hold a person called `1`.
+- **A suggestion is answered by holding it, not by writing it** — accept and decline go through
+  the same deferred-removal window as every removal (§2.23): the form is cancelled, the answer
+  waits eight seconds, and only then is it sent. The alternative — write immediately and delete
+  on undo — would put a real relationship into the household's history for the length of a
+  mis-tap, and leave a deletion behind for anyone reading the trail later. The cost is that a
+  second member does not see the link for those eight seconds; on a household-scale chore
+  screen that is worth an undo that writes nothing. Nothing new was built for it: the store, the
+  toast and the flush-on-leave already existed, and a suggestion answered is a row leaving a
+  list with something to do when the window closes.
+- **The answer forms are enhanced, and the screen still works without JavaScript** — the jump to
+  the top was a form post plus a redirect, so the fix is to stop navigating, not to add an API:
+  a SvelteKit form action already is the endpoint, `use:enhance` posts to that same action, and
+  with JavaScript off the identical form posts normally. One code path, two behaviours. The
+  tempting middle option — enhance plus `update()` — was rejected: it re-runs the page's `load`,
+  which re-evaluates every visible person *per answered claim*, and how long that takes on a
+  real imported household is still unmeasured. Holding sidesteps the question: the screen
+  already knows what it just did.
 - **An answer carries its place in the body, not on the URL** — a form action resolves against
   the current address, so `?/dismissSuggestion` replaces the whole query string and the search
   and cursor never reach the server. The place travels in a hidden field and the redirect is
@@ -607,6 +645,21 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   Partner edges therefore carry the status into `src/lib/kinship/`, and only the derivation stops
   — the link itself is stored, shown and still never re-derived.
 
+- **Relationship exclusion rules are one pure module, read twice** (`src/lib/relationships/
+  exclusions.ts`, docs/02 §2.4) — the picker greys an entry out and the use-case refuses the
+  write from the same function over the same facts, rather than the UI guessing what the server
+  will accept. The cost is that the person page's `load` ships the household's romantic pairs
+  and parent edges to the browser; they are already visibility-scoped, and the alternative — a
+  round trip per keystroke, or a picker that disagrees with the server — is worse.
+- **Only romance is exclusive; kinship stacks** — a pair carries one partnership, never two,
+  because *partner* and *spouse* are one claim in two words. Two **family** claims about the
+  same two people are two facts (a godparent is often the grandfather), so nothing refuses
+  them. An earlier cut refused a second family link too and was wrong in the first household
+  that opened it.
+- **A suggestion the write would refuse is not offered** (suppression 5) — the engine asks the
+  same parent cap before listing a claim, because *Accept* is the only button on the row and an
+  error there is a rule the household never broke.
+
 ## 4.10 Deployment
 
 - **Single Docker image** (multi-stage: build with Bun, run on a slim Bun base).
@@ -657,11 +710,33 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
    - Interaction handlers (expand, focus, hover) call back into the pure operations and
      re-render from the returned `GraphModel` — the adapter holds no domain rules.
    - Swapping Cytoscape for another renderer (or adding a layout) touches only this layer.
-   - The controller owns its **teardown**: it runs the first layout itself (so a layout still
-     moving nodes can be stopped again), stops that layout and any animation before destroying
-     the core, and no-ops on every method afterwards. A page can be left mid-layout, and a call
-     still in flight must reach a closed core rather than a half-demolished one. The controller
-     is split from the core it drives (`explorerFromCore`) so this is unit-tested headless.
+   - The controller owns its **teardown**: it runs the first layout itself, so a layout still
+     moving nodes can be stopped again, and it stops **every** layout still running before it
+     destroys the core, then no-ops on every method afterwards. A page can be left mid-layout,
+     and a call still in flight must reach a closed core rather than a half-demolished one.
+     Animations need no stopping of their own — destroying the core halts the loop that steps
+     them and empties every element's queue. The controller is split from the core it drives
+     (`explorerFromCore`) so this is unit-tested headless.
+   - The core is **constructed empty** and the elements added afterwards. With a container
+     present, Cytoscape arranges whatever the constructor is handed — under its default `grid`,
+     and before there is anywhere to catch the `layoutstart` it emits. An empty graph leaves
+     that layout nothing to arrange, so the first arrangement anyone sees is the controller's
+     own cose, from the same starting positions it always had.
+   - **The opening arrangement is not reproducible, and never was.** Elements carry no
+     positions, so every node starts at `(0, 0)` and cose — `randomize: false` or not — breaks
+     that tie at random: three plain reloads of one explorer URL move nodes by up to 457px,
+     about 190% of the drawing's own spread. Measured in the pinned container, 1280×1000.
+     Arranging from a grid first (which is what the constructor's default layout did while the
+     elements were passed to it) is deterministic instead — eight runs, identical to the
+     decimal. Both fill the canvas the same way and neither overlaps or clips a node, so this
+     is a choice about whether the map is the same on every visit, not about quality. Nothing
+     in the product promises a stable map today; if one is ever wanted, the way to get it is to
+     give the elements their positions, not to leave a default layout in the constructor.
+   - Layouts **overlap**: expanding a node re-arranges the graph while the opening arrangement is
+     still travelling, and Cytoscape runs the two side by side. So the canvas is marked
+     `data-layout="settled"` only when the *last* of them has stopped — the signal the e2e suite
+     reads before it takes a node's position (`e2e/graph-canvas.ts`), which an earlier layout
+     finishing first would otherwise give while the nodes are still moving.
 
 3. **UI** — the explorer Svelte component + the `/graph` route and the profile's "Explore"
    entry: layout, search box, filter chips, peek panel, path picker. Thin; delegates all
