@@ -102,8 +102,17 @@ test('takes a removed link out of the map at once, before it is sent', async ({ 
 	// The undo window is still open: the household's copy still has the link.
 	expect(posts).toEqual([]);
 
-	// Leaving ends the window — and shows the instrument above can see a post when there is one.
+	/*
+	 * Leaving ends the window — and shows the instrument above can see a post when there is one.
+	 * Waited for by the event and not by the navigation: `openPeople` is finished once the next
+	 * heading is up, while the request it set off reaches this process a moment later, so reading
+	 * the recorder right there is a race. `waitForRequest` settles on the same event the recorder
+	 * listens to, and the recorder was registered first, so it has the post by the time this
+	 * resolves.
+	 */
+	const sent = page.waitForRequest((request) => request.method() === 'POST');
 	await openPeople(page);
+	await sent;
 	expect(posts.length).toBeGreaterThan(0);
 });
 
