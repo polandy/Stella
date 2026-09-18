@@ -45,9 +45,9 @@ function seedInteraction(id: string, contactId: string, at: number, visibility: 
 		.run();
 	for (const c of participants) db.insert(schema.interactionParticipant).values({ interactionId: id, contactId: c }).run();
 }
-function seedRelationship(id: string, from: string, to: string, at: number) {
+function seedRelationship(id: string, from: string, to: string, at: number, createdBy = U1) {
 	db.insert(schema.relationship)
-		.values({ id, householdId: H, fromContactId: from, toContactId: to, typeId: 'sister', createdBy: U1, createdAt: at })
+		.values({ id, householdId: H, fromContactId: from, toContactId: to, typeId: 'sister', createdBy, createdAt: at })
 		.run();
 }
 
@@ -260,6 +260,56 @@ describe('recentNotices', () => {
 		expect((await repo.recentNotices(asU2, EVERYONE)).map((r) => r.id)).toEqual(['open']);
 		// positive control: the member who deleted them sees both.
 		expect((await repo.recentNotices(asU1, EVERYONE)).map((r) => r.id).sort()).toEqual(['open', 'secret']);
+	});
+
+	it('narrowed to one member, reports only what that member did', async () => {
+		logRemoval('by-one', 100, U1, 'shared');
+		logRemoval('by-two', 200, U2, 'shared');
+
+		expect((await repo.recentNotices(asU2, { limit: 10, memberId: U1 })).map((r) => r.id)).toEqual(['by-one']);
+		expect((await repo.recentNotices(asU2, { limit: 10, memberId: U2 })).map((r) => r.id)).toEqual(['by-two']);
+	});
+});
+
+describe('narrowed to one member (docs/02 §2.22.2)', () => {
+	const byOne: StreamQuery = { limit: 10, memberId: U1 };
+
+	it('returns only what that member did, from every table-backed source', async () => {
+		seedContact('julia', 100, 'shared', U1);
+		seedContact('marco', 110, 'shared', U2);
+		seedEntry('m-one', 'julia', 200, 'shared', U1);
+		seedEntry('m-two', 'julia', 210, 'shared', U2);
+		seedInteraction('i-one', 'julia', 300, 'shared', U1);
+		seedInteraction('i-two', 'julia', 310, 'shared', U2);
+		seedRelationship('r-one', 'julia', 'marco', 400, U1);
+		seedRelationship('r-two', 'marco', 'julia', 410, U2);
+
+		expect((await repo.recentMoments(asU2, byOne)).map((r) => r.id)).toEqual(['m-one']);
+		expect((await repo.recentPeople(asU2, byOne)).map((r) => r.id)).toEqual(['julia']);
+		expect((await repo.recentInteractions(asU2, byOne)).map((r) => r.id)).toEqual(['i-one']);
+		expect((await repo.recentRelationships(asU2, byOne)).map((r) => r.id)).toEqual(['r-one']);
+	});
+
+	it('never widens what the viewer may see: another member\u2019s private moment stays theirs', async () => {
+		seedContact('julia', 100, 'shared', U1);
+		seedEntry('open', 'julia', 200, 'shared', U1);
+		seedEntry('secret', 'julia', 210, 'private', U1);
+		seedInteraction('secret-call', 'julia', 300, 'private', U1);
+
+		expect((await repo.recentMoments(asU2, byOne)).map((r) => r.id)).toEqual(['open']);
+		expect(await repo.recentInteractions(asU2, byOne)).toHaveLength(0);
+		// positive control: the author, narrowed to themself, sees both.
+		expect((await repo.recentMoments(asU1, byOne)).map((r) => r.id)).toEqual(['secret', 'open']);
+		expect((await repo.recentInteractions(asU1, byOne)).map((r) => r.id)).toEqual(['secret-call']);
+	});
+
+	it('fills the limit with that member\u2019s items, not what is left after everyone else\u2019s', async () => {
+		seedContact('julia', 1, 'shared', U1);
+		seedEntry('one-old', 'julia', 100, 'shared', U1);
+		for (let i = 0; i < 3; i++) seedEntry(`two-${i}`, 'julia', 200 + i, 'shared', U2);
+
+		const rows = await repo.recentMoments(asU2, { limit: 2, memberId: U1 });
+		expect(rows.map((r) => r.id)).toEqual(['one-old']);
 	});
 });
 
