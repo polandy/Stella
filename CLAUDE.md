@@ -56,6 +56,7 @@ Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) �
 | `src/lib/server/auth/` | sessions, password, OIDC relying-party |
 | `src/lib/suggestions/` | **pure** suggestion engine: rules say what follows, `engine.ts` applies the universal suppressions centrally, reasons are `Phrase`s (test-first) |
 | `src/lib/sync/` | **pure** pending-work counting behind the shell's activity indicator: `pending-work.ts` store, `trackPending` / `whilePending` / `reportNavigation` (test-first) |
+| `src/lib/stream/` | **pure** household-stream filter: kinds, the `?kind=`/`?by=` codec, what the chips show (test-first) |
 | `src/lib/pwa/` | **pure** install/offline policy: manifest, cache rules, icon geometry, reachability protocol (test-first). `src/service-worker.ts` and `install.svelte.ts` are the adapters — they hold browser APIs, never a decision |
 | `src/lib/graph/model/` | **pure** graph domain: `GraphModel`, `buildEgoNetwork`, `expandNode`, `findConnectionPath`, `applyFilters` (test-first) |
 | `src/lib/graph/cytoscape/` | rendering adapter (Cytoscape confined here, lazy-loaded); no domain logic |
