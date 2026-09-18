@@ -13,6 +13,7 @@
 	import Toast from '$lib/components/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
 	import { providePending } from '$lib/sync/context.svelte';
+	import { reportNavigation } from '$lib/sync/pending';
 	import { onMount, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 
@@ -101,12 +102,9 @@
 	 */
 	const pending = providePending();
 	// A navigation is work like any other, and reported the same way, so a short one stays
-	// under the store's own delay instead of flashing the indicator for a frame.
-	$effect(() => {
-		if (!navigating.to) return;
-		pending.begin();
-		return () => pending.end();
-	});
+	// under the store's own delay instead of flashing the indicator for a frame. The rule
+	// itself is in `$lib/sync/pending`, where a unit test can drive it.
+	$effect(() => reportNavigation(pending, navigating.to));
 
 	// Removals are held back for an undo window (docs/04 §4.9). Leaving the page ends the
 	// window: a client-side navigation waits for the requests so the next screen cannot read

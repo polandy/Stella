@@ -3,9 +3,8 @@
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
-	import { removalKey, type RemovalKind } from '$lib/undo/keys';
-	import { submitAction } from '$lib/undo/submit-action';
-	import { whilePending } from '$lib/sync/pending';
+	import { deferredRemoval } from '$lib/undo/deferred-removal';
+	import type { RemovalKind } from '$lib/undo/keys';
 	import type { PendingSink } from '$lib/sync/pending-work';
 
 	/*
@@ -53,17 +52,12 @@
 	function defer(event: SubmitEvent) {
 		event.preventDefault();
 		const body = new FormData(event.currentTarget as HTMLFormElement);
-		removals.remove({
-			key: removalKey(kind, id),
-			label: removed,
-			commit: async () => {
-				const remove = async () => {
-					await submitAction(fetch, action, body);
-					await invalidateAll();
-				};
-				await (pending ? whilePending(pending, remove) : remove());
-			}
-		});
+		removals.remove(
+			deferredRemoval(
+				{ kind, id, label: removed, action, body },
+				{ fetch, reload: invalidateAll, pending }
+			)
+		);
 	}
 </script>
 

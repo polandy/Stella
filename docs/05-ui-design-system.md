@@ -548,9 +548,13 @@ indicator, and an unbalanced `end()` throws rather than counting below idle. Its
 injected, so both windows are unit-tested against a clock the test moves by hand. A navigation
 is reported to the same store, and so obeys the same windows. A page reports through
 `src/lib/sync/pending.ts`: `trackPending` wraps an enhanced form's submit, `whilePending` wraps
-a plain async job, and `RemoveButton`'s optional `pending` counts the commit a removal makes
-once its undo window has passed — never the window itself, during which nothing is on its way
-to the server yet.
+a plain async job, and `reportNavigation` is what the shell's `$effect` on `navigating.to`
+calls, so the rule can be driven — run, clean up, run again — without a browser.
+`RemoveButton`'s optional `pending` counts the commit a removal makes once its undo window has
+passed — never the window itself, during which nothing is on its way to the server yet. That
+rule is `deferredRemoval` in `src/lib/undo/deferred-removal.ts`, which is what the button hands
+to the removals store: key, toast wording and the work to do when the window closes. Both rules
+sit outside their components so a unit test can reach them.
 
 The indicator is hard to catch in a healthy local build — a save there is over in tens of
 milliseconds, well under the delay — so `/settings/debug` is a workbench for it: jobs of a
