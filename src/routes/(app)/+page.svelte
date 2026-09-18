@@ -11,7 +11,14 @@
 	import { relationshipRowLabel } from '$lib/relationships/labels';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import type { MessageKey } from '$lib/i18n/translate';
-	import { NO_FILTER, STREAM_KINDS, streamFilterHref, type StreamKind } from '$lib/stream/filter';
+	import {
+		isNarrowed,
+		NO_FILTER,
+		offersMemberChoice,
+		STREAM_KINDS,
+		streamFilterHref,
+		type StreamKind
+	} from '$lib/stream/filter';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -63,9 +70,7 @@
 		person: 'home.filter.kind.person',
 		notice: 'home.filter.kind.notice'
 	};
-	const filtered = $derived(data.filter.kind !== null || data.filter.memberId !== null);
-	// A household of one has nobody to tell apart, so the "who" row would be a single chip.
-	const MEMBERS_WORTH_A_CHOICE = 2;
+	const filtered = $derived(isNarrowed(data.filter));
 	const CHIP_ROW = 'flex flex-wrap items-center gap-1';
 	const CHIP =
 		'rounded-full px-3 py-1 text-sm font-medium text-fg-muted transition-colors hover:text-fg aria-[current=true]:bg-primary-soft aria-[current=true]:text-primary';
@@ -184,7 +189,7 @@
 					{@render chip(t(KIND_LABEL[kind]), { ...data.filter, kind }, data.filter.kind === kind)}
 				{/each}
 			</div>
-			{#if data.members.length >= MEMBERS_WORTH_A_CHOICE}
+			{#if offersMemberChoice(data.members)}
 				<div class={CHIP_ROW}>
 					<span class={CHIP_ROW_LABEL}>{t('home.filter.member')}</span>
 					{@render chip(t('home.filter.member.all'), { ...data.filter, memberId: null }, data.filter.memberId === null)}

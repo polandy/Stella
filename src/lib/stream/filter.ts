@@ -58,3 +58,16 @@ export function streamFilterHref(filter: StreamFilter): string {
 	const query = params.toString();
 	return query ? `${HOME}?${query}` : HOME;
 }
+
+/** Whether `filter` narrows the stream at all — the empty state differs when it does. */
+export function isNarrowed(filter: StreamFilter): boolean {
+	return filter.kind !== null || filter.memberId !== null;
+}
+
+/** Fewest members for which "who did it" is a choice rather than a single chip. */
+const MEMBERS_WORTH_A_CHOICE = 2;
+
+/** Whether the "who" row earns its place: a household of one has nobody to tell apart. */
+export function offersMemberChoice(members: readonly unknown[]): boolean {
+	return members.length >= MEMBERS_WORTH_A_CHOICE;
+}

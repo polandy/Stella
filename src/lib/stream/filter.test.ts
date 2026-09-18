@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { NO_FILTER, parseStreamFilter, streamFilterHref } from './filter';
+import {
+	isNarrowed,
+	NO_FILTER,
+	offersMemberChoice,
+	parseStreamFilter,
+	streamFilterHref
+} from './filter';
 
 /*
  * The stream filter as the URL carries it (docs/02 §2.22.2): `?kind=` narrows to one kind of
@@ -48,5 +54,20 @@ describe('streamFilterHref', () => {
 		expect(href).toBe('/?kind=interaction&by=u2');
 		expect(parseStreamFilter(new URL(href, 'http://x').searchParams, members)).toEqual(filter);
 		expect(streamFilterHref({ kind: null, memberId: 'u1' })).toBe('/?by=u1');
+	});
+});
+
+describe('isNarrowed', () => {
+	it('is false for the whole stream and true once either axis is set', () => {
+		expect(isNarrowed(NO_FILTER)).toBe(false);
+		expect(isNarrowed({ kind: 'notice', memberId: null })).toBe(true);
+		expect(isNarrowed({ kind: null, memberId: 'u1' })).toBe(true);
+	});
+});
+
+describe('offersMemberChoice', () => {
+	it('leaves the "who" choice out in a household of one, and offers it from two', () => {
+		expect(offersMemberChoice(['u1'])).toBe(false);
+		expect(offersMemberChoice(['u1', 'u2'])).toBe(true);
 	});
 });
