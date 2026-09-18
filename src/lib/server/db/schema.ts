@@ -73,6 +73,26 @@ export const session = sqliteTable('session', {
 	createdAt: integer('created_at').notNull().default(now)
 });
 
+/*
+ * A member's API token (docs/02 §2.16.1, docs/03 §3.2). Stored as the SHA-256 of the secret,
+ * like a session; unlike one it has a name, a fixed last day and a record of its last use.
+ */
+export const apiToken = sqliteTable(
+	'api_token',
+	{
+		id: text('id').primaryKey(),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		name: text('name').notNull(),
+		tokenHash: text('token_hash').notNull().unique(),
+		createdAt: integer('created_at').notNull().default(now),
+		expiresAt: integer('expires_at').notNull(),
+		lastUsedAt: integer('last_used_at')
+	},
+	(t) => [index('api_token_user_idx').on(t.userId)]
+);
+
 export const identity = sqliteTable(
 	'identity',
 	{

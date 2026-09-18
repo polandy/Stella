@@ -79,9 +79,9 @@ describe('the table list', () => {
 		expect(named.filter((name) => !inSchema.has(name))).toEqual([]);
 	});
 
-	it('leaves out live logins, identity-provider links and pending invites, and says so', () => {
+	it('leaves out live logins, API tokens, identity-provider links and pending invites, and says so', () => {
 		// An invitation is a live token with a hash in it, not something a household remembers.
-		expect(Object.keys(EXCLUDED_TABLES).sort()).toEqual(['identity', 'invitation', 'session']);
+		expect(Object.keys(EXCLUDED_TABLES).sort()).toEqual(['api_token', 'identity', 'invitation', 'session']);
 		for (const reason of Object.values(EXCLUDED_TABLES)) expect(reason.length).toBeGreaterThan(20);
 	});
 });

@@ -79,6 +79,33 @@ export const settings: SettingsMessages = {
 	'settings.about.unreachable':
 		'GitHub war nicht erreichbar, es kann also eine neuere Version geben.',
 	'settings.about.unreachableSince': (p: { when: string }) => `Zuletzt geprüft: ${p.when}.`,
+	'settings.api.heading': 'API',
+	'settings.api.title': 'API-Tokens',
+	'settings.api.blurb': 'Lass ein Skript oder einen Assistenten Menschen für dich erfassen — etwa aus einer Klassenliste.',
+	'settings.apiTokens.intro':
+		'Mit einem Token handelt ein Skript über Stellas API in deinem Namen: Es findet und erfasst genau das, was du könntest, und nicht mehr. Behandle es wie ein Passwort.',
+	'settings.apiTokens.create': 'Neues Token',
+	'settings.apiTokens.name': 'Wofür ist es?',
+	'settings.apiTokens.namePlaceholder': 'Import Klassenliste',
+	'settings.apiTokens.lifetime': 'Gültig für',
+	'settings.apiTokens.days': (p) => `${p.count} Tage`,
+	'settings.apiTokens.submit': 'Token erstellen',
+	'settings.apiTokens.createdHeading': 'Kopiere dein Token jetzt',
+	'settings.apiTokens.createdHint':
+		'Stella speichert nur einen Fingerabdruck davon und kann es nicht noch einmal zeigen. Geht es verloren, widerrufe es und erstelle ein neues.',
+	'settings.apiTokens.usage': 'Schicke es bei jeder Anfrage mit:',
+	'settings.apiTokens.copy': 'Kopieren',
+	'settings.apiTokens.copied': 'Kopiert',
+	'settings.apiTokens.yours': 'Deine Tokens',
+	'settings.apiTokens.none': 'Du hast keine Tokens.',
+	'settings.apiTokens.validUntil': (p) => `Gültig bis ${p.date}`,
+	'settings.apiTokens.expired': (p) => `Abgelaufen am ${p.date}`,
+	'settings.apiTokens.lastUsed': (p) => `zuletzt benutzt ${p.date}`,
+	'settings.apiTokens.neverUsed': 'nie benutzt',
+	'settings.apiTokens.revoke': 'Widerrufen',
+	'settings.apiTokens.revokeLabel': (p) => `„${p.name}“ widerrufen`,
+	'settings.apiTokens.revoked': 'Token widerrufen. Skripte damit können sich nicht mehr anmelden.',
+	'settings.apiTokens.notFound': 'Dieses Token gibt es schon nicht mehr.',
 	'settings.about.off':
 		'Stella sucht nicht nach neuen Versionen. Mit UPDATE_CHECK=true schaltest du die Suche ein.'
 };

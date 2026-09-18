@@ -67,7 +67,9 @@ export const EXCLUDED_TABLES: Readonly<Record<string, string>> = {
 	session: 'live logins; a restored archive should not resurrect somebody’s browser session',
 	invitation:
 		'a pending invite is a live token, not household memory — and its hash has no business in a file that gets copied around',
-	identity: 'the link to the identity provider, which belongs to that provider and not to us'
+	identity: 'the link to the identity provider, which belongs to that provider and not to us',
+	api_token:
+		'a live credential, like a session: a restored archive must not hand a script its way back in'
 };
 
 /** Columns that never leave the server, whatever table they are on. */

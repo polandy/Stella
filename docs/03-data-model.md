@@ -25,6 +25,7 @@ implementation of record.
 ```
 household 1───* user
 user      1───* session
+user      1───* api_token       (credentials for the import API)  [M2]
 user      1───* identity        (federated OIDC logins, e.g. Authelia)
 user      1───1 notification_preference   (digest schedule + delivery) [M3]
 user      1───* invitation (created_by)
@@ -98,6 +99,19 @@ Server-side sessions referenced by cookie.
 | created_at | int | |
 | user_agent / ip | text null | for the "active sessions" view |
 | oidc_id_token | text null | ID token of the SSO sign-in behind this session; the `id_token_hint` for RP-initiated logout (§2.1). Null for a local sign-in, and gone with the session on sign-out. |
+
+### api_token  [M2]
+A member's credential for the import API (docs/02 §2.16.1). Never exported (§2.15).
+
+| column | type | notes |
+|---|---|---|
+| id | text pk | ULID |
+| user_id | text fk → user.id | cascade delete — a token goes with its member |
+| name | text | what it is for, as its member typed it |
+| token_hash | text unique | SHA-256 of the `stella_…` secret; the secret itself is shown once and never stored |
+| created_at | int | |
+| expires_at | int | a fixed last day (30, 90 or 365 days on); never slides forward on use |
+| last_used_at | int null | stamped on every request it signs |
 
 ### identity
 Links a Stella user to an external OIDC identity (e.g. Authelia). A user may have a local

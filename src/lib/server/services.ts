@@ -1,4 +1,5 @@
 import type { AccountDeps, AccountRepository } from './auth/accounts';
+import type { ApiTokenDeps } from './auth/api-tokens';
 import type {
 	AuthorizationRequestDeps,
 	CompleteLoginDeps,
@@ -15,6 +16,8 @@ import { systemClock } from './clock';
 import { getConfig } from './config';
 import { getDb, getSqlite } from './db';
 import { createDrizzleAccountRepository } from './db/account-repository';
+import { createDrizzleApiImportRepository } from './db/api-import-repository';
+import { createDrizzleApiTokenRepository } from './db/api-token-repository';
 import { createDrizzleAttentionRepository } from './db/attention-repository';
 import { createDrizzleCircleRepository } from './db/circle-repository';
 import { createDrizzleContactRepository } from './db/contact-repository';
@@ -73,6 +76,7 @@ import type { StreamDeps, StreamRepository } from './domain/stream/stream';
 import type { CaptureMomentDeps } from './domain/moments/moments';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
 import type { ImportDeps, ImportRepository } from './domain/import/apply';
+import type { ApiImportDeps } from './domain/import/api/api-import';
 import type { ImportedPhotoDeps } from './domain/import/monica/photos';
 import type { InteractionDeps, InteractionRepository } from './domain/interactions/interactions';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
@@ -105,6 +109,16 @@ export function getSessionDeps(): SessionDeps {
 
 export function getAccountDeps(): AccountDeps {
 	return { accounts: getAccounts(), ids: ulidGenerator, hashPassword, verifyPassword };
+}
+
+/** API tokens (docs/02 §2.16.1): minted in Settings, read by the hook for `/api/v1/`. */
+export function getApiTokenDeps(): ApiTokenDeps {
+	return { tokens: createDrizzleApiTokenRepository(getDb()), clock: systemClock, ids: ulidGenerator };
+}
+
+/** The import API's use-case (docs/02 §2.16.1). */
+export function getApiImportDeps(): ApiImportDeps {
+	return { imports: createDrizzleApiImportRepository(getDb()), clock: systemClock, ids: ulidGenerator };
 }
 
 let oidcProvider: OidcProvider | null = null;

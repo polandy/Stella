@@ -116,5 +116,6 @@ export const errors: ErrorsMessages = {
 	'errors.export.adminOnly': 'Nur die Haushalts-Administration kann exportieren.',
 	'errors.story.badCursor': 'Fehlerhafter Verlaufs-Cursor',
 	'errors.journal.couldNotSave': 'Der Eintrag konnte nicht gespeichert werden.',
+	'errors.apiToken.emptyName': 'Bitte gib dem Token einen Namen, damit du später weißt, wofür er ist.',
 	'errors.journal.editFailed': 'Die Änderungen konnten nicht gespeichert werden.'
 };

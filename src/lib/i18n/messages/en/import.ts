@@ -108,6 +108,9 @@ export const importer = {
 	'import.metThrough': (p: { name: string }) => `Through ${p.name}`,
 	'import.metThroughInfo': (p: { info: string; name: string }) => `${p.info} (through ${p.name})`,
 
+	'import.api.loggedSummary': (p: { people: string; source: string }) =>
+		`imported ${p.people} through the API (${p.source})`,
+
 	'import.error.chooseFile': 'Please choose the Monica export or vCard file to import.',
 	'import.error.sessionMissing': 'The import session is missing. Please upload the dump again.',
 	'import.error.sessionGone': 'The uploaded dump is no longer available. Please upload it again.',
