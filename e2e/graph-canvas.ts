@@ -66,6 +66,29 @@ export async function highlightedLabels(page: Page): Promise<string[]> {
 	});
 }
 
+/** A node's place in the renderer's own model coordinates. */
+type ModelPoint = { x: number; y: number };
+
+/**
+ * Where the renderer holds every node, in its own model coordinates — the arrangement itself,
+ * untouched by how far the view is zoomed or panned, so a view that steps back to show
+ * newcomers does not read as the map having moved.
+ */
+export async function arrangement(page: Page): Promise<Map<string, ModelPoint>> {
+	const entries = await page.evaluate(() => {
+		type Node = { id(): string; position(): { x: number; y: number } };
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const registry = el as unknown as {
+			_cyreg?: { cy: { nodes(): Node[] & { map: Node[]['map'] } } };
+		};
+		const cy = registry?._cyreg?.cy;
+		if (!cy) return [];
+		return cy.nodes().map((n) => [n.id(), { ...n.position() }] as const);
+	});
+	return new Map(entries);
+}
+
 /** Waits for the renderer's own signal that its layout has stopped moving the nodes. */
 export async function settled(page: Page): Promise<void> {
 	await expect(page.locator('[data-layout]')).toHaveAttribute('data-layout', 'settled');

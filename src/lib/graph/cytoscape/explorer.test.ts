@@ -10,8 +10,8 @@ import type { CyElement } from './elements';
  * call still in flight when that happens must find a closed door rather than a half-demolished
  * one. Unguarded, Cytoscape throws on the renderer it no longer has (docs/04 §4.11).
  *
- * Layouts overlap: an expand re-arranges the graph while the opening arrangement is still
- * moving the nodes. Both of them are still running, so both have to be accounted for — at
+ * Layouts overlap: tidying the map up re-arranges it while the opening arrangement may still
+ * be moving the nodes. Both of them are still running, so both have to be accounted for — at
  * teardown, and in the settled signal the canvas publishes.
  */
 
@@ -28,6 +28,39 @@ function containerStub() {
 		} as unknown as HTMLElement,
 		layoutState: () => attributes['data-layout']
 	};
+}
+
+const edge = (source: string, target: string): CyElement => ({
+	group: 'edges',
+	data: { id: `${source}-${target}`, source, target },
+	classes: ''
+});
+
+/** Two linked people at known places, the way a settled canvas holds them. */
+function linkedPair(): Core {
+	return cytoscape({
+		headless: true,
+		elements: [
+			{ data: { id: 'a' }, position: { x: 0, y: 0 } },
+			{ data: { id: 'b' }, position: { x: 120, y: 0 } },
+			{ data: { id: 'a-b', source: 'a', target: 'b' } }
+		]
+	});
+}
+
+/** Counts every layout the controller asks the core for. */
+function countLayouts(cy: Core): () => number {
+	let layouts = 0;
+	const real = cy.layout.bind(cy);
+	cy.layout = ((options: Parameters<Core['layout']>[0]) => {
+		layouts++;
+		return real(options);
+	}) as Core['layout'];
+	return () => layouts;
+}
+
+function positionsOf(cy: Core, ids: string[]) {
+	return ids.map((id) => ({ ...cy.$id(id).position() }));
 }
 
 function core(): Core {
@@ -102,6 +135,95 @@ describe('explorerFromCore', () => {
 		expect(layouts).toBe(1);
 	});
 
+	it('leaves everyone already on the canvas where they stood when a node is expanded', () => {
+		// The reader has learnt where people are; an expand that re-arranged the whole map made
+		// them find their way again. Only the newcomers may move.
+		const cy = linkedPair();
+		const explorer = controller(cy);
+		const before = positionsOf(cy, ['a', 'b']);
+
+		explorer.setGraph([node('a'), node('b'), node('c'), edge('a', 'b'), edge('b', 'c')]);
+
+		expect(positionsOf(cy, ['a', 'b'])).toEqual(before);
+		const b = cy.$id('b').position();
+		const c = cy.$id('c').position();
+		expect(Math.hypot(c.x - b.x, c.y - b.y)).toBeLessThan(200);
+	});
+
+	it('runs no layout for an expand, so nothing re-frames the view', () => {
+		const cy = linkedPair();
+		const layouts = countLayouts(cy);
+		const explorer = controller(cy);
+
+		explorer.setGraph([node('a'), node('b'), node('c'), edge('a', 'b'), edge('b', 'c')]);
+
+		// Only the opening arrangement; the expand placed c without one.
+		expect(layouts()).toBe(1);
+		expect(cy.$id('c').nonempty()).toBe(true);
+	});
+
+	it('arranges nothing when people only leave the canvas', () => {
+		const cy = linkedPair();
+		const layouts = countLayouts(cy);
+		const explorer = controller(cy);
+		const before = positionsOf(cy, ['a']);
+
+		explorer.setGraph([node('a')]);
+
+		expect(cy.$id('b').empty()).toBe(true);
+		expect(layouts()).toBe(1);
+		expect(positionsOf(cy, ['a'])).toEqual(before);
+	});
+
+	it('tidies the whole map on request, framing it again', () => {
+		const cy = linkedPair();
+		const fits: unknown[] = [];
+		const real = cy.layout.bind(cy);
+		cy.layout = ((options: Parameters<Core['layout']>[0]) => {
+			fits.push((options as { fit?: unknown }).fit);
+			return real(options);
+		}) as Core['layout'];
+		const explorer = controller(cy);
+
+		explorer.arrange();
+
+		expect(fits).toEqual([true, true]);
+	});
+
+	it('glides the map into its tidied arrangement instead of showing every step', () => {
+		const cy = linkedPair();
+		const asked: Record<string, unknown>[] = [];
+		cy.layout = ((options: Record<string, unknown>) => {
+			asked.push(options);
+			return { run: () => {}, stop: () => {} };
+		}) as unknown as Core['layout'];
+		const explorer = explorerFromCore(cy, {
+			reducedMotion: false,
+			onTapNode: () => {},
+			onTapBackground: () => {}
+		});
+
+		explorer.arrange();
+
+		const tidy = asked[asked.length - 1];
+		expect(tidy.animate).toBe('end');
+		expect(tidy.animationDuration).toBeGreaterThan(0);
+	});
+
+	it('under reduced motion, tidies without any glide', () => {
+		const cy = linkedPair();
+		const asked: Record<string, unknown>[] = [];
+		cy.layout = ((options: Record<string, unknown>) => {
+			asked.push(options);
+			return { run: () => {}, stop: () => {} };
+		}) as unknown as Core['layout'];
+		const explorer = controller(cy);
+
+		explorer.arrange();
+
+		expect(asked[asked.length - 1].animate).toBe(false);
+	});
+
 	it('destroys the core once, however often it is asked', () => {
 		const cy = core();
 		const explorer = controller(cy);
@@ -124,18 +246,18 @@ describe('explorerFromCore', () => {
 	});
 
 	it('stops every layout that has started, not only the most recent one', () => {
-		// An expand re-lays out while the opening arrangement is still moving the nodes, so two
+		// A tidy-up re-lays out while the opening arrangement is still moving the nodes, so two
 		// layouts are in flight at once. Tracking only the last one leaves the first ticking
 		// against a core that is already gone — the very thing the teardown exists to prevent.
 		const cy = core();
 		const explorer = controller(cy);
 		const stopped: string[] = [];
 		announce(cy, 'layoutstart', layoutStub('opening', stopped));
-		announce(cy, 'layoutstart', layoutStub('expand', stopped));
+		announce(cy, 'layoutstart', layoutStub('tidy', stopped));
 
 		explorer.destroy();
 
-		expect(stopped.sort()).toEqual(['expand', 'opening']);
+		expect(stopped.sort()).toEqual(['opening', 'tidy']);
 	});
 
 	it('leaves a layout that has already come to rest alone', () => {
@@ -158,17 +280,17 @@ describe('explorerFromCore', () => {
 		const cy = coreWithContainer(container.element);
 		const stopped: string[] = [];
 		const opening = layoutStub('opening', stopped);
-		const expand = layoutStub('expand', stopped);
+		const tidy = layoutStub('tidy', stopped);
 
 		controller(cy);
 		expect(container.layoutState()).toBe('settling');
 
 		announce(cy, 'layoutstart', opening);
-		announce(cy, 'layoutstart', expand);
+		announce(cy, 'layoutstart', tidy);
 		announce(cy, 'layoutstop', opening);
 		expect(container.layoutState()).toBe('settling');
 
-		announce(cy, 'layoutstop', expand);
+		announce(cy, 'layoutstop', tidy);
 		expect(container.layoutState()).toBe('settled');
 	});
 
@@ -186,6 +308,7 @@ describe('explorerFromCore', () => {
 			explorer.highlightPath(['a', 'b']);
 			explorer.focus('a');
 			explorer.setStylesheet([]);
+			explorer.arrange();
 		}).not.toThrow();
 	});
 });

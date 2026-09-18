@@ -474,7 +474,9 @@ each kind of line on and off and double as the legend.
 
 Click a person to see who they are and jump to their page; the lines around them are named
 while they are selected, so you can read who is whose grandmother. Click again to pull in
-their connections. *Connection path* traces how two people are linked, and it always answers
+their connections: they appear around that person, and everyone already on the map stays
+where they were, so you never lose your place. When the map has grown untidy, *Tidy up*
+arranges it afresh. *Connection path* traces how two people are linked, and it always answers
 with the people in between rather than the worked-out shortcut — that is the point of asking.
 
 ## Signing out
