@@ -193,7 +193,9 @@ They must be edited together; `app.css` says so at both blocks.
 
 ## 5.5 Key screens
 
-- **Home** — the capture field over the household stream (§2.22), with a **rail** on the
+- **Home** — the capture field over the household stream (§2.22), which carries two rows of
+  filter chips (*What*, *Who*) in the Circles chip style — links with `aria-current`, wrapping
+  onto a second line on a phone rather than scrolling sideways — with a **rail** on the
   right from `lg` up: **Coming up** (§2.13.3) and **Quiet lately** (§2.12.1), each row an
   avatar, the person, one line of context and the one action — *Write a moment*. Below `lg`
   it is the **same vertical list**, full width — nothing scrolls sideways, because what lies

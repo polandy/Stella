@@ -46,8 +46,9 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
 - **Moments & household stream** (§2.22): one-sentence capture on Home with @-mentions,
   inline person creation and a post-save "link these two?" hint; Home becomes the
   visibility-scoped household stream (moments, new people, new relationships).
-- **Activity feed** ("What's new") with visibility filtering — filters and notable edits on
-  top of the stream.
+- **Activity feed** ("What's new") with visibility filtering — **shipped** as the household
+  stream (§2.11, §2.22.2), filterable by kind and by member. "Notable edits" were dropped: the
+  stream records what happened in the family, not every edit to the database.
 - **Personal dashboard (Home):** the stream plus a rail with "Coming up" and "Quiet lately"
   (§2.12); further panels (gifts given) as their base features land.
 - **Interactions timeline** + "last contacted", read as one **story timeline** per person

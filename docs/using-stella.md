@@ -9,6 +9,13 @@ Home is a text field with the household's stream underneath it. Newest first, gr
 day, showing what someone wrote, who someone added, when someone was in touch, and the
 connections someone made.
 
+Above the stream, two rows of chips narrow it down: **What** — only moments, only calls and
+visits, only relationships, only new people, or the notices — and **Who** — only what you did,
+or only what one other member did. They combine, so "Lena's moments" is two taps. The filter
+is part of the address, so a reload keeps it and *Back* takes it off again; *Everything* and
+*Everyone* show the whole stream. Filtering never shows anything you could not see anyway —
+someone else's private moments stay theirs.
+
 Beside the stream sit two short lists. **Coming up** is the next thirty days of birthdays
 and anniversaries. **Quiet lately** is the people nobody has written
 about in three months — not "you have not called Oma", which Stella cannot know, but "nothing
