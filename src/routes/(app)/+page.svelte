@@ -10,6 +10,8 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { relationshipRowLabel } from '$lib/relationships/labels';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
+	import type { MessageKey } from '$lib/i18n/translate';
+	import { NO_FILTER, STREAM_KINDS, streamFilterHref, type StreamKind } from '$lib/stream/filter';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -51,6 +53,23 @@
 	});
 
 	let hintDismissed = $state(false);
+
+	// The filter chips (docs/02 §2.22.2) are plain links, so a filter survives a reload, the
+	// back button undoes it, and it works before the page has hydrated.
+	const KIND_LABEL: Record<StreamKind, MessageKey> = {
+		moment: 'home.filter.kind.moment',
+		interaction: 'home.filter.kind.interaction',
+		relationship: 'home.filter.kind.relationship',
+		person: 'home.filter.kind.person',
+		notice: 'home.filter.kind.notice'
+	};
+	const filtered = $derived(data.filter.kind !== null || data.filter.memberId !== null);
+	// A household of one has nobody to tell apart, so the "who" row would be a single chip.
+	const MEMBERS_WORTH_A_CHOICE = 2;
+	const CHIP_ROW = 'flex flex-wrap items-center gap-1';
+	const CHIP =
+		'rounded-full px-3 py-1 text-sm font-medium text-fg-muted transition-colors hover:text-fg aria-[current=true]:bg-primary-soft aria-[current=true]:text-primary';
+	const CHIP_ROW_LABEL = 'mr-1 text-xs font-semibold uppercase tracking-wider text-fg-subtle';
 
 	// The rail's rows: one vertical list at every width — beside the stream from lg, above or
 	// below it on a phone. Nothing scrolls sideways, so nothing hides off the right edge.
@@ -154,6 +173,31 @@
 				{t('home.link.notNow')}
 			</Button>
 		</div>
+	{/if}
+
+	{#if days.length || filtered}
+		<nav class="flex flex-col gap-1.5" aria-label={t('home.filter.label')} data-testid="stream-filter" data-sveltekit-noscroll>
+			<div class={CHIP_ROW}>
+				<span class={CHIP_ROW_LABEL}>{t('home.filter.kind')}</span>
+				{@render chip(t('home.filter.kind.all'), { ...data.filter, kind: null }, data.filter.kind === null)}
+				{#each STREAM_KINDS as kind (kind)}
+					{@render chip(t(KIND_LABEL[kind]), { ...data.filter, kind }, data.filter.kind === kind)}
+				{/each}
+			</div>
+			{#if data.members.length >= MEMBERS_WORTH_A_CHOICE}
+				<div class={CHIP_ROW}>
+					<span class={CHIP_ROW_LABEL}>{t('home.filter.member')}</span>
+					{@render chip(t('home.filter.member.all'), { ...data.filter, memberId: null }, data.filter.memberId === null)}
+					{#each data.members as member (member.id)}
+						{@render chip(
+							member.id === data.user.id ? t('home.you') : member.name,
+							{ ...data.filter, memberId: member.id },
+							data.filter.memberId === member.id
+						)}
+					{/each}
+				</div>
+			{/if}
+		</nav>
 	{/if}
 
 	{#if days.length}
@@ -270,10 +314,18 @@
 				</li>
 			{/each}
 		</ol>
+	{:else if filtered}
+		<EmptyState icon="write" title={t('home.filter.empty.title')} hint={t('home.filter.empty.hint')}>
+			<Button variant="secondary" href={streamFilterHref(NO_FILTER)}>{t('home.filter.clear')}</Button>
+		</EmptyState>
 	{:else}
 		<EmptyState icon="write" title={t('home.empty.title')} hint={t('home.empty.hint')} />
 	{/if}
 </div>
+
+{#snippet chip(label: string, target: typeof data.filter, current: boolean)}
+	<a href={streamFilterHref(target)} class={CHIP} aria-current={current ? 'true' : undefined}>{label}</a>
+{/snippet}
 
 {#snippet showAll(total: number, reveal: () => void)}
 	<button

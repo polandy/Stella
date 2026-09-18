@@ -6,14 +6,17 @@ import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcomin
 import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
 import { captureMoment, MomentNeedsPersonError } from '$lib/server/domain/moments/moments';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
+import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
 import { handleFor } from '$lib/mentions/picker';
+import { parseStreamFilter } from '$lib/stream/filter';
 import {
 	getAttention,
 	getCaptureMomentDeps,
 	getContactDeps,
 	getImportantDates,
 	getJournalPhotoDeps,
+	getMemberDeps,
 	getStreamDeps
 } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
@@ -46,8 +49,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
+	// The filter names a member, so it can only be read once the household's members are known.
+	const members = await membersViewerFirst(getMemberDeps(), viewer);
+	const filter = parseStreamFilter(
+		url.searchParams,
+		members.map((m) => m.id)
+	);
+
 	const [items, contacts, names, dateSources, quietSources] = await Promise.all([
-		buildStream(getStreamDeps(), viewer),
+		buildStream(getStreamDeps(), viewer, filter),
 		listContacts(getContactDeps(), viewer),
 		listContactNames(getContactDeps(), viewer),
 		getImportantDates().listSourcesVisibleTo(viewer),
@@ -88,6 +98,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			lastName: c.lastName,
 			visibility: c.visibility
 		})),
+		filter,
+		members,
 		stream: items.map((item) =>
 			item.kind === 'moment'
 				? { ...item, body: undefined, bodyHtml: renderMarkdownWithMentions(item.body, nameOf) }

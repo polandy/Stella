@@ -1,3 +1,5 @@
+import type { Viewer } from '../../access/visibility';
+
 /*
  * The people who share a household (docs/02 §2.1). Everything they write carries their user
  * id; the story turns that id into a name through here, so a page never has to know how
@@ -30,4 +32,19 @@ export async function authorNames(
 	const members = await deps.members.listMembers(householdId);
 	const byId = new Map(members.map((member) => [member.id, member.name]));
 	return (userId) => byId.get(userId) ?? null;
+}
+
+/**
+ * The viewer's household, the viewer first and the rest in the household's order — the order a
+ * "who did it" choice reads in, with the viewer shown as "You" (docs/02 §2.22.2).
+ */
+export async function membersViewerFirst(
+	deps: MemberDeps,
+	viewer: Viewer
+): Promise<HouseholdMember[]> {
+	const members = await deps.members.listMembers(viewer.householdId);
+	return [
+		...members.filter((member) => member.id === viewer.id),
+		...members.filter((member) => member.id !== viewer.id)
+	];
 }
