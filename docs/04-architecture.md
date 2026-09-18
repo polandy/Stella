@@ -769,14 +769,23 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
      is a choice about whether the map is the same on every visit, not about quality. Nothing
      in the product promises a stable map today; if one is ever wanted, the way to get it is to
      give the elements their positions, not to leave a default layout in the constructor.
-   - Layouts **overlap**: expanding a node re-arranges the graph while the opening arrangement is
-     still travelling, and Cytoscape runs the two side by side. So the canvas is marked
-     `data-layout="settled"` only when the *last* of them has stopped — the signal the e2e suite
-     reads before it takes a node's position (`e2e/graph-canvas.ts`), which an earlier layout
-     finishing first would otherwise give while the nodes are still moving.
+   - Movements **overlap**: an arrangement can be chosen while the last one's glide is still
+     travelling, and an expand's newcomers and the view stepping back to show them move on their
+     own animations. So the canvas is marked `data-layout="settled"` only when the *last* layout
+     has stopped and no glide is left — the signal the e2e suite reads before it takes a node's
+     position (`e2e/graph-canvas.ts`), which an earlier one finishing first would otherwise give
+     while the nodes are still moving.
+   - **Every arrangement is worked out, then glided into** (docs/05 §5.8): the force layout runs
+     in one go without animation, its answer is read off and the nodes put back, and a `preset`
+     layout moves them there while the view — framed by the controller below the measured
+     toolbar, not by Cytoscape's own `fit` — travels with them.
+   - Cytoscape caches where its container sits and forgets it only on a scroll, a resize or a
+     transition's end. Content above the map can move it without any of those, so the adapter
+     drops the cache before every pointer event; otherwise a tap lands where the node used to
+     be (`e2e/person-map.spec.ts`).
 
 3. **UI** — the explorer Svelte component + the `/graph` route and the profile's "Explore"
-   entry: layout, search box, filter chips, peek panel, path picker. Thin; delegates all
+   entry: layout, search box, the Filter and Arrange menus, peek panel, path picker. Thin; delegates all
    logic to layers 1–2.
 
 **Why this is extensible & readable:** new edge kinds (e.g. a future "met at event") or new

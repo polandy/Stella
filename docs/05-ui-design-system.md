@@ -671,7 +671,7 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 
   Framing leaves the toolbar alone: the toolbar floats over the top of the canvas and wraps
   to more rows on a narrow window, so it is measured, and the map is framed in the part below
-  it — the top row of a tree is never drawn under the chips. Stepping back to show newcomers
+  it — the top row of a tree is never drawn under the toolbar. Stepping back to show newcomers
   after an expand keeps to the same strip. The very first arrangement is simply there, with no
   motion: the map has no earlier shape to glide from.
 
