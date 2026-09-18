@@ -1,7 +1,9 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import {
+	API_TOKEN_DEFAULT_LIFETIME_DAYS,
 	API_TOKEN_LIFETIMES_DAYS,
+	API_TOKEN_NAME_MAX,
 	EmptyApiTokenNameError,
 	issueApiToken,
 	listApiTokens,
@@ -20,10 +22,8 @@ import type { Actions, PageServerLoad } from './$types';
  * it may be in the wrong hands, and a grace period would be a window for exactly those hands.
  */
 
-const MAX_NAME = 80;
-
 const CreateSchema = v.object({
-	name: v.pipe(v.string(), v.maxLength(MAX_NAME)),
+	name: v.pipe(v.string(), v.maxLength(API_TOKEN_NAME_MAX)),
 	lifetimeDays: v.pipe(v.string(), v.transform(Number), v.picklist(API_TOKEN_LIFETIMES_DAYS))
 });
 
@@ -42,7 +42,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 		...token,
 		expired: token.expiresAt <= now
 	}));
-	return { tokens, lifetimes: [...API_TOKEN_LIFETIMES_DAYS] };
+	return {
+		tokens,
+		lifetimes: [...API_TOKEN_LIFETIMES_DAYS],
+		defaultLifetime: API_TOKEN_DEFAULT_LIFETIME_DAYS,
+		nameMax: API_TOKEN_NAME_MAX
+	};
 };
 
 export const actions: Actions = {

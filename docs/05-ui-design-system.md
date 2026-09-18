@@ -374,6 +374,16 @@ They must be edited together; `app.css` says so at both blocks.
   the form comes first. Sign-in offers **"Sign in with SSO"** (Authelia) and, if enabled, a
   local email/password form; the demo login sits under them while `SEED_DEMO` is on.
 
+- **Settings → API tokens** (docs/02 §2.16.1) — every member's own page, linked from Settings
+  under *API*. A form (name, lifetime as a `select`) above the list of the member's tokens:
+  name, *valid until* / *expired on*, *last used*, and a ghost *Revoke* whose accessible name
+  carries the token's name. A new token appears **once**, in a `--primary`-bordered panel on
+  `--primary-soft` above the form, with *Copy* and a ready-to-paste `curl` line against this
+  very instance; nothing on the page can show it again. Revoke has **no undo toast**, unlike
+  every other removal (§5.7): a token is withdrawn because it may be in the wrong hands, and a
+  grace period would be a window for exactly those hands. Icon: `apiToken` (a key) — not
+  `private`, which is about who sees a record.
+
 ## 5.6 Color semantics (categories → accents)
 
 Consistent everywhere (chips, edges, timeline dots):

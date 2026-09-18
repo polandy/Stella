@@ -16,7 +16,6 @@
 
 	const INPUT =
 		'rounded-control border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
-	const DEFAULT_LIFETIME = 90;
 
 	const day = (at: number) => new Date(at).toLocaleDateString(i18n.intlLocale, { dateStyle: 'medium' });
 
@@ -74,7 +73,7 @@
 				<input
 					name="name"
 					required
-					maxlength="80"
+					maxlength={data.nameMax}
 					placeholder={t('settings.apiTokens.namePlaceholder')}
 					class={INPUT}
 				/>
@@ -83,7 +82,7 @@
 				<span class="font-medium text-fg">{t('settings.apiTokens.lifetime')}</span>
 				<select name="lifetimeDays" class={INPUT}>
 					{#each data.lifetimes as days (days)}
-						<option value={days} selected={days === DEFAULT_LIFETIME}>
+						<option value={days} selected={days === data.defaultLifetime}>
 							{t('settings.apiTokens.days', { count: days })}
 						</option>
 					{/each}

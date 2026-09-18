@@ -26,6 +26,12 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const API_TOKEN_LIFETIMES_DAYS = [30, 90, 365] as const;
 export type ApiTokenLifetime = (typeof API_TOKEN_LIFETIMES_DAYS)[number];
 
+/** The lifetime the form offers first: long enough for a one-off job, short enough to lapse. */
+export const API_TOKEN_DEFAULT_LIFETIME_DAYS: ApiTokenLifetime = 90;
+
+/** The longest name a token may carry; it labels a row, it is not a note. */
+export const API_TOKEN_NAME_MAX = 80;
+
 /** A stored token. `tokenHash` is the SHA-256 of the secret, never the secret. */
 export interface ApiTokenRecord {
 	id: string;
