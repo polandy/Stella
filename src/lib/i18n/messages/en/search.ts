@@ -20,6 +20,8 @@ export const search = {
 	'graph.connectionPath': 'Connection path',
 	'graph.labels': 'Labels',
 	'graph.labels.hint': 'Name every line with its relationship',
+	'graph.arrange': 'Tidy up',
+	'graph.arrange.hint': 'Arrange the whole map afresh',
 	'graph.path.none': 'No connection found between those two.',
 	'graph.path.pickSecond': 'Now pick the second person…',
 	'graph.path.pickTwo': 'Pick two people to trace how they’re connected.',

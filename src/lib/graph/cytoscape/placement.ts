@@ -3,7 +3,9 @@
  * without Cytoscape: the canvas the reader has been looking at is their map of it, and an
  * expand that re-arranged everything made them find their way again. Instead every newcomer
  * is set down one edge length from the person it hangs off, fanned out into the open side of
- * that person, and nobody already on the canvas is touched.
+ * that person, and nobody already on the canvas is touched. Where that side is crowded the fan
+ * moves further out until it is clear of everyone, so a newcomer never lands in the middle of
+ * the map where it would make it harder to read.
  */
 
 /** A position on the canvas, in the renderer's model coordinates. */
@@ -18,23 +20,36 @@ export interface Link {
 	target: string;
 }
 
+/** Where a newcomer ends up, and the person it travels out from to get there. */
+export interface Placement {
+	at: Point;
+	from: Point;
+}
+
 /** The widest a fan may open around its anchor before it moves further out instead. */
 const MAX_FAN = Math.PI;
 /** How far beside the map a newcomer with no tie to it is set down, in edge lengths. */
 const DETACHED_OFFSET = 2;
+/** How far a crowded fan moves out per try, in edge lengths. */
+const PUSH_STEP = 0.5;
+/** A fan that is still not clear after this many tries is set down where the last one ended. */
+const MAX_PUSHES = 60;
+/** Rounding slack for "at least one edge length away". */
+const TOLERANCE = 1e-9;
 
 /**
- * Starting positions for `newcomers`, given where everyone else already stands. Returns only
- * the newcomers — `placed` is never moved. A newcomer is anchored on a neighbour that already
- * has a place (one opened off another newcomer follows it, round by round); one with no tie to
- * anyone placed is set beside the map rather than on top of it.
+ * Positions for `newcomers`, given where everyone else already stands. Returns only the
+ * newcomers — `placed` is never moved. A newcomer is anchored on a neighbour that already has a
+ * place (one opened off another newcomer follows it, round by round) and keeps at least one
+ * edge length from everyone placed before it; one with no tie to anyone placed is set beside
+ * the map rather than on top of it.
  */
 export function placeNewcomers(
 	placed: ReadonlyMap<string, Point>,
 	newcomers: readonly string[],
 	links: readonly Link[],
 	spacing: number
-): Map<string, Point> {
+): Map<string, Placement> {
 	const neighbours = new Map<string, string[]>();
 	const tie = (from: string, to: string) => {
 		const list = neighbours.get(from);
@@ -48,7 +63,7 @@ export function placeNewcomers(
 	}
 
 	const positions = new Map(placed);
-	const result = new Map<string, Point>();
+	const result = new Map<string, Placement>();
 	const centre = centroid([...placed.values()]);
 	let pending = newcomers.filter((id) => !placed.has(id));
 
@@ -68,7 +83,7 @@ export function placeNewcomers(
 			const [first] = pending;
 			const point = besideMap([...positions.values()], centre, spacing);
 			positions.set(first, point);
-			result.set(first, point);
+			result.set(first, { at: point, from: point });
 			pending = pending.slice(1);
 			continue;
 		}
@@ -79,10 +94,12 @@ export function placeNewcomers(
 				.filter((n) => positions.has(n))
 				.map((n) => positions.get(n)!);
 			const heading = openSide(anchor, taken, centre);
-			fan(anchor, heading, group.length, spacing).forEach((point, i) => {
-				positions.set(group[i], point);
-				result.set(group[i], point);
-			});
+			clearFan(anchor, heading, group.length, spacing, [...positions.values()]).forEach(
+				(point, i) => {
+					positions.set(group[i], point);
+					result.set(group[i], { at: point, from: anchor });
+				}
+			);
 		}
 		pending = pending.filter((id) => !positions.has(id));
 	}
@@ -120,19 +137,44 @@ function openSide(anchor: Point, taken: Point[], centre: Point): number {
 	return heading;
 }
 
-/**
- * `count` points on an arc around `anchor`, centred on `heading`, neighbours one edge length
- * apart. A fan that would open wider than {@link MAX_FAN} moves out to a larger radius instead,
- * so a big family stays on the open side rather than wrapping back into the map.
- */
-function fan(anchor: Point, heading: number, count: number, spacing: number): Point[] {
-	const radius = Math.max(spacing, ((count - 1) * spacing) / MAX_FAN);
+/** `count` points on an arc of `radius` around `anchor`, centred on `heading`, one edge length apart. */
+function fan(
+	anchor: Point,
+	heading: number,
+	count: number,
+	spacing: number,
+	radius: number
+): Point[] {
 	const step = spacing / radius;
 	const start = heading - ((count - 1) * step) / 2;
 	return Array.from({ length: count }, (_, i) => ({
 		x: anchor.x + radius * Math.cos(start + i * step),
 		y: anchor.y + radius * Math.sin(start + i * step)
 	}));
+}
+
+/**
+ * The nearest {@link fan} that keeps every point at least one edge length from everyone in
+ * `occupied`: it starts as close as the fan's size allows and moves out step by step, so a
+ * person with room around them keeps their people close and one in a crowd sends them past it.
+ */
+function clearFan(
+	anchor: Point,
+	heading: number,
+	count: number,
+	spacing: number,
+	occupied: Point[]
+): Point[] {
+	// A fan that would open wider than MAX_FAN starts further out instead, so a big family stays
+	// on the open side rather than wrapping back into the map.
+	const nearest = Math.max(spacing, ((count - 1) * spacing) / MAX_FAN);
+	const isClear = (point: Point) =>
+		occupied.every((o) => Math.hypot(point.x - o.x, point.y - o.y) >= spacing - TOLERANCE);
+	let points = fan(anchor, heading, count, spacing, nearest);
+	for (let push = 1; push <= MAX_PUSHES && !points.every(isClear); push++) {
+		points = fan(anchor, heading, count, spacing, nearest + push * PUSH_STEP * spacing);
+	}
+	return points;
 }
 
 /** A spot right of everything already placed, level with the centre of the map. */

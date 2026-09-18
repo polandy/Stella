@@ -27,14 +27,14 @@ describe('placeNewcomers', () => {
 	it('puts a newcomer one edge length from the person it was opened from', () => {
 		const result = placeNewcomers(placed, ['carl'], [{ source: 'bert', target: 'carl' }], SPACING);
 
-		expect(distance(result.get('carl')!, placed.get('bert')!)).toBeCloseTo(SPACING);
+		expect(distance(result.get('carl')!.at, placed.get('bert')!)).toBeCloseTo(SPACING);
 	});
 
 	it('fans newcomers outward, away from the rest of the map', () => {
 		const result = placeNewcomers(placed, ['carl'], [{ source: 'bert', target: 'carl' }], SPACING);
 
 		// bert stands right of centre, so his people open further to the right.
-		expect(result.get('carl')!.x).toBeGreaterThan(placed.get('bert')!.x);
+		expect(result.get('carl')!.at.x).toBeGreaterThan(placed.get('bert')!.x);
 	});
 
 	it('spreads several newcomers so no two of them land on top of each other', () => {
@@ -49,7 +49,9 @@ describe('placeNewcomers', () => {
 		expect(result.size).toBe(ids.length);
 		for (let i = 0; i < ids.length; i++) {
 			for (let j = i + 1; j < ids.length; j++) {
-				expect(distance(result.get(ids[i])!, result.get(ids[j])!)).toBeGreaterThan(SPACING * 0.8);
+				expect(distance(result.get(ids[i])!.at, result.get(ids[j])!.at)).toBeGreaterThan(
+					SPACING * 0.8
+				);
 			}
 		}
 	});
@@ -65,13 +67,59 @@ describe('placeNewcomers', () => {
 			SPACING
 		);
 
-		expect(distance(result.get('dora')!, result.get('carl')!)).toBeCloseTo(SPACING);
+		expect(distance(result.get('dora')!.at, result.get('carl')!.at)).toBeCloseTo(SPACING);
 	});
 
 	it('sets a newcomer with no tie to the map beside it, not on top of it', () => {
 		const result = placeNewcomers(placed, ['carl'], [], SPACING);
 
-		expect(result.get('carl')!.x).toBeGreaterThan(placed.get('bert')!.x);
+		expect(result.get('carl')!.at.x).toBeGreaterThan(placed.get('bert')!.x);
+	});
+
+	it('keeps newcomers clear of everyone already on the map, even from its crowded middle', () => {
+		// A person in the thick of the map: whoever they bring in goes out past the crowd rather
+		// than into it, so the map stays readable.
+		const crowd = new Map<string, Point>([['anna', { x: 0, y: 0 }]]);
+		for (let i = 0; i < 12; i++) {
+			const angle = (i / 12) * 2 * Math.PI;
+			crowd.set(`p${i}`, { x: 100 * Math.cos(angle), y: 100 * Math.sin(angle) });
+			crowd.set(`q${i}`, { x: 200 * Math.cos(angle), y: 200 * Math.sin(angle) });
+		}
+		const ids = ['carl', 'dora', 'emil', 'finn'];
+		const result = placeNewcomers(
+			crowd,
+			ids,
+			ids.map((id) => ({ source: 'anna', target: id })),
+			SPACING
+		);
+
+		for (const id of ids) {
+			for (const [, other] of crowd) {
+				expect(distance(result.get(id)!.at, other)).toBeGreaterThanOrEqual(SPACING - 1e-9);
+			}
+		}
+	});
+
+	it('keeps the newcomers of two different people clear of each other', () => {
+		const result = placeNewcomers(
+			placed,
+			['carl', 'dora'],
+			[
+				{ source: 'anna', target: 'carl' },
+				{ source: 'bert', target: 'dora' }
+			],
+			SPACING
+		);
+
+		expect(distance(result.get('carl')!.at, result.get('dora')!.at)).toBeGreaterThanOrEqual(
+			SPACING - 1e-9
+		);
+	});
+
+	it('starts each newcomer from the person it was opened from, so it can travel out', () => {
+		const result = placeNewcomers(placed, ['carl'], [{ source: 'bert', target: 'carl' }], SPACING);
+
+		expect(result.get('carl')!.from).toEqual(placed.get('bert')!);
 	});
 
 	it('still opens outward from a person standing at the very centre', () => {
@@ -91,7 +139,7 @@ describe('placeNewcomers', () => {
 			SPACING
 		);
 
-		const carl = result.get('carl')!;
+		const carl = result.get('carl')!.at;
 		expect(distance(carl, centred.get('anna')!)).toBeCloseTo(SPACING);
 		expect(distance(carl, centred.get('bert')!)).toBeGreaterThan(SPACING * 0.8);
 		expect(distance(carl, centred.get('dora')!)).toBeGreaterThan(SPACING * 0.8);

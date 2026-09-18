@@ -1,13 +1,6 @@
-import type {
-	Core,
-	CytoscapeOptions,
-	ElementDefinition,
-	EventObject,
-	Layouts,
-	NodeCollection
-} from 'cytoscape';
+import type { Core, CytoscapeOptions, ElementDefinition, EventObject, Layouts } from 'cytoscape';
 import type { CyElement } from './elements';
-import { placeNewcomers, type Point } from './placement';
+import { placeNewcomers, type Placement, type Point } from './placement';
 import { widenToReveal } from './viewport';
 import type { CyStyle } from './stylesheet';
 
@@ -38,9 +31,12 @@ export interface ExplorerOptions extends ControllerOptions {
 export interface ExplorerController {
 	/**
 	 * Reconcile the full (expanded) element set. Nodes already on the canvas stay where they
-	 * are; only the newcomers are placed and settled, and the viewport is left alone.
+	 * are; only the newcomers are placed, clear of everyone, and the view is left alone
+	 * unless it has to step back to show them.
 	 */
 	setGraph(elements: CyElement[]): void;
+	/** Arrange the whole map afresh and frame it — the reader's "tidy up". */
+	arrange(): void;
 	/** Show only these node/edge ids (filtering), without a re-layout. */
 	setVisible(nodeIds: Set<string>, edgeIds: Set<string>): void;
 	/** Dim everything except the node and its immediate neighbourhood (null clears). */
@@ -76,12 +72,6 @@ const MIN_ZOOM = 0.2;
 
 /** The length the force layout aims every edge at, and the step newcomers are placed at. */
 const EDGE_LENGTH = 90;
-/**
- * How hard the first iterations may shove a newcomer when an expand settles. Cose starts at
- * 1000, which is meant for untangling a whole graph from scratch; a newcomer already set down
- * next to its anchor only needs nudging clear of whoever it landed near.
- */
-const SETTLE_TEMPERATURE = 100;
 
 function layout(reducedMotion: boolean) {
 	return {
@@ -97,14 +87,6 @@ function layout(reducedMotion: boolean) {
 }
 
 /**
- * The same forces, run only to settle newcomers: everyone else is locked in place by the
- * caller, and the viewport stays where the reader left it.
- */
-function settleLayout(reducedMotion: boolean) {
-	return { ...layout(reducedMotion), fit: false, initialTemp: SETTLE_TEMPERATURE };
-}
-
-/**
  * The controller over an existing core. Split from {@link createExplorer} so the lifecycle can
  * be exercised against a headless core: what matters here is not the drawing but that nothing
  * touches the core once it is gone.
@@ -116,16 +98,26 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	// Every layout still moving the nodes. Destroying the core does not stop a layout: its next
 	// frame would run against a core whose renderer is already gone, throw there, and leave a
 	// half-demolished canvas behind — which is what a page navigated away from mid-layout used
-	// to do. There can be more than one, because expanding a node re-arranges the graph while
-	// the opening arrangement is still travelling, and Cytoscape lets the two run side by side.
+	// to do. There can be more than one, because tidying the map up re-arranges it while the
+	// opening arrangement may still be travelling, and Cytoscape lets the two run side by side.
 	const running = new Set<Layouts>();
-	// Viewport moves still under way to bring an expand's newcomers into view. Until they end,
-	// the drawn positions are still travelling across the screen just as during a layout.
-	let revealing = 0;
-	// Only the last layout to finish, with no reveal left, has brought the canvas to rest; the
-	// nodes an earlier layout left behind are still being moved by a later one.
+	// Animations still under way from an expand — newcomers travelling out to their places, the
+	// view stepping back to show them. Until they end the drawn positions are still moving,
+	// just as during a layout.
+	let moving = 0;
+	// Only the last layout to finish, with nothing else moving, has brought the canvas to rest;
+	// the nodes an earlier layout left behind are still being moved by a later one.
 	const publishLayoutState = () =>
-		setLayoutState(running.size === 0 && revealing === 0 ? SETTLED : SETTLING);
+		setLayoutState(running.size === 0 && moving === 0 ? SETTLED : SETTLING);
+	/** Runs an animation that counts as the canvas moving until it completes. */
+	const whileMoving = (start: (complete: () => void) => void) => {
+		moving++;
+		publishLayoutState();
+		start(() => {
+			moving--;
+			publishLayoutState();
+		});
+	};
 
 	setLayoutState(SETTLING);
 	cy.on('layoutstart', (e) => {
@@ -149,46 +141,40 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		cy.layout(layout(opts.reducedMotion) as Parameters<Core['layout']>[0]).run();
 
 	/*
-	 * Settle freshly placed nodes without moving anyone else. Cose leaves a locked node where
-	 * it is while still letting it push and pull, so the newcomers find room around a map that
-	 * stands still. Only nodes that were not locked already are locked here, and released again
-	 * once the layout stops — however it stops, a teardown included.
+	 * Newcomers travel out from the person they were opened from to their places, which the
+	 * placement already chose clear of everyone else — no layout runs, so nobody else moves.
+	 * Under reduced motion they are simply there.
 	 */
-	const settle = (newcomers: Set<string>) => {
-		const held = cy.nodes().filter((n) => !newcomers.has(n.id()) && !n.locked());
-		held.lock();
-		const settling = cy.layout(settleLayout(opts.reducedMotion) as Parameters<Core['layout']>[0]);
-		settling.one('layoutstop', () => {
-			if (!alive()) return;
-			held.unlock();
-			reveal(cy.nodes().filter((n) => newcomers.has(n.id())));
-		});
-		settling.run();
+	const bringIn = (placements: Map<string, Placement>) => {
+		reveal([...placements.values()].map((p) => p.at));
+		if (duration === 0) return;
+		for (const [id, { at }] of placements) {
+			whileMoving((complete) => cy.$id(id).animate({ position: at }, { duration, complete }));
+		}
 	};
 
 	/*
 	 * Newcomers set down beside a node at the edge of the view can land off screen. Rather
 	 * than re-framing the map, the view steps back just far enough to take them in as well.
 	 */
-	const reveal = (newcomers: NodeCollection) => {
-		if (newcomers.empty() || cy.width() === 0 || cy.height() === 0) return;
+	const reveal = (targets: Point[]) => {
+		if (targets.length === 0 || cy.width() === 0 || cy.height() === 0) return;
+		// Half an edge length around each centre covers the node and the name drawn under it.
+		const margin = EDGE_LENGTH / 2;
 		const next = widenToReveal(
 			{ extent: cy.extent(), zoom: cy.zoom() },
-			newcomers.boundingBox({}),
+			{
+				x1: Math.min(...targets.map((p) => p.x)) - margin,
+				y1: Math.min(...targets.map((p) => p.y)) - margin,
+				x2: Math.max(...targets.map((p) => p.x)) + margin,
+				y2: Math.max(...targets.map((p) => p.y)) + margin
+			},
 			{ width: cy.width(), height: cy.height() },
 			FRAME_PADDING,
 			cy.minZoom()
 		);
 		if (!next) return;
-		revealing++;
-		publishLayoutState();
-		cy.animate(next, {
-			duration,
-			complete: () => {
-				revealing--;
-				publishLayoutState();
-			}
-		});
+		whileMoving((complete) => cy.animate(next, { duration, complete }));
 	};
 
 	// The first arrangement runs here rather than through the constructor's `layout` option,
@@ -201,6 +187,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			if (!alive()) return;
 			const incoming = new Set(elements.map((e) => e.data.id as string));
 			const newcomers = new Set<string>();
+			let placements = new Map<string, Placement>();
 			let wasEmpty = false;
 			cy.batch(() => {
 				cy.elements().forEach((el) => {
@@ -217,11 +204,13 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 				const links = elements
 					.filter((e) => e.group === 'edges')
 					.map((e) => ({ source: e.data.source as string, target: e.data.target as string }));
-				const start = placeNewcomers(placed, [...newcomers], links, EDGE_LENGTH);
+				placements = placeNewcomers(placed, [...newcomers], links, EDGE_LENGTH);
+				// With motion, a newcomer starts on the person it was opened from and travels out.
+				const startAt = (p: Placement) => (duration === 0 ? p.at : p.from);
 				cy.add(
 					toAdd.map((e) => {
-						const position = start.get(e.data.id as string);
-						return position ? { ...e, position } : e;
+						const placement = placements.get(e.data.id as string);
+						return placement ? { ...e, position: { ...startAt(placement) } } : e;
 					}) as unknown as ElementDefinition[]
 				);
 			});
@@ -231,7 +220,12 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			// to keep, and gets a full arrangement.
 			if (newcomers.size === 0) return;
 			if (wasEmpty) relayout();
-			else settle(newcomers);
+			else bringIn(placements);
+		},
+
+		arrange() {
+			if (!alive()) return;
+			relayout();
 		},
 
 		setVisible(nodeIds, edgeIds) {

@@ -453,6 +453,14 @@
 			{t('graph.labels')}
 		</button>
 
+		<button
+			onclick={() => controller?.arrange()}
+			title={t('graph.arrange.hint')}
+			class="pointer-events-auto rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-fg-muted backdrop-blur transition-colors hover:text-fg"
+		>
+			{t('graph.arrange')}
+		</button>
+
 		{#if !compact}
 			<button
 				onclick={togglePath}

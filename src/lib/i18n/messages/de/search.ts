@@ -21,6 +21,8 @@ export const search: SearchMessages = {
 	'graph.connectionPath': 'Verbindungsweg',
 	'graph.labels': 'Bezeichnungen',
 	'graph.labels.hint': 'Jede Linie mit ihrer Beziehung benennen',
+	'graph.arrange': 'Anordnen',
+	'graph.arrange.hint': 'Den ganzen Graphen neu und übersichtlich anordnen',
 	'graph.path.none': 'Zwischen diesen beiden ist keine Verbindung zu finden.',
 	'graph.path.pickSecond': 'Wähle jetzt die zweite Person…',
 	'graph.path.pickTwo': 'Wähle zwei Menschen, um ihre Verbindung zu verfolgen.',
