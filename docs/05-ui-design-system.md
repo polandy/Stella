@@ -553,9 +553,8 @@ calls, so the rule can be driven — run, clean up, run again — without a brow
 `RemoveButton`'s optional `pending` counts the commit a removal makes once its undo window has
 passed — never the window itself, during which nothing is on its way to the server yet. That
 rule is `deferredRemoval` in `src/lib/undo/deferred-removal.ts`, which is what the button hands
-to the removals store: key, toast wording and the work to do when the window closes. Both sit
-outside their components on purpose — a rule inside a `<script>` is a rule no unit test can
-reach, and this one is wiring that would otherwise be free to disappear unnoticed.
+to the removals store: key, toast wording and the work to do when the window closes. Both rules
+sit outside their components so a unit test can reach them.
 
 The indicator is hard to catch in a healthy local build — a save there is over in tens of
 milliseconds, well under the delay — so `/settings/debug` is a workbench for it: jobs of a
