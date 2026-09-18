@@ -62,6 +62,47 @@ test('enters a link with how they connect, since when, and whether it still hold
 	await expect(enteredRow(page, 'Heidi Lehmann')).toContainText('since 1 June 2019');
 });
 
+/*
+ * The status has no unset state (docs/02 §2.4): a link being entered is one that holds, so the
+ * form stands on *current* and there is no "not said" to pick. This is the case that owns the
+ * defect — the picker used to stand on "Not said", so the commonest way to enter a link stored
+ * the one answer that means nothing.
+ *
+ * The option list is what carries the proof: on the build before the fix there were three of
+ * them with "Not said" checked. That a link comes back reading *current* cannot tell a stored
+ * `current` from a stored nothing — with the third answer gone, both would draw the same
+ * screen — so the storage side is held by the unit and migration specs, and what is asserted
+ * here is what a reader sees and picks.
+ *
+ * Corinne Keller is linked to nobody by the seed or by any other case, so this pair is its own.
+ */
+test('offers only the two answers a link can hold, and stands on current', async ({ page }) => {
+	await openPeopleTab(page, /Bettina Roth/);
+	await page.getByRole('button', { name: 'Add relationship' }).click();
+
+	const form = page.locator('form[action="?/addRelationship"]');
+	const addStatus = form.locator('select[name=status]');
+	await expect(addStatus.locator('option')).toHaveText(['current', 'former']);
+	await expect(addStatus.locator('option:checked')).toHaveText('current');
+
+	// Entered without the status being touched at all — the path that used to store nothing.
+	await form.locator('select[name=typeChoice]').selectOption({ label: 'Knows' });
+	await pickPerson(form.getByLabel('Person'), 'Corinne Keller');
+	await form.getByRole('button', { name: 'Add', exact: true }).click();
+
+	const row = enteredRow(page, 'Corinne Keller');
+	await expect(row).toContainText('Knows');
+	// A current link wears no chip; the *former* one in the case above proves the chip shows.
+	await expect(row).not.toContainText('former');
+
+	// It survives a reload, and the row's own editor stands on the answer it holds.
+	await page.reload();
+	await enteredRow(page, 'Corinne Keller').getByRole('button', { name: 'Edit' }).click();
+	const editStatus = page.locator('form[action="?/editRelationship"] select[name=status]');
+	await expect(editStatus.locator('option')).toHaveText(['current', 'former']);
+	await expect(editStatus.locator('option:checked')).toHaveText('current');
+});
+
 test('enters a link from the other side: "child of" needs no detour via the other profile', async ({ page }) => {
 	await openPeopleTab(page, /Bettina Roth/);
 	// The reverse side of an asymmetric type is on offer, so the sentence can be said the way
