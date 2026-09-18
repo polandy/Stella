@@ -386,7 +386,7 @@
 	 * than the button, because Esc leaves it without asking us. Where the browser cannot do it
 	 * (iOS Safari on an element) the button is simply absent.
 	 */
-	const canFullscreen = typeof document !== 'undefined' && document.fullscreenEnabled;
+	let canFullscreen = $state(false);
 	let fullscreen = $state(false);
 	const syncFullscreen = () => (fullscreen = document.fullscreenElement === frame);
 
@@ -400,6 +400,9 @@
 	}
 
 	onMount(async () => {
+		// Decided on the client only: the server renders this component too, and a button
+		// present there but not here (or the reverse) would be a hydration mismatch.
+		canFullscreen = document.fullscreenEnabled;
 		document.addEventListener('fullscreenchange', syncFullscreen);
 		// Build the initial ego view around the centre from the in-memory snapshot.
 		if (centerId) model = await buildEgoNetwork(source, centerId, 1);
