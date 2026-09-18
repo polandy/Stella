@@ -120,6 +120,7 @@
 		typeof window !== 'undefined' &&
 		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+	let frame: HTMLDivElement;
 	let container: HTMLDivElement;
 	let controller: ExplorerController | null = null;
 	let ready = $state(false);
@@ -428,6 +429,34 @@
 		controller.setTopInset(inset);
 	});
 
+	/*
+	 * Full screen is the browser's own, on the whole frame — canvas, toolbar and peek panel
+	 * together — so nothing the map needs is left behind. The state follows the browser rather
+	 * than the button, because Esc leaves it without asking us. Where the browser cannot do it
+	 * (iOS Safari on an element) the button is simply absent.
+	 */
+	let canFullscreen = $state(false);
+	let fullscreen = $state(false);
+	const syncFullscreen = () => (fullscreen = document.fullscreenElement === frame);
+
+	async function toggleFullscreen() {
+		try {
+			if (document.fullscreenElement === frame) await document.exitFullscreen();
+			else await frame.requestFullscreen();
+		} catch (error) {
+			console.error('Could not switch full screen', error);
+		}
+	}
+
+	// An effect rather than onMount/onDestroy: it runs in the browser only (the server renders
+	// this component too, and has no `document`), and a button present there but not here
+	// would be a hydration mismatch.
+	$effect(() => {
+		canFullscreen = document.fullscreenEnabled;
+		document.addEventListener('fullscreenchange', syncFullscreen);
+		return () => document.removeEventListener('fullscreenchange', syncFullscreen);
+	});
+
 	onMount(async () => {
 		// Build the initial ego view around the centre from the in-memory snapshot.
 		if (centerId) model = await buildEgoNetwork(source, centerId, 1);
@@ -485,7 +514,7 @@
 	});
 </script>
 
-<div class="relative h-full w-full overflow-hidden">
+<div bind:this={frame} class="relative h-full w-full overflow-hidden bg-bg">
 	<!-- Cytoscape stamps `position: relative` on its container, which would cancel an
 	     `absolute inset-0` box and collapse the canvas to zero height — size it directly. -->
 	<div bind:this={container} class="h-full w-full"></div>
@@ -630,6 +659,17 @@
 			{/snippet}
 		</MenuButton>
 
+		{#if canFullscreen}
+			<Button
+				variant="ghost"
+				size="sm"
+				icon={fullscreen ? 'exitFullscreen' : 'enterFullscreen'}
+				label={t(fullscreen ? 'graph.fullscreen.exit' : 'graph.fullscreen.enter')}
+				aria-pressed={fullscreen}
+				class="pointer-events-auto ml-auto"
+				onclick={toggleFullscreen}
+			/>
+		{/if}
 		{#if !compact}
 			<button
 				onclick={togglePath}

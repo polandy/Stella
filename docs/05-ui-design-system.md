@@ -309,6 +309,9 @@ They must be edited together; `app.css` says so at both blocks.
   dotted for kinship) in its token, so an item and the line it toggles can never disagree,
   and there is no second box to keep in sync. The **"Labels" switch** that names every line
   at once sits at the foot of the same menu.
+  A **Full screen** button at the end of the toolbar row hands the whole frame — canvas, toolbar
+  and peek panel — to the browser's Fullscreen API, on the graph route and on a person's map
+  alike; Esc leaves it. Where the browser cannot fullscreen an element, the button is absent.
 - **Circles** — a find-as-you-type field and kind chips over a grid of **cards** (§2.4.2):
   colour dot, name, kind and member count, the description, and a stack of the first four faces
   with "+n" for the rest. A query that matches nothing gets the empty state, not a blank page. A circle's page
