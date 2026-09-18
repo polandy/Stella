@@ -946,11 +946,11 @@ mechanism behind two features: correcting a birthday without touching the profil
   it with the `visibility` they were written with: a restore that loses a member's private
   journal is not a restore. That is why the export is **admin-only** and why it writes itself
   into `activity_log` — the household sees in its stream that an archive was taken.
-- **Credentials never travel.** Password hashes and TOTP secrets are stripped; live sessions and
-  the links to the identity provider are not exported at all.
+- **Credentials never travel.** Password hashes and TOTP secrets are stripped; live sessions,
+  API tokens (§2.16.1) and the links to the identity provider are not exported at all.
 - **What it deliberately leaves out.** `updated_at` (bookkeeping, set afresh on import), the
   installation's own settings (the household's and each member's preferences), pending
-  invitations, live sessions and identity-provider links. Everything else that carries meaning
+  invitations, live sessions, API tokens and identity-provider links. Everything else that carries meaning
   is in the file, and the round trip is held to that by a test.
 - **Import — shipped.** *Settings → Restore from an archive* reads a `.tar` back in: the people,
   everything written about them, the relationships, circles and tags, and the photos. Admin
@@ -1052,6 +1052,112 @@ included) it is the very first thing they will do.
   its own (`vcard:contact:<uid>`, or the card's position when it has no `UID`), so a vCard
   import is never mistaken for a re-run of a Monica one — and, by the same token, importing a
   vCard *and* a Monica export of the same people brings them in twice.
+
+### 2.16.1 The import API **[M2]**
+
+For people who arrive as a **list** rather than as an export — a kindergarten class with the
+parents, a club roster, a wedding's guests — a script or an assistant can read the list and
+send it to Stella in one request, as the member whose token signs it.
+
+**Tokens.** *Settings → API tokens* is every member's, not only the admin's: a token acts as
+whoever made it, sees what they see and writes records as theirs, so nobody makes or withdraws
+one for anybody else. A token has a name ("Class list import"), a lifetime of 30, 90 or 365
+days and a record of when it was last used. It is shown **once**, when it is made — Stella
+keeps only its SHA-256, like a session — and starts with `stella_`, so a leaked one is
+recognisable. Revoking is immediate and has no undo: a token is withdrawn because it may be in
+the wrong hands. A token opens the API and nothing else; under `/api/v1/` the session cookie
+is not read at all, so a signed-in browser cannot be steered into calling it by another site.
+Tokens are never exported (§2.15).
+
+**Endpoints.** Every request carries `Authorization: Bearer stella_…`; without a live token the
+answer is `401` with `{ "error": { "code": "unauthorized" } }`. A `POST` carries
+`Content-Type: application/json` — without it SvelteKit takes the body for a cross-site form
+submission and refuses it (`403`) before Stella sees it. `?dryRun=` accepts `true` or `false`
+and nothing else (`400 invalidDryRun`), so a typo can never mean "write".
+
+| Request | Answer |
+|---|---|
+| `GET /api/v1/people?q=anna` | `{ people: [{ id, displayName, description }] }` — the household search (§2.9), as the member would see it |
+| `GET /api/v1/circles?q=kinder` | `{ circles: [{ id, name, kind, startDate, endDate, memberCount }] }` — name contains the query, ignoring case and accents; all circles without one |
+| `POST /api/v1/import` | writes a document (below) |
+| `POST /api/v1/import?dryRun=true` | the same answer, and nothing written |
+
+**The document.** People, their contact details, the links between them and the circles they
+belong to, in one JSON object. Everything a document *creates* is named by a **ref** it chooses
+itself (`[A-Za-z0-9_-]{1,64}`); someone already in Stella is named by id instead, found through
+the lookups above.
+
+```json
+{
+  "source": "kindergarten-2023",
+  "visibility": "shared",
+  "people": [
+    { "ref": "juri", "firstName": "Juri", "lastName": "Example", "birthDate": "2017-10-03",
+      "fields": [{ "kind": "address", "value": "Examplestrasse 1, 3007 Bern" }] },
+    { "ref": "fabienne", "firstName": "Fabienne", "lastName": "Example",
+      "fields": [{ "kind": "phone", "value": "+41 79 000 00 00", "label": "mobile" }] },
+    { "ref": "leo", "existingId": "01J…" }
+  ],
+  "relationships": [{ "from": "fabienne", "to": "juri", "type": "parent_child" }],
+  "circles": [
+    { "ref": "kg", "name": "Kindergarten 2023/24", "kind": "class",
+      "startDate": "2023-08-01", "endDate": "2024-07-31",
+      "members": [{ "person": "juri", "role": "Child" }, { "person": "leo", "role": "Child" },
+                  { "person": "fabienne", "role": "Parent" }] }
+  ]
+}
+```
+
+- A **new person** has at least one of `displayName`, `firstName`, `lastName`, `nickname`;
+  optionally `description`, `birthDate` (`YYYY-MM-DD`, or `--MM-DD` without the year) and
+  `fields` (`kind` is one of `phone`, `email`, `address`, `url`, `social`, `date`, `custom`;
+  `value`; `label`). An **existing person** is `{ ref, existingId }` and nothing else.
+- A **relationship** is `{ from, to, type }` by the type's key — a built-in one
+  (`parent_child`, `grandparent_grandchild`, `sibling`, `partner`, `spouse`, `friend`,
+  `colleague`, `mentor_mentee`, `neighbor`, `acquaintance`, `knows`, `other`) or one of the
+  household's own (§2.4). `from` is the forward side: for `parent_child`, the parent.
+- A **new circle** has a `name`; optionally `kind` (§2.4.2: `friends`, `family`, `school`, `class`, `course`, `club`, `team`, `work`, `neighborhood`, `other`), `description`, `startDate`,
+  `endDate`, `parent` — the ref of a circle listed *earlier* in the document — and `members`.
+  An **existing circle** is `{ ref, existingId, members }`. A member is `{ person, role,
+  startDate, endDate }`, all but `person` optional.
+- `visibility` applies to every person and circle created; the member's default without it.
+- Objects are strict: a field Stella does not know is refused, never dropped, so `birthday` for
+  `birthDate` is an error rather than a birthday silently lost.
+
+**All or nothing, and every problem at once.** A body that is not a well-formed document is
+answered `400` with `{ problems: [{ code: "invalid", path: "people[2].birthDate", message }] }`;
+one that is well-formed but cannot be applied to this household is answered `422` with the
+problems the planner found — `duplicateRef`, `unknownRef`, `personNotFound`, `circleNotFound`,
+`idTaken`, `unknownRelationshipType`, `selfRelationship`, `duplicateRelationship`,
+`relationshipContradiction`, `relationshipExcluded` (with the `reason` of §2.4's guardrails and
+the `personId` it is about), `duplicateMember`. Either way nothing is written, not even the good
+part, and every problem is named, so a script fixes its output in one round. `code` and `path`
+are the contract; `message` is an English diagnostic for whoever writes the script.
+
+**Links pass the guardrails.** A link sent through the API meets the same rules as one entered
+on a person's page (§2.4): a generation cannot run both ways, a child has at most two parents,
+a partnership that still holds stands in the way of another, and so on — read against the
+household's record *and* the links earlier in the same document.
+
+**Sending twice changes nothing.** What a document creates is stored under an id made of
+`source` and its ref (`api~kindergarten-2023~p~juri`), so a second sending finds it and leaves
+it alone; a link or membership the household already has — under any id — is left out too. The
+answer says so rather than going quiet: each person and circle comes back with a `status` of
+`new`, `imported` (sent before) or `existing` (named by id), and `alreadyThere` counts the
+links and memberships left out.
+
+**Duplicates are pointed out, never decided.** A name is not an identity — two people can share
+one (§2.15) — so the API never concludes that a new person *is* somebody already in the
+household. `possibleDuplicates` lists every new person whose name, ignoring case, accents and
+word order, somebody the member can see already has, with their ids and birth dates. The way to
+act on it is a dry run first, then `existingId` for whoever turns out to be there already.
+
+**The answer** to a successful request, dry run or not:
+`{ dryRun, added: { people, fields, relationships, circles, memberships }, people: [{ ref, id,
+displayName, status }], circles: [{ ref, id, name, status }], possibleDuplicates: [{ ref,
+candidates }], alreadyThere: { relationships, memberships } }`. A real import that added
+anything is written to the activity log in the member's language ("imported 20 people through
+the API (kindergarten-2023)"), with the visibility of what it imported.
 
 ## 2.17 Settings **[M1/M2]**
 

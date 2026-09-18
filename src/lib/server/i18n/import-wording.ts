@@ -1,6 +1,7 @@
 import { dayLabel } from '$lib/dates/labels';
 import { INTL_LOCALES } from '$lib/i18n/locales';
 import { createTranslator } from '$lib/i18n/translate';
+import type { ApiImportWording } from '$lib/server/domain/import/api/api-import';
 import type { ImportWording } from '$lib/server/domain/import/monica/plan';
 
 /*
@@ -21,5 +22,14 @@ export function importWording(locals: App.Locals): ImportWording {
 		metThrough: (name) => t('import.metThrough', { name }),
 		metThroughInfo: (info, name) => t('import.metThroughInfo', { info, name }),
 		day: (isoDay) => dayLabel(lang, isoDay)
+	};
+}
+
+/** The import API's log entry, in the language of the member whose token sent the document. */
+export function apiImportWording(locals: App.Locals): ApiImportWording {
+	const t = createTranslator(locals.locale);
+	return {
+		imported: (people, source) =>
+			t('import.api.loggedSummary', { people: t('archive.peopleCount', { count: people }), source })
 	};
 }

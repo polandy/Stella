@@ -15,6 +15,7 @@ import {
 	Handshake,
 	House,
 	Image,
+	KeyRound,
 	Lock,
 	LogOut,
 	Mail,
@@ -73,6 +74,8 @@ export const ICONS = {
 	more: Ellipsis,
 	pinned: Star,
 	archive: Archive,
+	// A credential a script signs in with (docs/02 §2.16.1) — not `private`, which is about who sees a record.
+	apiToken: KeyRound,
 	// States
 	private: Lock,
 	// The network is gone, not the data (docs/02 §2.18).

@@ -412,6 +412,26 @@ the dump.
 Importing the same export a second time changes nothing — every imported record remembers
 where it came from — so a retry after a hiccup is safe.
 
+### Letting a script add people for you
+
+A class list, a club roster, the guests of a wedding: when people arrive as a list, a script
+or an assistant can read it and add them in one go — each person with their phone and address,
+the links between them (who is whose parent) and the circle they share.
+
+1. Open **Settings → API tokens**, give the token a name that says what it is for, pick how
+   long it lasts and press **Create token**.
+2. Copy it straight away. Stella shows it this once and then keeps only a fingerprint of it;
+   if it gets lost, revoke it and make a new one.
+3. Hand it to the script. It acts as *you*: it finds and adds exactly what you could in the
+   app, and everything it adds is yours.
+
+A good script asks first: it sends the list with `?dryRun=true`, and Stella answers with what
+it *would* add — and with anyone on the list whose name is already in Stella, so they can be
+linked to the person who is here instead of being added twice. Sending the same list again
+adds nothing new. When the job is done, revoke the token under **Settings → API tokens**; it
+stops working at once. The details for whoever writes the script are in the features spec,
+§2.16.1.
+
 ## Taking your data with you
 
 Stella is where the family keeps its memory, so you should be able to walk away with it.

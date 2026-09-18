@@ -64,6 +64,13 @@
       "when": 1789689352353,
       "tag": "0008_tough_venom",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1789734498098,
+      "tag": "0009_simple_nico_minoru",
+      "breakpoints": true
     }
   ]
 }

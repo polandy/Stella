@@ -118,6 +118,7 @@ export const errors = {
 	'errors.export.adminOnly': 'Only the household admin can export.',
 	'errors.story.badCursor': 'Malformed story cursor',
 	'errors.journal.couldNotSave': 'Could not save the entry.',
+	'errors.apiToken.emptyName': 'Please name the token, so you can tell later what it is for.',
 	'errors.journal.editFailed': 'Could not save the changes.'
 };
 

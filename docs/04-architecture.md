@@ -91,6 +91,13 @@ static/               # manifest, icons, offline shell
 4. Load functions / actions receive `locals.user` and pass it to the domain layer,
    which scopes every query by household + visibility.
 
+Under `/api/v1/` step 1 is different: the member is whoever the `Authorization: Bearer` token
+belongs to (`auth/api-tokens.ts`), and the session cookie is **not read at all**. A token
+therefore opens only the API, and a signed-in browser cannot be made to call the API from
+another site — there is no cookie for such a request to ride on, so the API needs no CSRF
+defence of its own. From there on the request is an ordinary one: `locals.user` is the member,
+and the domain scopes by them (docs/02 §2.16.1).
+
 ### Language
 
 The domain never speaks a language: a use-case that refuses something throws a
@@ -696,6 +703,27 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   nothing is read as `current`, and that reading cannot be told apart from a deliberate one
   afterwards. It is the right way round — `former` is the answer someone had to give, and it is
   the only one kept as said (docs/03 §relationship, docs/02 §2.4).
+- **The import API names people by the caller's refs, and never matches by name** — a list
+  arriving from a script is a new source, and the question every importer faces is whether the
+  "Anna Muster" in it is the one already here. The alternatives were to match on name (wrong
+  whenever two people share one, and silent about it) or to make the script invent row ids. A
+  ref is the script's own handle, `source` + ref is the stored id, so re-sending is a no-op like
+  the Monica import's source ids; somebody already here is named by `existingId`, found through
+  the API's own lookups. The API points out look-alikes and leaves the call to the caller — the
+  dry run exists for exactly that (docs/02 §2.16.1).
+- **The API is all or nothing, and refuses what it does not know** — a planner that wrote the
+  good half of a document would leave a household with parents and no children, and a strict
+  object refuses `birthday` instead of dropping it. Both cost the caller a round trip on a
+  mistake; both are cheaper than a half-written or silently thinner household. The planner
+  collects every problem before answering, so that round trip is one. Links meet the same
+  pure guardrails (`exclusionFor`) as the person page, fed with the household's record plus the
+  document's earlier links (`domain/import/api/plan.ts`).
+- **API tokens are the member, stored like sessions, shown once** — a token acts as the member
+  who made it rather than carrying scopes of its own: the household has two roles and one
+  access layer, and a second permission system for scripts would be a second place for
+  authorisation to go wrong. Stored as a SHA-256 hash like a session, but with a fixed last day
+  and a name; the `stella_` prefix makes one recognisable in a leaked log. Under `/api/v1/` the
+  cookie is not read, which keeps tokens out of the pages and cookies out of the API (§4.4).
 
 ## 4.10 Deployment
 

@@ -88,6 +88,8 @@ export const importer: ImportMessages = {
 	'import.metThrough': (p) => `Über ${p.name}`,
 	'import.metThroughInfo': (p) => `${p.info} (über ${p.name})`,
 
+	'import.api.loggedSummary': (p) => `${p.people} über die API importiert (${p.source})`,
+
 	'import.error.chooseFile': 'Bitte wähle die Monica-Export- oder vCard-Datei zum Importieren.',
 	'import.error.sessionMissing': 'Die Import-Sitzung fehlt. Bitte lade den Dump erneut hoch.',
 	'import.error.sessionGone':

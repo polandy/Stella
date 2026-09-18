@@ -90,6 +90,33 @@ export const settings = {
 	'settings.about.current': 'This is the newest release.',
 	'settings.about.unreachable': 'GitHub could not be reached, so this may not be the newest release.',
 	'settings.about.unreachableSince': (p: { when: string }) => `Last checked ${p.when}.`,
+	'settings.api.heading': 'API',
+	'settings.api.title': 'API tokens',
+	'settings.api.blurb': 'Let a script or an assistant add people for you — from a class list, say.',
+	'settings.apiTokens.intro':
+		'A token lets a script act as you through Stella’s API: it finds and adds exactly what you could, and nothing more. Treat it like a password.',
+	'settings.apiTokens.create': 'New token',
+	'settings.apiTokens.name': 'What is it for?',
+	'settings.apiTokens.namePlaceholder': 'Class list import',
+	'settings.apiTokens.lifetime': 'Valid for',
+	'settings.apiTokens.days': (p: { count: number }) => `${p.count} days`,
+	'settings.apiTokens.submit': 'Create token',
+	'settings.apiTokens.createdHeading': 'Copy your token now',
+	'settings.apiTokens.createdHint':
+		'Stella keeps only a fingerprint of it, so it cannot be shown again. If it is lost, revoke it and create a new one.',
+	'settings.apiTokens.usage': 'Send it with every request:',
+	'settings.apiTokens.copy': 'Copy',
+	'settings.apiTokens.copied': 'Copied',
+	'settings.apiTokens.yours': 'Your tokens',
+	'settings.apiTokens.none': 'You have no tokens.',
+	'settings.apiTokens.validUntil': (p: { date: string }) => `Valid until ${p.date}`,
+	'settings.apiTokens.expired': (p: { date: string }) => `Expired on ${p.date}`,
+	'settings.apiTokens.lastUsed': (p: { date: string }) => `last used ${p.date}`,
+	'settings.apiTokens.neverUsed': 'never used',
+	'settings.apiTokens.revoke': 'Revoke',
+	'settings.apiTokens.revokeLabel': (p: { name: string }) => `Revoke “${p.name}”`,
+	'settings.apiTokens.revoked': 'Token revoked. Scripts using it can no longer sign in.',
+	'settings.apiTokens.notFound': 'That token is already gone.',
 	'settings.about.off':
 		'Stella is not checking for new releases. Set UPDATE_CHECK=true to switch it on.'
 };

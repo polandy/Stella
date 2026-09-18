@@ -92,6 +92,19 @@
 		</a>
 	</section>
 
+	<!-- Every member's, not only the admin's: a token acts as whoever made it (docs/02 §2.16.1). -->
+	<section class="flex flex-col gap-3">
+		<h2 class="text-sm font-medium text-fg-muted">{t('settings.api.heading')}</h2>
+		<a href="/settings/api-tokens" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
+			<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="apiToken" size={18} /></span>
+			<span class="min-w-0 flex-1">
+				<span class="block font-medium text-fg">{t('settings.api.title')}</span>
+				<span class="block text-sm text-fg-muted">{t('settings.api.blurb')}</span>
+			</span>
+			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
+		</a>
+	</section>
+
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.data.heading')}</h2>
 		{#if data.isAdmin}
