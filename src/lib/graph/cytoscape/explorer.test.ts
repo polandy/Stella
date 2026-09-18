@@ -224,6 +224,39 @@ describe('explorerFromCore', () => {
 		expect(asked[asked.length - 1].animate).toBe(false);
 	});
 
+	it('moves the map to an arrangement it is handed, framing it again', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+		const [b] = positionsOf(cy, ['b']);
+
+		explorer.arrangeAt(new Map([['a', { x: 500, y: 700 }]]));
+
+		// Handed a place, a node goes there; a node it was not handed stays where it was.
+		expect(cy.$id('a').position()).toEqual({ x: 500, y: 700 });
+		expect(cy.$id('b').position()).toEqual(b);
+	});
+
+	it('glides into a handed arrangement, just as it does for a tidy-up', () => {
+		const cy = linkedPair();
+		const asked: Record<string, unknown>[] = [];
+		cy.layout = ((options: Record<string, unknown>) => {
+			asked.push(options);
+			return { run: () => {}, stop: () => {} };
+		}) as unknown as Core['layout'];
+		const explorer = explorerFromCore(cy, {
+			reducedMotion: false,
+			onTapNode: () => {},
+			onTapBackground: () => {}
+		});
+
+		explorer.arrangeAt(new Map([['a', { x: 500, y: 700 }]]));
+
+		const handed = asked[asked.length - 1];
+		expect(handed.name).toBe('preset');
+		expect(handed.animate).toBe(true);
+		expect(handed.fit).toBe(true);
+	});
+
 	it('destroys the core once, however often it is asked', () => {
 		const cy = core();
 		const explorer = controller(cy);
@@ -309,6 +342,7 @@ describe('explorerFromCore', () => {
 			explorer.focus('a');
 			explorer.setStylesheet([]);
 			explorer.arrange();
+			explorer.arrangeAt(new Map([['a', { x: 1, y: 1 }]]));
 		}).not.toThrow();
 	});
 });

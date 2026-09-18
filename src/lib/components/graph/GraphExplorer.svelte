@@ -21,6 +21,8 @@
 		withoutDerivedLinks
 	} from '$lib/graph/model/graph-model';
 	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
+	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
+	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
 	import type { ConnectionPath, GraphEdge, GraphFilters, GraphModel } from '$lib/graph/model/types';
 
 	interface Props {
@@ -260,6 +262,25 @@
 		controller?.focus(id);
 	}
 
+	/*
+	 * The three ways to arrange the map (docs/05 §5.8). Each is a one-off action, not a mode: an
+	 * expand afterwards still only adds people around the one expanded. The family tree reads
+	 * what is shown, so a filtered-out line cannot pull someone into a generation; the groups by
+	 * circle read every membership, so the grouping holds while the Circles chip is off.
+	 */
+	const ARRANGEMENTS = [
+		{ key: 'force', label: 'graph.arrange.force', hint: 'graph.arrange.force.hint' },
+		{ key: 'tree', label: 'graph.arrange.tree', hint: 'graph.arrange.tree.hint' },
+		{ key: 'circles', label: 'graph.arrange.circles', hint: 'graph.arrange.circles.hint' }
+	] as const;
+
+	function arrangeBy(key: (typeof ARRANGEMENTS)[number]['key']) {
+		if (!controller) return;
+		if (key === 'force') controller.arrange();
+		else if (key === 'tree') controller.arrangeAt(familyTreeLayout(visible));
+		else controller.arrangeAt(circleClustersLayout(model));
+	}
+
 	function togglePath() {
 		pathMode = !pathMode;
 		pathFrom = null;
@@ -453,13 +474,22 @@
 			{t('graph.labels')}
 		</button>
 
-		<button
-			onclick={() => controller?.arrange()}
-			title={t('graph.arrange.hint')}
-			class="pointer-events-auto rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-fg-muted backdrop-blur transition-colors hover:text-fg"
+		<div
+			role="group"
+			aria-label={t('graph.arrange')}
+			class="pointer-events-auto flex items-center gap-0.5 rounded-full border border-border bg-card/90 py-0.5 pl-3 pr-0.5 text-xs font-medium text-fg-muted backdrop-blur"
 		>
-			{t('graph.arrange')}
-		</button>
+			<span aria-hidden="true" class="mr-1">{t('graph.arrange')}</span>
+			{#each ARRANGEMENTS as arrangement (arrangement.key)}
+				<button
+					onclick={() => arrangeBy(arrangement.key)}
+					title={t(arrangement.hint)}
+					class="rounded-full px-2.5 py-0.5 transition-colors hover:bg-bg-sunken hover:text-fg"
+				>
+					{t(arrangement.label)}
+				</button>
+			{/each}
+		</div>
 
 		{#if !compact}
 			<button

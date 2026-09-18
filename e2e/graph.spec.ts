@@ -63,7 +63,7 @@ test('expanding a person brings the connections of theirs the canvas did not hav
 	await settled(page);
 });
 
-test('expanding moves nobody already on the map, and Tidy up re-arranges it', async ({ page }) => {
+test('expanding moves nobody already on the map, and arranging it freely re-arranges it', async ({ page }) => {
 	await page.goto('/graph?center=demo-c-hans');
 	await expect(page.locator('canvas').first()).toBeVisible();
 	await settled(page);
@@ -83,8 +83,8 @@ test('expanding moves nobody already on the map, and Tidy up re-arranges it', as
 	expect(grown.has('demo-c-peter')).toBe(true);
 	for (const [id, point] of before) expect(grown.get(id), id).toEqual(point);
 
-	// Tidy up is the one thing that may move them: the map is arranged afresh.
-	await page.getByRole('button', { name: 'Tidy up' }).click();
+	// Arranging is the one thing that may move them: the map is arranged afresh.
+	await page.getByRole('button', { name: 'Free' }).click();
 	await settled(page);
 	const tidied = await arrangement(page);
 	const moved = [...grown].filter(([id, p]) => {

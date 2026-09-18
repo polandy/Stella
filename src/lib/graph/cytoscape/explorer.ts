@@ -1,4 +1,11 @@
-import type { Core, CytoscapeOptions, ElementDefinition, EventObject, Layouts } from 'cytoscape';
+import type {
+	Core,
+	CytoscapeOptions,
+	ElementDefinition,
+	EventObject,
+	Layouts,
+	NodeSingular
+} from 'cytoscape';
 import type { CyElement } from './elements';
 import { placeNewcomers, type Placement, type Point } from './placement';
 import { widenToReveal } from './viewport';
@@ -35,8 +42,13 @@ export interface ExplorerController {
 	 * unless it has to step back to show them.
 	 */
 	setGraph(elements: CyElement[]): void;
-	/** Arrange the whole map afresh and frame it — the reader's "tidy up". */
+	/** Arrange the whole map afresh by the forces between people, and frame it. */
 	arrange(): void;
+	/**
+	 * Glide the map into an arrangement worked out elsewhere (the family tree, the groups by
+	 * circle) and frame it. A node without a place in it stays where it is.
+	 */
+	arrangeAt(positions: ReadonlyMap<string, Point>): void;
 	/** Show only these node/edge ids (filtering), without a re-layout. */
 	setVisible(nodeIds: Set<string>, edgeIds: Set<string>): void;
 	/** Dim everything except the node and its immediate neighbourhood (null clears). */
@@ -102,6 +114,19 @@ function tidyLayout(reducedMotion: boolean) {
 		animate: reducedMotion ? false : ('end' as const),
 		animationDuration: TIDY_GLIDE_DURATION,
 		animationEasing: 'ease-in-out-cubic'
+	};
+}
+
+/** Moving every node to a place already worked out, with the same glide as a tidy-up. */
+function presetLayout(reducedMotion: boolean, placeOf: (node: NodeSingular) => Point) {
+	return {
+		name: 'preset',
+		positions: placeOf,
+		animate: !reducedMotion,
+		animationDuration: TIDY_GLIDE_DURATION,
+		animationEasing: 'ease-in-out-cubic',
+		fit: true,
+		padding: FRAME_PADDING
 	};
 }
 
@@ -245,6 +270,12 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		arrange() {
 			if (!alive()) return;
 			cy.layout(tidyLayout(opts.reducedMotion) as Parameters<Core['layout']>[0]).run();
+		},
+
+		arrangeAt(positions) {
+			if (!alive()) return;
+			const placeOf = (node: NodeSingular) => positions.get(node.id()) ?? { ...node.position() };
+			cy.layout(presetLayout(opts.reducedMotion, placeOf) as Parameters<Core['layout']>[0]).run();
 		},
 
 		setVisible(nodeIds, edgeIds) {
