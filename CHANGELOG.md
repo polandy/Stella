@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.15](https://github.com/polandy/Stella/compare/v0.0.14...v0.0.15) (2026-09-18)
+
+
+### Features
+
+* **circles:** group a circle's members by role ([#137](https://github.com/polandy/Stella/issues/137)) ([a5ca00f](https://github.com/polandy/Stella/commit/a5ca00fab73e0896b27a063786add34b792e9eda))
+
 ## [0.0.14](https://github.com/polandy/Stella/compare/v0.0.13...v0.0.14) (2026-09-18)
 
 
