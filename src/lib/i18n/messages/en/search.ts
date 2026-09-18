@@ -37,6 +37,7 @@ export const search = {
 	'graph.peek.sharedContext': 'Shared context',
 	'graph.peek.person': 'Person',
 	'graph.peek.deceased': 'deceased',
+	'graph.peek.rolesToOpen': 'Roles to open up',
 	'graph.peek.expand': 'Expand connections',
 	'graph.peek.openProfile': 'Open profile',
 	'graph.peek.openCircle': 'Open the circle',

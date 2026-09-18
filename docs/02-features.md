@@ -694,6 +694,9 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   leaving the view. Everyone already on the canvas stays where they were; only the new people
   appear, around the person expanded and clear of the rest. The map is only re-arranged when
   the reader asks for it (below). Collapse to declutter.
+- **Choose the roles of a circle to open:** a circle's peek panel lists the roles its members
+  hold (with counts, "No role" last), all ticked. Expanding opens only the ticked roles, so a
+  class can show just its teachers; a re-sync reopens it for the same roles.
 - **In-graph search:** a search box finds a person and brings them into the view; if they
   are already reachable, the graph **animates to focus** them.
 - **Connection path ("how do we know each other?"):** pick a second person and Stella

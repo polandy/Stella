@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { buildEgoNetwork, expandNode, rebuildExplored } from './ego-network';
+import { buildEgoNetwork, circleRoles, expandNode, rebuildExplored } from './ego-network';
 import { emptyModel } from './graph-model';
 import { fakeGraphSource, familyEdges, familyNodes, familySource } from './fixtures';
 import type { GraphModel } from './types';
@@ -133,5 +133,60 @@ describe('rebuildExplored', () => {
 
 		expect(model.nodes).toHaveLength(0);
 		expect(model.edges).toHaveLength(0);
+	});
+});
+
+describe('circle roles', () => {
+	const roled = familyEdges.map((e) =>
+		e.id === 'm2'
+			? { ...e, label: 'Trainer' }
+			: e.id === 'm3'
+				? { ...e, label: 'Trainer' }
+				: e.id === 'm4'
+					? { ...e, label: 'Kassier' }
+					: e
+	);
+	const source = () => fakeGraphSource(familyNodes, roled);
+
+	it('lists the roles most-populated first, "no role" last', async () => {
+		const hood = await source().neighborhood('kegel');
+		expect(circleRoles(hood!)).toEqual([
+			{ role: 'Trainer', count: 2 },
+			{ role: 'Kassier', count: 1 },
+			{ role: null, count: 1 }
+		]);
+	});
+
+	it('expands a circle only for the chosen roles', async () => {
+		const model = await expandNode(
+			source(),
+			{ nodes: [], edges: [] },
+			'kegel',
+			new Set(['Kassier'])
+		);
+		expect(ids(model)).toEqual(new Set(['kegel', 'doris']));
+		expect(edgeIds(model)).toEqual(new Set(['m4']));
+	});
+
+	it('reveals members without a role when null is chosen', async () => {
+		const model = await expandNode(source(), { nodes: [], edges: [] }, 'kegel', new Set([null]));
+		expect(ids(model)).toEqual(new Set(['kegel', 'mara']));
+	});
+
+	it('expands every member when no roles are given', async () => {
+		const model = await expandNode(source(), { nodes: [], edges: [] }, 'kegel');
+		expect(ids(model)).toEqual(new Set(['kegel', 'mara', 'sarah', 'jonas', 'doris']));
+	});
+
+	it('rebuilds an expanded circle for the roles it was opened with', async () => {
+		const model = await rebuildExplored(
+			source(),
+			'jonas',
+			['kegel'],
+			1,
+			new Map([['kegel', new Set<string | null>(['Kassier'])]])
+		);
+		expect(ids(model).has('doris')).toBe(true);
+		expect(ids(model).has('sarah')).toBe(false); // a Trainer, so not opened up
 	});
 });

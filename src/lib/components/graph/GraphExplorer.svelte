@@ -14,7 +14,14 @@
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
 	import { paletteFromDom } from '$lib/graph/cytoscape/theme';
 	import { findConnectionPath } from '$lib/graph/model/connection-path';
-	import { buildEgoNetwork, expandNode, rebuildExplored } from '$lib/graph/model/ego-network';
+	import {
+		buildEgoNetwork,
+		circleRoles,
+		expandNode,
+		rebuildExplored,
+		type CircleRole,
+		type CircleRoleOption
+	} from '$lib/graph/model/ego-network';
 	import { canExpand, ringsFrom } from '$lib/graph/model/rings';
 	import {
 		applyFilters,
@@ -184,6 +191,40 @@
 	 * explored to the same extent instead of collapsing the map back to the first ring.
 	 */
 	let expandedIds = new Set<string>();
+	/** For a circle opened up for some roles only, which — so a resync reopens it the same way. */
+	const expandedRoles = new Map<string, ReadonlySet<CircleRole>>();
+
+	/*
+	 * The selected circle's roles and which of them the next expansion opens. Everything starts
+	 * chosen, so a plain "expand" still shows the whole circle. `roleOptionsFor` names the circle
+	 * they belong to, so a slow answer for a circle the reader has since left is dropped.
+	 */
+	let roleOptions = $state<CircleRoleOption[]>([]);
+	let roleOptionsFor: string | null = null;
+	let chosenRoles = $state(new Set<CircleRole>());
+	// A primitive, so growing the model (which may hand back new node objects) doesn't reset it.
+	const peekCircleId = $derived(peekNode?.kind === 'circle' ? peekNode.id : null);
+	$effect(() => {
+		const circleId = peekCircleId;
+		roleOptions = [];
+		roleOptionsFor = null;
+		if (circleId === null) return;
+		roleOptionsFor = circleId;
+		void source.neighborhood(circleId).then((hood) => {
+			if (!hood || roleOptionsFor !== circleId) return;
+			roleOptions = circleRoles(hood);
+			chosenRoles = new Set(roleOptions.map((o) => o.role));
+		});
+	});
+	const chosenAll = $derived(
+		roleOptions.length > 0 && roleOptions.every((o) => chosenRoles.has(o.role))
+	);
+
+	function toggleRole(role: CircleRole) {
+		const next = new Set(chosenRoles);
+		if (!next.delete(role)) next.add(role);
+		chosenRoles = next;
+	}
 	/** The snapshot the model on screen was built from; a different one means resync. */
 	let synced = untrack(() => graph);
 
@@ -207,7 +248,7 @@
 		path = null;
 		pathFrom = null;
 		pathMissing = false;
-		model = await rebuildExplored(source, centerId, expandedIds);
+		model = await rebuildExplored(source, centerId, expandedIds, 1, expandedRoles);
 		expandedIds = new Set([...expandedIds].filter((id) => model.nodes.some((n) => n.id === id)));
 		if (selected !== null && !model.nodes.some((n) => n.id === selected)) selected = null;
 	}
@@ -262,8 +303,11 @@
 		// The embedded map is one person's neighbourhood, not a way into the whole household:
 		// past its last ring the reader is sent to the explorer route instead (docs/02 §2.7).
 		if (centerId !== null && !canExpand(rings, id, maxRings)) return;
-		model = await expandNode(source, model, id);
+		const roles = peekNode?.id === id && peekNode.kind === 'circle' ? chosenRoles : undefined;
+		model = await expandNode(source, model, id, roles);
 		expandedIds.add(id);
+		if (roles && !chosenAll) expandedRoles.set(id, new Set(roles));
+		else expandedRoles.delete(id);
 	}
 
 	async function reveal(id: string) {
@@ -641,8 +685,23 @@
 				{#if peekNode.deceased}· {t('graph.peek.deceased')}{/if}
 			</div>
 			<div class="flex flex-col gap-2">
+				{#if peekNode.kind === 'circle' && peekExpandable && roleOptions.length > 1}
+					<fieldset class="flex flex-col gap-1 text-sm" data-testid="circle-roles">
+						<legend class="mb-1 text-xs text-fg-subtle">{t('graph.peek.rolesToOpen')}</legend>
+						{#each roleOptions as option (option.role)}
+							<label class="flex items-center gap-2">
+								<input
+									type="checkbox"
+									checked={chosenRoles.has(option.role)}
+									onchange={() => toggleRole(option.role)}
+								/>
+								<span class="text-fg">{option.role ?? t('circles.noRole')} · {option.count}</span>
+							</label>
+						{/each}
+					</fieldset>
+				{/if}
 				{#if peekExpandable}
-					<Button type="button" onclick={() => expand(peekNode.id)}>{t('graph.peek.expand')}</Button>
+					<Button type="button" disabled={peekNode.kind === 'circle' && roleOptions.length > 0 && chosenRoles.size === 0} onclick={() => expand(peekNode.id)}>{t('graph.peek.expand')}</Button>
 				{:else if fullGraphHref}
 					<!-- The map ends here, so the honest offer is the one place that goes further. -->
 					<Button icon="graph" href={fullGraphHref(peekNode.id)}>{t('graph.openInGraph')}</Button>

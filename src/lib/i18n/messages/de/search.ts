@@ -37,6 +37,7 @@ export const search: SearchMessages = {
 	'graph.peek.sharedContext': 'Gemeinsamer Zusammenhang',
 	'graph.peek.person': 'Person',
 	'graph.peek.deceased': 'verstorben',
+	'graph.peek.rolesToOpen': 'Rollen aufklappen',
 	'graph.peek.expand': 'Verbindungen aufklappen',
 	'graph.peek.openProfile': 'Profil öffnen',
 	'graph.peek.openCircle': 'Kreis öffnen',
