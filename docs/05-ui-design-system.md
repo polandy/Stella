@@ -624,6 +624,13 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   rather than drawn as a smudge. Asymmetric relationships show subtle direction.
 - **Expand affordance:** an unexpanded node hints it can grow (e.g. a small "+" / count of
   hidden connections); clicking expands its neighborhood in place with a gentle animation.
+  **The map holds still while it grows:** everyone already on the canvas stays exactly where
+  they stood, and only the newcomers move — they are set down one edge length from the person
+  they were opened from, fanned into that person's open side (`placement.ts`), and nudged
+  clear of their neighbours by the force layout with everyone else locked. The view is not
+  re-framed; only when a newcomer lands off screen does it step back just far enough to take
+  them in too (`viewport.ts`), so what the reader was looking at never leaves the screen.
+  A removal moves nobody.
 - **Search & focus:** an in-canvas search field; selecting a result smoothly pans/zooms to
   that node and pulses it. The suggested names are drawn above the rest of the toolbar: on a
   narrow window the chip row wraps underneath the field, and a name a chip covers cannot be

@@ -30,6 +30,28 @@ function containerStub() {
 	};
 }
 
+const edge = (source: string, target: string): CyElement => ({
+	group: 'edges',
+	data: { id: `${source}-${target}`, source, target },
+	classes: ''
+});
+
+/** Two linked people at known places, the way a settled canvas holds them. */
+function linkedPair(): Core {
+	return cytoscape({
+		headless: true,
+		elements: [
+			{ data: { id: 'a' }, position: { x: 0, y: 0 } },
+			{ data: { id: 'b' }, position: { x: 120, y: 0 } },
+			{ data: { id: 'a-b', source: 'a', target: 'b' } }
+		]
+	});
+}
+
+function positionsOf(cy: Core, ids: string[]) {
+	return ids.map((id) => ({ ...cy.$id(id).position() }));
+}
+
 function core(): Core {
 	return cytoscape({ headless: true, elements: [{ data: { id: 'a' } }, { data: { id: 'b' } }] });
 }
@@ -100,6 +122,64 @@ describe('explorerFromCore', () => {
 		controller(cy);
 
 		expect(layouts).toBe(1);
+	});
+
+	it('leaves everyone already on the canvas where they stood when a node is expanded', () => {
+		// The reader has learnt where people are; an expand that re-arranged the whole map made
+		// them find their way again. Only the newcomers may move.
+		const cy = linkedPair();
+		const explorer = controller(cy);
+		const before = positionsOf(cy, ['a', 'b']);
+
+		explorer.setGraph([node('a'), node('b'), node('c'), edge('a', 'b'), edge('b', 'c')]);
+
+		expect(positionsOf(cy, ['a', 'b'])).toEqual(before);
+		const b = cy.$id('b').position();
+		const c = cy.$id('c').position();
+		expect(Math.hypot(c.x - b.x, c.y - b.y)).toBeLessThan(200);
+	});
+
+	it('keeps the viewport where the reader left it when a node is expanded', () => {
+		const cy = linkedPair();
+		const fits: unknown[] = [];
+		const real = cy.layout.bind(cy);
+		cy.layout = ((options: Parameters<Core['layout']>[0]) => {
+			fits.push((options as { fit?: unknown }).fit);
+			return real(options);
+		}) as Core['layout'];
+		const explorer = controller(cy);
+
+		explorer.setGraph([node('a'), node('b'), node('c'), edge('a', 'b'), edge('b', 'c')]);
+
+		// The opening arrangement frames the map; the expand after it must not re-frame it.
+		expect(fits).toEqual([true, false]);
+	});
+
+	it('arranges nothing when people only leave the canvas', () => {
+		const cy = linkedPair();
+		let layouts = 0;
+		const real = cy.layout.bind(cy);
+		cy.layout = ((options: Parameters<Core['layout']>[0]) => {
+			layouts++;
+			return real(options);
+		}) as Core['layout'];
+		const explorer = controller(cy);
+		const before = positionsOf(cy, ['a']);
+
+		explorer.setGraph([node('a')]);
+
+		expect(cy.$id('b').empty()).toBe(true);
+		expect(layouts).toBe(1);
+		expect(positionsOf(cy, ['a'])).toEqual(before);
+	});
+
+	it('lets the people already placed move again once the expand has settled', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+
+		explorer.setGraph([node('a'), node('b'), node('c'), edge('a', 'b'), edge('b', 'c')]);
+
+		expect(cy.nodes(':locked').map((n) => n.id())).toEqual([]);
 	});
 
 	it('destroys the core once, however often it is asked', () => {
