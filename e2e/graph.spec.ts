@@ -1,6 +1,17 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './app';
-import { arrangement, clickNode, highlightedLabels, settled, stateOf } from './graph-canvas';
+import {
+	arrangeBy,
+	arrangement,
+	bowedLines,
+	circlesOnCanvas,
+	clickNode,
+	filterMenu,
+	highlightedLabels,
+	overlappingNodes,
+	settled,
+	stateOf
+} from './graph-canvas';
 
 /*
  * The explorer's toolbar and peek panel (docs/05 §5.8). Written after the screen was seen in
@@ -12,17 +23,36 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('the filter chips are the legend, and there is no second one', async ({ page }) => {
+test('the Filter menu is the legend, and the pill counts what is shown', async ({ page }) => {
 	await page.goto('/graph?center=demo-c-hans');
 	await expect(page.locator('canvas').first()).toBeVisible();
+	await expect(
+		page.getByRole('button', { name: 'Filter: 6 of 6 kinds of line shown' })
+	).toBeVisible();
 
+	const menu = await filterMenu(page);
 	for (const label of ['Family', 'Romantic', 'Social', 'Work', 'Circles', 'Kinship']) {
-		await expect(page.getByRole('button', { name: label })).toHaveAttribute('aria-pressed', 'true');
+		await expect(menu.getByRole('menuitemcheckbox', { name: label, exact: true })).toHaveAttribute(
+			'aria-checked',
+			'true'
+		);
 	}
 	await expect(page.getByText('Connections', { exact: true })).toHaveCount(0);
 
-	await page.getByRole('button', { name: 'Family' }).click();
-	await expect(page.getByRole('button', { name: 'Family' })).toHaveAttribute('aria-pressed', 'false');
+	// A toggle leaves the menu open for the next one, and the pill says what was left out.
+	await menu.getByRole('menuitemcheckbox', { name: 'Family', exact: true }).click();
+	await expect(menu.getByRole('menuitemcheckbox', { name: 'Family', exact: true })).toHaveAttribute(
+		'aria-checked',
+		'false'
+	);
+	await expect(
+		page.getByRole('button', { name: 'Filter: 5 of 6 kinds of line shown' })
+	).toBeVisible();
+
+	// Escape closes it and hands focus back to the pill.
+	await page.keyboard.press('Escape');
+	await expect(menu).toHaveCount(0);
+	await expect(page.getByRole('button', { name: /^Filter/ })).toBeFocused();
 });
 
 test('opens the peek panel on the centred person with their face, name and a way to their page', async ({ page }) => {
@@ -63,7 +93,7 @@ test('expanding a person brings the connections of theirs the canvas did not hav
 	await settled(page);
 });
 
-test('expanding moves nobody already on the map, and Tidy up re-arranges it', async ({ page }) => {
+test('expanding moves nobody already on the map, and arranging it freely re-arranges it', async ({ page }) => {
 	await page.goto('/graph?center=demo-c-hans');
 	await expect(page.locator('canvas').first()).toBeVisible();
 	await settled(page);
@@ -83,8 +113,8 @@ test('expanding moves nobody already on the map, and Tidy up re-arranges it', as
 	expect(grown.has('demo-c-peter')).toBe(true);
 	for (const [id, point] of before) expect(grown.get(id), id).toEqual(point);
 
-	// Tidy up is the one thing that may move them: the map is arranged afresh.
-	await page.getByRole('button', { name: 'Tidy up' }).click();
+	// Arranging is the one thing that may move them: the map is arranged afresh.
+	await arrangeBy(page, 'Free');
 	await settled(page);
 	const tidied = await arrangement(page);
 	const moved = [...grown].filter(([id, p]) => {
@@ -94,20 +124,74 @@ test('expanding moves nobody already on the map, and Tidy up re-arranges it', as
 	expect(moved.length).toBeGreaterThan(0);
 });
 
-test('draws the relatives nobody entered, and the Kinship chip takes them away', async ({ page }) => {
+test('Tree sets each generation on a row of its own and bends the lines that would cross somebody', async ({
+	page
+}) => {
+	await page.goto('/graph?center=demo-c-hans');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await settled(page);
+
+	await arrangeBy(page, 'Tree');
+	await settled(page);
+	await expect(page.getByRole('button', { name: 'Arrange: Tree' })).toBeVisible();
+
+	// Hans and his wife on one row, their son below them, their granddaughter below him.
+	const at = await arrangement(page);
+	const row = (id: string) => at.get(`demo-c-${id}`)!.y;
+	expect(row('rosa')).toBe(row('hans'));
+	expect(row('markus')).toBeGreaterThan(row('hans'));
+	expect(row('lena')).toBeGreaterThan(row('markus'));
+	expect(await overlappingNodes(page)).toEqual([]);
+	// The grandparent lines would run straight through the children's row.
+	expect(await bowedLines(page)).toBeGreaterThan(0);
+
+	// Free draws every line straight again.
+	await arrangeBy(page, 'Free');
+	await settled(page);
+	expect(await bowedLines(page)).toBe(0);
+});
+
+test('By circle stands Lena with one of her circles, the circles apart and nobody on top of anybody', async ({
+	page
+}) => {
+	await page.goto('/graph?center=demo-c-lena');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await settled(page);
+
+	await arrangeBy(page, 'By circle');
+	await settled(page);
+	await expect(page.getByRole('button', { name: 'Arrange: By circle' })).toBeVisible();
+
+	const circles = await circlesOnCanvas(page);
+	expect(circles.length, 'Lena is in three circles').toBeGreaterThanOrEqual(2);
+	const at = await arrangement(page);
+	const apart = (a: string, b: string) =>
+		Math.hypot(at.get(a)!.x - at.get(b)!.x, at.get(a)!.y - at.get(b)!.y);
+	const [home, ...others] = [...circles].sort(
+		(a, b) => apart(a, 'demo-c-lena') - apart(b, 'demo-c-lena')
+	);
+	// She stands on one ring, and every other circle keeps its distance from that group.
+	for (const other of others) {
+		expect(apart(home, other)).toBeGreaterThan(2 * apart(home, 'demo-c-lena'));
+	}
+	expect(await overlappingNodes(page)).toEqual([]);
+});
+
+test('draws the relatives nobody entered, and the Kinship filter takes them away', async ({ page }) => {
 	// Lena's cousin Timo is tied to her by nothing stored: he is in her neighbourhood only
 	// because the cousin line is worked out, through the grandparents they share.
 	await page.goto('/graph?center=demo-c-lena');
 	await expect(page.locator('canvas').first()).toBeVisible();
 	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('drawn')).toPass();
 
-	await page.getByRole('button', { name: 'Kinship' }).click();
-	await expect(page.getByRole('button', { name: 'Kinship' })).toHaveAttribute('aria-pressed', 'false');
+	const kinship = (await filterMenu(page)).getByRole('menuitemcheckbox', { name: 'Kinship' });
+	await kinship.click();
+	await expect(kinship).toHaveAttribute('aria-checked', 'false');
 	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('filtered-out')).toPass();
 	// Her father stays: he is there through an entered relationship, not a derived one.
 	expect(await stateOf(page, 'demo-c-markus')).toBe('drawn');
 
-	await page.getByRole('button', { name: 'Kinship' }).click();
+	await kinship.click();
 	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('drawn')).toPass();
 });
 
@@ -169,10 +253,10 @@ async function ownersAt(page: Page, points: { x: number; y: number }[]): Promise
 	);
 }
 
-test('keeps the suggested names on top when the filter chips wrap under the search field', async ({
+test('keeps the suggested names on top when the toolbar wraps under the search field', async ({
 	page
 }) => {
-	await page.setViewportSize({ width: 640, height: 800 });
+	await page.setViewportSize({ width: 320, height: 800 });
 	await page.goto('/graph?center=demo-c-hans');
 	await expect(page.locator('canvas').first()).toBeVisible();
 
@@ -181,9 +265,9 @@ test('keeps the suggested names on top when the filter chips wrap under the sear
 	const list = page.getByTestId('graph-suggestions');
 	await expect(list.getByRole('button', { name: 'Hans Brunner' })).toBeVisible();
 
-	// The chips have to overlap the list here, or the rest of this proves nothing.
+	// The toolbar's pills have to overlap the list here, or the rest of this proves nothing.
 	const fieldBox = await field.boundingBox();
-	const chipBox = await page.getByRole('button', { name: 'Family' }).boundingBox();
+	const chipBox = await page.getByRole('button', { name: /^Filter/ }).boundingBox();
 	const listBox = await list.boundingBox();
 	if (!fieldBox || !chipBox || !listBox) throw new Error('the toolbar has no layout');
 	expect(chipBox.y).toBeGreaterThan(fieldBox.y + fieldBox.height);

@@ -56,12 +56,14 @@ Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) �
 | `src/lib/server/auth/` | sessions, password, OIDC relying-party |
 | `src/lib/suggestions/` | **pure** suggestion engine: rules say what follows, `engine.ts` applies the universal suppressions centrally, reasons are `Phrase`s (test-first) |
 | `src/lib/sync/` | **pure** pending-work counting behind the shell's activity indicator: `pending-work.ts` store, `trackPending` / `whilePending` / `reportNavigation` (test-first) |
+| `src/lib/menu/` | **pure** toolbar-menu decisions: the Filter pill's count and highlight, arrow-key movement (test-first) |
 | `src/lib/stream/` | **pure** household-stream filter: kinds, the `?kind=`/`?by=` codec, what the chips show (test-first) |
 | `src/lib/pwa/` | **pure** install/offline policy: manifest, cache rules, icon geometry, reachability protocol (test-first). `src/service-worker.ts` and `install.svelte.ts` are the adapters — they hold browser APIs, never a decision |
 | `src/lib/graph/model/` | **pure** graph domain: `GraphModel`, `buildEgoNetwork`, `expandNode`, `findConnectionPath`, `applyFilters` (test-first) |
+| `src/lib/graph/layout/` | **pure** arrangements as positions: family tree, groups by circle (test-first) |
 | `src/lib/graph/cytoscape/` | rendering adapter (Cytoscape confined here, lazy-loaded); no domain logic |
 | `src/routes/` | thin edges: `load` / form actions / `+server.ts` |
-| `src/lib/components/` | UI components (design system): `Button`, `Icon` + the `icons.ts` registry, `Avatar`, `Section`, `EmptyState`, `CommandPalette`, `Toast` + `RemoveButton`, `InlineEdit`, … |
+| `src/lib/components/` | UI components (design system): `Button`, `Icon` + the `icons.ts` registry, `Avatar`, `Section`, `EmptyState`, `CommandPalette`, `MenuButton`, `Toast` + `RemoveButton`, `InlineEdit`, … |
 | `src/lib/i18n/` | languages, message catalogues (`messages/en`, `messages/de`), translator, Svelte context — **all UI copy lives here** (`docs/02` §2.19) |
 | `src/lib/design/tokens.ts` | the token table in TS — the only place that builds a colour token string |
 | `src/app.css` | the three token layers: Catppuccin flavour → surfaces → semantic (Latte/Mocha) |

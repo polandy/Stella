@@ -476,14 +476,18 @@ you can take it back with the same button, or with *None of them is me* in Setti
 everywhere else — their photo, or their initials on their colour — connected by the
 relationships and circles you have recorded. Alongside them run the **dotted lines of the
 family Stella worked out for itself** — grandparents, aunts, cousins, in-laws — the same ones
-the People tab names, drawn without anyone having entered them. The chips along the top switch
-each kind of line on and off and double as the legend.
+the People tab names, drawn without anyone having entered them. *Filter* at the top switches
+each kind of line on and off and doubles as the legend: it shows each kind in its colour and
+line style, and counts how many are shown, so *Filter 5/6* tells you something is hidden.
+*Labels* at the bottom of the same menu names every line at once.
 
 Click a person to see who they are and jump to their page; the lines around them are named
 while they are selected, so you can read who is whose grandmother. Click again to pull in
 their connections: they appear around that person, and everyone already on the map stays
-where they were, so you never lose your place. When the map has grown untidy, *Tidy up*
-arranges it afresh. *Connection path* traces how two people are linked, and it always answers
+where they were, so you never lose your place. *Arrange* puts the map in order when you want
+it: *Free* lets the connections pull it into shape, *Tree* shows the family as a family tree,
+one generation per row with the oldest at the top, and *By circle* gathers each circle's
+members around it. *Connection path* traces how two people are linked, and it always answers
 with the people in between rather than the worked-out shortcut — that is the point of asking.
 
 ## Signing out

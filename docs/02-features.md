@@ -686,8 +686,8 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 - **Expand any node in place:** click a person to expand *their* relationships and circles
   into the graph, then continue outward from there — exploring the web hop by hop without
   leaving the view. Everyone already on the canvas stays where they were; only the new people
-  appear, around the person expanded and clear of the rest. *Tidy up* arranges the whole map
-  afresh when the reader wants it. Collapse to declutter.
+  appear, around the person expanded and clear of the rest. The map is only re-arranged when
+  the reader asks for it (below). Collapse to declutter.
 - **In-graph search:** a search box finds a person and brings them into the view; if they
   are already reachable, the graph **animates to focus** them.
 - **Connection path ("how do we know each other?"):** pick a second person and Stella
@@ -701,8 +701,10 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 
 - **Filters:** by edge kind (relationships / circles / kinship), relationship category,
   circle, tag, or "living only".
-- **Layouts:** force-directed by default; tidy **tree** layout for family hierarchies and
-  **clustered** layout grouping circle members **[M2]**.
+- **Layouts:** force-directed by default. On request the map is arranged afresh — *free* by
+  the forces between people, as a **family tree** (one row per generation, partners side by
+  side, children under their parents), or **by circle** (each circle ringed by its members);
+  the map glides into the new arrangement (docs/05 §5.8).
 - **Performance:** the server sends the whole *visible* graph once as a slim, access-scoped
   snapshot (ids/labels + typed edges — not full records); the browser then builds the ego view
   and does every expand/focus/path **client-side with no further requests**. This pushes the
@@ -717,8 +719,8 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   It is inferred per viewer from the links that viewer may see, so an inferred line can never
   name a hidden person, and a pair the household linked itself keeps its own name. Selecting
   a person names the lines around them — "Grandfather", "Parent of", "via Kegelclub" —
-  because hundreds of labels at once would be noise by default; a **Labels** toggle in the
-  toolbar names every line at once for reading the whole map at a glance, off by default for
+  because hundreds of labels at once would be noise by default; a **Labels** switch in the
+  toolbar's Filter menu names every line at once for reading the whole map at a glance, off by default for
   the same reason, and drops any name that would render too small to read. The **connection
   path** deliberately ignores derived lines: it answers with the chain through the people who
   connect the two, not with the one-word name for that chain (docs/04 §4.9).

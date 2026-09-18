@@ -2,9 +2,11 @@ import { expect, test, type Page } from '@playwright/test';
 import { openPerson, pickPerson, signIn } from './app';
 import {
 	clickNode,
+	drawnNode,
 	firstClickableNode,
 	nodeOwners,
 	ringsOnCanvas,
+	filterMenu,
 	settled,
 	stateOf
 } from './graph-canvas';
@@ -41,22 +43,50 @@ test.describe('on a person’s page', () => {
 	}) => {
 		await expect(map(page).locator('canvas').first()).toBeVisible();
 
-		// The toolbar is there — the chips say so — but the two controls for going elsewhere are
-		// not: the page has its own search, and the whole map is one person's neighbourhood.
-		await expect(map(page).getByRole('button', { name: 'Family' })).toHaveAttribute(
-			'aria-pressed',
+		// The toolbar is there — the Filter menu says so — but the two controls for going
+		// elsewhere are not: the page has its own search, and the whole map is one person's
+		// neighbourhood. Circles are the profile's own list; on a card-sized map they double the
+		// node count, so the map opens without them — which is not the reader narrowing it.
+		const pill = map(page).getByRole('button', { name: 'Filter: 5 of 6 kinds of line shown' });
+		await expect(pill).toBeVisible();
+		const menu = await filterMenu(map(page));
+		await expect(menu.getByRole('menuitemcheckbox', { name: 'Family' })).toHaveAttribute(
+			'aria-checked',
 			'true'
 		);
-		// Circles are the profile's own list; on a card-sized map they double the node count.
-		await expect(
-			map(page).getByRole('button', { name: 'Circles', exact: true })
-		).toHaveAttribute('aria-pressed', 'false');
+		await expect(menu.getByRole('menuitemcheckbox', { name: 'Circles' })).toHaveAttribute(
+			'aria-checked',
+			'false'
+		);
+		await page.keyboard.press('Escape');
 		await expect(map(page).getByLabel('Find a person')).toHaveCount(0);
 		await expect(map(page).getByRole('button', { name: 'Connection path' })).toHaveCount(0);
 
 		// And nothing is selected on arrival: the peek panel would cover half a card-sized map
 		// before anybody asked it anything, and the page's header already names the person.
 		await expect(map(page).getByRole('complementary')).toHaveCount(0);
+	});
+
+	test('a tap lands on the person under it after the page above the map has moved', async ({
+		page
+	}) => {
+		await expect(map(page).locator('canvas').first()).toBeVisible();
+		await map(page).scrollIntoViewIfNeeded();
+		await settled(page);
+
+		// The canvas learns where it sits when the pointer first crosses it…
+		const lena = await drawnNode(page, LENA);
+		await page.mouse.move(lena.point!.x, lena.point!.y);
+		// …and then the page above it grows — no scroll, no resize, no transition reaches the
+		// canvas, just as when a card above unfolds or the server-drawn map gives way.
+		await map(page).evaluate((el) => {
+			const spacer = document.createElement('div');
+			spacer.style.height = '120px';
+			el.parentElement!.insertBefore(spacer, el);
+		});
+
+		await clickNode(page, MARKUS);
+		await expect(map(page).getByRole('complementary').getByText('Markus Brunner', { exact: true })).toBeVisible();
 	});
 
 	test('a person at the edge of the map is offered the graph, not another hop', async ({

@@ -11,6 +11,9 @@
 /** Parent → child, the direction the row is stored in. */
 export const PARENT_CHILD_TYPE_KEY = 'parent_child';
 
+/** Grandparent → grandchild, the direction the row is stored in. */
+export const GRANDPARENT_GRANDCHILD_TYPE_KEY = 'grandparent_grandchild';
+
 /** Sibling: undirected, stored one way round. */
 export const SIBLING_TYPE_KEY = 'sibling';
 
@@ -35,5 +38,5 @@ export const PARTNER_TYPE_KEYS: readonly string[] = ['partner', 'spouse'];
  */
 export const GENERATION_TYPE_KEYS: readonly string[] = [
 	PARENT_CHILD_TYPE_KEY,
-	'grandparent_grandchild'
+	GRANDPARENT_GRANDCHILD_TYPE_KEY
 ];
