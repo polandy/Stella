@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.14](https://github.com/polandy/Stella/compare/v0.0.13...v0.0.14) (2026-09-18)
+
+
+### Features
+
+* **api:** import people, links and circles through a token-signed API ([#135](https://github.com/polandy/Stella/issues/135)) ([9d6b128](https://github.com/polandy/Stella/commit/9d6b128e0bb177e4edf7a13e35b2a9e89d979ab8))
+
 ## [0.0.13](https://github.com/polandy/Stella/compare/v0.0.12...v0.0.13) (2026-09-18)
 
 
