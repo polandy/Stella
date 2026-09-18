@@ -87,9 +87,8 @@ export function exclusionLabel(
 	}
 }
 
-/** Whether a tie still holds: *current*, *former*, or nothing said. */
-export function relationshipStatusLabel(t: Translate, status: string | null): string {
-	if (status === null) return t('relationships.status.notSaid');
+/** Whether a tie still holds: *current* or *former* — there is no third answer. */
+export function relationshipStatusLabel(t: Translate, status: string): string {
 	const key = `relationships.status.${status}`;
 	return hasMessage(key) ? t(key) : status;
 }

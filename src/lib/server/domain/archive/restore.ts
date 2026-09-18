@@ -4,6 +4,7 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { isSafeMediaPath } from './archive';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from './document';
+import { CURRENT_RELATIONSHIP_STATUS } from '../../../relationships/status';
 
 /*
  * Reading an archive back (docs/02 §2.15): the document turned into rows this installation can
@@ -576,7 +577,9 @@ export function planRestore(
 			type_id: type,
 			note: str(link, 'description'),
 			since_date: str(link, 'since'),
-			status: str(link, 'status'),
+			// An archive from before the status meant anything carries none; a link that is on
+			// record holds until someone ends it (docs/02 §2.4).
+			status: str(link, 'status') ?? CURRENT_RELATIONSHIP_STATUS,
 			created_by: author(link),
 			...stamps(link)
 		});

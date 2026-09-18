@@ -37,7 +37,6 @@ export const relationships: RelationshipsMessages = {
 
 	'relationships.status.current': 'aktuell',
 	'relationships.status.former': 'ehemalig',
-	'relationships.status.notSaid': 'Nicht gesagt',
 
 	'relationships.type.parent_child.forward': 'Elternteil von',
 	'relationships.type.parent_child.reverse': 'Kind von',
