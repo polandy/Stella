@@ -2,8 +2,9 @@ import type { SubmitFunction } from '@sveltejs/kit';
 import type { PendingSink } from './pending-work';
 
 /*
- * Reporting work to the shell's pending-work store (`pending-work.ts`, docs/05 §5.7): the two
- * shapes it arrives in — an enhanced form's submit, and a plain async job.
+ * Reporting work to the shell's pending-work store (`pending-work.ts`, docs/05 §5.7): the three
+ * shapes it arrives in — an enhanced form's submit, a plain async job, and the page load a
+ * navigation sets off.
  */
 
 /** Runs `work` while the sink counts it. The count ends even when the work fails. */
@@ -39,4 +40,19 @@ export function trackPending(sink: PendingSink, inner: SubmitFunction): SubmitFu
 			}
 		};
 	};
+}
+
+/**
+ * `$effect(() => reportNavigation(sink, navigating.to))` — a page that is still loading is work
+ * like any other, counted from the moment the navigation starts until it is over, so a short
+ * one stays under the store's own delay instead of flashing the indicator for a frame.
+ *
+ * `destination` is `navigating.to`, which is null when nothing is on its way. The returned
+ * cleanup is what ends the count: Svelte runs it before the effect runs again, which is exactly
+ * when the navigation it was counting has finished or been replaced.
+ */
+export function reportNavigation(sink: PendingSink, destination: unknown): (() => void) | undefined {
+	if (!destination) return undefined;
+	sink.begin();
+	return () => sink.end();
 }

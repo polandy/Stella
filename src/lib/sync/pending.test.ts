@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import type { SubmitFunction } from '@sveltejs/kit';
-import { trackPending, whilePending } from './pending';
+import { reportNavigation, trackPending, whilePending } from './pending';
 import type { PendingSink } from './pending-work';
 
 /** A sink that writes down what it was told, so a test can assert on the order. */
@@ -106,5 +106,45 @@ describe('whilePending', () => {
 			})
 		).rejects.toThrow('nope');
 		expect(calls).toEqual(['begin', 'end']);
+	});
+});
+
+/*
+ * The shell reports a page that is still loading through the same store as a save, so a slow
+ * load shows the one indicator rather than nothing at all. The rule is here rather than inline
+ * in the layout's `$effect` so it can be driven the way Svelte drives it — run, clean up, run
+ * again — without a browser.
+ */
+describe('reportNavigation', () => {
+	it('counts nothing while no navigation is running', () => {
+		const { calls, sink } = recorder();
+
+		expect(reportNavigation(sink, null)).toBeUndefined();
+
+		// The recorder does write things down — the emptiness above is the absence of a
+		// navigation, not a sink that never hears anything.
+		reportNavigation(sink, {});
+		expect(calls).toEqual(['begin']);
+	});
+
+	it('counts a navigation from its start until it is over', () => {
+		const { calls, sink } = recorder();
+
+		const done = reportNavigation(sink, { url: new URL('https://stella.test/contacts') });
+		expect(calls).toEqual(['begin']);
+
+		done?.();
+		expect(calls).toEqual(['begin', 'end']);
+	});
+
+	it('balances one navigation against the next, so a second one is counted on its own', () => {
+		const { calls, sink } = recorder();
+
+		const first = reportNavigation(sink, { url: new URL('https://stella.test/contacts') });
+		first?.();
+		const second = reportNavigation(sink, { url: new URL('https://stella.test/graph') });
+		second?.();
+
+		expect(calls).toEqual(['begin', 'end', 'begin', 'end']);
 	});
 });
