@@ -448,11 +448,16 @@
 		}
 	}
 
-	onMount(async () => {
-		// Decided on the client only: the server renders this component too, and a button
-		// present there but not here (or the reverse) would be a hydration mismatch.
+	// An effect rather than onMount/onDestroy: it runs in the browser only (the server renders
+	// this component too, and has no `document`), and a button present there but not here
+	// would be a hydration mismatch.
+	$effect(() => {
 		canFullscreen = document.fullscreenEnabled;
 		document.addEventListener('fullscreenchange', syncFullscreen);
+		return () => document.removeEventListener('fullscreenchange', syncFullscreen);
+	});
+
+	onMount(async () => {
 		// Build the initial ego view around the centre from the in-memory snapshot.
 		if (centerId) model = await buildEgoNetwork(source, centerId, 1);
 
@@ -505,7 +510,6 @@
 		disposed = true;
 		themeObserver?.disconnect();
 		colorScheme?.removeEventListener('change', retheme);
-		document.removeEventListener('fullscreenchange', syncFullscreen);
 		controller?.destroy();
 	});
 </script>
