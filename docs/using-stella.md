@@ -476,8 +476,10 @@ you can take it back with the same button, or with *None of them is me* in Setti
 everywhere else — their photo, or their initials on their colour — connected by the
 relationships and circles you have recorded. Alongside them run the **dotted lines of the
 family Stella worked out for itself** — grandparents, aunts, cousins, in-laws — the same ones
-the People tab names, drawn without anyone having entered them. The chips along the top switch
-each kind of line on and off and double as the legend.
+the People tab names, drawn without anyone having entered them. *Filter* at the top switches
+each kind of line on and off and doubles as the legend: it shows each kind in its colour and
+line style, and counts how many are shown, so *Filter 5/6* tells you something is hidden.
+*Labels* at the bottom of the same menu names every line at once.
 
 Click a person to see who they are and jump to their page; the lines around them are named
 while they are selected, so you can read who is whose grandmother. Click again to pull in

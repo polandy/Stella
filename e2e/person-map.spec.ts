@@ -5,6 +5,7 @@ import {
 	firstClickableNode,
 	nodeOwners,
 	ringsOnCanvas,
+	filterMenu,
 	settled,
 	stateOf
 } from './graph-canvas';
@@ -41,16 +42,22 @@ test.describe('on a person’s page', () => {
 	}) => {
 		await expect(map(page).locator('canvas').first()).toBeVisible();
 
-		// The toolbar is there — the chips say so — but the two controls for going elsewhere are
-		// not: the page has its own search, and the whole map is one person's neighbourhood.
-		await expect(map(page).getByRole('button', { name: 'Family' })).toHaveAttribute(
-			'aria-pressed',
+		// The toolbar is there — the Filter menu says so — but the two controls for going
+		// elsewhere are not: the page has its own search, and the whole map is one person's
+		// neighbourhood. Circles are the profile's own list; on a card-sized map they double the
+		// node count, so the map opens without them — which is not the reader narrowing it.
+		const pill = map(page).getByRole('button', { name: 'Filter: 5 of 6 kinds of line shown' });
+		await expect(pill).toBeVisible();
+		const menu = await filterMenu(map(page));
+		await expect(menu.getByRole('menuitemcheckbox', { name: 'Family' })).toHaveAttribute(
+			'aria-checked',
 			'true'
 		);
-		// Circles are the profile's own list; on a card-sized map they double the node count.
-		await expect(
-			map(page).getByRole('button', { name: 'Circles', exact: true })
-		).toHaveAttribute('aria-pressed', 'false');
+		await expect(menu.getByRole('menuitemcheckbox', { name: 'Circles' })).toHaveAttribute(
+			'aria-checked',
+			'false'
+		);
+		await page.keyboard.press('Escape');
 		await expect(map(page).getByLabel('Find a person')).toHaveCount(0);
 		await expect(map(page).getByRole('button', { name: 'Connection path' })).toHaveCount(0);
 

@@ -3,6 +3,8 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import MenuButton from '$lib/components/MenuButton.svelte';
+	import { filterSummary } from '$lib/menu/menu';
 	import { categoryVar } from '$lib/design/tokens';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { kinshipLabel } from '$lib/kinship/labels';
@@ -102,6 +104,10 @@
 		{ key: 'kinship', label: 'graph.filter.kinship', token: 'var(--edge-kinship)', line: 'dotted' }
 	] as const;
 
+	/** One row of a toolbar menu; the check or switch on its right says its state. */
+	const MENU_ITEM =
+		'flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-[13px] text-fg hover:bg-bg-sunken focus:bg-bg-sunken focus:outline-none';
+
 	const reducedMotion =
 		typeof window !== 'undefined' &&
 		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -124,8 +130,16 @@
 	 * on a person's card they double the node count for something the profile already lists.
 	 * The chip is there either way, so switching them on is one click (docs/05 §5.5).
 	 */
-	let active = $state<Set<string>>(
-		new Set(FILTERS.map((f) => f.key).filter((key) => !(compact && key === 'circles')))
+	const openingFilters: ReadonlySet<string> = new Set(
+		FILTERS.map((f) => f.key).filter((key) => !(untrack(() => compact) && key === 'circles'))
+	);
+	let active = $state<Set<string>>(new Set(openingFilters));
+	const filters = $derived(
+		filterSummary(
+			active,
+			FILTERS.map((f) => f.key),
+			openingFilters
+		)
 	);
 	let query = $state('');
 	let pathMode = $state(false);
@@ -275,9 +289,14 @@
 		{ key: 'circles', label: 'graph.arrange.circles', hint: 'graph.arrange.circles.hint' }
 	] as const;
 
+	/** The arrangement last chosen, which the Arrange pill names; free until one is picked. */
+	let arrangedBy = $state<(typeof ARRANGEMENTS)[number]['key']>('force');
+	const arrangedLabel = $derived(ARRANGEMENTS.find((a) => a.key === arrangedBy)!.label);
+
 	function arrangeBy(key: (typeof ARRANGEMENTS)[number]['key']) {
 		const canvas = controller;
 		if (!canvas) return;
+		arrangedBy = key;
 		if (key === 'force') return canvas.arrange();
 		// The room each node really takes, its name included; a node the canvas is not drawing
 		// (filtered out) has none to measure, and is given the usual room.
@@ -468,54 +487,99 @@
 			</div>
 		{/if}
 
-		<div class="pointer-events-auto flex flex-wrap gap-1.5">
-			{#each FILTERS as f (f.key)}
+		<!-- The line kinds and their names live in one menu: it is the legend too, each kind
+		     drawn in its colour and line style, and the pill counts what is shown so a narrowed
+		     map is never mistaken for a sparse one (docs/05 §5.8). -->
+		<MenuButton
+			label={t('graph.filter.summary', filters)}
+			highlighted={filters.narrowed}
+		>
+			{#snippet trigger()}
+				{t('graph.filter')}
+				<span class="rounded-full bg-bg-sunken px-1.5 tabular-nums text-fg-muted">
+					{filters.shown}/{filters.total}
+				</span>
+			{/snippet}
+			{#snippet children()}
+				{#each FILTERS as f (f.key)}
+					<button
+						type="button"
+						role="menuitemcheckbox"
+						aria-checked={active.has(f.key)}
+						onclick={() => toggleFilter(f.key)}
+						class={MENU_ITEM}
+					>
+						<span
+							class="inline-block w-5 shrink-0 border-t-2"
+							style="border-color:{f.token};border-top-style:{f.line}"
+							aria-hidden="true"
+						></span>
+						<span class="flex-1">{t(f.label)}</span>
+						<span
+							class="grid size-4 shrink-0 place-items-center rounded border-[1.5px] text-[10px] leading-none"
+							class:border-border={!active.has(f.key)}
+							style={active.has(f.key)
+								? 'background:var(--primary);border-color:var(--primary);color:var(--primary-fg)'
+								: ''}
+							aria-hidden="true"
+						>
+							{#if active.has(f.key)}✓{/if}
+						</span>
+					</button>
+				{/each}
+				<div role="separator" class="mx-1 my-1 border-t border-border"></div>
 				<button
-					onclick={() => toggleFilter(f.key)}
-					aria-pressed={active.has(f.key)}
-					class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium backdrop-blur transition-opacity"
-					class:opacity-40={!active.has(f.key)}
-					style="border-color:color-mix(in srgb, {f.token} 45%, transparent); background:color-mix(in srgb, {f.token} 12%, var(--card)); color:var(--fg)"
+					type="button"
+					role="menuitemcheckbox"
+					aria-checked={edgeLabels}
+					onclick={() => (edgeLabels = !edgeLabels)}
+					class={MENU_ITEM}
 				>
+					<span class="flex-1">
+						{t('graph.labels')}
+						<span class="block text-[11px] text-fg-subtle">{t('graph.labels.hint')}</span>
+					</span>
 					<span
-						class="inline-block w-4 border-t-2"
-						style="border-color:{active.has(f.key) ? f.token : 'var(--fg-subtle)'};border-top-style:{f.line}"
+						class="relative h-4 w-7 shrink-0 rounded-full transition-colors"
+						style="background:{edgeLabels ? 'var(--primary)' : 'var(--border)'}"
 						aria-hidden="true"
-					></span>
-					{t(f.label)}
+					>
+						<span
+							class="absolute top-0.5 size-3 rounded-full bg-card transition-[left]"
+							style="left:{edgeLabels ? '0.875rem' : '0.125rem'}"
+						></span>
+					</span>
 				</button>
-			{/each}
-		</div>
+			{/snippet}
+		</MenuButton>
 
-		<button
-			onclick={() => (edgeLabels = !edgeLabels)}
-			aria-pressed={edgeLabels}
-			title={t('graph.labels.hint')}
-			class="pointer-events-auto rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-fg-muted backdrop-blur transition-colors hover:text-fg"
-			class:!border-transparent={edgeLabels}
-			style={edgeLabels
-				? 'background:color-mix(in srgb, var(--primary) 22%, transparent); color:var(--primary)'
-				: ''}
-		>
-			{t('graph.labels')}
-		</button>
-
-		<div
-			role="group"
-			aria-label={t('graph.arrange')}
-			class="pointer-events-auto flex items-center gap-0.5 rounded-full border border-border bg-card/90 py-0.5 pl-3 pr-0.5 text-xs font-medium text-fg-muted backdrop-blur"
-		>
-			<span aria-hidden="true" class="mr-1">{t('graph.arrange')}</span>
-			{#each ARRANGEMENTS as arrangement (arrangement.key)}
-				<button
-					onclick={() => arrangeBy(arrangement.key)}
-					title={t(arrangement.hint)}
-					class="rounded-full px-2.5 py-0.5 transition-colors hover:bg-bg-sunken hover:text-fg"
-				>
-					{t(arrangement.label)}
-				</button>
-			{/each}
-		</div>
+		<MenuButton label={t('graph.arrange.current', { name: t(arrangedLabel) })}>
+			{#snippet trigger()}
+				{t('graph.arrange.current', { name: t(arrangedLabel) })}
+			{/snippet}
+			{#snippet children({ close })}
+				{#each ARRANGEMENTS as arrangement (arrangement.key)}
+					<button
+						type="button"
+						role="menuitemradio"
+						aria-checked={arrangedBy === arrangement.key}
+						onclick={() => {
+							arrangeBy(arrangement.key);
+							close();
+						}}
+						class={MENU_ITEM}
+					>
+						<span class="w-3 shrink-0 font-bold text-primary" aria-hidden="true">
+							{#if arrangedBy === arrangement.key}✓{/if}
+						</span>
+						<span class="flex-1">
+							{t(arrangement.label)}
+							<span class="block text-[11px] text-fg-subtle">{t(arrangement.hint)}</span>
+						</span>
+					</button>
+				{/each}
+			{/snippet}
+		</MenuButton>
 
 		{#if !compact}
 			<button

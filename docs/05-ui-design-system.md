@@ -302,12 +302,13 @@ They must be edited together; `app.css` says so at both blocks.
   one line per person — name as a link, the reason in muted text, a *Link as relative*
   radio on the right. It is absent until there is something to say and never steals focus;
   the form submits exactly as before.
-- **Graph** — full-screen canvas. The toolbar's filter chips **are the legend**: each draws
-  its own line style (solid per category, dashed for circles, dotted for kinship) in its
-  token, so a chip and the line it toggles can never disagree, and there is no second box
-  to keep in sync. Search-to-focus, a **"Labels" toggle** that names every line at once
-  (§5.8), connection path, and a **peek panel** that shows the person's avatar, name and two
-  actions.
+- **Graph** — full-screen canvas under one slim toolbar row: search-to-focus, a **Filter**
+  menu, an **Arrange** menu and the connection path (§5.8), plus a **peek panel** that shows
+  the person's avatar, name and two actions. The Filter menu **is the legend**: each line
+  kind is an item drawn in its own line style (solid per category, dashed for circles,
+  dotted for kinship) in its token, so an item and the line it toggles can never disagree,
+  and there is no second box to keep in sync. The **"Labels" switch** that names every line
+  at once sits at the foot of the same menu.
 - **Circles** — a find-as-you-type field and kind chips over a grid of **cards** (§2.4.2):
   colour dot, name, kind and member count, the description, and a stack of the first four faces
   with "+n" for the rest. A query that matches nothing gets the empty state, not a blank page. A circle's page
@@ -620,8 +621,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   tokens in both themes. Chips and dots keep the raw token, because they sit beside a label.
   A line carries its name — "Parent of", "Grandfather", the circle role — but only while it
   is highlighted or on a traced path: selecting a person names their connections, and the
-  rest of the canvas stays quiet. A **"Labels" toggle** in the toolbar names every line at
-  once, for reading the whole map at a glance; it is off by default, because on a dense graph
+  rest of the canvas stays quiet. A **"Labels" switch** in the Filter menu names every line
+  at once, for reading the whole map at a glance; it is off by default, because on a dense graph
   hundreds of names are noise. Either way a name that would render below 7 px is dropped
   rather than drawn as a smudge. Asymmetric relationships show subtle direction.
 - **Expand affordance:** an unexpanded node hints it can grow (e.g. a small "+" / count of
@@ -634,7 +635,16 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   map. The view is not re-framed; only when a newcomer lands off screen does it step back just
   far enough to take them in too (`viewport.ts`), so what the reader was looking at never
   leaves the screen. A removal moves nobody.
-- **Arrange:** a toolbar group (*Arrange* / *Anordnen*) with three one-off actions — the
+- **Toolbar:** one slim row, because every row it takes is a row of map lost — and on the
+  card-sized map of a person's page, a large share of it. Only the search stays out in the
+  open, since it is used all the time; what is set once and then looked at goes into two
+  menus (`MenuButton`: arrow keys move between items, Escape closes and hands focus back, a
+  click elsewhere closes). **Filter** counts what is shown (*Filter 5/6*) and stands out in
+  the primary colour once the reader has narrowed the map — measured against what the map
+  opened with, so the person page's circles-off start is not mistaken for a forgotten
+  filter (`src/lib/menu/menu.ts`). Its items toggle and leave the menu open for the next.
+  **Arrange** names the current arrangement (*Arrange: Tree*) and closes on a choice.
+- **Arrange:** a toolbar menu (*Arrange* / *Anordnen*) with three one-off actions — the
   only things besides the first arrangement that move people already on the canvas. Each is
   worked out first and the map then glides into it in one slow movement (1.2 s), so the
   reader can follow each person to their new place; under reduced motion it simply takes its
@@ -683,7 +693,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   (`compact`, `maxRings`): this person stays in the middle, the map reaches **two hops**
   (`PERSON_MAP_RINGS`) and a node on the last ring offers *Open in the graph* where it would
   otherwise offer *Expand* — a card-sized map is not a way to walk the household. The toolbar
-  keeps the filter chips (which are the legend) and the Labels toggle, and drops what is about
+  keeps the Filter menu (which is the legend, with the Labels switch) and the Arrange menu —
+  a single small row — and drops what is about
   travelling elsewhere: the find-a-person field, because the page has its own search, and the
   two-ended connection path — a profile asks that question with a picker and hands it here
   (§5.5), rather than offering a trace that could only reach inside its own two hops. One label for one action — *Open in the graph* is the same words on the card

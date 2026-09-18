@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 /*
  * Reading and driving the relationship canvas from a spec (docs/05 §5.8).
@@ -172,4 +172,21 @@ export async function nodeOwners(page: Page, ids: string[]): Promise<Record<stri
 		}, point);
 	}
 	return owners;
+}
+
+/**
+ * The toolbar's Filter menu, opened (docs/05 §5.8): the line kinds are its checkbox items and
+ * double as the legend. Open already, it is left open rather than toggled shut.
+ */
+export async function filterMenu(scope: Page | Locator): Promise<Locator> {
+	const menu = scope.getByRole('menu', { name: /^Filter/ });
+	if (!(await menu.isVisible())) await scope.getByRole('button', { name: /^Filter/ }).click();
+	await expect(menu).toBeVisible();
+	return menu;
+}
+
+/** Chooses an arrangement from the toolbar's Arrange menu, which closes on the choice. */
+export async function arrangeBy(scope: Page | Locator, name: string): Promise<void> {
+	await scope.getByRole('button', { name: /^Arrange:/ }).click();
+	await scope.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).click();
 }
