@@ -378,6 +378,11 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 
 - **Cytoscape.js for the graph** — mature, purpose-built; lazy-loaded to protect the
   bundle. D3-force considered as a lighter alt if bundle size demands it.
+- **An expand places newcomers; only *Tidy up* re-arranges** — re-running the force layout
+  on every expand (even gliding into it, which was tried) moves everyone the reader had
+  already found. Newcomers are placed geometrically clear of the map instead (`placement.ts`)
+  and nobody else moves; the cost is longer lines after many expands, which the explicit
+  *Tidy up* button answers when the reader chooses (docs/05 §5.8).
 - **Explorer lines are deepened for the canvas, not re-picked** — in Latte only five of the
   fourteen accents clear 3:1 on the page ground, and none of the four category hues do. The
   alternative (swapping the categories to the five that pass) would have moved family to

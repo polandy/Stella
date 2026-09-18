@@ -685,7 +685,9 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 
 - **Expand any node in place:** click a person to expand *their* relationships and circles
   into the graph, then continue outward from there — exploring the web hop by hop without
-  leaving the view. Collapse to declutter.
+  leaving the view. Everyone already on the canvas stays where they were; only the new people
+  appear, around the person expanded and clear of the rest. *Tidy up* arranges the whole map
+  afresh when the reader wants it. Collapse to declutter.
 - **In-graph search:** a search box finds a person and brings them into the view; if they
   are already reachable, the graph **animates to focus** them.
 - **Connection path ("how do we know each other?"):** pick a second person and Stella
