@@ -337,6 +337,9 @@ you press Add. A role you type applies to everyone in that pick, so a team of el
 "players" is one form, not eleven. A role is fixed once someone has joined: to change it,
 remove them from the circle and add them again with the role you want.
 
+A circle's page shows its people grouped by role — all the players together, the coaches
+together — with anyone who has no role at the end.
+
 Circles are also the answer to "who else was there?", which is usually the question you
 have when you are trying to remember someone's name. **Open in the graph** on a circle's page
 draws that answer: the circle in the middle, everyone in it around it, and their own links

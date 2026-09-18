@@ -312,7 +312,8 @@ They must be edited together; `app.css` says so at both blocks.
 - **Circles** — a find-as-you-type field and kind chips over a grid of **cards** (§2.4.2):
   colour dot, name, kind and member count, the description, and a stack of the first four faces
   with "+n" for the rest. A query that matches nothing gets the empty state, not a blank page. A circle's page
-  puts the members in a **grid** of avatar cards with roles; *Add member* is the card's one
+  puts the members in **grids** of avatar cards, one per role under a small uppercase heading
+  with its count (no headings when nobody has a role); *Add member* is the card's one
   disclosure, like every other card in the app. Its header carries *Open in the graph* — the
   same button a person's People card has, because a circle is a node like any other — and the
   explorer offers *Back to the <name> circle* in return (§2.7).

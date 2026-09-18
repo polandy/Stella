@@ -29,6 +29,7 @@ export const circles = {
 	'circles.rolePlaceholder': 'member',
 	'circles.removeMember': (p: { name: string }) => `Remove ${p.name} from circle`,
 	'circles.removedFromCircle': 'Removed from the circle',
+	'circles.noRole': 'No role',
 	'circles.noMembers.title': 'Nobody in this circle yet',
 	'circles.noMembers.hint':
 		'Add the people who share this context; each of them will show it on their page.',

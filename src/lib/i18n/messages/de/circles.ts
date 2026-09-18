@@ -31,6 +31,7 @@ export const circles: CirclesMessages = {
 	'circles.rolePlaceholder': 'Mitglied',
 	'circles.removeMember': (p) => `${p.name} aus dem Kreis entfernen`,
 	'circles.removedFromCircle': 'Aus dem Kreis entfernt',
+	'circles.noRole': 'Ohne Rolle',
 	'circles.noMembers.title': 'Noch niemand in diesem Kreis',
 	'circles.noMembers.hint':
 		'Füge die Menschen hinzu, die diesen Zusammenhang teilen; bei jedem von ihnen erscheint er auf der Seite.',

@@ -3,6 +3,7 @@ import * as v from 'valibot';
 import {
 	addMembers,
 	getCircle,
+	groupMembersByRole,
 	listMembers,
 	removeMember,
 	suggestRoles
@@ -13,7 +14,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { say } from '$lib/server/i18n/say';
 
 /*
- * Circle detail (docs/02 §2.4.2): the circle, its visible members (with roles), and a picker to
+ * Circle detail (docs/02 §2.4.2): the circle, its visible members grouped by role, and a picker to
  * add one or more other visible contacts at once. Both endpoints of a membership must be visible (§3.7).
  */
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -31,7 +32,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	return {
 		circle,
-		members,
+		// People are shown under their role, so a class reads as its teachers and its pupils.
+		memberGroups: groupMembersByRole(members),
 		// What this circle already calls its people, offered while adding the next one.
 		roleSuggestions: suggestRoles(members.map((m) => m.role)),
 		candidates: allContacts.filter((c) => !memberIds.has(c.id))

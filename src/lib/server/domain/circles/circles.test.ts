@@ -6,6 +6,7 @@ import {
 	addMembers,
 	CIRCLE_COLORS,
 	createCircle,
+	groupMembersByRole,
 	joinCircleByName,
 	listRoleSuggestionsByCircleName,
 	resolveCircleColor,
@@ -16,6 +17,7 @@ import {
 	type CircleDeps,
 	type CircleRepository,
 	type CircleRoleUse,
+	type MemberView,
 	type NewCircle,
 	type NewMembership
 } from './circles';
@@ -216,6 +218,58 @@ describe('suggestRoles', () => {
 	it('folds spellings that differ only in case, keeping the most common one', () => {
 		expect(suggestRoles(['Teacher', 'teacher', 'teacher'])).toEqual(['teacher']);
 		expect(suggestRoles(['Teacher', 'Teacher', 'teacher'])).toEqual(['Teacher']);
+	});
+});
+
+describe('groupMembersByRole', () => {
+	const member = (name: string, role: string | null): MemberView => ({
+		membershipId: `m-${name}`,
+		contactId: `c-${name}`,
+		displayName: name,
+		avatarPhotoId: null,
+		role
+	});
+	const shape = (members: MemberView[]) =>
+		groupMembersByRole(members).map((g) => [g.role, g.members.map((m) => m.displayName)]);
+
+	it('groups people under their role, the most common role first', () => {
+		expect(
+			shape([
+				member('anna', 'teacher'),
+				member('bert', 'student'),
+				member('carl', 'student'),
+				member('dora', 'coach')
+			])
+		).toEqual([
+			['student', ['bert', 'carl']],
+			['coach', ['dora']],
+			['teacher', ['anna']]
+		]);
+	});
+
+	it('keeps the given order of people inside a group', () => {
+		expect(shape([member('dora', 'student'), member('anna', 'student')])).toEqual([
+			['student', ['dora', 'anna']]
+		]);
+	});
+
+	it('puts the people without a role last, under no role', () => {
+		expect(
+			shape([member('anna', null), member('bert', '   '), member('carl', 'coach')])
+		).toEqual([
+			['coach', ['carl']],
+			[null, ['anna', 'bert']]
+		]);
+	});
+
+	it('folds spellings that differ only in case under the most common one', () => {
+		expect(
+			shape([member('anna', 'Teacher'), member('bert', 'teacher'), member('carl', ' teacher ')])
+		).toEqual([['teacher', ['anna', 'bert', 'carl']]]);
+	});
+
+	it('has no groups for an empty circle', () => {
+		expect(groupMembersByRole([])).toEqual([]);
 	});
 });
 

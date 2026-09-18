@@ -581,6 +581,12 @@ a named group contacts belong to, over a period of time. (A first-class entity, 
   role is removed from the circle and added again with it. Someone already in the circle, or named twice in the same pick, joins
   once — and a person the actor may not see fails the whole pick rather than being dropped
   from it silently. The pick is written as one transaction, so it lands whole or not at all.
+- **Members are shown by role.** A circle's page lists its people under one heading per role,
+  with the count beside it: the most common role first (the order the role field offers them),
+  people without a role last under *No role*, and everyone alphabetical inside a group. Roles
+  that differ only in case are one group, headed by the household's most common spelling —
+  the same folding rule the suggestions use. A circle where nobody has a role stays one plain
+  grid, with no heading to say so.
 - **Finding one among many.** The Circles page filters as you type over name and description,
   with one chip per kind that is actually there, each carrying its count. The counts follow the
   query, so no chip ever leads to an empty page, and a kind the query has filtered away falls

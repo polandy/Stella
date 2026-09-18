@@ -124,3 +124,29 @@ test('a role the circle has never used is still free to type', async ({ page }) 
 	await page.getByRole('button', { name: 'Add people' }).click();
 	await expect(roleOptions(page)).toHaveCount(2);
 });
+
+test('a circle shows its people grouped by role, commonest first and those without one last', async ({
+	page
+}) => {
+	await addPerson(page, 'Ilka', 'Nussbaumer');
+	await addPerson(page, 'Ruben', 'Nussbaumer');
+	await addPerson(page, 'Selma', 'Achermann');
+	await addPerson(page, 'Timo', 'Achermann');
+
+	await newCircle(page, 'Lantern Canoe Club');
+	await addMember(page, 'Ilka Nussbaumer', 'coach');
+	await addMember(page, 'Ruben Nussbaumer', 'paddler');
+	await addMember(page, 'Selma Achermann', 'Paddler');
+	await addMember(page, 'Timo Achermann', '');
+
+	// Two spellings of one role make one group; the person without a role closes the list.
+	const groups = page.getByTestId('role-group');
+	await expect(groups).toHaveCount(3);
+	await expect(groups.nth(0).getByRole('heading')).toHaveText(/Paddler · 2/i);
+	await expect(groups.nth(0).getByRole('link', { name: 'Ruben Nussbaumer' })).toBeVisible();
+	await expect(groups.nth(0).getByRole('link', { name: 'Selma Achermann' })).toBeVisible();
+	await expect(groups.nth(1).getByRole('heading')).toHaveText(/coach · 1/i);
+	await expect(groups.nth(1).getByRole('link', { name: 'Ilka Nussbaumer' })).toBeVisible();
+	await expect(groups.nth(2).getByRole('heading')).toHaveText('No role · 1');
+	await expect(groups.nth(2).getByRole('link', { name: 'Timo Achermann' })).toBeVisible();
+});
