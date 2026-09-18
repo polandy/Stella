@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './app';
-import { clickNode, highlightedLabels, settled, stateOf } from './graph-canvas';
+import { arrangement, clickNode, highlightedLabels, settled, stateOf } from './graph-canvas';
 
 /*
  * The explorer's toolbar and peek panel (docs/05 §5.8). Written after the screen was seen in
@@ -61,6 +61,37 @@ test('expanding a person brings the connections of theirs the canvas did not hav
 
 	await expect(async () => expect(await stateOf(page, 'demo-c-peter')).toBe('drawn')).toPass();
 	await settled(page);
+});
+
+test('expanding moves nobody already on the map, and Tidy up re-arranges it', async ({ page }) => {
+	await page.goto('/graph?center=demo-c-hans');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await settled(page);
+	const before = await arrangement(page);
+	expect(before.has('demo-c-peter')).toBe(false);
+
+	await page.getByLabel('Find a person').fill('Sandra');
+	await page.getByTestId('graph-suggestions').getByRole('button', { name: 'Sandra' }).click();
+	const peek = page.getByRole('complementary');
+	await expect(peek.getByText('Sandra Brunner-Keller')).toBeVisible();
+	await peek.getByRole('button', { name: 'Expand connections' }).click();
+	await expect(async () => expect(await stateOf(page, 'demo-c-peter')).toBe('drawn')).toPass();
+	await settled(page);
+
+	// Peter came in, and everyone who was already there stands exactly where they stood.
+	const grown = await arrangement(page);
+	expect(grown.has('demo-c-peter')).toBe(true);
+	for (const [id, point] of before) expect(grown.get(id), id).toEqual(point);
+
+	// Tidy up is the one thing that may move them: the map is arranged afresh.
+	await page.getByRole('button', { name: 'Tidy up' }).click();
+	await settled(page);
+	const tidied = await arrangement(page);
+	const moved = [...grown].filter(([id, p]) => {
+		const q = tidied.get(id);
+		return !q || q.x !== p.x || q.y !== p.y;
+	});
+	expect(moved.length).toBeGreaterThan(0);
 });
 
 test('draws the relatives nobody entered, and the Kinship chip takes them away', async ({ page }) => {
