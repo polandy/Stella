@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.16](https://github.com/polandy/Stella/compare/v0.0.15...v0.0.16) (2026-09-18)
+
+
+### Features
+
+* **graph:** choose which roles of a circle to open up on the map ([#139](https://github.com/polandy/Stella/issues/139)) ([4c95564](https://github.com/polandy/Stella/commit/4c95564c3fd74c005628f98384540d55600b6b21))
+* **graph:** show the graph full screen ([#141](https://github.com/polandy/Stella/issues/141)) ([28d82a3](https://github.com/polandy/Stella/commit/28d82a3ceac6d5f9c508c405c0ffed73ed551411))
+
 ## [0.0.15](https://github.com/polandy/Stella/compare/v0.0.14...v0.0.15) (2026-09-18)
 
 
