@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.0.13](https://github.com/polandy/Stella/compare/v0.0.12...v0.0.13) (2026-09-18)
+
+
+### Features
+
+* **graph:** arrange the map freely, as a family tree, or by circle — under a one-row toolbar ([#134](https://github.com/polandy/Stella/issues/134)) ([0e7f4df](https://github.com/polandy/Stella/commit/0e7f4df323e152839d0f0d4a11c796b4d64088b9))
+* **graph:** expanding keeps the map in place, and Tidy up arranges it ([#133](https://github.com/polandy/Stella/issues/133)) ([6f81e4d](https://github.com/polandy/Stella/commit/6f81e4d4a161a1e23ceb34d35ed40a5cd1074f50))
+* **home:** filter the household stream by what and who ([#132](https://github.com/polandy/Stella/issues/132)) ([1750055](https://github.com/polandy/Stella/commit/175005505f94e1dbfa1a37869473f4a3edaefb49))
+* **ui:** say once, for the whole app, that it is still working ([54196d4](https://github.com/polandy/Stella/commit/54196d4508ebafe9378e10bd5b3e918a5a276624))
+
+
+### Bug Fixes
+
+* **relationships:** a link that is entered holds, and says so ([#129](https://github.com/polandy/Stella/issues/129)) ([985bfa1](https://github.com/polandy/Stella/commit/985bfa16aa89ac13941ba12a0f4157f41a17f14f))
+* **relationships:** drop a removed link from the map at once ([54196d4](https://github.com/polandy/Stella/commit/54196d4508ebafe9378e10bd5b3e918a5a276624))
+
 ## [0.0.12](https://github.com/polandy/Stella/compare/v0.0.11...v0.0.12) (2026-09-17)
 
 
