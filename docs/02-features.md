@@ -765,12 +765,13 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 Keeps the family in the loop — directly serving the core goal.
 
 - A reverse-chronological feed of **shared** changes: new contacts, new relationships,
-  new notes/photos/interactions, and notable edits.
+  new notes/photos/interactions. **Edits are not in it** — the feed is a record of what
+  happened in the family, not of what happened to the database (§2.22.2).
 - Each item shows **who**, **what**, **which contact**, and **when**, and links to it.
 - Private records **never** appear in another member's feed.
-- Feed is filterable by member and by type **[later]**.
+- Feed is filterable by member and by type (§2.22.2).
 - **Shipped as the household stream on Home (§2.22.2):** a scoped query over existing tables;
-  the feed's filters and "notable edits" come later. The single exception is a **deletion**,
+  the filters ship there too. The single exception is a **deletion**,
   which no table can report once its row is gone — that one item is read from `activity_log`
   (§2.2, docs/04 §4.9).
 
@@ -1301,7 +1302,16 @@ entry and a household update, without leaving the page. Concept + clickable prot
   marked with a lock; a private person only in their creator's; a relationship only when both
   ends are visible. Apart from the notices above, there is no event/log table and nothing is
   written twice.
-- **Deliberately not in the MVP:** filters by member or type, moments without any person
+- **Filters: what and who.** Above the stream, two rows of chips narrow it to one kind of item
+  (moments, calls & visits, relationships, new people, notices) and to one member (everyone,
+  *You*, each other member — the row is left out in a household of one). The filter lives in
+  the URL (`?kind=`, `?by=`), so it survives a reload and the back button undoes it; a kind or
+  member the household does not have is ignored rather than trusted. Filtering narrows the
+  *reads*, not the merged result, so a narrowed stream is filled to the same limit with what
+  matches rather than with what is left of everyone else's items — and it only ever narrows:
+  another member's private items stay theirs. A filter that matches nothing says so and
+  offers *Show everything*, rather than the first-run empty state.
+- **Deliberately not in the MVP:** moments without any person
   ("family trip"), parsing relationships out of text,
   reactions or comments. The previous dashboard panels (new people, recent notes, your
   contributions) are folded into the stream; dedicated panels (upcoming dates, gifts) return

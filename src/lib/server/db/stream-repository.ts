@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, or } from 'drizzle-orm';
-import { alias } from 'drizzle-orm/sqlite-core';
+import { alias, type SQLiteColumn } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import {
 	childRecordVisibleTo,
@@ -15,6 +15,7 @@ import type {
 	RelationshipRow,
 	NoticeRow,
 	StreamPerson,
+	StreamQuery,
 	StreamRepository
 } from '../domain/stream/stream';
 import type * as schema from './schema';
@@ -37,11 +38,20 @@ import {
  * + shared-or-own entry), people via `contactVisibleTo`, relationships via
  * `relationshipVisibleTo` (both ends visible), interactions via `childRecordVisibleTo` on the
  * subject. A moment's mention chips and an interaction's participants are limited to people
- * the viewer may see, so neither ever widens access.
+ * the viewer may see, so neither ever widens access. A read narrowed to one member adds that
+ * member as the author on top of the scope.
  */
+/**
+ * The member narrowing (docs/02 §2.22.2): only rows `memberId` wrote, or no condition at all.
+ * Always `and`-ed onto the visibility scope, never in place of it, so it can only narrow.
+ */
+function byMember(authorColumn: SQLiteColumn, memberId: string | null) {
+	return memberId === null ? undefined : eq(authorColumn, memberId);
+}
+
 export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schema>): StreamRepository {
 	return {
-		async recentMoments(viewer: Viewer, limit: number): Promise<MomentRow[]> {
+		async recentMoments(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<MomentRow[]> {
 			const rows = db
 				.select({
 					id: journalEntry.id,
@@ -59,10 +69,13 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				.innerJoin(contact, eq(journalEntry.contactId, contact.id))
 				.innerJoin(user, eq(journalEntry.createdBy, user.id))
 				.where(
-					childRecordVisibleTo(viewer, {
-						visibility: journalEntry.visibility,
-						createdBy: journalEntry.createdBy
-					})
+					and(
+						childRecordVisibleTo(viewer, {
+							visibility: journalEntry.visibility,
+							createdBy: journalEntry.createdBy
+						}),
+						byMember(journalEntry.createdBy, memberId)
+					)
 				)
 				.orderBy(desc(journalEntry.createdAt))
 				.limit(limit)
@@ -115,7 +128,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			}));
 		},
 
-		async recentNotices(viewer: Viewer, limit: number): Promise<NoticeRow[]> {
+		async recentNotices(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<NoticeRow[]> {
 			// The only source that is not a table of things that still exist. Once a contact is
 			// deleted — outright, or by being merged into someone else — the log entry is all
 			// that is left of that name (docs/04 §4.9); an export never had a row at all
@@ -136,7 +149,8 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 					and(
 						eq(activityLog.householdId, viewer.householdId),
 						inArray(activityLog.action, ['delete', 'merge', 'export', 'import']),
-						or(eq(activityLog.visibility, 'shared'), eq(activityLog.actorId, viewer.id))
+						or(eq(activityLog.visibility, 'shared'), eq(activityLog.actorId, viewer.id)),
+						byMember(activityLog.actorId, memberId)
 					)
 				)
 				.orderBy(desc(activityLog.createdAt))
@@ -150,7 +164,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			}));
 		},
 
-		async recentPeople(viewer: Viewer, limit: number): Promise<PersonRow[]> {
+		async recentPeople(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<PersonRow[]> {
 			const rows = db
 				.select({
 					id: contact.id,
@@ -164,7 +178,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				})
 				.from(contact)
 				.innerJoin(user, eq(contact.createdBy, user.id))
-				.where(contactBrowsableBy(viewer))
+				.where(and(contactBrowsableBy(viewer), byMember(contact.createdBy, memberId)))
 				.orderBy(desc(contact.createdAt))
 				.limit(limit)
 				.all();
@@ -178,7 +192,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			}));
 		},
 
-		async recentRelationships(viewer: Viewer, limit: number): Promise<RelationshipRow[]> {
+		async recentRelationships(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<RelationshipRow[]> {
 			const fromC = alias(contact, 'from_c');
 			const toC = alias(contact, 'to_c');
 			const rows = db
@@ -201,7 +215,9 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				.innerJoin(fromC, eq(relationship.fromContactId, fromC.id))
 				.innerJoin(toC, eq(relationship.toContactId, toC.id))
 				.innerJoin(user, eq(relationship.createdBy, user.id))
-				.where(relationshipVisibleTo(viewer, fromC, toC))
+				.where(
+					and(relationshipVisibleTo(viewer, fromC, toC), byMember(relationship.createdBy, memberId))
+				)
 				.orderBy(desc(relationship.createdAt))
 				.limit(limit)
 				.all();
@@ -216,7 +232,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			}));
 		},
 
-		async recentInteractions(viewer: Viewer, limit: number): Promise<InteractionRow[]> {
+		async recentInteractions(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<InteractionRow[]> {
 			const rows = db
 				.select({
 					id: interaction.id,
@@ -235,10 +251,13 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				.innerJoin(contact, eq(interaction.contactId, contact.id))
 				.innerJoin(user, eq(interaction.createdBy, user.id))
 				.where(
-					childRecordVisibleTo(viewer, {
-						visibility: interaction.visibility,
-						createdBy: interaction.createdBy
-					})
+					and(
+						childRecordVisibleTo(viewer, {
+							visibility: interaction.visibility,
+							createdBy: interaction.createdBy
+						}),
+						byMember(interaction.createdBy, memberId)
+					)
 				)
 				.orderBy(desc(interaction.createdAt))
 				.limit(limit)

@@ -497,6 +497,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   would duplicate what the tables already say and put the two out of step; that is the cost
   of the asymmetry, and it is the cheaper side.
 
+- **The stream is filtered in its reads, not after the merge** — filtering the merged list would
+  have kept the port as it was, but the merge cuts to a limit first, so one member's items would
+  be pushed out by everyone else's and a narrowed stream would come back short or empty. Instead
+  a left-out kind is not read at all and the member travels to every source in a `StreamQuery`,
+  `and`-ed onto the visibility scope so it can only narrow (docs/02 §2.22.2). The cost is one
+  more condition in each of the five adapter reads, each with its own integration case.
+
 - **Archiving hides from browsing, not from the graph** — `archived_at` could have been
   folded into `contactVisibleTo`, one line in the one place every read already goes through.
   It is a separate condition (`contactBrowsableBy`) applied at six listing surfaces instead,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { authorNames, type HouseholdMember, type MemberRepository } from './members';
+import { authorNames, membersViewerFirst, type HouseholdMember, type MemberRepository } from './members';
 
 /*
  * Who wrote what (docs/02 §2.23): the story names the member behind each item, so a household
@@ -45,5 +45,19 @@ describe('authorNames', () => {
 		const nameOf = await authorNames(deps, 'h1');
 
 		expect(nameOf('gone')).toBeNull();
+	});
+});
+
+describe('membersViewerFirst', () => {
+	it('puts the viewer first and keeps the household\u2019s order for the rest', async () => {
+		const members = await membersViewerFirst(deps, { id: 'u2', householdId: 'h1' });
+
+		expect(members.map((m) => m.id)).toEqual(['u2', 'u1']);
+	});
+
+	it('lists only the viewer\u2019s own household', async () => {
+		const members = await membersViewerFirst(deps, { id: 'u9', householdId: 'h2' });
+
+		expect(members.map((m) => m.id)).toEqual(['u9']);
 	});
 });
