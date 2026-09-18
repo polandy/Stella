@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { widenToReveal, type Box } from './viewport';
+import { frameBelow, widenToReveal, type Box } from './viewport';
 
 /*
  * Bringing an expand's newcomers into view without losing the view the reader had: the frame
@@ -58,6 +58,49 @@ describe('widenToReveal', () => {
 
 	it('stops at the smallest zoom the canvas allows', () => {
 		const next = widenToReveal(view, box(90_000, 0, 90_100, 100), SCREEN, PADDING, MIN_ZOOM)!;
+
+		expect(next.zoom).toBe(MIN_ZOOM);
+	});
+});
+
+describe('frameBelow', () => {
+	const map = box(0, 0, 1000, 400);
+	const SCREEN_WIDE = { width: 1200, height: 800 };
+	const TOP = 100;
+
+	it('fits the whole map into the part of the canvas the toolbar leaves free', () => {
+		const next = frameBelow(map, SCREEN_WIDE, TOP, PADDING, { min: MIN_ZOOM, max: 3 });
+		const topLeft = onScreen(0, 0, next);
+		const bottomRight = onScreen(1000, 400, next);
+
+		expect(topLeft.y).toBeGreaterThanOrEqual(TOP + PADDING - 1e-9);
+		expect(topLeft.x).toBeGreaterThanOrEqual(PADDING - 1e-9);
+		expect(bottomRight.x).toBeLessThanOrEqual(SCREEN_WIDE.width - PADDING + 1e-9);
+		expect(bottomRight.y).toBeLessThanOrEqual(SCREEN_WIDE.height - PADDING + 1e-9);
+	});
+
+	it('centres the map in that free part', () => {
+		const next = frameBelow(map, SCREEN_WIDE, TOP, PADDING, { min: MIN_ZOOM, max: 3 });
+		const middle = onScreen(500, 200, next);
+
+		expect(middle.x).toBeCloseTo(SCREEN_WIDE.width / 2);
+		expect(middle.y).toBeCloseTo(TOP + (SCREEN_WIDE.height - TOP) / 2);
+	});
+
+	it('does not blow a tiny map up past the largest zoom', () => {
+		const next = frameBelow(box(0, 0, 10, 10), SCREEN_WIDE, TOP, PADDING, {
+			min: MIN_ZOOM,
+			max: 1.5
+		});
+
+		expect(next.zoom).toBe(1.5);
+	});
+
+	it('stops at the smallest zoom for a map too big to fit', () => {
+		const next = frameBelow(box(0, 0, 100_000, 100), SCREEN_WIDE, TOP, PADDING, {
+			min: MIN_ZOOM,
+			max: 3
+		});
 
 		expect(next.zoom).toBe(MIN_ZOOM);
 	});

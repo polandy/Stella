@@ -346,6 +346,20 @@
 	 */
 	let disposed = false;
 
+	/*
+	 * The toolbar floats over the top of the canvas; framing the map leaves that strip free, so
+	 * the top row of a family tree is not drawn underneath the chips. It wraps to more rows on a
+	 * narrow window, hence measured rather than assumed.
+	 */
+	let toolbar = $state<HTMLDivElement>();
+	let toolbarHeight = $state(0);
+	const toolbarBottom = () => (toolbar ? toolbar.offsetTop + toolbarHeight : 0);
+	$effect(() => {
+		const inset = toolbarBottom();
+		if (!ready || !controller) return;
+		controller.setTopInset(inset);
+	});
+
 	onMount(async () => {
 		// Build the initial ego view around the centre from the in-memory snapshot.
 		if (centerId) model = await buildEgoNetwork(source, centerId, 1);
@@ -370,6 +384,7 @@
 			elements: toCytoscapeElements(model, { centerId: centerId ?? undefined, edgeLabel }),
 			stylesheet: stylesheet(),
 			reducedMotion,
+			topInset: toolbarBottom(),
 			onTapNode,
 			onTapBackground
 		});
@@ -417,6 +432,8 @@
 	     narrow window, and the row that wraps would otherwise slide underneath it — leaving
 	     the button under there unclickable. -->
 	<div
+		bind:this={toolbar}
+		bind:clientHeight={toolbarHeight}
 		class="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-center gap-2 transition-[padding]"
 		class:sm:pr-[17rem]={peekNode && !pathMode}
 	>

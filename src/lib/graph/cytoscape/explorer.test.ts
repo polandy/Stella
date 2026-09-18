@@ -48,15 +48,15 @@ function linkedPair(): Core {
 	});
 }
 
-/** Counts every layout the controller asks the core for. */
-function countLayouts(cy: Core): () => number {
-	let layouts = 0;
+/** Records the name of every layout the controller asks the core for, in order. */
+function layoutNames(cy: Core): string[] {
+	const names: string[] = [];
 	const real = cy.layout.bind(cy);
 	cy.layout = ((options: Parameters<Core['layout']>[0]) => {
-		layouts++;
+		names.push((options as { name: string }).name);
 		return real(options);
 	}) as Core['layout'];
-	return () => layouts;
+	return names;
 }
 
 function positionsOf(cy: Core, ids: string[]) {
@@ -79,6 +79,9 @@ function coreWithContainer(container: HTMLElement): Core {
 		elements: [{ data: { id: 'a' } }]
 	});
 	cy.layout = (() => ({ run: () => {}, stop: () => {} })) as unknown as Core['layout'];
+	// The stub container has no size to measure, so there is no view to frame either.
+	cy.width = () => 0;
+	cy.height = () => 0;
 	return cy;
 }
 
@@ -123,16 +126,12 @@ describe('explorerFromCore', () => {
 
 	it('arranges the graph itself, rather than leaving the first layout to the constructor', () => {
 		const cy = core();
-		let layouts = 0;
-		const real = cy.layout.bind(cy);
-		cy.layout = ((options: Parameters<Core['layout']>[0]) => {
-			layouts++;
-			return real(options);
-		}) as Core['layout'];
+		const names = layoutNames(cy);
 
 		controller(cy);
 
-		expect(layouts).toBe(1);
+		// Worked out by the forces, then set in place.
+		expect(names).toEqual(['cose', 'preset']);
 	});
 
 	it('leaves everyone already on the canvas where they stood when a node is expanded', () => {
@@ -152,42 +151,39 @@ describe('explorerFromCore', () => {
 
 	it('runs no layout for an expand, so nothing re-frames the view', () => {
 		const cy = linkedPair();
-		const layouts = countLayouts(cy);
+		const names = layoutNames(cy);
 		const explorer = controller(cy);
+		const opening = names.length;
 
 		explorer.setGraph([node('a'), node('b'), node('c'), edge('a', 'b'), edge('b', 'c')]);
 
-		// Only the opening arrangement; the expand placed c without one.
-		expect(layouts()).toBe(1);
+		expect(names.length).toBe(opening);
 		expect(cy.$id('c').nonempty()).toBe(true);
 	});
 
 	it('arranges nothing when people only leave the canvas', () => {
 		const cy = linkedPair();
-		const layouts = countLayouts(cy);
+		const names = layoutNames(cy);
 		const explorer = controller(cy);
+		const opening = names.length;
 		const before = positionsOf(cy, ['a']);
 
 		explorer.setGraph([node('a')]);
 
 		expect(cy.$id('b').empty()).toBe(true);
-		expect(layouts()).toBe(1);
+		expect(names.length).toBe(opening);
 		expect(positionsOf(cy, ['a'])).toEqual(before);
 	});
 
-	it('tidies the whole map on request, framing it again', () => {
+	it('tidies the whole map on request: worked out by the forces, then set in place', () => {
 		const cy = linkedPair();
-		const fits: unknown[] = [];
-		const real = cy.layout.bind(cy);
-		cy.layout = ((options: Parameters<Core['layout']>[0]) => {
-			fits.push((options as { fit?: unknown }).fit);
-			return real(options);
-		}) as Core['layout'];
+		const names = layoutNames(cy);
 		const explorer = controller(cy);
+		const opening = names.length;
 
 		explorer.arrange();
 
-		expect(fits).toEqual([true, true]);
+		expect(names.slice(opening)).toEqual(['cose', 'preset']);
 	});
 
 	it('glides the map into its tidied arrangement instead of showing every step', () => {
@@ -206,7 +202,8 @@ describe('explorerFromCore', () => {
 		explorer.arrange();
 
 		const tidy = asked[asked.length - 1];
-		expect(tidy.animate).toBe('end');
+		expect(tidy.name).toBe('preset');
+		expect(tidy.animate).toBe(true);
 		expect(tidy.animationDuration).toBeGreaterThan(0);
 	});
 
@@ -254,7 +251,29 @@ describe('explorerFromCore', () => {
 		const handed = asked[asked.length - 1];
 		expect(handed.name).toBe('preset');
 		expect(handed.animate).toBe(true);
-		expect(handed.fit).toBe(true);
+	});
+
+	it('frames the map in the part of the canvas the toolbar leaves free', () => {
+		const middleAfterArranging = (inset: number) => {
+			const cy = linkedPair();
+			cy.width = () => 1000;
+			cy.height = () => 800;
+			const explorer = controller(cy);
+			explorer.setTopInset(inset);
+			explorer.arrangeAt({
+				positions: new Map([
+					['a', { x: 0, y: 0 }],
+					['b', { x: 400, y: 0 }]
+				]),
+				bows: new Map()
+			});
+			return cy.$id('a').renderedPosition().y;
+		};
+
+		// Without a toolbar the map sits in the middle of the canvas; with one it sits in the
+		// middle of what the toolbar leaves.
+		expect(middleAfterArranging(0)).toBeCloseTo(400);
+		expect(middleAfterArranging(100)).toBeCloseTo(100 + 700 / 2);
 	});
 
 	it('bends the lines an arrangement says to, and straightens the rest', () => {

@@ -4,12 +4,13 @@ import type {
 	ElementDefinition,
 	EventObject,
 	Layouts,
+	NodeCollection,
 	NodeSingular
 } from 'cytoscape';
 import type { CyElement } from './elements';
 import type { Arrangement, Size } from '../layout/geometry';
 import { placeNewcomers, type Placement, type Point } from './placement';
-import { widenToReveal } from './viewport';
+import { frameBelow, widenToReveal, type Box } from './viewport';
 import { BOW_FIELD, BOWED_CLASS, type CyStyle } from './stylesheet';
 
 /*
@@ -28,6 +29,8 @@ export interface ExplorerHandlers {
 /** What the controller needs beyond the core; the core already carries its own container. */
 export interface ControllerOptions extends ExplorerHandlers {
 	reducedMotion: boolean;
+	/** Screen pixels the toolbar covers at the top, from the start — see `setTopInset`. */
+	topInset?: number;
 }
 
 export interface ExplorerOptions extends ControllerOptions {
@@ -53,6 +56,11 @@ export interface ExplorerController {
 	arrangeAt(arrangement: Arrangement): void;
 	/** How much room a node takes on the canvas, its name included, in model units. */
 	sizeOf(nodeId: string): Size;
+	/**
+	 * How many screen pixels at the top of the canvas something floats over (the toolbar).
+	 * Framing the map, and stepping back to show newcomers, keep the map below them.
+	 */
+	setTopInset(pixels: number): void;
 	/** Show only these node/edge ids (filtering), without a re-layout. */
 	setVisible(nodeIds: Set<string>, edgeIds: Set<string>): void;
 	/** Dim everything except the node and its immediate neighbourhood (null clears). */
@@ -93,44 +101,45 @@ const EDGE_LENGTH = 90;
  * enough to follow each person to their new place, which is what keeps the reader oriented.
  */
 const TIDY_GLIDE_DURATION = 1200;
-
-function layout(reducedMotion: boolean) {
-	return {
-		name: 'cose',
-		animate: !reducedMotion,
-		randomize: false, // start from current positions
-		fit: true,
-		padding: FRAME_PADDING,
-		nodeRepulsion: () => 8000,
-		idealEdgeLength: () => EDGE_LENGTH,
-		nodeDimensionsIncludeLabels: true
-	};
-}
+/** The glide eases in and out, so a node sets off and arrives gently. */
+const GLIDE_EASING = 'ease-in-out-cubic';
+/** The closest the canvas zooms, whether by the reader or when framing a small map. */
+const MAX_ZOOM = 2.5;
 
 /**
- * The full arrangement, computed first and then glided into in one movement — the view framing
- * along with it — rather than showing every step of the simulation. Under reduced motion the
- * map simply takes its new shape.
+ * The force-directed arrangement, worked out in one go rather than shown step by step: its
+ * result is then glided into like any other arrangement, framed by the controller itself so
+ * the framing can leave the toolbar's strip free.
  */
-function tidyLayout(reducedMotion: boolean) {
-	return {
-		...layout(reducedMotion),
-		animate: reducedMotion ? false : ('end' as const),
-		animationDuration: TIDY_GLIDE_DURATION,
-		animationEasing: 'ease-in-out-cubic'
-	};
-}
+const FORCE_LAYOUT = {
+	name: 'cose',
+	animate: false,
+	randomize: false, // start from current positions
+	fit: false,
+	nodeRepulsion: () => 8000,
+	idealEdgeLength: () => EDGE_LENGTH,
+	nodeDimensionsIncludeLabels: true
+};
 
-/** Moving every node to a place already worked out, with the same glide as a tidy-up. */
-function presetLayout(reducedMotion: boolean, placeOf: (node: NodeSingular) => Point) {
+/** Moving every node to a place already worked out; the controller frames the view itself. */
+function presetLayout(glide: boolean, placeOf: (node: NodeSingular) => Point) {
 	return {
 		name: 'preset',
 		positions: placeOf,
-		animate: !reducedMotion,
+		animate: glide,
 		animationDuration: TIDY_GLIDE_DURATION,
-		animationEasing: 'ease-in-out-cubic',
-		fit: true,
-		padding: FRAME_PADDING
+		animationEasing: GLIDE_EASING,
+		fit: false
+	};
+}
+
+/** The box around nodes set at `at`, each taking `size`. */
+function boxAround(nodes: { at: Point; size: Size }[]): Box {
+	return {
+		x1: Math.min(...nodes.map((n) => n.at.x - n.size.width / 2)),
+		y1: Math.min(...nodes.map((n) => n.at.y - n.size.height / 2)),
+		x2: Math.max(...nodes.map((n) => n.at.x + n.size.width / 2)),
+		y2: Math.max(...nodes.map((n) => n.at.y + n.size.height / 2))
 	};
 }
 
@@ -185,8 +194,50 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	const duration = opts.reducedMotion ? 0 : 350;
 	/** Nothing reaches a torn-down core: the calls still in flight at teardown fall away here. */
 	const alive = () => !cy.destroyed();
-	const relayout = () =>
-		cy.layout(layout(opts.reducedMotion) as Parameters<Core['layout']>[0]).run();
+	// Screen pixels at the top of the canvas the toolbar floats over; framing leaves them free.
+	let topInset = opts.topInset ?? 0;
+
+	/*
+	 * Where the force layout would put everyone, without moving anyone yet: it runs in one go
+	 * (no animation), its answer is read off, and every node is put back — so the move there
+	 * can be a single glide, framed below the toolbar, like every other arrangement.
+	 */
+	const forcePositions = (): Map<string, Point> => {
+		const before = new Map(cy.nodes().map((n) => [n.id(), { ...n.position() }] as const));
+		cy.layout(FORCE_LAYOUT as Parameters<Core['layout']>[0]).run();
+		const after = new Map(cy.nodes().map((n) => [n.id(), { ...n.position() }] as const));
+		cy.batch(() => cy.nodes().forEach((n) => void n.position(before.get(n.id())!)));
+		return after;
+	};
+
+	/*
+	 * Moves the map to `positions` and frames it below the toolbar — gliding both together, or
+	 * at once under reduced motion or when there is nothing yet to glide from. A node without a
+	 * place stays where it is; a filtered-out node is left out of the frame.
+	 */
+	const glideTo = (positions: ReadonlyMap<string, Point>, glide: boolean) => {
+		const placeOf = (node: NodeSingular) => positions.get(node.id()) ?? { ...node.position() };
+		const shown = cy.nodes().filter((n) => !n.hasClass('filtered-out')) as NodeCollection;
+		const view =
+			shown.nonempty() && cy.width() > 0 && cy.height() > 0
+				? frameBelow(
+						boxAround(shown.map((n) => ({ at: placeOf(n), size: sizeOf(n) }))),
+						{ width: cy.width(), height: cy.height() },
+						topInset,
+						FRAME_PADDING,
+						{ min: cy.minZoom(), max: cy.maxZoom() }
+					)
+				: null;
+		cy.layout(presetLayout(glide, placeOf) as Parameters<Core['layout']>[0]).run();
+		if (!view) return;
+		if (!glide) {
+			cy.viewport(view);
+			return;
+		}
+		whileMoving((complete) =>
+			cy.animate(view, { duration: TIDY_GLIDE_DURATION, easing: GLIDE_EASING, complete })
+		);
+	};
 
 	/*
 	 * Newcomers travel out from the person they were opened from to their places, which the
@@ -209,20 +260,29 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		if (targets.length === 0 || cy.width() === 0 || cy.height() === 0) return;
 		// Half an edge length around each centre covers the node and the name drawn under it.
 		const margin = EDGE_LENGTH / 2;
+		// The strip under the toolbar does not count as in view.
+		const extent = cy.extent();
 		const next = widenToReveal(
-			{ extent: cy.extent(), zoom: cy.zoom() },
+			{ extent: { ...extent, y1: extent.y1 + topInset / cy.zoom() }, zoom: cy.zoom() },
 			{
 				x1: Math.min(...targets.map((p) => p.x)) - margin,
 				y1: Math.min(...targets.map((p) => p.y)) - margin,
 				x2: Math.max(...targets.map((p) => p.x)) + margin,
 				y2: Math.max(...targets.map((p) => p.y)) + margin
 			},
-			{ width: cy.width(), height: cy.height() },
+			{ width: cy.width(), height: cy.height() - topInset },
 			FRAME_PADDING,
 			cy.minZoom()
 		);
 		if (!next) return;
-		whileMoving((complete) => cy.animate(next, { duration, complete }));
+		const view = { zoom: next.zoom, pan: { x: next.pan.x, y: next.pan.y + topInset } };
+		whileMoving((complete) => cy.animate(view, { duration, complete }));
+	};
+
+	/** How much room a node takes, its name included, in model units. */
+	const sizeOf = (node: NodeSingular): Size => {
+		const box = node.boundingBox({ includeLabels: true });
+		return { width: box.w, height: box.h };
 	};
 
 	/** Bends exactly the lines in `bows`, and straightens every other. */
@@ -242,8 +302,9 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 
 	// The first arrangement runs here rather than through the constructor's `layout` option,
 	// which lays out before there is anywhere to register `layoutstart` — and so before the
-	// running layout could be caught and stopped again.
-	relayout();
+	// running layout could be caught and stopped again. It is simply there: the map has no
+	// earlier shape for a glide to start from.
+	glideTo(forcePositions(), false);
 
 	return {
 		setGraph(elements) {
@@ -282,28 +343,30 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			// only the people it brought in (docs/05 §5.8); a canvas that was empty has nothing
 			// to keep, and gets a full arrangement.
 			if (newcomers.size === 0) return;
-			if (wasEmpty) relayout();
+			if (wasEmpty) glideTo(forcePositions(), false);
 			else bringIn(placements);
 		},
 
 		arrange() {
 			if (!alive()) return;
 			bend(new Map());
-			cy.layout(tidyLayout(opts.reducedMotion) as Parameters<Core['layout']>[0]).run();
+			glideTo(forcePositions(), !opts.reducedMotion);
 		},
 
 		arrangeAt({ positions, bows }) {
 			if (!alive()) return;
 			bend(bows);
-			const placeOf = (node: NodeSingular) => positions.get(node.id()) ?? { ...node.position() };
-			cy.layout(presetLayout(opts.reducedMotion, placeOf) as Parameters<Core['layout']>[0]).run();
+			glideTo(positions, !opts.reducedMotion);
 		},
 
 		sizeOf(nodeId) {
 			const node = cy.$id(nodeId);
 			if (!alive() || node.empty()) return { width: 0, height: 0 };
-			const box = node.boundingBox({ includeLabels: true });
-			return { width: box.w, height: box.h };
+			return sizeOf(node);
+		},
+
+		setTopInset(pixels) {
+			topInset = pixels;
 		},
 
 		setVisible(nodeIds, edgeIds) {
@@ -382,7 +445,7 @@ export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerCon
 		container: opts.container,
 		style: opts.stylesheet as unknown as CytoscapeOptions['style'],
 		minZoom: MIN_ZOOM,
-		maxZoom: 2.5,
+		maxZoom: MAX_ZOOM,
 		wheelSensitivity: 0.25,
 		boxSelectionEnabled: false
 	});

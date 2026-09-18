@@ -59,3 +59,31 @@ export function widenToReveal(
 		}
 	};
 }
+
+/**
+ * The viewport that frames `box` — the whole map — in the part of the canvas below `top`
+ * screen pixels, where the toolbar floats over the drawing, with `padding` all round and the
+ * map centred in what is left. The zoom stays within `zoom.min`..`zoom.max`, so a lone node is
+ * not blown up and a huge map is not shrunk to dust.
+ */
+export function frameBelow(
+	box: Box,
+	screen: { width: number; height: number },
+	top: number,
+	padding: number,
+	zoom: { min: number; max: number }
+): Viewport {
+	const free = { width: screen.width - 2 * padding, height: screen.height - top - 2 * padding };
+	const fitted = Math.min(
+		free.width / Math.max(box.x2 - box.x1, Number.EPSILON),
+		free.height / Math.max(box.y2 - box.y1, Number.EPSILON)
+	);
+	const next = Math.min(zoom.max, Math.max(zoom.min, fitted));
+	return {
+		zoom: next,
+		pan: {
+			x: screen.width / 2 - next * ((box.x1 + box.x2) / 2),
+			y: top + (screen.height - top) / 2 - next * ((box.y1 + box.y2) / 2)
+		}
+	};
+}

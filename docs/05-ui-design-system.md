@@ -659,6 +659,12 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   needs the smaller bend (`layout/geometry.ts`), so a line's name is never hidden under a node.
   *Free* draws every line straight again.
 
+  Framing leaves the toolbar alone: the toolbar floats over the top of the canvas and wraps
+  to more rows on a narrow window, so it is measured, and the map is framed in the part below
+  it — the top row of a tree is never drawn under the chips. Stepping back to show newcomers
+  after an expand keeps to the same strip. The very first arrangement is simply there, with no
+  motion: the map has no earlier shape to glide from.
+
   None of the three is a mode: an expand afterwards still only adds people around the one
   expanded, and the choice is not remembered across a reload (saved graph settings are M3).
 - **Search & focus:** an in-canvas search field; selecting a result smoothly pans/zooms to
