@@ -51,7 +51,6 @@ export const relationships = {
 
 	'relationships.status.current': 'current',
 	'relationships.status.former': 'former',
-	'relationships.status.notSaid': 'Not said',
 
 	'relationships.type.parent_child.forward': 'Parent of',
 	'relationships.type.parent_child.reverse': 'Child of',

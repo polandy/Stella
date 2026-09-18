@@ -19,7 +19,11 @@ import {
 } from '../../../relationships/exclusions';
 import { relationshipRowLabel } from '../../../relationships/labels';
 import { GENERATION_TYPE_KEYS } from '../../../relationships/type-keys';
-import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../../relationships/status';
+import {
+	CURRENT_RELATIONSHIP_STATUS,
+	RELATIONSHIP_STATUSES,
+	type RelationshipStatus
+} from '../../../relationships/status';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import type { RelationshipTypeRepository } from './relationship-types';
 import type { Clock } from '../../clock';
@@ -100,10 +104,15 @@ export interface RelationshipDetails {
 	description: string | null;
 	/** A full ISO day the link dates from, or null. */
 	sinceDate: string | null;
-	status: RelationshipStatus | null;
+	/** Whether the tie still holds. A link that exists is `current` until someone ends it. */
+	status: RelationshipStatus;
 }
 
-/** The same three as they arrive from a form: absent, blank and null all mean "not said". */
+/**
+ * The same three as they arrive from a form. For the two free fields, absent, blank and null
+ * all mean "not said"; for the status they mean `current`, the only state a link that exists
+ * can be in until it is explicitly ended (docs/02 §2.4).
+ */
 export interface RelationshipDetailsInput {
 	description?: string | null;
 	sinceDate?: string | null;
@@ -139,7 +148,7 @@ export function parseRelationshipDetails(input: RelationshipDetailsInput): Relat
 	return {
 		description: blankToNull(input.description),
 		sinceDate,
-		status: status as RelationshipStatus | null
+		status: (status as RelationshipStatus | null) ?? CURRENT_RELATIONSHIP_STATUS
 	};
 }
 

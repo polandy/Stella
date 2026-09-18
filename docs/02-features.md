@@ -289,8 +289,8 @@ reciprocal** link.
   Lio↔Lisa). "Both" is naturally two links; there is no separate concept to learn.
 - **Each relationship can carry its own free-text description** so you can explain *how*
   Lio relates to Peter versus to Lisa (e.g. "met through Peter at the ski course",
-  "Lisa's plus-one at the wedding"). Plus an optional **since** date and a **status**
-  (e.g. current/former for partners) **[M2]**.
+  "Lisa's plus-one at the wedding"). Plus an optional **since** date and a **status** of
+  *current* or *former* (e.g. for partners) **[M2]**.
 - Relationships are shown on each contact's profile, grouped by category (description
   inline), and drive the graph (2.7).
 - **Guardrails:** prevent duplicate and self relationships; refuse contradictions
@@ -355,10 +355,12 @@ reciprocal** link.
   opposite label as before. A symmetric type reads the same both ways and is listed once.
 
 - **Shipped:** entering a link takes the specifics with it — the free text for *how* these two
-  connect, an optional **since** day and a **status** of *current* or *former*, all optional and
-  all editable afterwards from the row itself. The row reads them back inline, with *former*
-  as a quiet chip. A day that never happened (`2019-02-30`) and a status the model does not
-  know are refused rather than stored. A link entered wrongly can be **removed**, with the
+  connect, an optional **since** day and a **status** of *current* or *former*, all editable
+  afterwards from the row itself. The status is the one that is never left open: a link being
+  entered is one that holds, so the form stands on *current* and there is no "not said" to
+  choose — a tie ends when someone says it ended, not by never having been described. The row
+  reads them back inline, with *former* as a quiet chip. A day that never happened
+  (`2019-02-30`) and a status the model does not know are refused rather than stored. A link entered wrongly can be **removed**, with the
   same Undo window as a tag or a date, and removing one that was standing in for a derived
   relationship brings the worked-out name back (§2.4.1). The **map follows the list** through
   that window: the link leaves both the moment the button is pressed, rather than the row going

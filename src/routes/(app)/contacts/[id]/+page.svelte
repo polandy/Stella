@@ -35,7 +35,11 @@
 	import { claimEndpoints, directClaimFor } from '$lib/kinship/claims';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { withoutRelationships } from '$lib/graph/model/without-pending';
-	import { RELATIONSHIP_STATUSES } from '$lib/relationships/status';
+	import {
+		CURRENT_RELATIONSHIP_STATUS,
+		FORMER_RELATIONSHIP_STATUS,
+		RELATIONSHIP_STATUSES
+	} from '$lib/relationships/status';
 	import { isChoiceOfLink, relationshipTypeOptions } from '$lib/relationships/type-options';
 	import { exclusionFor, type Exclusion } from '$lib/relationships/exclusions';
 	import { firstPickable, groupByExclusion } from '$lib/relationships/picker-groups';
@@ -887,7 +891,7 @@
 												· {t('contact.relationships.since', { day: dayLabel(i18n, rel.sinceDate) })}
 											</span>
 										{/if}
-										{#if rel.status === 'former'}
+										{#if rel.status === FORMER_RELATIONSHIP_STATUS}
 											<span class="shrink-0 rounded-full bg-bg-sunken px-2 py-0.5 text-xs text-fg-subtle">
 												{relationshipStatusLabel(t, rel.status)}
 											</span>
@@ -974,9 +978,6 @@
 											<label class="flex flex-col gap-1">
 												<span class="text-xs text-fg-muted">{t('contact.relationships.status')}</span>
 												<select name="status" class={INPUT}>
-													<option value="" selected={rel.status === null}>
-														{relationshipStatusLabel(t, null)}
-													</option>
 													{#each RELATIONSHIP_STATUSES as status (status)}
 														<option value={status} selected={rel.status === status}>
 															{relationshipStatusLabel(t, status)}
@@ -1168,10 +1169,13 @@
 								</label>
 								<label class="flex flex-col gap-1 text-sm">
 									<span class="text-fg-muted">{t('contact.relationships.status')}</span>
+									<!-- A link being entered is one that holds, so `current` is preselected and
+									     "not said" is not on offer (docs/02 §2.4). -->
 									<select name="status" class={INPUT}>
-										<option value="">{relationshipStatusLabel(t, null)}</option>
 										{#each RELATIONSHIP_STATUSES as status (status)}
-											<option value={status}>{relationshipStatusLabel(t, status)}</option>
+											<option value={status} selected={status === CURRENT_RELATIONSHIP_STATUS}>
+												{relationshipStatusLabel(t, status)}
+											</option>
 										{/each}
 									</select>
 								</label>

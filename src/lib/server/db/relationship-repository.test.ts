@@ -9,7 +9,10 @@ import { createDrizzleRelationshipRepository } from './relationship-repository';
 import { CUSTOM_TYPE_SORT_ORDER } from '../domain/relationships/relationship-types';
 import { seedRelationshipTypes } from './seed';
 import { deriveKinship } from '../../kinship/kinship';
-import { FORMER_RELATIONSHIP_STATUS } from '../../relationships/status';
+import {
+	CURRENT_RELATIONSHIP_STATUS,
+	FORMER_RELATIONSHIP_STATUS
+} from '../../relationships/status';
 
 /*
  * Integration spec for the Drizzle RelationshipRepository: type seeding, duplicate checks,
@@ -35,7 +38,7 @@ function newRelationship(id: string, fromContactId: string, toContactId: string,
 		typeId,
 		description: null,
 		sinceDate: null,
-		status: null,
+		status: CURRENT_RELATIONSHIP_STATUS,
 		createdBy: U1,
 		createdAt: 0,
 		updatedAt: 0
@@ -228,7 +231,7 @@ describe('exists / insert', () => {
 			typeId: 'parent_child',
 			description: null,
 			sinceDate: null,
-			status: null,
+			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U1,
 			createdAt: 0,
 			updatedAt: 0
@@ -277,7 +280,7 @@ describe('listForContactVisibleTo', () => {
 			typeId: 'parent_child',
 			description: null,
 			sinceDate: null,
-			status: null,
+			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U1,
 			createdAt: 0,
 			updatedAt: 0
@@ -326,15 +329,16 @@ describe('listForContactVisibleTo', () => {
 		}
 	});
 
-	it('reads a status the domain does not know as nothing said', async () => {
-		// The column is plain text; an older row or an import can hold anything.
+	it('reads a status the domain does not know as current', async () => {
+		// The column is plain text; an older row or an import can hold anything. A link that
+		// is on record holds until someone ends it, so anything but `former` reads as current.
 		db.update(schema.relationship)
 			.set({ status: 'complicated' })
 			.where(eq(schema.relationship.id, 'rel-pc'))
 			.run();
 
 		const [view] = await repo.listForContactVisibleTo(viewerU1, 'bettina');
-		expect(view.status).toBeNull();
+		expect(view.status).toBe('current');
 		// …and a status it does know still comes through, so this is not blanket blindness.
 		db.update(schema.relationship)
 			.set({ status: 'current' })
@@ -353,7 +357,7 @@ describe('listForContactVisibleTo', () => {
 			typeId: 'friend',
 			description: null,
 			sinceDate: null,
-			status: null,
+			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U1,
 			createdAt: 0,
 			updatedAt: 0
@@ -379,7 +383,7 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 		const rel = (id: string, from: string, to: string, typeId: string) =>
 			repo.insert({
 				id, householdId: H, fromContactId: from, toContactId: to, typeId,
-				description: null, sinceDate: null, status: null, createdBy: U1, createdAt: 1, updatedAt: 1
+				description: null, sinceDate: null, status: CURRENT_RELATIONSHIP_STATUS, createdBy: U1, createdAt: 1, updatedAt: 1
 			});
 		await rel('r-1', 'otto', 'bettina', 'parent_child');
 		await rel('r-2', 'bettina', 'hans', 'parent_child');
@@ -438,12 +442,12 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 		seedContact('secret', 'Secret', 'private', U2); // U2's own, invisible to U1
 		await repo.insert({
 			id: 'rel-open', householdId: H, fromContactId: 'bettina', toContactId: 'hans',
-			typeId: 'parent_child', description: null, sinceDate: null, status: null,
+			typeId: 'parent_child', description: null, sinceDate: null, status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U1, createdAt: 0, updatedAt: 0
 		});
 		await repo.insert({
 			id: 'rel-hidden', householdId: H, fromContactId: 'hans', toContactId: 'secret',
-			typeId: 'friend', description: 'quiet', sinceDate: null, status: null,
+			typeId: 'friend', description: 'quiet', sinceDate: null, status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U2, createdAt: 0, updatedAt: 0
 		});
 	});
@@ -458,7 +462,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			{
 				description: 'she raised him alone',
 				sinceDate: '1994-03-02',
-				status: 'current',
+				status: CURRENT_RELATIONSHIP_STATUS,
 				retype: null
 			},
 			1_700_000_000_000
@@ -473,7 +477,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 	});
 
 	it('refuses to touch one whose other endpoint the viewer cannot see', async () => {
-		const patch = { description: 'changed', sinceDate: null, status: null, retype: null };
+		const patch = { description: 'changed', sinceDate: null, status: CURRENT_RELATIONSHIP_STATUS, retype: null };
 		expect(await repo.updateVisibleTo(viewerU1, 'rel-hidden', patch, 1)).toBe(false);
 		expect((await detailsOf('rel-hidden'))?.note).toBe('quiet');
 
@@ -517,7 +521,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			{
 				description: null,
 				sinceDate: null,
-				status: null,
+				status: CURRENT_RELATIONSHIP_STATUS,
 				retype: {
 					endpoints: { fromContactId: 'hans', toContactId: 'bettina' },
 					typeId: 'grandparent_grandchild'
@@ -538,7 +542,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 		await repo.updateVisibleTo(
 			viewerU1,
 			'rel-open',
-			{ description: 'unchanged type', sinceDate: null, status: null, retype: null },
+			{ description: 'unchanged type', sinceDate: null, status: CURRENT_RELATIONSHIP_STATUS, retype: null },
 			1
 		);
 
@@ -556,7 +560,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 			await repo.updateVisibleTo(
 				viewerU1,
 				'no-such-relationship',
-				{ description: null, sinceDate: null, status: null, retype: null },
+				{ description: null, sinceDate: null, status: CURRENT_RELATIONSHIP_STATUS, retype: null },
 				1
 			)
 		).toBe(false);

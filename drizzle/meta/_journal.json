@@ -57,6 +57,13 @@
       "when": 1789507006363,
       "tag": "0007_bent_shiva",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1789689352353,
+      "tag": "0008_tough_venom",
+      "breakpoints": true
     }
   ]
 }
