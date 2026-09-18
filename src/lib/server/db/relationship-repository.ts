@@ -5,7 +5,11 @@ import type { KinshipGraph } from '../../kinship/kinship';
 import { relationshipVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import { loadKinshipGraph } from './kinship-graph-read';
-import { RELATIONSHIP_STATUSES, type RelationshipStatus } from '../../relationships/status';
+import {
+	CURRENT_RELATIONSHIP_STATUS,
+	RELATIONSHIP_STATUSES,
+	type RelationshipStatus
+} from '../../relationships/status';
 import {
 	describeRelationshipFor,
 	type NewRelationship,
@@ -52,13 +56,13 @@ const toType = (row: TypeRow): RelationshipType => ({
 
 /**
  * The column is plain text, so a row written before the two statuses existed — or by an
- * import — can hold anything. Anything the domain does not know reads as "not said" rather
- * than being passed off as a status.
+ * import — can hold anything. A link that is on record holds until someone ends it, so
+ * anything the domain does not know reads as `current` rather than as a state of its own.
  */
-const toStatus = (value: string | null): RelationshipStatus | null =>
+const toStatus = (value: string | null): RelationshipStatus =>
 	value !== null && RELATIONSHIP_STATUSES.includes(value as RelationshipStatus)
 		? (value as RelationshipStatus)
-		: null;
+		: CURRENT_RELATIONSHIP_STATUS;
 
 /**
  * The types a household may use: the built-in set (`household_id` null, seeded globally) plus

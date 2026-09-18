@@ -276,7 +276,7 @@ An instance connecting two contacts.
 | type_id | text fk → relationship_type.id | |
 | description | text null | free-text: how these two connect (see §2.4). Column name `note`. |
 | since_date | text null | full ISO day, validated against the calendar |
-| status | text null | `'current' \| 'former'`; anything else reads as unset. `former` on a partner link stops all kinship derivation through it (§2.4.1) |
+| status | text not null, default `'current'` | `'current' \| 'former'` — there is no unset state: a link that is on record holds until someone ends it, so anything else reads as `current`. `former` on a partner link stops all kinship derivation through it (§2.4.1) |
 | created_by | text fk → user.id | |
 | created_at / updated_at | int | |
 

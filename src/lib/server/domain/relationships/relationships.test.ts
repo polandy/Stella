@@ -426,17 +426,29 @@ describe('parseRelationshipDetails', () => {
 		expect(parseRelationshipDetails({ description: '  met at the ski course ' })).toEqual({
 			description: 'met at the ski course',
 			sinceDate: null,
-			status: null
+			status: 'current'
 		});
 	});
 
-	it('reads nothing given, and nothing but blanks, as nothing said', () => {
-		expect(parseRelationshipDetails({})).toEqual({ description: null, sinceDate: null, status: null });
+	it('reads nothing given, and nothing but blanks, as nothing said for the free fields', () => {
+		expect(parseRelationshipDetails({})).toEqual({
+			description: null,
+			sinceDate: null,
+			status: 'current'
+		});
 		expect(parseRelationshipDetails({ description: '   ', sinceDate: '', status: '' })).toEqual({
 			description: null,
 			sinceDate: null,
-			status: null
+			status: 'current'
 		});
+	});
+
+	// A link that exists holds until someone ends it, so there is no third answer to store
+	// (docs/02 §2.4): a form that says nothing about the status says `current`.
+	it('reads a status left unsaid as current, never as unset', () => {
+		expect(parseRelationshipDetails({}).status).toBe('current');
+		expect(parseRelationshipDetails({ status: null }).status).toBe('current');
+		expect(parseRelationshipDetails({ status: '  ' }).status).toBe('current');
 	});
 
 	it('takes a real day and refuses one that never happened', () => {

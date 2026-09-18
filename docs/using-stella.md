@@ -227,8 +227,9 @@ marriage or a partnership has ended, set it to **former** on the row: it stays o
 profiles, and the next one can then be entered as usual.
 
 A link can say more than its label. **How they connect** is yours to write — "met through
-Peter at the ski course" — and there is a **since** day and a **current / former** status if
-they help; all three are optional and all three can be changed later with *Edit* on the row.
+Peter at the ski course" — and there is a **since** day if it helps; both are optional. The
+status stands on **current**, because a link you are entering is one that holds; you set it to
+**former** on the day it ends. All three can be changed later with *Edit* on the row.
 Marking a partnership **former** keeps it on both profiles, but Stella stops working relatives
 out of it: an ex-partner is no longer named as a stepparent to the children, or as an in-law
 to the family.

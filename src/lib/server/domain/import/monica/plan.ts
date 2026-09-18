@@ -5,6 +5,7 @@ import { deriveDisplayName } from '../../contacts/display-name';
 import type { NewInteraction } from '../../interactions/interactions';
 import type { NewNote } from '../../notes/notes';
 import type { RelationshipCategory } from '../../../../relationships/categories';
+import { CURRENT_RELATIONSHIP_STATUS } from '../../../../relationships/status';
 import type { NewRelationship } from '../../relationships/relationships';
 import { BUILT_IN_RELATIONSHIP_TYPES } from '../../relationships/built-in-types';
 import { canonicalEndpoints } from '../../relationships/relationships';
@@ -297,9 +298,10 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 			...ends,
 			typeId,
 			description: null,
-			// Monica records neither of these, so there is nothing to carry over.
+			// Monica records neither of these, so there is nothing to carry over. A link it did
+			// record is one that holds, which is what `current` says (docs/02 §2.4).
 			sinceDate: null,
-			status: null,
+			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: opts.userId,
 			createdAt: opts.now,
 			updatedAt: opts.now

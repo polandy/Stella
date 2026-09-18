@@ -273,6 +273,17 @@ describe('an archive that does not add up', () => {
 		expect(rowsOf(plan, 'relationship')).toHaveLength(1);
 	});
 
+	// An archive written before the status column meant anything carries no status at all, and
+	// the column no longer takes one: a link that is on record holds (docs/02 §2.4).
+	it('reads a link with no status as current', () => {
+		const plan = planRestore(
+			deps(),
+			archived(bent((s) => delete (s.tables.relationship[0] as { status?: string }).status)),
+			target()
+		);
+		expect(rowsOf(plan, 'relationship')[0]).toMatchObject({ status: 'current' });
+	});
+
 	it('leaves out a mention of somebody the archive does not contain', () => {
 		const plan = planRestore(
 			deps(),

@@ -9,6 +9,7 @@ import {
 	unique
 } from 'drizzle-orm/sqlite-core';
 import type { Locale } from '../../i18n/locales';
+import { CURRENT_RELATIONSHIP_STATUS } from '../../relationships/status';
 
 /*
  * Drizzle schema — implementation of docs/03-data-model.md.
@@ -204,7 +205,9 @@ export const relationship = sqliteTable(
 			.references(() => relationshipType.id),
 		note: text('note'),
 		sinceDate: text('since_date'),
-		status: text('status'),
+		// A link that is on record holds until someone ends it, so there is no unset status:
+		// a row that says nothing says `current` (docs/03 §relationship).
+		status: text('status').notNull().default(CURRENT_RELATIONSHIP_STATUS),
 		createdBy: text('created_by')
 			.notNull()
 			.references(() => user.id),

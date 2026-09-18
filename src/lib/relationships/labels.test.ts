@@ -65,7 +65,7 @@ describe('relationshipCategoryLabel and relationshipStatusLabel', () => {
 	it('name the closed vocabularies in the reader’s language', () => {
 		expect(relationshipCategoryLabel(de, 'family')).toBe('Familie');
 		expect(relationshipStatusLabel(de, 'former')).toBe('ehemalig');
-		expect(relationshipStatusLabel(de, null)).toBe('Nicht gesagt');
+		expect(relationshipStatusLabel(de, 'current')).toBe('aktuell');
 	});
 
 	it('says a value it has no word for rather than nothing', () => {
