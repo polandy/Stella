@@ -670,6 +670,15 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **A suggestion the write would refuse is not offered** (suppression 5) — the engine asks the
   same parent cap before listing a claim, because *Accept* is the only button on the row and an
   error there is a rule the household never broke.
+- **A relationship's status has no unset state** — the column allowed `current`, `former` and
+  null, and the form offered all three with "not said" on top, so the commonest way to enter a
+  link stored the one answer that means nothing: a tie that exists holds until someone ends it.
+  The alternative was to keep null and merely default the form, which leaves every reader — the
+  row, kinship, an export — asking a question with no answer. The cost is paid once, in the
+  migration that rewrites the table (the first in Stella to do so): a row that genuinely said
+  nothing is read as `current`, and that reading cannot be told apart from a deliberate one
+  afterwards. It is the right way round — `former` is the answer someone had to give, and it is
+  the only one kept as said (docs/03 §relationship, docs/02 §2.4).
 
 ## 4.10 Deployment
 

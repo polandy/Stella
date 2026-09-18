@@ -55,12 +55,12 @@ const toType = (row: TypeRow): RelationshipType => ({
 });
 
 /**
- * The column is plain text, so a row written before the two statuses existed — or by an
- * import — can hold anything. A link that is on record holds until someone ends it, so
- * anything the domain does not know reads as `current` rather than as a state of its own.
+ * The column is plain text, so an import — or a hand-written archive — can put anything in it.
+ * A link that is on record holds until someone ends it, so anything the domain does not know
+ * reads as `current` rather than as a state of its own.
  */
-const toStatus = (value: string | null): RelationshipStatus =>
-	value !== null && RELATIONSHIP_STATUSES.includes(value as RelationshipStatus)
+const toStatus = (value: string): RelationshipStatus =>
+	RELATIONSHIP_STATUSES.includes(value as RelationshipStatus)
 		? (value as RelationshipStatus)
 		: CURRENT_RELATIONSHIP_STATUS;
 
