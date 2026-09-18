@@ -653,6 +653,12 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
     Someone in several circles stands with the biggest; their other memberships still show
     as lines. It reads every membership, so the grouping holds while the Circles chip is off.
 
+  Tree and By circle give every node the room it really takes — the canvas measures each
+  node with its name — and bend any line that would run through somebody on its way (a
+  grandparent line past the parent, a cousin past a sibling) around them, to the side that
+  needs the smaller bend (`layout/geometry.ts`), so a line's name is never hidden under a node.
+  *Free* draws every line straight again.
+
   None of the three is a mode: an expand afterwards still only adds people around the one
   expanded, and the choice is not remembered across a reload (saved graph settings are M3).
 - **Search & focus:** an in-canvas search field; selecting a result smoothly pans/zooms to
