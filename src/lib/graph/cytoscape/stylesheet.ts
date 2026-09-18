@@ -2,6 +2,10 @@ import { mixHex } from '../../design/color';
 import { AVATAR_TINT_PERCENT } from '../../design/tokens';
 import type { Palette } from './theme';
 
+/** The class and data field a bent line carries; the controller sets them, this draws them. */
+export const BOWED_CLASS = 'bowed';
+export const BOW_FIELD = 'bow';
+
 /*
  * Build the Cytoscape stylesheet from a resolved Palette (docs/05 §5.8). Pure: palette in,
  * style array out — so it tests without the library and re-themes by swapping the palette.
@@ -148,6 +152,16 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'target-arrow-shape': 'triangle',
 				'target-arrow-color': p.fgSubtle,
 				'arrow-scale': 0.8
+			}
+		},
+		// A line an arrangement bends around whoever stands in its way (docs/05 §5.8): its bow
+		// is the control point's sideways offset, set by the controller.
+		{
+			selector: `edge.${BOWED_CLASS}`,
+			style: {
+				'curve-style': 'unbundled-bezier',
+				'control-point-distances': `data(${BOW_FIELD})`,
+				'control-point-weights': 0.5
 			}
 		},
 		// ── Interaction states (toggled as classes by the controller) ─────────

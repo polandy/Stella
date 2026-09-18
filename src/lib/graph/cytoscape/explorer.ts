@@ -7,9 +7,10 @@ import type {
 	NodeSingular
 } from 'cytoscape';
 import type { CyElement } from './elements';
+import type { Arrangement, Size } from '../layout/geometry';
 import { placeNewcomers, type Placement, type Point } from './placement';
 import { widenToReveal } from './viewport';
-import type { CyStyle } from './stylesheet';
+import { BOW_FIELD, BOWED_CLASS, type CyStyle } from './stylesheet';
 
 /*
  * Imperative Cytoscape controller — the one place the library is touched, and it is dynamically
@@ -46,9 +47,12 @@ export interface ExplorerController {
 	arrange(): void;
 	/**
 	 * Glide the map into an arrangement worked out elsewhere (the family tree, the groups by
-	 * circle) and frame it. A node without a place in it stays where it is.
+	 * circle) and frame it. A node without a place in it stays where it is; the lines it says
+	 * to bend go around whoever stands in their way, and every other line is drawn straight.
 	 */
-	arrangeAt(positions: ReadonlyMap<string, Point>): void;
+	arrangeAt(arrangement: Arrangement): void;
+	/** How much room a node takes on the canvas, its name included, in model units. */
+	sizeOf(nodeId: string): Size;
 	/** Show only these node/edge ids (filtering), without a re-layout. */
 	setVisible(nodeIds: Set<string>, edgeIds: Set<string>): void;
 	/** Dim everything except the node and its immediate neighbourhood (null clears). */
@@ -221,6 +225,21 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		whileMoving((complete) => cy.animate(next, { duration, complete }));
 	};
 
+	/** Bends exactly the lines in `bows`, and straightens every other. */
+	const bend = (bows: ReadonlyMap<string, number>) => {
+		cy.batch(() => {
+			cy.edges().forEach((edge) => {
+				const bow = bows.get(edge.id());
+				if (bow === undefined) {
+					edge.removeClass(BOWED_CLASS);
+				} else {
+					edge.data(BOW_FIELD, bow);
+					edge.addClass(BOWED_CLASS);
+				}
+			});
+		});
+	};
+
 	// The first arrangement runs here rather than through the constructor's `layout` option,
 	// which lays out before there is anywhere to register `layoutstart` — and so before the
 	// running layout could be caught and stopped again.
@@ -269,13 +288,22 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 
 		arrange() {
 			if (!alive()) return;
+			bend(new Map());
 			cy.layout(tidyLayout(opts.reducedMotion) as Parameters<Core['layout']>[0]).run();
 		},
 
-		arrangeAt(positions) {
+		arrangeAt({ positions, bows }) {
 			if (!alive()) return;
+			bend(bows);
 			const placeOf = (node: NodeSingular) => positions.get(node.id()) ?? { ...node.position() };
 			cy.layout(presetLayout(opts.reducedMotion, placeOf) as Parameters<Core['layout']>[0]).run();
+		},
+
+		sizeOf(nodeId) {
+			const node = cy.$id(nodeId);
+			if (!alive() || node.empty()) return { width: 0, height: 0 };
+			const box = node.boundingBox({ includeLabels: true });
+			return { width: box.w, height: box.h };
 		},
 
 		setVisible(nodeIds, edgeIds) {

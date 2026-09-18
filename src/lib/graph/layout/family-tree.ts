@@ -1,7 +1,15 @@
 import { PARTNER_TYPE_KEYS } from '../../relationships/type-keys';
 import { familiesOf } from '../model/generations';
 import type { GraphModel } from '../model/types';
-import { shelve, type Point } from './geometry';
+import {
+	bowsAround,
+	defaultSizeOf,
+	LINE_CLEARANCE,
+	shelve,
+	type Arrangement,
+	type Point,
+	type SizeOf
+} from './geometry';
 
 /*
  * The family-tree arrangement (docs/02 §2.7, docs/05 §5.8). Pure: positions from the model, no
@@ -9,18 +17,20 @@ import { shelve, type Point } from './geometry';
  * a row is ordered so children sit under their parents, which keeps family lines from crossing.
  * Separate families stand side by side, and whoever has no family link — friends, colleagues,
  * circles — is shelved in rows beneath, rather than wedged into a generation they are not in.
+ * Each node gets the room its name needs, and a line that would pass through somebody on its
+ * way — a grandparent over the parent, a cousin past a sibling — bends around them.
  */
 
 /** Distances of the family tree, in model units. */
 export const TREE_SPACING = {
-	/** Between neighbours on a row — wide enough for a name under each node. */
-	node: 120,
+	/** Between two neighbours' names on a row. */
+	gap: 30,
 	/** Extra room between one couple or single and the next on a row. */
 	unit: 40,
 	/** Between one generation's row and the next. */
-	row: 150,
+	row: 170,
 	/** Between two separate families standing side by side. */
-	family: 200
+	family: 120
 } as const;
 
 /**
@@ -29,8 +39,11 @@ export const TREE_SPACING = {
  */
 const ORDERING_PASSES = 4;
 
-/** Positions for every node of `model`, arranged as a family tree. */
-export function familyTreeLayout(model: GraphModel): Map<string, Point> {
+/** The narrowest the shelf beneath gets, so a map with no family still reads as rows. */
+const SHELF_MIN_WIDTH = 600;
+
+/** Every node of `model` arranged as a family tree, each given the room `sizeOf` says it takes. */
+export function familyTreeLayout(model: GraphModel, sizeOf: SizeOf = defaultSizeOf): Arrangement {
 	const neighbours = new Map<string, Set<string>>();
 	const partners = new Map<string, Set<string>>();
 	const link = (map: Map<string, Set<string>>, a: string, b: string) => {
@@ -51,29 +64,31 @@ export function familyTreeLayout(model: GraphModel): Map<string, Point> {
 	let left = 0;
 	let deepest = -1;
 	for (const family of familiesOf(model)) {
-		const x = arrangeFamily(model, family, neighbours, partners);
-		const xs = [...x.values()];
-		const shift = left - Math.min(...xs);
+		const x = arrangeFamily(model, family, neighbours, partners, sizeOf);
+		const lefts = [...x].map(([id, at]) => at - sizeOf(id).width / 2);
+		const rights = [...x].map(([id, at]) => at + sizeOf(id).width / 2);
+		const shift = left - Math.min(...lefts);
 		for (const [id, generation] of family) {
 			positions.set(id, { x: x.get(id)! + shift, y: generation * TREE_SPACING.row });
 			deepest = Math.max(deepest, generation);
 		}
-		left += Math.max(...xs) - Math.min(...xs) + TREE_SPACING.family;
+		left += Math.max(...rights) - Math.min(...lefts) + TREE_SPACING.family;
 	}
 
 	const rest = model.nodes.filter((n) => !positions.has(n.id));
 	// Circles first, so the people shelved after them read as the loose ends they are.
 	rest.sort((a, b) => Number(b.kind === 'circle') - Number(a.kind === 'circle'));
 	const shelfTop = (deepest + 1) * TREE_SPACING.row + (deepest >= 0 ? TREE_SPACING.row / 2 : 0);
-	const width = Math.max(left - TREE_SPACING.family, TREE_SPACING.node * 4);
+	const width = Math.max(left - TREE_SPACING.family, SHELF_MIN_WIDTH);
 	shelve(
 		rest.map((n) => n.id),
 		{ x: 0, y: shelfTop },
 		width,
-		TREE_SPACING.node,
-		TREE_SPACING.row
+		sizeOf,
+		TREE_SPACING.gap,
+		TREE_SPACING.gap
 	).forEach((point, id) => positions.set(id, point));
-	return positions;
+	return { positions, bows: bowsAround(positions, model.edges, sizeOf, LINE_CLEARANCE) };
 }
 
 /** Horizontal position of each member of one family, ordered row by row. */
@@ -81,7 +96,8 @@ function arrangeFamily(
 	model: GraphModel,
 	family: Map<string, number>,
 	neighbours: Map<string, Set<string>>,
-	partners: Map<string, Set<string>>
+	partners: Map<string, Set<string>>,
+	sizeOf: SizeOf
 ): Map<string, number> {
 	// Rows of units: a couple (or a longer chain of partners) is one unit that moves together.
 	const rows: string[][][] = [];
@@ -106,12 +122,13 @@ function arrangeFamily(
 		let cursor = 0;
 		for (const unit of row) {
 			for (const id of unit) {
-				x.set(id, cursor);
-				cursor += TREE_SPACING.node;
+				const width = sizeOf(id).width;
+				x.set(id, cursor + width / 2);
+				cursor += width + TREE_SPACING.gap;
 			}
 			cursor += TREE_SPACING.unit;
 		}
-		const middle = (cursor - TREE_SPACING.node - TREE_SPACING.unit) / 2;
+		const middle = (cursor - TREE_SPACING.gap - TREE_SPACING.unit) / 2;
 		for (const unit of row) for (const id of unit) x.set(id, x.get(id)! - middle);
 	};
 	for (const row of rows) if (row) pack(row);

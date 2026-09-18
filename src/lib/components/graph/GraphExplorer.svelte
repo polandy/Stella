@@ -23,6 +23,7 @@
 	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
 	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
+	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
 	import type { ConnectionPath, GraphEdge, GraphFilters, GraphModel } from '$lib/graph/model/types';
 
 	interface Props {
@@ -275,10 +276,18 @@
 	] as const;
 
 	function arrangeBy(key: (typeof ARRANGEMENTS)[number]['key']) {
-		if (!controller) return;
-		if (key === 'force') controller.arrange();
-		else if (key === 'tree') controller.arrangeAt(familyTreeLayout(visible));
-		else controller.arrangeAt(circleClustersLayout(model));
+		const canvas = controller;
+		if (!canvas) return;
+		if (key === 'force') return canvas.arrange();
+		// The room each node really takes, its name included; a node the canvas is not drawing
+		// (filtered out) has none to measure, and is given the usual room.
+		const sizeOf = (id: string) => {
+			const size = canvas.sizeOf(id);
+			return size.width > 0 ? size : DEFAULT_NODE_SIZE;
+		};
+		canvas.arrangeAt(
+			key === 'tree' ? familyTreeLayout(visible, sizeOf) : circleClustersLayout(model, sizeOf)
+		);
 	}
 
 	function togglePath() {

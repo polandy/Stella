@@ -229,7 +229,7 @@ describe('explorerFromCore', () => {
 		const explorer = controller(cy);
 		const [b] = positionsOf(cy, ['b']);
 
-		explorer.arrangeAt(new Map([['a', { x: 500, y: 700 }]]));
+		explorer.arrangeAt({ positions: new Map([['a', { x: 500, y: 700 }]]), bows: new Map() });
 
 		// Handed a place, a node goes there; a node it was not handed stays where it was.
 		expect(cy.$id('a').position()).toEqual({ x: 500, y: 700 });
@@ -249,12 +249,48 @@ describe('explorerFromCore', () => {
 			onTapBackground: () => {}
 		});
 
-		explorer.arrangeAt(new Map([['a', { x: 500, y: 700 }]]));
+		explorer.arrangeAt({ positions: new Map([['a', { x: 500, y: 700 }]]), bows: new Map() });
 
 		const handed = asked[asked.length - 1];
 		expect(handed.name).toBe('preset');
 		expect(handed.animate).toBe(true);
 		expect(handed.fit).toBe(true);
+	});
+
+	it('bends the lines an arrangement says to, and straightens the rest', () => {
+		const cy = linkedPair();
+		cy.add({ group: 'nodes', data: { id: 'c' } });
+		cy.add({ group: 'edges', data: { id: 'b-c', source: 'b', target: 'c' } });
+		const explorer = controller(cy);
+
+		explorer.arrangeAt({ positions: new Map(), bows: new Map([['a-b', 80]]) });
+		expect(cy.$id('a-b').hasClass('bowed')).toBe(true);
+		expect(cy.$id('a-b').data('bow')).toBe(80);
+		expect(cy.$id('b-c').hasClass('bowed')).toBe(false);
+
+		explorer.arrangeAt({ positions: new Map(), bows: new Map([['b-c', -40]]) });
+		expect(cy.$id('a-b').hasClass('bowed')).toBe(false);
+		expect(cy.$id('b-c').hasClass('bowed')).toBe(true);
+	});
+
+	it('straightens every line when the map is arranged freely', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+		explorer.arrangeAt({ positions: new Map(), bows: new Map([['a-b', 80]]) });
+
+		explorer.arrange();
+
+		expect(cy.$id('a-b').hasClass('bowed')).toBe(false);
+	});
+
+	it('measures how much room each node takes', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+
+		const size = explorer.sizeOf('a');
+
+		expect(size.width).toBeGreaterThan(0);
+		expect(size.height).toBeGreaterThan(0);
 	});
 
 	it('destroys the core once, however often it is asked', () => {
@@ -342,7 +378,7 @@ describe('explorerFromCore', () => {
 			explorer.focus('a');
 			explorer.setStylesheet([]);
 			explorer.arrange();
-			explorer.arrangeAt(new Map([['a', { x: 1, y: 1 }]]));
+			explorer.arrangeAt({ positions: new Map([['a', { x: 1, y: 1 }]]), bows: new Map() });
 		}).not.toThrow();
 	});
 });
