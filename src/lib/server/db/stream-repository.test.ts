@@ -4,7 +4,7 @@ import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
-import { buildStream } from '../domain/stream/stream';
+import { buildStream, type StreamQuery } from '../domain/stream/stream';
 import * as schema from './schema';
 import { createDrizzleStreamRepository } from './stream-repository';
 
@@ -20,6 +20,8 @@ const U1 = 'user-1';
 const U2 = 'user-2';
 const asU2: Viewer = { id: U2, householdId: H };
 const asU1: Viewer = { id: U1, householdId: H };
+/** A read narrowed to nobody in particular. */
+const EVERYONE: StreamQuery = { limit: 10, memberId: null };
 
 let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzleStreamRepository>;
@@ -79,7 +81,7 @@ describe('recentMoments', () => {
 			.values({ id: 'ph1', householdId: H, contactId: 'julia', journalEntryId: 'new', createdBy: U1, filePath: 'a', thumbPath: 'b', mime: 'image/jpeg' })
 			.run();
 
-		const rows = await repo.recentMoments(asU2, 10);
+		const rows = await repo.recentMoments(asU2, EVERYONE);
 		expect(rows.map((r) => r.id)).toEqual(['new', 'old']);
 		expect(rows[0].actor).toEqual({ id: U1, name: 'One' });
 		expect(rows[0].anchor.name).toBe('julia');
@@ -94,8 +96,8 @@ describe('recentMoments', () => {
 		seedEntry('on-secret', 'secret', 200);
 		seedEntry('shared', 'julia', 300);
 
-		expect((await repo.recentMoments(asU2, 10)).map((r) => r.id)).toEqual(['shared']);
-		expect((await repo.recentMoments(asU1, 10)).map((r) => r.id)).toEqual(['shared', 'on-secret', 'mine-private']);
+		expect((await repo.recentMoments(asU2, EVERYONE)).map((r) => r.id)).toEqual(['shared']);
+		expect((await repo.recentMoments(asU1, EVERYONE)).map((r) => r.id)).toEqual(['shared', 'on-secret', 'mine-private']);
 	});
 });
 
@@ -107,7 +109,7 @@ describe('recentInteractions', () => {
 		seedInteraction('old', 'oma', 100);
 		seedInteraction('new', 'oma', 200, 'shared', U2, ['opa', 'secret']);
 
-		const rows = await repo.recentInteractions(asU2, 10);
+		const rows = await repo.recentInteractions(asU2, EVERYONE);
 		expect(rows.map((r) => r.id)).toEqual(['new', 'old']);
 		expect(rows[0]).toMatchObject({
 			actor: { id: U2, name: 'Two' },
@@ -126,8 +128,8 @@ describe('recentInteractions', () => {
 		seedInteraction('on-secret', 'secret', 200);
 		seedInteraction('shared', 'oma', 300);
 
-		expect((await repo.recentInteractions(asU2, 10)).map((r) => r.id)).toEqual(['shared']);
-		expect((await repo.recentInteractions(asU1, 10)).map((r) => r.id)).toEqual(['shared', 'on-secret', 'mine-private']);
+		expect((await repo.recentInteractions(asU2, EVERYONE)).map((r) => r.id)).toEqual(['shared']);
+		expect((await repo.recentInteractions(asU1, EVERYONE)).map((r) => r.id)).toEqual(['shared', 'on-secret', 'mine-private']);
 	});
 });
 
@@ -136,7 +138,7 @@ describe('recentPeople', () => {
 		seedContact('a', 100);
 		seedContact('b', 200, 'private', U1);
 		seedContact('c', 300, 'shared', U2);
-		const rows = await repo.recentPeople(asU2, 10);
+		const rows = await repo.recentPeople(asU2, EVERYONE);
 		expect(rows.map((r) => [r.id, r.actor.name])).toEqual([
 			['c', 'Two'],
 			['a', 'One']
@@ -151,7 +153,7 @@ describe('recentPeople', () => {
 			.where(eq(schema.contact.id, 'c'))
 			.run();
 
-		const rows = await repo.recentPeople(asU2, 10);
+		const rows = await repo.recentPeople(asU2, EVERYONE);
 		// positive control: the one still in the household is there, so this is no empty pass.
 		expect(rows.map((r) => r.id)).toEqual(['a']);
 	});
@@ -186,7 +188,7 @@ describe('recentNotices', () => {
 		logRemoval('older', 100, U1, 'shared');
 		logRemoval('newer', 200, U1, 'shared');
 
-		const rows = await repo.recentNotices(asU2, 10);
+		const rows = await repo.recentNotices(asU2, EVERYONE);
 		expect(rows.map((r) => r.id)).toEqual(['newer', 'older']);
 		expect(rows[0]).toMatchObject({ actor: { id: U1, name: 'One' }, summary: 'removed Person newer' });
 	});
@@ -194,7 +196,7 @@ describe('recentNotices', () => {
 	it('reports a merge too — a name stops existing either way', async () => {
 		logRemoval('merged', 100, U1, 'shared', 'merge');
 
-		expect((await repo.recentNotices(asU2, 10)).map((r) => r.id)).toEqual(['merged']);
+		expect((await repo.recentNotices(asU2, EVERYONE)).map((r) => r.id)).toEqual(['merged']);
 	});
 
 	it('reports an export, so the household sees that its archive was taken', async () => {
@@ -215,7 +217,7 @@ describe('recentNotices', () => {
 			})
 			.run();
 
-		const rows = await repo.recentNotices(asU2, 10);
+		const rows = await repo.recentNotices(asU2, EVERYONE);
 		expect(rows.map((r) => r.summary)).toEqual(['exported the household archive (12 people)']);
 	});
 
@@ -235,7 +237,7 @@ describe('recentNotices', () => {
 			})
 			.run();
 
-		const rows = await repo.recentNotices(asU2, 10);
+		const rows = await repo.recentNotices(asU2, EVERYONE);
 		expect(rows.map((r) => r.summary)).toEqual([
 			'restored 12 people from an archive of Familie Brunner'
 		]);
@@ -245,19 +247,19 @@ describe('recentNotices', () => {
 		// Only what no table can report belongs here; an archive or an update is not that.
 		logRemoval('edited', 100, U1, 'shared', 'update' as 'delete');
 
-		expect(await repo.recentNotices(asU2, 10)).toHaveLength(0);
+		expect(await repo.recentNotices(asU2, EVERYONE)).toHaveLength(0);
 		// positive control: the same insert with a logged action does come back.
 		logRemoval('gone', 110, U1, 'shared');
-		expect((await repo.recentNotices(asU2, 10)).map((r) => r.id)).toEqual(['gone']);
+		expect((await repo.recentNotices(asU2, EVERYONE)).map((r) => r.id)).toEqual(['gone']);
 	});
 
 	it('keeps a private person private, even in the record of their deletion', async () => {
 		logRemoval('secret', 100, U1, 'private');
 		logRemoval('open', 100, U1, 'shared');
 
-		expect((await repo.recentNotices(asU2, 10)).map((r) => r.id)).toEqual(['open']);
+		expect((await repo.recentNotices(asU2, EVERYONE)).map((r) => r.id)).toEqual(['open']);
 		// positive control: the member who deleted them sees both.
-		expect((await repo.recentNotices(asU1, 10)).map((r) => r.id).sort()).toEqual(['open', 'secret']);
+		expect((await repo.recentNotices(asU1, EVERYONE)).map((r) => r.id).sort()).toEqual(['open', 'secret']);
 	});
 });
 
@@ -268,10 +270,10 @@ describe('recentRelationships', () => {
 		seedContact('secret', 1, 'private', U1);
 		seedRelationship('r1', 'julia', 'marco', 100);
 		seedRelationship('r2', 'secret', 'marco', 200);
-		const rows = await repo.recentRelationships(asU2, 10);
+		const rows = await repo.recentRelationships(asU2, EVERYONE);
 		expect(rows.map((r) => r.id)).toEqual(['r1']);
 		expect(rows[0]).toMatchObject({ from: { name: 'julia' }, to: { name: 'marco' }, label: 'sister' });
-		expect((await repo.recentRelationships(asU1, 10)).map((r) => r.id)).toEqual(['r2', 'r1']);
+		expect((await repo.recentRelationships(asU1, EVERYONE)).map((r) => r.id)).toEqual(['r2', 'r1']);
 	});
 });
 

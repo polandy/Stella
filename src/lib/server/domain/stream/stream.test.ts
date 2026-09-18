@@ -6,8 +6,11 @@ import {
 	type NoticeRow,
 	type MomentRow,
 	type PersonRow,
-	type RelationshipRow
+	type RelationshipRow,
+	type StreamQuery,
+	type StreamRepository
 } from './stream';
+import { NO_FILTER } from '../../../stream/filter';
 
 /*
  * Household stream assembly (docs/02 §2.22.2): merge scoped sources newest-first, stable on
@@ -121,38 +124,51 @@ describe('assembleStream', () => {
 	});
 });
 
+/** A repository that records which sources were asked, and with what. */
+function recordingRepository() {
+	const asked: { source: string; query: StreamQuery }[] = [];
+	const answer =
+		<T>(source: string, rows: T[]) =>
+		async (_viewer: unknown, query: StreamQuery) => {
+			asked.push({ source, query });
+			return rows;
+		};
+	const stream: StreamRepository = {
+		recentMoments: answer('moments', [moment('m', 2)]),
+		recentPeople: answer('people', [person('p', 1)]),
+		recentRelationships: answer('relationships', []),
+		recentInteractions: answer('interactions', [touch('i', 3)]),
+		recentNotices: answer('notices', [removal('x', 4)])
+	};
+	return { stream, asked };
+}
+
+const viewer = { id: 'u1', householdId: 'h1' };
+
 describe('buildStream', () => {
 	it('asks each source for the limit and merges the results', async () => {
-		const asked: number[] = [];
-		const items = await buildStream(
-			{
-				stream: {
-					async recentMoments(_v, limit) {
-						asked.push(limit);
-						return [moment('m', 2)];
-					},
-					async recentPeople(_v, limit) {
-						asked.push(limit);
-						return [person('p', 1)];
-					},
-					async recentRelationships(_v, limit) {
-						asked.push(limit);
-						return [];
-					},
-					async recentInteractions(_v, limit) {
-						asked.push(limit);
-						return [touch('i', 3)];
-					},
-					async recentNotices(_v, limit) {
-						asked.push(limit);
-						return [removal('x', 4)];
-					}
-				}
-			},
-			{ id: 'u1', householdId: 'h1' },
-			7
-		);
-		expect(asked).toEqual([7, 7, 7, 7, 7]);
+		const { stream, asked } = recordingRepository();
+		const items = await buildStream({ stream }, viewer, NO_FILTER, 7);
+		expect(asked.map((a) => a.query)).toEqual(Array(5).fill({ limit: 7, memberId: null }));
 		expect(items.map((i) => i.id)).toEqual(['x', 'i', 'm', 'p']);
+	});
+
+	it('asks only the source of the chosen kind', async () => {
+		const { stream, asked } = recordingRepository();
+		const items = await buildStream({ stream }, viewer, { kind: 'interaction', memberId: null });
+		expect(asked.map((a) => a.source)).toEqual(['interactions']);
+		expect(items.map((i) => i.id)).toEqual(['i']);
+	});
+
+	it('hands the chosen member to every source it asks', async () => {
+		const { stream, asked } = recordingRepository();
+		await buildStream({ stream }, viewer, { kind: null, memberId: 'u2' }, 7);
+		expect(asked.map((a) => [a.source, a.query.memberId])).toEqual([
+			['moments', 'u2'],
+			['people', 'u2'],
+			['relationships', 'u2'],
+			['interactions', 'u2'],
+			['notices', 'u2']
+		]);
 	});
 });

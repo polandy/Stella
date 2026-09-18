@@ -1,10 +1,15 @@
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { InteractionKind } from '../../../interactions/kinds';
+import { NO_FILTER, STREAM_KINDS, type StreamFilter, type StreamKind } from '../../../stream/filter';
 
 /*
  * Household stream (docs/02 §2.22.2): what the family did, newest first. It is a *query* over
  * the existing tables — moments (journal entries), new people, new relationships and logged
  * interactions (docs/02 §2.6) — merged here; nothing is logged twice.
+ *
+ * The viewer can narrow it by kind and by member (`StreamFilter`). Both narrow the *reads*, not
+ * the merged result: cutting to the limit first and filtering after would leave one member's
+ * items pushed out by everyone else's.
  *
  * The one exception is a **removal**, which no table can report once its row is gone; that
  * one comes from `activity_log` (docs/04 §4.9). The adapter owns the visibility-scoped reads;
@@ -88,6 +93,15 @@ export interface NoticeRow {
 	summary: string;
 }
 
+/**
+ * One read of one source: at most `limit` rows, newest first, and only what `memberId` did when
+ * it is set. Visibility scoping is the adapter's either way — the member narrows, never widens.
+ */
+export interface StreamQuery {
+	limit: number;
+	memberId: string | null;
+}
+
 export type StreamItem =
 	| ({ kind: 'moment'; mine: boolean } & MomentRow)
 	| ({ kind: 'person'; mine: boolean } & PersonRow)
@@ -96,12 +110,12 @@ export type StreamItem =
 	| ({ kind: 'notice'; mine: boolean } & NoticeRow);
 
 export interface StreamRepository {
-	recentMoments(viewer: Viewer, limit: number): Promise<MomentRow[]>;
-	recentPeople(viewer: Viewer, limit: number): Promise<PersonRow[]>;
-	recentRelationships(viewer: Viewer, limit: number): Promise<RelationshipRow[]>;
-	recentInteractions(viewer: Viewer, limit: number): Promise<InteractionRow[]>;
+	recentMoments(viewer: Viewer, query: StreamQuery): Promise<MomentRow[]>;
+	recentPeople(viewer: Viewer, query: StreamQuery): Promise<PersonRow[]>;
+	recentRelationships(viewer: Viewer, query: StreamQuery): Promise<RelationshipRow[]>;
+	recentInteractions(viewer: Viewer, query: StreamQuery): Promise<InteractionRow[]>;
 	/** The one source that is the log itself, for what no table can report. */
-	recentNotices(viewer: Viewer, limit: number): Promise<NoticeRow[]>;
+	recentNotices(viewer: Viewer, query: StreamQuery): Promise<NoticeRow[]>;
 }
 
 export interface StreamDeps {
@@ -136,29 +150,31 @@ export function assembleStream(
 		),
 		...sources.notices.map((r): StreamItem => ({ kind: 'notice', mine: mine(r.actor), ...r }))
 	];
-	const rank: Record<StreamItem['kind'], number> = {
-		moment: 0,
-		interaction: 1,
-		relationship: 2,
-		person: 3,
-		notice: 4
-	};
-	items.sort((a, b) => b.at - a.at || rank[a.kind] - rank[b.kind] || a.id.localeCompare(b.id));
+	const rank = (kind: StreamKind) => STREAM_KINDS.indexOf(kind);
+	items.sort((a, b) => b.at - a.at || rank(a.kind) - rank(b.kind) || a.id.localeCompare(b.id));
 	return items.slice(0, Math.max(0, limit));
 }
 
-/** Fetch the scoped sources and build the viewer's stream. */
+/**
+ * Fetch the scoped sources and build the viewer's stream, narrowed to `filter`. A source whose
+ * kind the filter leaves out is not read at all.
+ */
 export async function buildStream(
 	deps: StreamDeps,
 	viewer: Viewer,
+	filter: StreamFilter = NO_FILTER,
 	limit = STREAM_LIMIT
 ): Promise<StreamItem[]> {
+	const query: StreamQuery = { limit, memberId: filter.memberId };
+	const read = <T>(kind: StreamKind, source: () => Promise<T[]>): Promise<T[]> =>
+		filter.kind === null || filter.kind === kind ? source() : Promise.resolve([]);
+	const { stream } = deps;
 	const [moments, people, relationships, interactions, notices] = await Promise.all([
-		deps.stream.recentMoments(viewer, limit),
-		deps.stream.recentPeople(viewer, limit),
-		deps.stream.recentRelationships(viewer, limit),
-		deps.stream.recentInteractions(viewer, limit),
-		deps.stream.recentNotices(viewer, limit)
+		read('moment', () => stream.recentMoments(viewer, query)),
+		read('person', () => stream.recentPeople(viewer, query)),
+		read('relationship', () => stream.recentRelationships(viewer, query)),
+		read('interaction', () => stream.recentInteractions(viewer, query)),
+		read('notice', () => stream.recentNotices(viewer, query))
 	]);
 	return assembleStream(
 		{ moments, people, relationships, interactions, notices },

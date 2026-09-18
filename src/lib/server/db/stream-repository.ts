@@ -15,6 +15,7 @@ import type {
 	RelationshipRow,
 	NoticeRow,
 	StreamPerson,
+	StreamQuery,
 	StreamRepository
 } from '../domain/stream/stream';
 import type * as schema from './schema';
@@ -41,7 +42,7 @@ import {
  */
 export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schema>): StreamRepository {
 	return {
-		async recentMoments(viewer: Viewer, limit: number): Promise<MomentRow[]> {
+		async recentMoments(viewer: Viewer, { limit }: StreamQuery): Promise<MomentRow[]> {
 			const rows = db
 				.select({
 					id: journalEntry.id,
@@ -115,7 +116,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			}));
 		},
 
-		async recentNotices(viewer: Viewer, limit: number): Promise<NoticeRow[]> {
+		async recentNotices(viewer: Viewer, { limit }: StreamQuery): Promise<NoticeRow[]> {
 			// The only source that is not a table of things that still exist. Once a contact is
 			// deleted — outright, or by being merged into someone else — the log entry is all
 			// that is left of that name (docs/04 §4.9); an export never had a row at all
@@ -150,7 +151,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			}));
 		},
 
-		async recentPeople(viewer: Viewer, limit: number): Promise<PersonRow[]> {
+		async recentPeople(viewer: Viewer, { limit }: StreamQuery): Promise<PersonRow[]> {
 			const rows = db
 				.select({
 					id: contact.id,
@@ -178,7 +179,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			}));
 		},
 
-		async recentRelationships(viewer: Viewer, limit: number): Promise<RelationshipRow[]> {
+		async recentRelationships(viewer: Viewer, { limit }: StreamQuery): Promise<RelationshipRow[]> {
 			const fromC = alias(contact, 'from_c');
 			const toC = alias(contact, 'to_c');
 			const rows = db
@@ -216,7 +217,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			}));
 		},
 
-		async recentInteractions(viewer: Viewer, limit: number): Promise<InteractionRow[]> {
+		async recentInteractions(viewer: Viewer, { limit }: StreamQuery): Promise<InteractionRow[]> {
 			const rows = db
 				.select({
 					id: interaction.id,
