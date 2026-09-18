@@ -18,11 +18,22 @@
 	const t = useTranslate();
 	const circle = $derived(data.circle);
 
-	// A member on their way out of the circle is off the grid while the undo window is open.
+	// A member on their way out of the circle is off the grid while the undo window is open;
+	// a role whose last member is leaving goes with them.
 	const removals = useRemovals();
-	const visibleMembers = $derived(
-		data.members.filter((m) => !removals.isPending(removalKey('membership', m.membershipId)))
+	const visibleGroups = $derived(
+		data.memberGroups
+			.map((g) => ({
+				...g,
+				members: g.members.filter(
+					(m) => !removals.isPending(removalKey('membership', m.membershipId))
+				)
+			}))
+			.filter((g) => g.members.length > 0)
 	);
+	const visibleCount = $derived(visibleGroups.reduce((sum, g) => sum + g.members.length, 0));
+	// Headings only earn their place once someone has a role; a circle without any stays one grid.
+	const showRoles = $derived(visibleGroups.some((g) => g.role !== null));
 	let addOpen = $state(false);
 	let newMemberIds = $state<string[]>([]);
 	const saved = savedEnhance(removals, t('components.saved'), () => {
@@ -53,31 +64,39 @@
 
 	<Section
 		title={t('circles.members')}
-		count={visibleMembers.length}
+		count={visibleCount}
 		addLabel={data.candidates.length ? t('circles.addPeople') : undefined}
 		error={form?.error ?? null}
 		bind:open={addOpen}
 	>
-		{#if visibleMembers.length}
-			<ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="member-grid">
-				{#each visibleMembers as m (m.membershipId)}
-					<li class="flex items-center gap-3 rounded-app bg-bg px-3 py-2.5">
-						<Avatar id={m.contactId} name={m.displayName} avatarPhotoId={m.avatarPhotoId} size={40} />
-						<span class="min-w-0 flex-1">
-							<a href="/contacts/{m.contactId}" class="block truncate font-medium text-fg hover:underline">{m.displayName}</a>
-							{#if m.role}<span class="block truncate text-xs text-fg-subtle">{m.role}</span>{/if}
-						</span>
-						<RemoveButton
-							kind="membership"
-							id={m.membershipId}
-							action="?/removeMember"
-							fields={{ contactId: m.contactId }}
-							label={t('circles.removeMember', { name: m.displayName })}
-							removed={t('circles.removedFromCircle')}
-						/>
-					</li>
+		{#if visibleCount}
+			<div class="flex flex-col gap-4" data-testid="member-grid">
+				{#each visibleGroups as group (group.role)}
+					<section class="flex flex-col gap-2" data-testid="role-group">
+						{#if showRoles}
+							<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle">
+								{group.role ?? t('circles.noRole')} · {group.members.length}
+							</h3>
+						{/if}
+						<ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+							{#each group.members as m (m.membershipId)}
+								<li class="flex items-center gap-3 rounded-app bg-bg px-3 py-2.5">
+									<Avatar id={m.contactId} name={m.displayName} avatarPhotoId={m.avatarPhotoId} size={40} />
+									<a href="/contacts/{m.contactId}" class="min-w-0 flex-1 truncate font-medium text-fg hover:underline">{m.displayName}</a>
+									<RemoveButton
+										kind="membership"
+										id={m.membershipId}
+										action="?/removeMember"
+										fields={{ contactId: m.contactId }}
+										label={t('circles.removeMember', { name: m.displayName })}
+										removed={t('circles.removedFromCircle')}
+									/>
+								</li>
+							{/each}
+						</ul>
+					</section>
 				{/each}
-			</ul>
+			</div>
 		{:else}
 			<EmptyState
 				icon="people"
