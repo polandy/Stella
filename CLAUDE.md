@@ -59,6 +59,7 @@ Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) �
 | `src/lib/stream/` | **pure** household-stream filter: kinds, the `?kind=`/`?by=` codec, what the chips show (test-first) |
 | `src/lib/pwa/` | **pure** install/offline policy: manifest, cache rules, icon geometry, reachability protocol (test-first). `src/service-worker.ts` and `install.svelte.ts` are the adapters — they hold browser APIs, never a decision |
 | `src/lib/graph/model/` | **pure** graph domain: `GraphModel`, `buildEgoNetwork`, `expandNode`, `findConnectionPath`, `applyFilters` (test-first) |
+| `src/lib/graph/layout/` | **pure** arrangements as positions: family tree, groups by circle (test-first) |
 | `src/lib/graph/cytoscape/` | rendering adapter (Cytoscape confined here, lazy-loaded); no domain logic |
 | `src/routes/` | thin edges: `load` / form actions / `+server.ts` |
 | `src/lib/components/` | UI components (design system): `Button`, `Icon` + the `icons.ts` registry, `Avatar`, `Section`, `EmptyState`, `CommandPalette`, `Toast` + `RemoveButton`, `InlineEdit`, … |

@@ -634,12 +634,27 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   map. The view is not re-framed; only when a newcomer lands off screen does it step back just
   far enough to take them in too (`viewport.ts`), so what the reader was looking at never
   leaves the screen. A removal moves nobody.
-- **Tidy up:** a toolbar button (*Tidy up* / *Anordnen*) runs the full force layout over the
-  whole map and frames it again — for when a long session of expanding has left long lines;
-  it is the one thing besides the first arrangement that moves people already on the canvas.
-  The new arrangement is computed first and the map then glides into it in one slow movement
-  (1.2 s), so the reader can follow each person to their new place; under reduced motion it
-  simply takes its new shape.
+- **Arrange:** a toolbar group (*Arrange* / *Anordnen*) with three one-off actions — the
+  only things besides the first arrangement that move people already on the canvas. Each is
+  worked out first and the map then glides into it in one slow movement (1.2 s), so the
+  reader can follow each person to their new place; under reduced motion it simply takes its
+  new shape, and the view is framed again either way.
+  - *Free / Frei* runs the force layout over the whole map — for when a long session of
+    expanding has left long lines.
+  - *Tree / Stammbaum* (`layout/family-tree.ts`): one row per generation, the oldest at the
+    top, worked out from the family links on the map (`model/generations.ts`) — entered
+    links first, the worked-out kinship lines only for a relative nothing entered reaches.
+    Partners stand side by side, each row is ordered so children sit under their parents,
+    separate families stand side by side, and whoever has no family link (friends,
+    colleagues, circles) is shelved in rows beneath rather than wedged into a generation.
+    It reads what is shown, so a line filtered away cannot pull someone into a row.
+  - *By circle / Nach Kreisen* (`layout/circle-clusters.ts`): each circle ringed by its
+    members, the groups apart and largest first, everyone in no circle shelved beneath.
+    Someone in several circles stands with the biggest; their other memberships still show
+    as lines. It reads every membership, so the grouping holds while the Circles chip is off.
+
+  None of the three is a mode: an expand afterwards still only adds people around the one
+  expanded, and the choice is not remembered across a reload (saved graph settings are M3).
 - **Search & focus:** an in-canvas search field; selecting a result smoothly pans/zooms to
   that node and pulses it. The suggested names are drawn above the rest of the toolbar: on a
   narrow window the chip row wraps underneath the field, and a name a chip covers cannot be
@@ -649,8 +664,6 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - **Selection & peek:** selecting a node dims the rest, highlights its neighborhood, and
   opens a side peek panel (summary + the way to the node's own page: *Open profile* for a
   person, *Open the circle* for a circle).
-- **Layouts:** force-directed default; tidy tree for family hierarchies and clustered for
-  circles (M2).
 - **Theme-aware:** all node/edge/label colors read from the semantic tokens so it matches
   Latte/Mocha; respects reduced motion (no continuous physics; expansion animations become
   instant when set). Keyboard-operable with a list-based fallback (§5.9).

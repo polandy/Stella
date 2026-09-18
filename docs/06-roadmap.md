@@ -69,8 +69,10 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   visibility (shared/private), rendered as a timeline on the profile (§2.20).
 - **Explorer (rich, core feature):** in-place node expansion, in-graph search-to-focus,
   connection-path finding between two people, circle + derived-kinship edges, filters and
-  tree/clustered layouts. Built as a pure graph-model domain + a confined Cytoscape
-  rendering adapter (docs/04 §4.11) — the pure operations are test-first.
+  tree/clustered layouts — **shipped**: *Arrange* offers free, family tree and by circle, and
+  an expand places newcomers without moving anyone (§2.7, docs/05 §5.8). Built as a pure
+  graph-model domain + a confined Cytoscape rendering adapter (docs/04 §4.11) — the pure
+  operations are test-first.
 - **Custom relationship types**; relationship note/since/status — the specifics (how they
   connect, since, current/former), editing and removal shipped, and a household names its own
   types under *Settings → Relationship types* (§2.4).
