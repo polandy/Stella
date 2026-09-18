@@ -50,7 +50,9 @@ export const search = {
 	'graph.peek.tipCompact': 'Tip: tap a selected person again to open up their own connections.',
 	'graph.peek.edgeOfMap': 'This is as far as this map goes. The graph carries the rest.',
 	'graph.onPerson.label': (p: { name: string }) => `The people around ${p.name}`,
-	'graph.onPerson.loading': 'Drawing the map…'
+	'graph.onPerson.loading': 'Drawing the map…',
+	'graph.fullscreen.enter': 'Full screen',
+	'graph.fullscreen.exit': 'Leave full screen'
 };
 
 /** The key set every translation of this area has to provide. */

@@ -49,5 +49,7 @@ export const search: SearchMessages = {
 		'Tipp: Tippe eine ausgewählte Person nochmal an, um ihre eigenen Verbindungen aufzuklappen.',
 	'graph.peek.edgeOfMap': 'Weiter reicht diese Karte nicht. Das Netz trägt den Rest.',
 	'graph.onPerson.label': (p) => `Die Menschen um ${p.name}`,
-	'graph.onPerson.loading': 'Karte wird gezeichnet…'
+	'graph.onPerson.loading': 'Karte wird gezeichnet…',
+	'graph.fullscreen.enter': 'Vollbild',
+	'graph.fullscreen.exit': 'Vollbild beenden'
 };
