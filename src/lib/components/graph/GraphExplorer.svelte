@@ -19,6 +19,7 @@
 		circleRoles,
 		expandNode,
 		rebuildExplored,
+		rolesOpenAfter,
 		type CircleRole,
 		type CircleRoleOption
 	} from '$lib/graph/model/ego-network';
@@ -208,6 +209,7 @@
 		const circleId = peekCircleId;
 		roleOptions = [];
 		roleOptionsFor = null;
+		chosenRoles = new Set();
 		if (circleId === null) return;
 		roleOptionsFor = circleId;
 		void source.neighborhood(circleId).then((hood) => {
@@ -216,9 +218,6 @@
 			chosenRoles = new Set(roleOptions.map((o) => o.role));
 		});
 	});
-	const chosenAll = $derived(
-		roleOptions.length > 0 && roleOptions.every((o) => chosenRoles.has(o.role))
-	);
 
 	function toggleRole(role: CircleRole) {
 		const next = new Set(chosenRoles);
@@ -303,11 +302,17 @@
 		// The embedded map is one person's neighbourhood, not a way into the whole household:
 		// past its last ring the reader is sent to the explorer route instead (docs/02 §2.7).
 		if (centerId !== null && !canExpand(rings, id, maxRings)) return;
-		const roles = peekNode?.id === id && peekNode.kind === 'circle' ? chosenRoles : undefined;
+		// Until the circle's roles have arrived there is nothing to narrow by: open it whole.
+		const roles =
+			peekCircleId === id && roleOptions.length > 0 ? new Set(chosenRoles) : undefined;
 		model = await expandNode(source, model, id, roles);
+		if (roles) {
+			const all = new Set(roleOptions.map((o) => o.role));
+			const open = rolesOpenAfter(expandedIds.has(id), expandedRoles.get(id), roles, all);
+			if (open) expandedRoles.set(id, open);
+			else expandedRoles.delete(id);
+		}
 		expandedIds.add(id);
-		if (roles && !chosenAll) expandedRoles.set(id, new Set(roles));
-		else expandedRoles.delete(id);
 	}
 
 	async function reveal(id: string) {

@@ -75,8 +75,7 @@ export function circleRoles(hood: Neighborhood): CircleRoleOption[] {
 	return [...counts]
 		.map(([role, count]) => ({ role, count }))
 		.sort(
-			(a, b) =>
-				rank(a) - rank(b) || b.count - a.count || (a.role ?? '').localeCompare(b.role ?? '')
+			(a, b) => rank(a) - rank(b) || b.count - a.count || (a.role ?? '').localeCompare(b.role ?? '')
 		);
 }
 
@@ -85,6 +84,23 @@ function withRoles(hood: Neighborhood, roles: ReadonlySet<CircleRole>): Neighbor
 	const edges = hood.edges.filter((e) => e.kind !== 'membership' || roles.has(roleOf(e)));
 	const reached = new Set(edges.flatMap((e) => [e.source, e.target]));
 	return { ...hood, edges, nodes: hood.nodes.filter((n) => reached.has(n.id)) };
+}
+
+/**
+ * Which roles a circle stands open for after another expansion, or `undefined` once every
+ * role in `all` is open. `before` is what stood open until now (`undefined` for a circle that
+ * was never expanded, or that is fully open — told apart by `expanded`). Expanding again
+ * widens the opened set and never narrows it, so a resync reopens all the reader has seen.
+ */
+export function rolesOpenAfter(
+	expanded: boolean,
+	before: ReadonlySet<CircleRole> | undefined,
+	chosen: ReadonlySet<CircleRole>,
+	all: ReadonlySet<CircleRole>
+): ReadonlySet<CircleRole> | undefined {
+	if (expanded && before === undefined) return undefined;
+	const open = new Set([...(before ?? []), ...chosen]);
+	return [...all].every((role) => open.has(role)) ? undefined : open;
 }
 
 /**

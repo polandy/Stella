@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { buildEgoNetwork, circleRoles, expandNode, rebuildExplored } from './ego-network';
+import {
+	buildEgoNetwork,
+	circleRoles,
+	expandNode,
+	rebuildExplored,
+	rolesOpenAfter
+} from './ego-network';
 import { emptyModel } from './graph-model';
 import { fakeGraphSource, familyEdges, familyNodes, familySource } from './fixtures';
 import type { GraphModel } from './types';
@@ -188,5 +194,35 @@ describe('circle roles', () => {
 		);
 		expect(ids(model).has('doris')).toBe(true);
 		expect(ids(model).has('sarah')).toBe(false); // a Trainer, so not opened up
+	});
+});
+
+describe('rolesOpenAfter', () => {
+	const all = new Set<string | null>(['Trainer', 'Kassier', null]);
+
+	it('remembers the chosen roles on a first expansion', () => {
+		expect(rolesOpenAfter(false, undefined, new Set(['Kassier']), all)).toEqual(
+			new Set(['Kassier'])
+		);
+	});
+
+	it('widens what was already open instead of replacing it', () => {
+		expect(rolesOpenAfter(true, new Set(['Kassier']), new Set(['Trainer']), all)).toEqual(
+			new Set(['Kassier', 'Trainer'])
+		);
+	});
+
+	it('is fully open once every role has been opened', () => {
+		expect(rolesOpenAfter(true, new Set(['Kassier']), new Set(['Trainer', null]), all)).toBe(
+			undefined
+		);
+	});
+
+	it('stays fully open when a circle already opened whole is expanded for some roles', () => {
+		expect(rolesOpenAfter(true, undefined, new Set(['Kassier']), all)).toBe(undefined);
+	});
+
+	it('treats a circle whose roles are unknown as fully open', () => {
+		expect(rolesOpenAfter(false, undefined, new Set(), new Set())).toBe(undefined);
 	});
 });

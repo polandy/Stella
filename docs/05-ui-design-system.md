@@ -696,7 +696,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   view and de-emphasizes everything else, so the chain reads instantly.
 - **Selection & peek:** selecting a node dims the rest, highlights its neighborhood, and
   opens a side peek panel (summary + the way to the node's own page: *Open profile* for a
-  person, *Open the circle* for a circle).
+  person, *Open the circle* for a circle). A circle with more than one role adds a ticked
+  checkbox per role above *Expand connections*, so only the ticked roles open (§2.7).
 - **Theme-aware:** all node/edge/label colors read from the semantic tokens so it matches
   Latte/Mocha; respects reduced motion (no continuous physics; expansion animations become
   instant when set). Keyboard-operable with a list-based fallback (§5.9).
