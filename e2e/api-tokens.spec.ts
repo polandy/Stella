@@ -104,7 +104,14 @@ test('people sent through the import API get a page and a circle', async ({ page
 	await page.goto(`/contacts/${zuri.id}`);
 	await expect(page.getByRole('heading', { name: 'Zuri Okafor' })).toBeVisible();
 	await expect(page.getByText('Okafor Kindergarten').first()).toBeVisible();
-	await expect(page.getByText('Ada Okafor').first()).toBeVisible();
+	// The link, as the person page's own list of entered relationships reads it.
+	await expect(
+		page
+			.locator('#section-relationships ul')
+			.first()
+			.locator('li')
+			.filter({ hasText: 'Ada Okafor' })
+	).toContainText('Child of');
 
 	const again = await page.request.post('/api/v1/import', {
 		headers: bearer(token),
