@@ -190,6 +190,40 @@ describe('explorerFromCore', () => {
 		expect(fits).toEqual([true, true]);
 	});
 
+	it('glides the map into its tidied arrangement instead of showing every step', () => {
+		const cy = linkedPair();
+		const asked: Record<string, unknown>[] = [];
+		cy.layout = ((options: Record<string, unknown>) => {
+			asked.push(options);
+			return { run: () => {}, stop: () => {} };
+		}) as unknown as Core['layout'];
+		const explorer = explorerFromCore(cy, {
+			reducedMotion: false,
+			onTapNode: () => {},
+			onTapBackground: () => {}
+		});
+
+		explorer.arrange();
+
+		const tidy = asked[asked.length - 1];
+		expect(tidy.animate).toBe('end');
+		expect(tidy.animationDuration).toBeGreaterThan(0);
+	});
+
+	it('under reduced motion, tidies without any glide', () => {
+		const cy = linkedPair();
+		const asked: Record<string, unknown>[] = [];
+		cy.layout = ((options: Record<string, unknown>) => {
+			asked.push(options);
+			return { run: () => {}, stop: () => {} };
+		}) as unknown as Core['layout'];
+		const explorer = controller(cy);
+
+		explorer.arrange();
+
+		expect(asked[asked.length - 1].animate).toBe(false);
+	});
+
 	it('destroys the core once, however often it is asked', () => {
 		const cy = core();
 		const explorer = controller(cy);

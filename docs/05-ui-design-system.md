@@ -635,6 +635,9 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - **Tidy up:** a toolbar button (*Tidy up* / *Anordnen*) runs the full force layout over the
   whole map and frames it again — for when a long session of expanding has left long lines;
   it is the one thing besides the first arrangement that moves people already on the canvas.
+  The new arrangement is computed first and the map then glides into it in one slow movement
+  (1.2 s), so the reader can follow each person to their new place; under reduced motion it
+  simply takes its new shape.
 - **Search & focus:** an in-canvas search field; selecting a result smoothly pans/zooms to
   that node and pulses it. The suggested names are drawn above the rest of the toolbar: on a
   narrow window the chip row wraps underneath the field, and a name a chip covers cannot be

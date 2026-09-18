@@ -72,6 +72,11 @@ const MIN_ZOOM = 0.2;
 
 /** The length the force layout aims every edge at, and the step newcomers are placed at. */
 const EDGE_LENGTH = 90;
+/**
+ * How long a tidy-up takes to glide the map into its new arrangement, in milliseconds. Slow
+ * enough to follow each person to their new place, which is what keeps the reader oriented.
+ */
+const TIDY_GLIDE_DURATION = 1200;
 
 function layout(reducedMotion: boolean) {
 	return {
@@ -83,6 +88,20 @@ function layout(reducedMotion: boolean) {
 		nodeRepulsion: () => 8000,
 		idealEdgeLength: () => EDGE_LENGTH,
 		nodeDimensionsIncludeLabels: true
+	};
+}
+
+/**
+ * The full arrangement, computed first and then glided into in one movement — the view framing
+ * along with it — rather than showing every step of the simulation. Under reduced motion the
+ * map simply takes its new shape.
+ */
+function tidyLayout(reducedMotion: boolean) {
+	return {
+		...layout(reducedMotion),
+		animate: reducedMotion ? false : ('end' as const),
+		animationDuration: TIDY_GLIDE_DURATION,
+		animationEasing: 'ease-in-out-cubic'
 	};
 }
 
@@ -225,7 +244,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 
 		arrange() {
 			if (!alive()) return;
-			relayout();
+			cy.layout(tidyLayout(opts.reducedMotion) as Parameters<Core['layout']>[0]).run();
 		},
 
 		setVisible(nodeIds, edgeIds) {
