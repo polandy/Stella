@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { openPerson, pickPerson, signIn } from './app';
 import {
 	clickNode,
+	drawnNode,
 	firstClickableNode,
 	nodeOwners,
 	ringsOnCanvas,
@@ -64,6 +65,28 @@ test.describe('on a person’s page', () => {
 		// And nothing is selected on arrival: the peek panel would cover half a card-sized map
 		// before anybody asked it anything, and the page's header already names the person.
 		await expect(map(page).getByRole('complementary')).toHaveCount(0);
+	});
+
+	test('a tap lands on the person under it after the page above the map has moved', async ({
+		page
+	}) => {
+		await expect(map(page).locator('canvas').first()).toBeVisible();
+		await map(page).scrollIntoViewIfNeeded();
+		await settled(page);
+
+		// The canvas learns where it sits when the pointer first crosses it…
+		const lena = await drawnNode(page, LENA);
+		await page.mouse.move(lena.point!.x, lena.point!.y);
+		// …and then the page above it grows — no scroll, no resize, no transition reaches the
+		// canvas, just as when a card above unfolds or the server-drawn map gives way.
+		await map(page).evaluate((el) => {
+			const spacer = document.createElement('div');
+			spacer.style.height = '120px';
+			el.parentElement!.insertBefore(spacer, el);
+		});
+
+		await clickNode(page, MARKUS);
+		await expect(map(page).getByRole('complementary').getByText('Markus Brunner', { exact: true })).toBeVisible();
 	});
 
 	test('a person at the edge of the map is offered the graph, not another hop', async ({

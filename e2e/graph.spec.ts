@@ -3,9 +3,12 @@ import { signIn } from './app';
 import {
 	arrangeBy,
 	arrangement,
+	bowedLines,
+	circlesOnCanvas,
 	clickNode,
 	filterMenu,
 	highlightedLabels,
+	overlappingNodes,
 	settled,
 	stateOf
 } from './graph-canvas';
@@ -119,6 +122,59 @@ test('expanding moves nobody already on the map, and arranging it freely re-arra
 		return !q || q.x !== p.x || q.y !== p.y;
 	});
 	expect(moved.length).toBeGreaterThan(0);
+});
+
+test('Tree sets each generation on a row of its own and bends the lines that would cross somebody', async ({
+	page
+}) => {
+	await page.goto('/graph?center=demo-c-hans');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await settled(page);
+
+	await arrangeBy(page, 'Tree');
+	await settled(page);
+	await expect(page.getByRole('button', { name: 'Arrange: Tree' })).toBeVisible();
+
+	// Hans and his wife on one row, their son below them, their granddaughter below him.
+	const at = await arrangement(page);
+	const row = (id: string) => at.get(`demo-c-${id}`)!.y;
+	expect(row('rosa')).toBe(row('hans'));
+	expect(row('markus')).toBeGreaterThan(row('hans'));
+	expect(row('lena')).toBeGreaterThan(row('markus'));
+	expect(await overlappingNodes(page)).toEqual([]);
+	// The grandparent lines would run straight through the children's row.
+	expect(await bowedLines(page)).toBeGreaterThan(0);
+
+	// Free draws every line straight again.
+	await arrangeBy(page, 'Free');
+	await settled(page);
+	expect(await bowedLines(page)).toBe(0);
+});
+
+test('By circle stands Lena with one of her circles, the circles apart and nobody on top of anybody', async ({
+	page
+}) => {
+	await page.goto('/graph?center=demo-c-lena');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await settled(page);
+
+	await arrangeBy(page, 'By circle');
+	await settled(page);
+	await expect(page.getByRole('button', { name: 'Arrange: By circle' })).toBeVisible();
+
+	const circles = await circlesOnCanvas(page);
+	expect(circles.length, 'Lena is in three circles').toBeGreaterThanOrEqual(2);
+	const at = await arrangement(page);
+	const apart = (a: string, b: string) =>
+		Math.hypot(at.get(a)!.x - at.get(b)!.x, at.get(a)!.y - at.get(b)!.y);
+	const [home, ...others] = [...circles].sort(
+		(a, b) => apart(a, 'demo-c-lena') - apart(b, 'demo-c-lena')
+	);
+	// She stands on one ring, and every other circle keeps its distance from that group.
+	for (const other of others) {
+		expect(apart(home, other)).toBeGreaterThan(2 * apart(home, 'demo-c-lena'));
+	}
+	expect(await overlappingNodes(page)).toEqual([]);
 });
 
 test('draws the relatives nobody entered, and the Kinship filter takes them away', async ({ page }) => {

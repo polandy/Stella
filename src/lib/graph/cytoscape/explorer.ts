@@ -451,5 +451,35 @@ export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerCon
 	});
 	cy.batch(() => cy.add(opts.elements as unknown as ElementDefinition[]));
 
-	return explorerFromCore(cy, opts);
+	/*
+	 * Cytoscape remembers where its container sits on the page and forgets it only on a scroll,
+	 * a resize or the end of a transition. Content above the map can move it without any of
+	 * those — a card unfolding, the server-drawn map giving way to this one — and every tap then
+	 * lands where the node used to be: on its neighbour, or on nothing. Asking afresh before each
+	 * pointer event costs one measurement per event and keeps a tap on what is under it.
+	 */
+	const renderer = (
+		cy as unknown as { renderer(): { invalidateContainerClientCoordsCache(): void } }
+	).renderer();
+	const forgetWhereItWas = () => renderer.invalidateContainerClientCoordsCache();
+	const listening = new AbortController();
+	for (const type of POINTER_EVENTS) {
+		opts.container.addEventListener(type, forgetWhereItWas, {
+			capture: true,
+			passive: true,
+			signal: listening.signal
+		});
+	}
+
+	const controller = explorerFromCore(cy, opts);
+	return {
+		...controller,
+		destroy() {
+			listening.abort();
+			controller.destroy();
+		}
+	};
 }
+
+/** The events Cytoscape reads a pointer's page position from. */
+const POINTER_EVENTS = ['mousedown', 'mousemove', 'mouseup', 'touchstart', 'touchmove', 'wheel'];

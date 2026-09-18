@@ -104,11 +104,15 @@ export async function ringsOnCanvas(page: Page, centerId: string): Promise<Map<s
 		let el: HTMLElement | null = document.querySelector('canvas');
 		while (el && !('_cyreg' in el)) el = el.parentElement;
 		const cy = el
-			? (el as unknown as {
-					_cyreg: {
-						cy: { edges(): { map(fn: (e: { data(k: string): string }) => string[]): string[][] } };
-					};
-				})._cyreg.cy
+			? (
+					el as unknown as {
+						_cyreg: {
+							cy: {
+								edges(): { map(fn: (e: { data(k: string): string }) => string[]): string[][] };
+							};
+						};
+					}
+				)._cyreg.cy
 			: null;
 		if (!cy) return [] as [string, number][];
 
@@ -190,3 +194,60 @@ export async function arrangeBy(scope: Page | Locator, name: string): Promise<vo
 	await scope.getByRole('button', { name: /^Arrange:/ }).click();
 	await scope.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).click();
 }
+
+/** Reads the running Cytoscape core off the page, for the few questions the helpers above do not ask. */
+type CoreQuery<T> = (cy: {
+	nodes(selector?: string): {
+		map<R>(
+			fn: (n: {
+				id(): string;
+				data(key: string): string;
+				hasClass(name: string): boolean;
+				boundingBox(options: object): { x1: number; y1: number; x2: number; y2: number };
+			}) => R
+		): R[];
+	};
+	edges(selector?: string): { length: number };
+}) => T;
+
+async function askCore<T>(page: Page, query: CoreQuery<T>): Promise<T> {
+	return page.evaluate((source) => {
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const cy = (el as unknown as { _cyreg: { cy: unknown } })._cyreg.cy;
+		return new Function('cy', `return (${source})(cy)`)(cy);
+	}, query.toString()) as Promise<T>;
+}
+
+/** How many lines an arrangement has bent around somebody standing in their way. */
+export const bowedLines = (page: Page) => askCore(page, (cy) => cy.edges('.bowed').length);
+
+/** The ids of the circles on the canvas. */
+export const circlesOnCanvas = (page: Page) =>
+	askCore(page, (cy) => cy.nodes('[kind = "circle"]').map((n) => n.id()));
+
+/**
+ * Every pair of drawn nodes whose boxes — the name under each included — overlap. Empty is the
+ * answer an arrangement owes the reader; a pair names who ran into whom.
+ */
+export const overlappingNodes = (page: Page) =>
+	askCore(page, (cy) => {
+		const boxes = cy
+			.nodes()
+			.map((n) => ({
+				id: n.id(),
+				hidden: n.hasClass('filtered-out'),
+				box: n.boundingBox({ includeLabels: true })
+			}))
+			.filter((n) => !n.hidden);
+		const pairs: string[] = [];
+		for (let i = 0; i < boxes.length; i++) {
+			for (let j = i + 1; j < boxes.length; j++) {
+				const [a, b] = [boxes[i].box, boxes[j].box];
+				if (a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2) {
+					pairs.push(`${boxes[i].id} × ${boxes[j].id}`);
+				}
+			}
+		}
+		return pairs;
+	});
