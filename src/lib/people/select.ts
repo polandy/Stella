@@ -30,3 +30,12 @@ export function filterPeople<T extends SelectablePerson>(query: string, people: 
 export function stillNeedsAPick(required: boolean, selectedCount: number): boolean {
 	return required && selectedCount === 0;
 }
+
+/**
+ * What the search box holds once someone has been picked. Kept, a search such as a surname
+ * stays put so the rest of the family is one click away; cleared, the box is ready for the
+ * next, unrelated name. The person picked is out of the list either way.
+ */
+export function queryAfterPick(query: string, keepSearch: boolean): string {
+	return keepSearch ? query : '';
+}

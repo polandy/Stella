@@ -19,6 +19,8 @@ export const components: ComponentsMessages = {
 	'components.palette.kindAction': 'Aktion',
 	'components.personSearch.placeholder': 'Personen suchen…',
 	'components.personSearch.empty': 'Niemand gefunden.',
+	'components.personSearch.matches': (p) => `${p.count} Treffer`,
+	'components.personSearch.addAll': (p) => `Alle ${p.count} hinzufügen`,
 	'components.personSearch.remove': (p) => `${p.name} entfernen`,
 	'components.personSearch.create': (p) => `„${p.name}“ als neue Person anlegen`,
 	'components.personSearch.createTitle': 'Neue Person',

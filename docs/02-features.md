@@ -577,10 +577,17 @@ a named group contacts belong to, over a period of time. (A first-class entity, 
 - **Filling a circle.** A circle's page adds **several people at once**: the picker keeps every
   person chosen as a chip until the form is submitted, so a whole class or team joins in one
   go rather than one round trip per person. A role typed alongside applies to everyone in that
-  pick (the form says so as soon as more than one is chosen); someone who needs a different
-  role is removed from the circle and added again with it. Someone already in the circle, or named twice in the same pick, joins
+  pick (the form says so as soon as more than one is chosen). Someone already in the circle, or named twice in the same pick, joins
   once — and a person the actor may not see fails the whole pick rather than being dropped
   from it silently. The pick is written as one transaction, so it lands whole or not at all.
+- **The search stays while a group is picked.** After someone is picked the typed search is kept
+  (a switch, on by default and remembered per browser, turns that off), so a surname keeps
+  listing the rest of the family; **Add all** takes every match at once. Whoever is picked leaves
+  the list, so it only ever shows who is still missing.
+- **Re-roling several members at once.** *Select* on the members list turns each card into a
+  checkbox, with *all* beside each role heading. A bar at the bottom sets one role on everyone
+  selected in a single transaction (blank removes the role) or removes them, each with its own
+  undo window (§2.23). Only members the actor can see are touched; nobody is joined by it.
 - **Members are shown by role.** A circle's page lists its people under one heading per role,
   with the count beside it: the most common role first (the order the role field offers them),
   people without a role last under *No role*, and everyone alphabetical inside a group. Roles

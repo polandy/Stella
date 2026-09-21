@@ -11,6 +11,7 @@ import {
 	listRoleSuggestionsByCircleName,
 	resolveCircleColor,
 	resolveCircleKind,
+	setMembersRole,
 	suggestCircleColor,
 	suggestRoles,
 	type Circle,
@@ -48,14 +49,25 @@ const idGen = (values: string[]): IdGenerator => {
 };
 const creator = { userId: 'u1', householdId: 'h1', defaultVisibility: 'shared' as const };
 
+const member = (contactId: string): MemberView => ({
+	membershipId: `ms-${contactId}`,
+	contactId,
+	displayName: contactId,
+	avatarPhotoId: null,
+	role: null
+});
+const viewer = { id: 'u1', householdId: 'h1' };
+
 function fakeRepo(existing: Circle | null = null) {
 	const inserted: NewCircle[] = [];
 	const memberships: NewMembership[] = [];
 	const removed: Array<[string, string]> = [];
+	const roleChanges: Array<{ circleId: string; contactIds: string[]; role: string | null; at: number }> = [];
 	let exists = false;
 	// Per-contact membership, for picks that mix people already in the circle with new ones.
 	const existingMembers = new Set<string>();
 	let roleUses: CircleRoleUse[] = [];
+	let visibleMembers: MemberView[] = [];
 	const repo: CircleRepository = {
 		insert: async (c) => void inserted.push(c),
 		findByNameVisibleTo: async () => existing,
@@ -68,7 +80,9 @@ function fakeRepo(existing: Circle | null = null) {
 			fresh.forEach((m) => existingMembers.add(m.contactId));
 		},
 		removeMembership: async (cid, contactId) => void removed.push([cid, contactId]),
-		listMembersVisibleTo: async () => [],
+		setRoles: async (circleId, contactIds, role, at) =>
+			void roleChanges.push({ circleId, contactIds: [...contactIds], role, at }),
+		listMembersVisibleTo: async () => visibleMembers,
 		listForContactVisibleTo: async () => [],
 		listRoleUsesVisibleTo: async () => roleUses
 	};
@@ -77,9 +91,12 @@ function fakeRepo(existing: Circle | null = null) {
 		inserted,
 		memberships,
 		removed,
+		roleChanges,
 		setExists: (v: boolean) => (exists = v),
 		setExistingMembers: (ids: string[]) => ids.forEach((id) => existingMembers.add(id)),
-		setRoleUses: (v: CircleRoleUse[]) => (roleUses = v)
+		setRoleUses: (v: CircleRoleUse[]) => (roleUses = v),
+		setVisibleMembers: (ids: string[]) =>
+			(visibleMembers = ids.map((contactId) => member(contactId)))
 	};
 }
 
@@ -191,6 +208,58 @@ describe('addMembers', () => {
 		// The positive control for the skip: jonas proves the call did run and did write.
 		expect(f.memberships.map((m) => m.contactId)).toEqual(['jonas']);
 		expect(f.memberships[0].role).toBe('coach');
+	});
+});
+
+describe('setMembersRole', () => {
+	const everyone = ['mara', 'jonas', 'ida'];
+
+	it('gives every chosen member the one trimmed role, in a single write', async () => {
+		const f = fakeRepo();
+		f.setVisibleMembers(everyone);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		await setMembersRole(deps, viewer, 'circle-1', everyone, ' coach ');
+		expect(f.roleChanges).toEqual([
+			{ circleId: 'circle-1', contactIds: everyone, role: 'coach', at: NOW }
+		]);
+	});
+
+	it('takes the role away when it is blank', async () => {
+		const f = fakeRepo();
+		f.setVisibleMembers(['mara']);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		await setMembersRole(deps, viewer, 'circle-1', ['mara'], '   ');
+		expect(f.roleChanges[0].role).toBeNull();
+	});
+
+	it('names each member once, even when the pick names one twice', async () => {
+		const f = fakeRepo();
+		f.setVisibleMembers(everyone);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		await setMembersRole(deps, viewer, 'circle-1', ['mara', 'mara', 'jonas'], 'coach');
+		expect(f.roleChanges[0].contactIds).toEqual(['mara', 'jonas']);
+	});
+
+	it('leaves out anyone the viewer cannot see in the circle, and keeps those they can', async () => {
+		const f = fakeRepo();
+		// `ghost` is not among the members this viewer may see (private, or not a member at all).
+		f.setVisibleMembers(['mara', 'jonas']);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		await setMembersRole(deps, viewer, 'circle-1', ['mara', 'ghost', 'jonas'], 'coach');
+		// The positive control: the two visible ones were written, so the call did run.
+		expect(f.roleChanges[0].contactIds).toEqual(['mara', 'jonas']);
+	});
+
+	it('writes nothing when none of the pick is visible, or the pick is empty', async () => {
+		const f = fakeRepo();
+		f.setVisibleMembers(['mara']);
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		await setMembersRole(deps, viewer, 'circle-1', ['ghost'], 'coach');
+		await setMembersRole(deps, viewer, 'circle-1', [], 'coach');
+		expect(f.roleChanges).toHaveLength(0);
+		// Positive control: a visible member does get written on the same fake.
+		await setMembersRole(deps, viewer, 'circle-1', ['mara'], 'coach');
+		expect(f.roleChanges).toHaveLength(1);
 	});
 });
 

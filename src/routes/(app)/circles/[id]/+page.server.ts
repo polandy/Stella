@@ -6,6 +6,7 @@ import {
 	groupMembersByRole,
 	listMembers,
 	removeMember,
+	setMembersRole,
 	suggestRoles
 } from '$lib/server/domain/circles/circles';
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
@@ -40,7 +41,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	};
 };
 
-const AddSchema = v.object({
+const PeopleAndRoleSchema = v.object({
 	contactIds: v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.minLength(1)),
 	role: v.optional(v.pipe(v.string(), v.trim()))
 });
@@ -55,7 +56,7 @@ export const actions: Actions = {
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 		const form = await request.formData();
-		const parsed = v.safeParse(AddSchema, {
+		const parsed = v.safeParse(PeopleAndRoleSchema, {
 			contactIds: form.getAll('contactId'),
 			role: form.get('role') || undefined
 		});
@@ -74,6 +75,31 @@ export const actions: Actions = {
 		await addMembers(
 			getCircleDeps(),
 			{ userId: locals.user.id },
+			params.id,
+			parsed.output.contactIds,
+			parsed.output.role
+		);
+		throw redirect(303, `/circles/${params.id}`);
+	},
+
+	// Re-roles several members at once; a blank role takes the role away (docs/02 §2.4.2).
+	setRole: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const circle = await getCircle(getCircleDeps(), viewer, params.id);
+		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
+
+		const form = await request.formData();
+		const parsed = v.safeParse(PeopleAndRoleSchema, {
+			contactIds: form.getAll('contactId'),
+			role: form.get('role') ?? undefined
+		});
+		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
+
+		await setMembersRole(
+			getCircleDeps(),
+			viewer,
 			params.id,
 			parsed.output.contactIds,
 			parsed.output.role

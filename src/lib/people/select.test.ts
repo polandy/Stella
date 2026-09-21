@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { filterPeople, stillNeedsAPick, type SelectablePerson } from './select';
+import { filterPeople, queryAfterPick, stillNeedsAPick, type SelectablePerson } from './select';
 
 function person(
 	overrides: Partial<SelectablePerson> & { id: string; displayName: string }
@@ -57,5 +57,15 @@ describe('stillNeedsAPick', () => {
 
 	it('demands nothing from an optional picker', () => {
 		expect(stillNeedsAPick(false, 0)).toBe(false);
+	});
+});
+
+describe('queryAfterPick', () => {
+	it('empties the search after a pick, as a one-off lookup does', () => {
+		expect(queryAfterPick('Meier', false)).toBe('');
+	});
+
+	it('keeps the search when the picker is filling a group from one search', () => {
+		expect(queryAfterPick('Meier', true)).toBe('Meier');
 	});
 });

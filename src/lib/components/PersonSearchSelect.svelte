@@ -6,7 +6,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { isNameWorthCreating, splitTypedName } from '$lib/people/new-person';
-	import { filterPeople, stillNeedsAPick, type SelectablePerson } from '$lib/people/select';
+	import { filterPeople, queryAfterPick, stillNeedsAPick, type SelectablePerson } from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';
 
 	/*
@@ -37,6 +37,11 @@
 		selectedIds?: string[];
 		/** Multiple people, kept as removable chips, vs. one that replaces the current pick. */
 		multiple?: boolean;
+		/**
+		 * With `multiple`: leave the typed search in place after a pick, so a surname keeps
+		 * listing the rest of the family. Off, each pick empties the box.
+		 */
+		keepSearch?: boolean;
 		/** Offer creating a person from the typed name, for pickers where a stranger belongs. */
 		allowCreate?: boolean;
 		/** Called with the person a pick lands on, for a form that reads more off them than the id. */
@@ -51,6 +56,7 @@
 		name,
 		selectedIds = $bindable([]),
 		multiple = false,
+		keepSearch = false,
 		allowCreate = false,
 		onPick,
 		id,
@@ -114,10 +120,20 @@
 	function choose(person: SelectablePerson) {
 		selectedIds = multiple ? [...selectedIds, person.id] : [person.id];
 		onPick?.(person);
-		query = '';
+		query = queryAfterPick(query, multiple && keepSearch);
 		highlighted = 0;
 		open = multiple;
 		if (!multiple) input?.blur();
+	}
+
+	/** Everyone the search lists, at once — a whole family found by one surname. */
+	function chooseAll() {
+		const everyone = matches;
+		selectedIds = [...selectedIds, ...everyone.map((p) => p.id)];
+		for (const person of everyone) onPick?.(person);
+		query = queryAfterPick(query, keepSearch);
+		highlighted = 0;
+		input?.focus();
 	}
 
 	function remove(pid: string) {
@@ -372,6 +388,22 @@
 		</div>
 	{:else if open}
 		<div class={panelClass}>
+			{#if multiple && query.trim() !== '' && matches.length > 1}
+				<div class="flex items-center justify-between gap-2 border-b border-border px-2.5 py-1.5 text-xs text-fg-muted">
+					<span>{t('components.personSearch.matches', { count: matches.length })}</span>
+					<button
+						type="button"
+						data-testid="person-search-add-all"
+						onmousedown={(e) => {
+							e.preventDefault();
+							chooseAll();
+						}}
+						class="rounded-control px-2 py-1 font-medium text-primary hover:bg-primary-soft"
+					>
+						{t('components.personSearch.addAll', { count: matches.length })}
+					</button>
+				</div>
+			{/if}
 			<ul
 				id="{id}-listbox"
 				role="listbox"
