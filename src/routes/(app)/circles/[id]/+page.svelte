@@ -232,6 +232,10 @@
 
 		{#snippet editor()}
 			<form method="POST" action="?/addMembers" use:enhance={saved} class="flex flex-wrap items-end gap-3">
+				<label class="flex basis-full items-center gap-2 text-sm text-fg-muted">
+					<input type="checkbox" bind:checked={keepSearch} onchange={rememberKeepSearch} class="accent-primary" />
+					{t('circles.keepSearch')}
+				</label>
 				<label for="circle-member" class="flex flex-1 flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.people')}</span>
 					<PersonSearchSelect
@@ -263,10 +267,6 @@
 					{/if}
 				</label>
 				<Button variant="primary" size="sm">{t('common.add')}</Button>
-				<label class="flex basis-full items-center gap-2 text-sm text-fg-muted">
-					<input type="checkbox" bind:checked={keepSearch} onchange={rememberKeepSearch} class="accent-primary" />
-					{t('circles.keepSearch')}
-				</label>
 			</form>
 		{/snippet}
 	</Section>
