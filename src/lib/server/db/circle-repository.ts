@@ -1,4 +1,4 @@
-import { and, count, eq, sql } from 'drizzle-orm';
+import { and, count, eq, inArray, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { circleColumnsVisibleTo, contactColumnsVisibleTo, membershipVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
@@ -165,6 +165,14 @@ export function createDrizzleCircleRepository(
 		async removeMembership(circleId: string, contactId: string) {
 			db.delete(circleMembership)
 				.where(and(eq(circleMembership.circleId, circleId), eq(circleMembership.contactId, contactId)))
+				.run();
+		},
+
+		async setRoles(circleId: string, contactIds: readonly string[], role: string | null, updatedAt: number) {
+			if (contactIds.length === 0) return;
+			db.update(circleMembership)
+				.set({ role, updatedAt })
+				.where(and(eq(circleMembership.circleId, circleId), inArray(circleMembership.contactId, [...contactIds])))
 				.run();
 		},
 

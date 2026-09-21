@@ -198,6 +198,17 @@ export interface CircleRepository {
 	 */
 	addMemberships(memberships: readonly NewMembership[]): Promise<void>;
 	removeMembership(circleId: string, contactId: string): Promise<void>;
+	/**
+	 * Give each of `contactIds` that is in the circle `role` (null clears it), in **one**
+	 * transaction, so a bulk re-role lands whole or not at all. People not in the circle are
+	 * left out rather than joined.
+	 */
+	setRoles(
+		circleId: string,
+		contactIds: readonly string[],
+		role: string | null,
+		updatedAt: number
+	): Promise<void>;
 	listMembersVisibleTo(viewer: Viewer, circleId: string): Promise<MemberView[]>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ContactCircleView[]>;
 	/** Every visible membership's role, with the name of the circle it belongs to. */
@@ -320,6 +331,22 @@ export async function addMembers(
 		updatedAt: now
 	}));
 	await deps.circles.addMemberships(memberships);
+}
+
+/**
+ * Give several members of a circle one role at once, or none when `role` is blank. The
+ * counterpart of {@link addMembers}, which never re-roles someone already in: this is how an
+ * existing member changes role. Each member is named once however often the pick repeats them.
+ */
+export async function setMembersRole(
+	deps: Pick<CircleDeps, 'circles' | 'clock'>,
+	circleId: string,
+	contactIds: readonly string[],
+	role: string | null | undefined
+): Promise<void> {
+	const unique = [...new Set(contactIds)];
+	if (unique.length === 0) return;
+	await deps.circles.setRoles(circleId, unique, orNull(role), deps.clock.now());
 }
 
 export async function removeMember(

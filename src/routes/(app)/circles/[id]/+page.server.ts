@@ -6,6 +6,7 @@ import {
 	groupMembersByRole,
 	listMembers,
 	removeMember,
+	setMembersRole,
 	suggestRoles
 } from '$lib/server/domain/circles/circles';
 import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
@@ -45,6 +46,11 @@ const AddSchema = v.object({
 	role: v.optional(v.pipe(v.string(), v.trim()))
 });
 
+const SetRoleSchema = v.object({
+	contactIds: v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.minLength(1)),
+	role: v.optional(v.pipe(v.string(), v.trim()))
+});
+
 export const actions: Actions = {
 	addMembers: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
@@ -76,6 +82,34 @@ export const actions: Actions = {
 			{ userId: locals.user.id },
 			params.id,
 			parsed.output.contactIds,
+			parsed.output.role
+		);
+		throw redirect(303, `/circles/${params.id}`);
+	},
+
+	// Re-roles several members at once; a blank role takes the role away (docs/02 §2.4.2).
+	setRole: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const circle = await getCircle(getCircleDeps(), viewer, params.id);
+		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
+
+		const form = await request.formData();
+		const parsed = v.safeParse(SetRoleSchema, {
+			contactIds: form.getAll('contactId'),
+			role: form.get('role') ?? undefined
+		});
+		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
+
+		// Only members the actor can see are re-roled; an id from elsewhere changes nothing.
+		const visible = new Set(
+			(await listMembers(getCircleDeps(), viewer, params.id)).map((m) => m.contactId)
+		);
+		await setMembersRole(
+			getCircleDeps(),
+			params.id,
+			parsed.output.contactIds.filter((id) => visible.has(id)),
 			parsed.output.role
 		);
 		throw redirect(303, `/circles/${params.id}`);

@@ -18,6 +18,8 @@ export const components = {
 	'components.palette.kindAction': 'action',
 	'components.personSearch.placeholder': 'Search people…',
 	'components.personSearch.empty': 'No one found.',
+	'components.personSearch.matches': (p: { count: number }) => `${p.count} matches`,
+	'components.personSearch.addAll': (p: { count: number }) => `Add all ${p.count}`,
 	'components.personSearch.remove': (p: { name: string }) => `Remove ${p.name}`,
 	'components.personSearch.create': (p: { name: string }) => `Add “${p.name}” as a new person`,
 	'components.personSearch.createTitle': 'New person',

@@ -334,8 +334,15 @@ type.
 
 You can add a whole group in one go: keep picking names and each one stays as a chip until
 you press Add. A role you type applies to everyone in that pick, so a team of eleven
-"players" is one form, not eleven. A role is fixed once someone has joined: to change it,
-remove them from the circle and add them again with the role you want.
+"players" is one form, not eleven. Searching for a surname keeps the list on that surname
+after each pick, so the rest of the family is one click away — or press **Add all** to take
+every match at once. If you would rather the search empty itself after each pick, switch off
+*Keep the search after picking someone*; Stella remembers your choice in this browser.
+
+To change the role of people already in the circle, press **Select** above the members, tick
+the people (or **all** beside a role heading), type the role in the bar at the bottom and
+press *Apply*. Leaving it empty takes the role away. The same bar removes the selected
+people from the circle.
 
 A circle's page shows its people grouped by role — all the players together, the coaches
 together — with anyone who has no role at the end.

@@ -3,7 +3,7 @@ import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
-import { addMember, createCircle, type CircleDeps } from '../domain/circles/circles';
+import { addMember, createCircle, setMembersRole, type CircleDeps } from '../domain/circles/circles';
 import { createDrizzleCircleRepository } from './circle-repository';
 import * as schema from './schema';
 
@@ -124,6 +124,41 @@ describe('memberships', () => {
 		await deps.circles.removeMembership(id, 'jonas');
 		members = await deps.circles.listMembersVisibleTo(viewerU1, id);
 		expect(members.map((m) => m.contactId)).toEqual(['mara']);
+	});
+
+	it('re-roles the chosen members in one go and leaves everyone else alone', async () => {
+		seedContact('ida');
+		seedContact('outsider');
+		const id = await createCircle(deps, creatorU1, { name: 'Choir' });
+		await addMember(deps, creatorU1, id, 'mara', 'alto');
+		await addMember(deps, creatorU1, id, 'jonas', 'alto');
+		await addMember(deps, creatorU1, id, 'ida', 'bass');
+
+		// `outsider` is not in the circle: naming them must not make them join.
+		await setMembersRole(deps, id, ['mara', 'jonas', 'outsider'], ' tenor ');
+
+		const roles = Object.fromEntries(
+			(await deps.circles.listMembersVisibleTo(viewerU1, id)).map((m) => [m.contactId, m.role])
+		);
+		expect(roles).toEqual({ mara: 'tenor', jonas: 'tenor', ida: 'bass' });
+	});
+
+	it('clears the role of the chosen members when the new role is blank', async () => {
+		const id = await createCircle(deps, creatorU1, { name: 'Choir' });
+		await addMember(deps, creatorU1, id, 'mara', 'alto');
+		await setMembersRole(deps, id, ['mara'], '');
+		const [mara] = await deps.circles.listMembersVisibleTo(viewerU1, id);
+		expect(mara.role).toBeNull();
+	});
+
+	it('does not touch a same-named member of another circle', async () => {
+		const choir = await createCircle(deps, creatorU1, { name: 'Choir' });
+		const club = await createCircle(deps, creatorU1, { name: 'Club' });
+		await addMember(deps, creatorU1, choir, 'mara', 'alto');
+		await addMember(deps, creatorU1, club, 'mara', 'captain');
+		await setMembersRole(deps, choir, ['mara'], 'tenor');
+		const [inClub] = await deps.circles.listMembersVisibleTo(viewerU1, club);
+		expect(inClub.role).toBe('captain');
 	});
 
 	it('lists a contact’s circles', async () => {

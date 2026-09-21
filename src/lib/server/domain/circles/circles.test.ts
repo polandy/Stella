@@ -11,6 +11,7 @@ import {
 	listRoleSuggestionsByCircleName,
 	resolveCircleColor,
 	resolveCircleKind,
+	setMembersRole,
 	suggestCircleColor,
 	suggestRoles,
 	type Circle,
@@ -52,6 +53,7 @@ function fakeRepo(existing: Circle | null = null) {
 	const inserted: NewCircle[] = [];
 	const memberships: NewMembership[] = [];
 	const removed: Array<[string, string]> = [];
+	const roleChanges: Array<{ circleId: string; contactIds: string[]; role: string | null; at: number }> = [];
 	let exists = false;
 	// Per-contact membership, for picks that mix people already in the circle with new ones.
 	const existingMembers = new Set<string>();
@@ -68,6 +70,8 @@ function fakeRepo(existing: Circle | null = null) {
 			fresh.forEach((m) => existingMembers.add(m.contactId));
 		},
 		removeMembership: async (cid, contactId) => void removed.push([cid, contactId]),
+		setRoles: async (circleId, contactIds, role, at) =>
+			void roleChanges.push({ circleId, contactIds: [...contactIds], role, at }),
 		listMembersVisibleTo: async () => [],
 		listForContactVisibleTo: async () => [],
 		listRoleUsesVisibleTo: async () => roleUses
@@ -77,6 +81,7 @@ function fakeRepo(existing: Circle | null = null) {
 		inserted,
 		memberships,
 		removed,
+		roleChanges,
 		setExists: (v: boolean) => (exists = v),
 		setExistingMembers: (ids: string[]) => ids.forEach((id) => existingMembers.add(id)),
 		setRoleUses: (v: CircleRoleUse[]) => (roleUses = v)
@@ -191,6 +196,38 @@ describe('addMembers', () => {
 		// The positive control for the skip: jonas proves the call did run and did write.
 		expect(f.memberships.map((m) => m.contactId)).toEqual(['jonas']);
 		expect(f.memberships[0].role).toBe('coach');
+	});
+});
+
+describe('setMembersRole', () => {
+	it('gives every chosen member the one trimmed role, in a single write', async () => {
+		const f = fakeRepo();
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		await setMembersRole(deps, 'circle-1', ['mara', 'jonas', 'ida'], ' coach ');
+		expect(f.roleChanges).toEqual([
+			{ circleId: 'circle-1', contactIds: ['mara', 'jonas', 'ida'], role: 'coach', at: NOW }
+		]);
+	});
+
+	it('takes the role away when it is blank', async () => {
+		const f = fakeRepo();
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		await setMembersRole(deps, 'circle-1', ['mara'], '   ');
+		expect(f.roleChanges[0].role).toBeNull();
+	});
+
+	it('names each member once, even when the pick names one twice', async () => {
+		const f = fakeRepo();
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		await setMembersRole(deps, 'circle-1', ['mara', 'mara', 'jonas'], 'coach');
+		expect(f.roleChanges[0].contactIds).toEqual(['mara', 'jonas']);
+	});
+
+	it('writes nothing for an empty pick', async () => {
+		const f = fakeRepo();
+		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		await setMembersRole(deps, 'circle-1', [], 'coach');
+		expect(f.roleChanges).toHaveLength(0);
 	});
 });
 
