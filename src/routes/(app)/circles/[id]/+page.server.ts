@@ -41,12 +41,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	};
 };
 
-const AddSchema = v.object({
-	contactIds: v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.minLength(1)),
-	role: v.optional(v.pipe(v.string(), v.trim()))
-});
-
-const SetRoleSchema = v.object({
+const PeopleAndRoleSchema = v.object({
 	contactIds: v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.minLength(1)),
 	role: v.optional(v.pipe(v.string(), v.trim()))
 });
@@ -61,7 +56,7 @@ export const actions: Actions = {
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 		const form = await request.formData();
-		const parsed = v.safeParse(AddSchema, {
+		const parsed = v.safeParse(PeopleAndRoleSchema, {
 			contactIds: form.getAll('contactId'),
 			role: form.get('role') || undefined
 		});
@@ -96,20 +91,17 @@ export const actions: Actions = {
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 		const form = await request.formData();
-		const parsed = v.safeParse(SetRoleSchema, {
+		const parsed = v.safeParse(PeopleAndRoleSchema, {
 			contactIds: form.getAll('contactId'),
 			role: form.get('role') ?? undefined
 		});
 		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
 
-		// Only members the actor can see are re-roled; an id from elsewhere changes nothing.
-		const visible = new Set(
-			(await listMembers(getCircleDeps(), viewer, params.id)).map((m) => m.contactId)
-		);
 		await setMembersRole(
 			getCircleDeps(),
+			viewer,
 			params.id,
-			parsed.output.contactIds.filter((id) => visible.has(id)),
+			parsed.output.contactIds,
 			parsed.output.role
 		);
 		throw redirect(303, `/circles/${params.id}`);

@@ -9,6 +9,7 @@
 	import RemoveButton from '$lib/components/RemoveButton.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { circleKindLabel } from '$lib/circles/labels';
+	import { allChosen, toggleEveryone, toggleGroup, toggleMember } from '$lib/circles/selection';
 	import { accentDotStyle } from '$lib/design/tokens';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
@@ -55,26 +56,9 @@
 	const allMembers = $derived(visibleGroups.flatMap((g) => g.members));
 	const chosenMembers = $derived(allMembers.filter((m) => selectedIds.includes(m.contactId)));
 
-	function toggleMember(contactId: string) {
-		selectedIds = selectedIds.includes(contactId)
-			? selectedIds.filter((id) => id !== contactId)
-			: [...selectedIds, contactId];
-	}
-	function groupIds(group: (typeof visibleGroups)[number]): string[] {
-		return group.members.map((m) => m.contactId);
-	}
-	function groupAllChosen(group: (typeof visibleGroups)[number]): boolean {
-		return groupIds(group).every((id) => selectedIds.includes(id));
-	}
-	function toggleGroup(group: (typeof visibleGroups)[number]) {
-		const ids = groupIds(group);
-		selectedIds = groupAllChosen(group)
-			? selectedIds.filter((id) => !ids.includes(id))
-			: [...new Set([...selectedIds, ...ids])];
-	}
-	function toggleEveryone() {
-		selectedIds = chosenMembers.length === allMembers.length ? [] : allMembers.map((m) => m.contactId);
-	}
+	const allIds = $derived(allMembers.map((m) => m.contactId));
+	const idsOf = (group: (typeof visibleGroups)[number]) => group.members.map((m) => m.contactId);
+	const everyoneChosen = $derived(allChosen(allIds, selectedIds));
 	function stopSelecting() {
 		selecting = false;
 		selectedIds = [];
@@ -173,8 +157,8 @@
 								<label class="flex items-center gap-1 text-xs text-primary">
 									<input
 										type="checkbox"
-										checked={groupAllChosen(group)}
-										onchange={() => toggleGroup(group)}
+										checked={allChosen(idsOf(group), selectedIds)}
+										onchange={() => (selectedIds = toggleGroup(selectedIds, idsOf(group)))}
 										aria-label={t('circles.selectRole', { role: group.role ?? t('circles.noRole') })}
 										class="accent-primary"
 									/>
@@ -197,7 +181,7 @@
 											<input
 												type="checkbox"
 												checked={chosen}
-												onchange={() => toggleMember(m.contactId)}
+												onchange={() => (selectedIds = toggleMember(selectedIds, m.contactId))}
 												aria-label={t('circles.selectMember', { name: m.displayName })}
 												class="size-5 shrink-0 accent-primary"
 											/>
@@ -282,8 +266,8 @@
 			<strong class="px-1 text-sm tabular-nums text-fg" aria-live="polite">
 				{chosenMembers.length ? t('circles.selectedCount', { count: chosenMembers.length }) : t('circles.selectNone')}
 			</strong>
-			<Button type="button" size="sm" onclick={toggleEveryone}>
-				{chosenMembers.length === allMembers.length ? t('circles.selectNoOne') : t('circles.selectEveryone')}
+			<Button type="button" size="sm" onclick={() => (selectedIds = toggleEveryone(selectedIds, allIds))}>
+				{everyoneChosen ? t('circles.selectNoOne') : t('circles.selectEveryone')}
 			</Button>
 			<form method="POST" action="?/setRole" use:enhance={roleSaved} class="ml-auto flex flex-wrap items-center gap-2">
 				{#each chosenMembers as m (m.contactId)}

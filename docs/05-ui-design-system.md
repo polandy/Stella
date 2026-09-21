@@ -317,7 +317,11 @@ They must be edited together; `app.css` says so at both blocks.
   with "+n" for the rest. A query that matches nothing gets the empty state, not a blank page. A circle's page
   puts the members in **grids** of avatar cards, one per role under a small uppercase heading
   with its count (no headings when nobody has a role); *Add member* is the card's one
-  disclosure, like every other card in the app. Its header carries *Open in the graph* — the
+  disclosure, like every other card in the app. *Select* in the card header turns each card into
+  a checkbox target (with an *all* box beside every role heading) and raises a **selection bar**
+  fixed to the bottom of the screen: the count, *Everyone / No one*, a role field with the
+  circle's roles as suggestions and *Apply*, and *Remove*. The bar is fixed rather than in the
+  card so it stays in reach in a long circle; leaving select mode drops it and the selection. Its header carries *Open in the graph* — the
   same button a person's People card has, because a circle is a node like any other — and the
   explorer offers *Back to the <name> circle* in return (§2.7).
 - **Empty states** are one component (`EmptyState`): a large icon in the subtle colour, a
@@ -438,7 +442,11 @@ type (same match/rank rules as the People directory and command palette — case
 diacritic-insensitive, prefix matches first), and posts the same hidden field(s) a `<select>`
 would, so it drops into an existing form action unchanged. Single mode replaces the pick on
 choosing someone; multiple mode (interaction participants) keeps chosen people as removable
-chips and lets you keep adding.
+chips and lets you keep adding. With `keepSearch` a multiple picker also keeps the typed
+query after a pick, so a surname keeps listing the rest of the family, and while a query has
+two or more matches the list opens with a *N matches · Add all N* row. Whoever is picked leaves
+the list either way. The switch that turns `keepSearch` off belongs to the form, **above** the
+field: the open list would cover it anywhere below.
 
 With `allowCreate`, the picker also ends a fruitless search: from two typed characters on, a
 row under the list offers *Add "<what you typed>" as a new person*, with a `+` mark and the

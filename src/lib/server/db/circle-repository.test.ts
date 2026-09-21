@@ -135,7 +135,7 @@ describe('memberships', () => {
 		await addMember(deps, creatorU1, id, 'ida', 'bass');
 
 		// `outsider` is not in the circle: naming them must not make them join.
-		await setMembersRole(deps, id, ['mara', 'jonas', 'outsider'], ' tenor ');
+		await setMembersRole(deps, viewerU1, id, ['mara', 'jonas', 'outsider'], ' tenor ');
 
 		const roles = Object.fromEntries(
 			(await deps.circles.listMembersVisibleTo(viewerU1, id)).map((m) => [m.contactId, m.role])
@@ -146,7 +146,7 @@ describe('memberships', () => {
 	it('clears the role of the chosen members when the new role is blank', async () => {
 		const id = await createCircle(deps, creatorU1, { name: 'Choir' });
 		await addMember(deps, creatorU1, id, 'mara', 'alto');
-		await setMembersRole(deps, id, ['mara'], '');
+		await setMembersRole(deps, viewerU1, id, ['mara'], '');
 		const [mara] = await deps.circles.listMembersVisibleTo(viewerU1, id);
 		expect(mara.role).toBeNull();
 	});
@@ -156,7 +156,7 @@ describe('memberships', () => {
 		const club = await createCircle(deps, creatorU1, { name: 'Club' });
 		await addMember(deps, creatorU1, choir, 'mara', 'alto');
 		await addMember(deps, creatorU1, club, 'mara', 'captain');
-		await setMembersRole(deps, choir, ['mara'], 'tenor');
+		await setMembersRole(deps, viewerU1, choir, ['mara'], 'tenor');
 		const [inClub] = await deps.circles.listMembersVisibleTo(viewerU1, club);
 		expect(inClub.role).toBe('captain');
 	});

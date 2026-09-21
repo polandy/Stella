@@ -336,17 +336,23 @@ export async function addMembers(
 /**
  * Give several members of a circle one role at once, or none when `role` is blank. The
  * counterpart of {@link addMembers}, which never re-roles someone already in: this is how an
- * existing member changes role. Each member is named once however often the pick repeats them.
+ * existing member changes role. Each member is named once however often the pick repeats them,
+ * and only those the viewer can see in this circle are touched — an id from elsewhere, or one
+ * that is not a member, is left out rather than written or joined (§3.7).
  */
 export async function setMembersRole(
 	deps: Pick<CircleDeps, 'circles' | 'clock'>,
+	viewer: Viewer,
 	circleId: string,
 	contactIds: readonly string[],
 	role: string | null | undefined
 ): Promise<void> {
-	const unique = [...new Set(contactIds)];
-	if (unique.length === 0) return;
-	await deps.circles.setRoles(circleId, unique, orNull(role), deps.clock.now());
+	const visible = new Set(
+		(await deps.circles.listMembersVisibleTo(viewer, circleId)).map((m) => m.contactId)
+	);
+	const chosen = [...new Set(contactIds)].filter((id) => visible.has(id));
+	if (chosen.length === 0) return;
+	await deps.circles.setRoles(circleId, chosen, orNull(role), deps.clock.now());
 }
 
 export async function removeMember(
