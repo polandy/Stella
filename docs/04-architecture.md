@@ -234,6 +234,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   names instead of an ambiguous number, and a year that can be left blank — which is how a
   birthday without a year (`--MM-DD`, §2.13.1) becomes expressible at all, something the
   native input cannot represent. (docs/05 §5.7.)
+- **Combobox over `<input list>` + `<datalist>`** — Mobile Safari, this project's primary test
+  device, never renders a datalist's suggestions at all, so the native control silently drops
+  the one thing it was chosen for. `src/lib/components/Combobox.svelte` borrows the person
+  search select's listbox/keyboard shell (reusing `src/lib/menu/menu.ts` for arrow-key movement)
+  but stays a plain named `<input>` under the hood: unlike a picker, there is no id to resolve
+  and nothing to require a match against, so the field's own typed text is always the value.
+  (docs/05 §5.7.)
 - **The household review recomputes, and stores only answers** — a pass over everyone could
   have stored its result, so two members working the same list would not see it shift under
   each other. It does not: a run is a question, not a thing, and a stored result set is a

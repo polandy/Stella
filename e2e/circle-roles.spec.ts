@@ -38,6 +38,20 @@ function roleOptions(page: Page): Locator {
 	return page.locator('#circle-roles option');
 }
 
+/**
+ * The circle page's own "Add people" role field: a `Combobox` (`src/lib/components/Combobox.svelte`),
+ * not the `<datalist>` the person page's "Join a circle" role field still is. Opening it is what
+ * mounts its listbox, so callers click it before reading `addRoleOptions`.
+ */
+function addRoleField(page: Page): Locator {
+	return page.locator('form[action="?/addMembers"]').getByLabel('Role (optional)');
+}
+
+/** The suggestions `addRoleField` is offering, once it has been opened. */
+function addRoleOptions(page: Page): Locator {
+	return page.locator('#circle-role-listbox [role="option"]');
+}
+
 test('a circle offers the roles it already uses to the next person joining it, commonest first', async ({
 	page
 }) => {
@@ -51,14 +65,15 @@ test('a circle offers the roles it already uses to the next person joining it, c
 	await addMember(page, 'Pia Grundler', 'rower');
 
 	await page.getByRole('button', { name: 'Add people' }).click();
-	const role = page.locator('form[action="?/addMembers"]').getByLabel('Role (optional)');
+	const role = addRoleField(page);
 	// The field is the one being suggested into, not a lookalike beside it.
-	await expect(role).toHaveAttribute('list', 'circle-roles');
+	await expect(role).toHaveAttribute('aria-controls', 'circle-role-listbox');
 
 	// Two roles from three memberships, and the one two people share leads.
-	await expect(roleOptions(page)).toHaveCount(2);
-	await expect(roleOptions(page).nth(0)).toHaveAttribute('value', 'rower');
-	await expect(roleOptions(page).nth(1)).toHaveAttribute('value', 'cox');
+	await role.click();
+	await expect(addRoleOptions(page)).toHaveCount(2);
+	await expect(addRoleOptions(page).nth(0)).toHaveText('rower');
+	await expect(addRoleOptions(page).nth(1)).toHaveText('cox');
 });
 
 test('on a person’s page the roles follow the circle name typed, in any capitalisation', async ({
@@ -105,9 +120,10 @@ test('one role, not two, when the household has spelled it both ways', async ({ 
 	await addMember(page, 'Yann Oberholzer', 'Guide');
 
 	await page.getByRole('button', { name: 'Add people' }).click();
-	await expect(roleOptions(page)).toHaveCount(1);
+	await addRoleField(page).click();
+	await expect(addRoleOptions(page)).toHaveCount(1);
 	// Three memberships fold into one role, under the spelling this household writes most.
-	await expect(roleOptions(page).nth(0)).toHaveAttribute('value', 'guide');
+	await expect(addRoleOptions(page).nth(0)).toHaveText('guide');
 });
 
 test('a role the circle has never used is still free to type', async ({ page }) => {
@@ -122,7 +138,8 @@ test('a role the circle has never used is still free to type', async ({ page }) 
 	await expect(page.getByTestId('member-grid')).toContainText('bowman');
 
 	await page.getByRole('button', { name: 'Add people' }).click();
-	await expect(roleOptions(page)).toHaveCount(2);
+	await addRoleField(page).click();
+	await expect(addRoleOptions(page)).toHaveCount(2);
 });
 
 test('a circle shows its people grouped by role, commonest first and those without one last', async ({
