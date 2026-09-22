@@ -1332,6 +1332,7 @@
 										/>
 										<span
 											class="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/65 to-transparent px-1.5 pb-1 pt-3 text-left text-[0.6875rem] font-medium text-white"
+											aria-hidden="true"
 										>
 											{photoDate(p.createdAt)}
 										</span>
