@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.17](https://github.com/polandy/Stella/compare/v0.0.16...v0.0.17) (2026-09-22)
+
+
+### Features
+
+* **circles:** change the role of several members at once and keep the search while filling a circle ([#142](https://github.com/polandy/Stella/issues/142)) ([c701701](https://github.com/polandy/Stella/commit/c701701722f6681aaf6ca977f151fef58102c1a6))
+* **contacts:** keep and date a person's past profile photos ([112220a](https://github.com/polandy/Stella/commit/112220a14cea70d4db2e596a7557ee1acb81998b))
+
 ## [0.0.16](https://github.com/polandy/Stella/compare/v0.0.15...v0.0.16) (2026-09-18)
 
 
