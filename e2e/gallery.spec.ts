@@ -1,6 +1,23 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { openPerson, signIn } from './app';
+import { addPerson, openPerson, signIn } from './app';
+import { dayLabel, type DateLanguage } from '../src/lib/dates/labels';
+import { INTL_LOCALES } from '../src/lib/i18n/locales';
+import { createTranslator } from '../src/lib/i18n/translate';
+
+/** The suite runs in English, so the dates it asserts are read the English way. */
+const english: DateLanguage = { t: createTranslator('en'), intlLocale: INTL_LOCALES.en };
+
+/** The day the server will stamp on something written now; CI pins `TZ` so both agree. */
+const today = () => new Date().toISOString().slice(0, 10);
+
+/**
+ * A pattern matching any one of these literal strings, for a web-first assertion that has more
+ * than one acceptable answer — a run that steps over midnight between the upload and reading
+ * the date back is the one case where "today" has two honest answers.
+ */
+const anyOf = (texts: string[]) =>
+	new RegExp(texts.map((text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'));
 
 /*
  * The photo gallery on a person (docs/02 §2.14). Written after the maintainer verified the
@@ -100,4 +117,40 @@ test('wears a gallery photo as the avatar, and gives it back when the photo is r
 	await await expect(page.locator('#section-photos > header')).toContainText('0');
 	await expect(page.getByText('No photos yet.')).toBeVisible();
 	await expect(avatar).toHaveCount(0);
+});
+
+test('dates a gallery photo, on its tile and in the lightbox', async ({ page }) => {
+	const before = today();
+	await openPhotos(page, PHOTOGRAPHED);
+	await addPhotos(page, [file('dated.png')]);
+	const grid = page.getByTestId('photo-grid');
+	const day = anyOf([before, today()].map((d) => dayLabel(english, d)));
+	await expect(grid).toContainText(day);
+
+	await grid.getByRole('button').first().click();
+	await expect(page.getByTestId('photo-lightbox')).toContainText(day);
+});
+
+test('keeps the old profile photo in Photos and says so, but only once there is an old one', async ({
+	page
+}) => {
+	await addPerson(page, 'Mira', 'Wyss');
+	const uploader = page.getByTestId('avatar-uploader');
+	const avatar = uploader.locator('img');
+	const notice = page.getByTestId('toast-notice');
+
+	// A first-ever photo has nothing "previous" to reassure about.
+	await uploader.locator('input[type=file]').setInputFiles(file('young.png'));
+	await expect(avatar).toHaveAttribute('src', /\/media\//);
+	await expect(notice).toHaveCount(0);
+
+	// Replacing it is the case the toast is for — and proves the check above was not just a
+	// locator that never finds a toast at all.
+	const firstSrc = await avatar.getAttribute('src');
+	await uploader.locator('input[type=file]').setInputFiles(file('older.png'));
+	await expect(avatar).not.toHaveAttribute('src', firstSrc ?? '');
+	await expect(notice).toContainText('The previous photo is still in Photos.');
+
+	// The old photo is not gone: it dropped back into the gallery, already on this same page.
+	await expect(page.getByTestId('photo-grid').locator('img')).toHaveCount(2);
 });

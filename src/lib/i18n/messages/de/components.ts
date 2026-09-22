@@ -9,6 +9,7 @@ export const components: ComponentsMessages = {
 	'components.photo.changeShort': 'Ändern',
 	'components.photo.failed':
 		'Das Foto konnte nicht hochgeladen werden. Versuche es mit einem JPEG- oder PNG-Bild.',
+	'components.photo.previousKept': 'Das vorherige Foto bleibt in den Fotos erhalten.',
 	'components.palette.jumpTo': 'Springen zu',
 	'components.palette.placeholder': 'Zu einer Person springen oder etwas tun…',
 	'components.palette.empty': 'Niemand mit diesem Namen.',

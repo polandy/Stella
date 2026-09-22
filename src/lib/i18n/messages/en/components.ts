@@ -7,6 +7,7 @@ export const components = {
 	'components.photo.addShort': 'Add',
 	'components.photo.changeShort': 'Change',
 	'components.photo.failed': 'Could not upload the photo. Try a JPEG or PNG image.',
+	'components.photo.previousKept': 'The previous photo is still in Photos.',
 	'components.palette.jumpTo': 'Jump to',
 	'components.palette.placeholder': 'Jump to a person, or do something…',
 	'components.palette.empty': 'Nobody by that name.',

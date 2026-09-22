@@ -93,6 +93,9 @@
 	let openPhoto = $state<number | null>(null);
 	const openedPhoto = $derived(openPhoto === null ? null : (data.gallery[openPhoto] ?? null));
 
+	/** When a gallery photo was added, in the viewer's language (docs/02 §2.14). */
+	const photoDate = (createdAt: number): string => dayLabel(i18n, new Date(createdAt).toISOString());
+
 	async function uploadPhotos(event: SubmitEvent) {
 		event.preventDefault();
 		const formEl = event.currentTarget as HTMLFormElement;
@@ -1319,7 +1322,7 @@
 									<button
 										type="button"
 										onclick={() => (openPhoto = index)}
-										class="block w-full overflow-hidden rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+										class="relative block w-full overflow-hidden rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 									>
 										<img
 											src={thumbnailUrl(p.id)}
@@ -1327,6 +1330,12 @@
 											class="aspect-square w-full object-cover"
 											loading="lazy"
 										/>
+										<span
+											class="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/65 to-transparent px-1.5 pb-1 pt-3 text-left text-[0.6875rem] font-medium text-white"
+											aria-hidden="true"
+										>
+											{photoDate(p.createdAt)}
+										</span>
 									</button>
 									{#if p.visibility === 'private'}
 										<span
@@ -1452,6 +1461,7 @@
 			<div class="flex items-center justify-between gap-3">
 				<p class="truncate text-sm text-fg">
 					{openedPhoto.caption ?? t('contact.photos.noCaption')}
+					<span class="ml-2 text-xs text-fg-subtle">{photoDate(openedPhoto.createdAt)}</span>
 					{#if openedPhoto.visibility === 'private'}
 						<span class="ml-2 inline-flex items-center gap-1 text-xs text-fg-subtle">
 							<Icon name="private" size={11} />{t('common.privateInline')}

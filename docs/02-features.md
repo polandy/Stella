@@ -946,6 +946,12 @@ mechanism behind two features: correcting a birthday without touching the profil
   notes follow (§2.10); anyone who can see a photo can make it the avatar. Removing a photo
   deletes both stored variants and, if the contact was wearing it, clears the avatar in the
   same transaction. Journal photos (§2.20) stay in the story and never appear here.
+- **Shipped: photo history.** Every gallery photo shows the day it was added, on the tile and
+  next to its caption in the lightbox — legible at a glance for a face that visibly changes
+  year to year, a child especially. Choosing a new avatar for someone who already had one never
+  discards the old one: setting an avatar has always stored it as a fresh gallery photo rather
+  than overwriting anything, so the previous picture simply drops back into the dated gallery,
+  and a toast confirms it at the moment of the change.
 
 ## 2.15 Data portability **[M2]**
 
