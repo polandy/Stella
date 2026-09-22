@@ -49,7 +49,7 @@
 	}
 </script>
 
-<div class="flex flex-col items-center gap-2">
+<div class="flex flex-col items-center gap-2" data-testid="avatar-uploader">
 	<button
 		type="button"
 		onclick={() => input.click()}
