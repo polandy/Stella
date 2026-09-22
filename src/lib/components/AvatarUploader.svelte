@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { processAvatar } from '$lib/image/process-avatar';
+	import { useRemovals } from '$lib/undo/context.svelte';
 	import Avatar from './Avatar.svelte';
 
 	interface Props {
@@ -13,6 +14,7 @@
 	let { contactId, name, avatarPhotoId = null, size = 64 }: Props = $props();
 
 	const t = useTranslate();
+	const removals = useRemovals();
 
 	let input: HTMLInputElement;
 	let busy = $state(false);
@@ -21,6 +23,9 @@
 	async function onPick(event: Event) {
 		const file = (event.currentTarget as HTMLInputElement).files?.[0];
 		if (!file) return;
+		// Captured before the upload settles: replacing an existing photo keeps it in the
+		// gallery (docs/02 §2.14), and only that case earns the reassurance toast.
+		const hadPreviousPhoto = avatarPhotoId !== null;
 		busy = true;
 		error = null;
 		try {
@@ -34,6 +39,7 @@
 			const res = await fetch(`/contacts/${contactId}?/setAvatar`, { method: 'POST', body });
 			if (!res.ok) throw new Error();
 			await invalidateAll();
+			if (hadPreviousPhoto) removals.notify(t('components.photo.previousKept'));
 		} catch {
 			error = t('components.photo.failed');
 		} finally {
