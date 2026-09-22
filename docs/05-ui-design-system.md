@@ -321,7 +321,10 @@ They must be edited together; `app.css` says so at both blocks.
   a checkbox target (with an *all* box beside every role heading) and raises a **selection bar**
   fixed to the bottom of the screen: the count, *Everyone / No one*, a role field with the
   circle's roles as suggestions and *Apply*, and *Remove*. The bar is fixed rather than in the
-  card so it stays in reach in a long circle; leaving select mode drops it and the selection. Its header carries *Open in the graph* — the
+  card so it stays in reach in a long circle; leaving select mode drops it and the selection. On
+  a phone it sits above the bottom tab bar (§5.4), a step below a toast (§5.7), so neither ever
+  hides the other. The role field is a **Combobox** (§5.7), not a plain input, so the suggestions
+  actually show on Mobile Safari. Its header carries *Open in the graph* — the
   same button a person's People card has, because a circle is a node like any other — and the
   explorer offers *Back to the <name> circle* in return (§2.7).
 - **Empty states** are one component (`EmptyState`): a large icon in the subtle colour, a
@@ -414,7 +417,7 @@ in the accent: colour identifies, the foreground reads (§5.2.2).
 
 ## 5.7 Components (design-system inventory)
 
-Buttons (primary/secondary/ghost/danger), inputs & selects, person search select, tag/chip,
+Buttons (primary/secondary/ghost/danger), inputs & selects, person search select, combobox, tag/chip,
 avatar (+ stack), card, section header, modal/sheet, toast, dropdown menu, command
 palette, empty states, timeline item, note card, relationship row, photo grid + lightbox.
 All themeable via semantic tokens, all keyboard-accessible.
@@ -525,6 +528,16 @@ field posts its text either way and the server resolves whatever handles it find
 narrows to the audience of what is being written, so a shared note never offers a private
 person. Used by the note form and the journal composer. The moment composer keeps its own
 richer picker because only a moment may create a person on the fly (§2.22.1).
+
+**Combobox** (`src/lib/components/Combobox.svelte`) is a plain text field with a dropdown of
+existing values — a circle's roles, offered while setting one on a member (§5.5 Circles) — that
+never forces a pick: it posts one named field, exactly like a bare `<input>` would, and typing
+something the list has never seen is always a valid answer. It replaces `<input list>` +
+`<datalist>`, whose dropdown Mobile Safari never shows at all. Opening it (focus, or typing)
+lists what matches, narrowest first (`src/lib/combobox/suggestions.ts`); arrow keys move,
+Enter takes the highlighted value instead of submitting the form around it, Escape closes the
+list. Unlike person search select, there is no separate "create" row and no empty state — the
+field's own text is always the value, a pick is only ever a shortcut to typing it.
 
 **Toasts** (`src/lib/components/Toast.svelte`) sit bottom-left of the content column, one
 card per message, announced as a polite live region. A removal's toast names what went —

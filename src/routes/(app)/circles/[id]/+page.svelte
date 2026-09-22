@@ -4,6 +4,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import Combobox from '$lib/components/Combobox.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import RemoveButton from '$lib/components/RemoveButton.svelte';
@@ -40,9 +41,11 @@
 	const showRoles = $derived(visibleGroups.some((g) => g.role !== null));
 	let addOpen = $state(false);
 	let newMemberIds = $state<string[]>([]);
+	let newRole = $state('');
 	const saved = savedEnhance(removals, t('components.saved'), () => {
 		addOpen = false;
 		newMemberIds = [];
+		newRole = '';
 	});
 
 	/*
@@ -235,16 +238,15 @@
 				</label>
 				<label class="flex flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.roleLabel')}</span>
-					<input
+					<!-- The roles this circle already uses; typing something new is still allowed. -->
+					<Combobox
+						id="circle-role"
 						name="role"
-						list="circle-roles"
+						bind:value={newRole}
+						options={data.roleSuggestions}
 						placeholder={t('circles.rolePlaceholder')}
 						class="w-32 {INPUT}"
 					/>
-					<!-- The roles this circle already uses; typing something new is still allowed. -->
-					<datalist id="circle-roles">
-						{#each data.roleSuggestions as role (role)}<option value={role}></option>{/each}
-					</datalist>
 					{#if newMemberIds.length > 1}
 						<!-- Only worth saying once the one role really does land on several people. -->
 						<span class="pb-2 text-xs text-fg-subtle">{t('circles.roleAppliesToAll')}</span>
@@ -257,9 +259,11 @@
 </main>
 
 {#if selecting}
-	<!-- Fixed to the bottom so it stays in reach however long the circle is. -->
+	<!-- Fixed to the bottom so it stays in reach however long the circle is; offset above the
+	     mobile bottom tab bar (src/routes/(app)/+layout.svelte) so the two never overlap. Stays
+	     below Toast's z-30 (Toast.svelte) so a save/undo toast is never hidden behind it. -->
 	<div
-		class="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+		class="pointer-events-none fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-20 flex justify-center px-4 md:bottom-[max(0.75rem,env(safe-area-inset-bottom))]"
 		data-testid="selection-bar"
 	>
 		<div class="pointer-events-auto flex w-full max-w-4xl flex-wrap items-center gap-2 rounded-app border border-border bg-card p-2.5 shadow-pop">
@@ -274,17 +278,15 @@
 					<input type="hidden" name="contactId" value={m.contactId} />
 				{/each}
 				<label for="bulk-role" class="text-sm text-fg-muted">{t('circles.bulkRole')}</label>
-				<input
+				<Combobox
 					id="bulk-role"
 					name="role"
-					list="bulk-role-suggestions"
 					bind:value={bulkRole}
+					options={data.roleSuggestions}
 					placeholder={t('circles.bulkRoleHint')}
+					placement="above"
 					class="w-44 {INPUT}"
 				/>
-				<datalist id="bulk-role-suggestions">
-					{#each data.roleSuggestions as role (role)}<option value={role}></option>{/each}
-				</datalist>
 				<Button variant="primary" size="sm" disabled={chosenMembers.length === 0}>{t('circles.bulkApply')}</Button>
 			</form>
 			<Button type="button" variant="danger" size="sm" disabled={chosenMembers.length === 0} onclick={removeChosen}>
