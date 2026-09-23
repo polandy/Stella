@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { devices, expect, test } from '@playwright/test';
 import { signIn } from './app';
 
 /*
@@ -9,8 +9,13 @@ import { signIn } from './app';
  * overlay covers the whole viewport, and nothing but its own button removes it. Safari's native
  * dismiss gesture, and the desktop Fullscreen API path, are not something this runner can
  * exercise either way — written after the fix was seen working on the owner's own iPad.
+ *
+ * The app keys the overlay off the device (iPad/iPhone user agent, or a "Mac" with touch points
+ * — iPadOS's own disguise), not off touch capability in general, since Android has no such
+ * dismiss-gesture quirk. `hasTouch` alone would no longer pick the overlay path here, so this
+ * borrows Playwright's iPad user agent string too.
  */
-test.use({ hasTouch: true });
+test.use({ hasTouch: true, userAgent: devices['iPad Pro 11'].userAgent });
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);

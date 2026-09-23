@@ -731,6 +731,14 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   authorisation to go wrong. Stored as a SHA-256 hash like a session, but with a fixed last day
   and a name; the `stella_` prefix makes one recognisable in a leaked log. Under `/api/v1/` the
   cookie is not read, which keeps tokens out of the pages and cookies out of the API (§4.4).
+- **Touch full screen is scoped to iPadOS/iOS Safari by device, not by touch capability** — the
+  graph's app-level full-screen overlay (docs/05 §5.8) exists only for Safari's own
+  swipe-to-dismiss quirk; matching touch broadly instead forced Android and touch laptops to
+  give up the browser's native Fullscreen API for a bug they don't have. There is no
+  feature-detectable signal for the quirk itself, so this is the one user-agent sniff in the
+  codebase: `navigator.userAgent` for `iPad`/`iPhone`, plus the `MacIntel` + touch-points
+  combination iPadOS answers with instead of naming itself
+  (`src/lib/components/graph/GraphExplorer.svelte`).
 
 ## 4.10 Deployment
 

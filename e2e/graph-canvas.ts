@@ -194,9 +194,19 @@ export async function nodeOwners(page: Page, ids: string[]): Promise<Record<stri
 			owners[id] = 'undrawn';
 			continue;
 		}
+		// Checked before awaitHitTestable: an offscreen point never resolves through
+		// elementFromPoint, so waiting for one to become hit-testable would just burn its whole
+		// timeout instead of reporting 'offscreen' at once.
+		const offscreen = await page.evaluate(
+			(p) => p.x < 0 || p.y < 0 || p.x > innerWidth || p.y > innerHeight,
+			point
+		);
+		if (offscreen) {
+			owners[id] = 'offscreen';
+			continue;
+		}
 		await awaitHitTestable(page, point);
 		owners[id] = await page.evaluate((p) => {
-			if (p.x < 0 || p.y < 0 || p.x > innerWidth || p.y > innerHeight) return 'offscreen';
 			const el = document.elementFromPoint(p.x, p.y);
 			return el ? el.tagName.toLowerCase() : 'nothing';
 		}, point);
