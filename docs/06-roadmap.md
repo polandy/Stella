@@ -117,7 +117,9 @@ Goal: sand the edges and add the nice-to-haves.
 - **Change digests:** per-member frequency (daily/weekly/monthly), delivered by email
   and/or signed webhook (HTTP POST). Needs a background scheduler + SMTP config (docs/04).
 - **Graph & UX polish:** "haven't seen in a while" hints, photo reordering, saved graph
-  filters, density/appearance refinements.
+  filters, density/appearance refinements. *Idea, unspecced:* an arrangement that groups
+  people by their role (e.g. within a circle), alongside the existing free/tree/by-circle
+  arrangements (§2.7, docs/05 §5.8).
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
