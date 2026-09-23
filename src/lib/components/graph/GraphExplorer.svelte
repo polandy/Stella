@@ -430,16 +430,34 @@
 	});
 
 	/*
-	 * Full screen is the browser's own, on the whole frame — canvas, toolbar and peek panel
-	 * together — so nothing the map needs is left behind. The state follows the browser rather
-	 * than the button, because Esc leaves it without asking us. Where the browser cannot do it
-	 * (iOS Safari on an element) the button is simply absent.
+	 * Full screen has two implementations, because "leave full screen" means something
+	 * different by input method:
+	 * - Mouse (desktop): the browser's own Fullscreen API on the whole frame — canvas, toolbar
+	 *   and peek panel together — so nothing the map needs is left behind. The state follows
+	 *   the browser rather than the button, because Esc leaves it without asking us; that's
+	 *   fine, nobody presses Esc mid-drag.
+	 * - Touch (phone/tablet): panning the canvas is itself a drag, and iPadOS/iOS Safari reads
+	 *   a downward drag on *any* Fullscreen-API element as "swipe to dismiss" — the same
+	 *   gesture that closes a full-screen video. That happens in Safari's own presentation
+	 *   layer, before any page script sees the touch, so there is nothing here that could
+	 *   intercept or undo it (confirmed against the real thing, not just in theory — a
+	 *   pointerup-triggered re-request never ran, because no pointer event fires for it).
+	 *   Touch devices get an app-level full screen instead: a fixed overlay over the whole
+	 *   viewport that is never handed to the browser, so there is no native gesture that can
+	 *   dismiss it — only the button.
+	 * Where neither is available (no Fullscreen API and no touch) the button is simply absent.
 	 */
+	const usesCssFullscreen =
+		typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 	let canFullscreen = $state(false);
 	let fullscreen = $state(false);
 	const syncFullscreen = () => (fullscreen = document.fullscreenElement === frame);
 
 	async function toggleFullscreen() {
+		if (usesCssFullscreen) {
+			fullscreen = !fullscreen;
+			return;
+		}
 		try {
 			if (document.fullscreenElement === frame) await document.exitFullscreen();
 			else await frame.requestFullscreen();
@@ -452,9 +470,22 @@
 	// this component too, and has no `document`), and a button present there but not here
 	// would be a hydration mismatch.
 	$effect(() => {
-		canFullscreen = document.fullscreenEnabled;
+		canFullscreen = usesCssFullscreen || document.fullscreenEnabled;
+		if (usesCssFullscreen) return;
 		document.addEventListener('fullscreenchange', syncFullscreen);
 		return () => document.removeEventListener('fullscreenchange', syncFullscreen);
+	});
+
+	// The app-level overlay covers the frame, but not whatever the reader scrolled down to
+	// behind it (the rest of a person's page, in the embedded case) — lock the body too, the
+	// way any other full-viewport overlay in the app does (the photo lightbox).
+	$effect(() => {
+		if (!usesCssFullscreen || !fullscreen) return;
+		const previous = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+		return () => {
+			document.body.style.overflow = previous;
+		};
 	});
 
 	onMount(async () => {
@@ -514,10 +545,21 @@
 	});
 </script>
 
-<div bind:this={frame} class="relative h-full w-full overflow-hidden bg-bg">
+<div
+	bind:this={frame}
+	class="h-full w-full overflow-hidden bg-bg"
+	class:relative={!(fullscreen && usesCssFullscreen)}
+	class:fixed={fullscreen && usesCssFullscreen}
+	class:inset-0={fullscreen && usesCssFullscreen}
+	class:z-50={fullscreen && usesCssFullscreen}
+	role={fullscreen && usesCssFullscreen ? 'dialog' : undefined}
+	aria-modal={fullscreen && usesCssFullscreen ? 'true' : undefined}
+>
 	<!-- Cytoscape stamps `position: relative` on its container, which would cancel an
-	     `absolute inset-0` box and collapse the canvas to zero height — size it directly. -->
-	<div bind:this={container} class="h-full w-full"></div>
+	     `absolute inset-0` box and collapse the canvas to zero height — size it directly.
+	     `touch-none`: Cytoscape reads every pan/zoom gesture itself; left to the browser's own
+	     default, a pan can be read as an edge-swipe or chrome-reveal gesture instead. -->
+	<div bind:this={container} class="h-full w-full touch-none"></div>
 
 	{#if !ready}
 		<div class="absolute inset-0 grid place-items-center text-sm text-fg-subtle">

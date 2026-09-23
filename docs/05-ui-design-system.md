@@ -310,8 +310,13 @@ They must be edited together; `app.css` says so at both blocks.
   and there is no second box to keep in sync. The **"Labels" switch** that names every line
   at once sits at the foot of the same menu.
   A **Full screen** button at the end of the toolbar row hands the whole frame — canvas, toolbar
-  and peek panel — to the browser's Fullscreen API, on the graph route and on a person's map
-  alike; Esc leaves it. Where the browser cannot fullscreen an element, the button is absent.
+  and peek panel — to full screen, on the graph route and on a person's map alike. On a mouse
+  it is the browser's own Fullscreen API (Esc leaves it too, which is fine — nobody presses Esc
+  mid-drag). On touch it is an app-level overlay instead: iPadOS/iOS Safari reads a downward
+  drag on a Fullscreen-API element as "swipe to dismiss", the same gesture that closes a
+  full-screen video, and panning the canvas is exactly that drag — so touch never hands the
+  frame to the browser, and only the button leaves. Where neither is available the button is
+  absent.
 - **Circles** — a find-as-you-type field and kind chips over a grid of **cards** (§2.4.2):
   colour dot, name, kind and member count, the description, and a stack of the first four faces
   with "+n" for the rest. A query that matches nothing gets the empty state, not a blank page. A circle's page
