@@ -484,14 +484,26 @@
 	});
 
 	// The app-level overlay covers the frame, but not whatever the reader scrolled down to
-	// behind it (the rest of a person's page, in the embedded case) — lock the body too, the
-	// way any other full-viewport overlay in the app does (the photo lightbox).
+	// behind it (the rest of a person's page, in the embedded case). `document.body` is never
+	// the thing that scrolls here — the shell's own root is already `h-screen overflow-hidden`
+	// and the real scroller is an inner div further down — so lock whichever ancestor actually
+	// has one, wherever this component happens to be mounted.
+	function scrollingAncestor(el: HTMLElement): HTMLElement | null {
+		for (let node = el.parentElement; node; node = node.parentElement) {
+			const overflowY = getComputedStyle(node).overflowY;
+			if (overflowY === 'auto' || overflowY === 'scroll') return node;
+		}
+		return null;
+	}
+
 	$effect(() => {
 		if (!usesCssFullscreen || !fullscreen) return;
-		const previous = document.body.style.overflow;
-		document.body.style.overflow = 'hidden';
+		const scroller = scrollingAncestor(frame);
+		if (!scroller) return;
+		const previous = scroller.style.overflow;
+		scroller.style.overflow = 'hidden';
 		return () => {
-			document.body.style.overflow = previous;
+			scroller.style.overflow = previous;
 		};
 	});
 
