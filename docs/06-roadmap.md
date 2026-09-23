@@ -120,6 +120,11 @@ Goal: sand the edges and add the nice-to-haves.
   filters, density/appearance refinements. *Idea, unspecced:* an arrangement that groups
   people by their role (e.g. within a circle), alongside the existing free/tree/by-circle
   arrangements (§2.7, docs/05 §5.8).
+- *Idea, unspecced:* **photos in every person picker** — search results wherever people are
+  found and picked (Circles' *Add member*, `PersonSearchSelect`, …) show the initials circle
+  even when the person has a photo, because the suggestion data doesn't carry `avatarPhotoId`
+  yet (`Avatar.svelte` only falls back to initials when it's missing). Thread the photo id
+  through so a person is recognisable at a glance there too.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
