@@ -312,10 +312,12 @@ They must be edited together; `app.css` says so at both blocks.
   A **Full screen** button at the end of the toolbar row hands the whole frame — canvas, toolbar
   and peek panel — to full screen, on the graph route and on a person's map alike. On a mouse
   it is the browser's own Fullscreen API (Esc leaves it too, which is fine — nobody presses Esc
-  mid-drag). On touch it is an app-level overlay instead: iPadOS/iOS Safari reads a downward
-  drag on a Fullscreen-API element as "swipe to dismiss", the same gesture that closes a
-  full-screen video, and panning the canvas is exactly that drag — so touch never hands the
-  frame to the browser, and only the button leaves. Where neither is available the button is
+  mid-drag). On iPadOS/iOS Safari it is an app-level overlay instead: that browser reads a
+  downward drag on a Fullscreen-API element as "swipe to dismiss", the same gesture that closes
+  a full-screen video, and panning the canvas is exactly that drag — so those devices never
+  hand the frame to the browser, and only the button leaves. Every other touch device (Android,
+  a touch laptop) keeps the native Fullscreen API like a mouse does. Where neither is available
+  the button is
   absent.
 - **Circles** — a find-as-you-type field and kind chips over a grid of **cards** (§2.4.2):
   colour dot, name, kind and member count, the description, and a stack of the first four faces
