@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.18](https://github.com/polandy/Stella/compare/v0.0.17...v0.0.18) (2026-09-23)
+
+
+### Bug Fixes
+
+* **circles:** keep the selection bar, its dropdown and toasts clear of the mobile tab bar ([677b6bd](https://github.com/polandy/Stella/commit/677b6bd0bbff41294963e3635b3290510d854dd0))
+* **e2e:** stop the canvas-tap flake in person-map.spec.ts ([80d6a4b](https://github.com/polandy/Stella/commit/80d6a4bda9bcbac7fd14fba8ec04b42582f0c85c))
+* **graph:** touch full screen only leaves via its own button ([2834856](https://github.com/polandy/Stella/commit/28348561407dbe9bf1f2dbbdb6d8a285403deafe))
+
 ## [0.0.17](https://github.com/polandy/Stella/compare/v0.0.16...v0.0.17) (2026-09-22)
 
 
