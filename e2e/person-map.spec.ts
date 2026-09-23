@@ -80,6 +80,15 @@ test.describe('on a person’s page', () => {
 		// …and then the page above it grows — no scroll, no resize, no transition reaches the
 		// canvas, just as when a card above unfolds or the server-drawn map gives way.
 		await map(page).evaluate((el) => {
+			// Without this, Chrome's scroll anchoring silently cancels the growth out: with the
+			// map already scrolled flush to the top, it treats the map as the anchor and adjusts
+			// scrollTop to keep it exactly where it was, so it never visually moves and the case
+			// proves nothing.
+			let scroller: HTMLElement | null = el.parentElement;
+			while (scroller && !(scroller.scrollHeight > scroller.clientHeight)) {
+				scroller = scroller.parentElement;
+			}
+			if (scroller) scroller.style.overflowAnchor = 'none';
 			const spacer = document.createElement('div');
 			spacer.style.height = '120px';
 			el.parentElement!.insertBefore(spacer, el);

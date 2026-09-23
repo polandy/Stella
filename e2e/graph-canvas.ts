@@ -53,7 +53,32 @@ export const stateOf = async (page: Page, id: string) => (await drawnNode(page, 
 export async function clickNode(page: Page, id: string): Promise<void> {
 	const { point } = await drawnNode(page, id);
 	if (!point) throw new Error(`the explorer is not drawing ${id}, so it cannot be clicked`);
+	await awaitHitTestable(page, point);
 	await page.mouse.click(point.x, point.y);
+}
+
+/**
+ * Waits until this point actually resolves to something under the canvas, not just the
+ * document root. Right after a DOM mutation near the canvas — content above it growing, a
+ * newly expanded node — Chromium's hit-test tree can lag the layout by more than the couple of
+ * frames a spec naturally waits between actions; the first pointer event dispatched against a
+ * stale tree then lands nowhere (`elementFromPoint` agrees: it answers `<html>`). Playwright's
+ * own click on an addressable element already waits out exactly this — "receives events" is
+ * part of its actionability protocol — but a canvas has no per-node DOM for that machinery to
+ * hook into, so a caller driving it by raw coordinates has to ask for it explicitly. A timeout
+ * here is left for the click itself to fail loudly on, rather than swallowed.
+ */
+async function awaitHitTestable(page: Page, point: { x: number; y: number }): Promise<void> {
+	await page
+		.waitForFunction(
+			([x, y]) => {
+				const el = document.elementFromPoint(x, y);
+				return !!el && el !== document.documentElement && el !== document.body;
+			},
+			[point.x, point.y],
+			{ timeout: 2000 }
+		)
+		.catch(() => {});
 }
 
 /** The names on the lines the renderer is currently emphasising. */
@@ -169,6 +194,7 @@ export async function nodeOwners(page: Page, ids: string[]): Promise<Record<stri
 			owners[id] = 'undrawn';
 			continue;
 		}
+		await awaitHitTestable(page, point);
 		owners[id] = await page.evaluate((p) => {
 			if (p.x < 0 || p.y < 0 || p.x > innerWidth || p.y > innerHeight) return 'offscreen';
 			const el = document.elementFromPoint(p.x, p.y);
