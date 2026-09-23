@@ -436,19 +436,26 @@
 	 *   and peek panel together — so nothing the map needs is left behind. The state follows
 	 *   the browser rather than the button, because Esc leaves it without asking us; that's
 	 *   fine, nobody presses Esc mid-drag.
-	 * - Touch (phone/tablet): panning the canvas is itself a drag, and iPadOS/iOS Safari reads
-	 *   a downward drag on *any* Fullscreen-API element as "swipe to dismiss" — the same
-	 *   gesture that closes a full-screen video. That happens in Safari's own presentation
-	 *   layer, before any page script sees the touch, so there is nothing here that could
-	 *   intercept or undo it (confirmed against the real thing, not just in theory — a
-	 *   pointerup-triggered re-request never ran, because no pointer event fires for it).
-	 *   Touch devices get an app-level full screen instead: a fixed overlay over the whole
-	 *   viewport that is never handed to the browser, so there is no native gesture that can
-	 *   dismiss it — only the button.
-	 * Where neither is available (no Fullscreen API and no touch) the button is simply absent.
+	 * - Touch on iPadOS/iOS Safari: panning the canvas is itself a drag, and Safari's own
+	 *   presentation layer reads a downward drag on *any* Fullscreen-API element as "swipe to
+	 *   dismiss" — the same gesture that closes a full-screen video — before any page script
+	 *   sees the touch, so there is nothing here that could intercept or undo it (confirmed
+	 *   against the real thing, not just in theory — a pointerup-triggered re-request never
+	 *   ran, because no pointer event fires for it). Every browser on iOS is Safari's WebKit
+	 *   underneath, so this is keyed off the device, not the nominal browser. These devices get
+	 *   an app-level full screen instead: a fixed overlay over the whole viewport that is never
+	 *   handed to the browser, so there is no native gesture that can dismiss it — only the
+	 *   button. Android and other touch devices don't have this quirk, so they keep the native
+	 *   Fullscreen API like a mouse does.
+	 * Where neither is available (no Fullscreen API and not one of these devices) the button is
+	 * simply absent.
 	 */
 	const usesCssFullscreen =
-		typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+		typeof window !== 'undefined' &&
+		(/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+			// iPadOS reports itself as a Mac; a Mac never has touch points, so this still only
+			// matches a real iPad.
+			(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 	let canFullscreen = $state(false);
 	let fullscreen = $state(false);
 	const syncFullscreen = () => (fullscreen = document.fullscreenElement === frame);
