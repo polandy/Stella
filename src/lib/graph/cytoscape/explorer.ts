@@ -10,7 +10,7 @@ import type {
 } from 'cytoscape';
 import type { CyElement } from './elements';
 import type { Arrangement, Size } from '../layout/geometry';
-import { packGroups } from '../layout/group-blocks';
+import { frameAround, packGroups } from '../layout/group-blocks';
 import { placeNewcomers, type Placement, type Point } from './placement';
 import { frameBelow, widenToReveal, type Box } from './viewport';
 import { BOW_FIELD, BOWED_CLASS, TUCKED_CLASS, type CyStyle } from './stylesheet';
@@ -154,6 +154,16 @@ function boxAround(nodes: { at: Point; size: Size }[]): Box {
 	};
 }
 
+/** The box around both. */
+function union(a: Box, b: Box): Box {
+	return {
+		x1: Math.min(a.x1, b.x1),
+		y1: Math.min(a.y1, b.y1),
+		x2: Math.max(a.x2, b.x2),
+		y2: Math.max(a.y2, b.y2)
+	};
+}
+
 /**
  * The controller over an existing core. Split from {@link createExplorer} so the lifecycle can
  * be exercised against a headless core: what matters here is not the drawing but that nothing
@@ -240,10 +250,16 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	const glideTo = (positions: ReadonlyMap<string, Point>, glide: boolean) => {
 		const placeOf = (node: NodeSingular) => positions.get(node.id()) ?? { ...node.position() };
 		const shown = people().filter((n) => !n.hasClass('filtered-out')) as NodeCollection;
+		const boxOf = (nodes: NodeCollection) =>
+			boxAround(nodes.map((n) => ({ at: placeOf(n), size: sizeOf(n) })));
+		// A group's frame reaches past its members, its name above them (docs/02 §2.7).
+		const frames = shown
+			.parents()
+			.map((frame) => frameAround(boxOf(frame.children().intersection(shown) as NodeCollection)));
 		const view =
 			shown.nonempty() && cy.width() > 0 && cy.height() > 0
 				? frameBelow(
-						boxAround(shown.map((n) => ({ at: placeOf(n), size: sizeOf(n) }))),
+						[boxOf(shown), ...frames].reduce(union),
 						{ width: cy.width(), height: cy.height() },
 						topInset,
 						FRAME_PADDING,

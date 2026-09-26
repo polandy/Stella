@@ -725,7 +725,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   place of the individual members. The single line from the circle to the group and a bundle
   between two groups are drawn thicker the more they carry, and a bundle between groups always
   shows its count. The lines a bundle stands for are **tucked away** — hidden, not removed — and
-  come back while their member (or group) is selected or they lie on a traced path.
+  come back while their member (or group) is selected or they lie on a traced path. Framing
+  the map takes in each frame and its name, so a group near the top stays clear of the toolbar.
 - **Search & focus:** an in-canvas search field; selecting a result smoothly pans/zooms to
   that node and pulses it. The suggested names are drawn above the rest of the toolbar: on a
   narrow window the chip row wraps underneath the field, and a name a chip covers cannot be

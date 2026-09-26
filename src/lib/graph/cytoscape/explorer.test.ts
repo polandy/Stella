@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import cytoscape, { type Core, type Layouts } from 'cytoscape';
 import { explorerFromCore } from './explorer';
 import type { CyElement } from './elements';
+import { frameAround } from '../layout/group-blocks';
 
 /*
  * The controller's lifecycle, exercised against a headless Cytoscape core — the same core the
@@ -509,6 +510,37 @@ describe('explorerFromCore', () => {
 				...at.flatMap((a) => at.map((b) => Math.hypot(a.x - b.x, a.y - b.y)))
 			);
 			expect(spread).toBeLessThan(400);
+		});
+
+		it('frames the map with a group\'s name clear of the toolbar', () => {
+			const cy = cytoscape({
+				headless: true,
+				styleEnabled: true,
+				style: [{ selector: 'node', style: { width: 30, height: 30 } }]
+			});
+			// A canvas to frame on, which a headless core does not measure.
+			cy.width = () => 800;
+			cy.height = () => 600;
+			const TOOLBAR = 60;
+			const explorer = explorerFromCore(cy, {
+				reducedMotion: true,
+				topInset: TOOLBAR,
+				onTapNode: () => {},
+				onTapBackground: () => {}
+			});
+			explorer.setGraph([group('kids'), inGroup('lena', 'kids'), inGroup('juri', 'kids')]);
+
+			explorer.arrangeAt({
+				positions: new Map([
+					['lena', { x: 0, y: 0 }],
+					['juri', { x: 60, y: 0 }]
+				]),
+				bows: new Map()
+			});
+
+			const members = cy.$id('lena').union(cy.$id('juri')).boundingBox({ includeLabels: true });
+			const top = frameAround(members).y1 * cy.zoom() + cy.pan().y;
+			expect(top).toBeGreaterThanOrEqual(TOOLBAR);
 		});
 
 		it('lights a selected group with its members and their lines to the rest', () => {

@@ -64,3 +64,24 @@ export function packGroups(
 	}
 	return packed;
 }
+
+/** A box on the canvas, from its top-left to its bottom-right corner. */
+interface Extent {
+	x1: number;
+	y1: number;
+	x2: number;
+	y2: number;
+}
+
+/**
+ * The room a group's frame fills around the box its members take: framing the map on the
+ * members alone would tuck the frame's name under whatever floats above the canvas.
+ */
+export function frameAround(members: Extent): Extent {
+	return {
+		x1: members.x1 - FRAME.padding,
+		y1: members.y1 - FRAME.padding - FRAME.label,
+		x2: members.x2 + FRAME.padding,
+		y2: members.y2 + FRAME.padding
+	};
+}

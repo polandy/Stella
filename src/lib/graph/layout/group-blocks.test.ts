@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { groupBlock, packGroups } from './group-blocks';
+import { frameAround, groupBlock, packGroups } from './group-blocks';
 import type { Point } from './geometry';
 
 /*
@@ -55,5 +55,17 @@ describe('packGroups', () => {
 		const packed = packGroups(scattered, [['a', 'b', 'c', 'd']], size);
 
 		expect(packed.get('loner')).toEqual({ x: 1000, y: 1000 });
+	});
+});
+
+describe('frameAround', () => {
+	it('reaches past the members by the padding, and higher still by the name on top', () => {
+		const members = { x1: 0, y1: 0, x2: 200, y2: 100 };
+		const frame = frameAround(members);
+
+		expect(frame.x1).toBeLessThan(members.x1);
+		expect(frame.x2).toBeGreaterThan(members.x2);
+		expect(frame.y2).toBeGreaterThan(members.y2);
+		expect(members.y1 - frame.y1).toBeGreaterThan(frame.y2 - members.y2);
 	});
 });
