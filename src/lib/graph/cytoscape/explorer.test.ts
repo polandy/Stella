@@ -400,4 +400,128 @@ describe('explorerFromCore', () => {
 			explorer.arrangeAt({ positions: new Map([['a', { x: 1, y: 1 }]]), bows: new Map() });
 		}).not.toThrow();
 	});
+
+	describe('with the circles grouped by role', () => {
+		const group = (id: string): CyElement => ({
+			group: 'nodes',
+			data: { id, kind: 'group' },
+			classes: 'role-group'
+		});
+		const inGroup = (id: string, parent: string): CyElement => ({
+			group: 'nodes',
+			data: { id, parent },
+			classes: 'person'
+		});
+		const tucked = (source: string, target: string): CyElement => ({
+			...edge(source, target),
+			classes: 'tucked'
+		});
+		const club = [node('swim'), node('andy'), inGroup('lena', 'kids'), inGroup('juri', 'kids')];
+
+		it('moves people already on the canvas into a group, and out again, where they stood', () => {
+			const cy = core();
+			const explorer = controller(cy);
+			explorer.setGraph([node('swim'), node('lena'), node('juri'), edge('swim', 'lena')]);
+			const before = positionsOf(cy, ['lena', 'juri']);
+
+			explorer.setGraph([group('kids'), ...club, edge('swim', 'lena')]);
+			expect(cy.$id('lena').parent().first().id()).toBe('kids');
+			expect(cy.$id('swim-lena').nonempty()).toBe(true);
+			expect(positionsOf(cy, ['lena', 'juri'])).toEqual(before);
+
+			explorer.setGraph([node('swim'), node('lena'), node('juri'), edge('swim', 'lena')]);
+			expect(cy.$id('kids').empty()).toBe(true);
+			expect(cy.$id('lena').parent().empty()).toBe(true);
+			expect(positionsOf(cy, ['lena', 'juri'])).toEqual(before);
+		});
+
+		it('names a member\'s tucked-away lines when the member is selected, keeping the group lit', () => {
+			const cy = core();
+			const explorer = controller(cy);
+			explorer.setGraph([group('kids'), ...club, tucked('swim', 'lena'), tucked('swim', 'juri')]);
+
+			explorer.highlightNeighborhood('lena');
+
+			expect(cy.$id('swim-lena').hasClass('highlight')).toBe(true);
+			expect(cy.$id('swim-juri').hasClass('highlight')).toBe(false);
+			expect(cy.$id('kids').hasClass('faded')).toBe(false);
+		});
+
+		it('keeps a circle\'s tucked-away lines tucked away when the circle is selected', () => {
+			const cy = core();
+			const explorer = controller(cy);
+			explorer.setGraph([group('kids'), ...club, tucked('swim', 'lena'), tucked('swim', 'juri')]);
+
+			explorer.highlightNeighborhood('swim');
+
+			expect(cy.$id('swim-lena').hasClass('highlight')).toBe(false);
+			expect(cy.$id('lena').hasClass('faded')).toBe(false);
+		});
+
+		it('stands a group\'s members together when the map is arranged freely', () => {
+			// Frames are sized from their members, so this core needs the sizes a style gives.
+			const cy = cytoscape({
+				headless: true,
+				styleEnabled: true,
+				style: [{ selector: 'node', style: { width: 30, height: 30 } }]
+			});
+			const explorer = controller(cy);
+			const far = ['m1', 'm2', 'm3', 'm4'];
+			explorer.setGraph([
+				group('kids'),
+				node('swim'),
+				...far.map((id) => inGroup(id, 'kids')),
+				// Each member hangs off a different stranger, pulling the four apart.
+				...far.flatMap((id) => [node(`${id}-friend`), edge(id, `${id}-friend`)]),
+				...far.map((id) => tucked('swim', id))
+			]);
+
+			explorer.arrange();
+
+			const at = positionsOf(cy, far);
+			const spread = Math.max(
+				...at.flatMap((a) => at.map((b) => Math.hypot(a.x - b.x, a.y - b.y)))
+			);
+			expect(spread).toBeLessThan(400);
+		});
+
+		it('lights a selected group with its members and their lines to the rest', () => {
+			const cy = core();
+			const explorer = controller(cy);
+			const bundle: CyElement = {
+				group: 'edges',
+				data: { id: 'swim>kids', source: 'swim', target: 'kids' },
+				classes: 'bundle'
+			};
+			explorer.setGraph([
+				group('kids'),
+				...club,
+				bundle,
+				tucked('swim', 'lena'),
+				{ ...tucked('andy', 'juri') }
+			]);
+
+			explorer.highlightNeighborhood('kids');
+
+			expect(cy.$id('kids').hasClass('selected')).toBe(true);
+			expect(cy.$id('lena').hasClass('faded')).toBe(false);
+			expect(cy.$id('andy-juri').hasClass('highlight')).toBe(true);
+			expect(cy.$id('andy').hasClass('faded')).toBe(false);
+			// The bundle already joins the group to its circle; a line per member would only repeat it.
+			expect(cy.$id('swim>kids').hasClass('highlight')).toBe(true);
+			expect(cy.$id('swim-lena').hasClass('highlight')).toBe(false);
+		});
+
+		it('keeps the group of a person on a traced path lit', () => {
+			const cy = core();
+			const explorer = controller(cy);
+			explorer.setGraph([group('kids'), ...club, edge('andy', 'lena')]);
+
+			explorer.highlightPath(['andy', 'lena']);
+
+			expect(cy.$id('kids').hasClass('faded')).toBe(false);
+			expect(cy.$id('andy-lena').hasClass('onpath')).toBe(true);
+		});
+	});
 });
+

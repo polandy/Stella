@@ -23,6 +23,12 @@ export const search = {
 	'graph.connectionPath': 'Connection path',
 	'graph.labels': 'Labels',
 	'graph.labels.hint': 'Name every line with its relationship',
+	'graph.groupByRole': 'Group by role',
+	'graph.groupByRole.hint': 'Everyone with the same role in a circle stands in one group, on one line to the circle',
+	'graph.innerLinks': 'Links within groups',
+	'graph.innerLinks.hint': 'Show family, friends and colleagues among the people of a group',
+	'graph.group.label': (p: { role: string; count: number }) => `${p.role} · ${p.count}`,
+	'graph.bundle.count': (p: { count: number }) => `${p.count} links`,
 	'graph.arrange': 'Arrange',
 	'graph.arrange.current': (p: { name: string }) => `Arrange: ${p.name}`,
 	'graph.arrange.force': 'Free',
@@ -41,6 +47,9 @@ export const search = {
 	'graph.peek.expand': 'Expand connections',
 	'graph.peek.openProfile': 'Open profile',
 	'graph.peek.openCircle': 'Open the circle',
+	'graph.peek.roleGroup': 'Role in the circle',
+	'graph.peek.inCircle': (p: { name: string }) => `in ${p.name}`,
+	'graph.peek.showIndividually': 'Show individually',
 	'graph.peek.tip':
 		'Tip: click a selected node to expand it, or use the connection path to see how two people are linked.',
 	// The map on a person's page reaches two steps and no further (docs/05 §5.5).

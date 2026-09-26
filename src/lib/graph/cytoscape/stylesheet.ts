@@ -5,6 +5,8 @@ import type { Palette } from './theme';
 /** The class and data field a bent line carries; the controller sets them, this draws them. */
 export const BOWED_CLASS = 'bowed';
 export const BOW_FIELD = 'bow';
+/** The class a line a bundle stands for carries (docs/02 §2.7); drawn only while selected. */
+export const TUCKED_CLASS = 'tucked';
 
 /*
  * Build the Cytoscape stylesheet from a resolved Palette (docs/05 §5.8). Pure: palette in,
@@ -102,6 +104,34 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'text-halign': 'center'
 			}
 		},
+		// ── Groups by role (docs/02 §2.7) — a frame around the members ─────────
+		// Cytoscape sizes a compound node around its members; the role and count sit on top.
+		{
+			selector: 'node.role-group',
+			style: {
+				shape: 'round-rectangle',
+				'background-color': mixHex(p.membership, 8, p.card),
+				'background-opacity': 0.7,
+				'border-color': p.membership,
+				'border-width': 1.5,
+				padding: '16px',
+				label: 'data(label)',
+				color: p.membership,
+				'font-size': 11,
+				'font-weight': 600,
+				'font-family': p.fontSans,
+				'text-valign': 'top',
+				'text-halign': 'center',
+				'text-margin-y': -4,
+				'text-background-color': p.bg,
+				'text-background-opacity': 0.85,
+				'text-background-shape': 'roundrectangle',
+				'text-background-padding': '3px',
+				'compound-sizing-wrt-labels': 'include',
+				'transition-property': 'opacity, border-width, border-color',
+				'transition-duration': '150ms'
+			}
+		},
 		// ── Edges ─────────────────────────────────────────────────────────────
 		{
 			selector: 'edge',
@@ -154,6 +184,12 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'arrow-scale': 0.8
 			}
 		},
+		// One line standing in for several (docs/02 §2.7): thicker the more it carries, and it
+		// always says how many, since that count is the one thing the bundle adds.
+		{
+			selector: 'edge.bundle',
+			style: { width: 'mapData(count, 2, 12, 3, 7)', opacity: 0.85, 'text-opacity': 1 }
+		},
 		// A line an arrangement bends around whoever stands in its way (docs/05 §5.8): its bow
 		// is the control point's sideways offset, set by the controller.
 		{
@@ -172,6 +208,13 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 		{ selector: 'edge.highlight, edge.onpath', style: { 'text-opacity': 1 } },
 		{ selector: 'node.selected', style: { 'border-color': p.focusRing, 'border-width': 5 } },
 		{ selector: '.faded', style: { opacity: 0.12 } },
+		// A line a bundle stands for, or a link inside a group with those switched off, shows
+		// only while its node is selected or it is on a traced path.
+		{ selector: `edge.${TUCKED_CLASS}`, style: { display: 'none' } },
+		{
+			selector: `edge.${TUCKED_CLASS}.highlight, edge.${TUCKED_CLASS}.onpath`,
+			style: { display: 'element' }
+		},
 		{ selector: '.filtered-out', style: { display: 'none' } },
 		{
 			selector: '.onpath',

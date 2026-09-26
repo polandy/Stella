@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { toCytoscapeElements } from './elements';
 import { avatarAccent } from '../../avatar';
+import { groupByRole } from '../model/role-groups';
 import type { GraphModel } from '../model/types';
 
 /*
@@ -60,5 +61,56 @@ describe('toCytoscapeElements', () => {
 		// mara touches r1 and m1 (dangling is dropped) → degree 2
 		expect(node('mara')?.data.degree).toBe(2);
 		expect(node('kegel')?.data.degree).toBe(1);
+	});
+});
+
+describe('toCytoscapeElements with the circles grouped by role', () => {
+	const club: GraphModel = {
+		nodes: [
+			{ id: 'swim', kind: 'circle', label: 'Swim club' },
+			{ id: 'lena', kind: 'person', label: 'Lena' },
+			{ id: 'juri', kind: 'person', label: 'Juri' },
+			{ id: 'andy', kind: 'person', label: 'Andy' }
+		],
+		edges: [
+			{ id: 'm-lena', source: 'swim', target: 'lena', kind: 'membership', label: 'Child' },
+			{ id: 'm-juri', source: 'swim', target: 'juri', kind: 'membership', label: 'Child' },
+			{ id: 'father', source: 'andy', target: 'lena', kind: 'relationship', category: 'family' }
+		]
+	};
+	const grouping = groupByRole(club, { innerLinks: true });
+	const els = toCytoscapeElements(club, {
+		grouping: {
+			grouping,
+			groupLabel: (g) => `${g.role} · ${g.memberIds.length}`,
+			bundleLabel: (b) => `${b.edgeIds.length} links`
+		}
+	});
+	const byId = (id: string) => els.find((e) => e.data.id === id);
+	const group = grouping.groups[0];
+
+	it('draws each group as a frame its members stand in', () => {
+		expect(byId(group.id)).toMatchObject({
+			group: 'nodes',
+			classes: 'role-group',
+			data: { label: 'Child · 2', kind: 'group' }
+		});
+		expect(byId('lena')?.data.parent).toBe(group.id);
+		expect(byId('andy')?.data.parent).toBeUndefined();
+	});
+
+	it('draws the line standing in for others, named with what it carries', () => {
+		const bundle = grouping.bundles[0];
+
+		expect(byId(bundle.id)).toMatchObject({
+			group: 'edges',
+			classes: 'bundle',
+			data: { source: 'swim', target: group.id, kind: 'membership', label: '2 links', count: 2 }
+		});
+	});
+
+	it('tucks away the lines a bundle stands for, and leaves the rest', () => {
+		expect(byId('m-lena')?.classes).toContain('tucked');
+		expect(byId('father')?.classes).not.toContain('tucked');
 	});
 });

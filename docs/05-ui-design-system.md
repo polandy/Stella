@@ -717,6 +717,15 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 
   None of the three is a mode: an expand afterwards still only adds people around the one
   expanded, and the choice is not remembered across a reload (saved graph settings are M3).
+- **Groups by role** (§2.7): a group is a **frame** (a Cytoscape compound node) around its
+  members — the circle colour, faintly tinted, with the role and count on top — and its members
+  stand in it as a block, in rows as near square as they go (`layout/group-blocks.ts`). The
+  force layout spreads a group's members like anybody else's, so *Free* packs each group into a
+  block where its members came to rest; *By circle* stands each block on its circle's ring in
+  place of the individual members. The single line from the circle to the group and a bundle
+  between two groups are drawn thicker the more they carry, and a bundle between groups always
+  shows its count. The lines a bundle stands for are **tucked away** — hidden, not removed — and
+  come back while their member (or group) is selected or they lie on a traced path.
 - **Search & focus:** an in-canvas search field; selecting a result smoothly pans/zooms to
   that node and pulses it. The suggested names are drawn above the rest of the toolbar: on a
   narrow window the chip row wraps underneath the field, and a name a chip covers cannot be

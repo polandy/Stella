@@ -721,6 +721,38 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   the forces between people, as a **family tree** (one row per generation, partners side by
   side, children under their parents), or **by circle** (each circle ringed by its members);
   the map glides into the new arrangement (docs/05 §5.8).
+- **Group circles by role:** a big circle — a school class, a sports club — hangs dozens of
+  people off one node, each on a line of their own, and the map turns into a starburst. A
+  **Group by role** switch in the Filter menu (off by default, remembered per device) draws
+  everyone who holds the same role in a circle as **one group** — a framed block titled with
+  the role and its count (*Child · 8*) — joined to the circle by a single line.
+  - A group needs **at least two people**: a role only one person holds stays an ordinary
+    node on its own line, since a frame around one face adds nothing. Members without a role
+    group under *No role* by the same rule.
+  - Someone in several circles joins the group of the **biggest** of them (the rule *By
+    circle* uses too, docs/05 §5.8); their other memberships stay individual lines.
+  - **Links inside a group** (siblings in a class, a couple among the parents) are drawn
+    between the members, behind a second switch, **Links within groups**, on by default.
+    Switched off, they still show for a selected member.
+  - **Links to people outside every group** (*Father of Lena*) run to the member, not to the
+    frame, so the map still says exactly who is connected — and a traced connection path
+    stays exact.
+  - **Links between two groups** (the parents to the children) are **bundled** into one line
+    per kind of link, carrying the count (*5 links*); a single one stays as it is. Selecting a
+    member or a group shows the individual lines behind it, as selecting always names a node's
+    connections — except a group's own line to its circle, which a line per member would only
+    repeat. Selecting the circle keeps its one line per group.
+  - **Selecting a group** opens the peek panel on it: the role, the circle, its members (each
+    a link to their page), **Show individually** — which dissolves just this group while the
+    rest stay grouped — and *Open the circle*.
+  - Grouping reads what is shown: with the Circles chip off there are no membership lines to
+    bundle, so there are no groups. It applies to *Free* and *By circle* — where the groups
+    stand around their circle in place of the individual members — and not to *Tree*, whose
+    rows are generations, not circles.
+  - People joining a group — the switch turned on, a circle expanded — make the map settle
+    afresh in the current arrangement (a glide, docs/05 §5.8), because a group's members must
+    stand together; any other expand still moves only the newcomers. Leaving a group moves
+    nobody.
 - **Performance:** the server sends the whole *visible* graph once as a slim, access-scoped
   snapshot (ids/labels + typed edges — not full records); the browser then builds the ego view
   and does every expand/focus/path **client-side with no further requests**. This pushes the

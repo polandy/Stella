@@ -117,9 +117,8 @@ Goal: sand the edges and add the nice-to-haves.
 - **Change digests:** per-member frequency (daily/weekly/monthly), delivered by email
   and/or signed webhook (HTTP POST). Needs a background scheduler + SMTP config (docs/04).
 - **Graph & UX polish:** "haven't seen in a while" hints, photo reordering, saved graph
-  filters, density/appearance refinements. *Idea, unspecced:* an arrangement that groups
-  people by their role (e.g. within a circle), alongside the existing free/tree/by-circle
-  arrangements (§2.7, docs/05 §5.8).
+  filters, density/appearance refinements. ~~Group a circle's members by role~~ — shipped:
+  a *Group by role* switch in the explorer's Filter menu (§2.7).
 - *Idea, unspecced:* **photos in every person picker** — search results wherever people are
   found and picked (Circles' *Add member*, `PersonSearchSelect`, …) show the initials circle
   even when the person has a photo, because the suggestion data doesn't carry `avatarPhotoId`

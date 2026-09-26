@@ -769,6 +769,10 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
      locally — no per-interaction requests. The same pure code also runs server-side over
      any source; only the source implementation differs (in-memory in the browser). This
      deliberately pushes load to the client and fits family scale.
+   - `groupByRole` (`model/role-groups.ts`) works out the groups by role (docs/02 §2.7) from
+     what is shown: which members stand in which group, the lines standing in for others
+     (circle → group, group ↔ group) and the edges they tuck away. The adapter turns a group
+     into a compound node and a bundle into an edge; nothing in the model changes shape.
    - Derived kinship (§2.4.1) is computed by the same engine the person page uses and merged
      as its own edge kind: `deriveKinshipEdges` folds each person's inferred relatives into
      one edge per pair, which the bulk read appends to the snapshot. Nothing else in the
