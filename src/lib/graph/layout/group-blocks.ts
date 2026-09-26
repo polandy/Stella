@@ -7,9 +7,9 @@ import type { Point, SizeOf } from './geometry';
 
 /**
  * The room a group's frame takes beyond its members: its padding on every side and the name
- * drawn on top (the stylesheet's `node.role-group`).
+ * drawn on top. The stylesheet's `node.role-group` draws the padding from here.
  */
-const FRAME = { padding: 16, label: 24 } as const;
+export const FRAME = { padding: 16, label: 24 } as const;
 /** The least room between two members' names. */
 const GAP = 30;
 

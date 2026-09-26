@@ -1,5 +1,6 @@
 import { mixHex } from '../../design/color';
 import { AVATAR_TINT_PERCENT } from '../../design/tokens';
+import { FRAME } from '../layout/group-blocks';
 import type { Palette } from './theme';
 
 /** The class and data field a bent line carries; the controller sets them, this draws them. */
@@ -114,7 +115,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'background-opacity': 0.7,
 				'border-color': p.membership,
 				'border-width': 1.5,
-				padding: '16px',
+				padding: `${FRAME.padding}px`,
 				label: 'data(label)',
 				color: p.membership,
 				'font-size': 11,
