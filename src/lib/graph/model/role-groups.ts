@@ -54,9 +54,16 @@ const MIN_GROUP_SIZE = 2;
 /** Nor is one line worth bundling. */
 const MIN_BUNDLE_SIZE = 2;
 
+const GROUP_ID_PREFIX = 'rolegroup:';
+
 /** The id a group keeps across rebuilds, so a dissolved one is found again. */
 function groupId(circleId: string, role: CircleRole): string {
-	return `rolegroup:${circleId}:${role === null ? '-' : `=${role}`}`;
+	return `${GROUP_ID_PREFIX}${circleId}:${role === null ? '-' : `=${role}`}`;
+}
+
+/** Whether an id names a group rather than a person or circle — a selection can outlive it. */
+export function isRoleGroupId(id: string): boolean {
+	return id.startsWith(GROUP_ID_PREFIX);
 }
 
 const roleOf = (edge: GraphEdge): CircleRole => edge.label ?? null;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { groupByRole, linksOfGrouped } from './role-groups';
+import { groupByRole, isRoleGroupId, linksOfGrouped } from './role-groups';
 import type { GraphEdge, GraphModel, GraphNode } from './types';
 
 /*
@@ -156,6 +156,14 @@ describe('groupByRole', () => {
 
 		expect(new Set(once).size).toBe(once.length);
 		expect(again).toEqual(once);
+	});
+
+	it('tells a group id from a person or circle id', () => {
+		const [children] = groupByRole(club, on).groups;
+
+		expect(isRoleGroupId(children.id)).toBe(true);
+		expect(isRoleGroupId('swim')).toBe(false);
+		expect(isRoleGroupId('lena')).toBe(false);
 	});
 
 	it('forms no groups without membership lines', () => {

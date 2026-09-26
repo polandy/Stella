@@ -33,6 +33,7 @@
 	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
 	import {
 		groupByRole,
+		isRoleGroupId,
 		linksOfGrouped,
 		type EdgeBundle,
 		type RoleGroup
@@ -380,7 +381,7 @@
 	});
 	// A group dissolved, or grouping switched off, takes its selection with it.
 	$effect(() => {
-		if (selected?.startsWith('rolegroup:') && !peekGroup) selected = null;
+		if (selected && isRoleGroupId(selected) && !peekGroup) selected = null;
 	});
 	// Selection / path highlighting.
 	$effect(() => {
