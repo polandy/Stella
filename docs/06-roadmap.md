@@ -125,6 +125,12 @@ Goal: sand the edges and add the nice-to-haves.
   even when the person has a photo, because the suggestion data doesn't carry `avatarPhotoId`
   yet (`Avatar.svelte` only falls back to initials when it's missing). Thread the photo id
   through so a person is recognisable at a glance there too.
+- *TODO, concept first:* **context hints for people without a last name** — some people are
+  only known by first name and where they belong, so a search result for them should say who
+  they are: *Sister of Hans Meyer*, *in the circle Class 9a*. Work out a concept before
+  building: which context wins when there are several (relationship vs. circle, which one),
+  where the hint shows (search, person pickers, the graph?), and how it stays access-scoped
+  so it never names a person or circle the viewer may not see (§2.10).
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
