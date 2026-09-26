@@ -435,6 +435,32 @@ describe('explorerFromCore', () => {
 			expect(positionsOf(cy, ['lena', 'juri'])).toEqual(before);
 		});
 
+		it('tucks a line already drawn away, and brings it back, when the grouping changes', () => {
+			const cy = core();
+			const explorer = controller(cy);
+			explorer.setGraph([node('swim'), node('lena'), node('juri'), edge('swim', 'lena')]);
+
+			explorer.setGraph([group('kids'), ...club, tucked('swim', 'lena')]);
+			expect(cy.$id('swim-lena').hasClass('tucked')).toBe(true);
+
+			explorer.setGraph([node('swim'), node('lena'), node('juri'), edge('swim', 'lena')]);
+			expect(cy.$id('swim-lena').hasClass('tucked')).toBe(false);
+		});
+
+		it('renames a group already drawn when its count changes', () => {
+			const cy = core();
+			const explorer = controller(cy);
+			const labelled = (label: string): CyElement => ({
+				...group('kids'),
+				data: { id: 'kids', kind: 'group', label }
+			});
+			explorer.setGraph([labelled('Kids · 2'), ...club]);
+
+			explorer.setGraph([labelled('Kids · 3'), ...club, inGroup('leo', 'kids')]);
+
+			expect(cy.$id('kids').data('label')).toBe('Kids · 3');
+		});
+
 		it('names a member\'s tucked-away lines when the member is selected, keeping the group lit', () => {
 			const cy = core();
 			const explorer = controller(cy);

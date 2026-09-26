@@ -351,7 +351,17 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 					if (parent !== current) n.move({ parent });
 				});
 				cy.elements().forEach((el) => {
-					if (!incoming.has(el.id())) el.remove();
+					const wanted = incoming.get(el.id());
+					if (!wanted) {
+						el.remove();
+						return;
+					}
+					// Switching the grouping keeps most elements, but tucks lines away or brings
+					// them back, and recounts a group. Only what the elements own is synced: the
+					// highlight, filter and bend classes belong to the controller.
+					el.toggleClass(TUCKED_CLASS, wanted.classes.split(' ').includes(TUCKED_CLASS));
+					const { id: _id, source: _s, target: _t, parent: _p, ...data } = wanted.data;
+					el.data(data);
 				});
 				wasEmpty = people().empty();
 				const placed = new Map<string, Point>(
