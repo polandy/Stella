@@ -731,6 +731,9 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
     group under *No role* by the same rule.
   - Someone in several circles joins the group of the **biggest** of them (the rule *By
     circle* uses too, docs/05 §5.8); their other memberships stay individual lines.
+  - A grouped person's **links to anybody else on the map come along** without anyone expanding
+    them: opening a circle brings its members but not their links to one another, and a group
+    is about how its people belong together.
   - **Links inside a group** (siblings in a class, a couple among the parents) are drawn
     between the members, behind a second switch, **Links within groups**, on by default.
     Switched off, they still show for a selected member.

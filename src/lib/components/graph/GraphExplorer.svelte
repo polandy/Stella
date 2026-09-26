@@ -31,7 +31,12 @@
 		withoutDerivedLinks
 	} from '$lib/graph/model/graph-model';
 	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
-	import { groupByRole, type EdgeBundle, type RoleGroup } from '$lib/graph/model/role-groups';
+	import {
+		groupByRole,
+		linksOfGrouped,
+		type EdgeBundle,
+		type RoleGroup
+	} from '$lib/graph/model/role-groups';
 	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
 	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
@@ -216,8 +221,27 @@
 	const visible = $derived(applyFilters(model, buildFilters()));
 	// Grouping reads what is shown, so the Circles chip off leaves no membership to group by;
 	// the tree's rows are generations, which a group would only pull apart (docs/02 §2.7).
+	const groupingOn = $derived(groupRoles && arrangedBy !== 'tree');
+	// Who is grouped depends only on the memberships shown; it decides whose links come along.
+	const grouped = $derived(
+		groupingOn ? new Set(groupByRole(visible, { innerLinks, dissolved }).groupOf.keys()) : null
+	);
+	/*
+	 * The map as drawn: what was opened up, plus the links of grouped people to anyone else on
+	 * it. Opening a circle brings its members without their links to each other, and a group is
+	 * about how its people belong together (docs/02 §2.7).
+	 */
+	const drawn = $derived(
+		grouped && grouped.size > 0
+			? mergeModels(model, {
+					nodes: [],
+					edges: linksOfGrouped(graph, new Set(model.nodes.map((n) => n.id)), grouped)
+				})
+			: model
+	);
+	const drawnVisible = $derived(drawn === model ? visible : applyFilters(drawn, buildFilters()));
 	const grouping = $derived(
-		groupRoles && arrangedBy !== 'tree' ? groupByRole(visible, { innerLinks, dissolved }) : null
+		groupingOn ? groupByRole(drawnVisible, { innerLinks, dissolved }) : null
 	);
 	const groupLabel = (g: RoleGroup) =>
 		t('graph.group.label', { role: g.role ?? t('circles.noRole'), count: g.memberIds.length });
@@ -225,15 +249,21 @@
 	const bundleLabel = (b: EdgeBundle) =>
 		b.kind === 'membership' ? '' : t('graph.bundle.count', { count: b.edgeIds.length });
 	const elements = () =>
-		toCytoscapeElements(model, {
+		toCytoscapeElements(drawn, {
 			centerId: centerId ?? undefined,
 			edgeLabel,
 			grouping: grouping ? { grouping, groupLabel, bundleLabel } : undefined
 		});
 	/** What the canvas shows: the filtered map, plus the frames and bundles grouping adds. */
 	const shownIds = () => ({
-		nodes: new Set([...visible.nodes.map((n) => n.id), ...(grouping?.groups.map((g) => g.id) ?? [])]),
-		edges: new Set([...visible.edges.map((e) => e.id), ...(grouping?.bundles.map((b) => b.id) ?? [])])
+		nodes: new Set([
+			...drawnVisible.nodes.map((n) => n.id),
+			...(grouping?.groups.map((g) => g.id) ?? [])
+		]),
+		edges: new Set([
+			...drawnVisible.edges.map((e) => e.id),
+			...(grouping?.bundles.map((b) => b.id) ?? [])
+		])
 	});
 	const peekGroup = $derived(
 		selected ? (grouping?.groups.find((g) => g.id === selected) ?? null) : null
@@ -439,7 +469,7 @@
 		canvas.arrangeAt(
 			key === 'tree'
 				? familyTreeLayout(visible, sizeOf)
-				: circleClustersLayout(model, sizeOf, grouping ?? undefined)
+				: circleClustersLayout(drawn, sizeOf, grouping ?? undefined)
 		);
 	}
 

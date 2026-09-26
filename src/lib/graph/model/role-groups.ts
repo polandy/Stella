@@ -156,3 +156,22 @@ export function groupByRole(model: GraphModel, options: RoleGroupOptions): RoleG
 
 	return { groups, groupOf, bundles, tucked };
 }
+
+/**
+ * The links of grouped people to anybody else on the map, from the whole `snapshot`. The map
+ * holds only what the reader opened up, so a circle's members arrive without their links to
+ * one another — and a group is about how its people belong together (docs/02 §2.7).
+ */
+export function linksOfGrouped(
+	snapshot: GraphModel,
+	onMap: ReadonlySet<string>,
+	grouped: ReadonlySet<string>
+): GraphEdge[] {
+	return snapshot.edges.filter(
+		(e) =>
+			e.kind !== 'membership' &&
+			onMap.has(e.source) &&
+			onMap.has(e.target) &&
+			(grouped.has(e.source) || grouped.has(e.target))
+	);
+}

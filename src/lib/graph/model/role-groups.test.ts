@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { groupByRole } from './role-groups';
+import { groupByRole, linksOfGrouped } from './role-groups';
 import type { GraphEdge, GraphModel, GraphNode } from './types';
 
 /*
@@ -167,3 +167,30 @@ describe('groupByRole', () => {
 		expect(groupByRole(noCircles, on)).toMatchObject({ groups: [], bundles: [] });
 	});
 });
+
+describe('linksOfGrouped', () => {
+	// The map holds only what was opened up: a circle's members arrive without their links to
+	// each other. A group is about how its people belong together, so those come along.
+	const snapshot: GraphModel = {
+		nodes: [...club.nodes, person('stranger')],
+		edges: [...club.edges, link('lena-stranger', 'lena', 'stranger')]
+	};
+	const onMap = new Set(club.nodes.map((n) => n.id));
+	const grouped = new Set(['lena', 'juri', 'leo', 'fabienne', 'thomas']);
+
+	it('brings the links between grouped people, and from them to anybody else on the map', () => {
+		const ids = linksOfGrouped(snapshot, onMap, grouped).map((e) => e.id);
+
+		expect(ids.sort()).toEqual(
+			['coach-friend', 'father-lena', 'mother-juri', 'mother-leo', 'siblings'].sort()
+		);
+	});
+
+	it('leaves out links to people not on the map, and memberships', () => {
+		const ids = linksOfGrouped(snapshot, onMap, grouped).map((e) => e.id);
+
+		expect(ids).not.toContain('lena-stranger');
+		expect(ids.some((id) => id.startsWith('swim-'))).toBe(false);
+	});
+});
+
