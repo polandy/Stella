@@ -1261,7 +1261,7 @@ household data leaves the instance, and nothing is sent when the check is off.
 Stella can be added to a phone's home screen and opened as its own window, and what has
 already been read stays readable when it cannot be reached. Full offline *writing* and sync
 is **out of scope** for v1: offline Stella is something you read, not something you add to.
-A later capture-only outbox is sketched in `docs/concepts/offline-capture.md`.
+A later outbox for *adding* while out of reach is planned in `docs/concepts/offline-capture.md`.
 
 **Installing.** A web app manifest and the icons the platforms ask for — 192 and 512, a
 maskable 512 drawn small enough that a launcher cropping to a circle keeps all of it, and a

@@ -130,11 +130,17 @@ Goal: sand the edges and add the nice-to-haves.
   building: which context wins when there are several (relationship vs. circle, which one),
   where the hint shows (search, person pickers, the graph?), and how it stays access-scoped
   so it never names a person or circle the viewer may not see (§2.10).
-- *Concept written, not decided:* **capturing while Stella is out of reach** — an outbox that
-  keeps moments written on a phone away from home and sends them once Stella answers again.
-  Adding only, never editing, so there is nothing to merge; the server re-checks everything
-  on arrival. Full offline sync was weighed and rejected. Concept and open questions:
-  `docs/concepts/offline-capture.md`.
+- *Direction decided, not scheduled:* **adding to Stella while it is out of reach**, in two
+  steps:
+  1. **Every change becomes a command.** One dispatcher, idempotent by the command's id, and
+     each route moved behind it on its own.
+  2. **An outbox on the phone.** It keeps what was *added* away from home, lets it be edited
+     until it is sent, and sends it once Stella answers again. Nothing others have seen is
+     changed offline, so there is nothing to merge, and the server re-checks everything on
+     arrival.
+
+  Event sourcing and full offline sync were weighed and rejected (docs/04 §4.9). Concept
+  and open questions: `docs/concepts/offline-capture.md`.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.

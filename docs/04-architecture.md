@@ -677,6 +677,24 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   encryption, so a device left signed in holds the pages its owner read — the same bargain as
   the browser's own history, and written down as such in §2.18 rather than left implied.
 
+- **Mutations become commands, not events; offline only adds** *(direction decided, not
+  built: `docs/concepts/offline-capture.md`)* — to write while Stella is out of reach, every
+  change becomes a named, idempotent command with an id made where it was issued, applied by
+  one dispatcher over today's use-cases. The tables stay the truth. A device may queue only
+  commands that *add*, and may edit them freely until they are sent, because nothing anyone
+  else has seen changes offline. That leaves no conflict to resolve, and access is still
+  checked once, on arrival. Rejected:
+  - **Event sourcing.** An append-only log would keep every deleted person and private
+    sentence, which breaks what deleting and *private* promise (§2.2, §2.10). It also would
+    not answer the hard question: what an offline edit means after someone else changed the
+    same person.
+  - **Full offline sync.** It needs a second authz path on the device and a "which version
+    wins?" screen.
+  - **Replaying failed form POSTs.** It would replay deletes and sign-outs days later.
+
+  The cost: a route-by-route refactor before the outbox, a receipt table for idempotency, and
+  no editing from a train.
+
 - **A former partnership derives nothing, rather than keeping the step-family it explained** —
   the first reading was that status is not history: a divorce does not unmake a stepmother, so
   `former` kept feeding the kinship engine. Real data settled it the other way — an ex-partner
