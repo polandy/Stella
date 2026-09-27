@@ -715,12 +715,14 @@
 		     suggestion list would otherwise be hidden behind it. Embedded, there is nobody to
 		     find: the map holds one person's neighbourhood and the page has its own search. -->
 		{#if !compact}
-			<div class="pointer-events-auto relative z-20">
+			<!-- On a phone the field takes whatever Filter and Arrange leave, so the three share a
+			     row (docs/05 §5.8). -->
+			<div class="pointer-events-auto relative z-20 min-w-0 flex-1 sm:flex-none">
 				<input
 					bind:value={query}
 					placeholder={t('graph.findPlaceholder')}
 					aria-label={t('graph.find')}
-					class="w-56 rounded-app border border-border bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
+					class="w-full sm:w-56 rounded-app border border-border bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
 				/>
 				{#if suggestions.length}
 					<ul
@@ -830,7 +832,9 @@
 
 		<MenuButton label={t('graph.arrange.current', { name: t(arrangedLabel) })}>
 			{#snippet trigger()}
-				{t('graph.arrange.current', { name: t(arrangedLabel) })}
+				<!-- The pill's label keeps "Arrange:" for assistive tech; a phone shows the name only. -->
+				<span class="sm:hidden">{t(arrangedLabel)}</span>
+				<span class="max-sm:hidden">{t('graph.arrange.current', { name: t(arrangedLabel) })}</span>
 			{/snippet}
 			{#snippet children({ close })}
 				{#each ARRANGEMENTS as arrangement (arrangement.key)}
@@ -856,6 +860,10 @@
 			{/snippet}
 		</MenuButton>
 
+		{#if !compact}
+			<!-- Full screen and the connection path start the second row on a phone. -->
+			<div class="basis-full sm:hidden" aria-hidden="true"></div>
+		{/if}
 		{#if canFullscreen}
 			<Button
 				variant="ghost"
@@ -908,7 +916,7 @@
 	{#if peekGroup && !pathMode}
 		<aside
 			data-testid="group-peek"
-			class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur"
+			class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-3 max-sm:w-auto max-sm:max-h-[60%] max-sm:p-3"
 			class:bottom-3={!compact}
 			class:w-64={!compact}
 			class:w-52={compact}
@@ -920,7 +928,7 @@
 			<div class="mb-3 text-xs text-fg-subtle">
 				{t('graph.peek.inCircle', { name: nameOf(peekGroup.circleId) })}
 			</div>
-			<ul class="mb-4 flex flex-col gap-1">
+			<ul class="mb-4 flex flex-col gap-1 max-sm:mb-3">
 				{#each peekGroup.memberIds as id (id)}
 					<li>
 						<a href="/contacts/{id}" class="flex items-center gap-2 rounded-lg px-1 py-1 text-sm text-fg hover:bg-bg-sunken">
@@ -930,9 +938,10 @@
 					</li>
 				{/each}
 			</ul>
-			<div class="flex flex-col gap-2">
+			<div class="flex flex-col gap-2 max-sm:flex-row">
 				<Button
 					type="button"
+					class="max-sm:flex-1"
 					onclick={() => {
 						dissolved = new Set([...dissolved, peekGroup!.id]);
 						selected = null;
@@ -940,33 +949,40 @@
 				>
 					{t('graph.peek.showIndividually')}
 				</Button>
-				<Button variant="primary" href="/circles/{peekGroup.circleId}">{t('graph.peek.openCircle')}</Button>
+				<Button variant="primary" class="max-sm:flex-1" href="/circles/{peekGroup.circleId}">{t('graph.peek.openCircle')}</Button>
 			</div>
 		</aside>
 	{:else if peekNode && !pathMode}
 		<!-- Full height beside a full-screen canvas; embedded it is only as tall as what it
-		     says, so it does not sit as an empty panel over half a card-sized map. -->
+		     says, so it does not sit as an empty panel over half a card-sized map. A phone has no
+		     room beside the map: there it is a strip along the bottom, clear of the toolbar. -->
 		<aside
-			class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur"
+			class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-3 max-sm:w-auto max-sm:max-h-[60%] max-sm:p-3"
 			class:bottom-3={!compact}
 			class:w-64={!compact}
 			class:w-52={compact}
 			class:max-h-[calc(100%-1.5rem)]={compact}
 		>
 			<Button variant="ghost" size="sm" icon="remove" label={t('common.close')} class="float-right" onclick={() => (selected = null)} />
-			{#if peekNode.kind === 'person'}
-				<div class="mb-3">
-					<Avatar id={peekNode.id} name={peekNode.label} avatarPhotoId={peekNode.avatarPhotoId ?? null} size={56} deceased={peekNode.deceased} />
+			<!-- Stacked in the side panel; side by side in a phone's strip, which has height to spare
+			     for neither. -->
+			<div class="mb-4 max-sm:mb-3 max-sm:flex max-sm:items-center max-sm:gap-3">
+				{#if peekNode.kind === 'person'}
+					<div class="mb-3 max-sm:mb-0 max-sm:shrink-0">
+						<Avatar id={peekNode.id} name={peekNode.label} avatarPhotoId={peekNode.avatarPhotoId ?? null} size={56} deceased={peekNode.deceased} />
+					</div>
+				{/if}
+				<div class="min-w-0">
+					<div class="text-lg font-semibold text-fg max-sm:truncate">{peekNode.label}</div>
+					<div class="text-xs text-fg-subtle">
+						{peekNode.kind === 'circle' ? t('graph.peek.sharedContext') : t('graph.peek.person')}
+						{#if peekNode.deceased}· {t('graph.peek.deceased')}{/if}
+					</div>
 				</div>
-			{/if}
-			<div class="text-lg font-semibold text-fg">{peekNode.label}</div>
-			<div class="mb-4 text-xs text-fg-subtle">
-				{peekNode.kind === 'circle' ? t('graph.peek.sharedContext') : t('graph.peek.person')}
-				{#if peekNode.deceased}· {t('graph.peek.deceased')}{/if}
 			</div>
-			<div class="flex flex-col gap-2">
+			<div class="flex flex-col gap-2 max-sm:flex-row max-sm:flex-wrap">
 				{#if peekNode.kind === 'circle' && peekExpandable && roleOptions.length > 1}
-					<fieldset class="flex flex-col gap-1 text-sm" data-testid="circle-roles">
+					<fieldset class="flex flex-col gap-1 text-sm max-sm:basis-full" data-testid="circle-roles">
 						<legend class="mb-1 text-xs text-fg-subtle">{t('graph.peek.rolesToOpen')}</legend>
 						{#each roleOptions as option (option.role)}
 							<label class="flex items-center gap-2">
@@ -981,18 +997,19 @@
 					</fieldset>
 				{/if}
 				{#if peekExpandable}
-					<Button type="button" disabled={peekNode.kind === 'circle' && roleOptions.length > 0 && chosenRoles.size === 0} onclick={() => expand(peekNode.id)}>{t('graph.peek.expand')}</Button>
+					<Button type="button" class="max-sm:flex-1" disabled={peekNode.kind === 'circle' && roleOptions.length > 0 && chosenRoles.size === 0} onclick={() => expand(peekNode.id)}>{t('graph.peek.expand')}</Button>
 				{:else if fullGraphHref}
 					<!-- The map ends here, so the honest offer is the one place that goes further. -->
-					<Button icon="graph" href={fullGraphHref(peekNode.id)}>{t('graph.openInGraph')}</Button>
+					<Button icon="graph" class="max-sm:flex-1" href={fullGraphHref(peekNode.id)}>{t('graph.openInGraph')}</Button>
 				{/if}
 				{#if peekNode.kind === 'person'}
-					<Button variant="primary" href="/contacts/{peekNode.id}">{t('graph.peek.openProfile')}</Button>
+					<Button variant="primary" class="max-sm:flex-1" href="/contacts/{peekNode.id}">{t('graph.peek.openProfile')}</Button>
 				{:else if peekNode.kind === 'circle'}
-					<Button variant="primary" href="/circles/{peekNode.id}">{t('graph.peek.openCircle')}</Button>
+					<Button variant="primary" class="max-sm:flex-1" href="/circles/{peekNode.id}">{t('graph.peek.openCircle')}</Button>
 				{/if}
 			</div>
-			<p class="mt-4 text-xs text-fg-subtle">
+			<!-- The general tip is left out of a phone's strip; that the map ends here is not. -->
+			<p class="mt-4 text-xs text-fg-subtle max-sm:mt-3" class:max-sm:hidden={peekExpandable}>
 				{#if !peekExpandable}
 					{t('graph.peek.edgeOfMap')}
 				{:else}

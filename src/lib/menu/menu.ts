@@ -42,3 +42,22 @@ export function nextMenuIndex(current: number, count: number, key: string): numb
 	const step = key === 'ArrowDown' ? 1 : -1;
 	return (current + step + count) % count;
 }
+
+/** A horizontal stretch of the screen, in pixels. */
+export interface Span {
+	left: number;
+	right: number;
+}
+
+/**
+ * How far to move an open menu sideways so it stays inside `bounds`, `margin` clear of each
+ * edge: a pill near the edge of a phone's map opens a menu wider than the room beside it. Too
+ * wide to fit either way, the menu keeps its start in view, where its first items are.
+ */
+export function menuShift(menu: Span, bounds: Span, margin: number): number {
+	const pastRight = menu.right - (bounds.right - margin);
+	let shift = pastRight > 0 ? -pastRight : 0;
+	const pastLeft = bounds.left + margin - (menu.left + shift);
+	if (pastLeft > 0) shift += pastLeft;
+	return shift;
+}

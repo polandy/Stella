@@ -47,6 +47,12 @@
 		error?: string | null;
 		/** A second action for the header, e.g. a link elsewhere. */
 		action?: Snippet;
+		/**
+		 * On a phone, lay the header's actions out as a grid of even, equally framed buttons
+		 * without icons, two to a row. For a card offering several things besides its Add, whose
+		 * mixed framed and quiet buttons would otherwise wrap into ragged rows (docs/05 §5.5).
+		 */
+		actionGrid?: boolean;
 		/** Bindable, so another control — a hero button, say — can open the form. */
 		open?: boolean;
 		children: Snippet;
@@ -64,6 +70,7 @@
 		addIcon = 'add',
 		error = null,
 		action,
+		actionGrid = false,
 		open = $bindable(false),
 		children,
 		editor
@@ -201,8 +208,13 @@
 			<span class="flex-1"></span>
 			<!-- The actions wrap among themselves and stay together on the right: a card may
 			     offer more than one thing besides its own Add — the relationships card offers
-			     two — and a row that cannot wrap pushes the last one off the card. -->
-			<div class="flex flex-wrap items-center justify-end gap-2">
+			     two — and a row that cannot wrap pushes the last one off the card. On a phone
+			     they only wrap below the title, where rows read from the left edge, not ragged
+			     against the right one. -->
+			<div
+				class="flex flex-wrap items-center justify-end gap-2 max-sm:justify-start"
+				class:action-grid={actionGrid}
+			>
 				{@render action?.()}
 				{@render disclosure()}
 			</div>
@@ -211,3 +223,30 @@
 		{@render body()}
 	</section>
 {/if}
+
+<style>
+	/* Below Tailwind's `sm`: the card's actions as two even columns, each framed alike. */
+	@media (width < 40rem) {
+		.action-grid {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			flex-basis: 100%;
+		}
+		.action-grid :global(.btn),
+		.action-grid :global(.btn:hover:not(:disabled)) {
+			width: 100%;
+			background: var(--card);
+			border-color: var(--border);
+			color: var(--fg);
+			font-weight: 600;
+			box-shadow: var(--shadow-card);
+		}
+		.action-grid :global(.btn:hover:not(:disabled)) {
+			background: var(--card-hover);
+		}
+		/* Half a phone's width holds the longest label only without its icon. */
+		.action-grid :global(.btn svg) {
+			display: none;
+		}
+	}
+</style>
