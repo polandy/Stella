@@ -19,7 +19,8 @@ const KINDS = {
 	'note.add': 'add',
 	'interaction.log': 'add',
 	'tag.assign': 'add',
-	'circle.join': 'add'
+	'circle.join': 'add',
+	'relationship.add': 'add'
 } as const satisfies Record<string, CommandKind>;
 
 /** One of the commands Stella knows. */
@@ -86,6 +87,17 @@ export interface CircleJoinPayload {
 	role: string | null;
 }
 
+/** A link between the person whose page it was entered on and someone else (docs/02 §2.4). */
+export interface RelationshipAddPayload {
+	contactId: string;
+	targetId: string;
+	/** Type *and* side, as the picker encodes them (`encodeRelationshipChoice`). */
+	typeChoice: string;
+	description: string | null;
+	sinceDate: string | null;
+	status: string | null;
+}
+
 /** The payload each command carries. */
 export interface CommandPayloads {
 	'moment.capture': MomentCapturePayload;
@@ -94,6 +106,7 @@ export interface CommandPayloads {
 	'interaction.log': InteractionLogPayload;
 	'tag.assign': TagAssignPayload;
 	'circle.join': CircleJoinPayload;
+	'relationship.add': RelationshipAddPayload;
 }
 
 /** One intent from one member. */

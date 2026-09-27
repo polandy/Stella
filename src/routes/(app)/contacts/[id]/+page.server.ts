@@ -46,7 +46,7 @@ import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
 import { authorLabel } from '$lib/story/author';
 import { segmentsOf } from '$lib/i18n/linked';
-import { decodeRelationshipChoice, endpointsForSide } from '$lib/relationships/type-options';
+import { decodeRelationshipChoice } from '$lib/relationships/type-options';
 import { toStoryItem } from './story-view';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import {
@@ -70,7 +70,6 @@ import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import {
-	createRelationship,
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
 	editRelationship,
@@ -580,7 +579,6 @@ export const actions: Actions = {
 
 	addRelationship: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
 		const parsed = v.safeParse(AddRelationshipSchema, {
@@ -594,48 +592,26 @@ export const actions: Actions = {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
 
-		// The picker offers an asymmetric type from both sides; the side says which endpoint
-		// is stored as `from` (docs/02 §2.4).
-		const choice = decodeRelationshipChoice(parsed.output.typeChoice);
-		if (!choice) {
+		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised;
+		// `addRelationshipChecked` holds every check the page used to make here.
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'relationship.add',
+			payload: { contactId: params.id, ...parsed.output },
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'relationship.add') {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
-		const endpoints = endpointsForSide(params.id, parsed.output.targetId, choice.side);
-
-		// Both endpoints must be visible to the viewer.
-		const [self, target] = await Promise.all([
-			getContact(getContactDeps(), viewer, params.id),
-			getContact(getContactDeps(), viewer, parsed.output.targetId)
-		]);
-		if (!self || !target) {
-			return fail(400, { error: say(locals, 'errors.person.notFound') });
-		}
-
-		try {
-			await createRelationship(getRelationshipDeps(), viewer, {
-				...endpoints,
-				typeId: choice.typeId,
-				// This profile: a refusal describes the link in the way from the page it is read on.
-				perspectiveContactId: params.id,
-				description: parsed.output.description ?? null,
-				sinceDate: parsed.output.sinceDate ?? null,
-				status: parsed.output.status ?? null
+		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
+		if (outcome?.status !== 'applied') {
+			return fail(outcome?.status === 'refused' ? 409 : 400, {
+				error:
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.relationship.couldNotAdd')
 			});
-		} catch (err) {
-			if (err instanceof DuplicateRelationshipError) {
-				return fail(409, { error: say(locals, 'errors.relationship.duplicate') });
-			}
-			if (err instanceof ContradictoryRelationshipError) {
-				return fail(409, { error: say(locals, 'errors.relationship.contradiction') });
-			}
-			// The picker greys these out, so this is the hand-written post — refused all the same.
-			if (err instanceof RelationshipExcludedError) {
-				return fail(409, { error: err.phrase(translator(locals)) });
-			}
-			if (err instanceof InvalidRelationshipDetailsError) {
-				return fail(400, { error: err.phrase(translator(locals)) });
-			}
-			return fail(400, { error: say(locals, 'errors.relationship.couldNotAdd') });
 		}
 
 		// Come back with the new pair named, so its implied links can be offered.

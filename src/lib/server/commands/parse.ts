@@ -61,6 +61,27 @@ const CircleJoin = v.object({
 	)
 });
 
+/** An optional text field: trimmed, and empty meaning absent. */
+const optionalText = v.optional(
+	v.nullable(
+		v.pipe(
+			v.string(),
+			v.trim(),
+			v.transform((text) => text || null)
+		)
+	),
+	null
+);
+
+const RelationshipAdd = v.object({
+	contactId: v.pipe(v.string(), v.minLength(1)),
+	targetId: v.pipe(v.string(), v.minLength(1)),
+	typeChoice: v.pipe(v.string(), v.minLength(1)),
+	description: optionalText,
+	sinceDate: optionalText,
+	status: optionalText
+});
+
 const envelope = {
 	id: v.pipe(v.string(), v.regex(ULID)),
 	issuedAt: v.pipe(v.number(), v.integer(), v.minValue(0))
@@ -71,7 +92,8 @@ const CommandSchema = v.variant('type', [
 	v.object({ ...envelope, type: v.literal('note.add'), payload: NoteAdd }),
 	v.object({ ...envelope, type: v.literal('interaction.log'), payload: InteractionLog }),
 	v.object({ ...envelope, type: v.literal('tag.assign'), payload: TagAssign }),
-	v.object({ ...envelope, type: v.literal('circle.join'), payload: CircleJoin })
+	v.object({ ...envelope, type: v.literal('circle.join'), payload: CircleJoin }),
+	v.object({ ...envelope, type: v.literal('relationship.add'), payload: RelationshipAdd })
 ]);
 
 /** `raw` as a command, or null when it is not exactly one. */

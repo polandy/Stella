@@ -81,6 +81,7 @@ import { attachMomentPhoto } from './domain/commands/moment-photo';
 import { writeNote } from './domain/notes/write-note';
 import { logInteractionChecked } from './domain/interactions/log-checked';
 import { onVisibleContact } from './domain/contacts/require-visible';
+import { addRelationshipChecked } from './domain/relationships/add-checked';
 import { assignTagByName } from './domain/tags/tags';
 import { joinCircleByName } from './domain/circles/circles';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
@@ -495,6 +496,8 @@ export function getCommandDeps(): CommandDeps {
 					payload.role
 				)
 			})),
+			'relationship.add': (actor, payload) =>
+				addRelationshipChecked({ ...getRelationshipDeps(), contacts: getContacts() }, actor, payload),
 			'interaction.log': (actor, payload) =>
 				logInteractionChecked({ ...getInteractionDeps(), contacts: getContacts() }, actor, payload),
 			'note.add': (actor, payload) =>

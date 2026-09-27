@@ -38,6 +38,7 @@ export const home = {
 	'home.outbox.discardNamed': (p: { name: string }) => `Discard “${p.name}”`,
 	'home.outbox.tagOn': (p: { name: string }) => `· tag on ${p.name}`,
 	'home.outbox.circleFor': (p: { name: string }) => `· circle for ${p.name}`,
+	'home.outbox.link': '· relationship',
 	'home.empty.title': 'Nothing written yet',
 	'home.empty.hint':
 		'Write the first moment above and mention someone with @ — that is all it takes.',

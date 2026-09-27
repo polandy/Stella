@@ -409,6 +409,55 @@
 	 * knows: a family link began on the younger one's birthday (docs/02 §2.4).
 	 */
 	const relationshipChoices = $derived(relationshipTypeOptions(data.relationshipTypes));
+	/*
+	 * Links entered here while Stella was out of reach, kept until they are sent (docs/02
+	 * §2.18). The guardrails are the server's: a link that has meanwhile become a duplicate or a
+	 * contradiction comes back refused, with the reason. Named the way the picker names them.
+	 */
+	const keptLinks = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'relationship.add'> =>
+				isKept(item, 'relationship.add') && item.command.payload.contactId === c.id
+		)
+	);
+	/** "Child of Bert Brunner", for a kept link. */
+	function keptLinkLabel(typeChoice: string, targetId: string): string {
+		const option = relationshipChoices.find((o) => o.value === typeChoice);
+		const target = data.otherContacts.find((p) => p.id === targetId)?.displayName ?? '';
+		return option ? `${relationshipTypeLabel(t, option.type, option.side)} ${target}` : target;
+	}
+	const relationshipForm = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const targetId = String(form.get('targetId') ?? '');
+					const typeChoice = String(form.get('typeChoice') ?? '');
+					if (!targetId || !typeChoice) return null;
+					const text = (name: string) => String(form.get(name) ?? '').trim() || null;
+					return {
+						id,
+						type: 'relationship.add',
+						payload: {
+							contactId: c.id,
+							targetId,
+							typeChoice,
+							description: text('description'),
+							sinceDate: text('sinceDate'),
+							status: text('status')
+						},
+						issuedAt: Date.now()
+					};
+				},
+				about: (form) =>
+					`${c.displayName} · ${keptLinkLabel(String(form.get('typeChoice') ?? ''), String(form.get('targetId') ?? ''))}`,
+				onKept: () => {
+					relateOpen = false;
+					relationshipTargetId = [];
+				}
+			},
+			savedRelationship
+		)
+	);
 	/** Empty until the picker is touched, which means it stands on its first entry. */
 	let relationshipChoice = $state('');
 	/** Someone named through the picker itself is not in `otherContacts` yet (docs/02 §2.2.2). */
@@ -1068,6 +1117,17 @@
 						</Button>
 					{/snippet}
 
+					{#if keptLinks.length > 0}
+						<ul class="mb-3 flex flex-col gap-2" data-testid="kept-links">
+							{#each keptLinks as item (item.command.id)}
+								<li>
+									<KeptItem {item}>
+										<p class="mt-1 text-fg">{keptLinkLabel(item.command.payload.typeChoice, item.command.payload.targetId)}</p>
+									</KeptItem>
+								</li>
+							{/each}
+						</ul>
+					{/if}
 					<!--
 						"How are we connected?" is a question this card cannot answer: it holds two hops
 						of the household and the chain usually runs further. So it asks who, and hands
@@ -1345,7 +1405,7 @@
 
 					{#snippet editor()}
 						{#if data.otherContacts.length > 0}
-							<form method="POST" action="?/addRelationship" use:enhance={savedRelationship} class="flex flex-wrap items-end gap-3">
+							<form method="POST" action="?/addRelationship" use:enhance={relationshipForm} class="flex flex-wrap items-end gap-3">
 								<label class="flex flex-1 flex-col gap-1 text-sm">
 									<span class="text-fg-muted">
 										{t('contact.relationships.is', { name: c.displayName })}

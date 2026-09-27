@@ -17,8 +17,8 @@ import { reachability } from './reachability.svelte';
 export interface Keepable {
 	/** The form's fields as the command they stand for, or null when they are not one. */
 	toCommand(data: FormData, id: string): JsonCommand | null;
-	/** Who it is about, for showing it away from this page. */
-	about: string;
+	/** Who it is about, for showing it away from this page — fixed, or read off the form. */
+	about: string | ((data: FormData) => string);
 	/** It was kept rather than sent: close the form, say so. */
 	onKept(): void;
 }
@@ -36,7 +36,8 @@ export function keepable(keep: Keepable, inner: SubmitFunction): SubmitFunction 
 		const kept = async () => {
 			const command = keep.toCommand(input.formData, id);
 			if (!command) return false;
-			await outbox.add(command, [], keep.about);
+			const about = typeof keep.about === 'string' ? keep.about : keep.about(input.formData);
+			await outbox.add(command, [], about);
 			keep.onKept();
 			return true;
 		};

@@ -88,7 +88,8 @@ function fakes(handler: () => Promise<CapturedMoment> = async () => captured) {
 			'note.add': async () => ({ noteId: 'n' }),
 			'interaction.log': async () => ({ interactionId: 'i' }),
 			'tag.assign': async () => ({ tagId: 't' }),
-			'circle.join': async () => ({ circleId: 'c' })
+			'circle.join': async () => ({ circleId: 'c' }),
+			'relationship.add': async () => ({ relationshipId: 'r' })
 		}
 	};
 	return {

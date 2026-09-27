@@ -87,6 +87,21 @@ describe('parseCommand, for a tag or a circle', () => {
 	});
 });
 
+describe('parseCommand, for a relationship', () => {
+	it('reads a link, empty specifics meaning none', () => {
+		const link = { id: ID, type: 'relationship.add', payload: { contactId: 'anna', targetId: 'bert', typeChoice: 'reverse:parent_child', description: ' ', sinceDate: '' }, issuedAt: 3 };
+		expect(parseCommand(link)?.payload).toEqual({
+			contactId: 'anna',
+			targetId: 'bert',
+			typeChoice: 'reverse:parent_child',
+			description: null,
+			sinceDate: null,
+			status: null
+		});
+		expect(parseCommand({ ...link, payload: { ...link.payload, targetId: '' } })).toBeNull();
+	});
+});
+
 describe('parsePhotoCommand', () => {
 	const bytes = new Uint8Array([1, 2, 3]);
 	const photo = { id: ID, momentId: '01K6A5ZQ3V9W8X7Y6Z5A4B3C2E', image: bytes, thumb: bytes, width: 1600, height: 1200, issuedAt: 5 };
