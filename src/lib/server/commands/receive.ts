@@ -1,4 +1,4 @@
-import { isQueueable, type CommandAnswer } from '../../commands/commands';
+import { isQueueable, type Command, type CommandAnswer } from '../../commands/commands';
 import type { Translate } from '../../i18n/translate';
 import { dispatchCommand, type CommandActor, type CommandDeps } from '../domain/commands/dispatch';
 import { parseCommand } from './parse';
@@ -20,6 +20,27 @@ function claimedId(raw: unknown): string {
 	return typeof id === 'string' ? id : '';
 }
 
+/**
+ * What to tell the phone about `command`, applied or not. Our own failure answers `failed`, so
+ * the phone keeps the command and tries later; it is logged here, where it happened.
+ */
+export async function answerFor(
+	deps: CommandDeps,
+	actor: CommandActor,
+	t: Translate,
+	command: Command
+): Promise<CommandAnswer> {
+	try {
+		const outcome = await dispatchCommand(deps, actor, command);
+		if (outcome.status === 'applied') return { id: command.id, status: 'applied', result: outcome.result };
+		if (outcome.status === 'refused') return { id: command.id, status: 'refused', reason: outcome.reason(t) };
+		return { id: command.id, status: 'busy' };
+	} catch (err) {
+		console.error(`Command ${command.id} (${command.type}) failed:`, err);
+		return { id: command.id, status: 'failed' };
+	}
+}
+
 /** Apply `raws` for `actor` in order, answering each. */
 export async function receiveQueued(
 	deps: CommandDeps,
@@ -38,19 +59,7 @@ export async function receiveQueued(
 			answers.push({ id: command.id, status: 'refused', reason: t('errors.command.notQueueable') });
 			continue;
 		}
-		try {
-			const outcome = await dispatchCommand(deps, actor, command);
-			answers.push(
-				outcome.status === 'applied'
-					? { id: command.id, status: 'applied', result: outcome.result }
-					: outcome.status === 'refused'
-						? { id: command.id, status: 'refused', reason: outcome.reason(t) }
-						: { id: command.id, status: 'busy' }
-			);
-		} catch (err) {
-			console.error(`Command ${command.id} (${command.type}) failed:`, err);
-			answers.push({ id: command.id, status: 'failed' });
-		}
+		answers.push(await answerFor(deps, actor, t, command));
 	}
 	return answers;
 }

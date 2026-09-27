@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { CommandAnswer } from '$lib/commands/commands';
 import { systemClock } from '$lib/server/clock';
 import { parsePhotoCommand } from '$lib/server/commands/parse';
-import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
+import { answerFor } from '$lib/server/commands/receive';
 import { translator } from '$lib/server/i18n/say';
 import { getCommandDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
@@ -40,22 +40,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	});
 	const t = translator(locals);
 	const named = typeof id === 'string' ? id : '';
-	let answer: CommandAnswer;
-	if (!command) {
-		answer = { id: named, status: 'refused', reason: t('errors.command.malformed') };
-	} else {
-		try {
-			const outcome = await dispatchCommand(getCommandDeps(), { userId: user.id, householdId: user.householdId }, command);
-			answer =
-				outcome.status === 'applied'
-					? { id: command.id, status: 'applied', result: outcome.result }
-					: outcome.status === 'refused'
-						? { id: command.id, status: 'refused', reason: outcome.reason(t) }
-						: { id: command.id, status: 'busy' };
-		} catch (err) {
-			console.error(`Photo command ${command.id} failed:`, err);
-			answer = { id: command.id, status: 'failed' };
-		}
-	}
+	const answer: CommandAnswer = command
+		? await answerFor(getCommandDeps(), { userId: user.id, householdId: user.householdId }, t, command)
+		: { id: named, status: 'refused', reason: t('errors.command.malformed') };
 	return json({ answer });
 };

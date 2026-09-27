@@ -1489,8 +1489,9 @@ entry and a household update, without leaving the page. Concept + clickable prot
 - **Visibility (§2.10).** A shared moment may mention only household-visible people; a private
   moment anyone the author can see — the journal rule. A person created inline takes the
   moment's visibility, so a private moment never introduces a shared person.
-- **Progressive.** The form posts natively; the picker, the inline-create queue and the photo
-  processing are enhancements.
+- **Progressive.** The form posts natively; the picker, the inline-create queue, the photo
+  processing and keeping a moment on the device while Stella is out of reach (§2.18) are
+  enhancements.
 
 ### 2.22.2 Household stream (Home)
 
