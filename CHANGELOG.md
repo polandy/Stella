@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.18](https://github.com/polandy/Stella/compare/v0.0.17...v0.0.18) (2026-09-27)
+
+
+### Features
+
+* **graph:** group a circle's members by role ([#151](https://github.com/polandy/Stella/issues/151)) ([8a62100](https://github.com/polandy/Stella/commit/8a62100443f352d4d815dd4af7ebe69328d8a1f1))
+
+
+### Bug Fixes
+
+* **circles:** keep the selection bar, its dropdown and toasts clear of the mobile tab bar ([677b6bd](https://github.com/polandy/Stella/commit/677b6bd0bbff41294963e3635b3290510d854dd0))
+* **e2e:** stop the canvas-tap flake in person-map.spec.ts ([80d6a4b](https://github.com/polandy/Stella/commit/80d6a4bda9bcbac7fd14fba8ec04b42582f0c85c))
+* **graph:** touch full screen only leaves via its own button ([2834856](https://github.com/polandy/Stella/commit/28348561407dbe9bf1f2dbbdb6d8a285403deafe))
+* tune the map, the peek panel and the relationships card for a phone ([#152](https://github.com/polandy/Stella/issues/152)) ([782f778](https://github.com/polandy/Stella/commit/782f77822436342d83e7047e5f236b7dda2b9a6d))
+
 ## [0.0.17](https://github.com/polandy/Stella/compare/v0.0.16...v0.0.17) (2026-09-22)
 
 
