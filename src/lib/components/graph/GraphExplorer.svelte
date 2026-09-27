@@ -580,12 +580,14 @@
 		     suggestion list would otherwise be hidden behind it. Embedded, there is nobody to
 		     find: the map holds one person's neighbourhood and the page has its own search. -->
 		{#if !compact}
-			<div class="pointer-events-auto relative z-20">
+			<!-- On a phone the field takes whatever Filter and Arrange leave, so the three share a
+			     row (docs/05 §5.8). -->
+			<div class="pointer-events-auto relative z-20 min-w-0 flex-1 sm:flex-none">
 				<input
 					bind:value={query}
 					placeholder={t('graph.findPlaceholder')}
 					aria-label={t('graph.find')}
-					class="w-56 rounded-app border border-border bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
+					class="w-full sm:w-56 rounded-app border border-border bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
 				/>
 				{#if suggestions.length}
 					<ul
@@ -675,7 +677,9 @@
 
 		<MenuButton label={t('graph.arrange.current', { name: t(arrangedLabel) })}>
 			{#snippet trigger()}
-				{t('graph.arrange.current', { name: t(arrangedLabel) })}
+				<!-- The pill's label keeps "Arrange:" for assistive tech; a phone shows the name only. -->
+				<span class="sm:hidden">{t(arrangedLabel)}</span>
+				<span class="max-sm:hidden">{t('graph.arrange.current', { name: t(arrangedLabel) })}</span>
 			{/snippet}
 			{#snippet children({ close })}
 				{#each ARRANGEMENTS as arrangement (arrangement.key)}
@@ -701,6 +705,10 @@
 			{/snippet}
 		</MenuButton>
 
+		{#if !compact}
+			<!-- Full screen and the connection path start the second row on a phone. -->
+			<div class="basis-full sm:hidden" aria-hidden="true"></div>
+		{/if}
 		{#if canFullscreen}
 			<Button
 				variant="ghost"
@@ -752,13 +760,16 @@
 	<!-- Peek panel -->
 	{#if peekNode && !pathMode}
 		<!-- Full height beside a full-screen canvas; embedded it is only as tall as what it
-		     says, so it does not sit as an empty panel over half a card-sized map. -->
+		     says, so it does not sit as an empty panel over half a card-sized map. On a phone
+		     the toolbar spans the width, so the panel starts below it rather than over Arrange. -->
 		<aside
-			class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur"
+			class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur max-sm:top-(--below-toolbar)"
+			style="--below-toolbar:{toolbarHeight ? toolbarBottom() + 8 : 12}px"
 			class:bottom-3={!compact}
 			class:w-64={!compact}
 			class:w-52={compact}
 			class:max-h-[calc(100%-1.5rem)]={compact}
+			class:max-sm:max-h-[calc(100%-var(--below-toolbar)-0.75rem)]={compact}
 		>
 			<Button variant="ghost" size="sm" icon="remove" label={t('common.close')} class="float-right" onclick={() => (selected = null)} />
 			{#if peekNode.kind === 'person'}

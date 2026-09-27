@@ -309,6 +309,11 @@ They must be edited together; `app.css` says so at both blocks.
   dotted for kinship) in its token, so an item and the line it toggles can never disagree,
   and there is no second box to keep in sync. The **"Labels" switch** that names every line
   at once sits at the foot of the same menu.
+  On a phone (below `sm`, tuned for a Pixel 9 Pro at 412 px) search, Filter and Arrange keep
+  one row: the search field takes whatever the two menus leave, and the Arrange pill shows only
+  the arrangement's name (its accessible name still reads *Arrange: …*). Full screen and the
+  connection path start a second row, and the peek panel opens below the toolbar instead of
+  over it, so Arrange stays within reach while somebody is selected.
   A **Full screen** button at the end of the toolbar row hands the whole frame — canvas, toolbar
   and peek panel — to full screen, on the graph route and on a person's map alike. On a mouse
   it is the browser's own Fullscreen API (Esc leaves it too, which is fine — nobody presses Esc
