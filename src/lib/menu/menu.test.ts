@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { filterSummary, nextMenuIndex } from './menu';
+import { filterSummary, menuShift, nextMenuIndex } from './menu';
 
 /*
- * The two decisions behind the graph toolbar's menus (docs/05 §5.8): what the Filter button
- * says about what is shown, and where the arrow keys move inside an open menu.
+ * The decisions behind the graph toolbar's menus (docs/05 §5.8): what the Filter button says
+ * about what is shown, where the arrow keys move inside an open menu, and how far an open menu
+ * moves to stay on the map.
  */
 
 describe('filterSummary', () => {
@@ -54,5 +55,30 @@ describe('nextMenuIndex', () => {
 
 	it('ignores every other key', () => {
 		expect(nextMenuIndex(1, 3, 'a')).toBeNull();
+	});
+});
+
+describe('menuShift', () => {
+	// A phone-sized map, 12 px kept clear at each side.
+	const map = { left: 0, right: 412 };
+	const MARGIN = 12;
+
+	it('leaves a menu that fits where it opened', () => {
+		expect(menuShift({ left: 20, right: 300 }, map, MARGIN)).toBe(0);
+	});
+
+	it('pulls a menu running past the right edge back inside', () => {
+		// Filter's menu opening under a pill that stands right of the search field.
+		expect(menuShift({ left: 215, right: 495 }, map, MARGIN)).toBe(412 - MARGIN - 495);
+	});
+
+	it('pushes a menu running past the left edge back inside', () => {
+		expect(menuShift({ left: -40, right: 240 }, map, MARGIN)).toBe(MARGIN + 40);
+	});
+
+	it('keeps the start in view when the menu is wider than the map', () => {
+		const shift = menuShift({ left: 100, right: 600 }, map, MARGIN);
+
+		expect(100 + shift).toBe(MARGIN);
 	});
 });

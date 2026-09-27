@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick, type Snippet } from 'svelte';
-	import { nextMenuIndex } from '$lib/menu/menu';
+	import { menuShift, nextMenuIndex, type Span } from '$lib/menu/menu';
 
 	/*
 	 * A pill that opens a small menu below it (docs/05 §5.8) — the graph toolbar's Filter and
@@ -29,13 +29,34 @@
 	let root = $state<HTMLDivElement>();
 	let pill = $state<HTMLButtonElement>();
 	let menu = $state<HTMLDivElement>();
+	/** Sideways, in pixels, so an open menu stays on the map it floats over. */
+	let shift = $state(0);
+
+	/** Room kept between an open menu and the edge of what shows it. */
+	const EDGE_MARGIN = 12;
+
+	/**
+	 * What can show the menu: the nearest box that cuts off what overflows it (the map is one),
+	 * within the window.
+	 */
+	function visibleSpan(from: HTMLElement): Span {
+		const span = { left: 0, right: document.documentElement.clientWidth };
+		for (let el = from.parentElement; el; el = el.parentElement) {
+			if (getComputedStyle(el).overflowX === 'visible') continue;
+			const box = el.getBoundingClientRect();
+			return { left: Math.max(span.left, box.left), right: Math.min(span.right, box.right) };
+		}
+		return span;
+	}
 
 	const items = () =>
 		menu ? [...menu.querySelectorAll<HTMLElement>('[role^="menuitem"]')] : [];
 
 	async function show(focus: 'first' | 'last' = 'first') {
+		shift = 0;
 		open = true;
 		await tick();
+		if (menu && root) shift = menuShift(menu.getBoundingClientRect(), visibleSpan(root), EDGE_MARGIN);
 		const all = items();
 		(focus === 'first' ? all[0] : all[all.length - 1])?.focus();
 	}
@@ -109,6 +130,7 @@
 			class="absolute top-full z-30 mt-1.5 grid min-w-56 gap-0.5 rounded-app border border-border bg-card p-1.5 shadow-pop"
 			class:left-0={align === 'start'}
 			class:right-0={align === 'end'}
+			style:translate={shift ? `${shift}px 0` : undefined}
 		>
 			{@render children({ close })}
 		</div>

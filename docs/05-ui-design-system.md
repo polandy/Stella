@@ -319,6 +319,9 @@ They must be edited together; `app.css` says so at both blocks.
   connection path start a second row. The **peek panel** has no room beside the map there, so
   it becomes a strip along the bottom — avatar and name side by side, its buttons in one row,
   the general tip left out — and the toolbar stays within reach while somebody is selected.
+  An open Filter or Arrange menu moves sideways as far as it must to stay on the map, 12 px
+  clear of its edge: on a phone both pills stand at the right, and a menu opening from there
+  would run off the screen.
   A **Full screen** button at the end of the toolbar row hands the whole frame — canvas, toolbar
   and peek panel — to full screen, on the graph route and on a person's map alike. On a mouse
   it is the browser's own Fullscreen API (Esc leaves it too, which is fine — nobody presses Esc
