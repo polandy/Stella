@@ -336,9 +336,14 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
     same photos without doubling any. A kept moment shows a photo *count*, not thumbnails. A
     photo arriving after its entry was deleted is refused (*Could not send a photo*) and can
     only be discarded. No size cap beyond the existing per-photo limits (§6.4).
-15. **Everything but a person on their own is built.** Moments (with photos), notes, calls and
-    visits, tags, circles and relationships. A person on their own (*Add person*) is the one
-    left: it needs the new person's page to exist offline, which a cached site cannot offer. Ordering between queued items (a
+15. **Every addition is built:** moments (with photos), notes, calls and visits, tags, circles,
+    relationships and a new person. Ordering between queued items is still not needed: a note
+    or a link can only be added on a person's page, and a person kept offline has no page
+    until Stella has them.
+26. **A person kept offline gets no page and no relative link.** *Add person* announces them
+    as kept and empties itself; the duplicate check's *link as relative* needs Stella, so it
+    is not carried over. Online the form now saves through `enhance` (it posted natively) and
+    still opens the new person's page. Ordering between queued items (a
     note on a person added offline) is not needed until people can be added offline.
 19. **Notes: the person page's logic moved into the domain** (`writeNote`), so a kept note and
     one written online are checked the same way. One visible change: a note on someone who is

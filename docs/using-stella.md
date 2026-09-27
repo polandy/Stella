@@ -573,7 +573,8 @@ ever dropped quietly. Photos wait with the moment and follow it once it is in. N
 and new people on their own cannot wait on the phone yet; those follow. A note you write on
 someone's page is kept the same way, and so is a call or visit, a tag or a circle you add
 there, and a relationship between two people; they show where they will land until they are
-sent. A relationship is checked when it arrives, like any other.
+sent. A relationship is checked when it arrives, like any other. Even *Add person* works: the
+new person waits on your phone and is added once Stella answers again.
 
 Signing out clears the pages your phone was keeping, so handing a device on does not hand on
 the household with it. If moments you wrote are still waiting, Stella asks first whether to keep

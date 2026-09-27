@@ -1328,8 +1328,10 @@ has meanwhile become a duplicate or a contradiction comes back as *Could not sen
   own, so a photo that fails keeps only itself waiting; the kept moment says *Photos not sent
   yet* until the last one is in. Once Stella has the moment it is household data, and the
   kept copy can no longer be edited, only discarded.
-- **Not yet.** Adding a person on their own follows (`docs/concepts/offline-capture.md`
-  §4.1); until then a new person can be created from a moment's *Create "…"*.
+- **A new person** added on *Add person* is kept too. Their page cannot open before Stella has
+  them, so the form says they are kept and stays ready for the next one; they show on Home as
+  not sent yet. Linking them to a relative found by the duplicate check (§2.2.1) needs Stella,
+  so that offer is not made out of reach.
 
 **What degrades.** A cached person page is the page as it was when last read, so anything
 added since is not on it, and the parts that fetch on demand — the relationship map, search

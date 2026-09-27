@@ -657,6 +657,10 @@ dashed outline at the top of that person's *Notes* section;
 *Edit* reopens the note form on it, whose button then reads *Save*. On Home it appears among
 the kept moments as *Not sent yet · note on <name>*, and its *Edit* goes to that person's notes.
 
+A **kept new person** is announced on *Add person* itself, in a dashed `role="status"` line
+above the emptied form (*… is kept on this device and added once it answers again*), and on
+Home as *Not sent yet · new person*.
+
 A **kept relationship** is a `KeptItem` at the top of the relationships card, named as the
 picker names it (*Friend of Corinne Keller*), with *Discard* only.
 
