@@ -784,6 +784,7 @@
 					count={visibleRelationships.length}
 					addLabel={t('contact.relationships.add')}
 					error={form?.error ?? null}
+					actionGrid
 					bind:open={relateOpen}
 				>
 					{#snippet action()}
@@ -798,20 +799,21 @@
 								{t('contact.relationships.howConnected')}
 							</Button>
 						{/if}
+						<!-- The way out of this person's two hops and into the household (docs/05 §5.5).
+						     A button, not a 12px text link: it is the second thing this card offers. -->
+						<Button size="sm" icon="graph" href="/graph?center={c.id}">
+							{t('graph.openInGraph')}
+						</Button>
 						<!--
 							The on-demand review (docs/concepts/relationship-suggestions.md §6.5). Quiet on
 							purpose: a ghost control, because asking what else might be true is never the
-							thing this card is for. Nothing runs until it is pressed.
+							thing this card is for. Nothing runs until it is pressed. It follows the two framed
+							buttons, beside the other quiet one (Add), so on a phone the four make an even grid.
 						-->
 						<Button variant="ghost" size="sm" icon="search" href="/contacts/{c.id}?review#relationships">
 							{data.review.open
 								? t('contact.relationships.reviewAgain')
 								: t('contact.relationships.review')}
-						</Button>
-						<!-- The way out of this person's two hops and into the household (docs/05 §5.5).
-						     A button, not a 12px text link: it is the second thing this card offers. -->
-						<Button size="sm" icon="graph" href="/graph?center={c.id}">
-							{t('graph.openInGraph')}
 						</Button>
 					{/snippet}
 

@@ -261,7 +261,11 @@ They must be edited together; `app.css` says so at both blocks.
     carries a *Back to <person>* link home (§2.7). Beside it, **How are we connected?** opens a
     person picker — the same one every other "which person?" question on this page uses — and
     hands both ends to the explorer, which traces the chain on arrival. The card asks the
-    question and does not answer it: it holds two hops, and the answer usually runs further. The list
+    question and does not answer it: it holds two hops, and the answer usually runs further.
+    The header orders its actions framed first (*How are we connected?*, *Open in the graph*),
+    then the quiet ones (*Check relationships*, *Add relationship*). On a phone the four would
+    wrap into ragged rows, so there they stand as an even two-by-two grid, framed alike and
+    without icons (`Section`'s `actionGrid`); the quiet/framed ranking is a wide-screen one. The list
     follows, each row *label · name · how they connect · since <day>* with *former* as a quiet
     chip, carrying **Edit** (revealing the same three fields in place, the type not among them)
     and the standard remove-with-undo. Below it, **Also related · worked out, not entered**
