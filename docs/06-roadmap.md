@@ -134,8 +134,9 @@ Goal: sand the edges and add the nice-to-haves.
   steps:
   1. **Every change becomes a command.** One dispatcher, idempotent by the command's id, and
      each route moved behind it on its own.
-  2. **An outbox on the phone.** It keeps what was *added* away from home, lets it be edited
-     until it is sent, and sends it once Stella answers again. Nothing others have seen is
+  2. **An outbox on the phone.** It keeps everything *added* away from home, photos
+     included, lets it be edited until it is sent, and sends it once Stella answers again.
+     Moments first, then one adding form at a time. Nothing others have seen is
      changed offline, so there is nothing to merge, and the server re-checks everything on
      arrival.
 

@@ -70,11 +70,13 @@ interface Command {
 - **Every command type declares its kind:** *add*, *change* or *remove*. Only *add* commands
   may be queued on a device (§4). The server enforces this, not only the client.
 - **Idempotency lives in one place.** A `command_receipt` row (command id, member, outcome,
-  time) is written in the same transaction as the command's effect. A command id seen
+  time) is written in the same transaction as the command's effect. It is **kept for good**. A
+  row holds no content, and a household makes a few thousand a year, so a phone that was
+  offline for months still cannot send anything twice, and there is no clean-up job. A command id seen
   before answers with the stored outcome and changes nothing. This makes resending safe for
   every command at once. Before, it would have needed solving once per endpoint.
 - **The tables stay the truth.** Receipts are never replayed, and nothing is derived from them.
-  `activity_log` keeps its narrow job (§4.9).
+  `activity_log` keeps its narrow job (docs/04 §4.9).
 - **Form actions and `/api/v1` call the dispatcher.** This gives one path per change, whether
   it comes from a form, a script or the outbox. The migration goes route by route, and each
   route is its own small PR. `moment.capture` is the first command, because it is the first
@@ -86,25 +88,52 @@ interface Command {
 
 ## 4. The outbox: adding while out of reach
 
-### 4.1 What a member sees
+### 4.1 What can be added
+
+**Everything that adds a row, from the first version:**
+- a moment, with people created inline;
+- a person;
+- a logged call or visit (§2.6);
+- a note;
+- a relationship;
+- a tag on a person;
+- a person added to a circle.
+
+Setting a field on someone who already exists is a *change*, even when the field was empty:
+a birthday, a name, a photo as avatar. Answering a suggestion or the household review is
+a change too. None of these are queued.
+
+Every form that adds works on its cached page as it does online. A relationship is the
+addition most likely to be refused on arrival, because its guardrails (§2.4) are checked
+against the household as it is *then*. It is kept as *Could not send*, like anything else.
+
+### 4.2 What a member sees
 
 - **The composer works as usual.** On a phone, the *What happened?* sheet opens as it does
   online. The offline line above the page (§2.18) is already showing. The save button says
   **Save for later** instead of **Save**.
-- **Mentions still autocomplete**, from the directory (§4.4). *Create "Name"* still works;
+- **Mentions and pickers still work**, from the directory (§4.5). *Create "Name"* still works;
   the person is added before the moment is.
-- **Photos: not in the first version.** A downscaled photo is hundreds of kilobytes per item,
-  and a failed send would have to keep it too. They can be added later without changing
-  anything else here.
-- **Unsent items stay visible.** They show at the top of the stream as *Not sent yet*, marked
-  like a draft. The shell's activity indicator (`src/lib/sync`) counts them. They look
+- **Photos, from the first version.** A photo is often why there is a moment at all. It is
+  processed in the browser exactly as online: downscaled, location data stripped. The result
+  is kept with the queued item in IndexedDB, under the same per-moment limit as online.
+  - If the device refuses the storage, *Save for later* fails visibly and the text stays in
+    the composer. Nothing is half-saved.
+  - Photos are sent after the item's text is confirmed. A photo that fails to upload keeps
+    only that photo waiting, not the moment.
+- **Unsent items stay visible, where they will land.**
+  - In the stream they sit at the top as *Not sent yet*: a dashed edge and a hollow dot.
+    Tapping one opens it for editing.
+  - On a person's page, an unsent note, tag or relationship shows the same way, in its own
+    section.
+  - *Could not send* uses the danger colour and says why. The shell's activity indicator (`src/lib/sync`) counts them. They look
   different from sent items, so nobody takes them for household knowledge that others can
   already see.
 - **Sending is automatic.** It happens once Stella answers again: the service worker already
   reports reachability to the page (§2.18, `reachability.ts`), and opening the app triggers
   it too. Background Sync is not relied on, because Safari and Firefox do not have it.
 
-### 4.2 Editing what has not been sent yet
+### 4.3 Editing what has not been sent yet
 
 Something written offline has been seen by nobody else, so changing it is private to the
 device and cannot conflict.
@@ -122,7 +151,7 @@ device and cannot conflict.
   then on it is edited online, like anything else. Offline it is read-only, like every
   cached page.
 
-### 4.3 What can go wrong on arrival, and what happens then
+### 4.4 What can go wrong on arrival, and what happens then
 
 Every command is checked again on arrival, with today's rules. It is never "trusted because it
 was valid when written".
@@ -133,7 +162,8 @@ was valid when written".
 | a mentioned person was deleted, merged or made invisible to the author | **kept** as *Could not send*, with the reason; editable, resendable or discardable; never dropped silently |
 | it refers to an item that could not be sent (a moment about an offline-added Vesna whose add was refused) | held as *Could not send* too, naming what it waits for |
 | the session has expired (e.g. the OIDC session ended) | waits; sent after signing in again |
-| the same command arrives twice (the connection dropped after the server applied it) | *already applied*, via its receipt (§3) |
+| the same command arrives twice (the connection dropped after the server applied it) | *already applied*, via its receipt (§3), however late |
+| a relationship that the guardrails now refuse (e.g. someone else linked the two meanwhile) | *Could not send*, with the guardrail's reason |
 | the anchor's journal already has an entry on that day, from any device | appended to it, never replaced, as for every moment (§2.22.1) |
 
 The rule behind the table: **the outbox is the only copy of what the member wrote.** Nothing
@@ -143,11 +173,16 @@ leaves it until the server has confirmed it, or the member discards it.
 a person added in the same offline stretch. The outbox sends in the order things were
 written, and an item never goes before one it depends on.
 
-### 4.4 The directory
+### 4.5 The directory
 
-For mentions to work offline, the device needs the names it may mention. That is new data
-at rest: a compact list (id, display name, avatar id, visibility) of the people the member
-can see, fetched through the access layer like any other read. It is refreshed whenever the
+For mentions and pickers to work offline, the device needs what they choose from. That is new
+data at rest:
+- **every person the member can see**: id, display name, avatar id, visibility;
+- **the household's relationship types, tags and the circles the member can see**, by id and
+  name.
+
+It is fetched through the access layer like any other read. For a household of a few hundred
+people it is tens of kilobytes; the cached pages already hold far more. It is refreshed whenever the
 app is reachable. It is deleted on sign-out, as the cached pages are (§2.18). The same
 bargain applies as for those pages, and it is written down the same way: no encryption; it
 protects a device that is handed on, not one left signed in.
@@ -155,7 +190,7 @@ protects a device that is handed on, not one left signed in.
 It is scoped per viewer. A private person another member created is never in it, just as they
 are never in search.
 
-### 4.5 Signing out with something unsent
+### 4.6 Signing out with something unsent
 
 Signing out deletes the device's cached pages (§2.18). The outbox must not be deleted
 silently with them. The sign-out form therefore says *"2 items have not been sent yet"* and
@@ -179,7 +214,7 @@ A different member signing in on the device never sees or sends someone else's o
   - the item states: pending → sending → gone, or pending → sending → could-not-send;
   - folding an edit into a pending item;
   - the dependency order;
-  - turning the server's outcome into one of the §4.3 rows.
+  - turning the server's outcome into one of the §4.4 rows.
 - **`src/lib/pwa/outbox-store.ts`**: the IndexedDB adapter. It decides nothing.
 - **One route**, `POST /api/commands`, that takes a batch of queued commands in order and
   answers one outcome each. It accepts only *add* commands. It is deliberately not "replay
@@ -190,24 +225,22 @@ A different member signing in on the device never sees or sends someone else's o
 
 ---
 
-## 6. Open questions
+## 6. Decided with the maintainer
 
-1. **Which additions come first.**
-   - Moments with inline people are the reason for all of this.
-   - Logged calls and visits (§2.6) and notes are the obvious next ones.
-   - A relationship link is an addition too, but its guardrails (§2.4) can refuse it on
-     arrival. It may be better left online.
-2. **Receipt retention.** How long a receipt is kept bounds how late a duplicate can still be
-   recognised. A device can be offline for weeks.
-3. **Directory size.** Is a list of every visible person acceptable at rest on a phone, or only
-   the people the member has recently opened? The full list makes mentions work; the short
-   list leaks less.
-4. **Photos** in a second step (§4.1): with a size cap, or not at all?
-5. **What "Not sent yet" and "Could not send" look like** in the stream on a phone. This needs
-   a sketch in docs/05 before it is built.
+1. **What can be added offline:** everything that adds a row, from the first version (§4.1).
+   The recommendation was moments only, to begin with. It was set wider, at the cost of an
+   offline path in every adding form.
+2. **Receipts:** kept for good (§3).
+3. **Directory:** every person the member can see, plus types, tags and circles (§4.5).
+4. **Photos:** from the first version (§4.2). The recommendation was a second step.
+5. **Looks:** unsent items sit where they will land, marked as drafts (§4.2). The sketch goes
+   into docs/05 with the outbox PR.
+6. **Same-day moments** used to replace each other, online too. Since #154 a second one is
+   appended (§2.22.1).
 
-*Answered:* a second moment about the same person on the same day used to replace the first,
-online too. Since #154 it is appended to the entry (§2.22.1).
+Still open: whether an archive (§2.15) should carry the receipts. Without them, a phone that
+has not sent yet could send twice to a household restored onto a new server. This is rare
+enough to decide when the receipt table is built.
 
 ---
 
@@ -219,9 +252,13 @@ online too. Since #154 it is appended to the entry (§2.22.1).
   - **Size:** the dispatcher, one table and one route. The bulk is the mechanical migration,
     about one small PR per area.
 - **The outbox**:
-  - **About the size of §2.18.** One pure module, one IndexedDB adapter, one endpoint, a
-    scoped directory read, and three UI states: *Save for later*, *Not sent yet* and
-    *Could not send*.
+  - **Larger than §2.18, because of the scope decided in §6.** The core is still one pure
+    module, one IndexedDB adapter, one endpoint and a scoped directory read. On top of that:
+    - every adding form (about seven) gets an offline path and a draft state on its page;
+    - photos are stored and sent;
+    - relationships can be refused on arrival.
+  - **The cheap way to build it:** moments first, end to end, then one form per PR. The scope
+    stays what was decided; only the order is chosen.
   - **Editing unsent items adds a little.** It needs folding an edit into a pending item and
     the send-time lock. It needs no conflict rule, because nothing that others have seen is
     ever changed offline.
