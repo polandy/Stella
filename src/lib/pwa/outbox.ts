@@ -1,0 +1,143 @@
+import type { Command, CommandAnswer, CommandPayloads } from '../commands/commands';
+
+/*
+ * The outbox (docs/concepts/offline-capture.md §4): what a phone holds back while Stella is
+ * out of reach, and what becomes of it. Pure; `outbox-store.ts` keeps it on the device and
+ * `outbox.svelte.ts` sends it. Every function returns a new list and leaves its input alone.
+ *
+ * The rule: **the outbox is the only copy of what the member wrote.** Nothing leaves it until
+ * Stella has confirmed it (`applied`) or the member discards it. An item being edited is *held*
+ * and never sent from under the editor, and one on its way (*sending*) cannot be edited or
+ * discarded, because nobody can know whether Stella already has it.
+ */
+
+/**
+ * Where an item stands. `pending` waits to be sent; `held` is open in the composer; `sending`
+ * is in a request with no answer yet; `refused` came back with a reason the member can act on.
+ */
+export type OutboxState = 'pending' | 'held' | 'sending' | 'refused';
+
+/** One thing a member added while Stella could not be reached. */
+export interface OutboxItem {
+	command: Command;
+	/** Whose it is: a different member signing in on the device never sees or sends it. */
+	memberId: string;
+	state: OutboxState;
+	/** Why Stella refused it, in the member's language; null unless it was refused. */
+	reason: string | null;
+	/** When it was saved on the device (epoch ms). */
+	savedAt: number;
+}
+
+/** Append a newly written item. */
+export function queue(
+	items: readonly OutboxItem[],
+	added: { command: Command; memberId: string; savedAt: number }
+): OutboxItem[] {
+	return [...items, { ...added, state: 'pending', reason: null }];
+}
+
+/**
+ * Take up to `max` of `memberId`'s pending items, oldest first, marking them *sending*.
+ * Oldest first because a later item may name something an earlier one created.
+ */
+export function takeBatch(
+	items: readonly OutboxItem[],
+	memberId: string,
+	max: number
+): { items: OutboxItem[]; batch: Command[] } {
+	const batch: Command[] = [];
+	const next = items.map((item) => {
+		if (batch.length >= max || item.memberId !== memberId || item.state !== 'pending') return item;
+		batch.push(item.command);
+		return { ...item, state: 'sending' as const };
+	});
+	return { items: next, batch };
+}
+
+/**
+ * Apply Stella's answers to what was in flight. *Applied* leaves; *refused* stays with its
+ * reason; *busy*, *failed* and anything left unanswered go back to waiting.
+ */
+export function settle(items: readonly OutboxItem[], answers: readonly CommandAnswer[]): OutboxItem[] {
+	const byId = new Map(answers.map((a) => [a.id, a]));
+	const next: OutboxItem[] = [];
+	for (const item of items) {
+		if (item.state !== 'sending') {
+			next.push(item);
+			continue;
+		}
+		const answer = byId.get(item.command.id);
+		if (answer?.status === 'applied') continue;
+		next.push(
+			answer?.status === 'refused'
+				? { ...item, state: 'refused', reason: answer.reason }
+				: { ...item, state: 'pending' }
+		);
+	}
+	return next;
+}
+
+/** The request never got an answer: everything in flight waits again. */
+export function unsend(items: readonly OutboxItem[]): OutboxItem[] {
+	return items.map((item) => (item.state === 'sending' ? { ...item, state: 'pending' } : item));
+}
+
+/**
+ * Open an item for editing, so it is not sent meanwhile. Null when it is on its way, or
+ * not there any more.
+ */
+export function hold(items: readonly OutboxItem[], id: string): OutboxItem[] | null {
+	const item = items.find((i) => i.command.id === id);
+	if (!item || item.state === 'sending') return null;
+	return items.map((i) => (i === item ? { ...i, state: 'held' } : i));
+}
+
+/** Close an edit without saving: the item goes back to where it was. */
+export function release(items: readonly OutboxItem[], id: string): OutboxItem[] {
+	return items.map((i) =>
+		i.command.id === id && i.state === 'held'
+			? { ...i, state: i.reason === null ? 'pending' : 'refused' }
+			: i
+	);
+}
+
+/**
+ * Save an edit into a held item, which then waits to be sent again. A refused item becomes
+ * a new command under `freshId`: Stella has already answered the old id, and the corrected
+ * one is a different request. A pending item keeps its id, so a copy that did reach Stella
+ * earlier is still recognised. Null when the item is not held.
+ */
+export function revise<T extends Command['type']>(
+	items: readonly OutboxItem[],
+	id: string,
+	payload: CommandPayloads[T],
+	freshId: string
+): OutboxItem[] | null {
+	const item = items.find((i) => i.command.id === id);
+	if (!item || item.state !== 'held') return null;
+	const command = {
+		...item.command,
+		id: item.reason === null ? item.command.id : freshId,
+		payload
+	} as Command;
+	return items.map((i) => (i === item ? { ...i, command, state: 'pending', reason: null } : i));
+}
+
+/** The member does not want it any more. Null when it is on its way and cannot be recalled. */
+export function discard(items: readonly OutboxItem[], id: string): OutboxItem[] | null {
+	const item = items.find((i) => i.command.id === id);
+	if (!item || item.state === 'sending') return null;
+	return items.filter((i) => i !== item);
+}
+
+/**
+ * The outbox as a freshly opened app finds it. An app closed mid-request left items
+ * *sending* with no answer coming, and one closed mid-edit left them *held* with no editor.
+ * Both go back to where they would be; a resend is safe, because Stella knows every id.
+ */
+export function recover(items: readonly OutboxItem[]): OutboxItem[] {
+	return unsend(items).map((i) =>
+		i.state === 'held' ? { ...i, state: i.reason === null ? 'pending' : 'refused' } : i
+	);
+}

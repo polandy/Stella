@@ -20,6 +20,15 @@ export const home = {
 	'home.showAll': (p: { count: number }) => `Show all ${p.count}`,
 	'home.lastWritten': (p: { ago: string }) => `Last written ${p.ago}`,
 	'home.nothingWrittenYet': 'Nothing written yet',
+	'home.outbox.label': 'Not sent yet',
+	'home.outbox.notSent': 'Not sent yet',
+	'home.outbox.editing': 'Being edited',
+	'home.outbox.sending': 'Sending…',
+	'home.outbox.couldNotSend': 'Could not send',
+	'home.outbox.edit': 'Edit',
+	'home.outbox.discard': 'Discard',
+	'home.outbox.discardQuestion': 'This device holds the only copy.',
+	'home.outbox.discardConfirm': 'Discard for good',
 	'home.empty.title': 'Nothing written yet',
 	'home.empty.hint':
 		'Write the first moment above and mention someone with @ — that is all it takes.',
@@ -59,6 +68,11 @@ export const home = {
 	'home.daysAgo': (p: { days: number }) => `${p.days}d ago`,
 	'home.weeksAgo': (p: { weeks: number }) => `${p.weeks}w ago`,
 
+	'composer.saveForLater': 'Save for later',
+	'composer.photosNeedStella':
+		'Stella is out of reach, and photos cannot wait on this device yet. Remove them to keep the text for later.',
+	'composer.couldNotKeep': 'This device could not keep the moment. The text is still here.',
+	'composer.alreadySending': 'This moment is being sent right now and can no longer be edited here.',
 	'composer.placeholder': 'Met someone? Type it here, mention people with @',
 	'composer.label': 'What happened?',
 	'composer.people': 'People',

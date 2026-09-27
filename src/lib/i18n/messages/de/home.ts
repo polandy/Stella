@@ -14,6 +14,15 @@ export const home: HomeMessages = {
 	'home.showAll': (p) => `Alle ${p.count} anzeigen`,
 	'home.lastWritten': (p) => `Zuletzt geschrieben ${p.ago}`,
 	'home.nothingWrittenYet': 'Noch nichts geschrieben',
+	'home.outbox.label': 'Noch nicht gesendet',
+	'home.outbox.notSent': 'Noch nicht gesendet',
+	'home.outbox.editing': 'Wird bearbeitet',
+	'home.outbox.sending': 'Wird gesendet…',
+	'home.outbox.couldNotSend': 'Konnte nicht gesendet werden',
+	'home.outbox.edit': 'Bearbeiten',
+	'home.outbox.discard': 'Verwerfen',
+	'home.outbox.discardQuestion': 'Nur dieses Gerät hat eine Kopie.',
+	'home.outbox.discardConfirm': 'Endgültig verwerfen',
 	'home.empty.title': 'Noch nichts geschrieben',
 	'home.empty.hint':
 		'Schreib oben den ersten Moment und erwähne jemanden mit @ — mehr braucht es nicht.',
@@ -53,6 +62,11 @@ export const home: HomeMessages = {
 	'home.daysAgo': (p) => `vor ${p.days} T.`,
 	'home.weeksAgo': (p) => `vor ${p.weeks} Wo.`,
 
+	'composer.saveForLater': 'Für später speichern',
+	'composer.photosNeedStella':
+		'Stella ist nicht erreichbar, und Fotos können noch nicht auf diesem Gerät warten. Entferne sie, um den Text für später zu behalten.',
+	'composer.couldNotKeep': 'Dieses Gerät konnte den Moment nicht behalten. Der Text ist noch da.',
+	'composer.alreadySending': 'Dieser Moment wird gerade gesendet und kann hier nicht mehr bearbeitet werden.',
 	'composer.placeholder': 'Jemanden getroffen? Schreib es hier, erwähne Menschen mit @',
 	'composer.label': 'Was ist passiert?',
 	'composer.people': 'Menschen',

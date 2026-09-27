@@ -1,11 +1,14 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, pushState } from '$app/navigation';
+	import { page } from '$app/state';
 	import { MediaQuery } from 'svelte/reactivity';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
+	import { outbox } from '$lib/pwa/outbox.svelte';
+	import type { OutboxItem } from '$lib/pwa/outbox';
 	import { agoLabel, occasionLabel, whenLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { relationshipRowLabel } from '$lib/relationships/labels';
@@ -102,24 +105,71 @@
 	// and survives a reload, and there is nothing to keep in sync with the tab bar.
 	// Below `md` the composer lives in the sheet; above it, at the top of the stream. One of
 	// them is mounted at a time, so there is exactly one "What happened?" field on the page.
+	// The kept moment open in the composer, if any (see below).
+	let editing = $state<OutboxItem | null>(null);
+
+	// The sheet also opens as shallow state (`page.state.compose`): that needs no server round
+	// trip, so the pencil still works while Stella is out of reach.
 	const phone = new MediaQuery('(width < 48rem)');
-	const sheetOpen = $derived(data.compose && phone.current);
+	const sheetOpen = $derived(
+		(data.compose || page.state.compose === true || page.url.searchParams.has('compose') || editing !== null) &&
+			phone.current
+	);
+	function openSheet(event: MouseEvent) {
+		event.preventDefault();
+		pushState('/?compose', { compose: true });
+	}
 	function closeSheet() {
+		if (editing) return void stopEditing();
+		if (page.state.compose) return history.back();
 		void goto('/', { replaceState: true, noScroll: true });
 	}
+
+	/*
+	 * Moments kept on this device while Stella was out of reach (docs/concepts/offline-capture.md
+	 * §4), shown where they will land: at the top of the stream, marked as not sent yet. One can
+	 * be opened in the composer until it is on its way; discarding asks twice, because the
+	 * device holds the only copy.
+	 */
+	let confirmingDiscard = $state<string | null>(null);
+	async function edit(item: OutboxItem) {
+		if (await outbox.hold(item.command.id)) editing = outbox.mine.find((i) => i.command.id === item.command.id) ?? null;
+	}
+	async function stopEditing() {
+		const item = editing;
+		editing = null;
+		if (item) await outbox.release(item.command.id);
+	}
+	async function discardKept(item: OutboxItem) {
+		confirmingDiscard = null;
+		await outbox.discard(item.command.id);
+	}
+	/** The day a kept moment is about, read the reader's way. */
+	function keptDay(iso: string): string {
+		return new Date(`${iso}T12:00:00`).toLocaleDateString(i18n.intlLocale, { day: 'numeric', month: 'long' });
+	}
+	const OUTBOX_LABEL: Record<OutboxItem['state'], MessageKey> = {
+		pending: 'home.outbox.notSent',
+		held: 'home.outbox.editing',
+		sending: 'home.outbox.sending',
+		refused: 'home.outbox.couldNotSend'
+	};
 </script>
 
 <svelte:head><title>{t('home.title')}</title></svelte:head>
 
 {#snippet composer()}
-	{#key data.draft}
+	{#key `${data.draft}:${editing?.command.id ?? ''}`}
 		<MomentComposer
 			candidates={data.candidates}
 			me={{ id: data.user.id, name: data.user.name }}
 			today={data.today}
-			error={form?.momentError ?? null}
+			error={editing ? null : (form?.momentError ?? null)}
 			draft={form?.draft ?? data.draft}
-			autofocus={data.compose}
+			autofocus={data.compose || page.state.compose === true || editing !== null}
+			{editing}
+			onEditDone={stopEditing}
+			onKept={() => sheetOpen && closeSheet()}
 		/>
 	{/key}
 {/snippet}
@@ -146,12 +196,49 @@
 				</div>
 			</div>
 		{:else}
-			<a href="/?compose" class="flex items-center gap-3 rounded-app bg-card px-3 py-2.5 text-sm text-fg-subtle shadow-card">
+			<a href="/?compose" onclick={openSheet} class="flex items-center gap-3 rounded-app bg-card px-3 py-2.5 text-sm text-fg-subtle shadow-card">
 				<Avatar id={data.user.id} name={data.user.name} avatarPhotoId={null} size={28} />
 				{t('home.heading')}
 			</a>
 		{/if}
 	</div>
+
+	{#if outbox.mine.length}
+		<section class="mt-3 flex flex-col gap-1.5" aria-label={t('home.outbox.label')} data-testid="outbox">
+			{#each outbox.mine as item (item.command.id)}
+				{@const refused = item.state === 'refused'}
+				<article
+					class="grid grid-cols-[32px_1fr] gap-3 rounded-app border border-dashed px-2.5 py-2.5 {refused ? 'border-danger/60 bg-danger/5' : 'border-border'}"
+					data-outbox-state={item.state}
+				>
+					<span class="grid size-8 place-items-center rounded-full border border-dashed {refused ? 'border-danger text-danger' : 'border-fg-subtle text-fg-subtle'}" aria-hidden="true">
+						<Icon name="offline" size={14} />
+					</span>
+					<div class="min-w-0">
+						<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
+							<b class="font-semibold {refused ? 'text-danger' : 'text-fg'}">{t(OUTBOX_LABEL[item.state])}</b>
+							{#if item.command.payload.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('common.onlyYouSee')}><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
+							<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.entryDate}>{keptDay(item.command.payload.entryDate)}</span>
+						</div>
+						<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
+						{#if item.reason}<p class="mt-1 text-sm text-danger">{item.reason}</p>{/if}
+						{#if item.state === 'pending' || item.state === 'refused'}
+							<div class="mt-1.5 flex flex-wrap gap-1.5">
+								{#if confirmingDiscard === item.command.id}
+									<span class="self-center text-xs text-fg-muted">{t('home.outbox.discardQuestion')}</span>
+									<Button variant="danger" size="sm" onclick={() => discardKept(item)}>{t('home.outbox.discardConfirm')}</Button>
+									<Button variant="ghost" size="sm" onclick={() => (confirmingDiscard = null)}>{t('common.cancel')}</Button>
+								{:else}
+									<Button variant="secondary" size="sm" icon="write" onclick={() => edit(item)}>{t('home.outbox.edit')}</Button>
+									<Button variant="ghost" size="sm" icon="remove" onclick={() => (confirmingDiscard = item.command.id)}>{t('home.outbox.discard')}</Button>
+								{/if}
+							</div>
+						{/if}
+					</div>
+				</article>
+			{/each}
+		</section>
+	{/if}
 
 </div>
 

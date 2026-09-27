@@ -71,6 +71,20 @@ export function verdictFor(request: CacheableRequest): CacheVerdict {
 	return 'keep';
 }
 
+/**
+ * The kept page that may stand in for `request` when the network is gone and the page itself
+ * was never kept, or null. A question in the URL (`/?compose`, `?relate=…`) is not kept, but
+ * it asks something *of* a page that is: offline, that page is a far better answer than the
+ * browser's error screen, and the app on it can still read the question from the address.
+ */
+export function standInFor(request: CacheableRequest): string | null {
+	if (request.method !== 'GET' || !request.isNavigation) return null;
+
+	const url = new URL(request.url);
+	if (url.origin !== request.origin || url.search === '' || isVolatile(url.pathname)) return null;
+	return url.pathname;
+}
+
 /** The route that ends a session. A POST to it is the last thing a signed-in device does. */
 const SIGN_OUT_PATH = '/logout';
 
