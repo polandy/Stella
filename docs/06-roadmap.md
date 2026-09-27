@@ -134,6 +134,12 @@ Goal: sand the edges and add the nice-to-haves.
   full three-part date field (day, month, year; docs/05 §5.7), which is heavy for a sentence
   written in passing. Today stays the default. Start with mockups of the lighter options
   before building anything (§2.22.1).
+- *TODO:* **confirm a worked-out relationship to store it** — every row in *Also related ·
+  worked out, not entered* (grandparent, aunt, cousin, in-law, …) gets a way to confirm it,
+  which then stores it as an explicit relationship, as *Actually the child* already does for
+  step relatives (§2.4.1). Today only step terms can be settled; the rest stay read-only.
+  Open: which derived terms have a stored type to become, and whether a confirmed link should
+  keep saying *via* whom it was worked out.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
