@@ -52,6 +52,27 @@ describe('parseCommand, for a note', () => {
 	});
 });
 
+describe('parseCommand, for a call or visit', () => {
+	const call = { id: ID, type: 'interaction.log', payload: { contactId: 'oma', kind: 'call', happenedAt: '2026-09-27' }, issuedAt: 3 };
+
+	it('reads a call, filling in what the form may leave out', () => {
+		expect(parseCommand(call)?.payload).toEqual({
+			contactId: 'oma',
+			kind: 'call',
+			happenedAt: '2026-09-27',
+			title: null,
+			description: null,
+			visibility: 'shared',
+			participantIds: []
+		});
+	});
+
+	it('refuses an unknown kind or a day that is not one', () => {
+		expect(parseCommand({ ...call, payload: { ...call.payload, kind: 'telegram' } })).toBeNull();
+		expect(parseCommand({ ...call, payload: { ...call.payload, happenedAt: 'Sunday' } })).toBeNull();
+	});
+});
+
 describe('parsePhotoCommand', () => {
 	const bytes = new Uint8Array([1, 2, 3]);
 	const photo = { id: ID, momentId: '01K6A5ZQ3V9W8X7Y6Z5A4B3C2E', image: bytes, thumb: bytes, width: 1600, height: 1200, issuedAt: 5 };

@@ -79,6 +79,7 @@ import { createDrizzleCommandReceiptRepository } from './db/command-receipt-repo
 import { createDrizzleEntryOwnership } from './db/entry-ownership';
 import { attachMomentPhoto } from './domain/commands/moment-photo';
 import { writeNote } from './domain/notes/write-note';
+import { logInteractionChecked } from './domain/interactions/log-checked';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
 import type { ImportDeps, ImportRepository } from './domain/import/apply';
 import type { ApiImportDeps } from './domain/import/api/api-import';
@@ -479,6 +480,8 @@ export function getCommandDeps(): CommandDeps {
 				)),
 				visibility: payload.visibility
 			}),
+			'interaction.log': (actor, payload) =>
+				logInteractionChecked({ ...getInteractionDeps(), contacts: getContacts() }, actor, payload),
 			'note.add': (actor, payload) =>
 				writeNote({ ...getNoteDeps(), contacts: getContacts() }, actor, payload),
 			'moment.photo': (actor, payload) =>

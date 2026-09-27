@@ -46,12 +46,19 @@
 	import type { RelationshipCategory } from '$lib/relationships/categories';
 	import { sinceDateFromBirth } from '$lib/relationships/since';
 	import type { SelectablePerson } from '$lib/people/select';
-	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
+	import {
+		INTERACTION_KINDS,
+		isInteractionKind,
+		KIND_PRESENTATION,
+		type InteractionKind
+	} from '$lib/interactions/kinds';
+	import type { JsonCommand } from '$lib/commands/commands';
 	import { untrack } from 'svelte';
 	import { ulid } from 'ulid';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { keepable } from '$lib/pwa/keepable';
+	import KeptItem from '$lib/components/KeptItem.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { ActionData, PageData } from './$types';
 
@@ -218,8 +225,8 @@
 
 	// Saving through `enhance` keeps the page — and with it any open undo window — alive, so
 	// each section closes itself here instead of on the reload a redirect used to cause.
-	// Logging a touchpoint is the exception: the story timeline owns its paged list, and only
-	// a fresh page gives it the new item, so that form still posts natively.
+	// Logging a touchpoint too: the story timeline, which owns its paged list, is keyed on the
+	// page's story, so the reloaded data hands it the new item as a fresh first page.
 	let openSection = $state({ contact: false, dates: false, circles: false, tags: false, note: false });
 	// The note's audience narrows whom the @-picker offers (docs/02 §2.20.1).
 	let noteVisibility = $state<'shared' | 'private'>('shared');
@@ -238,7 +245,6 @@
 		)
 	);
 	let editingNote = $state<KeptOf<'note.add'> | null>(null);
-	let confirmingNoteDiscard = $state<string | null>(null);
 	async function editKeptNote(item: KeptOf<'note.add'>) {
 		if (!(await outbox.hold(item.command.id))) return;
 		editingNote = item;
@@ -433,6 +439,102 @@
 	let merging = $state(false);
 	let mergeTargetId = $state<string[]>([]);
 	let participantIds = $state<string[]>([]);
+
+	/*
+	 * Calls and visits logged here while Stella was out of reach (docs/02 §2.18): kept on the
+	 * device and shown at the top of this person's story until they are sent. Editing one
+	 * reopens the log form on it, which then saves into the kept copy.
+	 */
+	const keptLogs = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'interaction.log'> =>
+				isKept(item, 'interaction.log') && item.command.payload.contactId === c.id
+		)
+	);
+	// The form's first kind is its default, as it was before it could be reopened on a kept one.
+	let logKind = $state<InteractionKind>(INTERACTION_KINDS[0]);
+	let logDay = $state(today);
+	let logTitle = $state('');
+	let logDescription = $state('');
+	let logVisibility = $state<'shared' | 'private'>('shared');
+	// Bumped to start the day field afresh with `logDay`; it keeps its own parts otherwise.
+	let logFresh = $state(0);
+	let editingLog = $state<KeptOf<'interaction.log'> | null>(null);
+	function clearLog() {
+		logKind = INTERACTION_KINDS[0];
+		logDay = today;
+		logTitle = '';
+		logDescription = '';
+		logVisibility = 'shared';
+		participantIds = [];
+		logFresh++;
+	}
+	async function editKeptLog(item: KeptOf<'interaction.log'>) {
+		if (!(await outbox.hold(item.command.id))) return;
+		const p = item.command.payload;
+		editingLog = item;
+		logKind = p.kind;
+		logDay = p.happenedAt;
+		logTitle = p.title ?? '';
+		logDescription = p.description ?? '';
+		logVisibility = p.visibility;
+		participantIds = [...p.participantIds];
+		logFresh++;
+		logOpen = true;
+	}
+	$effect(() => {
+		if (logOpen || !editingLog) return;
+		const item = editingLog;
+		editingLog = null;
+		clearLog();
+		void outbox.release(item.command.id);
+	});
+	/** The log form's fields as the command they stand for. */
+	function logCommandFrom(form: FormData, id: string): JsonCommand | null {
+		const kind = String(form.get('kind') ?? '');
+		const happenedAt = String(form.get('happenedAt') ?? '');
+		if (!isInteractionKind(kind) || !happenedAt) return null;
+		return {
+			id,
+			type: 'interaction.log',
+			payload: {
+				contactId: c.id,
+				kind,
+				happenedAt,
+				title: String(form.get('title') ?? '').trim() || null,
+				description: String(form.get('description') ?? '').trim() || null,
+				visibility: form.get('visibility') === 'private' ? 'private' : 'shared',
+				participantIds: form.getAll('participants').filter((p): p is string => typeof p === 'string')
+			},
+			issuedAt: Date.now()
+		};
+	}
+	const keepLog = $derived(
+		keepable(
+			{
+				toCommand: logCommandFrom,
+				about: c.displayName,
+				onKept: () => {
+					clearLog();
+					logOpen = false;
+				}
+			},
+			savedEnhance(removals, t('components.saved'), () => {
+				clearLog();
+				logOpen = false;
+			})
+		)
+	);
+	const logForm: SubmitFunction = (input) => {
+		if (!editingLog) return keepLog(input);
+		input.cancel();
+		const item = editingLog;
+		const command = logCommandFrom(input.formData, item.command.id);
+		editingLog = null;
+		if (command?.type === 'interaction.log') void outbox.revise(item.command.id, command.payload, ulid());
+		clearLog();
+		logOpen = false;
+	};
 	/** The day it happened, for the marker's tooltip. */
 	const archivedOn = $derived(
 		c.archivedAt === null ? null : dayLabel(i18n, new Date(c.archivedAt).toLocaleDateString('en-CA'))
@@ -1288,22 +1390,41 @@
 					bind:open={logOpen}
 					error={form?.interactionError ?? null}
 				>
-					{#key c.id}
+					{#if keptLogs.length > 0}
+						<ul class="mb-3 flex flex-col gap-2" data-testid="kept-logs">
+							{#each keptLogs as item (item.command.id)}
+								{@const kind = KIND_PRESENTATION[item.command.payload.kind]}
+								<li>
+									<KeptItem {item} onEdit={() => editKeptLog(item)}>
+										{#snippet meta()}
+											<span>· {t(kind.label)}</span>
+											<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{dayLabel(i18n, item.command.payload.happenedAt)}</span>
+										{/snippet}
+										{#if item.command.payload.title}<p class="mt-1 text-fg">{item.command.payload.title}</p>{/if}
+										{#if item.command.payload.description}<p class="mt-1 text-sm text-fg-muted">{item.command.payload.description}</p>{/if}
+									</KeptItem>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+					<!-- Keyed on the story itself: the timeline owns its paged list, so a new touchpoint
+					     reaches it as a fresh first page when the page's data is reloaded. -->
+					{#key data.story}
 						<StoryTimeline contactId={c.id} initial={data.story} />
 					{/key}
 
 					{#snippet editor()}
-						<form method="POST" action="?/logInteraction" class="flex flex-col gap-3">
+						<form method="POST" action="?/logInteraction" use:enhance={logForm} class="flex flex-col gap-3">
 							<div class="flex flex-wrap items-end gap-2">
 								<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
 									{#each data.interactionKinds as kind (kind)}
-										<option value={kind}>{t(KIND_PRESENTATION[kind].label)}</option>
+										<option value={kind} selected={kind === logKind}>{t(KIND_PRESENTATION[kind].label)}</option>
 									{/each}
 								</select>
-								<DateField name="happenedAt" value={today} required label={t('contact.day')} />
-								<input name="title" placeholder={t('contact.interaction.titlePlaceholder')} class="min-w-48 flex-1 {INPUT}" />
+								{#key logFresh}<DateField name="happenedAt" value={logDay} required label={t('contact.day')} />{/key}
+								<input name="title" bind:value={logTitle} placeholder={t('contact.interaction.titlePlaceholder')} class="min-w-48 flex-1 {INPUT}" />
 							</div>
-							<textarea name="description" rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} class={INPUT}
+							<textarea name="description" bind:value={logDescription} rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} class={INPUT}
 							></textarea>
 							{#if data.otherContacts.length > 0}
 								<label for="interaction-participants" class="flex flex-col gap-1 text-sm text-fg-muted">
@@ -1320,13 +1441,13 @@
 							{/if}
 							<div class="flex flex-wrap items-center gap-4 text-sm">
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="shared" checked /> {t('common.shared')}
+									<input type="radio" name="visibility" value="shared" bind:group={logVisibility} /> {t('common.shared')}
 								</label>
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="private" /> {t('common.private')}
+									<input type="radio" name="visibility" value="private" bind:group={logVisibility} /> {t('common.private')}
 								</label>
 								<Button variant="primary" size="sm" class="ml-auto">
-									{t('contact.interaction.submit')}
+									{editingLog ? t('common.save') : t('contact.interaction.submit')}
 								</Button>
 							</div>
 						</form>
@@ -1344,29 +1465,10 @@
 					{#if keptNotes.length > 0}
 						<ul class="mb-3 flex flex-col gap-2" data-testid="kept-notes">
 							{#each keptNotes as item (item.command.id)}
-								{@const refused = item.state === 'refused'}
-								<li class="rounded-control border border-dashed p-3 {refused ? 'border-danger/60 bg-danger/5' : 'border-border'}" data-outbox-state={item.state}>
-									<div class="mb-1 flex items-center gap-2 text-xs">
-										<Icon name="offline" size={12} />
-										<b class="font-semibold {refused ? 'text-danger' : 'text-fg'}">
-											{t(refused ? 'home.outbox.couldNotSend' : item.state === 'held' ? 'home.outbox.editing' : item.state === 'sending' ? 'home.outbox.sending' : 'home.outbox.notSent')}
-										</b>
-										{#if item.command.payload.visibility === 'private'}<span class="ml-auto inline-flex items-center gap-1 text-fg-subtle"><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
-									</div>
-									<p class="whitespace-pre-line text-fg">{item.command.payload.body}</p>
-									{#if item.reason}<p class="mt-1 text-sm text-danger">{item.reason}</p>{/if}
-									{#if item.state === 'pending' || item.state === 'refused'}
-										<div class="mt-1.5 flex flex-wrap gap-1.5">
-											{#if confirmingNoteDiscard === item.command.id}
-												<span class="self-center text-xs text-fg-muted">{t('home.outbox.discardQuestion')}</span>
-												<Button variant="danger" size="sm" onclick={() => { confirmingNoteDiscard = null; void outbox.discard(item.command.id); }}>{t('home.outbox.discardConfirm')}</Button>
-												<Button variant="ghost" size="sm" onclick={() => (confirmingNoteDiscard = null)}>{t('common.cancel')}</Button>
-											{:else}
-												<Button variant="secondary" size="sm" icon="write" onclick={() => editKeptNote(item)}>{t('home.outbox.edit')}</Button>
-												<Button variant="ghost" size="sm" icon="remove" onclick={() => (confirmingNoteDiscard = item.command.id)}>{t('home.outbox.discard')}</Button>
-											{/if}
-										</div>
-									{/if}
+								<li>
+									<KeptItem {item} onEdit={() => editKeptNote(item)}>
+										<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
+									</KeptItem>
 								</li>
 							{/each}
 						</ul>

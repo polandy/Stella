@@ -6,6 +6,7 @@
  * browser can import it; `MentionAudience` stands in for the server's `Visibility`.
  */
 
+import type { InteractionKind } from '../interactions/kinds';
 import type { MentionAudience } from '../mentions/audience';
 
 /** What a command does to the household's data. Only an addition may wait on a device. */
@@ -15,7 +16,8 @@ export type CommandKind = 'add' | 'change' | 'remove';
 const KINDS = {
 	'moment.capture': 'add',
 	'moment.photo': 'add',
-	'note.add': 'add'
+	'note.add': 'add',
+	'interaction.log': 'add'
 } as const satisfies Record<string, CommandKind>;
 
 /** One of the commands Stella knows. */
@@ -56,11 +58,24 @@ export interface NoteAddPayload {
 	isPinned: boolean;
 }
 
+/** A call, visit or other touchpoint with a person (docs/02 §2.6). */
+export interface InteractionLogPayload {
+	contactId: string;
+	kind: InteractionKind;
+	/** ISO `YYYY-MM-DD`. */
+	happenedAt: string;
+	title: string | null;
+	description: string | null;
+	visibility: MentionAudience;
+	participantIds: string[];
+}
+
 /** The payload each command carries. */
 export interface CommandPayloads {
 	'moment.capture': MomentCapturePayload;
 	'moment.photo': MomentPhotoPayload;
 	'note.add': NoteAddPayload;
+	'interaction.log': InteractionLogPayload;
 }
 
 /** One intent from one member. */

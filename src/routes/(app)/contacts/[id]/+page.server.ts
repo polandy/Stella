@@ -39,10 +39,8 @@ import { IMPORTANT_DATE_KINDS } from '$lib/server/domain/dates/upcoming';
 import {
 	deleteInteraction,
 	INTERACTION_KINDS,
-	InvalidInteractionError,
 	lastContactedAt,
-	listInteractions,
-	logInteraction
+	listInteractions
 } from '$lib/server/domain/interactions/interactions';
 import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
 import { authorNames } from '$lib/server/domain/household/members';
@@ -868,7 +866,6 @@ export const actions: Actions = {
 
 	logInteraction: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
 		const parsed = v.safeParse(LogInteractionSchema, {
@@ -883,41 +880,35 @@ export const actions: Actions = {
 			return fail(400, { interactionError: say(locals, 'errors.interaction.needKindAndDay') });
 		}
 
-		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
-
-		// A participant must be someone the viewer may see; an unknown id is refused rather
-		// than stored, so nothing outside the viewer's view ever gets attached.
-		const visibleIds = new Set((await listContacts(getContactDeps(), viewer)).map((c) => c.id));
-		if (!parsed.output.participantIds.every((id) => visibleIds.has(id))) {
-			return fail(400, { interactionError: say(locals, 'errors.interaction.participantNotFound') });
-		}
-
-		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
-			defaultVisibility: 'shared' as const // TODO: user default (settings, §2.16)
-		};
-		try {
-			await logInteraction(getInteractionDeps(), author, {
+		// A touchpoint is a command (docs/04 §4.11.2), named by the form when it can, so one
+		// kept on the phone after a lost answer is recognised when it arrives again.
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'interaction.log',
+			payload: {
 				contactId: params.id,
-				kind: parsed.output.kind,
-				happenedAt: parsed.output.happenedAt,
+				...parsed.output,
 				title: parsed.output.title ?? null,
-				description: parsed.output.description ?? null,
-				visibility: parsed.output.visibility,
-				participantIds: parsed.output.participantIds
-			});
-		} catch (err) {
+				description: parsed.output.description ?? null
+			},
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'interaction.log') {
+			return fail(400, { interactionError: say(locals, 'errors.interaction.needKindAndDay') });
+		}
+		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
+		if (outcome?.status !== 'applied') {
 			return fail(400, {
 				interactionError:
-					err instanceof InvalidInteractionError ? err.phrase(translator(locals)) : say(locals, 'errors.interaction.couldNotLog')
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.interaction.couldNotLog')
 			});
 		}
 
-		// This form posts natively (see the comment on the story card in +page.svelte), so the
-		// reload it causes has to be told where it came from — otherwise logging a touchpoint
-		// throws the reader back to the top of the page.
+		// The story timeline owns its paged list, so the page reloads to show the new item — and
+		// has to be told where it came from, or the reader lands back at the top.
 		throw redirect(303, contactSectionPath(params.id, 'story'));
 	},
 

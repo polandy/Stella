@@ -63,7 +63,8 @@ function fakes() {
 				return { ...captured, visibility: payload.visibility };
 			},
 			'moment.photo': async () => 'photo',
-			'note.add': async () => ({ noteId: 'n' })
+			'note.add': async () => ({ noteId: 'n' }),
+			'interaction.log': async () => ({ interactionId: 'i' })
 		}
 	};
 	return { deps, bodies };

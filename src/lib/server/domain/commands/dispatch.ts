@@ -30,6 +30,7 @@ export interface CommandResults {
 	/** The stored photo's id. */
 	'moment.photo': string;
 	'note.add': { noteId: string };
+	'interaction.log': { interactionId: string };
 }
 
 /** The use-case behind each command. */
@@ -145,6 +146,8 @@ function apply(
 		case 'moment.photo':
 			return handlers[command.type](actor, command.payload);
 		case 'note.add':
+			return handlers[command.type](actor, command.payload);
+		case 'interaction.log':
 			return handlers[command.type](actor, command.payload);
 	}
 }

@@ -101,7 +101,7 @@ describe('editing before it is sent', () => {
 
 		items = revise(items, 'a', { ...moment('a').payload, body: 'better @Julia' }, 'new-id')!;
 		expect(items[0].command.id).toBe('a');
-		expect(items[0].command.payload.body).toBe('better @Julia');
+		expect(items[0].command.payload).toMatchObject({ body: 'better @Julia' });
 		expect(items[0].state).toBe('pending');
 	});
 
