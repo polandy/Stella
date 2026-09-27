@@ -35,7 +35,7 @@ let day = 0;
 function seedEntry(id: string, contactId: string, at: number, visibility: Vis = 'shared', createdBy = U1, mentions: string[] = []) {
 	const entryDate = `2026-09-${String(++day).padStart(2, '0')}`;
 	db.insert(schema.journalEntry)
-		.values({ id, contactId, createdBy, visibility, entryDate, body: `moment ${id}`, createdAt: at })
+		.values({ id, contactId, createdBy, visibility, entryDate, body: `moment ${id}`, createdAt: at, updatedAt: at })
 		.run();
 	for (const m of mentions) db.insert(schema.journalMention).values({ journalEntryId: id, contactId: m }).run();
 }
@@ -87,6 +87,20 @@ describe('recentMoments', () => {
 		expect(rows[0].anchor.name).toBe('julia');
 		expect(rows[0].mentions.map((m) => m.id)).toEqual(['marco']); // 'secret' is not visible to U2
 		expect(rows[0].photoIds).toEqual(['ph1']);
+	});
+
+	it('places a moment by its last change, so one appended to an older entry comes first', async () => {
+		seedContact('julia', 1);
+		seedEntry('earlier-today', 'julia', 100);
+		seedEntry('in-between', 'julia', 300);
+		// A second moment the same day lands in the first entry (§2.22.1) and touches it at 400.
+		db.update(schema.journalEntry).set({ updatedAt: 400 }).where(eq(schema.journalEntry.id, 'earlier-today')).run();
+
+		const rows = await repo.recentMoments(asU1, EVERYONE);
+		expect(rows.map((r) => [r.id, r.at])).toEqual([
+			['earlier-today', 400],
+			['in-between', 300]
+		]);
 	});
 
 	it('hides another member’s private moment and moments on a private person', async () => {

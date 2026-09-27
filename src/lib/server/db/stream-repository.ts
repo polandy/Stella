@@ -55,7 +55,9 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			const rows = db
 				.select({
 					id: journalEntry.id,
-					at: journalEntry.createdAt,
+					// The last change, not creation: a moment appended to the day's entry (§2.22.1)
+					// has to surface where its author expects it, at the top.
+					at: journalEntry.updatedAt,
 					actorId: user.id,
 					actorName: user.name,
 					anchorId: contact.id,
@@ -77,7 +79,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 						byMember(journalEntry.createdBy, memberId)
 					)
 				)
-				.orderBy(desc(journalEntry.createdAt))
+				.orderBy(desc(journalEntry.updatedAt))
 				.limit(limit)
 				.all();
 			if (rows.length === 0) return [];

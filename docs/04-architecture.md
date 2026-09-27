@@ -731,6 +731,12 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   authorisation to go wrong. Stored as a SHA-256 hash like a session, but with a fixed last day
   and a name; the `stella_` prefix makes one recognisable in a leaked log. Under `/api/v1/` the
   cookie is not read, which keeps tokens out of the pages and cookies out of the API (§4.4).
+- **A second moment on the same day joins the first, and the stream orders by last change** —
+  the day slot (docs/02 §2.20) made a second moment replace the first. Giving each moment its
+  own entry would have meant lifting the slot for moments only, a migration and two kinds of
+  journal entry. Appending keeps one model, as a contact merge already does, and the stream
+  reads `updated_at` so the joined entry surfaces where its author looks. The cost: a plain
+  edit in the journal also brings an entry back to the top.
 
 ## 4.10 Deployment
 

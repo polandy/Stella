@@ -1436,6 +1436,10 @@ entry and a household update, without leaving the page. Concept + clickable prot
   ("Goes to *Julia*'s journal, mentions 1"). A moment therefore needs **at least one mention**.
   Day, visibility and photos behave as in §2.20 (default: today, shared; photos processed in
   the browser).
+- **A second moment adds, never replaces.** When the anchor's journal already has the
+  member's entry for that day and visibility (the day slot, §2.20), the moment is appended to
+  it as a new paragraph and its mentions join the entry's; the title stays. Editing an entry in
+  the journal still replaces its text — that is an edit, a moment is an addition.
 - **Create people inline.** When the typed `@name` matches nobody, the picker offers
   *"Create “Name”"*. Picking it inserts the handle and queues the name; on save the server
   creates that contact first (quick-add with just a display name, taking the **moment's
@@ -1457,7 +1461,9 @@ entry and a household update, without leaving the page. Concept + clickable prot
   did: **moments** (journal entries, with author, anchor, mentioned people as chips, photos),
   **new people** ("Lena added *Thomas Lang*"), **new relationships** ("Leo linked *Marie*
   → colleague of *Andy*") and **logged interactions** ("Lena logged a call with *Oma*",
-  §2.6). Every item links to the person it is about.
+  §2.6). Every item links to the person it is about. A moment is placed by its **last
+  change**: one appended to the day's entry (§2.22.1) brings that entry back to the top, as
+  does an edit to it in the journal.
 - **Notices** are the exception: the few things no table can report, read from `activity_log` —
   a person deleted or merged away (§2.2), and an archive of the household being taken (§2.15).
   Everyday edits are not written there and do not appear here; the stream stays a record of what
