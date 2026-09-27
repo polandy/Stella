@@ -67,3 +67,18 @@ export function kindOf(type: CommandType): CommandKind {
 export function isQueueable(type: CommandType): boolean {
 	return kindOf(type) === 'add';
 }
+
+/** The most commands one request to `POST /api/commands` may carry. */
+export const MAX_COMMAND_BATCH = 50;
+
+/**
+ * What `POST /api/commands` answers for each command it was sent, in the order sent. The
+ * outbox acts on the status alone: `applied` leaves the queue, `refused` becomes *Could not
+ * send* with the reason (already in the member's language), and `busy` / `failed` stay queued
+ * to be tried again — neither says anything about the command itself.
+ */
+export type CommandAnswer =
+	| { id: string; status: 'applied'; result: unknown }
+	| { id: string; status: 'refused'; reason: string }
+	| { id: string; status: 'busy' }
+	| { id: string; status: 'failed' };
