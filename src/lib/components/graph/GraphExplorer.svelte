@@ -916,7 +916,7 @@
 	{#if peekGroup && !pathMode}
 		<aside
 			data-testid="group-peek"
-			class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur"
+			class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-3 max-sm:w-auto max-sm:max-h-[60%] max-sm:p-3"
 			class:bottom-3={!compact}
 			class:w-64={!compact}
 			class:w-52={compact}
@@ -928,7 +928,7 @@
 			<div class="mb-3 text-xs text-fg-subtle">
 				{t('graph.peek.inCircle', { name: nameOf(peekGroup.circleId) })}
 			</div>
-			<ul class="mb-4 flex flex-col gap-1">
+			<ul class="mb-4 flex flex-col gap-1 max-sm:mb-3">
 				{#each peekGroup.memberIds as id (id)}
 					<li>
 						<a href="/contacts/{id}" class="flex items-center gap-2 rounded-lg px-1 py-1 text-sm text-fg hover:bg-bg-sunken">
@@ -938,9 +938,10 @@
 					</li>
 				{/each}
 			</ul>
-			<div class="flex flex-col gap-2">
+			<div class="flex flex-col gap-2 max-sm:flex-row">
 				<Button
 					type="button"
+					class="max-sm:flex-1"
 					onclick={() => {
 						dissolved = new Set([...dissolved, peekGroup!.id]);
 						selected = null;
@@ -948,7 +949,7 @@
 				>
 					{t('graph.peek.showIndividually')}
 				</Button>
-				<Button variant="primary" href="/circles/{peekGroup.circleId}">{t('graph.peek.openCircle')}</Button>
+				<Button variant="primary" class="max-sm:flex-1" href="/circles/{peekGroup.circleId}">{t('graph.peek.openCircle')}</Button>
 			</div>
 		</aside>
 	{:else if peekNode && !pathMode}
