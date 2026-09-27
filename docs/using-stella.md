@@ -524,6 +524,14 @@ one generation per row with the oldest at the top, and *By circle* gathers each 
 members around it. *Connection path* traces how two people are linked, and it always answers
 with the people in between rather than the worked-out shortcut — that is the point of asking.
 
+A big circle — a school class, a club — can bury the map under one line per member. Switch on
+*Group by role* in the *Filter* menu and everyone with the same role in a circle stands
+together in one framed group (*Pupil · 24*) on a single line to the circle. Links among the
+group's members stay visible (*Links within groups* turns them off), links between two groups
+become one line with a count, and a link to somebody outside still runs to the right person.
+Click a group to see who is in it, or *Show individually* to take just that one apart. Your
+browser remembers the switch.
+
 ## Signing out
 
 *Sign out* in the account menu ends your Stella session immediately. If your household
