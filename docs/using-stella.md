@@ -569,8 +569,8 @@ change it or throw it away. Stella gets it by itself once it answers again, when
 app or when your phone joins your home network, and it checks it as if you had written it
 there and then. If it cannot take it — someone you mentioned was deleted in the meantime —
 the moment stays as *Could not send*, with the reason, for you to fix; nothing you wrote is
-ever dropped quietly. Photos cannot wait on the phone yet, and neither can notes, calls or new
-people on their own; those follow.
+ever dropped quietly. Photos wait with the moment and follow it once it is in. Notes, calls
+and new people on their own cannot wait on the phone yet; those follow.
 
 Signing out clears the pages your phone was keeping, so handing a device on does not hand on
 the household with it. Moments not yet sent stay: they are yours, are sent the next time you

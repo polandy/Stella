@@ -3,8 +3,8 @@
 Status: **being built, moments first.** The decision is logged in `docs/04-architecture.md`
 §4.9 (*Mutations become commands, not events*), the structure is docs/04 §4.11.2, and what a
 member sees is docs/02 §2.18. This paper is the plan behind it. Built so far: the command
-dispatcher and its receipts, `POST /api/commands`, and keeping a moment (text only) on the
-phone. Everything decided while the maintainer was away is listed in §8, for review.
+dispatcher and its receipts, `POST /api/commands`, and keeping a moment with its photos on
+the phone. Everything decided while the maintainer was away is listed in §8, for review.
 
 ---
 
@@ -330,9 +330,12 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
 
 **Scope of this first cut**
 
-14. **Photos are not kept yet (deviates from §6.4 for now).** You chose photos from the first
-    version; they are the next step. Until then, out of reach with photos picked, the composer
-    asks to remove them and keeps the text — never a half-saved moment.
+14. **Photos are built, as commands of their own.** Each photo is a `moment.photo` command
+    naming its moment, sent as multipart after the moment has arrived; the online form action
+    attaches photos through the same command, so a save whose answer was lost resends the very
+    same photos without doubling any. A kept moment shows a photo *count*, not thumbnails. A
+    photo arriving after its entry was deleted is refused (*Could not send a photo*) and can
+    only be discarded. No size cap beyond the existing per-photo limits (§6.4).
 15. **Only moments so far.** Notes, calls and visits, people, tags, relationships and circle
     memberships follow, one per PR-sized step, each as a new command kind. Ordering between
     queued items (a note on a person added offline) is not needed until then.

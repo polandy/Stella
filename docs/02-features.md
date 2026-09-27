@@ -1316,8 +1316,12 @@ same happens when Stella stops answering in the middle of a save.
   rather than saved twice (`command_receipt`, docs/03 §3.3).
 - **Whose it is.** Kept moments belong to the member who wrote them. Another member signing
   in on the same device neither sees nor sends them, and signing out does not delete them.
-- **Not yet.** Photos cannot be kept yet; out of reach, the composer asks for them to be
-  removed and keeps the text. The other kinds of addition follow one at a time
+- **Photos too.** A moment's photos are processed in the browser as always (downscaled,
+  location stripped) and kept with it. They are sent after the moment has arrived, each on its
+  own, so a photo that fails keeps only itself waiting; the kept moment says *Photos not sent
+  yet* until the last one is in. Once Stella has the moment it is household data, and the
+  kept copy can no longer be edited, only discarded.
+- **Not yet.** The other kinds of addition — notes, calls, people — follow one at a time
   (`docs/concepts/offline-capture.md` §4.1).
 
 **What degrades.** A cached person page is the page as it was when last read, so anything

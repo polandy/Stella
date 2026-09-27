@@ -647,7 +647,8 @@ stream, because they are what the member just wrote and belong to no day of the 
 yet. **Edit** opens the item in the composer (on a phone, in the sheet) with a *Cancel* beside
 *Save*; **Discard** is a two-step inline confirmation (*This device holds the only copy.* →
 *Discard for good*), not a dialog and not an undo toast, because there is no server copy for an
-undo to fall back on. While Stella is out of reach, the composer's primary button reads **Save
+undo to fall back on. Kept photos show as a count beside the label (`photo` icon); once Stella
+has the moment and only photos wait, the label says so (*Photos not sent yet*) and *Edit* goes. While Stella is out of reach, the composer's primary button reads **Save
 for later**.
 
 **Install card** (`src/lib/components/InstallCard.svelte`) is an ordinary Settings card, one

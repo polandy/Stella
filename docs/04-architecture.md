@@ -900,9 +900,12 @@ the same way: pure decisions, thin adapters.
 - **`src/lib/server/commands/`** — the edge's half: `parse.ts` reads a command off the wire
   (Valibot), `receive.ts` answers a phone's batch one command at a time and accepts only
   additions. `POST /api/commands` is the route, signed in by the session cookie and reading
-  only `application/json`.
+  only `application/json`. A photo is the one command with bytes in it (`moment.photo`, naming
+  its moment by command id): it goes to `POST /api/commands/photo` as multipart, and
+  `domain/commands/moment-photo.ts` lands it on the entry its moment's receipt names — only
+  while that entry is still the member's.
 - **`src/lib/pwa/outbox.ts`** — the outbox's states (pending → sending → gone, or refused;
-  *held* while open in the composer), pure and unit-tested. `outbox-store.ts` keeps it in
+  *held* while open in the composer; *delivered* once only photos wait), pure and unit-tested. `outbox-store.ts` keeps it in
   IndexedDB, changing it in one transaction at a time so two tabs cannot overwrite each
   other; `outbox.svelte.ts` sends it and mirrors it for the page. Neither decides anything.
 - **The Home composer** saves through its form action as a named command (`commandId`), and
