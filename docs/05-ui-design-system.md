@@ -657,6 +657,9 @@ dashed outline at the top of that person's *Notes* section;
 *Edit* reopens the note form on it, whose button then reads *Save*. On Home it appears among
 the kept moments as *Not sent yet · note on <name>*, and its *Edit* goes to that person's notes.
 
+A **kept relationship** is a `KeptItem` at the top of the relationships card, named as the
+picker names it (*Friend of Corinne Keller*), with *Discard* only.
+
 A **kept tag or circle** (`KeptChip.svelte`) is the chip it will become with a dashed border
 and the `offline` icon, first in the row. A single word is quicker typed again than edited, so
 it offers only a one-click discard (✕); a refused one turns `--danger` and carries the reason

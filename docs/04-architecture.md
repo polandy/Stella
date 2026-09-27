@@ -913,7 +913,10 @@ the same way: pure decisions, thin adapters.
   command in the outbox instead. The person page's note and log forms use it; `note.add` is
   applied by `domain/notes/write-note.ts` and `interaction.log` by
   `domain/interactions/log-checked.ts`, each the one place that checks what it stores.
-  `tag.assign` and `circle.join` reuse their by-name use-cases behind `onVisibleContact`
+  `relationship.add` is applied by `domain/relationships/add-checked.ts`, which turns every
+  refusal — a person or type gone, a duplicate, a contradiction — into a reason, never into an
+  error the phone would retry. `tag.assign` and `circle.join` reuse their by-name use-cases
+  behind `onVisibleContact`
   (`domain/contacts/require-visible.ts`), the shared "is this person still visible" guard.
 - **The Home composer** saves through its form action as a named command (`commandId`), and
   keeps the moment in the outbox when Stella cannot be reached — including when the answer to
