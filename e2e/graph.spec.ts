@@ -265,9 +265,11 @@ test('keeps the suggested names on top when the toolbar wraps under the search f
 	const list = page.getByTestId('graph-suggestions');
 	await expect(list.getByRole('button', { name: 'Hans Brunner' })).toBeVisible();
 
-	// The toolbar's pills have to overlap the list here, or the rest of this proves nothing.
+	// The toolbar's second row has to overlap the list here, or the rest of this proves nothing.
+	// On a phone Filter and Arrange share the field's row (docs/05 §5.8); the connection path
+	// starts the row below it.
 	const fieldBox = await field.boundingBox();
-	const chipBox = await page.getByRole('button', { name: /^Filter/ }).boundingBox();
+	const chipBox = await page.getByRole('button', { name: 'Connection path' }).boundingBox();
 	const listBox = await list.boundingBox();
 	if (!fieldBox || !chipBox || !listBox) throw new Error('the toolbar has no layout');
 	expect(chipBox.y).toBeGreaterThan(fieldBox.y + fieldBox.height);
