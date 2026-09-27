@@ -130,6 +130,11 @@ Goal: sand the edges and add the nice-to-haves.
   building: which context wins when there are several (relationship vs. circle, which one),
   where the hint shows (search, person pickers, the graph?), and how it stays access-scoped
   so it never names a person or circle the viewer may not see (§2.10).
+- *Concept written, not decided:* **capturing while Stella is out of reach** — an outbox that
+  keeps moments written on a phone away from home and sends them once Stella answers again.
+  Adding only, never editing, so there is nothing to merge; the server re-checks everything
+  on arrival. Full offline sync was weighed and rejected. Concept and open questions:
+  `docs/concepts/offline-capture.md`.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
