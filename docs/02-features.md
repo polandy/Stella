@@ -1303,8 +1303,9 @@ having just either fetched a page or failed to, so it reports and the page liste
 **Keeping a moment for later.** While Stella is out of reach the composer's button says
 **Save for later**, and saving keeps the moment on the device instead of sending it. The
 same happens when Stella stops answering in the middle of a save. A **note** written on a
-person's page, and a **call or visit** logged there, are kept the same way, and show at the top
-of that person's notes or story.
+person's page, a **call or visit** logged there, and a **tag** or **circle** added there are
+kept the same way, and show where they will land: at the top of the person's notes or story,
+or as a dashed chip beside their tags and circles.
 - **Where it shows.** A kept moment shows under the capture field as *Not sent yet*. Until it
   is on its way it can be **edited** in the composer or **discarded**; discarding asks twice,
   because the device holds the only copy.
@@ -1325,8 +1326,8 @@ of that person's notes or story.
   own, so a photo that fails keeps only itself waiting; the kept moment says *Photos not sent
   yet* until the last one is in. Once Stella has the moment it is household data, and the
   kept copy can no longer be edited, only discarded.
-- **Not yet.** The other kinds of addition — people, tags, relationships, circle memberships —
-  follow one at a time (`docs/concepts/offline-capture.md` §4.1).
+- **Not yet.** Adding a person on their own, and a relationship, follow
+  (`docs/concepts/offline-capture.md` §4.1).
 
 **What degrades.** A cached person page is the page as it was when last read, so anything
 added since is not on it, and the parts that fetch on demand — the relationship map, search

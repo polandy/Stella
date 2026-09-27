@@ -657,6 +657,11 @@ dashed outline at the top of that person's *Notes* section;
 *Edit* reopens the note form on it, whose button then reads *Save*. On Home it appears among
 the kept moments as *Not sent yet · note on <name>*, and its *Edit* goes to that person's notes.
 
+A **kept tag or circle** (`KeptChip.svelte`) is the chip it will become with a dashed border
+and the `offline` icon, first in the row. A single word is quicker typed again than edited, so
+it offers only a one-click discard (✕); a refused one turns `--danger` and carries the reason
+as its title and in its accessible name.
+
 **Sign-out question** (`src/lib/components/SignOutForm.svelte`) wraps every sign-out form. With
 nothing waiting it is the plain form post it always was; with kept moments on the device it
 opens an inline `alertdialog` under the button in the same dashed outline as the kept moments —

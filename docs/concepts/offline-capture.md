@@ -336,8 +336,8 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
     same photos without doubling any. A kept moment shows a photo *count*, not thumbnails. A
     photo arriving after its entry was deleted is refused (*Could not send a photo*) and can
     only be discarded. No size cap beyond the existing per-photo limits (§6.4).
-15. **Moments, notes, and calls and visits so far.** People, tags, relationships and circle
-    memberships follow, one step each, as new command kinds. Ordering between queued items (a
+15. **Moments, notes, calls and visits, tags and circles so far.** A person on their own and
+    a relationship follow, as new command kinds. Ordering between queued items (a
     note on a person added offline) is not needed until people can be added offline.
 19. **Notes: the person page's logic moved into the domain** (`writeNote`), so a kept note and
     one written online are checked the same way. One visible change: a note on someone who is
@@ -349,6 +349,9 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
 21. **Every adding form gets the same wrapper** (`keepable`) rather than its own offline code,
     so the remaining forms are mostly a command kind, a domain use-case and one line in the
     page. Kept items share one component (`KeptItem`) wherever they show.
+24. **Kept tags and circles are dashed chips with a one-click discard, no *Edit* (deviates
+    from "editable until sent").** A single word is quicker typed again than edited, and a
+    two-step confirmation on a chip would be heavier than the thing it protects.
 23. **The log form no longer posts natively (deviates from an older comment).** It used to,
     because only a fresh page gave the story timeline its new item. Now the timeline is keyed
     on the page's story, so saving through `enhance` like every other section does the same —
