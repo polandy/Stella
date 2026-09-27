@@ -1436,6 +1436,10 @@ entry and a household update, without leaving the page. Concept + clickable prot
   ("Goes to *Julia*'s journal, mentions 1"). A moment therefore needs **at least one mention**.
   Day, visibility and photos behave as in §2.20 (default: today, shared; photos processed in
   the browser).
+- **A second moment adds, never replaces.** When the anchor's journal already has the
+  member's entry for that day and visibility (the day slot, §2.20), the moment is appended to
+  it as a new paragraph and its mentions join the entry's; the title stays. Editing an entry in
+  the journal still replaces its text — that is an edit, a moment is an addition.
 - **Create people inline.** When the typed `@name` matches nobody, the picker offers
   *"Create “Name”"*. Picking it inserts the handle and queues the name; on save the server
   creates that contact first (quick-add with just a display name, taking the **moment's

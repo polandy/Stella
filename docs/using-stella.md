@@ -47,6 +47,8 @@ A few things worth knowing:
 - **Photos** can be attached; they are resized in your browser before upload, which also
   strips location data out of them.
 - **The day** defaults to today. Change it if you are writing something down late.
+- **Two moments about the same person on the same day** end up in one journal entry, one
+  paragraph each. The second one is added; nothing you wrote earlier is replaced.
 
 ### Shared or private
 
