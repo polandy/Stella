@@ -67,7 +67,8 @@ function fakes() {
 			'interaction.log': async () => ({ interactionId: 'i' }),
 			'tag.assign': async () => ({ tagId: 't' }),
 			'circle.join': async () => ({ circleId: 'c' }),
-			'relationship.add': async () => ({ relationshipId: 'r' })
+			'relationship.add': async () => ({ relationshipId: 'r' }),
+			'contact.add': async () => ({ contactId: 'c' })
 		}
 	};
 	return { deps, bodies };

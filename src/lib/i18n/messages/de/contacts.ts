@@ -27,6 +27,8 @@ export const contacts: ContactsMessages = {
 		'Lege die erste Person an — alles andere in Stella hängt an einem Menschen.',
 
 	'contacts.new.title': 'Person hinzufügen · Stella',
+	'contacts.new.kept': (p: { name: string }) =>
+		`Stella ist nicht erreichbar, darum bleibt ${p.name || 'diese Person'} auf diesem Gerät und wird hinzugefügt, sobald Stella wieder antwortet.`,
 	'contacts.new.heading': 'Person hinzufügen',
 	'contacts.new.intro': 'Ein Name genügt. Alles Weitere kann bis zu ihrer Seite warten.',
 	'contacts.new.firstName': 'Vorname',

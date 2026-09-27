@@ -225,6 +225,11 @@
 						{#snippet meta()}<span>{t('home.outbox.tagOn', { name: item.about ?? '' })}</span>{/snippet}
 						<p class="mt-1 text-fg">{item.command.payload.name}</p>
 					</KeptItem>
+				{:else if isKept(item, 'contact.add')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.newPerson')}</span>{/snippet}
+						<p class="mt-1 text-fg">{item.about ?? ''}</p>
+					</KeptItem>
 				{:else if isKept(item, 'relationship.add')}
 					<KeptItem {item}>
 						{#snippet meta()}<span>{t('home.outbox.link')}</span>{/snippet}

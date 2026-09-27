@@ -25,6 +25,8 @@ export const contacts = {
 	'contacts.empty.hint': 'Add the first person — everything else in Stella hangs off someone.',
 
 	'contacts.new.title': 'Add a person · Stella',
+	'contacts.new.kept': (p: { name: string }) =>
+		`Stella is out of reach, so ${p.name || 'this person'} is kept on this device and added once it answers again.`,
 	'contacts.new.heading': 'Add a person',
 	'contacts.new.intro': 'A name is enough. Everything else can wait for their page.',
 	'contacts.new.firstName': 'First name',

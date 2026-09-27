@@ -20,7 +20,8 @@ const KINDS = {
 	'interaction.log': 'add',
 	'tag.assign': 'add',
 	'circle.join': 'add',
-	'relationship.add': 'add'
+	'relationship.add': 'add',
+	'contact.add': 'add'
 } as const satisfies Record<string, CommandKind>;
 
 /** One of the commands Stella knows. */
@@ -98,6 +99,19 @@ export interface RelationshipAddPayload {
 	status: string | null;
 }
 
+/** A new person, as the *Add person* form hands them over (docs/02 §2.2). */
+export interface ContactAddPayload {
+	firstName: string | null;
+	lastName: string | null;
+	nickname: string | null;
+	description: string | null;
+	howWeMet: string | null;
+	metPlace: string | null;
+	/** ISO `YYYY-MM-DD`, or `--MM-DD` when the year is not known. */
+	birthDate: string | null;
+	visibility: MentionAudience;
+}
+
 /** The payload each command carries. */
 export interface CommandPayloads {
 	'moment.capture': MomentCapturePayload;
@@ -107,6 +121,7 @@ export interface CommandPayloads {
 	'tag.assign': TagAssignPayload;
 	'circle.join': CircleJoinPayload;
 	'relationship.add': RelationshipAddPayload;
+	'contact.add': ContactAddPayload;
 }
 
 /** One intent from one member. */

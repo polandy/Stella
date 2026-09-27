@@ -82,6 +82,21 @@ const RelationshipAdd = v.object({
 	status: optionalText
 });
 
+const ContactAdd = v.pipe(
+	v.object({
+		firstName: optionalText,
+		lastName: optionalText,
+		nickname: optionalText,
+		description: optionalText,
+		howWeMet: optionalText,
+		metPlace: optionalText,
+		birthDate: optionalText,
+		visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
+	}),
+	// A person needs something to be called by (docs/02 §2.2).
+	v.check((p) => Boolean(p.firstName || p.lastName || p.nickname))
+);
+
 const envelope = {
 	id: v.pipe(v.string(), v.regex(ULID)),
 	issuedAt: v.pipe(v.number(), v.integer(), v.minValue(0))
@@ -93,7 +108,8 @@ const CommandSchema = v.variant('type', [
 	v.object({ ...envelope, type: v.literal('interaction.log'), payload: InteractionLog }),
 	v.object({ ...envelope, type: v.literal('tag.assign'), payload: TagAssign }),
 	v.object({ ...envelope, type: v.literal('circle.join'), payload: CircleJoin }),
-	v.object({ ...envelope, type: v.literal('relationship.add'), payload: RelationshipAdd })
+	v.object({ ...envelope, type: v.literal('relationship.add'), payload: RelationshipAdd }),
+	v.object({ ...envelope, type: v.literal('contact.add'), payload: ContactAdd })
 ]);
 
 /** `raw` as a command, or null when it is not exactly one. */

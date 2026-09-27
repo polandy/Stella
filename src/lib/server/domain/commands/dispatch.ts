@@ -34,6 +34,7 @@ export interface CommandResults {
 	'tag.assign': { tagId: string };
 	'circle.join': { circleId: string };
 	'relationship.add': { relationshipId: string };
+	'contact.add': { contactId: string };
 }
 
 /** The use-case behind each command. */
@@ -157,6 +158,8 @@ function apply(
 		case 'circle.join':
 			return handlers[command.type](actor, command.payload);
 		case 'relationship.add':
+			return handlers[command.type](actor, command.payload);
+		case 'contact.add':
 			return handlers[command.type](actor, command.payload);
 	}
 }

@@ -102,6 +102,27 @@ describe('parseCommand, for a relationship', () => {
 	});
 });
 
+describe('parseCommand, for a new person', () => {
+	const person = { id: ID, type: 'contact.add', payload: { firstName: ' Vesna ', lastName: '', birthDate: '1990-04-02' }, issuedAt: 3 };
+
+	it('reads a new person, empty fields meaning none', () => {
+		expect(parseCommand(person)?.payload).toEqual({
+			firstName: 'Vesna',
+			lastName: null,
+			nickname: null,
+			description: null,
+			howWeMet: null,
+			metPlace: null,
+			birthDate: '1990-04-02',
+			visibility: 'shared'
+		});
+	});
+
+	it('refuses a person with no name at all', () => {
+		expect(parseCommand({ ...person, payload: { firstName: ' ', nickname: '' } })).toBeNull();
+	});
+});
+
 describe('parsePhotoCommand', () => {
 	const bytes = new Uint8Array([1, 2, 3]);
 	const photo = { id: ID, momentId: '01K6A5ZQ3V9W8X7Y6Z5A4B3C2E', image: bytes, thumb: bytes, width: 1600, height: 1200, issuedAt: 5 };
