@@ -64,6 +64,7 @@ export const errors = {
 	'errors.command.idTaken': 'This was already sent as something else. Save it again as new.',
 	'errors.command.malformed': 'Stella could not read what was sent. Save it again as new.',
 	'errors.command.notQueueable': 'Only additions can wait to be sent.',
+	'errors.command.noSuchMoment': 'The moment this photo belongs to is no longer there to add it to.',
 	'errors.moment.needsPerson': 'Mention at least one person with @ so the moment has a place to go.',
 
 	'errors.image.empty': 'The image is empty.',

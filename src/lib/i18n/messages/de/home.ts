@@ -23,6 +23,10 @@ export const home: HomeMessages = {
 	'home.outbox.discard': 'Verwerfen',
 	'home.outbox.discardQuestion': 'Nur dieses Gerät hat eine Kopie.',
 	'home.outbox.discardConfirm': 'Endgültig verwerfen',
+	'home.outbox.photosWaiting': 'Fotos noch nicht gesendet',
+	'home.outbox.sendingPhotos': 'Fotos werden gesendet…',
+	'home.outbox.photoRefused': 'Ein Foto konnte nicht gesendet werden',
+	'home.outbox.photoCount': (p: { count: number }) => (p.count === 1 ? '1 Foto' : `${p.count} Fotos`),
 	'home.empty.title': 'Noch nichts geschrieben',
 	'home.empty.hint':
 		'Schreib oben den ersten Moment und erwähne jemanden mit @ — mehr braucht es nicht.',
@@ -63,8 +67,6 @@ export const home: HomeMessages = {
 	'home.weeksAgo': (p) => `vor ${p.weeks} Wo.`,
 
 	'composer.saveForLater': 'Für später speichern',
-	'composer.photosNeedStella':
-		'Stella ist nicht erreichbar, und Fotos können noch nicht auf diesem Gerät warten. Entferne sie, um den Text für später zu behalten.',
 	'composer.couldNotKeep': 'Dieses Gerät konnte den Moment nicht behalten. Der Text ist noch da.',
 	'composer.alreadySending': 'Dieser Moment wird gerade gesendet und kann hier nicht mehr bearbeitet werden.',
 	'composer.placeholder': 'Jemanden getroffen? Schreib es hier, erwähne Menschen mit @',

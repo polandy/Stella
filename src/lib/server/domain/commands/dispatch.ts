@@ -3,6 +3,7 @@ import { TranslatableError } from '../../../errors/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Clock } from '../../clock';
 import type { CapturedMoment } from '../moments/moments';
+import type { Visibility } from '../../access/visibility';
 
 /*
  * The command dispatcher (docs/concepts/offline-capture.md §3, docs/04 §4.9). Every change a
@@ -24,7 +25,10 @@ export interface CommandActor {
 
 /** What each command answers with when it is applied. */
 export interface CommandResults {
-	'moment.capture': CapturedMoment;
+	/** What a later photo needs to find its entry, too (`moment-photo.ts`). */
+	'moment.capture': CapturedMoment & { visibility: Visibility };
+	/** The stored photo's id. */
+	'moment.photo': string;
 }
 
 /** The use-case behind each command. */
@@ -47,6 +51,8 @@ export interface CommandReceipt {
 
 /** The receipt book. Receipts are kept for good: they hold ids, not content. */
 export interface CommandReceiptRepository {
+	/** The receipt for `id`, or null. */
+	find(id: string): Promise<CommandReceipt | null>;
 	/** Claim `receipt.id`: null when the claim is now ours, else the receipt already there. */
 	claim(receipt: Omit<CommandReceipt, 'status' | 'result'>): Promise<CommandReceipt | null>;
 	/** Take over a pending claim, only if it is still the one claimed at `claimedAt`. */
@@ -63,11 +69,11 @@ export interface CommandDeps {
 	handlers: CommandHandlers;
 }
 
-/** What became of a command. */
-export type CommandOutcome =
+/** What became of a command of type `T`. */
+export type CommandOutcome<T extends CommandType = CommandType> =
 	| {
 			status: 'applied';
-			result: CommandResults[CommandType];
+			result: CommandResults[T];
 			/** True when this was a resend of a command applied earlier. */
 			repeated: boolean;
 	  }
@@ -84,11 +90,11 @@ export type CommandOutcome =
 export const CLAIM_STALE_AFTER_MS = 60_000;
 
 /** Apply `command` for `actor`, once. */
-export async function dispatchCommand(
+export async function dispatchCommand<C extends Command>(
 	deps: CommandDeps,
 	actor: CommandActor,
-	command: Command
-): Promise<CommandOutcome> {
+	command: C
+): Promise<CommandOutcome<C['type']>> {
 	const at = deps.clock.now();
 	const existing = await deps.receipts.claim({
 		id: command.id,
@@ -104,7 +110,7 @@ export async function dispatchCommand(
 			return { status: 'refused', reason: phrase('errors.command.idTaken') };
 		}
 		if (existing.status === 'applied') {
-			return { status: 'applied', result: existing.result as CommandResults[CommandType], repeated: true };
+			return { status: 'applied', result: existing.result as CommandResults[C['type']], repeated: true };
 		}
 		// Pending: either another run is inside the handler, or one died there. A duplicate is
 		// visible and can be removed; a moment presumed saved but never written is gone.
@@ -114,9 +120,9 @@ export async function dispatchCommand(
 		}
 	}
 
-	let result: CommandResults[CommandType];
+	let result: CommandResults[C['type']];
 	try {
-		result = await apply(deps.handlers, actor, command);
+		result = (await apply(deps.handlers, actor, command)) as CommandResults[C['type']];
 	} catch (err) {
 		await deps.receipts.release(command.id);
 		if (err instanceof TranslatableError) return { status: 'refused', reason: err.phrase };
@@ -134,6 +140,8 @@ function apply(
 ): Promise<CommandResults[CommandType]> {
 	switch (command.type) {
 		case 'moment.capture':
+			return handlers[command.type](actor, command.payload);
+		case 'moment.photo':
 			return handlers[command.type](actor, command.payload);
 	}
 }

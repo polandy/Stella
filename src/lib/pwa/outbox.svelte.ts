@@ -1,8 +1,8 @@
 import {
 	MAX_COMMAND_BATCH,
-	type Command,
 	type CommandAnswer,
-	type CommandPayloads
+	type CommandPayloads,
+	type JsonCommand
 } from '../commands/commands';
 import {
 	discard,
@@ -12,8 +12,11 @@ import {
 	release,
 	revise,
 	settle,
+	settlePhoto,
 	takeBatch,
+	takePhoto,
 	unsend,
+	type KeptPhoto,
 	type OutboxItem
 } from './outbox';
 import { readOutbox, updateOutbox } from './outbox-store';
@@ -88,11 +91,11 @@ export const outbox = {
 		items = await readOutbox();
 	},
 
-	/** Keep `command` until it can be sent, then try at once. */
-	async add(command: Command): Promise<void> {
+	/** Keep `command` (and the photos that go with it) until it can be sent, then try at once. */
+	async add(command: JsonCommand, photos: KeptPhoto[] = []): Promise<void> {
 		const member = memberId;
 		if (!member) throw new Error('The outbox was used before a member signed in.');
-		await apply((list) => queue(list, { command, memberId: member, savedAt: Date.now() }));
+		await apply((list) => queue(list, { command, memberId: member, savedAt: Date.now(), photos }));
 		void outbox.send();
 	},
 
@@ -103,7 +106,7 @@ export const outbox = {
 	release: (id: string): Promise<void> => apply((list) => release(list, id)),
 
 	/** Save an edit and try to send it. `freshId` names it anew if it had been refused. */
-	async revise<T extends Command['type']>(
+	async revise<T extends JsonCommand['type']>(
 		id: string,
 		payload: CommandPayloads[T],
 		freshId: string
@@ -116,44 +119,88 @@ export const outbox = {
 	/** Throw an item away; false when it is on its way and cannot be recalled. */
 	discard: (id: string): Promise<boolean> => attempt((list) => discard(list, id)),
 
-	/** Send what waits, batch by batch, until nothing does or Stella stops answering. */
+	/**
+	 * Send what waits, batch by batch, then the photos of moments Stella already has, until
+	 * nothing waits or Stella stops answering.
+	 */
 	async send(): Promise<void> {
 		const member = memberId;
 		if (sending || !member) return;
 		sending = true;
 		try {
-			for (;;) {
-				let batch: Command[] = [];
-				await apply((list) => {
-					const taken = takeBatch(list, member, MAX_COMMAND_BATCH);
-					batch = taken.batch;
-					return taken.items;
-				});
-				if (batch.length === 0) return;
-
-				let answers: CommandAnswer[] | null = null;
-				try {
-					const response = await fetch('/api/commands', {
-						method: 'POST',
-						headers: { 'content-type': 'application/json' },
-						body: JSON.stringify({ commands: batch })
-					});
-					answers = await answersFrom(response);
-				} catch {
-					// Out of reach. Everything waits for the next chance.
-				}
-				if (!answers) {
-					await apply(unsend);
-					return;
-				}
-				const answered = answers;
-				await apply((list) => settle(list, answered));
-				if (answered.some((a) => a.status === 'applied')) whenApplied();
-				// Busy or failed means "not now": another round would get the same answer.
-				if (answered.some((a) => a.status === 'busy' || a.status === 'failed')) return;
-			}
+			if (await sendCommands(member)) await sendPhotos(member);
 		} finally {
 			sending = false;
 		}
 	}
 };
+
+/** Send queued commands in batches; true when everything that could go went. */
+async function sendCommands(member: string): Promise<boolean> {
+	for (;;) {
+		let batch: JsonCommand[] = [];
+		await apply((list) => {
+			const taken = takeBatch(list, member, MAX_COMMAND_BATCH);
+			batch = taken.batch;
+			return taken.items;
+		});
+		if (batch.length === 0) return true;
+
+		let answers: CommandAnswer[] | null = null;
+		try {
+			const response = await fetch('/api/commands', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ commands: batch })
+			});
+			answers = await answersFrom(response);
+		} catch {
+			// Out of reach. Everything waits for the next chance.
+		}
+		if (!answers) {
+			await apply(unsend);
+			return false;
+		}
+		const answered = answers;
+		await apply((list) => settle(list, answered));
+		if (answered.some((a) => a.status === 'applied')) whenApplied();
+		// Busy or failed means "not now": another round would get the same answer.
+		if (answered.some((a) => a.status === 'busy' || a.status === 'failed')) return false;
+	}
+}
+
+/** Upload the photos of moments Stella already has, one at a time. */
+async function sendPhotos(member: string): Promise<void> {
+	for (;;) {
+		let upload: { momentId: string; photo: KeptPhoto } | null = null;
+		await apply((list) => {
+			const taken = takePhoto(list, member);
+			upload = taken?.upload ?? null;
+			return taken?.items ?? list;
+		});
+		const next = upload as { momentId: string; photo: KeptPhoto } | null;
+		if (!next) return;
+
+		const form = new FormData();
+		form.set('id', next.photo.id);
+		form.set('momentId', next.momentId);
+		form.set('image', next.photo.image, 'photo.jpg');
+		form.set('thumb', next.photo.thumb, 'thumb.jpg');
+		form.set('width', String(next.photo.width));
+		form.set('height', String(next.photo.height));
+		let answer: CommandAnswer | null = null;
+		try {
+			const response = await fetch('/api/commands/photo', {
+				method: 'POST',
+				body: form
+			});
+			if (response.ok)
+				answer = ((await response.json()) as { answer?: CommandAnswer }).answer ?? null;
+		} catch {
+			// Out of reach, or not Stella answering: the photo waits.
+		}
+		await apply((list) => settlePhoto(list, next.momentId, next.photo.id, answer));
+		if (answer?.status === 'applied') whenApplied();
+		if (answer?.status !== 'applied') return;
+	}
+}

@@ -76,6 +76,8 @@ import type { StreamDeps, StreamRepository } from './domain/stream/stream';
 import { captureMoment, type CaptureMomentDeps } from './domain/moments/moments';
 import type { CommandDeps, CommandReceiptRepository } from './domain/commands/dispatch';
 import { createDrizzleCommandReceiptRepository } from './db/command-receipt-repository';
+import { createDrizzleEntryOwnership } from './db/entry-ownership';
+import { attachMomentPhoto } from './domain/commands/moment-photo';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
 import type { ImportDeps, ImportRepository } from './domain/import/apply';
 import type { ApiImportDeps } from './domain/import/api/api-import';
@@ -461,16 +463,25 @@ let commandReceiptRepository: CommandReceiptRepository | null = null;
 /** The dispatcher every change goes through (docs/concepts/offline-capture.md §3). */
 export function getCommandDeps(): CommandDeps {
 	const capture = getCaptureMomentDeps();
+	const receipts = (commandReceiptRepository ??= createDrizzleCommandReceiptRepository(getDb()));
 	return {
-		receipts: (commandReceiptRepository ??= createDrizzleCommandReceiptRepository(getDb())),
+		receipts,
 		clock: systemClock,
 		handlers: {
 			// A moment carries its own visibility, so it is also the author's default for anyone
-			// the moment creates inline.
-			'moment.capture': (actor, payload) =>
-				captureMoment(
+			// the moment creates inline — and what a photo sent after it inherits.
+			'moment.capture': async (actor, payload) => ({
+				...(await captureMoment(
 					capture,
 					{ userId: actor.userId, householdId: actor.householdId, defaultVisibility: payload.visibility },
+					payload
+				)),
+				visibility: payload.visibility
+			}),
+			'moment.photo': (actor, payload) =>
+				attachMomentPhoto(
+					{ receipts, entries: createDrizzleEntryOwnership(getDb()), photos: getJournalPhotoDeps() },
+					actor,
 					payload
 				)
 		}

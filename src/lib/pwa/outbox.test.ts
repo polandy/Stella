@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { Command, CommandAnswer } from '../commands/commands';
+import type { CommandAnswer, JsonCommand } from '../commands/commands';
 import {
 	discard,
 	hold,
@@ -8,7 +8,9 @@ import {
 	release,
 	revise,
 	settle,
+	settlePhoto,
 	takeBatch,
+	takePhoto,
 	unsend,
 	type OutboxItem
 } from './outbox';
@@ -20,7 +22,7 @@ import {
  * item being edited is never sent from under the editor.
  */
 
-const moment = (id: string, body = `moment ${id}`): Command => ({
+const moment = (id: string, body = `moment ${id}`): JsonCommand => ({
 	id,
 	type: 'moment.capture',
 	payload: { body, entryDate: '2026-09-27', visibility: 'shared', newPeople: [] },
@@ -150,5 +152,59 @@ describe('recover', () => {
 			['c', 'pending'],
 			['d', 'refused']
 		]);
+	});
+});
+
+describe('photos kept with a moment', () => {
+	const photo = (id: string) => ({ id, image: new Blob(['i']), thumb: new Blob(['t']), width: 4, height: 3 });
+	const withPhotos = (id: string, ...photoIds: string[]) =>
+		queue([], { command: moment(id), memberId: 'u1', savedAt: 1, photos: photoIds.map(photo) });
+
+	it('keeps a delivered moment until its photos are sent too, and never sends it again', () => {
+		let items = settle(takeBatch(withPhotos('a', 'p1', 'p2'), 'u1', 10).items, [
+			{ id: 'a', status: 'applied', result: {} }
+		]);
+		expect(items).toHaveLength(1);
+		expect(items[0]).toMatchObject({ delivered: true, state: 'pending' });
+		expect(takeBatch(items, 'u1', 10).batch).toEqual([]);
+
+		const first = takePhoto(items, 'u1')!;
+		expect(first.upload).toMatchObject({ momentId: 'a', photo: { id: 'p1' } });
+		expect(first.items[0].state).toBe('sending');
+		items = settlePhoto(first.items, 'a', 'p1', { id: 'p1', status: 'applied', result: 'ph1' });
+
+		const second = takePhoto(items, 'u1')!;
+		expect(second.upload.photo.id).toBe('p2');
+		expect(settlePhoto(second.items, 'a', 'p2', { id: 'p2', status: 'applied', result: 'ph2' })).toEqual([]);
+	});
+
+	it('does not upload a photo before its moment has arrived', () => {
+		expect(takePhoto(withPhotos('a', 'p1'), 'u1')).toBeNull();
+	});
+
+	it('keeps the photo waiting when its upload got no answer or a "not now"', () => {
+		const delivered = settle(takeBatch(withPhotos('a', 'p1'), 'u1', 10).items, [
+			{ id: 'a', status: 'applied', result: {} }
+		]);
+		const lost = settlePhoto(takePhoto(delivered, 'u1')!.items, 'a', 'p1', null);
+		expect(lost[0]).toMatchObject({ state: 'pending', delivered: true });
+		expect(lost[0].photos.map((p) => p.id)).toEqual(['p1']);
+		const busy = settlePhoto(takePhoto(lost, 'u1')!.items, 'a', 'p1', { id: 'p1', status: 'failed' });
+		expect(busy[0].state).toBe('pending');
+	});
+
+	it('shows a refused photo with the reason; a delivered moment can be discarded but not edited', () => {
+		const delivered = settle(takeBatch(withPhotos('a', 'p1'), 'u1', 10).items, [
+			{ id: 'a', status: 'applied', result: {} }
+		]);
+		const refused = settlePhoto(takePhoto(delivered, 'u1')!.items, 'a', 'p1', {
+			id: 'p1',
+			status: 'refused',
+			reason: 'Unsupported image format.'
+		});
+		expect(refused[0]).toMatchObject({ state: 'refused', reason: 'Unsupported image format.', delivered: true });
+		expect(takePhoto(refused, 'u1')).toBeNull();
+		expect(hold(refused, 'a')).toBeNull();
+		expect(discard(refused, 'a')).toEqual([]);
 	});
 });

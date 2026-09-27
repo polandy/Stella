@@ -1,4 +1,4 @@
-import type { Command, CommandAnswer, CommandPayloads } from '../commands/commands';
+import type { CommandAnswer, CommandPayloads, JsonCommand } from '../commands/commands';
 
 /*
  * The outbox (docs/concepts/offline-capture.md §4): what a phone holds back while Stella is
@@ -17,9 +17,19 @@ import type { Command, CommandAnswer, CommandPayloads } from '../commands/comman
  */
 export type OutboxState = 'pending' | 'held' | 'sending' | 'refused';
 
+/** A photo kept with a moment, already processed (downscaled, location stripped). */
+export interface KeptPhoto {
+	/** The photo's own command id, so an upload whose answer was lost is recognised. */
+	id: string;
+	image: Blob;
+	thumb: Blob;
+	width: number;
+	height: number;
+}
+
 /** One thing a member added while Stella could not be reached. */
 export interface OutboxItem {
-	command: Command;
+	command: JsonCommand;
 	/** Whose it is: a different member signing in on the device never sees or sends it. */
 	memberId: string;
 	state: OutboxState;
@@ -27,14 +37,24 @@ export interface OutboxItem {
 	reason: string | null;
 	/** When it was saved on the device (epoch ms). */
 	savedAt: number;
+	/** Photos still to be sent, after the moment itself. */
+	photos: KeptPhoto[];
+	/**
+	 * Stella has the moment; only its photos wait. It is never sent again, and — being
+	 * household data now — no longer edited here.
+	 */
+	delivered: boolean;
 }
 
 /** Append a newly written item. */
 export function queue(
 	items: readonly OutboxItem[],
-	added: { command: Command; memberId: string; savedAt: number }
+	added: { command: JsonCommand; memberId: string; savedAt: number; photos?: KeptPhoto[] }
 ): OutboxItem[] {
-	return [...items, { ...added, state: 'pending', reason: null }];
+	return [
+		...items,
+		{ ...added, photos: added.photos ?? [], state: 'pending', reason: null, delivered: false }
+	];
 }
 
 /**
@@ -45,10 +65,12 @@ export function takeBatch(
 	items: readonly OutboxItem[],
 	memberId: string,
 	max: number
-): { items: OutboxItem[]; batch: Command[] } {
-	const batch: Command[] = [];
+): { items: OutboxItem[]; batch: JsonCommand[] } {
+	const batch: JsonCommand[] = [];
 	const next = items.map((item) => {
-		if (batch.length >= max || item.memberId !== memberId || item.state !== 'pending') return item;
+		if (batch.length >= max || item.memberId !== memberId || item.state !== 'pending' || item.delivered) {
+			return item;
+		}
 		batch.push(item.command);
 		return { ...item, state: 'sending' as const };
 	});
@@ -56,8 +78,9 @@ export function takeBatch(
 }
 
 /**
- * Apply Stella's answers to what was in flight. *Applied* leaves; *refused* stays with its
- * reason; *busy*, *failed* and anything left unanswered go back to waiting.
+ * Apply Stella's answers to what was in flight. *Applied* leaves — or, with photos still to
+ * send, stays as delivered; *refused* stays with its reason; *busy*, *failed* and anything
+ * left unanswered go back to waiting.
  */
 export function settle(items: readonly OutboxItem[], answers: readonly CommandAnswer[]): OutboxItem[] {
 	const byId = new Map(answers.map((a) => [a.id, a]));
@@ -68,7 +91,10 @@ export function settle(items: readonly OutboxItem[], answers: readonly CommandAn
 			continue;
 		}
 		const answer = byId.get(item.command.id);
-		if (answer?.status === 'applied') continue;
+		if (answer?.status === 'applied') {
+			if (item.photos.length > 0) next.push({ ...item, state: 'pending', delivered: true });
+			continue;
+		}
 		next.push(
 			answer?.status === 'refused'
 				? { ...item, state: 'refused', reason: answer.reason }
@@ -89,7 +115,7 @@ export function unsend(items: readonly OutboxItem[]): OutboxItem[] {
  */
 export function hold(items: readonly OutboxItem[], id: string): OutboxItem[] | null {
 	const item = items.find((i) => i.command.id === id);
-	if (!item || item.state === 'sending') return null;
+	if (!item || item.state === 'sending' || item.delivered) return null;
 	return items.map((i) => (i === item ? { ...i, state: 'held' } : i));
 }
 
@@ -108,7 +134,7 @@ export function release(items: readonly OutboxItem[], id: string): OutboxItem[] 
  * one is a different request. A pending item keeps its id, so a copy that did reach Stella
  * earlier is still recognised. Null when the item is not held.
  */
-export function revise<T extends Command['type']>(
+export function revise<T extends JsonCommand['type']>(
 	items: readonly OutboxItem[],
 	id: string,
 	payload: CommandPayloads[T],
@@ -120,8 +146,56 @@ export function revise<T extends Command['type']>(
 		...item.command,
 		id: item.reason === null ? item.command.id : freshId,
 		payload
-	} as Command;
+	} as JsonCommand;
 	return items.map((i) => (i === item ? { ...i, command, state: 'pending', reason: null } : i));
+}
+
+/**
+ * The next photo of `memberId`'s to upload, from a moment Stella already has, marking its
+ * moment *sending*; null when there is none.
+ */
+export function takePhoto(
+	items: readonly OutboxItem[],
+	memberId: string
+): { items: OutboxItem[]; upload: { momentId: string; photo: KeptPhoto } } | null {
+	const item = items.find(
+		(i) => i.memberId === memberId && i.delivered && i.state === 'pending' && i.photos.length > 0
+	);
+	if (!item) return null;
+	return {
+		items: items.map((i) => (i === item ? { ...i, state: 'sending' } : i)),
+		upload: { momentId: item.command.id, photo: item.photos[0] }
+	};
+}
+
+/**
+ * Apply Stella's answer to one photo upload (null: no answer came). *Applied* drops the photo,
+ * and the moment with its last one; *refused* stays with the reason; anything else waits.
+ */
+export function settlePhoto(
+	items: readonly OutboxItem[],
+	momentId: string,
+	photoId: string,
+	answer: CommandAnswer | null
+): OutboxItem[] {
+	const next: OutboxItem[] = [];
+	for (const item of items) {
+		if (item.command.id !== momentId || item.state !== 'sending') {
+			next.push(item);
+			continue;
+		}
+		if (answer?.status === 'applied') {
+			const photos = item.photos.filter((p) => p.id !== photoId);
+			if (photos.length > 0) next.push({ ...item, photos, state: 'pending' });
+			continue;
+		}
+		next.push(
+			answer?.status === 'refused'
+				? { ...item, state: 'refused', reason: answer.reason }
+				: { ...item, state: 'pending' }
+		);
+	}
+	return next;
 }
 
 /** The member does not want it any more. Null when it is on its way and cannot be recalled. */

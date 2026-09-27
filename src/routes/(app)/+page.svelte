@@ -154,6 +154,13 @@
 		sending: 'home.outbox.sending',
 		refused: 'home.outbox.couldNotSend'
 	};
+	// Once Stella has the moment, only its photos are still on their way.
+	const DELIVERED_LABEL: Record<OutboxItem['state'], MessageKey> = {
+		pending: 'home.outbox.photosWaiting',
+		held: 'home.outbox.photosWaiting',
+		sending: 'home.outbox.sendingPhotos',
+		refused: 'home.outbox.photoRefused'
+	};
 </script>
 
 <svelte:head><title>{t('home.title')}</title></svelte:head>
@@ -216,7 +223,8 @@
 					</span>
 					<div class="min-w-0">
 						<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
-							<b class="font-semibold {refused ? 'text-danger' : 'text-fg'}">{t(OUTBOX_LABEL[item.state])}</b>
+							<b class="font-semibold {refused ? 'text-danger' : 'text-fg'}">{t((item.delivered ? DELIVERED_LABEL : OUTBOX_LABEL)[item.state])}</b>
+							{#if item.photos.length}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"><Icon name="photo" size={11} />{t('home.outbox.photoCount', { count: item.photos.length })}</span>{/if}
 							{#if item.command.payload.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('common.onlyYouSee')}><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
 							<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.entryDate}>{keptDay(item.command.payload.entryDate)}</span>
 						</div>
@@ -229,7 +237,9 @@
 									<Button variant="danger" size="sm" onclick={() => discardKept(item)}>{t('home.outbox.discardConfirm')}</Button>
 									<Button variant="ghost" size="sm" onclick={() => (confirmingDiscard = null)}>{t('common.cancel')}</Button>
 								{:else}
-									<Button variant="secondary" size="sm" icon="write" onclick={() => edit(item)}>{t('home.outbox.edit')}</Button>
+									{#if !item.delivered}
+										<Button variant="secondary" size="sm" icon="write" onclick={() => edit(item)}>{t('home.outbox.edit')}</Button>
+									{/if}
 									<Button variant="ghost" size="sm" icon="remove" onclick={() => (confirmingDiscard = item.command.id)}>{t('home.outbox.discard')}</Button>
 								{/if}
 							</div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { parseCommand } from './parse';
+import { parseCommand, parsePhotoCommand } from './parse';
 
 /*
  * Reading a command off the wire (docs/concepts/offline-capture.md §3). The outbox on a phone
@@ -36,5 +36,26 @@ describe('parseCommand', () => {
 		expect(parseCommand({ ...good, payload: { ...good.payload, body: '   ' } })).toBeNull();
 		expect(parseCommand({ ...good, payload: { ...good.payload, entryDate: '27.09.2026' } })).toBeNull();
 		expect(parseCommand({ ...good, payload: { ...good.payload, visibility: 'public' } })).toBeNull();
+	});
+});
+
+describe('parsePhotoCommand', () => {
+	const bytes = new Uint8Array([1, 2, 3]);
+	const photo = { id: ID, momentId: '01K6A5ZQ3V9W8X7Y6Z5A4B3C2E', image: bytes, thumb: bytes, width: 1600, height: 1200, issuedAt: 5 };
+
+	it('reads a photo for a moment sent before it', () => {
+		expect(parsePhotoCommand(photo)).toEqual({
+			id: ID,
+			type: 'moment.photo',
+			payload: { momentId: photo.momentId, image: bytes, thumb: bytes, width: 1600, height: 1200 },
+			issuedAt: 5
+		});
+	});
+
+	it('refuses a photo with no moment, no bytes or no size', () => {
+		expect(parsePhotoCommand({ ...photo, momentId: 'x' })).toBeNull();
+		expect(parsePhotoCommand({ ...photo, image: 'bytes' })).toBeNull();
+		expect(parsePhotoCommand({ ...photo, width: Number.NaN })).toBeNull();
+		expect(parsePhotoCommand({ ...photo, id: '' })).toBeNull();
 	});
 });

@@ -20,6 +20,8 @@ const captured: CapturedMoment = {
 	linkSuggestion: null
 };
 
+const result = { ...captured, visibility: 'shared' as const };
+
 const ids = ['01K6A5ZQ3V9W8X7Y6Z5A4B3C21', '01K6A5ZQ3V9W8X7Y6Z5A4B3C22', '01K6A5ZQ3V9W8X7Y6Z5A4B3C23'];
 const moment = (id: string, body = 'Coffee with @Julia') => ({
 	id,
@@ -34,6 +36,9 @@ function fakes() {
 	const deps: CommandDeps = {
 		clock: { now: () => 1_000 },
 		receipts: {
+			async find(id) {
+				return receipts.get(id) ?? null;
+			},
 			async claim(r) {
 				const existing = receipts.get(r.id);
 				if (existing) return existing;
@@ -55,8 +60,9 @@ function fakes() {
 				if (payload.body.includes('nobody')) throw new MomentNeedsPersonError();
 				if (payload.body.includes('crash')) throw new Error('disk full');
 				bodies.push(payload.body);
-				return captured;
-			}
+				return { ...captured, visibility: payload.visibility };
+			},
+			'moment.photo': async () => 'photo'
 		}
 	};
 	return { deps, bodies };
@@ -68,8 +74,8 @@ describe('receiveQueued', () => {
 		const answers = await receiveQueued(f.deps, actor, t, [moment(ids[0], 'first @Julia'), moment(ids[1], 'second @Julia')]);
 
 		expect(answers).toEqual([
-			{ id: ids[0], status: 'applied', result: captured },
-			{ id: ids[1], status: 'applied', result: captured }
+			{ id: ids[0], status: 'applied', result },
+			{ id: ids[1], status: 'applied', result }
 		]);
 		expect(f.bodies).toEqual(['first @Julia', 'second @Julia']);
 	});
@@ -109,7 +115,7 @@ describe('receiveQueued', () => {
 
 		expect(answers).toEqual([
 			{ id: ids[0], status: 'failed' },
-			{ id: ids[1], status: 'applied', result: captured }
+			{ id: ids[1], status: 'applied', result }
 		]);
 	});
 });

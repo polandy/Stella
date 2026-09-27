@@ -29,6 +29,10 @@ export const home = {
 	'home.outbox.discard': 'Discard',
 	'home.outbox.discardQuestion': 'This device holds the only copy.',
 	'home.outbox.discardConfirm': 'Discard for good',
+	'home.outbox.photosWaiting': 'Photos not sent yet',
+	'home.outbox.sendingPhotos': 'Sending photos…',
+	'home.outbox.photoRefused': 'Could not send a photo',
+	'home.outbox.photoCount': (p: { count: number }) => (p.count === 1 ? '1 photo' : `${p.count} photos`),
 	'home.empty.title': 'Nothing written yet',
 	'home.empty.hint':
 		'Write the first moment above and mention someone with @ — that is all it takes.',
@@ -69,8 +73,6 @@ export const home = {
 	'home.weeksAgo': (p: { weeks: number }) => `${p.weeks}w ago`,
 
 	'composer.saveForLater': 'Save for later',
-	'composer.photosNeedStella':
-		'Stella is out of reach, and photos cannot wait on this device yet. Remove them to keep the text for later.',
 	'composer.couldNotKeep': 'This device could not keep the moment. The text is still here.',
 	'composer.alreadySending': 'This moment is being sent right now and can no longer be edited here.',
 	'composer.placeholder': 'Met someone? Type it here, mention people with @',

@@ -11,7 +11,7 @@
 	import { allowedForAudience } from '$lib/mentions/audience';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
 	import type { MomentCapturePayload } from '$lib/commands/commands';
-	import type { OutboxItem } from '$lib/pwa/outbox';
+	import type { KeptPhoto, OutboxItem } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { tick } from 'svelte';
@@ -199,19 +199,27 @@
 		commandId = ulid();
 	}
 
-	/** Keep the moment on this device until Stella answers again. */
-	async function keepForLater(formEl: HTMLFormElement) {
-		if (picked.length > 0) {
-			localError = t('composer.photosNeedStella');
-			return;
+	/**
+	 * The picked photos, processed in the browser (downscaled, location stripped) and each named
+	 * as a command of its own — once per save, so a save that ends up kept for later sends the
+	 * very same photos under the very same names.
+	 */
+	async function preparePhotos(): Promise<KeptPhoto[]> {
+		const photos: KeptPhoto[] = [];
+		for (const file of picked) {
+			const { image, thumb, width, height } = await processImage(file);
+			photos.push({ id: ulid(), image, thumb, width, height });
 		}
+		return photos;
+	}
+
+	/** Keep the moment, and its photos, on this device until Stella answers again. */
+	async function keepForLater(formEl: HTMLFormElement, photos: KeptPhoto[]) {
 		try {
-			await outbox.add({
-				id: commandId,
-				type: 'moment.capture',
-				payload: payloadFrom(formEl),
-				issuedAt: Date.now()
-			});
+			await outbox.add(
+				{ id: commandId, type: 'moment.capture', payload: payloadFrom(formEl), issuedAt: Date.now() },
+				photos
+			);
 			clear();
 			onKept?.();
 		} catch {
@@ -238,16 +246,17 @@
 		localError = null;
 		try {
 			if (editing) return await saveEdit(formEl, editing);
-			if (!reachability.reachable) return await keepForLater(formEl);
+			const photos = await preparePhotos();
+			if (!reachability.reachable) return await keepForLater(formEl, photos);
 
 			const data = new FormData(formEl);
 			data.set('commandId', commandId);
-			for (const file of picked) {
-				const { image, thumb, width, height } = await processImage(file);
-				data.append('image', image, 'photo.jpg');
-				data.append('thumb', thumb, 'thumb.jpg');
-				data.append('width', String(width));
-				data.append('height', String(height));
+			for (const photo of photos) {
+				data.append('image', photo.image, 'photo.jpg');
+				data.append('thumb', photo.thumb, 'thumb.jpg');
+				data.append('width', String(photo.width));
+				data.append('height', String(photo.height));
+				data.append('photoId', photo.id);
 			}
 			let response: Response;
 			try {
@@ -259,7 +268,7 @@
 			} catch {
 				// Stella went out of reach mid-save — perhaps after storing it. Kept under the same
 				// name, it is recognised rather than saved twice.
-				return await keepForLater(formEl);
+				return await keepForLater(formEl, photos);
 			}
 			const result = deserialize(await response.text());
 			if (result.type === 'redirect' || result.type === 'success') clear();

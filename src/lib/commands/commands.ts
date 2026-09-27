@@ -13,7 +13,8 @@ export type CommandKind = 'add' | 'change' | 'remove';
 
 /** Every command, and its kind. */
 const KINDS = {
-	'moment.capture': 'add'
+	'moment.capture': 'add',
+	'moment.photo': 'add'
 } as const satisfies Record<string, CommandKind>;
 
 /** One of the commands Stella knows. */
@@ -33,9 +34,22 @@ export interface MomentCapturePayload {
 	newPeople: string[];
 }
 
+/**
+ * A photo for a moment sent earlier, named by that moment's command id. The only command
+ * with bytes in it, so it travels as multipart rather than in a JSON batch.
+ */
+export interface MomentPhotoPayload {
+	momentId: string;
+	image: Uint8Array;
+	thumb: Uint8Array;
+	width: number;
+	height: number;
+}
+
 /** The payload each command carries. */
 export interface CommandPayloads {
 	'moment.capture': MomentCapturePayload;
+	'moment.photo': MomentPhotoPayload;
 }
 
 /** One intent from one member. */
@@ -49,6 +63,9 @@ export type Command = {
 		issuedAt: number;
 	};
 }[CommandType];
+
+/** A command that travels in a JSON batch — every one but a photo, which carries bytes. */
+export type JsonCommand = Exclude<Command, { type: 'moment.photo' }>;
 
 /** Whether `value` names a command Stella knows. */
 export function isCommandType(value: unknown): value is CommandType {

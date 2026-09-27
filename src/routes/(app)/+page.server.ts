@@ -3,9 +3,8 @@ import * as v from 'valibot';
 import { quietContacts } from '$lib/server/domain/attention/quiet';
 import { listContactNames, listContacts } from '$lib/server/domain/contacts/contacts';
 import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
-import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { parseCommand } from '$lib/server/commands/parse';
+import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
@@ -18,7 +17,6 @@ import {
 	getCommandDeps,
 	getContactDeps,
 	getImportantDates,
-	getJournalPhotoDeps,
 	getMemberDeps,
 	getStreamDeps
 } from '$lib/server/services';
@@ -173,29 +171,31 @@ export const actions: Actions = {
 		}
 		const captured = outcome.result;
 
-		// Photos ride along exactly as on the journal page, on the anchor's entry — once: a
-		// resend of a moment already saved brought its photos the first time.
-		const images = outcome.repeated ? [] : form.getAll('image');
+		// Photos ride along as commands of their own, named by the composer, so a save whose
+		// answer was lost can send them again from the phone without doubling any.
+		const images = form.getAll('image');
 		const thumbs = form.getAll('thumb');
 		const widths = form.getAll('width');
 		const heights = form.getAll('height');
+		const photoIds = form.getAll('photoId');
 		for (let i = 0; i < images.length; i++) {
 			const image = images[i];
 			const thumb = thumbs[i];
 			if (!(image instanceof File) || !(thumb instanceof File)) continue;
-			try {
-				await attachJournalPhoto(getJournalPhotoDeps(), author, {
-					contactId: captured.anchorContactId,
-					journalEntryId: captured.entryId,
-					visibility: parsed.output.visibility,
-					upload: {
-						image: new Uint8Array(await image.arrayBuffer()),
-						thumb: new Uint8Array(await thumb.arrayBuffer()),
-						width: Number(widths[i]),
-						height: Number(heights[i])
-					}
-				});
-			} catch {
+			const photoId = photoIds[i];
+			const photo = parsePhotoCommand({
+				id: typeof photoId === 'string' && photoId ? photoId : ulidGenerator.next(),
+				momentId: command.id,
+				image: new Uint8Array(await image.arrayBuffer()),
+				thumb: new Uint8Array(await thumb.arrayBuffer()),
+				width: Number(widths[i]),
+				height: Number(heights[i]),
+				issuedAt: systemClock.now()
+			});
+			const attached = photo
+				? await dispatchCommand(getCommandDeps(), author, photo).catch(() => null)
+				: null;
+			if (attached?.status !== 'applied') {
 				return fail(400, {
 					momentError: say(locals, 'errors.moment.photoFailed'),
 					draft: ''

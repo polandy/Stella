@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import type { Command } from '../../commands/commands';
+import type { Command, JsonCommand } from '../../commands/commands';
 
 /*
  * Reading a command off the wire (docs/concepts/offline-capture.md §3). The edge's half of the
@@ -31,7 +31,35 @@ const CommandSchema = v.variant('type', [
 ]);
 
 /** `raw` as a command, or null when it is not exactly one. */
-export function parseCommand(raw: unknown): Command | null {
+export function parseCommand(raw: unknown): JsonCommand | null {
 	const parsed = v.safeParse(CommandSchema, raw);
 	return parsed.success ? parsed.output : null;
+}
+
+const PhotoSchema = v.object({
+	...envelope,
+	momentId: v.pipe(v.string(), v.regex(ULID)),
+	image: v.instance(Uint8Array),
+	thumb: v.instance(Uint8Array),
+	width: v.pipe(v.number(), v.integer(), v.minValue(1)),
+	height: v.pipe(v.number(), v.integer(), v.minValue(1))
+});
+
+/**
+ * A photo for a moment as a command, or null. Photos carry bytes, so they arrive as multipart
+ * form fields rather than in a JSON batch; the route reads the fields and hands them over here.
+ */
+export function parsePhotoCommand(raw: {
+	id: unknown;
+	momentId: unknown;
+	image: unknown;
+	thumb: unknown;
+	width: unknown;
+	height: unknown;
+	issuedAt: unknown;
+}): Command | null {
+	const parsed = v.safeParse(PhotoSchema, raw);
+	if (!parsed.success) return null;
+	const { id, issuedAt, ...payload } = parsed.output;
+	return { id, type: 'moment.photo', payload, issuedAt };
 }

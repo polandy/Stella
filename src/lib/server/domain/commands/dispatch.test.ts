@@ -31,6 +31,9 @@ const captured: CapturedMoment = {
 	linkSuggestion: null
 };
 
+/** What the capture handler answers: the moment, plus the visibility a later photo needs. */
+const result = { ...captured, visibility: 'shared' as const };
+
 const moment = (id = 'cmd1'): Command => ({
 	id,
 	type: 'moment.capture',
@@ -49,6 +52,9 @@ function fakes(handler: () => Promise<CapturedMoment> = async () => captured) {
 	let now = 1_000;
 	let applied = 0;
 	const repo: CommandReceiptRepository = {
+		async find(id) {
+			return receipts.get(id) ?? null;
+		},
 		async claim(r) {
 			const existing = receipts.get(r.id);
 			if (existing) return existing;
@@ -76,8 +82,9 @@ function fakes(handler: () => Promise<CapturedMoment> = async () => captured) {
 		handlers: {
 			'moment.capture': async () => {
 				applied++;
-				return handler();
-			}
+				return { ...(await handler()), visibility: 'shared' as const };
+			},
+			'moment.photo': async () => 'photo'
 		}
 	};
 	return {
@@ -93,14 +100,14 @@ describe('dispatchCommand', () => {
 		const f = fakes();
 		const outcome = await dispatchCommand(f.deps, actor, moment());
 
-		expect(outcome).toEqual({ status: 'applied', result: captured, repeated: false });
+		expect(outcome).toEqual({ status: 'applied', result, repeated: false });
 		expect(f.applied()).toBe(1);
 		expect(f.receipts.get('cmd1')).toMatchObject({
 			memberId: 'u1',
 			householdId: 'h1',
 			type: 'moment.capture',
 			status: 'applied',
-			result: captured
+			result
 		});
 	});
 
@@ -109,7 +116,7 @@ describe('dispatchCommand', () => {
 		await dispatchCommand(f.deps, actor, moment());
 		const again = await dispatchCommand(f.deps, actor, moment());
 
-		expect(again).toEqual({ status: 'applied', result: captured, repeated: true });
+		expect(again).toEqual({ status: 'applied', result, repeated: true });
 		expect(f.applied()).toBe(1);
 	});
 
