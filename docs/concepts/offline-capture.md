@@ -336,9 +336,19 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
     same photos without doubling any. A kept moment shows a photo *count*, not thumbnails. A
     photo arriving after its entry was deleted is refused (*Could not send a photo*) and can
     only be discarded. No size cap beyond the existing per-photo limits (§6.4).
-15. **Only moments so far.** Notes, calls and visits, people, tags, relationships and circle
-    memberships follow, one per PR-sized step, each as a new command kind. Ordering between
-    queued items (a note on a person added offline) is not needed until then.
+15. **Moments and notes so far.** Calls and visits, people, tags, relationships and circle
+    memberships follow, one step each, as new command kinds. Ordering between queued items (a
+    note on a person added offline) is not needed until people can be added offline.
+19. **Notes: the person page's logic moved into the domain** (`writeNote`), so a kept note and
+    one written online are checked the same way. One visible change: a note on someone who is
+    no longer visible now answers with an inline error in the notes section rather than a 404
+    page.
+20. **A kept note is edited on its person's page**, in the note form; on Home its *Edit* is a
+    link there. Home shows who a note is about from the name stored with it when it was kept
+    (`about`), since nothing can be looked up offline.
+21. **Every adding form gets the same wrapper** (`keepable`) rather than its own offline code,
+    so the remaining forms are mostly a command kind, a domain use-case and one line in the
+    page.
 16. **Signing out asks, inline** under the button (not a modal): *Keep and sign out* / *Discard
     and sign out* / *Cancel*, as §4.6 planned. Only when something is actually waiting; a
     moment already on its way cannot be discarded there.
@@ -348,6 +358,10 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
     and by trying it on a phone.
 
 **Found on the way**
+
+22. **A flaky e2e on `main`:** `graph-role-groups.spec.ts` › *tucks the links within a group
+    away when that switch is off* failed once in a full run and passed twice on its own. It
+    touches nothing this work changed; it breaks the no-race rule and deserves its own look.
 
 18. **A picker bug the old full-page reload hid:** after saving, SvelteKit returns focus to the
     page, and the composer's pending "close the picker" timer then closed it under whoever was

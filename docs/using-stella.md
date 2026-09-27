@@ -570,7 +570,8 @@ app or when your phone joins your home network, and it checks it as if you had w
 there and then. If it cannot take it — someone you mentioned was deleted in the meantime —
 the moment stays as *Could not send*, with the reason, for you to fix; nothing you wrote is
 ever dropped quietly. Photos wait with the moment and follow it once it is in. Notes, calls
-and new people on their own cannot wait on the phone yet; those follow.
+and new people on their own cannot wait on the phone yet; those follow. A note you write on
+someone's page is kept the same way, and shows at the top of their notes until it is sent.
 
 Signing out clears the pages your phone was keeping, so handing a device on does not hand on
 the household with it. If moments you wrote are still waiting, Stella asks first whether to keep

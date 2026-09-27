@@ -908,6 +908,10 @@ the same way: pure decisions, thin adapters.
   *held* while open in the composer; *delivered* once only photos wait), pure and unit-tested. `outbox-store.ts` keeps it in
   IndexedDB, changing it in one transaction at a time so two tabs cannot overwrite each
   other; `outbox.svelte.ts` sends it and mirrors it for the page. Neither decides anything.
+- **`src/lib/pwa/keepable.ts`** wraps an adding form's `use:enhance`: it names the post
+  (`commandId`) and, when Stella is out of reach or the post got no answer, keeps the same
+  command in the outbox instead. The person page's note form uses it; `note.add` is applied by
+  `domain/notes/write-note.ts`, the one place that checks and resolves a note.
 - **The Home composer** saves through its form action as a named command (`commandId`), and
   keeps the moment in the outbox when Stella cannot be reached — including when the answer to
   a save is lost, since the same name makes a second arrival harmless.

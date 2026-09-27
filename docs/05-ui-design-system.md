@@ -650,6 +650,10 @@ yet. **Edit** opens the item in the composer (on a phone, in the sheet) with a *
 undo to fall back on. Kept photos show as a count beside the label (`photo` icon); once Stella
 has the moment and only photos wait, the label says so (*Photos not sent yet*) and *Edit* goes.
 
+A **kept note** uses the same dashed outline at the top of that person's *Notes* section;
+*Edit* reopens the note form on it, whose button then reads *Save*. On Home it appears among
+the kept moments as *Not sent yet · note on <name>*, and its *Edit* goes to that person's notes.
+
 **Sign-out question** (`src/lib/components/SignOutForm.svelte`) wraps every sign-out form. With
 nothing waiting it is the plain form post it always was; with kept moments on the device it
 opens an inline `alertdialog` under the button in the same dashed outline as the kept moments —
