@@ -336,7 +336,7 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
     same photos without doubling any. A kept moment shows a photo *count*, not thumbnails. A
     photo arriving after its entry was deleted is refused (*Could not send a photo*) and can
     only be discarded. No size cap beyond the existing per-photo limits (§6.4).
-15. **Moments and notes so far.** Calls and visits, people, tags, relationships and circle
+15. **Moments, notes, and calls and visits so far.** People, tags, relationships and circle
     memberships follow, one step each, as new command kinds. Ordering between queued items (a
     note on a person added offline) is not needed until people can be added offline.
 19. **Notes: the person page's logic moved into the domain** (`writeNote`), so a kept note and
@@ -348,7 +348,11 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
     (`about`), since nothing can be looked up offline.
 21. **Every adding form gets the same wrapper** (`keepable`) rather than its own offline code,
     so the remaining forms are mostly a command kind, a domain use-case and one line in the
-    page.
+    page. Kept items share one component (`KeptItem`) wherever they show.
+23. **The log form no longer posts natively (deviates from an older comment).** It used to,
+    because only a fresh page gave the story timeline its new item. Now the timeline is keyed
+    on the page's story, so saving through `enhance` like every other section does the same —
+    and that is what lets a call be kept offline. The form's default kind stays the first one.
 16. **Signing out asks, inline** under the button (not a modal): *Keep and sign out* / *Discard
     and sign out* / *Cancel*, as §4.6 planned. Only when something is actually waiting; a
     moment already on its way cannot be discarded there.

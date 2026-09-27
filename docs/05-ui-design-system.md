@@ -637,7 +637,8 @@ clears on its own: the service worker reports whether Stella is reachable and th
 follows (docs/02 §2.18, docs/04 §4.11.1). There is nothing to dismiss, because dismissing it
 would not restore the connection.
 
-**Kept moments** (Home, under the capture field; docs/02 §2.18) look like stream items that
+**Kept moments** (`src/lib/components/KeptItem.svelte`; Home, under the capture field;
+docs/02 §2.18) look like stream items that
 have not landed yet: the same avatar-column grid, but inside a **dashed** `--border` outline
 with a hollow dashed circle carrying the `offline` icon where the avatar would be, and the body
 as typed rather than rendered. The label says where each one stands — *Not sent yet*, *Being
@@ -650,7 +651,9 @@ yet. **Edit** opens the item in the composer (on a phone, in the sheet) with a *
 undo to fall back on. Kept photos show as a count beside the label (`photo` icon); once Stella
 has the moment and only photos wait, the label says so (*Photos not sent yet*) and *Edit* goes.
 
-A **kept note** uses the same dashed outline at the top of that person's *Notes* section;
+A **kept call or visit** sits the same way at the top of the person's *Story*, with its kind and
+day in the heading line; *Edit* reopens the log form on it. A **kept note** uses the same
+dashed outline at the top of that person's *Notes* section;
 *Edit* reopens the note form on it, whose button then reads *Save*. On Home it appears among
 the kept moments as *Not sent yet · note on <name>*, and its *Edit* goes to that person's notes.
 
