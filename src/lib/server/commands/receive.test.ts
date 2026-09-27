@@ -64,7 +64,9 @@ function fakes() {
 			},
 			'moment.photo': async () => 'photo',
 			'note.add': async () => ({ noteId: 'n' }),
-			'interaction.log': async () => ({ interactionId: 'i' })
+			'interaction.log': async () => ({ interactionId: 'i' }),
+			'tag.assign': async () => ({ tagId: 't' }),
+			'circle.join': async () => ({ circleId: 'c' })
 		}
 	};
 	return { deps, bodies };

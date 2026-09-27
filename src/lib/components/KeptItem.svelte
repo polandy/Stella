@@ -59,7 +59,7 @@
 		<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 			<b class="font-semibold {refused ? 'text-danger' : 'text-fg'}">{t((item.delivered ? DELIVERED_LABEL : LABEL)[item.state])}</b>
 			{#if item.photos.length}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"><Icon name="photo" size={11} />{t('home.outbox.photoCount', { count: item.photos.length })}</span>{/if}
-			{#if item.command.payload.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('common.onlyYouSee')}><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
+			{#if 'visibility' in item.command.payload && item.command.payload.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('common.onlyYouSee')}><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
 			{@render meta?.()}
 		</div>
 		{@render children?.()}

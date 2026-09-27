@@ -1,5 +1,3 @@
-import { TranslatableError } from '../../../errors/translatable';
-import { phrase } from '../../../i18n/phrase';
 import {
 	createHandleResolver,
 	mentionsOtherThan,
@@ -7,6 +5,7 @@ import {
 } from '../../../mentions/mentions';
 import type { Visibility } from '../../access/visibility';
 import type { ContactRepository } from '../contacts/contacts';
+import { requireVisibleContact } from '../contacts/require-visible';
 import { audienceCandidates } from '../moments/moments';
 import { createNote, setNoteMentions, type NoteDeps } from './notes';
 
@@ -17,13 +16,6 @@ import { createNote, setNoteMentions, type NoteDeps } from './notes';
  * so the person page and a note kept on a phone (`note.add`, docs/concepts/offline-capture.md
  * §4.1) cannot drift apart.
  */
-
-/** The person a note is about is not one the author can see — deleted, or made private. */
-export class NoteSubjectGoneError extends TranslatableError {
-	constructor() {
-		super(phrase('errors.contact.notFound'), 'NoteSubjectGoneError');
-	}
-}
 
 export interface WriteNoteDeps extends NoteDeps {
 	contacts: Pick<ContactRepository, 'findByIdVisibleTo' | 'listVisibleTo'>;
@@ -43,8 +35,8 @@ export async function writeNote(
 	author: { userId: string; householdId: string },
 	input: WriteNoteInput
 ): Promise<{ noteId: string }> {
+	await requireVisibleContact(deps.contacts, author, input.contactId);
 	const viewer = { id: author.userId, householdId: author.householdId };
-	if (!(await deps.contacts.findByIdVisibleTo(viewer, input.contactId))) throw new NoteSubjectGoneError();
 
 	const resolver = createHandleResolver(
 		audienceCandidates(await deps.contacts.listVisibleTo(viewer), input.visibility)

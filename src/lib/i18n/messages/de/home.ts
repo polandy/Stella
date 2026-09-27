@@ -29,6 +29,9 @@ export const home: HomeMessages = {
 	'home.outbox.photoCount': (p: { count: number }) => (p.count === 1 ? '1 Foto' : `${p.count} Fotos`),
 	'home.outbox.noteOn': (p: { name: string }) => `· Notiz zu ${p.name}`,
 	'home.outbox.editOnPage': 'Bearbeiten',
+	'home.outbox.discardNamed': (p: { name: string }) => `„${p.name}“ verwerfen`,
+	'home.outbox.tagOn': (p: { name: string }) => `· Tag für ${p.name}`,
+	'home.outbox.circleFor': (p: { name: string }) => `· Kreis für ${p.name}`,
 	'home.empty.title': 'Noch nichts geschrieben',
 	'home.empty.hint':
 		'Schreib oben den ersten Moment und erwähne jemanden mit @ — mehr braucht es nicht.',

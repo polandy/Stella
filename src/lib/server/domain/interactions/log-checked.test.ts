@@ -2,7 +2,8 @@ import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
 import type { Contact, ContactSummary } from '../contacts/contacts';
 import { InvalidInteractionError, type NewInteraction } from './interactions';
-import { InteractionSubjectGoneError, logInteractionChecked, type LogCheckedDeps } from './log-checked';
+import { ContactGoneError } from '../contacts/require-visible';
+import { logInteractionChecked, type LogCheckedDeps } from './log-checked';
 
 /*
  * Logging a call or visit (docs/02 §2.6) as one use-case, so the person page and one kept on a
@@ -53,7 +54,7 @@ describe('logInteractionChecked', () => {
 
 	it('refuses a person the author cannot see, and a participant they cannot see, storing nothing', async () => {
 		const gone = fakes(['lena']);
-		await expect(logInteractionChecked(gone.deps, author, call)).rejects.toBeInstanceOf(InteractionSubjectGoneError);
+		await expect(logInteractionChecked(gone.deps, author, call)).rejects.toBeInstanceOf(ContactGoneError);
 		const hidden = fakes(['oma']);
 		await expect(logInteractionChecked(hidden.deps, author, call)).rejects.toBeInstanceOf(InvalidInteractionError);
 		expect([...gone.logged, ...hidden.logged]).toHaveLength(0);

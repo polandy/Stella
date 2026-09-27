@@ -31,6 +31,8 @@ export interface CommandResults {
 	'moment.photo': string;
 	'note.add': { noteId: string };
 	'interaction.log': { interactionId: string };
+	'tag.assign': { tagId: string };
+	'circle.join': { circleId: string };
 }
 
 /** The use-case behind each command. */
@@ -148,6 +150,10 @@ function apply(
 		case 'note.add':
 			return handlers[command.type](actor, command.payload);
 		case 'interaction.log':
+			return handlers[command.type](actor, command.payload);
+		case 'tag.assign':
+			return handlers[command.type](actor, command.payload);
+		case 'circle.join':
 			return handlers[command.type](actor, command.payload);
 	}
 }

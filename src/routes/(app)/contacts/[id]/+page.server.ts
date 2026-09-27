@@ -12,7 +12,6 @@ import {
 	listContactFields
 } from '$lib/server/domain/contact-fields/contact-fields';
 import {
-	joinCircleByName,
 	listCircles,
 	listCirclesForContact,
 	listRoleSuggestionsByCircleName,
@@ -91,7 +90,6 @@ import {
 	type ProposedLink
 } from '$lib/server/domain/relationships/suggestion-review';
 import {
-	assignTagByName,
 	listTagsForContact,
 	pruneOrphanTags,
 	TAG_COLORS,
@@ -986,7 +984,6 @@ export const actions: Actions = {
 
 	addTag: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
 		const parsed = v.safeParse(AddTagSchema, {
@@ -995,19 +992,21 @@ export const actions: Actions = {
 		});
 		if (!parsed.success) return fail(400, { tagError: say(locals, 'errors.tag.needName') });
 
-		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
-
-		try {
-			await assignTagByName(
-				getTagDeps(),
-				locals.user.householdId,
-				params.id,
-				parsed.output.name,
-				parsed.output.color
-			);
-		} catch {
-			return fail(400, { tagError: say(locals, 'errors.tag.couldNotAdd') });
+		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'tag.assign',
+			payload: { contactId: params.id, name: parsed.output.name, color: parsed.output.color ?? null },
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'tag.assign') return fail(400, { tagError: say(locals, 'errors.tag.needName') });
+		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
+		if (outcome?.status !== 'applied') {
+			return fail(400, {
+				tagError:
+					outcome?.status === 'refused' ? outcome.reason(translator(locals)) : say(locals, 'errors.tag.couldNotAdd')
+			});
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);
@@ -1178,10 +1177,6 @@ export const actions: Actions = {
 
 	joinCircle: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
-
-		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const form = await request.formData();
 		const name = form.get('circleName');
@@ -1189,16 +1184,21 @@ export const actions: Actions = {
 			return fail(400, { circleError: say(locals, 'errors.circle.needName') });
 		}
 
-		try {
-			await joinCircleByName(
-				getCircleDeps(),
-				{ userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: 'shared' },
-				params.id,
-				name,
-				typeof form.get('role') === 'string' ? String(form.get('role')) : undefined
-			);
-		} catch {
-			return fail(400, { circleError: say(locals, 'errors.circle.couldNotAdd') });
+		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'circle.join',
+			payload: { contactId: params.id, circleName: name, role: form.get('role') ?? null },
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'circle.join') return fail(400, { circleError: say(locals, 'errors.circle.needName') });
+		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
+		if (outcome?.status !== 'applied') {
+			return fail(400, {
+				circleError:
+					outcome?.status === 'refused' ? outcome.reason(translator(locals)) : say(locals, 'errors.circle.couldNotAdd')
+			});
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);

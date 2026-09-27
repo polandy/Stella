@@ -220,6 +220,16 @@
 						{/snippet}
 						{#if item.command.payload.title}<p class="mt-1 text-fg">{item.command.payload.title}</p>{/if}
 					</KeptItem>
+				{:else if isKept(item, 'tag.assign')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.tagOn', { name: item.about ?? '' })}</span>{/snippet}
+						<p class="mt-1 text-fg">{item.command.payload.name}</p>
+					</KeptItem>
+				{:else if isKept(item, 'circle.join')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.circleFor', { name: item.about ?? '' })}</span>{/snippet}
+						<p class="mt-1 text-fg">{item.command.payload.circleName}{item.command.payload.role ? ` · ${item.command.payload.role}` : ''}</p>
+					</KeptItem>
 				{/if}
 			{/each}
 		</section>

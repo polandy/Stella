@@ -80,6 +80,9 @@ import { createDrizzleEntryOwnership } from './db/entry-ownership';
 import { attachMomentPhoto } from './domain/commands/moment-photo';
 import { writeNote } from './domain/notes/write-note';
 import { logInteractionChecked } from './domain/interactions/log-checked';
+import { onVisibleContact } from './domain/contacts/require-visible';
+import { assignTagByName } from './domain/tags/tags';
+import { joinCircleByName } from './domain/circles/circles';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
 import type { ImportDeps, ImportRepository } from './domain/import/apply';
 import type { ApiImportDeps } from './domain/import/api/api-import';
@@ -480,6 +483,18 @@ export function getCommandDeps(): CommandDeps {
 				)),
 				visibility: payload.visibility
 			}),
+			'tag.assign': onVisibleContact(getContacts(), async (actor, payload) => ({
+				tagId: await assignTagByName(getTagDeps(), actor.householdId, payload.contactId, payload.name, payload.color)
+			})),
+			'circle.join': onVisibleContact(getContacts(), async (actor, payload) => ({
+				circleId: await joinCircleByName(
+					getCircleDeps(),
+					{ ...actor, defaultVisibility: 'shared' },
+					payload.contactId,
+					payload.circleName,
+					payload.role
+				)
+			})),
 			'interaction.log': (actor, payload) =>
 				logInteractionChecked({ ...getInteractionDeps(), contacts: getContacts() }, actor, payload),
 			'note.add': (actor, payload) =>

@@ -2,7 +2,8 @@ import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
 import type { Contact, ContactSummary } from '../contacts/contacts';
 import type { NewNote } from './notes';
-import { NoteSubjectGoneError, writeNote, type WriteNoteDeps } from './write-note';
+import { ContactGoneError } from '../contacts/require-visible';
+import { writeNote, type WriteNoteDeps } from './write-note';
 
 /*
  * Writing a note on a person (docs/02 §2.5, §2.20.1) as one use-case, so the person page and a
@@ -80,10 +81,10 @@ describe('writeNote', () => {
 		const f = fakes([person('julia'), person('hidden', 'private', 'u2')]);
 		await expect(
 			writeNote(f.deps, author, { contactId: 'hidden', body: 'x', visibility: 'shared', isPinned: false })
-		).rejects.toBeInstanceOf(NoteSubjectGoneError);
+		).rejects.toBeInstanceOf(ContactGoneError);
 		await expect(
 			writeNote(f.deps, author, { contactId: 'deleted', body: 'x', visibility: 'shared', isPinned: false })
-		).rejects.toBeInstanceOf(NoteSubjectGoneError);
+		).rejects.toBeInstanceOf(ContactGoneError);
 		expect(f.notes).toHaveLength(0);
 	});
 });

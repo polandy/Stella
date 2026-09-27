@@ -73,6 +73,20 @@ describe('parseCommand, for a call or visit', () => {
 	});
 });
 
+describe('parseCommand, for a tag or a circle', () => {
+	it('reads a tag by name, with or without a colour, and refuses a colour it does not know', () => {
+		const tag = { id: ID, type: 'tag.assign', payload: { contactId: 'julia', name: ' choir ' }, issuedAt: 3 };
+		expect(parseCommand(tag)?.payload).toEqual({ contactId: 'julia', name: 'choir', color: null });
+		expect(parseCommand({ ...tag, payload: { ...tag.payload, color: 'plaid' } })).toBeNull();
+	});
+
+	it('reads a circle by name, an empty role meaning none', () => {
+		const join = { id: ID, type: 'circle.join', payload: { contactId: 'julia', circleName: 'Choir', role: ' ' }, issuedAt: 3 };
+		expect(parseCommand(join)?.payload).toEqual({ contactId: 'julia', circleName: 'Choir', role: null });
+		expect(parseCommand({ ...join, payload: { ...join.payload, circleName: '' } })).toBeNull();
+	});
+});
+
 describe('parsePhotoCommand', () => {
 	const bytes = new Uint8Array([1, 2, 3]);
 	const photo = { id: ID, momentId: '01K6A5ZQ3V9W8X7Y6Z5A4B3C2E', image: bytes, thumb: bytes, width: 1600, height: 1200, issuedAt: 5 };

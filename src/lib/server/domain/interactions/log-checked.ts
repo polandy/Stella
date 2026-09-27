@@ -1,6 +1,6 @@
-import { TranslatableError } from '../../../errors/translatable';
 import { phrase } from '../../../i18n/phrase';
 import type { ContactRepository } from '../contacts/contacts';
+import { requireVisibleContact } from '../contacts/require-visible';
 import {
 	InvalidInteractionError,
 	logInteraction,
@@ -16,13 +16,6 @@ import {
  * like one logged online.
  */
 
-/** The person a touchpoint is about is not one the author can see — deleted, or made private. */
-export class InteractionSubjectGoneError extends TranslatableError {
-	constructor() {
-		super(phrase('errors.contact.notFound'), 'InteractionSubjectGoneError');
-	}
-}
-
 export interface LogCheckedDeps extends InteractionDeps {
 	contacts: Pick<ContactRepository, 'findByIdVisibleTo' | 'listVisibleTo'>;
 }
@@ -33,10 +26,8 @@ export async function logInteractionChecked(
 	author: { userId: string; householdId: string },
 	input: Required<Omit<LogInteractionInput, 'visibility'>> & Pick<LogInteractionInput, 'visibility'>
 ): Promise<{ interactionId: string }> {
+	await requireVisibleContact(deps.contacts, author, input.contactId);
 	const viewer = { id: author.userId, householdId: author.householdId };
-	if (!(await deps.contacts.findByIdVisibleTo(viewer, input.contactId))) {
-		throw new InteractionSubjectGoneError();
-	}
 	const visible = new Set((await deps.contacts.listVisibleTo(viewer)).map((c) => c.id));
 	if (!input.participantIds.every((id) => visible.has(id))) {
 		throw new InvalidInteractionError(phrase('errors.interaction.participantNotFound'));

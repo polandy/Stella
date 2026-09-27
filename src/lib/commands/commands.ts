@@ -17,7 +17,9 @@ const KINDS = {
 	'moment.capture': 'add',
 	'moment.photo': 'add',
 	'note.add': 'add',
-	'interaction.log': 'add'
+	'interaction.log': 'add',
+	'tag.assign': 'add',
+	'circle.join': 'add'
 } as const satisfies Record<string, CommandKind>;
 
 /** One of the commands Stella knows. */
@@ -70,12 +72,28 @@ export interface InteractionLogPayload {
 	participantIds: string[];
 }
 
+/** A tag put on a person by name; a name the household has not used yet makes a new tag. */
+export interface TagAssignPayload {
+	contactId: string;
+	name: string;
+	color: string | null;
+}
+
+/** A person put in a circle by name; a name nobody visible uses yet makes a new circle. */
+export interface CircleJoinPayload {
+	contactId: string;
+	circleName: string;
+	role: string | null;
+}
+
 /** The payload each command carries. */
 export interface CommandPayloads {
 	'moment.capture': MomentCapturePayload;
 	'moment.photo': MomentPhotoPayload;
 	'note.add': NoteAddPayload;
 	'interaction.log': InteractionLogPayload;
+	'tag.assign': TagAssignPayload;
+	'circle.join': CircleJoinPayload;
 }
 
 /** One intent from one member. */

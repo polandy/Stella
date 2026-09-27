@@ -59,6 +59,7 @@
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { keepable } from '$lib/pwa/keepable';
 	import KeptItem from '$lib/components/KeptItem.svelte';
+	import KeptChip from '$lib/components/KeptChip.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { ActionData, PageData } from './$types';
 
@@ -316,6 +317,62 @@
 				}
 			},
 			saved('note')
+		)
+	);
+	/*
+	 * Tags and circles added here while Stella was out of reach: kept on the device and shown as
+	 * dashed chips beside the real ones until they are sent (docs/02 §2.18).
+	 */
+	const keptTags = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'tag.assign'> =>
+				isKept(item, 'tag.assign') && item.command.payload.contactId === c.id
+		)
+	);
+	const keptCircles = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'circle.join'> =>
+				isKept(item, 'circle.join') && item.command.payload.contactId === c.id
+		)
+	);
+	const tagForm = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const name = String(form.get('name') ?? '').trim();
+					if (!name) return null;
+					const color = form.get('color');
+					return {
+						id,
+						type: 'tag.assign',
+						payload: { contactId: c.id, name, color: typeof color === 'string' && color ? color : null },
+						issuedAt: Date.now()
+					};
+				},
+				about: c.displayName,
+				onKept: () => (openSection.tags = false)
+			},
+			saved('tags')
+		)
+	);
+	const circleForm = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const circleName = String(form.get('circleName') ?? '').trim();
+					if (!circleName) return null;
+					const role = String(form.get('role') ?? '').trim();
+					return {
+						id,
+						type: 'circle.join',
+						payload: { contactId: c.id, circleName, role: role || null },
+						issuedAt: Date.now()
+					};
+				},
+				about: c.displayName,
+				onKept: () => (openSection.circles = false)
+			},
+			saved('circles')
 		)
 	);
 	// While a kept note is open, the form saves into it instead of posting.
@@ -744,8 +801,11 @@
 					<a href="/circles" class="text-xs text-link hover:underline">{t('contact.allCircles')}</a>
 				{/snippet}
 
-				{#if visibleCircles.length}
+				{#if visibleCircles.length || keptCircles.length}
 					<ul class="flex flex-wrap gap-1.5">
+						{#each keptCircles as item (item.command.id)}
+							<KeptChip {item} label={item.command.payload.role ? `${item.command.payload.circleName} · ${item.command.payload.role}` : item.command.payload.circleName} />
+						{/each}
 						{#each visibleCircles as circle (circle.membershipId)}
 							<li class="min-w-0 max-w-full">
 								<span class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border py-1 pl-2.5 pr-1.5 text-sm">
@@ -779,7 +839,7 @@
 				{/if}
 
 				{#snippet editor()}
-					<form method="POST" action="?/joinCircle" use:enhance={saved('circles')} class="flex flex-wrap items-end gap-2">
+					<form method="POST" action="?/joinCircle" use:enhance={circleForm} class="flex flex-wrap items-end gap-2">
 						<input
 							name="circleName"
 							list="circle-names"
@@ -806,8 +866,11 @@
 			</Section>
 
 				<Section as="row" title={t('contact.section.tags')} count={visibleTags.length} summary={tagSummary} startOpen={visibleTags.length > 0} addLabel={t('common.add')} error={form?.tagError ?? null} bind:open={openSection.tags}>
-				{#if visibleTags.length}
+				{#if visibleTags.length || keptTags.length}
 					<ul class="flex flex-wrap gap-1.5">
+						{#each keptTags as item (item.command.id)}
+							<KeptChip {item} label={item.command.payload.name} />
+						{/each}
 						{#each visibleTags as tag (tag.id)}
 							<li
 								class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-medium"
@@ -832,7 +895,7 @@
 				{/if}
 
 				{#snippet editor()}
-					<form method="POST" action="?/addTag" use:enhance={saved('tags')} class="flex flex-wrap items-end gap-2">
+					<form method="POST" action="?/addTag" use:enhance={tagForm} class="flex flex-wrap items-end gap-2">
 						<input name="name" placeholder={t('contact.tagName')} required class="min-w-32 flex-1 {INPUT}" />
 						<select name="color" aria-label={t('contact.colour')} class={INPUT}>
 							{#each data.tagColors as color (color)}<option value={color}>{color}</option>{/each}

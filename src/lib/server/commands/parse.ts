@@ -1,6 +1,7 @@
 import * as v from 'valibot';
 import type { Command, JsonCommand } from '../../commands/commands';
 import { INTERACTION_KINDS } from '../../interactions/kinds';
+import { TAG_COLORS } from '../domain/tags/tags';
 
 /*
  * Reading a command off the wire (docs/concepts/offline-capture.md §3). The edge's half of the
@@ -39,6 +40,27 @@ const InteractionLog = v.object({
 	participantIds: v.optional(v.array(v.pipe(v.string(), v.minLength(1))), [])
 });
 
+const TagAssign = v.object({
+	contactId: v.pipe(v.string(), v.minLength(1)),
+	name: v.pipe(v.string(), v.trim(), v.minLength(1)),
+	color: v.optional(v.nullable(v.picklist(TAG_COLORS)), null)
+});
+
+const CircleJoin = v.object({
+	contactId: v.pipe(v.string(), v.minLength(1)),
+	circleName: v.pipe(v.string(), v.trim(), v.minLength(1)),
+	role: v.optional(
+		v.nullable(
+			v.pipe(
+				v.string(),
+				v.trim(),
+				v.transform((role) => role || null)
+			)
+		),
+		null
+	)
+});
+
 const envelope = {
 	id: v.pipe(v.string(), v.regex(ULID)),
 	issuedAt: v.pipe(v.number(), v.integer(), v.minValue(0))
@@ -47,7 +69,9 @@ const envelope = {
 const CommandSchema = v.variant('type', [
 	v.object({ ...envelope, type: v.literal('moment.capture'), payload: MomentCapture }),
 	v.object({ ...envelope, type: v.literal('note.add'), payload: NoteAdd }),
-	v.object({ ...envelope, type: v.literal('interaction.log'), payload: InteractionLog })
+	v.object({ ...envelope, type: v.literal('interaction.log'), payload: InteractionLog }),
+	v.object({ ...envelope, type: v.literal('tag.assign'), payload: TagAssign }),
+	v.object({ ...envelope, type: v.literal('circle.join'), payload: CircleJoin })
 ]);
 
 /** `raw` as a command, or null when it is not exactly one. */
