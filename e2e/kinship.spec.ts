@@ -54,22 +54,23 @@ test('says nothing it cannot back: no derived relatives for someone with no fami
  * child already has the two parents Stella allows (docs/02 §2.4), and a claim the write would
  * refuse is not offered at all. So this case brings its own siblings — names the demo
  * household does not use — seeded through the archive, since they are the setting and the
- * parent link entered below is the step under test.
+ * parent link entered below is the step under test. No other spec may use them either: the
+ * archive takes a name it already holds for the same person, and seeds one sibling short.
  */
 test('offers the links a new parent implies, and writes only the one confirmed', async ({
 	page
 }) => {
 	await seedHousehold(
 		page,
-		['Rahel Ammann', 'Silvan Ammann', 'Thea Ammann'],
+		['Rahel Gisler', 'Silvan Gisler', 'Thea Gisler'],
 		[
-			{ from: 'Rahel Ammann', to: 'Silvan Ammann', type: LINK.siblingOf },
-			{ from: 'Rahel Ammann', to: 'Thea Ammann', type: LINK.siblingOf }
+			{ from: 'Rahel Gisler', to: 'Silvan Gisler', type: LINK.siblingOf },
+			{ from: 'Rahel Gisler', to: 'Thea Gisler', type: LINK.siblingOf }
 		]
 	);
 
 	// The one parent, entered by hand from Rahel's page.
-	await openPeopleTab(page, /Rahel Ammann/);
+	await openPeopleTab(page, /Rahel Gisler/);
 	await page.getByRole('button', { name: 'Add relationship' }).click();
 	const editor = page.locator('form[action="?/addRelationship"]');
 	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Child of' });
@@ -79,15 +80,15 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 
 	// Rahel's sister and brother follow from it, each with the reason and its own confirmation.
 	const proposals = page.getByTestId('kin-proposals');
-	await expect(proposals).toContainText('Vreni Zbinden is a parent of Silvan Ammann');
+	await expect(proposals).toContainText('Vreni Zbinden is a parent of Silvan Gisler');
 	await expect(proposals).toContainText(
-		'Vreni Zbinden is a parent of Rahel Ammann, and Rahel Ammann and Silvan Ammann are siblings.'
+		'Vreni Zbinden is a parent of Rahel Gisler, and Rahel Gisler and Silvan Gisler are siblings.'
 	);
-	await expect(proposals).toContainText('Vreni Zbinden is a parent of Thea Ammann');
+	await expect(proposals).toContainText('Vreni Zbinden is a parent of Thea Gisler');
 
 	await proposals
 		.getByTestId('kin-suggestion')
-		.filter({ hasText: 'Silvan Ammann' })
+		.filter({ hasText: 'Silvan Gisler' })
 		.getByRole('button', { name: 'Accept' })
 		.click();
 
@@ -98,14 +99,14 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 	 */
 	const rowFor = (name: string) =>
 		page.getByTestId('kin-proposals').getByTestId('kin-suggestion').filter({ hasText: name });
-	await expect(rowFor('Silvan Ammann')).toHaveCount(0);
-	await expect(rowFor('Thea Ammann')).toHaveCount(1);
+	await expect(rowFor('Silvan Gisler')).toHaveCount(0);
+	await expect(rowFor('Thea Gisler')).toHaveCount(1);
 	await expect(page.getByTestId('toast-undo')).toBeVisible();
 
 	// Leaving closes the window and sends it — and exactly the confirmed one was written: the
 	// link stands on Silvan's page and never reached Thea's.
-	await openPeopleTab(page, /Silvan Ammann/);
+	await openPeopleTab(page, /Silvan Gisler/);
 	await expect(page.locator('#section-relationships')).toContainText('Vreni Zbinden');
-	await openPeopleTab(page, /Thea Ammann/);
+	await openPeopleTab(page, /Thea Gisler/);
 	await expect(page.locator('#section-relationships')).not.toContainText('Vreni Zbinden');
 });

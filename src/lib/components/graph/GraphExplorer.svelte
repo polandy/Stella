@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount, untrack } from 'svelte';
+	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -31,6 +31,13 @@
 		withoutDerivedLinks
 	} from '$lib/graph/model/graph-model';
 	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
+	import {
+		groupByRole,
+		isRoleGroupId,
+		linksOfGrouped,
+		type EdgeBundle,
+		type RoleGroup
+	} from '$lib/graph/model/role-groups';
 	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
 	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
@@ -159,6 +166,32 @@
 	// turns every line's name on from the toolbar (docs/05 §5.8).
 	let edgeLabels = $state(false);
 
+	/*
+	 * The circles grouped by role (docs/02 §2.7): off by default, and like the line names a
+	 * way of looking rather than a filter. Both switches are a habit, so this browser keeps them.
+	 */
+	const GROUP_BY_ROLE_KEY = 'stella.graph.groupByRole';
+	const INNER_LINKS_KEY = 'stella.graph.innerLinks';
+	let groupRoles = $state(false);
+	let innerLinks = $state(true);
+	/** Groups the reader asked to see individually; the rest stay grouped. */
+	let dissolved = $state(new Set<string>());
+	function remember(key: string, on: boolean) {
+		try {
+			localStorage.setItem(key, on ? 'on' : 'off');
+		} catch {
+			// Not remembered, still applied for this visit.
+		}
+	}
+	function toggleGroupRoles() {
+		groupRoles = !groupRoles;
+		remember(GROUP_BY_ROLE_KEY, groupRoles);
+	}
+	function toggleInnerLinks() {
+		innerLinks = !innerLinks;
+		remember(INNER_LINKS_KEY, innerLinks);
+	}
+
 	function buildFilters(): GraphFilters {
 		const categories = (['family', 'romantic', 'social', 'professional'] as const).filter((c) =>
 			active.has(c)
@@ -170,7 +203,73 @@
 		return { edgeKinds, categories, keepNodeId: centerId ?? undefined };
 	}
 
+	/*
+	 * The three ways to arrange the map (docs/05 §5.8). Each is a one-off action, not a mode: an
+	 * expand afterwards still only adds people around the one expanded. The family tree reads
+	 * what is shown, so a filtered-out line cannot pull someone into a generation; the groups by
+	 * circle read every membership, so the grouping holds while the Circles chip is off.
+	 */
+	const ARRANGEMENTS = [
+		{ key: 'force', label: 'graph.arrange.force', hint: 'graph.arrange.force.hint' },
+		{ key: 'tree', label: 'graph.arrange.tree', hint: 'graph.arrange.tree.hint' },
+		{ key: 'circles', label: 'graph.arrange.circles', hint: 'graph.arrange.circles.hint' }
+	] as const;
+
+	/** The arrangement last chosen, which the Arrange pill names; free until one is picked. */
+	let arrangedBy = $state<(typeof ARRANGEMENTS)[number]['key']>('force');
+	const arrangedLabel = $derived(ARRANGEMENTS.find((a) => a.key === arrangedBy)!.label);
+
 	const visible = $derived(applyFilters(model, buildFilters()));
+	// Grouping reads what is shown, so the Circles chip off leaves no membership to group by;
+	// the tree's rows are generations, which a group would only pull apart (docs/02 §2.7).
+	const groupingOn = $derived(groupRoles && arrangedBy !== 'tree');
+	// Who is grouped depends only on the memberships shown; it decides whose links come along.
+	const grouped = $derived(
+		groupingOn ? new Set(groupByRole(visible, { innerLinks, dissolved }).groupOf.keys()) : null
+	);
+	/*
+	 * The map as drawn: what was opened up, plus the links of grouped people to anyone else on
+	 * it. Opening a circle brings its members without their links to each other, and a group is
+	 * about how its people belong together (docs/02 §2.7).
+	 */
+	const drawn = $derived(
+		grouped && grouped.size > 0
+			? mergeModels(model, {
+					nodes: [],
+					edges: linksOfGrouped(graph, new Set(model.nodes.map((n) => n.id)), grouped)
+				})
+			: model
+	);
+	const drawnVisible = $derived(drawn === model ? visible : applyFilters(drawn, buildFilters()));
+	const grouping = $derived(
+		groupingOn ? groupByRole(drawnVisible, { innerLinks, dissolved }) : null
+	);
+	const groupLabel = (g: RoleGroup) =>
+		t('graph.group.label', { role: g.role ?? t('circles.noRole'), count: g.memberIds.length });
+	// The line to a group needs no count: the group's own name carries it.
+	const bundleLabel = (b: EdgeBundle) =>
+		b.kind === 'membership' ? '' : t('graph.bundle.count', { count: b.edgeIds.length });
+	const elements = () =>
+		toCytoscapeElements(drawn, {
+			centerId: centerId ?? undefined,
+			edgeLabel,
+			grouping: grouping ? { grouping, groupLabel, bundleLabel } : undefined
+		});
+	/** What the canvas shows: the filtered map, plus the frames and bundles grouping adds. */
+	const shownIds = () => ({
+		nodes: new Set([
+			...drawnVisible.nodes.map((n) => n.id),
+			...(grouping?.groups.map((g) => g.id) ?? [])
+		]),
+		edges: new Set([
+			...drawnVisible.edges.map((e) => e.id),
+			...(grouping?.bundles.map((b) => b.id) ?? [])
+		])
+	});
+	const peekGroup = $derived(
+		selected ? (grouping?.groups.find((g) => g.id === selected) ?? null) : null
+	);
+	const nameOf = (id: string) => model.nodes.find((n) => n.id === id)?.label ?? id;
 	const peekNode = $derived(selected ? model.nodes.find((n) => n.id === selected) ?? null : null);
 	// How far each node sits from the centre, so the embedded map stops where it promises to.
 	const rings = $derived(centerId ? ringsFrom(model, centerId) : new Map<string, number>());
@@ -253,18 +352,36 @@
 		if (selected !== null && !model.nodes.some((n) => n.id === selected)) selected = null;
 	}
 
+	/*
+	 * Who stood in which group when the canvas last took the map in. Someone joining a group —
+	 * grouping switched on, a circle expanded — needs the map settled afresh, because a group's
+	 * members must stand together and newcomers are set down one by one (docs/02 §2.7).
+	 */
+	let placedInGroups = new Map<string, string>();
+	/** Set when joining a group settled the map, so an arrangement asked for then is not run twice. */
+	let settledForGroups = false;
 	// Push the full (expanded) element set to the renderer whenever the model grows.
 	$effect(() => {
+		const els = elements();
+		const groupOf = grouping?.groupOf ?? new Map<string, string>();
 		if (!ready || !controller) return;
-		controller.setGraph(toCytoscapeElements(model, { centerId: centerId ?? undefined, edgeLabel }));
+		controller.setGraph(els);
+		const joined = [...groupOf].some(([id, group]) => placedInGroups.get(id) !== group);
+		placedInGroups = groupOf;
+		if (joined) {
+			settledForGroups = true;
+			untrack(() => arrangeNow(arrangedBy));
+		}
 	});
 	// Apply filtering as show/hide (no re-layout).
 	$effect(() => {
+		const { nodes, edges } = shownIds();
 		if (!ready || !controller) return;
-		controller.setVisible(
-			new Set(visible.nodes.map((n) => n.id)),
-			new Set(visible.edges.map((e) => e.id))
-		);
+		controller.setVisible(nodes, edges);
+	});
+	// A group dissolved, or grouping switched off, takes its selection with it.
+	$effect(() => {
+		if (selected && isRoleGroupId(selected) && !peekGroup) selected = null;
 	});
 	// Selection / path highlighting.
 	$effect(() => {
@@ -280,6 +397,11 @@
 	});
 
 	async function onTapNode(id: string) {
+		// A group is a way of drawing people, not somebody to trace a path to or open up.
+		if (grouping?.groups.some((g) => g.id === id)) {
+			if (!pathMode) selected = id;
+			return;
+		}
 		if (pathMode) {
 			await pickPath(id);
 			return;
@@ -327,26 +449,17 @@
 		controller?.focus(id);
 	}
 
-	/*
-	 * The three ways to arrange the map (docs/05 §5.8). Each is a one-off action, not a mode: an
-	 * expand afterwards still only adds people around the one expanded. The family tree reads
-	 * what is shown, so a filtered-out line cannot pull someone into a generation; the groups by
-	 * circle read every membership, so the grouping holds while the Circles chip is off.
-	 */
-	const ARRANGEMENTS = [
-		{ key: 'force', label: 'graph.arrange.force', hint: 'graph.arrange.force.hint' },
-		{ key: 'tree', label: 'graph.arrange.tree', hint: 'graph.arrange.tree.hint' },
-		{ key: 'circles', label: 'graph.arrange.circles', hint: 'graph.arrange.circles.hint' }
-	] as const;
+	async function arrangeBy(key: (typeof ARRANGEMENTS)[number]['key']) {
+		arrangedBy = key;
+		// Leaving the tree may bring the groups back; they settle the map themselves (see above).
+		settledForGroups = false;
+		await tick();
+		if (!settledForGroups) arrangeNow(key);
+	}
 
-	/** The arrangement last chosen, which the Arrange pill names; free until one is picked. */
-	let arrangedBy = $state<(typeof ARRANGEMENTS)[number]['key']>('force');
-	const arrangedLabel = $derived(ARRANGEMENTS.find((a) => a.key === arrangedBy)!.label);
-
-	function arrangeBy(key: (typeof ARRANGEMENTS)[number]['key']) {
+	function arrangeNow(key: (typeof ARRANGEMENTS)[number]['key']) {
 		const canvas = controller;
 		if (!canvas) return;
-		arrangedBy = key;
 		if (key === 'force') return canvas.arrange();
 		// The room each node really takes, its name included; a node the canvas is not drawing
 		// (filtered out) has none to measure, and is given the usual room.
@@ -355,7 +468,9 @@
 			return size.width > 0 ? size : DEFAULT_NODE_SIZE;
 		};
 		canvas.arrangeAt(
-			key === 'tree' ? familyTreeLayout(visible, sizeOf) : circleClustersLayout(model, sizeOf)
+			key === 'tree'
+				? familyTreeLayout(visible, sizeOf)
+				: circleClustersLayout(drawn, sizeOf, grouping ?? undefined)
 		);
 	}
 
@@ -507,9 +622,16 @@
 
 		if (disposed) return;
 
+		try {
+			groupRoles = localStorage.getItem(GROUP_BY_ROLE_KEY) === 'on';
+			innerLinks = localStorage.getItem(INNER_LINKS_KEY) !== 'off';
+		} catch {
+			// Storage can be blocked; the defaults stand.
+		}
+
 		const explorer = await createExplorer({
 			container,
-			elements: toCytoscapeElements(model, { centerId: centerId ?? undefined, edgeLabel }),
+			elements: elements(),
 			stylesheet: stylesheet(),
 			reducedMotion,
 			topInset: toolbarBottom(),
@@ -521,10 +643,9 @@
 			return;
 		}
 		controller = explorer;
-		controller.setVisible(
-			new Set(visible.nodes.map((n) => n.id)),
-			new Set(visible.edges.map((e) => e.id))
-		);
+		placedInGroups = grouping?.groupOf ?? new Map();
+		const shown = shownIds();
+		controller.setVisible(shown.nodes, shown.edges);
 		controller.highlightNeighborhood(selected);
 		ready = true;
 
@@ -544,6 +665,20 @@
 		controller?.destroy();
 	});
 </script>
+
+<!-- The switch on the right of a menu row; the row itself carries the state for assistive tech. -->
+{#snippet toggle(on: boolean)}
+	<span
+		class="relative h-4 w-7 shrink-0 rounded-full transition-colors"
+		style="background:{on ? 'var(--primary)' : 'var(--border)'}"
+		aria-hidden="true"
+	>
+		<span
+			class="absolute top-0.5 size-3 rounded-full bg-card transition-[left]"
+			style="left:{on ? '0.875rem' : '0.125rem'}"
+		></span>
+	</span>
+{/snippet}
 
 <div
 	bind:this={frame}
@@ -574,7 +709,7 @@
 		bind:this={toolbar}
 		bind:clientHeight={toolbarHeight}
 		class="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-center gap-2 transition-[padding]"
-		class:sm:pr-[17rem]={peekNode && !pathMode}
+		class:sm:pr-[17rem]={(peekNode || peekGroup) && !pathMode}
 	>
 		<!-- Above the chips: on a narrow window the chip row wraps under the field, and the
 		     suggestion list would otherwise be hidden behind it. Embedded, there is nobody to
@@ -659,17 +794,37 @@
 						{t('graph.labels')}
 						<span class="block text-[11px] text-fg-subtle">{t('graph.labels.hint')}</span>
 					</span>
-					<span
-						class="relative h-4 w-7 shrink-0 rounded-full transition-colors"
-						style="background:{edgeLabels ? 'var(--primary)' : 'var(--border)'}"
-						aria-hidden="true"
-					>
-						<span
-							class="absolute top-0.5 size-3 rounded-full bg-card transition-[left]"
-							style="left:{edgeLabels ? '0.875rem' : '0.125rem'}"
-						></span>
-					</span>
+					{@render toggle(edgeLabels)}
 				</button>
+				<button
+					type="button"
+					role="menuitemcheckbox"
+					aria-checked={groupRoles}
+					onclick={toggleGroupRoles}
+					class={MENU_ITEM}
+				>
+					<span class="flex-1">
+						{t('graph.groupByRole')}
+						<span class="block text-[11px] text-fg-subtle">{t('graph.groupByRole.hint')}</span>
+					</span>
+					{@render toggle(groupRoles)}
+				</button>
+				{#if groupRoles}
+					<!-- Belongs to the grouping, so it stands indented under it and only while it is on. -->
+					<button
+						type="button"
+						role="menuitemcheckbox"
+						aria-checked={innerLinks}
+						onclick={toggleInnerLinks}
+						class="{MENU_ITEM} pl-6"
+					>
+						<span class="flex-1">
+							{t('graph.innerLinks')}
+							<span class="block text-[11px] text-fg-subtle">{t('graph.innerLinks.hint')}</span>
+						</span>
+						{@render toggle(innerLinks)}
+					</button>
+				{/if}
 			{/snippet}
 		</MenuButton>
 
@@ -750,7 +905,45 @@
 	{/if}
 
 	<!-- Peek panel -->
-	{#if peekNode && !pathMode}
+	{#if peekGroup && !pathMode}
+		<aside
+			data-testid="group-peek"
+			class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur"
+			class:bottom-3={!compact}
+			class:w-64={!compact}
+			class:w-52={compact}
+			class:max-h-[calc(100%-1.5rem)]={compact}
+		>
+			<Button variant="ghost" size="sm" icon="remove" label={t('common.close')} class="float-right" onclick={() => (selected = null)} />
+			<div class="text-xs text-fg-subtle">{t('graph.peek.roleGroup')}</div>
+			<div class="text-lg font-semibold text-fg">{groupLabel(peekGroup)}</div>
+			<div class="mb-3 text-xs text-fg-subtle">
+				{t('graph.peek.inCircle', { name: nameOf(peekGroup.circleId) })}
+			</div>
+			<ul class="mb-4 flex flex-col gap-1">
+				{#each peekGroup.memberIds as id (id)}
+					<li>
+						<a href="/contacts/{id}" class="flex items-center gap-2 rounded-lg px-1 py-1 text-sm text-fg hover:bg-bg-sunken">
+							<Avatar {id} name={nameOf(id)} avatarPhotoId={model.nodes.find((n) => n.id === id)?.avatarPhotoId ?? null} size={24} />
+							<span class="truncate">{nameOf(id)}</span>
+						</a>
+					</li>
+				{/each}
+			</ul>
+			<div class="flex flex-col gap-2">
+				<Button
+					type="button"
+					onclick={() => {
+						dissolved = new Set([...dissolved, peekGroup!.id]);
+						selected = null;
+					}}
+				>
+					{t('graph.peek.showIndividually')}
+				</Button>
+				<Button variant="primary" href="/circles/{peekGroup.circleId}">{t('graph.peek.openCircle')}</Button>
+			</div>
+		</aside>
+	{:else if peekNode && !pathMode}
 		<!-- Full height beside a full-screen canvas; embedded it is only as tall as what it
 		     says, so it does not sit as an empty panel over half a card-sized map. -->
 		<aside

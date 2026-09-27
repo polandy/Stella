@@ -2,6 +2,7 @@ import type {
 	Core,
 	CytoscapeOptions,
 	ElementDefinition,
+	EdgeSingular,
 	EventObject,
 	Layouts,
 	NodeCollection,
@@ -9,9 +10,10 @@ import type {
 } from 'cytoscape';
 import type { CyElement } from './elements';
 import type { Arrangement, Size } from '../layout/geometry';
+import { frameAround, packGroups } from '../layout/group-blocks';
 import { placeNewcomers, type Placement, type Point } from './placement';
 import { frameBelow, widenToReveal, type Box } from './viewport';
-import { BOW_FIELD, BOWED_CLASS, type CyStyle } from './stylesheet';
+import { BOW_FIELD, BOWED_CLASS, TUCKED_CLASS, type CyStyle } from './stylesheet';
 
 /*
  * Imperative Cytoscape controller — the one place the library is touched, and it is dynamically
@@ -89,6 +91,10 @@ interface LayoutEvent extends EventObject {
 	layout: Layouts;
 }
 
+/** What a group's frame carries as its kind (`elements.ts`). */
+const FRAME_KIND = 'group';
+const isFrame = (e: CyElement) => e.group === 'nodes' && e.data.kind === FRAME_KIND;
+
 /** The margin kept around the map, in screen pixels, when it is framed or widened. */
 const FRAME_PADDING = 48;
 /** The furthest out the canvas zooms, whether by the reader or to reveal newcomers. */
@@ -96,6 +102,8 @@ const MIN_ZOOM = 0.2;
 
 /** The length the force layout aims every edge at, and the step newcomers are placed at. */
 const EDGE_LENGTH = 90;
+/** The length it aims a line a bundle stands for at. */
+const TUCKED_EDGE_LENGTH = 2 * EDGE_LENGTH;
 /**
  * How long a tidy-up takes to glide the map into its new arrangement, in milliseconds. Slow
  * enough to follow each person to their new place, which is what keeps the reader oriented.
@@ -117,7 +125,10 @@ const FORCE_LAYOUT = {
 	randomize: false, // start from current positions
 	fit: false,
 	nodeRepulsion: () => 8000,
-	idealEdgeLength: () => EDGE_LENGTH,
+	// A line a bundle stands for still ties its member to the map, but at a longer reach, so the
+	// block its group is packed into stands clear of the circle (docs/02 §2.7).
+	idealEdgeLength: (edge: EdgeSingular) =>
+		edge.hasClass(TUCKED_CLASS) ? TUCKED_EDGE_LENGTH : EDGE_LENGTH,
 	nodeDimensionsIncludeLabels: true
 };
 
@@ -140,6 +151,16 @@ function boxAround(nodes: { at: Point; size: Size }[]): Box {
 		y1: Math.min(...nodes.map((n) => n.at.y - n.size.height / 2)),
 		x2: Math.max(...nodes.map((n) => n.at.x + n.size.width / 2)),
 		y2: Math.max(...nodes.map((n) => n.at.y + n.size.height / 2))
+	};
+}
+
+/** The box around both. */
+function union(a: Box, b: Box): Box {
+	return {
+		x1: Math.min(a.x1, b.x1),
+		y1: Math.min(a.y1, b.y1),
+		x2: Math.max(a.x2, b.x2),
+		y2: Math.max(a.y2, b.y2)
 	};
 }
 
@@ -192,6 +213,11 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	});
 
 	const duration = opts.reducedMotion ? 0 : 350;
+	/**
+	 * Everything on the canvas but the frames of the groups by role: a frame stands wherever its
+	 * members do, so it is never placed, measured or put back by itself.
+	 */
+	const people = () => cy.nodes().filter((n) => n.data('kind') !== FRAME_KIND) as NodeCollection;
 	/** Nothing reaches a torn-down core: the calls still in flight at teardown fall away here. */
 	const alive = () => !cy.destroyed();
 	// Screen pixels at the top of the canvas the toolbar floats over; framing leaves them free.
@@ -206,8 +232,14 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		const before = new Map(cy.nodes().map((n) => [n.id(), { ...n.position() }] as const));
 		cy.layout(FORCE_LAYOUT as Parameters<Core['layout']>[0]).run();
 		const after = new Map(cy.nodes().map((n) => [n.id(), { ...n.position() }] as const));
-		cy.batch(() => cy.nodes().forEach((n) => void n.position(before.get(n.id())!)));
-		return after;
+		cy.batch(() => people().forEach((n) => void n.position(before.get(n.id())!)));
+		// The forces spread a group's members as they would anybody; a group stands as one block
+		// where they came to rest (docs/02 §2.7).
+		const groups = cy
+			.nodes()
+			.filter((n) => n.isParent())
+			.map((frame) => (frame as NodeSingular).children().map((n) => n.id()));
+		return packGroups(after, groups, (id) => sizeOf(cy.$id(id)));
 	};
 
 	/*
@@ -217,11 +249,17 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	 */
 	const glideTo = (positions: ReadonlyMap<string, Point>, glide: boolean) => {
 		const placeOf = (node: NodeSingular) => positions.get(node.id()) ?? { ...node.position() };
-		const shown = cy.nodes().filter((n) => !n.hasClass('filtered-out')) as NodeCollection;
+		const shown = people().filter((n) => !n.hasClass('filtered-out')) as NodeCollection;
+		const boxOf = (nodes: NodeCollection) =>
+			boxAround(nodes.map((n) => ({ at: placeOf(n), size: sizeOf(n) })));
+		// A group's frame reaches past its members, its name above them (docs/02 §2.7).
+		const frames = shown
+			.parents()
+			.map((frame) => frameAround(boxOf(frame.children().intersection(shown) as NodeCollection)));
 		const view =
 			shown.nonempty() && cy.width() > 0 && cy.height() > 0
 				? frameBelow(
-						boxAround(shown.map((n) => ({ at: placeOf(n), size: sizeOf(n) }))),
+						[boxOf(shown), ...frames].reduce(union),
 						{ width: cy.width(), height: cy.height() },
 						topInset,
 						FRAME_PADDING,
@@ -309,17 +347,41 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	return {
 		setGraph(elements) {
 			if (!alive()) return;
-			const incoming = new Set(elements.map((e) => e.data.id as string));
+			const incoming = new Map(elements.map((e) => [e.data.id as string, e] as const));
 			const newcomers = new Set<string>();
 			let placements = new Map<string, Placement>();
 			let wasEmpty = false;
 			cy.batch(() => {
-				cy.elements().forEach((el) => {
-					if (!incoming.has(el.id())) el.remove();
+				// A frame goes in before anybody can be moved into it, and people leave a frame
+				// before it goes: removing a compound node takes everyone still inside with it.
+				cy.add(
+					elements.filter(
+						(e) => isFrame(e) && cy.$id(e.data.id as string).empty()
+					) as unknown as ElementDefinition[]
+				);
+				cy.nodes().forEach((n) => {
+					const wanted = incoming.get(n.id());
+					if (!wanted || isFrame(wanted)) return;
+					const parent = (wanted.data.parent as string | undefined) ?? null;
+					const current = n.parent().nonempty() ? n.parent().first().id() : null;
+					if (parent !== current) n.move({ parent });
 				});
-				wasEmpty = cy.nodes().empty();
+				cy.elements().forEach((el) => {
+					const wanted = incoming.get(el.id());
+					if (!wanted) {
+						el.remove();
+						return;
+					}
+					// Switching the grouping keeps most elements, but tucks lines away or brings
+					// them back, and recounts a group. Only what the elements own is synced: the
+					// highlight, filter and bend classes belong to the controller.
+					el.toggleClass(TUCKED_CLASS, wanted.classes.split(' ').includes(TUCKED_CLASS));
+					const { id: _id, source: _s, target: _t, parent: _p, ...data } = wanted.data;
+					el.data(data);
+				});
+				wasEmpty = people().empty();
 				const placed = new Map<string, Point>(
-					cy.nodes().map((n) => [n.id(), { ...n.position() }] as const)
+					people().map((n) => [n.id(), { ...n.position() }] as const)
 				);
 				const existing = new Set(cy.elements().map((el) => el.id()));
 				const toAdd = elements.filter((e) => !existing.has(e.data.id as string));
@@ -387,9 +449,22 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			if (!nodeId) return;
 			const node = cy.$id(nodeId);
 			if (node.empty()) return;
-			const hood = node.closedNeighborhood();
+			// A group lights up with its members and everything they are tied to; anybody lit keeps
+			// the frame they stand in lit too, since a frame's fading would fade them with it.
+			const own = node.union(node.children());
+			let hood = own.closedNeighborhood();
+			hood = hood.union(hood.nodes().parents());
 			cy.elements().not(hood).addClass('faded');
-			hood.edges().addClass('highlight');
+			// A tucked-away line shows for the member it belongs to, not for whoever is at its
+			// other end: selecting the circle keeps the one line to each group. Nor does it show
+			// for a selected group where the group's own bundle already reaches that other end.
+			const grouped = own.nodes().filter((n) => n.isChild());
+			const bundledTo = node.isParent() ? node.neighborhood().nodes() : cy.collection();
+			const shows = (e: EdgeSingular) =>
+				!e.hasClass(TUCKED_CLASS) ||
+				(e.connectedNodes().intersection(grouped).nonempty() &&
+					e.connectedNodes().intersection(bundledTo).empty());
+			hood.edges().filter(shows).addClass('highlight');
 			node.addClass('selected');
 		},
 
@@ -403,7 +478,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 				path = path.union(node);
 				if (i > 0) path = path.union(cy.$id(nodeIds[i - 1]).edgesWith(node));
 			}
-			cy.elements().not(path).addClass('faded');
+			cy.elements().not(path.union(path.nodes().parents())).addClass('faded');
 			path.addClass('onpath');
 		},
 

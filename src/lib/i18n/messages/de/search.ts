@@ -23,6 +23,13 @@ export const search: SearchMessages = {
 	'graph.connectionPath': 'Verbindungsweg',
 	'graph.labels': 'Bezeichnungen',
 	'graph.labels.hint': 'Jede Linie mit ihrer Beziehung benennen',
+	'graph.groupByRole': 'Kreise nach Rolle bündeln',
+	'graph.groupByRole.hint':
+		'Wer im Kreis dieselbe Rolle hat, steht als eine Gruppe beisammen — mit einer Linie zum Kreis',
+	'graph.innerLinks': 'Beziehungen in der Gruppe',
+	'graph.innerLinks.hint': 'Familie, Freundschaft und Beruf zwischen den Menschen einer Gruppe zeigen',
+	'graph.group.label': (p) => `${p.role} · ${p.count}`,
+	'graph.bundle.count': (p) => `${p.count} Verbindungen`,
 	'graph.arrange': 'Anordnen',
 	'graph.arrange.current': (p) => `Anordnen: ${p.name}`,
 	'graph.arrange.force': 'Frei',
@@ -41,6 +48,9 @@ export const search: SearchMessages = {
 	'graph.peek.expand': 'Verbindungen aufklappen',
 	'graph.peek.openProfile': 'Profil öffnen',
 	'graph.peek.openCircle': 'Kreis öffnen',
+	'graph.peek.roleGroup': 'Rolle im Kreis',
+	'graph.peek.inCircle': (p) => `im Kreis ${p.name}`,
+	'graph.peek.showIndividually': 'Einzeln zeigen',
 	'graph.peek.tip':
 		'Tipp: Klicke einen ausgewählten Knoten an, um ihn aufzuklappen — oder nutze den Verbindungsweg, um zu sehen, wie zwei Menschen verbunden sind.',
 	'graph.openInGraph': 'Im Netz öffnen',
