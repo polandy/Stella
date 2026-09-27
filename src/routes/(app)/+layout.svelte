@@ -175,7 +175,9 @@
 <CommandPalette people={data.people} bind:open={paletteOpen} />
 <Toast />
 
-<div class="flex h-screen w-full overflow-hidden bg-bg text-fg">
+<!-- The visible height, not 100vh: a phone browser counts 100vh with its address bar hidden,
+     so a shell that tall runs its foot under the fixed tab bar while the bar is showing. -->
+<div class="flex h-dvh w-full overflow-hidden bg-bg text-fg">
 	<!-- Sidebar (desktop) -->
 	<aside class="hidden w-60 shrink-0 flex-col gap-1 bg-bg-sunken p-3 md:flex">
 		<a href="/" class="mb-3 flex items-center px-2 py-1.5" aria-label={t('nav.stellaHome')}>
