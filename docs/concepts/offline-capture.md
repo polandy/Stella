@@ -1,9 +1,10 @@
 # Concept — Adding to Stella while it is out of reach
 
-Status: **direction decided, nothing built**. The decision is logged in `docs/04-architecture.md`
-§4.9 (*Mutations become commands, not events*). This paper is the plan behind it. It extends
-`docs/02-features.md` §2.18, which today rules offline writing out of scope for v1: *"offline
-Stella is something you read, not something you add to."*
+Status: **being built, moments first.** The decision is logged in `docs/04-architecture.md`
+§4.9 (*Mutations become commands, not events*), the structure is docs/04 §4.11.2, and what a
+member sees is docs/02 §2.18. This paper is the plan behind it. Built so far: the command
+dispatcher and its receipts, `POST /api/commands`, and keeping a moment (text only) on the
+phone. Everything decided while the maintainer was away is listed in §8, for review.
 
 ---
 
@@ -56,7 +57,7 @@ A **command** is one intent from one member:
 
 ```ts
 interface Command {
-	id: string; // UUIDv7 (docs/03 §IDs), made where the command is made, on the device if offline
+	id: string; // a ULID like every id (docs/03 §3.1), made where the command is issued
 	type: 'moment.capture' | 'contact.add' | 'interaction.log' | …;
 	payload: unknown; // validated per type at the edge
 	issuedAt: number; // when the member did it, not when it arrived
@@ -222,6 +223,8 @@ A different member signing in on the device never sees or sends someone else's o
   sign-outs and imports, possibly days later.
 - **The directory** is one scoped read and one cached JSON response. The cache policy
   (`cache-policy.ts`) gains a rule for it, and the sign-out purge gains the outbox check.
+  For moments it is not needed yet: the cached Home page already carries the composer's
+  candidate list, which is exactly the people a moment may mention.
 
 ---
 
@@ -268,3 +271,81 @@ enough to decide when the receipt table is built.
   - Household data held on the device outside the page cache: the directory and the outbox.
   - A test surface that is hard to drive without races: offline, then online, then a send.
     That needs the same deterministic seams as the reachability banner.
+
+---
+
+## 8. Decided while the maintainer was away — to review
+
+The maintainer asked for the build to go ahead on these recommendations and for every choice to
+be written down, to go through together later. Each line says what was chosen and why; the
+ones marked **(deviates)** differ from something said earlier and need a yes or no.
+
+**Server**
+
+1. **Receipts travel in the archive.** The archive test demands every table be exported or
+   excluded with a reason. Exported, a household restored onto a new server still recognises
+   what an unsent phone already delivered. This settles the one question §6 left open.
+2. **Command ids are ULIDs (deviates).** §3 first said UUIDv7; every other id in Stella is a
+   ULID (docs/03 §3.1), and the `ulid` package already runs in the browser. Same properties
+   (sortable, made anywhere), one format.
+3. **A claim pending for over a minute is taken over.** A run that stopped between claiming
+   and finishing would otherwise block its command for ever. The cost is a possible duplicate
+   moment after a crash, preferred to a moment presumed saved and never written.
+4. **A refusal releases the claim; our own error answers `failed`.** A refusal (a domain
+   error with a message, e.g. "mention at least one person") lets the corrected command be
+   sent again. Anything else is ours: the phone keeps the command and tries again later, and
+   the server logs it.
+5. **`POST /api/commands` takes up to 50 commands, reads only `application/json`,** and is
+   signed in by the session cookie like any page. JSON cannot be posted cross-site without a
+   CORS preflight, so it needs no form token; a `text/plain` post that looks like JSON is
+   refused with 415.
+
+**Phone**
+
+6. **Online saves stay on the form action (deviates, slightly).** The composer does not route
+   every moment through the outbox. With JavaScript it posts to the same form action as
+   before, carrying a `commandId`, and the outbox is used only when Stella is known to be out
+   of reach or the answer to a save is lost. Inline errors and the *"Link Julia and Marco?"*
+   hint keep working unchanged online. The visible difference: saving no longer reloads the
+   whole page.
+7. **When sending is tried:** app opened, Stella reported reachable, tab back in view, the
+   phone joining a network (`online` event), and right after saving. No timer — the same
+   reason the reachability banner does not poll.
+8. **The outbox is one IndexedDB record,** changed in one transaction at a time, so two open
+   tabs cannot overwrite each other's moments. Not encrypted, like the cached pages (§4.5).
+9. **Kept moments show under the capture field, not at the top of the stream (deviates from
+   §6.5).** On a phone the rail (*Coming up*, *Quiet lately*) can sit above the stream, which
+   pushed them out of sight; under the field is where the member just wrote them, on every
+   width.
+10. **Discard asks twice, inline** (*This device holds the only copy.* → *Discard for good*),
+    rather than an undo toast: there is no server copy for an undo to fall back on.
+11. **A kept moment shows its text as typed** (`@LenaBrunner`), not with names resolved, and a
+    moment sent later from the outbox offers no *"Link …?"* hint.
+12. **The phone's composer sheet opens without a round trip** (SvelteKit shallow routing), so
+    the pencil works offline. From another page the pencil still links to `/?compose`; the
+    service worker answers that offline with the kept Home page (`standInFor`).
+13. **The composer's default day is the device's own date** when it is later than the day the
+    cached page was rendered with — a page kept since yesterday would otherwise date today's
+    moment yesterday.
+
+**Scope of this first cut**
+
+14. **Photos are not kept yet (deviates from §6.4 for now).** You chose photos from the first
+    version; they are the next step. Until then, out of reach with photos picked, the composer
+    asks to remove them and keeps the text — never a half-saved moment.
+15. **Only moments so far.** Notes, calls and visits, people, tags, relationships and circle
+    memberships follow, one per PR-sized step, each as a new command kind. Ordering between
+    queued items (a note on a person added offline) is not needed until then.
+16. **Signing out keeps unsent moments** (they are sent at the member's next sign-in). The
+    *Keep or discard?* question at sign-out (§4.6) is not built yet.
+17. **The Playwright e2e is not written** — it waits for the maintainer's check in the app, as
+    always. The e2e suite also blocks service workers (a Chromium crash, see
+    `playwright.config.ts`), so the worker's part is covered by unit tests of the pure policy
+    and by trying it on a phone.
+
+**Found on the way**
+
+18. **A picker bug the old full-page reload hid:** after saving, SvelteKit returns focus to the
+    page, and the composer's pending "close the picker" timer then closed it under whoever was
+    already typing the next moment. The timer is now cancelled when the field is used again.
+

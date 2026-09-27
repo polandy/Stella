@@ -563,11 +563,18 @@ at: what is showing came off your phone, so anything somebody added since is not
 the relationship map and search come up empty rather than pretending. Everything is there
 again the moment you are back.
 
-You cannot *add* anything while Stella is out of reach — no moments, no notes, no people.
-Offline Stella is something to read.
+You can still write a moment. Out of reach, the button says **Save for later**: the moment is
+kept on your phone and shows under the field as *Not sent yet*. Until it is sent you can
+change it or throw it away. Stella gets it by itself once it answers again, when you open the
+app or when your phone joins your home network, and it checks it as if you had written it
+there and then. If it cannot take it — someone you mentioned was deleted in the meantime —
+the moment stays as *Could not send*, with the reason, for you to fix; nothing you wrote is
+ever dropped quietly. Photos cannot wait on the phone yet, and neither can notes, calls or new
+people on their own; those follow.
 
 Signing out clears the pages your phone was keeping, so handing a device on does not hand on
-the household with it.
+the household with it. Moments not yet sent stay: they are yours, are sent the next time you
+sign in, and nobody else signing in on that phone sees them.
 
 ## Light and dark
 

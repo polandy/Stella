@@ -58,7 +58,8 @@ Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) �
 | `src/lib/sync/` | **pure** pending-work counting behind the shell's activity indicator: `pending-work.ts` store, `trackPending` / `whilePending` / `reportNavigation` (test-first) |
 | `src/lib/menu/` | **pure** toolbar-menu decisions: the Filter pill's count and highlight, arrow-key movement (test-first) |
 | `src/lib/stream/` | **pure** household-stream filter: kinds, the `?kind=`/`?by=` codec, what the chips show (test-first) |
-| `src/lib/pwa/` | **pure** install/offline policy: manifest, cache rules, icon geometry, reachability protocol (test-first). `src/service-worker.ts` and `install.svelte.ts` are the adapters — they hold browser APIs, never a decision |
+| `src/lib/pwa/` | **pure** install/offline policy: manifest, cache rules, icon geometry, reachability protocol, the outbox's states (test-first). `src/service-worker.ts`, `install.svelte.ts`, `reachability.svelte.ts`, `outbox.svelte.ts` and `outbox-store.ts` are the adapters — they hold browser APIs, never a decision |
+| `src/lib/commands/` | **pure** command vocabulary shared by phone and server; the dispatcher that applies a command once is `src/lib/server/domain/commands/`, the wire edge `src/lib/server/commands/` (`docs/04` §4.11.2) |
 | `src/lib/graph/model/` | **pure** graph domain: `GraphModel`, `buildEgoNetwork`, `expandNode`, `findConnectionPath`, `applyFilters` (test-first) |
 | `src/lib/graph/layout/` | **pure** arrangements as positions: family tree, groups by circle (test-first) |
 | `src/lib/graph/cytoscape/` | rendering adapter (Cytoscape confined here, lazy-loaded); no domain logic |

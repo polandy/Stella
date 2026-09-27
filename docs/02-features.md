@@ -1259,9 +1259,10 @@ household data leaves the instance, and nothing is sent when the check is off.
 ## 2.18 Progressive Web App **[M2]**
 
 Stella can be added to a phone's home screen and opened as its own window, and what has
-already been read stays readable when it cannot be reached. Full offline *writing* and sync
-is **out of scope** for v1: offline Stella is something you read, not something you add to.
-A later outbox for *adding* while out of reach is planned in `docs/concepts/offline-capture.md`.
+already been read stays readable when it cannot be reached. Out of reach, a member can still
+**add**: a moment is kept on the device and sent once Stella answers again (*Keeping a moment
+for later*, below). Nothing that already exists is edited offline, so nothing has to be merged
+(docs/04 §4.9); the rest of the plan is `docs/concepts/offline-capture.md`.
 
 **Installing.** A web app manifest and the icons the platforms ask for — 192 and 512, a
 maskable 512 drawn small enough that a launcher cropping to a circle keeps all of it, and a
@@ -1283,7 +1284,9 @@ health check, not a page reporting on an import or export run, and not a page ca
 query string — a search is a question, not somewhere anyone returns to. Requests go to the
 network first and fall back to the copy on the device: Stella is on the household's own
 network, so the network is normally both reachable and the one telling the truth. A page
-that was never opened, asked for while out of reach, gets a plain offline screen.
+with a question in its address (`/?compose`) is answered, out of reach, by the kept page it
+asks something of. A page that was never opened, asked for while out of reach, gets a plain
+offline screen.
 
 **Signing out empties the device.** A cached page is household data at rest on somebody's
 phone, so the moment a session ends every cached page is thrown away. Note what this does
@@ -1296,6 +1299,26 @@ came off this device. It is not driven by `navigator.onLine`, which answers "is 
 on a network" — a phone on mobile data is perfectly online and cannot reach a Stella on the
 household LAN at all, which is exactly the case this exists for. The service worker knows,
 having just either fetched a page or failed to, so it reports and the page listens.
+
+**Keeping a moment for later.** While Stella is out of reach the composer's button says
+**Save for later**, and saving keeps the moment on the device instead of sending it. The
+same happens when Stella stops answering in the middle of a save.
+- **Where it shows.** A kept moment shows under the capture field as *Not sent yet*. Until it
+  is on its way it can be **edited** in the composer or **discarded**; discarding asks twice,
+  because the device holds the only copy.
+- **When it is sent.** It is sent without being asked: when the app opens, when Stella answers
+  again, when the app comes back into view, and when the phone joins a network. Nothing polls.
+- **On arrival.** Stella checks it exactly as if it had been written there and then. A moment
+  it refuses — someone mentioned was deleted in the meantime, say — stays as *Could not send*
+  with the reason, to be corrected or discarded, never dropped.
+- **Sent once.** Every moment carries a name made when it was written, and Stella remembers
+  every name it has applied, so a moment whose answer was lost on the way is recognised
+  rather than saved twice (`command_receipt`, docs/03 §3.3).
+- **Whose it is.** Kept moments belong to the member who wrote them. Another member signing
+  in on the same device neither sees nor sends them, and signing out does not delete them.
+- **Not yet.** Photos cannot be kept yet; out of reach, the composer asks for them to be
+  removed and keeps the text. The other kinds of addition follow one at a time
+  (`docs/concepts/offline-capture.md` §4.1).
 
 **What degrades.** A cached person page is the page as it was when last read, so anything
 added since is not on it, and the parts that fetch on demand — the relationship map, search

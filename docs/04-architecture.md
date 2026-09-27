@@ -45,7 +45,9 @@ src/
       media/         # sharp pipeline, storage paths
       search/        # FTS5 sync + query
       i18n/          # say(locals, key): a message in the language of the request
+      commands/      # the edge's half of commands: parse off the wire, receive a phone's batch
       config.ts      # env parsing/validation (valibot)
+    commands/         # pure: the command vocabulary shared by the phone and the server (§4.11.2)
     i18n/             # locales, message catalogues (en/de), translator, context
     errors/           # TranslatableError: a domain error carrying its message untranslated
     kinship/          # pure: derives the relatives nobody entered (§2.4.1)
@@ -62,7 +64,7 @@ src/
       reminders/…
       search/…
       settings/…
-    api/              # +server.ts JSON endpoints (graph data, upload, search)
+    api/              # +server.ts JSON endpoints (graph data, upload, search, commands)
   hooks.server.ts     # session resolution, language of the request, security headers
   app.css             # tailwind + theme tokens
 static/               # manifest, icons, offline shell
@@ -677,8 +679,8 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   encryption, so a device left signed in holds the pages its owner read — the same bargain as
   the browser's own history, and written down as such in §2.18 rather than left implied.
 
-- **Mutations become commands, not events; offline only adds** *(direction decided, not
-  built: `docs/concepts/offline-capture.md`)* — to write while Stella is out of reach, every
+- **Mutations become commands, not events; offline only adds** *(being built, moments first:
+  §4.11.2, `docs/concepts/offline-capture.md`)* — to write while Stella is out of reach, every
   change becomes a named, idempotent command with an id made where it was issued, applied by
   one dispatcher over today's use-cases. The tables stay the truth. A device may queue only
   commands that *add*, and may edit them freely until they are sent, because nothing anyone
@@ -862,11 +864,13 @@ each piece is small and named for intent. **Test-first targets:** `buildEgoNetwo
 The same split as the explorer: a pure domain and a thin adapter confined to one file.
 
 - **`src/lib/pwa/cache-policy.ts`** — the whole judgement, pure and unit-tested: which
-  requests may be cached, which never may, what a build's cache is called, and what a
-  sign-out looks like going past. **Test-first targets:** `verdictFor`, `endsTheSession`,
-  `cacheNameFor`.
+  requests may be cached, which never may, which kept page stands in for one that never is,
+  what a build's cache is called, and what a sign-out looks like going past. **Test-first
+  targets:** `verdictFor`, `standInFor`, `endsTheSession`, `cacheNameFor`.
 - **`src/lib/pwa/reachability.ts`** — the two messages the worker and the page exchange, and
   the guard that stops anything else on the channel moving the offline banner.
+  `reachability.svelte.ts` is its adapter: one rune the banner, the composer and the outbox
+  all read, so they never disagree.
 - **`src/service-worker.ts`** — the adapter. It asks the policy about real `Request`s and
   does as it is told; it decides nothing. This is deliberate: a service worker can otherwise
   only be checked by driving a browser and hoping the right thing was cached.
@@ -880,6 +884,30 @@ The same split as the explorer: a pure domain and a thin adapter confined to one
 Caches are named `stella-<version>`, so a deployed update activates into an empty one rather
 than mixing its shell with pages the previous build rendered, and the stale ones are dropped
 on `activate`.
+
+## 4.11.2 Commands & the outbox
+
+Adding while Stella is out of reach (docs/02 §2.18, `docs/concepts/offline-capture.md`), cut
+the same way: pure decisions, thin adapters.
+
+- **`src/lib/commands/commands.ts`** — the vocabulary, shared by the phone and the server:
+  each command's name, payload and *kind* (add, change, remove). Only an addition may wait on
+  a device (`isQueueable`).
+- **`src/lib/server/domain/commands/dispatch.ts`** — applies a command once however often it
+  arrives: claims its id in `command_receipt`, runs the use-case behind it, keeps the result.
+  A `TranslatableError` from the use-case is a *refusal* and releases the claim; anything
+  else is ours, releases it too and is rethrown. **Test-first target:** `dispatchCommand`.
+- **`src/lib/server/commands/`** — the edge's half: `parse.ts` reads a command off the wire
+  (Valibot), `receive.ts` answers a phone's batch one command at a time and accepts only
+  additions. `POST /api/commands` is the route, signed in by the session cookie and reading
+  only `application/json`.
+- **`src/lib/pwa/outbox.ts`** — the outbox's states (pending → sending → gone, or refused;
+  *held* while open in the composer), pure and unit-tested. `outbox-store.ts` keeps it in
+  IndexedDB, changing it in one transaction at a time so two tabs cannot overwrite each
+  other; `outbox.svelte.ts` sends it and mirrors it for the page. Neither decides anything.
+- **The Home composer** saves through its form action as a named command (`commandId`), and
+  keeps the moment in the outbox when Stella cannot be reached — including when the answer to
+  a save is lost, since the same name makes a second arrival harmless.
 
 ## 4.12 Background jobs & delivery (M3)
 

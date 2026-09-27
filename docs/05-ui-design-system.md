@@ -637,6 +637,19 @@ clears on its own: the service worker reports whether Stella is reachable and th
 follows (docs/02 §2.18, docs/04 §4.11.1). There is nothing to dismiss, because dismissing it
 would not restore the connection.
 
+**Kept moments** (Home, under the capture field; docs/02 §2.18) look like stream items that
+have not landed yet: the same avatar-column grid, but inside a **dashed** `--border` outline
+with a hollow dashed circle carrying the `offline` icon where the avatar would be, and the body
+as typed rather than rendered. The label says where each one stands — *Not sent yet*, *Being
+edited*, *Sending…*, *Could not send* — and a refused one turns the outline, the circle and the
+label to `--danger` with the reason underneath. They sit under the field rather than in the
+stream, because they are what the member just wrote and belong to no day of the household's
+yet. **Edit** opens the item in the composer (on a phone, in the sheet) with a *Cancel* beside
+*Save*; **Discard** is a two-step inline confirmation (*This device holds the only copy.* →
+*Discard for good*), not a dialog and not an undo toast, because there is no server copy for an
+undo to fall back on. While Stella is out of reach, the composer's primary button reads **Save
+for later**.
+
 **Install card** (`src/lib/components/InstallCard.svelte`) is an ordinary Settings card, one
 of three sentences depending on what the device can do — installed, installable, or a browser
 with no prompt to offer — with the button present only in the middle case. It is deliberately
