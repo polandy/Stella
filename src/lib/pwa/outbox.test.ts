@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { CommandAnswer, JsonCommand } from '../commands/commands';
 import {
 	discard,
+	discardAllOf,
 	hold,
 	queue,
 	recover,
@@ -206,5 +207,17 @@ describe('photos kept with a moment', () => {
 		expect(takePhoto(refused, 'u1')).toBeNull();
 		expect(hold(refused, 'a')).toBeNull();
 		expect(discard(refused, 'a')).toEqual([]);
+	});
+});
+
+describe('discardAllOf', () => {
+	it('throws away one member’s items when they sign out and ask to, and nobody else’s', () => {
+		const items = add(add(add([], 'a'), 'b', 'u2'), 'c');
+		expect(states(discardAllOf(items, 'u1'))).toEqual([['b', 'pending']]);
+	});
+
+	it('cannot recall what is already on its way', () => {
+		const items = takeBatch(add(add([], 'a'), 'b'), 'u1', 1).items;
+		expect(states(discardAllOf(items, 'u1'))).toEqual([['a', 'sending']]);
 	});
 });

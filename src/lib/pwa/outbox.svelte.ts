@@ -6,6 +6,7 @@ import {
 } from '../commands/commands';
 import {
 	discard,
+	discardAllOf,
 	hold,
 	queue,
 	recover,
@@ -114,6 +115,12 @@ export const outbox = {
 		const done = await attempt((list) => revise(list, id, payload, freshId));
 		if (done) void outbox.send();
 		return done;
+	},
+
+	/** Throw away everything of this member's that can still be recalled (sign-out). */
+	async discardMine(): Promise<void> {
+		const member = memberId;
+		if (member) await apply((list) => discardAllOf(list, member));
 	},
 
 	/** Throw an item away; false when it is on its way and cannot be recalled. */

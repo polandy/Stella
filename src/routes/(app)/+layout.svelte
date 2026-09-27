@@ -10,6 +10,7 @@
 	import type { MessageKey } from '$lib/i18n/translate';
 	import Logo from '$lib/components/Logo.svelte';
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
+	import SignOutForm from '$lib/components/SignOutForm.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
 	import { providePending } from '$lib/sync/context.svelte';
@@ -256,11 +257,11 @@
 						</button>
 					{/each}
 				</div>
-				<form method="POST" action="/logout" class="mt-1">
+				<SignOutForm class="mt-1">
 					<button class="w-full rounded-md px-3 py-2 text-left text-sm text-fg-muted transition-colors hover:bg-card-hover hover:text-fg">
 						{t('nav.signOut')}
 					</button>
-				</form>
+				</SignOutForm>
 			</div>
 		</details>
 	</aside>

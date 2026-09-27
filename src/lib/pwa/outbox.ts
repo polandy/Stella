@@ -206,6 +206,14 @@ export function discard(items: readonly OutboxItem[], id: string): OutboxItem[] 
 }
 
 /**
+ * Everything of `memberId`'s that can still be recalled, thrown away — they chose to at
+ * sign-out. What is already on its way cannot be.
+ */
+export function discardAllOf(items: readonly OutboxItem[], memberId: string): OutboxItem[] {
+	return items.filter((i) => i.memberId !== memberId || i.state === 'sending');
+}
+
+/**
  * The outbox as a freshly opened app finds it. An app closed mid-request left items
  * *sending* with no answer coming, and one closed mid-edit left them *held* with no editor.
  * Both go back to where they would be; a resend is safe, because Stella knows every id.
