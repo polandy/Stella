@@ -56,6 +56,11 @@ export const errors: ErrorsMessages = {
 	'errors.interaction.couldNotLog': 'Der Kontakt konnte nicht festgehalten werden.',
 
 	'errors.moment.couldNotSave': 'Der Moment konnte nicht gespeichert werden.',
+	'errors.command.idTaken':
+		'Das wurde schon als etwas anderes gesendet. Speichere es noch einmal als neu.',
+	'errors.command.malformed':
+		'Stella konnte nicht lesen, was gesendet wurde. Speichere es noch einmal als neu.',
+	'errors.command.notQueueable': 'Nur Hinzugefügtes kann auf das Senden warten.',
 	'errors.moment.needsPerson':
 		'Erwähne mit @ mindestens eine Person, damit der Moment einen Ort hat.',
 

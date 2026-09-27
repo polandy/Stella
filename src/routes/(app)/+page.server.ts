@@ -4,7 +4,10 @@ import { quietContacts } from '$lib/server/domain/attention/quiet';
 import { listContactNames, listContacts } from '$lib/server/domain/contacts/contacts';
 import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
-import { captureMoment, MomentNeedsPersonError } from '$lib/server/domain/moments/moments';
+import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
+import { parseCommand } from '$lib/server/commands/parse';
+import { ulidGenerator } from '$lib/server/id';
+import { systemClock } from '$lib/server/clock';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
@@ -12,7 +15,7 @@ import { handleFor } from '$lib/mentions/picker';
 import { parseStreamFilter } from '$lib/stream/filter';
 import {
 	getAttention,
-	getCaptureMomentDeps,
+	getCommandDeps,
 	getContactDeps,
 	getImportantDates,
 	getJournalPhotoDeps,
@@ -141,22 +144,38 @@ export const actions: Actions = {
 			});
 		}
 
-		let captured;
+		// The composer names its command when it can, so a double submit is one moment; a form
+		// posted without JavaScript gets an id here.
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'moment.capture',
+			payload: parsed.output,
+			issuedAt: systemClock.now()
+		});
+		if (!command) {
+			return fail(400, { momentError: say(locals, 'errors.command.malformed'), draft: parsed.output.body });
+		}
+
+		let outcome;
 		try {
-			captured = await captureMoment(getCaptureMomentDeps(), author, parsed.output);
-		} catch (err) {
-			// A moment with nobody in it is the one failure the writer can act on; anything
-			// else is ours to fix, and says so in the reader's language rather than in a
-			// message meant for a log.
+			outcome = await dispatchCommand(getCommandDeps(), author, command);
+		} catch {
+			// Anything the writer cannot act on is ours to fix, and says so in the reader's
+			// language rather than in a message meant for a log.
+			return fail(400, { momentError: say(locals, 'errors.moment.couldNotSave'), draft: parsed.output.body });
+		}
+		if (outcome.status !== 'applied') {
 			const message =
-				err instanceof MomentNeedsPersonError
-					? err.phrase(translator(locals))
+				outcome.status === 'refused'
+					? outcome.reason(translator(locals))
 					: say(locals, 'errors.moment.couldNotSave');
 			return fail(400, { momentError: message, draft: parsed.output.body });
 		}
+		const captured = outcome.result;
 
-		// Photos ride along exactly as on the journal page, on the anchor's entry.
-		const images = form.getAll('image');
+		// Photos ride along exactly as on the journal page, on the anchor's entry — once: a
+		// resend of a moment already saved brought its photos the first time.
+		const images = outcome.repeated ? [] : form.getAll('image');
 		const thumbs = form.getAll('thumb');
 		const widths = form.getAll('width');
 		const heights = form.getAll('height');

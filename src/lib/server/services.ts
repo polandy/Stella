@@ -73,7 +73,9 @@ import type { TagDeps, TagRepository } from './domain/tags/tags';
 import type { GraphRepository } from './db/graph-repository';
 import type { CircleDeps, CircleRepository } from './domain/circles/circles';
 import type { StreamDeps, StreamRepository } from './domain/stream/stream';
-import type { CaptureMomentDeps } from './domain/moments/moments';
+import { captureMoment, type CaptureMomentDeps } from './domain/moments/moments';
+import type { CommandDeps, CommandReceiptRepository } from './domain/commands/dispatch';
+import { createDrizzleCommandReceiptRepository } from './db/command-receipt-repository';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
 import type { ImportDeps, ImportRepository } from './domain/import/apply';
 import type { ApiImportDeps } from './domain/import/api/api-import';
@@ -452,6 +454,27 @@ export function getStreamDeps(): StreamDeps {
 
 export function getCaptureMomentDeps(): CaptureMomentDeps {
 	return { contacts: getContacts(), journal: getJournal(), ids: ulidGenerator, clock: systemClock };
+}
+
+let commandReceiptRepository: CommandReceiptRepository | null = null;
+
+/** The dispatcher every change goes through (docs/concepts/offline-capture.md §3). */
+export function getCommandDeps(): CommandDeps {
+	const capture = getCaptureMomentDeps();
+	return {
+		receipts: (commandReceiptRepository ??= createDrizzleCommandReceiptRepository(getDb())),
+		clock: systemClock,
+		handlers: {
+			// A moment carries its own visibility, so it is also the author's default for anyone
+			// the moment creates inline.
+			'moment.capture': (actor, payload) =>
+				captureMoment(
+					capture,
+					{ userId: actor.userId, householdId: actor.householdId, defaultVisibility: payload.visibility },
+					payload
+				)
+		}
+	};
 }
 
 let circleRepository: CircleRepository | null = null;
