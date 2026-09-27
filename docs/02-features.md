@@ -1315,7 +1315,9 @@ same happens when Stella stops answering in the middle of a save.
   every name it has applied, so a moment whose answer was lost on the way is recognised
   rather than saved twice (`command_receipt`, docs/03 §3.3).
 - **Whose it is.** Kept moments belong to the member who wrote them. Another member signing
-  in on the same device neither sees nor sends them, and signing out does not delete them.
+  in on the same device neither sees nor sends them. Signing out with moments still waiting
+  asks first — *Keep and sign out* (they are sent after the member's next sign-in) or
+  *Discard and sign out* — because it must never take the only copy along unasked.
 - **Photos too.** A moment's photos are processed in the browser as always (downscaled,
   location stripped) and kept with it. They are sent after the moment has arrived, each on its
   own, so a photo that fails keeps only itself waiting; the kept moment says *Photos not sent

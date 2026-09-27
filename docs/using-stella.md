@@ -573,8 +573,9 @@ ever dropped quietly. Photos wait with the moment and follow it once it is in. N
 and new people on their own cannot wait on the phone yet; those follow.
 
 Signing out clears the pages your phone was keeping, so handing a device on does not hand on
-the household with it. Moments not yet sent stay: they are yours, are sent the next time you
-sign in, and nobody else signing in on that phone sees them.
+the household with it. If moments you wrote are still waiting, Stella asks first whether to keep
+them or throw them away. Kept, they are yours: they are sent the next time you sign in, and
+nobody else signing in on that phone sees them.
 
 ## Light and dark
 

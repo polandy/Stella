@@ -339,8 +339,9 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
 15. **Only moments so far.** Notes, calls and visits, people, tags, relationships and circle
     memberships follow, one per PR-sized step, each as a new command kind. Ordering between
     queued items (a note on a person added offline) is not needed until then.
-16. **Signing out keeps unsent moments** (they are sent at the member's next sign-in). The
-    *Keep or discard?* question at sign-out (§4.6) is not built yet.
+16. **Signing out asks, inline** under the button (not a modal): *Keep and sign out* / *Discard
+    and sign out* / *Cancel*, as §4.6 planned. Only when something is actually waiting; a
+    moment already on its way cannot be discarded there.
 17. **The Playwright e2e is not written** — it waits for the maintainer's check in the app, as
     always. The e2e suite also blocks service workers (a Chromium crash, see
     `playwright.config.ts`), so the worker's part is covered by unit tests of the pure policy
