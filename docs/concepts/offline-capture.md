@@ -290,96 +290,94 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
    (sortable, made anywhere), one format.
 3. **A claim pending for over a minute is taken over.** A run that stopped between claiming
    and finishing would otherwise block its command for ever. The cost is a possible duplicate
-   moment after a crash, preferred to a moment presumed saved and never written.
+   after a crash, preferred to something presumed saved and never written.
 4. **A refusal releases the claim; our own error answers `failed`.** A refusal (a domain
    error with a message, e.g. "mention at least one person") lets the corrected command be
    sent again. Anything else is ours: the phone keeps the command and tries again later, and
-   the server logs it.
+   the server logs it. So every domain check a kept command can meet must throw a
+   `TranslatableError` — a plain `Error` would be retried for ever (see 9).
 5. **`POST /api/commands` takes up to 50 commands, reads only `application/json`,** and is
    signed in by the session cookie like any page. JSON cannot be posted cross-site without a
    CORS preflight, so it needs no form token; a `text/plain` post that looks like JSON is
-   refused with 415.
+   refused with 415. Photos go to `POST /api/commands/photo` as multipart instead.
+6. **Photos are commands of their own** (`moment.photo`, naming their moment), sent after the
+   moment has arrived. The online form action attaches photos through the same command, so a
+   save whose answer was lost resends the very same photos without doubling any. A photo whose
+   entry was deleted meanwhile is refused (*Could not send a photo*). No size cap beyond the
+   existing per-photo limits (§6.4).
+7. **Every form that adds now saves as a command, online too** — Home's composer, a person's
+   note, call, tag, circle and relationship forms, and *Add person*. One path whether it comes
+   from a form, a phone or a script; the price is that these actions now go through the
+   dispatcher even when nothing is offline.
+8. **The person page's checks moved into the domain.** Notes (`writeNote`), calls
+   (`logInteractionChecked`) and relationships (`addRelationshipChecked`) each got one
+   use-case holding what the route used to check, and tags and circles a shared guard
+   (`onVisibleContact`). Visible change: adding something to a person who is no longer
+   visible now answers with an inline error instead of a 404 page.
+9. **Every refusal reads as a sentence.** Where an addition could fail with a plain error — a
+   relationship type deleted meanwhile, say — the checked use-case now refuses with a message,
+   because a kept command would otherwise be retried for ever.
 
 **Phone**
 
-6. **Online saves stay on the form action (deviates, slightly).** The composer does not route
-   every moment through the outbox. With JavaScript it posts to the same form action as
-   before, carrying a `commandId`, and the outbox is used only when Stella is known to be out
-   of reach or the answer to a save is lost. Inline errors and the *"Link Julia and Marco?"*
-   hint keep working unchanged online. The visible difference: saving no longer reloads the
-   whole page.
-7. **When sending is tried:** app opened, Stella reported reachable, tab back in view, the
-   phone joining a network (`online` event), and right after saving. No timer — the same
-   reason the reachability banner does not poll.
-8. **The outbox is one IndexedDB record,** changed in one transaction at a time, so two open
-   tabs cannot overwrite each other's moments. Not encrypted, like the cached pages (§4.5).
-9. **Kept moments show under the capture field, not at the top of the stream (deviates from
-   §6.5).** On a phone the rail (*Coming up*, *Quiet lately*) can sit above the stream, which
-   pushed them out of sight; under the field is where the member just wrote them, on every
-   width.
-10. **Discard asks twice, inline** (*This device holds the only copy.* → *Discard for good*),
-    rather than an undo toast: there is no server copy for an undo to fall back on.
-11. **A kept moment shows its text as typed** (`@LenaBrunner`), not with names resolved, and a
-    moment sent later from the outbox offers no *"Link …?"* hint.
-12. **The phone's composer sheet opens without a round trip** (SvelteKit shallow routing), so
-    the pencil works offline. From another page the pencil still links to `/?compose`; the
-    service worker answers that offline with the kept Home page (`standInFor`).
-13. **The composer's default day is the device's own date** when it is later than the day the
+10. **Online saves stay on the form actions (deviates, slightly).** A form does not route
+    every save through the outbox. With JavaScript it posts to the same action as before,
+    carrying a `commandId`, and the outbox is used only when Stella is known to be out of
+    reach or the answer to a save is lost. Inline errors and the *"Link Julia and Marco?"*
+    hint keep working. The visible difference: saving no longer reloads the whole page.
+11. **Two forms stopped posting natively (deviates from older comments).** The call log posted
+    natively so the story timeline got a fresh page; the timeline is now keyed on the page's
+    story instead. *Add person* posted natively too. Both now save through `enhance` like the
+    other sections — which is what lets them keep something offline.
+12. **When sending is tried:** app opened, Stella reported reachable, tab back in view, the
+    phone joining a network (`online` event), and right after saving. No timer — the same
+    reason the reachability banner does not poll.
+13. **The outbox is one IndexedDB record,** changed in one transaction at a time, so two open
+    tabs cannot overwrite each other's items. Not encrypted, like the cached pages (§4.5).
+14. **Kept items show where they will land.** A moment under the capture field (not at the
+    top of the stream — **deviates from §6.5**: on a phone the rail can sit above the stream
+    and pushed them out of sight); a note, call or relationship at the top of its section on
+    the person's page; a tag or circle as a dashed chip beside the real ones; a new person as a
+    notice on *Add person*. Home lists every kept item, whoever it is about, with the name
+    stored when it was kept (`about`), since nothing can be looked up offline.
+15. **Editing:** moments, notes and calls reopen in their own form, which then saves into the
+    kept copy. **Tags, circles and relationships offer *Discard* only (deviates from
+    "editable until sent")** — a word or a link is quicker entered again than edited. A moment
+    Stella already has, with only photos waiting, can no longer be edited, only discarded.
+16. **Discarding asks twice, inline** (*This device holds the only copy.* → *Discard for
+    good*), rather than an undo toast — there is no server copy for an undo to fall back on.
+    Chips discard in one click: what is lost is one word.
+17. **A kept moment shows its text as typed** (`@LenaBrunner`), not with names resolved, a photo
+    *count* rather than thumbnails, and a moment sent later offers no *"Link …?"* hint.
+18. **The phone's composer sheet opens without a round trip** (SvelteKit shallow routing), so
+    the pencil works offline. From another page it still links to `/?compose`; the service
+    worker answers that offline with the kept Home page (`standInFor`).
+19. **The composer's default day is the device's own date** when it is later than the day the
     cached page was rendered with — a page kept since yesterday would otherwise date today's
     moment yesterday.
+20. **A person kept offline gets no page and no relative link.** *Add person* announces them as
+    kept and empties itself; the duplicate check's *link as relative* needs Stella and is not
+    carried over.
+21. **Signing out asks, inline** under the button: *Keep and sign out* / *Discard and sign
+    out* / *Cancel*, as §4.6 planned, only when something is waiting.
 
-**Scope of this first cut**
+**Scope and tests**
 
-14. **Photos are built, as commands of their own.** Each photo is a `moment.photo` command
-    naming its moment, sent as multipart after the moment has arrived; the online form action
-    attaches photos through the same command, so a save whose answer was lost resends the very
-    same photos without doubling any. A kept moment shows a photo *count*, not thumbnails. A
-    photo arriving after its entry was deleted is refused (*Could not send a photo*) and can
-    only be discarded. No size cap beyond the existing per-photo limits (§6.4).
-15. **Every addition is built:** moments (with photos), notes, calls and visits, tags, circles,
-    relationships and a new person. Ordering between queued items is still not needed: a note
-    or a link can only be added on a person's page, and a person kept offline has no page
-    until Stella has them.
-26. **A person kept offline gets no page and no relative link.** *Add person* announces them
-    as kept and empties itself; the duplicate check's *link as relative* needs Stella, so it
-    is not carried over. Online the form now saves through `enhance` (it posted natively) and
-    still opens the new person's page. Ordering between queued items (a
-    note on a person added offline) is not needed until people can be added offline.
-19. **Notes: the person page's logic moved into the domain** (`writeNote`), so a kept note and
-    one written online are checked the same way. One visible change: a note on someone who is
-    no longer visible now answers with an inline error in the notes section rather than a 404
-    page.
-20. **A kept note is edited on its person's page**, in the note form; on Home its *Edit* is a
-    link there. Home shows who a note is about from the name stored with it when it was kept
-    (`about`), since nothing can be looked up offline.
-21. **Every adding form gets the same wrapper** (`keepable`) rather than its own offline code,
-    so the remaining forms are mostly a command kind, a domain use-case and one line in the
-    page. Kept items share one component (`KeptItem`) wherever they show.
-25. **A kept relationship offers *Discard* only, no *Edit*.** Its form is the most involved
-    (type and side, person picker, since, status), and re-entering it is quicker than a second
-    editing path for it. The server's guardrails decide on arrival.
-24. **Kept tags and circles are dashed chips with a one-click discard, no *Edit* (deviates
-    from "editable until sent").** A single word is quicker typed again than edited, and a
-    two-step confirmation on a chip would be heavier than the thing it protects.
-23. **The log form no longer posts natively (deviates from an older comment).** It used to,
-    because only a fresh page gave the story timeline its new item. Now the timeline is keyed
-    on the page's story, so saving through `enhance` like every other section does the same —
-    and that is what lets a call be kept offline. The form's default kind stays the first one.
-16. **Signing out asks, inline** under the button (not a modal): *Keep and sign out* / *Discard
-    and sign out* / *Cancel*, as §4.6 planned. Only when something is actually waiting; a
-    moment already on its way cannot be discarded there.
-17. **The Playwright e2e is not written** — it waits for the maintainer's check in the app, as
-    always. The e2e suite also blocks service workers (a Chromium crash, see
+22. **Every addition is built:** moments (with photos), notes, calls and visits, tags, circles,
+    relationships and a new person. Ordering between queued items is not needed: a note or a
+    link can only be added on a person's page, and a person kept offline has no page until
+    Stella has them.
+23. **The Playwright e2e is not written** — it waits for the maintainer's check in the app, as
+    always. Every flow was tried in the browser with throwaway specs (not committed), and the
+    full existing suite passes. The e2e suite blocks service workers (a Chromium crash, see
     `playwright.config.ts`), so the worker's part is covered by unit tests of the pure policy
     and by trying it on a phone.
 
 **Found on the way**
 
-22. **A flaky e2e on `main`:** `graph-role-groups.spec.ts` › *tucks the links within a group
-    away when that switch is off* failed once in a full run and passed twice on its own. It
-    touches nothing this work changed; it breaks the no-race rule and deserves its own look.
-
-18. **A picker bug the old full-page reload hid:** after saving, SvelteKit returns focus to the
+24. **A picker bug the old full-page reload hid:** after saving, SvelteKit returns focus to the
     page, and the composer's pending "close the picker" timer then closed it under whoever was
     already typing the next moment. The timer is now cancelled when the field is used again.
-
+25. **A flaky e2e on `main`:** `graph-role-groups.spec.ts` › *tucks the links within a group
+    away when that switch is off* failed once in a full run and passed twice on its own. It
+    touches nothing this work changed; it breaks the no-race rule and deserves its own look.
