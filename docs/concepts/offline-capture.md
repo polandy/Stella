@@ -305,8 +305,8 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
    save whose answer was lost resends the very same photos without doubling any. A photo whose
    entry was deleted meanwhile is refused (*Could not send a photo*). No size cap beyond the
    existing per-photo limits (§6.4).
-7. **Every form that adds now saves as a command, online too** — Home's composer, a person's
-   note, call, tag, circle and relationship forms, and *Add person*. One path whether it comes
+7. **Every form for the additions of §4.1 now saves as a command, online too** — Home's
+   composer, a person's note, call, tag, circle and relationship forms, and *Add person*. One path whether it comes
    from a form, a phone or a script; the price is that these actions now go through the
    dispatcher even when nothing is offline.
 8. **The person page's checks moved into the domain.** Notes (`writeNote`), calls
@@ -363,10 +363,14 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
 
 **Scope and tests**
 
-22. **Every addition is built:** moments (with photos), notes, calls and visits, tags, circles,
-    relationships and a new person. Ordering between queued items is not needed: a note or a
-    link can only be added on a person's page, and a person kept offline has no page until
-    Stella has them.
+22. **Every addition §4.1 lists is built:** moments (with photos), notes, calls and visits,
+    tags, circles, relationships and a new person. Ordering between queued items is not
+    needed: a note or a link can only be added on a person's page, and a person kept offline
+    has no page until Stella has them.
+    **Not covered, though they add rows too:** a journal entry written on the journal page
+    itself, a contact field (phone, e-mail, …), an important date, and gallery photos. §4.1
+    did not name them; each would be a command kind, a checked use-case and one `keepable` in
+    its page. Worth deciding whether they belong.
 23. **The Playwright e2e is not written** — it waits for the maintainer's check in the app, as
     always. Every flow was tried in the browser with throwaway specs (not committed), and the
     full existing suite passes. The e2e suite blocks service workers (a Chromium crash, see
