@@ -78,6 +78,7 @@ import type { CommandDeps, CommandReceiptRepository } from './domain/commands/di
 import { createDrizzleCommandReceiptRepository } from './db/command-receipt-repository';
 import { createDrizzleEntryOwnership } from './db/entry-ownership';
 import { attachMomentPhoto } from './domain/commands/moment-photo';
+import { writeNote } from './domain/notes/write-note';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
 import type { ImportDeps, ImportRepository } from './domain/import/apply';
 import type { ApiImportDeps } from './domain/import/api/api-import';
@@ -478,6 +479,8 @@ export function getCommandDeps(): CommandDeps {
 				)),
 				visibility: payload.visibility
 			}),
+			'note.add': (actor, payload) =>
+				writeNote({ ...getNoteDeps(), contacts: getContacts() }, actor, payload),
 			'moment.photo': (actor, payload) =>
 				attachMomentPhoto(
 					{ receipts, entries: createDrizzleEntryOwnership(getDb()), photos: getJournalPhotoDeps() },

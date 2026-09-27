@@ -4,6 +4,7 @@ import {
 	discard,
 	discardAllOf,
 	hold,
+	isKept,
 	queue,
 	recover,
 	release,
@@ -207,6 +208,23 @@ describe('photos kept with a moment', () => {
 		expect(takePhoto(refused, 'u1')).toBeNull();
 		expect(hold(refused, 'a')).toBeNull();
 		expect(discard(refused, 'a')).toEqual([]);
+	});
+});
+
+describe('isKept', () => {
+	it('tells a kept moment from a kept note, and remembers who a note is about', () => {
+		const note: JsonCommand = {
+			id: 'n',
+			type: 'note.add',
+			payload: { contactId: 'julia', body: 'x', visibility: 'shared', isPinned: false },
+			issuedAt: 1
+		};
+		const [m, n] = queue(add([], 'a'), { command: note, memberId: 'u1', savedAt: 1, about: 'Julia' });
+		expect(isKept(m, 'moment.capture')).toBe(true);
+		expect(isKept(n, 'moment.capture')).toBe(false);
+		expect(isKept(n, 'note.add')).toBe(true);
+		expect(n.about).toBe('Julia');
+		expect(m.about).toBeNull();
 	});
 });
 

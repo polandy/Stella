@@ -93,10 +93,12 @@ export const outbox = {
 	},
 
 	/** Keep `command` (and the photos that go with it) until it can be sent, then try at once. */
-	async add(command: JsonCommand, photos: KeptPhoto[] = []): Promise<void> {
+	async add(command: JsonCommand, photos: KeptPhoto[] = [], about: string | null = null): Promise<void> {
 		const member = memberId;
 		if (!member) throw new Error('The outbox was used before a member signed in.');
-		await apply((list) => queue(list, { command, memberId: member, savedAt: Date.now(), photos }));
+		await apply((list) =>
+			queue(list, { command, memberId: member, savedAt: Date.now(), photos, about })
+		);
 		void outbox.send();
 	},
 

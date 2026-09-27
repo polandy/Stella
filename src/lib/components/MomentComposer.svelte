@@ -11,7 +11,7 @@
 	import { allowedForAudience } from '$lib/mentions/audience';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
 	import type { MomentCapturePayload } from '$lib/commands/commands';
-	import type { KeptPhoto, OutboxItem } from '$lib/pwa/outbox';
+	import type { KeptOf, KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { tick } from 'svelte';
@@ -45,7 +45,7 @@
 		draft?: string | null;
 		autofocus?: boolean;
 		/** A moment kept on this device, open for editing before it is sent. */
-		editing?: OutboxItem | null;
+		editing?: KeptOf<'moment.capture'> | null;
 		/** The edit was saved or abandoned. */
 		onEditDone?: () => void;
 		/** A moment was kept on this device for later. */
@@ -229,7 +229,7 @@
 	}
 
 	/** Save an edit into the kept moment it came from. */
-	async function saveEdit(formEl: HTMLFormElement, item: OutboxItem) {
+	async function saveEdit(formEl: HTMLFormElement, item: KeptOf<'moment.capture'>) {
 		const saved = await outbox.revise(item.command.id, payloadFrom(formEl), ulid());
 		if (!saved) {
 			localError = t('composer.alreadySending');

@@ -39,6 +39,19 @@ describe('parseCommand', () => {
 	});
 });
 
+describe('parseCommand, for a note', () => {
+	const note = { id: ID, type: 'note.add', payload: { contactId: 'julia', body: ' moving to @Bern ', visibility: 'private', isPinned: true }, issuedAt: 3 };
+
+	it('reads a note on a person, trimming its text', () => {
+		expect(parseCommand(note)?.payload).toEqual({ contactId: 'julia', body: 'moving to @Bern', visibility: 'private', isPinned: true });
+	});
+
+	it('refuses a note on nobody, or an empty one', () => {
+		expect(parseCommand({ ...note, payload: { ...note.payload, contactId: '' } })).toBeNull();
+		expect(parseCommand({ ...note, payload: { ...note.payload, body: ' ' } })).toBeNull();
+	});
+});
+
 describe('parsePhotoCommand', () => {
 	const bytes = new Uint8Array([1, 2, 3]);
 	const photo = { id: ID, momentId: '01K6A5ZQ3V9W8X7Y6Z5A4B3C2E', image: bytes, thumb: bytes, width: 1600, height: 1200, issuedAt: 5 };

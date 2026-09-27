@@ -48,6 +48,11 @@
 	import type { SelectablePerson } from '$lib/people/select';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { untrack } from 'svelte';
+	import { ulid } from 'ulid';
+	import { isKept, type KeptOf } from '$lib/pwa/outbox';
+	import { outbox } from '$lib/pwa/outbox.svelte';
+	import { keepable } from '$lib/pwa/keepable';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { ActionData, PageData } from './$types';
 
 	/*
@@ -218,6 +223,52 @@
 	let openSection = $state({ contact: false, dates: false, circles: false, tags: false, note: false });
 	// The note's audience narrows whom the @-picker offers (docs/02 §2.20.1).
 	let noteVisibility = $state<'shared' | 'private'>('shared');
+	let noteBody = $state('');
+	let notePinned = $state(false);
+
+	/*
+	 * Notes written here while Stella was out of reach (docs/02 §2.18): kept on the device and
+	 * shown at the top of this person's notes until they are sent. One can be opened in the
+	 * note form again until it is on its way; the form then saves into the kept copy.
+	 */
+	const keptNotes = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'note.add'> =>
+				isKept(item, 'note.add') && item.command.payload.contactId === data.contact.id
+		)
+	);
+	let editingNote = $state<KeptOf<'note.add'> | null>(null);
+	let confirmingNoteDiscard = $state<string | null>(null);
+	async function editKeptNote(item: KeptOf<'note.add'>) {
+		if (!(await outbox.hold(item.command.id))) return;
+		editingNote = item;
+		noteBody = item.command.payload.body;
+		noteVisibility = item.command.payload.visibility;
+		notePinned = item.command.payload.isPinned;
+		openSection.note = true;
+	}
+	async function stopEditingNote() {
+		const item = editingNote;
+		editingNote = null;
+		noteBody = '';
+		notePinned = false;
+		if (item) await outbox.release(item.command.id);
+	}
+	async function saveKeptNote(item: KeptOf<'note.add'>) {
+		editingNote = null;
+		await outbox.revise(
+			item.command.id,
+			{ ...item.command.payload, body: noteBody.trim(), visibility: noteVisibility, isPinned: notePinned },
+			ulid()
+		);
+		noteBody = '';
+		notePinned = false;
+		openSection.note = false;
+	}
+	// Closing the section abandons an edit, so the kept note goes back to waiting.
+	$effect(() => {
+		if (!openSection.note && editingNote) void stopEditingNote();
+	});
 	type SectionName = keyof typeof openSection;
 	/*
 	 * Joining a circle is one free-text field, so the role suggestions follow what is typed:
@@ -232,6 +283,41 @@
 	});
 	const saved = (name: SectionName) =>
 		savedEnhance(removals, t('components.saved'), () => (openSection[name] = false));
+	// The note form keeps a note on the device when Stella cannot take it (docs/02 §2.18).
+	const keepNote = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const body = String(form.get('body') ?? '').trim();
+					if (!body) return null;
+					return {
+						id,
+						type: 'note.add',
+						payload: {
+							contactId: data.contact.id,
+							body,
+							visibility: form.get('visibility') === 'private' ? 'private' : 'shared',
+							isPinned: form.get('isPinned') === 'on'
+						},
+						issuedAt: Date.now()
+					};
+				},
+				about: data.contact.displayName,
+				onKept: () => {
+					noteBody = '';
+					notePinned = false;
+					openSection.note = false;
+				}
+			},
+			saved('note')
+		)
+	);
+	// While a kept note is open, the form saves into it instead of posting.
+	const noteForm: SubmitFunction = (input) => {
+		if (!editingNote) return keepNote(input);
+		input.cancel();
+		void saveKeptNote(editingNote);
+	};
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
 	/*
 	 * The other end of a new relationship. Empty unless the page was *asked* to relate somebody
@@ -1255,6 +1341,36 @@
 					error={form?.noteError ?? null}
 					bind:open={openSection.note}
 				>
+					{#if keptNotes.length > 0}
+						<ul class="mb-3 flex flex-col gap-2" data-testid="kept-notes">
+							{#each keptNotes as item (item.command.id)}
+								{@const refused = item.state === 'refused'}
+								<li class="rounded-control border border-dashed p-3 {refused ? 'border-danger/60 bg-danger/5' : 'border-border'}" data-outbox-state={item.state}>
+									<div class="mb-1 flex items-center gap-2 text-xs">
+										<Icon name="offline" size={12} />
+										<b class="font-semibold {refused ? 'text-danger' : 'text-fg'}">
+											{t(refused ? 'home.outbox.couldNotSend' : item.state === 'held' ? 'home.outbox.editing' : item.state === 'sending' ? 'home.outbox.sending' : 'home.outbox.notSent')}
+										</b>
+										{#if item.command.payload.visibility === 'private'}<span class="ml-auto inline-flex items-center gap-1 text-fg-subtle"><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
+									</div>
+									<p class="whitespace-pre-line text-fg">{item.command.payload.body}</p>
+									{#if item.reason}<p class="mt-1 text-sm text-danger">{item.reason}</p>{/if}
+									{#if item.state === 'pending' || item.state === 'refused'}
+										<div class="mt-1.5 flex flex-wrap gap-1.5">
+											{#if confirmingNoteDiscard === item.command.id}
+												<span class="self-center text-xs text-fg-muted">{t('home.outbox.discardQuestion')}</span>
+												<Button variant="danger" size="sm" onclick={() => { confirmingNoteDiscard = null; void outbox.discard(item.command.id); }}>{t('home.outbox.discardConfirm')}</Button>
+												<Button variant="ghost" size="sm" onclick={() => (confirmingNoteDiscard = null)}>{t('common.cancel')}</Button>
+											{:else}
+												<Button variant="secondary" size="sm" icon="write" onclick={() => editKeptNote(item)}>{t('home.outbox.edit')}</Button>
+												<Button variant="ghost" size="sm" icon="remove" onclick={() => (confirmingNoteDiscard = item.command.id)}>{t('home.outbox.discard')}</Button>
+											{/if}
+										</div>
+									{/if}
+								</li>
+							{/each}
+						</ul>
+					{/if}
 					{#if data.notes.length > 0}
 						<ul class="flex flex-col gap-3">
 							{#each data.notes as note (note.id)}
@@ -1282,8 +1398,9 @@
 					{/if}
 
 					{#snippet editor()}
-						<form method="POST" action="?/addNote" use:enhance={saved('note')} class="flex flex-col gap-3">
+						<form method="POST" action="?/addNote" use:enhance={noteForm} class="flex flex-col gap-3">
 							<MentionTextarea
+								bind:value={noteBody}
 								name="body"
 								label={t('contact.notes.label')}
 								required
@@ -1294,7 +1411,7 @@
 							/>
 							<div class="flex flex-wrap items-center gap-4 text-sm">
 								<label class="flex items-center gap-1.5">
-									<input type="checkbox" name="isPinned" /> {t('contact.notes.pin')}
+									<input type="checkbox" name="isPinned" bind:checked={notePinned} /> {t('contact.notes.pin')}
 								</label>
 								<label class="flex items-center gap-1.5">
 									<input type="radio" name="visibility" value="shared" bind:group={noteVisibility} />
@@ -1304,7 +1421,7 @@
 									<input type="radio" name="visibility" value="private" bind:group={noteVisibility} />
 									{t('common.private')}
 								</label>
-								<Button variant="primary" size="sm" class="ml-auto">{t('contact.notes.add')}</Button>
+								<Button variant="primary" size="sm" class="ml-auto">{editingNote ? t('common.save') : t('contact.notes.add')}</Button>
 							</div>
 						</form>
 					{/snippet}

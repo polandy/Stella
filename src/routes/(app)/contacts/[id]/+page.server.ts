@@ -1,3 +1,7 @@
+import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
+import { parseCommand } from '$lib/server/commands/parse';
+import { ulidGenerator } from '$lib/server/id';
+import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { requireAdmin } from '$lib/server/auth/guards';
@@ -58,7 +62,6 @@ import {
 } from '$lib/server/domain/media/gallery';
 import { addGalleryPhoto } from '$lib/server/domain/media/gallery-upload';
 import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
-import { createHandleResolver, mentionsOtherThan, resolveMentions } from '$lib/mentions/mentions';
 import { mentionSnippet } from '$lib/mentions/snippet';
 import {
 	contactSectionPath,
@@ -67,9 +70,8 @@ import {
 } from '$lib/contacts/sections';
 import { personMap } from '$lib/graph/model/person-map';
 import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
-import { audienceCandidates } from '$lib/server/domain/moments/moments';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
-import { createNote, listNotesForContact, setNoteMentions } from '$lib/server/domain/notes/notes';
+import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import {
 	createRelationship,
 	ContradictoryRelationshipError,
@@ -98,6 +100,7 @@ import {
 	unassignTag
 } from '$lib/server/domain/tags/tags';
 import {
+	getCommandDeps,
 	getContactDeps,
 	getContactFieldDeps,
 	getAvatarDeps,
@@ -756,7 +759,6 @@ export const actions: Actions = {
 
 	addNote: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
 		const parsed = v.safeParse(AddNoteSchema, {
@@ -768,37 +770,27 @@ export const actions: Actions = {
 			return fail(400, { noteError: say(locals, 'errors.note.empty') });
 		}
 
-		// The contact must be visible to add a note to it.
-		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
-
-		const creator = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
-			defaultVisibility: 'shared' as const // TODO: user default (settings, §2.16)
-		};
-		// Resolve @-mentions against the contacts allowed for this note's audience, so the stored
-		// body carries stable id-based tokens and we know who to link (docs/02 §2.20.1).
-		const resolver = createHandleResolver(
-			audienceCandidates(await listContacts(getContactDeps(), viewer), parsed.output.visibility)
-		);
-		const resolved = resolveMentions(parsed.output.body, resolver);
-
-		let noteId: string;
-		try {
-			noteId = await createNote(getNoteDeps(), creator, {
-				contactId: params.id,
-				body: resolved.body,
-				visibility: parsed.output.visibility,
-				isPinned: parsed.output.isPinned
-			});
-		} catch {
-			return fail(400, { noteError: say(locals, 'errors.note.couldNotSave') });
+		// A note is a command (docs/04 §4.11.2): named by the form when it can, so a save whose
+		// answer was lost and is then kept on the phone is recognised when it arrives again.
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'note.add',
+			payload: { contactId: params.id, ...parsed.output },
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'note.add') {
+			return fail(400, { noteError: say(locals, 'errors.command.malformed') });
 		}
-
-		// Persist the reverse links, dropping a reference to the person whose note this is:
-		// a note on Sandra that names Sandra is not a passive mention (docs/02 §2.20.1).
-		await setNoteMentions(getNoteDeps(), noteId, mentionsOtherThan(resolved.ids, params.id));
+		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
+		if (outcome?.status !== 'applied') {
+			return fail(400, {
+				noteError:
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.note.couldNotSave')
+			});
+		}
 
 		throw redirect(303, `/contacts/${params.id}`);
 	},

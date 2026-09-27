@@ -8,7 +8,8 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
 	import { outbox } from '$lib/pwa/outbox.svelte';
-	import type { OutboxItem } from '$lib/pwa/outbox';
+	import { isKept, type KeptOf, type OutboxItem } from '$lib/pwa/outbox';
+	import { contactSectionPath } from '$lib/contacts/sections';
 	import { agoLabel, occasionLabel, whenLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { relationshipRowLabel } from '$lib/relationships/labels';
@@ -106,7 +107,7 @@
 	// Below `md` the composer lives in the sheet; above it, at the top of the stream. One of
 	// them is mounted at a time, so there is exactly one "What happened?" field on the page.
 	// The kept moment open in the composer, if any (see below).
-	let editing = $state<OutboxItem | null>(null);
+	let editing = $state<KeptOf<'moment.capture'> | null>(null);
 
 	// The sheet also opens as shallow state (`page.state.compose`): that needs no server round
 	// trip, so the pencil still works while Stella is out of reach.
@@ -132,8 +133,10 @@
 	 * device holds the only copy.
 	 */
 	let confirmingDiscard = $state<string | null>(null);
-	async function edit(item: OutboxItem) {
-		if (await outbox.hold(item.command.id)) editing = outbox.mine.find((i) => i.command.id === item.command.id) ?? null;
+	async function edit(item: KeptOf<'moment.capture'>) {
+		if (!(await outbox.hold(item.command.id))) return;
+		const held = outbox.mine.find((i) => i.command.id === item.command.id);
+		editing = held && isKept(held, 'moment.capture') ? held : null;
 	}
 	async function stopEditing() {
 		const item = editing;
@@ -226,7 +229,10 @@
 							<b class="font-semibold {refused ? 'text-danger' : 'text-fg'}">{t((item.delivered ? DELIVERED_LABEL : OUTBOX_LABEL)[item.state])}</b>
 							{#if item.photos.length}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"><Icon name="photo" size={11} />{t('home.outbox.photoCount', { count: item.photos.length })}</span>{/if}
 							{#if item.command.payload.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('common.onlyYouSee')}><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
-							<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.entryDate}>{keptDay(item.command.payload.entryDate)}</span>
+							{#if isKept(item, 'note.add')}<span>{t('home.outbox.noteOn', { name: item.about ?? '' })}</span>{/if}
+							{#if isKept(item, 'moment.capture')}
+								<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.entryDate}>{keptDay(item.command.payload.entryDate)}</span>
+							{/if}
 						</div>
 						<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
 						{#if item.reason}<p class="mt-1 text-sm text-danger">{item.reason}</p>{/if}
@@ -237,8 +243,10 @@
 									<Button variant="danger" size="sm" onclick={() => discardKept(item)}>{t('home.outbox.discardConfirm')}</Button>
 									<Button variant="ghost" size="sm" onclick={() => (confirmingDiscard = null)}>{t('common.cancel')}</Button>
 								{:else}
-									{#if !item.delivered}
+									{#if !item.delivered && isKept(item, 'moment.capture')}
 										<Button variant="secondary" size="sm" icon="write" onclick={() => edit(item)}>{t('home.outbox.edit')}</Button>
+									{:else if isKept(item, 'note.add')}
+										<Button variant="secondary" size="sm" icon="write" href={contactSectionPath(item.command.payload.contactId, 'notes')}>{t('home.outbox.editOnPage')}</Button>
 									{/if}
 									<Button variant="ghost" size="sm" icon="remove" onclick={() => (confirmingDiscard = item.command.id)}>{t('home.outbox.discard')}</Button>
 								{/if}

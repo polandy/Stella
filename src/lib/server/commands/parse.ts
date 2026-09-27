@@ -21,13 +21,21 @@ const MomentCapture = v.object({
 	newPeople: v.optional(v.array(v.pipe(v.string(), v.trim(), v.minLength(1))), [])
 });
 
+const NoteAdd = v.object({
+	contactId: v.pipe(v.string(), v.minLength(1)),
+	body: v.pipe(v.string(), v.trim(), v.minLength(1)),
+	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
+	isPinned: v.optional(v.boolean(), false)
+});
+
 const envelope = {
 	id: v.pipe(v.string(), v.regex(ULID)),
 	issuedAt: v.pipe(v.number(), v.integer(), v.minValue(0))
 };
 
 const CommandSchema = v.variant('type', [
-	v.object({ ...envelope, type: v.literal('moment.capture'), payload: MomentCapture })
+	v.object({ ...envelope, type: v.literal('moment.capture'), payload: MomentCapture }),
+	v.object({ ...envelope, type: v.literal('note.add'), payload: NoteAdd })
 ]);
 
 /** `raw` as a command, or null when it is not exactly one. */

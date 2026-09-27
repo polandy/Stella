@@ -40,6 +40,12 @@ export interface OutboxItem {
 	/** Photos still to be sent, after the moment itself. */
 	photos: KeptPhoto[];
 	/**
+	 * Who it is about, as the page named them when it was kept — for showing it anywhere but
+	 * that person's own page, where no name can be looked up offline. Null for a moment, whose
+	 * people are in its text.
+	 */
+	about: string | null;
+	/**
 	 * Stella has the moment; only its photos wait. It is never sent again, and — being
 	 * household data now — no longer edited here.
 	 */
@@ -49,12 +55,35 @@ export interface OutboxItem {
 /** Append a newly written item. */
 export function queue(
 	items: readonly OutboxItem[],
-	added: { command: JsonCommand; memberId: string; savedAt: number; photos?: KeptPhoto[] }
+	added: {
+		command: JsonCommand;
+		memberId: string;
+		savedAt: number;
+		photos?: KeptPhoto[];
+		about?: string | null;
+	}
 ): OutboxItem[] {
 	return [
 		...items,
-		{ ...added, photos: added.photos ?? [], state: 'pending', reason: null, delivered: false }
+		{
+			...added,
+			photos: added.photos ?? [],
+			about: added.about ?? null,
+			state: 'pending',
+			reason: null,
+			delivered: false
+		}
 	];
+}
+
+/** An item holding a command of type `T`. */
+export type KeptOf<T extends JsonCommand['type']> = OutboxItem & {
+	command: Extract<JsonCommand, { type: T }>;
+};
+
+/** Whether `item` holds a command of type `type`. */
+export function isKept<T extends JsonCommand['type']>(item: OutboxItem, type: T): item is KeptOf<T> {
+	return item.command.type === type;
 }
 
 /**

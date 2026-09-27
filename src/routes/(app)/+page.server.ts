@@ -150,7 +150,7 @@ export const actions: Actions = {
 			payload: parsed.output,
 			issuedAt: systemClock.now()
 		});
-		if (!command) {
+		if (command?.type !== 'moment.capture') {
 			return fail(400, { momentError: say(locals, 'errors.command.malformed'), draft: parsed.output.body });
 		}
 

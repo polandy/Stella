@@ -14,7 +14,8 @@ export type CommandKind = 'add' | 'change' | 'remove';
 /** Every command, and its kind. */
 const KINDS = {
 	'moment.capture': 'add',
-	'moment.photo': 'add'
+	'moment.photo': 'add',
+	'note.add': 'add'
 } as const satisfies Record<string, CommandKind>;
 
 /** One of the commands Stella knows. */
@@ -46,10 +47,20 @@ export interface MomentPhotoPayload {
 	height: number;
 }
 
+/** A note on a person (docs/02 §2.5), as the person page's note form hands it over. */
+export interface NoteAddPayload {
+	contactId: string;
+	/** Markdown with typed `@Handle`s and/or canonical mention tokens. */
+	body: string;
+	visibility: MentionAudience;
+	isPinned: boolean;
+}
+
 /** The payload each command carries. */
 export interface CommandPayloads {
 	'moment.capture': MomentCapturePayload;
 	'moment.photo': MomentPhotoPayload;
+	'note.add': NoteAddPayload;
 }
 
 /** One intent from one member. */

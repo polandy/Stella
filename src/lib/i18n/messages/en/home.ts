@@ -33,6 +33,8 @@ export const home = {
 	'home.outbox.sendingPhotos': 'Sending photos…',
 	'home.outbox.photoRefused': 'Could not send a photo',
 	'home.outbox.photoCount': (p: { count: number }) => (p.count === 1 ? '1 photo' : `${p.count} photos`),
+	'home.outbox.noteOn': (p: { name: string }) => `· note on ${p.name}`,
+	'home.outbox.editOnPage': 'Edit',
 	'home.empty.title': 'Nothing written yet',
 	'home.empty.hint':
 		'Write the first moment above and mention someone with @ — that is all it takes.',

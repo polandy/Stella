@@ -29,6 +29,7 @@ export interface CommandResults {
 	'moment.capture': CapturedMoment & { visibility: Visibility };
 	/** The stored photo's id. */
 	'moment.photo': string;
+	'note.add': { noteId: string };
 }
 
 /** The use-case behind each command. */
@@ -142,6 +143,8 @@ function apply(
 		case 'moment.capture':
 			return handlers[command.type](actor, command.payload);
 		case 'moment.photo':
+			return handlers[command.type](actor, command.payload);
+		case 'note.add':
 			return handlers[command.type](actor, command.payload);
 	}
 }
