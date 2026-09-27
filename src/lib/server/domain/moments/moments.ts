@@ -122,13 +122,34 @@ export async function captureMoment(
 
 	const [anchorContactId, ...mentionedContactIds] = resolved.ids;
 	const journalDeps = { journal: deps.journal, ids: deps.ids, clock: deps.clock };
-	const entryId = await saveJournalEntry(journalDeps, author, {
+	// The anchor's day slot may already hold an entry (§2.20); a moment is an addition, so it
+	// joins that entry — as a contact merge does — rather than replacing what was written.
+	const sameDay = await deps.journal.findDay({
+		authorId: author.userId,
 		contactId: anchorContactId,
 		entryDate: input.entryDate,
-		body: resolved.body,
 		visibility: input.visibility
 	});
-	await setJournalMentions(journalDeps, entryId, mentionedContactIds);
+	let entryId: string;
+	let entryMentions = mentionedContactIds;
+	if (sameDay) {
+		entryId = sameDay.id;
+		await deps.journal.updateBody({
+			id: entryId,
+			title: sameDay.title,
+			body: `${sameDay.body}\n\n${resolved.body}`,
+			updatedAt: deps.clock.now()
+		});
+		entryMentions = [...(await deps.journal.listMentionedContactIds(entryId)), ...mentionedContactIds];
+	} else {
+		entryId = await saveJournalEntry(journalDeps, author, {
+			contactId: anchorContactId,
+			entryDate: input.entryDate,
+			body: resolved.body,
+			visibility: input.visibility
+		});
+	}
+	await setJournalMentions(journalDeps, entryId, entryMentions);
 
 	return {
 		entryId,

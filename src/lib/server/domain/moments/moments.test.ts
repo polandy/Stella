@@ -216,6 +216,40 @@ describe('captureMoment', () => {
 		expect(f.entries[0].visibility).toBe('private');
 	});
 
+	it('appends a second moment about the same person on the same day instead of replacing the first', async () => {
+		const f = fakes([
+			{ id: 'julia', displayName: 'Julia' },
+			{ id: 'marco', displayName: 'Marco' },
+			{ id: 'lena', displayName: 'Lena' }
+		]);
+		const first = await captureMoment(f.deps, author, { ...base, body: 'Met @Julia with @Marco' });
+		f.entries[0].title = 'Lake day';
+		const second = await captureMoment(f.deps, author, { ...base, body: '@Julia called, @Lena says hi' });
+
+		expect(second.entryId).toBe(first.entryId);
+		expect(f.entries).toHaveLength(1);
+		expect(f.entries[0].body).toBe(
+			'Met @{contact:julia} with @{contact:marco}\n\n@{contact:julia} called, @{contact:lena} says hi'
+		);
+		expect(f.entries[0].title).toBe('Lake day');
+		expect(f.mentions.get(first.entryId)).toEqual(['marco', 'lena']);
+		// The result still describes the moment just written, not the whole day.
+		expect(second.mentionedContactIds).toEqual(['lena']);
+	});
+
+	it('keeps moments on other days or with another visibility in their own entries', async () => {
+		const f = fakes([{ id: 'julia', displayName: 'Julia' }]);
+		await captureMoment(f.deps, author, { ...base, body: 'Lunch with @Julia' });
+		await captureMoment(f.deps, author, { ...base, entryDate: '2026-09-04', body: 'Tea with @Julia' });
+		await captureMoment(f.deps, author, { ...base, visibility: 'private', body: 'Worried about @Julia' });
+
+		expect(f.entries.map((e) => e.body)).toEqual([
+			'Lunch with @{contact:julia}',
+			'Tea with @{contact:julia}',
+			'Worried about @{contact:julia}'
+		]);
+	});
+
 	it('offers no link when only one person is involved', async () => {
 		const f = fakes([{ id: 'marco', displayName: 'Marco' }]);
 		const result = await captureMoment(f.deps, author, { ...base, body: 'Coffee with @Marco' });
