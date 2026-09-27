@@ -1461,7 +1461,9 @@ entry and a household update, without leaving the page. Concept + clickable prot
   did: **moments** (journal entries, with author, anchor, mentioned people as chips, photos),
   **new people** ("Lena added *Thomas Lang*"), **new relationships** ("Leo linked *Marie*
   → colleague of *Andy*") and **logged interactions** ("Lena logged a call with *Oma*",
-  §2.6). Every item links to the person it is about.
+  §2.6). Every item links to the person it is about. A moment is placed by its **last
+  change**: one appended to the day's entry (§2.22.1) brings that entry back to the top, as
+  does an edit to it in the journal.
 - **Notices** are the exception: the few things no table can report, read from `activity_log` —
   a person deleted or merged away (§2.2), and an archive of the household being taken (§2.15).
   Everyday edits are not written there and do not appear here; the stream stays a record of what
