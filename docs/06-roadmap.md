@@ -130,6 +130,10 @@ Goal: sand the edges and add the nice-to-haves.
   building: which context wins when there are several (relationship vs. circle, which one),
   where the hint shows (search, person pickers, the graph?), and how it stays access-scoped
   so it never names a person or circle the viewer may not see (§2.10).
+- *TODO, design first:* **a simpler day in the *What happened?* composer** — today it is the
+  full three-part date field (day, month, year; docs/05 §5.7), which is heavy for a sentence
+  written in passing. Today stays the default. Start with mockups of the lighter options
+  before building anything (§2.22.1).
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
