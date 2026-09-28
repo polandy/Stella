@@ -7,20 +7,16 @@ import {
 	deleteJournalEntry,
 	editJournalEntry,
 	listJournalForContact,
-	saveJournalEntry,
 	setJournalMentions
 } from '$lib/server/domain/journal/journal';
-import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { createHandleResolver, mentionsOtherThan, resolveMentions, MENTION_TOKEN_RE } from '$lib/mentions/mentions';
 import { audienceCandidates } from '$lib/server/domain/moments/moments';
-import {
-	getContactDeps,
-	getJournalDeps,
-	getJournalPhotoDeps,
-	getPhotos,
-	getMemberDeps
-} from '$lib/server/services';
+import { getCommandDeps, getContactDeps, getJournalDeps, getPhotos, getMemberDeps } from '$lib/server/services';
+import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
+import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
+import { systemClock } from '$lib/server/clock';
+import { ulidGenerator } from '$lib/server/id';
 
 import type { Actions, PageServerLoad } from './$types';
 import { TranslatableError } from '$lib/errors/translatable';
@@ -147,46 +143,24 @@ export const actions: Actions = {
 			});
 		}
 
-		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
-			defaultVisibility: 'shared' as const
-		};
-
-		// Resolve @-mentions against the contacts allowed for this entry's audience, so the stored
-		// body carries stable id-based tokens and we know who to link (docs/02 §2.20.1).
-		const resolver = createHandleResolver(
-			audienceCandidates(await listContacts(getContactDeps(), viewer), parsed.output.visibility)
-		);
-		const resolved = resolveMentions(parsed.output.body, resolver);
-
-		let entryId: string;
-		try {
-			entryId = await saveJournalEntry(getJournalDeps(), author, {
-				contactId: params.id,
-				entryDate: parsed.output.entryDate,
-				title: parsed.output.title ?? null,
-				body: resolved.body,
-				visibility: parsed.output.visibility
+		// Writing is an addition (§2.20) and a command (docs/04 §4.11.2): named by the form when it
+		// can, so a save whose answer was lost and is kept on the phone is recognised on arrival.
+		const author = { userId: viewer.id, householdId: viewer.householdId };
+		const refusal = (outcome: Awaited<ReturnType<typeof dispatchCommand>> | null, otherwise: MessageKey) =>
+			fail(400, {
+				journalError: outcome?.status === 'refused' ? outcome.reason(translator(locals)) : say(locals, otherwise)
 			});
-		} catch (err) {
-			return fail(400, {
-				journalError:
-					err instanceof TranslatableError
-						? err.phrase(translator(locals))
-						: say(locals, 'errors.journal.couldNotSave')
-			});
-		}
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'journal.write',
+			payload: { contactId: params.id, ...parsed.output, title: parsed.output.title ?? null },
+			issuedAt: systemClock.now()
+		});
+		const written = command ? await dispatchCommand(getCommandDeps(), author, command).catch(() => null) : null;
+		if (!command || written?.status !== 'applied') return refusal(written, 'errors.journal.couldNotSave');
 
-		// Persist the reverse links, dropping a self-reference (docs/02 §2.20.1).
-		await setJournalMentions(
-			getJournalDeps(),
-			entryId,
-			mentionsOtherThan(resolved.ids, params.id)
-		);
-
-		// Attach any browser-processed photos (parallel image/thumb/width/height arrays), inheriting
-		// the entry's visibility so a private entry's photos stay private (§2.20).
+		// Browser-processed photos (parallel image/thumb/width/height arrays) follow as commands of
+		// their own, landing on the entry with its visibility (§2.20).
 		const images = form.getAll('image');
 		const thumbs = form.getAll('thumb');
 		const widths = form.getAll('width');
@@ -195,21 +169,18 @@ export const actions: Actions = {
 			const image = images[i];
 			const thumb = thumbs[i];
 			if (!(image instanceof File) || !(thumb instanceof File)) continue;
-			try {
-				await attachJournalPhoto(getJournalPhotoDeps(), author, {
-					contactId: params.id,
-					journalEntryId: entryId,
-					visibility: parsed.output.visibility,
-					upload: {
-						image: new Uint8Array(await image.arrayBuffer()),
-						thumb: new Uint8Array(await thumb.arrayBuffer()),
-						width: Number(widths[i]),
-						height: Number(heights[i])
-					}
-				});
-			} catch {
-				return fail(400, { journalError: say(locals, 'errors.journal.photoFailed') });
-			}
+			const photo = parsePhotoCommand({
+				id: ulidGenerator.next(),
+				type: 'moment.photo',
+				parentId: command.id,
+				image: new Uint8Array(await image.arrayBuffer()),
+				thumb: new Uint8Array(await thumb.arrayBuffer()),
+				width: Number(widths[i]),
+				height: Number(heights[i]),
+				issuedAt: systemClock.now()
+			});
+			const stored = photo ? await dispatchCommand(getCommandDeps(), author, photo).catch(() => null) : null;
+			if (stored?.status !== 'applied') return refusal(stored, 'errors.journal.photoFailed');
 		}
 
 		throw redirect(303, `/contacts/${params.id}/journal`);

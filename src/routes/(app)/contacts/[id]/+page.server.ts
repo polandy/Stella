@@ -1,5 +1,5 @@
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { parseCommand } from '$lib/server/commands/parse';
+import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
@@ -7,7 +7,6 @@ import * as v from 'valibot';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
 import {
-	addContactField,
 	fieldHref,
 	listContactFields
 } from '$lib/server/domain/contact-fields/contact-fields';
@@ -29,8 +28,6 @@ import {
 	restoreContact
 } from '$lib/server/domain/contacts/contacts';
 import {
-	addImportantDate,
-	InvalidImportantDateError,
 	listImportantDates,
 	overridesDerivedBirthday
 } from '$lib/server/domain/dates/important-dates';
@@ -57,8 +54,6 @@ import {
 	setGalleryPhotoVisibility,
 	useAsAvatar
 } from '$lib/server/domain/media/gallery';
-import { addGalleryPhoto } from '$lib/server/domain/media/gallery-upload';
-import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
 import { mentionSnippet } from '$lib/mentions/snippet';
 import {
 	contactSectionPath,
@@ -107,7 +102,6 @@ import {
 	getJournalDeps,
 	getNoteDeps,
 	getGalleryDeps,
-	getGalleryUploadDeps,
 	getGraphRepository,
 	getPhotos,
 	getRelationshipDeps,
@@ -784,15 +778,22 @@ export const actions: Actions = {
 		const contact = await getContact(getContactDeps(), viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		try {
-			await addContactField(getContactFieldDeps(), {
-				contactId: params.id,
-				kind: parsed.output.kind,
-				label: parsed.output.label ?? null,
-				value: parsed.output.value
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'field.add',
+			payload: { contactId: params.id, ...parsed.output, label: parsed.output.label ?? null },
+			issuedAt: systemClock.now()
+		});
+		const outcome = command
+			? await dispatchCommand(getCommandDeps(), { userId: viewer.id, householdId: viewer.householdId }, command).catch(() => null)
+			: null;
+		if (outcome?.status !== 'applied') {
+			return fail(400, {
+				fieldError:
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.field.couldNotAdd')
 			});
-		} catch {
-			return fail(400, { fieldError: say(locals, 'errors.field.couldNotAdd') });
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);
@@ -819,19 +820,21 @@ export const actions: Actions = {
 		const contact = await getContact(getContactDeps(), viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		try {
-			await addImportantDate(getImportantDateDeps(), {
-				contactId: params.id,
-				kind: parsed.output.kind,
-				label: parsed.output.label ?? null,
-				date: parsed.output.date,
-				recursYearly: parsed.output.recursYearly,
-				remind: parsed.output.remind
-			});
-		} catch (err) {
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'date.add',
+			payload: { contactId: params.id, ...parsed.output, label: parsed.output.label ?? null },
+			issuedAt: systemClock.now()
+		});
+		const outcome = command
+			? await dispatchCommand(getCommandDeps(), { userId: viewer.id, householdId: viewer.householdId }, command).catch(() => null)
+			: null;
+		if (outcome?.status !== 'applied') {
 			return fail(400, {
 				dateError:
-					err instanceof InvalidImportantDateError ? err.phrase(translator(locals)) : say(locals, 'errors.date.couldNotAdd')
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.date.couldNotAdd')
 			});
 		}
 
@@ -1020,27 +1023,36 @@ export const actions: Actions = {
 		}
 		const visibility = v.parse(VisibilitySchema, form.get('visibility') || undefined);
 
-		try {
-			for (const [index, image] of images.entries()) {
-				await addGalleryPhoto(
-					getGalleryUploadDeps(),
-					{ userId: locals.user.id, householdId: locals.user.householdId },
-					{
-						contactId: params.id,
-						visibility,
-						upload: {
-							image: new Uint8Array(await image.arrayBuffer()),
-							thumb: new Uint8Array(await thumbs[index]!.arrayBuffer()),
-							width: Number(widths[index]),
-							height: Number(heights[index])
-						}
-					}
-				);
-			}
-		} catch (err) {
-			return fail(400, {
-				photoError: err instanceof InvalidImageError ? err.phrase(translator(locals)) : say(locals, 'errors.image.couldNotStore')
+		// An upload is a command, and each photo one of its own following it (docs/04 §4.11.2).
+		const author = { userId: viewer.id, householdId: viewer.householdId };
+		const refusal = (outcome: Awaited<ReturnType<typeof dispatchCommand>> | null) =>
+			fail(400, {
+				photoError:
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.image.couldNotStore')
 			});
+		const upload = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'gallery.add',
+			payload: { contactId: params.id, visibility },
+			issuedAt: systemClock.now()
+		});
+		const added = upload ? await dispatchCommand(getCommandDeps(), author, upload).catch(() => null) : null;
+		if (!upload || added?.status !== 'applied') return refusal(added);
+		for (const [index, image] of images.entries()) {
+			const photo = parsePhotoCommand({
+				id: ulidGenerator.next(),
+				type: 'gallery.photo',
+				parentId: upload.id,
+				image: new Uint8Array(await image.arrayBuffer()),
+				thumb: new Uint8Array(await thumbs[index]!.arrayBuffer()),
+				width: Number(widths[index]),
+				height: Number(heights[index]),
+				issuedAt: systemClock.now()
+			});
+			const stored = photo ? await dispatchCommand(getCommandDeps(), author, photo).catch(() => null) : null;
+			if (stored?.status !== 'applied') return refusal(stored);
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},
