@@ -130,18 +130,28 @@ Goal: sand the edges and add the nice-to-haves.
   building: which context wins when there are several (relationship vs. circle, which one),
   where the hint shows (search, person pickers, the graph?), and how it stays access-scoped
   so it never names a person or circle the viewer may not see (§2.10).
-- *Direction decided, not scheduled:* **adding to Stella while it is out of reach**, in two
-  steps:
-  1. **Every change becomes a command.** One dispatcher, idempotent by the command's id, and
-     each route moved behind it on its own.
-  2. **An outbox on the phone.** It keeps everything *added* away from home, photos
-     included, lets it be edited until it is sent, and sends it once Stella answers again.
-     Moments first, then one adding form at a time. Nothing others have seen is
-     changed offline, so there is nothing to merge, and the server re-checks everything on
-     arrival.
-
-  Event sourcing and full offline sync were weighed and rejected (docs/04 §4.9). Concept
-  and open questions: `docs/concepts/offline-capture.md`.
+- ~~**Adding to Stella while it is out of reach**~~ — shipped (§2.18): every adding form
+  saves as a named command, idempotent by its id, through an outbox on the phone. Away from
+  home it keeps what is added, photos included, editable or discardable until sent, and
+  sends it once Stella answers again; the server re-checks everything on arrival. Nothing
+  others have seen is changed offline, so there is nothing to merge. Event sourcing and full
+  offline sync were weighed and rejected (docs/04 §4.9); the decisions taken along the way
+  are in `docs/concepts/offline-capture.md` §8.
+- *TODO, design first:* **a simpler day in the *What happened?* composer** — today it is the
+  full three-part date field (day, month, year; docs/05 §5.7), which is heavy for a sentence
+  written in passing. Today stays the default. Start with mockups of the lighter options
+  before building anything (§2.22.1).
+- *TODO:* **confirm a worked-out relationship to store it** — every row in *Also related ·
+  worked out, not entered* (grandparent, aunt, cousin, in-law, …) gets a way to confirm it,
+  which then stores it as an explicit relationship, as *Actually the child* already does for
+  step relatives (§2.4.1). Today only step terms can be settled; the rest stay read-only.
+  Open: which derived terms have a stored type to become, and whether a confirmed link should
+  keep saying *via* whom it was worked out.
+- *TODO:* **keep other nodes out of a role group's frame in the free arrangement** — grouping
+  by role (§2.7) packs a group's members into their frame and leaves everybody else where the
+  random free layout put them, so now and then another node (seen: the circle itself) lands
+  on top of a member, hides their name and takes their tap. A pass after packing should push
+  non-members that overlap a frame out of it. The family arrangement is not affected.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
