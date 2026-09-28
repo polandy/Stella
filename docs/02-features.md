@@ -243,10 +243,12 @@ no dialog, nothing typed twice:
 
 - **First and last name**, pre-filled by splitting the query at the first space (so *van der
   Berg* stays one surname).
-- **Nickname**, **description** and **birthday**, collapsed under *More details* — except
-  that with no last name the description comes forward with a nudge (§2.2.3). The birthday
-  is the same locale-aware field as everywhere else (§5.7), so the year may be left blank
-  here too — which is common for someone just being named in passing.
+- **Description**, one line, always in view: it is what the person is found and told apart
+  by later, whatever else is known. With no last name it comes in a highlighted box with a
+  nudge (§2.2.3).
+- **Nickname** and **birthday**, collapsed under *More details*. The birthday is the same
+  locale-aware field as everywhere else (§5.7), so the year may be left blank here too —
+  which is common for someone just being named in passing.
 - **Visibility**, shared or private, the same choice the full form offers, defaulting to
   shared.
 
@@ -273,8 +275,8 @@ a household soon has five people called *Thomas*. Two things keep them apart:
   ambiguous when the other one is filtered out. A unique name stays one line. The pure rule is
   `tellApart` (`src/lib/people/namesakes.ts`).
 - **A nudge when a last name is missing.** While a first name stands without a last name —
-  on *Add a person* and in a picker's create panel — the description field is brought forward
-  in a highlighted box: *Without a last name, "Thomas" is hard to tell apart later. What will
+  on *Add a person* and in a picker's create panel — the description field, there anyway,
+  sits in a highlighted box: *Without a last name, "Thomas" is hard to tell apart later. What will
   you know them by?* It is only a nudge; a name alone still saves.
 
 Not yet: relationship or circle as further fallbacks, and the @-picker, whose `@Thomas`

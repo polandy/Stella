@@ -342,22 +342,23 @@
 						bind:value={draft.description}
 						inputClass="rounded-control border border-border bg-card px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 					/>
+				{:else}
+					<!-- Worth asking for anyone new, not only a first name alone: it is what they are found by. -->
+					<label class="flex flex-col gap-1 text-xs text-fg-muted">
+						{t('components.personSearch.description')}
+						<input
+							bind:value={draft.description}
+							type="text"
+							autocomplete="off"
+							placeholder={t('components.namesake.placeholder')}
+							class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+						/>
+					</label>
 				{/if}
 
 				<details class="text-xs text-fg-muted">
 					<summary class="cursor-pointer">{t('components.personSearch.more')}</summary>
 					<div class="mt-2 grid grid-cols-2 gap-2">
-						{#if !askForSomethingToKnowThemBy}
-							<label class="col-span-2 flex flex-col gap-1">
-								{t('components.personSearch.description')}
-								<input
-									bind:value={draft.description}
-									type="text"
-									autocomplete="off"
-									class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
-								/>
-							</label>
-						{/if}
 						<label class="flex flex-col gap-1">
 							{t('components.personSearch.nickname')}
 							<input
