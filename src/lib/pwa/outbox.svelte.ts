@@ -135,11 +135,12 @@ export const outbox = {
 	async submit(command: JsonCommand, photos: KeptPhoto[] = [], about: string | null = null): Promise<Delivery> {
 		const member = memberId;
 		if (!member) throw new Error('The outbox was used before a member signed in.');
+		watched = [...watched, command.id];
+		await apply((list) => queue(list, { command, memberId: member, savedAt: Date.now(), photos, about }));
+		// Watched from here on only: a round ending while it was being queued must not report on it.
 		const delivery = new Promise<Delivery>((resolve) =>
 			watchers.set(command.id, { tell: resolve, applied: null })
 		);
-		watched = [...watched, command.id];
-		await apply((list) => queue(list, { command, memberId: member, savedAt: Date.now(), photos, about }));
 		void outbox.send();
 		return delivery;
 	},
@@ -224,8 +225,9 @@ async function sendCommands(member: string): Promise<boolean> {
 		}
 		const answered = answers;
 		await apply((list) => settle(list, answered));
-		for (const answer of answered) await report(answer);
+		// Reading the page again first: a form told afterwards may navigate, which must win.
 		if (answered.some((a) => a.status === 'applied')) whenApplied();
+		for (const answer of answered) await report(answer);
 		// Busy or failed means "not now": another round would get the same answer.
 		if (answered.some((a) => a.status === 'busy' || a.status === 'failed')) return false;
 	}
@@ -263,13 +265,13 @@ async function sendPhotos(member: string): Promise<void> {
 			// Out of reach, or not Stella answering: the photo waits.
 		}
 		await apply((list) => settlePhoto(list, next.parentId, next.photo.id, answer));
+		if (answer?.status === 'applied') whenApplied();
 		// A refused photo does not undo its entry, which Stella has: it stays kept, with the reason.
 		const watcher = watchers.get(next.parentId);
 		if (watcher && answer?.status === 'refused') tell(next.parentId, deliveryLeftOver(watcher.applied));
 		if (watcher && answer?.status === 'applied' && !items.some((i) => i.command.id === next.parentId)) {
 			tell(next.parentId, deliveryLeftOver(watcher.applied));
 		}
-		if (answer?.status === 'applied') whenApplied();
 		if (answer?.status !== 'applied') return;
 	}
 }

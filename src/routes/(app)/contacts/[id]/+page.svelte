@@ -11,7 +11,7 @@
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { processImage } from '$lib/image/process-image';
 	import { mediaUrl, thumbnailUrl } from '$lib/media/urls';
 	import RemoveButton from '$lib/components/RemoveButton.svelte';
@@ -58,6 +58,7 @@
 	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { keepable } from '$lib/pwa/keepable';
+	import { proposeHref } from '$lib/contacts/propose';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { isContactFieldKind } from '$lib/contact-fields/kinds';
 	import { isImportantDateKind } from '$lib/dates/kinds';
@@ -548,7 +549,13 @@
 					`${c.displayName} · ${keptLinkLabel(String(form.get('typeChoice') ?? ''), String(form.get('targetId') ?? ''))}`,
 				errorKey: 'error',
 				pending: graphPending,
-				onApplied: savedThen(closeRelate),
+				// Back on the card naming the new pair, so what it implies is offered (§2.4.1).
+				onApplied: async (_result, command) => {
+					savedThen(closeRelate)();
+					if (command.type === 'relationship.add') {
+						await goto(proposeHref(c.id, command.payload.targetId), { noScroll: true });
+					}
+				},
 				onKept: closeRelate
 			},
 			savedRelationship
@@ -721,7 +728,11 @@
 				toCommand: logCommandFrom,
 				about: c.displayName,
 				errorKey: 'interactionError',
-				onApplied: savedThen(closeLog),
+				// Back on the story card it was logged from, not at the top of the page.
+				onApplied: async () => {
+					savedThen(closeLog)();
+					await goto(contactSectionPath(c.id, 'story'));
+				},
 				onKept: closeLog
 			},
 			savedEnhance(removals, t('components.saved'), closeLog)

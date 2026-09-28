@@ -33,8 +33,8 @@ export interface Keepable {
 	 * not be processed — the page says why, and nothing is saved.
 	 */
 	photos?(data: FormData): Promise<KeptPhoto[] | null>;
-	/** Stella took it (the page is already read again): close the form, act on `result`. */
-	onApplied(result: unknown): void | Promise<void>;
+	/** Stella took `command` (the page is already read again): close the form, act on `result`. */
+	onApplied(result: unknown, command: JsonCommand): void | Promise<void>;
 	/** It was kept rather than sent: close the form, say so. */
 	onKept(): void;
 	/** Counts the save while it is on its way, for the shell's activity indicator. */
@@ -68,7 +68,7 @@ export function keepable(keep: Keepable, invalid: SubmitFunction): SubmitFunctio
 				// Clears an error an earlier try left on the form, as a successful action would.
 				await applyAction({ type: 'success', status: 200 });
 				await invalidateAll();
-				await keep.onApplied(delivery.result);
+				await keep.onApplied(delivery.result, command);
 			}
 		});
 	};

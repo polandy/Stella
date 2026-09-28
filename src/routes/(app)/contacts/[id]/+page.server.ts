@@ -6,6 +6,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
+import { parseProposePair, proposeHref } from '$lib/contacts/propose';
 import {
 	fieldHref,
 	listContactFields
@@ -119,18 +120,6 @@ import {
 	setSelfContact,
 	UnknownSelfContactError
 } from '$lib/server/domain/household/self-contact';
-
-/*
- * `?propose=<a>:<b>` names the pair whose new link should be propagated (docs/02 §2.4.1).
- * The pair is only a pointer: the use-case reads the real link back from the visible graph,
- * so a hand-written value can never conjure a suggestion out of nothing.
- */
-const PROPOSE_SEPARATOR = ':';
-
-function parseProposePair(raw: string | null): { a: string; b: string } | null {
-	const [a, b] = (raw ?? '').split(PROPOSE_SEPARATOR);
-	return a && b ? { a, b } : null;
-}
 
 /*
  * The on-demand review (docs/concepts/relationship-suggestions.md §6.5) hangs on the URL
@@ -609,8 +598,7 @@ export const actions: Actions = {
 		}
 
 		// Come back with the new pair named, so its implied links can be offered.
-		const pair = [params.id, parsed.output.targetId].join(PROPOSE_SEPARATOR);
-		throw redirect(303, `/contacts/${params.id}?propose=${pair}#relationships`);
+		throw redirect(303, proposeHref(params.id, parsed.output.targetId));
 	},
 
 	/** Correct a link: its specifics, and its type where the tie was named wrongly (docs/02 §2.4). */
