@@ -21,6 +21,17 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
+      # A release candidate is cut with a `Release-As: X.Y.Z-rc.N` footer. release-please
+      # cannot flag it itself: its `prerelease` option would also flag every 0.x release,
+      # and GitHub's `releases/latest` (the About card's update check) skips pre-releases.
+      # Flagged here, a candidate is never offered as an update.
+      - name: Flag a release candidate as a pre-release
+        if: steps.release.outputs.release_created == 'true' && contains(steps.release.outputs.tag_name, '-')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag_name }}
+        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --prerelease --latest=false
+
   # The tag release-please just pushed cannot trigger a workflow of its own (it is created
   # with GITHUB_TOKEN), so the image build is called from here instead.
   publish:
