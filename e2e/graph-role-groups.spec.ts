@@ -129,8 +129,13 @@ test('tucks the links within a group away when that switch is off', async ({ pag
 	await toggle(page, 'Links within groups');
 
 	await expect.poll(async () => (await groupingOnCanvas(page)).inner).toBe(0);
-	// Still there to be shown: selecting Sandra names her friendship again.
-	await clickNode(page, SANDRA);
+	// Still there to be shown: selecting Sandra names her friendship again. She is picked by
+	// name, not tapped: the free arrangement starts from a random spread, and packing her group
+	// into its frame can leave the Turnverein standing on top of her — a tap there selects the
+	// circle instead, and the case would fail for where the layout happened to put somebody.
+	await page.getByLabel('Find a person').fill('Sandra');
+	await page.getByTestId('graph-suggestions').getByRole('button', { name: 'Sandra' }).click();
+	await expect(page.getByRole('complementary').getByText('Sandra Brunner-Keller')).toBeVisible();
 	await expect.poll(async () => (await groupingOnCanvas(page)).inner).toBe(1);
 });
 
