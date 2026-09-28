@@ -697,6 +697,14 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   The cost: a route-by-route refactor before the outbox, a receipt table for idempotency, and
   no editing from a train.
 
+- **An addition saved in reach goes through the outbox too** (§4.11.2, concept §8 #10) — kept
+  first, sent at once, and the form waits for the answer. One path means the offline case is the
+  everyday case, not a branch taken only on a train, and a save cut off half way is already
+  kept. Rejected: posting to the form action in reach and keeping only on failure — two paths
+  to keep equal, and the offline one exercised least. The cost: inline errors and results
+  (*"Link …?"*, the new person's page) come back from the command's answer rather than from the
+  action, and the actions stay alongside as the path without JavaScript.
+
 - **A former partnership derives nothing, rather than keeping the step-family it explained** —
   the first reading was that status is not history: a divorce does not unmake a stepmother, so
   `former` kept feeding the kinship engine. Real data settled it the other way — an ex-partner
@@ -900,27 +908,36 @@ the same way: pure decisions, thin adapters.
 - **`src/lib/server/commands/`** — the edge's half: `parse.ts` reads a command off the wire
   (Valibot), `receive.ts` answers a phone's batch one command at a time and accepts only
   additions. `POST /api/commands` is the route, signed in by the session cookie and reading
-  only `application/json`. A photo is the one command with bytes in it (`moment.photo`, naming
-  its moment by command id): it goes to `POST /api/commands/photo` as multipart, and
-  `domain/commands/moment-photo.ts` lands it on the entry its moment's receipt names — only
-  while that entry is still the member's.
+  only `application/json`. A photo is the one command with bytes in it: it follows the command
+  it belongs to, naming it by id, and goes to `POST /api/commands/photo` as multipart with its
+  `type`. `domain/commands/photos.ts` lands a `moment.photo` on the entry its moment's — or
+  journal-page entry's (`journal.write`) — receipt names, and a `gallery.photo` in the gallery
+  of the person its `gallery.add` checked; only while that entry or person is still the
+  member's to add to.
 - **`src/lib/pwa/outbox.ts`** — the outbox's states (pending → sending → gone, or refused;
   *held* while open in the composer; *delivered* once only photos wait), pure and unit-tested. `outbox-store.ts` keeps it in
   IndexedDB, changing it in one transaction at a time so two tabs cannot overwrite each
   other; `outbox.svelte.ts` sends it and mirrors it for the page. Neither decides anything.
-- **`src/lib/pwa/keepable.ts`** wraps an adding form's `use:enhance`: it names the post
-  (`commandId`) and, when Stella is out of reach or the post got no answer, keeps the same
-  command in the outbox instead. The person page's note and log forms use it; `note.add` is
+- **Every addition goes through the outbox, in reach or not** (concept §8 #10). `outbox.submit`
+  keeps the command first, sends it at once and resolves with what became of it — *applied*
+  with Stella's result, *refused* with the reason, or *kept* when the round ended without an
+  answer; while it waits, the item is not shown as kept (`deliveryFor` / `deliveryLeftOver`
+  in `outbox.ts` decide). **`src/lib/pwa/keepable.ts`** is that path for an adding form's
+  `use:enhance`: it shows a refusal where the action's own error would be (`applyAction`), and
+  lets fields that are not a command yet post to the action, which says what is missing. The
+  form actions stay, as the path without JavaScript, and apply the same commands. The person
+  page's forms and the journal page use it; `note.add` is
   applied by `domain/notes/write-note.ts` and `interaction.log` by
   `domain/interactions/log-checked.ts`, each the one place that checks what it stores.
   `relationship.add` is applied by `domain/relationships/add-checked.ts`, which turns every
   refusal — a person or type gone, a duplicate, a contradiction — into a reason, never into an
   error the phone would retry. `tag.assign` and `circle.join` reuse their by-name use-cases
   behind `onVisibleContact`
-  (`domain/contacts/require-visible.ts`), the shared "is this person still visible" guard.
-- **The Home composer** saves through its form action as a named command (`commandId`), and
-  keeps the moment in the outbox when Stella cannot be reached — including when the answer to
-  a save is lost, since the same name makes a second arrival harmless.
+  (`domain/contacts/require-visible.ts`), the shared "is this person still visible" guard, as
+  do `field.add` and `date.add`. `journal.write` is `domain/journal/write-entry.ts`, which
+  adds to the day's entry as a moment does (`addToJournalDay`).
+- **The Home composer** saves through `outbox.submit` too, and goes back to the stream with the
+  *"Link …?"* hint (`src/lib/stream/link-hint.ts`) read off the moment's result.
 
 ## 4.12 Background jobs & delivery (M3)
 

@@ -97,10 +97,13 @@ interface Command {
 - a note;
 - a relationship;
 - a tag on a person;
-- a person added to a circle.
+- a person added to a circle;
+- an entry written on a person's journal page, with photos (§8, review of 22);
+- a contact detail (phone, e-mail, …) and an important date — each its own row;
+- photos for a person's gallery.
 
 Setting a field on someone who already exists is a *change*, even when the field was empty:
-a birthday, a name, a photo as avatar. Answering a suggestion or the household review is
+the birth date on their profile, a name, a photo as avatar. Answering a suggestion or the household review is
 a change too. None of these are queued.
 
 Every form that adds works on its cached page as it does online. A relationship is the
@@ -287,6 +290,8 @@ ones marked **(deviates)** differ from something said earlier.
   photos become keepable in this same change.
 - **25** gets a fix of its own, outside this change.
 
+Both are built (26–32 below record what was decided on the way).
+
 **Server**
 
 1. **Receipts travel in the archive.** The archive test demands every table be exported or
@@ -393,3 +398,29 @@ ones marked **(deviates)** differ from something said earlier.
 25. **A flaky e2e on `main`:** `graph-role-groups.spec.ts` › *tucks the links within a group
     away when that switch is off* failed once in a full run and passed twice on its own. It
     touches nothing this work changed; it breaks the no-race rule and deserves its own look.
+
+**After the review (reversing 10, widening 22)**
+
+26. **A save in reach is kept first, then sent, and the form waits for the answer.** One path:
+    `outbox.submit` resolves *applied* (the form closes on *Saved* and reads the page again),
+    *refused* (the reason shows where the action's error always showed) or *kept* (no answer in
+    that round). While it waits, the item is hidden from the kept lists, so a save that goes
+    through never flashes up as *Not sent yet*.
+27. **A refused save leaves the device at once.** The form it came from still holds what was
+    typed, with the reason beside it — correcting it saves as a new command. Keeping it as
+    *Could not send* too would show the same text twice.
+28. **A photo refused after its entry went in does not undo the save.** The entry is household
+    data by then; the form closes, and only the photo stays as *Could not send* with the reason.
+29. **Fields that are not a command yet still post to the form action**, which says what is
+    missing in the member's language. The actions stay as the path without JavaScript and apply
+    the same commands, so there is one domain path either way.
+30. **Writing on the journal page now adds to the day's entry instead of replacing it**, like a
+    moment (docs/02 §2.20). A kept entry arriving days later must not overwrite what was written
+    meanwhile; *Edit* is the way to change an entry. The hint under the form says so.
+31. **Gallery photos travel as a `gallery.add` that checks the person, then one `gallery.photo`
+    per photo naming it** — the same shape as a moment and its photos, so the outbox needs no
+    special case. A journal-page entry's photos are `moment.photo`s naming the `journal.write`;
+    the name was kept rather than renamed, the landing being identical.
+32. **Kept journal entries, contact details, dates and gallery photos can only be discarded,
+    not edited.** Short enough to type again; editing them in place would need each form to
+    learn the held state that notes and calls have. Easy to add if it is missed.

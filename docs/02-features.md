@@ -1303,10 +1303,11 @@ having just either fetched a page or failed to, so it reports and the page liste
 **Keeping a moment for later.** While Stella is out of reach the composer's button says
 **Save for later**, and saving keeps the moment on the device instead of sending it. The
 same happens when Stella stops answering in the middle of a save. A **note** written on a
-person's page, a **call or visit** logged there, a **tag** or **circle** and a
-**relationship** added there are kept the same way, and show where they will land: at the top
-of the person's notes, story or relationships, or as a dashed chip beside their tags and
-circles. A relationship is checked against the guardrails (§2.4) when it arrives, so one that
+person's page, a **call or visit** logged there, a **tag** or **circle**, a **contact detail**,
+a **date**, **gallery photos** and a **relationship** added there, and an **entry on their
+journal page** are kept the same way, and show where they will land: at the top of the
+person's notes, story, relationships, photos or journal, or as a dashed chip beside their
+tags, circles, contact details and dates. A relationship is checked against the guardrails (§2.4) when it arrives, so one that
 has meanwhile become a duplicate or a contradiction comes back as *Could not send*.
 - **Where it shows.** A kept moment shows under the capture field as *Not sent yet*. Until it
   is on its way it can be **edited** in the composer or **discarded**; discarding asks twice,
@@ -1316,6 +1317,10 @@ has meanwhile become a duplicate or a contradiction comes back as *Could not sen
 - **On arrival.** Stella checks it exactly as if it had been written there and then. A moment
   it refuses — someone mentioned was deleted in the meantime, say — stays as *Could not send*
   with the reason, to be corrected or discarded, never dropped.
+- **One path, in reach or not.** Every one of these saves goes through the same keeping and
+  sending; in reach it is simply sent at once and the form waits for the answer, so a save
+  looks as it always did and a refusal shows in the form, with what was typed still there. Only
+  a save whose answer never comes is left kept.
 - **Sent once.** Every moment carries a name made when it was written, and Stella remembers
   every name it has applied, so a moment whose answer was lost on the way is recognised
   rather than saved twice (`command_receipt`, docs/03 §3.3).
@@ -1381,9 +1386,12 @@ steps in the garden").
 - **Visibility (§2.10).** Each entry is **shared** (the whole household sees this person's
   journal) or **private** (only the author). Default is the author's household default. A
   private entry is a genuine diary — no one else, admin included, can read it.
-- **One entry per slot.** Uniqueness is per **(contact, author, day, visibility)**: saving the
-  same day again *edits* that entry rather than duplicating, so "one entry per day" holds while
-  still letting a member keep both a shared and a separate private entry for the same day.
+- **One entry per slot.** Uniqueness is per **(contact, author, day, visibility)**: writing on
+  the same day again *adds* to that entry — a new paragraph, its mentions joining the entry's,
+  the title kept (an untitled day takes the new one) — rather than duplicating or replacing it,
+  so "one entry per day" holds while still letting a member keep both a shared and a separate
+  private entry for the same day. An entry kept on a phone and sent days later therefore never
+  overwrites what was written meanwhile.
 - **Ownership.** Entries are attributed to their author; you may edit and delete **your own**.
   Editing changes the title/body in place — the day and visibility stay put, since they are
   part of the entry's identity (its day-slot, above); to move an entry to another day or change
@@ -1475,8 +1483,9 @@ entry and a household update, without leaving the page. Concept + clickable prot
   the browser).
 - **A second moment adds, never replaces.** When the anchor's journal already has the
   member's entry for that day and visibility (the day slot, §2.20), the moment is appended to
-  it as a new paragraph and its mentions join the entry's; the title stays. Editing an entry in
-  the journal still replaces its text — that is an edit, a moment is an addition.
+  it as a new paragraph and its mentions join the entry's; the title stays — as writing on the
+  journal page does. *Edit* on an entry still replaces its text: that is an edit, a moment is an
+  addition.
 - **Create people inline.** When the typed `@name` matches nobody, the picker offers
   *"Create “Name”"*. Picking it inserts the handle and queues the name; on save the server
   creates that contact first (quick-add with just a display name, taking the **moment's

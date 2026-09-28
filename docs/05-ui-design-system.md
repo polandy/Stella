@@ -667,7 +667,17 @@ picker names it (*Friend of Corinne Keller*), with *Discard* only.
 A **kept tag or circle** (`KeptChip.svelte`) is the chip it will become with a dashed border
 and the `offline` icon, first in the row. A single word is quicker typed again than edited, so
 it offers only a one-click discard (✕); a refused one turns `--danger` and carries the reason
-as its title and in its accessible name.
+as its title and in its accessible name. A **kept contact detail or date** uses the same chip,
+above the section's list (*Phone · 079 …*, *Anniversary · 12 June*).
+
+A **kept journal entry** is a `KeptItem` above the journal page's timeline, with its day, title
+and text; **kept gallery photos** are one `KeptItem` above the grid, saying how many. Both offer
+*Discard* only.
+
+**Saving while in reach** looks as it always did: a form waits for Stella's answer and closes on
+*Saved*, or shows a refusal where its error always showed, with what was typed still in it. A
+save whose answer never comes turns into a kept item instead, as if Stella had been out of reach
+all along — nothing is lost and nothing is shown twice (docs/04 §4.11.2).
 
 **Sign-out question** (`src/lib/components/SignOutForm.svelte`) wraps every sign-out form. With
 nothing waiting it is the plain form post it always was; with kept moments on the device it
