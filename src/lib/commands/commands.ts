@@ -6,6 +6,8 @@
  * browser can import it; `MentionAudience` stands in for the server's `Visibility`.
  */
 
+import type { ContactFieldKind } from '../contact-fields/kinds';
+import type { ImportantDateKind } from '../dates/kinds';
 import type { InteractionKind } from '../interactions/kinds';
 import type { MentionAudience } from '../mentions/audience';
 
@@ -21,7 +23,12 @@ const KINDS = {
 	'tag.assign': 'add',
 	'circle.join': 'add',
 	'relationship.add': 'add',
-	'contact.add': 'add'
+	'contact.add': 'add',
+	'journal.write': 'add',
+	'field.add': 'add',
+	'date.add': 'add',
+	'gallery.add': 'add',
+	'gallery.photo': 'add'
 } as const satisfies Record<string, CommandKind>;
 
 /** One of the commands Stella knows. */
@@ -42,11 +49,12 @@ export interface MomentCapturePayload {
 }
 
 /**
- * A photo for a moment sent earlier, named by that moment's command id. The only command
- * with bytes in it, so it travels as multipart rather than in a JSON batch.
+ * A photo following the command it belongs to, named by that command's id: a moment or a
+ * journal-page entry (`moment.photo`), or a gallery upload (`gallery.photo`). The only commands
+ * with bytes in them, so they travel as multipart rather than in a JSON batch.
  */
-export interface MomentPhotoPayload {
-	momentId: string;
+export interface PhotoPayload {
+	parentId: string;
 	image: Uint8Array;
 	thumb: Uint8Array;
 	width: number;
@@ -112,16 +120,60 @@ export interface ContactAddPayload {
 	visibility: MentionAudience;
 }
 
+/** An entry written on a person's journal page (docs/02 §2.20); its photos follow it. */
+export interface JournalWritePayload {
+	contactId: string;
+	/** ISO `YYYY-MM-DD` day the entry is about. */
+	entryDate: string;
+	title: string | null;
+	/** Markdown with typed `@Handle`s and/or canonical mention tokens. */
+	body: string;
+	visibility: MentionAudience;
+}
+
+/** A phone number, address or other way to reach a person (docs/02 §2.3). */
+export interface FieldAddPayload {
+	contactId: string;
+	kind: ContactFieldKind;
+	label: string | null;
+	value: string;
+}
+
+/** An important date on a person (docs/02 §2.13). */
+export interface DateAddPayload {
+	contactId: string;
+	kind: ImportantDateKind;
+	label: string | null;
+	/** ISO `YYYY-MM-DD`, or `--MM-DD` when the year is not known. */
+	date: string;
+	recursYearly: boolean;
+	remind: boolean;
+}
+
+/**
+ * Photos going into a person's gallery (docs/02 §2.14). Carries no bytes itself: it checks
+ * the person once, and each photo follows as a `gallery.photo` naming it.
+ */
+export interface GalleryAddPayload {
+	contactId: string;
+	visibility: MentionAudience;
+}
+
 /** The payload each command carries. */
 export interface CommandPayloads {
 	'moment.capture': MomentCapturePayload;
-	'moment.photo': MomentPhotoPayload;
+	'moment.photo': PhotoPayload;
 	'note.add': NoteAddPayload;
 	'interaction.log': InteractionLogPayload;
 	'tag.assign': TagAssignPayload;
 	'circle.join': CircleJoinPayload;
 	'relationship.add': RelationshipAddPayload;
 	'contact.add': ContactAddPayload;
+	'journal.write': JournalWritePayload;
+	'field.add': FieldAddPayload;
+	'date.add': DateAddPayload;
+	'gallery.add': GalleryAddPayload;
+	'gallery.photo': PhotoPayload;
 }
 
 /** One intent from one member. */
@@ -136,8 +188,11 @@ export type Command = {
 	};
 }[CommandType];
 
-/** A command that travels in a JSON batch — every one but a photo, which carries bytes. */
-export type JsonCommand = Exclude<Command, { type: 'moment.photo' }>;
+/** A command that carries a photo's bytes, and so travels on its own as multipart. */
+export type PhotoCommandType = 'moment.photo' | 'gallery.photo';
+
+/** A command that travels in a JSON batch — every one but a photo. */
+export type JsonCommand = Exclude<Command, { type: PhotoCommandType }>;
 
 /** Whether `value` names a command Stella knows. */
 export function isCommandType(value: unknown): value is CommandType {
@@ -171,3 +226,16 @@ export type CommandAnswer =
 	| { id: string; status: 'refused'; reason: string }
 	| { id: string; status: 'busy' }
 	| { id: string; status: 'failed' };
+
+/** What a photo kept with a command of `type` is sent as, or null when it cannot carry photos. */
+export function photoCommandFor(type: JsonCommand['type']): PhotoCommandType | null {
+	switch (type) {
+		case 'moment.capture':
+		case 'journal.write':
+			return 'moment.photo';
+		case 'gallery.add':
+			return 'gallery.photo';
+		default:
+			return null;
+	}
+}

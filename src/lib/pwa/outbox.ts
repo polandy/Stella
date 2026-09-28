@@ -1,4 +1,10 @@
-import type { CommandAnswer, CommandPayloads, JsonCommand } from '../commands/commands';
+import {
+	photoCommandFor,
+	type CommandAnswer,
+	type CommandPayloads,
+	type JsonCommand,
+	type PhotoCommandType
+} from '../commands/commands';
 
 /*
  * The outbox (docs/concepts/offline-capture.md §4): what a phone holds back while Stella is
@@ -17,7 +23,7 @@ import type { CommandAnswer, CommandPayloads, JsonCommand } from '../commands/co
  */
 export type OutboxState = 'pending' | 'held' | 'sending' | 'refused';
 
-/** A photo kept with a moment, already processed (downscaled, location stripped). */
+/** A photo kept with an entry or a gallery upload, already processed (downscaled, location stripped). */
 export interface KeptPhoto {
 	/** The photo's own command id, so an upload whose answer was lost is recognised. */
 	id: string;
@@ -37,7 +43,7 @@ export interface OutboxItem {
 	reason: string | null;
 	/** When it was saved on the device (epoch ms). */
 	savedAt: number;
-	/** Photos still to be sent, after the moment itself. */
+	/** Photos still to be sent, after the item itself. */
 	photos: KeptPhoto[];
 	/**
 	 * Who it is about, as the page named them when it was kept — for showing it anywhere but
@@ -46,7 +52,7 @@ export interface OutboxItem {
 	 */
 	about: string | null;
 	/**
-	 * Stella has the moment; only its photos wait. It is never sent again, and — being
+	 * Stella has the item; only its photos wait. It is never sent again, and — being
 	 * household data now — no longer edited here.
 	 */
 	delivered: boolean;
@@ -179,37 +185,45 @@ export function revise<T extends JsonCommand['type']>(
 	return items.map((i) => (i === item ? { ...i, command, state: 'pending', reason: null } : i));
 }
 
+/** One photo on its way, sent as `type` and naming the command it follows. */
+export interface PhotoUpload {
+	parentId: string;
+	type: PhotoCommandType;
+	photo: KeptPhoto;
+}
+
 /**
- * The next photo of `memberId`'s to upload, from a moment Stella already has, marking its
- * moment *sending*; null when there is none.
+ * The next photo of `memberId`'s to upload, from an item Stella already has, marking that
+ * item *sending*; null when there is none.
  */
 export function takePhoto(
 	items: readonly OutboxItem[],
 	memberId: string
-): { items: OutboxItem[]; upload: { momentId: string; photo: KeptPhoto } } | null {
+): { items: OutboxItem[]; upload: PhotoUpload } | null {
 	const item = items.find(
 		(i) => i.memberId === memberId && i.delivered && i.state === 'pending' && i.photos.length > 0
 	);
-	if (!item) return null;
+	const type = item && photoCommandFor(item.command.type);
+	if (!item || !type) return null;
 	return {
 		items: items.map((i) => (i === item ? { ...i, state: 'sending' } : i)),
-		upload: { momentId: item.command.id, photo: item.photos[0] }
+		upload: { parentId: item.command.id, type, photo: item.photos[0] }
 	};
 }
 
 /**
  * Apply Stella's answer to one photo upload (null: no answer came). *Applied* drops the photo,
- * and the moment with its last one; *refused* stays with the reason; anything else waits.
+ * and the item with its last one; *refused* stays with the reason; anything else waits.
  */
 export function settlePhoto(
 	items: readonly OutboxItem[],
-	momentId: string,
+	parentId: string,
 	photoId: string,
 	answer: CommandAnswer | null
 ): OutboxItem[] {
 	const next: OutboxItem[] = [];
 	for (const item of items) {
-		if (item.command.id !== momentId || item.state !== 'sending') {
+		if (item.command.id !== parentId || item.state !== 'sending') {
 			next.push(item);
 			continue;
 		}

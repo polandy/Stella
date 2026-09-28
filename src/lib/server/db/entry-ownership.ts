@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import type { EntryOwnership } from '../domain/commands/moment-photo';
+import type { EntryOwnership } from '../domain/commands/photos';
 import type * as schema from './schema';
 import { journalEntry } from './schema';
 

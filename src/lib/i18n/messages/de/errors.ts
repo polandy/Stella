@@ -61,8 +61,8 @@ export const errors: ErrorsMessages = {
 	'errors.command.malformed':
 		'Stella konnte nicht lesen, was gesendet wurde. Speichere es noch einmal als neu.',
 	'errors.command.notQueueable': 'Nur Hinzugefügtes kann auf das Senden warten.',
-	'errors.command.noSuchMoment':
-		'Der Moment, zu dem dieses Foto gehört, ist nicht mehr da.',
+	'errors.command.photoParentGone':
+		'Wozu dieses Foto gehört, ist nicht mehr da, um es hinzuzufügen.',
 	'errors.moment.needsPerson':
 		'Erwähne mit @ mindestens eine Person, damit der Moment einen Ort hat.',
 

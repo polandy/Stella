@@ -1,5 +1,7 @@
 import * as v from 'valibot';
 import type { Command, JsonCommand } from '../../commands/commands';
+import { CONTACT_FIELD_KINDS } from '../../contact-fields/kinds';
+import { IMPORTANT_DATE_KINDS } from '../../dates/kinds';
 import { INTERACTION_KINDS } from '../../interactions/kinds';
 import { TAG_COLORS } from '../domain/tags/tags';
 
@@ -97,6 +99,36 @@ const ContactAdd = v.pipe(
 	v.check((p) => Boolean(p.firstName || p.lastName || p.nickname))
 );
 
+const JournalWrite = v.object({
+	contactId: v.pipe(v.string(), v.minLength(1)),
+	entryDate: v.pipe(v.string(), v.regex(ISO_DAY)),
+	title: optionalText,
+	body: v.pipe(v.string(), v.trim(), v.minLength(1)),
+	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
+});
+
+const FieldAdd = v.object({
+	contactId: v.pipe(v.string(), v.minLength(1)),
+	kind: v.picklist(CONTACT_FIELD_KINDS),
+	label: optionalText,
+	value: v.pipe(v.string(), v.trim(), v.minLength(1))
+});
+
+// The day's shape and whether it exists are the use-case's to judge, with a reason to show.
+const DateAdd = v.object({
+	contactId: v.pipe(v.string(), v.minLength(1)),
+	kind: v.picklist(IMPORTANT_DATE_KINDS),
+	label: optionalText,
+	date: v.pipe(v.string(), v.trim(), v.minLength(1)),
+	recursYearly: v.optional(v.boolean(), true),
+	remind: v.optional(v.boolean(), true)
+});
+
+const GalleryAdd = v.object({
+	contactId: v.pipe(v.string(), v.minLength(1)),
+	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
+});
+
 const envelope = {
 	id: v.pipe(v.string(), v.regex(ULID)),
 	issuedAt: v.pipe(v.number(), v.integer(), v.minValue(0))
@@ -109,7 +141,11 @@ const CommandSchema = v.variant('type', [
 	v.object({ ...envelope, type: v.literal('tag.assign'), payload: TagAssign }),
 	v.object({ ...envelope, type: v.literal('circle.join'), payload: CircleJoin }),
 	v.object({ ...envelope, type: v.literal('relationship.add'), payload: RelationshipAdd }),
-	v.object({ ...envelope, type: v.literal('contact.add'), payload: ContactAdd })
+	v.object({ ...envelope, type: v.literal('contact.add'), payload: ContactAdd }),
+	v.object({ ...envelope, type: v.literal('journal.write'), payload: JournalWrite }),
+	v.object({ ...envelope, type: v.literal('field.add'), payload: FieldAdd }),
+	v.object({ ...envelope, type: v.literal('date.add'), payload: DateAdd }),
+	v.object({ ...envelope, type: v.literal('gallery.add'), payload: GalleryAdd })
 ]);
 
 /** `raw` as a command, or null when it is not exactly one. */
@@ -120,7 +156,8 @@ export function parseCommand(raw: unknown): JsonCommand | null {
 
 const PhotoSchema = v.object({
 	...envelope,
-	momentId: v.pipe(v.string(), v.regex(ULID)),
+	type: v.picklist(['moment.photo', 'gallery.photo']),
+	parentId: v.pipe(v.string(), v.regex(ULID)),
 	image: v.instance(Uint8Array),
 	thumb: v.instance(Uint8Array),
 	width: v.pipe(v.number(), v.integer(), v.minValue(1)),
@@ -128,12 +165,13 @@ const PhotoSchema = v.object({
 });
 
 /**
- * A photo for a moment as a command, or null. Photos carry bytes, so they arrive as multipart
- * form fields rather than in a JSON batch; the route reads the fields and hands them over here.
+ * A photo as a command, or null. Photos carry bytes, so they arrive as multipart form fields
+ * rather than in a JSON batch; the route reads the fields and hands them over here.
  */
 export function parsePhotoCommand(raw: {
 	id: unknown;
-	momentId: unknown;
+	type: unknown;
+	parentId: unknown;
 	image: unknown;
 	thumb: unknown;
 	width: unknown;
@@ -142,6 +180,6 @@ export function parsePhotoCommand(raw: {
 }): Command | null {
 	const parsed = v.safeParse(PhotoSchema, raw);
 	if (!parsed.success) return null;
-	const { id, issuedAt, ...payload } = parsed.output;
-	return { id, type: 'moment.photo', payload, issuedAt };
+	const { id, type, issuedAt, ...payload } = parsed.output;
+	return { id, type, payload, issuedAt };
 }

@@ -171,13 +171,24 @@ describe('photos kept with a moment', () => {
 		expect(takeBatch(items, 'u1', 10).batch).toEqual([]);
 
 		const first = takePhoto(items, 'u1')!;
-		expect(first.upload).toMatchObject({ momentId: 'a', photo: { id: 'p1' } });
+		expect(first.upload).toMatchObject({ parentId: 'a', type: 'moment.photo', photo: { id: 'p1' } });
 		expect(first.items[0].state).toBe('sending');
 		items = settlePhoto(first.items, 'a', 'p1', { id: 'p1', status: 'applied', result: 'ph1' });
 
 		const second = takePhoto(items, 'u1')!;
 		expect(second.upload.photo.id).toBe('p2');
 		expect(settlePhoto(second.items, 'a', 'p2', { id: 'p2', status: 'applied', result: 'ph2' })).toEqual([]);
+	});
+
+	it('uploads a photo kept for a gallery into that gallery', () => {
+		const gallery = queue([], {
+			command: { id: 'g', type: 'gallery.add', payload: { contactId: 'julia', visibility: 'shared' }, issuedAt: 1 },
+			memberId: 'u1',
+			savedAt: 1,
+			photos: [photo('p1')]
+		});
+		const delivered = settle(takeBatch(gallery, 'u1', 10).items, [{ id: 'g', status: 'applied', result: {} }]);
+		expect(takePhoto(delivered, 'u1')?.upload).toMatchObject({ parentId: 'g', type: 'gallery.photo' });
 	});
 
 	it('does not upload a photo before its moment has arrived', () => {

@@ -123,21 +123,96 @@ describe('parseCommand, for a new person', () => {
 	});
 });
 
+describe('parseCommand, for a journal-page entry', () => {
+	const entry = { id: ID, type: 'journal.write', payload: { contactId: 'julia', entryDate: '2026-09-27', title: ' Lake ', body: ' Swam ' }, issuedAt: 3 };
+
+	it('reads an entry, trimming it, an empty title meaning none and shared by default', () => {
+		expect(parseCommand(entry)?.payload).toEqual({ contactId: 'julia', entryDate: '2026-09-27', title: 'Lake', body: 'Swam', visibility: 'shared' });
+		expect(parseCommand({ ...entry, payload: { ...entry.payload, title: '  ' } })?.payload).toMatchObject({ title: null });
+	});
+
+	it('refuses an empty entry, or one on no day', () => {
+		expect(parseCommand({ ...entry, payload: { ...entry.payload, body: ' ' } })).toBeNull();
+		expect(parseCommand({ ...entry, payload: { ...entry.payload, entryDate: 'today' } })).toBeNull();
+	});
+});
+
+describe('parseCommand, for a field or a date', () => {
+	const field = { id: ID, type: 'field.add', payload: { contactId: 'julia', kind: 'phone', label: '', value: ' 079 123 ' }, issuedAt: 3 };
+	const date = { id: ID, type: 'date.add', payload: { contactId: 'julia', kind: 'anniversary', date: '--06-12' }, issuedAt: 3 };
+
+	it('reads a field, trimming its value, an empty label meaning none', () => {
+		expect(parseCommand(field)?.payload).toEqual({ contactId: 'julia', kind: 'phone', label: null, value: '079 123' });
+	});
+
+	it('refuses a field of an unknown kind, or with no value', () => {
+		expect(parseCommand({ ...field, payload: { ...field.payload, kind: 'fax' } })).toBeNull();
+		expect(parseCommand({ ...field, payload: { ...field.payload, value: ' ' } })).toBeNull();
+	});
+
+	it('reads a date, yearly and remembered unless the form says otherwise', () => {
+		expect(parseCommand(date)?.payload).toEqual({
+			contactId: 'julia',
+			kind: 'anniversary',
+			label: null,
+			date: '--06-12',
+			recursYearly: true,
+			remind: true
+		});
+		expect(parseCommand({ ...date, payload: { ...date.payload, recursYearly: false, remind: false } })?.payload).toMatchObject({
+			recursYearly: false,
+			remind: false
+		});
+	});
+
+	it('refuses a date of an unknown kind, or with no day', () => {
+		expect(parseCommand({ ...date, payload: { ...date.payload, kind: 'nameday' } })).toBeNull();
+		expect(parseCommand({ ...date, payload: { ...date.payload, date: '' } })).toBeNull();
+	});
+});
+
+describe('parseCommand, for a gallery upload', () => {
+	const gallery = { id: ID, type: 'gallery.add', payload: { contactId: 'julia' }, issuedAt: 3 };
+
+	it('reads the person the photos go to, shared by default', () => {
+		expect(parseCommand(gallery)?.payload).toEqual({ contactId: 'julia', visibility: 'shared' });
+	});
+
+	it('refuses an upload for nobody', () => {
+		expect(parseCommand({ ...gallery, payload: { contactId: '' } })).toBeNull();
+	});
+});
+
 describe('parsePhotoCommand', () => {
 	const bytes = new Uint8Array([1, 2, 3]);
-	const photo = { id: ID, momentId: '01K6A5ZQ3V9W8X7Y6Z5A4B3C2E', image: bytes, thumb: bytes, width: 1600, height: 1200, issuedAt: 5 };
+	const photo = {
+		id: ID,
+		type: 'moment.photo',
+		parentId: '01K6A5ZQ3V9W8X7Y6Z5A4B3C2E',
+		image: bytes,
+		thumb: bytes,
+		width: 1600,
+		height: 1200,
+		issuedAt: 5
+	};
 
-	it('reads a photo for a moment sent before it', () => {
+	it('reads a photo for the entry sent before it', () => {
 		expect(parsePhotoCommand(photo)).toEqual({
 			id: ID,
 			type: 'moment.photo',
-			payload: { momentId: photo.momentId, image: bytes, thumb: bytes, width: 1600, height: 1200 },
+			payload: { parentId: photo.parentId, image: bytes, thumb: bytes, width: 1600, height: 1200 },
 			issuedAt: 5
 		});
 	});
 
-	it('refuses a photo with no moment, no bytes or no size', () => {
-		expect(parsePhotoCommand({ ...photo, momentId: 'x' })).toBeNull();
+	it('reads a photo for a gallery upload sent before it', () => {
+		expect(parsePhotoCommand({ ...photo, type: 'gallery.photo' })?.type).toBe('gallery.photo');
+	});
+
+	it('refuses a photo of no known type, with no parent, no bytes or no size', () => {
+		expect(parsePhotoCommand({ ...photo, type: 'note.add' })).toBeNull();
+		expect(parsePhotoCommand({ ...photo, type: null })).toBeNull();
+		expect(parsePhotoCommand({ ...photo, parentId: 'x' })).toBeNull();
 		expect(parsePhotoCommand({ ...photo, image: 'bytes' })).toBeNull();
 		expect(parsePhotoCommand({ ...photo, width: Number.NaN })).toBeNull();
 		expect(parsePhotoCommand({ ...photo, id: '' })).toBeNull();

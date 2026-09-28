@@ -8,11 +8,12 @@ import { getCommandDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 /*
- * `POST /api/commands/photo` (docs/concepts/offline-capture.md §4.2): one photo for a moment a
- * phone already sent, as multipart — `id`, `momentId`, `image`, `thumb`, `width`, `height`. The
- * photo is a command of its own, so a resend after a lost answer is recognised, and it answers
- * as `POST /api/commands` does for each of its commands. A multipart post from another site
- * is refused by SvelteKit's own origin check before it gets here.
+ * `POST /api/commands/photo` (docs/concepts/offline-capture.md §4.2): one photo for a command a
+ * phone already sent, as multipart — `id`, `type` (`moment.photo` or `gallery.photo`),
+ * `parentId`, `image`, `thumb`, `width`, `height`. The photo is a command of its own, so a
+ * resend after a lost answer is recognised, and it answers as `POST /api/commands` does for
+ * each of its commands. A multipart post from another site is refused by SvelteKit's own
+ * origin check before it gets here.
  */
 export const POST: RequestHandler = async ({ locals, request }) => {
 	const user = locals.user;
@@ -31,7 +32,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	const id = form.get('id');
 	const command = parsePhotoCommand({
 		id,
-		momentId: form.get('momentId'),
+		type: form.get('type'),
+		parentId: form.get('parentId'),
 		image: await bytes('image'),
 		thumb: await bytes('thumb'),
 		width: Number(form.get('width')),

@@ -77,7 +77,10 @@ import { captureMoment, type CaptureMomentDeps } from './domain/moments/moments'
 import type { CommandDeps, CommandReceiptRepository } from './domain/commands/dispatch';
 import { createDrizzleCommandReceiptRepository } from './db/command-receipt-repository';
 import { createDrizzleEntryOwnership } from './db/entry-ownership';
-import { attachMomentPhoto } from './domain/commands/moment-photo';
+import { attachGalleryPhoto, attachMomentPhoto } from './domain/commands/photos';
+import { writeJournalEntry } from './domain/journal/write-entry';
+import { addContactField } from './domain/contact-fields/contact-fields';
+import { addImportantDate } from './domain/dates/important-dates';
 import { writeNote } from './domain/notes/write-note';
 import { logInteractionChecked } from './domain/interactions/log-checked';
 import { onVisibleContact } from './domain/contacts/require-visible';
@@ -511,7 +514,22 @@ export function getCommandDeps(): CommandDeps {
 					{ receipts, entries: createDrizzleEntryOwnership(getDb()), photos: getJournalPhotoDeps() },
 					actor,
 					payload
-				)
+				),
+			'journal.write': (actor, payload) =>
+				writeJournalEntry({ ...getJournalDeps(), contacts: getContacts() }, actor, payload),
+			'field.add': onVisibleContact(getContacts(), async (_actor, payload) => ({
+				fieldId: await addContactField(getContactFieldDeps(), payload)
+			})),
+			'date.add': onVisibleContact(getContacts(), async (_actor, payload) => ({
+				dateId: await addImportantDate(getImportantDateDeps(), payload)
+			})),
+			// Checks the person once; the photos following it land where it says (`photos.ts`).
+			'gallery.add': onVisibleContact(getContacts(), async (_actor, payload) => ({
+				contactId: payload.contactId,
+				visibility: payload.visibility
+			})),
+			'gallery.photo': (actor, payload) =>
+				attachGalleryPhoto({ receipts, contacts: getContacts(), photos: getGalleryUploadDeps() }, actor, payload)
 		}
 	};
 }

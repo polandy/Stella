@@ -18,7 +18,8 @@ import {
 	takePhoto,
 	unsend,
 	type KeptPhoto,
-	type OutboxItem
+	type OutboxItem,
+	type PhotoUpload
 } from './outbox';
 import { readOutbox, updateOutbox } from './outbox-store';
 
@@ -129,7 +130,7 @@ export const outbox = {
 	discard: (id: string): Promise<boolean> => attempt((list) => discard(list, id)),
 
 	/**
-	 * Send what waits, batch by batch, then the photos of moments Stella already has, until
+	 * Send what waits, batch by batch, then the photos of items Stella already has, until
 	 * nothing waits or Stella stops answering.
 	 */
 	async send(): Promise<void> {
@@ -178,21 +179,22 @@ async function sendCommands(member: string): Promise<boolean> {
 	}
 }
 
-/** Upload the photos of moments Stella already has, one at a time. */
+/** Upload the photos of items Stella already has, one at a time. */
 async function sendPhotos(member: string): Promise<void> {
 	for (;;) {
-		let upload: { momentId: string; photo: KeptPhoto } | null = null;
+		let upload: PhotoUpload | null = null;
 		await apply((list) => {
 			const taken = takePhoto(list, member);
 			upload = taken?.upload ?? null;
 			return taken?.items ?? list;
 		});
-		const next = upload as { momentId: string; photo: KeptPhoto } | null;
+		const next = upload as PhotoUpload | null;
 		if (!next) return;
 
 		const form = new FormData();
 		form.set('id', next.photo.id);
-		form.set('momentId', next.momentId);
+		form.set('type', next.type);
+		form.set('parentId', next.parentId);
 		form.set('image', next.photo.image, 'photo.jpg');
 		form.set('thumb', next.photo.thumb, 'thumb.jpg');
 		form.set('width', String(next.photo.width));
@@ -208,7 +210,7 @@ async function sendPhotos(member: string): Promise<void> {
 		} catch {
 			// Out of reach, or not Stella answering: the photo waits.
 		}
-		await apply((list) => settlePhoto(list, next.momentId, next.photo.id, answer));
+		await apply((list) => settlePhoto(list, next.parentId, next.photo.id, answer));
 		if (answer?.status === 'applied') whenApplied();
 		if (answer?.status !== 'applied') return;
 	}

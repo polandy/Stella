@@ -25,10 +25,18 @@ export interface CommandActor {
 
 /** What each command answers with when it is applied. */
 export interface CommandResults {
-	/** What a later photo needs to find its entry, too (`moment-photo.ts`). */
+	/** What a later photo needs to find its entry, too (`photos.ts`). */
 	'moment.capture': CapturedMoment & { visibility: Visibility };
 	/** The stored photo's id. */
 	'moment.photo': string;
+	/** Shaped like a moment's, so a photo following it lands the same way. */
+	'journal.write': { entryId: string; anchorContactId: string; visibility: Visibility };
+	'field.add': { fieldId: string };
+	'date.add': { dateId: string };
+	/** Where the photos following it go. */
+	'gallery.add': { contactId: string; visibility: Visibility };
+	/** The stored photo's id. */
+	'gallery.photo': string;
 	'note.add': { noteId: string };
 	'interaction.log': { interactionId: string };
 	'tag.assign': { tagId: string };
@@ -160,6 +168,16 @@ function apply(
 		case 'relationship.add':
 			return handlers[command.type](actor, command.payload);
 		case 'contact.add':
+			return handlers[command.type](actor, command.payload);
+		case 'journal.write':
+			return handlers[command.type](actor, command.payload);
+		case 'field.add':
+			return handlers[command.type](actor, command.payload);
+		case 'date.add':
+			return handlers[command.type](actor, command.payload);
+		case 'gallery.add':
+			return handlers[command.type](actor, command.payload);
+		case 'gallery.photo':
 			return handlers[command.type](actor, command.payload);
 	}
 }

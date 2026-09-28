@@ -185,7 +185,8 @@ export const actions: Actions = {
 			const photoId = photoIds[i];
 			const photo = parsePhotoCommand({
 				id: typeof photoId === 'string' && photoId ? photoId : ulidGenerator.next(),
-				momentId: command.id,
+				type: 'moment.photo',
+				parentId: command.id,
 				image: new Uint8Array(await image.arrayBuffer()),
 				thumb: new Uint8Array(await thumb.arrayBuffer()),
 				width: Number(widths[i]),

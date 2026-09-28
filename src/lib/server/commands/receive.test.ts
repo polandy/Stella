@@ -68,7 +68,12 @@ function fakes() {
 			'tag.assign': async () => ({ tagId: 't' }),
 			'circle.join': async () => ({ circleId: 'c' }),
 			'relationship.add': async () => ({ relationshipId: 'r' }),
-			'contact.add': async () => ({ contactId: 'c' })
+			'contact.add': async () => ({ contactId: 'c' }),
+			'journal.write': async () => ({ entryId: 'e', anchorContactId: 'c', visibility: 'shared' as const }),
+			'field.add': async () => ({ fieldId: 'f' }),
+			'date.add': async () => ({ dateId: 'd' }),
+			'gallery.add': async () => ({ contactId: 'c', visibility: 'shared' as const }),
+			'gallery.photo': async () => 'photo'
 		}
 	};
 	return { deps, bodies };
