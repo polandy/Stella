@@ -273,11 +273,19 @@ enough to decide when the receipt table is built.
 
 ---
 
-## 8. Decided while the maintainer was away — to review
+## 8. Decided while the maintainer was away — reviewed
 
 The maintainer asked for the build to go ahead on these recommendations and for every choice to
 be written down, to go through together later. Each line says what was chosen and why; the
-ones marked **(deviates)** differ from something said earlier and need a yes or no.
+ones marked **(deviates)** differ from something said earlier.
+
+**Reviewed with the maintainer on 2026-09-28.** Every item stands as written, except:
+
+- **10 is reversed:** online saves go through the outbox too, one path for every addition.
+  Inline errors and the *"Link …?"* hint have to come back from the command's answer.
+- **22 is widened:** the journal page's own entry, contact fields, important dates and gallery
+  photos become keepable in this same change.
+- **25** gets a fix of its own, outside this change.
 
 **Server**
 
