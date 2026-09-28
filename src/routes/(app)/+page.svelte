@@ -242,7 +242,7 @@
 						<p class="mt-1 text-fg">{item.command.payload.circleName}{item.command.payload.role ? ` · ${item.command.payload.role}` : ''}</p>
 					</KeptItem>
 				{:else if isKept(item, 'journal.write')}
-					<KeptItem {item} editHref={`/contacts/${item.command.payload.contactId}/journal`}>
+					<KeptItem {item}>
 						{#snippet meta()}
 							<span>{t('home.outbox.journalOf', { name: item.about ?? '' })}</span>
 							<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.entryDate}>{keptDay(item.command.payload.entryDate)}</span>
