@@ -130,6 +130,13 @@ Goal: sand the edges and add the nice-to-haves.
   building: which context wins when there are several (relationship vs. circle, which one),
   where the hint shows (search, person pickers, the graph?), and how it stays access-scoped
   so it never names a person or circle the viewer may not see (§2.10).
+- ~~**Adding to Stella while it is out of reach**~~ — shipped (§2.18): every adding form
+  saves as a named command, idempotent by its id, through an outbox on the phone. Away from
+  home it keeps what is added, photos included, editable or discardable until sent, and
+  sends it once Stella answers again; the server re-checks everything on arrival. Nothing
+  others have seen is changed offline, so there is nothing to merge. Event sourcing and full
+  offline sync were weighed and rejected (docs/04 §4.9); the decisions taken along the way
+  are in `docs/concepts/offline-capture.md` §8.
 - *TODO, design first:* **a simpler day in the *What happened?* composer** — today it is the
   full three-part date field (day, month, year; docs/05 §5.7), which is heavy for a sentence
   written in passing. Today stays the default. Start with mockups of the lighter options

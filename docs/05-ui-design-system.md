@@ -637,6 +637,55 @@ clears on its own: the service worker reports whether Stella is reachable and th
 follows (docs/02 §2.18, docs/04 §4.11.1). There is nothing to dismiss, because dismissing it
 would not restore the connection.
 
+**Kept moments** (`src/lib/components/KeptItem.svelte`; Home, under the capture field;
+docs/02 §2.18) look like stream items that
+have not landed yet: the same avatar-column grid, but inside a **dashed** `--border` outline
+with a hollow dashed circle carrying the `offline` icon where the avatar would be, and the body
+as typed rather than rendered. The label says where each one stands — *Not sent yet*, *Being
+edited*, *Sending…*, *Could not send* — and a refused one turns the outline, the circle and the
+label to `--danger` with the reason underneath. They sit under the field rather than in the
+stream, because they are what the member just wrote and belong to no day of the household's
+yet. **Edit** opens the item in the composer (on a phone, in the sheet) with a *Cancel* beside
+*Save*; **Discard** is a two-step inline confirmation (*This device holds the only copy.* →
+*Discard for good*), not a dialog and not an undo toast, because there is no server copy for an
+undo to fall back on. Kept photos show as a count beside the label (`photo` icon); once Stella
+has the moment and only photos wait, the label says so (*Photos not sent yet*) and *Edit* goes.
+
+A **kept call or visit** sits the same way at the top of the person's *Story*, with its kind and
+day in the heading line; *Edit* reopens the log form on it. A **kept note** uses the same
+dashed outline at the top of that person's *Notes* section;
+*Edit* reopens the note form on it, whose button then reads *Save*. On Home it appears among
+the kept moments as *Not sent yet · note on <name>*, and its *Edit* goes to that person's notes.
+
+A **kept new person** is announced on *Add person* itself, in a dashed `role="status"` line
+above the emptied form (*… is kept on this device and added once it answers again*), and on
+Home as *Not sent yet · new person*.
+
+A **kept relationship** is a `KeptItem` at the top of the relationships card, named as the
+picker names it (*Friend of Corinne Keller*), with *Discard* only.
+
+A **kept tag or circle** (`KeptChip.svelte`) is the chip it will become with a dashed border
+and the `offline` icon, first in the row. A single word is quicker typed again than edited, so
+it offers only a one-click discard (✕); a refused one turns `--danger` and carries the reason
+as its title and in its accessible name. A **kept contact detail or date** uses the same chip,
+above the section's list (*Phone · 079 …*, *Anniversary · 12 June*).
+
+A **kept journal entry** is a `KeptItem` above the journal page's timeline, with its day, title
+and text; **kept gallery photos** are one `KeptItem` above the grid, saying how many. Both offer
+*Discard* only.
+
+**Saving while in reach** looks as it always did: a form waits for Stella's answer and closes on
+*Saved*, or shows a refusal where its error always showed, with what was typed still in it. A
+save whose answer never comes turns into a kept item instead, as if Stella had been out of reach
+all along — nothing is lost and nothing is shown twice (docs/04 §4.11.2).
+
+**Sign-out question** (`src/lib/components/SignOutForm.svelte`) wraps every sign-out form. With
+nothing waiting it is the plain form post it always was; with kept moments on the device it
+opens an inline `alertdialog` under the button in the same dashed outline as the kept moments —
+*Keep and sign out* (primary), *Discard and sign out* (danger), *Cancel* — rather than a modal,
+because it belongs to the one button that raised it. While Stella is out of reach, the composer's primary button reads **Save
+for later**.
+
 **Install card** (`src/lib/components/InstallCard.svelte`) is an ordinary Settings card, one
 of three sentences depending on what the device can do — installed, installable, or a browser
 with no prompt to offer — with the button present only in the middle case. It is deliberately

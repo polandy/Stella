@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 	import Button from '$lib/components/Button.svelte';
+	import { keepable } from '$lib/pwa/keepable';
 	import DateField from '$lib/components/DateField.svelte';
 	import type { ActionData } from './$types';
 
@@ -49,6 +52,61 @@
 		timer = setTimeout(loadSuggestions, SUGGEST_DEBOUNCE_MS);
 	}
 
+	/*
+	 * Saved through the outbox (docs/concepts/offline-capture.md §8 #10). Out of reach, the
+	 * person is kept on this device and added once Stella answers again (docs/02 §2.18). Their
+	 * page cannot open before then, so the form says so and stays here, empty, ready for the
+	 * next one; they show on Home as not sent yet.
+	 */
+	let keptName = $state<string | null>(null);
+	let formElement: HTMLFormElement | undefined = $state();
+	const text = (data: FormData, name: string) => String(data.get(name) ?? '').trim() || null;
+	const nameOf = (data: FormData) =>
+		[text(data, 'firstName'), text(data, 'lastName')].filter(Boolean).join(' ') || text(data, 'nickname') || '';
+	const personForm = keepable(
+		{
+			toCommand: (data, id) => {
+				if (!nameOf(data)) return null;
+				return {
+					id,
+					type: 'contact.add',
+					payload: {
+						firstName: text(data, 'firstName'),
+						lastName: text(data, 'lastName'),
+						nickname: text(data, 'nickname'),
+						description: text(data, 'description'),
+						howWeMet: text(data, 'howWeMet'),
+						metPlace: text(data, 'metPlace'),
+						birthDate: text(data, 'birthDate'),
+						visibility: data.get('visibility') === 'private' ? 'private' : 'shared'
+					},
+					issuedAt: Date.now()
+				};
+			},
+			about: nameOf,
+			errorKey: 'error',
+			// Straight to the new person, into the relationship editor when a relative was picked.
+			onApplied: async (result) => {
+				const { contactId } = result as { contactId: string };
+				const relate = relateTo ? `?relate=${encodeURIComponent(relateTo)}` : '';
+				await goto(`/contacts/${contactId}${relate}`);
+			},
+			onKept: () => {
+				keptName = firstName || lastName ? [firstName, lastName].filter(Boolean).join(' ') : null;
+				firstName = '';
+				lastName = '';
+				suggestions = [];
+				relateTo = null;
+				formElement?.reset();
+			}
+		},
+		() =>
+			async ({ update }) => {
+				keptName = null;
+				await update();
+			}
+	);
+
 	const field = 'flex flex-col gap-1 text-sm';
 	const input = 'rounded-md border border-border bg-bg px-3 py-2 text-fg';
 </script>
@@ -61,7 +119,12 @@
 		<p class="text-sm text-fg-muted">{t('contacts.new.intro')}</p>
 	</header>
 
-	<form method="POST" class="flex flex-col gap-4 rounded-app bg-card p-6 shadow-card">
+	<form method="POST" use:enhance={personForm} bind:this={formElement} class="flex flex-col gap-4 rounded-app bg-card p-6 shadow-card">
+		{#if keptName !== null}
+			<p class="flex items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-sm text-fg-muted" role="status">
+				<Icon name="offline" size={14} />{t('contacts.new.kept', { name: keptName })}
+			</p>
+		{/if}
 		{#if form?.error}
 			<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
 		{/if}

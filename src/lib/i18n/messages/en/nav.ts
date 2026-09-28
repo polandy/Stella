@@ -16,6 +16,12 @@ export const nav = {
 	'nav.breadcrumb': 'Breadcrumb',
 	'nav.addPerson': 'Add person',
 	'nav.writeMoment': 'Write a moment',
+	'signOut.unsent': (p: { count: number }) =>
+		p.count === 1
+			? '1 moment has not been sent yet. It is only on this device.'
+			: `${p.count} moments have not been sent yet. They are only on this device.`,
+	'signOut.keep': 'Keep and sign out',
+	'signOut.discard': 'Discard and sign out',
 	'nav.signOut': 'Sign out',
 	'nav.theme.light': 'Light',
 	'nav.theme.system': 'System',

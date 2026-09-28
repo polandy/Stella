@@ -3,8 +3,10 @@ import * as v from 'valibot';
 import { quietContacts } from '$lib/server/domain/attention/quiet';
 import { listContactNames, listContacts } from '$lib/server/domain/contacts/contacts';
 import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
-import { attachJournalPhoto } from '$lib/server/domain/media/journal-photos';
-import { captureMoment, MomentNeedsPersonError } from '$lib/server/domain/moments/moments';
+import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
+import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
+import { ulidGenerator } from '$lib/server/id';
+import { systemClock } from '$lib/server/clock';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
@@ -12,16 +14,16 @@ import { handleFor } from '$lib/mentions/picker';
 import { parseStreamFilter } from '$lib/stream/filter';
 import {
 	getAttention,
-	getCaptureMomentDeps,
+	getCommandDeps,
 	getContactDeps,
 	getImportantDates,
-	getJournalPhotoDeps,
 	getMemberDeps,
 	getStreamDeps
 } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
+import { LINK_PARAM, linkHintHref } from '$lib/stream/link-hint';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
@@ -29,9 +31,6 @@ import type { MessageKey } from '$lib/i18n/translate';
  * query over existing tables; capture is the moments use-case. The layout guard already
  * ensures `locals.user`.
  */
-
-/** Query param carrying the post-save "link these two?" hint: `?link=<a>,<b>`. */
-const LINK_PARAM = 'link';
 
 /** Query param that opens the composer pre-filled with one person's handle: `?about=<id>`. */
 const ABOUT_PARAM = 'about';
@@ -141,42 +140,61 @@ export const actions: Actions = {
 			});
 		}
 
-		let captured;
+		// The composer names its command when it can, so a double submit is one moment; a form
+		// posted without JavaScript gets an id here.
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'moment.capture',
+			payload: parsed.output,
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'moment.capture') {
+			return fail(400, { momentError: say(locals, 'errors.command.malformed'), draft: parsed.output.body });
+		}
+
+		let outcome;
 		try {
-			captured = await captureMoment(getCaptureMomentDeps(), author, parsed.output);
-		} catch (err) {
-			// A moment with nobody in it is the one failure the writer can act on; anything
-			// else is ours to fix, and says so in the reader's language rather than in a
-			// message meant for a log.
+			outcome = await dispatchCommand(getCommandDeps(), author, command);
+		} catch {
+			// Anything the writer cannot act on is ours to fix, and says so in the reader's
+			// language rather than in a message meant for a log.
+			return fail(400, { momentError: say(locals, 'errors.moment.couldNotSave'), draft: parsed.output.body });
+		}
+		if (outcome.status !== 'applied') {
 			const message =
-				err instanceof MomentNeedsPersonError
-					? err.phrase(translator(locals))
+				outcome.status === 'refused'
+					? outcome.reason(translator(locals))
 					: say(locals, 'errors.moment.couldNotSave');
 			return fail(400, { momentError: message, draft: parsed.output.body });
 		}
+		const captured = outcome.result;
 
-		// Photos ride along exactly as on the journal page, on the anchor's entry.
+		// Photos ride along as commands of their own, named by the composer, so a save whose
+		// answer was lost can send them again from the phone without doubling any.
 		const images = form.getAll('image');
 		const thumbs = form.getAll('thumb');
 		const widths = form.getAll('width');
 		const heights = form.getAll('height');
+		const photoIds = form.getAll('photoId');
 		for (let i = 0; i < images.length; i++) {
 			const image = images[i];
 			const thumb = thumbs[i];
 			if (!(image instanceof File) || !(thumb instanceof File)) continue;
-			try {
-				await attachJournalPhoto(getJournalPhotoDeps(), author, {
-					contactId: captured.anchorContactId,
-					journalEntryId: captured.entryId,
-					visibility: parsed.output.visibility,
-					upload: {
-						image: new Uint8Array(await image.arrayBuffer()),
-						thumb: new Uint8Array(await thumb.arrayBuffer()),
-						width: Number(widths[i]),
-						height: Number(heights[i])
-					}
-				});
-			} catch {
+			const photoId = photoIds[i];
+			const photo = parsePhotoCommand({
+				id: typeof photoId === 'string' && photoId ? photoId : ulidGenerator.next(),
+				type: 'moment.photo',
+				parentId: command.id,
+				image: new Uint8Array(await image.arrayBuffer()),
+				thumb: new Uint8Array(await thumb.arrayBuffer()),
+				width: Number(widths[i]),
+				height: Number(heights[i]),
+				issuedAt: systemClock.now()
+			});
+			const attached = photo
+				? await dispatchCommand(getCommandDeps(), author, photo).catch(() => null)
+				: null;
+			if (attached?.status !== 'applied') {
 				return fail(400, {
 					momentError: say(locals, 'errors.moment.photoFailed'),
 					draft: ''
@@ -184,7 +202,6 @@ export const actions: Actions = {
 			}
 		}
 
-		const hint = captured.linkSuggestion ? `?${LINK_PARAM}=${captured.linkSuggestion.join(',')}` : '';
-		throw redirect(303, `/${hint}`);
+		throw redirect(303, linkHintHref(captured.linkSuggestion));
 	}
 };

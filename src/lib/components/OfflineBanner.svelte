@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { ASK_REACHABILITY, isReachabilityReport } from '$lib/pwa/reachability';
+	import { reachability } from '$lib/pwa/reachability.svelte';
 	import Icon from './Icon.svelte';
 
 	/*
@@ -10,29 +10,12 @@
 	 *
 	 * The service worker is what knows, so the worker is what it listens to — see
 	 * `$lib/pwa/reachability` for why `navigator.onLine` cannot answer this. Nothing is
-	 * polled: the worker reports when the answer changes, and a page that has just opened asks
-	 * once for the answer it was not around to hear.
+	 * polled: the worker reports when the answer changes.
 	 */
 	const t = useTranslate();
-
-	// Starts reachable so the server render carries no banner; the worker settles it on mount.
-	let reachable = $state(true);
-
-	$effect(() => {
-		const worker = navigator.serviceWorker;
-		if (!worker) return;
-
-		const onMessage = (event: MessageEvent) => {
-			if (isReachabilityReport(event.data)) reachable = event.data.reachable;
-		};
-		worker.addEventListener('message', onMessage);
-		worker.ready.then(() => worker.controller?.postMessage(ASK_REACHABILITY));
-
-		return () => worker.removeEventListener('message', onMessage);
-	});
 </script>
 
-{#if !reachable}
+{#if !reachability.reachable}
 	<p
 		data-testid="offline-banner"
 		role="status"

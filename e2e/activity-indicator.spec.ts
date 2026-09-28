@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Route } from '@playwright/test';
 import { openPeople, openPerson, pickPerson, signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 import { stateOf } from './graph-canvas';
@@ -28,14 +28,19 @@ const DORA = 'Dora Wildbach';
 /** `seed.ts` derives ids from the name, and the canvas addresses its nodes by contact id. */
 const DORA_ID = 'e2e-dora-wildbach';
 
-/** Holds every form post until the returned `release` is called. */
+/**
+ * Holds every save until the returned `release` is called: a form post, and an addition sent
+ * as a command through the outbox (docs/04 §4.11.2).
+ */
 async function holdSaves(page: Page): Promise<() => void> {
 	let release!: () => void;
 	const held = new Promise<void>((resolve) => (release = resolve));
-	await page.route('**/contacts/**', async (route) => {
+	const hold = async (route: Route) => {
 		if (route.request().method() === 'POST') await held;
 		await route.continue();
-	});
+	};
+	await page.route('**/contacts/**', hold);
+	await page.route('**/api/commands', hold);
 	return release;
 }
 

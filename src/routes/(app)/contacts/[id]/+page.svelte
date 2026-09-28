@@ -11,7 +11,7 @@
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { enhance } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { processImage } from '$lib/image/process-image';
 	import { mediaUrl, thumbnailUrl } from '$lib/media/urls';
 	import RemoveButton from '$lib/components/RemoveButton.svelte';
@@ -46,8 +46,25 @@
 	import type { RelationshipCategory } from '$lib/relationships/categories';
 	import { sinceDateFromBirth } from '$lib/relationships/since';
 	import type { SelectablePerson } from '$lib/people/select';
-	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
+	import {
+		INTERACTION_KINDS,
+		isInteractionKind,
+		KIND_PRESENTATION,
+		type InteractionKind
+	} from '$lib/interactions/kinds';
+	import type { JsonCommand } from '$lib/commands/commands';
 	import { untrack } from 'svelte';
+	import { ulid } from 'ulid';
+	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
+	import { outbox } from '$lib/pwa/outbox.svelte';
+	import { keepable } from '$lib/pwa/keepable';
+	import { proposeHref } from '$lib/contacts/propose';
+	import { reachability } from '$lib/pwa/reachability.svelte';
+	import { isContactFieldKind } from '$lib/contact-fields/kinds';
+	import { isImportantDateKind } from '$lib/dates/kinds';
+	import KeptItem from '$lib/components/KeptItem.svelte';
+	import KeptChip from '$lib/components/KeptChip.svelte';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { ActionData, PageData } from './$types';
 
 	/*
@@ -96,6 +113,16 @@
 	/** When a gallery photo was added, in the viewer's language (docs/02 §2.14). */
 	const photoDate = (createdAt: number): string => dayLabel(i18n, new Date(createdAt).toISOString());
 
+	/*
+	 * An upload is saved through the outbox like every addition (docs/concepts/offline-capture.md
+	 * §8 #10): the photos, processed first, go with a `gallery.add` naming the person, and are
+	 * kept on the device when Stella cannot take them — shown above the grid until they are sent.
+	 */
+	const keptGallery = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'gallery.add'> => isKept(item, 'gallery.add') && item.command.payload.contactId === c.id
+		)
+	);
 	async function uploadPhotos(event: SubmitEvent) {
 		event.preventDefault();
 		const formEl = event.currentTarget as HTMLFormElement;
@@ -103,20 +130,27 @@
 		uploading = true;
 		uploadError = null;
 		try {
-			const body = new FormData(formEl);
-			body.delete('files');
-			for (const file of picked) {
-				const { image, thumb, width, height } = await processImage(file);
-				body.append('image', image, 'photo.jpg');
-				body.append('thumb', thumb, 'thumb.jpg');
-				body.append('width', String(width));
-				body.append('height', String(height));
+			const photos: KeptPhoto[] = [];
+			for (const file of picked) photos.push({ id: ulid(), ...(await processImage(file)) });
+			const visibility = new FormData(formEl).get('visibility') === 'private' ? 'private' : 'shared';
+			const command: JsonCommand = {
+				id: ulid(),
+				type: 'gallery.add',
+				payload: { contactId: c.id, visibility },
+				issuedAt: Date.now()
+			};
+			if (!reachability.reachable) {
+				await outbox.add(command, photos, c.displayName);
+			} else {
+				const delivery = await outbox.submit(command, photos, c.displayName);
+				if (delivery.status === 'refused') {
+					uploadError = delivery.reason;
+					return;
+				}
+				if (delivery.status === 'applied') await invalidateAll();
 			}
-			const res = await fetch(`/contacts/${c.id}?/addGalleryPhotos`, { method: 'POST', body });
-			if (!res.ok) throw new Error();
 			picked = [];
 			formEl.reset();
-			await invalidateAll();
 		} catch {
 			uploadError = t('contact.photos.uploadFailed');
 		} finally {
@@ -213,11 +247,56 @@
 
 	// Saving through `enhance` keeps the page — and with it any open undo window — alive, so
 	// each section closes itself here instead of on the reload a redirect used to cause.
-	// Logging a touchpoint is the exception: the story timeline owns its paged list, and only
-	// a fresh page gives it the new item, so that form still posts natively.
+	// Logging a touchpoint too: the story timeline, which owns its paged list, is keyed on the
+	// page's story, so the reloaded data hands it the new item as a fresh first page.
 	let openSection = $state({ contact: false, dates: false, circles: false, tags: false, note: false });
 	// The note's audience narrows whom the @-picker offers (docs/02 §2.20.1).
 	let noteVisibility = $state<'shared' | 'private'>('shared');
+	let noteBody = $state('');
+	let notePinned = $state(false);
+
+	/*
+	 * Notes written here while Stella was out of reach (docs/02 §2.18): kept on the device and
+	 * shown at the top of this person's notes until they are sent. One can be opened in the
+	 * note form again until it is on its way; the form then saves into the kept copy.
+	 */
+	const keptNotes = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'note.add'> =>
+				isKept(item, 'note.add') && item.command.payload.contactId === data.contact.id
+		)
+	);
+	let editingNote = $state<KeptOf<'note.add'> | null>(null);
+	async function editKeptNote(item: KeptOf<'note.add'>) {
+		if (!(await outbox.hold(item.command.id))) return;
+		editingNote = item;
+		noteBody = item.command.payload.body;
+		noteVisibility = item.command.payload.visibility;
+		notePinned = item.command.payload.isPinned;
+		openSection.note = true;
+	}
+	async function stopEditingNote() {
+		const item = editingNote;
+		editingNote = null;
+		noteBody = '';
+		notePinned = false;
+		if (item) await outbox.release(item.command.id);
+	}
+	async function saveKeptNote(item: KeptOf<'note.add'>) {
+		editingNote = null;
+		await outbox.revise(
+			item.command.id,
+			{ ...item.command.payload, body: noteBody.trim(), visibility: noteVisibility, isPinned: notePinned },
+			ulid()
+		);
+		noteBody = '';
+		notePinned = false;
+		openSection.note = false;
+	}
+	// Closing the section abandons an edit, so the kept note goes back to waiting.
+	$effect(() => {
+		if (!openSection.note && editingNote) void stopEditingNote();
+	});
 	type SectionName = keyof typeof openSection;
 	/*
 	 * Joining a circle is one free-text field, so the role suggestions follow what is typed:
@@ -232,6 +311,175 @@
 	});
 	const saved = (name: SectionName) =>
 		savedEnhance(removals, t('components.saved'), () => (openSection[name] = false));
+	/** What a form saved through the outbox does once Stella took it: say so, then `close`. */
+	const savedThen = (close: () => void) => () => {
+		removals.notify(t('components.saved'));
+		close();
+	};
+	function clearNote() {
+		noteBody = '';
+		notePinned = false;
+		openSection.note = false;
+	}
+	// The note form saves through the outbox, keeping the note when Stella cannot take it (§2.18).
+	const keepNote = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const body = String(form.get('body') ?? '').trim();
+					if (!body) return null;
+					return {
+						id,
+						type: 'note.add',
+						payload: {
+							contactId: data.contact.id,
+							body,
+							visibility: form.get('visibility') === 'private' ? 'private' : 'shared',
+							isPinned: form.get('isPinned') === 'on'
+						},
+						issuedAt: Date.now()
+					};
+				},
+				about: data.contact.displayName,
+				errorKey: 'noteError',
+				onApplied: savedThen(clearNote),
+				onKept: clearNote
+			},
+			saved('note')
+		)
+	);
+	/*
+	 * Tags and circles added here while Stella was out of reach: kept on the device and shown as
+	 * dashed chips beside the real ones until they are sent (docs/02 §2.18).
+	 */
+	const keptTags = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'tag.assign'> =>
+				isKept(item, 'tag.assign') && item.command.payload.contactId === c.id
+		)
+	);
+	const keptCircles = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'circle.join'> =>
+				isKept(item, 'circle.join') && item.command.payload.contactId === c.id
+		)
+	);
+	const tagForm = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const name = String(form.get('name') ?? '').trim();
+					if (!name) return null;
+					const color = form.get('color');
+					return {
+						id,
+						type: 'tag.assign',
+						payload: { contactId: c.id, name, color: typeof color === 'string' && color ? color : null },
+						issuedAt: Date.now()
+					};
+				},
+				about: c.displayName,
+				errorKey: 'tagError',
+				onApplied: savedThen(() => (openSection.tags = false)),
+				onKept: () => (openSection.tags = false)
+			},
+			saved('tags')
+		)
+	);
+	const circleForm = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const circleName = String(form.get('circleName') ?? '').trim();
+					if (!circleName) return null;
+					const role = String(form.get('role') ?? '').trim();
+					return {
+						id,
+						type: 'circle.join',
+						payload: { contactId: c.id, circleName, role: role || null },
+						issuedAt: Date.now()
+					};
+				},
+				about: c.displayName,
+				errorKey: 'circleError',
+				onApplied: savedThen(() => (openSection.circles = false)),
+				onKept: () => (openSection.circles = false)
+			},
+			saved('circles')
+		)
+	);
+	/*
+	 * Ways to reach someone and their dates, added while Stella was out of reach: kept on the
+	 * device and shown as dashed chips above the real ones until they are sent (docs/02 §2.18).
+	 */
+	const keptFields = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'field.add'> => isKept(item, 'field.add') && item.command.payload.contactId === c.id
+		)
+	);
+	const keptDates = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'date.add'> => isKept(item, 'date.add') && item.command.payload.contactId === c.id
+		)
+	);
+	const fieldForm = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const kind = String(form.get('kind') ?? '');
+					const value = String(form.get('value') ?? '').trim();
+					if (!isContactFieldKind(kind) || !value) return null;
+					return {
+						id,
+						type: 'field.add',
+						payload: { contactId: c.id, kind, label: String(form.get('label') ?? '').trim() || null, value },
+						issuedAt: Date.now()
+					};
+				},
+				about: c.displayName,
+				errorKey: 'fieldError',
+				onApplied: savedThen(() => (openSection.contact = false)),
+				onKept: () => (openSection.contact = false)
+			},
+			saved('contact')
+		)
+	);
+	const dateForm = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const kind = String(form.get('kind') ?? '');
+					// The date field posts `--MM-DD` itself when the year was left blank (§2.13).
+					const date = String(form.get('date') ?? '').trim();
+					if (!isImportantDateKind(kind) || !date) return null;
+					return {
+						id,
+						type: 'date.add',
+						payload: {
+							contactId: c.id,
+							kind,
+							label: String(form.get('label') ?? '').trim() || null,
+							date,
+							recursYearly: form.get('recursYearly') !== null,
+							remind: form.get('remind') !== null
+						},
+						issuedAt: Date.now()
+					};
+				},
+				about: c.displayName,
+				errorKey: 'dateError',
+				onApplied: savedThen(() => (openSection.dates = false)),
+				onKept: () => (openSection.dates = false)
+			},
+			saved('dates')
+		)
+	);
+	// While a kept note is open, the form saves into it instead of posting.
+	const noteForm: SubmitFunction = (input) => {
+		if (!editingNote) return keepNote(input);
+		input.cancel();
+		void saveKeptNote(editingNote);
+	};
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
 	/*
 	 * The other end of a new relationship. Empty unless the page was *asked* to relate somebody
@@ -248,18 +496,71 @@
 	 * on this page moves while it runs.
 	 */
 	const graphPending = usePending();
-	const savedRelationship = trackPending(
-		graphPending,
-		savedEnhance(removals, t('components.saved'), () => {
-			relateOpen = false;
-			relationshipTargetId = [];
-		})
-	);
+	function closeRelate() {
+		relateOpen = false;
+		relationshipTargetId = [];
+	}
+	const savedRelationship = trackPending(graphPending, savedEnhance(removals, t('components.saved'), closeRelate));
 	/*
 	 * The specifics of the link being entered, watched so the form can fill in what it already
 	 * knows: a family link began on the younger one's birthday (docs/02 §2.4).
 	 */
 	const relationshipChoices = $derived(relationshipTypeOptions(data.relationshipTypes));
+	/*
+	 * Links entered here while Stella was out of reach, kept until they are sent (docs/02
+	 * §2.18). The guardrails are the server's: a link that has meanwhile become a duplicate or a
+	 * contradiction comes back refused, with the reason. Named the way the picker names them.
+	 */
+	const keptLinks = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'relationship.add'> =>
+				isKept(item, 'relationship.add') && item.command.payload.contactId === c.id
+		)
+	);
+	/** "Child of Bert Brunner", for a kept link. */
+	function keptLinkLabel(typeChoice: string, targetId: string): string {
+		const option = relationshipChoices.find((o) => o.value === typeChoice);
+		const target = data.otherContacts.find((p) => p.id === targetId)?.displayName ?? '';
+		return option ? `${relationshipTypeLabel(t, option.type, option.side)} ${target}` : target;
+	}
+	const relationshipForm = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const targetId = String(form.get('targetId') ?? '');
+					const typeChoice = String(form.get('typeChoice') ?? '');
+					if (!targetId || !typeChoice) return null;
+					const text = (name: string) => String(form.get(name) ?? '').trim() || null;
+					return {
+						id,
+						type: 'relationship.add',
+						payload: {
+							contactId: c.id,
+							targetId,
+							typeChoice,
+							description: text('description'),
+							sinceDate: text('sinceDate'),
+							status: text('status')
+						},
+						issuedAt: Date.now()
+					};
+				},
+				about: (form) =>
+					`${c.displayName} · ${keptLinkLabel(String(form.get('typeChoice') ?? ''), String(form.get('targetId') ?? ''))}`,
+				errorKey: 'error',
+				pending: graphPending,
+				// Back on the card naming the new pair, so what it implies is offered (§2.4.1).
+				onApplied: async (_result, command) => {
+					savedThen(closeRelate)();
+					if (command.type === 'relationship.add') {
+						await goto(proposeHref(c.id, command.payload.targetId), { noScroll: true });
+					}
+				},
+				onKept: closeRelate
+			},
+			savedRelationship
+		)
+	);
 	/** Empty until the picker is touched, which means it stands on its first entry. */
 	let relationshipChoice = $state('');
 	/** Someone named through the picker itself is not in `otherContacts` yet (docs/02 §2.2.2). */
@@ -347,6 +648,106 @@
 	let merging = $state(false);
 	let mergeTargetId = $state<string[]>([]);
 	let participantIds = $state<string[]>([]);
+
+	/*
+	 * Calls and visits logged here while Stella was out of reach (docs/02 §2.18): kept on the
+	 * device and shown at the top of this person's story until they are sent. Editing one
+	 * reopens the log form on it, which then saves into the kept copy.
+	 */
+	const keptLogs = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'interaction.log'> =>
+				isKept(item, 'interaction.log') && item.command.payload.contactId === c.id
+		)
+	);
+	// The form's first kind is its default, as it was before it could be reopened on a kept one.
+	let logKind = $state<InteractionKind>(INTERACTION_KINDS[0]);
+	let logDay = $state(today);
+	let logTitle = $state('');
+	let logDescription = $state('');
+	let logVisibility = $state<'shared' | 'private'>('shared');
+	// Bumped to start the day field afresh with `logDay`; it keeps its own parts otherwise.
+	let logFresh = $state(0);
+	let editingLog = $state<KeptOf<'interaction.log'> | null>(null);
+	function clearLog() {
+		logKind = INTERACTION_KINDS[0];
+		logDay = today;
+		logTitle = '';
+		logDescription = '';
+		logVisibility = 'shared';
+		participantIds = [];
+		logFresh++;
+	}
+	function closeLog() {
+		clearLog();
+		logOpen = false;
+	}
+	async function editKeptLog(item: KeptOf<'interaction.log'>) {
+		if (!(await outbox.hold(item.command.id))) return;
+		const p = item.command.payload;
+		editingLog = item;
+		logKind = p.kind;
+		logDay = p.happenedAt;
+		logTitle = p.title ?? '';
+		logDescription = p.description ?? '';
+		logVisibility = p.visibility;
+		participantIds = [...p.participantIds];
+		logFresh++;
+		logOpen = true;
+	}
+	$effect(() => {
+		if (logOpen || !editingLog) return;
+		const item = editingLog;
+		editingLog = null;
+		clearLog();
+		void outbox.release(item.command.id);
+	});
+	/** The log form's fields as the command they stand for. */
+	function logCommandFrom(form: FormData, id: string): JsonCommand | null {
+		const kind = String(form.get('kind') ?? '');
+		const happenedAt = String(form.get('happenedAt') ?? '');
+		if (!isInteractionKind(kind) || !happenedAt) return null;
+		return {
+			id,
+			type: 'interaction.log',
+			payload: {
+				contactId: c.id,
+				kind,
+				happenedAt,
+				title: String(form.get('title') ?? '').trim() || null,
+				description: String(form.get('description') ?? '').trim() || null,
+				visibility: form.get('visibility') === 'private' ? 'private' : 'shared',
+				participantIds: form.getAll('participants').filter((p): p is string => typeof p === 'string')
+			},
+			issuedAt: Date.now()
+		};
+	}
+	const keepLog = $derived(
+		keepable(
+			{
+				toCommand: logCommandFrom,
+				about: c.displayName,
+				errorKey: 'interactionError',
+				// Back on the story card it was logged from, not at the top of the page.
+				onApplied: async () => {
+					savedThen(closeLog)();
+					await goto(contactSectionPath(c.id, 'story'));
+				},
+				onKept: closeLog
+			},
+			savedEnhance(removals, t('components.saved'), closeLog)
+		)
+	);
+	const logForm: SubmitFunction = (input) => {
+		if (!editingLog) return keepLog(input);
+		input.cancel();
+		const item = editingLog;
+		const command = logCommandFrom(input.formData, item.command.id);
+		editingLog = null;
+		if (command?.type === 'interaction.log') void outbox.revise(item.command.id, command.payload, ulid());
+		clearLog();
+		logOpen = false;
+	};
 	/** The day it happened, for the marker's tooltip. */
 	const archivedOn = $derived(
 		c.archivedAt === null ? null : dayLabel(i18n, new Date(c.archivedAt).toLocaleDateString('en-CA'))
@@ -445,6 +846,13 @@
 			<section class="flex flex-col rounded-app bg-card p-4 shadow-card">
 				<h2 class="mb-1 text-sm font-semibold text-fg">{t('contact.section.profile')}</h2>
 				<Section as="row" title={t('contact.section.contact')} count={visibleFields.length} startOpen={visibleFields.length > 0} addLabel={t('common.add')} error={form?.fieldError ?? null} bind:open={openSection.contact}>
+				{#if keptFields.length > 0}
+					<ul class="mb-2 flex flex-wrap gap-1.5" data-testid="kept-fields">
+						{#each keptFields as item (item.command.id)}
+							<KeptChip {item} label={`${item.command.payload.label ?? kindLabel('fieldKind', item.command.payload.kind)} · ${item.command.payload.value}`} />
+						{/each}
+					</ul>
+				{/if}
 				{#if visibleFields.length > 0}
 					<dl class="grid grid-cols-[5rem_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-sm">
 						{#each visibleFields as f (f.id)}
@@ -472,7 +880,7 @@
 				{/if}
 
 				{#snippet editor()}
-					<form method="POST" action="?/addField" use:enhance={saved('contact')} class="flex flex-wrap items-end gap-2">
+					<form method="POST" action="?/addField" use:enhance={fieldForm} class="flex flex-wrap items-end gap-2">
 						<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
 							{#each data.fieldKinds as kind (kind)}
 								<option value={kind}>{kindLabel('fieldKind', kind)}</option>
@@ -486,6 +894,13 @@
 			</Section>
 
 				<Section as="row" title={t('contact.section.dates')} count={visibleDates.length} startOpen={hasDates} addLabel={t('common.add')} error={form?.dateError ?? null} bind:open={openSection.dates}>
+				{#if keptDates.length > 0}
+					<ul class="mb-2 flex flex-wrap gap-1.5" data-testid="kept-dates">
+						{#each keptDates as item (item.command.id)}
+							<KeptChip {item} label={`${item.command.payload.label ?? kindLabel('dateKind', item.command.payload.kind)} · ${dayLabel(i18n, item.command.payload.date)}`} />
+						{/each}
+					</ul>
+				{/if}
 				{#if data.derivedBirthday || data.estimatedBirthYear || visibleDates.length > 0}
 					<ul class="flex flex-col gap-1.5 text-sm">
 						{#if data.estimatedBirthYear}
@@ -532,7 +947,7 @@
 				{/if}
 
 				{#snippet editor()}
-					<form method="POST" action="?/addDate" use:enhance={saved('dates')} class="flex flex-wrap items-end gap-2">
+					<form method="POST" action="?/addDate" use:enhance={dateForm} class="flex flex-wrap items-end gap-2">
 						<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
 							{#each data.dateKinds as kind (kind)}
 								<option value={kind}>{kindLabel('dateKind', kind)}</option>
@@ -556,8 +971,11 @@
 					<a href="/circles" class="text-xs text-link hover:underline">{t('contact.allCircles')}</a>
 				{/snippet}
 
-				{#if visibleCircles.length}
+				{#if visibleCircles.length || keptCircles.length}
 					<ul class="flex flex-wrap gap-1.5">
+						{#each keptCircles as item (item.command.id)}
+							<KeptChip {item} label={item.command.payload.role ? `${item.command.payload.circleName} · ${item.command.payload.role}` : item.command.payload.circleName} />
+						{/each}
 						{#each visibleCircles as circle (circle.membershipId)}
 							<li class="min-w-0 max-w-full">
 								<span class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border py-1 pl-2.5 pr-1.5 text-sm">
@@ -591,7 +1009,7 @@
 				{/if}
 
 				{#snippet editor()}
-					<form method="POST" action="?/joinCircle" use:enhance={saved('circles')} class="flex flex-wrap items-end gap-2">
+					<form method="POST" action="?/joinCircle" use:enhance={circleForm} class="flex flex-wrap items-end gap-2">
 						<input
 							name="circleName"
 							list="circle-names"
@@ -618,8 +1036,11 @@
 			</Section>
 
 				<Section as="row" title={t('contact.section.tags')} count={visibleTags.length} summary={tagSummary} startOpen={visibleTags.length > 0} addLabel={t('common.add')} error={form?.tagError ?? null} bind:open={openSection.tags}>
-				{#if visibleTags.length}
+				{#if visibleTags.length || keptTags.length}
 					<ul class="flex flex-wrap gap-1.5">
+						{#each keptTags as item (item.command.id)}
+							<KeptChip {item} label={item.command.payload.name} />
+						{/each}
 						{#each visibleTags as tag (tag.id)}
 							<li
 								class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-medium"
@@ -644,7 +1065,7 @@
 				{/if}
 
 				{#snippet editor()}
-					<form method="POST" action="?/addTag" use:enhance={saved('tags')} class="flex flex-wrap items-end gap-2">
+					<form method="POST" action="?/addTag" use:enhance={tagForm} class="flex flex-wrap items-end gap-2">
 						<input name="name" placeholder={t('contact.tagName')} required class="min-w-32 flex-1 {INPUT}" />
 						<select name="color" aria-label={t('contact.colour')} class={INPUT}>
 							{#each data.tagColors as color (color)}<option value={color}>{color}</option>{/each}
@@ -817,6 +1238,17 @@
 						</Button>
 					{/snippet}
 
+					{#if keptLinks.length > 0}
+						<ul class="mb-3 flex flex-col gap-2" data-testid="kept-links">
+							{#each keptLinks as item (item.command.id)}
+								<li>
+									<KeptItem {item}>
+										<p class="mt-1 text-fg">{keptLinkLabel(item.command.payload.typeChoice, item.command.payload.targetId)}</p>
+									</KeptItem>
+								</li>
+							{/each}
+						</ul>
+					{/if}
 					<!--
 						"How are we connected?" is a question this card cannot answer: it holds two hops
 						of the household and the chain usually runs further. So it asks who, and hands
@@ -1094,7 +1526,7 @@
 
 					{#snippet editor()}
 						{#if data.otherContacts.length > 0}
-							<form method="POST" action="?/addRelationship" use:enhance={savedRelationship} class="flex flex-wrap items-end gap-3">
+							<form method="POST" action="?/addRelationship" use:enhance={relationshipForm} class="flex flex-wrap items-end gap-3">
 								<label class="flex flex-1 flex-col gap-1 text-sm">
 									<span class="text-fg-muted">
 										{t('contact.relationships.is', { name: c.displayName })}
@@ -1202,22 +1634,41 @@
 					bind:open={logOpen}
 					error={form?.interactionError ?? null}
 				>
-					{#key c.id}
+					{#if keptLogs.length > 0}
+						<ul class="mb-3 flex flex-col gap-2" data-testid="kept-logs">
+							{#each keptLogs as item (item.command.id)}
+								{@const kind = KIND_PRESENTATION[item.command.payload.kind]}
+								<li>
+									<KeptItem {item} onEdit={() => editKeptLog(item)}>
+										{#snippet meta()}
+											<span>· {t(kind.label)}</span>
+											<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{dayLabel(i18n, item.command.payload.happenedAt)}</span>
+										{/snippet}
+										{#if item.command.payload.title}<p class="mt-1 text-fg">{item.command.payload.title}</p>{/if}
+										{#if item.command.payload.description}<p class="mt-1 text-sm text-fg-muted">{item.command.payload.description}</p>{/if}
+									</KeptItem>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+					<!-- Keyed on the story itself: the timeline owns its paged list, so a new touchpoint
+					     reaches it as a fresh first page when the page's data is reloaded. -->
+					{#key data.story}
 						<StoryTimeline contactId={c.id} initial={data.story} />
 					{/key}
 
 					{#snippet editor()}
-						<form method="POST" action="?/logInteraction" class="flex flex-col gap-3">
+						<form method="POST" action="?/logInteraction" use:enhance={logForm} class="flex flex-col gap-3">
 							<div class="flex flex-wrap items-end gap-2">
 								<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
 									{#each data.interactionKinds as kind (kind)}
-										<option value={kind}>{t(KIND_PRESENTATION[kind].label)}</option>
+										<option value={kind} selected={kind === logKind}>{t(KIND_PRESENTATION[kind].label)}</option>
 									{/each}
 								</select>
-								<DateField name="happenedAt" value={today} required label={t('contact.day')} />
-								<input name="title" placeholder={t('contact.interaction.titlePlaceholder')} class="min-w-48 flex-1 {INPUT}" />
+								{#key logFresh}<DateField name="happenedAt" value={logDay} required label={t('contact.day')} />{/key}
+								<input name="title" bind:value={logTitle} placeholder={t('contact.interaction.titlePlaceholder')} class="min-w-48 flex-1 {INPUT}" />
 							</div>
-							<textarea name="description" rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} class={INPUT}
+							<textarea name="description" bind:value={logDescription} rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} class={INPUT}
 							></textarea>
 							{#if data.otherContacts.length > 0}
 								<label for="interaction-participants" class="flex flex-col gap-1 text-sm text-fg-muted">
@@ -1234,13 +1685,13 @@
 							{/if}
 							<div class="flex flex-wrap items-center gap-4 text-sm">
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="shared" checked /> {t('common.shared')}
+									<input type="radio" name="visibility" value="shared" bind:group={logVisibility} /> {t('common.shared')}
 								</label>
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="private" /> {t('common.private')}
+									<input type="radio" name="visibility" value="private" bind:group={logVisibility} /> {t('common.private')}
 								</label>
 								<Button variant="primary" size="sm" class="ml-auto">
-									{t('contact.interaction.submit')}
+									{editingLog ? t('common.save') : t('contact.interaction.submit')}
 								</Button>
 							</div>
 						</form>
@@ -1255,6 +1706,17 @@
 					error={form?.noteError ?? null}
 					bind:open={openSection.note}
 				>
+					{#if keptNotes.length > 0}
+						<ul class="mb-3 flex flex-col gap-2" data-testid="kept-notes">
+							{#each keptNotes as item (item.command.id)}
+								<li>
+									<KeptItem {item} onEdit={() => editKeptNote(item)}>
+										<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
+									</KeptItem>
+								</li>
+							{/each}
+						</ul>
+					{/if}
 					{#if data.notes.length > 0}
 						<ul class="flex flex-col gap-3">
 							{#each data.notes as note (note.id)}
@@ -1282,8 +1744,9 @@
 					{/if}
 
 					{#snippet editor()}
-						<form method="POST" action="?/addNote" use:enhance={saved('note')} class="flex flex-col gap-3">
+						<form method="POST" action="?/addNote" use:enhance={noteForm} class="flex flex-col gap-3">
 							<MentionTextarea
+								bind:value={noteBody}
 								name="body"
 								label={t('contact.notes.label')}
 								required
@@ -1294,7 +1757,7 @@
 							/>
 							<div class="flex flex-wrap items-center gap-4 text-sm">
 								<label class="flex items-center gap-1.5">
-									<input type="checkbox" name="isPinned" /> {t('contact.notes.pin')}
+									<input type="checkbox" name="isPinned" bind:checked={notePinned} /> {t('contact.notes.pin')}
 								</label>
 								<label class="flex items-center gap-1.5">
 									<input type="radio" name="visibility" value="shared" bind:group={noteVisibility} />
@@ -1304,7 +1767,7 @@
 									<input type="radio" name="visibility" value="private" bind:group={noteVisibility} />
 									{t('common.private')}
 								</label>
-								<Button variant="primary" size="sm" class="ml-auto">{t('contact.notes.add')}</Button>
+								<Button variant="primary" size="sm" class="ml-auto">{editingNote ? t('common.save') : t('contact.notes.add')}</Button>
 							</div>
 						</form>
 					{/snippet}
@@ -1317,6 +1780,13 @@
 					addLabel={t('contact.photos.add')}
 					error={form?.photoError ?? uploadError}
 				>
+					{#if keptGallery.length > 0}
+						<ul class="mb-3 flex flex-col gap-2" data-testid="kept-gallery">
+							{#each keptGallery as item (item.command.id)}
+								<li><KeptItem {item} /></li>
+							{/each}
+						</ul>
+					{/if}
 					{#if data.gallery.length > 0}
 						<ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="photo-grid">
 							{#each data.gallery as p, index (p.id)}

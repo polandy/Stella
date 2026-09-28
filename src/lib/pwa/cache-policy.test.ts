@@ -4,6 +4,7 @@ import {
 	cacheNameFor,
 	endsTheSession,
 	isStellaCache,
+	standInFor,
 	verdictFor
 } from './cache-policy';
 
@@ -113,5 +114,20 @@ describe('signing out', () => {
 		expect(
 			endsTheSession({ ...asset('/logout', 'https://elsewhere.example'), method: 'POST' })
 		).toBe(false);
+	});
+});
+
+describe('what stands in for a page that was never kept', () => {
+	it('offers the same page without its question, so /?compose still opens Home offline', () => {
+		expect(standInFor(page('/?compose'))).toBe('/');
+		expect(standInFor(page('/contacts/abc?relate=xyz'))).toBe('/contacts/abc');
+	});
+
+	it('has nothing to offer for a page without a question, a volatile page or anything else', () => {
+		expect(standInFor(page('/contacts/abc'))).toBeNull();
+		expect(standInFor(page('/login?next=/'))).toBeNull();
+		expect(standInFor(asset('/media/abc?thumb'))).toBeNull();
+		expect(standInFor({ ...page('/?compose'), method: 'POST' })).toBeNull();
+		expect(standInFor({ ...page('/?compose'), url: 'https://elsewhere.example/?compose' })).toBeNull();
 	});
 });

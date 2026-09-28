@@ -21,6 +21,7 @@ import {
 	cacheNameFor,
 	endsTheSession,
 	isStellaCache,
+	standInFor,
 	verdictFor
 } from '$lib/pwa/cache-policy';
 import {
@@ -147,5 +148,29 @@ worker.addEventListener('fetch', (event) => {
 		return;
 	}
 
-	if (verdictFor(describe) === 'keep') event.respondWith(networkFirst(request));
+	if (verdictFor(describe) === 'keep') {
+		event.respondWith(networkFirst(request));
+		return;
+	}
+
+	const standIn = standInFor(describe);
+	if (standIn) event.respondWith(networkOrStandIn(request, standIn));
 });
+
+/**
+ * A page that is never kept, answered by the network — or, when that is gone, by the kept
+ * page it asks something of (`standInFor`). Nothing is written to the cache here.
+ */
+async function networkOrStandIn(request: Request, standIn: string): Promise<Response> {
+	try {
+		const response = await fetch(request);
+		noteReachability(true);
+		return response;
+	} catch (networkError) {
+		noteReachability(false);
+		const cache = await caches.open(CACHE);
+		const kept = (await cache.match(standIn)) ?? (await cache.match(OFFLINE_FALLBACK_PATH));
+		if (kept) return kept;
+		throw networkError;
+	}
+}

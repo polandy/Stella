@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
+	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
@@ -8,11 +9,23 @@
 	import { processImage } from '$lib/image/process-image';
 	import { allowedForAudience } from '$lib/mentions/audience';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
+	import type { MomentCapturePayload } from '$lib/commands/commands';
+	import type { KeptOf, KeptPhoto } from '$lib/pwa/outbox';
+	import { outbox } from '$lib/pwa/outbox.svelte';
+	import { reachability } from '$lib/pwa/reachability.svelte';
+	import { linkHintHref } from '$lib/stream/link-hint';
 	import { tick } from 'svelte';
+	import { ulid } from 'ulid';
 
 	/*
 	 * The "What happened?" field (docs/02 §2.22.1). A plain textarea that posts natively; the
 	 * @-picker, inline "Create …" queue and browser-side photo processing are enhancements.
+	 *
+	 * With JavaScript it saves as a named command through the outbox, in reach or not
+	 * (docs/concepts/offline-capture.md §4, §8 #10): in reach it waits for Stella's answer, and
+	 * when there is none it keeps the moment on the device. The name is what makes that safe: a
+	 * moment whose answer was lost on the way is recognised when it arrives a second time.
+	 * `editing` opens a kept moment that has not been sent yet.
 	 */
 
 	interface Candidate {
@@ -31,15 +44,43 @@
 		/** Body to restore after a failed submit. */
 		draft?: string | null;
 		autofocus?: boolean;
+		/** A moment kept on this device, open for editing before it is sent. */
+		editing?: KeptOf<'moment.capture'> | null;
+		/** The edit was saved or abandoned. */
+		onEditDone?: () => void;
+		/** A moment was kept on this device for later. */
+		onKept?: () => void;
 	}
-	let { candidates, me, today, error = null, draft = null, autofocus = false }: Props = $props();
+	let {
+		candidates,
+		me,
+		today,
+		error = null,
+		draft = null,
+		autofocus = false,
+		editing = null,
+		onEditDone,
+		onKept
+	}: Props = $props();
 
 	const t = useTranslate();
 
+	// svelte-ignore state_referenced_locally -- the kept moment is only a starting value on purpose
+	const kept = editing?.command.payload ?? null;
 	// svelte-ignore state_referenced_locally -- the draft is only a starting value on purpose
-	let body = $state(draft ?? '');
-	let visibility = $state<'shared' | 'private'>('shared');
-	let newPeople = $state<string[]>([]);
+	let body = $state(kept?.body ?? draft ?? '');
+	let visibility = $state<'shared' | 'private'>(kept?.visibility ?? 'shared');
+	let newPeople = $state<string[]>(kept ? [...kept.newPeople] : []);
+	// The command this draft will be saved as; a new one after every save.
+	let commandId = $state(ulid());
+	// Bumped after a save to start the day and photo fields afresh. `form.reset()` cannot:
+	// it empties the date field's parts instead of returning them to the default day.
+	let fresh = $state(0);
+
+	// A page kept on the device may be days old, and so is the day it was rendered with. The
+	// device's own calendar is the writer's; it only ever moves the default forward.
+	const localDay = () => new Date().toLocaleDateString('en-CA');
+	const day = $derived(browser && localDay() > today ? localDay() : today);
 	let picked = $state<File[]>([]);
 	let saving = $state(false);
 	let localError = $state<string | null>(null);
@@ -74,7 +115,16 @@
 	});
 	const canSave = $derived(body.trim().length > 0 && referenced.length > 0 && !saving);
 
+	// Leaving the field closes the picker a moment later, so a click on a suggestion still
+	// lands. Coming back must cancel that: a navigation that returns focus to the page after a
+	// save would otherwise close the picker under whoever is already typing the next moment.
+	let closingPicker: ReturnType<typeof setTimeout> | undefined;
+	function closePickerSoon() {
+		closingPicker = setTimeout(() => (active = null), 120);
+	}
+
 	function refreshPicker() {
+		clearTimeout(closingPicker);
 		if (!textarea) return;
 		active = activeHandle(body, textarea.selectionStart);
 		selected = 0;
@@ -130,29 +180,90 @@
 		picked = Array.from((event.currentTarget as HTMLInputElement).files ?? []);
 	}
 
-	// With photos, process them client-side and post via fetch; otherwise the form posts natively.
+	/** What the form says, as the command's payload. */
+	function payloadFrom(formEl: HTMLFormElement): MomentCapturePayload {
+		const data = new FormData(formEl);
+		return {
+			body: String(data.get('body') ?? '').trim(),
+			entryDate: String(data.get('entryDate') ?? day),
+			visibility,
+			newPeople: [...newPeople]
+		};
+	}
+
+	function clear() {
+		body = '';
+		picked = [];
+		newPeople = [];
+		fresh++;
+		commandId = ulid();
+	}
+
+	/**
+	 * The picked photos, processed in the browser (downscaled, location stripped) and each named
+	 * as a command of its own — once per save, so a save that ends up kept for later sends the
+	 * very same photos under the very same names.
+	 */
+	async function preparePhotos(): Promise<KeptPhoto[]> {
+		const photos: KeptPhoto[] = [];
+		for (const file of picked) {
+			const { image, thumb, width, height } = await processImage(file);
+			photos.push({ id: ulid(), image, thumb, width, height });
+		}
+		return photos;
+	}
+
+	/** Keep the moment, and its photos, on this device until Stella answers again. */
+	async function keepForLater(formEl: HTMLFormElement, photos: KeptPhoto[]) {
+		try {
+			await outbox.add(
+				{ id: commandId, type: 'moment.capture', payload: payloadFrom(formEl), issuedAt: Date.now() },
+				photos
+			);
+			clear();
+			onKept?.();
+		} catch {
+			// The text stays in the field: nothing is half-saved.
+			localError = t('composer.couldNotKeep');
+		}
+	}
+
+	/** Save an edit into the kept moment it came from. */
+	async function saveEdit(formEl: HTMLFormElement, item: KeptOf<'moment.capture'>) {
+		const saved = await outbox.revise(item.command.id, payloadFrom(formEl), ulid());
+		if (!saved) {
+			localError = t('composer.alreadySending');
+			return;
+		}
+		clear();
+		onEditDone?.();
+	}
+
 	async function onSubmit(event: SubmitEvent) {
-		if (picked.length === 0) return;
 		event.preventDefault();
 		const formEl = event.currentTarget as HTMLFormElement;
 		saving = true;
 		localError = null;
 		try {
-			const data = new FormData(formEl);
-			for (const file of picked) {
-				const { image, thumb, width, height } = await processImage(file);
-				data.append('image', image, 'photo.jpg');
-				data.append('thumb', thumb, 'thumb.jpg');
-				data.append('width', String(width));
-				data.append('height', String(height));
+			if (editing) return await saveEdit(formEl, editing);
+			const photos = await preparePhotos();
+			if (!reachability.reachable) return await keepForLater(formEl, photos);
+
+			const delivery = await outbox.submit(
+				{ id: commandId, type: 'moment.capture', payload: payloadFrom(formEl), issuedAt: Date.now() },
+				photos
+			);
+			if (delivery.status === 'refused') {
+				// The text stays in the field, to be corrected and saved as a new moment.
+				localError = delivery.reason;
+				commandId = ulid();
+				return;
 			}
-			const res = await fetch('/?/capture', { method: 'POST', body: data, redirect: 'follow' });
-			if (!res.ok) throw new Error();
-			body = '';
-			picked = [];
-			newPeople = [];
-			formEl.reset();
-			await invalidateAll();
+			clear();
+			if (delivery.status === 'kept') return onKept?.();
+			// Back to the stream, offering to link the first two people in it (§2.22.1).
+			const { linkSuggestion } = delivery.result as { linkSuggestion: [string, string] | null };
+			await goto(linkHintHref(linkSuggestion), { invalidateAll: true });
 		} catch {
 			localError = t('composer.saveFailed');
 		} finally {
@@ -191,7 +302,8 @@
 			oninput={refreshPicker}
 			onclick={refreshPicker}
 			onkeyup={(e) => (e.key.startsWith('Arrow') ? refreshPicker() : undefined)}
-			onblur={() => setTimeout(() => (active = null), 120)}
+			onfocus={() => clearTimeout(closingPicker)}
+			onblur={closePickerSoon}
 			class="min-h-14 flex-1 resize-y bg-transparent font-serif text-[17px] leading-relaxed text-fg outline-none placeholder:text-fg-subtle"
 		></textarea>
 	</div>
@@ -241,12 +353,16 @@
 			{visibility === 'shared' ? t('common.shared') : t('common.private')}
 		</label>
 		<input type="hidden" name="visibility" value={visibility} />
-		<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted hover:text-fg">
-			<Icon name="photo" size={13} />
-			{picked.length ? t('composer.photoCount', { count: picked.length }) : t('composer.photo')}
-			<input type="file" accept="image/*" multiple onchange={onFiles} class="hidden" />
-		</label>
-		<DateField name="entryDate" value={today} max={today} required label={t('composer.day')} />
+		{#key fresh}
+		{#if !editing}
+			<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted hover:text-fg">
+				<Icon name="photo" size={13} />
+				{picked.length ? t('composer.photoCount', { count: picked.length }) : t('composer.photo')}
+				<input type="file" accept="image/*" multiple onchange={onFiles} class="hidden" />
+			</label>
+		{/if}
+		<DateField name="entryDate" value={kept?.entryDate ?? day} max={day} required label={t('composer.day')} />
+		{/key}
 		<span class="text-xs text-fg-subtle" aria-live="polite">
 			{#if referenced.length}
 				{t('composer.goesTo')}
@@ -259,9 +375,14 @@
 				{t('composer.needMention')}
 			{/if}
 		</span>
-		<Button variant="primary" disabled={!canSave} class="ml-auto">
-			{saving ? t('common.saving') : t('common.save')}
+		<div class="ml-auto flex items-center gap-2">
+		{#if editing}
+			<Button variant="ghost" type="button" onclick={() => onEditDone?.()}>{t('common.cancel')}</Button>
+		{/if}
+		<Button variant="primary" disabled={!canSave}>
+			{saving ? t('common.saving') : reachability.reachable ? t('common.save') : t('composer.saveForLater')}
 			<kbd class="rounded border border-primary-fg/40 px-1 text-[10px] font-medium opacity-75">⌘⏎</kbd>
 		</Button>
+		</div>
 	</div>
 </form>

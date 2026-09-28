@@ -139,7 +139,8 @@ ask for them with *Show earlier*.
 
 **The journal** is the writing half of that story, one entry per day. A moment written on Home
 lands here; *Write* on the person's page opens the full journal, where an entry can carry
-photos.
+photos. Writing on a day that already has your entry adds to it rather than replacing it; to
+change what is there, use *Edit* on the entry.
 
 **Photos** is the fourth tab: everything you have collected of that person in a grid, newest
 first, each one dated. *Add photos* takes several at once — each is shrunk in your browser
@@ -563,11 +564,27 @@ at: what is showing came off your phone, so anything somebody added since is not
 the relationship map and search come up empty rather than pretending. Everything is there
 again the moment you are back.
 
-You cannot *add* anything while Stella is out of reach — no moments, no notes, no people.
-Offline Stella is something to read.
+You can still write a moment. Out of reach, the button says **Save for later**: the moment is
+kept on your phone and shows under the field as *Not sent yet*. Until it is sent you can
+change it or throw it away. Stella gets it by itself once it answers again, when you open the
+app or when your phone joins your home network, and it checks it as if you had written it
+there and then. If it cannot take it — someone you mentioned was deleted in the meantime —
+the moment stays as *Could not send*, with the reason, for you to fix; nothing you wrote is
+ever dropped quietly. Photos wait with the moment and follow it once it is in. A note you
+write on someone's page is kept the same way, and so is a call or visit, a tag or a circle, a
+phone number or other contact detail, a date, photos for their gallery, a relationship between
+two people and an entry on their journal page; they show where they will land until they are
+sent. A relationship is checked when it arrives, like any other. Even *Add person* works: the
+new person waits on your phone and is added once Stella answers again.
+
+At home nothing of this shows: what you save goes straight in. Only if the connection drops in
+the middle of saving does it turn into *Not sent yet*, and it is sent later like the rest —
+never twice.
 
 Signing out clears the pages your phone was keeping, so handing a device on does not hand on
-the household with it.
+the household with it. If moments you wrote are still waiting, Stella asks first whether to keep
+them or throw them away. Kept, they are yours: they are sent the next time you sign in, and
+nobody else signing in on that phone sees them.
 
 ## Light and dark
 

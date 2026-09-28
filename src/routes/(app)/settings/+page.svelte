@@ -1,4 +1,5 @@
 <script lang="ts">
+	import SignOutForm from '$lib/components/SignOutForm.svelte';
 	import { untrack } from 'svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -151,14 +152,14 @@
 
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.account.heading')}</h2>
-		<form method="POST" action="/logout" class="contents">
+		<SignOutForm class="contents">
 			<button type="submit" class="flex w-full items-center gap-4 rounded-app bg-card p-4 text-left shadow-card transition-colors hover:bg-card-hover">
 				<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="signOut" size={18} /></span>
 				<span class="min-w-0 flex-1">
 					<span class="block font-medium text-fg">{t('nav.signOut')}</span>
 				</span>
 			</button>
-		</form>
+		</SignOutForm>
 	</section>
 
 	<section class="flex flex-col gap-3">

@@ -45,7 +45,9 @@ src/
       media/         # sharp pipeline, storage paths
       search/        # FTS5 sync + query
       i18n/          # say(locals, key): a message in the language of the request
+      commands/      # the edge's half of commands: parse off the wire, receive a phone's batch
       config.ts      # env parsing/validation (valibot)
+    commands/         # pure: the command vocabulary shared by the phone and the server (§4.11.2)
     i18n/             # locales, message catalogues (en/de), translator, context
     errors/           # TranslatableError: a domain error carrying its message untranslated
     kinship/          # pure: derives the relatives nobody entered (§2.4.1)
@@ -62,7 +64,7 @@ src/
       reminders/…
       search/…
       settings/…
-    api/              # +server.ts JSON endpoints (graph data, upload, search)
+    api/              # +server.ts JSON endpoints (graph data, upload, search, commands)
   hooks.server.ts     # session resolution, language of the request, security headers
   app.css             # tailwind + theme tokens
 static/               # manifest, icons, offline shell
@@ -677,6 +679,32 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   encryption, so a device left signed in holds the pages its owner read — the same bargain as
   the browser's own history, and written down as such in §2.18 rather than left implied.
 
+- **Mutations become commands, not events; offline only adds** *(being built, moments first:
+  §4.11.2, `docs/concepts/offline-capture.md`)* — to write while Stella is out of reach, every
+  change becomes a named, idempotent command with an id made where it was issued, applied by
+  one dispatcher over today's use-cases. The tables stay the truth. A device may queue only
+  commands that *add*, and may edit them freely until they are sent, because nothing anyone
+  else has seen changes offline. That leaves no conflict to resolve, and access is still
+  checked once, on arrival. Rejected:
+  - **Event sourcing.** An append-only log would keep every deleted person and private
+    sentence, which breaks what deleting and *private* promise (§2.2, §2.10). It also would
+    not answer the hard question: what an offline edit means after someone else changed the
+    same person.
+  - **Full offline sync.** It needs a second authz path on the device and a "which version
+    wins?" screen.
+  - **Replaying failed form POSTs.** It would replay deletes and sign-outs days later.
+
+  The cost: a route-by-route refactor before the outbox, a receipt table for idempotency, and
+  no editing from a train.
+
+- **An addition saved in reach goes through the outbox too** (§4.11.2, concept §8 #10) — kept
+  first, sent at once, and the form waits for the answer. One path means the offline case is the
+  everyday case, not a branch taken only on a train, and a save cut off half way is already
+  kept. Rejected: posting to the form action in reach and keeping only on failure — two paths
+  to keep equal, and the offline one exercised least. The cost: inline errors and results
+  (*"Link …?"*, the new person's page) come back from the command's answer rather than from the
+  action, and the actions stay alongside as the path without JavaScript.
+
 - **A former partnership derives nothing, rather than keeping the step-family it explained** —
   the first reading was that status is not history: a divorce does not unmake a stepmother, so
   `former` kept feeding the kinship engine. Real data settled it the other way — an ex-partner
@@ -844,11 +872,13 @@ each piece is small and named for intent. **Test-first targets:** `buildEgoNetwo
 The same split as the explorer: a pure domain and a thin adapter confined to one file.
 
 - **`src/lib/pwa/cache-policy.ts`** — the whole judgement, pure and unit-tested: which
-  requests may be cached, which never may, what a build's cache is called, and what a
-  sign-out looks like going past. **Test-first targets:** `verdictFor`, `endsTheSession`,
-  `cacheNameFor`.
+  requests may be cached, which never may, which kept page stands in for one that never is,
+  what a build's cache is called, and what a sign-out looks like going past. **Test-first
+  targets:** `verdictFor`, `standInFor`, `endsTheSession`, `cacheNameFor`.
 - **`src/lib/pwa/reachability.ts`** — the two messages the worker and the page exchange, and
   the guard that stops anything else on the channel moving the offline banner.
+  `reachability.svelte.ts` is its adapter: one rune the banner, the composer and the outbox
+  all read, so they never disagree.
 - **`src/service-worker.ts`** — the adapter. It asks the policy about real `Request`s and
   does as it is told; it decides nothing. This is deliberate: a service worker can otherwise
   only be checked by driving a browser and hoping the right thing was cached.
@@ -862,6 +892,52 @@ The same split as the explorer: a pure domain and a thin adapter confined to one
 Caches are named `stella-<version>`, so a deployed update activates into an empty one rather
 than mixing its shell with pages the previous build rendered, and the stale ones are dropped
 on `activate`.
+
+## 4.11.2 Commands & the outbox
+
+Adding while Stella is out of reach (docs/02 §2.18, `docs/concepts/offline-capture.md`), cut
+the same way: pure decisions, thin adapters.
+
+- **`src/lib/commands/commands.ts`** — the vocabulary, shared by the phone and the server:
+  each command's name, payload and *kind* (add, change, remove). Only an addition may wait on
+  a device (`isQueueable`).
+- **`src/lib/server/domain/commands/dispatch.ts`** — applies a command once however often it
+  arrives: claims its id in `command_receipt`, runs the use-case behind it, keeps the result.
+  A `TranslatableError` from the use-case is a *refusal* and releases the claim; anything
+  else is ours, releases it too and is rethrown. **Test-first target:** `dispatchCommand`.
+- **`src/lib/server/commands/`** — the edge's half: `parse.ts` reads a command off the wire
+  (Valibot), `receive.ts` answers a phone's batch one command at a time and accepts only
+  additions. `POST /api/commands` is the route, signed in by the session cookie and reading
+  only `application/json`. A photo is the one command with bytes in it: it follows the command
+  it belongs to, naming it by id, and goes to `POST /api/commands/photo` as multipart with its
+  `type`. `domain/commands/photos.ts` lands a `moment.photo` on the entry its moment's — or
+  journal-page entry's (`journal.write`) — receipt names, and a `gallery.photo` in the gallery
+  of the person its `gallery.add` checked; only while that entry or person is still the
+  member's to add to.
+- **`src/lib/pwa/outbox.ts`** — the outbox's states (pending → sending → gone, or refused;
+  *held* while open in the composer; *delivered* once only photos wait), pure and unit-tested. `outbox-store.ts` keeps it in
+  IndexedDB, changing it in one transaction at a time so two tabs cannot overwrite each
+  other; `outbox.svelte.ts` sends it and mirrors it for the page. Neither decides anything.
+- **Every addition goes through the outbox, in reach or not** (concept §8 #10). `outbox.submit`
+  keeps the command first, sends it at once and resolves with what became of it — *applied*
+  with Stella's result, *refused* with the reason, or *kept* when the round ended without an
+  answer; while it waits, the item is not shown as kept (`deliveryFor` / `deliveryLeftOver`
+  in `outbox.ts` decide). **`src/lib/pwa/keepable.ts`** is that path for an adding form's
+  `use:enhance`: it shows a refusal where the action's own error would be (`applyAction`), and
+  lets fields that are not a command yet post to the action, which says what is missing. The
+  form actions stay, as the path without JavaScript, and apply the same commands. The person
+  page's forms and the journal page use it; `note.add` is
+  applied by `domain/notes/write-note.ts` and `interaction.log` by
+  `domain/interactions/log-checked.ts`, each the one place that checks what it stores.
+  `relationship.add` is applied by `domain/relationships/add-checked.ts`, which turns every
+  refusal — a person or type gone, a duplicate, a contradiction — into a reason, never into an
+  error the phone would retry. `tag.assign` and `circle.join` reuse their by-name use-cases
+  behind `onVisibleContact`
+  (`domain/contacts/require-visible.ts`), the shared "is this person still visible" guard, as
+  do `field.add` and `date.add`. `journal.write` is `domain/journal/write-entry.ts`, which
+  adds to the day's entry as a moment does (`addToJournalDay`).
+- **The Home composer** saves through `outbox.submit` too, and goes back to the stream with the
+  *"Link …?"* hint (`src/lib/stream/link-hint.ts`) read off the moment's result.
 
 ## 4.12 Background jobs & delivery (M3)
 

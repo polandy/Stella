@@ -1,3 +1,4 @@
+import { CONTACT_FIELD_KINDS, type ContactFieldKind } from '../../../contact-fields/kinds';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -7,18 +8,6 @@ import type { IdGenerator } from '../../id';
  * no visibility of their own — they inherit the contact's, enforced by the adapter's
  * visibility-scoped reads. Orchestration and link derivation are pure.
  */
-
-export type ContactFieldKind = 'phone' | 'email' | 'address' | 'url' | 'social' | 'date' | 'custom';
-
-export const CONTACT_FIELD_KINDS: readonly ContactFieldKind[] = [
-	'phone',
-	'email',
-	'address',
-	'url',
-	'social',
-	'date',
-	'custom'
-];
 
 /** A clickable link for a field, or null when the kind has no natural action. */
 export function fieldHref(kind: ContactFieldKind, value: string): string | null {

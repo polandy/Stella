@@ -1,3 +1,5 @@
+import type { ImportantDateKind } from '../../../dates/kinds';
+
 /*
  * Upcoming important dates (docs/02 §2.13). Pure date arithmetic: given every date the viewer
  * may see, work out the next occurrence of each and keep the ones inside the horizon. There is
@@ -19,14 +21,6 @@ export const UPCOMING_LIMIT = 5;
  * (docs/05 §5.5). Beyond it the rail follows the stream instead of preceding it.
  */
 export const IMMINENT_HORIZON_DAYS = 14;
-
-export type ImportantDateKind = 'birthday' | 'anniversary' | 'custom';
-
-export const IMPORTANT_DATE_KINDS: readonly ImportantDateKind[] = [
-	'birthday',
-	'anniversary',
-	'custom'
-];
 
 export interface UpcomingSource {
 	contactId: string;

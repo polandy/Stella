@@ -16,7 +16,7 @@ export const journal = {
 	'journal.privateOnlyYou': 'Private — only you',
 	'journal.saveEntry': 'Save entry',
 	'journal.oneEntryPerDay':
-		'One entry per day — saving the same day again updates it. Private and shared are separate.',
+		'One entry per day — writing on the same day again adds to it. Private and shared are separate.',
 	'journal.by': (p: { author: string }) => `by ${p.author}`,
 	'journal.editEntry': 'Edit entry',
 	'journal.saveChanges': 'Save changes',

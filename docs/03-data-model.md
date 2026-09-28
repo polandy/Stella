@@ -51,6 +51,8 @@ activity_log *───1 user
 activity_log  ───? (entity_type, entity_id)  polymorphic reference
 
 household 1───* suggestion_dismissal   (claims the household declined)  [M2]
+household 1───* command_receipt        (commands already applied)       [M3]
+user      1───* command_receipt        (member_id)
 ```
 
 ## 3.3 Tables
@@ -534,6 +536,33 @@ before a row is ever written, and a deleted contact leaves a row that matches no
 
 A row constrains only what Stella **offers**. It never touches what the kinship engine derives
 or what a profile displays, and deleting it (*Ask again*) puts the suggestion back.
+
+### command_receipt  [M3]
+A command id that has been claimed or applied (`docs/concepts/offline-capture.md` §3), so a
+change that arrives twice — a phone that lost its connection after Stella saved — is applied
+once.
+
+| column | type | notes |
+|---|---|---|
+| id | text pk | the command's id, a ULID made where the command was issued (often the device) |
+| household_id | text fk | |
+| member_id | text fk → user.id | whose command it is; another member reusing the id is refused |
+| type | text | the command's name, e.g. `moment.capture` |
+| status | text | `'pending'` while a run holds the claim, `'applied'` once done |
+| result | text | the handler's answer as JSON, handed back to a resend |
+| claimed_at | int | when the current claim was taken |
+| completed_at | int | when it was applied |
+
+**A claim is the primary key.** `INSERT … ON CONFLICT DO NOTHING` either takes the id or leaves
+the earlier claim standing, so two runs of one command cannot both apply it. A refusal the
+member can act on deletes the claim, so the corrected command can be sent under the same id. A
+claim left *pending* for a minute is presumed abandoned by a run that stopped mid-way and is
+taken over: a possible duplicate is preferable to a moment presumed saved and never written.
+
+**Never replayed.** Nothing is derived from a receipt; the tables stay the truth. A row holds
+ids, not content, and is **kept for good**, so a device offline for months still cannot send
+anything twice. It travels in the archive (§2.15) for the same reason: a household restored
+onto a new server still recognises what an unsent phone already delivered.
 
 ## 3.4 Partial & fuzzy dates
 

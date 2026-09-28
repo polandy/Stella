@@ -12,12 +12,7 @@ import {
 	type MentionCandidate
 } from '../../../mentions/mentions';
 import { createContact, type ContactRepository, type ContactSummary } from '../contacts/contacts';
-import {
-	saveJournalEntry,
-	setJournalMentions,
-	type JournalAuthor,
-	type JournalRepository
-} from '../journal/journal';
+import { addToJournalDay, type JournalAuthor, type JournalRepository } from '../journal/journal';
 
 /*
  * Moments (docs/02 §2.22.1): the one-sentence capture. A moment *is* a journal entry — the
@@ -121,35 +116,15 @@ export async function captureMoment(
 	if (resolved.ids.length === 0) throw new MomentNeedsPersonError();
 
 	const [anchorContactId, ...mentionedContactIds] = resolved.ids;
-	const journalDeps = { journal: deps.journal, ids: deps.ids, clock: deps.clock };
-	// The anchor's day slot may already hold an entry (§2.20); a moment is an addition, so it
-	// joins that entry — as a contact merge does — rather than replacing what was written.
-	const sameDay = await deps.journal.findDay({
-		authorId: author.userId,
+	// A moment is an addition (§2.20): a day slot that already holds an entry gets it appended.
+	const entryId = await addToJournalDay({ journal: deps.journal, ids: deps.ids, clock: deps.clock }, author, {
 		contactId: anchorContactId,
 		entryDate: input.entryDate,
-		visibility: input.visibility
+		visibility: input.visibility,
+		title: null,
+		body: resolved.body,
+		mentionIds: mentionedContactIds
 	});
-	let entryId: string;
-	let entryMentions = mentionedContactIds;
-	if (sameDay) {
-		entryId = sameDay.id;
-		await deps.journal.updateBody({
-			id: entryId,
-			title: sameDay.title,
-			body: `${sameDay.body}\n\n${resolved.body}`,
-			updatedAt: deps.clock.now()
-		});
-		entryMentions = [...(await deps.journal.listMentionedContactIds(entryId)), ...mentionedContactIds];
-	} else {
-		entryId = await saveJournalEntry(journalDeps, author, {
-			contactId: anchorContactId,
-			entryDate: input.entryDate,
-			body: resolved.body,
-			visibility: input.visibility
-		});
-	}
-	await setJournalMentions(journalDeps, entryId, entryMentions);
 
 	return {
 		entryId,

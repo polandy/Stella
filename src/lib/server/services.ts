@@ -73,7 +73,21 @@ import type { TagDeps, TagRepository } from './domain/tags/tags';
 import type { GraphRepository } from './db/graph-repository';
 import type { CircleDeps, CircleRepository } from './domain/circles/circles';
 import type { StreamDeps, StreamRepository } from './domain/stream/stream';
-import type { CaptureMomentDeps } from './domain/moments/moments';
+import { captureMoment, type CaptureMomentDeps } from './domain/moments/moments';
+import type { CommandDeps, CommandReceiptRepository } from './domain/commands/dispatch';
+import { createDrizzleCommandReceiptRepository } from './db/command-receipt-repository';
+import { createDrizzleEntryOwnership } from './db/entry-ownership';
+import { attachGalleryPhoto, attachMomentPhoto } from './domain/commands/photos';
+import { writeJournalEntry } from './domain/journal/write-entry';
+import { addContactField } from './domain/contact-fields/contact-fields';
+import { addImportantDate } from './domain/dates/important-dates';
+import { writeNote } from './domain/notes/write-note';
+import { logInteractionChecked } from './domain/interactions/log-checked';
+import { onVisibleContact } from './domain/contacts/require-visible';
+import { addRelationshipChecked } from './domain/relationships/add-checked';
+import { createContact } from './domain/contacts/contacts';
+import { assignTagByName } from './domain/tags/tags';
+import { joinCircleByName } from './domain/circles/circles';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
 import type { ImportDeps, ImportRepository } from './domain/import/apply';
 import type { ApiImportDeps } from './domain/import/api/api-import';
@@ -452,6 +466,72 @@ export function getStreamDeps(): StreamDeps {
 
 export function getCaptureMomentDeps(): CaptureMomentDeps {
 	return { contacts: getContacts(), journal: getJournal(), ids: ulidGenerator, clock: systemClock };
+}
+
+let commandReceiptRepository: CommandReceiptRepository | null = null;
+
+/** The dispatcher every change goes through (docs/concepts/offline-capture.md §3). */
+export function getCommandDeps(): CommandDeps {
+	const capture = getCaptureMomentDeps();
+	const receipts = (commandReceiptRepository ??= createDrizzleCommandReceiptRepository(getDb()));
+	return {
+		receipts,
+		clock: systemClock,
+		handlers: {
+			// A moment carries its own visibility, so it is also the author's default for anyone
+			// the moment creates inline — and what a photo sent after it inherits.
+			'moment.capture': async (actor, payload) => ({
+				...(await captureMoment(
+					capture,
+					{ userId: actor.userId, householdId: actor.householdId, defaultVisibility: payload.visibility },
+					payload
+				)),
+				visibility: payload.visibility
+			}),
+			'tag.assign': onVisibleContact(getContacts(), async (actor, payload) => ({
+				tagId: await assignTagByName(getTagDeps(), actor.householdId, payload.contactId, payload.name, payload.color)
+			})),
+			'circle.join': onVisibleContact(getContacts(), async (actor, payload) => ({
+				circleId: await joinCircleByName(
+					getCircleDeps(),
+					{ ...actor, defaultVisibility: 'shared' },
+					payload.contactId,
+					payload.circleName,
+					payload.role
+				)
+			})),
+			'contact.add': async (actor, payload) => ({
+				contactId: await createContact(getContactDeps(), { ...actor, defaultVisibility: payload.visibility }, payload)
+			}),
+			'relationship.add': (actor, payload) =>
+				addRelationshipChecked({ ...getRelationshipDeps(), contacts: getContacts() }, actor, payload),
+			'interaction.log': (actor, payload) =>
+				logInteractionChecked({ ...getInteractionDeps(), contacts: getContacts() }, actor, payload),
+			'note.add': (actor, payload) =>
+				writeNote({ ...getNoteDeps(), contacts: getContacts() }, actor, payload),
+			'moment.photo': (actor, payload) =>
+				attachMomentPhoto(
+					{ receipts, entries: createDrizzleEntryOwnership(getDb()), photos: getJournalPhotoDeps() },
+					actor,
+					payload
+				),
+			'journal.write': (actor, payload) =>
+				writeJournalEntry({ ...getJournalDeps(), contacts: getContacts() }, actor, payload),
+			'field.add': onVisibleContact(getContacts(), async (_actor, payload) => ({
+				fieldId: await addContactField(getContactFieldDeps(), payload)
+			})),
+			'date.add': onVisibleContact(getContacts(), async (_actor, payload) => ({
+				dateId: await addImportantDate(getImportantDateDeps(), payload)
+			})),
+			// Checks the person once; the photos following it land where it says (`photos.ts`).
+			'gallery.add': onVisibleContact(getContacts(), async (_actor, payload) => ({
+				contactId: payload.contactId,
+				visibility: payload.visibility
+			})),
+			'gallery.photo': (actor, payload) =>
+				attachGalleryPhoto({ receipts, contacts: getContacts(), photos: getGalleryUploadDeps() }, actor, payload)
+		}
+	};
 }
 
 let circleRepository: CircleRepository | null = null;
