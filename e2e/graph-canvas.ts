@@ -54,7 +54,40 @@ export async function clickNode(page: Page, id: string): Promise<void> {
 	const { point } = await drawnNode(page, id);
 	if (!point) throw new Error(`the explorer is not drawing ${id}, so it cannot be clicked`);
 	await awaitHitTestable(page, point);
+	const onTop = await elementOnTopOf(page, id);
+	if (onTop !== id) {
+		throw new Error(
+			`${onTop ?? 'nothing'} is on top where the explorer draws ${id}, so a tap there would not reach ${id}`
+		);
+	}
 	await page.mouse.click(point.x, point.y);
+}
+
+/**
+ * What the renderer's own hit test answers at the centre of this node. A layout is free to
+ * set somebody down on top of somebody else — the free arrangement starts from a random
+ * spread — and a tap there reaches whoever is on top. Asking first turns that into a loud
+ * failure naming both, instead of a click on the wrong node that a later assertion misreads.
+ */
+async function elementOnTopOf(page: Page, id: string): Promise<string | null> {
+	return page.evaluate((nodeId) => {
+		type Core = {
+			$id(id: string): { position(): { x: number; y: number } };
+			renderer(): {
+				findNearestElement(
+					x: number,
+					y: number,
+					interactive: boolean,
+					touch: boolean
+				): { id(): string } | undefined;
+			};
+		};
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const cy = (el as unknown as { _cyreg: { cy: Core } })._cyreg.cy;
+		const { x, y } = cy.$id(nodeId).position();
+		return cy.renderer().findNearestElement(x, y, true, false)?.id() ?? null;
+	}, id);
 }
 
 /**
