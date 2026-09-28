@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { applyAction, deserialize } from '$app/forms';
-	import { invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
@@ -14,6 +13,7 @@
 	import type { KeptOf, KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
+	import { linkHintHref } from '$lib/stream/link-hint';
 	import { tick } from 'svelte';
 	import { ulid } from 'ulid';
 
@@ -21,11 +21,11 @@
 	 * The "What happened?" field (docs/02 §2.22.1). A plain textarea that posts natively; the
 	 * @-picker, inline "Create …" queue and browser-side photo processing are enhancements.
 	 *
-	 * With JavaScript it saves through the same form action, but as a named command
-	 * (`commandId`), and when Stella cannot be reached it keeps the moment on the device
-	 * instead (docs/concepts/offline-capture.md §4). The name is what makes that safe: a moment
-	 * whose answer was lost on the way is kept under the same name, and Stella recognises it
-	 * when it arrives a second time. `editing` opens a kept moment that has not been sent yet.
+	 * With JavaScript it saves as a named command through the outbox, in reach or not
+	 * (docs/concepts/offline-capture.md §4, §8 #10): in reach it waits for Stella's answer, and
+	 * when there is none it keeps the moment on the device. The name is what makes that safe: a
+	 * moment whose answer was lost on the way is recognised when it arrives a second time.
+	 * `editing` opens a kept moment that has not been sent yet.
 	 */
 
 	interface Candidate {
@@ -249,31 +249,21 @@
 			const photos = await preparePhotos();
 			if (!reachability.reachable) return await keepForLater(formEl, photos);
 
-			const data = new FormData(formEl);
-			data.set('commandId', commandId);
-			for (const photo of photos) {
-				data.append('image', photo.image, 'photo.jpg');
-				data.append('thumb', photo.thumb, 'thumb.jpg');
-				data.append('width', String(photo.width));
-				data.append('height', String(photo.height));
-				data.append('photoId', photo.id);
+			const delivery = await outbox.submit(
+				{ id: commandId, type: 'moment.capture', payload: payloadFrom(formEl), issuedAt: Date.now() },
+				photos
+			);
+			if (delivery.status === 'refused') {
+				// The text stays in the field, to be corrected and saved as a new moment.
+				localError = delivery.reason;
+				commandId = ulid();
+				return;
 			}
-			let response: Response;
-			try {
-				response = await fetch(formEl.action, {
-					method: 'POST',
-					body: data,
-					headers: { 'x-sveltekit-action': 'true' }
-				});
-			} catch {
-				// Stella went out of reach mid-save — perhaps after storing it. Kept under the same
-				// name, it is recognised rather than saved twice.
-				return await keepForLater(formEl, photos);
-			}
-			const result = deserialize(await response.text());
-			if (result.type === 'redirect' || result.type === 'success') clear();
-			await applyAction(result);
-			if (result.type === 'success') await invalidateAll();
+			clear();
+			if (delivery.status === 'kept') return onKept?.();
+			// Back to the stream, offering to link the first two people in it (§2.22.1).
+			const { linkSuggestion } = delivery.result as { linkSuggestion: [string, string] | null };
+			await goto(linkHintHref(linkSuggestion), { invalidateAll: true });
 		} catch {
 			localError = t('composer.saveFailed');
 		} finally {

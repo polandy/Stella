@@ -266,3 +266,31 @@ export function recover(items: readonly OutboxItem[]): OutboxItem[] {
 		i.state === 'held' ? { ...i, state: i.reason === null ? 'pending' : 'refused' } : i
 	);
 }
+
+/**
+ * What became of a save the member is watching (concept §8 #10: online saves go through the
+ * outbox too). *Applied* hands the form Stella's result; *refused* its reason, for the form to
+ * show where the action's own error would be; *kept* means it waits on this device.
+ */
+export type Delivery =
+	| { status: 'applied'; result: unknown }
+	| { status: 'refused'; reason: string }
+	| { status: 'kept' };
+
+/**
+ * What Stella's answer to a watched save means for whoever watches it; null while that is not
+ * known yet — a "not now", or photos of it still on their way.
+ */
+export function deliveryFor(answer: CommandAnswer, photosLeft: boolean): Delivery | null {
+	if (answer.status === 'refused') return { status: 'refused', reason: answer.reason };
+	if (answer.status === 'applied' && !photosLeft) return { status: 'applied', result: answer.result };
+	return null;
+}
+
+/**
+ * A watched save still unsettled when a sending round ends: done if Stella took it (`applied`,
+ * only its photos left to send later), kept otherwise.
+ */
+export function deliveryLeftOver(applied: { result: unknown } | null): Delivery {
+	return applied ? { status: 'applied', result: applied.result } : { status: 'kept' };
+}

@@ -23,6 +23,7 @@ import {
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
+import { LINK_PARAM, linkHintHref } from '$lib/stream/link-hint';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
@@ -30,9 +31,6 @@ import type { MessageKey } from '$lib/i18n/translate';
  * query over existing tables; capture is the moments use-case. The layout guard already
  * ensures `locals.user`.
  */
-
-/** Query param carrying the post-save "link these two?" hint: `?link=<a>,<b>`. */
-const LINK_PARAM = 'link';
 
 /** Query param that opens the composer pre-filled with one person's handle: `?about=<id>`. */
 const ABOUT_PARAM = 'about';
@@ -204,7 +202,6 @@ export const actions: Actions = {
 			}
 		}
 
-		const hint = captured.linkSuggestion ? `?${LINK_PARAM}=${captured.linkSuggestion.join(',')}` : '';
-		throw redirect(303, `/${hint}`);
+		throw redirect(303, linkHintHref(captured.linkSuggestion));
 	}
 };

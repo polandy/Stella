@@ -1,17 +1,24 @@
+import { applyAction } from '$app/forms';
+import { invalidateAll } from '$app/navigation';
 import type { SubmitFunction } from '@sveltejs/kit';
 import { ulid } from 'ulid';
 import type { JsonCommand } from '../commands/commands';
+import { whilePending } from '../sync/pending';
+import type { PendingSink } from '../sync/pending-work';
+import type { KeptPhoto } from './outbox';
 import { outbox } from './outbox.svelte';
 import { reachability } from './reachability.svelte';
 
 /*
- * An adding form that still works out of reach (docs/concepts/offline-capture.md §4.1). Wraps
- * the form's own `use:enhance` handler: the post is named as a command (`commandId`), and
- * when Stella is known to be out of reach — or the post never got an answer — the same
- * command is kept in the outbox instead of failing. The name is what makes the second case
- * safe: had Stella stored it after all, the kept copy is recognised when it arrives.
+ * An adding form, saved as a command through the outbox (docs/concepts/offline-capture.md §4.1,
+ * §8 #10): the same path whether Stella is in reach or not. In reach, the form waits for the
+ * answer — applied, or refused with a reason it shows where the action's own error would be —
+ * and an answer that never comes leaves the command kept on the device, as it is when Stella is
+ * known to be out of reach. The command's id is what makes that safe: had Stella stored it
+ * after all, the kept copy is recognised when it arrives.
  *
- * An adapter; what may be kept is the command vocabulary's business, not this file's.
+ * Fields that are not a command yet (something required left empty) still post to the form's
+ * action, which says what is missing. An adapter; what may be kept is the vocabulary's business.
  */
 
 export interface Keepable {
@@ -19,39 +26,46 @@ export interface Keepable {
 	toCommand(data: FormData, id: string): JsonCommand | null;
 	/** Who it is about, for showing it away from this page — fixed, or read off the form. */
 	about: string | ((data: FormData) => string);
+	/** The key the form's action returns its error under; a refusal's reason is shown there. */
+	errorKey: string;
+	/** The photos going with it, processed in the browser; none if omitted. */
+	photos?(data: FormData): Promise<KeptPhoto[]>;
+	/** Stella took it (the page is already read again): close the form, act on `result`. */
+	onApplied(result: unknown): void | Promise<void>;
 	/** It was kept rather than sent: close the form, say so. */
 	onKept(): void;
+	/** Counts the save while it is on its way, for the shell's activity indicator. */
+	pending?: PendingSink;
 }
 
-/** Whether a failed post failed for want of a connection, rather than being answered. */
-function unanswered(error: unknown): boolean {
-	return error instanceof TypeError;
-}
+const NOTHING_PENDING: PendingSink = { begin() {}, end() {} };
 
-/** `inner`, but keeping the post in the outbox when Stella cannot take it. */
-export function keepable(keep: Keepable, inner: SubmitFunction): SubmitFunction {
+/** The form saving through the outbox; `invalid` handles fields that are not a command. */
+export function keepable(keep: Keepable, invalid: SubmitFunction): SubmitFunction {
 	return async (input) => {
-		const id = ulid();
-		input.formData.set('commandId', id);
-		const kept = async () => {
-			const command = keep.toCommand(input.formData, id);
-			if (!command) return false;
-			const about = typeof keep.about === 'string' ? keep.about : keep.about(input.formData);
-			await outbox.add(command, [], about);
-			keep.onKept();
-			return true;
-		};
+		const command = keep.toCommand(input.formData, ulid());
+		if (!command) return invalid(input);
+		input.cancel();
 
+		const photos = keep.photos ? await keep.photos(input.formData) : [];
+		const about = typeof keep.about === 'string' ? keep.about : keep.about(input.formData);
 		if (!reachability.reachable) {
-			input.cancel();
-			await kept();
+			await outbox.add(command, photos, about);
+			keep.onKept();
 			return;
 		}
-		const after = await inner(input);
-		return async (options) => {
-			if (options.result.type === 'error' && unanswered(options.result.error) && (await kept())) return;
-			if (after) await after(options);
-			else await options.update();
-		};
+		await whilePending(keep.pending ?? NOTHING_PENDING, async () => {
+			const delivery = await outbox.submit(command, photos, about);
+			if (delivery.status === 'refused') {
+				await applyAction({ type: 'failure', status: 400, data: { [keep.errorKey]: delivery.reason } });
+			} else if (delivery.status === 'kept') {
+				keep.onKept();
+			} else {
+				// Clears an error an earlier try left on the form, as a successful action would.
+				await applyAction({ type: 'success', status: 200 });
+				await invalidateAll();
+				await keep.onApplied(delivery.result);
+			}
+		});
 	};
 }

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import type { CommandAnswer, JsonCommand } from '../commands/commands';
 import {
+	deliveryFor,
+	deliveryLeftOver,
 	discard,
 	discardAllOf,
 	hold,
@@ -248,5 +250,38 @@ describe('discardAllOf', () => {
 	it('cannot recall what is already on its way', () => {
 		const items = takeBatch(add(add([], 'a'), 'b'), 'u1', 1).items;
 		expect(states(discardAllOf(items, 'u1'))).toEqual([['a', 'sending']]);
+	});
+});
+
+describe('what a save someone is watching learns (online saves, concept §8 #10)', () => {
+	it('is done once Stella applied it and no photo of it waits', () => {
+		expect(deliveryFor({ id: 'a', status: 'applied', result: { noteId: 'n' } }, false)).toEqual({
+			status: 'applied',
+			result: { noteId: 'n' }
+		});
+	});
+
+	it('is not settled yet while its photos are still on their way', () => {
+		expect(deliveryFor({ id: 'a', status: 'applied', result: {} }, true)).toBeNull();
+	});
+
+	it('is refused with Stella’s reason, for the form to show', () => {
+		expect(deliveryFor({ id: 'a', status: 'refused', reason: 'Already linked.' }, false)).toEqual({
+			status: 'refused',
+			reason: 'Already linked.'
+		});
+	});
+
+	it('learns nothing from a “not now”', () => {
+		expect(deliveryFor({ id: 'a', status: 'busy' }, false)).toBeNull();
+		expect(deliveryFor({ id: 'a', status: 'failed' }, false)).toBeNull();
+	});
+
+	it('is kept for later when a round ends without an answer for it', () => {
+		expect(deliveryLeftOver(null)).toEqual({ status: 'kept' });
+	});
+
+	it('is done when Stella took it and only its photos are left to send later', () => {
+		expect(deliveryLeftOver({ result: { entryId: 'e' } })).toEqual({ status: 'applied', result: { entryId: 'e' } });
 	});
 });

@@ -290,7 +290,17 @@
 	});
 	const saved = (name: SectionName) =>
 		savedEnhance(removals, t('components.saved'), () => (openSection[name] = false));
-	// The note form keeps a note on the device when Stella cannot take it (docs/02 §2.18).
+	/** What a form saved through the outbox does once Stella took it: say so, then `close`. */
+	const savedThen = (close: () => void) => () => {
+		removals.notify(t('components.saved'));
+		close();
+	};
+	function clearNote() {
+		noteBody = '';
+		notePinned = false;
+		openSection.note = false;
+	}
+	// The note form saves through the outbox, keeping the note when Stella cannot take it (§2.18).
 	const keepNote = $derived(
 		keepable(
 			{
@@ -310,11 +320,9 @@
 					};
 				},
 				about: data.contact.displayName,
-				onKept: () => {
-					noteBody = '';
-					notePinned = false;
-					openSection.note = false;
-				}
+				errorKey: 'noteError',
+				onApplied: savedThen(clearNote),
+				onKept: clearNote
 			},
 			saved('note')
 		)
@@ -350,6 +358,8 @@
 					};
 				},
 				about: c.displayName,
+				errorKey: 'tagError',
+				onApplied: savedThen(() => (openSection.tags = false)),
 				onKept: () => (openSection.tags = false)
 			},
 			saved('tags')
@@ -370,6 +380,8 @@
 					};
 				},
 				about: c.displayName,
+				errorKey: 'circleError',
+				onApplied: savedThen(() => (openSection.circles = false)),
 				onKept: () => (openSection.circles = false)
 			},
 			saved('circles')
@@ -397,13 +409,11 @@
 	 * on this page moves while it runs.
 	 */
 	const graphPending = usePending();
-	const savedRelationship = trackPending(
-		graphPending,
-		savedEnhance(removals, t('components.saved'), () => {
-			relateOpen = false;
-			relationshipTargetId = [];
-		})
-	);
+	function closeRelate() {
+		relateOpen = false;
+		relationshipTargetId = [];
+	}
+	const savedRelationship = trackPending(graphPending, savedEnhance(removals, t('components.saved'), closeRelate));
 	/*
 	 * The specifics of the link being entered, watched so the form can fill in what it already
 	 * knows: a family link began on the younger one's birthday (docs/02 §2.4).
@@ -450,10 +460,10 @@
 				},
 				about: (form) =>
 					`${c.displayName} · ${keptLinkLabel(String(form.get('typeChoice') ?? ''), String(form.get('targetId') ?? ''))}`,
-				onKept: () => {
-					relateOpen = false;
-					relationshipTargetId = [];
-				}
+				errorKey: 'error',
+				pending: graphPending,
+				onApplied: savedThen(closeRelate),
+				onKept: closeRelate
 			},
 			savedRelationship
 		)
@@ -575,6 +585,10 @@
 		participantIds = [];
 		logFresh++;
 	}
+	function closeLog() {
+		clearLog();
+		logOpen = false;
+	}
 	async function editKeptLog(item: KeptOf<'interaction.log'>) {
 		if (!(await outbox.hold(item.command.id))) return;
 		const p = item.command.payload;
@@ -620,15 +634,11 @@
 			{
 				toCommand: logCommandFrom,
 				about: c.displayName,
-				onKept: () => {
-					clearLog();
-					logOpen = false;
-				}
+				errorKey: 'interactionError',
+				onApplied: savedThen(closeLog),
+				onKept: closeLog
 			},
-			savedEnhance(removals, t('components.saved'), () => {
-				clearLog();
-				logOpen = false;
-			})
+			savedEnhance(removals, t('components.saved'), closeLog)
 		)
 	);
 	const logForm: SubmitFunction = (input) => {

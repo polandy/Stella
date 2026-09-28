@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 	import Button from '$lib/components/Button.svelte';
 	import { keepable } from '$lib/pwa/keepable';
 	import DateField from '$lib/components/DateField.svelte';
@@ -52,9 +53,10 @@
 	}
 
 	/*
-	 * Out of reach, the person is kept on this device and added once Stella answers again
-	 * (docs/02 §2.18). Their page cannot open before then, so the form says so and stays here,
-	 * empty, ready for the next one; they show on Home as not sent yet.
+	 * Saved through the outbox (docs/concepts/offline-capture.md §8 #10). Out of reach, the
+	 * person is kept on this device and added once Stella answers again (docs/02 §2.18). Their
+	 * page cannot open before then, so the form says so and stays here, empty, ready for the
+	 * next one; they show on Home as not sent yet.
 	 */
 	let keptName = $state<string | null>(null);
 	let formElement: HTMLFormElement | undefined = $state();
@@ -82,6 +84,13 @@
 				};
 			},
 			about: nameOf,
+			errorKey: 'error',
+			// Straight to the new person, into the relationship editor when a relative was picked.
+			onApplied: async (result) => {
+				const { contactId } = result as { contactId: string };
+				const relate = relateTo ? `?relate=${encodeURIComponent(relateTo)}` : '';
+				await goto(`/contacts/${contactId}${relate}`);
+			},
 			onKept: () => {
 				keptName = firstName || lastName ? [firstName, lastName].filter(Boolean).join(' ') : null;
 				firstName = '';
