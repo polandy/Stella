@@ -1,11 +1,17 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
+	import KeptItem from '$lib/components/KeptItem.svelte';
 	import { processImage } from '$lib/image/process-image';
+	import { keepable } from '$lib/pwa/keepable';
+	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
+	import { outbox } from '$lib/pwa/outbox.svelte';
+	import { ulid } from 'ulid';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey as buildKey } from '$lib/undo/keys';
 	import { submitAction } from '$lib/undo/submit-action';
@@ -26,40 +32,72 @@
 	let picked = $state<File[]>([]);
 	let uploading = $state(false);
 	let uploadError = $state<string | null>(null);
+	let composeForm: HTMLFormElement | undefined = $state();
 
 	function onFiles(event: Event) {
 		picked = Array.from((event.currentTarget as HTMLInputElement).files ?? []);
 	}
 
-	// Progressive enhancement: with no images, let the form post natively (text-only). With
-	// images, process them client-side (downscale + EXIF strip) and post everything via fetch.
-	async function onSubmit(event: SubmitEvent) {
-		if (picked.length === 0) return; // native submit handles the text
-		event.preventDefault();
-		const formEl = event.currentTarget as HTMLFormElement;
-		uploading = true;
-		uploadError = null;
-		try {
-			const body = new FormData(formEl);
-			for (const file of picked) {
-				const { image, thumb, width, height } = await processImage(file);
-				body.append('image', image, 'photo.jpg');
-				body.append('thumb', thumb, 'thumb.jpg');
-				body.append('width', String(width));
-				body.append('height', String(height));
-			}
-			const res = await fetch(`/contacts/${c.id}/journal?/save`, { method: 'POST', body });
-			if (!res.ok) throw new Error();
-			formEl.reset();
-			picked = [];
-			composing = false;
-			await invalidateAll();
-		} catch {
-			uploadError = t('journal.uploadFailed');
-		} finally {
-			uploading = false;
-		}
+	/*
+	 * An entry is saved as a command through the outbox, in reach or not (docs/concepts/
+	 * offline-capture.md §4.1, §8 #10): its photos are processed first (downscaled, location
+	 * stripped) and follow it. Kept on the device when Stella cannot take it, it shows above the
+	 * timeline until it is sent. Without JavaScript the form posts to its action as before.
+	 */
+	const keptEntries = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'journal.write'> =>
+				isKept(item, 'journal.write') && item.command.payload.contactId === c.id
+		)
+	);
+	function doneComposing() {
+		composeForm?.reset();
+		picked = [];
+		entryVisibility = 'shared';
+		composing = false;
 	}
+	const journalForm = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const body = String(form.get('body') ?? '').trim();
+					const entryDate = String(form.get('entryDate') ?? '');
+					if (!body || !entryDate) return null;
+					return {
+						id,
+						type: 'journal.write',
+						payload: {
+							contactId: c.id,
+							entryDate,
+							title: String(form.get('title') ?? '').trim() || null,
+							body,
+							visibility: form.get('visibility') === 'private' ? 'private' : 'shared'
+						},
+						issuedAt: Date.now()
+					};
+				},
+				about: c.displayName,
+				errorKey: 'journalError',
+				photos: async () => {
+					uploading = true;
+					uploadError = null;
+					try {
+						const photos: KeptPhoto[] = [];
+						for (const file of picked) photos.push({ id: ulid(), ...(await processImage(file)) });
+						return photos;
+					} catch {
+						uploadError = t('journal.uploadFailed');
+						return null;
+					} finally {
+						uploading = false;
+					}
+				},
+				onApplied: doneComposing,
+				onKept: doneComposing
+			},
+			() => {}
+		)
+	);
 
 	// Removing is held back for an undo window (docs/02 §2.23), same as on the story.
 	const removals = useRemovals();
@@ -165,7 +203,8 @@
 			method="POST"
 			action="?/save"
 			enctype="multipart/form-data"
-			onsubmit={onSubmit}
+			use:enhance={journalForm}
+			bind:this={composeForm}
 			class="flex flex-col gap-3 rounded-app bg-card p-5 shadow-card"
 		>
 			{#if form?.journalError}
@@ -232,6 +271,20 @@
 				{t('journal.oneEntryPerDay')}
 			</p>
 		</form>
+	{/if}
+
+	{#if keptEntries.length > 0}
+		<ul class="flex flex-col gap-2" data-testid="kept-entries">
+			{#each keptEntries as item (item.command.id)}
+				<li>
+					<KeptItem {item}>
+						{#snippet meta()}<span>· {prettyDate(item.command.payload.entryDate)}</span>{/snippet}
+						{#if item.command.payload.title}<p class="mt-1 font-medium text-fg">{item.command.payload.title}</p>{/if}
+						<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
+					</KeptItem>
+				</li>
+			{/each}
+		</ul>
 	{/if}
 
 	{#if days.length}

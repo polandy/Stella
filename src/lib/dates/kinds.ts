@@ -8,3 +8,8 @@ export const IMPORTANT_DATE_KINDS = ['birthday', 'anniversary', 'custom'] as con
 
 /** One of `IMPORTANT_DATE_KINDS`. */
 export type ImportantDateKind = (typeof IMPORTANT_DATE_KINDS)[number];
+
+/** Whether `value` — a form field, say — is one of `IMPORTANT_DATE_KINDS`. */
+export function isImportantDateKind(value: string): value is ImportantDateKind {
+	return (IMPORTANT_DATE_KINDS as readonly string[]).includes(value);
+}

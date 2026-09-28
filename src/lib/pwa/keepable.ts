@@ -28,8 +28,11 @@ export interface Keepable {
 	about: string | ((data: FormData) => string);
 	/** The key the form's action returns its error under; a refusal's reason is shown there. */
 	errorKey: string;
-	/** The photos going with it, processed in the browser; none if omitted. */
-	photos?(data: FormData): Promise<KeptPhoto[]>;
+	/**
+	 * The photos going with it, processed in the browser; none if omitted. Null when they could
+	 * not be processed — the page says why, and nothing is saved.
+	 */
+	photos?(data: FormData): Promise<KeptPhoto[] | null>;
 	/** Stella took it (the page is already read again): close the form, act on `result`. */
 	onApplied(result: unknown): void | Promise<void>;
 	/** It was kept rather than sent: close the form, say so. */
@@ -48,6 +51,7 @@ export function keepable(keep: Keepable, invalid: SubmitFunction): SubmitFunctio
 		input.cancel();
 
 		const photos = keep.photos ? await keep.photos(input.formData) : [];
+		if (!photos) return;
 		const about = typeof keep.about === 'string' ? keep.about : keep.about(input.formData);
 		if (!reachability.reachable) {
 			await outbox.add(command, photos, about);

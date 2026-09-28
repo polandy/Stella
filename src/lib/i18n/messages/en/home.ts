@@ -40,6 +40,10 @@ export const home = {
 	'home.outbox.circleFor': (p: { name: string }) => `· circle for ${p.name}`,
 	'home.outbox.link': '· relationship',
 	'home.outbox.newPerson': '· new person',
+	'home.outbox.journalOf': (p: { name: string }) => `· journal of ${p.name}`,
+	'home.outbox.contactFor': (p: { name: string }) => `· contact detail for ${p.name}`,
+	'home.outbox.dateFor': (p: { name: string }) => `· date for ${p.name}`,
+	'home.outbox.photosOf': (p: { name: string }) => `· photos of ${p.name}`,
 	'home.empty.title': 'Nothing written yet',
 	'home.empty.hint':
 		'Write the first moment above and mention someone with @ — that is all it takes.',

@@ -7,6 +7,7 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
+	import { dayLabel as calendarDayLabel } from '$lib/dates/labels';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import KeptItem from '$lib/components/KeptItem.svelte';
@@ -239,6 +240,28 @@
 					<KeptItem {item}>
 						{#snippet meta()}<span>{t('home.outbox.circleFor', { name: item.about ?? '' })}</span>{/snippet}
 						<p class="mt-1 text-fg">{item.command.payload.circleName}{item.command.payload.role ? ` · ${item.command.payload.role}` : ''}</p>
+					</KeptItem>
+				{:else if isKept(item, 'journal.write')}
+					<KeptItem {item} editHref={`/contacts/${item.command.payload.contactId}/journal`}>
+						{#snippet meta()}
+							<span>{t('home.outbox.journalOf', { name: item.about ?? '' })}</span>
+							<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.entryDate}>{keptDay(item.command.payload.entryDate)}</span>
+						{/snippet}
+						<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
+					</KeptItem>
+				{:else if isKept(item, 'field.add')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.contactFor', { name: item.about ?? '' })}</span>{/snippet}
+						<p class="mt-1 text-fg">{item.command.payload.value}</p>
+					</KeptItem>
+				{:else if isKept(item, 'date.add')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.dateFor', { name: item.about ?? '' })}</span>{/snippet}
+						<p class="mt-1 text-fg">{[item.command.payload.label, calendarDayLabel(i18n, item.command.payload.date)].filter(Boolean).join(' · ')}</p>
+					</KeptItem>
+				{:else if isKept(item, 'gallery.add')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.photosOf', { name: item.about ?? '' })}</span>{/snippet}
 					</KeptItem>
 				{/if}
 			{/each}

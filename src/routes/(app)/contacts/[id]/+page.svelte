@@ -55,9 +55,12 @@
 	import type { JsonCommand } from '$lib/commands/commands';
 	import { untrack } from 'svelte';
 	import { ulid } from 'ulid';
-	import { isKept, type KeptOf } from '$lib/pwa/outbox';
+	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { keepable } from '$lib/pwa/keepable';
+	import { reachability } from '$lib/pwa/reachability.svelte';
+	import { isContactFieldKind } from '$lib/contact-fields/kinds';
+	import { isImportantDateKind } from '$lib/dates/kinds';
 	import KeptItem from '$lib/components/KeptItem.svelte';
 	import KeptChip from '$lib/components/KeptChip.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
@@ -109,6 +112,16 @@
 	/** When a gallery photo was added, in the viewer's language (docs/02 §2.14). */
 	const photoDate = (createdAt: number): string => dayLabel(i18n, new Date(createdAt).toISOString());
 
+	/*
+	 * An upload is saved through the outbox like every addition (docs/concepts/offline-capture.md
+	 * §8 #10): the photos, processed first, go with a `gallery.add` naming the person, and are
+	 * kept on the device when Stella cannot take them — shown above the grid until they are sent.
+	 */
+	const keptGallery = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'gallery.add'> => isKept(item, 'gallery.add') && item.command.payload.contactId === c.id
+		)
+	);
 	async function uploadPhotos(event: SubmitEvent) {
 		event.preventDefault();
 		const formEl = event.currentTarget as HTMLFormElement;
@@ -116,20 +129,27 @@
 		uploading = true;
 		uploadError = null;
 		try {
-			const body = new FormData(formEl);
-			body.delete('files');
-			for (const file of picked) {
-				const { image, thumb, width, height } = await processImage(file);
-				body.append('image', image, 'photo.jpg');
-				body.append('thumb', thumb, 'thumb.jpg');
-				body.append('width', String(width));
-				body.append('height', String(height));
+			const photos: KeptPhoto[] = [];
+			for (const file of picked) photos.push({ id: ulid(), ...(await processImage(file)) });
+			const visibility = new FormData(formEl).get('visibility') === 'private' ? 'private' : 'shared';
+			const command: JsonCommand = {
+				id: ulid(),
+				type: 'gallery.add',
+				payload: { contactId: c.id, visibility },
+				issuedAt: Date.now()
+			};
+			if (!reachability.reachable) {
+				await outbox.add(command, photos, c.displayName);
+			} else {
+				const delivery = await outbox.submit(command, photos, c.displayName);
+				if (delivery.status === 'refused') {
+					uploadError = delivery.reason;
+					return;
+				}
+				if (delivery.status === 'applied') await invalidateAll();
 			}
-			const res = await fetch(`/contacts/${c.id}?/addGalleryPhotos`, { method: 'POST', body });
-			if (!res.ok) throw new Error();
 			picked = [];
 			formEl.reset();
-			await invalidateAll();
 		} catch {
 			uploadError = t('contact.photos.uploadFailed');
 		} finally {
@@ -385,6 +405,72 @@
 				onKept: () => (openSection.circles = false)
 			},
 			saved('circles')
+		)
+	);
+	/*
+	 * Ways to reach someone and their dates, added while Stella was out of reach: kept on the
+	 * device and shown as dashed chips above the real ones until they are sent (docs/02 §2.18).
+	 */
+	const keptFields = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'field.add'> => isKept(item, 'field.add') && item.command.payload.contactId === c.id
+		)
+	);
+	const keptDates = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'date.add'> => isKept(item, 'date.add') && item.command.payload.contactId === c.id
+		)
+	);
+	const fieldForm = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const kind = String(form.get('kind') ?? '');
+					const value = String(form.get('value') ?? '').trim();
+					if (!isContactFieldKind(kind) || !value) return null;
+					return {
+						id,
+						type: 'field.add',
+						payload: { contactId: c.id, kind, label: String(form.get('label') ?? '').trim() || null, value },
+						issuedAt: Date.now()
+					};
+				},
+				about: c.displayName,
+				errorKey: 'fieldError',
+				onApplied: savedThen(() => (openSection.contact = false)),
+				onKept: () => (openSection.contact = false)
+			},
+			saved('contact')
+		)
+	);
+	const dateForm = $derived(
+		keepable(
+			{
+				toCommand: (form, id) => {
+					const kind = String(form.get('kind') ?? '');
+					// The date field posts `--MM-DD` itself when the year was left blank (§2.13).
+					const date = String(form.get('date') ?? '').trim();
+					if (!isImportantDateKind(kind) || !date) return null;
+					return {
+						id,
+						type: 'date.add',
+						payload: {
+							contactId: c.id,
+							kind,
+							label: String(form.get('label') ?? '').trim() || null,
+							date,
+							recursYearly: form.get('recursYearly') !== null,
+							remind: form.get('remind') !== null
+						},
+						issuedAt: Date.now()
+					};
+				},
+				about: c.displayName,
+				errorKey: 'dateError',
+				onApplied: savedThen(() => (openSection.dates = false)),
+				onKept: () => (openSection.dates = false)
+			},
+			saved('dates')
 		)
 	);
 	// While a kept note is open, the form saves into it instead of posting.
@@ -749,6 +835,13 @@
 			<section class="flex flex-col rounded-app bg-card p-4 shadow-card">
 				<h2 class="mb-1 text-sm font-semibold text-fg">{t('contact.section.profile')}</h2>
 				<Section as="row" title={t('contact.section.contact')} count={visibleFields.length} startOpen={visibleFields.length > 0} addLabel={t('common.add')} error={form?.fieldError ?? null} bind:open={openSection.contact}>
+				{#if keptFields.length > 0}
+					<ul class="mb-2 flex flex-wrap gap-1.5" data-testid="kept-fields">
+						{#each keptFields as item (item.command.id)}
+							<KeptChip {item} label={`${item.command.payload.label ?? kindLabel('fieldKind', item.command.payload.kind)} · ${item.command.payload.value}`} />
+						{/each}
+					</ul>
+				{/if}
 				{#if visibleFields.length > 0}
 					<dl class="grid grid-cols-[5rem_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-sm">
 						{#each visibleFields as f (f.id)}
@@ -776,7 +869,7 @@
 				{/if}
 
 				{#snippet editor()}
-					<form method="POST" action="?/addField" use:enhance={saved('contact')} class="flex flex-wrap items-end gap-2">
+					<form method="POST" action="?/addField" use:enhance={fieldForm} class="flex flex-wrap items-end gap-2">
 						<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
 							{#each data.fieldKinds as kind (kind)}
 								<option value={kind}>{kindLabel('fieldKind', kind)}</option>
@@ -790,6 +883,13 @@
 			</Section>
 
 				<Section as="row" title={t('contact.section.dates')} count={visibleDates.length} startOpen={hasDates} addLabel={t('common.add')} error={form?.dateError ?? null} bind:open={openSection.dates}>
+				{#if keptDates.length > 0}
+					<ul class="mb-2 flex flex-wrap gap-1.5" data-testid="kept-dates">
+						{#each keptDates as item (item.command.id)}
+							<KeptChip {item} label={`${item.command.payload.label ?? kindLabel('dateKind', item.command.payload.kind)} · ${dayLabel(i18n, item.command.payload.date)}`} />
+						{/each}
+					</ul>
+				{/if}
 				{#if data.derivedBirthday || data.estimatedBirthYear || visibleDates.length > 0}
 					<ul class="flex flex-col gap-1.5 text-sm">
 						{#if data.estimatedBirthYear}
@@ -836,7 +936,7 @@
 				{/if}
 
 				{#snippet editor()}
-					<form method="POST" action="?/addDate" use:enhance={saved('dates')} class="flex flex-wrap items-end gap-2">
+					<form method="POST" action="?/addDate" use:enhance={dateForm} class="flex flex-wrap items-end gap-2">
 						<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
 							{#each data.dateKinds as kind (kind)}
 								<option value={kind}>{kindLabel('dateKind', kind)}</option>
@@ -1669,6 +1769,13 @@
 					addLabel={t('contact.photos.add')}
 					error={form?.photoError ?? uploadError}
 				>
+					{#if keptGallery.length > 0}
+						<ul class="mb-3 flex flex-col gap-2" data-testid="kept-gallery">
+							{#each keptGallery as item (item.command.id)}
+								<li><KeptItem {item} /></li>
+							{/each}
+						</ul>
+					{/if}
 					{#if data.gallery.length > 0}
 						<ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="photo-grid">
 							{#each data.gallery as p, index (p.id)}

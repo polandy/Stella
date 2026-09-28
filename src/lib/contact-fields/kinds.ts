@@ -8,3 +8,8 @@ export const CONTACT_FIELD_KINDS = ['phone', 'email', 'address', 'url', 'social'
 
 /** One of `CONTACT_FIELD_KINDS`. */
 export type ContactFieldKind = (typeof CONTACT_FIELD_KINDS)[number];
+
+/** Whether `value` — a form field, say — is one of `CONTACT_FIELD_KINDS`. */
+export function isContactFieldKind(value: string): value is ContactFieldKind {
+	return (CONTACT_FIELD_KINDS as readonly string[]).includes(value);
+}
