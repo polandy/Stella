@@ -52,10 +52,13 @@ jobs:
           images: ${{ env.IMAGE }}
           # `value:` supplies the version, because the workflow runs off the caller's ref
           # rather than the tag and the semver patterns would otherwise match nothing.
+          # A release candidate (`v0.1.0-rc.1`) gets its own version tag only: `latest` is what
+          # unpinned installs pull, and a candidate must never reach them unasked. (The
+          # `{{major}}.{{minor}}` pattern already skips pre-releases by itself.)
           tags: |
             type=semver,pattern={{version}},value=${{ inputs.tag }}
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.tag }}
-            type=raw,value=latest
+            type=raw,value=latest,enable=${{ !contains(inputs.tag, '-') }}
 
       - id: build
         uses: docker/build-push-action@v6

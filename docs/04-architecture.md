@@ -366,6 +366,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   instance makes on its own — it names nothing about the household, is announced in
   `docs/install.md`, and a household that prefers Stella ask nobody anything sets
   `UPDATE_CHECK=false`. (§2.17.1.)
+- **Release candidates are cut by hand, flagged by the workflow** — release-please's own
+  `prerelease` option would flag every 0.x release too (it treats pre-major as pre-release),
+  and the release check reads `releases/latest`, which skips pre-releases. So a candidate is a
+  `Release-As: X.Y.Z-rc.N` footer, the release job flags it, and `publish` withholds `latest`.
+  The cost accepted: while a candidate is open every release needs its own `Release-As`, and
+  for the seconds between release and flag `releases/latest` names the candidate. Revisit at
+  1.0, where the built-in option stops catching final releases. (`docs/08` §8.9.)
 - **Our own message catalogue over an i18n library** — two languages and no plural rules
   beyond "one or many" do not pay for Paraglide's compiler or a runtime store. Typed area
   modules give the same guarantee more cheaply: German is typed against English, so a
