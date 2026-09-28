@@ -5,9 +5,9 @@ import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { requireAdmin } from '$lib/server/auth/guards';
+import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
 import {
 	addContactField,
-	CONTACT_FIELD_KINDS,
 	fieldHref,
 	listContactFields
 } from '$lib/server/domain/contact-fields/contact-fields';
@@ -34,7 +34,7 @@ import {
 	listImportantDates,
 	overridesDerivedBirthday
 } from '$lib/server/domain/dates/important-dates';
-import { IMPORTANT_DATE_KINDS } from '$lib/server/domain/dates/upcoming';
+import { IMPORTANT_DATE_KINDS } from '$lib/dates/kinds';
 import {
 	deleteInteraction,
 	INTERACTION_KINDS,

@@ -1,6 +1,6 @@
 import type { Visibility } from '../../../access/visibility';
 import type { CircleKind } from '../../circles/circles';
-import type { ContactFieldKind } from '../../contact-fields/contact-fields';
+import type { ContactFieldKind } from '../../../../contact-fields/kinds';
 
 /*
  * The document the import API accepts (docs/02 §2.16.1), as the domain reads it once the edge

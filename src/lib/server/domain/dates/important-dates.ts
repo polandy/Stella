@@ -4,7 +4,8 @@ import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
-import { IMPORTANT_DATE_KINDS, type ImportantDateKind, type UpcomingSource } from './upcoming';
+import { IMPORTANT_DATE_KINDS, type ImportantDateKind } from '../../../dates/kinds';
+import type { UpcomingSource } from './upcoming';
 
 /*
  * Important date use-cases (docs/02 §2.13). Dates are child records of a contact and have no
