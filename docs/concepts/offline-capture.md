@@ -1,10 +1,9 @@
 # Concept — Adding to Stella while it is out of reach
 
-Status: **being built, moments first.** The decision is logged in `docs/04-architecture.md`
+Status: **built, every addition of §4.1.** The decision is logged in `docs/04-architecture.md`
 §4.9 (*Mutations become commands, not events*), the structure is docs/04 §4.11.2, and what a
-member sees is docs/02 §2.18. This paper is the plan behind it. Built so far: the command
-dispatcher and its receipts, `POST /api/commands`, and keeping a moment with its photos on
-the phone. Everything decided while the maintainer was away is listed in §8, for review.
+member sees is docs/02 §2.18. This paper is the plan behind it. Everything decided while the
+maintainer was away is listed in §8, for review.
 
 ---
 
@@ -371,11 +370,12 @@ ones marked **(deviates)** differ from something said earlier and need a yes or 
     itself, a contact field (phone, e-mail, …), an important date, and gallery photos. §4.1
     did not name them; each would be a command kind, a checked use-case and one `keepable` in
     its page. Worth deciding whether they belong.
-23. **The Playwright e2e is not written** — it waits for the maintainer's check in the app, as
-    always. Every flow was tried in the browser with throwaway specs (not committed), and the
-    full existing suite passes. The e2e suite blocks service workers (a Chromium crash, see
-    `playwright.config.ts`), so the worker's part is covered by unit tests of the pure policy
-    and by trying it on a phone.
+23. **The Playwright e2e covers the page, not the worker.** Written after the maintainer's
+    check (`e2e/offline-capture.spec.ts`, `e2e/offline-person.spec.ts`). The suite blocks
+    service workers (a Chromium crash, see `playwright.config.ts`), so the specs go offline
+    with `context.setOffline`: the save fails on the way and is kept — the *Stella stopped
+    answering mid-save* path. The worker's part (the banner, cached pages, *Save for later*
+    known in advance) is covered by unit tests of the pure policy and by trying it on a phone.
 
 **Found on the way**
 
