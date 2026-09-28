@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.19-rc.1](https://github.com/polandy/Stella/compare/v0.0.18...v0.0.19-rc.1) (2026-09-28)
+
+
+### Features
+
+* keep additions on the phone while Stella is out of reach ([#153](https://github.com/polandy/Stella/issues/153)) ([afb3b19](https://github.com/polandy/Stella/commit/afb3b19feecee95501aaa1d21dddea4a69481398))
+
+
+### Bug Fixes
+
+* **moments:** append a second same-day moment instead of replacing the first ([#154](https://github.com/polandy/Stella/issues/154)) ([e0c9869](https://github.com/polandy/Stella/commit/e0c98699e715c02f36a18c0736aeb7a8f984af83))
+
+
+### Continuous Integration
+
+* cut release candidates without reaching latest ([#158](https://github.com/polandy/Stella/issues/158)) ([f047e5b](https://github.com/polandy/Stella/commit/f047e5b2155a92612681a877c5bf673ab630ebdf))
+
 ## [0.0.18](https://github.com/polandy/Stella/compare/v0.0.17...v0.0.18) (2026-09-27)
 
 
