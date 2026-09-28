@@ -7,8 +7,10 @@
 	import type { ActionData } from './$types';
 
 	import Icon from '$lib/components/Icon.svelte';
+	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { MessageKey } from '$lib/i18n/translate';
+	import { wantsSomethingToKnowThemBy } from '$lib/people/new-person';
 	import type { RankedCandidate } from '$lib/server/domain/contacts/suggestions';
 
 	let { form }: { form: ActionData } = $props();
@@ -29,6 +31,9 @@
 
 	let firstName = $state('');
 	let lastName = $state('');
+	/** Held here so it survives the field moving into the nudge and back (docs/02 §2.2.3). */
+	let description = $state('');
+	const askForSomethingToKnowThemBy = $derived(wantsSomethingToKnowThemBy({ firstName, lastName }));
 	let suggestions = $state<RankedCandidate[]>([]);
 	let relateTo = $state<string | null>(null);
 	let timer: ReturnType<typeof setTimeout> | null = null;
@@ -95,6 +100,7 @@
 				keptName = firstName || lastName ? [firstName, lastName].filter(Boolean).join(' ') : null;
 				firstName = '';
 				lastName = '';
+				description = '';
 				suggestions = [];
 				relateTo = null;
 				formElement?.reset();
@@ -163,13 +169,23 @@
 			</section>
 		{/if}
 
-		<label class={field}>
-			<span class="text-fg-muted">
-				{t('contacts.new.description')}
-				<span class="text-fg-subtle">{t('contacts.new.descriptionHint')}</span>
-			</span>
-			<input name="description" class={input} placeholder={t('contacts.new.descriptionPlaceholder')} />
-		</label>
+		{#if askForSomethingToKnowThemBy}
+			<KnowThemBy
+				{firstName}
+				label={t('contacts.new.description')}
+				name="description"
+				bind:value={description}
+				inputClass="rounded-md border border-border bg-card px-3 py-2 text-fg"
+			/>
+		{:else}
+			<label class={field}>
+				<span class="text-fg-muted">
+					{t('contacts.new.description')}
+					<span class="text-fg-subtle">{t('contacts.new.descriptionHint')}</span>
+				</span>
+				<input name="description" class={input} bind:value={description} placeholder={t('contacts.new.descriptionPlaceholder')} />
+			</label>
+		{/if}
 
 		<div class="flex gap-3">
 			<label class="{field} flex-1">

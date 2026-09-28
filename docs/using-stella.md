@@ -101,6 +101,12 @@ family knowing, the rest of the household sees *"… removed …"* in the stream
 **Adding someone** takes a name and nothing else. Everything beyond that — description,
 phone, email, address, birthday — is optional and can be filled in whenever.
 
+If you only know a first name — the family you met at the mountain hut — Stella asks for a
+line to know them by, such as *SAC hut, Aug 2026*. You don't have to give one, but it pays
+off: wherever you pick a person, and in the ⌘K search, two people with the same name show a
+second line with their description, or where and when you met them, so you can tell which
+Thomas is which.
+
 As soon as you type a surname, Stella checks whether that person might already be here.
 An **Already in Stella?** box lists people with the same or a similar surname — someone
 with exactly the same name comes first, in case you are about to add them twice. Each name

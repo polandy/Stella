@@ -126,10 +126,18 @@ Goal: sand the edges and add the nice-to-haves.
   through so a person is recognisable at a glance there too.
 - *TODO, concept first:* **context hints for people without a last name** — some people are
   only known by first name and where they belong, so a search result for them should say who
-  they are: *Sister of Hans Meyer*, *in the circle Class 9a*. Work out a concept before
-  building: which context wins when there are several (relationship vs. circle, which one),
-  where the hint shows (search, person pickers, the graph?), and how it stays access-scoped
-  so it never names a person or circle the viewer may not see (§2.10).
+  they are: *Sister of Hans Meyer*, *in the circle Class 9a*. ~~Description and where/when
+  met~~ — shipped as the namesake line in ⌘K and the person pickers, with a nudge for a
+  description when someone is added without a last name (§2.2.3). Still open, concept first:
+  **relationship and circle** as further fallbacks — which wins when there are several, and
+  how it stays access-scoped so it never names a person or circle the viewer may not see
+  (§2.10). Also open: the **@-picker** (notes, journal, moments) — its handle is the name, so
+  two people called *Thomas* both come out as `@Thomas`, which resolves to nobody (§2.20.1);
+  a second line there would promise a choice the text cannot keep.
+- *TODO:* **tidy up people known by a first name only** — a list of everyone who has a first
+  name and nothing else to tell them apart (no last name, no description, no where/when
+  met; the namesake line's *nothing yet* case, §2.2.3), to fill in, merge or archive one by
+  one. The nudge only reaches people added from now on.
 - ~~**Adding to Stella while it is out of reach**~~ — shipped (§2.18): every adding form
   saves as a named command, idempotent by its id, through an outbox on the phone. Away from
   home it keeps what is added, photos included, editable or discardable until sent, and

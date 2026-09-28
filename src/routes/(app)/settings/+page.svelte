@@ -21,8 +21,6 @@
 	let selfIds = $state<string[]>(
 		untrack(() => (data.user.selfContactId ? [data.user.selfContactId] : []))
 	);
-	// The shell's list carries no description; the picker's shape wants the field present.
-	const pickable = $derived(data.people.map((person) => ({ ...person, description: null })));
 	$effect(() => {
 		selfIds = data.user.selfContactId ? [data.user.selfContactId] : [];
 	});
@@ -54,7 +52,7 @@
 			</div>
 			<form method="POST" action="?/setSelf" class="flex flex-wrap items-center gap-2">
 				<PersonSearchSelect
-					people={pickable}
+					people={data.people}
 					name="contactId"
 					bind:selectedIds={selfIds}
 					id="self-contact"

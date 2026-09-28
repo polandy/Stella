@@ -27,7 +27,11 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 			firstName: p.firstName,
 			lastName: p.lastName,
 			nickname: p.nickname,
-			avatarPhotoId: p.avatarPhotoId
+			avatarPhotoId: p.avatarPhotoId,
+			// What tells two people of the same name apart in ⌘K and the pickers (docs/02 §2.2.3).
+			description: p.description,
+			metPlace: p.metPlace,
+			metDate: p.metDate
 		}))
 	};
 };

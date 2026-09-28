@@ -122,6 +122,16 @@ describe('createDrizzleContactRepository', () => {
 			'2015-05-20'
 		);
 	});
+
+	it('carries where and when they were met in the list summary, which tells namesakes apart', async () => {
+		// Two people called just "Thomas": the pickers say which is which from these (docs/02 §2.2.3).
+		await repo.insert(contactInput({ id: 'c-met', displayName: 'Thomas', metPlace: 'Blüemlisalphütte', metDate: '2026-08-12' }));
+
+		expect((await repo.listVisibleTo(viewerU1)).find((c) => c.id === 'c-met')).toMatchObject({
+			metPlace: 'Blüemlisalphütte',
+			metDate: '2026-08-12'
+		});
+	});
 });
 
 describe('listNameCandidatesVisibleTo (docs/02 §2.2.1)', () => {

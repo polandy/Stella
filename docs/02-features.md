@@ -243,9 +243,10 @@ no dialog, nothing typed twice:
 
 - **First and last name**, pre-filled by splitting the query at the first space (so *van der
   Berg* stays one surname).
-- **Nickname** and **birthday**, collapsed under *More details*. The birthday is the same
-  locale-aware field as everywhere else (§5.7), so the year may be left blank here too —
-  which is common for someone just being named in passing.
+- **Nickname**, **description** and **birthday**, collapsed under *More details* — except
+  that with no last name the description comes forward with a nudge (§2.2.3). The birthday
+  is the same locale-aware field as everywhere else (§5.7), so the year may be left blank
+  here too — which is common for someone just being named in passing.
 - **Visibility**, shared or private, the same choice the full form offers, defaulting to
   shared.
 
@@ -257,6 +258,27 @@ found no one.
 Offered on the pickers where a stranger belongs: **relationship target**, **interaction
 participants**, and **circle member**. Not on *merge duplicate*, where a person who did not
 exist a moment ago cannot be the duplicate.
+
+### 2.2.3 Telling namesakes apart **[M3]**
+
+People met once are often known by a first name only — a family met at a mountain hut — and
+a household soon has five people called *Thomas*. Two things keep them apart:
+
+- **A second line under a shared name.** In ⌘K and in every person picker (§2.2.2), a person
+  whose display name someone else on the list shares (ignoring case and stray spaces, not
+  accents — *René* and *Rene* look different) gets a second line saying which one they are:
+  their **description**; else **where and when you met** (*Met: Tierberglihütte · 2024*, the
+  year alone of the date); else a quiet *Nothing yet to tell them apart*, which is the cue to
+  add something. The whole list counts, not just what the query left: a Thomas is just as
+  ambiguous when the other one is filtered out. A unique name stays one line. The pure rule is
+  `tellApart` (`src/lib/people/namesakes.ts`).
+- **A nudge when a last name is missing.** While a first name stands without a last name —
+  on *Add a person* and in a picker's create panel — the description field is brought forward
+  in a highlighted box: *Without a last name, "Thomas" is hard to tell apart later. What will
+  you know them by?* It is only a nudge; a name alone still saves.
+
+Not yet: relationship or circle as further fallbacks, and the @-picker, whose `@Thomas`
+handle cannot tell namesakes apart anyway (docs/06, M3).
 
 ## 2.3 Contact fields **[M1]**
 

@@ -20,6 +20,8 @@ const person = (id: string, visibility: 'shared' | 'private' = 'shared', created
 	lastName: null,
 	nickname: null,
 	description: null,
+	metPlace: null,
+	metDate: null,
 	visibility,
 	avatarPhotoId: null,
 	birthDate: null,
