@@ -52,7 +52,8 @@ A few things worth knowing:
   moment, no detour. If somebody already has that name, it offers *Create another "…"*.
 - **Photos** can be attached; they are resized in your browser before upload, which also
   strips location data out of them.
-- **The day** defaults to today. Change it if you are writing something down late.
+- **The day** defaults to today. Writing something down late? Tap *Today* and pick the day —
+  the last week is right there, *Another day…* opens a calendar for any earlier one.
 - **Two moments about the same person on the same day** end up in one journal entry, one
   paragraph each. The second one is added; nothing you wrote earlier is replaced.
 
@@ -168,10 +169,17 @@ before it is uploaded, which also strips the location and camera details the fil
 and you choose there whether they are shared with the household or only yours.
 
 Click one and it opens large, with the date next to its caption. From there you can give it a
-caption, make it the person's photo, switch it between shared and private, or remove it. Only
-whoever added a photo can caption or remove it, but anyone who can see it can make it the
-person's photo. Removing one deletes the file for good and, if the person was wearing it, they
+caption, make it the person's photo, switch it between shared and private, or remove it.
+*Use as photo* first lets you choose the part that shows, as below; the photo stays one photo in
+the gallery, and choosing again — *Change framing* on the one they wear — starts from the part
+you chose last time. Only whoever added a photo can caption or remove it, but anyone who can
+see it can make it the person's photo. Removing one deletes the file for good and, if the person was wearing it, they
 go back to their initials. Escape closes the view and the arrow keys walk through the rest.
+
+To give someone a new photo straight away, click the round picture at the top of their page and
+pick an image. Before anything is uploaded you choose the part that shows: drag the picture
+inside the round frame and pinch, scroll or use the slider to zoom, then **Use photo**. Only that
+square is kept as their photo.
 
 Picking a new photo for someone who already had one never throws the old one away — it drops
 back into this grid, dated, and a small confirmation says so. Handy for someone whose face

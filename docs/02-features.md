@@ -1037,8 +1037,8 @@ mechanism behind two features: correcting a birthday without touching the profil
 
 - Each contact has an **avatar** and a **photo gallery**.
 - Upload from desktop or mobile camera/roll. **Avatars are processed in the browser** (M1):
-  the client applies EXIF orientation, centre-crops to a square, and produces a full + a
-  thumbnail JPEG; re-encoding via canvas **drops all EXIF/GPS metadata** (privacy) and keeps
+  the client applies EXIF orientation, cuts the square the person chose, and produces a full +
+  a thumbnail JPEG; re-encoding via canvas **drops all EXIF/GPS metadata** (privacy) and keeps
   uploads small, so the server needs no native image library. The server validates (magic
   bytes, size) and stores both variants on the media volume; dimensions/size in the DB.
 - EXIF orientation respected; EXIF GPS/personal metadata **stripped** (by the client re-encode
@@ -1057,6 +1057,22 @@ mechanism behind two features: correcting a birthday without touching the profil
   notes follow (§2.10); anyone who can see a photo can make it the avatar. Removing a photo
   deletes both stored variants and, if the contact was wearing it, clears the avatar in the
   same transaction. Journal photos (§2.20) stay in the story and never appear here.
+- **Shipped: choosing the square.** Picking a new photo for someone opens a **cropper** before
+  anything is uploaded: the picture sits behind a round window the shape of the avatar, starting
+  on the centred square the uploader used to cut on its own. Drag moves it, pinch or the mouse
+  wheel zooms around the fingers or the pointer, and a slider and the arrow keys and + / − do
+  the same without a gesture. The picture can never be moved or zoomed out far enough to leave
+  empty space in the square, and zoom stops at 6×. *Use photo* uploads exactly the square shown;
+  Escape or *Cancel* uploads nothing. The geometry is pure and tested (`src/lib/image/crop.ts`),
+  and the canvas cuts from the same numbers the dialog draws with.
+- **Shipped: framing a gallery photo.** *Use as photo* in the lightbox opens the same cropper
+  on the full picture. The gallery keeps **one** photo: the chosen square is remembered on a
+  *framing* of it (docs/03 §photo), and that is what the person wears. On the photo worn now
+  the button reads *Change framing*, and on any photo framed before the cropper starts on the
+  square chosen last time, not the centre. Choosing again replaces the framing rather than
+  adding one; removing the photo removes its framing, and a framing follows its photo to
+  private. The archive carries a framing with the square and the photo it belongs to, and a
+  restore that has to refuse a photo refuses its framing too.
 - **Shipped: photo history.** Every gallery photo shows the day it was added, on the tile and
   next to its caption in the lightbox — legible at a glance for a face that visibly changes
   year to year, a child especially. Choosing a new avatar for someone who already had one never
@@ -1575,6 +1591,10 @@ entry and a household update, without leaving the page. Concept + clickable prot
   ("Goes to *Julia*'s journal, mentions 1"). A moment therefore needs **at least one mention**.
   Day, visibility and photos behave as in §2.20 (default: today, shared; photos processed in
   the browser).
+- **The day is a pill, not a date form.** Almost every moment is from today, so the day sits
+  beside *Shared* and *Photo* as a quiet *Today*. A tap offers the last week — *Yesterday*,
+  then the weekdays — and *Another day…* for anything older, which opens a month calendar.
+  A day other than today makes the pill stand out; a day in the future is never offered.
 - **A second moment adds, never replaces.** When the anchor's journal already has the
   member's entry for that day and visibility (the day slot, §2.20), the moment is appended to
   it as a new paragraph and its mentions join the entry's; the title stays — as writing on the

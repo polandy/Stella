@@ -175,7 +175,7 @@ test('keeps a namesake mentioned when a journal entry is edited and saved', asyn
 });
 
 test('creates another namesake from a moment, only with something to know them by', async ({ page }) => {
-	const { name } = await twoNamesakes(page);
+	const { name, hut, lake } = await twoNamesakes(page);
 	await page.goto('/');
 	await appReady(page);
 
@@ -191,9 +191,17 @@ test('creates another namesake from a moment, only with something to know them b
 	await page.getByLabel('What happened?').pressSequentially('at the Gurten');
 	await page.getByRole('button', { name: /^Save/ }).click();
 
+	// The moment's name links to the journal of the person it was written about — the one just
+	// created. Their description is on their own page, so go there once the journal has opened;
+	// asserting before that would read the stream still on screen, which shows it too.
 	const moment = page.locator('article').filter({ hasText: 'at the Gurten' });
 	await moment.getByRole('link', { name, exact: true }).first().click();
-	await expect(page.getByText('Plays the alphorn')).toBeVisible();
+	await expect(page).toHaveURL(/\/contacts\/[^/]+\/journal$/);
+	const created = personId(page);
+	expect([hut, lake]).not.toContain(created);
+	await page.goto(`/contacts/${created}`);
+	await appReady(page);
+	await expect(page.getByRole('main').getByText('Plays the alphorn')).toBeVisible();
 });
 
 test('describes someone new in the relationship form by the link being entered', async ({ page }) => {

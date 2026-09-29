@@ -179,8 +179,6 @@ export const contact: ContactMessages = {
 	'contact.photos.dialog': 'Foto',
 	'contact.photos.closePhoto': 'Foto schließen',
 	'contact.photos.noCaption': 'Keine Bildunterschrift',
-	'contact.photos.currentPhoto': 'Aktuelles Foto',
-	'contact.photos.useAsPhoto': 'Als Foto verwenden',
 	'contact.photos.captionPlaceholder': 'Bildunterschrift hinzufügen',
 	'contact.photos.caption': 'Bildunterschrift',
 	'contact.photos.share': 'Mit dem Haushalt teilen',

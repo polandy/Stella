@@ -193,8 +193,6 @@ export const contact = {
 	'contact.photos.dialog': 'Photo',
 	'contact.photos.closePhoto': 'Close the photo',
 	'contact.photos.noCaption': 'No caption',
-	'contact.photos.currentPhoto': 'Current photo',
-	'contact.photos.useAsPhoto': 'Use as photo',
 	'contact.photos.captionPlaceholder': 'Add a caption',
 	'contact.photos.caption': 'Caption',
 	'contact.photos.share': 'Share with the household',

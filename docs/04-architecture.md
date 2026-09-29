@@ -235,7 +235,9 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   and its mobile date keyboard; it buys a field that reads correctly in both languages, month
   names instead of an ambiguous number, and a year that can be left blank — which is how a
   birthday without a year (`--MM-DD`, §2.13.1) becomes expressible at all, something the
-  native input cannot represent. (docs/05 §5.7.)
+  native input cannot represent. (docs/05 §5.7.) A moment's older day is picked from our own
+  month calendar for the same reason, a small component rather than a date-picker package
+  (§8.8), with the year a choice beside the month so a late memory is not a hundred taps away.
 - **Combobox over `<input list>` + `<datalist>`** — Mobile Safari, this project's primary test
   device, never renders a datalist's suggestions at all, so the native control silently drops
   the one thing it was chosen for. `src/lib/components/Combobox.svelte` borrows the person
@@ -804,6 +806,21 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   journal entry. Appending keeps one model, as a contact merge already does, and the stream
   reads `updated_at` so the joined entry surfaces where its author looks. The cost: a plain
   edit in the journal also brings an entry back to the top.
+- **A person's photo is cropped by our own cropper, and only the square is kept** — the crop is
+  a few lines of pure geometry (`src/lib/image/crop.ts`) behind a small dialog, so no cropper
+  library joins the dependencies (§8.8). The chosen square goes through the same browser canvas
+  as before and the picked original never leaves the device: there is no full-size copy to
+  re-crop later, which keeps location data and full-resolution pictures off the server. The
+  cost: changing the framing means picking the picture again.
+- **A gallery photo is worn through a framing row, not a crop applied where avatars render** —
+  an avatar is drawn from a photo id on dozens of screens, the explorer's canvas among them;
+  threading a square through each would be one chance per screen to forget it, and the canvas
+  cannot crop with CSS. So the browser renders the square once, as for any avatar, and it is
+  stored as a photo row of its own that points at its gallery photo and remembers the square
+  (docs/03 §photo). Its own id also keeps media immutable-cached: a new square is a new
+  address. Rejected: a variant behind the photo's own URL (a browser would keep showing the old
+  square for a year) and a second gallery photo (the gallery would fill with copies). The
+  cost: a framed photo stores one extra 512px image.
 
 ## 4.10 Deployment
 

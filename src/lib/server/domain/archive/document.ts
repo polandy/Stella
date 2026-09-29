@@ -37,6 +37,11 @@ const flag = (row: Row, column: string): boolean => row[column] === 1 || row[col
 const id = (row: Row, column = 'id'): string => String(row[column] ?? '');
 /** A count worth writing only when it is not the default; `present` drops the rest. */
 const ordinal = (row: Row, column: string): number | null => num(row, column) || null;
+/** The square of a framing, in its photo's pixels; absent on every other photo. */
+function framingCrop(row: Row): { x: number; y: number; size: number } | null {
+	const [x, y, size] = [num(row, 'crop_x'), num(row, 'crop_y'), num(row, 'crop_size')];
+	return x === null || y === null || size === null ? null : { x, y, size };
+}
 
 /** An instant as an ISO string, because a millisecond count means nothing to a reader. */
 const moment = (row: Row, column: string): string | null => {
@@ -128,6 +133,9 @@ export function buildArchiveDocument(
 			sort_order: ordinal(row, 'sort_order'),
 			caption: text(row, 'caption'),
 			taken_at: text(row, 'taken_at'),
+			// Set on the square a photo is worn through as the avatar (docs/02 §2.14).
+			framing_of: text(row, 'framing_of'),
+			crop: framingCrop(row),
 			visibility: text(row, 'visibility'),
 			author: text(row, 'created_by'),
 			created_at: moment(row, 'created_at')

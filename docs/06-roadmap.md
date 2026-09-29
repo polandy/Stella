@@ -145,10 +145,10 @@ Goal: sand the edges and add the nice-to-haves.
   others have seen is changed offline, so there is nothing to merge. Event sourcing and full
   offline sync were weighed and rejected (docs/04 §4.9); the decisions taken along the way
   are in `docs/concepts/offline-capture.md` §8.
-- *TODO, design first:* **a simpler day in the *What happened?* composer** — today it is the
-  full three-part date field (day, month, year; docs/05 §5.7), which is heavy for a sentence
-  written in passing. Today stays the default. Start with mockups of the lighter options
-  before building anything (§2.22.1).
+- ~~**A simpler day in the *What happened?* composer**~~ — shipped (§2.22.1): a *Today* pill
+  beside *Shared* and *Photo* offers the last week in one tap and a month calendar for
+  anything older. Chosen from four mockups over always-visible chips, a day stepper and a
+  week strip, because it takes no room while today is meant (docs/05 §5.7).
 - ~~**Confirm a worked-out relationship to store it**~~ — shipped (§2.4.1): every non-step
   row in *Also related · worked out, not entered* carries *Confirm*, which stores it as one of
   the new built-in family types (great-grandparent, half-sibling, aunt/uncle, cousin,

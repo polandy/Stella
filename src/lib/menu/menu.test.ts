@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { filterSummary, menuShift, nextMenuIndex } from './menu';
+import { filterSummary, menuOpensUpward, menuShift, nextMenuIndex } from './menu';
 
 /*
  * The decisions behind the graph toolbar's menus (docs/05 §5.8): what the Filter button says
@@ -80,5 +80,24 @@ describe('menuShift', () => {
 		const shift = menuShift({ left: 100, right: 600 }, map, MARGIN);
 
 		expect(100 + shift).toBe(MARGIN);
+	});
+});
+
+describe('menuOpensUpward', () => {
+	// A phone screen 915 px tall, 12 px kept clear top and bottom.
+	const screen = { top: 0, bottom: 915 };
+	const MARGIN = 12;
+
+	it('opens below when the menu fits there', () => {
+		expect(menuOpensUpward({ top: 100, bottom: 130 }, 320, screen, MARGIN)).toBe(false);
+	});
+
+	it('opens above a pill near the foot of the screen', () => {
+		// The day pill in the composer, a sheet at the bottom of the phone.
+		expect(menuOpensUpward({ top: 820, bottom: 845 }, 320, screen, MARGIN)).toBe(true);
+	});
+
+	it('stays below when there is even less room above', () => {
+		expect(menuOpensUpward({ top: 200, bottom: 230 }, 800, screen, MARGIN)).toBe(false);
 	});
 });

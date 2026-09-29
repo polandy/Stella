@@ -75,6 +75,7 @@ export const errors: ErrorsMessages = {
 	'errors.image.thumbTooLarge': 'Das Vorschaubild ist zu groß.',
 	'errors.image.unsupportedFormat': 'Nicht unterstütztes Bildformat.',
 	'errors.image.formatMismatch': 'Das Format des Vorschaubilds passt nicht.',
+	'errors.image.cropOutside': 'Der gewählte Ausschnitt passt nicht ins Foto.',
 	'errors.image.dimensions': 'Ungültige Bildabmessungen.',
 	'errors.image.couldNotStore': 'Das Foto konnte nicht gespeichert werden.',
 	'errors.caption.tooLong': (p) => `Eine Bildunterschrift darf höchstens ${p.max} Zeichen haben.`,

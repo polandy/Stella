@@ -414,6 +414,9 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 | contact_id | text fk → contact.id null | null = general/shared moment |
 | created_by | text fk → user.id | |
 | visibility | text | `'shared' \| 'private'` |
+| journal_entry_id | text fk → journal_entry.id null | set = belongs to that entry (§2.20), not the gallery |
+| framing_of | text null | set = the avatar framing of that gallery photo (docs/02 §2.14); no fk |
+| crop_x / crop_y / crop_size | real null | a framing's square, in its photo's full-size pixels |
 | file_path | text | path within media volume (original, sanitized) |
 | thumb_path | text | generated thumbnail path |
 | mime | text | |
@@ -425,6 +428,15 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 | created_at | int | |
 
 Note: `user.avatar_photo_id` and `contact.avatar_photo_id` reference this table.
+
+**A framing is a photo row of its own.** Wearing a gallery photo through a chosen square
+stores that square, rendered once, as a row with `framing_of` pointing at the photo; the
+contact's `avatar_photo_id` points at the framing. Its own id keeps media addresses immutable
+(a new square is a new row, never new bytes behind an old URL). Each photo has at most one
+framing — the repository replaces it in the same transaction that makes it the avatar. It is
+never listed in the gallery, copies its photo's `visibility` and `created_by` so exactly the
+same people see it, follows a change of the photo's visibility, and is deleted with the photo.
+`framing_of` carries no foreign key for the same reason as `avatar_photo_id`.
 
 **`journal_entry_id` carries no cascade.** It was added by migration `0002` as a plain
 `REFERENCES`, and adding one now would mean rebuilding `photo` — which cannot be dropped

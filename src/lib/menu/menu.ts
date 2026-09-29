@@ -61,3 +61,20 @@ export function menuShift(menu: Span, bounds: Span, margin: number): number {
 	if (pastLeft > 0) shift += pastLeft;
 	return shift;
 }
+
+/** A vertical stretch of the screen, in pixels. */
+export interface Band {
+	top: number;
+	bottom: number;
+}
+
+/**
+ * Whether a menu `height` tall opens above its pill rather than below: only when it would run
+ * past the foot of `bounds` and there is more room above — the composer's day pill sits at the
+ * bottom of a phone's sheet, where a menu below would open off the screen.
+ */
+export function menuOpensUpward(pill: Band, height: number, bounds: Band, margin: number): boolean {
+	const below = bounds.bottom - margin - pill.bottom;
+	const above = pill.top - (bounds.top + margin);
+	return height > below && above > below;
+}

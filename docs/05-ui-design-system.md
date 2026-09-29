@@ -518,9 +518,21 @@ wraps it. A `<label>` names its first labelable descendant, and in multiple mode
 chip's remove button, not the search input: the field loses its accessible name the moment
 anybody is picked, and a screen reader reaches an unnamed combobox (§5.9).
 
+**Day pill** (`src/lib/components/DayPill.svelte`) is the day of a moment in the *What
+happened?* composer (§2.22.1): one pill beside *Shared* and *Photo*, reading *Today*. A tap
+opens a `MenuButton` (§5.8) with today and the six days before it — named *Yesterday*, then by
+weekday, each with its short date — and *Another day…*, which opens the **day calendar**
+(`DayCalendar.svelte`): a month grid in the app's own language and week (Monday first in
+both of Stella's), later days greyed out, arrow keys moving a day or a week and Page Up/Down a
+month. The year is a choice beside the month's name, reaching a lifetime back. The arrows sit
+in fixed columns and every month shows six weeks, so neither the arrows nor the header move
+while paging. Like the date field below, it exists because the browser's own calendar speaks the
+browser's language. Either popover opens above the pill when there is no room below. It stands out in the primary colour once another day is chosen, so a moment is never
+filed under the wrong day unnoticed. The days are worked out in `src/lib/dates/recent.ts` and `month.ts`.
+
 **Date field** (`src/lib/components/DateField.svelte`) replaces `<input type="date">`
 everywhere a day is entered: birthday, important date, the day an interaction happened, a
-relationship's *Since*, a journal or moment day. A native date input takes its segment order,
+relationship's *Since*, a journal day. A native date input takes its segment order,
 its separators and its month names from the **browser's** locale, not the app's — so a German
 household reading Stella in German on an English browser is asked for `mm/dd/yyyy` and handed
 an English calendar, and no attribute on the page can change that. This field is assembled
@@ -735,6 +747,19 @@ viewport with the `offline` icon, what has happened, and a *Try again* that relo
 fetched and cached while the connection still works, which is why it loads nothing of its own
 — anything it read then would be stale by the time anybody saw it.
 
+**Photo cropper** (`src/lib/components/PhotoCropper.svelte`; opened by `AvatarUploader` after a
+picture is picked, docs/02 §2.14) is a native `<dialog>` in a card: a square window with the
+picture behind it and a round cut-out the shape of the avatar, the corners dimmed with
+`--bg-sunken` as the lightbox's backdrop is. The picture moves, the window never does: drag
+pans, pinch and the wheel zoom around the fingers or pointer, and a zoom slider plus the arrow
+keys and `+` / `−` give the same control without a gesture (the window is focusable, with
+`role="application"` so the keys reach it). *Use photo* is the primary button, *Cancel* and
+Escape leave without uploading. What each gesture does to the square is pure
+(`src/lib/image/crop.ts`); the component only turns events into those calls. The lightbox's
+*Use as photo* (`FrameAsAvatar.svelte`) opens the same dialog on the full picture, starting on
+the square chosen last time, and reads *Change framing* on the photo worn now. Keys pressed in
+the dialog stay in it, so the arrows move the picture rather than walking the gallery behind.
+
 **A choice that cannot be made says why, once.** Where a picker's entries are refused by what
 is already on record — the relationship type picker is the case (docs/02 §2.4) — the entries
 are `disabled` and the reason is the heading of the `optgroup` they are gathered under (*"Not
@@ -782,7 +807,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   card-sized map of a person's page, a large share of it. Only the search stays out in the
   open, since it is used all the time; what is set once and then looked at goes into two
   menus (`MenuButton`: arrow keys move between items, Escape closes and hands focus back, a
-  click elsewhere closes). **Filter** counts what is shown (*Filter 5/6*) and stands out in
+  click elsewhere closes; a menu with no room below its pill — the day pill at the foot of
+  a phone's composer sheet — opens above it instead). **Filter** counts what is shown (*Filter 5/6*) and stands out in
   the primary colour once the reader has narrowed the map — measured against what the map
   opened with, so the person page's circles-off start is not mistaken for a forgotten
   filter (`src/lib/menu/menu.ts`). Its items toggle and leave the menu open for the next.
