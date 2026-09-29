@@ -210,7 +210,7 @@ They must be edited together; `app.css` says so at both blocks.
   **absent entirely when empty**; there is no empty state for them, because a permanently
   empty panel teaches people to stop looking. On a phone the composer is a **sheet** opened from the *What happened?*
   bar or the tab-bar pencil.
-- **Settings → Check relationships** — the household-wide suggestion review (docs/02 §2.4.1).
+- **Settings → Data quality → Check relationships** — the household-wide suggestion review (docs/02 §2.4.1).
   Closed it is an `EmptyState` with one primary action, because no rule runs until it is asked
   for; asked, it is a count, *Check again*, and one card per person — avatar, name linking to
   the profile, and that person's claims as the **same rows the person page uses**
@@ -361,6 +361,13 @@ They must be edited together; `app.css` says so at both blocks.
   came for. An archived person carries a quiet *Archived* chip in their header beside
   *Private*, and the directory grows an **Archived (N)** chip at the end of the tag row,
   leading to the same list with the "last written about" column dropped.
+- **Data quality** in Settings gathers the household-wide checks, each a card like the rest
+  of Settings: *Check relationships* (docs/02 §2.4.1) and *People known by a first name only*
+  (§2.2.3, the `tidy` icon), whose card carries a count pill while anyone is left. Checks live
+  here, not in the People directory, so the directory stays a place to find people rather
+  than a to-do list. The first-name list gives each row a one-line description field and a
+  small *Save* under the name; a saved row leaves the list. The name links to the profile,
+  where merging and archiving already live — the list offers neither itself.
 - **Which of these people you are** (docs/02 §2.1.3) is set in two places and looks the same
   in both: Settings carries a **You** section with a labelled person search select, and the
   foot of a person's profile column carries a ghost *This is me* — the same button reading

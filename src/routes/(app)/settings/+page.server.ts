@@ -4,13 +4,15 @@ import {
 	setSelfContact,
 	UnknownSelfContactError
 } from '$lib/server/domain/household/self-contact';
-import { getSelfContactDeps, getUpdateCheck } from '$lib/server/services';
+import { listContacts } from '$lib/server/domain/contacts/contacts';
+import { isKnownByAFirstNameOnly } from '$lib/people/namesakes';
+import { getContactDeps, getSelfContactDeps, getUpdateCheck } from '$lib/server/services';
 import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
 /**
- * Settings landing (docs/02 §2.17): the language, who you are, the admin "Data" section and
- * the "About" line.
+ * Settings landing (docs/02 §2.17): the language, who you are, the data-quality checks, the
+ * admin "Data" section and the "About" line.
  *
  * The release check is handed over as a promise on purpose (docs/02 §2.17.1): the page is
  * rendered and sent at once, and the line about a newer version fills itself in when GitHub
@@ -19,8 +21,12 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const check = getUpdateCheck();
+	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	// How many are left to tidy up, so the card says whether opening it is worth it.
+	const firstNameOnly = (await listContacts(getContactDeps(), viewer)).filter(isKnownByAFirstNameOnly);
 	return {
 		isAdmin: locals.user.role === 'admin',
+		firstNameOnlyCount: firstNameOnly.length,
 		version: APP_VERSION,
 		update: check?.status() ?? null
 	};

@@ -279,6 +279,37 @@ export async function editProfile(
 	return true;
 }
 
+export class EmptyDescriptionError extends TranslatableError {
+	constructor() {
+		super(phrase('errors.contact.emptyDescription'), 'EmptyDescriptionError');
+	}
+}
+
+/**
+ * Give someone a description and nothing else — the clean-up list's one field, for people
+ * known by a first name only (docs/02 §2.2.3). Their name stays as it is. Returns false when
+ * the contact is not visible to the viewer, like `editProfile`.
+ */
+export async function describeContact(
+	deps: Pick<ContactDeps, 'contacts' | 'clock'>,
+	viewer: Viewer,
+	id: string,
+	description: string
+): Promise<boolean> {
+	const written = description.trim();
+	if (written.length === 0) throw new EmptyDescriptionError();
+
+	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
+	if (contact === null) return false;
+
+	await deps.contacts.updateProfile(id, {
+		displayName: contact.displayName,
+		description: written,
+		updatedAt: deps.clock.now()
+	});
+	return true;
+}
+
 /** Fetch a contact the viewer may see, or null. */
 export async function getContact(
 	deps: Pick<ContactDeps, 'contacts'>,

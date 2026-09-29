@@ -284,7 +284,16 @@ a household soon has five people called *Thomas*. Two things keep them apart:
   apart later. What will you know them by?* It is **needed**: a person added by hand with neither
   a last name nor a description is refused, by the server as much as by the form, so a kept
   addition from a phone meets the same rule (`createContact`). Imports keep what they carry, and
-  people added before are left as they are — finding those is a roadmap item (docs/06).
+  people added before are left as they are.
+- **A list of those added before.** *Settings → Data quality → People known by a first name
+  only*, next to *Check relationships* and like it open to every member, lists everyone the
+  viewer may see (archived people aside) who has a first name and nothing else; the card
+  says how many there are: no last name, neither in its field nor in the name they are shown by, no
+  description, no place or date met — exactly who the second line would call *Nothing yet*
+  (`isKnownByAFirstNameOnly`). Its list gives each person a description field to fill in
+  where they are listed, and saving takes them off it (`describeContact`: the name is kept,
+  an empty description refused). Merging a duplicate or archiving someone met once happens
+  on their page, one tap away.
 
 - **A picked mention stays the person picked.** The text shows `@Thomas` for either Thomas, so
   the @-picker remembers whom each handle it wrote stands for and saves it as that person's id
@@ -536,7 +545,7 @@ tables, fully unit-testable (test-first).
   belong to the household, not to the member who clicked, and they travel in an export, so a
   restored backup does not re-ask everything the household has already settled.
 
-- **Shipped:** the same question for the **whole household**, at *Settings → Check relationships*.
+- **Shipped:** the same question for the **whole household**, at *Settings → Data quality → Check relationships*.
   A per-person check only reaches the people somebody thought to open, and a household that
   entered or imported its links years ago has opened none of them — so this runs the rules over
   everyone the member can see, in one pass, and lists what stands grouped by the person each
@@ -1258,6 +1267,8 @@ the API (kindergarten-2023)"), with the visibility of what it imported.
 
 - **Account:** profile, password, **language** (§2.19), **which of these people you are**
   (§2.1.3), theme, default visibility, sessions/2FA.
+- **Data quality** (every member): check relationships (§2.4.1), people known by a first
+  name only (§2.2.3).
 - **Household** (admin): name, members & roles, invitations, relationship types, tags.
 - **Data** (admin): export, import, backup.
 - **Appearance:** theme (system/light/dark), accent color choice from Catppuccin set,

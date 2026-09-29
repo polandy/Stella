@@ -6,6 +6,8 @@ import {
 	archiveContact,
 	createContact,
 	editProfile,
+	describeContact,
+	EmptyDescriptionError,
 	EmptyContactNameError,
 	NeedsSomethingToKnowThemByError,
 	restoreContact,
@@ -276,6 +278,46 @@ describe('editProfile', () => {
 		// positive control: the same call against a visible contact does write
 		const visible = editableRepo(existing);
 		await editProfile(deps(visible.repo), viewer, 'contact-1', { displayName: 'Whoever', description: null });
+
+		expect(saved).toBe(false);
+		expect(f.patches).toEqual([]);
+		expect(visible.patches).toHaveLength(1);
+	});
+});
+
+/*
+ * Tidying up the people known by a first name only (docs/02 §2.2.3): a description written
+ * straight from the list, the name left as it is.
+ */
+describe('describeContact', () => {
+	const thomas: Contact = { ...existing, displayName: 'Thomas', firstName: 'Thomas', lastName: null, description: null };
+
+	it('saves a trimmed description and keeps the name they have', async () => {
+		const f = editableRepo(thomas);
+
+		const saved = await describeContact(deps(f.repo), viewer, 'contact-1', '  SAC hut, Aug 2026  ');
+
+		expect(saved).toBe(true);
+		expect(f.patches).toEqual([
+			{ id: 'contact-1', patch: { displayName: 'Thomas', description: 'SAC hut, Aug 2026', updatedAt: NOW } }
+		]);
+	});
+
+	it('refuses an empty description and writes nothing', async () => {
+		const f = editableRepo(thomas);
+
+		await expect(describeContact(deps(f.repo), viewer, 'contact-1', '   ')).rejects.toThrow(EmptyDescriptionError);
+		expect(f.patches).toEqual([]);
+	});
+
+	it('writes nothing for a contact the viewer may not see', async () => {
+		const f = editableRepo(null);
+
+		const saved = await describeContact(deps(f.repo), viewer, 'contact-1', 'SAC hut');
+
+		// positive control: the same call against a visible contact does write
+		const visible = editableRepo(thomas);
+		await describeContact(deps(visible.repo), viewer, 'contact-1', 'SAC hut');
 
 		expect(saved).toBe(false);
 		expect(f.patches).toEqual([]);

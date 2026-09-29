@@ -75,18 +75,32 @@
 	</section>
 
 	<!--
-		The household-wide relationship review (docs/02 §2.4.1). Its own section rather than part
-		of Data, because it is for every member: the answers belong to the household, not to the
-		admin who happened to click.
+		Checks over what the household has entered: the relationship review (docs/02 §2.4.1) and
+		the people known by a first name only (§2.2.3). Their own section rather than part of Data,
+		because they are for every member: the answers belong to the household, not to the admin
+		who happened to click.
 	-->
 	<section class="flex flex-col gap-3">
-		<h2 class="text-sm font-medium text-fg-muted">{t('settings.relationships.heading')}</h2>
+		<h2 class="text-sm font-medium text-fg-muted">{t('settings.quality.heading')}</h2>
 		<a href="/settings/relationships" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
 			<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="search" size={18} /></span>
 			<span class="min-w-0 flex-1">
 				<span class="block font-medium text-fg">{t('settings.relationships.title')}</span>
 				<span class="block text-sm text-fg-muted">{t('settings.relationships.blurb')}</span>
 			</span>
+			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
+		</a>
+		<a href="/settings/first-name-only" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
+			<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="tidy" size={18} /></span>
+			<span class="min-w-0 flex-1">
+				<span class="block font-medium text-fg">{t('settings.firstNameOnly.title')}</span>
+				<span class="block text-sm text-fg-muted">{t('settings.firstNameOnly.blurb')}</span>
+			</span>
+			{#if data.firstNameOnlyCount > 0}
+				<span class="rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium tabular-nums text-primary" data-testid="first-name-only-count">
+					{data.firstNameOnlyCount}
+				</span>
+			{/if}
 			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
 		</a>
 	</section>

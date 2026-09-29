@@ -112,6 +112,11 @@ someone. It pays off: wherever you pick a person, and in the ⌘K search, two pe
 second line with their description, or where and when you met them, so you can tell which
 Thomas is which.
 
+People added before Stella asked, or brought in by an import, may still be just *Thomas*. The
+**Settings → Data quality → People known by a first name only** lists them; write what you know each one by and
+**Save**, and they leave the list. If one turns out to be someone already here, open them to
+merge, and if you will never meet them again, archive them.
+
 As soon as you type a surname, Stella checks whether that person might already be here.
 An **Already in Stella?** box lists people with the same or a similar surname — someone
 with exactly the same name comes first, in case you are about to add them twice. Each name
@@ -294,7 +299,7 @@ was declined stays one click away under **N declined suggestions**, with who sai
 and *Offer again* to put it back.
 
 Going profile by profile only reaches the people you think to open, and most households have
-never opened most of theirs. **Settings → Check relationships** asks the same question about
+never opened most of theirs. **Settings → Data quality → Check relationships** asks the same question about
 everyone at once: it lists what follows from every link on record, grouped by the person each
 suggestion is about, with the same three answers on every row. Nothing is stored until you
 accept it, and a claim you have already answered is not offered again — so checking twice in a
