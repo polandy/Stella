@@ -880,8 +880,19 @@ The same split as the explorer: a pure domain and a thin adapter confined to one
 
 - **`src/lib/pwa/cache-policy.ts`** — the whole judgement, pure and unit-tested: which
   requests may be cached, which never may, which kept page stands in for one that never is,
-  what a build's cache is called, and what a sign-out looks like going past. **Test-first
-  targets:** `verdictFor`, `standInFor`, `endsTheSession`, `cacheNameFor`.
+  what a build's cache is called, and what a sign-out looks like going past. A page reached
+  by a link inside the app arrives as its data (`<page>/__data.json`), not as a document, so
+  that is kept too — under the page alone (`cacheKeyFor`), since SvelteKit's invalidation
+  mask changes with where the reader came from — or only pages loaded from the address bar
+  would ever be readable offline. `KEPT_AHEAD` names the pages the worker fetches and keeps
+  whenever a page opens and its cache lacks them, so they are there before anyone reads them
+  (Settings). The worker does it, not the page: its cache is the one that must hold them, and
+  a SvelteKit `preloadData` would hand a later tap the preloaded, stale data. Every request
+  the worker answers waits on the network for `patienceFor` at most — a lost network can
+  swallow a request rather than fail it — and a page's data that is never kept is still
+  failed on silence (`isPageData`), since failing is what sends SvelteKit to a whole page
+  the worker can answer. **Test-first targets:** `verdictFor`, `cacheKeyFor`, `patienceFor`,
+  `isPageData`, `standInFor`, `endsTheSession`, `cacheNameFor`.
 - **`src/lib/pwa/reachability.ts`** — the two messages the worker and the page exchange, and
   the guard that stops anything else on the channel moving the offline banner.
   `reachability.svelte.ts` is its adapter: one rune the banner, the composer and the outbox

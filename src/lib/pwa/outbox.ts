@@ -18,6 +18,17 @@ import {
  */
 
 /**
+ * How long a sending waits for Stella's answer before the round ends and what it carried waits
+ * again. A phone that has lost its network does not always say so, and a request nobody
+ * answers would otherwise hold every later save behind it. Giving up is safe: every command
+ * carries its id, so one Stella took after all is recognised when it comes again.
+ */
+export const COMMAND_PATIENCE_MS = 10_000;
+
+/** The same for one photo, which is megabytes rather than a few lines of text. */
+export const PHOTO_PATIENCE_MS = 60_000;
+
+/**
  * Where an item stands. `pending` waits to be sent; `held` is open in the composer; `sending`
  * is in a request with no answer yet; `refused` came back with a reason the member can act on.
  */

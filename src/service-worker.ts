@@ -17,10 +17,15 @@
 
 import { build, files, version } from '$service-worker';
 import {
+	KEPT_AHEAD,
+	NETWORK_PATIENCE_MS,
 	OFFLINE_FALLBACK_PATH,
+	cacheKeyFor,
 	cacheNameFor,
 	endsTheSession,
+	isPageData,
 	isStellaCache,
+	patienceFor,
 	standInFor,
 	verdictFor
 } from '$lib/pwa/cache-policy';
@@ -60,6 +65,8 @@ worker.addEventListener('activate', (event) => {
 			const stale = (await caches.keys()).filter((name) => isStellaCache(name) && name !== CACHE);
 			await Promise.all(stale.map((name) => caches.delete(name)));
 			await worker.clients.claim();
+			// The pages already open were asked for by the previous worker, into a cache now gone.
+			await keepAhead();
 		})()
 	);
 });
@@ -91,8 +98,25 @@ worker.addEventListener('message', (event) => {
 	if (event.data === ASK_REACHABILITY) {
 		const message: ReachabilityReport = { type: REPORT_REACHABILITY, reachable };
 		event.source?.postMessage(message);
+		// A page opening is also the moment to keep what should be there before it is read.
+		event.waitUntil(keepAhead());
 	}
 });
+
+/** Fetch and keep each `KEPT_AHEAD` page this build's cache does not hold yet. */
+async function keepAhead(): Promise<void> {
+	const cache = await caches.open(CACHE);
+	for (const path of KEPT_AHEAD) {
+		if (await cache.match(path)) continue;
+		// Bounded: `activate` waits for this, and every request waits for `activate`.
+		const signal = AbortSignal.timeout(NETWORK_PATIENCE_MS);
+		const response = await fetch(path, { signal }).catch(() => null);
+		// Redirected means signed out: that is the sign-in page, not the one asked for.
+		if (response?.ok && response.type === 'basic' && !response.redirected) {
+			await cache.put(path, response);
+		}
+	}
+}
 
 /** Throw away every page this device is holding. */
 async function purgeCaches(): Promise<void> {
@@ -100,26 +124,54 @@ async function purgeCaches(): Promise<void> {
 	await Promise.all(ours.map((name) => caches.delete(name)));
 }
 
-/** Serve from the network, keeping a copy; fall back to the copy when the network is gone. */
-async function networkFirst(request: Request): Promise<Response> {
-	const cache = await caches.open(CACHE);
-	try {
-		const response = await fetch(request);
+/** Resolves with null once `ms` have passed. */
+function silence(ms: number): Promise<null> {
+	return new Promise((resolve) => setTimeout(() => resolve(null), ms));
+}
+
+/**
+ * Ask the network, and give it as long as `patienceFor` says: the response, or null when it
+ * failed or said nothing in time. A response that lands after that still reaches `onAnswer`,
+ * so a late page refreshes the copy and says Stella is back.
+ */
+async function networkWithin(
+	request: Request,
+	hasCopy: boolean,
+	onAnswer: (response: Response) => void = () => {}
+): Promise<Response | null> {
+	const network = fetch(request).then((response) => {
 		noteReachability(true);
+		onAnswer(response);
+		return response;
+	});
+	const answer = await Promise.race([network, silence(patienceFor({ reachable, hasCopy }))]).catch(() => null);
+	if (!answer) {
+		// Silence or failure alike: the network is not answering, whatever the device believes.
+		network.catch(() => {});
+		noteReachability(false);
+	}
+	return answer;
+}
+
+/**
+ * Serve from the network, keeping a copy under `key`; fall back to the copy when the network
+ * does not answer.
+ */
+async function networkFirst(request: Request, key: string): Promise<Response> {
+	const cache = await caches.open(CACHE);
+	const cached = await cache.match(key);
+	const response = await networkWithin(request, cached !== undefined, (answer) => {
 		// Only a plain success is worth keeping: a redirect to the sign-in page is about this
 		// moment, and an error page cached now would outlive the error.
-		if (response.ok && response.type === 'basic') cache.put(request, response.clone());
-		return response;
-	} catch (networkError) {
-		noteReachability(false);
+		if (answer.ok && answer.type === 'basic') void cache.put(key, answer.clone());
+	});
+	if (response) return response;
+	if (cached) return cached;
 
-		const cached = await cache.match(request);
-		if (cached) return cached;
-
-		const fallback = await cache.match(OFFLINE_FALLBACK_PATH);
-		if (fallback && request.mode === 'navigate') return fallback;
-		throw networkError;
-	}
+	const fallback = await cache.match(OFFLINE_FALLBACK_PATH);
+	if (fallback && request.mode === 'navigate') return fallback;
+	// A page's data failing is what sends SvelteKit to the whole page, which lands above.
+	return Response.error();
 }
 
 worker.addEventListener('fetch', (event) => {
@@ -149,28 +201,30 @@ worker.addEventListener('fetch', (event) => {
 	}
 
 	if (verdictFor(describe) === 'keep') {
-		event.respondWith(networkFirst(request));
+		event.respondWith(networkFirst(request, cacheKeyFor(describe)));
 		return;
 	}
 
 	const standIn = standInFor(describe);
-	if (standIn) event.respondWith(networkOrStandIn(request, standIn));
+	if (standIn) {
+		event.respondWith(networkOrStandIn(request, standIn));
+		return;
+	}
+
+	// A page's data that is never kept — a filter, a search — still must not wait on silence.
+	if (isPageData(describe)) {
+		event.respondWith(networkWithin(request, false).then((response) => response ?? Response.error()));
+	}
 });
 
 /**
- * A page that is never kept, answered by the network — or, when that is gone, by the kept
- * page it asks something of (`standInFor`). Nothing is written to the cache here.
+ * A page that is never kept, answered by the network — or, when that does not answer, by the
+ * kept page it asks something of (`standInFor`). Nothing is written to the cache here.
  */
 async function networkOrStandIn(request: Request, standIn: string): Promise<Response> {
-	try {
-		const response = await fetch(request);
-		noteReachability(true);
-		return response;
-	} catch (networkError) {
-		noteReachability(false);
-		const cache = await caches.open(CACHE);
-		const kept = (await cache.match(standIn)) ?? (await cache.match(OFFLINE_FALLBACK_PATH));
-		if (kept) return kept;
-		throw networkError;
-	}
+	const cache = await caches.open(CACHE);
+	const kept = await cache.match(standIn);
+	const response = await networkWithin(request, kept !== undefined);
+	if (response) return response;
+	return kept ?? (await cache.match(OFFLINE_FALLBACK_PATH)) ?? Response.error();
 }

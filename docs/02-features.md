@@ -1305,12 +1305,18 @@ says where things stand in each of the three states a device can be in: already 
 installable (with the button), or a browser that offers no prompt, where it names the menu
 item instead. Safari is the last of those.
 
-**What a device keeps.** The build's own assets, every page as it is read, and the photos in
-them. Not the pages that describe the session (sign-in, sign-out, first-run setup), not the
+**What a device keeps.** The build's own assets, every page as it is read — whether it was
+loaded whole or reached by a link inside the app — and the photos in them. **Settings** is kept
+as soon as the app opens in reach, so it opens offline even when it was not read since the
+last update. Not the pages that describe the session (sign-in, sign-out, first-run setup), not the
 health check, not a page reporting on an import or export run, and not a page carrying a
 query string — a search is a question, not somewhere anyone returns to. Requests go to the
 network first and fall back to the copy on the device: Stella is on the household's own
-network, so the network is normally both reachable and the one telling the truth. A page
+network, so the network is normally both reachable and the one telling the truth. A phone
+that has lost its network does not always say so — a request can go out and never be answered
+— so the network gets a few seconds (`NETWORK_PATIENCE_MS`) and silence counts as out of reach.
+From then on a page with a copy is answered from the device at once, while the network is still
+asked in the background; the first answer from it is what says Stella is back. A page
 with a question in its address (`/?compose`) is answered, out of reach, by the kept page it
 asks something of. A page that was never opened, asked for while out of reach, gets a plain
 offline screen.
@@ -1347,7 +1353,7 @@ has meanwhile become a duplicate or a contradiction comes back as *Could not sen
 - **One path, in reach or not.** Every one of these saves goes through the same keeping and
   sending; in reach it is simply sent at once and the form waits for the answer, so a save
   looks as it always did and a refusal shows in the form, with what was typed still there. Only
-  a save whose answer never comes is left kept.
+  a save whose answer never comes is left kept; *never* is ten seconds, a photo's a minute.
 - **Sent once.** Every moment carries a name made when it was written, and Stella remembers
   every name it has applied, so a moment whose answer was lost on the way is recognised
   rather than saved twice (`command_receipt`, docs/03 §3.3).

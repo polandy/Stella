@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import {
 	OFFLINE_FALLBACK_PATH,
+	NETWORK_PATIENCE_MS,
+	cacheKeyFor,
 	cacheNameFor,
+	isPageData,
+	patienceFor,
 	endsTheSession,
 	isStellaCache,
 	standInFor,
@@ -37,6 +41,78 @@ describe('what may be kept on the device', () => {
 
 	it('refuses another origin, whose responses are not ours to hold', () => {
 		expect(verdictFor(asset('/avatar.png', 'https://elsewhere.example'))).toBe('skip');
+	});
+});
+
+/**
+ * The data SvelteKit fetches for `path` when a link inside the app is followed, rather than
+ * the whole document. `nodes` is its invalidation mask, one digit per layout and the page.
+ */
+function pageData(path: string, nodes = '001', query = '') {
+	const base = path === '/' ? '' : path;
+	const search = new URLSearchParams(query);
+	search.append('x-sveltekit-invalidated', nodes);
+	return asset(`${base}/__data.json?${search}`);
+}
+
+describe('a page opened from inside the app', () => {
+	it('is kept too, or only pages loaded from the address bar would ever be readable offline', () => {
+		expect(verdictFor(pageData('/settings'))).toBe('keep');
+		expect(verdictFor(pageData('/contacts/abc', '01'))).toBe('keep');
+		expect(verdictFor(pageData('/'))).toBe('keep');
+	});
+
+	it('is kept under the page alone, whichever layouts that visit happened to reload', () => {
+		expect(cacheKeyFor(pageData('/settings', '001'))).toBe(cacheKeyFor(pageData('/settings', '111')));
+		expect(cacheKeyFor(pageData('/settings'))).not.toBe(cacheKeyFor(pageData('/circles')));
+	});
+
+	it('is not kept when the page itself was not reloaded — there is nothing of it to show later', () => {
+		expect(verdictFor(pageData('/settings', '110'))).toBe('skip');
+	});
+
+	it('follows the same exclusions as the page itself', () => {
+		expect(verdictFor(pageData('/settings/import'))).toBe('skip');
+		expect(verdictFor(pageData('/search', '01', 'q=ada'))).toBe('skip');
+		expect(verdictFor({ ...pageData('/settings'), method: 'POST' })).toBe('skip');
+	});
+
+	it('leaves every other request under its own address', () => {
+		expect(cacheKeyFor(page('/contacts/abc'))).toBe(`${ORIGIN}/contacts/abc`);
+		expect(cacheKeyFor(asset('/media/abc'))).toBe(`${ORIGIN}/media/abc`);
+	});
+});
+
+describe('how long the network is given', () => {
+	it('is long enough for Stella to answer, and short enough that nobody stares at a spinner', () => {
+		// A phone that has lost its network does not always say so: the request goes out and
+		// nothing ever comes back. Waiting for that would leave the kept copy unused forever.
+		expect(patienceFor({ reachable: true, hasCopy: true })).toBe(NETWORK_PATIENCE_MS);
+		expect(NETWORK_PATIENCE_MS).toBeGreaterThan(0);
+	});
+
+	it('is nothing once Stella has stopped answering, so each tap offline is answered at once', () => {
+		expect(patienceFor({ reachable: false, hasCopy: true })).toBe(0);
+	});
+
+	it('is the full wait when there is no copy — back home, the network is the only answer', () => {
+		expect(patienceFor({ reachable: false, hasCopy: false })).toBe(NETWORK_PATIENCE_MS);
+		expect(patienceFor({ reachable: true, hasCopy: false })).toBe(NETWORK_PATIENCE_MS);
+	});
+});
+
+describe('the data of a page', () => {
+	it('is recognised whether or not it may be kept, so it never waits on silence either', () => {
+		expect(isPageData(pageData('/settings'))).toBe(true);
+		expect(isPageData(pageData('/', '01', 'kind=person'))).toBe(true);
+		expect(isPageData(pageData('/settings/import'))).toBe(true);
+	});
+
+	it('is not mistaken for a page, a photo or another origin', () => {
+		expect(isPageData(page('/settings'))).toBe(false);
+		expect(isPageData(asset('/media/abc'))).toBe(false);
+		expect(isPageData(asset('/settings/__data.json', 'https://elsewhere.example'))).toBe(false);
+		expect(isPageData({ ...pageData('/settings'), method: 'POST' })).toBe(false);
 	});
 });
 
