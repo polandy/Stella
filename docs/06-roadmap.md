@@ -171,7 +171,9 @@ Goal: sand the edges and add the nice-to-haves.
   use-cases and access layer (docs/03 §3.7) and is written to `activity_log` as that member,
   so the household sees who changed what and when. A private person stays in their owner's
   address book only. Concurrent edits are caught with ETags (`If-Match`): a stale
-  write is refused and the client fetches the current card, instead of silently overwriting.
+  write is refused and the client fetches the current card. This departs from the app's
+  last-write-wins (docs/01 §1.6) on purpose: a phone's copy can be days old, and writing it
+  back blindly would undo what others changed since.
   Deleting a contact on the phone archives the person rather than deleting them; a contact
   created there follows the member's default visibility, like one added in the app. vCard properties
   Stella does not model are kept on the card and written back unchanged, so a round-trip
