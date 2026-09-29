@@ -1,8 +1,8 @@
-import { createHandleResolver, mentionsOtherThan, resolveMentions } from '../../../mentions/mentions';
+import { mentionsOtherThan } from '../../../mentions/mentions';
 import type { Visibility } from '../../access/visibility';
 import type { ContactRepository } from '../contacts/contacts';
 import { requireVisibleContact } from '../contacts/require-visible';
-import { audienceCandidates } from '../moments/moments';
+import { resolveForAudience } from '../mentions/resolve-for-audience';
 import { addToJournalDay, type JournalDayDeps } from './journal';
 
 /*
@@ -42,10 +42,7 @@ export async function writeJournalEntry(
 }> {
 	await requireVisibleContact(deps.contacts, author, input.contactId);
 	const viewer = { id: author.userId, householdId: author.householdId };
-	const resolved = resolveMentions(
-		input.body,
-		createHandleResolver(audienceCandidates(await deps.contacts.listVisibleTo(viewer), input.visibility))
-	);
+	const resolved = resolveForAudience(await deps.contacts.listVisibleTo(viewer), input.visibility, input.body);
 	const entryId = await addToJournalDay(
 		deps,
 		{ ...author, defaultVisibility: input.visibility },

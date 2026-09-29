@@ -3,6 +3,7 @@ import type { Viewer } from '../../access/visibility';
 import type { Contact, ContactSummary } from '../contacts/contacts';
 import { ContactGoneError } from '../contacts/require-visible';
 import type { JournalEntry, NewJournalEntry } from './journal';
+import { AmbiguousMentionError } from '../mentions/resolve-for-audience';
 import { writeJournalEntry, type WriteJournalEntryDeps } from './write-entry';
 
 /*
@@ -177,6 +178,21 @@ describe('writeJournalEntry', () => {
 			body: 'With @Sam'
 		});
 		expect(f.entries[1].body).toBe('With @{contact:sam}');
+	});
+
+	it('asks which one when a typed handle is two people, writing nothing', async () => {
+		const thomas = (id: string) => ({ ...person(id), displayName: 'Thomas' });
+		const f = fakes([person('julia'), thomas('thomas-hut'), thomas('thomas-lenk')]);
+		await expect(
+			writeJournalEntry(f.deps, author, {
+				contactId: 'julia',
+				entryDate: '2026-09-03',
+				title: null,
+				body: 'Hut with @Thomas',
+				visibility: 'shared'
+			})
+		).rejects.toBeInstanceOf(AmbiguousMentionError);
+		expect(f.entries).toHaveLength(0);
 	});
 
 	it('refuses an entry on a person the author cannot see, writing nothing', async () => {

@@ -29,6 +29,21 @@ export function relationshipTypeLabel(
 	return hasMessage(key) ? t(key) : stored;
 }
 
+/**
+ * Who the other person is to `subjectName`, read from their end of a link being entered on the
+ * subject's page: "Hans is Parent of …" makes them "Child of Hans Meyer". What someone new is
+ * first known by, before the link itself exists (docs/02 §2.2.3).
+ */
+export function towardsSubject(
+	t: Translate,
+	type: NameableType,
+	subjectSide: 'forward' | 'reverse',
+	subjectName: string
+): string {
+	const theirSide = subjectSide === 'forward' ? 'reverse' : 'forward';
+	return `${relationshipTypeLabel(t, type, theirSide)} ${subjectName}`;
+}
+
 /** One row of a person's relationships, as the reads hand it over. */
 export interface LabelledRelationship {
 	/** The type's machine key; empty for a row that does not carry one. */

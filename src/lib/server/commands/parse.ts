@@ -18,11 +18,31 @@ const ULID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 /** An ISO calendar day. */
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 
+/** Text that may be left out, as null: blank reads as not given. */
+const textOrNull = v.optional(
+	v.pipe(
+		v.nullable(v.string()),
+		v.transform((s) => s?.trim() || null)
+	),
+	null
+);
+
+const MomentNewPerson = v.object({
+	// Inside a mention token, so only the characters a token's id may use.
+	key: v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{1,64}$/)),
+	firstName: v.pipe(v.string(), v.trim(), v.minLength(1)),
+	lastName: textOrNull,
+	description: textOrNull
+});
+
 const MomentCapture = v.object({
 	body: v.pipe(v.string(), v.trim(), v.minLength(1)),
 	entryDate: v.pipe(v.string(), v.regex(ISO_DAY)),
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
-	newPeople: v.optional(v.array(v.pipe(v.string(), v.trim(), v.minLength(1))), [])
+	newPeople: v.optional(
+		v.array(v.union([v.pipe(v.string(), v.trim(), v.minLength(1)), MomentNewPerson])),
+		[]
+	)
 });
 
 const NoteAdd = v.object({

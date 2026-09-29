@@ -11,6 +11,7 @@ import { mergeProfiles, type MergeableProfile } from './merge-profile';
 import type { MediaStore } from '../media/avatars';
 import type { IdGenerator } from '../../id';
 import { deriveDisplayName } from './display-name';
+import { isKnownByMoreThanAFirstName } from '../../../people/new-person';
 
 /*
  * Contact use-cases (docs/02 §2.2). Framework-agnostic orchestration over the
@@ -191,13 +192,27 @@ const orNull = (value?: string | null): string | null => {
 	return trimmed.length > 0 ? trimmed : null;
 };
 
-/** Create a contact, deriving its display name and defaulting its visibility. */
+/**
+ * Thrown when a person is being added by a first name alone: with no last name and no line to
+ * know them by, they cannot be told from the next person of that name (docs/02 §2.2.3).
+ */
+export class NeedsSomethingToKnowThemByError extends TranslatableError {
+	constructor() {
+		super(phrase('errors.contact.needsSomethingToKnowThemBy'), 'NeedsSomethingToKnowThemByError');
+	}
+}
+
+/**
+ * Create a contact, deriving its display name and defaulting its visibility. Everyone added by
+ * hand comes through here; imports write through their own adapters and keep what they carry.
+ */
 export async function createContact(
 	deps: ContactDeps,
 	creator: ContactCreator,
 	input: CreateContactInput
 ): Promise<string> {
 	const displayName = deriveDisplayName(input);
+	if (!isKnownByMoreThanAFirstName(input)) throw new NeedsSomethingToKnowThemByError();
 	const { birthDate, birthDatePrecision } = parseBirthDate(input.birthDate);
 	const now = deps.clock.now();
 	const id = deps.ids.next();

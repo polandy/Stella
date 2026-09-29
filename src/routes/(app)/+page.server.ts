@@ -10,7 +10,7 @@ import { systemClock } from '$lib/server/clock';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
-import { handleFor } from '$lib/mentions/picker';
+import { mentionToken } from '$lib/mentions/mentions';
 import { parseStreamFilter } from '$lib/stream/filter';
 import {
 	getAttention,
@@ -84,7 +84,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	return {
 		today: day,
 		compose: url.searchParams.has('compose') || about !== undefined,
-		draft: about ? `${handleFor(about)} ` : null,
+		// As stored, so the composer takes the person as picked — a namesake too (docs/02 §2.2.3).
+		draft: about ? `${mentionToken(about.id)} ` : null,
 		upcoming,
 		// Below `lg` the rail only precedes the stream when a date is close (docs/05 §5.5).
 		railFirst: hasImminentDate(upcoming),
@@ -95,7 +96,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			displayName: c.displayName,
 			firstName: c.firstName,
 			lastName: c.lastName,
-			visibility: c.visibility
+			visibility: c.visibility,
+			description: c.description,
+			metPlace: c.metPlace,
+			metDate: c.metDate
 		})),
 		filter,
 		members,

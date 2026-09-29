@@ -42,8 +42,13 @@ A few things worth knowing:
   moment*, so `⌘K`, `Enter` puts the cursor in the field. **`⌘⏎` / `Ctrl-⏎`** saves.
 - **On a phone**, tap the *What happened?* bar or the pencil in the middle of the bottom bar;
   the composer slides up over the stream.
-- **Someone new?** Just mention them. The suggestion list offers *Create "…"*, and the
-  person is created with the moment — no form, no detour.
+- **Two people with the same name?** The suggestion list says which is which (their
+  description, or where and when you met), and the one you pick is the one it means, even
+  though both read `@Thomas` in the text. A `@Thomas` typed without picking is not guessed:
+  Stella asks which one you mean.
+- **Someone new?** Just mention them. The suggestion list offers *Create "…"*, which asks
+  for a last name or, without one, a line to know them by, and the person is created with the
+  moment, no detour. If somebody already has that name, it offers *Create another "…"*.
 - **Photos** can be attached; they are resized in your browser before upload, which also
   strips location data out of them.
 - **The day** defaults to today. Change it if you are writing something down late.
@@ -102,8 +107,8 @@ family knowing, the rest of the household sees *"… removed …"* in the stream
 phone, email, address, birthday — is optional and can be filled in whenever.
 
 If you only know a first name — the family you met at the mountain hut — Stella asks for a
-line to know them by, such as *SAC hut, Aug 2026*. You don't have to give one, but it pays
-off: wherever you pick a person, and in the ⌘K search, two people with the same name show a
+line to know them by, such as *SAC hut, Aug 2026* — a first name alone is not enough to add
+someone. It pays off: wherever you pick a person, and in the ⌘K search, two people with the same name show a
 second line with their description, or where and when you met them, so you can tell which
 Thomas is which.
 

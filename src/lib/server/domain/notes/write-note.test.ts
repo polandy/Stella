@@ -3,6 +3,7 @@ import type { Viewer } from '../../access/visibility';
 import type { Contact, ContactSummary } from '../contacts/contacts';
 import type { NewNote } from './notes';
 import { ContactGoneError } from '../contacts/require-visible';
+import { AmbiguousMentionError } from '../mentions/resolve-for-audience';
 import { writeNote, type WriteNoteDeps } from './write-note';
 
 /*
@@ -77,6 +78,18 @@ describe('writeNote', () => {
 		const priv = fakes();
 		await writeNote(priv.deps, author, { contactId: 'julia', body: 'with @Sam and @Marco', visibility: 'private', isPinned: false });
 		expect(priv.mentions.get('n1')).toEqual(['sam', 'marco']);
+	});
+
+	it('asks which one when a typed handle is two people, storing nothing', async () => {
+		const thomas = (id: string) => ({ ...person(id), displayName: 'Thomas' });
+		const f = fakes([person('julia'), thomas('thomas-hut'), thomas('thomas-lenk')]);
+		await expect(
+			writeNote(f.deps, author, { contactId: 'julia', body: 'with @Thomas', visibility: 'shared', isPinned: false })
+		).rejects.toBeInstanceOf(AmbiguousMentionError);
+		expect(f.notes).toHaveLength(0);
+
+		await writeNote(f.deps, author, { contactId: 'julia', body: 'with @{contact:thomas-lenk}', visibility: 'shared', isPinned: false });
+		expect(f.mentions.get('n1')).toEqual(['thomas-lenk']);
 	});
 
 	it('refuses a note on someone the author cannot see (any more), storing nothing', async () => {

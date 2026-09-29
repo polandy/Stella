@@ -52,18 +52,21 @@ export interface MentionCandidate {
 	displayName: string;
 }
 
+/** Everyone a typed handle could mean: nobody, exactly one person, or several namesakes. */
+export type HandleResolver = (handle: string) => readonly string[];
+
 /**
- * Build a resolver from the contacts a mention is allowed to reference. A handle maps to a
- * contact id only when exactly one contact has that first+last (falling back to display name)
- * key; a collision is ambiguous and resolves to null, so the mention stays literal text.
+ * Build a resolver from the contacts a mention is allowed to reference. A handle matches every
+ * contact whose first+last (falling back to display name) key it is; more than one is a
+ * collision the caller must not settle by guessing.
  */
-export function createHandleResolver(contacts: MentionCandidate[]): (handle: string) => string | null {
-	const byKey = new Map<string, string | null>(); // key -> id, or null once ambiguous
+export function createHandleResolver(contacts: MentionCandidate[]): HandleResolver {
+	const byKey = new Map<string, string[]>();
 	const add = (raw: string, id: string) => {
 		const key = mentionKey(raw);
 		if (!key) return;
-		if (!byKey.has(key)) byKey.set(key, id);
-		else if (byKey.get(key) !== id) byKey.set(key, null); // two contacts share the handle
+		const ids = byKey.get(key) ?? [];
+		if (!ids.includes(id)) byKey.set(key, [...ids, id]);
 	};
 	for (const c of contacts) {
 		// Index both `@FirstnameLastname` and the display name, so a handle matches whether the
@@ -71,20 +74,29 @@ export function createHandleResolver(contacts: MentionCandidate[]): (handle: str
 		if (c.firstName || c.lastName) add(`${c.firstName ?? ''}${c.lastName ?? ''}`, c.id);
 		add(c.displayName, c.id);
 	}
-	return (handle: string) => byKey.get(mentionKey(handle)) ?? null;
+	return (handle: string) => byKey.get(mentionKey(handle)) ?? [];
+}
+
+/** A typed handle several people answer to, and who they are. */
+export interface AmbiguousHandle {
+	/** As first typed, without the `@`. */
+	handle: string;
+	ids: readonly string[];
 }
 
 /**
  * Normalise a body's mentions for storage: resolve typed handles to canonical tokens where the
- * resolver finds a unique match, leave unknown/ambiguous handles and escaped `\@` as literal
- * text, and pass existing canonical tokens through. Returns the rewritten body plus the unique
- * referenced contact ids (in first-seen order) for persisting the mention links.
+ * resolver finds exactly one person, leave unknown and ambiguous handles and escaped `\@` as
+ * literal text, and pass existing canonical tokens through. Returns the rewritten body, the
+ * unique referenced contact ids (in first-seen order) for persisting the mention links, and the
+ * ambiguous handles — which a caller refuses rather than silently dropping (docs/02 §2.2.3).
  */
 export function resolveMentions(
 	body: string,
-	resolve: (handle: string) => string | null
-): { body: string; ids: string[] } {
+	resolve: HandleResolver
+): { body: string; ids: string[]; ambiguous: AmbiguousHandle[] } {
 	const ids: string[] = [];
+	const ambiguous: AmbiguousHandle[] = [];
 	const pushId = (id: string) => {
 		if (!ids.includes(id)) ids.push(id);
 	};
@@ -94,14 +106,17 @@ export function resolveMentions(
 			pushId(tokenId);
 			return match; // already canonical
 		}
-		const id = resolve(handle);
-		if (id) {
-			pushId(id);
-			return mentionToken(id);
+		const matches = resolve(handle);
+		if (matches.length === 1) {
+			pushId(matches[0]);
+			return mentionToken(matches[0]);
+		}
+		if (matches.length > 1 && !ambiguous.some((a) => mentionKey(a.handle) === mentionKey(handle))) {
+			ambiguous.push({ handle, ids: matches });
 		}
 		return match; // unresolved handle → literal text
 	});
-	return { body: out, ids };
+	return { body: out, ids, ambiguous };
 }
 
 /**

@@ -91,6 +91,8 @@ export const home = {
 	'composer.people': 'People',
 	'composer.justCreated': 'just created',
 	'composer.create': (p: { name: string }) => `Create “${p.name}”`,
+	'composer.createAnother': (p: { name: string }) => `Create another “${p.name}”`,
+	'composer.addPerson': 'Add to the moment',
 	'composer.newPerson': 'new person',
 	'composer.photo': 'Photo',
 	'composer.photoCount': (p: { count: number }) =>
@@ -99,6 +101,7 @@ export const home = {
 	'composer.goesTo': 'Goes to',
 	'composer.goesToJournal': '’s journal',
 	'composer.alsoMentions': (p: { count: number }) => `, mentions ${p.count}`,
+	'composer.whichOne': (p: { handle: string }) => `Which @${p.handle}? Pick them from the list that opens when you type @`,
 	'composer.needMention': 'Mention at least one person with @',
 	'composer.saveFailed': 'Could not save. Try standard JPEG or PNG images.'
 };

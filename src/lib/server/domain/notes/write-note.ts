@@ -1,12 +1,8 @@
-import {
-	createHandleResolver,
-	mentionsOtherThan,
-	resolveMentions
-} from '../../../mentions/mentions';
+import { mentionsOtherThan } from '../../../mentions/mentions';
 import type { Visibility } from '../../access/visibility';
 import type { ContactRepository } from '../contacts/contacts';
 import { requireVisibleContact } from '../contacts/require-visible';
-import { audienceCandidates } from '../moments/moments';
+import { resolveForAudience } from '../mentions/resolve-for-audience';
 import { createNote, setNoteMentions, type NoteDeps } from './notes';
 
 /*
@@ -38,10 +34,7 @@ export async function writeNote(
 	await requireVisibleContact(deps.contacts, author, input.contactId);
 	const viewer = { id: author.userId, householdId: author.householdId };
 
-	const resolver = createHandleResolver(
-		audienceCandidates(await deps.contacts.listVisibleTo(viewer), input.visibility)
-	);
-	const resolved = resolveMentions(input.body, resolver);
+	const resolved = resolveForAudience(await deps.contacts.listVisibleTo(viewer), input.visibility, input.body);
 	const noteId = await createNote(
 		deps,
 		{ ...author, defaultVisibility: input.visibility },

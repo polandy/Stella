@@ -29,10 +29,12 @@ describe('suggest', () => {
 		expect(s.people.map((p) => p.id)).toEqual(['j', 'n', 'm']);
 		expect(s.create).toBeNull();
 	});
-	it('offers creation unless the query is exactly someone', () => {
-		expect(suggest('Lena', people).create).toBe('Lena');
-		expect(suggest('JuliaMeier', people).create).toBeNull();
-		expect(suggest('mama', people).create).toBeNull();
+	it('offers creation for any typed name, as another one when somebody has it already', () => {
+		expect(suggest('Lena', people)).toMatchObject({ create: 'Lena', createsAnother: false });
+		// A second Julia Meier is a person like any other (docs/02 §2.2.3).
+		expect(suggest('JuliaMeier', people)).toMatchObject({ create: 'JuliaMeier', createsAnother: true });
+		expect(suggest('mama', people)).toMatchObject({ create: 'mama', createsAnother: true });
+		expect(suggest('', people).create).toBeNull();
 	});
 	it('respects the limit', () => {
 		expect(suggest('', people, 2).people).toHaveLength(2);

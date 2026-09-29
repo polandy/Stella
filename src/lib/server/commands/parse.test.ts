@@ -28,6 +28,21 @@ describe('parseCommand', () => {
 		expect(parsed?.payload).toEqual({ body: 'x @Julia', entryDate: '2026-09-27', visibility: 'shared', newPeople: [] });
 	});
 
+	it('reads a person created with a moment, name and description with it', () => {
+		const parsed = parseCommand({
+			...good,
+			payload: {
+				...good.payload,
+				newPeople: ['Vesna', { key: 'k1', firstName: ' Thomas ', lastName: '', description: ' Hut guide ' }]
+			}
+		});
+		expect(parsed?.payload).toMatchObject({
+			newPeople: ['Vesna', { key: 'k1', firstName: 'Thomas', lastName: null, description: 'Hut guide' }]
+		});
+		const nameless = { key: 'k1', firstName: '  ', lastName: null, description: null };
+		expect(parseCommand({ ...good, payload: { ...good.payload, newPeople: [nameless] } })).toBeNull();
+	});
+
 	it('refuses what is not exactly a known command', () => {
 		expect(parseCommand(null)).toBeNull();
 		expect(parseCommand({ ...good, type: 'contact.delete' })).toBeNull();

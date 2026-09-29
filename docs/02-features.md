@@ -116,7 +116,8 @@ shows to the other as anything but a badge.
 The central entity. A contact is any person the family wants to remember — they need
 not be an app user.
 
-**Fields (all optional except a display name):**
+**Fields (all optional except a name — and a first name alone needs a last name or a
+description to go with it, §2.2.3):**
 
 - Names: first, last, nickname, name prefix/suffix, "goes by".
 - Optionally a **maiden/former name**.
@@ -142,9 +143,9 @@ not be an app user.
 
 **Behaviors:**
 
-- **Quick add:** a minimal, fast form — display name + optional photo + optional
-  "how we met" — reachable in one tap, designed for mobile capture. Everything else can
-  be filled later.
+- **Quick add:** a minimal, fast form — a name (with a last name or a description) +
+  optional photo + optional "how we met" — reachable in one tap, designed for mobile capture.
+  Everything else can be filled later.
 - **Contact profile page** aggregates: header (avatar, name, description, key dates,
   tags), relationships, notes, interactions timeline, photo gallery, contact fields.
 - **Deceased contacts** are kept, visually marked, and excluded from active reminders.
@@ -244,8 +245,10 @@ no dialog, nothing typed twice:
 - **First and last name**, pre-filled by splitting the query at the first space (so *van der
   Berg* stays one surname).
 - **Description**, one line, always in view: it is what the person is found and told apart
-  by later, whatever else is known. With no last name it comes in a highlighted box with a
-  nudge (§2.2.3).
+  by later, whatever else is known. With no last name it comes in a highlighted box and is
+  needed (§2.2.3). In the relationship form it starts filled in from the link being entered,
+  read from the new person's end — on Hans's page, *Parent of* makes it *Child of Hans Meyer*
+  — and follows the type while it has not been edited.
 - **Nickname** and **birthday**, collapsed under *More details*. The birthday is the same
   locale-aware field as everywhere else (§5.7), so the year may be left blank here too —
   which is common for someone just being named in passing.
@@ -266,7 +269,8 @@ exist a moment ago cannot be the duplicate.
 People met once are often known by a first name only — a family met at a mountain hut — and
 a household soon has five people called *Thomas*. Two things keep them apart:
 
-- **A second line under a shared name.** In ⌘K and in every person picker (§2.2.2), a person
+- **A second line under a shared name.** In ⌘K, in every person picker (§2.2.2) and in the
+  @-picker (§2.20.1), a person
   whose display name someone else on the list shares (ignoring case and stray spaces, not
   accents — *René* and *Rene* look different) gets a second line saying which one they are:
   their **description**; else **where and when you met** (*Met: Tierberglihütte · 2024*, the
@@ -274,13 +278,23 @@ a household soon has five people called *Thomas*. Two things keep them apart:
   add something. The whole list counts, not just what the query left: a Thomas is just as
   ambiguous when the other one is filtered out. A unique name stays one line. The pure rule is
   `tellApart` (`src/lib/people/namesakes.ts`).
-- **A nudge when a last name is missing.** While a first name stands without a last name —
-  on *Add a person* and in a picker's create panel — the description field, there anyway,
-  sits in a highlighted box: *Without a last name, "Thomas" is hard to tell apart later. What will
-  you know them by?* It is only a nudge; a name alone still saves.
+- **A description when a last name is missing.** While a first name stands without a last name —
+  on *Add a person*, in a picker's create panel and in the moment composer's — the description
+  field, there anyway, sits in a highlighted box: *Without a last name, "Thomas" is hard to tell
+  apart later. What will you know them by?* It is **needed**: a person added by hand with neither
+  a last name nor a description is refused, by the server as much as by the form, so a kept
+  addition from a phone meets the same rule (`createContact`). Imports keep what they carry, and
+  people added before are left as they are — finding those is a roadmap item (docs/06).
 
-Not yet: relationship or circle as further fallbacks, and the @-picker, whose `@Thomas`
-handle cannot tell namesakes apart anyway (docs/06, M3).
+- **A picked mention stays the person picked.** The text shows `@Thomas` for either Thomas, so
+  the @-picker remembers whom each handle it wrote stands for and saves it as that person's id
+  token (§2.20.1). A `@Thomas` nobody picked — typed by hand, pasted, or written without
+  JavaScript — that could be several people the text may name is **refused**, naming each with
+  their second line (*@Thomas could be 2 people: Thomas (Mountain guide), Thomas (Met: Lenk ·
+  2023)…*), and the text stays to be corrected. A mention is never dropped without a word. The
+  moment composer says so before saving (*Which @Thomas?*).
+
+Not yet: relationship or circle as further fallbacks (docs/06, M3).
 
 ## 2.3 Contact fields **[M1]**
 
@@ -1444,13 +1458,18 @@ on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s jou
 
 - **Authoring.** Typing `@` opens an autocomplete over the contacts you may see (§2.10),
   filtered by name as you type; picking one inserts the mention. The on-screen form is
-  `@FirstnameLastname` with no space, e.g. `@AnnaWeber`. Write `\@` for a literal "@".
+  `@FirstnameLastname` with no space, e.g. `@AnnaWeber`. Write `\@` for a literal "@". The
+  field remembers whom each picked handle stands for, through any typing around it, and saves
+  it as that person's token; changing the name itself lets the pick go (§2.2.3). Editing an
+  entry shows its tokens as handles again, still remembered, so saving an edit keeps every
+  mention it had.
 - **Stored form is id-based, not name-based.** A confirmed mention is saved as a stable token
   that embeds the contact **id** — so it survives a later rename and never resolves to the wrong
   person when two people share a name. The typed `@AnnaWeber` is only the lookup key. A raw,
-  unconfirmed `@FirstnameLastname` (e.g. pasted text) is resolved best-effort when the entry is
-  saved: a single exact first+last match becomes a mention; anything ambiguous or unmatched is
-  left as literal text. The id inside the token may be a *source id* from an import
+  unconfirmed `@FirstnameLastname` (e.g. pasted text) is resolved when the entry is saved: a
+  single exact first+last match becomes a mention, an unmatched one is left as literal text
+  (`@home` is often not a mention at all), and one that could be several people is refused with
+  their names rather than guessed or dropped (§2.2.3). The id inside the token may be a *source id* from an import
   (`monica:contact:9`, §2.16), so the token grammar accepts `:` in it.
 - **Rendering.** A mention renders as a chip/link to `/contacts/{id}`, labelled with the
   person's **current** display name (looked up at render time). It goes through the same
@@ -1519,11 +1538,17 @@ entry and a household update, without leaving the page. Concept + clickable prot
   it as a new paragraph and its mentions join the entry's; the title stays — as writing on the
   journal page does. *Edit* on an entry still replaces its text: that is an edit, a moment is an
   addition.
-- **Create people inline.** When the typed `@name` matches nobody, the picker offers
-  *"Create “Name”"*. Picking it inserts the handle and queues the name; on save the server
-  creates that contact first (quick-add with just a display name, taking the **moment's
-  visibility**) and then resolves the handle to it. Everything else about the person is filled
-  in later on their profile.
+- **Create people inline.** The picker offers *"Create “Name”"* for whatever is typed after
+  `@` — *"Create another “Thomas”"* when somebody has that name already, since a second Thomas
+  is a person like any other. Picking it opens a small panel in the list's place: **first and
+  last name**, filled in from what was typed, and a **description**, in the highlighted box with
+  the nudge of §2.2.3 while there is no last name. Enter adds the person to the moment, Escape
+  goes back to the text; neither saves the moment. The text then mentions them by a placeholder
+  (`@{contact:new:<key>}`), and on save the server creates them first — with the **moment's
+  visibility** — and swaps the placeholder for their id, so they are never looked up by name.
+  A person added in the panel but no longer mentioned when saving is not created. Everything
+  else about them is filled in later on their profile. A moment kept on a phone by an older
+  build queued bare names; those are still created by name, as before.
 - **Relationships are offered, not parsed.** Free text is never interpreted. After saving a
   moment that mentions two or more people, Home shows a quiet, dismissible hint —
   *"Link Julia and Marco?"* — whose one action opens Julia's profile with the relationship form

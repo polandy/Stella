@@ -7,6 +7,8 @@ export const errors = {
 	'errors.contact.birthDateFormat':
 		'A birth date must be YYYY-MM-DD, or --MM-DD when the year is unknown.',
 	'errors.contact.emptyName': 'A name cannot be empty.',
+	'errors.contact.needsSomethingToKnowThemBy':
+		'Add a last name or a description, so this person can be told apart from others of the same name later.',
 	'errors.contact.needAName': 'Please enter at least a name or nickname.',
 	'errors.contact.couldNotCreate': 'Could not add the person.',
 	'errors.self.notFound': 'That person is not one you can pick as yourself.',
@@ -66,6 +68,8 @@ export const errors = {
 	'errors.command.notQueueable': 'Only additions can wait to be sent.',
 	'errors.command.photoParentGone': 'What this photo belongs to is no longer there to add it to.',
 	'errors.moment.needsPerson': 'Mention at least one person with @ so the moment has a place to go.',
+	'errors.mention.ambiguous': (p: { handle: string; count: number; people: string }) =>
+		`@${p.handle} could be ${p.count} people: ${p.people}. Pick the one you mean from the list that opens when you type @.`,
 
 	'errors.image.empty': 'The image is empty.',
 	'errors.image.tooLarge': 'The image is too large.',
