@@ -16,6 +16,9 @@ const EX = { first: 'Vera', last: 'Moser' };
 
 const fullName = (who: { first: string; last: string }) => `${who.first} ${who.last}`;
 
+const enteredRow = (page: Page, otherName: string) =>
+	page.locator('#section-relationships ul').first().locator('li').filter({ hasText: otherName });
+
 /** Fills the *Add relationship* form on the open person and submits it. */
 async function addLink(
 	page: Page,
@@ -27,10 +30,9 @@ async function addLink(
 	await pickPerson(form.getByLabel('Person'), fields.person);
 	if (fields.status) await form.locator('select[name=status]').selectOption(fields.status);
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
+	// The saved row is the signal: navigating away before it lands can overtake the save.
+	await expect(enteredRow(page, fields.person)).toBeVisible();
 }
-
-const enteredRow = (page: Page, otherName: string) =>
-	page.locator('#section-relationships ul').first().locator('li').filter({ hasText: otherName });
 
 test('stops naming an ex-partner a stepparent, without dropping the link', async ({ page }) => {
 	await signIn(page);
