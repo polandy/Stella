@@ -9,12 +9,19 @@ import { REPORT_REACHABILITY, isReachabilityReport } from './reachability';
 
 describe('a reachability report', () => {
 	it('is recognised when the worker sends one', () => {
-		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: false })).toBe(true);
-		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: true })).toBe(true);
+		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: false, keptAt: 1 })).toBe(true);
+		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: true, keptAt: null })).toBe(true);
+	});
+
+	it('says when the page on screen was kept, or null when it came from Stella just now', () => {
+		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: false })).toBe(false);
+		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: false, keptAt: 'yesterday' })).toBe(
+			false
+		);
 	});
 
 	it('is not confused with another message on the same channel', () => {
-		expect(isReachabilityReport({ type: 'workbox-broadcast', reachable: true })).toBe(false);
+		expect(isReachabilityReport({ type: 'workbox-broadcast', reachable: true, keptAt: null })).toBe(false);
 		expect(isReachabilityReport('stella:reachability')).toBe(false);
 	});
 
