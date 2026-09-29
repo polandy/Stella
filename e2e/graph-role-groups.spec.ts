@@ -1,6 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 import { signIn } from './app';
-import { arrangeBy, clickFrame, filterMenu, selectNode, settled, stateOf } from './graph-canvas';
+import {
+	arrangeBy,
+	clickFrame,
+	clickNode,
+	filterMenu,
+	selectNode,
+	settled,
+	stateOf
+} from './graph-canvas';
 
 /*
  * Grouping a circle's members by role on the map (docs/02 §2.7, docs/05 §5.8). Written after
@@ -132,14 +140,52 @@ test('tucks the links within a group away when that switch is off', async ({ pag
 	await toggle(page, 'Links within groups');
 
 	await expect.poll(async () => (await groupingOnCanvas(page)).inner).toBe(0);
-	// Still there to be shown: selecting Sandra names her friendship again. She is picked by
-	// name, not tapped: the free arrangement starts from a random spread, and packing her group
-	// into its frame can leave the Turnverein standing on top of her — a tap there selects the
-	// circle instead, and the case would fail for where the layout happened to put somebody.
-	await page.getByLabel('Find a person').fill('Sandra');
-	await page.getByTestId('graph-suggestions').getByRole('button', { name: 'Sandra' }).click();
+	// Still there to be shown: tapping Sandra names her friendship again. Nobody else stands
+	// under her group's frame, so the tap reaches her wherever the layout put the group.
+	await clickNode(page, SANDRA);
 	await expect(page.getByRole('complementary').getByText('Sandra Brunner-Keller')).toBeVisible();
 	await expect.poll(async () => (await groupingOnCanvas(page)).inner).toBe(1);
+});
+
+/**
+ * Everyone drawn who is not in a group but reaches into a group's frame, as `frame ⊃ node`:
+ * such a node hides a member's name and takes their tap. Model boxes, names included.
+ */
+async function underFrames(page: Page): Promise<string[]> {
+	return page.evaluate(() => {
+		type Box = { x1: number; y1: number; x2: number; y2: number };
+		type Node = {
+			id(): string;
+			isParent(): boolean;
+			isChild(): boolean;
+			visible(): boolean;
+			boundingBox(o: object): Box;
+		};
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const cy = (el as unknown as { _cyreg: { cy: { nodes(): { toArray(): Node[] } } } })._cyreg
+			.cy;
+		const nodes = cy.nodes().toArray().filter((n) => n.visible());
+		const box = (n: Node) => n.boundingBox({ includeLabels: true, includeOverlays: false });
+		const meet = (a: Box, b: Box) => a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2;
+		return nodes
+			.filter((f) => f.isParent())
+			.flatMap((frame) =>
+				nodes
+					.filter((n) => !n.isParent() && !n.isChild() && meet(box(frame), box(n)))
+					.map((n) => `${frame.id()} ⊃ ${n.id()}`)
+			);
+	});
+}
+
+test('leaves nobody outside a group standing under its frame', async ({ page }) => {
+	await openTurnverein(page);
+	await toggle(page, 'Group by role');
+	await expect.poll(async () => (await groupingOnCanvas(page)).frame).toBe(true);
+
+	// Settled, so this is where everyone came to rest, not a moment of the glide there.
+	await settled(page);
+	expect(await underFrames(page)).toEqual([]);
 });
 
 test('a tapped group lists its people and can be shown individually', async ({ page }) => {
