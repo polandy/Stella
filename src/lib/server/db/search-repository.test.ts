@@ -58,6 +58,18 @@ describe('searchContacts', () => {
 		expect(await repo.searchContacts(viewerU1, toFtsQuery('secretina'), 20)).toHaveLength(1);
 	});
 
+	it("carries a found person's photo, so the result shows their face", async () => {
+		db.update(schema.contact)
+			.set({ avatarPhotoId: 'photo-hans' })
+			.where(eq(schema.contact.id, 'c-hans'))
+			.run();
+
+		const [hans] = await repo.searchContacts(viewerU1, toFtsQuery('hans'), 20);
+		expect(hans.avatarPhotoId).toBe('photo-hans');
+		const [secretina] = await repo.searchContacts(viewerU1, toFtsQuery('secretina'), 20);
+		expect(secretina.avatarPhotoId).toBeNull();
+	});
+
 	it('stops finding a contact once they are archived', async () => {
 		db.update(schema.contact)
 			.set({ archivedAt: 1_700_000_000_000 })

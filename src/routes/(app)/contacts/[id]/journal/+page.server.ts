@@ -85,7 +85,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 				visibility: c.visibility,
 				description: c.description,
 				metPlace: c.metPlace,
-				metDate: c.metDate
+				metDate: c.metDate,
+				avatarPhotoId: c.avatarPhotoId
 			})),
 		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5, §2.20.1)
 		entries: entries.map((e) => ({

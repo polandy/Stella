@@ -14,7 +14,7 @@ function fakeRepo() {
 	const repo: SearchRepository = {
 		searchContacts: async (_v, q) => {
 			calls.push(`contacts:${q}`);
-			return [{ id: 'c1', displayName: 'Hans', description: null }];
+			return [{ id: 'c1', displayName: 'Hans', description: null, avatarPhotoId: null }];
 		},
 		searchNotes: async (_v, q) => {
 			calls.push(`notes:${q}`);

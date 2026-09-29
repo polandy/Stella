@@ -858,7 +858,8 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 
 - **Global search** (keyboard-accessible, `/` or ⌘K) across contact names, descriptions,
   contact-field values, tags, and note bodies.
-- Backed by SQLite **FTS5**; results grouped by type (contacts, notes) with snippets.
+- Backed by SQLite **FTS5**; results grouped by type (contacts, notes) with snippets. A person
+  found shows their photo, or their initials when they have none.
 - Respects visibility — private records only appear for their owner.
 
 ## 2.10 Privacy model (shared vs. private) **[M1]**

@@ -1,12 +1,19 @@
 import type { Viewer } from '../../../access/visibility';
 import type { CircleKind, CircleRepository } from '../../circles/circles';
-import { search, type ContactHit, type SearchDeps } from '../../search/search';
+import { search, type SearchDeps } from '../../search/search';
 
 /*
  * The API's lookups (docs/02 §2.16.1): how a script finds the ids it then names as
  * `existingId`. Both go through the household's own reads, so a script finds exactly what its
  * member would find in the app — no more.
  */
+
+/** A person as the API lists them (docs/02 §2.16.1). */
+export interface PersonMatch {
+	id: string;
+	displayName: string;
+	description: string | null;
+}
 
 /** A circle as the API lists it. */
 export interface CircleMatch {
@@ -23,8 +30,13 @@ export async function findPeople(
 	deps: SearchDeps,
 	viewer: Viewer,
 	query: string
-): Promise<ContactHit[]> {
-	return (await search(deps, viewer, query)).contacts;
+): Promise<PersonMatch[]> {
+	// Picked field by field, so what the app's result list grows never widens the API's answer.
+	return (await search(deps, viewer, query)).contacts.map(({ id, displayName, description }) => ({
+		id,
+		displayName,
+		description
+	}));
 }
 
 /** A name folded for matching: no case, no accents. */
