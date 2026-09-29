@@ -12,7 +12,15 @@ import {
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { extractMentionIds, mentionsOtherThan } from '$lib/mentions/mentions';
 import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
-import { getCommandDeps, getContactDeps, getJournalDeps, getPhotos, getMemberDeps } from '$lib/server/services';
+import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
+import {
+	getCommandDeps,
+	getContactDeps,
+	getJournalDeps,
+	getPhotos,
+	getMemberDeps,
+	getNamesakeContextDeps
+} from '$lib/server/services';
 import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { systemClock } from '$lib/server/clock';
@@ -219,7 +227,9 @@ export const actions: Actions = {
 		let resolved: { body: string; ids: string[] };
 		try {
 			// A handle that could be several people is asked about, not dropped (docs/02 §2.2.3).
-			resolved = resolveForAudience(contacts, entry.visibility, parsed.output.body);
+			resolved = await withNamesakeContext(getNamesakeContextDeps(), viewer, async () =>
+				resolveForAudience(contacts, entry.visibility, parsed.output.body)
+			);
 			ok = await editJournalEntry(getJournalDeps(), author, {
 				id: parsed.output.id,
 				title: parsed.output.title ?? null,

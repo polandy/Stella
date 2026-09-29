@@ -7,6 +7,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
 	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
+	import WhichNamesake from '$lib/components/WhichNamesake.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { processImage } from '$lib/image/process-image';
 	import { allowedForAudience } from '$lib/mentions/audience';
@@ -28,6 +29,7 @@
 		toStored,
 		type MentionPick
 	} from '$lib/mentions/picks';
+	import { unclearHandles } from '$lib/mentions/unclear';
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
 	import {
@@ -179,7 +181,8 @@
 	const referenced = $derived(
 		resolved.ids.flatMap((id) => known.filter((c) => c.id === id))
 	);
-	const canSave = $derived(body.trim().length > 0 && referenced.length > 0 && !saving);
+	const unclear = $derived(unclearHandles(toStored(body, picks), known, peopleContext()));
+	const canSave = $derived(body.trim().length > 0 && referenced.length > 0 && unclear.length === 0 && !saving);
 
 	// Leaving the field closes the picker a moment later, so a click on a suggestion still
 	// lands. Coming back must cancel that: a navigation that returns focus to the page after a
@@ -566,6 +569,10 @@
 		</ul>
 	{/if}
 
+	{#if unclear.length}
+		<div class="mx-3 mb-2"><WhichNamesake {unclear} /></div>
+	{/if}
+
 	<div class="flex flex-wrap items-center gap-2 border-t border-border-subtle px-3 py-2">
 		<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted has-checked:border-transparent has-checked:bg-primary-soft has-checked:font-semibold has-checked:text-primary">
 			<input type="checkbox" class="sr-only" checked={visibility === 'shared'} onchange={(e) => (visibility = (e.currentTarget as HTMLInputElement).checked ? 'shared' : 'private')} />
@@ -584,8 +591,8 @@
 		<DateField name="entryDate" value={kept?.entryDate ?? day} max={day} required label={t('composer.day')} />
 		{/key}
 		<span class="text-xs text-fg-subtle" aria-live="polite">
-			{#if resolved.ambiguous.length}
-				{t('composer.whichOne', { handle: resolved.ambiguous[0].handle })}
+			{#if unclear.length}
+				<!-- The box above asks which one. -->
 			{:else if referenced.length}
 				{t('composer.goesTo')}
 				<b class="font-semibold text-fg-muted">{referenced[0].displayName}</b>{t(

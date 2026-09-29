@@ -7,6 +7,7 @@ import {
 	type AmbiguousHandle,
 	type MentionCandidate
 } from '../../../mentions/mentions';
+import type { PersonContext } from '../../../people/context';
 import { describeDistinction, tellApart, type Distinguishable } from '../../../people/namesakes';
 import type { Visibility } from '../../access/visibility';
 import type { ContactSummary } from '../contacts/contacts';
@@ -38,19 +39,41 @@ export function audienceCandidates(contacts: ContactSummary[], visibility: Visib
 	}));
 }
 
-/** Thrown when a typed handle could be several people; names each so the author can choose. */
+/**
+ * Thrown when a typed handle could be several people; names each so the author can choose.
+ * `contexts` is what the author may see of those people's relationships and circles, which
+ * tells apart a namesake with nothing typed (`withNamesakeContext` reads it).
+ */
 export class AmbiguousMentionError extends TranslatableError {
-	constructor(ambiguous: readonly AmbiguousHandle[], candidates: readonly Candidate[]) {
-		super(ambiguityPhrase(ambiguous, candidates), 'AmbiguousMentionError');
+	/** The people the refused handles could be, and nobody else. */
+	readonly people: readonly Candidate[];
+
+	constructor(
+		readonly ambiguous: readonly AmbiguousHandle[],
+		candidates: readonly Candidate[],
+		contexts: ReadonlyMap<string, PersonContext> = new Map()
+	) {
+		const people = candidates.filter((c) => ambiguous.some(({ ids }) => ids.includes(c.id)));
+		super(ambiguityPhrase(ambiguous, people, contexts), 'AmbiguousMentionError');
+		this.people = people;
+	}
+
+	/** The same refusal, naming each person with `contexts` to fall back on. */
+	withContext(contexts: ReadonlyMap<string, PersonContext>): AmbiguousMentionError {
+		return new AmbiguousMentionError(this.ambiguous, this.people, contexts);
 	}
 }
 
-function ambiguityPhrase(ambiguous: readonly AmbiguousHandle[], candidates: readonly Candidate[]): Phrase {
+function ambiguityPhrase(
+	ambiguous: readonly AmbiguousHandle[],
+	candidates: readonly Candidate[],
+	contexts: ReadonlyMap<string, PersonContext>
+): Phrase {
 	return (t) =>
 		ambiguous
 			.map(({ handle, ids }) => {
 				const people = candidates.filter((c) => ids.includes(c.id));
-				const lines = tellApart(people);
+				const lines = tellApart(people, contexts);
 				const named = people.map((p) => {
 					const line = lines.get(p.id);
 					return line ? `${p.displayName} (${describeDistinction(t, line)})` : p.displayName;

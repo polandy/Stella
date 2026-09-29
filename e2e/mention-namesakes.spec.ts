@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, signIn } from './app';
 
 /*
@@ -72,21 +72,81 @@ test('says which namesake is which in the @-picker, and the moment goes to the o
 	await expect(moment.locator(`a[href="/contacts/${lake}"]`).first()).toBeVisible();
 });
 
-test('asks which one when a namesake is typed rather than picked, keeping the text', async ({ page }) => {
+/** The box under the field asks about `@name`, saving is off, and unfolding it tells the two apart. */
+async function expectAsked(page: Page, save: Locator, name: string) {
+	const box = page.getByTestId('which-namesake');
+	await expect(box).toContainText(`@${name} could be 2 people`);
+	await expect(save).toBeDisabled();
+	await box.getByText('Who is who?').click();
+	await expect(box).toContainText(HUT);
+	await expect(box).toContainText(LAKE);
+}
+
+/** Writes `@name` again and picks the hut warden from the @-list, which answers the box. */
+async function pickTheHutWarden(page: Page, field: Locator, save: Locator, name: string) {
+	await field.fill('');
+	await field.pressSequentially(`With @${name}`);
+	await page.getByRole('option').filter({ hasText: HUT }).click();
+	await expect(page.getByTestId('which-namesake')).toHaveCount(0);
+	await expect(save).toBeEnabled();
+}
+
+test('asks which one a typed namesake means in a note, keeping saving off until one is picked', async ({ page }) => {
 	const { name } = await twoNamesakes(page);
 	await addPerson(page, 'Anneliese', { last: `Gfeller${runLetters()}` });
 
 	await page.getByRole('button', { name: 'Add note' }).click();
 	const field = page.getByRole('textbox', { name: 'Note' });
+	const save = page.getByRole('button', { name: 'Add note' });
 	await field.pressSequentially(`Called @${name}`);
 	await field.press('Escape');
-	await page.getByRole('button', { name: 'Add note' }).click();
-
-	const refusal = page.getByText(new RegExp(`@${name} could be 2 people`));
-	await expect(refusal).toBeVisible();
-	await expect(refusal).toContainText(HUT);
-	await expect(refusal).toContainText(LAKE);
+	await expectAsked(page, save, name);
 	await expect(field).toHaveValue(`Called @${name}`);
+
+	await pickTheHutWarden(page, field, save, name);
+});
+
+test('asks which one a typed namesake means in a moment, keeping saving off until one is picked', async ({ page }) => {
+	const { name } = await twoNamesakes(page);
+	const last = `Gfeller${runLetters()}`;
+	await addPerson(page, 'Anneliese', { last });
+	await page.goto('/');
+	await appReady(page);
+
+	// Someone clear is named too, so it is the namesake alone that keeps saving off.
+	const field = page.getByLabel('What happened?');
+	const save = page.getByRole('button', { name: /^Save/ });
+	await field.pressSequentially(`Coffee with @Anneliese${last} and @${name}`);
+	await field.press('Escape');
+	await expectAsked(page, save, name);
+
+	await pickTheHutWarden(page, field, save, name);
+});
+
+test('asks which one a typed namesake means in a journal entry, new or edited', async ({ page }) => {
+	const { name, hut } = await twoNamesakes(page);
+	const subject = await addPerson(page, 'Anneliese', { last: `Gfeller${runLetters()}` });
+	await page.goto(`/contacts/${subject}/journal`);
+	await appReady(page);
+
+	await page.getByRole('button', { name: 'New entry' }).click();
+	const field = page.getByRole('textbox', { name: 'Entry' });
+	const save = page.getByRole('button', { name: 'Save entry' });
+	await field.pressSequentially(`Walked with @${name}`);
+	await field.press('Escape');
+	await expectAsked(page, save, name);
+	await pickTheHutWarden(page, field, save, name);
+	await save.click();
+	await expect(page.locator(`a.mention[href="/contacts/${hut}"]`)).toBeVisible();
+
+	await page.getByRole('button', { name: 'Edit entry' }).click();
+	const editing = page.getByRole('textbox', { name: 'Entry' });
+	const saveChanges = page.getByRole('button', { name: 'Save changes' });
+	await expect(saveChanges).toBeEnabled();
+	await editing.press('End');
+	await editing.pressSequentially(` and @${name}`);
+	await editing.press('Escape');
+	await expectAsked(page, saveChanges, name);
 });
 
 test('keeps a namesake mentioned when a journal entry is edited and saved', async ({ page }) => {
