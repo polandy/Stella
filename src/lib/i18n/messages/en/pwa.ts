@@ -12,6 +12,11 @@ export const pwa = {
 	'pwa.offline.retry': 'Try again',
 	/* Shown over the app while the device has no connection and pages come off the cache. */
 	'pwa.offline.banner': 'Offline — showing what this device already had.',
+	/* The same line once the worker knows when the page on screen was kept (`copyAge`). */
+	'pwa.offline.bannerAsOf': (p: { when: string }) => `Offline — from this device, as of ${p.when}.`,
+	'pwa.offline.keptToday': (p: { time: string }) => `today ${p.time}`,
+	'pwa.offline.keptYesterday': (p: { time: string }) => `yesterday ${p.time}`,
+	'pwa.offline.keptOn': (p: { date: string; time: string }) => `${p.date} ${p.time}`,
 
 	/* Settings → This device: the standing offer to install, never a prompt over the page. */
 	'pwa.install.heading': 'This device',

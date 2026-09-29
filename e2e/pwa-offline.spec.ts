@@ -66,6 +66,23 @@ test('opens Settings offline without it ever having been read', async ({ page, c
 	await expect(page.getByRole('heading', { name: 'Language' })).toBeVisible();
 });
 
+test('opens People and Circles offline without them ever having been read, and says how old they are', async ({
+	page,
+	context
+}) => {
+	// Kept as the worker takes over, in order, so Circles being there means People is too.
+	await expect.poll(() => isKept(page, '/circles')).toBe(true);
+	await context.setOffline(true);
+
+	await page.locator('a[href="/circles"]:visible').first().click();
+	await expect(page.getByRole('heading', { name: 'Circles', level: 1 })).toBeVisible();
+	// The exact wording (today, yesterday, a date) is `copy-age.test.ts`'s; here, that it is said.
+	await expect(page.getByTestId('offline-banner')).toHaveText(/from this device, as of .*\d{2}:\d{2}/);
+
+	await peopleTab(page).click();
+	await expect(page.getByRole('heading', { name: 'People', level: 1 })).toBeVisible();
+});
+
 test('opens a page offline that was only ever reached by tapping', async ({ page, context }) => {
 	await tapToLena(page);
 	await page.getByRole('link', { name: 'Home' }).first().click();

@@ -12,6 +12,10 @@ export const pwa: PwaMessages = {
 		'Stella läuft in eurem eigenen Netzwerk und ist von hier aus gerade nicht erreichbar. Seiten, die du schon geöffnet hast, kannst du weiterhin lesen.',
 	'pwa.offline.retry': 'Erneut versuchen',
 	'pwa.offline.banner': 'Offline – du siehst, was auf diesem Gerät schon da war.',
+	'pwa.offline.bannerAsOf': (p: { when: string }) => `Offline – von diesem Gerät, Stand ${p.when}.`,
+	'pwa.offline.keptToday': (p: { time: string }) => `heute ${p.time}`,
+	'pwa.offline.keptYesterday': (p: { time: string }) => `gestern ${p.time}`,
+	'pwa.offline.keptOn': (p: { date: string; time: string }) => `${p.date} ${p.time}`,
 
 	'pwa.install.heading': 'Dieses Gerät',
 	'pwa.install.label': 'Stella installieren',

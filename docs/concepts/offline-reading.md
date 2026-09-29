@@ -1,6 +1,6 @@
 # Concept — Reading Stella while it is out of reach
 
-Status: **decided, not built** (§7). Its companion is `offline-capture.md`, which covers adding.
+Status: **decided; step 1 built, step 2 not yet** (§7). Its companion is `offline-capture.md`, which covers adding.
 Together they are the whole offline story: out of reach, a member can **look anyone up** and
 **write down what happened**. Changing or deleting what already exists stays online
 (docs/04 §4.9, *Mutations become commands, not events*). Nothing here reopens that decision.
@@ -148,7 +148,8 @@ is handed on, not one left signed in.
 4. **Order of work:**
    1. Keep Home, People and Circles ahead, as Settings is (`KEPT_AHEAD`), and show how old the
       copy is in the offline line (§4.4). This is small and fixes the empty cache after an
-      update.
+      update. **Built:** the worker tracks, per window, when the page on screen was kept and
+      sends it with the reachability report (`keptAt`); `src/lib/pwa/copy-age.ts` words it.
    2. Keep every person page and journal ahead, with the stamps (§4.2) and the prune (§4.3).
 
 **Still to measure before step 2:** how large a person's page data is in the demo household.
