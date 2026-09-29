@@ -42,6 +42,7 @@ export const components = {
 	'components.namesake.metPlace': (p: { place: string }) => `Met: ${p.place}`,
 	'components.namesake.metYear': (p: { year: string }) => `Met in ${p.year}`,
 	'components.namesake.nothing': 'Nothing yet to tell them apart',
+	'components.namesake.circleRole': (p: { circle: string; role: string }) => `${p.circle} · ${p.role}`,
 	'components.namesake.nudge': (p: { name: string }) =>
 		`Without a last name, “${p.name}” is hard to tell apart later.`,
 	'components.namesake.nudgeAsk': 'What will you know them by?',

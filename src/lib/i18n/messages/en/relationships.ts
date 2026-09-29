@@ -75,7 +75,32 @@ export const relationships = {
 	'relationships.type.knows.forward': 'Knows',
 	'relationships.type.knows.reverse': 'Knows',
 	'relationships.type.other.forward': 'Connected to',
-	'relationships.type.other.reverse': 'Connected to'
+	'relationships.type.other.reverse': 'Connected to',
+	// The same link when its other end is the viewer's own person (docs/02 §2.2.3).
+	'relationships.towardsYou.parent_child.forward': 'Your parent',
+	'relationships.towardsYou.parent_child.reverse': 'Your child',
+	'relationships.towardsYou.grandparent_grandchild.forward': 'Your grandparent',
+	'relationships.towardsYou.grandparent_grandchild.reverse': 'Your grandchild',
+	'relationships.towardsYou.sibling.forward': 'Your sibling',
+	'relationships.towardsYou.sibling.reverse': 'Your sibling',
+	'relationships.towardsYou.partner.forward': 'Your partner',
+	'relationships.towardsYou.partner.reverse': 'Your partner',
+	'relationships.towardsYou.spouse.forward': 'Your spouse',
+	'relationships.towardsYou.spouse.reverse': 'Your spouse',
+	'relationships.towardsYou.friend.forward': 'A friend of yours',
+	'relationships.towardsYou.friend.reverse': 'A friend of yours',
+	'relationships.towardsYou.colleague.forward': 'Your colleague',
+	'relationships.towardsYou.colleague.reverse': 'Your colleague',
+	'relationships.towardsYou.mentor_mentee.forward': 'Your mentor',
+	'relationships.towardsYou.mentor_mentee.reverse': 'Your mentee',
+	'relationships.towardsYou.neighbor.forward': 'Your neighbor',
+	'relationships.towardsYou.neighbor.reverse': 'Your neighbor',
+	'relationships.towardsYou.acquaintance.forward': 'An acquaintance of yours',
+	'relationships.towardsYou.acquaintance.reverse': 'An acquaintance of yours',
+	'relationships.towardsYou.knows.forward': 'Knows you',
+	'relationships.towardsYou.knows.reverse': 'Knows you',
+	'relationships.towardsYou.other.forward': 'Connected to you',
+	'relationships.towardsYou.other.reverse': 'Connected to you'
 };
 
 /** The key set every translation of this area has to provide. */

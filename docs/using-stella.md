@@ -110,11 +110,14 @@ If you only know a first name — the family you met at the mountain hut — Ste
 line to know them by, such as *SAC hut, Aug 2026* — a first name alone is not enough to add
 someone. It pays off: wherever you pick a person, and in the ⌘K search, two people with the same name show a
 second line with their description, or where and when you met them, so you can tell which
-Thomas is which.
+Thomas is which. If you wrote neither, the line says how they are linked to someone you know —
+*Sibling of Sabine Keller*, or *Your sibling* — or a circle they are in, such as *Turnverein
+Muri · Coach*.
 
 People added before Stella asked, or brought in by an import, may still be just *Thomas*. The
 **Settings → Data quality → People known by a first name only** lists them; write what you know each one by and
-**Save**, and they leave the list. If one turns out to be someone already here, open them to
+**Save**, and they leave the list. Where Stella already knows a link or a circle of theirs, the
+field starts out with it, ready to keep or change. If one turns out to be someone already here, open them to
 merge, and if you will never meet them again, archive them.
 
 As soon as you type a surname, Stella checks whether that person might already be here.
