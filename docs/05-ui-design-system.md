@@ -503,8 +503,10 @@ composer's alike. Its field is required — the panels keep their add button off
 filled; `compact` gives it the panel's smaller labels.
 
 **Which-namesake box** (`WhichNamesake.svelte`): while a typed `@Thomas` could be several people
-the text may name, the same `--primary-soft` box sits under the field, asking *Which @Thomas do
-you mean?* and listing each with avatar and `NamesakeLine` (`unclearHandles`, docs/02 §2.2.3).
+the text may name, a slim `--primary-soft` box sits under the field with one line (*@Thomas could be 3
+people — pick one from the @ list*) and *Who is who?* folded away beneath it, each person with
+their `NamesakeLine` (`unclearHandles`, docs/02 §2.2.3) — folded, since the @-list shows the
+same lines where the pick is made.
 The form's save button stays off until one is picked — in the moment composer, the note form
 and the journal's new and edit forms alike (`MentionTextarea`'s bindable `unclear`).
 

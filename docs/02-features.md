@@ -315,8 +315,8 @@ a household soon has five people called *Thomas*. Two things keep them apart:
   sibling)…*), and the text stays to be corrected. The links and circles are read, as the
   author, only once a text is refused (`withNamesakeContext`). A mention is never dropped
   without a word. With JavaScript it is asked sooner: while such a `@Thomas` stands in the
-  moment composer, a note or a journal entry, a box under the field asks *Which @Thomas do you
-  mean?*, listing each with the same line, and saving stays off until one is picked from the
+  moment composer, a note or a journal entry, a slim box under the field says *@Thomas could
+  be 3 people — pick one from the @ list*, with *Who is who?* to unfold each one's line, and saving stays off until one is picked from the
   @-list.
 
 ## 2.3 Contact fields **[M1]**

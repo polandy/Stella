@@ -43,9 +43,9 @@ export const components = {
 	'components.namesake.metYear': (p: { year: string }) => `Met in ${p.year}`,
 	'components.namesake.nothing': 'Nothing yet to tell them apart',
 	'components.namesake.circleRole': (p: { circle: string; role: string }) => `${p.circle} · ${p.role}`,
-	'components.namesake.which': (p: { handle: string }) => `Which @${p.handle} do you mean?`,
-	'components.namesake.whichHint':
-		'Pick them from the list that opens when you type @. Saving waits until then.',
+	'components.namesake.which': (p: { handle: string; count: number }) =>
+		`@${p.handle} could be ${p.count} people — pick one from the @ list.`,
+	'components.namesake.whoIsWho': 'Who is who?',
 	'components.namesake.nudge': (p: { name: string }) =>
 		`Without a last name, “${p.name}” is hard to tell apart later.`,
 	'components.namesake.nudgeAsk': 'What will you know them by?',

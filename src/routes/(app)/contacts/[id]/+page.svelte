@@ -1767,7 +1767,7 @@
 								candidates={data.otherContacts}
 								visibility={noteVisibility}
 								placeholder={t('contact.notes.placeholder')}
-								class={INPUT}
+								class="{INPUT} w-full"
 							/>
 							<div class="flex flex-wrap items-center gap-4 text-sm">
 								<label class="flex items-center gap-1.5">
