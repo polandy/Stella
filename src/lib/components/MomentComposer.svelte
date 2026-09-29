@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
-	import DateField from '$lib/components/DateField.svelte';
+	import DayPill from '$lib/components/DayPill.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
 	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
@@ -588,7 +588,7 @@
 				<input type="file" accept="image/*" multiple onchange={onFiles} class="hidden" />
 			</label>
 		{/if}
-		<DateField name="entryDate" value={kept?.entryDate ?? day} max={day} required label={t('composer.day')} />
+		<DayPill name="entryDate" value={kept?.entryDate ?? day} today={day} />
 		{/key}
 		<span class="text-xs text-fg-subtle" aria-live="polite">
 			{#if unclear.length}

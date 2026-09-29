@@ -235,7 +235,9 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   and its mobile date keyboard; it buys a field that reads correctly in both languages, month
   names instead of an ambiguous number, and a year that can be left blank — which is how a
   birthday without a year (`--MM-DD`, §2.13.1) becomes expressible at all, something the
-  native input cannot represent. (docs/05 §5.7.)
+  native input cannot represent. (docs/05 §5.7.) A moment's older day is picked from our own
+  month calendar for the same reason, a small component rather than a date-picker package
+  (§8.8), with the year a choice beside the month so a late memory is not a hundred taps away.
 - **Combobox over `<input list>` + `<datalist>`** — Mobile Safari, this project's primary test
   device, never renders a datalist's suggestions at all, so the native control silently drops
   the one thing it was chosen for. `src/lib/components/Combobox.svelte` borrows the person

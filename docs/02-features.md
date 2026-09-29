@@ -1574,6 +1574,10 @@ entry and a household update, without leaving the page. Concept + clickable prot
   ("Goes to *Julia*'s journal, mentions 1"). A moment therefore needs **at least one mention**.
   Day, visibility and photos behave as in §2.20 (default: today, shared; photos processed in
   the browser).
+- **The day is a pill, not a date form.** Almost every moment is from today, so the day sits
+  beside *Shared* and *Photo* as a quiet *Today*. A tap offers the last week — *Yesterday*,
+  then the weekdays — and *Another day…* for anything older, which opens a month calendar.
+  A day other than today makes the pill stand out; a day in the future is never offered.
 - **A second moment adds, never replaces.** When the anchor's journal already has the
   member's entry for that day and visibility (the day slot, §2.20), the moment is appended to
   it as a new paragraph and its mentions join the entry's; the title stays — as writing on the
