@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.19-rc.2](https://github.com/polandy/Stella/compare/v0.0.19-rc.1...v0.0.19-rc.2) (2026-09-29)
+
+
+### Features
+
+* **people:** tell namesakes apart and ask for a description when there is no last name ([#159](https://github.com/polandy/Stella/issues/159)) ([028c7c1](https://github.com/polandy/Stella/commit/028c7c13d040c02224dea608c238f6e0249a1efc))
+
+
+### Bug Fixes
+
+* **people:** keep the Add a person fields inside the card on a phone ([#163](https://github.com/polandy/Stella/issues/163)) ([9b78312](https://github.com/polandy/Stella/commit/9b78312c0250b79915ea90f7351c0b0f9d84a55d))
+* **pwa:** keep pages readable offline and stop waiting on a network that never answers ([#162](https://github.com/polandy/Stella/issues/162)) ([cbf3e43](https://github.com/polandy/Stella/commit/cbf3e430cadc0db44552968f13ae972efffdca46))
+* **release:** read a release candidate's version so its update check stays on ([#160](https://github.com/polandy/Stella/issues/160)) ([1ee7e13](https://github.com/polandy/Stella/commit/1ee7e13523a527cb4221cb9db319efb310a93b0e))
+
 ## [0.0.19-rc.1](https://github.com/polandy/Stella/compare/v0.0.18...v0.0.19-rc.1) (2026-09-28)
 
 
