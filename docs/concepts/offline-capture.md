@@ -387,8 +387,11 @@ Both are built (26–32 below record what was decided on the way).
     check (`e2e/offline-capture.spec.ts`, `e2e/offline-person.spec.ts`). The suite blocks
     service workers (a Chromium crash, see `playwright.config.ts`), so the specs go offline
     with `context.setOffline`: the save fails on the way and is kept — the *Stella stopped
-    answering mid-save* path. The worker's part (the banner, cached pages, *Save for later*
-    known in advance) is covered by unit tests of the pure policy and by trying it on a phone.
+    answering mid-save* path. The worker's part is covered by unit tests of the pure policy
+    and, since #162, by `e2e/pwa-offline.spec.ts` in a `pwa` project of its own that lets the
+    worker run: pages kept when reached by tapping, Settings kept ahead, and a network that
+    takes requests and never answers — the flight-mode-behind-a-VPN shape `setOffline`
+    cannot produce, which hung 0.0.19-rc.1.
 
 **Found on the way**
 

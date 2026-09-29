@@ -18,6 +18,9 @@ const FEED_PORT = Number(process.env.E2E_FEED_PORT ?? 4174);
 /** The one spec that belongs to the `setup` project and to no other. */
 const SETUP_SPEC = /auth\.setup\.ts$/;
 
+/** The specs that need the service worker running, and so get a project of their own. */
+const PWA_SPECS = /pwa-[^/]*\.spec\.ts$/;
+
 /*
  * No service worker, for a suite that never tests one.
  *
@@ -30,8 +33,9 @@ const SETUP_SPEC = /auth\.setup\.ts$/;
  * The browser process is also where Chromium keeps the service worker registry, and since the
  * PWA landed every page registers one (`OfflineBanner` waits on `serviceWorker.ready`) while
  * the suite creates and destroys a context per test. Blocking registration takes that out of
- * the crashing process and costs no coverage: there is no PWA spec, and the install and
- * offline rules are unit-tested as pure policy in `src/lib/pwa/`. The offline specs go
+ * the crashing process. The install and offline rules are unit-tested as pure policy in
+ * `src/lib/pwa/`; what only a running worker shows lives in `e2e/pwa-*.spec.ts`, the one
+ * project that allows it — a handful of contexts rather than the whole suite's. The offline specs go
  * offline with `context.setOffline` and need no worker for it (`e2e/offline-capture.spec.ts`).
  *
  * Measured rather than guessed: shard 1 of `63c4e2a` was run eight times in one matrix, four
@@ -62,9 +66,16 @@ export default defineConfig({
 		{ name: 'setup', testMatch: SETUP_SPEC, use: { ...devices['Desktop Chrome'] } },
 		{
 			name: 'chromium',
-			testIgnore: SETUP_SPEC,
+			testIgnore: [SETUP_SPEC, PWA_SPECS],
 			dependencies: ['setup'],
 			use: { ...devices['Desktop Chrome'], storageState: AUTH_STATE_PATH }
+		},
+		// The offline behaviour is the phone's, so it is driven at a phone's size.
+		{
+			name: 'pwa',
+			testMatch: PWA_SPECS,
+			dependencies: ['setup'],
+			use: { ...devices['Pixel 7'], storageState: AUTH_STATE_PATH, serviceWorkers: 'allow' }
 		}
 	],
 	webServer: [
