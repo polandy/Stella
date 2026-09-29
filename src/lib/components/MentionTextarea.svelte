@@ -34,6 +34,7 @@
 		description?: string | null;
 		metPlace?: string | null;
 		metDate?: string | null;
+		avatarPhotoId: string | null;
 	}
 	interface Props {
 		/** Everyone the author may see; the picker narrows to the audience below. */
@@ -224,7 +225,7 @@
 						onmouseenter={() => (selected = i)}
 						class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
 					>
-						<Avatar id={person.id} name={person.displayName} size={22} />
+						<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={22} />
 						<span class="min-w-0">
 							<span class="block truncate">{person.displayName}</span>
 							{#if namesakes.get(person.id)}<NamesakeLine distinction={namesakes.get(person.id)!} />{/if}

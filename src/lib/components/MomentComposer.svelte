@@ -72,6 +72,7 @@
 		description?: string | null;
 		metPlace?: string | null;
 		metDate?: string | null;
+		avatarPhotoId: string | null;
 	}
 	interface Props {
 		/** People the author may see; the picker narrows to the moment's audience itself. */
@@ -552,7 +553,7 @@
 						class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
 					>
 						{#if row.kind === 'person'}
-							<Avatar id={row.person.id} name={row.person.displayName} size={22} />
+							<Avatar id={row.person.id} name={row.person.displayName} avatarPhotoId={row.person.avatarPhotoId} size={22} />
 							<span class="min-w-0">
 								<span class="block truncate">{row.person.displayName}</span>
 								{#if namesakes.get(row.person.id)}<NamesakeLine distinction={namesakes.get(row.person.id)!} />{/if}

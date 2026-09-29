@@ -119,11 +119,9 @@ Goal: sand the edges and add the nice-to-haves.
 - **Graph & UX polish:** "haven't seen in a while" hints, photo reordering, saved graph
   filters, density/appearance refinements. ~~Group a circle's members by role~~ — shipped:
   a *Group by role* switch in the explorer's Filter menu (§2.7).
-- *Idea, unspecced:* **photos in every person picker** — search results wherever people are
-  found and picked (Circles' *Add member*, `PersonSearchSelect`, …) show the initials circle
-  even when the person has a photo, because the suggestion data doesn't carry `avatarPhotoId`
-  yet (`Avatar.svelte` only falls back to initials when it's missing). Thread the photo id
-  through so a person is recognisable at a glance there too.
+- ~~**Photos in every person picker**~~ — shipped (docs/05 §5.10): search results, the person
+  pickers (Circles' *Add member*, the relationship form, …) and the @-lists show a person's
+  photo instead of their initials whenever they have one.
 - *TODO, concept first:* **context hints for people without a last name** — some people are
   only known by first name and where they belong, so a search result for them should say who
   they are: *Sister of Hans Meyer*, *in the circle Class 9a*. ~~Description and where/when

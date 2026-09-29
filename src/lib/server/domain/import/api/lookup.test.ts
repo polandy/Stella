@@ -54,12 +54,13 @@ describe('findCircles', () => {
 });
 
 describe('findPeople', () => {
+	// The photo id is for the app's own result list; the API answers with the documented shape.
 	it('answers with the people the household search finds', async () => {
 		const asked: string[] = [];
 		const search = {
 			searchContacts: async (_v: unknown, fts: string) => {
 				asked.push(fts);
-				return [{ id: 'c-1', displayName: 'Anna Muster', description: null }];
+				return [{ id: 'c-1', displayName: 'Anna Muster', description: null, avatarPhotoId: 'photo-1' }];
 			},
 			searchNotes: async () => []
 		};
