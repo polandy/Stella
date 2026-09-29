@@ -100,5 +100,10 @@ test('shows the photo in the search results', async ({ page }) => {
 	const { name, id, src } = await personWithAPhoto(page);
 	await page.goto(`/search?q=${encodeURIComponent(name.split(' ')[1])}`);
 
-	await expect(photoIn(page.locator(`a[href="/contacts/${id}"]`), src)).toBeVisible();
+	// Only the page's own result list: ⌘K lists the same person with the same photo, and
+	// whether its rows are rendered yet is a race that must not decide this case.
+	const results = page
+		.locator('section')
+		.filter({ has: page.getByRole('heading', { name: 'People', exact: true }) });
+	await expect(photoIn(results.locator(`a[href="/contacts/${id}"]`), src)).toBeVisible();
 });
