@@ -122,17 +122,13 @@ Goal: sand the edges and add the nice-to-haves.
 - ~~**Photos in every person picker**~~ — shipped (docs/05 §5.10): search results, the person
   pickers (Circles' *Add member*, the relationship form, …) and the @-lists show a person's
   photo instead of their initials whenever they have one.
-- *TODO, concept first:* **context hints for people without a last name** — some people are
-  only known by first name and where they belong, so a search result for them should say who
-  they are: *Sister of Hans Meyer*, *in the circle Class 9a*. ~~Description and where/when
-  met~~ — shipped as the namesake line in ⌘K and the person pickers, with a nudge for a
-  description when someone is added without a last name (§2.2.3). ~~**Relationship and
-  circle** as further fallbacks~~ — shipped (§2.2.3, `docs/concepts/namesake-context.html`):
-  read per viewer through the access layer, a link to another namesake skipped, and the
-  clean-up list filled in from them, and in the refusal of a typed `@Thomas`. The relationship form
-  fills a new person's description in from the link (*Child of Hans Meyer*), as plain text. ~~The **@-picker**~~ — shipped: the second line there too, the pick remembered as
-  the person's id, and a typed `@Thomas` that is two people refused with their names
-  (§2.2.3, `docs/concepts/mention-namesakes.html`).
+- ~~**Context hints for people without a last name**~~ — shipped (§2.2.3): someone known
+  only by a first name is told apart by a second line in ⌘K, the person pickers and the
+  @-picker — their description, where/when met, then a relationship or circle read per viewer
+  through the access layer (*Sister of Hans Meyer*, *in the circle Class 9a*). Adding someone
+  without a last name nudges for a description, the relationship form fills one in from the
+  link, and a typed `@Thomas` that is two people is refused with their names
+  (`docs/concepts/namesake-context.html`, `docs/concepts/mention-namesakes.html`).
 - ~~**Tidy up people known by a first name only**~~ — shipped (§2.2.3): *Settings → Data
   quality* lists everyone with a first name and nothing else to tell them
   apart, each with a description field; merge and archive stay on their page.
@@ -143,6 +139,13 @@ Goal: sand the edges and add the nice-to-haves.
   others have seen is changed offline, so there is nothing to merge. Event sourcing and full
   offline sync were weighed and rejected (docs/04 §4.9); the decisions taken along the way
   are in `docs/concepts/offline-capture.md` §8.
+- **Reading Stella while it is out of reach** — every person the member can see readable
+  offline, their journal too, not only the pages read since the last update; the offline line
+  says how old the copy is, and a person no longer visible leaves the device on the next
+  refresh. Pages are kept ahead as the server renders them (no second renderer, no local
+  database); a per-person change stamp keeps the refresh to what changed. Two steps: first
+  Home, People and Circles kept ahead plus the age of the copy, then the person pages.
+  Plan and decisions: `docs/concepts/offline-reading.md`.
 - ~~**A simpler day in the *What happened?* composer**~~ — shipped (§2.22.1): a *Today* pill
   beside *Shared* and *Photo* offers the last week in one tap and a month calendar for
   anything older. Chosen from four mockups over always-visible chips, a day stepper and a
