@@ -757,6 +757,14 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   same two people are two facts (a godparent is often the grandfather), so nothing refuses
   them. An earlier cut refused a second family link too and was wrong in the first household
   that opened it.
+- **Every worked-out term has a built-in type to be confirmed as** (docs/02 §2.4.1) — confirming
+  a cousin stores a `cousin` row rather than a household's own type or a generic *Connected to*,
+  so the confirmed link reads the same in every household and in both languages. The confirmed
+  types are facts about a pair and never primary links, so storing one invents nothing further;
+  `half_sibling` is its own type because `sibling` claims full siblings. The cost is that a
+  confirmed row is frozen: it no longer follows the links it was worked out from. For the same
+  reason the old refusal of a hand-entered sibling that shared parents imply is gone — it
+  stood in the way of confirming one, and the household decides.
 - **A suggestion the write would refuse is not offered** (suppression 5) — the engine asks the
   same parent cap before listing a claim, because *Accept* is the only button on the row and an
   error there is a rule the household never broke.
