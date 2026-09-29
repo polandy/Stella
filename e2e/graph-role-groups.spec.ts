@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { signIn } from './app';
-import { arrangeBy, clickFrame, clickNode, filterMenu, settled, stateOf } from './graph-canvas';
+import { arrangeBy, clickFrame, filterMenu, selectNode, settled, stateOf } from './graph-canvas';
 
 /*
  * Grouping a circle's members by role on the map (docs/02 §2.7, docs/05 §5.8). Written after
@@ -72,8 +72,11 @@ async function groupingOnCanvas(page: Page) {
 async function openTurnverein(page: Page) {
 	await page.goto(`/graph?center=${LENA}`);
 	await settled(page);
-	await clickNode(page, TURNVEREIN);
+	// Selected, not tapped: the free arrangement starts from a random spread and now and then
+	// draws the Musikschule on top of the Turnverein, where a tap would reach the wrong circle.
+	await selectNode(page, TURNVEREIN);
 	const peek = page.getByRole('complementary');
+	await expect(peek.getByText('Turnverein Länggasse')).toBeVisible();
 	await peek.getByRole('button', { name: 'Expand connections' }).click();
 	await expect.poll(() => stateOf(page, FRANZISKA)).toBe('drawn');
 	await peek.getByRole('button', { name: 'Close' }).click();
