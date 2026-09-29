@@ -1426,7 +1426,11 @@ bargain as the browser's own history.
 came off this device. It is not driven by `navigator.onLine`, which answers "is this device
 on a network" — a phone on mobile data is perfectly online and cannot reach a Stella on the
 household LAN at all, which is exactly the case this exists for. The service worker knows,
-having just either fetched a page or failed to, so it reports and the page listens. When the
+having just either fetched a page or failed to, so it reports and the page listens. A page
+left open makes no request, so the moments the answer may have changed under it also ask the
+worker to check: the phone losing or joining a network, and the app coming back into view. A
+phone in flight mode shows the line at once; a phone whose network cannot reach Stella (VPN
+off, away from home) shows it once the check has waited out the network's few seconds. When the
 page came off the device, the line also says **how old it is** — *"Offline — from this
 device, as of yesterday 18:04"* — read from the kept response's `Date` header: an old copy is
 normal offline, but it must never look current. The worker tracks this per window, for whole

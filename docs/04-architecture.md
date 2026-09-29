@@ -702,9 +702,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   offline case there is, and the one the feature exists for. Driven from the flag the banner
   simply never appeared. The worker knows, having just either fetched a page or failed to and
   fallen back to the cache, so it reports and the page listens; a page that has just opened
-  asks once, because the report it needed was sent while it was still loading. Rejected:
-  polling a health endpoint from the page, which answers the right question but burns a
-  request on a timer forever to catch a state that changes a handful of times a day.
+  asks once, because the report it needed was sent while it was still loading. A page left
+  open makes no request, so the worker never noticed a connection dropping under it: the page
+  now asks it to check `/healthz` when the device goes offline or online and when the app
+  comes back into view, believing a device that says it is offline at once, since a
+  flight-mode request can hang rather than fail. Rejected: polling a health endpoint from the
+  page, which answers the right question but burns a request on a timer forever to catch a
+  state that changes a handful of times a day.
 
 - **Pages are cached, and sign-out throws them away** — a cached person page is household
   data at rest on somebody's phone, which is the cost of §2.18 being worth anything at all:

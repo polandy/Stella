@@ -123,6 +123,14 @@ The offline line (§2.18) gains the time the showing page was fetched. The servi
 already stores each response; the time comes from its `Date` header. Old copies are
 normal and fine, but they must never look current.
 
+The line must also appear without a tap. The worker only learns that Stella is out of reach
+when a request fails, and a page left open makes none, so the page asks the worker to check
+`/healthz` when the device goes offline or online and when the app comes back into view. A
+device that reports itself offline is believed at once (flight mode can hang a request rather
+than fail it); one that reports itself online is checked, since online is not in reach. There
+is no timer: the connection dropping *while the app stays open on a network that cannot
+reach Stella* is still noticed only on the next tap.
+
 ### 4.5 Signing out
 
 Unchanged: every kept page is thrown away (§2.18). With pages kept ahead there is simply more to

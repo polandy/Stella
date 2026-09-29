@@ -686,8 +686,8 @@ anything in (docs/02 §2.19).
 `--warning-soft`, ruled above and below in `--warning` at 40 %, directly above the page content — above the content and not the shell, because
 it is what you are reading that may be out of date, not the navigation around it. It carries
 `role="status"`, so it is announced rather than read only by the sighted, and it appears and
-clears on its own: the service worker reports whether Stella is reachable and the banner
-follows (docs/02 §2.18, docs/04 §4.11.1). When the page came off the device it also says how
+clears on its own: the service worker reports whether Stella is reachable, checking again
+when the connection changes or the app comes back into view, and the banner follows (docs/02 §2.18, docs/04 §4.11.1). When the page came off the device it also says how
 old it is (*as of yesterday 18:04*): an old copy is fine offline, but must not look current.
 The words stay in `--fg` (medium weight) and only the icon takes `--warning`: the tint makes the
 line hard to miss on a phone, where the earlier grey line on grey was, without turning it into

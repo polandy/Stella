@@ -16,6 +16,16 @@
 /** A page asking the worker where things stand, because it has just been opened. */
 export const ASK_REACHABILITY = 'stella:reachability?';
 
+/**
+ * A page telling the worker that something changed under it without a request to notice: the
+ * device lost or joined a network, or the app came back into view. The worker finds out and
+ * reports only if the answer changed, so a page left open learns it is offline without a tap.
+ */
+export const CHECK_REACHABILITY = 'stella:reachability!';
+
+/** What the worker asks to find out: public, no database, and cheap enough for every check. */
+export const PROBE_PATH = '/healthz';
+
 /** The worker's answer, sent in reply and again whenever it changes. */
 export const REPORT_REACHABILITY = 'stella:reachability';
 
@@ -41,4 +51,26 @@ export function isReachabilityReport(data: unknown): data is ReachabilityReport 
 		typeof message.reachable === 'boolean' &&
 		(message.keptAt === undefined || message.keptAt === null || typeof message.keptAt === 'number')
 	);
+}
+
+/** How the health check was answered, as far as the verdict needs it; null when it was not. */
+export interface ProbeAnswer {
+	ok: boolean;
+	type: ResponseType;
+	/** The parsed JSON body, or whatever else came back in its place. */
+	body: unknown;
+}
+
+/**
+ * Whether a check found Stella. A device that says it has no network is believed at once, since
+ * a flight-mode request can hang rather than fail; a device that says it is online is not, which
+ * is the whole point of asking. Only Stella's own health answer counts: a Wi-Fi login page
+ * answers every address with a 200 of its own.
+ */
+export function probeSays(check: { deviceOnline: boolean; answer: ProbeAnswer | null }): boolean {
+	const { deviceOnline, answer } = check;
+	if (!deviceOnline || answer === null) return false;
+	if (!answer.ok || answer.type !== 'basic') return false;
+	const body = answer.body;
+	return typeof body === 'object' && body !== null && (body as Record<string, unknown>).status === 'ok';
 }

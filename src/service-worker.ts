@@ -41,7 +41,10 @@ import {
 } from '$lib/pwa/people-ahead';
 import {
 	ASK_REACHABILITY,
+	CHECK_REACHABILITY,
+	PROBE_PATH,
 	REPORT_REACHABILITY,
+	probeSays,
 	type ReachabilityReport
 } from '$lib/pwa/reachability';
 
@@ -141,7 +144,30 @@ worker.addEventListener('message', (event) => {
 		// A page opening is also the moment to keep what should be there before it is read.
 		event.waitUntil(keepAhead().then(refreshPeople));
 	}
+	if (event.data === CHECK_REACHABILITY) event.waitUntil(checkReachability());
 });
+
+/** The check under way, so a burst of events (offline, then hidden, then shown) asks once. */
+let reachabilityCheck: Promise<void> | null = null;
+
+/** Find out whether Stella answers, without waiting for a page's request to show it. */
+function checkReachability(): Promise<void> {
+	reachabilityCheck ??= probe().finally(() => {
+		reachabilityCheck = null;
+	});
+	return reachabilityCheck;
+}
+
+async function probe(): Promise<void> {
+	const deviceOnline = worker.navigator.onLine;
+	const response = deviceOnline ? await fetchAhead(PROBE_PATH) : null;
+	const answer = response && {
+		ok: response.ok,
+		type: response.type,
+		body: await response.json().catch(() => null)
+	};
+	noteReachability(probeSays({ deviceOnline, answer }));
+}
 
 /** Fetch and keep each `KEPT_AHEAD` page this build's cache does not hold yet. */
 async function keepAhead(): Promise<void> {
