@@ -124,6 +124,23 @@ test('expanding moves nobody already on the map, and arranging it freely re-arra
 	expect(moved.length).toBeGreaterThan(0);
 });
 
+test('draws the same map on every visit', async ({ page }) => {
+	// Rounded to the pixel: the same people in the same places, not the same floating point.
+	const visit = async () => {
+		await page.goto('/graph?center=demo-c-lena');
+		await settled(page);
+		return [...(await arrangement(page))]
+			.map(([id, at]) => `${id} ${Math.round(at.x)},${Math.round(at.y)}`)
+			.sort();
+	};
+
+	const first = await visit();
+	// A map of several people: one person alone would be the same map by default.
+	expect(first.length).toBeGreaterThan(5);
+	expect(await visit()).toEqual(first);
+	expect(await visit()).toEqual(first);
+});
+
 test('Tree sets each generation on a row of its own and bends the lines that would cross somebody', async ({
 	page
 }) => {
