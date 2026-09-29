@@ -167,6 +167,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		nameOfAuthor: read.nameOfAuthor
 	};
 	const t = translator(locals);
+	const storyContext = { ...ctx, userId: viewer.id, photosByEntry: photosByEntry(read.journalPhotos) };
 
 	return {
 		// Who they are.
@@ -179,9 +180,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 
 		// What happened with them: the story's first page, and their touchpoints.
 		story: {
-			items: read.storyPage.items.map((item) =>
-				toStoryItem(item, { ...ctx, userId: viewer.id, photosByEntry: photosByEntry(read.journalPhotos) })
-			),
+			items: read.storyPage.items.map((item) => toStoryItem(item, storyContext)),
 			nextCursor: read.storyPage.nextCursor
 		},
 		interactions: read.interactions.map((interaction) => interactionView(interaction, viewer.id)),
