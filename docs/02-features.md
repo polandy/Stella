@@ -244,8 +244,10 @@ no dialog, nothing typed twice:
 - **First and last name**, pre-filled by splitting the query at the first space (so *van der
   Berg* stays one surname).
 - **Description**, one line, always in view: it is what the person is found and told apart
-  by later, whatever else is known. With no last name it comes in a highlighted box with a
-  nudge (§2.2.3).
+  by later, whatever else is known. With no last name it comes in a highlighted box and is
+  needed (§2.2.3). In the relationship form it starts filled in from the link being entered,
+  read from the new person's end — on Hans's page, *Parent of* makes it *Child of Hans Meyer*
+  — and follows the type while it has not been edited.
 - **Nickname** and **birthday**, collapsed under *More details*. The birthday is the same
   locale-aware field as everywhere else (§5.7), so the year may be left blank here too —
   which is common for someone just being named in passing.

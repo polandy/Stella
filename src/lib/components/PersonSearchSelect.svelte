@@ -47,6 +47,11 @@
 		keepSearch?: boolean;
 		/** Offer creating a person from the typed name, for pickers where a stranger belongs. */
 		allowCreate?: boolean;
+		/**
+		 * What to fill the new person's description with, from what the form around the picker
+		 * already says about them — "Child of Hans Meyer" in a relationship form (docs/02 §2.2.3).
+		 */
+		suggestedDescription?: string;
 		/** Called with the person a pick lands on, for a form that reads more off them than the id. */
 		onPick?: (person: SelectablePerson) => void;
 		id?: string;
@@ -61,6 +66,7 @@
 		multiple = false,
 		keepSearch = false,
 		allowCreate = false,
+		suggestedDescription = '',
 		onPick,
 		id,
 		required = false,
@@ -149,13 +155,24 @@
 
 	async function startCreate() {
 		const { firstName, lastName } = splitTypedName(query);
-		draft = { firstName, lastName, nickname: '', description: '', birthDate: '', visibility: 'shared' };
+		draft = { firstName, lastName, nickname: '', description: suggestedDescription, birthDate: '', visibility: 'shared' };
+		offered = suggestedDescription;
 		createError = null;
 		creating = true;
 		open = true;
 		await tick();
 		firstNameInput?.focus();
 	}
+
+	// The suggestion follows the form while nobody has made the description their own: another
+	// type chosen with the panel open is a new suggestion, a typed description stays.
+	let offered = '';
+	$effect(() => {
+		const next = suggestedDescription;
+		if (!creating || next === offered) return;
+		if (draft.description === offered) draft.description = next;
+		offered = next;
+	});
 
 	function cancelCreate() {
 		creating = false;

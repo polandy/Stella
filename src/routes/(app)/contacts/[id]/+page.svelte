@@ -29,7 +29,8 @@
 		exclusionLabel,
 		relationshipRowLabel,
 		relationshipStatusLabel,
-		relationshipTypeLabel
+		relationshipTypeLabel,
+		towardsSubject
 	} from '$lib/relationships/labels';
 	import { contactSectionPath, sectionAnchor } from '$lib/contacts/sections';
 	import { directClaimLabel, kinshipLabel } from '$lib/kinship/labels';
@@ -611,6 +612,14 @@
 		return firstPickable(relationshipChoices, forTarget) === null && relationshipChoices.length > 0
 			? forTarget(relationshipChoices[0])
 			: null;
+	});
+	// Someone named in the picker for the first time is known by this link until they have more
+	// (docs/02 §2.2.3): on Hans's page, "Parent of" makes them "Child of Hans Meyer".
+	const suggestedTargetDescription = $derived.by(() => {
+		const chosen =
+			relationshipChoices.find((option) => option.value === relationshipChoice) ??
+			relationshipChoices[0];
+		return chosen ? towardsSubject(t, chosen.type, chosen.side, c.displayName) : '';
 	});
 	const suggestedSince = $derived.by(() => {
 		const chosen =
@@ -1583,6 +1592,7 @@
 										bind:selectedIds={relationshipTargetId}
 										onPick={(person) => (pickedTarget = person)}
 										allowCreate
+										suggestedDescription={suggestedTargetDescription}
 									/>
 								</label>
 								<label class="flex w-full flex-col gap-1 text-sm sm:flex-1">

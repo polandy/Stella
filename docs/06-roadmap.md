@@ -131,7 +131,8 @@ Goal: sand the edges and add the nice-to-haves.
   description when someone is added without a last name (§2.2.3). Still open, concept first:
   **relationship and circle** as further fallbacks — which wins when there are several, and
   how it stays access-scoped so it never names a person or circle the viewer may not see
-  (§2.10). ~~The **@-picker**~~ — shipped: the second line there too, the pick remembered as
+  (§2.10). Meanwhile the relationship form fills a new person's description in from the link
+  (*Child of Hans Meyer*), as plain text. ~~The **@-picker**~~ — shipped: the second line there too, the pick remembered as
   the person's id, and a typed `@Thomas` that is two people refused with their names
   (§2.2.3, `docs/concepts/mention-namesakes.html`).
 - *TODO:* **tidy up people known by a first name only** — a list of everyone who has a first
