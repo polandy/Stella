@@ -25,9 +25,11 @@ import {
 	endsTheSession,
 	isPageData,
 	isStellaCache,
+	keptAt,
 	patienceFor,
 	standInFor,
-	verdictFor
+	verdictFor,
+	type CacheableRequest
 } from '$lib/pwa/cache-policy';
 import {
 	ASK_REACHABILITY,
@@ -78,11 +80,41 @@ worker.addEventListener('activate', (event) => {
  */
 let reachable = true;
 
+/*
+ * When the page each open window shows was kept, if it came off the device: the offline line
+ * says how old it is (docs/concepts/offline-reading.md §4.4). Null once Stella answered it.
+ * Keyed by client id, because two windows can show copies of different ages. Never pruned: a
+ * window being navigated is not yet among the open ones, so pruning could drop the entry it is
+ * about to ask for; and the browser stops an idle worker, map and all, within minutes.
+ */
+const keptAtByClient = new Map<string, number | null>();
+
+/** What to tell the window `clientId` about where things stand. */
+function reportFor(clientId: string): ReachabilityReport {
+	return { type: REPORT_REACHABILITY, reachable, keptAt: keptAtByClient.get(clientId) ?? null };
+}
+
 /** Tell every open page where things stand, so the offline banner matches reality. */
 async function report(): Promise<void> {
-	const message: ReachabilityReport = { type: REPORT_REACHABILITY, reachable };
 	const clients = await worker.clients.matchAll({ type: 'window' });
-	for (const client of clients) client.postMessage(message);
+	for (const client of clients) client.postMessage(reportFor(client.id));
+}
+
+/**
+ * Record where the page answering `event` came from. A whole page is shown by the window it
+ * creates, which asks once it has loaded; a page's data is shown by a window already open, so
+ * that one is told now.
+ */
+function noteServed(event: FetchEvent, kept: Response | null): void {
+	// A photo is part of the page, not the page: its age is not what the line reports.
+	const isPage = event.request.mode === 'navigate' || isPageData(describe(event.request));
+	if (!isPage) return;
+	const stamp = kept ? keptAt(kept.headers.get('date')) : null;
+	const clientId = event.request.mode === 'navigate' ? event.resultingClientId : event.clientId;
+	if (!clientId) return;
+	keptAtByClient.set(clientId, stamp);
+	if (event.request.mode === 'navigate') return;
+	void worker.clients.get(clientId).then((client) => client?.postMessage(reportFor(clientId)));
 }
 
 /** Record what a request turned out to prove, and tell the pages only when it changed. */
@@ -96,8 +128,8 @@ worker.addEventListener('message', (event) => {
 	// A page that has just opened asks rather than waiting to be told: the report it needs was
 	// very likely sent while it was still loading, and there is nothing to poll.
 	if (event.data === ASK_REACHABILITY) {
-		const message: ReachabilityReport = { type: REPORT_REACHABILITY, reachable };
-		event.source?.postMessage(message);
+		const source = event.source;
+		if (source && 'id' in source) source.postMessage(reportFor(source.id));
 		// A page opening is also the moment to keep what should be there before it is read.
 		event.waitUntil(keepAhead());
 	}
@@ -157,7 +189,8 @@ async function networkWithin(
  * Serve from the network, keeping a copy under `key`; fall back to the copy when the network
  * does not answer.
  */
-async function networkFirst(request: Request, key: string): Promise<Response> {
+async function networkFirst(event: FetchEvent, key: string): Promise<Response> {
+	const { request } = event;
 	const cache = await caches.open(CACHE);
 	const cached = await cache.match(key);
 	const response = await networkWithin(request, cached !== undefined, (answer) => {
@@ -165,25 +198,37 @@ async function networkFirst(request: Request, key: string): Promise<Response> {
 		// moment, and an error page cached now would outlive the error.
 		if (answer.ok && answer.type === 'basic') void cache.put(key, answer.clone());
 	});
-	if (response) return response;
-	if (cached) return cached;
+	if (response) {
+		noteServed(event, null);
+		return response;
+	}
+	if (cached) {
+		noteServed(event, cached);
+		return cached;
+	}
 
+	noteServed(event, null);
 	const fallback = await cache.match(OFFLINE_FALLBACK_PATH);
 	if (fallback && request.mode === 'navigate') return fallback;
 	// A page's data failing is what sends SvelteKit to the whole page, which lands above.
 	return Response.error();
 }
 
-worker.addEventListener('fetch', (event) => {
-	const { request } = event;
-	const describe = {
+/** A request as the cache policy asks about it. */
+function describe(request: Request): CacheableRequest {
+	return {
 		method: request.method,
 		url: request.url,
 		origin: worker.location.origin,
 		isNavigation: request.mode === 'navigate'
 	};
+}
 
-	if (endsTheSession(describe)) {
+worker.addEventListener('fetch', (event) => {
+	const { request } = event;
+	const described = describe(request);
+
+	if (endsTheSession(described)) {
 		// Sign-out empties the device. The purge is awaited alongside the request rather than
 		// after it, so the pages are gone even if the browser is closed on the way back.
 		event.waitUntil(purgeCaches());
@@ -200,19 +245,19 @@ worker.addEventListener('fetch', (event) => {
 		return;
 	}
 
-	if (verdictFor(describe) === 'keep') {
-		event.respondWith(networkFirst(request, cacheKeyFor(describe)));
+	if (verdictFor(described) === 'keep') {
+		event.respondWith(networkFirst(event, cacheKeyFor(described)));
 		return;
 	}
 
-	const standIn = standInFor(describe);
+	const standIn = standInFor(described);
 	if (standIn) {
-		event.respondWith(networkOrStandIn(request, standIn));
+		event.respondWith(networkOrStandIn(event, standIn));
 		return;
 	}
 
 	// A page's data that is never kept — a filter, a search — still must not wait on silence.
-	if (isPageData(describe)) {
+	if (isPageData(described)) {
 		event.respondWith(networkWithin(request, false).then((response) => response ?? Response.error()));
 	}
 });
@@ -221,10 +266,11 @@ worker.addEventListener('fetch', (event) => {
  * A page that is never kept, answered by the network — or, when that does not answer, by the
  * kept page it asks something of (`standInFor`). Nothing is written to the cache here.
  */
-async function networkOrStandIn(request: Request, standIn: string): Promise<Response> {
+async function networkOrStandIn(event: FetchEvent, standIn: string): Promise<Response> {
 	const cache = await caches.open(CACHE);
 	const kept = await cache.match(standIn);
-	const response = await networkWithin(request, kept !== undefined);
+	const response = await networkWithin(event.request, kept !== undefined);
+	noteServed(event, response ? null : (kept ?? null));
 	if (response) return response;
 	return kept ?? (await cache.match(OFFLINE_FALLBACK_PATH)) ?? Response.error();
 }

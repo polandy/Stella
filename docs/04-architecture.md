@@ -947,15 +947,18 @@ The same split as the explorer: a pure domain and a thin adapter confined to one
   mask changes with where the reader came from — or only pages loaded from the address bar
   would ever be readable offline. `KEPT_AHEAD` names the pages the worker fetches and keeps
   whenever a page opens and its cache lacks them, so they are there before anyone reads them
-  (Settings). The worker does it, not the page: its cache is the one that must hold them, and
+  (Home, People, Circles and Settings). The worker does it, not the page: its cache is the one that must hold them, and
   a SvelteKit `preloadData` would hand a later tap the preloaded, stale data. Every request
   the worker answers waits on the network for `patienceFor` at most — a lost network can
   swallow a request rather than fail it — and a page's data that is never kept is still
   failed on silence (`isPageData`), since failing is what sends SvelteKit to a whole page
-  the worker can answer. **Test-first targets:** `verdictFor`, `cacheKeyFor`, `patienceFor`,
-  `isPageData`, `standInFor`, `endsTheSession`, `cacheNameFor`.
+  the worker can answer. `keptAt` reads when a kept copy was fetched off its `Date` header.
+  **Test-first targets:** `verdictFor`, `cacheKeyFor`, `patienceFor`, `isPageData`,
+  `standInFor`, `endsTheSession`, `cacheNameFor`, `keptAt`.
 - **`src/lib/pwa/reachability.ts`** — the two messages the worker and the page exchange, and
-  the guard that stops anything else on the channel moving the offline banner.
+  the guard that stops anything else on the channel moving the offline banner. The report
+  also carries when the page on screen was kept (`keptAt`), which the worker tracks per
+  window; `copy-age.ts` words it for the banner (**test-first target:** `copyAge`).
   `reachability.svelte.ts` is its adapter: one rune the banner, the composer and the outbox
   all read, so they never disagree.
 - **`src/service-worker.ts`** — the adapter. It asks the policy about real `Request`s and

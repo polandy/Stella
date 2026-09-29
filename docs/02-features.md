@@ -1393,9 +1393,10 @@ installable (with the button), or a browser that offers no prompt, where it name
 item instead. Safari is the last of those.
 
 **What a device keeps.** The build's own assets, every page as it is read — whether it was
-loaded whole or reached by a link inside the app — and the photos in them. **Settings** is kept
-as soon as the app opens in reach, so it opens offline even when it was not read since the
-last update. Not the pages that describe the session (sign-in, sign-out, first-run setup), not the
+loaded whole or reached by a link inside the app — and the photos in them. The places a phone
+starts from — **Home, People, Circles and Settings** — are kept as soon as the app opens in
+reach, so they open offline even when they were not read since the last update
+(`KEPT_AHEAD`; every person page ahead is the next step, `docs/concepts/offline-reading.md`). Not the pages that describe the session (sign-in, sign-out, first-run setup), not the
 health check, not a page reporting on an import or export run, and not a page carrying a
 query string — a search is a question, not somewhere anyone returns to. Requests go to the
 network first and fall back to the copy on the device: Stella is on the household's own
@@ -1418,7 +1419,11 @@ bargain as the browser's own history.
 came off this device. It is not driven by `navigator.onLine`, which answers "is this device
 on a network" — a phone on mobile data is perfectly online and cannot reach a Stella on the
 household LAN at all, which is exactly the case this exists for. The service worker knows,
-having just either fetched a page or failed to, so it reports and the page listens.
+having just either fetched a page or failed to, so it reports and the page listens. When the
+page came off the device, the line also says **how old it is** — *"Offline — from this
+device, as of yesterday 18:04"* — read from the kept response's `Date` header: an old copy is
+normal offline, but it must never look current. The worker tracks this per window, for whole
+pages and page data only (a photo's age is not the page's).
 
 **Keeping a moment for later.** While Stella is out of reach the composer's button says
 **Save for later**, and saving keeps the moment on the device instead of sending it. The

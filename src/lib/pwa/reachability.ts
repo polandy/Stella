@@ -24,11 +24,21 @@ export interface ReachabilityReport {
 	type: typeof REPORT_REACHABILITY;
 	/** Whether the last request the worker made actually got through to Stella. */
 	reachable: boolean;
+	/**
+	 * When the page on screen was kept (epoch ms), if the worker answered it from the device;
+	 * null when it came from Stella or its age is unknown. Absent from a worker of a build
+	 * before it, which a page can still hear for a moment during an update.
+	 */
+	keptAt?: number | null;
 }
 
 /** Whether `data` off a `message` event is a report, rather than anything else on the channel. */
 export function isReachabilityReport(data: unknown): data is ReachabilityReport {
 	if (typeof data !== 'object' || data === null) return false;
 	const message = data as Record<string, unknown>;
-	return message.type === REPORT_REACHABILITY && typeof message.reachable === 'boolean';
+	return (
+		message.type === REPORT_REACHABILITY &&
+		typeof message.reachable === 'boolean' &&
+		(message.keptAt === undefined || message.keptAt === null || typeof message.keptAt === 'number')
+	);
 }

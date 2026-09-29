@@ -50,10 +50,22 @@ const NEVER_CACHED = [
 
 /**
  * Pages the service worker keeps as soon as a page opens in reach, rather than once they are
- * read. Settings is opened rarely and wanted offline all the same, and every update starts
- * from an empty cache.
+ * read: the places a phone starts from (docs/concepts/offline-reading.md §4.1). Every update
+ * starts from an empty cache, so without these the app is empty on the train the morning after
+ * one — and Settings is opened rarely and wanted offline all the same.
  */
-export const KEPT_AHEAD: readonly string[] = ['/settings'];
+export const KEPT_AHEAD: readonly string[] = ['/', '/contacts', '/circles', '/settings'];
+
+/**
+ * When a kept copy was fetched, from its response's `Date` header: the moment Stella wrote it,
+ * so the offline line can say how old the page on screen is. Null when the header is missing
+ * or unreadable — the line then says only that the page is from the device, never a made-up age.
+ */
+export function keptAt(dateHeader: string | null): number | null {
+	if (!dateHeader) return null;
+	const time = Date.parse(dateHeader);
+	return Number.isNaN(time) ? null : time;
+}
 
 /** Whether `path` is one of `NEVER_CACHED`, or something beneath it. */
 function isVolatile(path: string): boolean {

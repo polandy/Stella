@@ -12,11 +12,14 @@ import { ASK_REACHABILITY, isReachabilityReport } from './reachability';
  */
 
 let reachable = $state(true);
+let keptAt = $state<number | null>(null);
 
 if (browser && 'serviceWorker' in navigator) {
 	const worker = navigator.serviceWorker;
 	worker.addEventListener('message', (event: MessageEvent) => {
-		if (isReachabilityReport(event.data)) reachable = event.data.reachable;
+		if (!isReachabilityReport(event.data)) return;
+		reachable = event.data.reachable;
+		keptAt = event.data.keptAt ?? null;
 	});
 	// The report this page needed was likely sent while it was still loading, so it asks.
 	void worker.ready.then(() => worker.controller?.postMessage(ASK_REACHABILITY));
@@ -26,5 +29,9 @@ if (browser && 'serviceWorker' in navigator) {
 export const reachability = {
 	get reachable(): boolean {
 		return reachable;
+	},
+	/** When the page on screen was kept, if it came off the device and its age is known. */
+	get keptAt(): number | null {
+		return keptAt;
 	}
 };

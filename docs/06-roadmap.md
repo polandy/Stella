@@ -144,7 +144,8 @@ Goal: sand the edges and add the nice-to-haves.
   says how old the copy is, and a person no longer visible leaves the device on the next
   refresh. Pages are kept ahead as the server renders them (no second renderer, no local
   database); a per-person change stamp keeps the refresh to what changed. Two steps: first
-  Home, People and Circles kept ahead plus the age of the copy, then the person pages.
+  Home, People and Circles kept ahead plus the age of the copy (**shipped**), then the person
+  pages.
   Plan and decisions: `docs/concepts/offline-reading.md`.
 - ~~**A simpler day in the *What happened?* composer**~~ — shipped (§2.22.1): a *Today* pill
   beside *Shared* and *Photo* offers the last week in one tap and a month calendar for

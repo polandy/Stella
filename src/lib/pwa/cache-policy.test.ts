@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+	KEPT_AHEAD,
 	OFFLINE_FALLBACK_PATH,
 	NETWORK_PATIENCE_MS,
 	cacheKeyFor,
@@ -8,6 +9,7 @@ import {
 	patienceFor,
 	endsTheSession,
 	isStellaCache,
+	keptAt,
 	standInFor,
 	verdictFor
 } from './cache-policy';
@@ -143,6 +145,29 @@ describe('what must never be kept', () => {
 		// The import screens describe a run that has finished; replayed offline they would
 		// claim a restore is in progress that nobody started.
 		expect(verdictFor(page('/settings/import/archive'))).toBe('skip');
+	});
+});
+
+describe('what is kept before it is read', () => {
+	it('is every place a phone starts from, so a fresh update is not an empty app on the train', () => {
+		// docs/concepts/offline-reading.md §4.1: Home, People, Circles and Settings.
+		expect([...KEPT_AHEAD].sort()).toEqual(['/', '/circles', '/contacts', '/settings']);
+	});
+
+	it('is only ever what would be kept anyway once read', () => {
+		for (const path of KEPT_AHEAD) expect(verdictFor(page(path))).toBe('keep');
+	});
+});
+
+describe('when a kept copy was fetched', () => {
+	it('is read off the response’s own date, the moment Stella wrote it', () => {
+		expect(keptAt('Mon, 28 Sep 2026 16:04:00 GMT')).toBe(Date.UTC(2026, 8, 28, 16, 4));
+	});
+
+	it('is unknown rather than guessed when the date is missing or unreadable', () => {
+		expect(keptAt(null)).toBeNull();
+		expect(keptAt('')).toBeNull();
+		expect(keptAt('yesterday-ish')).toBeNull();
 	});
 });
 
