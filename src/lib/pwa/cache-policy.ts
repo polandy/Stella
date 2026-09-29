@@ -49,8 +49,9 @@ const NEVER_CACHED = [
 ];
 
 /**
- * Pages kept as soon as the app opens in reach, rather than once they are read. Settings is
- * opened rarely and wanted offline all the same, and every update starts from an empty cache.
+ * Pages the service worker keeps as soon as a page opens in reach, rather than once they are
+ * read. Settings is opened rarely and wanted offline all the same, and every update starts
+ * from an empty cache.
  */
 export const KEPT_AHEAD: readonly string[] = ['/settings'];
 

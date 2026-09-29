@@ -17,6 +17,7 @@
 
 import { build, files, version } from '$service-worker';
 import {
+	KEPT_AHEAD,
 	OFFLINE_FALLBACK_PATH,
 	cacheKeyFor,
 	cacheNameFor,
@@ -61,6 +62,8 @@ worker.addEventListener('activate', (event) => {
 			const stale = (await caches.keys()).filter((name) => isStellaCache(name) && name !== CACHE);
 			await Promise.all(stale.map((name) => caches.delete(name)));
 			await worker.clients.claim();
+			// The pages already open were asked for by the previous worker, into a cache now gone.
+			await keepAhead();
 		})()
 	);
 });
@@ -92,8 +95,23 @@ worker.addEventListener('message', (event) => {
 	if (event.data === ASK_REACHABILITY) {
 		const message: ReachabilityReport = { type: REPORT_REACHABILITY, reachable };
 		event.source?.postMessage(message);
+		// A page opening is also the moment to keep what should be there before it is read.
+		event.waitUntil(keepAhead());
 	}
 });
+
+/** Fetch and keep each `KEPT_AHEAD` page this build's cache does not hold yet. */
+async function keepAhead(): Promise<void> {
+	const cache = await caches.open(CACHE);
+	for (const path of KEPT_AHEAD) {
+		if (await cache.match(path)) continue;
+		const response = await fetch(path).catch(() => null);
+		// Redirected means signed out: that is the sign-in page, not the one asked for.
+		if (response?.ok && response.type === 'basic' && !response.redirected) {
+			await cache.put(path, response);
+		}
+	}
+}
 
 /** Throw away every page this device is holding. */
 async function purgeCaches(): Promise<void> {

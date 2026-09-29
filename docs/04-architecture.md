@@ -884,8 +884,10 @@ The same split as the explorer: a pure domain and a thin adapter confined to one
   by a link inside the app arrives as its data (`<page>/__data.json`), not as a document, so
   that is kept too — under the page alone (`cacheKeyFor`), since SvelteKit's invalidation
   mask changes with where the reader came from — or only pages loaded from the address bar
-  would ever be readable offline. `KEPT_AHEAD` names the pages the shell loads once in reach
-  so they are kept before anyone reads them (Settings). **Test-first targets:** `verdictFor`,
+  would ever be readable offline. `KEPT_AHEAD` names the pages the worker fetches and keeps
+  whenever a page opens and its cache lacks them, so they are there before anyone reads them
+  (Settings). The worker does it, not the page: its cache is the one that must hold them, and
+  a SvelteKit `preloadData` would hand a later tap the preloaded, stale data. **Test-first targets:** `verdictFor`,
   `cacheKeyFor`, `standInFor`, `endsTheSession`, `cacheNameFor`.
 - **`src/lib/pwa/reachability.ts`** — the two messages the worker and the page exchange, and
   the guard that stops anything else on the channel moving the offline banner.

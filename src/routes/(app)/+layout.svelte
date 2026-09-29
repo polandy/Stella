@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { beforeNavigate, goto, invalidateAll, onNavigate, preloadData, pushState } from '$app/navigation';
+	import { beforeNavigate, goto, invalidateAll, onNavigate, pushState } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import Button from '$lib/components/Button.svelte';
 	import ActivityIndicator from '$lib/components/ActivityIndicator.svelte';
@@ -14,7 +14,6 @@
 	import Toast from '$lib/components/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
 	import { providePending } from '$lib/sync/context.svelte';
-	import { KEPT_AHEAD } from '$lib/pwa/cache-policy';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { reportNavigation } from '$lib/sync/pending';
@@ -158,15 +157,6 @@
 	});
 	$effect(() => {
 		if (reachability.reachable) void outbox.send();
-	});
-
-	// Loaded once in reach so the service worker keeps them (docs/02 §2.18); a failure only
-	// means they are not kept this time.
-	let keptAhead = false;
-	$effect(() => {
-		if (keptAhead || !reachability.reachable || !navigator.serviceWorker?.controller) return;
-		keptAhead = true;
-		for (const path of KEPT_AHEAD) void preloadData(path).catch(() => {});
 	});
 
 	// On Home the pencil opens the sheet as shallow state, which needs no round trip and so
