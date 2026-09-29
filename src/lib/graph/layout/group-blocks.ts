@@ -84,7 +84,7 @@ function clearOf(frames: readonly Extent[], from: Point, size: Size): Point {
 	const covering = (at: Point) => frames.filter((frame) => overlaps(frame, at, size));
 	const distance = (at: Point) => Math.hypot(at.x - from.x, at.y - from.y);
 	let at = from;
-	// Each step leaves a frame for good or ends clear; one per frame is as many as it takes.
+	// A step per frame at most: past that the spot is crowded beyond help, and the last exit stands.
 	for (let step = 0; step <= frames.length; step++) {
 		const over = covering(at);
 		if (over.length === 0) return at;
@@ -113,7 +113,7 @@ function overlaps(frame: Extent, at: Point, size: Size): boolean {
 }
 
 /** The box nodes set at `at` take, each its own `size`. */
-function boxAround(nodes: readonly { at: Point; size: Size }[]): Extent {
+export function boxAround(nodes: readonly { at: Point; size: Size }[]): Extent {
 	return {
 		x1: Math.min(...nodes.map((n) => n.at.x - n.size.width / 2)),
 		y1: Math.min(...nodes.map((n) => n.at.y - n.size.height / 2)),

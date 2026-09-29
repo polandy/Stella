@@ -10,7 +10,7 @@ import type {
 } from 'cytoscape';
 import type { CyElement } from './elements';
 import type { Arrangement, Size } from '../layout/geometry';
-import { frameAround, packGroups } from '../layout/group-blocks';
+import { boxAround, frameAround, packGroups } from '../layout/group-blocks';
 import { placeNewcomers, type Placement, type Point } from './placement';
 import { frameBelow, widenToReveal, type Box } from './viewport';
 import { BOW_FIELD, BOWED_CLASS, TUCKED_CLASS, type CyStyle } from './stylesheet';
@@ -141,16 +141,6 @@ function presetLayout(glide: boolean, placeOf: (node: NodeSingular) => Point) {
 		animationDuration: TIDY_GLIDE_DURATION,
 		animationEasing: GLIDE_EASING,
 		fit: false
-	};
-}
-
-/** The box around nodes set at `at`, each taking `size`. */
-function boxAround(nodes: { at: Point; size: Size }[]): Box {
-	return {
-		x1: Math.min(...nodes.map((n) => n.at.x - n.size.width / 2)),
-		y1: Math.min(...nodes.map((n) => n.at.y - n.size.height / 2)),
-		x2: Math.max(...nodes.map((n) => n.at.x + n.size.width / 2)),
-		y2: Math.max(...nodes.map((n) => n.at.y + n.size.height / 2))
 	};
 }
 
