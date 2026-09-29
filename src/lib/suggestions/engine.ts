@@ -1,6 +1,7 @@
+import { K1 } from './rules/kin';
 import { L1, L2 } from './rules/links';
 import { isDerivable, isRefusedByRules } from './suppressions';
-import type { Confidence, Rule, Suggestion, Trigger } from './types';
+import type { Confidence, Rule, RuleId, Suggestion, Trigger } from './types';
 import { claimKey } from './claims';
 import type { SuggestionView } from './view';
 
@@ -21,9 +22,15 @@ import type { SuggestionView } from './view';
 /** Which rules answer which trigger. A new rule is a row here, not an edit to a shared switch. */
 const RULES: Record<Trigger['kind'], readonly Rule[]> = {
 	'link-stored': [L1, L2],
-	'person-reviewed': [L1, L2],
-	'household-reviewed': [L1, L2]
+	'person-reviewed': [L1, L2, K1],
+	'household-reviewed': [L1, L2, K1]
 };
+
+/**
+ * Within one confidence, what follows from an entry comes before what is only worked out: a
+ * missing parent is news, a grandmother Stella already names is housekeeping.
+ */
+const RULE_RANK: Record<RuleId, number> = { L1: 0, L2: 1, K1: 2 };
 
 /** Closeness of a claim to certainty, most certain first — the order suggestions are shown in. */
 const CONFIDENCE_RANK: Record<Confidence, number> = {
@@ -55,7 +62,8 @@ function suppressed(suggestion: Suggestion, view: SuggestionView): boolean {
 		!view.has(fromId) ||
 		!view.has(toId) ||
 		view.isLinked(fromId, toId) ||
-		isDerivable(view, relation, fromId, toId) ||
+		// K1 offers what is derived on purpose — asked for, and stored only on *Accept*.
+		(suggestion.ruleId !== 'K1' && isDerivable(view, relation, fromId, toId)) ||
 		isRefusedByRules(view, relation, fromId, toId)
 	);
 }
@@ -77,7 +85,7 @@ function answered(suggestion: Suggestion, view: SuggestionView): Suggestion {
 function order(x: Suggestion, y: Suggestion, view: SuggestionView): number {
 	return (
 		CONFIDENCE_RANK[x.confidence] - CONFIDENCE_RANK[y.confidence] ||
-		x.ruleId.localeCompare(y.ruleId) ||
+		RULE_RANK[x.ruleId] - RULE_RANK[y.ruleId] ||
 		view.nameOf(x.fromId).localeCompare(view.nameOf(y.fromId)) ||
 		view.nameOf(x.toId).localeCompare(view.nameOf(y.toId))
 	);

@@ -382,3 +382,65 @@ describe('evaluate, over the whole household', () => {
 		expect(evaluate(household, view())).toEqual([]);
 	});
 });
+
+describe('evaluate — worked-out relatives (K1)', () => {
+	/** Bettina → Hans → Nina: Bettina is Nina's grandparent, worked out and not entered. */
+	const threeGenerations = () =>
+		view({
+			parentEdges: [
+				{ parentId: 'bettina', childId: 'hans' },
+				{ parentId: 'hans', childId: 'nina' },
+				{ parentId: 'bettina', childId: 'lisa' }
+			]
+		});
+
+	it('offers a worked-out relative on a review, though Stella already works it out', () => {
+		expect(shape({ kind: 'person-reviewed', subjectId: 'nina' }, threeGenerations())).toEqual([
+			['K1', 'grandparent', 'bettina', 'nina'],
+			['K1', 'aunt-uncle', 'lisa', 'nina']
+		]);
+	});
+
+	it('offers the derived sibling too, which the link rules would never store', () => {
+		// Hans and Lisa share Bettina: siblings by derivation, and a K1 claim for that reason —
+		// stored from the reviewed end first, since a sibling link has no direction.
+		expect(shape({ kind: 'person-reviewed', subjectId: 'lisa' }, threeGenerations())).toContainEqual(
+			['K1', 'sibling', 'lisa', 'hans']
+		);
+	});
+
+	it('asks a household about a pair once, whichever end reaches it', () => {
+		const found = shape({ kind: 'household-reviewed' }, threeGenerations());
+		const grandparent = found.filter(([, relation]) => relation === 'grandparent');
+		expect(grandparent).toEqual([['K1', 'grandparent', 'bettina', 'nina']]);
+	});
+
+	it('lists what follows before what is only worked out', () => {
+		const v = view({
+			parentEdges: [
+				{ parentId: 'bettina', childId: 'hans' },
+				{ parentId: 'kurt', childId: 'bettina' }
+			],
+			siblingEdges: [{ a: 'hans', b: 'lisa' }]
+		});
+		// Around Hans: Bettina is Lisa's parent too (L1), and Kurt is Hans's grandparent (K1).
+		expect(shape({ kind: 'person-reviewed', subjectId: 'hans' }, v)).toEqual([
+			['L1', 'parent', 'bettina', 'lisa'],
+			['K1', 'grandparent', 'kurt', 'hans']
+		]);
+	});
+
+	it('drops a worked-out claim the household declined, and keeps offering the others', () => {
+		const declined: Dismissal = {
+			relation: 'grandparent',
+			pairKey: pairKey('bettina', 'nina'),
+			dismissedAt: 1,
+			dismissedBy: 'u1'
+		};
+		const v = view({ parentEdges: threeGenerations().parentEdges }, [declined]);
+		expect(shape({ kind: 'person-reviewed', subjectId: 'nina' }, v)).toEqual([
+			['K1', 'aunt-uncle', 'lisa', 'nina']
+		]);
+	});
+});
+

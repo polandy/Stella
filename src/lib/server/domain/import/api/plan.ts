@@ -1,5 +1,5 @@
 import type { Visibility } from '../../../access/visibility';
-import { deriveKinship, type KinshipGraph } from '../../../../kinship/kinship';
+import type { KinshipGraph } from '../../../../kinship/kinship';
 import {
 	exclusionFor,
 	type ExclusionReason,
@@ -465,13 +465,7 @@ function planRelationships(
 			{
 				subjectTies: everything.filter(touching(from)).map((l) => tieOf(l, from)),
 				romanticPairs: graph.partnerEdges.filter((e) => !e.former).map((e) => ({ a: e.a, b: e.b })),
-				parentEdges: graph.parentEdges,
-				derivedSiblingIds:
-					type.key === SIBLING_TYPE_KEY
-						? deriveKinship(graph, from)
-								.filter((kin) => kin.term === 'sibling')
-								.map((kin) => kin.personId)
-						: []
+				parentEdges: graph.parentEdges
 			},
 			{
 				subjectId: from,

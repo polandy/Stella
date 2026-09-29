@@ -17,8 +17,7 @@ const colleague = { key: 'colleague', category: 'professional' } as const;
 const NOTHING_KNOWN: ExclusionFacts = {
 	subjectTies: [],
 	romanticPairs: [],
-	parentEdges: [],
-	derivedSiblingIds: []
+	parentEdges: []
 };
 
 const facts = (overrides: Partial<ExclusionFacts>): ExclusionFacts => ({
@@ -203,28 +202,6 @@ describe('exclusionFor — one romantic band per pair', () => {
 	});
 });
 
-describe('exclusionFor — siblings Stella already works out', () => {
-	const sharedParents = facts({ derivedSiblingIds: ['bert'] });
-
-	it('refuses a sibling link that shared parents already say', () => {
-		expect(
-			ask(sharedParents, { subjectId: 'anna', targetId: 'bert', type: sibling, side: 'forward' })
-		).toEqual({ reason: 'siblingDerived', personId: 'bert' });
-	});
-
-	it('leaves other types alone between the same two', () => {
-		expect(
-			ask(sharedParents, { subjectId: 'anna', targetId: 'bert', type: friend, side: 'forward' })
-		).toBeNull();
-	});
-
-	it('leaves a sibling link to someone else alone', () => {
-		expect(
-			ask(sharedParents, { subjectId: 'anna', targetId: 'dora', type: sibling, side: 'forward' })
-		).toBeNull();
-	});
-});
-
 describe('exclusionFor — at most two parents', () => {
 	const bertHasTwoParents = facts({
 		parentEdges: [
@@ -351,9 +328,8 @@ describe('exclusionFor — a godparent blocks no kinship', () => {
 			}
 		],
 		romanticPairs: [],
-		parentEdges: [],
-		derivedSiblingIds: []
-	};
+		parentEdges: []
+		};
 
 	const askTheOther = (type: { key: string; category: 'family' | 'romantic' | 'professional' }) =>
 		exclusionFor(godchildOfTheOther, {

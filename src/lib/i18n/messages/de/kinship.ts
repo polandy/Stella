@@ -48,6 +48,28 @@ export const kinship: KinshipMessages = {
 	'kinship.term.sibling-in-law.female': 'Schwägerin',
 	'kinship.term.sibling-in-law.neutral': 'Schwager oder Schwägerin',
 
+	'kinship.claim.grandparent.male': (p) => `${p.from} ist ein Großvater von ${p.to}`,
+	'kinship.claim.grandparent.female': (p) => `${p.from} ist eine Großmutter von ${p.to}`,
+	'kinship.claim.grandparent.neutral': (p) => `${p.from} ist ein Großelternteil von ${p.to}`,
+	'kinship.claim.great-grandparent.male': (p) => `${p.from} ist ein Urgroßvater von ${p.to}`,
+	'kinship.claim.great-grandparent.female': (p) => `${p.from} ist eine Urgroßmutter von ${p.to}`,
+	'kinship.claim.great-grandparent.neutral': (p) => `${p.from} ist ein Urgroßelternteil von ${p.to}`,
+	'kinship.claim.aunt-uncle.male': (p) => `${p.from} ist ein Onkel von ${p.to}`,
+	'kinship.claim.aunt-uncle.female': (p) => `${p.from} ist eine Tante von ${p.to}`,
+	'kinship.claim.aunt-uncle.neutral': (p) => `${p.from} ist Tante oder Onkel von ${p.to}`,
+	'kinship.claim.parent-in-law.male': (p) => `${p.from} ist ein Schwiegervater von ${p.to}`,
+	'kinship.claim.parent-in-law.female': (p) => `${p.from} ist eine Schwiegermutter von ${p.to}`,
+	'kinship.claim.parent-in-law.neutral': (p) => `${p.from} ist ein Schwiegerelternteil von ${p.to}`,
+	'kinship.claim.half-sibling.male': (p) => `${p.to} ist ein Halbbruder von ${p.from}`,
+	'kinship.claim.half-sibling.female': (p) => `${p.to} ist eine Halbschwester von ${p.from}`,
+	'kinship.claim.half-sibling.neutral': (p) => `${p.to} ist ein Halbgeschwister von ${p.from}`,
+	'kinship.claim.cousin.male': (p) => `${p.to} ist ein Cousin von ${p.from}`,
+	'kinship.claim.cousin.female': (p) => `${p.to} ist eine Cousine von ${p.from}`,
+	'kinship.claim.cousin.neutral': (p) => `${p.to} ist Cousin oder Cousine von ${p.from}`,
+	'kinship.claim.sibling-in-law.male': (p) => `${p.to} ist ein Schwager von ${p.from}`,
+	'kinship.claim.sibling-in-law.female': (p) => `${p.to} ist eine Schwägerin von ${p.from}`,
+	'kinship.claim.sibling-in-law.neutral': (p) => `${p.to} ist Schwager oder Schwägerin von ${p.from}`,
+	'kinship.reason.workedOutThrough': (p) => `Hergeleitet über ${p.via}, noch nicht eingetragen`,
 	'kinship.reason.parentThroughSibling': (p) =>
 		`${p.parent} ist ein Elternteil von ${p.via}, und ${p.via} und ${p.child} sind Geschwister.`
 };

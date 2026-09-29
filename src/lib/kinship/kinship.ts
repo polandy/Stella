@@ -77,6 +77,8 @@ export interface DerivedKin {
 	variant: KinVariant;
 	/** Display names of the people the inference runs through, for "via Bettina". */
 	via: string[];
+	/** The same people's ids, in the same order, so each name can lead to that person. */
+	viaIds: string[];
 }
 
 /** Closeness, lowest first — the order relatives are shown in. */
@@ -108,7 +110,8 @@ const PARENTS_FOR_HALF = 2;
 /** Unordered key for a pair. The separator cannot occur in an id, which is generated. */
 const pairKey = (x: string, y: string) => (x < y ? `${x} ${y}` : `${y} ${x}`);
 
-function variantFor(person: KinPerson): KinVariant {
+/** Which wording a person's terms take: gendered where the gender is on record. */
+export function variantFor(person: Pick<KinPerson, 'gender'>): KinVariant {
 	const gender = (person.gender ?? '').trim().toLowerCase();
 	if (gender === 'male') return 'male';
 	if (gender === 'female') return 'female';
@@ -191,7 +194,7 @@ class Inference {
 	relativesOf(subjectId: string): DerivedKin[] {
 		const { links, byId, excluded } = this;
 
-		/** Best (closest) term per person wins; the first `via` for that term is kept. */
+		/** Best (closest) term per person wins; the first `via` for that term is kept, as ids. */
 		const best = new Map<string, { term: KinTerm; via: string[] }>();
 		const claim = (personId: string, term: KinTerm, via: string[]): void => {
 			if (personId === subjectId || !byId.has(personId)) return;
@@ -201,8 +204,7 @@ class Inference {
 			best.set(personId, { term, via });
 		};
 
-		const nameOf = (id: string) => byId.get(id)?.displayName ?? id;
-		const parents = links.get(links.parents, subjectId);
+				const parents = links.get(links.parents, subjectId);
 		const children = links.get(links.children, subjectId);
 		const siblings = links.siblingsOf(subjectId);
 
@@ -213,75 +215,83 @@ class Inference {
 				links.parentCount(subjectId) >= PARENTS_FOR_HALF &&
 				links.parentCount(sibling) >= PARENTS_FOR_HALF;
 			const term: KinTerm = bothComplete && shared.length === 1 ? 'half-sibling' : 'sibling';
-			claim(sibling, term, shared.map(nameOf));
+			claim(sibling, term, shared);
 		}
 
 		// Ancestors and descendants, two and three generations out.
 		for (const parent of parents) {
 			for (const grandparent of links.get(links.parents, parent)) {
-				claim(grandparent, 'grandparent', [nameOf(parent)]);
+				claim(grandparent, 'grandparent', [parent]);
 				for (const great of links.get(links.parents, grandparent)) {
-					claim(great, 'great-grandparent', [nameOf(parent), nameOf(grandparent)]);
+					claim(great, 'great-grandparent', [parent, grandparent]);
 				}
 			}
 			// Parent's siblings and their children.
 			for (const auntUncle of links.siblingsOf(parent)) {
-				claim(auntUncle, 'aunt-uncle', [nameOf(parent)]);
+				claim(auntUncle, 'aunt-uncle', [parent]);
 				for (const cousin of links.get(links.children, auntUncle)) {
-					claim(cousin, 'cousin', [nameOf(parent), nameOf(auntUncle)]);
+					claim(cousin, 'cousin', [parent, auntUncle]);
 				}
 			}
 			// A parent's partner who is not also a parent is a step-parent, and their other
 			// children — the ones sharing no parent with the subject — are step-siblings.
 			for (const stepParent of links.get(links.partners, parent)) {
 				if (parents.includes(stepParent)) continue;
-				claim(stepParent, 'step-parent', [nameOf(parent)]);
+				claim(stepParent, 'step-parent', [parent]);
 				for (const stepSibling of links.get(links.children, stepParent)) {
 					if (links.sharedParentIds(subjectId, stepSibling).length > 0) continue;
-					claim(stepSibling, 'step-sibling', [nameOf(stepParent)]);
+					claim(stepSibling, 'step-sibling', [stepParent]);
 				}
 			}
 		}
 
 		for (const child of children) {
 			for (const grandchild of links.get(links.children, child)) {
-				claim(grandchild, 'grandchild', [nameOf(child)]);
+				claim(grandchild, 'grandchild', [child]);
 				for (const great of links.get(links.children, grandchild)) {
-					claim(great, 'great-grandchild', [nameOf(child), nameOf(grandchild)]);
+					claim(great, 'great-grandchild', [child, grandchild]);
 				}
 			}
 			for (const childInLaw of links.get(links.partners, child)) {
-				claim(childInLaw, 'child-in-law', [nameOf(child)]);
+				claim(childInLaw, 'child-in-law', [child]);
 			}
 		}
 
 		for (const sibling of siblings) {
 			for (const nieceNephew of links.get(links.children, sibling)) {
-				claim(nieceNephew, 'niece-nephew', [nameOf(sibling)]);
+				claim(nieceNephew, 'niece-nephew', [sibling]);
 			}
 			for (const siblingInLaw of links.get(links.partners, sibling)) {
-				claim(siblingInLaw, 'sibling-in-law', [nameOf(sibling)]);
+				claim(siblingInLaw, 'sibling-in-law', [sibling]);
 			}
 		}
 
 		// Through a partner: their parents and siblings, and their children from before.
 		for (const partner of links.get(links.partners, subjectId)) {
 			for (const parentInLaw of links.get(links.parents, partner)) {
-				claim(parentInLaw, 'parent-in-law', [nameOf(partner)]);
+				claim(parentInLaw, 'parent-in-law', [partner]);
 			}
 			for (const siblingInLaw of links.siblingsOf(partner)) {
-				claim(siblingInLaw, 'sibling-in-law', [nameOf(partner)]);
+				claim(siblingInLaw, 'sibling-in-law', [partner]);
 			}
 			for (const stepChild of links.get(links.children, partner)) {
 				if (children.includes(stepChild)) continue;
-				claim(stepChild, 'step-child', [nameOf(partner)]);
+				claim(stepChild, 'step-child', [partner]);
 			}
 		}
 
+		const nameOf = (id: string) => byId.get(id)?.displayName ?? id;
 		return [...best.entries()]
 			.map(([personId, { term, via }]) => {
 				const person = byId.get(personId)!;
-				return { personId, displayName: person.displayName, term, variant: variantFor(person), via };
+				return {
+					personId,
+					displayName: person.displayName,
+					term,
+					variant: variantFor(person),
+					via: via.map(nameOf),
+					viaIds: via
+				};
 			})
 			.sort(
 				(x, y) => TERM_RANK[x.term] - TERM_RANK[y.term] || x.displayName.localeCompare(y.displayName)

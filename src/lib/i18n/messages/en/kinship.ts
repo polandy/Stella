@@ -56,6 +56,32 @@ export const kinship = {
 	 * three names in a different order, and every one of them is a link on screen
 	 * (`src/lib/i18n/linked.ts`).
 	 */
+	/*
+	 * A worked-out relative offered for entering (K1): the elder of a directed relation is named,
+	 * or else the relative (`to`), in the gender on record and neutrally where there is none.
+	 */
+	'kinship.claim.grandparent.male': (p: { from: string; to: string }) => `${p.from} is a grandfather of ${p.to}`,
+	'kinship.claim.grandparent.female': (p: { from: string; to: string }) => `${p.from} is a grandmother of ${p.to}`,
+	'kinship.claim.grandparent.neutral': (p: { from: string; to: string }) => `${p.from} is a grandparent of ${p.to}`,
+	'kinship.claim.great-grandparent.male': (p: { from: string; to: string }) => `${p.from} is a great-grandfather of ${p.to}`,
+	'kinship.claim.great-grandparent.female': (p: { from: string; to: string }) => `${p.from} is a great-grandmother of ${p.to}`,
+	'kinship.claim.great-grandparent.neutral': (p: { from: string; to: string }) => `${p.from} is a great-grandparent of ${p.to}`,
+	'kinship.claim.aunt-uncle.male': (p: { from: string; to: string }) => `${p.from} is an uncle of ${p.to}`,
+	'kinship.claim.aunt-uncle.female': (p: { from: string; to: string }) => `${p.from} is an aunt of ${p.to}`,
+	'kinship.claim.aunt-uncle.neutral': (p: { from: string; to: string }) => `${p.from} is an aunt or uncle of ${p.to}`,
+	'kinship.claim.parent-in-law.male': (p: { from: string; to: string }) => `${p.from} is a father-in-law of ${p.to}`,
+	'kinship.claim.parent-in-law.female': (p: { from: string; to: string }) => `${p.from} is a mother-in-law of ${p.to}`,
+	'kinship.claim.parent-in-law.neutral': (p: { from: string; to: string }) => `${p.from} is a parent-in-law of ${p.to}`,
+	'kinship.claim.half-sibling.male': (p: { from: string; to: string }) => `${p.to} is a half-brother of ${p.from}`,
+	'kinship.claim.half-sibling.female': (p: { from: string; to: string }) => `${p.to} is a half-sister of ${p.from}`,
+	'kinship.claim.half-sibling.neutral': (p: { from: string; to: string }) => `${p.to} is a half-sibling of ${p.from}`,
+	'kinship.claim.cousin.male': (p: { from: string; to: string }) => `${p.to} is a cousin of ${p.from}`,
+	'kinship.claim.cousin.female': (p: { from: string; to: string }) => `${p.to} is a cousin of ${p.from}`,
+	'kinship.claim.cousin.neutral': (p: { from: string; to: string }) => `${p.to} is a cousin of ${p.from}`,
+	'kinship.claim.sibling-in-law.male': (p: { from: string; to: string }) => `${p.to} is a brother-in-law of ${p.from}`,
+	'kinship.claim.sibling-in-law.female': (p: { from: string; to: string }) => `${p.to} is a sister-in-law of ${p.from}`,
+	'kinship.claim.sibling-in-law.neutral': (p: { from: string; to: string }) => `${p.to} is a sibling-in-law of ${p.from}`,
+	'kinship.reason.workedOutThrough': (p: { via: string }) => `Worked out through ${p.via}, not entered yet`,
 	'kinship.reason.parentThroughSibling': (p: { parent: string; via: string; child: string }) =>
 		`${p.parent} is a parent of ${p.via}, and ${p.via} and ${p.child} are siblings.`
 };

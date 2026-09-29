@@ -127,12 +127,6 @@ describe('exclusionLabel', () => {
 			`Carl already has ${MAX_PARENTS} parents`
 		);
 	});
-
-	it('needs no name where the reason is about neither person alone', () => {
-		expect(exclusionLabel(en, { reason: 'siblingDerived', personId: 'c' }, carl)).toBe(
-			'already siblings through their parents'
-		);
-	});
 });
 
 describe('towardsSubject', () => {

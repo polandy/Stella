@@ -1,4 +1,4 @@
-import type { Relation } from './types';
+import { isDirected, type Relation } from './types';
 
 /*
  * Who a claim is about (docs/concepts/relationship-suggestions.md §6.6).
@@ -32,7 +32,7 @@ export interface SubjectGroup<T extends NamedClaim> {
  * names its two ends symmetrically, and is filed under the one the rule named first.
  */
 const subjectOf = (claim: NamedClaim): [string, string] =>
-	claim.relation === 'parent' ? [claim.toId, claim.toName] : [claim.fromId, claim.fromName];
+	isDirected(claim.relation) ? [claim.toId, claim.toName] : [claim.fromId, claim.fromName];
 
 /** Groups claims by the person they are about, keeping the engine's order within and between. */
 export function groupBySubject<T extends NamedClaim>(claims: readonly T[]): SubjectGroup<T>[] {

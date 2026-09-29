@@ -21,7 +21,7 @@ export function kinshipLabel(
 /** "Actually the child" — what confirming a step relative's direct link is called. */
 export function directClaimLabel(t: Translate, claim: DirectClaim): string {
 	if (claim.typeKey === SIBLING_TYPE_KEY) return t('contact.relationships.reallySibling');
-	return claim.parent === 'subject'
+	return claim.elder === 'subject'
 		? t('contact.relationships.reallyChild')
 		: t('contact.relationships.reallyParent');
 }

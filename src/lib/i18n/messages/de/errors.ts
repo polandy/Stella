@@ -20,8 +20,6 @@ export const errors: ErrorsMessages = {
 		`Das steht schon anders da: ${p.tie} ${p.name}. Ändere lieber diese Beziehung, statt eine zweite anzulegen.`,
 	'errors.relationship.alreadyRomantic': (p) =>
 		`Mit ${p.name} ist schon eine Partnerschaft festgehalten. Ändere lieber diese, statt eine zweite anzulegen.`,
-	'errors.relationship.siblingDerived': (p) =>
-		`Stella leitet ${p.name} hier bereits aus den gemeinsamen Eltern als Geschwister ab. Von Hand eingetragen würde das Abgeleitete ersetzt.`,
 	'errors.relationship.romanticTaken': (p) =>
 		`${p.name} ist bereits mit ${p.partner} zusammen, und diese Partnerschaft besteht noch. Setze sie zuerst auf ehemalig.`,
 	'errors.relationship.parentsComplete': (p) =>
