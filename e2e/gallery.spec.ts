@@ -53,9 +53,10 @@ async function addPhotos(
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 }
 
-/** A newly picked profile photo opens the cropper first; take the square it starts on. */
+/** Choosing a profile photo opens the cropper first; take the square it starts on. */
 async function useAsFramed(page: Page): Promise<void> {
-	const cropper = page.getByTestId('photo-cropper');
+	// The uploader and the lightbox each carry one; only the open one is visible.
+	const cropper = page.getByTestId('photo-cropper').filter({ visible: true });
 	await cropper.getByRole('button', { name: 'Use photo' }).click();
 	await expect(cropper).toBeHidden();
 }
@@ -111,13 +112,14 @@ test('wears a gallery photo as the avatar, and gives it back when the photo is r
 	await expect(avatar).toHaveCount(0); // initials until a photo is chosen
 
 	await grid.getByRole('button').first().click();
-	await page.getByTestId('photo-lightbox').getByRole('button', { name: 'Use as photo' }).click();
+	const lightbox = page.getByTestId('photo-lightbox');
+	await lightbox.getByRole('button', { name: 'Use as photo' }).click();
+	await useAsFramed(page);
 	await expect(avatar).toHaveAttribute('src', /\/media\//);
 
-	// Reopening shows the photo is the one being worn, so it cannot be chosen twice.
-	await grid.getByRole('button').first().click();
-	const lightbox = page.getByTestId('photo-lightbox');
-	await expect(lightbox.getByRole('button', { name: 'Current photo' })).toBeDisabled();
+	// The photo worn now offers to change its square; the framing is not a second photo.
+	await expect(lightbox.getByRole('button', { name: 'Change framing' })).toBeVisible();
+	await expect(page.locator('#section-photos > header')).toContainText('1');
 
 	// Removing the photo takes the face with it rather than leaving a broken one.
 	await lightbox.getByRole('button', { name: 'Remove' }).click();

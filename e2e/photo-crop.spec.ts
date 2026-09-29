@@ -115,3 +115,56 @@ test('uploads nothing when the cropper is cancelled', async ({ page }) => {
 	await cropper.getByRole('button', { name: 'Use photo' }).click();
 	await expect(avatar).toHaveAttribute('src', /\/media\//);
 });
+
+test('frames a gallery photo, keeps it one photo, and starts from the remembered square', async ({ page }) => {
+	await addPerson(page, 'Nora', 'Rahmen');
+	await page.getByRole('button', { name: 'Add photos' }).click();
+	const form = page.locator('#section-photos form');
+	await form.locator('input[name=files]').setInputFiles({
+		name: 'card.png',
+		mimeType: 'image/png',
+		buffer: await testCard(page)
+	});
+	await form.getByRole('button', { name: 'Add', exact: true }).click();
+	const photos = page.locator('#section-photos > header');
+	await expect(photos).toContainText('1');
+
+	await page.getByTestId('photo-grid').getByRole('button').first().click();
+	const lightbox = page.getByTestId('photo-lightbox');
+	await lightbox.getByRole('button', { name: 'Use as photo' }).click();
+	const cropper = lightbox.getByTestId('photo-cropper');
+	await expect(cropper.getByRole('button', { name: 'Use photo' })).toBeEnabled();
+
+	// The same square as for a new photo: 1.5× and dragged to the picture's left edge.
+	await cropper.getByRole('slider', { name: 'Zoom' }).fill('1.5');
+	const frame = cropper.getByRole('application', { name: 'Photo to frame' });
+	await frame.hover();
+	const box = (await frame.boundingBox())!;
+	await page.mouse.down();
+	await page.mouse.move(box.x + box.width * 2, box.y + box.height / 2, { steps: 4 });
+	await page.mouse.up();
+	await cropper.getByRole('button', { name: 'Use photo' }).click();
+	await expect(cropper).toBeHidden();
+
+	const avatar = page.getByTestId('avatar-uploader').locator('img');
+	await expect(avatar).toHaveAttribute('src', /\/media\//);
+	expectNear(await colourAt(avatar, 0.05, 0.5), RED);
+	expectNear(await colourAt(avatar, 0.7, 0.5), RED);
+	expectNear(await colourAt(avatar, 0.8, 0.5), GREEN);
+	expectNear(await colourAt(avatar, 0.95, 0.5), GREEN);
+
+	// Still one photo in the gallery: the square is remembered on it, not added beside it.
+	await expect(photos).toContainText('1');
+
+	// Choosing again starts on the square chosen last time, not the centre.
+	await lightbox.getByRole('button', { name: 'Change framing' }).click();
+	await expect(cropper.getByRole('button', { name: 'Use photo' })).toBeEnabled();
+	await expect(cropper.getByRole('slider', { name: 'Zoom' })).toHaveValue('1.5');
+
+	// Escape leaves the cropper and only the cropper; the next one closes the photo.
+	await page.keyboard.press('Escape');
+	await expect(cropper).toBeHidden();
+	await expect(lightbox).toBeVisible();
+	await page.keyboard.press('Escape');
+	await expect(lightbox).toBeHidden();
+});
