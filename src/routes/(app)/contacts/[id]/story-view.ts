@@ -1,3 +1,4 @@
+import type { JournalPhotoRef } from '$lib/server/domain/media/avatars';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import type { StoryItem } from '$lib/server/domain/story/story';
 import { authorLabel } from '$lib/story/author';
@@ -9,6 +10,31 @@ import type { StoryItemView } from '$lib/story/item';
  * lives here rather than inside either route because the page's first page and the endpoint's
  * later pages must produce exactly the same shape; two copies would drift on the first change.
  */
+
+/** Items per page of the timeline: the first comes with the page, the rest from the endpoint. */
+export const STORY_PAGE_SIZE = 12;
+
+/** Visible journal photo ids grouped by entry, so each entry renders its own gallery. */
+export function photosByEntry(photos: readonly JournalPhotoRef[]): Map<string, string[]> {
+	const grouped = new Map<string, string[]>();
+	for (const photo of photos) {
+		const list = grouped.get(photo.journalEntryId) ?? [];
+		list.push(photo.id);
+		grouped.set(photo.journalEntryId, list);
+	}
+	return grouped;
+}
+
+/**
+ * The name lookup for @-mention chips. Built from the visibility scope, not the browsing one:
+ * an archived person keeps their name in a sentence that already mentions them (docs/02 §2.2).
+ */
+export function nameLookup(
+	names: readonly { id: string; displayName: string }[]
+): (contactId: string) => string | null {
+	const byId = new Map(names.map((c) => [c.id, c.displayName]));
+	return (contactId) => byId.get(contactId) ?? null;
+}
 
 export interface StoryViewContext {
 	/** The signed-in user, to decide what they may remove and who counts as "you". */

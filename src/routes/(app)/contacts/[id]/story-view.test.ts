@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { toStoryItem, type StoryViewContext } from './story-view';
+import { nameLookup, photosByEntry, toStoryItem, type StoryViewContext } from './story-view';
 import type { StoryItem } from '$lib/server/domain/story/story';
 
 /*
@@ -183,5 +183,26 @@ describe('toStoryItem, who may remove what', () => {
 		expect(toStoryItem(interactionItem({ visibility: 'private' }), context()).visibility).toBe(
 			'private'
 		);
+	});
+});
+
+describe('photosByEntry', () => {
+	it('groups the visible journal photos under their entry, in the order they came', () => {
+		const grouped = photosByEntry([
+			{ id: 'p1', journalEntryId: 'j1' },
+			{ id: 'p2', journalEntryId: 'j2' },
+			{ id: 'p3', journalEntryId: 'j1' }
+		]);
+		expect(grouped.get('j1')).toEqual(['p1', 'p3']);
+		expect(grouped.get('j2')).toEqual(['p2']);
+		expect(grouped.get('j3')).toBeUndefined();
+	});
+});
+
+describe('nameLookup', () => {
+	it('answers a name the viewer may see, and null for anyone else', () => {
+		const nameOf = nameLookup([{ id: 'c1', displayName: 'Anna Brunner' }]);
+		expect(nameOf('c1')).toBe('Anna Brunner');
+		expect(nameOf('c-hidden')).toBeNull();
 	});
 });
