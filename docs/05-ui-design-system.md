@@ -560,7 +560,10 @@ text as stored: the field shows `@Thomas` and remembers the pick against it
 (`src/lib/mentions/picks.ts`), and a posted form carries the id tokens — set in the form's
 `formdata` event, so a plain post, `enhance` and `new FormData(form)` all get them. Used by the
 note form and the journal composer. The moment composer keeps its own
-richer picker because only a moment may create a person on the fly (§2.22.1).
+richer picker because only a moment may create a person on the fly (§2.22.1): its *Create "…"*
+row opens a small panel in the list's place — first and last name, and the description in the
+`KnowThemBy` box while the last name is empty — the same fields as a person picker's create
+panel, without visibility (the moment's) or the extra details.
 
 **Combobox** (`src/lib/components/Combobox.svelte`) is a plain text field with a dropdown of
 existing values — a circle's roles, offered while setting one on a member (§5.5 Circles) — that
