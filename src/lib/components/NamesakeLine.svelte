@@ -27,4 +27,4 @@
 	});
 </script>
 
-<span class="block truncate text-xs text-fg-subtle" class:italic={distinction.kind === 'nothing'}>{text}</span>
+<span data-testid="namesake-line" class="block truncate text-xs text-fg-subtle" class:italic={distinction.kind === 'nothing'}>{text}</span>
