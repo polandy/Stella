@@ -41,7 +41,8 @@ what Stella knows should meet them in the same list — decided 2026-09-29 by th
 - **Anchor** — the person the flow started from (the profile that was open).
 - **Subject / Object** — the two endpoints of a proposed link.
 - **Primary links** — `parent_child`, `sibling`, `partner`, `spouse`. The only types the
-  kinship engine reads, and the only types a rule may propose *storing* (§6.1).
+  kinship engine reads, and the only types L1 and L2 may propose *storing* (§6.1); K1 proposes
+  the built-in family type that names a worked-out term (§3.1).
 - **Confidence** — `certain` (logically implied by what is stored), `likely`
   (conventionally implied; a real household would usually agree), `possible` (a context
   hint that is as often wrong as right).
@@ -209,8 +210,9 @@ evaluate(trigger: Trigger, view: SuggestionView, options?: EvaluateOptions): Sug
   (§7.2); the engine never filters, because an engine that filters can forget to.
 - **`Trigger`** is a discriminated union: `link-stored`, `link-retyped`, `person-created`,
   `form-opened`, `person-reviewed`. Every rule declares which triggers it answers, so adding a
-  rule never means editing a switch that three other rules share. **Shipped:** `link-stored`
-  and `person-reviewed`, both answered by L1 and L2.
+  rule never means editing a switch that three other rules share. **Shipped:** `link-stored`,
+  answered by L1 and L2, and `person-reviewed` and `household-reviewed`, answered by L1, L2
+  and K1.
 - **`Suggestion`** carries `ruleId`, `kind` (`link` | `field` | `membership` | `warning`),
   `confidence`, the payload, and a `reason` **Phrase + params**.
 
@@ -361,7 +363,7 @@ the smallest thing that works:
 - **One form action, no paging and no background job.** One graph read, one evaluation.
   Paging is the fix if a real household makes it slow, and nobody has measured one yet.
 - **A run is not stored** (docs/04 §4.9); only the answers are.
-- **Every confidence is listed.** L1 and L2 are both `certain`, so the *certain-only first
+- **Every confidence is listed.** L1, L2 and K1 are all `certain`, so the *certain-only first
   pass* argued for below costs nothing today — it becomes a real decision the day L3 lands,
   and it is the reason there is still no bulk accept.
 - **Settings is the entry point**, for every member rather than the admin alone.

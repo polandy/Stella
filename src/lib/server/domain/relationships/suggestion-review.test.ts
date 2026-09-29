@@ -184,6 +184,11 @@ describe('reviewHousehold', () => {
 		expect(d.asked).toEqual([viewer, viewer]);
 	});
 
+	it('offers the worked-out relatives of everyone too, each pair once', async () => {
+		// Andy and Linda share Wing Kam — siblings nobody entered, reached from both ends.
+		expect(workedOut(await reviewHousehold(deps(), viewer))).toEqual([['sibling', 'andy', 'linda']]);
+	});
+
 	it('names the people, so the interface can phrase the claim', async () => {
 		const [first] = await reviewHousehold(deps(), viewer);
 		expect(first).toMatchObject({ fromName: 'Wing Kam', toName: 'Steve', relation: 'parent' });

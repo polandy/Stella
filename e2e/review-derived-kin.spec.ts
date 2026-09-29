@@ -62,6 +62,12 @@ test('offers a worked-out relative, named by gender and by whom it runs through'
 	await expect(uncle).toContainText(`Worked out through ${f.parent}, not entered yet`);
 	await expect(uncle.getByRole('link', { name: f.parent })).toHaveAttribute('href', /\/contacts\//);
 	await expect(row(panel, `${f.grandfather} is a grandfather of ${f.child}`)).toHaveCount(1);
+
+	// The household-wide check asks the same, filed under the child.
+	await page.goto(`/settings/relationships?review&q=${encodeURIComponent(f.child)}`);
+	await expect(
+		page.getByTestId('kin-suggestion').filter({ hasText: `${f.uncle} is an uncle of ${f.child}` })
+	).toHaveCount(1);
 });
 
 test('accepting on one side enters it for both, and neither check asks again', async ({
@@ -74,6 +80,8 @@ test('accepting on one side enters it for both, and neither check asks again', a
 		.getByRole('button', { name: 'Accept' })
 		.click();
 	await expect(row(panel, f.uncle)).toHaveCount(0);
+	await expect(page.getByTestId('toast-undo')).toBeVisible();
+	await expect(page.getByText(`Entered: ${f.uncle} is an uncle of ${f.child}`)).toBeVisible();
 
 	// Leaving sends it. The uncle's page shows the entered link from his side …
 	await openPerson(page, new RegExp(f.uncle));

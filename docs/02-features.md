@@ -526,8 +526,8 @@ tables, fully unit-testable (test-first).
   tie to existing children is deliberately not offered: it is a step relationship, which the
   profile already names without storing anything. What is offered is worked out by a rule
   engine (`src/lib/suggestions/`) that keeps the rules apart from the checks applied to all
-  of them — so Stella never offers a pair the household has already linked, and never offers
-  to *store* a tie it already works out and displays.
+  of them — so Stella never offers a pair the household has already linked, and a write never
+  offers to *store* a tie it already works out and displays (a review does, on request — below).
 - **Shipped:** a worked-out **step** relative can be corrected in place. *Stepchild*,
   *stepparent* and *stepsibling* are what Stella falls back to when the link runs through a
   partner and no direct one is on record — but a partner's child is often the person's own
