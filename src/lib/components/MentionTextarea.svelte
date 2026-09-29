@@ -1,10 +1,12 @@
 <script lang="ts">
 	import Avatar from '$lib/components/Avatar.svelte';
 	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
+	import WhichNamesake from '$lib/components/WhichNamesake.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { allowedForAudience } from '$lib/mentions/audience';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
 	import { shiftPicks, toEditable, toStored, type MentionPick } from '$lib/mentions/picks';
+	import { unclearHandles } from '$lib/mentions/unclear';
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
 	import { onMount, tick } from 'svelte';
@@ -48,6 +50,8 @@
 		placeholder?: string;
 		label: string;
 		class?: string;
+		/** Set while a typed handle could be several people; the form keeps saving off meanwhile. */
+		unclear?: boolean;
 	}
 	let {
 		candidates,
@@ -59,7 +63,8 @@
 		required = false,
 		placeholder,
 		label,
-		class: className = ''
+		class: className = '',
+		unclear = $bindable(false)
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -108,6 +113,11 @@
 	// The second line counts everyone the list could offer, not only what the query left.
 	const peopleContext = usePeopleContext();
 	const namesakes = $derived(tellApart(audience, peopleContext()));
+	// Asked the way the server would refuse it, before saving is offered (docs/02 §2.2.3).
+	const unclearNow = $derived(unclearHandles(value, audience, peopleContext()));
+	$effect(() => {
+		unclear = unclearNow.length > 0;
+	});
 
 	function refreshPicker() {
 		if (!textarea) return;
@@ -210,5 +220,8 @@
 				</li>
 			{/each}
 		</ul>
+	{/if}
+	{#if unclearNow.length}
+		<div class="mt-2"><WhichNamesake unclear={unclearNow} /></div>
 	{/if}
 </div>
