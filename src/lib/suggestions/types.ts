@@ -19,18 +19,48 @@ export interface PrimaryLink {
 }
 
 /**
- * What a suggested link would record. Narrower than `PrimaryLink.kind`: a partner tie is
- * never *suggested*, because a partner's tie to existing children is a step relationship,
- * which the profile already names without storing anything (docs/02 §2.4.1).
+ * What a suggested link would record. `parent` and `sibling` follow from what was entered
+ * (L1, L2); the rest are the relatives Stella works out, offered for entering (K1). A partner
+ * tie is never *suggested*, and neither is a step term: a partner's tie to existing children
+ * is a step relationship, which the profile corrects in place rather than stores
+ * (docs/02 §2.4.1). Each relation is stored as one built-in type (`TYPE_KEY_FOR_RELATION`).
  */
-export type Relation = 'parent' | 'sibling';
+export const RELATIONS = [
+	'parent',
+	'sibling',
+	'half-sibling',
+	'grandparent',
+	'great-grandparent',
+	'aunt-uncle',
+	'cousin',
+	'parent-in-law',
+	'sibling-in-law'
+] as const;
+
+/** One of `RELATIONS`. */
+export type Relation = (typeof RELATIONS)[number];
+
+/**
+ * The relations that run from one generation to the next. For these a claim's `fromId` is the
+ * elder — the parent, the grandparent, the aunt — and the claim is about the younger end.
+ */
+const DIRECTED: ReadonlySet<Relation> = new Set([
+	'parent',
+	'grandparent',
+	'great-grandparent',
+	'aunt-uncle',
+	'parent-in-law'
+]);
+
+/** Whether a relation has an elder end, which then stands at `fromId`. */
+export const isDirected = (relation: Relation): boolean => DIRECTED.has(relation);
 
 /**
  * Which rule produced a suggestion, from the catalogue in
  * `docs/concepts/relationship-suggestions.md` §2. Carried so the household can be told what
  * kind of claim it is looking at, and so ordering stays deterministic between rules.
  */
-export type RuleId = 'L1' | 'L2';
+export type RuleId = 'L1' | 'L2' | 'K1';
 
 /**
  * How sure the rule is. `certain` is a logical consequence of what the household entered —
@@ -64,7 +94,7 @@ export interface LinkSuggestion {
 	ruleId: RuleId;
 	confidence: Confidence;
 	relation: Relation;
-	/** For a `parent` relation, `fromId` is the parent and `toId` the child. */
+	/** For a directed relation (`isDirected`), `fromId` is the elder and `toId` the younger. */
 	fromId: string;
 	toId: string;
 	/**

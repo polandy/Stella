@@ -136,6 +136,7 @@ export const contact: ContactMessages = {
 		`${p.parent} als Elternteil von ${p.child} übernommen`,
 	'contact.relationships.acceptedSibling': (p) =>
 		`${p.one} und ${p.other} als Geschwister übernommen`,
+	'contact.relationships.acceptedClaim': (p) => `Eingetragen: ${p.claim}`,
 	'contact.relationships.declinedNotice': 'Abgelehnt — wird nicht mehr vorgeschlagen',
 	'contact.relationships.accept': 'Übernehmen',
 	'contact.relationships.decline': 'Ablehnen',

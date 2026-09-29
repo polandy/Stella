@@ -1,4 +1,5 @@
 import type { LinkedPhrase, PersonRef } from '$lib/i18n/linked';
+import type { Relation } from '../suggestions/types';
 
 /**
  * The claim one suggestion row makes — *Otto Meier is a parent of Lisa Meier* — with both
@@ -7,22 +8,28 @@ import type { LinkedPhrase, PersonRef } from '$lib/i18n/linked';
  * Built here rather than interpolated in the component: German orders the sentence its own way,
  * and a sentence with slots can be tested where a string built in markup cannot.
  */
-export const claimSentence = (
-	relation: 'parent' | 'sibling',
-	from: PersonRef,
-	to: PersonRef
-): LinkedPhrase =>
-	relation === 'parent'
-		? (t) => ({
+export const claimSentence = (relation: Relation, from: PersonRef, to: PersonRef): LinkedPhrase => {
+	switch (relation) {
+		case 'parent':
+			return (t) => ({
 				people: { parent: from, child: to },
 				say: (names) =>
 					t('contact.relationships.parentProposal', {
 						parent: names.parent!,
 						child: names.child!
 					})
-			})
-		: (t) => ({
+			});
+		case 'sibling':
+			return (t) => ({
 				people: { one: from, other: to },
 				say: (names) =>
 					t('contact.relationships.siblingProposal', { one: names.one!, other: names.other! })
 			});
+		default:
+			// A worked-out relation: the elder first where it has one (docs/02 §2.4.1).
+			return (t) => ({
+				people: { from, to },
+				say: (names) => t(`kinship.claim.${relation}`, { from: names.from!, to: names.to! })
+			});
+	}
+};

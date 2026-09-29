@@ -56,6 +56,15 @@ export const kinship = {
 	 * three names in a different order, and every one of them is a link on screen
 	 * (`src/lib/i18n/linked.ts`).
 	 */
+	/** A worked-out relative offered for entering (K1): the claim, elder first where it has one. */
+	'kinship.claim.half-sibling': (p: { from: string; to: string }) => `${p.from} and ${p.to} are half-siblings`,
+	'kinship.claim.grandparent': (p: { from: string; to: string }) => `${p.from} is a grandparent of ${p.to}`,
+	'kinship.claim.great-grandparent': (p: { from: string; to: string }) => `${p.from} is a great-grandparent of ${p.to}`,
+	'kinship.claim.aunt-uncle': (p: { from: string; to: string }) => `${p.from} is an aunt or uncle of ${p.to}`,
+	'kinship.claim.cousin': (p: { from: string; to: string }) => `${p.from} and ${p.to} are cousins`,
+	'kinship.claim.parent-in-law': (p: { from: string; to: string }) => `${p.from} is a parent-in-law of ${p.to}`,
+	'kinship.claim.sibling-in-law': (p: { from: string; to: string }) => `${p.from} and ${p.to} are siblings-in-law`,
+	'kinship.reason.workedOutThrough': (p: { via: string }) => `Worked out through ${p.via}, not entered yet`,
 	'kinship.reason.parentThroughSibling': (p: { parent: string; via: string; child: string }) =>
 		`${p.parent} is a parent of ${p.via}, and ${p.via} and ${p.child} are siblings.`
 };

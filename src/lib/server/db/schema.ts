@@ -11,6 +11,7 @@ import {
 } from 'drizzle-orm/sqlite-core';
 import type { Locale } from '../../i18n/locales';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../relationships/status';
+import type { Relation } from '../../suggestions/types';
 
 /*
  * Drizzle schema — implementation of docs/03-data-model.md.
@@ -553,7 +554,7 @@ export const suggestionDismissal = sqliteTable(
 		householdId: text('household_id')
 			.notNull()
 			.references(() => household.id, { onDelete: 'cascade' }),
-		relation: text('relation').$type<'parent' | 'sibling'>().notNull(),
+		relation: text('relation').$type<Relation>().notNull(),
 		/** The two contact ids, sorted and space-separated, so either end names the same row. */
 		pairKey: text('pair_key').notNull(),
 		dismissedBy: text('dismissed_by')

@@ -154,7 +154,8 @@ Goal: sand the edges and add the nice-to-haves.
   the new built-in family types (great-grandparent, half-sibling, aunt/uncle, cousin,
   parent-in-law, sibling-in-law; grandparent and sibling already existed). The refusal of a
   hand-entered sibling Stella already works out is gone with it. A confirmed link reads like
-  any entered one and no longer says *via* whom it was worked out.
+  any entered one and no longer says *via* whom it was worked out. Both *Check relationships*
+  lists offer the same claims (rule K1), after what follows from an entry.
 - *TODO:* **fold imported custom family types into the built-ins** — a Monica import
   (docs/monica-mapping.md) creates the household's own *Cousin of* and *Uncle/aunt of*, which
   now sit beside the built-in `cousin` and `aunt_uncle_niece_nephew` in the picker. Map them

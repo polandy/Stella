@@ -48,6 +48,14 @@ export const kinship: KinshipMessages = {
 	'kinship.term.sibling-in-law.female': 'Schwägerin',
 	'kinship.term.sibling-in-law.neutral': 'Schwager oder Schwägerin',
 
+	'kinship.claim.half-sibling': (p) => `${p.from} und ${p.to} sind Halbgeschwister`,
+	'kinship.claim.grandparent': (p) => `${p.from} ist ein Großelternteil von ${p.to}`,
+	'kinship.claim.great-grandparent': (p) => `${p.from} ist ein Urgroßelternteil von ${p.to}`,
+	'kinship.claim.aunt-uncle': (p) => `${p.from} ist Tante oder Onkel von ${p.to}`,
+	'kinship.claim.cousin': (p) => `${p.from} und ${p.to} sind Cousin und Cousine`,
+	'kinship.claim.parent-in-law': (p) => `${p.from} ist ein Schwiegerelternteil von ${p.to}`,
+	'kinship.claim.sibling-in-law': (p) => `${p.from} und ${p.to} sind verschwägert`,
+	'kinship.reason.workedOutThrough': (p) => `Hergeleitet über ${p.via}, noch nicht eingetragen`,
 	'kinship.reason.parentThroughSibling': (p) =>
 		`${p.parent} ist ein Elternteil von ${p.via}, und ${p.via} und ${p.child} sind Geschwister.`
 };

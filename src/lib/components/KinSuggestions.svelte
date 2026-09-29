@@ -5,7 +5,8 @@
 	import LinkedNames from '$lib/components/LinkedNames.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { segmentsOf, type Segment } from '$lib/i18n/linked';
+	import { segmentsOf, textOf, type Segment } from '$lib/i18n/linked';
+	import type { Relation } from '$lib/suggestions/types';
 	import { ANSWER_ANCHOR_FIELD, answerAnchor, answerKey } from '$lib/relationships/answer-key';
 	import { wasTakenBack, type AnswerState, type AnsweredClaims } from '$lib/relationships/answered';
 	import { claimSentence } from '$lib/relationships/claim-sentence';
@@ -39,7 +40,7 @@
 	interface Suggestion {
 		ruleId: string;
 		confidence: 'certain' | 'likely' | 'possible';
-		relation: 'parent' | 'sibling';
+		relation: Relation;
 		fromId: string;
 		toId: string;
 		fromName: string;
@@ -137,9 +138,15 @@
 	/** The sentence the toast carries while the answer is held. */
 	function answerNotice(s: Suggestion, answer: 'accept' | 'decline'): string {
 		if (answer === 'decline') return t('contact.relationships.declinedNotice');
-		return s.relation === 'parent'
-			? t('contact.relationships.acceptedParent', { parent: s.fromName, child: s.toName })
-			: t('contact.relationships.acceptedSibling', { one: s.fromName, other: s.toName });
+		if (s.relation === 'parent') {
+			return t('contact.relationships.acceptedParent', { parent: s.fromName, child: s.toName });
+		}
+		if (s.relation === 'sibling') {
+			return t('contact.relationships.acceptedSibling', { one: s.fromName, other: s.toName });
+		}
+		return t('contact.relationships.acceptedClaim', {
+			claim: textOf(claimSentence(s.relation, { id: s.fromId, name: s.fromName }, { id: s.toId, name: s.toName })(t))
+		});
 	}
 
 	/**

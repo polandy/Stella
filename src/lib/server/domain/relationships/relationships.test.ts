@@ -379,7 +379,8 @@ describe('readKinship', () => {
 				displayName: 'Otto',
 				term: 'grandparent',
 				variant: 'male',
-				via: ['Bettina']
+				via: ['Bettina'],
+				viaIds: ['bettina']
 			}
 		]);
 		expect(found.proposals).toEqual([]);

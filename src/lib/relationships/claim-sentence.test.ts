@@ -20,6 +20,16 @@ const idsIn = (claim: ReturnType<typeof claimSentence>, t: typeof en) =>
 	segmentsOf(claim(t)).flatMap((segment) => ('person' in segment ? [segment.person.id] : []));
 
 describe('claimSentence', () => {
+	it('says a worked-out claim the way each language says it, both names followable', () => {
+		const claim = claimSentence('aunt-uncle', otto, lisa);
+		expect(textOf(claim(en))).toBe('Otto Meier is an aunt or uncle of Lisa Meier');
+		expect(textOf(claim(de))).toBe('Otto Meier ist Tante oder Onkel von Lisa Meier');
+		expect(idsIn(claim, en)).toEqual(['p-otto', 'p-lisa']);
+		expect(textOf(claimSentence('cousin', otto, lisa)(en))).toBe(
+			'Otto Meier and Lisa Meier are cousins'
+		);
+	});
+
 	it('says a parent claim the way each language says it', () => {
 		const claim = claimSentence('parent', otto, lisa);
 		expect(textOf(claim(en))).toBe('Otto Meier is a parent of Lisa Meier');

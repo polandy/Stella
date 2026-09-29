@@ -311,6 +311,12 @@ answers. *Accept* stores the link. *Decline* tells Stella it is wrong, and it st
 offered — however it comes up again later. And leaving it alone does nothing at all, so there
 is never a reason to decline something just to clear the list.
 
+The check also lists the relatives Stella works out and that nobody has entered yet — the same
+ones that carry **Confirm** on the profile: *Corinne Keller is an aunt or uncle of Lena
+Brunner, worked out through Sandra Brunner-Keller*. They come after the links that follow, and
+*Accept* enters them exactly as *Confirm* would. Declining one only stops the check asking: the
+profile still names the relative, because it follows from the links you entered.
+
 Declining is not final and is not private: it holds for everyone in the household, and what
 was declined stays one click away under **N declined suggestions**, with who said no and when,
 and *Offer again* to put it back.
