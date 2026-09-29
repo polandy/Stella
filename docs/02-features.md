@@ -553,7 +553,9 @@ tables, fully unit-testable (test-first).
   re-derived. The confirmed types are facts about a pair, never read back as primary links, so
   confirming one invents nothing further. Which row a term becomes and which way round it is
   stored is decided in the same pure module as the step correction (`src/lib/kinship/claims.ts`),
-  and it is written through the same checked action.
+  and it is written through the same checked action — in place, without reloading the page, so the
+  reader stays where they were. The derived rows are laid out like the entered ones, the action
+  in the same column as *Edit*, with *via* on a line of its own beneath the name.
 
 - **Shipped:** the relationships card carries a **Check suggestions** control, and it is what
   makes all of the above reachable at all. Every suggestion described so far is raised by a
