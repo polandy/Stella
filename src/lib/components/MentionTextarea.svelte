@@ -69,6 +69,9 @@
 
 	const t = useTranslate();
 
+	/** Long enough for a click on a suggestion to land before the blur closes the list under it. */
+	const BLUR_CLOSE_MS = 120;
+
 	let textarea: HTMLTextAreaElement | undefined = $state();
 	let active = $state<ActiveHandle | null>(null);
 	let selected = $state(0);
@@ -152,6 +155,16 @@
 		return () => form.removeEventListener('formdata', carryStored);
 	});
 
+	/*
+	 * Closing on blur has to survive the focus coming straight back, as in PersonSearchSelect:
+	 * someone who clicks away and at once types again would otherwise watch the list they just
+	 * opened shut under them when the earlier blur's timer runs out.
+	 */
+	function closeIfFocusLeft() {
+		if (document.activeElement === textarea) return;
+		active = null;
+	}
+
 	function onKeydown(event: KeyboardEvent) {
 		if (!active || people.length === 0) return;
 		if (event.key === 'ArrowDown') {
@@ -186,7 +199,7 @@
 		oninput={onInput}
 		onclick={refreshPicker}
 		onkeyup={(e) => (e.key.startsWith('Arrow') ? refreshPicker() : undefined)}
-		onblur={() => setTimeout(() => (active = null), 120)}
+		onblur={() => setTimeout(closeIfFocusLeft, BLUR_CLOSE_MS)}
 		class={className}
 	></textarea>
 
