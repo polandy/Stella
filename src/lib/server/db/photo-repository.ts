@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
@@ -10,6 +11,7 @@ import type {
 	PhotoRepository,
 	StoredPhoto
 } from '../domain/media/avatars';
+import type { FramingRepository, StoredFraming } from '../domain/media/framing';
 import type * as schema from './schema';
 import { contact, photo } from './schema';
 
@@ -20,7 +22,7 @@ import { contact, photo } from './schema';
  */
 export function createDrizzlePhotoRepository(
 	db: BunSQLiteDatabase<typeof schema>
-): PhotoRepository {
+): PhotoRepository & FramingRepository {
 	return {
 		async insert(p: StoredPhoto) {
 			db.insert(photo)
@@ -99,6 +101,7 @@ export function createDrizzlePhotoRepository(
 				.select(GALLERY_COLUMNS)
 				.from(photo)
 				.innerJoin(contact, eq(photo.contactId, contact.id))
+				.leftJoin(framing, eq(framing.framingOf, photo.id))
 				.where(and(eq(photo.contactId, contactId), isGalleryPhotoVisibleTo(viewer)))
 				.orderBy(desc(photo.createdAt))
 				.all()
@@ -114,6 +117,7 @@ export function createDrizzlePhotoRepository(
 				.select(GALLERY_COLUMNS)
 				.from(photo)
 				.innerJoin(contact, eq(photo.contactId, contact.id))
+				.leftJoin(framing, eq(framing.framingOf, photo.id))
 				.where(
 					and(eq(photo.id, photoId), eq(photo.contactId, contactId), isGalleryPhotoVisibleTo(viewer))
 				)
@@ -131,55 +135,100 @@ export function createDrizzlePhotoRepository(
 			if ('caption' in input) changes.caption = input.caption ?? null;
 			if (input.visibility) changes.visibility = input.visibility;
 			if (Object.keys(changes).length === 0) return false;
-			const updated = db
-				.update(photo)
-				.set(changes)
-				.where(and(eq(photo.id, input.photoId), eq(photo.createdBy, input.authorId), isNull(photo.journalEntryId)))
-				.returning({ id: photo.id })
-				.all();
-			return updated.length > 0;
+			return db.transaction((tx) => {
+				const updated = tx
+					.update(photo)
+					.set(changes)
+					.where(and(eq(photo.id, input.photoId), eq(photo.createdBy, input.authorId), isGalleryPhoto()))
+					.returning({ id: photo.id })
+					.all();
+				// A framing is seen by exactly who sees its photo (domain/media/framing.ts).
+				if (updated.length > 0 && changes.visibility) {
+					tx.update(photo).set({ visibility: changes.visibility }).where(eq(photo.framingOf, input.photoId)).run();
+				}
+				return updated.length > 0;
+			});
 		},
 
 		async deleteOwnGalleryPhoto(input: {
 			authorId: string;
 			photoId: string;
-		}): Promise<DeletedPhotoFiles | null> {
+		}): Promise<DeletedPhotoFiles[] | null> {
 			return db.transaction((tx) => {
 				const removed = tx
 					.delete(photo)
-					.where(
-						and(
-							eq(photo.id, input.photoId),
-							eq(photo.createdBy, input.authorId),
-							isNull(photo.journalEntryId)
-						)
-					)
+					.where(and(eq(photo.id, input.photoId), eq(photo.createdBy, input.authorId), isGalleryPhoto()))
 					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
 					.all();
-				const files = removed[0];
-				if (!files) return null;
+				if (removed.length === 0) return null;
+				const framings = tx
+					.delete(photo)
+					.where(eq(photo.framingOf, input.photoId))
+					.returning({ id: photo.id, filePath: photo.filePath, thumbPath: photo.thumbPath })
+					.all();
 				// The avatar column carries no foreign key, so a contact would otherwise keep
-				// pointing at bytes that no longer exist.
-				tx.update(contact)
-					.set({ avatarPhotoId: null })
-					.where(eq(contact.avatarPhotoId, input.photoId))
+				// pointing at bytes that no longer exist — the photo's own, or its framing's.
+				const worn = [input.photoId, ...framings.map((f) => f.id)];
+				for (const id of worn) {
+					tx.update(contact).set({ avatarPhotoId: null }).where(eq(contact.avatarPhotoId, id)).run();
+				}
+				return [...removed, ...framings.map(({ filePath, thumbPath }) => ({ filePath, thumbPath }))];
+			});
+		},
+
+		async replaceFraming(f: StoredFraming): Promise<DeletedPhotoFiles[]> {
+			return db.transaction((tx) => {
+				const replaced = tx
+					.delete(photo)
+					.where(eq(photo.framingOf, f.framingOf))
+					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
+					.all();
+				tx.insert(photo)
+					.values({
+						id: f.id,
+						householdId: f.householdId,
+						contactId: f.contactId,
+						journalEntryId: null,
+						framingOf: f.framingOf,
+						cropX: f.crop.x,
+						cropY: f.crop.y,
+						cropSize: f.crop.size,
+						createdBy: f.createdBy,
+						visibility: f.visibility,
+						filePath: f.filePath,
+						thumbPath: f.thumbPath,
+						mime: f.mime,
+						width: f.width,
+						height: f.height,
+						sizeBytes: f.sizeBytes,
+						createdAt: f.createdAt
+					})
 					.run();
-				return files;
+				tx.update(contact).set({ avatarPhotoId: f.id }).where(eq(contact.id, f.contactId)).run();
+				return replaced;
 			});
 		}
 	};
 }
 
 /*
- * A gallery photo is one that belongs to no journal entry (docs/02 §2.14 vs §2.20). Reads are
- * scoped through the central `childRecordVisibleTo`, so a private photo reaches only its author.
+ * A gallery photo is one that belongs to no journal entry (docs/02 §2.14 vs §2.20) and is not
+ * the framing of another photo. Reads are scoped through the central `childRecordVisibleTo`, so
+ * a private photo reaches only its author.
  */
+function isGalleryPhoto() {
+	return and(isNull(photo.journalEntryId), isNull(photo.framingOf));
+}
+
 function isGalleryPhotoVisibleTo(viewer: Viewer) {
 	return and(
-		isNull(photo.journalEntryId),
+		isGalleryPhoto(),
 		childRecordVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy })
 	);
 }
+
+/** A photo's framing, joined beside it; each photo has at most one. */
+const framing = alias(photo, 'framing');
 
 const GALLERY_COLUMNS = {
 	id: photo.id,
@@ -190,7 +239,10 @@ const GALLERY_COLUMNS = {
 	width: photo.width,
 	height: photo.height,
 	createdAt: photo.createdAt,
-	isAvatar: sql<number>`(${contact.avatarPhotoId} = ${photo.id})`
+	isAvatar: sql<number>`(${contact.avatarPhotoId} IN (${photo.id}, ${framing.id}))`,
+	cropX: framing.cropX,
+	cropY: framing.cropY,
+	cropSize: framing.cropSize
 };
 
 type GalleryRow = {
@@ -203,6 +255,9 @@ type GalleryRow = {
 	height: number | null;
 	createdAt: number;
 	isAvatar: number | null;
+	cropX: number | null;
+	cropY: number | null;
+	cropSize: number | null;
 };
 
 /** SQLite has no booleans; the avatar flag arrives as 0/1 and is mapped here, at the boundary. */
@@ -215,5 +270,9 @@ const toGalleryPhoto = (row: GalleryRow): GalleryPhoto => ({
 	width: row.width,
 	height: row.height,
 	createdAt: row.createdAt,
-	isAvatar: row.isAvatar === 1
+	isAvatar: row.isAvatar === 1,
+	framing:
+		row.cropX !== null && row.cropY !== null && row.cropSize !== null
+			? { x: row.cropX, y: row.cropY, size: row.cropSize }
+			: null
 });
