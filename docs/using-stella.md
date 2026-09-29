@@ -259,8 +259,7 @@ written down. Pick the other person first, and any kind that cannot hold is **gr
 a line saying why**: somebody with a partnership that still holds gets no second one ("Not
 possible — already with Carl"), a pair that is already a couple gets no second kind of
 partnership, with the link in the way named as it reads on the page you are on ("Not possible —
-already Partner of Bert" — change that link instead), siblings Stella already works out from
-shared parents are not offered again, and nobody gets a third parent.
+already Partner of Bert" — change that link instead), and nobody gets a third parent.
 
 Family links themselves are never in each other's way. A godparent is often the grandfather
 too, so write down both — Stella takes two kinship links about the same two people as two
@@ -290,9 +289,15 @@ back, and Stella offers Undo for a moment in case that was hasty.
 
 From the few links you enter, Stella works out the rest and shows them under **Also
 related · worked out, not entered**: grandparents, aunts and uncles, cousins, in-laws,
-step-family. They are never stored and never invented — each says who it comes through, and
-anything you have entered yourself keeps your wording. Where a gender is on record the word
-follows it ("Grandmother"), otherwise it stays neutral ("Grandparent").
+step-family. They are never invented — each says who it comes through, and anything you have
+entered yourself keeps your wording. Where a gender is on record the word follows it
+("Grandmother"), otherwise it stays neutral ("Grandparent").
+
+They are not stored either, until you say so. **Confirm** on a row enters it as a link of its
+own — *Grandparent of*, *Cousin of*, *Aunt / uncle of* — so it moves up to the links you
+entered and stays, even if the people it was worked out through change later. A step relative
+has *Actually the child* (or *the parent*, *a sibling*) instead, for when the partner's child
+is also this person's own.
 
 Adding a parent or a sibling usually implies more of them. Stella asks rather than assumes:
 say Vreni is Lena's parent and an **Also true?** panel offers her as a parent of Lena's

@@ -166,6 +166,10 @@ export const contact = {
 		`declined on ${p.day} by ${p.who}`,
 	'contact.relationships.askAgain': 'Offer again',
 	'contact.relationships.derived': 'Also related · worked out, not entered',
+	/** Stores a worked-out relative as an entered link (docs/02 §2.4.1). */
+	'contact.relationships.confirmKin': 'Confirm',
+	'contact.relationships.confirmKinLabel': (p: { name: string; term: string }) =>
+		`Enter ${p.name} as ${p.term}`,
 	'contact.relationships.reallyChild': 'Actually the child',
 	'contact.relationships.reallyParent': 'Actually the parent',
 	'contact.relationships.reallySibling': 'Actually a sibling',

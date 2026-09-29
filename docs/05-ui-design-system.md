@@ -274,10 +274,13 @@ They must be edited together; `app.css` says so at both blocks.
     chip, carrying **Edit** (revealing the same three fields in place, the type not among them)
     and the standard remove-with-undo. Below it, **Also related · worked out, not entered**
     (§2.4.1) carries the derived relatives — a divider, a quieter heading and a *via* clause
-    keep an inference visually distinct from something the household typed. The rows are
-    read-only with one exception: a *step* relative is only as much as Stella can see, so
-    those rows carry a ghost **Actually the child / the parent / a sibling** at the end of the
-    line, which stores the direct link and so takes the row out of the block. After a link is
+    keep an inference visually distinct from something the household typed. Otherwise a row
+    is laid out like an entered one — an empty dot column, the label's width, the action in
+    *Edit*'s column (the remove button's place held empty) — with *via* on its own line under
+    the name. Each row ends in one ghost action that stores it and so takes it out of the
+    block, in place without a reload: **Confirm** for a term that says what it is, and for a
+    *step* relative, which is only as much as Stella can see, **Actually the child / the
+    parent / a sibling**, storing the direct link instead. After a link is
     added, an **Also true?** panel sits above them with what it implies, one *Add this too* per
     line: a suggestion is a sentence with a button, never a checkbox list that could be swept in
     with one click. **Story**, titled *Activity*, is the merged timeline of §2.23 — journal

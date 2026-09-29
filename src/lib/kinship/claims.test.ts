@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'bun:test';
-import { PARENT_CHILD_TYPE_KEY, SIBLING_TYPE_KEY } from '$lib/relationships/type-keys';
-import { claimEndpoints, directClaimFor } from './claims';
+import {
+	AUNT_UNCLE_TYPE_KEY,
+	COUSIN_TYPE_KEY,
+	GRANDPARENT_GRANDCHILD_TYPE_KEY,
+	GREAT_GRANDPARENT_TYPE_KEY,
+	HALF_SIBLING_TYPE_KEY,
+	PARENT_CHILD_TYPE_KEY,
+	PARENT_IN_LAW_TYPE_KEY,
+	SIBLING_IN_LAW_TYPE_KEY,
+	SIBLING_TYPE_KEY
+} from '$lib/relationships/type-keys';
+import { claimEndpoints, confirmedClaimFor, directClaimFor } from './claims';
 import type { KinTerm } from './kinship';
 
 /*
@@ -29,27 +39,58 @@ describe('directClaimFor', () => {
 	it('reads a step-child as the subject being the parent', () => {
 		expect(directClaimFor('step-child')).toEqual({
 			typeKey: PARENT_CHILD_TYPE_KEY,
-			parent: 'subject'
+			elder: 'subject'
 		});
 	});
 
 	it('reads a step-parent as the relative being the parent', () => {
 		expect(directClaimFor('step-parent')).toEqual({
 			typeKey: PARENT_CHILD_TYPE_KEY,
-			parent: 'relative'
+			elder: 'relative'
 		});
 	});
 
 	it('reads a step-sibling as a plain sibling, which has no direction', () => {
 		expect(directClaimFor('step-sibling')).toEqual({
 			typeKey: SIBLING_TYPE_KEY,
-			parent: null
+			elder: null
 		});
 	});
 
 	it('offers a correction for the step terms and nothing else', () => {
 		const offered = ALL_TERMS.filter((term) => directClaimFor(term) !== null);
 		expect(offered).toEqual(['step-parent', 'step-child', 'step-sibling']);
+	});
+});
+
+describe('confirmedClaimFor', () => {
+	it('stores every term that is not a step term as the relationship it names', () => {
+		expect(
+			Object.fromEntries(ALL_TERMS.map((term) => [term, confirmedClaimFor(term)]))
+		).toEqual({
+			sibling: { typeKey: SIBLING_TYPE_KEY, elder: null },
+			'half-sibling': { typeKey: HALF_SIBLING_TYPE_KEY, elder: null },
+			grandparent: { typeKey: GRANDPARENT_GRANDCHILD_TYPE_KEY, elder: 'relative' },
+			grandchild: { typeKey: GRANDPARENT_GRANDCHILD_TYPE_KEY, elder: 'subject' },
+			'aunt-uncle': { typeKey: AUNT_UNCLE_TYPE_KEY, elder: 'relative' },
+			'niece-nephew': { typeKey: AUNT_UNCLE_TYPE_KEY, elder: 'subject' },
+			'great-grandparent': { typeKey: GREAT_GRANDPARENT_TYPE_KEY, elder: 'relative' },
+			'great-grandchild': { typeKey: GREAT_GRANDPARENT_TYPE_KEY, elder: 'subject' },
+			cousin: { typeKey: COUSIN_TYPE_KEY, elder: null },
+			'step-parent': null,
+			'step-child': null,
+			'step-sibling': null,
+			'parent-in-law': { typeKey: PARENT_IN_LAW_TYPE_KEY, elder: 'relative' },
+			'child-in-law': { typeKey: PARENT_IN_LAW_TYPE_KEY, elder: 'subject' },
+			'sibling-in-law': { typeKey: SIBLING_IN_LAW_TYPE_KEY, elder: null }
+		});
+	});
+
+	it('gives every term exactly one way to be stored — a correction or a confirmation', () => {
+		const both = ALL_TERMS.filter(
+			(term) => (directClaimFor(term) === null) === (confirmedClaimFor(term) === null)
+		);
+		expect(both).toEqual([]);
 	});
 });
 
@@ -66,5 +107,12 @@ describe('claimEndpoints', () => {
 
 	it('stores a sibling subject-first, since neither end is the parent', () => {
 		expect(ends('step-sibling')).toEqual({ fromId: 'subject-id', toId: 'relative-id' });
+	});
+
+	it('writes the elder generation first for a confirmed term', () => {
+		const confirmed = (term: KinTerm) =>
+			claimEndpoints(confirmedClaimFor(term)!, 'subject-id', 'relative-id');
+		expect(confirmed('grandparent')).toEqual({ fromId: 'relative-id', toId: 'subject-id' });
+		expect(confirmed('niece-nephew')).toEqual({ fromId: 'subject-id', toId: 'relative-id' });
 	});
 });

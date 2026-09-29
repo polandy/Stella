@@ -872,7 +872,7 @@ describe('createRelationship — what is already on record', () => {
 		expect(f.inserted).toMatchObject({ fromContactId: 'anna', toContactId: 'bert' });
 	});
 
-	it('refuses a sibling link Stella already works out from shared parents', async () => {
+	it('stores a sibling link Stella already works out from shared parents — confirming it is the household\'s call', async () => {
 		const f = fakeRepo({
 			type: sibling,
 			graph: {
@@ -886,9 +886,8 @@ describe('createRelationship — what is already on record', () => {
 				]
 			}
 		});
-		await expect(create(f, 'anna', 'bert', 'sibling')).rejects.toBeInstanceOf(
-			RelationshipExcludedError
-		);
+		await create(f, 'anna', 'bert', 'sibling');
+		expect(f.inserted).toMatchObject({ fromContactId: 'anna', toContactId: 'bert' });
 	});
 
 	it('refuses a third parent', async () => {

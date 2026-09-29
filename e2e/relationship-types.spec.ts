@@ -108,7 +108,7 @@ test('leaves the built-in types alone', async ({ page }) => {
 	await openTypeSettings(page);
 	const builtIn = page.getByTestId('built-in-types');
 
-	await expect(builtIn.locator('li')).toHaveCount(12);
+	await expect(builtIn.locator('li')).toHaveCount(18);
 	await expect(builtIn).toContainText('Parent of');
 	// They are part of the app, so the list offers nothing to do to them.
 	await expect(builtIn.getByRole('button')).toHaveCount(0);

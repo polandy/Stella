@@ -147,12 +147,16 @@ Goal: sand the edges and add the nice-to-haves.
   beside *Shared* and *Photo* offers the last week in one tap and a month calendar for
   anything older. Chosen from four mockups over always-visible chips, a day stepper and a
   week strip, because it takes no room while today is meant (docs/05 §5.7).
-- *TODO:* **confirm a worked-out relationship to store it** — every row in *Also related ·
-  worked out, not entered* (grandparent, aunt, cousin, in-law, …) gets a way to confirm it,
-  which then stores it as an explicit relationship, as *Actually the child* already does for
-  step relatives (§2.4.1). Today only step terms can be settled; the rest stay read-only.
-  Open: which derived terms have a stored type to become, and whether a confirmed link should
-  keep saying *via* whom it was worked out.
+- ~~**Confirm a worked-out relationship to store it**~~ — shipped (§2.4.1): every non-step
+  row in *Also related · worked out, not entered* carries *Confirm*, which stores it as one of
+  the new built-in family types (great-grandparent, half-sibling, aunt/uncle, cousin,
+  parent-in-law, sibling-in-law; grandparent and sibling already existed). The refusal of a
+  hand-entered sibling Stella already works out is gone with it. A confirmed link reads like
+  any entered one and no longer says *via* whom it was worked out.
+- *TODO:* **fold imported custom family types into the built-ins** — a Monica import
+  (docs/monica-mapping.md) creates the household's own *Cousin of* and *Uncle/aunt of*, which
+  now sit beside the built-in `cousin` and `aunt_uncle_niece_nephew` in the picker. Map them
+  to the built-ins on import, and offer existing households a one-off merge.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.

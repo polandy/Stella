@@ -8,6 +8,7 @@ import * as schema from './schema';
 import { createDrizzleRelationshipRepository } from './relationship-repository';
 import { CUSTOM_TYPE_SORT_ORDER } from '../domain/relationships/relationship-types';
 import { seedRelationshipTypes } from './seed';
+import { BUILT_IN_RELATIONSHIP_TYPES } from '../domain/relationships/built-in-types';
 import { deriveKinship } from '../../kinship/kinship';
 import {
 	CURRENT_RELATIONSHIP_STATUS,
@@ -99,6 +100,22 @@ describe('relationship types', () => {
 		const types = await repo.listTypes(viewerU1);
 		expect(types.find((t) => t.id === 'parent_child')?.forwardLabel).toBe('Parent of');
 		expect(types.find((t) => t.id === 'sibling')?.symmetric).toBe(true);
+	});
+
+	it('brings an older install up to the current built-ins: new types added, the order redone', async () => {
+		// As an install seeded before the family types were added left it.
+		db.delete(schema.relationshipType).where(eq(schema.relationshipType.id, 'cousin')).run();
+		db.update(schema.relationshipType)
+			.set({ sortOrder: 5 })
+			.where(eq(schema.relationshipType.id, 'friend'))
+			.run();
+
+		seedRelationshipTypes(db);
+
+		const types = await repo.listTypes(viewerU1);
+		const expected = BUILT_IN_RELATIONSHIP_TYPES.find((t) => t.id === 'friend')!.sortOrder;
+		expect(types.find((t) => t.id === 'friend')?.sortOrder).toBe(expected);
+		expect(types.find((t) => t.id === 'cousin')?.symmetric).toBe(true);
 	});
 
 	it("lists the built-in types and this household's own, never another household's", async () => {
