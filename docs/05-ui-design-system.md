@@ -515,9 +515,21 @@ wraps it. A `<label>` names its first labelable descendant, and in multiple mode
 chip's remove button, not the search input: the field loses its accessible name the moment
 anybody is picked, and a screen reader reaches an unnamed combobox (§5.9).
 
+**Day pill** (`src/lib/components/DayPill.svelte`) is the day of a moment in the *What
+happened?* composer (§2.22.1): one pill beside *Shared* and *Photo*, reading *Today*. A tap
+opens a `MenuButton` (§5.8) with today and the six days before it — named *Yesterday*, then by
+weekday, each with its short date — and *Another day…*, which opens the **day calendar**
+(`DayCalendar.svelte`): a month grid in the app's own language and week (Monday first in
+both of Stella's), later days greyed out, arrow keys moving a day or a week and Page Up/Down a
+month. The year is a choice beside the month's name, reaching a lifetime back. The arrows sit
+in fixed columns and every month shows six weeks, so neither the arrows nor the header move
+while paging. Like the date field below, it exists because the browser's own calendar speaks the
+browser's language. Either popover opens above the pill when there is no room below. It stands out in the primary colour once another day is chosen, so a moment is never
+filed under the wrong day unnoticed. The days are worked out in `src/lib/dates/recent.ts` and `month.ts`.
+
 **Date field** (`src/lib/components/DateField.svelte`) replaces `<input type="date">`
 everywhere a day is entered: birthday, important date, the day an interaction happened, a
-relationship's *Since*, a journal or moment day. A native date input takes its segment order,
+relationship's *Since*, a journal day. A native date input takes its segment order,
 its separators and its month names from the **browser's** locale, not the app's — so a German
 household reading Stella in German on an English browser is asked for `mm/dd/yyyy` and handed
 an English calendar, and no attribute on the page can change that. This field is assembled
@@ -779,7 +791,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   card-sized map of a person's page, a large share of it. Only the search stays out in the
   open, since it is used all the time; what is set once and then looked at goes into two
   menus (`MenuButton`: arrow keys move between items, Escape closes and hands focus back, a
-  click elsewhere closes). **Filter** counts what is shown (*Filter 5/6*) and stands out in
+  click elsewhere closes; a menu with no room below its pill — the day pill at the foot of
+  a phone's composer sheet — opens above it instead). **Filter** counts what is shown (*Filter 5/6*) and stands out in
   the primary colour once the reader has narrowed the map — measured against what the map
   opened with, so the person page's circles-off start is not mistaken for a forgotten
   filter (`src/lib/menu/menu.ts`). Its items toggle and leave the menu open for the next.
