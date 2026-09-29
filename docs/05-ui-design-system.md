@@ -732,6 +732,16 @@ viewport with the `offline` icon, what has happened, and a *Try again* that relo
 fetched and cached while the connection still works, which is why it loads nothing of its own
 — anything it read then would be stale by the time anybody saw it.
 
+**Photo cropper** (`src/lib/components/PhotoCropper.svelte`; opened by `AvatarUploader` after a
+picture is picked, docs/02 §2.14) is a native `<dialog>` in a card: a square window with the
+picture behind it and a round cut-out the shape of the avatar, the corners dimmed with
+`--bg-sunken` as the lightbox's backdrop is. The picture moves, the window never does: drag
+pans, pinch and the wheel zoom around the fingers or pointer, and a zoom slider plus the arrow
+keys and `+` / `−` give the same control without a gesture (the window is focusable, with
+`role="application"` so the keys reach it). *Use photo* is the primary button, *Cancel* and
+Escape leave without uploading. What each gesture does to the square is pure
+(`src/lib/image/crop.ts`); the component only turns events into those calls.
+
 **A choice that cannot be made says why, once.** Where a picker's entries are refused by what
 is already on record — the relationship type picker is the case (docs/02 §2.4) — the entries
 are `disabled` and the reason is the heading of the `optgroup` they are gathered under (*"Not

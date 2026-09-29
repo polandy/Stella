@@ -53,6 +53,13 @@ async function addPhotos(
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 }
 
+/** A newly picked profile photo opens the cropper first; take the square it starts on. */
+async function useAsFramed(page: Page): Promise<void> {
+	const cropper = page.getByTestId('photo-cropper');
+	await cropper.getByRole('button', { name: 'Use photo' }).click();
+	await expect(cropper).toBeHidden();
+}
+
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
@@ -141,6 +148,7 @@ test('keeps the old profile photo in Photos and says so, but only once there is 
 
 	// A first-ever photo has nothing "previous" to reassure about.
 	await uploader.locator('input[type=file]').setInputFiles(file('young.png'));
+	await useAsFramed(page);
 	await expect(avatar).toHaveAttribute('src', /\/media\//);
 	await expect(notice).toHaveCount(0);
 
@@ -148,6 +156,7 @@ test('keeps the old profile photo in Photos and says so, but only once there is 
 	// locator that never finds a toast at all.
 	const firstSrc = await avatar.getAttribute('src');
 	await uploader.locator('input[type=file]').setInputFiles(file('older.png'));
+	await useAsFramed(page);
 	await expect(avatar).not.toHaveAttribute('src', firstSrc ?? '');
 	await expect(notice).toContainText('The previous photo is still in Photos.');
 

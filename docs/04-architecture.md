@@ -796,6 +796,12 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   journal entry. Appending keeps one model, as a contact merge already does, and the stream
   reads `updated_at` so the joined entry surfaces where its author looks. The cost: a plain
   edit in the journal also brings an entry back to the top.
+- **A person's photo is cropped by our own cropper, and only the square is kept** — the crop is
+  a few lines of pure geometry (`src/lib/image/crop.ts`) behind a small dialog, so no cropper
+  library joins the dependencies (§8.8). The chosen square goes through the same browser canvas
+  as before and the picked original never leaves the device: there is no full-size copy to
+  re-crop later, which keeps location data and full-resolution pictures off the server. The
+  cost: changing the framing means picking the picture again.
 
 ## 4.10 Deployment
 
