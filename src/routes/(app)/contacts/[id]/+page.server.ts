@@ -8,10 +8,7 @@ import { RELATIONS } from '$lib/suggestions/types';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
 import { parseProposePair, proposeHref } from '$lib/contacts/propose';
-import {
-	fieldHref,
-	listContactFields
-} from '$lib/server/domain/contact-fields/contact-fields';
+import { listContactFields } from '$lib/server/domain/contact-fields/contact-fields';
 import {
 	listCircles,
 	listCirclesForContact,
@@ -29,10 +26,7 @@ import {
 	listContacts,
 	restoreContact
 } from '$lib/server/domain/contacts/contacts';
-import {
-	listImportantDates,
-	overridesDerivedBirthday
-} from '$lib/server/domain/dates/important-dates';
+import { listImportantDates } from '$lib/server/domain/dates/important-dates';
 import { IMPORTANT_DATE_KINDS } from '$lib/dates/kinds';
 import {
 	deleteInteraction,
@@ -43,10 +37,7 @@ import {
 import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
-import { authorLabel } from '$lib/story/author';
-import { segmentsOf } from '$lib/i18n/linked';
 import { decodeRelationshipChoice } from '$lib/relationships/type-options';
-import { toStoryItem } from './story-view';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import {
 	captionGalleryPhoto,
@@ -56,15 +47,9 @@ import {
 	setGalleryPhotoVisibility
 } from '$lib/server/domain/media/gallery';
 import { frameAsAvatar } from '$lib/server/domain/media/framing';
-import { mentionSnippet } from '$lib/mentions/snippet';
-import {
-	contactSectionPath,
-	SECTION_FOR_REFERENCE,
-	sectionForLegacyTab
-} from '$lib/contacts/sections';
+import { contactSectionPath, sectionForLegacyTab } from '$lib/contacts/sections';
 import { personMap } from '$lib/graph/model/person-map';
 import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
-import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import {
 	ContradictoryRelationshipError,
@@ -81,10 +66,7 @@ import {
 	declineClaim,
 	restoreClaim
 } from '$lib/server/relationships/suggestion-answers';
-import {
-	reviewPerson,
-	type ProposedLink
-} from '$lib/server/domain/relationships/suggestion-review';
+import { reviewPerson } from '$lib/server/domain/relationships/suggestion-review';
 import {
 	listTagsForContact,
 	pruneOrphanTags,
@@ -122,6 +104,21 @@ import {
 	setSelfContact,
 	UnknownSelfContactError
 } from '$lib/server/domain/household/self-contact';
+import type { Viewer } from '$lib/server/access/visibility';
+import { say, translator } from '$lib/server/i18n/say';
+import { allOf } from '$lib/async/all-of';
+import {
+	birthdayOf,
+	declinedBy,
+	fieldView,
+	interactionView,
+	mentionedInView,
+	noteView,
+	withReasonsSaid,
+	type PersonViewContext
+} from './person-view';
+import { nameLookup, photosByEntry, STORY_PAGE_SIZE, toStoryItem } from './story-view';
+import type { Actions, PageServerLoad } from './$types';
 
 /*
  * The on-demand review (docs/concepts/relationship-suggestions.md §6.5) hangs on the URL
@@ -134,13 +131,6 @@ const REVIEW_PARAM = 'review';
 /** The person page with the review panel open, back at the relationships card. */
 const reviewPath = (contactId: string) => `/contacts/${contactId}?${REVIEW_PARAM}#relationships`;
 
-/** Whether a birth date precision (docs/03 §3.4) names an actual day rather than a year. */
-const namesADay = (precision: string) => precision === 'full' || precision === 'month_day';
-
-/** First page of the story timeline; older items stream in via the story endpoint. */
-const STORY_PAGE = 12;
-import type { Actions, PageServerLoad } from './$types';
-
 /** The claim a review form is answering: the relation and the two people. */
 async function parseAnswer(request: Request) {
 	const form = await request.formData();
@@ -150,8 +140,6 @@ async function parseAnswer(request: Request) {
 		toId: form.get('toId')
 	});
 }
-import { say, translator } from '$lib/server/i18n/say';
-
 export const load: PageServerLoad = async ({ locals, params, url }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
@@ -166,141 +154,51 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	if (legacy) throw redirect(302, contactSectionPath(params.id, legacy));
 
 	const contact = await getContact(getContactDeps(), viewer, params.id);
-	if (!contact) {
-		// 404 for both "missing" and "not visible to you" — never reveal existence.
-		throw error(404, say(locals, 'errors.contact.notFound'));
-	}
+	// 404 for both "missing" and "not visible to you" — never reveal existence.
+	if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 	const reviewOpen = url.searchParams.has(REVIEW_PARAM);
+	const proposeFor = url.searchParams.get('propose');
+	const read = await readPersonPage(viewer, params.id, { reviewOpen, proposeFor });
 
-	const [
-		relationships,
-		types,
-		allContacts,
-		contactNames,
-		notes,
-		fields,
-		tags,
-		contactCircles,
-		allCircles,
-		circleRolesByName,
-		storyPage,
-		journalPhotos,
-		gallery,
-		dates,
-		interactions,
-		kinship,
-		reviewed,
-		mentionedIn,
-		exclusionFacts,
-		visibleGraph
-	] = await Promise.all([
-		getRelationships().listForContactVisibleTo(viewer, params.id),
-		getRelationshipTypes().listTypes(viewer),
-		listContacts(getContactDeps(), viewer),
-		listContactNames(getContactDeps(), viewer),
-		listNotesForContact(getNoteDeps(), viewer, params.id),
-		listContactFields(getContactFieldDeps(), viewer, params.id),
-		listTagsForContact(getTagDeps(), viewer, params.id),
-		listCirclesForContact(getCircleDeps(), viewer, params.id),
-		listCircles(getCircleDeps(), viewer),
-		listRoleSuggestionsByCircleName(getCircleDeps(), viewer),
-		listStoryPage(getStoryDeps(), viewer, params.id, { limit: STORY_PAGE }),
-		getPhotos().listJournalPhotos(viewer, params.id),
-		listGallery(getGalleryDeps(), viewer, params.id),
-		listImportantDates(getImportantDateDeps(), viewer, params.id),
-		listInteractions(getInteractionDeps(), viewer, params.id),
-		readKinship(getSuggestionReviewDeps(), viewer, params.id, parseProposePair(url.searchParams.get('propose'))),
-		reviewOpen
-			? reviewPerson(getSuggestionReviewDeps(), viewer, params.id, { includeDismissed: true })
-			: Promise.resolve([]),
-		listMentionedIn(getMentionedInDeps(), viewer, params.id),
-		readExclusionFacts(getRelationshipDeps(), viewer, params.id),
-		/*
-		 * The map on the page (docs/05 §5.5) is cut from the same access-scoped snapshot the
-		 * explorer route reads, and for the same reason: derived kinship is worked out over the
-		 * whole visible graph, so an inference cut from a slice could name the wrong relative.
-		 * Only the person's own slice is sent to the browser.
-		 */
-		getGraphRepository().loadVisibleGraph(viewer)
-	]);
-
-	const graph = await personMap(visibleGraph, params.id);
-
-	// Group visible journal photo ids by entry so the story timeline renders each gallery.
-	const journalPhotosByEntry = new Map<string, string[]>();
-	for (const p of journalPhotos) {
-		const list = journalPhotosByEntry.get(p.journalEntryId) ?? [];
-		list.push(p.id);
-		journalPhotosByEntry.set(p.journalEntryId, list);
-	}
-
-	// Name lookup for @-mention chips in journal bodies, scoped to what the viewer may see.
-	// Archived people are out of `allContacts`, but a mention already written still names
-	// them — so the chip lookup reads the visibility scope (docs/02 §2.2).
-	const nameById = new Map(contactNames.map((c) => [c.id, c.displayName]));
-	const nameOf = (id: string) => nameById.get(id) ?? null;
-	// …and for the member behind each item (docs/02 §2.23).
-	const nameOfAuthor = await authorNames(getMemberDeps(), viewer.householdId);
-
-	/*
-	 * A suggestion's reason arrives unsaid; here is where it becomes a sentence in the language
-	 * this request is being read in, cut into words and people so the screen can make every name
-	 * a way to that person. A closure cannot cross `load` into `data`.
-	 */
-	const said = (proposals: readonly ProposedLink[]) =>
-		proposals.map((proposal) => ({
-			...proposal,
-			reason: segmentsOf(proposal.reason(translator(locals)))
-		}));
+	const ctx: PersonViewContext = {
+		viewerId: viewer.id,
+		nameOf: nameLookup(read.contactNames),
+		nameOfAuthor: read.nameOfAuthor
+	};
+	const t = translator(locals);
 
 	return {
-		story: {
-			items: storyPage.items.map((item) =>
-				toStoryItem(item, {
-					userId: locals.user!.id,
-					photosByEntry: journalPhotosByEntry,
-					nameOf,
-					nameOfAuthor
-				})
-			),
-			nextCursor: storyPage.nextCursor
-		},
+		// Who they are.
 		contact,
-		interactions: interactions.map((i) => ({
-			id: i.id,
-			kind: i.kind,
-			happenedAt: i.happenedAt,
-			title: i.title,
-			description: i.description,
-			visibility: i.visibility,
-			mine: i.createdBy === locals.user!.id,
-			participants: i.participants.map((p) => ({ contactId: p.contactId, displayName: p.displayName }))
-		})),
+		...birthdayOf(contact, read.dates),
+		dates: read.dates,
+		fields: read.fields.map(fieldView),
+		tags: read.tags,
+		circles: read.contactCircles,
+
+		// What happened with them: the story's first page, and their touchpoints.
+		story: {
+			items: read.storyPage.items.map((item) =>
+				toStoryItem(item, { ...ctx, userId: viewer.id, photosByEntry: photosByEntry(read.journalPhotos) })
+			),
+			nextCursor: read.storyPage.nextCursor
+		},
+		interactions: read.interactions.map((interaction) => interactionView(interaction, viewer.id)),
 		// Derived from the list *this viewer* sees, so a private touchpoint never shows here.
-		lastContactedAt: lastContactedAt(interactions),
-		interactionKinds: INTERACTION_KINDS,
-		// Deleting a person for good is admin-only (docs/02 §2.2); archiving is for everyone.
-		isAdmin: locals.user.role === 'admin',
-		dates,
-		// The birthday derived from the profile, unless an explicit row takes over (§2.13.2) or
-		// the birth date is only an estimated year (docs/03 §3.4), which names no day.
-		derivedBirthday:
-			overridesDerivedBirthday(dates) || !namesADay(contact.birthDatePrecision)
-				? null
-				: contact.birthDate,
-		estimatedBirthYear: namesADay(contact.birthDatePrecision) ? null : contact.birthDate,
-		dateKinds: IMPORTANT_DATE_KINDS,
-		relationships,
+		lastContactedAt: lastContactedAt(read.interactions),
+		notes: read.notes.map((note) => noteView(note, ctx.nameOf)),
+		mentionedIn: read.mentionedIn.map((reference) => mentionedInView(reference, ctx)),
+		// The person's photo gallery (docs/02 §2.14), newest first, already visibility-scoped.
+		gallery: read.gallery,
+
+		// Who they belong with.
+		relationships: read.relationships,
 		// Inferred, never stored (docs/02 §2.4.1); shown apart from the entered links.
-		derivedKin: kinship.derived,
-		/*
-		 * Links implied by the one just added, offered for a single confirmation each. The
-		 * reason arrives as a `Phrase`; here is where it becomes a sentence, in the language
-		 * this request is being read in.
-		 */
-		proposals: said(kinship.proposals),
-		proposeFor: url.searchParams.get('propose'),
+		derivedKin: read.kinship.derived,
+		// Links implied by the one just added, offered for a single confirmation each.
+		proposals: withReasonsSaid(read.kinship.proposals, t),
+		proposeFor,
 		/*
 		 * The on-demand review (docs/concepts/relationship-suggestions.md §6.5): what stands
 		 * around this person right now, asked for rather than raised by a write. Closed, it
@@ -308,72 +206,87 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		 */
 		review: {
 			open: reviewOpen,
-			suggestions: said(reviewed),
-			// Only the members a declined row actually names — the panel says who said no.
-			memberNames: Object.fromEntries(
-				reviewed
-					.filter((suggestion) => suggestion.dismissed !== null)
-					.map((suggestion) => [suggestion.dismissed!.by, nameOfAuthor(suggestion.dismissed!.by)])
-			)
+			suggestions: withReasonsSaid(read.reviewed, t),
+			memberNames: declinedBy(read.reviewed, ctx.nameOfAuthor)
 		},
-		relationshipTypes: types,
 		/*
 		 * What the household's own records already rule out (docs/02 §2.4), so the picker can
 		 * grey an entry out with the reason rather than let it be saved and refused. The rules
 		 * are the ones the use-case is guarded by, run over the same facts.
 		 */
-		exclusionFacts,
-		tags,
-		circles: contactCircles,
-		circleNames: allCircles.map((c) => c.name),
-		// Roles already used per circle, so joining one offers what that circle calls its people.
-		circleRolesByName,
-		tagColors: TAG_COLORS,
-		fieldKinds: CONTACT_FIELD_KINDS,
-		fields: fields.map((f) => ({
-			id: f.id,
-			kind: f.kind,
-			label: f.label,
-			value: f.value,
-			href: fieldHref(f.kind, f.value)
-		})),
-		// candidate targets for a new relationship: everyone visible except this contact
-		otherContacts: allContacts.filter((c) => c.id !== params.id),
+		exclusionFacts: read.exclusionFacts,
+		/** The person's own slice of the visible graph, for the map on their page (docs/05 §5.5). */
+		graph: await personMap(read.visibleGraph, params.id),
+
+		// What the forms on the page offer.
+		relationshipTypes: read.relationshipTypes,
+		// Candidate targets for a new relationship: everyone visible except this contact.
+		otherContacts: read.allContacts.filter((c) => c.id !== params.id),
 		// `?relate=<id>` pre-selects a person in the relationship form (the stream's link hint, §2.22.1).
 		relateTo: url.searchParams.get('relate'),
-		// The person's photo gallery (docs/02 §2.14), newest first, already visibility-scoped.
-		gallery,
-		// Who is looking: the gallery only offers caption/remove on your own photos.
+		circleNames: read.allCircles.map((c) => c.name),
+		// Roles already used per circle, so joining one offers what that circle calls its people.
+		circleRolesByName: read.circleRolesByName,
+		interactionKinds: INTERACTION_KINDS,
+		dateKinds: IMPORTANT_DATE_KINDS,
+		fieldKinds: CONTACT_FIELD_KINDS,
+		tagColors: TAG_COLORS,
+
+		// Who is looking: the gallery only offers caption/remove on your own photos, and
+		// deleting a person for good is admin-only (docs/02 §2.2); archiving is for everyone.
 		viewerId: viewer.id,
-		/** The person's own slice of the visible graph, for the map on their page (docs/05 §5.5). */
-		graph,
-		/*
-		 * Where this person is named by somebody else (docs/02 §2.20.1). Read-only: the entry
-		 * belongs to the person it is about, so each item links there rather than offering an
-		 * edit that would have to be undone on another page.
-		 */
-		mentionedIn: mentionedIn.map((reference) => ({
-			kind: reference.kind,
-			entryId: reference.entryId,
-			sourceName: reference.sourceName,
-			author: authorLabel(reference.authorId === locals.user!.id, nameOfAuthor(reference.authorId)),
-			visibility: reference.visibility,
-			day: reference.day,
-			title: reference.title,
-			snippet: mentionSnippet(reference.body, nameOf),
-			href: contactSectionPath(reference.sourceContactId, SECTION_FOR_REFERENCE[reference.kind])
-		})),
-		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5)
-		notes: notes.map((note) => ({
-			id: note.id,
-			title: note.title,
-			bodyHtml: renderMarkdownWithMentions(note.body, nameOf),
-			isPinned: note.isPinned,
-			visibility: note.visibility,
-			createdAt: note.createdAt
-		}))
+		isAdmin: locals.user.role === 'admin'
 	};
 };
+
+/**
+ * Everything the person page reads, at once and each under its own name. Every read goes
+ * through a use-case scoped to the viewer; nothing here decides what anyone may see.
+ */
+function readPersonPage(
+	viewer: Viewer,
+	contactId: string,
+	request: { reviewOpen: boolean; proposeFor: string | null }
+) {
+	return allOf({
+		// The person's own records.
+		dates: listImportantDates(getImportantDateDeps(), viewer, contactId),
+		fields: listContactFields(getContactFieldDeps(), viewer, contactId),
+		tags: listTagsForContact(getTagDeps(), viewer, contactId),
+		contactCircles: listCirclesForContact(getCircleDeps(), viewer, contactId),
+		storyPage: listStoryPage(getStoryDeps(), viewer, contactId, { limit: STORY_PAGE_SIZE }),
+		journalPhotos: getPhotos().listJournalPhotos(viewer, contactId),
+		interactions: listInteractions(getInteractionDeps(), viewer, contactId),
+		notes: listNotesForContact(getNoteDeps(), viewer, contactId),
+		mentionedIn: listMentionedIn(getMentionedInDeps(), viewer, contactId),
+		gallery: listGallery(getGalleryDeps(), viewer, contactId),
+
+		// Their place in the family.
+		relationships: getRelationships().listForContactVisibleTo(viewer, contactId),
+		kinship: readKinship(getSuggestionReviewDeps(), viewer, contactId, parseProposePair(request.proposeFor)),
+		reviewed: request.reviewOpen
+			? reviewPerson(getSuggestionReviewDeps(), viewer, contactId, { includeDismissed: true })
+			: Promise.resolve([]),
+		exclusionFacts: readExclusionFacts(getRelationshipDeps(), viewer, contactId),
+		/*
+		 * The map on the page (docs/05 §5.5) is cut from the same access-scoped snapshot the
+		 * explorer route reads, and for the same reason: derived kinship is worked out over the
+		 * whole visible graph, so an inference cut from a slice could name the wrong relative.
+		 * Only the person's own slice is sent to the browser.
+		 */
+		visibleGraph: getGraphRepository().loadVisibleGraph(viewer),
+
+		// The household around them: names to read mentions by, and what the forms offer.
+		// Archived people are out of `allContacts`, but a mention already written still names
+		// them — so the name lookup reads the visibility scope (docs/02 §2.2).
+		contactNames: listContactNames(getContactDeps(), viewer),
+		nameOfAuthor: authorNames(getMemberDeps(), viewer.householdId),
+		allContacts: listContacts(getContactDeps(), viewer),
+		relationshipTypes: getRelationshipTypes().listTypes(viewer),
+		allCircles: listCircles(getCircleDeps(), viewer),
+		circleRolesByName: listRoleSuggestionsByCircleName(getCircleDeps(), viewer)
+	});
+}
 
 const EditProfileSchema = v.object({
 	displayName: v.pipe(v.string(), v.trim(), v.minLength(1)),
