@@ -7,6 +7,7 @@ export const errors: ErrorsMessages = {
 	'errors.contact.emptyName': 'Ein Name darf nicht leer sein.',
 	'errors.contact.needsSomethingToKnowThemBy':
 		'Gib einen Nachnamen oder eine Beschreibung an, damit man die Person später von anderen mit demselben Namen unterscheiden kann.',
+	'errors.contact.emptyDescription': 'Schreib etwas, woran man die Person erkennt.',
 	'errors.contact.needAName': 'Bitte gib wenigstens einen Namen oder Spitznamen ein.',
 	'errors.contact.couldNotCreate': 'Die Person konnte nicht angelegt werden.',
 	'errors.self.notFound': 'Diese Person kannst du nicht als dich selbst wählen.',

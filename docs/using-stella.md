@@ -112,6 +112,11 @@ someone. It pays off: wherever you pick a person, and in the ⌘K search, two pe
 second line with their description, or where and when you met them, so you can tell which
 Thomas is which.
 
+People added before Stella asked, or brought in by an import, may still be just *Thomas*. The
+**First name only** chip in **People** lists them; write what you know each one by and
+**Save**, and they leave the list. If one turns out to be someone already here, open them to
+merge, and if you will never meet them again, archive them.
+
 As soon as you type a surname, Stella checks whether that person might already be here.
 An **Already in Stella?** box lists people with the same or a similar surname — someone
 with exactly the same name comes first, in case you are about to add them twice. Each name

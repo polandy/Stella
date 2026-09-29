@@ -284,7 +284,15 @@ a household soon has five people called *Thomas*. Two things keep them apart:
   apart later. What will you know them by?* It is **needed**: a person added by hand with neither
   a last name nor a description is refused, by the server as much as by the form, so a kept
   addition from a phone meets the same rule (`createContact`). Imports keep what they carry, and
-  people added before are left as they are — finding those is a roadmap item (docs/06).
+  people added before are left as they are.
+- **A list of those added before.** The People directory carries a **First name only (N)**
+  chip while anyone the viewer may see (archived people aside) has a first name and nothing
+  else: no last name, neither in its field nor in the name they are shown by, no
+  description, no place or date met — exactly who the second line would call *Nothing yet*
+  (`isKnownByAFirstNameOnly`). Its list gives each person a description field to fill in
+  where they are listed, and saving takes them off it (`describeContact`: the name is kept,
+  an empty description refused). Merging a duplicate or archiving someone met once happens
+  on their page, one tap away.
 
 - **A picked mention stays the person picked.** The text shows `@Thomas` for either Thomas, so
   the @-picker remembers whom each handle it wrote stands for and saves it as that person's id

@@ -9,6 +9,7 @@ export const errors = {
 	'errors.contact.emptyName': 'A name cannot be empty.',
 	'errors.contact.needsSomethingToKnowThemBy':
 		'Add a last name or a description, so this person can be told apart from others of the same name later.',
+	'errors.contact.emptyDescription': 'Write something to know them by.',
 	'errors.contact.needAName': 'Please enter at least a name or nickname.',
 	'errors.contact.couldNotCreate': 'Could not add the person.',
 	'errors.self.notFound': 'That person is not one you can pick as yourself.',

@@ -14,6 +14,8 @@ export interface Distinguishable {
 	description?: string | null;
 	metPlace?: string | null;
 	metDate?: string | null;
+	/** Only the clean-up list reads it; the second line never names a surname the name shows. */
+	lastName?: string | null;
 }
 
 /** The second line under a namesake, wording left to the component (docs/02 §2.19). */
@@ -56,6 +58,17 @@ export function tellApart(people: readonly Distinguishable[]): Map<string, Disti
 		if ((counts.get(sameNameKey(p.displayName)) ?? 0) > 1) lines.set(p.id, distinctionOf(p));
 	}
 	return lines;
+}
+
+/**
+ * Whether someone is known by a first name alone (docs/02 §2.2.3): no last name, neither in its
+ * field nor in the name they are shown by, and nothing for the namesake line to say either. The
+ * people the clean-up list gathers, by the same rule that would give them *Nothing yet*.
+ */
+export function isKnownByAFirstNameOnly(person: Distinguishable): boolean {
+	if (filled(person.lastName)) return false;
+	if (person.displayName.trim().split(/\s+/).length > 1) return false;
+	return distinctionOf(person).kind === 'nothing';
 }
 
 /** The second line in words, in the reader's language — for a component and a refusal alike. */

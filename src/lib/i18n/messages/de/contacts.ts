@@ -22,6 +22,13 @@ export const contacts: ContactsMessages = {
 	'contacts.emptyArchive.hint':
 		'Archivieren nimmt jemanden aus den Listen, ohne ihn zu verlieren. Bisher ist niemand archiviert.',
 	'contacts.emptyArchive.back': 'Zurück zu allen',
+	'contacts.headingFirstNameOnly': 'Nur mit Vornamen bekannt',
+	'contacts.firstNameOnlySuffix': ', noch ohne etwas, woran man sie unterscheidet',
+	'contacts.firstNameOnlyHint': 'Ergänze, woran du sie jeweils erkennst. Zum Zusammenführen oder Archivieren öffne die Person.',
+	'contacts.firstNameOnlyChip': (p) => `Nur Vorname (${p.count})`,
+	'contacts.knowThemBy': (p) => `Woran erkennst du ${p.name}?`,
+	'contacts.emptyFirstNameOnly.title': 'Alle sind unterscheidbar',
+	'contacts.emptyFirstNameOnly.hint': 'Niemand mehr, von dem nur der Vorname bekannt ist.',
 	'contacts.empty.title': 'Noch keine Menschen',
 	'contacts.empty.hint':
 		'Lege die erste Person an — alles andere in Stella hängt an einem Menschen.',

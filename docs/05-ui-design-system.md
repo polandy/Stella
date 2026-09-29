@@ -361,6 +361,12 @@ They must be edited together; `app.css` says so at both blocks.
   came for. An archived person carries a quiet *Archived* chip in their header beside
   *Private*, and the directory grows an **Archived (N)** chip at the end of the tag row,
   leading to the same list with the "last written about" column dropped.
+- **Tidying up people known by a first name only** (docs/02 §2.2.3) is a second chip at the
+  end of the tag row, **First name only (N)** with the `tidy` icon, before *Archived* and
+  shown only while N is above nought. Its list keeps the directory's letter groups and search;
+  each row carries a one-line description field and a small *Save* under the name, so the
+  household tidies up where it reads. A saved row leaves the list. The name links to the
+  profile, where merging and archiving already live — the list offers neither itself.
 - **Which of these people you are** (docs/02 §2.1.3) is set in two places and looks the same
   in both: Settings carries a **You** section with a labelled person search select, and the
   foot of a person's profile column carries a ghost *This is me* — the same button reading
