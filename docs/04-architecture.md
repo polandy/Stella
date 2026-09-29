@@ -835,7 +835,7 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   feature-detectable signal for the quirk itself, so this is the one user-agent sniff in the
   codebase: `navigator.userAgent` for `iPad`/`iPhone`, plus the `MacIntel` + touch-points
   combination iPadOS answers with instead of naming itself
-  (`src/lib/components/graph/GraphExplorer.svelte`).
+  (`src/lib/ui/fullscreen.ts`).
 
 ## 4.10 Deployment
 

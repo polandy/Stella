@@ -42,6 +42,8 @@
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
 	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
 	import type { ConnectionPath, GraphEdge, GraphFilters, GraphModel } from '$lib/graph/model/types';
+	import { dismissesFullscreenOnDrag } from '$lib/ui/fullscreen';
+	import { scrollingAncestor } from '$lib/ui/keep-place';
 
 	interface Props {
 		/**
@@ -556,21 +558,15 @@
 	 *   dismiss" — the same gesture that closes a full-screen video — before any page script
 	 *   sees the touch, so there is nothing here that could intercept or undo it (confirmed
 	 *   against the real thing, not just in theory — a pointerup-triggered re-request never
-	 *   ran, because no pointer event fires for it). Every browser on iOS is Safari's WebKit
-	 *   underneath, so this is keyed off the device, not the nominal browser. These devices get
-	 *   an app-level full screen instead: a fixed overlay over the whole viewport that is never
+	 *   ran, because no pointer event fires for it). These devices (`dismissesFullscreenOnDrag`)
+	 *   get an app-level full screen instead: a fixed overlay over the whole viewport that is never
 	 *   handed to the browser, so there is no native gesture that can dismiss it — only the
 	 *   button. Android and other touch devices don't have this quirk, so they keep the native
 	 *   Fullscreen API like a mouse does.
 	 * Where neither is available (no Fullscreen API and not one of these devices) the button is
 	 * simply absent.
 	 */
-	const usesCssFullscreen =
-		typeof window !== 'undefined' &&
-		(/iPad|iPhone|iPod/.test(navigator.userAgent) ||
-			// iPadOS reports itself as a Mac; a Mac never has touch points, so this still only
-			// matches a real iPad.
-			(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+	const usesCssFullscreen = typeof window !== 'undefined' && dismissesFullscreenOnDrag(navigator);
 	let canFullscreen = $state(false);
 	let fullscreen = $state(false);
 	const syncFullscreen = () => (fullscreen = document.fullscreenElement === frame);
@@ -603,17 +599,9 @@
 	// the thing that scrolls here — the shell's own root is already `h-screen overflow-hidden`
 	// and the real scroller is an inner div further down — so lock whichever ancestor actually
 	// has one, wherever this component happens to be mounted.
-	function scrollingAncestor(el: HTMLElement): HTMLElement | null {
-		for (let node = el.parentElement; node; node = node.parentElement) {
-			const overflowY = getComputedStyle(node).overflowY;
-			if (overflowY === 'auto' || overflowY === 'scroll') return node;
-		}
-		return null;
-	}
-
 	$effect(() => {
 		if (!usesCssFullscreen || !fullscreen) return;
-		const scroller = scrollingAncestor(frame);
+		const scroller = scrollingAncestor<HTMLElement>(frame);
 		if (!scroller) return;
 		const previous = scroller.style.overflow;
 		scroller.style.overflow = 'hidden';

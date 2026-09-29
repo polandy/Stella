@@ -34,7 +34,9 @@ export const placeAfter = (scrollTop: number, given: number, room: number): numb
  * already moved once; asking the DOM at runtime survives the next move, where a class name
  * would not.
  */
-export function scrollingAncestor(node: Scrollable | null): Scrollable | null {
+export function scrollingAncestor<T extends Scrollable & { parentElement: T | null }>(
+	node: T | null
+): T | null {
 	let walk = node?.parentElement ?? null;
 	while (walk && walk.scrollHeight <= walk.clientHeight) walk = walk.parentElement;
 	return walk;
