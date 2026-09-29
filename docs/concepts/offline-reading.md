@@ -90,7 +90,7 @@ refresh asks first what changed:
 - **The stamp is the hard part.** `contact.updated_at` alone is not enough: a note, a moment
   naming them, a new relationship, or a photo changes their page without touching the contact
   row. Option: the latest `updated_at` over the rows the page is made of, as one grouped
-  query. It needs measuring against a demo household (open question 1).
+  query. It needs measuring against a demo household before step 2 (§7).
 
 ### 4.3 Pruning
 
