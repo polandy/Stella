@@ -617,6 +617,7 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   reads the candidates through the access layer (`contextOfPeople`, only for people with
   nothing typed) and the browser picks the first whose other end is not a namesake, since only
   it knows the list. The cost is two scoped reads per navigation, bounded by a household's size.
+  A refused `@Thomas` reads them only then (`withNamesakeContext`), not on every text saved.
 - **A picked mention is remembered by its range, and a typed namesake is refused** — two people
   called Thomas both read `@Thomas`. The options were a disambiguated handle (`@Thomas2`), raw
   id tokens in the field, or keeping the readable handle and remembering the pick against the

@@ -101,7 +101,6 @@ export const home = {
 	'composer.goesTo': 'Goes to',
 	'composer.goesToJournal': '’s journal',
 	'composer.alsoMentions': (p: { count: number }) => `, mentions ${p.count}`,
-	'composer.whichOne': (p: { handle: string }) => `Which @${p.handle}? Pick them from the list that opens when you type @`,
 	'composer.needMention': 'Mention at least one person with @',
 	'composer.saveFailed': 'Could not save. Try standard JPEG or PNG images.'
 };
