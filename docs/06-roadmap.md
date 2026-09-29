@@ -161,6 +161,17 @@ Goal: sand the edges and add the nice-to-haves.
   (docs/monica-mapping.md) creates the household's own *Cousin of* and *Uncle/aunt of*, which
   now sit beside the built-in `cousin` and `aunt_uncle_niece_nephew` in the picker. Map them
   to the built-ins on import, and offer existing households a one-off merge.
+- **Stella's people in the phone's address book and calendar (CardDAV / CalDAV)** — a
+  member adds Stella as a CardDAV account on their phone or mail client and sees the people
+  they are allowed to see as contacts (name, photo, phone, email, address, birthday), plus a
+  CalDAV calendar of their birthdays and anniversaries. Read-only first: Stella stays the
+  place people are edited, so there is nothing to merge; two-way sync is a later, separate
+  decision. Every card goes through the access layer per member (docs/03 §3.7), so an address
+  book never shows more than the member's own view of Stella. DAV clients cannot sign in
+  through SSO, so each member creates a revocable **app password** for it in Settings.
+  A per-person change stamp (shared with offline reading) keeps each sync to what changed.
+  Open: which contact fields go out, whether a member picks circles to sync, and whether a
+  plain subscribable `.ics` link suffices for the calendar instead of full CalDAV.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
@@ -176,6 +187,6 @@ Goal: sand the edges and add the nice-to-haves.
 
 ## Explicitly later / maybe-never
 
-CardDAV/CalDAV & contact sync, native mobile apps, multi-tenant SaaS, AI enrichment,
+Two-way contact sync (writing back from CardDAV, Google Contacts), native mobile apps, multi-tenant SaaS, AI enrichment,
 finance/gift/task modules, real-time collaborative editing. Revisit only if the core
 stays simple. (See [01-vision-and-scope.md §1.6](01-vision-and-scope.md).)
