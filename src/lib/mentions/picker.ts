@@ -90,3 +90,19 @@ export function insertHandle(
 		caret: active.start + inserted.length
 	};
 }
+
+/** Which side of the field the picker's list opens on, and how tall it may grow there. */
+export interface ListPlacement {
+	side: 'below' | 'above';
+	maxHeight: number;
+}
+
+/**
+ * Where the list opens so it stays on screen: below the field when it fits, else on whichever
+ * side has more room — the phone's composer sheet sits at the bottom, with the keyboard under
+ * it — and never taller than that side, scrolling instead.
+ */
+export function listPlacement(space: { above: number; below: number }, listHeight: number): ListPlacement {
+	if (listHeight <= space.below || space.below >= space.above) return { side: 'below', maxHeight: space.below };
+	return { side: 'above', maxHeight: space.above };
+}

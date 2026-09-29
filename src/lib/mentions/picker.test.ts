@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { activeHandle, handleFor, insertHandle, suggest } from './picker';
+import { activeHandle, handleFor, insertHandle, listPlacement, suggest } from './picker';
 
 const people = [
 	{ id: 'j', displayName: 'Julia Meier', firstName: 'Julia', lastName: 'Meier' },
@@ -50,5 +50,20 @@ describe('handleFor / insertHandle', () => {
 		const r = insertHandle('met @Ju at', { start: 4, query: 'Ju' }, 7, '@JuliaMeier');
 		expect(r.text).toBe('met @JuliaMeier  at');
 		expect(r.caret).toBe(16);
+	});
+});
+
+/* The list must stay on screen, also in the phone's composer sheet at the bottom (docs/05). */
+describe('listPlacement', () => {
+	it('opens below the field when the list fits there', () => {
+		expect(listPlacement({ above: 600, below: 300 }, 250)).toEqual({ side: 'below', maxHeight: 300 });
+	});
+
+	it('opens above when it does not fit below and there is more room above', () => {
+		expect(listPlacement({ above: 600, below: 120 }, 250)).toEqual({ side: 'above', maxHeight: 600 });
+	});
+
+	it('stays below, scrolling, when below is still the roomier side', () => {
+		expect(listPlacement({ above: 100, below: 180 }, 250)).toEqual({ side: 'below', maxHeight: 180 });
 	});
 });
