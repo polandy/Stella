@@ -828,6 +828,14 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   address. Rejected: a variant behind the photo's own URL (a browser would keep showing the old
   square for a year) and a second gallery photo (the gallery would fill with copies). The
   cost: a framed photo stores one extra 512px image.
+- **Touch full screen is scoped to iPadOS/iOS Safari by device, not by touch capability** — the
+  graph's app-level full-screen overlay (docs/05 §5.8) exists only for Safari's own
+  swipe-to-dismiss quirk; matching touch broadly instead forced Android and touch laptops to
+  give up the browser's native Fullscreen API for a bug they don't have. There is no
+  feature-detectable signal for the quirk itself, so this is the one user-agent sniff in the
+  codebase: `navigator.userAgent` for `iPad`/`iPhone`, plus the `MacIntel` + touch-points
+  combination iPadOS answers with instead of naming itself
+  (`src/lib/ui/fullscreen.ts`).
 
 ## 4.10 Deployment
 

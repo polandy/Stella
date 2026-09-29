@@ -27,8 +27,9 @@ rebuild and a restart; there is no watch mode here.
 ```
 
 Builds (`bun run build`) if needed, starts a production server (`bun ./build/index.js`) in the
-background on port 4190 (override with `PORT=…`), bound to `0.0.0.0` so it's reachable from other
-devices on the LAN, and prints both URLs plus the demo login. Data lives at
+background on port 5173 (override with `PORT=…`; not 4190 — some routers silently drop that
+reserved ManageSieve port), bound to `0.0.0.0` so it's reachable from other devices on the LAN,
+and prints both URLs plus the demo login. Data lives at
 `.claude/skills/preview/data/` — isolated from the real `./data/stella.db` and from the e2e
 suite's `./data/e2e/`, so this can never touch either. `SEED_DEMO=true` seeds the Brunner
 household (plus the Widmer and Steiner families and a dozen circles) on first start; re-running

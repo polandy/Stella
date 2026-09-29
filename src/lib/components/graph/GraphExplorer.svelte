@@ -42,6 +42,8 @@
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
 	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
 	import type { ConnectionPath, GraphEdge, GraphFilters, GraphModel } from '$lib/graph/model/types';
+	import { dismissesFullscreenOnDrag } from '$lib/ui/fullscreen';
+	import { scrollingAncestor } from '$lib/ui/keep-place';
 
 	interface Props {
 		/**
@@ -551,19 +553,20 @@
 	 *   and peek panel together — so nothing the map needs is left behind. The state follows
 	 *   the browser rather than the button, because Esc leaves it without asking us; that's
 	 *   fine, nobody presses Esc mid-drag.
-	 * - Touch (phone/tablet): panning the canvas is itself a drag, and iPadOS/iOS Safari reads
-	 *   a downward drag on *any* Fullscreen-API element as "swipe to dismiss" — the same
-	 *   gesture that closes a full-screen video. That happens in Safari's own presentation
-	 *   layer, before any page script sees the touch, so there is nothing here that could
-	 *   intercept or undo it (confirmed against the real thing, not just in theory — a
-	 *   pointerup-triggered re-request never ran, because no pointer event fires for it).
-	 *   Touch devices get an app-level full screen instead: a fixed overlay over the whole
-	 *   viewport that is never handed to the browser, so there is no native gesture that can
-	 *   dismiss it — only the button.
-	 * Where neither is available (no Fullscreen API and no touch) the button is simply absent.
+	 * - Touch on iPadOS/iOS Safari: panning the canvas is itself a drag, and Safari's own
+	 *   presentation layer reads a downward drag on *any* Fullscreen-API element as "swipe to
+	 *   dismiss" — the same gesture that closes a full-screen video — before any page script
+	 *   sees the touch, so there is nothing here that could intercept or undo it (confirmed
+	 *   against the real thing, not just in theory — a pointerup-triggered re-request never
+	 *   ran, because no pointer event fires for it). These devices (`dismissesFullscreenOnDrag`)
+	 *   get an app-level full screen instead: a fixed overlay over the whole viewport that is never
+	 *   handed to the browser, so there is no native gesture that can dismiss it — only the
+	 *   button. Android and other touch devices don't have this quirk, so they keep the native
+	 *   Fullscreen API like a mouse does.
+	 * Where neither is available (no Fullscreen API and not one of these devices) the button is
+	 * simply absent.
 	 */
-	const usesCssFullscreen =
-		typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+	const usesCssFullscreen = typeof window !== 'undefined' && dismissesFullscreenOnDrag(navigator);
 	let canFullscreen = $state(false);
 	let fullscreen = $state(false);
 	const syncFullscreen = () => (fullscreen = document.fullscreenElement === frame);
@@ -592,14 +595,18 @@
 	});
 
 	// The app-level overlay covers the frame, but not whatever the reader scrolled down to
-	// behind it (the rest of a person's page, in the embedded case) — lock the body too, the
-	// way any other full-viewport overlay in the app does (the photo lightbox).
+	// behind it (the rest of a person's page, in the embedded case). `document.body` is never
+	// the thing that scrolls here — the shell's own root is already `h-screen overflow-hidden`
+	// and the real scroller is an inner div further down — so lock whichever ancestor actually
+	// has one, wherever this component happens to be mounted.
 	$effect(() => {
 		if (!usesCssFullscreen || !fullscreen) return;
-		const previous = document.body.style.overflow;
-		document.body.style.overflow = 'hidden';
+		const scroller = scrollingAncestor<HTMLElement>(frame);
+		if (!scroller) return;
+		const previous = scroller.style.overflow;
+		scroller.style.overflow = 'hidden';
 		return () => {
-			document.body.style.overflow = previous;
+			scroller.style.overflow = previous;
 		};
 	});
 
