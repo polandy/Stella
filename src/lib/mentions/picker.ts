@@ -34,13 +34,15 @@ export function handleFor(c: MentionCandidate): string {
 
 export interface Suggestions<C extends MentionCandidate> {
 	people: C[];
-	/** Name to offer as "Create …", or null when the query is empty or already someone. */
+	/** Name to offer as "Create …", or null while the query is empty. */
 	create: string | null;
+	/** Somebody has that name already, so creating makes another one (docs/02 §2.2.3). */
+	createsAnother: boolean;
 }
 
 /**
  * Rank people for a query: prefix matches on any name part first, then substring matches,
- * each alphabetically. Offers creation when nothing matches the query exactly.
+ * each alphabetically. Offers creation for any typed name, saying when it is somebody's already.
  */
 export function suggest<C extends MentionCandidate>(
 	query: string,
@@ -72,7 +74,7 @@ export function suggest<C extends MentionCandidate>(
 		const full = mentionKey(`${c.firstName ?? ''}${c.lastName ?? ''}`);
 		return mentionKey(c.displayName) === q || (full.length > 0 && full === q);
 	});
-	return { people, create: q && !exact ? query : null };
+	return { people, create: q ? query : null, createsAnother: exact };
 }
 
 /** Replace the active handle with `handle` plus a trailing space; returns the new text and caret. */

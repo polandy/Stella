@@ -1,5 +1,6 @@
 import { MENTION_TOKEN_RE, mentionToken, type MentionCandidate } from './mentions';
 import { handleFor } from './picker';
+import { newPersonMentionId, type MomentNewPerson } from '../commands/commands';
 
 /*
  * Remembering whom a picked `@Handle` stands for (docs/02 §2.20.1). The field shows the
@@ -96,4 +97,29 @@ export function asTyped(body: string, people: readonly MentionCandidate[]): stri
 		const person = people.find((p) => p.id === id);
 		return person ? handleFor(person) : null;
 	}).text;
+}
+
+/** Id for a bare name an older build queued; never written as a token, only listed. */
+const QUEUED_NAME_PREFIX = 'new-name:';
+
+/** Whether a listed person is a name an older build queued, found by name rather than by id. */
+export function isQueuedName(id: string): boolean {
+	return id.startsWith(QUEUED_NAME_PREFIX);
+}
+
+/**
+ * The people a moment creates, as the picker lists them: under the placeholder id their mention
+ * carries until Stella has them, so picking one writes that placeholder.
+ */
+export function newPeopleAsCandidates(newPeople: readonly (string | MomentNewPerson)[]): MentionCandidate[] {
+	return newPeople.map((person) =>
+		typeof person === 'string'
+			? { id: QUEUED_NAME_PREFIX + person, displayName: person, firstName: null, lastName: null }
+			: {
+					id: newPersonMentionId(person.key),
+					displayName: [person.firstName, person.lastName].filter(Boolean).join(' '),
+					firstName: person.firstName,
+					lastName: person.lastName
+				}
+	);
 }

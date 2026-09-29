@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { asTyped, shiftPicks, toEditable, toStored, type MentionPick } from './picks';
+import { asTyped, newPeopleAsCandidates, shiftPicks, toEditable, toStored, type MentionPick } from './picks';
 
 /*
  * Remembering which person a picked `@Handle` stands for (docs/02 §2.20.1). The field shows
@@ -105,6 +105,20 @@ describe('asTyped', () => {
 		];
 		expect(asTyped('@{contact:thomas-hut} and @{contact:sandra} at the hut', people)).toBe(
 			'@Thomas and @SandraBrunner at the hut'
+		);
+	});
+});
+
+describe('newPeopleAsCandidates', () => {
+	it('offers the people a moment creates under their placeholder id, and an older build’s names by name', () => {
+		expect(
+			newPeopleAsCandidates([{ key: 'k1', firstName: 'Thomas', lastName: 'Frei', description: null }, 'Vesna'])
+		).toEqual([
+			{ id: 'new:k1', displayName: 'Thomas Frei', firstName: 'Thomas', lastName: 'Frei' },
+			{ id: 'new-name:Vesna', displayName: 'Vesna', firstName: null, lastName: null }
+		]);
+		expect(asTyped('Met @{contact:new:k1}', newPeopleAsCandidates([{ key: 'k1', firstName: 'Thomas', lastName: null, description: null }]))).toBe(
+			'Met @Thomas'
 		);
 	});
 });

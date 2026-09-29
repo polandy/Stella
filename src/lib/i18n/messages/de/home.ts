@@ -85,6 +85,8 @@ export const home: HomeMessages = {
 	'composer.people': 'Menschen',
 	'composer.justCreated': 'gerade angelegt',
 	'composer.create': (p) => `„${p.name}“ anlegen`,
+	'composer.createAnother': (p) => `Weitere Person „${p.name}“ anlegen`,
+	'composer.addPerson': 'Zum Moment hinzufügen',
 	'composer.newPerson': 'neue Person',
 	'composer.photo': 'Foto',
 	'composer.photoCount': (p) => (p.count === 1 ? '1 Foto' : `${p.count} Fotos`),

@@ -3,7 +3,8 @@ import { phrase } from '../../../i18n/phrase';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import { extractHandles, mentionKey } from '../../../mentions/mentions';
+import { newPersonMentionId, type MomentNewPerson } from '../../../commands/commands';
+import { extractHandles, mentionKey, mentionToken } from '../../../mentions/mentions';
 import { resolveForAudience } from '../mentions/resolve-for-audience';
 import { createContact, type ContactRepository } from '../contacts/contacts';
 import { addToJournalDay, type JournalAuthor, type JournalRepository } from '../journal/journal';
@@ -22,8 +23,12 @@ export interface CaptureMomentInput {
 	/** ISO `YYYY-MM-DD` day the moment is about. */
 	entryDate: string;
 	visibility: Visibility;
-	/** Display names the composer queued via "Create “Name”"; created only if mentioned. */
-	newPeople: string[];
+	/**
+	 * People the composer created with the moment, each created only if the body mentions them:
+	 * by the placeholder `@{contact:new:<key>}`, or — queued by an older build as a bare display
+	 * name — by their `@Handle`.
+	 */
+	newPeople: (string | MomentNewPerson)[];
 }
 
 export interface CaptureMomentDeps {
@@ -75,23 +80,40 @@ export async function captureMoment(
 	const mentionedKeys = new Set(extractHandles(body).map(mentionKey));
 	const existingKeys = new Set(visible.map((c) => mentionKey(c.displayName)));
 
-	// Create only queued names that are both mentioned and not already someone visible.
 	const createdContactIds: string[] = [];
+	const creator = { userId: author.userId, householdId: author.householdId, defaultVisibility: input.visibility };
+	const contactDeps = { contacts: deps.contacts, ids: deps.ids, clock: deps.clock };
+
+	// A person named with what tells them apart is created by their placeholder, never by name:
+	// a second Thomas is as welcome as the first (docs/02 §2.2.3).
+	let written = body;
+	for (const person of input.newPeople) {
+		if (typeof person === 'string') continue;
+		const placeholder = mentionToken(newPersonMentionId(person.key));
+		if (!written.includes(placeholder)) continue;
+		const id = await createContact(contactDeps, creator, {
+			firstName: person.firstName,
+			lastName: person.lastName,
+			description: person.description,
+			visibility: input.visibility
+		});
+		createdContactIds.push(id);
+		written = written.replaceAll(placeholder, mentionToken(id));
+	}
+
+	// Create only queued names that are both mentioned and not already someone visible.
 	const queued = new Set<string>();
 	for (const name of input.newPeople) {
+		if (typeof name !== 'string') continue;
 		const key = mentionKey(name);
 		if (!key || queued.has(key) || existingKeys.has(key) || !mentionedKeys.has(key)) continue;
 		queued.add(key);
 		createdContactIds.push(
-			await createContact(
-				{ contacts: deps.contacts, ids: deps.ids, clock: deps.clock },
-				{ userId: author.userId, householdId: author.householdId, defaultVisibility: input.visibility },
-				{ displayName: name.trim(), visibility: input.visibility }
-			)
+			await createContact(contactDeps, creator, { displayName: name.trim(), visibility: input.visibility })
 		);
 	}
 
-	const resolved = resolveForAudience(await deps.contacts.listVisibleTo(viewer), input.visibility, body);
+	const resolved = resolveForAudience(await deps.contacts.listVisibleTo(viewer), input.visibility, written);
 	if (resolved.ids.length === 0) throw new MomentNeedsPersonError();
 
 	const [anchorContactId, ...mentionedContactIds] = resolved.ids;

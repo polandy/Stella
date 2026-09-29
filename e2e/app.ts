@@ -93,6 +93,16 @@ export async function mention(page: Page, query: string, label: RegExp): Promise
 }
 
 /**
+ * Mentions somebody new in the moment composer: "Create …" opens a small panel with the name
+ * filled in (docs/02 §2.22.1), and adding from it writes the mention.
+ */
+export async function mentionNew(page: Page, name: string): Promise<void> {
+	await page.getByLabel('What happened?').pressSequentially(`@${name}`);
+	await page.getByRole('option', { name: new RegExp(`Create.*${name}`) }).click();
+	await page.getByTestId('composer-create').getByRole('button', { name: 'Add to the moment' }).click();
+}
+
+/**
  * Types a name into a `PersonSearchSelect` combobox (relationship target, circle member,
  * interaction participant, merge duplicate) and picks the matching option. Replaces a plain
  * `<select>` interaction: the field filters as you type, so it needs a query first.

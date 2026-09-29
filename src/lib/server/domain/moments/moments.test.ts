@@ -208,6 +208,25 @@ describe('captureMoment', () => {
 		expect(f.entries).toHaveLength(0);
 	});
 
+	it('creates a person named in the moment with their description, beside a namesake already there', async () => {
+		const f = fakes([{ id: 'thomas-hut', displayName: 'Thomas', firstName: 'Thomas' }]);
+		const result = await captureMoment(f.deps, author, {
+			...base,
+			body: 'Met @{contact:new:k1} at the lake, not @{contact:thomas-hut}',
+			newPeople: [
+				{ key: 'k1', firstName: 'Thomas', lastName: null, description: 'Swims at the Marzili' },
+				{ key: 'k2', firstName: 'Unused', lastName: null, description: null }
+			]
+		});
+
+		expect(result.createdContactIds).toHaveLength(1);
+		const created = f.contacts.find((c) => c.id === result.createdContactIds[0])!;
+		expect(created).toMatchObject({ displayName: 'Thomas', firstName: 'Thomas', description: 'Swims at the Marzili', visibility: 'shared' });
+		expect(result.anchorContactId).toBe(created.id);
+		expect(f.entries[0].body).toBe(`Met @{contact:${created.id}} at the lake, not @{contact:thomas-hut}`);
+		expect(f.contacts.some((c) => c.firstName === 'Unused')).toBe(false);
+	});
+
 	it('lands a picked namesake in their own journal, by the id the picker wrote', async () => {
 		const f = fakes([
 			{ id: 'thomas-hut', displayName: 'Thomas', firstName: 'Thomas' },

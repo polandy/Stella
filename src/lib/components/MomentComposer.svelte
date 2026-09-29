@@ -5,15 +5,24 @@
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
 	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { processImage } from '$lib/image/process-image';
 	import { allowedForAudience } from '$lib/mentions/audience';
-	import { createHandleResolver, resolveMentions } from '$lib/mentions/mentions';
+	import { createHandleResolver, mentionKey, resolveMentions } from '$lib/mentions/mentions';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
-	import { shiftPicks, toEditable, toStored, type MentionPick } from '$lib/mentions/picks';
+	import {
+		isQueuedName,
+		newPeopleAsCandidates,
+		shiftPicks,
+		toEditable,
+		toStored,
+		type MentionPick
+	} from '$lib/mentions/picks';
 	import { tellApart } from '$lib/people/namesakes';
-	import type { MomentCapturePayload } from '$lib/commands/commands';
+	import { splitTypedName, wantsSomethingToKnowThemBy } from '$lib/people/new-person';
+	import type { MomentCapturePayload, MomentNewPerson } from '$lib/commands/commands';
 	import type { KeptOf, KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
@@ -33,6 +42,8 @@
 	 *
 	 * A person picked in the list is remembered against the `@Handle` it wrote and saved as their
 	 * id token, so two people called Thomas stay two people (docs/02 §2.2.3, `picks.ts`).
+	 * Creating somebody opens a small panel for their name and what to know them by; the text
+	 * then mentions them by a placeholder the server swaps for their id once it has them.
 	 */
 
 	interface Candidate {
@@ -78,17 +89,19 @@
 
 	// svelte-ignore state_referenced_locally -- the kept moment is only a starting value on purpose
 	const kept = editing?.command.payload ?? null;
+	let newPeople = $state<(string | MomentNewPerson)[]>(kept ? [...kept.newPeople] : []);
 	// A kept moment and a draft are stored text: picked people come back as picks.
 	// svelte-ignore state_referenced_locally -- the draft is only a starting value on purpose
+	const startingPeople = [...candidates, ...newPeopleAsCandidates(newPeople)];
+	// svelte-ignore state_referenced_locally -- see above
 	const start = toEditable(kept?.body ?? draft ?? '', (id) => {
-		const person = candidates.find((c) => c.id === id);
+		const person = startingPeople.find((c) => c.id === id);
 		return person ? handleFor(person) : null;
 	});
 	let body = $state(start.text);
 	// Whom each picked handle in the text stands for.
 	let picks: MentionPick[] = start.picks;
 	let visibility = $state<'shared' | 'private'>(kept?.visibility ?? 'shared');
-	let newPeople = $state<string[]>(kept ? [...kept.newPeople] : []);
 	// The command this draft will be saved as; a new one after every save.
 	let commandId = $state(ulid());
 	// Bumped after a save to start the day and photo fields afresh. `form.reset()` cannot:
@@ -110,17 +123,36 @@
 	const audience = $derived(
 		allowedForAudience(candidates, visibility)
 	);
-	const known = $derived([
-		...audience,
-		...newPeople.map((n) => ({ id: `new:${n}`, displayName: n, firstName: null, lastName: null }))
-	]);
-	const suggestions = $derived(active ? suggest(active.query, known) : { people: [], create: null });
+	const created = $derived(newPeopleAsCandidates(newPeople));
+	const createdIds = $derived(new Set(created.map((c) => c.id)));
+	const known = $derived([...audience, ...created]);
+	const suggestions = $derived(
+		active ? suggest(active.query, known) : { people: [], create: null, createsAnother: false }
+	);
 	// The second line counts everyone the list could offer, not only what the query left.
 	const namesakes = $derived(tellApart(audience));
 	const rows = $derived([
 		...suggestions.people.map((p) => ({ kind: 'person' as const, person: p })),
-		...(suggestions.create ? [{ kind: 'create' as const, name: suggestions.create }] : [])
+		...(suggestions.create
+			? [{ kind: 'create' as const, name: suggestions.create, another: suggestions.createsAnother }]
+			: [])
 	]);
+
+	/*
+	 * Somebody being created from the picker: their name, what to know them by, and where in the
+	 * text the `@` they came from sits. Open, it stands in for the list.
+	 */
+	let creating = $state<{
+		firstName: string;
+		lastName: string;
+		description: string;
+		at: ActiveHandle;
+		caret: number;
+	} | null>(null);
+	let createFirstName: HTMLInputElement | undefined = $state();
+	const askForSomethingToKnowThemBy = $derived(
+		creating ? wantsSomethingToKnowThemBy({ firstName: creating.firstName, lastName: creating.lastName }) : false
+	);
 
 	// The people the text currently references, for the "goes to …'s journal" line — read the
 	// way the server will: picks by id, anything typed by name, a namesake nobody picked as a
@@ -161,23 +193,72 @@
 	async function choose(index: number) {
 		const row = rows[index];
 		if (!row || !active || !textarea) return;
-		let handle: string;
-		let picked: MentionPick | undefined;
-		if (row.kind === 'create') {
-			if (!newPeople.includes(row.name)) newPeople = [...newPeople, row.name];
-			handle = '@' + row.name;
-		} else {
-			handle = handleFor(row.person);
-			// Somebody created with this moment has no id yet; the server finds them by name.
-			if (!row.person.id.startsWith('new:'))
-				picked = { start: active.start, end: active.start + handle.length, id: row.person.id };
-		}
-		const r = insertHandle(body, active, textarea.selectionStart, handle);
+		if (row.kind === 'create') return openCreate(row.name, active, textarea.selectionStart);
+		const handle = handleFor(row.person);
+		// A name an older build queued has no id or placeholder; the server finds it by name.
+		const picked = isQueuedName(row.person.id)
+			? undefined
+			: { start: active.start, end: active.start + handle.length, id: row.person.id };
+		await insert(handle, active, textarea.selectionStart, picked);
+	}
+
+	async function insert(handle: string, at: ActiveHandle, caret: number, picked?: MentionPick) {
+		if (!textarea) return;
+		const r = insertHandle(body, at, caret, handle);
 		changeText(r.text, picked);
 		active = null;
 		await tick();
 		textarea.focus();
 		textarea.setSelectionRange(r.caret, r.caret);
+	}
+
+	/** Open the panel for a new person, named as typed — or as the namesake is, when there is one. */
+	async function openCreate(typed: string, at: ActiveHandle, caret: number) {
+		const namesake = audience.find((c) => mentionKey(c.displayName) === mentionKey(typed));
+		const name = namesake?.firstName
+			? { firstName: namesake.firstName, lastName: '' }
+			: splitTypedName(typed);
+		creating = { firstName: name.firstName, lastName: name.lastName, description: '', at, caret };
+		active = null;
+		clearTimeout(closingPicker);
+		await tick();
+		createFirstName?.focus();
+	}
+
+	async function cancelCreate() {
+		const was = creating;
+		creating = null;
+		await tick();
+		textarea?.focus();
+		if (was) textarea?.setSelectionRange(was.caret, was.caret);
+	}
+
+	/** Queue the new person with the moment and mention them by their placeholder. */
+	async function addCreated() {
+		if (!creating || !creating.firstName.trim()) return;
+		const person: MomentNewPerson = {
+			key: ulid(),
+			firstName: creating.firstName.trim(),
+			lastName: creating.lastName.trim() || null,
+			description: creating.description.trim() || null
+		};
+		newPeople = [...newPeople, person];
+		const [candidate] = newPeopleAsCandidates([person]);
+		const handle = handleFor(candidate);
+		const { at, caret } = creating;
+		creating = null;
+		await insert(handle, at, caret, { start: at.start, end: at.start + handle.length, id: candidate.id });
+	}
+
+	function onCreateKeydown(event: KeyboardEvent) {
+		// The panel sits inside the moment's form: Enter adds the person, it never saves the moment.
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			void addCreated();
+		} else if (event.key === 'Escape') {
+			event.preventDefault();
+			void cancelCreate();
+		}
 	}
 
 	function onKeydown(event: KeyboardEvent) {
@@ -219,7 +300,8 @@
 			body: toStored(body, picks).trim(),
 			entryDate: String(data.get('entryDate') ?? day),
 			visibility,
-			newPeople: [...newPeople]
+			// Plain objects: the payload is kept in IndexedDB, which cannot clone a state proxy.
+			newPeople: $state.snapshot(newPeople)
 		};
 	}
 
@@ -341,7 +423,65 @@
 		></textarea>
 	</div>
 
-	{#if active && rows.length > 0}
+	{#if creating}
+		<!-- Plain inputs, not a nested form: the panel lives inside the moment's form. -->
+		<div
+			class="absolute left-14 top-16 z-10 flex w-[min(340px,calc(100%-4rem))] flex-col gap-2.5 rounded-app border border-border bg-card p-3 shadow-pop"
+			data-testid="composer-create"
+			onkeydown={onCreateKeydown}
+			role="none"
+		>
+			<p class="text-sm font-semibold text-fg">{t('components.personSearch.createTitle')}</p>
+			<div class="grid grid-cols-2 gap-2">
+				<label class="flex flex-col gap-1 text-xs text-fg-muted">
+					{t('components.personSearch.firstName')}
+					<input
+						bind:this={createFirstName}
+						bind:value={creating.firstName}
+						type="text"
+						autocomplete="off"
+						class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+					/>
+				</label>
+				<label class="flex flex-col gap-1 text-xs text-fg-muted">
+					{t('components.personSearch.lastName')}
+					<input
+						bind:value={creating.lastName}
+						type="text"
+						autocomplete="off"
+						class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+					/>
+				</label>
+			</div>
+			{#if askForSomethingToKnowThemBy}
+				<KnowThemBy
+					firstName={creating.firstName}
+					compact
+					label={t('components.personSearch.description')}
+					bind:value={creating.description}
+					inputClass="rounded-control border border-border bg-card px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+				/>
+			{:else}
+				<label class="flex flex-col gap-1 text-xs text-fg-muted">
+					{t('components.personSearch.description')}
+					<input
+						bind:value={creating.description}
+						type="text"
+						autocomplete="off"
+						placeholder={t('components.namesake.placeholder')}
+						class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+					/>
+				</label>
+			{/if}
+			<div class="flex justify-end gap-2">
+				<!-- `type="button"`: inside the moment's form, these must never save it. -->
+				<Button type="button" variant="ghost" size="sm" onclick={cancelCreate}>{t('components.personSearch.cancel')}</Button>
+				<Button type="button" variant="primary" size="sm" disabled={!creating.firstName.trim()} onclick={addCreated}>
+					{t('composer.addPerson')}
+				</Button>
+			</div>
+		</div>
+	{:else if active && rows.length > 0}
 		<ul
 			role="listbox"
 			class="absolute left-14 top-16 z-10 w-[min(320px,calc(100%-4rem))] rounded-app border border-border bg-card p-1 shadow-pop"
@@ -366,10 +506,10 @@
 								<span class="block truncate">{row.person.displayName}</span>
 								{#if namesakes.get(row.person.id)}<NamesakeLine distinction={namesakes.get(row.person.id)!} />{/if}
 							</span>
-							{#if row.person.id.startsWith('new:')}<span class="ml-auto text-xs text-fg-subtle">{t('composer.justCreated')}</span>{/if}
+							{#if createdIds.has(row.person.id)}<span class="ml-auto text-xs text-fg-subtle">{t('composer.justCreated')}</span>{/if}
 						{:else}
 							<span class="grid size-[22px] place-items-center rounded-full border border-dashed border-success text-success">+</span>
-							<span class="font-semibold text-success">{t('composer.create', { name: row.name })}</span>
+							<span class="font-semibold text-success">{row.another ? t('composer.createAnother', { name: row.name }) : t('composer.create', { name: row.name })}</span>
 							<span class="ml-auto text-xs text-fg-subtle">{t('composer.newPerson')}</span>
 						{/if}
 					</button>
@@ -377,10 +517,6 @@
 			{/each}
 		</ul>
 	{/if}
-
-	{#each newPeople as name (name)}
-		<input type="hidden" name="newPeople" value={name} />
-	{/each}
 
 	<div class="flex flex-wrap items-center gap-2 border-t border-border-subtle px-3 py-2">
 		<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted has-checked:border-transparent has-checked:bg-primary-soft has-checked:font-semibold has-checked:text-primary">

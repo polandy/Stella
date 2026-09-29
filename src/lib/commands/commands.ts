@@ -44,8 +44,26 @@ export interface MomentCapturePayload {
 	/** ISO `YYYY-MM-DD` day the moment is about — the writer's day, not the arrival's. */
 	entryDate: string;
 	visibility: MentionAudience;
-	/** Display names the composer queued via "Create “Name”". */
-	newPeople: string[];
+	/**
+	 * People the composer created with the moment. A person is mentioned in the body by the
+	 * placeholder `@{contact:new:<key>}` until Stella has them; a bare display name is what an
+	 * older build queued, found in the body by its `@Handle`.
+	 */
+	newPeople: (string | MomentNewPerson)[];
+}
+
+/** A person named for the first time in a moment, with what tells them apart (docs/02 §2.2.3). */
+export interface MomentNewPerson {
+	/** Made on the device; the mention's placeholder id is `newPersonMentionId(key)`. */
+	key: string;
+	firstName: string;
+	lastName: string | null;
+	description: string | null;
+}
+
+/** The id a moment's body mentions a person by until Stella has created them. */
+export function newPersonMentionId(key: string): string {
+	return `new:${key}`;
 }
 
 /**

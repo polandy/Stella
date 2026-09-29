@@ -1532,11 +1532,17 @@ entry and a household update, without leaving the page. Concept + clickable prot
   it as a new paragraph and its mentions join the entry's; the title stays — as writing on the
   journal page does. *Edit* on an entry still replaces its text: that is an edit, a moment is an
   addition.
-- **Create people inline.** When the typed `@name` matches nobody, the picker offers
-  *"Create “Name”"*. Picking it inserts the handle and queues the name; on save the server
-  creates that contact first (quick-add with just a display name, taking the **moment's
-  visibility**) and then resolves the handle to it. Everything else about the person is filled
-  in later on their profile.
+- **Create people inline.** The picker offers *"Create “Name”"* for whatever is typed after
+  `@` — *"Create another “Thomas”"* when somebody has that name already, since a second Thomas
+  is a person like any other. Picking it opens a small panel in the list's place: **first and
+  last name**, filled in from what was typed, and a **description**, in the highlighted box with
+  the nudge of §2.2.3 while there is no last name. Enter adds the person to the moment, Escape
+  goes back to the text; neither saves the moment. The text then mentions them by a placeholder
+  (`@{contact:new:<key>}`), and on save the server creates them first — with the **moment's
+  visibility** — and swaps the placeholder for their id, so they are never looked up by name.
+  A person added in the panel but no longer mentioned when saving is not created. Everything
+  else about them is filled in later on their profile. A moment kept on a phone by an older
+  build queued bare names; those are still created by name, as before.
 - **Relationships are offered, not parsed.** Free text is never interpreted. After saving a
   moment that mentions two or more people, Home shows a quiet, dismissible hint —
   *"Link Julia and Marco?"* — whose one action opens Julia's profile with the relationship form

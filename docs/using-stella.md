@@ -46,8 +46,9 @@ A few things worth knowing:
   description, or where and when you met), and the one you pick is the one it means, even
   though both read `@Thomas` in the text. A `@Thomas` typed without picking is not guessed:
   Stella asks which one you mean.
-- **Someone new?** Just mention them. The suggestion list offers *Create "…"*, and the
-  person is created with the moment — no form, no detour.
+- **Someone new?** Just mention them. The suggestion list offers *Create "…"*, which asks
+  for a last name and a line to know them by — both optional — and the person is created with
+  the moment, no detour. If somebody already has that name, it offers *Create another "…"*.
 - **Photos** can be attached; they are resized in your browser before upload, which also
   strips location data out of them.
 - **The day** defaults to today. Change it if you are writing something down late.

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { appReady, mention, openPerson, signIn } from './app';
+import { appReady, mention, mentionNew, openPerson, signIn } from './app';
 
 /*
  * Moments capture and the household stream (docs/02 §2.22). Written after the flow was
@@ -32,9 +32,9 @@ test('captures a moment on an existing person and shows it in the stream', async
 
 test('creates the people it mentions and offers to link the first two', async ({ page }) => {
 	await page.getByLabel('What happened?').pressSequentially('Met ');
-	await mention(page, 'Zelda', /Create.*Zelda/);
+	await mentionNew(page, 'Zelda');
 	await page.getByLabel('What happened?').pressSequentially('and ');
-	await mention(page, 'Yorick', /Create.*Yorick/);
+	await mentionNew(page, 'Yorick');
 	await page.getByLabel('What happened?').pressSequentially('at the market');
 
 	await composerSave(page).click();
@@ -62,7 +62,7 @@ test('keeps a private moment marked as private', async ({ page }) => {
 	await expect(page.getByText('Private', { exact: true })).toBeVisible();
 
 	await page.getByLabel('What happened?').pressSequentially('Coffee with ');
-	await mention(page, 'Quill', /Create.*Quill/);
+	await mentionNew(page, 'Quill');
 	await page.getByLabel('What happened?').pressSequentially('about the surprise party');
 
 	await composerSave(page).click();
@@ -80,7 +80,7 @@ test('refuses to save a moment that mentions nobody', async ({ page }) => {
 });
 
 test('adds a second moment about the same person that day to the first, keeping both', async ({ page }) => {
-	await mention(page, 'Ulric', /Create.*Ulric/);
+	await mentionNew(page, 'Ulric');
 	await page.getByLabel('What happened?').pressSequentially('repotted the ferns');
 	await composerSave(page).click();
 	await expect(page.locator('article').first()).toContainText('repotted the ferns');
@@ -88,7 +88,7 @@ test('adds a second moment about the same person that day to the first, keeping 
 	// Exact: the shared suite database also holds a Gina Ulrich.
 	await mention(page, 'Ulric', /^Ulric$/);
 	await page.getByLabel('What happened?').pressSequentially('phoned, ');
-	await mention(page, 'Vesna', /Create.*Vesna/);
+	await mentionNew(page, 'Vesna');
 	await page.getByLabel('What happened?').pressSequentially('sends her love');
 	await composerSave(page).click();
 	// The entry the moment joined rises to the top, above Vesna's "New person" item.

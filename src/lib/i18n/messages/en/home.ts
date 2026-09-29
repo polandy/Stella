@@ -91,6 +91,8 @@ export const home = {
 	'composer.people': 'People',
 	'composer.justCreated': 'just created',
 	'composer.create': (p: { name: string }) => `Create “${p.name}”`,
+	'composer.createAnother': (p: { name: string }) => `Create another “${p.name}”`,
+	'composer.addPerson': 'Add to the moment',
 	'composer.newPerson': 'new person',
 	'composer.photo': 'Photo',
 	'composer.photoCount': (p: { count: number }) =>
