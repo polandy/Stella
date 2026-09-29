@@ -32,6 +32,14 @@ import {
 	type CacheableRequest
 } from '$lib/pwa/cache-policy';
 import {
+	VISIBLE_PEOPLE_PATH,
+	isNewerCopy,
+	keysToPrune,
+	parseVisiblePeople,
+	peopleToKeep,
+	refreshDue
+} from '$lib/pwa/people-ahead';
+import {
 	ASK_REACHABILITY,
 	REPORT_REACHABILITY,
 	type ReachabilityReport
@@ -131,7 +139,7 @@ worker.addEventListener('message', (event) => {
 		const source = event.source;
 		if (source && 'id' in source) source.postMessage(reportFor(source.id));
 		// A page opening is also the moment to keep what should be there before it is read.
-		event.waitUntil(keepAhead());
+		event.waitUntil(keepAhead().then(refreshPeople));
 	}
 });
 
@@ -148,6 +156,89 @@ async function keepAhead(): Promise<void> {
 			await cache.put(path, response);
 		}
 	}
+}
+
+/** When the last refresh of the people finished, so opening pages in a row does not repeat it. */
+let lastPeopleRefresh: number | null = null;
+/** The refresh under way, so a second page opening joins it rather than starting another. */
+let peopleRefresh: Promise<void> | null = null;
+
+/**
+ * Keep every person the member can see readable offline (docs/concepts/offline-reading.md §4):
+ * drop the pages of anyone no longer visible, then revalidate each person's pages and fetch
+ * the avatars not yet kept. One request at a time, in the background, while Stella answers.
+ */
+function refreshPeople(): Promise<void> {
+	if (peopleRefresh) return peopleRefresh;
+	if (!reachable || !refreshDue(lastPeopleRefresh, Date.now())) return Promise.resolve();
+	peopleRefresh = keepPeopleAhead().finally(() => {
+		peopleRefresh = null;
+	});
+	return peopleRefresh;
+}
+
+/** A GET the worker makes on its own behalf, bounded like every request it waits on. */
+function fetchAhead(path: string, headers: HeadersInit = {}): Promise<Response | null> {
+	const signal = AbortSignal.timeout(NETWORK_PATIENCE_MS);
+	return fetch(path, { headers, signal, cache: 'no-store' }).catch(() => null);
+}
+
+/** Whether `response` is Stella's own answer, not the sign-in page a lapsed session gets. */
+const isOwnAnswer = (response: Response | null): response is Response =>
+	response !== null && response.type === 'basic' && !response.redirected;
+
+async function keepPeopleAhead(): Promise<void> {
+	const listed = await fetchAhead(VISIBLE_PEOPLE_PATH);
+	if (!isOwnAnswer(listed) || !listed.ok) return;
+	// Nothing is pruned on an answer that is not a list: that would empty the device.
+	const people = parseVisiblePeople(await listed.json().catch(() => null));
+	if (!people) return;
+
+	const cache = await caches.open(CACHE);
+	const kept = (await cache.keys()).map((request) => request.url);
+	const visible = new Set(people.map((person) => person.id));
+	await Promise.all(keysToPrune(kept, worker.location.origin, visible).map((key) => cache.delete(key)));
+
+	const { pages, avatars } = peopleToKeep(people);
+	for (const page of pages) {
+		// Out of reach or signed out part-way: stop, and try again on the next page opening.
+		if (!(await revalidate(cache, page))) return;
+	}
+	for (const avatar of avatars) {
+		if (await cache.match(avatar)) continue;
+		const response = await fetchAhead(avatar);
+		if (!isOwnAnswer(response) || !response.ok) return;
+		await cache.put(avatar, response);
+	}
+	lastPeopleRefresh = Date.now();
+}
+
+/**
+ * Bring one page's kept data up to date: asked with the tag of the copy held, so an unchanged
+ * page costs a bodiless 304. False when Stella did not answer as itself.
+ */
+async function revalidate(cache: Cache, path: string): Promise<boolean> {
+	const url = new URL(path, worker.location.origin).href;
+	const key = cacheKeyFor({ method: 'GET', url, origin: worker.location.origin, isNavigation: false });
+	const held = await cache.match(key);
+	const etag = held?.headers.get('etag');
+	const response = await fetchAhead(path, etag ? { 'If-None-Match': etag } : {});
+	if (!isOwnAnswer(response)) return false;
+
+	if (response.status === 304 && held) {
+		// Confirmed current just now: the copy takes the answer's date, so the offline line
+		// says how old the *knowledge* is, not when the bytes first arrived.
+		const headers = new Headers(held.headers);
+		const date = response.headers.get('date');
+		if (date) headers.set('date', date);
+		await cache.put(key, new Response(await held.arrayBuffer(), { status: held.status, headers }));
+		return true;
+	}
+	if (!response.ok) return response.status === 404;
+	if (isNewerCopy(response.headers.get('date'), held?.headers.get('date') ?? null)) {
+		await cache.put(key, response);
+	}
+	return true;
 }
 
 /** Throw away every page this device is holding. */

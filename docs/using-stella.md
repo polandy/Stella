@@ -596,8 +596,9 @@ tap *Install* — after that Stella opens in its own window, without the browser
 across the top. Safari has no such button: use *Share → Add to Home Screen* instead, and the
 card in Settings says so.
 
-Once it is installed, the pages you have already opened — and Home, People, Circles and
-Settings, always — stay readable when Stella cannot be reached — on the train, or simply away from home, since Stella runs on your own network and
+Once it is installed, every person you can see — their page and their journal — and Home,
+People, Circles and Settings stay readable, whether or not you opened them. Stella keeps them
+up to date on your phone in the background while it can reach home. They stay readable when Stella cannot be reached — on the train, or simply away from home, since Stella runs on your own network and
 is not on the internet. A line above the page tells you when that is what you are looking
 at, and how old it is (*as of yesterday 18:04*): what is showing came off your phone, so
 anything somebody added since is not on it, and

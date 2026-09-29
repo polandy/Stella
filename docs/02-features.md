@@ -1396,7 +1396,14 @@ item instead. Safari is the last of those.
 loaded whole or reached by a link inside the app — and the photos in them. The places a phone
 starts from — **Home, People, Circles and Settings** — are kept as soon as the app opens in
 reach, so they open offline even when they were not read since the last update
-(`KEPT_AHEAD`; every person page ahead is the next step, `docs/concepts/offline-reading.md`). Not the pages that describe the session (sign-in, sign-out, first-run setup), not the
+(`KEPT_AHEAD`). So is **every person the member can see**: their page and their journal,
+kept as the data a tap inside the app fetches, together with their avatar. They are brought
+up to date in the background while Stella answers, at most every five minutes. Each page is
+asked with a tag of the copy held, so an unchanged one costs a few bytes. A person who is no
+longer visible (deleted, merged, made private, archived) leaves the device on the next
+refresh. A person's address opened directly while out of reach shows the offline screen
+unless that page itself was read; inside the app, every person is a tap away
+(`docs/concepts/offline-reading.md`). Not the pages that describe the session (sign-in, sign-out, first-run setup), not the
 health check, not a page reporting on an import or export run, and not a page carrying a
 query string — a search is a question, not somewhere anyone returns to. Requests go to the
 network first and fall back to the copy on the device: Stella is on the household's own

@@ -37,6 +37,12 @@ describe('what may be kept on the device', () => {
 		expect(verdictFor(asset('/media/abc'))).toBe('keep');
 	});
 
+	it('keeps a photo’s thumbnail too, which is how every avatar is drawn', () => {
+		// `?thumb` names a size of the same photo, not a question; without it no avatar is kept.
+		expect(verdictFor(asset('/media/abc?thumb'))).toBe('keep');
+		expect(cacheKeyFor(asset('/media/abc?thumb'))).not.toBe(cacheKeyFor(asset('/media/abc')));
+	});
+
 	it('refuses anything that is not a plain read', () => {
 		expect(verdictFor({ ...page('/contacts/abc'), method: 'POST' })).toBe('skip');
 	});

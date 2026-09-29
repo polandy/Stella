@@ -716,6 +716,15 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   encryption, so a device left signed in holds the pages its owner read — the same bargain as
   the browser's own history, and written down as such in §2.18 rather than left implied.
 
+- **Pages kept ahead are revalidated by a tag of their content, not a change stamp** (§4.11.1,
+  `docs/concepts/offline-reading.md` §4.2): a person page holds household-wide data (worked-out
+  kinship, the map, relatives' names, mentions from other entries), and on the rows themselves
+  deletes leave nothing while tags, mentions and photo edits carry no timestamp. A
+  `max(updated_at)` stamp would be wrong in exactly those cases, and keeping it right would tie
+  every future change of the page to a list of tables. The `ETag` hashes what the member was
+  sent, so it cannot drift. The cost is a server render per person per refresh, measured at a
+  median of 6 ms. Rejected: the per-person stamp, and refetching everything on each start.
+
 - **Mutations become commands, not events; offline only adds** *(being built, moments first:
   §4.11.2, `docs/concepts/offline-capture.md`)* — to write while Stella is out of reach, every
   change becomes a named, idempotent command with an id made where it was issued, applied by
@@ -947,7 +956,8 @@ The same split as the explorer: a pure domain and a thin adapter confined to one
   mask changes with where the reader came from — or only pages loaded from the address bar
   would ever be readable offline. `KEPT_AHEAD` names the pages the worker fetches and keeps
   whenever a page opens and its cache lacks them, so they are there before anyone reads them
-  (Home, People, Circles and Settings). The worker does it, not the page: its cache is the one that must hold them, and
+  (Home, People, Circles and Settings). A photo's `?thumb` is kept like the photo, being a
+  size rather than a question: it is how every avatar is drawn. The worker does it, not the page: its cache is the one that must hold them, and
   a SvelteKit `preloadData` would hand a later tap the preloaded, stale data. Every request
   the worker answers waits on the network for `patienceFor` at most — a lost network can
   swallow a request rather than fail it — and a page's data that is never kept is still
@@ -955,6 +965,15 @@ The same split as the explorer: a pure domain and a thin adapter confined to one
   the worker can answer. `keptAt` reads when a kept copy was fetched off its `Date` header.
   **Test-first targets:** `verdictFor`, `cacheKeyFor`, `patienceFor`, `isPageData`,
   `standInFor`, `endsTheSession`, `cacheNameFor`, `keptAt`.
+- **`src/lib/pwa/people-ahead.ts`** — every person the member can see, kept ahead
+  (`docs/concepts/offline-reading.md`): which pages and avatars to keep (`peopleToKeep`),
+  which kept pages to drop because their person is no longer visible (`keysToPrune`), whether
+  an answer may replace a copy (`isNewerCopy`), when to look again (`refreshDue`), and the
+  guard on the list `GET /api/offline/people` returns (`parseVisiblePeople`). The worker
+  revalidates each page with `If-None-Match`. The tag comes from
+  `src/lib/server/http/etag.ts`, which `hooks.server.ts` applies to every page's data,
+  answering `304` when the device already holds it. **Test-first targets:** all of these,
+  plus `etagOf`, `isUnchanged` and `wantsEtag`.
 - **`src/lib/pwa/reachability.ts`** — the two messages the worker and the page exchange, and
   the guard that stops anything else on the channel moving the offline banner. The report
   also carries when the page on screen was kept (`keptAt`), which the worker tracks per

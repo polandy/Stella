@@ -8,7 +8,7 @@ export const pwa = {
 	/* The screen shown when a page was never opened on this device and cannot be fetched now. */
 	'pwa.offline.title': 'No connection',
 	'pwa.offline.body':
-		'Stella lives on your own network, so there is nothing to reach from here right now. Pages you have already opened are still readable.',
+		'Stella lives on your own network, so there is nothing to reach from here right now. Everyone you can see is still readable from inside the app, and so are the pages you have opened.',
 	'pwa.offline.retry': 'Try again',
 	/* Shown over the app while the device has no connection and pages come off the cache. */
 	'pwa.offline.banner': 'Offline — showing what this device already had.',
@@ -22,7 +22,7 @@ export const pwa = {
 	'pwa.install.heading': 'This device',
 	'pwa.install.label': 'Install Stella',
 	'pwa.install.hint':
-		'Added to the home screen, Stella opens in its own window and keeps the pages you have read available without a connection.',
+		'Added to the home screen, Stella opens in its own window and keeps everyone you can see readable without a connection.',
 	'pwa.install.action': 'Install',
 	'pwa.install.installed': 'Stella is installed on this device.',
 	'pwa.install.byHand':

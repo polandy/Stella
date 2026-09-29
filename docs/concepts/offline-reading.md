@@ -1,6 +1,6 @@
 # Concept — Reading Stella while it is out of reach
 
-Status: **decided; step 1 built, step 2 not yet** (§7). Its companion is `offline-capture.md`, which covers adding.
+Status: **built** (§7). Its companion is `offline-capture.md`, which covers adding.
 Together they are the whole offline story: out of reach, a member can **look anyone up** and
 **write down what happened**. Changing or deleting what already exists stays online
 (docs/04 §4.9, *Mutations become commands, not events*). Nothing here reopens that decision.
@@ -72,32 +72,50 @@ someone, but you cannot look up who they were.
 ### 4.1 What is kept
 
 - `/`, `/contacts`, `/circles`, `/settings`: as soon as the app opens in reach.
-- For every person in the layout's `people` list: `/contacts/<id>` and
-  `/contacts/<id>/journal`, as page data (`__data.json`). The page shell is the same for
-  every person and is kept once.
+- For every person in the layout's `people` list (the People directory; archived people are
+  not in it): `/contacts/<id>` and `/contacts/<id>/journal`, as page data (`__data.json`),
+  which is what a tap inside the app fetches. Not as whole documents: a person's address
+  opened directly while out of reach (typed, or a link from outside the app) shows the offline
+  page unless that page itself was read before. The app starts at Home, so every person is
+  one tap away.
 - Avatars, as they are small. Gallery and moment photos are **not** fetched ahead, only kept
   when seen, as today. They are the bulk of the bytes and the least needed on a train.
 
 ### 4.2 When it is refreshed
 
-Refetching a few hundred pages on every app start costs data on a phone and battery. So the
-refresh asks first what changed:
-- **One cheap request** returns, for each person the member can see, a stamp of the last change
-  to anything on their page. The server computes it through the access layer. It is a list of
-  `(id, stamp)` pairs, a few kilobytes.
-- **Only people whose stamp moved are refetched**, one at a time, in the background, while
-  Stella stays in reach. A page the member opens meanwhile goes first, as today.
-- **The stamp is the hard part.** `contact.updated_at` alone is not enough: a note, a moment
-  naming them, a new relationship, or a photo changes their page without touching the contact
-  row. Option: the latest `updated_at` over the rows the page is made of, as one grouped
-  query. It needs measuring against a demo household before step 2 (§7).
+Refetching a few hundred pages on every app start costs data on a phone. So each page is
+asked for with the tag of the copy held, and an unchanged one costs a bodiless `304`:
+- **`GET /api/offline/people`** returns who the member can see now, with their avatar ids,
+  through the same use-case as the People directory. A few kilobytes.
+- **Every page's data carries an `ETag`**: a hash of exactly what this member was sent. The
+  worker asks each kept person page with `If-None-Match`; only a changed page comes back in
+  full. One request at a time, in the background, while Stella answers, at most every five
+  minutes (`REFRESH_INTERVAL_MS`).
+- **Why a content tag and not a change stamp** (decided 2026-09-30, replacing the stamp this
+  section first proposed): a person page is made of much more than the person's own rows.
+  Worked-out kinship, the map two steps out, relatives' names and mentions in other people's
+  entries all come from the household. On the rows themselves, deletes leave nothing behind,
+  and tags, mentions and photo edits carry no timestamp. A stamp would have been wrong in
+  exactly the cases that matter. The tag compares what the member actually sees, so it cannot
+  drift from the page. It costs the server a render per person per refresh: a median of 6 ms
+  per page in the demo household.
+- **No version order is needed.** The device never holds a newer page than the server, since
+  nothing that exists is edited offline, so "different" always means "take the server's". The
+  one race is on the device: a refresh and a page opened at the same moment. There the
+  answer's `Date` decides, and a copy is never replaced by an older one (`isNewerCopy`).
+- **A `304` re-dates the copy**: it was just confirmed current, so the offline line (§4.4)
+  says when the knowledge is from, not when the bytes first arrived.
 
 ### 4.3 Pruning
 
 After each refresh, every kept page for a person **not** in the current list is deleted:
 deleted, merged, made private by another member, or an archive import that changed ids.
 Without this, a person who was taken away would stay readable on a phone. That is the one
-real new risk here (§2, point 5).
+real new risk here (§2, point 5). Every form a page was kept in goes: the document, its data
+and the journal beneath it (`keysToPrune`). A person archived since leaves too, and is
+readable again once opened in reach. Nothing is pruned on an answer that is not a list, which
+would otherwise empty the device. Photos stay as they are kept today, when seen: a pruned
+person's avatar may remain in the cache, reachable from no page.
 
 ### 4.4 Saying how old it is
 
@@ -150,8 +168,12 @@ is handed on, not one left signed in.
       copy is in the offline line (§4.4). This is small and fixes the empty cache after an
       update. **Built:** the worker tracks, per window, when the page on screen was kept and
       sends it with the reachability report (`keptAt`); `src/lib/pwa/copy-age.ts` words it.
-   2. Keep every person page and journal ahead, with the stamps (§4.2) and the prune (§4.3).
+   2. Keep every person page and journal ahead, with the refresh (§4.2) and the prune (§4.3).
+      **Built:** `src/lib/pwa/people-ahead.ts` plans, `src/lib/server/http/etag.ts` tags,
+      `GET /api/offline/people` lists, and the worker runs it.
 
-**Still to measure before step 2:** how large a person's page data is in the demo household.
-Proposal: no limit unless all people together come to well over ~20 MB; above that, people
-from the last year first.
+**Measured before step 2** (demo household, 25 people): a person page's data is 23 KB on
+average (32 KB at most), a journal's 5 KB. That is about 28 KB a person, so 500 people come to
+about 14 MB, under the ~20 MB where a limit would start. So there is no limit. A whole page as
+a document would be about 100 KB, which is one more reason to keep the data only. A full
+refresh of the demo household takes about a quarter of a second.
