@@ -10,6 +10,12 @@ export const components: ComponentsMessages = {
 	'components.photo.failed':
 		'Das Foto konnte nicht hochgeladen werden. Versuche es mit einem JPEG- oder PNG-Bild.',
 	'components.photo.previousKept': 'Das vorherige Foto bleibt in den Fotos erhalten.',
+	'components.cropper.title': 'Ausschnitt wählen',
+	'components.cropper.window': 'Foto zum Zuschneiden',
+	'components.cropper.hint':
+		'Zum Verschieben ziehen, zum Zoomen mit zwei Fingern oder dem Mausrad. Pfeiltasten und + / − gehen auch.',
+	'components.cropper.zoom': 'Zoom',
+	'components.cropper.use': 'Foto verwenden',
 	'components.palette.jumpTo': 'Springen zu',
 	'components.palette.placeholder': 'Zu einer Person springen oder etwas tun…',
 	'components.palette.empty': 'Niemand mit diesem Namen.',

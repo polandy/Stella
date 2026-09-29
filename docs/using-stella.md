@@ -169,6 +169,11 @@ whoever added a photo can caption or remove it, but anyone who can see it can ma
 person's photo. Removing one deletes the file for good and, if the person was wearing it, they
 go back to their initials. Escape closes the view and the arrow keys walk through the rest.
 
+To give someone a new photo straight away, click the round picture at the top of their page and
+pick an image. Before anything is uploaded you choose the part that shows: drag the picture
+inside the round frame and pinch, scroll or use the slider to zoom, then **Use photo**. Only that
+square is kept as their photo.
+
 Picking a new photo for someone who already had one never throws the old one away — it drops
 back into this grid, dated, and a small confirmation says so. Handy for someone whose face
 changes over the years, a child especially: their old photos stay right here to look back on.
