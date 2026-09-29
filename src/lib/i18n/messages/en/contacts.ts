@@ -21,13 +21,6 @@ export const contacts = {
 	'contacts.emptyArchive.hint':
 		'Archiving takes someone out of the lists without losing them. Nobody is.',
 	'contacts.emptyArchive.back': 'Back to everyone',
-	'contacts.headingFirstNameOnly': 'Known by a first name only',
-	'contacts.firstNameOnlySuffix': ', with nothing yet to tell them apart',
-	'contacts.firstNameOnlyHint': 'Add what you will know each one by. To merge or archive someone, open them.',
-	'contacts.firstNameOnlyChip': (p: { count: number }) => `First name only (${p.count})`,
-	'contacts.knowThemBy': (p: { name: string }) => `What will you know ${p.name} by?`,
-	'contacts.emptyFirstNameOnly.title': 'Everyone can be told apart',
-	'contacts.emptyFirstNameOnly.hint': 'Nobody left with a first name only and nothing else.',
 	'contacts.empty.title': 'No people yet',
 	'contacts.empty.hint': 'Add the first person — everything else in Stella hangs off someone.',
 

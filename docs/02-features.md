@@ -285,9 +285,10 @@ a household soon has five people called *Thomas*. Two things keep them apart:
   a last name nor a description is refused, by the server as much as by the form, so a kept
   addition from a phone meets the same rule (`createContact`). Imports keep what they carry, and
   people added before are left as they are.
-- **A list of those added before.** The People directory carries a **First name only (N)**
-  chip while anyone the viewer may see (archived people aside) has a first name and nothing
-  else: no last name, neither in its field nor in the name they are shown by, no
+- **A list of those added before.** *Settings → Data quality → People known by a first name
+  only*, next to *Check relationships* and like it open to every member, lists everyone the
+  viewer may see (archived people aside) who has a first name and nothing else; the card
+  says how many there are: no last name, neither in its field nor in the name they are shown by, no
   description, no place or date met — exactly who the second line would call *Nothing yet*
   (`isKnownByAFirstNameOnly`). Its list gives each person a description field to fill in
   where they are listed, and saving takes them off it (`describeContact`: the name is kept,
@@ -544,7 +545,7 @@ tables, fully unit-testable (test-first).
   belong to the household, not to the member who clicked, and they travel in an export, so a
   restored backup does not re-ask everything the household has already settled.
 
-- **Shipped:** the same question for the **whole household**, at *Settings → Check relationships*.
+- **Shipped:** the same question for the **whole household**, at *Settings → Data quality → Check relationships*.
   A per-person check only reaches the people somebody thought to open, and a household that
   entered or imported its links years ago has opened none of them — so this runs the rules over
   everyone the member can see, in one pass, and lists what stands grouped by the person each

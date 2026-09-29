@@ -135,8 +135,8 @@ Goal: sand the edges and add the nice-to-haves.
   (*Child of Hans Meyer*), as plain text. ~~The **@-picker**~~ — shipped: the second line there too, the pick remembered as
   the person's id, and a typed `@Thomas` that is two people refused with their names
   (§2.2.3, `docs/concepts/mention-namesakes.html`).
-- ~~**Tidy up people known by a first name only**~~ — shipped (§2.2.3): the directory's
-  *First name only (N)* chip lists everyone with a first name and nothing else to tell them
+- ~~**Tidy up people known by a first name only**~~ — shipped (§2.2.3): *Settings → Data
+  quality* lists everyone with a first name and nothing else to tell them
   apart, each with a description field; merge and archive stay on their page.
 - ~~**Adding to Stella while it is out of reach**~~ — shipped (§2.18): every adding form
   saves as a named command, idempotent by its id, through an outbox on the phone. Away from
