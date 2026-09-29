@@ -153,11 +153,6 @@ Goal: sand the edges and add the nice-to-haves.
   step relatives (§2.4.1). Today only step terms can be settled; the rest stay read-only.
   Open: which derived terms have a stored type to become, and whether a confirmed link should
   keep saying *via* whom it was worked out.
-- *TODO:* **keep other nodes out of a role group's frame in the free arrangement** — grouping
-  by role (§2.7) packs a group's members into their frame and leaves everybody else where the
-  random free layout put them, so now and then another node (seen: the circle itself) lands
-  on top of a member, hides their name and takes their tap. A pass after packing should push
-  non-members that overlap a frame out of it. The family arrangement is not affected.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.

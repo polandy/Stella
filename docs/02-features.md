@@ -812,7 +812,8 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   - Grouping reads what is shown: with the Circles chip off there are no membership lines to
     bundle, so there are no groups. It applies to *Free* and *By circle* — where the groups
     stand around their circle in place of the individual members — and not to *Tree*, whose
-    rows are generations, not circles.
+    rows are generations, not circles. Nobody outside a group is left under its frame: whoever
+    it would cover — the circle, say — stands just beside it instead.
   - People joining a group — the switch turned on, a circle expanded — make the map settle
     afresh in the current arrangement (a glide, docs/05 §5.8), because a group's members must
     stand together; any other expand still moves only the newcomers. Leaving a group moves
