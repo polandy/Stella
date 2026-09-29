@@ -39,10 +39,11 @@ export function peopleToKeep(people: readonly VisiblePerson[]): { pages: string[
 }
 
 /**
- * Pages under `/contacts/` that are not a person. Anything else there is somebody's page; a
- * route added here later and missed is only pruned, never shown to someone who may not see it.
+ * Pages under `/contacts/` that are not a person: the static routes, and `__data.json`, the
+ * People list's own data. Anything else there is somebody's page; a route added here later and
+ * missed is only pruned, never shown to someone who may not see it.
  */
-const NOT_A_PERSON = new Set(['new', 'quick-add', 'suggest']);
+const NOT_A_PERSON = new Set(['new', 'quick-add', 'suggest', '__data.json']);
 
 /**
  * The kept keys to delete: every page — as a document or as its data, the person page and

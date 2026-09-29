@@ -599,8 +599,9 @@ card in Settings says so.
 Once it is installed, every person you can see — their page and their journal — and Home,
 People, Circles and Settings stay readable, whether or not you opened them. Stella keeps them
 up to date on your phone in the background while it can reach home. They stay readable when Stella cannot be reached — on the train, or simply away from home, since Stella runs on your own network and
-is not on the internet. A line above the page tells you when that is what you are looking
-at, and how old it is (*as of yesterday 18:04*): what is showing came off your phone, so
+is not on the internet. A yellow line above the page tells you when that is what you are
+looking at, as soon as your phone loses its connection or you come back to the app, and how
+old it is (*as of yesterday 18:04*): what is showing came off your phone, so
 anything somebody added since is not on it, and
 the relationship map and search come up empty rather than pretending. Everything is there
 again the moment you are back.

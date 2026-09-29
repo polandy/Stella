@@ -36,7 +36,9 @@ describe('keysToPrune', () => {
 		`${ORIGIN}/contacts/stays`,
 		`${ORIGIN}/contacts/stays/__data.json`,
 		`${ORIGIN}/contacts`,
+		`${ORIGIN}/contacts/__data.json`,
 		`${ORIGIN}/contacts/new`,
+		`${ORIGIN}/contacts/new/__data.json`,
 		`${ORIGIN}/`,
 		`${ORIGIN}/media/p1?thumb`
 	];
@@ -54,6 +56,9 @@ describe('keysToPrune', () => {
 		expect(pruned).not.toContain(`${ORIGIN}/contacts/stays`);
 		expect(pruned).not.toContain(`${ORIGIN}/contacts/new`);
 		expect(pruned).not.toContain(`${ORIGIN}/contacts`);
+		// The People list's own data, which a tap on People reads offline.
+		expect(pruned).not.toContain(`${ORIGIN}/contacts/__data.json`);
+		expect(pruned).not.toContain(`${ORIGIN}/contacts/new/__data.json`);
 	});
 
 	it('leaves another origin’s keys alone', () => {
