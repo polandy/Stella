@@ -56,6 +56,54 @@ describe('packGroups', () => {
 
 		expect(packed.get('loner')).toEqual({ x: 1000, y: 1000 });
 	});
+
+	/** The frame around where `ids` were packed, as the renderer draws it. */
+	const frameOf = (packed: Map<string, Point>, ids: string[]) => {
+		const { width, height } = size();
+		const at = ids.map((id) => packed.get(id)!);
+		return frameAround({
+			x1: Math.min(...at.map((p) => p.x)) - width / 2,
+			y1: Math.min(...at.map((p) => p.y)) - height / 2,
+			x2: Math.max(...at.map((p) => p.x)) + width / 2,
+			y2: Math.max(...at.map((p) => p.y)) + height / 2
+		});
+	};
+	const covers = (frame: ReturnType<typeof frameAround>, at: Point) => {
+		const { width, height } = size();
+		return (
+			at.x + width / 2 > frame.x1 &&
+			at.x - width / 2 < frame.x2 &&
+			at.y + height / 2 > frame.y1 &&
+			at.y - height / 2 < frame.y2
+		);
+	};
+
+	it('pushes someone the packing buried under a frame out of it, to just beside it', () => {
+		// The circle the free layout happened to set down where the group now stands.
+		const buried = new Map(scattered).set('circle', { x: 300, y: 300 });
+		const packed = packGroups(buried, [['a', 'b', 'c', 'd']], size);
+		const frame = frameOf(packed, ['a', 'b', 'c', 'd']);
+		const at = packed.get('circle')!;
+
+		expect(covers(frame, at)).toBe(false);
+		// Beside the frame, not flung across the map.
+		expect(Math.hypot(at.x - 300, at.y - 300)).toBeLessThan(400);
+	});
+
+	it('keeps a pushed person out of a neighbouring frame too', () => {
+		const twoGroups = new Map<string, Point>([
+			['a', { x: 0, y: 0 }],
+			['b', { x: 0, y: 200 }],
+			['c', { x: 330, y: 0 }],
+			['d', { x: 330, y: 200 }],
+			['between', { x: 165, y: 100 }]
+		]);
+		const packed = packGroups(twoGroups, [['a', 'b'], ['c', 'd']], size);
+		const at = packed.get('between')!;
+
+		expect(covers(frameOf(packed, ['a', 'b']), at)).toBe(false);
+		expect(covers(frameOf(packed, ['c', 'd']), at)).toBe(false);
+	});
 });
 
 describe('frameAround', () => {
