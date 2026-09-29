@@ -1267,6 +1267,8 @@ the API (kindergarten-2023)"), with the visibility of what it imported.
 
 - **Account:** profile, password, **language** (§2.19), **which of these people you are**
   (§2.1.3), theme, default visibility, sessions/2FA.
+- **Data quality** (every member): check relationships (§2.4.1), people known by a first
+  name only (§2.2.3).
 - **Household** (admin): name, members & roles, invitations, relationship types, tags.
 - **Data** (admin): export, import, backup.
 - **Appearance:** theme (system/light/dark), accent color choice from Catppuccin set,

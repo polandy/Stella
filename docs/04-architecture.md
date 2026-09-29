@@ -606,6 +606,10 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   but a nudge still let the next indistinguishable *Thomas* in. The rule sits in `createContact`,
   which every hand-entry path shares (form, picker panel, moment, a kept addition from a phone),
   and not in the importers, which bring in what a household already has rather than lose it.
+- **Data-quality checks live in Settings, not in the People directory** — the list of people
+  known by a first name only first shipped as a directory chip beside *Archived*, and read as a
+  to-do list on the screen people open to find someone. It joined *Check relationships* under
+  *Settings → Data quality*, where a card's count says whether opening it is worth it.
 - **A picked mention is remembered by its range, and a typed namesake is refused** — two people
   called Thomas both read `@Thomas`. The options were a disambiguated handle (`@Thomas2`), raw
   id tokens in the field, or keeping the readable handle and remembering the pick against the
