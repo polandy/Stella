@@ -231,7 +231,8 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	const forcePositions = (): Map<string, Point> => {
 		const before = new Map(cy.nodes().map((n) => [n.id(), { ...n.position() }] as const));
 		cy.layout(FORCE_LAYOUT as Parameters<Core['layout']>[0]).run();
-		const after = new Map(cy.nodes().map((n) => [n.id(), { ...n.position() }] as const));
+		// Frames left out: one stands wherever its members do, and is no one to step out of it.
+		const after = new Map(people().map((n) => [n.id(), { ...n.position() }] as const));
 		cy.batch(() => people().forEach((n) => void n.position(before.get(n.id())!)));
 		// The forces spread a group's members as they would anybody; a group stands as one block
 		// where they came to rest (docs/02 §2.7).
