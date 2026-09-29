@@ -778,7 +778,8 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 
 - **Filters:** by edge kind (relationships / circles / kinship), relationship category,
   circle, tag, or "living only".
-- **Layouts:** force-directed by default. On request the map is arranged afresh — *free* by
+- **Layouts:** force-directed by default, and **the same map on every visit**: the same people
+  come out in the same places, so they are found where they were left. On request the map is arranged afresh — *free* by
   the forces between people, as a **family tree** (one row per generation, partners side by
   side, children under their parents), or **by circle** (each circle ringed by its members);
   the map glides into the new arrangement (docs/05 §5.8).
