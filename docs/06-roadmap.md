@@ -131,8 +131,7 @@ Goal: sand the edges and add the nice-to-haves.
   description when someone is added without a last name (§2.2.3). ~~**Relationship and
   circle** as further fallbacks~~ — shipped (§2.2.3, `docs/concepts/namesake-context.html`):
   read per viewer through the access layer, a link to another namesake skipped, and the
-  clean-up list filled in from them. Still open: the same line in the refusal of a typed
-  `@Thomas`, which names only a description or where they were met. The relationship form
+  clean-up list filled in from them, and in the refusal of a typed `@Thomas`. The relationship form
   fills a new person's description in from the link (*Child of Hans Meyer*), as plain text. ~~The **@-picker**~~ — shipped: the second line there too, the pick remembered as
   the person's id, and a typed `@Thomas` that is two people refused with their names
   (§2.2.3, `docs/concepts/mention-namesakes.html`).

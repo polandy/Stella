@@ -43,6 +43,7 @@ import type { ImportArchiveDeps, RestoreRepository } from './domain/archive/impo
 import { createDrizzleRelationshipRepository } from './db/relationship-repository';
 import { createDrizzlePersonContextReads } from './db/person-context-reads';
 import type { PersonContextDeps } from './domain/contacts/person-context';
+import { withNamesakeContext, type NamesakeContextDeps } from './domain/mentions/namesake-context';
 import { createDrizzleSuggestionDismissalRepository } from './db/suggestion-dismissal-repository';
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
@@ -76,7 +77,8 @@ import type { GraphRepository } from './db/graph-repository';
 import type { CircleDeps, CircleRepository } from './domain/circles/circles';
 import type { StreamDeps, StreamRepository } from './domain/stream/stream';
 import { captureMoment, type CaptureMomentDeps } from './domain/moments/moments';
-import type { CommandDeps, CommandReceiptRepository } from './domain/commands/dispatch';
+import type { CommandActor, CommandDeps, CommandReceiptRepository } from './domain/commands/dispatch';
+import type { Viewer } from './access/visibility';
 import { createDrizzleCommandReceiptRepository } from './db/command-receipt-repository';
 import { createDrizzleEntryOwnership } from './db/entry-ownership';
 import { attachGalleryPhoto, attachMomentPhoto } from './domain/commands/photos';
@@ -212,6 +214,15 @@ export function getContactDeps(): ContactDeps {
 /** What a namesake's second line may fall back on: their links and circles (docs/02 §2.2.3). */
 export function getPersonContextDeps(): PersonContextDeps {
 	return { contextReads: createDrizzlePersonContextReads(getDb()) };
+}
+
+/** What a refused `@Thomas` names each Thomas by, a namesake with nothing typed included. */
+export function getNamesakeContextDeps(): NamesakeContextDeps {
+	return {
+		...getPersonContextDeps(),
+		selfContactOf: async (userId) => (await getAccounts().findById(userId))?.selfContactId ?? null,
+		clock: systemClock
+	};
 }
 
 /** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */
@@ -477,6 +488,10 @@ export function getCaptureMomentDeps(): CaptureMomentDeps {
 
 let commandReceiptRepository: CommandReceiptRepository | null = null;
 
+function viewerOf(actor: CommandActor): Viewer {
+	return { id: actor.userId, householdId: actor.householdId };
+}
+
 /** The dispatcher every change goes through (docs/concepts/offline-capture.md §3). */
 export function getCommandDeps(): CommandDeps {
 	const capture = getCaptureMomentDeps();
@@ -488,10 +503,12 @@ export function getCommandDeps(): CommandDeps {
 			// A moment carries its own visibility, so it is also the author's default for anyone
 			// the moment creates inline — and what a photo sent after it inherits.
 			'moment.capture': async (actor, payload) => ({
-				...(await captureMoment(
-					capture,
-					{ userId: actor.userId, householdId: actor.householdId, defaultVisibility: payload.visibility },
-					payload
+				...(await withNamesakeContext(getNamesakeContextDeps(), viewerOf(actor), () =>
+					captureMoment(
+						capture,
+						{ userId: actor.userId, householdId: actor.householdId, defaultVisibility: payload.visibility },
+						payload
+					)
 				)),
 				visibility: payload.visibility
 			}),
@@ -515,7 +532,9 @@ export function getCommandDeps(): CommandDeps {
 			'interaction.log': (actor, payload) =>
 				logInteractionChecked({ ...getInteractionDeps(), contacts: getContacts() }, actor, payload),
 			'note.add': (actor, payload) =>
-				writeNote({ ...getNoteDeps(), contacts: getContacts() }, actor, payload),
+				withNamesakeContext(getNamesakeContextDeps(), viewerOf(actor), () =>
+					writeNote({ ...getNoteDeps(), contacts: getContacts() }, actor, payload)
+				),
 			'moment.photo': (actor, payload) =>
 				attachMomentPhoto(
 					{ receipts, entries: createDrizzleEntryOwnership(getDb()), photos: getJournalPhotoDeps() },
@@ -523,7 +542,9 @@ export function getCommandDeps(): CommandDeps {
 					payload
 				),
 			'journal.write': (actor, payload) =>
-				writeJournalEntry({ ...getJournalDeps(), contacts: getContacts() }, actor, payload),
+				withNamesakeContext(getNamesakeContextDeps(), viewerOf(actor), () =>
+					writeJournalEntry({ ...getJournalDeps(), contacts: getContacts() }, actor, payload)
+				),
 			'field.add': onVisibleContact(getContacts(), async (_actor, payload) => ({
 				fieldId: await addContactField(getContactFieldDeps(), payload)
 			})),
