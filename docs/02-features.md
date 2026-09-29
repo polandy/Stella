@@ -589,7 +589,8 @@ tables, fully unit-testable (test-first).
 - **Shipped:** both checks also list the **worked-out relatives** that carry *Confirm* on the
   profile, so a household working through what Stella knows meets them in the same list. They
   are claims like the rest — the relative, the person, and *worked out through* whom, each name
-  followable — listed after what follows from an entry, since a missing parent is news and a
+  followable, the relative named by gender where it is on record (*an aunt of*, *a cousin of*)
+  and neutrally where not (*an aunt or uncle of*) — listed after what follows from an entry, since a missing parent is news and a
   grandmother Stella already names is housekeeping. *Accept* stores the same row *Confirm*
   would; the step terms are left out, being corrected on the profile rather than entered as
   they are. *Not true* here only stops the check asking: the profile keeps naming the relative,

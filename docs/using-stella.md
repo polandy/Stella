@@ -312,8 +312,8 @@ offered — however it comes up again later. And leaving it alone does nothing a
 is never a reason to decline something just to clear the list.
 
 The check also lists the relatives Stella works out and that nobody has entered yet — the same
-ones that carry **Confirm** on the profile: *Corinne Keller is an aunt or uncle of Lena
-Brunner, worked out through Sandra Brunner-Keller*. They come after the links that follow, and
+ones that carry **Confirm** on the profile: *Corinne Keller is an aunt of Lena Brunner, worked
+out through Sandra Brunner-Keller* — gendered where the gender is on record, neutral otherwise. They come after the links that follow, and
 *Accept* enters them exactly as *Confirm* would. Declining one only stops the check asking: the
 profile still names the relative, because it follows from the links you entered.
 

@@ -17,10 +17,10 @@ const en = createTranslator('en');
 /** Otto → Rita → Nils, with Rita's partner Vera, who is Nils's step-parent only. */
 const family: KinshipGraph = {
 	people: [
-		{ id: 'otto', displayName: 'Otto' },
-		{ id: 'rita', displayName: 'Rita' },
+		{ id: 'otto', displayName: 'Otto', gender: 'male' },
+		{ id: 'rita', displayName: 'Rita', gender: 'female' },
 		{ id: 'nils', displayName: 'Nils' },
-		{ id: 'vera', displayName: 'Vera' }
+		{ id: 'vera', displayName: 'Vera', gender: 'female' }
 	],
 	parentEdges: [
 		{ parentId: 'otto', childId: 'rita' },
@@ -55,6 +55,20 @@ describe('K1', () => {
 		// partnership, is the positive control that the review did reach her.
 		const offered = claims(K1({ kind: 'person-reviewed', subjectId: 'vera' }, buildView(family)));
 		expect(offered).toEqual([{ relation: 'parent-in-law', fromId: 'otto', toId: 'vera' }]);
+	});
+
+	it('carries the gender of the person the sentence names: the elder, or else the relative', () => {
+		const variants = (subjectId: string) =>
+			K1({ kind: 'person-reviewed', subjectId }, buildView(family)).map((s) => [
+				s.relation,
+				s.variant
+			]);
+		// Otto is named in both of his claims, from whichever end they are asked.
+		expect(variants('nils')).toEqual([['grandparent', 'male']]);
+		expect(variants('otto')).toEqual([
+			['grandparent', 'male'],
+			['parent-in-law', 'male']
+		]);
 	});
 
 	it('reaches everyone the viewer can see on a household pass', () => {

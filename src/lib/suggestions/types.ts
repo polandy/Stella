@@ -1,4 +1,5 @@
 import type { LinkedPhrase } from '$lib/i18n/linked';
+import type { KinVariant } from '$lib/kinship/kinship';
 import type { Answer } from './claims';
 import type { SuggestionView } from './view';
 
@@ -102,6 +103,12 @@ export interface LinkSuggestion {
 	 * the people it names, so every name in it can be followed to that person.
 	 */
 	reason: LinkedPhrase;
+	/**
+	 * The gender of the person the claim's sentence names — the elder of a directed relation,
+	 * the relative (`toId`) of a symmetric one — so it reads *an aunt of*, not *an aunt or
+	 * uncle of*, where the gender is on record. Only worked-out claims (K1) carry one.
+	 */
+	variant?: KinVariant;
 	/**
 	 * The household's *no* — who declined this claim and when — or null while it stands. A rule
 	 * never sets it: the engine drops a dismissed suggestion outright, and only fills this in

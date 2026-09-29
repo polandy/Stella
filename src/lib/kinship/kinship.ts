@@ -110,7 +110,8 @@ const PARENTS_FOR_HALF = 2;
 /** Unordered key for a pair. The separator cannot occur in an id, which is generated. */
 const pairKey = (x: string, y: string) => (x < y ? `${x} ${y}` : `${y} ${x}`);
 
-function variantFor(person: KinPerson): KinVariant {
+/** Which wording a person's terms take: gendered where the gender is on record. */
+export function variantFor(person: Pick<KinPerson, 'gender'>): KinVariant {
 	const gender = (person.gender ?? '').trim().toLowerCase();
 	if (gender === 'male') return 'male';
 	if (gender === 'female') return 'female';

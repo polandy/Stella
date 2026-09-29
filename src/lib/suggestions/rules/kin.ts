@@ -1,8 +1,8 @@
 import { claimEndpoints, confirmedClaimFor } from '$lib/kinship/claims';
-import { deriveKinship, deriveKinshipForAll, type DerivedKin } from '$lib/kinship/kinship';
+import { deriveKinship, deriveKinshipForAll, variantFor, type DerivedKin } from '$lib/kinship/kinship';
 import { RELATION_FOR_TYPE_KEY } from '$lib/relationships/type-keys';
 import { workedOutThrough } from '../reasons';
-import type { LinkSuggestion, Rule, Trigger } from '../types';
+import { isDirected, type LinkSuggestion, type Rule, type Trigger } from '../types';
 import type { SuggestionView } from '../view';
 
 /*
@@ -32,14 +32,17 @@ function relativesInScope(trigger: Trigger, view: SuggestionView): [string, Deri
 	}
 }
 
-export const K1: Rule = (trigger: Trigger, view: SuggestionView): LinkSuggestion[] =>
-	relativesInScope(trigger, view).flatMap(([subjectId, kin]) => {
+export const K1: Rule = (trigger: Trigger, view: SuggestionView): LinkSuggestion[] => {
+	const people = new Map(view.people.map((person) => [person.id, person]));
+	return relativesInScope(trigger, view).flatMap(([subjectId, kin]) => {
 		// A step term is corrected to a direct link on the profile, never entered as it is.
 		const confirmed = confirmedClaimFor(kin.term);
 		const relation = confirmed && RELATION_FOR_TYPE_KEY[confirmed.typeKey];
 		if (!confirmed || !relation) return [];
 		const { fromId, toId } = claimEndpoints(confirmed, subjectId, kin.personId);
 		const via = kin.viaIds.map((id) => ({ id, name: view.nameOf(id) }));
+		// The sentence names the elder where there is one, and otherwise the relative.
+		const named = people.get(isDirected(relation) ? fromId : toId);
 		return [
 			{
 				kind: 'link',
@@ -49,7 +52,9 @@ export const K1: Rule = (trigger: Trigger, view: SuggestionView): LinkSuggestion
 				fromId,
 				toId,
 				reason: workedOutThrough(via),
+				variant: named ? variantFor(named) : 'neutral',
 				dismissed: null
 			}
 		];
 	});
+};

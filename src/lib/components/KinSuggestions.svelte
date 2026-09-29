@@ -6,6 +6,7 @@
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { segmentsOf, textOf, type Segment } from '$lib/i18n/linked';
+	import type { KinVariant } from '$lib/kinship/kinship';
 	import type { Relation } from '$lib/suggestions/types';
 	import { ANSWER_ANCHOR_FIELD, answerAnchor, answerKey } from '$lib/relationships/answer-key';
 	import { wasTakenBack, type AnswerState, type AnsweredClaims } from '$lib/relationships/answered';
@@ -52,6 +53,8 @@
 		reason: readonly Segment[];
 		/** Who declined this claim and when; null while it stands unanswered. */
 		dismissed: { at: number; by: string } | null;
+		/** The gender of the person a worked-out claim names; absent on the other claims. */
+		variant?: KinVariant;
 	}
 
 	interface Props {
@@ -145,7 +148,7 @@
 			return t('contact.relationships.acceptedSibling', { one: s.fromName, other: s.toName });
 		}
 		return t('contact.relationships.acceptedClaim', {
-			claim: textOf(claimSentence(s.relation, { id: s.fromId, name: s.fromName }, { id: s.toId, name: s.toName })(t))
+			claim: textOf(sentenceOf(s))
 		});
 	}
 
@@ -177,11 +180,17 @@
 		};
 	}
 
-	/** The sentence the claim makes, in the reader's language, with both people followable. */
-	const claimOf = (s: Suggestion) =>
-		segmentsOf(
-			claimSentence(s.relation, { id: s.fromId, name: s.fromName }, { id: s.toId, name: s.toName })(t)
-		);
+	/** The sentence the claim makes, in the reader's language. */
+	const sentenceOf = (s: Suggestion) =>
+		claimSentence(
+			s.relation,
+			{ id: s.fromId, name: s.fromName },
+			{ id: s.toId, name: s.toName },
+			s.variant
+		)(t);
+
+	/** The same sentence cut into words and people, so both names are followable. */
+	const claimOf = (s: Suggestion) => segmentsOf(sentenceOf(s));
 
 	/** "declined on 12 September 2026", with the member who declined it when we know them. */
 	function declinedWhen(answer: { at: number; by: string }): string {
