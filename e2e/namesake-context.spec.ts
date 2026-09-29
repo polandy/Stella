@@ -4,7 +4,7 @@ import { LINK, seedHousehold } from './seed';
 
 /*
  * A namesake with nothing typed to tell them apart falls back on a relationship (docs/02
- * §2.2.3) in ⌘K, in every picker and in the refusal of a note sent later, and the clean-up list fills their description in from it; the @-picker's list stays
+ * §2.2.3) in ⌘K, in every picker and in the refusal of a text sent later, and the clean-up list fills their description in from it; the @-picker's list stays
  * on screen in the phone's composer sheet (docs/05). Written after the maintainer checked both
  * on the phone (docs/08 §8.4.1).
  *
@@ -45,32 +45,34 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('names a namesake by their relationship when a note sent later is refused for a typed @Name', async ({ page }) => {
+test('names a namesake by their relationship when a text sent later is refused for a typed @Name', async ({ page }) => {
 	const letters = runLetters();
 	const name = `Quirin${letters}`;
 	const sister = `Sabine${letters} Keller`;
 	await seedNamesakes(page, name, sister);
 
 	// What a phone's outbox sends once Stella is in reach again (docs/concepts/offline-capture.md
-	// §4): the writing screen asks first, but a note kept on the phone meets the server's question.
+	// §4): the writing screen asks first, but a text kept on the phone meets the server's
+	// question — a note, a moment and a journal entry each.
+	const body = `Called @${name}`;
+	const day = '2026-09-01';
+	const sent = [
+		{ type: 'note.add', payload: { contactId: VRENI, body, visibility: 'shared', isPinned: false } },
+		{ type: 'moment.capture', payload: { body, entryDate: day, visibility: 'shared', newPeople: [] } },
+		{ type: 'journal.write', payload: { contactId: VRENI, entryDate: day, title: null, body, visibility: 'shared' } }
+	];
 	const response = await page.request.post('/api/commands', {
-		data: {
-			commands: [
-				{
-					id: commandId(),
-					issuedAt: Date.now(),
-					type: 'note.add',
-					payload: { contactId: VRENI, body: `Called @${name}`, visibility: 'shared', isPinned: false }
-				}
-			]
-		}
+		data: { commands: sent.map((c) => ({ id: commandId(), issuedAt: Date.now(), ...c })) }
 	});
 	expect(response.ok()).toBe(true);
-	const [answer] = (await response.json()).answers;
-	expect(answer.status).toBe('refused');
-	expect(answer.reason).toContain(`@${name} could be 2 people:`);
-	expect(answer.reason).toContain(`${name} (Sibling of ${sister})`);
-	expect(answer.reason).toContain(`${name} (Ferry to Spiez)`);
+	const answers: { status: string; reason?: string }[] = (await response.json()).answers;
+	expect(answers).toHaveLength(sent.length);
+	for (const answer of answers) {
+		expect(answer.status).toBe('refused');
+		expect(answer.reason).toContain(`@${name} could be 2 people:`);
+		expect(answer.reason).toContain(`${name} (Sibling of ${sister})`);
+		expect(answer.reason).toContain(`${name} (Ferry to Spiez)`);
+	}
 });
 
 test('says who a namesake is by their relationship, and offers it as their description', async ({ page }) => {
