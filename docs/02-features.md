@@ -274,10 +274,20 @@ a household soon has five people called *Thomas*. Two things keep them apart:
   whose display name someone else on the list shares (ignoring case and stray spaces, not
   accents — *René* and *Rene* look different) gets a second line saying which one they are:
   their **description**; else **where and when you met** (*Met: Tierberglihütte · 2024*, the
-  year alone of the date); else a quiet *Nothing yet to tell them apart*, which is the cue to
-  add something. The whole list counts, not just what the query left: a Thomas is just as
-  ambiguous when the other one is filtered out. A unique name stays one line. The pure rule is
-  `tellApart` (`src/lib/people/namesakes.ts`).
+  year alone of the date); else **one of their relationships**, read from their end (*Sibling of
+  Sabine Keller*; a link to the viewer's own person reads *Your sibling*); else **a circle they
+  are in** (*Turnverein Muri · Coach*); else a quiet *Nothing yet to tell them apart*, which is
+  the cue to add something. What was typed wins because it was written to tell them apart and
+  reads the same for everyone. Of several links, only current ones whose two ends the viewer
+  may see count, never one to another namesake (*Father of Thomas*), family first, then the
+  type's order, then the oldest. Of several circles, only visible, unarchived ones whose end
+  date has not passed, the most specific first (*Class 9a* over *School Muri*), then one with a
+  role, then the latest start. The server reads those per viewer through the access layer
+  (§2.10), so a private person or circle is never named, and nothing is stored: the line
+  follows the links as they are. The whole list counts, not just what the query left: a Thomas
+  is just as ambiguous when the other one is filtered out. A unique name stays one line. The
+  pure rules are `tellApart` (`src/lib/people/namesakes.ts`) and `rankContext`
+  (`src/lib/people/context.ts`).
 - **A description when a last name is missing.** While a first name stands without a last name —
   on *Add a person*, in a picker's create panel and in the moment composer's — the description
   field, there anyway, sits in a highlighted box: *Without a last name, "Thomas" is hard to tell
@@ -290,8 +300,10 @@ a household soon has five people called *Thomas*. Two things keep them apart:
   viewer may see (archived people aside) who has a first name and nothing else; the card
   says how many there are: no last name, neither in its field nor in the name they are shown by, no
   description, no place or date met — exactly who the second line would call *Nothing yet*
-  (`isKnownByAFirstNameOnly`). Its list gives each person a description field to fill in
-  where they are listed, and saving takes them off it (`describeContact`: the name is kept,
+  (`isKnownByAFirstNameOnly`); a link or a circle does not take anyone off it, since it can
+  end or be made private. Its list gives each person a description field to fill in where
+  they are listed, filled in already where a link or a circle says who they are, in words fit
+  to store for everyone (*Sibling of Andy Brunner*, never *Your sibling*), and saving takes them off it (`describeContact`: the name is kept,
   an empty description refused). Merging a duplicate or archiving someone met once happens
   on their page, one tap away.
 
@@ -299,7 +311,7 @@ a household soon has five people called *Thomas*. Two things keep them apart:
   the @-picker remembers whom each handle it wrote stands for and saves it as that person's id
   token (§2.20.1). A `@Thomas` nobody picked — typed by hand, pasted, or written without
   JavaScript — that could be several people the text may name is **refused**, naming each with
-  their second line (*@Thomas could be 2 people: Thomas (Mountain guide), Thomas (Met: Lenk ·
+  their description or where they were met (*@Thomas could be 2 people: Thomas (Mountain guide), Thomas (Met: Lenk ·
   2023)…*), and the text stays to be corrected. A mention is never dropped without a word. The
   moment composer says so before saving (*Which @Thomas?*).
 

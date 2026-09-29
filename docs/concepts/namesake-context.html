@@ -222,8 +222,10 @@
         the first relationship candidate whose other end is not a namesake. That is why the server sends three, not
         one. <code>Distinction</code> gains <code>relationship</code> and <code>circle</code> kinds, and
         <code>describeDistinction</code> words them.</li>
-      <li>The refusal of an ambiguous <code>@Thomas</code> (<code>resolveForAudience</code>) names the candidates with
-        the same line. It only ever goes to the author, so the author's own view is the right one.</li>
+      <li>The refusal of an ambiguous <code>@Thomas</code> (<code>resolveForAudience</code>) keeps naming the candidates
+        by description or where they were met for now. Giving it the same fallback means threading the reads through
+        the moment, note and journal use-cases; it is a follow-up on the roadmap. The picker, where a mention is
+        normally made, already shows the full line.</li>
     </ul>
     <p class="verdict">Nothing is stored. The line is always derived from what the viewer can see right now, so ending
       a link or making a circle private changes it on the next page load, with nothing to keep in sync.</p>

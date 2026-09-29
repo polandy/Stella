@@ -5,6 +5,7 @@
 	import { allowedForAudience } from '$lib/mentions/audience';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
 	import { shiftPicks, toEditable, toStored, type MentionPick } from '$lib/mentions/picks';
+	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
 	import { onMount, tick } from 'svelte';
 
@@ -105,7 +106,8 @@
 	);
 	const people = $derived(active ? suggest(active.query, audience).people : []);
 	// The second line counts everyone the list could offer, not only what the query left.
-	const namesakes = $derived(tellApart(audience));
+	const peopleContext = usePeopleContext();
+	const namesakes = $derived(tellApart(audience, peopleContext()));
 
 	function refreshPicker() {
 		if (!textarea) return;

@@ -60,6 +60,7 @@
 								type="text"
 								required
 								autocomplete="off"
+								value={person.suggestion ?? ''}
 								placeholder={t('components.namesake.placeholder')}
 								class="w-full min-w-0 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-fg placeholder:text-fg-subtle"
 							/>

@@ -7,6 +7,7 @@
 	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
 	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
 	import {
 		isKnownByMoreThanAFirstName,
@@ -107,7 +108,8 @@
 	const knownPeople = $derived([...people, ...addedHere]);
 	const byId = $derived(new Map(knownPeople.map((p) => [p.id, p])));
 	/** Which Thomas is which, over everyone offered — a namesake out of sight is still one. */
-	const namesakes = $derived(tellApart(knownPeople));
+	const peopleContext = usePeopleContext();
+	const namesakes = $derived(tellApart(knownPeople, peopleContext()));
 	const askForSomethingToKnowThemBy = $derived(wantsSomethingToKnowThemBy(draft));
 	const chosen = $derived(selectedIds.map((pid) => byId.get(pid)).filter((p) => p !== undefined));
 	const pickable = $derived(

@@ -479,7 +479,9 @@ query after a pick, so a surname keeps listing the rest of the family, and while
 two or more matches the list opens with a *N matches · Add all N* row. Whoever is picked leaves
 the list either way. A person who shares their name with someone else on the list carries a
 second, smaller `--fg-subtle` line (`NamesakeLine`) saying which one they are (docs/02 §2.2.3);
-a unique name stays one line. The switch that turns `keepSearch` off belongs to the form, **above** the
+a unique name stays one line. Where nothing was typed, the line falls back on a link or a circle
+the app shell hands down through context (`providePeopleContext` / `usePeopleContext`), so every
+picker reads the same map whichever list of people its page gave it. The switch that turns `keepSearch` off belongs to the form, **above** the
 field: the open list would cover it anywhere below.
 
 With `allowCreate`, the picker also ends a fruitless search: from two typed characters on, a

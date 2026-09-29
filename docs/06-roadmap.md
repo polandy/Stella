@@ -128,11 +128,12 @@ Goal: sand the edges and add the nice-to-haves.
   only known by first name and where they belong, so a search result for them should say who
   they are: *Sister of Hans Meyer*, *in the circle Class 9a*. ~~Description and where/when
   met~~ — shipped as the namesake line in ⌘K and the person pickers, with a nudge for a
-  description when someone is added without a last name (§2.2.3). Still open, concept first:
-  **relationship and circle** as further fallbacks — which wins when there are several, and
-  how it stays access-scoped so it never names a person or circle the viewer may not see
-  (§2.10). Concept: `docs/concepts/namesake-context.html`. Meanwhile the relationship form fills a new person's description in from the link
-  (*Child of Hans Meyer*), as plain text. ~~The **@-picker**~~ — shipped: the second line there too, the pick remembered as
+  description when someone is added without a last name (§2.2.3). ~~**Relationship and
+  circle** as further fallbacks~~ — shipped (§2.2.3, `docs/concepts/namesake-context.html`):
+  read per viewer through the access layer, a link to another namesake skipped, and the
+  clean-up list filled in from them. Still open: the same line in the refusal of a typed
+  `@Thomas`, which names only a description or where they were met. The relationship form
+  fills a new person's description in from the link (*Child of Hans Meyer*), as plain text. ~~The **@-picker**~~ — shipped: the second line there too, the pick remembered as
   the person's id, and a typed `@Thomas` that is two people refused with their names
   (§2.2.3, `docs/concepts/mention-namesakes.html`).
 - ~~**Tidy up people known by a first name only**~~ — shipped (§2.2.3): *Settings → Data

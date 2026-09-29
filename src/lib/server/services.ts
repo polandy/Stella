@@ -41,6 +41,8 @@ import { createDrizzleRestoreRepository } from './db/restore-repository';
 import type { ArchiveDeps, ArchiveRepository } from './domain/archive/archive';
 import type { ImportArchiveDeps, RestoreRepository } from './domain/archive/import';
 import { createDrizzleRelationshipRepository } from './db/relationship-repository';
+import { createDrizzlePersonContextReads } from './db/person-context-reads';
+import type { PersonContextDeps } from './domain/contacts/person-context';
 import { createDrizzleSuggestionDismissalRepository } from './db/suggestion-dismissal-repository';
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
@@ -205,6 +207,11 @@ export function getContacts(): ContactRepository & NameCandidateSource {
 
 export function getContactDeps(): ContactDeps {
 	return { contacts: getContacts(), ids: ulidGenerator, clock: systemClock };
+}
+
+/** What a namesake's second line may fall back on: their links and circles (docs/02 §2.2.3). */
+export function getPersonContextDeps(): PersonContextDeps {
+	return { contextReads: createDrizzlePersonContextReads(getDb()) };
 }
 
 /** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */

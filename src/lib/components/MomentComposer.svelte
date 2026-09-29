@@ -20,6 +20,7 @@
 		toStored,
 		type MentionPick
 	} from '$lib/mentions/picks';
+	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
 	import {
 		capitalisedIfTypedLowercase,
@@ -135,7 +136,8 @@
 		active ? suggest(active.query, known) : { people: [], create: null, createsAnother: false }
 	);
 	// The second line counts everyone the list could offer, not only what the query left.
-	const namesakes = $derived(tellApart(audience));
+	const peopleContext = usePeopleContext();
+	const namesakes = $derived(tellApart(audience, peopleContext()));
 	const rows = $derived([
 		...suggestions.people.map((p) => ({ kind: 'person' as const, person: p })),
 		...(suggestions.create
