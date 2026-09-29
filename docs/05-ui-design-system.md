@@ -926,4 +926,7 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - **Logo:** the branching-graph mark in `Logo.svelte`, in the sidebar and on the auth screens.
 - **Avatar fallback:** initials on a deterministic accent derived from the contact id, mixed
   over `--card` so an avatar stays opaque inside a stack, with the initials in `--fg` (§5.2.2).
+  Only for somebody without a photo: wherever a person is listed to be found or picked — search
+  results, ⌘K, the person pickers, the @-list — the list carries their `avatarPhotoId`, so a
+  face is recognisable at a glance.
 - Empty states use friendly copy and a clear primary action, never a dead end.
