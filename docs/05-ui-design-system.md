@@ -850,7 +850,9 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   members — the circle colour, faintly tinted, with the role and count on top — and its members
   stand in it as a block, in rows as near square as they go (`layout/group-blocks.ts`). The
   force layout spreads a group's members like anybody else's, so *Free* packs each group into a
-  block where its members came to rest; *By circle* stands each block on its circle's ring in
+  block where its members came to rest, and anyone not in a group whom a block now covers — the
+  circle itself, say — steps out to the nearest spot beside every frame, so no name is hidden
+  and no tap taken; *By circle* stands each block on its circle's ring in
   place of the individual members. The single line from the circle to the group and a bundle
   between two groups are drawn thicker the more they carry, and a bundle between groups always
   shows its count. The lines a bundle stands for are **tucked away** — hidden, not removed — and
@@ -929,4 +931,7 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - **Logo:** the branching-graph mark in `Logo.svelte`, in the sidebar and on the auth screens.
 - **Avatar fallback:** initials on a deterministic accent derived from the contact id, mixed
   over `--card` so an avatar stays opaque inside a stack, with the initials in `--fg` (§5.2.2).
+  Only for somebody without a photo: wherever a person is listed to be found or picked — search
+  results, ⌘K, the person pickers, the @-list — the list carries their `avatarPhotoId`, so a
+  face is recognisable at a glance.
 - Empty states use friendly copy and a clear primary action, never a dead end.

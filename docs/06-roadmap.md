@@ -119,11 +119,9 @@ Goal: sand the edges and add the nice-to-haves.
 - **Graph & UX polish:** "haven't seen in a while" hints, photo reordering, saved graph
   filters, density/appearance refinements. ~~Group a circle's members by role~~ — shipped:
   a *Group by role* switch in the explorer's Filter menu (§2.7).
-- *Idea, unspecced:* **photos in every person picker** — search results wherever people are
-  found and picked (Circles' *Add member*, `PersonSearchSelect`, …) show the initials circle
-  even when the person has a photo, because the suggestion data doesn't carry `avatarPhotoId`
-  yet (`Avatar.svelte` only falls back to initials when it's missing). Thread the photo id
-  through so a person is recognisable at a glance there too.
+- ~~**Photos in every person picker**~~ — shipped (docs/05 §5.10): search results, the person
+  pickers (Circles' *Add member*, the relationship form, …) and the @-lists show a person's
+  photo instead of their initials whenever they have one.
 - *TODO, concept first:* **context hints for people without a last name** — some people are
   only known by first name and where they belong, so a search result for them should say who
   they are: *Sister of Hans Meyer*, *in the circle Class 9a*. ~~Description and where/when
@@ -159,11 +157,6 @@ Goal: sand the edges and add the nice-to-haves.
   (docs/monica-mapping.md) creates the household's own *Cousin of* and *Uncle/aunt of*, which
   now sit beside the built-in `cousin` and `aunt_uncle_niece_nephew` in the picker. Map them
   to the built-ins on import, and offer existing households a one-off merge.
-- *TODO:* **keep other nodes out of a role group's frame in the free arrangement** — grouping
-  by role (§2.7) packs a group's members into their frame and leaves everybody else where the
-  random free layout put them, so now and then another node (seen: the circle itself) lands
-  on top of a member, hides their name and takes their tap. A pass after packing should push
-  non-members that overlap a frame out of it. The family arrangement is not affected.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.

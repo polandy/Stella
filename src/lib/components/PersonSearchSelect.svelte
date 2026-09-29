@@ -289,7 +289,7 @@
 		{#if multiple}
 			{#each chosen as person (person.id)}
 				<span class="inline-flex items-center gap-1 rounded-full bg-bg-sunken py-0.5 pl-2 pr-1 text-sm text-fg">
-					<Avatar id={person.id} name={person.displayName} size={16} />
+					<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={16} />
 					{person.displayName}
 					<button
 						type="button"
@@ -481,7 +481,7 @@
 								onmouseenter={() => (highlighted = i)}
 								class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
 							>
-								<Avatar id={person.id} name={person.displayName} size={22} />
+								<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={22} />
 								<span class="min-w-0">
 									<span class="block truncate">{person.displayName}</span>
 									{#if namesakeLine}<NamesakeLine distinction={namesakeLine} />{/if}

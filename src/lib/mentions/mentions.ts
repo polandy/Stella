@@ -50,6 +50,8 @@ export interface MentionCandidate {
 	firstName?: string | null;
 	lastName?: string | null;
 	displayName: string;
+	/** Their photo in the picker; absent for somebody only just typed and not yet saved. */
+	avatarPhotoId?: string | null;
 }
 
 /** Everyone a typed handle could mean: nobody, exactly one person, or several namesakes. */
