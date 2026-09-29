@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '../../../i18n/translate';
 import type { ContactSummary } from '../contacts/contacts';
-import { AmbiguousMentionError, resolveForAudience } from './resolve-for-audience';
+import { AmbiguousMentionError, audienceCandidates, resolveForAudience } from './resolve-for-audience';
 
 /*
  * Resolving what a text names against who its audience may name (docs/02 §2.20.1), and asking
@@ -64,5 +64,16 @@ describe('resolveForAudience', () => {
 		const withPrivateThomas = [household[0], { ...household[1], visibility: 'private' as const }];
 		expect(resolveForAudience(withPrivateThomas, 'shared', 'with @Thomas').ids).toEqual(['thomas-hut']);
 		expect(() => resolveForAudience(withPrivateThomas, 'private', 'with @Thomas')).toThrow(AmbiguousMentionError);
+	});
+});
+
+describe('audienceCandidates', () => {
+	const all: ContactSummary[] = [
+		{ id: 'a', displayName: 'A', firstName: null, lastName: null, nickname: null, description: null, metPlace: null, metDate: null, visibility: 'shared', avatarPhotoId: null, birthDate: null },
+		{ id: 'b', displayName: 'B', firstName: null, lastName: null, nickname: null, description: null, metPlace: null, metDate: null, visibility: 'private', avatarPhotoId: null, birthDate: null }
+	];
+	it('limits a shared entry to household-visible people, a private one to everyone visible', () => {
+		expect(audienceCandidates(all, 'shared').map((c) => c.id)).toEqual(['a']);
+		expect(audienceCandidates(all, 'private').map((c) => c.id)).toEqual(['a', 'b']);
 	});
 });

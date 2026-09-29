@@ -52,8 +52,6 @@ export class MomentNeedsPersonError extends TranslatableError {
 	}
 }
 
-export { audienceCandidates } from '../mentions/resolve-for-audience';
-
 /**
  * Capture a moment: create the queued people the body actually mentions, resolve every
  * handle against the moment's audience, save the entry on the first person mentioned and link

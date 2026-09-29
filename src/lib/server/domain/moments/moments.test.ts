@@ -3,7 +3,7 @@ import type { Viewer } from '../../access/visibility';
 import type { Contact, ContactSummary, NewContact } from '../contacts/contacts';
 import type { JournalAuthor, JournalEntry, NewJournalEntry } from '../journal/journal';
 import { AmbiguousMentionError } from '../mentions/resolve-for-audience';
-import { MomentNeedsPersonError, audienceCandidates, captureMoment, type CaptureMomentDeps } from './moments';
+import { MomentNeedsPersonError, captureMoment, type CaptureMomentDeps } from './moments';
 
 /*
  * Moment capture (docs/02 §2.22.1). A moment is a journal entry anchored on the first person
@@ -279,16 +279,5 @@ describe('captureMoment', () => {
 		const result = await captureMoment(f.deps, author, { ...base, body: 'Coffee with @Marco' });
 		expect(result.linkSuggestion).toBeNull();
 		expect(f.mentions.get(result.entryId)).toEqual([]);
-	});
-});
-
-describe('audienceCandidates', () => {
-	const all: ContactSummary[] = [
-		{ id: 'a', displayName: 'A', firstName: null, lastName: null, nickname: null, description: null, metPlace: null, metDate: null, visibility: 'shared', avatarPhotoId: null, birthDate: null },
-		{ id: 'b', displayName: 'B', firstName: null, lastName: null, nickname: null, description: null, metPlace: null, metDate: null, visibility: 'private', avatarPhotoId: null, birthDate: null }
-	];
-	it('limits a shared entry to household-visible people, a private one to everyone visible', () => {
-		expect(audienceCandidates(all, 'shared').map((c) => c.id)).toEqual(['a']);
-		expect(audienceCandidates(all, 'private').map((c) => c.id)).toEqual(['a', 'b']);
 	});
 });
