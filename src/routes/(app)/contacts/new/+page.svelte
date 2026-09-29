@@ -113,8 +113,10 @@
 			}
 	);
 
-	const field = 'flex flex-col gap-1 text-sm';
-	const input = 'rounded-md border border-border bg-bg px-3 py-2 text-fg';
+	const field = 'flex min-w-0 flex-col gap-1 text-sm';
+	// `w-full min-w-0`: an input's intrinsic width (~20 characters) would otherwise push a
+	// two-column row past the card's edge on a phone.
+	const input = 'w-full min-w-0 rounded-md border border-border bg-bg px-3 py-2 text-fg';
 </script>
 
 <svelte:head><title>{t('contacts.new.title')}</title></svelte:head>
@@ -175,7 +177,7 @@
 				label={t('contacts.new.description')}
 				name="description"
 				bind:value={description}
-				inputClass="rounded-md border border-border bg-card px-3 py-2 text-fg"
+				inputClass="w-full min-w-0 rounded-md border border-border bg-card px-3 py-2 text-fg"
 			/>
 		{:else}
 			<label class={field}>
@@ -187,12 +189,14 @@
 			</label>
 		{/if}
 
-		<div class="flex gap-3">
-			<label class="{field} flex-1">
+		<!-- Stacked on a phone: "How we met" wraps to two lines there and would drop its field
+		     below its neighbour's. Side by side from `sm`, bottoms aligned for the same reason. -->
+		<div class="grid gap-3 sm:grid-cols-2 sm:items-end">
+			<label class={field}>
 				<span class="text-fg-muted">{t('contacts.new.howWeMet')}</span>
 				<input name="howWeMet" class={input} />
 			</label>
-			<label class="{field} flex-1">
+			<label class={field}>
 				<span class="text-fg-muted">{t('contacts.new.where')}</span>
 				<input name="metPlace" class={input} placeholder={t('contacts.new.wherePlaceholder')} />
 			</label>
