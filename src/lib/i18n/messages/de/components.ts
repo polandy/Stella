@@ -44,6 +44,9 @@ export const components: ComponentsMessages = {
 	'components.namesake.metYear': (p) => `Kennengelernt ${p.year}`,
 	'components.namesake.nothing': 'Noch nichts, woran man die Person erkennt',
 	'components.namesake.circleRole': (p) => `${p.circle} · ${p.role}`,
+	'components.namesake.which': (p) => `Wen meinst du mit @${p.handle}?`,
+	'components.namesake.whichHint':
+		'Wähle die Person in der Liste, die sich beim Tippen von @ öffnet. Speichern geht erst danach.',
 	'components.namesake.nudge': (p) => `Ohne Nachnamen ist „${p.name}“ später schwer auseinanderzuhalten.`,
 	'components.namesake.nudgeAsk': 'Woran erkennst du die Person wieder?',
 	'components.namesake.placeholder': 'z. B. SAC-Hütte, Aug. 2026',

@@ -45,7 +45,8 @@ A few things worth knowing:
 - **Two people with the same name?** The suggestion list says which is which (their
   description, or where and when you met), and the one you pick is the one it means, even
   though both read `@Thomas` in the text. A `@Thomas` typed without picking is not guessed:
-  Stella asks which one you mean, naming each the way the list does.
+  a box under the text asks which one you mean, naming each the way the list does, and saving
+  waits until you pick one from the list.
 - **Someone new?** Just mention them. The suggestion list offers *Create "…"*, which asks
   for a last name or, without one, a line to know them by, and the person is created with the
   moment, no detour. If somebody already has that name, it offers *Create another "…"*.

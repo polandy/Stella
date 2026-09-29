@@ -502,6 +502,12 @@ why (docs/02 §2.2.3), on *Add a person*, in the picker's create panel and in th
 composer's alike. Its field is required — the panels keep their add button off until it is
 filled; `compact` gives it the panel's smaller labels.
 
+**Which-namesake box** (`WhichNamesake.svelte`): while a typed `@Thomas` could be several people
+the text may name, the same `--primary-soft` box sits under the field, asking *Which @Thomas do
+you mean?* and listing each with avatar and `NamesakeLine` (`unclearHandles`, docs/02 §2.2.3).
+The form's save button stays off until one is picked — in the moment composer, the note form
+and the journal's new and edit forms alike (`MentionTextarea`'s bindable `unclear`).
+
 **Callers give it an `id` and point their label at it with `for`** — never a label that merely
 wraps it. A `<label>` names its first labelable descendant, and in multiple mode that is a
 chip's remove button, not the search input: the field loses its accessible name the moment

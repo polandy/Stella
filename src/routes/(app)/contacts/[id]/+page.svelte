@@ -256,6 +256,8 @@
 	let noteVisibility = $state<'shared' | 'private'>('shared');
 	let noteBody = $state('');
 	let notePinned = $state(false);
+	// A typed @Thomas that could be several people keeps saving off until one is picked.
+	let noteUnclear = $state(false);
 
 	/*
 	 * Notes written here while Stella was out of reach (docs/02 §2.18): kept on the device and
@@ -1758,6 +1760,7 @@
 						<form method="POST" action="?/addNote" use:enhance={noteForm} class="flex flex-col gap-3">
 							<MentionTextarea
 								bind:value={noteBody}
+								bind:unclear={noteUnclear}
 								name="body"
 								label={t('contact.notes.label')}
 								required
@@ -1778,7 +1781,7 @@
 									<input type="radio" name="visibility" value="private" bind:group={noteVisibility} />
 									{t('common.private')}
 								</label>
-								<Button variant="primary" size="sm" class="ml-auto">{editingNote ? t('common.save') : t('contact.notes.add')}</Button>
+								<Button variant="primary" size="sm" class="ml-auto" disabled={noteUnclear}>{editingNote ? t('common.save') : t('contact.notes.add')}</Button>
 							</div>
 						</form>
 					{/snippet}
