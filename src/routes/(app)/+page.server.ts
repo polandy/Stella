@@ -99,7 +99,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			visibility: c.visibility,
 			description: c.description,
 			metPlace: c.metPlace,
-			metDate: c.metDate
+			metDate: c.metDate,
+			avatarPhotoId: c.avatarPhotoId
 		})),
 		filter,
 		members,

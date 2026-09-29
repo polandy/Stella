@@ -10,7 +10,7 @@ import type {
 } from 'cytoscape';
 import type { CyElement } from './elements';
 import type { Arrangement, Size } from '../layout/geometry';
-import { frameAround, packGroups } from '../layout/group-blocks';
+import { boxAround, frameAround, packGroups } from '../layout/group-blocks';
 import { placeNewcomers, type Placement, type Point } from './placement';
 import { frameBelow, widenToReveal, type Box } from './viewport';
 import { BOW_FIELD, BOWED_CLASS, TUCKED_CLASS, type CyStyle } from './stylesheet';
@@ -144,16 +144,6 @@ function presetLayout(glide: boolean, placeOf: (node: NodeSingular) => Point) {
 	};
 }
 
-/** The box around nodes set at `at`, each taking `size`. */
-function boxAround(nodes: { at: Point; size: Size }[]): Box {
-	return {
-		x1: Math.min(...nodes.map((n) => n.at.x - n.size.width / 2)),
-		y1: Math.min(...nodes.map((n) => n.at.y - n.size.height / 2)),
-		x2: Math.max(...nodes.map((n) => n.at.x + n.size.width / 2)),
-		y2: Math.max(...nodes.map((n) => n.at.y + n.size.height / 2))
-	};
-}
-
 /** The box around both. */
 function union(a: Box, b: Box): Box {
 	return {
@@ -231,7 +221,8 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	const forcePositions = (): Map<string, Point> => {
 		const before = new Map(cy.nodes().map((n) => [n.id(), { ...n.position() }] as const));
 		cy.layout(FORCE_LAYOUT as Parameters<Core['layout']>[0]).run();
-		const after = new Map(cy.nodes().map((n) => [n.id(), { ...n.position() }] as const));
+		// Frames left out: one stands wherever its members do, and is no one to step out of it.
+		const after = new Map(people().map((n) => [n.id(), { ...n.position() }] as const));
 		cy.batch(() => people().forEach((n) => void n.position(before.get(n.id())!)));
 		// The forces spread a group's members as they would anybody; a group stands as one block
 		// where they came to rest (docs/02 §2.7).
