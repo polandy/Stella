@@ -124,10 +124,9 @@ const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
 /**
  * `positions` with everyone who shares a spot with somebody set apart around it, on a
- * sunflower spiral at least `spacing` between neighbours; whoever stands alone stays put. The
- * force layout pushes two nodes on one spot apart in a random direction, so a map whose nodes
- * all start at the origin came out differently on every load; spread in the order of their
- * ids, the same people always start — and so settle — in the same places.
+ * sunflower spiral at least `spacing` between neighbours; whoever stands alone stays put.
+ * Spread in the order of their ids, so the force layout, which parts two nodes on one spot in
+ * a random direction, has no tie left to break (docs/04 §4.11).
  */
 export function spreadCoincident(
 	positions: ReadonlyMap<string, Point>,

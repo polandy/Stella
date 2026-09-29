@@ -66,8 +66,8 @@ export async function clickNode(page: Page, id: string): Promise<void> {
 /**
  * What the renderer's own hit test answers at the centre of this node. A layout is free to
  * set somebody down on top of somebody else — nothing in the forces forbids it — and a tap
- * there reaches whoever is on top. Asking first turns that into a loud
- * failure naming both, instead of a click on the wrong node that a later assertion misreads.
+ * there reaches whoever is on top. Asking first turns that into a loud failure naming both,
+ * instead of a click on the wrong node that a later assertion misreads.
  */
 async function elementOnTopOf(page: Page, id: string): Promise<string | null> {
 	return page.evaluate((nodeId) => {
