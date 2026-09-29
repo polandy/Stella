@@ -97,7 +97,6 @@ export const home = {
 	'composer.photo': 'Photo',
 	'composer.photoCount': (p: { count: number }) =>
 		p.count === 1 ? '1 photo' : `${p.count} photos`,
-	'composer.day': 'Day',
 	'composer.dayToday': 'Today',
 	'composer.dayYesterday': 'Yesterday',
 	'composer.dayOther': 'Another day…',

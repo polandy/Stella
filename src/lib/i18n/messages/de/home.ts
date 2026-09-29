@@ -90,7 +90,6 @@ export const home: HomeMessages = {
 	'composer.newPerson': 'neue Person',
 	'composer.photo': 'Foto',
 	'composer.photoCount': (p) => (p.count === 1 ? '1 Foto' : `${p.count} Fotos`),
-	'composer.day': 'Tag',
 	'composer.dayToday': 'Heute',
 	'composer.dayYesterday': 'Gestern',
 	'composer.dayOther': 'Anderer Tag…',

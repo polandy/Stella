@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, mention, mentionNew, signIn } from './app';
 
 /*
@@ -100,14 +100,21 @@ test.describe('on a phone', () => {
 		await page.locator('nav').getByRole('link', { name: 'Write a moment' }).click();
 		await expect(page.getByTestId('compose-sheet')).toBeVisible();
 
+		// The pill sits at the foot of the sheet: below it, the menu and the calendar would leave
+		// the screen, so both open above it.
+		const bottomOf = async (box: Locator) => {
+			const { y, height } = (await box.boundingBox())!;
+			return y + height;
+		};
 		await dayPill(page).click();
+		const menu = page.getByRole('menu');
+		await expect(menu).toBeVisible();
+		expect(await bottomOf(menu)).toBeLessThan((await dayPill(page).boundingBox())!.y);
+
 		await page.getByRole('menuitem', { name: 'Another day…' }).click();
 		const calendar = page.getByRole('group', { name: 'Choose a day' });
 		await expect(calendar).toBeVisible();
-		// The pill sits at the foot of the sheet: below it the calendar would leave the screen.
-		expect((await calendar.boundingBox())!.y + (await calendar.boundingBox())!.height).toBeLessThan(
-			(await dayPill(page).boundingBox())!.y
-		);
+		expect(await bottomOf(calendar)).toBeLessThan((await dayPill(page).boundingBox())!.y);
 
 		// A year of months passes some that fill five weeks and some that fill six.
 		const previous = calendar.getByRole('button', { name: 'Previous month' });

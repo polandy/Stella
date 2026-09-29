@@ -24,9 +24,9 @@
 
 	const i18n = useI18n();
 
-	// Null follows `today`, so a page kept open past midnight moves on with it.
+	// Null until the reader picks: follows `value`, so a page kept open past midnight moves on.
 	let chosen = $state<string | null>(null);
-	const day = $derived(chosen ?? (value === today ? today : value));
+	const day = $derived(chosen ?? value);
 	const offTheDefault = $derived(day !== today);
 
 	let root = $state<HTMLDivElement>();
