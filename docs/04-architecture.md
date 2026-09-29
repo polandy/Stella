@@ -602,6 +602,14 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **People are identified in the archive by id, never by name** — two people can share a first
   and last name, and a document that joins on names silently fuses them. Every person carries
   their id and every relationship, mention, participant and membership refers to it.
+- **A picked mention is remembered by its range, and a typed namesake is refused** — two people
+  called Thomas both read `@Thomas`. The options were a disambiguated handle (`@Thomas2`), raw
+  id tokens in the field, or keeping the readable handle and remembering the pick against the
+  range of text it wrote (`src/lib/mentions/picks.ts`), stored as the id token. The last keeps
+  the text as written; the cost is a range that must be carried through every edit, and a pick
+  let go the moment its name is changed. A `@Thomas` nobody picked is refused with both names
+  rather than guessed or left as text, because a silently dropped mention loses the moment from
+  the person's journal without a word.
 - **An import adds and never overwrites** — the alternatives were replacing a record the archive
   also has, or asking the admin field by field. Replacing loses whatever was written since the
   export and makes an import unrepeatable; asking turns a restore into a merge tool nobody asked
