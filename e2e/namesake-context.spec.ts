@@ -4,7 +4,7 @@ import { LINK, seedHousehold } from './seed';
 
 /*
  * A namesake with nothing typed to tell them apart falls back on a relationship (docs/02
- * §2.2.3), and the clean-up list fills their description in from it; the @-picker's list stays
+ * §2.2.3) in ⌘K and in every picker, and the clean-up list fills their description in from it; the @-picker's list stays
  * on screen in the phone's composer sheet (docs/05). Written after the maintainer checked both
  * on the phone (docs/08 §8.4.1).
  *
@@ -16,6 +16,8 @@ import { LINK, seedHousehold } from './seed';
  */
 
 const PIXEL_9_PRO = { width: 412, height: 915 };
+/** A seeded person whose page offers a note field and the relationship form; neither is saved. */
+const VRENI = 'demo-c-vreni';
 
 /** Six letters no other attempt shares, so a name made from them is this attempt's alone. */
 function runLetters(): string {
@@ -53,6 +55,21 @@ test('says who a namesake is by their relationship, and offers it as their descr
 	await expect(found.filter({ hasText: 'Ferry to Spiez' })).toHaveCount(1);
 	await page.keyboard.press('Escape');
 
+	// Every picker reads the same line, whichever list its page handed it: a note's @-picker…
+	await page.goto(`/contacts/${VRENI}`);
+	await appReady(page);
+	await page.getByRole('button', { name: 'Add note' }).click();
+	await page.getByRole('textbox', { name: 'Note' }).pressSequentially(`@${name}`);
+	const mentioned = page.getByRole('option', { name: new RegExp(`^${name}`) });
+	await expect(mentioned.filter({ hasText: `Sibling of ${sister}` })).toHaveCount(1);
+	await page.getByRole('textbox', { name: 'Note' }).fill('');
+
+	// …and the person picker of the relationship form.
+	await page.getByRole('button', { name: 'Add relationship' }).click();
+	await page.locator('form[action="?/addRelationship"]').getByLabel('Person').fill(name);
+	const offered = page.getByTestId('person-search-listbox').getByRole('option');
+	await expect(offered.filter({ hasText: `Sibling of ${sister}` })).toHaveCount(1);
+
 	// The same line is waiting in the clean-up list, to keep as a description with one tap.
 	await page.goto('/settings/first-name-only');
 	await appReady(page);
@@ -71,7 +88,7 @@ test('says who a namesake is by their relationship, and offers it as their descr
 test.describe('on a phone', () => {
 	test.use({ viewport: PIXEL_9_PRO });
 
-	test('keeps the @-picker\'s list on screen in the composer sheet', async ({ page }) => {
+	test('says who a namesake is in the composer sheet, keeping the @-picker\'s list on screen', async ({ page }) => {
 		const letters = runLetters();
 		const name = `Quirin${letters}`;
 		await seedNamesakes(page, name, `Sabine${letters} Keller`);
@@ -87,6 +104,7 @@ test.describe('on a phone', () => {
 
 		const list = sheet.getByRole('listbox');
 		await expect(list.getByRole('option', { name: new RegExp(`^${name}`) })).toHaveCount(5);
+		await expect(list.getByRole('option').filter({ hasText: `Sibling of Sabine${letters} Keller` })).toHaveCount(1);
 		const box = await list.boundingBox();
 		expect(box!.y).toBeGreaterThanOrEqual(0);
 		expect(box!.y + box!.height).toBeLessThanOrEqual(PIXEL_9_PRO.height);
