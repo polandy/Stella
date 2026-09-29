@@ -602,6 +602,10 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **People are identified in the archive by id, never by name** — two people can share a first
   and last name, and a document that joins on names silently fuses them. Every person carries
   their id and every relationship, mention, participant and membership refers to it.
+- **A first name alone is refused when a person is added by hand** — first a nudge (§2.2.3),
+  but a nudge still let the next indistinguishable *Thomas* in. The rule sits in `createContact`,
+  which every hand-entry path shares (form, picker panel, moment, a kept addition from a phone),
+  and not in the importers, which bring in what a household already has rather than lose it.
 - **A picked mention is remembered by its range, and a typed namesake is refused** — two people
   called Thomas both read `@Thomas`. The options were a disambiguated handle (`@Thomas2`), raw
   id tokens in the field, or keeping the readable handle and remembering the pick against the

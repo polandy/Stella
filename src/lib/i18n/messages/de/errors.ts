@@ -5,6 +5,8 @@ export const errors: ErrorsMessages = {
 	'errors.contact.birthDateFormat':
 		'Ein Geburtsdatum muss JJJJ-MM-TT lauten — oder --MM-TT, wenn das Jahr unbekannt ist.',
 	'errors.contact.emptyName': 'Ein Name darf nicht leer sein.',
+	'errors.contact.needsSomethingToKnowThemBy':
+		'Gib einen Nachnamen oder eine Beschreibung an, damit man die Person später von anderen mit demselben Namen unterscheiden kann.',
 	'errors.contact.needAName': 'Bitte gib wenigstens einen Namen oder Spitznamen ein.',
 	'errors.contact.couldNotCreate': 'Die Person konnte nicht angelegt werden.',
 	'errors.self.notFound': 'Diese Person kannst du nicht als dich selbst wählen.',

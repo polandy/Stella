@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
 import type { Contact, ContactSummary, NewContact } from '../contacts/contacts';
 import type { JournalAuthor, JournalEntry, NewJournalEntry } from '../journal/journal';
+import { NeedsSomethingToKnowThemByError } from '../contacts/contacts';
 import { AmbiguousMentionError } from '../mentions/resolve-for-audience';
 import { MomentNeedsPersonError, captureMoment, type CaptureMomentDeps } from './moments';
 
@@ -158,20 +159,29 @@ describe('captureMoment', () => {
 		expect(f.mentions.get(result.entryId)).toEqual(['marco']);
 	});
 
-	it('creates a queued person inline, then resolves the handle to them', async () => {
+	it('creates a name an older build queued by its handle, when it is a whole name', async () => {
 		const f = fakes([{ id: 'marco', displayName: 'Marco' }]);
 		const result = await captureMoment(f.deps, author, {
 			...base,
-			body: '@Julia is @Marco’s sister',
-			newPeople: ['Julia']
+			body: '@JuliaMeier is @Marco’s sister',
+			newPeople: ['Julia Meier']
 		});
 
 		expect(result.createdContactIds).toHaveLength(1);
-		const julia = f.contacts.find((c) => c.displayName === 'Julia')!;
+		const julia = f.contacts.find((c) => c.displayName === 'Julia Meier')!;
 		expect(julia.createdBy).toBe('u1');
 		expect(julia.visibility).toBe('shared');
 		expect(result.anchorContactId).toBe(julia.id);
 		expect(f.entries[0].body).toBe(`@{contact:${julia.id}} is @{contact:marco}’s sister`);
+	});
+
+	it('refuses a bare first name an older build queued, saving nothing (docs/02 §2.2.3)', async () => {
+		const f = fakes([{ id: 'marco', displayName: 'Marco' }]);
+		await expect(
+			captureMoment(f.deps, author, { ...base, body: '@Julia is @Marco’s sister', newPeople: ['Julia'] })
+		).rejects.toBeInstanceOf(NeedsSomethingToKnowThemByError);
+		expect(f.contacts).toHaveLength(1);
+		expect(f.entries).toHaveLength(0);
 	});
 
 	it('creates queued people only if they are mentioned and not already someone visible', async () => {
@@ -251,8 +261,8 @@ describe('captureMoment', () => {
 		const result = await captureMoment(f.deps, author, {
 			...base,
 			visibility: 'private',
-			body: '@Sam and @Kim',
-			newPeople: ['Kim']
+			body: '@Sam and @{contact:new:k1}',
+			newPeople: [{ key: 'k1', firstName: 'Kim', lastName: null, description: 'From yoga' }]
 		});
 		expect(result.anchorContactId).toBe('secret');
 		expect(f.contacts.find((c) => c.displayName === 'Kim')!.visibility).toBe('private');

@@ -191,13 +191,37 @@ const orNull = (value?: string | null): string | null => {
 	return trimmed.length > 0 ? trimmed : null;
 };
 
-/** Create a contact, deriving its display name and defaulting its visibility. */
+/**
+ * Thrown when a person is being added by a first name alone: with no last name and no line to
+ * know them by, they cannot be told from the next person of that name (docs/02 §2.2.3).
+ */
+export class NeedsSomethingToKnowThemByError extends TranslatableError {
+	constructor() {
+		super(phrase('errors.contact.needsSomethingToKnowThemBy'), 'NeedsSomethingToKnowThemByError');
+	}
+}
+
+/**
+ * A last name, or a description to know them by. A name given whole — `Thomas Widmer` typed as
+ * the display name — carries its last name in it.
+ */
+function hasSomethingToKnowThemBy(input: CreateContactInput): boolean {
+	if (orNull(input.description)) return true;
+	if (input.firstName?.trim() || input.lastName?.trim()) return orNull(input.lastName) !== null;
+	return (input.displayName ?? '').trim().split(/\s+/).length > 1;
+}
+
+/**
+ * Create a contact, deriving its display name and defaulting its visibility. Everyone added by
+ * hand comes through here; imports write through their own adapters and keep what they carry.
+ */
 export async function createContact(
 	deps: ContactDeps,
 	creator: ContactCreator,
 	input: CreateContactInput
 ): Promise<string> {
 	const displayName = deriveDisplayName(input);
+	if (!hasSomethingToKnowThemBy(input)) throw new NeedsSomethingToKnowThemByError();
 	const { birthDate, birthDatePrecision } = parseBirthDate(input.birthDate);
 	const now = deps.clock.now();
 	const id = deps.ids.next();

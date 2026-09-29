@@ -176,7 +176,8 @@
 	}
 
 	async function submitCreate() {
-		if (saving) return;
+		// Stella refuses a first name alone (docs/02 §2.2.3); Enter must not get past the button.
+		if (saving || (askForSomethingToKnowThemBy && !draft.description.trim())) return;
 		saving = true;
 		createError = null;
 		try {
@@ -407,7 +408,7 @@
 						type="button"
 						variant="primary"
 						size="sm"
-						disabled={saving}
+						disabled={saving || (askForSomethingToKnowThemBy && !draft.description.trim())}
 						onclick={submitCreate}
 					>
 						{saving ? t('components.personSearch.submitting') : t('components.personSearch.submit')}

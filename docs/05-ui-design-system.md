@@ -489,8 +489,9 @@ a form field, since the panel sends JSON.
 
 **Know-them-by nudge** (`KnowThemBy.svelte`): while a new person has a first name and no last
 name, the description field sits in a `--primary-soft` box with the `met` icon and one line on
-why (docs/02 §2.2.3), on *Add a person* and in the picker's create panel alike. It asks and
-never blocks; `compact` gives it the panel's smaller labels.
+why (docs/02 §2.2.3), on *Add a person*, in the picker's create panel and in the moment
+composer's alike. Its field is required — the panels keep their add button off until it is
+filled; `compact` gives it the panel's smaller labels.
 
 **Callers give it an `id` and point their label at it with `for`** — never a label that merely
 wraps it. A `<label>` names its first labelable descendant, and in multiple mode that is a

@@ -237,6 +237,8 @@
 	/** Queue the new person with the moment and mention them by their placeholder. */
 	async function addCreated() {
 		if (!creating || !creating.firstName.trim()) return;
+		// Stella refuses a first name alone (docs/02 §2.2.3); the button says so by staying off.
+		if (askForSomethingToKnowThemBy && !creating.description.trim()) return;
 		const person: MomentNewPerson = {
 			key: ulid(),
 			firstName: creating.firstName.trim(),
@@ -479,7 +481,7 @@
 			<div class="flex justify-end gap-2">
 				<!-- `type="button"`: inside the moment's form, these must never save it. -->
 				<Button type="button" variant="ghost" size="sm" onclick={cancelCreate}>{t('components.personSearch.cancel')}</Button>
-				<Button type="button" variant="primary" size="sm" disabled={!creating.firstName.trim()} onclick={addCreated}>
+				<Button type="button" variant="primary" size="sm" disabled={!creating.firstName.trim() || (askForSomethingToKnowThemBy && !creating.description.trim())} onclick={addCreated}>
 					{t('composer.addPerson')}
 				</Button>
 			</div>

@@ -275,10 +275,13 @@ a household soon has five people called *Thomas*. Two things keep them apart:
   add something. The whole list counts, not just what the query left: a Thomas is just as
   ambiguous when the other one is filtered out. A unique name stays one line. The pure rule is
   `tellApart` (`src/lib/people/namesakes.ts`).
-- **A nudge when a last name is missing.** While a first name stands without a last name —
-  on *Add a person* and in a picker's create panel — the description field, there anyway,
-  sits in a highlighted box: *Without a last name, "Thomas" is hard to tell apart later. What will
-  you know them by?* It is only a nudge; a name alone still saves.
+- **A description when a last name is missing.** While a first name stands without a last name —
+  on *Add a person*, in a picker's create panel and in the moment composer's — the description
+  field, there anyway, sits in a highlighted box: *Without a last name, "Thomas" is hard to tell
+  apart later. What will you know them by?* It is **needed**: a person added by hand with neither
+  a last name nor a description is refused, by the server as much as by the form, so a kept
+  addition from a phone meets the same rule (`createContact`). Imports keep what they carry, and
+  people added before are left as they are — finding those is a roadmap item (docs/06).
 
 - **A picked mention stays the person picked.** The text shows `@Thomas` for either Thomas, so
   the @-picker remembers whom each handle it wrote stands for and saves it as that person's id

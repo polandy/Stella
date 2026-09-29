@@ -94,12 +94,15 @@ export async function mention(page: Page, query: string, label: RegExp): Promise
 
 /**
  * Mentions somebody new in the moment composer: "Create …" opens a small panel with the name
- * filled in (docs/02 §2.22.1), and adding from it writes the mention.
+ * filled in (docs/02 §2.22.1), and adding from it writes the mention. A first name alone needs a
+ * line to know them by (§2.2.3), so one is given.
  */
-export async function mentionNew(page: Page, name: string): Promise<void> {
+export async function mentionNew(page: Page, name: string, description = 'Met at the market'): Promise<void> {
 	await page.getByLabel('What happened?').pressSequentially(`@${name}`);
 	await page.getByRole('option', { name: new RegExp(`Create.*${name}`) }).click();
-	await page.getByTestId('composer-create').getByRole('button', { name: 'Add to the moment' }).click();
+	const panel = page.getByTestId('composer-create');
+	await panel.getByLabel('Description').fill(description);
+	await panel.getByRole('button', { name: 'Add to the moment' }).click();
 }
 
 /**
