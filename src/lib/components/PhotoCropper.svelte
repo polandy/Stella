@@ -5,12 +5,15 @@
 		cropRect,
 		imagePlacement,
 		initialCrop,
+		keyStep,
 		panBy,
+		pinch,
 		zoomTo,
 		type Crop,
 		type CropRect,
+		type FingerPair,
 		type ImageSize,
-		type WindowPoint
+		type WindowPixel
 	} from '$lib/image/crop';
 	import Button from './Button.svelte';
 
@@ -32,8 +35,6 @@
 
 	const t = useTranslate();
 
-	/** Screen pixels one arrow-key press moves the picture. */
-	const KEY_STEP_PX = 12;
 	/** How strongly a mouse wheel notch zooms; small so a trackpad stays smooth. */
 	const WHEEL_ZOOM_PER_PX = 0.002;
 
@@ -72,40 +73,36 @@
 
 	// ── Pointers: one drags, two pinch ─────────────────────────────────────────
 
-	const pointers = new Map<number, { x: number; y: number }>();
+	/** Where each finger (or the mouse) is on the window, in window pixels. */
+	const pointers = new Map<number, WindowPixel>();
 
-	function windowPoint(clientX: number, clientY: number): WindowPoint {
+	function onWindow(event: PointerEvent | WheelEvent): WindowPixel {
 		const box = windowEl!.getBoundingClientRect();
-		return { x: (clientX - box.left) / box.width, y: (clientY - box.top) / box.height };
+		return { x: event.clientX - box.left, y: event.clientY - box.top };
 	}
 
-	function spread(): { distance: number; midX: number; midY: number } {
+	function fingers(): FingerPair {
 		const [a, b] = [...pointers.values()];
-		return { distance: Math.hypot(a.x - b.x, a.y - b.y), midX: (a.x + b.x) / 2, midY: (a.y + b.y) / 2 };
+		return { a, b };
 	}
 
 	function onPointerDown(event: PointerEvent) {
 		windowEl?.setPointerCapture(event.pointerId);
-		pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+		pointers.set(event.pointerId, onWindow(event));
 	}
 
 	function onPointerMove(event: PointerEvent) {
 		const previous = pointers.get(event.pointerId);
 		if (!previous || !image || !crop) return;
+		const now = onWindow(event);
 		if (pointers.size === 1) {
-			pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-			crop = panBy(image, crop, { dx: event.clientX - previous.x, dy: event.clientY - previous.y }, windowPx);
-			return;
+			pointers.set(event.pointerId, now);
+			crop = panBy(image, crop, { dx: now.x - previous.x, dy: now.y - previous.y }, windowPx);
+		} else if (pointers.size === 2) {
+			const before = fingers();
+			pointers.set(event.pointerId, now);
+			crop = pinch(image, crop, before, fingers(), windowPx);
 		}
-		if (pointers.size !== 2) return;
-		const before = spread();
-		pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-		const after = spread();
-		if (before.distance > 0) {
-			const focus = windowPoint(before.midX, before.midY);
-			crop = zoomTo(image, crop, (crop.zoom * after.distance) / before.distance, focus);
-		}
-		crop = panBy(image, crop, { dx: after.midX - before.midX, dy: after.midY - before.midY }, windowPx);
 	}
 
 	function onPointerUp(event: PointerEvent) {
@@ -115,29 +112,17 @@
 	function onWheel(event: WheelEvent) {
 		if (!image || !crop) return;
 		event.preventDefault();
-		const focus = windowPoint(event.clientX, event.clientY);
+		const at = onWindow(event);
+		const focus = { x: at.x / windowPx, y: at.y / windowPx };
 		crop = zoomTo(image, crop, crop.zoom * Math.exp(-event.deltaY * WHEEL_ZOOM_PER_PX), focus);
 	}
 
 	function onKeydown(event: KeyboardEvent) {
 		if (!image || !crop) return;
-		const moves: Record<string, [number, number]> = {
-			ArrowLeft: [KEY_STEP_PX, 0],
-			ArrowRight: [-KEY_STEP_PX, 0],
-			ArrowUp: [0, KEY_STEP_PX],
-			ArrowDown: [0, -KEY_STEP_PX]
-		};
-		const move = moves[event.key];
-		if (move) {
-			event.preventDefault();
-			crop = panBy(image, crop, { dx: move[0], dy: move[1] }, windowPx);
-		} else if (event.key === '+' || event.key === '=') {
-			event.preventDefault();
-			crop = zoomTo(image, crop, crop.zoom * 1.1);
-		} else if (event.key === '-') {
-			event.preventDefault();
-			crop = zoomTo(image, crop, crop.zoom / 1.1);
-		}
+		const next = keyStep(image, crop, event.key, windowPx);
+		if (!next) return;
+		event.preventDefault();
+		crop = next;
 	}
 
 	function onSlide(event: Event) {
@@ -192,7 +177,7 @@
 				/>
 			{/if}
 			<!-- The round avatar the square will be worn as; the corners stay visible but dimmed. -->
-			<div class="pointer-events-none absolute inset-0 rounded-full shadow-[0_0_0_100vmax_rgb(0_0_0/0.45)]"></div>
+			<div class="pointer-events-none absolute inset-0 rounded-full shadow-[0_0_0_100vmax_color-mix(in_srgb,var(--bg-sunken)_70%,transparent)]"></div>
 		</div>
 
 		<p id="cropper-hint" class="text-xs text-fg-muted">{t('components.cropper.hint')}</p>

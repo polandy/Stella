@@ -4,7 +4,9 @@ import {
 	cropRect,
 	imagePlacement,
 	initialCrop,
+	keyStep,
 	panBy,
+	pinch,
 	zoomTo,
 	type ImageSize
 } from './crop';
@@ -70,5 +72,59 @@ describe('drawing the picture behind the window', () => {
 		const zoomed = zoomTo(landscape, initialCrop(landscape), 2);
 		// Crop {x:1250, y:750, size:1500} in a 300px window: a fifth of the picture's size.
 		expect(imagePlacement(landscape, zoomed, 300)).toEqual({ left: -250, top: -150, width: 800, height: 600 });
+	});
+});
+
+describe('pinching with two fingers', () => {
+	it('zooms by how far the fingers spread, around the point between them', () => {
+		// Fingers around a point a quarter into the window spread to twice their distance, not moving
+		// their midpoint: the picture doubles in size around that point.
+		const pinched = pinch(
+			landscape,
+			initialCrop(landscape),
+			{ a: { x: 50, y: 50 }, b: { x: 100, y: 100 } },
+			{ a: { x: 25, y: 25 }, b: { x: 125, y: 125 } },
+			300
+		);
+		expect(pinched.zoom).toBe(2);
+		expect(cropRect(landscape, pinched)).toEqual({ x: 875, y: 375, size: 1500 });
+	});
+
+	it('moves the picture with the fingers when they travel together', () => {
+		const pinched = pinch(
+			landscape,
+			initialCrop(landscape),
+			{ a: { x: 100, y: 100 }, b: { x: 200, y: 100 } },
+			{ a: { x: 120, y: 100 }, b: { x: 220, y: 100 } },
+			300
+		);
+		expect(cropRect(landscape, pinched)).toEqual({ x: 300, y: 0, size: 3000 });
+	});
+
+	it('ignores two fingers on the same spot rather than zooming by a division by zero', () => {
+		const same = { x: 150, y: 150 };
+		const pinched = pinch(landscape, initialCrop(landscape), { a: same, b: same }, { a: same, b: same }, 300);
+		expect(pinched).toEqual(initialCrop(landscape));
+	});
+});
+
+describe('the keyboard', () => {
+	it('moves the picture the way the arrow points, like dragging it', () => {
+		const right = keyStep(landscape, initialCrop(landscape), 'ArrowRight', 300)!;
+		const left = keyStep(landscape, initialCrop(landscape), 'ArrowLeft', 300)!;
+		expect(cropRect(landscape, right).x).toBeLessThan(500);
+		expect(cropRect(landscape, left).x).toBeGreaterThan(500);
+	});
+
+	it('zooms in with + (or = , the same key unshifted) and out with −', () => {
+		const zoomedIn = keyStep(landscape, initialCrop(landscape), '+', 300)!;
+		expect(zoomedIn.zoom).toBeGreaterThan(1);
+		expect(keyStep(landscape, initialCrop(landscape), '=', 300)).toEqual(zoomedIn);
+		expect(keyStep(landscape, zoomedIn, '-', 300)!.zoom).toBeCloseTo(1);
+	});
+
+	it('leaves every other key to the browser', () => {
+		expect(keyStep(landscape, initialCrop(landscape), 'Tab', 300)).toBeNull();
+		expect(keyStep(landscape, initialCrop(landscape), 'Enter', 300)).toBeNull();
 	});
 });

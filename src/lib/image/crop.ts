@@ -118,3 +118,59 @@ export function imagePlacement(image: ImageSize, crop: Crop, windowPx: number): 
 		height: image.height * scale
 	};
 }
+
+/** A point in the window, in window pixels from its top-left corner. */
+export interface WindowPixel {
+	x: number;
+	y: number;
+}
+
+/** Two fingers on the window. */
+export interface FingerPair {
+	a: WindowPixel;
+	b: WindowPixel;
+}
+
+/**
+ * Follow a two-finger gesture from `before` to `after`: zoom by how far the fingers spread,
+ * around the point between them, and move with that point when it travels.
+ */
+export function pinch(image: ImageSize, crop: Crop, before: FingerPair, after: FingerPair, windowPx: number): Crop {
+	const spread = (pair: FingerPair) => Math.hypot(pair.a.x - pair.b.x, pair.a.y - pair.b.y);
+	const middle = (pair: FingerPair) => ({ x: (pair.a.x + pair.b.x) / 2, y: (pair.a.y + pair.b.y) / 2 });
+	const from = middle(before);
+	const to = middle(after);
+	// Two fingers on one spot have no spread to scale by; only the move applies.
+	const zoomed =
+		spread(before) > 0
+			? zoomTo(image, crop, (crop.zoom * spread(after)) / spread(before), {
+					x: from.x / windowPx,
+					y: from.y / windowPx
+				})
+			: crop;
+	return panBy(image, zoomed, { dx: to.x - from.x, dy: to.y - from.y }, windowPx);
+}
+
+/** Window pixels one arrow-key press moves the picture. */
+const KEY_STEP_PX = 12;
+/** How much one + or − press zooms. */
+const KEY_ZOOM_FACTOR = 1.1;
+
+const ARROW_MOVES = new Map<string, { dx: number; dy: number }>([
+	['ArrowLeft', { dx: -KEY_STEP_PX, dy: 0 }],
+	['ArrowRight', { dx: KEY_STEP_PX, dy: 0 }],
+	['ArrowUp', { dx: 0, dy: -KEY_STEP_PX }],
+	['ArrowDown', { dx: 0, dy: KEY_STEP_PX }]
+]);
+
+/**
+ * What a key does to the crop: the arrows move the picture as a drag would, + (or =, the same
+ * key unshifted) and − zoom. Null for any other key, which the browser keeps.
+ */
+export function keyStep(image: ImageSize, crop: Crop, key: string, windowPx: number): Crop | null {
+	const move = ARROW_MOVES.get(key);
+	if (move) return panBy(image, crop, move, windowPx);
+	if (key === '+' || key === '=') return zoomTo(image, crop, crop.zoom * KEY_ZOOM_FACTOR);
+	if (key === '-') return zoomTo(image, crop, crop.zoom / KEY_ZOOM_FACTOR);
+	return null;
+}
