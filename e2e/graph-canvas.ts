@@ -64,30 +64,10 @@ export async function clickNode(page: Page, id: string): Promise<void> {
 }
 
 /**
- * Selects a node through the renderer's own tap event, wherever the layout has put it. For a
- * case that needs a node selected but is not about tapping it: the free arrangement can set
- * somebody else on top, where `clickNode` rightly refuses, and the case would then fail for a
- * reason it does not test. A circle cannot be picked by name the way a person can, so this is
- * the only deterministic way to it. Whatever a tap triggers runs exactly as it would.
- */
-export async function selectNode(page: Page, id: string): Promise<void> {
-	const tapped = await page.evaluate((nodeId) => {
-		type Core = { $id(id: string): { empty(): boolean; emit(event: string): void } };
-		let el: HTMLElement | null = document.querySelector('canvas');
-		while (el && !('_cyreg' in el)) el = el.parentElement;
-		const node = el ? (el as unknown as { _cyreg: { cy: Core } })._cyreg.cy.$id(nodeId) : null;
-		if (!node || node.empty()) return false;
-		node.emit('tap');
-		return true;
-	}, id);
-	if (!tapped) throw new Error(`the explorer is not holding ${id}, so it cannot be selected`);
-}
-
-/**
  * What the renderer's own hit test answers at the centre of this node. A layout is free to
- * set somebody down on top of somebody else — the free arrangement starts from a random
- * spread — and a tap there reaches whoever is on top. Asking first turns that into a loud
- * failure naming both, instead of a click on the wrong node that a later assertion misreads.
+ * set somebody down on top of somebody else — nothing in the forces forbids it — and a tap
+ * there reaches whoever is on top. Asking first turns that into a loud failure naming both,
+ * instead of a click on the wrong node that a later assertion misreads.
  */
 async function elementOnTopOf(page: Page, id: string): Promise<string | null> {
 	return page.evaluate((nodeId) => {
@@ -295,9 +275,19 @@ export async function nodeOwners(page: Page, ids: string[]): Promise<Record<stri
 			owners[id] = 'undrawn';
 			continue;
 		}
+		// Checked before awaitHitTestable: an offscreen point never resolves through
+		// elementFromPoint, so waiting for one to become hit-testable would just burn its whole
+		// timeout instead of reporting 'offscreen' at once.
+		const offscreen = await page.evaluate(
+			(p) => p.x < 0 || p.y < 0 || p.x > innerWidth || p.y > innerHeight,
+			point
+		);
+		if (offscreen) {
+			owners[id] = 'offscreen';
+			continue;
+		}
 		await awaitHitTestable(page, point);
 		owners[id] = await page.evaluate((p) => {
-			if (p.x < 0 || p.y < 0 || p.x > innerWidth || p.y > innerHeight) return 'offscreen';
 			const el = document.elementFromPoint(p.x, p.y);
 			return el ? el.tagName.toLowerCase() : 'nothing';
 		}, point);

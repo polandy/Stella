@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { useTranslate } from '$lib/i18n/context.svelte';
+	import type { CropRect } from '$lib/image/crop';
 	import { processAvatar } from '$lib/image/process-avatar';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import Avatar from './Avatar.svelte';
+	import PhotoCropper from './PhotoCropper.svelte';
 
 	interface Props {
 		contactId: string;
@@ -20,16 +22,27 @@
 	let busy = $state(false);
 	let error = $state<string | null>(null);
 
-	async function onPick(event: Event) {
+	/** The picked picture while the person chooses its square; null when no cropper is open. */
+	let picked = $state<File | null>(null);
+
+	function onPick(event: Event) {
 		const file = (event.currentTarget as HTMLInputElement).files?.[0];
+		if (input) input.value = '';
+		if (!file) return;
+		error = null;
+		picked = file;
+	}
+
+	async function upload(crop: CropRect) {
+		const file = picked;
+		picked = null;
 		if (!file) return;
 		// Captured before the upload settles: replacing an existing photo keeps it in the
 		// gallery (docs/02 §2.14), and only that case earns the reassurance toast.
 		const hadPreviousPhoto = avatarPhotoId !== null;
 		busy = true;
-		error = null;
 		try {
-			const { image, thumb, width, height } = await processAvatar(file);
+			const { image, thumb, width, height } = await processAvatar(file, crop);
 			const body = new FormData();
 			body.append('image', image, 'avatar.jpg');
 			body.append('thumb', thumb, 'thumb.jpg');
@@ -44,7 +57,6 @@
 			error = t('components.photo.failed');
 		} finally {
 			busy = false;
-			if (input) input.value = '';
 		}
 	}
 </script>
@@ -68,4 +80,5 @@
 	</button>
 	<input bind:this={input} onchange={onPick} type="file" accept="image/*" class="hidden" />
 	{#if error}<p class="text-xs text-danger">{error}</p>{/if}
+	<PhotoCropper file={picked} onconfirm={upload} oncancel={() => (picked = null)} />
 </div>

@@ -9,6 +9,7 @@
 	import { allSent, answeredCount, type AnsweredClaims } from '$lib/relationships/answered';
 	import { REVIEW_PARAM, QUERY_PARAM, reviewHref } from '$lib/relationships/review-url';
 	import { PEOPLE_PER_PAGE } from '$lib/suggestions/paging';
+	import type { Relation } from '$lib/suggestions/types';
 	import type { ActionData, PageData } from './$types';
 
 	/*
@@ -45,7 +46,7 @@
 	 * stating a number nobody can see any more.
 	 */
 	let answered = $state<AnsweredClaims>({});
-	const keyOf = (s: { relation: 'parent' | 'sibling'; fromId: string; toId: string }) =>
+	const keyOf = (s: { relation: Relation; fromId: string; toId: string }) =>
 		answerKey(s.relation, s.fromId, s.toId);
 
 	const answeredHere = $derived(answeredCount(answered));
@@ -57,7 +58,7 @@
 	 * A folded group keeps claims this page never showed, so it is never finished here.
 	 */
 	const finished = (group: {
-		suggestions: { relation: 'parent' | 'sibling'; fromId: string; toId: string }[];
+		suggestions: { relation: Relation; fromId: string; toId: string }[];
 		totalSuggestions: number;
 	}) =>
 		group.totalSuggestions === group.suggestions.length &&

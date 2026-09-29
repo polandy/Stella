@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { circleNameKey } from '$lib/circles/name-key';
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
+	import FrameAsAvatar from '$lib/components/FrameAsAvatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import KinSuggestions from '$lib/components/KinSuggestions.svelte';
 	import DateField from '$lib/components/DateField.svelte';
 	import RelationshipMap from '$lib/components/graph/RelationshipMap.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
+	import { asTyped } from '$lib/mentions/picks';
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import Section from '$lib/components/Section.svelte';
@@ -28,11 +30,12 @@
 		exclusionLabel,
 		relationshipRowLabel,
 		relationshipStatusLabel,
-		relationshipTypeLabel
+		relationshipTypeLabel,
+		towardsSubject
 	} from '$lib/relationships/labels';
 	import { contactSectionPath, sectionAnchor } from '$lib/contacts/sections';
 	import { directClaimLabel, kinshipLabel } from '$lib/kinship/labels';
-	import { claimEndpoints, directClaimFor } from '$lib/kinship/claims';
+	import { claimEndpoints, confirmedClaimFor, directClaimFor } from '$lib/kinship/claims';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { withoutRelationships } from '$lib/graph/model/without-pending';
 	import {
@@ -254,6 +257,8 @@
 	let noteVisibility = $state<'shared' | 'private'>('shared');
 	let noteBody = $state('');
 	let notePinned = $state(false);
+	// A typed @Thomas that could be several people keeps saving off until one is picked.
+	let noteUnclear = $state(false);
 
 	/*
 	 * Notes written here while Stella was out of reach (docs/02 §2.18): kept on the device and
@@ -611,6 +616,14 @@
 			? forTarget(relationshipChoices[0])
 			: null;
 	});
+	// Someone named in the picker for the first time is known by this link until they have more
+	// (docs/02 §2.2.3): on Hans's page, "Parent of" makes them "Child of Hans Meyer".
+	const suggestedTargetDescription = $derived.by(() => {
+		const chosen =
+			relationshipChoices.find((option) => option.value === relationshipChoice) ??
+			relationshipChoices[0];
+		return chosen ? towardsSubject(t, chosen.type, chosen.side, c.displayName) : '';
+	});
 	const suggestedSince = $derived.by(() => {
 		const chosen =
 			relationshipChoices.find((option) => option.value === relationshipChoice) ??
@@ -633,6 +646,16 @@
 
 	/** Which relationship has its details open for correction; one at a time. */
 	let editingRelationship = $state<string | null>(null);
+	/*
+	 * Confirming a worked-out relative re-reads the page where the reader is. The action ends in
+	 * a redirect for a browser without script; following it would jump to the section's anchor,
+	 * so it is answered by reloading the data instead of navigating.
+	 */
+	const confirmKin = trackPending(graphPending, () => async ({ result, update }) => {
+		if (result.type !== 'redirect') return update();
+		await invalidateAll();
+		removals.notify(t('components.saved'));
+	});
 	const savedRelationshipEdit = trackPending(
 		graphPending,
 		savedEnhance(removals, t('components.saved'), () => (editingRelationship = null))
@@ -1479,9 +1502,9 @@
 					{/if}
 
 					<!--
-						Derived kinship (docs/02 §2.4.1): worked out from the entered links, never
-						stored. Kept visually apart and labelled, so nobody mistakes an inference
-						for something the household wrote down.
+						Derived kinship (docs/02 §2.4.1): worked out from the entered links, and
+						stored only when the household says so. Kept visually apart and labelled, so
+						nobody mistakes an inference for something the household wrote down.
 					-->
 					{#if data.derivedKin.length > 0}
 						<div class="mt-4 border-t border-border-subtle pt-3" data-testid="derived-kin">
@@ -1491,32 +1514,64 @@
 							<ul class="flex flex-col divide-y divide-border-subtle">
 								{#each data.derivedKin as kin (kin.personId)}
 									<!--
-										A step term is only as much as Stella can see: the link runs through a
-										partner and no direct one is on record. The household may well mean more
-										than that, and only they can say so — hence the one-tap correction, which
-										is the single way an inference here ever becomes something entered.
+										Every row can become something entered. A step term is only as much as
+										Stella can see — the link runs through a partner and no direct one is on
+										record — so it is corrected to the direct link the household may well
+										mean. Every other term is confirmed as it stands.
 									-->
 									{@const claim = directClaimFor(kin.term)}
-									<li class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2 text-sm">
-										<span class="w-24 shrink-0 truncate text-fg-muted">{kinshipLabel(t, kin)}</span>
-										<a href="/contacts/{kin.personId}" class="font-medium text-fg hover:underline">
-											{kin.displayName}
-										</a>
+									{@const confirmed = confirmedClaimFor(kin.term)}
+									{@const stored = claim ?? confirmed}
+									<!--
+										Laid out like an entered row — the dot's column, the label's width, the
+										actions in the same place — so *Confirm* lines up under *Edit*.
+									-->
+									<li class="flex flex-col gap-0.5 py-2 text-sm">
+										<div class="flex items-center gap-3">
+											<span class="size-2 shrink-0" aria-hidden="true"></span>
+											<span class="w-24 shrink-0 truncate text-fg-muted">{kinshipLabel(t, kin)}</span>
+											<a href="/contacts/{kin.personId}" class="font-medium text-fg hover:underline">
+												{kin.displayName}
+											</a>
+											{#if stored}
+												{@const ends = claimEndpoints(stored, c.id, kin.personId)}
+												<form
+													method="POST"
+													action="?/addProposedRelationship"
+													use:enhance={confirmKin}
+													class="ml-auto flex shrink-0 items-center gap-1"
+												>
+													<input type="hidden" name="fromId" value={ends.fromId} />
+													<input type="hidden" name="toId" value={ends.toId} />
+													<input type="hidden" name="typeId" value={stored.typeKey} />
+													{#if claim}
+														<Button variant="ghost" size="sm">{directClaimLabel(t, claim)}</Button>
+													{:else}
+														<Button
+															variant="ghost"
+															size="sm"
+															title={t('contact.relationships.confirmKinLabel', {
+																name: kin.displayName,
+																term: kinshipLabel(t, kin)
+															})}
+														>
+															{t('contact.relationships.confirmKin')}
+														</Button>
+													{/if}
+													<!-- Holds the remove button's place, so the action ends where Edit does. -->
+													<span class="invisible" aria-hidden="true">
+														<Button type="button" variant="danger" size="sm" icon="remove" tabindex={-1} />
+													</span>
+												</form>
+											{/if}
+										</div>
+										<!-- Under the name, so a long "via" never pushes the action out of line. -->
 										{#if kin.via.length > 0}
-											<span class="truncate text-fg-subtle">
-												· {t('contact.relationships.via', {
+											<span class="truncate pl-32 text-fg-subtle">
+												{t('contact.relationships.via', {
 													people: kin.via.join(t('contact.relationships.viaAnd'))
 												})}
 											</span>
-										{/if}
-										{#if claim}
-											{@const ends = claimEndpoints(claim, c.id, kin.personId)}
-											<form method="POST" action="?/addProposedRelationship" class="ml-auto shrink-0">
-												<input type="hidden" name="fromId" value={ends.fromId} />
-												<input type="hidden" name="toId" value={ends.toId} />
-												<input type="hidden" name="typeId" value={claim.typeKey} />
-												<Button variant="ghost" size="sm">{directClaimLabel(t, claim)}</Button>
-											</form>
 										{/if}
 									</li>
 								{/each}
@@ -1582,6 +1637,7 @@
 										bind:selectedIds={relationshipTargetId}
 										onPick={(person) => (pickedTarget = person)}
 										allowCreate
+										suggestedDescription={suggestedTargetDescription}
 									/>
 								</label>
 								<label class="flex w-full flex-col gap-1 text-sm sm:flex-1">
@@ -1711,7 +1767,7 @@
 							{#each keptNotes as item (item.command.id)}
 								<li>
 									<KeptItem {item} onEdit={() => editKeptNote(item)}>
-										<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
+										<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...data.otherContacts, data.contact])}</p>
 									</KeptItem>
 								</li>
 							{/each}
@@ -1747,13 +1803,14 @@
 						<form method="POST" action="?/addNote" use:enhance={noteForm} class="flex flex-col gap-3">
 							<MentionTextarea
 								bind:value={noteBody}
+								bind:unclear={noteUnclear}
 								name="body"
 								label={t('contact.notes.label')}
 								required
 								candidates={data.otherContacts}
 								visibility={noteVisibility}
 								placeholder={t('contact.notes.placeholder')}
-								class={INPUT}
+								class="{INPUT} w-full"
 							/>
 							<div class="flex flex-wrap items-center gap-4 text-sm">
 								<label class="flex items-center gap-1.5">
@@ -1767,7 +1824,7 @@
 									<input type="radio" name="visibility" value="private" bind:group={noteVisibility} />
 									{t('common.private')}
 								</label>
-								<Button variant="primary" size="sm" class="ml-auto">{editingNote ? t('common.save') : t('contact.notes.add')}</Button>
+								<Button variant="primary" size="sm" class="ml-auto" disabled={noteUnclear}>{editingNote ? t('common.save') : t('contact.notes.add')}</Button>
 							</div>
 						</form>
 					{/snippet}
@@ -1950,12 +2007,12 @@
 			/>
 
 			<div class="flex flex-wrap items-center gap-2">
-				<form method="POST" action="?/usePhotoAsAvatar" class="contents">
-					<input type="hidden" name="photoId" value={openedPhoto.id} />
-					<Button variant="secondary" size="sm" disabled={openedPhoto.isAvatar}>
-						{openedPhoto.isAvatar ? t('contact.photos.currentPhoto') : t('contact.photos.useAsPhoto')}
-					</Button>
-				</form>
+				<FrameAsAvatar
+					contactId={c.id}
+					photoId={openedPhoto.id}
+					isAvatar={openedPhoto.isAvatar}
+					framing={openedPhoto.framing}
+				/>
 
 				{#if openedPhoto.createdBy === data.viewerId}
 					<form method="POST" action="?/captionPhoto" class="flex flex-1 items-center gap-2">

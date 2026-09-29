@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { deserialize, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
+	import { asTyped } from '$lib/mentions/picks';
 	import KeptItem from '$lib/components/KeptItem.svelte';
 	import { processImage } from '$lib/image/process-image';
 	import { keepable } from '$lib/pwa/keepable';
@@ -27,6 +28,8 @@
 
 	// The entry's audience narrows whom the @-picker offers (docs/02 §2.20.1).
 	let entryVisibility = $state<'shared' | 'private'>('shared');
+	// A typed @Thomas that could be several people keeps saving off until one is picked.
+	let entryUnclear = $state(false);
 
 	// Selected images for the entry being composed (processed in the browser on submit).
 	let picked = $state<File[]>([]);
@@ -120,6 +123,7 @@
 	let editTitle = $state('');
 	let editBody = $state('');
 	let editSaving = $state(false);
+	let editUnclear = $state(false);
 	let editError = $state<string | null>(null);
 
 	function startEdit(entry: PageData['entries'][number]) {
@@ -140,9 +144,16 @@
 		try {
 			const res = await fetch(`/contacts/${c.id}/journal?/edit`, {
 				method: 'POST',
-				body: new FormData(formEl)
+				body: new FormData(formEl),
+				headers: { 'x-sveltekit-action': 'true' }
 			});
-			if (!res.ok) throw new Error();
+			const result = deserialize(await res.text());
+			// A refusal says why — a namesake to pick, say (docs/02 §2.2.3) — and keeps the text.
+			if (result.type === 'failure') {
+				editError = (result.data?.journalError as string | undefined) ?? t('journal.editSaveFailed');
+				return;
+			}
+			if (result.type === 'error') throw new Error();
 			editingId = null;
 			await invalidateAll();
 		} catch {
@@ -240,6 +251,7 @@
 				required
 				candidates={data.candidates}
 				visibility={entryVisibility}
+				bind:unclear={entryUnclear}
 				placeholder={t('journal.bodyPlaceholder')}
 				class="w-full rounded-md border border-border bg-bg px-3 py-2 text-fg"
 			/>
@@ -263,7 +275,7 @@
 					<input type="radio" name="visibility" value="private" bind:group={entryVisibility} />
 					{t('journal.privateOnlyYou')}
 				</label>
-				<Button variant="primary" disabled={uploading} class="ml-auto">
+				<Button variant="primary" disabled={uploading || entryUnclear} class="ml-auto">
 					{uploading ? t('common.saving') : t('journal.saveEntry')}
 				</Button>
 			</div>
@@ -280,7 +292,7 @@
 					<KeptItem {item}>
 						{#snippet meta()}<span>· {prettyDate(item.command.payload.entryDate)}</span>{/snippet}
 						{#if item.command.payload.title}<p class="mt-1 font-medium text-fg">{item.command.payload.title}</p>{/if}
-						<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
+						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...data.candidates, data.contact])}</p>
 					</KeptItem>
 				</li>
 			{/each}
@@ -369,13 +381,15 @@
 										rows={5}
 										required
 										bind:value={editBody}
+										bind:unclear={editUnclear}
+										names={entry.mentionNames}
 										candidates={data.candidates}
 										visibility={entry.visibility}
 										placeholder={t('journal.bodyPlaceholder')}
 										class="w-full rounded-md border border-border bg-bg px-3 py-2 text-fg"
 									/>
 									<div class="flex items-center gap-3">
-										<Button variant="primary" disabled={editSaving}>
+										<Button variant="primary" disabled={editSaving || editUnclear}>
 											{editSaving ? t('common.saving') : t('journal.saveChanges')}
 										</Button>
 										<Button variant="ghost" type="button" onclick={cancelEdit}>

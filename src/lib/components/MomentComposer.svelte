@@ -3,13 +3,42 @@
 	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
-	import DateField from '$lib/components/DateField.svelte';
+	import DayPill from '$lib/components/DayPill.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
+	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
+	import WhichNamesake from '$lib/components/WhichNamesake.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { processImage } from '$lib/image/process-image';
 	import { allowedForAudience } from '$lib/mentions/audience';
-	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
-	import type { MomentCapturePayload } from '$lib/commands/commands';
+	import { createHandleResolver, mentionKey, resolveMentions } from '$lib/mentions/mentions';
+	import {
+		activeHandle,
+		handleFor,
+		insertHandle,
+		listPlacement,
+		suggest,
+		type ActiveHandle,
+		type ListPlacement
+	} from '$lib/mentions/picker';
+	import {
+		isQueuedName,
+		newPeopleAsCandidates,
+		shiftPicks,
+		toEditable,
+		toStored,
+		type MentionPick
+	} from '$lib/mentions/picks';
+	import { unclearHandles } from '$lib/mentions/unclear';
+	import { usePeopleContext } from '$lib/people/context.svelte';
+	import { tellApart } from '$lib/people/namesakes';
+	import {
+		capitalisedIfTypedLowercase,
+		isKnownByMoreThanAFirstName,
+		splitTypedName,
+		wantsSomethingToKnowThemBy
+	} from '$lib/people/new-person';
+	import type { MomentCapturePayload, MomentNewPerson } from '$lib/commands/commands';
 	import type { KeptOf, KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
@@ -26,6 +55,11 @@
 	 * when there is none it keeps the moment on the device. The name is what makes that safe: a
 	 * moment whose answer was lost on the way is recognised when it arrives a second time.
 	 * `editing` opens a kept moment that has not been sent yet.
+	 *
+	 * A person picked in the list is remembered against the `@Handle` it wrote and saved as their
+	 * id token, so two people called Thomas stay two people (docs/02 §2.2.3, `picks.ts`).
+	 * Creating somebody opens a small panel for their name and what to know them by; the text
+	 * then mentions them by a placeholder the server swaps for their id once it has them.
 	 */
 
 	interface Candidate {
@@ -34,6 +68,11 @@
 		firstName: string | null;
 		lastName: string | null;
 		visibility: 'shared' | 'private';
+		/** What tells namesakes apart in the list (docs/02 §2.2.3). */
+		description?: string | null;
+		metPlace?: string | null;
+		metDate?: string | null;
+		avatarPhotoId: string | null;
 	}
 	interface Props {
 		/** People the author may see; the picker narrows to the moment's audience itself. */
@@ -41,7 +80,7 @@
 		me: { id: string; name: string; avatarPhotoId?: string | null };
 		today: string;
 		error?: string | null;
-		/** Body to restore after a failed submit. */
+		/** Body to start from: after a failed submit, or a person to write about, as stored. */
 		draft?: string | null;
 		autofocus?: boolean;
 		/** A moment kept on this device, open for editing before it is sent. */
@@ -67,10 +106,19 @@
 
 	// svelte-ignore state_referenced_locally -- the kept moment is only a starting value on purpose
 	const kept = editing?.command.payload ?? null;
+	let newPeople = $state<(string | MomentNewPerson)[]>(kept ? [...kept.newPeople] : []);
+	// A kept moment and a draft are stored text: picked people come back as picks.
 	// svelte-ignore state_referenced_locally -- the draft is only a starting value on purpose
-	let body = $state(kept?.body ?? draft ?? '');
+	const startingPeople = [...candidates, ...newPeopleAsCandidates(newPeople)];
+	// svelte-ignore state_referenced_locally -- see above
+	const start = toEditable(kept?.body ?? draft ?? '', (id) => {
+		const person = startingPeople.find((c) => c.id === id);
+		return person ? handleFor(person) : null;
+	});
+	let body = $state(start.text);
+	// Whom each picked handle in the text stands for.
+	let picks: MentionPick[] = start.picks;
 	let visibility = $state<'shared' | 'private'>(kept?.visibility ?? 'shared');
-	let newPeople = $state<string[]>(kept ? [...kept.newPeople] : []);
 	// The command this draft will be saved as; a new one after every save.
 	let commandId = $state(ulid());
 	// Bumped after a save to start the day and photo fields afresh. `form.reset()` cannot:
@@ -85,6 +133,9 @@
 	let saving = $state(false);
 	let localError = $state<string | null>(null);
 	let textarea: HTMLTextAreaElement | undefined = $state();
+	let composer: HTMLFormElement | undefined = $state();
+	let list: HTMLUListElement | undefined = $state();
+	let placement: ListPlacement = $state({ side: 'below', maxHeight: Number.POSITIVE_INFINITY });
 
 	// Picker state: the handle under the caret and the ranked suggestions for it.
 	let active = $state<ActiveHandle | null>(null);
@@ -92,28 +143,47 @@
 	const audience = $derived(
 		allowedForAudience(candidates, visibility)
 	);
-	const known = $derived([
-		...audience,
-		...newPeople.map((n) => ({ id: `new:${n}`, displayName: n, firstName: null, lastName: null }))
-	]);
-	const suggestions = $derived(active ? suggest(active.query, known) : { people: [], create: null });
+	const created = $derived(newPeopleAsCandidates(newPeople));
+	const createdIds = $derived(new Set(created.map((c) => c.id)));
+	const known = $derived([...audience, ...created]);
+	const suggestions = $derived(
+		active ? suggest(active.query, known) : { people: [], create: null, createsAnother: false }
+	);
+	// The second line counts everyone the list could offer, not only what the query left.
+	const peopleContext = usePeopleContext();
+	const namesakes = $derived(tellApart(audience, peopleContext()));
 	const rows = $derived([
 		...suggestions.people.map((p) => ({ kind: 'person' as const, person: p })),
-		...(suggestions.create ? [{ kind: 'create' as const, name: suggestions.create }] : [])
+		...(suggestions.create
+			? [{ kind: 'create' as const, name: suggestions.create, another: suggestions.createsAnother }]
+			: [])
 	]);
 
-	// The people the text currently references, for the "goes to …'s journal" line.
-	const referenced = $derived.by(() => {
-		const handles = body.match(/(?<![\p{L}\p{N}@\\])@[\p{L}][\p{L}\p{N}]*/gu) ?? [];
-		const byHandle = new Map(known.map((c) => [handleFor(c).toLowerCase(), c]));
-		const out: { id: string; displayName: string }[] = [];
-		for (const h of handles) {
-			const c = byHandle.get(h.toLowerCase());
-			if (c && !out.some((o) => o.id === c.id)) out.push(c);
-		}
-		return out;
-	});
-	const canSave = $derived(body.trim().length > 0 && referenced.length > 0 && !saving);
+	/*
+	 * Somebody being created from the picker: their name, what to know them by, and where in the
+	 * text the `@` they came from sits. Open, it stands in for the list.
+	 */
+	let creating = $state<{
+		firstName: string;
+		lastName: string;
+		description: string;
+		at: ActiveHandle;
+		caret: number;
+	} | null>(null);
+	let createFirstName: HTMLInputElement | undefined = $state();
+	const askForSomethingToKnowThemBy = $derived(
+		creating ? wantsSomethingToKnowThemBy({ firstName: creating.firstName, lastName: creating.lastName }) : false
+	);
+
+	// The people the text currently references, for the "goes to …'s journal" line — read the
+	// way the server will: picks by id, anything typed by name, a namesake nobody picked as a
+	// question rather than a guess.
+	const resolved = $derived(resolveMentions(toStored(body, picks), createHandleResolver(known)));
+	const referenced = $derived(
+		resolved.ids.flatMap((id) => known.filter((c) => c.id === id))
+	);
+	const unclear = $derived(unclearHandles(toStored(body, picks), known, peopleContext()));
+	const canSave = $derived(body.trim().length > 0 && referenced.length > 0 && unclear.length === 0 && !saving);
 
 	// Leaving the field closes the picker a moment later, so a click on a suggestion still
 	// lands. Coming back must cancel that: a navigation that returns focus to the page after a
@@ -121,6 +191,18 @@
 	let closingPicker: ReturnType<typeof setTimeout> | undefined;
 	function closePickerSoon() {
 		closingPicker = setTimeout(() => (active = null), 120);
+	}
+
+	/** Take the field's new text, carrying the picks across the change. */
+	function changeText(next: string, picked?: MentionPick) {
+		picks = shiftPicks(body, next, picks);
+		if (picked) picks = [...picks, picked];
+		body = next;
+	}
+
+	function onInput(event: Event) {
+		changeText((event.currentTarget as HTMLTextAreaElement).value);
+		refreshPicker();
 	}
 
 	function refreshPicker() {
@@ -133,19 +215,75 @@
 	async function choose(index: number) {
 		const row = rows[index];
 		if (!row || !active || !textarea) return;
-		let handle: string;
-		if (row.kind === 'create') {
-			if (!newPeople.includes(row.name)) newPeople = [...newPeople, row.name];
-			handle = '@' + row.name;
-		} else {
-			handle = handleFor(row.person);
-		}
-		const r = insertHandle(body, active, textarea.selectionStart, handle);
-		body = r.text;
+		if (row.kind === 'create') return openCreate(row.name, active, textarea.selectionStart);
+		const handle = handleFor(row.person);
+		// A name an older build queued has no id or placeholder; the server finds it by name.
+		const picked = isQueuedName(row.person.id)
+			? undefined
+			: { start: active.start, end: active.start + handle.length, id: row.person.id };
+		await insert(handle, active, textarea.selectionStart, picked);
+	}
+
+	async function insert(handle: string, at: ActiveHandle, caret: number, picked?: MentionPick) {
+		if (!textarea) return;
+		const r = insertHandle(body, at, caret, handle);
+		changeText(r.text, picked);
 		active = null;
 		await tick();
 		textarea.focus();
 		textarea.setSelectionRange(r.caret, r.caret);
+	}
+
+	/** Open the panel for a new person, named as typed — or as the namesake is, when there is one. */
+	async function openCreate(typed: string, at: ActiveHandle, caret: number) {
+		const namesake = audience.find((c) => mentionKey(c.displayName) === mentionKey(typed));
+		const asTyped = splitTypedName(typed);
+		const name = namesake?.firstName
+			? { firstName: namesake.firstName, lastName: '' }
+			: { ...asTyped, firstName: capitalisedIfTypedLowercase(asTyped.firstName) };
+		creating = { firstName: name.firstName, lastName: name.lastName, description: '', at, caret };
+		active = null;
+		clearTimeout(closingPicker);
+		await tick();
+		createFirstName?.focus();
+	}
+
+	async function cancelCreate() {
+		const was = creating;
+		creating = null;
+		await tick();
+		textarea?.focus();
+		if (was) textarea?.setSelectionRange(was.caret, was.caret);
+	}
+
+	/** Queue the new person with the moment and mention them by their placeholder. */
+	async function addCreated() {
+		if (!creating || !creating.firstName.trim()) return;
+		// Stella refuses a first name alone (docs/02 §2.2.3); the button says so by staying off.
+		if (!isKnownByMoreThanAFirstName(creating)) return;
+		const person: MomentNewPerson = {
+			key: ulid(),
+			firstName: creating.firstName.trim(),
+			lastName: creating.lastName.trim() || null,
+			description: creating.description.trim() || null
+		};
+		newPeople = [...newPeople, person];
+		const [candidate] = newPeopleAsCandidates([person]);
+		const handle = handleFor(candidate);
+		const { at, caret } = creating;
+		creating = null;
+		await insert(handle, at, caret, { start: at.start, end: at.start + handle.length, id: candidate.id });
+	}
+
+	function onCreateKeydown(event: KeyboardEvent) {
+		// The panel sits inside the moment's form: Enter adds the person, it never saves the moment.
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			void addCreated();
+		} else if (event.key === 'Escape') {
+			event.preventDefault();
+			void cancelCreate();
+		}
 	}
 
 	function onKeydown(event: KeyboardEvent) {
@@ -184,15 +322,17 @@
 	function payloadFrom(formEl: HTMLFormElement): MomentCapturePayload {
 		const data = new FormData(formEl);
 		return {
-			body: String(data.get('body') ?? '').trim(),
+			body: toStored(body, picks).trim(),
 			entryDate: String(data.get('entryDate') ?? day),
 			visibility,
-			newPeople: [...newPeople]
+			// Plain objects: the payload is kept in IndexedDB, which cannot clone a state proxy.
+			newPeople: $state.snapshot(newPeople)
 		};
 	}
 
 	function clear() {
 		body = '';
+		picks = [];
 		picked = [];
 		newPeople = [];
 		fresh++;
@@ -274,6 +414,25 @@
 	$effect(() => {
 		if (autofocus) textarea?.focus();
 	});
+
+	/** Where the list starts below the composer's top edge (`top-16`), and its gap to a screen edge. */
+	const LIST_OFFSET = 64;
+	const EDGE_GAP = 8;
+
+	// The list stays on screen: in the phone's sheet the composer sits at the bottom, with the
+	// keyboard shrinking the visible part further, so it opens upwards when there is more room.
+	$effect(() => {
+		if (!list || !composer) return;
+		void rows.length;
+		const viewport = window.visualViewport;
+		const visibleTop = viewport?.offsetTop ?? 0;
+		const visibleBottom = visibleTop + (viewport?.height ?? window.innerHeight);
+		const top = composer.getBoundingClientRect().top;
+		placement = listPlacement(
+			{ above: top - visibleTop - EDGE_GAP, below: visibleBottom - top - LIST_OFFSET - EDGE_GAP },
+			list.scrollHeight
+		);
+	});
 </script>
 
 <form
@@ -281,6 +440,7 @@
 	action="/?/capture"
 	enctype="multipart/form-data"
 	onsubmit={onSubmit}
+	bind:this={composer}
 	class="relative flex flex-col rounded-app bg-card shadow-card transition-shadow focus-within:ring-2 focus-within:ring-primary/40"
 >
 	{#if error || localError}
@@ -290,7 +450,7 @@
 		<Avatar id={me.id} name={me.name} avatarPhotoId={me.avatarPhotoId ?? null} size={40} />
 		<textarea
 			bind:this={textarea}
-			bind:value={body}
+			value={body}
 			name="body"
 			rows="2"
 			required
@@ -299,7 +459,7 @@
 			aria-label={t('composer.label')}
 			aria-autocomplete="list"
 			onkeydown={onKeydown}
-			oninput={refreshPicker}
+			oninput={onInput}
 			onclick={refreshPicker}
 			onkeyup={(e) => (e.key.startsWith('Arrow') ? refreshPicker() : undefined)}
 			onfocus={() => clearTimeout(closingPicker)}
@@ -308,10 +468,75 @@
 		></textarea>
 	</div>
 
-	{#if active && rows.length > 0}
+	{#if creating}
+		<!-- Plain inputs, not a nested form: the panel lives inside the moment's form. It takes
+		     its place in the card rather than floating over it, so on a phone, where the composer
+		     is a sheet at the bottom of the screen, it grows the sheet instead of leaving it. -->
+		<div
+			class="mx-3 mb-2 flex flex-col gap-2.5 rounded-app border border-border bg-bg p-3"
+			data-testid="composer-create"
+			onkeydown={onCreateKeydown}
+			role="none"
+		>
+			<p class="text-sm font-semibold text-fg">{t('components.personSearch.createTitle')}</p>
+			<div class="grid grid-cols-2 gap-2">
+				<label class="flex flex-col gap-1 text-xs text-fg-muted">
+					{t('components.personSearch.firstName')}
+					<input
+						bind:this={createFirstName}
+						bind:value={creating.firstName}
+						type="text"
+						autocomplete="off"
+						class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+					/>
+				</label>
+				<label class="flex flex-col gap-1 text-xs text-fg-muted">
+					{t('components.personSearch.lastName')}
+					<input
+						bind:value={creating.lastName}
+						type="text"
+						autocomplete="off"
+						class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+					/>
+				</label>
+			</div>
+			{#if askForSomethingToKnowThemBy}
+				<KnowThemBy
+					firstName={creating.firstName}
+					compact
+					label={t('components.personSearch.description')}
+					bind:value={creating.description}
+					inputClass="rounded-control border border-border bg-card px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+				/>
+			{:else}
+				<label class="flex flex-col gap-1 text-xs text-fg-muted">
+					{t('components.personSearch.description')}
+					<input
+						bind:value={creating.description}
+						type="text"
+						autocomplete="off"
+						placeholder={t('components.namesake.placeholder')}
+						class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+					/>
+				</label>
+			{/if}
+			<div class="flex justify-end gap-2">
+				<!-- `type="button"`: inside the moment's form, these must never save it. -->
+				<Button type="button" variant="ghost" size="sm" onclick={cancelCreate}>{t('components.personSearch.cancel')}</Button>
+				<Button type="button" variant="primary" size="sm" disabled={!creating.firstName.trim() || !isKnownByMoreThanAFirstName(creating)} onclick={addCreated}>
+					{t('composer.addPerson')}
+				</Button>
+			</div>
+		</div>
+	{:else if active && rows.length > 0}
 		<ul
 			role="listbox"
-			class="absolute left-14 top-16 z-10 w-[min(320px,calc(100%-4rem))] rounded-app border border-border bg-card p-1 shadow-pop"
+			bind:this={list}
+			style:max-height="{placement.maxHeight}px"
+			class="absolute left-14 z-10 w-[min(320px,calc(100%-4rem))] overflow-y-auto rounded-app border border-border bg-card p-1 shadow-pop {placement.side ===
+			'above'
+				? 'bottom-full mb-1'
+				: 'top-16'}"
 		>
 			<li class="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">{t('composer.people')}</li>
 			{#each rows as row, i (row.kind === 'person' ? row.person.id : 'create')}
@@ -328,12 +553,15 @@
 						class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
 					>
 						{#if row.kind === 'person'}
-							<Avatar id={row.person.id} name={row.person.displayName} size={22} />
-							<span class="truncate">{row.person.displayName}</span>
-							{#if row.person.id.startsWith('new:')}<span class="ml-auto text-xs text-fg-subtle">{t('composer.justCreated')}</span>{/if}
+							<Avatar id={row.person.id} name={row.person.displayName} avatarPhotoId={row.person.avatarPhotoId} size={22} />
+							<span class="min-w-0">
+								<span class="block truncate">{row.person.displayName}</span>
+								{#if namesakes.get(row.person.id)}<NamesakeLine distinction={namesakes.get(row.person.id)!} />{/if}
+							</span>
+							{#if createdIds.has(row.person.id)}<span class="ml-auto text-xs text-fg-subtle">{t('composer.justCreated')}</span>{/if}
 						{:else}
 							<span class="grid size-[22px] place-items-center rounded-full border border-dashed border-success text-success">+</span>
-							<span class="font-semibold text-success">{t('composer.create', { name: row.name })}</span>
+							<span class="font-semibold text-success">{row.another ? t('composer.createAnother', { name: row.name }) : t('composer.create', { name: row.name })}</span>
 							<span class="ml-auto text-xs text-fg-subtle">{t('composer.newPerson')}</span>
 						{/if}
 					</button>
@@ -342,9 +570,9 @@
 		</ul>
 	{/if}
 
-	{#each newPeople as name (name)}
-		<input type="hidden" name="newPeople" value={name} />
-	{/each}
+	{#if unclear.length}
+		<div class="mx-3 mb-2"><WhichNamesake {unclear} /></div>
+	{/if}
 
 	<div class="flex flex-wrap items-center gap-2 border-t border-border-subtle px-3 py-2">
 		<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted has-checked:border-transparent has-checked:bg-primary-soft has-checked:font-semibold has-checked:text-primary">
@@ -361,10 +589,12 @@
 				<input type="file" accept="image/*" multiple onchange={onFiles} class="hidden" />
 			</label>
 		{/if}
-		<DateField name="entryDate" value={kept?.entryDate ?? day} max={day} required label={t('composer.day')} />
+		<DayPill name="entryDate" value={kept?.entryDate ?? day} today={day} />
 		{/key}
 		<span class="text-xs text-fg-subtle" aria-live="polite">
-			{#if referenced.length}
+			{#if unclear.length}
+				<!-- The box above asks which one. -->
+			{:else if referenced.length}
 				{t('composer.goesTo')}
 				<b class="font-semibold text-fg-muted">{referenced[0].displayName}</b>{t(
 					'composer.goesToJournal'

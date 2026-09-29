@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which Thomas</title>
+<style>
+  :root, :root[data-theme='light'] {
+    --bg:#eff1f5; --bg-elevated:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff;
+    --border:#ccd0da; --border-soft:#dce0e8;
+    --fg:#4c4f69; --fg-muted:#6c6f85; --fg-subtle:#8c8fa1;
+    --primary:#8839ef; --primary-fg:#ffffff; --primary-soft:#8839ef1a; --link:#1e66f5;
+    --success:#40a02b; --warning:#df8e1d; --danger:#d20f39; --danger-soft:#d20f3914;
+    --shadow:0 1px 2px rgba(76,79,105,.06), 0 8px 24px rgba(76,79,105,.08);
+    --shadow-pop:0 4px 10px rgba(76,79,105,.10), 0 16px 36px rgba(76,79,105,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#232334;
+      --border:#313244; --border-soft:#26263a;
+      --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+      --primary:#cba6f7; --primary-fg:#1e1e2e; --primary-soft:#cba6f722; --link:#89b4fa;
+      --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8; --danger-soft:#f38ba81c;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+      --shadow-pop:0 4px 10px rgba(0,0,0,.35), 0 16px 36px rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#232334;
+    --border:#313244; --border-soft:#26263a;
+    --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --primary-soft:#cba6f722; --link:#89b4fa;
+    --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8; --danger-soft:#f38ba81c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+    --shadow-pop:0 4px 10px rgba(0,0,0,.35), 0 16px 36px rgba(0,0,0,.45);
+  }
+
+  * { box-sizing:border-box; }
+  html { color-scheme: light dark; }
+  body {
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.55;
+  }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+  h1,h2,h3 { text-wrap:balance; margin:0; }
+  code { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.86em; background:var(--bg-sunken); padding:1px 6px; border-radius:5px; overflow-wrap:anywhere; }
+
+  .wrap { max-width:960px; margin:0 auto; padding-block:clamp(28px,5vw,56px) 96px; padding-inline:clamp(16px,4vw,40px); }
+  .doc-head { display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+  .eyebrow { font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-subtle); font-weight:700; }
+  .doc-head h1 { font-size:clamp(26px,4.2vw,40px); font-weight:700; letter-spacing:-.02em; line-height:1.1; }
+  .lede { font-size:clamp(15px,1.7vw,17px); color:var(--fg-muted); max-width:66ch; margin:0; }
+
+  section.block { margin-top:44px; display:flex; flex-direction:column; gap:14px; }
+  section.block > h2 { font-size:20px; font-weight:650; letter-spacing:-.01em; }
+  section.block > p, .block li { color:var(--fg-muted); max-width:70ch; font-size:14.5px; margin:0; }
+  .block ul { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; }
+  .note { font-size:13.5px; color:var(--fg-subtle); max-width:70ch; margin:0; }
+  .verdict { border-left:3px solid var(--primary); padding:8px 0 8px 14px; font-size:14px; max-width:70ch; }
+
+  .stage { background:var(--bg-elevated); border:1px solid var(--border-soft); border-radius:14px; padding:clamp(12px,3vw,20px); display:flex; flex-direction:column; gap:14px; }
+  .stage-bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .stage-bar .label { font-size:12px; color:var(--fg-subtle); font-weight:600; margin-right:4px; }
+  .chip-btn { font:inherit; font-size:12.5px; border:1px solid var(--border); background:var(--card); color:var(--fg-muted); padding:4px 11px; border-radius:999px; cursor:pointer; }
+  .chip-btn:hover { color:var(--fg); }
+
+  /* The composer, as on Home (docs/05). */
+  .composer { position:relative; background:var(--card); border-radius:14px; box-shadow:var(--shadow); }
+  .composer:focus-within { box-shadow:var(--shadow), 0 0 0 2px color-mix(in srgb, var(--primary) 40%, transparent); }
+  .composer .top { display:flex; gap:12px; padding:12px 12px 8px; align-items:flex-start; }
+  .avatar { flex:none; display:grid; place-items:center; border-radius:999px; font-weight:700; color:#fff; }
+  .composer textarea { flex:1; min-height:64px; resize:vertical; border:0; background:transparent; color:var(--fg); font-family:Georgia, 'Iowan Old Style', serif; font-size:17px; line-height:1.6; outline:none; }
+  .composer .foot { display:flex; flex-wrap:wrap; gap:8px; align-items:center; border-top:1px solid var(--border-soft); padding:8px 12px; }
+  .goes { font-size:12px; color:var(--fg-subtle); }
+  .goes b { color:var(--fg-muted); font-weight:600; }
+  .goes .which { color:var(--fg-subtle); font-weight:400; }
+  .save { margin-left:auto; font:inherit; font-size:13px; font-weight:600; background:var(--primary); color:var(--primary-fg); border:0; border-radius:9px; padding:6px 14px; cursor:pointer; }
+  .save:disabled { opacity:.45; cursor:not-allowed; }
+  .error { margin:12px 12px 0; padding:9px 12px; border-radius:9px; background:var(--danger-soft); color:var(--danger); font-size:13.5px; }
+  .error ul { margin:6px 0 0; padding-left:18px; }
+  .error li { color:var(--danger); font-size:13px; }
+
+  .picker { position:absolute; left:56px; top:64px; z-index:10; width:min(330px, calc(100% - 64px)); background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-pop); padding:4px; list-style:none; margin:0; }
+  .picker .head { font-size:11px; font-weight:650; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); padding:6px 10px 4px; }
+  .picker button { display:flex; width:100%; gap:10px; align-items:center; text-align:left; border:0; background:transparent; color:var(--fg); font:inherit; font-size:14px; padding:6px 10px; border-radius:8px; cursor:pointer; }
+  .picker button[aria-selected='true'] { background:var(--primary-soft); }
+  .picker .names { display:flex; flex-direction:column; min-width:0; }
+  .picker .names span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .picker .second { font-size:12px; color:var(--fg-subtle); }
+  .picker .second.nothing { font-style:italic; }
+  .new-marker { outline:2px dashed var(--warning); outline-offset:3px; border-radius:4px; }
+
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; }
+  .panel { background:var(--card); border:1px solid var(--border-soft); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; min-width:0; }
+  .panel h3 { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); font-weight:700; }
+  .panel pre { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; color:var(--fg); }
+  .picks { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px; font-size:13px; }
+  .picks .empty { color:var(--fg-subtle); font-style:italic; }
+  .rendered { font-family:Georgia, 'Iowan Old Style', serif; font-size:16px; line-height:1.6; }
+  .mention { display:inline-block; padding:0 7px; border-radius:999px; background:var(--primary-soft); color:var(--primary); font-family:'Inter', ui-sans-serif, system-ui, sans-serif; font-size:13.5px; font-weight:600; text-decoration:none; }
+  .mention small { font-weight:400; color:var(--fg-subtle); }
+  .ok { color:var(--success); font-size:13px; }
+
+  .compare { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; }
+  .compare .panel.bad { border-color:color-mix(in srgb, var(--danger) 40%, var(--border-soft)); }
+  .compare .panel.good { border-color:color-mix(in srgb, var(--success) 40%, var(--border-soft)); }
+  .tag { align-self:flex-start; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:2px 8px; border-radius:999px; }
+  .tag.bad { background:var(--danger-soft); color:var(--danger); }
+  .tag.good { background:color-mix(in srgb, var(--success) 14%, transparent); color:var(--success); }
+
+  table { border-collapse:collapse; width:100%; font-size:13.5px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--border-soft); vertical-align:top; }
+  th { font-size:12px; color:var(--fg-subtle); font-weight:650; }
+  td { color:var(--fg-muted); }
+  .table-scroll { overflow-x:auto; background:var(--card); border-radius:12px; border:1px solid var(--border-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="doc-head">
+    <div class="eyebrow">Concept · docs/02 §2.2.3 × §2.20.1</div>
+    <h1>Which Thomas: namesakes in the @-picker</h1>
+    <p class="lede">Picking one of two <em>Thomas</em> in the @-picker inserts <code>@Thomas</code>, and nothing
+      else remembers which one was meant. On save the server finds two people for the handle and leaves it as
+      text: the mention is lost, silently. This page walks through the fix: say which one in the list, remember the
+      pick instead of guessing from the name, and ask when there was no pick.</p>
+  </header>
+
+  <section class="block">
+    <h2>What happens today</h2>
+    <div class="compare">
+      <div class="panel bad">
+        <span class="tag bad">Today</span>
+        <p class="note">Three identical rows. Picking the second one writes <code>@Thomas</code>. The line under the
+          field names <em>a</em> Thomas, the last one in the list. The server's resolver sees a collision
+          (<code>mentions.ts</code>, <code>createHandleResolver</code>) and keeps the text. A moment with only this mention is
+          refused as <em>“needs a mention”</em>. A note or journal entry saves, but without the mention.</p>
+        <p class="note">Editing an entry turns every stored token back into <code>@Name</code>
+          (<code>bodyForEditing</code>). Saving an entry that mentions a namesake drops that mention too.</p>
+      </div>
+      <div class="panel good">
+        <span class="tag good">Proposed</span>
+        <p class="note">Every Thomas gets the second line ⌘K already shows. The field keeps the readable
+          <code>@Thomas</code> and remembers <em>which</em> Thomas was picked at that place. On save, the browser writes the id token
+          itself, the form the server already takes as it is. A handle nobody picked that could mean two people is
+          <strong>refused with the candidates named</strong>, and the text stays in the field.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Try it</h2>
+    <p>The household below has three people called <em>Thomas</em>, a <em>Thomas Lang</em>, and the two Brunners. Type
+      <code>@th</code>, pick one with the arrow keys and Enter, keep typing before and after the pick, and save. The panels
+      under the composer show what the field remembers and what would be stored.</p>
+
+    <div class="stage">
+      <div class="stage-bar">
+        <span class="label">Start from</span>
+        <button class="chip-btn" data-scenario="empty">An empty field</button>
+        <button class="chip-btn" data-scenario="typed">Handle typed by hand</button>
+        <button class="chip-btn" data-scenario="edit">Editing a saved entry</button>
+      </div>
+
+      <form class="composer" id="composer" autocomplete="off">
+        <div id="error" class="error" hidden></div>
+        <div class="top">
+          <div class="avatar" style="width:40px;height:40px;background:#8839ef;font-size:15px">A</div>
+          <textarea id="body" rows="2" aria-label="What happened?" aria-autocomplete="list"
+            placeholder="What happened? Type @ to name someone"></textarea>
+        </div>
+        <ul class="picker" id="picker" role="listbox" aria-label="People" hidden></ul>
+        <div class="foot">
+          <span class="goes" id="goes" aria-live="polite"></span>
+          <button class="save" id="save" type="submit">Save</button>
+        </div>
+      </form>
+
+      <div class="grid2">
+        <div class="panel">
+          <h3>What the field remembers</h3>
+          <ul class="picks" id="picks"></ul>
+          <p class="note">A pick keeps its place while text is typed before it. Changing the name itself lets the
+            pick go, and the handle is back to being looked up by name.</p>
+        </div>
+        <div class="panel">
+          <h3>What would be stored</h3>
+          <pre id="stored">–</pre>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>How it reads once saved</h3>
+        <div class="rendered" id="rendered"><span class="note">Nothing saved yet.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>The rules</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>The handle in the text</th><th>On save</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Picked in the list</td><td>The picked person's id token, whatever the name</td><td>The pick is the author's answer; the name is only what is shown.</td></tr>
+          <tr><td>Typed, one person has it</td><td>That person, as today</td><td>Nothing to ask.</td></tr>
+          <tr><td>Typed, several people have it</td><td><strong>Refused</strong>, naming each with their second line; the text stays</td><td>A mention lost without a word is only noticed months later, on an empty page.</td></tr>
+          <tr><td>Typed, nobody has it</td><td>Stays text, as today</td><td><code>@home</code> or somebody's handle elsewhere is often not a mention at all.</td></tr>
+          <tr><td>Reopened for editing</td><td>Shown as <code>@Name</code>, remembered as the stored id</td><td>Editing must not lose what saving kept.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The same rules apply in all three places an @-picker lives: the moment composer, the note field and the
+      journal (<code>MentionTextarea</code>). They apply to a moment kept on the device too, which then carries id tokens
+      and has nothing left to guess when it is sent.</p>
+  </section>
+
+  <section class="block">
+    <h2>How it is cut</h2>
+    <ul>
+      <li><strong>Two pure functions</strong> in <code>src/lib/mentions/</code>, test-first:
+        <code>toEditable(body, nameOf) → { text, picks }</code> and <code>toStored(text, picks) → body</code>, plus
+        <code>shiftPicks(before, after, picks)</code>, which carries picks across an edit (common prefix and suffix; a pick
+        the change touches is dropped).</li>
+      <li><strong>The second line</strong> is <code>tellApart</code> and <code>NamesakeLine</code>, as in ⌘K. The mention candidates
+        gain <code>description</code>, <code>metPlace</code> and <code>metDate</code>.</li>
+      <li><strong>The server</strong> changes in one place. <code>createHandleResolver</code> already knows a handle is ambiguous. It
+        now says so instead of answering <code>null</code>, and <code>resolveMentions</code> reports ambiguous handles. The moment,
+        note and journal use-cases refuse with a translatable phrase that names the candidates.</li>
+      <li><strong>Without JavaScript</strong>, the form posts the text as before. A namesake handle is then refused with the
+        reason, never dropped.</li>
+      <li><strong>Not in scope:</strong> chips inside the field (a rewrite that would cost the plain-textarea fallback), and a
+        suffix in the handle like <code>@Thomas2</code> (it would stay in the stored text).</li>
+    </ul>
+    <p class="verdict">Recommendation: build parts 1–3 together. The second line and remembering the pick fix the path people
+      actually take. The refusal closes the rest, so no mention disappears without a word.</p>
+  </section>
+</div>
+
+<script>
+  // ----- The household ---------------------------------------------------------------------
+  const PEOPLE = [
+    { id: '01TH0MASHUT', displayName: 'Thomas', firstName: 'Thomas', lastName: null, description: 'Mountain guide at the Tierberglihütte', color: '#1e66f5' },
+    { id: '01TH0MASLNK', displayName: 'Thomas', firstName: 'Thomas', lastName: null, metPlace: 'Lenk', metDate: '2023-08-12', color: '#fe640b' },
+    { id: '01TH0MASNIL', displayName: 'Thomas', firstName: 'Thomas', lastName: null, color: '#179299' },
+    { id: '01TH0MASLNG', displayName: 'Thomas Lang', firstName: 'Thomas', lastName: 'Lang', color: '#df8e1d' },
+    { id: '01SANDRABRN', displayName: 'Sandra Brunner', firstName: 'Sandra', lastName: 'Brunner', color: '#ea76cb' },
+    { id: '01LENABRUNR', displayName: 'Lena Brunner', firstName: 'Lena', lastName: 'Brunner', color: '#40a02b' }
+  ];
+  const byId = new Map(PEOPLE.map((p) => [p.id, p]));
+
+  // ----- The pure rules (what src/lib/mentions and namesakes.ts would hold) -----------------
+  const key = (s) => s.normalize('NFC').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+  const handleFor = (p) => '@' + ((p.firstName || p.lastName) ? `${p.firstName ?? ''}${p.lastName ?? ''}` : p.displayName).replace(/[^\p{L}\p{N}]/gu, '');
+
+  function tellApart(people) {
+    const counts = new Map();
+    for (const p of people) counts.set(p.displayName.trim().toLowerCase(), (counts.get(p.displayName.trim().toLowerCase()) ?? 0) + 1);
+    const lines = new Map();
+    for (const p of people) {
+      if ((counts.get(p.displayName.trim().toLowerCase()) ?? 0) < 2) continue;
+      if (p.description) lines.set(p.id, { kind: 'description', text: p.description });
+      else if (p.metPlace || p.metDate) lines.set(p.id, { kind: 'met', text: 'Met: ' + [p.metPlace, p.metDate?.slice(0, 4)].filter(Boolean).join(' · ') });
+      else lines.set(p.id, { kind: 'nothing', text: 'Nothing yet to tell them apart' });
+    }
+    return lines;
+  }
+  const LINES = tellApart(PEOPLE);
+
+  function suggest(query) {
+    const q = key(query);
+    return PEOPLE
+      .map((p) => {
+        const parts = [p.displayName, p.firstName ?? '', p.lastName ?? ''].map(key).filter(Boolean);
+        const rank = !q ? 1 : parts.some((x) => x.startsWith(q)) ? 0 : parts.some((x) => x.includes(q)) ? 1 : -1;
+        return { p, rank };
+      })
+      .filter((s) => s.rank >= 0)
+      .sort((a, b) => a.rank - b.rank || a.p.displayName.localeCompare(b.p.displayName))
+      .slice(0, 5)
+      .map((s) => s.p);
+  }
+
+  /** Carry picks across an edit: find the changed span; picks after it shift, picks it touches go. */
+  function shiftPicks(before, after, picks) {
+    let pre = 0;
+    while (pre < before.length && pre < after.length && before[pre] === after[pre]) pre++;
+    let suf = 0;
+    while (suf < before.length - pre && suf < after.length - pre && before[before.length - 1 - suf] === after[after.length - 1 - suf]) suf++;
+    const changedEnd = before.length - suf;
+    const delta = after.length - before.length;
+    return picks.flatMap((pk) => {
+      // A letter typed straight after a handle makes it a different name, so the pick goes too.
+      if (pk.end < pre || (pk.end === pre && !/[\p{L}\p{N}]/u.test(after[pre] ?? ''))) return [pk];
+      if (pk.start >= changedEnd) return [{ ...pk, start: pk.start + delta, end: pk.end + delta }];
+      return [];
+    });
+  }
+
+  const HANDLE = /(\\@)|@\{contact:([A-Za-z0-9_:-]+)\}|(?<![\p{L}\p{N}@\\])@(\p{L}[\p{L}\p{N}]*)/gu;
+
+  /** Stored body -> the text shown for editing, with a pick for every token. */
+  function toEditable(body) {
+    let text = '';
+    const picks = [];
+    let last = 0;
+    for (const m of body.matchAll(/@\{contact:([A-Za-z0-9_:-]+)\}/g)) {
+      text += body.slice(last, m.index);
+      const p = byId.get(m[1]);
+      const handle = p ? handleFor(p) : m[0];
+      if (p) picks.push({ start: text.length, end: text.length + handle.length, id: p.id });
+      text += handle;
+      last = m.index + m[0].length;
+    }
+    return { text: text + body.slice(last), picks };
+  }
+
+  /** Text + picks -> the stored body, or the handles that need an answer. */
+  function toStored(text, picks) {
+    const ambiguous = [];
+    let out = '';
+    let last = 0;
+    for (const m of text.matchAll(HANDLE)) {
+      out += text.slice(last, m.index);
+      last = m.index + m[0].length;
+      const pick = picks.find((pk) => pk.start === m.index && pk.end === last);
+      if (m[1] || m[2]) { out += m[0]; continue; }
+      if (pick) { out += `@{contact:${pick.id}}`; continue; }
+      const matches = PEOPLE.filter((p) => key(handleFor(p)) === key(m[3]) || key(p.displayName) === key(m[3]));
+      if (matches.length === 1) out += `@{contact:${matches[0].id}}`;
+      else {
+        if (matches.length > 1 && !ambiguous.some((a) => a.handle === m[0])) ambiguous.push({ handle: m[0], matches });
+        out += m[0];
+      }
+    }
+    out += text.slice(last);
+    return { body: out, ambiguous };
+  }
+
+  // ----- The composer -----------------------------------------------------------------------
+  const ta = document.getElementById('body');
+  const picker = document.getElementById('picker');
+  const goes = document.getElementById('goes');
+  const picksEl = document.getElementById('picks');
+  const storedEl = document.getElementById('stored');
+  const renderedEl = document.getElementById('rendered');
+  const errorEl = document.getElementById('error');
+
+  let picks = [];
+  let previous = '';
+  let active = null;
+  let selected = 0;
+  let people = [];
+
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const avatar = (p, size) => `<span class="avatar" style="width:${size}px;height:${size}px;background:${p.color};font-size:${Math.round(size * 0.45)}px">${esc(p.displayName[0])}</span>`;
+
+  function activeHandle() {
+    const m = /(?<![\p{L}\p{N}@\\])@([\p{L}\p{N}]*)$/u.exec(ta.value.slice(0, ta.selectionStart));
+    return m ? { start: ta.selectionStart - m[0].length, query: m[1] } : null;
+  }
+
+  function renderPicker() {
+    people = active ? suggest(active.query) : [];
+    if (!people.length) { picker.hidden = true; return; }
+    picker.hidden = false;
+    picker.innerHTML = '<li class="head" role="presentation">People</li>' + people.map((p, i) => {
+      const line = LINES.get(p.id);
+      return `<li role="none"><button type="button" role="option" aria-selected="${i === selected}" data-i="${i}">
+        ${avatar(p, 24)}
+        <span class="names"><span>${esc(p.displayName)}</span>${line ? `<span class="second ${line.kind === 'nothing' ? 'nothing' : ''}">${esc(line.text)}</span>` : ''}</span>
+      </button></li>`;
+    }).join('');
+  }
+
+  function describe(p) {
+    const line = LINES.get(p.id);
+    return line ? `${esc(p.displayName)} <span class="which">(${esc(line.text)})</span>` : esc(p.displayName);
+  }
+
+  function referenced() {
+    const out = [];
+    for (const m of ta.value.matchAll(HANDLE)) {
+      if (!m[3]) continue;
+      const end = m.index + m[0].length;
+      const pick = picks.find((pk) => pk.start === m.index && pk.end === end);
+      const matches = pick ? [byId.get(pick.id)] : PEOPLE.filter((p) => key(handleFor(p)) === key(m[3]));
+      if (matches.length === 1 && !out.includes(matches[0])) out.push(matches[0]);
+    }
+    return out;
+  }
+
+  function renderSide() {
+    const refs = referenced();
+    goes.innerHTML = refs.length
+      ? `Goes to <b>${describe(refs[0])}</b>’s journal${refs.length > 1 ? `, mentions ${refs.length - 1} more` : ''}`
+      : ta.value.trim() ? 'Name someone with @ to say whose journal this goes to' : '';
+    picksEl.innerHTML = picks.length
+      ? picks.map((pk) => `<li>${esc(ta.value.slice(pk.start, pk.end))} at ${pk.start}–${pk.end} → ${describe(byId.get(pk.id))}</li>`).join('')
+      : '<li class="empty">No picks: every handle would be looked up by name.</li>';
+    const { body, ambiguous } = toStored(ta.value, picks);
+    storedEl.textContent = ambiguous.length ? '(refused, see the message above the field)' : body || '–';
+  }
+
+  function refresh() {
+    active = activeHandle();
+    selected = 0;
+    renderPicker();
+  }
+
+  function choose(i) {
+    const p = people[i];
+    if (!p || !active) return;
+    const handle = handleFor(p);
+    const caret = ta.selectionStart;
+    const before = ta.value;
+    const after = before.slice(0, active.start) + handle + ' ' + before.slice(caret);
+    picks = shiftPicks(before, after, picks);
+    picks.push({ start: active.start, end: active.start + handle.length, id: p.id });
+    picks.sort((a, b) => a.start - b.start);
+    ta.value = after;
+    previous = after;
+    const pos = active.start + handle.length + 1;
+    ta.setSelectionRange(pos, pos);
+    active = null;
+    renderPicker();
+    renderSide();
+    ta.focus();
+  }
+
+  ta.addEventListener('input', () => {
+    picks = shiftPicks(previous, ta.value, picks);
+    previous = ta.value;
+    errorEl.hidden = true;
+    refresh();
+    renderSide();
+  });
+  ta.addEventListener('click', refresh);
+  ta.addEventListener('keyup', (e) => { if (e.key.startsWith('Arrow') && !(active && people.length && (e.key === 'ArrowUp' || e.key === 'ArrowDown'))) refresh(); });
+  ta.addEventListener('blur', () => setTimeout(() => { active = null; renderPicker(); }, 120));
+  ta.addEventListener('keydown', (e) => {
+    if (!active || !people.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); selected = (selected + 1) % people.length; renderPicker(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); selected = (selected - 1 + people.length) % people.length; renderPicker(); }
+    else if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); choose(selected); }
+    else if (e.key === 'Escape') { e.preventDefault(); active = null; renderPicker(); }
+  });
+  picker.addEventListener('mousedown', (e) => {
+    const b = e.target.closest('button[data-i]');
+    if (!b) return;
+    e.preventDefault();
+    choose(Number(b.dataset.i));
+  });
+  picker.addEventListener('mouseover', (e) => {
+    const b = e.target.closest('button[data-i]');
+    if (b && Number(b.dataset.i) !== selected) { selected = Number(b.dataset.i); renderPicker(); }
+  });
+
+  document.getElementById('composer').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const { body, ambiguous } = toStored(ta.value, picks);
+    if (ambiguous.length) {
+      errorEl.hidden = false;
+      errorEl.innerHTML = ambiguous.map((a) =>
+        `${esc(a.handle)} could be ${a.matches.length} people. Pick the one you mean in the list:<ul>${a.matches.map((p) => `<li>${describe(p)}</li>`).join('')}</ul>`
+      ).join('');
+      return;
+    }
+    if (!referenced().length) {
+      errorEl.hidden = false;
+      errorEl.textContent = 'A moment needs at least one person. Name someone with @.';
+      return;
+    }
+    errorEl.hidden = true;
+    renderedEl.innerHTML = body.split(/(@\{contact:[A-Za-z0-9_:-]+\})/).map((part) => {
+      const m = /^@\{contact:([A-Za-z0-9_:-]+)\}$/.exec(part);
+      if (!m) return esc(part);
+      const p = byId.get(m[1]);
+      const line = LINES.get(p.id);
+      return `<a class="mention" href="#" title="${line ? esc(line.text) : ''}">${esc(p.displayName)}</a>`;
+    }).join('') + `<p class="ok">Saved. ${new Set([...body.matchAll(/@\{contact:([^}]+)\}/g)].map((m) => m[1])).size} mention(s) linked. Each chip links to its own person.</p>`;
+  });
+
+  // ----- Scenarios --------------------------------------------------------------------------
+  const SCENARIOS = {
+    empty: () => ({ text: '', picks: [] }),
+    typed: () => ({ text: 'Hiked to the hut with @Thomas and @SandraBrunner', picks: [] }),
+    edit: () => toEditable('Hiked to the hut with @{contact:01TH0MASHUT} and @{contact:01SANDRABRN}. Coffee with @{contact:01TH0MASLNK} in Lenk.')
+  };
+  function load(name) {
+    const s = SCENARIOS[name]();
+    ta.value = s.text;
+    previous = s.text;
+    picks = s.picks;
+    errorEl.hidden = true;
+    renderedEl.innerHTML = '<span class="note">Nothing saved yet.</span>';
+    active = null;
+    renderPicker();
+    renderSide();
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+  }
+  document.querySelectorAll('[data-scenario]').forEach((b) => b.addEventListener('click', () => load(b.dataset.scenario)));
+  load('empty');
+</script>
+</body>
+</html>

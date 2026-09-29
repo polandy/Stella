@@ -244,8 +244,10 @@ never end up on a `relationship` row. Writes go further and match only `househol
 viewer's household`, which is what keeps the built-in set read-only in SQL as well as in the
 use-case. `key` is derived from the forward label and may never be one of `parent_child`,
 `sibling`, `partner` or `spouse` — the keys the kinship inference reads (docs/02 §2.4.1).
-`sort_order` is 0…11 for the built-ins and 100 for every custom type, with the forward label
-breaking the tie. A type is not deletable while `relationship` rows still reference it, and
+`sort_order` is 0…17 for the built-ins — family first, closest first — and 100 for every
+custom type, with the forward label breaking the tie. The startup seeder adds a built-in type a
+release brings and brings the built-ins' `sort_order` up to date; nothing else of an existing
+row is overwritten. A type is not deletable while `relationship` rows still reference it, and
 `symmetric` is not changeable then either, because it decides the canonical storage
 direction of those rows.
 
@@ -253,26 +255,26 @@ direction of those rows.
 |---|---|---|---|---|
 | `parent_child` | family | Parent of | Child of | — |
 | `grandparent_grandchild` | family | Grandparent of | Grandchild of | — |
+| `great_grandparent_great_grandchild` | family | Great-grandparent of | Great-grandchild of | — |
 | `sibling` | family | Sibling of | — | ✓ |
-| `pibling_nibling` | family | Aunt / Uncle of | Niece / Nephew of | — |
+| `half_sibling` | family | Half-sibling of | — | ✓ |
+| `aunt_uncle_niece_nephew` | family | Aunt / uncle of | Niece / nephew of | — |
 | `cousin` | family | Cousin of | — | ✓ |
-| `step_parent_child` | family | Step-parent of | Step-child of | — |
-| `guardian_ward` | family | Guardian of | Ward of | — |
-| `godparent_godchild` | family | Godparent of | Godchild of | — |
-| `in_law` | family | In-law of | — | ✓ |
-| `spouse` | romantic | Spouse of | — | ✓ |
+| `parent_in_law_child_in_law` | family | Parent-in-law of | Child-in-law of | — |
+| `sibling_in_law` | family | Sibling-in-law of | — | ✓ |
 | `partner` | romantic | Partner of | — | ✓ |
-| `ex_partner` | romantic | Ex-partner of | — | ✓ |
+| `spouse` | romantic | Spouse of | — | ✓ |
 | `friend` | social | Friend of | — | ✓ |
-| `neighbor` | social | Neighbor of | — | ✓ |
-| `roommate` | social | Roommate of | — | ✓ |
-| `acquaintance` | social | Acquaintance of | — | ✓ |
 | `colleague` | professional | Colleague of | — | ✓ |
-| `manager_report` | professional | Manager of | Reports to | — |
 | `mentor_mentee` | professional | Mentor of | Mentee of | — |
-| `teacher_student` | professional | Teacher of | Student of | — |
-| `business_partner` | professional | Business partner of | — | ✓ |
-| `client_provider` | professional | Client of | Provider to | — |
+| `neighbor` | social | Neighbor of | — | ✓ |
+| `acquaintance` | social | Acquaintance of | — | ✓ |
+| `knows` | social | Knows | — | ✓ |
+| `other` | other | Connected to | — | ✓ |
+
+The family types after `sibling` are the terms the kinship engine works out (docs/02 §2.4.1),
+so a household can store one it has confirmed — or enter it directly where the connecting
+person is not in Stella. None of them is read as a primary link.
 | `knows` | other | Knows | — | ✓ |
 | `other` | other | Connected to | — | ✓ |
 
@@ -412,6 +414,9 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 | contact_id | text fk → contact.id null | null = general/shared moment |
 | created_by | text fk → user.id | |
 | visibility | text | `'shared' \| 'private'` |
+| journal_entry_id | text fk → journal_entry.id null | set = belongs to that entry (§2.20), not the gallery |
+| framing_of | text null | set = the avatar framing of that gallery photo (docs/02 §2.14); no fk |
+| crop_x / crop_y / crop_size | real null | a framing's square, in its photo's full-size pixels |
 | file_path | text | path within media volume (original, sanitized) |
 | thumb_path | text | generated thumbnail path |
 | mime | text | |
@@ -423,6 +428,15 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 | created_at | int | |
 
 Note: `user.avatar_photo_id` and `contact.avatar_photo_id` reference this table.
+
+**A framing is a photo row of its own.** Wearing a gallery photo through a chosen square
+stores that square, rendered once, as a row with `framing_of` pointing at the photo; the
+contact's `avatar_photo_id` points at the framing. Its own id keeps media addresses immutable
+(a new square is a new row, never new bytes behind an old URL). Each photo has at most one
+framing — the repository replaces it in the same transaction that makes it the avatar. It is
+never listed in the gallery, copies its photo's `visibility` and `created_by` so exactly the
+same people see it, follows a change of the photo's visibility, and is deleted with the photo.
+`framing_of` carries no foreign key for the same reason as `avatar_photo_id`.
 
 **`journal_entry_id` carries no cascade.** It was added by migration `0002` as a plain
 `REFERENCES`, and adding one now would mean rebuilding `photo` — which cannot be dropped

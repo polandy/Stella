@@ -10,9 +10,17 @@ import {
 	setJournalMentions
 } from '$lib/server/domain/journal/journal';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
-import { createHandleResolver, mentionsOtherThan, resolveMentions, MENTION_TOKEN_RE } from '$lib/mentions/mentions';
-import { audienceCandidates } from '$lib/server/domain/moments/moments';
-import { getCommandDeps, getContactDeps, getJournalDeps, getPhotos, getMemberDeps } from '$lib/server/services';
+import { extractMentionIds, mentionsOtherThan } from '$lib/mentions/mentions';
+import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
+import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
+import {
+	getCommandDeps,
+	getContactDeps,
+	getJournalDeps,
+	getPhotos,
+	getMemberDeps,
+	getNamesakeContextDeps
+} from '$lib/server/services';
 import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { systemClock } from '$lib/server/clock';
@@ -31,18 +39,6 @@ function today(): string {
 /** Identity on a message key, so a typo in a validation message is a compile error. */
 function key(name: MessageKey): MessageKey {
 	return name;
-}
-
-/**
- * Turn a stored body's canonical mention tokens back into typed `@Handle` text, so editing an
- * entry starts from something a person actually wrote rather than raw `@{contact:<id>}` tokens.
- * Round-trips fine: `resolveMentions` re-resolves the handle to the same canonical token.
- */
-function bodyForEditing(body: string, nameOf: (id: string) => string | null): string {
-	return body.replace(MENTION_TOKEN_RE, (match, id: string) => {
-		const name = nameOf(id);
-		return name ? `@${name.replace(/\s+/g, '')}` : match;
-	});
 }
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -86,7 +82,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 				displayName: c.displayName,
 				firstName: c.firstName,
 				lastName: c.lastName,
-				visibility: c.visibility
+				visibility: c.visibility,
+				description: c.description,
+				metPlace: c.metPlace,
+				metDate: c.metDate,
+				avatarPhotoId: c.avatarPhotoId
 			})),
 		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5, §2.20.1)
 		entries: entries.map((e) => ({
@@ -94,8 +94,12 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			entryDate: e.entryDate,
 			title: e.title,
 			bodyHtml: renderMarkdownWithMentions(e.body, nameOf),
-			// plain text for the edit form, with tokens turned back into typed handles
-			bodyForEdit: bodyForEditing(e.body, nameOf),
+			// the stored body for the edit form, which shows its tokens as handles and keeps whom
+			// each one names — including people the picker does not offer, such as the subject
+			bodyForEdit: e.body,
+			mentionNames: Object.fromEntries(
+				extractMentionIds(e.body).flatMap((id) => (nameById.has(id) ? [[id, nameById.get(id)!]] : []))
+			),
 			visibility: e.visibility,
 			mine: e.createdBy === locals.user!.id,
 			author: authorLabel(e.createdBy === locals.user!.id, nameOfAuthor(e.createdBy)),
@@ -213,11 +217,7 @@ export const actions: Actions = {
 			return fail(404, { journalError: say(locals, 'errors.journal.editFailed') });
 		}
 
-		const resolver = createHandleResolver(
-			audienceCandidates(await listContacts(getContactDeps(), viewer), entry.visibility)
-		);
-		const resolved = resolveMentions(parsed.output.body, resolver);
-
+		const contacts = await listContacts(getContactDeps(), viewer);
 		const author = {
 			userId: locals.user.id,
 			householdId: locals.user.householdId,
@@ -225,7 +225,12 @@ export const actions: Actions = {
 		};
 
 		let ok: boolean;
+		let resolved: { body: string; ids: string[] };
 		try {
+			// A handle that could be several people is asked about, not dropped (docs/02 §2.2.3).
+			resolved = await withNamesakeContext(getNamesakeContextDeps(), viewer, async () =>
+				resolveForAudience(contacts, entry.visibility, parsed.output.body)
+			);
 			ok = await editJournalEntry(getJournalDeps(), author, {
 				id: parsed.output.id,
 				title: parsed.output.title ?? null,

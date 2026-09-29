@@ -14,6 +14,7 @@
 	import Toast from '$lib/components/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
 	import { providePending } from '$lib/sync/context.svelte';
+	import { providePeopleContext } from '$lib/people/context.svelte';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { reportNavigation } from '$lib/sync/pending';
@@ -114,6 +115,7 @@
 	// the item back; an unload — or a native form post, which must not be replayed as a GET —
 	// sends them with keepalive alongside and hopes for the best.
 	const removals = provideRemovals();
+	providePeopleContext(() => data.peopleContext);
 	beforeNavigate((navigation) => {
 		if (removals.snapshot.removals.length === 0) return;
 		if (navigation.type === 'leave' || navigation.type === 'form' || !navigation.to) {

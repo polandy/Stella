@@ -7,6 +7,9 @@ export const errors = {
 	'errors.contact.birthDateFormat':
 		'A birth date must be YYYY-MM-DD, or --MM-DD when the year is unknown.',
 	'errors.contact.emptyName': 'A name cannot be empty.',
+	'errors.contact.needsSomethingToKnowThemBy':
+		'Add a last name or a description, so this person can be told apart from others of the same name later.',
+	'errors.contact.emptyDescription': 'Write something to know them by.',
 	'errors.contact.needAName': 'Please enter at least a name or nickname.',
 	'errors.contact.couldNotCreate': 'Could not add the person.',
 	'errors.self.notFound': 'That person is not one you can pick as yourself.',
@@ -20,8 +23,6 @@ export const errors = {
 	/** For a refusal that names no link; the wording above is the one a reader should meet. */
 	'errors.relationship.alreadyRomantic': (p: { name: string }) =>
 		`There is already a partnership on record with ${p.name}. Correct that one instead of adding a second.`,
-	'errors.relationship.siblingDerived': (p: { name: string }) =>
-		`Stella already works ${p.name} out as a sibling here, from the shared parents. Entering it by hand would replace what is worked out.`,
 	'errors.relationship.romanticTaken': (p: { name: string; partner: string }) =>
 		`${p.name} is already with ${p.partner}, and that partnership still holds. Mark it as former first.`,
 	'errors.relationship.parentsComplete': (p: { name: string; max: number }) =>
@@ -66,6 +67,8 @@ export const errors = {
 	'errors.command.notQueueable': 'Only additions can wait to be sent.',
 	'errors.command.photoParentGone': 'What this photo belongs to is no longer there to add it to.',
 	'errors.moment.needsPerson': 'Mention at least one person with @ so the moment has a place to go.',
+	'errors.mention.ambiguous': (p: { handle: string; count: number; people: string }) =>
+		`@${p.handle} could be ${p.count} people: ${p.people}. Pick the one you mean from the list that opens when you type @.`,
 
 	'errors.image.empty': 'The image is empty.',
 	'errors.image.tooLarge': 'The image is too large.',
@@ -73,6 +76,7 @@ export const errors = {
 	'errors.image.thumbTooLarge': 'The thumbnail is too large.',
 	'errors.image.unsupportedFormat': 'Unsupported image format.',
 	'errors.image.formatMismatch': 'Thumbnail format mismatch.',
+	'errors.image.cropOutside': 'The chosen square does not fit inside the photo.',
 	'errors.image.dimensions': 'Invalid image dimensions.',
 	'errors.image.couldNotStore': 'Could not store the photo.',
 	'errors.caption.tooLong': (p: { max: number }) => `A caption can be at most ${p.max} characters.`,

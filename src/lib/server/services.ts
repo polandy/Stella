@@ -41,6 +41,9 @@ import { createDrizzleRestoreRepository } from './db/restore-repository';
 import type { ArchiveDeps, ArchiveRepository } from './domain/archive/archive';
 import type { ImportArchiveDeps, RestoreRepository } from './domain/archive/import';
 import { createDrizzleRelationshipRepository } from './db/relationship-repository';
+import { createDrizzlePersonContextReads } from './db/person-context-reads';
+import type { PersonContextDeps } from './domain/contacts/person-context';
+import { withNamesakeContext, type NamesakeContextDeps } from './domain/mentions/namesake-context';
 import { createDrizzleSuggestionDismissalRepository } from './db/suggestion-dismissal-repository';
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
@@ -74,7 +77,8 @@ import type { GraphRepository } from './db/graph-repository';
 import type { CircleDeps, CircleRepository } from './domain/circles/circles';
 import type { StreamDeps, StreamRepository } from './domain/stream/stream';
 import { captureMoment, type CaptureMomentDeps } from './domain/moments/moments';
-import type { CommandDeps, CommandReceiptRepository } from './domain/commands/dispatch';
+import type { CommandActor, CommandDeps, CommandReceiptRepository } from './domain/commands/dispatch';
+import type { Viewer } from './access/visibility';
 import { createDrizzleCommandReceiptRepository } from './db/command-receipt-repository';
 import { createDrizzleEntryOwnership } from './db/entry-ownership';
 import { attachGalleryPhoto, attachMomentPhoto } from './domain/commands/photos';
@@ -94,6 +98,7 @@ import type { ApiImportDeps } from './domain/import/api/api-import';
 import type { ImportedPhotoDeps } from './domain/import/monica/photos';
 import type { InteractionDeps, InteractionRepository } from './domain/interactions/interactions';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
+import type { FramingDeps, FramingRepository } from './domain/media/framing';
 import type { GalleryDeps } from './domain/media/gallery';
 import type { GalleryUploadDeps } from './domain/media/gallery-upload';
 import type { JournalPhotoDeps } from './domain/media/journal-photos';
@@ -205,6 +210,20 @@ export function getContacts(): ContactRepository & NameCandidateSource {
 
 export function getContactDeps(): ContactDeps {
 	return { contacts: getContacts(), ids: ulidGenerator, clock: systemClock };
+}
+
+/** What a namesake's second line may fall back on: their links and circles (docs/02 §2.2.3). */
+export function getPersonContextDeps(): PersonContextDeps {
+	return { contextReads: createDrizzlePersonContextReads(getDb()) };
+}
+
+/** What a refused `@Thomas` names each Thomas by, a namesake with nothing typed included. */
+export function getNamesakeContextDeps(): NamesakeContextDeps {
+	return {
+		...getPersonContextDeps(),
+		selfContactOf: async (userId) => (await getAccounts().findById(userId))?.selfContactId ?? null,
+		clock: systemClock
+	};
 }
 
 /** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */
@@ -405,7 +424,7 @@ export function getGraphRepository(): GraphRepository {
 	return (graphRepository ??= createDrizzleGraphRepository(getDb()));
 }
 
-let photoRepository: PhotoRepository | null = null;
+let photoRepository: ReturnType<typeof createDrizzlePhotoRepository> | null = null;
 let archiveRepository: ArchiveRepository | null = null;
 
 /** Deps for exporting the household as one archive (docs/02 §2.15). */
@@ -430,6 +449,11 @@ export function getImportArchiveDeps(): ImportArchiveDeps {
 let mediaStore: MediaStore | null = null;
 
 export function getPhotos(): PhotoRepository {
+	return photoAdapter();
+}
+
+/** One Drizzle adapter serves both photo ports; each use-case sees only its own. */
+function photoAdapter(): PhotoRepository & FramingRepository {
 	return (photoRepository ??= createDrizzlePhotoRepository(getDb()));
 }
 
@@ -448,6 +472,11 @@ export function getImportedPhotoDeps(): ImportedPhotoDeps {
 /** Deps for the photo gallery on a person (docs/02 §2.14). */
 export function getGalleryDeps(): GalleryDeps {
 	return { photos: getPhotos(), media: getMediaStore() };
+}
+
+/** Deps for wearing a gallery photo through a chosen square (docs/02 §2.14). */
+export function getFramingDeps(): FramingDeps {
+	return { framings: photoAdapter(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
 }
 
 export function getGalleryUploadDeps(): GalleryUploadDeps {
@@ -470,6 +499,10 @@ export function getCaptureMomentDeps(): CaptureMomentDeps {
 
 let commandReceiptRepository: CommandReceiptRepository | null = null;
 
+function viewerOf(actor: CommandActor): Viewer {
+	return { id: actor.userId, householdId: actor.householdId };
+}
+
 /** The dispatcher every change goes through (docs/concepts/offline-capture.md §3). */
 export function getCommandDeps(): CommandDeps {
 	const capture = getCaptureMomentDeps();
@@ -481,10 +514,12 @@ export function getCommandDeps(): CommandDeps {
 			// A moment carries its own visibility, so it is also the author's default for anyone
 			// the moment creates inline — and what a photo sent after it inherits.
 			'moment.capture': async (actor, payload) => ({
-				...(await captureMoment(
-					capture,
-					{ userId: actor.userId, householdId: actor.householdId, defaultVisibility: payload.visibility },
-					payload
+				...(await withNamesakeContext(getNamesakeContextDeps(), viewerOf(actor), () =>
+					captureMoment(
+						capture,
+						{ userId: actor.userId, householdId: actor.householdId, defaultVisibility: payload.visibility },
+						payload
+					)
 				)),
 				visibility: payload.visibility
 			}),
@@ -508,7 +543,9 @@ export function getCommandDeps(): CommandDeps {
 			'interaction.log': (actor, payload) =>
 				logInteractionChecked({ ...getInteractionDeps(), contacts: getContacts() }, actor, payload),
 			'note.add': (actor, payload) =>
-				writeNote({ ...getNoteDeps(), contacts: getContacts() }, actor, payload),
+				withNamesakeContext(getNamesakeContextDeps(), viewerOf(actor), () =>
+					writeNote({ ...getNoteDeps(), contacts: getContacts() }, actor, payload)
+				),
 			'moment.photo': (actor, payload) =>
 				attachMomentPhoto(
 					{ receipts, entries: createDrizzleEntryOwnership(getDb()), photos: getJournalPhotoDeps() },
@@ -516,7 +553,9 @@ export function getCommandDeps(): CommandDeps {
 					payload
 				),
 			'journal.write': (actor, payload) =>
-				writeJournalEntry({ ...getJournalDeps(), contacts: getContacts() }, actor, payload),
+				withNamesakeContext(getNamesakeContextDeps(), viewerOf(actor), () =>
+					writeJournalEntry({ ...getJournalDeps(), contacts: getContacts() }, actor, payload)
+				),
 			'field.add': onVisibleContact(getContacts(), async (_actor, payload) => ({
 				fieldId: await addContactField(getContactFieldDeps(), payload)
 			})),

@@ -33,7 +33,15 @@ export const settings: SettingsMessages = {
 		'Benenne die Arten von Verbindungen, die dein Haushalt festhält — über die hinaus, die Stella mitbringt.',
 	'settings.data.adminOnly':
 		'Import, Sicherungen und die Beziehungsarten sind der Haushalts-Administration vorbehalten.',
-	'settings.relationships.heading': 'Beziehungen',
+	'settings.quality.heading': 'Datenqualität',
+	'settings.firstNameOnly.pageTitle': 'Nur Vorname · Stella',
+	'settings.firstNameOnly.title': 'Nur mit Vornamen bekannt',
+	'settings.firstNameOnly.blurb': 'Alle, von denen nur der Vorname bekannt ist und sonst nichts, um sie zu unterscheiden.',
+	'settings.firstNameOnly.intro':
+		'Nur ein Vorname — kein Nachname, keine Beschreibung, kein Ort oder Datum des Kennenlernens. Ergänze, woran du sie jeweils erkennst. Zum Zusammenführen oder Archivieren öffne die Person.',
+	'settings.firstNameOnly.knowThemBy': (p) => `Woran erkennst du ${p.name}?`,
+	'settings.firstNameOnly.empty.title': 'Alle sind unterscheidbar',
+	'settings.firstNameOnly.empty.hint': 'Niemand mehr, von dem nur der Vorname bekannt ist.',
 	'settings.relationships.title': 'Beziehungen prüfen',
 	'settings.relationships.intro':
 		'Stella geht alle Personen durch, die du sehen kannst, und zeigt die Familienverbindungen, die sich aus dem Eingetragenen ergeben. Gespeichert wird erst, was du übernimmst.',

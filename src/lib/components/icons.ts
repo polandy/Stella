@@ -32,6 +32,7 @@ import {
 	Star,
 	Users,
 	UserRound,
+	UserRoundPen,
 	UsersRound,
 	Video,
 	Waypoints,
@@ -79,6 +80,8 @@ export const ICONS = {
 	more: Ellipsis,
 	pinned: Star,
 	archive: Archive,
+	// People known by a first name only, to be tidied up (docs/02 §2.2.3)
+	tidy: UserRoundPen,
 	// A credential a script signs in with (docs/02 §2.16.1) — not `private`, which is about who sees a record.
 	apiToken: KeyRound,
 	// States

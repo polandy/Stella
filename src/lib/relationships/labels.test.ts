@@ -6,7 +6,8 @@ import {
 	relationshipCategoryLabel,
 	relationshipRowLabel,
 	relationshipStatusLabel,
-	relationshipTypeLabel
+	relationshipTypeLabel,
+	towardsSubject
 } from './labels';
 
 /*
@@ -126,10 +127,13 @@ describe('exclusionLabel', () => {
 			`Carl already has ${MAX_PARENTS} parents`
 		);
 	});
+});
 
-	it('needs no name where the reason is about neither person alone', () => {
-		expect(exclusionLabel(en, { reason: 'siblingDerived', personId: 'c' }, carl)).toBe(
-			'already siblings through their parents'
-		);
+describe('towardsSubject', () => {
+	it('says who someone new is from the link being entered, read from their end', () => {
+		// On Hans's page, "Hans is Parent of …" makes the new person his child.
+		expect(towardsSubject(en, builtIn, 'forward', 'Hans Meyer')).toBe('Child of Hans Meyer');
+		expect(towardsSubject(de, builtIn, 'reverse', 'Hans Meyer')).toBe('Elternteil von Hans Meyer');
+		expect(towardsSubject(en, ownType, 'forward', 'Vreni')).toBe('Godchild of Vreni');
 	});
 });

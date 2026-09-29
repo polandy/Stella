@@ -1,11 +1,8 @@
 import { error, json, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import type { SelectablePerson } from '$lib/people/select';
-import {
-	createContact,
-	getContact,
-	InvalidBirthDateError
-} from '$lib/server/domain/contacts/contacts';
+import { TranslatableError } from '$lib/errors/translatable';
+import { createContact, getContact } from '$lib/server/domain/contacts/contacts';
 import { say, translator } from '$lib/server/i18n/say';
 import { getContactDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
@@ -48,7 +45,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	} catch (err) {
 		throw error(
 			400,
-			err instanceof InvalidBirthDateError
+			// A birthday that is no day, or a first name with nothing to know them by (§2.2.3).
+			err instanceof TranslatableError
 				? err.phrase(translator(locals))
 				: say(locals, 'errors.contact.needAName')
 		);
@@ -68,7 +66,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		description: created.description,
 		metPlace: created.metPlace,
 		metDate: created.metDate,
-		birthDate: created.birthDate
+		birthDate: created.birthDate,
+		avatarPhotoId: created.avatarPhotoId
 	};
 	return json(person, { status: 201 });
 };

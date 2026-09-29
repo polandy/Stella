@@ -118,3 +118,36 @@ export function bowsAround(
 	}
 	return bows;
 }
+
+/** The golden angle: each next point on the spiral turns this far, so none line up. */
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+
+/**
+ * `positions` with everyone who shares a spot with somebody set apart around it, on a
+ * sunflower spiral at least `spacing` between neighbours; whoever stands alone stays put.
+ * Spread in the order of their ids, so the force layout, which parts two nodes on one spot in
+ * a random direction, has no tie left to break (docs/04 §4.11).
+ */
+export function spreadCoincident(
+	positions: ReadonlyMap<string, Point>,
+	spacing: number
+): Map<string, Point> {
+	const bySpot = new Map<string, string[]>();
+	for (const [id, { x, y }] of positions) {
+		const spot = `${x},${y}`;
+		bySpot.set(spot, [...(bySpot.get(spot) ?? []), id]);
+	}
+	const spread = new Map(positions);
+	for (const ids of bySpot.values()) {
+		if (ids.length < 2) continue;
+		const centre = positions.get(ids[0])!;
+		[...ids].sort().forEach((id, k) => {
+			const radius = spacing * Math.sqrt(k);
+			spread.set(id, {
+				x: centre.x + radius * Math.cos(k * GOLDEN_ANGLE),
+				y: centre.y + radius * Math.sin(k * GOLDEN_ANGLE)
+			});
+		});
+	}
+	return spread;
+}

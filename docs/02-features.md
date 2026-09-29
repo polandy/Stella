@@ -116,7 +116,8 @@ shows to the other as anything but a badge.
 The central entity. A contact is any person the family wants to remember — they need
 not be an app user.
 
-**Fields (all optional except a display name):**
+**Fields (all optional except a name — and a first name alone needs a last name or a
+description to go with it, §2.2.3):**
 
 - Names: first, last, nickname, name prefix/suffix, "goes by".
 - Optionally a **maiden/former name**.
@@ -142,9 +143,9 @@ not be an app user.
 
 **Behaviors:**
 
-- **Quick add:** a minimal, fast form — display name + optional photo + optional
-  "how we met" — reachable in one tap, designed for mobile capture. Everything else can
-  be filled later.
+- **Quick add:** a minimal, fast form — a name (with a last name or a description) +
+  optional photo + optional "how we met" — reachable in one tap, designed for mobile capture.
+  Everything else can be filled later.
 - **Contact profile page** aggregates: header (avatar, name, description, key dates,
   tags), relationships, notes, interactions timeline, photo gallery, contact fields.
 - **Deceased contacts** are kept, visually marked, and excluded from active reminders.
@@ -244,8 +245,10 @@ no dialog, nothing typed twice:
 - **First and last name**, pre-filled by splitting the query at the first space (so *van der
   Berg* stays one surname).
 - **Description**, one line, always in view: it is what the person is found and told apart
-  by later, whatever else is known. With no last name it comes in a highlighted box with a
-  nudge (§2.2.3).
+  by later, whatever else is known. With no last name it comes in a highlighted box and is
+  needed (§2.2.3). In the relationship form it starts filled in from the link being entered,
+  read from the new person's end — on Hans's page, *Parent of* makes it *Child of Hans Meyer*
+  — and follows the type while it has not been edited.
 - **Nickname** and **birthday**, collapsed under *More details*. The birthday is the same
   locale-aware field as everywhere else (§5.7), so the year may be left blank here too —
   which is common for someone just being named in passing.
@@ -266,21 +269,55 @@ exist a moment ago cannot be the duplicate.
 People met once are often known by a first name only — a family met at a mountain hut — and
 a household soon has five people called *Thomas*. Two things keep them apart:
 
-- **A second line under a shared name.** In ⌘K and in every person picker (§2.2.2), a person
+- **A second line under a shared name.** In ⌘K, in every person picker (§2.2.2) and in the
+  @-picker (§2.20.1), a person
   whose display name someone else on the list shares (ignoring case and stray spaces, not
   accents — *René* and *Rene* look different) gets a second line saying which one they are:
   their **description**; else **where and when you met** (*Met: Tierberglihütte · 2024*, the
-  year alone of the date); else a quiet *Nothing yet to tell them apart*, which is the cue to
-  add something. The whole list counts, not just what the query left: a Thomas is just as
-  ambiguous when the other one is filtered out. A unique name stays one line. The pure rule is
-  `tellApart` (`src/lib/people/namesakes.ts`).
-- **A nudge when a last name is missing.** While a first name stands without a last name —
-  on *Add a person* and in a picker's create panel — the description field, there anyway,
-  sits in a highlighted box: *Without a last name, "Thomas" is hard to tell apart later. What will
-  you know them by?* It is only a nudge; a name alone still saves.
+  year alone of the date); else **one of their relationships**, read from their end (*Sibling of
+  Sabine Keller*; a link to the viewer's own person reads *Your sibling*); else **a circle they
+  are in** (*Turnverein Muri · Coach*); else a quiet *Nothing yet to tell them apart*, which is
+  the cue to add something. What was typed wins because it was written to tell them apart and
+  reads the same for everyone. Of several links, only current ones whose two ends the viewer
+  may see count, never one to another namesake (*Father of Thomas*), family first, then the
+  type's order, then the oldest. Of several circles, only visible, unarchived ones whose end
+  date has not passed, the most specific first (*Class 9a* over *School Muri*), then one with a
+  role, then the latest start. The server reads those per viewer through the access layer
+  (§2.10), so a private person or circle is never named, and nothing is stored: the line
+  follows the links as they are. The whole list counts, not just what the query left: a Thomas
+  is just as ambiguous when the other one is filtered out. A unique name stays one line. The
+  pure rules are `tellApart` (`src/lib/people/namesakes.ts`) and `rankContext`
+  (`src/lib/people/context.ts`).
+- **A description when a last name is missing.** While a first name stands without a last name —
+  on *Add a person*, in a picker's create panel and in the moment composer's — the description
+  field, there anyway, sits in a highlighted box: *Without a last name, "Thomas" is hard to tell
+  apart later. What will you know them by?* It is **needed**: a person added by hand with neither
+  a last name nor a description is refused, by the server as much as by the form, so a kept
+  addition from a phone meets the same rule (`createContact`). Imports keep what they carry, and
+  people added before are left as they are.
+- **A list of those added before.** *Settings → Data quality → People known by a first name
+  only*, next to *Check relationships* and like it open to every member, lists everyone the
+  viewer may see (archived people aside) who has a first name and nothing else; the card
+  says how many there are: no last name, neither in its field nor in the name they are shown by, no
+  description, no place or date met — exactly who the second line would call *Nothing yet*
+  (`isKnownByAFirstNameOnly`); a link or a circle does not take anyone off it, since it can
+  end or be made private. Its list gives each person a description field to fill in where
+  they are listed, filled in already where a link or a circle says who they are, in words fit
+  to store for everyone (*Sibling of Andy Brunner*, never *Your sibling*), and saving takes them off it (`describeContact`: the name is kept,
+  an empty description refused). Merging a duplicate or archiving someone met once happens
+  on their page, one tap away.
 
-Not yet: relationship or circle as further fallbacks, and the @-picker, whose `@Thomas`
-handle cannot tell namesakes apart anyway (docs/06, M3).
+- **A picked mention stays the person picked.** The text shows `@Thomas` for either Thomas, so
+  the @-picker remembers whom each handle it wrote stands for and saves it as that person's id
+  token (§2.20.1). A `@Thomas` nobody picked — typed by hand, pasted, or written without
+  JavaScript — that could be several people the text may name is **refused**, naming each with
+  the same line as the pickers (*@Thomas could be 2 people: Thomas (Mountain guide), Thomas (Your
+  sibling)…*), and the text stays to be corrected. The links and circles are read, as the
+  author, only once a text is refused (`withNamesakeContext`). A mention is never dropped
+  without a word. With JavaScript it is asked sooner: while such a `@Thomas` stands in the
+  moment composer, a note or a journal entry, a slim box under the field says *@Thomas could
+  be 3 people — pick one from the @ list*, with *Who is who?* to unfold each one's line, and saving stays off until one is picked from the
+  @-list.
 
 ## 2.3 Contact fields **[M1]**
 
@@ -320,8 +357,9 @@ reciprocal** link.
 - **Guardrails:** prevent duplicate and self relationships; refuse contradictions
   (e.g. mutual "parent of").
 
-- **Shipped:** a **generation claimed in both directions is refused**. `parent_child` and
-  `grandparent_grandchild` run one way — nobody is their own parent's parent — so once such a
+- **Shipped:** a **generation claimed in both directions is refused**. `parent_child`,
+  `grandparent_grandchild`, `great_grandparent_great_grandchild`, `aunt_uncle_niece_nephew`
+  and `parent_in_law_child_in_law` run one way — nobody is their own parent's parent — so once such a
   link is stored, entering it flipped between the same two people is turned away with the
   reason and nothing is written. It matters twice over: the picker offers both sides of a type
   from one screen (below), which puts the flipped pair one wrong click away, and the kinship
@@ -352,10 +390,6 @@ reciprocal** link.
     the derived kinship (§2.4.1) is worked out from the links it reads, not from a count of
     them.
 
-  - **Nothing that is already worked out.** Where shared parents already make two people
-    siblings (§2.4.1), entering it by hand is refused — a stored row permanently replaces the
-    derived one, and the derivation is the better record. A **half**-sibling stays enterable:
-    saying those two are full siblings adds something the one shared parent does not say.
   - **At most two parents.** A third parent is far more often a mistyped link than a third
     parent, and Stella ships no step- or adoptive-parent type to tell them apart. A household
     that really has a third to record corrects one of the two rather than adding to them.
@@ -446,7 +480,7 @@ reciprocal** link.
 
 Stella reasons over the relationship graph so members enter as little as possible.
 
-**Derived kinship (computed, not stored):** from a small set of **primary** relationships
+**Derived kinship (computed, stored only when confirmed):** from a small set of **primary** relationships
 (parent/child, partner/spouse, sibling), Stella derives extended kinship *for display*
 without manual entry — **grandparent/grandchild, great-grandparent, aunt/uncle,
 niece/nephew, cousin, sibling-in-law, parent-in-law**, plus half/step variants where
@@ -492,20 +526,38 @@ tables, fully unit-testable (test-first).
   tie to existing children is deliberately not offered: it is a step relationship, which the
   profile already names without storing anything. What is offered is worked out by a rule
   engine (`src/lib/suggestions/`) that keeps the rules apart from the checks applied to all
-  of them — so Stella never offers a pair the household has already linked, and never offers
-  to *store* a tie it already works out and displays.
+  of them — so Stella never offers a pair the household has already linked, and a write never
+  offers to *store* a tie it already works out and displays (a review does, on request — below).
 - **Shipped:** a worked-out **step** relative can be corrected in place. *Stepchild*,
   *stepparent* and *stepsibling* are what Stella falls back to when the link runs through a
   partner and no direct one is on record — but a partner's child is often the person's own
   child too, and only the household knows which it is. So those rows, and only those, carry
   a quiet **Actually the child / the parent / a sibling**, which stores the direct link.
-  Every other term is unambiguous and stays read-only: a grandmother is a grandmother, with
-  nothing to decide. Confirming settles the pair for good — an entered link is never
+  Stella has no step type, so the step reading itself is not stored; every other term is
+  confirmed as it stands (next note). Confirming settles the pair for good — an entered link is never
   re-derived — so the row disappears and the real relationship takes its place in the list
   above, while the relatives that were *not* corrected keep their step term. Which link a
   step term would become is decided by a pure, language-free module (`src/lib/kinship/`),
   and the writing goes through the same checked action as the *Also true?* block, so a
   correction that would contradict the graph is refused like any other entry.
+
+- **Shipped:** every other worked-out row carries a quiet **Confirm**, which stores it as an
+  entered link of the type that says the same thing: a grandparent as `grandparent_grandchild`,
+  a great-grandparent as `great_grandparent_great_grandchild`, an aunt or uncle as
+  `aunt_uncle_niece_nephew`, a cousin as `cousin`, a parent- or child-in-law as
+  `parent_in_law_child_in_law`, a sibling-in-law as `sibling_in_law`, a sibling as `sibling` and
+  a half-sibling as `half_sibling` — kept apart from `sibling`, which says the two are *full*
+  siblings. These are built-in types like any other, so they can also be entered by hand where
+  the connecting person is not in Stella. What confirming buys is permanence: the row then
+  stands on its own, and a later change to the links it was worked out from (a parent removed,
+  a partnership marked former) no longer takes it away. It moves up into the entered list with
+  the type's wording and leaves the derived block, since a pair with a stored link is never
+  re-derived. The confirmed types are facts about a pair, never read back as primary links, so
+  confirming one invents nothing further. Which row a term becomes and which way round it is
+  stored is decided in the same pure module as the step correction (`src/lib/kinship/claims.ts`),
+  and it is written through the same checked action — in place, without reloading the page, so the
+  reader stays where they were. The derived rows are laid out like the entered ones, the action
+  in the same column as *Edit*, with *via* on a line of its own beneath the name.
 
 - **Shipped:** the relationships card carries a **Check suggestions** control, and it is what
   makes all of the above reachable at all. Every suggestion described so far is raised by a
@@ -522,7 +574,7 @@ tables, fully unit-testable (test-first).
   belong to the household, not to the member who clicked, and they travel in an export, so a
   restored backup does not re-ask everything the household has already settled.
 
-- **Shipped:** the same question for the **whole household**, at *Settings → Check relationships*.
+- **Shipped:** the same question for the **whole household**, at *Settings → Data quality → Check relationships*.
   A per-person check only reaches the people somebody thought to open, and a household that
   entered or imported its links years ago has opened none of them — so this runs the rules over
   everyone the member can see, in one pass, and lists what stands grouped by the person each
@@ -533,6 +585,18 @@ tables, fully unit-testable (test-first).
   household answered. It is for every member, not the admin alone: the answers belong to the
   household. Anyone's check is scoped to their own graph, so a private person is never named to
   someone who may not see them.
+
+- **Shipped:** both checks also list the **worked-out relatives** that carry *Confirm* on the
+  profile, so a household working through what Stella knows meets them in the same list. They
+  are claims like the rest — the relative, the person, and *worked out through* whom, each name
+  followable, the relative named by gender where it is on record (*an aunt of*, *a cousin of*)
+  and neutrally where not (*an aunt or uncle of*) — listed after what follows from an entry, since a missing parent is news and a
+  grandmother Stella already names is housekeeping. *Accept* stores the same row *Confirm*
+  would; the step terms are left out, being corrected on the profile rather than entered as
+  they are. *Not true* here only stops the check asking: the profile keeps naming the relative,
+  because it still follows from the links on record. A write never raises them — the *Also
+  true?* block stays limited to what the new link implies (`docs/concepts/
+  relationship-suggestions.md` §3.5, rule K1).
 
 - **Shipped:** every suggestion **says what it follows from**, and every name in it is a way to
   that person. A parent claim rests on two facts — the parent is on record for one child, and
@@ -741,7 +805,8 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 
 - **Filters:** by edge kind (relationships / circles / kinship), relationship category,
   circle, tag, or "living only".
-- **Layouts:** force-directed by default. On request the map is arranged afresh — *free* by
+- **Layouts:** force-directed by default, and **the same map on every visit**: the same people
+  come out in the same places, so they are found where they were left. On request the map is arranged afresh — *free* by
   the forces between people, as a **family tree** (one row per generation, partners side by
   side, children under their parents), or **by circle** (each circle ringed by its members);
   the map glides into the new arrangement (docs/05 §5.8).
@@ -775,7 +840,8 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   - Grouping reads what is shown: with the Circles chip off there are no membership lines to
     bundle, so there are no groups. It applies to *Free* and *By circle* — where the groups
     stand around their circle in place of the individual members — and not to *Tree*, whose
-    rows are generations, not circles.
+    rows are generations, not circles. Nobody outside a group is left under its frame: whoever
+    it would cover — the circle, say — stands just beside it instead.
   - People joining a group — the switch turned on, a circle expanded — make the map settle
     afresh in the current arrangement (a glide, docs/05 §5.8), because a group's members must
     stand together; any other expand still moves only the newcomers. Leaving a group moves
@@ -819,7 +885,8 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 
 - **Global search** (keyboard-accessible, `/` or ⌘K) across contact names, descriptions,
   contact-field values, tags, and note bodies.
-- Backed by SQLite **FTS5**; results grouped by type (contacts, notes) with snippets.
+- Backed by SQLite **FTS5**; results grouped by type (contacts, notes) with snippets. A person
+  found shows their photo, or their initials when they have none.
 - Respects visibility — private records only appear for their owner.
 
 ## 2.10 Privacy model (shared vs. private) **[M1]**
@@ -985,8 +1052,8 @@ mechanism behind two features: correcting a birthday without touching the profil
 
 - Each contact has an **avatar** and a **photo gallery**.
 - Upload from desktop or mobile camera/roll. **Avatars are processed in the browser** (M1):
-  the client applies EXIF orientation, centre-crops to a square, and produces a full + a
-  thumbnail JPEG; re-encoding via canvas **drops all EXIF/GPS metadata** (privacy) and keeps
+  the client applies EXIF orientation, cuts the square the person chose, and produces a full +
+  a thumbnail JPEG; re-encoding via canvas **drops all EXIF/GPS metadata** (privacy) and keeps
   uploads small, so the server needs no native image library. The server validates (magic
   bytes, size) and stores both variants on the media volume; dimensions/size in the DB.
 - EXIF orientation respected; EXIF GPS/personal metadata **stripped** (by the client re-encode
@@ -1005,6 +1072,22 @@ mechanism behind two features: correcting a birthday without touching the profil
   notes follow (§2.10); anyone who can see a photo can make it the avatar. Removing a photo
   deletes both stored variants and, if the contact was wearing it, clears the avatar in the
   same transaction. Journal photos (§2.20) stay in the story and never appear here.
+- **Shipped: choosing the square.** Picking a new photo for someone opens a **cropper** before
+  anything is uploaded: the picture sits behind a round window the shape of the avatar, starting
+  on the centred square the uploader used to cut on its own. Drag moves it, pinch or the mouse
+  wheel zooms around the fingers or the pointer, and a slider and the arrow keys and + / − do
+  the same without a gesture. The picture can never be moved or zoomed out far enough to leave
+  empty space in the square, and zoom stops at 6×. *Use photo* uploads exactly the square shown;
+  Escape or *Cancel* uploads nothing. The geometry is pure and tested (`src/lib/image/crop.ts`),
+  and the canvas cuts from the same numbers the dialog draws with.
+- **Shipped: framing a gallery photo.** *Use as photo* in the lightbox opens the same cropper
+  on the full picture. The gallery keeps **one** photo: the chosen square is remembered on a
+  *framing* of it (docs/03 §photo), and that is what the person wears. On the photo worn now
+  the button reads *Change framing*, and on any photo framed before the cropper starts on the
+  square chosen last time, not the centre. Choosing again replaces the framing rather than
+  adding one; removing the photo removes its framing, and a framing follows its photo to
+  private. The archive carries a framing with the square and the photo it belongs to, and a
+  restore that has to refuse a photo refuses its framing too.
 - **Shipped: photo history.** Every gallery photo shows the day it was added, on the tile and
   next to its caption in the lightbox — legible at a glance for a face that visibly changes
   year to year, a child especially. Choosing a new avatar for someone who already had one never
@@ -1194,8 +1277,10 @@ the lookups above.
   `fields` (`kind` is one of `phone`, `email`, `address`, `url`, `social`, `date`, `custom`;
   `value`; `label`). An **existing person** is `{ ref, existingId }` and nothing else.
 - A **relationship** is `{ from, to, type }` by the type's key — a built-in one
-  (`parent_child`, `grandparent_grandchild`, `sibling`, `partner`, `spouse`, `friend`,
-  `colleague`, `mentor_mentee`, `neighbor`, `acquaintance`, `knows`, `other`) or one of the
+  (`parent_child`, `grandparent_grandchild`, `great_grandparent_great_grandchild`, `sibling`,
+  `half_sibling`, `aunt_uncle_niece_nephew`, `cousin`, `parent_in_law_child_in_law`,
+  `sibling_in_law`, `partner`, `spouse`, `friend`, `colleague`, `mentor_mentee`, `neighbor`,
+  `acquaintance`, `knows`, `other`) or one of the
   household's own (§2.4). `from` is the forward side: for `parent_child`, the parent.
 - A **new circle** has a `name`; optionally `kind` (§2.4.2: `friends`, `family`, `school`, `class`, `course`, `club`, `team`, `work`, `neighborhood`, `other`), `description`, `startDate`,
   `endDate`, `parent` — the ref of a circle listed *earlier* in the document — and `members`.
@@ -1244,6 +1329,8 @@ the API (kindergarten-2023)"), with the visibility of what it imported.
 
 - **Account:** profile, password, **language** (§2.19), **which of these people you are**
   (§2.1.3), theme, default visibility, sessions/2FA.
+- **Data quality** (every member): check relationships (§2.4.1), people known by a first
+  name only (§2.2.3).
 - **Household** (admin): name, members & roles, invitations, relationship types, tags.
 - **Data** (admin): export, import, backup.
 - **Appearance:** theme (system/light/dark), accent color choice from Catppuccin set,
@@ -1444,13 +1531,18 @@ on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s jou
 
 - **Authoring.** Typing `@` opens an autocomplete over the contacts you may see (§2.10),
   filtered by name as you type; picking one inserts the mention. The on-screen form is
-  `@FirstnameLastname` with no space, e.g. `@AnnaWeber`. Write `\@` for a literal "@".
+  `@FirstnameLastname` with no space, e.g. `@AnnaWeber`. Write `\@` for a literal "@". The
+  field remembers whom each picked handle stands for, through any typing around it, and saves
+  it as that person's token; changing the name itself lets the pick go (§2.2.3). Editing an
+  entry shows its tokens as handles again, still remembered, so saving an edit keeps every
+  mention it had.
 - **Stored form is id-based, not name-based.** A confirmed mention is saved as a stable token
   that embeds the contact **id** — so it survives a later rename and never resolves to the wrong
   person when two people share a name. The typed `@AnnaWeber` is only the lookup key. A raw,
-  unconfirmed `@FirstnameLastname` (e.g. pasted text) is resolved best-effort when the entry is
-  saved: a single exact first+last match becomes a mention; anything ambiguous or unmatched is
-  left as literal text. The id inside the token may be a *source id* from an import
+  unconfirmed `@FirstnameLastname` (e.g. pasted text) is resolved when the entry is saved: a
+  single exact first+last match becomes a mention, an unmatched one is left as literal text
+  (`@home` is often not a mention at all), and one that could be several people is refused with
+  their names rather than guessed or dropped (§2.2.3). The id inside the token may be a *source id* from an import
   (`monica:contact:9`, §2.16), so the token grammar accepts `:` in it.
 - **Rendering.** A mention renders as a chip/link to `/contacts/{id}`, labelled with the
   person's **current** display name (looked up at render time). It goes through the same
@@ -1514,16 +1606,26 @@ entry and a household update, without leaving the page. Concept + clickable prot
   ("Goes to *Julia*'s journal, mentions 1"). A moment therefore needs **at least one mention**.
   Day, visibility and photos behave as in §2.20 (default: today, shared; photos processed in
   the browser).
+- **The day is a pill, not a date form.** Almost every moment is from today, so the day sits
+  beside *Shared* and *Photo* as a quiet *Today*. A tap offers the last week — *Yesterday*,
+  then the weekdays — and *Another day…* for anything older, which opens a month calendar.
+  A day other than today makes the pill stand out; a day in the future is never offered.
 - **A second moment adds, never replaces.** When the anchor's journal already has the
   member's entry for that day and visibility (the day slot, §2.20), the moment is appended to
   it as a new paragraph and its mentions join the entry's; the title stays — as writing on the
   journal page does. *Edit* on an entry still replaces its text: that is an edit, a moment is an
   addition.
-- **Create people inline.** When the typed `@name` matches nobody, the picker offers
-  *"Create “Name”"*. Picking it inserts the handle and queues the name; on save the server
-  creates that contact first (quick-add with just a display name, taking the **moment's
-  visibility**) and then resolves the handle to it. Everything else about the person is filled
-  in later on their profile.
+- **Create people inline.** The picker offers *"Create “Name”"* for whatever is typed after
+  `@` — *"Create another “Thomas”"* when somebody has that name already, since a second Thomas
+  is a person like any other. Picking it opens a small panel in the list's place: **first and
+  last name**, filled in from what was typed, and a **description**, in the highlighted box with
+  the nudge of §2.2.3 while there is no last name. Enter adds the person to the moment, Escape
+  goes back to the text; neither saves the moment. The text then mentions them by a placeholder
+  (`@{contact:new:<key>}`), and on save the server creates them first — with the **moment's
+  visibility** — and swaps the placeholder for their id, so they are never looked up by name.
+  A person added in the panel but no longer mentioned when saving is not created. Everything
+  else about them is filled in later on their profile. A moment kept on a phone by an older
+  build queued bare names; those are still created by name, as before.
 - **Relationships are offered, not parsed.** Free text is never interpreted. After saving a
   moment that mentions two or more people, Home shows a quiet, dismissible hint —
   *"Link Julia and Marco?"* — whose one action opens Julia's profile with the relationship form

@@ -282,8 +282,6 @@ const PHRASE_FOR_REASON: Record<ExclusionReason, (e: Exclusion, nameOf: NameOf) 
 		return (t) =>
 			t('errors.relationship.alreadyTied', { tie: relationshipRowLabel(t, tie), name });
 	},
-	siblingDerived: (exclusion, nameOf) =>
-		phrase('errors.relationship.siblingDerived', { name: nameOf(exclusion.personId) }),
 	// Both people: which of the two is spoken for is the whole answer, and naming only the
 	// partner leaves the sentence to be read as being about whoever's page it arrives on.
 	romanticTaken: (exclusion, nameOf) =>
@@ -347,15 +345,7 @@ async function loadExclusionCheck(
 		parentEdges: graph.parentEdges.map((edge) => ({
 			parentId: edge.parentId,
 			childId: edge.childId
-		})),
-		/*
-		 * Full siblings only. A half-sibling is derived from a single shared parent, and saying
-		 * by hand that those two are siblings adds something the parent link does not say — so
-		 * that claim stays offerable.
-		 */
-		derivedSiblingIds: deriveKinship(graph, subjectId)
-			.filter((kin) => kin.term === 'sibling')
-			.map((kin) => kin.personId)
+		}))
 	};
 	const names = new Map(graph.people.map((person) => [person.id, person.displayName]));
 	return { facts, nameOf: (contactId) => names.get(contactId) ?? '' };

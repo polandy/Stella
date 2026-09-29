@@ -1,17 +1,12 @@
 import { TranslatableError } from '../../../errors/translatable';
 import { phrase } from '../../../i18n/phrase';
 import type { Visibility, Viewer } from '../../access/visibility';
-import { allowedForAudience } from '../../../mentions/audience';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import {
-	createHandleResolver,
-	extractHandles,
-	mentionKey,
-	resolveMentions,
-	type MentionCandidate
-} from '../../../mentions/mentions';
-import { createContact, type ContactRepository, type ContactSummary } from '../contacts/contacts';
+import { newPersonMentionId, type MomentNewPerson } from '../../../commands/commands';
+import { extractHandles, mentionKey, mentionToken } from '../../../mentions/mentions';
+import { resolveForAudience } from '../mentions/resolve-for-audience';
+import { createContact, type ContactRepository } from '../contacts/contacts';
 import { addToJournalDay, type JournalAuthor, type JournalRepository } from '../journal/journal';
 
 /*
@@ -28,8 +23,12 @@ export interface CaptureMomentInput {
 	/** ISO `YYYY-MM-DD` day the moment is about. */
 	entryDate: string;
 	visibility: Visibility;
-	/** Display names the composer queued via "Create “Name”"; created only if mentioned. */
-	newPeople: string[];
+	/**
+	 * People the composer created with the moment, each created only if the body mentions them:
+	 * by the placeholder `@{contact:new:<key>}`, or — queued by an older build as a bare display
+	 * name — by their `@Handle`.
+	 */
+	newPeople: (string | MomentNewPerson)[];
 }
 
 export interface CaptureMomentDeps {
@@ -59,23 +58,6 @@ export class MomentNeedsPersonError extends TranslatableError {
 }
 
 /**
- * People an entry of the given visibility may reference (docs/02 §2.20.1): a shared entry only
- * household-visible contacts, a private entry anyone the author can see — so a mention never
- * widens access. Shared by the moment capture and the journal route.
- */
-export function audienceCandidates(
-	contacts: ContactSummary[],
-	visibility: Visibility
-): MentionCandidate[] {
-	return allowedForAudience(contacts, visibility).map((c) => ({
-		id: c.id,
-		firstName: c.firstName,
-		lastName: c.lastName,
-		displayName: c.displayName
-	}));
-}
-
-/**
  * Capture a moment: create the queued people the body actually mentions, resolve every
  * handle against the moment's audience, save the entry on the first person mentioned and link
  * the rest. A person created inline takes the moment's visibility, so a shared moment can
@@ -90,29 +72,48 @@ export async function captureMoment(
 	if (body.length === 0) throw new MomentNeedsPersonError();
 	const viewer: Viewer = { id: author.userId, householdId: author.householdId };
 
+	const visible = await deps.contacts.listVisibleTo(viewer);
+	// A handle that is two people is asked about before anyone is created: a refused moment
+	// must leave the household as it found it.
+	resolveForAudience(visible, input.visibility, body);
+
 	const mentionedKeys = new Set(extractHandles(body).map(mentionKey));
-	const existingKeys = new Set(
-		(await deps.contacts.listVisibleTo(viewer)).map((c) => mentionKey(c.displayName))
-	);
+	const existingKeys = new Set(visible.map((c) => mentionKey(c.displayName)));
+
+	const createdContactIds: string[] = [];
+	const creator = { userId: author.userId, householdId: author.householdId, defaultVisibility: input.visibility };
+	const contactDeps = { contacts: deps.contacts, ids: deps.ids, clock: deps.clock };
+
+	// A person named with what tells them apart is created by their placeholder, never by name:
+	// a second Thomas is as welcome as the first (docs/02 §2.2.3).
+	let written = body;
+	for (const person of input.newPeople) {
+		if (typeof person === 'string') continue;
+		const placeholder = mentionToken(newPersonMentionId(person.key));
+		if (!written.includes(placeholder)) continue;
+		const id = await createContact(contactDeps, creator, {
+			firstName: person.firstName,
+			lastName: person.lastName,
+			description: person.description,
+			visibility: input.visibility
+		});
+		createdContactIds.push(id);
+		written = written.replaceAll(placeholder, mentionToken(id));
+	}
 
 	// Create only queued names that are both mentioned and not already someone visible.
-	const createdContactIds: string[] = [];
 	const queued = new Set<string>();
 	for (const name of input.newPeople) {
+		if (typeof name !== 'string') continue;
 		const key = mentionKey(name);
 		if (!key || queued.has(key) || existingKeys.has(key) || !mentionedKeys.has(key)) continue;
 		queued.add(key);
 		createdContactIds.push(
-			await createContact(
-				{ contacts: deps.contacts, ids: deps.ids, clock: deps.clock },
-				{ userId: author.userId, householdId: author.householdId, defaultVisibility: input.visibility },
-				{ displayName: name.trim(), visibility: input.visibility }
-			)
+			await createContact(contactDeps, creator, { displayName: name.trim(), visibility: input.visibility })
 		);
 	}
 
-	const candidates = audienceCandidates(await deps.contacts.listVisibleTo(viewer), input.visibility);
-	const resolved = resolveMentions(body, createHandleResolver(candidates));
+	const resolved = resolveForAudience(await deps.contacts.listVisibleTo(viewer), input.visibility, written);
 	if (resolved.ids.length === 0) throw new MomentNeedsPersonError();
 
 	const [anchorContactId, ...mentionedContactIds] = resolved.ids;

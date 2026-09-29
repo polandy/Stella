@@ -34,13 +34,15 @@ export function handleFor(c: MentionCandidate): string {
 
 export interface Suggestions<C extends MentionCandidate> {
 	people: C[];
-	/** Name to offer as "Create …", or null when the query is empty or already someone. */
+	/** Name to offer as "Create …", or null while the query is empty. */
 	create: string | null;
+	/** Somebody has that name already, so creating makes another one (docs/02 §2.2.3). */
+	createsAnother: boolean;
 }
 
 /**
  * Rank people for a query: prefix matches on any name part first, then substring matches,
- * each alphabetically. Offers creation when nothing matches the query exactly.
+ * each alphabetically. Offers creation for any typed name, saying when it is somebody's already.
  */
 export function suggest<C extends MentionCandidate>(
 	query: string,
@@ -72,7 +74,7 @@ export function suggest<C extends MentionCandidate>(
 		const full = mentionKey(`${c.firstName ?? ''}${c.lastName ?? ''}`);
 		return mentionKey(c.displayName) === q || (full.length > 0 && full === q);
 	});
-	return { people, create: q && !exact ? query : null };
+	return { people, create: q ? query : null, createsAnother: exact };
 }
 
 /** Replace the active handle with `handle` plus a trailing space; returns the new text and caret. */
@@ -87,4 +89,20 @@ export function insertHandle(
 		text: text.slice(0, active.start) + inserted + text.slice(caret),
 		caret: active.start + inserted.length
 	};
+}
+
+/** Which side of the field the picker's list opens on, and how tall it may grow there. */
+export interface ListPlacement {
+	side: 'below' | 'above';
+	maxHeight: number;
+}
+
+/**
+ * Where the list opens so it stays on screen: below the field when it fits, else on whichever
+ * side has more room — the phone's composer sheet sits at the bottom, with the keyboard under
+ * it — and never taller than that side, scrolling instead.
+ */
+export function listPlacement(space: { above: number; below: number }, listHeight: number): ListPlacement {
+	if (listHeight <= space.below || space.below >= space.above) return { side: 'below', maxHeight: space.below };
+	return { side: 'above', maxHeight: space.above };
 }

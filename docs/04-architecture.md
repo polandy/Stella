@@ -235,7 +235,9 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   and its mobile date keyboard; it buys a field that reads correctly in both languages, month
   names instead of an ambiguous number, and a year that can be left blank — which is how a
   birthday without a year (`--MM-DD`, §2.13.1) becomes expressible at all, something the
-  native input cannot represent. (docs/05 §5.7.)
+  native input cannot represent. (docs/05 §5.7.) A moment's older day is picked from our own
+  month calendar for the same reason, a small component rather than a date-picker package
+  (§8.8), with the year a choice beside the month so a late memory is not a hundred taps away.
 - **Combobox over `<input list>` + `<datalist>`** — Mobile Safari, this project's primary test
   device, never renders a datalist's suggestions at all, so the native control silently drops
   the one thing it was chosen for. `src/lib/components/Combobox.svelte` borrows the person
@@ -406,6 +408,10 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   already found. Newcomers are placed geometrically clear of the map instead (`placement.ts`)
   and nobody else moves; the cost is longer lines after many expands, which the explicit
   *Arrange* actions answer when the reader chooses (docs/05 §5.8).
+- **A stable first map, seeded rather than arranged twice** — a map that looks the same on
+  every visit lets the reader find people where they left them, and lets a test aim at a node.
+  Starting cose from a grid was also deterministic, but runs a second layout; seeding only
+  the nodes that share a spot costs nothing and leaves an already-drawn map to the forces.
 - **Family tree and circle groups are our own geometry, not layout extensions** — both are
   pure functions from the model to positions (`src/lib/graph/layout/`), handed to Cytoscape's
   built-in `preset` layout. A dagre/klay extension would add a dependency and still not know
@@ -602,6 +608,30 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **People are identified in the archive by id, never by name** — two people can share a first
   and last name, and a document that joins on names silently fuses them. Every person carries
   their id and every relationship, mention, participant and membership refers to it.
+- **A first name alone is refused when a person is added by hand** — first a nudge (§2.2.3),
+  but a nudge still let the next indistinguishable *Thomas* in. The rule sits in `createContact`,
+  which every hand-entry path shares (form, picker panel, moment, a kept addition from a phone),
+  and not in the importers, which bring in what a household already has rather than lose it.
+- **Data-quality checks live in Settings, not in the People directory** — the list of people
+  known by a first name only first shipped as a directory chip beside *Archived*, and read as a
+  to-do list on the screen people open to find someone. It joined *Check relationships* under
+  *Settings → Data quality*, where a card's count says whether opening it is worth it.
+- **A namesake's context line is derived per viewer, never stored** — relationship and circle
+  are further fallbacks for the second line (§2.2.3), and each is a record with its own
+  visibility. Storing the line would go stale when a link ends and could name a private person
+  to someone else; ranking in the browser would send it links it may not see. The shell's load
+  reads the candidates through the access layer (`contextOfPeople`, only for people with
+  nothing typed) and the browser picks the first whose other end is not a namesake, since only
+  it knows the list. The cost is two scoped reads per navigation, bounded by a household's size.
+  A refused `@Thomas` reads them only then (`withNamesakeContext`), not on every text saved.
+- **A picked mention is remembered by its range, and a typed namesake is refused** — two people
+  called Thomas both read `@Thomas`. The options were a disambiguated handle (`@Thomas2`), raw
+  id tokens in the field, or keeping the readable handle and remembering the pick against the
+  range of text it wrote (`src/lib/mentions/picks.ts`), stored as the id token. The last keeps
+  the text as written; the cost is a range that must be carried through every edit, and a pick
+  let go the moment its name is changed. A `@Thomas` nobody picked is refused with both names
+  rather than guessed or left as text, because a silently dropped mention loses the moment from
+  the person's journal without a word.
 - **An import adds and never overwrites** — the alternatives were replacing a record the archive
   also has, or asking the admin field by field. Replacing loses whatever was written since the
   export and makes an import unrepeatable; asking turns a restore into a merge tool nobody asked
@@ -733,6 +763,17 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   same two people are two facts (a godparent is often the grandfather), so nothing refuses
   them. An earlier cut refused a second family link too and was wrong in the first household
   that opened it.
+- **Every worked-out term has a built-in type to be confirmed as** (docs/02 §2.4.1) — confirming
+  a cousin stores a `cousin` row rather than a household's own type or a generic *Connected to*,
+  so the confirmed link reads the same in every household and in both languages. The confirmed
+  types are facts about a pair and never primary links, so storing one invents nothing further;
+  `half_sibling` is its own type because `sibling` claims full siblings. The cost is that a
+  confirmed row is frozen: it no longer follows the links it was worked out from. For the same
+  reason the old refusal of a hand-entered sibling that shared parents imply is gone — it
+  stood in the way of confirming one, and the household decides. The reviews offer the same
+  claims (rule K1) as the one exception to *the link rules never suggest what can be derived*:
+  K1 is asked for, never raised by a write, and the engine exempts it from suppression 2 by
+  rule id rather than letting a rule filter for itself.
 - **A suggestion the write would refuse is not offered** (suppression 5) — the engine asks the
   same parent cap before listing a claim, because *Accept* is the only button on the row and an
   error there is a rule the household never broke.
@@ -772,6 +813,29 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   journal entry. Appending keeps one model, as a contact merge already does, and the stream
   reads `updated_at` so the joined entry surfaces where its author looks. The cost: a plain
   edit in the journal also brings an entry back to the top.
+- **A person's photo is cropped by our own cropper, and only the square is kept** — the crop is
+  a few lines of pure geometry (`src/lib/image/crop.ts`) behind a small dialog, so no cropper
+  library joins the dependencies (§8.8). The chosen square goes through the same browser canvas
+  as before and the picked original never leaves the device: there is no full-size copy to
+  re-crop later, which keeps location data and full-resolution pictures off the server. The
+  cost: changing the framing means picking the picture again.
+- **A gallery photo is worn through a framing row, not a crop applied where avatars render** —
+  an avatar is drawn from a photo id on dozens of screens, the explorer's canvas among them;
+  threading a square through each would be one chance per screen to forget it, and the canvas
+  cannot crop with CSS. So the browser renders the square once, as for any avatar, and it is
+  stored as a photo row of its own that points at its gallery photo and remembers the square
+  (docs/03 §photo). Its own id also keeps media immutable-cached: a new square is a new
+  address. Rejected: a variant behind the photo's own URL (a browser would keep showing the old
+  square for a year) and a second gallery photo (the gallery would fill with copies). The
+  cost: a framed photo stores one extra 512px image.
+- **Touch full screen is scoped to iPadOS/iOS Safari by device, not by touch capability** — the
+  graph's app-level full-screen overlay (docs/05 §5.8) exists only for Safari's own
+  swipe-to-dismiss quirk; matching touch broadly instead forced Android and touch laptops to
+  give up the browser's native Fullscreen API for a bug they don't have. There is no
+  feature-detectable signal for the quirk itself, so this is the one user-agent sniff in the
+  codebase: `navigator.userAgent` for `iPad`/`iPhone`, plus the `MacIntel` + touch-points
+  combination iPadOS answers with instead of naming itself
+  (`src/lib/ui/fullscreen.ts`).
 
 ## 4.10 Deployment
 
@@ -839,16 +903,13 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
      and before there is anywhere to catch the `layoutstart` it emits. An empty graph leaves
      that layout nothing to arrange, so the first arrangement anyone sees is the controller's
      own cose, from the same starting positions it always had.
-   - **The opening arrangement is not reproducible, and never was.** Elements carry no
-     positions, so every node starts at `(0, 0)` and cose — `randomize: false` or not — breaks
-     that tie at random: three plain reloads of one explorer URL move nodes by up to 457px,
-     about 190% of the drawing's own spread. Measured in the pinned container, 1280×1000.
-     Arranging from a grid first (which is what the constructor's default layout did while the
-     elements were passed to it) is deterministic instead — eight runs, identical to the
-     decimal. Both fill the canvas the same way and neither overlaps or clips a node, so this
-     is a choice about whether the map is the same on every visit, not about quality. Nothing
-     in the product promises a stable map today; if one is ever wanted, the way to get it is to
-     give the elements their positions, not to leave a default layout in the constructor.
+   - **The same map comes out on every load.** Elements carry no positions, so every node
+     starts at `(0, 0)`, and cose — `randomize: false` or not — breaks a tie between two nodes
+     on one spot at random: three plain reloads of one explorer URL used to move nodes by up to
+     457px. So before every force run, whoever shares a spot is set apart on a sunflower spiral
+     in the order of their ids (`spreadCoincident`, `layout/geometry.ts`); with no tie left,
+     cose has nothing to roll, and the same people on the same canvas settle in the same
+     places — four reloads of Lena's map, measured in the pinned container, identical.
    - Movements **overlap**: an arrangement can be chosen while the last one's glide is still
      travelling, and an expand's newcomers and the view stepping back to show them move on their
      own animations. So the canvas is marked `data-layout="settled"` only when the *last* layout

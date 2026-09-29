@@ -4,12 +4,14 @@ import {
 	index,
 	integer,
 	primaryKey,
+	real,
 	sqliteTable,
 	text,
 	unique
 } from 'drizzle-orm/sqlite-core';
 import type { Locale } from '../../i18n/locales';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../relationships/status';
+import type { Relation } from '../../suggestions/types';
 
 /*
  * Drizzle schema — implementation of docs/03-data-model.md.
@@ -398,6 +400,14 @@ export const photo = sqliteTable(
 		// rebuilding the table to add one would have to drop `photo` while `contact` still
 		// points at it. The declaration says what the database enforces (docs/03 §photo).
 		journalEntryId: text('journal_entry_id').references(() => journalEntry.id),
+		// When set, this row is the avatar framing of that gallery photo (docs/02 §2.14): the
+		// square someone chose, rendered once, never shown in the gallery itself. No foreign
+		// key, like `avatar_photo_id`: the repository removes a framing with its photo.
+		framingOf: text('framing_of'),
+		// The chosen square, in the full-size picture's pixels, so choosing again starts there.
+		cropX: real('crop_x'),
+		cropY: real('crop_y'),
+		cropSize: real('crop_size'),
 		createdBy: text('created_by')
 			.notNull()
 			.references(() => user.id),
@@ -415,7 +425,8 @@ export const photo = sqliteTable(
 	},
 	(t) => [
 		index('photo_contact_idx').on(t.contactId),
-		index('photo_journal_idx').on(t.journalEntryId)
+		index('photo_journal_idx').on(t.journalEntryId),
+		index('photo_framing_idx').on(t.framingOf)
 	]
 );
 
@@ -543,7 +554,7 @@ export const suggestionDismissal = sqliteTable(
 		householdId: text('household_id')
 			.notNull()
 			.references(() => household.id, { onDelete: 'cascade' }),
-		relation: text('relation').$type<'parent' | 'sibling'>().notNull(),
+		relation: text('relation').$type<Relation>().notNull(),
 		/** The two contact ids, sorted and space-separated, so either end names the same row. */
 		pairKey: text('pair_key').notNull(),
 		dismissedBy: text('dismissed_by')

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { isNameWorthCreating, splitTypedName, wantsSomethingToKnowThemBy } from './new-person';
+import { isNameWorthCreating, splitTypedName, wantsSomethingToKnowThemBy, capitalisedIfTypedLowercase, isKnownByMoreThanAFirstName } from './new-person';
 
 describe('splitTypedName', () => {
 	it('reads a single word as a first name', () => {
@@ -55,5 +55,32 @@ describe('wantsSomethingToKnowThemBy', () => {
 
 	it('stays quiet while nothing is typed yet', () => {
 		expect(wantsSomethingToKnowThemBy({ firstName: ' ', lastName: '' })).toBe(false);
+	});
+});
+
+describe('capitalisedIfTypedLowercase', () => {
+	it('capitalises a name typed all in lowercase, as a handle on a phone usually is', () => {
+		expect(capitalisedIfTypedLowercase('thomas')).toBe('Thomas');
+		expect(capitalisedIfTypedLowercase('élise')).toBe('Élise');
+	});
+
+	it('leaves a name alone once its writer has capitalised any of it', () => {
+		expect(capitalisedIfTypedLowercase('McKenzie')).toBe('McKenzie');
+		expect(capitalisedIfTypedLowercase('deVries')).toBe('deVries');
+		expect(capitalisedIfTypedLowercase('')).toBe('');
+	});
+});
+
+describe('isKnownByMoreThanAFirstName', () => {
+	it('takes a last name, a description, or a whole name typed as one', () => {
+		expect(isKnownByMoreThanAFirstName({ firstName: 'Thomas', lastName: 'Widmer' })).toBe(true);
+		expect(isKnownByMoreThanAFirstName({ firstName: 'Thomas', description: 'Hut warden' })).toBe(true);
+		expect(isKnownByMoreThanAFirstName({ displayName: 'Thomas Widmer' })).toBe(true);
+	});
+
+	it('refuses a first name alone, however it is written', () => {
+		expect(isKnownByMoreThanAFirstName({ firstName: 'Thomas', lastName: ' ', description: ' ' })).toBe(false);
+		expect(isKnownByMoreThanAFirstName({ displayName: 'Thomas' })).toBe(false);
+		expect(isKnownByMoreThanAFirstName({})).toBe(false);
 	});
 });
