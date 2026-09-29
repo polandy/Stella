@@ -5,7 +5,6 @@ import {
 	clickFrame,
 	clickNode,
 	filterMenu,
-	selectNode,
 	settled,
 	stateOf
 } from './graph-canvas';
@@ -80,9 +79,7 @@ async function groupingOnCanvas(page: Page) {
 async function openTurnverein(page: Page) {
 	await page.goto(`/graph?center=${LENA}`);
 	await settled(page);
-	// Selected, not tapped: the free arrangement starts from a random spread and now and then
-	// draws the Musikschule on top of the Turnverein, where a tap would reach the wrong circle.
-	await selectNode(page, TURNVEREIN);
+	await clickNode(page, TURNVEREIN);
 	const peek = page.getByRole('complementary');
 	await expect(peek.getByText('Turnverein Länggasse')).toBeVisible();
 	await peek.getByRole('button', { name: 'Expand connections' }).click();

@@ -408,6 +408,10 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   already found. Newcomers are placed geometrically clear of the map instead (`placement.ts`)
   and nobody else moves; the cost is longer lines after many expands, which the explicit
   *Arrange* actions answer when the reader chooses (docs/05 §5.8).
+- **A stable first map, seeded rather than arranged twice** — a map that looks the same on
+  every visit lets the reader find people where they left them, and lets a test aim at a node.
+  Starting cose from a grid was also deterministic, but runs a second layout; seeding only
+  the nodes that share a spot costs nothing and leaves an already-drawn map to the forces.
 - **Family tree and circle groups are our own geometry, not layout extensions** — both are
   pure functions from the model to positions (`src/lib/graph/layout/`), handed to Cytoscape's
   built-in `preset` layout. A dagre/klay extension would add a dependency and still not know
@@ -891,16 +895,13 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
      and before there is anywhere to catch the `layoutstart` it emits. An empty graph leaves
      that layout nothing to arrange, so the first arrangement anyone sees is the controller's
      own cose, from the same starting positions it always had.
-   - **The opening arrangement is not reproducible, and never was.** Elements carry no
-     positions, so every node starts at `(0, 0)` and cose — `randomize: false` or not — breaks
-     that tie at random: three plain reloads of one explorer URL move nodes by up to 457px,
-     about 190% of the drawing's own spread. Measured in the pinned container, 1280×1000.
-     Arranging from a grid first (which is what the constructor's default layout did while the
-     elements were passed to it) is deterministic instead — eight runs, identical to the
-     decimal. Both fill the canvas the same way and neither overlaps or clips a node, so this
-     is a choice about whether the map is the same on every visit, not about quality. Nothing
-     in the product promises a stable map today; if one is ever wanted, the way to get it is to
-     give the elements their positions, not to leave a default layout in the constructor.
+   - **The same map comes out on every load.** Elements carry no positions, so every node
+     starts at `(0, 0)`, and cose — `randomize: false` or not — breaks a tie between two nodes
+     on one spot at random: three plain reloads of one explorer URL used to move nodes by up to
+     457px. So before every force run, whoever shares a spot is set apart on a sunflower spiral
+     in the order of their ids (`spreadCoincident`, `layout/geometry.ts`); with no tie left,
+     cose has nothing to roll, and the same people on the same canvas settle in the same
+     places — four reloads of Lena's map, measured in the pinned container, identical.
    - Movements **overlap**: an arrangement can be chosen while the last one's glide is still
      travelling, and an expand's newcomers and the view stepping back to show them move on their
      own animations. So the canvas is marked `data-layout="settled"` only when the *last* layout
