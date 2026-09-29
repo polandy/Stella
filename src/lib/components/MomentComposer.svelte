@@ -11,7 +11,15 @@
 	import { processImage } from '$lib/image/process-image';
 	import { allowedForAudience } from '$lib/mentions/audience';
 	import { createHandleResolver, mentionKey, resolveMentions } from '$lib/mentions/mentions';
-	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
+	import {
+		activeHandle,
+		handleFor,
+		insertHandle,
+		listPlacement,
+		suggest,
+		type ActiveHandle,
+		type ListPlacement
+	} from '$lib/mentions/picker';
 	import {
 		isQueuedName,
 		newPeopleAsCandidates,
@@ -20,6 +28,7 @@
 		toStored,
 		type MentionPick
 	} from '$lib/mentions/picks';
+	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
 	import {
 		capitalisedIfTypedLowercase,
@@ -121,6 +130,9 @@
 	let saving = $state(false);
 	let localError = $state<string | null>(null);
 	let textarea: HTMLTextAreaElement | undefined = $state();
+	let composer: HTMLFormElement | undefined = $state();
+	let list: HTMLUListElement | undefined = $state();
+	let placement: ListPlacement = $state({ side: 'below', maxHeight: Number.POSITIVE_INFINITY });
 
 	// Picker state: the handle under the caret and the ranked suggestions for it.
 	let active = $state<ActiveHandle | null>(null);
@@ -135,7 +147,8 @@
 		active ? suggest(active.query, known) : { people: [], create: null, createsAnother: false }
 	);
 	// The second line counts everyone the list could offer, not only what the query left.
-	const namesakes = $derived(tellApart(audience));
+	const peopleContext = usePeopleContext();
+	const namesakes = $derived(tellApart(audience, peopleContext()));
 	const rows = $derived([
 		...suggestions.people.map((p) => ({ kind: 'person' as const, person: p })),
 		...(suggestions.create
@@ -397,6 +410,25 @@
 	$effect(() => {
 		if (autofocus) textarea?.focus();
 	});
+
+	/** Where the list starts below the composer's top edge (`top-16`), and its gap to a screen edge. */
+	const LIST_OFFSET = 64;
+	const EDGE_GAP = 8;
+
+	// The list stays on screen: in the phone's sheet the composer sits at the bottom, with the
+	// keyboard shrinking the visible part further, so it opens upwards when there is more room.
+	$effect(() => {
+		if (!list || !composer) return;
+		void rows.length;
+		const viewport = window.visualViewport;
+		const visibleTop = viewport?.offsetTop ?? 0;
+		const visibleBottom = visibleTop + (viewport?.height ?? window.innerHeight);
+		const top = composer.getBoundingClientRect().top;
+		placement = listPlacement(
+			{ above: top - visibleTop - EDGE_GAP, below: visibleBottom - top - LIST_OFFSET - EDGE_GAP },
+			list.scrollHeight
+		);
+	});
 </script>
 
 <form
@@ -404,6 +436,7 @@
 	action="/?/capture"
 	enctype="multipart/form-data"
 	onsubmit={onSubmit}
+	bind:this={composer}
 	class="relative flex flex-col rounded-app bg-card shadow-card transition-shadow focus-within:ring-2 focus-within:ring-primary/40"
 >
 	{#if error || localError}
@@ -494,7 +527,12 @@
 	{:else if active && rows.length > 0}
 		<ul
 			role="listbox"
-			class="absolute left-14 top-16 z-10 w-[min(320px,calc(100%-4rem))] rounded-app border border-border bg-card p-1 shadow-pop"
+			bind:this={list}
+			style:max-height="{placement.maxHeight}px"
+			class="absolute left-14 z-10 w-[min(320px,calc(100%-4rem))] overflow-y-auto rounded-app border border-border bg-card p-1 shadow-pop {placement.side ===
+			'above'
+				? 'bottom-full mb-1'
+				: 'top-16'}"
 		>
 			<li class="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">{t('composer.people')}</li>
 			{#each rows as row, i (row.kind === 'person' ? row.person.id : 'create')}

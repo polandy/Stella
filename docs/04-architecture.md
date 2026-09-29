@@ -610,6 +610,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   known by a first name only first shipped as a directory chip beside *Archived*, and read as a
   to-do list on the screen people open to find someone. It joined *Check relationships* under
   *Settings → Data quality*, where a card's count says whether opening it is worth it.
+- **A namesake's context line is derived per viewer, never stored** — relationship and circle
+  are further fallbacks for the second line (§2.2.3), and each is a record with its own
+  visibility. Storing the line would go stale when a link ends and could name a private person
+  to someone else; ranking in the browser would send it links it may not see. The shell's load
+  reads the candidates through the access layer (`contextOfPeople`, only for people with
+  nothing typed) and the browser picks the first whose other end is not a namesake, since only
+  it knows the list. The cost is two scoped reads per navigation, bounded by a household's size.
 - **A picked mention is remembered by its range, and a typed namesake is refused** — two people
   called Thomas both read `@Thomas`. The options were a disambiguated handle (`@Thomas2`), raw
   id tokens in the field, or keeping the readable handle and remembering the pick against the

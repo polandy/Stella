@@ -5,6 +5,7 @@
 	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { paletteRows, type PalettePerson } from '$lib/palette/palette';
+	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tick } from 'svelte';
 
 	/*
@@ -26,12 +27,18 @@
 	let selected = $state(0);
 
 	const t = useTranslate();
+	const peopleContext = usePeopleContext();
 	const rows = $derived(
-		paletteRows(query, people, {
-			write: t('components.palette.write'),
-			addPerson: t('components.palette.addPerson'),
-			searchEverything: (q) => t('components.palette.searchEverything', { query: q })
-		})
+		paletteRows(
+			query,
+			people,
+			{
+				write: t('components.palette.write'),
+				addPerson: t('components.palette.addPerson'),
+				searchEverything: (q) => t('components.palette.searchEverything', { query: q })
+			},
+			peopleContext()
+		)
 	);
 
 	$effect(() => {

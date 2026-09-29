@@ -1,5 +1,6 @@
 import type { IconName } from '$lib/components/icons';
 import { matchesQuery, startsWithQuery } from '$lib/people/directory';
+import type { PersonContext } from '$lib/people/context';
 import { tellApart, type Distinction } from '$lib/people/namesakes';
 
 /*
@@ -66,7 +67,9 @@ const ACTIONS: readonly { id: string; label: ActionLabel; icon: IconName; href: 
 export function paletteRows(
 	query: string,
 	people: PalettePerson[],
-	labels: PaletteLabels
+	labels: PaletteLabels,
+	/** What the namesake line falls back on, by person (docs/02 §2.2.3). */
+	contexts: ReadonlyMap<string, PersonContext> = new Map()
 ): PaletteRow[] {
 	const q = query.trim();
 	const rows: PaletteRow[] = [];
@@ -78,7 +81,7 @@ export function paletteRows(
 		}
 	}
 
-	const namesakes = tellApart(people);
+	const namesakes = tellApart(people, contexts);
 	const found = people
 		// Matched by name only; the description is shown, not searched — full search reads it.
 		.map((p) => ({ ...p, description: null }))

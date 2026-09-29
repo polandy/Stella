@@ -479,7 +479,9 @@ query after a pick, so a surname keeps listing the rest of the family, and while
 two or more matches the list opens with a *N matches · Add all N* row. Whoever is picked leaves
 the list either way. A person who shares their name with someone else on the list carries a
 second, smaller `--fg-subtle` line (`NamesakeLine`) saying which one they are (docs/02 §2.2.3);
-a unique name stays one line. The switch that turns `keepSearch` off belongs to the form, **above** the
+a unique name stays one line. Where nothing was typed, the line falls back on a link or a circle
+the app shell hands down through context (`providePeopleContext` / `usePeopleContext`), so every
+picker reads the same map whichever list of people its page gave it. The switch that turns `keepSearch` off belongs to the form, **above** the
 field: the open list would cover it anywhere below.
 
 With `allowCreate`, the picker also ends a fruitless search: from two typed characters on, a
@@ -571,7 +573,9 @@ note form and the journal composer. The moment composer keeps its own
 richer picker because only a moment may create a person on the fly (§2.22.1): its *Create "…"*
 row opens a small panel in the list's place — first and last name, and the description in the
 `KnowThemBy` box while the last name is empty — the same fields as a person picker's create
-panel, without visibility (the moment's) or the extra details.
+panel, without visibility (the moment's) or the extra details. Its list opens below the field when it fits,
+else on the roomier side — in the phone's sheet at the bottom, with the keyboard up, that is
+above — and scrolls within that side rather than running off the screen (`listPlacement`).
 
 **Combobox** (`src/lib/components/Combobox.svelte`) is a plain text field with a dropdown of
 existing values — a circle's roles, offered while setting one on a member (§5.5 Circles) — that
