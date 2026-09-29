@@ -355,8 +355,9 @@ reciprocal** link.
 - **Guardrails:** prevent duplicate and self relationships; refuse contradictions
   (e.g. mutual "parent of").
 
-- **Shipped:** a **generation claimed in both directions is refused**. `parent_child` and
-  `grandparent_grandchild` run one way — nobody is their own parent's parent — so once such a
+- **Shipped:** a **generation claimed in both directions is refused**. `parent_child`,
+  `grandparent_grandchild`, `great_grandparent_great_grandchild`, `aunt_uncle_niece_nephew`
+  and `parent_in_law_child_in_law` run one way — nobody is their own parent's parent — so once such a
   link is stored, entering it flipped between the same two people is turned away with the
   reason and nothing is written. It matters twice over: the picker offers both sides of a type
   from one screen (below), which puts the flipped pair one wrong click away, and the kinship
@@ -387,10 +388,6 @@ reciprocal** link.
     the derived kinship (§2.4.1) is worked out from the links it reads, not from a count of
     them.
 
-  - **Nothing that is already worked out.** Where shared parents already make two people
-    siblings (§2.4.1), entering it by hand is refused — a stored row permanently replaces the
-    derived one, and the derivation is the better record. A **half**-sibling stays enterable:
-    saying those two are full siblings adds something the one shared parent does not say.
   - **At most two parents.** A third parent is far more often a mistyped link than a third
     parent, and Stella ships no step- or adoptive-parent type to tell them apart. A household
     that really has a third to record corrects one of the two rather than adding to them.
@@ -481,7 +478,7 @@ reciprocal** link.
 
 Stella reasons over the relationship graph so members enter as little as possible.
 
-**Derived kinship (computed, not stored):** from a small set of **primary** relationships
+**Derived kinship (computed, stored only when confirmed):** from a small set of **primary** relationships
 (parent/child, partner/spouse, sibling), Stella derives extended kinship *for display*
 without manual entry — **grandparent/grandchild, great-grandparent, aunt/uncle,
 niece/nephew, cousin, sibling-in-law, parent-in-law**, plus half/step variants where
@@ -534,13 +531,29 @@ tables, fully unit-testable (test-first).
   partner and no direct one is on record — but a partner's child is often the person's own
   child too, and only the household knows which it is. So those rows, and only those, carry
   a quiet **Actually the child / the parent / a sibling**, which stores the direct link.
-  Every other term is unambiguous and stays read-only: a grandmother is a grandmother, with
-  nothing to decide. Confirming settles the pair for good — an entered link is never
+  Stella has no step type, so the step reading itself is not stored; every other term is
+  confirmed as it stands (next note). Confirming settles the pair for good — an entered link is never
   re-derived — so the row disappears and the real relationship takes its place in the list
   above, while the relatives that were *not* corrected keep their step term. Which link a
   step term would become is decided by a pure, language-free module (`src/lib/kinship/`),
   and the writing goes through the same checked action as the *Also true?* block, so a
   correction that would contradict the graph is refused like any other entry.
+
+- **Shipped:** every other worked-out row carries a quiet **Confirm**, which stores it as an
+  entered link of the type that says the same thing: a grandparent as `grandparent_grandchild`,
+  a great-grandparent as `great_grandparent_great_grandchild`, an aunt or uncle as
+  `aunt_uncle_niece_nephew`, a cousin as `cousin`, a parent- or child-in-law as
+  `parent_in_law_child_in_law`, a sibling-in-law as `sibling_in_law`, a sibling as `sibling` and
+  a half-sibling as `half_sibling` — kept apart from `sibling`, which says the two are *full*
+  siblings. These are built-in types like any other, so they can also be entered by hand where
+  the connecting person is not in Stella. What confirming buys is permanence: the row then
+  stands on its own, and a later change to the links it was worked out from (a parent removed,
+  a partnership marked former) no longer takes it away. It moves up into the entered list with
+  the type's wording and leaves the derived block, since a pair with a stored link is never
+  re-derived. The confirmed types are facts about a pair, never read back as primary links, so
+  confirming one invents nothing further. Which row a term becomes and which way round it is
+  stored is decided in the same pure module as the step correction (`src/lib/kinship/claims.ts`),
+  and it is written through the same checked action.
 
 - **Shipped:** the relationships card carries a **Check suggestions** control, and it is what
   makes all of the above reachable at all. Every suggestion described so far is raised by a
@@ -1229,8 +1242,10 @@ the lookups above.
   `fields` (`kind` is one of `phone`, `email`, `address`, `url`, `social`, `date`, `custom`;
   `value`; `label`). An **existing person** is `{ ref, existingId }` and nothing else.
 - A **relationship** is `{ from, to, type }` by the type's key — a built-in one
-  (`parent_child`, `grandparent_grandchild`, `sibling`, `partner`, `spouse`, `friend`,
-  `colleague`, `mentor_mentee`, `neighbor`, `acquaintance`, `knows`, `other`) or one of the
+  (`parent_child`, `grandparent_grandchild`, `great_grandparent_great_grandchild`, `sibling`,
+  `half_sibling`, `aunt_uncle_niece_nephew`, `cousin`, `parent_in_law_child_in_law`,
+  `sibling_in_law`, `partner`, `spouse`, `friend`, `colleague`, `mentor_mentee`, `neighbor`,
+  `acquaintance`, `knows`, `other`) or one of the
   household's own (§2.4). `from` is the forward side: for `parent_child`, the parent.
 - A **new circle** has a `name`; optionally `kind` (§2.4.2: `friends`, `family`, `school`, `class`, `course`, `club`, `team`, `work`, `neighborhood`, `other`), `description`, `startDate`,
   `endDate`, `parent` — the ref of a circle listed *earlier* in the document — and `members`.

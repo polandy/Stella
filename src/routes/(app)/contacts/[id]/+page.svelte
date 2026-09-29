@@ -34,7 +34,7 @@
 	} from '$lib/relationships/labels';
 	import { contactSectionPath, sectionAnchor } from '$lib/contacts/sections';
 	import { directClaimLabel, kinshipLabel } from '$lib/kinship/labels';
-	import { claimEndpoints, directClaimFor } from '$lib/kinship/claims';
+	import { claimEndpoints, confirmedClaimFor, directClaimFor } from '$lib/kinship/claims';
 	import { accentChipStyle, accentDotStyle, categoryVar } from '$lib/design/tokens';
 	import { withoutRelationships } from '$lib/graph/model/without-pending';
 	import {
@@ -1489,9 +1489,9 @@
 					{/if}
 
 					<!--
-						Derived kinship (docs/02 §2.4.1): worked out from the entered links, never
-						stored. Kept visually apart and labelled, so nobody mistakes an inference
-						for something the household wrote down.
+						Derived kinship (docs/02 §2.4.1): worked out from the entered links, and
+						stored only when the household says so. Kept visually apart and labelled, so
+						nobody mistakes an inference for something the household wrote down.
 					-->
 					{#if data.derivedKin.length > 0}
 						<div class="mt-4 border-t border-border-subtle pt-3" data-testid="derived-kin">
@@ -1501,12 +1501,13 @@
 							<ul class="flex flex-col divide-y divide-border-subtle">
 								{#each data.derivedKin as kin (kin.personId)}
 									<!--
-										A step term is only as much as Stella can see: the link runs through a
-										partner and no direct one is on record. The household may well mean more
-										than that, and only they can say so — hence the one-tap correction, which
-										is the single way an inference here ever becomes something entered.
+										Every row can become something entered. A step term is only as much as
+										Stella can see — the link runs through a partner and no direct one is on
+										record — so it is corrected to the direct link the household may well
+										mean. Every other term is confirmed as it stands.
 									-->
 									{@const claim = directClaimFor(kin.term)}
+									{@const confirmed = confirmedClaimFor(kin.term)}
 									<li class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2 text-sm">
 										<span class="w-24 shrink-0 truncate text-fg-muted">{kinshipLabel(t, kin)}</span>
 										<a href="/contacts/{kin.personId}" class="font-medium text-fg hover:underline">
@@ -1526,6 +1527,23 @@
 												<input type="hidden" name="toId" value={ends.toId} />
 												<input type="hidden" name="typeId" value={claim.typeKey} />
 												<Button variant="ghost" size="sm">{directClaimLabel(t, claim)}</Button>
+											</form>
+										{:else if confirmed}
+											{@const ends = claimEndpoints(confirmed, c.id, kin.personId)}
+											<form method="POST" action="?/addProposedRelationship" class="ml-auto shrink-0">
+												<input type="hidden" name="fromId" value={ends.fromId} />
+												<input type="hidden" name="toId" value={ends.toId} />
+												<input type="hidden" name="typeId" value={confirmed.typeKey} />
+												<Button
+													variant="ghost"
+													size="sm"
+													title={t('contact.relationships.confirmKinLabel', {
+														name: kin.displayName,
+														term: kinshipLabel(t, kin)
+													})}
+												>
+													{t('contact.relationships.confirmKin')}
+												</Button>
 											</form>
 										{/if}
 									</li>

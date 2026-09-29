@@ -23,7 +23,7 @@ import type { RelationshipType } from './relationships';
 /** Labels are shown inline on a relationship row; past this they stop being labels. */
 const MAX_LABEL_LENGTH = 80;
 
-/** Where custom types sort: after every built-in one (which occupy 0…11). */
+/** Where custom types sort: after every built-in one (which occupy 0…17). */
 export const CUSTOM_TYPE_SORT_ORDER = 100;
 
 /**

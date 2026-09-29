@@ -119,9 +119,10 @@ listed here so the rule engine's shape is not designed around family alone.
 Stated explicitly so nobody re-adds them later: **grandparent / great-grandparent, aunt /
 uncle, niece / nephew, cousin, half-sibling, parent-in-law, sibling-in-law, step-parent,
 step-child, step-sibling.** Every one of these follows from primary links and is named by the
-kinship engine on the profile. A household that wants one *stored* anyway (a grandmother
-whose connecting parent is not in Stella) enters it by hand — that path stays open and is the
-reason the built-in type set contains `grandparent_grandchild` at all.
+kinship engine on the profile. A household that wants one *stored* anyway confirms it on the
+row that names it (docs/02 §2.4.1), or — where the connecting person is not in Stella —
+enters it by hand; that is why the built-in type set carries a type for each of them. Being
+offered it unasked is what stays ruled out.
 
 ---
 

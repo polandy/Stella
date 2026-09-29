@@ -154,6 +154,8 @@ export const contact: ContactMessages = {
 	'contact.relationships.declinedOnBy': (p) => `abgelehnt am ${p.day} von ${p.who}`,
 	'contact.relationships.askAgain': 'Wieder anbieten',
 	'contact.relationships.derived': 'Ebenfalls verwandt · hergeleitet, nicht eingetragen',
+	'contact.relationships.confirmKin': 'Bestätigen',
+	'contact.relationships.confirmKinLabel': (p) => `${p.name} als ${p.term} eintragen`,
 	'contact.relationships.reallyChild': 'Doch das eigene Kind',
 	'contact.relationships.reallyParent': 'Doch ein eigener Elternteil',
 	'contact.relationships.reallySibling': 'Doch ein Geschwisterteil',

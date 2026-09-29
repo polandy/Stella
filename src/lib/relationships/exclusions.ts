@@ -1,5 +1,5 @@
 import type { RelationshipCategory } from './categories';
-import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS, SIBLING_TYPE_KEY } from './type-keys';
+import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from './type-keys';
 import type { RelationshipSide } from './type-options';
 
 /*
@@ -23,7 +23,6 @@ import type { RelationshipSide } from './type-options';
 /** Why a type may not be claimed between two people. */
 export const EXCLUSION_REASONS = [
 	'alreadyRomantic',
-	'siblingDerived',
 	'romanticTaken',
 	'parentsComplete'
 ] as const;
@@ -88,8 +87,6 @@ export interface ExclusionFacts {
 	romanticPairs: readonly ExclusionPair[];
 	/** Parent → child links across the household. */
 	parentEdges: readonly ExclusionParentEdge[];
-	/** Who the kinship engine already names as the subject's sibling. */
-	derivedSiblingIds: readonly string[];
 }
 
 /** The claim being weighed: this type, read this way round, between these two. */
@@ -165,10 +162,6 @@ export function exclusionFor(facts: ExclusionFacts, query: ExclusionQuery): Excl
 				tie: { typeKey: band.typeKey, side: band.side, label: band.label }
 			};
 		}
-	}
-
-	if (type.key === SIBLING_TYPE_KEY && facts.derivedSiblingIds.includes(targetId)) {
-		return { reason: 'siblingDerived', personId: targetId };
 	}
 
 	if (PARTNER_TYPE_KEYS.includes(type.key)) {

@@ -90,8 +90,6 @@ export function exclusionLabel(
 						name
 					})
 				: t('relationships.blocked.alreadyRomantic', { name });
-		case 'siblingDerived':
-			return t('relationships.blocked.siblingDerived');
 		case 'romanticTaken':
 			return t('relationships.blocked.romanticTaken', {
 				name,
