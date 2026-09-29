@@ -88,4 +88,17 @@ describe('paletteRows', () => {
 		]);
 		expect(paletteRows('lake', people, german).at(-1)?.label).toBe('Überall nach „lake“ suchen');
 	});
+
+	it('says which Thomas is which when the household has more than one', () => {
+		const household = [
+			person('hut', 'Thomas', { description: 'SAC hut, Aug 2026' }),
+			person('gym', 'Thomas', { metPlace: 'Gym club', metDate: '2021-03-01' }),
+			person('meier', 'Thomas Meier', { lastName: 'Meier', description: 'Neighbour' })
+		];
+		const rows = paletteRows('thom', household, labels).filter((r) => r.kind === 'person');
+
+		expect(rows.find((r) => r.id === 'hut')).toMatchObject({ distinction: { kind: 'description', text: 'SAC hut, Aug 2026' } });
+		expect(rows.find((r) => r.id === 'gym')).toMatchObject({ distinction: { kind: 'met', place: 'Gym club', year: '2021' } });
+		expect(rows.find((r) => r.id === 'meier')).toMatchObject({ distinction: null });
+	});
 });

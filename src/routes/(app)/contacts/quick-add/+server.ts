@@ -23,6 +23,8 @@ const InlineCreateSchema = v.object({
 	firstName: optional,
 	lastName: optional,
 	nickname: optional,
+	/** Asked for when there is no last name, so this Thomas can be told from the next (§2.2.3). */
+	description: optional,
 	birthDate: optional,
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
 });
@@ -64,6 +66,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		lastName: created.lastName,
 		nickname: created.nickname,
 		description: created.description,
+		metPlace: created.metPlace,
+		metDate: created.metDate,
 		birthDate: created.birthDate
 	};
 	return json(person, { status: 201 });

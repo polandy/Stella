@@ -80,6 +80,9 @@ export interface ContactSummary {
 	lastName: string | null;
 	nickname: string | null;
 	description: string | null;
+	/** Where and when they were met — with the description, what tells namesakes apart (docs/02 §2.2.3). */
+	metPlace: string | null;
+	metDate: string | null;
 	visibility: Visibility;
 	avatarPhotoId: string | null;
 	/**

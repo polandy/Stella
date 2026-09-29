@@ -189,7 +189,8 @@ They must be edited together; `app.css` says so at both blocks.
   you type with arrow keys and Enter; a typed query always ends in *Search everything*, which
   is the full-text search over notes the palette itself does not read. The rows come from a
   pure `paletteRows`; the people arrive with the app shell's `load`, so the first keystroke
-  answers without a round trip. It is the one control here that cannot work without
+  answers without a round trip. A person who shares their name with someone else gets a
+  second line saying which one they are (docs/02 §2.2.3). It is the one control here that cannot work without
   JavaScript, so its trigger stays **disabled until the shell has mounted** rather than
   swallowing a click in the first moments after a load — which is also what lets a test know
   the page is ready instead of waiting and hoping (`docs/08` §8.4).
@@ -469,7 +470,9 @@ choosing someone; multiple mode (interaction participants) keeps chosen people a
 chips and lets you keep adding. With `keepSearch` a multiple picker also keeps the typed
 query after a pick, so a surname keeps listing the rest of the family, and while a query has
 two or more matches the list opens with a *N matches · Add all N* row. Whoever is picked leaves
-the list either way. The switch that turns `keepSearch` off belongs to the form, **above** the
+the list either way. A person who shares their name with someone else on the list carries a
+second, smaller `--fg-subtle` line (`NamesakeLine`) saying which one they are (docs/02 §2.2.3);
+a unique name stays one line. The switch that turns `keepSearch` off belongs to the form, **above** the
 field: the open list would cover it anywhere below.
 
 With `allowCreate`, the picker also ends a fruitless search: from two typed characters on, a
@@ -477,12 +480,17 @@ row under the list offers *Add "<what you typed>" as a new person*, with a `+` m
 accent colour. It sits **outside** the listbox on purpose — it is an action, not a person, and
 keeping it out means "the options" stays a list of people for a screen reader and for anything
 locating someone by name. *No one found.* stays above it. Choosing it swaps the dropdown for a
-compact create panel in the same position (first/last name pre-filled from the query, nickname
-and birthday collapsed, visibility pills), which posts to `/contacts/quick-add` and selects the
+compact create panel in the same position (first/last name pre-filled from the query, a
+description line always in view, nickname and birthday collapsed, visibility pills), which posts to `/contacts/quick-add` and selects the
 new person on success (§2.2.2). The panel is plain inputs and `type="button"` buttons, never a
 nested `<form>` — the picker sits inside the caller's form, and Enter inside the panel saves
 the person rather than submitting that form. Its birthday is a `DateField` bound by value, not
 a form field, since the panel sends JSON.
+
+**Know-them-by nudge** (`KnowThemBy.svelte`): while a new person has a first name and no last
+name, the description field sits in a `--primary-soft` box with the `met` icon and one line on
+why (docs/02 §2.2.3), on *Add a person* and in the picker's create panel alike. It asks and
+never blocks; `compact` gives it the panel's smaller labels.
 
 **Callers give it an `id` and point their label at it with `for`** — never a label that merely
 wraps it. A `<label>` names its first labelable descendant, and in multiple mode that is a

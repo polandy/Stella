@@ -25,6 +25,8 @@ const person = (
 	lastName: null,
 	nickname: null,
 	description: null,
+	metPlace: null,
+	metDate: null,
 	visibility,
 	avatarPhotoId: null,
 	birthDate: null,

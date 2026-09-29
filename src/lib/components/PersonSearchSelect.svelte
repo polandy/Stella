@@ -4,8 +4,11 @@
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
+	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { isNameWorthCreating, splitTypedName } from '$lib/people/new-person';
+	import { tellApart } from '$lib/people/namesakes';
+	import { isNameWorthCreating, splitTypedName, wantsSomethingToKnowThemBy } from '$lib/people/new-person';
 	import { filterPeople, queryAfterPick, stillNeedsAPick, type SelectablePerson } from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';
 
@@ -85,12 +88,16 @@
 		firstName: '',
 		lastName: '',
 		nickname: '',
+		description: '',
 		birthDate: '',
 		visibility: 'shared' as Visibility
 	});
 
 	const knownPeople = $derived([...people, ...addedHere]);
 	const byId = $derived(new Map(knownPeople.map((p) => [p.id, p])));
+	/** Which Thomas is which, over everyone offered — a namesake out of sight is still one. */
+	const namesakes = $derived(tellApart(knownPeople));
+	const askForSomethingToKnowThemBy = $derived(wantsSomethingToKnowThemBy(draft));
 	const chosen = $derived(selectedIds.map((pid) => byId.get(pid)).filter((p) => p !== undefined));
 	const pickable = $derived(
 		multiple ? knownPeople.filter((p) => !selectedIds.includes(p.id)) : knownPeople
@@ -142,7 +149,7 @@
 
 	async function startCreate() {
 		const { firstName, lastName } = splitTypedName(query);
-		draft = { firstName, lastName, nickname: '', birthDate: '', visibility: 'shared' };
+		draft = { firstName, lastName, nickname: '', description: '', birthDate: '', visibility: 'shared' };
 		createError = null;
 		creating = true;
 		open = true;
@@ -327,6 +334,28 @@
 					</label>
 				</div>
 
+				{#if askForSomethingToKnowThemBy}
+					<KnowThemBy
+						firstName={draft.firstName}
+						compact
+						label={t('components.personSearch.description')}
+						bind:value={draft.description}
+						inputClass="rounded-control border border-border bg-card px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+					/>
+				{:else}
+					<!-- Worth asking for anyone new, not only a first name alone: it is what they are found by. -->
+					<label class="flex flex-col gap-1 text-xs text-fg-muted">
+						{t('components.personSearch.description')}
+						<input
+							bind:value={draft.description}
+							type="text"
+							autocomplete="off"
+							placeholder={t('components.namesake.placeholder')}
+							class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+						/>
+					</label>
+				{/if}
+
 				<details class="text-xs text-fg-muted">
 					<summary class="cursor-pointer">{t('components.personSearch.more')}</summary>
 					<div class="mt-2 grid grid-cols-2 gap-2">
@@ -414,6 +443,7 @@
 					<li class="px-2.5 py-1.5 text-sm text-fg-subtle">{t('components.personSearch.empty')}</li>
 				{:else}
 					{#each matches as person, i (person.id)}
+						{@const namesakeLine = namesakes.get(person.id)}
 						<li role="none">
 							<button
 								type="button"
@@ -427,7 +457,10 @@
 								class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
 							>
 								<Avatar id={person.id} name={person.displayName} size={22} />
-								<span class="truncate">{person.displayName}</span>
+								<span class="min-w-0">
+									<span class="block truncate">{person.displayName}</span>
+									{#if namesakeLine}<NamesakeLine distinction={namesakeLine} />{/if}
+								</span>
 							</button>
 						</li>
 					{/each}

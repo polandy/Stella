@@ -20,6 +20,8 @@ const summary = (id: string, visibility: 'shared' | 'private' = 'shared'): Conta
 	lastName: null,
 	nickname: null,
 	description: null,
+	metPlace: null,
+	metDate: null,
 	visibility,
 	avatarPhotoId: null,
 	birthDate: null

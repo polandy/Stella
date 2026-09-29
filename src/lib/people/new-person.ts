@@ -26,3 +26,12 @@ export function splitTypedName(query: string): TypedName {
 export function isNameWorthCreating(query: string): boolean {
 	return query.trim().length >= MIN_CREATABLE_LENGTH;
 }
+
+/**
+ * Whether to ask for a line to know the new person by (docs/02 §2.2.3): a first name alone
+ * will not tell them apart from the next person of that name. Only a nudge — saving without
+ * one stays allowed, a name is all a person needs.
+ */
+export function wantsSomethingToKnowThemBy(name: TypedName): boolean {
+	return name.firstName.trim() !== '' && name.lastName.trim() === '';
+}
