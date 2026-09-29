@@ -311,11 +311,10 @@ a household soon has five people called *Thomas*. Two things keep them apart:
   the @-picker remembers whom each handle it wrote stands for and saves it as that person's id
   token (§2.20.1). A `@Thomas` nobody picked — typed by hand, pasted, or written without
   JavaScript — that could be several people the text may name is **refused**, naming each with
-  their description or where they were met (*@Thomas could be 2 people: Thomas (Mountain guide), Thomas (Met: Lenk ·
-  2023)…*), and the text stays to be corrected. A mention is never dropped without a word. The
+  the same line as the pickers (*@Thomas could be 2 people: Thomas (Mountain guide), Thomas (Your
+  sibling)…*), and the text stays to be corrected. The links and circles are read, as the
+  author, only once a text is refused (`withNamesakeContext`). A mention is never dropped without a word. The
   moment composer says so before saving (*Which @Thomas?*).
-
-Not yet: relationship or circle as further fallbacks (docs/06, M3).
 
 ## 2.3 Contact fields **[M1]**
 
