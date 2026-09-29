@@ -35,6 +35,7 @@ export interface StoredFraming extends StoredPhoto {
 	crop: CropRect;
 }
 
+/** What framing needs from storage; the Drizzle photo adapter implements it beside `PhotoRepository`. */
 export interface FramingRepository {
 	/** One gallery photo, only if it belongs to that contact and the viewer may see it. */
 	findVisibleGalleryPhoto(viewer: Viewer, contactId: string, photoId: string): Promise<GalleryPhoto | null>;
@@ -45,6 +46,7 @@ export interface FramingRepository {
 	replaceFraming(framing: StoredFraming): Promise<DeletedPhotoFiles[]>;
 }
 
+/** Ports for `frameAsAvatar` (docs/08 §8.3). */
 export interface FramingDeps {
 	framings: FramingRepository;
 	media: MediaStore;
@@ -52,6 +54,7 @@ export interface FramingDeps {
 	clock: Clock;
 }
 
+/** One request to wear a gallery photo through a chosen square. */
 export interface FrameAsAvatarInput {
 	contactId: string;
 	photoId: string;
