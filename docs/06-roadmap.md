@@ -175,9 +175,9 @@ Goal: sand the edges and add the nice-to-haves.
   last-write-wins (docs/01 §1.6) on purpose: a phone's copy can be days old, and writing it
   back blindly would undo what others changed since.
   Deleting a contact on the phone archives the person rather than deleting them; a contact
-  created there follows the member's default visibility, like one added in the app. vCard properties
-  Stella does not model are kept on the card and written back unchanged, so a round-trip
-  loses nothing. The calendar stays derived: a birthday is changed on the contact, not the
+  created there follows the member's default visibility, like one added in the app. vCard
+  properties Stella does not model are kept on the card and written back unchanged, so a
+  round-trip loses nothing. The calendar stays derived: a birthday is changed on the contact, not the
   event. DAV clients cannot sign in through SSO, so each member creates a revocable **app
   password** for it in Settings. A per-person change stamp (shared with offline reading)
   keeps each sync to what changed.
