@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { ASK_REACHABILITY, isReachabilityReport } from './reachability';
+import { ASK_REACHABILITY, CHECK_REACHABILITY, isReachabilityReport } from './reachability';
 
 /*
  * Whether Stella answers, as one rune the whole page reads (docs/02 §2.18). The offline line,
@@ -23,6 +23,15 @@ if (browser && 'serviceWorker' in navigator) {
 	});
 	// The report this page needed was likely sent while it was still loading, so it asks.
 	void worker.ready.then(() => worker.controller?.postMessage(ASK_REACHABILITY));
+
+	// The worker only notices on a request, and a page left open makes none: these are the
+	// moments the answer may have changed under it. Events, not a timer (docs/04 §4.9).
+	const check = () => worker.controller?.postMessage(CHECK_REACHABILITY);
+	window.addEventListener('offline', check);
+	window.addEventListener('online', check);
+	document.addEventListener('visibilitychange', () => {
+		if (document.visibilityState === 'visible') check();
+	});
 }
 
 /** Where things stand, as a rune. */

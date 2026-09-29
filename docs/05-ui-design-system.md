@@ -107,7 +107,8 @@ divider, a relative timestamp.
 
 **Brand and state.** `--primary` (mauve) marks the one primary action, the current navigation
 item and focus; `--primary-soft` is its 14 % tint for active chips and hovers. `--success`,
-`--warning`, `--danger`, `--link` are unchanged.
+`--warning`, `--danger`, `--link` are unchanged; `--warning-soft` is an 18 % tint of
+`--warning`, the ground of the offline line.
 
 **Accents.** All fourteen Catppuccin accents are published as `--accent-<name>`. Tags, circles
 and generated avatars store one of those names, so the name a household picks survives a
@@ -681,13 +682,16 @@ it works with JavaScript off. It appears twice: in **Settings → Language**, an
 the sign-in form — the first screen has to be readable before there is a profile to remember
 anything in (docs/02 §2.19).
 
-**Offline banner** (`src/lib/components/OfflineBanner.svelte`) is a single quiet line on
-`--bg-sunken` directly above the page content — above the content and not the shell, because
+**Offline banner** (`src/lib/components/OfflineBanner.svelte`) is a single line on
+`--warning-soft`, ruled above and below in `--warning` at 40 %, directly above the page content — above the content and not the shell, because
 it is what you are reading that may be out of date, not the navigation around it. It carries
 `role="status"`, so it is announced rather than read only by the sighted, and it appears and
-clears on its own: the service worker reports whether Stella is reachable and the banner
-follows (docs/02 §2.18, docs/04 §4.11.1). When the page came off the device it also says how
+clears on its own: the service worker reports whether Stella is reachable, checking again
+when the connection changes or the app comes back into view, and the banner follows (docs/02 §2.18, docs/04 §4.11.1). When the page came off the device it also says how
 old it is (*as of yesterday 18:04*): an old copy is fine offline, but must not look current.
+The words stay in `--fg` (medium weight) and only the icon takes `--warning`: the tint makes the
+line hard to miss on a phone, where the earlier grey line on grey was, without turning it into
+an error.
 There is nothing to dismiss, because dismissing it would not restore the connection.
 
 **Kept moments** (`src/lib/components/KeptItem.svelte`; Home, under the capture field;
