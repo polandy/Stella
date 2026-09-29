@@ -226,7 +226,10 @@ A different member signing in on the device never sees or sends someone else's o
 - **The directory** is one scoped read and one cached JSON response. The cache policy
   (`cache-policy.ts`) gains a rule for it, and the sign-out purge gains the outbox check.
   For moments it is not needed yet: the cached Home page already carries the composer's
-  candidate list, which is exactly the people a moment may mention.
+  candidate list, which is exactly the people a moment may mention. The app layout carries
+  every visible person for ⌘K too, with what tells namesakes apart, so every cached page
+  brings the list along. Making every page readable offline, not only the lists, is
+  `offline-reading.md`.
 
 ---
 
