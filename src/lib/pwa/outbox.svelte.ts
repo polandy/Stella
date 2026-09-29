@@ -19,6 +19,8 @@ import {
 	takeBatch,
 	takePhoto,
 	unsend,
+	COMMAND_PATIENCE_MS,
+	PHOTO_PATIENCE_MS,
 	type Delivery,
 	type KeptPhoto,
 	type OutboxItem,
@@ -213,11 +215,12 @@ async function sendCommands(member: string): Promise<boolean> {
 			const response = await fetch('/api/commands', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ commands: batch })
+				body: JSON.stringify({ commands: batch }),
+				signal: AbortSignal.timeout(COMMAND_PATIENCE_MS)
 			});
 			answers = await answersFrom(response);
 		} catch {
-			// Out of reach. Everything waits for the next chance.
+			// Out of reach, or no answer in time. Everything waits for the next chance.
 		}
 		if (!answers) {
 			await apply(unsend);
@@ -257,7 +260,8 @@ async function sendPhotos(member: string): Promise<void> {
 		try {
 			const response = await fetch('/api/commands/photo', {
 				method: 'POST',
-				body: form
+				body: form,
+				signal: AbortSignal.timeout(PHOTO_PATIENCE_MS)
 			});
 			if (response.ok)
 				answer = ((await response.json()) as { answer?: CommandAnswer }).answer ?? null;

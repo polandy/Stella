@@ -89,6 +89,35 @@ function questionOf(url: URL): string {
 	return search.toString();
 }
 
+/**
+ * How long the network gets to answer before the device's copy is used instead. A phone that
+ * has lost its network does not always say so — the request goes out and nothing comes back —
+ * so without a limit the copy would never be reached. Stella on the household's own network
+ * answers far sooner; a response that is merely late still refreshes the copy when it lands.
+ */
+export const NETWORK_PATIENCE_MS = 4000;
+
+/**
+ * How long to wait for the network. Once the last request did not reach Stella, a tap with a
+ * copy to show is answered from the device at once, while the network is still asked in the
+ * background — its answer is what says Stella is back. Without a copy the network is the only
+ * answer there is, so it gets the full wait.
+ */
+export function patienceFor(state: { reachable: boolean; hasCopy: boolean }): number {
+	return state.hasCopy && !state.reachable ? 0 : NETWORK_PATIENCE_MS;
+}
+
+/**
+ * Whether `request` is a page's data, kept or not. Those are what a tap inside the app waits
+ * on, so none of them may wait on silence: failing is what makes SvelteKit fall back to a
+ * whole page, which the worker can answer from the device.
+ */
+export function isPageData(request: CacheableRequest): boolean {
+	if (request.method !== 'GET') return false;
+	const url = new URL(request.url);
+	return url.origin === request.origin && dataPageOf(url) !== null;
+}
+
 /** What the service worker may do with the response to `request`. */
 export function verdictFor(request: CacheableRequest): CacheVerdict {
 	if (request.method !== 'GET') return 'skip';
