@@ -157,6 +157,8 @@
 	--focus-ring: var(--ctp-lavender);
 	--success: var(--ctp-green);
 	--warning: var(--ctp-yellow);
+	/* The ground of the offline line: noticed at a glance, but not mistaken for an error. */
+	--warning-soft: color-mix(in srgb, var(--warning) 18%, transparent);
 	--danger: var(--ctp-red);
 	--link: var(--ctp-blue);
 
@@ -223,6 +225,7 @@
 	--color-primary-soft: var(--primary-soft);
 	--color-success: var(--success);
 	--color-warning: var(--warning);
+	--color-warning-soft: var(--warning-soft);
 	--color-danger: var(--danger);
 	--color-link: var(--link);
 

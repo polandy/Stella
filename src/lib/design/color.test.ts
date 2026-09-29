@@ -211,3 +211,31 @@ describe('accents as fills', () => {
 		});
 	}
 });
+
+/*
+ * The offline line (docs/05 §5.7) is tinted with `--warning` so it is not missed, but the
+ * yellow is only the ground and the icon: the words stay in `--fg`, which has to read on the
+ * tint in every theme. The percentage mirrors `--warning-soft` in app.css.
+ */
+describe('text on the offline tint', () => {
+	const WARNING_SOFT_PERCENT = 18;
+
+	it('declares the tint the offline line is painted with', () => {
+		expect(css).toContain(`--warning-soft: color-mix(in srgb, var(--warning) ${WARNING_SOFT_PERCENT}%, transparent)`);
+	});
+
+	for (const theme of THEMES) {
+		const tokens = tokensFor(css, theme);
+
+		it(`reads --fg on the warning tint over --bg in ${theme}`, () => {
+			const fg = resolveColor(tokens, '--fg');
+			const warning = resolveColor(tokens, '--warning');
+			const ground = resolveColor(tokens, '--bg');
+			if (fg === null || warning === null || ground === null) {
+				throw new Error(`--fg, --warning or --bg does not resolve to a colour in ${theme}`);
+			}
+			const tint = mixHex(warning, WARNING_SOFT_PERCENT, ground);
+			expect(contrastRatio(fg, tint)).toBeGreaterThanOrEqual(AA_TEXT);
+		});
+	}
+});

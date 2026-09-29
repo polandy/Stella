@@ -30,9 +30,9 @@
 	<p
 		data-testid="offline-banner"
 		role="status"
-		class="flex items-center justify-center gap-2 bg-bg-sunken px-4 py-1.5 text-center text-sm text-fg-muted"
+		class="flex items-center justify-center gap-2 border-y border-warning/40 bg-warning-soft px-4 py-1.5 text-center text-sm font-medium text-fg"
 	>
-		<Icon name="offline" size={15} />
+		<Icon name="offline" size={15} class="text-warning" />
 		{line}
 	</p>
 {/if}

@@ -139,13 +139,11 @@ Goal: sand the edges and add the nice-to-haves.
   others have seen is changed offline, so there is nothing to merge. Event sourcing and full
   offline sync were weighed and rejected (docs/04 §4.9); the decisions taken along the way
   are in `docs/concepts/offline-capture.md` §8.
-- **Reading Stella while it is out of reach** — every person the member can see readable
+- ~~**Reading Stella while it is out of reach**~~ — shipped (§2.18): every person the member can see readable
   offline, their journal too, not only the pages read since the last update; the offline line
   says how old the copy is, and a person no longer visible leaves the device on the next
   refresh. Pages are kept ahead as the server renders them (no second renderer, no local
-  database); a per-person change stamp keeps the refresh to what changed. Two steps: first
-  Home, People and Circles kept ahead plus the age of the copy (**shipped**), then the person
-  pages.
+  database); a tag of each page's content keeps the refresh to what changed.
   Plan and decisions: `docs/concepts/offline-reading.md`.
 - ~~**A simpler day in the *What happened?* composer**~~ — shipped (§2.22.1): a *Today* pill
   beside *Shared* and *Photo* offers the last week in one tap and a month calendar for
