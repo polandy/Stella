@@ -47,8 +47,8 @@ const PWA_SPECS = /pwa-[^/]*\.spec\.ts$/;
  * `destroy()`, fixed since in #109 — was never this crash's cause.
  *
  * `--disable-gpu` was the previous suspect and was wrong: the crash survived it unchanged,
- * down to the address. If this ever returns — a real PWA e2e spec would have to unblock the
- * worker — re-run an untouched commit as a control before blaming the diff under test.
+ * down to the address. If this ever returns — the `pwa` project below is where the worker
+ * runs now — re-run an untouched commit as a control before blaming the diff under test.
  */
 const NO_SERVICE_WORKER = 'block' as const;
 
