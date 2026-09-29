@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import {
 	MAX_ZOOM,
+	cropFromRect,
 	cropRect,
 	imagePlacement,
 	initialCrop,
@@ -24,6 +25,21 @@ describe('a freshly picked photo', () => {
 	it('starts on the centred square the uploader used to cut on its own', () => {
 		expect(cropRect(landscape, initialCrop(landscape))).toEqual({ x: 500, y: 0, size: 3000 });
 		expect(cropRect(portrait, initialCrop(portrait))).toEqual({ x: 0, y: 200, size: 1200 });
+	});
+});
+
+describe('a photo framed before', () => {
+	it('starts on the square chosen last time', () => {
+		const remembered = { x: 1200, y: 600, size: 1500 };
+		expect(cropRect(landscape, cropFromRect(landscape, remembered))).toEqual(remembered);
+	});
+
+	it('pulls a remembered square back inside a picture it no longer fits', () => {
+		expect(cropRect(landscape, cropFromRect(landscape, { x: 3000, y: 2000, size: 5000 }))).toEqual({
+			x: 1000,
+			y: 0,
+			size: 3000
+		});
 	});
 });
 

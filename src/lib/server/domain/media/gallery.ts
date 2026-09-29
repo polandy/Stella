@@ -72,26 +72,11 @@ export async function removeGalleryPhoto(
 	viewer: Viewer,
 	photoId: string
 ): Promise<boolean> {
-	const files = await deps.photos.deleteOwnGalleryPhoto({ authorId: viewer.id, photoId });
-	if (!files) return false;
-	await deps.media.delete(files.filePath);
-	await deps.media.delete(files.thumbPath);
-	return true;
-}
-
-/**
- * Wear a gallery photo as the contact's avatar. The photo must be one of *that* contact's and
- * visible to the viewer, so a guessed id can neither borrow someone else's face nor confirm
- * that a private photo exists.
- */
-export async function useAsAvatar(
-	deps: Pick<GalleryDeps, 'photos'>,
-	viewer: Viewer,
-	contactId: string,
-	photoId: string
-): Promise<boolean> {
-	const found = await deps.photos.findVisibleGalleryPhoto(viewer, contactId, photoId);
-	if (!found) return false;
-	await deps.photos.setContactAvatar(contactId, photoId);
+	const removed = await deps.photos.deleteOwnGalleryPhoto({ authorId: viewer.id, photoId });
+	if (!removed) return false;
+	for (const files of removed) {
+		await deps.media.delete(files.filePath);
+		await deps.media.delete(files.thumbPath);
+	}
 	return true;
 }

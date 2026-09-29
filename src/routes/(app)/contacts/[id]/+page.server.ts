@@ -52,9 +52,9 @@ import {
 	CaptionTooLongError,
 	listGallery,
 	removeGalleryPhoto,
-	setGalleryPhotoVisibility,
-	useAsAvatar
+	setGalleryPhotoVisibility
 } from '$lib/server/domain/media/gallery';
+import { frameAsAvatar } from '$lib/server/domain/media/framing';
 import { mentionSnippet } from '$lib/mentions/snippet';
 import {
 	contactSectionPath,
@@ -103,6 +103,7 @@ import {
 	getJournalDeps,
 	getNoteDeps,
 	getGalleryDeps,
+	getFramingDeps,
 	getGraphRepository,
 	getPhotos,
 	getRelationshipDeps,
@@ -1089,15 +1090,34 @@ export const actions: Actions = {
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},
 
-	/** Wear a gallery photo as this contact's avatar. */
-	usePhotoAsAvatar: async ({ request, params, locals }) => {
+	/**
+	 * Wear a gallery photo as this contact's avatar through the square chosen in the cropper
+	 * (docs/02 §2.14). The browser sends the square and its rendering, as for a new avatar.
+	 */
+	framePhotoAsAvatar: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		const form = await request.formData();
 		const photoId = form.get('photoId');
-		if (typeof photoId !== 'string') return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
-		if (!(await useAsAvatar(getGalleryDeps(), viewer, params.id, photoId))) {
-			return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
+		const image = form.get('image');
+		const thumb = form.get('thumb');
+		if (typeof photoId !== 'string' || !(image instanceof File) || !(thumb instanceof File)) {
+			return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
+		}
+		const crop = { x: Number(form.get('cropX')), y: Number(form.get('cropY')), size: Number(form.get('cropSize')) };
+		const upload = {
+			image: new Uint8Array(await image.arrayBuffer()),
+			thumb: new Uint8Array(await thumb.arrayBuffer()),
+			width: Number(form.get('width')),
+			height: Number(form.get('height'))
+		};
+		try {
+			if (!(await frameAsAvatar(getFramingDeps(), viewer, { contactId: params.id, photoId, crop, upload }))) {
+				return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
+			}
+		} catch (err) {
+			if (err instanceof InvalidAvatarError) return fail(400, { photoError: err.phrase(translator(locals)) });
+			throw err;
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},

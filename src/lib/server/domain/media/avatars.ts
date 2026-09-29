@@ -1,3 +1,4 @@
+import type { CropRect } from '../../../image/crop';
 import { TranslatableError } from '../../../errors/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
@@ -108,8 +109,10 @@ export interface GalleryPhoto {
 	width: number | null;
 	height: number | null;
 	createdAt: number;
-	/** Whether this photo is the contact's current avatar. */
+	/** Whether this photo is the contact's current avatar, as it is or through its framing. */
 	isAvatar: boolean;
+	/** The square last chosen to wear this photo as the avatar, if any (see `./framing`). */
+	framing: CropRect | null;
 }
 
 /** The file paths a deleted photo leaves behind, so the bytes can go too. */
@@ -145,11 +148,11 @@ export interface PhotoRepository {
 		visibility?: 'shared' | 'private';
 	}): Promise<boolean>;
 	/**
-	 * Remove a gallery photo the author uploaded and return its files. Clearing the avatar
-	 * that pointed at it happens in the same transaction, so a deleted photo can never leave
-	 * a contact wearing a face that no longer exists.
+	 * Remove a gallery photo the author uploaded, with its framing, and return their files.
+	 * Clearing the avatar that pointed at either happens in the same transaction, so a deleted
+	 * photo can never leave a contact wearing a face that no longer exists.
 	 */
-	deleteOwnGalleryPhoto(input: { authorId: string; photoId: string }): Promise<DeletedPhotoFiles | null>;
+	deleteOwnGalleryPhoto(input: { authorId: string; photoId: string }): Promise<DeletedPhotoFiles[] | null>;
 }
 
 /** Byte storage under the media volume; paths returned are what the DB records. */

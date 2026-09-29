@@ -740,7 +740,10 @@ pans, pinch and the wheel zoom around the fingers or pointer, and a zoom slider 
 keys and `+` / `−` give the same control without a gesture (the window is focusable, with
 `role="application"` so the keys reach it). *Use photo* is the primary button, *Cancel* and
 Escape leave without uploading. What each gesture does to the square is pure
-(`src/lib/image/crop.ts`); the component only turns events into those calls.
+(`src/lib/image/crop.ts`); the component only turns events into those calls. The lightbox's
+*Use as photo* (`FrameAsAvatar.svelte`) opens the same dialog on the full picture, starting on
+the square chosen last time, and reads *Change framing* on the photo worn now. Keys pressed in
+the dialog stay in it, so the arrows move the picture rather than walking the gallery behind.
 
 **A choice that cannot be made says why, once.** Where a picker's entries are refused by what
 is already on record — the relationship type picker is the case (docs/02 §2.4) — the entries

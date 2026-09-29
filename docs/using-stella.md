@@ -168,9 +168,11 @@ before it is uploaded, which also strips the location and camera details the fil
 and you choose there whether they are shared with the household or only yours.
 
 Click one and it opens large, with the date next to its caption. From there you can give it a
-caption, make it the person's photo, switch it between shared and private, or remove it. Only
-whoever added a photo can caption or remove it, but anyone who can see it can make it the
-person's photo. Removing one deletes the file for good and, if the person was wearing it, they
+caption, make it the person's photo, switch it between shared and private, or remove it.
+*Use as photo* first lets you choose the part that shows, as below; the photo stays one photo in
+the gallery, and choosing again — *Change framing* on the one they wear — starts from the part
+you chose last time. Only whoever added a photo can caption or remove it, but anyone who can
+see it can make it the person's photo. Removing one deletes the file for good and, if the person was wearing it, they
 go back to their initials. Escape closes the view and the arrow keys walk through the rest.
 
 To give someone a new photo straight away, click the round picture at the top of their page and

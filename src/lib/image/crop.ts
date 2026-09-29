@@ -68,6 +68,15 @@ export function initialCrop(image: ImageSize): Crop {
 	return { centerX: image.width / 2, centerY: image.height / 2, zoom: 1 };
 }
 
+/** The crop that shows a square chosen before — pulled inside the picture if it no longer fits. */
+export function cropFromRect(image: ImageSize, rect: CropRect): Crop {
+	return withinPicture(image, {
+		centerX: rect.x + rect.size / 2,
+		centerY: rect.y + rect.size / 2,
+		zoom: Math.min(image.width, image.height) / rect.size
+	});
+}
+
 export function cropRect(image: ImageSize, crop: Crop): CropRect {
 	const size = side(image, crop.zoom);
 	return { x: crop.centerX - size / 2, y: crop.centerY - size / 2, size };

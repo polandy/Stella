@@ -2,6 +2,7 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import {
 		MAX_ZOOM,
+		cropFromRect,
 		cropRect,
 		imagePlacement,
 		initialCrop,
@@ -22,16 +23,19 @@
 	 * moves behind a fixed round window: drag it, pinch or scroll to zoom, or use the slider and
 	 * the arrow keys. All geometry lives in `$lib/image/crop`; this component only turns pointer
 	 * and key events into calls there and draws the result. A native <dialog> gives focus
-	 * trapping, Escape and the backdrop for free, as in the command palette.
+	 * trapping, Escape and the backdrop for free, as in the command palette. Keys stay inside it:
+	 * the gallery's lightbox walks its photos with the same arrows on `window`.
 	 */
 
 	interface Props {
 		/** The picked picture; the dialog is open while this is set. */
 		file: Blob | null;
+		/** The square chosen last time, to start from instead of the centre. */
+		initial?: CropRect | null;
 		onconfirm: (crop: CropRect) => void;
 		oncancel: () => void;
 	}
-	let { file, onconfirm, oncancel }: Props = $props();
+	let { file, initial = null, onconfirm, oncancel }: Props = $props();
 
 	const t = useTranslate();
 
@@ -68,7 +72,7 @@
 	function onLoad(event: Event) {
 		const img = event.currentTarget as HTMLImageElement;
 		image = { width: img.naturalWidth, height: img.naturalHeight };
-		crop = initialCrop(image);
+		crop = initial ? cropFromRect(image, initial) : initialCrop(image);
 	}
 
 	// ── Pointers: one drags, two pinch ─────────────────────────────────────────
@@ -138,6 +142,7 @@
 <dialog
 	bind:this={dialog}
 	onclose={() => file && oncancel()}
+	onkeydown={(event) => dialog?.open && event.stopPropagation()}
 	aria-label={t('components.cropper.title')}
 	class="m-auto w-full max-w-sm rounded-app border border-border bg-card p-0 text-fg shadow-pop backdrop:bg-bg-sunken/70 backdrop:backdrop-blur-sm"
 	data-testid="photo-cropper"

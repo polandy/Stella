@@ -151,6 +151,12 @@ function int(row: Row, key: string): number | null {
 	return typeof value === 'number' && Number.isFinite(value) ? Math.trunc(value) : null;
 }
 
+/** A measure that may carry a fraction, such as a framing's square. */
+function real(row: Row, key: string): number | null {
+	const value = row[key];
+	return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
 const bool = (row: Row, key: string): boolean => row[key] === true;
 
 /** An ISO instant back to the epoch milliseconds the database stores. */
@@ -286,6 +292,7 @@ export function planRestore(
 		}
 		mediaPaths.add(file);
 		mediaPaths.add(thumb);
+		const crop = record(row.crop);
 		photos.push({
 			id: str(row, 'id') ?? deps.ids.next(),
 			household_id: target.householdId,
@@ -301,6 +308,10 @@ export function planRestore(
 			size_bytes: int(row, 'bytes'),
 			caption: str(row, 'caption'),
 			taken_at: str(row, 'taken_at'),
+			framing_of: str(row, 'framing_of'),
+			crop_x: crop ? real(crop, 'x') : null,
+			crop_y: crop ? real(crop, 'y') : null,
+			crop_size: crop ? real(crop, 'size') : null,
 			sort_order: int(row, 'sort_order') ?? 0,
 			created_at: ms(row, 'created_at') ?? now
 		});
@@ -605,6 +616,17 @@ export function planRestore(
 		});
 	}
 
+	// A framing whose photo was refused above would be worn by nobody's gallery and could never
+	// be removed from the interface; it goes with its photo, files included (docs/02 §2.14).
+	const photoIds = new Set(photos.filter((p) => p.framing_of === null).map((p) => p.id));
+	const keptPhotos = photos.filter((p) => {
+		const framingOf = p.framing_of;
+		if (typeof framingOf !== 'string' || photoIds.has(framingOf)) return true;
+		mediaPaths.delete(p.file_path as string);
+		mediaPaths.delete(p.thumb_path as string);
+		return false;
+	});
+
 	return {
 		householdId: target.householdId,
 		household: str(document, 'household') ?? 'a household',
@@ -623,7 +645,7 @@ export function planRestore(
 			{ table: 'journal_mention', rows: journalMentions },
 			{ table: 'interaction', rows: interactions },
 			{ table: 'interaction_participant', rows: participants },
-			{ table: 'photo', rows: photos },
+			{ table: 'photo', rows: keptPhotos },
 			{ table: 'circle', rows: circles },
 			{ table: 'circle_membership', rows: memberships },
 			{ table: 'relationship', rows: relationships },
