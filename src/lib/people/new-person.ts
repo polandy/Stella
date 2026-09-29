@@ -35,3 +35,13 @@ export function isNameWorthCreating(query: string): boolean {
 export function wantsSomethingToKnowThemBy(name: TypedName): boolean {
 	return name.firstName.trim() !== '' && name.lastName.trim() === '';
 }
+
+/**
+ * A name typed all in lowercase with its first letter capitalised — `@thomas` is how a handle
+ * is typed on a phone, not how the person is called. Any capital already in it is the writer's
+ * own choice and is kept as it is.
+ */
+export function capitalisedIfTypedLowercase(name: string): string {
+	if (name !== name.toLowerCase()) return name;
+	return name.charAt(0).toUpperCase() + name.slice(1);
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { isNameWorthCreating, splitTypedName, wantsSomethingToKnowThemBy } from './new-person';
+import { isNameWorthCreating, splitTypedName, wantsSomethingToKnowThemBy, capitalisedIfTypedLowercase } from './new-person';
 
 describe('splitTypedName', () => {
 	it('reads a single word as a first name', () => {
@@ -55,5 +55,18 @@ describe('wantsSomethingToKnowThemBy', () => {
 
 	it('stays quiet while nothing is typed yet', () => {
 		expect(wantsSomethingToKnowThemBy({ firstName: ' ', lastName: '' })).toBe(false);
+	});
+});
+
+describe('capitalisedIfTypedLowercase', () => {
+	it('capitalises a name typed all in lowercase, as a handle on a phone usually is', () => {
+		expect(capitalisedIfTypedLowercase('thomas')).toBe('Thomas');
+		expect(capitalisedIfTypedLowercase('élise')).toBe('Élise');
+	});
+
+	it('leaves a name alone once its writer has capitalised any of it', () => {
+		expect(capitalisedIfTypedLowercase('McKenzie')).toBe('McKenzie');
+		expect(capitalisedIfTypedLowercase('deVries')).toBe('deVries');
+		expect(capitalisedIfTypedLowercase('')).toBe('');
 	});
 });

@@ -21,7 +21,7 @@
 		type MentionPick
 	} from '$lib/mentions/picks';
 	import { tellApart } from '$lib/people/namesakes';
-	import { splitTypedName, wantsSomethingToKnowThemBy } from '$lib/people/new-person';
+	import { capitalisedIfTypedLowercase, splitTypedName, wantsSomethingToKnowThemBy } from '$lib/people/new-person';
 	import type { MomentCapturePayload, MomentNewPerson } from '$lib/commands/commands';
 	import type { KeptOf, KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -215,9 +215,10 @@
 	/** Open the panel for a new person, named as typed — or as the namesake is, when there is one. */
 	async function openCreate(typed: string, at: ActiveHandle, caret: number) {
 		const namesake = audience.find((c) => mentionKey(c.displayName) === mentionKey(typed));
+		const asTyped = splitTypedName(typed);
 		const name = namesake?.firstName
 			? { firstName: namesake.firstName, lastName: '' }
-			: splitTypedName(typed);
+			: { ...asTyped, firstName: capitalisedIfTypedLowercase(asTyped.firstName) };
 		creating = { firstName: name.firstName, lastName: name.lastName, description: '', at, caret };
 		active = null;
 		clearTimeout(closingPicker);
@@ -424,9 +425,11 @@
 	</div>
 
 	{#if creating}
-		<!-- Plain inputs, not a nested form: the panel lives inside the moment's form. -->
+		<!-- Plain inputs, not a nested form: the panel lives inside the moment's form. It takes
+		     its place in the card rather than floating over it, so on a phone, where the composer
+		     is a sheet at the bottom of the screen, it grows the sheet instead of leaving it. -->
 		<div
-			class="absolute left-14 top-16 z-10 flex w-[min(340px,calc(100%-4rem))] flex-col gap-2.5 rounded-app border border-border bg-card p-3 shadow-pop"
+			class="mx-3 mb-2 flex flex-col gap-2.5 rounded-app border border-border bg-bg p-3"
 			data-testid="composer-create"
 			onkeydown={onCreateKeydown}
 			role="none"
