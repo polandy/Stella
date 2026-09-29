@@ -150,4 +150,10 @@ test('describes someone new in the relationship form by the link being entered',
 	await expect(description).toHaveValue(`Child of Anneliese ${last}`);
 	await form.locator('select[name="typeChoice"]').selectOption({ label: 'Friend of' });
 	await expect(description).toHaveValue(`Friend of Anneliese ${last}`);
+
+	// Without a last name the description is what they are known by, so it cannot be emptied.
+	const add = page.getByTestId('person-search-create').getByRole('button', { name: 'Add & select' });
+	await expect(add).toBeEnabled();
+	await description.fill('');
+	await expect(add).toBeDisabled();
 });

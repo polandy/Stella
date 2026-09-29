@@ -21,7 +21,12 @@
 		type MentionPick
 	} from '$lib/mentions/picks';
 	import { tellApart } from '$lib/people/namesakes';
-	import { capitalisedIfTypedLowercase, splitTypedName, wantsSomethingToKnowThemBy } from '$lib/people/new-person';
+	import {
+		capitalisedIfTypedLowercase,
+		isKnownByMoreThanAFirstName,
+		splitTypedName,
+		wantsSomethingToKnowThemBy
+	} from '$lib/people/new-person';
 	import type { MomentCapturePayload, MomentNewPerson } from '$lib/commands/commands';
 	import type { KeptOf, KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -238,7 +243,7 @@
 	async function addCreated() {
 		if (!creating || !creating.firstName.trim()) return;
 		// Stella refuses a first name alone (docs/02 §2.2.3); the button says so by staying off.
-		if (askForSomethingToKnowThemBy && !creating.description.trim()) return;
+		if (!isKnownByMoreThanAFirstName(creating)) return;
 		const person: MomentNewPerson = {
 			key: ulid(),
 			firstName: creating.firstName.trim(),
@@ -481,7 +486,7 @@
 			<div class="flex justify-end gap-2">
 				<!-- `type="button"`: inside the moment's form, these must never save it. -->
 				<Button type="button" variant="ghost" size="sm" onclick={cancelCreate}>{t('components.personSearch.cancel')}</Button>
-				<Button type="button" variant="primary" size="sm" disabled={!creating.firstName.trim() || (askForSomethingToKnowThemBy && !creating.description.trim())} onclick={addCreated}>
+				<Button type="button" variant="primary" size="sm" disabled={!creating.firstName.trim() || !isKnownByMoreThanAFirstName(creating)} onclick={addCreated}>
 					{t('composer.addPerson')}
 				</Button>
 			</div>

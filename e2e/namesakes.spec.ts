@@ -41,6 +41,12 @@ test('asks what to know a first-name-only person by, and lets go once there is a
 
 	await page.getByLabel('First name').fill('Gottfried');
 	await expect(nudge).toContainText('Without a last name, “Gottfried” is hard to tell apart later.');
+
+	// A first name alone is not enough to add someone: the form stops at the empty description.
+	await page.getByRole('button', { name: 'Add person' }).click();
+	await expect(nudge.getByLabel('Description')).toHaveJSProperty('validity.valueMissing', true);
+	await expect(page.getByLabel('First name')).toHaveValue('Gottfried');
+
 	await nudge.getByLabel('Description').fill('Met at the Gspaltenhornhütte');
 
 	// A last name is enough to tell him apart: the box goes, the field and what it holds stay.

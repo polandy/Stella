@@ -116,7 +116,8 @@ shows to the other as anything but a badge.
 The central entity. A contact is any person the family wants to remember — they need
 not be an app user.
 
-**Fields (all optional except a display name):**
+**Fields (all optional except a name — and a first name alone needs a last name or a
+description to go with it, §2.2.3):**
 
 - Names: first, last, nickname, name prefix/suffix, "goes by".
 - Optionally a **maiden/former name**.
@@ -142,9 +143,9 @@ not be an app user.
 
 **Behaviors:**
 
-- **Quick add:** a minimal, fast form — display name + optional photo + optional
-  "how we met" — reachable in one tap, designed for mobile capture. Everything else can
-  be filled later.
+- **Quick add:** a minimal, fast form — a name (with a last name or a description) +
+  optional photo + optional "how we met" — reachable in one tap, designed for mobile capture.
+  Everything else can be filled later.
 - **Contact profile page** aggregates: header (avatar, name, description, key dates,
   tags), relationships, notes, interactions timeline, photo gallery, contact fields.
 - **Deceased contacts** are kept, visually marked, and excluded from active reminders.

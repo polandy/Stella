@@ -11,6 +11,7 @@ import { mergeProfiles, type MergeableProfile } from './merge-profile';
 import type { MediaStore } from '../media/avatars';
 import type { IdGenerator } from '../../id';
 import { deriveDisplayName } from './display-name';
+import { isKnownByMoreThanAFirstName } from '../../../people/new-person';
 
 /*
  * Contact use-cases (docs/02 §2.2). Framework-agnostic orchestration over the
@@ -202,16 +203,6 @@ export class NeedsSomethingToKnowThemByError extends TranslatableError {
 }
 
 /**
- * A last name, or a description to know them by. A name given whole — `Thomas Widmer` typed as
- * the display name — carries its last name in it.
- */
-function hasSomethingToKnowThemBy(input: CreateContactInput): boolean {
-	if (orNull(input.description)) return true;
-	if (input.firstName?.trim() || input.lastName?.trim()) return orNull(input.lastName) !== null;
-	return (input.displayName ?? '').trim().split(/\s+/).length > 1;
-}
-
-/**
  * Create a contact, deriving its display name and defaulting its visibility. Everyone added by
  * hand comes through here; imports write through their own adapters and keep what they carry.
  */
@@ -221,7 +212,7 @@ export async function createContact(
 	input: CreateContactInput
 ): Promise<string> {
 	const displayName = deriveDisplayName(input);
-	if (!hasSomethingToKnowThemBy(input)) throw new NeedsSomethingToKnowThemByError();
+	if (!isKnownByMoreThanAFirstName(input)) throw new NeedsSomethingToKnowThemByError();
 	const { birthDate, birthDatePrecision } = parseBirthDate(input.birthDate);
 	const now = deps.clock.now();
 	const id = deps.ids.next();

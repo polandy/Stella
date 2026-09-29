@@ -8,7 +8,12 @@
 	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
-	import { isNameWorthCreating, splitTypedName, wantsSomethingToKnowThemBy } from '$lib/people/new-person';
+	import {
+		isKnownByMoreThanAFirstName,
+		isNameWorthCreating,
+		splitTypedName,
+		wantsSomethingToKnowThemBy
+	} from '$lib/people/new-person';
 	import { filterPeople, queryAfterPick, stillNeedsAPick, type SelectablePerson } from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';
 
@@ -194,7 +199,7 @@
 
 	async function submitCreate() {
 		// Stella refuses a first name alone (docs/02 §2.2.3); Enter must not get past the button.
-		if (saving || (askForSomethingToKnowThemBy && !draft.description.trim())) return;
+		if (saving || !isKnownByMoreThanAFirstName(draft)) return;
 		saving = true;
 		createError = null;
 		try {
@@ -425,7 +430,7 @@
 						type="button"
 						variant="primary"
 						size="sm"
-						disabled={saving || (askForSomethingToKnowThemBy && !draft.description.trim())}
+						disabled={saving || !isKnownByMoreThanAFirstName(draft)}
 						onclick={submitCreate}
 					>
 						{saving ? t('components.personSearch.submitting') : t('components.personSearch.submit')}

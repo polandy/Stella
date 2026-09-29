@@ -45,3 +45,23 @@ export function capitalisedIfTypedLowercase(name: string): string {
 	if (name !== name.toLowerCase()) return name;
 	return name.charAt(0).toUpperCase() + name.slice(1);
 }
+
+/** What a person being added by hand is named and described with; blank reads as missing. */
+export interface PersonBeingAdded {
+	displayName?: string | null;
+	firstName?: string | null;
+	lastName?: string | null;
+	description?: string | null;
+}
+
+/**
+ * Whether a person being added by hand can be told from the next one of that name (docs/02
+ * §2.2.3): a last name, or a description to know them by. A name given whole — `Thomas Widmer`
+ * as the display name — carries its last name in it. The one rule the forms and `createContact`
+ * both read, so a form never offers what the server refuses.
+ */
+export function isKnownByMoreThanAFirstName(person: PersonBeingAdded): boolean {
+	if (person.description?.trim()) return true;
+	if (person.firstName?.trim() || person.lastName?.trim()) return Boolean(person.lastName?.trim());
+	return (person.displayName ?? '').trim().split(/\s+/).length > 1;
+}
