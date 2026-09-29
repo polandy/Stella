@@ -162,6 +162,27 @@ Goal: sand the edges and add the nice-to-haves.
   (docs/monica-mapping.md) creates the household's own *Cousin of* and *Uncle/aunt of*, which
   now sit beside the built-in `cousin` and `aunt_uncle_niece_nephew` in the picker. Map them
   to the built-ins on import, and offer existing households a one-off merge.
+- **Stella's people in the phone's address book and calendar (CardDAV / CalDAV)** — a
+  member adds Stella as a CardDAV account on their phone or mail client and sees the people
+  they are allowed to see as contacts (name, photo, phone, email, address, birthday), plus a
+  CalDAV calendar of their birthdays and anniversaries. **Two-way** for contacts: a person
+  added, changed or removed in the address book arrives in Stella. As in the app, every
+  member may change every person they can see; each write goes through the same domain
+  use-cases and access layer (docs/03 §3.7) and is written to `activity_log` as that member,
+  so the household sees who changed what and when. A private person stays in their owner's
+  address book only. Concurrent edits are caught with ETags (`If-Match`): a stale
+  write is refused and the client fetches the current card. This departs from the app's
+  last-write-wins (docs/01 §1.6) on purpose: a phone's copy can be days old, and writing it
+  back blindly would undo what others changed since.
+  Deleting a contact on the phone archives the person rather than deleting them; a contact
+  created there follows the member's default visibility, like one added in the app. vCard
+  properties Stella does not model are kept on the card and written back unchanged, so a
+  round-trip loses nothing. The calendar stays derived: a birthday is changed on the contact, not the
+  event. DAV clients cannot sign in through SSO, so each member creates a revocable **app
+  password** for it in Settings. A per-person change stamp (shared with offline reading)
+  keeps each sync to what changed.
+  Open: which contact fields go out, whether a member picks circles to sync, and whether a
+  plain subscribable `.ics` link suffices for the calendar instead of full CalDAV.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
@@ -177,6 +198,6 @@ Goal: sand the edges and add the nice-to-haves.
 
 ## Explicitly later / maybe-never
 
-CardDAV/CalDAV & contact sync, native mobile apps, multi-tenant SaaS, AI enrichment,
+Google Contacts sync, native mobile apps, multi-tenant SaaS, AI enrichment,
 finance/gift/task modules, real-time collaborative editing. Revisit only if the core
 stays simple. (See [01-vision-and-scope.md §1.6](01-vision-and-scope.md).)

@@ -83,8 +83,9 @@ multi-tenant SaaS use.
 
 - **Multi-tenant SaaS** (many independent families on one shared public instance).
   The data model leaves the door open, but v1 assumes one household per deployment.
-- **Two-way calendar / email / social-media sync.** No CardDAV/CalDAV, no Google
-  Contacts sync in v1 (candidate for later).
+- **Email / social-media sync.** No Google Contacts sync in v1 (candidate for later).
+  A two-way CardDAV address book and a CalDAV birthday calendar are planned for M3
+  (docs/06).
 - **Native mobile apps.** PWA covers mobile in v1; native is a later possibility.
 - **AI features** (auto-summaries, enrichment). Not a v1 concern.
 - **Financial tracking, gift management, task/journal modules** à la Monica. Kept out
