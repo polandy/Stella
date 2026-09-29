@@ -48,9 +48,44 @@ const NEVER_CACHED = [
 	'/settings/export'
 ];
 
+/**
+ * Pages kept as soon as the app opens in reach, rather than once they are read. Settings is
+ * opened rarely and wanted offline all the same, and every update starts from an empty cache.
+ */
+export const KEPT_AHEAD: readonly string[] = ['/settings'];
+
 /** Whether `path` is one of `NEVER_CACHED`, or something beneath it. */
 function isVolatile(path: string): boolean {
 	return NEVER_CACHED.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+}
+
+/*
+ * Following a link inside the app fetches only the page's data, from `<page>/__data.json`,
+ * never the page itself — so unless that is kept too, a page reached by tapping is never
+ * readable offline. SvelteKit adds a mask saying which layouts and the page to reload; the
+ * digits change with where the reader came from, so they are no part of what is kept.
+ */
+const DATA_SUFFIX = '/__data.json';
+const INVALIDATED_PARAM = 'x-sveltekit-invalidated';
+const TRAILING_SLASH_PARAM = 'x-sveltekit-trailing-slash';
+
+/** The page `url` fetches the data of, or null when it is not a page's data. */
+function dataPageOf(url: URL): string | null {
+	if (!url.pathname.endsWith(DATA_SUFFIX)) return null;
+	return url.pathname.slice(0, -DATA_SUFFIX.length) || '/';
+}
+
+/** Whether a page's data response holds the page itself, not only the layouts around it. */
+function reloadsThePage(url: URL): boolean {
+	return (url.searchParams.get(INVALIDATED_PARAM) ?? '').endsWith('1');
+}
+
+/** The question a page's data asks, without SvelteKit's own bookkeeping. */
+function questionOf(url: URL): string {
+	const search = new URLSearchParams(url.search);
+	search.delete(INVALIDATED_PARAM);
+	search.delete(TRAILING_SLASH_PARAM);
+	return search.toString();
 }
 
 /** What the service worker may do with the response to `request`. */
@@ -60,6 +95,14 @@ export function verdictFor(request: CacheableRequest): CacheVerdict {
 	const url = new URL(request.url);
 	// Another origin's response is not ours to hold, and its size is not ours to spend.
 	if (url.origin !== request.origin) return 'skip';
+
+	const dataPage = dataPageOf(url);
+	if (dataPage !== null) {
+		if (isVolatile(dataPage) || questionOf(url) !== '') return 'skip';
+		// Kept under the page alone, so a copy without the page in it would stand in for one.
+		return reloadsThePage(url) ? 'keep' : 'skip';
+	}
+
 	if (isVolatile(url.pathname)) return 'skip';
 
 	// Pages and the media they are made of; a query string means a search or a filter, which
@@ -69,6 +112,16 @@ export function verdictFor(request: CacheableRequest): CacheVerdict {
 	if (url.search !== '' && url.pathname !== OFFLINE_FALLBACK_PATH) return 'skip';
 
 	return 'keep';
+}
+
+/**
+ * The address a kept response is stored and looked up under: a page's data under the page
+ * alone (see `DATA_SUFFIX`), everything else under its own.
+ */
+export function cacheKeyFor(request: CacheableRequest): string {
+	const url = new URL(request.url);
+	if (dataPageOf(url) === null) return request.url;
+	return `${url.origin}${url.pathname}`;
 }
 
 /**

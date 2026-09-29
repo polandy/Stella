@@ -18,6 +18,7 @@
 import { build, files, version } from '$service-worker';
 import {
 	OFFLINE_FALLBACK_PATH,
+	cacheKeyFor,
 	cacheNameFor,
 	endsTheSession,
 	isStellaCache,
@@ -100,20 +101,23 @@ async function purgeCaches(): Promise<void> {
 	await Promise.all(ours.map((name) => caches.delete(name)));
 }
 
-/** Serve from the network, keeping a copy; fall back to the copy when the network is gone. */
-async function networkFirst(request: Request): Promise<Response> {
+/**
+ * Serve from the network, keeping a copy under `key`; fall back to the copy when the network
+ * is gone.
+ */
+async function networkFirst(request: Request, key: string): Promise<Response> {
 	const cache = await caches.open(CACHE);
 	try {
 		const response = await fetch(request);
 		noteReachability(true);
 		// Only a plain success is worth keeping: a redirect to the sign-in page is about this
 		// moment, and an error page cached now would outlive the error.
-		if (response.ok && response.type === 'basic') cache.put(request, response.clone());
+		if (response.ok && response.type === 'basic') cache.put(key, response.clone());
 		return response;
 	} catch (networkError) {
 		noteReachability(false);
 
-		const cached = await cache.match(request);
+		const cached = await cache.match(key);
 		if (cached) return cached;
 
 		const fallback = await cache.match(OFFLINE_FALLBACK_PATH);
@@ -149,7 +153,7 @@ worker.addEventListener('fetch', (event) => {
 	}
 
 	if (verdictFor(describe) === 'keep') {
-		event.respondWith(networkFirst(request));
+		event.respondWith(networkFirst(request, cacheKeyFor(describe)));
 		return;
 	}
 

@@ -1305,8 +1305,10 @@ says where things stand in each of the three states a device can be in: already 
 installable (with the button), or a browser that offers no prompt, where it names the menu
 item instead. Safari is the last of those.
 
-**What a device keeps.** The build's own assets, every page as it is read, and the photos in
-them. Not the pages that describe the session (sign-in, sign-out, first-run setup), not the
+**What a device keeps.** The build's own assets, every page as it is read — whether it was
+loaded whole or reached by a link inside the app — and the photos in them. **Settings** is kept
+as soon as the app opens in reach, so it opens offline even when it was not read since the
+last update. Not the pages that describe the session (sign-in, sign-out, first-run setup), not the
 health check, not a page reporting on an import or export run, and not a page carrying a
 query string — a search is a question, not somewhere anyone returns to. Requests go to the
 network first and fall back to the copy on the device: Stella is on the household's own
