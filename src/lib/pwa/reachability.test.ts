@@ -13,11 +13,16 @@ describe('a reachability report', () => {
 		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: true, keptAt: null })).toBe(true);
 	});
 
-	it('says when the page on screen was kept, or null when it came from Stella just now', () => {
-		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: false })).toBe(false);
+	it('is rejected when it says the page was kept at something that is not a time', () => {
 		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: false, keptAt: 'yesterday' })).toBe(
 			false
 		);
+	});
+
+	it('still counts from a worker older than the age of a copy, as a report of no known age', () => {
+		// During an update the page of the new build can still hear the previous worker for a
+		// moment. Rejecting its report would leave the offline line away while Stella is out of reach.
+		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: false })).toBe(true);
 	});
 
 	it('is not confused with another message on the same channel', () => {

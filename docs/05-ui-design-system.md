@@ -686,8 +686,9 @@ anything in (docs/02 §2.19).
 it is what you are reading that may be out of date, not the navigation around it. It carries
 `role="status"`, so it is announced rather than read only by the sighted, and it appears and
 clears on its own: the service worker reports whether Stella is reachable and the banner
-follows (docs/02 §2.18, docs/04 §4.11.1). There is nothing to dismiss, because dismissing it
-would not restore the connection.
+follows (docs/02 §2.18, docs/04 §4.11.1). When the page came off the device it also says how
+old it is (*as of yesterday 18:04*): an old copy is fine offline, but must not look current.
+There is nothing to dismiss, because dismissing it would not restore the connection.
 
 **Kept moments** (`src/lib/components/KeptItem.svelte`; Home, under the capture field;
 docs/02 §2.18) look like stream items that

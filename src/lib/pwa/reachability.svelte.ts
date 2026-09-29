@@ -19,7 +19,7 @@ if (browser && 'serviceWorker' in navigator) {
 	worker.addEventListener('message', (event: MessageEvent) => {
 		if (!isReachabilityReport(event.data)) return;
 		reachable = event.data.reachable;
-		keptAt = event.data.keptAt;
+		keptAt = event.data.keptAt ?? null;
 	});
 	// The report this page needed was likely sent while it was still loading, so it asks.
 	void worker.ready.then(() => worker.controller?.postMessage(ASK_REACHABILITY));

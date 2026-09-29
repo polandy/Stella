@@ -83,7 +83,9 @@ let reachable = true;
 /*
  * When the page each open window shows was kept, if it came off the device: the offline line
  * says how old it is (docs/concepts/offline-reading.md §4.4). Null once Stella answered it.
- * Keyed by client id, because two windows can show copies of different ages.
+ * Keyed by client id, because two windows can show copies of different ages. Never pruned: a
+ * window being navigated is not yet among the open ones, so pruning could drop the entry it is
+ * about to ask for; and the browser stops an idle worker, map and all, within minutes.
  */
 const keptAtByClient = new Map<string, number | null>();
 
@@ -95,9 +97,6 @@ function reportFor(clientId: string): ReachabilityReport {
 /** Tell every open page where things stand, so the offline banner matches reality. */
 async function report(): Promise<void> {
 	const clients = await worker.clients.matchAll({ type: 'window' });
-	const open = new Set(clients.map((client) => client.id));
-	// Forget the windows that have closed; the map is only ever as long as the open ones.
-	for (const id of keptAtByClient.keys()) if (!open.has(id)) keptAtByClient.delete(id);
 	for (const client of clients) client.postMessage(reportFor(client.id));
 }
 

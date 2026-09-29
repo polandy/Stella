@@ -26,9 +26,10 @@ export interface ReachabilityReport {
 	reachable: boolean;
 	/**
 	 * When the page on screen was kept (epoch ms), if the worker answered it from the device;
-	 * null when it came from Stella or its age is unknown.
+	 * null when it came from Stella or its age is unknown. Absent from a worker of a build
+	 * before it, which a page can still hear for a moment during an update.
 	 */
-	keptAt: number | null;
+	keptAt?: number | null;
 }
 
 /** Whether `data` off a `message` event is a report, rather than anything else on the channel. */
@@ -38,6 +39,6 @@ export function isReachabilityReport(data: unknown): data is ReachabilityReport 
 	return (
 		message.type === REPORT_REACHABILITY &&
 		typeof message.reachable === 'boolean' &&
-		(message.keptAt === null || typeof message.keptAt === 'number')
+		(message.keptAt === undefined || message.keptAt === null || typeof message.keptAt === 'number')
 	);
 }
