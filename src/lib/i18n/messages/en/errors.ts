@@ -66,6 +66,8 @@ export const errors = {
 	'errors.command.notQueueable': 'Only additions can wait to be sent.',
 	'errors.command.photoParentGone': 'What this photo belongs to is no longer there to add it to.',
 	'errors.moment.needsPerson': 'Mention at least one person with @ so the moment has a place to go.',
+	'errors.mention.ambiguous': (p: { handle: string; count: number; people: string }) =>
+		`@${p.handle} could be ${p.count} people: ${p.people}. Pick the one you mean from the list that opens when you type @.`,
 
 	'errors.image.empty': 'The image is empty.',
 	'errors.image.tooLarge': 'The image is too large.',

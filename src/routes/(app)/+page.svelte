@@ -7,6 +7,7 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
+	import { asTyped } from '$lib/mentions/picks';
 	import { dayLabel as calendarDayLabel } from '$lib/dates/labels';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
@@ -205,12 +206,12 @@
 						{#snippet meta()}
 							<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.entryDate}>{keptDay(item.command.payload.entryDate)}</span>
 						{/snippet}
-						<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
+						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, data.candidates)}</p>
 					</KeptItem>
 				{:else if isKept(item, 'note.add')}
 					<KeptItem {item} editHref={contactSectionPath(item.command.payload.contactId, 'notes')}>
 						{#snippet meta()}<span>{t('home.outbox.noteOn', { name: item.about ?? '' })}</span>{/snippet}
-						<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
+						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, data.candidates)}</p>
 					</KeptItem>
 				{:else if isKept(item, 'interaction.log')}
 					{@const kind = KIND_PRESENTATION[item.command.payload.kind]}
@@ -247,7 +248,7 @@
 							<span>{t('home.outbox.journalOf', { name: item.about ?? '' })}</span>
 							<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.entryDate}>{keptDay(item.command.payload.entryDate)}</span>
 						{/snippet}
-						<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
+						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, data.candidates)}</p>
 					</KeptItem>
 				{:else if isKept(item, 'field.add')}
 					<KeptItem {item}>

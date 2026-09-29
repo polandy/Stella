@@ -7,6 +7,7 @@
 	import RelationshipMap from '$lib/components/graph/RelationshipMap.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
+	import { asTyped } from '$lib/mentions/picks';
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import Section from '$lib/components/Section.svelte';
@@ -1711,7 +1712,7 @@
 							{#each keptNotes as item (item.command.id)}
 								<li>
 									<KeptItem {item} onEdit={() => editKeptNote(item)}>
-										<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
+										<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...data.otherContacts, data.contact])}</p>
 									</KeptItem>
 								</li>
 							{/each}

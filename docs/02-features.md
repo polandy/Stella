@@ -266,7 +266,8 @@ exist a moment ago cannot be the duplicate.
 People met once are often known by a first name only — a family met at a mountain hut — and
 a household soon has five people called *Thomas*. Two things keep them apart:
 
-- **A second line under a shared name.** In ⌘K and in every person picker (§2.2.2), a person
+- **A second line under a shared name.** In ⌘K, in every person picker (§2.2.2) and in the
+  @-picker (§2.20.1), a person
   whose display name someone else on the list shares (ignoring case and stray spaces, not
   accents — *René* and *Rene* look different) gets a second line saying which one they are:
   their **description**; else **where and when you met** (*Met: Tierberglihütte · 2024*, the
@@ -279,8 +280,15 @@ a household soon has five people called *Thomas*. Two things keep them apart:
   sits in a highlighted box: *Without a last name, "Thomas" is hard to tell apart later. What will
   you know them by?* It is only a nudge; a name alone still saves.
 
-Not yet: relationship or circle as further fallbacks, and the @-picker, whose `@Thomas`
-handle cannot tell namesakes apart anyway (docs/06, M3).
+- **A picked mention stays the person picked.** The text shows `@Thomas` for either Thomas, so
+  the @-picker remembers whom each handle it wrote stands for and saves it as that person's id
+  token (§2.20.1). A `@Thomas` nobody picked — typed by hand, pasted, or written without
+  JavaScript — that could be several people the text may name is **refused**, naming each with
+  their second line (*@Thomas could be 2 people: Thomas (Mountain guide), Thomas (Met: Lenk ·
+  2023)…*), and the text stays to be corrected. A mention is never dropped without a word. The
+  moment composer says so before saving (*Which @Thomas?*).
+
+Not yet: relationship or circle as further fallbacks (docs/06, M3).
 
 ## 2.3 Contact fields **[M1]**
 
@@ -1444,13 +1452,18 @@ on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s jou
 
 - **Authoring.** Typing `@` opens an autocomplete over the contacts you may see (§2.10),
   filtered by name as you type; picking one inserts the mention. The on-screen form is
-  `@FirstnameLastname` with no space, e.g. `@AnnaWeber`. Write `\@` for a literal "@".
+  `@FirstnameLastname` with no space, e.g. `@AnnaWeber`. Write `\@` for a literal "@". The
+  field remembers whom each picked handle stands for, through any typing around it, and saves
+  it as that person's token; changing the name itself lets the pick go (§2.2.3). Editing an
+  entry shows its tokens as handles again, still remembered, so saving an edit keeps every
+  mention it had.
 - **Stored form is id-based, not name-based.** A confirmed mention is saved as a stable token
   that embeds the contact **id** — so it survives a later rename and never resolves to the wrong
   person when two people share a name. The typed `@AnnaWeber` is only the lookup key. A raw,
-  unconfirmed `@FirstnameLastname` (e.g. pasted text) is resolved best-effort when the entry is
-  saved: a single exact first+last match becomes a mention; anything ambiguous or unmatched is
-  left as literal text. The id inside the token may be a *source id* from an import
+  unconfirmed `@FirstnameLastname` (e.g. pasted text) is resolved when the entry is saved: a
+  single exact first+last match becomes a mention, an unmatched one is left as literal text
+  (`@home` is often not a mention at all), and one that could be several people is refused with
+  their names rather than guessed or dropped (§2.2.3). The id inside the token may be a *source id* from an import
   (`monica:contact:9`, §2.16), so the token grammar accepts `:` in it.
 - **Rendering.** A mention renders as a chip/link to `/contacts/{id}`, labelled with the
   person's **current** display name (looked up at render time). It goes through the same

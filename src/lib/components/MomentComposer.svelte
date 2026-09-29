@@ -5,10 +5,14 @@
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { processImage } from '$lib/image/process-image';
 	import { allowedForAudience } from '$lib/mentions/audience';
+	import { createHandleResolver, resolveMentions } from '$lib/mentions/mentions';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
+	import { shiftPicks, toEditable, toStored, type MentionPick } from '$lib/mentions/picks';
+	import { tellApart } from '$lib/people/namesakes';
 	import type { MomentCapturePayload } from '$lib/commands/commands';
 	import type { KeptOf, KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -26,6 +30,9 @@
 	 * when there is none it keeps the moment on the device. The name is what makes that safe: a
 	 * moment whose answer was lost on the way is recognised when it arrives a second time.
 	 * `editing` opens a kept moment that has not been sent yet.
+	 *
+	 * A person picked in the list is remembered against the `@Handle` it wrote and saved as their
+	 * id token, so two people called Thomas stay two people (docs/02 §2.2.3, `picks.ts`).
 	 */
 
 	interface Candidate {
@@ -34,6 +41,10 @@
 		firstName: string | null;
 		lastName: string | null;
 		visibility: 'shared' | 'private';
+		/** What tells namesakes apart in the list (docs/02 §2.2.3). */
+		description?: string | null;
+		metPlace?: string | null;
+		metDate?: string | null;
 	}
 	interface Props {
 		/** People the author may see; the picker narrows to the moment's audience itself. */
@@ -41,7 +52,7 @@
 		me: { id: string; name: string; avatarPhotoId?: string | null };
 		today: string;
 		error?: string | null;
-		/** Body to restore after a failed submit. */
+		/** Body to start from: after a failed submit, or a person to write about, as stored. */
 		draft?: string | null;
 		autofocus?: boolean;
 		/** A moment kept on this device, open for editing before it is sent. */
@@ -67,8 +78,15 @@
 
 	// svelte-ignore state_referenced_locally -- the kept moment is only a starting value on purpose
 	const kept = editing?.command.payload ?? null;
+	// A kept moment and a draft are stored text: picked people come back as picks.
 	// svelte-ignore state_referenced_locally -- the draft is only a starting value on purpose
-	let body = $state(kept?.body ?? draft ?? '');
+	const start = toEditable(kept?.body ?? draft ?? '', (id) => {
+		const person = candidates.find((c) => c.id === id);
+		return person ? handleFor(person) : null;
+	});
+	let body = $state(start.text);
+	// Whom each picked handle in the text stands for.
+	let picks: MentionPick[] = start.picks;
 	let visibility = $state<'shared' | 'private'>(kept?.visibility ?? 'shared');
 	let newPeople = $state<string[]>(kept ? [...kept.newPeople] : []);
 	// The command this draft will be saved as; a new one after every save.
@@ -97,22 +115,20 @@
 		...newPeople.map((n) => ({ id: `new:${n}`, displayName: n, firstName: null, lastName: null }))
 	]);
 	const suggestions = $derived(active ? suggest(active.query, known) : { people: [], create: null });
+	// The second line counts everyone the list could offer, not only what the query left.
+	const namesakes = $derived(tellApart(audience));
 	const rows = $derived([
 		...suggestions.people.map((p) => ({ kind: 'person' as const, person: p })),
 		...(suggestions.create ? [{ kind: 'create' as const, name: suggestions.create }] : [])
 	]);
 
-	// The people the text currently references, for the "goes to …'s journal" line.
-	const referenced = $derived.by(() => {
-		const handles = body.match(/(?<![\p{L}\p{N}@\\])@[\p{L}][\p{L}\p{N}]*/gu) ?? [];
-		const byHandle = new Map(known.map((c) => [handleFor(c).toLowerCase(), c]));
-		const out: { id: string; displayName: string }[] = [];
-		for (const h of handles) {
-			const c = byHandle.get(h.toLowerCase());
-			if (c && !out.some((o) => o.id === c.id)) out.push(c);
-		}
-		return out;
-	});
+	// The people the text currently references, for the "goes to …'s journal" line — read the
+	// way the server will: picks by id, anything typed by name, a namesake nobody picked as a
+	// question rather than a guess.
+	const resolved = $derived(resolveMentions(toStored(body, picks), createHandleResolver(known)));
+	const referenced = $derived(
+		resolved.ids.flatMap((id) => known.filter((c) => c.id === id))
+	);
 	const canSave = $derived(body.trim().length > 0 && referenced.length > 0 && !saving);
 
 	// Leaving the field closes the picker a moment later, so a click on a suggestion still
@@ -121,6 +137,18 @@
 	let closingPicker: ReturnType<typeof setTimeout> | undefined;
 	function closePickerSoon() {
 		closingPicker = setTimeout(() => (active = null), 120);
+	}
+
+	/** Take the field's new text, carrying the picks across the change. */
+	function changeText(next: string, picked?: MentionPick) {
+		picks = shiftPicks(body, next, picks);
+		if (picked) picks = [...picks, picked];
+		body = next;
+	}
+
+	function onInput(event: Event) {
+		changeText((event.currentTarget as HTMLTextAreaElement).value);
+		refreshPicker();
 	}
 
 	function refreshPicker() {
@@ -134,14 +162,18 @@
 		const row = rows[index];
 		if (!row || !active || !textarea) return;
 		let handle: string;
+		let picked: MentionPick | undefined;
 		if (row.kind === 'create') {
 			if (!newPeople.includes(row.name)) newPeople = [...newPeople, row.name];
 			handle = '@' + row.name;
 		} else {
 			handle = handleFor(row.person);
+			// Somebody created with this moment has no id yet; the server finds them by name.
+			if (!row.person.id.startsWith('new:'))
+				picked = { start: active.start, end: active.start + handle.length, id: row.person.id };
 		}
 		const r = insertHandle(body, active, textarea.selectionStart, handle);
-		body = r.text;
+		changeText(r.text, picked);
 		active = null;
 		await tick();
 		textarea.focus();
@@ -184,7 +216,7 @@
 	function payloadFrom(formEl: HTMLFormElement): MomentCapturePayload {
 		const data = new FormData(formEl);
 		return {
-			body: String(data.get('body') ?? '').trim(),
+			body: toStored(body, picks).trim(),
 			entryDate: String(data.get('entryDate') ?? day),
 			visibility,
 			newPeople: [...newPeople]
@@ -193,6 +225,7 @@
 
 	function clear() {
 		body = '';
+		picks = [];
 		picked = [];
 		newPeople = [];
 		fresh++;
@@ -290,7 +323,7 @@
 		<Avatar id={me.id} name={me.name} avatarPhotoId={me.avatarPhotoId ?? null} size={40} />
 		<textarea
 			bind:this={textarea}
-			bind:value={body}
+			value={body}
 			name="body"
 			rows="2"
 			required
@@ -299,7 +332,7 @@
 			aria-label={t('composer.label')}
 			aria-autocomplete="list"
 			onkeydown={onKeydown}
-			oninput={refreshPicker}
+			oninput={onInput}
 			onclick={refreshPicker}
 			onkeyup={(e) => (e.key.startsWith('Arrow') ? refreshPicker() : undefined)}
 			onfocus={() => clearTimeout(closingPicker)}
@@ -329,7 +362,10 @@
 					>
 						{#if row.kind === 'person'}
 							<Avatar id={row.person.id} name={row.person.displayName} size={22} />
-							<span class="truncate">{row.person.displayName}</span>
+							<span class="min-w-0">
+								<span class="block truncate">{row.person.displayName}</span>
+								{#if namesakes.get(row.person.id)}<NamesakeLine distinction={namesakes.get(row.person.id)!} />{/if}
+							</span>
 							{#if row.person.id.startsWith('new:')}<span class="ml-auto text-xs text-fg-subtle">{t('composer.justCreated')}</span>{/if}
 						{:else}
 							<span class="grid size-[22px] place-items-center rounded-full border border-dashed border-success text-success">+</span>
@@ -364,7 +400,9 @@
 		<DateField name="entryDate" value={kept?.entryDate ?? day} max={day} required label={t('composer.day')} />
 		{/key}
 		<span class="text-xs text-fg-subtle" aria-live="polite">
-			{#if referenced.length}
+			{#if resolved.ambiguous.length}
+				{t('composer.whichOne', { handle: resolved.ambiguous[0].handle })}
+			{:else if referenced.length}
 				{t('composer.goesTo')}
 				<b class="font-semibold text-fg-muted">{referenced[0].displayName}</b>{t(
 					'composer.goesToJournal'

@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { deserialize, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
+	import { asTyped } from '$lib/mentions/picks';
 	import KeptItem from '$lib/components/KeptItem.svelte';
 	import { processImage } from '$lib/image/process-image';
 	import { keepable } from '$lib/pwa/keepable';
@@ -140,9 +141,16 @@
 		try {
 			const res = await fetch(`/contacts/${c.id}/journal?/edit`, {
 				method: 'POST',
-				body: new FormData(formEl)
+				body: new FormData(formEl),
+				headers: { 'x-sveltekit-action': 'true' }
 			});
-			if (!res.ok) throw new Error();
+			const result = deserialize(await res.text());
+			// A refusal says why — a namesake to pick, say (docs/02 §2.2.3) — and keeps the text.
+			if (result.type === 'failure') {
+				editError = (result.data?.journalError as string | undefined) ?? t('journal.editSaveFailed');
+				return;
+			}
+			if (result.type === 'error') throw new Error();
 			editingId = null;
 			await invalidateAll();
 		} catch {
@@ -280,7 +288,7 @@
 					<KeptItem {item}>
 						{#snippet meta()}<span>· {prettyDate(item.command.payload.entryDate)}</span>{/snippet}
 						{#if item.command.payload.title}<p class="mt-1 font-medium text-fg">{item.command.payload.title}</p>{/if}
-						<p class="mt-1 whitespace-pre-line text-fg">{item.command.payload.body}</p>
+						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...data.candidates, data.contact])}</p>
 					</KeptItem>
 				</li>
 			{/each}
@@ -369,6 +377,7 @@
 										rows={5}
 										required
 										bind:value={editBody}
+										names={entry.mentionNames}
 										candidates={data.candidates}
 										visibility={entry.visibility}
 										placeholder={t('journal.bodyPlaceholder')}

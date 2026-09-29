@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { Distinction } from '$lib/people/namesakes';
+	import { describeDistinction, type Distinction } from '$lib/people/namesakes';
 
 	/*
 	 * The second line under a person in a list where someone else shares their name (docs/02
@@ -11,20 +11,6 @@
 	let { distinction }: { distinction: Distinction } = $props();
 
 	const t = useTranslate();
-
-	const text = $derived.by(() => {
-		switch (distinction.kind) {
-			case 'description':
-				return distinction.text;
-			case 'met':
-				if (distinction.place && distinction.year)
-					return t('components.namesake.metPlaceYear', { place: distinction.place, year: distinction.year });
-				if (distinction.place) return t('components.namesake.metPlace', { place: distinction.place });
-				return t('components.namesake.metYear', { year: distinction.year ?? '' });
-			case 'nothing':
-				return t('components.namesake.nothing');
-		}
-	});
 </script>
 
-<span data-testid="namesake-line" class="block truncate text-xs text-fg-subtle" class:italic={distinction.kind === 'nothing'}>{text}</span>
+<span data-testid="namesake-line" class="block truncate text-xs text-fg-subtle" class:italic={distinction.kind === 'nothing'}>{describeDistinction(t, distinction)}</span>

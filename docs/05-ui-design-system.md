@@ -555,7 +555,11 @@ people while you type `@` (docs/02 §2.20.1): a listbox under the caret, arrows 
 or Tab to take the highlighted person, Escape to dismiss. The picker is an enhancement — the
 field posts its text either way and the server resolves whatever handles it finds — and it
 narrows to the audience of what is being written, so a shared note never offers a private
-person. Used by the note form and the journal composer. The moment composer keeps its own
+person. A namesake carries the same `NamesakeLine` as in the person pickers. Its `value` is the
+text as stored: the field shows `@Thomas` and remembers the pick against it
+(`src/lib/mentions/picks.ts`), and a posted form carries the id tokens — set in the form's
+`formdata` event, so a plain post, `enhance` and `new FormData(form)` all get them. Used by the
+note form and the journal composer. The moment composer keeps its own
 richer picker because only a moment may create a person on the fly (§2.22.1).
 
 **Combobox** (`src/lib/components/Combobox.svelte`) is a plain text field with a dropdown of

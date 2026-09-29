@@ -1,17 +1,11 @@
 import { TranslatableError } from '../../../errors/translatable';
 import { phrase } from '../../../i18n/phrase';
 import type { Visibility, Viewer } from '../../access/visibility';
-import { allowedForAudience } from '../../../mentions/audience';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import {
-	createHandleResolver,
-	extractHandles,
-	mentionKey,
-	resolveMentions,
-	type MentionCandidate
-} from '../../../mentions/mentions';
-import { createContact, type ContactRepository, type ContactSummary } from '../contacts/contacts';
+import { extractHandles, mentionKey } from '../../../mentions/mentions';
+import { resolveForAudience } from '../mentions/resolve-for-audience';
+import { createContact, type ContactRepository } from '../contacts/contacts';
 import { addToJournalDay, type JournalAuthor, type JournalRepository } from '../journal/journal';
 
 /*
@@ -58,22 +52,7 @@ export class MomentNeedsPersonError extends TranslatableError {
 	}
 }
 
-/**
- * People an entry of the given visibility may reference (docs/02 §2.20.1): a shared entry only
- * household-visible contacts, a private entry anyone the author can see — so a mention never
- * widens access. Shared by the moment capture and the journal route.
- */
-export function audienceCandidates(
-	contacts: ContactSummary[],
-	visibility: Visibility
-): MentionCandidate[] {
-	return allowedForAudience(contacts, visibility).map((c) => ({
-		id: c.id,
-		firstName: c.firstName,
-		lastName: c.lastName,
-		displayName: c.displayName
-	}));
-}
+export { audienceCandidates } from '../mentions/resolve-for-audience';
 
 /**
  * Capture a moment: create the queued people the body actually mentions, resolve every
@@ -90,10 +69,13 @@ export async function captureMoment(
 	if (body.length === 0) throw new MomentNeedsPersonError();
 	const viewer: Viewer = { id: author.userId, householdId: author.householdId };
 
+	const visible = await deps.contacts.listVisibleTo(viewer);
+	// A handle that is two people is asked about before anyone is created: a refused moment
+	// must leave the household as it found it.
+	resolveForAudience(visible, input.visibility, body);
+
 	const mentionedKeys = new Set(extractHandles(body).map(mentionKey));
-	const existingKeys = new Set(
-		(await deps.contacts.listVisibleTo(viewer)).map((c) => mentionKey(c.displayName))
-	);
+	const existingKeys = new Set(visible.map((c) => mentionKey(c.displayName)));
 
 	// Create only queued names that are both mentioned and not already someone visible.
 	const createdContactIds: string[] = [];
@@ -111,8 +93,7 @@ export async function captureMoment(
 		);
 	}
 
-	const candidates = audienceCandidates(await deps.contacts.listVisibleTo(viewer), input.visibility);
-	const resolved = resolveMentions(body, createHandleResolver(candidates));
+	const resolved = resolveForAudience(await deps.contacts.listVisibleTo(viewer), input.visibility, body);
 	if (resolved.ids.length === 0) throw new MomentNeedsPersonError();
 
 	const [anchorContactId, ...mentionedContactIds] = resolved.ids;

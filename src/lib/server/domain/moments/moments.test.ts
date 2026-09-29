@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
 import type { Contact, ContactSummary, NewContact } from '../contacts/contacts';
 import type { JournalAuthor, JournalEntry, NewJournalEntry } from '../journal/journal';
+import { AmbiguousMentionError } from '../mentions/resolve-for-audience';
 import { MomentNeedsPersonError, audienceCandidates, captureMoment, type CaptureMomentDeps } from './moments';
 
 /*
@@ -193,6 +194,27 @@ describe('captureMoment', () => {
 		);
 		expect(f.contacts).toHaveLength(1);
 		expect(f.entries).toHaveLength(0);
+	});
+
+	it('asks which one when a typed handle is two people, creating and saving nothing', async () => {
+		const f = fakes([
+			{ id: 'thomas-hut', displayName: 'Thomas', firstName: 'Thomas' },
+			{ id: 'thomas-lenk', displayName: 'Thomas', firstName: 'Thomas' }
+		]);
+		await expect(
+			captureMoment(f.deps, author, { ...base, body: 'Hut with @Thomas and @Julia', newPeople: ['Julia'] })
+		).rejects.toBeInstanceOf(AmbiguousMentionError);
+		expect(f.contacts).toHaveLength(2);
+		expect(f.entries).toHaveLength(0);
+	});
+
+	it('lands a picked namesake in their own journal, by the id the picker wrote', async () => {
+		const f = fakes([
+			{ id: 'thomas-hut', displayName: 'Thomas', firstName: 'Thomas' },
+			{ id: 'thomas-lenk', displayName: 'Thomas', firstName: 'Thomas' }
+		]);
+		const result = await captureMoment(f.deps, author, { ...base, body: 'Coffee with @{contact:thomas-lenk}' });
+		expect(result.anchorContactId).toBe('thomas-lenk');
 	});
 
 	it('does not let a shared moment reference a private person', async () => {

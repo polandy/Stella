@@ -92,6 +92,7 @@ export const home: HomeMessages = {
 	'composer.goesTo': 'Kommt in',
 	'composer.goesToJournal': 's Tagebuch',
 	'composer.alsoMentions': (p) => `, erwähnt ${p.count}`,
+	'composer.whichOne': (p) => `Wen meinst du mit @${p.handle}? Wähle die Person in der Liste, die sich beim Tippen von @ öffnet`,
 	'composer.needMention': 'Erwähne mit @ mindestens eine Person',
 	'composer.saveFailed':
 		'Konnte nicht gespeichert werden. Versuche es mit üblichen JPEG- oder PNG-Bildern.'

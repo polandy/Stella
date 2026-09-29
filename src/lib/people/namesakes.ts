@@ -5,6 +5,8 @@
  * saying which one they are. Pure and client-safe: the pickers work it out as they render.
  */
 
+import type { Translate } from '../i18n/translate';
+
 /** What a person needs to carry for their namesakes to be told apart. */
 export interface Distinguishable {
 	id: string;
@@ -54,4 +56,19 @@ export function tellApart(people: readonly Distinguishable[]): Map<string, Disti
 		if ((counts.get(sameNameKey(p.displayName)) ?? 0) > 1) lines.set(p.id, distinctionOf(p));
 	}
 	return lines;
+}
+
+/** The second line in words, in the reader's language — for a component and a refusal alike. */
+export function describeDistinction(t: Translate, distinction: Distinction): string {
+	switch (distinction.kind) {
+		case 'description':
+			return distinction.text;
+		case 'met':
+			if (distinction.place && distinction.year)
+				return t('components.namesake.metPlaceYear', { place: distinction.place, year: distinction.year });
+			if (distinction.place) return t('components.namesake.metPlace', { place: distinction.place });
+			return t('components.namesake.metYear', { year: distinction.year ?? '' });
+		case 'nothing':
+			return t('components.namesake.nothing');
+	}
 }

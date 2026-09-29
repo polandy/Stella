@@ -1,15 +1,24 @@
 <script lang="ts">
 	import Avatar from '$lib/components/Avatar.svelte';
+	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { allowedForAudience } from '$lib/mentions/audience';
 	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
-	import { tick } from 'svelte';
+	import { shiftPicks, toEditable, toStored, type MentionPick } from '$lib/mentions/picks';
+	import { tellApart } from '$lib/people/namesakes';
+	import { onMount, tick } from 'svelte';
 
 	/*
 	 * A textarea that offers people while you type `@` (docs/02 §2.20.1). The picker is an
 	 * enhancement over a plain field: the form posts the text either way, and the server resolves
 	 * whatever handles it finds. Unlike the moment composer it cannot create a person on the fly —
 	 * a note or a journal entry is written about people who already exist.
+	 *
+	 * `value` is the text as stored: a person picked in the list is written as their id token, so
+	 * two people called Thomas stay two people (docs/02 §2.2.3). The field itself shows the
+	 * readable `@Thomas` and remembers the pick against it (`picks.ts`); posting the form sends
+	 * the stored form, and without JavaScript the typed text goes and the server asks about any
+	 * handle that could be more than one person.
 	 */
 
 	interface Candidate {
@@ -18,6 +27,10 @@
 		firstName: string | null;
 		lastName: string | null;
 		visibility: 'shared' | 'private';
+		/** What tells namesakes apart in the list (docs/02 §2.2.3). */
+		description?: string | null;
+		metPlace?: string | null;
+		metDate?: string | null;
 	}
 	interface Props {
 		/** Everyone the author may see; the picker narrows to the audience below. */
@@ -25,7 +38,10 @@
 		/** Audience of the text being written: a shared one may only name shared people. */
 		visibility?: 'shared' | 'private';
 		name: string;
+		/** The text as stored, with picked people as id tokens. */
 		value?: string;
+		/** Names for people a stored text mentions who are not offered in the list, by id. */
+		names?: Record<string, string>;
 		rows?: number;
 		required?: boolean;
 		placeholder?: string;
@@ -37,6 +53,7 @@
 		visibility = 'shared',
 		name,
 		value = $bindable(''),
+		names = {},
 		rows = 3,
 		required = false,
 		placeholder,
@@ -50,27 +67,78 @@
 	let active = $state<ActiveHandle | null>(null);
 	let selected = $state(0);
 
+	function handleOf(id: string): string | null {
+		const person = candidates.find((c) => c.id === id);
+		if (person) return handleFor(person);
+		return names[id] ? handleFor({ id, displayName: names[id] }) : null;
+	}
+
+	// What the field shows, and whom each picked handle in it stands for. Worked out here as
+	// well as in the effect below, so a server-rendered field already shows its text.
+	// svelte-ignore state_referenced_locally -- the effect below follows later changes
+	const initial = toEditable(value, handleOf);
+	let text = $state(initial.text);
+	let picks: MentionPick[] = initial.picks;
+	// The stored form this field last handed out, so a `value` set from outside is told apart.
+	// svelte-ignore state_referenced_locally -- see above
+	let handedOut: string | null = value;
+
+	$effect.pre(() => {
+		if (value === handedOut) return;
+		const editable = toEditable(value, handleOf);
+		text = editable.text;
+		picks = editable.picks;
+		handedOut = value;
+	});
+
+	/** Take the field's new text, carrying the picks across the change. */
+	function changeText(next: string, picked?: MentionPick) {
+		picks = shiftPicks(text, next, picks);
+		if (picked) picks = [...picks, picked];
+		text = next;
+		handedOut = toStored(text, picks);
+		value = handedOut;
+	}
+
 	const audience = $derived(
 		allowedForAudience(candidates, visibility)
 	);
 	const people = $derived(active ? suggest(active.query, audience).people : []);
+	// The second line counts everyone the list could offer, not only what the query left.
+	const namesakes = $derived(tellApart(audience));
 
 	function refreshPicker() {
 		if (!textarea) return;
-		active = activeHandle(value, textarea.selectionStart);
+		active = activeHandle(text, textarea.selectionStart);
 		selected = 0;
+	}
+
+	function onInput(event: Event) {
+		changeText((event.currentTarget as HTMLTextAreaElement).value);
+		refreshPicker();
 	}
 
 	async function choose(index: number) {
 		const person = people[index];
 		if (!person || !active || !textarea) return;
-		const r = insertHandle(value, active, textarea.selectionStart, handleFor(person));
-		value = r.text;
+		const handle = handleFor(person);
+		const r = insertHandle(text, active, textarea.selectionStart, handle);
+		changeText(r.text, { start: active.start, end: active.start + handle.length, id: person.id });
 		active = null;
 		await tick();
 		textarea.focus();
 		textarea.setSelectionRange(r.caret, r.caret);
 	}
+
+	// A posted form carries the stored form, whoever builds its data — a plain post, `enhance`
+	// or `new FormData(form)`.
+	onMount(() => {
+		const form = textarea?.form;
+		if (!form) return;
+		const carryStored = (event: FormDataEvent) => event.formData.set(name, value);
+		form.addEventListener('formdata', carryStored);
+		return () => form.removeEventListener('formdata', carryStored);
+	});
 
 	function onKeydown(event: KeyboardEvent) {
 		if (!active || people.length === 0) return;
@@ -95,7 +163,7 @@
 <div class="relative">
 	<textarea
 		bind:this={textarea}
-		bind:value
+		value={text}
 		{name}
 		{rows}
 		{required}
@@ -103,7 +171,7 @@
 		aria-label={label}
 		aria-autocomplete="list"
 		onkeydown={onKeydown}
-		oninput={refreshPicker}
+		oninput={onInput}
 		onclick={refreshPicker}
 		onkeyup={(e) => (e.key.startsWith('Arrow') ? refreshPicker() : undefined)}
 		onblur={() => setTimeout(() => (active = null), 120)}
@@ -132,7 +200,10 @@
 						class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
 					>
 						<Avatar id={person.id} name={person.displayName} size={22} />
-						<span class="truncate">{person.displayName}</span>
+						<span class="min-w-0">
+							<span class="block truncate">{person.displayName}</span>
+							{#if namesakes.get(person.id)}<NamesakeLine distinction={namesakes.get(person.id)!} />{/if}
+						</span>
 					</button>
 				</li>
 			{/each}

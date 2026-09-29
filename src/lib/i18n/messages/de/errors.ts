@@ -65,6 +65,8 @@ export const errors: ErrorsMessages = {
 		'Wozu dieses Foto gehört, ist nicht mehr da, um es hinzuzufügen.',
 	'errors.moment.needsPerson':
 		'Erwähne mit @ mindestens eine Person, damit der Moment einen Ort hat.',
+	'errors.mention.ambiguous': (p) =>
+		`@${p.handle} passt auf ${p.count} Personen: ${p.people}. Wähle in der Liste, die sich beim Tippen von @ öffnet, wer gemeint ist.`,
 
 	'errors.image.empty': 'Das Bild ist leer.',
 	'errors.image.tooLarge': 'Das Bild ist zu groß.',

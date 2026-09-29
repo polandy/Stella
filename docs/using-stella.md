@@ -42,6 +42,10 @@ A few things worth knowing:
   moment*, so `⌘K`, `Enter` puts the cursor in the field. **`⌘⏎` / `Ctrl-⏎`** saves.
 - **On a phone**, tap the *What happened?* bar or the pencil in the middle of the bottom bar;
   the composer slides up over the stream.
+- **Two people with the same name?** The suggestion list says which is which (their
+  description, or where and when you met), and the one you pick is the one it means, even
+  though both read `@Thomas` in the text. A `@Thomas` typed without picking is not guessed:
+  Stella asks which one you mean.
 - **Someone new?** Just mention them. The suggestion list offers *Create "…"*, and the
   person is created with the moment — no form, no detour.
 - **Photos** can be attached; they are resized in your browser before upload, which also
