@@ -122,17 +122,13 @@ Goal: sand the edges and add the nice-to-haves.
 - ~~**Photos in every person picker**~~ — shipped (docs/05 §5.10): search results, the person
   pickers (Circles' *Add member*, the relationship form, …) and the @-lists show a person's
   photo instead of their initials whenever they have one.
-- *TODO, concept first:* **context hints for people without a last name** — some people are
-  only known by first name and where they belong, so a search result for them should say who
-  they are: *Sister of Hans Meyer*, *in the circle Class 9a*. ~~Description and where/when
-  met~~ — shipped as the namesake line in ⌘K and the person pickers, with a nudge for a
-  description when someone is added without a last name (§2.2.3). ~~**Relationship and
-  circle** as further fallbacks~~ — shipped (§2.2.3, `docs/concepts/namesake-context.html`):
-  read per viewer through the access layer, a link to another namesake skipped, and the
-  clean-up list filled in from them, and in the refusal of a typed `@Thomas`. The relationship form
-  fills a new person's description in from the link (*Child of Hans Meyer*), as plain text. ~~The **@-picker**~~ — shipped: the second line there too, the pick remembered as
-  the person's id, and a typed `@Thomas` that is two people refused with their names
-  (§2.2.3, `docs/concepts/mention-namesakes.html`).
+- ~~**Context hints for people without a last name**~~ — shipped (§2.2.3): someone known
+  only by a first name is told apart by a second line in ⌘K, the person pickers and the
+  @-picker — their description, where/when met, then a relationship or circle read per viewer
+  through the access layer (*Sister of Hans Meyer*, *in the circle Class 9a*). Adding someone
+  without a last name nudges for a description, the relationship form fills one in from the
+  link, and a typed `@Thomas` that is two people is refused with their names
+  (`docs/concepts/namesake-context.html`, `docs/concepts/mention-namesakes.html`).
 - ~~**Tidy up people known by a first name only**~~ — shipped (§2.2.3): *Settings → Data
   quality* lists everyone with a first name and nothing else to tell them
   apart, each with a description field; merge and archive stay on their page.
