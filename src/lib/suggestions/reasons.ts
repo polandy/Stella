@@ -27,3 +27,20 @@ export const parentThroughSibling = (
 		say: (names) => t('kinship.reason.parentThroughSibling', names)
 	});
 };
+
+/**
+ * Why a worked-out relative is offered: Stella reached them through these people, and nobody
+ * has entered the tie. Each person the inference ran through is named and followable.
+ */
+export const workedOutThrough = (via: readonly PersonRef[]): LinkedPhrase => {
+	return (t) => {
+		const people = Object.fromEntries(via.map((person, index) => [`via${index}`, person]));
+		return {
+			people,
+			say: (names) =>
+				t('kinship.reason.workedOutThrough', {
+					via: via.map((_, index) => names[`via${index}`]!).join(t('contact.relationships.viaAnd'))
+				})
+		};
+	};
+};

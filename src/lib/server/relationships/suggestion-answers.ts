@@ -12,6 +12,7 @@ import {
 } from '$lib/server/domain/relationships/suggestion-review';
 import { getContactDeps, getRelationshipDeps, getSuggestionReviewDeps } from '$lib/server/services';
 import { say } from '$lib/server/i18n/say';
+import { RELATIONS } from '$lib/suggestions/types';
 
 /*
  * Answering a suggestion, wherever it was offered (docs/concepts/relationship-suggestions.md
@@ -41,7 +42,7 @@ const refused = (message: string, status: 400 | 409 = 400): RefusedAnswer => ({ 
 
 /** A claim being answered: the relation and the two people, from either end. */
 const ClaimSchema = v.object({
-	relation: v.picklist(['parent', 'sibling'] as const),
+	relation: v.picklist(RELATIONS),
 	fromId: v.pipe(v.string(), v.minLength(1)),
 	toId: v.pipe(v.string(), v.minLength(1))
 });

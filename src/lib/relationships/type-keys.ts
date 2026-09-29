@@ -1,3 +1,5 @@
+import type { Relation } from '../suggestions/types';
+
 /*
  * The keys of the relationship types Stella seeds (docs/02 §2.4). Most types are just rows,
  * but a few are reasoned about by name — which links count as primary for kinship inference,
@@ -46,10 +48,23 @@ export const SIBLING_IN_LAW_TYPE_KEY = 'sibling_in_law';
  * it has to name a type, and this is the one place the two vocabularies meet — so a rule that
  * starts offering siblings cannot quietly go on writing parent links.
  */
-export const TYPE_KEY_FOR_RELATION: Readonly<Record<'parent' | 'sibling', string>> = {
+export const TYPE_KEY_FOR_RELATION: Readonly<Record<Relation, string>> = {
 	parent: PARENT_CHILD_TYPE_KEY,
-	sibling: SIBLING_TYPE_KEY
+	sibling: SIBLING_TYPE_KEY,
+	'half-sibling': HALF_SIBLING_TYPE_KEY,
+	grandparent: GRANDPARENT_GRANDCHILD_TYPE_KEY,
+	'great-grandparent': GREAT_GRANDPARENT_TYPE_KEY,
+	'aunt-uncle': AUNT_UNCLE_TYPE_KEY,
+	cousin: COUSIN_TYPE_KEY,
+	'parent-in-law': PARENT_IN_LAW_TYPE_KEY,
+	'sibling-in-law': SIBLING_IN_LAW_TYPE_KEY
 };
+
+/** The relation a stored type answers, where it answers one — the other way round. */
+export const RELATION_FOR_TYPE_KEY: Readonly<Partial<Record<string, Relation>>> =
+	Object.fromEntries(
+		Object.entries(TYPE_KEY_FOR_RELATION).map(([relation, typeKey]) => [typeKey, relation])
+	) as Partial<Record<string, Relation>>;
 
 /** Either of these makes someone a partner for kinship purposes. */
 export const PARTNER_TYPE_KEYS: readonly string[] = ['partner', 'spouse'];

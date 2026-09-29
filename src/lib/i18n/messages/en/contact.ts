@@ -142,6 +142,7 @@ export const contact = {
 		`Added ${p.parent} as a parent of ${p.child}`,
 	'contact.relationships.acceptedSibling': (p: { one: string; other: string }) =>
 		`Added ${p.one} and ${p.other} as siblings`,
+	'contact.relationships.acceptedClaim': (p: { claim: string }) => `Entered: ${p.claim}`,
 	'contact.relationships.declinedNotice': 'Declined — it will not be offered again',
 	'contact.relationships.accept': 'Accept',
 	'contact.relationships.decline': 'Decline',

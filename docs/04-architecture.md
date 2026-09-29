@@ -766,7 +766,10 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   `half_sibling` is its own type because `sibling` claims full siblings. The cost is that a
   confirmed row is frozen: it no longer follows the links it was worked out from. For the same
   reason the old refusal of a hand-entered sibling that shared parents imply is gone — it
-  stood in the way of confirming one, and the household decides.
+  stood in the way of confirming one, and the household decides. The reviews offer the same
+  claims (rule K1) as the one exception to *the link rules never suggest what can be derived*:
+  K1 is asked for, never raised by a write, and the engine exempts it from suppression 2 by
+  rule id rather than letting a rule filter for itself.
 - **A suggestion the write would refuse is not offered** (suppression 5) — the engine asks the
   same parent cap before listing a claim, because *Accept* is the only button on the row and an
   error there is a rule the household never broke.

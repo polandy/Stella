@@ -526,8 +526,8 @@ tables, fully unit-testable (test-first).
   tie to existing children is deliberately not offered: it is a step relationship, which the
   profile already names without storing anything. What is offered is worked out by a rule
   engine (`src/lib/suggestions/`) that keeps the rules apart from the checks applied to all
-  of them — so Stella never offers a pair the household has already linked, and never offers
-  to *store* a tie it already works out and displays.
+  of them — so Stella never offers a pair the household has already linked, and a write never
+  offers to *store* a tie it already works out and displays (a review does, on request — below).
 - **Shipped:** a worked-out **step** relative can be corrected in place. *Stepchild*,
   *stepparent* and *stepsibling* are what Stella falls back to when the link runs through a
   partner and no direct one is on record — but a partner's child is often the person's own
@@ -585,6 +585,18 @@ tables, fully unit-testable (test-first).
   household answered. It is for every member, not the admin alone: the answers belong to the
   household. Anyone's check is scoped to their own graph, so a private person is never named to
   someone who may not see them.
+
+- **Shipped:** both checks also list the **worked-out relatives** that carry *Confirm* on the
+  profile, so a household working through what Stella knows meets them in the same list. They
+  are claims like the rest — the relative, the person, and *worked out through* whom, each name
+  followable, the relative named by gender where it is on record (*an aunt of*, *a cousin of*)
+  and neutrally where not (*an aunt or uncle of*) — listed after what follows from an entry, since a missing parent is news and a
+  grandmother Stella already names is housekeeping. *Accept* stores the same row *Confirm*
+  would; the step terms are left out, being corrected on the profile rather than entered as
+  they are. *Not true* here only stops the check asking: the profile keeps naming the relative,
+  because it still follows from the links on record. A write never raises them — the *Also
+  true?* block stays limited to what the new link implies (`docs/concepts/
+  relationship-suggestions.md` §3.5, rule K1).
 
 - **Shipped:** every suggestion **says what it follows from**, and every name in it is a way to
   that person. A parent claim rests on two facts — the parent is on record for one child, and

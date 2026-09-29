@@ -29,7 +29,7 @@ import type { SuggestionView } from './view';
  * Derivation has no term meaning `parent`: a parent is entered, never inferred. The empty
  * set is deliberate, and `suppressions.test.ts` holds it in place.
  */
-const TERMS_MEANING: Record<Relation, readonly KinTerm[]> = {
+const TERMS_MEANING: Partial<Record<Relation, readonly KinTerm[]>> = {
 	parent: [],
 	sibling: ['sibling', 'half-sibling']
 };
@@ -44,7 +44,7 @@ export function isDerivable(
 	subjectId: string,
 	objectId: string
 ): boolean {
-	const terms = TERMS_MEANING[relation];
+	const terms = TERMS_MEANING[relation] ?? [];
 	if (terms.length === 0) return false;
 	return deriveKinship(view, objectId).some(
 		(kin) => kin.personId === subjectId && terms.includes(kin.term)

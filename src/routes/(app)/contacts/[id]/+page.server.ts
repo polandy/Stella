@@ -4,6 +4,7 @@ import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
+import { RELATIONS } from '$lib/suggestions/types';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
 import { parseProposePair, proposeHref } from '$lib/contacts/propose';
@@ -410,7 +411,7 @@ const PhotoVisibilitySchema = v.object({
 
 /** One claim a member is answering on the review panel (§6.4): the relation and the pair. */
 const AnswerSuggestionSchema = v.object({
-	relation: v.picklist(['parent', 'sibling']),
+	relation: v.picklist(RELATIONS),
 	fromId: v.pipe(v.string(), v.minLength(1)),
 	toId: v.pipe(v.string(), v.minLength(1))
 });
