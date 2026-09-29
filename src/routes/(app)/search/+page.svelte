@@ -36,8 +36,7 @@
 							href="/contacts/{c.id}"
 							class="flex items-center gap-3 rounded-app px-3 py-2 transition-colors hover:bg-card hover:shadow-card"
 						>
-							<!-- Initials only: the search port does not carry the avatar photo yet (docs/02 §2.10). -->
-							<Avatar id={c.id} name={c.displayName} size={32} />
+							<Avatar id={c.id} name={c.displayName} avatarPhotoId={c.avatarPhotoId} size={32} />
 							<span class="text-fg">{c.displayName}</span>
 							{#if c.description}<span class="truncate text-sm text-fg-muted">· {c.description}</span>{/if}
 						</a>
