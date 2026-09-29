@@ -1047,8 +1047,15 @@ mechanism behind two features: correcting a birthday without touching the profil
   the same without a gesture. The picture can never be moved or zoomed out far enough to leave
   empty space in the square, and zoom stops at 6×. *Use photo* uploads exactly the square shown;
   Escape or *Cancel* uploads nothing. The geometry is pure and tested (`src/lib/image/crop.ts`),
-  and the canvas cuts from the same numbers the dialog draws with. *Use as photo* from the
-  gallery still wears the picture as it is.
+  and the canvas cuts from the same numbers the dialog draws with.
+- **Shipped: framing a gallery photo.** *Use as photo* in the lightbox opens the same cropper
+  on the full picture. The gallery keeps **one** photo: the chosen square is remembered on a
+  *framing* of it (docs/03 §photo), and that is what the person wears. On the photo worn now
+  the button reads *Change framing*, and on any photo framed before the cropper starts on the
+  square chosen last time, not the centre. Choosing again replaces the framing rather than
+  adding one; removing the photo removes its framing, and a framing follows its photo to
+  private. The archive carries a framing with the square and the photo it belongs to, and a
+  restore that has to refuse a photo refuses its framing too.
 - **Shipped: photo history.** Every gallery photo shows the day it was added, on the tile and
   next to its caption in the lightbox — legible at a glance for a face that visibly changes
   year to year, a child especially. Choosing a new avatar for someone who already had one never

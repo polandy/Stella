@@ -96,6 +96,7 @@ import type { ApiImportDeps } from './domain/import/api/api-import';
 import type { ImportedPhotoDeps } from './domain/import/monica/photos';
 import type { InteractionDeps, InteractionRepository } from './domain/interactions/interactions';
 import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
+import type { FramingDeps, FramingRepository } from './domain/media/framing';
 import type { GalleryDeps } from './domain/media/gallery';
 import type { GalleryUploadDeps } from './domain/media/gallery-upload';
 import type { JournalPhotoDeps } from './domain/media/journal-photos';
@@ -412,7 +413,7 @@ export function getGraphRepository(): GraphRepository {
 	return (graphRepository ??= createDrizzleGraphRepository(getDb()));
 }
 
-let photoRepository: PhotoRepository | null = null;
+let photoRepository: ReturnType<typeof createDrizzlePhotoRepository> | null = null;
 let archiveRepository: ArchiveRepository | null = null;
 
 /** Deps for exporting the household as one archive (docs/02 §2.15). */
@@ -437,6 +438,11 @@ export function getImportArchiveDeps(): ImportArchiveDeps {
 let mediaStore: MediaStore | null = null;
 
 export function getPhotos(): PhotoRepository {
+	return photoAdapter();
+}
+
+/** One Drizzle adapter serves both photo ports; each use-case sees only its own. */
+function photoAdapter(): PhotoRepository & FramingRepository {
 	return (photoRepository ??= createDrizzlePhotoRepository(getDb()));
 }
 
@@ -455,6 +461,11 @@ export function getImportedPhotoDeps(): ImportedPhotoDeps {
 /** Deps for the photo gallery on a person (docs/02 §2.14). */
 export function getGalleryDeps(): GalleryDeps {
 	return { photos: getPhotos(), media: getMediaStore() };
+}
+
+/** Deps for wearing a gallery photo through a chosen square (docs/02 §2.14). */
+export function getFramingDeps(): FramingDeps {
+	return { framings: photoAdapter(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
 }
 
 export function getGalleryUploadDeps(): GalleryUploadDeps {

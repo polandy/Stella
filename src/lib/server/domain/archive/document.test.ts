@@ -189,7 +189,8 @@ describe('what a restore would otherwise lose', () => {
 				{ id: 'd-1', contact_id: 'c-1', kind: 'birthday', date: '1980-06-01', recurs_yearly: 1, remind: 1 }
 			],
 			photo: [
-				{ id: 'p-1', contact_id: 'c-1', journal_entry_id: null, file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', width: 1600, height: 1200, size_bytes: 240000, sort_order: 2, created_by: 'u-1', visibility: 'shared' }
+				{ id: 'p-1', contact_id: 'c-1', journal_entry_id: null, file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', width: 1600, height: 1200, size_bytes: 240000, sort_order: 2, created_by: 'u-1', visibility: 'shared' },
+				{ id: 'p-2', contact_id: 'c-1', journal_entry_id: null, framing_of: 'p-1', crop_x: 300, crop_y: 0.5, crop_size: 1200, file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', width: 512, height: 512, created_by: 'u-1', visibility: 'shared' }
 			],
 			circle: [
 				{ id: 'ci-1', name: 'Klasse 5b', kind: 'class', color: 'green', parent_circle_id: 'ci-0', start_date: '2019-08-01', end_date: '2020-07-01', archived_at: NOW, created_by: 'u-1', visibility: 'shared' }
@@ -252,6 +253,10 @@ describe('what a restore would otherwise lose', () => {
 			bytes: 240000,
 			sort_order: 2
 		});
+		// The square a photo is worn through as the avatar, and which photo it frames (§2.14).
+		const framing = (person.photos as Record<string, unknown>[]).find((p) => p.id === 'p-2');
+		expect(framing).toMatchObject({ framing_of: 'p-1', crop: { x: 300, y: 0.5, size: 1200 } });
+		expect((person.photos as Record<string, unknown>[]).find((p) => p.id === 'p-1')).not.toHaveProperty('crop');
 		expect(built().circles[0]).toMatchObject({
 			color: 'green',
 			parent: 'ci-0',

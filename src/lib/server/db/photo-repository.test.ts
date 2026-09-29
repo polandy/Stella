@@ -5,6 +5,7 @@ import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import type { StoredPhoto } from '../domain/media/avatars';
+import type { StoredFraming } from '../domain/media/framing';
 import { createDrizzlePhotoRepository } from './photo-repository';
 import * as schema from './schema';
 
@@ -128,7 +129,8 @@ describe('the gallery (docs/02 §2.14)', () => {
 			visibility: 'shared',
 			createdBy: U1,
 			contactId: 'mara',
-			isAvatar: false
+			isAvatar: false,
+			framing: null
 		});
 	});
 
@@ -161,16 +163,104 @@ describe('the gallery (docs/02 §2.14)', () => {
 
 	it('deletes only the author’s own photo and hands back its files', async () => {
 		expect(await repo.deleteOwnGalleryPhoto({ authorId: U2, photoId: 'g-shared' })).toBeNull();
-		expect(await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared' })).toEqual({
-			filePath: 'p1.jpg',
-			thumbPath: 'p1_thumb.jpg'
-		});
+		expect(await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared' })).toEqual([
+			{ filePath: 'p1.jpg', thumbPath: 'p1_thumb.jpg' }
+		]);
 		expect(db.select().from(schema.photo).where(eq(schema.photo.id, 'g-shared')).get()).toBeUndefined();
 	});
 
 	it('takes the avatar off the contact when the photo it points at is deleted', async () => {
 		await repo.setContactAvatar('mara', 'g-shared');
 		await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared' });
+		const row = db.select().from(schema.contact).where(eq(schema.contact.id, 'mara')).get();
+		expect(row?.avatarPhotoId).toBeNull();
+	});
+});
+
+describe('framings (docs/02 §2.14)', () => {
+	/*
+	 * A framing is the square someone chose to wear a gallery photo as the avatar: a photo row of
+	 * its own, pointing at the gallery photo. U1 owns a shared and a private photo on Mara.
+	 */
+	const framing = (over: Partial<StoredFraming> = {}): StoredFraming => ({
+		...photo({ id: 'f1', filePath: 'f1.jpg', thumbPath: 'f1_thumb.jpg', createdAt: 900 }),
+		framingOf: 'g-shared',
+		crop: { x: 100, y: 50, size: 300 },
+		...over
+	});
+
+	beforeEach(async () => {
+		seedContact('mara');
+		await repo.insert(photo({ id: 'g-shared', createdAt: 100 }));
+		await repo.insert(photo({ id: 'g-private', visibility: 'private', createdAt: 200 }));
+	});
+
+	it('wears the framing and marks its photo as the one worn, with the square remembered', async () => {
+		expect(await repo.replaceFraming(framing())).toEqual([]);
+		const contactRow = db.select().from(schema.contact).where(eq(schema.contact.id, 'mara')).get();
+		expect(contactRow?.avatarPhotoId).toBe('f1');
+
+		const gallery = await repo.listGalleryPhotos(viewerU1, 'mara');
+		// The framing is not a second photo in the gallery.
+		expect(gallery.map((p) => p.id)).toEqual(['g-private', 'g-shared']);
+		expect(gallery.find((p) => p.id === 'g-shared')).toMatchObject({
+			isAvatar: true,
+			framing: { x: 100, y: 50, size: 300 }
+		});
+		expect(gallery.find((p) => p.id === 'g-private')).toMatchObject({ isAvatar: false, framing: null });
+	});
+
+	it('serves the framing under its own id, to whoever may see its photo', async () => {
+		await repo.replaceFraming(framing());
+		expect(await repo.getVisiblePhotoFile(viewerU2, 'f1', 'thumb')).toEqual({ path: 'f1_thumb.jpg', mime: 'image/jpeg' });
+	});
+
+	it('replaces the earlier framing of the same photo and hands back its files', async () => {
+		await repo.replaceFraming(framing());
+		const replaced = await repo.replaceFraming(
+			framing({ id: 'f2', filePath: 'f2.jpg', thumbPath: 'f2_thumb.jpg', crop: { x: 0, y: 0, size: 512 } })
+		);
+		expect(replaced).toEqual([{ filePath: 'f1.jpg', thumbPath: 'f1_thumb.jpg' }]);
+		const ids = db.select({ id: schema.photo.id }).from(schema.photo).all().map((r) => r.id);
+		expect(ids.sort()).toEqual(['f2', 'g-private', 'g-shared']);
+		const gallery = await repo.listGalleryPhotos(viewerU1, 'mara');
+		expect(gallery.find((p) => p.id === 'g-shared')?.framing).toEqual({ x: 0, y: 0, size: 512 });
+	});
+
+	it('keeps the framing of a photo no longer worn, so choosing it again starts there', async () => {
+		await repo.replaceFraming(framing());
+		await repo.setContactAvatar('mara', 'g-private');
+		const gallery = await repo.listGalleryPhotos(viewerU1, 'mara');
+		expect(gallery.find((p) => p.id === 'g-shared')).toMatchObject({
+			isAvatar: false,
+			framing: { x: 100, y: 50, size: 300 }
+		});
+		expect(gallery.find((p) => p.id === 'g-private')?.isAvatar).toBe(true);
+	});
+
+	it('cannot be found, re-scoped or deleted as a gallery photo of its own', async () => {
+		await repo.replaceFraming(framing());
+		expect(await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'f1')).toBeNull();
+		expect(await repo.updateOwnGalleryPhoto({ authorId: U1, photoId: 'f1', caption: 'x' })).toBe(false);
+		expect(await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'f1' })).toBeNull();
+		// Positive control: the photo it frames is all of those things.
+		expect(await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'g-shared')).toMatchObject({ id: 'g-shared' });
+	});
+
+	it('follows its photo when the photo is made private', async () => {
+		await repo.replaceFraming(framing());
+		await repo.updateOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared', visibility: 'private' });
+		expect(await repo.getVisiblePhotoFile(viewerU2, 'f1', 'thumb')).toBeNull();
+		expect(await repo.getVisiblePhotoFile(viewerU1, 'f1', 'thumb')).not.toBeNull();
+	});
+
+	it('goes with its photo, files and avatar included', async () => {
+		await repo.replaceFraming(framing());
+		expect(await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared' })).toEqual([
+			{ filePath: 'p1.jpg', thumbPath: 'p1_thumb.jpg' },
+			{ filePath: 'f1.jpg', thumbPath: 'f1_thumb.jpg' }
+		]);
+		expect(db.select().from(schema.photo).where(eq(schema.photo.id, 'f1')).get()).toBeUndefined();
 		const row = db.select().from(schema.contact).where(eq(schema.contact.id, 'mara')).get();
 		expect(row?.avatarPhotoId).toBeNull();
 	});

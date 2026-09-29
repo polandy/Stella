@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { circleNameKey } from '$lib/circles/name-key';
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
+	import FrameAsAvatar from '$lib/components/FrameAsAvatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import KinSuggestions from '$lib/components/KinSuggestions.svelte';
 	import DateField from '$lib/components/DateField.svelte';
@@ -1961,12 +1962,12 @@
 			/>
 
 			<div class="flex flex-wrap items-center gap-2">
-				<form method="POST" action="?/usePhotoAsAvatar" class="contents">
-					<input type="hidden" name="photoId" value={openedPhoto.id} />
-					<Button variant="secondary" size="sm" disabled={openedPhoto.isAvatar}>
-						{openedPhoto.isAvatar ? t('contact.photos.currentPhoto') : t('contact.photos.useAsPhoto')}
-					</Button>
-				</form>
+				<FrameAsAvatar
+					contactId={c.id}
+					photoId={openedPhoto.id}
+					isAvatar={openedPhoto.isAvatar}
+					framing={openedPhoto.framing}
+				/>
 
 				{#if openedPhoto.createdBy === data.viewerId}
 					<form method="POST" action="?/captionPhoto" class="flex flex-1 items-center gap-2">
