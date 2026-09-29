@@ -463,6 +463,21 @@ describe('relationships', () => {
 		expect(planned(document, context({ people, graph: over })).relationships).toHaveLength(1);
 	});
 
+	it('stores a sibling link its shared parents already imply — confirming it is the household\'s call', () => {
+		expect(
+			planned(
+				doc({
+					people: family,
+					relationships: [
+						link('carl', 'parent_child', 'anna'),
+						link('carl', 'parent_child', 'bert'),
+						link('anna', 'sibling', 'bert')
+					]
+				})
+			).relationships
+		).toHaveLength(3);
+	});
+
 	it('refuses a partner claimed twice for one person within the document', () => {
 		expect(
 			refused(

@@ -6,7 +6,10 @@ import {
 	archiveContact,
 	createContact,
 	editProfile,
+	describeContact,
+	EmptyDescriptionError,
 	EmptyContactNameError,
+	NeedsSomethingToKnowThemByError,
 	restoreContact,
 	deleteContact,
 	mergeContacts,
@@ -97,9 +100,32 @@ describe('createContact', () => {
 
 	it('normalises blank optional fields to null', async () => {
 		const f = fakeRepo();
-		await createContact(deps(f.repo), creator, { firstName: 'Hans', lastName: '  ', description: '' });
+		await createContact(deps(f.repo), creator, { firstName: 'Hans', lastName: '  ', nickname: '', description: 'From the choir' });
 		expect(f.inserted?.lastName).toBeNull();
-		expect(f.inserted?.description).toBeNull();
+		expect(f.inserted?.nickname).toBeNull();
+	});
+
+	it('refuses a first name alone, with no last name and nothing to know them by (docs/02 §2.2.3)', async () => {
+		const f = fakeRepo();
+		await expect(
+			createContact(deps(f.repo), creator, { firstName: 'Thomas', lastName: '  ', description: ' ' })
+		).rejects.toBeInstanceOf(NeedsSomethingToKnowThemByError);
+		await expect(createContact(deps(f.repo), creator, { displayName: 'Thomas' })).rejects.toBeInstanceOf(
+			NeedsSomethingToKnowThemByError
+		);
+		expect(f.inserted).toBeNull();
+	});
+
+	it('takes a first name with a last name, or with a description, or a full name typed as one', async () => {
+		for (const input of [
+			{ firstName: 'Thomas', lastName: 'Widmer' },
+			{ firstName: 'Thomas', description: 'Mountain guide at the hut' },
+			{ displayName: 'Thomas Widmer' }
+		]) {
+			const f = fakeRepo();
+			await createContact(deps(f.repo), creator, input);
+			expect(f.inserted?.displayName).toContain('Thomas');
+		}
 	});
 
 	it('rejects a contact with nothing to identify it', async () => {
@@ -124,7 +150,7 @@ describe('createContact birth dates', () => {
 		await createContact(
 			{ contacts: f.repo, ids: sequentialIds('c1'), clock },
 			creator,
-			{ firstName: 'Mia', birthDate: '--03-11' }
+			{ firstName: 'Mia', lastName: 'Brunner', birthDate: '--03-11' }
 		);
 		expect(f.inserted).toMatchObject({ birthDate: '--03-11', birthDatePrecision: 'month_day' });
 	});
@@ -132,7 +158,8 @@ describe('createContact birth dates', () => {
 	it('leaves the birth date null when none is given', async () => {
 		const f = fakeRepo();
 		await createContact({ contacts: f.repo, ids: sequentialIds('c1'), clock }, creator, {
-			firstName: 'Mia'
+			firstName: 'Mia',
+			lastName: 'Brunner'
 		});
 		expect(f.inserted).toMatchObject({ birthDate: null, birthDatePrecision: 'full' });
 	});
@@ -251,6 +278,46 @@ describe('editProfile', () => {
 		// positive control: the same call against a visible contact does write
 		const visible = editableRepo(existing);
 		await editProfile(deps(visible.repo), viewer, 'contact-1', { displayName: 'Whoever', description: null });
+
+		expect(saved).toBe(false);
+		expect(f.patches).toEqual([]);
+		expect(visible.patches).toHaveLength(1);
+	});
+});
+
+/*
+ * Tidying up the people known by a first name only (docs/02 §2.2.3): a description written
+ * straight from the list, the name left as it is.
+ */
+describe('describeContact', () => {
+	const thomas: Contact = { ...existing, displayName: 'Thomas', firstName: 'Thomas', lastName: null, description: null };
+
+	it('saves a trimmed description and keeps the name they have', async () => {
+		const f = editableRepo(thomas);
+
+		const saved = await describeContact(deps(f.repo), viewer, 'contact-1', '  SAC hut, Aug 2026  ');
+
+		expect(saved).toBe(true);
+		expect(f.patches).toEqual([
+			{ id: 'contact-1', patch: { displayName: 'Thomas', description: 'SAC hut, Aug 2026', updatedAt: NOW } }
+		]);
+	});
+
+	it('refuses an empty description and writes nothing', async () => {
+		const f = editableRepo(thomas);
+
+		await expect(describeContact(deps(f.repo), viewer, 'contact-1', '   ')).rejects.toThrow(EmptyDescriptionError);
+		expect(f.patches).toEqual([]);
+	});
+
+	it('writes nothing for a contact the viewer may not see', async () => {
+		const f = editableRepo(null);
+
+		const saved = await describeContact(deps(f.repo), viewer, 'contact-1', 'SAC hut');
+
+		// positive control: the same call against a visible contact does write
+		const visible = editableRepo(thomas);
+		await describeContact(deps(visible.repo), viewer, 'contact-1', 'SAC hut');
 
 		expect(saved).toBe(false);
 		expect(f.patches).toEqual([]);

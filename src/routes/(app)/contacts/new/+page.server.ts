@@ -1,13 +1,17 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { createTranslator } from '$lib/i18n/translate';
-import { createContact, InvalidBirthDateError } from '$lib/server/domain/contacts/contacts';
-import { getContactDeps } from '$lib/server/services';
+import { parseCommand } from '$lib/server/commands/parse';
+import { systemClock } from '$lib/server/clock';
+import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
+import { ulidGenerator } from '$lib/server/id';
+import { getCommandDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
  * Quick-add: create a person from a minimal form (docs/02 §2.2). A name is required; the
- * display name is derived server-side. Visibility defaults to shared.
+ * display name is derived server-side. Visibility defaults to shared. Saved as a `contact.add`
+ * command, which is what lets the form keep a person on the phone out of reach (§2.18).
  */
 
 const optional = v.optional(v.pipe(v.string(), v.trim()));
@@ -53,24 +57,23 @@ export const actions: Actions = {
 			return fail(400, { error: t('errors.form.checkAndRetry') });
 		}
 
-		const creator = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
-			defaultVisibility: 'shared' as const // TODO: use the user's default (settings, §2.16)
-		};
-
+		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
 		const { relateTo, ...input } = parsed.output;
-		let id: string;
-		try {
-			id = await createContact(getContactDeps(), creator, input);
-		} catch (err) {
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'contact.add',
+			payload: input,
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'contact.add') return fail(400, { error: t('errors.contact.needAName') });
+		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
+		if (outcome?.status !== 'applied') {
 			return fail(400, {
-				error:
-					err instanceof InvalidBirthDateError
-						? err.phrase(t)
-						: t('errors.contact.needAName')
+				error: outcome?.status === 'refused' ? outcome.reason(t) : t('errors.contact.needAName')
 			});
 		}
+		const id = outcome.result.contactId;
 
 		throw redirect(303, relateTo ? `/contacts/${id}?relate=${encodeURIComponent(relateTo)}` : `/contacts/${id}`);
 	}

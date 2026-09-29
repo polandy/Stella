@@ -4,8 +4,17 @@
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
+	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { isNameWorthCreating, splitTypedName } from '$lib/people/new-person';
+	import { usePeopleContext } from '$lib/people/context.svelte';
+	import { tellApart } from '$lib/people/namesakes';
+	import {
+		isKnownByMoreThanAFirstName,
+		isNameWorthCreating,
+		splitTypedName,
+		wantsSomethingToKnowThemBy
+	} from '$lib/people/new-person';
 	import { filterPeople, queryAfterPick, stillNeedsAPick, type SelectablePerson } from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';
 
@@ -44,6 +53,11 @@
 		keepSearch?: boolean;
 		/** Offer creating a person from the typed name, for pickers where a stranger belongs. */
 		allowCreate?: boolean;
+		/**
+		 * What to fill the new person's description with, from what the form around the picker
+		 * already says about them — "Child of Hans Meyer" in a relationship form (docs/02 §2.2.3).
+		 */
+		suggestedDescription?: string;
 		/** Called with the person a pick lands on, for a form that reads more off them than the id. */
 		onPick?: (person: SelectablePerson) => void;
 		id?: string;
@@ -58,6 +72,7 @@
 		multiple = false,
 		keepSearch = false,
 		allowCreate = false,
+		suggestedDescription = '',
 		onPick,
 		id,
 		required = false,
@@ -85,12 +100,17 @@
 		firstName: '',
 		lastName: '',
 		nickname: '',
+		description: '',
 		birthDate: '',
 		visibility: 'shared' as Visibility
 	});
 
 	const knownPeople = $derived([...people, ...addedHere]);
 	const byId = $derived(new Map(knownPeople.map((p) => [p.id, p])));
+	/** Which Thomas is which, over everyone offered — a namesake out of sight is still one. */
+	const peopleContext = usePeopleContext();
+	const namesakes = $derived(tellApart(knownPeople, peopleContext()));
+	const askForSomethingToKnowThemBy = $derived(wantsSomethingToKnowThemBy(draft));
 	const chosen = $derived(selectedIds.map((pid) => byId.get(pid)).filter((p) => p !== undefined));
 	const pickable = $derived(
 		multiple ? knownPeople.filter((p) => !selectedIds.includes(p.id)) : knownPeople
@@ -142,13 +162,24 @@
 
 	async function startCreate() {
 		const { firstName, lastName } = splitTypedName(query);
-		draft = { firstName, lastName, nickname: '', birthDate: '', visibility: 'shared' };
+		draft = { firstName, lastName, nickname: '', description: suggestedDescription, birthDate: '', visibility: 'shared' };
+		offered = suggestedDescription;
 		createError = null;
 		creating = true;
 		open = true;
 		await tick();
 		firstNameInput?.focus();
 	}
+
+	// The suggestion follows the form while nobody has made the description their own: another
+	// type chosen with the panel open is a new suggestion, a typed description stays.
+	let offered = '';
+	$effect(() => {
+		const next = suggestedDescription;
+		if (!creating || next === offered) return;
+		if (draft.description === offered) draft.description = next;
+		offered = next;
+	});
 
 	function cancelCreate() {
 		creating = false;
@@ -169,7 +200,8 @@
 	}
 
 	async function submitCreate() {
-		if (saving) return;
+		// Stella refuses a first name alone (docs/02 §2.2.3); Enter must not get past the button.
+		if (saving || !isKnownByMoreThanAFirstName(draft)) return;
 		saving = true;
 		createError = null;
 		try {
@@ -257,7 +289,7 @@
 		{#if multiple}
 			{#each chosen as person (person.id)}
 				<span class="inline-flex items-center gap-1 rounded-full bg-bg-sunken py-0.5 pl-2 pr-1 text-sm text-fg">
-					<Avatar id={person.id} name={person.displayName} size={16} />
+					<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={16} />
 					{person.displayName}
 					<button
 						type="button"
@@ -327,6 +359,28 @@
 					</label>
 				</div>
 
+				{#if askForSomethingToKnowThemBy}
+					<KnowThemBy
+						firstName={draft.firstName}
+						compact
+						label={t('components.personSearch.description')}
+						bind:value={draft.description}
+						inputClass="rounded-control border border-border bg-card px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+					/>
+				{:else}
+					<!-- Worth asking for anyone new, not only a first name alone: it is what they are found by. -->
+					<label class="flex flex-col gap-1 text-xs text-fg-muted">
+						{t('components.personSearch.description')}
+						<input
+							bind:value={draft.description}
+							type="text"
+							autocomplete="off"
+							placeholder={t('components.namesake.placeholder')}
+							class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+						/>
+					</label>
+				{/if}
+
 				<details class="text-xs text-fg-muted">
 					<summary class="cursor-pointer">{t('components.personSearch.more')}</summary>
 					<div class="mt-2 grid grid-cols-2 gap-2">
@@ -378,7 +432,7 @@
 						type="button"
 						variant="primary"
 						size="sm"
-						disabled={saving}
+						disabled={saving || !isKnownByMoreThanAFirstName(draft)}
 						onclick={submitCreate}
 					>
 						{saving ? t('components.personSearch.submitting') : t('components.personSearch.submit')}
@@ -414,6 +468,7 @@
 					<li class="px-2.5 py-1.5 text-sm text-fg-subtle">{t('components.personSearch.empty')}</li>
 				{:else}
 					{#each matches as person, i (person.id)}
+						{@const namesakeLine = namesakes.get(person.id)}
 						<li role="none">
 							<button
 								type="button"
@@ -426,8 +481,11 @@
 								onmouseenter={() => (highlighted = i)}
 								class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
 							>
-								<Avatar id={person.id} name={person.displayName} size={22} />
-								<span class="truncate">{person.displayName}</span>
+								<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={22} />
+								<span class="min-w-0">
+									<span class="block truncate">{person.displayName}</span>
+									{#if namesakeLine}<NamesakeLine distinction={namesakeLine} />{/if}
+								</span>
 							</button>
 						</li>
 					{/each}

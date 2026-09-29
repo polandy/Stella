@@ -42,11 +42,20 @@ A few things worth knowing:
   moment*, so `⌘K`, `Enter` puts the cursor in the field. **`⌘⏎` / `Ctrl-⏎`** saves.
 - **On a phone**, tap the *What happened?* bar or the pencil in the middle of the bottom bar;
   the composer slides up over the stream.
-- **Someone new?** Just mention them. The suggestion list offers *Create "…"*, and the
-  person is created with the moment — no form, no detour.
+- **Two people with the same name?** The suggestion list says which is which (their
+  description, or where and when you met), and the one you pick is the one it means, even
+  though both read `@Thomas` in the text. A `@Thomas` typed without picking is not guessed:
+  a box under the text asks which one you mean, naming each the way the list does, and saving
+  waits until you pick one from the list.
+- **Someone new?** Just mention them. The suggestion list offers *Create "…"*, which asks
+  for a last name or, without one, a line to know them by, and the person is created with the
+  moment, no detour. If somebody already has that name, it offers *Create another "…"*.
 - **Photos** can be attached; they are resized in your browser before upload, which also
   strips location data out of them.
-- **The day** defaults to today. Change it if you are writing something down late.
+- **The day** defaults to today. Writing something down late? Tap *Today* and pick the day —
+  the last week is right there, *Another day…* opens a calendar for any earlier one.
+- **Two moments about the same person on the same day** end up in one journal entry, one
+  paragraph each. The second one is added; nothing you wrote earlier is replaced.
 
 ### Shared or private
 
@@ -99,6 +108,20 @@ family knowing, the rest of the household sees *"… removed …"* in the stream
 **Adding someone** takes a name and nothing else. Everything beyond that — description,
 phone, email, address, birthday — is optional and can be filled in whenever.
 
+If you only know a first name — the family you met at the mountain hut — Stella asks for a
+line to know them by, such as *SAC hut, Aug 2026* — a first name alone is not enough to add
+someone. It pays off: wherever you pick a person, and in the ⌘K search, two people with the same name show a
+second line with their description, or where and when you met them, so you can tell which
+Thomas is which. If you wrote neither, the line says how they are linked to someone you know —
+*Sibling of Sabine Keller*, or *Your sibling* — or a circle they are in, such as *Turnverein
+Muri · Coach*.
+
+People added before Stella asked, or brought in by an import, may still be just *Thomas*. The
+**Settings → Data quality → People known by a first name only** lists them; write what you know each one by and
+**Save**, and they leave the list. Where Stella already knows a link or a circle of theirs, the
+field starts out with it, ready to keep or change. If one turns out to be someone already here, open them to
+merge, and if you will never meet them again, archive them.
+
 As soon as you type a surname, Stella checks whether that person might already be here.
 An **Already in Stella?** box lists people with the same or a similar surname — someone
 with exactly the same name comes first, in case you are about to add them twice. Each name
@@ -137,7 +160,8 @@ ask for them with *Show earlier*.
 
 **The journal** is the writing half of that story, one entry per day. A moment written on Home
 lands here; *Write* on the person's page opens the full journal, where an entry can carry
-photos.
+photos. Writing on a day that already has your entry adds to it rather than replacing it; to
+change what is there, use *Edit* on the entry.
 
 **Photos** is the fourth tab: everything you have collected of that person in a grid, newest
 first, each one dated. *Add photos* takes several at once — each is shrunk in your browser
@@ -145,10 +169,17 @@ before it is uploaded, which also strips the location and camera details the fil
 and you choose there whether they are shared with the household or only yours.
 
 Click one and it opens large, with the date next to its caption. From there you can give it a
-caption, make it the person's photo, switch it between shared and private, or remove it. Only
-whoever added a photo can caption or remove it, but anyone who can see it can make it the
-person's photo. Removing one deletes the file for good and, if the person was wearing it, they
+caption, make it the person's photo, switch it between shared and private, or remove it.
+*Use as photo* first lets you choose the part that shows, as below; the photo stays one photo in
+the gallery, and choosing again — *Change framing* on the one they wear — starts from the part
+you chose last time. Only whoever added a photo can caption or remove it, but anyone who can
+see it can make it the person's photo. Removing one deletes the file for good and, if the person was wearing it, they
 go back to their initials. Escape closes the view and the arrow keys walk through the rest.
+
+To give someone a new photo straight away, click the round picture at the top of their page and
+pick an image. Before anything is uploaded you choose the part that shows: drag the picture
+inside the round frame and pinch, scroll or use the slider to zoom, then **Use photo**. Only that
+square is kept as their photo.
 
 Picking a new photo for someone who already had one never throws the old one away — it drops
 back into this grid, dated, and a small confirmation says so. Handy for someone whose face
@@ -228,8 +259,7 @@ written down. Pick the other person first, and any kind that cannot hold is **gr
 a line saying why**: somebody with a partnership that still holds gets no second one ("Not
 possible — already with Carl"), a pair that is already a couple gets no second kind of
 partnership, with the link in the way named as it reads on the page you are on ("Not possible —
-already Partner of Bert" — change that link instead), siblings Stella already works out from
-shared parents are not offered again, and nobody gets a third parent.
+already Partner of Bert" — change that link instead), and nobody gets a third parent.
 
 Family links themselves are never in each other's way. A godparent is often the grandfather
 too, so write down both — Stella takes two kinship links about the same two people as two
@@ -259,9 +289,15 @@ back, and Stella offers Undo for a moment in case that was hasty.
 
 From the few links you enter, Stella works out the rest and shows them under **Also
 related · worked out, not entered**: grandparents, aunts and uncles, cousins, in-laws,
-step-family. They are never stored and never invented — each says who it comes through, and
-anything you have entered yourself keeps your wording. Where a gender is on record the word
-follows it ("Grandmother"), otherwise it stays neutral ("Grandparent").
+step-family. They are never invented — each says who it comes through, and anything you have
+entered yourself keeps your wording. Where a gender is on record the word follows it
+("Grandmother"), otherwise it stays neutral ("Grandparent").
+
+They are not stored either, until you say so. **Confirm** on a row enters it as a link of its
+own — *Grandparent of*, *Cousin of*, *Aunt / uncle of* — so it moves up to the links you
+entered and stays, even if the people it was worked out through change later. A step relative
+has *Actually the child* (or *the parent*, *a sibling*) instead, for when the partner's child
+is also this person's own.
 
 Adding a parent or a sibling usually implies more of them. Stella asks rather than assumes:
 say Vreni is Lena's parent and an **Also true?** panel offers her as a parent of Lena's
@@ -275,12 +311,18 @@ answers. *Accept* stores the link. *Decline* tells Stella it is wrong, and it st
 offered — however it comes up again later. And leaving it alone does nothing at all, so there
 is never a reason to decline something just to clear the list.
 
+The check also lists the relatives Stella works out and that nobody has entered yet — the same
+ones that carry **Confirm** on the profile: *Corinne Keller is an aunt of Lena Brunner, worked
+out through Sandra Brunner-Keller* — gendered where the gender is on record, neutral otherwise. They come after the links that follow, and
+*Accept* enters them exactly as *Confirm* would. Declining one only stops the check asking: the
+profile still names the relative, because it follows from the links you entered.
+
 Declining is not final and is not private: it holds for everyone in the household, and what
 was declined stays one click away under **N declined suggestions**, with who said no and when,
 and *Offer again* to put it back.
 
 Going profile by profile only reaches the people you think to open, and most households have
-never opened most of theirs. **Settings → Check relationships** asks the same question about
+never opened most of theirs. **Settings → Data quality → Check relationships** asks the same question about
 everyone at once: it lists what follows from every link on record, grouped by the person each
 suggestion is about, with the same three answers on every row. Nothing is stored until you
 accept it, and a claim you have already answered is not offered again — so checking twice in a
@@ -524,6 +566,14 @@ one generation per row with the oldest at the top, and *By circle* gathers each 
 members around it. *Connection path* traces how two people are linked, and it always answers
 with the people in between rather than the worked-out shortcut — that is the point of asking.
 
+A big circle — a school class, a club — can bury the map under one line per member. Switch on
+*Group by role* in the *Filter* menu and everyone with the same role in a circle stands
+together in one framed group (*Pupil · 24*) on a single line to the circle. Links among the
+group's members stay visible (*Links within groups* turns them off), links between two groups
+become one line with a count, and a link to somebody outside still runs to the right person.
+Click a group to see who is in it, or *Show individually* to take just that one apart. Your
+browser remembers the switch.
+
 ## Signing out
 
 *Sign out* in the account menu ends your Stella session immediately. If your household
@@ -546,18 +596,34 @@ tap *Install* — after that Stella opens in its own window, without the browser
 across the top. Safari has no such button: use *Share → Add to Home Screen* instead, and the
 card in Settings says so.
 
-Once it is installed, the pages you have already opened stay readable when Stella cannot be
-reached — on the train, or simply away from home, since Stella runs on your own network and
+Once it is installed, the pages you have already opened — and Settings, always — stay
+readable when Stella cannot be reached — on the train, or simply away from home, since Stella runs on your own network and
 is not on the internet. A line above the page tells you when that is what you are looking
 at: what is showing came off your phone, so anything somebody added since is not on it, and
 the relationship map and search come up empty rather than pretending. Everything is there
 again the moment you are back.
 
-You cannot *add* anything while Stella is out of reach — no moments, no notes, no people.
-Offline Stella is something to read.
+You can still write a moment. Out of reach, the button says **Save for later**: the moment is
+kept on your phone and shows under the field as *Not sent yet*. Until it is sent you can
+change it or throw it away. Stella gets it by itself once it answers again, when you open the
+app or when your phone joins your home network, and it checks it as if you had written it
+there and then. If it cannot take it — someone you mentioned was deleted in the meantime —
+the moment stays as *Could not send*, with the reason, for you to fix; nothing you wrote is
+ever dropped quietly. Photos wait with the moment and follow it once it is in. A note you
+write on someone's page is kept the same way, and so is a call or visit, a tag or a circle, a
+phone number or other contact detail, a date, photos for their gallery, a relationship between
+two people and an entry on their journal page; they show where they will land until they are
+sent. A relationship is checked when it arrives, like any other. Even *Add person* works: the
+new person waits on your phone and is added once Stella answers again.
+
+At home nothing of this shows: what you save goes straight in. Only if the connection drops in
+the middle of saving does it turn into *Not sent yet*, and it is sent later like the rest —
+never twice.
 
 Signing out clears the pages your phone was keeping, so handing a device on does not hand on
-the household with it.
+the household with it. If moments you wrote are still waiting, Stella asks first whether to keep
+them or throw them away. Kept, they are yours: they are sent the next time you sign in, and
+nobody else signing in on that phone sees them.
 
 ## Light and dark
 

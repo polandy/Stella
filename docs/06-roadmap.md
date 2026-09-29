@@ -117,14 +117,47 @@ Goal: sand the edges and add the nice-to-haves.
 - **Change digests:** per-member frequency (daily/weekly/monthly), delivered by email
   and/or signed webhook (HTTP POST). Needs a background scheduler + SMTP config (docs/04).
 - **Graph & UX polish:** "haven't seen in a while" hints, photo reordering, saved graph
-  filters, density/appearance refinements. *Idea, unspecced:* an arrangement that groups
-  people by their role (e.g. within a circle), alongside the existing free/tree/by-circle
-  arrangements (§2.7, docs/05 §5.8).
-- *Idea, unspecced:* **photos in every person picker** — search results wherever people are
-  found and picked (Circles' *Add member*, `PersonSearchSelect`, …) show the initials circle
-  even when the person has a photo, because the suggestion data doesn't carry `avatarPhotoId`
-  yet (`Avatar.svelte` only falls back to initials when it's missing). Thread the photo id
-  through so a person is recognisable at a glance there too.
+  filters, density/appearance refinements. ~~Group a circle's members by role~~ — shipped:
+  a *Group by role* switch in the explorer's Filter menu (§2.7).
+- ~~**Photos in every person picker**~~ — shipped (docs/05 §5.10): search results, the person
+  pickers (Circles' *Add member*, the relationship form, …) and the @-lists show a person's
+  photo instead of their initials whenever they have one.
+- *TODO, concept first:* **context hints for people without a last name** — some people are
+  only known by first name and where they belong, so a search result for them should say who
+  they are: *Sister of Hans Meyer*, *in the circle Class 9a*. ~~Description and where/when
+  met~~ — shipped as the namesake line in ⌘K and the person pickers, with a nudge for a
+  description when someone is added without a last name (§2.2.3). ~~**Relationship and
+  circle** as further fallbacks~~ — shipped (§2.2.3, `docs/concepts/namesake-context.html`):
+  read per viewer through the access layer, a link to another namesake skipped, and the
+  clean-up list filled in from them, and in the refusal of a typed `@Thomas`. The relationship form
+  fills a new person's description in from the link (*Child of Hans Meyer*), as plain text. ~~The **@-picker**~~ — shipped: the second line there too, the pick remembered as
+  the person's id, and a typed `@Thomas` that is two people refused with their names
+  (§2.2.3, `docs/concepts/mention-namesakes.html`).
+- ~~**Tidy up people known by a first name only**~~ — shipped (§2.2.3): *Settings → Data
+  quality* lists everyone with a first name and nothing else to tell them
+  apart, each with a description field; merge and archive stay on their page.
+- ~~**Adding to Stella while it is out of reach**~~ — shipped (§2.18): every adding form
+  saves as a named command, idempotent by its id, through an outbox on the phone. Away from
+  home it keeps what is added, photos included, editable or discardable until sent, and
+  sends it once Stella answers again; the server re-checks everything on arrival. Nothing
+  others have seen is changed offline, so there is nothing to merge. Event sourcing and full
+  offline sync were weighed and rejected (docs/04 §4.9); the decisions taken along the way
+  are in `docs/concepts/offline-capture.md` §8.
+- ~~**A simpler day in the *What happened?* composer**~~ — shipped (§2.22.1): a *Today* pill
+  beside *Shared* and *Photo* offers the last week in one tap and a month calendar for
+  anything older. Chosen from four mockups over always-visible chips, a day stepper and a
+  week strip, because it takes no room while today is meant (docs/05 §5.7).
+- ~~**Confirm a worked-out relationship to store it**~~ — shipped (§2.4.1): every non-step
+  row in *Also related · worked out, not entered* carries *Confirm*, which stores it as one of
+  the new built-in family types (great-grandparent, half-sibling, aunt/uncle, cousin,
+  parent-in-law, sibling-in-law; grandparent and sibling already existed). The refusal of a
+  hand-entered sibling Stella already works out is gone with it. A confirmed link reads like
+  any entered one and no longer says *via* whom it was worked out. Both *Check relationships*
+  lists offer the same claims (rule K1), after what follows from an entry.
+- *TODO:* **fold imported custom family types into the built-ins** — a Monica import
+  (docs/monica-mapping.md) creates the household's own *Cousin of* and *Uncle/aunt of*, which
+  now sit beside the built-in `cousin` and `aunt_uncle_niece_nephew` in the picker. Map them
+  to the built-ins on import, and offer existing households a one-off merge.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.

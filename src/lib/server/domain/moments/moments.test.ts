@@ -2,7 +2,9 @@ import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
 import type { Contact, ContactSummary, NewContact } from '../contacts/contacts';
 import type { JournalAuthor, JournalEntry, NewJournalEntry } from '../journal/journal';
-import { MomentNeedsPersonError, audienceCandidates, captureMoment, type CaptureMomentDeps } from './moments';
+import { NeedsSomethingToKnowThemByError } from '../contacts/contacts';
+import { AmbiguousMentionError } from '../mentions/resolve-for-audience';
+import { MomentNeedsPersonError, captureMoment, type CaptureMomentDeps } from './moments';
 
 /*
  * Moment capture (docs/02 §2.22.1). A moment is a journal entry anchored on the first person
@@ -21,6 +23,8 @@ function summary(c: NewContact): ContactSummary {
 		lastName: c.lastName,
 		nickname: c.nickname,
 		description: c.description,
+		metPlace: c.metPlace ?? null,
+		metDate: c.metDate ?? null,
 		visibility: c.visibility,
 		avatarPhotoId: null,
 		birthDate: c.birthDate ?? null
@@ -155,20 +159,29 @@ describe('captureMoment', () => {
 		expect(f.mentions.get(result.entryId)).toEqual(['marco']);
 	});
 
-	it('creates a queued person inline, then resolves the handle to them', async () => {
+	it('creates a name an older build queued by its handle, when it is a whole name', async () => {
 		const f = fakes([{ id: 'marco', displayName: 'Marco' }]);
 		const result = await captureMoment(f.deps, author, {
 			...base,
-			body: '@Julia is @Marco’s sister',
-			newPeople: ['Julia']
+			body: '@JuliaMeier is @Marco’s sister',
+			newPeople: ['Julia Meier']
 		});
 
 		expect(result.createdContactIds).toHaveLength(1);
-		const julia = f.contacts.find((c) => c.displayName === 'Julia')!;
+		const julia = f.contacts.find((c) => c.displayName === 'Julia Meier')!;
 		expect(julia.createdBy).toBe('u1');
 		expect(julia.visibility).toBe('shared');
 		expect(result.anchorContactId).toBe(julia.id);
 		expect(f.entries[0].body).toBe(`@{contact:${julia.id}} is @{contact:marco}’s sister`);
+	});
+
+	it('refuses a bare first name an older build queued, saving nothing (docs/02 §2.2.3)', async () => {
+		const f = fakes([{ id: 'marco', displayName: 'Marco' }]);
+		await expect(
+			captureMoment(f.deps, author, { ...base, body: '@Julia is @Marco’s sister', newPeople: ['Julia'] })
+		).rejects.toBeInstanceOf(NeedsSomethingToKnowThemByError);
+		expect(f.contacts).toHaveLength(1);
+		expect(f.entries).toHaveLength(0);
 	});
 
 	it('creates queued people only if they are mentioned and not already someone visible', async () => {
@@ -193,6 +206,46 @@ describe('captureMoment', () => {
 		expect(f.entries).toHaveLength(0);
 	});
 
+	it('asks which one when a typed handle is two people, creating and saving nothing', async () => {
+		const f = fakes([
+			{ id: 'thomas-hut', displayName: 'Thomas', firstName: 'Thomas' },
+			{ id: 'thomas-lenk', displayName: 'Thomas', firstName: 'Thomas' }
+		]);
+		await expect(
+			captureMoment(f.deps, author, { ...base, body: 'Hut with @Thomas and @Julia', newPeople: ['Julia'] })
+		).rejects.toBeInstanceOf(AmbiguousMentionError);
+		expect(f.contacts).toHaveLength(2);
+		expect(f.entries).toHaveLength(0);
+	});
+
+	it('creates a person named in the moment with their description, beside a namesake already there', async () => {
+		const f = fakes([{ id: 'thomas-hut', displayName: 'Thomas', firstName: 'Thomas' }]);
+		const result = await captureMoment(f.deps, author, {
+			...base,
+			body: 'Met @{contact:new:k1} at the lake, not @{contact:thomas-hut}',
+			newPeople: [
+				{ key: 'k1', firstName: 'Thomas', lastName: null, description: 'Swims at the Marzili' },
+				{ key: 'k2', firstName: 'Unused', lastName: null, description: null }
+			]
+		});
+
+		expect(result.createdContactIds).toHaveLength(1);
+		const created = f.contacts.find((c) => c.id === result.createdContactIds[0])!;
+		expect(created).toMatchObject({ displayName: 'Thomas', firstName: 'Thomas', description: 'Swims at the Marzili', visibility: 'shared' });
+		expect(result.anchorContactId).toBe(created.id);
+		expect(f.entries[0].body).toBe(`Met @{contact:${created.id}} at the lake, not @{contact:thomas-hut}`);
+		expect(f.contacts.some((c) => c.firstName === 'Unused')).toBe(false);
+	});
+
+	it('lands a picked namesake in their own journal, by the id the picker wrote', async () => {
+		const f = fakes([
+			{ id: 'thomas-hut', displayName: 'Thomas', firstName: 'Thomas' },
+			{ id: 'thomas-lenk', displayName: 'Thomas', firstName: 'Thomas' }
+		]);
+		const result = await captureMoment(f.deps, author, { ...base, body: 'Coffee with @{contact:thomas-lenk}' });
+		expect(result.anchorContactId).toBe('thomas-lenk');
+	});
+
 	it('does not let a shared moment reference a private person', async () => {
 		const f = fakes([
 			{ id: 'secret', displayName: 'Sam', visibility: 'private', createdBy: 'u1' },
@@ -208,12 +261,46 @@ describe('captureMoment', () => {
 		const result = await captureMoment(f.deps, author, {
 			...base,
 			visibility: 'private',
-			body: '@Sam and @Kim',
-			newPeople: ['Kim']
+			body: '@Sam and @{contact:new:k1}',
+			newPeople: [{ key: 'k1', firstName: 'Kim', lastName: null, description: 'From yoga' }]
 		});
 		expect(result.anchorContactId).toBe('secret');
 		expect(f.contacts.find((c) => c.displayName === 'Kim')!.visibility).toBe('private');
 		expect(f.entries[0].visibility).toBe('private');
+	});
+
+	it('appends a second moment about the same person on the same day instead of replacing the first', async () => {
+		const f = fakes([
+			{ id: 'julia', displayName: 'Julia' },
+			{ id: 'marco', displayName: 'Marco' },
+			{ id: 'lena', displayName: 'Lena' }
+		]);
+		const first = await captureMoment(f.deps, author, { ...base, body: 'Met @Julia with @Marco' });
+		f.entries[0].title = 'Lake day';
+		const second = await captureMoment(f.deps, author, { ...base, body: '@Julia called, @Lena says hi' });
+
+		expect(second.entryId).toBe(first.entryId);
+		expect(f.entries).toHaveLength(1);
+		expect(f.entries[0].body).toBe(
+			'Met @{contact:julia} with @{contact:marco}\n\n@{contact:julia} called, @{contact:lena} says hi'
+		);
+		expect(f.entries[0].title).toBe('Lake day');
+		expect(f.mentions.get(first.entryId)).toEqual(['marco', 'lena']);
+		// The result still describes the moment just written, not the whole day.
+		expect(second.mentionedContactIds).toEqual(['lena']);
+	});
+
+	it('keeps moments on other days or with another visibility in their own entries', async () => {
+		const f = fakes([{ id: 'julia', displayName: 'Julia' }]);
+		await captureMoment(f.deps, author, { ...base, body: 'Lunch with @Julia' });
+		await captureMoment(f.deps, author, { ...base, entryDate: '2026-09-04', body: 'Tea with @Julia' });
+		await captureMoment(f.deps, author, { ...base, visibility: 'private', body: 'Worried about @Julia' });
+
+		expect(f.entries.map((e) => e.body)).toEqual([
+			'Lunch with @{contact:julia}',
+			'Tea with @{contact:julia}',
+			'Worried about @{contact:julia}'
+		]);
 	});
 
 	it('offers no link when only one person is involved', async () => {
@@ -221,16 +308,5 @@ describe('captureMoment', () => {
 		const result = await captureMoment(f.deps, author, { ...base, body: 'Coffee with @Marco' });
 		expect(result.linkSuggestion).toBeNull();
 		expect(f.mentions.get(result.entryId)).toEqual([]);
-	});
-});
-
-describe('audienceCandidates', () => {
-	const all: ContactSummary[] = [
-		{ id: 'a', displayName: 'A', firstName: null, lastName: null, nickname: null, description: null, visibility: 'shared', avatarPhotoId: null, birthDate: null },
-		{ id: 'b', displayName: 'B', firstName: null, lastName: null, nickname: null, description: null, visibility: 'private', avatarPhotoId: null, birthDate: null }
-	];
-	it('limits a shared entry to household-visible people, a private one to everyone visible', () => {
-		expect(audienceCandidates(all, 'shared').map((c) => c.id)).toEqual(['a']);
-		expect(audienceCandidates(all, 'private').map((c) => c.id)).toEqual(['a', 'b']);
 	});
 });

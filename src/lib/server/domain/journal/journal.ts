@@ -100,6 +100,13 @@ export interface JournalDeps {
 	clock: Clock;
 }
 
+/** What writing into a day slot needs — the narrow part of `JournalDeps`. */
+export interface JournalDayDeps {
+	journal: Pick<JournalRepository, 'findDay' | 'insert' | 'updateBody' | 'replaceMentions' | 'listMentionedContactIds'>;
+	ids: IdGenerator;
+	clock: Clock;
+}
+
 export interface SaveJournalEntryInput {
 	contactId: string;
 	entryDate: string;
@@ -122,7 +129,7 @@ const orNull = (value?: string | null): string | null => {
  * contact is visible to the author.
  */
 export async function saveJournalEntry(
-	deps: Pick<JournalDeps, 'journal' | 'ids' | 'clock'>,
+	deps: JournalDayDeps,
 	author: JournalAuthor,
 	input: SaveJournalEntryInput
 ): Promise<string> {
@@ -235,7 +242,7 @@ export async function listJournalPage(
  * drops any self-reference before calling this. Rebuilds the entry's mention links wholesale.
  */
 export async function setJournalMentions(
-	deps: Pick<JournalDeps, 'journal'>,
+	deps: { journal: Pick<JournalRepository, 'replaceMentions'> },
 	journalEntryId: string,
 	contactIds: string[]
 ): Promise<void> {
@@ -258,4 +265,52 @@ export async function deleteJournalEntry(
 		await deps.media.delete(file.thumbPath);
 	}
 	return true;
+}
+
+/** Text for one day slot, its mentions already resolved to the people it names. */
+export interface JournalDayAddition {
+	contactId: string;
+	entryDate: string;
+	visibility: Visibility;
+	title: string | null;
+	/** Markdown with canonical mention tokens. */
+	body: string;
+	/** Who else it names; merged with the slot's existing mentions. */
+	mentionIds: string[];
+}
+
+/**
+ * What the journal page and a moment both write (§2.20, §2.22.1): `addition` becomes a new
+ * entry in its day slot, or is appended to the one already there. An existing title is kept;
+ * an untitled day takes the new one. Returns the entry's id.
+ */
+export async function addToJournalDay(
+	deps: JournalDayDeps,
+	author: JournalAuthor,
+	addition: JournalDayAddition
+): Promise<string> {
+	const body = addition.body.trim();
+	if (body.length === 0) throw new Error('A journal entry needs some content.');
+	const sameDay = await deps.journal.findDay({
+		authorId: author.userId,
+		contactId: addition.contactId,
+		entryDate: addition.entryDate,
+		visibility: addition.visibility
+	});
+	if (!sameDay) {
+		const entryId = await saveJournalEntry(deps, author, addition);
+		await setJournalMentions(deps, entryId, addition.mentionIds);
+		return entryId;
+	}
+	await deps.journal.updateBody({
+		id: sameDay.id,
+		title: sameDay.title ?? addition.title,
+		body: `${sameDay.body}\n\n${body}`,
+		updatedAt: deps.clock.now()
+	});
+	await setJournalMentions(deps, sameDay.id, [
+		...(await deps.journal.listMentionedContactIds(sameDay.id)),
+		...addition.mentionIds
+	]);
+	return sameDay.id;
 }

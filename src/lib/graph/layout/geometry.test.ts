@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { bowsAround, shelve, type Point, type Size } from './geometry';
+import { bowsAround, shelve, spreadCoincident, type Point, type Size } from './geometry';
 
 /*
  * The shared geometry of the arrangements (docs/05 §5.8): shelving by real width, and bending
@@ -82,5 +82,44 @@ describe('bowsAround', () => {
 		]);
 
 		expect(bowsAround(positions, line, small, 10).size).toBe(0);
+	});
+});
+
+describe('spreadCoincident', () => {
+	const origin = { x: 0, y: 0 };
+
+	it('sets everyone sharing one spot apart, a spacing from each other at least', () => {
+		const spread = spreadCoincident(
+			new Map(['a', 'b', 'c', 'd', 'e'].map((id) => [id, origin])),
+			90
+		);
+		const at = [...spread.values()];
+
+		for (let i = 0; i < at.length; i++) {
+			for (let j = i + 1; j < at.length; j++) {
+				expect(Math.hypot(at[i].x - at[j].x, at[i].y - at[j].y)).toBeGreaterThanOrEqual(90);
+			}
+		}
+	});
+
+	it('leaves whoever stands alone where they are', () => {
+		const spread = spreadCoincident(
+			new Map([
+				['a', origin],
+				['b', origin],
+				['alone', { x: 500, y: 300 }]
+			]),
+			90
+		);
+
+		expect(spread.get('alone')).toEqual({ x: 500, y: 300 });
+	});
+
+	it('gives each person the same spot however the map was handed over', () => {
+		const ids = ['mia', 'elias', 'beat', 'sandra'];
+		const forwards = spreadCoincident(new Map(ids.map((id) => [id, origin])), 90);
+		const backwards = spreadCoincident(new Map([...ids].reverse().map((id) => [id, origin])), 90);
+
+		for (const id of ids) expect(backwards.get(id), id).toEqual(forwards.get(id)!);
 	});
 });

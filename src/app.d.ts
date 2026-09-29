@@ -13,7 +13,10 @@ declare global {
 			locale: Locale;
 		}
 		// interface PageData {}
-		// interface PageState {}
+		interface PageState {
+			/** The phone's composer sheet, opened without a round trip (docs/02 §2.22.1). */
+			compose?: boolean;
+		}
 		// interface Platform {}
 	}
 }

@@ -1,5 +1,7 @@
 import type { IconName } from '$lib/components/icons';
 import { matchesQuery, startsWithQuery } from '$lib/people/directory';
+import type { PersonContext } from '$lib/people/context';
+import { tellApart, type Distinction } from '$lib/people/namesakes';
 
 /*
  * The command palette (docs/05 §5.4): the rows ⌘K shows for a query. The first row on an
@@ -11,7 +13,10 @@ import { matchesQuery, startsWithQuery } from '$lib/people/directory';
  * pure and language-free, and the component hands it the viewer's language (docs/02 §2.19).
  */
 
-/** A person as the palette needs them: names to match on, an avatar to draw. */
+/**
+ * A person as the palette needs them: names to match on, an avatar to draw, and what tells
+ * them apart from a namesake (docs/02 §2.2.3).
+ */
 export interface PalettePerson {
 	id: string;
 	displayName: string;
@@ -19,12 +24,23 @@ export interface PalettePerson {
 	lastName: string | null;
 	nickname: string | null;
 	avatarPhotoId: string | null;
+	description?: string | null;
+	metPlace?: string | null;
+	metDate?: string | null;
 }
 
 /** One row of the palette; `href` is where Enter goes. */
 export type PaletteRow =
 	| { kind: 'action'; id: string; label: string; icon: IconName; href: string }
-	| { kind: 'person'; id: string; label: string; avatarPhotoId: string | null; href: string }
+	| {
+			kind: 'person';
+			id: string;
+			label: string;
+			avatarPhotoId: string | null;
+			/** The second line, only when someone else in the household shares the name. */
+			distinction: Distinction | null;
+			href: string;
+	  }
 	| { kind: 'search'; id: 'search'; label: string; icon: IconName; href: string };
 
 /** Most people shown at once; the query narrows the rest. */
@@ -51,7 +67,9 @@ const ACTIONS: readonly { id: string; label: ActionLabel; icon: IconName; href: 
 export function paletteRows(
 	query: string,
 	people: PalettePerson[],
-	labels: PaletteLabels
+	labels: PaletteLabels,
+	/** What the namesake line falls back on, by person (docs/02 §2.2.3). */
+	contexts: ReadonlyMap<string, PersonContext> = new Map()
 ): PaletteRow[] {
 	const q = query.trim();
 	const rows: PaletteRow[] = [];
@@ -63,13 +81,22 @@ export function paletteRows(
 		}
 	}
 
+	const namesakes = tellApart(people, contexts);
 	const found = people
+		// Matched by name only; the description is shown, not searched — full search reads it.
 		.map((p) => ({ ...p, description: null }))
 		.filter((p) => matchesQuery(p, q))
 		.sort((a, b) => Number(startsWithQuery(b, q)) - Number(startsWithQuery(a, q)))
 		.slice(0, PALETTE_PEOPLE_LIMIT);
 	for (const p of found) {
-		rows.push({ kind: 'person', id: p.id, label: p.displayName, avatarPhotoId: p.avatarPhotoId, href: `/contacts/${p.id}` });
+		rows.push({
+			kind: 'person',
+			id: p.id,
+			label: p.displayName,
+			avatarPhotoId: p.avatarPhotoId,
+			distinction: namesakes.get(p.id) ?? null,
+			href: `/contacts/${p.id}`
+		});
 	}
 
 	if (q !== '') {

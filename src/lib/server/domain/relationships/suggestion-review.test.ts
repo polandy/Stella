@@ -90,9 +90,18 @@ function deps(graph: KinshipGraph = family(), log: Dismissal[] = []) {
 	return it;
 }
 
-/** Suggestions as `[from, to, when-declined]`, ignoring the rule and the sentence. */
-const shape = (found: { fromId: string; toId: string; dismissed: { at: number } | null }[]) =>
-	found.map((s) => [s.fromId, s.toId, s.dismissed?.at ?? null]);
+/**
+ * The claims that *follow* (L1, L2) as `[from, to, when-declined]`, ignoring the sentence. The
+ * worked-out relatives a review also offers (K1) have their own cases, so these stay about the
+ * claims they were written for.
+ */
+const shape = (
+	found: { ruleId: string; fromId: string; toId: string; dismissed: { at: number } | null }[]
+) => found.filter((s) => s.ruleId !== 'K1').map((s) => [s.fromId, s.toId, s.dismissed?.at ?? null]);
+
+/** The worked-out claims (K1) as `[relation, from, to]`. */
+const workedOut = (found: { ruleId: string; relation: string; fromId: string; toId: string }[]) =>
+	found.filter((s) => s.ruleId === 'K1').map((s) => [s.relation, s.fromId, s.toId]);
 
 describe('reviewPerson', () => {
 	/*
@@ -109,6 +118,14 @@ describe('reviewPerson', () => {
 			'Wing Kam is a parent of Andy, and Andy and Steve are siblings.'
 		);
 		expect(d.asked).toEqual([viewer, viewer]);
+	});
+
+	it('offers the relatives Stella works out for entering too, after what follows', async () => {
+		// Andy and Linda share Wing Kam: siblings nobody entered. Steve's entered sibling link
+		// to Andy is what makes Wing Kam's claim follow — and that one comes first.
+		const found = await reviewPerson(deps(), viewer, 'linda');
+		expect(workedOut(found)).toEqual([['sibling', 'linda', 'andy']]);
+		expect(found.at(-1)).toMatchObject({ ruleId: 'K1', fromName: 'Linda', toName: 'Andy' });
 	});
 
 	it('says nothing about someone the viewer’s graph does not contain', async () => {
@@ -167,6 +184,11 @@ describe('reviewHousehold', () => {
 		expect(d.asked).toEqual([viewer, viewer]);
 	});
 
+	it('offers the worked-out relatives of everyone too, each pair once', async () => {
+		// Andy and Linda share Wing Kam — siblings nobody entered, reached from both ends.
+		expect(workedOut(await reviewHousehold(deps(), viewer))).toEqual([['sibling', 'andy', 'linda']]);
+	});
+
 	it('names the people, so the interface can phrase the claim', async () => {
 		const [first] = await reviewHousehold(deps(), viewer);
 		expect(first).toMatchObject({ fromName: 'Wing Kam', toName: 'Steve', relation: 'parent' });
@@ -177,7 +199,7 @@ describe('reviewHousehold', () => {
 
 	it('leaves out a claim the household declined, and lists it when asked', async () => {
 		const log = [declinedClaim()];
-		expect(await reviewHousehold(deps(family(), log), viewer)).toEqual([]);
+		expect(shape(await reviewHousehold(deps(family(), log), viewer))).toEqual([]);
 		expect(shape(await reviewHousehold(deps(family(), log), viewer, { includeDismissed: true }))).toEqual([
 			['wingkam', 'steve', 42]
 		]);

@@ -10,6 +10,8 @@ export interface ContactHit {
 	id: string;
 	displayName: string;
 	description: string | null;
+	/** So a result shows the person's face rather than their initials (docs/02 §2.9). */
+	avatarPhotoId: string | null;
 }
 
 export interface NoteHit {

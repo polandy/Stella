@@ -1,5 +1,51 @@
 # Changelog
 
+## [0.0.19-rc.2](https://github.com/polandy/Stella/compare/v0.0.19-rc.1...v0.0.19-rc.2) (2026-09-29)
+
+
+### Features
+
+* **people:** tell namesakes apart and ask for a description when there is no last name ([#159](https://github.com/polandy/Stella/issues/159)) ([028c7c1](https://github.com/polandy/Stella/commit/028c7c13d040c02224dea608c238f6e0249a1efc))
+
+
+### Bug Fixes
+
+* **people:** keep the Add a person fields inside the card on a phone ([#163](https://github.com/polandy/Stella/issues/163)) ([9b78312](https://github.com/polandy/Stella/commit/9b78312c0250b79915ea90f7351c0b0f9d84a55d))
+* **pwa:** keep pages readable offline and stop waiting on a network that never answers ([#162](https://github.com/polandy/Stella/issues/162)) ([cbf3e43](https://github.com/polandy/Stella/commit/cbf3e430cadc0db44552968f13ae972efffdca46))
+* **release:** read a release candidate's version so its update check stays on ([#160](https://github.com/polandy/Stella/issues/160)) ([1ee7e13](https://github.com/polandy/Stella/commit/1ee7e13523a527cb4221cb9db319efb310a93b0e))
+
+## [0.0.19-rc.1](https://github.com/polandy/Stella/compare/v0.0.18...v0.0.19-rc.1) (2026-09-28)
+
+
+### Features
+
+* keep additions on the phone while Stella is out of reach ([#153](https://github.com/polandy/Stella/issues/153)) ([afb3b19](https://github.com/polandy/Stella/commit/afb3b19feecee95501aaa1d21dddea4a69481398))
+
+
+### Bug Fixes
+
+* **moments:** append a second same-day moment instead of replacing the first ([#154](https://github.com/polandy/Stella/issues/154)) ([e0c9869](https://github.com/polandy/Stella/commit/e0c98699e715c02f36a18c0736aeb7a8f984af83))
+
+
+### Continuous Integration
+
+* cut release candidates without reaching latest ([#158](https://github.com/polandy/Stella/issues/158)) ([f047e5b](https://github.com/polandy/Stella/commit/f047e5b2155a92612681a877c5bf673ab630ebdf))
+
+## [0.0.18](https://github.com/polandy/Stella/compare/v0.0.17...v0.0.18) (2026-09-27)
+
+
+### Features
+
+* **graph:** group a circle's members by role ([#151](https://github.com/polandy/Stella/issues/151)) ([8a62100](https://github.com/polandy/Stella/commit/8a62100443f352d4d815dd4af7ebe69328d8a1f1))
+
+
+### Bug Fixes
+
+* **circles:** keep the selection bar, its dropdown and toasts clear of the mobile tab bar ([677b6bd](https://github.com/polandy/Stella/commit/677b6bd0bbff41294963e3635b3290510d854dd0))
+* **e2e:** stop the canvas-tap flake in person-map.spec.ts ([80d6a4b](https://github.com/polandy/Stella/commit/80d6a4bda9bcbac7fd14fba8ec04b42582f0c85c))
+* **graph:** touch full screen only leaves via its own button ([2834856](https://github.com/polandy/Stella/commit/28348561407dbe9bf1f2dbbdb6d8a285403deafe))
+* tune the map, the peek panel and the relationships card for a phone ([#152](https://github.com/polandy/Stella/issues/152)) ([782f778](https://github.com/polandy/Stella/commit/782f77822436342d83e7047e5f236b7dda2b9a6d))
+
 ## [0.0.17](https://github.com/polandy/Stella/compare/v0.0.16...v0.0.17) (2026-09-22)
 
 

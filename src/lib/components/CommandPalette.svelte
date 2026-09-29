@@ -2,8 +2,10 @@
 	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { paletteRows, type PalettePerson } from '$lib/palette/palette';
+	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tick } from 'svelte';
 
 	/*
@@ -25,12 +27,18 @@
 	let selected = $state(0);
 
 	const t = useTranslate();
+	const peopleContext = usePeopleContext();
 	const rows = $derived(
-		paletteRows(query, people, {
-			write: t('components.palette.write'),
-			addPerson: t('components.palette.addPerson'),
-			searchEverything: (q) => t('components.palette.searchEverything', { query: q })
-		})
+		paletteRows(
+			query,
+			people,
+			{
+				write: t('components.palette.write'),
+				addPerson: t('components.palette.addPerson'),
+				searchEverything: (q) => t('components.palette.searchEverything', { query: q })
+			},
+			peopleContext()
+		)
 	);
 
 	$effect(() => {
@@ -114,7 +122,14 @@
 					{:else}
 						<span class="grid size-6 place-items-center text-fg-subtle"><Icon name={row.icon} size={15} /></span>
 					{/if}
-					<span class="truncate">{row.label}</span>
+					{#if row.kind === 'person' && row.distinction}
+						<span class="min-w-0">
+							<span class="block truncate">{row.label}</span>
+							<NamesakeLine distinction={row.distinction} />
+						</span>
+					{:else}
+						<span class="truncate">{row.label}</span>
+					{/if}
 					{#if row.kind !== 'person'}<span class="ml-auto text-xs text-fg-subtle">{row.kind === 'search' ? t('components.palette.kindSearch') : t('components.palette.kindAction')}</span>{/if}
 				</a>
 			</li>

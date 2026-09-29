@@ -124,6 +124,23 @@ test('expanding moves nobody already on the map, and arranging it freely re-arra
 	expect(moved.length).toBeGreaterThan(0);
 });
 
+test('draws the same map on every visit', async ({ page }) => {
+	// Rounded to the pixel: the same people in the same places, not the same floating point.
+	const visit = async () => {
+		await page.goto('/graph?center=demo-c-lena');
+		await settled(page);
+		return [...(await arrangement(page))]
+			.map(([id, at]) => `${id} ${Math.round(at.x)},${Math.round(at.y)}`)
+			.sort();
+	};
+
+	const first = await visit();
+	// A map of several people: one person alone would be the same map by default.
+	expect(first.length).toBeGreaterThan(5);
+	expect(await visit()).toEqual(first);
+	expect(await visit()).toEqual(first);
+});
+
 test('Tree sets each generation on a row of its own and bends the lines that would cross somebody', async ({
 	page
 }) => {
@@ -265,9 +282,11 @@ test('keeps the suggested names on top when the toolbar wraps under the search f
 	const list = page.getByTestId('graph-suggestions');
 	await expect(list.getByRole('button', { name: 'Hans Brunner' })).toBeVisible();
 
-	// The toolbar's pills have to overlap the list here, or the rest of this proves nothing.
+	// The toolbar's second row has to overlap the list here, or the rest of this proves nothing.
+	// On a phone Filter and Arrange share the field's row (docs/05 §5.8); the connection path
+	// starts the row below it.
 	const fieldBox = await field.boundingBox();
-	const chipBox = await page.getByRole('button', { name: /^Filter/ }).boundingBox();
+	const chipBox = await page.getByRole('button', { name: 'Connection path' }).boundingBox();
 	const listBox = await list.boundingBox();
 	if (!fieldBox || !chipBox || !listBox) throw new Error('the toolbar has no layout');
 	expect(chipBox.y).toBeGreaterThan(fieldBox.y + fieldBox.height);

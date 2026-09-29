@@ -58,6 +58,25 @@ describe('generationsOf', () => {
 		expect(generations.get('lena')).toBe(generations.get('otto')! + 2);
 	});
 
+	it('places the confirmed kinship types as far apart as the terms they confirm', () => {
+		// A confirmed term replaces its dotted line, so it has to place people just as well.
+		const offsetOf = (typeKey: string) => {
+			const generations = generationsOf(model(['a', 'b'], [stored('a', 'b', typeKey)]));
+			return generations.get('b')! - generations.get('a')!;
+		};
+
+		expect(
+			[
+				'great_grandparent_great_grandchild',
+				'aunt_uncle_niece_nephew',
+				'parent_in_law_child_in_law',
+				'half_sibling',
+				'cousin',
+				'sibling_in_law'
+			].map(offsetOf)
+		).toEqual([3, 1, 1, 0, 0, 0]);
+	});
+
 	it('places a relative only the worked-out kinship ties to the map', () => {
 		// Timo's parents are not on the canvas, only the dotted cousin line to Lena is.
 		const generations = generationsOf(

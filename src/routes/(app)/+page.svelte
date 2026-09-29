@@ -1,11 +1,18 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, pushState } from '$app/navigation';
+	import { page } from '$app/state';
 	import { MediaQuery } from 'svelte/reactivity';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
+	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
+	import { dayLabel as calendarDayLabel } from '$lib/dates/labels';
+	import { outbox } from '$lib/pwa/outbox.svelte';
+	import { isKept, type KeptOf } from '$lib/pwa/outbox';
+	import KeptItem from '$lib/components/KeptItem.svelte';
+	import { contactSectionPath } from '$lib/contacts/sections';
 	import { agoLabel, occasionLabel, whenLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { relationshipRowLabel } from '$lib/relationships/labels';
@@ -102,24 +109,62 @@
 	// and survives a reload, and there is nothing to keep in sync with the tab bar.
 	// Below `md` the composer lives in the sheet; above it, at the top of the stream. One of
 	// them is mounted at a time, so there is exactly one "What happened?" field on the page.
+	// The kept moment open in the composer, if any (see below).
+	let editing = $state<KeptOf<'moment.capture'> | null>(null);
+
+	// The sheet also opens as shallow state (`page.state.compose`): that needs no server round
+	// trip, so the pencil still works while Stella is out of reach.
 	const phone = new MediaQuery('(width < 48rem)');
-	const sheetOpen = $derived(data.compose && phone.current);
+	const sheetOpen = $derived(
+		(data.compose || page.state.compose === true || page.url.searchParams.has('compose') || editing !== null) &&
+			phone.current
+	);
+	function openSheet(event: MouseEvent) {
+		event.preventDefault();
+		pushState('/?compose', { compose: true });
+	}
 	function closeSheet() {
+		if (editing) return void stopEditing();
+		if (page.state.compose) return history.back();
 		void goto('/', { replaceState: true, noScroll: true });
+	}
+
+	/*
+	 * Moments kept on this device while Stella was out of reach (docs/concepts/offline-capture.md
+	 * §4), shown where they will land: at the top of the stream, marked as not sent yet. One can
+	 * be opened in the composer until it is on its way; discarding asks twice, because the
+	 * device holds the only copy.
+	 */
+	async function edit(item: KeptOf<'moment.capture'>) {
+		if (!(await outbox.hold(item.command.id))) return;
+		const held = outbox.mine.find((i) => i.command.id === item.command.id);
+		editing = held && isKept(held, 'moment.capture') ? held : null;
+	}
+	async function stopEditing() {
+		const item = editing;
+		editing = null;
+		if (item) await outbox.release(item.command.id);
+	}
+	/** The day a kept moment is about, read the reader's way. */
+	function keptDay(iso: string): string {
+		return new Date(`${iso}T12:00:00`).toLocaleDateString(i18n.intlLocale, { day: 'numeric', month: 'long' });
 	}
 </script>
 
 <svelte:head><title>{t('home.title')}</title></svelte:head>
 
 {#snippet composer()}
-	{#key data.draft}
+	{#key `${data.draft}:${editing?.command.id ?? ''}`}
 		<MomentComposer
 			candidates={data.candidates}
 			me={{ id: data.user.id, name: data.user.name }}
 			today={data.today}
-			error={form?.momentError ?? null}
+			error={editing ? null : (form?.momentError ?? null)}
 			draft={form?.draft ?? data.draft}
-			autofocus={data.compose}
+			autofocus={data.compose || page.state.compose === true || editing !== null}
+			{editing}
+			onEditDone={stopEditing}
+			onKept={() => sheetOpen && closeSheet()}
 		/>
 	{/key}
 {/snippet}
@@ -146,12 +191,83 @@
 				</div>
 			</div>
 		{:else}
-			<a href="/?compose" class="flex items-center gap-3 rounded-app bg-card px-3 py-2.5 text-sm text-fg-subtle shadow-card">
+			<a href="/?compose" onclick={openSheet} class="flex items-center gap-3 rounded-app bg-card px-3 py-2.5 text-sm text-fg-subtle shadow-card">
 				<Avatar id={data.user.id} name={data.user.name} avatarPhotoId={null} size={28} />
 				{t('home.heading')}
 			</a>
 		{/if}
 	</div>
+
+	{#if outbox.mine.length}
+		<section class="mt-3 flex flex-col gap-1.5" aria-label={t('home.outbox.label')} data-testid="outbox">
+			{#each outbox.mine as item (item.command.id)}
+				{#if isKept(item, 'moment.capture')}
+					<KeptItem {item} onEdit={() => edit(item)}>
+						{#snippet meta()}
+							<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.entryDate}>{keptDay(item.command.payload.entryDate)}</span>
+						{/snippet}
+						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...data.candidates, ...newPeopleAsCandidates(item.command.payload.newPeople)])}</p>
+					</KeptItem>
+				{:else if isKept(item, 'note.add')}
+					<KeptItem {item} editHref={contactSectionPath(item.command.payload.contactId, 'notes')}>
+						{#snippet meta()}<span>{t('home.outbox.noteOn', { name: item.about ?? '' })}</span>{/snippet}
+						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, data.candidates)}</p>
+					</KeptItem>
+				{:else if isKept(item, 'interaction.log')}
+					{@const kind = KIND_PRESENTATION[item.command.payload.kind]}
+					<KeptItem {item} editHref={contactSectionPath(item.command.payload.contactId, 'story')}>
+						{#snippet meta()}
+							<span>· {t(kind.label)} · {item.about ?? ''}</span>
+							<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.happenedAt}>{keptDay(item.command.payload.happenedAt)}</span>
+						{/snippet}
+						{#if item.command.payload.title}<p class="mt-1 text-fg">{item.command.payload.title}</p>{/if}
+					</KeptItem>
+				{:else if isKept(item, 'tag.assign')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.tagOn', { name: item.about ?? '' })}</span>{/snippet}
+						<p class="mt-1 text-fg">{item.command.payload.name}</p>
+					</KeptItem>
+				{:else if isKept(item, 'contact.add')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.newPerson')}</span>{/snippet}
+						<p class="mt-1 text-fg">{item.about ?? ''}</p>
+					</KeptItem>
+				{:else if isKept(item, 'relationship.add')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.link')}</span>{/snippet}
+						<p class="mt-1 text-fg">{item.about ?? ''}</p>
+					</KeptItem>
+				{:else if isKept(item, 'circle.join')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.circleFor', { name: item.about ?? '' })}</span>{/snippet}
+						<p class="mt-1 text-fg">{item.command.payload.circleName}{item.command.payload.role ? ` · ${item.command.payload.role}` : ''}</p>
+					</KeptItem>
+				{:else if isKept(item, 'journal.write')}
+					<KeptItem {item}>
+						{#snippet meta()}
+							<span>{t('home.outbox.journalOf', { name: item.about ?? '' })}</span>
+							<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.entryDate}>{keptDay(item.command.payload.entryDate)}</span>
+						{/snippet}
+						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, data.candidates)}</p>
+					</KeptItem>
+				{:else if isKept(item, 'field.add')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.contactFor', { name: item.about ?? '' })}</span>{/snippet}
+						<p class="mt-1 text-fg">{item.command.payload.value}</p>
+					</KeptItem>
+				{:else if isKept(item, 'date.add')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.dateFor', { name: item.about ?? '' })}</span>{/snippet}
+						<p class="mt-1 text-fg">{[item.command.payload.label, calendarDayLabel(i18n, item.command.payload.date)].filter(Boolean).join(' · ')}</p>
+					</KeptItem>
+				{:else if isKept(item, 'gallery.add')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.photosOf', { name: item.about ?? '' })}</span>{/snippet}
+					</KeptItem>
+				{/if}
+			{/each}
+		</section>
+	{/if}
 
 </div>
 

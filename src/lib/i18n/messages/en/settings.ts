@@ -36,7 +36,15 @@ export const settings = {
 	 * docs/concepts/relationship-suggestions.md §6.6) — for every member, not only the admin:
 	 * the dismissal log belongs to the household and any member may answer or take one back.
 	 */
-	'settings.relationships.heading': 'Relationships',
+	'settings.quality.heading': 'Data quality',
+	'settings.firstNameOnly.pageTitle': 'First name only · Stella',
+	'settings.firstNameOnly.title': 'People known by a first name only',
+	'settings.firstNameOnly.blurb': 'Everyone with a first name and nothing else to tell them apart.',
+	'settings.firstNameOnly.intro':
+		'Nothing but a first name — no last name, no description, no place or date you met. Add what you will know each one by. To merge or archive someone, open them.',
+	'settings.firstNameOnly.knowThemBy': (p: { name: string }) => `What will you know ${p.name} by?`,
+	'settings.firstNameOnly.empty.title': 'Everyone can be told apart',
+	'settings.firstNameOnly.empty.hint': 'Nobody left with a first name only and nothing else.',
 	'settings.relationships.title': 'Check relationships',
 	'settings.relationships.intro':
 		'Stella works through everyone you can see and lists the family links that follow from what is already entered. Nothing is stored until you accept it.',

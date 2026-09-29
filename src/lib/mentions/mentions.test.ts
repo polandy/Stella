@@ -86,6 +86,21 @@ describe('resolveMentions', () => {
 		expect(ids).toEqual([]);
 	});
 
+	it('names every person an ambiguous handle could be, so the author can be asked which', () => {
+		const namesakes = createHandleResolver([
+			{ id: 'thomas-hut', firstName: 'Thomas', lastName: null, displayName: 'Thomas' },
+			{ id: 'thomas-lenk', firstName: 'Thomas', lastName: null, displayName: 'Thomas' },
+			{ id: 'sandra', firstName: 'Sandra', lastName: 'Brunner', displayName: 'Sandra Brunner' }
+		]);
+		const resolved = resolveMentions('@Thomas and @SandraBrunner, @thomas again, @Nobody', namesakes);
+		expect(resolved.ids).toEqual(['sandra']);
+		expect(resolved.ambiguous).toEqual([{ handle: 'Thomas', ids: ['thomas-hut', 'thomas-lenk'] }]);
+	});
+
+	it('reports nothing ambiguous when every handle is somebody or nobody', () => {
+		expect(resolveMentions('@AnnaWeber and @NobodyHere', resolve).ambiguous).toEqual([]);
+	});
+
 	it('does not treat an email address as a mention', () => {
 		const { body, ids } = resolveMentions('mail anna@example.com about it', resolve);
 		expect(body).toBe('mail anna@example.com about it');
@@ -105,7 +120,7 @@ describe('resolveMentions', () => {
 		expect(body).toBe('@{contact:monica:contact:9} versucht anzurufen');
 		expect(ids).toEqual(['monica:contact:9']);
 		// …and the token it wrote is recognised as canonical on the next save.
-		expect(resolveMentions(body, resolve)).toEqual({ body, ids });
+		expect(resolveMentions(body, resolve)).toEqual({ body, ids, ambiguous: [] });
 	});
 
 	it('is idempotent on an already-normalised body', () => {

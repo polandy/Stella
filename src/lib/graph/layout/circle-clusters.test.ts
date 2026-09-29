@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { circleClustersLayout } from './circle-clusters';
 import type { Point } from './geometry';
+import { groupByRole } from '../model/role-groups';
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 /*
@@ -10,11 +11,12 @@ import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 const person = (id: string): GraphNode => ({ id, kind: 'person', label: id });
 const circle = (id: string): GraphNode => ({ id, kind: 'circle', label: id });
-const member = (circleId: string, personId: string): GraphEdge => ({
+const member = (circleId: string, personId: string, role?: string): GraphEdge => ({
 	id: `${circleId}-${personId}`,
 	source: circleId,
 	target: personId,
-	kind: 'membership'
+	kind: 'membership',
+	...(role ? { label: role } : {})
 });
 
 const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -74,4 +76,64 @@ describe('circleClustersLayout', () => {
 			}
 		}
 	});
+
+	describe('with the circles grouped by role', () => {
+		/** A class of four children and three parents, and a coach who stands alone. */
+		const school: GraphModel = {
+			nodes: [
+				circle('class'),
+				...['c1', 'c2', 'c3', 'c4', 'p1', 'p2', 'p3', 'coach', 'ida'].map(person)
+			],
+			edges: [
+				...['c1', 'c2', 'c3', 'c4'].map((c) => member('class', c, 'Child')),
+				...['p1', 'p2', 'p3'].map((p) => member('class', p, 'Parent')),
+				member('class', 'coach', 'Coach')
+			]
+		};
+		const grouping = groupByRole(school, { innerLinks: true });
+		const sizeOf = (id: string) =>
+			id === 'class' ? { width: 260, height: 40 } : { width: 110, height: 70 };
+		const layout = circleClustersLayout(school, sizeOf, grouping).positions;
+		const centroid = (ids: string[]) => ({
+			x: ids.reduce((sum, id) => sum + layout.get(id)!.x, 0) / ids.length,
+			y: ids.reduce((sum, id) => sum + layout.get(id)!.y, 0) / ids.length
+		});
+
+		it('stands each group together as one block, not strung out along the ring', () => {
+			for (const group of grouping.groups) {
+				const centre = centroid(group.memberIds);
+				for (const id of group.memberIds) {
+					// Within a node's width of the block's centre: a 2×2 block, not a quarter ring.
+					expect(distance(layout.get(id)!, centre), id).toBeLessThan(110);
+				}
+			}
+		});
+
+		it('keeps every group clear of the circle, of the other groups and of whoever stands alone', () => {
+			// A frame reaches past its members by its padding and the name on top.
+			const box = (ids: string[]) => {
+				const xs = ids.flatMap((id) => [layout.get(id)!.x - 55, layout.get(id)!.x + 55]);
+				const ys = ids.flatMap((id) => [layout.get(id)!.y - 35, layout.get(id)!.y + 35]);
+				return { x1: Math.min(...xs) - 16, x2: Math.max(...xs) + 16, y1: Math.min(...ys) - 40, y2: Math.max(...ys) + 16 };
+			};
+			const around = (id: string) => {
+				const at = layout.get(id)!;
+				const size = sizeOf(id);
+				return { x1: at.x - size.width / 2, x2: at.x + size.width / 2, y1: at.y - size.height / 2, y2: at.y + size.height / 2 };
+			};
+			const boxes = [
+				...grouping.groups.map((g) => box(g.memberIds)),
+				around('class'),
+				around('coach')
+			];
+			for (let i = 0; i < boxes.length; i++) {
+				for (let j = i + 1; j < boxes.length; j++) {
+					const [a, b] = [boxes[i], boxes[j]];
+					const apart = a.x2 <= b.x1 || b.x2 <= a.x1 || a.y2 <= b.y1 || b.y2 <= a.y1;
+					expect(apart, `box ${i} and box ${j}`).toBe(true);
+				}
+			}
+		});
+	});
 });
+

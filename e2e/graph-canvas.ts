@@ -54,7 +54,40 @@ export async function clickNode(page: Page, id: string): Promise<void> {
 	const { point } = await drawnNode(page, id);
 	if (!point) throw new Error(`the explorer is not drawing ${id}, so it cannot be clicked`);
 	await awaitHitTestable(page, point);
+	const onTop = await elementOnTopOf(page, id);
+	if (onTop !== id) {
+		throw new Error(
+			`${onTop ?? 'nothing'} is on top where the explorer draws ${id}, so a tap there would not reach ${id}`
+		);
+	}
 	await page.mouse.click(point.x, point.y);
+}
+
+/**
+ * What the renderer's own hit test answers at the centre of this node. A layout is free to
+ * set somebody down on top of somebody else — nothing in the forces forbids it — and a tap
+ * there reaches whoever is on top. Asking first turns that into a loud failure naming both,
+ * instead of a click on the wrong node that a later assertion misreads.
+ */
+async function elementOnTopOf(page: Page, id: string): Promise<string | null> {
+	return page.evaluate((nodeId) => {
+		type Core = {
+			$id(id: string): { position(): { x: number; y: number } };
+			renderer(): {
+				findNearestElement(
+					x: number,
+					y: number,
+					interactive: boolean,
+					touch: boolean
+				): { id(): string } | undefined;
+			};
+		};
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const cy = (el as unknown as { _cyreg: { cy: Core } })._cyreg.cy;
+		const { x, y } = cy.$id(nodeId).position();
+		return cy.renderer().findNearestElement(x, y, true, false)?.id() ?? null;
+	}, id);
 }
 
 /**
@@ -79,6 +112,54 @@ async function awaitHitTestable(page: Page, point: { x: number; y: number }): Pr
 			{ timeout: 2000 }
 		)
 		.catch(() => {});
+}
+
+/**
+ * Taps a group's frame where the frame itself is on top: its centre is where a member stands,
+ * and the lines to and between the members cross it, so the spot is asked of the renderer's
+ * own hit test rather than guessed — where they fall depends on the layout.
+ */
+export async function clickFrame(page: Page, id: string) {
+	const at = await page.evaluate((frameId) => {
+		type Box = { x1: number; y1: number; x2: number; y2: number };
+		type Core = {
+			$id(id: string): { renderedBoundingBox(o: object): Box };
+			pan(): { x: number; y: number };
+			zoom(): number;
+			renderer(): {
+				findNearestElement(
+					x: number,
+					y: number,
+					interactive: boolean,
+					touch: boolean
+				): { id(): string } | undefined;
+			};
+		};
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const cy = (el as unknown as { _cyreg: { cy: Core } })._cyreg.cy;
+		const box = el!.getBoundingClientRect();
+		const bb = cy.$id(frameId).renderedBoundingBox({ includeLabels: false });
+		const [pan, zoom] = [cy.pan(), cy.zoom()];
+		const STEPS = 12;
+		for (let i = 1; i < STEPS; i++) {
+			for (let j = 1; j < STEPS; j++) {
+				const x = bb.x1 + ((bb.x2 - bb.x1) * i) / STEPS;
+				const y = bb.y1 + ((bb.y2 - bb.y1) * j) / STEPS;
+				const hit = cy
+					.renderer()
+					.findNearestElement((x - pan.x) / zoom, (y - pan.y) / zoom, true, false);
+				if (hit?.id() !== frameId) continue;
+				const point = { x: box.left + x, y: box.top + y };
+				if (document.elementFromPoint(point.x, point.y)?.tagName.toLowerCase() === 'canvas') {
+					return point;
+				}
+			}
+		}
+		return null;
+	}, id);
+	if (!at) throw new Error(`nowhere on the frame ${id} is the frame itself on top`);
+	await page.mouse.click(at.x, at.y);
 }
 
 /** The names on the lines the renderer is currently emphasising. */

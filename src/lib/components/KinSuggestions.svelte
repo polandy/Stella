@@ -5,7 +5,9 @@
 	import LinkedNames from '$lib/components/LinkedNames.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { segmentsOf, type Segment } from '$lib/i18n/linked';
+	import { segmentsOf, textOf, type Segment } from '$lib/i18n/linked';
+	import type { KinVariant } from '$lib/kinship/kinship';
+	import type { Relation } from '$lib/suggestions/types';
 	import { ANSWER_ANCHOR_FIELD, answerAnchor, answerKey } from '$lib/relationships/answer-key';
 	import { wasTakenBack, type AnswerState, type AnsweredClaims } from '$lib/relationships/answered';
 	import { claimSentence } from '$lib/relationships/claim-sentence';
@@ -39,7 +41,7 @@
 	interface Suggestion {
 		ruleId: string;
 		confidence: 'certain' | 'likely' | 'possible';
-		relation: 'parent' | 'sibling';
+		relation: Relation;
 		fromId: string;
 		toId: string;
 		fromName: string;
@@ -51,6 +53,8 @@
 		reason: readonly Segment[];
 		/** Who declined this claim and when; null while it stands unanswered. */
 		dismissed: { at: number; by: string } | null;
+		/** The gender of the person a worked-out claim names; absent on the other claims. */
+		variant?: KinVariant;
 	}
 
 	interface Props {
@@ -137,9 +141,15 @@
 	/** The sentence the toast carries while the answer is held. */
 	function answerNotice(s: Suggestion, answer: 'accept' | 'decline'): string {
 		if (answer === 'decline') return t('contact.relationships.declinedNotice');
-		return s.relation === 'parent'
-			? t('contact.relationships.acceptedParent', { parent: s.fromName, child: s.toName })
-			: t('contact.relationships.acceptedSibling', { one: s.fromName, other: s.toName });
+		if (s.relation === 'parent') {
+			return t('contact.relationships.acceptedParent', { parent: s.fromName, child: s.toName });
+		}
+		if (s.relation === 'sibling') {
+			return t('contact.relationships.acceptedSibling', { one: s.fromName, other: s.toName });
+		}
+		return t('contact.relationships.acceptedClaim', {
+			claim: textOf(sentenceOf(s))
+		});
 	}
 
 	/**
@@ -170,11 +180,17 @@
 		};
 	}
 
-	/** The sentence the claim makes, in the reader's language, with both people followable. */
-	const claimOf = (s: Suggestion) =>
-		segmentsOf(
-			claimSentence(s.relation, { id: s.fromId, name: s.fromName }, { id: s.toId, name: s.toName })(t)
-		);
+	/** The sentence the claim makes, in the reader's language. */
+	const sentenceOf = (s: Suggestion) =>
+		claimSentence(
+			s.relation,
+			{ id: s.fromId, name: s.fromName },
+			{ id: s.toId, name: s.toName },
+			s.variant
+		)(t);
+
+	/** The same sentence cut into words and people, so both names are followable. */
+	const claimOf = (s: Suggestion) => segmentsOf(sentenceOf(s));
 
 	/** "declined on 12 September 2026", with the member who declined it when we know them. */
 	function declinedWhen(answer: { at: number; by: string }): string {

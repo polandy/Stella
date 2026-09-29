@@ -70,6 +70,27 @@ describe('deriveKinship', () => {
 		expect(kinOf('Hans')).toContainEqual(['Rosa', 'Grandmother']);
 	});
 
+	it('carries the ids of the people a relative comes through, beside their names', () => {
+		// Ids apart from names, so a mix-up between the two cannot pass.
+		const graph: KinshipGraph = {
+			people: [
+				{ id: 'id-otto', displayName: 'Otto' },
+				{ id: 'id-rita', displayName: 'Rita' },
+				{ id: 'id-nils', displayName: 'Nils' }
+			],
+			parentEdges: [
+				{ parentId: 'id-otto', childId: 'id-rita' },
+				{ parentId: 'id-rita', childId: 'id-nils' }
+			],
+			siblingEdges: [],
+			partnerEdges: [],
+			storedPairs: []
+		};
+		expect(deriveKinship(graph, 'id-nils')).toMatchObject([
+			{ personId: 'id-otto', term: 'grandparent', via: ['Rita'], viaIds: ['id-rita'] }
+		]);
+	});
+
 	it('names grandchildren from the other end', () => {
 		expect(kinOf('Otto')).toContainEqual(['Hans', 'Grandson']);
 		expect(kinOf('Otto')).toContainEqual(['Lisa', 'Granddaughter']);

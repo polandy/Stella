@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { beforeNavigate, goto, onNavigate } from '$app/navigation';
+	import { beforeNavigate, goto, invalidateAll, onNavigate, pushState } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import Button from '$lib/components/Button.svelte';
 	import ActivityIndicator from '$lib/components/ActivityIndicator.svelte';
@@ -10,9 +10,13 @@
 	import type { MessageKey } from '$lib/i18n/translate';
 	import Logo from '$lib/components/Logo.svelte';
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
+	import SignOutForm from '$lib/components/SignOutForm.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
 	import { providePending } from '$lib/sync/context.svelte';
+	import { providePeopleContext } from '$lib/people/context.svelte';
+	import { outbox } from '$lib/pwa/outbox.svelte';
+	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { reportNavigation } from '$lib/sync/pending';
 	import { onMount, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
@@ -111,6 +115,7 @@
 	// the item back; an unload — or a native form post, which must not be replayed as a GET —
 	// sends them with keepalive alongside and hopes for the best.
 	const removals = provideRemovals();
+	providePeopleContext(() => data.peopleContext);
 	beforeNavigate((navigation) => {
 		if (removals.snapshot.removals.length === 0) return;
 		if (navigation.type === 'leave' || navigation.type === 'form' || !navigation.to) {
@@ -129,6 +134,40 @@
 		window.addEventListener('pagehide', flush);
 		return () => window.removeEventListener('pagehide', flush);
 	});
+
+	/*
+	 * What this member saved while Stella was out of reach (docs/concepts/offline-capture.md
+	 * §4) is sent when the app opens, when Stella answers again, when the tab comes back into
+	 * view and when the device joins a network — never on a timer. What Stella took is read back by reloading the page's data.
+	 */
+	onMount(() => {
+		void outbox.start(data.user.id, () => void invalidateAll()).catch(() => {
+			// No IndexedDB (a private window in some browsers): nothing can have been kept.
+		});
+		const onVisible = () => {
+			if (document.visibilityState !== 'visible') return;
+			void outbox.refresh().then(() => outbox.send());
+		};
+		// A hint, not proof: it fires when the phone joins a network — the home Wi-Fi, say.
+		const onOnline = () => void outbox.send();
+		document.addEventListener('visibilitychange', onVisible);
+		window.addEventListener('online', onOnline);
+		return () => {
+			document.removeEventListener('visibilitychange', onVisible);
+			window.removeEventListener('online', onOnline);
+		};
+	});
+	$effect(() => {
+		if (reachability.reachable) void outbox.send();
+	});
+
+	// On Home the pencil opens the sheet as shallow state, which needs no round trip and so
+	// works while Stella is out of reach; from anywhere else it is a plain link to Home.
+	function openComposer(event: MouseEvent) {
+		if (page.url.pathname !== '/') return;
+		event.preventDefault();
+		pushState('/?compose', { compose: true });
+	}
 
 	// Theme: same contract as the no-flash init in app.html (stella-theme).
 	type ThemeChoice = 'light' | 'system' | 'dark';
@@ -175,7 +214,9 @@
 <CommandPalette people={data.people} bind:open={paletteOpen} />
 <Toast />
 
-<div class="flex h-screen w-full overflow-hidden bg-bg text-fg">
+<!-- The visible height, not 100vh: a phone browser counts 100vh with its address bar hidden,
+     so a shell that tall runs its foot under the fixed tab bar while the bar is showing. -->
+<div class="flex h-dvh w-full overflow-hidden bg-bg text-fg">
 	<!-- Sidebar (desktop) -->
 	<aside class="hidden w-60 shrink-0 flex-col gap-1 bg-bg-sunken p-3 md:flex">
 		<a href="/" class="mb-3 flex items-center px-2 py-1.5" aria-label={t('nav.stellaHome')}>
@@ -218,11 +259,11 @@
 						</button>
 					{/each}
 				</div>
-				<form method="POST" action="/logout" class="mt-1">
+				<SignOutForm class="mt-1">
 					<button class="w-full rounded-md px-3 py-2 text-left text-sm text-fg-muted transition-colors hover:bg-card-hover hover:text-fg">
 						{t('nav.signOut')}
 					</button>
-				</form>
+				</SignOutForm>
 			</div>
 		</details>
 	</aside>
@@ -281,7 +322,7 @@
 				{t(item.label)}
 			</a>
 		{/each}
-		<a href="/?compose" class="flex flex-1 flex-col items-center py-2.5" aria-label={t('nav.writeMoment')}>
+		<a href="/?compose" onclick={openComposer} class="flex flex-1 flex-col items-center py-2.5" aria-label={t('nav.writeMoment')}>
 			<span class="-mt-4 grid size-11 place-items-center rounded-full bg-primary text-primary-fg shadow-pop">
 				<Icon name="write" size={21} />
 			</span>

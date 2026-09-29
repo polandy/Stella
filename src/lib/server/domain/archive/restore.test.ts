@@ -72,6 +72,8 @@ function fullHousehold(): HouseholdSnapshot {
 			interaction_participant: [{ interaction_id: 'i-1', contact_id: 'c-rosa' }],
 			photo: [
 				{ id: 'p-gallery', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, created_by: 'u-1', visibility: 'shared', file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', width: 1600, height: 1200, size_bytes: 240000, caption: 'at the lake', taken_at: '2026-06-01', sort_order: 3, created_at: EXPORTED },
+				// The square Hans's lake photo is worn through (docs/02 §2.14): a photo row of its own.
+				{ id: 'p-framing', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, framing_of: 'p-gallery', crop_x: 400, crop_y: 120.5, crop_size: 900, created_by: 'u-1', visibility: 'shared', file_path: 'p3.jpg', thumb_path: 't3.jpg', mime: 'image/jpeg', width: 512, height: 512, size_bytes: 40000, caption: null, taken_at: null, sort_order: 0, created_at: EXPORTED },
 				{ id: 'p-journal', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: 'j-1', created_by: 'u-1', visibility: 'private', file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', width: null, height: null, size_bytes: null, caption: null, taken_at: null, sort_order: 0, created_at: EXPORTED }
 			],
 			tag: [{ id: 'tg-1', household_id: 'h-1', name: 'Bern', color: 'blue', created_at: EXPORTED }],
@@ -143,7 +145,7 @@ describe('the round trip', () => {
 		journal_mention: ['journal_entry_id', 'contact_id'],
 		interaction: ['id', 'contact_id', 'visibility', 'kind', 'title', 'description', 'happened_at', 'created_at'],
 		interaction_participant: ['interaction_id', 'contact_id'],
-		photo: ['id', 'contact_id', 'journal_entry_id', 'visibility', 'file_path', 'thumb_path', 'mime', 'width', 'height', 'size_bytes', 'caption', 'taken_at', 'sort_order', 'created_at'],
+		photo: ['id', 'contact_id', 'journal_entry_id', 'framing_of', 'crop_x', 'crop_y', 'crop_size', 'visibility', 'file_path', 'thumb_path', 'mime', 'width', 'height', 'size_bytes', 'caption', 'taken_at', 'sort_order', 'created_at'],
 		tag: ['id', 'name', 'color'],
 		contact_tag: ['contact_id', 'tag_id'],
 		circle: ['id', 'visibility', 'name', 'description', 'kind', 'color', 'parent_circle_id', 'start_date', 'end_date', 'archived_at', 'created_at'],
@@ -187,7 +189,7 @@ describe('the round trip', () => {
 	});
 
 	it('names every media file the photos need, once each', () => {
-		expect(planned().mediaPaths.sort()).toEqual(['p1.jpg', 'p2.jpg', 't1.jpg', 't2.jpg']);
+		expect(planned().mediaPaths.sort()).toEqual(['p1.jpg', 'p2.jpg', 'p3.jpg', 't1.jpg', 't2.jpg', 't3.jpg']);
 	});
 
 	it('has nothing to complain about when the archive is whole', () => {
@@ -300,8 +302,9 @@ describe('an archive that does not add up', () => {
 			archived(bent((s) => (s.tables.photo[0].file_path = '../../etc/passwd'))),
 			target()
 		);
+		// Its framing goes with it: a square of a photo that is not there frames nothing.
 		expect(rowsOf(plan, 'photo').map((p) => p.id)).toEqual(['p-journal']);
-		expect(plan.mediaPaths).not.toContain('../../etc/passwd');
+		expect(plan.mediaPaths.sort()).toEqual(['p2.jpg', 't2.jpg']);
 		expect(plan.warnings).toContainEqual({ code: 'photoBadPath', file: '../../etc/passwd' });
 	});
 

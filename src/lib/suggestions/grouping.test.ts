@@ -20,6 +20,15 @@ const claim = (relation: Relation, fromId: string, toId: string, fromName: strin
 });
 
 describe('groupBySubject', () => {
+	it('files a directed worked-out claim under the younger end, a symmetric one under the first', () => {
+		expect(
+			groupBySubject([
+				claim('grandparent', 'otto', 'nils', 'Otto', 'Nils'),
+				claim('cousin', 'nils', 'timo', 'Nils', 'Timo')
+			]).map((group) => group.subjectId)
+		).toEqual(['nils']);
+	});
+
 	/*
 	 * A parent claim is about the child: "Bettina is a parent of Lisa" answers a question
 	 * about Lisa's parents, and the household reads it on Lisa's row.

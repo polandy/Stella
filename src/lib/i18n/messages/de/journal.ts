@@ -16,7 +16,7 @@ export const journal: JournalMessages = {
 	'journal.privateOnlyYou': 'Privat — nur du',
 	'journal.saveEntry': 'Eintrag speichern',
 	'journal.oneEntryPerDay':
-		'Ein Eintrag pro Tag — speicherst du denselben Tag erneut, wird er aktualisiert. Privat und geteilt zählen getrennt.',
+		'Ein Eintrag pro Tag — schreibst du am selben Tag erneut, wird er ergänzt. Privat und geteilt zählen getrennt.',
 	'journal.by': (p) => `von ${p.author}`,
 	'journal.editEntry': 'Eintrag bearbeiten',
 	'journal.saveChanges': 'Änderungen speichern',

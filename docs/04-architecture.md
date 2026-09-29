@@ -45,7 +45,9 @@ src/
       media/         # sharp pipeline, storage paths
       search/        # FTS5 sync + query
       i18n/          # say(locals, key): a message in the language of the request
+      commands/      # the edge's half of commands: parse off the wire, receive a phone's batch
       config.ts      # env parsing/validation (valibot)
+    commands/         # pure: the command vocabulary shared by the phone and the server (§4.11.2)
     i18n/             # locales, message catalogues (en/de), translator, context
     errors/           # TranslatableError: a domain error carrying its message untranslated
     kinship/          # pure: derives the relatives nobody entered (§2.4.1)
@@ -62,7 +64,7 @@ src/
       reminders/…
       search/…
       settings/…
-    api/              # +server.ts JSON endpoints (graph data, upload, search)
+    api/              # +server.ts JSON endpoints (graph data, upload, search, commands)
   hooks.server.ts     # session resolution, language of the request, security headers
   app.css             # tailwind + theme tokens
 static/               # manifest, icons, offline shell
@@ -233,7 +235,9 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   and its mobile date keyboard; it buys a field that reads correctly in both languages, month
   names instead of an ambiguous number, and a year that can be left blank — which is how a
   birthday without a year (`--MM-DD`, §2.13.1) becomes expressible at all, something the
-  native input cannot represent. (docs/05 §5.7.)
+  native input cannot represent. (docs/05 §5.7.) A moment's older day is picked from our own
+  month calendar for the same reason, a small component rather than a date-picker package
+  (§8.8), with the year a choice beside the month so a late memory is not a hundred taps away.
 - **Combobox over `<input list>` + `<datalist>`** — Mobile Safari, this project's primary test
   device, never renders a datalist's suggestions at all, so the native control silently drops
   the one thing it was chosen for. `src/lib/components/Combobox.svelte` borrows the person
@@ -364,6 +368,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   instance makes on its own — it names nothing about the household, is announced in
   `docs/install.md`, and a household that prefers Stella ask nobody anything sets
   `UPDATE_CHECK=false`. (§2.17.1.)
+- **Release candidates are cut by hand, flagged by the workflow** — release-please's own
+  `prerelease` option would flag every 0.x release too (it treats pre-major as pre-release),
+  and the release check reads `releases/latest`, which skips pre-releases. So a candidate is a
+  `Release-As: X.Y.Z-rc.N` footer, the release job flags it, and `publish` withholds `latest`.
+  The cost accepted: while a candidate is open every release needs its own `Release-As`, and
+  for the seconds between release and flag `releases/latest` names the candidate. Revisit at
+  1.0, where the built-in option stops catching final releases. (`docs/08` §8.9.)
 - **Our own message catalogue over an i18n library** — two languages and no plural rules
   beyond "one or many" do not pay for Paraglide's compiler or a runtime store. Typed area
   modules give the same guarantee more cheaply: German is typed against English, so a
@@ -397,6 +408,10 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   already found. Newcomers are placed geometrically clear of the map instead (`placement.ts`)
   and nobody else moves; the cost is longer lines after many expands, which the explicit
   *Arrange* actions answer when the reader chooses (docs/05 §5.8).
+- **A stable first map, seeded rather than arranged twice** — a map that looks the same on
+  every visit lets the reader find people where they left them, and lets a test aim at a node.
+  Starting cose from a grid was also deterministic, but runs a second layout; seeding only
+  the nodes that share a spot costs nothing and leaves an already-drawn map to the forces.
 - **Family tree and circle groups are our own geometry, not layout extensions** — both are
   pure functions from the model to positions (`src/lib/graph/layout/`), handed to Cytoscape's
   built-in `preset` layout. A dagre/klay extension would add a dependency and still not know
@@ -593,6 +608,30 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **People are identified in the archive by id, never by name** — two people can share a first
   and last name, and a document that joins on names silently fuses them. Every person carries
   their id and every relationship, mention, participant and membership refers to it.
+- **A first name alone is refused when a person is added by hand** — first a nudge (§2.2.3),
+  but a nudge still let the next indistinguishable *Thomas* in. The rule sits in `createContact`,
+  which every hand-entry path shares (form, picker panel, moment, a kept addition from a phone),
+  and not in the importers, which bring in what a household already has rather than lose it.
+- **Data-quality checks live in Settings, not in the People directory** — the list of people
+  known by a first name only first shipped as a directory chip beside *Archived*, and read as a
+  to-do list on the screen people open to find someone. It joined *Check relationships* under
+  *Settings → Data quality*, where a card's count says whether opening it is worth it.
+- **A namesake's context line is derived per viewer, never stored** — relationship and circle
+  are further fallbacks for the second line (§2.2.3), and each is a record with its own
+  visibility. Storing the line would go stale when a link ends and could name a private person
+  to someone else; ranking in the browser would send it links it may not see. The shell's load
+  reads the candidates through the access layer (`contextOfPeople`, only for people with
+  nothing typed) and the browser picks the first whose other end is not a namesake, since only
+  it knows the list. The cost is two scoped reads per navigation, bounded by a household's size.
+  A refused `@Thomas` reads them only then (`withNamesakeContext`), not on every text saved.
+- **A picked mention is remembered by its range, and a typed namesake is refused** — two people
+  called Thomas both read `@Thomas`. The options were a disambiguated handle (`@Thomas2`), raw
+  id tokens in the field, or keeping the readable handle and remembering the pick against the
+  range of text it wrote (`src/lib/mentions/picks.ts`), stored as the id token. The last keeps
+  the text as written; the cost is a range that must be carried through every edit, and a pick
+  let go the moment its name is changed. A `@Thomas` nobody picked is refused with both names
+  rather than guessed or left as text, because a silently dropped mention loses the moment from
+  the person's journal without a word.
 - **An import adds and never overwrites** — the alternatives were replacing a record the archive
   also has, or asking the admin field by field. Replacing loses whatever was written since the
   export and makes an import unrepeatable; asking turns a restore into a merge tool nobody asked
@@ -677,6 +716,32 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   encryption, so a device left signed in holds the pages its owner read — the same bargain as
   the browser's own history, and written down as such in §2.18 rather than left implied.
 
+- **Mutations become commands, not events; offline only adds** *(being built, moments first:
+  §4.11.2, `docs/concepts/offline-capture.md`)* — to write while Stella is out of reach, every
+  change becomes a named, idempotent command with an id made where it was issued, applied by
+  one dispatcher over today's use-cases. The tables stay the truth. A device may queue only
+  commands that *add*, and may edit them freely until they are sent, because nothing anyone
+  else has seen changes offline. That leaves no conflict to resolve, and access is still
+  checked once, on arrival. Rejected:
+  - **Event sourcing.** An append-only log would keep every deleted person and private
+    sentence, which breaks what deleting and *private* promise (§2.2, §2.10). It also would
+    not answer the hard question: what an offline edit means after someone else changed the
+    same person.
+  - **Full offline sync.** It needs a second authz path on the device and a "which version
+    wins?" screen.
+  - **Replaying failed form POSTs.** It would replay deletes and sign-outs days later.
+
+  The cost: a route-by-route refactor before the outbox, a receipt table for idempotency, and
+  no editing from a train.
+
+- **An addition saved in reach goes through the outbox too** (§4.11.2, concept §8 #10) — kept
+  first, sent at once, and the form waits for the answer. One path means the offline case is the
+  everyday case, not a branch taken only on a train, and a save cut off half way is already
+  kept. Rejected: posting to the form action in reach and keeping only on failure — two paths
+  to keep equal, and the offline one exercised least. The cost: inline errors and results
+  (*"Link …?"*, the new person's page) come back from the command's answer rather than from the
+  action, and the actions stay alongside as the path without JavaScript.
+
 - **A former partnership derives nothing, rather than keeping the step-family it explained** —
   the first reading was that status is not history: a divorce does not unmake a stepmother, so
   `former` kept feeding the kinship engine. Real data settled it the other way — an ex-partner
@@ -698,6 +763,17 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   same two people are two facts (a godparent is often the grandfather), so nothing refuses
   them. An earlier cut refused a second family link too and was wrong in the first household
   that opened it.
+- **Every worked-out term has a built-in type to be confirmed as** (docs/02 §2.4.1) — confirming
+  a cousin stores a `cousin` row rather than a household's own type or a generic *Connected to*,
+  so the confirmed link reads the same in every household and in both languages. The confirmed
+  types are facts about a pair and never primary links, so storing one invents nothing further;
+  `half_sibling` is its own type because `sibling` claims full siblings. The cost is that a
+  confirmed row is frozen: it no longer follows the links it was worked out from. For the same
+  reason the old refusal of a hand-entered sibling that shared parents imply is gone — it
+  stood in the way of confirming one, and the household decides. The reviews offer the same
+  claims (rule K1) as the one exception to *the link rules never suggest what can be derived*:
+  K1 is asked for, never raised by a write, and the engine exempts it from suppression 2 by
+  rule id rather than letting a rule filter for itself.
 - **A suggestion the write would refuse is not offered** (suppression 5) — the engine asks the
   same parent cap before listing a claim, because *Accept* is the only button on the row and an
   error there is a rule the household never broke.
@@ -731,6 +807,27 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   authorisation to go wrong. Stored as a SHA-256 hash like a session, but with a fixed last day
   and a name; the `stella_` prefix makes one recognisable in a leaked log. Under `/api/v1/` the
   cookie is not read, which keeps tokens out of the pages and cookies out of the API (§4.4).
+- **A second moment on the same day joins the first, and the stream orders by last change** —
+  the day slot (docs/02 §2.20) made a second moment replace the first. Giving each moment its
+  own entry would have meant lifting the slot for moments only, a migration and two kinds of
+  journal entry. Appending keeps one model, as a contact merge already does, and the stream
+  reads `updated_at` so the joined entry surfaces where its author looks. The cost: a plain
+  edit in the journal also brings an entry back to the top.
+- **A person's photo is cropped by our own cropper, and only the square is kept** — the crop is
+  a few lines of pure geometry (`src/lib/image/crop.ts`) behind a small dialog, so no cropper
+  library joins the dependencies (§8.8). The chosen square goes through the same browser canvas
+  as before and the picked original never leaves the device: there is no full-size copy to
+  re-crop later, which keeps location data and full-resolution pictures off the server. The
+  cost: changing the framing means picking the picture again.
+- **A gallery photo is worn through a framing row, not a crop applied where avatars render** —
+  an avatar is drawn from a photo id on dozens of screens, the explorer's canvas among them;
+  threading a square through each would be one chance per screen to forget it, and the canvas
+  cannot crop with CSS. So the browser renders the square once, as for any avatar, and it is
+  stored as a photo row of its own that points at its gallery photo and remembers the square
+  (docs/03 §photo). Its own id also keeps media immutable-cached: a new square is a new
+  address. Rejected: a variant behind the photo's own URL (a browser would keep showing the old
+  square for a year) and a second gallery photo (the gallery would fill with copies). The
+  cost: a framed photo stores one extra 512px image.
 - **Touch full screen is scoped to iPadOS/iOS Safari by device, not by touch capability** — the
   graph's app-level full-screen overlay (docs/05 §5.8) exists only for Safari's own
   swipe-to-dismiss quirk; matching touch broadly instead forced Android and touch laptops to
@@ -777,6 +874,10 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
      locally — no per-interaction requests. The same pure code also runs server-side over
      any source; only the source implementation differs (in-memory in the browser). This
      deliberately pushes load to the client and fits family scale.
+   - `groupByRole` (`model/role-groups.ts`) works out the groups by role (docs/02 §2.7) from
+     what is shown: which members stand in which group, the lines standing in for others
+     (circle → group, group ↔ group) and the edges they tuck away. The adapter turns a group
+     into a compound node and a bundle into an edge; nothing in the model changes shape.
    - Derived kinship (§2.4.1) is computed by the same engine the person page uses and merged
      as its own edge kind: `deriveKinshipEdges` folds each person's inferred relatives into
      one edge per pair, which the bulk read appends to the snapshot. Nothing else in the
@@ -802,16 +903,13 @@ Three layers, one direction of dependency (domain ← adapters ← UI):
      and before there is anywhere to catch the `layoutstart` it emits. An empty graph leaves
      that layout nothing to arrange, so the first arrangement anyone sees is the controller's
      own cose, from the same starting positions it always had.
-   - **The opening arrangement is not reproducible, and never was.** Elements carry no
-     positions, so every node starts at `(0, 0)` and cose — `randomize: false` or not — breaks
-     that tie at random: three plain reloads of one explorer URL move nodes by up to 457px,
-     about 190% of the drawing's own spread. Measured in the pinned container, 1280×1000.
-     Arranging from a grid first (which is what the constructor's default layout did while the
-     elements were passed to it) is deterministic instead — eight runs, identical to the
-     decimal. Both fill the canvas the same way and neither overlaps or clips a node, so this
-     is a choice about whether the map is the same on every visit, not about quality. Nothing
-     in the product promises a stable map today; if one is ever wanted, the way to get it is to
-     give the elements their positions, not to leave a default layout in the constructor.
+   - **The same map comes out on every load.** Elements carry no positions, so every node
+     starts at `(0, 0)`, and cose — `randomize: false` or not — breaks a tie between two nodes
+     on one spot at random: three plain reloads of one explorer URL used to move nodes by up to
+     457px. So before every force run, whoever shares a spot is set apart on a sunflower spiral
+     in the order of their ids (`spreadCoincident`, `layout/geometry.ts`); with no tie left,
+     cose has nothing to roll, and the same people on the same canvas settle in the same
+     places — four reloads of Lena's map, measured in the pinned container, identical.
    - Movements **overlap**: an arrangement can be chosen while the last one's glide is still
      travelling, and an expand's newcomers and the view stepping back to show them move on their
      own animations. So the canvas is marked `data-layout="settled"` only when the *last* layout
@@ -842,11 +940,24 @@ each piece is small and named for intent. **Test-first targets:** `buildEgoNetwo
 The same split as the explorer: a pure domain and a thin adapter confined to one file.
 
 - **`src/lib/pwa/cache-policy.ts`** — the whole judgement, pure and unit-tested: which
-  requests may be cached, which never may, what a build's cache is called, and what a
-  sign-out looks like going past. **Test-first targets:** `verdictFor`, `endsTheSession`,
-  `cacheNameFor`.
+  requests may be cached, which never may, which kept page stands in for one that never is,
+  what a build's cache is called, and what a sign-out looks like going past. A page reached
+  by a link inside the app arrives as its data (`<page>/__data.json`), not as a document, so
+  that is kept too — under the page alone (`cacheKeyFor`), since SvelteKit's invalidation
+  mask changes with where the reader came from — or only pages loaded from the address bar
+  would ever be readable offline. `KEPT_AHEAD` names the pages the worker fetches and keeps
+  whenever a page opens and its cache lacks them, so they are there before anyone reads them
+  (Settings). The worker does it, not the page: its cache is the one that must hold them, and
+  a SvelteKit `preloadData` would hand a later tap the preloaded, stale data. Every request
+  the worker answers waits on the network for `patienceFor` at most — a lost network can
+  swallow a request rather than fail it — and a page's data that is never kept is still
+  failed on silence (`isPageData`), since failing is what sends SvelteKit to a whole page
+  the worker can answer. **Test-first targets:** `verdictFor`, `cacheKeyFor`, `patienceFor`,
+  `isPageData`, `standInFor`, `endsTheSession`, `cacheNameFor`.
 - **`src/lib/pwa/reachability.ts`** — the two messages the worker and the page exchange, and
   the guard that stops anything else on the channel moving the offline banner.
+  `reachability.svelte.ts` is its adapter: one rune the banner, the composer and the outbox
+  all read, so they never disagree.
 - **`src/service-worker.ts`** — the adapter. It asks the policy about real `Request`s and
   does as it is told; it decides nothing. This is deliberate: a service worker can otherwise
   only be checked by driving a browser and hoping the right thing was cached.
@@ -860,6 +971,52 @@ The same split as the explorer: a pure domain and a thin adapter confined to one
 Caches are named `stella-<version>`, so a deployed update activates into an empty one rather
 than mixing its shell with pages the previous build rendered, and the stale ones are dropped
 on `activate`.
+
+## 4.11.2 Commands & the outbox
+
+Adding while Stella is out of reach (docs/02 §2.18, `docs/concepts/offline-capture.md`), cut
+the same way: pure decisions, thin adapters.
+
+- **`src/lib/commands/commands.ts`** — the vocabulary, shared by the phone and the server:
+  each command's name, payload and *kind* (add, change, remove). Only an addition may wait on
+  a device (`isQueueable`).
+- **`src/lib/server/domain/commands/dispatch.ts`** — applies a command once however often it
+  arrives: claims its id in `command_receipt`, runs the use-case behind it, keeps the result.
+  A `TranslatableError` from the use-case is a *refusal* and releases the claim; anything
+  else is ours, releases it too and is rethrown. **Test-first target:** `dispatchCommand`.
+- **`src/lib/server/commands/`** — the edge's half: `parse.ts` reads a command off the wire
+  (Valibot), `receive.ts` answers a phone's batch one command at a time and accepts only
+  additions. `POST /api/commands` is the route, signed in by the session cookie and reading
+  only `application/json`. A photo is the one command with bytes in it: it follows the command
+  it belongs to, naming it by id, and goes to `POST /api/commands/photo` as multipart with its
+  `type`. `domain/commands/photos.ts` lands a `moment.photo` on the entry its moment's — or
+  journal-page entry's (`journal.write`) — receipt names, and a `gallery.photo` in the gallery
+  of the person its `gallery.add` checked; only while that entry or person is still the
+  member's to add to.
+- **`src/lib/pwa/outbox.ts`** — the outbox's states (pending → sending → gone, or refused;
+  *held* while open in the composer; *delivered* once only photos wait), pure and unit-tested. `outbox-store.ts` keeps it in
+  IndexedDB, changing it in one transaction at a time so two tabs cannot overwrite each
+  other; `outbox.svelte.ts` sends it and mirrors it for the page. Neither decides anything.
+- **Every addition goes through the outbox, in reach or not** (concept §8 #10). `outbox.submit`
+  keeps the command first, sends it at once and resolves with what became of it — *applied*
+  with Stella's result, *refused* with the reason, or *kept* when the round ended without an
+  answer; while it waits, the item is not shown as kept (`deliveryFor` / `deliveryLeftOver`
+  in `outbox.ts` decide). **`src/lib/pwa/keepable.ts`** is that path for an adding form's
+  `use:enhance`: it shows a refusal where the action's own error would be (`applyAction`), and
+  lets fields that are not a command yet post to the action, which says what is missing. The
+  form actions stay, as the path without JavaScript, and apply the same commands. The person
+  page's forms and the journal page use it; `note.add` is
+  applied by `domain/notes/write-note.ts` and `interaction.log` by
+  `domain/interactions/log-checked.ts`, each the one place that checks what it stores.
+  `relationship.add` is applied by `domain/relationships/add-checked.ts`, which turns every
+  refusal — a person or type gone, a duplicate, a contradiction — into a reason, never into an
+  error the phone would retry. `tag.assign` and `circle.join` reuse their by-name use-cases
+  behind `onVisibleContact`
+  (`domain/contacts/require-visible.ts`), the shared "is this person still visible" guard, as
+  do `field.add` and `date.add`. `journal.write` is `domain/journal/write-entry.ts`, which
+  adds to the day's entry as a moment does (`addToJournalDay`).
+- **The Home composer** saves through `outbox.submit` too, and goes back to the stream with the
+  *"Link …?"* hint (`src/lib/stream/link-hint.ts`) read off the moment's result.
 
 ## 4.12 Background jobs & delivery (M3)
 

@@ -1,14 +1,18 @@
+import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
+import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
+import { ulidGenerator } from '$lib/server/id';
+import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
+import { RELATIONS } from '$lib/suggestions/types';
 import { requireAdmin } from '$lib/server/auth/guards';
+import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
+import { parseProposePair, proposeHref } from '$lib/contacts/propose';
 import {
-	addContactField,
-	CONTACT_FIELD_KINDS,
 	fieldHref,
 	listContactFields
 } from '$lib/server/domain/contact-fields/contact-fields';
 import {
-	joinCircleByName,
 	listCircles,
 	listCirclesForContact,
 	listRoleSuggestionsByCircleName,
@@ -26,26 +30,22 @@ import {
 	restoreContact
 } from '$lib/server/domain/contacts/contacts';
 import {
-	addImportantDate,
-	InvalidImportantDateError,
 	listImportantDates,
 	overridesDerivedBirthday
 } from '$lib/server/domain/dates/important-dates';
-import { IMPORTANT_DATE_KINDS } from '$lib/server/domain/dates/upcoming';
+import { IMPORTANT_DATE_KINDS } from '$lib/dates/kinds';
 import {
 	deleteInteraction,
 	INTERACTION_KINDS,
-	InvalidInteractionError,
 	lastContactedAt,
-	listInteractions,
-	logInteraction
+	listInteractions
 } from '$lib/server/domain/interactions/interactions';
 import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
 import { authorLabel } from '$lib/story/author';
 import { segmentsOf } from '$lib/i18n/linked';
-import { decodeRelationshipChoice, endpointsForSide } from '$lib/relationships/type-options';
+import { decodeRelationshipChoice } from '$lib/relationships/type-options';
 import { toStoryItem } from './story-view';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import {
@@ -53,12 +53,9 @@ import {
 	CaptionTooLongError,
 	listGallery,
 	removeGalleryPhoto,
-	setGalleryPhotoVisibility,
-	useAsAvatar
+	setGalleryPhotoVisibility
 } from '$lib/server/domain/media/gallery';
-import { addGalleryPhoto } from '$lib/server/domain/media/gallery-upload';
-import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
-import { createHandleResolver, mentionsOtherThan, resolveMentions } from '$lib/mentions/mentions';
+import { frameAsAvatar } from '$lib/server/domain/media/framing';
 import { mentionSnippet } from '$lib/mentions/snippet';
 import {
 	contactSectionPath,
@@ -67,11 +64,9 @@ import {
 } from '$lib/contacts/sections';
 import { personMap } from '$lib/graph/model/person-map';
 import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
-import { audienceCandidates } from '$lib/server/domain/moments/moments';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
-import { createNote, listNotesForContact, setNoteMentions } from '$lib/server/domain/notes/notes';
+import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import {
-	createRelationship,
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
 	editRelationship,
@@ -91,13 +86,13 @@ import {
 	type ProposedLink
 } from '$lib/server/domain/relationships/suggestion-review';
 import {
-	assignTagByName,
 	listTagsForContact,
 	pruneOrphanTags,
 	TAG_COLORS,
 	unassignTag
 } from '$lib/server/domain/tags/tags';
 import {
+	getCommandDeps,
 	getContactDeps,
 	getContactFieldDeps,
 	getAvatarDeps,
@@ -109,7 +104,7 @@ import {
 	getJournalDeps,
 	getNoteDeps,
 	getGalleryDeps,
-	getGalleryUploadDeps,
+	getFramingDeps,
 	getGraphRepository,
 	getPhotos,
 	getRelationshipDeps,
@@ -127,18 +122,6 @@ import {
 	setSelfContact,
 	UnknownSelfContactError
 } from '$lib/server/domain/household/self-contact';
-
-/*
- * `?propose=<a>:<b>` names the pair whose new link should be propagated (docs/02 §2.4.1).
- * The pair is only a pointer: the use-case reads the real link back from the visible graph,
- * so a hand-written value can never conjure a suggestion out of nothing.
- */
-const PROPOSE_SEPARATOR = ':';
-
-function parseProposePair(raw: string | null): { a: string; b: string } | null {
-	const [a, b] = (raw ?? '').split(PROPOSE_SEPARATOR);
-	return a && b ? { a, b } : null;
-}
 
 /*
  * The on-demand review (docs/concepts/relationship-suggestions.md §6.5) hangs on the URL
@@ -428,7 +411,7 @@ const PhotoVisibilitySchema = v.object({
 
 /** One claim a member is answering on the review panel (§6.4): the relation and the pair. */
 const AnswerSuggestionSchema = v.object({
-	relation: v.picklist(['parent', 'sibling']),
+	relation: v.picklist(RELATIONS),
 	fromId: v.pipe(v.string(), v.minLength(1)),
 	toId: v.pipe(v.string(), v.minLength(1))
 });
@@ -581,7 +564,6 @@ export const actions: Actions = {
 
 	addRelationship: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
 		const parsed = v.safeParse(AddRelationshipSchema, {
@@ -595,53 +577,30 @@ export const actions: Actions = {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
 
-		// The picker offers an asymmetric type from both sides; the side says which endpoint
-		// is stored as `from` (docs/02 §2.4).
-		const choice = decodeRelationshipChoice(parsed.output.typeChoice);
-		if (!choice) {
+		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised;
+		// `addRelationshipChecked` holds every check the page used to make here.
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'relationship.add',
+			payload: { contactId: params.id, ...parsed.output },
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'relationship.add') {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
-		const endpoints = endpointsForSide(params.id, parsed.output.targetId, choice.side);
-
-		// Both endpoints must be visible to the viewer.
-		const [self, target] = await Promise.all([
-			getContact(getContactDeps(), viewer, params.id),
-			getContact(getContactDeps(), viewer, parsed.output.targetId)
-		]);
-		if (!self || !target) {
-			return fail(400, { error: say(locals, 'errors.person.notFound') });
-		}
-
-		try {
-			await createRelationship(getRelationshipDeps(), viewer, {
-				...endpoints,
-				typeId: choice.typeId,
-				// This profile: a refusal describes the link in the way from the page it is read on.
-				perspectiveContactId: params.id,
-				description: parsed.output.description ?? null,
-				sinceDate: parsed.output.sinceDate ?? null,
-				status: parsed.output.status ?? null
+		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
+		if (outcome?.status !== 'applied') {
+			return fail(outcome?.status === 'refused' ? 409 : 400, {
+				error:
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.relationship.couldNotAdd')
 			});
-		} catch (err) {
-			if (err instanceof DuplicateRelationshipError) {
-				return fail(409, { error: say(locals, 'errors.relationship.duplicate') });
-			}
-			if (err instanceof ContradictoryRelationshipError) {
-				return fail(409, { error: say(locals, 'errors.relationship.contradiction') });
-			}
-			// The picker greys these out, so this is the hand-written post — refused all the same.
-			if (err instanceof RelationshipExcludedError) {
-				return fail(409, { error: err.phrase(translator(locals)) });
-			}
-			if (err instanceof InvalidRelationshipDetailsError) {
-				return fail(400, { error: err.phrase(translator(locals)) });
-			}
-			return fail(400, { error: say(locals, 'errors.relationship.couldNotAdd') });
 		}
 
 		// Come back with the new pair named, so its implied links can be offered.
-		const pair = [params.id, parsed.output.targetId].join(PROPOSE_SEPARATOR);
-		throw redirect(303, `/contacts/${params.id}?propose=${pair}#relationships`);
+		throw redirect(303, proposeHref(params.id, parsed.output.targetId));
 	},
 
 	/** Correct a link: its specifics, and its type where the tie was named wrongly (docs/02 §2.4). */
@@ -756,7 +715,6 @@ export const actions: Actions = {
 
 	addNote: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
 		const parsed = v.safeParse(AddNoteSchema, {
@@ -768,37 +726,27 @@ export const actions: Actions = {
 			return fail(400, { noteError: say(locals, 'errors.note.empty') });
 		}
 
-		// The contact must be visible to add a note to it.
-		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
-
-		const creator = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
-			defaultVisibility: 'shared' as const // TODO: user default (settings, §2.16)
-		};
-		// Resolve @-mentions against the contacts allowed for this note's audience, so the stored
-		// body carries stable id-based tokens and we know who to link (docs/02 §2.20.1).
-		const resolver = createHandleResolver(
-			audienceCandidates(await listContacts(getContactDeps(), viewer), parsed.output.visibility)
-		);
-		const resolved = resolveMentions(parsed.output.body, resolver);
-
-		let noteId: string;
-		try {
-			noteId = await createNote(getNoteDeps(), creator, {
-				contactId: params.id,
-				body: resolved.body,
-				visibility: parsed.output.visibility,
-				isPinned: parsed.output.isPinned
-			});
-		} catch {
-			return fail(400, { noteError: say(locals, 'errors.note.couldNotSave') });
+		// A note is a command (docs/04 §4.11.2): named by the form when it can, so a save whose
+		// answer was lost and is then kept on the phone is recognised when it arrives again.
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'note.add',
+			payload: { contactId: params.id, ...parsed.output },
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'note.add') {
+			return fail(400, { noteError: say(locals, 'errors.command.malformed') });
 		}
-
-		// Persist the reverse links, dropping a reference to the person whose note this is:
-		// a note on Sandra that names Sandra is not a passive mention (docs/02 §2.20.1).
-		await setNoteMentions(getNoteDeps(), noteId, mentionsOtherThan(resolved.ids, params.id));
+		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
+		if (outcome?.status !== 'applied') {
+			return fail(400, {
+				noteError:
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.note.couldNotSave')
+			});
+		}
 
 		throw redirect(303, `/contacts/${params.id}`);
 	},
@@ -820,15 +768,22 @@ export const actions: Actions = {
 		const contact = await getContact(getContactDeps(), viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		try {
-			await addContactField(getContactFieldDeps(), {
-				contactId: params.id,
-				kind: parsed.output.kind,
-				label: parsed.output.label ?? null,
-				value: parsed.output.value
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'field.add',
+			payload: { contactId: params.id, ...parsed.output, label: parsed.output.label ?? null },
+			issuedAt: systemClock.now()
+		});
+		const outcome = command
+			? await dispatchCommand(getCommandDeps(), { userId: viewer.id, householdId: viewer.householdId }, command).catch(() => null)
+			: null;
+		if (outcome?.status !== 'applied') {
+			return fail(400, {
+				fieldError:
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.field.couldNotAdd')
 			});
-		} catch {
-			return fail(400, { fieldError: say(locals, 'errors.field.couldNotAdd') });
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);
@@ -855,19 +810,21 @@ export const actions: Actions = {
 		const contact = await getContact(getContactDeps(), viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		try {
-			await addImportantDate(getImportantDateDeps(), {
-				contactId: params.id,
-				kind: parsed.output.kind,
-				label: parsed.output.label ?? null,
-				date: parsed.output.date,
-				recursYearly: parsed.output.recursYearly,
-				remind: parsed.output.remind
-			});
-		} catch (err) {
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'date.add',
+			payload: { contactId: params.id, ...parsed.output, label: parsed.output.label ?? null },
+			issuedAt: systemClock.now()
+		});
+		const outcome = command
+			? await dispatchCommand(getCommandDeps(), { userId: viewer.id, householdId: viewer.householdId }, command).catch(() => null)
+			: null;
+		if (outcome?.status !== 'applied') {
 			return fail(400, {
 				dateError:
-					err instanceof InvalidImportantDateError ? err.phrase(translator(locals)) : say(locals, 'errors.date.couldNotAdd')
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.date.couldNotAdd')
 			});
 		}
 
@@ -876,7 +833,6 @@ export const actions: Actions = {
 
 	logInteraction: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
 		const parsed = v.safeParse(LogInteractionSchema, {
@@ -891,41 +847,35 @@ export const actions: Actions = {
 			return fail(400, { interactionError: say(locals, 'errors.interaction.needKindAndDay') });
 		}
 
-		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
-
-		// A participant must be someone the viewer may see; an unknown id is refused rather
-		// than stored, so nothing outside the viewer's view ever gets attached.
-		const visibleIds = new Set((await listContacts(getContactDeps(), viewer)).map((c) => c.id));
-		if (!parsed.output.participantIds.every((id) => visibleIds.has(id))) {
-			return fail(400, { interactionError: say(locals, 'errors.interaction.participantNotFound') });
-		}
-
-		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
-			defaultVisibility: 'shared' as const // TODO: user default (settings, §2.16)
-		};
-		try {
-			await logInteraction(getInteractionDeps(), author, {
+		// A touchpoint is a command (docs/04 §4.11.2), named by the form when it can, so one
+		// kept on the phone after a lost answer is recognised when it arrives again.
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'interaction.log',
+			payload: {
 				contactId: params.id,
-				kind: parsed.output.kind,
-				happenedAt: parsed.output.happenedAt,
+				...parsed.output,
 				title: parsed.output.title ?? null,
-				description: parsed.output.description ?? null,
-				visibility: parsed.output.visibility,
-				participantIds: parsed.output.participantIds
-			});
-		} catch (err) {
+				description: parsed.output.description ?? null
+			},
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'interaction.log') {
+			return fail(400, { interactionError: say(locals, 'errors.interaction.needKindAndDay') });
+		}
+		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
+		if (outcome?.status !== 'applied') {
 			return fail(400, {
 				interactionError:
-					err instanceof InvalidInteractionError ? err.phrase(translator(locals)) : say(locals, 'errors.interaction.couldNotLog')
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.interaction.couldNotLog')
 			});
 		}
 
-		// This form posts natively (see the comment on the story card in +page.svelte), so the
-		// reload it causes has to be told where it came from — otherwise logging a touchpoint
-		// throws the reader back to the top of the page.
+		// The story timeline owns its paged list, so the page reloads to show the new item — and
+		// has to be told where it came from, or the reader lands back at the top.
 		throw redirect(303, contactSectionPath(params.id, 'story'));
 	},
 
@@ -1003,7 +953,6 @@ export const actions: Actions = {
 
 	addTag: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
 		const parsed = v.safeParse(AddTagSchema, {
@@ -1012,19 +961,21 @@ export const actions: Actions = {
 		});
 		if (!parsed.success) return fail(400, { tagError: say(locals, 'errors.tag.needName') });
 
-		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
-
-		try {
-			await assignTagByName(
-				getTagDeps(),
-				locals.user.householdId,
-				params.id,
-				parsed.output.name,
-				parsed.output.color
-			);
-		} catch {
-			return fail(400, { tagError: say(locals, 'errors.tag.couldNotAdd') });
+		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'tag.assign',
+			payload: { contactId: params.id, name: parsed.output.name, color: parsed.output.color ?? null },
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'tag.assign') return fail(400, { tagError: say(locals, 'errors.tag.needName') });
+		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
+		if (outcome?.status !== 'applied') {
+			return fail(400, {
+				tagError:
+					outcome?.status === 'refused' ? outcome.reason(translator(locals)) : say(locals, 'errors.tag.couldNotAdd')
+			});
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);
@@ -1062,27 +1013,36 @@ export const actions: Actions = {
 		}
 		const visibility = v.parse(VisibilitySchema, form.get('visibility') || undefined);
 
-		try {
-			for (const [index, image] of images.entries()) {
-				await addGalleryPhoto(
-					getGalleryUploadDeps(),
-					{ userId: locals.user.id, householdId: locals.user.householdId },
-					{
-						contactId: params.id,
-						visibility,
-						upload: {
-							image: new Uint8Array(await image.arrayBuffer()),
-							thumb: new Uint8Array(await thumbs[index]!.arrayBuffer()),
-							width: Number(widths[index]),
-							height: Number(heights[index])
-						}
-					}
-				);
-			}
-		} catch (err) {
-			return fail(400, {
-				photoError: err instanceof InvalidImageError ? err.phrase(translator(locals)) : say(locals, 'errors.image.couldNotStore')
+		// An upload is a command, and each photo one of its own following it (docs/04 §4.11.2).
+		const author = { userId: viewer.id, householdId: viewer.householdId };
+		const refusal = (outcome: Awaited<ReturnType<typeof dispatchCommand>> | null) =>
+			fail(400, {
+				photoError:
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.image.couldNotStore')
 			});
+		const upload = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'gallery.add',
+			payload: { contactId: params.id, visibility },
+			issuedAt: systemClock.now()
+		});
+		const added = upload ? await dispatchCommand(getCommandDeps(), author, upload).catch(() => null) : null;
+		if (!upload || added?.status !== 'applied') return refusal(added);
+		for (const [index, image] of images.entries()) {
+			const photo = parsePhotoCommand({
+				id: ulidGenerator.next(),
+				type: 'gallery.photo',
+				parentId: upload.id,
+				image: new Uint8Array(await image.arrayBuffer()),
+				thumb: new Uint8Array(await thumbs[index]!.arrayBuffer()),
+				width: Number(widths[index]),
+				height: Number(heights[index]),
+				issuedAt: systemClock.now()
+			});
+			const stored = photo ? await dispatchCommand(getCommandDeps(), author, photo).catch(() => null) : null;
+			if (stored?.status !== 'applied') return refusal(stored);
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},
@@ -1131,15 +1091,34 @@ export const actions: Actions = {
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},
 
-	/** Wear a gallery photo as this contact's avatar. */
-	usePhotoAsAvatar: async ({ request, params, locals }) => {
+	/**
+	 * Wear a gallery photo as this contact's avatar through the square chosen in the cropper
+	 * (docs/02 §2.14). The browser sends the square and its rendering, as for a new avatar.
+	 */
+	framePhotoAsAvatar: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		const form = await request.formData();
 		const photoId = form.get('photoId');
-		if (typeof photoId !== 'string') return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
-		if (!(await useAsAvatar(getGalleryDeps(), viewer, params.id, photoId))) {
-			return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
+		const image = form.get('image');
+		const thumb = form.get('thumb');
+		if (typeof photoId !== 'string' || !(image instanceof File) || !(thumb instanceof File)) {
+			return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
+		}
+		const crop = { x: Number(form.get('cropX')), y: Number(form.get('cropY')), size: Number(form.get('cropSize')) };
+		const upload = {
+			image: new Uint8Array(await image.arrayBuffer()),
+			thumb: new Uint8Array(await thumb.arrayBuffer()),
+			width: Number(form.get('width')),
+			height: Number(form.get('height'))
+		};
+		try {
+			if (!(await frameAsAvatar(getFramingDeps(), viewer, { contactId: params.id, photoId, crop, upload }))) {
+				return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
+			}
+		} catch (err) {
+			if (err instanceof InvalidAvatarError) return fail(400, { photoError: err.phrase(translator(locals)) });
+			throw err;
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},
@@ -1195,10 +1174,6 @@ export const actions: Actions = {
 
 	joinCircle: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
-
-		const contact = await getContact(getContactDeps(), viewer, params.id);
-		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const form = await request.formData();
 		const name = form.get('circleName');
@@ -1206,16 +1181,21 @@ export const actions: Actions = {
 			return fail(400, { circleError: say(locals, 'errors.circle.needName') });
 		}
 
-		try {
-			await joinCircleByName(
-				getCircleDeps(),
-				{ userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: 'shared' },
-				params.id,
-				name,
-				typeof form.get('role') === 'string' ? String(form.get('role')) : undefined
-			);
-		} catch {
-			return fail(400, { circleError: say(locals, 'errors.circle.couldNotAdd') });
+		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'circle.join',
+			payload: { contactId: params.id, circleName: name, role: form.get('role') ?? null },
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'circle.join') return fail(400, { circleError: say(locals, 'errors.circle.needName') });
+		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
+		if (outcome?.status !== 'applied') {
+			return fail(400, {
+				circleError:
+					outcome?.status === 'refused' ? outcome.reason(translator(locals)) : say(locals, 'errors.circle.couldNotAdd')
+			});
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);

@@ -20,6 +20,11 @@ export const INTERACTION_KINDS = [
 /** One of `INTERACTION_KINDS`. */
 export type InteractionKind = (typeof INTERACTION_KINDS)[number];
 
+/** Whether `value` — a form field, say — is one of `INTERACTION_KINDS`. */
+export function isInteractionKind(value: string): value is InteractionKind {
+	return (INTERACTION_KINDS as readonly string[]).includes(value);
+}
+
 /** How a kind reads on screen. */
 export interface KindPresentation {
 	/** The message naming the kind; the wording lives in the catalogue (docs/02 §2.19). */

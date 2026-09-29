@@ -1,11 +1,16 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 	import Button from '$lib/components/Button.svelte';
+	import { keepable } from '$lib/pwa/keepable';
 	import DateField from '$lib/components/DateField.svelte';
 	import type { ActionData } from './$types';
 
 	import Icon from '$lib/components/Icon.svelte';
+	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { MessageKey } from '$lib/i18n/translate';
+	import { wantsSomethingToKnowThemBy } from '$lib/people/new-person';
 	import type { RankedCandidate } from '$lib/server/domain/contacts/suggestions';
 
 	let { form }: { form: ActionData } = $props();
@@ -26,6 +31,9 @@
 
 	let firstName = $state('');
 	let lastName = $state('');
+	/** Held here so it survives the field moving into the nudge and back (docs/02 §2.2.3). */
+	let description = $state('');
+	const askForSomethingToKnowThemBy = $derived(wantsSomethingToKnowThemBy({ firstName, lastName }));
 	let suggestions = $state<RankedCandidate[]>([]);
 	let relateTo = $state<string | null>(null);
 	let timer: ReturnType<typeof setTimeout> | null = null;
@@ -49,8 +57,66 @@
 		timer = setTimeout(loadSuggestions, SUGGEST_DEBOUNCE_MS);
 	}
 
-	const field = 'flex flex-col gap-1 text-sm';
-	const input = 'rounded-md border border-border bg-bg px-3 py-2 text-fg';
+	/*
+	 * Saved through the outbox (docs/concepts/offline-capture.md §8 #10). Out of reach, the
+	 * person is kept on this device and added once Stella answers again (docs/02 §2.18). Their
+	 * page cannot open before then, so the form says so and stays here, empty, ready for the
+	 * next one; they show on Home as not sent yet.
+	 */
+	let keptName = $state<string | null>(null);
+	let formElement: HTMLFormElement | undefined = $state();
+	const text = (data: FormData, name: string) => String(data.get(name) ?? '').trim() || null;
+	const nameOf = (data: FormData) =>
+		[text(data, 'firstName'), text(data, 'lastName')].filter(Boolean).join(' ') || text(data, 'nickname') || '';
+	const personForm = keepable(
+		{
+			toCommand: (data, id) => {
+				if (!nameOf(data)) return null;
+				return {
+					id,
+					type: 'contact.add',
+					payload: {
+						firstName: text(data, 'firstName'),
+						lastName: text(data, 'lastName'),
+						nickname: text(data, 'nickname'),
+						description: text(data, 'description'),
+						howWeMet: text(data, 'howWeMet'),
+						metPlace: text(data, 'metPlace'),
+						birthDate: text(data, 'birthDate'),
+						visibility: data.get('visibility') === 'private' ? 'private' : 'shared'
+					},
+					issuedAt: Date.now()
+				};
+			},
+			about: nameOf,
+			errorKey: 'error',
+			// Straight to the new person, into the relationship editor when a relative was picked.
+			onApplied: async (result) => {
+				const { contactId } = result as { contactId: string };
+				const relate = relateTo ? `?relate=${encodeURIComponent(relateTo)}` : '';
+				await goto(`/contacts/${contactId}${relate}`);
+			},
+			onKept: () => {
+				keptName = firstName || lastName ? [firstName, lastName].filter(Boolean).join(' ') : null;
+				firstName = '';
+				lastName = '';
+				description = '';
+				suggestions = [];
+				relateTo = null;
+				formElement?.reset();
+			}
+		},
+		() =>
+			async ({ update }) => {
+				keptName = null;
+				await update();
+			}
+	);
+
+	const field = 'flex min-w-0 flex-col gap-1 text-sm';
+	// `w-full min-w-0`: an input's intrinsic width (~20 characters) would otherwise push a
+	// two-column row past the card's edge on a phone.
+	const input = 'w-full min-w-0 rounded-md border border-border bg-bg px-3 py-2 text-fg';
 </script>
 
 <svelte:head><title>{t('contacts.new.title')}</title></svelte:head>
@@ -61,7 +127,12 @@
 		<p class="text-sm text-fg-muted">{t('contacts.new.intro')}</p>
 	</header>
 
-	<form method="POST" class="flex flex-col gap-4 rounded-app bg-card p-6 shadow-card">
+	<form method="POST" use:enhance={personForm} bind:this={formElement} class="flex flex-col gap-4 rounded-app bg-card p-6 shadow-card">
+		{#if keptName !== null}
+			<p class="flex items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-sm text-fg-muted" role="status">
+				<Icon name="offline" size={14} />{t('contacts.new.kept', { name: keptName })}
+			</p>
+		{/if}
 		{#if form?.error}
 			<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
 		{/if}
@@ -100,20 +171,32 @@
 			</section>
 		{/if}
 
-		<label class={field}>
-			<span class="text-fg-muted">
-				{t('contacts.new.description')}
-				<span class="text-fg-subtle">{t('contacts.new.descriptionHint')}</span>
-			</span>
-			<input name="description" class={input} placeholder={t('contacts.new.descriptionPlaceholder')} />
-		</label>
+		{#if askForSomethingToKnowThemBy}
+			<KnowThemBy
+				{firstName}
+				label={t('contacts.new.description')}
+				name="description"
+				bind:value={description}
+				inputClass="w-full min-w-0 rounded-md border border-border bg-card px-3 py-2 text-fg"
+			/>
+		{:else}
+			<label class={field}>
+				<span class="text-fg-muted">
+					{t('contacts.new.description')}
+					<span class="text-fg-subtle">{t('contacts.new.descriptionHint')}</span>
+				</span>
+				<input name="description" class={input} bind:value={description} placeholder={t('contacts.new.descriptionPlaceholder')} />
+			</label>
+		{/if}
 
-		<div class="flex gap-3">
-			<label class="{field} flex-1">
+		<!-- Stacked on a phone: "How we met" wraps to two lines there and would drop its field
+		     below its neighbour's. Side by side from `sm`, bottoms aligned for the same reason. -->
+		<div class="grid gap-3 sm:grid-cols-2 sm:items-end">
+			<label class={field}>
 				<span class="text-fg-muted">{t('contacts.new.howWeMet')}</span>
 				<input name="howWeMet" class={input} />
 			</label>
-			<label class="{field} flex-1">
+			<label class={field}>
 				<span class="text-fg-muted">{t('contacts.new.where')}</span>
 				<input name="metPlace" class={input} placeholder={t('contacts.new.wherePlaceholder')} />
 			</label>

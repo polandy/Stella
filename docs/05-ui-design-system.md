@@ -172,6 +172,9 @@ They must be edited together; `app.css` says so at both blocks.
     the **pencil** — writing a moment is the verb the app is built around, adding a record
     is not — and it opens the composer as a sheet over Home (§2.22.1). Settings, rarely
     opened, sits in the top bar there rather than taking a sixth place.
+    The shell is as tall as the **visible** viewport (`100dvh`), not `100vh`: a phone browser
+    counts `100vh` with its address bar hidden, and a shell that tall runs its foot — the
+    graph's peek strip, say — under the fixed tab bar while the address bar shows.
   - **Breadcrumb trail** in the top bar, derived from the route + loaded data
     (`Home / People / {name} / Journal`). Every segment links, so Home is always one
     click away; the active destination is marked with `aria-current="page"` in the
@@ -186,7 +189,8 @@ They must be edited together; `app.css` says so at both blocks.
   you type with arrow keys and Enter; a typed query always ends in *Search everything*, which
   is the full-text search over notes the palette itself does not read. The rows come from a
   pure `paletteRows`; the people arrive with the app shell's `load`, so the first keystroke
-  answers without a round trip. It is the one control here that cannot work without
+  answers without a round trip. A person who shares their name with someone else gets a
+  second line saying which one they are (docs/02 §2.2.3). It is the one control here that cannot work without
   JavaScript, so its trigger stays **disabled until the shell has mounted** rather than
   swallowing a click in the first moments after a load — which is also what lets a test know
   the page is ready instead of waiting and hoping (`docs/08` §8.4).
@@ -206,7 +210,7 @@ They must be edited together; `app.css` says so at both blocks.
   **absent entirely when empty**; there is no empty state for them, because a permanently
   empty panel teaches people to stop looking. On a phone the composer is a **sheet** opened from the *What happened?*
   bar or the tab-bar pencil.
-- **Settings → Check relationships** — the household-wide suggestion review (docs/02 §2.4.1).
+- **Settings → Data quality → Check relationships** — the household-wide suggestion review (docs/02 §2.4.1).
   Closed it is an `EmptyState` with one primary action, because no rule runs until it is asked
   for; asked, it is a count, *Check again*, and one card per person — avatar, name linking to
   the profile, and that person's claims as the **same rows the person page uses**
@@ -261,15 +265,22 @@ They must be edited together; `app.css` says so at both blocks.
     carries a *Back to <person>* link home (§2.7). Beside it, **How are we connected?** opens a
     person picker — the same one every other "which person?" question on this page uses — and
     hands both ends to the explorer, which traces the chain on arrival. The card asks the
-    question and does not answer it: it holds two hops, and the answer usually runs further. The list
+    question and does not answer it: it holds two hops, and the answer usually runs further.
+    The header orders its actions framed first (*How are we connected?*, *Open in the graph*),
+    then the quiet ones (*Check relationships*, *Add relationship*). On a phone the four would
+    wrap into ragged rows, so there they stand as an even two-by-two grid, framed alike and
+    without icons (`Section`'s `actionGrid`); the quiet/framed ranking is a wide-screen one. The list
     follows, each row *label · name · how they connect · since <day>* with *former* as a quiet
     chip, carrying **Edit** (revealing the same three fields in place, the type not among them)
     and the standard remove-with-undo. Below it, **Also related · worked out, not entered**
     (§2.4.1) carries the derived relatives — a divider, a quieter heading and a *via* clause
-    keep an inference visually distinct from something the household typed. The rows are
-    read-only with one exception: a *step* relative is only as much as Stella can see, so
-    those rows carry a ghost **Actually the child / the parent / a sibling** at the end of the
-    line, which stores the direct link and so takes the row out of the block. After a link is
+    keep an inference visually distinct from something the household typed. Otherwise a row
+    is laid out like an entered one — an empty dot column, the label's width, the action in
+    *Edit*'s column (the remove button's place held empty) — with *via* on its own line under
+    the name. Each row ends in one ghost action that stores it and so takes it out of the
+    block, in place without a reload: **Confirm** for a term that says what it is, and for a
+    *step* relative, which is only as much as Stella can see, **Actually the child / the
+    parent / a sibling**, storing the direct link instead. After a link is
     added, an **Also true?** panel sits above them with what it implies, one *Add this too* per
     line: a suggestion is a sentence with a button, never a checkbox list that could be swept in
     with one click. **Story**, titled *Activity*, is the merged timeline of §2.23 — journal
@@ -309,6 +320,15 @@ They must be edited together; `app.css` says so at both blocks.
   dotted for kinship) in its token, so an item and the line it toggles can never disagree,
   and there is no second box to keep in sync. The **"Labels" switch** that names every line
   at once sits at the foot of the same menu.
+  On a phone (below `sm`, tuned for a Pixel 9 Pro at 412 px) search, Filter and Arrange keep
+  one row: the search field takes whatever the two menus leave, and the Arrange pill shows only
+  the arrangement's name (its accessible name still reads *Arrange: …*). Full screen and the
+  connection path start a second row. The **peek panel** has no room beside the map there, so
+  it becomes a strip along the bottom — avatar and name side by side, its buttons in one row,
+  the general tip left out — and the toolbar stays within reach while somebody is selected.
+  An open Filter or Arrange menu moves sideways as far as it must to stay on the map, 12 px
+  clear of its edge: on a phone both pills stand at the right, and a menu opening from there
+  would run off the screen.
   A **Full screen** button at the end of the toolbar row hands the whole frame — canvas, toolbar
   and peek panel — to full screen, on the graph route and on a person's map alike. On a mouse
   it is the browser's own Fullscreen API (Esc leaves it too, which is fine — nobody presses Esc
@@ -346,6 +366,13 @@ They must be edited together; `app.css` says so at both blocks.
   came for. An archived person carries a quiet *Archived* chip in their header beside
   *Private*, and the directory grows an **Archived (N)** chip at the end of the tag row,
   leading to the same list with the "last written about" column dropped.
+- **Data quality** in Settings gathers the household-wide checks, each a card like the rest
+  of Settings: *Check relationships* (docs/02 §2.4.1) and *People known by a first name only*
+  (§2.2.3, the `tidy` icon), whose card carries a count pill while anyone is left. Checks live
+  here, not in the People directory, so the directory stays a place to find people rather
+  than a to-do list. The first-name list gives each row a one-line description field and a
+  small *Save* under the name; a saved row leaves the list. The name links to the profile,
+  where merging and archiving already live — the list offers neither itself.
 - **Which of these people you are** (docs/02 §2.1.3) is set in two places and looks the same
   in both: Settings carries a **You** section with a labelled person search select, and the
   foot of a person's profile column carries a ghost *This is me* — the same button reading
@@ -455,7 +482,11 @@ choosing someone; multiple mode (interaction participants) keeps chosen people a
 chips and lets you keep adding. With `keepSearch` a multiple picker also keeps the typed
 query after a pick, so a surname keeps listing the rest of the family, and while a query has
 two or more matches the list opens with a *N matches · Add all N* row. Whoever is picked leaves
-the list either way. The switch that turns `keepSearch` off belongs to the form, **above** the
+the list either way. A person who shares their name with someone else on the list carries a
+second, smaller `--fg-subtle` line (`NamesakeLine`) saying which one they are (docs/02 §2.2.3);
+a unique name stays one line. Where nothing was typed, the line falls back on a link or a circle
+the app shell hands down through context (`providePeopleContext` / `usePeopleContext`), so every
+picker reads the same map whichever list of people its page gave it. The switch that turns `keepSearch` off belongs to the form, **above** the
 field: the open list would cover it anywhere below.
 
 With `allowCreate`, the picker also ends a fruitless search: from two typed characters on, a
@@ -463,21 +494,47 @@ row under the list offers *Add "<what you typed>" as a new person*, with a `+` m
 accent colour. It sits **outside** the listbox on purpose — it is an action, not a person, and
 keeping it out means "the options" stays a list of people for a screen reader and for anything
 locating someone by name. *No one found.* stays above it. Choosing it swaps the dropdown for a
-compact create panel in the same position (first/last name pre-filled from the query, nickname
-and birthday collapsed, visibility pills), which posts to `/contacts/quick-add` and selects the
+compact create panel in the same position (first/last name pre-filled from the query, a
+description line always in view, nickname and birthday collapsed, visibility pills), which posts to `/contacts/quick-add` and selects the
 new person on success (§2.2.2). The panel is plain inputs and `type="button"` buttons, never a
 nested `<form>` — the picker sits inside the caller's form, and Enter inside the panel saves
 the person rather than submitting that form. Its birthday is a `DateField` bound by value, not
 a form field, since the panel sends JSON.
+
+**Know-them-by nudge** (`KnowThemBy.svelte`): while a new person has a first name and no last
+name, the description field sits in a `--primary-soft` box with the `met` icon and one line on
+why (docs/02 §2.2.3), on *Add a person*, in the picker's create panel and in the moment
+composer's alike. Its field is required — the panels keep their add button off until it is
+filled; `compact` gives it the panel's smaller labels.
+
+**Which-namesake box** (`WhichNamesake.svelte`): while a typed `@Thomas` could be several people
+the text may name, a slim `--primary-soft` box sits under the field with one line (*@Thomas could be 3
+people — pick one from the @ list*) and *Who is who?* folded away beneath it, each person with
+their `NamesakeLine` (`unclearHandles`, docs/02 §2.2.3) — folded, since the @-list shows the
+same lines where the pick is made.
+The form's save button stays off until one is picked — in the moment composer, the note form
+and the journal's new and edit forms alike (`MentionTextarea`'s bindable `unclear`).
 
 **Callers give it an `id` and point their label at it with `for`** — never a label that merely
 wraps it. A `<label>` names its first labelable descendant, and in multiple mode that is a
 chip's remove button, not the search input: the field loses its accessible name the moment
 anybody is picked, and a screen reader reaches an unnamed combobox (§5.9).
 
+**Day pill** (`src/lib/components/DayPill.svelte`) is the day of a moment in the *What
+happened?* composer (§2.22.1): one pill beside *Shared* and *Photo*, reading *Today*. A tap
+opens a `MenuButton` (§5.8) with today and the six days before it — named *Yesterday*, then by
+weekday, each with its short date — and *Another day…*, which opens the **day calendar**
+(`DayCalendar.svelte`): a month grid in the app's own language and week (Monday first in
+both of Stella's), later days greyed out, arrow keys moving a day or a week and Page Up/Down a
+month. The year is a choice beside the month's name, reaching a lifetime back. The arrows sit
+in fixed columns and every month shows six weeks, so neither the arrows nor the header move
+while paging. Like the date field below, it exists because the browser's own calendar speaks the
+browser's language. Either popover opens above the pill when there is no room below. It stands out in the primary colour once another day is chosen, so a moment is never
+filed under the wrong day unnoticed. The days are worked out in `src/lib/dates/recent.ts` and `month.ts`.
+
 **Date field** (`src/lib/components/DateField.svelte`) replaces `<input type="date">`
 everywhere a day is entered: birthday, important date, the day an interaction happened, a
-relationship's *Since*, a journal or moment day. A native date input takes its segment order,
+relationship's *Since*, a journal day. A native date input takes its segment order,
 its separators and its month names from the **browser's** locale, not the app's — so a German
 household reading Stella in German on an English browser is asked for `mm/dd/yyyy` and handed
 an English calendar, and no attribute on the page can change that. This field is assembled
@@ -533,8 +590,17 @@ people while you type `@` (docs/02 §2.20.1): a listbox under the caret, arrows 
 or Tab to take the highlighted person, Escape to dismiss. The picker is an enhancement — the
 field posts its text either way and the server resolves whatever handles it finds — and it
 narrows to the audience of what is being written, so a shared note never offers a private
-person. Used by the note form and the journal composer. The moment composer keeps its own
-richer picker because only a moment may create a person on the fly (§2.22.1).
+person. A namesake carries the same `NamesakeLine` as in the person pickers. Its `value` is the
+text as stored: the field shows `@Thomas` and remembers the pick against it
+(`src/lib/mentions/picks.ts`), and a posted form carries the id tokens — set in the form's
+`formdata` event, so a plain post, `enhance` and `new FormData(form)` all get them. Used by the
+note form and the journal composer. The moment composer keeps its own
+richer picker because only a moment may create a person on the fly (§2.22.1): its *Create "…"*
+row opens a small panel in the list's place — first and last name, and the description in the
+`KnowThemBy` box while the last name is empty — the same fields as a person picker's create
+panel, without visibility (the moment's) or the extra details. Its list opens below the field when it fits,
+else on the roomier side — in the phone's sheet at the bottom, with the keyboard up, that is
+above — and scrolls within that side rather than running off the screen (`listPlacement`).
 
 **Combobox** (`src/lib/components/Combobox.svelte`) is a plain text field with a dropdown of
 existing values — a circle's roles, offered while setting one on a member (§5.5 Circles) — that
@@ -623,6 +689,55 @@ clears on its own: the service worker reports whether Stella is reachable and th
 follows (docs/02 §2.18, docs/04 §4.11.1). There is nothing to dismiss, because dismissing it
 would not restore the connection.
 
+**Kept moments** (`src/lib/components/KeptItem.svelte`; Home, under the capture field;
+docs/02 §2.18) look like stream items that
+have not landed yet: the same avatar-column grid, but inside a **dashed** `--border` outline
+with a hollow dashed circle carrying the `offline` icon where the avatar would be, and the body
+as typed rather than rendered. The label says where each one stands — *Not sent yet*, *Being
+edited*, *Sending…*, *Could not send* — and a refused one turns the outline, the circle and the
+label to `--danger` with the reason underneath. They sit under the field rather than in the
+stream, because they are what the member just wrote and belong to no day of the household's
+yet. **Edit** opens the item in the composer (on a phone, in the sheet) with a *Cancel* beside
+*Save*; **Discard** is a two-step inline confirmation (*This device holds the only copy.* →
+*Discard for good*), not a dialog and not an undo toast, because there is no server copy for an
+undo to fall back on. Kept photos show as a count beside the label (`photo` icon); once Stella
+has the moment and only photos wait, the label says so (*Photos not sent yet*) and *Edit* goes.
+
+A **kept call or visit** sits the same way at the top of the person's *Story*, with its kind and
+day in the heading line; *Edit* reopens the log form on it. A **kept note** uses the same
+dashed outline at the top of that person's *Notes* section;
+*Edit* reopens the note form on it, whose button then reads *Save*. On Home it appears among
+the kept moments as *Not sent yet · note on <name>*, and its *Edit* goes to that person's notes.
+
+A **kept new person** is announced on *Add person* itself, in a dashed `role="status"` line
+above the emptied form (*… is kept on this device and added once it answers again*), and on
+Home as *Not sent yet · new person*.
+
+A **kept relationship** is a `KeptItem` at the top of the relationships card, named as the
+picker names it (*Friend of Corinne Keller*), with *Discard* only.
+
+A **kept tag or circle** (`KeptChip.svelte`) is the chip it will become with a dashed border
+and the `offline` icon, first in the row. A single word is quicker typed again than edited, so
+it offers only a one-click discard (✕); a refused one turns `--danger` and carries the reason
+as its title and in its accessible name. A **kept contact detail or date** uses the same chip,
+above the section's list (*Phone · 079 …*, *Anniversary · 12 June*).
+
+A **kept journal entry** is a `KeptItem` above the journal page's timeline, with its day, title
+and text; **kept gallery photos** are one `KeptItem` above the grid, saying how many. Both offer
+*Discard* only.
+
+**Saving while in reach** looks as it always did: a form waits for Stella's answer and closes on
+*Saved*, or shows a refusal where its error always showed, with what was typed still in it. A
+save whose answer never comes turns into a kept item instead, as if Stella had been out of reach
+all along — nothing is lost and nothing is shown twice (docs/04 §4.11.2).
+
+**Sign-out question** (`src/lib/components/SignOutForm.svelte`) wraps every sign-out form. With
+nothing waiting it is the plain form post it always was; with kept moments on the device it
+opens an inline `alertdialog` under the button in the same dashed outline as the kept moments —
+*Keep and sign out* (primary), *Discard and sign out* (danger), *Cancel* — rather than a modal,
+because it belongs to the one button that raised it. While Stella is out of reach, the composer's primary button reads **Save
+for later**.
+
 **Install card** (`src/lib/components/InstallCard.svelte`) is an ordinary Settings card, one
 of three sentences depending on what the device can do — installed, installable, or a browser
 with no prompt to offer — with the button present only in the middle case. It is deliberately
@@ -633,6 +748,19 @@ aunt is an interruption, and there is no state in which it needs answering now.
 viewport with the `offline` icon, what has happened, and a *Try again* that reloads. It is
 fetched and cached while the connection still works, which is why it loads nothing of its own
 — anything it read then would be stale by the time anybody saw it.
+
+**Photo cropper** (`src/lib/components/PhotoCropper.svelte`; opened by `AvatarUploader` after a
+picture is picked, docs/02 §2.14) is a native `<dialog>` in a card: a square window with the
+picture behind it and a round cut-out the shape of the avatar, the corners dimmed with
+`--bg-sunken` as the lightbox's backdrop is. The picture moves, the window never does: drag
+pans, pinch and the wheel zoom around the fingers or pointer, and a zoom slider plus the arrow
+keys and `+` / `−` give the same control without a gesture (the window is focusable, with
+`role="application"` so the keys reach it). *Use photo* is the primary button, *Cancel* and
+Escape leave without uploading. What each gesture does to the square is pure
+(`src/lib/image/crop.ts`); the component only turns events into those calls. The lightbox's
+*Use as photo* (`FrameAsAvatar.svelte`) opens the same dialog on the full picture, starting on
+the square chosen last time, and reads *Change framing* on the photo worn now. Keys pressed in
+the dialog stay in it, so the arrows move the picture rather than walking the gallery behind.
 
 **A choice that cannot be made says why, once.** Where a picker's entries are refused by what
 is already on record — the relationship type picker is the case (docs/02 §2.4) — the entries
@@ -681,7 +809,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   card-sized map of a person's page, a large share of it. Only the search stays out in the
   open, since it is used all the time; what is set once and then looked at goes into two
   menus (`MenuButton`: arrow keys move between items, Escape closes and hands focus back, a
-  click elsewhere closes). **Filter** counts what is shown (*Filter 5/6*) and stands out in
+  click elsewhere closes; a menu with no room below its pill — the day pill at the foot of
+  a phone's composer sheet — opens above it instead). **Filter** counts what is shown (*Filter 5/6*) and stands out in
   the primary colour once the reader has narrowed the map — measured against what the map
   opened with, so the person page's circles-off start is not mistaken for a forgotten
   filter (`src/lib/menu/menu.ts`). Its items toggle and leave the menu open for the next.
@@ -719,6 +848,18 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 
   None of the three is a mode: an expand afterwards still only adds people around the one
   expanded, and the choice is not remembered across a reload (saved graph settings are M3).
+- **Groups by role** (§2.7): a group is a **frame** (a Cytoscape compound node) around its
+  members — the circle colour, faintly tinted, with the role and count on top — and its members
+  stand in it as a block, in rows as near square as they go (`layout/group-blocks.ts`). The
+  force layout spreads a group's members like anybody else's, so *Free* packs each group into a
+  block where its members came to rest, and anyone not in a group whom a block now covers — the
+  circle itself, say — steps out to the nearest spot beside every frame, so no name is hidden
+  and no tap taken; *By circle* stands each block on its circle's ring in
+  place of the individual members. The single line from the circle to the group and a bundle
+  between two groups are drawn thicker the more they carry, and a bundle between groups always
+  shows its count. The lines a bundle stands for are **tucked away** — hidden, not removed — and
+  come back while their member (or group) is selected or they lie on a traced path. Framing
+  the map takes in each frame and its name, so a group near the top stays clear of the toolbar.
 - **Search & focus:** an in-canvas search field; selecting a result smoothly pans/zooms to
   that node and pulses it. The suggested names are drawn above the rest of the toolbar: on a
   narrow window the chip row wraps underneath the field, and a name a chip covers cannot be
@@ -792,4 +933,7 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - **Logo:** the branching-graph mark in `Logo.svelte`, in the sidebar and on the auth screens.
 - **Avatar fallback:** initials on a deterministic accent derived from the contact id, mixed
   over `--card` so an avatar stays opaque inside a stack, with the initials in `--fg` (§5.2.2).
+  Only for somebody without a photo: wherever a person is listed to be found or picked — search
+  results, ⌘K, the person pickers, the @-list — the list carries their `avatarPhotoId`, so a
+  face is recognisable at a glance.
 - Empty states use friendly copy and a clear primary action, never a dead end.

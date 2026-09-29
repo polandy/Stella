@@ -287,6 +287,15 @@ A change is done when:
   changelog and version are generated from it, so an accurate type matters.
 - Config lives in `release-please-config.json` + `.release-please-manifest.json`; the
   workflow is `.github/workflows/release-please.yml` (GitHub Actions).
+- **Release candidates** are cut by hand with a `Release-As` footer on a commit to `main`
+  (e.g. an empty `chore: release 0.1.0-rc.1` with `Release-As: 0.1.0-rc.1`). The workflow
+  flags that GitHub release as a pre-release — so the About card's update check never offers
+  it — and `publish` pushes the image as `X.Y.Z-rc.N` only, never `X.Y` or `latest`.
+  While a candidate is open, **every** further release needs a `Release-As` footer too
+  (`0.1.0-rc.2`, or the final `0.1.0`): release-please would otherwise bump the candidate
+  itself and propose nonsense like `0.1.1-rc.1`. Don't merge a release PR with such a version.
+  (Its `prerelease`/`versioning: prerelease` options don't fit: pre-1.0 they would flag every
+  0.x release as a pre-release.)
 - **The release PR runs no CI**, by design: `ci.yml`'s `pull_request` trigger ignores
   `release-please--**`. The PR only bumps the version, the changelog and the manifest —
   content already verified on `main` — and its branch is authored by `github-actions[bot]`,

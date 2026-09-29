@@ -1,13 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
-import { mention, signIn } from './app';
+import { appReady, mention, mentionNew, openPerson, signIn } from './app';
 
 /*
  * Moments capture and the household stream (docs/02 §2.22). Written after the flow was
  * verified in the running app (docs/08 §8.4.1). The suite runs against a fresh database
  * seeded with the demo dataset, signed in as the demo admin.
  *
- * People invented here (Zelda, Yorick, Quill) are deliberately absent from the demo dataset,
- * so the "Create …" path never collides with a seeded contact.
+ * People invented here (Zelda, Yorick, Quill, Ulric, Vesna) are deliberately absent from the
+ * demo dataset, so the "Create …" path never collides with a seeded contact.
  */
 
 const composerSave = (page: Page) => page.getByRole('button', { name: /^Save/ });
@@ -32,9 +32,9 @@ test('captures a moment on an existing person and shows it in the stream', async
 
 test('creates the people it mentions and offers to link the first two', async ({ page }) => {
 	await page.getByLabel('What happened?').pressSequentially('Met ');
-	await mention(page, 'Zelda', /Create.*Zelda/);
+	await mentionNew(page, 'Zelda');
 	await page.getByLabel('What happened?').pressSequentially('and ');
-	await mention(page, 'Yorick', /Create.*Yorick/);
+	await mentionNew(page, 'Yorick');
 	await page.getByLabel('What happened?').pressSequentially('at the market');
 
 	await composerSave(page).click();
@@ -62,7 +62,7 @@ test('keeps a private moment marked as private', async ({ page }) => {
 	await expect(page.getByText('Private', { exact: true })).toBeVisible();
 
 	await page.getByLabel('What happened?').pressSequentially('Coffee with ');
-	await mention(page, 'Quill', /Create.*Quill/);
+	await mentionNew(page, 'Quill');
 	await page.getByLabel('What happened?').pressSequentially('about the surprise party');
 
 	await composerSave(page).click();
@@ -77,4 +77,35 @@ test('refuses to save a moment that mentions nobody', async ({ page }) => {
 
 	await expect(page.getByText('Mention at least one person with @')).toBeVisible();
 	await expect(composerSave(page)).toBeDisabled();
+});
+
+test('adds a second moment about the same person that day to the first, keeping both', async ({ page }) => {
+	await mentionNew(page, 'Ulric');
+	await page.getByLabel('What happened?').pressSequentially('repotted the ferns');
+	await composerSave(page).click();
+	await expect(page.locator('article').first()).toContainText('repotted the ferns');
+
+	// Exact: the shared suite database also holds a Gina Ulrich.
+	await mention(page, 'Ulric', /^Ulric$/);
+	await page.getByLabel('What happened?').pressSequentially('phoned, ');
+	await mentionNew(page, 'Vesna');
+	await page.getByLabel('What happened?').pressSequentially('sends her love');
+	await composerSave(page).click();
+	// The entry the moment joined rises to the top, above Vesna's "New person" item.
+	const top = page.locator('article').first();
+	await expect(top).toContainText('sends her love');
+	await expect(top).toContainText('repotted the ferns');
+
+	// One day slot, one entry: the earlier moment is still there beside the later one.
+	await openPerson(page, /\bUlric\b/);
+	await page.getByRole('link', { name: 'Write' }).first().click();
+	await expect(page.getByRole('heading', { name: 'Journal' })).toBeVisible();
+	await appReady(page);
+	const entries = page.locator('article', { hasText: 'repotted the ferns' });
+	await expect(entries).toHaveCount(1);
+	await expect(entries).toContainText('sends her love');
+
+	// The second moment's mention joined the entry, so it shows on Vesna's page too.
+	await openPerson(page, /Vesna/);
+	await expect(page.getByTestId('mentioned-in').locator('a[data-kind="journal"]')).toHaveCount(1);
 });

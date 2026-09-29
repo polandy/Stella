@@ -1,8 +1,11 @@
+import type { CropRect } from './crop';
+
 /*
- * Client-side avatar processing (docs/02 §2.14). The browser applies EXIF orientation, centre-
- * crops to a square, and renders a full (512px) and a thumbnail (128px) JPEG. Re-encoding via
- * canvas drops all EXIF/GPS metadata (a privacy win) and keeps the upload small — so the server
- * needs no native image library. Browser-only (uses createImageBitmap + canvas).
+ * Client-side avatar processing (docs/02 §2.14). The browser applies EXIF orientation, cuts the
+ * square the person chose in the cropper (`./crop`), and renders a full (512px) and a thumbnail
+ * (128px) JPEG. Re-encoding via canvas drops all EXIF/GPS metadata (a privacy win) and keeps the
+ * upload small — so the server needs no native image library. Browser-only (uses
+ * createImageBitmap + canvas).
  */
 
 const AVATAR_SIZE = 512;
@@ -33,15 +36,16 @@ function toSquareJpeg(bitmap: ImageBitmap, size: number, sx: number, sy: number,
 	});
 }
 
-export async function processAvatar(file: File): Promise<ProcessedAvatar> {
+/**
+ * `crop` is in the picture's pixels *after* EXIF orientation — the same space the cropper's
+ * `<img>` measures, since browsers orient an image element from its EXIF too.
+ */
+export async function processAvatar(file: Blob, crop: CropRect): Promise<ProcessedAvatar> {
 	const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
 	try {
-		const crop = Math.min(bitmap.width, bitmap.height);
-		const sx = (bitmap.width - crop) / 2;
-		const sy = (bitmap.height - crop) / 2;
 		const [image, thumb] = await Promise.all([
-			toSquareJpeg(bitmap, AVATAR_SIZE, sx, sy, crop),
-			toSquareJpeg(bitmap, THUMB_SIZE, sx, sy, crop)
+			toSquareJpeg(bitmap, AVATAR_SIZE, crop.x, crop.y, crop.size),
+			toSquareJpeg(bitmap, THUMB_SIZE, crop.x, crop.y, crop.size)
 		]);
 		return { image, thumb, width: AVATAR_SIZE, height: AVATAR_SIZE };
 	} finally {

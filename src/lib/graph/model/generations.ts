@@ -1,8 +1,14 @@
 import type { KinTerm } from '../../kinship/kinship';
 import {
+	AUNT_UNCLE_TYPE_KEY,
+	COUSIN_TYPE_KEY,
 	GRANDPARENT_GRANDCHILD_TYPE_KEY,
+	GREAT_GRANDPARENT_TYPE_KEY,
+	HALF_SIBLING_TYPE_KEY,
 	PARENT_CHILD_TYPE_KEY,
+	PARENT_IN_LAW_TYPE_KEY,
 	PARTNER_TYPE_KEYS,
+	SIBLING_IN_LAW_TYPE_KEY,
 	SIBLING_TYPE_KEY
 } from '../../relationships/type-keys';
 import type { GraphEdge, GraphModel } from './types';
@@ -19,7 +25,13 @@ import type { GraphEdge, GraphModel } from './types';
 const STORED_OFFSET: Readonly<Record<string, number>> = {
 	[PARENT_CHILD_TYPE_KEY]: 1,
 	[GRANDPARENT_GRANDCHILD_TYPE_KEY]: 2,
+	[GREAT_GRANDPARENT_TYPE_KEY]: 3,
+	[AUNT_UNCLE_TYPE_KEY]: 1,
+	[PARENT_IN_LAW_TYPE_KEY]: 1,
 	[SIBLING_TYPE_KEY]: 0,
+	[HALF_SIBLING_TYPE_KEY]: 0,
+	[COUSIN_TYPE_KEY]: 0,
+	[SIBLING_IN_LAW_TYPE_KEY]: 0,
 	...Object.fromEntries(PARTNER_TYPE_KEYS.map((key) => [key, 0]))
 };
 

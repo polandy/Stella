@@ -48,9 +48,74 @@ const NEVER_CACHED = [
 	'/settings/export'
 ];
 
+/**
+ * Pages the service worker keeps as soon as a page opens in reach, rather than once they are
+ * read. Settings is opened rarely and wanted offline all the same, and every update starts
+ * from an empty cache.
+ */
+export const KEPT_AHEAD: readonly string[] = ['/settings'];
+
 /** Whether `path` is one of `NEVER_CACHED`, or something beneath it. */
 function isVolatile(path: string): boolean {
 	return NEVER_CACHED.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+}
+
+/*
+ * Following a link inside the app fetches only the page's data, from `<page>/__data.json`,
+ * never the page itself — so unless that is kept too, a page reached by tapping is never
+ * readable offline. SvelteKit adds a mask saying which layouts and the page to reload; the
+ * digits change with where the reader came from, so they are no part of what is kept.
+ */
+const DATA_SUFFIX = '/__data.json';
+const INVALIDATED_PARAM = 'x-sveltekit-invalidated';
+const TRAILING_SLASH_PARAM = 'x-sveltekit-trailing-slash';
+
+/** The page `url` fetches the data of, or null when it is not a page's data. */
+function dataPageOf(url: URL): string | null {
+	if (!url.pathname.endsWith(DATA_SUFFIX)) return null;
+	return url.pathname.slice(0, -DATA_SUFFIX.length) || '/';
+}
+
+/** Whether a page's data response holds the page itself, not only the layouts around it. */
+function reloadsThePage(url: URL): boolean {
+	return (url.searchParams.get(INVALIDATED_PARAM) ?? '').endsWith('1');
+}
+
+/** The question a page's data asks, without SvelteKit's own bookkeeping. */
+function questionOf(url: URL): string {
+	const search = new URLSearchParams(url.search);
+	search.delete(INVALIDATED_PARAM);
+	search.delete(TRAILING_SLASH_PARAM);
+	return search.toString();
+}
+
+/**
+ * How long the network gets to answer before the device's copy is used instead. A phone that
+ * has lost its network does not always say so — the request goes out and nothing comes back —
+ * so without a limit the copy would never be reached. Stella on the household's own network
+ * answers far sooner; a response that is merely late still refreshes the copy when it lands.
+ */
+export const NETWORK_PATIENCE_MS = 4000;
+
+/**
+ * How long to wait for the network. Once the last request did not reach Stella, a tap with a
+ * copy to show is answered from the device at once, while the network is still asked in the
+ * background — its answer is what says Stella is back. Without a copy the network is the only
+ * answer there is, so it gets the full wait.
+ */
+export function patienceFor(state: { reachable: boolean; hasCopy: boolean }): number {
+	return state.hasCopy && !state.reachable ? 0 : NETWORK_PATIENCE_MS;
+}
+
+/**
+ * Whether `request` is a page's data, kept or not. Those are what a tap inside the app waits
+ * on, so none of them may wait on silence: failing is what makes SvelteKit fall back to a
+ * whole page, which the worker can answer from the device.
+ */
+export function isPageData(request: CacheableRequest): boolean {
+	if (request.method !== 'GET') return false;
+	const url = new URL(request.url);
+	return url.origin === request.origin && dataPageOf(url) !== null;
 }
 
 /** What the service worker may do with the response to `request`. */
@@ -60,6 +125,14 @@ export function verdictFor(request: CacheableRequest): CacheVerdict {
 	const url = new URL(request.url);
 	// Another origin's response is not ours to hold, and its size is not ours to spend.
 	if (url.origin !== request.origin) return 'skip';
+
+	const dataPage = dataPageOf(url);
+	if (dataPage !== null) {
+		if (isVolatile(dataPage) || questionOf(url) !== '') return 'skip';
+		// Kept under the page alone, so a copy without the page in it would stand in for one.
+		return reloadsThePage(url) ? 'keep' : 'skip';
+	}
+
 	if (isVolatile(url.pathname)) return 'skip';
 
 	// Pages and the media they are made of; a query string means a search or a filter, which
@@ -69,6 +142,30 @@ export function verdictFor(request: CacheableRequest): CacheVerdict {
 	if (url.search !== '' && url.pathname !== OFFLINE_FALLBACK_PATH) return 'skip';
 
 	return 'keep';
+}
+
+/**
+ * The address a kept response is stored and looked up under: a page's data under the page
+ * alone (see `DATA_SUFFIX`), everything else under its own.
+ */
+export function cacheKeyFor(request: CacheableRequest): string {
+	const url = new URL(request.url);
+	if (dataPageOf(url) === null) return request.url;
+	return `${url.origin}${url.pathname}`;
+}
+
+/**
+ * The kept page that may stand in for `request` when the network is gone and the page itself
+ * was never kept, or null. A question in the URL (`/?compose`, `?relate=…`) is not kept, but
+ * it asks something *of* a page that is: offline, that page is a far better answer than the
+ * browser's error screen, and the app on it can still read the question from the address.
+ */
+export function standInFor(request: CacheableRequest): string | null {
+	if (request.method !== 'GET' || !request.isNavigation) return null;
+
+	const url = new URL(request.url);
+	if (url.origin !== request.origin || url.search === '' || isVolatile(url.pathname)) return null;
+	return url.pathname;
 }
 
 /** The route that ends a session. A POST to it is the last thing a signed-in device does. */

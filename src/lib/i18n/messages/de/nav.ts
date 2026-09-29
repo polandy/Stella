@@ -17,6 +17,12 @@ export const nav: NavMessages = {
 	'nav.breadcrumb': 'Brotkrumen-Navigation',
 	'nav.addPerson': 'Person hinzufügen',
 	'nav.writeMoment': 'Moment festhalten',
+	'signOut.unsent': (p: { count: number }) =>
+		p.count === 1
+			? '1 Moment ist noch nicht gesendet. Er ist nur auf diesem Gerät.'
+			: `${p.count} Momente sind noch nicht gesendet. Sie sind nur auf diesem Gerät.`,
+	'signOut.keep': 'Behalten und abmelden',
+	'signOut.discard': 'Verwerfen und abmelden',
 	'nav.signOut': 'Abmelden',
 	'nav.theme.light': 'Hell',
 	'nav.theme.system': 'System',

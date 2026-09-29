@@ -11,6 +11,11 @@ export interface SelectablePerson extends DirectoryPerson {
 	 * something off it — the relationship form dates a family link from it (docs/02 §2.4).
 	 */
 	birthDate?: string | null;
+	/** Where and when they were met: with the description, what tells namesakes apart (docs/02 §2.2.3). */
+	metPlace?: string | null;
+	metDate?: string | null;
+	/** Required, so no picker's list forgets it and shows initials for someone with a photo. */
+	avatarPhotoId: string | null;
 }
 
 /** People matching `query`, best name-match first. Empty query returns everyone, unsorted. */

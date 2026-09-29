@@ -8,6 +8,7 @@ import type { SourceExport } from '../domain/import/monica/monica-export';
 import { englishWording } from '../domain/import/monica/wording.fixture';
 import { planMonicaImport, type ImportPlan } from '../domain/import/monica/plan';
 import { createDrizzleImportRepository } from './import-repository';
+import { BUILT_IN_RELATIONSHIP_TYPES } from '../domain/relationships/built-in-types';
 import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 
@@ -125,6 +126,6 @@ describe('import repository', () => {
 		broken.relationships.push({ ...broken.relationships[0]!, id: 'monica:relationship:999', toContactId: 'monica:contact:404' });
 		await expect(repo.applyPlan(broken)).rejects.toThrow();
 		expect(rows(schema.contact)).toBe(0);
-		expect(rows(schema.relationshipType)).toBe(12); // only the built-ins
+		expect(rows(schema.relationshipType)).toBe(BUILT_IN_RELATIONSHIP_TYPES.length); // only the built-ins
 	});
 });

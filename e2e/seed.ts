@@ -49,7 +49,9 @@ const RESTORE_ACTION = '/settings/import/archive?/restore';
 export async function seedHousehold(
 	page: Page,
 	people: readonly string[],
-	links: readonly SeedLink[] = []
+	links: readonly SeedLink[] = [],
+	/** A gender for whoever needs one — the only way a spec can set it, as the form has none. */
+	genders: Readonly<Record<string, 'male' | 'female'>> = {}
 ): Promise<void> {
 	const document = {
 		format: ARCHIVE_FORMAT,
@@ -61,7 +63,8 @@ export async function seedHousehold(
 				id: idOf(name),
 				display_name: name,
 				first_name: first,
-				last_name: rest.join(' ')
+				last_name: rest.join(' '),
+				gender: genders[name] ?? null
 			};
 		}),
 		relationships: links.map((link) => ({

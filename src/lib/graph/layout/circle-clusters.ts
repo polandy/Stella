@@ -1,3 +1,5 @@
+import type { RoleGrouping } from '../model/role-groups';
+import { groupBlock } from './group-blocks';
 import type { GraphModel } from '../model/types';
 import {
 	bowsAround,
@@ -13,7 +15,9 @@ import {
  * The arrangement by circles (docs/02 §2.7, docs/05 §5.8). Pure: positions from the model, no
  * renderer. Each circle stands with its members in a ring around it and the groups keep their
  * distance, largest first; whoever is in no circle is shelved beneath. Someone in several
- * circles stands with the biggest one — their other memberships still show as lines.
+ * circles stands with the biggest one — their other memberships still show as lines. With the
+ * circles grouped by role (docs/02 §2.7) a group stands on the ring as one block, its members
+ * in rows inside it, in place of each of them standing there alone.
  */
 
 /** Distances of the arrangement by circles, in model units. */
@@ -27,16 +31,26 @@ export const CLUSTER_SPACING = {
 /** The narrowest the block of groups gets, so a handful of circles still reads as rows. */
 const MIN_WIDTH = 600;
 
-/** A circle and the members standing around it. */
+/** What stands on a circle's ring: one person, or a group by role as one block. */
+interface Unit {
+	ids: string[];
+	/** Where each of `ids` stands, from the unit's centre. */
+	offsets: Point[];
+	/** How far the unit reaches from its centre, whichever way it is turned. */
+	reach: number;
+}
+
+/** A circle and what stands around it. */
 interface Group {
 	circleId: string;
-	members: string[];
+	units: Unit[];
 }
 
 /** Every node of `model` grouped by circle, each given the room `sizeOf` says it takes. */
 export function circleClustersLayout(
 	model: GraphModel,
-	sizeOf: SizeOf = defaultSizeOf
+	sizeOf: SizeOf = defaultSizeOf,
+	grouping?: RoleGrouping
 ): Arrangement {
 	const circles = model.nodes.filter((n) => n.kind === 'circle').map((n) => n.id);
 	const isCircle = new Set(circles);
@@ -50,16 +64,28 @@ export function circleClustersLayout(
 	}
 
 	// Each person stands with the biggest of their circles; a tie goes to the one listed first.
+	// Someone in a group stands with the group's circle, which the grouping chose the same way.
 	const home = new Map<string, string>();
+	const groupsBy = new Map<string, RoleGrouping['groups']>();
+	for (const g of grouping?.groups ?? []) {
+		groupsBy.set(g.circleId, [...(groupsBy.get(g.circleId) ?? []), g]);
+		for (const id of g.memberIds) home.set(id, g.circleId);
+	}
 	const bySize = [...circles].sort((a, b) => membersOf.get(b)!.size - membersOf.get(a)!.size);
 	for (const circleId of bySize) {
 		for (const personId of membersOf.get(circleId)!) {
 			if (!home.has(personId)) home.set(personId, circleId);
 		}
 	}
+	const grouped = new Set(grouping?.groupOf.keys() ?? []);
 	const groups: Group[] = bySize.map((circleId) => ({
 		circleId,
-		members: model.nodes.filter((n) => home.get(n.id) === circleId).map((n) => n.id)
+		units: [
+			...(groupsBy.get(circleId) ?? []).map((g) => ({ ids: g.memberIds, ...groupBlock(g.memberIds, sizeOf) })),
+			...model.nodes
+				.filter((n) => home.get(n.id) === circleId && !grouped.has(n.id))
+				.map((n) => alone(n.id, sizeOf))
+		]
 	}));
 
 	const rings = groups.map((g) => ring(g, sizeOf));
@@ -80,11 +106,11 @@ export function circleClustersLayout(
 		}
 		const centre = { x: cursor + reach, y: rowTop + reach };
 		positions.set(group.circleId, centre);
-		group.members.forEach((id, k) => {
-			const angle = -Math.PI / 2 + (k / group.members.length) * 2 * Math.PI;
-			positions.set(id, {
-				x: centre.x + radius * Math.cos(angle),
-				y: centre.y + radius * Math.sin(angle)
+		group.units.forEach((unit, k) => {
+			const angle = -Math.PI / 2 + (k / group.units.length) * 2 * Math.PI;
+			const at = { x: centre.x + radius * Math.cos(angle), y: centre.y + radius * Math.sin(angle) };
+			unit.ids.forEach((id, m) => {
+				positions.set(id, { x: at.x + unit.offsets[m].x, y: at.y + unit.offsets[m].y });
 			});
 		});
 		cursor += 2 * reach + CLUSTER_SPACING.group;
@@ -104,21 +130,26 @@ export function circleClustersLayout(
 	return { positions, bows: bowsAround(positions, model.edges, sizeOf, LINE_CLEARANCE) };
 }
 
+/** One person standing on the ring by themselves. */
+function alone(id: string, sizeOf: SizeOf): Unit {
+	const size = sizeOf(id);
+	return { ids: [id], offsets: [{ x: 0, y: 0 }], reach: Math.max(size.width, size.height) / 2 };
+}
+
 /**
- * The ring a group's members stand on, and how far the group reaches from its centre. The ring
- * keeps the widest member's name clear of the circle in the middle and of its neighbours on
- * either side; the reach adds the widest member's own room.
+ * The ring a group's units stand on, and how far the group reaches from its centre. The ring
+ * keeps the widest unit clear of the circle in the middle and of its neighbours on either
+ * side; the reach adds the widest unit's own room.
  */
 function ring(group: Group, sizeOf: SizeOf): { radius: number; reach: number } {
 	const centre = sizeOf(group.circleId);
 	const halfCentre = Math.max(centre.width, centre.height) / 2;
-	if (group.members.length === 0) return { radius: 0, reach: halfCentre };
-	const sizes = group.members.map(sizeOf);
-	const halfMember = Math.max(...sizes.map((s) => Math.max(s.width, s.height))) / 2;
-	const clearOfCentre = halfCentre + halfMember + CLUSTER_SPACING.gap;
-	const chord = 2 * halfMember + CLUSTER_SPACING.gap;
+	if (group.units.length === 0) return { radius: 0, reach: halfCentre };
+	const halfUnit = Math.max(...group.units.map((u) => u.reach));
+	const clearOfCentre = halfCentre + halfUnit + CLUSTER_SPACING.gap;
+	const chord = 2 * halfUnit + CLUSTER_SPACING.gap;
 	const clearOfNeighbours =
-		group.members.length > 1 ? chord / (2 * Math.sin(Math.PI / group.members.length)) : 0;
+		group.units.length > 1 ? chord / (2 * Math.sin(Math.PI / group.units.length)) : 0;
 	const radius = Math.max(clearOfCentre, clearOfNeighbours);
-	return { radius, reach: radius + halfMember };
+	return { radius, reach: radius + halfUnit };
 }
