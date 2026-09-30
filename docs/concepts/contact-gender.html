@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gender and Pronouns on the Profile</title>
+<title>Gender on the Profile</title>
 <style>
   /* ── Catppuccin tokens, straight from src/app.css (Latte / Mocha) ─────── */
   :root, :root[data-theme='light'] {
@@ -86,7 +86,6 @@
   .avatar { width:72px; height:72px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:24px; background:color-mix(in srgb,var(--pink) 30%,var(--card)); color:var(--fg); flex-shrink:0; }
   .p-head .who { flex:1; min-width:0; }
   .p-head h3 { font-size:24px; font-weight:700; letter-spacing:-.01em; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
-  .p-head h3 .pron { font-size:14px; font-weight:500; color:var(--fg-subtle); }
   .p-head .desc { color:var(--fg-muted); margin:2px 0 0; }
   .p-head .meta { margin-top:8px; font-size:12px; color:var(--fg-subtle); display:flex; gap:14px; flex-wrap:wrap; }
   .p-head .meta b { color:var(--fg-muted); font-weight:500; }
@@ -158,9 +157,9 @@
 <div class="wrap">
   <header class="doc-head">
     <span class="kicker">Concept · Contacts</span>
-    <h1>Gender and pronouns, edited where they are read</h1>
+    <h1>Gender, edited where it is read</h1>
     <p class="lede">
-      Stella already stores a gender and pronouns for each contact and uses the gender to name
+      Stella already stores a gender for each contact and uses the gender to name
       relatives (<i>aunt</i> rather than <i>aunt or uncle</i>). But only an import can set them.
       This mockup adds them to the profile card, where the rest of a person's facts live.
     </p>
@@ -170,16 +169,14 @@
     <span class="eyebrow">Prototype</span>
     <h2>Rosa's profile</h2>
     <p class="intro">
-      Click the <b>Gender</b> row in the profile card. Pick one of three options and add pronouns
-      if you like. The worked-out relatives on the left update as you choose, so you
-      can see what the field changes. <kbd>Enter</kbd> saves and <kbd>Esc</kbd> cancels, just like
-      the name and the description.
+      Click the <b>Gender</b> row in the profile card. Tap one of three options, and it is saved at once. The worked-out relatives on the left update as you choose, so you
+      can see what the field changes. <kbd>Esc</kbd> closes the editor without a change.
     </p>
 
     <div class="switch">
       <span class="lbl">Start from</span>
       <button class="chip" data-start="empty" aria-pressed="true">Nothing on record</button>
-      <button class="chip" data-start="female" aria-pressed="false">Female · she/her</button>
+      <button class="chip" data-start="female" aria-pressed="false">Female</button>
       <button class="chip" data-start="diverse" aria-pressed="false">Diverse</button>
     </div>
 
@@ -226,7 +223,7 @@
     <p class="intro">
       <i>New contact</i> gets one optional chip row right under the names. It is visible rather than
       tucked into <i>More</i>, because the form links relatives straight away, and one tap there makes
-      the wording right from the start. Pronouns are left for the profile.
+      the wording right from the start.
     </p>
     <div class="proto-shell">
       <div class="browserbar">
@@ -261,10 +258,10 @@
     <div class="notes">
       <div class="note">
         <span class="d">Settled</span>
-        <h3>One row, not two</h3>
-        <p>Gender and pronouns share one row, <i>Female · she/her</i>, and one editor. They are
-          read together, so they are edited together. The row sits at the top of the profile card,
-          above contact details.</p>
+        <h3>No pronouns</h3>
+        <p>Stella never uses pronouns in its own wording, and no import fills them, so the field
+          would stay empty. The <code>pronouns</code> column stays in the schema, unused and
+          untouched, so archives and migrations do not change.</p>
       </div>
       <div class="note">
         <span class="d">Settled</span>
@@ -276,25 +273,14 @@
       </div>
       <div class="note">
         <span class="d">Settled</span>
-        <h3>Pronouns are free text</h3>
-        <p>Suggestions follow the chosen gender and the UI language (<i>sie/ihr</i>,
-          <i>she/her</i>, …), but any text is allowed. Pronouns never change kinship wording.</p>
+        <h3>One tap saves</h3>
+        <p>The row opens three chips. A tap saves and closes, and tapping the chosen one again
+          clears it. With nothing on record the row says so quietly, and relatives are named
+          neutrally.</p>
       </div>
       <div class="note">
         <span class="d">Settled</span>
-        <h3>Empty is a real answer</h3>
-        <p>With nothing on record the row says so quietly, and relatives are named neutrally.
-          <i>Remove</i> in the editor clears both fields.</p>
-      </div>
-      <div class="note">
-        <span class="d">Settled</span>
-        <h3>Pronouns only on the profile</h3>
-        <p>The header keeps name, description and the meta line. It is already full on a phone,
-          and in a family CRM you mostly know the people anyway.</p>
-      </div>
-      <div class="note">
-        <span class="d">Settled</span>
-        <h3>New contact asks for gender, not pronouns</h3>
+        <h3>New contact asks for gender too</h3>
         <p>One optional chip row under the names. It works offline too: the <code>contact.add</code>
           command gains an optional <code>gender</code>, so older queued commands without it still apply.</p>
       </div>
@@ -303,12 +289,6 @@
         <h3>Imported “O” becomes Diverse</h3>
         <p>Monica and vCard imports have dropped <code>O</code> (other) so far, because there was
           nowhere for it to go. Now it maps to <code>diverse</code>.</p>
-      </div>
-      <div class="note">
-        <span class="d">Settled</span>
-        <h3>Pronouns are kept as typed</h3>
-        <p><i>sie/ihr</i> stays <i>sie/ihr</i> in the English UI. Only the suggestions follow the
-          UI language, because free text cannot be translated consistently.</p>
       </div>
       <div class="note">
         <span class="d">Settled</span>
@@ -330,17 +310,15 @@
       family: 'Family, as Stella works it out', profile: 'Profile',
       contact: 'Contact details', dates: 'Dates', circles: 'Circles',
       kinNote: 'Where no female or male gender is on record, Stella names relatives neutrally.',
-      gender: 'Gender', notSet: 'Not on record', genderCap: 'Gender', pronounsCap: 'Pronouns',
+      gender: 'Gender', notSet: 'Not on record', genderCap: 'Gender',
       female: 'Female', male: 'Male', diverse: 'Diverse',
-      pronPlaceholder: 'e.g. she/her',
-      save: 'Save', cancel: 'Cancel', remove: 'Remove',
-      pron: { female: ['she/her'], male: ['he/him'], other: ['they/them', 'she/her', 'he/him'] },
+      cancel: 'Cancel',
       preview: 'Relatives will be named', gendered: 'gendered', neutral: 'neutrally',
       kin1: { female: 'Grandmother', male: 'Grandfather', neutral: 'Grandparent' },
       kin1of: 'of Lena, Noah and Elias',
       kin2: { female: 'Aunt', male: 'Uncle', neutral: 'Aunt or uncle' },
       kin2of: 'of Jana Aebi',
-      keys: 'Enter saves · Esc cancels', langBtn: 'Deutsch',
+      keys: 'A tap saves · Esc cancels', langBtn: 'Deutsch',
       newHeading: 'Add a person', firstName: 'First name', lastName: 'Last name', optional: '(optional)',
       linkAsRelative: 'Link as relative', description: 'Description', more: 'More — nickname, birthday',
       addPerson: 'Add person', newKin: { female: 'Niece', male: 'Nephew', neutral: 'Niece or nephew' }, newKinOf: 'of Rosa Brunner-Aebi',
@@ -351,17 +329,15 @@
       family: 'Familie, wie Stella sie herleitet', profile: 'Profil',
       contact: 'Kontaktdaten', dates: 'Daten', circles: 'Kreise',
       kinNote: 'Ist kein weibliches oder männliches Geschlecht erfasst, nennt Stella Verwandte neutral.',
-      gender: 'Geschlecht', notSet: 'Nicht erfasst', genderCap: 'Geschlecht', pronounsCap: 'Pronomen',
+      gender: 'Geschlecht', notSet: 'Nicht erfasst', genderCap: 'Geschlecht',
       female: 'Weiblich', male: 'Männlich', diverse: 'Divers',
-      pronPlaceholder: 'z. B. sie/ihr',
-      save: 'Speichern', cancel: 'Abbrechen', remove: 'Entfernen',
-      pron: { female: ['sie/ihr'], male: ['er/ihm'], other: ['keine Pronomen', 'sie/ihr', 'er/ihm'] },
+      cancel: 'Abbrechen',
       preview: 'Verwandte werden', gendered: 'nach Geschlecht benannt', neutral: 'neutral benannt',
       kin1: { female: 'Großmutter', male: 'Großvater', neutral: 'Großelternteil' },
       kin1of: 'von Lena, Noah und Elias',
       kin2: { female: 'Tante', male: 'Onkel', neutral: 'Onkel oder Tante' },
       kin2of: 'von Jana Aebi',
-      keys: 'Enter speichert · Esc bricht ab', langBtn: 'English',
+      keys: 'Antippen speichert · Esc bricht ab', langBtn: 'English',
       newHeading: 'Person hinzufügen', firstName: 'Vorname', lastName: 'Nachname', optional: '(optional)',
       linkAsRelative: 'Als verwandt verknüpfen', description: 'Beschreibung', more: 'Mehr — Spitzname, Geburtstag',
       addPerson: 'Person hinzufügen', newKin: { female: 'Nichte', male: 'Neffe', neutral: 'Nichte oder Neffe' }, newKinOf: 'von Rosa Brunner-Aebi',
@@ -369,15 +345,15 @@
   };
 
   const STARTS = {
-    empty: { gender: '', pronouns: '' },
-    female: { gender: 'female', pronouns: 'she/her' },
-    diverse: { gender: 'diverse', pronouns: '' },
+    empty: { gender: '' },
+    female: { gender: 'female' },
+    diverse: { gender: 'diverse' },
   };
   const PRESETS = ['female', 'male', 'diverse'];
 
   let lang = 'en';
   let saved = { ...STARTS.empty };
-  let draft = null; // non-null while the editor is open
+  let editing = false;
   let newGender = '';
 
   const c = () => COPY[lang];
@@ -413,73 +389,51 @@
 
   function renderRow() {
     const slot = document.getElementById('gender-slot');
-    if (draft) return renderEditor(slot);
-    const parts = [saved.gender && genderLabel(saved.gender), saved.pronouns].filter(Boolean);
+    if (editing) return renderEditor(slot);
+    const label = saved.gender && genderLabel(saved.gender);
     slot.innerHTML = `
       <div class="row editable" tabindex="0" role="button" id="gender-row">
         <span class="k">${c().gender}</span>
-        <span class="v ${parts.length ? '' : 'empty'}">${parts.length ? parts.join(' · ') : c().notSet}</span>
+        <span class="v ${label ? '' : 'empty'}">${label || c().notSet}</span>
       </div>`;
     const row = document.getElementById('gender-row');
-    const open = () => { draft = { ...saved }; renderRow(); };
+    const open = () => { editing = true; renderRow(); };
     row.onclick = open;
     row.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
-    renderKin(saved.gender, false);
   }
 
   function renderEditor(slot) {
-        const suggestions = c().pron[draft.gender === 'female' || draft.gender === 'male' ? draft.gender : 'other'];
-    const gendered = variant(draft.gender) !== 'neutral';
+    const gendered = variant(saved.gender) !== 'neutral';
     slot.innerHTML = `
       <div class="editor" id="editor">
         <label class="cap">${c().genderCap}</label>
         <div class="seg">
-          ${PRESETS.map((p) => `<button type="button" class="chip" data-g="${p}" aria-pressed="${draft.gender === p}">${c()[p]}</button>`).join('')}
+          ${PRESETS.map((p) => `<button type="button" class="chip" data-g="${p}" aria-pressed="${saved.gender === p}">${c()[p]}</button>`).join('')}
         </div>
-        <label class="cap" for="pron">${c().pronounsCap}</label>
-        <input class="input" id="pron" placeholder="${c().pronPlaceholder}" value="${draft.pronouns}">
-        <div class="seg">${suggestions.map((s) => `<button type="button" class="chip" data-p="${s}">${s}</button>`).join('')}</div>
         <p class="hint">${c().preview} <b>${gendered ? c().gendered : c().neutral}</b>.</p>
         <div class="actions">
-          <button type="button" class="btn primary" id="save">${c().save}</button>
           <button type="button" class="btn ghost" id="cancel">${c().cancel}</button>
-          <button type="button" class="btn link" id="remove">${c().remove}</button>
+          <span class="keys">${c().keys}</span>
         </div>
-        <span class="keys">${c().keys}</span>
       </div>`;
 
-    slot.querySelectorAll('[data-g]').forEach((b) => b.onclick = () => {
-      const g = b.dataset.g;
-      draft.gender = draft.gender === g ? '' : g;
-      renderEditor(slot);
-      renderKin(draft.gender, true);
-      document.getElementById('pron').focus();
-    });
-    slot.querySelectorAll('[data-p]').forEach((b) => b.onclick = () => {
-      draft.pronouns = b.dataset.p; document.getElementById('pron').value = draft.pronouns;
-    });
-    document.getElementById('pron').oninput = (e) => { draft.pronouns = e.target.value.trim(); };
-
-    const save = () => { saved = { gender: draft.gender, pronouns: draft.pronouns }; draft = null; renderRow(); };
-    const cancel = () => { draft = null; renderRow(); };
-    document.getElementById('save').onclick = save;
+    const commit = (gender) => { saved = { gender }; editing = false; renderRow(); renderKin(saved.gender, true); };
+    slot.querySelectorAll('[data-g]').forEach((b) => b.onclick = () => commit(saved.gender === b.dataset.g ? '' : b.dataset.g));
+    const cancel = () => { editing = false; renderRow(); };
     document.getElementById('cancel').onclick = cancel;
-    document.getElementById('remove').onclick = () => { saved = { gender: '', pronouns: '' }; draft = null; renderRow(); };
-    document.getElementById('editor').onkeydown = (e) => {
-      if (e.key === 'Escape') cancel();
-      if (e.key === 'Enter' && e.target.tagName === 'INPUT') save();
-    };
+    document.getElementById('editor').onkeydown = (e) => { if (e.key === 'Escape') cancel(); };
+    slot.querySelector('[aria-pressed="true"], [data-g]').focus();
   }
 
   function pressOnly(selector, button) {
     document.querySelectorAll(selector).forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
   }
   document.querySelectorAll('[data-start]').forEach((b) => b.onclick = () => {
-    pressOnly('[data-start]', b); saved = { ...STARTS[b.dataset.start] }; draft = null; renderRow();
+    pressOnly('[data-start]', b); saved = { ...STARTS[b.dataset.start] }; editing = false; renderRow(); renderKin(saved.gender, false);
   });
   document.getElementById('lang-btn').onclick = () => {
     lang = lang === 'en' ? 'de' : 'en';
-    renderStatic(); renderRow(); renderNewForm();
+    renderStatic(); renderRow(); renderKin(saved.gender, false); renderNewForm();
   };
   document.getElementById('theme-btn').onclick = () => {
     const root = document.documentElement;
@@ -489,6 +443,7 @@
 
   renderStatic();
   renderRow();
+  renderKin(saved.gender, false);
   renderNewForm();
 </script>
 </body>
