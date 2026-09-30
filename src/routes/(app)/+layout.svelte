@@ -275,7 +275,7 @@
 			<!-- On Home the trail would be "Home" alone, which the tab bar and sidebar already say;
 			     a phone, which has no sidebar, shows the logo there instead. -->
 			{#if crumbs.length <= 1}
-				<a href="/" class="md:hidden" aria-label={t('nav.stellaHome')}><Logo size={26} wordmark /></a>
+				<a href="/" class="flex items-center md:hidden" aria-label={t('nav.stellaHome')}><Logo size={26} wordmark /></a>
 			{:else}
 				<nav aria-label={t('nav.breadcrumb')} class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
 					{#each crumbs as crumb, i (i)}
