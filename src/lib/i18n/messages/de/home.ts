@@ -5,7 +5,7 @@ export const home: HomeMessages = {
 	'home.title': 'Start · Stella',
 	'home.heading': 'Was ist passiert?',
 	'home.intro':
-		'Einmal aufschreiben. Alle im Haushalt sehen es — außer du behältst es für dich.',
+		'Schreib auf, was war – der ganze Haushalt sieht es, außer du hältst es privat.',
 	'home.you': 'Du',
 	'home.atAGlance': 'Auf einen Blick',
 	'home.comingUp': 'Kommt bald',

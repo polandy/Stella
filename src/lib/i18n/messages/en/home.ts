@@ -11,7 +11,7 @@ export const home = {
 	'home.title': 'Home · Stella',
 	'home.heading': 'What happened?',
 	'home.intro':
-		'Write it down once. Everyone in the household sees it, unless you keep it private.',
+		'Write down what happened — the whole household sees it, unless you keep it private.',
 	'home.you': 'You',
 	'home.atAGlance': 'At a glance',
 	'home.comingUp': 'Coming up',

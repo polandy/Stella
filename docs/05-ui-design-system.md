@@ -209,7 +209,8 @@ They must be edited together; `app.css` says so at both blocks.
   **above** the stream while a date is due **within 14 days** (`IMMINENT_HORIZON_DAYS`);
   otherwise it follows the stream, where it is still one scroll away. Both bands are
   **absent entirely when empty**; there is no empty state for them, because a permanently
-  empty panel teaches people to stop looking. On a phone the top is the person search and
+  empty panel teaches people to stop looking. On a phone the top is the person search — the
+  *What happened?* heading speaks to the composer, so there it is left to screen readers — and
   the composer is a **sheet** opened from the tab-bar pencil.
 - **Settings → Data quality → Check relationships** — the household-wide suggestion review (docs/02 §2.4.1).
   Closed it is an `EmptyState` with one primary action, because no rule runs until it is asked

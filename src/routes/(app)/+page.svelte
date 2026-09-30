@@ -168,7 +168,9 @@
 {/snippet}
 
 <main class="mx-auto grid w-full max-w-6xl gap-x-10 gap-y-6 px-4 py-6 md:px-6 md:py-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:grid-rows-[auto_auto_1fr]">
-<header class="lg:col-start-1 lg:row-start-1">
+<!-- The heading speaks to the composer; a phone's Home opens on the person search instead, so
+     there it is left to screen readers and the search takes the top. -->
+<header class="max-md:sr-only lg:col-start-1 lg:row-start-1">
 	<h1 class="text-2xl font-semibold text-fg">{t('home.heading')}</h1>
 	<p class="text-sm text-fg-muted">{t('home.intro')}</p>
 </header>
