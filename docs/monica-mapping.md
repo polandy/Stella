@@ -51,8 +51,8 @@ Stella stores one row whose type carries both labels, so mirrored pairs collapse
 | `parent` / `child` | built-in `parent_child` (parent on the forward side) |
 | `grandparent` / `grandchild` | built-in `grandparent_grandchild` |
 | `mentor` / `protege` | built-in `mentor_mentee` |
-| `cousin` | custom *Cousin of* (family, symmetric) |
-| `uncle` / `nephew` | custom *Uncle/aunt of* / *Nephew/niece of* (family) |
+| `cousin` | built-in `cousin` |
+| `uncle` / `nephew` | built-in `aunt_uncle_niece_nephew` (aunt/uncle on the forward side) |
 | `godfather` / `godson` | custom *Godparent of* / *Godchild of* (family) |
 | `stepparent` / `stepchild` | custom *Step-parent of* / *Step-child of* (family) |
 | `bestfriend` | custom *Best friend of* (social, symmetric) |
