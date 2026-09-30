@@ -49,6 +49,22 @@ export async function drawnNode(page: Page, id: string): Promise<DrawnNode> {
 
 export const stateOf = async (page: Page, id: string) => (await drawnNode(page, id)).state;
 
+/** What the renderer is doing with one line right now, by the same reading as a node. */
+export async function lineStateOf(page: Page, id: string): Promise<NodeState> {
+	return page.evaluate((edgeId) => {
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const cy = el ? (el as unknown as { _cyreg: { cy: CyForTests } })._cyreg.cy : null;
+		if (!cy) return 'absent' as const;
+		const edge = cy.$id(edgeId);
+		if (edge.empty()) return 'absent' as const;
+		return edge.hasClass('filtered-out') ? ('filtered-out' as const) : ('drawn' as const);
+	}, id);
+}
+
+/** A derived kinship line's id, which is the same whichever of the pair is named first. */
+export const kinshipLineId = (a: string, b: string) => (a < b ? `kin:${a}:${b}` : `kin:${b}:${a}`);
+
 /** Clicks a node where the renderer has actually drawn it. */
 export async function clickNode(page: Page, id: string): Promise<void> {
 	const { point } = await drawnNode(page, id);
