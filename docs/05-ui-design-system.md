@@ -180,6 +180,11 @@ They must be edited together; `app.css` says so at both blocks.
     (`Home / People / {name} / Journal`). Every segment links, so Home is always one
     click away; on Home itself there is no trail — "Home" alone would repeat the tab bar — and
     a phone, having no sidebar, shows the logo there instead.
+  - **On a phone the top bar gets out of the way**: it slides up while the page scrolls down
+    and comes back as soon as it scrolls up (`TOP_BAR_TRAVEL_PX` in one direction, so a
+    shaky thumb does not flicker it), and always shows within its own height of the top.
+    The rule is the pure `followScroll` (`src/lib/shell/top-bar.ts`); reduced motion gets a
+    cut instead of the slide.
     The active destination is marked with `aria-current="page"` in the sidebar and tab bar. The desktop shell's account menu (theme + sign out) lives in the
     shell, not per page; sign out is repeated as a plain button on **Settings** so it is
     reachable on mobile, where that menu is not rendered.
