@@ -272,8 +272,11 @@
 	<div class="flex min-w-0 flex-1 flex-col">
 		<!-- Top bar -->
 		<header class="flex items-center gap-3 px-4 py-3 md:px-6">
-			<!-- On Home the trail would be "Home" alone, which the tab bar and sidebar already say. -->
-			{#if crumbs.length > 1}
+			<!-- On Home the trail would be "Home" alone, which the tab bar and sidebar already say;
+			     a phone, which has no sidebar, shows the logo there instead. -->
+			{#if crumbs.length <= 1}
+				<a href="/" class="md:hidden" aria-label={t('nav.stellaHome')}><Logo size={26} wordmark /></a>
+			{:else}
 				<nav aria-label={t('nav.breadcrumb')} class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
 					{#each crumbs as crumb, i (i)}
 						{#if i > 0}<span class="text-fg-subtle/60" aria-hidden="true">/</span>{/if}
