@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { mention, signIn } from './app';
+import { mention, openComposer, signIn } from './app';
 
 /*
  * Filtering the household stream by what and who (docs/02 §2.22.2). Written after the chips
@@ -23,6 +23,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('narrows the stream to one member, and "You" is the viewer', async ({ page }) => {
+	await openComposer(page);
 	await mention(page, 'Lena', /Lena Brunner/);
 	await page.getByLabel('What happened?').pressSequentially(MY_MOMENT);
 	await page.getByRole('button', { name: /^Save/ }).click();

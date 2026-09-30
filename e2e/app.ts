@@ -24,8 +24,8 @@ export async function signIn(page: Page): Promise<void> {
 		await page.getByRole('button', { name: 'Sign in as demo user' }).click();
 	}
 	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
-	// Home is served fast enough now that a spec can start typing into the moment composer
-	// before its @-picker is wired up, so hand back a shell that has actually mounted.
+	// Home is served fast enough now that a spec can start using it before the page has
+	// hydrated, so hand back a shell that has actually mounted.
 	await appReady(page);
 }
 
@@ -84,6 +84,24 @@ export async function addTag(page: Page, name: string): Promise<void> {
 	await tags.getByPlaceholder('Tag name').fill(name);
 	await tags.getByRole('button', { name: 'Add', exact: true }).last().click();
 	await expect(tags).toContainText(name);
+}
+
+/**
+ * Opens the moment composer over Home, the way a person does: the top of Home is the person
+ * search, so writing goes through the Write button beside it (from `md` up) or the tab bar's
+ * pencil (on a phone) — whichever is on screen. Both open the overlay as shallow state, so
+ * this works offline too once Home is showing. The field takes focus once it is open, which
+ * is the composer saying it is ready to type into.
+ */
+export async function openComposer(page: Page): Promise<Locator> {
+	if (new URL(page.url()).pathname !== '/') await page.goto('/');
+	await appReady(page);
+	// By where it goes: the rail's "Write a moment" links open it about one person instead.
+	await page.locator('a[href="/?compose"]').filter({ visible: true }).click();
+	await expect(page.getByTestId('compose-sheet')).toBeVisible();
+	const field = page.getByLabel('What happened?');
+	await expect(field).toBeFocused();
+	return field;
 }
 
 /** Types `@query` into the moment composer and picks the suggestion whose label matches. */

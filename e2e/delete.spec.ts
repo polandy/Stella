@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, mention, openPerson, signIn } from './app';
+import { addPerson, mention, openComposer, openPerson, signIn } from './app';
 
 /*
  * Removing a person for good (docs/02 §2.2). Written after the flow was verified in the
@@ -38,6 +38,7 @@ test('asks a second time, and the first click alone deletes nothing', async ({ p
 
 test('takes the person and everything written about them, and tells the household', async ({ page }) => {
 	// A moment about them, so there is something of theirs in the stream to lose.
+	await openComposer(page);
 	await page.getByLabel('What happened?').pressSequentially('walked the dog with ');
 	await mention(page, 'Ophelia', new RegExp(WHO));
 	await page.getByRole('button', { name: /^Save/ }).click();

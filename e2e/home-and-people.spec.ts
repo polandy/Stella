@@ -127,12 +127,12 @@ test.describe('on a phone', () => {
 		await expect(comingUp.getByRole('button', { name: /Show all/ })).toHaveCount(0);
 	});
 
-	test('keeps the capture field above the rail', async ({ page }) => {
-		// The rail is worth the top of a phone screen; the field it would push off is worth more.
+	test('keeps the person search above the rail', async ({ page }) => {
+		// The rail is worth the top of a phone screen; the search it would push off is worth more.
 		// The birthdays put the rail in front of the stream, which is the only arrangement in
-		// which it can push the field down — without them this would pass on the broken layout.
+		// which it can push the search down — without them this would pass on the broken layout.
 		await addBirthdaysSoon(page, ['Mara Aebi']);
-		const bar = await page.getByRole('link', { name: 'What happened?' }).boundingBox();
+		const bar = await page.getByRole('combobox', { name: 'Find a person…' }).boundingBox();
 		const rail = await page.getByRole('complementary', { name: 'At a glance' }).boundingBox();
 		expect(bar!.y).toBeLessThan(rail!.y);
 	});
