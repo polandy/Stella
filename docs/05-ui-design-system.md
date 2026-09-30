@@ -178,8 +178,14 @@ They must be edited together; `app.css` says so at both blocks.
     graph's peek strip, say — under the fixed tab bar while the address bar shows.
   - **Breadcrumb trail** in the top bar, derived from the route + loaded data
     (`Home / People / {name} / Journal`). Every segment links, so Home is always one
-    click away; the active destination is marked with `aria-current="page"` in the
-    sidebar and tab bar. The desktop shell's account menu (theme + sign out) lives in the
+    click away; on Home itself there is no trail — "Home" alone would repeat the tab bar — and
+    a phone, having no sidebar, shows the logo there instead.
+  - **On a phone the top bar gets out of the way**: it slides up while the page scrolls down
+    and comes back as soon as it scrolls up (`TOP_BAR_TRAVEL_PX` in one direction, so a
+    shaky thumb does not flicker it), and always shows within its own height of the top.
+    The rule is the pure `followScroll` (`src/lib/shell/top-bar.ts`); reduced motion gets a
+    cut instead of the slide.
+    The active destination is marked with `aria-current="page"` in the sidebar and tab bar. The desktop shell's account menu (theme + sign out) lives in the
     shell, not per page; sign out is repeated as a plain button on **Settings** so it is
     reachable on mobile, where that menu is not rendered.
   - The shell is a single `(app)/+layout.svelte`; pages render content only — no per-page
@@ -198,8 +204,8 @@ They must be edited together; `app.css` says so at both blocks.
 
 ## 5.5 Key screens
 
-- **Home** — the capture field over the household stream (§2.22), which carries two rows of
-  filter chips (*What*, *Who*) in the Circles chip style — links with `aria-current`, wrapping
+- **Home** — the capture field (on a phone, the person search) over the household stream
+  (§2.22), which carries two rows of filter chips (*What*, *Who*) in the Circles chip style — links with `aria-current`, wrapping
   onto a second line on a phone rather than scrolling sideways — with a **rail** on the
   right from `lg` up: **Coming up** (§2.13.3) and **Quiet lately** (§2.12.1), each row an
   avatar, the person, one line of context and the one action — *Write a moment*. Below `lg`
@@ -209,8 +215,9 @@ They must be edited together; `app.css` says so at both blocks.
   **above** the stream while a date is due **within 14 days** (`IMMINENT_HORIZON_DAYS`);
   otherwise it follows the stream, where it is still one scroll away. Both bands are
   **absent entirely when empty**; there is no empty state for them, because a permanently
-  empty panel teaches people to stop looking. On a phone the composer is a **sheet** opened from the *What happened?*
-  bar or the tab-bar pencil.
+  empty panel teaches people to stop looking. On a phone the top is the person search — the
+  *What happened?* heading speaks to the composer, so there it is left to screen readers — and
+  the composer is a **sheet** opened from the tab-bar pencil.
 - **Settings → Data quality → Check relationships** — the household-wide suggestion review (docs/02 §2.4.1).
   Closed it is an `EmptyState` with one primary action, because no rule runs until it is asked
   for; asked, it is a count, *Check again*, and one card per person — avatar, name linking to

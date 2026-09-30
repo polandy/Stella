@@ -1621,18 +1621,26 @@ on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s jou
 The fastest way to record a memory, and the way the family stays in the loop. Where Monica
 asks you to fill in modules, Stella asks **"what happened?"** — one field on Home turns a
 sentence like *"met @Julia at the lake, she's @Marco's sister"* into a person, a journal
-entry and a household update, without leaving the page. Concept + clickable prototype:
-`docs/concepts/moments-capture-concept.html`.
+entry and a household update, without leaving the page. On a phone the top of Home is a
+**person search** instead: finding someone is what a phone opens Home for most often.
+Concept + clickable prototype: `docs/concepts/moments-capture-concept.html`.
 
 ### 2.22.1 Capture ("What happened?")
 
 - **One field, on Home.** A plain text field (Markdown allowed) with the same `@`-mention
   autocomplete as the journal (§2.20.1). On desktop it sits at the top of Home; on a phone the
-  stream shows a one-line *What happened?* bar and the composer opens as a **sheet** over it,
-  from that bar or from the **pencil in the middle of the tab bar** (`/?compose`, so the open
-  state lives in the URL and survives a reload). `⌘K` / `Ctrl+K` from anywhere opens the
-  **command palette** (docs/05 §5.4), whose first row is *Write a moment* — so `⌘K`, `Enter`
-  still lands here.
+  composer opens as a **sheet** over the stream from the **pencil in the middle of the tab
+  bar** (`/?compose`, so the open state lives in the URL and survives a reload). `⌘K` /
+  `Ctrl+K` from anywhere opens the **command palette** (docs/05 §5.4), whose first row is
+  *Write a moment* — so `⌘K`, `Enter` still lands here.
+- **Find a person, at the top of a phone's Home.** Where the desktop has the composer, a
+  phone has a search field for people: typing lists up to six people whose name matches —
+  the best-starting name first, a namesake with the line that tells them apart (§2.2.3) —
+  and ends with *Search everything* (the full search, which also reads notes). Arrow keys
+  and Enter open a person. It matches against the people the shell already carries, as the
+  palette does, so it answers as you type and still works while Stella is out of reach;
+  without JavaScript it is a plain form into `/search`. The rows come from the pure
+  `personSearchRows`, which the palette shares.
 - **A moment *is* a journal entry.** Nothing new is stored: the first person mentioned becomes
   the entry's contact (the *anchor*, whose journal it lands in); every other mention is stored
   as a `journal_mention` exactly as today. The composer shows the anchor while typing

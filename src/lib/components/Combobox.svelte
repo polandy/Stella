@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { nextMenuIndex } from '$lib/menu/menu';
 	import { filterSuggestions } from '$lib/combobox/suggestions';
+	import { BLUR_CLOSE_MS } from '$lib/components/blur-close';
 
 	/*
 	 * A plain text field that suggests values already in use — a circle's roles, a household's
@@ -10,8 +11,6 @@
 	 * a dropdown for.
 	 */
 
-	/** Long enough for a click on a suggestion to land before the blur closes the list under it. */
-	const BLUR_CLOSE_MS = 120;
 
 	interface Props {
 		/** The form field this posts, exactly as a bare `<input name>` would. */

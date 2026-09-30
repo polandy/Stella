@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { beforeNavigate, goto, invalidateAll, onNavigate, pushState } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, goto, invalidateAll, onNavigate, pushState } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import Button from '$lib/components/Button.svelte';
 	import ActivityIndicator from '$lib/components/ActivityIndicator.svelte';
@@ -18,6 +18,7 @@
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { reportNavigation } from '$lib/sync/pending';
+	import { followScroll, SHOWN_TOP_BAR } from '$lib/shell/top-bar';
 	import { onMount, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 
@@ -80,6 +81,14 @@
 	// being disabled, rather than swallowing a click in the first moments after a load.
 	let paletteReady = $state(false);
 	onMount(() => (paletteReady = true));
+
+	// A phone's top bar slides away while the page scrolls down and back as it scrolls up
+	// (docs/05 §5.4); `followScroll` decides, this only feeds it and slides the bar.
+	let topBar = $state(SHOWN_TOP_BAR);
+	let topBarHeight = $state(0);
+	let scroller: HTMLDivElement | undefined = $state();
+	// Every page opens with its bar, from wherever the shared scroller stands.
+	afterNavigate(() => (topBar = { ...SHOWN_TOP_BAR, y: scroller?.scrollTop ?? 0 }));
 	function onGlobalKeydown(event: KeyboardEvent) {
 		if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return;
 		event.preventDefault();
@@ -271,17 +280,34 @@
 	<!-- Main column -->
 	<div class="flex min-w-0 flex-1 flex-col">
 		<!-- Top bar -->
-		<header class="flex items-center gap-3 px-4 py-3 md:px-6">
-			<nav aria-label={t('nav.breadcrumb')} class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
-				{#each crumbs as crumb, i (i)}
-					{#if i > 0}<span class="text-fg-subtle/60" aria-hidden="true">/</span>{/if}
-					{#if crumb.href && i < crumbs.length - 1}
-						<a href={crumb.href} class="text-fg-subtle hover:text-fg">{crumb.label}</a>
-					{:else}
-						<span class="font-semibold text-fg" aria-current="page">{crumb.label}</span>
-					{/if}
-				{/each}
-			</nav>
+		<!-- Slid up out of the shell rather than taken out of the flow, so the page follows it
+		     smoothly; a keyboard reaching into it brings it back. -->
+		<header
+			bind:offsetHeight={topBarHeight}
+			onfocusin={() => (topBar = { ...topBar, hidden: false })}
+			style:--top-bar-height="{topBarHeight}px"
+			class="flex items-center gap-3 px-4 py-3 transition-[margin-top] duration-350 ease-in-out motion-reduce:transition-none md:px-6 {topBar.hidden
+				? 'max-md:-mt-(--top-bar-height)'
+				: ''}"
+			data-testid="top-bar"
+			data-hidden={topBar.hidden}
+		>
+			<!-- On Home the trail would be "Home" alone, which the tab bar and sidebar already say;
+			     a phone, which has no sidebar, shows the logo there instead. -->
+			{#if crumbs.length <= 1}
+				<a href="/" class="flex items-center md:hidden" aria-label={t('nav.stellaHome')}><Logo size={26} wordmark /></a>
+			{:else}
+				<nav aria-label={t('nav.breadcrumb')} class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
+					{#each crumbs as crumb, i (i)}
+						{#if i > 0}<span class="text-fg-subtle/60" aria-hidden="true">/</span>{/if}
+						{#if crumb.href && i < crumbs.length - 1}
+							<a href={crumb.href} class="text-fg-subtle hover:text-fg">{crumb.label}</a>
+						{:else}
+							<span class="font-semibold text-fg" aria-current="page">{crumb.label}</span>
+						{/if}
+					{/each}
+				</nav>
+			{/if}
 
 			<div class="ml-auto flex items-center gap-2">
 				<button
@@ -309,7 +335,11 @@
 		<OfflineBanner />
 
 		<!-- Page content -->
-		<div class="flex-1 overflow-y-auto pb-16 md:pb-0">
+		<div
+			bind:this={scroller}
+			onscroll={(event) => (topBar = followScroll(topBar, event.currentTarget.scrollTop, topBarHeight))}
+			class="flex-1 overflow-y-auto pb-16 md:pb-0"
+		>
 			{@render children()}
 		</div>
 	</div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, pushState } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { MediaQuery } from 'svelte/reactivity';
 	import Avatar from '$lib/components/Avatar.svelte';
@@ -7,6 +7,7 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
+	import PersonFinder from '$lib/components/PersonFinder.svelte';
 	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
 	import { dayLabel as calendarDayLabel } from '$lib/dates/labels';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -107,8 +108,9 @@
 	// On a phone the composer is a sheet over the stream, opened by the pencil in the tab bar
 	// (`/?compose`) and closed by handing the URL back — so the open state lives in the URL
 	// and survives a reload, and there is nothing to keep in sync with the tab bar.
-	// Below `md` the composer lives in the sheet; above it, at the top of the stream. One of
-	// them is mounted at a time, so there is exactly one "What happened?" field on the page.
+	// Below `md` the composer lives in the sheet and the top of Home is the person search;
+	// above it, the composer sits at the top of the stream. One of them is mounted at a time,
+	// so there is exactly one "What happened?" field on the page.
 	// The kept moment open in the composer, if any (see below).
 	let editing = $state<KeptOf<'moment.capture'> | null>(null);
 
@@ -119,10 +121,6 @@
 		(data.compose || page.state.compose === true || page.url.searchParams.has('compose') || editing !== null) &&
 			phone.current
 	);
-	function openSheet(event: MouseEvent) {
-		event.preventDefault();
-		pushState('/?compose', { compose: true });
-	}
 	function closeSheet() {
 		if (editing) return void stopEditing();
 		if (page.state.compose) return history.back();
@@ -170,14 +168,17 @@
 {/snippet}
 
 <main class="mx-auto grid w-full max-w-6xl gap-x-10 gap-y-6 px-4 py-6 md:px-6 md:py-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:grid-rows-[auto_auto_1fr]">
-<header class="lg:col-start-1 lg:row-start-1">
+<!-- The heading speaks to the composer; a phone's Home opens on the person search instead, so
+     there it is left to screen readers and the search takes the top. -->
+<header class="max-md:sr-only lg:col-start-1 lg:row-start-1">
 	<h1 class="text-2xl font-semibold text-fg">{t('home.heading')}</h1>
 	<p class="text-sm text-fg-muted">{t('home.intro')}</p>
 </header>
 
 <div class="flex min-w-0 flex-col max-lg:order-1 lg:col-start-1 lg:row-start-2">
 
-	<!-- Desktop: the composer sits at the top. Phone: a sheet over the stream (below). -->
+	<!-- Desktop: the composer sits at the top. Phone: a person search, and the composer as a
+	     sheet over the stream (below). -->
 	<div class="max-md:hidden">
 		{#if !phone.current}{@render composer()}{/if}
 	</div>
@@ -191,10 +192,8 @@
 				</div>
 			</div>
 		{:else}
-			<a href="/?compose" onclick={openSheet} class="flex items-center gap-3 rounded-app bg-card px-3 py-2.5 text-sm text-fg-subtle shadow-card">
-				<Avatar id={data.user.id} name={data.user.name} avatarPhotoId={null} size={28} />
-				{t('home.heading')}
-			</a>
+			<!-- The pencil in the tab bar writes; the top of a phone's Home finds a person. -->
+			<PersonFinder people={data.people} />
 		{/if}
 	</div>
 

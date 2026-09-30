@@ -10,6 +10,7 @@
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
 	import { onMount, tick } from 'svelte';
+	import { BLUR_CLOSE_MS } from '$lib/components/blur-close';
 
 	/*
 	 * A textarea that offers people while you type `@` (docs/02 §2.20.1). The picker is an
@@ -70,8 +71,6 @@
 
 	const t = useTranslate();
 
-	/** Long enough for a click on a suggestion to land before the blur closes the list under it. */
-	const BLUR_CLOSE_MS = 120;
 
 	let textarea: HTMLTextAreaElement | undefined = $state();
 	let active = $state<ActiveHandle | null>(null);
