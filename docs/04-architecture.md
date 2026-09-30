@@ -849,6 +849,12 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   codebase: `navigator.userAgent` for `iPad`/`iPhone`, plus the `MacIntel` + touch-points
   combination iPadOS answers with instead of naming itself
   (`src/lib/ui/fullscreen.ts`).
+- **Gender as three values, pronouns left unused** — a fixed `female` / `male` / `diverse`
+  instead of free text, because the only thing Stella does with a gender is choose a kinship
+  word, and free text would need guessing to do that. It costs the nuance free text allowed.
+  Pronouns are not offered at all: nothing Stella writes uses them. The `pronouns` column stays
+  in the schema, unused, so there is no migration and no archive format change for a field
+  that was always empty (docs/02 §2.2, `src/lib/people/gender.ts`).
 
 ## 4.10 Deployment
 

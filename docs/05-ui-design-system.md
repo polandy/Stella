@@ -574,6 +574,12 @@ field is simply always there. A save that failed keeps the editor open with the 
 it, and one that worked says *Saved* like every other form. Used for the person's name and
 description (docs/02 §2.2).
 
+**Gender row** (`src/lib/components/GenderRow.svelte`) is the same idea for a choice of three:
+the profile card's *Gender* row opens three chips, and a tap on one saves it and closes the
+row. The chosen chip is pressed (`aria-pressed`), and a tap on it takes the gender off the
+record. Escape closes without a change. *New contact* shows the same chips as radio buttons
+that a second tap unchecks, because the field is optional (docs/02 §2.2).
+
 **Settings → Data** lists the household's data tools as full-width cards: an icon in a soft
 primary disc, a name, one line of explanation, and a chevron. *Download the archive* is the one
 card that is a form rather than a link — it posts, because taking the archive writes a line into

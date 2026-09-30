@@ -16,8 +16,9 @@ const MOTHER = 'Ines Aregger';
 const CHILD = 'Kim Aregger';
 const LONER = 'Pia Aregger';
 
-test.beforeEach(async ({ page }) => {
-	await signIn(page);
+// The stored session is enough without JavaScript; `signIn` waits for a shell that never mounts there.
+test.beforeEach(async ({ page, javaScriptEnabled }) => {
+	if (javaScriptEnabled) await signIn(page);
 });
 
 test('sets a gender with one tap, names relatives by it, and takes it back with another', async ({ page }) => {
@@ -84,6 +85,26 @@ test('Escape closes the chips without changing anything', async ({ page }) => {
 	await expect(row.getByRole('button', { name: /^Gender/ })).toBeVisible();
 	await expect(row.getByRole('button', { name: 'Female', exact: true })).toHaveCount(0);
 	expect(await row.innerText()).toBe(before);
+});
+
+/*
+ * The form's own action, which is what saves a person when the page runs without JavaScript;
+ * with it, the chips above go through the command outbox instead.
+ */
+test.describe('without JavaScript', () => {
+	test.use({ javaScriptEnabled: false });
+
+	test('keeps the gender chosen while adding someone', async ({ page }) => {
+		await page.goto('/contacts/new');
+		await page.getByLabel('First name').fill('Leonie');
+		await page.getByLabel('Last name').fill('Zumstein');
+		await page.getByText('Diverse', { exact: true }).click();
+		await expect(page.getByRole('radio', { name: 'Diverse', exact: true })).toBeChecked();
+		await page.getByRole('button', { name: 'Add person' }).click();
+
+		await expect(page.getByRole('heading', { name: 'Leonie Zumstein' })).toBeVisible();
+		await expect(page.locator('[data-row="gender"]')).toContainText('Diverse');
+	});
 });
 
 test('asks for a gender while adding someone, and lets a second tap take the choice back', async ({ page }) => {

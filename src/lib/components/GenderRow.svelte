@@ -9,7 +9,7 @@
 	/*
 	 * A person's gender, set where it is read (docs/02 §2.2). The row opens three chips; a tap
 	 * saves and closes, and a tap on the chosen one takes it off the record. Each chip is a
-	 * submit button carrying its own value, so the row works without JavaScript as well.
+	 * submit button carrying its own value, so a tap is the whole form.
 	 */
 	interface Props {
 		gender: Gender | null;
