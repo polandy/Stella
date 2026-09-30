@@ -47,6 +47,12 @@ export interface RoleGroupOptions {
 	innerLinks: boolean;
 	/** Groups the reader asked to see individually, by id. */
 	dissolved?: ReadonlySet<string>;
+	/**
+	 * Edges the map leaves off unless their person is selected — the derived kinship lines its
+	 * chains already say (docs/02 §2.7). A bundle never stands for one, or its count would name
+	 * lines the map does not draw; each stays its person's own, shown as they are selected.
+	 */
+	leftOff?: ReadonlySet<string>;
 }
 
 /** A frame around one face adds nothing, so a role needs this many people to form a group. */
@@ -134,7 +140,7 @@ export function groupByRole(model: GraphModel, options: RoleGroupOptions): RoleG
 	// Links between two groups gather into one line per kind; links inside a group stay.
 	const between = new Map<string, EdgeBundle>();
 	for (const edge of model.edges) {
-		if (edge.kind === 'membership') continue;
+		if (edge.kind === 'membership' || options.leftOff?.has(edge.id)) continue;
 		const from = groupOf.get(edge.source);
 		const to = groupOf.get(edge.target);
 		if (from === undefined || to === undefined) continue;

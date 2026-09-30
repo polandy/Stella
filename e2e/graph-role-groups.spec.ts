@@ -5,15 +5,18 @@ import {
 	clickFrame,
 	clickNode,
 	filterMenu,
+	kinshipLineId,
 	settled,
 	stateOf
 } from './graph-canvas';
+import { circleIdOf, LINK, personIdOf, seedHousehold } from './seed';
 
 /*
  * Grouping a circle's members by role on the map (docs/02 §2.7, docs/05 §5.8). Written after
  * the maintainer tried it in the running app (docs/08 §8.4.1).
  *
- * Read-only against the demo household: it centres Lena and opens her Turnverein, whose two
+ * Read-only against the demo household, save the last case, which seeds its own family: the
+ * others centre Lena and open her Turnverein, whose two
  * "Aktive" — Sandra and Franziska, friends with each other — are the only role held twice.
  * Lena (Kinderriege) and Beat (Leiter) hold theirs alone and stay ordinary nodes; Sandra is
  * Lena's mother, a link from inside the group to somebody outside it.
@@ -247,4 +250,121 @@ test('remembers the switch on this device', async ({ page }) => {
 		'aria-checked',
 		'true'
 	);
+});
+
+/*
+ * A derived kinship line the map leaves off, because the chain of entered links it abbreviates
+ * is drawn, is never counted in a bundle between two groups (docs/02 §2.7) — the count would
+ * name lines the map does not draw. This case brings its own household, seeded through the
+ * archive as its setting, with names the demo household and the other specs do not use:
+ * Brigitte is the mother of Cla and Dario and Arnold's sister, so Arnold is their uncle through
+ * a chain that is on the map. In the Schachklub, Arnold and Brigitte are the Trainer, the
+ * children the Junioren — two groups, with Brigitte's parent links and Arnold's uncle lines
+ * both running between them.
+ */
+const ARNOLD = 'Arnold Vonlanthen';
+const BRIGITTE = 'Brigitte Vonlanthen';
+const CLA = 'Cla Vonlanthen';
+const DARIO = 'Dario Vonlanthen';
+const SCHACHKLUB = 'Schachklub Aarberg';
+const CLUB = circleIdOf(SCHACHKLUB);
+const TRAINER = `rolegroup:${CLUB}:=Trainer`;
+const JUNIOREN = `rolegroup:${CLUB}:=Junioren`;
+
+/** The bundles the renderer draws between two groups, by kind, with the count each carries. */
+async function bundlesBetween(page: Page, x: string, y: string) {
+	return page.evaluate(
+		({ x, y }) => {
+			type Edge = { data(key: string): string | number; visible(): boolean };
+			let el: HTMLElement | null = document.querySelector('canvas');
+			while (el && !('_cyreg' in el)) el = el.parentElement;
+			const cy = (
+				el as unknown as {
+					_cyreg: { cy: { edges(s: string): { toArray(): Edge[] } } };
+				}
+			)._cyreg.cy;
+			return cy
+				.edges('edge.bundle')
+				.toArray()
+				.filter(
+					(e) =>
+						e.visible() &&
+						((e.data('source') === x && e.data('target') === y) ||
+							(e.data('source') === y && e.data('target') === x))
+				)
+				.map((e) => `${e.data('kind')} × ${e.data('count')}`)
+				.sort();
+		},
+		{ x, y }
+	);
+}
+
+/** Whether the renderer shows this line right now: held, not filtered out, not tucked away. */
+async function lineShown(page: Page, id: string) {
+	return page.evaluate((edgeId) => {
+		type Edge = { empty(): boolean; visible(): boolean };
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const cy = (el as unknown as { _cyreg: { cy: { $id(id: string): Edge } } })._cyreg.cy;
+		const edge = cy.$id(edgeId);
+		return !edge.empty() && edge.visible();
+	}, id);
+}
+
+test('counts no derived kinship line the map leaves off in a bundle between two groups', async ({
+	page
+}) => {
+	await seedHousehold(
+		page,
+		[ARNOLD, BRIGITTE, CLA, DARIO],
+		[
+			{ from: BRIGITTE, to: ARNOLD, type: LINK.siblingOf },
+			{ from: BRIGITTE, to: CLA, type: LINK.parentOf },
+			{ from: BRIGITTE, to: DARIO, type: LINK.parentOf }
+		],
+		{ [ARNOLD]: 'male', [BRIGITTE]: 'female' },
+		[
+			{
+				name: SCHACHKLUB,
+				members: [
+					{ person: ARNOLD, role: 'Trainer' },
+					{ person: BRIGITTE, role: 'Trainer' },
+					{ person: CLA, role: 'Junioren' },
+					{ person: DARIO, role: 'Junioren' }
+				]
+			}
+		]
+	);
+	await page.goto(`/graph?center=${personIdOf(BRIGITTE)}`);
+	await settled(page);
+	await clickNode(page, CLUB);
+	const peek = page.getByRole('complementary');
+	await expect(peek.getByText(SCHACHKLUB)).toBeVisible();
+	await peek.getByRole('button', { name: 'Expand connections' }).click();
+	await peek.getByRole('button', { name: 'Close' }).click();
+	await settled(page);
+
+	await toggle(page, 'Group by role');
+
+	// Brigitte's two parent links travel as one bundle — the sign the groups are drawn and the
+	// bundles between them counted. Arnold's uncle lines, their chain through her on the map,
+	// make no bundle of their own.
+	await expect.poll(() => bundlesBetween(page, TRAINER, JUNIOREN)).toEqual(['relationship × 2']);
+
+	// Selecting Arnold names his lines, the uncle lines among them, as without groups.
+	const uncleOfCla = kinshipLineId(personIdOf(ARNOLD), personIdOf(CLA));
+	const uncleOfDario = kinshipLineId(personIdOf(ARNOLD), personIdOf(DARIO));
+	expect(await lineShown(page, uncleOfCla)).toBe(false);
+	await page.getByLabel('Find a person').fill(ARNOLD);
+	await page.getByTestId('graph-suggestions').getByRole('button', { name: ARNOLD }).click();
+	await expect(peek.getByText(ARNOLD)).toBeVisible();
+	await expect.poll(() => lineShown(page, uncleOfCla)).toBe(true);
+	expect(await lineShown(page, uncleOfDario)).toBe(true);
+	await peek.getByRole('button', { name: 'Close' }).click();
+
+	// Asked for every kinship line, the map draws them — and bundles them, with their count.
+	await toggle(page, 'All kinship lines');
+	await expect
+		.poll(() => bundlesBetween(page, TRAINER, JUNIOREN))
+		.toEqual(['kinship × 2', 'relationship × 2']);
 });

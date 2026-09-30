@@ -105,6 +105,43 @@ describe('groupByRole', () => {
 		expect(grouping.tucked.has('mother-juri')).toBe(false);
 	});
 
+	it('bundles no line the map leaves off, so a count never names a line it would not draw', () => {
+		// Thomas is the children's uncle three times over; the map explains two of those by a chain.
+		const kin = (childId: string): GraphEdge => ({
+			id: `uncle-${childId}`,
+			source: 'thomas',
+			target: childId,
+			kind: 'kinship',
+			category: 'family',
+			derived: true
+		});
+		const withKinship: GraphModel = {
+			nodes: club.nodes,
+			edges: [...club.edges, kin('lena'), kin('juri'), kin('leo')]
+		};
+		const kinshipBundles = (leftOff: ReadonlySet<string>) =>
+			groupByRole(withKinship, { ...on, leftOff }).bundles.filter((b) => b.kind === 'kinship');
+
+		expect(kinshipBundles(new Set())[0].edgeIds.sort()).toEqual([
+			'uncle-juri',
+			'uncle-lena',
+			'uncle-leo'
+		]);
+		expect(kinshipBundles(new Set(['uncle-leo']))[0].edgeIds.sort()).toEqual([
+			'uncle-juri',
+			'uncle-lena'
+		]);
+
+		// Left off, a line is its person's own again: selecting them names it like any other.
+		const grouping = groupByRole(withKinship, {
+			...on,
+			leftOff: new Set(['uncle-juri', 'uncle-leo'])
+		});
+		expect(grouping.bundles.filter((b) => b.kind === 'kinship')).toEqual([]);
+		expect(grouping.tucked.has('uncle-juri')).toBe(false);
+		expect(grouping.tucked.has('uncle-lena')).toBe(false);
+	});
+
 	it('keeps links to people outside every group with the person', () => {
 		const grouping = groupByRole(club, on);
 
