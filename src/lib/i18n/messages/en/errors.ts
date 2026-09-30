@@ -7,6 +7,7 @@ export const errors = {
 	'errors.contact.birthDateFormat':
 		'A birth date must be YYYY-MM-DD, or --MM-DD when the year is unknown.',
 	'errors.contact.emptyName': 'A name cannot be empty.',
+	'errors.contact.invalidGender': 'Choose female, male or diverse.',
 	'errors.contact.needsSomethingToKnowThemBy':
 		'Add a last name or a description, so this person can be told apart from others of the same name later.',
 	'errors.contact.emptyDescription': 'Write something to know them by.',

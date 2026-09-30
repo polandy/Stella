@@ -278,6 +278,7 @@ function planPeople(
 			metPlace: null,
 			birthDate,
 			birthDatePrecision: birthDate?.startsWith('--') ? 'month_day' : 'full',
+			gender: null,
 			...stamps
 		};
 		contacts.push(contact);

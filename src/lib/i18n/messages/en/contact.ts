@@ -25,6 +25,14 @@ export const contact = {
 	'contact.section.mentions': 'Mentioned in',
 	'contact.section.profile': 'Profile',
 
+	'contact.gender': 'Gender',
+	'contact.gender.edit': 'Edit gender',
+	'contact.gender.notRecorded': 'Not on record',
+	'contact.gender.female': 'Female',
+	'contact.gender.male': 'Male',
+	'contact.gender.diverse': 'Diverse',
+	'contact.gender.hint': 'With female or male, relatives are named by gender, such as aunt or uncle; otherwise neutrally.',
+
 	'contact.section.contact': 'Contact',
 	'contact.noFields': 'No phone, email, or address yet.',
 	'contact.removeField': (p: { what: string }) => `Remove ${p.what}`,

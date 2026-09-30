@@ -5,6 +5,7 @@ export const errors: ErrorsMessages = {
 	'errors.contact.birthDateFormat':
 		'Ein Geburtsdatum muss JJJJ-MM-TT lauten — oder --MM-TT, wenn das Jahr unbekannt ist.',
 	'errors.contact.emptyName': 'Ein Name darf nicht leer sein.',
+	'errors.contact.invalidGender': 'Bitte weiblich, männlich oder divers wählen.',
 	'errors.contact.needsSomethingToKnowThemBy':
 		'Gib einen Nachnamen oder eine Beschreibung an, damit man die Person später von anderen mit demselben Namen unterscheiden kann.',
 	'errors.contact.emptyDescription': 'Schreib etwas, woran man die Person erkennt.',

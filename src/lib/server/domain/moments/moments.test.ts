@@ -45,6 +45,7 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 		description: null,
 		birthDate: null,
 		birthDatePrecision: 'full',
+		gender: null,
 		howWeMet: null,
 		metDate: null,
 		metPlace: null,
@@ -63,6 +64,7 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 			},
 			// The moment capture never edits a profile; present because the port requires it.
 			async updateProfile() {},
+			async setGender() {},
 		async setArchived() {},
 		async listArchivedVisibleTo() {
 			return [];

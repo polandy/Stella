@@ -10,6 +10,7 @@ import type { ContactFieldKind } from '../contact-fields/kinds';
 import type { ImportantDateKind } from '../dates/kinds';
 import type { InteractionKind } from '../interactions/kinds';
 import type { MentionAudience } from '../mentions/audience';
+import type { Gender } from '../people/gender';
 
 /** What a command does to the household's data. Only an addition may wait on a device. */
 export type CommandKind = 'add' | 'change' | 'remove';
@@ -135,6 +136,8 @@ export interface ContactAddPayload {
 	metPlace: string | null;
 	/** ISO `YYYY-MM-DD`, or `--MM-DD` when the year is not known. */
 	birthDate: string | null;
+	/** Optional: a phone that queued the person before the field existed sends none. */
+	gender?: Gender | null;
 	visibility: MentionAudience;
 }
 

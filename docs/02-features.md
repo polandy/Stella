@@ -121,7 +121,13 @@ description to go with it, §2.2.3):**
 
 - Names: first, last, nickname, name prefix/suffix, "goes by".
 - Optionally a **maiden/former name**.
-- Gender (free-form or preset), pronouns.
+- **Gender**: *female*, *male* or *diverse*, or nothing on record. It is set from the
+  profile card's *Gender* row, where a tap on one of three chips saves it and a tap on the
+  chosen one takes it off again, and optionally while adding the person. Female and male make
+  relatives' wording gendered (*aunt*, *uncle*); diverse, like nothing on record, keeps it
+  neutral. A stored value other than the three — free text from an older archive — reads as
+  not on record. Stella asks for no pronouns: nothing it writes uses them, and in a family
+  address book the field would stay empty (the `pronouns` column stays, unused).
 - Photo / avatar.
 - Birthdate (with support for **unknown year** and **age-only** estimates).
 - Deceased flag + date of death.

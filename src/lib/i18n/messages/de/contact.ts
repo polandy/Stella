@@ -25,6 +25,14 @@ export const contact: ContactMessages = {
 	'contact.section.mentions': 'Erwähnt in',
 	'contact.section.profile': 'Profil',
 
+	'contact.gender': 'Geschlecht',
+	'contact.gender.edit': 'Geschlecht bearbeiten',
+	'contact.gender.notRecorded': 'Nicht erfasst',
+	'contact.gender.female': 'Weiblich',
+	'contact.gender.male': 'Männlich',
+	'contact.gender.diverse': 'Divers',
+	'contact.gender.hint': 'Bei weiblich oder männlich heißen Verwandte nach Geschlecht, etwa Tante oder Onkel; sonst neutral.',
+
 	'contact.section.contact': 'Kontaktdaten',
 	'contact.noFields': 'Noch keine Telefonnummer, E-Mail-Adresse oder Anschrift.',
 	'contact.removeField': (p) => `${p.what} entfernen`,

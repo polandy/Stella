@@ -42,6 +42,7 @@ export const contacts: ContactsMessages = {
 		'Nach dem Anlegen landest du im Beziehungseditor, mit dieser Person ausgewählt.',
 	'contacts.new.description': 'Beschreibung',
 	'contacts.new.descriptionHint': '(eine Zeile)',
+	'contacts.new.genderHint': '(optional)',
 	'contacts.new.descriptionPlaceholder': 'Marcos Schwester, am See kennengelernt',
 	'contacts.new.howWeMet': 'Wie wir uns kennengelernt haben',
 	'contacts.new.where': 'Wo',
