@@ -257,8 +257,15 @@
 			: model
 	);
 	const drawnVisible = $derived(drawn === model ? visible : applyFilters(drawn, buildFilters()));
+	/*
+	 * The derived lines whose chain of entered links is on the map only repeat it, so they stay
+	 * off unless the reader asks for every one of them (docs/02 §2.7). Read without the
+	 * selection, so a bundle between two groups counts only the lines the map draws, and
+	 * selecting someone neither rebuilds the canvas nor moves anybody.
+	 */
+	const leftOff = $derived(allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible));
 	const grouping = $derived(
-		groupingOn ? groupByRole(drawnVisible, { innerLinks, dissolved }) : null
+		groupingOn ? groupByRole(drawnVisible, { innerLinks, dissolved, leftOff }) : null
 	);
 	const groupLabel = (g: RoleGroup) =>
 		t('graph.group.label', { role: g.role ?? t('circles.noRole'), count: g.memberIds.length });
@@ -271,10 +278,7 @@
 			edgeLabel,
 			grouping: grouping ? { grouping, groupLabel, bundleLabel } : undefined
 		});
-	/*
-	 * A derived line whose chain of entered links is on the map only repeats it, so it stays off
-	 * until its person is selected — or the reader asks for every one of them (docs/02 §2.7).
-	 */
+	// The same lines, but the selected person's own are drawn: selecting names every line.
 	const implied = $derived(
 		allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible, selected)
 	);

@@ -249,6 +249,19 @@ They must be edited together; `app.css` says so at both blocks.
     that is the honest limit. *Undo* lives in the toast for eight seconds, and under
     `prefers-reduced-motion` the row simply goes. Concept:
     `docs/concepts/relationship-answer-vanish.html`.
+  - **A keyboard answer keeps its place, too.** The focused *Accept* or *Decline* leaves with
+    its row, so once the row has gone focus moves to the **same button of the row that took its
+    place** — a run of *Decline, Enter* goes on down the list. The rows are read in page order
+    across the whole screen: a person's last answer carries on into the next person's first
+    row; with nothing left below, the nearest row above; with no row left at all, the screen's
+    heading (*Check relationships*, or *Suggestions* / *Also true?* on a profile), which is
+    focusable for exactly this. Not the person's own name: their card leaves the page once its
+    answers are sent and would drop focus a second time. Only a keyboard answer moves focus
+    (`:focus-visible`) — a click never does, so the pointer's 0px hold is untouched — and never
+    when the reader has already put focus somewhere else, or the row left for another reason
+    (an undo, a refresh). Focusing a button says nothing new, so the toast's announcement is
+    not talked over. Works the same under `prefers-reduced-motion`. Decision:
+    `src/lib/relationships/answer-focus.ts`.
 - **People** — a find-as-you-type field, tag chips, then **letter groups** by surname with a
   sticky letter heading; each row is avatar, name (lock for private), description, and
   **last written about** on the right (`—` when nothing has been). The heading counts people;

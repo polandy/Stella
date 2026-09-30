@@ -9,6 +9,12 @@
 	import type { KinVariant } from '$lib/kinship/kinship';
 	import type { Relation } from '$lib/suggestions/types';
 	import { ANSWER_ANCHOR_FIELD, answerAnchor, answerKey } from '$lib/relationships/answer-key';
+	import {
+		focusAfterAnswer,
+		owesFocus,
+		type AnswerControl,
+		type FocusNow
+	} from '$lib/relationships/answer-focus';
 	import { wasTakenBack, type AnswerState, type AnsweredClaims } from '$lib/relationships/answered';
 	import { claimSentence } from '$lib/relationships/claim-sentence';
 	import { RETURN_TO_FIELD } from '$lib/relationships/review-url';
@@ -37,6 +43,12 @@
 	 * stay under the reader's hand (`$lib/ui/leaving.ts`). The answer itself is still held for
 	 * one undo window and sent only when that window closes (docs/02 §2.23): what leaves the
 	 * screen and what reaches the server are two different promises.
+	 *
+	 * Keyboard focus is kept as the scroll offset is: the button that had it leaves with its
+	 * row, so once the row has gone focus moves to the same button of the row that took its
+	 * place (`$lib/relationships/answer-focus.ts`). The rows are read across the nearest
+	 * `data-kin-scope` ancestor, so on the review page a person's last answer carries on into the
+	 * next person's card; with no row left, focus goes to that scope's `data-kin-heading`.
 	 */
 	interface Suggestion {
 		ruleId: string;
@@ -113,15 +125,61 @@
 	const keyOf = (s: Suggestion) => answerKey(s.relation, s.fromId, s.toId);
 
 	/*
+	 * The one answer whose row owes focus back once it has gone. Set only when the reader
+	 * answered from a keyboard-focused button, so a row leaving for any other reason — another member's
+	 * answer arriving with fresh data, a failed send, an undo — never moves focus. Plain rather
+	 * than `$state`: nothing renders from it.
+	 */
+	let owed: { key: string; control: AnswerControl } | null = null;
+
+	/*
 	 * Undo is pressed in the toast, which knows nothing about this block — so the way back is
 	 * observed rather than reported: a claim the store no longer holds, and that never went as
 	 * far as *sending*, was taken back, and its row returns to the open list.
 	 */
 	$effect(() => {
 		for (const [key, claim] of Object.entries(answered)) {
-			if (wasTakenBack(claim, removals.isPending(key))) delete answered[key];
+			if (!wasTakenBack(claim, removals.isPending(key))) continue;
+			delete answered[key];
+			if (owed?.key === key) owed = null;
 		}
 	});
+
+	/**
+	 * Runs when a row's way out ends — after 200ms, or at once under `prefers-reduced-motion`,
+	 * where the transition has no duration and ends in the same step. The row is still in the
+	 * page at that moment, which is what lets its place in the list be read.
+	 */
+	function settleFocus(row: HTMLElement, key: string) {
+		if (owed?.key !== key) return;
+		const { control } = owed;
+		owed = null;
+		const scope = row.closest<HTMLElement>('[data-kin-scope]') ?? row.parentElement;
+		if (!scope) return;
+		// A row on its way out is `inert` for as long as it stays: Svelte marks it so.
+		const rows = [...scope.querySelectorAll<HTMLElement>('[data-kin-row]')];
+		const active = document.activeElement;
+		const focusNow: FocusNow =
+			active === null || active === document.body
+				? 'nowhere'
+				: row.contains(active)
+					? 'leaving-row'
+					: 'elsewhere';
+		const target = focusAfterAnswer(
+			rows.map((el) => ({ key: el.dataset.kinRow ?? '', leaving: el.inert })),
+			key,
+			control,
+			focusNow
+		);
+		if (target === null) return;
+		const element =
+			target === 'heading'
+				? scope.querySelector<HTMLElement>('[data-kin-heading]')
+				: rows
+						.find((el) => el.dataset.kinRow === target.row)
+						?.querySelector<HTMLElement>(`[data-kin-answer="${target.control}"] button`);
+		element?.focus();
+	}
 
 	/*
 	 * An answered row goes immediately, whether or not its undo window has closed: it is the
@@ -175,6 +233,14 @@
 		);
 		return (event: Parameters<typeof submit>[0]) => {
 			const result = submit(event);
+			// Remember the control only if a keyboard reader was on it: `:focus-visible` is the
+			// browser's own word for that, and a click leaves the pointer path exactly as it was.
+			const active = document.activeElement;
+			const owes = owesFocus({
+				inAnswer: event.formElement.contains(active),
+				visible: active?.matches(':focus-visible') ?? false
+			});
+			owed = owes ? { key, control: answer } : null;
 			answered[key] = { answer, state: 'held' };
 			return result;
 		};
@@ -208,7 +274,9 @@
 			class="grid grid-cols-[1fr_auto] items-start gap-x-3 gap-y-1 rounded-md border border-border-subtle bg-card p-2 max-[34rem]:grid-cols-1"
 			id={answerAnchor(suggestion.relation, suggestion.fromId, suggestion.toId)}
 			data-testid="kin-suggestion"
+			data-kin-row={keyOf(suggestion)}
 			out:leaving={{ duration: leaveMs }}
+			onoutroend={(event) => settleFocus(event.currentTarget, keyOf(suggestion))}
 		>
 			<span class="min-w-0 text-sm font-medium text-fg">
 				<LinkedNames segments={claimOf(suggestion)} />
@@ -228,6 +296,7 @@
 				<form
 					method="POST"
 					action="?/addProposedRelationship"
+					data-kin-answer="accept"
 					use:enhance={hold(suggestion, 'accept')}
 				>
 					<input type="hidden" name="fromId" value={suggestion.fromId} />
@@ -242,7 +311,12 @@
 					/>
 					<Button variant="primary" size="sm">{t('contact.relationships.accept')}</Button>
 				</form>
-				<form method="POST" action="?/dismissSuggestion" use:enhance={hold(suggestion, 'decline')}>
+				<form
+					method="POST"
+					action="?/dismissSuggestion"
+					data-kin-answer="decline"
+					use:enhance={hold(suggestion, 'decline')}
+				>
 					<input type="hidden" name="relation" value={suggestion.relation} />
 					<input type="hidden" name="fromId" value={suggestion.fromId} />
 					<input type="hidden" name="toId" value={suggestion.toId} />

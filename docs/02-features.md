@@ -844,7 +844,9 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
     frame, so the map still says exactly who is connected — and a traced connection path
     stays exact.
   - **Links between two groups** (the parents to the children) are **bundled** into one line
-    per kind of link, carrying the count (*5 links*); a single one stays as it is. Selecting a
+    per kind of link, carrying the count (*5 links*); a single one stays as it is. A derived
+    kinship line the map leaves off because its chain is drawn (below) is never counted in a
+    bundle — it shows only for its selected person, as without groups. Selecting a
     member or a group shows the individual lines behind it, as selecting always names a node's
     connections — except a group's own line to its circle, which a line per member would only
     repeat. Selecting the circle keeps its one line per group.

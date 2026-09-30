@@ -148,6 +148,7 @@ test('folds a Cousin of an older Monica import created into the built-in one', a
 		['Ida Kuster', 'Pia Kuster'],
 		[{ from: 'Ida Kuster', to: 'Pia Kuster', type: 'monica:reltype:cousin' }],
 		{},
+		[],
 		[{ id: 'monica:reltype:cousin', key: 'cousin', label: 'Cousin of', category: 'family' }]
 	);
 	await openTypeSettings(page);

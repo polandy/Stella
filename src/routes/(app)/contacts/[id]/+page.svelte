@@ -1463,8 +1463,9 @@
 						Each is one confirmation of its own — Stella never writes them by itself.
 					-->
 					{#if data.proposals.length > 0}
-						<div class="mt-4 flex flex-col gap-2 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="kin-proposals">
-							<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle">
+						<div class="mt-4 flex flex-col gap-2 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="kin-proposals" data-kin-scope>
+							<!-- Where focus goes when the last claim here is answered (KinSuggestions). -->
+							<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle" data-kin-heading tabindex="-1">
 								{t('contact.relationships.alsoTrue')}
 							</h3>
 							<KinSuggestions suggestions={data.proposals} propose={data.proposeFor} />
@@ -1479,9 +1480,10 @@
 						ago. It runs nothing until it is pressed.
 					-->
 					{#if data.review.open}
-						<div class="mt-4 flex flex-col gap-3 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="kin-review">
+						<div class="mt-4 flex flex-col gap-3 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="kin-review" data-kin-scope>
 							<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-								<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle">
+								<!-- Where focus goes when the last claim here is answered (KinSuggestions). -->
+								<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle" data-kin-heading tabindex="-1">
 									{t('contact.relationships.reviewHeading')}
 								</h3>
 								<span class="text-xs text-fg-subtle">

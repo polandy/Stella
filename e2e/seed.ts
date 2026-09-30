@@ -48,8 +48,21 @@ export interface SeedLink {
 	type: (typeof LINK)[keyof typeof LINK] | SeedType['id'];
 }
 
+/** A circle and who holds which role in it, people by full name as `people` spells them. */
+export interface SeedCircle {
+	/** The circle's id on the map is `circleIdOf(name)`. */
+	name: string;
+	members: readonly { person: string; role: string }[];
+}
+
 /** Restore is add-only and keyed by id, so an id that is a function of the name is idempotent. */
 const idOf = (name: string) => `e2e-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+
+/** The id a seeded person gets, so a spec can find their node on the map. */
+export const personIdOf = (name: string) => idOf(name);
+
+/** The id a seeded circle gets, so a spec can find its node on the map. */
+export const circleIdOf = (name: string) => idOf(`circle ${name}`);
 
 /** The `restore` action of the archive screen; a plain form post, answered with the report. */
 const RESTORE_ACTION = '/settings/import/archive?/restore';
@@ -64,6 +77,9 @@ export async function seedHousehold(
 	links: readonly SeedLink[] = [],
 	/** A gender for whoever needs one, as the setting of a case rather than the step under test. */
 	genders: Readonly<Record<string, 'male' | 'female'>> = {},
+	/** Circles with their members' roles, likewise the setting of a case. */
+	circles: readonly SeedCircle[] = [],
+	/** Types of the household's own that `links` may name, likewise the setting of a case. */
 	types: readonly SeedType[] = []
 ): Promise<void> {
 	const document = {
@@ -95,6 +111,15 @@ export async function seedHousehold(
 			type: link.type,
 			// The status a link entered through the form gets (docs/03 §relationship).
 			status: 'current' satisfies RelationshipStatus
+		})),
+		circles: circles.map((circle) => ({
+			id: circleIdOf(circle.name),
+			name: circle.name,
+			members: circle.members.map((member) => ({
+				id: idOf(`${circle.name} ${member.person}`),
+				person: idOf(member.person),
+				role: member.role
+			}))
 		}))
 	};
 	const text = new TextEncoder().encode(JSON.stringify(document));
@@ -120,6 +145,10 @@ export async function seedHousehold(
 	// is a perfectly good setting, and `toBe(0)` against a missing count would fail on it.
 	expect(report.added.contact ?? 0).toBe(people.length);
 	expect(report.added.relationship ?? 0).toBe(links.length);
+	expect(report.added.circle ?? 0).toBe(circles.length);
+	expect(report.added.circle_membership ?? 0).toBe(
+		circles.reduce((sum, circle) => sum + circle.members.length, 0)
+	);
 }
 
 /** The app's own origin, from the project config — not from whatever page happens to be open. */
@@ -129,9 +158,14 @@ function appOrigin(): string {
 	return new URL(baseURL).origin;
 }
 
-/** The counts the restore report carries for the two kinds of record the seed writes. */
+/** The counts the restore report carries for the kinds of record the seed writes. */
 interface RestoreCounts {
-	added: { contact: number; relationship: number };
+	added: {
+		contact: number;
+		relationship: number;
+		circle: number;
+		circle_membership: number;
+	};
 }
 
 /**
@@ -146,5 +180,12 @@ function restoreReportFrom(body: string): RestoreCounts {
 	const record = (index: unknown) => flat[index as number] as Record<string, number>;
 	const count = (index: unknown) => flat[index as number] as number;
 	const added = record(record(record(0).report).added);
-	return { added: { contact: count(added.contact), relationship: count(added.relationship) } };
+	return {
+		added: {
+			contact: count(added.contact),
+			relationship: count(added.relationship),
+			circle: count(added.circle),
+			circle_membership: count(added.circle_membership)
+		}
+	};
 }
