@@ -29,11 +29,23 @@ for (const id of Object.values(LINK)) {
 	}
 }
 
+/**
+ * A symmetric type of the household's own, for a case whose setting is a type the forms cannot
+ * make — one an older import created under the id it chose, say.
+ */
+export interface SeedType {
+	id: string;
+	key: string;
+	label: string;
+	category: string;
+}
+
 export interface SeedLink {
 	/** Full names, as `people` spells them. */
 	from: string;
 	to: string;
-	type: (typeof LINK)[keyof typeof LINK];
+	/** A built-in by its id, or the id of one of the seeded `types`. */
+	type: (typeof LINK)[keyof typeof LINK] | SeedType['id'];
 }
 
 /** Restore is add-only and keyed by id, so an id that is a function of the name is idempotent. */
@@ -51,7 +63,8 @@ export async function seedHousehold(
 	people: readonly string[],
 	links: readonly SeedLink[] = [],
 	/** A gender for whoever needs one, as the setting of a case rather than the step under test. */
-	genders: Readonly<Record<string, 'male' | 'female'>> = {}
+	genders: Readonly<Record<string, 'male' | 'female'>> = {},
+	types: readonly SeedType[] = []
 ): Promise<void> {
 	const document = {
 		format: ARCHIVE_FORMAT,
@@ -67,6 +80,14 @@ export async function seedHousehold(
 				gender: genders[name] ?? null
 			};
 		}),
+		relationship_types: types.map((type) => ({
+			id: type.id,
+			key: type.key,
+			forward_label: type.label,
+			reverse_label: type.label,
+			category: type.category,
+			symmetric: true
+		})),
 		relationships: links.map((link) => ({
 			id: idOf(`${link.from} ${link.type} ${link.to}`),
 			from: idOf(link.from),
