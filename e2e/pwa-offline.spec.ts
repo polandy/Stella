@@ -44,6 +44,11 @@ async function neverAnswer(context: BrowserContext): Promise<void> {
 
 /** The phone's People tab — the sidebar link of the same name is hidden at this width. */
 const peopleTab = (page: Page) => page.locator('a[href="/contacts"]:visible').first();
+/**
+ * The phone's Home tab. Not the breadcrumb's Home: the top bar slides away once a long list
+ * has been scrolled (docs/05 §5.4), while the tab bar stays; it comes last in the page.
+ */
+const homeTab = (page: Page) => page.locator('a[href="/"]:visible').last();
 
 /** Opens Lena Brunner's page the way a phone does: by tapping, never from the address bar. */
 async function tapToLena(page: Page): Promise<void> {
@@ -85,7 +90,7 @@ test('opens People and Circles offline without them ever having been read, and s
 
 test('opens a page offline that was only ever reached by tapping', async ({ page, context }) => {
 	await tapToLena(page);
-	await page.getByRole('link', { name: 'Home' }).first().click();
+	await homeTab(page).click();
 	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
 	await context.setOffline(true);
 
@@ -96,7 +101,7 @@ test('finds a person from Home offline and opens them', async ({ page, context }
 	// The search reads the people the shell already carries (docs/02 §2.22.1); the page it
 	// opens comes from the worker's cache, which the tap to Lena has filled.
 	await tapToLena(page);
-	await page.getByRole('link', { name: 'Home' }).first().click();
+	await homeTab(page).click();
 	await context.setOffline(true);
 
 	await page.getByRole('combobox', { name: 'Find a person…' }).pressSequentially('lena');
