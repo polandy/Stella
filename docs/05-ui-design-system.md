@@ -178,8 +178,8 @@ They must be edited together; `app.css` says so at both blocks.
     graph's peek strip, say — under the fixed tab bar while the address bar shows.
   - **Breadcrumb trail** in the top bar, derived from the route + loaded data
     (`Home / People / {name} / Journal`). Every segment links, so Home is always one
-    click away; on Home itself there is no trail — "Home" alone would repeat the tab bar; the active destination is marked with `aria-current="page"` in the
-    sidebar and tab bar. The desktop shell's account menu (theme + sign out) lives in the
+    click away; on Home itself there is no trail — "Home" alone would repeat the tab bar.
+    The active destination is marked with `aria-current="page"` in the sidebar and tab bar. The desktop shell's account menu (theme + sign out) lives in the
     shell, not per page; sign out is repeated as a plain button on **Settings** so it is
     reachable on mobile, where that menu is not rendered.
   - The shell is a single `(app)/+layout.svelte`; pages render content only — no per-page
@@ -198,8 +198,8 @@ They must be edited together; `app.css` says so at both blocks.
 
 ## 5.5 Key screens
 
-- **Home** — the capture field (on a phone, the person search) over the household stream (§2.22), which carries two rows of
-  filter chips (*What*, *Who*) in the Circles chip style — links with `aria-current`, wrapping
+- **Home** — the capture field (on a phone, the person search) over the household stream
+  (§2.22), which carries two rows of filter chips (*What*, *Who*) in the Circles chip style — links with `aria-current`, wrapping
   onto a second line on a phone rather than scrolling sideways — with a **rail** on the
   right from `lg` up: **Coming up** (§2.13.3) and **Quiet lately** (§2.12.1), each row an
   avatar, the person, one line of context and the one action — *Write a moment*. Below `lg`

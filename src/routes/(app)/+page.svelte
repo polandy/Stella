@@ -109,8 +109,8 @@
 	// (`/?compose`) and closed by handing the URL back — so the open state lives in the URL
 	// and survives a reload, and there is nothing to keep in sync with the tab bar.
 	// Below `md` the composer lives in the sheet and the top of Home is the person search;
-	// above it, the composer sits at the top of the stream. One of
-	// them is mounted at a time, so there is exactly one "What happened?" field on the page.
+	// above it, the composer sits at the top of the stream. One of them is mounted at a time,
+	// so there is exactly one "What happened?" field on the page.
 	// The kept moment open in the composer, if any (see below).
 	let editing = $state<KeptOf<'moment.capture'> | null>(null);
 
@@ -177,7 +177,8 @@
 
 <div class="flex min-w-0 flex-col max-lg:order-1 lg:col-start-1 lg:row-start-2">
 
-	<!-- Desktop: the composer sits at the top. Phone: a person search, the composer a sheet over the stream (below). -->
+	<!-- Desktop: the composer sits at the top. Phone: a person search, and the composer as a
+	     sheet over the stream (below). -->
 	<div class="max-md:hidden">
 		{#if !phone.current}{@render composer()}{/if}
 	</div>

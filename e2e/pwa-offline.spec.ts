@@ -92,6 +92,18 @@ test('opens a page offline that was only ever reached by tapping', async ({ page
 	await tapToLena(page);
 });
 
+test('finds a person from Home offline and opens them', async ({ page, context }) => {
+	// The search reads the people the shell already carries (docs/02 §2.22.1); the page it
+	// opens comes from the worker's cache, which the tap to Lena has filled.
+	await tapToLena(page);
+	await page.getByRole('link', { name: 'Home' }).first().click();
+	await context.setOffline(true);
+
+	await page.getByRole('combobox', { name: 'Find a person…' }).pressSequentially('lena');
+	await page.getByRole('option', { name: 'Lena Brunner' }).click();
+	await expect(page.getByRole('heading', { name: 'Lena Brunner' })).toBeVisible();
+});
+
 test('answers from the device when requests are never answered, and keeps a new person', async ({
 	page,
 	context

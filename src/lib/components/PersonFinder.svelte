@@ -6,6 +6,8 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { personSearchRows, type PalettePerson } from '$lib/palette/palette';
 	import { usePeopleContext } from '$lib/people/context.svelte';
+	import { BLUR_CLOSE_MS } from '$lib/components/blur-close';
+	import { nextMenuIndex } from '$lib/menu/menu';
 
 	/*
 	 * The home screen's search field (docs/02 §2.22.1, docs/05 §5.4): people matching the
@@ -14,8 +16,7 @@
 	 * Stella is out of reach. The rows come from the pure `personSearchRows`; this only draws
 	 * them and follows one.
 	 *
-	 * Without JavaScript it is a plain GET form into /search, which is also where Enter goes
-	 * when nothing is highlighted and nobody matches.
+	 * Without JavaScript it is a plain GET form into /search.
 	 */
 
 	interface Props {
@@ -23,8 +24,6 @@
 	}
 	let { people }: Props = $props();
 
-	/** Long enough for a click on a row to land before the blur closes the list under it. */
-	const BLUR_CLOSE_MS = 120;
 	const LISTBOX_ID = 'person-finder-rows';
 
 	const t = useTranslate();
@@ -48,17 +47,16 @@
 
 	function onKeydown(event: KeyboardEvent) {
 		// Home and End stay with the text cursor; only the arrows move through the rows.
-		if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-			if (rows.length === 0) return;
+		const next = event.key.startsWith('Arrow') ? nextMenuIndex(highlighted, rows.length, event.key) : null;
+		if (next !== null) {
 			event.preventDefault();
 			open = true;
-			const step = event.key === 'ArrowDown' ? 1 : -1;
-			highlighted = (highlighted + step + rows.length) % rows.length;
+			highlighted = next;
 		} else if (event.key === 'Enter') {
-			const row = rows[highlighted];
-			if (!row) return; // nothing typed: let the form do nothing useful on its own
+			// Nothing typed means no rows: stay put rather than open an empty full search.
 			event.preventDefault();
-			follow(row.href);
+			const row = rows[highlighted];
+			if (row) follow(row.href);
 		} else if (event.key === 'Escape') {
 			if (!showList && query === '') return;
 			event.preventDefault();

@@ -17,6 +17,7 @@
 	} from '$lib/people/new-person';
 	import { filterPeople, queryAfterPick, stillNeedsAPick, type SelectablePerson } from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';
+	import { BLUR_CLOSE_MS } from '$lib/components/blur-close';
 
 	/*
 	 * A person picker that filters by name as you type, for any form field where someone chooses
@@ -33,8 +34,6 @@
 	/** Where the inline create panel posts; the endpoint answers with the created person. */
 	const QUICK_ADD_ENDPOINT = '/contacts/quick-add';
 
-	/** Long enough for a click on an option to land before the blur closes the list under it. */
-	const BLUR_CLOSE_MS = 120;
 
 	const VISIBILITY_LEVELS = ['shared', 'private'] as const;
 	type Visibility = (typeof VISIBILITY_LEVELS)[number];

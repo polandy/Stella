@@ -52,6 +52,22 @@ test.describe('on a phone', () => {
 		await expect(page).toHaveURL('/search?q=garden%20gate');
 	});
 
+	test('does nothing on Enter before anything is typed', async ({ page }) => {
+		// Every search the page asks for is recorded; the tap to Lena that follows is the
+		// positive signal that anything Enter would have started has been sent by then.
+		const searches: string[] = [];
+		page.on('request', (request) => {
+			if (new URL(request.url()).pathname === '/search') searches.push(request.url());
+		});
+
+		await finder(page).press('Enter');
+		await finder(page).pressSequentially('lena');
+		await page.getByRole('option', { name: 'Lena Brunner' }).click();
+		await expect(page).toHaveURL(`/contacts/${LENA}`);
+
+		expect(searches).toEqual([]);
+	});
+
 	test('has no one-word breadcrumb over the search', async ({ page }) => {
 		await expect(finder(page)).toBeVisible();
 		await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toHaveCount(0);
