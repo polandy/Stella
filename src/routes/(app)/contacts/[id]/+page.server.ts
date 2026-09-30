@@ -5,6 +5,7 @@ import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { RELATIONS } from '$lib/suggestions/types';
+import { GENDERS } from '$lib/people/gender';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
 import { parseProposePair, proposeHref } from '$lib/contacts/propose';
@@ -21,6 +22,8 @@ import {
 	mergeContacts,
 	editProfile,
 	EmptyContactNameError,
+	InvalidGenderError,
+	setGender,
 	getContact,
 	listContactNames,
 	listContacts,
@@ -292,6 +295,9 @@ const EditProfileSchema = v.object({
 	description: v.optional(v.pipe(v.string(), v.trim()))
 });
 
+/** One of the three, or empty for taking the gender off the record (docs/02 §2.2). */
+const GenderSchema = v.union([v.picklist(GENDERS), v.literal('')]);
+
 /** The specifics of a link (docs/02 §2.4); the domain has the last word on what is real. */
 const RelationshipDetailsSchema = {
 	description: v.optional(v.pipe(v.string(), v.trim())),
@@ -392,6 +398,25 @@ export const actions: Actions = {
 		} catch (err) {
 			if (err instanceof EmptyContactNameError)
 				return fail(400, { profileError: err.phrase(translator(locals)) });
+			throw err;
+		}
+
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/* A gender from the profile's chips; an empty value takes it off the record (docs/02 §2.2). */
+	setGender: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const parsed = v.safeParse(GenderSchema, (await request.formData()).get('gender') ?? '');
+		if (!parsed.success) return fail(400, { genderError: say(locals, 'errors.contact.invalidGender') });
+
+		try {
+			const saved = await setGender(getContactDeps(), viewer, params.id, parsed.output || null);
+			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
+		} catch (err) {
+			if (err instanceof InvalidGenderError) return fail(400, { genderError: err.phrase(translator(locals)) });
 			throw err;
 		}
 

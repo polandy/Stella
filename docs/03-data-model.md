@@ -178,8 +178,8 @@ The central person entity.
 | prefix / suffix | text null | e.g. Dr., Jr. |
 | former_name | text null | maiden/previous |
 | display_name | text | computed/entered; required, never empty |
-| gender | text null | free-form or preset |
-| pronouns | text null | |
+| gender | text null | `female` / `male` / `diverse`; anything else reads as not on record |
+| pronouns | text null | unused — kept so archives and migrations stay unchanged |
 | description | text null | one-liner |
 | avatar_photo_id | text fk → photo.id null | |
 | birth_date | text null | ISO date; see 3.4 partial dates |

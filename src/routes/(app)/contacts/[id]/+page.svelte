@@ -10,6 +10,7 @@
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
 	import { asTyped } from '$lib/mentions/picks';
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
+	import GenderRow from '$lib/components/GenderRow.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { enhance } from '$app/forms';
@@ -868,6 +869,7 @@
 		<div class="order-2 flex min-w-0 flex-col gap-4 lg:sticky lg:top-4">
 			<section class="flex flex-col rounded-app bg-card p-4 shadow-card">
 				<h2 class="mb-1 text-sm font-semibold text-fg">{t('contact.section.profile')}</h2>
+				<GenderRow gender={c.gender} error={form?.genderError ?? null} />
 				<Section as="row" title={t('contact.section.contact')} count={visibleFields.length} startOpen={visibleFields.length > 0} addLabel={t('common.add')} error={form?.fieldError ?? null} bind:open={openSection.contact}>
 				{#if keptFields.length > 0}
 					<ul class="mb-2 flex flex-wrap gap-1.5" data-testid="kept-fields">
