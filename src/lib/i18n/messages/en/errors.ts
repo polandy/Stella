@@ -47,6 +47,9 @@ export const errors = {
 		p.count === 1
 			? '1 relationship still uses this type. Change it first.'
 			: `${p.count} relationships still use this type. Change them first.`,
+	'errors.relationshipType.mergeIntoItself': 'A relationship type cannot be merged into itself.',
+	'errors.relationshipType.mergeShape':
+		'Only types that both read the same from each side, or both read differently, can be merged.',
 
 	'errors.date.unknownKind': (p: { kind: string }) => `Unknown important date kind: ${p.kind}`,
 	'errors.date.format': 'A date must be YYYY-MM-DD, or --MM-DD without a year.',

@@ -43,6 +43,10 @@ export const errors: ErrorsMessages = {
 		p.count === 1
 			? '1 Beziehung nutzt diese Art noch. Ändere sie zuerst.'
 			: `${p.count} Beziehungen nutzen diese Art noch. Ändere sie zuerst.`,
+	'errors.relationshipType.mergeIntoItself':
+		'Eine Beziehungsart lässt sich nicht mit sich selbst zusammenführen.',
+	'errors.relationshipType.mergeShape':
+		'Zusammenführen lassen sich nur Arten, die beide von jeder Seite gleich lauten oder beide verschieden.',
 
 	'errors.date.unknownKind': (p) => `Unbekannte Art von Datum: ${p.kind}`,
 	'errors.date.format': 'Ein Datum muss JJJJ-MM-TT lauten — oder --MM-TT ohne Jahr.',

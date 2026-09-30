@@ -1,4 +1,4 @@
-import { and, eq, isNull, ne, or } from 'drizzle-orm';
+import { and, eq, isNull, ne, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { KinshipGraph } from '../../kinship/kinship';
@@ -157,6 +157,44 @@ export function createDrizzleRelationshipRepository(
 				.returning({ id: relationshipType.id })
 				.all();
 			return changed.length > 0;
+		},
+
+		async mergeTypeInto(viewer: Viewer, fromId: string, intoId: string) {
+			return db.transaction((tx) => {
+				const from = tx
+					.select({ id: relationshipType.id })
+					.from(relationshipType)
+					.where(customTypeOf(viewer, fromId))
+					.get();
+				const into = tx
+					.select({ id: relationshipType.id })
+					.from(relationshipType)
+					.where(
+						and(
+							eq(relationshipType.id, intoId),
+							or(
+								isNull(relationshipType.householdId),
+								eq(relationshipType.householdId, viewer.householdId)
+							)
+						)
+					)
+					.get();
+				if (!from || !into) return false;
+				// Deliberately not scoped by visibility: the type is household vocabulary, and a row
+				// left on it would keep it from being deleted. `or ignore` leaves a pair the target
+				// already links where it was, so the delete below takes that duplicate with it —
+				// the same rule as merging two people (contact-merge.ts).
+				tx.run(
+					sql`update or ignore relationship set type_id = ${intoId} where type_id = ${fromId} and household_id = ${viewer.householdId}`
+				);
+				tx.delete(relationship)
+					.where(
+						and(eq(relationship.typeId, fromId), eq(relationship.householdId, viewer.householdId))
+					)
+					.run();
+				tx.delete(relationshipType).where(customTypeOf(viewer, fromId)).run();
+				return true;
+			});
 		},
 
 		async countRelationshipsOfType(viewer: Viewer, typeId: string) {

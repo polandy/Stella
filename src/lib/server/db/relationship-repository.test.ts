@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
@@ -232,6 +232,84 @@ describe('relationship types', () => {
 		// The positive control: U2 owns the private contact and sees both.
 		expect(await repo.countRelationshipsOfType(viewerU2, 'type-own')).toBe(2);
 		expect(await repo.countRelationshipsOfType(viewerU1, 'parent_child')).toBe(0);
+	});
+});
+
+describe('mergeTypeInto', () => {
+	/** A symmetric custom *Cousin of* as an older Monica import created it. */
+	async function seedImportedCousin() {
+		await repo.insertType({
+			id: 'monica:reltype:cousin',
+			householdId: H,
+			key: 'cousin',
+			forwardLabel: 'Cousin of',
+			reverseLabel: 'Cousin of',
+			category: 'family',
+			symmetric: true,
+			sortOrder: CUSTOM_TYPE_SORT_ORDER
+		});
+	}
+
+	const typesOf = (from: string, to: string) =>
+		db
+			.select({ typeId: schema.relationship.typeId })
+			.from(schema.relationship)
+			.where(
+				and(eq(schema.relationship.fromContactId, from), eq(schema.relationship.toContactId, to))
+			)
+			.all()
+			.map((row) => row.typeId);
+
+	it('moves every relationship across, even between people the viewer cannot see, and deletes the type', async () => {
+		await seedImportedCousin();
+		seedContact('mara', 'Mara', 'shared');
+		seedContact('jonas', 'Jonas', 'shared');
+		seedContact('secret', 'Secret', 'private', U2);
+		await repo.insert(newRelationship('rel-visible', 'jonas', 'mara', 'monica:reltype:cousin'));
+		await repo.insert(newRelationship('rel-hidden', 'mara', 'secret', 'monica:reltype:cousin'));
+
+		expect(await repo.mergeTypeInto(viewerU1, 'monica:reltype:cousin', 'cousin')).toBe(true);
+
+		expect(typesOf('jonas', 'mara')).toEqual(['cousin']);
+		expect(typesOf('mara', 'secret')).toEqual(['cousin']);
+		expect(await repo.getType(viewerU1, 'monica:reltype:cousin')).toBeNull();
+	});
+
+	it('keeps the link a pair already has under the target, and drops the duplicate', async () => {
+		await seedImportedCousin();
+		seedContact('mara', 'Mara', 'shared');
+		seedContact('jonas', 'Jonas', 'shared');
+		await repo.insert(newRelationship('rel-built-in', 'jonas', 'mara', 'cousin'));
+		await repo.insert(newRelationship('rel-imported', 'jonas', 'mara', 'monica:reltype:cousin'));
+
+		expect(await repo.mergeTypeInto(viewerU1, 'monica:reltype:cousin', 'cousin')).toBe(true);
+
+		const rows = db.select({ id: schema.relationship.id }).from(schema.relationship).all();
+		expect(rows).toEqual([{ id: 'rel-built-in' }]);
+	});
+
+	it("refuses a built-in or another household's type as the one folded away, writing nothing", async () => {
+		db.insert(schema.household).values({ id: 'household-2', name: 'Other' }).run();
+		db.insert(schema.relationshipType)
+			.values({
+				id: 'type-foreign',
+				householdId: 'household-2',
+				key: 'bridge_partner',
+				forwardLabel: 'Bridge partner of',
+				reverseLabel: 'Bridge partner of',
+				category: 'social',
+				symmetric: 1,
+				sortOrder: CUSTOM_TYPE_SORT_ORDER
+			})
+			.run();
+		seedContact('mara', 'Mara', 'shared');
+		seedContact('jonas', 'Jonas', 'shared');
+		await repo.insert(newRelationship('rel-1', 'jonas', 'mara', 'cousin'));
+
+		expect(await repo.mergeTypeInto(viewerU1, 'cousin', 'friend')).toBe(false);
+		expect(await repo.mergeTypeInto(viewerU1, 'type-foreign', 'friend')).toBe(false);
+		expect(typesOf('jonas', 'mara')).toEqual(['cousin']);
+		expect(await repo.getType(viewerU1, 'cousin')).not.toBeNull();
 	});
 });
 
