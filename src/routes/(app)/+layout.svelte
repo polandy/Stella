@@ -286,7 +286,7 @@
 			bind:offsetHeight={topBarHeight}
 			onfocusin={() => (topBar = { ...topBar, hidden: false })}
 			style:--top-bar-height="{topBarHeight}px"
-			class="flex items-center gap-3 px-4 py-3 transition-[margin-top] duration-200 ease-out motion-reduce:transition-none md:px-6 {topBar.hidden
+			class="flex items-center gap-3 px-4 py-3 transition-[margin-top] duration-350 ease-in-out motion-reduce:transition-none md:px-6 {topBar.hidden
 				? 'max-md:-mt-(--top-bar-height)'
 				: ''}"
 			data-testid="top-bar"
