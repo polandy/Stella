@@ -248,6 +248,16 @@ export async function removeRelationshipType(
 }
 
 /**
+ * Whether `into` can take over `from`'s relationships. Symmetry decides the canonical storage
+ * direction (`canonicalEndpoints`), and a one-way type says which end is which: folding across
+ * would invent a direction or lose one.
+ */
+export const canMergeInto = (
+	from: Pick<RelationshipType, 'id' | 'symmetric'>,
+	into: Pick<RelationshipType, 'id' | 'symmetric'>
+): boolean => from.id !== into.id && from.symmetric === into.symmetric;
+
+/**
  * Fold a custom type into another one — typically a built-in that now says the same thing, as
  * *Cousin of* does for the one an older Monica import created. Every relationship stored under
  * it moves across, including links between people this viewer cannot see: the type is the
@@ -266,9 +276,7 @@ export async function mergeRelationshipType(
 	if (from.id === into.id) {
 		throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.mergeIntoItself'));
 	}
-	// Symmetry decides the canonical storage direction (`canonicalEndpoints`), and a one-way
-	// type says which end is which: folding across would invent a direction or lose one.
-	if (from.symmetric !== into.symmetric) {
+	if (!canMergeInto(from, into)) {
 		throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.mergeShape'));
 	}
 	return deps.types.mergeTypeInto(viewer, fromId, intoId);

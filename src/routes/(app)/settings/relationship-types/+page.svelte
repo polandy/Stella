@@ -41,10 +41,6 @@
 
 	const allTypes = $derived([...data.builtIn, ...data.custom]);
 
-	/** Where a type can be folded: any other type that reads the same way round (docs/02 §2.4). */
-	const mergeTargetsOf = (type: PageData['custom'][number]) =>
-		allTypes.filter((other) => other.id !== type.id && other.symmetric === type.symmetric);
-
 	const labelOf = (typeId: string) => {
 		const type = allTypes.find((candidate) => candidate.id === typeId);
 		return type ? relationshipTypeLabel(t, type) : typeId;
@@ -185,7 +181,7 @@
 									<label class="flex flex-1 flex-col gap-1">
 										<span class="text-xs text-fg-muted">{t('relationshipTypes.mergeLabel')}</span>
 										<select name="intoId" class={INPUT} required>
-											{#each mergeTargetsOf(type) as target (target.id)}
+											{#each type.mergeTargets as target (target.id)}
 												<option value={target.id} selected={target.id === type.replacedBy}>
 													{relationshipTypeLabel(t, target)}
 												</option>

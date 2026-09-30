@@ -867,6 +867,12 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   Pronouns are not offered at all: nothing Stella writes uses them. The `pronouns` column stays
   in the schema, unused, so there is no migration and no archive format change for a field
   that was always empty (docs/02 §2.2, `src/lib/people/gender.ts`).
+- **Merging a relationship type moves links the admin cannot see** — the one write under the
+  access layer not scoped by `relationshipVisibleTo`, scoped by household instead: a type is
+  household vocabulary, and a hidden link left on it would keep it from ever going. Changing
+  a link's type reveals nothing to anyone. Where a pair is already linked by the target, the
+  existing link wins and the duplicate's note and date go with it — the contact-merge rule,
+  rather than a second way of settling collisions (docs/02 §2.4).
 
 ## 4.10 Deployment
 

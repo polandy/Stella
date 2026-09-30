@@ -11,6 +11,7 @@ import {
 	mergeRelationshipType,
 	parseRelationshipTypeFields,
 	claimTypeKey,
+	canMergeInto,
 	removeRelationshipType
 } from './relationship-types';
 import type { RelationshipType } from './relationships';
@@ -330,6 +331,18 @@ describe('removeRelationshipType', () => {
 		const f = fakeRepo({ types: [] });
 		expect(await removeRelationshipType(f.deps, viewer, 'type-elsewhere')).toBe(false);
 		expect(f.recorded.deleted).toEqual([]);
+	});
+});
+
+describe('canMergeInto', () => {
+	it('takes a type of the same shape, and never the type itself', () => {
+		const sym = (id: string) => ({ id, symmetric: true });
+		const oneWay = (id: string) => ({ id, symmetric: false });
+		expect(canMergeInto(sym('a'), sym('b'))).toBe(true);
+		expect(canMergeInto(oneWay('a'), oneWay('b'))).toBe(true);
+		expect(canMergeInto(sym('a'), oneWay('b'))).toBe(false);
+		expect(canMergeInto(oneWay('a'), sym('b'))).toBe(false);
+		expect(canMergeInto(sym('a'), sym('a'))).toBe(false);
 	});
 });
 

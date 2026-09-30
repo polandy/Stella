@@ -6,6 +6,7 @@ import {
 	BuiltInRelationshipTypeError,
 	InvalidRelationshipTypeError,
 	RelationshipTypeInUseError,
+	canMergeInto,
 	createRelationshipType,
 	editRelationshipType,
 	mergeRelationshipType,
@@ -71,7 +72,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 				...type,
 				usageCount: await getRelationshipTypes().countRelationshipsOfType(viewer, type.id),
 				// A type an older import created before Stella had it built in: offered to fold in.
-				replacedBy: builtInReplacingImportedType(type.id)
+				replacedBy: builtInReplacingImportedType(type.id),
+				mergeTargets: types.filter((other) => canMergeInto(type, other))
 			}))
 	);
 
