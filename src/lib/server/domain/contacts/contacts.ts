@@ -12,6 +12,7 @@ import type { MediaStore } from '../media/avatars';
 import type { IdGenerator } from '../../id';
 import { deriveDisplayName } from './display-name';
 import { isKnownByMoreThanAFirstName } from '../../../people/new-person';
+import { isGender, type Gender } from '../../../people/gender';
 
 /*
  * Contact use-cases (docs/02 §2.2). Framework-agnostic orchestration over the
@@ -36,6 +37,7 @@ export interface CreateContactInput {
 	metPlace?: string | null;
 	/** ISO `YYYY-MM-DD`, or `--MM-DD` when the year is unknown. */
 	birthDate?: string | null;
+	gender?: Gender | null;
 	visibility?: Visibility;
 }
 
@@ -55,6 +57,7 @@ export interface NewContact {
 	metPlace: string | null;
 	birthDate: string | null;
 	birthDatePrecision: BirthDatePrecision;
+	gender: Gender | null;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -114,6 +117,8 @@ export interface ContactRepository {
 	listNamesVisibleTo(viewer: Viewer): Promise<ContactName[]>;
 	/** Write the hero's own fields; the caller has already checked the contact is visible. */
 	updateProfile(id: string, patch: ProfilePatch): Promise<void>;
+	/** Record a gender, or none; the caller has already checked the contact is visible. */
+	setGender(id: string, gender: Gender | null, updatedAt: number): Promise<void>;
 	/** Stamp or clear `archived_at`; the caller has already checked the contact is visible. */
 	setArchived(id: string, archivedAt: number | null): Promise<void>;
 	/**
@@ -192,6 +197,20 @@ const orNull = (value?: string | null): string | null => {
 	return trimmed.length > 0 ? trimmed : null;
 };
 
+/** Thrown when a gender is not one of the three Stella records (docs/02 §2.2). */
+export class InvalidGenderError extends TranslatableError {
+	constructor() {
+		super(phrase('errors.contact.invalidGender'), 'InvalidGenderError');
+	}
+}
+
+/** A gender as given, or none; anything but the three is refused rather than stored. */
+function checkedGender(gender: Gender | null | undefined): Gender | null {
+	if (gender === null || gender === undefined) return null;
+	if (!isGender(gender)) throw new InvalidGenderError();
+	return gender;
+}
+
 /**
  * Thrown when a person is being added by a first name alone: with no last name and no line to
  * know them by, they cannot be told from the next person of that name (docs/02 §2.2.3).
@@ -214,6 +233,7 @@ export async function createContact(
 	const displayName = deriveDisplayName(input);
 	if (!isKnownByMoreThanAFirstName(input)) throw new NeedsSomethingToKnowThemByError();
 	const { birthDate, birthDatePrecision } = parseBirthDate(input.birthDate);
+	const gender = checkedGender(input.gender);
 	const now = deps.clock.now();
 	const id = deps.ids.next();
 
@@ -232,6 +252,7 @@ export async function createContact(
 		metPlace: orNull(input.metPlace),
 		birthDate,
 		birthDatePrecision,
+		gender,
 		createdAt: now,
 		updatedAt: now
 	};
@@ -276,6 +297,24 @@ export async function editProfile(
 		description: orNull(edit.description),
 		updatedAt: deps.clock.now()
 	});
+	return true;
+}
+
+/**
+ * Record a person's gender, or take it off the record with null (docs/02 §2.2). Returns false
+ * when the contact is not visible to the viewer, like `editProfile`.
+ */
+export async function setGender(
+	deps: Pick<ContactDeps, 'contacts' | 'clock'>,
+	viewer: Viewer,
+	id: string,
+	gender: Gender | null
+): Promise<boolean> {
+	const checked = checkedGender(gender);
+	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
+	if (contact === null) return false;
+
+	await deps.contacts.setGender(id, checked, deps.clock.now());
 	return true;
 }
 

@@ -3,6 +3,7 @@ import type { Command, JsonCommand } from '../../commands/commands';
 import { CONTACT_FIELD_KINDS } from '../../contact-fields/kinds';
 import { IMPORTANT_DATE_KINDS } from '../../dates/kinds';
 import { INTERACTION_KINDS } from '../../interactions/kinds';
+import { GENDERS } from '../../people/gender';
 import { TAG_COLORS } from '../domain/tags/tags';
 
 /*
@@ -113,6 +114,8 @@ const ContactAdd = v.pipe(
 		howWeMet: optionalText,
 		metPlace: optionalText,
 		birthDate: optionalText,
+		// Left out by a build from before the field, which is the same as none chosen.
+		gender: v.optional(v.nullable(v.picklist(GENDERS)), null),
 		visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
 	}),
 	// A person needs something to be called by (docs/02 §2.2).

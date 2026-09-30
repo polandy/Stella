@@ -100,6 +100,7 @@ describe('people', () => {
 				metPlace: null,
 				birthDate: '2019-06-23',
 				birthDatePrecision: 'full',
+				gender: null,
 				createdAt: NOW,
 				updatedAt: NOW
 			}

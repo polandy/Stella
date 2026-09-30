@@ -13,6 +13,7 @@ import { resolveTagColor, type NewTag } from '../../tags/tags';
 import type { MonicaContact, SourceExport, MonicaId, MonicaSpecialDate } from './monica-export';
 import { mapRelationshipType } from './relationship-types';
 import { sourcePrefix } from '../source';
+import type { Gender } from '../../../../people/gender';
 
 /*
  * The Monica → Stella mapping (docs/02 §2.16; the table is docs/monica-mapping.md). Pure:
@@ -53,7 +54,6 @@ export interface ImportWording {
 
 /** A contact row as the import writes it — the profile fields Stella's create form lacks included. */
 export interface ImportedContact extends NewContact {
-	gender: string | null;
 	jobTitle: string | null;
 	company: string | null;
 	isDeceased: boolean;
@@ -168,8 +168,8 @@ const orNull = (value: string | null | undefined): string | null => {
 	return trimmed.length > 0 ? trimmed : null;
 };
 
-/** Monica's gender codes → Stella's free-text gender. "Prefer not to say" stays empty. */
-const GENDER: Record<string, string> = { M: 'male', F: 'female' };
+/** Monica's gender codes → Stella's gender. "Prefer not to say" stays empty. */
+const GENDER: Record<string, Gender> = { M: 'male', F: 'female' };
 
 /** A Monica special date → Stella's stored value plus precision (docs/03 §3.4). */
 function birthDateOf(date: MonicaSpecialDate | undefined): {

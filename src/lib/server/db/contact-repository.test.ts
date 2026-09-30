@@ -37,6 +37,7 @@ function contactInput(over: Partial<NewContact>): NewContact {
 		description: null,
 		birthDate: null,
 		birthDatePrecision: 'full',
+		gender: null,
 		howWeMet: null,
 		metDate: null,
 		metPlace: null,
@@ -74,6 +75,15 @@ describe('createDrizzleContactRepository', () => {
 			birthDate: '--03-11',
 			birthDatePrecision: 'month_day'
 		});
+	});
+
+	it('round-trips the gender, and reads a value from before the three as not on record', async () => {
+		await repo.insert(contactInput({ id: 'c-diverse', gender: 'diverse' }));
+		await repo.insert(contactInput({ id: 'c-older' }));
+		db.update(schema.contact).set({ gender: 'genderfluid' }).where(eq(schema.contact.id, 'c-older')).run();
+
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-diverse'))?.gender).toBe('diverse');
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-older'))?.gender).toBeNull();
 	});
 
 	it('reads the deceased flag back as a boolean, not SQLite 0/1', async () => {
@@ -197,6 +207,30 @@ describe('editing the hero in place', () => {
 		await repo.updateProfile('c-shared', { displayName: 'Only me', description: null, updatedAt: 2 });
 
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-priv')).toEqual(before!);
+	});
+});
+
+describe('setting a gender', () => {
+	beforeEach(async () => {
+		await repo.insert(contactInput({ id: 'c-rosa', displayName: 'Rosa' }));
+		await repo.insert(contactInput({ id: 'c-other', displayName: 'Other' }));
+	});
+
+	it('records a gender and stamps the change, then takes it off the record again', async () => {
+		await repo.setGender('c-rosa', 'female', 500);
+		expect(await repo.findByIdVisibleTo(viewerU1, 'c-rosa')).toMatchObject({ gender: 'female', updatedAt: 500 });
+
+		await repo.setGender('c-rosa', null, 600);
+		expect(await repo.findByIdVisibleTo(viewerU1, 'c-rosa')).toMatchObject({ gender: null, updatedAt: 600 });
+	});
+
+	it('touches only the contact it names', async () => {
+		const before = await repo.findByIdVisibleTo(viewerU1, 'c-other');
+
+		await repo.setGender('c-rosa', 'male', 2);
+
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-rosa'))?.gender).toBe('male');
+		expect(await repo.findByIdVisibleTo(viewerU1, 'c-other')).toEqual(before!);
 	});
 });
 
