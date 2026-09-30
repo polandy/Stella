@@ -500,7 +500,8 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **Undo is a removal held back in the browser, not a soft delete** — a removed story item
   is hidden and its form is posted only when the eight-second toast closes or the page is
   left (`src/lib/undo`, a pure store with the timer injected; the app shell flushes it on
-  navigation and `pagehide`, with `keepalive`). Rejected: a `deleted_at` column on the two
+  navigation and `pagehide`, with `keepalive`; a client-side navigation is held back until the
+  requests land and issued again only if no newer one started meanwhile). Rejected: a `deleted_at` column on the two
   story tables, which would have put a filter into every read that touches them — story,
   stream, search, "quiet lately", photos — with a leak whenever one is forgotten, a purge to
   write, and the journal's one-entry-per-day slot blocked by a row that is invisible but
