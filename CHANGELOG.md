@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.19-rc.4](https://github.com/polandy/Stella/compare/v0.0.19-rc.3...v0.0.19-rc.4) (2026-09-30)
+
+
+### Features
+
+* **contacts:** set a gender from the profile and when adding a person ([#188](https://github.com/polandy/Stella/issues/188)) ([8325cc8](https://github.com/polandy/Stella/commit/8325cc8aefcd1fa9d6142613ae00bfe31630d6ad))
+* **graph:** draw a derived kinship line only where its chain is missing ([#187](https://github.com/polandy/Stella/issues/187)) ([0cfc77e](https://github.com/polandy/Stella/commit/0cfc77e53cf7e29ecca6e6b2bff96c6b99519cf5))
+* **home:** find a person from the top of a phone's Home, and let its top bar slide away ([#191](https://github.com/polandy/Stella/issues/191)) ([a47b299](https://github.com/polandy/Stella/commit/a47b299006e7203beb84506a53e88683dcd217db))
+
+
+### Miscellaneous Chores
+
+* release 0.0.19-rc.4 ([2e03d81](https://github.com/polandy/Stella/commit/2e03d8147b9921820dcfbcd986a45bdfe0b0fa8c))
+
 ## [0.0.19-rc.3](https://github.com/polandy/Stella/compare/v0.0.19-rc.2...v0.0.19-rc.3) (2026-09-30)
 
 
