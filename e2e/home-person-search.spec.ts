@@ -68,9 +68,23 @@ test.describe('on a phone', () => {
 		expect(searches).toEqual([]);
 	});
 
-	test('has no one-word breadcrumb over the search', async ({ page }) => {
-		await expect(finder(page)).toBeVisible();
+	test('shows the logo where the one-word breadcrumb would be, centred on the top bar buttons', async ({ page }) => {
+		const logo = page.getByRole('banner').getByRole('link', { name: 'Stella home' });
+		await expect(logo).toBeVisible();
 		await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toHaveCount(0);
+
+		// Measured, not read from the classes: an inline link sat 3px above the buttons' middle.
+		const middle = async (box: { y: number; height: number } | null) => box!.y + box!.height / 2;
+		const mark = await middle(await logo.getByRole('img', { name: 'Stella' }).boundingBox());
+		const search = await middle(await page.getByRole('button', { name: 'Search' }).boundingBox());
+		expect(Math.abs(mark - search)).toBeLessThanOrEqual(0.5);
+	});
+
+	test('keeps the breadcrumb, not the logo, everywhere but Home', async ({ page }) => {
+		await page.getByRole('link', { name: 'People' }).last().click();
+
+		await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('People');
+		await expect(page.getByRole('banner').getByRole('link', { name: 'Stella home' })).toHaveCount(0);
 	});
 });
 
