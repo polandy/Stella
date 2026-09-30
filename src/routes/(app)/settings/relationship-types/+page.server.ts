@@ -8,8 +8,10 @@ import {
 	RelationshipTypeInUseError,
 	createRelationshipType,
 	editRelationshipType,
+	mergeRelationshipType,
 	removeRelationshipType
 } from '$lib/server/domain/relationships/relationship-types';
+import { builtInReplacingImportedType } from '$lib/server/domain/import/monica/relationship-types';
 import { getRelationshipTypeDeps, getRelationshipTypes } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
@@ -29,6 +31,11 @@ const TypeSchema = v.object({
 const WithIdSchema = v.object({ ...TypeSchema.entries, typeId: v.pipe(v.string(), v.minLength(1)) });
 
 const IdOnlySchema = v.object({ typeId: v.pipe(v.string(), v.minLength(1)) });
+
+const MergeSchema = v.object({
+	typeId: v.pipe(v.string(), v.minLength(1)),
+	intoId: v.pipe(v.string(), v.minLength(1))
+});
 
 /** The form's checkbox arrives as `'on'` or not at all. */
 const inputOf = (parsed: v.InferOutput<typeof TypeSchema>) => ({
@@ -62,7 +69,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.filter((type) => type.householdId !== null)
 			.map(async (type) => ({
 				...type,
-				usageCount: await getRelationshipTypes().countRelationshipsOfType(viewer, type.id)
+				usageCount: await getRelationshipTypes().countRelationshipsOfType(viewer, type.id),
+				// A type an older import created before Stella had it built in: offered to fold in.
+				replacedBy: builtInReplacingImportedType(type.id)
 			}))
 	);
 
@@ -100,6 +109,26 @@ export const actions: Actions = {
 				inputOf(parsed.output)
 			);
 			if (!changed) return fail(404, { error: say(locals, 'errors.relationshipType.gone') });
+		} catch (err) {
+			const message = messageOf(err, locals);
+			if (!message) throw err;
+			return fail(400, { error: message });
+		}
+		throw redirect(303, '/settings/relationship-types');
+	},
+
+	merge: async ({ request, locals }) => {
+		const user = requireAdmin(locals);
+		const parsed = v.safeParse(MergeSchema, Object.fromEntries(await request.formData()));
+		if (!parsed.success) return fail(400, { error: parsed.issues[0].message });
+		try {
+			const merged = await mergeRelationshipType(
+				getRelationshipTypeDeps(),
+				{ id: user.id, householdId: user.householdId },
+				parsed.output.typeId,
+				parsed.output.intoId
+			);
+			if (!merged) return fail(404, { error: say(locals, 'errors.relationshipType.gone') });
 		} catch (err) {
 			const message = messageOf(err, locals);
 			if (!message) throw err;

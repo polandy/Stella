@@ -91,3 +91,16 @@ export function mapRelationshipType(name: string): MappedRelationshipType {
 	const label = name.charAt(0).toUpperCase() + name.slice(1);
 	return sym(key, label, 'other');
 }
+
+/**
+ * Types an older import created before Stella had them built in, by the id it gave them, and
+ * the built-in each now folds into (docs/02 §2.4). New imports land on the built-in directly.
+ */
+const REPLACED_BY_BUILT_IN: Readonly<Record<string, string>> = {
+	'monica:reltype:cousin': 'cousin',
+	'monica:reltype:uncle_nephew': 'aunt_uncle_niece_nephew'
+};
+
+/** The built-in that replaces an imported custom type, or null when none does. */
+export const builtInReplacingImportedType = (typeId: string): string | null =>
+	REPLACED_BY_BUILT_IN[typeId] ?? null;
