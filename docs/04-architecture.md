@@ -375,6 +375,11 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   The cost accepted: while a candidate is open every release needs its own `Release-As`, and
   for the seconds between release and flag `releases/latest` names the candidate. Revisit at
   1.0, where the built-in option stops catching final releases. (`docs/08` §8.9.)
+- **The release PR is opened with a personal token** — opened with `GITHUB_TOKEN`, its CI
+  run needs a manual approval and ends red after the merge, and no trigger filter can skip
+  it by head branch. Approving each run by hand was the alternative. The cost accepted: a
+  token to create and renew, falling back to `GITHUB_TOKEN` when missing so a release never
+  waits on it. (`docs/08` §8.9.)
 - **Our own message catalogue over an i18n library** — two languages and no plural rules
   beyond "one or many" do not pay for Paraglide's compiler or a runtime store. Typed area
   modules give the same guarantee more cheaply: German is typed against English, so a
