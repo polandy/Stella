@@ -74,7 +74,7 @@
 </script>
 
 <form bind:this={root} method="GET" action="/search" role="search" class="relative" data-testid="person-finder">
-	<label class="flex items-center gap-2.5 rounded-app bg-card px-3 py-2.5 text-fg-subtle shadow-card focus-within:text-fg">
+	<label class="flex items-center gap-2.5 rounded-app bg-card px-3 py-2.5 text-fg-subtle shadow-card transition-shadow focus-within:text-fg focus-within:ring-2 focus-within:ring-primary/40">
 		<Icon name="search" size={16} />
 		<input
 			name="q"
@@ -96,7 +96,7 @@
 			aria-activedescendant={showList && rows[highlighted] ? `person-finder-${rows[highlighted].kind}-${rows[highlighted].id}` : undefined}
 			autocomplete="off"
 			enterkeyhint="search"
-			class="min-w-0 flex-1 bg-transparent text-sm text-fg placeholder:text-fg-subtle focus-visible:outline-none"
+			class="min-w-0 flex-1 bg-transparent text-sm text-fg placeholder:text-fg-subtle"
 		/>
 	</label>
 
@@ -134,3 +134,11 @@
 		</ul>
 	{/if}
 </form>
+
+<style>
+	/* The card around the field shows the focus ring; the global :focus-visible outline is
+	   unlayered, so a utility cannot take it off the input — a scoped rule can. */
+	input:focus-visible {
+		outline: none;
+	}
+</style>
