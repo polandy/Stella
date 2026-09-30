@@ -148,9 +148,9 @@ Releases are cut by release-please. When it publishes a release, the same workfl
 calls `publish`, which builds the image and pushes it to `ghcr.io/polandy/stella` as
 `X.Y.Z`, `X.Y` and `latest`. A release candidate (`X.Y.Z-rc.N`) is pushed under its own
 tag only, so it never reaches an install that follows `latest` or `X.Y`; to try one, pin it
-explicitly (`docs/08` §8.9). The run's summary prints the line to pin. (The release tag
-cannot trigger a build by itself: release-please pushes it with the run's `GITHUB_TOKEN`,
-and GitHub does not start workflows from events a token creates.)
+explicitly (`docs/08` §8.9). The run's summary prints the line to pin. (The build is called
+from the release run rather than triggered by the tag, so it runs once whichever token
+release-please pushed the tag with.)
 
 Pin the **digest**, not a tag — a tag can be moved, a digest cannot:
 
