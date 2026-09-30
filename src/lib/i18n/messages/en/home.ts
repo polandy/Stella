@@ -1,5 +1,5 @@
 /*
- * The home screen (docs/02 §2.22.1): the capture field, the household's stream and the rail.
+ * The home screen (docs/02 §2.22.1): the person search, the capture field, the household's stream and the rail.
  *
  * A stream line reads "<Actor> wrote in <Name>'s journal", with the names as links; the
  * sentence is therefore split into the words *around* the links rather than kept whole. The
@@ -17,6 +17,7 @@ export const home = {
 	'home.comingUp': 'Coming up',
 	'home.quietLately': 'Quiet lately',
 	'home.writeMoment': 'Write a moment',
+	'home.findPerson': 'Find a person…',
 	'home.showAll': (p: { count: number }) => `Show all ${p.count}`,
 	'home.lastWritten': (p: { ago: string }) => `Last written ${p.ago}`,
 	'home.nothingWrittenYet': 'Nothing written yet',

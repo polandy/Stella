@@ -81,29 +81,47 @@ export function paletteRows(
 		}
 	}
 
+	rows.push(...personSearchRows(q, people, labels.searchEverything, contexts, { listAllWhenEmpty: true }));
+	return rows;
+}
+
+/**
+ * The rows of a search for people alone — the home screen's search field (docs/02 §2.22.1):
+ * the people whose name matches, then a way into full search. The palette adds its actions
+ * on top; the home field has none, and offers nothing until something is typed.
+ */
+export function personSearchRows(
+	query: string,
+	people: PalettePerson[],
+	searchEverything: PaletteLabels['searchEverything'],
+	contexts: ReadonlyMap<string, PersonContext> = new Map(),
+	/** The palette doubles as a jump list, so it shows people before anything is typed. */
+	{ listAllWhenEmpty = false }: { listAllWhenEmpty?: boolean } = {}
+): PaletteRow[] {
+	const q = query.trim();
+	if (q === '' && !listAllWhenEmpty) return [];
+
 	const namesakes = tellApart(people, contexts);
-	const found = people
+	const rows: PaletteRow[] = people
 		// Matched by name only; the description is shown, not searched — full search reads it.
 		.map((p) => ({ ...p, description: null }))
 		.filter((p) => matchesQuery(p, q))
 		.sort((a, b) => Number(startsWithQuery(b, q)) - Number(startsWithQuery(a, q)))
-		.slice(0, PALETTE_PEOPLE_LIMIT);
-	for (const p of found) {
-		rows.push({
+		.slice(0, PALETTE_PEOPLE_LIMIT)
+		.map((p) => ({
 			kind: 'person',
 			id: p.id,
 			label: p.displayName,
 			avatarPhotoId: p.avatarPhotoId,
 			distinction: namesakes.get(p.id) ?? null,
 			href: `/contacts/${p.id}`
-		});
-	}
+		}));
 
 	if (q !== '') {
 		rows.push({
 			kind: 'search',
 			id: 'search',
-			label: labels.searchEverything(q),
+			label: searchEverything(q),
 			icon: 'search',
 			href: `/search?q=${encodeURIComponent(q)}`
 		});

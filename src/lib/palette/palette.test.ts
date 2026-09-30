@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import {
 	paletteRows,
+	personSearchRows,
 	PALETTE_PEOPLE_LIMIT,
 	type PaletteLabels,
 	type PalettePerson
@@ -100,5 +101,35 @@ describe('paletteRows', () => {
 		expect(rows.find((r) => r.id === 'hut')).toMatchObject({ distinction: { kind: 'description', text: 'SAC hut, Aug 2026' } });
 		expect(rows.find((r) => r.id === 'gym')).toMatchObject({ distinction: { kind: 'met', place: 'Gym club', year: '2021' } });
 		expect(rows.find((r) => r.id === 'meier')).toMatchObject({ distinction: null });
+	});
+});
+
+describe('personSearchRows', () => {
+	const searchEverything = labels.searchEverything;
+
+	it('offers nothing until something is typed, so the home field stays a plain field', () => {
+		expect(personSearchRows('', people, searchEverything)).toEqual([]);
+		expect(personSearchRows('   ', people, searchEverything)).toEqual([]);
+	});
+
+	it('finds people by name, the best-starting name first, and never offers an action', () => {
+		const rows = personSearchRows('le', [person('corinne', 'Corinne Keller', { lastName: 'Keller' }), ...people], searchEverything);
+
+		expect(rows.filter((r) => r.kind === 'person').map((r) => r.id)).toEqual(['lena', 'corinne']);
+		expect(rows.some((r) => r.kind === 'action')).toBe(false);
+	});
+
+	it('ends with full search, so a query nobody matches still leads somewhere', () => {
+		const rows = personSearchRows('garden', people, searchEverything);
+
+		expect(rows).toEqual([
+			{ kind: 'search', id: 'search', label: 'Search everything for “garden”', icon: 'search', href: '/search?q=garden' }
+		]);
+	});
+
+	it('shows no more people than the palette does', () => {
+		const many = Array.from({ length: PALETTE_PEOPLE_LIMIT + 3 }, (_, i) => person(`p${i}`, `Anna ${i}`));
+
+		expect(personSearchRows('anna', many, searchEverything).filter((r) => r.kind === 'person')).toHaveLength(PALETTE_PEOPLE_LIMIT);
 	});
 });

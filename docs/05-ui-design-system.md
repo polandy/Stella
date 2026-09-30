@@ -198,7 +198,7 @@ They must be edited together; `app.css` says so at both blocks.
 
 ## 5.5 Key screens
 
-- **Home** — the capture field over the household stream (§2.22), which carries two rows of
+- **Home** — the person search field over the household stream (§2.22), which carries two rows of
   filter chips (*What*, *Who*) in the Circles chip style — links with `aria-current`, wrapping
   onto a second line on a phone rather than scrolling sideways — with a **rail** on the
   right from `lg` up: **Coming up** (§2.13.3) and **Quiet lately** (§2.12.1), each row an
@@ -209,8 +209,9 @@ They must be edited together; `app.css` says so at both blocks.
   **above** the stream while a date is due **within 14 days** (`IMMINENT_HORIZON_DAYS`);
   otherwise it follows the stream, where it is still one scroll away. Both bands are
   **absent entirely when empty**; there is no empty state for them, because a permanently
-  empty panel teaches people to stop looking. On a phone the composer is a **sheet** opened from the *What happened?*
-  bar or the tab-bar pencil.
+  empty panel teaches people to stop looking. The composer opens over the stream: a **sheet**
+  from the tab-bar pencil on a phone, a dialog from the *Write a moment* button beside the
+  search field above it.
 - **Settings → Data quality → Check relationships** — the household-wide suggestion review (docs/02 §2.4.1).
   Closed it is an `EmptyState` with one primary action, because no rule runs until it is asked
   for; asked, it is a count, *Check again*, and one card per person — avatar, name linking to
