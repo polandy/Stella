@@ -175,8 +175,11 @@
 	 */
 	const GROUP_BY_ROLE_KEY = 'stella.graph.groupByRole';
 	const INNER_LINKS_KEY = 'stella.graph.innerLinks';
+	const ALL_KINSHIP_KEY = 'stella.graph.allKinship';
 	let groupRoles = $state(false);
 	let innerLinks = $state(true);
+	/** Every derived line, including those whose chain is already drawn — for reading the whole family. */
+	let allKinship = $state(false);
 	/** Groups the reader asked to see individually; the rest stay grouped. */
 	let dissolved = $state(new Set<string>());
 	function remember(key: string, on: boolean) {
@@ -189,6 +192,10 @@
 	function toggleGroupRoles() {
 		groupRoles = !groupRoles;
 		remember(GROUP_BY_ROLE_KEY, groupRoles);
+	}
+	function toggleAllKinship() {
+		allKinship = !allKinship;
+		remember(ALL_KINSHIP_KEY, allKinship);
 	}
 	function toggleInnerLinks() {
 		innerLinks = !innerLinks;
@@ -260,9 +267,11 @@
 		});
 	/*
 	 * A derived line whose chain of entered links is on the map only repeats it, so it stays off
-	 * until its person is selected (docs/02 §2.7).
+	 * until its person is selected — or the reader asks for every one of them (docs/02 §2.7).
 	 */
-	const implied = $derived(impliedKinshipEdgeIds(drawnVisible, selected));
+	const implied = $derived(
+		allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible, selected)
+	);
 	/** What the canvas shows: the filtered map, plus the frames and bundles grouping adds. */
 	const shownIds = () => ({
 		nodes: new Set([
@@ -638,6 +647,7 @@
 		try {
 			groupRoles = localStorage.getItem(GROUP_BY_ROLE_KEY) === 'on';
 			innerLinks = localStorage.getItem(INNER_LINKS_KEY) !== 'off';
+			allKinship = localStorage.getItem(ALL_KINSHIP_KEY) === 'on';
 		} catch {
 			// Storage can be blocked; the defaults stand.
 		}
@@ -811,6 +821,22 @@
 					</span>
 					{@render toggle(edgeLabels)}
 				</button>
+				{#if active.has('kinship')}
+					<!-- Only means something while derived lines are drawn at all. -->
+					<button
+						type="button"
+						role="menuitemcheckbox"
+						aria-checked={allKinship}
+						onclick={toggleAllKinship}
+						class={MENU_ITEM}
+					>
+						<span class="flex-1">
+							{t('graph.allKinship')}
+							<span class="block text-[11px] text-fg-subtle">{t('graph.allKinship.hint')}</span>
+						</span>
+						{@render toggle(allKinship)}
+					</button>
+				{/if}
 				<button
 					type="button"
 					role="menuitemcheckbox"

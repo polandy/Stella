@@ -867,7 +867,9 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   themselves. It appears when someone on the chain is not opened up, is filtered away or is
   private, and — since selecting a person names every line around them — for the selected
   person, so the word *Nephew* is one tap away. A chain through a friend or a circle does not
-  count, and neither does one through another derived line. Selecting
+  count, and neither does one through another derived line. For reading a whole family at
+  once, an **All kinship lines** switch in the Filter menu (off by default, remembered per
+  device, offered while the Kinship chip is on) draws every derived line again. Selecting
   a person names the lines around them — "Grandfather", "Parent of", "via Kegelclub" —
   because hundreds of labels at once would be noise by default; a **Labels** switch in the
   toolbar's Filter menu names every line at once for reading the whole map at a glance, off by default for

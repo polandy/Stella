@@ -23,6 +23,9 @@ export const search = {
 	'graph.connectionPath': 'Connection path',
 	'graph.labels': 'Labels',
 	'graph.labels.hint': 'Name every line with its relationship',
+	'graph.allKinship': 'All kinship lines',
+	'graph.allKinship.hint':
+		'Also draw the relatives the entered links already show, like a nephew next to his father and uncle',
 	'graph.groupByRole': 'Group by role',
 	'graph.groupByRole.hint': 'Everyone with the same role in a circle stands in one group, on one line to the circle',
 	'graph.innerLinks': 'Links within groups',

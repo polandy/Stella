@@ -790,8 +790,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   subtly desaturated.
 - **Edges:** styled by kind — relationship category (5.6), **circle membership** (dashed /
   circle-colored), and **derived kinship** (lighter, dotted, clearly "inferred"; left off while
-  the entered links it abbreviates are on the map, except around the selected person — docs/02
-  §2.7, `model/implied-kinship.ts`). On the
+  the entered links it abbreviates are on the map, except around the selected person or with
+  the Filter menu's *All kinship lines* switch on — docs/02 §2.7, `model/implied-kinship.ts`). On the
   canvas an edge is the only carrier of its category, so each line colour is the token
   **deepened toward `--fg` until it clears 3:1 on the page ground** (`ensureContrast`; the
   hue survives, only the depth changes), held there by `theme.test.ts` against the real

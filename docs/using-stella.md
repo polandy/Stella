@@ -555,7 +555,8 @@ family Stella worked out for itself** — grandparents, aunts, cousins, in-laws 
 the People tab names, drawn without anyone having entered them. A dotted line only shows up
 where it tells you something new: if Frederick's father Steve and Steve's link to his brother
 Andy are both on the map, you can already see that Frederick is Andy's nephew, so the extra
-line stays away until you select Andy or Frederick. *Filter* at the top switches
+line stays away until you select Andy or Frederick — or until you switch on *All kinship
+lines* in the Filter menu, which draws every one of them. *Filter* at the top switches
 each kind of line on and off and doubles as the legend: it shows each kind in its colour and
 line style, and counts how many are shown, so *Filter 5/6* tells you something is hidden.
 *Labels* at the bottom of the same menu names every line at once.
