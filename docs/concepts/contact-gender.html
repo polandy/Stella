@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gender and Pronouns on the Profile</title>
+<style>
+  /* ── Catppuccin tokens, straight from src/app.css (Latte / Mocha) ─────── */
+  :root, :root[data-theme='light'] {
+    --bg:#eff1f5; --bg-elevated:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff;
+    --border:#ccd0da; --border-soft:#dce0e8;
+    --fg:#4c4f69; --fg-muted:#6c6f85; --fg-subtle:#8c8fa1;
+    --primary:#8839ef; --primary-fg:#ffffff; --link:#1e66f5;
+    --green:#40a02b; --peach:#fe640b; --teal:#179299; --pink:#ea76cb; --yellow:#df8e1d;
+    --success:#40a02b; --warning:#df8e1d; --danger:#d20f39;
+    --shadow:0 1px 2px rgba(76,79,105,.06), 0 8px 24px rgba(76,79,105,.08);
+    --shadow-sm:0 1px 2px rgba(76,79,105,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+      --border:#313244; --border-soft:#26263a;
+      --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+      --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+      --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --pink:#f5c2e7; --yellow:#f9e2af;
+      --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+    --border:#313244; --border-soft:#26263a;
+    --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --pink:#f5c2e7; --yellow:#f9e2af;
+    --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing:border-box; }
+  html { color-scheme: light dark; }
+  body {
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.55;
+  }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+  h1,h2,h3 { text-wrap:balance; margin:0; }
+  code { font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.88em; background:var(--bg-sunken); padding:1px 6px; border-radius:5px; }
+
+  .wrap { max-width:1100px; margin:0 auto; padding-block:clamp(28px,5vw,64px) 96px; padding-inline:clamp(18px,4vw,40px); }
+  .doc-head { display:flex; flex-direction:column; gap:14px; margin-bottom:12px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); }
+  .doc-head h1 { font-size:clamp(28px,4.4vw,42px); font-weight:700; letter-spacing:-.02em; line-height:1.1; }
+  .doc-head p.lede { font-size:clamp(15px,1.7vw,18px); color:var(--fg-muted); max-width:64ch; margin:0; }
+
+  .toolbar { position:fixed; top:calc(16px + env(safe-area-inset-top, 0px)); right:16px; z-index:50; display:flex; gap:8px; }
+  .pill { display:inline-flex; align-items:center; gap:7px; cursor:pointer; background:var(--card); color:var(--fg-muted); border:1px solid var(--border); border-radius:999px; padding:7px 14px; font:inherit; font-size:13px; box-shadow:var(--shadow-sm); }
+  .pill:hover { color:var(--fg); }
+
+  .eyebrow { font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-subtle); }
+  section.block { margin-top:56px; }
+  section.block > .eyebrow { margin-bottom:10px; display:block; }
+  section.block > h2 { font-size:clamp(20px,2.6vw,26px); font-weight:650; letter-spacing:-.01em; margin-bottom:8px; }
+  section.block > p.intro { color:var(--fg-muted); max-width:68ch; margin:0 0 22px; }
+
+  .switch { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:0 0 16px; }
+  .switch .lbl { font-size:12px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--fg-subtle); }
+  .chip { font-size:12.5px; padding:5px 12px; border-radius:999px; border:1px solid var(--border); color:var(--fg-muted); cursor:pointer; background:var(--card); font:inherit; }
+  .chip:hover { border-color:var(--primary); color:var(--fg); }
+  .chip[aria-pressed='true'] { background:color-mix(in srgb,var(--primary) 16%,transparent); border-color:var(--primary); color:var(--fg); font-weight:600; }
+
+  /* ── Prototype frame ──────────────────────────────────────────────────── */
+  .proto-shell { border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); background:var(--bg); }
+  .browserbar { display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--bg-elevated); border-bottom:1px solid var(--border); }
+  .dots { display:flex; gap:6px; }
+  .dots i { width:11px; height:11px; border-radius:50%; display:block; }
+  .urlbar { flex:1; margin-left:8px; background:var(--bg); border:1px solid var(--border-soft); border-radius:8px; padding:5px 12px; font-size:12.5px; color:var(--fg-subtle); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .canvas { padding:24px; }
+  @media (max-width:520px) { .canvas { padding:16px 14px; } }
+
+  /* The person page, simplified: header, then story + sidebar (docs/05). */
+  .p-head { display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; margin-bottom:22px; }
+  .avatar { width:72px; height:72px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:24px; background:color-mix(in srgb,var(--pink) 30%,var(--card)); color:var(--fg); flex-shrink:0; }
+  .p-head .who { flex:1; min-width:0; }
+  .p-head h3 { font-size:24px; font-weight:700; letter-spacing:-.01em; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .p-head h3 .pron { font-size:14px; font-weight:500; color:var(--fg-subtle); }
+  .p-head .desc { color:var(--fg-muted); margin:2px 0 0; }
+  .p-head .meta { margin-top:8px; font-size:12px; color:var(--fg-subtle); display:flex; gap:14px; flex-wrap:wrap; }
+  .p-head .meta b { color:var(--fg-muted); font-weight:500; }
+
+  .p-grid { display:grid; gap:24px; grid-template-columns:minmax(0,1fr) 17rem; align-items:start; }
+  @media (max-width:860px) { .p-grid { grid-template-columns:1fr; } .p-side { order:-1; } }
+
+  .card { background:var(--card); border-radius:14px; box-shadow:var(--shadow-sm); padding:16px; }
+  .card h4 { font-size:14px; font-weight:600; margin:0 0 6px; }
+  .story .item { padding:12px 0; border-top:1px solid var(--border-soft); font-size:14px; color:var(--fg-muted); }
+  .story .item:first-of-type { border-top:0; }
+  .story .kin { color:var(--fg); }
+  .story .kin b { font-weight:600; }
+  .story .changed { animation:flash 1.2s ease-out; border-radius:6px; }
+  @keyframes flash { from { background:color-mix(in srgb,var(--primary) 20%,transparent); } to { background:transparent; } }
+
+  .row { display:flex; align-items:center; gap:12px; padding:6px 0; font-size:14px; border-bottom:1px solid var(--border-soft); }
+  .row .k { width:5rem; flex-shrink:0; color:var(--fg-subtle); }
+  .row .v { flex:1; min-width:0; color:var(--fg); }
+  .row .v.empty { color:var(--fg-subtle); font-style:italic; }
+  .row.editable { cursor:text; border-radius:8px; margin-inline:-6px; padding-inline:6px; }
+  .row.editable:hover { background:var(--bg-sunken); }
+  .section-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; font-size:14px; color:var(--fg); border-bottom:1px solid var(--border-soft); }
+  .section-row:last-child { border-bottom:0; }
+  .section-row small { color:var(--fg-subtle); }
+
+  /* The editor that takes the row's place. */
+  .editor { margin:6px -6px 4px; padding:12px; border:1px solid var(--primary); border-radius:12px; background:color-mix(in srgb,var(--primary) 5%,var(--card)); display:flex; flex-direction:column; gap:10px; }
+  .editor label.cap { font-size:12px; font-weight:600; color:var(--fg-muted); }
+  .seg { display:flex; flex-wrap:wrap; gap:6px; }
+  .seg .chip { font-size:13px; }
+  .input { width:100%; font:inherit; font-size:14px; color:var(--fg); background:var(--card); border:1px solid var(--border); border-radius:9px; padding:6px 10px; }
+  .input:focus { outline:2px solid var(--primary); outline-offset:0; border-color:transparent; }
+  .hint { font-size:12px; color:var(--fg-subtle); margin:0; }
+  .hint b { color:var(--fg-muted); font-weight:600; }
+  .actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .btn { display:inline-flex; align-items:center; gap:7px; border-radius:9px; padding:5px 12px; font:inherit; font-size:13px; font-weight:600; cursor:pointer; border:1px solid transparent; }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); }
+  .btn.ghost { background:var(--card); color:var(--fg-muted); border-color:var(--border); font-weight:500; }
+  .btn.link { background:none; color:var(--fg-subtle); padding:5px 4px; margin-left:auto; font-weight:500; }
+  .btn.link:hover { color:var(--danger); }
+  .keys { font-size:11px; color:var(--fg-subtle); }
+  kbd { font-family:inherit; font-size:10.5px; border:1px solid var(--border); border-bottom-width:2px; border-radius:4px; padding:0 4px; background:var(--card); }
+
+  /* ── Notes ────────────────────────────────────────────────────────────── */
+  .new-form { display:flex; flex-direction:column; gap:14px; max-width:560px; }
+  .new-form label, .new-form .field { display:flex; flex-direction:column; gap:5px; font-size:13px; color:var(--fg-muted); }
+  .new-form .cap { font-size:13px; color:var(--fg-muted); }
+  .new-form .opt { color:var(--fg-subtle); }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .fake-input { font-size:14px; color:var(--fg); background:var(--card); border:1px solid var(--border); border-radius:9px; padding:6px 10px; }
+  .fake-input b { font-weight:600; }
+  .more { font-size:13px; color:var(--fg-muted); border:1px solid var(--border-soft); border-radius:9px; padding:8px 12px; }
+
+  .notes { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); }
+  .note { background:var(--card); border:1px solid var(--border-soft); border-radius:13px; padding:15px 16px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:8px; }
+  .note h3 { font-size:15px; font-weight:650; }
+  .note p { margin:0; font-size:13.5px; color:var(--fg-muted); }
+  .note .q { font-size:11px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; color:var(--warning); }
+  .note .d { font-size:11px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; color:var(--success); }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button class="pill" id="lang-btn" type="button">Deutsch</button>
+  <button class="pill" id="theme-btn" type="button">Theme</button>
+</div>
+
+<div class="wrap">
+  <header class="doc-head">
+    <span class="kicker">Concept · Contacts</span>
+    <h1>Gender and pronouns, edited where they are read</h1>
+    <p class="lede">
+      Stella already stores a gender and pronouns for each contact and uses the gender to name
+      relatives (<i>aunt</i> rather than <i>aunt or uncle</i>). But only an import can set them.
+      This mockup adds them to the profile card, where the rest of a person's facts live.
+    </p>
+  </header>
+
+  <section class="block">
+    <span class="eyebrow">Prototype</span>
+    <h2>Rosa's profile</h2>
+    <p class="intro">
+      Click the <b>Gender</b> row in the profile card. Pick one of three options and add pronouns
+      if you like. The worked-out relatives on the left update as you choose, so you
+      can see what the field changes. <kbd>Enter</kbd> saves and <kbd>Esc</kbd> cancels, just like
+      the name and the description.
+    </p>
+
+    <div class="switch">
+      <span class="lbl">Start from</span>
+      <button class="chip" data-start="empty" aria-pressed="true">Nothing on record</button>
+      <button class="chip" data-start="female" aria-pressed="false">Female · she/her</button>
+      <button class="chip" data-start="diverse" aria-pressed="false">Diverse</button>
+    </div>
+
+    <div class="proto-shell">
+      <div class="browserbar">
+        <div class="dots"><i style="background:#ed8796"></i><i style="background:#eed49f"></i><i style="background:#a6da95"></i></div>
+        <div class="urlbar">stella.local/contacts/rosa</div>
+      </div>
+      <div class="canvas">
+        <div class="p-head">
+          <div class="avatar">RB</div>
+          <div class="who">
+            <h3>Rosa Brunner-Aebi</h3>
+            <p class="desc" data-t="desc"></p>
+            <div class="meta"><span data-t="born"></span><span data-t="last"></span></div>
+          </div>
+        </div>
+
+        <div class="p-grid">
+          <div class="card story">
+            <h4 data-t="family"></h4>
+            <div class="item kin" id="kin-1"></div>
+            <div class="item kin" id="kin-2"></div>
+            <div class="item" data-t="kinNote"></div>
+          </div>
+
+          <aside class="p-side">
+            <div class="card">
+              <h4 data-t="profile"></h4>
+              <div id="gender-slot"></div>
+              <div class="section-row"><span data-t="contact"></span><small>2</small></div>
+              <div class="section-row"><span data-t="dates"></span><small>1</small></div>
+              <div class="section-row"><span data-t="circles"></span><small>1</small></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Prototype</span>
+    <h2>Adding a person</h2>
+    <p class="intro">
+      <i>New contact</i> gets one optional chip row right under the names. It is visible rather than
+      tucked into <i>More</i>, because the form links relatives straight away, and one tap there makes
+      the wording right from the start. Pronouns are left for the profile.
+    </p>
+    <div class="proto-shell">
+      <div class="browserbar">
+        <div class="dots"><i style="background:#ed8796"></i><i style="background:#eed49f"></i><i style="background:#a6da95"></i></div>
+        <div class="urlbar">stella.local/contacts/new</div>
+      </div>
+      <div class="canvas">
+        <div class="card new-form">
+          <h4 data-t="newHeading"></h4>
+          <div class="pair">
+            <label><span data-t="firstName"></span><input class="input" value="Jana"></label>
+            <label><span data-t="lastName"></span><input class="input" value="Aebi"></label>
+          </div>
+          <div class="field">
+            <span class="cap"><span data-t="genderCap"></span> <span class="opt" data-t="optional"></span></span>
+            <div class="seg" id="new-gender"></div>
+          </div>
+          <div class="field"><span class="cap" data-t="linkAsRelative"></span>
+            <div class="fake-input" id="new-kin"></div>
+          </div>
+          <div class="field"><span class="cap" data-t="description"></span><input class="input"></div>
+          <div class="more" data-t="more"></div>
+          <div class="actions"><button type="button" class="btn primary" data-t="addPerson"></button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow">Decisions in this mockup</span>
+    <h2>What the design settles</h2>
+    <div class="notes">
+      <div class="note">
+        <span class="d">Settled</span>
+        <h3>One row, not two</h3>
+        <p>Gender and pronouns share one row, <i>Female · she/her</i>, and one editor. They are
+          read together, so they are edited together. The row sits at the top of the profile card,
+          above contact details.</p>
+      </div>
+      <div class="note">
+        <span class="d">Settled</span>
+        <h3>Three options, nothing else</h3>
+        <p>Three presets are stored as <code>female</code>, <code>male</code> and
+          <code>diverse</code> and shown translated; there is no free-text gender.
+          Only <code>female</code> and <code>male</code> make relatives gendered; <i>Diverse</i> and nothing on record
+          name them neutrally, which is how <code>src/lib/kinship</code> already behaves.</p>
+      </div>
+      <div class="note">
+        <span class="d">Settled</span>
+        <h3>Pronouns are free text</h3>
+        <p>Suggestions follow the chosen gender and the UI language (<i>sie/ihr</i>,
+          <i>she/her</i>, …), but any text is allowed. Pronouns never change kinship wording.</p>
+      </div>
+      <div class="note">
+        <span class="d">Settled</span>
+        <h3>Empty is a real answer</h3>
+        <p>With nothing on record the row says so quietly, and relatives are named neutrally.
+          <i>Remove</i> in the editor clears both fields.</p>
+      </div>
+      <div class="note">
+        <span class="d">Settled</span>
+        <h3>Pronouns only on the profile</h3>
+        <p>The header keeps name, description and the meta line. It is already full on a phone,
+          and in a family CRM you mostly know the people anyway.</p>
+      </div>
+      <div class="note">
+        <span class="d">Settled</span>
+        <h3>New contact asks for gender, not pronouns</h3>
+        <p>One optional chip row under the names. It works offline too: the <code>contact.add</code>
+          command gains an optional <code>gender</code>, so older queued commands without it still apply.</p>
+      </div>
+      <div class="note">
+        <span class="d">Settled</span>
+        <h3>Imported “O” becomes Diverse</h3>
+        <p>Monica and vCard imports have dropped <code>O</code> (other) so far, because there was
+          nowhere for it to go. Now it maps to <code>diverse</code>.</p>
+      </div>
+      <div class="note">
+        <span class="d">Settled</span>
+        <h3>Pronouns are kept as typed</h3>
+        <p><i>sie/ihr</i> stays <i>sie/ihr</i> in the English UI. Only the suggestions follow the
+          UI language, because free text cannot be translated consistently.</p>
+      </div>
+      <div class="note">
+        <span class="d">Settled</span>
+        <h3>Unknown old values read as not on record</h3>
+        <p>A value other than the three (say, from an old archive) shows as <i>Not on record</i> and
+          is replaced on the next save. The domain accepts only <code>female</code>,
+          <code>male</code>, <code>diverse</code> or nothing.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  // Copy for both languages, mirroring what would live in src/lib/i18n/messages/{en,de}.
+  const COPY = {
+    en: {
+      desc: 'Markus’ mother, retired, keeps the garden in Muri.',
+      born: 'Born 19 April 1957', last: 'Last contact 3 weeks ago',
+      family: 'Family, as Stella works it out', profile: 'Profile',
+      contact: 'Contact details', dates: 'Dates', circles: 'Circles',
+      kinNote: 'Where no female or male gender is on record, Stella names relatives neutrally.',
+      gender: 'Gender', notSet: 'Not on record', genderCap: 'Gender', pronounsCap: 'Pronouns',
+      female: 'Female', male: 'Male', diverse: 'Diverse',
+      pronPlaceholder: 'e.g. she/her',
+      save: 'Save', cancel: 'Cancel', remove: 'Remove',
+      pron: { female: ['she/her'], male: ['he/him'], other: ['they/them', 'she/her', 'he/him'] },
+      preview: 'Relatives will be named', gendered: 'gendered', neutral: 'neutrally',
+      kin1: { female: 'Grandmother', male: 'Grandfather', neutral: 'Grandparent' },
+      kin1of: 'of Lena, Noah and Elias',
+      kin2: { female: 'Aunt', male: 'Uncle', neutral: 'Aunt or uncle' },
+      kin2of: 'of Jana Aebi',
+      keys: 'Enter saves · Esc cancels', langBtn: 'Deutsch',
+      newHeading: 'Add a person', firstName: 'First name', lastName: 'Last name', optional: '(optional)',
+      linkAsRelative: 'Link as relative', description: 'Description', more: 'More — nickname, birthday',
+      addPerson: 'Add person', newKin: { female: 'Niece', male: 'Nephew', neutral: 'Niece or nephew' }, newKinOf: 'of Rosa Brunner-Aebi',
+    },
+    de: {
+      desc: 'Markus’ Mutter, pensioniert, pflegt den Garten in Muri.',
+      born: 'Geboren am 19. April 1957', last: 'Letzter Kontakt vor 3 Wochen',
+      family: 'Familie, wie Stella sie herleitet', profile: 'Profil',
+      contact: 'Kontaktdaten', dates: 'Daten', circles: 'Kreise',
+      kinNote: 'Ist kein weibliches oder männliches Geschlecht erfasst, nennt Stella Verwandte neutral.',
+      gender: 'Geschlecht', notSet: 'Nicht erfasst', genderCap: 'Geschlecht', pronounsCap: 'Pronomen',
+      female: 'Weiblich', male: 'Männlich', diverse: 'Divers',
+      pronPlaceholder: 'z. B. sie/ihr',
+      save: 'Speichern', cancel: 'Abbrechen', remove: 'Entfernen',
+      pron: { female: ['sie/ihr'], male: ['er/ihm'], other: ['keine Pronomen', 'sie/ihr', 'er/ihm'] },
+      preview: 'Verwandte werden', gendered: 'nach Geschlecht benannt', neutral: 'neutral benannt',
+      kin1: { female: 'Großmutter', male: 'Großvater', neutral: 'Großelternteil' },
+      kin1of: 'von Lena, Noah und Elias',
+      kin2: { female: 'Tante', male: 'Onkel', neutral: 'Onkel oder Tante' },
+      kin2of: 'von Jana Aebi',
+      keys: 'Enter speichert · Esc bricht ab', langBtn: 'English',
+      newHeading: 'Person hinzufügen', firstName: 'Vorname', lastName: 'Nachname', optional: '(optional)',
+      linkAsRelative: 'Als verwandt verknüpfen', description: 'Beschreibung', more: 'Mehr — Spitzname, Geburtstag',
+      addPerson: 'Person hinzufügen', newKin: { female: 'Nichte', male: 'Neffe', neutral: 'Nichte oder Neffe' }, newKinOf: 'von Rosa Brunner-Aebi',
+    },
+  };
+
+  const STARTS = {
+    empty: { gender: '', pronouns: '' },
+    female: { gender: 'female', pronouns: 'she/her' },
+    diverse: { gender: 'diverse', pronouns: '' },
+  };
+  const PRESETS = ['female', 'male', 'diverse'];
+
+  let lang = 'en';
+  let saved = { ...STARTS.empty };
+  let draft = null; // non-null while the editor is open
+  let newGender = '';
+
+  const c = () => COPY[lang];
+  const variant = (g) => (g === 'female' || g === 'male' ? g : 'neutral');
+  const genderLabel = (g) => (PRESETS.includes(g) ? c()[g] : g);
+
+  function renderStatic() {
+    document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = c()[el.dataset.t]; });
+    document.getElementById('lang-btn').textContent = c().langBtn;
+    document.documentElement.lang = lang;
+  }
+
+  function renderKin(gender, flash) {
+    const v = variant(gender);
+    const k1 = document.getElementById('kin-1');
+    const k2 = document.getElementById('kin-2');
+    const next1 = `<b>${c().kin1[v]}</b> ${c().kin1of}`;
+    const next2 = `<b>${c().kin2[v]}</b> ${c().kin2of}`;
+    if (flash && k1.innerHTML !== next1) { k1.classList.remove('changed'); void k1.offsetWidth; k1.classList.add('changed'); }
+    if (flash && k2.innerHTML !== next2) { k2.classList.remove('changed'); void k2.offsetWidth; k2.classList.add('changed'); }
+    k1.innerHTML = next1;
+    k2.innerHTML = next2;
+  }
+
+  function renderNewForm() {
+    const seg = document.getElementById('new-gender');
+    seg.innerHTML = PRESETS.map((p) => `<button type="button" class="chip" data-ng="${p}" aria-pressed="${newGender === p}">${c()[p]}</button>`).join('');
+    seg.querySelectorAll('[data-ng]').forEach((b) => b.onclick = () => {
+      newGender = newGender === b.dataset.ng ? '' : b.dataset.ng; renderNewForm();
+    });
+    document.getElementById('new-kin').innerHTML = `<b>${c().newKin[variant(newGender)]}</b> ${c().newKinOf}`;
+  }
+
+  function renderRow() {
+    const slot = document.getElementById('gender-slot');
+    if (draft) return renderEditor(slot);
+    const parts = [saved.gender && genderLabel(saved.gender), saved.pronouns].filter(Boolean);
+    slot.innerHTML = `
+      <div class="row editable" tabindex="0" role="button" id="gender-row">
+        <span class="k">${c().gender}</span>
+        <span class="v ${parts.length ? '' : 'empty'}">${parts.length ? parts.join(' · ') : c().notSet}</span>
+      </div>`;
+    const row = document.getElementById('gender-row');
+    const open = () => { draft = { ...saved }; renderRow(); };
+    row.onclick = open;
+    row.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+    renderKin(saved.gender, false);
+  }
+
+  function renderEditor(slot) {
+        const suggestions = c().pron[draft.gender === 'female' || draft.gender === 'male' ? draft.gender : 'other'];
+    const gendered = variant(draft.gender) !== 'neutral';
+    slot.innerHTML = `
+      <div class="editor" id="editor">
+        <label class="cap">${c().genderCap}</label>
+        <div class="seg">
+          ${PRESETS.map((p) => `<button type="button" class="chip" data-g="${p}" aria-pressed="${draft.gender === p}">${c()[p]}</button>`).join('')}
+        </div>
+        <label class="cap" for="pron">${c().pronounsCap}</label>
+        <input class="input" id="pron" placeholder="${c().pronPlaceholder}" value="${draft.pronouns}">
+        <div class="seg">${suggestions.map((s) => `<button type="button" class="chip" data-p="${s}">${s}</button>`).join('')}</div>
+        <p class="hint">${c().preview} <b>${gendered ? c().gendered : c().neutral}</b>.</p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="save">${c().save}</button>
+          <button type="button" class="btn ghost" id="cancel">${c().cancel}</button>
+          <button type="button" class="btn link" id="remove">${c().remove}</button>
+        </div>
+        <span class="keys">${c().keys}</span>
+      </div>`;
+
+    slot.querySelectorAll('[data-g]').forEach((b) => b.onclick = () => {
+      const g = b.dataset.g;
+      draft.gender = draft.gender === g ? '' : g;
+      renderEditor(slot);
+      renderKin(draft.gender, true);
+      document.getElementById('pron').focus();
+    });
+    slot.querySelectorAll('[data-p]').forEach((b) => b.onclick = () => {
+      draft.pronouns = b.dataset.p; document.getElementById('pron').value = draft.pronouns;
+    });
+    document.getElementById('pron').oninput = (e) => { draft.pronouns = e.target.value.trim(); };
+
+    const save = () => { saved = { gender: draft.gender, pronouns: draft.pronouns }; draft = null; renderRow(); };
+    const cancel = () => { draft = null; renderRow(); };
+    document.getElementById('save').onclick = save;
+    document.getElementById('cancel').onclick = cancel;
+    document.getElementById('remove').onclick = () => { saved = { gender: '', pronouns: '' }; draft = null; renderRow(); };
+    document.getElementById('editor').onkeydown = (e) => {
+      if (e.key === 'Escape') cancel();
+      if (e.key === 'Enter' && e.target.tagName === 'INPUT') save();
+    };
+  }
+
+  function pressOnly(selector, button) {
+    document.querySelectorAll(selector).forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+  }
+  document.querySelectorAll('[data-start]').forEach((b) => b.onclick = () => {
+    pressOnly('[data-start]', b); saved = { ...STARTS[b.dataset.start] }; draft = null; renderRow();
+  });
+  document.getElementById('lang-btn').onclick = () => {
+    lang = lang === 'en' ? 'de' : 'en';
+    renderStatic(); renderRow(); renderNewForm();
+  };
+  document.getElementById('theme-btn').onclick = () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark';
+  };
+
+  renderStatic();
+  renderRow();
+  renderNewForm();
+</script>
+</body>
+</html>
