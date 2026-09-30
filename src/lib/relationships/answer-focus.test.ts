@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { focusAfterAnswer, owesFocus, type ListedRow } from './answer-focus';
 
 /*
- * Where keyboard focus goes once an answered row has left its list (docs/05 §5.4, issue #127).
+ * Where keyboard focus goes once an answered row has left its list (docs/05 §5.5, issue #127).
  * The focused button leaves with the row, so without a decision the browser drops focus on the
  * page itself and the next Tab starts again at the top — row forty becomes forty Tabs away.
  */
