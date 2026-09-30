@@ -272,16 +272,19 @@
 	<div class="flex min-w-0 flex-1 flex-col">
 		<!-- Top bar -->
 		<header class="flex items-center gap-3 px-4 py-3 md:px-6">
-			<nav aria-label={t('nav.breadcrumb')} class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
-				{#each crumbs as crumb, i (i)}
-					{#if i > 0}<span class="text-fg-subtle/60" aria-hidden="true">/</span>{/if}
-					{#if crumb.href && i < crumbs.length - 1}
-						<a href={crumb.href} class="text-fg-subtle hover:text-fg">{crumb.label}</a>
-					{:else}
-						<span class="font-semibold text-fg" aria-current="page">{crumb.label}</span>
-					{/if}
-				{/each}
-			</nav>
+			<!-- On Home the trail would be "Home" alone, which the tab bar and sidebar already say. -->
+			{#if crumbs.length > 1}
+				<nav aria-label={t('nav.breadcrumb')} class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
+					{#each crumbs as crumb, i (i)}
+						{#if i > 0}<span class="text-fg-subtle/60" aria-hidden="true">/</span>{/if}
+						{#if crumb.href && i < crumbs.length - 1}
+							<a href={crumb.href} class="text-fg-subtle hover:text-fg">{crumb.label}</a>
+						{:else}
+							<span class="font-semibold text-fg" aria-current="page">{crumb.label}</span>
+						{/if}
+					{/each}
+				</nav>
+			{/if}
 
 			<div class="ml-auto flex items-center gap-2">
 				<button

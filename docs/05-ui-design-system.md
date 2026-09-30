@@ -178,7 +178,7 @@ They must be edited together; `app.css` says so at both blocks.
     graph's peek strip, say — under the fixed tab bar while the address bar shows.
   - **Breadcrumb trail** in the top bar, derived from the route + loaded data
     (`Home / People / {name} / Journal`). Every segment links, so Home is always one
-    click away; the active destination is marked with `aria-current="page"` in the
+    click away; on Home itself there is no trail — "Home" alone would repeat the tab bar; the active destination is marked with `aria-current="page"` in the
     sidebar and tab bar. The desktop shell's account menu (theme + sign out) lives in the
     shell, not per page; sign out is repeated as a plain button on **Settings** so it is
     reachable on mobile, where that menu is not rendered.
