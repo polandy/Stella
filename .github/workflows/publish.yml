@@ -3,9 +3,9 @@ name: publish
 # Called by the release job once release-please has cut a release, and runnable by hand to
 # re-publish a tag whose build failed.
 #
-# It is deliberately NOT triggered by the release tag itself: release-please pushes that tag
-# with the run's GITHUB_TOKEN, and GitHub does not start workflows from events a token
-# creates. A `push: tags` trigger here would therefore never fire on a real release.
+# It is deliberately NOT triggered by the release tag itself: when release-please pushes that
+# tag with the run's GITHUB_TOKEN, GitHub starts no workflow from it, and with a personal
+# token a tag trigger would build every release twice.
 on:
   workflow_call:
     inputs:

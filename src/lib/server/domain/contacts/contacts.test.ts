@@ -6,6 +6,8 @@ import {
 	archiveContact,
 	createContact,
 	editProfile,
+	setGender,
+	InvalidGenderError,
 	describeContact,
 	EmptyDescriptionError,
 	EmptyContactNameError,
@@ -47,6 +49,7 @@ function fakeRepo() {
 		listArchivedVisibleTo: async () => [],
 		listNamesVisibleTo: async () => [],
 		updateProfile: async () => {},
+		setGender: async () => {},
 		setArchived: async () => {},
 		deleteVisibleTo: async () => null,
 		readForMerge: async () => null,
@@ -128,6 +131,24 @@ describe('createContact', () => {
 		}
 	});
 
+	it('keeps the gender chosen while adding them, and none when none was chosen', async () => {
+		const chosen = fakeRepo();
+		await createContact(deps(chosen.repo), creator, { firstName: 'Jana', lastName: 'Aebi', gender: 'diverse' });
+		const unchosen = fakeRepo();
+		await createContact(deps(unchosen.repo), creator, { firstName: 'Jana', lastName: 'Aebi' });
+
+		expect(chosen.inserted?.gender).toBe('diverse');
+		expect(unchosen.inserted?.gender).toBeNull();
+	});
+
+	it('refuses a gender that is not one of the three, and adds no one', async () => {
+		const f = fakeRepo();
+		await expect(
+			createContact(deps(f.repo), creator, { firstName: 'Jana', lastName: 'Aebi', gender: 'other' as never })
+		).rejects.toBeInstanceOf(InvalidGenderError);
+		expect(f.inserted).toBeNull();
+	});
+
 	it('rejects a contact with nothing to identify it', async () => {
 		const f = fakeRepo();
 		await expect(createContact(deps(f.repo), creator, {})).rejects.toThrow();
@@ -185,6 +206,7 @@ describe('createContact birth dates', () => {
 function editableRepo(contact: Contact | null) {
 	const patches: { id: string; patch: ProfilePatch }[] = [];
 	const archived: { id: string; archivedAt: number | null }[] = [];
+	const genders: { id: string; gender: string | null; updatedAt: number }[] = [];
 	const repo: ContactRepository = {
 		insert: async () => {},
 		findByIdVisibleTo: async () => contact,
@@ -194,6 +216,9 @@ function editableRepo(contact: Contact | null) {
 		updateProfile: async (id, patch) => {
 			patches.push({ id, patch });
 		},
+		setGender: async (id, gender, updatedAt) => {
+			genders.push({ id, gender, updatedAt });
+		},
 		setArchived: async (id, archivedAt) => {
 			archived.push({ id, archivedAt });
 		},
@@ -201,7 +226,7 @@ function editableRepo(contact: Contact | null) {
 		readForMerge: async () => null,
 		mergeVisibleTo: async () => false
 	};
-	return { repo, patches, archived };
+	return { repo, patches, archived, genders };
 }
 
 const viewer = { id: 'user-1', householdId: 'household-1' };
@@ -221,6 +246,7 @@ const existing: Contact = {
 	metPlace: null,
 	birthDate: null,
 	birthDatePrecision: 'full',
+	gender: null,
 	avatarPhotoId: null,
 	isDeceased: false,
 	archivedAt: null,
@@ -282,6 +308,51 @@ describe('editProfile', () => {
 		expect(saved).toBe(false);
 		expect(f.patches).toEqual([]);
 		expect(visible.patches).toHaveLength(1);
+	});
+});
+
+/*
+ * Setting a gender from the profile (docs/02 §2.2): one tap on one of three, and a tap on the
+ * chosen one again takes it off the record.
+ */
+describe('setGender', () => {
+	it('records the gender and stamps the change', async () => {
+		const f = editableRepo(existing);
+
+		const saved = await setGender(deps(f.repo), viewer, 'contact-1', 'female');
+
+		expect(saved).toBe(true);
+		expect(f.genders).toEqual([{ id: 'contact-1', gender: 'female', updatedAt: NOW }]);
+	});
+
+	it('takes the gender off the record', async () => {
+		const f = editableRepo({ ...existing, gender: 'male' });
+
+		await setGender(deps(f.repo), viewer, 'contact-1', null);
+
+		expect(f.genders).toEqual([{ id: 'contact-1', gender: null, updatedAt: NOW }]);
+	});
+
+	it('refuses anything but the three, and writes nothing', async () => {
+		const f = editableRepo(existing);
+
+		await expect(setGender(deps(f.repo), viewer, 'contact-1', 'genderfluid' as never)).rejects.toThrow(
+			InvalidGenderError
+		);
+		expect(f.genders).toEqual([]);
+	});
+
+	it('writes nothing for a contact the viewer may not see', async () => {
+		const hidden = editableRepo(null);
+		const saved = await setGender(deps(hidden.repo), viewer, 'contact-1', 'female');
+
+		// positive control: the same call against a visible contact does write
+		const visible = editableRepo(existing);
+		await setGender(deps(visible.repo), viewer, 'contact-1', 'female');
+
+		expect(saved).toBe(false);
+		expect(hidden.genders).toEqual([]);
+		expect(visible.genders).toHaveLength(1);
 	});
 });
 
@@ -375,6 +446,7 @@ describe('deleteContact', () => {
 			listArchivedVisibleTo: async () => [],
 			listNamesVisibleTo: async () => [],
 			updateProfile: async () => {},
+			setGender: async () => {},
 			setArchived: async () => {},
 			readForMerge: async () => null,
 		mergeVisibleTo: async () => false,
@@ -487,6 +559,7 @@ describe('mergeContacts', () => {
 			listArchivedVisibleTo: async () => [],
 			listNamesVisibleTo: async () => [],
 			updateProfile: async () => {},
+			setGender: async () => {},
 			setArchived: async () => {},
 			deleteVisibleTo: async () => null,
 			readForMerge: async () => pair,

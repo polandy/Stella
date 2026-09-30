@@ -24,6 +24,7 @@
 		type CircleRoleOption
 	} from '$lib/graph/model/ego-network';
 	import { canExpand, ringsFrom } from '$lib/graph/model/rings';
+	import { impliedKinshipEdgeIds } from '$lib/graph/model/implied-kinship';
 	import {
 		applyFilters,
 		emptyModel,
@@ -164,9 +165,11 @@
 	let pathFrom = $state<string | null>(null);
 	let path = $state<ConnectionPath | null>(null);
 	let pathMissing = $state(false);
-	// Off by default: the canvas stays quiet, and whoever wants the map read at a glance
-	// turns every line's name on from the toolbar (docs/05 §5.8).
-	let edgeLabels = $state(false);
+	// On by default: with the lines that only repeat a chain left off, the names left are what
+	// the map is read by. Whoever wants it quieter turns them off, and this browser keeps that
+	// (docs/05 §5.8).
+	const EDGE_LABELS_KEY = 'stella.graph.edgeLabels';
+	let edgeLabels = $state(true);
 
 	/*
 	 * The circles grouped by role (docs/02 §2.7): off by default, and like the line names a
@@ -174,8 +177,11 @@
 	 */
 	const GROUP_BY_ROLE_KEY = 'stella.graph.groupByRole';
 	const INNER_LINKS_KEY = 'stella.graph.innerLinks';
+	const ALL_KINSHIP_KEY = 'stella.graph.allKinship';
 	let groupRoles = $state(false);
 	let innerLinks = $state(true);
+	/** Every derived line, including those whose chain is already drawn — for reading the whole family. */
+	let allKinship = $state(false);
 	/** Groups the reader asked to see individually; the rest stay grouped. */
 	let dissolved = $state(new Set<string>());
 	function remember(key: string, on: boolean) {
@@ -188,6 +194,14 @@
 	function toggleGroupRoles() {
 		groupRoles = !groupRoles;
 		remember(GROUP_BY_ROLE_KEY, groupRoles);
+	}
+	function toggleEdgeLabels() {
+		edgeLabels = !edgeLabels;
+		remember(EDGE_LABELS_KEY, edgeLabels);
+	}
+	function toggleAllKinship() {
+		allKinship = !allKinship;
+		remember(ALL_KINSHIP_KEY, allKinship);
 	}
 	function toggleInnerLinks() {
 		innerLinks = !innerLinks;
@@ -257,6 +271,13 @@
 			edgeLabel,
 			grouping: grouping ? { grouping, groupLabel, bundleLabel } : undefined
 		});
+	/*
+	 * A derived line whose chain of entered links is on the map only repeats it, so it stays off
+	 * until its person is selected — or the reader asks for every one of them (docs/02 §2.7).
+	 */
+	const implied = $derived(
+		allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible, selected)
+	);
 	/** What the canvas shows: the filtered map, plus the frames and bundles grouping adds. */
 	const shownIds = () => ({
 		nodes: new Set([
@@ -264,7 +285,7 @@
 			...(grouping?.groups.map((g) => g.id) ?? [])
 		]),
 		edges: new Set([
-			...drawnVisible.edges.map((e) => e.id),
+			...drawnVisible.edges.filter((e) => !implied.has(e.id)).map((e) => e.id),
 			...(grouping?.bundles.map((b) => b.id) ?? [])
 		])
 	});
@@ -632,6 +653,8 @@
 		try {
 			groupRoles = localStorage.getItem(GROUP_BY_ROLE_KEY) === 'on';
 			innerLinks = localStorage.getItem(INNER_LINKS_KEY) !== 'off';
+			allKinship = localStorage.getItem(ALL_KINSHIP_KEY) === 'on';
+			edgeLabels = localStorage.getItem(EDGE_LABELS_KEY) !== 'off';
 		} catch {
 			// Storage can be blocked; the defaults stand.
 		}
@@ -796,7 +819,7 @@
 					type="button"
 					role="menuitemcheckbox"
 					aria-checked={edgeLabels}
-					onclick={() => (edgeLabels = !edgeLabels)}
+					onclick={toggleEdgeLabels}
 					class={MENU_ITEM}
 				>
 					<span class="flex-1">
@@ -805,6 +828,22 @@
 					</span>
 					{@render toggle(edgeLabels)}
 				</button>
+				{#if active.has('kinship')}
+					<!-- Only means something while derived lines are drawn at all. -->
+					<button
+						type="button"
+						role="menuitemcheckbox"
+						aria-checked={allKinship}
+						onclick={toggleAllKinship}
+						class={MENU_ITEM}
+					>
+						<span class="flex-1">
+							{t('graph.allKinship')}
+							<span class="block text-[11px] text-fg-subtle">{t('graph.allKinship.hint')}</span>
+						</span>
+						{@render toggle(allKinship)}
+					</button>
+				{/if}
 				<button
 					type="button"
 					role="menuitemcheckbox"

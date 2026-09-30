@@ -121,7 +121,13 @@ description to go with it, §2.2.3):**
 
 - Names: first, last, nickname, name prefix/suffix, "goes by".
 - Optionally a **maiden/former name**.
-- Gender (free-form or preset), pronouns.
+- **Gender**: *female*, *male* or *diverse*, or nothing on record. It is set from the
+  profile card's *Gender* row, where a tap on one of three chips saves it and a tap on the
+  chosen one takes it off again, and optionally while adding the person. Female and male make
+  relatives' wording gendered (*aunt*, *uncle*); diverse, like nothing on record, keeps it
+  neutral. A stored value other than the three — free text from an older archive — reads as
+  not on record. Stella asks for no pronouns: nothing it writes uses them, and in a family
+  address book the field would stay empty (the `pronouns` column stays, unused).
 - Photo / avatar.
 - Birthdate (with support for **unknown year** and **age-only** estimates).
 - Deceased flag + date of death.
@@ -858,11 +864,22 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 - **Shipped:** the explorer draws derived kinship as its own dotted, neutral-coloured line
   next to the entered relationships and circle memberships, toggled by the **Kinship** chip.
   It is inferred per viewer from the links that viewer may see, so an inferred line can never
-  name a hidden person, and a pair the household linked itself keeps its own name. Selecting
-  a person names the lines around them — "Grandfather", "Parent of", "via Kegelclub" —
-  because hundreds of labels at once would be noise by default; a **Labels** switch in the
-  toolbar's Filter menu names every line at once for reading the whole map at a glance, off by default for
-  the same reason, and drops any name that would render too small to read. The **connection
+  name a hidden person, and a pair the household linked itself keeps its own name.
+  **A derived line is drawn only where it is the bridge.** It is shorthand for a chain of
+  entered links — Frederick is Andy's nephew because he is Steve's son and Steve is Andy's
+  brother — so while that chain stands on the map (parent, sibling and partner links, at
+  most four of them, the longest any worked-out term needs) the dotted line would only repeat
+  it, and in a family with a few children per sibling those repeats outnumber the links
+  themselves. It appears when someone on the chain is not opened up, is filtered away or is
+  private, and — since selecting a person names every line around them — for the selected
+  person, so the word *Nephew* is one tap away. A chain through a friend or a circle does not
+  count, and neither does one through another derived line. For reading a whole family at
+  once, an **All kinship lines** switch in the Filter menu (off by default, remembered per
+  device, offered while the Kinship chip is on) draws every derived line again. Selecting
+  a person names the lines around them — "Grandfather", "Parent of", "via Kegelclub". A
+  **Labels** switch in the toolbar's Filter menu names every line at once; it is on by
+  default (remembered per device), since with the repeating kinship lines gone the names left
+  are what the map is read by, and it drops any name that would render too small to read. The **connection
   path** deliberately ignores derived lines: it answers with the chain through the people who
   connect the two, not with the one-word name for that chain (docs/04 §4.9).
 

@@ -23,6 +23,8 @@ export const search: SearchMessages = {
 	'graph.connectionPath': 'Verbindungsweg',
 	'graph.labels': 'Bezeichnungen',
 	'graph.labels.hint': 'Jede Linie mit ihrer Beziehung benennen',
+	'graph.allKinship': 'Alle Verwandtschaftslinien',
+	'graph.allKinship.hint': 'Auch die, die sich aus den eingetragenen Linien ergeben',
 	'graph.groupByRole': 'Kreise nach Rolle bündeln',
 	'graph.groupByRole.hint':
 		'Wer im Kreis dieselbe Rolle hat, steht als eine Gruppe beisammen — mit einer Linie zum Kreis',

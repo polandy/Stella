@@ -11,6 +11,7 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { MessageKey } from '$lib/i18n/translate';
 	import { wantsSomethingToKnowThemBy } from '$lib/people/new-person';
+	import { GENDERS, type Gender } from '$lib/people/gender';
 	import type { RankedCandidate } from '$lib/server/domain/contacts/suggestions';
 
 	let { form }: { form: ActionData } = $props();
@@ -36,6 +37,8 @@
 	const askForSomethingToKnowThemBy = $derived(wantsSomethingToKnowThemBy({ firstName, lastName }));
 	let suggestions = $state<RankedCandidate[]>([]);
 	let relateTo = $state<string | null>(null);
+	// Optional, so a second tap on the chosen chip takes the choice back — a radio alone cannot.
+	let gender = $state<Gender | null>(null);
 	let timer: ReturnType<typeof setTimeout> | null = null;
 	let requestSeq = 0;
 
@@ -83,6 +86,7 @@
 						howWeMet: text(data, 'howWeMet'),
 						metPlace: text(data, 'metPlace'),
 						birthDate: text(data, 'birthDate'),
+						gender,
 						visibility: data.get('visibility') === 'private' ? 'private' : 'shared'
 					},
 					issuedAt: Date.now()
@@ -103,6 +107,7 @@
 				description = '';
 				suggestions = [];
 				relateTo = null;
+				gender = null;
 				formElement?.reset();
 			}
 		},
@@ -147,6 +152,33 @@
 				<input name="lastName" class={input} autocomplete="off" bind:value={lastName} oninput={onNameInput} onblur={loadSuggestions} />
 			</label>
 		</div>
+
+		<!-- Under the names rather than in *More*: it decides how Stella names their relatives
+		     from the first link on (docs/02 §2.2). -->
+		<fieldset class={field}>
+			<legend class="mb-1 text-fg-muted">
+				{t('contact.gender')} <span class="text-fg-subtle">{t('contacts.new.genderHint')}</span>
+			</legend>
+			<div class="flex flex-wrap gap-1.5">
+				{#each GENDERS as option (option)}
+					<label>
+						<input
+							type="radio"
+							name="gender"
+							value={option}
+							checked={gender === option}
+							onclick={() => (gender = gender === option ? null : option)}
+							class="peer sr-only"
+						/>
+						<span
+							class="inline-block cursor-pointer rounded-full border border-border px-3 py-1 text-sm text-fg-muted transition-colors hover:border-primary hover:text-fg peer-checked:border-primary peer-checked:bg-primary-soft peer-checked:font-semibold peer-checked:text-fg peer-focus-visible:outline-2 peer-focus-visible:outline-primary"
+						>
+							{t(`contact.gender.${option}`)}
+						</span>
+					</label>
+				{/each}
+			</div>
+		</fieldset>
 
 		{#if suggestions.length > 0}
 			<section class="flex flex-col gap-2 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="name-suggestions" aria-live="polite">

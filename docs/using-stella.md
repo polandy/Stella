@@ -108,8 +108,12 @@ photos, dates, their journal and every link to them, and the picture files thems
 asks twice, and there is no undo afterwards. So that nobody simply vanishes without the
 family knowing, the rest of the household sees *"… removed …"* in the stream on Home.
 
-**Adding someone** takes a name and nothing else. Everything beyond that — description,
-phone, email, address, birthday — is optional and can be filled in whenever.
+**Adding someone** takes a name and nothing else. Everything beyond that — gender,
+description, phone, email, address, birthday — is optional and can be filled in whenever.
+
+**Gender** is a row at the top of the profile card: tap it, then *Female*, *Male* or
+*Diverse*, and it is saved. Tapping the chosen one again takes it off the record. It decides
+how Stella names relatives — *Aunt* or *Uncle* with female or male, *Aunt or uncle* otherwise.
 
 If you only know a first name — the family you met at the mountain hut — Stella asks for a
 line to know them by, such as *SAC hut, Aug 2026* — a first name alone is not enough to add
@@ -555,10 +559,15 @@ you can take it back with the same button, or with *None of them is me* in Setti
 everywhere else — their photo, or their initials on their colour — connected by the
 relationships and circles you have recorded. Alongside them run the **dotted lines of the
 family Stella worked out for itself** — grandparents, aunts, cousins, in-laws — the same ones
-the People tab names, drawn without anyone having entered them. *Filter* at the top switches
+the People tab names, drawn without anyone having entered them. A dotted line only shows up
+where it tells you something new: if Frederick's father Steve and Steve's link to his brother
+Andy are both on the map, you can already see that Frederick is Andy's nephew, so the extra
+line stays away until you select Andy or Frederick — or until you switch on *All kinship
+lines* in the Filter menu, which draws every one of them. *Filter* at the top switches
 each kind of line on and off and doubles as the legend: it shows each kind in its colour and
 line style, and counts how many are shown, so *Filter 5/6* tells you something is hidden.
-*Labels* at the bottom of the same menu names every line at once.
+*Labels* in the same menu names every line at once; it starts on, and switching it off leaves
+the names to whoever you select.
 
 Click a person to see who they are and jump to their page; the lines around them are named
 while they are selected, so you can read who is whose grandmother. Click again to pull in

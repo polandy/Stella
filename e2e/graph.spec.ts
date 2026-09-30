@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { signIn } from './app';
 import {
 	arrangeBy,
@@ -8,6 +8,8 @@ import {
 	clickNode,
 	filterMenu,
 	highlightedLabels,
+	kinshipLineId,
+	lineStateOf,
 	overlappingNodes,
 	settled,
 	stateOf
@@ -201,7 +203,7 @@ test('draws the relatives nobody entered, and the Kinship filter takes them away
 	await expect(page.locator('canvas').first()).toBeVisible();
 	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('drawn')).toPass();
 
-	const kinship = (await filterMenu(page)).getByRole('menuitemcheckbox', { name: 'Kinship' });
+	const kinship = (await filterMenu(page)).getByRole('menuitemcheckbox', { name: 'Kinship', exact: true });
 	await kinship.click();
 	await expect(kinship).toHaveAttribute('aria-checked', 'false');
 	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('filtered-out')).toPass();
@@ -210,6 +212,88 @@ test('draws the relatives nobody entered, and the Kinship filter takes them away
 
 	await kinship.click();
 	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('drawn')).toPass();
+});
+
+/** Brings a person up through the search field, which selects them and opens their panel. */
+async function findPerson(page: Page, name: string) {
+	await page.getByLabel('Find a person').fill(name);
+	await page.getByTestId('graph-suggestions').getByRole('button', { name }).click();
+	await expect(page.getByRole('complementary').getByText(name)).toBeVisible();
+}
+
+test('leaves a derived line off while the links it abbreviates are on the map', async ({ page }) => {
+	// Markus and Daniel are brothers; Lena is Markus's daughter, so Daniel's niece, and Timo,
+	// Daniel's son, is Markus's nephew (docs/02 §2.7).
+	const niece = kinshipLineId('demo-c-daniel', 'demo-c-lena');
+	const nephew = kinshipLineId('demo-c-markus', 'demo-c-timo');
+	await page.goto('/graph?center=demo-c-daniel');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await settled(page);
+
+	// Nothing selected, and Markus not opened up yet: his link to Lena is not on the map, so the
+	// niece line is the only thing joining her to Daniel, and it stays as the bridge.
+	await page.getByRole('complementary').getByRole('button', { name: 'Close' }).click();
+	await expect(async () => expect(await highlightedLabels(page)).toEqual([])).toPass();
+	expect(await lineStateOf(page, niece)).toBe('drawn');
+
+	// Opening Markus up draws the chain Daniel – Markus – Lena, and the shorthand goes.
+	await findPerson(page, 'Markus Brunner');
+	await page.getByRole('complementary').getByRole('button', { name: 'Expand connections' }).click();
+	// Corinne is Markus's sister-in-law and nobody's relative on Daniel's side: her arrival says
+	// the expansion has landed.
+	await expect(async () => expect(await stateOf(page, 'demo-c-corinne')).toBe('drawn')).toPass();
+	await expect(async () => expect(await lineStateOf(page, niece)).toBe('filtered-out')).toPass();
+	// Lena herself stays: she is on the map through her father now.
+	expect(await stateOf(page, 'demo-c-lena')).toBe('drawn');
+
+	// Selecting Daniel names every line around him, the niece among them.
+	await findPerson(page, 'Daniel Brunner');
+	await expect(async () => expect(await lineStateOf(page, niece)).toBe('drawn')).toPass();
+	// One line per pair, named from whichever end the engine asked first.
+	expect(await highlightedLabels(page)).toEqual(expect.arrayContaining([expect.stringMatching(/^(Niece|Uncle)$/)]));
+	// Markus's own nephew line came with him, and its chain runs through Daniel, already here.
+	expect(await lineStateOf(page, nephew)).toBe('filtered-out');
+
+	// Unselected again, it goes — until the reader asks for every derived line.
+	await page.getByRole('complementary').getByRole('button', { name: 'Close' }).click();
+	await expect(async () => expect(await lineStateOf(page, niece)).toBe('filtered-out')).toPass();
+	const menu = await filterMenu(page);
+	await expect(menu.getByRole('menuitemcheckbox', { name: /^Labels/ })).toHaveAttribute(
+		'aria-checked',
+		'true'
+	);
+	const all = menu.getByRole('menuitemcheckbox', { name: /^All kinship lines/ });
+	await all.click();
+	await expect(all).toHaveAttribute('aria-checked', 'true');
+	await expect(async () => expect(await lineStateOf(page, niece)).toBe('drawn')).toPass();
+	expect(await lineStateOf(page, nephew)).toBe('drawn');
+
+	// The switch belongs to the Kinship chip: with the chip off it has nothing to show.
+	await menu.getByRole('menuitemcheckbox', { name: 'Kinship', exact: true }).click();
+	await expect(all).toHaveCount(0);
+	await expect(async () => expect(await lineStateOf(page, niece)).toBe('filtered-out')).toPass();
+});
+
+test('remembers the Labels and All kinship lines switches on this device', async ({ page }) => {
+	await page.goto('/graph?center=demo-c-daniel');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	let menu = await filterMenu(page);
+	const labels = () => menu.getByRole('menuitemcheckbox', { name: /^Labels/ });
+	const all = () => menu.getByRole('menuitemcheckbox', { name: /^All kinship lines/ });
+	// Both start the way a first visit shows them: names on, the repeating lines off.
+	await expect(labels()).toHaveAttribute('aria-checked', 'true');
+	await expect(all()).toHaveAttribute('aria-checked', 'false');
+	await labels().click();
+	await all().click();
+	await expect(labels()).toHaveAttribute('aria-checked', 'false');
+	await expect(all()).toHaveAttribute('aria-checked', 'true');
+
+	await page.reload();
+	await settled(page);
+
+	menu = await filterMenu(page);
+	await expect(labels()).toHaveAttribute('aria-checked', 'false');
+	await expect(all()).toHaveAttribute('aria-checked', 'true');
 });
 
 test('a connection path answers with the people in between, not with the derived shortcut', async ({ page }) => {

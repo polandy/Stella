@@ -40,6 +40,7 @@ export const contacts = {
 		'After adding, you land in the relationship editor with them selected.',
 	'contacts.new.description': 'Description',
 	'contacts.new.descriptionHint': '(one line)',
+	'contacts.new.genderHint': '(optional)',
 	'contacts.new.descriptionPlaceholder': "Marco's sister, met at the lake",
 	'contacts.new.howWeMet': 'How we met',
 	'contacts.new.where': 'Where',

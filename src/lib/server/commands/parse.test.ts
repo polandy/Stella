@@ -129,8 +129,19 @@ describe('parseCommand, for a new person', () => {
 			howWeMet: null,
 			metPlace: null,
 			birthDate: '1990-04-02',
+			gender: null,
 			visibility: 'shared'
 		});
+	});
+
+	it('reads the gender chosen for them, one of the three', () => {
+		expect(parseCommand({ ...person, payload: { ...person.payload, gender: 'diverse' } })?.payload).toMatchObject({
+			gender: 'diverse'
+		});
+	});
+
+	it('refuses a gender that is not one of the three, rather than dropping it', () => {
+		expect(parseCommand({ ...person, payload: { ...person.payload, gender: 'other' } })).toBeNull();
 	});
 
 	it('refuses a person with no name at all', () => {

@@ -375,6 +375,11 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   The cost accepted: while a candidate is open every release needs its own `Release-As`, and
   for the seconds between release and flag `releases/latest` names the candidate. Revisit at
   1.0, where the built-in option stops catching final releases. (`docs/08` §8.9.)
+- **The release PR is opened with a personal token** — opened with `GITHUB_TOKEN`, its CI
+  run needs a manual approval and ends red after the merge, and no trigger filter can skip
+  it by head branch. Approving each run by hand was the alternative. The cost accepted: a
+  token to create and renew, falling back to `GITHUB_TOKEN` when missing so a release never
+  waits on it. (`docs/08` §8.9.)
 - **Our own message catalogue over an i18n library** — two languages and no plural rules
   beyond "one or many" do not pay for Paraglide's compiler or a runtime store. Typed area
   modules give the same guarantee more cheaply: German is typed against English, so a
@@ -571,6 +576,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   Storing them would mean invalidating on every relationship, birth and visibility change,
   and would let a stale row outlive the link it came from. Inference re-runs per subject,
   which is quadratic in principle but reads a household-sized graph in a single pass.
+- **A derived line is left off when the map already joins its ends, judged on the map, not
+  from the engine's `via`** — `model/implied-kinship.ts` walks the drawn parent, sibling and
+  partner links, at most four (the longest chain any term needs). The engine's `viaIds` keep
+  only the first chain per relative and name people, not the links between them, so a map
+  holding a different but equally real chain would still have drawn the shorthand. The cost:
+  a line can go because *some* family chain joins the pair rather than the one it was worked
+  out through — acceptable, since selecting either end brings it back with its name.
 - **What Stella *offers* lives apart from what it *derives*, and the two are compared by
   relation, not by pair** — `lib/suggestions/` holds the rules, the read model and the
   suppressions; `lib/kinship/` stays the answer to what is true. They are separate because
@@ -849,6 +861,12 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   codebase: `navigator.userAgent` for `iPad`/`iPhone`, plus the `MacIntel` + touch-points
   combination iPadOS answers with instead of naming itself
   (`src/lib/ui/fullscreen.ts`).
+- **Gender as three values, pronouns left unused** — a fixed `female` / `male` / `diverse`
+  instead of free text, because the only thing Stella does with a gender is choose a kinship
+  word, and free text would need guessing to do that. It costs the nuance free text allowed.
+  Pronouns are not offered at all: nothing Stella writes uses them. The `pronouns` column stays
+  in the schema, unused, so there is no migration and no archive format change for a field
+  that was always empty (docs/02 §2.2, `src/lib/people/gender.ts`).
 
 ## 4.10 Deployment
 

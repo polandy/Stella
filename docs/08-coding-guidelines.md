@@ -296,12 +296,15 @@ A change is done when:
   itself and propose nonsense like `0.1.1-rc.1`. Don't merge a release PR with such a version.
   (Its `prerelease`/`versioning: prerelease` options don't fit: pre-1.0 they would flag every
   0.x release as a pre-release.)
-- **The release PR runs no CI**, by design: `ci.yml`'s `pull_request` trigger ignores
-  `release-please--**`. The PR only bumps the version, the changelog and the manifest —
-  content already verified on `main` — and its branch is authored by `github-actions[bot]`,
-  a `CONTRIBUTOR`, so each run would wait forever on "Approve and run" and then be reported
-  as a workflow-file failure once the merge deleted the branch. So merge it on `main`'s
-  green run; an empty check list there is expected, not a skipped gate.
+- **The release PR runs CI like any other PR**, because release-please opens it with the
+  maintainer's token, the repository secret `RELEASE_PLEASE_TOKEN`. Opened with the run's
+  `GITHUB_TOKEN` instead, the PR is authored by `github-actions[bot]`, a `CONTRIBUTOR`: its
+  run waits forever on "Approve and run" and is reported as a failure once the merge deletes
+  the branch. (A workflow cannot skip it by branch name: `pull_request`'s `branches` filters
+  match the PR's *base*, which is `main`.) The secret is a fine-grained personal access token
+  for this repository only, with *Contents*, *Pull requests* and *Issues* set to read and
+  write; renew it before it expires. Without it the workflow falls back to `GITHUB_TOKEN`,
+  so releases still work and only that red run comes back.
 
 ## 8.10 Working agreement
 

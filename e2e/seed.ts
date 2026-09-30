@@ -50,7 +50,7 @@ export async function seedHousehold(
 	page: Page,
 	people: readonly string[],
 	links: readonly SeedLink[] = [],
-	/** A gender for whoever needs one — the only way a spec can set it, as the form has none. */
+	/** A gender for whoever needs one, as the setting of a case rather than the step under test. */
 	genders: Readonly<Record<string, 'male' | 'female'>> = {}
 ): Promise<void> {
 	const document = {

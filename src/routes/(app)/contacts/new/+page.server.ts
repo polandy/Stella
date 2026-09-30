@@ -6,6 +6,7 @@ import { systemClock } from '$lib/server/clock';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { ulidGenerator } from '$lib/server/id';
 import { getCommandDeps } from '$lib/server/services';
+import { GENDERS } from '$lib/people/gender';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
@@ -24,6 +25,7 @@ const QuickAddSchema = v.object({
 	howWeMet: optional,
 	metPlace: optional,
 	birthDate: optional,
+	gender: v.optional(v.picklist(GENDERS)),
 	/** An existing person to link right after creating (docs/02 §2.2.1). */
 	relateTo: optional,
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
@@ -47,6 +49,7 @@ export const actions: Actions = {
 			howWeMet: form.get('howWeMet') || undefined,
 			metPlace: form.get('metPlace') || undefined,
 			birthDate: form.get('birthDate') || undefined,
+			gender: form.get('gender') || undefined,
 			relateTo: form.get('relateTo') || undefined,
 			visibility: form.get('visibility') || undefined
 		});

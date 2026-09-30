@@ -17,6 +17,7 @@ import type { NewActivityEntry } from '../domain/activity/activity';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import { mergeContacts } from './contact-merge';
 import type { NameCandidate, NameCandidateSource } from '../domain/contacts/suggestions';
+import { readGender, type Gender } from '../../people/gender';
 import type * as schema from './schema';
 import {
 	activityLog,
@@ -86,6 +87,7 @@ const contactColumns = {
 	metPlace: contactTable.metPlace,
 	birthDate: contactTable.birthDate,
 	birthDatePrecision: contactTable.birthDatePrecision,
+	gender: contactTable.gender,
 	isDeceased: contactTable.isDeceased,
 	archivedAt: contactTable.archivedAt,
 	createdAt: contactTable.createdAt,
@@ -106,8 +108,9 @@ export function createDrizzleContactRepository(
 				.from(contactTable)
 				.where(and(eq(contactTable.id, id), contactVisibleTo(viewer)))
 				.get();
-			// SQLite has no boolean; the domain works with one.
-			return row ? { ...row, isDeceased: row.isDeceased === 1 } : null;
+			// SQLite has no boolean, and the column predates the three genders; the domain
+			// works with a boolean and with one of the three or nothing.
+			return row ? { ...row, isDeceased: row.isDeceased === 1, gender: readGender(row.gender) } : null;
 		},
 
 		async listVisibleTo(viewer: Viewer) {
@@ -281,6 +284,10 @@ export function createDrizzleContactRepository(
 				})
 				.where(eq(contactTable.id, id))
 				.run();
+		},
+
+		async setGender(id: string, gender: Gender | null, updatedAt: number) {
+			db.update(contactTable).set({ gender, updatedAt }).where(eq(contactTable.id, id)).run();
 		}
 	};
 }
