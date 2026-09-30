@@ -78,3 +78,22 @@ export function menuOpensUpward(pill: Band, height: number, bounds: Band, margin
 	const above = pill.top - (bounds.top + margin);
 	return height > below && above > below;
 }
+
+/**
+ * How tall an open menu may grow on the side it opens to, so its foot (or top) stays inside
+ * `bounds`, `margin` clear of the edge, `gap` apart from its pill. A menu taller than that
+ * scrolls instead: on the small map of a person's page the Filter menu is taller than the map,
+ * and the map cuts off whatever runs past it.
+ */
+export function menuMaxHeight(
+	pill: Band,
+	upward: boolean,
+	bounds: Band,
+	margin: number,
+	gap: number
+): number {
+	const room = upward
+		? pill.top - gap - (bounds.top + margin)
+		: bounds.bottom - margin - pill.bottom - gap;
+	return Math.max(0, room);
+}

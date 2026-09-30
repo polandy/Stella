@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { filterSummary, menuOpensUpward, menuShift, nextMenuIndex } from './menu';
+import { filterSummary, menuMaxHeight, menuOpensUpward, menuShift, nextMenuIndex } from './menu';
 
 /*
  * The decisions behind the graph toolbar's menus (docs/05 §5.8): what the Filter button says
@@ -99,5 +99,27 @@ describe('menuOpensUpward', () => {
 
 	it('stays below when there is even less room above', () => {
 		expect(menuOpensUpward({ top: 200, bottom: 230 }, 800, screen, MARGIN)).toBe(false);
+	});
+});
+
+describe('menuMaxHeight', () => {
+	// The map on a person's page: 730 px tall on the screen, the pill near its top.
+	const map = { top: 250, bottom: 980 };
+	const pill = { top: 280, bottom: 310 };
+	const MARGIN = 12;
+	const GAP = 6;
+
+	it('lets a menu below its pill reach down to the foot of the map, no further', () => {
+		expect(menuMaxHeight(pill, false, map, MARGIN, GAP)).toBe(980 - 12 - 310 - 6);
+	});
+
+	it('lets a menu above its pill reach up to the top of the map', () => {
+		const low = { top: 900, bottom: 930 };
+
+		expect(menuMaxHeight(low, true, map, MARGIN, GAP)).toBe(900 - 6 - (250 + 12));
+	});
+
+	it('never asks for less than nothing', () => {
+		expect(menuMaxHeight({ top: 970, bottom: 1000 }, false, map, MARGIN, GAP)).toBe(0);
 	});
 });

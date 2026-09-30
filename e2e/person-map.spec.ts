@@ -67,6 +67,31 @@ test.describe('on a person’s page', () => {
 		await expect(map(page).getByRole('complementary')).toHaveCount(0);
 	});
 
+	test('the Filter menu stays on the small map of a phone, scrolling to its last item', async ({
+		page
+	}) => {
+		// On a Pixel 9 Pro the menu is taller than the card-sized map, which cuts off whatever
+		// runs past it; the switches at its foot must still be reachable (docs/05 §5.8).
+		await page.setViewportSize({ width: 412, height: 915 });
+		await page.reload();
+		await expect(map(page).locator('canvas').first()).toBeVisible();
+
+		const menu = await filterMenu(map(page));
+		const last = menu.getByRole('menuitemcheckbox', { name: /^Group by role/ });
+		await last.scrollIntoViewIfNeeded();
+		const [mapBox, menuBox, lastBox] = await Promise.all([
+			map(page).boundingBox(),
+			menu.boundingBox(),
+			last.boundingBox()
+		]);
+		// The whole menu stands inside the map — reaching its last item scrolls the menu, not
+		// the map's clipped inside out from under it — and that item is inside the menu.
+		expect(menuBox!.y).toBeGreaterThanOrEqual(mapBox!.y);
+		expect(menuBox!.y + menuBox!.height).toBeLessThanOrEqual(mapBox!.y + mapBox!.height);
+		expect(lastBox!.y).toBeGreaterThanOrEqual(menuBox!.y);
+		expect(lastBox!.y + lastBox!.height).toBeLessThanOrEqual(menuBox!.y + menuBox!.height);
+	});
+
 	test('a tap lands on the person under it after the page above the map has moved', async ({
 		page
 	}) => {

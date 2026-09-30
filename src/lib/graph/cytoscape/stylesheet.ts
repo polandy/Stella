@@ -141,11 +141,10 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'curve-style': 'bezier',
 				'line-color': p.fgSubtle,
 				opacity: 0.6,
-				// Every line knows its name ("Parent of", "Grandfather"), but hundreds of them at
-				// once would be noise — so by default the label appears only while the edge is
-				// highlighted, and selecting a person names their connections (docs/02 §2.7).
-				// The toolbar's "Labels" toggle names them all for those who want the map read
-				// at a glance.
+				// Every line knows its name ("Parent of", "Grandfather"). The toolbar's "Labels"
+				// switch (on by default) names them all; switched off, a label appears only while
+				// its edge is highlighted, so selecting a person still names their connections
+				// (docs/02 §2.7).
 				label: 'data(label)',
 				'text-opacity': options.edgeLabels ? 1 : 0,
 				'min-zoomed-font-size': EDGE_LABEL_MIN_ZOOMED_FONT_SIZE,
