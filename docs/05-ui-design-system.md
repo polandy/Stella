@@ -818,7 +818,8 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   open, since it is used all the time; what is set once and then looked at goes into two
   menus (`MenuButton`: arrow keys move between items, Escape closes and hands focus back, a
   click elsewhere closes; a menu with no room below its pill — the day pill at the foot of
-  a phone's composer sheet — opens above it instead). **Filter** counts what is shown (*Filter 5/6*) and stands out in
+  a phone's composer sheet — opens above it instead; a menu taller than the box that shows
+  it — the Filter menu on a person's small map — stops at that box's edge and scrolls). **Filter** counts what is shown (*Filter 5/6*) and stands out in
   the primary colour once the reader has narrowed the map — measured against what the map
   opened with, so the person page's circles-off start is not mistaken for a forgotten
   filter (`src/lib/menu/menu.ts`). Its items toggle and leave the menu open for the next.

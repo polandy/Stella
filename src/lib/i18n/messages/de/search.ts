@@ -24,8 +24,7 @@ export const search: SearchMessages = {
 	'graph.labels': 'Bezeichnungen',
 	'graph.labels.hint': 'Jede Linie mit ihrer Beziehung benennen',
 	'graph.allKinship': 'Alle Verwandtschaftslinien',
-	'graph.allKinship.hint':
-		'Auch Verwandte verbinden, die sich schon aus den eingetragenen Linien ergeben, etwa den Neffen neben Vater und Onkel',
+	'graph.allKinship.hint': 'Auch die, die sich aus den eingetragenen Linien ergeben',
 	'graph.groupByRole': 'Kreise nach Rolle bündeln',
 	'graph.groupByRole.hint':
 		'Wer im Kreis dieselbe Rolle hat, steht als eine Gruppe beisammen — mit einer Linie zum Kreis',
