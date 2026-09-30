@@ -64,9 +64,9 @@ export const MONICA_RELATIONSHIP_TYPES: Readonly<Record<string, MappedRelationsh
 	sibling: builtIn('sibling'),
 	grandparent: builtIn('grandparent_grandchild', true),
 	grandchild: builtIn('grandparent_grandchild', false),
-	uncle: asym('uncle_nephew', 'Uncle/aunt of', 'Nephew/niece of', 'family', true),
-	nephew: asym('uncle_nephew', 'Uncle/aunt of', 'Nephew/niece of', 'family', false),
-	cousin: sym('cousin', 'Cousin of', 'family'),
+	uncle: builtIn('aunt_uncle_niece_nephew', true),
+	nephew: builtIn('aunt_uncle_niece_nephew', false),
+	cousin: builtIn('cousin'),
 	godfather: asym('godparent_godchild', 'Godparent of', 'Godchild of', 'family', true),
 	godson: asym('godparent_godchild', 'Godparent of', 'Godchild of', 'family', false),
 	stepparent: asym('stepparent_stepchild', 'Step-parent of', 'Step-child of', 'family', true),
@@ -91,3 +91,16 @@ export function mapRelationshipType(name: string): MappedRelationshipType {
 	const label = name.charAt(0).toUpperCase() + name.slice(1);
 	return sym(key, label, 'other');
 }
+
+/**
+ * Types an older import created before Stella had them built in, by the id it gave them, and
+ * the built-in each now folds into (docs/02 §2.4). New imports land on the built-in directly.
+ */
+const REPLACED_BY_BUILT_IN: Readonly<Record<string, string>> = {
+	'monica:reltype:cousin': 'cousin',
+	'monica:reltype:uncle_nephew': 'aunt_uncle_niece_nephew'
+};
+
+/** The built-in that replaces an imported custom type, or null when none does. */
+export const builtInReplacingImportedType = (typeId: string): string | null =>
+	REPLACED_BY_BUILT_IN[typeId] ?? null;

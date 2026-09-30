@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { appReady, openPerson, pickPerson, signIn } from './app';
+import { seedHousehold } from './seed';
 
 /*
  * A household naming its own kinds of link (docs/02 §2.4). Written after the flow was
@@ -137,4 +138,58 @@ test('removes a type nothing uses, with Undo', async ({ page }) => {
 	await expect(page.getByTestId('toast-undo')).toBeVisible();
 	await openTypeSettings(page);
 	await expect(customRow(page, 'Sings with')).toHaveCount(0);
+});
+
+test('folds a Cousin of an older Monica import created into the built-in one', async ({ page }) => {
+	// Imports land on the built-in now, so only a restore can still write the type they used to
+	// create — under the id they gave it, which is what the offer recognises.
+	await seedHousehold(
+		page,
+		['Ida Kuster', 'Pia Kuster'],
+		[{ from: 'Ida Kuster', to: 'Pia Kuster', type: 'monica:reltype:cousin' }],
+		{},
+		[],
+		[{ id: 'monica:reltype:cousin', key: 'cousin', label: 'Cousin of', category: 'family' }]
+	);
+	await openTypeSettings(page);
+	const row = customRow(page, 'Cousin of');
+	await expect(row).toContainText('Stella now has “Cousin of” built in');
+
+	await row.getByRole('button', { name: 'Merge into Cousin of' }).click();
+	await expect(page.getByText('Relationship types merged')).toBeVisible();
+	await expect(customRow(page, 'Cousin of')).toHaveCount(0);
+
+	// The link came along rather than going with the type.
+	await openPerson(page, /Ida Kuster/);
+	await expect(page.locator('#section-relationships')).toContainText('Pia Kuster');
+});
+
+test('merges a type of its own into another one, links and all', async ({ page }) => {
+	await seedHousehold(page, ['Rolf Amsler', 'Vera Amsler']);
+	await openTypeSettings(page);
+	await addType(page, { label: 'Hikes with', category: 'social' });
+	await expect(customRow(page, 'Hikes with')).toHaveCount(1);
+
+	await openPerson(page, /Rolf Amsler/);
+	await page.getByRole('button', { name: 'Add relationship' }).click();
+	const form = page.locator('form[action="?/addRelationship"]');
+	await form.locator('select[name=typeChoice]').selectOption({ label: 'Hikes with' });
+	await pickPerson(form.getByLabel('Person'), 'Vera Amsler');
+	await form.getByRole('button', { name: 'Add', exact: true }).click();
+	await expect(page.locator('#section-relationships')).toContainText('Vera Amsler');
+
+	await openTypeSettings(page);
+	const row = customRow(page, 'Hikes with');
+	await row.getByRole('button', { name: 'Edit' }).click();
+	const merge = page.locator('form[action="?/merge"]').filter({ has: page.locator('select') });
+	await merge.locator('select[name=intoId]').selectOption({ label: 'Friend of' });
+	await merge.getByRole('button', { name: 'Merge', exact: true }).click();
+	await expect(page.getByText('Relationship types merged')).toBeVisible();
+	await expect(customRow(page, 'Hikes with')).toHaveCount(0);
+
+	await openPerson(page, /Rolf Amsler/);
+	const relationships = page.locator('#section-relationships');
+	await expect(relationships).toContainText('Friend of');
+	await expect(relationships).toContainText('Vera Amsler');
+	await expect(relationships).not.toContainText('Hikes with');
 });

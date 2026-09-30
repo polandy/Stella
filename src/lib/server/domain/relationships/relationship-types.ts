@@ -173,6 +173,12 @@ export interface RelationshipTypeRepository {
 	deleteTypeVisibleTo(viewer: Viewer, typeId: string): Promise<boolean>;
 	/** How many relationships the viewer may see are stored under this type. */
 	countRelationshipsOfType(viewer: Viewer, typeId: string): Promise<number>;
+	/**
+	 * Atomically moves every relationship of the custom type `fromId` onto `intoId` and
+	 * deletes `fromId`; a pair already linked by `intoId` keeps that link and the duplicate
+	 * goes. False when `fromId` is not a custom type of the viewer's household.
+	 */
+	mergeTypeInto(viewer: Viewer, fromId: string, intoId: string): Promise<boolean>;
 }
 
 export interface RelationshipTypeDeps {
@@ -239,4 +245,39 @@ export async function removeRelationshipType(
 	const count = await deps.types.countRelationshipsOfType(viewer, typeId);
 	if (count > 0) throw new RelationshipTypeInUseError(count);
 	return deps.types.deleteTypeVisibleTo(viewer, typeId);
+}
+
+/**
+ * Whether `into` can take over `from`'s relationships. Symmetry decides the canonical storage
+ * direction (`canonicalEndpoints`), and a one-way type says which end is which: folding across
+ * would invent a direction or lose one.
+ */
+export const canMergeInto = (
+	from: Pick<RelationshipType, 'id' | 'symmetric'>,
+	into: Pick<RelationshipType, 'id' | 'symmetric'>
+): boolean => from.id !== into.id && from.symmetric === into.symmetric;
+
+/**
+ * Fold a custom type into another one — typically a built-in that now says the same thing, as
+ * *Cousin of* does for the one an older Monica import created. Every relationship stored under
+ * it moves across, including links between people this viewer cannot see: the type is the
+ * household's vocabulary, and one row left behind would keep it from going.
+ */
+export async function mergeRelationshipType(
+	deps: Pick<RelationshipTypeDeps, 'types'>,
+	viewer: Viewer,
+	fromId: string,
+	intoId: string
+): Promise<boolean> {
+	const from = await deps.types.getType(viewer, fromId);
+	const into = await deps.types.getType(viewer, intoId);
+	if (!from || !into) return false;
+	if (from.householdId === null) throw new BuiltInRelationshipTypeError();
+	if (from.id === into.id) {
+		throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.mergeIntoItself'));
+	}
+	if (!canMergeInto(from, into)) {
+		throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.mergeShape'));
+	}
+	return deps.types.mergeTypeInto(viewer, fromId, intoId);
 }

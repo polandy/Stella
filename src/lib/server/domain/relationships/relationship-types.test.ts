@@ -8,8 +8,10 @@ import {
 	RelationshipTypeInUseError,
 	createRelationshipType,
 	editRelationshipType,
+	mergeRelationshipType,
 	parseRelationshipTypeFields,
 	claimTypeKey,
+	canMergeInto,
 	removeRelationshipType
 } from './relationship-types';
 import type { RelationshipType } from './relationships';
@@ -129,10 +131,11 @@ interface Recorded {
 	inserted: unknown[];
 	updated: unknown[];
 	deleted: string[];
+	merged: { fromId: string; intoId: string }[];
 }
 
 function fakeRepo(opts: { types?: RelationshipType[]; usageCount?: number } = {}) {
-	const recorded: Recorded = { inserted: [], updated: [], deleted: [] };
+	const recorded: Recorded = { inserted: [], updated: [], deleted: [], merged: [] };
 	const types = opts.types ?? [];
 	const repo = {
 		listTypes: async () => types,
@@ -148,7 +151,11 @@ function fakeRepo(opts: { types?: RelationshipType[]; usageCount?: number } = {}
 			recorded.deleted.push(id);
 			return types.some((t) => t.id === id && t.householdId !== null);
 		},
-		countRelationshipsOfType: async () => opts.usageCount ?? 0
+		countRelationshipsOfType: async () => opts.usageCount ?? 0,
+		mergeTypeInto: async (_v: Viewer, fromId: string, intoId: string) => {
+			recorded.merged.push({ fromId, intoId });
+			return true;
+		}
 	};
 	return { recorded, deps: { types: repo, ids: { next: () => 'type-1' } } };
 }
@@ -324,5 +331,80 @@ describe('removeRelationshipType', () => {
 		const f = fakeRepo({ types: [] });
 		expect(await removeRelationshipType(f.deps, viewer, 'type-elsewhere')).toBe(false);
 		expect(f.recorded.deleted).toEqual([]);
+	});
+});
+
+describe('canMergeInto', () => {
+	it('takes a type of the same shape, and never the type itself', () => {
+		const sym = (id: string) => ({ id, symmetric: true });
+		const oneWay = (id: string) => ({ id, symmetric: false });
+		expect(canMergeInto(sym('a'), sym('b'))).toBe(true);
+		expect(canMergeInto(oneWay('a'), oneWay('b'))).toBe(true);
+		expect(canMergeInto(sym('a'), oneWay('b'))).toBe(false);
+		expect(canMergeInto(oneWay('a'), sym('b'))).toBe(false);
+		expect(canMergeInto(sym('a'), sym('a'))).toBe(false);
+	});
+});
+
+describe('mergeRelationshipType', () => {
+	const cousin = BUILT_IN_RELATIONSHIP_TYPES.find((t) => t.id === 'cousin')!;
+	const importedCousin: RelationshipType = {
+		...custom,
+		id: 'monica:reltype:cousin',
+		key: 'cousin',
+		forwardLabel: 'Cousin of',
+		reverseLabel: 'Cousin of',
+		category: 'family'
+	};
+	const godparent: RelationshipType = {
+		...custom,
+		id: 'type-godparent',
+		key: 'godparent_of',
+		forwardLabel: 'Godparent of',
+		reverseLabel: 'Godchild of',
+		category: 'family',
+		symmetric: false
+	};
+
+	it('folds a custom type into one of the same shape', async () => {
+		const f = fakeRepo({ types: [importedCousin, cousin] });
+		expect(await mergeRelationshipType(f.deps, viewer, importedCousin.id, 'cousin')).toBe(true);
+		expect(f.recorded.merged).toEqual([{ fromId: importedCousin.id, intoId: 'cousin' }]);
+	});
+
+	it('refuses to fold a built-in type away', async () => {
+		const f = fakeRepo({ types: [importedCousin, cousin] });
+		await expect(
+			mergeRelationshipType(f.deps, viewer, 'cousin', importedCousin.id)
+		).rejects.toThrow(BuiltInRelationshipTypeError);
+		expect(f.recorded.merged).toEqual([]);
+	});
+
+	it('refuses to fold a type into itself', async () => {
+		const f = fakeRepo({ types: [importedCousin] });
+		await expect(
+			mergeRelationshipType(f.deps, viewer, importedCousin.id, importedCousin.id)
+		).rejects.toThrow(InvalidRelationshipTypeError);
+		expect(f.recorded.merged).toEqual([]);
+	});
+
+	it('refuses to fold a one-way type into a symmetric one, and the other way round', async () => {
+		// Symmetry decides which end is stored first, and a one-way type says which end is which:
+		// folding across would either invent a direction or throw one away.
+		const f = fakeRepo({ types: [importedCousin, godparent, cousin] });
+		await expect(mergeRelationshipType(f.deps, viewer, godparent.id, 'cousin')).rejects.toThrow(
+			InvalidRelationshipTypeError
+		);
+		await expect(
+			mergeRelationshipType(f.deps, viewer, importedCousin.id, godparent.id)
+		).rejects.toThrow(InvalidRelationshipTypeError);
+		expect(f.recorded.merged).toEqual([]);
+	});
+
+	it("reports either type out of this viewer's reach without writing", async () => {
+		const f = fakeRepo({ types: [importedCousin] });
+		expect(await mergeRelationshipType(f.deps, viewer, importedCousin.id, 'elsewhere')).toBe(false);
+		expect(await mergeRelationshipType(f.deps, viewer, 'elsewhere', importedCousin.id)).toBe(false);
+		expect(f.recorded.merged).toEqual([]);
 	});
 });

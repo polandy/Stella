@@ -13,6 +13,7 @@
 	import SignOutForm from '$lib/components/SignOutForm.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
+	import { navigationTurns } from '$lib/undo/navigation-turns';
 	import { providePending } from '$lib/sync/context.svelte';
 	import { providePeopleContext } from '$lib/people/context.svelte';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -125,7 +126,10 @@
 	// sends them with keepalive alongside and hopes for the best.
 	const removals = provideRemovals();
 	providePeopleContext(() => data.peopleContext);
+	const turns = navigationTurns();
 	beforeNavigate((navigation) => {
+		// Taken for every navigation, so a newer one retires any held back below.
+		const stillLatest = turns.take();
 		if (removals.snapshot.removals.length === 0) return;
 		if (navigation.type === 'leave' || navigation.type === 'form' || !navigation.to) {
 			void removals.flush();
@@ -134,6 +138,7 @@
 		const { to, type, delta } = navigation;
 		navigation.cancel();
 		void removals.flush().then(() => {
+			if (!stillLatest()) return;
 			if (type === 'popstate' && delta) history.go(delta);
 			else void goto(to.url);
 		});

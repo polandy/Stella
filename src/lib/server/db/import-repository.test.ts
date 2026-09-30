@@ -40,7 +40,7 @@ function fixture(): SourceExport {
 		relationshipTypes: [
 			{ id: 8, name: 'parent', nameReverse: 'child' },
 			{ id: 9, name: 'child', nameReverse: 'parent' },
-			{ id: 15, name: 'cousin', nameReverse: 'cousin' }
+			{ id: 15, name: 'bestfriend', nameReverse: 'bestfriend' }
 		],
 		relationships: [
 			{ id: 1, typeId: 8, contactIs: 1, ofContact: 2, createdAt: null },
@@ -96,8 +96,8 @@ describe('import repository', () => {
 		expect(ada).toMatchObject({ displayName: 'Ada Test', jobTitle: 'Engineer', birthDate: '2016', birthDatePrecision: 'age' });
 		expect(rows(schema.interactionParticipant)).toBe(1);
 		expect(rows(schema.contactTag)).toBe(2);
-		expect(db.select().from(schema.relationshipType).where(eq(schema.relationshipType.id, 'monica:reltype:cousin')).get()).toMatchObject({
-			householdId: H, forwardLabel: 'Cousin of', symmetric: 1
+		expect(db.select().from(schema.relationshipType).where(eq(schema.relationshipType.id, 'monica:reltype:best_friend')).get()).toMatchObject({
+			householdId: H, forwardLabel: 'Best friend of', symmetric: 1
 		});
 	});
 

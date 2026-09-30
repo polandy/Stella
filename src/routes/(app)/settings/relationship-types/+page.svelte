@@ -37,6 +37,14 @@
 		addSymmetric = true;
 	});
 	const savedEdit = savedEnhance(removals, t('components.saved'), () => (editing = null));
+	const savedMerge = savedEnhance(removals, t('relationshipTypes.merged'), () => (editing = null));
+
+	const allTypes = $derived([...data.builtIn, ...data.custom]);
+
+	const labelOf = (typeId: string) => {
+		const type = allTypes.find((candidate) => candidate.id === typeId);
+		return type ? relationshipTypeLabel(t, type) : typeId;
+	};
 
 	const visibleCustom = $derived(
 		data.custom.filter((type) => !removals.isPending(removalKey('relationship-type', type.id)))
@@ -104,6 +112,23 @@
 							</div>
 						</div>
 
+						{#if type.replacedBy}
+							<form
+								method="POST"
+								action="?/merge"
+								use:enhance={savedMerge}
+								data-testid="replaced-by-built-in"
+								class="flex flex-wrap items-center gap-2 pl-5 text-fg-muted"
+							>
+								<input type="hidden" name="typeId" value={type.id} />
+								<input type="hidden" name="intoId" value={type.replacedBy} />
+								<span>{t('relationshipTypes.replaced', { label: labelOf(type.replacedBy) })}</span>
+								<Button variant="primary" size="sm">
+									{t('relationshipTypes.mergeInto', { label: labelOf(type.replacedBy) })}
+								</Button>
+							</form>
+						{/if}
+
 						{#if editing === type.id}
 							<!-- The machine key stays as it was: it is what the type *is*, and rewriting it
 							     would make the row a different type to everything already stored. -->
@@ -143,6 +168,29 @@
 								<div>
 									<Button variant="primary" size="sm">{t('common.save')}</Button>
 								</div>
+							</form>
+
+							<form
+								method="POST"
+								action="?/merge"
+								use:enhance={savedMerge}
+								class="flex flex-col gap-2 border-t border-border-subtle pt-2 pl-5"
+							>
+								<input type="hidden" name="typeId" value={type.id} />
+								<div class="flex flex-wrap items-end gap-2">
+									<label class="flex flex-1 flex-col gap-1">
+										<span class="text-xs text-fg-muted">{t('relationshipTypes.mergeLabel')}</span>
+										<select name="intoId" class={INPUT} required>
+											{#each type.mergeTargets as target (target.id)}
+												<option value={target.id} selected={target.id === type.replacedBy}>
+													{relationshipTypeLabel(t, target)}
+												</option>
+											{/each}
+										</select>
+									</label>
+									<Button variant="secondary" size="sm">{t('relationshipTypes.merge')}</Button>
+								</div>
+								<p class="text-xs text-fg-subtle">{t('relationshipTypes.mergeHint')}</p>
 							</form>
 						{/if}
 					</li>

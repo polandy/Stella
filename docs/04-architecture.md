@@ -500,7 +500,8 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **Undo is a removal held back in the browser, not a soft delete** — a removed story item
   is hidden and its form is posted only when the eight-second toast closes or the page is
   left (`src/lib/undo`, a pure store with the timer injected; the app shell flushes it on
-  navigation and `pagehide`, with `keepalive`). Rejected: a `deleted_at` column on the two
+  navigation and `pagehide`, with `keepalive`; a client-side navigation is held back until the
+  requests land and issued again only if no newer one started meanwhile). Rejected: a `deleted_at` column on the two
   story tables, which would have put a filter into every read that touches them — story,
   stream, search, "quiet lately", photos — with a leak whenever one is forgotten, a purge to
   write, and the journal's one-entry-per-day slot blocked by a row that is invisible but
@@ -878,6 +879,12 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   Pronouns are not offered at all: nothing Stella writes uses them. The `pronouns` column stays
   in the schema, unused, so there is no migration and no archive format change for a field
   that was always empty (docs/02 §2.2, `src/lib/people/gender.ts`).
+- **Merging a relationship type moves links the admin cannot see** — the one write under the
+  access layer not scoped by `relationshipVisibleTo`, scoped by household instead: a type is
+  household vocabulary, and a hidden link left on it would keep it from ever going. Changing
+  a link's type reveals nothing to anyone. Where a pair is already linked by the target, the
+  existing link wins and the duplicate's note and date go with it — the contact-merge rule,
+  rather than a second way of settling collisions (docs/02 §2.4).
 
 ## 4.10 Deployment
 

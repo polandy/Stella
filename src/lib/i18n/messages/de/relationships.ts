@@ -18,6 +18,14 @@ export const relationships: RelationshipsMessages = {
 	'relationshipTypes.labelPlaceholder': 'Patenelternteil von',
 	'relationshipTypes.reversePlaceholder': 'Patenkind von',
 	'relationshipTypes.symmetric': 'Liest sich von beiden Seiten gleich',
+	'relationshipTypes.replaced': (p) =>
+		`Stella bringt „${p.label}“ inzwischen mit, darum steht diese Art in der Auswahl doppelt.`,
+	'relationshipTypes.mergeInto': (p) => `Mit ${p.label} zusammenführen`,
+	'relationshipTypes.mergeLabel': 'Mit einer anderen Art zusammenführen',
+	'relationshipTypes.mergeHint':
+		'Verschiebt jede Beziehung dieser Art auf die gewählte und entfernt diese dann. Sind zwei Personen durch beide verbunden, behalten sie eine Verbindung.',
+	'relationshipTypes.merge': 'Zusammenführen',
+	'relationshipTypes.merged': 'Beziehungsarten zusammengeführt',
 	'relationshipTypes.builtIn': 'Mitgeliefert',
 	'relationshipTypes.builtInHint':
 		'Diese bringt Stella mit und sie sind überall gleich — damit die Verwandtschaft, die Stella herleitet (Großeltern, Cousinen, Schwiegerfamilie), immer dasselbe bedeutet.',

@@ -22,6 +22,14 @@ export const relationships = {
 	'relationshipTypes.labelPlaceholder': 'Godparent of',
 	'relationshipTypes.reversePlaceholder': 'Godchild of',
 	'relationshipTypes.symmetric': 'Reads the same from both sides',
+	'relationshipTypes.replaced': (p: { label: string }) =>
+		`Stella now has “${p.label}” built in, so this one shows up twice in the picker.`,
+	'relationshipTypes.mergeInto': (p: { label: string }) => `Merge into ${p.label}`,
+	'relationshipTypes.mergeLabel': 'Merge into another type',
+	'relationshipTypes.mergeHint':
+		'Moves every relationship of this type onto the one you pick, then removes this one. Where two people are already linked by both, they keep one link.',
+	'relationshipTypes.merge': 'Merge',
+	'relationshipTypes.merged': 'Relationship types merged',
 	'relationshipTypes.builtIn': 'Built in',
 	'relationshipTypes.builtInHint':
 		'These come with Stella and are the same everywhere, so the family kinship Stella works out — grandparents, cousins, in-laws — keeps meaning the same thing.',

@@ -429,6 +429,9 @@ They must be edited together; `app.css` says so at both blocks.
   or a vCard, which carry them inside the file, plus **Relationship types** (docs/02 §2.4): the household's own types as rows
   with a category dot, an *Edit* disclosure and — only where nothing uses the type — a
   `RemoveButton` with the usual Undo window; a type in use shows `used N×` in its place. The
+  *Edit* disclosure ends with *Merge into another type* — a select of the types of the same
+  shape and a secondary *Merge* button — and a type an older import created before Stella had
+  it built in carries a one-line hint with a primary *Merge into …* button under its row. The
   built-in twelve follow as a plain, actionless list under *Built in*, so their absence from
   the editable set reads as deliberate. Admin only; members see why. The page ends with an **About**
   card: the running version as the card's own line, and under it — when the release check is

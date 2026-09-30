@@ -481,6 +481,14 @@ reciprocal** link.
   relationships still point at cannot be removed, and the page shows its usage count in place
   of the remove button rather than offering a removal that would be refused. Types belong to
   the household: another household's are neither offered nor reachable by id.
+  A custom type can be **merged into another type** that reads the same way round (both
+  symmetric, or both not): every relationship stored under it moves across in one step —
+  including links between people the admin cannot see, since the type is household vocabulary
+  and one row left on it would keep it from going — and the type is removed. Where a pair is
+  already linked by the target, that link stays and the duplicate goes, as when merging two
+  people (§2.2). A built-in type is never the one merged away. A *Cousin of* or *Uncle/aunt of*
+  that an older Monica import created before Stella had them built in carries a one-click
+  offer to fold it into the built-in; imports now land on the built-in directly (§2.16).
 
 ### 2.4.1 Relationship intelligence — derived kinship & propagation **[M2]**
 
@@ -1185,7 +1193,8 @@ included) it is the very first thing they will do.
     job/company; "how you met" → `how_we_met`/`met_date`).
   - Contact fields (emails, phones, addresses, websites, social) → `contact_field`.
   - Relationships → `relationship`, mapping Monica relationship types to our built-in
-    `relationship_type` set, **creating custom types** for anything unmatched.
+    `relationship_type` set, **creating custom types** for anything unmatched
+    (cousins, aunts/uncles and nieces/nephews land on the built-ins; `docs/monica-mapping.md`).
   - Notes → `note`; Journal/other free text → notes with a source tag.
   - Activities → `interaction` (kind/date/participants).
   - Important dates / reminders → `important_date`.

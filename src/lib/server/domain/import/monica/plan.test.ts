@@ -35,6 +35,9 @@ function emptyExport(): SourceExport {
 			{ id: 15, name: 'cousin', nameReverse: 'cousin' },
 			{ id: 13, name: 'uncle', nameReverse: 'nephew' },
 			{ id: 14, name: 'nephew', nameReverse: 'uncle' },
+			{ id: 16, name: 'godfather', nameReverse: 'godson' },
+			{ id: 17, name: 'godson', nameReverse: 'godfather' },
+			{ id: 20, name: 'bestfriend', nameReverse: 'bestfriend' },
 			{ id: 99, name: 'Skipartner', nameReverse: 'Skipartner' }
 		],
 		relationships: [],
@@ -180,26 +183,43 @@ describe('planMonicaImport — relationships', () => {
 		expect(plan.relationshipTypes).toEqual([]);
 	});
 
-	it('creates a custom type once for names Stella lacks, and a fallback for user-defined names', () => {
+	it('lands cousins, uncles/aunts and nephews/nieces on the built-in family types', () => {
 		const exp = emptyExport();
 		exp.contacts = [contact(1, 'A', null), contact(2, 'B', null), contact(3, 'C', null)];
 		exp.relationships = [
 			{ id: 1, typeId: 15, contactIs: 1, ofContact: 2, createdAt: null },
 			{ id: 2, typeId: 15, contactIs: 2, ofContact: 1, createdAt: null },
 			{ id: 3, typeId: 13, contactIs: 3, ofContact: 1, createdAt: null }, // A is uncle of C
-			{ id: 4, typeId: 14, contactIs: 1, ofContact: 3, createdAt: null }, // C is nephew of A
+			{ id: 4, typeId: 14, contactIs: 1, ofContact: 3, createdAt: null } // C is nephew of A
+		];
+		const plan = planMonicaImport(exp, opts);
+		expect(plan.relationshipTypes).toEqual([]);
+		expect(plan.relationships.map((r) => [r.typeId, r.fromContactId, r.toContactId])).toEqual([
+			['cousin', 'monica:contact:1', 'monica:contact:2'],
+			['aunt_uncle_niece_nephew', 'monica:contact:1', 'monica:contact:3']
+		]);
+	});
+
+	it('creates a custom type once for names Stella lacks, and a fallback for user-defined names', () => {
+		const exp = emptyExport();
+		exp.contacts = [contact(1, 'A', null), contact(2, 'B', null), contact(3, 'C', null)];
+		exp.relationships = [
+			{ id: 1, typeId: 20, contactIs: 1, ofContact: 2, createdAt: null },
+			{ id: 2, typeId: 20, contactIs: 2, ofContact: 1, createdAt: null },
+			{ id: 3, typeId: 16, contactIs: 3, ofContact: 1, createdAt: null }, // A is godfather of C
+			{ id: 4, typeId: 17, contactIs: 1, ofContact: 3, createdAt: null }, // C is godson of A
 			{ id: 5, typeId: 99, contactIs: 2, ofContact: 3, createdAt: null },
 			{ id: 6, typeId: 99, contactIs: 3, ofContact: 2, createdAt: null }
 		];
 		const plan = planMonicaImport(exp, opts);
 		expect(plan.relationshipTypes.map((t) => [t.id, t.forwardLabel, t.reverseLabel, t.category, t.symmetric])).toEqual([
-			['monica:reltype:cousin', 'Cousin of', 'Cousin of', 'family', true],
-			['monica:reltype:uncle_nephew', 'Uncle/aunt of', 'Nephew/niece of', 'family', false],
+			['monica:reltype:best_friend', 'Best friend of', 'Best friend of', 'social', true],
+			['monica:reltype:godparent_godchild', 'Godparent of', 'Godchild of', 'family', false],
 			['monica:reltype:skipartner', 'Skipartner', 'Skipartner', 'other', true]
 		]);
 		expect(plan.relationshipTypes.every((t) => t.householdId === 'h1')).toBe(true);
-		const uncle = plan.relationships.find((r) => r.typeId === 'monica:reltype:uncle_nephew');
-		expect(uncle).toMatchObject({ fromContactId: 'monica:contact:1', toContactId: 'monica:contact:3' });
+		const godparent = plan.relationships.find((r) => r.typeId === 'monica:reltype:godparent_godchild');
+		expect(godparent).toMatchObject({ fromContactId: 'monica:contact:1', toContactId: 'monica:contact:3' });
 		expect(plan.report.warnings).toContainEqual({ code: 'customType', name: 'Skipartner' });
 	});
 
