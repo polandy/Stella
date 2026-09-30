@@ -376,6 +376,12 @@ sides stays as it was, because that is what decides how its links are stored. A 
 longer want can be removed once nothing uses it; while links still point at it, the page
 tells you how many instead of offering the button.
 
+Two types that mean the same thing can be folded into one: open the one you want gone with
+**Edit**, pick the type to keep under **Merge into another type**, and every link moves across
+before the old type disappears. If you imported from Monica before Stella knew cousins, aunts
+and uncles itself, your own *Cousin of* and *Uncle/aunt of* show a **Merge into …** button that
+does this in one tap.
+
 ## Circles
 
 A circle is a context people share: a school class, a football team, a choir, a street.

@@ -156,10 +156,11 @@ Goal: sand the edges and add the nice-to-haves.
   hand-entered sibling Stella already works out is gone with it. A confirmed link reads like
   any entered one and no longer says *via* whom it was worked out. Both *Check relationships*
   lists offer the same claims (rule K1), after what follows from an entry.
-- *TODO:* **fold imported custom family types into the built-ins** — a Monica import
-  (docs/monica-mapping.md) creates the household's own *Cousin of* and *Uncle/aunt of*, which
-  now sit beside the built-in `cousin` and `aunt_uncle_niece_nephew` in the picker. Map them
-  to the built-ins on import, and offer existing households a one-off merge.
+- ~~**Fold imported custom family types into the built-ins**~~ — shipped (§2.4): a Monica
+  import lands cousins, aunts/uncles and nieces/nephews on the built-in `cousin` and
+  `aunt_uncle_niece_nephew` (docs/monica-mapping.md). A household that imported earlier gets a
+  one-click *Merge into …* on its own *Cousin of* and *Uncle/aunt of*, and any custom type can
+  be merged into another of the same shape under *Settings → Relationship types*.
 - **Stella's people in the phone's address book and calendar (CardDAV / CalDAV)** — a
   member adds Stella as a CardDAV account on their phone or mail client and sees the people
   they are allowed to see as contacts (name, photo, phone, email, address, birthday), plus a
