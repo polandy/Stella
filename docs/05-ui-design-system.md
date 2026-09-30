@@ -319,8 +319,9 @@ They must be edited together; `app.css` says so at both blocks.
   the person's avatar, name and two actions. The Filter menu **is the legend**: each line
   kind is an item drawn in its own line style (solid per category, dashed for circles,
   dotted for kinship) in its token, so an item and the line it toggles can never disagree,
-  and there is no second box to keep in sync. The **"Labels" switch** that names every line
-  at once sits at the foot of the same menu.
+  and there is no second box to keep in sync. Below the kinds sit the switches that change how
+  the map is read rather than what it holds: **"Labels"**, which names every line at once,
+  **"All kinship lines"** (while the Kinship kind is on) and the grouping by role.
   On a phone (below `sm`, tuned for a Pixel 9 Pro at 412 px) search, Filter and Arrange keep
   one row: the search field takes whatever the two menus leave, and the Arrange pill shows only
   the arrangement's name (its accessible name still reads *Arrange: …*). Full screen and the

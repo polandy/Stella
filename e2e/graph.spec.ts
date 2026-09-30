@@ -274,6 +274,28 @@ test('leaves a derived line off while the links it abbreviates are on the map', 
 	await expect(async () => expect(await lineStateOf(page, niece)).toBe('filtered-out')).toPass();
 });
 
+test('remembers the Labels and All kinship lines switches on this device', async ({ page }) => {
+	await page.goto('/graph?center=demo-c-daniel');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	let menu = await filterMenu(page);
+	const labels = () => menu.getByRole('menuitemcheckbox', { name: /^Labels/ });
+	const all = () => menu.getByRole('menuitemcheckbox', { name: /^All kinship lines/ });
+	// Both start the way a first visit shows them: names on, the repeating lines off.
+	await expect(labels()).toHaveAttribute('aria-checked', 'true');
+	await expect(all()).toHaveAttribute('aria-checked', 'false');
+	await labels().click();
+	await all().click();
+	await expect(labels()).toHaveAttribute('aria-checked', 'false');
+	await expect(all()).toHaveAttribute('aria-checked', 'true');
+
+	await page.reload();
+	await settled(page);
+
+	menu = await filterMenu(page);
+	await expect(labels()).toHaveAttribute('aria-checked', 'false');
+	await expect(all()).toHaveAttribute('aria-checked', 'true');
+});
+
 test('a connection path answers with the people in between, not with the derived shortcut', async ({ page }) => {
 	await page.goto('/graph?center=demo-c-lena');
 	await expect(page.locator('canvas').first()).toBeVisible();

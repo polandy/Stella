@@ -571,6 +571,13 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   Storing them would mean invalidating on every relationship, birth and visibility change,
   and would let a stale row outlive the link it came from. Inference re-runs per subject,
   which is quadratic in principle but reads a household-sized graph in a single pass.
+- **A derived line is left off when the map already joins its ends, judged on the map, not
+  from the engine's `via`** — `model/implied-kinship.ts` walks the drawn parent, sibling and
+  partner links, at most four (the longest chain any term needs). The engine's `viaIds` keep
+  only the first chain per relative and name people, not the links between them, so a map
+  holding a different but equally real chain would still have drawn the shorthand. The cost:
+  a line can go because *some* family chain joins the pair rather than the one it was worked
+  out through — acceptable, since selecting either end brings it back with its name.
 - **What Stella *offers* lives apart from what it *derives*, and the two are compared by
   relation, not by pair** — `lib/suggestions/` holds the rules, the read model and the
   suppressions; `lib/kinship/` stays the answer to what is true. They are separate because
