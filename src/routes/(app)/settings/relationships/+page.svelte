@@ -69,12 +69,20 @@
 	);
 </script>
 
-<main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
+<!--
+	The whole screen is one focus scope for the answer rows (KinSuggestions): a person's last
+	answer carries focus on into the next person's card, and once no row is left anywhere it
+	lands on the page heading — not on the person's own name, whose card leaves the page as
+	soon as its answers are sent, and would drop focus a second time.
+-->
+<main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10" data-kin-scope>
 	<header class="flex flex-col gap-1">
 		<a href="/settings" class="flex items-center gap-1 text-sm text-link hover:underline">
 			<Icon name="forward" size={12} />{t('nav.settings')}
 		</a>
-		<h1 class="text-2xl font-semibold text-fg">{t('settings.relationships.title')}</h1>
+		<h1 class="text-2xl font-semibold text-fg" data-kin-heading tabindex="-1">
+			{t('settings.relationships.title')}
+		</h1>
 		<p class="text-fg-muted">{t('settings.relationships.intro')}</p>
 	</header>
 
