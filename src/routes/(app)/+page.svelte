@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { goto, pushState } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { MediaQuery } from 'svelte/reactivity';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
@@ -104,22 +105,22 @@
 	let showAllUpcoming = $state(false);
 	let showAllQuiet = $state(false);
 
-	// The composer is an overlay over the stream — a sheet on a phone, a dialog above it —
-	// opened by the tab bar's pencil or the Write button (`/?compose`) and closed by handing
-	// the URL back, so the open state lives in the URL and survives a reload, and there is
-	// nothing to keep in sync with the tab bar. The top of Home is the person search instead.
+	// On a phone the composer is a sheet over the stream, opened by the pencil in the tab bar
+	// (`/?compose`) and closed by handing the URL back — so the open state lives in the URL
+	// and survives a reload, and there is nothing to keep in sync with the tab bar.
+	// Below `md` the composer lives in the sheet and the top of Home is the person search;
+	// above it, the composer sits at the top of the stream. One of
+	// them is mounted at a time, so there is exactly one "What happened?" field on the page.
 	// The kept moment open in the composer, if any (see below).
 	let editing = $state<KeptOf<'moment.capture'> | null>(null);
 
 	// The sheet also opens as shallow state (`page.state.compose`): that needs no server round
 	// trip, so the pencil still works while Stella is out of reach.
+	const phone = new MediaQuery('(width < 48rem)');
 	const sheetOpen = $derived(
-		data.compose || page.state.compose === true || page.url.searchParams.has('compose') || editing !== null
+		(data.compose || page.state.compose === true || page.url.searchParams.has('compose') || editing !== null) &&
+			phone.current
 	);
-	function openSheet(event: MouseEvent) {
-		event.preventDefault();
-		pushState('/?compose', { compose: true });
-	}
 	function closeSheet() {
 		if (editing) return void stopEditing();
 		if (page.state.compose) return history.back();
@@ -174,23 +175,24 @@
 
 <div class="flex min-w-0 flex-col max-lg:order-1 lg:col-start-1 lg:row-start-2">
 
-	<!-- The top of Home finds a person (docs/02 §2.22.1); writing a moment opens the composer
-	     over the stream — a sheet on a phone, a dialog above it. -->
-	<div class="flex items-center gap-2">
-		<div class="min-w-0 flex-1"><PersonFinder people={data.people} /></div>
-		<!-- On a phone the tab bar's pencil does this. Wrapped: the button's own display rule
-		     would outrank a utility on the element. -->
-		<span class="max-md:hidden"><Button variant="primary" icon="write" href="/?compose" onclick={openSheet}>{t('home.writeMoment')}</Button></span>
+	<!-- Desktop: the composer sits at the top. Phone: a person search, the composer a sheet over the stream (below). -->
+	<div class="max-md:hidden">
+		{#if !phone.current}{@render composer()}{/if}
 	</div>
-	{#if sheetOpen || form?.momentError}
-		<div class="fixed inset-0 z-30 flex flex-col justify-end md:justify-start md:pt-[12vh]" data-testid="compose-sheet">
-			<button type="button" class="absolute inset-0 bg-bg-sunken/70 backdrop-blur-sm" aria-label={t('common.close')} onclick={closeSheet}></button>
-			<div class="relative rounded-t-app bg-bg p-3 pb-4 shadow-pop md:mx-auto md:w-full md:max-w-2xl md:rounded-app md:p-4">
-				<div class="mx-auto mb-2 h-1 w-10 rounded-full bg-border md:hidden"></div>
-				{@render composer()}
+	<div class="md:hidden">
+		{#if sheetOpen || (form?.momentError && phone.current)}
+			<div class="fixed inset-0 z-30 flex flex-col justify-end" data-testid="compose-sheet">
+				<button type="button" class="flex-1 bg-bg-sunken/70 backdrop-blur-sm" aria-label={t('common.close')} onclick={closeSheet}></button>
+				<div class="rounded-t-app bg-bg p-3 pb-4 shadow-pop">
+					<div class="mx-auto mb-2 h-1 w-10 rounded-full bg-border"></div>
+					{@render composer()}
+				</div>
 			</div>
-		</div>
-	{/if}
+		{:else}
+			<!-- The pencil in the tab bar writes; the top of a phone's Home finds a person. -->
+			<PersonFinder people={data.people} />
+		{/if}
+	</div>
 
 	{#if outbox.mine.length}
 		<section class="mt-3 flex flex-col gap-1.5" aria-label={t('home.outbox.label')} data-testid="outbox">

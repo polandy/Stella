@@ -5,12 +5,8 @@ sentence about it. Everything else in the app exists to make that sentence usefu
 
 ## The home screen
 
-Home is a search field for people with the household's stream underneath it. Start typing a
-name and the people who match appear right under the field; pick one (or use the arrow keys
-and Enter) to open their page. The last row, *Search everything*, also looks through notes.
-It works offline too, for everyone Stella already showed you.
-
-The stream underneath is newest first, grouped by day, showing what someone wrote, who someone added, when someone was in touch, and the
+Home is a text field with the household's stream underneath it. Newest first, grouped by
+day, showing what someone wrote, who someone added, when someone was in touch, and the
 connections someone made.
 
 Above the stream, two rows of chips narrow it down: **What** — only moments, only calls and
@@ -44,9 +40,11 @@ A few things worth knowing:
 
 - **`⌘K` / `Ctrl-K`** from anywhere opens a small palette; its first row is *Write a
   moment*, so `⌘K`, `Enter` puts the cursor in the field. **`⌘⏎` / `Ctrl-⏎`** saves.
-- **Where to write:** on a computer, click **Write a moment** beside the search field; on a
-  phone, tap the pencil in the middle of the bottom bar. The composer opens over the stream;
-  click or tap outside it to close it.
+- **On a phone**, tap the pencil in the middle of the bottom bar; the composer slides up
+  over the stream. The top of a phone's Home is a search field for people instead: start
+  typing a name and the people who match appear right under it; tap one to open their page.
+  The last row, *Search everything*, also looks through notes. It works offline too, for
+  everyone Stella already showed you.
 - **Two people with the same name?** The suggestion list says which is which (their
   description, or where and when you met), and the one you pick is the one it means, even
   though both read `@Thomas` in the text. A `@Thomas` typed without picking is not guessed:

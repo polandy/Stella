@@ -1604,19 +1604,18 @@ on *Sandra*'s profile a passive item appears: "mentioned in *Beat Steiner*'s jou
 The fastest way to record a memory, and the way the family stays in the loop. Where Monica
 asks you to fill in modules, Stella asks **"what happened?"** — one field on Home turns a
 sentence like *"met @Julia at the lake, she's @Marco's sister"* into a person, a journal
-entry and a household update, without leaving the page. The top of Home is a **person
-search** instead: finding someone is what Home is opened for most often. Concept + clickable prototype:
+entry and a household update, without leaving the page. On a phone the top of Home is
+a **person search** instead: finding someone is what a phone opens Home for most often. Concept + clickable prototype:
 `docs/concepts/moments-capture-concept.html`.
 
 ### 2.22.1 Capture ("What happened?")
 
-- **One field, over Home.** A plain text field (Markdown allowed) with the same `@`-mention
-  autocomplete as the journal (§2.20.1). It opens over the stream — a **sheet** on a phone, a
-  dialog from `md` up — from the **pencil in the middle of the tab bar** on a phone or the
-  **Write a moment** button beside the search field above it (`/?compose`, so the open state
-  lives in the URL and survives a reload; tapping outside closes it).
-- **Find a person, at the top of Home.** The first thing on Home is a search field for
-  people: typing lists up to six people whose name matches — the best-starting name first,
+- **One field, on Home.** A plain text field (Markdown allowed) with the same `@`-mention
+  autocomplete as the journal (§2.20.1). On desktop it sits at the top of Home; on a phone the
+  composer opens as a **sheet** over the stream from the **pencil in the middle of the tab
+  bar** (`/?compose`, so the open state lives in the URL and survives a reload).
+- **Find a person, at the top of a phone's Home.** Where the desktop has the composer, a
+  phone has a search field for people: typing lists up to six people whose name matches — the best-starting name first,
   a namesake with the line that tells them apart (§2.2.3) — and ends with *Search everything*
   (the full search, which also reads notes). Arrow keys and Enter open a person. It matches
   against the people the shell already carries, as the palette does, so it answers as you
