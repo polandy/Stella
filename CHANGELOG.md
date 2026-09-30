@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.0.19-rc.3](https://github.com/polandy/Stella/compare/v0.0.19-rc.2...v0.0.19-rc.3) (2026-09-30)
+
+
+### Features
+
+* **graph:** draw the same map on every visit ([#179](https://github.com/polandy/Stella/issues/179)) ([f23404f](https://github.com/polandy/Stella/commit/f23404f748fa9bde59096d3ff538a6a7e5539c21))
+* **kinship:** confirm a worked-out relative to store it as an entered link ([#172](https://github.com/polandy/Stella/issues/172)) ([96369a2](https://github.com/polandy/Stella/commit/96369a2e8d689a277ff4baaabfcf165ded023f8f))
+* **mentions:** ask which namesake a typed @Thomas means, naming them by a relationship or a circle ([#170](https://github.com/polandy/Stella/issues/170)) ([9d48227](https://github.com/polandy/Stella/commit/9d48227b7eba012851f58003ff836b3fd85483df))
+* **mentions:** keep namesakes apart in the @-picker and when someone is named ([1e7133f](https://github.com/polandy/Stella/commit/1e7133fd5a47bb7466432f8524f88a8d2252b0d7))
+* **moments:** pick a moment's day from a Today pill, with a calendar for older days ([#175](https://github.com/polandy/Stella/issues/175)) ([b2b5990](https://github.com/polandy/Stella/commit/b2b59902cd78997f87f99094286b4851d660ddd3))
+* **people:** show a person's photo in every picker, @-list and search result ([#177](https://github.com/polandy/Stella/issues/177)) ([fcfeba0](https://github.com/polandy/Stella/commit/fcfeba0a88630292a275c2f920b32fab58c00ee2))
+* **people:** tell namesakes apart by a relationship or a circle ([#169](https://github.com/polandy/Stella/issues/169)) ([8cefe02](https://github.com/polandy/Stella/commit/8cefe02ac93da2791d0b9f54e760429322e1fef3))
+* **photos:** choose the square of a new photo before it becomes someone's avatar ([#171](https://github.com/polandy/Stella/issues/171)) ([4d2c610](https://github.com/polandy/Stella/commit/4d2c6102715f849e9ad2191644ed7bae75e8628d))
+* **photos:** frame a gallery photo as someone's avatar and remember the square ([#173](https://github.com/polandy/Stella/issues/173)) ([1288653](https://github.com/polandy/Stella/commit/12886531d470d2829e70d9b188ce241814b1daba))
+* **pwa:** keep every visible person readable offline, and show the offline line at once ([#185](https://github.com/polandy/Stella/issues/185)) ([177644a](https://github.com/polandy/Stella/commit/177644ab0a226b46e48f83e456fc860f5418f7a4))
+* **pwa:** keep Home, People and Circles ahead, and say how old an offline page is ([#183](https://github.com/polandy/Stella/issues/183)) ([0e6ec73](https://github.com/polandy/Stella/commit/0e6ec73a1958475c1ce0dbb9cea4f85f88897044))
+* **relationships:** offer worked-out relatives in Check relationships ([#178](https://github.com/polandy/Stella/issues/178)) ([d6c18d5](https://github.com/polandy/Stella/commit/d6c18d5a955d47c40fdb59f27cc3a184186a1f8b))
+* **settings:** tidy up the people known by a first name only, under Data quality ([#168](https://github.com/polandy/Stella/issues/168)) ([cf2247a](https://github.com/polandy/Stella/commit/cf2247af40090723e7d5917c31779fd33966f45d))
+
+
+### Bug Fixes
+
+* **graph:** keep touch full screen to iPad and iPhone, and lock the page's real scroller ([#150](https://github.com/polandy/Stella/issues/150)) ([e79f9f6](https://github.com/polandy/Stella/commit/e79f9f6de72f757b9e6d58316572c1b3aef27fb0))
+* **graph:** step anyone a role group's frame lands on out beside it ([#176](https://github.com/polandy/Stella/issues/176)) ([fc4e826](https://github.com/polandy/Stella/commit/fc4e8263f5e7e3629940c4345c26569d8899ee13))
+* **mentions:** keep the @-list open when the field gets focus straight back ([#174](https://github.com/polandy/Stella/issues/174)) ([729f2e0](https://github.com/polandy/Stella/commit/729f2e0bb77ebbc9f241bd751b555f203311be2e))
+
+
+### Miscellaneous Chores
+
+* release 0.0.19-rc.3 ([1a01b18](https://github.com/polandy/Stella/commit/1a01b1870b37717dce81766fad8dd87bf8a87839))
+
 ## [0.0.19-rc.2](https://github.com/polandy/Stella/compare/v0.0.19-rc.1...v0.0.19-rc.2) (2026-09-29)
 
 
