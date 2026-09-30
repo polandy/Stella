@@ -24,6 +24,7 @@
 		type CircleRoleOption
 	} from '$lib/graph/model/ego-network';
 	import { canExpand, ringsFrom } from '$lib/graph/model/rings';
+	import { impliedKinshipEdgeIds } from '$lib/graph/model/implied-kinship';
 	import {
 		applyFilters,
 		emptyModel,
@@ -257,6 +258,11 @@
 			edgeLabel,
 			grouping: grouping ? { grouping, groupLabel, bundleLabel } : undefined
 		});
+	/*
+	 * A derived line whose chain of entered links is on the map only repeats it, so it stays off
+	 * until its person is selected (docs/02 §2.7).
+	 */
+	const implied = $derived(impliedKinshipEdgeIds(drawnVisible, selected));
 	/** What the canvas shows: the filtered map, plus the frames and bundles grouping adds. */
 	const shownIds = () => ({
 		nodes: new Set([
@@ -264,7 +270,7 @@
 			...(grouping?.groups.map((g) => g.id) ?? [])
 		]),
 		edges: new Set([
-			...drawnVisible.edges.map((e) => e.id),
+			...drawnVisible.edges.filter((e) => !implied.has(e.id)).map((e) => e.id),
 			...(grouping?.bundles.map((b) => b.id) ?? [])
 		])
 	});
