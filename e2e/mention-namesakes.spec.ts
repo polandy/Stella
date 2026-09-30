@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { appReady, openComposer, signIn } from './app';
+import { appReady, signIn } from './app';
 
 /*
  * Namesakes in the @-picker and when someone is named for the first time (docs/02 §2.2.3,
@@ -53,7 +53,8 @@ test.beforeEach(async ({ page }) => {
 
 test('says which namesake is which in the @-picker, and the moment goes to the one picked', async ({ page }) => {
 	const { name, lake } = await twoNamesakes(page);
-	await openComposer(page);
+	await page.goto('/');
+	await appReady(page);
 
 	const field = page.getByLabel('What happened?');
 	await field.pressSequentially(`Coffee with @${name}`);
@@ -109,7 +110,8 @@ test('asks which one a typed namesake means in a moment, keeping saving off unti
 	const { name } = await twoNamesakes(page);
 	const last = `Gfeller${runLetters()}`;
 	await addPerson(page, 'Anneliese', { last });
-	await openComposer(page);
+	await page.goto('/');
+	await appReady(page);
 
 	// Someone clear is named too, so it is the namesake alone that keeps saving off.
 	const field = page.getByLabel('What happened?');
@@ -174,7 +176,8 @@ test('keeps a namesake mentioned when a journal entry is edited and saved', asyn
 
 test('creates another namesake from a moment, only with something to know them by', async ({ page }) => {
 	const { name, hut, lake } = await twoNamesakes(page);
-	await openComposer(page);
+	await page.goto('/');
+	await appReady(page);
 
 	await page.getByLabel('What happened?').pressSequentially(`Lunch with @${name}`);
 	await page.getByRole('option', { name: `Create another “${name}”` }).click();

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { AUTH_STATE_PATH } from './auth-state';
-import { addPerson, mention, openComposer, openPerson, signIn } from './app';
+import { addPerson, mention, openPerson, signIn } from './app';
 
 /*
  * Keeping a moment for later (docs/02 §2.18, docs/concepts/offline-capture.md). Written after
@@ -38,14 +38,11 @@ const DOT_PNG = Buffer.from(
 	'base64'
 );
 
-/** Writes a moment while Stella is out of reach; keeping it closes the composer again. */
 async function keepMoment(page: Page, text: string): Promise<void> {
-	await openComposer(page);
 	await mention(page, 'Lena', /Lena Brunner/);
 	await page.getByLabel('What happened?').pressSequentially(text);
 	await composerSave(page).click();
 	await expect(kept(page).filter({ hasText: text })).toContainText('Not sent yet');
-	await expect(page.getByTestId('compose-sheet')).toHaveCount(0);
 }
 
 test.describe('signed in', () => {
@@ -59,6 +56,7 @@ test.describe('signed in', () => {
 	}) => {
 		await context.setOffline(true);
 		await keepMoment(page, 'fed the ducks at the pond');
+		await expect(page.getByLabel('What happened?')).toHaveValue('');
 
 		await kept(page).getByRole('button', { name: 'Edit' }).click();
 		const field = page.getByLabel('What happened?');
@@ -105,8 +103,10 @@ test.describe('signed in', () => {
 			await page.setViewportSize({ width, height });
 			await context.setOffline(true);
 
-			// Opened by the tab bar's pencil, the only way to write on a phone.
+			await page.locator('nav a[aria-label="Write a moment"]').click();
+			await expect(page.getByTestId('compose-sheet')).toBeVisible();
 			await keepMoment(page, `kept from a ${width}px phone`);
+			await expect(page.getByTestId('compose-sheet')).toHaveCount(0);
 
 			await kept(page).getByRole('button', { name: 'Edit' }).click();
 			await expect(page.getByTestId('compose-sheet')).toBeVisible();
@@ -130,7 +130,6 @@ test.describe('signed in', () => {
 		await addPerson(page, 'Fotina', 'Vogelsang');
 		await signIn(page);
 		await context.setOffline(true);
-		await openComposer(page);
 		await mention(page, 'Fotina', /Fotina Vogelsang/);
 		await page.getByLabel('What happened?').pressSequentially('a photo kept for later');
 		await page
@@ -153,7 +152,6 @@ test.describe('signed in', () => {
 	test('saves a moment with a photo online without keeping anything', async ({ page }) => {
 		await addPerson(page, 'Pixelia', 'Vogelsang');
 		await signIn(page);
-		await openComposer(page);
 		await mention(page, 'Pixelia', /Pixelia Vogelsang/);
 		await page.getByLabel('What happened?').pressSequentially('a photo saved straight away');
 		await page
@@ -206,7 +204,6 @@ test.describe('signed in', () => {
 		await addPerson(page, 'Refusa', 'Wendt');
 		await signIn(page);
 		await context.setOffline(true);
-		await openComposer(page);
 		await mention(page, 'Refusa', /Refusa Wendt/);
 		await page.getByLabel('What happened?').pressSequentially('about someone deleted meanwhile');
 		await composerSave(page).click();

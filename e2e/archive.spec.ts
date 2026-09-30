@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { appReady, mention, openComposer, openPerson, signIn } from './app';
+import { appReady, mention, openPerson, signIn } from './app';
 
 /*
  * Putting someone out of the way (docs/02 §2.2). Written after the flow was verified in the
@@ -95,7 +95,6 @@ test('keeps an archived person in the family, only out of the lists', async ({ p
 
 test('keeps their name in something already written about them', async ({ page }) => {
 	// A moment naming both Widmers: Thomas anchors it, Franziska rides along as a mention.
-	await openComposer(page);
 	await page.getByLabel('What happened?').pressSequentially('Walked the Aare with ');
 	await mention(page, 'Thomas', /Thomas Widmer/);
 	await page.getByLabel('What happened?').pressSequentially('and ');

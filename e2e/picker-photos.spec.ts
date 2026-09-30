@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { addPerson, appReady, openComposer, pickPerson, signIn } from './app';
+import { addPerson, appReady, pickPerson, signIn } from './app';
 
 /*
  * A person with a photo wears it wherever they are listed to be found or picked (docs/05
@@ -77,7 +77,8 @@ test('shows the photo in a circle’s person picker and in the chip it picks', a
 
 test('shows the photo in the moment composer’s @-list', async ({ page }) => {
 	const { name, src } = await personWithAPhoto(page);
-	await openComposer(page);
+	await page.goto('/');
+	await appReady(page);
 
 	await page.getByLabel('What happened?').pressSequentially(`@${name.split(' ')[1]}`);
 	await expect(photoIn(page.getByRole('option', { name }), src)).toBeVisible();

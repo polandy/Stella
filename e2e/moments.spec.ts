@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { appReady, mention, mentionNew, openComposer, openPerson, signIn } from './app';
+import { appReady, mention, mentionNew, openPerson, signIn } from './app';
 
 /*
  * Moments capture and the household stream (docs/02 §2.22). Written after the flow was
@@ -14,7 +14,6 @@ const composerSave = (page: Page) => page.getByRole('button', { name: /^Save/ })
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
-	await openComposer(page);
 });
 
 test('captures a moment on an existing person and shows it in the stream', async ({ page }) => {
@@ -86,8 +85,6 @@ test('adds a second moment about the same person that day to the first, keeping 
 	await composerSave(page).click();
 	await expect(page.locator('article').first()).toContainText('repotted the ferns');
 
-	// A save closes the composer, so the second moment opens it again.
-	await openComposer(page);
 	// Exact: the shared suite database also holds a Gina Ulrich.
 	await mention(page, 'Ulric', /^Ulric$/);
 	await page.getByLabel('What happened?').pressSequentially('phoned, ');

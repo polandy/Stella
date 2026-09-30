@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { appReady, mention, mentionNew, openComposer, signIn } from './app';
+import { appReady, mention, mentionNew, signIn } from './app';
 
 /*
  * The day of a moment (docs/02 §2.22.1, docs/05 §5.7): a Today pill offering the last week,
@@ -35,7 +35,6 @@ async function dateOffered(page: Page, name: RegExp): Promise<string> {
 }
 
 test('files a moment under yesterday when it is picked from the day pill', async ({ page }) => {
-	await openComposer(page);
 	await page.getByLabel('What happened?').pressSequentially('Tea with ');
 	await mentionNew(page, 'Leopoldine');
 	await page.getByLabel('What happened?').pressSequentially('in the rose garden, a day late');
@@ -47,9 +46,7 @@ test('files a moment under yesterday when it is picked from the day pill', async
 	await composerSave(page).click();
 	await expect(page.locator('article', { hasText: 'in the rose garden, a day late' })).toBeVisible();
 	// Back to today for the next moment.
-	await openComposer(page);
 	await expect(dayPill(page)).toHaveAccessibleName('Day: Today');
-	await page.goto('/');
 
 	const days = await journalOf(page, 'in the rose garden, a day late', 'Leopoldine');
 	await expect(days).toHaveCount(1);
@@ -58,7 +55,6 @@ test('files a moment under yesterday when it is picked from the day pill', async
 });
 
 test('picks an older day from the calendar, the year chosen beside the month', async ({ page }) => {
-	await openComposer(page);
 	await page.getByLabel('What happened?').pressSequentially('Danced with ');
 	await mentionNew(page, 'Hortensia');
 	await page.getByLabel('What happened?').pressSequentially('at the harvest ball');
@@ -84,7 +80,6 @@ test('picks an older day from the calendar, the year chosen beside the month', a
 });
 
 test('keeps a moment on today unless another day is picked', async ({ page }) => {
-	await openComposer(page);
 	await mention(page, 'Lena', /Lena Brunner/);
 	await page.getByLabel('What happened?').pressSequentially('baked the plum cake');
 	const today = await dateOffered(page, /^Today/);
