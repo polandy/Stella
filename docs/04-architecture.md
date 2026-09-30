@@ -1080,9 +1080,9 @@ the same way: pure decisions, thin adapters.
 - **The Home composer** saves through `outbox.submit` too, and goes back to the stream with the
   *"Link …?"* hint (`src/lib/stream/link-hint.ts`) read off the moment's result.
 
-## 4.12 Background jobs & delivery (M3)
+## 4.12 Background jobs & delivery (later)
 
-The change digests (`02-features.md` §2.11.1) need periodic work, kept as lean as the rest:
+Not on the roadmap for now (docs/06). The change digests (`02-features.md` §2.11.1) need periodic work, kept as lean as the rest:
 
 - **Scheduler:** a single in-process interval timer started at server boot (no external cron
   or job queue). On each tick it finds members whose `next_digest_at` is due and processes

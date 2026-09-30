@@ -113,9 +113,6 @@ Goal: sand the edges and add the nice-to-haves.
 
 - ~~**Localization:** German with a language switcher~~ — shipped: English and German are
   both fully supported, chosen per member and kept with the profile (§2.19).
-- **Local 2FA** (TOTP) for non-SSO accounts; opt-in email reminders.
-- **Change digests:** per-member frequency (daily/weekly/monthly), delivered by email
-  and/or signed webhook (HTTP POST). Needs a background scheduler + SMTP config (docs/04).
 - **Graph & UX polish:** "haven't seen in a while" hints, photo reordering, saved graph
   filters, density/appearance refinements. ~~Group a circle's members by role~~ — shipped:
   a *Group by role* switch in the explorer's Filter menu (§2.7).
@@ -200,3 +197,9 @@ Goal: sand the edges and add the nice-to-haves.
 Google Contacts sync, native mobile apps, multi-tenant SaaS, AI enrichment,
 finance/gift/task modules, real-time collaborative editing. Revisit only if the core
 stays simple. (See [01-vision-and-scope.md §1.6](01-vision-and-scope.md).)
+
+- **Local 2FA** (TOTP) for accounts without SSO, and opt-in email reminders — deprioritized:
+  Stella runs behind Authelia, which already asks for the second factor. The `totp_secret`
+  column stays reserved (docs/03).
+- **Change digests** by email or signed webhook (docs/02 §2.11.1, docs/04 §4.12) — taken off
+  the roadmap for now; the design stays written down in case it comes back.
