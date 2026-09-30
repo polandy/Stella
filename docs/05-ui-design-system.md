@@ -796,11 +796,12 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   **deepened toward `--fg` until it clears 3:1 on the page ground** (`ensureContrast`; the
   hue survives, only the depth changes), held there by `theme.test.ts` against the real
   tokens in both themes. Chips and dots keep the raw token, because they sit beside a label.
-  A line carries its name — "Parent of", "Grandfather", the circle role — but only while it
-  is highlighted or on a traced path: selecting a person names their connections, and the
-  rest of the canvas stays quiet. A **"Labels" switch** in the Filter menu names every line
-  at once, for reading the whole map at a glance; it is off by default, because on a dense graph
-  hundreds of names are noise. Either way a name that would render below 7 px is dropped
+  A line carries its name — "Parent of", "Grandfather", the circle role. A **"Labels" switch**
+  in the Filter menu names every line at once and is **on by default**, remembered per
+  device: with the kinship lines that only repeat a chain left off, the names that remain are
+  what the map is read by. Switched off, a line is named only while it is highlighted or on a
+  traced path — selecting a person names their connections, and the rest of the canvas stays
+  quiet. Either way a name that would render below 7 px is dropped
   rather than drawn as a smudge. Asymmetric relationships show subtle direction.
 - **Expand affordance:** an unexpanded node hints it can grow (e.g. a small "+" / count of
   hidden connections); clicking expands its neighborhood in place with a gentle animation.

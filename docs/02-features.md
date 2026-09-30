@@ -870,10 +870,10 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   count, and neither does one through another derived line. For reading a whole family at
   once, an **All kinship lines** switch in the Filter menu (off by default, remembered per
   device, offered while the Kinship chip is on) draws every derived line again. Selecting
-  a person names the lines around them — "Grandfather", "Parent of", "via Kegelclub" —
-  because hundreds of labels at once would be noise by default; a **Labels** switch in the
-  toolbar's Filter menu names every line at once for reading the whole map at a glance, off by default for
-  the same reason, and drops any name that would render too small to read. The **connection
+  a person names the lines around them — "Grandfather", "Parent of", "via Kegelclub". A
+  **Labels** switch in the toolbar's Filter menu names every line at once; it is on by
+  default (remembered per device), since with the repeating kinship lines gone the names left
+  are what the map is read by, and it drops any name that would render too small to read. The **connection
   path** deliberately ignores derived lines: it answers with the chain through the people who
   connect the two, not with the one-word name for that chain (docs/04 §4.9).
 

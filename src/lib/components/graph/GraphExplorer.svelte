@@ -165,9 +165,11 @@
 	let pathFrom = $state<string | null>(null);
 	let path = $state<ConnectionPath | null>(null);
 	let pathMissing = $state(false);
-	// Off by default: the canvas stays quiet, and whoever wants the map read at a glance
-	// turns every line's name on from the toolbar (docs/05 §5.8).
-	let edgeLabels = $state(false);
+	// On by default: with the lines that only repeat a chain left off, the names left are what
+	// the map is read by. Whoever wants it quieter turns them off, and this browser keeps that
+	// (docs/05 §5.8).
+	const EDGE_LABELS_KEY = 'stella.graph.edgeLabels';
+	let edgeLabels = $state(true);
 
 	/*
 	 * The circles grouped by role (docs/02 §2.7): off by default, and like the line names a
@@ -192,6 +194,10 @@
 	function toggleGroupRoles() {
 		groupRoles = !groupRoles;
 		remember(GROUP_BY_ROLE_KEY, groupRoles);
+	}
+	function toggleEdgeLabels() {
+		edgeLabels = !edgeLabels;
+		remember(EDGE_LABELS_KEY, edgeLabels);
 	}
 	function toggleAllKinship() {
 		allKinship = !allKinship;
@@ -648,6 +654,7 @@
 			groupRoles = localStorage.getItem(GROUP_BY_ROLE_KEY) === 'on';
 			innerLinks = localStorage.getItem(INNER_LINKS_KEY) !== 'off';
 			allKinship = localStorage.getItem(ALL_KINSHIP_KEY) === 'on';
+			edgeLabels = localStorage.getItem(EDGE_LABELS_KEY) !== 'off';
 		} catch {
 			// Storage can be blocked; the defaults stand.
 		}
@@ -812,7 +819,7 @@
 					type="button"
 					role="menuitemcheckbox"
 					aria-checked={edgeLabels}
-					onclick={() => (edgeLabels = !edgeLabels)}
+					onclick={toggleEdgeLabels}
 					class={MENU_ITEM}
 				>
 					<span class="flex-1">

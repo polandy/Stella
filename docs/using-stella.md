@@ -559,7 +559,8 @@ line stays away until you select Andy or Frederick — or until you switch on *A
 lines* in the Filter menu, which draws every one of them. *Filter* at the top switches
 each kind of line on and off and doubles as the legend: it shows each kind in its colour and
 line style, and counts how many are shown, so *Filter 5/6* tells you something is hidden.
-*Labels* at the bottom of the same menu names every line at once.
+*Labels* in the same menu names every line at once; it starts on, and switching it off leaves
+the names to whoever you select.
 
 Click a person to see who they are and jump to their page; the lines around them are named
 while they are selected, so you can read who is whose grandmother. Click again to pull in

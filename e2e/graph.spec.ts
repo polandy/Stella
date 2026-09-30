@@ -201,7 +201,7 @@ test('draws the relatives nobody entered, and the Kinship filter takes them away
 	await expect(page.locator('canvas').first()).toBeVisible();
 	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('drawn')).toPass();
 
-	const kinship = (await filterMenu(page)).getByRole('menuitemcheckbox', { name: 'Kinship' });
+	const kinship = (await filterMenu(page)).getByRole('menuitemcheckbox', { name: 'Kinship', exact: true });
 	await kinship.click();
 	await expect(kinship).toHaveAttribute('aria-checked', 'false');
 	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('filtered-out')).toPass();
