@@ -288,6 +288,17 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   other designs were built and measured first — a deferred gap that waits for the pointer to
   leave holds at the top of a list too, where this one cannot, and was rejected as a hole in the
   list (`docs/concepts/relationship-answer-vanish.html`).
+- **Keyboard focus follows the answer, decided once the row has gone** — the focused button
+  leaves the page with its row, and the browser drops focus on `<body>`. The answer remembers
+  which of the two buttons had focus, and when the row's leave transition ends (`outroend` —
+  at once under `prefers-reduced-motion`, where it has no duration) the list focuses the same
+  button of the next row still standing, read across the nearest `data-kin-scope`; the scope's
+  `data-kin-heading` when none is left. Waiting for the end rather than moving focus at once
+  keeps `focus()` from scrolling the page while the list is still paying back the row's
+  height. Only an answer from a `:focus-visible` button owes focus back, so a click — which
+  focuses the button too, without a ring — leaves the pointer path exactly as it was; a row
+  that leaves for any other reason owes nothing. The decision is pure
+  (`src/lib/relationships/answer-focus.ts`); the component only reads the DOM and moves focus.
 - **A sentence is handed its names, never assembled from pieces** — a claim and its reason each
   name two or three people, and every name is a link to that person. Building the sentence out
   of translated fragments with names in between would put English word order into the domain:
