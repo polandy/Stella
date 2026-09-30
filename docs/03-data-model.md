@@ -27,7 +27,7 @@ household 1───* user
 user      1───* session
 user      1───* api_token       (credentials for the import API)  [M2]
 user      1───* identity        (federated OIDC logins, e.g. Authelia)
-user      1───1 notification_preference   (digest schedule + delivery) [M3]
+user      1───1 notification_preference   (digest schedule + delivery) [later]
 user      1───* invitation (created_by)
 
 contact   *───1 user            (created_by)
@@ -87,7 +87,7 @@ A family member with an account.
 | accent_pref | text | Catppuccin accent name, e.g. `'mauve'` |
 | default_visibility | text | `'shared' \| 'private'` for new records |
 | reduced_motion | int | 0/1 |
-| totp_secret | text null | [M3] 2FA |
+| totp_secret | text null | reserved for local 2FA [later] |
 | created_at / updated_at | int | |
 
 ### session
@@ -133,7 +133,7 @@ password, one or more federated identities, or both.
 Constraints: unique on `(issuer, subject)`. Login matches an incoming token to a user
 via this pair first; email-based linking is a configurable fallback for first login only.
 
-### notification_preference  [M3]
+### notification_preference  [later]
 Per-member digest schedule and delivery config (docs/02 §2.11.1). One row per user.
 
 | column | type | notes |

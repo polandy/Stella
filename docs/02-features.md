@@ -29,7 +29,7 @@ See [06-roadmap.md](06-roadmap.md).
   theme preference (system / light / dark), default visibility for new records
   (shared / private).
 - **Security:** rate-limited login, session revocation ("sign out everywhere"),
-  optional TOTP 2FA for local accounts **[M3]** (with SSO, 2FA is delegated to the IdP).
+  optional TOTP 2FA for local accounts **[later]** (with SSO, 2FA is delegated to the IdP).
 
 ### 2.1.1 Authentication methods
 
@@ -946,7 +946,9 @@ Keeps the family in the loop — directly serving the core goal.
   which no table can report once its row is gone — that one item is read from `activity_log`
   (§2.2, docs/04 §4.9).
 
-### 2.11.1 Change digests & delivery **[M3]**
+### 2.11.1 Change digests & delivery **[later]**
+
+> Not on the roadmap for now (docs/06); kept as the design should it come back.
 
 Each member can choose to be notified about recent household changes on a schedule, so you
 don't have to open the app to stay in the loop.
@@ -1807,7 +1809,7 @@ The **story** is that merge, done once, server-side.
 | **Guided migration from Monica** (JSON/SQL/vCard, mapping, preview) | M2 |
 | PWA install + offline shell | M2 |
 | RP-initiated single logout | M2 — shipped |
-| 2FA (local), email reminders | M3 |
-| Change digests (daily/weekly/monthly) via email + webhook | M3 |
+| 2FA (local), email reminders | later |
+| Change digests (daily/weekly/monthly) via email + webhook | later |
 | @mentions, photo reordering, "haven't seen" hints | M3 |
 | German localization | M3 |
