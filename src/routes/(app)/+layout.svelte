@@ -127,10 +127,13 @@
 	// sends them with keepalive alongside and hopes for the best.
 	const removals = provideRemovals();
 	providePeopleContext(() => data.peopleContext);
-	// The people every picker reads come with the shell, which a client-side navigation keeps;
-	// after one, they are reloaded if anyone changed them meanwhile (docs/04 §4.9).
-	afterNavigate((navigation) => {
-		if (navigation.type === 'enter') return;
+	/*
+	 * The people every picker reads come with the shell, which a client-side navigation keeps,
+	 * and so does a tab left open while someone else adds a person. After a navigation, and
+	 * whenever the tab comes back into view, they are reloaded if anyone changed them
+	 * (docs/04 §4.9).
+	 */
+	const refreshPeople = () =>
 		void refreshPeopleIfChanged(
 			{
 				fetchStamp: async () => {
@@ -142,6 +145,8 @@
 			},
 			data.peopleStamp
 		);
+	afterNavigate((navigation) => {
+		if (navigation.type !== 'enter') refreshPeople();
 	});
 	const turns = navigationTurns();
 	beforeNavigate((navigation) => {
@@ -178,6 +183,7 @@
 		const onVisible = () => {
 			if (document.visibilityState !== 'visible') return;
 			void outbox.refresh().then(() => outbox.send());
+			refreshPeople();
 		};
 		// A hint, not proof: it fires when the phone joins a network — the home Wi-Fi, say.
 		const onOnline = () => void outbox.send();

@@ -893,7 +893,8 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - **One list of people in the shell, kept current by a stamp** — the pages used to send their
   own copy of the household's people next to the shell's, about half of every page's data at a
   few hundred people. Now only the shell sends it, so a client-side navigation, which keeps the
-  shell, would leave it stale. After one, `/api/people/stamp` returns a hash of what the shell
+  shell, would leave it stale, and so would a tab left open while someone else adds a person.
+  After a navigation, and whenever the tab comes back into view, `/api/people/stamp` returns a hash of what the shell
   would send now; only a different answer reloads it (`app:people`). This costs one small
   request per navigation, and a picker can read the old list for the few milliseconds the
   check takes. A hash rather than counts and `updated_at`, because archiving or a new photo
