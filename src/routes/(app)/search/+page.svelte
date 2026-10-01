@@ -16,9 +16,11 @@
 
 	<form method="GET" class="flex gap-2">
 		<input
+			type="search"
 			name="q"
 			value={data.q}
 			placeholder={t('search.placeholder')}
+			aria-label={t('search.title')}
 			class="flex-1 rounded-app border border-border bg-bg px-4 py-2.5 text-fg"
 		/>
 		<Button variant="primary">{t('common.search')}</Button>

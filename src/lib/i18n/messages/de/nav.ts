@@ -14,6 +14,8 @@ export const nav: NavMessages = {
 	'nav.circle': 'Kreis',
 	'nav.importPeople': 'Menschen importieren',
 	'nav.stellaHome': 'Stella-Startseite',
+	'nav.main': 'Hauptnavigation',
+	'nav.skipToContent': 'Zum Inhalt springen',
 	'nav.breadcrumb': 'Brotkrumen-Navigation',
 	'nav.addPerson': 'Person hinzufügen',
 	'nav.writeMoment': 'Moment festhalten',

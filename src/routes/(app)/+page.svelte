@@ -184,13 +184,26 @@
 	</div>
 	<div class="md:hidden">
 		{#if sheetOpen || (form?.momentError && phone.current)}
-			<div class="fixed inset-0 z-30 flex flex-col justify-end" data-testid="compose-sheet">
-				<button type="button" class="flex-1 bg-bg-sunken/70 backdrop-blur-sm" aria-label={t('common.close')} onclick={closeSheet}></button>
-				<div class="rounded-t-app bg-bg p-3 pb-4 shadow-pop">
+			<!-- A modal <dialog>, so the platform keeps focus inside, Escape closes and the stream
+			     behind is out of reach for a screen reader too (docs/05 §5.9). Not a scroll box:
+			     the day calendar and the @-picker open past its top edge. -->
+			<dialog
+				{@attach (sheet: HTMLDialogElement) => sheet.showModal()}
+				oncancel={(event) => {
+					event.preventDefault();
+					closeSheet();
+				}}
+				onclick={(event) => event.target === event.currentTarget && closeSheet()}
+				aria-label={t('nav.writeMoment')}
+				class="mb-0 mt-auto w-full max-w-none overflow-visible rounded-t-app bg-bg p-0 text-fg shadow-pop backdrop:bg-bg-sunken/70 backdrop:backdrop-blur-sm"
+				data-testid="compose-sheet"
+			>
+				<!-- The padding lives inside, so a tap on the sheet's edge is not a tap on the backdrop. -->
+				<div class="p-3 pb-4">
 					<div class="mx-auto mb-2 h-1 w-10 rounded-full bg-border"></div>
 					{@render composer()}
 				</div>
-			</div>
+			</dialog>
 		{:else}
 			<!-- The pencil in the tab bar writes; the top of a phone's Home finds a person. -->
 			<PersonFinder people={data.people} />
@@ -342,9 +355,9 @@
 									<div class="note-body mt-1 text-fg">{@html item.bodyHtml}</div>
 									{#if item.photoIds.length}
 										<div class="mt-2 flex gap-1.5">
-											{#each item.photoIds as photoId (photoId)}
+											{#each item.photoIds as photoId, index (photoId)}
 												<a href="/media/{photoId}" target="_blank" rel="noreferrer" class="block overflow-hidden rounded-md border border-border">
-													<img src="/media/{photoId}?thumb" alt="" loading="lazy" class="size-16 object-cover" />
+													<img src="/media/{photoId}?thumb" alt={t('components.photo.open', { n: index + 1, count: item.photoIds.length })} loading="lazy" class="size-16 object-cover" />
 												</a>
 											{/each}
 										</div>
@@ -367,7 +380,7 @@
 										<span>{t('home.stream.added')}</span>
 										<a href="/contacts/{item.person.id}" class="font-medium text-fg hover:underline">{item.person.name}</a>
 										{#if t('home.stream.addedAfter')}<span>{t('home.stream.addedAfter')}</span>{/if}
-										<span class="rounded bg-success/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-success">{t('home.stream.newPerson')}</span>
+										<span class="rounded bg-success/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-fg">{t('home.stream.newPerson')}</span>
 										{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('common.onlyYouSee')}><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago(item.at)}</span>
 									</div>
@@ -424,7 +437,7 @@
 										<span>{relationshipRowLabel(t, item)}</span>
 										<a href="/contacts/{item.to.id}" class="font-medium text-fg hover:underline">{item.to.name}</a>
 										{#if t('home.stream.linkedAfter')}<span>{t('home.stream.linkedAfter')}</span>{/if}
-										<span class="rounded bg-link/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-link">{t('home.stream.relationship')}</span>
+										<span class="rounded bg-link/16 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-fg">{t('home.stream.relationship')}</span>
 										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago(item.at)}</span>
 									</div>
 								</div>

@@ -14,6 +14,8 @@ export const nav = {
 	'nav.importPeople': 'Import people',
 	'nav.stellaHome': 'Stella home',
 	'nav.breadcrumb': 'Breadcrumb',
+	'nav.main': 'Main',
+	'nav.skipToContent': 'Skip to content',
 	'nav.addPerson': 'Add person',
 	'nav.writeMoment': 'Write a moment',
 	'signOut.unsent': (p: { count: number }) =>

@@ -277,7 +277,8 @@ test.describe('without JavaScript', () => {
 	test('still draws the relationships, each name a link to that person', async ({ page }) => {
 		await page.goto(`/contacts/${LENA}`);
 
-		const svg = page.getByRole('img', { name: 'Relationship network for Lena Brunner' });
+		// A group, not an img: an img would hide the links inside it from a screen reader.
+		const svg = page.getByRole('group', { name: 'Relationship network for Lena Brunner' });
 		await expect(svg).toBeVisible();
 		await expect(svg.getByRole('link', { name: /Markus Brunner/ })).toHaveAttribute(
 			'href',

@@ -8,6 +8,9 @@ export const components = {
 	'components.photo.changeShort': 'Change',
 	'components.photo.failed': 'Could not upload the photo. Try a JPEG or PNG image.',
 	'components.photo.previousKept': 'The previous photo is still in Photos.',
+	// Names a thumbnail that is the only thing inside its link, so the link has a name.
+	'components.photo.open': (p: { n: number; count: number }) =>
+		`Photo ${p.n} of ${p.count}, opens in a new tab`,
 	'components.frame.use': 'Use as photo',
 	'components.frame.change': 'Change framing',
 	'components.cropper.title': 'Frame the photo',

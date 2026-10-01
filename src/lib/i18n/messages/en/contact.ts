@@ -200,7 +200,6 @@ export const contact = {
 	'contact.photos.adding': 'Adding…',
 	'contact.photos.uploadFailed': 'Those photos could not be added.',
 	'contact.photos.dialog': 'Photo',
-	'contact.photos.closePhoto': 'Close the photo',
 	'contact.photos.noCaption': 'No caption',
 	'contact.photos.captionPlaceholder': 'Add a caption',
 	'contact.photos.caption': 'Caption',

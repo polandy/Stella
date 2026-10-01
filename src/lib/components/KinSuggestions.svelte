@@ -332,14 +332,14 @@
 			<span class="col-span-full flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-fg-subtle">
 				<!--
 					Confidence is a word rather than a colour bar: "certain" here means a logical
-					consequence of what the household entered, not a strong hunch.
+					consequence of what the household entered, not a strong hunch. The word is in
+					`--fg` and only the outline carries the colour — green and yellow text sat
+					below AA on Latte's card (docs/05 §5.9).
 				-->
 				<span
-					class="rounded-full border px-1.5 text-[0.6875rem] font-semibold tracking-wide"
+					class="rounded-full border px-1.5 text-[0.6875rem] font-semibold tracking-wide text-fg"
 					class:border-success={suggestion.confidence === 'certain'}
-					class:text-success={suggestion.confidence === 'certain'}
 					class:border-warning={suggestion.confidence !== 'certain'}
-					class:text-warning={suggestion.confidence !== 'certain'}
 				>
 					{t(CONFIDENCE_KEY[suggestion.confidence])}
 				</span>

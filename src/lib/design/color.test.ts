@@ -5,6 +5,7 @@ import { resolveColor, tokensFor, type Theme } from './css-tokens';
 import {
 	ACCENTS,
 	AVATAR_ACCENTS,
+	AVATAR_TINT_PERCENT,
 	accentVar,
 	categoryVar
 } from './tokens';
@@ -133,7 +134,18 @@ describe('AA contrast, both themes (docs/05 §5.9)', () => {
 		// Meta text on the page ground: 3.9:1, so it only ever repeats what is already on screen.
 		{ text: '--fg-subtle', on: '--bg', floor: AA_LARGE },
 		{ text: '--primary-fg', on: '--primary', floor: AA_TEXT },
-		{ text: '--border', on: '--card', floor: 1.2 }
+		// Words written in a colour, wherever they land: a link, a primary action, a warning.
+		{ text: '--link', on: '--card', floor: AA_TEXT },
+		{ text: '--link', on: '--bg', floor: AA_TEXT },
+		{ text: '--primary', on: '--card', floor: AA_TEXT },
+		{ text: '--primary', on: '--bg', floor: AA_TEXT },
+		{ text: '--danger', on: '--card', floor: AA_TEXT },
+		{ text: '--danger', on: '--bg', floor: AA_TEXT },
+		{ text: '--border', on: '--card', floor: 1.2 },
+		// A focus indicator is a non-text boundary: 3:1 against whatever it is drawn over.
+		{ text: '--focus-ring', on: '--card', floor: AA_LARGE },
+		{ text: '--focus-ring', on: '--bg', floor: AA_LARGE },
+		{ text: '--focus-ring', on: '--bg-sunken', floor: AA_LARGE }
 	];
 
 	for (const theme of THEMES) {
@@ -184,6 +196,21 @@ describe('text on an accent tint', () => {
 				expect(failing).toEqual([]);
 			});
 		}
+
+		// The ego graph's initials discs: a category tint, initials in --fg (docs/05 §5.9).
+		it(`reads --fg on every category disc over --card in ${theme}`, () => {
+			const fg = resolveColor(tokens, '--fg');
+			const card = resolveColor(tokens, '--card');
+			expect(fg).not.toBeNull();
+			expect(card).not.toBeNull();
+
+			const failing = RELATIONSHIP_CATEGORIES.filter((category) => {
+				const color = resolveColor(tokens, property(categoryVar(category)));
+				const tint = mixHex(color as string, AVATAR_TINT_PERCENT, card as string);
+				return contrastRatio(fg as string, tint) < AA_TEXT;
+			});
+			expect(failing).toEqual([]);
+		});
 	}
 });
 

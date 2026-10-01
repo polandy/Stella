@@ -929,11 +929,9 @@
 			<button
 				onclick={togglePath}
 				aria-pressed={pathMode}
-				class="pointer-events-auto rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-fg-muted backdrop-blur transition-colors hover:text-fg"
-				class:!border-transparent={pathMode}
-				style={pathMode
-					? 'background:color-mix(in srgb, var(--warning) 22%, transparent); color:var(--warning)'
-					: ''}
+				class="pointer-events-auto rounded-full border px-3 py-1 text-xs font-medium backdrop-blur transition-colors {pathMode
+					? 'border-transparent bg-warning-soft text-fg'
+					: 'border-border bg-card/90 text-fg-muted hover:text-fg'}"
 			>
 				{t('graph.connectionPath')}
 			</button>

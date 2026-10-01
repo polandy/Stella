@@ -186,7 +186,6 @@ export const contact: ContactMessages = {
 	'contact.photos.adding': 'Wird hinzugefügt…',
 	'contact.photos.uploadFailed': 'Diese Fotos konnten nicht hinzugefügt werden.',
 	'contact.photos.dialog': 'Foto',
-	'contact.photos.closePhoto': 'Foto schließen',
 	'contact.photos.noCaption': 'Keine Bildunterschrift',
 	'contact.photos.captionPlaceholder': 'Bildunterschrift hinzufügen',
 	'contact.photos.caption': 'Bildunterschrift',
