@@ -10,10 +10,34 @@ You are a meticulous code reviewer for **Stella** (repo `ross`). Review the pull
 
 Work through **all** sections below in order. Collect findings as you go and fix what the instructions say to fix. Finish with a structured verdict.
 
+## Depth: pick the tier first
+
+A review costs as much as what it reads, so its depth follows the PR's risk, not a fixed recipe.
+Decide the tier from `gh pr diff <PR> --name-only` and say which one you used in the verdict.
+
+- **Full** — any of: a schema or `drizzle/` change, anything under `src/lib/server/access/`, a
+  visibility or authz rule, the offline command path (`src/lib/commands/`,
+  `src/lib/server/domain/commands/`), a new dependency, or a new screen. Every section below.
+- **Light** — everything else (copy, styling, a contained component or pure-module change, docs).
+  §0 without a worktree (read `gh pr diff`; open a whole file only where the diff is not enough),
+  §1, §3, the §4.0 table, §6 and §7. Skip §2 unless the diff adds a decision, and skip the
+  rendering and mutation steps of §5 unless the PR's headline is visual.
+
+In both tiers:
+
+- **Trust a green CI for `bun run check` and `bun run test`** — they ran on the PR's head. Run them
+  locally only when you push a fix, or when CI is red or has not run on the current head.
+- **Read the diff before any file**, and open the doc *section* the PR touches (`grep -n` for its
+  heading, then read that range), never a whole `docs/` file.
+- **Red CI**: read `scripts/ci-failures.sh <PR>` first — failure annotations only. Reach for
+  `gh run view --log-failed` only when that is not enough.
+- **Never run `bun run test:e2e` locally** — CI runs it on every push. Render with a throwaway
+  script only when a §5 claim is about pixels.
+
 ## 0. Gather context
 
 - `gh pr view <PR> --json title,body,baseRefName,headRefName,mergeStateStatus,statusCheckRollup` for metadata and CI status.
-- `gh pr diff <PR>` for the full diff. Check the branch out **in its own worktree** (`git worktree add ../ross-review-<PR> <branch>`) so you can build and test without disturbing whatever the main checkout is on, and remove it when you are done. Never review by switching branches under someone else's uncommitted work.
+- `gh pr diff <PR>` for the full diff. Where the tier needs a checkout, use the author's worktree if it exists and is clean, else check the branch out **in its own worktree** (`git worktree add ../Stella-review-<PR> <branch>`, never under `.claude/`) so you can build and test without disturbing whatever the main checkout is on, and remove it when you are done. Never review by switching branches under someone else's uncommitted work.
 - Read the PR description first — the review checks the implementation *against its stated intent*.
 - **Load the project standard**: `CLAUDE.md` (§Golden rules, §Non-negotiables) and `docs/08-coding-guidelines.md`. These are binding and authoritative. Section 3 below distills the highest-signal checks, but the *files* win where they disagree with this skill.
 
@@ -109,7 +133,7 @@ If the PR touches `src/routes/` or `src/lib/components/`:
 ## 6. CI status — fix failures
 
 - Check `gh pr checks <PR>`. **All checks must be green** — both the `verify` job (`bun run check`, `bun run test`) and the `e2e` job.
-- If anything is red: read the failure (`gh run view --log-failed`), fix it on the PR branch, re-run `bun run check` and `bun run test` locally, commit with a Conventional Commit, push, wait for the re-run. Repeat until green.
+- If anything is red: read the failure (`scripts/ci-failures.sh <PR>`; the full log via `gh run view --log-failed` only if that is not enough), fix it on the PR branch, re-run `bun run check` and `bun run test` locally, commit with a Conventional Commit, push, wait for the re-run. Repeat until green.
 - Commit types are chosen by **user-facing impact**, because release-please builds the changelog from them (§8.9). A user-visible behaviour change committed as `chore:` disappears from the release notes — that is a finding in itself.
 
 ## 7. Branch freshness — update if behind

@@ -37,6 +37,7 @@ bun run test:e2e   # Playwright e2e (builds, serves, runs in the pinned containe
 bun run check      # svelte-check + types
 bun run build      # production build   |  bun run start  → bun ./build/index.js
 bun run db:generate | db:migrate | db:push | db:studio
+scripts/ci-failures.sh <PR>   # only the failures of a PR's latest CI run
 ```
 
 ## Stack — full: `docs/04-architecture.md`
