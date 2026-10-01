@@ -27,6 +27,7 @@
 		type CircleRoleOption
 	} from '$lib/graph/model/ego-network';
 	import { canExpand, hasLinks, ringsFrom } from '$lib/graph/model/rings';
+	import { expandWouldAdd } from '$lib/graph/model/expand-offer';
 	import { impliedKinshipEdgeIds } from '$lib/graph/model/implied-kinship';
 	import {
 		applyFilters,
@@ -353,9 +354,12 @@
 			expandable: (id) => centerId === null || canExpand(rings, id, maxRings)
 		})
 	);
-	// Expand is offered exactly where the badge promises somebody, so the two never disagree:
-	// under filters that hide everything behind a node, neither appears (docs/02 §2.7).
-	const peekHasMore = $derived(peekNode !== null && (hidden.get(peekNode.id) ?? 0) > 0);
+	// Expand is offered exactly when it would add something under the current filters: somebody
+	// behind the "+N", or a line among people already shown — never a button that does nothing,
+	// and never missing where a circle's roles are still to be drawn (docs/02 §2.7).
+	const peekHasMore = $derived(
+		peekNode !== null && expandWouldAdd(graph, drawn, peekNode.id, buildFilters())
+	);
 	const peekExpandable = $derived(peekWithinReach && peekHasMore);
 	/*
 	 * A centre linked to nobody draws one lonely dot. The explorer route says why and offers
