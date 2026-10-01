@@ -17,7 +17,10 @@ export interface WelcomeStep {
 
 /** What the card is decided from: who the member can see, who they are, and whether they run it. */
 export interface HouseholdSoFar {
-	/** The people the member can see, archived ones left out. */
+	/**
+	 * The people the member can see, archived ones left out — or any two of them: two ids are
+	 * enough to tell whether anybody besides the member's own record is there.
+	 */
 	peopleIds: readonly string[];
 	selfContactId: string | null;
 	/** The Monica import is admin-only (docs/02 §2.16), so only an admin is offered it. */

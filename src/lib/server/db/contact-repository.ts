@@ -181,6 +181,16 @@ export function createDrizzleContactRepository(
 				.all();
 		},
 
+		async listSomeBrowsableIdsVisibleTo(viewer: Viewer, limit: number) {
+			return db
+				.select({ id: contactTable.id })
+				.from(contactTable)
+				.where(contactBrowsableBy(viewer))
+				.limit(limit)
+				.all()
+				.map((row) => row.id);
+		},
+
 		async countArchivedVisibleTo(viewer: Viewer) {
 			const row = db
 				.select({ n: count() })

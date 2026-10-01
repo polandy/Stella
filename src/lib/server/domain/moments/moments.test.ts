@@ -78,6 +78,9 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 		async listBrowsableNamesAmong() {
 			return [];
 		},
+		async listSomeBrowsableIdsVisibleTo() {
+			return [];
+		},
 		async countArchivedVisibleTo() {
 			return 0;
 		},

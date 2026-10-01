@@ -222,7 +222,7 @@
 				hint={t('circles.noMembers.hint')}
 			>
 				<!-- The header's Add opens the same form; with nobody to add yet, people come first. -->
-				{#if data.candidates.length}
+				{#if candidates.length}
 					<Button variant="primary" icon="add" type="button" onclick={() => (addOpen = true)}>{t('circles.noMembers.add')}</Button>
 				{:else}
 					<Button variant="primary" icon="add" href={newPersonHref()}>{t('nav.addPerson')}</Button>

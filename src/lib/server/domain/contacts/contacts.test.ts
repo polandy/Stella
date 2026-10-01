@@ -3,6 +3,7 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { NewActivityEntry } from '../activity/activity';
 import {
+	listPeopleEnoughForFirstRun,
 	archiveContact,
 	createContact,
 	editProfile,
@@ -55,6 +56,7 @@ function fakeRepo() {
 		listNamesVisibleTo: async () => [],
 		listNamesAmongVisibleTo: async () => [],
 		listBrowsableNamesAmong: async () => [],
+		listSomeBrowsableIdsVisibleTo: async () => [],
 		countArchivedVisibleTo: async () => 0,
 		listDistinguishableVisibleTo: async () => [],
 		updateProfile: async () => {},
@@ -224,6 +226,7 @@ function editableRepo(contact: Contact | null) {
 		listNamesVisibleTo: async () => [],
 		listNamesAmongVisibleTo: async () => [],
 		listBrowsableNamesAmong: async () => [],
+		listSomeBrowsableIdsVisibleTo: async () => [],
 		countArchivedVisibleTo: async () => 0,
 		listDistinguishableVisibleTo: async () => [],
 		updateProfile: async (id, patch) => {
@@ -460,6 +463,7 @@ describe('deleteContact', () => {
 			listNamesVisibleTo: async () => [],
 			listNamesAmongVisibleTo: async () => [],
 			listBrowsableNamesAmong: async () => [],
+			listSomeBrowsableIdsVisibleTo: async () => [],
 			countArchivedVisibleTo: async () => 0,
 			listDistinguishableVisibleTo: async () => [],
 			updateProfile: async () => {},
@@ -577,6 +581,7 @@ describe('mergeContacts', () => {
 			listNamesVisibleTo: async () => [],
 			listNamesAmongVisibleTo: async () => [],
 			listBrowsableNamesAmong: async () => [],
+			listSomeBrowsableIdsVisibleTo: async () => [],
 			countArchivedVisibleTo: async () => 0,
 			listDistinguishableVisibleTo: async () => [],
 			updateProfile: async () => {},
@@ -739,5 +744,25 @@ describe('reading names for just the ids a page needs', () => {
 		// Positive control: the same recorder does see a read when there is someone to name.
 		await listContactNamesAmong({ contacts: f.repo }, viewer, ['anna']);
 		expect(f.asked).toEqual([{ read: 'visible', ids: ['anna'] }]);
+	});
+});
+
+/*
+ * Home's first-run card (docs/02 §2.22.3) only needs to know whether the household holds
+ * anybody besides the member's own record, so it must not read the whole household to learn it.
+ */
+describe('listPeopleEnoughForFirstRun', () => {
+	it('asks for two browsable ids: one more than the self record can ever be', async () => {
+		const f = fakeRepo();
+		const limits: number[] = [];
+		f.repo.listSomeBrowsableIdsVisibleTo = async (_viewer, limit) => {
+			limits.push(limit);
+			return ['self', 'anna', 'ben'].slice(0, limit);
+		};
+		expect(await listPeopleEnoughForFirstRun({ contacts: f.repo }, { id: 'u', householdId: 'h' })).toEqual([
+			'self',
+			'anna'
+		]);
+		expect(limits).toEqual([2]);
 	});
 });

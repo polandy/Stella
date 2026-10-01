@@ -457,6 +457,15 @@ describe('reading a few people by id', () => {
 		);
 	});
 
+	it('reads at most as many browsable ids as asked for, from the browsing scope', async () => {
+		// U1 browses Anna and Ben only: Old Neighbour is archived, Theirs is U2's private record.
+		expect((await repo.listSomeBrowsableIdsVisibleTo(viewerU1, 5)).sort()).toEqual(['c-anna', 'c-ben']);
+		expect(await repo.listSomeBrowsableIdsVisibleTo(viewerU1, 1)).toHaveLength(1);
+		// The same scope as the directory it stands in for.
+		const listed = (await repo.listVisibleTo(viewerU2)).map((c) => c.id).sort();
+		expect((await repo.listSomeBrowsableIdsVisibleTo(viewerU2, 5)).sort()).toEqual(listed);
+	});
+
 	it('counts the archived people the viewer may see', async () => {
 		expect(await repo.countArchivedVisibleTo(viewerU1)).toBe(1);
 		await repo.setArchived('c-theirs', NOW);
