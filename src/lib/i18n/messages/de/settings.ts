@@ -18,6 +18,10 @@ export const settings: SettingsMessages = {
 	'settings.self.placeholder': 'Dich selbst über den Namen suchen',
 	'settings.self.clear': 'Keine davon bin ich',
 	'settings.self.saved': 'Gespeichert.',
+	'settings.self.nobodyYet':
+		'Noch ist niemand in Stella, also gibt es niemanden zum Auswählen. Füge dich selbst hinzu, dann bist du sofort verknüpft.',
+	'settings.self.notListed': 'Noch nicht in der Liste?',
+	'settings.self.addYourself': 'Dich selbst hinzufügen',
 	'settings.data.heading': 'Daten',
 	'settings.data.importPeople': 'Menschen importieren',
 	'settings.data.importPeopleBlurb':

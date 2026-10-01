@@ -122,7 +122,11 @@ export const contact = {
 	'contact.relationships.howConnectedTo': (p: { name: string }) => `${p.name} and…`,
 	'contact.relationships.tracePath': 'Trace it',
 	'contact.relationships.add': 'Add relationship',
-	'contact.relationships.none': 'No relationships yet.',
+	'contact.relationships.none': (p: { name: string }) => `${p.name} is not linked to anyone yet`,
+	// Not *Add relationship*: the card's header already has that button, and this one is the invitation.
+	'contact.relationships.addFirst': (p: { name: string }) => `Link ${p.name} to someone`,
+	'contact.relationships.noneHint':
+		'Add family, a partner, friends or colleagues — the map of who they know draws itself from these.',
 	'contact.relationships.remove': (p: { name: string }) => `Remove the link to ${p.name}`,
 	'contact.relationships.removed': 'Relationship removed',
 	'contact.relationships.since': (p: { day: string }) => `since ${p.day}`,
@@ -186,14 +190,16 @@ export const contact = {
 	'contact.relationships.viaAnd': ' and ',
 
 	'contact.notes.add': 'Add note',
-	'contact.notes.none': 'No notes yet.',
+	'contact.notes.none': (p: { name: string }) =>
+		`Nothing noted about ${p.name} yet. Keep what you would hate to forget here — gift ideas, allergies, the dog’s name.`,
 	'contact.notes.pinned': 'pinned',
 	'contact.notes.label': 'Note',
 	'contact.notes.placeholder': 'Write a note… (Markdown, @ to mention someone)',
 	'contact.notes.pin': 'Pin',
 
 	'contact.photos.add': 'Add photos',
-	'contact.photos.none': 'No photos yet.',
+	'contact.photos.none': (p: { name: string }) =>
+		`No photos of ${p.name} yet. Add one, and it can become their picture.`,
 	'contact.photos.of': (p: { name: string }) => `Photo of ${p.name}`,
 	'contact.photos.privateHint': 'Private — only you can see this',
 	'contact.photos.pictures': 'Pictures',

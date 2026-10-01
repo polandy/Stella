@@ -4,6 +4,7 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
 	import { asTyped } from '$lib/mentions/picks';
@@ -430,11 +431,11 @@
 			{/each}
 		</ol>
 	{:else}
-		<div class="rounded-app border border-dashed border-border p-10 text-center">
-			<p class="text-fg-muted">{t('journal.empty.title')}</p>
-			<p class="mt-1 text-sm text-fg-subtle">
-				{t('journal.empty.hint', { name: c.displayName })}
-			</p>
-		</div>
+		<EmptyState icon="journal" title={t('journal.empty.title')} hint={t('journal.empty.hint', { name: c.displayName })}>
+			<!-- With the form already open above, a second way to open it would only distract. -->
+			{#if !showForm}
+				<Button variant="primary" icon="write" type="button" onclick={() => (composing = true)}>{t('journal.empty.write')}</Button>
+			{/if}
+		</EmptyState>
 	{/if}
 </main>

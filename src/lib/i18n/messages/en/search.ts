@@ -4,6 +4,7 @@ export const search = {
 	'search.title': 'Search',
 	'search.placeholder': 'Search people and notes…',
 	'search.noResults': (p: { query: string }) => `No results for “${p.query}”.`,
+	'search.noResultsHint': 'Nobody by that name, and no note that says it. If they are new, add them.',
 	'search.prompt': 'Type to search across people and notes.',
 	'search.people': 'People',
 	'search.notes': 'Notes',
@@ -67,6 +68,14 @@ export const search = {
 	'graph.backToCircle': (p: { name: string }) => `Back to the ${p.name} circle`,
 	'graph.peek.tipCompact': 'Tip: tap a selected person again to open up their own connections.',
 	'graph.peek.edgeOfMap': 'This is as far as this map goes. The graph carries the rest.',
+	'graph.peek.allShown': 'Everything linked here is already on the map.',
+	// A centre with no links at all (docs/02 §2.7): an invitation instead of a lone dot.
+	'graph.alone.title': (p: { name: string }) => `${p.name} is not linked to anyone yet`,
+	'graph.alone.hint':
+		'Add a parent, a partner, a friend or a colleague, and the map grows from there.',
+	'graph.alone.add': 'Add a relationship',
+	'graph.aloneCircle.title': (p: { name: string }) => `Nobody is in ${p.name} yet`,
+	'graph.aloneCircle.hint': 'Add the people who share this circle, and the map grows from there.',
 	'graph.onPerson.label': (p: { name: string }) => `The people around ${p.name}`,
 	'graph.onPerson.loading': 'Drawing the map…',
 	'graph.fullscreen.enter': 'Full screen',

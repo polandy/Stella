@@ -1,7 +1,11 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { quietContacts } from '$lib/server/domain/attention/quiet';
-import { listBrowsableNamesAmong, listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
+import {
+	listBrowsableNamesAmong,
+	listContactNamesAmong,
+	listPeopleEnoughForFirstRun
+} from '$lib/server/domain/contacts/contacts';
 import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
@@ -24,6 +28,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
 import { LINK_PARAM, linkHintHref } from '$lib/stream/link-hint';
+import { welcomeSteps } from '$lib/onboarding/welcome';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
@@ -60,12 +65,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const aboutId = url.searchParams.get(ABOUT_PARAM);
 	const named = [a, b, aboutId].filter((id): id is string => Boolean(id));
 
-	const [items, onList, dateSources, quietSources] = await Promise.all([
+	const [items, onList, dateSources, quietSources, firstPeople] = await Promise.all([
 		buildStream(getStreamDeps(), viewer, filter),
 		// Who the household can still act on — the browsing scope — among just those.
 		listBrowsableNamesAmong(getContactDeps(), viewer, named),
 		getImportantDates().listSourcesVisibleTo(viewer),
-		getAttention().listQuietSourcesVisibleTo(viewer)
+		getAttention().listQuietSourcesVisibleTo(viewer),
+		// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
+		listPeopleEnoughForFirstRun(getContactDeps(), viewer)
 	]);
 	// What a mention already written is called (archived people included), for the moments
 	// on this page only.
@@ -100,6 +107,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		railFirst: hasImminentDate(upcoming),
 		quiet: quietContacts(quietSources, day),
 		linkSuggestion,
+		// The first-run card (docs/02 §2.22.3), or null once the household has begun.
+		welcome: welcomeSteps({
+			peopleIds: firstPeople,
+			selfContactId: locals.user.selfContactId,
+			isAdmin: locals.user.role === 'admin'
+		}),
 		filter,
 		members,
 		stream: items.map((item) =>

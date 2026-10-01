@@ -128,6 +128,11 @@ export interface ContactRepository {
 	listNamesAmongVisibleTo(viewer: Viewer, ids: readonly string[]): Promise<ContactName[]>;
 	/** Id and name of those of these ids the household still browses — archived ones left out. */
 	listBrowsableNamesAmong(viewer: Viewer, ids: readonly string[]): Promise<ContactName[]>;
+	/**
+	 * Up to `limit` ids from the browsing scope, in no particular order — for a decision that
+	 * only needs to know whether there is anybody (else), not who (Home's first-run card).
+	 */
+	listSomeBrowsableIdsVisibleTo(viewer: Viewer, limit: number): Promise<string[]>;
 	/** How many `listArchivedVisibleTo` would list. */
 	countArchivedVisibleTo(viewer: Viewer): Promise<number>;
 	/** What tells each browsable person apart (docs/02 §2.2.3), without the rest of the record. */
@@ -427,6 +432,18 @@ export async function countKnownByAFirstNameOnly(
 	viewer: Viewer
 ): Promise<number> {
 	return (await deps.contacts.listDistinguishableVisibleTo(viewer)).filter(isKnownByAFirstNameOnly).length;
+}
+
+/**
+ * Enough of the household's browsable people to tell whether it holds anybody besides the
+ * viewer's own record: two ids, so one more than the self record can ever be. Home's first-run
+ * card (docs/02 §2.22.3) asks this on every visit, so it must not read the whole household.
+ */
+export async function listPeopleEnoughForFirstRun(
+	deps: Pick<ContactDeps, 'contacts'>,
+	viewer: Viewer
+): Promise<string[]> {
+	return deps.contacts.listSomeBrowsableIdsVisibleTo(viewer, 2);
 }
 
 /** How many archived people the viewer may see — what the archive chip says. */

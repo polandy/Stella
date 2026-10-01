@@ -17,6 +17,9 @@ export const settings = {
 	'settings.self.placeholder': 'Search for yourself by name',
 	'settings.self.clear': 'None of them is me',
 	'settings.self.saved': 'Saved.',
+	'settings.self.nobodyYet': 'Nobody is in Stella yet, so there is no one to pick. Add yourself and you are linked at once.',
+	'settings.self.notListed': 'Not in the list yet?',
+	'settings.self.addYourself': 'Add yourself',
 	'settings.data.heading': 'Data',
 	'settings.data.importPeople': 'Import people',
 	'settings.data.importPeopleBlurb':

@@ -4,6 +4,7 @@ import {
 	Blend,
 	BookOpen,
 	CalendarDays,
+	Check,
 	ChevronLeft,
 	ChevronRight,
 	CircleDot,
@@ -92,6 +93,8 @@ export const ICONS = {
 	install: DownloadCloud,
 	// The member's own person (docs/02 §2.1.3).
 	self: UserRound,
+	// A step already taken, on the first-run card (docs/02 §2.22.3).
+	done: Check,
 	calendar: CalendarDays,
 	quiet: Moon,
 	shared: UsersRound,

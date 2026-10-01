@@ -27,6 +27,7 @@ export const journal = {
 	'journal.empty.title': 'No journal entries yet.',
 	'journal.empty.hint': (p: { name: string }) =>
 		`Capture ${p.name}’s first moment — a milestone, a funny quote, a good day.`,
+	'journal.empty.write': 'Write the first entry',
 	'journal.uploadFailed': 'Could not save. Try standard JPEG or PNG images.'
 };
 
