@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
 	EDGE_LABEL_LIMIT,
 	edgeLabelsFit,
+	linesDrawn,
 	MAX_NODE_DIAMETER,
 	MIN_NODE_DIAMETER,
 	nodeDiameter
@@ -28,6 +29,24 @@ describe('edgeLabelsFit', () => {
 
 	it('sits around forty lines', () => {
 		expect(EDGE_LABEL_LIMIT).toBe(40);
+	});
+});
+
+describe('linesDrawn', () => {
+	const lines = ['a', 'b', 'c', 'd', 'e'].map((id) => ({ id }));
+
+	it('counts every line the map shows', () => {
+		expect(linesDrawn(lines, [], 0)).toBe(5);
+	});
+
+	it('leaves out the lines held back until their person is selected', () => {
+		// Left-off kinship and the lines a bundle tucks away are not drawn, so they cannot be
+		// what crowds the names; one held back twice over is still one line.
+		expect(linesDrawn(lines, [new Set(['a']), new Set(['b', 'a'])], 0)).toBe(3);
+	});
+
+	it('counts a bundle as the one line it draws', () => {
+		expect(linesDrawn(lines, [new Set(['a', 'b', 'c'])], 1)).toBe(3);
 	});
 });
 

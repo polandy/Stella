@@ -844,9 +844,10 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   A line carries its name — "Parent of", "Grandfather", the circle role. A **"Labels" switch**
   in the Filter menu names every line at once and is **on by default**, remembered per
   device: with the kinship lines that only repeat a chain left off, the names that remain are
-  what the map is read by. **Past 40 lines on screen** (`EDGE_LABEL_LIMIT`, counted without the
-  selection so selecting never flips it) the names pile up around a hub, so they are paused
-  even with the switch on, and the switch's hint says so. Switched off or paused, a line is
+  what the map is read by. **Past 40 lines drawn on the map** (`EDGE_LABEL_LIMIT`;
+  `linesDrawn` counts without the selection, so selecting never flips it, and a bundle as the
+  one line it draws) the names pile up around a hub, so they are paused even with the switch
+  on, and the switch's hint says so. Switched off or paused, a line is
   named only while it is highlighted, hovered or on a traced path — selecting a person names
   their connections, pointing at a person or a line names theirs, and the rest of the canvas
   stays quiet. Any name — a person's, a circle's or a line's — that would render below 8 px

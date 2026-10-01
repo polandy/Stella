@@ -27,6 +27,19 @@ export function edgeLabelsFit(switchedOn: boolean, visibleEdges: number): boolea
 	return switchedOn && visibleEdges <= EDGE_LABEL_LIMIT;
 }
 
+/**
+ * How many lines the map draws, the count {@link edgeLabelsFit} weighs: the lines shown, less
+ * any `heldBack` until their person is selected (left-off kinship, the lines a bundle tucks
+ * away), plus the `bundles` drawn in their stead.
+ */
+export function linesDrawn(
+	shown: readonly { id: string }[],
+	heldBack: readonly ReadonlySet<string>[],
+	bundles: number
+): number {
+	return shown.filter((line) => !heldBack.some((set) => set.has(line.id))).length + bundles;
+}
+
 /** The smallest disc, for somebody with no lines on the map. */
 export const MIN_NODE_DIAMETER = 30;
 /** The largest disc: big enough to find a hub, small enough to leave its neighbours room. */

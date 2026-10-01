@@ -44,7 +44,7 @@
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
 	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
 	import { DEFAULT_DENSITY, DENSITIES, spacingFor, type Density } from '$lib/graph/layout/density';
-	import { EDGE_LABEL_LIMIT, edgeLabelsFit } from '$lib/graph/layout/legibility';
+	import { EDGE_LABEL_LIMIT, edgeLabelsFit, linesDrawn } from '$lib/graph/layout/legibility';
 	import { hiddenNeighbourCounts } from '$lib/graph/model/hidden-neighbours';
 	import { densityPreference, type DensityPreference } from '$lib/graph/density-preference';
 	import type { ConnectionPath, GraphEdge, GraphFilters, GraphModel } from '$lib/graph/model/types';
@@ -309,7 +309,11 @@
 	const labelsFit = $derived(
 		edgeLabelsFit(
 			edgeLabels,
-			drawnVisible.edges.filter((e) => !leftOff.has(e.id)).length + (grouping?.bundles.length ?? 0)
+			linesDrawn(
+				drawnVisible.edges,
+				grouping ? [leftOff, grouping.tucked] : [leftOff],
+				grouping?.bundles.length ?? 0
+			)
 		)
 	);
 	// The same lines, but the selected person's own are drawn: selecting names every line.

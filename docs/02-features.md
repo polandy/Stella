@@ -835,7 +835,7 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   side never run together. Choosing one re-runs the free arrangement; the tree and the circles
   already measure every name.
 - **Legible when busy:** zoomed far out, names too small to read are dropped rather than
-  smudged; past 40 lines on screen, line names wait until a line is pointed at or a person is
+  smudged; past 40 lines on the map, line names wait until a line is pointed at or a person is
   selected, even with *Labels* on (the menu says so); a person's size grows with the square
   root of their lines, so hubs stay tellable apart without swallowing their neighbours.
 - **Group circles by role:** a big circle — a school class, a sports club — hangs dozens of
@@ -906,7 +906,7 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   **Labels** switch in the toolbar's Filter menu names every line at once; it is on by
   default (remembered per device), since with the repeating kinship lines gone the names left
   are what the map is read by, and it drops any name that would render too small to read. Past
-  40 lines on screen the names pile up around a hub, so they then wait for a line to be pointed
+  40 lines on the map the names pile up around a hub, so they then wait for a line to be pointed
   at or a person selected, whatever the switch says. The **connection
   path** deliberately ignores derived lines: it answers with the chain through the people who
   connect the two, not with the one-word name for that chain (docs/04 §4.9).

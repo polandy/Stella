@@ -573,7 +573,7 @@ lines* in the Filter menu, which draws every one of them. *Filter* at the top sw
 each kind of line on and off and doubles as the legend: it shows each kind in its colour and
 line style, and counts how many are shown, so *Filter 5/6* tells you something is hidden.
 *Labels* in the same menu names every line at once; it starts on, and switching it off leaves
-the names to whoever you select or point at. Once more than 40 lines are on screen the names
+the names to whoever you select or point at. Once the map holds more than 40 lines the names
 would pile up, so they wait for you to point or select even with *Labels* on — the menu says
 when that is happening. Zoomed far out, names that would be too small to read are left off
 until you zoom back in. *Spacing* at the bottom of the menu sets how far apart people stand —
