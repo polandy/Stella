@@ -431,6 +431,12 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   missing key is a compile error, and a message with values is a function whose parameters
   are checked at every call site (minimal-deps rule, §8.8). Revisit if a third language or
   ICU plural forms arrive.
+- **German is loaded on demand, and nothing translates before it arrives** — the root
+  `+layout.ts` awaits the catalogue rather than letting `createTranslator` fall back to
+  English, because the fallback is a flash of the wrong language and a hydration mismatch
+  (§4.4). It halves the chunk every English reader downloads; the cost is one more request
+  before a German page hydrates, since the chunk is fetched by the root load rather than
+  preloaded with the page.
 - **The domain names messages, the edge says them** — a use-case that refuses something
   throws a `TranslatableError` carrying a `Phrase` (key + values), and the import and
   restore reports carry codes rather than sentences. It keeps `domain/` free of a language
