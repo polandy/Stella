@@ -1,7 +1,8 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { describeContact, EmptyDescriptionError, listContacts } from '$lib/server/domain/contacts/contacts';
-import { getAttention, getContactDeps } from '$lib/server/services';
+import { contextOfPeople } from '$lib/server/domain/contacts/person-context';
+import { getAttention, getContactDeps, getPersonContextDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import { isKnownByAFirstNameOnly, suggestedDescription } from '$lib/people/namesakes';
 import type { Actions, PageServerLoad } from './$types';
@@ -14,26 +15,32 @@ import type { Actions, PageServerLoad } from './$types';
  * everyone: *Sibling of Andy Brunner*, never *Your sibling*.
  */
 
-export const load: PageServerLoad = async ({ locals, parent }) => {
+export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
-	const [everyone, touches, { peopleContext }] = await Promise.all([
+	const [everyone, touches] = await Promise.all([
 		listContacts(getContactDeps(), viewer),
-		getAttention().listQuietSourcesVisibleTo(viewer),
-		parent()
+		getAttention().listQuietSourcesVisibleTo(viewer)
 	]);
+	const today = new Date().toLocaleDateString('en-CA');
+	const firstNameOnly = everyone.filter(isKnownByAFirstNameOnly);
+	// Read here rather than taken from the shell, which holds it for namesakes only: a Thomas
+	// nobody else shares a name with still deserves a suggestion from his links.
+	const peopleContext = await contextOfPeople(getPersonContextDeps(), viewer, {
+		people: firstNameOnly,
+		selfContactId: locals.user.selfContactId,
+		today
+	});
 	const t = translator(locals);
 	// When they were last written about is what tells a Thomas worth keeping from one met once.
 	const lastTouchedOn = new Map(touches.map((t) => [t.contactId, t.lastTouchedOn]));
 	return {
-		people: everyone
-			.filter(isKnownByAFirstNameOnly)
-			.map((c) => ({
-				...c,
-				lastTouchedOn: lastTouchedOn.get(c.id) ?? null,
-				suggestion: suggestedDescription(t, everyone, peopleContext[c.id])
-			})),
-		today: new Date().toLocaleDateString('en-CA')
+		people: firstNameOnly.map((c) => ({
+			...c,
+			lastTouchedOn: lastTouchedOn.get(c.id) ?? null,
+			suggestion: suggestedDescription(t, everyone, peopleContext[c.id])
+		})),
+		today
 	};
 };
 

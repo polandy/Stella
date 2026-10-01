@@ -33,7 +33,18 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const shown = showArchived ? archived : contacts;
 
 	return {
-		contacts: shown.map((c) => ({ ...c, lastTouchedOn: lastTouchedOn.get(c.id) ?? null })),
+		// What a row shows and the filter searches (`$lib/people/directory`), not the whole record.
+		contacts: shown.map((c) => ({
+			id: c.id,
+			displayName: c.displayName,
+			firstName: c.firstName,
+			lastName: c.lastName,
+			nickname: c.nickname,
+			description: c.description,
+			avatarPhotoId: c.avatarPhotoId,
+			visibility: c.visibility,
+			lastTouchedOn: lastTouchedOn.get(c.id) ?? null
+		})),
 		archivedCount: archived.length,
 		showArchived,
 		tags,

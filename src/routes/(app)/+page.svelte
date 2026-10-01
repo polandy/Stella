@@ -154,7 +154,7 @@
 {#snippet composer()}
 	{#key `${data.draft}:${editing?.command.id ?? ''}`}
 		<MomentComposer
-			candidates={data.candidates}
+			candidates={data.people}
 			me={{ id: data.user.id, name: data.user.name }}
 			today={data.today}
 			error={editing ? null : (form?.momentError ?? null)}
@@ -205,12 +205,12 @@
 						{#snippet meta()}
 							<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.entryDate}>{keptDay(item.command.payload.entryDate)}</span>
 						{/snippet}
-						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...data.candidates, ...newPeopleAsCandidates(item.command.payload.newPeople)])}</p>
+						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...data.people, ...newPeopleAsCandidates(item.command.payload.newPeople)])}</p>
 					</KeptItem>
 				{:else if isKept(item, 'note.add')}
 					<KeptItem {item} editHref={contactSectionPath(item.command.payload.contactId, 'notes')}>
 						{#snippet meta()}<span>{t('home.outbox.noteOn', { name: item.about ?? '' })}</span>{/snippet}
-						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, data.candidates)}</p>
+						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, data.people)}</p>
 					</KeptItem>
 				{:else if isKept(item, 'interaction.log')}
 					{@const kind = KIND_PRESENTATION[item.command.payload.kind]}
@@ -247,7 +247,7 @@
 							<span>{t('home.outbox.journalOf', { name: item.about ?? '' })}</span>
 							<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle" title={item.command.payload.entryDate}>{keptDay(item.command.payload.entryDate)}</span>
 						{/snippet}
-						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, data.candidates)}</p>
+						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, data.people)}</p>
 					</KeptItem>
 				{:else if isKept(item, 'field.add')}
 					<KeptItem {item}>

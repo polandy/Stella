@@ -222,8 +222,6 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 
 		// What the forms on the page offer.
 		relationshipTypes: read.relationshipTypes,
-		// Candidate targets for a new relationship: everyone visible except this contact.
-		otherContacts: read.allContacts.filter((c) => c.id !== params.id),
 		// `?relate=<id>` pre-selects a person in the relationship form (the stream's link hint, §2.22.1).
 		relateTo: url.searchParams.get('relate'),
 		circleNames: read.allCircles.map((c) => c.name),

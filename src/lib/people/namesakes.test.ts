@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '../i18n/translate';
 import type { ContextTie, PersonContext } from './context';
 import {
+	namesakesOn,
 	contextLineOf,
 	describeDistinction,
 	isKnownByAFirstNameOnly,
@@ -58,6 +59,22 @@ describe('tellApart', () => {
 });
 
 /* The clean-up list's rule (docs/02 §2.2.3): the namesake line's "nothing yet" case, for anyone. */
+describe('namesakesOn', () => {
+	it('keeps exactly the people who share their name with another on the list', () => {
+		const people = [
+			person('a', 'Thomas'),
+			person('b', ' thomas '),
+			person('c', 'Thomas Meier'),
+			person('d', 'Sabine')
+		];
+		expect(namesakesOn(people).map((p) => p.id)).toEqual(['a', 'b']);
+	});
+
+	it('finds none on a list where every name is told apart by itself', () => {
+		expect(namesakesOn([person('a', 'Thomas'), person('b', 'Thomas Meier')])).toEqual([]);
+	});
+});
+
 describe('isKnownByAFirstNameOnly', () => {
 	it('finds a first name with nothing else to tell them apart', () => {
 		expect(isKnownByAFirstNameOnly(person('a', 'Thomas'))).toBe(true);

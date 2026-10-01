@@ -91,17 +91,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		railFirst: hasImminentDate(upcoming),
 		quiet: quietContacts(quietSources, day),
 		linkSuggestion,
-		candidates: contacts.map((c) => ({
-			id: c.id,
-			displayName: c.displayName,
-			firstName: c.firstName,
-			lastName: c.lastName,
-			visibility: c.visibility,
-			description: c.description,
-			metPlace: c.metPlace,
-			metDate: c.metDate,
-			avatarPhotoId: c.avatarPhotoId
-		})),
 		filter,
 		members,
 		stream: items.map((item) =>

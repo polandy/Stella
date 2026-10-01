@@ -81,6 +81,9 @@
 	 * of empty inputs. Below `lg` the columns stack, main column first.
 	 */
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	// Candidate targets for a new relationship: everyone visible but this person, from the
+	// shell's list rather than a second copy of it in this page's data.
+	const otherContacts = $derived(data.people.filter((p) => p.id !== data.contact.id));
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -526,7 +529,7 @@
 	/** "Child of Bert Brunner", for a kept link. */
 	function keptLinkLabel(typeChoice: string, targetId: string): string {
 		const option = relationshipChoices.find((o) => o.value === typeChoice);
-		const target = data.otherContacts.find((p) => p.id === targetId)?.displayName ?? '';
+		const target = otherContacts.find((p) => p.id === targetId)?.displayName ?? '';
 		return option ? `${relationshipTypeLabel(t, option.type, option.side)} ${target}` : target;
 	}
 	const relationshipForm = $derived(
@@ -575,7 +578,7 @@
 		const id = relationshipTargetId[0];
 		if (!id) return null;
 		if (pickedTarget?.id === id) return pickedTarget;
-		return data.otherContacts.find((person) => person.id === id) ?? null;
+		return otherContacts.find((person) => person.id === id) ?? null;
 	});
 	/*
 	 * What the household's own records rule out (docs/02 §2.4). The same pure rules the
@@ -600,7 +603,7 @@
 	const nameOfContact = (contactId: string): string =>
 		contactId === c.id
 			? c.displayName
-			: (data.otherContacts.find((person) => person.id === contactId)?.displayName ?? '');
+			: (otherContacts.find((person) => person.id === contactId)?.displayName ?? '');
 	/*
 	 * The entry the form would post: the one that was picked, or — since the select is read
 	 * rather than bound — the first one that *can* be picked, which is where an untouched
@@ -1164,7 +1167,7 @@
 								<span class="text-xs text-fg-muted">{t('contact.merge.who')}</span>
 								<PersonSearchSelect
 									id="merge-target"
-									people={data.otherContacts}
+									people={otherContacts}
 									name="mergedId"
 									bind:selectedIds={mergeTargetId}
 									placeholder={t('contact.merge.choose')}
@@ -1234,7 +1237,7 @@
 					bind:open={relateOpen}
 				>
 					{#snippet action()}
-						{#if data.otherContacts.length > 0}
+						{#if otherContacts.length > 0}
 							<Button
 								size="sm"
 								icon="connectionPath"
@@ -1287,7 +1290,7 @@
 								</span>
 								<PersonSearchSelect
 									id="path-target"
-									people={data.otherContacts}
+									people={otherContacts}
 									name="pathTarget"
 									bind:selectedIds={pathTargetId}
 								/>
@@ -1584,7 +1587,7 @@
 					{/if}
 
 					{#snippet editor()}
-						{#if data.otherContacts.length > 0}
+						{#if otherContacts.length > 0}
 							<form method="POST" action="?/addRelationship" use:enhance={relationshipForm} class="flex flex-wrap items-end gap-3">
 								<label class="flex flex-1 flex-col gap-1 text-sm">
 									<span class="text-fg-muted">
@@ -1636,7 +1639,7 @@
 									<span class="text-fg-muted">{t('contact.relationships.person')}</span>
 									<PersonSearchSelect
 										id="relationship-target"
-										people={data.otherContacts}
+										people={otherContacts}
 										name="targetId"
 										bind:selectedIds={relationshipTargetId}
 										onPick={(person) => (pickedTarget = person)}
@@ -1730,12 +1733,12 @@
 							</div>
 							<textarea name="description" bind:value={logDescription} rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} class={INPUT}
 							></textarea>
-							{#if data.otherContacts.length > 0}
+							{#if otherContacts.length > 0}
 								<label for="interaction-participants" class="flex flex-col gap-1 text-sm text-fg-muted">
 									{t('contact.interaction.whoElse')}
 									<PersonSearchSelect
 										id="interaction-participants"
-										people={data.otherContacts}
+										people={otherContacts}
 										name="participants"
 										bind:selectedIds={participantIds}
 										multiple
@@ -1771,7 +1774,7 @@
 							{#each keptNotes as item (item.command.id)}
 								<li>
 									<KeptItem {item} onEdit={() => editKeptNote(item)}>
-										<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...data.otherContacts, data.contact])}</p>
+										<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...otherContacts, data.contact])}</p>
 									</KeptItem>
 								</li>
 							{/each}
@@ -1811,7 +1814,7 @@
 								name="body"
 								label={t('contact.notes.label')}
 								required
-								candidates={data.otherContacts}
+								candidates={otherContacts}
 								visibility={noteVisibility}
 								placeholder={t('contact.notes.placeholder')}
 								class="{INPUT} w-full"
