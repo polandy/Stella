@@ -311,14 +311,25 @@ A change is done when:
 How a change travels from idea to `main`. The global rules (no direct commits to `main`, no
 magic literals, no timing-based tests) apply on top of this.
 
-- **One git worktree per feature** under `.claude/worktrees/`, branched from `origin/main` →
-  PR → green CI → **wait for the merge go-ahead**. Merge as a squash with a hand-written
-  Conventional Commit subject; release-please derives the changelog from it.
+- **One git worktree per feature**, beside the checkout (`../Stella-<slug>`) — never under
+  `.claude/`, where Vite's build breaks — branched from `origin/main` → PR → green CI → **wait
+  for the merge go-ahead**. Merge as a squash with a hand-written Conventional Commit subject;
+  release-please derives the changelog from it.
+- **At most two feature PRs open at once.** Parallel PRs touching the same screens collide
+  (two migrations with one number, the same component edited twice), and every merge then
+  costs a catch-up and a second review. Get one tested and merged before starting a third.
 - **A feature PR is complete**: the domain/access change, the UI that exposes it, the matching
   `docs/` page and `using-stella.md` when a user can see it. Never "UI in a follow-up", never
   "docs later".
 - **Run `/pr-review` on your own PR before asking for the go-ahead** — every PR, and its verdict
   comment is the evidence it happened. A missing verdict is a blocker, not a formality.
+  Its depth follows the PR's risk (the skill's *Depth* section): a full review for schema,
+  access, offline-command or new-screen changes, a light one otherwise.
+- **Agents**: implementation goes to the `stella-implementer` agent, reviews to
+  `stella-reviewer` (`.claude/agents/`), which carry these rules so a brief only states scope
+  and decisions. Agents read doc *sections*, not whole docs; never run `bun run test:e2e`
+  (CI does, on every push); and read a red run with `scripts/ci-failures.sh <PR>` before
+  reaching for the full log.
 - **A UI change ships a running Playwright case**, added after the owner's OK (§8.4.1). It
   asserts what is *rendered*, never only the URL, and never waits on a timeout: if nothing
   observable exists to wait on, that absence is the defect — give the production code a signal.
