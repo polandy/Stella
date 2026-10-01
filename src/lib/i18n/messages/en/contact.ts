@@ -211,6 +211,9 @@ export const contact = {
 	'contact.photos.caption': 'Caption',
 	'contact.photos.share': 'Share with the household',
 	'contact.photos.makePrivate': 'Make private',
+	'contact.photos.favourite': 'Favourite',
+	'contact.photos.pin': 'Pin as favourite',
+	'contact.photos.unpin': 'Unpin favourite',
 
 	'contact.mentions.in': 'in',
 	'contact.mentions.notes': 'notes',

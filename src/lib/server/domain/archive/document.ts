@@ -136,6 +136,8 @@ export function buildArchiveDocument(
 			// Set on the square a photo is worn through as the avatar (docs/02 §2.14).
 			framing_of: text(row, 'framing_of'),
 			crop: framingCrop(row),
+			// When the household made it one of the person's favourites (docs/02 §2.14).
+			pinned_at: moment(row, 'pinned_at'),
 			visibility: text(row, 'visibility'),
 			author: text(row, 'created_by'),
 			created_at: moment(row, 'created_at')

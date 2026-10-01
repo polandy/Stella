@@ -103,7 +103,7 @@ interface Command {
 - photos for a person's gallery.
 
 Setting a field on someone who already exists is a *change*, even when the field was empty:
-the birth date on their profile, a name, a photo as avatar. Answering a suggestion or the household review is
+the birth date on their profile, a name, a photo as avatar, pinning a photo as a favourite. Answering a suggestion or the household review is
 a change too. None of these are queued.
 
 Every form that adds works on its cached page as it does online. A relationship is the

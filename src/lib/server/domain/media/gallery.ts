@@ -1,7 +1,9 @@
 import { TranslatableError } from '../../../errors/translatable';
 import { phrase } from '../../../i18n/phrase';
 import type { Viewer, Visibility } from '../../access/visibility';
+import type { Clock } from '../../clock';
 import type { GalleryPhoto, MediaStore, PhotoRepository } from './avatars';
+import { orderGallery } from './gallery-order';
 
 /*
  * The photo gallery on a person (docs/02 §2.14).
@@ -23,15 +25,35 @@ export class CaptionTooLongError extends TranslatableError {
 export interface GalleryDeps {
 	photos: PhotoRepository;
 	media: MediaStore;
+	clock: Clock;
 }
 
-/** The gallery photos of a contact that this viewer may see, newest first. */
+/** The gallery photos of a contact that this viewer may see: favourites first, then newest first. */
 export async function listGallery(
 	deps: Pick<GalleryDeps, 'photos'>,
 	viewer: Viewer,
 	contactId: string
 ): Promise<GalleryPhoto[]> {
-	return deps.photos.listGalleryPhotos(viewer, contactId);
+	return orderGallery(await deps.photos.listGalleryPhotos(viewer, contactId));
+}
+
+/**
+ * Pin a photo as one of a person's favourites, or unpin it (docs/02 §2.14). A pin belongs to
+ * the household, like the photo itself (docs/04 §4.9): anyone who can see the photo may pin
+ * it, and everyone who sees it sees it pinned. Pinning a photo that is already pinned keeps
+ * its first pin, so sending the same pin twice changes nothing. False when the viewer cannot
+ * see the photo — the same answer whether or not it exists.
+ */
+export async function pinGalleryPhoto(
+	deps: Pick<GalleryDeps, 'photos' | 'clock'>,
+	viewer: Viewer,
+	input: { contactId: string; photoId: string; pinned: boolean }
+): Promise<boolean> {
+	const photo = await deps.photos.findVisibleGalleryPhoto(viewer, input.contactId, input.photoId);
+	if (!photo) return false;
+	if (input.pinned === (photo.pinnedAt !== null)) return true;
+	await deps.photos.setGalleryPhotoPin(photo.id, input.pinned ? deps.clock.now() : null);
+	return true;
 }
 
 /**
