@@ -314,17 +314,15 @@ interface ExclusionCheck {
 	nameOf: (contactId: string) => string;
 }
 
-/**
- * What the exclusion rules need to judge a claim made from `subjectId`'s profile, read from
- * the two snapshots the repository has already scoped to the viewer. Only partnerships that
- * still hold are passed on — that is the escape a household needs, because a marriage marked
- * former stops standing in the way of the next one.
- */
 /** The two reads an exclusion check is made of. */
 type ExclusionSource = {
 	relationships: Pick<RelationshipRepository, 'loadKinshipGraphVisibleTo' | 'listForContactVisibleTo'>;
 };
 
+/**
+ * What the exclusion rules need to judge a claim made from `subjectId`'s profile, read from
+ * the two snapshots the repository has already scoped to the viewer.
+ */
 async function loadExclusionCheck(
 	deps: ExclusionSource,
 	viewer: Viewer,
@@ -341,6 +339,8 @@ async function loadExclusionCheck(
 /**
  * The exclusion facts out of a graph and the subject's own ties that were already read — the
  * person page reads both for other cards, and asking the store again would only repeat them.
+ * Only partnerships that still hold are passed on — that is the escape a household needs,
+ * because a marriage marked former stops standing in the way of the next one.
  */
 export function exclusionFactsFrom(
 	graph: KinshipGraph,
