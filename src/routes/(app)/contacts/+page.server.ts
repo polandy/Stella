@@ -1,5 +1,9 @@
 import { redirect } from '@sveltejs/kit';
-import { listArchivedContacts, listContacts } from '$lib/server/domain/contacts/contacts';
+import {
+	countArchivedContacts,
+	listArchivedContacts,
+	listContacts
+} from '$lib/server/domain/contacts/contacts';
 import { listContactsByTag, listTags } from '$lib/server/domain/tags/tags';
 import { getAttention, getContactDeps, getTagDeps } from '$lib/server/services';
 import type { PageServerLoad } from './$types';
@@ -18,23 +22,23 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// archived ones are by definition not among them.
 	const showArchived = url.searchParams.has('archived');
 
-	// The archived list is loaded either way, because its size is what the chip says — and
-	// a chip that leads to an empty room is worse than no chip.
-	const [tags, archived, contacts, touches] = await Promise.all([
+	// The archive's size is what the chip says — and a chip that leads to an empty room is
+	// worse than no chip — so it is counted either way; the list only when it is shown.
+	const [tags, archivedCount, contacts, touches] = await Promise.all([
 		listTags(getTagDeps(), locals.user.householdId),
-		listArchivedContacts(getContactDeps(), viewer),
-		activeTag
-			? listContactsByTag(getTagDeps(), viewer, activeTag)
-			: listContacts(getContactDeps(), viewer),
+		countArchivedContacts(getContactDeps(), viewer),
+		showArchived
+			? listArchivedContacts(getContactDeps(), viewer)
+			: activeTag
+				? listContactsByTag(getTagDeps(), viewer, activeTag)
+				: listContacts(getContactDeps(), viewer),
 		getAttention().listQuietSourcesVisibleTo(viewer)
 	]);
 	const lastTouchedOn = new Map(touches.map((t) => [t.contactId, t.lastTouchedOn]));
 
-	const shown = showArchived ? archived : contacts;
-
 	return {
 		// What a row shows and the filter searches (`$lib/people/directory`), not the whole record.
-		contacts: shown.map((c) => ({
+		contacts: contacts.map((c) => ({
 			id: c.id,
 			displayName: c.displayName,
 			firstName: c.firstName,
@@ -45,7 +49,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			visibility: c.visibility,
 			lastTouchedOn: lastTouchedOn.get(c.id) ?? null
 		})),
-		archivedCount: archived.length,
+		archivedCount,
 		showArchived,
 		tags,
 		// The archive is its own view; a tag left in the URL would otherwise make the header

@@ -1,6 +1,7 @@
 import type { JournalPhotoRef } from '$lib/server/domain/media/avatars';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import type { StoryItem } from '$lib/server/domain/story/story';
+import { extractMentionIds } from '$lib/mentions/mentions';
 import { authorLabel } from '$lib/story/author';
 import type { StoryItemView } from '$lib/story/item';
 
@@ -23,6 +24,20 @@ export function photosByEntry(photos: readonly JournalPhotoRef[]): Map<string, s
 		grouped.set(photo.journalEntryId, list);
 	}
 	return grouped;
+}
+
+/** The people the journal entries among `items` mention, each once — the names a page needs. */
+export function mentionIdsOf(items: readonly StoryItem[]): string[] {
+	const ids = new Set<string>();
+	for (const item of items) {
+		if (item.kind === 'journal') for (const id of extractMentionIds(item.entry.body)) ids.add(id);
+	}
+	return [...ids];
+}
+
+/** The journal entries among `items` — the ones whose photos a page shows. */
+export function entryIdsOf(items: readonly StoryItem[]): string[] {
+	return items.flatMap((item) => (item.kind === 'journal' ? [item.entry.id] : []));
 }
 
 /**

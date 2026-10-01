@@ -3,6 +3,7 @@
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import FrameAsAvatar from '$lib/components/FrameAsAvatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 	import KinSuggestions from '$lib/components/KinSuggestions.svelte';
 	import DateField from '$lib/components/DateField.svelte';
 	import RelationshipMap from '$lib/components/graph/RelationshipMap.svelte';
@@ -1470,7 +1471,12 @@
 						</ul>
 
 						{:else}
-						<p class="text-sm text-fg-subtle">{t('contact.relationships.none')}</p>
+						<!-- In place of the map: what it would show, and the step that starts it. -->
+						<EmptyState compact icon="graph" title={t('contact.relationships.none', { name: c.displayName })} hint={t('contact.relationships.noneHint')}>
+							{#if !relateOpen}
+								<Button variant="primary" size="sm" icon="add" type="button" onclick={() => (relateOpen = true)}>{t('contact.relationships.addFirst', { name: c.displayName })}</Button>
+							{/if}
+						</EmptyState>
 					{/if}
 
 					<!--
@@ -1815,7 +1821,7 @@
 							{/each}
 						</ul>
 					{:else}
-						<p class="text-sm text-fg-subtle">{t('contact.notes.none')}</p>
+						<p class="text-sm text-fg-subtle">{t('contact.notes.none', { name: c.displayName })}</p>
 					{/if}
 
 					{#snippet editor()}
@@ -1898,7 +1904,7 @@
 							{/each}
 						</ul>
 					{:else}
-						<p class="text-sm text-fg-subtle">{t('contact.photos.none')}</p>
+						<p class="text-sm text-fg-subtle">{t('contact.photos.none', { name: c.displayName })}</p>
 					{/if}
 
 					{#snippet editor()}

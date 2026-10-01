@@ -116,7 +116,9 @@ const ContactAdd = v.pipe(
 		birthDate: optionalText,
 		// Left out by a build from before the field, which is the same as none chosen.
 		gender: v.optional(v.nullable(v.picklist(GENDERS)), null),
-		visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
+		visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
+		// "This is me" (docs/02 §2.1.3); absent from a build that predates it, which means no.
+		isSelf: v.optional(v.boolean(), false)
 	}),
 	// A person needs something to be called by (docs/02 §2.2).
 	v.check((p) => Boolean(p.firstName || p.lastName || p.nickname))

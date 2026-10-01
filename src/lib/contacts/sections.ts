@@ -50,3 +50,12 @@ export function sectionForLegacyTab(value: string | null): ContactSection | null
 		? SECTION_FOR_LEGACY_TAB[value as keyof typeof SECTION_FOR_LEGACY_TAB]
 		: null;
 }
+
+/**
+ * A person's page with the relationship form already open and nobody chosen (docs/02 §2.4) —
+ * where every "link them to somebody" invitation leads. `?relate=<id>` names the other end;
+ * left empty, it only opens the form.
+ */
+export function addRelationshipPath(contactId: string): string {
+	return `/contacts/${contactId}?relate=#${sectionAnchor('relationships')}`;
+}

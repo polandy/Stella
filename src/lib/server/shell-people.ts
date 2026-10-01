@@ -1,8 +1,9 @@
 import type { AuthUser } from './auth/accounts';
 import { listContacts } from './domain/contacts/contacts';
 import { contextOfPeople } from './domain/contacts/person-context';
+import { peopleStampOf } from './domain/contacts/people-stamp';
 import { namesakesOn } from '../people/namesakes';
-import { getContactDeps, getPersonContextDeps } from './services';
+import { getContactDeps, getPeopleStampDeps, getPersonContextDeps } from './services';
 
 /*
  * The people the app shell carries for the ⌘K palette and every picker (docs/05 §5.4), with
@@ -15,12 +16,17 @@ import { getContactDeps, getPersonContextDeps } from './services';
 /** The shell's people as `user` may see them, and the stamp of exactly that. */
 export async function readShellPeople(user: AuthUser) {
 	const viewer = { id: user.id, householdId: user.householdId };
-	const contacts = await listContacts(getContactDeps(), viewer);
+	// One reading of the clock, so the context and its stamp are about the same day.
+	const today = new Date().toLocaleDateString('en-CA');
+	const [contacts, peopleStamp] = await Promise.all([
+		listContacts(getContactDeps(), viewer),
+		stampFor(user, today)
+	]);
 	// Only namesakes are ever given a second line, so only their links and circles are read.
 	const peopleContext = await contextOfPeople(getPersonContextDeps(), viewer, {
 		people: namesakesOn(contacts),
 		selfContactId: user.selfContactId,
-		today: new Date().toLocaleDateString('en-CA')
+		today
 	});
 	const people = contacts.map((p) => ({
 		id: p.id,
@@ -38,8 +44,20 @@ export async function readShellPeople(user: AuthUser) {
 		metPlace: p.metPlace,
 		metDate: p.metDate
 	}));
-	return { people, peopleContext, peopleStamp: stampOf({ people, peopleContext }) };
+	return { people, peopleContext, peopleStamp };
 }
 
-/** A short fingerprint of what the shell would send; equal exactly when the content is. */
-const stampOf = (shell: unknown) => Bun.hash(JSON.stringify(shell)).toString(36);
+/**
+ * The stamp alone, for `GET /api/people/stamp`: a few aggregates instead of the list and its
+ * context, because it is asked after every client-side navigation (docs/04 §4.9).
+ */
+export function readPeopleStamp(user: AuthUser): Promise<string> {
+	return stampFor(user, new Date().toLocaleDateString('en-CA'));
+}
+
+/** A short fingerprint of the markers the shell's people are read from (`peopleStampOf`). */
+async function stampFor(user: AuthUser, today: string): Promise<string> {
+	const viewer = { id: user.id, householdId: user.householdId };
+	const markers = await peopleStampOf(getPeopleStampDeps(), viewer, { selfContactId: user.selfContactId, today });
+	return Bun.hash(markers).toString(36);
+}

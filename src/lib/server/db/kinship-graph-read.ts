@@ -47,6 +47,22 @@ export function loadKinshipGraph(
 		.where(relationshipVisibleTo(viewer, fromC, toC))
 		.all();
 
+	return kinshipGraphOf(people, rows);
+}
+
+/** A visible link as the kinship engine reads it: its two ends, its type and whether it holds. */
+export interface KinshipLinkRow {
+	fromId: string;
+	toId: string;
+	key: string;
+	status: string;
+}
+
+/**
+ * The engine's input from rows already scoped to the viewer. Shared with the graph repository,
+ * which reads the same people and links for the explorer and builds both from the one read.
+ */
+export function kinshipGraphOf(people: KinPerson[], rows: readonly KinshipLinkRow[]): KinshipGraph {
 	const parentEdges: ParentEdge[] = [];
 	const siblingEdges: Pair[] = [];
 	const partnerEdges: PartnerEdge[] = [];

@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'bun:test';
-import type { Interaction } from '$lib/server/domain/interactions/interactions';
+import type { GraphModel } from '$lib/graph/model/types';
 import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import type { Note } from '$lib/server/domain/notes/notes';
 import {
 	birthdayOf,
 	declinedBy,
 	fieldView,
-	interactionView,
+	circleNamesIn,
 	mentionedInView,
 	noteView,
+	peopleNamedIn,
 	type PersonViewContext
 } from './person-view';
 
@@ -51,36 +52,6 @@ describe('birthdayOf', () => {
 	it('gives way to a birthday entered as a date of its own (docs/02 §2.13.2)', () => {
 		const dates = [{ kind: 'birthday' as const }];
 		expect(birthdayOf({ birthDate: '1980-04-12', birthDatePrecision: 'full' }, dates).derivedBirthday).toBeNull();
-	});
-});
-
-function interaction(overrides: Partial<Interaction> = {}): Interaction {
-	return {
-		id: 'i1',
-		contactId: 'c1',
-		createdBy: VIEWER,
-		visibility: 'shared',
-		kind: 'call',
-		happenedAt: '2026-09-01',
-		title: 'Catch-up',
-		description: null,
-		createdAt: 1,
-		updatedAt: 1,
-		participants: [{ contactId: 'c-anna', displayName: 'Anna Brunner', avatarPhotoId: 'p1' }],
-		...overrides
-	};
-}
-
-describe('interactionView', () => {
-	it('marks the viewer’s own touchpoints, which are the ones they may remove', () => {
-		expect(interactionView(interaction(), VIEWER).mine).toBe(true);
-		expect(interactionView(interaction({ createdBy: 'user-2' }), VIEWER).mine).toBe(false);
-	});
-
-	it('names the participants and sends nothing else about them', () => {
-		expect(interactionView(interaction(), VIEWER).participants).toEqual([
-			{ contactId: 'c-anna', displayName: 'Anna Brunner' }
-		]);
 	});
 });
 
@@ -152,5 +123,34 @@ describe('declinedBy', () => {
 			{ dismissed: { by: 'user-gone', at: 2 } }
 		];
 		expect(declinedBy(suggestions, context().nameOfAuthor)).toEqual({ 'user-2': 'Hans Brunner', 'user-gone': null });
+	});
+});
+
+/*
+ * The person page names people and circles from the visible graph it reads for the map,
+ * instead of reading the household's names and circles again (docs/04 §4.11).
+ */
+describe('names out of the visible graph', () => {
+	const graph: GraphModel = {
+		nodes: [
+			{ id: 'c-zora', kind: 'person', label: 'Zora' },
+			{ id: 'circle-b', kind: 'circle', label: 'Schule' },
+			{ id: 'c-anna', kind: 'person', label: 'Anna Brunner' },
+			{ id: 'circle-a', kind: 'circle', label: 'Chor' },
+			{ id: 'circle-c', kind: 'circle', label: 'Ärzte' }
+		],
+		edges: []
+	};
+
+	it('names every person in it, and only people', () => {
+		expect(peopleNamedIn(graph)).toEqual([
+			{ id: 'c-zora', displayName: 'Zora' },
+			{ id: 'c-anna', displayName: 'Anna Brunner' }
+		]);
+	});
+
+	it("lists the circles' names in the order the database sorts them", () => {
+		// SQLite's default collation compares bytes, so an umlaut sorts after every ASCII letter.
+		expect(circleNamesIn(graph)).toEqual(['Chor', 'Schule', 'Ärzte']);
 	});
 });

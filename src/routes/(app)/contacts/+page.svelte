@@ -7,6 +7,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { accentChipStyle } from '$lib/design/tokens';
 	import { groupByLetter, matchesQuery } from '$lib/people/directory';
+	import { newPersonHref } from '$lib/people/new-person';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -101,7 +102,17 @@
 			<Button variant="primary" icon="add" href="/contacts/new">{t('nav.addPerson')}</Button>
 		</EmptyState>
 	{:else if found.length === 0}
-		<p class="px-2 py-6 text-center text-sm text-fg-muted" role="status">{t('contacts.noMatch', { query })}</p>
+		<!-- A status, so a screen reader hears that the list emptied. Not from the archive: nobody
+		     there matching says nothing about who is missing, so it offers no new person. -->
+		<div role="status">
+			{#if data.showArchived}
+				<EmptyState icon="search" title={t('contacts.noMatch', { query })} />
+			{:else}
+				<EmptyState icon="search" title={t('contacts.noMatch', { query })} hint={t('contacts.noMatchHint')}>
+					<Button variant="primary" icon="add" href={newPersonHref({ name: query })}>{t('contacts.addNamed', { name: query.trim() })}</Button>
+				</EmptyState>
+			{/if}
+		</div>
 	{:else}
 		<div class="flex flex-col gap-4" data-testid="people-directory">
 			{#if !data.showArchived}

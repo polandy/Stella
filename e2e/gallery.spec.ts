@@ -67,7 +67,7 @@ test.beforeEach(async ({ page }) => {
 
 test('adds photos, captions one, and keeps the caption on the picture it belongs to', async ({ page }) => {
 	await openPhotos(page, PHOTOGRAPHED);
-	await expect(page.getByText('No photos yet.')).toBeVisible();
+	await expect(page.getByText(/^No photos of .+ yet\./)).toBeVisible();
 
 	await addPhotos(page, [file('lake.png'), file('boat.png')]);
 	const grid = page.getByTestId('photo-grid');
@@ -124,7 +124,7 @@ test('wears a gallery photo as the avatar, and gives it back when the photo is r
 	// Removing the photo takes the face with it rather than leaving a broken one.
 	await lightbox.getByRole('button', { name: 'Remove' }).click();
 	await await expect(page.locator('#section-photos > header')).toContainText('0');
-	await expect(page.getByText('No photos yet.')).toBeVisible();
+	await expect(page.getByText(/^No photos of .+ yet\./)).toBeVisible();
 	await expect(avatar).toHaveCount(0);
 });
 

@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
 	CONTACT_SECTIONS,
+	addRelationshipPath,
 	contactSectionPath,
 	SECTION_FOR_LEGACY_TAB,
 	SECTION_FOR_REFERENCE,
@@ -19,6 +20,17 @@ describe('sectionAnchor', () => {
 describe('contactSectionPath', () => {
 	test('points at the card on that person’s page', () => {
 		expect(contactSectionPath('c-1', 'photos')).toBe('/contacts/c-1#section-photos');
+	});
+});
+
+describe('addRelationshipPath', () => {
+	test('opens the relationship form on that person’s page, with nobody picked yet', () => {
+		const url = new URL(addRelationshipPath('c-1'), 'http://stella.test');
+
+		expect(url.pathname).toBe('/contacts/c-1');
+		// The page opens its form for any `relate`, and names the other end only when it is set.
+		expect(url.searchParams.get('relate')).toBe('');
+		expect(url.hash).toBe('#section-relationships');
 	});
 });
 

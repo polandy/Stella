@@ -27,6 +27,7 @@ export const journal: JournalMessages = {
 	'journal.empty.title': 'Noch keine Tagebucheinträge.',
 	'journal.empty.hint': (p) =>
 		`Halte ${p.name}s ersten Moment fest — einen Meilenstein, einen lustigen Spruch, einen guten Tag.`,
+	'journal.empty.write': 'Ersten Eintrag schreiben',
 	'journal.uploadFailed':
 		'Konnte nicht gespeichert werden. Versuche es mit üblichen JPEG- oder PNG-Bildern.'
 };

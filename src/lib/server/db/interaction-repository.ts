@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, lt, or } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, max, or } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo, contactColumnsVisibleTo } from '../access/query-scoping';
@@ -148,6 +148,16 @@ export function createDrizzleInteractionRepository(
 				.limit(opts.limit)
 				.all();
 			return withParticipants(viewer, rows);
+		},
+
+		async lastHappenedOnVisibleTo(viewer: Viewer, contactId: string): Promise<string | null> {
+			const row = db
+				.select({ day: max(interaction.happenedAt) })
+				.from(interaction)
+				.innerJoin(contact, eq(interaction.contactId, contact.id))
+				.where(and(eq(interaction.contactId, contactId), visibleToViewer(viewer)))
+				.get();
+			return row?.day ?? null;
 		},
 
 		async deleteOwn(p: { authorId: string; id: string }): Promise<boolean> {
