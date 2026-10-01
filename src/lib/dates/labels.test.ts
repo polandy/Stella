@@ -4,7 +4,6 @@ import { createTranslator } from '$lib/i18n/translate';
 import {
 	dayLabel,
 	occasionLabel,
-	quietLabel,
 	sinceLabel,
 	whenLabel,
 	type DateLanguage
@@ -71,17 +70,6 @@ describe('dayLabel', () => {
 	});
 });
 
-describe('quietLabel', () => {
-	test('rounds a silence to the unit someone would say out loud', () => {
-		expect(quietLabel(en, 90)).toBe('3 months');
-		expect(quietLabel(en, 120)).toBe('4 months');
-		expect(quietLabel(en, 365)).toBe('a year');
-		expect(quietLabel(en, 730)).toBe('2 years');
-		expect(quietLabel(en, 45)).toBe('6 weeks');
-		expect(quietLabel(en, 12)).toBe('12 days');
-	});
-});
-
 describe('sinceLabel', () => {
 	test('says nothing when nothing was ever written, so the screen can show a dash', () => {
 		expect(sinceLabel(en, null, '2026-09-05')).toBeNull();
@@ -110,7 +98,6 @@ describe('in German', () => {
 	});
 
 	test('words a silence the way it is said in German', () => {
-		expect(quietLabel(de, 365)).toBe('ein Jahr');
 		expect(sinceLabel(de, '2026-08-26', '2026-09-05')).toBe('vor 10 Tagen');
 	});
 });

@@ -60,7 +60,7 @@ import type {
 } from './domain/contact-fields/contact-fields';
 import type { SearchDeps, SearchRepository } from './domain/search/search';
 import type { StoryDeps } from './domain/story/story';
-import type { AttentionRepository } from './domain/attention/quiet';
+import type { AttentionRepository } from './domain/attention/last-touched';
 import type { ContactDeps, ContactRepository } from './domain/contacts/contacts';
 import type { NameCandidateSource, SuggestionDeps } from './domain/contacts/suggestions';
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';

@@ -2,38 +2,26 @@ import { eq, max } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo, contactBrowsableBy } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import type { AttentionRepository, QuietSource } from '../domain/attention/quiet';
+import type { AttentionRepository, LastTouched } from '../domain/attention/last-touched';
 import type * as schema from './schema';
 import { contact, interaction, journalEntry } from './schema';
 
 /*
- * Drizzle adapter for the AttentionRepository port (docs/02 §2.12). Three scoped reads rather
+ * Drizzle adapter for the AttentionRepository port (docs/02 §2.2). Three scoped reads rather
  * than one triple join: the latest journal day and the latest touchpoint day are each grouped
  * per contact under `childRecordVisibleTo`, so a private entry the viewer may not see cannot
  * count as attention from their chair. The contact rows themselves come through
  * `contactVisibleTo`, the only authz path.
  */
 
-/** SQLite has no boolean; `is_deceased` is 0/1. */
-const asBool = (value: number) => value === 1;
-
-/** `contact.created_at` is epoch milliseconds; the domain reasons in ISO days. */
-const dayOf = (epochMs: number) => new Date(epochMs).toISOString().slice(0, 10);
-
 /** Build the AttentionRepository adapter over a Drizzle handle. */
 export function createDrizzleAttentionRepository(
 	db: BunSQLiteDatabase<typeof schema>
 ): AttentionRepository {
 	return {
-		async listQuietSourcesVisibleTo(viewer: Viewer): Promise<QuietSource[]> {
+		async listLastTouchedVisibleTo(viewer: Viewer): Promise<LastTouched[]> {
 			const people = db
-				.select({
-					contactId: contact.id,
-					contactName: contact.displayName,
-					avatarPhotoId: contact.avatarPhotoId,
-					isDeceased: contact.isDeceased,
-					createdAt: contact.createdAt
-				})
+				.select({ contactId: contact.id })
 				.from(contact)
 				.where(contactBrowsableBy(viewer))
 				.all();
@@ -64,10 +52,6 @@ export function createDrizzleAttentionRepository(
 
 			return people.map((p) => ({
 				contactId: p.contactId,
-				contactName: p.contactName,
-				avatarPhotoId: p.avatarPhotoId,
-				isDeceased: asBool(p.isDeceased),
-				knownSince: dayOf(p.createdAt),
 				lastTouchedOn: lastTouched.get(p.contactId) ?? null
 			}));
 		}

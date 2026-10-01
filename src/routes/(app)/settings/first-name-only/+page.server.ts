@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 	const [everyone, touches] = await Promise.all([
 		listContacts(getContactDeps(), viewer),
-		getAttention().listQuietSourcesVisibleTo(viewer)
+		getAttention().listLastTouchedVisibleTo(viewer)
 	]);
 	const today = new Date().toLocaleDateString('en-CA');
 	const firstNameOnly = everyone.filter(isKnownByAFirstNameOnly);

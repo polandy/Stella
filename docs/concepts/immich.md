@@ -200,8 +200,6 @@ Following the GitHub release feed, the existing outbound-call pattern
 - **Writing back** — Stella knows full names and birthdays Immich lacks; Immich shows ages
   on photos from them. One tap, *"Give Immich Julia's name and birthday"*, needs
   `person.update` on the key. It comes after reading has been lived with.
-- **"Last photo together"** as evidence for *haven't seen in a while* on Home (docs/02 §2.12): the newest
-  photo of two people is cheap to get and an honest sign of meeting.
 - **Suggesting people** from Immich faces that are named but not in Stella yet.
 - **More than one library**: per-member keys, or Immich 3.3 person sharing, if photos in the
   other members' libraries turn out to be missed.

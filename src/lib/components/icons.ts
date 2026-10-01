@@ -23,7 +23,6 @@ import {
 	Mail,
 	MessageCircle,
 	Minimize,
-	Moon,
 	Phone,
 	Plus,
 	Route,
@@ -96,7 +95,6 @@ export const ICONS = {
 	// A step already taken, on the first-run card (docs/02 §2.22.3).
 	done: Check,
 	calendar: CalendarDays,
-	quiet: Moon,
 	shared: UsersRound,
 	// Interaction kinds (docs/02 §2.6)
 	met: Handshake,
