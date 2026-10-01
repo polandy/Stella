@@ -80,7 +80,9 @@ export async function seedHousehold(
 	/** Circles with their members' roles, likewise the setting of a case. */
 	circles: readonly SeedCircle[] = [],
 	/** Types of the household's own that `links` may name, likewise the setting of a case. */
-	types: readonly SeedType[] = []
+	types: readonly SeedType[] = [],
+	/** Who has died, by full name, likewise the setting of a case. */
+	deceased: readonly string[] = []
 ): Promise<void> {
 	const document = {
 		format: ARCHIVE_FORMAT,
@@ -93,7 +95,8 @@ export async function seedHousehold(
 				display_name: name,
 				first_name: first,
 				last_name: rest.join(' '),
-				gender: genders[name] ?? null
+				gender: genders[name] ?? null,
+				deceased: deceased.includes(name) ? true : null
 			};
 		}),
 		relationship_types: types.map((type) => ({
