@@ -113,9 +113,14 @@ Goal: sand the edges and add the nice-to-haves.
 
 - ~~**Localization:** German with a language switcher~~ — shipped: English and German are
   both fully supported, chosen per member and kept with the profile (§2.19).
-- **Graph & UX polish:** photo reordering, saved graph
-  filters, density/appearance refinements. ~~Group a circle's members by role~~ — shipped:
-  a *Group by role* switch in the explorer's Filter menu (§2.7).
+- **Graph & UX polish:** photo reordering, saved graph filters. ~~Group a circle's
+  members by role~~ — shipped: a *Group by role* switch in the explorer's Filter menu (§2.7).
+  ~~Density/appearance refinements~~ — shipped (§2.7, docs/05 §5.8): a busy map stays
+  legible, with a density choice and a *+N* hint on a node that has more to expand.
+  ~~Walk the map from the keyboard~~ — shipped (§2.7): arrow keys step from person to person
+  and a screen reader hears who is under the cursor. ~~Favourite photos first~~ — shipped
+  (§2.14): *Pin as favourite* puts a photo at the front of a person's gallery for the whole
+  household; a free reordering beyond that is still open.
 - ~~**Photos in every person picker**~~ — shipped (docs/05 §5.10): search results, the person
   pickers (Circles' *Add member*, the relationship form, …) and the @-lists show a person's
   photo instead of their initials whenever they have one.
@@ -185,7 +190,14 @@ Goal: sand the edges and add the nice-to-haves.
   them* together, and *Use as photo*. One read-only household key set by the admin; images
   go through a signed proxy and follow the contact's visibility. Built in five slices; the
   decisions are in `docs/concepts/immich.md` §9.
-- Performance passes, empty-state and onboarding refinements, accessibility audit.
+- ~~**Performance passes**~~ — shipped: each list of people is sent once, repeated lookups
+  are backed by indexes, and the person page reads its family once instead of the household
+  per page.
+- ~~**Empty-state and onboarding refinements**~~ — shipped (§2.22): a new household is
+  welcomed on Home with the first steps to take, ticked off as they are done, and every empty
+  state names the next step instead of only saying nothing is there.
+- ~~**Accessibility audit**~~ — shipped (§2.19): photo links are named, overlays are real
+  dialogs, contrast in Latte is lifted, and the audit's remaining findings are closed.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
 
