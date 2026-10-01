@@ -42,6 +42,8 @@ import type { ArchiveDeps, ArchiveRepository } from './domain/archive/archive';
 import type { ImportArchiveDeps, RestoreRepository } from './domain/archive/import';
 import { createDrizzleRelationshipRepository } from './db/relationship-repository';
 import { createDrizzlePersonContextReads } from './db/person-context-reads';
+import { createDrizzlePeopleStampReads } from './db/people-stamp-reads';
+import type { PeopleStampDeps } from './domain/contacts/people-stamp';
 import type { PersonContextDeps } from './domain/contacts/person-context';
 import { withNamesakeContext, type NamesakeContextDeps } from './domain/mentions/namesake-context';
 import { createDrizzleSuggestionDismissalRepository } from './db/suggestion-dismissal-repository';
@@ -68,6 +70,7 @@ import type {
 	SuggestionDismissalRepository,
 	SuggestionReviewDeps
 } from './domain/relationships/suggestion-review';
+import type { FamilyReadDeps } from './domain/relationships/family';
 import type {
 	RelationshipTypeDeps,
 	RelationshipTypeRepository
@@ -97,7 +100,7 @@ import type { ImportDeps, ImportRepository } from './domain/import/apply';
 import type { ApiImportDeps } from './domain/import/api/api-import';
 import type { ImportedPhotoDeps } from './domain/import/monica/photos';
 import type { InteractionDeps, InteractionRepository } from './domain/interactions/interactions';
-import type { AvatarDeps, MediaStore, PhotoRepository } from './domain/media/avatars';
+import type { AvatarDeps, MediaStore, MediaStreamSource, PhotoRepository } from './domain/media/avatars';
 import type { FramingDeps, FramingRepository } from './domain/media/framing';
 import type { GalleryDeps } from './domain/media/gallery';
 import type { GalleryUploadDeps } from './domain/media/gallery-upload';
@@ -217,6 +220,11 @@ export function getPersonContextDeps(): PersonContextDeps {
 	return { contextReads: createDrizzlePersonContextReads(getDb()) };
 }
 
+/** Deps for the stamp of the shell's people (docs/04 §4.9). */
+export function getPeopleStampDeps(): PeopleStampDeps {
+	return { stamps: createDrizzlePeopleStampReads(getDb()) };
+}
+
 /** What a refused `@Thomas` names each Thomas by, a namesake with nothing typed included. */
 export function getNamesakeContextDeps(): NamesakeContextDeps {
 	return {
@@ -298,6 +306,15 @@ export function getSuggestionReviewDeps(): SuggestionReviewDeps {
 		dismissals: getSuggestionDismissals(),
 		ids: ulidGenerator,
 		clock: systemClock
+	};
+}
+
+/** Deps for the family cards of the person page, read in one go (docs/04 §4.11). */
+export function getFamilyReadDeps(): FamilyReadDeps {
+	return {
+		family: getGraphRepository(),
+		relationships: getRelationships(),
+		dismissals: getSuggestionDismissals()
 	};
 }
 
@@ -446,7 +463,7 @@ export function getImportArchiveDeps(): ImportArchiveDeps {
 	};
 }
 
-let mediaStore: MediaStore | null = null;
+let mediaStore: (MediaStore & MediaStreamSource) | null = null;
 
 export function getPhotos(): PhotoRepository {
 	return photoAdapter();
@@ -457,7 +474,7 @@ function photoAdapter(): PhotoRepository & FramingRepository {
 	return (photoRepository ??= createDrizzlePhotoRepository(getDb()));
 }
 
-export function getMediaStore(): MediaStore {
+export function getMediaStore(): MediaStore & MediaStreamSource {
 	return (mediaStore ??= createFileMediaStore(getConfig().mediaDir));
 }
 

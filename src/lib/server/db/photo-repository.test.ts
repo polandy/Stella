@@ -265,3 +265,48 @@ describe('framings (docs/02 §2.14)', () => {
 		expect(row?.avatarPhotoId).toBeNull();
 	});
 });
+
+describe('listJournalPhotosOfEntries', () => {
+	function entry(id: string, entryDate: string) {
+		db.insert(schema.journalEntry)
+			.values({ id, contactId: 'mara', createdBy: U1, entryDate, body: id })
+			.run();
+	}
+
+	beforeEach(async () => {
+		seedContact('mara');
+		entry('j1', '2026-01-01');
+		entry('j2', '2026-01-02');
+		entry('j3', '2026-01-03');
+		await repo.insert(photo({ id: 'a', journalEntryId: 'j1', createdAt: 3 }));
+		await repo.insert(photo({ id: 'b', journalEntryId: 'j1', createdAt: 1 }));
+		await repo.insert(photo({ id: 'c', journalEntryId: 'j2', createdAt: 2 }));
+		await repo.insert(photo({ id: 'd', journalEntryId: 'j3', createdAt: 4 }));
+		await repo.insert(photo({ id: 'e', journalEntryId: 'j2', visibility: 'private', createdAt: 5 }));
+		await repo.insert(photo({ id: 'g', journalEntryId: null }));
+	});
+
+	it("is the person's journal photos cut to the entries a story page shows", async () => {
+		for (const viewer of [viewerU1, viewerU2]) {
+			const all = await repo.listJournalPhotos(viewer, 'mara');
+			const page = await repo.listJournalPhotosOfEntries(viewer, 'mara', ['j1', 'j2']);
+			expect(page).toEqual(all.filter((p) => p.journalEntryId !== 'j3'));
+		}
+		// Not vacuous: oldest first, and a private photo only for its author.
+		expect((await repo.listJournalPhotosOfEntries(viewerU1, 'mara', ['j1', 'j2'])).map((p) => p.id)).toEqual([
+			'b',
+			'c',
+			'a',
+			'e'
+		]);
+		expect((await repo.listJournalPhotosOfEntries(viewerU2, 'mara', ['j1', 'j2'])).map((p) => p.id)).toEqual([
+			'b',
+			'c',
+			'a'
+		]);
+	});
+
+	it('reads nothing for a page without entries', async () => {
+		expect(await repo.listJournalPhotosOfEntries(viewerU1, 'mara', [])).toEqual([]);
+	});
+});

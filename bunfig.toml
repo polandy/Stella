@@ -3,3 +3,8 @@
 # CI/Docker installs use `bun install --frozen-lockfile` for reproducibility.
 [install]
 exact = true
+
+# Every message catalogue is loaded before the first test file, as the server does at start-up
+# (catalogues other than English are fetched on demand — src/lib/i18n/translate.ts).
+[test]
+preload = ["./src/lib/i18n/test-preload.ts"]
