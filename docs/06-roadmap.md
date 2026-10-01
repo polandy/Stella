@@ -179,6 +179,12 @@ Goal: sand the edges and add the nice-to-haves.
   keeps each sync to what changed.
   Open: which contact fields go out, whether a member picks circles to sync, and whether a
   plain subscribable `.ics` link suffices for the calendar instead of full CalDAV.
+- **A person's photos from Immich** — a contact is linked to the person Immich's face
+  recognition knows, by a name-matching review list or a face picker. Their page then shows
+  how many photos there are, a strip of the latest, a small viewer, the photos of *you and
+  them* together, and *Use as photo*. One read-only household key set by the admin; images
+  go through a signed proxy and follow the contact's visibility. Built in five slices; the
+  decisions are in `docs/concepts/immich.md` §9.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
