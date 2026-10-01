@@ -65,7 +65,7 @@ multi-tenancy possible later.
 |---|---|---|
 | id | text pk | |
 | name | text | display name of the family/household |
-| default_visibility | text | `'shared'` default for the household |
+| default_visibility | text | not read: new records always start `'shared'` (docs/02 §2.10); left from an earlier plan |
 | created_at / updated_at | int | |
 
 ### user
@@ -85,7 +85,7 @@ A family member with an account.
 | self_contact_id | text null | the contact this member **is** (§2.1.3). No FK on purpose: SQLite cannot add one with an `ON DELETE` action through `ALTER TABLE`, and a plain reference would refuse to delete that person. Deleting the contact clears it, merging repoints it |
 | theme_pref | text | `'system' \| 'light' \| 'dark'` |
 | accent_pref | text | Catppuccin accent name, e.g. `'mauve'` |
-| default_visibility | text | `'shared' \| 'private'` for new records |
+| default_visibility | text | not read: new records always start `'shared'` (docs/02 §2.10); left from an earlier plan |
 | reduced_motion | int | 0/1 |
 | totp_secret | text null | reserved for local 2FA [later] |
 | created_at / updated_at | int | |
