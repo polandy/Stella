@@ -5,7 +5,8 @@
 	import Button from './Button.svelte';
 	import Icon from './Icon.svelte';
 	import { FIELD_SELECTOR, firstField } from './first-field';
-	import { owesFocusBack } from '$lib/ui/focus-return';
+	import { focusLeftForm, owesFocusBack } from '$lib/ui/focus-return';
+	import { focusDestination } from '$lib/ui/focus-destination';
 	import type { IconName } from './icons';
 
 	/*
@@ -104,9 +105,7 @@
 	 */
 	let focusInForm = false;
 	function onFocusOut(event: FocusEvent) {
-		const next = event.relatedTarget;
-		// Focus going nowhere is the field being removed under it — still "was inside".
-		if (next instanceof Node && !form?.contains(next)) focusInForm = false;
+		if (form && focusLeftForm(focusDestination(form, event.relatedTarget))) focusInForm = false;
 	}
 
 	function toggle() {

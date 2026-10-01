@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { neighbourAfterLeaving, owesFocusBack, type ListedRow } from './focus-return';
+import { focusLeftForm, neighbourAfterLeaving, owesFocusBack, type ListedRow } from './focus-return';
 
 /*
  * Where keyboard focus goes when the control holding it disappears (WCAG 2.4.3): a form that
@@ -43,5 +43,28 @@ describe('owesFocusBack', () => {
 
 	it('does not pull focus to a form that was closed from somewhere else', () => {
 		expect(owesFocusBack({ hadFocusInside: false, focusNow: 'page' })).toBe(false);
+	});
+});
+
+/*
+ * Saving through `applyAction` or a navigation hands focus to `<body>` before the form closes
+ * (SvelteKit resets it there), so focus "going to the page" is the form being torn down, not
+ * the reader leaving it — the save must still hand focus back to the section's button.
+ */
+describe('focusLeftForm', () => {
+	it('is true when focus moved on to another control outside the form', () => {
+		expect(focusLeftForm('elsewhere')).toBe(true);
+	});
+
+	it('is false while focus stays inside the form', () => {
+		expect(focusLeftForm('inside')).toBe(false);
+	});
+
+	it('is false when focus went nowhere, as when the field is removed under it', () => {
+		expect(focusLeftForm('nowhere')).toBe(false);
+	});
+
+	it('is false when focus was put on the page itself, as a SvelteKit save does', () => {
+		expect(focusLeftForm('page')).toBe(false);
 	});
 });

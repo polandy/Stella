@@ -210,6 +210,17 @@
 		refreshPicker();
 	}
 
+	/*
+	 * A caret moved by the arrow keys may have entered or left an @-handle, so the list is asked
+	 * again — except for Up and Down while the list is open: those moved its highlight on
+	 * keydown, and asking again would put it straight back on the first row.
+	 */
+	function onKeyup(event: KeyboardEvent) {
+		if (!event.key.startsWith('Arrow')) return;
+		if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && active && rows.length > 0) return;
+		refreshPicker();
+	}
+
 	function refreshPicker() {
 		clearTimeout(closingPicker);
 		if (!textarea) return;
@@ -467,7 +478,7 @@
 			onkeydown={onKeydown}
 			oninput={onInput}
 			onclick={refreshPicker}
-			onkeyup={(e) => (e.key.startsWith('Arrow') ? refreshPicker() : undefined)}
+			onkeyup={onKeyup}
 			onfocus={() => clearTimeout(closingPicker)}
 			onblur={closePickerSoon}
 			class="min-h-14 flex-1 resize-y bg-transparent font-serif text-[17px] leading-relaxed text-fg outline-none placeholder:text-fg-subtle"

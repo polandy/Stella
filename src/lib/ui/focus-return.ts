@@ -39,3 +39,16 @@ export function owesFocusBack(state: {
 }): boolean {
 	return state.hadFocusInside && state.focusNow === 'page';
 }
+
+/** Where focus went when it left a field of an open form, as the form's `focusout` tells it. */
+export type FocusDestination = 'inside' | 'nowhere' | 'page' | 'elsewhere';
+
+/**
+ * Whether focus really left the form, so a close afterwards owes it nothing. Only a move to
+ * another control does. Focus going nowhere is the field being removed under it; focus put on
+ * `<body>` is SvelteKit resetting it after a save (`applyAction`, a navigation) a moment
+ * before the form closes — both are the form going away, not the reader leaving it.
+ */
+export function focusLeftForm(destination: FocusDestination): boolean {
+	return destination === 'elsewhere';
+}

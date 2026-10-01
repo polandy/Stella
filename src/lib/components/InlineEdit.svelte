@@ -5,7 +5,8 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
-	import { owesFocusBack } from '$lib/ui/focus-return';
+	import { focusLeftForm, owesFocusBack } from '$lib/ui/focus-return';
+	import { focusDestination } from '$lib/ui/focus-destination';
 	import { tick } from 'svelte';
 
 	/*
@@ -89,9 +90,8 @@
 	let focusInForm = false;
 	let wasOpen = false;
 	function onFocusOut(event: FocusEvent) {
-		const next = event.relatedTarget;
 		const formEl = event.currentTarget as HTMLFormElement;
-		if (next instanceof Node && !formEl.contains(next)) focusInForm = false;
+		if (focusLeftForm(focusDestination(formEl, event.relatedTarget))) focusInForm = false;
 	}
 	$effect(() => {
 		const justClosed = wasOpen && !open;
