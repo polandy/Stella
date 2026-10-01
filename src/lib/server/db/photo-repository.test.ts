@@ -6,6 +6,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import type { StoredPhoto } from '../domain/media/avatars';
 import type { StoredFraming } from '../domain/media/framing';
+import { pinGalleryPhoto } from '../domain/media/gallery';
 import { createDrizzlePhotoRepository } from './photo-repository';
 import * as schema from './schema';
 
@@ -145,8 +146,30 @@ describe('the gallery (docs/02 §2.14)', () => {
 
 	it('pins nothing but a gallery photo', async () => {
 		await repo.setGalleryPhotoPin('in-journal', 1_000);
-		const row = db.select().from(schema.photo).where(eq(schema.photo.id, 'in-journal')).get();
-		expect(row?.pinnedAt).toBeNull();
+		await repo.setGalleryPhotoPin('g-shared', 1_000);
+		const pinOf = (id: string) => db.select().from(schema.photo).where(eq(schema.photo.id, id)).get()?.pinnedAt;
+		expect(pinOf('in-journal')).toBeNull();
+		// Positive control: the same call does pin a gallery photo.
+		expect(pinOf('g-shared')).toBe(1_000);
+	});
+
+	it('lets a member pin only a photo they can see, through the use-case and the real scoping', async () => {
+		const deps = { photos: repo, clock: { now: () => 2_000 } };
+		const pinOf = (id: string) => db.select().from(schema.photo).where(eq(schema.photo.id, id)).get()?.pinnedAt;
+		seedContact('otto');
+
+		// U1's private photo is invisible to U2, so U2 cannot pin it, whether or not it exists.
+		expect(await pinGalleryPhoto(deps, viewerU2, { contactId: 'mara', photoId: 'g-private', pinned: true })).toBe(false);
+		// Nor through another person's page.
+		expect(await pinGalleryPhoto(deps, viewerU1, { contactId: 'otto', photoId: 'g-shared', pinned: true })).toBe(false);
+		expect(pinOf('g-private')).toBeNull();
+		expect(pinOf('g-shared')).toBeNull();
+
+		// Positive controls: U2 pins the shared photo U1 added, and U1 pins their own private one.
+		expect(await pinGalleryPhoto(deps, viewerU2, { contactId: 'mara', photoId: 'g-shared', pinned: true })).toBe(true);
+		expect(await pinGalleryPhoto(deps, viewerU1, { contactId: 'mara', photoId: 'g-private', pinned: true })).toBe(true);
+		expect(pinOf('g-shared')).toBe(2_000);
+		expect(pinOf('g-private')).toBe(2_000);
 	});
 
 	it('keeps journal photos out of the gallery', async () => {

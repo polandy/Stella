@@ -192,7 +192,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		lastContactedAt: lastContactedAt(read.interactions),
 		notes: read.notes.map((note) => noteView(note, ctx.nameOf)),
 		mentionedIn: read.mentionedIn.map((reference) => mentionedInView(reference, ctx)),
-		// The person's photo gallery (docs/02 §2.14), newest first, already visibility-scoped.
+		// The person's photo gallery (docs/02 §2.14), favourites first, already visibility-scoped.
 		gallery: read.gallery,
 
 		// Who they belong with.
