@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import { deserialize, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
@@ -222,12 +223,8 @@
 			bind:this={composeForm}
 			class="flex flex-col gap-3 rounded-app bg-card p-5 shadow-card"
 		>
-			{#if form?.journalError}
-				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.journalError}</p>
-			{/if}
-			{#if uploadError}
-				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{uploadError}</p>
-			{/if}
+			<FormError message={form?.journalError} />
+			<FormError message={uploadError} />
 			<div class="flex flex-wrap items-end gap-3">
 				<div class="flex flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('journal.day')}</span>
@@ -244,7 +241,7 @@
 					<input
 						name="title"
 						placeholder={t('journal.titlePlaceholder')}
-						class="rounded-md border border-border bg-bg px-3 py-2 text-fg"
+						class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
 					/>
 				</label>
 			</div>
@@ -257,12 +254,14 @@
 				visibility={entryVisibility}
 				bind:unclear={entryUnclear}
 				placeholder={t('journal.bodyPlaceholder')}
-				class="w-full rounded-md border border-border bg-bg px-3 py-2 text-fg"
+				class="w-full rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
 			/>
 			<div class="flex flex-wrap items-center gap-3">
-				<label class="inline-flex cursor-pointer items-center gap-2 rounded-app border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg">
+				<!-- `sr-only`, not `hidden`: a hidden input is out of the tab order, and the button
+				     with it (WCAG 2.1.1). The label shows where focus is instead. -->
+				<label class="inline-flex cursor-pointer items-center gap-2 rounded-app border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring">
 					<Icon name="photo" size={15} /> {t('journal.addPhotos')}
-					<input type="file" accept="image/*" multiple onchange={onFiles} class="hidden" />
+					<input type="file" accept="image/*" multiple onchange={onFiles} class="sr-only" />
 				</label>
 				{#if picked.length}
 					<span class="text-sm text-fg-subtle">
@@ -271,14 +270,17 @@
 				{/if}
 			</div>
 			<div class="flex flex-wrap items-center gap-4 text-sm">
-				<label class="flex items-center gap-1.5">
-					<input type="radio" name="visibility" value="shared" bind:group={entryVisibility} />
-					{t('common.shared')}
-				</label>
-				<label class="flex items-center gap-1.5">
-					<input type="radio" name="visibility" value="private" bind:group={entryVisibility} />
-					{t('journal.privateOnlyYou')}
-				</label>
+				<fieldset class="flex flex-wrap items-center gap-4">
+					<legend class="sr-only">{t('common.visibility')}</legend>
+					<label class="flex items-center gap-1.5">
+						<input type="radio" name="visibility" value="shared" bind:group={entryVisibility} />
+						{t('common.shared')}
+					</label>
+					<label class="flex items-center gap-1.5">
+						<input type="radio" name="visibility" value="private" bind:group={entryVisibility} />
+						{t('journal.privateOnlyYou')}
+					</label>
+				</fieldset>
 				<Button variant="primary" disabled={uploading || entryUnclear} class="ml-auto">
 					{uploading ? t('common.saving') : t('journal.saveEntry')}
 				</Button>
@@ -367,16 +369,14 @@
 									class="flex flex-col gap-3"
 								>
 									<input type="hidden" name="id" value={entry.id} />
-									{#if editError}
-										<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{editError}</p>
-									{/if}
+									<FormError message={editError} />
 									<label class="flex flex-col gap-1 text-sm">
 										<span class="text-fg-muted">{t('journal.titleOptional')}</span>
 										<input
 											name="title"
 											bind:value={editTitle}
 											placeholder={t('journal.titlePlaceholder')}
-											class="rounded-md border border-border bg-bg px-3 py-2 text-fg"
+											class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
 										/>
 									</label>
 									<MentionTextarea
@@ -390,7 +390,7 @@
 										{candidates}
 										visibility={entry.visibility}
 										placeholder={t('journal.bodyPlaceholder')}
-										class="w-full rounded-md border border-border bg-bg px-3 py-2 text-fg"
+										class="w-full rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
 									/>
 									<div class="flex items-center gap-3">
 										<Button variant="primary" disabled={editSaving || editUnclear}>

@@ -55,7 +55,9 @@ export const contacts = {
 	'contacts.new.more': 'More — nickname, birthday',
 	'contacts.new.nickname': 'Nickname',
 	'contacts.new.birthday': 'Birthday',
-	'contacts.new.visibility': 'Visibility'
+	'contacts.new.visibility': 'Visibility',
+	'contacts.matchCount': (p: { count: number }) =>
+		p.count === 1 ? '1 person found' : `${p.count} people found`
 };
 
 /** The key set every translation of this area has to provide. */

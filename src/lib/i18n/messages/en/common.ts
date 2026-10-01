@@ -18,7 +18,6 @@ export const common = {
 	'common.back': 'Back',
 	'common.open': 'Open',
 	'common.search': 'Search',
-	'common.searchPlaceholder': 'Search…',
 	'common.loading': 'Loading…',
 	'common.undo': 'Undo',
 	'common.undone': 'Undone',
@@ -37,7 +36,9 @@ export const common = {
 	'common.privateInline': 'private',
 	'common.onlyYouSee': 'Only you can see this',
 	'common.removeFailed': 'Could not remove it. It is back on the page.',
-	'common.somethingWentWrong': 'Something went wrong. Please try again.'
+	'common.somethingWentWrong': 'Something went wrong. Please try again.',
+	'common.visibility': 'Who can see this',
+	'common.pageTitle': (p: { page: string }) => `${p.page} · Stella`
 };
 
 /** The key set every translation of this area has to provide. */

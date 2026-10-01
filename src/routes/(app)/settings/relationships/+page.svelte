@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
@@ -75,6 +76,9 @@
 	lands on the page heading — not on the person's own name, whose card leaves the page as
 	soon as its answers are sent, and would drop focus a second time.
 -->
+
+<svelte:head><title>{t('common.pageTitle', { page: t('settings.relationships.title') })}</title></svelte:head>
+
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10" data-kin-scope>
 	<header class="flex flex-col gap-1">
 		<a href="/settings" class="flex items-center gap-1 text-sm text-link hover:underline">
@@ -86,9 +90,7 @@
 		<p class="text-fg-muted">{t('settings.relationships.intro')}</p>
 	</header>
 
-	{#if form?.error}
-		<p class="rounded-app bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
-	{/if}
+	<FormError message={form?.error} />
 
 	{#if !data.open}
 		<EmptyState
@@ -172,7 +174,7 @@
 				type="search"
 				value={data.query}
 				placeholder={t('settings.relationships.findPerson')}
-				class="min-w-0 flex-1 rounded-app border border-border bg-card px-3 py-1.5 text-sm text-fg placeholder:text-fg-subtle"
+				class="min-w-0 flex-1 rounded-app border border-border-input bg-card px-3 py-1.5 text-sm text-fg placeholder:text-fg-subtle"
 			/>
 			<Button variant="ghost" size="sm">{t('settings.relationships.searchSubmit')}</Button>
 			{#if data.query}

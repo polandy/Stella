@@ -132,9 +132,13 @@
 		{ key: 'kinship', label: 'graph.filter.kinship', token: 'var(--edge-kinship)', line: 'dotted' }
 	] as const;
 
-	/** One row of a toolbar menu; the check or switch on its right says its state. */
+	/**
+	 * One row of a toolbar menu; the check or switch on its right says its state. The focused
+	 * row keeps the global focus ring as well as its tint: a tint alone is a 1.1:1 change
+	 * (WCAG 1.4.11, 2.4.7).
+	 */
 	const MENU_ITEM =
-		'flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-[13px] text-fg hover:bg-bg-sunken focus:bg-bg-sunken focus:outline-none';
+		'flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-[13px] text-fg hover:bg-bg-sunken focus:bg-bg-sunken';
 
 	const reducedMotion =
 		typeof window !== 'undefined' &&
@@ -921,7 +925,7 @@
 					bind:value={query}
 					placeholder={t('graph.findPlaceholder')}
 					aria-label={t('graph.find')}
-					class="w-full sm:w-56 rounded-app border border-border bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
+					class="w-full sm:w-56 rounded-app border border-border-input bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
 				/>
 				{#if suggestions.length}
 					<ul

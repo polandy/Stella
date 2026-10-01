@@ -13,6 +13,8 @@
 	const total = $derived(data.results.contacts.length + data.results.notes.length);
 </script>
 
+<svelte:head><title>{t('common.pageTitle', { page: t('search.title') })}</title></svelte:head>
+
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
 	<h1 class="text-2xl font-semibold text-fg">{t('search.title')}</h1>
 
@@ -23,7 +25,7 @@
 			value={data.q}
 			placeholder={t('search.placeholder')}
 			aria-label={t('search.title')}
-			class="flex-1 rounded-app border border-border bg-bg px-4 py-2.5 text-fg"
+			class="flex-1 rounded-app border border-border-input bg-bg px-4 py-2.5 text-fg"
 		/>
 		<Button variant="primary">{t('common.search')}</Button>
 	</form>

@@ -38,7 +38,7 @@
 
 	<!-- Find as you type. Filtering runs on what is already loaded, so there is no round trip
 	     and no wait between the keystroke and the list. -->
-	<label class="flex items-center gap-2 rounded-control border border-border bg-card px-3 py-2 shadow-card focus-within:border-primary">
+	<label class="flex items-center gap-2 rounded-control border border-border-input bg-card px-3 py-2 shadow-card focus-within:border-primary">
 		<Icon name="search" size={15} />
 		<span class="sr-only">{t('contacts.find')}</span>
 		<input
@@ -49,6 +49,14 @@
 			class="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none placeholder:text-fg-subtle"
 		/>
 	</label>
+	<!--
+		How many the typing left, for a screen reader (WCAG 4.1.3). Always in the page, so it is
+		listening before the first keystroke; silent when nothing is typed, and when nobody
+		matches, since the "Nobody matches" line below says so itself.
+	-->
+	<p class="sr-only" aria-live="polite" data-testid="people-match-count">
+		{query.trim() !== '' && found.length > 0 ? t('contacts.matchCount', { count: found.length }) : ''}
+	</p>
 
 	{#if data.tags.length > 0 || data.archivedCount > 0}
 		<!-- Named so a test can assert on the row itself rather than on a link's accessible
@@ -57,8 +65,9 @@
 			<a
 				href="/contacts"
 				class="rounded-full px-3 py-1 text-sm font-medium transition-colors"
+				aria-current={!data.activeTag && !data.showArchived ? 'page' : undefined}
 				class:bg-primary-soft={!data.activeTag && !data.showArchived}
-				class:text-primary={!data.activeTag && !data.showArchived}
+				class:text-fg={!data.activeTag && !data.showArchived}
 				class:text-fg-muted={data.activeTag || data.showArchived}
 			>
 				{t('contacts.all')}
@@ -67,6 +76,7 @@
 				<a
 					href="/contacts?tag={tag.id}"
 					class="rounded-full px-3 py-1 text-sm font-medium"
+					aria-current={data.activeTag === tag.id ? 'page' : undefined}
 					style={accentChipStyle(tag.color, { active: data.activeTag === tag.id })}
 				>
 					{tag.name}
@@ -77,8 +87,9 @@
 				<a
 					href="/contacts?archived"
 					class="ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition-colors"
+					aria-current={data.showArchived ? 'page' : undefined}
 					class:bg-primary-soft={data.showArchived}
-					class:text-primary={data.showArchived}
+					class:text-fg={data.showArchived}
 					class:text-fg-muted={!data.showArchived}
 				>
 					<Icon name="archive" size={13} />{t('contacts.archivedChip', {
@@ -120,7 +131,7 @@
 			{/if}
 			{#each groups as group (group.letter)}
 				<section>
-					<h2 class="sticky top-0 z-10 flex items-center gap-3 bg-bg py-1.5 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
+					<h2 class="sticky top-0 z-10 flex items-center gap-3 bg-bg py-1.5 text-xs font-semibold uppercase tracking-wider text-fg-muted">
 						{group.letter}<span class="h-px flex-1 bg-border"></span>
 					</h2>
 					<ul class="flex flex-col">

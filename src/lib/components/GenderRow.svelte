@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/Button.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
@@ -55,7 +56,7 @@
 				{/each}
 			</div>
 			<p class="text-xs text-fg-subtle">{t('contact.gender.hint')}</p>
-			{#if error}<p class="text-sm text-danger">{error}</p>{/if}
+			<FormError message={error} variant="inline" />
 			<div>
 				<Button variant="ghost" size="sm" type="button" onclick={() => (editing = false)}>{t('common.cancel')}</Button>
 			</div>

@@ -27,7 +27,8 @@ export const nav = {
 	'nav.signOut': 'Sign out',
 	'nav.theme.light': 'Light',
 	'nav.theme.system': 'System',
-	'nav.theme.dark': 'Dark'
+	'nav.theme.dark': 'Dark',
+	'nav.accountMenu': 'Account menu'
 };
 
 /** The key set every translation of this area has to provide. */

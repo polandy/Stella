@@ -55,9 +55,9 @@ test('offers the typed name only once it is long enough to be one, and never as 
 	await field.fill('Bo');
 	await expect(createRow(page)).toBeVisible();
 
-	// It is an action, not a person: the listbox stays a list of people, and an empty search
-	// leaves it empty. (Scoped to the picker — the relationship-type `<select>` beside it has
-	// options of its own.)
+	// The list of people stays a list of people, and an empty search leaves it empty; the offer
+	// is an option of the picker beside them (`e2e/accessibility-audit.spec.ts`). (Scoped to
+	// the picker — the relationship-type `<select>` beside it has options of its own.)
 	await field.fill('Wendelin Pfyffer');
 	await expect(page.getByTestId('person-search-listbox').getByRole('option')).toHaveCount(0);
 	await expect(page.getByText('No one found.')).toBeVisible();

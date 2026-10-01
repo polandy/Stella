@@ -37,9 +37,10 @@
 	<span class="truncate">{label}</span>
 	<span class="sr-only">— {item.reason ?? t(STATUS[item.state])}</span>
 	{#if item.state === 'pending' || item.state === 'refused'}
+		<!-- 24px square (WCAG 2.5.8); the negative margin keeps the chip its own height. -->
 		<button
 			type="button"
-			class="grid size-5 shrink-0 place-items-center rounded-full hover:bg-bg-sunken"
+			class="-my-1 grid size-6 shrink-0 place-items-center rounded-full hover:bg-bg-sunken"
 			aria-label={t('home.outbox.discardNamed', { name: label })}
 			onclick={() => void outbox.discard(item.command.id)}
 		>

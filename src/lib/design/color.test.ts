@@ -106,7 +106,7 @@ describe('app.css declares every token the helpers build', () => {
 		});
 
 		it(`resolves the surface and text tokens to a colour in ${theme}`, () => {
-			const surfaces = ['--bg', '--bg-sunken', '--card', '--card-hover', '--border', '--fg', '--fg-muted', '--fg-subtle', '--primary', '--primary-fg'];
+			const surfaces = ['--bg', '--bg-sunken', '--card', '--card-hover', '--border', '--border-input', '--fg', '--fg-muted', '--fg-subtle', '--primary', '--primary-fg', '--success-text'];
 			const unresolved = surfaces.filter((name) => resolveColor(tokens, name) === null);
 			expect(unresolved).toEqual([]);
 		});
@@ -141,6 +141,12 @@ describe('AA contrast, both themes (docs/05 §5.9)', () => {
 		{ text: '--primary', on: '--bg', floor: AA_TEXT },
 		{ text: '--danger', on: '--card', floor: AA_TEXT },
 		{ text: '--danger', on: '--bg', floor: AA_TEXT },
+		// "Create …" in the mention list is written in green; Latte's flat green is 3.3:1 on a card.
+		{ text: '--success-text', on: '--card', floor: AA_TEXT },
+		// The edge of a text field is what tells it is one (1.4.11): 3:1 on the card it sits in
+		// and on the page ground that is also its own fill.
+		{ text: '--border-input', on: '--card', floor: AA_LARGE },
+		{ text: '--border-input', on: '--bg', floor: AA_LARGE },
 		{ text: '--border', on: '--card', floor: 1.2 },
 		// A focus indicator is a non-text boundary: 3:1 against whatever it is drawn over.
 		{ text: '--focus-ring', on: '--card', floor: AA_LARGE },
@@ -271,6 +277,57 @@ describe('text on the offline tint', () => {
 			}
 			const tint = mixHex(warning, WARNING_SOFT_PERCENT, ground);
 			expect(contrastRatio(fg, tint)).toBeGreaterThanOrEqual(AA_TEXT);
+		});
+	}
+});
+
+/*
+ * Words on a state tint — the error banner on `--danger-soft`, an active filter chip or the
+ * highlighted Filter pill on `--primary-soft` — are written in `--fg` (docs/05 §5.6): the state
+ * colour itself drops below AA on its own tint in Latte (danger 4.0:1, primary 3.8:1 over the
+ * page ground). The percentages mirror app.css and MenuButton.svelte.
+ */
+describe('text on a state tint', () => {
+	const DANGER_SOFT_PERCENT = 10;
+	const PRIMARY_SOFT_PERCENT = 14;
+	const MENU_HIGHLIGHT_PERCENT = 18;
+
+	it('declares the tints those surfaces are painted with', () => {
+		expect(css).toContain(`--danger-soft: color-mix(in srgb, var(--danger) ${DANGER_SOFT_PERCENT}%, transparent)`);
+		expect(css).toContain(`--primary-soft: color-mix(in srgb, var(--primary) ${PRIMARY_SOFT_PERCENT}%, transparent)`);
+	});
+
+	const TINTS = [
+		{ state: '--danger', percent: DANGER_SOFT_PERCENT, over: '--bg' },
+		{ state: '--danger', percent: DANGER_SOFT_PERCENT, over: '--card' },
+		{ state: '--primary', percent: PRIMARY_SOFT_PERCENT, over: '--bg' },
+		{ state: '--primary', percent: PRIMARY_SOFT_PERCENT, over: '--card' },
+		{ state: '--primary', percent: MENU_HIGHLIGHT_PERCENT, over: '--card' }
+	];
+
+	for (const theme of THEMES) {
+		const tokens = tokensFor(css, theme);
+		for (const { state, percent, over } of TINTS) {
+			it(`reads --fg on ${percent}% ${state} over ${over} in ${theme}`, () => {
+				const fg = resolveColor(tokens, '--fg');
+				const color = resolveColor(tokens, state);
+				const ground = resolveColor(tokens, over);
+				if (fg === null || color === null || ground === null) {
+					throw new Error(`--fg, ${state} or ${over} does not resolve to a colour in ${theme}`);
+				}
+				expect(contrastRatio(fg, mixHex(color, percent, ground))).toBeGreaterThanOrEqual(AA_TEXT);
+			});
+		}
+
+		// The mention list's "Create …" row is green on a highlighted (primary-soft) row as well.
+		it(`reads --success-text on a highlighted row in ${theme}`, () => {
+			const success = resolveColor(tokens, '--success-text');
+			const primary = resolveColor(tokens, '--primary');
+			const card = resolveColor(tokens, '--card');
+			if (success === null || primary === null || card === null) {
+				throw new Error(`--success-text, --primary or --card does not resolve in ${theme}`);
+			}
+			expect(contrastRatio(success, mixHex(primary, PRIMARY_SOFT_PERCENT, card))).toBeGreaterThanOrEqual(AA_TEXT);
 		});
 	}
 });

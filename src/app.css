@@ -65,6 +65,12 @@
 	--primary: #853ae8;
 	--link: #2761d9;
 	--danger: #cb123b;
+	/* Green written as words ("Create …") is 3.3:1 on a card; deepened the same way, against
+	   the highlighted row it also sits on. */
+	--success-text: #476f50;
+	/* A field's edge has to clear 3:1 on the card and on its own `--bg` fill (WCAG 1.4.11);
+	   overlay1 reaches only 2.6:1 on the page ground in Latte, overlay2 clears both. */
+	--border-input: var(--ctp-overlay2);
 }
 
 :root[data-theme='dark'] {
@@ -106,6 +112,8 @@
 	--primary: var(--ctp-mauve);
 	--link: var(--ctp-blue);
 	--danger: var(--ctp-red);
+	--success-text: var(--ctp-green);
+	--border-input: var(--ctp-overlay1);
 }
 
 /* Follow the OS when the user hasn't explicitly chosen light. */
@@ -149,6 +157,8 @@
 		--primary: var(--ctp-mauve);
 		--link: var(--ctp-blue);
 		--danger: var(--ctp-red);
+		--success-text: var(--ctp-green);
+		--border-input: var(--ctp-overlay1);
 	}
 }
 
@@ -175,6 +185,9 @@
 	--warning: var(--ctp-yellow);
 	/* The ground of the offline line: noticed at a glance, but not mistaken for an error. */
 	--warning-soft: color-mix(in srgb, var(--warning) 18%, transparent);
+	/* The ground of an error banner. Its words are written in `--fg`: `--danger` on this tint
+	   is 4.0:1 over the page ground in Latte (docs/05 §5.6). */
+	--danger-soft: color-mix(in srgb, var(--danger) 10%, transparent);
 
 	/* Accents, addressable by name: tags, circles and generated avatars pick from these. */
 	--accent-rosewater: var(--ctp-rosewater);
@@ -231,6 +244,7 @@
 	--color-card-hover: var(--card-hover);
 	--color-border: var(--border);
 	--color-border-subtle: var(--border-subtle);
+	--color-border-input: var(--border-input);
 	--color-fg: var(--fg);
 	--color-fg-muted: var(--fg-muted);
 	--color-fg-subtle: var(--fg-subtle);
@@ -238,9 +252,11 @@
 	--color-primary-fg: var(--primary-fg);
 	--color-primary-soft: var(--primary-soft);
 	--color-success: var(--success);
+	--color-success-text: var(--success-text);
 	--color-warning: var(--warning);
 	--color-warning-soft: var(--warning-soft);
 	--color-danger: var(--danger);
+	--color-danger-soft: var(--danger-soft);
 	--color-link: var(--link);
 	--color-focus-ring: var(--focus-ring);
 

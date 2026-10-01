@@ -48,7 +48,8 @@ test('narrows the person picker to matching names as you type, rather than listi
 	const form = page.locator('form[action="?/addMembers"]');
 	const field = form.getByLabel('People');
 	await field.click();
-	const options = page.getByRole('option');
+	// The people only: once a name is typed, the offer to add someone new is an option too.
+	const options = page.getByTestId('person-search-listbox').getByRole('option');
 	const fullCount = await options.count();
 
 	await field.fill('bettina');

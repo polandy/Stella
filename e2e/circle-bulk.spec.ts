@@ -30,7 +30,7 @@ async function addMembers(page: Page, people: string[], role: string): Promise<v
 	const search = form.getByLabel('People');
 	for (const person of people) {
 		await search.fill(person);
-		await page.getByRole('option', { name: person }).click();
+		await page.getByTestId('person-search-listbox').getByRole('option', { name: person }).click();
 		await expect(form.getByRole('button', { name: `Remove ${person}` })).toBeVisible();
 	}
 	await form.getByLabel('Role (optional)').fill(role);
@@ -118,7 +118,7 @@ test('with the switch off the search empties after a pick, and the choice is rem
 
 	const search = form.getByLabel('People');
 	await search.fill('Zaugg');
-	await page.getByRole('option', { name: f.aurel }).click();
+	await page.getByTestId('person-search-listbox').getByRole('option', { name: f.aurel }).click();
 	await expect(form.getByRole('button', { name: `Remove ${f.aurel}` })).toBeVisible();
 	await expect(search).toHaveValue('');
 

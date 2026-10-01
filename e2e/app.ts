@@ -113,7 +113,9 @@ export async function mentionNew(page: Page, name: string, description = 'Met at
 export async function pickPerson(field: Locator, name: string): Promise<void> {
 	await field.click();
 	await field.fill(name);
-	await field.page().getByRole('option', { name }).click();
+	// Among the people only: the offer to add someone new is an option too, and its name
+	// carries the query, so it would match a full name typed here.
+	await field.page().getByTestId('person-search-listbox').getByRole('option', { name }).click();
 	// Multi-select keeps the list open for adding another person; close it so it cannot
 	// overlap and intercept the next click (the single-select case is already closed). The
 	// input keeps focus through the option's mousedown handler, so send the key to whatever

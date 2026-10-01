@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { CropRect } from '$lib/image/crop';
@@ -76,5 +77,5 @@
 <Button variant="secondary" size="sm" onclick={open} aria-busy={busy}>
 	{isAvatar ? t('components.frame.change') : t('components.frame.use')}
 </Button>
-{#if error}<p class="text-xs text-danger">{error}</p>{/if}
+<FormError message={error} variant="inline" size="xs" />
 <PhotoCropper file={picture} initial={framing} onconfirm={wear} oncancel={() => (picture = null)} />

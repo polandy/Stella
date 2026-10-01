@@ -70,7 +70,9 @@
 	}: Props = $props();
 
 	const t = useTranslate();
-
+	const uid = $props.id();
+	const listboxId = `${uid}-people`;
+	const optionId = (i: number) => `${uid}-person-${i}`;
 
 	let textarea: HTMLTextAreaElement | undefined = $state();
 	let active = $state<ActiveHandle | null>(null);
@@ -121,6 +123,17 @@
 	$effect(() => {
 		unclear = unclearNow.length > 0;
 	});
+
+	/*
+	 * A caret moved by the arrow keys may have entered or left an @-handle, so the list is asked
+	 * again — except for Up and Down while the list is open: those moved its highlight on
+	 * keydown, and asking again would put it straight back on the first row.
+	 */
+	function onKeyup(event: KeyboardEvent) {
+		if (!event.key.startsWith('Arrow')) return;
+		if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && active && people.length > 0) return;
+		refreshPicker();
+	}
 
 	function refreshPicker() {
 		if (!textarea) return;
@@ -195,16 +208,21 @@
 		{placeholder}
 		aria-label={label}
 		aria-autocomplete="list"
+		aria-controls={listboxId}
+		aria-activedescendant={active && people[selected] ? optionId(selected) : undefined}
 		onkeydown={onKeydown}
 		oninput={onInput}
 		onclick={refreshPicker}
-		onkeyup={(e) => (e.key.startsWith('Arrow') ? refreshPicker() : undefined)}
+		onkeyup={onKeyup}
 		onblur={() => setTimeout(closeIfFocusLeft, BLUR_CLOSE_MS)}
 		class={className}
 	></textarea>
 
 	{#if active && people.length > 0}
+		<!-- A textarea cannot take the combobox role, so it points at the list with
+		     aria-controls and at the highlighted person with aria-activedescendant. -->
 		<ul
+			id={listboxId}
 			role="listbox"
 			aria-label={t('composer.people')}
 			data-testid="mention-picker"
@@ -216,6 +234,8 @@
 					<button
 						type="button"
 						role="option"
+						id={optionId(i)}
+						tabindex="-1"
 						aria-selected={i === selected}
 						onmousedown={(e) => {
 							e.preventDefault();
