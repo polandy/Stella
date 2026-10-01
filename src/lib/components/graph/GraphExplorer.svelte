@@ -13,6 +13,7 @@
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
 	import { paletteFromDom } from '$lib/graph/cytoscape/theme';
+	import { graphKeyAction } from '$lib/graph/keyboard';
 	import { findConnectionPath } from '$lib/graph/model/connection-path';
 	import {
 		buildEgoNetwork,
@@ -85,6 +86,8 @@
 	}: Props = $props();
 
 	const t = useTranslate();
+	const uid = $props.id();
+	const hintId = `${uid}-keyboard-hint`;
 
 	// A built-in relationship type reads in the viewer's language; a household's own type
 	// reads as somebody typed it (docs/02 §2.19).
@@ -530,6 +533,58 @@
 		pathFrom = null;
 	}
 
+	/*
+	 * Walking the map from the keyboard (docs/05 §5.8). The cursor is where the keyboard is,
+	 * apart from the selection: stepping past people must not select each one in turn, which
+	 * would re-highlight the map on every key. Enter on it does what a click does.
+	 */
+	let cursor = $state<string | null>(null);
+	/** The canvas holds keyboard focus; its drawn children cover an outline, so a frame shows it. */
+	let keyboardOnCanvas = $state(false);
+	const cursorLabel = $derived.by(() => {
+		if (cursor === null) return '';
+		const group = grouping?.groups.find((g) => g.id === cursor);
+		const name = group ? groupLabel(group) : nameOf(cursor);
+		return cursor === selected ? t('graph.keyboard.selected', { name }) : name;
+	});
+
+	function placeCursor(id: string | null) {
+		cursor = id;
+		controller?.markCursor(id);
+	}
+
+	const keyFor = (key: string) =>
+		graphKeyAction({
+			key,
+			cursor,
+			positions: controller?.positions() ?? new Map(),
+			start: selected ?? centerId
+		});
+
+	function onCanvasFocus() {
+		// A click focuses the canvas too; only the keyboard's arrival shows where it is.
+		if (!container.matches(':focus-visible')) return;
+		keyboardOnCanvas = true;
+		const home = keyFor('Home');
+		if (home?.kind === 'move') placeCursor(cursor ?? home.to);
+	}
+
+	async function onCanvasKeydown(event: KeyboardEvent) {
+		if (event.altKey || event.ctrlKey || event.metaKey) return;
+		const action = keyFor(event.key);
+		if (!action) return;
+		event.preventDefault();
+		keyboardOnCanvas = true;
+		if (action.kind === 'move') placeCursor(action.to);
+		else if (action.kind === 'activate') await onTapNode(action.id);
+		else if (action.kind === 'clear') {
+			// In path mode Escape takes back a half-picked pair first, then leaves the mode.
+			if (pathMode && pathFrom) pathFrom = null;
+			else if (pathMode) togglePath();
+			else onTapBackground();
+		}
+	}
+
 	function toggleFilter(key: string) {
 		const next = new Set(active);
 		if (next.has(key)) next.delete(key);
@@ -540,7 +595,7 @@
 	// The one place a stylesheet is built: theme changes and the label toggle share it, so
 	// re-theming can never drop the toggle and vice versa.
 	function stylesheet() {
-		return buildStylesheet(paletteFromDom(), { edgeLabels });
+		return buildStylesheet(paletteFromDom(), { edgeLabels, reducedMotion });
 	}
 
 	function retheme() {
@@ -728,11 +783,34 @@
 	     `absolute inset-0` box and collapse the canvas to zero height — size it directly.
 	     `touch-none`: Cytoscape reads every pan/zoom gesture itself; left to the browser's own
 	     default, a pan can be read as an edge-swipe or chrome-reveal gesture instead. -->
-	<div bind:this={container} class="h-full w-full touch-none"></div>
+	<!-- The canvas is one stop in the tab order and is walked with the arrow keys (docs/05
+	     §5.8); the person under the keyboard is announced, since the canvas has no text.
+	     `svelte-ignore`: Svelte counts `application` as non-interactive, yet it is the role that
+	     hands the arrow keys to this element rather than to a screen reader's reading mode. -->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
+	<div
+		bind:this={container}
+		class="h-full w-full touch-none focus:outline-none"
+		tabindex={ready ? 0 : -1}
+		role="application"
+		aria-label={t('graph.canvas')}
+		aria-describedby={hintId}
+		onfocus={onCanvasFocus}
+		onblur={() => {
+			keyboardOnCanvas = false;
+			controller?.markCursor(null);
+		}}
+		onkeydown={onCanvasKeydown}
+	></div>
+	{#if keyboardOnCanvas}
+		<div class="pointer-events-none absolute inset-0 ring-2 ring-inset ring-focus-ring" aria-hidden="true"></div>
+	{/if}
+	<p id={hintId} class="sr-only">{t('graph.keyboard.hint')}</p>
+	<p class="sr-only" aria-live="polite">{cursorLabel}</p>
 
 	{#if !ready}
 		<div class="absolute inset-0 grid place-items-center text-sm text-fg-subtle">
-			Loading the graph…
+			{t('graph.loading')}
 		</div>
 	{/if}
 
@@ -945,6 +1023,7 @@
 		>
 			<div
 				data-testid="path-prompt"
+				aria-live="polite"
 				class="rounded-full border border-border bg-card/90 px-4 py-1.5 text-xs text-fg-muted backdrop-blur"
 			>
 				{#if path}

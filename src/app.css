@@ -242,6 +242,7 @@
 	--color-warning-soft: var(--warning-soft);
 	--color-danger: var(--danger);
 	--color-link: var(--link);
+	--color-focus-ring: var(--focus-ring);
 
 	--radius-app: var(--radius);
 	--radius-control: var(--radius-control);

@@ -63,6 +63,7 @@ Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) �
 | `src/lib/commands/` | **pure** command vocabulary shared by phone and server; the dispatcher that applies a command once is `src/lib/server/domain/commands/`, the wire edge `src/lib/server/commands/` (`docs/04` §4.11.2) |
 | `src/lib/graph/model/` | **pure** graph domain: `GraphModel`, `buildEgoNetwork`, `expandNode`, `findConnectionPath`, `applyFilters` (test-first) |
 | `src/lib/graph/layout/` | **pure** arrangements as positions: family tree, groups by circle (test-first) |
+| `src/lib/graph/keyboard.ts` | **pure** keyboard walk over the map: which key steps to whom (test-first) |
 | `src/lib/graph/cytoscape/` | rendering adapter (Cytoscape confined here, lazy-loaded); no domain logic |
 | `src/routes/` | thin edges: `load` / form actions / `+server.ts` |
 | `src/lib/components/` | UI components (design system): `Button`, `Icon` + the `icons.ts` registry, `Avatar`, `Section`, `EmptyState`, `CommandPalette`, `MenuButton`, `Toast` + `RemoveButton`, `InlineEdit`, … |

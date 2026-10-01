@@ -39,6 +39,12 @@ export const search = {
 	'graph.arrange.tree.hint': 'One row per generation, the oldest at the top',
 	'graph.arrange.circles': 'By circle',
 	'graph.arrange.circles.hint': 'Each circle with its members around it',
+	'graph.loading': 'Loading the graph…',
+	// Walking the map from the keyboard (docs/05 §5.8).
+	'graph.canvas': 'Relationship map',
+	'graph.keyboard.hint':
+		'Arrow keys move between people. Enter selects, and pressed again opens up their connections. Home goes back to the selected person or the centre, Escape lets go.',
+	'graph.keyboard.selected': (p: { name: string }) => `${p.name}, selected`,
 	'graph.path.none': 'No connection found between those two.',
 	'graph.path.pickSecond': 'Now pick the second person…',
 	'graph.path.pickTwo': 'Pick two people to trace how they’re connected.',

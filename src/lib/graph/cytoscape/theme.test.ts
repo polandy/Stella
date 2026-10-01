@@ -3,7 +3,7 @@ import { resolvePalette } from './theme';
 import { AA_LARGE, contrastRatio, mixHex } from '../../design/color';
 import { resolveColor, tokensFor, type Theme } from '../../design/css-tokens';
 import { RELATIONSHIP_CATEGORIES } from '../../relationships/categories';
-import { buildStylesheet, EDGE_LABEL_MIN_ZOOMED_FONT_SIZE } from './stylesheet';
+import { buildStylesheet, CURSOR_CLASS, EDGE_LABEL_MIN_ZOOMED_FONT_SIZE } from './stylesheet';
 
 /*
  * Palette resolution + stylesheet building (docs/05 §5.6/§5.8), tested with a fake token
@@ -132,6 +132,31 @@ describe('buildStylesheet', () => {
 			);
 			expect(edge?.style['min-zoomed-font-size']).toBe(EDGE_LABEL_MIN_ZOOMED_FONT_SIZE);
 		}
+	});
+
+	it('thickens the lines of a traced path without squashing the people on it', () => {
+		// `width` is a line's thickness but a node's size: set on both, the path's people
+		// were drawn three pixels wide.
+		const nodeRules = styles.filter((s) => /(^|,\s*)(node)?\.onpath/.test(s.selector));
+		for (const rule of nodeRules) expect(rule.style.width).toBeUndefined();
+		expect(styles.find((s) => s.selector === 'edge.onpath')?.style.width).toBe(3);
+	});
+
+	it('rings the node the keyboard is on in the focus colour, outside its own border', () => {
+		const cursor = styles.find((s) => s.selector === `node.${CURSOR_CLASS}`);
+		expect(cursor?.style).toMatchObject({
+			'outline-color': resolvePalette(read).focusRing,
+			'outline-width': 3
+		});
+	});
+
+	it('changes state at once under reduced motion, and eases otherwise', () => {
+		const durations = (sheet: ReturnType<typeof buildStylesheet>) =>
+			sheet.map((s) => s.style['transition-duration']).filter((d) => d !== undefined);
+		expect(durations(styles)).not.toContain('0ms');
+		const still = durations(buildStylesheet(resolvePalette(read), { reducedMotion: true }));
+		expect(still.length).toBeGreaterThan(0);
+		expect(new Set(still)).toEqual(new Set(['0ms']));
 	});
 
 	it('gives every person accent its own background selector', () => {

@@ -13,7 +13,7 @@ import { spreadCoincident, type Arrangement, type Size } from '../layout/geometr
 import { boxAround, frameAround, packGroups } from '../layout/group-blocks';
 import { placeNewcomers, type Placement, type Point } from './placement';
 import { frameBelow, widenToReveal, type Box } from './viewport';
-import { BOW_FIELD, BOWED_CLASS, TUCKED_CLASS, type CyStyle } from './stylesheet';
+import { BOW_FIELD, BOWED_CLASS, CURSOR_CLASS, TUCKED_CLASS, type CyStyle } from './stylesheet';
 
 /*
  * Imperative Cytoscape controller — the one place the library is touched, and it is dynamically
@@ -71,6 +71,13 @@ export interface ExplorerController {
 	highlightPath(nodeIds: string[] | null): void;
 	/** Smoothly centre and zoom onto a node. */
 	focus(nodeId: string): void;
+	/** Where every node shown stands, in model units — what the keyboard walks (docs/05 §5.8). */
+	positions(): Map<string, Point>;
+	/**
+	 * Ring the node the keyboard is on (null clears), and bring it into view if it stands off
+	 * screen or under the toolbar.
+	 */
+	markCursor(nodeId: string | null): void;
 	/** Re-theme the canvas from a freshly-resolved palette. */
 	setStylesheet(stylesheet: CyStyle[]): void;
 	/** Tear the canvas down. Idempotent, and every other method no-ops afterwards. */
@@ -484,6 +491,29 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			const node = cy.$id(nodeId);
 			if (node.empty()) return;
 			cy.animate({ center: { eles: node }, zoom: 1.3 }, { duration });
+		},
+
+		positions() {
+			if (!alive()) return new Map();
+			const shown = cy.nodes().filter((n) => !n.hasClass('filtered-out')) as NodeCollection;
+			return new Map(shown.map((n) => [n.id(), { ...n.position() }] as const));
+		},
+
+		markCursor(nodeId) {
+			if (!alive()) return;
+			cy.nodes().removeClass(CURSOR_CLASS);
+			if (!nodeId) return;
+			const node = cy.$id(nodeId);
+			if (node.empty()) return;
+			node.addClass(CURSOR_CLASS);
+			if (cy.width() === 0 || cy.height() === 0) return;
+			// The keyboard can step to someone the view has left behind; the view follows,
+			// but only when it has to, so walking a map in view never moves it.
+			const box = node.renderedBoundingBox({ includeLabels: true });
+			const inView =
+				box.x1 >= 0 && box.x2 <= cy.width() && box.y1 >= topInset && box.y2 <= cy.height();
+			if (inView) return;
+			whileMoving((complete) => cy.animate({ center: { eles: node } }, { duration, complete }));
 		},
 
 		setStylesheet(stylesheet) {
