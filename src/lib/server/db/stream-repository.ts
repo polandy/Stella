@@ -212,13 +212,23 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 					label: relationshipType.forwardLabel,
 					typeKey: relationshipType.key
 				})
+				// Newest first and only a handful: walking `relationship_created_idx` from the top
+				// stops at the limit, where joining from the people would sort every link. SQLite
+				// keeps the order of a CROSS JOIN, so the joins are spelled as conditions.
 				.from(relationship)
-				.innerJoin(relationshipType, eq(relationship.typeId, relationshipType.id))
-				.innerJoin(fromC, eq(relationship.fromContactId, fromC.id))
-				.innerJoin(toC, eq(relationship.toContactId, toC.id))
-				.innerJoin(user, eq(relationship.createdBy, user.id))
+				.crossJoin(relationshipType)
+				.crossJoin(fromC)
+				.crossJoin(toC)
+				.crossJoin(user)
 				.where(
-					and(relationshipVisibleTo(viewer, fromC, toC), byMember(relationship.createdBy, memberId))
+					and(
+						eq(relationship.typeId, relationshipType.id),
+						eq(relationship.fromContactId, fromC.id),
+						eq(relationship.toContactId, toC.id),
+						eq(relationship.createdBy, user.id),
+						relationshipVisibleTo(viewer, fromC, toC),
+						byMember(relationship.createdBy, memberId)
+					)
 				)
 				.orderBy(desc(relationship.createdAt))
 				.limit(limit)
@@ -249,11 +259,14 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 					title: interaction.title,
 					visibility: interaction.visibility
 				})
+				// Walked from `interaction_created_idx`, newest first, for the same reason as the links.
 				.from(interaction)
-				.innerJoin(contact, eq(interaction.contactId, contact.id))
-				.innerJoin(user, eq(interaction.createdBy, user.id))
+				.crossJoin(contact)
+				.crossJoin(user)
 				.where(
 					and(
+						eq(interaction.contactId, contact.id),
+						eq(interaction.createdBy, user.id),
 						childRecordVisibleTo(viewer, {
 							visibility: interaction.visibility,
 							createdBy: interaction.createdBy

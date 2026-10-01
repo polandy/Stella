@@ -16,12 +16,12 @@
 	import { navigationTurns } from '$lib/undo/navigation-turns';
 	import { providePending } from '$lib/sync/context.svelte';
 	import { providePeopleContext } from '$lib/people/context.svelte';
-	import { refreshPeopleIfChanged } from '$lib/sync/people-freshness';
+	import { refreshPeopleIfChanged, shellReloads } from '$lib/sync/people-freshness';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { reportNavigation } from '$lib/sync/pending';
 	import { followScroll, SHOWN_TOP_BAR } from '$lib/shell/top-bar';
-	import { onMount, type Snippet } from 'svelte';
+	import { onMount, untrack, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
@@ -145,7 +145,10 @@
 			},
 			data.peopleStamp
 		);
+	// A navigation that reloaded the shell (a form submit, an invalidation) is fresh already.
+	const shell = shellReloads(untrack(() => data.people));
 	afterNavigate((navigation) => {
+		if (shell.reloadedSinceLastLook(data.people)) return;
 		if (navigation.type !== 'enter') refreshPeople();
 	});
 	const turns = navigationTurns();

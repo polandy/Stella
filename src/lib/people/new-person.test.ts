@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'bun:test';
-import { isNameWorthCreating, splitTypedName, wantsSomethingToKnowThemBy, capitalisedIfTypedLowercase, isKnownByMoreThanAFirstName } from './new-person';
+import {
+	isNameWorthCreating,
+	splitTypedName,
+	wantsSomethingToKnowThemBy,
+	capitalisedIfTypedLowercase,
+	isKnownByMoreThanAFirstName,
+	newPersonHref,
+	readNewPersonRequest
+} from './new-person';
 
 describe('splitTypedName', () => {
 	it('reads a single word as a first name', () => {
@@ -82,5 +90,42 @@ describe('isKnownByMoreThanAFirstName', () => {
 		expect(isKnownByMoreThanAFirstName({ firstName: 'Thomas', lastName: ' ', description: ' ' })).toBe(false);
 		expect(isKnownByMoreThanAFirstName({ displayName: 'Thomas' })).toBe(false);
 		expect(isKnownByMoreThanAFirstName({})).toBe(false);
+	});
+});
+
+describe('newPersonHref', () => {
+	it('opens the plain form when nothing is asked of it', () => {
+		expect(newPersonHref()).toBe('/contacts/new');
+		expect(newPersonHref({ name: '  ' })).toBe('/contacts/new');
+	});
+
+	it('carries a typed name over, so a search that found nobody becomes the new person', () => {
+		expect(newPersonHref({ name: ' Anna Müller ' })).toBe('/contacts/new?name=Anna+M%C3%BCller');
+	});
+
+	it('marks the person being added as the member themselves', () => {
+		expect(newPersonHref({ self: true })).toBe('/contacts/new?self=1');
+	});
+});
+
+describe('readNewPersonRequest', () => {
+	const read = (href: string) => readNewPersonRequest(new URL(href, 'http://stella.test').searchParams);
+
+	it('reads what newPersonHref wrote', () => {
+		expect(read(newPersonHref({ name: 'Lukas van der Berg' }))).toEqual({
+			name: { firstName: 'Lukas', lastName: 'van der Berg' },
+			isSelf: false
+		});
+		expect(read(newPersonHref({ self: true }))).toEqual({
+			name: { firstName: '', lastName: '' },
+			isSelf: true
+		});
+	});
+
+	it('takes only `self=1` as "this is me", so a stray parameter claims nobody', () => {
+		expect(read('/contacts/new?self=1').isSelf).toBe(true);
+		expect(read('/contacts/new?self=0').isSelf).toBe(false);
+		expect(read('/contacts/new?self').isSelf).toBe(false);
+		expect(read('/contacts/new').isSelf).toBe(false);
 	});
 });

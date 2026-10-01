@@ -3,6 +3,26 @@
 Stella has one habit at its centre: when something happens with someone, write one
 sentence about it. Everything else in the app exists to make that sentence useful later.
 
+## Your first visit
+
+A new Stella starts empty, so the first thing Home shows is a **Welcome to Stella** card with
+three ways in:
+
+- **Start with yourself** — add your own entry. Stella remembers that this one is you, so the
+  map opens on you and everyone you add next can be linked to you.
+- **Coming from Monica?** — bring everyone over from Monica or an address book in one go (see
+  [Moving in from Monica](#moving-in-from-monica-or-from-an-address-book)). Only the household
+  admin sees this one, because only they can run an import.
+- **Add someone** — anybody at all; a name is enough.
+
+Once you have added yourself the card stays, with that step ticked off, so the other two are
+still there. It goes away by itself as soon as there is anybody else in Stella.
+
+Empty places elsewhere work the same way: they say what belongs there and offer the step that
+fills them. A search that finds nobody offers to add that name as a new person, a circle search
+that finds nothing offers to create the circle, and a person with no relationships yet offers
+to add the first one.
+
 ## The home screen
 
 Home is a text field with the household's stream underneath it. Newest first, grouped by
@@ -170,8 +190,8 @@ lands here; *Write* on the person's page opens the full journal, where an entry 
 photos. Writing on a day that already has your entry adds to it rather than replacing it; to
 change what is there, use *Edit* on the entry.
 
-**Photos** is the fourth tab: everything you have collected of that person in a grid, newest
-first, each one dated. *Add photos* takes several at once — each is shrunk in your browser
+**Photos** is the fourth tab: everything you have collected of that person in a grid — their
+favourites first, then the rest newest first, each one dated. *Add photos* takes several at once — each is shrunk in your browser
 before it is uploaded, which also strips the location and camera details the file was carrying,
 and you choose there whether they are shared with the household or only yours.
 
@@ -181,7 +201,10 @@ caption, make it the person's photo, switch it between shared and private, or re
 the gallery, and choosing again — *Change framing* on the one they wear — starts from the part
 you chose last time. Only whoever added a photo can caption or remove it, but anyone who can
 see it can make it the person's photo. Removing one deletes the file for good and, if the person was wearing it, they
-go back to their initials. Escape closes the view and the arrow keys walk through the rest (not while you are typing a caption).
+go back to their initials. *Pin as favourite* moves a photo to the front of the grid, with a
+star on it; the one you pinned last comes first, and *Unpin favourite* puts it back in date
+order. Favourites are the household's, so everyone sees the same ones in front, and anyone who
+can see a photo can pin or unpin it. Escape closes the view and the arrow keys walk through the rest (not while you are typing a caption).
 
 To give someone a new photo straight away, click the round picture at the top of their page and
 pick an image. Before anything is uploaded you choose the part that shows: drag the picture
@@ -431,7 +454,8 @@ your removing it never quietly takes it off someone else's private contact.
 person as you type, and offers *Write a moment* and *Add person* as its first rows. Notes are
 not in it; the last row, *Search everything*, opens the full search, which looks through
 people and notes at once, matches partial words, and only ever returns what you are allowed
-to see.
+to see. When it finds nothing it offers *Add "…"*, which opens *Add person* with what you typed
+already filled in as the name — and so does the filter on the People page.
 
 ## Moving in from Monica, or from an address book
 
@@ -551,7 +575,8 @@ than screen by screen, so there is no corner of the app where it silently doesn'
 Stella keeps a record for everyone the household wants to remember, and one of them is
 probably you. Say so and the app stops guessing: **Settings → You** has a search field for
 picking your own entry, and the foot of any person's page has *This is me* for the same
-thing. From then on the map opens around you rather than whoever happens to come first, and
+thing. If you are not in Stella yet, *Add yourself* there (or *Start with yourself* on the
+welcome card) adds your entry and marks it as you in one go. From then on the map opens around you rather than whoever happens to come first, and
 your row wears a small **You** in the list and on your page. The relationship form is not
 filled in for you — the person field starts empty and waits, because a name already sitting
 there reads as an answer rather than as an offer.

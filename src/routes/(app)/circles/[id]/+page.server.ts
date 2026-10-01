@@ -9,7 +9,7 @@ import {
 	setMembersRole,
 	suggestRoles
 } from '$lib/server/domain/circles/circles';
-import { getContact, listContacts } from '$lib/server/domain/contacts/contacts';
+import { listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { getCircleDeps, getContactDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say } from '$lib/server/i18n/say';
@@ -25,11 +25,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const circle = await getCircle(getCircleDeps(), viewer, params.id);
 	if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
-	const [members, allContacts] = await Promise.all([
-		listMembers(getCircleDeps(), viewer, params.id),
-		listContacts(getContactDeps(), viewer)
-	]);
-	const memberIds = new Set(members.map((m) => m.contactId));
+	const members = await listMembers(getCircleDeps(), viewer, params.id);
 
 	return {
 		circle,
@@ -37,7 +33,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		memberGroups: groupMembersByRole(members),
 		// What this circle already calls its people, offered while adding the next one.
 		roleSuggestions: suggestRoles(members.map((m) => m.role)),
-		candidates: allContacts.filter((c) => !memberIds.has(c.id))
+		// Who is in already, so the picker offers the rest of the shell's people.
+		memberIds: members.map((m) => m.contactId)
 	};
 };
 
@@ -64,11 +61,9 @@ export const actions: Actions = {
 
 		// Every chosen person must be visible to the actor — one that is not fails the whole
 		// pick rather than being dropped silently from it (§3.7).
-		const contactDeps = getContactDeps();
-		const contacts = await Promise.all(
-			parsed.output.contactIds.map((id) => getContact(contactDeps, viewer, id))
-		);
-		if (contacts.some((contact) => !contact)) {
+		const chosen = new Set(parsed.output.contactIds);
+		const visible = await listContactNamesAmong(getContactDeps(), viewer, [...chosen]);
+		if (visible.length !== chosen.size) {
 			return fail(400, { error: say(locals, 'errors.person.notFound') });
 		}
 

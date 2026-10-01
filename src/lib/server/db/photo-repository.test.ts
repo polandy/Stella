@@ -6,6 +6,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import type { StoredPhoto } from '../domain/media/avatars';
 import type { StoredFraming } from '../domain/media/framing';
+import { pinGalleryPhoto } from '../domain/media/gallery';
 import { createDrizzlePhotoRepository } from './photo-repository';
 import * as schema from './schema';
 
@@ -130,8 +131,45 @@ describe('the gallery (docs/02 §2.14)', () => {
 			createdBy: U1,
 			contactId: 'mara',
 			isAvatar: false,
-			framing: null
+			framing: null,
+			pinnedAt: null
 		});
+	});
+
+	it('pins and unpins a gallery photo for everyone who sees it', async () => {
+		await repo.setGalleryPhotoPin('g-shared', 1_000);
+		expect((await repo.listGalleryPhotos(viewerU2, 'mara')).find((p) => p.id === 'g-shared')?.pinnedAt).toBe(1_000);
+		expect((await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'g-shared'))?.pinnedAt).toBe(1_000);
+		await repo.setGalleryPhotoPin('g-shared', null);
+		expect((await repo.findVisibleGalleryPhoto(viewerU2, 'mara', 'g-shared'))?.pinnedAt).toBeNull();
+	});
+
+	it('pins nothing but a gallery photo', async () => {
+		await repo.setGalleryPhotoPin('in-journal', 1_000);
+		await repo.setGalleryPhotoPin('g-shared', 1_000);
+		const pinOf = (id: string) => db.select().from(schema.photo).where(eq(schema.photo.id, id)).get()?.pinnedAt;
+		expect(pinOf('in-journal')).toBeNull();
+		// Positive control: the same call does pin a gallery photo.
+		expect(pinOf('g-shared')).toBe(1_000);
+	});
+
+	it('lets a member pin only a photo they can see, through the use-case and the real scoping', async () => {
+		const deps = { photos: repo, clock: { now: () => 2_000 } };
+		const pinOf = (id: string) => db.select().from(schema.photo).where(eq(schema.photo.id, id)).get()?.pinnedAt;
+		seedContact('otto');
+
+		// U1's private photo is invisible to U2, so U2 cannot pin it, whether or not it exists.
+		expect(await pinGalleryPhoto(deps, viewerU2, { contactId: 'mara', photoId: 'g-private', pinned: true })).toBe(false);
+		// Nor through another person's page.
+		expect(await pinGalleryPhoto(deps, viewerU1, { contactId: 'otto', photoId: 'g-shared', pinned: true })).toBe(false);
+		expect(pinOf('g-private')).toBeNull();
+		expect(pinOf('g-shared')).toBeNull();
+
+		// Positive controls: U2 pins the shared photo U1 added, and U1 pins their own private one.
+		expect(await pinGalleryPhoto(deps, viewerU2, { contactId: 'mara', photoId: 'g-shared', pinned: true })).toBe(true);
+		expect(await pinGalleryPhoto(deps, viewerU1, { contactId: 'mara', photoId: 'g-private', pinned: true })).toBe(true);
+		expect(pinOf('g-shared')).toBe(2_000);
+		expect(pinOf('g-private')).toBe(2_000);
 	});
 
 	it('keeps journal photos out of the gallery', async () => {
@@ -263,5 +301,50 @@ describe('framings (docs/02 §2.14)', () => {
 		expect(db.select().from(schema.photo).where(eq(schema.photo.id, 'f1')).get()).toBeUndefined();
 		const row = db.select().from(schema.contact).where(eq(schema.contact.id, 'mara')).get();
 		expect(row?.avatarPhotoId).toBeNull();
+	});
+});
+
+describe('listJournalPhotosOfEntries', () => {
+	function entry(id: string, entryDate: string) {
+		db.insert(schema.journalEntry)
+			.values({ id, contactId: 'mara', createdBy: U1, entryDate, body: id })
+			.run();
+	}
+
+	beforeEach(async () => {
+		seedContact('mara');
+		entry('j1', '2026-01-01');
+		entry('j2', '2026-01-02');
+		entry('j3', '2026-01-03');
+		await repo.insert(photo({ id: 'a', journalEntryId: 'j1', createdAt: 3 }));
+		await repo.insert(photo({ id: 'b', journalEntryId: 'j1', createdAt: 1 }));
+		await repo.insert(photo({ id: 'c', journalEntryId: 'j2', createdAt: 2 }));
+		await repo.insert(photo({ id: 'd', journalEntryId: 'j3', createdAt: 4 }));
+		await repo.insert(photo({ id: 'e', journalEntryId: 'j2', visibility: 'private', createdAt: 5 }));
+		await repo.insert(photo({ id: 'g', journalEntryId: null }));
+	});
+
+	it("is the person's journal photos cut to the entries a story page shows", async () => {
+		for (const viewer of [viewerU1, viewerU2]) {
+			const all = await repo.listJournalPhotos(viewer, 'mara');
+			const page = await repo.listJournalPhotosOfEntries(viewer, 'mara', ['j1', 'j2']);
+			expect(page).toEqual(all.filter((p) => p.journalEntryId !== 'j3'));
+		}
+		// Not vacuous: oldest first, and a private photo only for its author.
+		expect((await repo.listJournalPhotosOfEntries(viewerU1, 'mara', ['j1', 'j2'])).map((p) => p.id)).toEqual([
+			'b',
+			'c',
+			'a',
+			'e'
+		]);
+		expect((await repo.listJournalPhotosOfEntries(viewerU2, 'mara', ['j1', 'j2'])).map((p) => p.id)).toEqual([
+			'b',
+			'c',
+			'a'
+		]);
+	});
+
+	it('reads nothing for a page without entries', async () => {
+		expect(await repo.listJournalPhotosOfEntries(viewerU1, 'mara', [])).toEqual([]);
 	});
 });

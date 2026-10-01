@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { familyEdges, familyNodes } from './fixtures';
-import { canExpand, ringsFrom } from './rings';
+import { canExpand, hasLinks, hasMoreAround, ringsFrom } from './rings';
 import type { GraphModel } from './types';
 
 /*
@@ -68,5 +68,46 @@ describe('canExpand', () => {
 	test('refuses a node that is not on the map at all', () => {
 		expect(canExpand(rings, 'ghost', 2)).toBe(false);
 		expect(canExpand(rings, 'nobody', 2)).toBe(false);
+	});
+});
+
+describe('hasMoreAround', () => {
+	const person = (id: string) => ({ id, kind: 'person' as const, label: id });
+	const link = (id: string, source: string, target: string) => ({
+		id,
+		source,
+		target,
+		kind: 'relationship' as const
+	});
+	// Ana knows Ben, Ben knows Cleo; the map so far shows Ana and Ben.
+	const graph: GraphModel = {
+		nodes: [person('ana'), person('ben'), person('cleo'), person('dev')],
+		edges: [link('ab', 'ana', 'ben'), link('bc', 'ben', 'cleo')]
+	};
+	const shown: GraphModel = { nodes: [person('ana'), person('ben')], edges: [link('ab', 'ana', 'ben')] };
+
+	test('says yes while a node still has a link the map does not show', () => {
+		expect(hasMoreAround(graph, shown, 'ben')).toBe(true);
+	});
+
+	test('says no once every link of the node is already on the map', () => {
+		// positive control above: Ben has more; Ana's only link is drawn
+		expect(hasMoreAround(graph, shown, 'ana')).toBe(false);
+	});
+
+	test('says no for somebody with no links at all, so there is nothing to offer', () => {
+		expect(hasMoreAround(graph, { nodes: [person('dev')], edges: [] }, 'dev')).toBe(false);
+	});
+
+	test('ignores a link to somebody outside the reachable graph, as expanding would', () => {
+		const dangling: GraphModel = { nodes: graph.nodes, edges: [...graph.edges, link('ax', 'ana', 'hidden')] };
+		expect(hasMoreAround(dangling, shown, 'ana')).toBe(false);
+	});
+});
+
+describe('hasLinks', () => {
+	test('tells somebody linked to anyone from somebody alone on the map', () => {
+		expect(hasLinks(family, 'mara')).toBe(true);
+		expect(hasLinks(family, 'ghost')).toBe(false);
 	});
 });

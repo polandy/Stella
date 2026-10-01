@@ -10,10 +10,34 @@ You are a meticulous code reviewer for **Stella** (repo `ross`). Review the pull
 
 Work through **all** sections below in order. Collect findings as you go and fix what the instructions say to fix. Finish with a structured verdict.
 
+## Depth: pick the tier first
+
+A review costs as much as what it reads, so its depth follows the PR's risk, not a fixed recipe.
+Decide the tier from `gh pr diff <PR> --name-only` and say which one you used in the verdict.
+
+- **Full** — any of: a schema or `drizzle/` change, anything under `src/lib/server/access/`, a
+  visibility or authz rule, the offline command path (`src/lib/commands/`,
+  `src/lib/server/domain/commands/`), a new dependency, or a new screen. Every section below.
+- **Light** — everything else (copy, styling, a contained component or pure-module change, docs).
+  §0 without a worktree (read `gh pr diff`; open a whole file only where the diff is not enough),
+  §1, §3, the §4.0 table, §6 and §7. Skip §2 unless the diff adds a decision, and skip the
+  rendering and mutation steps of §5 unless the PR's headline is visual.
+
+In both tiers:
+
+- **Trust a green CI for `bun run check` and `bun run test`** — they ran on the PR's head. Run them
+  locally only when you push a fix, or when CI is red or has not run on the current head.
+- **Read the diff before any file**, and open the doc *section* the PR touches (`grep -n` for its
+  heading, then read that range), never a whole `docs/` file.
+- **Red CI**: read `scripts/ci-failures.sh <PR>` first — failure annotations only. Reach for
+  `gh run view --log-failed` only when that is not enough.
+- **Never run `bun run test:e2e` locally** — CI runs it on every push. Render with a throwaway
+  script only when a §5 claim is about pixels.
+
 ## 0. Gather context
 
 - `gh pr view <PR> --json title,body,baseRefName,headRefName,mergeStateStatus,statusCheckRollup` for metadata and CI status.
-- `gh pr diff <PR>` for the full diff. Check the branch out **in its own worktree** (`git worktree add ../ross-review-<PR> <branch>`) so you can build and test without disturbing whatever the main checkout is on, and remove it when you are done. Never review by switching branches under someone else's uncommitted work.
+- `gh pr diff <PR>` for the full diff. Where the tier needs a checkout, use the author's worktree if it exists and is clean, else check the branch out **in its own worktree** (`git worktree add ../Stella-review-<PR> <branch>`, never under `.claude/`) so you can build and test without disturbing whatever the main checkout is on, and remove it when you are done. Never review by switching branches under someone else's uncommitted work.
 - Read the PR description first — the review checks the implementation *against its stated intent*.
 - **Load the project standard**: `CLAUDE.md` (§Golden rules, §Non-negotiables) and `docs/08-coding-guidelines.md`. These are binding and authoritative. Section 3 below distills the highest-signal checks, but the *files* win where they disagree with this skill.
 
@@ -21,12 +45,17 @@ Work through **all** sections below in order. Collect findings as you go and fix
 
 Every behaviour change is reflected in its doc **in the same PR** — never as a follow-up. `CLAUDE.md` states it as a non-negotiable: "When you change the model or a behavior, update the matching `docs/` file in the same change."
 
+`docs/02-features.md`, `docs/04-architecture.md` and `docs/05-ui-design-system.md` are each
+just an index now — one line per `§` linking to its own file under `docs/features/`,
+`docs/architecture/` or `docs/design/`. Find the owning `§` in the index, then edit its
+section file directly.
+
 | Change | Doc that must move with it |
 |---|---|
-| New or changed feature behaviour | `docs/02-features.md` (the numbered section that owns it) |
+| New or changed feature behaviour | the owning section file under `docs/features/` (via `docs/02-features.md`'s index) |
 | Tables, columns, constraints, the visibility model | `docs/03-data-model.md` |
-| Structure, wiring, a new port/adapter, config, a real decision | `docs/04-architecture.md` (incl. §4.9 decision log) |
-| A new screen, component or interaction pattern | `docs/05-ui-design-system.md` |
+| Structure, wiring, a new port/adapter, config, a real decision | the owning section file under `docs/architecture/` (via `docs/04-architecture.md`'s index); real decisions go in `docs/architecture/4.9-decision-log.md` |
+| A new screen, component or interaction pattern | the owning section file under `docs/design/` (via `docs/05-ui-design-system.md`'s index) |
 | Milestone scope moving | `docs/06-roadmap.md` |
 | Anything an operator must do differently | `docs/07-deployment.md` **and** `docs/install.md` |
 | Anything a user does differently | `docs/using-stella.md`, and `README.md` if it is on the front page |
@@ -36,7 +65,7 @@ Every behaviour change is reflected in its doc **in the same PR** — never as a
 - **User docs are promises.** `docs/install.md` and `docs/using-stella.md` are read by someone deciding whether to trust the app. A PR that changes a shortcut, a default, an env var or a screen and leaves those files describing the old behaviour has published something untrue.
 - Doc comments on exported symbols must match actual behaviour, and every exported symbol has one (`CLAUDE.md`, §8.6).
 
-## 2. Decisions (`docs/04-architecture.md` §4.9)
+## 2. Decisions (`docs/architecture/4.9-decision-log.md`, linked from `docs/04-architecture.md` §4.9)
 
 Stella keeps an **ADR-lite decision log** rather than separate ADR files.
 
@@ -92,7 +121,7 @@ Three rules follow:
 
 If the PR touches `src/routes/` or `src/lib/components/`:
 
-- **`docs/05-ui-design-system.md` must be updated** in the same PR for a new screen, component or interaction pattern.
+- **The owning section file under `docs/design/` must be updated** (via `docs/05-ui-design-system.md`'s index) in the same PR for a new screen, component or interaction pattern.
 - **The feature's UI ships with the feature.** A backend capability with "UI in a follow-up" is a blocker, not a note.
 - **The delivery loop is part of the review** (§8.4.1). The order is: implement with unit/integration tests → the maintainer verifies it in the running app → **on their OK** the Playwright e2e is added. So:
   - A PR whose e2e was written *before* any manual verification is a finding — an unverified e2e encodes a guess and passes, which is worse than no e2e.
@@ -109,7 +138,7 @@ If the PR touches `src/routes/` or `src/lib/components/`:
 ## 6. CI status — fix failures
 
 - Check `gh pr checks <PR>`. **All checks must be green** — both the `verify` job (`bun run check`, `bun run test`) and the `e2e` job.
-- If anything is red: read the failure (`gh run view --log-failed`), fix it on the PR branch, re-run `bun run check` and `bun run test` locally, commit with a Conventional Commit, push, wait for the re-run. Repeat until green.
+- If anything is red: read the failure (`scripts/ci-failures.sh <PR>`; the full log via `gh run view --log-failed` only if that is not enough), fix it on the PR branch, re-run `bun run check` and `bun run test` locally, commit with a Conventional Commit, push, wait for the re-run. Repeat until green.
 - Commit types are chosen by **user-facing impact**, because release-please builds the changelog from them (§8.9). A user-visible behaviour change committed as `chore:` disappears from the release notes — that is a finding in itself.
 
 ## 7. Branch freshness — update if behind

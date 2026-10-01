@@ -1,6 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { getContact, listContactNames, listContacts } from '$lib/server/domain/contacts/contacts';
+import { getContact, listContactNamesAmong, listContacts } from '$lib/server/domain/contacts/contacts';
 import { authorNames } from '$lib/server/domain/household/members';
 import { authorLabel } from '$lib/story/author';
 import {
@@ -48,12 +48,16 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const contact = await getContact(getContactDeps(), viewer, params.id);
 	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
 
-	const [entries, journalPhotos, allContacts, contactNames] = await Promise.all([
+	const [entries, journalPhotos] = await Promise.all([
 		listJournalForContact(getJournalDeps(), viewer, params.id),
-		getPhotos().listJournalPhotos(viewer, params.id),
-		listContacts(getContactDeps(), viewer),
-		listContactNames(getContactDeps(), viewer)
+		getPhotos().listJournalPhotos(viewer, params.id)
 	]);
+	// Names for the people the entries mention, not for the whole household.
+	const contactNames = await listContactNamesAmong(
+		getContactDeps(),
+		viewer,
+		entries.flatMap((e) => extractMentionIds(e.body))
+	);
 
 	// Group visible photo ids by their entry so each entry renders its own gallery.
 	const photosByEntry = new Map<string, string[]>();
@@ -73,21 +77,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	return {
 		contact: { id: contact.id, displayName: contact.displayName, avatarPhotoId: contact.avatarPhotoId },
 		today: today(),
-		// People the @-picker may offer, minus the person whose journal this is: naming them
-		// here is not a mention, it is the entry's own subject (docs/02 §2.20.1).
-		candidates: allContacts
-			.filter((c) => c.id !== params.id)
-			.map((c) => ({
-				id: c.id,
-				displayName: c.displayName,
-				firstName: c.firstName,
-				lastName: c.lastName,
-				visibility: c.visibility,
-				description: c.description,
-				metPlace: c.metPlace,
-				metDate: c.metDate,
-				avatarPhotoId: c.avatarPhotoId
-			})),
 		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5, §2.20.1)
 		entries: entries.map((e) => ({
 			id: e.id,
@@ -95,8 +84,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			title: e.title,
 			bodyHtml: renderMarkdownWithMentions(e.body, nameOf),
 			// the stored body for the edit form, which shows its tokens as handles and keeps whom
-			// each one names — including people the picker does not offer, such as the subject
-			bodyForEdit: e.body,
+			// each one names — including people the picker does not offer, such as the subject.
+			// Only an author edits an entry, so only their own carry it.
+			bodyForEdit: e.createdBy === locals.user!.id ? e.body : null,
 			mentionNames: Object.fromEntries(
 				extractMentionIds(e.body).flatMap((id) => (nameById.has(id) ? [[id, nameById.get(id)!]] : []))
 			),

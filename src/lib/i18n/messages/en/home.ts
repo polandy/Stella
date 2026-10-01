@@ -45,6 +45,19 @@ export const home = {
 	'home.outbox.contactFor': (p: { name: string }) => `· contact detail for ${p.name}`,
 	'home.outbox.dateFor': (p: { name: string }) => `· date for ${p.name}`,
 	'home.outbox.photosOf': (p: { name: string }) => `· photos of ${p.name}`,
+	// The first-run card (docs/02 §2.22.3).
+	'home.welcome.label': 'Getting started',
+	'home.welcome.title': 'Welcome to Stella',
+	'home.welcome.intro':
+		'Stella keeps the people in your life, what happens with them and how they are connected. Three ways to begin:',
+	'home.welcome.self.title': 'Start with yourself',
+	'home.welcome.self.hint':
+		'Add your own record. The map opens on you, and everyone you add can be linked to you.',
+	'home.welcome.import.title': 'Coming from Monica?',
+	'home.welcome.import.hint': 'Bring your people, notes and relationships over in one go.',
+	'home.welcome.add.title': 'Add someone',
+	'home.welcome.add.hint': 'A name is all it takes; the rest can come later.',
+	'home.welcome.done': 'Done',
 	'home.empty.title': 'Nothing written yet',
 	'home.empty.hint':
 		'Write the first moment above and mention someone with @ — that is all it takes.',

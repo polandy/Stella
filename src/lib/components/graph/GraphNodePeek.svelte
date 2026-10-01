@@ -9,7 +9,9 @@
 	interface Props {
 		node: GraphNode;
 		compact: boolean;
-		/** Whether the map may grow around this node; past the last ring it may not. */
+		/** Whether the node lies inside the map's reach; past the last ring it does not. */
+		withinReach: boolean;
+		/** Whether Expand is offered: within reach, and it would add a person or a line. */
 		expandable: boolean;
 		/** A circle's roles, once they have arrived; empty for a person. */
 		roleOptions: CircleRoleOption[];
@@ -24,6 +26,7 @@
 	let {
 		node,
 		compact,
+		withinReach,
 		expandable,
 		roleOptions,
 		chosenRoles,
@@ -81,7 +84,7 @@
 		{/if}
 		{#if expandable}
 			<Button type="button" class="max-sm:flex-1" disabled={node.kind === 'circle' && roleOptions.length > 0 && chosenRoles.size === 0} onclick={() => onExpand(node.id)}>{t('graph.peek.expand')}</Button>
-		{:else if fullGraphHref}
+		{:else if fullGraphHref && !withinReach}
 			<!-- The map ends here, so the honest offer is the one place that goes further. -->
 			<Button icon="graph" class="max-sm:flex-1" href={fullGraphHref(node.id)}>{t('graph.openInGraph')}</Button>
 		{/if}
@@ -93,8 +96,10 @@
 	</div>
 	<!-- The general tip is left out of a phone's strip; that the map ends here is not. -->
 	<p class="mt-4 text-xs text-fg-subtle max-sm:mt-3" class:max-sm:hidden={expandable}>
-		{#if !expandable}
+		{#if !withinReach}
 			{t('graph.peek.edgeOfMap')}
+		{:else if !expandable}
+			{t('graph.peek.allShown')}
 		{:else}
 			{compact ? t('graph.peek.tipCompact') : t('graph.peek.tip')}
 		{/if}

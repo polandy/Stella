@@ -17,15 +17,14 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 	const file = await getPhotos().getVisiblePhotoFile(viewer, params.id, variant);
 	if (!file) throw error(404, say(locals, 'errors.notFound'));
 
-	const bytes = await getMediaStore().read(file.path);
-	if (!bytes) throw error(404, say(locals, 'errors.notFound'));
+	// Streamed from disk rather than read into memory first: a full-size photo is megabytes.
+	const opened = await getMediaStore().open(file.path);
+	if (!opened) throw error(404, say(locals, 'errors.notFound'));
 
-	// The bytes are a Uint8Array; Bun's Response accepts it at runtime (the DOM lib type for
-	// BodyInit is stricter about the backing buffer, hence the cast).
-	return new Response(bytes as unknown as BodyInit, {
+	return new Response(opened.body, {
 		headers: {
 			'Content-Type': file.mime,
-			'Content-Length': String(bytes.byteLength),
+			'Content-Length': String(opened.size),
 			'Cache-Control': 'private, max-age=31536000, immutable'
 		}
 	});

@@ -1,7 +1,11 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { quietContacts } from '$lib/server/domain/attention/quiet';
-import { listContactNames, listContacts } from '$lib/server/domain/contacts/contacts';
+import {
+	listBrowsableNamesAmong,
+	listContactNamesAmong,
+	listPeopleEnoughForFirstRun
+} from '$lib/server/domain/contacts/contacts';
 import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
@@ -10,7 +14,7 @@ import { systemClock } from '$lib/server/clock';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
-import { mentionToken } from '$lib/mentions/mentions';
+import { extractMentionIds, mentionToken } from '$lib/mentions/mentions';
 import { parseStreamFilter } from '$lib/stream/filter';
 import {
 	getAttention,
@@ -24,6 +28,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
 import { LINK_PARAM, linkHintHref } from '$lib/stream/link-hint';
+import { welcomeSteps } from '$lib/onboarding/welcome';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
@@ -55,27 +60,38 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		members.map((m) => m.id)
 	);
 
-	const [items, contacts, names, dateSources, quietSources] = await Promise.all([
+	// The people the URL names: a link hint's pair, or the person a moment is about.
+	const [a, b] = (url.searchParams.get(LINK_PARAM) ?? '').split(',');
+	const aboutId = url.searchParams.get(ABOUT_PARAM);
+	const named = [a, b, aboutId].filter((id): id is string => Boolean(id));
+
+	const [items, onList, dateSources, quietSources, firstPeople] = await Promise.all([
 		buildStream(getStreamDeps(), viewer, filter),
-		listContacts(getContactDeps(), viewer),
-		listContactNames(getContactDeps(), viewer),
+		// Who the household can still act on — the browsing scope — among just those.
+		listBrowsableNamesAmong(getContactDeps(), viewer, named),
 		getImportantDates().listSourcesVisibleTo(viewer),
-		getAttention().listQuietSourcesVisibleTo(viewer)
+		getAttention().listQuietSourcesVisibleTo(viewer),
+		// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
+		listPeopleEnoughForFirstRun(getContactDeps(), viewer)
 	]);
-	// Two reads, because they answer different questions: what a mention already written is
-	// called (archived people included) and who the household can still act on.
+	// What a mention already written is called (archived people included), for the moments
+	// on this page only.
+	const names = await listContactNamesAmong(
+		getContactDeps(),
+		viewer,
+		items.flatMap((item) => (item.kind === 'moment' ? extractMentionIds(item.body) : []))
+	);
 	const nameById = new Map(names.map((c) => [c.id, c.displayName]));
 	const nameOf = (id: string) => nameById.get(id) ?? null;
 
 	// The hint only names people the viewer may see; anything else is silently dropped.
-	const [a, b] = (url.searchParams.get(LINK_PARAM) ?? '').split(',');
-	const onList = new Map(contacts.map((c) => [c.id, c.displayName]));
-	const [a2, b2] = [onList.get(a), onList.get(b)];
+	const nameOnList = new Map(onList.map((c) => [c.id, c.displayName]));
+	const [a2, b2] = [nameOnList.get(a), nameOnList.get(b)];
 	const linkSuggestion =
 		a && b && a2 && b2 ? { a: { id: a, name: a2 }, b: { id: b, name: b2 } } : null;
 
 	// "Write a moment" on an upcoming date opens the composer with that person already in it.
-	const about = contacts.find((c) => c.id === url.searchParams.get(ABOUT_PARAM));
+	const about = onList.find((c) => c.id === aboutId);
 
 	// One reading of the clock, so the composer's day and the horizon cannot straddle midnight.
 	const day = today();
@@ -91,6 +107,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		railFirst: hasImminentDate(upcoming),
 		quiet: quietContacts(quietSources, day),
 		linkSuggestion,
+		// The first-run card (docs/02 §2.22.3), or null once the household has begun.
+		welcome: welcomeSteps({
+			peopleIds: firstPeople,
+			selfContactId: locals.user.selfContactId,
+			isAdmin: locals.user.role === 'admin'
+		}),
 		filter,
 		members,
 		stream: items.map((item) =>

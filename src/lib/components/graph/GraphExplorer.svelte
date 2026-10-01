@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import Button from '$lib/components/Button.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
+	import { addRelationshipPath } from '$lib/contacts/sections';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { kinshipLabel } from '$lib/kinship/labels';
 	import { relationshipRowLabel } from '$lib/relationships/labels';
@@ -18,7 +20,8 @@
 		type CircleRole,
 		type CircleRoleOption
 	} from '$lib/graph/model/ego-network';
-	import { canExpand, ringsFrom } from '$lib/graph/model/rings';
+	import { canExpand, hasLinks, ringsFrom } from '$lib/graph/model/rings';
+	import { expandWouldAdd } from '$lib/graph/model/expand-offer';
 	import { impliedKinshipEdgeIds } from '$lib/graph/model/implied-kinship';
 	import {
 		applyFilters,
@@ -249,7 +252,9 @@
 	const peekNode = $derived(selected ? model.nodes.find((n) => n.id === selected) ?? null : null);
 	// How far each node sits from the centre, so the embedded map stops where it promises to.
 	const rings = $derived(centerId ? ringsFrom(model, centerId) : new Map<string, number>());
-	const peekExpandable = $derived(
+	// Inside the map's reach, and with something left to open — Expand on somebody whose every
+	// link is drawn already, or who has none, was a button that did nothing (docs/02 §2.7).
+	const peekWithinReach = $derived(
 		peekNode !== null && (centerId === null || canExpand(rings, peekNode.id, maxRings))
 	);
 	// The "+N" on a node that can still grow: who an expand would bring in under the current
@@ -259,6 +264,22 @@
 			filters: buildFilters(),
 			expandable: (id) => centerId === null || canExpand(rings, id, maxRings)
 		})
+	);
+	// Expand is offered exactly when it would add something under the current filters: somebody
+	// behind the "+N", or a line among people already shown — never a button that does nothing,
+	// and never missing where a circle's roles are still to be drawn (docs/02 §2.7).
+	const peekHasMore = $derived(
+		peekNode !== null && expandWouldAdd(graph, drawn, peekNode.id, buildFilters())
+	);
+	const peekExpandable = $derived(peekWithinReach && peekHasMore);
+	/*
+	 * A centre linked to nobody draws one lonely dot. The explorer route says why and offers
+	 * the step that changes it; an embedded map is never drawn for somebody without links.
+	 */
+	const lonelyCentre = $derived(
+		!compact && centerId !== null && !hasLinks(graph, centerId)
+			? (graph.nodes.find((n) => n.id === centerId) ?? null)
+			: null
 	);
 
 	/*
@@ -621,6 +642,23 @@
 		onClear={onCanvasClear}
 	/>
 
+	<!-- Below the centre rather than over it, and out of the way while a peek panel is open. -->
+	{#if ready && lonelyCentre && !selected}
+		<div class="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center px-4" data-testid="graph-alone">
+			<div class="pointer-events-auto w-full max-w-sm rounded-app bg-card shadow-pop">
+				{#if lonelyCentre.kind === 'circle'}
+					<EmptyState icon="circles" title={t('graph.aloneCircle.title', { name: lonelyCentre.label })} hint={t('graph.aloneCircle.hint')}>
+						<Button variant="primary" icon="add" href="/circles/{lonelyCentre.id}">{t('circles.addPeople')}</Button>
+					</EmptyState>
+				{:else}
+					<EmptyState icon="graph" title={t('graph.alone.title', { name: lonelyCentre.label })} hint={t('graph.alone.hint')}>
+						<Button variant="primary" icon="add" href={addRelationshipPath(lonelyCentre.id)}>{t('graph.alone.add')}</Button>
+					</EmptyState>
+				{/if}
+			</div>
+		</div>
+	{/if}
+
 	<!-- Toolbar. It keeps clear of the peek panel while that is open: the chips wrap on a
 	     narrow window, and the row that wraps would otherwise slide underneath it — leaving
 	     the button under there unclickable. -->
@@ -701,6 +739,7 @@
 		<GraphNodePeek
 			node={peekNode}
 			{compact}
+			withinReach={peekWithinReach}
 			expandable={peekExpandable}
 			{roleOptions}
 			{chosenRoles}

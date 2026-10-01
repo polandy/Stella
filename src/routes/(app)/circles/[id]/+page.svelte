@@ -13,6 +13,7 @@
 	import { allChosen, toggleEveryone, toggleGroup, toggleMember } from '$lib/circles/selection';
 	import { accentDotStyle } from '$lib/design/tokens';
 	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { newPersonHref } from '$lib/people/new-person';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { deferredRemoval } from '$lib/undo/deferred-removal';
 	import { removalKey } from '$lib/undo/keys';
@@ -20,6 +21,11 @@
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	// The shell's people who are not in the circle yet: the ones the picker can add.
+	const candidates = $derived.by(() => {
+		const members = new Set(data.memberIds);
+		return data.people.filter((p) => !members.has(p.id));
+	});
 	const t = useTranslate();
 	const circle = $derived(data.circle);
 
@@ -136,7 +142,7 @@
 	<Section
 		title={t('circles.members')}
 		count={visibleCount}
-		addLabel={data.candidates.length ? t('circles.addPeople') : undefined}
+		addLabel={candidates.length ? t('circles.addPeople') : undefined}
 		error={form?.error ?? null}
 		bind:open={addOpen}
 	>
@@ -214,7 +220,14 @@
 				icon="people"
 				title={t('circles.noMembers.title')}
 				hint={t('circles.noMembers.hint')}
-			/>
+			>
+				<!-- The header's Add opens the same form; with nobody to add yet, people come first. -->
+				{#if candidates.length}
+					<Button variant="primary" icon="add" type="button" onclick={() => (addOpen = true)}>{t('circles.noMembers.add')}</Button>
+				{:else}
+					<Button variant="primary" icon="add" href={newPersonHref()}>{t('nav.addPerson')}</Button>
+				{/if}
+			</EmptyState>
 		{/if}
 
 		{#snippet editor()}
@@ -227,7 +240,7 @@
 					<span class="text-fg-muted">{t('circles.people')}</span>
 					<PersonSearchSelect
 						id="circle-member"
-						people={data.candidates}
+						people={candidates}
 						name="contactId"
 						bind:selectedIds={newMemberIds}
 						multiple

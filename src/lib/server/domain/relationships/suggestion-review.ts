@@ -104,6 +104,16 @@ export async function reviewPerson(
 		deps.relationships.loadKinshipGraphVisibleTo(viewer),
 		deps.dismissals.listForHousehold(viewer)
 	]);
+	return reviewPersonIn(graph, dismissals, subjectId, options);
+}
+
+/** `reviewPerson` over a graph and a dismissal log already read for the same viewer. */
+export function reviewPersonIn(
+	graph: KinshipGraph,
+	dismissals: readonly Dismissal[],
+	subjectId: string,
+	options: { includeDismissed?: boolean } = {}
+): ProposedLink[] {
 	const view = buildView(graph, dismissals);
 	if (!view.has(subjectId)) return [];
 	const found = evaluate({ kind: 'person-reviewed', subjectId }, view, options);

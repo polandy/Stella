@@ -3,6 +3,7 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { NewActivityEntry } from '../activity/activity';
 import {
+	listPeopleEnoughForFirstRun,
 	archiveContact,
 	createContact,
 	editProfile,
@@ -15,6 +16,10 @@ import {
 	restoreContact,
 	deleteContact,
 	mergeContacts,
+	countKnownByAFirstNameOnly,
+	listBrowsableNamesAmong,
+	listContactNamesAmong,
+	type DistinguishableContact,
 	type MergePair,
 	type DeletedContactMedia,
 	type Contact,
@@ -23,6 +28,7 @@ import {
 	type NewContact,
 	type ProfilePatch
 } from './contacts';
+import { isKnownByAFirstNameOnly } from '../../../people/namesakes';
 
 /*
  * The createContact use-case: derive the display name, apply the creator's default
@@ -48,6 +54,11 @@ function fakeRepo() {
 		listVisibleTo: async () => [],
 		listArchivedVisibleTo: async () => [],
 		listNamesVisibleTo: async () => [],
+		listNamesAmongVisibleTo: async () => [],
+		listBrowsableNamesAmong: async () => [],
+		listSomeBrowsableIdsVisibleTo: async () => [],
+		countArchivedVisibleTo: async () => 0,
+		listDistinguishableVisibleTo: async () => [],
 		updateProfile: async () => {},
 		setGender: async () => {},
 		setArchived: async () => {},
@@ -213,6 +224,11 @@ function editableRepo(contact: Contact | null) {
 		listVisibleTo: async () => [],
 		listArchivedVisibleTo: async () => [],
 		listNamesVisibleTo: async () => [],
+		listNamesAmongVisibleTo: async () => [],
+		listBrowsableNamesAmong: async () => [],
+		listSomeBrowsableIdsVisibleTo: async () => [],
+		countArchivedVisibleTo: async () => 0,
+		listDistinguishableVisibleTo: async () => [],
 		updateProfile: async (id, patch) => {
 			patches.push({ id, patch });
 		},
@@ -445,6 +461,11 @@ describe('deleteContact', () => {
 			listVisibleTo: async () => [],
 			listArchivedVisibleTo: async () => [],
 			listNamesVisibleTo: async () => [],
+			listNamesAmongVisibleTo: async () => [],
+			listBrowsableNamesAmong: async () => [],
+			listSomeBrowsableIdsVisibleTo: async () => [],
+			countArchivedVisibleTo: async () => 0,
+			listDistinguishableVisibleTo: async () => [],
 			updateProfile: async () => {},
 			setGender: async () => {},
 			setArchived: async () => {},
@@ -558,6 +579,11 @@ describe('mergeContacts', () => {
 			listVisibleTo: async () => [],
 			listArchivedVisibleTo: async () => [],
 			listNamesVisibleTo: async () => [],
+			listNamesAmongVisibleTo: async () => [],
+			listBrowsableNamesAmong: async () => [],
+			listSomeBrowsableIdsVisibleTo: async () => [],
+			countArchivedVisibleTo: async () => 0,
+			listDistinguishableVisibleTo: async () => [],
 			updateProfile: async () => {},
 			setGender: async () => {},
 			setArchived: async () => {},
@@ -646,5 +672,97 @@ describe('mergeContacts', () => {
 
 		expect(await mergeContacts(deps(f.repo), viewer, 'same', 'same')).toBe(false);
 		expect(f.merges).toEqual([]);
+	});
+});
+
+describe('countKnownByAFirstNameOnly', () => {
+	it('counts by the same rule the clean-up list gathers people by', async () => {
+		const row = (id: string, displayName: string, more: Partial<DistinguishableContact> = {}) => ({
+			id,
+			displayName,
+			lastName: null,
+			description: null,
+			metPlace: null,
+			metDate: null,
+			...more
+		});
+		const rows: DistinguishableContact[] = [
+			row('anna', 'Anna'),
+			row('ben', 'Ben', { lastName: 'Brunner' }),
+			row('carla', 'Carla Huber'),
+			row('dora', 'Dora', { description: 'from the choir' }),
+			row('emil', 'Emil', { metPlace: 'Bern' }),
+			row('fritz', ' Fritz ')
+		];
+		const f = fakeRepo();
+		f.repo.listDistinguishableVisibleTo = async () => rows;
+
+		expect(await countKnownByAFirstNameOnly({ contacts: f.repo }, { id: 'u', householdId: 'h' })).toBe(2);
+		expect(rows.filter(isKnownByAFirstNameOnly).map((r) => r.id)).toEqual(['anna', 'fritz']);
+	});
+});
+
+/*
+ * The by-id name reads behind the story, the journal, Home and the circle picker (docs/04
+ * §4.8). The circle action compares the answer's length with the distinct ids it asked for, so
+ * a repeated id has to be asked once, and a page with nobody to name must not read at all.
+ */
+describe('reading names for just the ids a page needs', () => {
+	const viewer = { id: 'u', householdId: 'h' };
+
+	function recordingRepo() {
+		const f = fakeRepo();
+		const asked: { read: string; ids: readonly string[] }[] = [];
+		f.repo.listNamesAmongVisibleTo = async (_viewer, ids) => {
+			asked.push({ read: 'visible', ids });
+			return ids.map((id) => ({ id, displayName: id }));
+		};
+		f.repo.listBrowsableNamesAmong = async (_viewer, ids) => {
+			asked.push({ read: 'browsable', ids });
+			return ids.map((id) => ({ id, displayName: id }));
+		};
+		return { repo: f.repo, asked };
+	}
+
+	it('asks the store for each person once, however often a page names them', async () => {
+		const f = recordingRepo();
+		const visible = await listContactNamesAmong({ contacts: f.repo }, viewer, ['anna', 'ben', 'anna']);
+		const browsable = await listBrowsableNamesAmong({ contacts: f.repo }, viewer, ['ben', 'ben', 'cleo']);
+
+		expect(visible.map((c) => c.id)).toEqual(['anna', 'ben']);
+		expect(browsable.map((c) => c.id)).toEqual(['ben', 'cleo']);
+		expect(f.asked).toEqual([
+			{ read: 'visible', ids: ['anna', 'ben'] },
+			{ read: 'browsable', ids: ['ben', 'cleo'] }
+		]);
+	});
+
+	it('reads nothing when the page names nobody', async () => {
+		const f = recordingRepo();
+		expect(await listContactNamesAmong({ contacts: f.repo }, viewer, [])).toEqual([]);
+		expect(await listBrowsableNamesAmong({ contacts: f.repo }, viewer, [])).toEqual([]);
+		// Positive control: the same recorder does see a read when there is someone to name.
+		await listContactNamesAmong({ contacts: f.repo }, viewer, ['anna']);
+		expect(f.asked).toEqual([{ read: 'visible', ids: ['anna'] }]);
+	});
+});
+
+/*
+ * Home's first-run card (docs/02 §2.22.3) only needs to know whether the household holds
+ * anybody besides the member's own record, so it must not read the whole household to learn it.
+ */
+describe('listPeopleEnoughForFirstRun', () => {
+	it('asks for two browsable ids: one more than the self record can ever be', async () => {
+		const f = fakeRepo();
+		const limits: number[] = [];
+		f.repo.listSomeBrowsableIdsVisibleTo = async (_viewer, limit) => {
+			limits.push(limit);
+			return ['self', 'anna', 'ben'].slice(0, limit);
+		};
+		expect(await listPeopleEnoughForFirstRun({ contacts: f.repo }, { id: 'u', householdId: 'h' })).toEqual([
+			'self',
+			'anna'
+		]);
+		expect(limits).toEqual([2]);
 	});
 });

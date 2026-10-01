@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { signIn } from './app';
-import { clickFrame, settled } from './graph-canvas';
+import { clickFrame, clickNode, settled } from './graph-canvas';
 
 /*
  * The app on a phone, tuned for a Pixel 9 Pro (docs/05 §5.5, §5.8). Written after the
@@ -92,15 +92,23 @@ test('a selected person’s panel is a strip along the bottom, above the tab bar
 	await page.goto(`/graph?center=${LENA}`);
 	await settled(page);
 
-	// The centre is selected on arrival, so its panel is showing.
+	// The centre is selected on arrival, so its panel is showing. Every link of hers is drawn
+	// already, so it offers no Expand and says why — on a phone too (docs/02 §2.7).
 	const panel = page.getByRole('complementary').filter({ hasText: 'Lena Brunner' });
 	await expect(panel.getByRole('link', { name: 'Open profile' })).toBeVisible();
+	await expect(panel).toContainText('Everything linked here is already on the map.');
+	await expect(panel.getByRole('button', { name: 'Expand connections' })).toHaveCount(0);
 	await expectBottomStrip(page, panel);
 
-	// Its two buttons side by side, not stacked.
-	const expand = await boxOf(panel.getByRole('button', { name: 'Expand connections' }));
-	const profile = await boxOf(panel.getByRole('link', { name: 'Open profile' }));
-	expect(Math.abs(expand.y - profile.y)).toBeLessThan(2);
+	// A node with more around it — her Turnverein, its members unopened — offers both, side by
+	// side, not stacked.
+	await panel.getByRole('button', { name: 'Close' }).click();
+	await clickNode(page, TURNVEREIN);
+	const circle = page.getByRole('complementary').filter({ hasText: 'Turnverein Länggasse' });
+	await expectBottomStrip(page, circle);
+	const expand = await boxOf(circle.getByRole('button', { name: 'Expand connections' }));
+	const open = await boxOf(circle.getByRole('link', { name: 'Open the circle' }));
+	expect(Math.abs(expand.y - open.y)).toBeLessThan(2);
 });
 
 test('a tapped role group’s panel is the same strip', async ({ page }) => {

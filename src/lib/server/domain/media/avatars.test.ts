@@ -89,10 +89,12 @@ function fakeDeps() {
 		},
 		getVisiblePhotoFile: async () => null,
 		listJournalPhotos: async () => [],
+		listJournalPhotosOfEntries: async () => [],
 		listGalleryPhotos: async () => [],
 		findVisibleGalleryPhoto: async () => null,
 		updateOwnGalleryPhoto: async () => false,
-		deleteOwnGalleryPhoto: async () => null
+		deleteOwnGalleryPhoto: async () => null,
+		setGalleryPhotoPin: async () => {}
 	};
 	const deps: AvatarDeps = { photos, media, ids: idGen, clock };
 	return {

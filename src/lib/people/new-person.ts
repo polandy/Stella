@@ -65,3 +65,32 @@ export function isKnownByMoreThanAFirstName(person: PersonBeingAdded): boolean {
 	if (person.firstName?.trim() || person.lastName?.trim()) return Boolean(person.lastName?.trim());
 	return (person.displayName ?? '').trim().split(/\s+/).length > 1;
 }
+
+/** What the *Add person* form can be opened with (docs/02 §2.2). */
+export interface NewPersonRequest {
+	/** A name typed elsewhere — a search that found nobody — to start the form from. */
+	name?: string;
+	/** The person being added is the member themselves (docs/02 §2.1.3). */
+	self?: boolean;
+}
+
+const NEW_PERSON_PATH = '/contacts/new';
+
+/** The link that opens the *Add person* form as asked — the one place its parameters are spelled. */
+export function newPersonHref(request: NewPersonRequest = {}): string {
+	const params = new URLSearchParams();
+	const name = request.name?.trim() ?? '';
+	if (name) params.set('name', name);
+	if (request.self) params.set('self', '1');
+	const query = params.toString();
+	return query ? `${NEW_PERSON_PATH}?${query}` : NEW_PERSON_PATH;
+}
+
+/** What a link made by {@link newPersonHref} asks of the form. */
+export function readNewPersonRequest(params: URLSearchParams): { name: TypedName; isSelf: boolean } {
+	return {
+		name: splitTypedName(params.get('name') ?? ''),
+		// Only the exact value: claiming a record as yourself is not something to infer.
+		isSelf: params.get('self') === '1'
+	};
+}

@@ -10,7 +10,8 @@ import {
 	relationshipVisibleTo
 } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import { loadKinshipGraph } from './kinship-graph-read';
+import type { VisibleFamily, VisibleFamilySource } from '../domain/relationships/family';
+import { kinshipGraphOf } from './kinship-graph-read';
 import type * as schema from './schema';
 import { circle, circleMembership, contact, relationship, relationshipType } from './schema';
 
@@ -25,21 +26,25 @@ import { circle, circleMembership, contact, relationship, relationshipType } fro
  * scoped snapshot, so an inferred line can never name a person the viewer may not see.
  */
 
-export interface GraphRepository {
+export interface GraphRepository extends VisibleFamilySource {
 	loadVisibleGraph(viewer: Viewer): Promise<GraphModel>;
 }
 
 export function createDrizzleGraphRepository(
 	db: BunSQLiteDatabase<typeof schema>
 ): GraphRepository {
-	return {
-		async loadVisibleGraph(viewer: Viewer): Promise<GraphModel> {
+	/*
+	 * One read of the people and their links serves both the drawing and the kinship engine,
+	 * which used to read them again on its own: the person page needs both in one request.
+	 */
+	async function loadVisibleGraphWithKinship(viewer: Viewer): Promise<VisibleFamily> {
 			const contactRows = db
 				.select({
 					id: contact.id,
 					label: contact.displayName,
 					deceased: contact.isDeceased,
-					avatarPhotoId: contact.avatarPhotoId
+					avatarPhotoId: contact.avatarPhotoId,
+					gender: contact.gender
 				})
 				.from(contact)
 				.where(contactVisibleTo(viewer))
@@ -63,7 +68,8 @@ export function createDrizzleGraphRepository(
 					category: relationshipType.category,
 					typeKey: relationshipType.key,
 					forwardLabel: relationshipType.forwardLabel,
-					symmetric: relationshipType.symmetric
+					symmetric: relationshipType.symmetric,
+					status: relationship.status
 				})
 				.from(relationship)
 				.innerJoin(relationshipType, eq(relationship.typeId, relationshipType.id))
@@ -114,11 +120,21 @@ export function createDrizzleGraphRepository(
 				});
 			}
 
+			const kinship = kinshipGraphOf(
+				contactRows.map((r) => ({ id: r.id, displayName: r.label, gender: r.gender })),
+				relRows.map((r) => ({ fromId: r.fromContactId, toId: r.toContactId, key: r.typeKey, status: r.status }))
+			);
 			// Derived kinship (docs/02 §2.4.1) as its own edge kind: what the primary links imply
 			// but nobody entered — grandparents, aunts, cousins, in-laws — drawn once per pair.
-			edges.push(...deriveKinshipEdges(loadKinshipGraph(db, viewer)));
+			edges.push(...deriveKinshipEdges(kinship));
 
-			return { nodes, edges };
+			return { graph: { nodes, edges }, kinship };
+	}
+
+	return {
+		loadVisibleGraphWithKinship,
+		async loadVisibleGraph(viewer: Viewer): Promise<GraphModel> {
+			return (await loadVisibleGraphWithKinship(viewer)).graph;
 		}
 	};
 }

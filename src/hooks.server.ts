@@ -1,6 +1,7 @@
-import type { Handle } from '@sveltejs/kit';
-import { LOCALE_COOKIE } from '$lib/i18n/locales';
+import type { Handle, ServerInit } from '@sveltejs/kit';
+import { LOCALE_COOKIE, LOCALES } from '$lib/i18n/locales';
 import { resolveLocale } from '$lib/i18n/resolve';
+import { loadCatalog } from '$lib/i18n/translate';
 import { clearSessionCookie, SESSION_COOKIE, setLocaleCookie } from '$lib/server/auth/cookies';
 import { resolveRequestIdentity } from '$lib/server/auth/request-identity';
 import { etagOf, isUnchanged, wantsEtag } from '$lib/server/http/etag';
@@ -14,6 +15,15 @@ import { getAccounts, getApiTokenDeps, getSessionDeps } from '$lib/server/servic
  * The API (`/api/v1/`) is the one exception: there the member is who the bearer token says,
  * and the cookie is not read at all (`resolveRequestIdentity`).
  */
+
+/*
+ * Every message catalogue, loaded once before the first request. Only the browser fetches a
+ * language on demand (docs/04 §4.4); the server speaks them all, and its routes, actions and
+ * `say()` translate synchronously from here on.
+ */
+export const init: ServerInit = async () => {
+	await Promise.all(LOCALES.map((locale) => loadCatalog(locale)));
+};
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const identity = await resolveRequestIdentity(
