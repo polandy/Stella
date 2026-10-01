@@ -5,6 +5,7 @@ import {
 	captionGalleryPhoto,
 	CaptionTooLongError,
 	listGallery,
+	pinGalleryPhoto,
 	removeGalleryPhoto,
 	setGalleryPhotoVisibility,
 	CAPTION_MAX_LENGTH,
@@ -18,6 +19,7 @@ import {
  */
 
 const viewer: Viewer = { id: 'u1', householdId: 'h1' };
+const NOW = 5_000;
 
 const photo = (over: Partial<GalleryPhoto> = {}): GalleryPhoto => ({
 	id: 'p1',
@@ -30,12 +32,14 @@ const photo = (over: Partial<GalleryPhoto> = {}): GalleryPhoto => ({
 	createdAt: 1000,
 	isAvatar: false,
 	framing: null,
+	pinnedAt: null,
 	...over
 });
 
 function deps(over: { photos?: GalleryPhoto[]; visible?: GalleryPhoto | null } = {}) {
 	const calls: string[] = [];
 	const deleted: string[] = [];
+	const pins: { photoId: string; pinnedAt: number | null }[] = [];
 	const updates: {
 		authorId: string;
 		photoId: string;
@@ -51,6 +55,9 @@ function deps(over: { photos?: GalleryPhoto[]; visible?: GalleryPhoto | null } =
 		async findVisibleGalleryPhoto(v, contactId, photoId) {
 			calls.push(`find ${v.id} ${contactId} ${photoId}`);
 			return over.visible ?? null;
+		},
+		async setGalleryPhotoPin(photoId, pinnedAt) {
+			pins.push({ photoId, pinnedAt });
 		},
 		async updateOwnGalleryPhoto(input) {
 			updates.push(input);
@@ -70,14 +77,17 @@ function deps(over: { photos?: GalleryPhoto[]; visible?: GalleryPhoto | null } =
 	const d: GalleryDeps & {
 		calls: string[];
 		deleted: string[];
+		pins: typeof pins;
 		updates: typeof updates;
 		removedFiles: string[];
 	} = {
 		calls,
 		deleted,
+		pins,
 		updates,
 		removedFiles,
 		photos: photos as PhotoRepository,
+		clock: { now: () => NOW },
 		media: {
 			async put() {
 				return '';
@@ -98,6 +108,54 @@ describe('listGallery', () => {
 		const d = deps({ photos: [photo(), photo({ id: 'p2' })] });
 		expect(await listGallery(d, viewer, 'c1')).toHaveLength(2);
 		expect(d.calls).toEqual(['list u1 c1']);
+	});
+
+	it('shows the favourites first, then the rest newest first', async () => {
+		const d = deps({
+			photos: [photo({ id: 'new', createdAt: 3 }), photo({ id: 'old', createdAt: 1, pinnedAt: 9 }), photo({ id: 'mid', createdAt: 2 })]
+		});
+		expect((await listGallery(d, viewer, 'c1')).map((p) => p.id)).toEqual(['old', 'new', 'mid']);
+	});
+});
+
+describe('pinGalleryPhoto', () => {
+	const someoneElse: Viewer = { id: 'u2', householdId: 'h1' };
+
+	it('pins a photo the viewer can see, at the time it was pinned', async () => {
+		const d = deps({ visible: photo() });
+		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(true);
+		expect(d.calls).toEqual(['find u1 c1 p1']);
+		expect(d.pins).toEqual([{ photoId: 'p1', pinnedAt: NOW }]);
+	});
+
+	it('lets any member who sees the photo pin it, not only who added it — a pin is the household’s', async () => {
+		const d = deps({ visible: photo({ createdBy: 'u1' }) });
+		expect(await pinGalleryPhoto(d, someoneElse, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(true);
+		expect(d.pins).toEqual([{ photoId: 'p1', pinnedAt: NOW }]);
+	});
+
+	it('keeps the first pin’s time when a pinned photo is pinned again, so a replay changes nothing', async () => {
+		const d = deps({ visible: photo({ pinnedAt: 1_234 }) });
+		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(true);
+		expect(d.pins).toEqual([]);
+	});
+
+	it('unpins a pinned photo', async () => {
+		const d = deps({ visible: photo({ pinnedAt: 1_234 }) });
+		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: false })).toBe(true);
+		expect(d.pins).toEqual([{ photoId: 'p1', pinnedAt: null }]);
+	});
+
+	it('writes nothing when unpinning a photo that is not pinned', async () => {
+		const d = deps({ visible: photo() });
+		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: false })).toBe(true);
+		expect(d.pins).toEqual([]);
+	});
+
+	it('refuses a photo the viewer cannot see, without saying whether it exists', async () => {
+		const d = deps({ visible: null });
+		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(false);
+		expect(d.pins).toEqual([]);
 	});
 });
 

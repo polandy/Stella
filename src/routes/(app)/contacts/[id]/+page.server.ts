@@ -42,6 +42,7 @@ import {
 	captionGalleryPhoto,
 	CaptionTooLongError,
 	listGallery,
+	pinGalleryPhoto,
 	removeGalleryPhoto,
 	setGalleryPhotoVisibility
 } from '$lib/server/domain/media/gallery';
@@ -195,7 +196,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		lastContactedAt: read.lastContactedAt,
 		notes: read.notes.map((note) => noteView(note, ctx.nameOf)),
 		mentionedIn: read.mentionedIn.map((reference) => mentionedInView(reference, ctx)),
-		// The person's photo gallery (docs/02 §2.14), newest first, already visibility-scoped.
+		// The person's photo gallery (docs/02 §2.14), favourites first, already visibility-scoped.
 		gallery: read.gallery,
 
 		// Who they belong with.
@@ -315,6 +316,12 @@ const VisibilitySchema = v.optional(v.picklist(['shared', 'private']), 'shared')
 const PhotoVisibilitySchema = v.object({
 	photoId: v.pipe(v.string(), v.minLength(1)),
 	visibility: v.picklist(['shared', 'private'])
+});
+
+/** Pin a photo as a favourite, or unpin it; the form says which, so a resend is the same. */
+const PhotoPinSchema = v.object({
+	photoId: v.pipe(v.string(), v.minLength(1)),
+	pinned: v.picklist(['true', 'false'])
 });
 
 /** One claim a member is answering on the review panel (§6.4): the relation and the pair. */
@@ -1014,6 +1021,20 @@ export const actions: Actions = {
 			))
 		) {
 			return fail(403, { photoError: say(locals, 'errors.photo.onlyOwnerChange') });
+		}
+		throw redirect(303, contactSectionPath(params.id, 'photos'));
+	},
+
+	/** Pin a gallery photo as one of the person's favourites, or unpin it. Anyone who sees it may. */
+	pinPhoto: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const form = await request.formData();
+		const parsed = v.safeParse(PhotoPinSchema, { photoId: form.get('photoId'), pinned: form.get('pinned') });
+		if (!parsed.success) return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
+		const input = { contactId: params.id, photoId: parsed.output.photoId, pinned: parsed.output.pinned === 'true' };
+		if (!(await pinGalleryPhoto(getGalleryDeps(), viewer, input))) {
+			return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},

@@ -488,7 +488,7 @@ export function getImportedPhotoDeps(): ImportedPhotoDeps {
 
 /** Deps for the photo gallery on a person (docs/02 §2.14). */
 export function getGalleryDeps(): GalleryDeps {
-	return { photos: getPhotos(), media: getMediaStore() };
+	return { photos: getPhotos(), media: getMediaStore(), clock: systemClock };
 }
 
 /** Deps for wearing a gallery photo through a chosen square (docs/02 §2.14). */

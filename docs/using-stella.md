@@ -190,8 +190,8 @@ lands here; *Write* on the person's page opens the full journal, where an entry 
 photos. Writing on a day that already has your entry adds to it rather than replacing it; to
 change what is there, use *Edit* on the entry.
 
-**Photos** is the fourth tab: everything you have collected of that person in a grid, newest
-first, each one dated. *Add photos* takes several at once — each is shrunk in your browser
+**Photos** is the fourth tab: everything you have collected of that person in a grid — their
+favourites first, then the rest newest first, each one dated. *Add photos* takes several at once — each is shrunk in your browser
 before it is uploaded, which also strips the location and camera details the file was carrying,
 and you choose there whether they are shared with the household or only yours.
 
@@ -201,7 +201,10 @@ caption, make it the person's photo, switch it between shared and private, or re
 the gallery, and choosing again — *Change framing* on the one they wear — starts from the part
 you chose last time. Only whoever added a photo can caption or remove it, but anyone who can
 see it can make it the person's photo. Removing one deletes the file for good and, if the person was wearing it, they
-go back to their initials. Escape closes the view and the arrow keys walk through the rest (not while you are typing a caption).
+go back to their initials. *Pin as favourite* moves a photo to the front of the grid, with a
+star on it; the one you pinned last comes first, and *Unpin favourite* puts it back in date
+order. Favourites are the household's, so everyone sees the same ones in front, and anyone who
+can see a photo can pin or unpin it. Escape closes the view and the arrow keys walk through the rest (not while you are typing a caption).
 
 To give someone a new photo straight away, click the round picture at the top of their page and
 pick an image. Before anything is uploaded you choose the part that shows: drag the picture

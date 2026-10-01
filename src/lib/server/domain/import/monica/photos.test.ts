@@ -30,7 +30,8 @@ function fakes() {
 		listGalleryPhotos: async () => [],
 		findVisibleGalleryPhoto: async () => null,
 		updateOwnGalleryPhoto: async () => false,
-		deleteOwnGalleryPhoto: async () => null
+		deleteOwnGalleryPhoto: async () => null,
+		setGalleryPhotoPin: async () => {}
 	};
 	const media: MediaStore = {
 		put: async (key, bytes) => {
