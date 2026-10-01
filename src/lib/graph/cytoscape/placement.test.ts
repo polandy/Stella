@@ -56,6 +56,58 @@ describe('placeNewcomers', () => {
 		}
 	});
 
+	it('keeps a big fan close, in rows around its person rather than one far-flung ring', () => {
+		// Twenty people on one arc no wider than a half-turn sat over six edge lengths out,
+		// with long lines crossing the map to reach them.
+		const ids = Array.from({ length: 20 }, (_, i) => `n${i}`);
+		const result = placeNewcomers(
+			placed,
+			ids,
+			ids.map((id) => ({ source: 'bert', target: id })),
+			SPACING
+		);
+
+		const reach = ids.map((id) => distance(result.get(id)!.at, placed.get('bert')!));
+		expect(Math.max(...reach)).toBeLessThanOrEqual(3 * SPACING + 1e-6);
+		// The first row is filled before the next one starts.
+		const firstRow = reach.filter((r) => Math.abs(r - SPACING) < 1e-6).length;
+		expect(firstRow).toBeGreaterThanOrEqual(4);
+	});
+
+	it('keeps every newcomer of a big fan at least one edge length from every other', () => {
+		// One edge length is wider than a name, so the names under a fan never run together.
+		const ids = Array.from({ length: 30 }, (_, i) => `n${i}`);
+		const result = placeNewcomers(
+			placed,
+			ids,
+			ids.map((id) => ({ source: 'bert', target: id })),
+			SPACING
+		);
+
+		for (let i = 0; i < ids.length; i++) {
+			for (let j = i + 1; j < ids.length; j++) {
+				expect(distance(result.get(ids[i])!.at, result.get(ids[j])!.at)).toBeGreaterThanOrEqual(
+					SPACING - 1e-6
+				);
+			}
+		}
+	});
+
+	it('opens even a big fan on its person’s open side only', () => {
+		const ids = Array.from({ length: 30 }, (_, i) => `n${i}`);
+		const result = placeNewcomers(
+			placed,
+			ids,
+			ids.map((id) => ({ source: 'bert', target: id })),
+			SPACING
+		);
+
+		// bert's open side is to the right: nobody of his is set back over him into the map.
+		for (const id of ids) {
+			expect(result.get(id)!.at.x).toBeGreaterThanOrEqual(placed.get('bert')!.x - 1e-6);
+		}
+	});
+
 	it('hangs a newcomer that only knows another newcomer off that one', () => {
 		const result = placeNewcomers(
 			placed,

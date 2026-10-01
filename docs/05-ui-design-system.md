@@ -819,9 +819,14 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - **Nodes:** people as the **same disc as their avatar** — the photo when there is one,
   otherwise the accent tint over the card with the accent as the ring — so a face keeps its
   colour between the list and the map (`avatarAccent` is the one hash). A name label sits
-  below in the interface font. **Circle nodes** are a distinct shape (rounded pill) so
-  contexts read differently from people. Node size encodes degree; deceased contacts are
-  subtly desaturated.
+  below in the interface font, at most 96 px wide (`NODE_LABEL_WIDTH`). **Circle nodes** are
+  a distinct shape (rounded pill) so contexts read differently from people; the pill's tint
+  and ring carry the circle colour and its name is written in `--fg`, as on a chip. Node size
+  encodes degree on a **square-root scale** — 30 px with no lines, growing less with each line
+  and capped at 64 px (`nodeDiameter`, `layout/legibility.ts`) — so a hub of twenty still reads
+  bigger than one of ten without crowding its own fan. A **deceased** person keeps full
+  opacity — a faded disc read as "not really there" — and is drawn desaturated instead: a
+  `--fg-subtle` tint and a **double ring** in `--fg-subtle`, so the mark holds without colour.
 - **Edges:** styled by kind — relationship category (5.6), **circle membership** (dashed /
   circle-colored), and **derived kinship** (lighter, dotted, clearly "inferred"; left off while
   the entered links it abbreviates are on the map, except around the selected person or with
@@ -829,21 +834,43 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   canvas an edge is the only carrier of its category, so each line colour is the token
   **deepened toward `--fg` until it clears 3:1 on the page ground** (`ensureContrast`; the
   hue survives, only the depth changes), held there by `theme.test.ts` against the real
-  tokens in both themes. Chips and dots keep the raw token, because they sit beside a label.
+  tokens in both themes. Lines are drawn **opaque**: at 0.6 opacity every Latte line fell back
+  under 3:1 after being lifted over it, so `theme.test.ts` checks the colour *as drawn* —
+  the line blended over the ground by its rule's opacity — and only fading may go below. The
+  inferred kinship line is "lighter" by being thinner and dotted, not see-through. A traced
+  path's yellow is deepened the same way. The arrowhead of a directed line is drawn in its
+  line's colour, never a grey of its own. Chips and dots keep the raw token, because they sit
+  beside a label.
   A line carries its name — "Parent of", "Grandfather", the circle role. A **"Labels" switch**
   in the Filter menu names every line at once and is **on by default**, remembered per
   device: with the kinship lines that only repeat a chain left off, the names that remain are
-  what the map is read by. Switched off, a line is named only while it is highlighted or on a
-  traced path — selecting a person names their connections, and the rest of the canvas stays
-  quiet. Either way a name that would render below 7 px is dropped
-  rather than drawn as a smudge. Asymmetric relationships show subtle direction.
-- **Expand affordance:** an unexpanded node hints it can grow (e.g. a small "+" / count of
-  hidden connections); clicking expands its neighborhood in place with a gentle animation.
+  what the map is read by. **Past 40 lines on screen** (`EDGE_LABEL_LIMIT`, counted without the
+  selection so selecting never flips it) the names pile up around a hub, so they are paused
+  even with the switch on, and the switch's hint says so. Switched off or paused, a line is
+  named only while it is highlighted, hovered or on a traced path — selecting a person names
+  their connections, pointing at a person or a line names theirs, and the rest of the canvas
+  stays quiet. Any name — a person's, a circle's or a line's — that would render below 8 px
+  (`LABEL_MIN_ZOOMED_FONT_SIZE`) is dropped rather than drawn as a smudge, so a map zoomed far
+  out shows its shape and the names come back as it is zoomed in. Asymmetric relationships
+  show subtle direction.
+- **Selection and cursor** look different by shape, not only by colour: the **selection** is a
+  solid `--focus-ring` border inside a soft filled halo of the same colour; the **keyboard's
+  cursor** is a dashed `--focus-ring` ring held a few pixels off the node. Both can sit on one
+  person and still read as two marks.
+- **Expand affordance:** a node that expanding would grow wears a small **"+N"** pill over its
+  upper right edge — the people or circles it would bring in under the current filters
+  (`model/hidden-neighbours.ts`), none past the embedded map's last ring. The canvas has no
+  DOM, so the pill is a tiny SVG drawn from the palette (`--card` fill, `--fg` words,
+  `--fg-subtle` ring; `cytoscape/badge.ts`), laid over the node outside its disc so a photo
+  stays whole. Clicking expands its neighbourhood in place with a gentle animation.
   **The map holds still while it grows:** everyone already on the canvas stays exactly where
   they stood, and only the newcomers move — they travel out from the person they were opened
   from to a fan on that person's open side, one edge length away where there is room and
   further out where there is not, until every newcomer is at least an edge length clear of
-  everyone (`placement.ts`). No layout runs, so a newcomer never lands in the middle of the
+  everyone (`placement.ts`). A fan opens no wider than a half-turn; a big family fills it in
+  **rows**, the inner row first and each further row one edge length out, neighbours one edge
+  length apart measured straight across — rather than one ring that drifted ever further out
+  the more people it held. No layout runs, so a newcomer never lands in the middle of the
   map. The view is not re-framed; only when a newcomer lands off screen does it step back just
   far enough to take them in too (`viewport.ts`), so what the reader was looking at never
   leaves the screen. A removal moves nobody.
@@ -857,6 +884,12 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   the primary colour once the reader has narrowed the map — measured against what the map
   opened with, so the person page's circles-off start is not mistaken for a forgotten
   filter (`src/lib/menu/menu.ts`). Its items toggle and leave the menu open for the next.
+  Its last group is **Spacing** (*Abstand*): *Compact / Comfortable / Spacious* (*Kompakt /
+  Ausgewogen / Großzügig*), radio items, remembered per device (`graph/density-preference.ts`
+  over `layout/density.ts`). A density is an edge length and a push for the free arrangement,
+  and the step an expand sets newcomers at: 100, 116 (the default) and 150 — all wider than a
+  96 px name, so names side by side never touch. Choosing one re-runs *Free* when that is the
+  current arrangement; *Tree* and *By circle* measure every name already and stay as they are.
   **Arrange** names the current arrangement (*Arrange: Tree*) and closes on a choice.
 - **Arrange:** a toolbar menu (*Arrange* / *Anordnen*) with three one-off actions — the
   only things besides the first arrangement that move people already on the canvas. Each is
@@ -923,9 +956,10 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   does not re-highlight the map at every step. *Enter* or *Space* does what a click does
   (select, then expand; pick in path mode), *Home* returns to the selection or the centre,
   *Escape* lets go — in path mode it takes back a half-picked pair, then leaves the mode.
-  The cursor wears a ring in `--focus-ring` outside the node's border, a frame in the same
-  colour marks the canvas as focused, and the person under the cursor is announced through
-  a polite live region, as is the path prompt. A step to someone off screen or under the
+  The cursor wears a dashed ring in `--focus-ring` outside the node's border (unlike the
+  selection's filled halo, above), a frame in the same colour marks the canvas as focused, and
+  the person under the cursor is announced through a polite live region — with their "+N"
+  when they have one (*Lena Brunner, 4 more to open up*) — as is the path prompt. A step to someone off screen or under the
   toolbar brings them into view; a step within view never moves the map.
 - **Embedded on a person's page** (§5.5) the same component runs with a narrower brief
   (`compact`, `maxRings`): this person stays in the middle, the map reaches **two hops**
@@ -964,7 +998,9 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   4.1:1. It cannot go darker without becoming `--fg-muted`, so there it is reserved for meta
   that repeats what is already on screen (day dividers, relative timestamps), held to the
   3:1 large-text floor by test.
-- The explorer's lines clear 3:1 on the canvas in both themes (§5.8); the labels of
+- The explorer's lines clear 3:1 on the canvas in both themes **as drawn**, opacity included
+  (§5.8): the deepened accent lines in `graph/cytoscape/theme.test.ts`, the neutral ones
+  (`--edge-kinship`, `--cat-other`) beside the other pairs in `color.test.ts`. The labels of
   interaction kinds are written in `--fg` with only the icon in the kind's colour, since
   peach and green text sat at 2.5–2.8:1 on the page ground (§5.6).
 - Visible focus rings (`--focus-ring`) at 3:1 against every surface, held by the same test;

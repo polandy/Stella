@@ -1,7 +1,8 @@
 import { avatarAccent } from '../../avatar';
 import { thumbnailUrl } from '../../media/urls';
 import type { EdgeBundle, RoleGroup, RoleGrouping } from '../model/role-groups';
-import { TUCKED_CLASS } from './stylesheet';
+import { nodeDiameter } from '../layout/legibility';
+import { HAS_MORE_CLASS, TUCKED_CLASS } from './stylesheet';
 import type { GraphEdge, GraphModel } from '../model/types';
 
 /*
@@ -27,6 +28,11 @@ export interface ElementOptions {
 	 * the viewer's language and can translate a built-in relationship type (docs/02 §2.19).
 	 */
 	edgeLabel?: (edge: GraphEdge) => string;
+	/**
+	 * How many people expanding a node would bring in (`hiddenNeighbourCounts`); a node with
+	 * an entry wears a "+N" badge (docs/05 §5.8).
+	 */
+	hiddenNeighbours?: ReadonlyMap<string, number>;
 	/** The circles grouped by role (docs/02 §2.7), and how a group and a bundle are named. */
 	grouping?: {
 		grouping: RoleGrouping;
@@ -53,6 +59,8 @@ export function toCytoscapeElements(model: GraphModel, options: ElementOptions =
 		const parent = options.grouping?.grouping.groupOf.get(n.id);
 		const photo = n.kind === 'person' && n.avatarPhotoId ? thumbnailUrl(n.avatarPhotoId) : null;
 		if (photo) classes.push('has-photo');
+		const more = options.hiddenNeighbours?.get(n.id) ?? 0;
+		if (more > 0) classes.push(HAS_MORE_CLASS);
 		return {
 			group: 'nodes',
 			data: {
@@ -61,6 +69,8 @@ export function toCytoscapeElements(model: GraphModel, options: ElementOptions =
 				kind: n.kind,
 				accent: n.kind === 'circle' ? CIRCLE_ACCENT : avatarAccent(n.id),
 				degree: degree.get(n.id) ?? 0,
+				size: nodeDiameter(degree.get(n.id) ?? 0),
+				more,
 				...(photo ? { photo } : {}),
 				...(parent ? { parent } : {})
 			},

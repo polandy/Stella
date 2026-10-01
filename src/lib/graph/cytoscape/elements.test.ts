@@ -3,6 +3,7 @@ import { toCytoscapeElements } from './elements';
 import { avatarAccent } from '../../avatar';
 import { groupByRole } from '../model/role-groups';
 import type { GraphModel } from '../model/types';
+import { nodeDiameter } from '../layout/legibility';
 
 /*
  * Pure GraphModel → Cytoscape element mapping (docs/04 §4.11). No library, no DOM.
@@ -61,6 +62,21 @@ describe('toCytoscapeElements', () => {
 		// mara touches r1 and m1 (dangling is dropped) → degree 2
 		expect(node('mara')?.data.degree).toBe(2);
 		expect(node('kegel')?.data.degree).toBe(1);
+	});
+
+	it('sizes each node by its degree on the shared scale', () => {
+		expect(node('mara')?.data.size).toBe(nodeDiameter(2));
+		expect(node('kegel')?.data.size).toBe(nodeDiameter(1));
+	});
+
+	it('says how many more a node would bring in, and nothing for one with none', () => {
+		const counted = toCytoscapeElements(model, { hiddenNeighbours: new Map([['walter', 4]]) });
+		const of = (id: string) => counted.find((e) => e.group === 'nodes' && e.data.id === id);
+
+		expect(of('walter')?.data.more).toBe(4);
+		expect(of('walter')?.classes).toContain('has-more');
+		expect(of('mara')?.data.more).toBe(0);
+		expect(of('mara')?.classes).not.toContain('has-more');
 	});
 });
 

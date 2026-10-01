@@ -573,10 +573,15 @@ lines* in the Filter menu, which draws every one of them. *Filter* at the top sw
 each kind of line on and off and doubles as the legend: it shows each kind in its colour and
 line style, and counts how many are shown, so *Filter 5/6* tells you something is hidden.
 *Labels* in the same menu names every line at once; it starts on, and switching it off leaves
-the names to whoever you select.
+the names to whoever you select or point at. Once more than 40 lines are on screen the names
+would pile up, so they wait for you to point or select even with *Labels* on — the menu says
+when that is happening. Zoomed far out, names that would be too small to read are left off
+until you zoom back in. *Spacing* at the bottom of the menu sets how far apart people stand —
+*Compact*, *Comfortable* or *Spacious* — and your browser remembers it.
 
 Click a person to see who they are and jump to their page; the lines around them are named
-while they are selected, so you can read who is whose grandmother. Click again to pull in
+while they are selected, so you can read who is whose grandmother. A small **+3** on someone
+means three more people (or circles) would appear if you opened them up. Click again to pull in
 their connections: they appear around that person, and everyone already on the map stays
 where they were, so you never lose your place. *Arrange* puts the map in order when you want
 it: *Free* lets the connections pull it into shape, *Tree* shows the family as a family tree,
@@ -585,7 +590,8 @@ members around it. *Connection path* traces how two people are linked, and it al
 with the people in between rather than the worked-out shortcut — that is the point of asking.
 
 The map works from the keyboard too. *Tab* onto it and the arrow keys walk from person to
-person — to whoever stands next in that direction — with a ring showing where you are. *Enter*
+person — to whoever stands next in that direction — with a dashed ring showing where you are
+(the person you selected wears a solid ring with a soft glow instead). *Enter*
 does what a click does, *Home* goes back to the person you selected, or else the one in the middle, and *Escape* lets go.
 
 A big circle — a school class, a club — can bury the map under one line per member. Switch on

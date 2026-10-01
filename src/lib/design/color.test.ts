@@ -145,7 +145,15 @@ describe('AA contrast, both themes (docs/05 §5.9)', () => {
 		// A focus indicator is a non-text boundary: 3:1 against whatever it is drawn over.
 		{ text: '--focus-ring', on: '--card', floor: AA_LARGE },
 		{ text: '--focus-ring', on: '--bg', floor: AA_LARGE },
-		{ text: '--focus-ring', on: '--bg-sunken', floor: AA_LARGE }
+		{ text: '--focus-ring', on: '--bg-sunken', floor: AA_LARGE },
+		// The explorer's lines are non-text boundaries on the page ground (docs/05 §5.8). These
+		// tokens are drawn as they are, at full opacity: the inferred kinship line, and a line of
+		// no known category with its arrowhead. The accent-coloured lines are deepened on the
+		// canvas instead, and held to the same floor as drawn in `graph/cytoscape/theme.test.ts`.
+		// (A deceased person's ring is `--fg-subtle`, the "+N" badge `--fg` on `--card`: both
+		// are held above.)
+		{ text: '--edge-kinship', on: '--bg', floor: AA_LARGE },
+		{ text: '--cat-other', on: '--bg', floor: AA_LARGE }
 	];
 
 	for (const theme of THEMES) {

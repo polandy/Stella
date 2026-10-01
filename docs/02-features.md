@@ -800,8 +800,13 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 - **Expand any node in place:** click a person to expand *their* relationships and circles
   into the graph, then continue outward from there — exploring the web hop by hop without
   leaving the view. Everyone already on the canvas stays where they were; only the new people
-  appear, around the person expanded and clear of the rest. The map is only re-arranged when
+  appear, around the person expanded and clear of the rest — a big family in rows on that
+  person's open side rather than on one far-flung ring. The map is only re-arranged when
   the reader asks for it (below). Collapse to declutter.
+- **Where the map goes on:** a node that expanding would grow wears a small **"+N"** — how
+  many people or circles it would bring in under the current filters. It goes once there is
+  nothing more behind it, and the embedded map shows none past its last ring. A screen reader
+  hears the count with the name under the keyboard's cursor.
 - **Choose the roles of a circle to open:** a circle's peek panel lists the roles its members
   hold (with counts, "No role" last), all ticked. Expanding opens only the ticked roles, so a
   class can show just its teachers; a re-sync reopens it for the same roles.
@@ -811,8 +816,9 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   finds the **shortest path** between the two through relationships/circles and builds up
   exactly those nodes and edges — so you see the chain that links them (e.g. *You → Peter
   → Ski Course → Hans*).
-- **Peek & jump:** hovering highlights a node's immediate neighborhood; a side peek panel
-  summarizes the selected person with a link to their full profile.
+- **Peek & jump:** pointing at a person or a line names those lines; selecting highlights a
+  node's immediate neighbourhood, and a side peek panel summarizes the selected person with a
+  link to their full profile.
 
 **Controls & presentation**
 
@@ -823,6 +829,15 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   the forces between people, as a **family tree** (one row per generation, partners side by
   side, children under their parents), or **by circle** (each circle ringed by its members);
   the map glides into the new arrangement (docs/05 §5.8).
+- **Spacing:** *Compact*, *Comfortable* (the default) or *Spacious*, chosen in the Filter menu
+  and remembered per device. It sets how far apart the free arrangement and an expand put
+  people; even *Compact* keeps two people further apart than a name is wide, so names side by
+  side never run together. Choosing one re-runs the free arrangement; the tree and the circles
+  already measure every name.
+- **Legible when busy:** zoomed far out, names too small to read are dropped rather than
+  smudged; past 40 lines on screen, line names wait until a line is pointed at or a person is
+  selected, even with *Labels* on (the menu says so); a person's size grows with the square
+  root of their lines, so hubs stay tellable apart without swallowing their neighbours.
 - **Group circles by role:** a big circle — a school class, a sports club — hangs dozens of
   people off one node, each on a line of their own, and the map turns into a starburst. A
   **Group by role** switch in the Filter menu (off by default, remembered per device) draws
@@ -890,7 +905,9 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   a person names the lines around them — "Grandfather", "Parent of", "via Kegelclub". A
   **Labels** switch in the toolbar's Filter menu names every line at once; it is on by
   default (remembered per device), since with the repeating kinship lines gone the names left
-  are what the map is read by, and it drops any name that would render too small to read. The **connection
+  are what the map is read by, and it drops any name that would render too small to read. Past
+  40 lines on screen the names pile up around a hub, so they then wait for a line to be pointed
+  at or a person selected, whatever the switch says. The **connection
   path** deliberately ignores derived lines: it answers with the chain through the people who
   connect the two, not with the one-word name for that chain (docs/04 §4.9).
 

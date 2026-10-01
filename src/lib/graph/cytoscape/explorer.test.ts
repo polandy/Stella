@@ -3,6 +3,8 @@ import cytoscape, { type Core, type Layouts } from 'cytoscape';
 import { explorerFromCore } from './explorer';
 import type { CyElement } from './elements';
 import { frameAround } from '../layout/group-blocks';
+import { spacingFor } from '../layout/density';
+import { HAS_MORE_CLASS, HOVERED_CLASS } from './stylesheet';
 
 /*
  * The controller's lifecycle, exercised against a headless Cytoscape core — the same core the
@@ -335,6 +337,95 @@ describe('explorerFromCore', () => {
 		explorer.arrange();
 
 		expect(cy.$id('a-b').hasClass('bowed')).toBe(false);
+	});
+
+	it('sets newcomers the edge length of the density it was given away', () => {
+		const cy = linkedPair();
+		const explorer = explorerFromCore(cy, {
+			reducedMotion: true,
+			spacing: spacingFor('spacious'),
+			onTapNode: () => {},
+			onTapBackground: () => {}
+		});
+
+		explorer.setGraph([node('a'), node('b'), node('c'), edge('a', 'b'), edge('b', 'c')]);
+
+		const b = cy.$id('b').position();
+		const c = cy.$id('c').position();
+		expect(Math.hypot(c.x - b.x, c.y - b.y)).toBeCloseTo(spacingFor('spacious').edgeLength);
+	});
+
+	it('takes a new density for the next expand, moving nobody already placed', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+		const before = positionsOf(cy, ['a', 'b']);
+
+		explorer.setSpacing(spacingFor('compact'));
+		explorer.setGraph([node('a'), node('b'), node('c'), edge('a', 'b'), edge('b', 'c')]);
+
+		expect(positionsOf(cy, ['a', 'b'])).toEqual(before);
+		const b = cy.$id('b').position();
+		const c = cy.$id('c').position();
+		expect(Math.hypot(c.x - b.x, c.y - b.y)).toBeCloseTo(spacingFor('compact').edgeLength);
+	});
+
+	it('aims the free arrangement at the density’s edge length and push', () => {
+		const cy = linkedPair();
+		const asked: Record<string, unknown>[] = [];
+		const real = cy.layout.bind(cy);
+		cy.layout = ((options: Record<string, unknown>) => {
+			asked.push(options);
+			return real(options as unknown as Parameters<Core['layout']>[0]);
+		}) as unknown as Core['layout'];
+		const explorer = controller(cy);
+
+		explorer.setSpacing(spacingFor('spacious'));
+		explorer.arrange();
+
+		const cose = asked.filter((o) => o.name === 'cose').at(-1)!;
+		const plainLine = { hasClass: () => false };
+		expect((cose.idealEdgeLength as (e: unknown) => number)(plainLine)).toBe(
+			spacingFor('spacious').edgeLength
+		);
+		expect((cose.nodeRepulsion as () => number)()).toBe(spacingFor('spacious').repulsion);
+	});
+
+	it('names the lines of whoever the pointer rests on, and lets go when it leaves', () => {
+		const cy = linkedPair();
+		controller(cy);
+
+		cy.$id('b').emit('mouseover');
+		expect(cy.$id('a-b').hasClass(HOVERED_CLASS)).toBe(true);
+
+		cy.$id('b').emit('mouseout');
+		expect(cy.$id('a-b').hasClass(HOVERED_CLASS)).toBe(false);
+	});
+
+	it('names a line the pointer rests on', () => {
+		const cy = linkedPair();
+		controller(cy);
+
+		cy.$id('a-b').emit('mouseover');
+		expect(cy.$id('a-b').hasClass(HOVERED_CLASS)).toBe(true);
+
+		cy.$id('a-b').emit('mouseout');
+		expect(cy.$id('a-b').hasClass(HOVERED_CLASS)).toBe(false);
+	});
+
+	it('takes the "+N" badge off a node once there is nothing more behind it', () => {
+		// Expanding a node brings its people in; the node itself stays, and its badge must go.
+		const cy = core();
+		const explorer = controller(cy);
+		const growing: CyElement = { group: 'nodes', data: { id: 'a', more: 2 }, classes: `person ${HAS_MORE_CLASS}` };
+		explorer.setGraph([growing, node('b')]);
+		expect(cy.$id('a').hasClass(HAS_MORE_CLASS)).toBe(true);
+
+		explorer.setGraph([{ ...growing, data: { id: 'a', more: 0 }, classes: 'person' }, node('b')]);
+		expect(cy.$id('a').hasClass(HAS_MORE_CLASS)).toBe(false);
+		expect(cy.$id('a').data('more')).toBe(0);
+
+		explorer.setGraph([growing, node('b')]);
+		expect(cy.$id('a').hasClass(HAS_MORE_CLASS)).toBe(true);
 	});
 
 	it('measures how much room each node takes', () => {

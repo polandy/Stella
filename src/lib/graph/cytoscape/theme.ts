@@ -27,7 +27,13 @@ export interface Palette {
 	membership: string;
 	kinship: string;
 	/** The edge colours deepened until they clear 3:1 on the canvas (docs/05 §5.8). */
-	lines: { categories: Record<RelationshipCategory, string>; membership: string; kinship: string };
+	lines: {
+		categories: Record<RelationshipCategory, string>;
+		membership: string;
+		kinship: string;
+		/** A traced connection path: the yellow accent, deepened like the rest. */
+		path: string;
+	};
 }
 
 /** Reads one custom property's resolved value; the DOM helper and the tests each supply one. */
@@ -81,7 +87,10 @@ export function resolvePalette(read: TokenReader): Palette {
 				other: onCanvas(categories.other)
 			},
 			membership: onCanvas(membership),
-			kinship: onCanvas(kinship)
+			kinship: onCanvas(kinship),
+			// Latte's yellow sits near 2:1 on the page ground; the traced chain is the one thing
+			// the reader asked to see, so it is held to the same floor as every other line.
+			path: onCanvas(accents.yellow)
 		}
 	};
 }

@@ -43,6 +43,10 @@
 	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
 	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
+	import { DEFAULT_DENSITY, DENSITIES, spacingFor, type Density } from '$lib/graph/layout/density';
+	import { EDGE_LABEL_LIMIT, edgeLabelsFit } from '$lib/graph/layout/legibility';
+	import { hiddenNeighbourCounts } from '$lib/graph/model/hidden-neighbours';
+	import { densityPreference, type DensityPreference } from '$lib/graph/density-preference';
 	import type { ConnectionPath, GraphEdge, GraphFilters, GraphModel } from '$lib/graph/model/types';
 	import { dismissesFullscreenOnDrag } from '$lib/ui/fullscreen';
 	import { scrollingAncestor } from '$lib/ui/keep-place';
@@ -211,6 +215,21 @@
 		remember(INNER_LINKS_KEY, innerLinks);
 	}
 
+	/*
+	 * How close together people are set (docs/05 §5.8): a habit, so this browser keeps it. A
+	 * new density re-runs the free arrangement, since that is the shape it describes; the tree
+	 * and the circles measure every name already, and only the next expand follows it there.
+	 */
+	let density = $state<Density>(DEFAULT_DENSITY);
+	let densityStore: DensityPreference | null = null;
+	function chooseDensity(next: Density) {
+		if (next === density) return;
+		density = next;
+		densityStore?.save(next);
+		controller?.setSpacing(spacingFor(next));
+		if (arrangedBy === 'force') controller?.arrange();
+	}
+
 	function buildFilters(): GraphFilters {
 		const categories = (['family', 'romantic', 'social', 'professional'] as const).filter((c) =>
 			active.has(c)
@@ -279,8 +298,20 @@
 		toCytoscapeElements(drawn, {
 			centerId: centerId ?? undefined,
 			edgeLabel,
+			hiddenNeighbours: hidden,
 			grouping: grouping ? { grouping, groupLabel, bundleLabel } : undefined
 		});
+	/*
+	 * Every line is named only while the names fit (docs/05 §5.8); past that they pile up
+	 * around a hub, and pointing at a line or selecting somebody names theirs. Counted without
+	 * the selection, so selecting somebody never switches every name on or off.
+	 */
+	const labelsFit = $derived(
+		edgeLabelsFit(
+			edgeLabels,
+			drawnVisible.edges.filter((e) => !leftOff.has(e.id)).length + (grouping?.bundles.length ?? 0)
+		)
+	);
 	// The same lines, but the selected person's own are drawn: selecting names every line.
 	const implied = $derived(
 		allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible, selected)
@@ -305,6 +336,14 @@
 	const rings = $derived(centerId ? ringsFrom(model, centerId) : new Map<string, number>());
 	const peekExpandable = $derived(
 		peekNode !== null && (centerId === null || canExpand(rings, peekNode.id, maxRings))
+	);
+	// The "+N" on a node that can still grow: who an expand would bring in under the current
+	// filters, and none past the embedded map's last ring (docs/05 §5.8).
+	const hidden = $derived(
+		hiddenNeighbourCounts(graph, drawnVisible, {
+			filters: buildFilters(),
+			expandable: (id) => centerId === null || canExpand(rings, id, maxRings)
+		})
 	);
 	const suggestions = $derived(
 		query.trim()
@@ -544,7 +583,10 @@
 	const cursorLabel = $derived.by(() => {
 		if (cursor === null) return '';
 		const group = grouping?.groups.find((g) => g.id === cursor);
-		const name = group ? groupLabel(group) : nameOf(cursor);
+		const plain = group ? groupLabel(group) : nameOf(cursor);
+		// The "+N" badge is drawn on the canvas; a screen reader hears it with the name.
+		const more = hidden.get(cursor) ?? 0;
+		const name = more > 0 ? t('graph.keyboard.more', { name: plain, count: more }) : plain;
 		return cursor === selected ? t('graph.keyboard.selected', { name }) : name;
 	});
 
@@ -595,7 +637,7 @@
 	// The one place a stylesheet is built: theme changes and the label toggle share it, so
 	// re-theming can never drop the toggle and vice versa.
 	function stylesheet() {
-		return buildStylesheet(paletteFromDom(), { edgeLabels, reducedMotion });
+		return buildStylesheet(paletteFromDom(), { edgeLabels: labelsFit, reducedMotion });
 	}
 
 	function retheme() {
@@ -714,6 +756,8 @@
 			innerLinks = localStorage.getItem(INNER_LINKS_KEY) !== 'off';
 			allKinship = localStorage.getItem(ALL_KINSHIP_KEY) === 'on';
 			edgeLabels = localStorage.getItem(EDGE_LABELS_KEY) !== 'off';
+			densityStore = densityPreference(localStorage);
+			density = densityStore.load();
 		} catch {
 			// Storage can be blocked; the defaults stand.
 		}
@@ -724,6 +768,7 @@
 			stylesheet: stylesheet(),
 			reducedMotion,
 			topInset: toolbarBottom(),
+			spacing: spacingFor(density),
 			onTapNode,
 			onTapBackground
 		});
@@ -906,7 +951,11 @@
 				>
 					<span class="flex-1">
 						{t('graph.labels')}
-						<span class="block text-[11px] text-fg-subtle">{t('graph.labels.hint')}</span>
+						<span class="block text-[11px] text-fg-subtle">
+							{edgeLabels && !labelsFit
+								? t('graph.labels.tooMany', { count: EDGE_LABEL_LIMIT })
+								: t('graph.labels.hint')}
+						</span>
 					</span>
 					{@render toggle(edgeLabels)}
 				</button>
@@ -955,6 +1004,27 @@
 						{@render toggle(innerLinks)}
 					</button>
 				{/if}
+				<!-- How close together people stand; a choice of three, kept by this browser. -->
+				<div role="separator" class="mx-1 my-1 border-t border-border"></div>
+				<div role="group" aria-labelledby="{uid}-density">
+					<div id="{uid}-density" class="px-2 pt-1 pb-0.5 text-[11px] text-fg-subtle">
+						{t('graph.density')}
+					</div>
+					{#each DENSITIES as option (option)}
+						<button
+							type="button"
+							role="menuitemradio"
+							aria-checked={density === option}
+							onclick={() => chooseDensity(option)}
+							class={MENU_ITEM}
+						>
+							<span class="w-3 shrink-0 font-bold text-primary" aria-hidden="true">
+								{#if density === option}✓{/if}
+							</span>
+							<span class="flex-1">{t(`graph.density.${option}`)}</span>
+						</button>
+					{/each}
+				</div>
 			{/snippet}
 		</MenuButton>
 
