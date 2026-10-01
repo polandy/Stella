@@ -84,7 +84,6 @@ A family member with an account.
 | self_contact_id | text null | the contact this member **is** (§2.1.3). No FK on purpose: SQLite cannot add one with an `ON DELETE` action through `ALTER TABLE`, and a plain reference would refuse to delete that person. Deleting the contact clears it, merging repoints it. Set from Settings, from the person's page, or by adding yourself (`contact.add` with `isSelf`), which creates the contact and sets it in one step |
 | theme_pref | text | `'system' \| 'light' \| 'dark'` |
 | accent_pref | text | Catppuccin accent name, e.g. `'mauve'` |
-| reduced_motion | int | 0/1 |
 | totp_secret | text null | reserved for local 2FA [later] |
 | created_at / updated_at | int | |
 

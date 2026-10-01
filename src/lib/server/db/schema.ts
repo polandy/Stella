@@ -54,7 +54,6 @@ export const user = sqliteTable('user', {
 	localePref: text('locale_pref').$type<Locale>(),
 	themePref: text('theme_pref').$type<'system' | 'light' | 'dark'>().notNull().default('system'),
 	accentPref: text('accent_pref').notNull().default('mauve'),
-	reducedMotion: integer('reduced_motion').notNull().default(0),
 	totpSecret: text('totp_secret'),
 	createdAt: integer('created_at').notNull().default(now),
 	updatedAt: integer('updated_at').notNull().default(now)
