@@ -85,6 +85,13 @@
       "when": 1790687967127,
       "tag": "0011_strong_greymalkin",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1790842117853,
+      "tag": "0012_wandering_rogue",
+      "breakpoints": true
     }
   ]
 }

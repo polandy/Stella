@@ -29,7 +29,6 @@ type Role = 'admin' | 'member';
 export const household = sqliteTable('household', {
 	id: text('id').primaryKey(),
 	name: text('name').notNull(),
-	defaultVisibility: text('default_visibility').$type<Visibility>().notNull().default('shared'),
 	createdAt: integer('created_at').notNull().default(now),
 	updatedAt: integer('updated_at').notNull().default(now)
 });
@@ -55,7 +54,6 @@ export const user = sqliteTable('user', {
 	localePref: text('locale_pref').$type<Locale>(),
 	themePref: text('theme_pref').$type<'system' | 'light' | 'dark'>().notNull().default('system'),
 	accentPref: text('accent_pref').notNull().default('mauve'),
-	defaultVisibility: text('default_visibility').$type<Visibility>().notNull().default('shared'),
 	reducedMotion: integer('reduced_motion').notNull().default(0),
 	totpSecret: text('totp_secret'),
 	createdAt: integer('created_at').notNull().default(now),

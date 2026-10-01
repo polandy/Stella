@@ -39,7 +39,7 @@ export const POST: RequestHandler = async ({ locals, request, url }) => {
 
 	const result = await importViaApi(
 		getApiImportDeps(),
-		// TODO: use the member's default visibility once it is a setting (docs/02 §2.16).
+		// A document that names no visibility is shared, like anything added in the app (§2.10).
 		{ userId: user.id, householdId: user.householdId, defaultVisibility: 'shared' },
 		reading.document,
 		{ dryRun, wording: apiImportWording(locals) }
