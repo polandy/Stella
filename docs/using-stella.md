@@ -584,6 +584,10 @@ one generation per row with the oldest at the top, and *By circle* gathers each 
 members around it. *Connection path* traces how two people are linked, and it always answers
 with the people in between rather than the worked-out shortcut — that is the point of asking.
 
+The map works from the keyboard too. *Tab* onto it and the arrow keys walk from person to
+person — to whoever stands next in that direction — with a ring showing where you are. *Enter*
+does what a click does, *Home* goes back to the person you selected, or else the one in the middle, and *Escape* lets go.
+
 A big circle — a school class, a club — can bury the map under one line per member. Switch on
 *Group by role* in the *Filter* menu and everyone with the same role in a circle stands
 together in one framed group (*Pupil · 24*) on a single line to the circle. Links among the

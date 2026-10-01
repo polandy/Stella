@@ -125,6 +125,40 @@ describe('explorerFromCore', () => {
 		expect(cy.$id('a').hasClass('selected')).toBe(true);
 	});
 
+	it('reports where everyone shown stands, for the keyboard to walk', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+		explorer.arrangeAt({
+			positions: new Map([
+				['a', { x: 0, y: 0 }],
+				['b', { x: 120, y: 0 }]
+			]),
+			bows: new Map()
+		});
+
+		expect(explorer.positions()).toEqual(
+			new Map([
+				['a', { x: 0, y: 0 }],
+				['b', { x: 120, y: 0 }]
+			])
+		);
+		// Someone filtered out is not there to step to.
+		explorer.setVisible(new Set(['a']), new Set());
+		expect([...explorer.positions().keys()]).toEqual(['a']);
+	});
+
+	it('marks the one node the keyboard is on, and nobody once it lets go', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+
+		explorer.markCursor('a');
+		explorer.markCursor('b');
+		expect(cy.$('.cursor').map((n) => n.id())).toEqual(['b']);
+
+		explorer.markCursor(null);
+		expect(cy.$('.cursor').empty()).toBe(true);
+	});
+
 	it('arranges the graph itself, rather than leaving the first layout to the constructor', () => {
 		const cy = core();
 		const names = layoutNames(cy);

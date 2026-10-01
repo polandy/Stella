@@ -40,6 +40,11 @@ export const search: SearchMessages = {
 	'graph.arrange.tree.hint': 'Eine Zeile pro Generation, die Ältesten oben',
 	'graph.arrange.circles': 'Nach Kreisen',
 	'graph.arrange.circles.hint': 'Jeder Kreis mit seinen Mitgliedern darum',
+	'graph.loading': 'Der Graph lädt…',
+	'graph.canvas': 'Beziehungsgraph',
+	'graph.keyboard.hint':
+		'Mit den Pfeiltasten von Person zu Person. Enter wählt aus und klappt beim zweiten Mal die Verbindungen auf. Pos1 führt zurück zur ausgewählten Person oder zur Mitte, Escape hebt die Auswahl auf.',
+	'graph.keyboard.selected': (p) => `${p.name}, ausgewählt`,
 	'graph.path.none': 'Zwischen diesen beiden ist keine Verbindung zu finden.',
 	'graph.path.pickSecond': 'Wähle jetzt die zweite Person…',
 	'graph.path.pickTwo': 'Wähle zwei Menschen, um ihre Verbindung zu verfolgen.',

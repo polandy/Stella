@@ -915,7 +915,18 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   checkbox per role above *Expand connections*, so only the ticked roles open (§2.7).
 - **Theme-aware:** all node/edge/label colors read from the semantic tokens so it matches
   Latte/Mocha; respects reduced motion (no continuous physics; expansion animations become
-  instant when set). Keyboard-operable with a list-based fallback (§5.9).
+  instant when set; state changes such as a selection fading the rest are instant too).
+- **Keyboard:** the canvas is one tab stop (`role="application"`, its keys described to a
+  screen reader). The arrow keys move a cursor to whoever stands nearest in that direction
+  on screen — ahead counts, off to the side counts double, so the step goes where the eye
+  does (`src/lib/graph/keyboard.ts`). The cursor is not the selection: walking past people
+  does not re-highlight the map at every step. *Enter* or *Space* does what a click does
+  (select, then expand; pick in path mode), *Home* returns to the selection or the centre,
+  *Escape* lets go — in path mode it takes back a half-picked pair, then leaves the mode.
+  The cursor wears a ring in `--focus-ring` outside the node's border, a frame in the same
+  colour marks the canvas as focused, and the person under the cursor is announced through
+  a polite live region, as is the path prompt. A step to someone off screen or under the
+  toolbar brings them into view; a step within view never moves the map.
 - **Embedded on a person's page** (§5.5) the same component runs with a narrower brief
   (`compact`, `maxRings`): this person stays in the middle, the map reaches **two hops**
   (`PERSON_MAP_RINGS`) and a node on the last ring offers *Open in the graph* where it would
@@ -958,6 +969,7 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   peach and green text sat at 2.5–2.8:1 on the page ground (§5.6).
 - Visible focus rings (`--focus-ring`) at 3:1 against every surface, held by the same test;
   logical tab order; a *Skip to content* link as the first stop, landing on the page itself.
+- The relationship map is walked with the arrow keys, its cursor announced (§5.8).
 - Landmarks: the sidebar and the phone's tab bar are each a `<nav>` named *Main*, the
   breadcrumb its own `<nav>`, and every page — the graph too — is a `<main>` with an `<h1>`.
 - Overlays are native modal `<dialog>`s — the command palette, the photo cropper, the photo

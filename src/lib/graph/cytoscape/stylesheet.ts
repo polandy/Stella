@@ -8,6 +8,8 @@ export const BOWED_CLASS = 'bowed';
 export const BOW_FIELD = 'bow';
 /** The class a line a bundle stands for carries (docs/02 §2.7); drawn only while selected. */
 export const TUCKED_CLASS = 'tucked';
+/** The class the node the keyboard is on carries (docs/05 §5.8); the controller sets it. */
+export const CURSOR_CLASS = 'cursor';
 
 /*
  * Build the Cytoscape stylesheet from a resolved Palette (docs/05 §5.8). Pure: palette in,
@@ -34,9 +36,12 @@ export interface StylesheetOptions {
 	 * graph hundreds of names are noise, so the reader opts in (docs/05 §5.8).
 	 */
 	edgeLabels?: boolean;
+	/** The reader asked for less motion: a state change (selection, fading) is then instant. */
+	reducedMotion?: boolean;
 }
 
 export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): CyStyle[] {
+	const transition = options.reducedMotion ? '0ms' : '150ms';
 	return [
 		// ── People ────────────────────────────────────────────────────────────
 		{
@@ -59,7 +64,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'text-background-shape': 'roundrectangle',
 				'text-background-padding': '2px',
 				'transition-property': 'opacity, border-width, border-color',
-				'transition-duration': '150ms'
+				'transition-duration': transition
 			}
 		},
 		// The same disc as the avatar component (docs/05 §5.10): the accent tints the card and
@@ -130,7 +135,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'text-background-padding': '3px',
 				'compound-sizing-wrt-labels': 'include',
 				'transition-property': 'opacity, border-width, border-color',
-				'transition-duration': '150ms'
+				'transition-duration': transition
 			}
 		},
 		// ── Edges ─────────────────────────────────────────────────────────────
@@ -157,7 +162,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'text-background-padding': '2px',
 				'text-rotation': 'autorotate',
 				'transition-property': 'opacity, width, line-color',
-				'transition-duration': '150ms'
+				'transition-duration': transition
 			}
 		},
 		// Lines take the canvas-safe depth of their token: an edge carries its category alone.
@@ -207,7 +212,20 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 		},
 		{ selector: 'edge.highlight, edge.onpath', style: { 'text-opacity': 1 } },
 		{ selector: 'node.selected', style: { 'border-color': p.focusRing, 'border-width': 5 } },
+		// The keyboard's place: a ring outside the border, so it reads over a selection's own
+		// focus-coloured border and over a traced path's yellow one alike.
+		{
+			selector: `node.${CURSOR_CLASS}`,
+			style: {
+				'outline-color': p.focusRing,
+				'outline-width': 3,
+				'outline-offset': 3,
+				'outline-opacity': 1
+			}
+		},
 		{ selector: '.faded', style: { opacity: 0.12 } },
+		// Stepping onto a faded node lifts it, or the ring would fade with it.
+		{ selector: `node.faded.${CURSOR_CLASS}`, style: { opacity: 1 } },
 		// A line a bundle stands for, or a link inside a group with those switched off, shows
 		// only while its node is selected or it is on a traced path.
 		{ selector: `edge.${TUCKED_CLASS}`, style: { display: 'none' } },
@@ -216,16 +234,14 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			style: { display: 'element' }
 		},
 		{ selector: '.filtered-out', style: { display: 'none' } },
+		// Split by kind: `width` is a line's thickness but a node's size.
 		{
-			selector: '.onpath',
-			style: {
-				opacity: 1,
-				width: 3,
-				'line-color': p.accents.yellow,
-				'border-color': p.accents.yellow,
-				'border-width': 5,
-				'z-index': 30
-			}
+			selector: 'edge.onpath',
+			style: { opacity: 1, width: 3, 'line-color': p.accents.yellow, 'z-index': 30 }
+		},
+		{
+			selector: 'node.onpath',
+			style: { opacity: 1, 'border-color': p.accents.yellow, 'border-width': 5, 'z-index': 30 }
 		}
 	];
 }

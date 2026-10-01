@@ -441,6 +441,11 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   built-in `preset` layout. A dagre/klay extension would add a dependency and still not know
   that partners stand together or that a generation is read off the family links; the cost
   is a simple ordering heuristic rather than a crossing-minimal one.
+- **The map is walked by the keyboard on the canvas, not through a list beside it** — the
+  arrow keys step to the nearest person in that direction (`src/lib/graph/keyboard.ts`), so
+  the keyboard follows the picture the reader sees. A list fallback would only repeat the
+  People page and lose the one thing the map says, where people stand to each other; the cost
+  is that a screen-reader user hears one person at a time rather than a whole list.
 - **Explorer lines are deepened for the canvas, not re-picked** — in Latte only five of the
   fourteen accents clear 3:1 on the page ground, and none of the four category hues do. The
   alternative (swapping the categories to the five that pass) would have moved family to

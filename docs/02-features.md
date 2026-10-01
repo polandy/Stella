@@ -868,7 +868,9 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   streaming can return later for very large households (§4.11).
 - **Access-scoped:** only nodes/edges the viewer may see appear (§2.10 / §3.7).
 - **Beautiful & accessible:** Catppuccin-themed in light/dark, smooth but
-  `prefers-reduced-motion`-aware, keyboard-operable, with a list-based fallback view.
+  `prefers-reduced-motion`-aware, and keyboard-operable: the canvas is one tab stop, the
+  arrow keys step to the nearest person in that direction, Enter does what a click does
+  (docs/05 §5.8).
 
 - **Shipped:** the explorer draws derived kinship as its own dotted, neutral-coloured line
   next to the entered relationships and circle memberships, toggled by the **Kinship** chip.
