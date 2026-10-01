@@ -5,6 +5,7 @@ import type { Point } from './layout/geometry';
  * the canvas adapter only reports where everyone stands and carries the step out.
  */
 
+/** A step on screen, as the arrow keys name them. */
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
 const DIRECTION_OF_KEY: Record<string, Direction> = {
@@ -62,6 +63,7 @@ export type GraphKeyAction =
 	| { kind: 'activate'; id: string }
 	| { kind: 'clear' };
 
+/** A key pressed on the map, with what it is read against. */
 export interface GraphKey {
 	key: string;
 	/** Who the keyboard is on, or null before it has been placed. */
@@ -72,6 +74,10 @@ export interface GraphKey {
 	start: string | null;
 }
 
+/**
+ * What a key on the map asks for. The first arrow key places the cursor on `start` (or, with
+ * none, on the first person by id) rather than stepping from nowhere.
+ */
 export function graphKeyAction({ key, cursor, positions, start }: GraphKey): GraphKeyAction | null {
 	if (positions.size === 0) return null;
 	const home = start !== null && positions.has(start) ? start : [...positions.keys()].sort()[0];
