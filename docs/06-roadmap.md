@@ -171,7 +171,7 @@ Goal: sand the edges and add the nice-to-haves.
   last-write-wins (docs/01 §1.6) on purpose: a phone's copy can be days old, and writing it
   back blindly would undo what others changed since.
   Deleting a contact on the phone archives the person rather than deleting them; a contact
-  created there follows the member's default visibility, like one added in the app. vCard
+  created there is shared, like one added in the app (§2.10). vCard
   properties Stella does not model are kept on the card and written back unchanged, so a
   round-trip loses nothing. The calendar stays derived: a birthday is changed on the contact, not the
   event. DAV clients cannot sign in through SSO, so each member creates a revocable **app
@@ -179,6 +179,12 @@ Goal: sand the edges and add the nice-to-haves.
   keeps each sync to what changed.
   Open: which contact fields go out, whether a member picks circles to sync, and whether a
   plain subscribable `.ics` link suffices for the calendar instead of full CalDAV.
+- **A person's photos from Immich** — a contact is linked to the person Immich's face
+  recognition knows, by a name-matching review list or a face picker. Their page then shows
+  how many photos there are, a strip of the latest, a small viewer, the photos of *you and
+  them* together, and *Use as photo*. One read-only household key set by the admin; images
+  go through a signed proxy and follow the contact's visibility. Built in five slices; the
+  decisions are in `docs/concepts/immich.md` §9.
 - Performance passes, empty-state and onboarding refinements, accessibility audit.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.

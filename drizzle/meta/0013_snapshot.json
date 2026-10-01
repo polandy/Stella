@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "194d148b-fb30-4bc0-b5f3-051a5e0a3520",
-  "prevId": "63d57be6-33fb-4836-8023-f2015f243a91",
+  "id": "02ed32d7-5a03-42fd-9f28-873aaad97c62",
+  "prevId": "194d148b-fb30-4bc0-b5f3-051a5e0a3520",
   "tables": {
     "activity_log": {
       "name": "activity_log",
@@ -807,13 +807,6 @@
             "household_id"
           ],
           "isUnique": false
-        },
-        "contact_visibility_idx": {
-          "name": "contact_visibility_idx",
-          "columns": [
-            "visibility"
-          ],
-          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -964,7 +957,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "contact_tag_tag_idx": {
+          "name": "contact_tag_tag_idx",
+          "columns": [
+            "tag_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "contact_tag_contact_id_contact_id_fk": {
           "name": "contact_tag_contact_id_contact_id_fk",
@@ -1370,7 +1371,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "interaction_participant_contact_idx": {
+          "name": "interaction_participant_contact_idx",
+          "columns": [
+            "contact_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "interaction_participant_interaction_id_interaction_id_fk": {
           "name": "interaction_participant_interaction_id_interaction_id_fk",
@@ -1584,10 +1593,19 @@
         }
       },
       "indexes": {
-        "journal_contact_idx": {
-          "name": "journal_contact_idx",
+        "journal_contact_day_idx": {
+          "name": "journal_contact_day_idx",
           "columns": [
-            "contact_id"
+            "contact_id",
+            "entry_date",
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "journal_updated_idx": {
+          "name": "journal_updated_idx",
+          "columns": [
+            "updated_at"
           ],
           "isUnique": false
         },
@@ -1831,7 +1849,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "note_mention_contact_idx": {
+          "name": "note_mention_contact_idx",
+          "columns": [
+            "contact_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "note_mention_note_id_note_id_fk": {
           "name": "note_mention_note_id_note_id_fk",
@@ -2199,6 +2225,13 @@
           ],
           "isUnique": false
         },
+        "relationship_type_idx": {
+          "name": "relationship_type_idx",
+          "columns": [
+            "type_id"
+          ],
+          "isUnique": false
+        },
         "relationship_unique": {
           "name": "relationship_unique",
           "columns": [
@@ -2416,7 +2449,15 @@
           "default": "(cast(strftime('%s','now') as integer) * 1000)"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "session_user_idx": {
+          "name": "session_user_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "session_user_id_user_id_fk": {
           "name": "session_user_id_user_id_fk",

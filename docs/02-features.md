@@ -26,8 +26,7 @@ See [06-roadmap.md](06-roadmap.md).
   referenced by an httpOnly, SameSite=Lax, Secure cookie. The identity provider is used
   for authentication, not for every request.
 - **Account settings:** display name, avatar, email, password change (local accounts),
-  theme preference (system / light / dark), default visibility for new records
-  (shared / private).
+  theme preference (system / light / dark).
 - **Security:** rate-limited login, session revocation ("sign out everywhere"),
   optional TOTP 2FA for local accounts **[later]** (with SSO, 2FA is delegated to the IdP).
 
@@ -70,7 +69,7 @@ credentials and MFA.
   There is always at least one local **break-glass admin** possible so an
   IdP misconfiguration can't lock everyone out.
 - **Profile sync:** name/email/avatar may be refreshed from claims on each login
-  (configurable), while Stella-specific settings (theme, default visibility) stay local.
+  (configurable), while Stella-specific settings (theme, language) stay local.
 - **Single Logout:** local logout always clears the Stella session — first and
   unconditionally. **RP-initiated logout** then redirects to the provider's
   `end_session_endpoint` (with the sign-in's `id_token_hint`) when the provider advertises
@@ -920,7 +919,9 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 
 - Every shareable record (**contact, note, photo, interaction**) has a **visibility**:
   `shared` (whole household) or `private` (only the creator).
-- **Default** visibility for new records follows the creator's account preference.
+- **Shared by default:** every new record starts `shared`. Stella is open by design: the
+  household sees what its members add, and *private* is the exception, chosen per record.
+  There is deliberately no per-member preference that turns this around.
 - **Inheritance & rules:**
   - A **private contact** and everything under it are visible only to its creator,
     regardless of child visibility.
@@ -1205,8 +1206,8 @@ included) it is the very first thing they will do.
     structured notes on the contact (clearly labeled), so nothing silently disappears.
 - **Idempotent & safe:** dry-run preview first; import is atomic (all-or-nothing) and can
   be run into an empty household; a stable **source id** per record prevents duplicates if
-  re-run. Everything imported is attributed to the importing user and set to the household
-  **default visibility** (configurable in the wizard).
+  re-run. Everything imported is attributed to the importing user and **shared**, unless
+  the admin picks *private* for this import in the wizard.
 - **Report:** after import, a summary of what was imported, skipped, or approximated, with
   any warnings — no silent data loss.
 - **Documented mapping table** ships in `docs/` so the transformation is transparent and
@@ -1316,7 +1317,7 @@ the lookups above.
   `endDate`, `parent` — the ref of a circle listed *earlier* in the document — and `members`.
   An **existing circle** is `{ ref, existingId, members }`. A member is `{ person, role,
   startDate, endDate }`, all but `person` optional.
-- `visibility` applies to every person and circle created; the member's default without it.
+- `visibility` applies to every person and circle created; `shared` without it (§2.10).
 - Objects are strict: a field Stella does not know is refused, never dropped, so `birthday` for
   `birthDate` is an error rather than a birthday silently lost.
 
@@ -1358,7 +1359,7 @@ the API (kindergarten-2023)"), with the visibility of what it imported.
 ## 2.17 Settings **[M1/M2]**
 
 - **Account:** profile, password, **language** (§2.19), **which of these people you are**
-  (§2.1.3), theme, default visibility, sessions/2FA.
+  (§2.1.3), theme, sessions/2FA.
 - **Data quality** (every member): check relationships (§2.4.1), people known by a first
   name only (§2.2.3).
 - **Household** (admin): name, members & roles, invitations, relationship types, tags.
