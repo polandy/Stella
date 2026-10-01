@@ -146,6 +146,19 @@ describe('joinCircleByName', () => {
 		expect(f.inserted[0]).toMatchObject({ name: 'Ski Course' });
 		expect(f.memberships[0]).toMatchObject({ circleId: 'circle-1', contactId: 'mara' });
 	});
+	it('creates a missing circle as what the member starts new entries as (docs/02 §2.17)', async () => {
+		const shared = fakeRepo(null);
+		await joinCircleByName({ circles: shared.repo, ids: idGen(['c1', 'm1']), clock }, creator, 'mara', 'Choir');
+		const hidden = fakeRepo(null);
+		await joinCircleByName(
+			{ circles: hidden.repo, ids: idGen(['c2', 'm2']), clock },
+			{ ...creator, defaultVisibility: 'private' },
+			'mara',
+			'Choir'
+		);
+		expect(shared.inserted[0]).toMatchObject({ visibility: 'shared' });
+		expect(hidden.inserted[0]).toMatchObject({ visibility: 'private' });
+	});
 });
 
 describe('suggestCircleColor', () => {

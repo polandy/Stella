@@ -712,6 +712,11 @@ it works with JavaScript off. It appears twice: in **Settings → Language**, an
 the sign-in form — the first screen has to be readable before there is a profile to remember
 anything in (docs/02 §2.19).
 
+**Settings → New entries** uses the same segmented control for *Shared* / *Private*, each
+with its icon, the chosen one filled and marked `aria-pressed`; the line below repeats what
+the choice means (*The whole household can see this.*). Every adding form then opens its
+own shared/private control on that choice (docs/02 §2.17).
+
 **Offline banner** (`src/lib/components/OfflineBanner.svelte`) is a single line on
 `--warning-soft`, ruled above and below in `--warning` at 40 %, directly above the page content — above the content and not the shell, because
 it is what you are reading that may be out of date, not the navigation around it. It carries
