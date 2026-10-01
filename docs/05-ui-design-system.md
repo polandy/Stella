@@ -109,7 +109,14 @@ divider, a relative timestamp.
 item; `--primary-soft` is its 14 % tint for active chips and hovers. `--focus-ring` is lavender
 in Mocha and blue in Latte, where lavender reaches only 2.6:1 on the page ground. `--success`
 and `--warning` are the flat accents; `--warning-soft` is an 18 % tint of `--warning`, the
-ground of the offline line. In Latte, `--primary`, `--link` and `--danger` are mauve, blue and
+ground of the offline line, and `--danger-soft` a 10 % tint of `--danger`, the ground of an
+error banner (`FormError`). Words on either tint, and on `--primary-soft`, are written in `--fg`:
+`--danger` on its tint and `--primary` on its tint fall to 4.0:1 and 3.8:1 over Latte's page
+ground. `--success-text` is green for words ("Create …" in the mention list) — Latte's flat
+green is 3.3:1 on a card, so it is deepened the same way, against the highlighted row as well.
+`--border-input` is the edge of a text field, select or textarea, at 3:1 on the card and on the
+page ground (WCAG 1.4.11): Latte's `overlay2`, Mocha's `overlay1` (Latte's `overlay1` reaches only
+2.6:1 on the page ground). `--border` stays the quiet line between things. In Latte, `--primary`, `--link` and `--danger` are mauve, blue and
 red deepened toward the text colour by the smallest step that clears 4.5:1 on the page ground
 (the flat accents sat at 4.0–4.5:1), so a word written in them reads wherever it lands; in Mocha
 they are the flat accents.
@@ -422,7 +429,8 @@ They must be edited together; `app.css` says so at both blocks.
   "year unknown", whether it repeats, and whether it shows on Home. A birthday derived from
   the profile is listed there too, marked *from the profile* and not deletable; an explicit
   birthday row replaces it (docs/02 §2.13.2).
-- **Settings** — account (incl. sign out), appearance (theme + accent + reduced motion),
+- **Settings** — account (incl. sign out), appearance (theme + accent + reduced motion — the
+  *Reduce motion* switch is there today),
   household (members, invitations, relationship types, tags), data (export/import/backup), auth.
   *Today:* a landing page with the **Data** section, a **You** section (docs/02 §2.1.3) and an
   **Account** section (sign out only so far), and the **Import people** wizard
@@ -651,7 +659,13 @@ field's own text is always the value, a pick is only ever a shortcut to typing i
 card per message, announced as a polite live region. A removal's toast names what went —
 *Entry removed*, *Tag removed*, *Left the circle*, *Added Otto Meier as a parent of Lisa
 Meier* — and carries an **Undo** button for the whole window (eight seconds); a plain notice
-— *Saved*, or why a removal failed — has no button and goes on its own. Removing needs no confirmation dialog because every removal can
+— *Saved*, or why a removal failed — has no button and goes on its own. The window **stands
+still while the pointer is over a toast or focus is inside the region**, and starts over in full
+once both have left (`hold`/`release` in `src/lib/undo/pending-removals.ts`, WCAG 2.2.1), so
+reaching for Undo never races the clock. The region is a `region` named *Notifications*.
+Removing with the keyboard hands focus to the same remove button of the row that moves up into
+the gap — or the row above, or the list's heading once it is empty (`neighbourAfterLeaving`
+in `src/lib/ui/focus-return.ts`); a pointer press moves nothing. Removing needs no confirmation dialog because every removal can
 be taken back from here (docs/02 §2.23), and every one of them is the same component
 (`RemoveButton`), so no list can quietly opt out. Saving says *Saved* and closes the form it
 was typed in — a section's editor and an inline edit alike. On a phone the region sits above the tab bar.
@@ -959,7 +973,9 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 
 - AA contrast for text in both themes, **enforced by test**: `src/lib/design/color.test.ts`
   parses `app.css`, resolves each token and holds the pairs the interface actually renders —
-  the three text steps on each surface, and `--fg` on every accent tint — to 4.5:1.
+  the three text steps on each surface, `--fg` on every accent tint and on the danger and
+  primary state tints, `--success-text` — to 4.5:1, and `--border-input` to 3:1. Content
+  (breadcrumbs, letter headings, chip-row labels, anything on `--bg-sunken`) is `--fg-muted`.
 - One measured gap, stated rather than papered over: `--fg-subtle` on the page ground is
   4.1:1. It cannot go darker without becoming `--fg-muted`, so there it is reserved for meta
   that repeats what is already on screen (day dividers, relative timestamps), held to the
@@ -982,10 +998,35 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   the category's colour.
 - A badge that is a word (*New person*, *likely*, an active *Connection path*) writes it in
   `--fg` and lets the tint or outline carry the colour, as chips do.
-- All actions reachable without a pointer; graph has a list-based fallback view.
-- Respect `prefers-reduced-motion`; no motion-only information.
+- All actions reachable without a pointer; graph has a list-based fallback view. A file
+  picker is a visually hidden (`sr-only`, never `hidden`) input inside its label, and the label
+  draws the focus ring (`has-focus-visible:`) — likewise the colour swatches and the composer's
+  share switch.
+- Respect `prefers-reduced-motion`, **and the member's own *Reduce motion* switch** in Settings
+  (docs/02 §2.17): it is written on `<html data-motion="reduce">` by the server for the first
+  paint; `app.css` honours the attribute wherever it honours the media query, Tailwind's
+  `motion-reduce:` variant answers both, and script asks `lessMotion()` (`src/lib/ui/motion.ts`).
+  No motion-only information.
 - Form fields labeled — a compact inline editor whose field shows only a placeholder carries the
-  same words as its `aria-label`; errors announced; adequate touch targets (≥44px).
+  same words as its `aria-label`. A label names a person picker's field only (`label for`
+  around the caption), never the chips and list beside it. Radio pairs (*Shared / Private*)
+  sit in a `fieldset` with a legend.
+- **Errors are announced**: every form error is a `FormError` (`role="alert"`, with an `id`);
+  where one field is at fault it carries `aria-invalid` and `aria-describedby` pointing at it.
+- **Focus never falls to the page**: a section's form or an inline edit that closes on save,
+  cancel or Escape hands focus back to the button that opened it, if focus was inside
+  (`owesFocusBack`); the account menu closes on Escape back to its summary.
+- **Suggestion lists** (combobox, person picker, @-mention list, ⌘K palette, home search): the
+  field carries `aria-controls` and `aria-activedescendant` on the highlighted option (and
+  `role="combobox"` + `aria-expanded` where it is an `<input>`; a `<textarea>` cannot take the
+  role), options have ids and `tabindex="-1"`, the option *is* the link or button rather than
+  wrapping one, and captions or "No one found" rows are `role="presentation"`. The People and
+  Circles filter fields announce their match count through a polite live region that is always
+  in the page.
+- Touch targets at least 24×24 px (WCAG 2.5.8), the chips' remove buttons included; the
+  current phone tab is told by weight and a bar along its top edge, not by colour alone.
+- Visible words are part of a control's name (the top bar's *Search*); every page has a
+  `<title>` of the form *Page · Stella*.
 - `<html lang>` carries the language the page was rendered in, so a screen reader speaks
   German with German phonemes rather than reading it as English (docs/02 §2.19).
 

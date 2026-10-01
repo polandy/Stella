@@ -50,5 +50,7 @@ export const contacts: ContactsMessages = {
 	'contacts.new.more': 'Mehr — Spitzname, Geburtstag',
 	'contacts.new.nickname': 'Spitzname',
 	'contacts.new.birthday': 'Geburtstag',
-	'contacts.new.visibility': 'Sichtbarkeit'
+	'contacts.new.visibility': 'Sichtbarkeit',
+	'contacts.matchCount': (p: { count: number }) =>
+		p.count === 1 ? '1 Person gefunden' : `${p.count} Personen gefunden`
 };

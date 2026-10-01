@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { MOTION_ATTRIBUTE, wantsLessMotion } from '$lib/ui/motion';
 	import { enhance } from '$app/forms';
 	import { MediaQuery } from 'svelte/reactivity';
 	import Button from '$lib/components/Button.svelte';
@@ -120,7 +121,14 @@
 	const reducedMotion = new MediaQuery('prefers-reduced-motion: reduce');
 
 	/** Under `prefers-reduced-motion` the row simply goes; there is nothing to watch leave. */
-	const leaveMs = $derived(reducedMotion.current ? 0 : LEAVE_MS);
+	const leaveMs = $derived(
+		wantsLessMotion({
+			device: reducedMotion.current,
+			attribute: typeof document === 'undefined' ? null : document.documentElement.getAttribute(MOTION_ATTRIBUTE)
+		})
+			? 0
+			: LEAVE_MS
+	);
 
 	const keyOf = (s: Suggestion) => answerKey(s.relation, s.fromId, s.toId);
 

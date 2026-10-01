@@ -101,8 +101,12 @@
 	{#if showList}
 		<ul id={LISTBOX_ID} role="listbox" class="absolute inset-x-0 top-full z-20 mt-1 max-h-[60vh] overflow-y-auto rounded-app border border-border bg-card p-1.5 shadow-pop">
 			{#each rows as row, i (row.kind + row.id)}
-				<li id="person-finder-{row.kind}-{row.id}" role="option" aria-selected={i === highlighted} class="rounded-control aria-selected:bg-primary-soft">
+				<!-- The link itself is the option: an option may not hold an interactive child. -->
+				<li role="none">
 					<a
+						id="person-finder-{row.kind}-{row.id}"
+						role="option"
+						aria-selected={i === highlighted}
 						href={row.href}
 						onmousedown={(e) => e.preventDefault()}
 						onclick={(e) => {
@@ -111,7 +115,7 @@
 						}}
 						onpointerenter={() => (highlighted = i)}
 						tabindex="-1"
-						class="flex items-center gap-2.5 px-2.5 py-2 text-sm text-fg"
+						class="flex items-center gap-2.5 rounded-control px-2.5 py-2 text-sm text-fg aria-selected:bg-primary-soft"
 					>
 						{#if row.kind === 'person'}
 							<Avatar id={row.id} name={row.label} avatarPhotoId={row.avatarPhotoId} size={24} />

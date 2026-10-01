@@ -238,7 +238,8 @@ wrote it — can remove it from the story. Each item says who wrote it, so in a 
 several people you can see at a glance that Nina logged the call and you wrote the entry.
 Removing asks no "are you sure?": the item disappears
 and a small **Undo** appears at the bottom of the screen for a few seconds, in case it was
-the wrong one. That goes for everything you can remove — a phone number, a date, a tag, a
+the wrong one. While your pointer rests on it, or you have tabbed to it, the clock stops — it
+starts again from the beginning once you move away. That goes for everything you can remove — a phone number, a date, a tag, a
 circle you leave — and saving something says *Saved* in the same corner. When a change takes
 a moment to work through — a relationship, say, with the map beside it to redraw — a small
 *Updating…* appears at the top of the window until it is done. Nothing is greyed out or locked
@@ -654,6 +655,12 @@ nobody else signing in on that phone sees them.
 
 Stella follows whatever your device is set to, and both themes are designed rather than
 inverted. There is nothing to configure.
+
+## Less movement
+
+Stella fades between screens and lets removed rows slide away. If your device is set to reduce
+motion, it already doesn't. If you would rather have it still on every device you sign in on,
+switch on **Settings → Appearance → Reduce motion**; it is kept with your profile.
 
 ## English or German
 

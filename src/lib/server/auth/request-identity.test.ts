@@ -19,7 +19,8 @@ const ANNA: AuthUser = {
 	name: 'Anna',
 	role: 'member',
 	locale: null,
-	selfContactId: null
+	selfContactId: null,
+	reducedMotion: false
 };
 
 let deps: RequestIdentityDeps;

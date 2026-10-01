@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import { circleNameKey } from '$lib/circles/name-key';
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import FrameAsAvatar from '$lib/components/FrameAsAvatar.svelte';
@@ -100,7 +101,7 @@
 
 	/** One class for every text input on the page, so they cannot drift apart. */
 	const INPUT =
-		'rounded-control border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
+		'rounded-control border border-border-input bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
 
 	let relateOpen = $state(untrack(() => data.relateTo) !== null);
 	// The hero's "Log contact" opens the story section's form; the section owns the state.
@@ -573,7 +574,9 @@
 				onApplied: async (_result, command) => {
 					savedThen(closeRelate)();
 					if (command.type === 'relationship.add') {
-						await goto(proposeHref(c.id, command.payload.targetId), { noScroll: true });
+						// keepFocus: the closed form hands focus back to its button (Section), and a
+						// navigation's own focus reset would drop it on the page again.
+						await goto(proposeHref(c.id, command.payload.targetId), { noScroll: true, keepFocus: true });
 					}
 				},
 				onKept: closeRelate
@@ -769,7 +772,7 @@
 				// Back on the story card it was logged from, not at the top of the page.
 				onApplied: async () => {
 					savedThen(closeLog)();
-					await goto(contactSectionPath(c.id, 'story'));
+					await goto(contactSectionPath(c.id, 'story'), { keepFocus: true });
 				},
 				onKept: closeLog
 			},
@@ -853,14 +856,14 @@
 				{#if archived}
 					<span
 						data-testid="archived-marker"
-						class="inline-flex items-center gap-1 rounded-full bg-bg-sunken px-2 py-0.5 text-fg-subtle"
+						class="inline-flex items-center gap-1 rounded-full bg-bg-sunken px-2 py-0.5 text-fg-muted"
 						title={t('contact.archivedOn', { day: archivedOn ?? '' })}
 					>
 						<Icon name="archive" size={11} />{t('contact.archived')}
 					</span>
 				{/if}
 			</div>
-			{#if form?.avatarError}<p class="mt-1 text-xs text-danger">{form.avatarError}</p>{/if}
+			<FormError message={form?.avatarError} variant="inline" size="xs" class="mt-1" />
 		</div>
 
 		<div class="flex w-full gap-2 sm:w-auto">
@@ -1175,8 +1178,10 @@
 							<p class="text-xs text-fg">
 								{t('contact.merge.explain', { name: c.displayName })}
 							</p>
-							<label for="merge-target" class="flex flex-col gap-1">
-								<span class="text-xs text-fg-muted">{t('contact.merge.who')}</span>
+							<!-- The label names the field only: wrapped around the picker, it would also
+							     take in the chips' remove buttons and the list (docs/05 §5.7). -->
+							<div class="flex flex-col gap-1">
+								<label for="merge-target" class="text-xs text-fg-muted">{t('contact.merge.who')}</label>
 								<PersonSearchSelect
 									id="merge-target"
 									people={otherContacts}
@@ -1185,8 +1190,8 @@
 									placeholder={t('contact.merge.choose')}
 									required
 								/>
-							</label>
-							{#if form?.mergeError}<p class="text-xs text-danger">{form.mergeError}</p>{/if}
+							</div>
+							<FormError message={form?.mergeError} variant="inline" size="xs" />
 							<div>
 								<Button variant="primary" size="sm">
 									{t('contact.merge.submit', { name: c.displayName })}
@@ -1369,7 +1374,7 @@
 											</span>
 										{/if}
 										{#if rel.status === FORMER_RELATIONSHIP_STATUS}
-											<span class="shrink-0 rounded-full bg-bg-sunken px-2 py-0.5 text-xs text-fg-subtle">
+											<span class="shrink-0 rounded-full bg-bg-sunken px-2 py-0.5 text-xs text-fg-muted">
 												{relationshipStatusLabel(t, rel.status)}
 											</span>
 										{/if}
@@ -1746,8 +1751,9 @@
 							<textarea name="description" bind:value={logDescription} rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} aria-label={t('contact.interaction.detailsPlaceholder')} class={INPUT}
 							></textarea>
 							{#if otherContacts.length > 0}
-								<label for="interaction-participants" class="flex flex-col gap-1 text-sm text-fg-muted">
-									{t('contact.interaction.whoElse')}
+								<!-- The label names the field only, not the chips and list around it. -->
+								<div class="flex flex-col gap-1 text-sm">
+									<label for="interaction-participants" class="text-fg-muted">{t('contact.interaction.whoElse')}</label>
 									<PersonSearchSelect
 										id="interaction-participants"
 										people={otherContacts}
@@ -1756,15 +1762,18 @@
 										multiple
 										allowCreate
 									/>
-								</label>
+								</div>
 							{/if}
 							<div class="flex flex-wrap items-center gap-4 text-sm">
-								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="shared" bind:group={logVisibility} /> {t('common.shared')}
-								</label>
-								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="private" bind:group={logVisibility} /> {t('common.private')}
-								</label>
+								<fieldset class="flex flex-wrap items-center gap-4">
+									<legend class="sr-only">{t('common.visibility')}</legend>
+									<label class="flex items-center gap-1.5">
+										<input type="radio" name="visibility" value="shared" bind:group={logVisibility} /> {t('common.shared')}
+									</label>
+									<label class="flex items-center gap-1.5">
+										<input type="radio" name="visibility" value="private" bind:group={logVisibility} /> {t('common.private')}
+									</label>
+								</fieldset>
 								<Button variant="primary" size="sm" class="ml-auto">
 									{editingLog ? t('common.save') : t('contact.interaction.submit')}
 								</Button>
@@ -1835,14 +1844,17 @@
 								<label class="flex items-center gap-1.5">
 									<input type="checkbox" name="isPinned" bind:checked={notePinned} /> {t('contact.notes.pin')}
 								</label>
-								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="shared" bind:group={noteVisibility} />
-									{t('common.shared')}
-								</label>
-								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="private" bind:group={noteVisibility} />
-									{t('common.private')}
-								</label>
+								<fieldset class="flex flex-wrap items-center gap-4">
+									<legend class="sr-only">{t('common.visibility')}</legend>
+									<label class="flex items-center gap-1.5">
+										<input type="radio" name="visibility" value="shared" bind:group={noteVisibility} />
+										{t('common.shared')}
+									</label>
+									<label class="flex items-center gap-1.5">
+										<input type="radio" name="visibility" value="private" bind:group={noteVisibility} />
+										{t('common.private')}
+									</label>
+								</fieldset>
 								<Button variant="primary" size="sm" class="ml-auto" disabled={noteUnclear}>{editingNote ? t('common.save') : t('contact.notes.add')}</Button>
 							</div>
 						</form>
@@ -1916,6 +1928,7 @@
 								/>
 							</label>
 							<fieldset class="flex items-center gap-3 text-sm">
+								<legend class="sr-only">{t('common.visibility')}</legend>
 								<label class="flex items-center gap-1.5">
 									<input type="radio" name="visibility" value="shared" checked /> {t('common.shared')}
 								</label>

@@ -1,5 +1,7 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import SignOutForm from '$lib/components/SignOutForm.svelte';
+	import { enhance } from '$app/forms';
 	import { untrack } from 'svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -26,6 +28,8 @@
 	});
 </script>
 
+<svelte:head><title>{t('common.pageTitle', { page: t('settings.title') })}</title></svelte:head>
+
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header>
 		<h1 class="text-2xl font-semibold text-fg">{t('settings.title')}</h1>
@@ -41,6 +45,37 @@
 			</div>
 			<LanguagePicker />
 		</div>
+	</section>
+
+	<!--
+		Appearance: less motion, for a member whose device does not ask for it (docs/02 §2.17).
+		A toggle button whose name stays "Reduce motion"; its state is aria-pressed, so the
+		label never flips under a screen reader. It only ever adds to the device's own setting.
+	-->
+	<section class="flex flex-col gap-3">
+		<h2 class="text-sm font-medium text-fg-muted">{t('settings.appearance.heading')}</h2>
+		<form method="POST" action="?/setMotion" use:enhance class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card">
+			<input type="hidden" name="reduce" value={data.user.reducedMotion ? 'off' : 'on'} />
+			<div class="min-w-0 flex-1">
+				<p id="reduce-motion-label" class="font-medium text-fg">{t('settings.appearance.reduceMotion')}</p>
+				<p id="reduce-motion-hint" class="text-sm text-fg-muted">{t('settings.appearance.reduceMotionHint')}</p>
+			</div>
+			<button
+				type="submit"
+				aria-pressed={data.user.reducedMotion}
+				aria-labelledby="reduce-motion-label"
+				aria-describedby="reduce-motion-hint"
+				data-testid="reduce-motion"
+				class="relative h-6 w-11 shrink-0 rounded-full border border-border-input bg-bg transition-colors aria-pressed:border-primary aria-pressed:bg-primary"
+			>
+				<span
+					class="absolute top-0.5 left-0.5 size-4.5 rounded-full transition-transform {data.user.reducedMotion
+						? 'translate-x-5 bg-primary-fg'
+						: 'bg-fg-muted'}"
+					aria-hidden="true"
+				></span>
+			</button>
+		</form>
 	</section>
 
 	<section class="flex flex-col gap-3">
@@ -66,9 +101,8 @@
 					<Button variant="ghost" size="sm">{t('settings.self.clear')}</Button>
 				</form>
 			{/if}
-			{#if form?.selfError}
-				<p class="text-sm text-danger">{form.selfError}</p>
-			{:else if form?.selfSaved}
+			<FormError message={form?.selfError} variant="inline" />
+			{#if !form?.selfError && form?.selfSaved}
 				<p class="text-sm text-fg-muted">{form.selfSaved}</p>
 			{/if}
 		</div>

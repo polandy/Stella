@@ -97,7 +97,7 @@
 					bind:value={parts.month}
 					aria-label={i18n.t('components.dateField.month')}
 					{required}
-					class="min-w-0 rounded-control border border-border bg-bg px-2 py-2 text-sm text-fg"
+					class="min-w-0 rounded-control border border-border-input bg-bg px-2 py-2 text-sm text-fg"
 				>
 					<option value="">{i18n.t('components.dateField.monthEmpty')}</option>
 					{#each months as monthName, index (monthName)}
@@ -116,7 +116,7 @@
 					{required}
 					aria-label={i18n.t('components.dateField.day')}
 					placeholder={i18n.t('components.dateField.dayPlaceholder')}
-					class="w-12 rounded-control border border-border bg-bg px-2 py-2 text-sm text-fg placeholder:text-fg-subtle"
+					class="w-12 rounded-control border border-border-input bg-bg px-2 py-2 text-sm text-fg placeholder:text-fg-subtle"
 				/>
 			{:else}
 				<input
@@ -128,7 +128,7 @@
 					required={required && !allowYearUnknown}
 					aria-label={i18n.t('components.dateField.year')}
 					placeholder={i18n.t('components.dateField.yearPlaceholder')}
-					class="w-16 rounded-control border border-border bg-bg px-2 py-2 text-sm text-fg placeholder:text-fg-subtle"
+					class="w-16 rounded-control border border-border-input bg-bg px-2 py-2 text-sm text-fg placeholder:text-fg-subtle"
 				/>
 			{/if}
 		{/each}

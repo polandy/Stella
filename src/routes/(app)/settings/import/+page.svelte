@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { hasMessage } from '$lib/i18n/translate';
@@ -107,8 +108,10 @@
 		return hasMessage(key) ? t(key) : what.replace(/([A-Z])/g, ' $1').toLowerCase();
 	};
 
-	const fieldClass = 'rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg';
+	const fieldClass = 'rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg';
 </script>
+
+<svelte:head><title>{t('common.pageTitle', { page: t('import.title') })}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header>
@@ -131,9 +134,7 @@
 
 	{#if step === 'upload'}
 		<form method="POST" action="?/preview" enctype="multipart/form-data" class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card">
-			{#if form?.step === 'upload' && form.error}
-				<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
-			{/if}
+			<FormError message={form?.step === 'upload' ? form.error : null} />
 			<label class="flex flex-col gap-1 text-sm text-fg-muted">
 				<span>{t('import.fileLabel')}</span>
 				<input type="file" name="dump" accept=".sql,.json,.vcf,.gz,.sql.gz,.json.gz,.vcf.gz,application/sql,application/json,text/vcard,application/gzip" required class={fieldClass} />

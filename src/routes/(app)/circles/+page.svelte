@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
@@ -46,36 +47,46 @@
 
 	{#if showForm}
 		<form method="POST" action="?/create" class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card">
-			{#if form?.error}<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>{/if}
+			<FormError message={form?.error} id="circle-error" />
 
 			<label class="flex flex-col gap-1 text-sm">
 				<span class="text-fg-muted">{t('circles.name')}</span>
-				<input name="name" placeholder={t('circles.namePlaceholder')} required class="rounded-md border border-border bg-bg px-3 py-2 text-fg" />
+				<input
+					name="name"
+					placeholder={t('circles.namePlaceholder')}
+					required
+					aria-invalid={form?.error ? 'true' : undefined}
+					aria-describedby={form?.error ? 'circle-error' : undefined}
+					class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg" />
 			</label>
 
 			<div class="flex flex-wrap gap-4">
 				<label class="flex flex-1 flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.kindLabel')}</span>
-					<select name="kind" class="rounded-md border border-border bg-bg px-3 py-2 text-fg">
+					<select name="kind" class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg">
 						{#each data.kinds as kind (kind)}<option value={kind}>{circleKindLabel(t, kind)}</option>{/each}
 					</select>
 				</label>
 				<label class="flex flex-[2] flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.descriptionLabel')}</span>
-					<input name="description" class="rounded-md border border-border bg-bg px-3 py-2 text-fg" />
+					<input name="description" class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg" />
 				</label>
 			</div>
 
+			<!-- Each swatch is named for a screen reader, and shows a focus ring of its own: the
+			     radio under it is visually hidden, so it cannot show one (WCAG 1.1.1, 2.4.7). -->
 			<fieldset class="flex flex-col gap-2">
-				<span class="text-sm text-fg-muted">{t('circles.colour')}</span>
+				<legend class="mb-2 text-sm text-fg-muted">{t('circles.colour')}</legend>
 				<div class="flex flex-wrap gap-2">
 					{#each data.colors as color (color)}
-						<label class="cursor-pointer" title={color}>
+						<label class="cursor-pointer" title={t(`components.colour.${color}`)}>
 							<input type="radio" name="color" value={color} checked={color === data.suggestedColor} class="peer sr-only" />
 							<span
-								class="block size-7 rounded-full ring-offset-2 ring-offset-[var(--card)] transition-all peer-checked:ring-2 peer-checked:ring-[var(--fg)] hover:scale-110"
+								class="block size-7 rounded-full ring-offset-2 ring-offset-[var(--card)] transition-all peer-checked:ring-2 peer-checked:ring-[var(--fg)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-focus-ring hover:scale-110"
 								style={accentDotStyle(color)}
+								aria-hidden="true"
 							></span>
+							<span class="sr-only">{t(`components.colour.${color}`)}</span>
 						</label>
 					{/each}
 				</div>
@@ -86,7 +97,7 @@
 	{/if}
 
 	{#if data.circles.length > 0}
-		<label class="flex items-center gap-2 rounded-control border border-border bg-card px-3 py-2 shadow-card focus-within:border-primary">
+		<label class="flex items-center gap-2 rounded-control border border-border-input bg-card px-3 py-2 shadow-card focus-within:border-primary">
 			<Icon name="search" size={15} />
 			<span class="sr-only">{t('circles.find')}</span>
 			<input
@@ -97,6 +108,10 @@
 				class="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none placeholder:text-fg-subtle"
 			/>
 		</label>
+		<!-- Always in the page, so a screen reader is listening before the first keystroke. -->
+		<p class="sr-only" aria-live="polite" data-testid="circle-match-count">
+			{query.trim() !== '' || kind !== ALL_KINDS ? t('circles.matchCount', { count: shown.length }) : ''}
+		</p>
 
 		{#if chips.length > 1}
 			<div class="flex flex-wrap items-center gap-2" data-testid="circle-kinds">
@@ -105,10 +120,10 @@
 						type="button"
 						onclick={() => (chosenKind = chip.kind)}
 						aria-pressed={kind === chip.kind}
-						class="rounded-full px-3 py-1 text-sm font-medium transition-colors aria-pressed:bg-primary-soft aria-pressed:text-primary text-fg-muted hover:text-fg"
+						class="rounded-full px-3 py-1 text-sm font-medium transition-colors aria-pressed:bg-primary-soft aria-pressed:font-semibold aria-pressed:text-fg text-fg-muted hover:text-fg"
 					>
 						{chip.label}
-						<span class="text-xs text-fg-subtle">{chip.count}</span>
+						<span class="text-xs text-fg-muted">{chip.count}</span>
 					</button>
 				{/each}
 			</div>

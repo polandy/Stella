@@ -1,9 +1,11 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { tick, untrack, type Snippet } from 'svelte';
 	import Button from './Button.svelte';
 	import Icon from './Icon.svelte';
 	import { FIELD_SELECTOR, firstField } from './first-field';
+	import { owesFocusBack } from '$lib/ui/focus-return';
 	import type { IconName } from './icons';
 
 	/*
@@ -94,6 +96,18 @@
 	 * the cursor into it would skip the error message the reader arrived for.
 	 */
 	let wasExpanded = false;
+	/*
+	 * Whether the cursor is in the form. A save or a cancel closes it and takes the focused
+	 * field with it; the browser then drops focus on the page, and the next Tab would start at
+	 * the top. Tracked from the form's own focus events, because by the time it has closed the
+	 * field is gone and there is nothing left to ask (WCAG 2.4.3).
+	 */
+	let focusInForm = false;
+	function onFocusOut(event: FocusEvent) {
+		const next = event.relatedTarget;
+		// Focus going nowhere is the field being removed under it — still "was inside".
+		if (next instanceof Node && !form?.contains(next)) focusInForm = false;
+	}
 
 	function toggle() {
 		open = !expanded;
@@ -104,7 +118,20 @@
 	// story card's — since it watches the state rather than the button.
 	$effect(() => {
 		const justOpened = expanded && !wasExpanded && error === null;
+		const justClosed = !expanded && wasExpanded;
 		wasExpanded = expanded;
+		if (justClosed) {
+			const hadFocusInside = focusInForm;
+			focusInForm = false;
+			void tick().then(() => {
+				const active = document.activeElement;
+				const focusNow = active === null || active === document.body ? 'page' : 'elsewhere';
+				if (owesFocusBack({ hadFocusInside, focusNow })) {
+					card?.querySelector<HTMLElement>('[data-section-toggle]')?.focus();
+				}
+			});
+			return;
+		}
 		if (!justOpened || !form) return;
 		void tick().then(() => {
 			card?.scrollIntoView({ block: 'nearest' });
@@ -153,11 +180,11 @@
 			bind:this={form}
 			role="group"
 			onkeydown={onKeydown}
+			onfocusin={() => (focusInForm = true)}
+			onfocusout={onFocusOut}
 			class="mb-3 border-b border-border-subtle pb-3"
 		>
-			{#if error}
-				<p class="mb-3 rounded-control bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>
-			{/if}
+			<FormError message={error} class="mb-3" />
 			{@render editor()}
 		</div>
 	{/if}

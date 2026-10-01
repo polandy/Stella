@@ -20,6 +20,9 @@ export interface Removals {
 	/** Reactive — reading it inside `$derived` tracks the pending list. */
 	isPending(key: string): boolean;
 	notify(text: string): void;
+	/** Stops the windows while the reader is at the toasts; `release` lets them run again. */
+	hold(): void;
+	release(): void;
 }
 
 /**
@@ -43,7 +46,9 @@ export function provideRemovals(): Removals {
 		undo: store.undo,
 		flush: store.flush,
 		isPending: (key) => snapshot.removals.some((removal) => removal.key === key),
-		notify: store.notify
+		notify: store.notify,
+		hold: store.hold,
+		release: store.release
 	};
 	setContext(CONTEXT_KEY, removals);
 	return removals;

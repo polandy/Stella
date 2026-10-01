@@ -81,8 +81,10 @@
 	const filtered = $derived(isNarrowed(data.filter));
 	const CHIP_ROW = 'flex flex-wrap items-center gap-1';
 	const CHIP =
-		'rounded-full px-3 py-1 text-sm font-medium text-fg-muted transition-colors hover:text-fg aria-[current=true]:bg-primary-soft aria-[current=true]:text-primary';
-	const CHIP_ROW_LABEL = 'mr-1 text-xs font-semibold uppercase tracking-wider text-fg-subtle';
+		'rounded-full px-3 py-1 text-sm font-medium text-fg-muted transition-colors hover:text-fg aria-[current=true]:bg-primary-soft aria-[current=true]:font-semibold aria-[current=true]:text-fg';
+	// Words on a tint, and labels that carry content, are written in --fg / --fg-muted: in Latte
+	// --primary on its own tint and --fg-subtle on the page ground both fall below AA (docs/05 §5.6).
+	const CHIP_ROW_LABEL = 'mr-1 text-xs font-semibold uppercase tracking-wider text-fg-muted';
 
 	// The rail's rows: one vertical list at every width — beside the stream from lg, above or
 	// below it on a phone. Nothing scrolls sideways, so nothing hides off the right edge.

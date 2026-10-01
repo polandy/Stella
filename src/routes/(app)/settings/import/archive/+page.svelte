@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import { countLabel, summariseRestore, tableLabel } from '$lib/archive/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -41,6 +42,8 @@
 	);
 </script>
 
+<svelte:head><title>{t('common.pageTitle', { page: t('archive.restore.title') })}</title></svelte:head>
+
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header class="flex flex-col gap-2">
 		<h1 class="text-2xl font-semibold text-fg">{t('archive.restore.title')}</h1>
@@ -53,11 +56,7 @@
 		enctype="multipart/form-data"
 		class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card"
 	>
-		{#if form && 'error' in form && form.error}
-			<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger" data-testid="restore-error">
-				{form.error}
-			</p>
-		{/if}
+		<FormError message={form && 'error' in form ? form.error : null} data-testid="restore-error" />
 		<label class="flex flex-col gap-1 text-sm text-fg-muted">
 			<span>{t('archive.restore.fileLabel')}</span>
 			<input
@@ -65,7 +64,7 @@
 				name="archive"
 				accept=".tar,application/x-tar"
 				required
-				class="rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg"
+				class="rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg"
 			/>
 		</label>
 		<p class="text-xs text-fg-subtle">{t('archive.restore.fileHint')}</p>

@@ -1,6 +1,7 @@
 import type { Handle } from '@sveltejs/kit';
 import { LOCALE_COOKIE } from '$lib/i18n/locales';
 import { resolveLocale } from '$lib/i18n/resolve';
+import { motionAttribute } from '$lib/ui/motion';
 import { clearSessionCookie, SESSION_COOKIE, setLocaleCookie } from '$lib/server/auth/cookies';
 import { resolveRequestIdentity } from '$lib/server/auth/request-identity';
 import { etagOf, isUnchanged, wantsEtag } from '$lib/server/http/etag';
@@ -48,7 +49,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	const response = await resolve(event, {
 		// Screen readers and the browser's own translation prompt both go by `<html lang>`.
-		transformPageChunk: ({ html }) => html.replace('%lang%', event.locals.locale)
+		// The member's wish for less motion is on the page before its first paint (docs/05 §5.5).
+		transformPageChunk: ({ html }) =>
+			html
+				.replace('%lang%', event.locals.locale)
+				.replace('%stella.motion%', motionAttribute(event.locals.user?.reducedMotion ?? false))
 	});
 	const answer = await withEtag(event.request, response);
 	answer.headers.set('X-Content-Type-Options', 'nosniff');

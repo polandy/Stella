@@ -173,6 +173,107 @@ describe('createPendingRemovals', () => {
 	});
 });
 
+/*
+ * The window is not a fixed eight seconds for somebody still reading the toast or reaching
+ * for its Undo (WCAG 2.2.1): while the toast region is hovered or holds focus, it stands still,
+ * and once it is let go the window starts over in full.
+ */
+describe('holding the window open', () => {
+	it('commits nothing while held, however long it is held', async () => {
+		const { clock, store } = setup();
+		const { committed, commit } = commitRecorder();
+		store.remove({ key: 'note:a', label: 'Note removed', commit: commit('note:a') });
+
+		clock.advance(UNDO_WINDOW_MS - 1);
+		store.hold();
+		clock.advance(UNDO_WINDOW_MS * 10);
+		await settled();
+
+		expect(committed).toEqual([]);
+		expect(store.isPending('note:a')).toBe(true);
+	});
+
+	it('gives a full window again once let go, then commits', async () => {
+		const { clock, store } = setup();
+		const { committed, commit } = commitRecorder();
+		store.remove({ key: 'note:a', label: 'Note removed', commit: commit('note:a') });
+		clock.advance(UNDO_WINDOW_MS - 1);
+		store.hold();
+
+		store.release();
+		clock.advance(UNDO_WINDOW_MS - 1);
+		await settled();
+		expect(committed).toEqual([]);
+
+		clock.advance(1);
+		await settled();
+		expect(committed).toEqual(['note:a']);
+	});
+
+	it('does not start the window of a removal made while held until it is let go', async () => {
+		const { clock, store } = setup();
+		const { committed, commit } = commitRecorder();
+		store.hold();
+		store.remove({ key: 'note:b', label: 'Note removed', commit: commit('note:b') });
+
+		clock.advance(UNDO_WINDOW_MS * 2);
+		await settled();
+		expect(committed).toEqual([]);
+
+		store.release();
+		clock.advance(UNDO_WINDOW_MS);
+		await settled();
+		expect(committed).toEqual(['note:b']);
+	});
+
+	it('keeps a notice up while held', () => {
+		const { clock, store } = setup();
+		store.notify('Saved');
+		store.hold();
+
+		clock.advance(UNDO_WINDOW_MS * 2);
+		expect(store.snapshot().notices.map((n) => n.text)).toEqual(['Saved']);
+
+		store.release();
+		clock.advance(UNDO_WINDOW_MS);
+		expect(store.snapshot().notices).toEqual([]);
+	});
+
+	it('still lets undo and leaving the page through while held', async () => {
+		const { clock, store } = setup();
+		const { committed, commit } = commitRecorder();
+		store.remove({ key: 'note:a', label: 'Note removed', commit: commit('note:a') });
+		store.remove({ key: 'note:b', label: 'Note removed', commit: commit('note:b') });
+		store.hold();
+
+		store.undo('note:a');
+		await store.flush();
+
+		expect(committed).toEqual(['note:b']);
+		// Nothing is left armed behind the flush to fire later.
+		store.release();
+		clock.advance(UNDO_WINDOW_MS);
+		await settled();
+		expect(committed).toEqual(['note:b']);
+	});
+
+	it('treats a second hold or a stray release as a no-op', async () => {
+		const { clock, store } = setup();
+		const { committed, commit } = commitRecorder();
+		store.remove({ key: 'note:a', label: 'Note removed', commit: commit('note:a') });
+
+		store.release();
+		store.hold();
+		store.hold();
+		store.release();
+		expect(clock.armed).toBe(1);
+
+		clock.advance(UNDO_WINDOW_MS);
+		await settled();
+		expect(committed).toEqual(['note:a']);
+	});
+});
+
 /** Lets the promise chains started by a fired timer run to completion. */
 async function settled() {
 	for (let i = 0; i < 4; i++) await Promise.resolve();

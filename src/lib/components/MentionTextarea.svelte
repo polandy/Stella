@@ -70,7 +70,9 @@
 	}: Props = $props();
 
 	const t = useTranslate();
-
+	const uid = $props.id();
+	const listboxId = `${uid}-people`;
+	const optionId = (i: number) => `${uid}-person-${i}`;
 
 	let textarea: HTMLTextAreaElement | undefined = $state();
 	let active = $state<ActiveHandle | null>(null);
@@ -195,6 +197,8 @@
 		{placeholder}
 		aria-label={label}
 		aria-autocomplete="list"
+		aria-controls={listboxId}
+		aria-activedescendant={active && people[selected] ? optionId(selected) : undefined}
 		onkeydown={onKeydown}
 		oninput={onInput}
 		onclick={refreshPicker}
@@ -204,7 +208,10 @@
 	></textarea>
 
 	{#if active && people.length > 0}
+		<!-- A textarea cannot take the combobox role, so it points at the list with
+		     aria-controls and at the highlighted person with aria-activedescendant. -->
 		<ul
+			id={listboxId}
 			role="listbox"
 			aria-label={t('composer.people')}
 			data-testid="mention-picker"
@@ -216,6 +223,8 @@
 					<button
 						type="button"
 						role="option"
+						id={optionId(i)}
+						tabindex="-1"
 						aria-selected={i === selected}
 						onmousedown={(e) => {
 							e.preventDefault();

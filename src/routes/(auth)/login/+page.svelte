@@ -1,11 +1,12 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { form, data }: { form: ActionData; data: PageData } = $props();
 	const t = useTranslate();
-	const INPUT = 'rounded-md border border-border bg-bg px-3 py-2 text-fg';
+	const INPUT = 'rounded-md border border-border-input bg-bg px-3 py-2 text-fg';
 </script>
 
 <svelte:head><title>{t('auth.signInTitle')}</title></svelte:head>
@@ -16,9 +17,7 @@
 	<p class="rounded-app bg-card px-3 py-2 text-sm text-fg-muted">{t('auth.signedOut')}</p>
 {/if}
 
-{#if data.ssoError}
-	<p class="rounded-app bg-danger/10 px-3 py-2 text-sm text-danger">{data.ssoError}</p>
-{/if}
+<FormError message={data.ssoError} />
 
 {#if data.oidcEnabled}
 	<Button variant="primary" href="/login/sso" class="justify-center">{t('auth.signInWithSso')}</Button>
@@ -31,17 +30,15 @@
 
 {#if data.localEnabled}
 	<form method="POST" class="flex flex-col gap-4 rounded-app bg-card p-6 shadow-card">
-		{#if form?.error}
-			<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
-		{/if}
+		<FormError message={form?.error} id="sign-in-error" />
 
 		<label class="flex flex-col gap-1 text-sm">
 			<span class="text-fg-muted">{t('auth.email')}</span>
-			<input name="email" type="email" required autocomplete="email" class={INPUT} />
+			<input name="email" type="email" required autocomplete="email" class={INPUT} aria-invalid={form?.error ? 'true' : undefined} aria-describedby={form?.error ? 'sign-in-error' : undefined} />
 		</label>
 		<label class="flex flex-col gap-1 text-sm">
 			<span class="text-fg-muted">{t('auth.password')}</span>
-			<input name="password" type="password" required autocomplete="current-password" class={INPUT} />
+			<input name="password" type="password" required autocomplete="current-password" class={INPUT} aria-invalid={form?.error ? 'true' : undefined} aria-describedby={form?.error ? 'sign-in-error' : undefined} />
 		</label>
 
 		<Button variant="primary" class="mt-2 justify-center">{t('auth.signIn')}</Button>

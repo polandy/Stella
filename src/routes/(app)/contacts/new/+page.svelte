@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/Button.svelte';
@@ -121,7 +122,7 @@
 	const field = 'flex min-w-0 flex-col gap-1 text-sm';
 	// `w-full min-w-0`: an input's intrinsic width (~20 characters) would otherwise push a
 	// two-column row past the card's edge on a phone.
-	const input = 'w-full min-w-0 rounded-md border border-border bg-bg px-3 py-2 text-fg';
+	const input = 'w-full min-w-0 rounded-md border border-border-input bg-bg px-3 py-2 text-fg';
 </script>
 
 <svelte:head><title>{t('contacts.new.title')}</title></svelte:head>
@@ -138,14 +139,20 @@
 				<Icon name="offline" size={14} />{t('contacts.new.kept', { name: keptName })}
 			</p>
 		{/if}
-		{#if form?.error}
-			<p class="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{form.error}</p>
-		{/if}
+		<FormError message={form?.error} id="new-person-error" />
 
 		<div class="flex gap-3">
 			<label class="{field} flex-1">
 				<span class="text-fg-muted">{t('contacts.new.firstName')}</span>
-				<input name="firstName" class={input} autocomplete="off" bind:value={firstName} oninput={onNameInput} />
+				<input
+					name="firstName"
+					class={input}
+					autocomplete="off"
+					bind:value={firstName}
+					oninput={onNameInput}
+					aria-invalid={form?.error ? 'true' : undefined}
+					aria-describedby={form?.error ? 'new-person-error' : undefined}
+				/>
 			</label>
 			<label class="{field} flex-1">
 				<span class="text-fg-muted">{t('contacts.new.lastName')}</span>
@@ -182,7 +189,7 @@
 
 		{#if suggestions.length > 0}
 			<section class="flex flex-col gap-2 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="name-suggestions" aria-live="polite">
-				<h2 class="text-xs font-medium uppercase tracking-wide text-fg-subtle">{t('contacts.new.alreadyHere')}</h2>
+				<h2 class="text-xs font-medium uppercase tracking-wide text-fg-muted">{t('contacts.new.alreadyHere')}</h2>
 				<ul class="flex flex-col gap-1.5">
 					{#each suggestions as s (s.id)}
 						<li class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
@@ -209,7 +216,7 @@
 				label={t('contacts.new.description')}
 				name="description"
 				bind:value={description}
-				inputClass="w-full min-w-0 rounded-md border border-border bg-card px-3 py-2 text-fg"
+				inputClass="w-full min-w-0 rounded-md border border-border-input bg-card px-3 py-2 text-fg"
 			/>
 		{:else}
 			<label class={field}>

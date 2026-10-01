@@ -96,7 +96,7 @@
 				value={Number(month.slice(0, 4))}
 				onchange={(e) => (month = inYear(month, Number(e.currentTarget.value), lastMonth))}
 				aria-label={i18n.t('components.dateField.year')}
-				class="rounded-control border border-border bg-bg px-1.5 py-0.5 text-sm font-semibold text-fg tabular-nums"
+				class="rounded-control border border-border-input bg-bg px-1.5 py-0.5 text-sm font-semibold text-fg tabular-nums"
 			>
 				{#each years as year (year)}
 					<option value={year}>{year}</option>

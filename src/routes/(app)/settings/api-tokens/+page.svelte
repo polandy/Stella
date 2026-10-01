@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import Button from '$lib/components/Button.svelte';
@@ -15,7 +16,7 @@
 	const t = i18n.t;
 
 	const INPUT =
-		'rounded-control border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
+		'rounded-control border border-border-input bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
 
 	const day = (at: number) => new Date(at).toLocaleDateString(i18n.intlLocale, { dateStyle: 'medium' });
 
@@ -29,6 +30,8 @@
 		copied = true;
 	}
 </script>
+
+<svelte:head><title>{t('common.pageTitle', { page: t('settings.api.title') })}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header class="flex flex-col gap-1">
@@ -88,9 +91,7 @@
 					{/each}
 				</select>
 			</label>
-			{#if form && 'error' in form && form.error}
-				<p class="text-sm text-danger">{form.error}</p>
-			{/if}
+			<FormError message={form && 'error' in form ? form.error : null} variant="inline" />
 			<div><Button type="submit">{t('settings.apiTokens.submit')}</Button></div>
 		</form>
 	</section>

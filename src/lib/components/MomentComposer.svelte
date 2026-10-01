@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
@@ -103,6 +104,10 @@
 	}: Props = $props();
 
 	const t = useTranslate();
+	const uid = $props.id();
+	const errorId = `${uid}-error`;
+	const listboxId = `${uid}-people`;
+	const optionId = (i: number) => `${uid}-person-${i}`;
 
 	// svelte-ignore state_referenced_locally -- the kept moment is only a starting value on purpose
 	const kept = editing?.command.payload ?? null;
@@ -443,9 +448,7 @@
 	bind:this={composer}
 	class="relative flex flex-col rounded-app bg-card shadow-card transition-shadow focus-within:ring-2 focus-within:ring-primary/40"
 >
-	{#if error || localError}
-		<p class="mx-3 mt-3 rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{error ?? localError}</p>
-	{/if}
+	<FormError message={error ?? localError} id={errorId} class="mx-3 mt-3" />
 	<div class="flex items-start gap-3 p-3 pb-2">
 		<Avatar id={me.id} name={me.name} avatarPhotoId={me.avatarPhotoId ?? null} size={40} />
 		<textarea
@@ -458,6 +461,9 @@
 			placeholder={t('composer.placeholder')}
 			aria-label={t('composer.label')}
 			aria-autocomplete="list"
+			aria-controls={listboxId}
+			aria-activedescendant={!creating && active && rows[selected] ? optionId(selected) : undefined}
+			aria-describedby={error ?? localError ? errorId : undefined}
 			onkeydown={onKeydown}
 			oninput={onInput}
 			onclick={refreshPicker}
@@ -487,7 +493,7 @@
 						bind:value={creating.firstName}
 						type="text"
 						autocomplete="off"
-						class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+						class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 					/>
 				</label>
 				<label class="flex flex-col gap-1 text-xs text-fg-muted">
@@ -496,7 +502,7 @@
 						bind:value={creating.lastName}
 						type="text"
 						autocomplete="off"
-						class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+						class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 					/>
 				</label>
 			</div>
@@ -506,7 +512,7 @@
 					compact
 					label={t('components.personSearch.description')}
 					bind:value={creating.description}
-					inputClass="rounded-control border border-border bg-card px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+					inputClass="rounded-control border border-border-input bg-card px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 				/>
 			{:else}
 				<label class="flex flex-col gap-1 text-xs text-fg-muted">
@@ -516,7 +522,7 @@
 						type="text"
 						autocomplete="off"
 						placeholder={t('components.namesake.placeholder')}
-						class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+						class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 					/>
 				</label>
 			{/if}
@@ -530,7 +536,9 @@
 		</div>
 	{:else if active && rows.length > 0}
 		<ul
+			id={listboxId}
 			role="listbox"
+			aria-label={t('composer.people')}
 			bind:this={list}
 			style:max-height="{placement.maxHeight}px"
 			class="absolute left-14 z-10 w-[min(320px,calc(100%-4rem))] overflow-y-auto rounded-app border border-border bg-card p-1 shadow-pop {placement.side ===
@@ -538,12 +546,16 @@
 				? 'bottom-full mb-1'
 				: 'top-16'}"
 		>
-			<li class="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">{t('composer.people')}</li>
+			<!-- A caption for the eye; the listbox carries the same words as its name. -->
+			<li role="presentation" aria-hidden="true" class="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-fg-muted">{t('composer.people')}</li>
 			{#each rows as row, i (row.kind === 'person' ? row.person.id : 'create')}
-				<li>
+				<li role="none">
+					<!-- tabindex -1: the field keeps focus and points here with aria-activedescendant. -->
 					<button
 						type="button"
 						role="option"
+						id={optionId(i)}
+						tabindex="-1"
 						aria-selected={i === selected}
 						onmousedown={(e) => {
 							e.preventDefault();
@@ -560,8 +572,8 @@
 							</span>
 							{#if createdIds.has(row.person.id)}<span class="ml-auto text-xs text-fg-subtle">{t('composer.justCreated')}</span>{/if}
 						{:else}
-							<span class="grid size-[22px] place-items-center rounded-full border border-dashed border-success text-success">+</span>
-							<span class="font-semibold text-success">{row.another ? t('composer.createAnother', { name: row.name }) : t('composer.create', { name: row.name })}</span>
+							<span class="grid size-[22px] place-items-center rounded-full border border-dashed border-success text-success-text" aria-hidden="true">+</span>
+							<span class="font-semibold text-success-text">{row.another ? t('composer.createAnother', { name: row.name }) : t('composer.create', { name: row.name })}</span>
 							<span class="ml-auto text-xs text-fg-subtle">{t('composer.newPerson')}</span>
 						{/if}
 					</button>
@@ -575,18 +587,25 @@
 	{/if}
 
 	<div class="flex flex-wrap items-center gap-2 border-t border-border-subtle px-3 py-2">
-		<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted has-checked:border-transparent has-checked:bg-primary-soft has-checked:font-semibold has-checked:text-primary">
-			<input type="checkbox" class="sr-only" checked={visibility === 'shared'} onchange={(e) => (visibility = (e.currentTarget as HTMLInputElement).checked ? 'shared' : 'private')} />
+		<!--
+			A checkbox whose name stays put — "Share with household", checked or not — so a screen
+			reader hears one control changing state rather than a label that swaps under it. The
+			visible word is the state, for the eye. Words on the tint in `--fg` (docs/05 §5.6).
+		-->
+		<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted has-checked:border-transparent has-checked:bg-primary-soft has-checked:font-semibold has-checked:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring">
+			<input type="checkbox" class="sr-only" aria-label={t('composer.shareWithHousehold')} checked={visibility === 'shared'} onchange={(e) => (visibility = (e.currentTarget as HTMLInputElement).checked ? 'shared' : 'private')} />
 			<Icon name={visibility === 'shared' ? 'shared' : 'private'} size={13} />
-			{visibility === 'shared' ? t('common.shared') : t('common.private')}
+			<span aria-hidden="true">{visibility === 'shared' ? t('common.shared') : t('common.private')}</span>
 		</label>
 		<input type="hidden" name="visibility" value={visibility} />
 		{#key fresh}
 		{#if !editing}
-			<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted hover:text-fg">
+			<!-- `sr-only`, not `hidden`: a hidden input is out of the tab order, and the photo
+			     button with it (WCAG 2.1.1). The pill shows where focus is instead. -->
+			<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring">
 				<Icon name="photo" size={13} />
 				{picked.length ? t('composer.photoCount', { count: picked.length }) : t('composer.photo')}
-				<input type="file" accept="image/*" multiple onchange={onFiles} class="hidden" />
+				<input type="file" accept="image/*" multiple onchange={onFiles} class="sr-only" />
 			</label>
 		{/if}
 		<DayPill name="entryDate" value={kept?.entryDate ?? day} today={day} />

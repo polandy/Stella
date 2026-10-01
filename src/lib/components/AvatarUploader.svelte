@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { CropRect } from '$lib/image/crop';
@@ -79,6 +80,6 @@
 		</span>
 	</button>
 	<input bind:this={input} onchange={onPick} type="file" accept="image/*" class="hidden" />
-	{#if error}<p class="text-xs text-danger">{error}</p>{/if}
+	<FormError message={error} variant="inline" size="xs" />
 	<PhotoCropper file={picked} onconfirm={upload} oncancel={() => (picked = null)} />
 </div>

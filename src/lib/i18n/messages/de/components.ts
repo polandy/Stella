@@ -70,5 +70,20 @@ export const components: ComponentsMessages = {
 	'components.dateField.yearOptional': 'Lass das Jahr leer, wenn du es nicht weißt.',
 	'components.dateField.noSuchDay': 'Diesen Tag gibt es im Kalender nicht.',
 	'components.dateField.incomplete': 'Gib das ganze Datum ein oder lösche es.',
-	'components.dateField.inFuture': 'Dieser Tag ist noch nicht gewesen.'
+	'components.dateField.inFuture': 'Dieser Tag ist noch nicht gewesen.',
+	'components.toasts': 'Mitteilungen',
+	'components.colour.rosewater': 'Rosenholz',
+	'components.colour.flamingo': 'Flamingo',
+	'components.colour.pink': 'Rosa',
+	'components.colour.mauve': 'Mauve',
+	'components.colour.red': 'Rot',
+	'components.colour.maroon': 'Weinrot',
+	'components.colour.peach': 'Pfirsich',
+	'components.colour.yellow': 'Gelb',
+	'components.colour.green': 'Grün',
+	'components.colour.teal': 'Petrol',
+	'components.colour.sky': 'Himmelblau',
+	'components.colour.sapphire': 'Saphir',
+	'components.colour.blue': 'Blau',
+	'components.colour.lavender': 'Lavendel'
 };

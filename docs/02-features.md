@@ -1367,7 +1367,10 @@ the API (kindergarten-2023)"), with the visibility of what it imported.
 - **Household** (admin): name, members & roles, invitations, relationship types, tags.
 - **Data** (admin): export, import, backup.
 - **Appearance:** theme (system/light/dark), accent color choice from Catppuccin set,
-  reduced motion.
+  reduced motion. *Today:* **Reduce motion** is a switch in Settings → Appearance, stored on
+  the profile (`user.reduced_motion`) so it follows the member to every device. It only adds to
+  the device's own `prefers-reduced-motion`, never overrides a device that asks for less: screens
+  cut instead of cross-fading, rows leave without sliding, the map does not glide (docs/05 §5.9).
 - **About:** which version this Stella is, and whether a newer one has been released (§2.17.1).
 
 ### 2.17.1 "Is there a newer Stella?" **[M2]**
@@ -1515,7 +1518,14 @@ being a copy.
 ## 2.19 Accessibility & i18n
 
 - Keyboard navigable, focus-visible, ARIA where needed, WCAG **AA** contrast in both
-  themes, `prefers-reduced-motion` respected.
+  themes, `prefers-reduced-motion` respected — and a **Reduce motion** switch of Stella's own
+  (§2.17). Form errors are announced (`role="alert"`) and tied to the field at fault; focus
+  returns to the button that opened a form when it closes, and to the neighbouring row when a
+  row is removed; the undo toast's window stands still while it is hovered or focused. The
+  checklist is docs/05 §5.9.
+- Words that only a screen reader hears are translated like any other: the colour names of
+  the circle swatches, the People and Circles match counts, the *Account menu* and the
+  *Notifications* region.
 - **English and German are both fully supported.** Every string a person reads — screens,
   form errors, domain refusals, the import and archive reports — comes from a typed message
   catalogue (`src/lib/i18n/messages/{en,de}`), one module per area, with the German module

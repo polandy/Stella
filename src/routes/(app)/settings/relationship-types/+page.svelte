@@ -24,7 +24,7 @@
 
 	/** One class for every text input on the page, so they cannot drift apart. */
 	const INPUT =
-		'rounded-control border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
+		'rounded-control border border-border-input bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
 
 	let addOpen = $state(false);
 	let editing = $state<string | null>(null);
@@ -50,6 +50,8 @@
 		data.custom.filter((type) => !removals.isPending(removalKey('relationship-type', type.id)))
 	);
 </script>
+
+<svelte:head><title>{t('common.pageTitle', { page: t('relationshipTypes.title') })}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header class="flex flex-col gap-1">

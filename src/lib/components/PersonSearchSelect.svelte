@@ -81,6 +81,12 @@
 
 	const t = useTranslate();
 	const removals = useRemovals();
+	// A picker without an `id` of its own still needs one to tie its list to its field.
+	const uid = $props.id();
+	const baseId = $derived(id ?? uid);
+	const listboxId = $derived(`${baseId}-listbox`);
+	const optionId = (i: number) => `${baseId}-option-${i}`;
+	const createOptionId = $derived(`${baseId}-create`);
 
 	let query = $state('');
 	let open = $state(false);
@@ -273,6 +279,12 @@
 	}
 
 	const singlePicked = $derived(!multiple ? chosen[0] : undefined);
+	/** The row the arrow keys are on, as the field announces it (`aria-activedescendant`). */
+	const activeOption = $derived.by(() => {
+		if (!open || creating) return undefined;
+		if (showCreate && highlighted === createIndex) return createOptionId;
+		return highlighted < matches.length ? optionId(highlighted) : undefined;
+	});
 	const panelClass =
 		'absolute left-0 top-full z-10 mt-1 w-full min-w-[16rem] rounded-app border border-border bg-card shadow-pop';
 </script>
@@ -283,18 +295,19 @@
 	{/each}
 
 	<div
-		class="flex flex-wrap items-center gap-1.5 rounded-md border border-border bg-bg px-2 py-1.5 focus-within:ring-2 focus-within:ring-primary {className}"
+		class="flex flex-wrap items-center gap-1.5 rounded-md border border-border-input bg-bg px-2 py-1.5 focus-within:ring-2 focus-within:ring-primary {className}"
 	>
 		{#if multiple}
 			{#each chosen as person (person.id)}
 				<span class="inline-flex items-center gap-1 rounded-full bg-bg-sunken py-0.5 pl-2 pr-1 text-sm text-fg">
 					<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={16} />
 					{person.displayName}
+					<!-- 24px square (WCAG 2.5.8); the negative margin keeps the chip its own height. -->
 					<button
 						type="button"
 						onclick={() => remove(person.id)}
 						aria-label={t('components.personSearch.remove', { name: person.displayName })}
-						class="grid size-4 place-items-center rounded-full text-fg-subtle hover:bg-bg hover:text-fg"
+						class="-my-1 grid size-6 place-items-center rounded-full text-fg-muted hover:bg-bg hover:text-fg"
 					>
 						<Icon name="remove" size={12} />
 					</button>
@@ -309,8 +322,9 @@
 				{id}
 				type="text"
 				role="combobox"
-				aria-expanded={open}
-				aria-controls="{id}-listbox"
+				aria-expanded={open && !creating}
+				aria-controls={listboxId}
+				aria-activedescendant={activeOption}
 				aria-autocomplete="list"
 				autocomplete="off"
 				required={stillNeedsAPick(required, selectedIds.length)}
@@ -344,7 +358,7 @@
 							bind:value={draft.firstName}
 							type="text"
 							autocomplete="off"
-							class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+							class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 						/>
 					</label>
 					<label class="flex flex-col gap-1 text-xs text-fg-muted">
@@ -353,7 +367,7 @@
 							bind:value={draft.lastName}
 							type="text"
 							autocomplete="off"
-							class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+							class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 						/>
 					</label>
 				</div>
@@ -364,7 +378,7 @@
 						compact
 						label={t('components.personSearch.description')}
 						bind:value={draft.description}
-						inputClass="rounded-control border border-border bg-card px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+						inputClass="rounded-control border border-border-input bg-card px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 					/>
 				{:else}
 					<!-- Worth asking for anyone new, not only a first name alone: it is what they are found by. -->
@@ -375,7 +389,7 @@
 							type="text"
 							autocomplete="off"
 							placeholder={t('components.namesake.placeholder')}
-							class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+							class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 						/>
 					</label>
 				{/if}
@@ -389,7 +403,7 @@
 								bind:value={draft.nickname}
 								type="text"
 								autocomplete="off"
-								class="rounded-control border border-border bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+								class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 							/>
 						</label>
 						<div class="col-span-2 flex flex-col gap-1">
@@ -458,20 +472,24 @@
 				</div>
 			{/if}
 			<ul
-				id="{id}-listbox"
+				id={listboxId}
 				role="listbox"
 				data-testid="person-search-listbox"
 				class="max-h-56 overflow-y-auto p-1"
 			>
 				{#if matches.length === 0}
-					<li class="px-2.5 py-1.5 text-sm text-fg-subtle">{t('components.personSearch.empty')}</li>
+					<!-- Not an option: a note that there are none, for the eye and for a reader alike. -->
+					<li role="presentation" class="px-2.5 py-1.5 text-sm text-fg-muted">{t('components.personSearch.empty')}</li>
 				{:else}
 					{#each matches as person, i (person.id)}
 						{@const namesakeLine = namesakes.get(person.id)}
 						<li role="none">
+							<!-- tabindex -1: the field keeps focus and points here with aria-activedescendant. -->
 							<button
 								type="button"
 								role="option"
+								id={optionId(i)}
+								tabindex="-1"
 								aria-selected={i === highlighted}
 								onmousedown={(e) => {
 									e.preventDefault();
@@ -498,6 +516,8 @@
 			{#if showCreate}
 				<button
 					type="button"
+					id={createOptionId}
+					tabindex="-1"
 					data-testid="person-search-create-option"
 					onmousedown={(e) => {
 						e.preventDefault();
