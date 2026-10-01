@@ -62,5 +62,5 @@ export const circles: CirclesMessages = {
 	'circles.kind.neighborhood': 'Nachbarschaft',
 	'circles.kind.other': 'Sonstiges',
 	'circles.matchCount': (p: { count: number }) =>
-		p.count === 0 ? 'Kein Kreis passt' : p.count === 1 ? '1 Kreis gefunden' : `${p.count} Kreise gefunden`
+		p.count === 0 ? 'Keine Kreise gefunden' : p.count === 1 ? '1 Kreis gefunden' : `${p.count} Kreise gefunden`
 };

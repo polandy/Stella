@@ -60,7 +60,7 @@ export const circles = {
 	'circles.kind.neighborhood': 'Neighbourhood',
 	'circles.kind.other': 'Other',
 	'circles.matchCount': (p: { count: number }) =>
-		p.count === 0 ? 'No circle matches' : p.count === 1 ? '1 circle found' : `${p.count} circles found`
+		p.count === 0 ? 'No circles found' : p.count === 1 ? '1 circle found' : `${p.count} circles found`
 };
 
 /** The key set every translation of this area has to provide. */
