@@ -139,6 +139,11 @@ export interface ContactAddPayload {
 	/** Optional: a phone that queued the person before the field existed sends none. */
 	gender?: Gender | null;
 	visibility: MentionAudience;
+	/**
+	 * The member is adding themselves: Stella records this person as who they are (docs/02
+	 * §2.1.3). Optional: a phone that queued the person before the field existed sends none.
+	 */
+	isSelf?: boolean;
 }
 
 /** An entry written on a person's journal page (docs/02 §2.20); its photos follow it. */

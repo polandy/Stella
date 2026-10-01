@@ -122,7 +122,10 @@ export const contact: ContactMessages = {
 	'contact.relationships.howConnectedTo': (p) => `${p.name} und…`,
 	'contact.relationships.tracePath': 'Weg zeigen',
 	'contact.relationships.add': 'Beziehung hinzufügen',
-	'contact.relationships.none': 'Noch keine Beziehungen.',
+	'contact.relationships.none': (p) => `${p.name} ist noch mit niemandem verknüpft`,
+	'contact.relationships.addFirst': (p) => `${p.name} mit jemandem verknüpfen`,
+	'contact.relationships.noneHint':
+		'Füge Familie, Partner, Freunde oder Kollegen hinzu — daraus zeichnet sich die Karte, wen sie kennen.',
 	'contact.relationships.remove': (p) => `Verbindung zu ${p.name} entfernen`,
 	'contact.relationships.removed': 'Beziehung entfernt',
 	'contact.relationships.since': (p) => `seit ${p.day}`,
@@ -172,14 +175,16 @@ export const contact: ContactMessages = {
 	'contact.relationships.viaAnd': ' und ',
 
 	'contact.notes.add': 'Notiz hinzufügen',
-	'contact.notes.none': 'Noch keine Notizen.',
+	'contact.notes.none': (p) =>
+		`Noch nichts über ${p.name} notiert. Halte hier fest, was du nicht vergessen willst — Geschenkideen, Allergien, den Namen des Hundes.`,
 	'contact.notes.pinned': 'angeheftet',
 	'contact.notes.label': 'Notiz',
 	'contact.notes.placeholder': 'Notiz schreiben… (Markdown, @ zum Erwähnen)',
 	'contact.notes.pin': 'Anheften',
 
 	'contact.photos.add': 'Fotos hinzufügen',
-	'contact.photos.none': 'Noch keine Fotos.',
+	'contact.photos.none': (p) =>
+		`Noch keine Fotos von ${p.name}. Füge eines hinzu, dann kann es zum Profilbild werden.`,
 	'contact.photos.of': (p) => `Foto von ${p.name}`,
 	'contact.photos.privateHint': 'Privat — das siehst nur du',
 	'contact.photos.pictures': 'Bilder',

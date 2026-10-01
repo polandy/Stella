@@ -13,6 +13,7 @@
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import KeptItem from '$lib/components/KeptItem.svelte';
+	import WelcomeCard from '$lib/components/WelcomeCard.svelte';
 	import { contactSectionPath } from '$lib/contacts/sections';
 	import { agoLabel, occasionLabel, whenLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -284,6 +285,7 @@
 </div>
 
 <div class="flex min-w-0 flex-col gap-6 max-lg:order-3 lg:col-start-1 lg:row-start-3">
+	{#if data.welcome}<WelcomeCard steps={data.welcome} />{/if}
 	{#if data.linkSuggestion && !hintDismissed}
 		<div class="flex items-center gap-3 rounded-app border border-success/35 bg-success/10 px-4 py-2.5 text-sm text-fg" role="status">
 			<div class="flex-1">
@@ -451,7 +453,7 @@
 		<EmptyState icon="write" title={t('home.filter.empty.title')} hint={t('home.filter.empty.hint')}>
 			<Button variant="secondary" href={streamFilterHref(NO_FILTER)}>{t('home.filter.clear')}</Button>
 		</EmptyState>
-	{:else}
+	{:else if !data.welcome}
 		<EmptyState icon="write" title={t('home.empty.title')} hint={t('home.empty.hint')} />
 	{/if}
 </div>

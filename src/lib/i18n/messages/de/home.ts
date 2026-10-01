@@ -39,6 +39,18 @@ export const home: HomeMessages = {
 	'home.outbox.contactFor': (p: { name: string }) => `· Kontaktdaten für ${p.name}`,
 	'home.outbox.dateFor': (p: { name: string }) => `· Datum für ${p.name}`,
 	'home.outbox.photosOf': (p: { name: string }) => `· Fotos von ${p.name}`,
+	'home.welcome.label': 'Erste Schritte',
+	'home.welcome.title': 'Willkommen bei Stella',
+	'home.welcome.intro':
+		'Stella merkt sich die Menschen in deinem Leben, was mit ihnen geschieht und wie sie verbunden sind. Drei Wege zum Anfangen:',
+	'home.welcome.self.title': 'Fang bei dir an',
+	'home.welcome.self.hint':
+		'Lege deinen eigenen Eintrag an. Die Karte öffnet sich bei dir, und alle, die du hinzufügst, lassen sich mit dir verknüpfen.',
+	'home.welcome.import.title': 'Du kommst von Monica?',
+	'home.welcome.import.hint': 'Hol deine Menschen, Notizen und Beziehungen in einem Schritt herüber.',
+	'home.welcome.add.title': 'Jemanden hinzufügen',
+	'home.welcome.add.hint': 'Ein Name genügt; alles andere kann später kommen.',
+	'home.welcome.done': 'Erledigt',
 	'home.empty.title': 'Noch nichts geschrieben',
 	'home.empty.hint':
 		'Schreib oben den ersten Moment und erwähne jemanden mit @ — mehr braucht es nicht.',

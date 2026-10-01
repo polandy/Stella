@@ -173,6 +173,8 @@ export interface RelationshipTypeRepository {
 	deleteTypeVisibleTo(viewer: Viewer, typeId: string): Promise<boolean>;
 	/** How many relationships the viewer may see are stored under this type. */
 	countRelationshipsOfType(viewer: Viewer, typeId: string): Promise<number>;
+	/** `countRelationshipsOfType` for every type at once; a type with none is left out. */
+	countRelationshipsByType(viewer: Viewer): Promise<Map<string, number>>;
 	/**
 	 * Atomically moves every relationship of the custom type `fromId` onto `intoId` and
 	 * deletes `fromId`; a pair already linked by `intoId` keeps that link and the duplicate

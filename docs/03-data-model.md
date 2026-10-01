@@ -81,7 +81,7 @@ A family member with an account.
 | role_locked | int | 0/1; if 1, IdP group-sync will not override the role (protects break-glass admin) |
 | locale_pref | text | interface language: `'en' \| 'de'`, default `'en'` (§2.19) |
 | avatar_photo_id | text fk → photo.id null | |
-| self_contact_id | text null | the contact this member **is** (§2.1.3). No FK on purpose: SQLite cannot add one with an `ON DELETE` action through `ALTER TABLE`, and a plain reference would refuse to delete that person. Deleting the contact clears it, merging repoints it |
+| self_contact_id | text null | the contact this member **is** (§2.1.3). No FK on purpose: SQLite cannot add one with an `ON DELETE` action through `ALTER TABLE`, and a plain reference would refuse to delete that person. Deleting the contact clears it, merging repoints it. Set from Settings, from the person's page, or by adding yourself (`contact.add` with `isSelf`), which creates the contact and sets it in one step |
 | theme_pref | text | `'system' \| 'light' \| 'dark'` |
 | accent_pref | text | Catppuccin accent name, e.g. `'mauve'` |
 | reduced_motion | int | 0/1 |
@@ -193,7 +193,8 @@ The central person entity.
 | created_at / updated_at | int | |
 
 FTS: `first_name, last_name, nickname, display_name, description, how_we_met` are
-indexed in an FTS5 table (see 3.5).
+indexed in an FTS5 table (see 3.5). Indexed on `(household_id, created_at)`: every read is
+scoped by household, and the Home stream reads the newest people first.
 
 **Archiving is not visibility.** `contactVisibleTo` decides who *may* see a contact (§3.7);
 `archived_at` decides whether they are *listed*. The two are separate conditions, and
@@ -201,7 +202,8 @@ indexed in an FTS5 table (see 3.5).
 suggestions, *Quiet lately*, both *Coming up* queries and the stream's new-people read.
 Everything that reasons about the household's shape — `kinship-graph-read`, the graph
 repository — every read of one named contact, and the name lookup that resolves @-mentions
-(`listNamesVisibleTo`) keep using `contactVisibleTo` alone.
+(`listNamesVisibleTo`, and `listNamesAmongVisibleTo` for just the ids a page mentions) keep
+using `contactVisibleTo` alone.
 
 ### contact_field
 Repeatable contact methods.
@@ -300,6 +302,8 @@ A relationship can be deleted (a link entered by mistake); nothing else referenc
 so the delete is plain and the graph and derived kinship follow on the next read.
 
 Constraints: `from != to`; unique on `(from_contact_id, to_contact_id, type_id)`.
+Indexed on `from_contact_id`, `to_contact_id`, `type_id`, and on `created_at` for the Home
+stream's newest links.
 Direction is stored canonically for asymmetric types (from = forward-label side).
 Visibility is **derived** from the two endpoints (see 2.10), not stored.
 
@@ -379,6 +383,10 @@ self-reference (`contact_id` = the entry's own `contact_id`) is **not** stored. 
 | description | text null | |
 | happened_at | text | ISO date `YYYY-MM-DD` — the day it happened; the timeline orders by it, then `created_at` |
 | created_at / updated_at | int | |
+
+Indexed on `(contact_id, happened_at, created_at)`, so a person's touchpoints come in story
+order and the day of the last one is read from the index alone; and on `created_at` for the
+Home stream's newest touchpoints.
 
 ### interaction_participant  [M2]
 | column | type | notes |

@@ -1,10 +1,17 @@
 import { error, json, redirect } from '@sveltejs/kit';
-import { getContact, listContactNames } from '$lib/server/domain/contacts/contacts';
+import { getContact, listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
 import { getContactDeps, getMemberDeps, getPhotos, getStoryDeps } from '$lib/server/services';
 import { parseStoryCursor } from '$lib/story/cursor';
-import { nameLookup, photosByEntry, STORY_PAGE_SIZE, toStoryItem } from '../story-view';
+import {
+	entryIdsOf,
+	mentionIdsOf,
+	nameLookup,
+	photosByEntry,
+	STORY_PAGE_SIZE,
+	toStoryItem
+} from '../story-view';
 import type { RequestHandler } from './$types';
 import { say } from '$lib/server/i18n/say';
 
@@ -34,19 +41,21 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		cursor
 	});
 
-	const photos = await getPhotos().listJournalPhotos(viewer, params.id);
-	const names = await listContactNames(getContactDeps(), viewer);
-	const nameOfAuthor = await authorNames(getMemberDeps(), viewer.householdId);
+	// Only what this page shows: its entries' photos and the people its entries mention.
+	const [photos, names, nameOfAuthor] = await Promise.all([
+		getPhotos().listJournalPhotosOfEntries(viewer, params.id, entryIdsOf(page.items)),
+		listContactNamesAmong(getContactDeps(), viewer, mentionIdsOf(page.items)),
+		authorNames(getMemberDeps(), viewer.householdId)
+	]);
+	const context = {
+		userId: locals.user.id,
+		photosByEntry: photosByEntry(photos),
+		nameOf: nameLookup(names),
+		nameOfAuthor
+	};
 
 	return json({
-		items: page.items.map((item) =>
-			toStoryItem(item, {
-				userId: locals.user!.id,
-				photosByEntry: photosByEntry(photos),
-				nameOf: nameLookup(names),
-				nameOfAuthor
-			})
-		),
+		items: page.items.map((item) => toStoryItem(item, context)),
 		nextCursor: page.nextCursor
 	});
 };

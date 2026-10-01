@@ -40,6 +40,9 @@ function deps() {
 			async listJournalPhotos() {
 				return [];
 			},
+			async listJournalPhotosOfEntries() {
+				return [];
+			},
 			async listGalleryPhotos() {
 				return [];
 			},

@@ -13,6 +13,7 @@ import type { IdGenerator } from '../../id';
 import { deriveDisplayName } from './display-name';
 import { isKnownByMoreThanAFirstName } from '../../../people/new-person';
 import { isGender, type Gender } from '../../../people/gender';
+import { isKnownByAFirstNameOnly } from '../../../people/namesakes';
 
 /*
  * Contact use-cases (docs/02 §2.2). Framework-agnostic orchestration over the
@@ -76,6 +77,14 @@ export interface ContactName {
 	displayName: string;
 }
 
+/** What tells namesakes apart (docs/02 §2.2.3), as stored. */
+export interface DistinguishableContact extends ContactName {
+	lastName: string | null;
+	description: string | null;
+	metPlace: string | null;
+	metDate: string | null;
+}
+
 /** Row shape for list views. */
 export interface ContactSummary {
 	id: string;
@@ -115,6 +124,19 @@ export interface ContactRepository {
 	 * out of the sentences that name them (docs/02 §2.2).
 	 */
 	listNamesVisibleTo(viewer: Viewer): Promise<ContactName[]>;
+	/** `listNamesVisibleTo`, for just these ids: the ones the viewer may not see are left out. */
+	listNamesAmongVisibleTo(viewer: Viewer, ids: readonly string[]): Promise<ContactName[]>;
+	/** Id and name of those of these ids the household still browses — archived ones left out. */
+	listBrowsableNamesAmong(viewer: Viewer, ids: readonly string[]): Promise<ContactName[]>;
+	/**
+	 * Up to `limit` ids from the browsing scope, in no particular order — for a decision that
+	 * only needs to know whether there is anybody (else), not who (Home's first-run card).
+	 */
+	listSomeBrowsableIdsVisibleTo(viewer: Viewer, limit: number): Promise<string[]>;
+	/** How many `listArchivedVisibleTo` would list. */
+	countArchivedVisibleTo(viewer: Viewer): Promise<number>;
+	/** What tells each browsable person apart (docs/02 §2.2.3), without the rest of the record. */
+	listDistinguishableVisibleTo(viewer: Viewer): Promise<DistinguishableContact[]>;
 	/** Write the hero's own fields; the caller has already checked the contact is visible. */
 	updateProfile(id: string, patch: ProfilePatch): Promise<void>;
 	/** Record a gender, or none; the caller has already checked the contact is visible. */
@@ -376,6 +398,60 @@ export async function listContactNames(
 	viewer: Viewer
 ): Promise<ContactName[]> {
 	return deps.contacts.listNamesVisibleTo(viewer);
+}
+
+/**
+ * `listContactNames` for just the people a page is about to name — the mentions in the story
+ * page it renders, say — rather than everyone in the household.
+ */
+export async function listContactNamesAmong(
+	deps: Pick<ContactDeps, 'contacts'>,
+	viewer: Viewer,
+	ids: readonly string[]
+): Promise<ContactName[]> {
+	const unique = [...new Set(ids)];
+	return unique.length === 0 ? [] : deps.contacts.listNamesAmongVisibleTo(viewer, unique);
+}
+
+/** Those of `ids` the viewer may see and the household still browses, with their names. */
+export async function listBrowsableNamesAmong(
+	deps: Pick<ContactDeps, 'contacts'>,
+	viewer: Viewer,
+	ids: readonly string[]
+): Promise<ContactName[]> {
+	const unique = [...new Set(ids)];
+	return unique.length === 0 ? [] : deps.contacts.listBrowsableNamesAmong(viewer, unique);
+}
+
+/**
+ * How many browsable people are known by a first name alone (docs/02 §2.2.3) — the number on
+ * the Settings card — counted by the clean-up list's own rule over just the columns it reads.
+ */
+export async function countKnownByAFirstNameOnly(
+	deps: Pick<ContactDeps, 'contacts'>,
+	viewer: Viewer
+): Promise<number> {
+	return (await deps.contacts.listDistinguishableVisibleTo(viewer)).filter(isKnownByAFirstNameOnly).length;
+}
+
+/**
+ * Enough of the household's browsable people to tell whether it holds anybody besides the
+ * viewer's own record: two ids, so one more than the self record can ever be. Home's first-run
+ * card (docs/02 §2.22.3) asks this on every visit, so it must not read the whole household.
+ */
+export async function listPeopleEnoughForFirstRun(
+	deps: Pick<ContactDeps, 'contacts'>,
+	viewer: Viewer
+): Promise<string[]> {
+	return deps.contacts.listSomeBrowsableIdsVisibleTo(viewer, 2);
+}
+
+/** How many archived people the viewer may see — what the archive chip says. */
+export async function countArchivedContacts(
+	deps: Pick<ContactDeps, 'contacts'>,
+	viewer: Viewer
+): Promise<number> {
+	return deps.contacts.countArchivedVisibleTo(viewer);
 }
 
 /** List the archived contacts — the only read that shows them as a list. */

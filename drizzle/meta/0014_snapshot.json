@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "0f295a75-dc5d-425d-a07b-4f5f0c850712",
+  "id": "41e75a3d-4876-4da2-8d35-c3d73a82d837",
   "prevId": "02ed32d7-5a03-42fd-9f28-873aaad97c62",
   "tables": {
     "activity_log": {
@@ -801,10 +801,11 @@
         }
       },
       "indexes": {
-        "contact_household_idx": {
-          "name": "contact_household_idx",
+        "contact_household_created_idx": {
+          "name": "contact_household_created_idx",
           "columns": [
-            "household_id"
+            "household_id",
+            "created_at"
           ],
           "isUnique": false
         }
@@ -1313,10 +1314,19 @@
         }
       },
       "indexes": {
-        "interaction_contact_idx": {
-          "name": "interaction_contact_idx",
+        "interaction_contact_happened_idx": {
+          "name": "interaction_contact_happened_idx",
           "columns": [
-            "contact_id"
+            "contact_id",
+            "happened_at",
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "interaction_created_idx": {
+          "name": "interaction_created_idx",
+          "columns": [
+            "created_at"
           ],
           "isUnique": false
         }
@@ -2036,13 +2046,6 @@
           "autoincrement": false,
           "default": 0
         },
-        "pinned_at": {
-          "name": "pinned_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -2236,6 +2239,13 @@
           "name": "relationship_type_idx",
           "columns": [
             "type_id"
+          ],
+          "isUnique": false
+        },
+        "relationship_created_idx": {
+          "name": "relationship_created_idx",
+          "columns": [
+            "created_at"
           ],
           "isUnique": false
         },

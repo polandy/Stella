@@ -233,6 +233,26 @@ describe('relationship types', () => {
 		expect(await repo.countRelationshipsOfType(viewerU2, 'type-own')).toBe(2);
 		expect(await repo.countRelationshipsOfType(viewerU1, 'parent_child')).toBe(0);
 	});
+
+	it('counts every type at once, the same as asking type by type', async () => {
+		await seedOwnType();
+		seedContact('mara', 'Mara', 'shared');
+		seedContact('jonas', 'Jonas', 'shared');
+		seedContact('lio', 'Lio', 'shared');
+		seedContact('secret', 'Secret', 'private', U2);
+		await repo.insert(newRelationship('rel-1', 'mara', 'jonas', 'type-own'));
+		await repo.insert(newRelationship('rel-2', 'jonas', 'lio', 'type-own'));
+		await repo.insert(newRelationship('rel-3', 'mara', 'secret', 'type-own'));
+		await repo.insert(newRelationship('rel-4', 'mara', 'lio', 'parent_child'));
+
+		for (const viewer of [viewerU1, viewerU2]) {
+			const counts = await repo.countRelationshipsByType(viewer);
+			for (const typeId of ['type-own', 'parent_child', 'sibling']) {
+				expect(counts.get(typeId) ?? 0).toBe(await repo.countRelationshipsOfType(viewer, typeId));
+			}
+		}
+		expect((await repo.countRelationshipsByType(viewerU1)).get('type-own')).toBe(2);
+	});
 });
 
 describe('mergeTypeInto', () => {

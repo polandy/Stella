@@ -1,4 +1,4 @@
-import { and, eq, isNull, ne, or, sql } from 'drizzle-orm';
+import { and, count, eq, isNull, ne, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { KinshipGraph } from '../../kinship/kinship';
@@ -208,6 +208,20 @@ export function createDrizzleRelationshipRepository(
 				.where(and(eq(relationship.typeId, typeId), relationshipVisibleTo(viewer, fromC, toC)))
 				.all();
 			return rows.length;
+		},
+
+		async countRelationshipsByType(viewer: Viewer) {
+			const fromC = alias(contact, 'from_c');
+			const toC = alias(contact, 'to_c');
+			const rows = db
+				.select({ typeId: relationship.typeId, n: count() })
+				.from(relationship)
+				.innerJoin(fromC, eq(relationship.fromContactId, fromC.id))
+				.innerJoin(toC, eq(relationship.toContactId, toC.id))
+				.where(relationshipVisibleTo(viewer, fromC, toC))
+				.groupBy(relationship.typeId)
+				.all();
+			return new Map(rows.map((r) => [r.typeId, r.n]));
 		},
 
 		async exists(
