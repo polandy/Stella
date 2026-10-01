@@ -3,6 +3,7 @@ import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { KinshipGraph, Pair } from '../../../kinship/kinship';
 import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';
 import { evaluate } from '../../../suggestions/engine';
+import type { Dismissal } from '../../../suggestions/claims';
 import type { PrimaryLink } from '../../../suggestions/types';
 import { buildView } from '../../../suggestions/view';
 import { nameProposals, type ProposedLink, type SuggestionReviewSource } from './suggestion-review';
@@ -319,8 +320,13 @@ interface ExclusionCheck {
  * still hold are passed on — that is the escape a household needs, because a marriage marked
  * former stops standing in the way of the next one.
  */
+/** The two reads an exclusion check is made of. */
+type ExclusionSource = {
+	relationships: Pick<RelationshipRepository, 'loadKinshipGraphVisibleTo' | 'listForContactVisibleTo'>;
+};
+
 async function loadExclusionCheck(
-	deps: Pick<RelationshipDeps, 'relationships'>,
+	deps: ExclusionSource,
 	viewer: Viewer,
 	subjectId: string
 ): Promise<ExclusionCheck> {
@@ -328,7 +334,19 @@ async function loadExclusionCheck(
 		deps.relationships.loadKinshipGraphVisibleTo(viewer),
 		deps.relationships.listForContactVisibleTo(viewer, subjectId)
 	]);
-	const facts: ExclusionFacts = {
+	const names = new Map(graph.people.map((person) => [person.id, person.displayName]));
+	return { facts: exclusionFactsFrom(graph, ties), nameOf: (contactId) => names.get(contactId) ?? '' };
+}
+
+/**
+ * The exclusion facts out of a graph and the subject's own ties that were already read — the
+ * person page reads both for other cards, and asking the store again would only repeat them.
+ */
+export function exclusionFactsFrom(
+	graph: KinshipGraph,
+	ties: readonly RelationshipView[]
+): ExclusionFacts {
+	return {
 		subjectTies: ties.map((tie) => ({
 			relationshipId: tie.id,
 			otherContactId: tie.otherContactId,
@@ -347,13 +365,11 @@ async function loadExclusionCheck(
 			childId: edge.childId
 		}))
 	};
-	const names = new Map(graph.people.map((person) => [person.id, person.displayName]));
-	return { facts, nameOf: (contactId) => names.get(contactId) ?? '' };
 }
 
 /** The same reading the write is guarded by, for the picker on the person page. */
 export async function readExclusionFacts(
-	deps: Pick<RelationshipDeps, 'relationships'>,
+	deps: ExclusionSource,
 	viewer: Viewer,
 	subjectId: string
 ): Promise<ExclusionFacts> {
@@ -478,6 +494,19 @@ export async function readKinship(
 		deps.relationships.loadKinshipGraphVisibleTo(viewer),
 		deps.dismissals.listForHousehold(viewer)
 	]);
+	return kinshipFrom(graph, dismissals, subjectId, proposeFor);
+}
+
+/**
+ * `readKinship` over a graph and a dismissal log already read. The dismissals are only
+ * consulted when `proposeFor` names a stored link, so a caller that has none may pass `[]`.
+ */
+export function kinshipFrom(
+	graph: KinshipGraph,
+	dismissals: readonly Dismissal[],
+	subjectId: string,
+	proposeFor?: Pair | null
+): KinshipRead {
 	const derived = deriveKinship(graph, subjectId);
 	const added = proposeFor ? primaryLinkBetween(graph, proposeFor.a, proposeFor.b) : null;
 	if (!added) return { derived, proposals: [] };

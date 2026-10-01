@@ -20,6 +20,11 @@
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	// The shell's people who are not in the circle yet: the ones the picker can add.
+	const candidates = $derived.by(() => {
+		const members = new Set(data.memberIds);
+		return data.people.filter((p) => !members.has(p.id));
+	});
 	const t = useTranslate();
 	const circle = $derived(data.circle);
 
@@ -136,7 +141,7 @@
 	<Section
 		title={t('circles.members')}
 		count={visibleCount}
-		addLabel={data.candidates.length ? t('circles.addPeople') : undefined}
+		addLabel={candidates.length ? t('circles.addPeople') : undefined}
 		error={form?.error ?? null}
 		bind:open={addOpen}
 	>
@@ -227,7 +232,7 @@
 					<span class="text-fg-muted">{t('circles.people')}</span>
 					<PersonSearchSelect
 						id="circle-member"
-						people={data.candidates}
+						people={candidates}
 						name="contactId"
 						bind:selectedIds={newMemberIds}
 						multiple

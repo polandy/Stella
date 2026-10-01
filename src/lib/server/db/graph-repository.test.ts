@@ -9,6 +9,7 @@ import { buildEgoNetwork } from '../../graph/model/ego-network';
 import { findConnectionPath } from '../../graph/model/connection-path';
 import type { Viewer } from '../access/visibility';
 import { createDrizzleGraphRepository } from './graph-repository';
+import { loadKinshipGraph } from './kinship-graph-read';
 import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 
@@ -25,6 +26,7 @@ const viewerU1: Viewer = { id: U1, householdId: H };
 const viewerU2: Viewer = { id: U2, householdId: H };
 
 let db: BunSQLiteDatabase<typeof schema>;
+let sqlite: Database;
 
 function seedContact(id: string, name: string, visibility: 'shared' | 'private' = 'shared', createdBy = U1) {
 	db.insert(schema.contact).values({ id, householdId: H, createdBy, visibility, displayName: name }).run();
@@ -36,7 +38,7 @@ function rel(id: string, from: string, to: string, typeId: string) {
 }
 
 beforeEach(() => {
-	const sqlite = new Database(':memory:');
+	sqlite = new Database(':memory:');
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
@@ -198,5 +200,46 @@ describe('loadVisibleGraph — derived kinship', () => {
 		expect(forOther.edges.some((e) => e.id.includes('hidden'))).toBe(false);
 		// The visible part of the family is still derived for U2 — this is scoping, not silence.
 		expect(forOther.edges.some((e) => e.id === 'kin:lio:rosa')).toBe(true);
+	});
+});
+
+describe('loadVisibleGraphWithKinship', () => {
+	beforeEach(() => {
+		// A family with every case the two readings must agree on: an archived grandmother, a
+		// private relative, a former partnership and a person with a gender on record.
+		seedContact('rosa', 'Rosa');
+		seedContact('nina', 'Nina');
+		seedContact('hidden', 'Hidden', 'private', U1);
+		seedContact('ex', 'Ex');
+		rel('r-gran', 'rosa', 'mara', 'parent_child');
+		rel('r-aunt', 'rosa', 'nina', 'parent_child');
+		rel('r-hidden', 'rosa', 'hidden', 'parent_child');
+		rel('r-ex', 'jonas', 'ex', 'spouse');
+		db.update(schema.relationship).set({ status: 'former' }).where(eq(schema.relationship.id, 'r-ex')).run();
+		db.update(schema.contact).set({ archivedAt: 1_700_000_000_000 }).where(eq(schema.contact.id, 'rosa')).run();
+		db.update(schema.contact).set({ gender: 'female' }).where(eq(schema.contact.id, 'nina')).run();
+	});
+
+	for (const [who, viewer] of [['the owner of the private relative', viewerU1], ['another member', viewerU2]] as const) {
+		it(`is the explorer's graph and the kinship engine's input at once, for ${who}`, async () => {
+			const both = await createDrizzleGraphRepository(db).loadVisibleGraphWithKinship(viewer);
+
+			expect(both.graph).toEqual(await createDrizzleGraphRepository(db).loadVisibleGraph(viewer));
+			expect(both.kinship).toEqual(loadKinshipGraph(db, viewer));
+		});
+	}
+
+	it('reads the people and their links once for both', async () => {
+		const sent: string[] = [];
+		const watched = Object.create(sqlite) as typeof sqlite;
+		watched.prepare = ((sql: string) => {
+			sent.push(sql);
+			return sqlite.prepare(sql);
+		}) as typeof sqlite.prepare;
+
+		await createDrizzleGraphRepository(drizzle(watched, { schema })).loadVisibleGraphWithKinship(viewerU1);
+
+		// People, links, circles, memberships.
+		expect(sent).toHaveLength(4);
 	});
 });

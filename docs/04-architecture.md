@@ -108,6 +108,19 @@ codes rather than sentences. The edge renders them — `say(locals, key)` in a r
 `useI18n()` context in a component — so one request is answered end to end in one language.
 `Error.message` stays English, for logs and stack traces.
 
+Only the English catalogue is bundled with every page: it is the fallback and the type the
+others are checked against. Every other language is a dynamic `import()` in
+`src/lib/i18n/translate.ts`, so it gets a chunk of its own and a browser that reads English
+never downloads German. Translating stays synchronous; instead, `loadCatalog(locale)` must
+settle first, and `createTranslator` throws for a language whose catalogue has not arrived —
+answering in English would be a flash of the wrong language and a hydration mismatch. The
+server loads every catalogue once at start-up (`init` in `hooks.server.ts`); in the browser
+the universal root `+layout.ts` awaits the reader's catalogue, which SvelteKit runs before it
+hydrates and before it renders a navigation, so the client hydrates in the language the
+server rendered. `bun test` preloads all catalogues (`bunfig.toml` →
+`src/lib/i18n/test-preload.ts`). The installed app's service worker still precaches every
+chunk, German included — in the background, not on the first paint.
+
 ### Local login
 `POST` credentials → verify Argon2id → create `session` row → set cookie.
 
@@ -222,8 +235,21 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   nobody else is ever given a second line. See the decision below on keeping it current.
 - **Repeated lookups are index-backed**: every foreign key a page or a delete looks up by,
   and the orders the story and the stream page through; `src/lib/server/db/indexes.test.ts`
-  holds the plan to that. Pragmas beyond WAL: `temp_store = MEMORY`, and `optimize` at start
-  so the planner has statistics.
+  holds the plan to that, planning the statements the repositories actually send. The stream's
+  newest links and touchpoints are joined with `CROSS JOIN`, which SQLite keeps in the written
+  order: walking the `created_at` index from the top stops at the limit, where the planner
+  otherwise starts from the people and sorts every row. Pragmas beyond WAL:
+  `temp_store = MEMORY`, and `optimize` at start so the planner has statistics.
+- **A page reads what it shows, not the household.** The person page reads the visible
+  graph once (`readFamilyOf`, `src/lib/server/domain/relationships/family.ts`): the graph
+  repository's `loadVisibleGraphWithKinship` builds the map's drawing and the kinship
+  engine's input from one read of people and links, and derived kin, proposals, the review,
+  the picker's exclusions and the map are cut from it by the same pure functions their own
+  use-cases are made of. Names for mentions come from that graph's people, circle names from
+  its circles. The story's pages, the journal and Home look up only the people their text
+  mentions and the photos of the entries they show; a visibility check over a few ids is one
+  `IN` read; counts are counts (`count(*)`, `GROUP BY`), not lists measured in JavaScript.
+  Media is streamed from disk (`Bun.file`), never read into memory first.
 
 ## 4.9 Decision log (ADR-lite)
 
@@ -899,11 +925,18 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   own copy of the household's people next to the shell's, about half of every page's data at a
   few hundred people. Now only the shell sends it, so a client-side navigation, which keeps the
   shell, would leave it stale, and so would a tab left open while someone else adds a person.
-  After a navigation, and whenever the tab comes back into view, `/api/people/stamp` returns a hash of what the shell
-  would send now; only a different answer reloads it (`app:people`). This costs one small
-  request per navigation, and a picker can read the old list for the few milliseconds the
-  check takes. A hash rather than counts and `updated_at`, because archiving or a new photo
-  does not touch `updated_at` (`src/lib/sync/people-freshness.ts`).
+  After a navigation, and whenever the tab comes back into view, `/api/people/stamp` returns a
+  stamp of what the shell is read from; only a different answer reloads it (`app:people`). A
+  navigation that reloaded the shell anyway — a form submit, an invalidation — skips the
+  check, told by the list's identity (`shellReloads`). The stamp is one statement of
+  aggregates over what the viewer may see (`src/lib/server/domain/contacts/people-stamp.ts`):
+  count, latest and summed `updated_at` of the browsable people, links and memberships, plus
+  the values `updated_at` does not follow — the avatars, a household type's labels, a
+  circle's own fields — and the reader's self-contact and today's date, which the namesake
+  context is read against. It used to hash the list itself, which cost the whole read twice
+  per form submit. `src/lib/server/db/people-stamp-reads.test.ts` drives every write the
+  list is made of through its repository and holds the stamp to moving with each; a write
+  outside a repository has to keep that test true (`src/lib/sync/people-freshness.ts`).
 - **Merging a relationship type moves links the admin cannot see** — the one write under the
   access layer not scoped by `relationshipVisibleTo`, scoped by household instead: a type is
   household vocabulary, and a hidden link left on it would keep it from ever going. Changing

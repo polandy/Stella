@@ -26,6 +26,7 @@ function fakes() {
 		},
 		getVisiblePhotoFile: async () => null,
 		listJournalPhotos: async () => [],
+		listJournalPhotosOfEntries: async () => [],
 		listGalleryPhotos: async () => [],
 		findVisibleGalleryPhoto: async () => null,
 		updateOwnGalleryPhoto: async () => false,

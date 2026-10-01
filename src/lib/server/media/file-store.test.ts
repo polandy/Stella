@@ -41,4 +41,18 @@ describe('createFileMediaStore', () => {
 		expect(await store.read('b.jpg')).toBeNull();
 		await store.delete('b.jpg'); // must not throw
 	});
+
+	it('opens a file to be streamed, without reading it into memory first', async () => {
+		const store = await freshStore();
+		const bytes = new Uint8Array([7, 8, 9]);
+		await store.put('c.jpg', bytes);
+		const opened = await store.open('c.jpg');
+		expect(opened?.size).toBe(3);
+		expect(new Uint8Array(await new Response(opened!.body).arrayBuffer())).toEqual(bytes);
+	});
+
+	it('opens nothing for a missing file', async () => {
+		const store = await freshStore();
+		expect(await store.open('missing.jpg')).toBeNull();
+	});
 });

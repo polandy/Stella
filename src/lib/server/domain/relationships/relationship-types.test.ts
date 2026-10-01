@@ -152,6 +152,7 @@ function fakeRepo(opts: { types?: RelationshipType[]; usageCount?: number } = {}
 			return types.some((t) => t.id === id && t.householdId !== null);
 		},
 		countRelationshipsOfType: async () => opts.usageCount ?? 0,
+		countRelationshipsByType: async () => new Map(),
 		mergeTypeInto: async (_v: Viewer, fromId: string, intoId: string) => {
 			recorded.merged.push({ fromId, intoId });
 			return true;

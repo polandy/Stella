@@ -15,6 +15,8 @@ import {
 	restoreContact,
 	deleteContact,
 	mergeContacts,
+	countKnownByAFirstNameOnly,
+	type DistinguishableContact,
 	type MergePair,
 	type DeletedContactMedia,
 	type Contact,
@@ -23,6 +25,7 @@ import {
 	type NewContact,
 	type ProfilePatch
 } from './contacts';
+import { isKnownByAFirstNameOnly } from '../../../people/namesakes';
 
 /*
  * The createContact use-case: derive the display name, apply the creator's default
@@ -48,6 +51,10 @@ function fakeRepo() {
 		listVisibleTo: async () => [],
 		listArchivedVisibleTo: async () => [],
 		listNamesVisibleTo: async () => [],
+		listNamesAmongVisibleTo: async () => [],
+		listBrowsableNamesAmong: async () => [],
+		countArchivedVisibleTo: async () => 0,
+		listDistinguishableVisibleTo: async () => [],
 		updateProfile: async () => {},
 		setGender: async () => {},
 		setArchived: async () => {},
@@ -213,6 +220,10 @@ function editableRepo(contact: Contact | null) {
 		listVisibleTo: async () => [],
 		listArchivedVisibleTo: async () => [],
 		listNamesVisibleTo: async () => [],
+		listNamesAmongVisibleTo: async () => [],
+		listBrowsableNamesAmong: async () => [],
+		countArchivedVisibleTo: async () => 0,
+		listDistinguishableVisibleTo: async () => [],
 		updateProfile: async (id, patch) => {
 			patches.push({ id, patch });
 		},
@@ -445,6 +456,10 @@ describe('deleteContact', () => {
 			listVisibleTo: async () => [],
 			listArchivedVisibleTo: async () => [],
 			listNamesVisibleTo: async () => [],
+			listNamesAmongVisibleTo: async () => [],
+			listBrowsableNamesAmong: async () => [],
+			countArchivedVisibleTo: async () => 0,
+			listDistinguishableVisibleTo: async () => [],
 			updateProfile: async () => {},
 			setGender: async () => {},
 			setArchived: async () => {},
@@ -558,6 +573,10 @@ describe('mergeContacts', () => {
 			listVisibleTo: async () => [],
 			listArchivedVisibleTo: async () => [],
 			listNamesVisibleTo: async () => [],
+			listNamesAmongVisibleTo: async () => [],
+			listBrowsableNamesAmong: async () => [],
+			countArchivedVisibleTo: async () => 0,
+			listDistinguishableVisibleTo: async () => [],
 			updateProfile: async () => {},
 			setGender: async () => {},
 			setArchived: async () => {},
@@ -646,5 +665,32 @@ describe('mergeContacts', () => {
 
 		expect(await mergeContacts(deps(f.repo), viewer, 'same', 'same')).toBe(false);
 		expect(f.merges).toEqual([]);
+	});
+});
+
+describe('countKnownByAFirstNameOnly', () => {
+	it('counts by the same rule the clean-up list gathers people by', async () => {
+		const row = (id: string, displayName: string, more: Partial<DistinguishableContact> = {}) => ({
+			id,
+			displayName,
+			lastName: null,
+			description: null,
+			metPlace: null,
+			metDate: null,
+			...more
+		});
+		const rows: DistinguishableContact[] = [
+			row('anna', 'Anna'),
+			row('ben', 'Ben', { lastName: 'Brunner' }),
+			row('carla', 'Carla Huber'),
+			row('dora', 'Dora', { description: 'from the choir' }),
+			row('emil', 'Emil', { metPlace: 'Bern' }),
+			row('fritz', ' Fritz ')
+		];
+		const f = fakeRepo();
+		f.repo.listDistinguishableVisibleTo = async () => rows;
+
+		expect(await countKnownByAFirstNameOnly({ contacts: f.repo }, { id: 'u', householdId: 'h' })).toBe(2);
+		expect(rows.filter(isKnownByAFirstNameOnly).map((r) => r.id)).toEqual(['anna', 'fritz']);
 	});
 });
