@@ -127,10 +127,15 @@ test('the person picker points at the highlighted person, and "No one found." is
 	await expectPointingAt(field, options.nth(1));
 
 	// Nobody matches: the note says so on screen, and is not offered as something to pick.
+	// The one option left is the offer to add them, and the field can point at it.
 	await field.fill('Zyxwvutsrq');
 	await expect(listbox.getByText('No one found.')).toBeVisible();
-	await expect(listbox.getByRole('option')).toHaveCount(0);
-	await expect(page.getByRole('option', { name: 'No one found.' })).toHaveCount(0);
+	const picker = page.locator(`[id="${await field.getAttribute('aria-controls')}"]`);
+	await expect(picker).toHaveRole('listbox');
+	await expect(picker.getByRole('option', { name: 'No one found.' })).toHaveCount(0);
+	const create = picker.getByRole('option', { name: 'Add “Zyxwvutsrq” as a new person' });
+	await expect(picker.getByRole('option')).toHaveCount(1);
+	await expectPointingAt(field, create);
 });
 
 test('the ⌘K palette points at its rows as options, and Enter follows the highlighted one', async ({
@@ -182,11 +187,11 @@ test.describe('focus after a form closes', () => {
 		await addPerson(page, 'Ottilie', 'Brandenberger');
 
 		// Save: the heading's button now carries the new name, and holds the focus.
-		await page.getByRole('button', { name: 'Ottilie Brandenberger' }).click();
+		await page.getByRole('button', { name: 'Ottilie Brandenberger', exact: true }).click();
 		await page.getByRole('textbox', { name: 'Edit name' }).fill('Ottilie Brandenberger-Sutz');
 		await page.getByRole('button', { name: 'Save' }).click();
 		await expect(page.getByRole('heading', { name: 'Ottilie Brandenberger-Sutz' })).toBeVisible();
-		await expect(page.getByRole('button', { name: 'Ottilie Brandenberger-Sutz' })).toBeFocused();
+		await expect(page.getByRole('button', { name: 'Ottilie Brandenberger-Sutz', exact: true })).toBeFocused();
 
 		// Cancel.
 		await page.getByRole('button', { name: 'Add a description' }).click();
