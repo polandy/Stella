@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { nameLookup, photosByEntry, toStoryItem, type StoryViewContext } from './story-view';
+import {
+	entryIdsOf,
+	mentionIdsOf,
+	nameLookup,
+	photosByEntry,
+	toStoryItem,
+	type StoryViewContext
+} from './story-view';
 import type { StoryItem } from '$lib/server/domain/story/story';
 
 /*
@@ -204,5 +211,38 @@ describe('nameLookup', () => {
 		const nameOf = nameLookup([{ id: 'c1', displayName: 'Anna Brunner' }]);
 		expect(nameOf('c1')).toBe('Anna Brunner');
 		expect(nameOf('c-hidden')).toBeNull();
+	});
+});
+
+/*
+ * A page of the story reads names and photos for itself, not for the whole household: these
+ * say which. Rendering a page with only them must give what rendering it with everything gave.
+ */
+describe('what a story page needs looked up', () => {
+	const page = [
+		journalItem({ id: 'j1', body: 'With @{contact:anna} and @{contact:ben}, then @{contact:anna} again.' }),
+		interactionItem({ id: 'i1', description: '@{contact:cleo} is not rendered as a mention here' }),
+		journalItem({ id: 'j2', body: 'Nobody named.' })
+	];
+
+	it('names the people the journal entries on the page mention, each once', () => {
+		expect(mentionIdsOf(page)).toEqual(['anna', 'ben']);
+	});
+
+	it('lists the journal entries on the page, whose photos it shows', () => {
+		expect(entryIdsOf(page)).toEqual(['j1', 'j2']);
+	});
+
+	it('renders the page the same with only those names as with everyone', () => {
+		const everyone = new Map([
+			['anna', 'Anna'],
+			['ben', 'Ben'],
+			['cleo', 'Cleo'],
+			['dora', 'Dora']
+		]);
+		const few = new Map([...everyone].filter(([id]) => mentionIdsOf(page).includes(id)));
+		const render = (names: Map<string, string>) =>
+			page.map((item) => toStoryItem(item, context({ nameOf: (id) => names.get(id) ?? null })));
+		expect(render(few)).toEqual(render(everyone));
 	});
 });

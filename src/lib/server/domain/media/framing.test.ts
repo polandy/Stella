@@ -26,6 +26,7 @@ const source = (over: Partial<GalleryPhoto> = {}): GalleryPhoto => ({
 	createdAt: 1000,
 	isAvatar: false,
 	framing: null,
+	pinnedAt: null,
 	...over
 });
 

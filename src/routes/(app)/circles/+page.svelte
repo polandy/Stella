@@ -15,6 +15,8 @@
 	const t = useTranslate();
 
 	let wantForm = $state(false);
+	// What the new circle is called to begin with: a search that found nothing hands its query over.
+	let newName = $state('');
 	// A failed submit keeps the form open, so the error has somewhere to be read.
 	const showForm = $derived(wantForm || form?.error !== undefined);
 
@@ -53,6 +55,7 @@
 				<span class="text-fg-muted">{t('circles.name')}</span>
 				<input
 					name="name"
+					value={newName}
 					placeholder={t('circles.namePlaceholder')}
 					required
 					aria-invalid={form?.error ? 'true' : undefined}
@@ -137,7 +140,22 @@
 			</Button>
 		</EmptyState>
 	{:else if shown.length === 0}
-		<EmptyState icon="search" title={t('circles.noMatch.title')} hint={t('circles.noMatch.hint')} />
+		<EmptyState icon="search" title={t('circles.noMatch.title')} hint={t('circles.noMatch.hint')}>
+			<!-- Only a typed name makes a circle; a kind chip alone has nothing to call it. -->
+			{#if query.trim()}
+				<Button
+					variant="primary"
+					icon="add"
+					type="button"
+					onclick={() => {
+						newName = query.trim();
+						wantForm = true;
+					}}
+				>
+					{t('circles.noMatch.create', { name: query.trim() })}
+				</Button>
+			{/if}
+		</EmptyState>
 	{:else}
 		<ul class="grid gap-3 sm:grid-cols-2" data-testid="circle-cards">
 			{#each shown as circle (circle.id)}

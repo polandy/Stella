@@ -113,6 +113,8 @@ export interface GalleryPhoto {
 	isAvatar: boolean;
 	/** The square last chosen to wear this photo as the avatar, if any (see `./framing`). */
 	framing: CropRect | null;
+	/** When the household pinned it as a favourite (epoch ms); null when it is not one. */
+	pinnedAt: number | null;
 }
 
 /** The file paths a deleted photo leaves behind, so the bytes can go too. */
@@ -136,10 +138,21 @@ export interface PhotoRepository {
 	getVisiblePhotoFile(viewer: Viewer, photoId: string, variant: 'full' | 'thumb'): Promise<PhotoFile | null>;
 	/** Journal photos on a contact the viewer may see, oldest first (docs/02 §2.20). */
 	listJournalPhotos(viewer: Viewer, contactId: string): Promise<JournalPhotoRef[]>;
+	/** `listJournalPhotos`, cut to these entries — the ones a story page shows. */
+	listJournalPhotosOfEntries(
+		viewer: Viewer,
+		contactId: string,
+		entryIds: readonly string[]
+	): Promise<JournalPhotoRef[]>;
 	/** Gallery photos on a contact the viewer may see, newest first (docs/02 §2.14). */
 	listGalleryPhotos(viewer: Viewer, contactId: string): Promise<GalleryPhoto[]>;
 	/** One gallery photo, only if it belongs to that contact and the viewer may see it. */
 	findVisibleGalleryPhoto(viewer: Viewer, contactId: string, photoId: string): Promise<GalleryPhoto | null>;
+	/**
+	 * Pin a gallery photo as a favourite at `pinnedAt`, or unpin it with null. Unscoped: the
+	 * use-case has already found the photo visible to whoever asked (`./gallery`).
+	 */
+	setGalleryPhotoPin(photoId: string, pinnedAt: number | null): Promise<void>;
 	/** Change the caption and/or visibility of a photo the author uploaded; false if not theirs. */
 	updateOwnGalleryPhoto(input: {
 		authorId: string;
@@ -160,6 +173,12 @@ export interface MediaStore {
 	put(key: string, bytes: Uint8Array): Promise<string>;
 	read(path: string): Promise<Uint8Array | null>;
 	delete(path: string): Promise<void>;
+}
+
+/** Media served whole to the browser, streamed rather than read into memory first. */
+export interface MediaStreamSource {
+	/** The file as a body to stream from, or null when it is gone. */
+	open(path: string): Promise<{ body: Blob; size: number } | null>;
 }
 
 export interface AvatarDeps {

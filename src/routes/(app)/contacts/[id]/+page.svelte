@@ -4,6 +4,7 @@
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import FrameAsAvatar from '$lib/components/FrameAsAvatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 	import KinSuggestions from '$lib/components/KinSuggestions.svelte';
 	import DateField from '$lib/components/DateField.svelte';
 	import RelationshipMap from '$lib/components/graph/RelationshipMap.svelte';
@@ -1475,7 +1476,12 @@
 						</ul>
 
 						{:else}
-						<p class="text-sm text-fg-subtle">{t('contact.relationships.none')}</p>
+						<!-- In place of the map: what it would show, and the step that starts it. -->
+						<EmptyState compact icon="graph" title={t('contact.relationships.none', { name: c.displayName })} hint={t('contact.relationships.noneHint')}>
+							{#if !relateOpen}
+								<Button variant="primary" size="sm" icon="add" type="button" onclick={() => (relateOpen = true)}>{t('contact.relationships.addFirst', { name: c.displayName })}</Button>
+							{/if}
+						</EmptyState>
 					{/if}
 
 					<!--
@@ -1824,7 +1830,7 @@
 							{/each}
 						</ul>
 					{:else}
-						<p class="text-sm text-fg-subtle">{t('contact.notes.none')}</p>
+						<p class="text-sm text-fg-subtle">{t('contact.notes.none', { name: c.displayName })}</p>
 					{/if}
 
 					{#snippet editor()}
@@ -1891,6 +1897,16 @@
 											class="aspect-square w-full object-cover"
 											loading="lazy"
 										/>
+										{#if p.pinnedAt !== null}
+											<!-- A star, not a tint: the pin reads without colour (docs/05 §5.10). -->
+											<span
+												class="pointer-events-none absolute left-1 top-1 rounded-full bg-bg/80 p-1 text-primary"
+												data-testid="photo-favourite"
+											>
+												<Icon name="pinned" size={11} />
+											</span>
+											<span class="sr-only">{t('contact.photos.favourite')}</span>
+										{/if}
 										<span
 											class="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/65 to-transparent px-1.5 pb-1 pt-3 text-left text-[0.6875rem] font-medium text-white"
 											aria-hidden="true"
@@ -1910,7 +1926,7 @@
 							{/each}
 						</ul>
 					{:else}
-						<p class="text-sm text-fg-subtle">{t('contact.photos.none')}</p>
+						<p class="text-sm text-fg-subtle">{t('contact.photos.none', { name: c.displayName })}</p>
 					{/if}
 
 					{#snippet editor()}
@@ -2029,6 +2045,11 @@
 				<p class="truncate text-sm text-fg">
 					{openedPhoto.caption ?? t('contact.photos.noCaption')}
 					<span class="ml-2 text-xs text-fg-subtle">{photoDate(openedPhoto.createdAt)}</span>
+					{#if openedPhoto.pinnedAt !== null}
+						<span class="ml-2 inline-flex items-center gap-1 text-xs font-medium text-primary">
+							<Icon name="pinned" size={11} />{t('contact.photos.favourite')}
+						</span>
+					{/if}
 					{#if openedPhoto.visibility === 'private'}
 						<span class="ml-2 inline-flex items-center gap-1 text-xs text-fg-subtle">
 							<Icon name="private" size={11} />{t('common.privateInline')}
@@ -2051,6 +2072,15 @@
 					isAvatar={openedPhoto.isAvatar}
 					framing={openedPhoto.framing}
 				/>
+
+				<!-- Anyone who sees the photo may pin it: a favourite is the household's (docs/02 §2.14). -->
+				<form method="POST" action="?/pinPhoto" class="contents">
+					<input type="hidden" name="photoId" value={openedPhoto.id} />
+					<input type="hidden" name="pinned" value={openedPhoto.pinnedAt === null ? 'true' : 'false'} />
+					<Button variant="ghost" size="sm" icon="pinned" data-testid="photo-pin">
+						{openedPhoto.pinnedAt === null ? t('contact.photos.pin') : t('contact.photos.unpin')}
+					</Button>
+				</form>
 
 				{#if openedPhoto.createdBy === data.viewerId}
 					<form method="POST" action="?/captionPhoto" class="flex flex-1 items-center gap-2">

@@ -18,6 +18,8 @@ export const contacts: ContactsMessages = {
 	'contacts.lastWrittenAboutOn': (p) => `Zuletzt beschrieben am ${p.date}`,
 	'contacts.nothingWrittenYet': 'Noch nichts geschrieben',
 	'contacts.noMatch': (p) => `Niemand passt zu „${p.query}“.`,
+	'contacts.noMatchHint': 'Prüfe die Schreibweise — oder füge die Person gleich hinzu, wenn sie neu ist.',
+	'contacts.addNamed': (p) => `„${p.name}“ hinzufügen`,
 	'contacts.emptyArchive.title': 'Nichts archiviert',
 	'contacts.emptyArchive.hint':
 		'Archivieren nimmt jemanden aus den Listen, ohne ihn zu verlieren. Bisher ist niemand archiviert.',
@@ -31,6 +33,10 @@ export const contacts: ContactsMessages = {
 		`Stella ist nicht erreichbar, darum bleibt ${p.name || 'diese Person'} auf diesem Gerät und wird hinzugefügt, sobald Stella wieder antwortet.`,
 	'contacts.new.heading': 'Person hinzufügen',
 	'contacts.new.intro': 'Ein Name genügt. Alles Weitere kann bis zu ihrer Seite warten.',
+	'contacts.new.selfHeading': 'Dich selbst hinzufügen',
+	'contacts.new.selfIntro':
+		'Dieser Eintrag bist du: Stella verknüpft ihn mit deinem Konto, damit sich die Karte bei dir öffnet und sich deine Menschen mit dir verknüpfen lassen.',
+	'contacts.new.selfSubmit': 'Mich hinzufügen',
 	'contacts.new.firstName': 'Vorname',
 	'contacts.new.lastName': 'Nachname',
 	'contacts.new.alreadyHere': 'Schon in Stella?',

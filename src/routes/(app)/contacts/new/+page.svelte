@@ -5,7 +5,8 @@
 	import Button from '$lib/components/Button.svelte';
 	import { keepable } from '$lib/pwa/keepable';
 	import DateField from '$lib/components/DateField.svelte';
-	import type { ActionData } from './$types';
+	import { onMount, untrack } from 'svelte';
+	import type { ActionData, PageData } from './$types';
 
 	import Icon from '$lib/components/Icon.svelte';
 	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
@@ -15,7 +16,7 @@
 	import { GENDERS, type Gender } from '$lib/people/gender';
 	import type { RankedCandidate } from '$lib/server/domain/contacts/suggestions';
 
-	let { form }: { form: ActionData } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	const t = useTranslate();
 
@@ -31,8 +32,9 @@
 	};
 	const SUGGEST_DEBOUNCE_MS = 250;
 
-	let firstName = $state('');
-	let lastName = $state('');
+	// A name carried over from a search that found nobody (`?name=`), else blank.
+	let firstName = $state(untrack(() => data.name.firstName));
+	let lastName = $state(untrack(() => data.name.lastName));
 	/** Held here so it survives the field moving into the nudge and back (docs/02 §2.2.3). */
 	let description = $state('');
 	const askForSomethingToKnowThemBy = $derived(wantsSomethingToKnowThemBy({ firstName, lastName }));
@@ -55,6 +57,11 @@
 		suggestions = (await res.json()) as RankedCandidate[];
 		if (relateTo !== null && !suggestions.some((s) => s.id === relateTo)) relateTo = null;
 	}
+
+	// A carried-over surname deserves the same look for namesakes and relatives as a typed one.
+	onMount(() => {
+		if (lastName.trim()) void loadSuggestions();
+	});
 
 	function onNameInput() {
 		if (timer) clearTimeout(timer);
@@ -88,7 +95,8 @@
 						metPlace: text(data, 'metPlace'),
 						birthDate: text(data, 'birthDate'),
 						gender,
-						visibility: data.get('visibility') === 'private' ? 'private' : 'shared'
+						visibility: data.get('visibility') === 'private' ? 'private' : 'shared',
+						isSelf: data.get('isSelf') === '1'
 					},
 					issuedAt: Date.now()
 				};
@@ -99,7 +107,8 @@
 			onApplied: async (result) => {
 				const { contactId } = result as { contactId: string };
 				const relate = relateTo ? `?relate=${encodeURIComponent(relateTo)}` : '';
-				await goto(`/contacts/${contactId}${relate}`);
+				// Adding yourself changed who the account says it is, which the shell holds too.
+				await goto(`/contacts/${contactId}${relate}`, { invalidateAll: data.isSelf });
 			},
 			onKept: () => {
 				keptName = firstName || lastName ? [firstName, lastName].filter(Boolean).join(' ') : null;
@@ -129,8 +138,8 @@
 
 <main class="mx-auto flex w-full max-w-lg flex-col gap-6 px-6 py-10">
 	<header>
-		<h1 class="text-2xl font-semibold text-fg">{t('contacts.new.heading')}</h1>
-		<p class="text-sm text-fg-muted">{t('contacts.new.intro')}</p>
+		<h1 class="text-2xl font-semibold text-fg">{data.isSelf ? t('contacts.new.selfHeading') : t('contacts.new.heading')}</h1>
+		<p class="text-sm text-fg-muted">{data.isSelf ? t('contacts.new.selfIntro') : t('contacts.new.intro')}</p>
 	</header>
 
 	<form method="POST" use:enhance={personForm} bind:this={formElement} class="flex flex-col gap-4 rounded-app bg-card p-6 shadow-card">
@@ -140,6 +149,7 @@
 			</p>
 		{/if}
 		<FormError message={form?.error} id="new-person-error" />
+		{#if data.isSelf}<input type="hidden" name="isSelf" value="1" />{/if}
 
 		<div class="flex gap-3">
 			<label class="{field} flex-1">
@@ -271,6 +281,6 @@
 			</label>
 		</fieldset>
 
-		<Button variant="primary" class="mt-2">{t('nav.addPerson')}</Button>
+		<Button variant="primary" class="mt-2">{data.isSelf ? t('contacts.new.selfSubmit') : t('nav.addPerson')}</Button>
 	</form>
 </main>

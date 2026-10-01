@@ -29,3 +29,19 @@ export async function refreshPeopleIfChanged(deps: PeopleFreshnessDeps, known: s
 	await deps.reload();
 	return 'reloaded';
 }
+
+/**
+ * Whether the shell's own data was reloaded since the last look — then the list is as fresh
+ * as a stamp could make it, and asking would cost a request to learn nothing. Told apart by
+ * identity: a reload hands the layout a new list, a kept shell the same one.
+ */
+export function shellReloads(initial: unknown) {
+	let lastSeen = initial;
+	return {
+		reloadedSinceLastLook(current: unknown): boolean {
+			const reloaded = current !== lastSeen;
+			lastSeen = current;
+			return reloaded;
+		}
+	};
+}

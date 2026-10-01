@@ -81,7 +81,7 @@ A family member with an account.
 | role_locked | int | 0/1; if 1, IdP group-sync will not override the role (protects break-glass admin) |
 | locale_pref | text | interface language: `'en' \| 'de'`, default `'en'` (§2.19) |
 | avatar_photo_id | text fk → photo.id null | |
-| self_contact_id | text null | the contact this member **is** (§2.1.3). No FK on purpose: SQLite cannot add one with an `ON DELETE` action through `ALTER TABLE`, and a plain reference would refuse to delete that person. Deleting the contact clears it, merging repoints it |
+| self_contact_id | text null | the contact this member **is** (§2.1.3). No FK on purpose: SQLite cannot add one with an `ON DELETE` action through `ALTER TABLE`, and a plain reference would refuse to delete that person. Deleting the contact clears it, merging repoints it. Set from Settings, from the person's page, or by adding yourself (`contact.add` with `isSelf`), which creates the contact and sets it in one step |
 | theme_pref | text | `'system' \| 'light' \| 'dark'` |
 | accent_pref | text | Catppuccin accent name, e.g. `'mauve'` |
 | reduced_motion | int | 0/1 |
@@ -193,7 +193,8 @@ The central person entity.
 | created_at / updated_at | int | |
 
 FTS: `first_name, last_name, nickname, display_name, description, how_we_met` are
-indexed in an FTS5 table (see 3.5).
+indexed in an FTS5 table (see 3.5). Indexed on `(household_id, created_at)`: every read is
+scoped by household, and the Home stream reads the newest people first.
 
 **Archiving is not visibility.** `contactVisibleTo` decides who *may* see a contact (§3.7);
 `archived_at` decides whether they are *listed*. The two are separate conditions, and
@@ -201,7 +202,8 @@ indexed in an FTS5 table (see 3.5).
 suggestions, *Quiet lately*, both *Coming up* queries and the stream's new-people read.
 Everything that reasons about the household's shape — `kinship-graph-read`, the graph
 repository — every read of one named contact, and the name lookup that resolves @-mentions
-(`listNamesVisibleTo`) keep using `contactVisibleTo` alone.
+(`listNamesVisibleTo`, and `listNamesAmongVisibleTo` for just the ids a page mentions) keep
+using `contactVisibleTo` alone.
 
 ### contact_field
 Repeatable contact methods.
@@ -300,6 +302,8 @@ A relationship can be deleted (a link entered by mistake); nothing else referenc
 so the delete is plain and the graph and derived kinship follow on the next read.
 
 Constraints: `from != to`; unique on `(from_contact_id, to_contact_id, type_id)`.
+Indexed on `from_contact_id`, `to_contact_id`, `type_id`, and on `created_at` for the Home
+stream's newest links.
 Direction is stored canonically for asymmetric types (from = forward-label side).
 Visibility is **derived** from the two endpoints (see 2.10), not stored.
 
@@ -380,6 +384,10 @@ self-reference (`contact_id` = the entry's own `contact_id`) is **not** stored. 
 | happened_at | text | ISO date `YYYY-MM-DD` — the day it happened; the timeline orders by it, then `created_at` |
 | created_at / updated_at | int | |
 
+Indexed on `(contact_id, happened_at, created_at)`, so a person's touchpoints come in story
+order and the day of the last one is read from the index alone; and on `created_at` for the
+Home stream's newest touchpoints.
+
 ### interaction_participant  [M2]
 | column | type | notes |
 |---|---|---|
@@ -423,6 +431,7 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 | caption | text null | |
 | taken_at | text null | from EXIF if kept |
 | sort_order | int | |
+| pinned_at | int null | when the household pinned this gallery photo as a favourite (docs/02 §2.14); null = not one |
 | created_at | int | |
 
 Note: `user.avatar_photo_id` and `contact.avatar_photo_id` reference this table.
@@ -435,6 +444,11 @@ framing — the repository replaces it in the same transaction that makes it the
 never listed in the gallery, copies its photo's `visibility` and `created_by` so exactly the
 same people see it, follows a change of the photo's visibility, and is deleted with the photo.
 `framing_of` carries no foreign key for the same reason as `avatar_photo_id`.
+
+**A favourite is a moment, not a flag.** `pinned_at` says when a gallery photo was pinned, so
+the gallery can show favourites first, the latest pin leading, and the rest newest first
+(`src/lib/server/domain/media/gallery-order.ts`). It sits on the photo, so a pin is the
+household's rather than one member's (docs/04 §4.9).
 
 **`journal_entry_id` carries no cascade.** It was added by migration `0002` as a plain
 `REFERENCES`, and adding one now would mean rebuilding `photo` — which cannot be dropped

@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNotNull, or, sql } from 'drizzle-orm';
+import { and, count, eq, inArray, isNotNull, or, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import {
@@ -162,6 +162,56 @@ export function createDrizzleContactRepository(
 				.from(contactTable)
 				.where(and(contactVisibleTo(viewer), isNotNull(contactTable.archivedAt)))
 				.orderBy(contactTable.displayName)
+				.all();
+		},
+
+		async listNamesAmongVisibleTo(viewer: Viewer, ids: readonly string[]) {
+			return db
+				.select({ id: contactTable.id, displayName: contactTable.displayName })
+				.from(contactTable)
+				.where(and(inArray(contactTable.id, [...ids]), contactVisibleTo(viewer)))
+				.all();
+		},
+
+		async listBrowsableNamesAmong(viewer: Viewer, ids: readonly string[]) {
+			return db
+				.select({ id: contactTable.id, displayName: contactTable.displayName })
+				.from(contactTable)
+				.where(and(inArray(contactTable.id, [...ids]), contactBrowsableBy(viewer)))
+				.all();
+		},
+
+		async listSomeBrowsableIdsVisibleTo(viewer: Viewer, limit: number) {
+			return db
+				.select({ id: contactTable.id })
+				.from(contactTable)
+				.where(contactBrowsableBy(viewer))
+				.limit(limit)
+				.all()
+				.map((row) => row.id);
+		},
+
+		async countArchivedVisibleTo(viewer: Viewer) {
+			const row = db
+				.select({ n: count() })
+				.from(contactTable)
+				.where(and(contactVisibleTo(viewer), isNotNull(contactTable.archivedAt)))
+				.get();
+			return row?.n ?? 0;
+		},
+
+		async listDistinguishableVisibleTo(viewer: Viewer) {
+			return db
+				.select({
+					id: contactTable.id,
+					displayName: contactTable.displayName,
+					lastName: contactTable.lastName,
+					description: contactTable.description,
+					metPlace: contactTable.metPlace,
+					metDate: contactTable.metDate
+				})
+				.from(contactTable)
+				.where(contactBrowsableBy(viewer))
 				.all();
 		},
 

@@ -16,7 +16,8 @@ export const circles = {
 	'circles.empty.title': 'No circles yet',
 	'circles.empty.hint': 'A circle is a context people share. Add the first one and put people in it.',
 	'circles.noMatch.title': 'No circle matches',
-	'circles.noMatch.hint': 'Try part of a name, or a word from a description.',
+	'circles.noMatch.hint': 'Try part of a name, or a word from a description — or start it now.',
+	'circles.noMatch.create': (p: { name: string }) => `Create “${p.name}”`,
 	'circles.memberCount': (p: { count: number }) => (p.count === 1 ? '1 member' : `${p.count} members`),
 	'circles.nobodyYet': 'Nobody in it yet',
 	'circles.private': 'private',
@@ -46,6 +47,7 @@ export const circles = {
 	'circles.bulkRemove': 'Remove',
 	'circles.removedManyFromCircle': (p: { count: number }) => `${p.count} removed from the circle`,
 	'circles.noMembers.title': 'Nobody in this circle yet',
+	'circles.noMembers.add': 'Add the first members',
 	'circles.noMembers.hint':
 		'Add the people who share this context; each of them will show it on their page.',
 	'circles.kind.all': 'All',

@@ -76,6 +76,8 @@ export interface InteractionRepository {
 		contactId: string,
 		opts: { limit: number; before?: InteractionCursor }
 	): Promise<Interaction[]>;
+	/** The latest day among the interactions on a contact the viewer may see, or null. */
+	lastHappenedOnVisibleTo(viewer: Viewer, contactId: string): Promise<string | null>;
 	/** Delete an interaction the viewer authored; returns whether a row was removed. */
 	deleteOwn(params: { authorId: string; id: string }): Promise<boolean>;
 }
@@ -174,15 +176,14 @@ export async function deleteInteraction(
 }
 
 /**
- * The day of the most recent interaction, or null. Derived from the list the viewer may
- * see, so "last contacted" never leaks a private touchpoint through the profile header.
+ * The day of the most recent interaction the viewer may see, or null — so "last contacted"
+ * never leaks a private touchpoint through the profile header. Asked of the store as one day
+ * rather than worked out from the whole list, which the person page no longer reads.
  */
-export function lastContactedAt(
-	interactions: readonly Pick<Interaction, 'happenedAt'>[]
-): string | null {
-	let latest: string | null = null;
-	for (const { happenedAt } of interactions) {
-		if (latest === null || happenedAt > latest) latest = happenedAt;
-	}
-	return latest;
+export async function lastContactedOn(
+	deps: Pick<InteractionDeps, 'interactions'>,
+	viewer: Viewer,
+	contactId: string
+): Promise<string | null> {
+	return deps.interactions.lastHappenedOnVisibleTo(viewer, contactId);
 }

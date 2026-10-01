@@ -8,6 +8,7 @@
 	import LanguagePicker from '$lib/components/LanguagePicker.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { newPersonHref } from '$lib/people/new-person';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -50,20 +51,38 @@
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.self.heading')}</h2>
 		<div class="flex flex-col gap-3 rounded-app bg-card p-4 shadow-card">
 			<div>
-				<label for="self-contact" class="font-medium text-fg">{t('settings.self.label')}</label>
+				{#if data.people.length > 0}
+					<label for="self-contact" class="font-medium text-fg">{t('settings.self.label')}</label>
+				{:else}
+					<p class="font-medium text-fg">{t('settings.self.label')}</p>
+				{/if}
 				<p class="text-sm text-fg-muted">{t('settings.self.hint')}</p>
 			</div>
-			<form method="POST" action="?/setSelf" class="flex flex-wrap items-center gap-2">
-				<PersonSearchSelect
-					people={data.people}
-					name="contactId"
-					bind:selectedIds={selfIds}
-					id="self-contact"
-					placeholder={t('settings.self.placeholder')}
-					class="min-w-[14rem] flex-1"
-				/>
-				<Button type="submit">{t('common.save')}</Button>
-			</form>
+			<!-- With nobody to pick from, the picker would be a dead end: offer to add yourself. -->
+			{#if data.people.length === 0}
+				<div class="flex flex-wrap items-center gap-3" data-testid="self-nobody-yet">
+					<p class="min-w-0 flex-1 basis-56 text-sm text-fg-muted">{t('settings.self.nobodyYet')}</p>
+					<Button variant="primary" icon="self" href={newPersonHref({ self: true })}>{t('settings.self.addYourself')}</Button>
+				</div>
+			{:else}
+				<form method="POST" action="?/setSelf" class="flex flex-wrap items-center gap-2">
+					<PersonSearchSelect
+						people={data.people}
+						name="contactId"
+						bind:selectedIds={selfIds}
+						id="self-contact"
+						placeholder={t('settings.self.placeholder')}
+						class="min-w-[14rem] flex-1"
+					/>
+					<Button type="submit">{t('common.save')}</Button>
+				</form>
+				{#if !data.user.selfContactId}
+					<p class="text-sm text-fg-muted">
+						{t('settings.self.notListed')}
+						<a href={newPersonHref({ self: true })} class="font-medium text-link hover:underline">{t('settings.self.addYourself')}</a>
+					</p>
+				{/if}
+			{/if}
 			{#if data.user.selfContactId}
 				<form method="POST" action="?/setSelf">
 					<Button variant="ghost" size="sm">{t('settings.self.clear')}</Button>

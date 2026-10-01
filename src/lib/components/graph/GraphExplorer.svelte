@@ -2,6 +2,8 @@
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
+	import { addRelationshipPath } from '$lib/contacts/sections';
 	import Icon from '$lib/components/Icon.svelte';
 	import MenuButton from '$lib/components/MenuButton.svelte';
 	import { filterSummary } from '$lib/menu/menu';
@@ -24,7 +26,7 @@
 		type CircleRole,
 		type CircleRoleOption
 	} from '$lib/graph/model/ego-network';
-	import { canExpand, ringsFrom } from '$lib/graph/model/rings';
+	import { canExpand, hasLinks, hasMoreAround, ringsFrom } from '$lib/graph/model/rings';
 	import { impliedKinshipEdgeIds } from '$lib/graph/model/implied-kinship';
 	import {
 		applyFilters,
@@ -307,8 +309,21 @@
 	const peekNode = $derived(selected ? model.nodes.find((n) => n.id === selected) ?? null : null);
 	// How far each node sits from the centre, so the embedded map stops where it promises to.
 	const rings = $derived(centerId ? ringsFrom(model, centerId) : new Map<string, number>());
-	const peekExpandable = $derived(
+	// Inside the map's reach, and with something left to open — Expand on somebody whose every
+	// link is drawn already, or who has none, was a button that did nothing (docs/02 §2.7).
+	const peekWithinReach = $derived(
 		peekNode !== null && (centerId === null || canExpand(rings, peekNode.id, maxRings))
+	);
+	const peekHasMore = $derived(peekNode !== null && hasMoreAround(graph, model, peekNode.id));
+	const peekExpandable = $derived(peekWithinReach && peekHasMore);
+	/*
+	 * A centre linked to nobody draws one lonely dot. The explorer route says why and offers
+	 * the step that changes it; an embedded map is never drawn for somebody without links.
+	 */
+	const lonelyCentre = $derived(
+		!compact && centerId !== null && !hasLinks(graph, centerId)
+			? (graph.nodes.find((n) => n.id === centerId) ?? null)
+			: null
 	);
 	const suggestions = $derived(
 		query.trim()
@@ -818,6 +833,23 @@
 		</div>
 	{/if}
 
+	<!-- Below the centre rather than over it, and out of the way while a peek panel is open. -->
+	{#if ready && lonelyCentre && !selected}
+		<div class="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center px-4" data-testid="graph-alone">
+			<div class="pointer-events-auto w-full max-w-sm rounded-app bg-card shadow-pop">
+				{#if lonelyCentre.kind === 'circle'}
+					<EmptyState icon="circles" title={t('graph.aloneCircle.title', { name: lonelyCentre.label })} hint={t('graph.aloneCircle.hint')}>
+						<Button variant="primary" icon="add" href="/circles/{lonelyCentre.id}">{t('circles.addPeople')}</Button>
+					</EmptyState>
+				{:else}
+					<EmptyState icon="graph" title={t('graph.alone.title', { name: lonelyCentre.label })} hint={t('graph.alone.hint')}>
+						<Button variant="primary" icon="add" href={addRelationshipPath(lonelyCentre.id)}>{t('graph.alone.add')}</Button>
+					</EmptyState>
+				{/if}
+			</div>
+		</div>
+	{/if}
+
 	<!-- Toolbar. It keeps clear of the peek panel while that is open: the chips wrap on a
 	     narrow window, and the row that wraps would otherwise slide underneath it — leaving
 	     the button under there unclickable. -->
@@ -1129,7 +1161,7 @@
 				{/if}
 				{#if peekExpandable}
 					<Button type="button" class="max-sm:flex-1" disabled={peekNode.kind === 'circle' && roleOptions.length > 0 && chosenRoles.size === 0} onclick={() => expand(peekNode.id)}>{t('graph.peek.expand')}</Button>
-				{:else if fullGraphHref}
+				{:else if fullGraphHref && !peekWithinReach}
 					<!-- The map ends here, so the honest offer is the one place that goes further. -->
 					<Button icon="graph" class="max-sm:flex-1" href={fullGraphHref(peekNode.id)}>{t('graph.openInGraph')}</Button>
 				{/if}
@@ -1141,8 +1173,10 @@
 			</div>
 			<!-- The general tip is left out of a phone's strip; that the map ends here is not. -->
 			<p class="mt-4 text-xs text-fg-subtle max-sm:mt-3" class:max-sm:hidden={peekExpandable}>
-				{#if !peekExpandable}
+				{#if !peekWithinReach}
 					{t('graph.peek.edgeOfMap')}
+				{:else if !peekHasMore}
+					{t('graph.peek.allShown')}
 				{:else}
 					{compact ? t('graph.peek.tipCompact') : t('graph.peek.tip')}
 				{/if}

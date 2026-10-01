@@ -7,12 +7,16 @@ import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { ulidGenerator } from '$lib/server/id';
 import { getCommandDeps } from '$lib/server/services';
 import { GENDERS } from '$lib/people/gender';
+import { readNewPersonRequest } from '$lib/people/new-person';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
  * Quick-add: create a person from a minimal form (docs/02 §2.2). A name is required; the
  * display name is derived server-side. Visibility defaults to shared. Saved as a `contact.add`
  * command, which is what lets the form keep a person on the phone out of reach (§2.18).
+ *
+ * `?name=` starts the form from a search that found nobody; `?self=1` is the member adding
+ * themselves (§2.1.3, the first-run card), and the person saved is then recorded as them.
  */
 
 const optional = v.optional(v.pipe(v.string(), v.trim()));
@@ -28,12 +32,13 @@ const QuickAddSchema = v.object({
 	gender: v.optional(v.picklist(GENDERS)),
 	/** An existing person to link right after creating (docs/02 §2.2.1). */
 	relateTo: optional,
-	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
+	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
+	isSelf: v.optional(v.literal('1'))
 });
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) throw redirect(302, '/login');
-	return {};
+	return readNewPersonRequest(url.searchParams);
 };
 
 export const actions: Actions = {
@@ -51,7 +56,8 @@ export const actions: Actions = {
 			birthDate: form.get('birthDate') || undefined,
 			gender: form.get('gender') || undefined,
 			relateTo: form.get('relateTo') || undefined,
-			visibility: form.get('visibility') || undefined
+			visibility: form.get('visibility') || undefined,
+			isSelf: form.get('isSelf') || undefined
 		});
 		// The reader's language: everything this action can say back is a message key rendered
 		// here, where the request's locale is known (docs/02 §2.19).
@@ -61,11 +67,11 @@ export const actions: Actions = {
 		}
 
 		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
-		const { relateTo, ...input } = parsed.output;
+		const { relateTo, isSelf, ...input } = parsed.output;
 		const command = parseCommand({
 			id: form.get('commandId') || ulidGenerator.next(),
 			type: 'contact.add',
-			payload: input,
+			payload: { ...input, isSelf: isSelf === '1' },
 			issuedAt: systemClock.now()
 		});
 		if (command?.type !== 'contact.add') return fail(400, { error: t('errors.contact.needAName') });

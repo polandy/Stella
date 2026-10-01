@@ -5,6 +5,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import {
 	deleteInteraction,
+	lastContactedOn,
 	listInteractions,
 	logInteraction,
 	type InteractionAuthor
@@ -226,5 +227,37 @@ describe('interaction repository', () => {
 		expect(await deleteInteraction(deps(), author1, id)).toBe(true);
 		expect(await listInteractions(deps(), viewerU1, 'oma')).toHaveLength(0);
 		expect(db.select().from(schema.interactionParticipant).all()).toHaveLength(0);
+	});
+
+	describe('the day they were last in touch', () => {
+		it('is the latest day among the touchpoints the viewer may see, not the latest logged', async () => {
+			await logInteraction(deps(), author1, { contactId: 'oma', kind: 'call', happenedAt: '2026-08-30' });
+			await logInteraction(deps(), author1, { contactId: 'oma', kind: 'met', happenedAt: '2026-03-01' });
+			await logInteraction(deps(), author1, { contactId: 'oma', kind: 'gift', happenedAt: '2026-01-05' });
+			await logInteraction(deps(), author1, { contactId: 'opa', kind: 'met', happenedAt: '2026-12-24' });
+
+			expect(await lastContactedOn(deps(), viewerU1, 'oma')).toBe('2026-08-30');
+		});
+
+		it('never reveals a private touchpoint through the profile header', async () => {
+			await logInteraction(deps(), author1, { contactId: 'oma', kind: 'call', happenedAt: '2026-08-01' });
+			await logInteraction(deps(), author1, {
+				contactId: 'oma',
+				kind: 'gift',
+				happenedAt: '2026-08-02',
+				visibility: 'private'
+			});
+
+			expect(await lastContactedOn(deps(), viewerU1, 'oma')).toBe('2026-08-02');
+			expect(await lastContactedOn(deps(), viewerU2, 'oma')).toBe('2026-08-01');
+		});
+
+		it('is nothing for nobody touched, or for a person the viewer may not see', async () => {
+			await logInteraction(deps(), author1, { contactId: 'secret', kind: 'met', happenedAt: '2026-08-01' });
+
+			expect(await lastContactedOn(deps(), viewerU1, 'oma')).toBeNull();
+			expect(await lastContactedOn(deps(), viewerU2, 'secret')).toBeNull();
+			expect(await lastContactedOn(deps(), viewerU1, 'secret')).toBe('2026-08-01');
+		});
 	});
 });

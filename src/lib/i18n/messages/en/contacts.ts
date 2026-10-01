@@ -17,6 +17,8 @@ export const contacts = {
 	'contacts.lastWrittenAboutOn': (p: { date: string }) => `Last written about ${p.date}`,
 	'contacts.nothingWrittenYet': 'Nothing written yet',
 	'contacts.noMatch': (p: { query: string }) => `Nobody matches “${p.query}”.`,
+	'contacts.noMatchHint': 'Check the spelling — or, if they are new, add them now.',
+	'contacts.addNamed': (p: { name: string }) => `Add “${p.name}”`,
 	'contacts.emptyArchive.title': 'Nothing archived',
 	'contacts.emptyArchive.hint':
 		'Archiving takes someone out of the lists without losing them. Nobody is.',
@@ -29,6 +31,11 @@ export const contacts = {
 		`Stella is out of reach, so ${p.name || 'this person'} is kept on this device and added once it answers again.`,
 	'contacts.new.heading': 'Add a person',
 	'contacts.new.intro': 'A name is enough. Everything else can wait for their page.',
+	// Adding yourself (docs/02 §2.1.3): the same form, saying what it will do with the record.
+	'contacts.new.selfHeading': 'Add yourself',
+	'contacts.new.selfIntro':
+		'This record is you: Stella links it to your account, so the map opens on you and your people can be linked to you.',
+	'contacts.new.selfSubmit': 'Add me',
 	'contacts.new.firstName': 'First name',
 	'contacts.new.lastName': 'Last name',
 	'contacts.new.alreadyHere': 'Already in Stella?',

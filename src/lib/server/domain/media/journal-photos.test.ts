@@ -40,6 +40,9 @@ function deps() {
 			async listJournalPhotos() {
 				return [];
 			},
+			async listJournalPhotosOfEntries() {
+				return [];
+			},
 			async listGalleryPhotos() {
 				return [];
 			},
@@ -51,7 +54,8 @@ function deps() {
 			},
 			async deleteOwnGalleryPhoto() {
 				return null;
-			}
+			},
+			async setGalleryPhotoPin() {}
 		},
 		media: {
 			async put(key: string, bytes: Uint8Array) {

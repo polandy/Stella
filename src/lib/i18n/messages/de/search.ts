@@ -5,6 +5,8 @@ export const search: SearchMessages = {
 	'search.title': 'Suche',
 	'search.placeholder': 'Menschen und Notizen durchsuchen…',
 	'search.noResults': (p) => `Keine Treffer für „${p.query}“.`,
+	'search.noResultsHint':
+		'Niemand mit diesem Namen und keine Notiz, in der es steht. Ist die Person neu, füge sie hinzu.',
 	'search.prompt': 'Tippe, um Menschen und Notizen zu durchsuchen.',
 	'search.people': 'Menschen',
 	'search.notes': 'Notizen',
@@ -66,6 +68,13 @@ export const search: SearchMessages = {
 	'graph.peek.tipCompact':
 		'Tipp: Tippe eine ausgewählte Person nochmal an, um ihre eigenen Verbindungen aufzuklappen.',
 	'graph.peek.edgeOfMap': 'Weiter reicht diese Karte nicht. Das Netz trägt den Rest.',
+	'graph.peek.allShown': 'Alles, was hier verknüpft ist, steht schon auf der Karte.',
+	'graph.alone.title': (p) => `${p.name} ist noch mit niemandem verknüpft`,
+	'graph.alone.hint':
+		'Füge einen Elternteil, eine Partnerin oder einen Partner, eine Freundin oder einen Kollegen hinzu, und die Karte wächst von dort aus.',
+	'graph.alone.add': 'Beziehung hinzufügen',
+	'graph.aloneCircle.title': (p) => `Noch niemand in ${p.name}`,
+	'graph.aloneCircle.hint': 'Füge die Menschen hinzu, die diesen Kreis teilen, und die Karte wächst von dort aus.',
 	'graph.onPerson.label': (p) => `Die Menschen um ${p.name}`,
 	'graph.onPerson.loading': 'Karte wird gezeichnet…',
 	'graph.fullscreen.enter': 'Vollbild',

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
+	import { newPersonHref } from '$lib/people/new-person';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { PageData } from './$types';
 
@@ -30,7 +32,12 @@
 
 	{#if hasQuery}
 		{#if total === 0}
-			<p class="text-fg-subtle">{t('search.noResults', { query: data.q })}</p>
+			<!-- Nobody found is usually somebody new: the query is already their name. -->
+			<EmptyState icon="search" title={t('search.noResults', { query: data.q })} hint={t('search.noResultsHint')}>
+				<Button variant="primary" icon="add" href={newPersonHref({ name: data.q })}>
+					{t('contacts.addNamed', { name: data.q })}
+				</Button>
+			</EmptyState>
 		{:else}
 			{#if data.results.contacts.length > 0}
 				<section class="flex flex-col gap-1">
