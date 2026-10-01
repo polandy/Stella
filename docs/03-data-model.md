@@ -423,6 +423,7 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 | caption | text null | |
 | taken_at | text null | from EXIF if kept |
 | sort_order | int | |
+| pinned_at | int null | when the household pinned this gallery photo as a favourite (docs/02 §2.14); null = not one |
 | created_at | int | |
 
 Note: `user.avatar_photo_id` and `contact.avatar_photo_id` reference this table.
@@ -435,6 +436,11 @@ framing — the repository replaces it in the same transaction that makes it the
 never listed in the gallery, copies its photo's `visibility` and `created_by` so exactly the
 same people see it, follows a change of the photo's visibility, and is deleted with the photo.
 `framing_of` carries no foreign key for the same reason as `avatar_photo_id`.
+
+**A favourite is a moment, not a flag.** `pinned_at` says when a gallery photo was pinned, so
+the gallery can show favourites first, the latest pin leading, and the rest newest first
+(`src/lib/server/domain/media/gallery-order.ts`). It sits on the photo, so a pin is the
+household's rather than one member's (docs/04 §4.9).
 
 **`journal_entry_id` carries no cascade.** It was added by migration `0002` as a plain
 `REFERENCES`, and adding one now would mean rebuilding `photo` — which cannot be dropped

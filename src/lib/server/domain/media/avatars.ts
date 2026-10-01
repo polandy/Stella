@@ -113,6 +113,8 @@ export interface GalleryPhoto {
 	isAvatar: boolean;
 	/** The square last chosen to wear this photo as the avatar, if any (see `./framing`). */
 	framing: CropRect | null;
+	/** When the household pinned it as a favourite (epoch ms); null when it is not one. */
+	pinnedAt: number | null;
 }
 
 /** The file paths a deleted photo leaves behind, so the bytes can go too. */
@@ -140,6 +142,11 @@ export interface PhotoRepository {
 	listGalleryPhotos(viewer: Viewer, contactId: string): Promise<GalleryPhoto[]>;
 	/** One gallery photo, only if it belongs to that contact and the viewer may see it. */
 	findVisibleGalleryPhoto(viewer: Viewer, contactId: string, photoId: string): Promise<GalleryPhoto | null>;
+	/**
+	 * Pin a gallery photo as a favourite at `pinnedAt`, or unpin it with null. Unscoped: the
+	 * use-case has already found the photo visible to whoever asked (`./gallery`).
+	 */
+	setGalleryPhotoPin(photoId: string, pinnedAt: number | null): Promise<void>;
 	/** Change the caption and/or visibility of a photo the author uploaded; false if not theirs. */
 	updateOwnGalleryPhoto(input: {
 		authorId: string;

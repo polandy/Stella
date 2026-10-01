@@ -130,8 +130,23 @@ describe('the gallery (docs/02 §2.14)', () => {
 			createdBy: U1,
 			contactId: 'mara',
 			isAvatar: false,
-			framing: null
+			framing: null,
+			pinnedAt: null
 		});
+	});
+
+	it('pins and unpins a gallery photo for everyone who sees it', async () => {
+		await repo.setGalleryPhotoPin('g-shared', 1_000);
+		expect((await repo.listGalleryPhotos(viewerU2, 'mara')).find((p) => p.id === 'g-shared')?.pinnedAt).toBe(1_000);
+		expect((await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'g-shared'))?.pinnedAt).toBe(1_000);
+		await repo.setGalleryPhotoPin('g-shared', null);
+		expect((await repo.findVisibleGalleryPhoto(viewerU2, 'mara', 'g-shared'))?.pinnedAt).toBeNull();
+	});
+
+	it('pins nothing but a gallery photo', async () => {
+		await repo.setGalleryPhotoPin('in-journal', 1_000);
+		const row = db.select().from(schema.photo).where(eq(schema.photo.id, 'in-journal')).get();
+		expect(row?.pinnedAt).toBeNull();
 	});
 
 	it('keeps journal photos out of the gallery', async () => {

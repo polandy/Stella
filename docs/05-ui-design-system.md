@@ -313,7 +313,7 @@ They must be edited together; `app.css` says so at both blocks.
     author's name beside the kind (*you* on your own items), *Show earlier* paging back through
     both sources; it is paged, so it carries no count. **Notes** are pinned-first. **Photos**
     (§2.14) is a square grid at three columns, four from `sm`, with a lock badge on a private
-    one; a photo opens into a **lightbox** — a solid card over a blurred, dimmed backdrop that
+    one and a star badge, top left, on a favourite — which the grid shows first; a photo opens into a **lightbox** — a solid card over a blurred, dimmed backdrop that
     closes on click, with the caption above the picture and the actions in one row beneath it.
     The destructive action sits last in that row and carries the danger style, so it is never
     the button next to the one you meant. **Mentioned in**

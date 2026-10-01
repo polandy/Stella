@@ -1094,7 +1094,7 @@ mechanism behind two features: correcting a birthday without touching the profil
 - Photos have their own visibility (2.10) and can be captioned.
 - Basic gallery: grid, lightbox, set-as-avatar, delete. Reordering **[M3]**.
 
-- **Shipped:** the person page carries a **Photos** tab — a square grid, newest first, each
+- **Shipped:** the person page carries a **Photos** tab — a square grid, newest first (favourites ahead, below), each
   private photo wearing a lock. Adding takes several files at once; each is downscaled and
   re-encoded in the browser first, so no EXIF or GPS ever leaves the device, and the upload
   carries its own *shared or private* choice. Opening one gives a **lightbox** over a dimmed
@@ -1126,6 +1126,19 @@ mechanism behind two features: correcting a birthday without touching the profil
   discards the old one: setting an avatar has always stored it as a fresh gallery photo rather
   than overwriting anything, so the previous picture simply drops back into the dated gallery,
   and a toast confirms it at the moment of the change.
+- **Shipped: favourite photos first.** In the lightbox, *Pin as favourite* makes a photo one of
+  the person's favourites, and *Unpin favourite* takes it back. Favourites lead the gallery,
+  the one pinned most recently first, so a pin visibly puts that photo at the front, and
+  unpinning and pinning again moves a favourite there; everything else follows, newest first.
+  A favourite wears a star on its tile and *Favourite*, with the star, beside its date in the
+  lightbox — a shape and a word, never only a colour. A pin is the **household's**, like the
+  photo (docs/04 §4.9): anyone who can see a photo can pin or unpin it, and everyone who sees it
+  sees it pinned. Pinning a photo that is already pinned keeps its first pin, so a resent form
+  changes nothing. It is a change, not an addition, so it is not queued offline
+  (docs/concepts/offline-capture.md §4.1). The rule is one pure function
+  (`src/lib/server/domain/media/gallery-order.ts`) and the gallery is the only list of a
+  person's photos it orders: journal photos stay with their entry in the story. The archive
+  carries the pin (`pinned_at`), so a restore brings the favourites back.
 
 ## 2.15 Data portability **[M2]**
 

@@ -125,6 +125,10 @@ export function createDrizzlePhotoRepository(
 			return row ? toGalleryPhoto(row) : null;
 		},
 
+		async setGalleryPhotoPin(photoId: string, pinnedAt: number | null) {
+			db.update(photo).set({ pinnedAt }).where(and(eq(photo.id, photoId), isGalleryPhoto())).run();
+		},
+
 		async updateOwnGalleryPhoto(input: {
 			authorId: string;
 			photoId: string;
@@ -242,7 +246,8 @@ const GALLERY_COLUMNS = {
 	isAvatar: sql<number>`(${contact.avatarPhotoId} IN (${photo.id}, ${framing.id}))`,
 	cropX: framing.cropX,
 	cropY: framing.cropY,
-	cropSize: framing.cropSize
+	cropSize: framing.cropSize,
+	pinnedAt: photo.pinnedAt
 };
 
 type GalleryRow = {
@@ -258,6 +263,7 @@ type GalleryRow = {
 	cropX: number | null;
 	cropY: number | null;
 	cropSize: number | null;
+	pinnedAt: number | null;
 };
 
 /** SQLite has no booleans; the avatar flag arrives as 0/1 and is mapped here, at the boundary. */
@@ -274,5 +280,6 @@ const toGalleryPhoto = (row: GalleryRow): GalleryPhoto => ({
 	framing:
 		row.cropX !== null && row.cropY !== null && row.cropSize !== null
 			? { x: row.cropX, y: row.cropY, size: row.cropSize }
-			: null
+			: null,
+	pinnedAt: row.pinnedAt
 });

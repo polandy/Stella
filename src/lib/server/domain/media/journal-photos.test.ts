@@ -51,7 +51,8 @@ function deps() {
 			},
 			async deleteOwnGalleryPhoto() {
 				return null;
-			}
+			},
+			async setGalleryPhotoPin() {}
 		},
 		media: {
 			async put(key: string, bytes: Uint8Array) {

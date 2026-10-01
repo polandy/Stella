@@ -191,6 +191,9 @@ export const contact: ContactMessages = {
 	'contact.photos.caption': 'Bildunterschrift',
 	'contact.photos.share': 'Mit dem Haushalt teilen',
 	'contact.photos.makePrivate': 'Privat machen',
+	'contact.photos.favourite': 'Favorit',
+	'contact.photos.pin': 'Als Favorit anheften',
+	'contact.photos.unpin': 'Favorit lösen',
 
 	'contact.mentions.in': 'in',
 	'contact.mentions.notes': 'Notizen',
