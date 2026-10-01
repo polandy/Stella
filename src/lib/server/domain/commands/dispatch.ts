@@ -21,6 +21,8 @@ import type { Visibility } from '../../access/visibility';
 export interface CommandActor {
 	userId: string;
 	householdId: string;
+	/** What a record the command creates without naming a visibility starts as (docs/02 §2.17). */
+	defaultVisibility: Visibility;
 }
 
 /** What each command answers with when it is applied. */

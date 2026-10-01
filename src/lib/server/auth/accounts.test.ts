@@ -3,13 +3,15 @@ import type { IdGenerator } from '../id';
 import { DEFAULT_LOCALE } from '../../i18n/locales';
 import {
 	authenticateLocal,
+	changeDefaultVisibility,
 	changeLocale,
 	registerFirstAdmin,
 	type AccountRepository,
 	type AuthUser,
 	type NewAdmin,
 	type StoredCredentials,
-	UnsupportedLocaleError
+	UnsupportedLocaleError,
+	UnsupportedVisibilityError
 } from './accounts';
 
 /*
@@ -22,6 +24,7 @@ function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) 
 	const users = [...seed];
 	let inserted: NewAdmin | null = null;
 	const localeWrites: { userId: string; locale: string }[] = [];
+	const visibilityWrites: { userId: string; visibility: string }[] = [];
 	const repo: AccountRepository = {
 		countUsers: async () => users.length,
 		findCredentialsByEmail: async (email): Promise<StoredCredentials | null> => {
@@ -36,9 +39,12 @@ function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) 
 		updateLocale: async (userId, locale) => {
 			localeWrites.push({ userId, locale });
 		},
-		updateSelfContact: async () => {}
+		updateSelfContact: async () => {},
+		updateDefaultVisibility: async (userId, visibility) => {
+			visibilityWrites.push({ userId, visibility });
+		}
 	};
-	return { repo, localeWrites, get inserted() { return inserted; } };
+	return { repo, localeWrites, visibilityWrites, get inserted() { return inserted; } };
 }
 
 function sequentialIds(...values: string[]): IdGenerator {
@@ -71,7 +77,8 @@ describe('registerFirstAdmin', () => {
 			name: 'Andy',
 			role: 'admin',
 			locale: 'de',
-			selfContactId: null
+			selfContactId: null,
+			defaultVisibility: 'shared'
 		});
 		expect(f.inserted?.household).toEqual({ id: 'household-id', name: 'Pollari' });
 		expect(f.inserted?.user.passwordHash).toBe('hashed:a-good-passphrase');
@@ -87,7 +94,8 @@ describe('registerFirstAdmin', () => {
 			name: 'X',
 			role: 'admin',
 			locale: DEFAULT_LOCALE,
-			selfContactId: null
+			selfContactId: null,
+			defaultVisibility: 'shared'
 		};
 		const f = fakeRepo([{ user: existing, passwordHash: 'hashed:x' }]);
 		await expect(
@@ -110,7 +118,8 @@ describe('authenticateLocal', () => {
 		name: 'Andy',
 		role: 'admin',
 		locale: DEFAULT_LOCALE,
-		selfContactId: null
+		selfContactId: null,
+		defaultVisibility: 'shared'
 	};
 
 	it('returns the user for correct credentials', async () => {
@@ -148,7 +157,8 @@ describe('changeLocale', () => {
 		name: 'Andy',
 		role: 'admin',
 		locale: 'en',
-		selfContactId: null
+		selfContactId: null,
+		defaultVisibility: 'shared'
 	};
 
 	it('stores a supported language and reports it back', async () => {
@@ -163,5 +173,32 @@ describe('changeLocale', () => {
 			UnsupportedLocaleError
 		);
 		expect(f.localeWrites).toEqual([]);
+	});
+});
+
+describe('changeDefaultVisibility', () => {
+	const user: AuthUser = {
+		id: 'u1',
+		householdId: 'h1',
+		email: 'andy@example.test',
+		name: 'Andy',
+		role: 'member',
+		locale: 'en',
+		selfContactId: null,
+		defaultVisibility: 'shared'
+	};
+
+	it('stores the visibility new records start with and reports it back', async () => {
+		const f = fakeRepo([{ user, passwordHash: null }]);
+		expect(await changeDefaultVisibility({ accounts: f.repo }, 'u1', 'private')).toBe('private');
+		expect(f.visibilityWrites).toEqual([{ userId: 'u1', visibility: 'private' }]);
+	});
+
+	it('refuses anything but shared or private, and writes nothing', async () => {
+		const f = fakeRepo([{ user, passwordHash: null }]);
+		await expect(changeDefaultVisibility({ accounts: f.repo }, 'u1', 'public')).rejects.toBeInstanceOf(
+			UnsupportedVisibilityError
+		);
+		expect(f.visibilityWrites).toEqual([]);
 	});
 });

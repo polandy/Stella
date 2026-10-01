@@ -1,6 +1,7 @@
 import { count, eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Locale } from '../../i18n/locales';
+import type { Visibility } from '../access/visibility';
 import type { AccountRepository, AuthUser, StoredCredentials } from '../auth/accounts';
 import type * as schema from './schema';
 import { household as householdTable, user as userTable } from './schema';
@@ -18,6 +19,7 @@ const toAuthUser = (row: {
 	role: 'admin' | 'member';
 	localePref: Locale | null;
 	selfContactId: string | null;
+	defaultVisibility: Visibility;
 }): AuthUser => ({
 	id: row.id,
 	householdId: row.householdId,
@@ -25,7 +27,8 @@ const toAuthUser = (row: {
 	name: row.name,
 	role: row.role,
 	locale: row.localePref,
-	selfContactId: row.selfContactId
+	selfContactId: row.selfContactId,
+	defaultVisibility: row.defaultVisibility
 });
 
 export function createDrizzleAccountRepository(
@@ -47,6 +50,7 @@ export function createDrizzleAccountRepository(
 					role: userTable.role,
 					localePref: userTable.localePref,
 					selfContactId: userTable.selfContactId,
+					defaultVisibility: userTable.defaultVisibility,
 					passwordHash: userTable.passwordHash
 				})
 				.from(userTable)
@@ -65,7 +69,8 @@ export function createDrizzleAccountRepository(
 					name: userTable.name,
 					role: userTable.role,
 					localePref: userTable.localePref,
-					selfContactId: userTable.selfContactId
+					selfContactId: userTable.selfContactId,
+					defaultVisibility: userTable.defaultVisibility
 				})
 				.from(userTable)
 				.where(eq(userTable.id, id))
@@ -85,7 +90,8 @@ export function createDrizzleAccountRepository(
 						passwordHash: data.user.passwordHash,
 						role: data.user.role,
 						roleLocked: data.user.roleLocked,
-						localePref: data.user.locale
+						localePref: data.user.locale,
+						defaultVisibility: data.user.defaultVisibility
 					})
 					.run();
 			});
@@ -97,6 +103,10 @@ export function createDrizzleAccountRepository(
 
 		async updateSelfContact(userId: string, contactId: string | null) {
 			db.update(userTable).set({ selfContactId: contactId }).where(eq(userTable.id, userId)).run();
+		},
+
+		async updateDefaultVisibility(userId: string, visibility: Visibility) {
+			db.update(userTable).set({ defaultVisibility: visibility }).where(eq(userTable.id, userId)).run();
 		}
 	};
 }

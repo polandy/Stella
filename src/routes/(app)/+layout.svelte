@@ -16,6 +16,7 @@
 	import { navigationTurns } from '$lib/undo/navigation-turns';
 	import { providePending } from '$lib/sync/context.svelte';
 	import { providePeopleContext } from '$lib/people/context.svelte';
+	import { provideDefaultVisibility } from '$lib/people/default-visibility.svelte';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { reportNavigation } from '$lib/sync/pending';
@@ -126,6 +127,7 @@
 	// sends them with keepalive alongside and hopes for the best.
 	const removals = provideRemovals();
 	providePeopleContext(() => data.peopleContext);
+	provideDefaultVisibility(() => data.user.defaultVisibility);
 	const turns = navigationTurns();
 	beforeNavigate((navigation) => {
 		// Taken for every navigation, so a newer one retires any held back below.

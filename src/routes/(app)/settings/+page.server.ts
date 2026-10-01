@@ -6,12 +6,13 @@ import {
 } from '$lib/server/domain/household/self-contact';
 import { listContacts } from '$lib/server/domain/contacts/contacts';
 import { isKnownByAFirstNameOnly } from '$lib/people/namesakes';
-import { getContactDeps, getSelfContactDeps, getUpdateCheck } from '$lib/server/services';
+import { changeDefaultVisibility, UnsupportedVisibilityError } from '$lib/server/auth/accounts';
+import { getAccountDeps, getContactDeps, getSelfContactDeps, getUpdateCheck } from '$lib/server/services';
 import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
 /**
- * Settings landing (docs/02 §2.17): the language, who you are, the data-quality checks, the
+ * Settings landing (docs/02 §2.17): the language, who you are, what new entries start as, the data-quality checks, the
  * admin "Data" section and the "About" line.
  *
  * The release check is handed over as a promise on purpose (docs/02 §2.17.1): the page is
@@ -55,5 +56,25 @@ export const actions: Actions = {
 		}
 
 		return { selfSaved: say(locals, 'settings.self.saved') };
+	},
+
+	/* What the member's new records start as (docs/02 §2.17): every form opens on it. */
+	setDefaultVisibility: async ({ request, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const requested = (await request.formData()).get('visibility');
+		try {
+			const saved = await changeDefaultVisibility(
+				getAccountDeps(),
+				locals.user.id,
+				typeof requested === 'string' ? requested : ''
+			);
+			// As with `setSelf`: the reloaded page reads `locals`, filled before this write.
+			locals.user = { ...locals.user, defaultVisibility: saved };
+		} catch (err) {
+			if (err instanceof UnsupportedVisibilityError)
+				return fail(400, { visibilityError: say(locals, 'settings.visibility.unsupported') });
+			throw err;
+		}
+		return { visibilitySaved: say(locals, 'settings.visibility.saved') };
 	}
 };

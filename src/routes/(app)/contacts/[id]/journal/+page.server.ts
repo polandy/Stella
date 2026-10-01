@@ -113,7 +113,7 @@ const SaveSchema = v.object({
 	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, key('errors.journal.badDay'))),
 	title: v.optional(v.pipe(v.string(), v.trim())),
 	body: v.pipe(v.string(), v.trim(), v.minLength(1)),
-	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
+	visibility: v.picklist(['shared', 'private'])
 });
 
 const EditSchema = v.object({
@@ -136,7 +136,7 @@ export const actions: Actions = {
 			entryDate: form.get('entryDate'),
 			title: form.get('title') || undefined,
 			body: form.get('body'),
-			visibility: form.get('visibility') || undefined
+			visibility: form.get('visibility') || locals.user.defaultVisibility
 		});
 		if (!parsed.success) {
 			return fail(400, {
@@ -149,7 +149,7 @@ export const actions: Actions = {
 
 		// Writing is an addition (§2.20) and a command (docs/04 §4.11.2): named by the form when it
 		// can, so a save whose answer was lost and is kept on the phone is recognised on arrival.
-		const author = { userId: viewer.id, householdId: viewer.householdId };
+		const author = { userId: viewer.id, householdId: viewer.householdId, defaultVisibility: locals.user.defaultVisibility };
 		const refusal = (outcome: Awaited<ReturnType<typeof dispatchCommand>> | null, otherwise: MessageKey) =>
 			fail(400, {
 				journalError: outcome?.status === 'refused' ? outcome.reason(translator(locals)) : say(locals, otherwise)
@@ -221,7 +221,7 @@ export const actions: Actions = {
 		const author = {
 			userId: locals.user.id,
 			householdId: locals.user.householdId,
-			defaultVisibility: 'shared' as const
+			defaultVisibility: locals.user.defaultVisibility
 		};
 
 		let ok: boolean;
@@ -266,7 +266,7 @@ export const actions: Actions = {
 
 		await deleteJournalEntry(
 			getJournalDeps(),
-			{ userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: 'shared' },
+			{ userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: locals.user.defaultVisibility },
 			id
 		);
 		throw redirect(303, `/contacts/${params.id}/journal`);

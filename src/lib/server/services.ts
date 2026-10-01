@@ -529,7 +529,7 @@ export function getCommandDeps(): CommandDeps {
 			'circle.join': onVisibleContact(getContacts(), async (actor, payload) => ({
 				circleId: await joinCircleByName(
 					getCircleDeps(),
-					{ ...actor, defaultVisibility: 'shared' },
+					actor,
 					payload.contactId,
 					payload.circleName,
 					payload.role

@@ -23,7 +23,7 @@ const InlineCreateSchema = v.object({
 	/** Asked for when there is no last name, so this Thomas can be told from the next (§2.2.3). */
 	description: optional,
 	birthDate: optional,
-	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
+	visibility: v.optional(v.picklist(['shared', 'private']))
 });
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -36,7 +36,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	const creator = {
 		userId: locals.user.id,
 		householdId: locals.user.householdId,
-		defaultVisibility: 'shared' as const // TODO: use the user's default (settings, §2.16)
+		defaultVisibility: locals.user.defaultVisibility
 	};
 
 	let id: string;

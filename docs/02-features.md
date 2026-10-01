@@ -920,7 +920,11 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 
 - Every shareable record (**contact, note, photo, interaction**) has a **visibility**:
   `shared` (whole household) or `private` (only the creator).
-- **Default** visibility for new records follows the creator's account preference.
+- **Default** visibility for new records follows the creator's account preference
+  (*Settings → New entries*, §2.17): every adding form opens on it and the member can pick the
+  other each time; a record added without a choice — a person created inline in a picker, a
+  command from the phone that names none, a document posted to the import API — takes it as
+  it is. A new member starts on `shared`.
 - **Inheritance & rules:**
   - A **private contact** and everything under it are visible only to its creator,
     regardless of child visibility.
@@ -1358,7 +1362,7 @@ the API (kindergarten-2023)"), with the visibility of what it imported.
 ## 2.17 Settings **[M1/M2]**
 
 - **Account:** profile, password, **language** (§2.19), **which of these people you are**
-  (§2.1.3), theme, default visibility, sessions/2FA.
+  (§2.1.3), **what new entries start as** (shared or private, §2.10), theme, sessions/2FA.
 - **Data quality** (every member): check relationships (§2.4.1), people known by a first
   name only (§2.2.3).
 - **Household** (admin): name, members & roles, invitations, relationship types, tags.
@@ -1658,7 +1662,7 @@ Concept + clickable prototype: `docs/concepts/moments-capture-concept.html`.
   the entry's contact (the *anchor*, whose journal it lands in); every other mention is stored
   as a `journal_mention` exactly as today. The composer shows the anchor while typing
   ("Goes to *Julia*'s journal, mentions 1"). A moment therefore needs **at least one mention**.
-  Day, visibility and photos behave as in §2.20 (default: today, shared; photos processed in
+  Day, visibility and photos behave as in §2.20 (default: today, and what the member's new entries start as, §2.17; photos processed in
   the browser).
 - **The day is a pill, not a date form.** Almost every moment is from today, so the day sits
   beside *Shared* and *Photo* as a quiet *Today*. A tap offers the last week — *Yesterday*,

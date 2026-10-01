@@ -17,6 +17,12 @@ export const settings = {
 	'settings.self.placeholder': 'Search for yourself by name',
 	'settings.self.clear': 'None of them is me',
 	'settings.self.saved': 'Saved.',
+	'settings.visibility.heading': 'New entries',
+	'settings.visibility.label': 'What you add starts as',
+	'settings.visibility.hint':
+		'Every form opens on this, and you can still pick the other each time. Anything added without a choice, such as a person created inline or through the import API, takes it as it is.',
+	'settings.visibility.saved': 'Saved.',
+	'settings.visibility.unsupported': 'A new entry can only start as shared or private.',
 	'settings.data.heading': 'Data',
 	'settings.data.importPeople': 'Import people',
 	'settings.data.importPeopleBlurb':

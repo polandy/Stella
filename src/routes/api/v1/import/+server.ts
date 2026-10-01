@@ -39,8 +39,8 @@ export const POST: RequestHandler = async ({ locals, request, url }) => {
 
 	const result = await importViaApi(
 		getApiImportDeps(),
-		// TODO: use the member's default visibility once it is a setting (docs/02 §2.16).
-		{ userId: user.id, householdId: user.householdId, defaultVisibility: 'shared' },
+		// A document that does not say takes what the token's member starts records as (§2.17).
+		{ userId: user.id, householdId: user.householdId, defaultVisibility: user.defaultVisibility },
 		reading.document,
 		{ dryRun, wording: apiImportWording(locals) }
 	);

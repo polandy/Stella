@@ -28,7 +28,7 @@ const QuickAddSchema = v.object({
 	gender: v.optional(v.picklist(GENDERS)),
 	/** An existing person to link right after creating (docs/02 §2.2.1). */
 	relateTo: optional,
-	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
+	visibility: v.picklist(['shared', 'private'])
 });
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -51,7 +51,7 @@ export const actions: Actions = {
 			birthDate: form.get('birthDate') || undefined,
 			gender: form.get('gender') || undefined,
 			relateTo: form.get('relateTo') || undefined,
-			visibility: form.get('visibility') || undefined
+			visibility: form.get('visibility') || locals.user.defaultVisibility
 		});
 		// The reader's language: everything this action can say back is a message key rendered
 		// here, where the request's locale is known (docs/02 §2.19).
@@ -69,7 +69,7 @@ export const actions: Actions = {
 			issuedAt: systemClock.now()
 		});
 		if (command?.type !== 'contact.add') return fail(400, { error: t('errors.contact.needAName') });
-		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: locals.user.defaultVisibility };
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(400, {

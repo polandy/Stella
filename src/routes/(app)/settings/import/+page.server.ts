@@ -41,7 +41,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	return {};
 };
 
-const VisibilitySchema = v.optional(v.picklist(['shared', 'private']), 'shared');
+const VisibilitySchema = v.picklist(['shared', 'private']);
 const StepSchema = v.object({
 	token: v.pipe(v.string(), v.minLength(1)),
 	visibility: VisibilitySchema
@@ -72,7 +72,7 @@ export const actions: Actions = {
 		const user = requireAdmin(locals);
 		const form = await request.formData();
 		const file = form.get('dump');
-		const visibility = v.parse(VisibilitySchema, form.get('visibility') || undefined);
+		const visibility = v.parse(VisibilitySchema, form.get('visibility') || user.defaultVisibility);
 		if (!(file instanceof File) || file.size === 0) {
 			return fail(400, {
 				step: 'upload' as const,
@@ -106,7 +106,7 @@ export const actions: Actions = {
 	confirm: async ({ request, locals }) => {
 		const user = requireAdmin(locals);
 		const form = await request.formData();
-		const parsed = v.safeParse(StepSchema, { token: form.get('token'), visibility: form.get('visibility') || undefined });
+		const parsed = v.safeParse(StepSchema, { token: form.get('token'), visibility: form.get('visibility') || user.defaultVisibility });
 		if (!parsed.success)
 			return fail(400, {
 				step: 'upload' as const,

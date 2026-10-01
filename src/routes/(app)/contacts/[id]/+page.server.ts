@@ -320,7 +320,7 @@ const EditRelationshipSchema = v.object({
 });
 
 /** Visibility of a newly uploaded gallery photo (docs/02 §2.14). */
-const VisibilitySchema = v.optional(v.picklist(['shared', 'private']), 'shared');
+const VisibilitySchema = v.picklist(['shared', 'private']);
 
 const PhotoVisibilitySchema = v.object({
 	photoId: v.pipe(v.string(), v.minLength(1)),
@@ -344,7 +344,7 @@ const AddProposedSchema = v.object({
 
 const AddNoteSchema = v.object({
 	body: v.pipe(v.string(), v.trim(), v.minLength(1)),
-	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
+	visibility: v.picklist(['shared', 'private']),
 	isPinned: v.optional(v.boolean(), false)
 });
 
@@ -367,7 +367,7 @@ const LogInteractionSchema = v.object({
 	happenedAt: v.pipe(v.string(), v.minLength(1)),
 	title: v.optional(v.pipe(v.string(), v.trim())),
 	description: v.optional(v.pipe(v.string(), v.trim())),
-	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
+	visibility: v.picklist(['shared', 'private']),
 	participantIds: v.array(v.pipe(v.string(), v.minLength(1)))
 });
 
@@ -525,7 +525,7 @@ export const actions: Actions = {
 		if (command?.type !== 'relationship.add') {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
-		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: locals.user.defaultVisibility };
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(outcome?.status === 'refused' ? 409 : 400, {
@@ -656,7 +656,7 @@ export const actions: Actions = {
 		const form = await request.formData();
 		const parsed = v.safeParse(AddNoteSchema, {
 			body: form.get('body'),
-			visibility: form.get('visibility') || undefined,
+			visibility: form.get('visibility') || locals.user.defaultVisibility,
 			isPinned: form.get('isPinned') === 'on'
 		});
 		if (!parsed.success) {
@@ -674,7 +674,7 @@ export const actions: Actions = {
 		if (command?.type !== 'note.add') {
 			return fail(400, { noteError: say(locals, 'errors.command.malformed') });
 		}
-		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: locals.user.defaultVisibility };
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(400, {
@@ -712,7 +712,7 @@ export const actions: Actions = {
 			issuedAt: systemClock.now()
 		});
 		const outcome = command
-			? await dispatchCommand(getCommandDeps(), { userId: viewer.id, householdId: viewer.householdId }, command).catch(() => null)
+			? await dispatchCommand(getCommandDeps(), { userId: viewer.id, householdId: viewer.householdId, defaultVisibility: locals.user.defaultVisibility }, command).catch(() => null)
 			: null;
 		if (outcome?.status !== 'applied') {
 			return fail(400, {
@@ -754,7 +754,7 @@ export const actions: Actions = {
 			issuedAt: systemClock.now()
 		});
 		const outcome = command
-			? await dispatchCommand(getCommandDeps(), { userId: viewer.id, householdId: viewer.householdId }, command).catch(() => null)
+			? await dispatchCommand(getCommandDeps(), { userId: viewer.id, householdId: viewer.householdId, defaultVisibility: locals.user.defaultVisibility }, command).catch(() => null)
 			: null;
 		if (outcome?.status !== 'applied') {
 			return fail(400, {
@@ -777,7 +777,7 @@ export const actions: Actions = {
 			happenedAt: form.get('happenedAt'),
 			title: form.get('title') || undefined,
 			description: form.get('description') || undefined,
-			visibility: form.get('visibility') || undefined,
+			visibility: form.get('visibility') || locals.user.defaultVisibility,
 			participantIds: form.getAll('participants').filter((p) => typeof p === 'string')
 		});
 		if (!parsed.success) {
@@ -800,7 +800,7 @@ export const actions: Actions = {
 		if (command?.type !== 'interaction.log') {
 			return fail(400, { interactionError: say(locals, 'errors.interaction.needKindAndDay') });
 		}
-		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: locals.user.defaultVisibility };
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(400, {
@@ -827,7 +827,7 @@ export const actions: Actions = {
 		const contact = await getContact(getContactDeps(), viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		const author = { userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: 'shared' as const };
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: locals.user.defaultVisibility };
 		const removed = await deleteInteraction(getInteractionDeps(), author, interactionId);
 		if (!removed) return fail(403, { interactionError: say(locals, 'errors.interaction.onlyLogger') });
 		throw redirect(303, `/contacts/${params.id}`);
@@ -851,7 +851,7 @@ export const actions: Actions = {
 		const author = {
 			userId: locals.user.id,
 			householdId: locals.user.householdId,
-			defaultVisibility: 'shared' as const
+			defaultVisibility: locals.user.defaultVisibility
 		};
 		const removed = await deleteJournalEntry(getJournalDeps(), author, id);
 		if (!removed) return fail(403, { interactionError: say(locals, 'errors.journal.onlyAuthor') });
@@ -906,7 +906,7 @@ export const actions: Actions = {
 			issuedAt: systemClock.now()
 		});
 		if (command?.type !== 'tag.assign') return fail(400, { tagError: say(locals, 'errors.tag.needName') });
-		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: locals.user.defaultVisibility };
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(400, {
@@ -948,10 +948,10 @@ export const actions: Actions = {
 		if (images.length === 0 || images.length !== thumbs.length) {
 			return fail(400, { photoError: say(locals, 'errors.image.chooseSome') });
 		}
-		const visibility = v.parse(VisibilitySchema, form.get('visibility') || undefined);
+		const visibility = v.parse(VisibilitySchema, form.get('visibility') || locals.user.defaultVisibility);
 
 		// An upload is a command, and each photo one of its own following it (docs/04 §4.11.2).
-		const author = { userId: viewer.id, householdId: viewer.householdId };
+		const author = { userId: viewer.id, householdId: viewer.householdId, defaultVisibility: locals.user.defaultVisibility };
 		const refusal = (outcome: Awaited<ReturnType<typeof dispatchCommand>> | null) =>
 			fail(400, {
 				photoError:
@@ -1126,7 +1126,7 @@ export const actions: Actions = {
 			issuedAt: systemClock.now()
 		});
 		if (command?.type !== 'circle.join') return fail(400, { circleError: say(locals, 'errors.circle.needName') });
-		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: locals.user.defaultVisibility };
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(400, {

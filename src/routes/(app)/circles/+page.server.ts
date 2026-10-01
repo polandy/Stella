@@ -52,7 +52,7 @@ export const actions: Actions = {
 
 		const id = await createCircle(
 			getCircleDeps(),
-			{ userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: 'shared' },
+			{ userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: locals.user.defaultVisibility },
 			parsed.output
 		);
 		throw redirect(303, `/circles/${id}`);

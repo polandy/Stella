@@ -30,10 +30,10 @@ export async function requireVisibleContact(
  * `apply`, guarded: it runs only when the payload's person is visible to the author. For the
  * additions whose use-case predates commands and takes the check on trust from its caller.
  */
-export function onVisibleContact<P extends { contactId: string }, R>(
+export function onVisibleContact<A extends { userId: string; householdId: string }, P extends { contactId: string }, R>(
 	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>,
-	apply: (author: { userId: string; householdId: string }, payload: P) => Promise<R>
-): (author: { userId: string; householdId: string }, payload: P) => Promise<R> {
+	apply: (author: A, payload: P) => Promise<R>
+): (author: A, payload: P) => Promise<R> {
 	return async (author, payload) => {
 		await requireVisibleContact(contacts, author, payload.contactId);
 		return apply(author, payload);

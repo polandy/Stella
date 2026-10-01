@@ -31,6 +31,7 @@
 	} from '$lib/mentions/picks';
 	import { unclearHandles } from '$lib/mentions/unclear';
 	import { usePeopleContext } from '$lib/people/context.svelte';
+	import { useDefaultVisibility } from '$lib/people/default-visibility.svelte';
 	import { tellApart } from '$lib/people/namesakes';
 	import {
 		capitalisedIfTypedLowercase,
@@ -118,7 +119,8 @@
 	let body = $state(start.text);
 	// Whom each picked handle in the text stands for.
 	let picks: MentionPick[] = start.picks;
-	let visibility = $state<'shared' | 'private'>(kept?.visibility ?? 'shared');
+	const defaultVisibility = useDefaultVisibility();
+	let visibility = $state<'shared' | 'private'>(kept?.visibility ?? defaultVisibility());
 	// The command this draft will be saved as; a new one after every save.
 	let commandId = $state(ulid());
 	// Bumped after a save to start the day and photo fields afresh. `form.reset()` cannot:

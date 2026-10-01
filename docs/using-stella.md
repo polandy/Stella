@@ -63,7 +63,9 @@ A few things worth knowing:
 ### Shared or private
 
 The chip next to the field says **Shared** by default: the household sees it. Tap it and
-it says **Private**: only you do. Private is genuine — a private moment, and any person
+it says **Private**: only you do. If you would rather start every new entry as private, say
+so once under **Settings → New entries**: from then on the chip, and every other form that
+adds something, opens on *Private*, and you tap to share instead. Private is genuine — a private moment, and any person
 you create inside one, is invisible to the rest of the household, including in search,
 in the stream and on other people's pages.
 

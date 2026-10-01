@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { useDefaultVisibility } from '$lib/people/default-visibility.svelte';
 	import { hasMessage } from '$lib/i18n/translate';
 	import { processImage } from '$lib/image/process-image';
 	import type { ActionData } from './$types';
@@ -14,6 +15,8 @@
 	let { form }: { form: ActionData } = $props();
 
 	const t = useTranslate();
+	// The member's choice for new entries (docs/02 §2.17); a click picks the other.
+	const defaultVisibility = useDefaultVisibility();
 
 	const step = $derived(form?.step ?? 'upload');
 
@@ -145,11 +148,11 @@
 			<fieldset class="flex flex-wrap items-center gap-4 text-sm">
 				<legend class="mb-1 text-fg-muted">{t('import.visibilityLegend')}</legend>
 				<label class="flex items-center gap-1.5">
-					<input type="radio" name="visibility" value="shared" checked />
+					<input type="radio" name="visibility" value="shared" checked={defaultVisibility() === 'shared'} />
 					{t('import.visibility.shared')}
 				</label>
 				<label class="flex items-center gap-1.5">
-					<input type="radio" name="visibility" value="private" />
+					<input type="radio" name="visibility" value="private" checked={defaultVisibility() === 'private'} />
 					{t('import.visibility.private')}
 				</label>
 			</fieldset>

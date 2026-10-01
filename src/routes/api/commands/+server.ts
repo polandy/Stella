@@ -32,6 +32,6 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		return json({ error: { code: 'invalidBatch' } }, { status: 400 });
 	}
 
-	const actor = { userId: user.id, householdId: user.householdId };
+	const actor = { userId: user.id, householdId: user.householdId, defaultVisibility: user.defaultVisibility };
 	return json({ answers: await receiveQueued(getCommandDeps(), actor, translator(locals), commands) });
 };

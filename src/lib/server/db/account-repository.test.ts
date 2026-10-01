@@ -30,7 +30,8 @@ const admin: AuthUser = {
 	name: 'Andy',
 	role: 'admin',
 	locale: 'en',
-	selfContactId: null
+	selfContactId: null,
+	defaultVisibility: 'shared'
 };
 
 async function seedAdmin(
@@ -70,6 +71,13 @@ describe('createDrizzleAccountRepository', () => {
 		await seedAdmin();
 		await repo.updateLocale('user-1', 'de');
 		expect(await repo.findById('user-1')).toEqual({ ...admin, locale: 'de' });
+	});
+
+	it('stores the visibility new records start with, and reads it back on both paths', async () => {
+		await seedAdmin();
+		await repo.updateDefaultVisibility('user-1', 'private');
+		expect(await repo.findById('user-1')).toEqual({ ...admin, defaultVisibility: 'private' });
+		expect((await repo.findCredentialsByEmail(admin.email))?.user.defaultVisibility).toBe('private');
 	});
 
 	it('stores which contact the member is, and reads it back on both paths', async () => {

@@ -8,6 +8,7 @@
 	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { usePeopleContext } from '$lib/people/context.svelte';
+	import { useDefaultVisibility } from '$lib/people/default-visibility.svelte';
 	import { tellApart } from '$lib/people/namesakes';
 	import {
 		isKnownByMoreThanAFirstName,
@@ -95,13 +96,14 @@
 	let saving = $state(false);
 	let createError = $state<string | null>(null);
 	let firstNameInput: HTMLInputElement | undefined = $state();
+	const defaultVisibility = useDefaultVisibility();
 	let draft = $state({
 		firstName: '',
 		lastName: '',
 		nickname: '',
 		description: '',
 		birthDate: '',
-		visibility: 'shared' as Visibility
+		visibility: defaultVisibility() as Visibility
 	});
 
 	const knownPeople = $derived([...people, ...addedHere]);
@@ -161,7 +163,7 @@
 
 	async function startCreate() {
 		const { firstName, lastName } = splitTypedName(query);
-		draft = { firstName, lastName, nickname: '', description: suggestedDescription, birthDate: '', visibility: 'shared' };
+		draft = { firstName, lastName, nickname: '', description: suggestedDescription, birthDate: '', visibility: defaultVisibility() };
 		offered = suggestedDescription;
 		createError = null;
 		creating = true;

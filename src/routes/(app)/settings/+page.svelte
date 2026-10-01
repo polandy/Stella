@@ -12,6 +12,7 @@
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	const i18n = useI18n();
 	const t = i18n.t;
+	const VISIBILITIES = ['shared', 'private'] as const;
 
 	/* When the release check last got an answer — shown only when today's attempt failed. */
 	const checkedAt = (at: number) =>
@@ -70,6 +71,48 @@
 				<p class="text-sm text-danger">{form.selfError}</p>
 			{:else if form?.selfSaved}
 				<p class="text-sm text-fg-muted">{form.selfSaved}</p>
+			{/if}
+		</div>
+	</section>
+
+	<section class="flex flex-col gap-3">
+		<h2 class="text-sm font-medium text-fg-muted">{t('settings.visibility.heading')}</h2>
+		<div class="flex flex-col gap-3 rounded-app bg-card p-4 shadow-card">
+			<div>
+				<p id="default-visibility-label" class="font-medium text-fg">{t('settings.visibility.label')}</p>
+				<p class="text-sm text-fg-muted">{t('settings.visibility.hint')}</p>
+			</div>
+			<!-- A segmented control of submit buttons, like the language picker: no script needed. -->
+			<form
+				method="POST"
+				action="?/setDefaultVisibility"
+				aria-labelledby="default-visibility-label"
+				class="flex gap-1 rounded-control border border-border p-1"
+			>
+				{#each VISIBILITIES as visibility (visibility)}
+					{@const current = visibility === data.user.defaultVisibility}
+					<button
+						name="visibility"
+						value={visibility}
+						aria-pressed={current}
+						class="flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
+						class:bg-primary={current}
+						class:text-primary-fg={current}
+						class:text-fg-muted={!current}
+						class:hover:text-fg={!current}
+					>
+						<Icon name={visibility} size={14} />
+						{visibility === 'shared' ? t('common.shared') : t('common.private')}
+					</button>
+				{/each}
+			</form>
+			<p class="text-sm text-fg-subtle">
+				{data.user.defaultVisibility === 'shared' ? t('common.sharedHint') : t('common.privateHint')}
+			</p>
+			{#if form?.visibilityError}
+				<p class="text-sm text-danger">{form.visibilityError}</p>
+			{:else if form?.visibilitySaved}
+				<p class="text-sm text-fg-muted" role="status">{form.visibilitySaved}</p>
 			{/if}
 		</div>
 	</section>

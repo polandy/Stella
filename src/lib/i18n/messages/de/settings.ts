@@ -18,6 +18,12 @@ export const settings: SettingsMessages = {
 	'settings.self.placeholder': 'Dich selbst über den Namen suchen',
 	'settings.self.clear': 'Keine davon bin ich',
 	'settings.self.saved': 'Gespeichert.',
+	'settings.visibility.heading': 'Neue Einträge',
+	'settings.visibility.label': 'Was du hinzufügst, ist zunächst',
+	'settings.visibility.hint':
+		'Jedes Formular öffnet damit, und du kannst jedes Mal das andere wählen. Was ohne Wahl hinzukommt, etwa eine unterwegs angelegte Person oder ein Import über die API, übernimmt es so.',
+	'settings.visibility.saved': 'Gespeichert.',
+	'settings.visibility.unsupported': 'Ein neuer Eintrag kann nur geteilt oder privat beginnen.',
 	'settings.data.heading': 'Daten',
 	'settings.data.importPeople': 'Menschen importieren',
 	'settings.data.importPeopleBlurb':

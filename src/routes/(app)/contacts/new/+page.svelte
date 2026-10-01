@@ -9,6 +9,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { useDefaultVisibility } from '$lib/people/default-visibility.svelte';
 	import type { MessageKey } from '$lib/i18n/translate';
 	import { wantsSomethingToKnowThemBy } from '$lib/people/new-person';
 	import { GENDERS, type Gender } from '$lib/people/gender';
@@ -17,6 +18,8 @@
 	let { form }: { form: ActionData } = $props();
 
 	const t = useTranslate();
+	// The member's choice for new entries (docs/02 §2.17); a click picks the other.
+	const defaultVisibility = useDefaultVisibility();
 
 	/*
 	 * Duplicate & relative suggestions (docs/02 §2.2.1): once a surname is typed, the people
@@ -255,11 +258,11 @@
 		<fieldset class="flex items-center gap-4 text-sm">
 			<span class="text-fg-muted">{t('contacts.new.visibility')}</span>
 			<label class="flex items-center gap-1.5">
-				<input type="radio" name="visibility" value="shared" checked />
+				<input type="radio" name="visibility" value="shared" checked={defaultVisibility() === 'shared'} />
 				{t('common.shared')}
 			</label>
 			<label class="flex items-center gap-1.5">
-				<input type="radio" name="visibility" value="private" />
+				<input type="radio" name="visibility" value="private" checked={defaultVisibility() === 'private'} />
 				{t('common.private')}
 			</label>
 		</fieldset>

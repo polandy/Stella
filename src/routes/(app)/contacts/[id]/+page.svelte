@@ -255,7 +255,7 @@
 	// page's story, so the reloaded data hands it the new item as a fresh first page.
 	let openSection = $state({ contact: false, dates: false, circles: false, tags: false, note: false });
 	// The note's audience narrows whom the @-picker offers (docs/02 §2.20.1).
-	let noteVisibility = $state<'shared' | 'private'>('shared');
+	let noteVisibility = $state<'shared' | 'private'>(untrack(() => data.user.defaultVisibility));
 	let noteBody = $state('');
 	let notePinned = $state(false);
 	// A typed @Thomas that could be several people keeps saving off until one is picked.
@@ -689,7 +689,7 @@
 	let logDay = $state(today);
 	let logTitle = $state('');
 	let logDescription = $state('');
-	let logVisibility = $state<'shared' | 'private'>('shared');
+	let logVisibility = $state<'shared' | 'private'>(untrack(() => data.user.defaultVisibility));
 	// Bumped to start the day field afresh with `logDay`; it keeps its own parts otherwise.
 	let logFresh = $state(0);
 	let editingLog = $state<KeptOf<'interaction.log'> | null>(null);
@@ -698,7 +698,7 @@
 		logDay = today;
 		logTitle = '';
 		logDescription = '';
-		logVisibility = 'shared';
+		logVisibility = data.user.defaultVisibility;
 		participantIds = [];
 		logFresh++;
 	}
@@ -1901,10 +1901,10 @@
 							</label>
 							<fieldset class="flex items-center gap-3 text-sm">
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="shared" checked /> {t('common.shared')}
+									<input type="radio" name="visibility" value="shared" checked={data.user.defaultVisibility === 'shared'} /> {t('common.shared')}
 								</label>
 								<label class="flex items-center gap-1.5">
-									<input type="radio" name="visibility" value="private" /> {t('common.private')}
+									<input type="radio" name="visibility" value="private" checked={data.user.defaultVisibility === 'private'} /> {t('common.private')}
 								</label>
 							</fieldset>
 							<Button variant="primary" size="sm" disabled={uploading}>

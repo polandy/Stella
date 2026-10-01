@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { deserialize, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
@@ -27,7 +28,7 @@
 	const c = $derived(data.contact);
 
 	// The entry's audience narrows whom the @-picker offers (docs/02 §2.20.1).
-	let entryVisibility = $state<'shared' | 'private'>('shared');
+	let entryVisibility = $state<'shared' | 'private'>(untrack(() => data.user.defaultVisibility));
 	// A typed @Thomas that could be several people keeps saving off until one is picked.
 	let entryUnclear = $state(false);
 
@@ -56,7 +57,7 @@
 	function doneComposing() {
 		composeForm?.reset();
 		picked = [];
-		entryVisibility = 'shared';
+		entryVisibility = data.user.defaultVisibility;
 		composing = false;
 	}
 	const journalForm = $derived(

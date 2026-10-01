@@ -1,4 +1,5 @@
 import { isLocale, type Locale } from '../../i18n/locales';
+import type { Visibility } from '../access/visibility';
 import type { IdGenerator } from '../id';
 
 /*
@@ -20,6 +21,8 @@ export interface AuthUser {
 	locale: Locale | null;
 	/** The contact this user *is*, or null while they have not said (docs/02 §2.1.3). */
 	selfContactId: string | null;
+	/** What a record this user adds starts as, unless they pick otherwise (docs/02 §2.17). */
+	defaultVisibility: Visibility;
 }
 
 export interface StoredCredentials {
@@ -43,6 +46,8 @@ export interface AccountRepository {
 	updateLocale(userId: string, locale: Locale): Promise<void>;
 	/** Persist which contact the user is, or clear it with `null` (docs/02 §2.1.3). */
 	updateSelfContact(userId: string, contactId: string | null): Promise<void>;
+	/** Persist what the user's new records start as (docs/02 §2.17). */
+	updateDefaultVisibility(userId: string, visibility: Visibility): Promise<void>;
 }
 
 export interface AccountDeps {
@@ -84,6 +89,31 @@ export async function changeLocale(
 	return locale;
 }
 
+/** Thrown when something other than `shared` or `private` is offered as a default. */
+export class UnsupportedVisibilityError extends Error {
+	constructor(readonly requested: string) {
+		super(`Unsupported visibility: ${requested}`);
+		this.name = 'UnsupportedVisibilityError';
+	}
+}
+
+const isVisibility = (value: string): value is Visibility => value === 'shared' || value === 'private';
+
+/**
+ * Change what a user's new records start as (docs/02 §2.17): every form opens on it and a
+ * record added without a choice — quick-add, the import API — takes it. Refused rather than
+ * stored when it is neither visibility, since the access layer knows no third one.
+ */
+export async function changeDefaultVisibility(
+	deps: Pick<AccountDeps, 'accounts'>,
+	userId: string,
+	visibility: string
+): Promise<Visibility> {
+	if (!isVisibility(visibility)) throw new UnsupportedVisibilityError(visibility);
+	await deps.accounts.updateDefaultVisibility(userId, visibility);
+	return visibility;
+}
+
 /**
  * Create the household and its first, admin user. Only allowed while no users exist (the
  * one-time first-run setup). The admin is `roleLocked` so IdP group-sync can never demote
@@ -105,7 +135,8 @@ export async function registerFirstAdmin(
 		name: input.name,
 		role: 'admin',
 		locale: input.locale,
-		selfContactId: null
+		selfContactId: null,
+		defaultVisibility: 'shared'
 	};
 	const passwordHash = await deps.hashPassword(input.password);
 

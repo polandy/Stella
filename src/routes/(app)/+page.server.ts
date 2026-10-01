@@ -115,7 +115,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 const CaptureSchema = v.object({
 	body: v.pipe(v.string(), v.trim(), v.minLength(1, key('errors.moment.needText'))),
 	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, key('errors.moment.badDay'))),
-	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
+	visibility: v.picklist(['shared', 'private']),
 	newPeople: v.array(v.pipe(v.string(), v.trim(), v.minLength(1)))
 });
 
@@ -125,14 +125,14 @@ export const actions: Actions = {
 		const author = {
 			userId: locals.user.id,
 			householdId: locals.user.householdId,
-			defaultVisibility: 'shared' as const
+			defaultVisibility: locals.user.defaultVisibility
 		};
 
 		const form = await request.formData();
 		const parsed = v.safeParse(CaptureSchema, {
 			body: form.get('body'),
 			entryDate: form.get('entryDate'),
-			visibility: form.get('visibility') || undefined,
+			visibility: form.get('visibility') || locals.user.defaultVisibility,
 			newPeople: form.getAll('newPeople').filter((n): n is string => typeof n === 'string')
 		});
 		if (!parsed.success) {
