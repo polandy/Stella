@@ -1,11 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
-	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import MenuButton from '$lib/components/MenuButton.svelte';
-	import { filterSummary } from '$lib/menu/menu';
-	import { categoryVar } from '$lib/design/tokens';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { kinshipLabel } from '$lib/kinship/labels';
 	import { relationshipRowLabel } from '$lib/relationships/labels';
@@ -13,7 +8,6 @@
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
 	import { paletteFromDom } from '$lib/graph/cytoscape/theme';
-	import { graphKeyAction } from '$lib/graph/keyboard';
 	import { findConnectionPath } from '$lib/graph/model/connection-path';
 	import {
 		buildEgoNetwork,
@@ -40,16 +34,31 @@
 		type EdgeBundle,
 		type RoleGroup
 	} from '$lib/graph/model/role-groups';
+	import { shownOnCanvas } from '$lib/graph/model/shown-on-canvas';
+	import { graphFiltersFor, openingFilterKeys } from '$lib/graph/model/view-filters';
+	import type { ArrangementKey } from '$lib/graph/layout/arrangements';
 	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
 	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
-	import { DEFAULT_DENSITY, DENSITIES, spacingFor, type Density } from '$lib/graph/layout/density';
-	import { EDGE_LABEL_LIMIT, edgeLabelsFit, linesDrawn } from '$lib/graph/layout/legibility';
+	import { DEFAULT_DENSITY, spacingFor, type Density } from '$lib/graph/layout/density';
+	import { edgeLabelsFit, linesDrawn } from '$lib/graph/layout/legibility';
 	import { hiddenNeighbourCounts } from '$lib/graph/model/hidden-neighbours';
 	import { densityPreference, type DensityPreference } from '$lib/graph/density-preference';
+	import {
+		DEFAULT_VIEW_SWITCHES,
+		viewSwitchPreference,
+		type ViewSwitchPreference,
+		type ViewSwitches
+	} from '$lib/graph/view-switches';
 	import type { ConnectionPath, GraphEdge, GraphFilters, GraphModel } from '$lib/graph/model/types';
-	import { dismissesFullscreenOnDrag } from '$lib/ui/fullscreen';
-	import { scrollingAncestor } from '$lib/ui/keep-place';
+	import { frameFullscreen } from './frame-fullscreen.svelte';
+	import GraphArrangeMenu from './GraphArrangeMenu.svelte';
+	import GraphCanvas from './GraphCanvas.svelte';
+	import GraphFilterMenu from './GraphFilterMenu.svelte';
+	import GraphFindField from './GraphFindField.svelte';
+	import GraphGroupPeek from './GraphGroupPeek.svelte';
+	import GraphNodePeek from './GraphNodePeek.svelte';
+	import GraphPathPrompt from './GraphPathPrompt.svelte';
 
 	interface Props {
 		/**
@@ -90,8 +99,6 @@
 	}: Props = $props();
 
 	const t = useTranslate();
-	const uid = $props.id();
-	const hintId = `${uid}-keyboard-hint`;
 
 	// A built-in relationship type reads in the viewer's language; a household's own type
 	// reads as somebody typed it (docs/02 §2.19).
@@ -109,36 +116,13 @@
 	// Path finding travels stored links only: a derived edge names a chain rather than being
 	// one, so hopping it would answer "how do we know each other?" with the label (docs/02 §2.7).
 	const pathSource = $derived(inMemoryGraphSource(withoutDerivedLinks(graph)));
-	const contacts = $derived(
-		graph.nodes
-			.filter((n) => n.kind === 'person')
-			.map((n) => ({ id: n.id, displayName: n.label }))
-			.sort((a, b) => a.displayName.localeCompare(b.displayName))
-	);
-
-	// The filterable connection kinds, each tied to its category colour (docs/05 §5.6).
-	// Each filter carries the same token the canvas draws that edge kind with (docs/05 §5.6),
-	// so a chip and the line it toggles can never drift apart.
-	// Each chip also draws its line style, so the chips are the legend (docs/05 §5.8).
-	const FILTERS = [
-		{ key: 'family', label: 'relationships.category.family', token: categoryVar('family'), line: 'solid' },
-		{ key: 'romantic', label: 'relationships.category.romantic', token: categoryVar('romantic'), line: 'solid' },
-		{ key: 'social', label: 'relationships.category.social', token: categoryVar('social'), line: 'solid' },
-		{ key: 'professional', label: 'relationships.category.professional', token: categoryVar('professional'), line: 'solid' },
-		{ key: 'circles', label: 'graph.filter.circles', token: 'var(--edge-membership)', line: 'dashed' },
-		{ key: 'kinship', label: 'graph.filter.kinship', token: 'var(--edge-kinship)', line: 'dotted' }
-	] as const;
-
-	/** One row of a toolbar menu; the check or switch on its right says its state. */
-	const MENU_ITEM =
-		'flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-[13px] text-fg hover:bg-bg-sunken focus:bg-bg-sunken focus:outline-none';
 
 	const reducedMotion =
 		typeof window !== 'undefined' &&
 		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	let frame: HTMLDivElement;
-	let container: HTMLDivElement;
+	let container = $state<HTMLDivElement>();
 	let controller: ExplorerController | null = null;
 	let ready = $state(false);
 
@@ -151,68 +135,24 @@
 	 * header already names the person, so nothing is selected until a node is tapped.
 	 */
 	let selected = $state<string | null>(untrack(() => (compact ? null : centerId)));
-	/*
-	 * Circles are people's shared contexts, not people: on the route they belong in the picture,
-	 * on a person's card they double the node count for something the profile already lists.
-	 * The chip is there either way, so switching them on is one click (docs/05 §5.5).
-	 */
-	const openingFilters: ReadonlySet<string> = new Set(
-		FILTERS.map((f) => f.key).filter((key) => !(untrack(() => compact) && key === 'circles'))
-	);
+	const openingFilters = openingFilterKeys(untrack(() => compact));
 	let active = $state<Set<string>>(new Set(openingFilters));
-	const filters = $derived(
-		filterSummary(
-			active,
-			FILTERS.map((f) => f.key),
-			openingFilters
-		)
-	);
-	let query = $state('');
 	let pathMode = $state(false);
 	let pathFrom = $state<string | null>(null);
 	let path = $state<ConnectionPath | null>(null);
 	let pathMissing = $state(false);
-	// On by default: with the lines that only repeat a chain left off, the names left are what
-	// the map is read by. Whoever wants it quieter turns them off, and this browser keeps that
-	// (docs/05 §5.8).
-	const EDGE_LABELS_KEY = 'stella.graph.edgeLabels';
-	let edgeLabels = $state(true);
-
 	/*
-	 * The circles grouped by role (docs/02 §2.7): off by default, and like the line names a
-	 * way of looking rather than a filter. Both switches are a habit, so this browser keeps them.
+	 * How the reader looks at the map: the line names, the circles grouped by role (docs/02
+	 * §2.7) and every derived line. Ways of looking rather than filters, and a habit, so this
+	 * browser keeps them (`view-switches.ts`).
 	 */
-	const GROUP_BY_ROLE_KEY = 'stella.graph.groupByRole';
-	const INNER_LINKS_KEY = 'stella.graph.innerLinks';
-	const ALL_KINSHIP_KEY = 'stella.graph.allKinship';
-	let groupRoles = $state(false);
-	let innerLinks = $state(true);
-	/** Every derived line, including those whose chain is already drawn — for reading the whole family. */
-	let allKinship = $state(false);
+	let switches = $state<ViewSwitches>({ ...DEFAULT_VIEW_SWITCHES });
+	let switchStore: ViewSwitchPreference | null = null;
 	/** Groups the reader asked to see individually; the rest stay grouped. */
 	let dissolved = $state(new Set<string>());
-	function remember(key: string, on: boolean) {
-		try {
-			localStorage.setItem(key, on ? 'on' : 'off');
-		} catch {
-			// Not remembered, still applied for this visit.
-		}
-	}
-	function toggleGroupRoles() {
-		groupRoles = !groupRoles;
-		remember(GROUP_BY_ROLE_KEY, groupRoles);
-	}
-	function toggleEdgeLabels() {
-		edgeLabels = !edgeLabels;
-		remember(EDGE_LABELS_KEY, edgeLabels);
-	}
-	function toggleAllKinship() {
-		allKinship = !allKinship;
-		remember(ALL_KINSHIP_KEY, allKinship);
-	}
-	function toggleInnerLinks() {
-		innerLinks = !innerLinks;
-		remember(INNER_LINKS_KEY, innerLinks);
+	function toggleSwitch(name: keyof ViewSwitches) {
+		switches[name] = !switches[name];
+		switchStore?.save(name, switches[name]);
 	}
 
 	/*
@@ -231,39 +171,19 @@
 	}
 
 	function buildFilters(): GraphFilters {
-		const categories = (['family', 'romantic', 'social', 'professional'] as const).filter((c) =>
-			active.has(c)
-		);
-		const edgeKinds: GraphFilters['edgeKinds'] = [];
-		if (categories.length) edgeKinds.push('relationship');
-		if (active.has('circles')) edgeKinds.push('membership');
-		if (active.has('kinship')) edgeKinds.push('kinship');
-		return { edgeKinds, categories, keepNodeId: centerId ?? undefined };
+		return graphFiltersFor(active, centerId);
 	}
 
-	/*
-	 * The three ways to arrange the map (docs/05 §5.8). Each is a one-off action, not a mode: an
-	 * expand afterwards still only adds people around the one expanded. The family tree reads
-	 * what is shown, so a filtered-out line cannot pull someone into a generation; the groups by
-	 * circle read every membership, so the grouping holds while the Circles chip is off.
-	 */
-	const ARRANGEMENTS = [
-		{ key: 'force', label: 'graph.arrange.force', hint: 'graph.arrange.force.hint' },
-		{ key: 'tree', label: 'graph.arrange.tree', hint: 'graph.arrange.tree.hint' },
-		{ key: 'circles', label: 'graph.arrange.circles', hint: 'graph.arrange.circles.hint' }
-	] as const;
-
-	/** The arrangement last chosen, which the Arrange pill names; free until one is picked. */
-	let arrangedBy = $state<(typeof ARRANGEMENTS)[number]['key']>('force');
-	const arrangedLabel = $derived(ARRANGEMENTS.find((a) => a.key === arrangedBy)!.label);
+	/** The arrangement last chosen, which the Arrange pill names; free until one is picked (docs/05 §5.8). */
+	let arrangedBy = $state<ArrangementKey>('force');
 
 	const visible = $derived(applyFilters(model, buildFilters()));
 	// Grouping reads what is shown, so the Circles chip off leaves no membership to group by;
 	// the tree's rows are generations, which a group would only pull apart (docs/02 §2.7).
-	const groupingOn = $derived(groupRoles && arrangedBy !== 'tree');
+	const groupingOn = $derived(switches.groupRoles && arrangedBy !== 'tree');
 	// Who is grouped depends only on the memberships shown; it decides whose links come along.
 	const grouped = $derived(
-		groupingOn ? new Set(groupByRole(visible, { innerLinks, dissolved }).groupOf.keys()) : null
+		groupingOn ? new Set(groupByRole(visible, { innerLinks: switches.innerLinks, dissolved }).groupOf.keys()) : null
 	);
 	/*
 	 * The map as drawn: what was opened up, plus the links of grouped people to anyone else on
@@ -285,9 +205,9 @@
 	 * selection, so a bundle between two groups counts only the lines the map draws, and
 	 * selecting someone neither rebuilds the canvas nor moves anybody.
 	 */
-	const leftOff = $derived(allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible));
+	const leftOff = $derived(switches.allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible));
 	const grouping = $derived(
-		groupingOn ? groupByRole(drawnVisible, { innerLinks, dissolved, leftOff }) : null
+		groupingOn ? groupByRole(drawnVisible, { innerLinks: switches.innerLinks, dissolved, leftOff }) : null
 	);
 	const groupLabel = (g: RoleGroup) =>
 		t('graph.group.label', { role: g.role ?? t('circles.noRole'), count: g.memberIds.length });
@@ -308,7 +228,7 @@
 	 */
 	const labelsFit = $derived(
 		edgeLabelsFit(
-			edgeLabels,
+			switches.edgeLabels,
 			linesDrawn(
 				drawnVisible.edges,
 				grouping ? [leftOff, grouping.tucked] : [leftOff],
@@ -318,19 +238,10 @@
 	);
 	// The same lines, but the selected person's own are drawn: selecting names every line.
 	const implied = $derived(
-		allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible, selected)
+		switches.allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible, selected)
 	);
 	/** What the canvas shows: the filtered map, plus the frames and bundles grouping adds. */
-	const shownIds = () => ({
-		nodes: new Set([
-			...drawnVisible.nodes.map((n) => n.id),
-			...(grouping?.groups.map((g) => g.id) ?? [])
-		]),
-		edges: new Set([
-			...drawnVisible.edges.filter((e) => !implied.has(e.id)).map((e) => e.id),
-			...(grouping?.bundles.map((b) => b.id) ?? [])
-		])
-	});
+	const shownIds = () => shownOnCanvas(drawnVisible, implied, grouping);
 	const peekGroup = $derived(
 		selected ? (grouping?.groups.find((g) => g.id === selected) ?? null) : null
 	);
@@ -348,16 +259,6 @@
 			filters: buildFilters(),
 			expandable: (id) => centerId === null || canExpand(rings, id, maxRings)
 		})
-	);
-	const suggestions = $derived(
-		query.trim()
-			? contacts
-					.filter((c) => c.displayName.toLowerCase().includes(query.trim().toLowerCase()))
-					.slice(0, 6)
-			: []
-	);
-	const pathChain = $derived(
-		path ? path.nodeIds.map((id) => model.nodes.find((n) => n.id === id)?.label ?? id) : []
 	);
 
 	/*
@@ -512,7 +413,6 @@
 	}
 
 	async function reveal(id: string) {
-		query = '';
 		if (!model.nodes.some((n) => n.id === id)) {
 			model = mergeModels(model, await buildEgoNetwork(source, id, 1));
 			expandedIds.add(id);
@@ -522,7 +422,7 @@
 		controller?.focus(id);
 	}
 
-	async function arrangeBy(key: (typeof ARRANGEMENTS)[number]['key']) {
+	async function arrangeBy(key: ArrangementKey) {
 		arrangedBy = key;
 		// Leaving the tree may bring the groups back; they settle the map themselves (see above).
 		settledForGroups = false;
@@ -530,7 +430,7 @@
 		if (!settledForGroups) arrangeNow(key);
 	}
 
-	function arrangeNow(key: (typeof ARRANGEMENTS)[number]['key']) {
+	function arrangeNow(key: ArrangementKey) {
 		const canvas = controller;
 		if (!canvas) return;
 		if (key === 'force') return canvas.arrange();
@@ -576,59 +476,12 @@
 		pathFrom = null;
 	}
 
-	/*
-	 * Walking the map from the keyboard (docs/05 §5.8). The cursor is where the keyboard is,
-	 * apart from the selection: stepping past people must not select each one in turn, which
-	 * would re-highlight the map on every key. Enter on it does what a click does.
-	 */
-	let cursor = $state<string | null>(null);
-	/** The canvas holds keyboard focus; its drawn children cover an outline, so a frame shows it. */
-	let keyboardOnCanvas = $state(false);
-	const cursorLabel = $derived.by(() => {
-		if (cursor === null) return '';
-		const group = grouping?.groups.find((g) => g.id === cursor);
-		const plain = group ? groupLabel(group) : nameOf(cursor);
-		// The "+N" badge is drawn on the canvas; a screen reader hears it with the name.
-		const more = hidden.get(cursor) ?? 0;
-		const name = more > 0 ? t('graph.keyboard.more', { name: plain, count: more }) : plain;
-		return cursor === selected ? t('graph.keyboard.selected', { name }) : name;
-	});
-
-	function placeCursor(id: string | null) {
-		cursor = id;
-		controller?.markCursor(id);
-	}
-
-	const keyFor = (key: string) =>
-		graphKeyAction({
-			key,
-			cursor,
-			positions: controller?.positions() ?? new Map(),
-			start: selected ?? centerId
-		});
-
-	function onCanvasFocus() {
-		// A click focuses the canvas too; only the keyboard's arrival shows where it is.
-		if (!container.matches(':focus-visible')) return;
-		keyboardOnCanvas = true;
-		const home = keyFor('Home');
-		if (home?.kind === 'move') placeCursor(cursor ?? home.to);
-	}
-
-	async function onCanvasKeydown(event: KeyboardEvent) {
-		if (event.altKey || event.ctrlKey || event.metaKey) return;
-		const action = keyFor(event.key);
-		if (!action) return;
-		event.preventDefault();
-		keyboardOnCanvas = true;
-		if (action.kind === 'move') placeCursor(action.to);
-		else if (action.kind === 'activate') await onTapNode(action.id);
-		else if (action.kind === 'clear') {
-			// In path mode Escape takes back a half-picked pair first, then leaves the mode.
-			if (pathMode && pathFrom) pathFrom = null;
-			else if (pathMode) togglePath();
-			else onTapBackground();
-		}
+	// Escape on the canvas: in path mode it takes back a half-picked pair first, then leaves
+	// the mode.
+	function onCanvasClear() {
+		if (pathMode && pathFrom) pathFrom = null;
+		else if (pathMode) togglePath();
+		else onTapBackground();
 	}
 
 	function toggleFilter(key: string) {
@@ -672,69 +525,8 @@
 		controller.setTopInset(inset);
 	});
 
-	/*
-	 * Full screen has two implementations, because "leave full screen" means something
-	 * different by input method:
-	 * - Mouse (desktop): the browser's own Fullscreen API on the whole frame — canvas, toolbar
-	 *   and peek panel together — so nothing the map needs is left behind. The state follows
-	 *   the browser rather than the button, because Esc leaves it without asking us; that's
-	 *   fine, nobody presses Esc mid-drag.
-	 * - Touch on iPadOS/iOS Safari: panning the canvas is itself a drag, and Safari's own
-	 *   presentation layer reads a downward drag on *any* Fullscreen-API element as "swipe to
-	 *   dismiss" — the same gesture that closes a full-screen video — before any page script
-	 *   sees the touch, so there is nothing here that could intercept or undo it (confirmed
-	 *   against the real thing, not just in theory — a pointerup-triggered re-request never
-	 *   ran, because no pointer event fires for it). These devices (`dismissesFullscreenOnDrag`)
-	 *   get an app-level full screen instead: a fixed overlay over the whole viewport that is never
-	 *   handed to the browser, so there is no native gesture that can dismiss it — only the
-	 *   button. Android and other touch devices don't have this quirk, so they keep the native
-	 *   Fullscreen API like a mouse does.
-	 * Where neither is available (no Fullscreen API and not one of these devices) the button is
-	 * simply absent.
-	 */
-	const usesCssFullscreen = typeof window !== 'undefined' && dismissesFullscreenOnDrag(navigator);
-	let canFullscreen = $state(false);
-	let fullscreen = $state(false);
-	const syncFullscreen = () => (fullscreen = document.fullscreenElement === frame);
-
-	async function toggleFullscreen() {
-		if (usesCssFullscreen) {
-			fullscreen = !fullscreen;
-			return;
-		}
-		try {
-			if (document.fullscreenElement === frame) await document.exitFullscreen();
-			else await frame.requestFullscreen();
-		} catch (error) {
-			console.error('Could not switch full screen', error);
-		}
-	}
-
-	// An effect rather than onMount/onDestroy: it runs in the browser only (the server renders
-	// this component too, and has no `document`), and a button present there but not here
-	// would be a hydration mismatch.
-	$effect(() => {
-		canFullscreen = usesCssFullscreen || document.fullscreenEnabled;
-		if (usesCssFullscreen) return;
-		document.addEventListener('fullscreenchange', syncFullscreen);
-		return () => document.removeEventListener('fullscreenchange', syncFullscreen);
-	});
-
-	// The app-level overlay covers the frame, but not whatever the reader scrolled down to
-	// behind it (the rest of a person's page, in the embedded case). `document.body` is never
-	// the thing that scrolls here — the shell's own root is already `h-screen overflow-hidden`
-	// and the real scroller is an inner div further down — so lock whichever ancestor actually
-	// has one, wherever this component happens to be mounted.
-	$effect(() => {
-		if (!usesCssFullscreen || !fullscreen) return;
-		const scroller = scrollingAncestor<HTMLElement>(frame);
-		if (!scroller) return;
-		const previous = scroller.style.overflow;
-		scroller.style.overflow = 'hidden';
-		return () => {
-			scroller.style.overflow = previous;
-		};
-	});
+	const screen = frameFullscreen(() => frame);
+	const overlay = $derived(screen.on && screen.usesCss);
 
 	onMount(async () => {
 		// Build the initial ego view around the centre from the in-memory snapshot.
@@ -756,16 +548,16 @@
 		if (disposed) return;
 
 		try {
-			groupRoles = localStorage.getItem(GROUP_BY_ROLE_KEY) === 'on';
-			innerLinks = localStorage.getItem(INNER_LINKS_KEY) !== 'off';
-			allKinship = localStorage.getItem(ALL_KINSHIP_KEY) === 'on';
-			edgeLabels = localStorage.getItem(EDGE_LABELS_KEY) !== 'off';
+			switchStore = viewSwitchPreference(localStorage);
+			switches = switchStore.load();
 			densityStore = densityPreference(localStorage);
 			density = densityStore.load();
 		} catch {
 			// Storage can be blocked; the defaults stand.
 		}
 
+		// Bound by the canvas as it mounts, which is before this runs.
+		if (!container) throw new Error('The graph canvas has no element to draw into.');
 		const explorer = await createExplorer({
 			container,
 			elements: elements(),
@@ -804,64 +596,30 @@
 	});
 </script>
 
-<!-- The switch on the right of a menu row; the row itself carries the state for assistive tech. -->
-{#snippet toggle(on: boolean)}
-	<span
-		class="relative h-4 w-7 shrink-0 rounded-full transition-colors"
-		style="background:{on ? 'var(--primary)' : 'var(--border)'}"
-		aria-hidden="true"
-	>
-		<span
-			class="absolute top-0.5 size-3 rounded-full bg-card transition-[left]"
-			style="left:{on ? '0.875rem' : '0.125rem'}"
-		></span>
-	</span>
-{/snippet}
-
 <div
 	bind:this={frame}
 	class="h-full w-full overflow-hidden bg-bg"
-	class:relative={!(fullscreen && usesCssFullscreen)}
-	class:fixed={fullscreen && usesCssFullscreen}
-	class:inset-0={fullscreen && usesCssFullscreen}
-	class:z-50={fullscreen && usesCssFullscreen}
-	role={fullscreen && usesCssFullscreen ? 'dialog' : undefined}
-	aria-modal={fullscreen && usesCssFullscreen ? 'true' : undefined}
+	class:relative={!overlay}
+	class:fixed={overlay}
+	class:inset-0={overlay}
+	class:z-50={overlay}
+	role={overlay ? 'dialog' : undefined}
+	aria-modal={overlay ? 'true' : undefined}
 >
-	<!-- Cytoscape stamps `position: relative` on its container, which would cancel an
-	     `absolute inset-0` box and collapse the canvas to zero height — size it directly.
-	     `touch-none`: Cytoscape reads every pan/zoom gesture itself; left to the browser's own
-	     default, a pan can be read as an edge-swipe or chrome-reveal gesture instead. -->
-	<!-- The canvas is one stop in the tab order and is walked with the arrow keys (docs/05
-	     §5.8); the person under the keyboard is announced, since the canvas has no text.
-	     `svelte-ignore`: Svelte counts `application` as non-interactive, yet it is the role that
-	     hands the arrow keys to this element rather than to a screen reader's reading mode. -->
-	<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
-	<div
-		bind:this={container}
-		class="h-full w-full touch-none focus:outline-none"
-		tabindex={ready ? 0 : -1}
-		role="application"
-		aria-label={t('graph.canvas')}
-		aria-describedby={hintId}
-		onfocus={onCanvasFocus}
-		onblur={() => {
-			keyboardOnCanvas = false;
-			controller?.markCursor(null);
-		}}
-		onkeydown={onCanvasKeydown}
-	></div>
-	{#if keyboardOnCanvas}
-		<div class="pointer-events-none absolute inset-0 ring-2 ring-inset ring-focus-ring" aria-hidden="true"></div>
-	{/if}
-	<p id={hintId} class="sr-only">{t('graph.keyboard.hint')}</p>
-	<p class="sr-only" aria-live="polite">{cursorLabel}</p>
-
-	{#if !ready}
-		<div class="absolute inset-0 grid place-items-center text-sm text-fg-subtle">
-			{t('graph.loading')}
-		</div>
-	{/if}
+	<GraphCanvas
+		bind:container
+		{ready}
+		{selected}
+		{centerId}
+		{grouping}
+		{groupLabel}
+		{nameOf}
+		{hidden}
+		positions={() => controller?.positions() ?? new Map()}
+		markCursor={(id) => controller?.markCursor(id)}
+		onActivate={onTapNode}
+		onClear={onCanvasClear}
+	/>
 
 	<!-- Toolbar. It keeps clear of the peek panel while that is open: the chips wrap on a
 	     narrow window, and the row that wraps would otherwise slide underneath it — leaving
@@ -876,205 +634,35 @@
 		     suggestion list would otherwise be hidden behind it. Embedded, there is nobody to
 		     find: the map holds one person's neighbourhood and the page has its own search. -->
 		{#if !compact}
-			<!-- On a phone the field takes whatever Filter and Arrange leave, so the three share a
-			     row (docs/05 §5.8). -->
-			<div class="pointer-events-auto relative z-20 min-w-0 flex-1 sm:flex-none">
-				<input
-					bind:value={query}
-					placeholder={t('graph.findPlaceholder')}
-					aria-label={t('graph.find')}
-					class="w-full sm:w-56 rounded-app border border-border bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
-				/>
-				{#if suggestions.length}
-					<ul
-						data-testid="graph-suggestions"
-						class="absolute left-0 top-full mt-1 w-full overflow-hidden rounded-app border border-border bg-card shadow-pop"
-					>
-						{#each suggestions as c (c.id)}
-							<li>
-								<button
-									onclick={() => reveal(c.id)}
-									class="block w-full px-3 py-2 text-left text-sm text-fg hover:bg-bg-sunken"
-								>
-									{c.displayName}
-								</button>
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</div>
+			<GraphFindField {graph} onReveal={reveal} />
 		{/if}
 
-		<!-- The line kinds and their names live in one menu: it is the legend too, each kind
-		     drawn in its colour and line style, and the pill counts what is shown so a narrowed
-		     map is never mistaken for a sparse one (docs/05 §5.8). -->
-		<MenuButton
-			label={t('graph.filter.summary', filters)}
-			highlighted={filters.narrowed}
-		>
-			{#snippet trigger()}
-				{t('graph.filter')}
-				<span class="rounded-full bg-bg-sunken px-1.5 tabular-nums text-fg-muted">
-					{filters.shown}/{filters.total}
-				</span>
-			{/snippet}
-			{#snippet children()}
-				{#each FILTERS as f (f.key)}
-					<button
-						type="button"
-						role="menuitemcheckbox"
-						aria-checked={active.has(f.key)}
-						onclick={() => toggleFilter(f.key)}
-						class={MENU_ITEM}
-					>
-						<span
-							class="inline-block w-5 shrink-0 border-t-2"
-							style="border-color:{f.token};border-top-style:{f.line}"
-							aria-hidden="true"
-						></span>
-						<span class="flex-1">{t(f.label)}</span>
-						<span
-							class="grid size-4 shrink-0 place-items-center rounded border-[1.5px] text-[10px] leading-none"
-							class:border-border={!active.has(f.key)}
-							style={active.has(f.key)
-								? 'background:var(--primary);border-color:var(--primary);color:var(--primary-fg)'
-								: ''}
-							aria-hidden="true"
-						>
-							{#if active.has(f.key)}✓{/if}
-						</span>
-					</button>
-				{/each}
-				<div role="separator" class="mx-1 my-1 border-t border-border"></div>
-				<button
-					type="button"
-					role="menuitemcheckbox"
-					aria-checked={edgeLabels}
-					onclick={toggleEdgeLabels}
-					class={MENU_ITEM}
-				>
-					<span class="flex-1">
-						{t('graph.labels')}
-						<span class="block text-[11px] text-fg-subtle">
-							{edgeLabels && !labelsFit
-								? t('graph.labels.tooMany', { count: EDGE_LABEL_LIMIT })
-								: t('graph.labels.hint')}
-						</span>
-					</span>
-					{@render toggle(edgeLabels)}
-				</button>
-				{#if active.has('kinship')}
-					<!-- Only means something while derived lines are drawn at all. -->
-					<button
-						type="button"
-						role="menuitemcheckbox"
-						aria-checked={allKinship}
-						onclick={toggleAllKinship}
-						class={MENU_ITEM}
-					>
-						<span class="flex-1">
-							{t('graph.allKinship')}
-							<span class="block text-[11px] text-fg-subtle">{t('graph.allKinship.hint')}</span>
-						</span>
-						{@render toggle(allKinship)}
-					</button>
-				{/if}
-				<button
-					type="button"
-					role="menuitemcheckbox"
-					aria-checked={groupRoles}
-					onclick={toggleGroupRoles}
-					class={MENU_ITEM}
-				>
-					<span class="flex-1">
-						{t('graph.groupByRole')}
-						<span class="block text-[11px] text-fg-subtle">{t('graph.groupByRole.hint')}</span>
-					</span>
-					{@render toggle(groupRoles)}
-				</button>
-				{#if groupRoles}
-					<!-- Belongs to the grouping, so it stands indented under it and only while it is on. -->
-					<button
-						type="button"
-						role="menuitemcheckbox"
-						aria-checked={innerLinks}
-						onclick={toggleInnerLinks}
-						class="{MENU_ITEM} pl-6"
-					>
-						<span class="flex-1">
-							{t('graph.innerLinks')}
-							<span class="block text-[11px] text-fg-subtle">{t('graph.innerLinks.hint')}</span>
-						</span>
-						{@render toggle(innerLinks)}
-					</button>
-				{/if}
-				<!-- How close together people stand; a choice of three, kept by this browser. -->
-				<div role="separator" class="mx-1 my-1 border-t border-border"></div>
-				<div role="group" aria-labelledby="{uid}-density">
-					<div id="{uid}-density" class="px-2 pt-1 pb-0.5 text-[11px] text-fg-subtle">
-						{t('graph.density')}
-					</div>
-					{#each DENSITIES as option (option)}
-						<button
-							type="button"
-							role="menuitemradio"
-							aria-checked={density === option}
-							onclick={() => chooseDensity(option)}
-							class={MENU_ITEM}
-						>
-							<span class="w-3 shrink-0 font-bold text-primary" aria-hidden="true">
-								{#if density === option}✓{/if}
-							</span>
-							<span class="flex-1">{t(`graph.density.${option}`)}</span>
-						</button>
-					{/each}
-				</div>
-			{/snippet}
-		</MenuButton>
+		<GraphFilterMenu
+			{active}
+			{openingFilters}
+			onToggleFilter={toggleFilter}
+			{switches}
+			onSwitch={toggleSwitch}
+			{labelsFit}
+			{density}
+			onChooseDensity={chooseDensity}
+		/>
 
-		<MenuButton label={t('graph.arrange.current', { name: t(arrangedLabel) })}>
-			{#snippet trigger()}
-				<!-- The pill's label keeps "Arrange:" for assistive tech; a phone shows the name only. -->
-				<span class="sm:hidden">{t(arrangedLabel)}</span>
-				<span class="max-sm:hidden">{t('graph.arrange.current', { name: t(arrangedLabel) })}</span>
-			{/snippet}
-			{#snippet children({ close })}
-				{#each ARRANGEMENTS as arrangement (arrangement.key)}
-					<button
-						type="button"
-						role="menuitemradio"
-						aria-checked={arrangedBy === arrangement.key}
-						onclick={() => {
-							arrangeBy(arrangement.key);
-							close();
-						}}
-						class={MENU_ITEM}
-					>
-						<span class="w-3 shrink-0 font-bold text-primary" aria-hidden="true">
-							{#if arrangedBy === arrangement.key}✓{/if}
-						</span>
-						<span class="flex-1">
-							{t(arrangement.label)}
-							<span class="block text-[11px] text-fg-subtle">{t(arrangement.hint)}</span>
-						</span>
-					</button>
-				{/each}
-			{/snippet}
-		</MenuButton>
+		<GraphArrangeMenu {arrangedBy} onArrange={arrangeBy} />
 
 		{#if !compact}
 			<!-- Full screen and the connection path start the second row on a phone. -->
 			<div class="basis-full sm:hidden" aria-hidden="true"></div>
 		{/if}
-		{#if canFullscreen}
+		{#if screen.available}
 			<Button
 				variant="ghost"
 				size="sm"
-				icon={fullscreen ? 'exitFullscreen' : 'enterFullscreen'}
-				label={t(fullscreen ? 'graph.fullscreen.exit' : 'graph.fullscreen.enter')}
-				aria-pressed={fullscreen}
+				icon={screen.on ? 'exitFullscreen' : 'enterFullscreen'}
+				label={t(screen.on ? 'graph.fullscreen.exit' : 'graph.fullscreen.enter')}
+				aria-pressed={screen.on}
 				class="pointer-events-auto ml-auto"
-				onclick={toggleFullscreen}
+				onclick={screen.toggle}
 			/>
 		{/if}
 		{#if !compact}
@@ -1092,131 +680,34 @@
 
 	<!-- Path prompt / result -->
 	{#if pathMode}
-		<div
-			class="pointer-events-none absolute inset-x-0 top-16 flex justify-center"
-		>
-			<div
-				data-testid="path-prompt"
-				aria-live="polite"
-				class="rounded-full border border-border bg-card/90 px-4 py-1.5 text-xs text-fg-muted backdrop-blur"
-			>
-				{#if path}
-					{pathChain.join(' → ')}
-				{:else if pathMissing}
-					{t('graph.path.none')}
-				{:else if pathFrom}
-					{t('graph.path.pickSecond')}
-				{:else}
-					{t('graph.path.pickTwo')}
-				{/if}
-			</div>
-		</div>
+		<GraphPathPrompt {path} {pathMissing} {pathFrom} {nameOf} />
 	{/if}
 
 	<!-- Peek panel -->
 	{#if peekGroup && !pathMode}
-		<aside
-			data-testid="group-peek"
-			class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-3 max-sm:w-auto max-sm:max-h-[60%] max-sm:p-3"
-			class:bottom-3={!compact}
-			class:w-64={!compact}
-			class:w-52={compact}
-			class:max-h-[calc(100%-1.5rem)]={compact}
-		>
-			<Button variant="ghost" size="sm" icon="remove" label={t('common.close')} class="float-right" onclick={() => (selected = null)} />
-			<div class="text-xs text-fg-subtle">{t('graph.peek.roleGroup')}</div>
-			<div class="text-lg font-semibold text-fg">{groupLabel(peekGroup)}</div>
-			<div class="mb-3 text-xs text-fg-subtle">
-				{t('graph.peek.inCircle', { name: nameOf(peekGroup.circleId) })}
-			</div>
-			<ul class="mb-4 flex flex-col gap-1 max-sm:mb-3">
-				{#each peekGroup.memberIds as id (id)}
-					<li>
-						<a href="/contacts/{id}" class="flex items-center gap-2 rounded-lg px-1 py-1 text-sm text-fg hover:bg-bg-sunken">
-							<Avatar {id} name={nameOf(id)} avatarPhotoId={model.nodes.find((n) => n.id === id)?.avatarPhotoId ?? null} size={24} />
-							<span class="truncate">{nameOf(id)}</span>
-						</a>
-					</li>
-				{/each}
-			</ul>
-			<div class="flex flex-col gap-2 max-sm:flex-row">
-				<Button
-					type="button"
-					class="max-sm:flex-1"
-					onclick={() => {
-						dissolved = new Set([...dissolved, peekGroup!.id]);
-						selected = null;
-					}}
-				>
-					{t('graph.peek.showIndividually')}
-				</Button>
-				<Button variant="primary" class="max-sm:flex-1" href="/circles/{peekGroup.circleId}">{t('graph.peek.openCircle')}</Button>
-			</div>
-		</aside>
+		<GraphGroupPeek
+			group={peekGroup}
+			label={groupLabel(peekGroup)}
+			nodes={model.nodes}
+			{nameOf}
+			{compact}
+			onShowIndividually={() => {
+				dissolved = new Set([...dissolved, peekGroup!.id]);
+				selected = null;
+			}}
+			onClose={() => (selected = null)}
+		/>
 	{:else if peekNode && !pathMode}
-		<!-- Full height beside a full-screen canvas; embedded it is only as tall as what it
-		     says, so it does not sit as an empty panel over half a card-sized map. A phone has no
-		     room beside the map: there it is a strip along the bottom, clear of the toolbar. -->
-		<aside
-			class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-3 max-sm:w-auto max-sm:max-h-[60%] max-sm:p-3"
-			class:bottom-3={!compact}
-			class:w-64={!compact}
-			class:w-52={compact}
-			class:max-h-[calc(100%-1.5rem)]={compact}
-		>
-			<Button variant="ghost" size="sm" icon="remove" label={t('common.close')} class="float-right" onclick={() => (selected = null)} />
-			<!-- Stacked in the side panel; side by side in a phone's strip, which has height to spare
-			     for neither. -->
-			<div class="mb-4 max-sm:mb-3 max-sm:flex max-sm:items-center max-sm:gap-3">
-				{#if peekNode.kind === 'person'}
-					<div class="mb-3 max-sm:mb-0 max-sm:shrink-0">
-						<Avatar id={peekNode.id} name={peekNode.label} avatarPhotoId={peekNode.avatarPhotoId ?? null} size={56} deceased={peekNode.deceased} />
-					</div>
-				{/if}
-				<div class="min-w-0">
-					<div class="text-lg font-semibold text-fg max-sm:truncate">{peekNode.label}</div>
-					<div class="text-xs text-fg-subtle">
-						{peekNode.kind === 'circle' ? t('graph.peek.sharedContext') : t('graph.peek.person')}
-						{#if peekNode.deceased}· {t('graph.peek.deceased')}{/if}
-					</div>
-				</div>
-			</div>
-			<div class="flex flex-col gap-2 max-sm:flex-row max-sm:flex-wrap">
-				{#if peekNode.kind === 'circle' && peekExpandable && roleOptions.length > 1}
-					<fieldset class="flex flex-col gap-1 text-sm max-sm:basis-full" data-testid="circle-roles">
-						<legend class="mb-1 text-xs text-fg-subtle">{t('graph.peek.rolesToOpen')}</legend>
-						{#each roleOptions as option (option.role)}
-							<label class="flex items-center gap-2">
-								<input
-									type="checkbox"
-									checked={chosenRoles.has(option.role)}
-									onchange={() => toggleRole(option.role)}
-								/>
-								<span class="text-fg">{option.role ?? t('circles.noRole')} · {option.count}</span>
-							</label>
-						{/each}
-					</fieldset>
-				{/if}
-				{#if peekExpandable}
-					<Button type="button" class="max-sm:flex-1" disabled={peekNode.kind === 'circle' && roleOptions.length > 0 && chosenRoles.size === 0} onclick={() => expand(peekNode.id)}>{t('graph.peek.expand')}</Button>
-				{:else if fullGraphHref}
-					<!-- The map ends here, so the honest offer is the one place that goes further. -->
-					<Button icon="graph" class="max-sm:flex-1" href={fullGraphHref(peekNode.id)}>{t('graph.openInGraph')}</Button>
-				{/if}
-				{#if peekNode.kind === 'person'}
-					<Button variant="primary" class="max-sm:flex-1" href="/contacts/{peekNode.id}">{t('graph.peek.openProfile')}</Button>
-				{:else if peekNode.kind === 'circle'}
-					<Button variant="primary" class="max-sm:flex-1" href="/circles/{peekNode.id}">{t('graph.peek.openCircle')}</Button>
-				{/if}
-			</div>
-			<!-- The general tip is left out of a phone's strip; that the map ends here is not. -->
-			<p class="mt-4 text-xs text-fg-subtle max-sm:mt-3" class:max-sm:hidden={peekExpandable}>
-				{#if !peekExpandable}
-					{t('graph.peek.edgeOfMap')}
-				{:else}
-					{compact ? t('graph.peek.tipCompact') : t('graph.peek.tip')}
-				{/if}
-			</p>
-		</aside>
+		<GraphNodePeek
+			node={peekNode}
+			{compact}
+			expandable={peekExpandable}
+			{roleOptions}
+			{chosenRoles}
+			onToggleRole={toggleRole}
+			onExpand={expand}
+			{fullGraphHref}
+			onClose={() => (selected = null)}
+		/>
 	{/if}
 </div>
