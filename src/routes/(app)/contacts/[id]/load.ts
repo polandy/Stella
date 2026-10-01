@@ -1,0 +1,197 @@
+import { error, redirect } from '@sveltejs/kit';
+import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
+import { parseProposePair } from '$lib/contacts/propose';
+import { listContactFields } from '$lib/server/domain/contact-fields/contact-fields';
+import {
+	listCirclesForContact,
+	listRoleSuggestionsByCircleName
+} from '$lib/server/domain/circles/circles';
+import { getContact } from '$lib/server/domain/contacts/contacts';
+import { listImportantDates } from '$lib/server/domain/dates/important-dates';
+import { IMPORTANT_DATE_KINDS } from '$lib/dates/kinds';
+import { INTERACTION_KINDS, lastContactedOn } from '$lib/server/domain/interactions/interactions';
+import { authorNames } from '$lib/server/domain/household/members';
+import { listStoryPage } from '$lib/server/domain/story/story';
+import { listGallery } from '$lib/server/domain/media/gallery';
+import { contactSectionPath, sectionForLegacyTab } from '$lib/contacts/sections';
+import { personMap } from '$lib/graph/model/person-map';
+import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
+import { listNotesForContact } from '$lib/server/domain/notes/notes';
+import { readFamilyOf } from '$lib/server/domain/relationships/family';
+import { listTagsForContact, TAG_COLORS } from '$lib/server/domain/tags/tags';
+import {
+	getContactDeps,
+	getContactFieldDeps,
+	getCircleDeps,
+	getImportantDateDeps,
+	getInteractionDeps,
+	getNoteDeps,
+	getGalleryDeps,
+	getFamilyReadDeps,
+	getPhotos,
+	getRelationshipTypes,
+	getStoryDeps,
+	getTagDeps,
+	getMemberDeps,
+	getMentionedInDeps
+} from '$lib/server/services';
+import type { Viewer } from '$lib/server/access/visibility';
+import { say, translator } from '$lib/server/i18n/say';
+import { allOf } from '$lib/async/all-of';
+import {
+	birthdayOf,
+	declinedBy,
+	circleNamesIn,
+	fieldView,
+	mentionedInView,
+	noteView,
+	peopleNamedIn,
+	withReasonsSaid,
+	type PersonViewContext
+} from './person-view';
+import { REVIEW_PARAM } from './review-path';
+import { entryIdsOf, nameLookup, photosByEntry, STORY_PAGE_SIZE, toStoryItem } from './story-view';
+import type { PageServerLoad } from './$types';
+
+export const load = (async ({ locals, params, url }) => {
+	if (!locals.user) throw redirect(302, '/login');
+	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+	/*
+	 * The page had tabs until its content became one column of cards (docs/05 §5.5). A
+	 * bookmark or a history entry still carrying `?tab=` is answered with the card it meant,
+	 * rather than silently landing at the top of the page. After the sign-in check, so an
+	 * old link cannot bounce a signed-out reader anywhere but the login page.
+	 */
+	const legacy = sectionForLegacyTab(url.searchParams.get('tab'));
+	if (legacy) throw redirect(302, contactSectionPath(params.id, legacy));
+
+	const contact = await getContact(getContactDeps(), viewer, params.id);
+	// 404 for both "missing" and "not visible to you" — never reveal existence.
+	if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
+
+	const reviewOpen = url.searchParams.has(REVIEW_PARAM);
+	const proposeFor = url.searchParams.get('propose');
+	const read = await readPersonPage(viewer, params.id, {
+		reviewOpen,
+		proposeFor: parseProposePair(proposeFor)
+	});
+	// Only the photos of the entries on the story's first page; later pages bring their own.
+	const journalPhotos = await getPhotos().listJournalPhotosOfEntries(
+		viewer,
+		params.id,
+		entryIdsOf(read.storyPage.items)
+	);
+
+	const ctx: PersonViewContext = {
+		viewerId: viewer.id,
+		// The visible graph holds everyone the viewer may see, archived people included, so a
+		// mention already written keeps its name (docs/02 §2.2) without a second read of them.
+		nameOf: nameLookup(peopleNamedIn(read.family.graph)),
+		nameOfAuthor: read.nameOfAuthor
+	};
+	const t = translator(locals);
+	const storyContext = { ...ctx, userId: viewer.id, photosByEntry: photosByEntry(journalPhotos) };
+
+	return {
+		// Who they are.
+		contact,
+		...birthdayOf(contact, read.dates),
+		dates: read.dates,
+		fields: read.fields.map(fieldView),
+		tags: read.tags,
+		circles: read.contactCircles,
+
+		// What happened with them: the story's first page, and their touchpoints.
+		story: {
+			items: read.storyPage.items.map((item) => toStoryItem(item, storyContext)),
+			nextCursor: read.storyPage.nextCursor
+		},
+		// Of the touchpoints *this viewer* sees, so a private one never shows here.
+		lastContactedAt: read.lastContactedAt,
+		notes: read.notes.map((note) => noteView(note, ctx.nameOf)),
+		mentionedIn: read.mentionedIn.map((reference) => mentionedInView(reference, ctx)),
+		// The person's photo gallery (docs/02 §2.14), favourites first, already visibility-scoped.
+		gallery: read.gallery,
+
+		// Who they belong with.
+		relationships: read.family.ties,
+		// Inferred, never stored (docs/02 §2.4.1); shown apart from the entered links.
+		derivedKin: read.family.kinship.derived,
+		// Links implied by the one just added, offered for a single confirmation each.
+		proposals: withReasonsSaid(read.family.kinship.proposals, t),
+		proposeFor,
+		/*
+		 * The on-demand review (docs/concepts/relationship-suggestions.md §6.5): what stands
+		 * around this person right now, asked for rather than raised by a write. Closed, it
+		 * costs nothing — no rule runs until somebody presses the control.
+		 */
+		review: {
+			open: reviewOpen,
+			suggestions: withReasonsSaid(read.family.reviewed, t),
+			memberNames: declinedBy(read.family.reviewed, ctx.nameOfAuthor)
+		},
+		/*
+		 * What the household's own records already rule out (docs/02 §2.4), so the picker can
+		 * grey an entry out with the reason rather than let it be saved and refused. The rules
+		 * are the ones the use-case is guarded by, run over the same facts.
+		 */
+		exclusionFacts: read.family.exclusionFacts,
+		/** The person's own slice of the visible graph, for the map on their page (docs/05 §5.5). */
+		graph: await personMap(read.family.graph, params.id),
+
+		// What the forms on the page offer.
+		relationshipTypes: read.relationshipTypes,
+		// `?relate=<id>` pre-selects a person in the relationship form (the stream's link hint, §2.22.1).
+		relateTo: url.searchParams.get('relate'),
+		circleNames: circleNamesIn(read.family.graph),
+		// Roles already used per circle, so joining one offers what that circle calls its people.
+		circleRolesByName: read.circleRolesByName,
+		interactionKinds: INTERACTION_KINDS,
+		dateKinds: IMPORTANT_DATE_KINDS,
+		fieldKinds: CONTACT_FIELD_KINDS,
+		tagColors: TAG_COLORS,
+
+		// Who is looking: the gallery only offers caption/remove on your own photos, and
+		// deleting a person for good is admin-only (docs/02 §2.2); archiving is for everyone.
+		viewerId: viewer.id,
+		isAdmin: locals.user.role === 'admin'
+	};
+}) satisfies PageServerLoad;
+
+/**
+ * Everything the person page reads, at once and each under its own name. Every read goes
+ * through a use-case scoped to the viewer; nothing here decides what anyone may see.
+ */
+function readPersonPage(
+	viewer: Viewer,
+	contactId: string,
+	request: { reviewOpen: boolean; proposeFor: { a: string; b: string } | null }
+) {
+	return allOf({
+		// The person's own records.
+		dates: listImportantDates(getImportantDateDeps(), viewer, contactId),
+		fields: listContactFields(getContactFieldDeps(), viewer, contactId),
+		tags: listTagsForContact(getTagDeps(), viewer, contactId),
+		contactCircles: listCirclesForContact(getCircleDeps(), viewer, contactId),
+		storyPage: listStoryPage(getStoryDeps(), viewer, contactId, { limit: STORY_PAGE_SIZE }),
+		lastContactedAt: lastContactedOn(getInteractionDeps(), viewer, contactId),
+		notes: listNotesForContact(getNoteDeps(), viewer, contactId),
+		mentionedIn: listMentionedIn(getMentionedInDeps(), viewer, contactId),
+		gallery: listGallery(getGalleryDeps(), viewer, contactId),
+
+		/*
+		 * Their place in the family: their links, derived kin, proposals, the review, what the
+		 * picker greys out and the map, all from one read of the visible graph. The map is cut
+		 * from the same access-scoped snapshot the explorer route reads, and for the same reason:
+		 * derived kinship is worked out over the whole visible graph, so an inference cut from a
+		 * slice could name the wrong relative. Only the person's own slice is sent to the browser.
+		 */
+		family: readFamilyOf(getFamilyReadDeps(), viewer, contactId, request),
+
+		// What the forms offer, and who wrote what.
+		nameOfAuthor: authorNames(getMemberDeps(), viewer.householdId),
+		relationshipTypes: getRelationshipTypes().listTypes(viewer),
+		circleRolesByName: listRoleSuggestionsByCircleName(getCircleDeps(), viewer)
+	});
+}
