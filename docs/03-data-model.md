@@ -15,7 +15,7 @@ implementation of record.
   removes the row and cascades.
 - **Visibility:** where present, `visibility` is `'shared' | 'private'` and
   `created_by` references the owning user. These two together drive access control
-  (see [02-features.md §2.10](02-features.md#210-privacy-model-shared-vs-private)).
+  (see [02-features.md §2.10](features/2.10-privacy-model.md#210-privacy-model-shared-vs-private-m1)).
 - **Enums** are stored as text with a CHECK constraint (SQLite has no native enum).
 - **Booleans** are integers 0/1.
 - **Money/none here.**
