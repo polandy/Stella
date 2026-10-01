@@ -28,5 +28,6 @@ export const nav: NavMessages = {
 	'nav.signOut': 'Abmelden',
 	'nav.theme.light': 'Hell',
 	'nav.theme.system': 'System',
-	'nav.theme.dark': 'Dunkel'
+	'nav.theme.dark': 'Dunkel',
+	'nav.accountMenu': 'Kontomenü'
 };

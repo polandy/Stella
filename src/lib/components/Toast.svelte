@@ -9,15 +9,51 @@
 	 * its own. A polite live region (no `status` role, which would make it the page's second
 	 * status and steal `getByRole('status')` from inline hints) so a screen reader hears
 	 * "Entry removed" without losing focus.
+	 *
+	 * The window stands still while the pointer is over a toast or focus is inside the region,
+	 * and starts over in full once both have left (WCAG 2.2.1; `hold`/`release` in
+	 * pending-removals.ts) — reaching for Undo never races the clock.
 	 */
 	const removals = useRemovals();
 	const t = useTranslate();
+
+	let hovered = false;
+	let focused = false;
+	function follow(next: { hovered?: boolean; focused?: boolean }) {
+		hovered = next.hovered ?? hovered;
+		focused = next.focused ?? focused;
+		if (hovered || focused) removals.hold();
+		else removals.release();
+	}
+	function onFocusOut(event: FocusEvent) {
+		if (region?.contains(event.relatedTarget as Node | null)) return;
+		follow({ focused: false });
+	}
+
+	/*
+	 * A toast that goes — Undo pressed, its window over — takes the pointer or the focus with it
+	 * without a `pointerleave` or `focusout` a browser can be relied on to send. So whenever the
+	 * toasts change, ask the page where the reader actually is, or the hold would never let go.
+	 */
+	let region: HTMLDivElement | undefined = $state();
+	$effect(() => {
+		void removals.snapshot;
+		if (!region) return;
+		follow({ hovered: region.matches(':hover'), focused: region.contains(document.activeElement) });
+	});
 </script>
 
 <div
 	class="pointer-events-none fixed bottom-20 left-4 z-30 flex max-w-[calc(100vw-2rem)] flex-col gap-2 md:bottom-4 md:left-[17rem]"
+	role="region"
+	aria-label={t('components.toasts')}
 	aria-live="polite"
 	data-testid="toasts"
+	bind:this={region}
+	onpointerenter={() => follow({ hovered: true })}
+	onpointerleave={() => follow({ hovered: false })}
+	onfocusin={() => follow({ focused: true })}
+	onfocusout={onFocusOut}
 >
 	{#each removals.snapshot.removals as removal (removal.key)}
 		<div class="toast" data-testid="toast-undo">

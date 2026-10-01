@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormError from '$lib/components/FormError.svelte';
 	import SignOutForm from '$lib/components/SignOutForm.svelte';
 	import { untrack } from 'svelte';
 	import Button from '$lib/components/Button.svelte';
@@ -26,6 +27,8 @@
 		selfIds = data.user.selfContactId ? [data.user.selfContactId] : [];
 	});
 </script>
+
+<svelte:head><title>{t('common.pageTitle', { page: t('settings.title') })}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header>
@@ -85,9 +88,8 @@
 					<Button variant="ghost" size="sm">{t('settings.self.clear')}</Button>
 				</form>
 			{/if}
-			{#if form?.selfError}
-				<p class="text-sm text-danger">{form.selfError}</p>
-			{:else if form?.selfSaved}
+			<FormError message={form?.selfError} variant="inline" />
+			{#if !form?.selfError && form?.selfSaved}
 				<p class="text-sm text-fg-muted">{form.selfSaved}</p>
 			{/if}
 		</div>

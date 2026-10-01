@@ -117,7 +117,7 @@
 			// Not remembered, still applied for this visit.
 		}
 	}
-	const INPUT = 'rounded-md border border-border bg-bg px-3 py-2 text-fg';
+	const INPUT = 'rounded-md border border-border-input bg-bg px-3 py-2 text-fg';
 </script>
 
 <svelte:head><title>{t('circles.detail.title', { name: circle.name })}</title></svelte:head>
@@ -236,8 +236,9 @@
 					<input type="checkbox" bind:checked={keepSearch} onchange={rememberKeepSearch} class="accent-primary" />
 					{t('circles.keepSearch')}
 				</label>
-				<label for="circle-member" class="flex flex-1 flex-col gap-1 text-sm">
-					<span class="text-fg-muted">{t('circles.people')}</span>
+				<!-- The label names the field only, not the chips and list around it. -->
+				<div class="flex flex-1 flex-col gap-1 text-sm">
+					<label for="circle-member" class="text-fg-muted">{t('circles.people')}</label>
 					<PersonSearchSelect
 						id="circle-member"
 						people={candidates}
@@ -248,7 +249,7 @@
 						allowCreate
 						required
 					/>
-				</label>
+				</div>
 				<label class="flex flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.roleLabel')}</span>
 					<!-- The roles this circle already uses; typing something new is still allowed. -->

@@ -149,7 +149,7 @@
 		class:text-fg-muted={!highlighted}
 		class:border-transparent={highlighted}
 		style={highlighted
-			? 'background:color-mix(in srgb, var(--primary) 18%, var(--card)); color:var(--primary)'
+			? 'background:color-mix(in srgb, var(--primary) 18%, var(--card)); color:var(--fg)'
 			: ''}
 	>
 		{@render trigger()}

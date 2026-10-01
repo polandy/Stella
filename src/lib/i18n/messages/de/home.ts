@@ -112,5 +112,6 @@ export const home: HomeMessages = {
 	'composer.alsoMentions': (p) => `, erwähnt ${p.count}`,
 	'composer.needMention': 'Erwähne mit @ mindestens eine Person',
 	'composer.saveFailed':
-		'Konnte nicht gespeichert werden. Versuche es mit üblichen JPEG- oder PNG-Bildern.'
+		'Konnte nicht gespeichert werden. Versuche es mit üblichen JPEG- oder PNG-Bildern.',
+	'composer.shareWithHousehold': 'Mit dem Haushalt teilen'
 };

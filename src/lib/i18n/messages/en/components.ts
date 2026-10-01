@@ -72,7 +72,22 @@ export const components = {
 	'components.dateField.yearOptional': 'Leave the year blank if you do not know it.',
 	'components.dateField.noSuchDay': 'There is no such day in the calendar.',
 	'components.dateField.incomplete': 'Fill in the whole date, or clear it.',
-	'components.dateField.inFuture': 'That day has not happened yet.'
+	'components.dateField.inFuture': 'That day has not happened yet.',
+	'components.toasts': 'Notifications',
+	'components.colour.rosewater': 'Rosewater',
+	'components.colour.flamingo': 'Flamingo',
+	'components.colour.pink': 'Pink',
+	'components.colour.mauve': 'Mauve',
+	'components.colour.red': 'Red',
+	'components.colour.maroon': 'Maroon',
+	'components.colour.peach': 'Peach',
+	'components.colour.yellow': 'Yellow',
+	'components.colour.green': 'Green',
+	'components.colour.teal': 'Teal',
+	'components.colour.sky': 'Sky',
+	'components.colour.sapphire': 'Sapphire',
+	'components.colour.blue': 'Blue',
+	'components.colour.lavender': 'Lavender'
 };
 
 /** The key set every translation of this area has to provide. */

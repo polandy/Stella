@@ -48,6 +48,13 @@ export interface PendingRemovals {
 	isPending(key: string): boolean;
 	/** Shows a message for one window. */
 	notify(text: string): void;
+	/**
+	 * Stops every window while the reader is at the toasts — hovering them or focused in them —
+	 * so Undo cannot run out under their hand (WCAG 2.2.1). A second hold is a no-op.
+	 */
+	hold(): void;
+	/** Lets the windows run again, each from a full window. A release without a hold is a no-op. */
+	release(): void;
 	snapshot(): RemovalsSnapshot;
 	/** Called after every change; returns the unsubscribe. */
 	subscribe(listener: () => void): () => void;
@@ -66,14 +73,20 @@ interface Pending {
 	timer: unknown;
 }
 
+interface ShownNotice {
+	notice: Notice;
+	timer: unknown;
+}
+
 /** Builds the store the app shell holds for one browser tab. */
 export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemovals {
 	const { scheduler, onCommitFailed } = deps;
 	const windowMs = deps.windowMs ?? UNDO_WINDOW_MS;
 	const pending = new Map<string, Pending>();
-	const notices: Notice[] = [];
+	const notices: ShownNotice[] = [];
 	const listeners = new Set<() => void>();
 	let nextNoticeId = 1;
+	let held = false;
 
 	const changed = () => {
 		for (const listener of listeners) listener();
@@ -94,8 +107,16 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 		void perform(entry.removal);
 	}
 
+	function armRemoval(entry: Pending) {
+		entry.timer = held ? undefined : scheduler.setTimeout(() => windowClosed(entry), windowMs);
+	}
+
+	function armNotice(shown: ShownNotice) {
+		shown.timer = held ? undefined : scheduler.setTimeout(() => dismissNotice(shown.notice.id), windowMs);
+	}
+
 	function dismissNotice(id: number) {
-		const index = notices.findIndex((notice) => notice.id === id);
+		const index = notices.findIndex((shown) => shown.notice.id === id);
 		if (index === -1) return;
 		notices.splice(index, 1);
 		changed();
@@ -105,7 +126,7 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 		remove(removal) {
 			if (pending.has(removal.key)) return;
 			const entry: Pending = { removal, timer: undefined };
-			entry.timer = scheduler.setTimeout(() => windowClosed(entry), windowMs);
+			armRemoval(entry);
 			pending.set(removal.key, entry);
 			changed();
 		},
@@ -127,14 +148,26 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 		},
 		isPending: (key) => pending.has(key),
 		notify(text) {
-			const notice = { id: nextNoticeId++, text };
-			notices.push(notice);
-			scheduler.setTimeout(() => dismissNotice(notice.id), windowMs);
+			const shown: ShownNotice = { notice: { id: nextNoticeId++, text }, timer: undefined };
+			armNotice(shown);
+			notices.push(shown);
 			changed();
+		},
+		hold() {
+			if (held) return;
+			held = true;
+			for (const entry of pending.values()) scheduler.clearTimeout(entry.timer);
+			for (const shown of notices) scheduler.clearTimeout(shown.timer);
+		},
+		release() {
+			if (!held) return;
+			held = false;
+			for (const entry of pending.values()) armRemoval(entry);
+			for (const shown of notices) armNotice(shown);
 		},
 		snapshot: () => ({
 			removals: [...pending.values()].map((entry) => entry.removal),
-			notices: [...notices]
+			notices: notices.map((shown) => shown.notice)
 		}),
 		subscribe(listener) {
 			listeners.add(listener);

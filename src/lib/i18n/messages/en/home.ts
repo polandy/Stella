@@ -119,7 +119,8 @@ export const home = {
 	'composer.goesToJournal': '’s journal',
 	'composer.alsoMentions': (p: { count: number }) => `, mentions ${p.count}`,
 	'composer.needMention': 'Mention at least one person with @',
-	'composer.saveFailed': 'Could not save. Try standard JPEG or PNG images.'
+	'composer.saveFailed': 'Could not save. Try standard JPEG or PNG images.',
+	'composer.shareWithHousehold': 'Share with household'
 };
 
 /** The key set every translation of this area has to provide. */

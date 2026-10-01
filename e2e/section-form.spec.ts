@@ -59,12 +59,12 @@ test('dismissing the person picker keeps the half-filled form it sits in', async
 	const picker = form.getByLabel('Person');
 	await picker.click();
 	await picker.fill('Vreni');
-	await expect(page.getByRole('option', { name: /Vreni/ })).toBeVisible();
+	await expect(page.getByTestId('person-search-listbox').getByRole('option', { name: /Vreni/ })).toBeVisible();
 
 	await page.keyboard.press('Escape');
 
 	// The list goes; the form and what was typed into it stay.
-	await expect(page.getByRole('option', { name: /Vreni/ })).toHaveCount(0);
+	await expect(page.getByTestId('person-search-listbox').getByRole('option', { name: /Vreni/ })).toHaveCount(0);
 	await expect(form).toBeVisible();
 	await expect(description).toHaveValue('rowing club');
 });

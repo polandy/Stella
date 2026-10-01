@@ -14,7 +14,6 @@ export const common: CommonMessages = {
 	'common.back': 'Zurück',
 	'common.open': 'Öffnen',
 	'common.search': 'Suchen',
-	'common.searchPlaceholder': 'Suchen…',
 	'common.loading': 'Wird geladen…',
 	'common.undo': 'Rückgängig',
 	'common.undone': 'Rückgängig gemacht',
@@ -32,5 +31,7 @@ export const common: CommonMessages = {
 	'common.privateInline': 'privat',
 	'common.onlyYouSee': 'Das sieht nur du',
 	'common.removeFailed': 'Konnte nicht entfernt werden. Es ist wieder auf der Seite.',
-	'common.somethingWentWrong': 'Da ist etwas schiefgegangen. Bitte versuche es erneut.'
+	'common.somethingWentWrong': 'Da ist etwas schiefgegangen. Bitte versuche es erneut.',
+	'common.visibility': 'Wer das sehen kann',
+	'common.pageTitle': (p: { page: string }) => `${p.page} · Stella`
 };

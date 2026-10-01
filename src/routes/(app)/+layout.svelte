@@ -209,6 +209,20 @@
 		pushState('/?compose', { compose: true });
 	}
 
+	// The phone's tabs. The current one is not told by its colour alone (WCAG 1.4.1): it is
+	// also set in semibold, under a bar along the tab bar's top edge.
+	const TAB =
+		'relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-fg-subtle aria-[current=page]:font-semibold aria-[current=page]:text-primary';
+	const TAB_MARK = 'absolute inset-x-1/4 top-0 h-0.5 rounded-b-full bg-primary';
+
+	let accountMenu: HTMLDetailsElement | undefined = $state();
+	function closeAccountMenuOnEscape(event: KeyboardEvent) {
+		if (event.key !== 'Escape' || !accountMenu?.open) return;
+		event.preventDefault();
+		accountMenu.open = false;
+		accountMenu.querySelector('summary')?.focus();
+	}
+
 	// Theme: same contract as the no-flash init in app.html (stella-theme).
 	type ThemeChoice = 'light' | 'system' | 'dark';
 	const THEME_CHOICES: { value: ThemeChoice; label: MessageKey }[] = [
@@ -287,8 +301,11 @@
 		<div class="flex-1"></div>
 
 		<!-- Account: theme + sign out -->
-		<details class="group relative">
+		<!-- Escape closes it like any other menu, and hands focus back to its summary. -->
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<details class="group relative" bind:this={accountMenu} onkeydown={closeAccountMenuOnEscape}>
 			<summary class="flex cursor-pointer list-none items-center gap-2.5 rounded-app bg-card p-2 shadow-card [&::-webkit-details-marker]:hidden">
+				<span class="sr-only">{t('nav.accountMenu')}</span>
 				<span class="grid size-8 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-fg">{initials}</span>
 				<span class="min-w-0 flex-1">
 					<span class="block truncate text-sm font-medium text-fg">{data.user.name}</span>
@@ -343,7 +360,7 @@
 					{#each crumbs as crumb, i (i)}
 						{#if i > 0}<span class="text-fg-subtle/60" aria-hidden="true">/</span>{/if}
 						{#if crumb.href && i < crumbs.length - 1}
-							<a href={crumb.href} class="text-fg-subtle hover:text-fg">{crumb.label}</a>
+							<a href={crumb.href} class="text-fg-muted hover:text-fg">{crumb.label}</a>
 						{:else}
 							<span class="font-semibold text-fg" aria-current="page">{crumb.label}</span>
 						{/if}
@@ -361,7 +378,9 @@
 					aria-keyshortcuts="Meta+K Control+K"
 				>
 					<Icon name="search" size={15} />
-					<span class="hidden lg:inline">{t('common.searchPlaceholder')}</span>
+					<!-- The same words as the button's name, so a voice command can say what it reads
+					     (WCAG 2.5.3); the name stays for widths where the words are hidden. -->
+					<span class="hidden lg:inline">{t('nav.search')}</span>
 					<kbd class="hidden rounded border border-border px-1 text-[10px] font-medium lg:inline">⌘K</kbd>
 				</button>
 				<Button variant="primary" icon="add" href="/contacts/new" label={t('nav.addPerson')}>
@@ -391,7 +410,8 @@
 	<!-- Bottom tab bar (mobile) -->
 	<nav aria-label={t('nav.main')} class="fixed inset-x-0 bottom-0 z-20 flex border-t border-border-subtle bg-card md:hidden">
 		{#each tabBar.slice(0, 2) as item (item.href)}
-			<a href={item.href} aria-current={isActive(item) ? 'page' : undefined} class="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-fg-subtle aria-[current=page]:text-primary">
+			<a href={item.href} aria-current={isActive(item) ? 'page' : undefined} class={TAB}>
+				{#if isActive(item)}<span class={TAB_MARK} aria-hidden="true"></span>{/if}
 				<Icon name={item.icon} size={20} />
 				{t(item.label)}
 			</a>
@@ -402,7 +422,8 @@
 			</span>
 		</a>
 		{#each tabBar.slice(2) as item (item.href)}
-			<a href={item.href} aria-current={isActive(item) ? 'page' : undefined} class="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-fg-subtle aria-[current=page]:text-primary">
+			<a href={item.href} aria-current={isActive(item) ? 'page' : undefined} class={TAB}>
+				{#if isActive(item)}<span class={TAB_MARK} aria-hidden="true"></span>{/if}
 				<Icon name={item.icon} size={20} />
 				{t(item.label)}
 			</a>

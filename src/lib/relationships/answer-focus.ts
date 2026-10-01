@@ -1,3 +1,5 @@
+import { neighbourAfterLeaving, type ListedRow } from '../ui/focus-return';
+
 /*
  * Where keyboard focus goes once an answered suggestion row has left its list (docs/05 §5.5).
  *
@@ -10,12 +12,7 @@
 /** Which of a row's two answers had focus. The same one is focused on the row that follows. */
 export type AnswerControl = 'accept' | 'decline';
 
-/** One row of the list as it stands in the page, in reading order. */
-export interface ListedRow {
-	readonly key: string;
-	/** On its way out — answered a moment earlier in a quick run — and so not a place to land. */
-	readonly leaving: boolean;
-}
+export type { ListedRow };
 
 /**
  * Where focus is when the answered row has gone: nowhere (the browser dropped it on the page),
@@ -41,11 +38,8 @@ export function focusAfterAnswer(
 	focus: FocusNow
 ): AnswerFocus | null {
 	if (focus === 'elsewhere') return null;
-	const at = rows.findIndex((r) => r.key === answered);
-	if (at === -1) return 'heading';
-	const standing = (r: ListedRow) => !r.leaving;
-	const next = rows.slice(at + 1).find(standing) ?? rows.slice(0, at).findLast(standing);
-	return next ? { row: next.key, control } : 'heading';
+	const next = neighbourAfterLeaving(rows, answered);
+	return next ? { row: next, control } : 'heading';
 }
 
 /**

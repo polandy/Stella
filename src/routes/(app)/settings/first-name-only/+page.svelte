@@ -62,7 +62,7 @@
 								autocomplete="off"
 								value={person.suggestion ?? ''}
 								placeholder={t('components.namesake.placeholder')}
-								class="w-full min-w-0 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-fg placeholder:text-fg-subtle"
+								class="w-full min-w-0 rounded-md border border-border-input bg-card px-3 py-1.5 text-sm text-fg placeholder:text-fg-subtle"
 							/>
 						</label>
 						<Button type="submit" size="sm">{t('common.save')}</Button>

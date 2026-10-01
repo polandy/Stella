@@ -93,6 +93,9 @@
 			oninput={() => (selected = 0)}
 			onkeydown={onKeydown}
 			type="text"
+			role="combobox"
+			aria-expanded={rows.length > 0}
+			aria-autocomplete="list"
 			placeholder={t('components.palette.placeholder')}
 			aria-label={t('components.palette.jumpTo')}
 			aria-controls="palette-rows"
@@ -104,18 +107,17 @@
 	</div>
 	<ul id="palette-rows" role="listbox" class="max-h-[60vh] overflow-y-auto p-1.5">
 		{#each rows as row, i (row.kind + row.id)}
-			<li
-				id="palette-{row.kind}-{row.id}"
-				role="option"
-				aria-selected={i === selected}
-				class="rounded-control aria-selected:bg-primary-soft"
-			>
+			<!-- The link itself is the option: an option may not hold an interactive child. -->
+			<li role="none">
 				<a
+					id="palette-{row.kind}-{row.id}"
+					role="option"
+					aria-selected={i === selected}
 					href={row.href}
 					onclick={(e) => { e.preventDefault(); follow(row.href); }}
 					onpointerenter={() => (selected = i)}
 					tabindex="-1"
-					class="flex items-center gap-2.5 px-2.5 py-2 text-sm text-fg"
+					class="flex items-center gap-2.5 rounded-control px-2.5 py-2 text-sm text-fg aria-selected:bg-primary-soft"
 				>
 					{#if row.kind === 'person'}
 						<Avatar id={row.id} name={row.label} avatarPhotoId={row.avatarPhotoId} size={24} />
@@ -134,7 +136,7 @@
 				</a>
 			</li>
 		{:else}
-			<li class="px-2.5 py-4 text-center text-sm text-fg-muted">{t('components.palette.empty')}</li>
+			<li role="presentation" class="px-2.5 py-4 text-center text-sm text-fg-muted">{t('components.palette.empty')}</li>
 		{/each}
 	</ul>
 </dialog>

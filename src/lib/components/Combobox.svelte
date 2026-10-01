@@ -48,6 +48,11 @@
 	let root: HTMLDivElement | undefined = $state();
 
 	const matches = $derived(open ? filterSuggestions(value, options) : []);
+	const showList = $derived(open && matches.length > 0);
+	// A field without an `id` of its own still needs one to tie its list to it.
+	const uid = $props.id();
+	const listboxId = $derived(`${id ?? uid}-listbox`);
+	const optionId = (i: number) => `${listboxId}-${i}`;
 
 	function pick(option: string) {
 		value = option;
@@ -88,8 +93,9 @@
 		{name}
 		type="text"
 		role="combobox"
-		aria-expanded={open}
-		aria-controls={id ? `${id}-listbox` : undefined}
+		aria-expanded={showList}
+		aria-controls={listboxId}
+		aria-activedescendant={showList && highlighted >= 0 ? optionId(highlighted) : undefined}
 		aria-autocomplete="list"
 		autocomplete="off"
 		{required}
@@ -105,9 +111,9 @@
 		class={className}
 	/>
 
-	{#if open && matches.length > 0}
+	{#if showList}
 		<ul
-			id={id ? `${id}-listbox` : undefined}
+			id={listboxId}
 			role="listbox"
 			data-testid="combobox-listbox"
 			class="absolute left-0 z-30 max-h-48 w-full min-w-[10rem] overflow-y-auto rounded-app border border-border bg-card p-1 shadow-pop {placement ===
@@ -117,9 +123,12 @@
 		>
 			{#each matches as option, i (option)}
 				<li role="none">
+					<!-- tabindex -1: the field keeps focus and points here with aria-activedescendant. -->
 					<button
 						type="button"
 						role="option"
+						id={optionId(i)}
+						tabindex="-1"
 						aria-selected={i === highlighted}
 						onmousedown={(e) => {
 							e.preventDefault();
