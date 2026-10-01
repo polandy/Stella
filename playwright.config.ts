@@ -58,7 +58,9 @@ export default defineConfig({
 	fullyParallel: false,
 	workers: 1,
 	forbidOnly: !!process.env.CI,
-	reporter: 'list',
+	// On CI the `github` reporter also turns each failure into a check annotation, so a red
+	// run can be read as a short list (`scripts/ci-failures.sh`) instead of the full log.
+	reporter: process.env.CI ? [['list'], ['github']] : 'list',
 	use: { baseURL: BASE_URL, trace: 'retain-on-failure', serviceWorkers: NO_SERVICE_WORKER },
 	projects: [
 		// Signs in once; every spec below starts from the session it stores, which is a page
