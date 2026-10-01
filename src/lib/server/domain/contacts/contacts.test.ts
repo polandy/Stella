@@ -16,6 +16,8 @@ import {
 	deleteContact,
 	mergeContacts,
 	countKnownByAFirstNameOnly,
+	listBrowsableNamesAmong,
+	listContactNamesAmong,
 	type DistinguishableContact,
 	type MergePair,
 	type DeletedContactMedia,
@@ -692,5 +694,50 @@ describe('countKnownByAFirstNameOnly', () => {
 
 		expect(await countKnownByAFirstNameOnly({ contacts: f.repo }, { id: 'u', householdId: 'h' })).toBe(2);
 		expect(rows.filter(isKnownByAFirstNameOnly).map((r) => r.id)).toEqual(['anna', 'fritz']);
+	});
+});
+
+/*
+ * The by-id name reads behind the story, the journal, Home and the circle picker (docs/04
+ * §4.8). The circle action compares the answer's length with the distinct ids it asked for, so
+ * a repeated id has to be asked once, and a page with nobody to name must not read at all.
+ */
+describe('reading names for just the ids a page needs', () => {
+	const viewer = { id: 'u', householdId: 'h' };
+
+	function recordingRepo() {
+		const f = fakeRepo();
+		const asked: { read: string; ids: readonly string[] }[] = [];
+		f.repo.listNamesAmongVisibleTo = async (_viewer, ids) => {
+			asked.push({ read: 'visible', ids });
+			return ids.map((id) => ({ id, displayName: id }));
+		};
+		f.repo.listBrowsableNamesAmong = async (_viewer, ids) => {
+			asked.push({ read: 'browsable', ids });
+			return ids.map((id) => ({ id, displayName: id }));
+		};
+		return { repo: f.repo, asked };
+	}
+
+	it('asks the store for each person once, however often a page names them', async () => {
+		const f = recordingRepo();
+		const visible = await listContactNamesAmong({ contacts: f.repo }, viewer, ['anna', 'ben', 'anna']);
+		const browsable = await listBrowsableNamesAmong({ contacts: f.repo }, viewer, ['ben', 'ben', 'cleo']);
+
+		expect(visible.map((c) => c.id)).toEqual(['anna', 'ben']);
+		expect(browsable.map((c) => c.id)).toEqual(['ben', 'cleo']);
+		expect(f.asked).toEqual([
+			{ read: 'visible', ids: ['anna', 'ben'] },
+			{ read: 'browsable', ids: ['ben', 'cleo'] }
+		]);
+	});
+
+	it('reads nothing when the page names nobody', async () => {
+		const f = recordingRepo();
+		expect(await listContactNamesAmong({ contacts: f.repo }, viewer, [])).toEqual([]);
+		expect(await listBrowsableNamesAmong({ contacts: f.repo }, viewer, [])).toEqual([]);
+		// Positive control: the same recorder does see a read when there is someone to name.
+		await listContactNamesAmong({ contacts: f.repo }, viewer, ['anna']);
+		expect(f.asked).toEqual([{ read: 'visible', ids: ['anna'] }]);
 	});
 });
