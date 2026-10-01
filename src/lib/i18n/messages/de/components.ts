@@ -10,6 +10,7 @@ export const components: ComponentsMessages = {
 	'components.photo.failed':
 		'Das Foto konnte nicht hochgeladen werden. Versuche es mit einem JPEG- oder PNG-Bild.',
 	'components.photo.previousKept': 'Das vorherige Foto bleibt in den Fotos erhalten.',
+	'components.photo.open': (p) => `Foto ${p.n} von ${p.count}, öffnet in einem neuen Tab`,
 	'components.frame.use': 'Als Foto verwenden',
 	'components.frame.change': 'Ausschnitt ändern',
 	'components.cropper.title': 'Ausschnitt wählen',

@@ -253,6 +253,14 @@
 
 <!-- The visible height, not 100vh: a phone browser counts 100vh with its address bar hidden,
      so a shell that tall runs its foot under the fixed tab bar while the bar is showing. -->
+<!-- The first stop for a keyboard: past the sidebar and the top bar to the page itself. -->
+<a
+	href="#content"
+	class="sr-only z-50 rounded-control bg-card text-sm font-medium text-fg shadow-pop focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:px-3 focus:py-2"
+>
+	{t('nav.skipToContent')}
+</a>
+
 <div class="flex h-dvh w-full overflow-hidden bg-bg text-fg">
 	<!-- Sidebar (desktop) -->
 	<aside class="hidden w-60 shrink-0 flex-col gap-1 bg-bg-sunken p-3 md:flex">
@@ -260,16 +268,18 @@
 			<Logo size={26} wordmark />
 		</a>
 
-		{#each nav as item (item.href)}
-			<a
-				href={item.href}
-				aria-current={isActive(item) ? 'page' : undefined}
-				class="flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium text-fg-muted transition-colors hover:bg-card hover:text-fg aria-[current=page]:bg-card aria-[current=page]:font-semibold aria-[current=page]:text-fg aria-[current=page]:shadow-card [&_svg]:text-fg-subtle aria-[current=page]:[&_svg]:text-primary"
-			>
-				<Icon name={item.icon} size={17} />
-				{t(item.label)}
-			</a>
-		{/each}
+		<nav aria-label={t('nav.main')} class="flex flex-col gap-1">
+			{#each nav as item (item.href)}
+				<a
+					href={item.href}
+					aria-current={isActive(item) ? 'page' : undefined}
+					class="flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium text-fg-muted transition-colors hover:bg-card hover:text-fg aria-[current=page]:bg-card aria-[current=page]:font-semibold aria-[current=page]:text-fg aria-[current=page]:shadow-card [&_svg]:text-fg-subtle aria-[current=page]:[&_svg]:text-primary"
+				>
+					<Icon name={item.icon} size={17} />
+					{t(item.label)}
+				</a>
+			{/each}
+		</nav>
 
 		<div class="flex-1"></div>
 
@@ -287,6 +297,7 @@
 					{#each THEME_CHOICES as choice (choice.value)}
 						<button
 							onclick={() => applyTheme(choice.value)}
+							aria-pressed={theme === choice.value}
 							class="flex-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
 							class:bg-primary={theme === choice.value}
 							class:text-primary-fg={theme === choice.value}
@@ -364,6 +375,8 @@
 
 		<!-- Page content -->
 		<div
+			id="content"
+			tabindex="-1"
 			bind:this={scroller}
 			onscroll={(event) => (topBar = followScroll(topBar, event.currentTarget.scrollTop, topBarHeight))}
 			class="flex-1 overflow-y-auto pb-16 md:pb-0"
@@ -373,7 +386,7 @@
 	</div>
 
 	<!-- Bottom tab bar (mobile) -->
-	<nav class="fixed inset-x-0 bottom-0 z-20 flex border-t border-border-subtle bg-card md:hidden">
+	<nav aria-label={t('nav.main')} class="fixed inset-x-0 bottom-0 z-20 flex border-t border-border-subtle bg-card md:hidden">
 		{#each tabBar.slice(0, 2) as item (item.href)}
 			<a href={item.href} aria-current={isActive(item) ? 'page' : undefined} class="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-fg-subtle aria-[current=page]:text-primary">
 				<Icon name={item.icon} size={20} />

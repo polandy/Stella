@@ -80,6 +80,15 @@ export function accentAvatarStyle(accent: Accent): string {
 	);
 }
 
+/**
+ * The fill of an SVG initials disc in a relationship category's colour: the avatar's tint,
+ * since the initials on it are written in `--fg` — white on the flat accent fell to 1.5:1 in
+ * Mocha (docs/05 §5.9).
+ */
+export function categoryDiscFill(category: RelationshipCategory): string {
+	return `color-mix(in srgb, ${categoryVar(category)} ${AVATAR_TINT_PERCENT}%, var(--card))`;
+}
+
 /** Inline style for a solid colour dot, as used by circles and legends. */
 export function accentDotStyle(accent: Accent): string {
 	return `background:${accentVar(accent)}`;

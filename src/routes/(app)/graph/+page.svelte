@@ -15,7 +15,9 @@
 	<title>{t('graph.title')}</title>
 </svelte:head>
 
-<div class="flex h-full flex-col">
+<main class="flex h-full flex-col">
+	<!-- The canvas is the page, so the heading is for screen readers; the sidebar says where you are. -->
+	<h1 class="sr-only">{t('nav.graph')}</h1>
 	<div class="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-border px-6 py-3 text-sm">
 		{#if data.cameFrom}
 			<!-- Back to the page this centre was opened from — a profile or a circle (docs/05 §5.5). -->
@@ -48,4 +50,4 @@
 			</div>
 		{/if}
 	</div>
-</div>
+</main>

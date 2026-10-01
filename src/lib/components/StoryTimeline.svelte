@@ -156,7 +156,7 @@
 								<div class="note-body mt-0.5 max-w-[65ch] text-fg">{@html item.bodyHtml}</div>
 								{#if item.photos.length}
 									<div class="mt-3 flex flex-wrap gap-2">
-										{#each item.photos as photoId (photoId)}
+										{#each item.photos as photoId, index (photoId)}
 											<a
 												href="/media/{photoId}"
 												target="_blank"
@@ -165,7 +165,7 @@
 											>
 												<img
 													src="/media/{photoId}?thumb"
-													alt=""
+													alt={t('components.photo.open', { n: index + 1, count: item.photos.length })}
 													loading="lazy"
 													class="size-20 object-cover"
 												/>

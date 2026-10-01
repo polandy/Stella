@@ -105,10 +105,14 @@ three steps in both flavours. All three clear AA on `--card`. On the page ground
 reaches 3.9:1, so there it carries only meta that repeats what is already on screen — a day
 divider, a relative timestamp.
 
-**Brand and state.** `--primary` (mauve) marks the one primary action, the current navigation
-item and focus; `--primary-soft` is its 14 % tint for active chips and hovers. `--success`,
-`--warning`, `--danger`, `--link` are unchanged; `--warning-soft` is an 18 % tint of
-`--warning`, the ground of the offline line.
+**Brand and state.** `--primary` (mauve) marks the one primary action and the current navigation
+item; `--primary-soft` is its 14 % tint for active chips and hovers. `--focus-ring` is lavender
+in Mocha and blue in Latte, where lavender reaches only 2.6:1 on the page ground. `--success`
+and `--warning` are the flat accents; `--warning-soft` is an 18 % tint of `--warning`, the
+ground of the offline line. In Latte, `--primary`, `--link` and `--danger` are mauve, blue and
+red deepened toward the text colour by the smallest step that clears 4.5:1 on the page ground
+(the flat accents sat at 4.0–4.5:1), so a word written in them reads wherever it lands; in Mocha
+they are the flat accents.
 
 **Accents.** All fourteen Catppuccin accents are published as `--accent-<name>`. Tags, circles
 and generated avatars store one of those names, so the name a household picks survives a
@@ -952,10 +956,24 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
 - The explorer's lines clear 3:1 on the canvas in both themes (§5.8); the labels of
   interaction kinds are written in `--fg` with only the icon in the kind's colour, since
   peach and green text sat at 2.5–2.8:1 on the page ground (§5.6).
-- Visible focus rings (`--focus-ring`), logical tab order, skip-to-content.
+- Visible focus rings (`--focus-ring`) at 3:1 against every surface, held by the same test;
+  logical tab order; a *Skip to content* link as the first stop, landing on the page itself.
+- Landmarks: the sidebar and the phone's tab bar are each a `<nav>` named *Main*, the
+  breadcrumb its own `<nav>`, and every page — the graph too — is a `<main>` with an `<h1>`.
+- Overlays are native modal `<dialog>`s — the command palette, the photo cropper, the photo
+  viewer and the phone's composer sheet — so focus moves in, stays there and Escape closes. The
+  photo viewer hands focus back to the thumbnail of the photo now showing, and leaves the arrow
+  keys to the caption field while it has focus (`src/lib/ui/photo-walk.ts`).
+- A link whose only content is an image names it: a moment's thumbnails read *Photo 2 of 3,
+  opens in a new tab*. The ego graph is a `group`, not an `img`, so its people stay links a
+  screen reader can reach; its discs are a category tint with the initials in `--fg`, ringed in
+  the category's colour.
+- A badge that is a word (*New person*, *likely*, an active *Connection path*) writes it in
+  `--fg` and lets the tint or outline carry the colour, as chips do.
 - All actions reachable without a pointer; graph has a list-based fallback view.
 - Respect `prefers-reduced-motion`; no motion-only information.
-- Form fields labeled; errors announced; adequate touch targets (≥44px).
+- Form fields labeled — a compact inline editor whose field shows only a placeholder carries the
+  same words as its `aria-label`; errors announced; adequate touch targets (≥44px).
 - `<html lang>` carries the language the page was rendered in, so a screen reader speaks
   German with German phonemes rather than reading it as English (docs/02 §2.19).
 

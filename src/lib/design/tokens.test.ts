@@ -5,6 +5,7 @@ import {
 	AVATAR_ACCENTS,
 	accentAvatarStyle,
 	accentChipStyle,
+	categoryDiscFill,
 	accentDotStyle,
 	accentVar,
 	categoryVar
@@ -75,6 +76,10 @@ describe('accent styles', () => {
 		expect(accentAvatarStyle('blue')).toBe(
 			'background:color-mix(in srgb, var(--accent-blue) 22%, var(--card));color:var(--fg)'
 		);
+	});
+
+	it('fills an SVG initials disc with a tint of its category over the card, like an avatar', () => {
+		expect(categoryDiscFill('family')).toBe('color-mix(in srgb, var(--cat-family) 22%, var(--card))');
 	});
 
 	it('paints a dot in the flat accent, which carries no text', () => {

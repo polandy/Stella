@@ -5,7 +5,7 @@
 	 * loaded — no graph engine, no extra fetch. Nodes link to the connected contact.
 	 * Category accents follow docs/05 §5.6.
 	 */
-	import { categoryVar } from '$lib/design/tokens';
+	import { categoryDiscFill, categoryVar } from '$lib/design/tokens';
 	import { thumbnailUrl } from '$lib/media/urls';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { RELATIONSHIP_CATEGORIES, type RelationshipCategory } from '$lib/relationships/categories';
@@ -26,10 +26,11 @@
 
 	const t = useTranslate();
 
-	const categoryColor = (category: string): string =>
+	const categoryOf = (category: string): RelationshipCategory =>
 		(RELATIONSHIP_CATEGORIES as readonly string[]).includes(category)
-			? categoryVar(category as RelationshipCategory)
-			: categoryVar('other');
+			? (category as RelationshipCategory)
+			: 'other';
+	const categoryColor = (category: string): string => categoryVar(categoryOf(category));
 
 	function initials(name: string): string {
 		return name
@@ -60,7 +61,8 @@
 				...n,
 				x: CX + RING * Math.cos(angle),
 				y: CY + RING * Math.sin(angle),
-				color: categoryColor(n.category)
+				color: categoryColor(n.category),
+				disc: categoryDiscFill(categoryOf(n.category))
 			};
 		})
 	);
@@ -70,7 +72,7 @@
 	class="ego"
 	viewBox="0 0 {W} {H}"
 	preserveAspectRatio="xMidYMid meet"
-	role="img"
+	role="group"
 	aria-label={t('contact.egoGraphLabel', { name: centerName })}
 	style="font-size:{13 * fontScale}px"
 >
@@ -116,7 +118,10 @@
 			<text x={n.x} y={n.y - NODE_R - 7} text-anchor="middle" fill="var(--fg-subtle)" class="role">
 				{n.label}
 			</text>
-			<circle cx={n.x} cy={n.y} r={NODE_R} fill={n.color} />
+			<!-- The ring carries the category; the tint inside lets the initials read in --fg. -->
+			<circle cx={n.x} cy={n.y} r={NODE_R} fill={n.disc} stroke={n.color} stroke-width="2" />
+			<!-- Its own ring outside the disc, since a category can share the focus colour. -->
+			<circle class="focus" cx={n.x} cy={n.y} r={NODE_R + 5} fill="none" />
 			{#if n.avatarPhotoId}
 				<image
 					href={thumbnailUrl(n.avatarPhotoId)}
@@ -128,7 +133,7 @@
 					clip-path="url(#ego-clip-{n.id})"
 				/>
 			{:else}
-				<text x={n.x} y={n.y} dy="0.35em" text-anchor="middle" fill="#fff" font-weight="600">
+				<text x={n.x} y={n.y} dy="0.35em" text-anchor="middle" fill="var(--fg)" font-weight="600">
 					{initials(n.name)}
 				</text>
 			{/if}
@@ -162,7 +167,10 @@
 	.node:focus-visible {
 		outline: none;
 	}
-	.node:focus-visible circle {
+	.focus {
+		stroke: none;
+	}
+	.node:focus-visible .focus {
 		stroke: var(--focus-ring);
 		stroke-width: 3;
 	}

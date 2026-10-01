@@ -57,7 +57,8 @@
 		type InteractionKind
 	} from '$lib/interactions/kinds';
 	import type { JsonCommand } from '$lib/commands/commands';
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
+	import { photoAfterKey } from '$lib/ui/photo-walk';
 	import { ulid } from 'ulid';
 	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -165,12 +166,22 @@
 		}
 	}
 
-	function onGalleryKeydown(event: KeyboardEvent) {
+	// The grid's buttons, so closing the photo hands focus back to the one now showing.
+	const thumbnails: HTMLButtonElement[] = $state([]);
+
+	function onPhotoKeydown(event: KeyboardEvent) {
+		if (openPhoto === null) return;
+		const target = event.target as HTMLElement;
+		const typing = target.matches('input, textarea') || target.isContentEditable;
+		const next = photoAfterKey({ key: event.key, at: openPhoto, count: data.gallery.length, typing });
+		if (next !== null) openPhoto = next;
+	}
+
+	function closePhoto() {
 		const at = openPhoto;
-		if (at === null || data.gallery.length === 0) return;
-		if (event.key === 'Escape') openPhoto = null;
-		if (event.key === 'ArrowRight') openPhoto = (at + 1) % data.gallery.length;
-		if (event.key === 'ArrowLeft') openPhoto = (at - 1 + data.gallery.length) % data.gallery.length;
+		openPhoto = null;
+		// After the dialog has gone: until then the grid is inert and cannot take focus.
+		if (at !== null) void tick().then(() => thumbnails[at]?.focus());
 	}
 
 	// The hero's second action opens the story card's own form, wherever the reader is.
@@ -781,7 +792,6 @@
 	);
 </script>
 
-<svelte:window onkeydown={onGalleryKeydown} />
 
 <svelte:head><title>{t('contact.title', { name: c.displayName })}</title></svelte:head>
 
@@ -914,8 +924,8 @@
 								<option value={kind}>{kindLabel('fieldKind', kind)}</option>
 							{/each}
 						</select>
-						<input name="label" placeholder={t('contact.labelOptional')} class="w-28 {INPUT}" />
-						<input name="value" placeholder={t('contact.value')} required class="min-w-40 flex-1 {INPUT}" />
+						<input name="label" placeholder={t('contact.labelOptional')} aria-label={t('contact.labelOptional')} class="w-28 {INPUT}" />
+						<input name="value" placeholder={t('contact.value')} aria-label={t('contact.value')} required class="min-w-40 flex-1 {INPUT}" />
 						<Button variant="primary" size="sm">{t('common.add')}</Button>
 					</form>
 				{/snippet}
@@ -982,7 +992,7 @@
 							{/each}
 						</select>
 						<DateField name="date" required allowYearUnknown label={t('contact.day')} />
-						<input name="label" placeholder={t('contact.dateNameForCustom')} class="w-full {INPUT}" />
+						<input name="label" placeholder={t('contact.dateNameForCustom')} aria-label={t('contact.dateNameForCustom')} class="w-full {INPUT}" />
 						<label class="flex items-center gap-1.5 text-sm text-fg-muted">
 							<input type="checkbox" name="recursYearly" checked /> {t('contact.everyYear')}
 						</label>
@@ -1042,6 +1052,7 @@
 							name="circleName"
 							list="circle-names"
 							placeholder={t('contact.joinOrCreate')}
+							aria-label={t('contact.joinOrCreate')}
 							class="min-w-40 flex-1 {INPUT}"
 							bind:value={joiningCircleName}
 						/>
@@ -1052,6 +1063,7 @@
 							name="role"
 							list="circle-roles"
 							placeholder={t('contact.roleOptional')}
+							aria-label={t('contact.roleOptional')}
 							class="w-28 {INPUT}"
 						/>
 						<!-- The roles the circle being joined already uses; a new one is still free to type. -->
@@ -1094,7 +1106,7 @@
 
 				{#snippet editor()}
 					<form method="POST" action="?/addTag" use:enhance={tagForm} class="flex flex-wrap items-end gap-2">
-						<input name="name" placeholder={t('contact.tagName')} required class="min-w-32 flex-1 {INPUT}" />
+						<input name="name" placeholder={t('contact.tagName')} aria-label={t('contact.tagName')} required class="min-w-32 flex-1 {INPUT}" />
 						<select name="color" aria-label={t('contact.colour')} class={INPUT}>
 							{#each data.tagColors as color (color)}<option value={color}>{color}</option>{/each}
 						</select>
@@ -1729,9 +1741,9 @@
 									{/each}
 								</select>
 								{#key logFresh}<DateField name="happenedAt" value={logDay} required label={t('contact.day')} />{/key}
-								<input name="title" bind:value={logTitle} placeholder={t('contact.interaction.titlePlaceholder')} class="min-w-48 flex-1 {INPUT}" />
+								<input name="title" bind:value={logTitle} placeholder={t('contact.interaction.titlePlaceholder')} aria-label={t('contact.interaction.titlePlaceholder')} class="min-w-48 flex-1 {INPUT}" />
 							</div>
-							<textarea name="description" bind:value={logDescription} rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} class={INPUT}
+							<textarea name="description" bind:value={logDescription} rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} aria-label={t('contact.interaction.detailsPlaceholder')} class={INPUT}
 							></textarea>
 							{#if otherContacts.length > 0}
 								<label for="interaction-participants" class="flex flex-col gap-1 text-sm text-fg-muted">
@@ -1857,6 +1869,7 @@
 								<li class="relative">
 									<button
 										type="button"
+										bind:this={thumbnails[index]}
 										onclick={() => (openPhoto = index)}
 										class="relative block w-full overflow-hidden rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 									>
@@ -1982,18 +1995,23 @@
 	Lightbox (docs/02 §2.14). One overlay for whichever photo is open: a dimmed backdrop that
 	closes on click, the picture, and the few things you might do with it. Only the person who
 	added a photo can caption, re-scope or remove it; anyone who can see it can make it the
-	avatar. Escape closes, the arrow keys walk the grid.
+	avatar. Escape closes, the arrow keys walk the grid. A modal <dialog>, so focus moves in and
+	stays there, and returns to the photo's thumbnail on the way out (docs/05 §5.9).
 -->
 {#if openedPhoto}
-	<div class="fixed inset-0 z-50 flex flex-col" role="dialog" aria-modal="true" aria-label={t('contact.photos.dialog')} data-testid="photo-lightbox">
-		<button
-			type="button"
-			class="absolute inset-0 bg-bg-sunken/90 backdrop-blur-sm"
-			aria-label={t('contact.photos.closePhoto')}
-			onclick={() => (openPhoto = null)}
-		></button>
-
-		<div class="relative m-auto flex w-full max-w-3xl flex-col gap-3 rounded-app bg-card p-4 shadow-pop">
+	<dialog
+		{@attach (lightbox: HTMLDialogElement) => lightbox.showModal()}
+		oncancel={(event) => {
+			event.preventDefault();
+			closePhoto();
+		}}
+		onclick={(event) => event.target === event.currentTarget && closePhoto()}
+		onkeydown={onPhotoKeydown}
+		aria-label={t('contact.photos.dialog')}
+		class="m-auto w-full max-w-3xl rounded-app bg-card p-0 text-fg shadow-pop backdrop:bg-bg-sunken/90 backdrop:backdrop-blur-sm"
+		data-testid="photo-lightbox"
+	>
+		<div class="flex flex-col gap-3 p-4">
 			<div class="flex items-center justify-between gap-3">
 				<p class="truncate text-sm text-fg">
 					{openedPhoto.caption ?? t('contact.photos.noCaption')}
@@ -2004,7 +2022,7 @@
 						</span>
 					{/if}
 				</p>
-				<Button variant="ghost" size="sm" onclick={() => (openPhoto = null)}>{t('common.close')}</Button>
+				<Button variant="ghost" size="sm" onclick={closePhoto}>{t('common.close')}</Button>
 			</div>
 
 			<img
@@ -2053,5 +2071,5 @@
 				{/if}
 			</div>
 		</div>
-	</div>
+	</dialog>
 {/if}

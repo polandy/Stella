@@ -1097,7 +1097,7 @@ mechanism behind two features: correcting a birthday without touching the profil
   re-encoded in the browser first, so no EXIF or GPS ever leaves the device, and the upload
   carries its own *shared or private* choice. Opening one gives a **lightbox** over a dimmed
   backdrop: the picture, its caption, *Use as photo* (which makes it the contact's avatar),
-  the shared/private switch and *Remove*. Escape closes it and the arrow keys walk the grid.
+  the shared/private switch and *Remove*. Escape closes it and the arrow keys walk the grid — except while the caption field has focus, where they move the caret — and closing hands focus back to the photo's thumbnail.
   Captioning, re-scoping and removing appear only on photos you added yourself, the same rule
   notes follow (§2.10); anyone who can see a photo can make it the avatar. Removing a photo
   deletes both stored variants and, if the contact was wearing it, clears the avatar in the
