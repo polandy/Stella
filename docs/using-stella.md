@@ -181,7 +181,7 @@ caption, make it the person's photo, switch it between shared and private, or re
 the gallery, and choosing again — *Change framing* on the one they wear — starts from the part
 you chose last time. Only whoever added a photo can caption or remove it, but anyone who can
 see it can make it the person's photo. Removing one deletes the file for good and, if the person was wearing it, they
-go back to their initials. Escape closes the view and the arrow keys walk through the rest.
+go back to their initials. Escape closes the view and the arrow keys walk through the rest (not while you are typing a caption).
 
 To give someone a new photo straight away, click the round picture at the top of their page and
 pick an image. Before anything is uploaded you choose the part that shows: drag the picture
