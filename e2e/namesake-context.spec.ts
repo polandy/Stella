@@ -121,6 +121,20 @@ test('says who a namesake is by their relationship, and offers it as their descr
 	await expect(found.filter({ hasText: `Sibling of ${sister}` })).toHaveCount(1);
 });
 
+test('offers a description from a link to someone whose first name nobody else has', async ({ page }) => {
+	// The shell sends relationship context for namesakes only (docs/04 §4.8); the clean-up list
+	// reads its own, so a name that is unique still gets its suggestion.
+	const letters = runLetters();
+	const name = `Ottilie${letters}`;
+	const brother = `Bruno${letters} Keller`;
+	await seedHousehold(page, [name, brother], [{ from: name, to: brother, type: LINK.siblingOf }]);
+
+	await page.goto('/settings/first-name-only');
+	await appReady(page);
+	const row = page.getByTestId('first-name-only-row').filter({ has: page.getByRole('link', { name, exact: true }) });
+	await expect(row.getByRole('textbox', { name: `What will you know ${name} by?` })).toHaveValue(`Sibling of ${brother}`);
+});
+
 test.describe('on a phone', () => {
 	test.use({ viewport: PIXEL_9_PRO });
 

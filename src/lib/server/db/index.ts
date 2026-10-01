@@ -47,6 +47,8 @@ export function getDb(): BunSQLiteDatabase<typeof schema> {
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	sqlite.exec('PRAGMA busy_timeout = 5000;');
 	sqlite.exec('PRAGMA synchronous = NORMAL;');
+	// Sorts and groupings that no index serves stay in memory instead of a temp file.
+	sqlite.exec('PRAGMA temp_store = MEMORY;');
 
 	sqliteInstance = sqlite;
 	instance = drizzle(sqlite, { schema });
@@ -55,6 +57,9 @@ export function getDb(): BunSQLiteDatabase<typeof schema> {
 	// the app and is resolved relative to the working directory.
 	migrate(instance, { migrationsFolder: './drizzle' });
 	seedRelationshipTypes(instance);
+	// Gives the planner table statistics to choose indexes by; `0x10002` is SQLite's advice for
+	// a long-lived connection: analyse what has none yet, and keep each run short.
+	sqlite.exec('PRAGMA optimize = 0x10002;');
 	// Create the FTS tables + triggers before demo seeding so seeded contacts/notes index.
 	ensureSearchIndex(sqlite);
 	if (config.seedDemo) {

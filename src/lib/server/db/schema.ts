@@ -71,7 +71,7 @@ export const session = sqliteTable('session', {
 	// ID token of the OIDC sign-in behind this session; the `id_token_hint` for single logout.
 	oidcIdToken: text('oidc_id_token'),
 	createdAt: integer('created_at').notNull().default(now)
-});
+}, (t) => [index('session_user_idx').on(t.userId)]);
 
 /*
  * A member's API token (docs/02 §2.16.1, docs/03 §3.2). Stored as the SHA-256 of the secret,
@@ -167,8 +167,7 @@ export const contact = sqliteTable(
 		updatedAt: integer('updated_at').notNull().default(now)
 	},
 	(t) => [
-		index('contact_household_idx').on(t.householdId),
-		index('contact_visibility_idx').on(t.visibility)
+		index('contact_household_idx').on(t.householdId)
 	]
 );
 
@@ -237,7 +236,8 @@ export const relationship = sqliteTable(
 	(t) => [
 		unique('relationship_unique').on(t.fromContactId, t.toContactId, t.typeId),
 		index('relationship_from_idx').on(t.fromContactId),
-		index('relationship_to_idx').on(t.toContactId)
+		index('relationship_to_idx').on(t.toContactId),
+		index('relationship_type_idx').on(t.typeId)
 	]
 );
 
@@ -273,7 +273,10 @@ export const noteMention = sqliteTable(
 			.notNull()
 			.references(() => contact.id, { onDelete: 'cascade' })
 	},
-	(t) => [primaryKey({ columns: [t.noteId, t.contactId] })]
+	(t) => [
+		primaryKey({ columns: [t.noteId, t.contactId] }),
+		index('note_mention_contact_idx').on(t.contactId)
+	]
 );
 
 /*
@@ -301,7 +304,9 @@ export const journalEntry = sqliteTable(
 		updatedAt: integer('updated_at').notNull().default(now)
 	},
 	(t) => [
-		index('journal_contact_idx').on(t.contactId),
+		// In the story's order, so a page of it is read rather than sorted (docs/02 §2.23).
+		index('journal_contact_day_idx').on(t.contactId, t.entryDate, t.createdAt),
+		index('journal_updated_idx').on(t.updatedAt),
 		unique('journal_day_slot').on(t.contactId, t.createdBy, t.entryDate, t.visibility)
 	]
 );
@@ -361,7 +366,10 @@ export const interactionParticipant = sqliteTable(
 			.notNull()
 			.references(() => contact.id, { onDelete: 'cascade' })
 	},
-	(t) => [primaryKey({ columns: [t.interactionId, t.contactId] })]
+	(t) => [
+		primaryKey({ columns: [t.interactionId, t.contactId] }),
+		index('interaction_participant_contact_idx').on(t.contactId)
+	]
 );
 
 export const importantDate = sqliteTable(
@@ -453,7 +461,10 @@ export const contactTag = sqliteTable(
 			.notNull()
 			.references(() => tag.id, { onDelete: 'cascade' })
 	},
-	(t) => [primaryKey({ columns: [t.contactId, t.tagId] })]
+	(t) => [
+		primaryKey({ columns: [t.contactId, t.tagId] }),
+		index('contact_tag_tag_idx').on(t.tagId)
+	]
 );
 
 // ── Circles & shared contexts ─────────────────────────────────────────────

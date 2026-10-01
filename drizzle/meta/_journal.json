@@ -92,6 +92,13 @@
       "when": 1790842117853,
       "tag": "0012_wandering_rogue",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1790854159953,
+      "tag": "0013_next_eternity",
+      "breakpoints": true
     }
   ]
 }

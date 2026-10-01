@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterNavigate, beforeNavigate, goto, invalidateAll, onNavigate, pushState } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, goto, invalidate, invalidateAll, onNavigate, pushState } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import Button from '$lib/components/Button.svelte';
 	import ActivityIndicator from '$lib/components/ActivityIndicator.svelte';
@@ -16,6 +16,7 @@
 	import { navigationTurns } from '$lib/undo/navigation-turns';
 	import { providePending } from '$lib/sync/context.svelte';
 	import { providePeopleContext } from '$lib/people/context.svelte';
+	import { refreshPeopleIfChanged } from '$lib/sync/people-freshness';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { reportNavigation } from '$lib/sync/pending';
@@ -126,6 +127,27 @@
 	// sends them with keepalive alongside and hopes for the best.
 	const removals = provideRemovals();
 	providePeopleContext(() => data.peopleContext);
+	/*
+	 * The people every picker reads come with the shell, which a client-side navigation keeps,
+	 * and so does a tab left open while someone else adds a person. After a navigation, and
+	 * whenever the tab comes back into view, they are reloaded if anyone changed them
+	 * (docs/04 §4.9).
+	 */
+	const refreshPeople = () =>
+		void refreshPeopleIfChanged(
+			{
+				fetchStamp: async () => {
+					const answer = await fetch('/api/people/stamp');
+					if (!answer.ok) throw new Error(`people stamp: ${answer.status}`);
+					return ((await answer.json()) as { stamp: string }).stamp;
+				},
+				reload: () => invalidate('app:people')
+			},
+			data.peopleStamp
+		);
+	afterNavigate((navigation) => {
+		if (navigation.type !== 'enter') refreshPeople();
+	});
 	const turns = navigationTurns();
 	beforeNavigate((navigation) => {
 		// Taken for every navigation, so a newer one retires any held back below.
@@ -161,6 +183,7 @@
 		const onVisible = () => {
 			if (document.visibilityState !== 'visible') return;
 			void outbox.refresh().then(() => outbox.send());
+			refreshPeople();
 		};
 		// A hint, not proof: it fires when the phone joins a network — the home Wi-Fi, say.
 		const onOnline = () => void outbox.send();

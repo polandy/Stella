@@ -216,6 +216,14 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
 - SSR + minimal client JS (Svelte compiles away). Islands of interactivity only where
   needed (graph, search, forms).
 - Expected idle memory dominated by the Bun runtime; target well under 150 MB.
+- **Each list of people crosses the wire once.** The app shell carries the people the viewer
+  may see; pages and pickers read that list rather than sending their own copy, and a page
+  sends only the fields it renders. The namesake context goes out for namesakes only, since
+  nobody else is ever given a second line. See the decision below on keeping it current.
+- **Repeated lookups are index-backed**: every foreign key a page or a delete looks up by,
+  and the orders the story and the stream page through; `src/lib/server/db/indexes.test.ts`
+  holds the plan to that. Pragmas beyond WAL: `temp_store = MEMORY`, and `optimize` at start
+  so the planner has statistics.
 
 ## 4.9 Decision log (ADR-lite)
 
@@ -644,9 +652,12 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   are further fallbacks for the second line (§2.2.3), and each is a record with its own
   visibility. Storing the line would go stale when a link ends and could name a private person
   to someone else; ranking in the browser would send it links it may not see. The shell's load
-  reads the candidates through the access layer (`contextOfPeople`, only for people with
-  nothing typed) and the browser picks the first whose other end is not a namesake, since only
-  it knows the list. The cost is two scoped reads per navigation, bounded by a household's size.
+  reads the candidates through the access layer (`contextOfPeople`, only for namesakes with
+  nothing typed: every picker's list is part of the shell's, so a name unique there is unique
+  in any of them) and the browser picks the first whose other end is not a namesake, since only
+  it knows the list. The cost is two scoped reads per shell load, bounded by a household's size.
+  *Data quality → First name only* reads its own, since it suggests a description to people
+  whose name nobody else shares.
   A refused `@Thomas` reads them only then (`withNamesakeContext`), not on every text saved.
 - **A picked mention is remembered by its range, and a typed namesake is refused** — two people
   called Thomas both read `@Thomas`. The options were a disambiguated handle (`@Thomas2`), raw
@@ -879,6 +890,15 @@ client with `authorization_code` grant, PKCE required, the redirect URI above, a
   Pronouns are not offered at all: nothing Stella writes uses them. The `pronouns` column stays
   in the schema, unused, so there is no migration and no archive format change for a field
   that was always empty (docs/02 §2.2, `src/lib/people/gender.ts`).
+- **One list of people in the shell, kept current by a stamp** — the pages used to send their
+  own copy of the household's people next to the shell's, about half of every page's data at a
+  few hundred people. Now only the shell sends it, so a client-side navigation, which keeps the
+  shell, would leave it stale, and so would a tab left open while someone else adds a person.
+  After a navigation, and whenever the tab comes back into view, `/api/people/stamp` returns a hash of what the shell
+  would send now; only a different answer reloads it (`app:people`). This costs one small
+  request per navigation, and a picker can read the old list for the few milliseconds the
+  check takes. A hash rather than counts and `updated_at`, because archiving or a new photo
+  does not touch `updated_at` (`src/lib/sync/people-freshness.ts`).
 - **Merging a relationship type moves links the admin cannot see** — the one write under the
   access layer not scoped by `relationshipVisibleTo`, scoped by household instead: a type is
   household vocabulary, and a hidden link left on it would keep it from ever going. Changing

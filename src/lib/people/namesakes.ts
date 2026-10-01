@@ -59,6 +59,15 @@ function sharedNamesOn(people: readonly Distinguishable[]): (displayName: string
 }
 
 /**
+ * The people on `people` who share their name with another on it: the only ones a second line
+ * is ever drawn for, and so the only ones whose relationships and circles are worth sending.
+ */
+export function namesakesOn<P extends Distinguishable>(people: readonly P[]): P[] {
+	const isShared = sharedNamesOn(people);
+	return people.filter((p) => isShared(p.displayName));
+}
+
+/**
  * The line a person's relationships or circles give, or null when they give none: the first
  * link whose other end is not a namesake too (*Father of Thomas* tells no Thomas apart), else
  * the circle.
