@@ -10,8 +10,8 @@ import type { PageServerLoad } from './$types';
 
 /*
  * People (docs/02 §2.2): every person the viewer may see, with the last day anything was
- * written about them. That day comes from the attention repository, the same scoped read
- * that feeds "Quiet lately" on Home, so the two screens can never disagree about it.
+ * written about them. That day comes from the attention repository, a scoped read, so a
+ * private entry the viewer may not see never dates anyone.
  */
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			: activeTag
 				? listContactsByTag(getTagDeps(), viewer, activeTag)
 				: listContacts(getContactDeps(), viewer),
-		getAttention().listQuietSourcesVisibleTo(viewer)
+		getAttention().listLastTouchedVisibleTo(viewer)
 	]);
 	const lastTouchedOn = new Map(touches.map((t) => [t.contactId, t.lastTouchedOn]));
 

@@ -326,7 +326,7 @@ const IMPORTANT_DATES: readonly ImportantDateSeed[] = [
 
 /*
  * The story so far (docs/02 §2.23): journal entries and touchpoints, dated relative to the
- * day the seed runs so "Quiet lately" and "last written about" always have something to say.
+ * day the seed runs so "last written about" always has something to say.
  * Lena is deliberately left out — the e2e suite writes her story itself and counts it.
  * Opa Hans carries enough for the timeline to need a second page.
  */

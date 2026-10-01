@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { appReady, fillDate, signIn } from './app';
 
 /*
- * Home's rail, the People directory and the ⌘K palette (docs/02 §2.12.1, §2.2, §2.22.1;
+ * Home's rail, the People directory and the ⌘K palette (docs/02 §2.12, §2.2, §2.22.1;
  * docs/05 §5.4). Written after the screens were merged and seen in the running app
  * (docs/08 §8.4.1). Runs against the demo dataset, signed in as the demo admin; the person
  * created here (Xenia Quillford) is absent from the seed.
@@ -38,16 +38,14 @@ async function addBirthdaysSoon(page: Page, names: string[], firstInDays = 2): P
 	await page.goto('/');
 }
 
-test('names a person nobody has written about in months, and offers to write a moment', async ({ page }) => {
-	const quiet = page.getByTestId('quiet-lately');
+test('holds only Coming up in the rail, with no band about who has gone quiet', async ({ page }) => {
+	// A birthday this week, so the rail is there on any day the suite runs and its headings
+	// can be read; the removed *Quiet lately* band would have been the second one.
+	await addBirthdaysSoon(page, ['Mira Quadri']);
+	const rail = page.getByRole('complementary', { name: 'At a glance' });
+	await expect(rail.getByTestId('coming-up')).toBeVisible();
 
-	// Reto's last entry is seeded three hundred days back; Markus was written about yesterday.
-	await expect(quiet.getByRole('link', { name: 'Reto Hofer' })).toBeVisible();
-	await expect(quiet.getByRole('link', { name: 'Markus Brunner' })).toHaveCount(0);
-
-	await quiet.getByRole('listitem').filter({ hasText: 'Reto Hofer' }).getByRole('link', { name: 'Write a moment' }).click();
-
-	await expect(page.getByLabel('What happened?')).toHaveValue(/Reto/);
+	await expect(rail.getByRole('heading')).toHaveText(['Coming up']);
 });
 
 test('finds a person by the nickname given when they were added', async ({ page }) => {
@@ -93,18 +91,17 @@ test.describe('on a phone', () => {
 	test.use({ viewport: { width: 390, height: 844 } });
 
 	test('lays the rail out as one vertical list, with nothing off the right edge', async ({ page }) => {
-		// The bands used to be a strip of cards scrolling sideways, so most of them sat off
-		// the screen with nothing to say so (docs/05 §5.5). Enough people to fill the strip,
+		// The band used to be a strip of cards scrolling sideways, so most of it sat off the
+		// screen with nothing to say so (docs/05 §5.5). Enough people to fill the strip,
 		// because an empty band cannot overflow and would pass this without the fix.
 		await addBirthdaysSoon(page, ['Ilona Weber', 'Jonas Xavier', 'Karin Yerly', 'Livio Zbinden']);
 		await expect(page.getByTestId('coming-up')).toBeVisible();
-		await expect(page.getByTestId('quiet-lately')).toBeVisible();
 
 		const sideways = await page.evaluate(() => {
 			const scrolls = (el: Element) => el.scrollWidth > el.clientWidth + 1;
 			return {
 				page: document.documentElement.scrollWidth > window.innerWidth + 1,
-				bands: [...document.querySelectorAll('[data-testid$="-lately"] ul, [data-testid="coming-up"] ul')].some(scrolls)
+				bands: [...document.querySelectorAll('[data-testid="coming-up"] ul')].some(scrolls)
 			};
 		});
 		expect(sideways).toEqual({ page: false, bands: false });

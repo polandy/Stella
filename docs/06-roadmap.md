@@ -49,8 +49,8 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
 - **Activity feed** ("What's new") with visibility filtering — **shipped** as the household
   stream (§2.11, §2.22.2), filterable by kind and by member. "Notable edits" were dropped: the
   stream records what happened in the family, not every edit to the database.
-- **Personal dashboard (Home):** the stream plus a rail with "Coming up" and "Quiet lately"
-  (§2.12); further panels (gifts given) as their base features land.
+- **Personal dashboard (Home):** the stream plus a rail with "Coming up" (§2.12); further
+  panels (gifts given) as their base features land.
 - **Interactions timeline** + "last contacted", read as one **story timeline** per person
   together with the journal (§2.23).
 - **Name-based suggestions:** duplicate/relative candidates on contact entry (pure ranker)
@@ -113,7 +113,7 @@ Goal: sand the edges and add the nice-to-haves.
 
 - ~~**Localization:** German with a language switcher~~ — shipped: English and German are
   both fully supported, chosen per member and kept with the profile (§2.19).
-- **Graph & UX polish:** "haven't seen in a while" hints, photo reordering, saved graph
+- **Graph & UX polish:** photo reordering, saved graph
   filters, density/appearance refinements. ~~Group a circle's members by role~~ — shipped:
   a *Group by role* switch in the explorer's Filter menu (§2.7).
 - ~~**Photos in every person picker**~~ — shipped (docs/05 §5.10): search results, the person

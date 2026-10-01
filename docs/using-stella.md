@@ -36,14 +36,11 @@ is part of the address, so a reload keeps it and *Back* takes it off again; *Eve
 *Everyone* show the whole stream. Filtering never shows anything you could not see anyway —
 someone else's private moments stay theirs.
 
-Beside the stream sit two short lists. **Coming up** is the next thirty days of birthdays
-and anniversaries. **Quiet lately** is the people nobody has written
-about in three months — not "you have not called Oma", which Stella cannot know, but "nothing
-has been written down about Oma", which it can. Each name offers one thing: *Write a moment*.
-Both lists disappear when they have nothing to say. On a phone there is no room beside the
-stream, so they go under it — and above it only while something is due within a fortnight,
-which is when they are worth the top of the screen. Each list shows three people there, with
-*Show all* underneath when there are more.
+Beside the stream sits a short list, **Coming up**: the next thirty days of birthdays and
+anniversaries. Each name offers one thing: *Write a moment*. The list disappears when it has
+nothing to say. On a phone there is no room beside the stream, so it goes under it — and
+above it only while something is due within a fortnight, which is when it is worth the top
+of the screen. It shows three people there, with *Show all* underneath when there are more.
 
 ### Writing a moment
 

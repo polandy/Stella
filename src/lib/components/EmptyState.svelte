@@ -6,7 +6,7 @@
 	/*
 	 * An empty screen is an invitation, not a dead end (docs/05 §5.10): one large icon in the
 	 * subtle text colour, a line that says what belongs here, and the one action that starts
-	 * it. Bands that are absent when empty (Coming up, Quiet lately) do not use this.
+	 * it. A band that is absent when empty (Coming up) does not use this.
 	 *
 	 * `compact` is the same invitation inside a card that holds other things — a person's
 	 * relationships, say — where a screen-sized block would push everything else away: a small

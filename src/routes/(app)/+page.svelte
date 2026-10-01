@@ -15,7 +15,7 @@
 	import KeptItem from '$lib/components/KeptItem.svelte';
 	import WelcomeCard from '$lib/components/WelcomeCard.svelte';
 	import { contactSectionPath } from '$lib/contacts/sections';
-	import { agoLabel, occasionLabel, whenLabel } from '$lib/dates/labels';
+	import { occasionLabel, whenLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { relationshipRowLabel } from '$lib/relationships/labels';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
@@ -93,8 +93,8 @@
 	const RAIL_ROW =
 		'grid grid-cols-[28px_1fr] items-center gap-2.5 rounded-app px-1.5 py-1.5 transition-colors hover:bg-card';
 
-	// A phone shows the first few rows of a band and keeps the rest one tap away, so two full
-	// bands never push the stream off the screen; from lg the whole band is there (docs/05 §5.5).
+	// A phone shows the first few rows of the band and keeps the rest one tap away, so a full
+	// band never pushes the stream off the screen; from lg the whole band is there (docs/05 §5.5).
 	const RAIL_CAP = 3;
 	const RAIL_OVERFLOW = 'max-lg:hidden';
 
@@ -106,7 +106,6 @@
 	const railOrder = $derived(data.railFirst ? RAIL_BEFORE_STREAM : RAIL_AFTER_STREAM);
 
 	let showAllUpcoming = $state(false);
-	let showAllQuiet = $state(false);
 
 	// On a phone the composer is a sheet over the stream, opened by the pencil in the tab bar
 	// (`/?compose`) and closed by handing the URL back — so the open state lives in the URL
@@ -474,13 +473,14 @@
 	</button>
 {/snippet}
 
-<!-- The rail: the future, and the people slipping out of it. Both bands are absent when
-     empty, because a box that is permanently empty teaches people to stop looking at it. -->
-<aside
-	class="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:gap-8 lg:self-start {railOrder}"
-	aria-label={t('home.atAGlance')}
->
-	{#if data.upcoming.length}
+<!-- The rail: what is coming up. It is absent when nothing is, because a box that is
+     permanently empty teaches people to stop looking at it; from lg its column stays reserved,
+     so the stream keeps its width whether or not a date is near. -->
+{#if data.upcoming.length}
+	<aside
+		class="flex min-w-0 flex-col lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start {railOrder}"
+		aria-label={t('home.atAGlance')}
+	>
 		<section data-testid="coming-up">
 			<h2 class="flex items-center gap-2 pb-2 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
 				<Icon name="calendar" size={13} />{t('home.comingUp')}
@@ -505,34 +505,6 @@
 				{@render showAll(data.upcoming.length, () => (showAllUpcoming = true))}
 			{/if}
 		</section>
-	{/if}
-
-	{#if data.quiet.length}
-		<section data-testid="quiet-lately">
-			<h2 class="flex items-center gap-2 pb-2 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
-				<Icon name="quiet" size={13} />{t('home.quietLately')}
-			</h2>
-			<ul class="{RAIL_LIST}">
-				{#each data.quiet as item, i (item.contactId)}
-					<li class="{RAIL_ROW} {i >= RAIL_CAP && !showAllQuiet ? RAIL_OVERFLOW : ''}">
-						<Avatar id={item.contactId} name={item.contactName} avatarPhotoId={item.avatarPhotoId} size={28} />
-						<div class="min-w-0 text-[13px] leading-snug text-fg-muted">
-							<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline">{item.contactName}</a>
-							<span class="block text-xs text-fg-subtle">
-								{item.lastTouchedOn
-									? t('home.lastWritten', { ago: agoLabel(i18n, item.quietForDays) })
-									: t('home.nothingWrittenYet')}
-								<span aria-hidden="true">·</span>
-								<a href="/?about={item.contactId}" class="text-link hover:underline">{t('home.writeMoment')}</a>
-							</span>
-						</div>
-					</li>
-				{/each}
-			</ul>
-			{#if data.quiet.length > RAIL_CAP && !showAllQuiet}
-				{@render showAll(data.quiet.length, () => (showAllQuiet = true))}
-			{/if}
-		</section>
-	{/if}
-</aside>
+	</aside>
+{/if}
 </main>

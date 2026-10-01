@@ -8,10 +8,10 @@ import { createDrizzleAttentionRepository } from './attention-repository';
 import * as schema from './schema';
 
 /*
- * Integration spec for the attention adapter (docs/02 §2.12, "Quiet lately"). The rule that
- * needs a real database is the one that decides *which* touches count: only the journal
- * entries and touchpoints the viewer may see. A private entry someone else wrote must not make
- * a person look recently attended to — from that viewer's chair they really are quiet.
+ * Integration spec for the attention adapter: the day each person was last written about, as
+ * the People list shows it (docs/02 §2.2). The rule that needs a real database is the one that
+ * decides *which* touches count: only the journal entries and touchpoints the viewer may see.
+ * A private entry someone else wrote must not date a person from that viewer's chair.
  */
 
 const H = 'household-1';
@@ -45,11 +45,11 @@ beforeEach(() => {
 		.run();
 });
 
-const sources = (viewer: Viewer) => createDrizzleAttentionRepository(db).listQuietSourcesVisibleTo(viewer);
+const sources = (viewer: Viewer) => createDrizzleAttentionRepository(db).listLastTouchedVisibleTo(viewer);
 const byId = async (viewer: Viewer, id: string) => (await sources(viewer)).find((s) => s.contactId === id);
 
-describe('attention repository, quiet sources', () => {
-	it('stops nagging about someone who has been archived', async () => {
+describe('attention repository, last touched', () => {
+	it('leaves out someone who has been archived', async () => {
 		db.update(schema.contact)
 			.set({ archivedAt: 1_700_000_000_000 })
 			.where(eq(schema.contact.id, 'oma'))
@@ -60,15 +60,8 @@ describe('attention repository, quiet sources', () => {
 		expect(await byId(viewerU1, 'secret')).toBeDefined();
 	});
 
-	it('hands back a person with no story at all, dated from the day they were added', async () => {
-		expect(await byId(viewerU1, 'oma')).toEqual({
-			contactId: 'oma',
-			contactName: 'Oma',
-			avatarPhotoId: null,
-			isDeceased: false,
-			knownSince: '2020-01-01',
-			lastTouchedOn: null
-		});
+	it('hands back a person with no story at all as never written about, and nothing more', async () => {
+		expect(await byId(viewerU1, 'oma')).toEqual({ contactId: 'oma', lastTouchedOn: null });
 	});
 
 	it('takes the latest day across journal entries and touchpoints, whichever is newer', async () => {
@@ -103,12 +96,4 @@ describe('attention repository, quiet sources', () => {
 		expect((await sources(viewerU2)).map((s) => s.contactId)).toEqual(['oma']);
 	});
 
-	it('carries the deceased flag as a boolean, so the domain can leave them out', async () => {
-		db.insert(schema.contact)
-			.values({ id: 'opa', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Opa', isDeceased: 1 })
-			.run();
-
-		expect((await byId(viewerU1, 'opa'))!.isDeceased).toBe(true);
-		expect((await byId(viewerU1, 'oma'))!.isDeceased).toBe(false);
-	});
 });

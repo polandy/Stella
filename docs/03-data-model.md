@@ -198,7 +198,7 @@ scoped by household, and the Home stream reads the newest people first.
 **Archiving is not visibility.** `contactVisibleTo` decides who *may* see a contact (§3.7);
 `archived_at` decides whether they are *listed*. The two are separate conditions, and
 `contactBrowsableBy` is their conjunction — applied by the directory, the search, the name
-suggestions, *Quiet lately*, both *Coming up* queries and the stream's new-people read.
+suggestions, People's *last written about* column, both *Coming up* queries and the stream's new-people read.
 Everything that reasons about the household's shape — `kinship-graph-read`, the graph
 repository — every read of one named contact, and the name lookup that resolves @-mentions
 (`listNamesVisibleTo`, and `listNamesAmongVisibleTo` for just the ids a page mentions) keep

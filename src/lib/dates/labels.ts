@@ -73,7 +73,7 @@ const WEEK_DAYS = 7;
 const MONTH_DAYS = 30;
 const YEAR_DAYS = 365;
 
-/** A silence rounded to the coarsest unit that still reads honestly. */
+/** A span of days rounded to the coarsest unit that still reads honestly. */
 interface Span {
 	unit: 'year' | 'month' | 'week' | 'day';
 	amount: number;
@@ -86,23 +86,12 @@ function coarseSpan(days: number): Span {
 	return { unit: 'day', amount: days };
 }
 
-/** How long a silence has lasted, on its own: "3 months", "a year". */
-export function quietLabel(lang: DateLanguage, days: number): string {
-	const span = coarseSpan(days);
-	if (span.unit === 'year') {
-		return span.amount === 1 ? lang.t('dates.aYear') : lang.t('dates.years', { years: span.amount });
-	}
-	if (span.unit === 'month') return lang.t('dates.months', { months: span.amount });
-	if (span.unit === 'week') return lang.t('dates.weeks', { weeks: span.amount });
-	return lang.t('dates.days', { days: span.amount });
-}
-
 /**
- * The same silence as a point in the past: "3 months ago". A separate set of messages
- * rather than a duration glued to an "ago", because German declines the duration there
+ * A span as a point in the past: "3 months ago". Its own set of messages rather than a
+ * duration glued to an "ago", because German declines the duration there
  * ("3 Monate" but "vor 3 Monaten").
  */
-export function agoLabel(lang: DateLanguage, days: number): string {
+function agoLabel(lang: DateLanguage, days: number): string {
 	const span = coarseSpan(days);
 	if (span.unit === 'year') {
 		return span.amount === 1

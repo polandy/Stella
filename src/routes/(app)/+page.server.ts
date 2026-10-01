@@ -1,6 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { quietContacts } from '$lib/server/domain/attention/quiet';
 import {
 	listBrowsableNamesAmong,
 	listContactNamesAmong,
@@ -17,7 +16,6 @@ import { buildStream } from '$lib/server/domain/stream/stream';
 import { extractMentionIds, mentionToken } from '$lib/mentions/mentions';
 import { parseStreamFilter } from '$lib/stream/filter';
 import {
-	getAttention,
 	getCommandDeps,
 	getContactDeps,
 	getImportantDates,
@@ -32,9 +30,8 @@ import { welcomeSteps } from '$lib/onboarding/welcome';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
- * the rail beside it — what is coming up and who has gone quiet. Everything on it is a scoped
- * query over existing tables; capture is the moments use-case. The layout guard already
- * ensures `locals.user`.
+ * the rail beside it — what is coming up. Everything on it is a scoped query over existing
+ * tables; capture is the moments use-case. The layout guard already ensures `locals.user`.
  */
 
 /** Query param that opens the composer pre-filled with one person's handle: `?about=<id>`. */
@@ -65,12 +62,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const aboutId = url.searchParams.get(ABOUT_PARAM);
 	const named = [a, b, aboutId].filter((id): id is string => Boolean(id));
 
-	const [items, onList, dateSources, quietSources, firstPeople] = await Promise.all([
+	const [items, onList, dateSources, firstPeople] = await Promise.all([
 		buildStream(getStreamDeps(), viewer, filter),
 		// Who the household can still act on — the browsing scope — among just those.
 		listBrowsableNamesAmong(getContactDeps(), viewer, named),
 		getImportantDates().listSourcesVisibleTo(viewer),
-		getAttention().listQuietSourcesVisibleTo(viewer),
 		// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
 		listPeopleEnoughForFirstRun(getContactDeps(), viewer)
 	]);
@@ -105,7 +101,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		upcoming,
 		// Below `lg` the rail only precedes the stream when a date is close (docs/05 §5.5).
 		railFirst: hasImminentDate(upcoming),
-		quiet: quietContacts(quietSources, day),
 		linkSuggestion,
 		// The first-run card (docs/02 §2.22.3), or null once the household has begun.
 		welcome: welcomeSteps({
