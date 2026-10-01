@@ -16,8 +16,7 @@ const user = (role: AuthUser['role']): AuthUser => ({
 	name: 'P',
 	role,
 	locale: DEFAULT_LOCALE,
-	selfContactId: null,
-	reducedMotion: false
+	selfContactId: null
 });
 
 /** The guard only reads `user`; the language rides along on every request's locals. */

@@ -6,8 +6,7 @@ import {
 } from '$lib/server/domain/household/self-contact';
 import { listContacts } from '$lib/server/domain/contacts/contacts';
 import { isKnownByAFirstNameOnly } from '$lib/people/namesakes';
-import { changeReducedMotion } from '$lib/server/auth/accounts';
-import { getAccountDeps, getContactDeps, getSelfContactDeps, getUpdateCheck } from '$lib/server/services';
+import { getContactDeps, getSelfContactDeps, getUpdateCheck } from '$lib/server/services';
 import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -56,15 +55,5 @@ export const actions: Actions = {
 		}
 
 		return { selfSaved: say(locals, 'settings.self.saved') };
-	},
-
-	/* Less motion, as a switch of Stella's own (docs/02 §2.17). A plain post: works without JS. */
-	setMotion: async ({ request, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const reduce = (await request.formData()).get('reduce') === 'on';
-		await changeReducedMotion(getAccountDeps(), locals.user.id, reduce);
-		// The shell's load re-runs off these `locals` within this request (see setSelf).
-		locals.user = { ...locals.user, reducedMotion: reduce };
-		return { motionSaved: true };
 	}
 };

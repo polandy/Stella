@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { lessMotion } from '$lib/ui/motion';
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
@@ -134,8 +133,9 @@
 	const MENU_ITEM =
 		'flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-[13px] text-fg hover:bg-bg-sunken focus:bg-bg-sunken';
 
-	// The device's setting or the member's own switch (docs/05 §5.5).
-	const reducedMotion = typeof window !== 'undefined' && lessMotion();
+	const reducedMotion =
+		typeof window !== 'undefined' &&
+		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	let frame: HTMLDivElement;
 	let container: HTMLDivElement;

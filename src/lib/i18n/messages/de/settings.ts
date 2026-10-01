@@ -115,9 +115,5 @@ export const settings: SettingsMessages = {
 	'settings.apiTokens.revoked': 'Token widerrufen. Skripte damit können sich nicht mehr anmelden.',
 	'settings.apiTokens.notFound': 'Dieses Token gibt es schon nicht mehr.',
 	'settings.about.off':
-		'Stella sucht nicht nach neuen Versionen. Mit UPDATE_CHECK=true schaltest du die Suche ein.',
-	'settings.appearance.heading': 'Darstellung',
-	'settings.appearance.reduceMotion': 'Bewegung reduzieren',
-	'settings.appearance.reduceMotionHint':
-		'Bildschirme wechseln ohne Überblendung und nichts gleitet, auf jedem Gerät, auf dem du angemeldet bist. Ein Gerät, das selbst weniger Bewegung verlangt, bekommt sie immer.'
+		'Stella sucht nicht nach neuen Versionen. Mit UPDATE_CHECK=true schaltest du die Suche ein.'
 };

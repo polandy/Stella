@@ -126,11 +126,7 @@ export const settings = {
 	'settings.apiTokens.revoked': 'Token revoked. Scripts using it can no longer sign in.',
 	'settings.apiTokens.notFound': 'That token is already gone.',
 	'settings.about.off':
-		'Stella is not checking for new releases. Set UPDATE_CHECK=true to switch it on.',
-	'settings.appearance.heading': 'Appearance',
-	'settings.appearance.reduceMotion': 'Reduce motion',
-	'settings.appearance.reduceMotionHint':
-		'Screens cut instead of fading and nothing slides, on every device you sign in on. A device set to reduce motion always does.'
+		'Stella is not checking for new releases. Set UPDATE_CHECK=true to switch it on.'
 };
 
 /** The key set every translation of this area has to provide. */

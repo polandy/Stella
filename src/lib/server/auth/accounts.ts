@@ -20,8 +20,6 @@ export interface AuthUser {
 	locale: Locale | null;
 	/** The contact this user *is*, or null while they have not said (docs/02 §2.1.3). */
 	selfContactId: string | null;
-	/** Asked Stella for less motion, whatever the device says (docs/02 §2.17). */
-	reducedMotion: boolean;
 }
 
 export interface StoredCredentials {
@@ -45,8 +43,6 @@ export interface AccountRepository {
 	updateLocale(userId: string, locale: Locale): Promise<void>;
 	/** Persist which contact the user is, or clear it with `null` (docs/02 §2.1.3). */
 	updateSelfContact(userId: string, contactId: string | null): Promise<void>;
-	/** Persist whether the user wants less motion (docs/02 §2.17). */
-	updateReducedMotion(userId: string, reduce: boolean): Promise<void>;
 }
 
 export interface AccountDeps {
@@ -89,19 +85,6 @@ export async function changeLocale(
 }
 
 /**
- * Ask for less motion, or stop asking (docs/02 §2.17, docs/05 §5.5). Stored on the profile so
- * it follows the member to every device, alongside what the device's own setting says.
- */
-export async function changeReducedMotion(
-	deps: Pick<AccountDeps, 'accounts'>,
-	userId: string,
-	reduce: boolean
-): Promise<boolean> {
-	await deps.accounts.updateReducedMotion(userId, reduce);
-	return reduce;
-}
-
-/**
  * Create the household and its first, admin user. Only allowed while no users exist (the
  * one-time first-run setup). The admin is `roleLocked` so IdP group-sync can never demote
  * this break-glass account (docs/02 §2.1.2).
@@ -122,8 +105,7 @@ export async function registerFirstAdmin(
 		name: input.name,
 		role: 'admin',
 		locale: input.locale,
-		selfContactId: null,
-		reducedMotion: false
+		selfContactId: null
 	};
 	const passwordHash = await deps.hashPassword(input.password);
 

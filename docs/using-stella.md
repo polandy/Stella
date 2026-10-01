@@ -656,12 +656,6 @@ nobody else signing in on that phone sees them.
 Stella follows whatever your device is set to, and both themes are designed rather than
 inverted. There is nothing to configure.
 
-## Less movement
-
-Stella fades between screens and lets removed rows slide away. If your device is set to reduce
-motion, it already doesn't. If you would rather have it still on every device you sign in on,
-switch on **Settings → Appearance → Reduce motion**; it is kept with your profile.
-
 ## English or German
 
 Stella speaks both, and the whole of it — screens, buttons, dates, the messages a form gives

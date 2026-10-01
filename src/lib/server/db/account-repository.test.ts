@@ -30,8 +30,7 @@ const admin: AuthUser = {
 	name: 'Andy',
 	role: 'admin',
 	locale: 'en',
-	selfContactId: null,
-	reducedMotion: false
+	selfContactId: null
 };
 
 async function seedAdmin(
@@ -65,16 +64,6 @@ describe('createDrizzleAccountRepository', () => {
 
 	it('returns null for an unknown email', async () => {
 		expect(await repo.findCredentialsByEmail('nobody@example.test')).toBeNull();
-	});
-
-	it('stores and reads back the wish for less motion, on both read paths', async () => {
-		await seedAdmin();
-		await repo.updateReducedMotion('user-1', true);
-		expect(await repo.findById('user-1')).toEqual({ ...admin, reducedMotion: true });
-		expect((await repo.findCredentialsByEmail(admin.email))?.user.reducedMotion).toBe(true);
-
-		await repo.updateReducedMotion('user-1', false);
-		expect(await repo.findById('user-1')).toEqual(admin);
 	});
 
 	it('stores and reads back the interface language', async () => {

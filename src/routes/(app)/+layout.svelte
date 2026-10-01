@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { lessMotion, MOTION_ATTRIBUTE, motionAttribute } from '$lib/ui/motion';
 	import { afterNavigate, beforeNavigate, goto, invalidate, invalidateAll, onNavigate, pushState } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import Button from '$lib/components/Button.svelte';
@@ -102,7 +101,7 @@
 	// one place. Browsers without the API and people who asked for less motion get a cut.
 	onNavigate((navigation) => {
 		if (!document.startViewTransition) return;
-		if (lessMotion()) return;
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 		return new Promise((resolve) => {
 			document.startViewTransition(async () => {
 				resolve();
@@ -206,12 +205,6 @@
 		event.preventDefault();
 		pushState('/?compose', { compose: true });
 	}
-
-	// The member's switch for less motion (Settings), on <html> where app.css reads it. The
-	// server wrote it for the first paint; this follows a change made since.
-	$effect(() => {
-		document.documentElement.setAttribute(MOTION_ATTRIBUTE, motionAttribute(data.user.reducedMotion));
-	});
 
 	// The phone's tabs. The current one is not told by its colour alone (WCAG 1.4.1): it is
 	// also set in semibold, under a bar along the tab bar's top edge.

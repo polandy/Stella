@@ -4,7 +4,6 @@ import { DEFAULT_LOCALE } from '../../i18n/locales';
 import {
 	authenticateLocal,
 	changeLocale,
-	changeReducedMotion,
 	registerFirstAdmin,
 	type AccountRepository,
 	type AuthUser,
@@ -23,7 +22,6 @@ function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) 
 	const users = [...seed];
 	let inserted: NewAdmin | null = null;
 	const localeWrites: { userId: string; locale: string }[] = [];
-	const motionWrites: { userId: string; reduce: boolean }[] = [];
 	const repo: AccountRepository = {
 		countUsers: async () => users.length,
 		findCredentialsByEmail: async (email): Promise<StoredCredentials | null> => {
@@ -38,12 +36,9 @@ function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) 
 		updateLocale: async (userId, locale) => {
 			localeWrites.push({ userId, locale });
 		},
-		updateSelfContact: async () => {},
-		updateReducedMotion: async (userId, reduce) => {
-			motionWrites.push({ userId, reduce });
-		}
+		updateSelfContact: async () => {}
 	};
-	return { repo, localeWrites, motionWrites, get inserted() { return inserted; } };
+	return { repo, localeWrites, get inserted() { return inserted; } };
 }
 
 function sequentialIds(...values: string[]): IdGenerator {
@@ -76,8 +71,7 @@ describe('registerFirstAdmin', () => {
 			name: 'Andy',
 			role: 'admin',
 			locale: 'de',
-			selfContactId: null,
-			reducedMotion: false
+			selfContactId: null
 		});
 		expect(f.inserted?.household).toEqual({ id: 'household-id', name: 'Pollari' });
 		expect(f.inserted?.user.passwordHash).toBe('hashed:a-good-passphrase');
@@ -93,8 +87,7 @@ describe('registerFirstAdmin', () => {
 			name: 'X',
 			role: 'admin',
 			locale: DEFAULT_LOCALE,
-			selfContactId: null,
-			reducedMotion: false
+			selfContactId: null
 		};
 		const f = fakeRepo([{ user: existing, passwordHash: 'hashed:x' }]);
 		await expect(
@@ -117,8 +110,7 @@ describe('authenticateLocal', () => {
 		name: 'Andy',
 		role: 'admin',
 		locale: DEFAULT_LOCALE,
-		selfContactId: null,
-		reducedMotion: false
+		selfContactId: null
 	};
 
 	it('returns the user for correct credentials', async () => {
@@ -156,8 +148,7 @@ describe('changeLocale', () => {
 		name: 'Andy',
 		role: 'admin',
 		locale: 'en',
-		selfContactId: null,
-		reducedMotion: false
+		selfContactId: null
 	};
 
 	it('stores a supported language and reports it back', async () => {
@@ -172,21 +163,5 @@ describe('changeLocale', () => {
 			UnsupportedLocaleError
 		);
 		expect(f.localeWrites).toEqual([]);
-	});
-});
-
-/*
- * Less motion as a setting of Stella's own (docs/02 §2.17, docs/05 §5.5), for a member whose
- * device does not say it — or who wants it here and not everywhere.
- */
-describe('changeReducedMotion', () => {
-	it('stores the choice either way and reports it back', async () => {
-		const f = fakeRepo();
-		expect(await changeReducedMotion({ accounts: f.repo }, 'u1', true)).toBe(true);
-		expect(await changeReducedMotion({ accounts: f.repo }, 'u1', false)).toBe(false);
-		expect(f.motionWrites).toEqual([
-			{ userId: 'u1', reduce: true },
-			{ userId: 'u1', reduce: false }
-		]);
 	});
 });
