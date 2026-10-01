@@ -266,6 +266,7 @@ const ARNOLD = 'Arnold Vonlanthen';
 const BRIGITTE = 'Brigitte Vonlanthen';
 const CLA = 'Cla Vonlanthen';
 const DARIO = 'Dario Vonlanthen';
+const ELIA = 'Elia Gerber';
 const SCHACHKLUB = 'Schachklub Aarberg';
 const CLUB = circleIdOf(SCHACHKLUB);
 const TRAINER = `rolegroup:${CLUB}:=Trainer`;
@@ -316,7 +317,7 @@ test('counts no derived kinship line the map leaves off in a bundle between two 
 }) => {
 	await seedHousehold(
 		page,
-		[ARNOLD, BRIGITTE, CLA, DARIO],
+		[ARNOLD, BRIGITTE, CLA, DARIO, ELIA],
 		[
 			{ from: BRIGITTE, to: ARNOLD, type: LINK.siblingOf },
 			{ from: BRIGITTE, to: CLA, type: LINK.parentOf },
@@ -330,7 +331,10 @@ test('counts no derived kinship line the map leaves off in a bundle between two 
 					{ person: ARNOLD, role: 'Trainer' },
 					{ person: BRIGITTE, role: 'Trainer' },
 					{ person: CLA, role: 'Junioren' },
-					{ person: DARIO, role: 'Junioren' }
+					{ person: DARIO, role: 'Junioren' },
+					// Linked to nobody else, so the club still has somebody to bring in: Expand
+					// follows the "+N" (docs/02 §2.7), and opening the club draws its roles.
+					{ person: ELIA, role: 'Junioren' }
 				]
 			}
 		]
