@@ -1,0 +1,201 @@
+<script lang="ts">
+	import Button from '$lib/components/Button.svelte';
+	import Icon from '$lib/components/Icon.svelte';
+	import KeptItem from '$lib/components/KeptItem.svelte';
+	import Section from '$lib/components/Section.svelte';
+	import { invalidateAll } from '$app/navigation';
+	import type { JsonCommand } from '$lib/commands/commands';
+	import { sectionAnchor } from '$lib/contacts/sections';
+	import { dayLabel } from '$lib/dates/labels';
+	import { useI18n } from '$lib/i18n/context.svelte';
+	import { processImage } from '$lib/image/process-image';
+	import { thumbnailUrl } from '$lib/media/urls';
+	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
+	import { outbox } from '$lib/pwa/outbox.svelte';
+	import { reachability } from '$lib/pwa/reachability.svelte';
+	import { photoAfterKey } from '$lib/ui/photo-walk';
+	import { tick } from 'svelte';
+	import { ulid } from 'ulid';
+	import { INPUT } from './inputs';
+	import PhotoLightbox from './PhotoLightbox.svelte';
+	import type { PersonForm, PersonPageData } from './types';
+
+	// What was taken (docs/02 §2.14): the person page's gallery card and its lightbox.
+	let { data, form }: { data: PersonPageData; form: PersonForm } = $props();
+
+	const i18n = useI18n();
+	const t = i18n.t;
+	const c = $derived(data.contact);
+
+	/*
+	 * The gallery (docs/02 §2.14). Photos are downscaled and EXIF-stripped in the browser
+	 * before upload, so nothing leaves the device carrying a location. The lightbox is one
+	 * overlay reused for whichever photo is open; `openPhoto` is an index into the grid so
+	 * the arrow keys can walk it.
+	 */
+	let picked = $state<File[]>([]);
+	let uploading = $state(false);
+	let uploadError = $state<string | null>(null);
+	let openPhoto = $state<number | null>(null);
+	const openedPhoto = $derived(openPhoto === null ? null : (data.gallery[openPhoto] ?? null));
+
+	/** When a gallery photo was added, in the viewer's language (docs/02 §2.14). */
+	const photoDate = (createdAt: number): string => dayLabel(i18n, new Date(createdAt).toISOString());
+
+	/*
+	 * An upload is saved through the outbox like every addition (docs/concepts/offline-capture.md
+	 * §8 #10): the photos, processed first, go with a `gallery.add` naming the person, and are
+	 * kept on the device when Stella cannot take them — shown above the grid until they are sent.
+	 */
+	const keptGallery = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'gallery.add'> => isKept(item, 'gallery.add') && item.command.payload.contactId === c.id
+		)
+	);
+	async function uploadPhotos(event: SubmitEvent) {
+		event.preventDefault();
+		const formEl = event.currentTarget as HTMLFormElement;
+		if (picked.length === 0) return;
+		uploading = true;
+		uploadError = null;
+		try {
+			const photos: KeptPhoto[] = [];
+			for (const file of picked) photos.push({ id: ulid(), ...(await processImage(file)) });
+			const visibility = new FormData(formEl).get('visibility') === 'private' ? 'private' : 'shared';
+			const command: JsonCommand = {
+				id: ulid(),
+				type: 'gallery.add',
+				payload: { contactId: c.id, visibility },
+				issuedAt: Date.now()
+			};
+			if (!reachability.reachable) {
+				await outbox.add(command, photos, c.displayName);
+			} else {
+				const delivery = await outbox.submit(command, photos, c.displayName);
+				if (delivery.status === 'refused') {
+					uploadError = delivery.reason;
+					return;
+				}
+				if (delivery.status === 'applied') await invalidateAll();
+			}
+			picked = [];
+			formEl.reset();
+		} catch {
+			uploadError = t('contact.photos.uploadFailed');
+		} finally {
+			uploading = false;
+		}
+	}
+
+	// The grid's buttons, so closing the photo hands focus back to the one now showing.
+	const thumbnails: HTMLButtonElement[] = $state([]);
+
+	function onPhotoKeydown(event: KeyboardEvent) {
+		if (openPhoto === null) return;
+		const target = event.target as HTMLElement;
+		const typing = target.matches('input, textarea') || target.isContentEditable;
+		const next = photoAfterKey({ key: event.key, at: openPhoto, count: data.gallery.length, typing });
+		if (next !== null) openPhoto = next;
+	}
+
+	function closePhoto() {
+		const at = openPhoto;
+		openPhoto = null;
+		// After the dialog has gone: until then the grid is inert and cannot take focus.
+		if (at !== null) void tick().then(() => thumbnails[at]?.focus());
+	}
+</script>
+
+<Section
+		id={sectionAnchor('photos')}
+		title={t('contact.section.photos')}
+		count={data.gallery.length}
+		addLabel={t('contact.photos.add')}
+		error={form?.photoError ?? uploadError}
+	>
+		{#if keptGallery.length > 0}
+			<ul class="mb-3 flex flex-col gap-2" data-testid="kept-gallery">
+				{#each keptGallery as item (item.command.id)}
+					<li><KeptItem {item} /></li>
+				{/each}
+			</ul>
+		{/if}
+		{#if data.gallery.length > 0}
+			<ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="photo-grid">
+				{#each data.gallery as p, index (p.id)}
+					<li class="relative">
+						<button
+							type="button"
+							bind:this={thumbnails[index]}
+							onclick={() => (openPhoto = index)}
+							class="relative block w-full overflow-hidden rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+						>
+							<img
+								src={thumbnailUrl(p.id)}
+								alt={p.caption ?? t('contact.photos.of', { name: c.displayName })}
+								class="aspect-square w-full object-cover"
+								loading="lazy"
+							/>
+							{#if p.pinnedAt !== null}
+								<!-- A star, not a tint: the pin reads without colour (docs/05 §5.10). -->
+								<span
+									class="pointer-events-none absolute left-1 top-1 rounded-full bg-bg/80 p-1 text-primary"
+									data-testid="photo-favourite"
+								>
+									<Icon name="pinned" size={11} />
+								</span>
+								<span class="sr-only">{t('contact.photos.favourite')}</span>
+							{/if}
+							<span
+								class="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/65 to-transparent px-1.5 pb-1 pt-3 text-left text-[0.6875rem] font-medium text-white"
+								aria-hidden="true"
+							>
+								{photoDate(p.createdAt)}
+							</span>
+						</button>
+						{#if p.visibility === 'private'}
+							<span
+								class="absolute right-1 top-1 rounded-full bg-bg/80 p-1 text-fg-muted"
+								title={t('contact.photos.privateHint')}
+							>
+								<Icon name="private" size={11} />
+							</span>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		{:else}
+			<p class="text-sm text-fg-subtle">{t('contact.photos.none', { name: c.displayName })}</p>
+		{/if}
+
+		{#snippet editor()}
+			<form onsubmit={uploadPhotos} class="flex flex-wrap items-end gap-3">
+				<label class="flex flex-1 flex-col gap-1 text-sm">
+					<span class="text-fg-muted">{t('contact.photos.pictures')}</span>
+					<input
+						name="files"
+						type="file"
+						accept="image/*"
+						multiple
+						required
+						onchange={(e) => (picked = Array.from(e.currentTarget.files ?? []))}
+						class={INPUT}
+					/>
+				</label>
+				<fieldset class="flex items-center gap-3 text-sm">
+					<legend class="sr-only">{t('common.visibility')}</legend>
+					<label class="flex items-center gap-1.5">
+						<input type="radio" name="visibility" value="shared" checked /> {t('common.shared')}
+					</label>
+					<label class="flex items-center gap-1.5">
+						<input type="radio" name="visibility" value="private" /> {t('common.private')}
+					</label>
+				</fieldset>
+				<Button variant="primary" size="sm" disabled={uploading}>
+					{uploading ? t('contact.photos.adding') : t('common.add')}
+				</Button>
+			</form>
+		{/snippet}
+</Section>
+
+<PhotoLightbox {data} {openedPhoto} {photoDate} {closePhoto} {onPhotoKeydown} />
