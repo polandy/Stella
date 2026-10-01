@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { openPerson, signIn } from './app';
-import { clickNode, drawnNode, filterMenu, firstClickableNode, ringsOnCanvas, settled } from './graph-canvas';
+import { arrangement, clickNode, drawnNode, filterMenu, firstClickableNode, ringsOnCanvas, settled } from './graph-canvas';
 import { LINK, personIdOf, seedHousehold } from './seed';
 
 /*
@@ -103,33 +103,16 @@ async function lines(page: Page) {
 	});
 }
 
-/** The mean length of the drawn lines between people, in the renderer's model coordinates. */
-async function meanLineLength(page: Page): Promise<number> {
+/** Every line the renderer holds, drawn or not, by its two ends — what placement anchors on. */
+async function ties(page: Page): Promise<{ source: string; target: string }[]> {
 	return page.evaluate(() => {
-		type El = {
-			data(key: string): string;
-			hasClass(name: string): boolean;
-			position(): { x: number; y: number };
-			isParent(): boolean;
-		};
+		type Edge = { data(key: string): string };
 		let el: HTMLElement | null = document.querySelector('canvas');
 		while (el && !('_cyreg' in el)) el = el.parentElement;
-		const cy = (
-			el as unknown as {
-				_cyreg: { cy: { edges(): { map<R>(fn: (e: El) => R): R[] }; $id(id: string): El } };
-			}
-		)._cyreg.cy;
-		const lengths = cy
-			.edges()
-			.map((e) => {
-				if (e.hasClass('filtered-out')) return null;
-				const [a, b] = [cy.$id(e.data('source')), cy.$id(e.data('target'))];
-				if (a.isParent() || b.isParent()) return null;
-				const [p, q] = [a.position(), b.position()];
-				return Math.hypot(p.x - q.x, p.y - q.y);
-			})
-			.filter((l): l is number => l !== null);
-		return lengths.reduce((sum, l) => sum + l, 0) / lengths.length;
+		if (!el) return [];
+		const cy = (el as unknown as { _cyreg: { cy: { edges(): { map<R>(fn: (e: Edge) => R): R[] } } } })._cyreg
+			.cy;
+		return cy.edges().map((e) => ({ source: e.data('source'), target: e.data('target') }));
 	});
 }
 
@@ -227,22 +210,59 @@ test('on a person’s page nobody on the last ring wears a "+N", though the expl
 	expect(there.some((n) => newcomers.some((c) => c.id === n.id) && n.badged)).toBe(true);
 });
 
-test('Spacing sets people closer or further apart on Free, and this browser keeps it', async ({ page }) => {
+test('Spacing re-arranges Free at once, sets later newcomers at its step, and this browser keeps it', async ({
+	page
+}) => {
+	// Without motion a newcomer is set down at once, so its place is the one the step decided.
+	await page.emulateMedia({ reducedMotion: 'reduce' });
 	await openMap(page, HANS);
-	const comfortable = await meanLineLength(page);
+	const before = await arrangement(page);
 	let menu = await filterMenu(page);
 	const option = (name: string) => menu.getByRole('menuitemradio', { name, exact: true });
 	await expect(option('Comfortable')).toHaveAttribute('aria-checked', 'true');
-	await expect(option('Compact')).toHaveAttribute('aria-checked', 'false');
-
-	await option('Compact').click();
-	await expect(option('Compact')).toHaveAttribute('aria-checked', 'true');
-	await expect.poll(() => meanLineLength(page)).toBeLessThan(comfortable);
+	await expect(option('Spacious')).toHaveAttribute('aria-checked', 'false');
 
 	await option('Spacious').click();
 	await expect(option('Spacious')).toHaveAttribute('aria-checked', 'true');
 	await expect(option('Comfortable')).toHaveAttribute('aria-checked', 'false');
-	await expect.poll(() => meanLineLength(page)).toBeGreaterThan(comfortable);
+	// The map is Free, so the choice re-arranges it there and then.
+	await expect
+		.poll(async () => {
+			const now = await arrangement(page);
+			return [...before].some(([id, p]) => {
+				const q = now.get(id);
+				return !!q && (q.x !== p.x || q.y !== p.y);
+			});
+		})
+		.toBe(true);
+	await settled(page);
+	await page.keyboard.press('Escape');
+	await expect(menu).toHaveCount(0);
+
+	// A newcomer is set one step from the person it hangs off, or a whole number of half steps
+	// further where that side is crowded (placement.ts). Spacious is 150; Comfortable's 116
+	// would put them at multiples of 58 instead.
+	const placed = await nodes(page);
+	const hub = placed.filter((n) => n.drawn && n.kind === 'person').sort((a, b) => b.more - a.more)[0];
+	await expand(page, hub);
+	const at = await arrangement(page);
+	const known = new Set(placed.map((n) => n.id));
+	const newcomers = [...at.keys()].filter((id) => !known.has(id));
+	expect(newcomers.length).toBeGreaterThan(0);
+	const links = await ties(page);
+	const HALF_STEP = 150 / 2;
+	for (const id of newcomers) {
+		const p = at.get(id)!;
+		const steps = links
+			.filter((l) => l.source === id || l.target === id)
+			.map((l) => at.get(l.source === id ? l.target : l.source))
+			.filter((q): q is { x: number; y: number } => !!q)
+			.map((q) => Math.hypot(p.x - q.x, p.y - q.y) / HALF_STEP);
+		expect(
+			steps.some((n) => n >= 2 - 1e-6 && Math.abs(n - Math.round(n)) < 1e-6),
+			`${id} stands at ${steps.map((n) => (n * HALF_STEP).toFixed(1)).join(', ')} from its ties`
+		).toBe(true);
+	}
 
 	await page.reload();
 	await settled(page);
