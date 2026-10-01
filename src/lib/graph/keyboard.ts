@@ -14,6 +14,14 @@ const DIRECTION_OF_KEY: Record<string, Direction> = {
 	ArrowRight: 'right'
 };
 
+/** Splits an offset into how far it lies ahead in a direction and how far off to the side. */
+const AXES: Record<Direction, (dx: number, dy: number) => { ahead: number; sideways: number }> = {
+	right: (dx, dy) => ({ ahead: dx, sideways: dy }),
+	left: (dx, dy) => ({ ahead: -dx, sideways: dy }),
+	down: (dx, dy) => ({ ahead: dy, sideways: dx }),
+	up: (dx, dy) => ({ ahead: -dy, sideways: dx })
+};
+
 /**
  * How much more sideways distance counts than distance ahead. Above 1, someone straight ahead
  * wins over someone nearer but off to the side, which is where the reader's eye goes.
@@ -37,8 +45,7 @@ export function nextInDirection(
 		if (id === from) continue;
 		const dx = p.x - origin.x;
 		const dy = p.y - origin.y;
-		const [ahead, sideways] =
-			direction === 'right' ? [dx, dy] : direction === 'left' ? [-dx, dy] : direction === 'down' ? [dy, dx] : [-dy, dx];
+		const { ahead, sideways } = AXES[direction](dx, dy);
 		if (ahead <= 0) continue;
 		const score = ahead + SIDEWAYS_WEIGHT * Math.abs(sideways);
 		if (!best || score < best.score || (score === best.score && id < best.id)) best = { id, score };
