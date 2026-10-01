@@ -17,7 +17,7 @@ import {
  */
 
 export interface LogCheckedDeps extends InteractionDeps {
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo' | 'listVisibleTo'>;
+	contacts: Pick<ContactRepository, 'findByIdVisibleTo' | 'listBrowsableNamesAmong'>;
 }
 
 /** Log a touchpoint on a person the author can see, with participants they can see. */
@@ -28,8 +28,10 @@ export async function logInteractionChecked(
 ): Promise<{ interactionId: string }> {
 	await requireVisibleContact(deps.contacts, author, input.contactId);
 	const viewer = { id: author.userId, householdId: author.householdId };
-	const visible = new Set((await deps.contacts.listVisibleTo(viewer)).map((c) => c.id));
-	if (!input.participantIds.every((id) => visible.has(id))) {
+	// Only the people named are looked up, in the same browsing scope the picker offers.
+	const named = [...new Set(input.participantIds)];
+	const found = named.length === 0 ? [] : await deps.contacts.listBrowsableNamesAmong(viewer, named);
+	if (found.length !== named.length) {
 		throw new InvalidInteractionError(phrase('errors.interaction.participantNotFound'));
 	}
 	const interactionId = await logInteraction(

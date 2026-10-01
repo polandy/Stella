@@ -20,6 +20,9 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	// People the @-picker may offer — the shell's list — minus the person whose journal this is:
+	// naming them here is not a mention, it is the entry's own subject (docs/02 §2.20.1).
+	const candidates = $derived(data.people.filter((p) => p.id !== data.contact.id));
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -129,7 +132,7 @@
 	function startEdit(entry: PageData['entries'][number]) {
 		editingId = entry.id;
 		editTitle = entry.title ?? '';
-		editBody = entry.bodyForEdit;
+		editBody = entry.bodyForEdit ?? '';
 		editError = null;
 	}
 	function cancelEdit() {
@@ -249,7 +252,7 @@
 				label={t('journal.entry')}
 				rows={5}
 				required
-				candidates={data.candidates}
+				{candidates}
 				visibility={entryVisibility}
 				bind:unclear={entryUnclear}
 				placeholder={t('journal.bodyPlaceholder')}
@@ -292,7 +295,7 @@
 					<KeptItem {item}>
 						{#snippet meta()}<span>· {prettyDate(item.command.payload.entryDate)}</span>{/snippet}
 						{#if item.command.payload.title}<p class="mt-1 font-medium text-fg">{item.command.payload.title}</p>{/if}
-						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...data.candidates, data.contact])}</p>
+						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...candidates, data.contact])}</p>
 					</KeptItem>
 				</li>
 			{/each}
@@ -383,7 +386,7 @@
 										bind:value={editBody}
 										bind:unclear={editUnclear}
 										names={entry.mentionNames}
-										candidates={data.candidates}
+										{candidates}
 										visibility={entry.visibility}
 										placeholder={t('journal.bodyPlaceholder')}
 										class="w-full rounded-md border border-border bg-bg px-3 py-2 text-fg"

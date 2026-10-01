@@ -415,3 +415,66 @@ describe('deleting a contact', () => {
 		expect(db.select().from(schema.activityLog).all()).toHaveLength(1);
 	});
 });
+
+/*
+ * Reads that answer for a handful of people, or with one number, where a page used to read
+ * the whole household and look the few up or count them itself (docs/04 §4.8).
+ */
+describe('reading a few people by id', () => {
+	beforeEach(async () => {
+		await repo.insert(contactInput({ id: 'c-anna', displayName: 'Anna' }));
+		await repo.insert(contactInput({ id: 'c-ben', displayName: 'Ben', lastName: 'Brunner', description: 'from school' }));
+		await repo.insert(contactInput({ id: 'c-old', displayName: 'Old Neighbour' }));
+		await repo.insert(contactInput({ id: 'c-theirs', visibility: 'private', createdBy: U2, displayName: 'Theirs' }));
+		await repo.setArchived('c-old', NOW);
+	});
+
+	const sorted = (names: { id: string; displayName: string }[]) =>
+		[...names].sort((a, b) => a.id.localeCompare(b.id));
+
+	it('names exactly the asked-for people the viewer may see, archived ones included', async () => {
+		const names = await repo.listNamesAmongVisibleTo(viewerU1, ['c-anna', 'c-old', 'c-theirs', 'c-gone']);
+		expect(sorted(names)).toEqual([
+			{ id: 'c-anna', displayName: 'Anna' },
+			{ id: 'c-old', displayName: 'Old Neighbour' }
+		]);
+		// The same scope as the whole-household read it stands in for.
+		const all = await repo.listNamesVisibleTo(viewerU2);
+		const asked = await repo.listNamesAmongVisibleTo(viewerU2, all.map((c) => c.id));
+		expect(sorted(asked)).toEqual(sorted(all));
+	});
+
+	it('names only the people the household still browses, when asked for those', async () => {
+		const names = await repo.listBrowsableNamesAmong(viewerU1, ['c-anna', 'c-ben', 'c-old', 'c-theirs']);
+		expect(sorted(names)).toEqual([
+			{ id: 'c-anna', displayName: 'Anna' },
+			{ id: 'c-ben', displayName: 'Ben' }
+		]);
+		// The same scope as the directory it stands in for.
+		const listed = (await repo.listVisibleTo(viewerU2)).map((c) => ({ id: c.id, displayName: c.displayName }));
+		expect(sorted(await repo.listBrowsableNamesAmong(viewerU2, ['c-anna', 'c-ben', 'c-old', 'c-theirs']))).toEqual(
+			sorted(listed)
+		);
+	});
+
+	it('counts the archived people the viewer may see', async () => {
+		expect(await repo.countArchivedVisibleTo(viewerU1)).toBe(1);
+		await repo.setArchived('c-theirs', NOW);
+		expect(await repo.countArchivedVisibleTo(viewerU1)).toBe(1);
+		expect(await repo.countArchivedVisibleTo(viewerU2)).toBe(2);
+		expect(await repo.countArchivedVisibleTo(viewerU2)).toBe((await repo.listArchivedVisibleTo(viewerU2)).length);
+	});
+
+	it('reads what tells the browsable people apart, and nothing else', async () => {
+		const rows = await repo.listDistinguishableVisibleTo(viewerU1);
+		expect(rows.map((r) => r.id).sort()).toEqual(['c-anna', 'c-ben']);
+		expect(rows.find((r) => r.id === 'c-ben')).toEqual({
+			id: 'c-ben',
+			displayName: 'Ben',
+			lastName: 'Brunner',
+			description: 'from school',
+			metPlace: null,
+			metDate: null
+		});
+	});
+});

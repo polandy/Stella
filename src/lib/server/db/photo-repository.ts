@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, isNull, sql, type SQL } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo } from '../access/query-scoping';
@@ -23,6 +23,25 @@ import { contact, photo } from './schema';
 export function createDrizzlePhotoRepository(
 	db: BunSQLiteDatabase<typeof schema>
 ): PhotoRepository & FramingRepository {
+	/** A person's journal photos the viewer may see, oldest first, among the entries `entries` picks. */
+	function journalPhotosWhere(viewer: Viewer, contactId: string, entries: SQL): JournalPhotoRef[] {
+		const rows = db
+			.select({ id: photo.id, journalEntryId: photo.journalEntryId })
+			.from(photo)
+			.innerJoin(contact, eq(photo.contactId, contact.id))
+			.where(
+				and(
+					eq(photo.contactId, contactId),
+					entries,
+					childRecordVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy })
+				)
+			)
+			.orderBy(asc(photo.createdAt))
+			.all();
+		// journalEntryId is non-null here: both filters only pick photos of an entry.
+		return rows.map((r) => ({ id: r.id, journalEntryId: r.journalEntryId as string }));
+	}
+
 	return {
 		async insert(p: StoredPhoto) {
 			db.insert(photo)
@@ -79,21 +98,16 @@ export function createDrizzlePhotoRepository(
 		},
 
 		async listJournalPhotos(viewer: Viewer, contactId: string): Promise<JournalPhotoRef[]> {
-			const rows = db
-				.select({ id: photo.id, journalEntryId: photo.journalEntryId })
-				.from(photo)
-				.innerJoin(contact, eq(photo.contactId, contact.id))
-				.where(
-					and(
-						eq(photo.contactId, contactId),
-						isNotNull(photo.journalEntryId),
-						childRecordVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy })
-					)
-				)
-				.orderBy(asc(photo.createdAt))
-				.all();
-			// journalEntryId is non-null here by the isNotNull filter.
-			return rows.map((r) => ({ id: r.id, journalEntryId: r.journalEntryId as string }));
+			return journalPhotosWhere(viewer, contactId, isNotNull(photo.journalEntryId));
+		},
+
+		async listJournalPhotosOfEntries(
+			viewer: Viewer,
+			contactId: string,
+			entryIds: readonly string[]
+		): Promise<JournalPhotoRef[]> {
+			if (entryIds.length === 0) return [];
+			return journalPhotosWhere(viewer, contactId, inArray(photo.journalEntryId, [...entryIds]));
 		},
 
 		async listGalleryPhotos(viewer: Viewer, contactId: string): Promise<GalleryPhoto[]> {

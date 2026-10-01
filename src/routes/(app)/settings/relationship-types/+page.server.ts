@@ -61,21 +61,23 @@ function messageOf(err: unknown, locals: App.Locals): string | null {
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireAdmin(locals);
 	const viewer = { id: user.id, householdId: user.householdId };
-	const types = await getRelationshipTypes().listTypes(viewer);
+	const [types, usage] = await Promise.all([
+		getRelationshipTypes().listTypes(viewer),
+		getRelationshipTypes().countRelationshipsByType(viewer)
+	]);
 
 	// A type still in use cannot be removed, so the page counts first and offers the button
 	// only where it would succeed — an undo toast that quietly fails at commit would lie.
-	const custom = await Promise.all(
-		types
-			.filter((type) => type.householdId !== null)
-			.map(async (type) => ({
-				...type,
-				usageCount: await getRelationshipTypes().countRelationshipsOfType(viewer, type.id),
-				// A type an older import created before Stella had it built in: offered to fold in.
-				replacedBy: builtInReplacingImportedType(type.id),
-				mergeTargets: types.filter((other) => canMergeInto(type, other))
-			}))
-	);
+	// One grouped count for all of them, not one query per type.
+	const custom = types
+		.filter((type) => type.householdId !== null)
+		.map((type) => ({
+			...type,
+			usageCount: usage.get(type.id) ?? 0,
+			// A type an older import created before Stella had it built in: offered to fold in.
+			replacedBy: builtInReplacingImportedType(type.id),
+			mergeTargets: types.filter((other) => canMergeInto(type, other))
+		}));
 
 	return { builtIn: types.filter((type) => type.householdId === null), custom };
 };

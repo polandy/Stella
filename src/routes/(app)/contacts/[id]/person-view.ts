@@ -5,7 +5,7 @@ import { mentionSnippet } from '$lib/mentions/snippet';
 import { fieldHref, type ContactField } from '$lib/server/domain/contact-fields/contact-fields';
 import type { Contact } from '$lib/server/domain/contacts/contacts';
 import { overridesDerivedBirthday, type ImportantDate } from '$lib/server/domain/dates/important-dates';
-import type { Interaction } from '$lib/server/domain/interactions/interactions';
+import type { GraphModel } from '$lib/graph/model/types';
 import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import type { Note } from '$lib/server/domain/notes/notes';
@@ -48,18 +48,19 @@ export function birthdayOf(
 	};
 }
 
-/** A touchpoint as the page lists it; the participants by name only. */
-export function interactionView(interaction: Interaction, viewerId: string) {
-	return {
-		id: interaction.id,
-		kind: interaction.kind,
-		happenedAt: interaction.happenedAt,
-		title: interaction.title,
-		description: interaction.description,
-		visibility: interaction.visibility,
-		mine: interaction.createdBy === viewerId,
-		participants: interaction.participants.map((p) => ({ contactId: p.contactId, displayName: p.displayName }))
-	};
+/** The people in the visible graph by name — the visibility scope, archived people included. */
+export function peopleNamedIn(graph: GraphModel): { id: string; displayName: string }[] {
+	return graph.nodes.flatMap((node) => (node.kind === 'person' ? [{ id: node.id, displayName: node.label }] : []));
+}
+
+/**
+ * The names of the circles in the visible graph, for the circle form's suggestions. Sorted by
+ * code unit, which is how SQLite's default collation ordered the read this replaces.
+ */
+export function circleNamesIn(graph: GraphModel): string[] {
+	return graph.nodes
+		.flatMap((node) => (node.kind === 'circle' ? [node.label] : []))
+		.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 /** A contact detail, with the link it opens (mail, phone, map) where there is one. */

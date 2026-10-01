@@ -4,7 +4,6 @@ import type { IdGenerator } from '../../id';
 import {
 	deleteInteraction,
 	InvalidInteractionError,
-	lastContactedAt,
 	logInteraction,
 	type Interaction,
 	type InteractionAuthor,
@@ -36,6 +35,7 @@ function fakeRepo() {
 		},
 		listForContactVisibleTo: async () => [],
 		listPageForContactVisibleTo: async () => [],
+		lastHappenedOnVisibleTo: async () => null,
 		deleteOwn: async (params) => {
 			deleted.push(params);
 			return true;
@@ -156,19 +156,5 @@ describe('deleteInteraction', () => {
 		const removed = await deleteInteraction(deps(f.repo), author, 'int-9');
 		expect(removed).toBe(true);
 		expect(f.deleted).toEqual([{ authorId: 'u1', id: 'int-9' }]);
-	});
-});
-
-describe('lastContactedAt', () => {
-	const at = (happenedAt: string): Pick<Interaction, 'happenedAt'> => ({ happenedAt });
-
-	it('is null when nothing was logged', () => {
-		expect(lastContactedAt([])).toBeNull();
-	});
-
-	it('is the most recent day regardless of list order', () => {
-		expect(lastContactedAt([at('2026-01-05'), at('2026-08-30'), at('2026-03-01')])).toBe(
-			'2026-08-30'
-		);
 	});
 });

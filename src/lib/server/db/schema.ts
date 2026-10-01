@@ -167,7 +167,9 @@ export const contact = sqliteTable(
 		updatedAt: integer('updated_at').notNull().default(now)
 	},
 	(t) => [
-		index('contact_household_idx').on(t.householdId)
+		// Every household-scoped read, and the newest people first for the Home stream
+		// (docs/04 §4.8); a lookup by household alone is served by its first column.
+		index('contact_household_created_idx').on(t.householdId, t.createdAt)
 	]
 );
 
@@ -237,7 +239,9 @@ export const relationship = sqliteTable(
 		unique('relationship_unique').on(t.fromContactId, t.toContactId, t.typeId),
 		index('relationship_from_idx').on(t.fromContactId),
 		index('relationship_to_idx').on(t.toContactId),
-		index('relationship_type_idx').on(t.typeId)
+		index('relationship_type_idx').on(t.typeId),
+		// The newest links first, for the Home stream (docs/04 §4.8).
+		index('relationship_created_idx').on(t.createdAt)
 	]
 );
 
@@ -353,7 +357,12 @@ export const interaction = sqliteTable(
 		createdAt: integer('created_at').notNull().default(now),
 		updatedAt: integer('updated_at').notNull().default(now)
 	},
-	(t) => [index('interaction_contact_idx').on(t.contactId)]
+	(t) => [
+		// A person's touchpoints in story order, and the day of their last one (docs/04 §4.8).
+		index('interaction_contact_happened_idx').on(t.contactId, t.happenedAt, t.createdAt),
+		// The newest touchpoints first, for the Home stream.
+		index('interaction_created_idx').on(t.createdAt)
+	]
 );
 
 export const interactionParticipant = sqliteTable(
