@@ -70,7 +70,7 @@ Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) �
 | `src/lib/graph/keyboard.ts` | **pure** keyboard walk over the map: which key steps to whom (test-first) |
 | `src/lib/graph/cytoscape/` | rendering adapter (Cytoscape confined here, lazy-loaded); no domain logic |
 | `src/routes/` | thin edges: `load` / form actions / `+server.ts`; a large page keeps its `load` and action groups in colocated plain modules (`contacts/[id]/load.ts`, `actions/*.ts`) |
-| `src/lib/components/` | UI components (design system): `Button`, `Icon` + the `icons.ts` registry, `Avatar`, `Section`, `EmptyState`, `CommandPalette`, `MenuButton`, `Toast` + `RemoveButton`, `InlineEdit`, …; `person/` holds the person page's cards, one component per section |
+| `src/lib/components/` | UI components (design system): `Button`, `Icon` + the `icons.ts` registry, `Avatar`, `Section`, `EmptyState`, `CommandPalette`, `MenuButton`, `Toast` + `RemoveButton`, `InlineEdit`, …; `graph/` holds the map: `GraphExplorer` wires state to the canvas, its parts (`GraphCanvas`, `GraphFilterMenu`, `GraphArrangeMenu`, `GraphFindField`, `GraphNodePeek`/`GraphGroupPeek`, `GraphPathPrompt`) only render; `person/` holds the person page's cards, one component per section |
 | `src/lib/i18n/` | languages, message catalogues (`messages/en`, `messages/de`), translator, Svelte context — **all UI copy lives here** (`docs/02` §2.19) |
 | `src/lib/design/tokens.ts` | the token table in TS — the only place that builds a colour token string |
 | `src/app.css` | the three token layers: Catppuccin flavour → surfaces → semantic (Latte/Mocha) |
