@@ -47,6 +47,7 @@ export const circles = {
 	'circles.bulkRemove': 'Remove',
 	'circles.removedManyFromCircle': (p: { count: number }) => `${p.count} removed from the circle`,
 	'circles.noMembers.title': 'Nobody in this circle yet',
+	'circles.noMembers.add': 'Add the first members',
 	'circles.noMembers.hint':
 		'Add the people who share this context; each of them will show it on their page.',
 	'circles.kind.all': 'All',

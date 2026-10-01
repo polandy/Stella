@@ -50,6 +50,7 @@ export const circles: CirclesMessages = {
 	'circles.bulkRemove': 'Entfernen',
 	'circles.removedManyFromCircle': (p) => `${p.count} aus dem Kreis entfernt`,
 	'circles.noMembers.title': 'Noch niemand in diesem Kreis',
+	'circles.noMembers.add': 'Erste Mitglieder hinzufügen',
 	'circles.noMembers.hint':
 		'Füge die Menschen hinzu, die diesen Zusammenhang teilen; bei jedem von ihnen erscheint er auf der Seite.',
 	'circles.kind.all': 'Alle',

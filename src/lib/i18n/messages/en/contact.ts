@@ -123,6 +123,8 @@ export const contact = {
 	'contact.relationships.tracePath': 'Trace it',
 	'contact.relationships.add': 'Add relationship',
 	'contact.relationships.none': (p: { name: string }) => `${p.name} is not linked to anyone yet`,
+	// Not *Add relationship*: the card's header already has that button, and this one is the invitation.
+	'contact.relationships.addFirst': (p: { name: string }) => `Link ${p.name} to someone`,
 	'contact.relationships.noneHint':
 		'Add family, a partner, friends or colleagues — the map of who they know draws itself from these.',
 	'contact.relationships.remove': (p: { name: string }) => `Remove the link to ${p.name}`,

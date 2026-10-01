@@ -431,7 +431,7 @@
 		<EmptyState icon="journal" title={t('journal.empty.title')} hint={t('journal.empty.hint', { name: c.displayName })}>
 			<!-- With the form already open above, a second way to open it would only distract. -->
 			{#if !showForm}
-				<Button variant="primary" icon="write" type="button" onclick={() => (composing = true)}>{t('journal.newEntry')}</Button>
+				<Button variant="primary" icon="write" type="button" onclick={() => (composing = true)}>{t('journal.empty.write')}</Button>
 			{/if}
 		</EmptyState>
 	{/if}

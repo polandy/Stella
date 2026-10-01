@@ -123,6 +123,7 @@ export const contact: ContactMessages = {
 	'contact.relationships.tracePath': 'Weg zeigen',
 	'contact.relationships.add': 'Beziehung hinzufügen',
 	'contact.relationships.none': (p) => `${p.name} ist noch mit niemandem verknüpft`,
+	'contact.relationships.addFirst': (p) => `${p.name} mit jemandem verknüpfen`,
 	'contact.relationships.noneHint':
 		'Füge Familie, Partner, Freunde oder Kollegen hinzu — daraus zeichnet sich die Karte, wen sie kennen.',
 	'contact.relationships.remove': (p) => `Verbindung zu ${p.name} entfernen`,

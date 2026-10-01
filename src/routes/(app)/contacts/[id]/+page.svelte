@@ -1474,7 +1474,7 @@
 						<!-- In place of the map: what it would show, and the step that starts it. -->
 						<EmptyState compact icon="graph" title={t('contact.relationships.none', { name: c.displayName })} hint={t('contact.relationships.noneHint')}>
 							{#if !relateOpen}
-								<Button variant="primary" size="sm" icon="add" type="button" onclick={() => (relateOpen = true)}>{t('contact.relationships.add')}</Button>
+								<Button variant="primary" size="sm" icon="add" type="button" onclick={() => (relateOpen = true)}>{t('contact.relationships.addFirst', { name: c.displayName })}</Button>
 							{/if}
 						</EmptyState>
 					{/if}
