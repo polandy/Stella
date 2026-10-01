@@ -130,8 +130,17 @@ describe('parseCommand, for a new person', () => {
 			metPlace: null,
 			birthDate: '1990-04-02',
 			gender: null,
-			visibility: 'shared'
+			visibility: 'shared',
+			isSelf: false
 		});
+	});
+
+	it('reads that the member is adding themselves, and nothing but a yes as yes', () => {
+		const asked = (isSelf: unknown) => parseCommand({ ...person, payload: { ...person.payload, isSelf } });
+
+		expect(asked(true)?.payload).toMatchObject({ isSelf: true });
+		expect(asked(false)?.payload).toMatchObject({ isSelf: false });
+		expect(asked('1')).toBeNull();
 	});
 
 	it('reads the gender chosen for them, one of the three', () => {

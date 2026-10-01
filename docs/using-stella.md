@@ -3,6 +3,26 @@
 Stella has one habit at its centre: when something happens with someone, write one
 sentence about it. Everything else in the app exists to make that sentence useful later.
 
+## Your first visit
+
+A new Stella starts empty, so the first thing Home shows is a **Welcome to Stella** card with
+three ways in:
+
+- **Start with yourself** — add your own entry. Stella remembers that this one is you, so the
+  map opens on you and everyone you add next can be linked to you.
+- **Coming from Monica?** — bring everyone over from Monica or an address book in one go (see
+  [Moving in from Monica](#moving-in-from-monica-or-from-an-address-book)). Only the household
+  admin sees this one, because only they can run an import.
+- **Add someone** — anybody at all; a name is enough.
+
+Once you have added yourself the card stays, with that step ticked off, so the other two are
+still there. It goes away by itself as soon as there is anybody else in Stella.
+
+Empty places elsewhere work the same way: they say what belongs there and offer the step that
+fills them. A search that finds nobody offers to add that name as a new person, a circle search
+that finds nothing offers to create the circle, and a person with no relationships yet offers
+to add the first one.
+
 ## The home screen
 
 Home is a text field with the household's stream underneath it. Newest first, grouped by
@@ -431,7 +451,8 @@ your removing it never quietly takes it off someone else's private contact.
 person as you type, and offers *Write a moment* and *Add person* as its first rows. Notes are
 not in it; the last row, *Search everything*, opens the full search, which looks through
 people and notes at once, matches partial words, and only ever returns what you are allowed
-to see.
+to see. When it finds nothing it offers *Add "…"*, which opens *Add person* with what you typed
+already filled in as the name — and so does the filter on the People page.
 
 ## Moving in from Monica, or from an address book
 
@@ -551,7 +572,8 @@ than screen by screen, so there is no corner of the app where it silently doesn'
 Stella keeps a record for everyone the household wants to remember, and one of them is
 probably you. Say so and the app stops guessing: **Settings → You** has a search field for
 picking your own entry, and the foot of any person's page has *This is me* for the same
-thing. From then on the map opens around you rather than whoever happens to come first, and
+thing. If you are not in Stella yet, *Add yourself* there (or *Start with yourself* on the
+welcome card) adds your entry and marks it as you in one go. From then on the map opens around you rather than whoever happens to come first, and
 your row wears a small **You** in the list and on your page. The relationship form is not
 filled in for you — the person field starts empty and waits, because a name already sitting
 there reads as an answer rather than as an offer.

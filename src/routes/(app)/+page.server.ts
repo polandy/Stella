@@ -24,6 +24,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
 import { LINK_PARAM, linkHintHref } from '$lib/stream/link-hint';
+import { welcomeSteps } from '$lib/onboarding/welcome';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
@@ -91,6 +92,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		railFirst: hasImminentDate(upcoming),
 		quiet: quietContacts(quietSources, day),
 		linkSuggestion,
+		// The first-run card (docs/02 §2.22.3), or null once the household has begun.
+		welcome: welcomeSteps({
+			peopleIds: contacts.map((c) => c.id),
+			selfContactId: locals.user.selfContactId,
+			isAdmin: locals.user.role === 'admin'
+		}),
 		filter,
 		members,
 		stream: items.map((item) =>

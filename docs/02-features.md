@@ -97,6 +97,12 @@ shows to the other as anything but a badge.
 - **Where it is set:** in Settings ("You", a searchable person picker), and from the
   person's own page ("This is me"). The same button on the profile lets go of the link
   again, so a wrong pick is undone where it was made.
+- **Adding yourself.** *Start with yourself* on the first-run card (§2.22.3) and *Add
+  yourself* in Settings open the *Add person* form as `/contacts/new?self=1`: the same form,
+  headed *Add yourself*, and the person it saves is recorded as the member in the same step —
+  the `contact.add` command carries `isSelf`, so a form kept on a phone out of reach (§2.18)
+  ends the same way once it is sent. Settings offers it in place of the picker while there is
+  nobody to pick, and as a line under the picker while the member has not chosen anyone.
 - **What it may point at:** only a contact that member can already see. A private record
   belonging to somebody else is refused rather than stored — a link they could never
   verify or undo, and one that would give away that the record exists.
@@ -150,7 +156,10 @@ description to go with it, §2.2.3):**
 
 - **Quick add:** a minimal, fast form — a name (with a last name or a description) +
   optional photo + optional "how we met" — reachable in one tap, designed for mobile capture.
-  Everything else can be filled later.
+  Everything else can be filled later. `?name=` starts it from a typed name, split as in
+  §2.2.2: a search that found nobody — global search (§2.9), the People directory's
+  find-as-you-type — offers *Add "Lukas Bauer"* and lands here with the name filled in.
+  `?self=1` is the member adding themselves (§2.1.3).
 - **Contact profile page** aggregates: header (avatar, name, description, key dates,
   tags), relationships, notes, interactions timeline, photo gallery, contact fields.
 - **Deceased contacts** are kept, visually marked, and excluded from active reminders.
@@ -700,7 +709,11 @@ a named group contacts belong to, over a period of time. (A first-class entity, 
   query, so no chip ever leads to an empty page, and a kind the query has filtered away falls
   back to *All*. Both run in the browser over the circles already loaded — a household has few
   enough of them that a round trip per keystroke would only add latency. The chips appear only
-  when there is more than one kind to choose between.
+  when there is more than one kind to choose between. A query that matches no circle offers
+  *Create "…"*, which opens the new-circle form with the query as its name.
+- **An empty circle invites its first members.** A circle with nobody in it says so and offers
+  *Add people*, which opens the same form as the card's header; while the household has nobody
+  to add, it offers *Add person* instead.
 - Circles are shareable records under the standard visibility model (§2.10); a membership
   is visible when both its Circle and the contact are visible. Powered by a small,
   test-first domain module over the membership data — extends the graph without touching
@@ -801,7 +814,14 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
   into the graph, then continue outward from there — exploring the web hop by hop without
   leaving the view. Everyone already on the canvas stays where they were; only the new people
   appear, around the person expanded and clear of the rest. The map is only re-arranged when
-  the reader asks for it (below). Collapse to declutter.
+  the reader asks for it (below). Collapse to declutter. *Expand* is offered only while the
+  node has a link the map does not draw yet; on somebody whose every link is already there —
+  or who has none — the peek panel says so instead of offering a button that would do nothing.
+- **A centre linked to nobody** draws one lonely dot. The explorer says so beneath it and offers
+  the step that changes it: *Add a relationship*, which opens that person's page with the
+  relationship form already open — or, for an empty circle, *Add people* on its page. The
+  person's own page never draws an empty map: its relationships card shows a compact invitation
+  in its place, with the same *Add relationship* (§2.4).
 - **Choose the roles of a circle to open:** a circle's peek panel lists the roles its members
   hold (with counts, "No role" last), all ticked. Expanding opens only the ticked roles, so a
   class can show just its teachers; a re-sync reopens it for the same roles.
@@ -916,6 +936,9 @@ architecture in [`docs/04-architecture.md` §4.11](04-architecture.md).
 - Backed by SQLite **FTS5**; results grouped by type (contacts, notes) with snippets. A person
   found shows their photo, or their initials when they have none.
 - Respects visibility — private records only appear for their owner.
+- **Nothing found is an offer.** A search with no results says so and offers *Add "…"*, which
+  opens the *Add person* form with the query as the name (§2.2) — the People directory's
+  filter does the same when nobody matches (not in the archive, where it would mean nothing).
 
 ## 2.10 Privacy model (shared vs. private) **[M1]**
 
@@ -1729,6 +1752,25 @@ Concept + clickable prototype: `docs/concepts/moments-capture-concept.html`.
 - Implemented as a pure, test-first domain (`domain/moments`: capture orchestration over the
   contact + journal ports; `domain/stream`: merge/limit of scoped reads over a
   `StreamRepository` port); the Drizzle adapter owns the scoped queries; Home is a thin edge.
+
+### 2.22.3 First run
+
+A household fresh out of setup — or a member's first SSO sign-in — lands on Home, and an empty
+stream has nothing to act on. So while the household holds **nobody but the member**, Home
+carries a **welcome card** above the stream with three steps:
+
+1. **Start with yourself** — the *Add person* form as *Add yourself* (§2.1.3): the record is
+   linked to the member as it is saved, so the graph opens on them and everyone added next can
+   be linked to them.
+2. **Coming from Monica?** — the import (§2.16). Shown to admins only, because only an admin
+   may run it; it is the import's one door outside Settings.
+3. **Add someone** — the plain *Add person* form.
+
+The card stays after the first step, with that step ticked off in place, and goes as soon as
+the household holds anybody besides the member — added by hand or imported. Nothing is stored
+to dismiss it: it is a reading of the household, not a setting. The decision lives in a pure
+module (`$lib/onboarding/welcome`), so when it shows and what counts as done is unit-tested;
+while it shows, the stream's own "nothing written yet" state stays away.
 
 ## 2.23 The story timeline **[M2]**
 

@@ -58,3 +58,26 @@ export function canExpand(
 	const ring = rings.get(nodeId);
 	return ring !== undefined && ring < maxRings;
 }
+
+/**
+ * Whether expanding `nodeId` would add anything to `shown`: a link of it in `graph` — between
+ * two nodes the graph holds, as the in-memory source reads it — that the map does not draw yet.
+ * Without this the peek panel offered *Expand* on somebody with no links, and pressing it did
+ * nothing (docs/02 §2.7).
+ */
+export function hasMoreAround(graph: GraphModel, shown: GraphModel, nodeId: string): boolean {
+	const inGraph = new Set(graph.nodes.map((node) => node.id));
+	const drawn = new Set(shown.edges.map((edge) => edge.id));
+	return graph.edges.some(
+		(edge) =>
+			(edge.source === nodeId || edge.target === nodeId) &&
+			inGraph.has(edge.source) &&
+			inGraph.has(edge.target) &&
+			!drawn.has(edge.id)
+	);
+}
+
+/** Whether `nodeId` is linked to anybody in `graph` — a map of somebody alone has nothing to draw. */
+export function hasLinks(graph: GraphModel, nodeId: string): boolean {
+	return hasMoreAround(graph, { nodes: [], edges: [] }, nodeId);
+}

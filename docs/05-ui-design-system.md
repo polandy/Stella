@@ -383,6 +383,26 @@ They must be edited together; `app.css` says so at both blocks.
 - **Empty states** are one component (`EmptyState`): a large icon in the subtle colour, a
   line naming what belongs here, and the one action that starts it — never a bare "nothing
   here". Bands that are absent when empty (Coming up, Quiet lately) do not use it.
+  - **The action is the next step, made specific.** A search that found nobody offers *Add
+    "Lukas"* with the name carried over (global search, the People filter); a circle search
+    offers *Create "…"*; an empty circle *Add people*; an empty journal *New entry*; a graph
+    centred on somebody with no links *Add a relationship*. Where the action needs something
+    that is not there yet — an empty circle in a household with nobody to add — it offers that
+    instead (*Add person*). An action that would duplicate a form already open is left out.
+  - **`compact`** is the same invitation inside a card that holds other things: a small icon
+    beside the words and the action after them, so it does not push the rest of the card away.
+    A person's relationships card uses it in place of the map while they have no links.
+  - **The copy names the person** where there is one: *Nothing noted about Lena yet* and what a
+    note is good for, rather than *No notes yet.*
+  - A no-match state that replaces a filtered list sits in a `role="status"` wrapper, so a
+    screen reader hears the list empty while the reader types.
+- **First-run card** (Home, docs/02 §2.22.3): one card above the stream while the household
+  holds nobody but the member — a heading, one line on what Stella is for, and up to three
+  steps as full-width link rows (icon in `--primary-soft`, title, one-line hint, chevron). A
+  done step keeps its place, muted with a tick in `--success`, so the list never shifts under
+  the reader. When it shows and what is done comes from `$lib/onboarding/welcome`; the component
+  (`WelcomeCard`) only draws it. It replaces the stream's own empty state rather than stacking
+  on top of it.
 - **Between screens** the app cross-fades (`document.startViewTransition`, 160 ms) so a list
   and the person it opens read as one place; the shell skips it under
   `prefers-reduced-motion` and in browsers without the API. No skeleton loaders: pages are
@@ -1005,4 +1025,5 @@ The explorer (§2.7, core feature) should feel alive and effortless. Interaction
   Only for somebody without a photo: wherever a person is listed to be found or picked — search
   results, ⌘K, the person pickers, the @-list — the list carries their `avatarPhotoId`, so a
   face is recognisable at a glance.
-- Empty states use friendly copy and a clear primary action, never a dead end.
+- Empty states use friendly copy and a clear primary action, never a dead end (§5.5,
+  *Empty states*). A done step is ticked with `done` (Lucide `Check`).

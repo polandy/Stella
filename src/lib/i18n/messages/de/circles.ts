@@ -18,7 +18,9 @@ export const circles: CirclesMessages = {
 	'circles.empty.hint':
 		'Ein Kreis ist ein Zusammenhang, den Menschen teilen. Lege den ersten an und setze Menschen hinein.',
 	'circles.noMatch.title': 'Kein Kreis passt',
-	'circles.noMatch.hint': 'Versuche einen Teil des Namens oder ein Wort aus der Beschreibung.',
+	'circles.noMatch.hint':
+		'Versuche einen Teil des Namens oder ein Wort aus der Beschreibung — oder leg den Kreis gleich an.',
+	'circles.noMatch.create': (p) => `„${p.name}“ anlegen`,
 	'circles.memberCount': (p) => (p.count === 1 ? '1 Mitglied' : `${p.count} Mitglieder`),
 	'circles.nobodyYet': 'Noch niemand darin',
 	'circles.private': 'privat',
