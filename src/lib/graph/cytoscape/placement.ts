@@ -26,7 +26,7 @@ export interface Placement {
 	from: Point;
 }
 
-/** The widest a fan may open around its anchor before it moves further out instead. */
+/** The widest a row of a fan may open around its anchor; more people start another row. */
 const MAX_FAN = Math.PI;
 /** How far beside the map a newcomer with no tie to it is set down, in edge lengths. */
 const DETACHED_OFFSET = 2;
@@ -137,7 +137,13 @@ function openSide(anchor: Point, taken: Point[], centre: Point): number {
 	return heading;
 }
 
-/** `count` points on an arc of `radius` around `anchor`, centred on `heading`, one edge length apart. */
+/**
+ * `count` points around `anchor`, centred on `heading`, in rows: the first row `radius` out,
+ * each further row one edge length beyond the last. A row holds as many as fit on an arc no
+ * wider than {@link MAX_FAN} with neighbours one edge length apart (measured straight across,
+ * which is how far apart their names are drawn), and the inner rows fill first — so a big
+ * family stays near the person it was opened from instead of on one ring far out.
+ */
 function fan(
 	anchor: Point,
 	heading: number,
@@ -145,18 +151,28 @@ function fan(
 	spacing: number,
 	radius: number
 ): Point[] {
-	const step = spacing / radius;
-	const start = heading - ((count - 1) * step) / 2;
-	return Array.from({ length: count }, (_, i) => ({
-		x: anchor.x + radius * Math.cos(start + i * step),
-		y: anchor.y + radius * Math.sin(start + i * step)
-	}));
+	const points: Point[] = [];
+	for (let row = 0; points.length < count; row++) {
+		const rowRadius = radius + row * spacing;
+		// The angle at which two points on this row stand exactly one edge length apart.
+		const step = 2 * Math.asin(Math.min(1, spacing / (2 * rowRadius)));
+		const capacity = Math.floor(MAX_FAN / step + TOLERANCE) + 1;
+		const inRow = Math.min(capacity, count - points.length);
+		const start = heading - ((inRow - 1) * step) / 2;
+		for (let i = 0; i < inRow; i++) {
+			points.push({
+				x: anchor.x + rowRadius * Math.cos(start + i * step),
+				y: anchor.y + rowRadius * Math.sin(start + i * step)
+			});
+		}
+	}
+	return points;
 }
 
 /**
  * The nearest {@link fan} that keeps every point at least one edge length from everyone in
- * `occupied`: it starts as close as the fan's size allows and moves out step by step, so a
- * person with room around them keeps their people close and one in a crowd sends them past it.
+ * `occupied`: it starts one edge length out and moves out step by step, so a person with room
+ * around them keeps their people close and one in a crowd sends them past it.
  */
 function clearFan(
 	anchor: Point,
@@ -165,14 +181,11 @@ function clearFan(
 	spacing: number,
 	occupied: Point[]
 ): Point[] {
-	// A fan that would open wider than MAX_FAN starts further out instead, so a big family stays
-	// on the open side rather than wrapping back into the map.
-	const nearest = Math.max(spacing, ((count - 1) * spacing) / MAX_FAN);
 	const isClear = (point: Point) =>
 		occupied.every((o) => Math.hypot(point.x - o.x, point.y - o.y) >= spacing - TOLERANCE);
-	let points = fan(anchor, heading, count, spacing, nearest);
+	let points = fan(anchor, heading, count, spacing, spacing);
 	for (let push = 1; push <= MAX_PUSHES && !points.every(isClear); push++) {
-		points = fan(anchor, heading, count, spacing, nearest + push * PUSH_STEP * spacing);
+		points = fan(anchor, heading, count, spacing, spacing + push * PUSH_STEP * spacing);
 	}
 	return points;
 }

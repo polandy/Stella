@@ -24,6 +24,12 @@ export const search = {
 	'graph.connectionPath': 'Connection path',
 	'graph.labels': 'Labels',
 	'graph.labels.hint': 'Name every line with its relationship',
+	'graph.labels.tooMany': (p: { count: number }) =>
+		`Paused while more than ${p.count} lines are shown — point at a line or select someone to read theirs`,
+	'graph.density': 'Spacing',
+	'graph.density.compact': 'Compact',
+	'graph.density.comfortable': 'Comfortable',
+	'graph.density.spacious': 'Spacious',
 	'graph.allKinship': 'All kinship lines',
 	'graph.allKinship.hint': 'Also the ones the entered links already explain',
 	'graph.groupByRole': 'Group by role',
@@ -46,6 +52,8 @@ export const search = {
 	'graph.keyboard.hint':
 		'Arrow keys move between people. Enter selects, and pressed again opens up their connections. Home goes back to the selected person or the centre, Escape lets go.',
 	'graph.keyboard.selected': (p: { name: string }) => `${p.name}, selected`,
+	'graph.keyboard.more': (p: { name: string; count: number }) =>
+		`${p.name}, ${p.count} more to open up`,
 	'graph.path.none': 'No connection found between those two.',
 	'graph.path.pickSecond': 'Now pick the second person…',
 	'graph.path.pickTwo': 'Pick two people to trace how they’re connected.',

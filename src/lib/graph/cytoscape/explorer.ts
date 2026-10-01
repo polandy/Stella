@@ -13,7 +13,16 @@ import { spreadCoincident, type Arrangement, type Size } from '../layout/geometr
 import { boxAround, frameAround, packGroups } from '../layout/group-blocks';
 import { placeNewcomers, type Placement, type Point } from './placement';
 import { frameBelow, widenToReveal, type Box } from './viewport';
-import { BOW_FIELD, BOWED_CLASS, CURSOR_CLASS, TUCKED_CLASS, type CyStyle } from './stylesheet';
+import { DEFAULT_DENSITY, spacingFor, type Spacing } from '../layout/density';
+import {
+	BOW_FIELD,
+	BOWED_CLASS,
+	CURSOR_CLASS,
+	HAS_MORE_CLASS,
+	HOVERED_CLASS,
+	TUCKED_CLASS,
+	type CyStyle
+} from './stylesheet';
 
 /*
  * Imperative Cytoscape controller — the one place the library is touched, and it is dynamically
@@ -33,6 +42,8 @@ export interface ControllerOptions extends ExplorerHandlers {
 	reducedMotion: boolean;
 	/** Screen pixels the toolbar covers at the top, from the start — see `setTopInset`. */
 	topInset?: number;
+	/** How far apart people are set, from the start — see `setSpacing`. */
+	spacing?: Spacing;
 }
 
 export interface ExplorerOptions extends ControllerOptions {
@@ -63,6 +74,11 @@ export interface ExplorerController {
 	 * Framing the map, and stepping back to show newcomers, keep the map below them.
 	 */
 	setTopInset(pixels: number): void;
+	/**
+	 * How far apart people are set (docs/05 §5.8). Moves nobody by itself: the next expand and
+	 * the next free arrangement use it.
+	 */
+	setSpacing(spacing: Spacing): void;
 	/** Show only these node/edge ids (filtering), without a re-layout. */
 	setVisible(nodeIds: Set<string>, edgeIds: Set<string>): void;
 	/** Dim everything except the node and its immediate neighbourhood (null clears). */
@@ -107,10 +123,11 @@ const FRAME_PADDING = 48;
 /** The furthest out the canvas zooms, whether by the reader or to reveal newcomers. */
 const MIN_ZOOM = 0.2;
 
-/** The length the force layout aims every edge at, and the step newcomers are placed at. */
-const EDGE_LENGTH = 90;
-/** The length it aims a line a bundle stands for at. */
-const TUCKED_EDGE_LENGTH = 2 * EDGE_LENGTH;
+/** The classes the elements decide, which an element already on the canvas takes on afresh. */
+const SYNCED_CLASSES = [TUCKED_CLASS, HAS_MORE_CLASS];
+
+/** A line a bundle stands for is aimed this many edge lengths long. */
+const TUCKED_EDGE_FACTOR = 2;
 /**
  * How long a tidy-up takes to glide the map into its new arrangement, in milliseconds. Slow
  * enough to follow each person to their new place, which is what keeps the reader oriented.
@@ -122,22 +139,24 @@ const GLIDE_EASING = 'ease-in-out-cubic';
 const MAX_ZOOM = 2.5;
 
 /**
- * The force-directed arrangement, worked out in one go rather than shown step by step: its
- * result is then glided into like any other arrangement, framed by the controller itself so
- * the framing can leave the toolbar's strip free.
+ * The force-directed arrangement at the reader's density, worked out in one go rather than
+ * shown step by step: its result is then glided into like any other arrangement, framed by the
+ * controller itself so the framing can leave the toolbar's strip free.
  */
-const FORCE_LAYOUT = {
-	name: 'cose',
-	animate: false,
-	randomize: false, // start from current positions
-	fit: false,
-	nodeRepulsion: () => 8000,
-	// A line a bundle stands for still ties its member to the map, but at a longer reach, so the
-	// block its group is packed into stands clear of the circle (docs/02 §2.7).
-	idealEdgeLength: (edge: EdgeSingular) =>
-		edge.hasClass(TUCKED_CLASS) ? TUCKED_EDGE_LENGTH : EDGE_LENGTH,
-	nodeDimensionsIncludeLabels: true
-};
+function forceLayout({ edgeLength, repulsion }: Spacing) {
+	return {
+		name: 'cose',
+		animate: false,
+		randomize: false, // start from current positions
+		fit: false,
+		nodeRepulsion: () => repulsion,
+		// A line a bundle stands for still ties its member to the map, but at a longer reach, so
+		// the block its group is packed into stands clear of the circle (docs/02 §2.7).
+		idealEdgeLength: (edge: EdgeSingular) =>
+			edge.hasClass(TUCKED_CLASS) ? TUCKED_EDGE_FACTOR * edgeLength : edgeLength,
+		nodeDimensionsIncludeLabels: true
+	};
+}
 
 /** Moving every node to a place already worked out; the controller frames the view itself. */
 function presetLayout(glide: boolean, placeOf: (node: NodeSingular) => Point) {
@@ -209,6 +228,13 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		if (e.target === cy) opts.onTapBackground();
 	});
 
+	// Pointing at a line, or at a person, names those lines (docs/05 §5.8): with the names of a
+	// busy map switched off, this is how one is read without selecting anybody.
+	const linesUnder = (e: EventObject) =>
+		e.target.isNode() ? e.target.connectedEdges() : e.target;
+	cy.on('mouseover', 'node, edge', (e) => linesUnder(e).addClass(HOVERED_CLASS));
+	cy.on('mouseout', 'node, edge', (e) => linesUnder(e).removeClass(HOVERED_CLASS));
+
 	const duration = opts.reducedMotion ? 0 : 350;
 	/**
 	 * Everything on the canvas but the frames of the groups by role: a frame stands wherever its
@@ -219,6 +245,8 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	const alive = () => !cy.destroyed();
 	// Screen pixels at the top of the canvas the toolbar floats over; framing leaves them free.
 	let topInset = opts.topInset ?? 0;
+	// How far apart people are set: the reader's density (docs/05 §5.8).
+	let spacing = opts.spacing ?? spacingFor(DEFAULT_DENSITY);
 
 	/*
 	 * Where the force layout would put everyone, without moving anyone yet: it runs in one go
@@ -230,10 +258,10 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		// People on one spot — everyone, on a first load — would be pushed apart at random.
 		const start = spreadCoincident(
 			new Map(people().map((n) => [n.id(), { ...n.position() }] as const)),
-			EDGE_LENGTH
+			spacing.edgeLength
 		);
 		cy.batch(() => people().forEach((n) => void n.position(start.get(n.id())!)));
-		cy.layout(FORCE_LAYOUT as Parameters<Core['layout']>[0]).run();
+		cy.layout(forceLayout(spacing) as Parameters<Core['layout']>[0]).run();
 		// Frames left out: one stands wherever its members do, and is no one to step out of it.
 		const after = new Map(people().map((n) => [n.id(), { ...n.position() }] as const));
 		cy.batch(() => people().forEach((n) => void n.position(before.get(n.id())!)));
@@ -301,7 +329,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	const reveal = (targets: Point[]) => {
 		if (targets.length === 0 || cy.width() === 0 || cy.height() === 0) return;
 		// Half an edge length around each centre covers the node and the name drawn under it.
-		const margin = EDGE_LENGTH / 2;
+		const margin = spacing.edgeLength / 2;
 		// The strip under the toolbar does not count as in view.
 		const extent = cy.extent();
 		const next = widenToReveal(
@@ -377,9 +405,11 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 						return;
 					}
 					// Switching the grouping keeps most elements, but tucks lines away or brings
-					// them back, and recounts a group. Only what the elements own is synced: the
+					// them back, and recounts a group; an expand takes the "+N" off whoever has
+					// nothing more behind them. Only what the elements own is synced: the
 					// highlight, filter and bend classes belong to the controller.
-					el.toggleClass(TUCKED_CLASS, wanted.classes.split(' ').includes(TUCKED_CLASS));
+					const owned = wanted.classes.split(' ');
+					for (const name of SYNCED_CLASSES) el.toggleClass(name, owned.includes(name));
 					const { id: _id, source: _s, target: _t, parent: _p, ...data } = wanted.data;
 					el.data(data);
 				});
@@ -394,7 +424,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 				const links = elements
 					.filter((e) => e.group === 'edges')
 					.map((e) => ({ source: e.data.source as string, target: e.data.target as string }));
-				placements = placeNewcomers(placed, [...newcomers], links, EDGE_LENGTH);
+				placements = placeNewcomers(placed, [...newcomers], links, spacing.edgeLength);
 				// With motion, a newcomer starts on the person it was opened from and travels out.
 				const startAt = (p: Placement) => (duration === 0 ? p.at : p.from);
 				cy.add(
@@ -433,6 +463,10 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 
 		setTopInset(pixels) {
 			topInset = pixels;
+		},
+
+		setSpacing(next) {
+			spacing = next;
 		},
 
 		setVisible(nodeIds, edgeIds) {

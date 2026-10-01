@@ -1,6 +1,8 @@
 import { mixHex } from '../../design/color';
 import { AVATAR_TINT_PERCENT } from '../../design/tokens';
 import { FRAME } from '../layout/group-blocks';
+import { LABEL_MIN_ZOOMED_FONT_SIZE, NODE_LABEL_WIDTH } from '../layout/legibility';
+import { expandBadge } from './badge';
 import type { Palette } from './theme';
 
 /** The class and data field a bent line carries; the controller sets them, this draws them. */
@@ -10,6 +12,10 @@ export const BOW_FIELD = 'bow';
 export const TUCKED_CLASS = 'tucked';
 /** The class the node the keyboard is on carries (docs/05 §5.8); the controller sets it. */
 export const CURSOR_CLASS = 'cursor';
+/** The class a line carries while the pointer rests on it or on either of its ends. */
+export const HOVERED_CLASS = 'hovered';
+/** The class a node carries while expanding it would bring more people in (`elements.ts`). */
+export const HAS_MORE_CLASS = 'has-more';
 
 /*
  * Build the Cytoscape stylesheet from a resolved Palette (docs/05 §5.8). Pure: palette in,
@@ -23,41 +29,57 @@ export interface CyStyle {
 	style: Record<string, unknown>;
 }
 
-/**
- * Below this rendered font size (in screen pixels) Cytoscape drops a label. Zoomed far out,
- * edge names would otherwise pile into unreadable smudges over the lines they belong to.
- */
-export const EDGE_LABEL_MIN_ZOOMED_FONT_SIZE = 7;
-
 /** How the caller wants the canvas drawn, beyond the colours. */
 export interface StylesheetOptions {
 	/**
-	 * Name every edge at once, not just the highlighted ones. Off by default: on a dense
-	 * graph hundreds of names are noise, so the reader opts in (docs/05 §5.8).
+	 * Name every line at once, not just the highlighted, hovered or traced ones. The caller
+	 * decides: the Labels switch is on by default, but past a few dozen lines the names pile
+	 * up around a hub, so it is off whenever they no longer fit (`edgeLabelsFit`, docs/05 §5.8).
 	 */
 	edgeLabels?: boolean;
 	/** The reader asked for less motion: a state change (selection, fading) is then instant. */
 	reducedMotion?: boolean;
 }
 
+/** The element accessor a function-valued style reads; Cytoscape hands it the element. */
+interface StyledElement {
+	data(key: string): unknown;
+}
+
 export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): CyStyle[] {
 	const transition = options.reducedMotion ? '0ms' : '150ms';
+	// One badge image per count, built once per palette: every node with "+3" shares it.
+	const badges = new Map<number, string>();
+	const badgeOf = (ele: StyledElement): string => {
+		const count = Number(ele.data('more'));
+		let uri = badges.get(count);
+		if (uri === undefined) {
+			uri = expandBadge(count, { fill: p.card, text: p.fg, ring: p.fgSubtle }).uri;
+			badges.set(count, uri);
+		}
+		return uri;
+	};
+	// Each line is drawn in one colour, its arrowhead included (docs/05 §5.8).
+	const line = (hex: string) => ({ 'line-color': hex, 'target-arrow-color': hex });
+
 	return [
 		// ── People ────────────────────────────────────────────────────────────
 		{
 			selector: 'node.person',
 			style: {
 				'background-color': p.card, // overridden per-accent below
-				width: 'mapData(degree, 0, 10, 30, 56)',
-				height: 'mapData(degree, 0, 10, 30, 56)',
+				// The diameter the elements carry: a square-root scale of the lines on the map.
+				width: 'data(size)',
+				height: 'data(size)',
 				label: 'data(label)',
 				color: p.fg,
 				'font-size': 11,
 				'font-family': p.fontSans,
 				'text-valign': 'bottom',
 				'text-margin-y': 6,
-				'text-max-width': '96px',
+				'text-max-width': `${NODE_LABEL_WIDTH}px`,
 				'text-wrap': 'ellipsis',
+				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE,
 				'border-width': 3,
 				'text-background-color': p.bg,
 				'text-background-opacity': 0.65,
@@ -87,11 +109,21 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			selector: 'node.center',
 			style: { 'border-color': p.primary, 'border-width': 4, 'font-weight': 600, 'z-index': 10 }
 		},
+		// Somebody who has died keeps their full weight on the map — a faded disc read as "not
+		// really there" — and is told apart by colour drained to the neutral grey and a double
+		// ring, so the mark holds without colour too.
 		{
 			selector: 'node.deceased',
-			style: { 'background-opacity': 0.45, 'border-opacity': 0.5 }
+			style: {
+				'background-color': mixHex(p.fgSubtle, AVATAR_TINT_PERCENT, p.card),
+				'border-color': p.fgSubtle,
+				'border-style': 'double',
+				'border-width': 5
+			}
 		},
 		// ── Circles (shared contexts) — a distinct pill shape ─────────────────
+		// The tint and the ring carry the circle colour; the name is written in the text colour,
+		// as on a chip, because lavender words on a lavender tint fell under AA in Latte.
 		{
 			selector: 'node.circle',
 			style: {
@@ -103,11 +135,12 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				height: 28,
 				padding: '8px',
 				label: 'data(label)',
-				color: p.membership,
+				color: p.fg,
 				'font-size': 11,
 				'font-weight': 600,
 				'text-valign': 'center',
-				'text-halign': 'center'
+				'text-halign': 'center',
+				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE
 			}
 		},
 		// ── Groups by role (docs/02 §2.7) — a frame around the members ─────────
@@ -122,7 +155,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'border-width': 1.5,
 				padding: `${FRAME.padding}px`,
 				label: 'data(label)',
-				color: p.membership,
+				color: p.fg,
 				'font-size': 11,
 				'font-weight': 600,
 				'font-family': p.fontSans,
@@ -133,26 +166,61 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'text-background-opacity': 0.85,
 				'text-background-shape': 'roundrectangle',
 				'text-background-padding': '3px',
+				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE,
 				'compound-sizing-wrt-labels': 'include',
 				'transition-property': 'opacity, border-width, border-color',
 				'transition-duration': transition
 			}
 		},
+		// ── "+N": expanding this node would bring more people in ──────────────
+		// A small pill over the node's upper right edge, drawn as an image because the canvas
+		// has no DOM. It sits outside the disc (`containment: over`), so a photo stays whole.
+		{
+			selector: `node.${HAS_MORE_CLASS}`,
+			style: {
+				'background-image': (ele: StyledElement) => [badgeOf(ele)],
+				'background-fit': 'none',
+				'background-clip': 'none',
+				'background-image-containment': 'over',
+				'background-width': 'auto',
+				'background-height': 'auto',
+				'background-position-x': '100%',
+				'background-position-y': '0%',
+				'background-offset-x': 10,
+				'background-offset-y': -6,
+				'bounds-expansion': 16
+			}
+		},
+		{
+			selector: `node.has-photo.${HAS_MORE_CLASS}`,
+			style: {
+				'background-image': (ele: StyledElement) => [String(ele.data('photo')), badgeOf(ele)],
+				'background-fit': ['cover', 'none'],
+				'background-clip': ['node', 'none'],
+				'background-image-containment': ['inside', 'over'],
+				'background-width': ['auto', 'auto'],
+				'background-height': ['auto', 'auto'],
+				'background-position-x': ['50%', '100%'],
+				'background-position-y': ['50%', '0%'],
+				'background-offset-x': [0, 10],
+				'background-offset-y': [0, -6]
+			}
+		},
 		// ── Edges ─────────────────────────────────────────────────────────────
+		// Opaque on purpose: each line colour is deepened until it clears 3:1 on the page ground
+		// (docs/05 §5.8), and drawing it see-through would undo exactly that.
 		{
 			selector: 'edge',
 			style: {
 				width: 1.6,
 				'curve-style': 'bezier',
-				'line-color': p.fgSubtle,
-				opacity: 0.6,
-				// Every line knows its name ("Parent of", "Grandfather"). The toolbar's "Labels"
-				// switch (on by default) names them all; switched off, a label appears only while
-				// its edge is highlighted, so selecting a person still names their connections
-				// (docs/02 §2.7).
+				...line(p.lines.categories.other),
+				// Every line knows its name ("Parent of", "Grandfather"). Named all at once only when
+				// the caller asks (see `edgeLabels`); otherwise a name shows while its line is
+				// highlighted, hovered or traced, so pointing at a person still names their lines.
 				label: 'data(label)',
 				'text-opacity': options.edgeLabels ? 1 : 0,
-				'min-zoomed-font-size': EDGE_LABEL_MIN_ZOOMED_FONT_SIZE,
+				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE,
 				color: p.fgMuted,
 				'font-size': 10,
 				'font-family': p.fontSans,
@@ -166,34 +234,28 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			}
 		},
 		// Lines take the canvas-safe depth of their token: an edge carries its category alone.
-		{ selector: 'edge[category = "family"]', style: { 'line-color': p.lines.categories.family } },
-		{ selector: 'edge[category = "romantic"]', style: { 'line-color': p.lines.categories.romantic } },
-		{ selector: 'edge[category = "social"]', style: { 'line-color': p.lines.categories.social } },
-		{
-			selector: 'edge[category = "professional"]',
-			style: { 'line-color': p.lines.categories.professional }
-		},
+		{ selector: 'edge[category = "family"]', style: line(p.lines.categories.family) },
+		{ selector: 'edge[category = "romantic"]', style: line(p.lines.categories.romantic) },
+		{ selector: 'edge[category = "social"]', style: line(p.lines.categories.social) },
+		{ selector: 'edge[category = "professional"]', style: line(p.lines.categories.professional) },
 		{
 			selector: 'edge[kind = "membership"]',
-			style: { 'line-color': p.lines.membership, 'line-style': 'dashed', 'line-dash-pattern': [4, 4] }
+			style: { ...line(p.lines.membership), 'line-style': 'dashed', 'line-dash-pattern': [4, 4] }
 		},
+		// Inferred, so lighter: thinner and dotted rather than see-through, which keeps it at 3:1.
 		{
 			selector: 'edge[kind = "kinship"]',
-			style: { 'line-color': p.lines.kinship, 'line-style': 'dotted', opacity: 0.45 }
+			style: { ...line(p.lines.kinship), 'line-style': 'dotted', width: 1.2 }
 		},
 		{
 			selector: 'edge[directed = 1]',
-			style: {
-				'target-arrow-shape': 'triangle',
-				'target-arrow-color': p.fgSubtle,
-				'arrow-scale': 0.8
-			}
+			style: { 'target-arrow-shape': 'triangle', 'arrow-scale': 0.8 }
 		},
 		// One line standing in for several (docs/02 §2.7): thicker the more it carries, and it
 		// always says how many, since that count is the one thing the bundle adds.
 		{
 			selector: 'edge.bundle',
-			style: { width: 'mapData(count, 2, 12, 3, 7)', opacity: 0.85, 'text-opacity': 1 }
+			style: { width: 'mapData(count, 2, 12, 3, 7)', 'text-opacity': 1 }
 		},
 		// A line an arrangement bends around whoever stands in its way (docs/05 §5.8): its bow
 		// is the control point's sideways offset, set by the controller.
@@ -210,16 +272,32 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			selector: '.highlight',
 			style: { opacity: 1, width: 2.6, 'border-color': p.focusRing, 'z-index': 20 }
 		},
-		{ selector: 'edge.highlight, edge.onpath', style: { 'text-opacity': 1 } },
-		{ selector: 'node.selected', style: { 'border-color': p.focusRing, 'border-width': 5 } },
-		// The keyboard's place: a ring outside the border, so it reads over a selection's own
-		// focus-coloured border and over a traced path's yellow one alike.
+		{ selector: `edge.${HOVERED_CLASS}`, style: { width: 2.6, 'z-index': 25 } },
+		{
+			selector: `edge.highlight, edge.onpath, edge.${HOVERED_CLASS}`,
+			style: { 'text-opacity': 1 }
+		},
+		// The selection is a filled halo around a solid ring; the keyboard's cursor (below) a
+		// dashed ring held off the node. Two shapes, so they never read as one — not even for
+		// someone who cannot tell their colours apart.
+		{
+			selector: 'node.selected',
+			style: {
+				'border-color': p.focusRing,
+				'border-width': 4,
+				'underlay-color': p.focusRing,
+				'underlay-opacity': 0.3,
+				'underlay-padding': 8,
+				'underlay-shape': 'ellipse'
+			}
+		},
 		{
 			selector: `node.${CURSOR_CLASS}`,
 			style: {
 				'outline-color': p.focusRing,
 				'outline-width': 3,
-				'outline-offset': 3,
+				'outline-style': 'dashed',
+				'outline-offset': 5,
 				'outline-opacity': 1
 			}
 		},
@@ -237,11 +315,11 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 		// Split by kind: `width` is a line's thickness but a node's size.
 		{
 			selector: 'edge.onpath',
-			style: { opacity: 1, width: 3, 'line-color': p.accents.yellow, 'z-index': 30 }
+			style: { opacity: 1, width: 3, ...line(p.lines.path), 'z-index': 30 }
 		},
 		{
 			selector: 'node.onpath',
-			style: { opacity: 1, 'border-color': p.accents.yellow, 'border-width': 5, 'z-index': 30 }
+			style: { opacity: 1, 'border-color': p.lines.path, 'border-width': 5, 'z-index': 30 }
 		}
 	];
 }

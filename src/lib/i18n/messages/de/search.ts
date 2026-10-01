@@ -25,6 +25,12 @@ export const search: SearchMessages = {
 	'graph.connectionPath': 'Verbindungsweg',
 	'graph.labels': 'Bezeichnungen',
 	'graph.labels.hint': 'Jede Linie mit ihrer Beziehung benennen',
+	'graph.labels.tooMany': (p) =>
+		`Pausiert, solange mehr als ${p.count} Linien zu sehen sind — zeig auf eine Linie oder wähle jemanden aus, um seine zu lesen`,
+	'graph.density': 'Abstand',
+	'graph.density.compact': 'Kompakt',
+	'graph.density.comfortable': 'Ausgewogen',
+	'graph.density.spacious': 'Großzügig',
 	'graph.allKinship': 'Alle Verwandtschaftslinien',
 	'graph.allKinship.hint': 'Auch die, die sich aus den eingetragenen Linien ergeben',
 	'graph.groupByRole': 'Kreise nach Rolle bündeln',
@@ -47,6 +53,7 @@ export const search: SearchMessages = {
 	'graph.keyboard.hint':
 		'Mit den Pfeiltasten von Person zu Person. Enter wählt aus und klappt beim zweiten Mal die Verbindungen auf. Pos1 führt zurück zur ausgewählten Person oder zur Mitte, Escape hebt die Auswahl auf.',
 	'graph.keyboard.selected': (p) => `${p.name}, ausgewählt`,
+	'graph.keyboard.more': (p) => `${p.name}, ${p.count} weitere zum Aufklappen`,
 	'graph.path.none': 'Zwischen diesen beiden ist keine Verbindung zu finden.',
 	'graph.path.pickSecond': 'Wähle jetzt die zweite Person…',
 	'graph.path.pickTwo': 'Wähle zwei Menschen, um ihre Verbindung zu verfolgen.',

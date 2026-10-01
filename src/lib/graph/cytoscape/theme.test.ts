@@ -3,7 +3,8 @@ import { resolvePalette } from './theme';
 import { AA_LARGE, contrastRatio, mixHex } from '../../design/color';
 import { resolveColor, tokensFor, type Theme } from '../../design/css-tokens';
 import { RELATIONSHIP_CATEGORIES } from '../../relationships/categories';
-import { buildStylesheet, CURSOR_CLASS, EDGE_LABEL_MIN_ZOOMED_FONT_SIZE } from './stylesheet';
+import { buildStylesheet, CURSOR_CLASS, HAS_MORE_CLASS, HOVERED_CLASS } from './stylesheet';
+import { LABEL_MIN_ZOOMED_FONT_SIZE } from '../layout/legibility';
 
 /*
  * Palette resolution + stylesheet building (docs/05 §5.6/§5.8), tested with a fake token
@@ -91,9 +92,35 @@ describe('every explorer line clears 3:1 on the canvas', () => {
 			const lines = [
 				...RELATIONSHIP_CATEGORIES.map((c) => [c, p.lines.categories[c]] as const),
 				['membership', p.lines.membership] as const,
-				['kinship', p.lines.kinship] as const
+				['kinship', p.lines.kinship] as const,
+				['path', p.lines.path] as const
 			];
 			const failing = lines.filter(([, hex]) => contrastRatio(hex, p.bg) < AA_LARGE);
+			expect(failing).toEqual([]);
+		});
+
+		/*
+		 * A line drawn see-through is a different colour from its token: 0.6 opacity took every
+		 * line in Latte back under 3:1 after `ensureContrast` had lifted it over. So the colour
+		 * that counts is the one on screen — the line blended over the ground by its rule's
+		 * opacity — and only fading, which de-emphasises on purpose, may go below.
+		 */
+		it(`keeps every line clear of 3:1 as drawn, opacity included, in ${theme}`, () => {
+			const sheet = buildStylesheet(p);
+			const rule = (selector: string) => sheet.find((s) => s.selector === selector)?.style ?? {};
+			const opacityOf = (selector: string) => Number(rule(selector).opacity ?? 1);
+			const drawn = (hex: string, opacity: number) => mixHex(hex, opacity * 100, p.bg);
+			const base = Math.min(opacityOf('edge'), 1);
+			const cases = [
+				...RELATIONSHIP_CATEGORIES.map((c) => [c, p.lines.categories[c], base] as const),
+				['membership', p.lines.membership, base] as const,
+				['kinship', p.lines.kinship, Math.min(base, opacityOf('edge[kind = "kinship"]'))] as const,
+				['bundle', p.lines.categories.family, Math.min(base, opacityOf('edge.bundle'))] as const,
+				['unknown category', String(rule('edge')['line-color']), base] as const
+			];
+			const failing = cases
+				.filter(([, hex, opacity]) => contrastRatio(drawn(hex, opacity), p.bg) < AA_LARGE)
+				.map(([name]) => name);
 			expect(failing).toEqual([]);
 		});
 	}
@@ -111,12 +138,102 @@ describe('buildStylesheet', () => {
 		expect(has('node.center')).toBe(true);
 	});
 
-	it('keeps edge labels hidden until the edge is highlighted or on a path', () => {
+	it('keeps edge labels hidden until the edge is highlighted, hovered or on a path', () => {
 		const edge = styles.find((s) => s.selector === 'edge');
 		expect(edge?.style).toMatchObject({ label: 'data(label)', 'text-opacity': 0 });
 
-		const named = styles.find((s) => s.selector === 'edge.highlight, edge.onpath');
+		const named = styles.find(
+			(s) => s.selector === `edge.highlight, edge.onpath, edge.${HOVERED_CLASS}`
+		);
 		expect(named?.style).toEqual({ 'text-opacity': 1 });
+	});
+
+	it('draws each arrowhead in the colour of its own line', () => {
+		const lineRules = styles.filter(
+			(s) => s.selector.startsWith('edge') && s.style['line-color'] !== undefined
+		);
+		expect(lineRules.length).toBeGreaterThan(5);
+		for (const rule of lineRules) {
+			expect({ selector: rule.selector, arrow: rule.style['target-arrow-color'] }).toEqual({
+				selector: rule.selector,
+				arrow: rule.style['line-color']
+			});
+		}
+		// The direction rule only switches the arrow on; it must not repaint it.
+		const directed = styles.find((s) => s.selector === 'edge[directed = 1]');
+		expect(directed?.style['target-arrow-color']).toBeUndefined();
+	});
+
+	it('traces a path in its canvas-safe colour, the arrowheads with it', () => {
+		const p = resolvePalette(read);
+		expect(styles.find((s) => s.selector === 'edge.onpath')?.style).toMatchObject({
+			'line-color': p.lines.path,
+			'target-arrow-color': p.lines.path
+		});
+	});
+
+	it('drops the names of people and circles that zoom out too small to read', () => {
+		for (const selector of ['node.person', 'node.circle', 'node.role-group']) {
+			const rule = styles.find((s) => s.selector === selector);
+			expect({ selector, size: rule?.style['min-zoomed-font-size'] }).toEqual({
+				selector,
+				size: LABEL_MIN_ZOOMED_FONT_SIZE
+			});
+		}
+		expect(LABEL_MIN_ZOOMED_FONT_SIZE).toBe(8);
+	});
+
+	it('sizes a person by the diameter the elements carry', () => {
+		const person = styles.find((s) => s.selector === 'node.person');
+		expect(person?.style).toMatchObject({ width: 'data(size)', height: 'data(size)' });
+	});
+
+	it('marks the selection and the keyboard cursor differently, not by colour alone', () => {
+		const selected = styles.find((s) => s.selector === 'node.selected')?.style ?? {};
+		const cursor = styles.find((s) => s.selector === `node.${CURSOR_CLASS}`)?.style ?? {};
+		// The selection is a filled halo around a solid border; the cursor a dashed ring.
+		expect(Number(selected['underlay-opacity'])).toBeGreaterThan(0);
+		expect(Number(selected['underlay-padding'])).toBeGreaterThan(0);
+		expect(cursor['outline-style']).toBe('dashed');
+		expect(cursor['underlay-opacity']).toBeUndefined();
+		expect(selected['outline-style']).toBeUndefined();
+	});
+
+	it('marks a deceased person with a muted double ring, never by fading them', () => {
+		const p = resolvePalette(read);
+		const deceased = styles.find((s) => s.selector === 'node.deceased')?.style ?? {};
+		expect(deceased).toMatchObject({ 'border-style': 'double', 'border-color': p.fgSubtle });
+		for (const fade of ['opacity', 'background-opacity', 'border-opacity', 'text-opacity']) {
+			expect({ fade, value: deceased[fade] }).toEqual({ fade, value: undefined });
+		}
+	});
+
+	it('writes a circle’s name in the text colour, its tint carrying the circle colour', () => {
+		const p = resolvePalette(read);
+		const circle = styles.find((s) => s.selector === 'node.circle')?.style ?? {};
+		expect(circle.color).toBe(p.fg);
+		expect(circle['border-color']).toBe(p.membership);
+	});
+
+	it('lays a "+N" badge over the corner of a node that can still grow', () => {
+		const rule = styles.find((s) => s.selector === `node.${HAS_MORE_CLASS}`)?.style ?? {};
+		const image = rule['background-image'] as (ele: { data(key: string): unknown }) => string[];
+		const images = image({ data: (key) => ({ more: 5 })[key] });
+		expect(images).toHaveLength(1);
+		expect(decodeURIComponent(images[0])).toContain('>+5<');
+		// Drawn over the node's edge, not clipped to its disc.
+		expect(rule['background-clip']).toBe('none');
+		expect(rule['background-image-containment']).toBe('over');
+	});
+
+	it('keeps the photo under the badge for a person who has both', () => {
+		const rule =
+			styles.find((s) => s.selector === `node.has-photo.${HAS_MORE_CLASS}`)?.style ?? {};
+		const image = rule['background-image'] as (ele: { data(key: string): unknown }) => string[];
+		const images = image({ data: (key) => ({ more: 2, photo: '/media/p?thumb' })[key] });
+		expect(images[0]).toBe('/media/p?thumb');
+		expect(decodeURIComponent(images[1])).toContain('>+2<');
+		expect(rule['background-clip']).toEqual(['node', 'none']);
 	});
 
 	it('names every edge at once when edge labels are asked for', () => {
@@ -130,7 +247,7 @@ describe('buildStylesheet', () => {
 			const edge = buildStylesheet(resolvePalette(read), { edgeLabels: on }).find(
 				(s) => s.selector === 'edge'
 			);
-			expect(edge?.style['min-zoomed-font-size']).toBe(EDGE_LABEL_MIN_ZOOMED_FONT_SIZE);
+			expect(edge?.style['min-zoomed-font-size']).toBe(LABEL_MIN_ZOOMED_FONT_SIZE);
 		}
 	});
 
