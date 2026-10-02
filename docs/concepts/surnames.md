@@ -1,7 +1,7 @@
 # Concept — Last names for several people at once, worked out where Stella can
 
-Status: **concept, not built.** Written on 2026-10-02 for the maintainer's decisions; the
-open points are listed in §10. It builds on the field-suggestion catalogue of
+Status: **decided, not built.** Decided with the maintainer on 2026-10-02; the decisions are
+listed in §10. It builds on the field-suggestion catalogue of
 `docs/concepts/relationship-suggestions.md` §4 (F1, F1b, F2, F3) and settles its open question
 on suggestions while *editing* (§9 there) for the last name only.
 
@@ -105,17 +105,27 @@ can see have none, the toast that confirms the save offers it to them:
 
 > Last name saved. **Lea and Max** have none yet — Brunner too? [Yes] [Undo]
 
+It goes **one generation at a time**: never grandchildren in the same offer. Saying *Yes* for
+Lea and Max is itself a save, so its toast offers the name to *their* children in turn. A
+family name comes down the tree step by step, each step confirmed, and a daughter who carries
+another name by marriage simply ends the chain on her branch.
+
 It only ever **fills a blank**. Changing a surname that is already there (Peter becomes
 Peter Meier after a marriage) offers nothing to anyone: that is the dangerous half of the open
 question in `relationship-suggestions.md` §9, and the answer here is *never automatically*.
 
-### 3.4 One person, on their profile
+### 3.4 One person, on their profile: the name parts
 
 Under the name in the hero, a person without a last name shows a quiet **Add last name**, with
-the best proposal as a chip when there is one (*Brunner?*). A tap on the chip saves it; a tap
-on *Add last name* opens a field in place, like the inline name edit. This is the only place
-where a person's last name is edited one at a time, so it also offers to **change** an existing
-one (with *keep the old one as former name*, §6).
+the best proposal as a chip when there is one (*Brunner?*). A tap on the chip saves it.
+
+Beyond that, the profile makes **all name parts** editable: **first name, last name and
+nickname**, which today can only be given when a person is created. The inline edit of the
+shown name stays as it is (a tap on the name); a small **Name parts** link beside it opens
+the three fields in place, Enter saves, Escape puts them back. *Add last name* opens the same
+fields with the last name focused. Changing an existing last name offers *keep the old one as
+former name* (§6). A person may not end up with no name at all: the shown name is never
+empty, so emptying every part is allowed and the shown name simply stays as it is.
 
 ---
 
@@ -129,11 +139,13 @@ a reason. The ids continue the F series of `relationship-suggestions.md` §4.
 | **F1** | a **parent** with a last name | that name | likely |
 | **F1b** | two parents with **different** last names | both, as *Choose one* | likely, no winner |
 | **F2** | a **sibling** with a last name (all named siblings agree) | that name | likely |
-| **F3** | a **partner or spouse** with a last name | that name, never pre-ticked | possible |
+| **F3** | a **partner or spouse** with a last name | that name, never pre-ticked; when the partner has a former name, the row says so (*Maria Brunner, born Keller*) | possible |
 | **F9** | the person's **own shown name** has words after the first name (*Thomas Brunner*, last name empty, typical of imports) | those words, with the first word as first name if that is empty too | certain |
 | **F10** | their **children** share one last name | that name | possible (a parent may have kept their own) |
 | **F11** | a **family-kind circle** whose members with a last name all share one | that name | likely |
-| **F12** | an **email address** whose local part contains the first name and one more word (*thomas.brunner@…*) | that word, capitalised | possible |
+
+F11 reads the circle's **kind**, never its name: *Familie Brunner* is covered because its
+members are Brunners, without parsing words that depend on the language.
 
 How they combine for one person:
 
@@ -145,8 +157,9 @@ How they combine for one person:
 4. A name dismissed for this person (§5) is dropped before any of this.
 
 Never used as a source: anything private the viewer cannot see, a description's free text (it
-was often *written from* a link, so it would only echo F1–F2), the `former_name` of anyone, and
-a `former` partnership.
+was often *written from* a link, so it would only echo F1–F2), the `former_name` of anyone, a
+`former` partnership, a circle's name, and email addresses (rare in a family address book and
+easily wrong: *thomas.b@*, a work address; the import case is F9).
 
 ---
 
@@ -172,12 +185,12 @@ a `former` partnership.
 
 ## 6. The shown name
 
-`display_name` is stored and required. A last name must reach it, or the directory still
-shows *Thomas*. The rule:
+`display_name` is stored and required. A changed name part must reach it, or the directory
+still shows *Thomas*. The rule, the same for every path that changes a part (bulk or profile):
 
 - If the shown name is **what the parts made** — it equals `deriveDisplayName` of the old
-  first and last name without an explicit name (*Thomas*) — it is **made again** from the new
-  parts (*Thomas Brunner*).
+  first name, last name and nickname without an explicit name (*Thomas*) — it is **made
+  again** from the new parts (*Thomas Brunner*).
 - If the member **chose** a different shown name (*Opa Hans*, *Tante Gabi*), it is **kept**.
   The row says so (*shown as "Opa Hans"*) so nobody wonders why the directory did not change.
 - If a person has a shown name but **no first name** (imports, F9), the first word of the shown
@@ -197,6 +210,9 @@ at once, since they already read `last_name` and `display_name`.
   refuses an empty name, refuses a `replace: false` change on someone who already has a
   different name (so a stale screen cannot overwrite), applies §6 per person, and writes
   everything in **one transaction**: all or nothing.
+- **The profile** uses a second use-case, `editNameParts(deps, viewer, id, parts)`, for the
+  three fields of §3.4 and the former-name choice. Both use-cases apply §6 through the same
+  pure function, so a shown name follows its parts the same way wherever they change.
 - **Undo**: the toast offers *Undo* for eight seconds, and the batch is sent only when the
   window closes or the page is left, the same deferred send as answering suggestions (§2.23).
 - **The household is told**: one activity entry per batch, *Andy set the last name Brunner on 4
@@ -210,11 +226,12 @@ at once, since they already read `last_name` and `display_name`.
 
 | Part | Place | Kind |
 |---|---|---|
-| Rules F1–F3, F9–F12, combination, folding | `src/lib/suggestions/rules/surnames.ts` (+ test) | pure, test-first |
+| Rules F1–F3, F9–F11, combination, folding | `src/lib/suggestions/rules/surnames.ts` (+ test) | pure, test-first |
 | Grouping into *groups / choose one / none* | `src/lib/suggestions/surname-groups.ts` (+ test) | pure, test-first |
-| Shown-name rule of §6 | `domain/contacts/display-name.ts` (`withLastName`) | pure, test-first |
-| `setLastNames` | `domain/contacts/` | use-case with `deps` (contacts repo, dismissals, activity, clock) |
-| What a viewer may see for the rules | `SuggestionView`, already built per viewer through `access/` | read model, extended by email local parts and circle kinds |
+| Shown-name rule of §6 | `domain/contacts/display-name.ts` (`withNameParts`) | pure, test-first |
+| `setLastNames`, `editNameParts` | `domain/contacts/` | use-cases with `deps` (contacts repo, dismissals, activity, clock) |
+| What a viewer may see for the rules | `SuggestionView`, already built per viewer through `access/` | read model, extended by circle kinds and former names |
+| Name parts on the profile | `components/person/` (the hero) | component |
 | Data-quality page | `routes/(app)/settings/last-names/` | edge |
 | *Select* + bar on People, *Set last name* on circle members | `routes/(app)/contacts`, the circle page | edge + components |
 | Copy | `i18n/messages/en`, `de` | both languages |
@@ -223,8 +240,8 @@ at once, since they already read `last_name` and `display_name`.
 
 ## 9. Slicing
 
-1. **Edit one last name** — §3.4 without the chip, `setLastNames` for one person, §6. Fills
-   the gap that today makes a surname impossible to add later.
+1. **Name parts on the profile** — §3.4 without the chip, `editNameParts`, §6. Fills the gap
+   that today makes a first name, last name or nickname impossible to change later.
 2. **The rules and the Data-quality list** — §4, §3.1, dismissals. The bulk path that does most
    of the work.
 3. **Select on People and circles** — §3.2.
@@ -235,15 +252,14 @@ Each is a PR with its unit tests, UI and docs; the e2e follows the maintainer's 
 
 ---
 
-## 10. Open questions for the maintainer
+## 10. Decisions (with the maintainer, 2026-10-02)
 
-1. **F3 (partner).** Show it at all, unticked as proposed, or leave partners out entirely?
-2. **F10 / F12** (children's name, email address) — worth having, or too speculative for a
-   family address book?
-3. **F11.** Is *family-kind circle* the right signal, or does the household name such circles
-   so that the name itself (*Familie Brunner*) should be read too? Reading circle names is
-   language-dependent and left out above.
-4. **Deceased people** in the list: included as proposed, or a filter?
-5. **Profile editing (§3.4).** Should the profile also get editable first name and nickname
-   fields while it is touched, or stay with the last name alone?
-6. **Passing it on (§3.3)** to **grandchildren** as well, or children and siblings only?
+1. **Partner (F3)** is offered, never pre-ticked, with the partner's former name shown when
+   there is one.
+2. **Children (F10)** stay as a source, unticked. **Email addresses** are not a source.
+3. **Circles (F11)** count by their *family* kind only; a circle's name is never read.
+4. **Deceased people** are in the list, marked as everywhere else, with no filter of their own.
+5. **The profile** makes all name parts editable — first name, last name, nickname — not the
+   last name alone (§3.4).
+6. **Passing it on (§3.3)** goes one generation at a time: children and siblings, and each
+   accepted step offers the next.
