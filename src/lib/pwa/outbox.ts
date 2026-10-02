@@ -40,6 +40,8 @@ export interface KeptPhoto {
 	id: string;
 	image: Blob;
 	thumb: Blob;
+	/** A large group photo's 1600 px view, sent beside its full picture (docs/02 §2.4.2). */
+	view?: Blob;
 	width: number;
 	height: number;
 }

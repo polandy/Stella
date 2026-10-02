@@ -285,11 +285,12 @@ export function planRestore(
 	) => {
 		const file = str(row, 'file');
 		const thumb = str(row, 'thumb');
+		const view = str(row, 'view');
 		if (file === null || thumb === null) {
 			warn({ code: 'photoWithoutFile' });
 			return;
 		}
-		if (!isSafeMediaPath(file) || !isSafeMediaPath(thumb)) {
+		if (!isSafeMediaPath(file) || !isSafeMediaPath(thumb) || (view !== null && !isSafeMediaPath(view))) {
 			// A path out of the media directory is the one thing in an archive that could reach
 			// the rest of the disk. It is refused, not cleaned up.
 			warn({ code: 'photoBadPath', file });
@@ -297,6 +298,7 @@ export function planRestore(
 		}
 		mediaPaths.add(file);
 		mediaPaths.add(thumb);
+		if (view !== null) mediaPaths.add(view);
 		const crop = record(row.crop);
 		photos.push({
 			id: str(row, 'id') ?? deps.ids.next(),
@@ -309,6 +311,7 @@ export function planRestore(
 			visibility: visibilityOf(row),
 			file_path: file,
 			thumb_path: thumb,
+			view_path: view,
 			mime: str(row, 'mime') ?? 'image/jpeg',
 			width: int(row, 'width'),
 			height: int(row, 'height'),
@@ -316,6 +319,7 @@ export function planRestore(
 			caption: str(row, 'caption'),
 			taken_at: str(row, 'taken_at'),
 			framing_of: str(row, 'framing_of'),
+			cut_from: str(row, 'cut_from'),
 			crop_x: crop ? real(crop, 'x') : null,
 			crop_y: crop ? real(crop, 'y') : null,
 			crop_size: crop ? real(crop, 'size') : null,
@@ -628,14 +632,18 @@ export function planRestore(
 
 	// A framing whose photo was refused above would be worn by nobody's gallery and could never
 	// be removed from the interface; it goes with its photo, files included (docs/02 §2.14).
+	// A profile picture cut from a group photo is such a framing too (concept §6). A photo that
+	// was cut from one before only remembers it, so it stays and forgets a group photo refused.
 	const photoIds = new Set(photos.filter((p) => p.framing_of === null).map((p) => p.id));
-	const keptPhotos = photos.filter((p) => {
-		const framingOf = p.framing_of;
-		if (typeof framingOf !== 'string' || photoIds.has(framingOf)) return true;
-		mediaPaths.delete(p.file_path as string);
-		mediaPaths.delete(p.thumb_path as string);
-		return false;
-	});
+	const keptPhotos = photos
+		.filter((p) => {
+			const framingOf = p.framing_of;
+			if (typeof framingOf !== 'string' || photoIds.has(framingOf)) return true;
+			mediaPaths.delete(p.file_path as string);
+			mediaPaths.delete(p.thumb_path as string);
+			return false;
+		})
+		.map((p) => (typeof p.cut_from === 'string' && !photoIds.has(p.cut_from) ? { ...p, cut_from: null } : p));
 
 	return {
 		householdId: target.householdId,

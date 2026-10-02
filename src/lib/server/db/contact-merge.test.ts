@@ -257,6 +257,44 @@ describe('what would collide', () => {
 	});
 });
 
+describe('profile pictures cut from a group photo', () => {
+	// docs/concepts/circle-photos.md §5.2: one cut per person and photo, and a cut nobody wears
+	// any more is a photo of its own. Both records cut from one class photo would otherwise clash.
+	function seedCut(id: string, contactId: string) {
+		db.insert(schema.photo)
+			.values({ id, householdId: H, contactId, framingOf: 'class', cropX: 0, cropY: 0, cropSize: 300, createdBy: U1, filePath: `${id}.jpg`, thumbPath: `${id}_t.jpg`, mime: 'image/jpeg' })
+			.run();
+		db.update(schema.contact).set({ avatarPhotoId: id }).where(eq(schema.contact.id, contactId)).run();
+	}
+
+	beforeEach(() => {
+		db.insert(schema.circle).values({ id: 'k', householdId: H, createdBy: U1, name: 'Class' }).run();
+		db.insert(schema.photo)
+			.values({ id: 'class', householdId: H, circleId: 'k', createdBy: U1, filePath: 'c.jpg', thumbPath: 'c_t.jpg', mime: 'image/jpeg', createdAt: 42 })
+			.run();
+	});
+
+	const photoRow = (id: string) => db.select().from(schema.photo).where(eq(schema.photo.id, id)).get();
+
+	it('keeps the survivor’s cut worn and turns the other record’s into a photo of their own', () => {
+		seedCut('cut-keep', 'keep');
+		seedCut('cut-dup', 'dup');
+		expect(mergeContacts(db, viewer, { keepId: 'keep', mergedId: 'dup', profile: { ...PROFILE, avatarPhotoId: 'cut-keep' }, audit, updatedAt: 999 })).toBe(true);
+		expect(photoRow('cut-keep')).toMatchObject({ contactId: 'keep', framingOf: 'class' });
+		expect(photoRow('cut-dup')).toMatchObject({ contactId: 'keep', framingOf: null, cutFrom: 'class', createdAt: 42 });
+	});
+
+	it('turns the survivor’s own cut into a photo when the merged record’s picture is kept', () => {
+		seedCut('cut-keep', 'keep');
+		seedCut('cut-dup', 'dup');
+		mergeContacts(db, viewer, { keepId: 'keep', mergedId: 'dup', profile: { ...PROFILE, avatarPhotoId: 'cut-dup' }, audit, updatedAt: 999 });
+		expect(photoRow('cut-keep')).toMatchObject({ framingOf: null, cutFrom: 'class' });
+		// The picture that is worn stays worn, now as a photo of their own.
+		expect(photoRow('cut-dup')).toMatchObject({ contactId: 'keep', framingOf: null });
+		expect(db.select().from(schema.contact).where(eq(schema.contact.id, 'keep')).get()?.avatarPhotoId).toBe('cut-dup');
+	});
+});
+
 describe('what it refuses', () => {
 	it('refuses a record the viewer cannot see, and changes nothing', () => {
 		seedContact('theirs', 'Theirs', 'private', U2);

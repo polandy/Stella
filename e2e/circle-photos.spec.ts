@@ -10,7 +10,7 @@ import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/dem
  *
  * The suite shares one database and runs serially, so every case builds a circle of its own out
  * of people it invents. Tiles, the cover and the banners are told apart by the photo id each one
- * shows — a grid tile carries it, a strip and the lightbox load `/media/<id>`.
+ * shows — a grid tile carries it, a strip and the lightbox load `/media/<id>?view`.
  */
 
 const PIXEL = readFileSync('e2e/fixtures/monica-photos/photos/ottilie-avatar.png');
@@ -58,10 +58,10 @@ const roleGroup = (page: Page, role: string) =>
 const tileIds = (page: Page) => () =>
 	tiles(page).evaluateAll((buttons) => buttons.map((b) => b.getAttribute('data-photo-tile')));
 
-/** Which photo a strip or the lightbox is showing, read off its full-size image. */
+/** Which photo a strip or the lightbox is showing, read off its 1600 px view. */
 async function shownId(scope: Locator): Promise<string | undefined> {
 	const src = await scope.locator('img').first().getAttribute('src');
-	return src?.match(/^\/media\/([^?]+)$/)?.[1];
+	return src?.match(/^\/media\/([^?]+)\?view$/)?.[1];
 }
 
 /** Uploads through *Add photos*, with a role (or none) and shared or private, and waits for them. */

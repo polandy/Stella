@@ -254,6 +254,7 @@ async function sendPhotos(member: string): Promise<void> {
 		form.set('parentId', next.parentId);
 		form.set('image', next.photo.image, 'photo.jpg');
 		form.set('thumb', next.photo.thumb, 'thumb.jpg');
+		if (next.photo.view) form.set('view', next.photo.view, 'view.jpg');
 		form.set('width', String(next.photo.width));
 		form.set('height', String(next.photo.height));
 		let answer: CommandAnswer | null = null;

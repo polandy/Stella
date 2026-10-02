@@ -4,7 +4,7 @@
 	import FormError from '$lib/components/FormError.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { mediaUrl } from '$lib/media/urls';
+	import { viewUrl } from '$lib/media/urls';
 	import type { CirclePagePhoto } from './types';
 
 	let {
@@ -79,7 +79,7 @@
 		</div>
 
 		<img
-			src={mediaUrl(photo.id)}
+			src={viewUrl(photo.id)}
 			alt={photo.caption ?? t('circles.photos.of', { name: circleName })}
 			class="max-h-[60vh] w-full rounded-control bg-bg-sunken object-contain"
 		/>

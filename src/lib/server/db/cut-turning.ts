@@ -109,9 +109,14 @@ export function keepCutLeftBehind(tx: Db, contactId: string, next: { framingOf: 
 	if (left) turnCuts(tx, [left], 'switched');
 }
 
-/** Every cut `contactId` has but does not wear becomes their own photo (after a merge). */
-export function keepUnwornCuts(tx: Db, contactId: string): void {
-	const wearing = tx.select({ id: contact.avatarPhotoId }).from(contact).where(eq(contact.id, contactId)).get();
+/**
+ * Every cut `contactId` has but does not wear becomes their own photo — or every cut at all with
+ * `evenWorn`, for a record about to be merged away, whose worn cut may clash with the survivor's.
+ */
+export function keepUnwornCuts(tx: Db, contactId: string, options: { evenWorn?: boolean } = {}): void {
+	const wearing = options.evenWorn
+		? undefined
+		: tx.select({ id: contact.avatarPhotoId }).from(contact).where(eq(contact.id, contactId)).get();
 	const unworn = tx
 		.select({ id: photo.id })
 		.from(photo)

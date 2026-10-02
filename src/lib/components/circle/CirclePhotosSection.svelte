@@ -7,7 +7,7 @@
 	import { roleKey } from '$lib/circles/role-key';
 	import type { JsonCommand } from '$lib/commands/commands';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { processImage } from '$lib/image/process-image';
+	import { processGroupPhoto } from '$lib/image/process-image';
 	import { thumbnailUrl } from '$lib/media/urls';
 	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -72,7 +72,7 @@
 		uploadError = null;
 		try {
 			const photos: KeptPhoto[] = [];
-			for (const file of picked) photos.push({ id: ulid(), ...(await processImage(file)) });
+			for (const file of picked) photos.push({ id: ulid(), ...(await processGroupPhoto(file)) });
 			const visibility = new FormData(formEl).get('visibility') === 'private' ? 'private' : 'shared';
 			const command: JsonCommand = {
 				id: ulid(),
