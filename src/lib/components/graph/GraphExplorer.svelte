@@ -39,6 +39,13 @@
 	} from '$lib/graph/model/role-groups';
 	import { shownOnCanvas } from '$lib/graph/model/shown-on-canvas';
 	import { graphFiltersFor, openingFilterKeys } from '$lib/graph/model/view-filters';
+	import {
+		removeView,
+		saveView,
+		viewMatching,
+		type SavedView
+	} from '$lib/graph/model/saved-views';
+	import { savedViewsPreference, type SavedViewsPreference } from '$lib/graph/saved-views-preference';
 	import type { ArrangementKey } from '$lib/graph/layout/arrangements';
 	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
@@ -171,6 +178,25 @@
 		densityStore?.save(next);
 		controller?.setSpacing(spacingFor(next));
 		if (arrangedBy === 'force') controller?.arrange();
+	}
+
+	/*
+	 * Named Filter-menu states this device keeps (docs/02 §2.7): the kinds of line and the
+	 * switches, never the centre or anybody's position — a view is how to look, not where.
+	 */
+	let savedViews = $state<SavedView[]>([]);
+	let viewStore: SavedViewsPreference | null = null;
+	const currentView = $derived(viewMatching(savedViews, { active, switches }));
+	function keepViews(next: SavedView[]) {
+		savedViews = next;
+		viewStore?.save(next);
+	}
+	function applyView(view: SavedView) {
+		active = new Set(view.filters);
+		// The switches are habits this browser keeps one by one; a view sets them like a tap would.
+		for (const name of Object.keys(view.switches) as (keyof ViewSwitches)[]) {
+			if (switches[name] !== view.switches[name]) toggleSwitch(name);
+		}
 	}
 
 	function buildFilters(): GraphFilters {
@@ -573,6 +599,8 @@
 			switches = switchStore.load();
 			densityStore = densityPreference(localStorage);
 			density = densityStore.load();
+			viewStore = savedViewsPreference(localStorage);
+			savedViews = viewStore.load();
 		} catch {
 			// Storage can be blocked; the defaults stand.
 		}
@@ -684,6 +712,11 @@
 			{labelsFit}
 			{density}
 			onChooseDensity={chooseDensity}
+			{savedViews}
+			{currentView}
+			onApplyView={applyView}
+			onSaveView={(name) => keepViews(saveView(savedViews, name, { active, switches }))}
+			onDeleteView={(name) => keepViews(removeView(savedViews, name))}
 		/>
 
 		<GraphArrangeMenu {arrangedBy} onArrange={arrangeBy} />

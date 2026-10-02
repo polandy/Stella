@@ -5,8 +5,10 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { DENSITIES, type Density } from '$lib/graph/layout/density';
 	import { EDGE_LABEL_LIMIT } from '$lib/graph/layout/legibility';
+	import type { SavedView } from '$lib/graph/model/saved-views';
 	import type { FilterKey } from '$lib/graph/model/view-filters';
 	import type { ViewSwitches } from '$lib/graph/view-switches';
+	import GraphSavedViews from './GraphSavedViews.svelte';
 	import { MENU_ITEM } from './menu-item';
 
 	/*
@@ -25,6 +27,12 @@
 		labelsFit: boolean;
 		density: Density;
 		onChooseDensity: (density: Density) => void;
+		/** The views this device keeps, and the one the map shows now (docs/02 §2.7). */
+		savedViews: readonly SavedView[];
+		currentView: string | null;
+		onApplyView: (view: SavedView) => void;
+		onSaveView: (name: string) => void;
+		onDeleteView: (name: string) => void;
 	}
 	let {
 		active,
@@ -34,7 +42,12 @@
 		onSwitch,
 		labelsFit,
 		density,
-		onChooseDensity
+		onChooseDensity,
+		savedViews,
+		currentView,
+		onApplyView,
+		onSaveView,
+		onDeleteView
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -89,7 +102,20 @@
 			{filters.shown}/{filters.total}
 		</span>
 	{/snippet}
-	{#snippet children()}
+	{#snippet children({ close })}
+		<!-- First, so a saved way of looking is the nearest tap on a phone. Showing one ends the
+		     choice, so the menu closes on the map it now shows. -->
+		<GraphSavedViews
+			views={savedViews}
+			current={currentView}
+			onApply={(view) => {
+				onApplyView(view);
+				close();
+			}}
+			onSave={onSaveView}
+			onDelete={onDeleteView}
+		/>
+		<div role="separator" class="mx-1 my-1 border-t border-border"></div>
 		{#each FILTERS as f (f.key)}
 			<button
 				type="button"

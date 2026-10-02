@@ -3,6 +3,7 @@ import { DEFAULT_VIEW_SWITCHES, type ViewSwitches } from '../view-switches';
 import {
 	parseSavedViews,
 	removeView,
+	savedViewNamed,
 	saveView,
 	serializeSavedViews,
 	viewMatching,
@@ -93,6 +94,19 @@ describe('removeView', () => {
 		const views = saveView([], 'A', familyOnly);
 
 		expect(removeView(views, 'Z')).toEqual(views);
+	});
+});
+
+describe('savedViewNamed', () => {
+	const views = saveView([], 'Family', familyOnly);
+
+	it('finds the view a name would replace, as saving compares names', () => {
+		expect(savedViewNamed(views, ' family ')?.name).toBe('Family');
+	});
+
+	it('finds none for a new name or a blank one', () => {
+		expect(savedViewNamed(views, 'Work')).toBeNull();
+		expect(savedViewNamed(views, '  ')).toBeNull();
 	});
 });
 

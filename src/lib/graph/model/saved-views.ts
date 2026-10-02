@@ -44,6 +44,12 @@ export function saveView(views: readonly SavedView[], name: string, state: ViewS
 	return views.map((v, i) => (i === at ? view : v));
 }
 
+/** The view that saving under `name` would replace, so the menu can say so before it does. */
+export function savedViewNamed(views: readonly SavedView[], name: string): SavedView | null {
+	if (!name.trim()) return null;
+	return views.find((v) => sameName(v.name, name)) ?? null;
+}
+
 /** The list without the view called `name`. */
 export function removeView(views: readonly SavedView[], name: string): SavedView[] {
 	return views.filter((v) => !sameName(v.name, name));
