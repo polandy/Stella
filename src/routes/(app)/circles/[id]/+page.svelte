@@ -49,6 +49,10 @@
 	const walk = new PhotoWalk();
 	const walked = $derived(photos.photos.find((p) => p.id === walk.photoId) ?? null);
 	const openPhotos = walk.open.bind(walk);
+	// A photo removed (or made unseeable) from inside the lightbox closes it.
+	$effect(() => {
+		if (walk.current && !walked) walk.close();
+	});
 	const photoDate = (createdAt: number): string => dayLabel(i18n, new Date(createdAt).toISOString());
 
 	// A member on their way out of the circle is off the grid while the undo window is open;
