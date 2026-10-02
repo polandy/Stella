@@ -65,7 +65,7 @@ export interface FrameAsAvatarInput {
 }
 
 /** A square that is a real square and lies inside the picture (when its size is on record). */
-function assertCropInside(crop: CropRect, picture: { width: number | null; height: number | null }): void {
+export function assertCropInside(crop: CropRect, picture: { width: number | null; height: number | null }): void {
 	const numbers = [crop.x, crop.y, crop.size];
 	const inside =
 		numbers.every(Number.isFinite) &&

@@ -265,6 +265,15 @@ describe('parsePhotoCommand', () => {
 		expect(parsePhotoCommand({ ...photo, type: 'circleGallery.photo' })?.type).toBe('circleGallery.photo');
 	});
 
+	it('reads the 1600 px view a large circle photo is sent with', () => {
+		const view = new Uint8Array([4, 5]);
+		const parsed = parsePhotoCommand({ ...photo, type: 'circleGallery.photo', width: 4096, view });
+		expect(parsed?.payload).toEqual({ parentId: photo.parentId, image: bytes, thumb: bytes, view, width: 4096, height: 1200 });
+		// No view is no view, not an empty one.
+		expect(parsePhotoCommand({ ...photo, type: 'circleGallery.photo', view: null })?.payload).not.toHaveProperty('view');
+		expect(parsePhotoCommand({ ...photo, type: 'circleGallery.photo', view: 'bytes' })).toBeNull();
+	});
+
 	it('refuses a photo of no known type, with no parent, no bytes or no size', () => {
 		expect(parsePhotoCommand({ ...photo, type: 'note.add' })).toBeNull();
 		expect(parsePhotoCommand({ ...photo, type: null })).toBeNull();

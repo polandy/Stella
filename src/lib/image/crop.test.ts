@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import {
-	MAX_ZOOM,
 	cropFromRect,
 	cropRect,
 	imagePlacement,
 	initialCrop,
 	keyStep,
+	maxZoom,
 	panBy,
 	pinch,
 	zoomTo,
@@ -73,7 +73,27 @@ describe('zooming in', () => {
 
 	it('never zooms out past the whole short side, nor in past the limit', () => {
 		expect(zoomTo(landscape, initialCrop(landscape), 0.2).zoom).toBe(1);
-		expect(zoomTo(landscape, initialCrop(landscape), 99).zoom).toBe(MAX_ZOOM);
+		expect(zoomTo(landscape, initialCrop(landscape), 99).zoom).toBe(maxZoom(landscape));
+	});
+});
+
+describe('how far the picture lets you zoom', () => {
+	// Concept circle-photos §5.3: the square may shrink to about 256 px of the original, so a
+	// face in a class photo can fill the frame without being blown up past its detail.
+	it('lets the square shrink to 256 px of the picture', () => {
+		const classPhoto: ImageSize = { width: 4096, height: 2731 };
+		const tightest = cropRect(classPhoto, zoomTo(classPhoto, initialCrop(classPhoto), 99));
+		expect(tightest.size).toBeCloseTo(256);
+	});
+
+	it('follows the picture rather than a fixed factor', () => {
+		expect(maxZoom(landscape)).toBeCloseTo(3000 / 256);
+		expect(maxZoom(portrait)).toBeCloseTo(1200 / 256);
+	});
+
+	it('never goes below the whole short side, however small the picture', () => {
+		expect(maxZoom({ width: 200, height: 150 })).toBe(1);
+		expect(zoomTo({ width: 200, height: 150 }, initialCrop({ width: 200, height: 150 }), 4).zoom).toBe(1);
 	});
 
 	it('pulls the square back inside the picture when zooming out near an edge', () => {

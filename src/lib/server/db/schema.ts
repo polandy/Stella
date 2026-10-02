@@ -7,7 +7,8 @@ import {
 	real,
 	sqliteTable,
 	text,
-	unique
+	unique,
+	uniqueIndex
 } from 'drizzle-orm/sqlite-core';
 import type { Locale } from '../../i18n/locales';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../relationships/status';
@@ -425,6 +426,10 @@ export const photo = sqliteTable(
 		// The circle role the photo shows, as it was picked (one of the circle's roles, folded
 		// by case when matched); null = the circle as a whole, a candidate for its cover.
 		circleRole: text('circle_role'),
+		// When set, this photo is a profile picture that was cut from that circle photo and is now
+		// a photo of its own (docs/concepts/circle-photos.md §5.2): a reference, never a copy. No
+		// foreign key, like `framing_of`; the repository clears it when the group photo goes.
+		cutFrom: text('cut_from'),
 		// The chosen square, in the full-size picture's pixels, so choosing again starts there.
 		cropX: real('crop_x'),
 		cropY: real('crop_y'),
@@ -435,6 +440,9 @@ export const photo = sqliteTable(
 		visibility: text('visibility').$type<Visibility>().notNull().default('shared'),
 		filePath: text('file_path').notNull(),
 		thumbPath: text('thumb_path').notNull(),
+		// A 1600 px rendition beside a larger full picture, which the grid and the lightbox load
+		// instead of it; null when the full picture is already that small (docs/02 §2.4.2).
+		viewPath: text('view_path'),
 		mime: text('mime').notNull(),
 		width: integer('width'),
 		height: integer('height'),
@@ -451,6 +459,10 @@ export const photo = sqliteTable(
 		index('photo_contact_idx').on(t.contactId),
 		index('photo_journal_idx').on(t.journalEntryId),
 		index('photo_framing_idx').on(t.framingOf),
+		// One framing per photo and person: a group photo is cut once for each face on it.
+		uniqueIndex('photo_framing_person_idx')
+			.on(t.framingOf, t.contactId)
+			.where(sql`${t.framingOf} IS NOT NULL`),
 		index('photo_circle_idx').on(t.circleId)
 	]
 );

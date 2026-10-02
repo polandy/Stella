@@ -79,6 +79,8 @@ export interface PhotoPayload {
 	parentId: string;
 	image: Uint8Array;
 	thumb: Uint8Array;
+	/** A large circle photo's 1600 px view beside its full picture (docs/02 §2.4.2). */
+	view?: Uint8Array;
 	width: number;
 	height: number;
 }

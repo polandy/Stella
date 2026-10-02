@@ -112,10 +112,11 @@ export async function attachCirclePhoto(
 	const viewer = { id: actor.userId, householdId: actor.householdId };
 	if (!(await deps.circles.getVisibleTo(viewer, upload.circleId))) throw new PhotoParentGoneError();
 
+	const { image, thumb, view, width, height } = payload;
 	return addCirclePhoto(deps.photos, actor, {
 		circleId: upload.circleId,
 		role: upload.role,
 		visibility: upload.visibility,
-		upload: { image: payload.image, thumb: payload.thumb, width: payload.width, height: payload.height }
+		upload: view ? { image, thumb, view, width, height } : { image, thumb, width, height }
 	});
 }

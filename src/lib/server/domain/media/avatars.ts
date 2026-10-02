@@ -93,6 +93,13 @@ export interface StoredPhoto {
 	createdAt: number;
 }
 
+/**
+ * Which size of a photo to serve: the full picture, the 1600 px view a circle photo keeps beside
+ * its larger full picture (docs/02 §2.4.2), or the thumbnail. A photo without a view serves its
+ * full picture for it.
+ */
+export type PhotoVariant = 'full' | 'view' | 'thumb';
+
 /** A stored file resolved for serving. */
 export interface PhotoFile {
 	path: string;
@@ -115,6 +122,11 @@ export interface GalleryPhoto {
 	framing: CropRect | null;
 	/** When the household pinned it as a favourite (epoch ms); null when it is not one. */
 	pinnedAt: number | null;
+	/**
+	 * The group photo this one was cut from, once a profile picture of its own
+	 * (docs/concepts/circle-photos.md §5.2); null when it was not, or the viewer cannot see it.
+	 */
+	cutFrom: { photoId: string; circleId: string; circleName: string } | null;
 }
 
 /** The file paths a deleted photo leaves behind, so the bytes can go too. */
@@ -134,8 +146,8 @@ export interface PhotoRepository {
 	/** Whether a photo with this id is already stored (imports use stable ids). */
 	exists(id: string): Promise<boolean>;
 	setContactAvatar(contactId: string, photoId: string): Promise<void>;
-	/** The avatar file (full or thumb) for a photo, only if the viewer may see it (docs/03 §3.7). */
-	getVisiblePhotoFile(viewer: Viewer, photoId: string, variant: 'full' | 'thumb'): Promise<PhotoFile | null>;
+	/** A photo's file in one of its sizes, only if the viewer may see it (docs/03 §3.7). */
+	getVisiblePhotoFile(viewer: Viewer, photoId: string, variant: PhotoVariant): Promise<PhotoFile | null>;
 	/** Journal photos on a contact the viewer may see, oldest first (docs/02 §2.20). */
 	listJournalPhotos(viewer: Viewer, contactId: string): Promise<JournalPhotoRef[]>;
 	/** `listJournalPhotos`, cut to these entries — the ones a story page shows. */

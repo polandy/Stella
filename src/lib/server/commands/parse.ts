@@ -199,6 +199,8 @@ const PhotoSchema = v.object({
 	parentId: v.pipe(v.string(), v.regex(ULID)),
 	image: v.instance(Uint8Array),
 	thumb: v.instance(Uint8Array),
+	// A large circle photo's 1600 px view (docs/02 §2.4.2); every other photo is its own view.
+	view: v.nullish(v.instance(Uint8Array)),
 	width: v.pipe(v.number(), v.integer(), v.minValue(1)),
 	height: v.pipe(v.number(), v.integer(), v.minValue(1))
 });
@@ -213,12 +215,14 @@ export function parsePhotoCommand(raw: {
 	parentId: unknown;
 	image: unknown;
 	thumb: unknown;
+	view?: unknown;
 	width: unknown;
 	height: unknown;
 	issuedAt: unknown;
 }): Command | null {
 	const parsed = v.safeParse(PhotoSchema, raw);
 	if (!parsed.success) return null;
-	const { id, type, issuedAt, ...payload } = parsed.output;
+	const { id, type, issuedAt, view, ...rest } = parsed.output;
+	const payload = view ? { ...rest, view } : rest;
 	return { id, type, payload, issuedAt };
 }
