@@ -160,13 +160,11 @@
 		class="group/inline -mx-1 flex max-w-full items-center gap-1.5 rounded-control px-1 text-left transition-colors hover:bg-card-hover"
 		class:min-h-8={pencil}
 	>
+		<!-- The pencil follows the value with no whitespace, which would join a heading's text. -->
 		{#if value}
 			<span class="truncate {valueClass}" class:text-2xl={heading} class:font-semibold={heading}>{value}</span>
 		{:else}
 			<span class="text-fg-subtle">{emptyLabel}</span>
-		{/if}
-		{#if pencil}
-			<Icon name="rename" size={14} class="text-fg-subtle" />
-		{/if}
+		{/if}{#if pencil}<Icon name="rename" size={14} class="text-fg-subtle" />{/if}
 	</button>
 {/if}
