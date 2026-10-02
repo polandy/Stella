@@ -429,7 +429,6 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 | size_bytes | int | |
 | caption | text null | |
 | taken_at | text null | from EXIF if kept |
-| sort_order | int | |
 | pinned_at | int null | when the household pinned this gallery photo as a favourite (docs/02 §2.14); null = not one |
 | created_at | int | |
 

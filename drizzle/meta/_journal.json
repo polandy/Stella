@@ -120,6 +120,13 @@
       "when": 1790897478824,
       "tag": "0016_quick_blob",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1790899951761,
+      "tag": "0017_clumsy_meteorite",
+      "breakpoints": true
     }
   ]
 }

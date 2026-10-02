@@ -130,7 +130,6 @@ export function buildArchiveDocument(
 			width: num(row, 'width'),
 			height: num(row, 'height'),
 			bytes: num(row, 'size_bytes'),
-			sort_order: ordinal(row, 'sort_order'),
 			caption: text(row, 'caption'),
 			taken_at: text(row, 'taken_at'),
 			// Set on the square a photo is worn through as the avatar (docs/02 §2.14).
