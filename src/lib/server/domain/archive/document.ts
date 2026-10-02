@@ -108,8 +108,13 @@ export function buildArchiveDocument(
 	const entries = groupBy(t('journal_entry'), 'contact_id');
 	const interactions = groupBy(t('interaction'), 'contact_id');
 	const galleryPhotos = groupBy(
-		t('photo').filter((p) => text(p, 'journal_entry_id') === null),
+		t('photo').filter((p) => text(p, 'journal_entry_id') === null && text(p, 'circle_id') === null),
 		'contact_id'
+	);
+	// A circle's photos belong to the circle, not to anybody's gallery (docs/02 §2.4.2).
+	const circlePhotos = groupBy(
+		t('photo').filter((p) => text(p, 'circle_id') !== null),
+		'circle_id'
 	);
 	const entryPhotos = groupBy(
 		t('photo').filter((p) => text(p, 'journal_entry_id') !== null),
@@ -135,6 +140,8 @@ export function buildArchiveDocument(
 			// Set on the square a photo is worn through as the avatar (docs/02 §2.14).
 			framing_of: text(row, 'framing_of'),
 			crop: framingCrop(row),
+			// The circle role a circle's photo shows (docs/02 §2.4.2).
+			role: text(row, 'circle_role'),
 			// When the household made it one of the person's favourites (docs/02 §2.14).
 			pinned_at: moment(row, 'pinned_at'),
 			visibility: text(row, 'visibility'),
@@ -297,7 +304,8 @@ export function buildArchiveDocument(
 						author: text(m, 'created_by'),
 						created_at: moment(m, 'created_at')
 					})
-				)
+				),
+				photos: (circlePhotos.get(id(c)) ?? []).map(photo)
 			})
 		),
 		relationships: t('relationship').map((r) =>

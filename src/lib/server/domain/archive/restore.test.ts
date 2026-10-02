@@ -74,7 +74,9 @@ function fullHousehold(): HouseholdSnapshot {
 				{ id: 'p-gallery', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, created_by: 'u-1', visibility: 'shared', file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', width: 1600, height: 1200, size_bytes: 240000, caption: 'at the lake', taken_at: '2026-06-01', pinned_at: EXPORTED, created_at: EXPORTED },
 				// The square Hans's lake photo is worn through (docs/02 §2.14): a photo row of its own.
 				{ id: 'p-framing', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, framing_of: 'p-gallery', crop_x: 400, crop_y: 120.5, crop_size: 900, created_by: 'u-1', visibility: 'shared', file_path: 'p3.jpg', thumb_path: 't3.jpg', mime: 'image/jpeg', width: 512, height: 512, size_bytes: 40000, caption: null, taken_at: null, created_at: EXPORTED },
-				{ id: 'p-journal', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: 'j-1', created_by: 'u-1', visibility: 'private', file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', width: null, height: null, size_bytes: null, caption: null, taken_at: null, created_at: EXPORTED }
+				{ id: 'p-journal', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: 'j-1', created_by: 'u-1', visibility: 'private', file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', width: null, height: null, size_bytes: null, caption: null, taken_at: null, created_at: EXPORTED },
+				// The club's team photo (docs/02 §2.4.2): it belongs to the circle, not to anyone.
+				{ id: 'p-circle', household_id: 'h-1', contact_id: null, journal_entry_id: null, circle_id: 'ci-1', circle_role: 'coach', created_by: 'u-1', visibility: 'private', file_path: 'p4.jpg', thumb_path: 't4.jpg', mime: 'image/jpeg', width: 1600, height: 900, size_bytes: 300000, caption: 'season start', taken_at: null, pinned_at: EXPORTED, created_at: EXPORTED }
 			],
 			tag: [{ id: 'tg-1', household_id: 'h-1', name: 'Bern', color: 'blue', created_at: EXPORTED }],
 			contact_tag: [{ contact_id: 'c-hans', tag_id: 'tg-1' }],
@@ -145,7 +147,7 @@ describe('the round trip', () => {
 		journal_mention: ['journal_entry_id', 'contact_id'],
 		interaction: ['id', 'contact_id', 'visibility', 'kind', 'title', 'description', 'happened_at', 'created_at'],
 		interaction_participant: ['interaction_id', 'contact_id'],
-		photo: ['id', 'contact_id', 'journal_entry_id', 'framing_of', 'crop_x', 'crop_y', 'crop_size', 'visibility', 'file_path', 'thumb_path', 'mime', 'width', 'height', 'size_bytes', 'caption', 'taken_at', 'pinned_at', 'created_at'],
+		photo: ['id', 'contact_id', 'journal_entry_id', 'circle_id', 'circle_role', 'framing_of', 'crop_x', 'crop_y', 'crop_size', 'visibility', 'file_path', 'thumb_path', 'mime', 'width', 'height', 'size_bytes', 'caption', 'taken_at', 'pinned_at', 'created_at'],
 		tag: ['id', 'name', 'color'],
 		contact_tag: ['contact_id', 'tag_id'],
 		circle: ['id', 'visibility', 'name', 'description', 'kind', 'color', 'parent_circle_id', 'start_date', 'end_date', 'archived_at', 'created_at'],
@@ -189,7 +191,7 @@ describe('the round trip', () => {
 	});
 
 	it('names every media file the photos need, once each', () => {
-		expect(planned().mediaPaths.sort()).toEqual(['p1.jpg', 'p2.jpg', 'p3.jpg', 't1.jpg', 't2.jpg', 't3.jpg']);
+		expect(planned().mediaPaths.sort()).toEqual(['p1.jpg', 'p2.jpg', 'p3.jpg', 'p4.jpg', 't1.jpg', 't2.jpg', 't3.jpg', 't4.jpg']);
 	});
 
 	it('has nothing to complain about when the archive is whole', () => {
@@ -316,9 +318,22 @@ describe('an archive that does not add up', () => {
 			target()
 		);
 		// Its framing goes with it: a square of a photo that is not there frames nothing.
-		expect(rowsOf(plan, 'photo').map((p) => p.id)).toEqual(['p-journal']);
-		expect(plan.mediaPaths.sort()).toEqual(['p2.jpg', 't2.jpg']);
+		expect(rowsOf(plan, 'photo').map((p) => p.id)).toEqual(['p-journal', 'p-circle']);
+		expect(plan.mediaPaths.sort()).toEqual(['p2.jpg', 'p4.jpg', 't2.jpg', 't4.jpg']);
 		expect(plan.warnings).toContainEqual({ code: 'photoBadPath', file: '../../etc/passwd' });
+	});
+
+	it('refuses a circle’s photos, files included, with the circle', () => {
+		const plan = planRestore(
+			deps(),
+			archived(bent((s) => (s.tables.circle[0].name = ''))),
+			target()
+		);
+		// Positive control: the other photos still come through.
+		expect(rowsOf(plan, 'photo').map((p) => p.id).sort()).toEqual(['p-framing', 'p-gallery', 'p-journal']);
+		expect(plan.mediaPaths).not.toContain('p4.jpg');
+		expect(plan.mediaPaths).not.toContain('t4.jpg');
+		expect(plan.warnings).toContainEqual({ code: 'circleWithoutName' });
 	});
 
 	it('drops one broken record and keeps the rest of the person’s', () => {
