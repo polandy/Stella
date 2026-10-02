@@ -65,14 +65,15 @@ test('imports a vCard, stores the picture it carries and shows the people', asyn
 	await page.getByRole('button', { name: 'Finish' }).click();
 	await expect(page).toHaveURL(/\/contacts$/);
 
-	await page.getByRole('link', { name: /Odile Margrit Trachsel/ }).first().click();
-	await expect(page.getByRole('heading', { name: 'Odile Margrit Trachsel' })).toBeVisible();
+	// Her card carries a nickname, which is part of the name it shapes (docs/02 §2.2).
+	await page.getByRole('link', { name: /Odile Margrit “Odi” Trachsel/ }).first().click();
+	await expect(page.getByRole('heading', { name: 'Odile Margrit “Odi” Trachsel' })).toBeVisible();
 	await expect(page.getByText('19 May 1984')).toBeVisible();
 	await expect(page.locator('section[data-row="Tags"]')).toContainText('Jodlerchoerli');
 	// The note was folded across lines and escaped its own comma; both survived.
 	await expect(page.getByText('Leiht mir jedes Jahr das Zelt, ohne zu fragen.')).toBeVisible();
 	// The picture went through the browser's resize pipeline and became the avatar.
-	await expect(page.locator('img[alt="Odile Margrit Trachsel"]')).toHaveAttribute(
+	await expect(page.locator('img[alt="Odile Margrit “Odi” Trachsel"]')).toHaveAttribute(
 		'src',
 		new RegExp(PHOTO_ID)
 	);
@@ -97,7 +98,7 @@ test('a second run of the same vCard writes nothing twice', async ({ page }) => 
 	await page.getByRole('button', { name: 'Store photos' }).click();
 	await expect(page.getByText('1 of 1 · 0 stored, 1 already there')).toBeVisible();
 	await page.goto('/contacts');
-	await expect(page.getByRole('link', { name: /Odile Margrit Trachsel/ })).toHaveCount(1);
+	await expect(page.getByRole('link', { name: /Odile Margrit “Odi” Trachsel/ })).toHaveCount(1);
 });
 
 test('says so when a card is opened and never closed, and writes nothing', async ({ page }) => {
