@@ -10,6 +10,7 @@ import {
 	discard,
 	discardAllOf,
 	hold,
+	photoAnswer,
 	queue,
 	recover,
 	release,
@@ -51,6 +52,8 @@ let sending = false;
 // A send asked for while one runs: it goes again once that one is done.
 let again = false;
 let whenApplied: () => void = () => {};
+/** The reason a photo over the server's request cap is refused with, in the member's language. */
+let photoTooLarge = '';
 
 /** Saves being watched, by command id: who to tell, and Stella's result once it applied. */
 const watchers = new Map<string, { tell: (delivery: Delivery) => void; applied: { result: unknown } | null }>();
@@ -105,11 +108,13 @@ export const outbox = {
 
 	/**
 	 * Start for the signed-in member: pick up where a closed app left off, then try to send.
-	 * `onApplied` runs whenever Stella took something, so the page can read it back.
+	 * `onApplied` runs whenever Stella took something, so the page can read it back;
+	 * `tooLarge` is the reason a photo over the server's request cap is refused with.
 	 */
-	async start(member: string, onApplied: () => void): Promise<void> {
+	async start(member: string, onApplied: () => void, tooLarge: string): Promise<void> {
 		memberId = member;
 		whenApplied = onApplied;
+		photoTooLarge = tooLarge;
 		await apply(recover);
 		await outbox.send();
 	},
@@ -264,8 +269,10 @@ async function sendPhotos(member: string): Promise<void> {
 				body: form,
 				signal: AbortSignal.timeout(PHOTO_PATIENCE_MS)
 			});
-			if (response.ok)
-				answer = ((await response.json()) as { answer?: CommandAnswer }).answer ?? null;
+			const sent = response.ok
+				? (((await response.json()) as { answer?: CommandAnswer }).answer ?? null)
+				: null;
+			answer = photoAnswer(next.photo.id, response.status, sent, photoTooLarge);
 		} catch {
 			// Out of reach, or not Stella answering: the photo waits.
 		}

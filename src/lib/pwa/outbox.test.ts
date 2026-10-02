@@ -7,6 +7,7 @@ import {
 	discardAllOf,
 	hold,
 	isKept,
+	photoAnswer,
 	queue,
 	recover,
 	release,
@@ -299,5 +300,23 @@ describe('what a save someone is watching learns (online saves, concept §8 #10)
 
 	it('is done when Stella took it and only its photos are left to send later', () => {
 		expect(deliveryLeftOver({ result: { entryId: 'e' } })).toEqual({ status: 'applied', result: { entryId: 'e' } });
+	});
+});
+
+describe('photoAnswer', () => {
+	const TOO_LARGE = 'Too large for this server';
+	const applied: CommandAnswer = { id: 'p1', status: 'applied', result: null };
+
+	it('takes Stella’s own answer when the upload got through', () => {
+		expect(photoAnswer('p1', 200, applied, TOO_LARGE)).toEqual(applied);
+	});
+
+	it('refuses a photo the server turned away as too large, rather than retrying it for ever', () => {
+		expect(photoAnswer('p1', 413, null, TOO_LARGE)).toEqual({ id: 'p1', status: 'refused', reason: TOO_LARGE });
+	});
+
+	it('leaves any other failure waiting, since it may pass on the next try', () => {
+		expect(photoAnswer('p1', 502, null, TOO_LARGE)).toBeNull();
+		expect(photoAnswer('p1', 500, null, TOO_LARGE)).toBeNull();
 	});
 });
