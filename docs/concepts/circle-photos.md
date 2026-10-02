@@ -90,25 +90,78 @@ with every feed entry, only additions are listed, never changes.
 - **Visibility.** A circle photo is visible when its circle is visible and the photo is
   (shared, or private and the actor's own). This goes through the access layer like every
   other record (docs/03 §3.7). A private circle's photos are private with it.
-- **Deleting a circle** deletes its photos and both stored files of each. **Archiving** a
-  circle keeps them.
+- **Deleting a circle** deletes its photos and their stored files, after turning any profile
+  pictures cut from them into the people's own photos (§5.4). **Archiving** a circle keeps them.
 - **Nesting.** A parent circle does not show its children's photos: a school's cover is the
   school's, not the newest class photo.
 
 ---
 
-## 5. Offline and portability
+## 5. A profile picture cut from a group photo
+
+A class photo already holds everybody's face. Instead of hunting for a picture of each child,
+the household can **cut each person's profile picture out of the group photo**.
+
+### 5.1 Where it starts
+
+- **From the lightbox** of a circle photo: *Use as profile picture for …* asks for the person,
+  with the circle's members listed first (those in the photo's role ahead of the rest) and a
+  search over everyone the actor can see. The cropper then opens on the full picture.
+- **From the person page**: choosing a photo for someone offers, next to their own gallery,
+  the photos of the circles they belong to. Picking one opens the same cropper.
+- **One after another.** After a cut made from the lightbox, the dialog offers *Next person*,
+  so a whole class gets its pictures in one sitting. People who already wear a cut of this
+  photo are marked in the person list.
+
+### 5.2 What is stored
+
+- The profile picture is a **framing of the circle photo** (docs/03 §photo): the square
+  chosen, rendered once, belonging to that person. Nothing is copied into the person's
+  gallery, and the group photo stays one photo. A circle photo has at most **one framing per
+  person**; choosing again for the same person replaces it.
+- The framing is rendered at a size that stays sharp (1024 px rather than the avatar's 512),
+  so it can later stand on its own as a photo (§5.4).
+- The person's **Photos** tab shows a row *From circle photos*: each group photo they were cut
+  from, with its circle's name, including those whose cut they no longer wear. Changing the
+  profile picture therefore never loses the earlier one, as with gallery photos today.
+
+### 5.3 Resolution
+
+- **Circle photos are kept up to 4096 px** on their longest edge (person and journal photos
+  stay at 1600 px). Processing stays in the browser, so EXIF and GPS are still dropped.
+- Three variants are stored: the full picture, a 1600 px view and the thumbnail. The grid and
+  the lightbox load the view and the thumbnail; only the cropper loads the full picture.
+- The cropper's zoom limit follows the picture instead of the fixed 6×: it may zoom until the
+  square is about 256 px of the original, so a face in a class photo can fill the frame
+  without being blown up past its detail.
+
+### 5.4 When the group photo goes away
+
+- **Removing** a circle photo that is someone's profile picture asks first: *This photo is
+  the profile picture of 4 people.* On confirmation, each person's framing becomes **a photo
+  of their own**, in their gallery and still worn as their profile picture, and only then is
+  the group photo removed. Nobody's picture disappears.
+- **Making it private** asks the same, and does the same: the cuts become the people's own
+  shared photos, and only the group photo turns private.
+- Removing a whole circle does the same for all its photos (with one combined question).
+- The framing already holds its rendered square, so turning it into a photo moves no bytes
+  through an image library on the server.
+
+---
+
+## 6. Offline and portability
 
 - **Offline.** Adding circle photos is queued exactly like a person's gallery photos
   (docs/concepts/offline-capture.md §4): a photo taken without network is kept on the device
   and sent once it is back, at most once. Changing role, pin or visibility is a change, not
   an addition, so it is not queued, as with pins today.
 - **Archive.** The export carries circle photos with their circle, role, caption, pin and
-  visibility. A restore that refuses a circle refuses its photos.
+  visibility, and each framing with its person and square. A restore that refuses a circle
+  refuses its photos, and a framing whose photo is refused is refused with it.
 
 ---
 
-## 6. Shape of the change (for implementation)
+## 7. Shape of the change (for implementation)
 
 - **Data.** Two nullable columns on `photo`: `circle_id` (the circle the photo belongs to; the
   repository removes the photo with its circle, like `journal_entry_id`) and `circle_role`
@@ -118,8 +171,14 @@ with every feed entry, only additions are listed, never changes.
   cover and each role's lead photo, grid order (reusing `gallery-order.ts`), role-chip counts,
   and the role options for the picker (current roles plus the photo's own role, folded by
   case).
+- **Group-photo profile pictures.** A framing may now belong to a circle photo, one per
+  person (`framing_of` + `contact_id`). A third stored variant for circle photos: the 1600 px
+  view beside the full picture (up to 4096 px) and the thumbnail. Pure, test-first: the
+  cropper's zoom limit from the picture's size, and which framings a removal or a switch to
+  private must turn into photos first. The turning itself is one transaction: the framing row
+  becomes a gallery photo of its person and stays their avatar, then the group photo goes.
 - **Domain use-cases** with `deps` (repository, clock, idGenerator): add, set role, pin/unpin,
-  caption, re-scope, remove. They reuse the gallery upload path for storage.
+  caption, re-scope, remove, frame for a person. They reuse the gallery upload path for storage.
 - **UI.** The circle page gets the cover, role banners and the Photos section, reusing the
   lightbox and the upload processing from the person gallery. The overview card gets the
   strip. All copy is in English and German.
@@ -128,7 +187,7 @@ with every feed entry, only additions are listed, never changes.
 
 ---
 
-## 7. Decisions (2026-10-02)
+## 8. Decisions (2026-10-02)
 
 | # | Question | Decision |
 |---|---|---|
@@ -145,3 +204,10 @@ with every feed entry, only additions are listed, never changes.
 | 11 | Overview card? | A flat strip on top, only when there is a cover |
 | 12 | Who may edit? | Anyone who sees it: caption, role, favourite. The uploader: shared/private, remove |
 | 13 | Nested circles? | A parent never shows its children's photos |
+| 14 | Profile picture from a group photo? | Yes: from the lightbox and from the person page |
+| 15 | Several people from one photo? | Yes, one after another (*Next person*) |
+| 16 | How is the cut stored? | As a framing of the circle photo (a reference, no copy) |
+| 17 | The group photo is removed? | Warn, then each cut becomes the person's own photo and stays worn |
+| 18 | The group photo turns private? | Warn, then the same as removing |
+| 19 | Visible on the person page? | Yes: *From circle photos* in the Photos tab |
+| 20 | Resolution? | Circle photos up to 4096 px; zoom limit follows the picture |
