@@ -21,18 +21,22 @@ export const TOP_BAR_TRAVEL_PX = 24;
 export const SHOWN_TOP_BAR: TopBarState = { hidden: false, y: 0, travel: 0 };
 
 /**
- * The bar after the page scrolled to `y`. Within the bar's own height of the top it always
- * shows — there is nothing under it to make room for, and an overscroll above the top reads
- * as the top too.
+ * The bar after the page scrolled to `y`, of at most `maxY`. Within the bar's own height of the
+ * top it always shows — there is nothing under it to make room for, and an overscroll above the
+ * top reads as the top too. Within the bar's height of the bottom it stays as it is: sliding it
+ * away makes the page that much taller and pulls the scroll back, which would read as scrolling
+ * up and bring it back, over and over.
  */
-export function followScroll(state: TopBarState, y: number, barHeight: number): TopBarState {
+export function followScroll(state: TopBarState, y: number, barHeight: number, maxY: number): TopBarState {
 	const step = y - state.y;
 	const sameDirection = Math.sign(step) === Math.sign(state.travel);
 	const travel = sameDirection ? state.travel + step : step;
 
 	let hidden = state.hidden;
 	if (y <= barHeight) hidden = false;
-	else if (travel >= TOP_BAR_TRAVEL_PX) hidden = true;
+	else if (y >= maxY - barHeight) {
+		// Near the bottom: leave it as it stands (see above).
+	} else if (travel >= TOP_BAR_TRAVEL_PX) hidden = true;
 	else if (travel <= -TOP_BAR_TRAVEL_PX) hidden = false;
 
 	return { hidden, y, travel };
