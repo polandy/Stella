@@ -76,7 +76,8 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Child of' });
 	await pickPerson(editor.getByLabel('Person'), 'Vreni Zbinden');
 	await editor.getByRole('button', { name: 'Add', exact: true }).click();
-	await expect(page.locator('#section-relationships')).toContainText('Vreni Zbinden');
+	// The stored list, not the card: the form's own chip names the person until it closes.
+	await expect(page.getByTestId('relationship-list')).toContainText('Vreni Zbinden');
 
 	// Rahel's sister and brother follow from it, each with the reason and its own confirmation.
 	const proposals = page.getByTestId('kin-proposals');
