@@ -434,7 +434,6 @@ export const photo = sqliteTable(
 		sizeBytes: integer('size_bytes'),
 		caption: text('caption'),
 		takenAt: text('taken_at'),
-		sortOrder: integer('sort_order').notNull().default(0),
 		// When the household pinned this gallery photo as one of the person's favourites
 		// (docs/02 §2.14); null when it is not one. A moment rather than a flag, because the
 		// pins are shown most recently pinned first (domain/media/gallery-order.ts).

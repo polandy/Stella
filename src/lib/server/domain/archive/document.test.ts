@@ -189,7 +189,7 @@ describe('what a restore would otherwise lose', () => {
 				{ id: 'd-1', contact_id: 'c-1', kind: 'birthday', date: '1980-06-01', recurs_yearly: 1, remind: 1 }
 			],
 			photo: [
-				{ id: 'p-1', contact_id: 'c-1', journal_entry_id: null, file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', width: 1600, height: 1200, size_bytes: 240000, sort_order: 2, created_by: 'u-1', visibility: 'shared' },
+				{ id: 'p-1', contact_id: 'c-1', journal_entry_id: null, file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', width: 1600, height: 1200, size_bytes: 240000, created_by: 'u-1', visibility: 'shared' },
 				{ id: 'p-2', contact_id: 'c-1', journal_entry_id: null, framing_of: 'p-1', crop_x: 300, crop_y: 0.5, crop_size: 1200, file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', width: 512, height: 512, created_by: 'u-1', visibility: 'shared' }
 			],
 			circle: [
@@ -250,9 +250,10 @@ describe('what a restore would otherwise lose', () => {
 		expect((person.photos as Record<string, unknown>[])[0]).toMatchObject({
 			width: 1600,
 			height: 1200,
-			bytes: 240000,
-			sort_order: 2
+			bytes: 240000
 		});
+		// Favourites are the gallery's only order (§2.14); a photo carries no position.
+		expect((person.photos as Record<string, unknown>[])[0]).not.toHaveProperty('sort_order');
 		// The square a photo is worn through as the avatar, and which photo it frames (§2.14).
 		const framing = (person.photos as Record<string, unknown>[]).find((p) => p.id === 'p-2');
 		expect(framing).toMatchObject({ framing_of: 'p-1', crop: { x: 300, y: 0.5, size: 1200 } });

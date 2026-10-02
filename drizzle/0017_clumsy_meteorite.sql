@@ -1,0 +1,1 @@
+ALTER TABLE `photo` DROP COLUMN `sort_order`;

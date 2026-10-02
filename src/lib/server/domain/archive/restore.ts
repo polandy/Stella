@@ -312,7 +312,6 @@ export function planRestore(
 			crop_x: crop ? real(crop, 'x') : null,
 			crop_y: crop ? real(crop, 'y') : null,
 			crop_size: crop ? real(crop, 'size') : null,
-			sort_order: int(row, 'sort_order') ?? 0,
 			pinned_at: ms(row, 'pinned_at'),
 			created_at: ms(row, 'created_at') ?? now
 		});

@@ -71,10 +71,10 @@ function fullHousehold(): HouseholdSnapshot {
 			],
 			interaction_participant: [{ interaction_id: 'i-1', contact_id: 'c-rosa' }],
 			photo: [
-				{ id: 'p-gallery', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, created_by: 'u-1', visibility: 'shared', file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', width: 1600, height: 1200, size_bytes: 240000, caption: 'at the lake', taken_at: '2026-06-01', sort_order: 3, pinned_at: EXPORTED, created_at: EXPORTED },
+				{ id: 'p-gallery', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, created_by: 'u-1', visibility: 'shared', file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', width: 1600, height: 1200, size_bytes: 240000, caption: 'at the lake', taken_at: '2026-06-01', pinned_at: EXPORTED, created_at: EXPORTED },
 				// The square Hans's lake photo is worn through (docs/02 §2.14): a photo row of its own.
-				{ id: 'p-framing', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, framing_of: 'p-gallery', crop_x: 400, crop_y: 120.5, crop_size: 900, created_by: 'u-1', visibility: 'shared', file_path: 'p3.jpg', thumb_path: 't3.jpg', mime: 'image/jpeg', width: 512, height: 512, size_bytes: 40000, caption: null, taken_at: null, sort_order: 0, created_at: EXPORTED },
-				{ id: 'p-journal', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: 'j-1', created_by: 'u-1', visibility: 'private', file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', width: null, height: null, size_bytes: null, caption: null, taken_at: null, sort_order: 0, created_at: EXPORTED }
+				{ id: 'p-framing', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, framing_of: 'p-gallery', crop_x: 400, crop_y: 120.5, crop_size: 900, created_by: 'u-1', visibility: 'shared', file_path: 'p3.jpg', thumb_path: 't3.jpg', mime: 'image/jpeg', width: 512, height: 512, size_bytes: 40000, caption: null, taken_at: null, created_at: EXPORTED },
+				{ id: 'p-journal', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: 'j-1', created_by: 'u-1', visibility: 'private', file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', width: null, height: null, size_bytes: null, caption: null, taken_at: null, created_at: EXPORTED }
 			],
 			tag: [{ id: 'tg-1', household_id: 'h-1', name: 'Bern', color: 'blue', created_at: EXPORTED }],
 			contact_tag: [{ contact_id: 'c-hans', tag_id: 'tg-1' }],
@@ -145,7 +145,7 @@ describe('the round trip', () => {
 		journal_mention: ['journal_entry_id', 'contact_id'],
 		interaction: ['id', 'contact_id', 'visibility', 'kind', 'title', 'description', 'happened_at', 'created_at'],
 		interaction_participant: ['interaction_id', 'contact_id'],
-		photo: ['id', 'contact_id', 'journal_entry_id', 'framing_of', 'crop_x', 'crop_y', 'crop_size', 'visibility', 'file_path', 'thumb_path', 'mime', 'width', 'height', 'size_bytes', 'caption', 'taken_at', 'sort_order', 'pinned_at', 'created_at'],
+		photo: ['id', 'contact_id', 'journal_entry_id', 'framing_of', 'crop_x', 'crop_y', 'crop_size', 'visibility', 'file_path', 'thumb_path', 'mime', 'width', 'height', 'size_bytes', 'caption', 'taken_at', 'pinned_at', 'created_at'],
 		tag: ['id', 'name', 'color'],
 		contact_tag: ['contact_id', 'tag_id'],
 		circle: ['id', 'visibility', 'name', 'description', 'kind', 'color', 'parent_circle_id', 'start_date', 'end_date', 'archived_at', 'created_at'],
@@ -194,6 +194,19 @@ describe('the round trip', () => {
 
 	it('has nothing to complain about when the archive is whole', () => {
 		expect(planned().warnings).toEqual([]);
+	});
+
+	it('reads an older archive whose photos still carry a sort order, and lets it go', () => {
+		// Archives written before the photo's sort_order column was dropped still have it.
+		const older = archived() as { people: Record<string, unknown>[] };
+		const gallery = older.people[0].photos as Record<string, unknown>[];
+		gallery[0].sort_order = 3;
+		const plan = planRestore(deps(), older, target());
+		const restored = rowsOf(plan, 'photo').find((p) => p.id === gallery[0].id)!;
+		// Positive control: the photo itself comes through.
+		expect(restored.file_path).toBe('p1.jpg');
+		expect(restored).not.toHaveProperty('sort_order');
+		expect(plan.warnings).toEqual([]);
 	});
 });
 
