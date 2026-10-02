@@ -11,7 +11,7 @@ import {
 } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { VisibleFamily, VisibleFamilySource } from '../domain/relationships/family';
-import { kinshipGraphOf } from './kinship-graph-read';
+import { kinshipGraphOf } from '../../kinship/graph-of';
 import type * as schema from './schema';
 import { circle, circleMembership, contact, relationship, relationshipType } from './schema';
 
