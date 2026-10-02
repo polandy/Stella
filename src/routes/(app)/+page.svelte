@@ -428,7 +428,7 @@
 									entry is all that is left of them (docs/02 §2.2).
 								-->
 								<span class="grid size-8 shrink-0 place-items-center rounded-full bg-bg-sunken text-fg-subtle" aria-hidden="true">
-									<Icon name="remove" size={14} />
+									<Icon name={item.about === 'lastNames' ? 'rename' : 'remove'} size={14} />
 								</span>
 								<div class="min-w-0">
 									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">

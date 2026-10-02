@@ -146,6 +146,18 @@ People added before Stella asked, or brought in by an import, may still be just 
 field starts out with it, ready to keep or change. If one turns out to be someone already here, open them to
 merge, and if you will never meet them again, archive them.
 
+**Last names for a whole family.** People who came in as *Lea*, *Max* and *Sophie* can be given
+their surname together: **Settings → Data quality → Last names** lists everyone without one.
+Where Stella can tell — Lea is Peter Brunner's child, Sophie is in the *Family Brunner* circle,
+or the name they are shown by already says *Thomas Brunner* — it groups them under that name,
+says why on each row, and **Apply** gives the ticked ones the name. A partner's or a child's
+name is offered unticked, since people do not always share it; two parents with different
+names make you pick. Anyone without a suggestion gets a field, and **Select…** gives several
+of them one name. *Not Brunner* in a row's menu tells Stella not to propose that name for that
+person again — *Offer again* at the foot of the page takes it back. You can undo for eight
+seconds, and if the new name matches someone already in Stella, the page asks whether it is the
+same person and leads you to the merge.
+
 As soon as you type a surname, Stella checks whether that person might already be here.
 An **Already in Stella?** box lists people with the same or a similar surname — someone
 with exactly the same name comes first, in case you are about to add them twice. Each name

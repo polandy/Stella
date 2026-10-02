@@ -68,7 +68,8 @@ const removal = (id: string, at: number, actor = lena): NoticeRow => ({
 	id,
 	at,
 	actor,
-	summary: 'removed Someone Gone'
+	summary: 'removed Someone Gone',
+	about: 'removal'
 });
 
 const circlePhoto = (

@@ -23,6 +23,7 @@ import { relationships } from './relationships';
 import { search } from './search';
 import { settings } from './settings';
 import { story } from './story';
+import { surnames } from './surnames';
 
 /** Every message Stella can say in German. */
 export const de = {
@@ -45,5 +46,6 @@ export const de = {
 	...relationships,
 	...search,
 	...settings,
-	...story
+	...story,
+	...surnames
 };

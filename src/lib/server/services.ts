@@ -48,7 +48,16 @@ import { createDrizzlePeopleStampReads } from './db/people-stamp-reads';
 import type { PeopleStampDeps } from './domain/contacts/people-stamp';
 import type { PersonContextDeps } from './domain/contacts/person-context';
 import { withNamesakeContext, type NamesakeContextDeps } from './domain/mentions/namesake-context';
-import { createDrizzleSuggestionDismissalRepository } from './db/suggestion-dismissal-repository';
+import {
+	createDrizzleSuggestionDismissalRepository,
+	createDrizzleSurnameDismissalRepository
+} from './db/suggestion-dismissal-repository';
+import { createDrizzleSurnameFacts } from './db/surname-facts';
+import type {
+	LastNameDeps,
+	SurnameDismissalDeps,
+	SurnameReviewDeps
+} from './domain/contacts/last-names';
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
 import type { MemberDeps, MemberRepository } from './domain/household/members';
@@ -223,6 +232,30 @@ export function getContacts(): ContactRepository & NameCandidateSource & NameRep
 /** Deps for changing name parts, one person or several (docs/concepts/surnames.md §7). */
 export function getNameDeps(): NameDeps {
 	return { names: getContacts(), clock: systemClock };
+}
+
+/** Deps for setting last names in one batch, with its log entry (docs/concepts/surnames.md §7). */
+export function getLastNameDeps(): LastNameDeps {
+	return { ...getNameDeps(), ids: ulidGenerator };
+}
+
+/** Deps for reading what Stella proposes as last names (docs/concepts/surnames.md §4). */
+export function getSurnameReviewDeps(): SurnameReviewDeps {
+	return {
+		surnames: createDrizzleSurnameFacts(getDb()),
+		relationships: getRelationships(),
+		surnameDismissals: createDrizzleSurnameDismissalRepository(getDb())
+	};
+}
+
+/** Deps for the household's *not this name* (docs/concepts/surnames.md §5). */
+export function getSurnameDismissalDeps(): SurnameDismissalDeps {
+	return {
+		names: getContacts(),
+		surnameDismissals: createDrizzleSurnameDismissalRepository(getDb()),
+		ids: ulidGenerator,
+		clock: systemClock
+	};
 }
 
 export function getContactDeps(): ContactDeps {

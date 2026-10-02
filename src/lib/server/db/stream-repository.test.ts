@@ -267,6 +267,27 @@ describe('recentNotices', () => {
 		expect((await repo.recentNotices(asU2, EVERYONE)).map((r) => r.id)).toEqual(['gone']);
 	});
 
+	it('reports last names set for several people at once (docs/concepts/surnames.md §7)', async () => {
+		// An update, but the one the household is told about: a batch changes how people read.
+		db.insert(schema.activityLog)
+			.values({
+				id: 'named',
+				householdId: H,
+				actorId: U1,
+				action: 'update',
+				entityType: 'last_name',
+				entityId: 'c-1',
+				contactId: null,
+				visibility: 'shared',
+				summary: 'set the last name Brunner on 4 people',
+				createdAt: 500
+			})
+			.run();
+
+		const rows = await repo.recentNotices(asU2, EVERYONE);
+		expect(rows.map((r) => [r.summary, r.about])).toEqual([['set the last name Brunner on 4 people', 'lastNames']]);
+	});
+
 	it('keeps a private person private, even in the record of their deletion', async () => {
 		logRemoval('secret', 100, U1, 'private');
 		logRemoval('open', 100, U1, 'shared');

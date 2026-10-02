@@ -573,6 +573,13 @@ from the tables it happened to. `summary` is precomputed and `visibility` copied
 deleted record, since neither can be recovered afterwards; `entity_id` names a row that no
 longer exists, which is why it carries no foreign key.
 
+**And for last names given to several people at once** (`docs/concepts/surnames.md` §7): one
+row per batch, `action = 'update'`, `entity_type = 'last_name'`, `entity_id` the first person
+named, `contact_id` null, `visibility` private when any of them is, and a summary in the
+giver's language (*set the last name Brunner on 4 people*). It is the one update the stream
+reports, because a batch changes how several people read at once; it is written in the same
+transaction as the names.
+
 ### suggestion_dismissal  [M2]
 The claims the household has declined, so a suggestion answered once is not offered again
 (`docs/concepts/relationship-suggestions.md` §6.4).
@@ -581,8 +588,8 @@ The claims the household has declined, so a suggestion answered once is not offe
 |---|---|---|
 | id | text pk | |
 | household_id | text fk | the household decided, not the member who clicked |
-| relation | text | `'parent' \| 'sibling'` — what the claim would have stored |
-| pair_key | text | the two contact ids, sorted and space-separated |
+| relation | text | `'parent' \| 'sibling'` — what the claim would have stored — or `'last_name'` |
+| pair_key | text | the two contact ids, sorted and space-separated; for `last_name`, the contact id, a space and the folded surname |
 | dismissed_by | text fk → user.id | who answered, for the trail |
 | dismissed_at | int | |
 
@@ -596,6 +603,12 @@ before a row is ever written, and a deleted contact leaves a row that matches no
 
 A row constrains only what Stella **offers**. It never touches what the kinship engine derives
 or what a profile displays, and deleting it (*Ask again*) puts the suggestion back.
+
+**A declined last name** (*Not Brunner*, `docs/concepts/surnames.md` §5) shares the table
+rather than adding one: `relation = 'last_name'`, keyed by the person and the surname folded
+the §2.2.1 way, so *Brünner* and *brunner* are one answer and a different name can still be
+proposed. The column is text, so this needed no migration; the relationship log reads only
+the other relations, and the *Last names* page lists these with *Offer again*.
 
 ### command_receipt  [M3]
 A command id that has been claimed or applied (`docs/concepts/offline-capture.md` §3), so a
