@@ -1,7 +1,7 @@
 # Concept — Photos of a circle, by role
 
 Status: **built.** PR 1 built §1–§4 and §6 (circle photos, cover, role banners, Photos
-section, feed, offline, archive); PR 2 builds §5 — profile pictures cut from a group photo, the
+section, feed, offline, archive); PR 2 (#220) built §5 — profile pictures cut from a group photo, the
 4096 px pictures with their 1600 px view, framings per person and `cut_from` — with the
 framing parts of §4 and §6. Nothing deletes a whole circle yet, so its combined question waits
 for that feature; the rule underneath takes any number of photos. Decided with the maintainer

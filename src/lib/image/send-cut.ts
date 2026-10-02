@@ -1,3 +1,4 @@
+import { submitAction } from '../undo/submit-action';
 import type { CropRect } from './crop';
 import { CUT_SIZE, processAvatar } from './process-avatar';
 
@@ -33,6 +34,6 @@ export async function sendCut(
 	body.append('thumb', thumb, 'thumb.jpg');
 	body.append('width', String(width));
 	body.append('height', String(height));
-	const res = await fetch(action, { method: 'POST', body });
-	if (!res.ok) throw new Error(`The cut was not saved (${res.status}).`);
+	// Answered as an action result, not a rendered page: the caller reloads the data it shows.
+	await submitAction(fetch, action, body, { keepalive: false });
 }

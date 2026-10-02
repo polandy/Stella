@@ -15,13 +15,19 @@ const ACTION_HEADER = 'x-sveltekit-action';
 /**
  * Sends `body` to a form action the way the browser would have, minus the navigation.
  * `keepalive` lets the request finish after the page is left, which is when a deferred
- * removal is most often sent (docs/04 §4.9).
+ * removal is most often sent (docs/04 §4.9). Browsers refuse it for a body over 64 KB, so a
+ * request carrying a picture turns it off.
  */
-export async function submitAction(fetch: ActionFetch, action: string, body: FormData): Promise<void> {
+export async function submitAction(
+	fetch: ActionFetch,
+	action: string,
+	body: FormData,
+	options: { keepalive?: boolean } = {}
+): Promise<void> {
 	const response = await fetch(action, {
 		method: 'POST',
 		body,
-		keepalive: true,
+		keepalive: options.keepalive ?? true,
 		headers: { [ACTION_HEADER]: 'true' }
 	});
 	if (!response.ok) throw new ActionFailedError(action, response.status);
