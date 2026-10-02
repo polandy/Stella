@@ -1,7 +1,7 @@
 import type { Visibility } from '../../../access/visibility';
 import type { NewContactField } from '../../contact-fields/contact-fields';
 import type { BirthDatePrecision, NewContact } from '../../contacts/contacts';
-import { deriveDisplayName } from '../../contacts/display-name';
+import { deriveDisplayName } from '../../../../people/display-name';
 import type { NewInteraction } from '../../interactions/interactions';
 import type { NewNote } from '../../notes/notes';
 import type { RelationshipCategory } from '../../../../relationships/categories';

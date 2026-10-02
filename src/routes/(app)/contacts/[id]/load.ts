@@ -7,7 +7,7 @@ import {
 	listRoleSuggestionsByCircleName
 } from '$lib/server/domain/circles/circles';
 import { getContact } from '$lib/server/domain/contacts/contacts';
-import { shownNameIsChosen } from '$lib/server/domain/contacts/display-name';
+import { shownNameIsChosen } from '$lib/people/display-name';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
 import { textOf } from '$lib/i18n/linked';
 import type { SurnameOption, SurnameProposal } from '$lib/suggestions/rules/surnames';

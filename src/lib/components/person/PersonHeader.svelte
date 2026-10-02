@@ -5,6 +5,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import LastNameHelp from './LastNameHelp.svelte';
+	import NameEditor from './NameEditor.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { PersonForm, PersonPageData } from './types';
@@ -48,25 +49,14 @@
 	/>
 	<div class="min-w-0 flex-1">
 		<!-- Name and description are edited where they are read (docs/02 §2.2). -->
-		<h1 class="tracking-tight text-fg">
-			<InlineEdit
-				action="?/editProfile"
-				name="displayName"
-				value={c.displayName}
-				extra={{ description: c.description ?? '' }}
-				label={t('contact.editName')}
-				error={form?.profileError ?? null}
-				heading
-			/>
-		</h1>
-		<!-- The parts the shown name is made of, which can change long after someone was added. -->
-		<LastNameHelp {data} {form} />
+		<NameEditor name={c} shownNameChosen={data.shownNameChosen} error={form?.namePartsError ?? null} />
+		<!-- Stella's proposal for a missing last name, and passing a new one on. -->
+		<LastNameHelp {data} />
 		<p class="text-fg-muted">
 			<InlineEdit
 				action="?/editProfile"
 				name="description"
 				value={c.description ?? ''}
-				extra={{ displayName: c.displayName }}
 				label={t('contact.editDescription')}
 				placeholder={t('contact.descriptionPlaceholder')}
 				empty={t('contact.addDescription')}

@@ -15,7 +15,7 @@ import {
 import { resolveCircleColor, resolveCircleKind, type NewCircle } from '../../circles/circles';
 import type { NewContactField } from '../../contact-fields/contact-fields';
 import type { NewContact } from '../../contacts/contacts';
-import { deriveDisplayName } from '../../contacts/display-name';
+import { deriveDisplayName } from '../../../../people/display-name';
 import {
 	canonicalEndpoints,
 	type NewRelationship,

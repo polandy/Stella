@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { Contact } from './contacts';
 import { editNameParts, type NameRepository, type NameWrite } from './name-parts';
+import { EmptyContactNameError } from './contacts';
 import type { NewActivityEntry } from '../activity/activity';
 
 /*
@@ -56,6 +57,7 @@ describe('editNameParts', () => {
 			firstName: ' Thomas ',
 			lastName: 'Brunner',
 			nickname: 'Tom',
+			displayName: 'Thomas',
 			keepFormerName: false
 		});
 
@@ -85,6 +87,7 @@ describe('editNameParts', () => {
 			firstName: 'Thomas',
 			lastName: 'Brunner',
 			nickname: null,
+			displayName: 'Onkel Tom',
 			keepFormerName: false
 		});
 
@@ -98,6 +101,7 @@ describe('editNameParts', () => {
 			firstName: 'Thomas',
 			lastName: 'Brunner',
 			nickname: null,
+			displayName: 'Thomas Meier',
 			keepFormerName: true
 		});
 
@@ -113,12 +117,14 @@ describe('editNameParts', () => {
 			firstName: 'Thomas',
 			lastName: 'Brunner',
 			nickname: null,
+			displayName: 'Thomas Meier',
 			keepFormerName: false
 		});
 		await editNameParts(unchanged.deps, viewer, 'thomas', {
 			firstName: 'Tom',
 			lastName: 'Meier',
 			nickname: null,
+			displayName: 'Thomas Meier',
 			keepFormerName: true
 		});
 
@@ -133,6 +139,7 @@ describe('editNameParts', () => {
 			firstName: '',
 			lastName: '',
 			nickname: '',
+			displayName: 'Thomas',
 			keepFormerName: false
 		});
 
@@ -142,7 +149,7 @@ describe('editNameParts', () => {
 	it('writes nothing for a person the viewer may not see', async () => {
 		const hidden = fakeNames();
 		const visible = fakeNames(thomas);
-		const parts = { firstName: 'Thomas', lastName: 'Brunner', nickname: null, keepFormerName: false };
+		const parts = { firstName: 'Thomas', lastName: 'Brunner', nickname: null, displayName: 'Thomas', keepFormerName: false };
 
 		const saved = await editNameParts(hidden.deps, viewer, 'thomas', parts);
 		await editNameParts(visible.deps, viewer, 'thomas', parts);
@@ -151,5 +158,80 @@ describe('editNameParts', () => {
 		expect(hidden.batches).toEqual([]);
 		// positive control: the same edit of a visible person is written
 		expect(visible.batches).toHaveLength(1);
+	});
+
+	/*
+	 * *Shown as* is in the same editor (docs/02 §2.2): while it follows the parts it is made
+	 * again from them; once a member types their own, that is what is stored.
+	 */
+	it('makes a following shown name again from the new parts when it comes back untouched', async () => {
+		const f = fakeNames({ ...thomas, displayName: 'Thomas Meier', lastName: 'Meier' });
+
+		await editNameParts(f.deps, viewer, 'thomas', {
+			firstName: 'Tom',
+			lastName: 'Meier',
+			nickname: null,
+			displayName: 'Thomas Meier',
+			keepFormerName: false
+		});
+
+		expect(f.batches[0]?.writes[0]?.displayName).toBe('Tom Meier');
+	});
+
+	it('stores a shown name the member typed, whatever the parts make', async () => {
+		const f = fakeNames(thomas);
+
+		await editNameParts(f.deps, viewer, 'thomas', {
+			firstName: 'Thomas',
+			lastName: 'Brunner',
+			nickname: null,
+			displayName: '  Onkel Tom ',
+			keepFormerName: false
+		});
+
+		expect(f.batches[0]?.writes[0]).toMatchObject({ displayName: 'Onkel Tom', lastName: 'Brunner' });
+	});
+
+	it('keeps a chosen shown name that comes back untouched', async () => {
+		const f = fakeNames({ ...thomas, displayName: 'Opa Hans' });
+
+		await editNameParts(f.deps, viewer, 'thomas', {
+			firstName: 'Thomas',
+			lastName: 'Brunner',
+			nickname: null,
+			displayName: 'Opa Hans',
+			keepFormerName: false
+		});
+
+		expect(f.batches[0]?.writes[0]?.displayName).toBe('Opa Hans');
+	});
+
+	it('reads a blank shown name with parts as *follow the parts*', async () => {
+		const f = fakeNames({ ...thomas, displayName: 'Opa Hans' });
+
+		await editNameParts(f.deps, viewer, 'thomas', {
+			firstName: 'Thomas',
+			lastName: 'Brunner',
+			nickname: null,
+			displayName: '   ',
+			keepFormerName: false
+		});
+
+		expect(f.batches[0]?.writes[0]?.displayName).toBe('Thomas Brunner');
+	});
+
+	it('refuses a blank shown name with blank parts, and writes nothing', async () => {
+		const f = fakeNames(thomas);
+
+		await expect(
+			editNameParts(f.deps, viewer, 'thomas', {
+				firstName: ' ',
+				lastName: '',
+				nickname: null,
+				displayName: '',
+				keepFormerName: false
+			})
+		).rejects.toThrow(EmptyContactNameError);
+		expect(f.batches).toEqual([]);
 	});
 });

@@ -114,18 +114,21 @@ It only ever **fills a blank**. Changing a surname that is already there (Peter 
 Peter Meier after a marriage) offers nothing to anyone: that is the dangerous half of the open
 question in `relationship-suggestions.md` §9, and the answer here is *never automatically*.
 
-### 3.4 One person, on their profile: the name parts
+### 3.4 One person, on their profile: the name
 
-Under the name in the hero, a person without a last name shows a quiet **Add last name**, with
-the best proposal as a chip when there is one (*Brunner?*). A tap on the chip saves it.
+Under the name in the hero, a person without a last name shows the best proposal as a chip
+when there is one (*Brunner?*). A tap on the chip saves it, with the usual undo.
 
-Beyond that, the profile makes **all name parts** editable: **first name, last name and
-nickname**, which today can only be given when a person is created. The inline edit of the
-shown name stays as it is (a tap on the name); a small **Name parts** link beside it opens
-the three fields in place, Enter saves, Escape puts them back. *Add last name* opens the same
-fields with the last name focused. Changing an existing last name offers *keep the old one as
-former name* (§6). A person may not end up with no name at all: the shown name is never
-empty, so emptying every part is allowed and the shown name simply stays as it is.
+The profile makes **every part of the name** editable — **first name, last name and
+nickname**, which before could only be given when a person was created — in **one editor**
+opened by a tap on the name itself (the whole line, with a pencil, so a finger cannot miss
+it). Below the three parts is **Shown as**, the stored display name: while it follows the parts
+it changes as they are typed, and once the member types their own it stays as typed. This
+replaced the separate inline edit of the shown name and the *Name parts* / *Add last name*
+links that the first build had (§10.7). Enter saves, Escape puts everything back. Changing an
+existing last name offers *keep the old one as former name* (§6). A person may not end up with
+no name at all: emptying every part is allowed while a shown name stands, a blank *Shown as*
+with parts means *follow the parts*, and nothing at all is refused.
 
 ---
 
@@ -231,10 +234,10 @@ at once, since they already read `last_name` and `display_name`.
 |---|---|---|
 | Rules F1–F3, F9–F11, combination, folding | `src/lib/suggestions/rules/surnames.ts` (+ test) | pure, test-first |
 | Grouping into *groups / choose one / none* | `src/lib/suggestions/surname-groups.ts` (+ test) | pure, test-first |
-| Shown-name rule of §6 | `domain/contacts/display-name.ts` (`withNameParts`) | pure, test-first |
+| Shown-name rule of §6 | `src/lib/people/display-name.ts` (`withNameParts`, `withNameEdit`), shared with the editor | pure, test-first |
 | `setLastNames`, `editNameParts` | `domain/contacts/` | use-cases with `deps` (contacts repo, dismissals, activity, clock) |
 | What a viewer may see for the rules | `SuggestionView`, already built per viewer through `access/` | read model, extended by circle kinds and former names |
-| Name parts on the profile | `components/person/` (the hero) | component |
+| The name editor on the profile | `components/person/NameEditor.svelte` (the hero) | component |
 | Data-quality page | `routes/(app)/settings/last-names/` | edge |
 | *Select* + bar on People, *Set last name* on circle members | `routes/(app)/contacts`, the circle page | edge + components |
 | Copy | `i18n/messages/en`, `de` | both languages |
@@ -244,7 +247,8 @@ at once, since they already read `last_name` and `display_name`.
 ## 9. Slicing
 
 1. **Name parts on the profile** — §3.4 without the chip, `editNameParts`, §6. Fills the gap
-   that today makes a first name, last name or nickname impossible to change later.
+   that today makes a first name, last name or nickname impossible to change later. Reworked
+   after the owner's first look into the one editor behind a tap on the name (§10.7).
 2. **The rules and the Data-quality list** — §4, §3.1, dismissals. The bulk path that does most
    of the work.
 3. **Select on People and circles** — §3.2.
@@ -266,3 +270,10 @@ Each is a PR with its unit tests, UI and docs; the e2e follows the maintainer's 
    last name alone (§3.4).
 6. **Passing it on (§3.3)** goes one generation at a time: children and siblings, and each
    accepted step offers the next.
+7. **One editor for the whole name (2026-10-02, after trying the first build).** A tap on the
+   name opens first name, last name, nickname and *Shown as* together; the separate *Name
+   parts* and *Add last name* links go, and so does the second way to rename (`editProfile`
+   edits the description only). *Shown as* follows the parts until the member types their own;
+   the server makes an untouched following name again from the parts. Only the proposal chip
+   stays under the name. On a phone every target in this flow is at least 44 px tall with room
+   between them.

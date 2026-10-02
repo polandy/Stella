@@ -24,15 +24,16 @@ test('renames a person from the heading itself, and says Saved', async ({ page }
 	// aria-label on the button would replace it with "Edit name".
 	await expect(page.getByRole('heading', { name: NAME })).toBeVisible();
 
+	// One editor holds every part of the name; it opens on the first name, *Shown as* below.
 	await page.getByRole('button', { name: NAME }).click();
-	const field = page.getByRole('textbox', { name: 'Edit name' });
-	await expect(field).toBeFocused();
+	await expect(page.getByRole('textbox', { name: 'First name' })).toBeFocused();
+	const field = page.getByRole('textbox', { name: 'Shown as' });
 	await field.fill(RENAMED);
 	await page.getByRole('button', { name: 'Save' }).click();
 
 	await expect(page.getByTestId('toast-notice')).toContainText('Saved');
 	await expect(page.getByRole('heading', { name: RENAMED })).toBeVisible();
-	await expect(page.getByRole('textbox', { name: 'Edit name' })).toHaveCount(0);
+	await expect(page.getByRole('textbox', { name: 'Shown as' })).toHaveCount(0);
 
 	// It is the person who changed, not just this screen: the directory says so too.
 	await page.getByRole('link', { name: 'People' }).first().click();
@@ -41,7 +42,7 @@ test('renames a person from the heading itself, and says Saved', async ({ page }
 	// Put the name back, so the rest of the suite finds him where it expects him.
 	await page.getByRole('link', { name: RENAMED }).first().click();
 	await page.getByRole('button', { name: RENAMED }).click();
-	await page.getByRole('textbox', { name: 'Edit name' }).fill(NAME);
+	await page.getByRole('textbox', { name: 'Shown as' }).fill(NAME);
 	await page.getByRole('button', { name: 'Save' }).click();
 	await expect(page.getByRole('heading', { name: NAME })).toBeVisible();
 });
@@ -63,12 +64,14 @@ test('writes a description where there was none, and keeps it after a reload', a
 test('refuses to leave a person nameless, and keeps the editor open with the reason', async ({
 	page
 }) => {
+	// A blank *Shown as* with parts means "follow the parts", so every field is emptied.
 	await page.getByRole('button', { name: NAME }).click();
-	await page.getByRole('textbox', { name: 'Edit name' }).fill('   ');
+	for (const label of ['First name', 'Last name', 'Nickname', 'Shown as'])
+		await page.getByRole('textbox', { name: label }).fill('   ');
 	await page.getByRole('button', { name: 'Save' }).click();
 
 	await expect(page.getByText('A name cannot be empty.')).toBeVisible();
-	await expect(page.getByRole('textbox', { name: 'Edit name' })).toBeVisible();
+	await expect(page.getByRole('textbox', { name: 'Shown as' })).toBeVisible();
 
 	// Nothing was written: the heading and the directory still carry the name.
 	await page.reload();
@@ -77,10 +80,10 @@ test('refuses to leave a person nameless, and keeps the editor open with the rea
 
 test('Escape puts the value back and writes nothing', async ({ page }) => {
 	await page.getByRole('button', { name: NAME }).click();
-	await page.getByRole('textbox', { name: 'Edit name' }).fill('Someone Else Entirely');
+	await page.getByRole('textbox', { name: 'Shown as' }).fill('Someone Else Entirely');
 	await page.keyboard.press('Escape');
 
-	await expect(page.getByRole('textbox', { name: 'Edit name' })).toHaveCount(0);
+	await expect(page.getByRole('textbox', { name: 'Shown as' })).toHaveCount(0);
 	await expect(page.getByRole('heading', { name: NAME })).toBeVisible();
 	await expect(page.getByTestId('toast-notice')).toHaveCount(0);
 	await page.reload();

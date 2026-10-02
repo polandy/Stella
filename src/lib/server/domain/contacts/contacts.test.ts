@@ -272,61 +272,44 @@ const existing: Contact = {
 };
 
 describe('editProfile', () => {
-	it('saves a trimmed name and description, and stamps the change', async () => {
+	/*
+	 * Only the description now: the name is edited with its parts in one editor
+	 * (`editNameParts`), so there is one way to rename, not two (docs/02 §2.2).
+	 */
+	it('saves a trimmed description, keeps the name as stored, and stamps the change', async () => {
 		const f = editableRepo(existing);
 
-		const saved = await editProfile(deps(f.repo), viewer, 'contact-1', {
-			displayName: '  Hans Müller-Meier  ',
-			description: '  Nachbar, links  '
-		});
+		const saved = await editProfile(deps(f.repo), viewer, 'contact-1', { description: '  Nachbar, links  ' });
 
 		expect(saved).toBe(true);
 		expect(f.patches).toEqual([
-			{
-				id: 'contact-1',
-				patch: {
-					displayName: 'Hans Müller-Meier',
-					description: 'Nachbar, links',
-					updatedAt: NOW
-				}
-			}
+			{ id: 'contact-1', patch: { displayName: 'Hans Müller', description: 'Nachbar, links', updatedAt: NOW } }
 		]);
 	});
 
 	it('clears a description that was emptied, rather than storing blanks', async () => {
 		const f = editableRepo(existing);
 
-		await editProfile(deps(f.repo), viewer, 'contact-1', { displayName: 'Hans', description: '   ' });
+		await editProfile(deps(f.repo), viewer, 'contact-1', { description: '   ' });
 
 		expect(f.patches[0].patch.description).toBeNull();
-	});
-
-	it('refuses an empty name and writes nothing', async () => {
-		const f = editableRepo(existing);
-
-		await expect(
-			editProfile(deps(f.repo), viewer, 'contact-1', { displayName: '  ', description: null })
-		).rejects.toThrow(EmptyContactNameError);
-		expect(f.patches).toEqual([]);
 	});
 
 	it('writes nothing for a contact the viewer may not see', async () => {
 		const f = editableRepo(null);
 
-		const saved = await editProfile(deps(f.repo), viewer, 'contact-1', {
-			displayName: 'Whoever',
-			description: null
-		});
+		const saved = await editProfile(deps(f.repo), viewer, 'contact-1', { description: null });
 
 		// positive control: the same call against a visible contact does write
 		const visible = editableRepo(existing);
-		await editProfile(deps(visible.repo), viewer, 'contact-1', { displayName: 'Whoever', description: null });
+		await editProfile(deps(visible.repo), viewer, 'contact-1', { description: null });
 
 		expect(saved).toBe(false);
 		expect(f.patches).toEqual([]);
 		expect(visible.patches).toHaveLength(1);
 	});
 });
+
 
 /*
  * Setting a gender from the profile (docs/02 §2.2): one tap on one of three, and a tap on the

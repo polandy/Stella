@@ -14,7 +14,7 @@ import type { IdGenerator } from '../../id';
 import type { KinshipGraphSource } from '../relationships/suggestion-review';
 import type { PassOnMap } from '../../../surnames/pass-on';
 import type { SurnameProposal } from '../../../suggestions/rules/surnames';
-import { withNameParts } from './display-name';
+import { withNameParts } from '../../../people/display-name';
 import type { NameDeps, NameWrite } from './name-parts';
 
 /*

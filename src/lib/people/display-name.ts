@@ -1,6 +1,9 @@
 /*
  * Derive a contact's display name — pure (docs/03 §contact: display_name is required and
  * never empty). Priority: explicit name → first+last → first → last → nickname.
+ *
+ * Shared by the server and the profile's name editor, which shows *Shown as* following the
+ * parts while they are typed by the very rule the server applies on save (docs/02 §2.2).
  */
 
 export interface NameParts {
@@ -83,4 +86,23 @@ export function withNameParts(current: StoredName, change: NamePartsChange): Sto
 export function shownNameIsChosen(name: StoredName): boolean {
 	const fromParts = nameFromParts({ ...name, displayName: null });
 	return fromParts !== null && fromParts !== clean(name.displayName);
+}
+
+/**
+ * The whole name as the profile's one editor sends it (docs/02 §2.2): the parts and *Shown as*.
+ * A shown name that comes back as it was stored, while it was following the parts, is made
+ * again from the new parts (`withNameParts`) — so a form without the live update, or one left
+ * open while the parts were typed, still follows them. A shown name typed by the member is
+ * stored as typed; a blank one means *follow the parts*. Null when nothing names the person at
+ * all — the caller refuses that, since the shown name is never empty.
+ */
+export function withNameEdit(current: StoredName, change: NamePartsChange, shownName: string): StoredName | null {
+	const next = withNameParts(current, change);
+	const typed = clean(shownName);
+	if (typed === '') {
+		const fromParts = nameFromParts(next);
+		return fromParts === null ? null : { ...next, displayName: fromParts };
+	}
+	if (typed === clean(current.displayName) && !shownNameIsChosen(current)) return next;
+	return { ...next, displayName: typed };
 }

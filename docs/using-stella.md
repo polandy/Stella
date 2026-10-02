@@ -185,17 +185,17 @@ Every card, and every profile row, holds one **+ Add** button, and the form open
 the heading you pressed it from. Nothing is an open form until you ask for it, so the page reads
 as a person rather than as a stack of empty fields.
 
-To change their **name or the line under it**, click the text itself: a field opens where the
-value was, Enter saves it and Escape leaves it as it was. A name cannot be emptied, and Stella
-says so rather than quietly keeping the old one.
+To change the **line under the name**, tap it: a field opens where it was, Enter saves it and
+Escape leaves it as it was.
 
-The name is made of parts — **first name, last name and nickname** — and those can change long
-after someone was added: *Name parts* under the name opens the three fields (Enter saves,
-Escape leaves them), and someone without a surname also shows *Add last name*, which opens
-the same fields on the last name. The name shown follows the parts: *Thomas* becomes *Thomas
-Brunner* once he has a last name. A name somebody chose on purpose — *Opa Hans* — stays as it
-is, and the fields say so. Replacing a last name offers to keep the old one as their former
-name.
+To change the **name**, tap the name itself (it carries a small pencil). One editor opens with
+every part of it — **first name, last name, nickname** — and **Shown as**, the name Stella
+shows everywhere. While you type the parts, *Shown as* follows them: *Thomas* becomes *Thomas
+Brunner* once he has a last name. If you would rather he were shown as *Onkel Tom*, type that
+into *Shown as* and it stays; empty it to let it follow the parts again. Replacing a last name
+offers to keep the old one as their former name. A person cannot be left with no name at all,
+and Stella says so rather than quietly keeping the old one. When Stella can guess a missing
+last name, it shows it under the name as a chip — *Brunner?* — and one tap gives it.
 
 **Notes** are for things that stay true — "allergic to hazelnuts", "always calls on
 Sundays". Moments are for things that happened. Notes can be pinned to the top, and have

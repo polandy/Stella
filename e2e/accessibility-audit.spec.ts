@@ -188,7 +188,7 @@ test.describe('focus after a form closes', () => {
 
 		// Save: the heading's button now carries the new name, and holds the focus.
 		await page.getByRole('button', { name: 'Ottilie Brandenberger', exact: true }).click();
-		await page.getByRole('textbox', { name: 'Edit name' }).fill('Ottilie Brandenberger-Sutz');
+		await page.getByRole('textbox', { name: 'Shown as' }).fill('Ottilie Brandenberger-Sutz');
 		await page.getByRole('button', { name: 'Save' }).click();
 		await expect(page.getByRole('heading', { name: 'Ottilie Brandenberger-Sutz' })).toBeVisible();
 		await expect(page.getByRole('button', { name: 'Ottilie Brandenberger-Sutz', exact: true })).toBeFocused();

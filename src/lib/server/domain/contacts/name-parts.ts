@@ -1,8 +1,8 @@
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { NewActivityEntry } from '../activity/activity';
-import type { Contact } from './contacts';
-import { withNameParts, type StoredName } from './display-name';
+import { withNameEdit, type StoredName } from '../../../people/display-name';
+import { EmptyContactNameError, type Contact } from './contacts';
 
 /*
  * Changing the parts of a person's name after they were added (docs/concepts/surnames.md §3.4,
@@ -32,19 +32,23 @@ export interface NameDeps {
 	clock: Clock;
 }
 
-/** What the profile's *Name parts* fields send (§3.4). */
+/** What the profile's name editor sends (§3.4): the three parts and *Shown as*. */
 export interface NamePartsEdit {
 	firstName: string | null;
 	lastName: string | null;
 	nickname: string | null;
+	/** *Shown as*; blank means follow the parts. */
+	displayName: string;
 	/** Keep the last name being replaced as the former name (§6). */
 	keepFormerName: boolean;
 }
 
 /**
- * Write first name, last name and nickname from the profile. Emptying every part is allowed —
- * the shown name then stays as it is, so nobody ends up without a name. Returns false when the
- * person is not visible to the viewer, so the route answers 404 as for a missing one.
+ * Write the whole name from the profile's one editor — the only way to rename someone by hand.
+ * Emptying every part is allowed while a shown name stands; with no parts and no shown name the
+ * edit is refused (`EmptyContactNameError`), since nobody may end up without a name. Returns
+ * false when the person is not visible to the viewer, so the route answers 404 as for a
+ * missing one.
  */
 export async function editNameParts(
 	deps: NameDeps,
@@ -55,7 +59,8 @@ export async function editNameParts(
 	const contact = await deps.names.findByIdVisibleTo(viewer, id);
 	if (contact === null) return false;
 
-	const next = withNameParts(contact, edit);
+	const next = withNameEdit(contact, edit, edit.displayName);
+	if (next === null) throw new EmptyContactNameError();
 	const replacedLastName = contact.lastName !== null && contact.lastName !== next.lastName;
 	const formerName = edit.keepFormerName && replacedLastName ? contact.lastName : contact.formerName;
 
