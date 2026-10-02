@@ -575,10 +575,11 @@ longer exists, which is why it carries no foreign key.
 
 **And for last names given to several people at once** (`docs/concepts/surnames.md` §7): one
 row per batch, `action = 'update'`, `entity_type = 'last_name'`, `entity_id` the first person
-named, `contact_id` null, `visibility` private when any of them is, and a summary in the
-giver's language (*set the last name Brunner on 4 people*). It is the one update the stream
-reports, because a batch changes how several people read at once; it is written in the same
-transaction as the names.
+named, `contact_id` null, `visibility` private when any of them is. Its `summary` holds the
+**facts** as JSON (`{"lastName":"Brunner","count":4}`) rather than a sentence: the people are
+still there, so Home says the line in each reader's language at read time (`noticeContentOf`,
+`src/lib/stream/notices.ts`); rows stored as an English or German sentence before are still
+read. It is written in the same transaction as the names.
 
 ### suggestion_dismissal  [M2]
 The claims the household has declined, so a suggestion answered once is not offered again

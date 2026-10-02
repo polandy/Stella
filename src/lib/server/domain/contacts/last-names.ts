@@ -15,6 +15,7 @@ import type { IdGenerator } from '../../id';
 import type { KinshipGraphSource } from '../relationships/suggestion-review';
 import type { PassOnMap } from '../../../surnames/pass-on';
 import type { SurnameProposal } from '../../../suggestions/rules/surnames';
+import { lastNamesFacts } from '../../../stream/notices';
 import { withNameParts } from '../../../people/display-name';
 import type { NameDeps, NameWrite } from './name-parts';
 
@@ -80,9 +81,6 @@ export interface LastNameChange {
 	replace: boolean;
 }
 
-/** How the log line reads, in the actor's language — the edge words it, as for imports. */
-export type LastNamesWording = (lastName: string, count: number) => string;
-
 export class EmptyLastNameError extends TranslatableError {
 	constructor() {
 		super(phrase('errors.contact.emptyLastName'), 'EmptyLastNameError');
@@ -108,7 +106,6 @@ export async function setLastNames(
 	deps: LastNameDeps,
 	viewer: Viewer,
 	changes: readonly LastNameChange[],
-	wording: LastNamesWording,
 	/** The giver's language: a nickname in a shown name made again takes its quote marks. */
 	locale: Locale
 ): Promise<number | null> {
@@ -148,7 +145,8 @@ export async function setLastNames(
 		contactId: null,
 		// The line is no more visible than the least visible person it is about.
 		visibility: anyPrivate ? 'private' : 'shared',
-		summary: wording(names.join(', '), writes.length),
+		// Facts, said at read time in each reader's language (docs/02 §2.11).
+		summary: lastNamesFacts(names.join(', '), writes.length),
 		createdAt: now
 	});
 	return writes.length;

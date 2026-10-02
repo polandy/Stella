@@ -226,7 +226,8 @@ at once, since they already read `last_name` and `display_name`.
 - **Undo**: the toast offers *Undo* for eight seconds, and the batch is sent only when the
   window closes or the page is left, the same deferred send as answering suggestions (§2.23).
 - **The household is told**: one activity entry per batch, *Andy set the last name Brunner on 4
-  people*, linking to the people the reader may see.
+  people*. The entry stores the facts (surname and count), not a sentence, and Home says it in
+  each reader's language.
 - **Not offline.** The outbox is for adding, not editing (docs/02 §2.18); the actions are
   disabled with the usual offline line while Stella is out of reach.
 

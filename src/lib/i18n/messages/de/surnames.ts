@@ -10,8 +10,6 @@ export const surnames: SurnamesMessages = {
 	'surnames.reason.parent': (p) => `Elternteil von ${p.child}`,
 	'surnames.reason.circle': (p) => `Im Kreis ${p.circle}`,
 
-	'surnames.log': (p) =>
-		p.count === 1 ? `hat 1 Person den Nachnamen ${p.name} gegeben` : `hat ${p.count} Personen den Nachnamen ${p.name} gegeben`,
 
 	'surnames.toast.set': (p) =>
 		p.count === 1 ? `Nachname ${p.name} gesetzt` : `Nachname ${p.name} für ${p.count} Personen gesetzt`,

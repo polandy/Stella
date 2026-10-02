@@ -1,3 +1,4 @@
+import type { NoticeContent } from '../../../stream/notices';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { InteractionKind } from '../../../interactions/kinds';
 import { NO_FILTER, STREAM_KINDS, type StreamFilter, type StreamKind } from '../../../stream/filter';
@@ -90,13 +91,12 @@ export interface NoticeRow {
 	id: string;
 	at: number;
 	actor: StreamActor;
-	/** Precomputed when it happened — the record it names no longer exists. */
-	summary: string;
 	/**
-	 * What the line is about, for its icon: a record gone (deleted, merged), the archive taken
-	 * or brought in, or last names given to several people (docs/concepts/surnames.md §7).
+	 * What the line says: the prose written when a record went (deleted, merged) or the archive
+	 * was taken or brought in, or the facts of last names given or a name edited, which Home says
+	 * in the reader's language (`noticeContentOf`).
 	 */
-	about: 'removal' | 'lastNames';
+	content: NoticeContent;
 }
 
 /** A circle a photo was added to, as the stream names it. */

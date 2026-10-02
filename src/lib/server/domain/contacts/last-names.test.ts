@@ -15,6 +15,7 @@ import {
 	type SurnameListPerson
 } from './last-names';
 import type { NameWrite } from './name-parts';
+import { lastNamesFacts } from '../../../stream/notices';
 
 /*
  * Last names for several people at once (docs/concepts/surnames.md §3, §5, §7): the reviewed
@@ -51,7 +52,6 @@ function contact(id: string, first: string, last: string | null, over: Partial<C
 	};
 }
 
-const wording = (name: string, count: number) => `set the last name ${name} on ${count} people`;
 
 function fakeDeps(visible: Contact[], people: SurnameListPerson[] = [], graph: Partial<KinshipGraph> = {}) {
 	const batches: { writes: readonly NameWrite[]; audit: NewActivityEntry | null }[] = [];
@@ -105,7 +105,7 @@ describe('setLastNames', () => {
 		const written = await setLastNames(f.deps, viewer, [
 			{ contactId: 'lea', lastName: ' Brunner ', replace: false },
 			{ contactId: 'max', lastName: 'Brunner', replace: false }
-		], wording, 'de');
+		], 'de');
 
 		expect(written).toBe(2);
 		expect(f.batches).toHaveLength(1);
@@ -118,7 +118,8 @@ describe('setLastNames', () => {
 			entityType: 'last_name',
 			actorId: 'user-1',
 			visibility: 'shared',
-			summary: 'set the last name Brunner on 2 people'
+			// Facts, not prose: Home says it in each reader's language (docs/02 §2.11).
+			summary: lastNamesFacts('Brunner', 2)
 		});
 	});
 
@@ -128,7 +129,7 @@ describe('setLastNames', () => {
 		await setLastNames(f.deps, viewer, [
 			{ contactId: 'lea', lastName: 'Brunner', replace: false },
 			{ contactId: 'max', lastName: 'Brunner', replace: false }
-		], wording, 'de');
+		], 'de');
 
 		expect(f.batches[0]?.audit?.visibility).toBe('private');
 	});
@@ -137,7 +138,7 @@ describe('setLastNames', () => {
 		const f = fakeDeps([lea]);
 
 		await expect(
-			setLastNames(f.deps, viewer, [{ contactId: 'lea', lastName: '  ', replace: false }], wording, 'de')
+			setLastNames(f.deps, viewer, [{ contactId: 'lea', lastName: '  ', replace: false }], 'de')
 		).rejects.toThrow(EmptyLastNameError);
 		expect(f.batches).toEqual([]);
 	});
@@ -148,7 +149,7 @@ describe('setLastNames', () => {
 		const written = await setLastNames(f.deps, viewer, [
 			{ contactId: 'lea', lastName: 'Brunner', replace: false },
 			{ contactId: 'hidden', lastName: 'Brunner', replace: false }
-		], wording, 'de');
+		], 'de');
 
 		expect(written).toBeNull();
 		expect(f.batches).toEqual([]);
@@ -160,9 +161,9 @@ describe('setLastNames', () => {
 		const asked = fakeDeps([anna]);
 
 		await expect(
-			setLastNames(refused.deps, viewer, [{ contactId: 'anna', lastName: 'Brunner', replace: false }], wording, 'de')
+			setLastNames(refused.deps, viewer, [{ contactId: 'anna', lastName: 'Brunner', replace: false }], 'de')
 		).rejects.toThrow(LastNameWouldOverwriteError);
-		await setLastNames(asked.deps, viewer, [{ contactId: 'anna', lastName: 'Brunner', replace: true }], wording, 'de');
+		await setLastNames(asked.deps, viewer, [{ contactId: 'anna', lastName: 'Brunner', replace: true }], 'de');
 
 		expect(refused.batches).toEqual([]);
 		expect(asked.batches[0]?.writes[0]).toMatchObject({ lastName: 'Brunner', formerName: null });
@@ -175,18 +176,18 @@ describe('setLastNames', () => {
 		const written = await setLastNames(f.deps, viewer, [
 			{ contactId: 'lea', lastName: 'Brunner', replace: false },
 			{ contactId: 'sophie', lastName: 'Brunner', replace: false }
-		], wording, 'de');
+		], 'de');
 
 		expect(written).toBe(1);
 		expect(f.batches[0]?.writes.map((w) => w.id)).toEqual(['lea']);
-		expect(f.batches[0]?.audit?.summary).toBe('set the last name Brunner on 1 people');
+		expect(f.batches[0]?.audit?.summary).toBe(lastNamesFacts('Brunner', 1));
 	});
 
 	it('writes nothing at all when nobody needs the name', async () => {
 		const sophie = contact('sophie', 'Sophie', 'Brunner');
 		const f = fakeDeps([sophie]);
 
-		expect(await setLastNames(f.deps, viewer, [{ contactId: 'sophie', lastName: 'Brunner', replace: false }], wording, 'de')).toBe(0);
+		expect(await setLastNames(f.deps, viewer, [{ contactId: 'sophie', lastName: 'Brunner', replace: false }], 'de')).toBe(0);
 		expect(f.batches).toEqual([]);
 	});
 });

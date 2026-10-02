@@ -1,3 +1,4 @@
+import { lastNamesFacts } from '../../stream/notices';
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
@@ -204,7 +205,7 @@ describe('recentNotices', () => {
 
 		const rows = await repo.recentNotices(asU2, EVERYONE);
 		expect(rows.map((r) => r.id)).toEqual(['newer', 'older']);
-		expect(rows[0]).toMatchObject({ actor: { id: U1, name: 'One' }, summary: 'removed Person newer' });
+		expect(rows[0]).toMatchObject({ actor: { id: U1, name: 'One' }, content: { kind: 'text', text: 'removed Person newer' } });
 	});
 
 	it('reports a merge too — a name stops existing either way', async () => {
@@ -232,7 +233,7 @@ describe('recentNotices', () => {
 			.run();
 
 		const rows = await repo.recentNotices(asU2, EVERYONE);
-		expect(rows.map((r) => r.summary)).toEqual(['exported the household archive (12 people)']);
+		expect(rows.map((r) => r.content)).toEqual([{ kind: 'text', text: 'exported the household archive (12 people)' }]);
 	});
 
 	it('reports an import, because a restore moves the household\u2019s data too', async () => {
@@ -252,8 +253,8 @@ describe('recentNotices', () => {
 			.run();
 
 		const rows = await repo.recentNotices(asU2, EVERYONE);
-		expect(rows.map((r) => r.summary)).toEqual([
-			'restored 12 people from an archive of Familie Brunner'
+		expect(rows.map((r) => r.content)).toEqual([
+			{ kind: 'text', text: 'restored 12 people from an archive of Familie Brunner' }
 		]);
 	});
 
@@ -279,13 +280,14 @@ describe('recentNotices', () => {
 				entityId: 'c-1',
 				contactId: null,
 				visibility: 'shared',
-				summary: 'set the last name Brunner on 4 people',
+				summary: lastNamesFacts('Brunner', 4),
 				createdAt: 500
 			})
 			.run();
 
 		const rows = await repo.recentNotices(asU2, EVERYONE);
-		expect(rows.map((r) => [r.summary, r.about])).toEqual([['set the last name Brunner on 4 people', 'lastNames']]);
+		// Facts, not prose: Home says the line in each reader's language.
+		expect(rows.map((r) => r.content)).toEqual([{ kind: 'lastNames', lastName: 'Brunner', count: 4 }]);
 	});
 
 	it('keeps a private person private, even in the record of their deletion', async () => {

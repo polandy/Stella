@@ -11,9 +11,6 @@ export const surnames = {
 	'surnames.reason.parent': (p: { child: string }) => `Parent of ${p.child}`,
 	'surnames.reason.circle': (p: { circle: string }) => `In the circle ${p.circle}`,
 
-	// The household's line in the stream; written once, in the giver's language (§7).
-	'surnames.log': (p: { name: string; count: number }) =>
-		p.count === 1 ? `set the last name ${p.name} on 1 person` : `set the last name ${p.name} on ${p.count} people`,
 
 	// The undo toast of a batch, and its failure (docs/02 §2.23).
 	'surnames.toast.set': (p: { name: string; count: number }) =>
