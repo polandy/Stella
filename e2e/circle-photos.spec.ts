@@ -282,3 +282,203 @@ test('the stream says who added how many photos to which circle, under the Circl
 	await expect(page.getByRole('heading', { name: circle })).toBeVisible();
 	await expect(tiles(page)).toHaveCount(3);
 });
+
+/*
+ * Profile pictures cut from a group photo (docs/concepts/circle-photos.md §5). The picture is
+ * drawn in the browser rather than read from a fixture: the cropper needs something larger
+ * than a pixel to frame, and a cut is rendered from the full picture the cropper loads.
+ */
+
+/** A 1200×800 landscape in three bands, large enough for the cropper to frame a square of. */
+async function groupPicture(page: Page, name: string): Promise<{ name: string; mimeType: string; buffer: Buffer }> {
+	const bytes = await page.evaluate(async () => {
+		const canvas = document.createElement('canvas');
+		canvas.width = 1200;
+		canvas.height = 800;
+		const ctx = canvas.getContext('2d')!;
+		['#ee0000', '#00aa00', '#0000ee'].forEach((colour, third) => {
+			ctx.fillStyle = colour;
+			ctx.fillRect(third * 400, 0, 400, 800);
+		});
+		const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
+		return Array.from(new Uint8Array(await blob.arrayBuffer()));
+	});
+	return { name, mimeType: 'image/png', buffer: Buffer.from(bytes) };
+}
+
+const cutDialog = (page: Page) => page.getByTestId('cut-dialog');
+const candidate = (page: Page, name: string) => cutDialog(page).getByTestId('cut-candidate').filter({ hasText: name });
+const WEARS = 'Wears a cut of this photo';
+
+/** In an open cut dialog: picks the person, keeps the cropper's square and waits for the cut. */
+async function cutFor(page: Page, name: string): Promise<void> {
+	await candidate(page, name).click();
+	const cropper = page.getByTestId('photo-cropper');
+	await expect(cropper.getByRole('button', { name: 'Use photo' })).toBeEnabled();
+	await cropper.getByRole('button', { name: 'Use photo' }).click();
+	await expect(cutDialog(page).getByTestId('cut-done')).toHaveText(`${name} now wears this photo.`);
+}
+
+/** Opens the only photo of the circle and cuts each of `names` out of it, one after another. */
+async function cutFromOnlyPhoto(page: Page, ...names: string[]): Promise<void> {
+	await tiles(page).first().click();
+	await lightbox(page).getByTestId('cut-open').click();
+	for (const [index, name] of names.entries()) {
+		if (index > 0) await cutDialog(page).getByRole('button', { name: 'Next person' }).click();
+		await cutFor(page, name);
+	}
+	await cutDialog(page).getByRole('button', { name: 'Done' }).click();
+	await expect(cutDialog(page)).toBeHidden();
+}
+
+/** The address of a member's page, read off the circle's member grid. */
+async function memberPage(page: Page, name: string): Promise<string> {
+	const href = await page.getByTestId('member-grid').getByRole('link', { name }).getAttribute('href');
+	expect(href).toMatch(/^\/contacts\//);
+	return href!;
+}
+
+/** The picture on the person page's header, apart from the chooser's group photos beside it. */
+const headerPicture = (page: Page) =>
+	page.getByTestId('avatar-uploader').getByRole('button', { name: 'Change photo' }).locator('img');
+
+/** The person page's header picture: an image that has loaded, and the photo id it shows. */
+async function wornPictureId(page: Page): Promise<string> {
+	const img = headerPicture(page);
+	await expect(img).toHaveAttribute('src', /^\/media\/[^?]+\?thumb$/);
+	// Decoding fails on a picture that does not load, so this is the picture really there.
+	expect(await img.evaluate(async (el: HTMLImageElement) => (await el.decode(), el.naturalWidth))).toBeGreaterThan(0);
+	return (await img.getAttribute('src'))!.match(/^\/media\/([^?]+)\?thumb$/)![1];
+}
+
+const galleryIds = (page: Page) => () =>
+	page
+		.getByTestId('photo-grid')
+		.locator('img')
+		.evaluateAll((imgs) => imgs.map((img) => img.getAttribute('src')?.match(/^\/media\/([^?]+)\?thumb$/)?.[1]));
+
+test('cuts a member’s profile picture from the lightbox, marks them as cut and offers the next person', async ({
+	page
+}) => {
+	const circle = 'Saffron Street Class 1B';
+	await circleWithRoles(page, circle, [
+		['Elodie', 'Wyss', 'pupil'],
+		['Matteo', 'Wyss', 'pupil']
+	]);
+	await addCirclePhotos(page, [await groupPicture(page, 'class.png')], { role: 'pupil' });
+	const elodiePage = await memberPage(page, 'Elodie Wyss');
+
+	await tiles(page).first().click();
+	await lightbox(page).getByRole('button', { name: 'Use as profile picture for …' }).click();
+	// The photo's role leads the list, and nobody wears a cut of it yet: both show initials.
+	await expect(cutDialog(page).getByRole('heading', { name: 'pupil' })).toBeVisible();
+	await expect(candidate(page, 'Elodie Wyss')).toBeVisible();
+	await expect(candidate(page, 'Matteo Wyss')).toBeVisible();
+	await expect(cutDialog(page).getByTestId('cut-candidate').locator('img')).toHaveCount(0);
+	await expect(cutDialog(page)).not.toContainText(WEARS);
+
+	await cutFor(page, 'Elodie Wyss');
+	await cutDialog(page).getByRole('button', { name: 'Next person' }).click();
+	// Back at the list: Elodie now wears the photo and is marked; Matteo is still to do.
+	await expect(candidate(page, 'Matteo Wyss')).toBeVisible();
+	await expect(candidate(page, 'Elodie Wyss')).toContainText(WEARS);
+	await expect(candidate(page, 'Elodie Wyss').locator('img')).toHaveCount(1);
+	await expect(candidate(page, 'Matteo Wyss')).not.toContainText(WEARS);
+	await expect(candidate(page, 'Matteo Wyss').locator('img')).toHaveCount(0);
+
+	await page.goto(elodiePage);
+	await appReady(page);
+	await wornPictureId(page);
+	// What she wears is a framing of the group photo, not a photo in her gallery.
+	await expect(page.getByTestId('on-group-photos').getByRole('link', { name: circle })).toBeVisible();
+	await expect(page.getByTestId('photo-grid')).toHaveCount(0);
+});
+
+test('a new profile picture keeps the old cut as their own photo, from the circle, beside the group photo', async ({
+	page
+}) => {
+	const circle = 'Wisteria Close Choir';
+	await circleWithRoles(page, circle, [['Linus', 'Ammann', 'bass']]);
+	await addCirclePhotos(page, [await groupPicture(page, 'choir.png')]);
+	const linusPage = await memberPage(page, 'Linus Ammann');
+	await cutFromOnlyPhoto(page, 'Linus Ammann');
+
+	await page.goto(linusPage);
+	await appReady(page);
+	const cut = await wornPictureId(page);
+
+	// A different picture, from a file: the uploader's own input, as the chooser's *Choose a
+	// picture…* would open it.
+	await page
+		.getByTestId('avatar-uploader')
+		.locator('input[type=file]')
+		.setInputFiles(await groupPicture(page, 'portrait.png'));
+	const cropper = page.getByTestId('photo-cropper');
+	await expect(cropper.getByRole('button', { name: 'Use photo' })).toBeEnabled();
+	await cropper.getByRole('button', { name: 'Use photo' }).click();
+	await expect(headerPicture(page)).not.toHaveAttribute('src', `/media/${cut}?thumb`);
+	expect(await wornPictureId(page)).not.toBe(cut);
+
+	// The old cut is in the gallery now, as a photo of his own that says where it came from.
+	await expect.poll(galleryIds(page)).toContain(cut);
+	await page.locator(`[data-testid=photo-grid] img[src="/media/${cut}?thumb"]`).click();
+	await expect(page.getByTestId('photo-lightbox').getByTestId('photo-cut-from')).toHaveText(`From ${circle}`);
+	await page.getByTestId('photo-lightbox').getByRole('button', { name: 'Close', exact: true }).click();
+
+	// And the group photo it was cut from is listed under *On group photos*, into the circle.
+	const onGroupPhotos = page.getByTestId('on-group-photos');
+	await expect(onGroupPhotos.getByRole('heading', { name: 'On group photos' })).toBeVisible();
+	await expect(onGroupPhotos.getByRole('link')).toHaveCount(1);
+	await onGroupPhotos.getByRole('link', { name: circle }).click();
+	await expect(page.getByRole('heading', { name: circle })).toBeVisible();
+});
+
+for (const [action, confirm, keeps, family] of [
+	['Remove', 'Remove anyway', 'They keep it as a photo of their own.', 'Kälin'],
+	['Make private', 'Make private anyway', 'They keep it as a shared photo of their own.', 'Gisler']
+] as const) {
+	test(`${action} on a group photo someone wears warns first, and they keep their picture`, async ({ page, browser }) => {
+		const circle = `Cedar Row Quartet (${action})`;
+		await circleWithRoles(page, circle, [
+			['Aurelio', family, 'violin'],
+			['Benedikta', family, 'viola']
+		]);
+		await addCirclePhotos(page, [await groupPicture(page, 'quartet.png')]);
+		const aurelioPage = await memberPage(page, `Aurelio ${family}`);
+		await cutFromOnlyPhoto(page, `Aurelio ${family}`, `Benedikta ${family}`);
+
+		const owner = lightbox(page).getByTestId('circle-photo-owner');
+		await owner.getByRole('button', { name: action, exact: true }).click();
+		const warning = owner.getByTestId('cut-warning');
+		await expect(warning).toContainText('This photo is the profile picture of 2 people.');
+		await expect(warning).toContainText(keeps);
+		// Cancel asks nothing more and changes nothing.
+		await warning.getByRole('button', { name: 'Cancel' }).click();
+		await expect(warning).toBeHidden();
+		await expect(tiles(page)).toHaveCount(1);
+
+		await owner.getByRole('button', { name: action, exact: true }).click();
+		await warning.getByRole('button', { name: confirm }).click();
+		if (action === 'Remove') {
+			await expect(tiles(page)).toHaveCount(0);
+		} else {
+			await expect(owner.getByRole('button', { name: 'Share with the household' })).toBeVisible();
+		}
+
+		// The picture he wore is a photo of his own now: in his gallery and still on his page.
+		await page.goto(aurelioPage);
+		await appReady(page);
+		const worn = await wornPictureId(page);
+		await expect.poll(galleryIds(page)).toEqual([worn]);
+
+		// The other member sees it too: it is shared, whatever became of the group photo.
+		const nina = await signInAsNina(browser);
+		try {
+			await nina.goto(aurelioPage);
+			await appReady(nina);
+			expect(await wornPictureId(nina)).toBe(worn);
+		} finally {
+			await nina.context().close();
+		}
+	});
+}
