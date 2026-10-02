@@ -64,7 +64,7 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   birth date, and a "Coming up" band in Home's rail that offers to write a moment — no
   reminder objects and no separate reminders screen.
 - **Photo gallery** (grid, lightbox, captions, set-as-avatar) with per-photo visibility
-  — shipped on the person page (§2.14); reordering stays M3.
+  — shipped on the person page (§2.14); favourites stand in for reordering.
 - **Personal journal:** per-person diary — dated Markdown entries with photos, per-entry
   visibility (shared/private), rendered as a timeline on the profile (§2.20).
 - **Explorer (rich, core feature):** in-place node expansion, in-graph search-to-focus,
@@ -113,14 +113,14 @@ Goal: sand the edges and add the nice-to-haves.
 
 - ~~**Localization:** German with a language switcher~~ — shipped: English and German are
   both fully supported, chosen per member and kept with the profile (§2.19).
-- **Graph & UX polish:** photo reordering, saved graph filters. ~~Group a circle's
+- **Graph & UX polish:** saved graph filters. ~~Group a circle's
   members by role~~ — shipped: a *Group by role* switch in the explorer's Filter menu (§2.7).
   ~~Density/appearance refinements~~ — shipped (§2.7, docs/05 §5.8): a busy map stays
   legible, with a density choice and a *+N* hint on a node that has more to expand.
   ~~Walk the map from the keyboard~~ — shipped (§2.7): arrow keys step from person to person
   and a screen reader hears who is under the cursor. ~~Favourite photos first~~ — shipped
   (§2.14): *Pin as favourite* puts a photo at the front of a person's gallery for the whole
-  household; a free reordering beyond that is still open.
+  household. That is the only ordering: a free reordering of the gallery is not planned.
 - ~~**Photos in every person picker**~~ — shipped (docs/05 §5.10): search results, the person
   pickers (Circles' *Add member*, the relationship form, …) and the @-lists show a person's
   photo instead of their initials whenever they have one.
