@@ -242,4 +242,19 @@ describe('loadVisibleGraphWithKinship', () => {
 		// People, links, circles, memberships.
 		expect(sent).toHaveLength(4);
 	});
+
+	// Rule L3 (docs/concepts/relationship-suggestions.md §3.2) reads these through this reader
+	// when the person page asks for kinship via `loadVisibleGraphWithKinship` — the second of
+	// the two places that select them (the other is `kinship-graph-read.ts`, covered in
+	// `relationship-repository.test.ts`). Both must carry the values, not just agree on `null`.
+	it('carries the birth dates and the day a partnership began', async () => {
+		db.update(schema.contact).set({ birthDate: '2015-05-20' }).where(eq(schema.contact.id, 'lio')).run();
+		db.update(schema.relationship).set({ sinceDate: '2009-06-13' }).where(eq(schema.relationship.id, 'r-partner')).run();
+
+		const both = await createDrizzleGraphRepository(db).loadVisibleGraphWithKinship(viewerU1);
+		expect(both.kinship.people.find((p) => p.id === 'lio')?.birthDate).toBe('2015-05-20');
+		expect(both.kinship.people.find((p) => p.id === 'mara')?.birthDate).toBeNull();
+		expect(both.kinship.partnerEdges).toContainEqual({ a: 'mara', b: 'jonas', former: false, sinceDate: '2009-06-13' });
+		expect(both.kinship).toEqual(loadKinshipGraph(db, viewerU1));
+	});
 });

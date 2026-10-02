@@ -79,12 +79,18 @@ export interface ExclusionParentEdge {
 	childId: string;
 }
 
+/** A partnership that still holds, with the day it began where entered. */
+export interface RomanticPair extends ExclusionPair {
+	/** Not read by these rules; the form's second-parent offer (rule L3) tells a step-parent by it. */
+	sinceDate?: string | null;
+}
+
 /** What is on record, as the rules need it. Everything is scoped to one viewer already. */
 export interface ExclusionFacts {
 	/** Every link the subject carries, from their perspective. */
 	subjectTies: readonly SubjectTie[];
 	/** Partner and spouse links across the household — **only those that still hold**. */
-	romanticPairs: readonly ExclusionPair[];
+	romanticPairs: readonly RomanticPair[];
 	/** Parent → child links across the household. */
 	parentEdges: readonly ExclusionParentEdge[];
 }

@@ -1,18 +1,24 @@
 /*
- * `?propose=<a>:<b>` names the pair whose new link should be propagated (docs/02 §2.4.1).
- * The pair is only a pointer: the use-case reads the real link back from the visible graph,
- * so a hand-written value can never conjure a suggestion out of nothing.
+ * `?propose=<a>:<b>,<a>:<c>` names the pairs whose new links should be propagated (docs/02
+ * §2.4.1): one pair after a single link, every pair of a batch stored together, so *Also true?*
+ * is worked out across all of them (docs/concepts/multi-pick-relationships.html D7). The pairs
+ * are only pointers: the use-case reads the real links back from the visible graph, so a
+ * hand-written value can never conjure a suggestion out of nothing.
  */
 
 const PROPOSE_SEPARATOR = ':';
+const PAIR_SEPARATOR = ',';
 
-/** The person page after a new link from `contactId` to `targetId`, offering what it implies. */
-export function proposeHref(contactId: string, targetId: string): string {
-	return `/contacts/${contactId}?propose=${[contactId, targetId].join(PROPOSE_SEPARATOR)}#relationships`;
+/** The person page after new links from `contactId` to each of `targetIds`, offering what they imply. */
+export function proposeHref(contactId: string, targetIds: readonly string[]): string {
+	const pairs = targetIds.map((targetId) => [contactId, targetId].join(PROPOSE_SEPARATOR));
+	return `/contacts/${contactId}?propose=${pairs.join(PAIR_SEPARATOR)}#relationships`;
 }
 
-/** The pair a `?propose=` value names, or null. */
-export function parseProposePair(raw: string | null): { a: string; b: string } | null {
-	const [a, b] = (raw ?? '').split(PROPOSE_SEPARATOR);
-	return a && b ? { a, b } : null;
+/** The pairs a `?propose=` value names, in order; a half pair is skipped. */
+export function parseProposePairs(raw: string | null): { a: string; b: string }[] {
+	return (raw ?? '').split(PAIR_SEPARATOR).flatMap((pair) => {
+		const [a, b] = pair.split(PROPOSE_SEPARATOR);
+		return a && b ? [{ a, b }] : [];
+	});
 }

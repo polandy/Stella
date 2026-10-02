@@ -114,7 +114,7 @@ export const relationshipActions = {
 		}
 
 		// Come back with the new pair named, so its implied links can be offered.
-		throw redirect(303, proposeHref(params.id, parsed.output.targetId));
+		throw redirect(303, proposeHref(params.id, [parsed.output.targetId]));
 	},
 
 	/**

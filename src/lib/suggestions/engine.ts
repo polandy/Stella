@@ -1,5 +1,5 @@
 import { K1 } from './rules/kin';
-import { L1, L2 } from './rules/links';
+import { L1, L2, L3 } from './rules/links';
 import { isDerivable, isRefusedByRules } from './suppressions';
 import type { Confidence, Rule, RuleId, Suggestion, Trigger } from './types';
 import { claimKey } from './claims';
@@ -21,7 +21,8 @@ import type { SuggestionView } from './view';
 
 /** Which rules answer which trigger. A new rule is a row here, not an edit to a shared switch. */
 const RULES: Record<Trigger['kind'], readonly Rule[]> = {
-	'link-stored': [L1, L2],
+	// L3 is a guess, so it answers a write only (docs/concepts/relationship-suggestions.md §3.2).
+	'link-stored': [L1, L2, L3],
 	'person-reviewed': [L1, L2, K1],
 	'household-reviewed': [L1, L2, K1]
 };
@@ -30,7 +31,7 @@ const RULES: Record<Trigger['kind'], readonly Rule[]> = {
  * Within one confidence, what follows from an entry comes before what is only worked out: a
  * missing parent is news, a grandmother Stella already names is housekeeping.
  */
-const RULE_RANK: Record<RuleId, number> = { L1: 0, L2: 1, K1: 2 };
+const RULE_RANK: Record<RuleId, number> = { L1: 0, L2: 1, L3: 2, K1: 3 };
 
 /** Closeness of a claim to certainty, most certain first — the order suggestions are shown in. */
 const CONFIDENCE_RANK: Record<Confidence, number> = {
@@ -120,8 +121,21 @@ export function evaluate(
 	view: SuggestionView,
 	options: EvaluateOptions = {}
 ): Suggestion[] {
-	const found = RULES[trigger.kind]
-		.flatMap((rule) => rule(trigger, view))
+	return evaluateAll([trigger], view, options);
+}
+
+/**
+ * `evaluate` for several triggers at once — the links a batch stored together
+ * (docs/concepts/multi-pick-relationships.html D7). One list, not one per link: a claim two
+ * links lead to is asked once, and the whole batch is in the engine's one order.
+ */
+export function evaluateAll(
+	triggers: readonly Trigger[],
+	view: SuggestionView,
+	options: EvaluateOptions = {}
+): Suggestion[] {
+	const found = triggers
+		.flatMap((trigger) => RULES[trigger.kind].flatMap((rule) => rule(trigger, view)))
 		.filter((suggestion) => !suppressed(suggestion, view))
 		.map((suggestion) => answered(suggestion, view))
 		.filter((suggestion) => options.includeDismissed || suggestion.dismissed === null)

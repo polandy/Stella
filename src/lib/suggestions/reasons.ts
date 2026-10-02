@@ -29,6 +29,22 @@ export const parentThroughSibling = (
 };
 
 /**
+ * Why a likely second parent is offered (L3): they are the parent's partner, and the parent is
+ * on record for the child. Both facts, for the same reason as above — and because the claim is
+ * only *likely*, the reader needs to see what it rests on to judge it.
+ */
+export const partnerOfParent = (
+	partner: PersonRef,
+	parent: PersonRef,
+	child: PersonRef
+): LinkedPhrase<'partner' | 'parent' | 'child'> => {
+	return (t) => ({
+		people: { partner, parent, child },
+		say: (names) => t('kinship.reason.partnerOfParent', names)
+	});
+};
+
+/**
  * Why a worked-out relative is offered: Stella reached them through these people, and nobody
  * has entered the tie. Each person the inference ran through is named and followable.
  */

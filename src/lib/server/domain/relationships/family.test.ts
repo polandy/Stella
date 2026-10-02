@@ -115,7 +115,7 @@ function separately() {
 
 describe('readFamilyOf', () => {
 	it('gives every family card the answer its own use-case gives', async () => {
-		const proposeFor = { a: 'andy', b: 'steve' };
+		const proposeFor = [{ a: 'andy', b: 'steve' }];
 		const read = await readFamilyOf(deps(), viewer, 'andy', { proposeFor, reviewOpen: true });
 
 		const before = separately();
@@ -136,15 +136,15 @@ describe('readFamilyOf', () => {
 
 	it('reads the family, the ties and the dismissals once for all the cards', async () => {
 		const d = deps();
-		await readFamilyOf(d, viewer, 'andy', { proposeFor: { a: 'andy', b: 'steve' }, reviewOpen: true });
+		await readFamilyOf(d, viewer, 'andy', { proposeFor: [{ a: 'andy', b: 'steve' }], reviewOpen: true });
 		expect(d.asked).toEqual({ family: 1, ties: 1, dismissals: 1 });
 	});
 
 	it('leaves the dismissals unread when no proposal or review asks for them', async () => {
 		const d = deps();
-		const read = await readFamilyOf(d, viewer, 'andy', { proposeFor: null, reviewOpen: false });
+		const read = await readFamilyOf(d, viewer, 'andy', { proposeFor: [], reviewOpen: false });
 		expect(d.asked).toEqual({ family: 1, ties: 1, dismissals: 0 });
-		expect(read.kinship).toEqual(await readKinship(separately(), viewer, 'andy', null));
+		expect(read.kinship).toEqual(await readKinship(separately(), viewer, 'andy', []));
 		expect(read.reviewed).toEqual([]);
 	});
 });

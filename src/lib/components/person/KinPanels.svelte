@@ -5,11 +5,20 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { keepable } from '$lib/pwa/keepable';
+	import { answerKey } from '$lib/relationships/answer-key';
+	import type { AnsweredClaims } from '$lib/relationships/answered';
+	import { parentsOnRecord } from '$lib/relationships/multi-pick';
+	import { CURRENT_RELATIONSHIP_STATUS } from '$lib/relationships/status';
+	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
+	import { encodeRelationshipChoice } from '$lib/relationships/type-options';
+	import { addAllBatches, type AddAllBatch } from '$lib/suggestions/add-all';
 	import { claimEndpoints, confirmedClaimFor, directClaimFor } from '$lib/kinship/claims';
 	import { directClaimLabel, kinshipLabel } from '$lib/kinship/labels';
 	import { usePending } from '$lib/sync/context.svelte';
 	import { trackPending } from '$lib/sync/pending';
 	import { useRemovals } from '$lib/undo/context.svelte';
+	import { announceSavedBatch, relationshipIdsOf } from './saved-batch';
 	import type { PersonPageData } from './types';
 
 	/*
@@ -35,6 +44,71 @@
 		await invalidateAll();
 		removals.notify(t('components.saved'));
 	});
+
+	/*
+	 * *Add all* (docs/concepts/multi-pick-relationships.html D7): the claims of the *Also true?*
+	 * block that one batch can store, still listed and answerable row by row above. Worked out
+	 * from the rows still standing — one already answered in its undo window is not sent twice.
+	 */
+	let answered = $state<AnsweredClaims>({});
+	/** Batches sent while Stella was out of reach: kept on the device, so not offered again. */
+	let keptBatches = $state<string[]>([]);
+	const batchKey = (batch: AddAllBatch) => `${batch.side}:${batch.subjectId}:${batch.targetIds.join(',')}`;
+	const parentType = $derived(data.relationshipTypes.find((type) => type.key === PARENT_CHILD_TYPE_KEY) ?? null);
+	const batches = $derived(
+		parentType
+			? addAllBatches(
+					data.proposals.filter(
+						(s) => s.dismissed === null && !answered[answerKey(s.relation, s.fromId, s.toId)]
+					),
+					(childId) => parentsOnRecord(data.exclusionFacts, childId)
+				).filter((batch) => !keptBatches.includes(batchKey(batch)))
+			: []
+	);
+	/** Everyone a proposal names, by id, for the batch's sentence. */
+	const proposedName = (id: string) =>
+		data.proposals.find((s) => s.fromId === id)?.fromName ??
+		data.proposals.find((s) => s.toId === id)?.toName ??
+		'';
+	const names = (ids: readonly string[]) =>
+		new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(ids.map(proposedName));
+	const batchSentence = (batch: AddAllBatch) =>
+		batch.side === 'reverse'
+			? t('contact.relationships.addAllParentsOf', {
+					parents: names(batch.targetIds),
+					child: proposedName(batch.subjectId)
+				})
+			: t('contact.relationships.addAllChildrenOf', {
+					parent: proposedName(batch.subjectId),
+					children: names(batch.targetIds)
+				});
+
+	/** One `relationship.addMany`, through the outbox like every adding form: one toast, one *Undo*. */
+	const addAll = (batch: AddAllBatch, typeId: string) =>
+		keepable(
+			{
+				toCommand: (_fields, id) => ({
+					id,
+					type: 'relationship.addMany',
+					payload: {
+						contactId: batch.subjectId,
+						typeChoice: encodeRelationshipChoice(typeId, batch.side),
+						status: CURRENT_RELATIONSHIP_STATUS,
+						description: null,
+						links: batch.targetIds.map((targetId) => ({ targetId, sinceDate: null }))
+					},
+					issuedAt: Date.now()
+				}),
+				about: batchSentence(batch),
+				errorKey: 'error',
+				pending: graphPending,
+				onApplied: (result) =>
+					announceSavedBatch({ contactId: c.id, removals, pending: graphPending, t }, relationshipIdsOf(result)),
+				onKept: () => (keptBatches = [...keptBatches, batchKey(batch)])
+			},
+			// Every batch is a command, so the plain form post below is only the no-script path.
+			() => async ({ update }) => update()
+		);
 </script>
 
 <!--
@@ -47,7 +121,32 @@
 		<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle" data-kin-heading tabindex="-1">
 			{t('contact.relationships.alsoTrue')}
 		</h3>
-		<KinSuggestions suggestions={data.proposals} propose={data.proposeFor} />
+		<KinSuggestions suggestions={data.proposals} propose={data.proposeFor} bind:answered />
+		{#if parentType && batches.length > 0}
+			<ul class="flex list-none flex-col gap-2 border-t border-dashed border-border pt-2" data-testid="kin-add-all">
+				{#each batches as batch (batchKey(batch))}
+					<li class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm">
+						<span class="min-w-0 text-fg-muted">{batchSentence(batch)}</span>
+						<!-- Without script this posts to the subject's own page, which stores the batch the same way. -->
+						<form
+							method="POST"
+							action="/contacts/{batch.subjectId}?/addRelationships"
+							use:enhance={addAll(batch, parentType.id)}
+						>
+							<input type="hidden" name="typeChoice" value={encodeRelationshipChoice(parentType.id, batch.side)} />
+							<input type="hidden" name="status" value={CURRENT_RELATIONSHIP_STATUS} />
+							{#each batch.targetIds as targetId (targetId)}
+								<input type="hidden" name="targetId" value={targetId} />
+								<input type="hidden" name="sinceDate" value="" />
+							{/each}
+							<Button variant="primary" size="sm" icon="add">
+								{t('contact.relationships.addAll', { count: batch.targetIds.length })}
+							</Button>
+						</form>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 	</div>
 {/if}
 

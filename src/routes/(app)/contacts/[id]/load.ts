@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
-import { parseProposePair } from '$lib/contacts/propose';
+import { parseProposePairs } from '$lib/contacts/propose';
 import { listContactFields } from '$lib/server/domain/contact-fields/contact-fields';
 import {
 	listCirclesForContact,
@@ -82,7 +82,7 @@ export const load = (async ({ locals, params, url }) => {
 	const proposeFor = url.searchParams.get('propose');
 	const read = await readPersonPage(viewer, params.id, {
 		reviewOpen,
-		proposeFor: parseProposePair(proposeFor)
+		proposeFor: parseProposePairs(proposeFor)
 	});
 	// Only the photos of the entries on the story's first page; later pages bring their own.
 	const journalPhotos = await getPhotos().listJournalPhotosOfEntries(
@@ -140,7 +140,7 @@ export const load = (async ({ locals, params, url }) => {
 		relationships: read.family.ties,
 		// Inferred, never stored (docs/02 §2.4.1); shown apart from the entered links.
 		derivedKin: read.family.kinship.derived,
-		// Links implied by the one just added, offered for a single confirmation each.
+		// Links implied by the ones just added — one, or a whole batch — offered for a confirmation each.
 		proposals: withReasonsSaid(read.family.kinship.proposals, t),
 		proposeFor,
 		/*
@@ -188,7 +188,7 @@ export const load = (async ({ locals, params, url }) => {
 function readPersonPage(
 	viewer: Viewer,
 	contactId: string,
-	request: { reviewOpen: boolean; proposeFor: { a: string; b: string } | null }
+	request: { reviewOpen: boolean; proposeFor: { a: string; b: string }[] }
 ) {
 	return allOf({
 		// The person's own records.

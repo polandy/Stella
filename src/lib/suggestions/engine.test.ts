@@ -3,7 +3,7 @@ import { textOf } from '$lib/i18n/linked';
 import { createTranslator } from '$lib/i18n/translate';
 import type { KinshipGraph } from '$lib/kinship/kinship';
 import { pairKey, type Dismissal } from './claims';
-import { evaluate, oneRowPerClaim } from './engine';
+import { evaluate, evaluateAll, oneRowPerClaim } from './engine';
 import type { Suggestion, Trigger } from './types';
 import { buildView } from './view';
 
@@ -76,7 +76,9 @@ describe('evaluate', () => {
 		});
 		expect(shape(stored('partner', 'bettina', 'kurt'), v)).toEqual([]);
 		expect(shape(stored('parent', 'bettina', 'hans'), v)).toEqual([
-			['L1', 'parent', 'bettina', 'lisa']
+			['L1', 'parent', 'bettina', 'lisa'],
+			// Bettina's partner, as the likely other parent (L3).
+			['L3', 'parent', 'kurt', 'hans']
 		]);
 	});
 
@@ -444,3 +446,72 @@ describe('evaluate — worked-out relatives (K1)', () => {
 	});
 });
 
+
+/*
+ * L3 runs after a write and nowhere else (docs/concepts/relationship-suggestions.md §3.2): it is
+ * a guess, and over a whole household it would offer every undated step-parent.
+ */
+describe('evaluate — the likely second parent (L3)', () => {
+	const family = () =>
+		view({
+			parentEdges: [
+				{ parentId: 'bettina', childId: 'hans' },
+				{ parentId: 'bettina', childId: 'lisa' }
+			],
+			partnerEdges: [{ a: 'bettina', b: 'kurt' }]
+		});
+
+	it('offers the partner after a parent link is stored, after what is certain', () => {
+		const found = evaluate(stored('parent', 'bettina', 'hans'), family());
+		expect(found.map((s) => [s.ruleId, s.fromId, s.toId, s.confidence])).toEqual([
+			['L3', 'kurt', 'hans', 'likely']
+		]);
+	});
+
+	it('is not part of a review', () => {
+		const ruleIds = (trigger: Trigger) => evaluate(trigger, family()).map((s) => s.ruleId);
+		expect(ruleIds({ kind: 'person-reviewed', subjectId: 'hans' })).not.toContain('L3');
+		expect(ruleIds({ kind: 'household-reviewed' })).not.toContain('L3');
+	});
+});
+
+/*
+ * Several links stored together (docs/concepts/multi-pick-relationships.html D7): one list for
+ * the whole batch, each claim once, in the engine's one order — not one list per link.
+ */
+describe('evaluateAll', () => {
+	it('answers every trigger at once, one row per claim, in one order', () => {
+		const v = view({
+			parentEdges: [
+				{ parentId: 'bettina', childId: 'hans' },
+				{ parentId: 'kurt', childId: 'hans' },
+				{ parentId: 'bettina', childId: 'lisa' }
+			],
+			siblingEdges: [
+				{ a: 'nina', b: 'hans' },
+				{ a: 'nina', b: 'lisa' }
+			]
+		});
+		const found = evaluateAll(
+			[stored('sibling', 'nina', 'hans'), stored('sibling', 'nina', 'lisa')],
+			v
+		);
+		// Bettina reaches Nina through Hans and through Lisa; she is offered once, and Kurt,
+		// whom only the first link reaches, sorts in among the batch's claims.
+		expect(found.map((s) => [s.ruleId, s.fromId, s.toId])).toEqual([
+			['L2', 'bettina', 'nina'],
+			['L2', 'kurt', 'nina']
+		]);
+	});
+
+	it('is evaluate for a single trigger', () => {
+		const v = view({
+			parentEdges: [{ parentId: 'bettina', childId: 'hans' }],
+			siblingEdges: [{ a: 'hans', b: 'lisa' }]
+		});
+		const trigger = stored('parent', 'bettina', 'hans');
+		const ends = (found: Suggestion[]) => found.map((s) => [s.ruleId, s.fromId, s.toId]);
+		expect(ends(evaluateAll([trigger], v))).toEqual([['L1', 'bettina', 'lisa']]);
+		expect(ends(evaluate(trigger, v))).toEqual(ends(evaluateAll([trigger], v)));
+	});
+});

@@ -1,9 +1,11 @@
 <script lang="ts">
+	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import { enhance } from '$app/forms';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { proposeHref } from '$lib/contacts/propose';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { SelectablePerson } from '$lib/people/select';
@@ -21,6 +23,7 @@
 		oneDateForAll,
 		parentsOnRecord,
 		pickCap,
+		secondParentOffer,
 		sharedSince,
 		sincePerPair,
 		type ServerRefusal
@@ -30,11 +33,11 @@
 	import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from '$lib/relationships/type-keys';
 	import { CURRENT_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '$lib/relationships/status';
 	import { usePending } from '$lib/sync/context.svelte';
-	import { trackPending, whilePending } from '$lib/sync/pending';
+	import { trackPending } from '$lib/sync/pending';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
-	import { submitAction } from '$lib/undo/submit-action';
 	import { INPUT } from './inputs';
+	import { announceSavedBatch, relationshipIdsOf } from './saved-batch';
 	import type { ExclusionOf, PersonForm, PersonPageData, RelationshipChoices } from './types';
 
 	/*
@@ -45,7 +48,9 @@
 	 * type, status and description are shared, the since day is worked out per pair, and the type
 	 * decides how many people the field takes. One person picked saves exactly as it always has
 	 * (`relationship.add`, then *Also true?* for the pair); several save as one batch
-	 * (`relationship.addMany`), all or nothing, with one *Undo*.
+	 * (`relationship.addMany`), all or nothing, with one *Undo* — and then *Also true?* for the
+	 * whole batch at once (D7). With one parent picked for "Child of", the likely second parent
+	 * is offered under the field (D4, rule L3): one tap makes them a chip, nothing is preselected.
 	 */
 	let {
 		data,
@@ -90,30 +95,6 @@
 
 	/** The type choice the last batch was sent with: a refusal it brought back is about that type. */
 	let submittedChoice = $state<string | null>(null);
-
-	/** Takes back a batch saved together, from the toast's *Undo* (`?/removeRelationships`). */
-	async function undoBatch(relationshipIds: readonly string[]) {
-		const body = new FormData();
-		for (const id of relationshipIds) body.append('relationshipId', id);
-		try {
-			await whilePending(graphPending, () =>
-				submitAction(fetch, `/contacts/${c.id}?/removeRelationships`, body, { keepalive: false })
-			);
-			await invalidateAll();
-		} catch (error) {
-			console.error('Could not take back the links saved together:', error);
-			removals.notify(t('contact.relationships.undoLinksFailed'));
-		}
-	}
-
-	/** The ids a batch answered with; anything else is not ours and says so. */
-	function relationshipIdsOf(result: unknown): string[] {
-		const ids = (result as { relationshipIds?: unknown } | null)?.relationshipIds;
-		if (!Array.isArray(ids) || !ids.every((id) => typeof id === 'string')) {
-			throw new Error('relationship.addMany answered without its relationship ids');
-		}
-		return ids;
-	}
 
 	const savedRelationship = trackPending(
 		graphPending,
@@ -169,11 +150,20 @@
 				pending: graphPending,
 				onApplied: async (result, command) => {
 					if (command.type === 'relationship.addMany') {
-						const ids = relationshipIdsOf(result);
-						removals.notify(t('contact.relationships.linksSaved', { count: ids.length }), () => {
-							void undoBatch(ids);
-						});
+						announceSavedBatch(
+							{ contactId: c.id, removals, pending: graphPending, t },
+							relationshipIdsOf(result)
+						);
 						closeRelate();
+						// Back on the card naming every new pair, so *Also true?* is worked out for the
+						// whole batch at once rather than for whichever link came last (D7).
+						await goto(
+							proposeHref(
+								c.id,
+								command.payload.links.map((link) => link.targetId)
+							),
+							{ noScroll: true, keepFocus: true }
+						);
 						return;
 					}
 					removals.notify(t('components.saved'));
@@ -182,7 +172,7 @@
 						// Back on the card naming the new pair, so what it implies is offered (§2.4.1).
 						// keepFocus: the closed form hands focus back to its button (Section), and a
 						// navigation's own focus reset would drop it on the page again.
-						await goto(proposeHref(c.id, command.payload.targetId), { noScroll: true, keepFocus: true });
+						await goto(proposeHref(c.id, [command.payload.targetId]), { noScroll: true, keepFocus: true });
 					}
 				},
 				onKept: closeRelate
@@ -259,6 +249,26 @@
 				})
 			: null
 	);
+	/*
+	 * The likely second parent (D4, rule L3), offered under the field while one parent is picked
+	 * for "Child of". Someone the field could take: visible here, and not ruled out by the same
+	 * exclusion rules that grey out an entry.
+	 */
+	const coParent = $derived.by(() => {
+		const offer = secondParentOffer({
+			choice: chosen,
+			pickedIds: picked,
+			child: data.contact,
+			facts: data.exclusionFacts,
+			isRefused: (targetId) => refusals.some((refusal) => refusal.targetId === targetId),
+			canOffer: (personId) =>
+				otherContacts.some((person) => person.id === personId) &&
+				chosen !== null &&
+				exclusionOf(chosen, personId) === null
+		});
+		const partner = offer && otherContacts.find((person) => person.id === offer.partnerId);
+		return offer && partner ? { partner, parentName: nameOfPicked(offer.parentId) } : null;
+	});
 	const hintsId = $props.id();
 	const hasHints = $derived(capHint !== null || overCapLine !== null || refusals.length > 0);
 
@@ -372,6 +382,33 @@
 					<p class="text-fg-muted">{t('contact.relationships.removeToAdd', { count: refusals.length })}</p>
 				{/if}
 			</div>
+			<!-- Outside the live region: an offer is not news to interrupt with, only a choice. -->
+			{#if coParent}
+				<div
+					class="flex flex-wrap items-center gap-2 rounded-control border border-dashed border-primary bg-card px-2 py-1.5 text-sm text-fg-muted"
+					data-testid="second-parent-offer"
+				>
+					<span>{t('contact.relationships.secondParentAlso')}</span>
+					<button
+						type="button"
+						class="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-primary bg-card py-0.5 pl-0.5 pr-2.5 text-fg hover:bg-primary-soft"
+						aria-label={t('contact.relationships.secondParentAdd', { name: coParent.partner.displayName })}
+						onclick={() => (relationshipTargetId = [...relationshipTargetId, coParent.partner.id])}
+					>
+						<Avatar
+							id={coParent.partner.id}
+							name={coParent.partner.displayName}
+							avatarPhotoId={coParent.partner.avatarPhotoId}
+							size={24}
+						/>
+						<Icon name="add" size={14} />
+						{coParent.partner.displayName}
+					</button>
+					<span class="text-xs text-fg-subtle">
+						{t('contact.relationships.secondParentWhy', { name: coParent.parentName })}
+					</span>
+				</div>
+			{/if}
 		</div>
 		<label class="flex w-full flex-col gap-1 text-sm">
 			<span class="text-fg-muted">

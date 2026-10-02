@@ -15,6 +15,8 @@ export interface KinPerson {
 	id: string;
 	displayName: string;
 	gender?: string | null;
+	/** `YYYY-MM-DD`, a year, or a year-less `--MM-DD` (docs/03 §3.4); read by rule L3 only. */
+	birthDate?: string | null;
 }
 
 export interface ParentEdge {
@@ -35,6 +37,8 @@ export interface Pair {
  */
 export interface PartnerEdge extends Pair {
 	former?: boolean;
+	/** The day the partnership began, where entered; tells a step-parent apart (rule L3). */
+	sinceDate?: string | null;
 }
 
 /** The primary links to reason over, plus every pair that must not be re-derived. */

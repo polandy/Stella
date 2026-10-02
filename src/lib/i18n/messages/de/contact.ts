@@ -173,6 +173,12 @@ export const contact: ContactMessages = {
 	'contact.relationships.linksSaved': (p) => `${p.count} Beziehungen gespeichert`,
 	'contact.relationships.undoLinksFailed':
 		'Die Beziehungen ließen sich nicht zurücknehmen. Sie stehen noch auf der Seite.',
+	'contact.relationships.secondParentAlso': 'Auch',
+	'contact.relationships.secondParentAdd': (p) => `${p.name} als zweites Elternteil hinzufügen`,
+	'contact.relationships.secondParentWhy': (p) => `Partner von ${p.name}`,
+	'contact.relationships.addAllParentsOf': (p) => `${p.parents} als Eltern von ${p.child}`,
+	'contact.relationships.addAllChildrenOf': (p) => `${p.parent} als Elternteil von ${p.children}`,
+	'contact.relationships.addAll': (p) => `Alle ${p.count} hinzufügen`,
 	'contact.relationships.alsoTrue': 'Stimmt das auch?',
 	'contact.relationships.parentProposal': (p) => `${p.parent} ist ein Elternteil von ${p.child}`,
 	'contact.relationships.siblingProposal': (p) => `${p.one} und ${p.other} sind Geschwister`,

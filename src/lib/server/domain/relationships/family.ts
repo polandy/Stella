@@ -40,9 +40,9 @@ export interface FamilyReadDeps {
 	dismissals: Pick<SuggestionDismissalRepository, 'listForHousehold'>;
 }
 
-/** What the page asked for besides the person: a link just stored, and the open review. */
+/** What the page asked for besides the person: the links just stored, and the open review. */
 export interface FamilyRequest {
-	proposeFor: Pair | null;
+	proposeFor: readonly Pair[];
 	reviewOpen: boolean;
 }
 
@@ -62,7 +62,7 @@ export async function readFamilyOf(
 	request: FamilyRequest
 ): Promise<FamilyRead> {
 	// Only a proposal or the review weighs what the household declined; the rest never asks.
-	const needsDismissals = request.proposeFor !== null || request.reviewOpen;
+	const needsDismissals = request.proposeFor.length > 0 || request.reviewOpen;
 	const [family, ties, dismissals] = await Promise.all([
 		deps.family.loadVisibleGraphWithKinship(viewer),
 		deps.relationships.listForContactVisibleTo(viewer, subjectId),

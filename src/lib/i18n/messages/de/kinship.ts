@@ -70,6 +70,8 @@ export const kinship: KinshipMessages = {
 	'kinship.claim.sibling-in-law.female': (p) => `${p.to} ist eine Schwägerin von ${p.from}`,
 	'kinship.claim.sibling-in-law.neutral': (p) => `${p.to} ist Schwager oder Schwägerin von ${p.from}`,
 	'kinship.reason.workedOutThrough': (p) => `Hergeleitet über ${p.via}, noch nicht eingetragen`,
+	'kinship.reason.partnerOfParent': (p) =>
+		`${p.partner} und ${p.parent} sind ein Paar, und ${p.parent} ist ein Elternteil von ${p.child}.`,
 	'kinship.reason.parentThroughSibling': (p) =>
 		`${p.parent} ist ein Elternteil von ${p.via}, und ${p.via} und ${p.child} sind Geschwister.`
 };

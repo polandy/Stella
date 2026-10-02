@@ -61,7 +61,7 @@ export const isDirected = (relation: Relation): boolean => DIRECTED.has(relation
  * `docs/concepts/relationship-suggestions.md` §2. Carried so the household can be told what
  * kind of claim it is looking at, and so ordering stays deterministic between rules.
  */
-export type RuleId = 'L1' | 'L2' | 'K1';
+export type RuleId = 'L1' | 'L2' | 'L3' | 'K1';
 
 /**
  * How sure the rule is. `certain` is a logical consequence of what the household entered —
@@ -85,7 +85,15 @@ export type Confidence = 'certain' | 'likely' | 'possible';
  * them.
  */
 export type Trigger =
-	| { kind: 'link-stored'; link: PrimaryLink }
+	| {
+			kind: 'link-stored';
+			link: PrimaryLink;
+			/**
+			 * Whose page the link was entered on, where the caller knows. L3 stays quiet when it
+			 * was the child's: the form there offered the partner already, before the save.
+			 */
+			enteredFrom?: string;
+	  }
 	| { kind: 'person-reviewed'; subjectId: string }
 	| { kind: 'household-reviewed' };
 

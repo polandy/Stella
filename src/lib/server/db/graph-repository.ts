@@ -44,7 +44,8 @@ export function createDrizzleGraphRepository(
 					label: contact.displayName,
 					deceased: contact.isDeceased,
 					avatarPhotoId: contact.avatarPhotoId,
-					gender: contact.gender
+					gender: contact.gender,
+					birthDate: contact.birthDate
 				})
 				.from(contact)
 				.where(contactVisibleTo(viewer))
@@ -69,7 +70,8 @@ export function createDrizzleGraphRepository(
 					typeKey: relationshipType.key,
 					forwardLabel: relationshipType.forwardLabel,
 					symmetric: relationshipType.symmetric,
-					status: relationship.status
+					status: relationship.status,
+					sinceDate: relationship.sinceDate
 				})
 				.from(relationship)
 				.innerJoin(relationshipType, eq(relationship.typeId, relationshipType.id))
@@ -121,8 +123,14 @@ export function createDrizzleGraphRepository(
 			}
 
 			const kinship = kinshipGraphOf(
-				contactRows.map((r) => ({ id: r.id, displayName: r.label, gender: r.gender })),
-				relRows.map((r) => ({ fromId: r.fromContactId, toId: r.toContactId, key: r.typeKey, status: r.status }))
+				contactRows.map((r) => ({ id: r.id, displayName: r.label, gender: r.gender, birthDate: r.birthDate })),
+				relRows.map((r) => ({
+					fromId: r.fromContactId,
+					toId: r.toContactId,
+					key: r.typeKey,
+					status: r.status,
+					sinceDate: r.sinceDate
+				}))
 			);
 			// Derived kinship (docs/02 §2.4.1) as its own edge kind: what the primary links imply
 			// but nobody entered — grandparents, aunts, cousins, in-laws — drawn once per pair.
