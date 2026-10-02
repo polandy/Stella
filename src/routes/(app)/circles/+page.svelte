@@ -8,6 +8,7 @@
 	import { circleKindLabel } from '$lib/circles/labels';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { accentDotStyle } from '$lib/design/tokens';
+	import { thumbnailUrl } from '$lib/media/urls';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -159,39 +160,46 @@
 	{:else}
 		<ul class="grid gap-3 sm:grid-cols-2" data-testid="circle-cards">
 			{#each shown as circle (circle.id)}
+				{@const cover = data.covers[circle.id]}
 				<li>
 					<a
 						href="/circles/{circle.id}"
-						class="flex h-full flex-col gap-3 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
+						class="flex h-full flex-col overflow-hidden rounded-app bg-card shadow-card transition-colors hover:bg-card-hover"
 					>
-						<div class="flex items-start gap-3">
-							<span class="mt-1.5 size-3 shrink-0 rounded-full" style={accentDotStyle(circle.color)}></span>
-							<span class="min-w-0 flex-1">
-								<span class="block truncate font-semibold text-fg">{circle.name}</span>
-								<span class="block text-xs text-fg-subtle">
-									<span>{circleKindLabel(t, circle.kind)}</span>
-									· {t('circles.memberCount', { count: circle.memberCount })}
-									{#if circle.visibility === 'private'} · {t('circles.private')}{/if}
-								</span>
-							</span>
-						</div>
-						{#if circle.description}
-							<p class="line-clamp-2 text-sm text-fg-muted">{circle.description}</p>
+						{#if cover}
+							<!-- The cover as a flat strip, filled from the centre (docs/05 §5.5); decoration, the name says it. -->
+							<img src={thumbnailUrl(cover)} alt="" loading="lazy" class="h-20 w-full object-cover object-center" data-testid="circle-card-cover" />
 						{/if}
-						<div class="mt-auto flex items-center">
-							{#each circle.preview as member, i (member.contactId)}
-								<span class="rounded-full ring-2 ring-card" class:-ml-1={i > 0}>
-									<Avatar id={member.contactId} name={member.displayName} avatarPhotoId={member.avatarPhotoId} size={28} />
+						<div class="flex flex-1 flex-col gap-3 p-4">
+							<div class="flex items-start gap-3">
+								<span class="mt-1.5 size-3 shrink-0 rounded-full" style={accentDotStyle(circle.color)}></span>
+								<span class="min-w-0 flex-1">
+									<span class="block truncate font-semibold text-fg">{circle.name}</span>
+									<span class="block text-xs text-fg-subtle">
+										<span>{circleKindLabel(t, circle.kind)}</span>
+										· {t('circles.memberCount', { count: circle.memberCount })}
+										{#if circle.visibility === 'private'} · {t('circles.private')}{/if}
+									</span>
 								</span>
-							{/each}
-							{#if circle.memberCount > circle.preview.length}
-								<span class="-ml-1 grid size-7 place-items-center rounded-full bg-bg-sunken text-[11px] font-semibold text-fg-muted ring-2 ring-card">
-									+{circle.memberCount - circle.preview.length}
-								</span>
+							</div>
+							{#if circle.description}
+								<p class="line-clamp-2 text-sm text-fg-muted">{circle.description}</p>
 							{/if}
-							{#if circle.memberCount === 0}
-								<span class="text-xs text-fg-subtle">{t('circles.nobodyYet')}</span>
-							{/if}
+							<div class="mt-auto flex items-center">
+								{#each circle.preview as member, i (member.contactId)}
+									<span class="rounded-full ring-2 ring-card" class:-ml-1={i > 0}>
+										<Avatar id={member.contactId} name={member.displayName} avatarPhotoId={member.avatarPhotoId} size={28} />
+									</span>
+								{/each}
+								{#if circle.memberCount > circle.preview.length}
+									<span class="-ml-1 grid size-7 place-items-center rounded-full bg-bg-sunken text-[11px] font-semibold text-fg-muted ring-2 ring-card">
+										+{circle.memberCount - circle.preview.length}
+									</span>
+								{/if}
+								{#if circle.memberCount === 0}
+									<span class="text-xs text-fg-subtle">{t('circles.nobodyYet')}</span>
+								{/if}
+							</div>
 						</div>
 					</a>
 				</li>

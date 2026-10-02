@@ -4,15 +4,23 @@
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import CirclePhotoLightbox from '$lib/components/circle/CirclePhotoLightbox.svelte';
+	import CirclePhotosSection from '$lib/components/circle/CirclePhotosSection.svelte';
+	import MemberCard from '$lib/components/circle/MemberCard.svelte';
+	import MemberSelectionBar from '$lib/components/circle/MemberSelectionBar.svelte';
+	import PhotoStrip from '$lib/components/circle/PhotoStrip.svelte';
+	import { PhotoWalk } from '$lib/components/circle/photo-walk.svelte';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import RemoveButton from '$lib/components/RemoveButton.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { circleKindLabel } from '$lib/circles/labels';
+	import { roleKey } from '$lib/circles/role-key';
+	import { dayLabel } from '$lib/dates/labels';
 	import { allChosen, toggleEveryone, toggleGroup, toggleMember } from '$lib/circles/selection';
 	import { accentDotStyle } from '$lib/design/tokens';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { useI18n } from '$lib/i18n/context.svelte';
 	import { newPersonHref } from '$lib/people/new-person';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { deferredRemoval } from '$lib/undo/deferred-removal';
@@ -26,8 +34,22 @@
 		const members = new Set(data.memberIds);
 		return data.people.filter((p) => !members.has(p.id));
 	});
-	const t = useTranslate();
+	const i18n = useI18n();
+	const t = i18n.t;
 	const circle = $derived(data.circle);
+
+	/*
+	 * The circle's photos (docs/02 §2.4.2): the cover, a banner over each role group and the
+	 * Photos section all open one lightbox, which walks only the photos it was opened among —
+	 * one role's, or the grid as filtered. It follows the photo by id, so a save that reloads
+	 * the page keeps it open, and a photo that went away closes it.
+	 */
+	const photos = $derived(data.photos);
+	const ofRole = (key: string | null) => photos.photos.filter((p) => p.roleKey === key).map((p) => p.id);
+	const walk = new PhotoWalk();
+	const walked = $derived(photos.photos.find((p) => p.id === walk.photoId) ?? null);
+	const openPhotos = walk.open.bind(walk);
+	const photoDate = (createdAt: number): string => dayLabel(i18n, new Date(createdAt).toISOString());
 
 	// A member on their way out of the circle is off the grid while the undo window is open;
 	// a role whose last member is leaving goes with them.
@@ -123,6 +145,16 @@
 <svelte:head><title>{t('circles.detail.title', { name: circle.name })}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
+	{#if photos.cover}
+		{@const ids = ofRole(null)}
+		<PhotoStrip
+			photoId={photos.cover.id}
+			count={ids.length}
+			size="cover"
+			label={t('circles.photos.openCover', { count: ids.length })}
+			onopen={(opener) => openPhotos(ids, 0, opener)}
+		/>
+	{/if}
 	<header class="flex items-center gap-4">
 		<span class="grid size-12 shrink-0 place-items-center rounded-full" style={accentDotStyle(circle.color)}>
 			<span class="size-4 rounded-full bg-card/70"></span>
@@ -176,40 +208,26 @@
 							{/if}
 							</div>
 						{/if}
+						<!-- The role's lead photo stands above its people (concept §3.1); No role has the cover. -->
+						{#if showRoles && group.role !== null && photos.banners[roleKey(group.role) ?? '']}
+							{@const banner = photos.banners[roleKey(group.role) ?? '']}
+							{@const ids = ofRole(banner.roleKey)}
+							<PhotoStrip
+								photoId={banner.id}
+								count={ids.length}
+								size="banner"
+								label={t('circles.photos.openRole', { role: group.role, count: ids.length })}
+								onopen={(opener) => openPhotos(ids, ids.indexOf(banner.id), opener)}
+							/>
+						{/if}
 						<ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
 							{#each group.members as m (m.membershipId)}
-								{@const chosen = selectedIds.includes(m.contactId)}
-								<li
-									class="flex items-center gap-3 rounded-app border-2 bg-bg px-3 py-2.5 {chosen
-										? 'border-primary bg-primary-soft'
-										: 'border-transparent'}"
-								>
-									{#if selecting}
-										<!-- The whole card is the target, so a thumb finds it as easily as a cursor. -->
-										<label class="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
-											<input
-												type="checkbox"
-												checked={chosen}
-												onchange={() => (selectedIds = toggleMember(selectedIds, m.contactId))}
-												aria-label={t('circles.selectMember', { name: m.displayName })}
-												class="size-5 shrink-0 accent-primary"
-											/>
-											<Avatar id={m.contactId} name={m.displayName} avatarPhotoId={m.avatarPhotoId} size={40} />
-											<span class="min-w-0 flex-1 truncate font-medium text-fg">{m.displayName}</span>
-										</label>
-									{:else}
-										<Avatar id={m.contactId} name={m.displayName} avatarPhotoId={m.avatarPhotoId} size={40} />
-										<a href="/contacts/{m.contactId}" class="min-w-0 flex-1 truncate font-medium text-fg hover:underline">{m.displayName}</a>
-										<RemoveButton
-											kind="membership"
-											id={m.membershipId}
-											action="?/removeMember"
-											fields={{ contactId: m.contactId }}
-											label={t('circles.removeMember', { name: m.displayName })}
-											removed={t('circles.removedFromCircle')}
-										/>
-									{/if}
-								</li>
+								<MemberCard
+									member={m}
+									{selecting}
+									chosen={selectedIds.includes(m.contactId)}
+									ontoggle={() => (selectedIds = toggleMember(selectedIds, m.contactId))}
+								/>
 							{/each}
 						</ul>
 					</section>
@@ -270,42 +288,33 @@
 			</form>
 		{/snippet}
 	</Section>
+
+	<CirclePhotosSection {data} error={form && 'photoError' in form ? (form.photoError ?? null) : null} {photoDate} onopen={openPhotos} />
 </main>
 
+{#if walk.current && walked}
+	<CirclePhotoLightbox
+		photo={walked}
+		at={walk.current.at}
+		count={walk.current.ids.length}
+		circleName={circle.name}
+		viewerId={data.viewerId}
+		error={form && 'photoError' in form ? (form.photoError ?? null) : null}
+		{photoDate}
+		onclose={() => walk.close()}
+		onkeydown={(event) => walk.onkeydown(event)}
+		onstep={(by) => walk.step(by)}
+	/>
+{/if}
+
 {#if selecting}
-	<!-- Fixed to the bottom so it stays in reach however long the circle is; offset above the
-	     mobile bottom tab bar (src/routes/(app)/+layout.svelte) so the two never overlap. Stays
-	     below Toast's z-30 (Toast.svelte) so a save/undo toast is never hidden behind it. -->
-	<div
-		class="pointer-events-none fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-20 flex justify-center px-4 md:bottom-[max(0.75rem,env(safe-area-inset-bottom))]"
-		data-testid="selection-bar"
-	>
-		<div class="pointer-events-auto flex w-full max-w-4xl flex-wrap items-center gap-2 rounded-app border border-border bg-card p-2.5 shadow-pop">
-			<strong class="px-1 text-sm tabular-nums text-fg" aria-live="polite">
-				{chosenMembers.length ? t('circles.selectedCount', { count: chosenMembers.length }) : t('circles.selectNone')}
-			</strong>
-			<Button type="button" size="sm" onclick={() => (selectedIds = toggleEveryone(selectedIds, allIds))}>
-				{everyoneChosen ? t('circles.selectNoOne') : t('circles.selectEveryone')}
-			</Button>
-			<form method="POST" action="?/setRole" use:enhance={roleSaved} class="ml-auto flex flex-wrap items-center gap-2">
-				{#each chosenMembers as m (m.contactId)}
-					<input type="hidden" name="contactId" value={m.contactId} />
-				{/each}
-				<label for="bulk-role" class="text-sm text-fg-muted">{t('circles.bulkRole')}</label>
-				<Combobox
-					id="bulk-role"
-					name="role"
-					bind:value={bulkRole}
-					options={data.roleSuggestions}
-					placeholder={t('circles.bulkRoleHint')}
-					placement="above"
-					class="w-44 {INPUT}"
-				/>
-				<Button variant="primary" size="sm" disabled={chosenMembers.length === 0}>{t('circles.bulkApply')}</Button>
-			</form>
-			<Button type="button" variant="danger" size="sm" disabled={chosenMembers.length === 0} onclick={removeChosen}>
-				{t('circles.bulkRemove')}
-			</Button>
-		</div>
-	</div>
+	<MemberSelectionBar
+		chosenIds={chosenMembers.map((m) => m.contactId)}
+		{everyoneChosen}
+		roleSuggestions={data.roleSuggestions}
+		{roleSaved}
+		bind:bulkRole
+		ontoggleeveryone={() => (selectedIds = toggleEveryone(selectedIds, allIds))}
+		onremove={removeChosen}
+	/>
 {/if}

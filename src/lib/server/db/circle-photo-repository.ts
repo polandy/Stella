@@ -9,7 +9,7 @@ import type {
 	StoredCirclePhoto
 } from '../domain/circles/circle-photos';
 import type * as schema from './schema';
-import { circle, photo } from './schema';
+import { circle, photo, user } from './schema';
 
 /*
  * Drizzle adapter for the circle photo port (docs/02 §2.4.2, docs/08 §8.3). Every read joins the
@@ -24,7 +24,11 @@ export function createDrizzleCirclePhotoRepository(
 		circlePhotoVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy });
 
 	const select = () =>
-		db.select(COLUMNS).from(photo).innerJoin(circle, eq(photo.circleId, circle.id));
+		db
+			.select(COLUMNS)
+			.from(photo)
+			.innerJoin(circle, eq(photo.circleId, circle.id))
+			.innerJoin(user, eq(photo.createdBy, user.id));
 
 	return {
 		async insert(p: StoredCirclePhoto) {
@@ -113,6 +117,7 @@ const COLUMNS = {
 	caption: photo.caption,
 	visibility: photo.visibility,
 	createdBy: photo.createdBy,
+	createdByName: user.name,
 	width: photo.width,
 	height: photo.height,
 	createdAt: photo.createdAt,

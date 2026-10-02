@@ -9,8 +9,11 @@ import {
 	setMembersRole,
 	suggestRoles
 } from '$lib/server/domain/circles/circles';
+import { circlePhotoView, photoRoleOptions } from '$lib/server/domain/circles/circle-photo-view';
+import { listCirclePhotos } from '$lib/server/domain/circles/circle-photos';
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
-import { getCircleDeps, getContactDeps } from '$lib/server/services';
+import { getCircleDeps, getCirclePhotoDeps, getContactDeps } from '$lib/server/services';
+import { photoActions } from './actions/photos';
 import type { Actions, PageServerLoad } from './$types';
 import { say } from '$lib/server/i18n/say';
 
@@ -25,14 +28,26 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const circle = await getCircle(getCircleDeps(), viewer, params.id);
 	if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
-	const members = await listMembers(getCircleDeps(), viewer, params.id);
+	const [members, photos] = await Promise.all([
+		listMembers(getCircleDeps(), viewer, params.id),
+		listCirclePhotos(getCirclePhotoDeps(), viewer, params.id)
+	]);
+	const roles = suggestRoles(members.map((m) => m.role));
 
 	return {
 		circle,
 		// People are shown under their role, so a class reads as its teachers and its pupils.
 		memberGroups: groupMembersByRole(members),
 		// What this circle already calls its people, offered while adding the next one.
-		roleSuggestions: suggestRoles(members.map((m) => m.role)),
+		roleSuggestions: roles,
+		// The cover, the banner over each role group, and the Photos section (docs/02 §2.4.2).
+		photos: circlePhotoView(
+			// Each photo's role picker: the circle's roles, and its own once nobody has it (§4).
+			photos.map((p) => ({ ...p, roleOptions: photoRoleOptions(roles, p.role) })),
+			roles
+		),
+		// Who is looking: shared/private and Remove are only offered on their own photos.
+		viewerId: viewer.id,
 		// Who is in already, so the picker offers the rest of the shell's people.
 		memberIds: members.map((m) => m.contactId)
 	};
@@ -44,6 +59,8 @@ const PeopleAndRoleSchema = v.object({
 });
 
 export const actions: Actions = {
+	...photoActions,
+
 	addMembers: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };

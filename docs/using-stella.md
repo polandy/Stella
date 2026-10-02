@@ -427,6 +427,23 @@ people from the circle.
 A circle's page shows its people grouped by role — all the players together, the coaches
 together — with anyone who has no role at the end.
 
+A circle can have photos: the class photo of each school year, the team on the pitch, the
+teachers at the summer party. Press **Add photos** in the *Photos* card below the members and
+pick several at once; say who is in them — one of the circle's roles, or *No role* when the
+photo shows everyone — and whether the household may see them. Like a person's photos they
+are shrunk in your browser first, so no location ever leaves your phone, and without a
+connection they wait on the device until Stella can take them.
+
+A photo with no role becomes the circle's **cover**, the wide picture at the top of its page
+and on its card on the Circles page. A photo with a role sits as a banner above that role's
+people, so *Student* reads as the class photo and then the children in it. When there are
+several, the one you pinned last leads, otherwise the newest. Tap the cover or a banner to
+look through that role's photos; the chips above the grid (*All*, *No role*, each role) show
+one group at a time. In the open photo anyone who can see it can caption it, change its role
+or pin it as a favourite; making it private and removing it are for whoever added it. A photo
+whose role nobody in the circle has any more keeps that role and stays in the grid; its banner
+comes back with the role.
+
 Circles are also the answer to "who else was there?", which is usually the question you
 have when you are trying to remember someone's name. **Open in the graph** on a circle's page
 draws that answer: the circle in the middle, everyone in it around it, and their own links

@@ -58,6 +58,7 @@ const photo = (over: Partial<CirclePhoto> = {}): CirclePhoto => ({
 	caption: null,
 	visibility: 'shared',
 	createdBy: 'u1',
+	createdByName: 'One',
 	width: 1600,
 	height: 1200,
 	createdAt: 1_000,

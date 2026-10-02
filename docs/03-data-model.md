@@ -420,6 +420,8 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 | created_by | text fk → user.id | |
 | visibility | text | `'shared' \| 'private'` |
 | journal_entry_id | text fk → journal_entry.id null | set = belongs to that entry (§2.20), not the gallery |
+| circle_id | text null | set = belongs to that circle's photos (docs/02 §2.4.2), not to any person; no fk |
+| circle_role | text null | the circle role the photo shows, as picked; null = the circle as a whole |
 | framing_of | text null | set = the avatar framing of that gallery photo (docs/02 §2.14); no fk |
 | crop_x / crop_y / crop_size | real null | a framing's square, in its photo's full-size pixels |
 | file_path | text | path within media volume (original, sanitized) |
@@ -447,6 +449,17 @@ same people see it, follows a change of the photo's visibility, and is deleted w
 the gallery can show favourites first, the latest pin leading, and the rest newest first
 (`src/lib/server/domain/media/gallery-order.ts`). It sits on the photo, so a pin is the
 household's rather than one member's (docs/04 §4.9).
+
+**A photo has at most one owner:** a contact (its gallery), a journal entry (which also names
+the entry's contact), or a circle. A circle photo has `contact_id` null and is read through its
+circle: visible when the circle is, and shared or the viewer's own (§3.7). Its `circle_role` is
+stored as it was picked from the circle's roles and matched to the members' roles by the
+members list's folding (trimmed, case-folded), so a role nobody has any more keeps its photos.
+`circle_id` carries no foreign key for the reason `journal_entry_id` has no cascade (below): the
+repository removes a circle's photos, and their files, with the circle. Nothing deletes a circle
+yet; the rule is for the day something does. The columns leave room for profile pictures cut
+from a group photo (docs/concepts/circle-photos.md §5): a framing of a circle photo and a
+`cut_from` are additions, not changes.
 
 **`journal_entry_id` carries no cascade.** It was added by migration `0002` as a plain
 `REFERENCES`, and adding one now would mean rebuilding `photo` — which cannot be dropped
@@ -640,7 +653,9 @@ Contact visibility is the root: a `private` contact is visible only to its creat
 shared contact. Relationships require **both** endpoints visible. A **circle** follows the
 same contact-like rule (shared to the household, or private to its owner); a
 **circle_membership** — and any derived shared-context link — is visible only when both
-its circle and the member contact are visible. A **journal_mention** or **note_mention** (and the
+its circle and the member contact are visible. A **circle photo** is visible when its circle
+is, and it is shared or the viewer's own — the child-record rule with the circle in the
+contact's place (`canViewCirclePhoto` / `circlePhotoVisibleTo`). A **journal_mention** or **note_mention** (and the
 passive "Mentioned in" item it drives) is visible only when its parent entry is visible to
 the viewer (child-record rule — a private entry ⇒ only its author) **and** the referenced
 contact is visible; a **shared** entry may reference only household-visible contacts, so a

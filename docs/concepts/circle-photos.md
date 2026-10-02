@@ -1,7 +1,9 @@
 # Concept — Photos of a circle, by role
 
-Status: **concept agreed, mockup next, not built.** Decided with the maintainer on 2026-10-02
-(§7).
+Status: **concept agreed; PR 1 builds §1–§4 and §6** (circle photos, cover, role banners,
+Photos section, feed, offline, archive) with the gallery's 1600 px uploads. §5 — profile pictures
+cut from a group photo, the 4096 px variants, framings and `cut_from` — is PR 2. Decided with
+the maintainer on 2026-10-02 (§8).
 
 ---
 

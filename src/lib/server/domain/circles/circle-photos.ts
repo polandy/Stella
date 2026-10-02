@@ -30,6 +30,8 @@ export interface CirclePhoto {
 	caption: string | null;
 	visibility: Visibility;
 	createdBy: string;
+	/** Who added it, by name — the lightbox says so. */
+	createdByName: string;
 	width: number | null;
 	height: number | null;
 	createdAt: number;

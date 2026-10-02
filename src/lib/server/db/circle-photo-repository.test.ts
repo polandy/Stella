@@ -77,6 +77,7 @@ describe('listVisible / findVisible', () => {
 			caption: null,
 			visibility: 'shared',
 			createdBy: U1,
+			createdByName: 'One',
 			width: 1600,
 			height: 900,
 			createdAt: 10,
