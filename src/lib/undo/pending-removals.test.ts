@@ -174,6 +174,57 @@ describe('createPendingRemovals', () => {
 });
 
 /*
+ * Something just added that can be taken back (docs/02 §2.4: several links saved in one go).
+ * The addition is already stored, so the notice carries *Undo* the other way round from a
+ * removal: nothing happens when its window closes, and pressing it sends the taking back.
+ */
+describe('a notice that can be taken back', () => {
+	it('says whether it carries Undo', () => {
+		const { store } = setup();
+		store.notify('Saved');
+		store.notify('2 links saved', () => {});
+		expect(store.snapshot().notices.map((n) => [n.text, n.undoable])).toEqual([
+			['Saved', false],
+			['2 links saved', true]
+		]);
+	});
+
+	it('runs the taking back once and drops the notice when Undo is pressed', () => {
+		const { store } = setup();
+		const takenBack: string[] = [];
+		store.notify('2 links saved', () => takenBack.push('batch'));
+		const [notice] = store.snapshot().notices;
+
+		store.takeBack(notice.id);
+		store.takeBack(notice.id);
+
+		expect(takenBack).toEqual(['batch']);
+		expect(store.snapshot().notices).toEqual([]);
+	});
+
+	it('takes nothing back when its window closes unpressed', () => {
+		const { clock, store } = setup();
+		const takenBack: string[] = [];
+		store.notify('2 links saved', () => takenBack.push('batch'));
+
+		clock.advance(UNDO_WINDOW_MS);
+
+		expect(store.snapshot().notices).toEqual([]);
+		expect(takenBack).toEqual([]);
+	});
+
+	it('ignores Undo on a notice that has none', () => {
+		const { store } = setup();
+		store.notify('Saved');
+		const [notice] = store.snapshot().notices;
+
+		store.takeBack(notice.id);
+
+		expect(store.snapshot().notices.map((n) => n.text)).toEqual(['Saved']);
+	});
+});
+
+/*
  * The window is not a fixed eight seconds for somebody still reading the toast or reaching
  * for its Undo (WCAG 2.2.1): while the toast region is hovered or holds focus, it stands still,
  * and once it is let go the window starts over in full.

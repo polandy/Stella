@@ -139,7 +139,7 @@
 		</div>
 	{/if}
 
-	<ul class="flex flex-col divide-y divide-border-subtle">
+	<ul class="flex flex-col divide-y divide-border-subtle" data-testid="relationship-list">
 		{#each visibleRelationships as rel (rel.id)}
 			<li class="flex flex-col gap-1 py-2 text-sm">
 				<div class="flex items-center gap-3">

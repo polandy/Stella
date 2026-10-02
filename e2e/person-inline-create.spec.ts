@@ -104,7 +104,8 @@ test('names a stranger from the relationship picker and links them without leavi
 
 	// Selected, not merely created: submitting the form links the person just named.
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
-	await expect(page.locator('#section-relationships')).toContainText('Malia Buchser');
+	// The stored list, not the card: the form's own chip names the person until it closes.
+	await expect(page.getByTestId('relationship-list')).toContainText('Malia Buchser');
 
 	// And she is a real person with her own page, reachable from the link just written.
 	await page.locator('#section-relationships').getByRole('link', { name: 'Malia Buchser' }).first().click();

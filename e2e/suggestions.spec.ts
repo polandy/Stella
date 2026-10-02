@@ -60,7 +60,8 @@ test('link as relative creates the person and opens their relationship editor wi
 	const editor = page.locator('form[action="?/addRelationship"]');
 	const target = editor.getByLabel('Person');
 	await expect(target).toBeVisible();
-	await expect(target).toHaveValue('Lena Brunner');
+	// The person field takes several people now, so the one handed over stands as a chip.
+	await expect(editor.getByTestId('person-search-chip')).toHaveText(/Lena Brunner/);
 
 	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Sibling of' });
 	await editor.getByRole('button', { name: 'Add', exact: true }).click();

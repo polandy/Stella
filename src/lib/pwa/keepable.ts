@@ -61,7 +61,13 @@ export function keepable(keep: Keepable, invalid: SubmitFunction): SubmitFunctio
 		await whilePending(keep.pending ?? NOTHING_PENDING, async () => {
 			const delivery = await outbox.submit(command, photos, about);
 			if (delivery.status === 'refused') {
-				await applyAction({ type: 'failure', status: 400, data: { [keep.errorKey]: delivery.reason } });
+				// A refused batch also names each refused person, for the form to mark (docs/02 §2.4).
+				const refusals = delivery.refusals ? { refusals: delivery.refusals } : {};
+				await applyAction({
+					type: 'failure',
+					status: 400,
+					data: { [keep.errorKey]: delivery.reason, ...refusals }
+				});
 			} else if (delivery.status === 'kept') {
 				keep.onKept();
 			} else {

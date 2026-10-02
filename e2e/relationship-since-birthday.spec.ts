@@ -48,8 +48,12 @@ test('dates a parent–child link from the child, whichever side the sentence is
 	await expect(since.getByLabel('Month', { exact: true })).toHaveValue('7');
 	await expect(since.getByLabel('Year', { exact: true })).toHaveValue('2017');
 
-	// "Bettina is a child of Kurt" — now she is the child, and it is her own birthday.
-	await say(form, 'Child of', 'Kurt Lehmann');
+	// "Bettina is a child of …" — now she is the child, and it is her own birthday. The field
+	// takes several people now, so Jan is let go first; and the day comes from her side alone,
+	// so it stands before anyone is picked (who, and whether a parent slot is free, depends on
+	// what other specs in this shared database have given her).
+	await form.getByRole('button', { name: 'Remove Jan Steiner' }).click();
+	await form.locator('select[name=typeChoice]').selectOption({ label: 'Child of' });
 	await expect(sinceValue(form)).toHaveValue('1990-12-15');
 });
 

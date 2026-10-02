@@ -76,7 +76,8 @@ test('will not remove a type while links still use it', async ({ page }) => {
 	await form.locator('select[name=typeChoice]').selectOption({ label: 'Godparent of' });
 	await pickPerson(form.getByLabel('Person'), 'Bettina Roth');
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
-	await expect(page.locator('#section-relationships')).toContainText('Bettina Roth');
+	// The stored list, not the card: the form's own chip names the person until it closes.
+	await expect(page.getByTestId('relationship-list')).toContainText('Bettina Roth');
 
 	await openTypeSettings(page);
 	await expect(row).toContainText('used 1×');
@@ -176,7 +177,8 @@ test('merges a type of its own into another one, links and all', async ({ page }
 	await form.locator('select[name=typeChoice]').selectOption({ label: 'Hikes with' });
 	await pickPerson(form.getByLabel('Person'), 'Vera Amsler');
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
-	await expect(page.locator('#section-relationships')).toContainText('Vera Amsler');
+	// The stored list, not the card: the form's own chip names the person until it closes.
+	await expect(page.getByTestId('relationship-list')).toContainText('Vera Amsler');
 
 	await openTypeSettings(page);
 	const row = customRow(page, 'Hikes with');

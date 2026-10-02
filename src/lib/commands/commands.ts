@@ -286,9 +286,18 @@ export const MAX_COMMAND_BATCH = 50;
  * send* with the reason (already in the member's language), and `busy` / `failed` stay queued
  * to be tried again — neither says anything about the command itself.
  */
+/**
+ * One person a refused batch names (`relationship.addMany`), with the reason in the member's
+ * language — so the form marks that person's chip rather than only quoting the sentence.
+ */
+export interface RefusedTarget {
+	targetId: string;
+	reason: string;
+}
+
 export type CommandAnswer =
 	| { id: string; status: 'applied'; result: unknown }
-	| { id: string; status: 'refused'; reason: string }
+	| { id: string; status: 'refused'; reason: string; refusals?: RefusedTarget[] }
 	| { id: string; status: 'busy' }
 	| { id: string; status: 'failed' };
 
