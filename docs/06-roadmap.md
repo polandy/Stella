@@ -113,7 +113,8 @@ Goal: sand the edges and add the nice-to-haves.
 
 - ~~**Localization:** German with a language switcher~~ — shipped: English and German are
   both fully supported, chosen per member and kept with the profile (§2.19).
-- **Graph & UX polish:** saved graph filters. ~~Group a circle's
+- **Graph & UX polish:** ~~saved graph filters~~ — shipped (§2.7, docs/05 §5.8): the
+  Filter menu keeps named views per device, applied with one tap. ~~Group a circle's
   members by role~~ — shipped: a *Group by role* switch in the explorer's Filter menu (§2.7).
   ~~Density/appearance refinements~~ — shipped (§2.7, docs/05 §5.8): a busy map stays
   legible, with a density choice and a *+N* hint on a node that has more to expand.
