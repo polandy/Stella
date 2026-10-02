@@ -8,6 +8,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
 	import PersonFinder from '$lib/components/PersonFinder.svelte';
+	import StreamCirclePhoto from '$lib/components/StreamCirclePhoto.svelte';
 	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
 	import { dayLabel as calendarDayLabel } from '$lib/dates/labels';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -77,6 +78,7 @@
 		interaction: 'home.filter.kind.interaction',
 		relationship: 'home.filter.kind.relationship',
 		person: 'home.filter.kind.person',
+		circlePhoto: 'home.filter.kind.circlePhoto',
 		notice: 'home.filter.kind.notice'
 	};
 	const filtered = $derived(isNarrowed(data.filter));
@@ -278,6 +280,10 @@
 					<KeptItem {item}>
 						{#snippet meta()}<span>{t('home.outbox.photosOf', { name: item.about ?? '' })}</span>{/snippet}
 					</KeptItem>
+				{:else if isKept(item, 'circleGallery.add')}
+					<KeptItem {item}>
+						{#snippet meta()}<span>{t('home.outbox.photosFor', { name: item.about ?? '' })}</span>{/snippet}
+					</KeptItem>
 				{/if}
 			{/each}
 		</section>
@@ -414,6 +420,8 @@
 										</div>
 									{/if}
 								</div>
+							{:else if item.kind === 'circlePhoto'}
+								<StreamCirclePhoto {item} who={item.mine ? t('home.you') : item.actor.name} ago={ago(item.at)} />
 							{:else if item.kind === 'notice'}
 								<!--
 									The only item with nobody to link to: the person is gone, and the log

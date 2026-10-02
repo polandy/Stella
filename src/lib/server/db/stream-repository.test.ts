@@ -327,6 +327,35 @@ describe('narrowed to one member (docs/02 §2.22.2)', () => {
 	});
 });
 
+describe('recentCirclePhotos', () => {
+	function seedCirclePhoto(id: string, circleId: string, at: number, visibility: Vis = 'shared', createdBy = U1, role: string | null = null) {
+		db.insert(schema.photo)
+			.values({ id, householdId: H, circleId, circleRole: role, createdBy, visibility, filePath: `${id}.jpg`, thumbPath: `${id}_t.jpg`, mime: 'image/jpeg', createdAt: at })
+			.run();
+	}
+
+	it('returns the photos added to visible circles newest first, with who, which circle and role', async () => {
+		db.insert(schema.circle)
+			.values([
+				{ id: 'class', householdId: H, createdBy: U1, visibility: 'shared', name: 'Class 1B' },
+				{ id: 'secret', householdId: H, createdBy: U1, visibility: 'private', name: 'Secret' }
+			])
+			.run();
+		seedCirclePhoto('old', 'class', 100, 'shared', U1, 'Student');
+		seedCirclePhoto('new', 'class', 300);
+		seedCirclePhoto('mine', 'class', 200, 'private', U2);
+		seedCirclePhoto('theirs', 'class', 250, 'private', U1);
+		seedCirclePhoto('hidden', 'secret', 400);
+		expect(await repo.recentCirclePhotos(asU2, EVERYONE)).toEqual([
+			{ id: 'new', at: 300, actor: { id: U1, name: 'One' }, circle: { id: 'class', name: 'Class 1B' }, role: null, visibility: 'shared' },
+			{ id: 'mine', at: 200, actor: { id: U2, name: 'Two' }, circle: { id: 'class', name: 'Class 1B' }, role: null, visibility: 'private' },
+			{ id: 'old', at: 100, actor: { id: U1, name: 'One' }, circle: { id: 'class', name: 'Class 1B' }, role: 'Student', visibility: 'shared' }
+		]);
+		expect((await repo.recentCirclePhotos(asU2, { limit: 10, memberId: U2 })).map((r) => r.id)).toEqual(['mine']);
+		expect((await repo.recentCirclePhotos(asU1, { limit: 2, memberId: null })).map((r) => r.id)).toEqual(['hidden', 'new']);
+	});
+});
+
 describe('recentRelationships', () => {
 	it('returns relationships whose both ends are visible, newest-first', async () => {
 		seedContact('julia', 1);

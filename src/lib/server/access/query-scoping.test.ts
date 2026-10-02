@@ -5,15 +5,17 @@ import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { alias } from 'drizzle-orm/sqlite-core';
 import * as schema from '../db/schema';
-import { contact, note, relationship } from '../db/schema';
+import { circle, contact, note, photo, relationship } from '../db/schema';
 import {
 	childRecordVisibleTo,
+	circlePhotoVisibleTo,
 	contactBrowsableBy,
 	contactVisibleTo,
 	relationshipVisibleTo
 } from './query-scoping';
 import {
 	canViewChildRecord,
+	canViewCirclePhoto,
 	canViewContact,
 	canViewRelationship,
 	type Viewer
@@ -79,6 +81,23 @@ beforeAll(() => {
 		{ id: 'n-priv-u1', contactId: 'c-shared', createdBy: U1, visibility: 'private', body: 'u1 private' },
 		{ id: 'n-priv-u2', contactId: 'c-shared', createdBy: U2, visibility: 'private', body: 'u2 private' },
 		{ id: 'n-on-priv', contactId: 'c-priv-u1', createdBy: U1, visibility: 'shared', body: 'on private contact' }
+	]).run();
+
+	// Circles of every visibility, each with a shared photo and a private one of each member.
+	db.insert(circle).values([
+		{ id: 'k-shared', householdId: H1, createdBy: U1, visibility: 'shared', name: 'Shared circle' },
+		{ id: 'k-priv-u1', householdId: H1, createdBy: U1, visibility: 'private', name: 'Private of U1' },
+		{ id: 'k-foreign', householdId: H2, createdBy: U3, visibility: 'shared', name: 'Foreign' }
+	]).run();
+	const circlePhoto = (id: string, circleId: string, householdId: string, createdBy: string, visibility: 'shared' | 'private') => ({
+		id, householdId, circleId, createdBy, visibility, filePath: `${id}.jpg`, thumbPath: `${id}_t.jpg`, mime: 'image/jpeg'
+	});
+	db.insert(photo).values([
+		circlePhoto('kp-shared', 'k-shared', H1, U1, 'shared'),
+		circlePhoto('kp-priv-u1', 'k-shared', H1, U1, 'private'),
+		circlePhoto('kp-priv-u2', 'k-shared', H1, U2, 'private'),
+		circlePhoto('kp-on-priv', 'k-priv-u1', H1, U2, 'shared'),
+		circlePhoto('kp-foreign', 'k-foreign', H2, U3, 'shared')
 	]).run();
 
 	// Relationships: one with both endpoints visible to U2, one with a hidden endpoint.
@@ -255,5 +274,53 @@ describe('relationshipVisibleTo (both endpoints must be visible)', () => {
 		// c-priv-u2 (→ r-both-visible hidden). Ownership of one contact is not blanket access.
 		expect(scopedRelationshipIds(viewerU1)).toEqual(expectedRelationshipIds(viewerU1));
 		expect(scopedRelationshipIds(viewerU1)).toEqual(['r-hidden-endpoint']);
+	});
+});
+
+describe('circlePhotoVisibleTo (photos joined to their circle)', () => {
+	function scopedPhotoIds(viewer: Viewer): string[] {
+		return db
+			.select({ id: photo.id })
+			.from(photo)
+			.innerJoin(circle, eq(photo.circleId, circle.id))
+			.where(circlePhotoVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy }))
+			.all()
+			.map((r) => r.id)
+			.sort();
+	}
+
+	function expectedPhotoIds(viewer: Viewer): string[] {
+		return db
+			.select()
+			.from(photo)
+			.innerJoin(circle, eq(photo.circleId, circle.id))
+			.all()
+			.filter((row) =>
+				canViewCirclePhoto(viewer, {
+					ownerId: row.photo.createdBy,
+					visibility: row.photo.visibility,
+					circle: {
+						householdId: row.circle.householdId,
+						ownerId: row.circle.createdBy,
+						visibility: row.circle.visibility
+					}
+				})
+			)
+			.map((row) => row.photo.id)
+			.sort();
+	}
+
+	it('shows shared photos and the members own private ones, never a hidden circle', () => {
+		expect(scopedPhotoIds(viewerU2)).toEqual(expectedPhotoIds(viewerU2));
+		expect(scopedPhotoIds(viewerU2)).toEqual(['kp-priv-u2', 'kp-shared']);
+	});
+
+	it('lets the private circle owner see the photos in it', () => {
+		expect(scopedPhotoIds(viewerU1)).toEqual(expectedPhotoIds(viewerU1));
+		expect(scopedPhotoIds(viewerU1)).toEqual(['kp-on-priv', 'kp-priv-u1', 'kp-shared']);
+	});
+
+	it('shows another household nothing of this one', () => {
+		expect(scopedPhotoIds(viewerForeign)).toEqual(['kp-foreign']);
 	});
 });

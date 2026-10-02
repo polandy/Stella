@@ -218,6 +218,23 @@ describe('parseCommand, for a gallery upload', () => {
 	});
 });
 
+describe('parseCommand, for a circle photo upload', () => {
+	const upload = { id: ID, type: 'circleGallery.add', payload: { circleId: 'class-1b', role: 'Student' }, issuedAt: 3 };
+
+	it('reads the circle and the role the photos go to, shared by default', () => {
+		expect(parseCommand(upload)?.payload).toEqual({ circleId: 'class-1b', role: 'Student', visibility: 'shared' });
+	});
+
+	it('reads a blank or missing role as no role', () => {
+		expect(parseCommand({ ...upload, payload: { circleId: 'k', role: '  ' } })?.payload).toMatchObject({ role: null });
+		expect(parseCommand({ ...upload, payload: { circleId: 'k' } })?.payload).toMatchObject({ role: null });
+	});
+
+	it('refuses an upload for no circle', () => {
+		expect(parseCommand({ ...upload, payload: { circleId: '' } })).toBeNull();
+	});
+});
+
 describe('parsePhotoCommand', () => {
 	const bytes = new Uint8Array([1, 2, 3]);
 	const photo = {
@@ -242,6 +259,10 @@ describe('parsePhotoCommand', () => {
 
 	it('reads a photo for a gallery upload sent before it', () => {
 		expect(parsePhotoCommand({ ...photo, type: 'gallery.photo' })?.type).toBe('gallery.photo');
+	});
+
+	it('reads a photo for a circle photo upload sent before it', () => {
+		expect(parsePhotoCommand({ ...photo, type: 'circleGallery.photo' })?.type).toBe('circleGallery.photo');
 	});
 
 	it('refuses a photo of no known type, with no parent, no bytes or no size', () => {

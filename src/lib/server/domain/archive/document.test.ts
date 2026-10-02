@@ -34,7 +34,8 @@ function fullHousehold(): HouseholdSnapshot {
 			interaction_participant: [{ interaction_id: 'i-1', contact_id: 'c-rosa' }],
 			photo: [
 				{ id: 'p-gallery', contact_id: 'c-hans', journal_entry_id: null, file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', visibility: 'shared', created_by: 'u-1', created_at: NOW },
-				{ id: 'p-journal', contact_id: 'c-hans', journal_entry_id: 'j-1', file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', visibility: 'private', created_by: 'u-1', created_at: NOW }
+				{ id: 'p-journal', contact_id: 'c-hans', journal_entry_id: 'j-1', file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', visibility: 'private', created_by: 'u-1', created_at: NOW },
+				{ id: 'p-circle', contact_id: null, journal_entry_id: null, circle_id: 'ci-1', circle_role: 'coach', caption: 'Season start', pinned_at: NOW, file_path: 'p3.jpg', thumb_path: 't3.jpg', mime: 'image/jpeg', visibility: 'private', created_by: 'u-1', created_at: NOW }
 			],
 			tag: [{ id: 'tg-1', name: 'Bern', color: 'blue' }],
 			contact_tag: [{ contact_id: 'c-hans', tag_id: 'tg-1' }],
@@ -112,6 +113,26 @@ describe('a person', () => {
 		const entry = (hans().journal as Record<string, unknown>[])[0];
 		expect((entry.photos as Record<string, unknown>[]).map((p) => p.id)).toEqual(['p-journal']);
 		expect((hans().photos as Record<string, unknown>[]).map((p) => p.id)).toEqual(['p-gallery']);
+	});
+
+	it('puts a circle photo with its circle, in nobody’s gallery', () => {
+		expect(doc().people.flatMap((p) => (p.photos as Record<string, unknown>[] | undefined) ?? []).map((p) => p.id)).not.toContain(
+			'p-circle'
+		);
+		expect(doc().circles[0].photos).toEqual([
+			{
+				id: 'p-circle',
+				file: 'p3.jpg',
+				thumb: 't3.jpg',
+				mime: 'image/jpeg',
+				caption: 'Season start',
+				role: 'coach',
+				pinned_at: '2026-09-07T09:30:00.000Z',
+				visibility: 'private',
+				author: 'u-1',
+				created_at: '2026-09-07T09:30:00.000Z'
+			}
+		]);
 	});
 
 	it('leaves out what is not there instead of writing nulls', () => {

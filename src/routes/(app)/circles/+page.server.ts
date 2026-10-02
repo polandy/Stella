@@ -7,23 +7,29 @@ import {
 	listCircles,
 	suggestCircleColor
 } from '$lib/server/domain/circles/circles';
-import { getCircleDeps } from '$lib/server/services';
+import { listCircleCovers } from '$lib/server/domain/circles/circle-photos';
+import { getCircleDeps, getCirclePhotoDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say } from '$lib/server/i18n/say';
 
 /*
- * Circles overview (docs/02 §2.4.2, docs/05 §5.5): all visible circles with member counts,
- * plus a create form whose colour palette pre-selects a still-unused Catppuccin accent.
+ * Circles overview (docs/02 §2.4.2, docs/05 §5.5): all visible circles with member counts and
+ * cover photos, plus a create form whose colour palette pre-selects a still-unused Catppuccin accent.
  */
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
-	const circles = await listCircles(getCircleDeps(), viewer);
+	const [circles, covers] = await Promise.all([
+		listCircles(getCircleDeps(), viewer),
+		listCircleCovers(getCirclePhotoDeps(), viewer)
+	]);
 	const usedColors = circles.map((c) => c.color);
 
 	return {
 		circles,
+		// Each circle's cover photo, by circle id; a card without one shows no strip.
+		covers,
 		colors: CIRCLE_COLORS,
 		kinds: CIRCLE_KINDS,
 		suggestedColor: suggestCircleColor(usedColors)

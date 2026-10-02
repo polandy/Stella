@@ -4,8 +4,9 @@ import { NO_FILTER, STREAM_KINDS, type StreamFilter, type StreamKind } from '../
 
 /*
  * Household stream (docs/02 §2.22.2): what the family did, newest first. It is a *query* over
- * the existing tables — moments (journal entries), new people, new relationships and logged
- * interactions (docs/02 §2.6) — merged here; nothing is logged twice.
+ * the existing tables — moments (journal entries), new people, new relationships, logged
+ * interactions (docs/02 §2.6) and photos added to circles (§2.4.2) — merged here; nothing is
+ * logged twice.
  *
  * The viewer can narrow it by kind and by member (`StreamFilter`). Both narrow the *reads*, not
  * the merged result: cutting to the limit first and filtering after would leave one member's
@@ -93,6 +94,64 @@ export interface NoticeRow {
 	summary: string;
 }
 
+/** A circle a photo was added to, as the stream names it. */
+export interface StreamCircle {
+	id: string;
+	name: string;
+}
+
+/** One photo added to a circle (docs/02 §2.4.2), as the source reads it. */
+export interface CirclePhotoUploadRow {
+	/** The photo's id — also what the stream shows of it. */
+	id: string;
+	at: number;
+	actor: StreamActor;
+	circle: StreamCircle;
+	/** The role it was added with; null for the circle as a whole. */
+	role: string | null;
+	visibility: Visibility;
+}
+
+/** Photos one member added to one circle in one go, as the stream shows them. */
+export interface CirclePhotoRow extends CirclePhotoUploadRow {
+	/** Newest first; the item's own `id` and `at` are the first one's. */
+	photoIds: string[];
+}
+
+/**
+ * How far apart two photos may have arrived and still be one upload. Several files picked at
+ * once arrive one request after the other, and a queued upload drains photo by photo, so the
+ * gap covers a slow phone; a second visit to the same circle later the same day stays its own.
+ */
+export const CIRCLE_UPLOAD_GAP_MS = 10 * 60 * 1000;
+
+/**
+ * Fold photos (newest first) into uploads: a photo joins the one before it when the same
+ * member added it to the same circle, with the same visibility, within `CIRCLE_UPLOAD_GAP_MS`.
+ * Without it, a class trip's twenty photos would be twenty items and push everything else out.
+ */
+function groupCirclePhotos(photos: readonly CirclePhotoUploadRow[]): CirclePhotoRow[] {
+	const uploads: CirclePhotoRow[] = [];
+	let lastAt = 0;
+	for (const photo of photos) {
+		const open = uploads.at(-1);
+		if (
+			open &&
+			open.actor.id === photo.actor.id &&
+			open.circle.id === photo.circle.id &&
+			open.visibility === photo.visibility &&
+			lastAt - photo.at <= CIRCLE_UPLOAD_GAP_MS
+		) {
+			open.photoIds.push(photo.id);
+			if (open.role !== photo.role) open.role = null;
+		} else {
+			uploads.push({ ...photo, photoIds: [photo.id] });
+		}
+		lastAt = photo.at;
+	}
+	return uploads;
+}
+
 /**
  * One read of one source: at most `limit` rows, newest first, and only what `memberId` did when
  * it is set. Visibility scoping is the adapter's either way — the member narrows, never widens.
@@ -107,7 +166,8 @@ export type StreamItem =
 	| ({ kind: 'person'; mine: boolean } & PersonRow)
 	| ({ kind: 'relationship'; mine: boolean } & RelationshipRow)
 	| ({ kind: 'interaction'; mine: boolean } & InteractionRow)
-	| ({ kind: 'notice'; mine: boolean } & NoticeRow);
+	| ({ kind: 'notice'; mine: boolean } & NoticeRow)
+	| ({ kind: 'circlePhoto'; mine: boolean } & CirclePhotoRow);
 
 export interface StreamRepository {
 	recentMoments(viewer: Viewer, query: StreamQuery): Promise<MomentRow[]>;
@@ -116,6 +176,8 @@ export interface StreamRepository {
 	recentInteractions(viewer: Viewer, query: StreamQuery): Promise<InteractionRow[]>;
 	/** The one source that is the log itself, for what no table can report. */
 	recentNotices(viewer: Viewer, query: StreamQuery): Promise<NoticeRow[]>;
+	/** Photos added to circles, newest first, one row per photo (docs/02 §2.4.2). */
+	recentCirclePhotos(viewer: Viewer, query: StreamQuery): Promise<CirclePhotoUploadRow[]>;
 }
 
 export interface StreamDeps {
@@ -123,8 +185,8 @@ export interface StreamDeps {
 }
 
 /**
- * Merge the five (already scoped, newest-first) sources into one stream, newest first, cut
- * to `limit`. Ties on time keep a stable kind order so a person created together with their
+ * Merge the six (already scoped, newest-first) sources into one stream, newest first, cut
+ * to `limit`; a circle's photos are folded into uploads first. Ties on time keep a stable kind order so a person created together with their
  * first moment reads "added … / wrote …" consistently. Pure and deterministic.
  */
 export function assembleStream(
@@ -134,6 +196,7 @@ export function assembleStream(
 		relationships: RelationshipRow[];
 		interactions: InteractionRow[];
 		notices: NoticeRow[];
+		circlePhotos: CirclePhotoUploadRow[];
 	},
 	viewerId: string,
 	limit = STREAM_LIMIT
@@ -148,7 +211,10 @@ export function assembleStream(
 		...sources.interactions.map(
 			(i): StreamItem => ({ kind: 'interaction', mine: mine(i.actor), ...i })
 		),
-		...sources.notices.map((r): StreamItem => ({ kind: 'notice', mine: mine(r.actor), ...r }))
+		...sources.notices.map((r): StreamItem => ({ kind: 'notice', mine: mine(r.actor), ...r })),
+		...groupCirclePhotos(sources.circlePhotos).map(
+			(c): StreamItem => ({ kind: 'circlePhoto', mine: mine(c.actor), ...c })
+		)
 	];
 	const rank = (kind: StreamKind) => STREAM_KINDS.indexOf(kind);
 	items.sort((a, b) => b.at - a.at || rank(a.kind) - rank(b.kind) || a.id.localeCompare(b.id));
@@ -169,15 +235,16 @@ export async function buildStream(
 	const read = <T>(kind: StreamKind, source: () => Promise<T[]>): Promise<T[]> =>
 		filter.kind === null || filter.kind === kind ? source() : Promise.resolve([]);
 	const { stream } = deps;
-	const [moments, people, relationships, interactions, notices] = await Promise.all([
+	const [moments, people, relationships, interactions, notices, circlePhotos] = await Promise.all([
 		read('moment', () => stream.recentMoments(viewer, query)),
 		read('person', () => stream.recentPeople(viewer, query)),
 		read('relationship', () => stream.recentRelationships(viewer, query)),
 		read('interaction', () => stream.recentInteractions(viewer, query)),
-		read('notice', () => stream.recentNotices(viewer, query))
+		read('notice', () => stream.recentNotices(viewer, query)),
+		read('circlePhoto', () => stream.recentCirclePhotos(viewer, query))
 	]);
 	return assembleStream(
-		{ moments, people, relationships, interactions, notices },
+		{ moments, people, relationships, interactions, notices, circlePhotos },
 		viewer.id,
 		limit
 	);

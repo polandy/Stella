@@ -418,6 +418,13 @@ export const photo = sqliteTable(
 		// square someone chose, rendered once, never shown in the gallery itself. No foreign
 		// key, like `avatar_photo_id`: the repository removes a framing with its photo.
 		framingOf: text('framing_of'),
+		// When set, this photo belongs to that circle's gallery (docs/02 §2.4.2) and to nobody's
+		// person gallery. No foreign key, like `framing_of`: SQLite cannot add one with a cascade
+		// to an existing table, so the repository removes a circle's photos with the circle.
+		circleId: text('circle_id'),
+		// The circle role the photo shows, as it was picked (one of the circle's roles, folded
+		// by case when matched); null = the circle as a whole, a candidate for its cover.
+		circleRole: text('circle_role'),
 		// The chosen square, in the full-size picture's pixels, so choosing again starts there.
 		cropX: real('crop_x'),
 		cropY: real('crop_y'),
@@ -443,7 +450,8 @@ export const photo = sqliteTable(
 	(t) => [
 		index('photo_contact_idx').on(t.contactId),
 		index('photo_journal_idx').on(t.journalEntryId),
-		index('photo_framing_idx').on(t.framingOf)
+		index('photo_framing_idx').on(t.framingOf),
+		index('photo_circle_idx').on(t.circleId)
 	]
 );
 

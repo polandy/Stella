@@ -29,7 +29,9 @@ const KINDS = {
 	'field.add': 'add',
 	'date.add': 'add',
 	'gallery.add': 'add',
-	'gallery.photo': 'add'
+	'gallery.photo': 'add',
+	'circleGallery.add': 'add',
+	'circleGallery.photo': 'add'
 } as const satisfies Record<string, CommandKind>;
 
 /** One of the commands Stella knows. */
@@ -69,7 +71,8 @@ export function newPersonMentionId(key: string): string {
 
 /**
  * A photo following the command it belongs to, named by that command's id: a moment or a
- * journal-page entry (`moment.photo`), or a gallery upload (`gallery.photo`). The only commands
+ * journal-page entry (`moment.photo`), a gallery upload (`gallery.photo`) or a circle's photo
+ * upload (`circleGallery.photo`). The only commands
  * with bytes in them, so they travel as multipart rather than in a JSON batch.
  */
 export interface PhotoPayload {
@@ -185,6 +188,18 @@ export interface GalleryAddPayload {
 	visibility: MentionAudience;
 }
 
+/**
+ * Photos going into a circle's gallery (docs/02 §2.4.2). Like a person's gallery upload it
+ * carries no bytes: it checks the circle and the role once, and each photo follows as a
+ * `circleGallery.photo` naming it.
+ */
+export interface CircleGalleryAddPayload {
+	circleId: string;
+	/** One of the circle's roles, or null for the circle as a whole. */
+	role: string | null;
+	visibility: MentionAudience;
+}
+
 /** The payload each command carries. */
 export interface CommandPayloads {
 	'moment.capture': MomentCapturePayload;
@@ -200,6 +215,8 @@ export interface CommandPayloads {
 	'date.add': DateAddPayload;
 	'gallery.add': GalleryAddPayload;
 	'gallery.photo': PhotoPayload;
+	'circleGallery.add': CircleGalleryAddPayload;
+	'circleGallery.photo': PhotoPayload;
 }
 
 /** One intent from one member. */
@@ -215,7 +232,7 @@ export type Command = {
 }[CommandType];
 
 /** A command that carries a photo's bytes, and so travels on its own as multipart. */
-export type PhotoCommandType = 'moment.photo' | 'gallery.photo';
+export type PhotoCommandType = 'moment.photo' | 'gallery.photo' | 'circleGallery.photo';
 
 /** A command that travels in a JSON batch — every one but a photo. */
 export type JsonCommand = Exclude<Command, { type: PhotoCommandType }>;
@@ -261,6 +278,8 @@ export function photoCommandFor(type: JsonCommand['type']): PhotoCommandType | n
 			return 'moment.photo';
 		case 'gallery.add':
 			return 'gallery.photo';
+		case 'circleGallery.add':
+			return 'circleGallery.photo';
 		default:
 			return null;
 	}

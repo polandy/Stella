@@ -276,8 +276,13 @@ export function planRestore(
 		});
 	}
 
-	/** A photo, wherever it hangs: the gallery, or a journal entry. */
-	const addPhoto = (row: Row, contactId: string, journalEntryId: string | null) => {
+	/** A photo, wherever it hangs: a person's gallery, a journal entry, or a circle. */
+	const addPhoto = (
+		row: Row,
+		owner:
+			| { contactId: string; journalEntryId: string | null }
+			| { circleId: string }
+	) => {
 		const file = str(row, 'file');
 		const thumb = str(row, 'thumb');
 		if (file === null || thumb === null) {
@@ -296,8 +301,10 @@ export function planRestore(
 		photos.push({
 			id: str(row, 'id') ?? deps.ids.next(),
 			household_id: target.householdId,
-			contact_id: contactId,
-			journal_entry_id: journalEntryId,
+			contact_id: 'contactId' in owner ? owner.contactId : null,
+			journal_entry_id: 'contactId' in owner ? owner.journalEntryId : null,
+			circle_id: 'circleId' in owner ? owner.circleId : null,
+			circle_role: 'circleId' in owner ? str(row, 'role') : null,
 			created_by: author(row),
 			visibility: visibilityOf(row),
 			file_path: file,
@@ -413,7 +420,7 @@ export function planRestore(
 			for (const mentioned of knownOnly(ids(entry, 'mentions'), 'journalMentions')) {
 				journalMentions.push({ journal_entry_id: entryId, contact_id: mentioned });
 			}
-			for (const image of records(entry, 'photos')) addPhoto(image, contactId, entryId);
+			for (const image of records(entry, 'photos')) addPhoto(image, { contactId, journalEntryId: entryId });
 		}
 
 		for (const touch of records(person, 'interactions')) {
@@ -440,7 +447,7 @@ export function planRestore(
 			}
 		}
 
-		for (const image of records(person, 'photos')) addPhoto(image, contactId, null);
+		for (const image of records(person, 'photos')) addPhoto(image, { contactId, journalEntryId: null });
 	}
 
 	// ── Tags ──────────────────────────────────────────────────────────────
@@ -518,6 +525,9 @@ export function planRestore(
 			archived_at: ms(circle, 'archived_at'),
 			...stamps(circle)
 		});
+
+		// Only a circle that is restored brings its photos: a refused circle refuses them too.
+		for (const image of records(circle, 'photos')) addPhoto(image, { circleId: id });
 
 		for (const member of records(circle, 'members')) {
 			const person = str(member, 'person');

@@ -1,6 +1,8 @@
 import type { PhotoPayload } from '../../../commands/commands';
 import { TranslatableError } from '../../../errors/translatable';
 import { phrase } from '../../../i18n/phrase';
+import { addCirclePhoto, type CirclePhotoDeps } from '../circles/circle-photos';
+import type { CircleRepository } from '../circles/circles';
 import type { ContactRepository } from '../contacts/contacts';
 import { addGalleryPhoto, type GalleryUploadDeps } from '../media/gallery-upload';
 import { attachJournalPhoto, type JournalPhotoDeps } from '../media/journal-photos';
@@ -90,6 +92,30 @@ export async function attachGalleryPhoto(
 	return addGalleryPhoto(deps.photos, actor, {
 		contactId: gallery.contactId,
 		visibility: gallery.visibility,
+		upload: { image: payload.image, thumb: payload.thumb, width: payload.width, height: payload.height }
+	});
+}
+
+export interface CirclePhotoUploadDeps {
+	receipts: Pick<CommandReceiptRepository, 'find'>;
+	circles: Pick<CircleRepository, 'getVisibleTo'>;
+	photos: Pick<CirclePhotoDeps, 'circlePhotos' | 'media' | 'ids' | 'clock'>;
+}
+
+/** Add a photo to the circle its upload was for, with the upload's role; returns its id. */
+export async function attachCirclePhoto(
+	deps: CirclePhotoUploadDeps,
+	actor: CommandActor,
+	payload: PhotoPayload
+): Promise<string> {
+	const upload = await appliedParent(deps.receipts, actor, payload.parentId, ['circleGallery.add']);
+	const viewer = { id: actor.userId, householdId: actor.householdId };
+	if (!(await deps.circles.getVisibleTo(viewer, upload.circleId))) throw new PhotoParentGoneError();
+
+	return addCirclePhoto(deps.photos, actor, {
+		circleId: upload.circleId,
+		role: upload.role,
+		visibility: upload.visibility,
 		upload: { image: payload.image, thumb: payload.thumb, width: payload.width, height: payload.height }
 	});
 }
