@@ -515,7 +515,7 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 			{ parentId: 'otto', childId: 'bettina' },
 			{ parentId: 'bettina', childId: 'hans' }
 		]);
-		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt', former: false }]);
+		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt', former: false, sinceDate: null }]);
 		// Every visible pair is a stored pair, so nothing already linked is re-derived.
 		expect(graph.storedPairs).toContainEqual({ a: 'otto', b: 'hans' });
 	});
@@ -529,9 +529,20 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 			.run();
 
 		const graph = await repo.loadKinshipGraphVisibleTo(viewerU1);
-		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt', former: true }]);
+		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt', former: true, sinceDate: null }]);
 		expect(graph.storedPairs).toContainEqual({ a: 'bettina', b: 'kurt' });
 		expect(deriveKinship(graph, 'hans').map((k) => k.personId)).not.toContain('kurt');
+	});
+
+	// Rule L3 tells a step-parent by these two dates (docs/concepts/relationship-suggestions.md §3.2).
+	it('carries the birth dates and the day a partnership began', async () => {
+		db.update(schema.contact).set({ birthDate: '2015-05-20' }).where(eq(schema.contact.id, 'hans')).run();
+		db.update(schema.relationship).set({ sinceDate: '2009-06-13' }).where(eq(schema.relationship.id, 'r-3')).run();
+
+		const graph = await repo.loadKinshipGraphVisibleTo(viewerU1);
+		expect(graph.people.find((p) => p.id === 'hans')?.birthDate).toBe('2015-05-20');
+		expect(graph.people.find((p) => p.id === 'otto')?.birthDate).toBeNull();
+		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt', former: false, sinceDate: '2009-06-13' }]);
 	});
 
 	it('hides a private person’s links from everyone but their author', async () => {

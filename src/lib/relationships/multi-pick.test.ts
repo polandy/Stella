@@ -6,6 +6,7 @@ import {
 	oneDateForAll,
 	parentsOnRecord,
 	pickCap,
+	secondParentOffer,
 	sharedSince,
 	sincePerPair
 } from './multi-pick';
@@ -201,5 +202,57 @@ describe('oneDateForAll', () => {
 
 	it('is blank when no pair was given one', () => {
 		expect(oneDateForAll([{ targetId: 'tom', sinceDate: '' }])).toBe('');
+	});
+});
+
+/*
+ * D4: with one parent picked for "Child of", the form offers the likely second parent under the
+ * field — one tap, never preselected (docs/concepts/multi-pick-relationships.html).
+ */
+describe('secondParentOffer', () => {
+	const facts = {
+		parentEdges: [] as { parentId: string; childId: string }[],
+		romanticPairs: [{ a: 'anna', b: 'bert' }]
+	};
+	const offer = (over: Partial<Parameters<typeof secondParentOffer>[0]> = {}) =>
+		secondParentOffer({
+			choice: childOf,
+			pickedIds: ['anna'],
+			child: { id: 'lio', birthDate: '2015-05-20' },
+			facts,
+			isRefused: () => false,
+			canOffer: () => true,
+			...over
+		});
+
+	it('offers the picked parent’s partner for "Child of"', () => {
+		expect(offer()).toEqual({ parentId: 'anna', partnerId: 'bert' });
+	});
+
+	it('offers nobody for any other type or side', () => {
+		expect(offer({ choice: parentOf })).toBeNull();
+		expect(offer({ choice: { type: { key: 'sibling' }, side: 'forward' } })).toBeNull();
+		expect(offer({ choice: null })).toBeNull();
+	});
+
+	it('waits for exactly one parent: nobody yet, or both already picked', () => {
+		expect(offer({ pickedIds: [] })).toBeNull();
+		expect(offer({ pickedIds: ['anna', 'carl'] })).toBeNull();
+	});
+
+	it('offers nobody while the picked parent is refused', () => {
+		expect(offer({ isRefused: (id) => id === 'anna' })).toBeNull();
+	});
+
+	// Not someone the picker could take: out of sight, or ruled out by the exclusion rules.
+	it('offers nobody the field could not take', () => {
+		expect(offer({ canOffer: (id) => id !== 'bert' })).toBeNull();
+	});
+
+	it('leaves the step-parent check and the free slot to rule L3', () => {
+		const later = { ...facts, romanticPairs: [{ a: 'anna', b: 'bert', sinceDate: '2019-01-01' }] };
+		expect(offer({ facts: later })).toBeNull();
+		const oneOnRecord = { ...facts, parentEdges: [{ parentId: 'carl', childId: 'lio' }] };
+		expect(offer({ facts: oneOnRecord })).toBeNull();
 	});
 });

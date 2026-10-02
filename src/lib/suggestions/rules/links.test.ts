@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { textOf } from '$lib/i18n/linked';
 import { createTranslator } from '$lib/i18n/translate';
 import type { KinshipGraph } from '$lib/kinship/kinship';
-import { L1, L2 } from './links';
+import { L1, L2, L3, likelyCoParent, type CoParentGraph } from './links';
 import type { Trigger } from '../types';
 import { buildView } from '../view';
 
@@ -210,5 +210,177 @@ describe('a household-wide pass runs the same rules over every link there is', (
 	it('says nothing when no primary link is stored at all', () => {
 		expect(L1(household(), view())).toEqual([]);
 		expect(L2(household(), view())).toEqual([]);
+	});
+});
+
+/*
+ * L3 — the likely second parent (docs/concepts/relationship-suggestions.md §3.2). Not a
+ * logical consequence, so it is a pure question of its own before it is a rule: the form asks
+ * it while a parent is picked but not stored yet (multi-pick-relationships D4), and the engine
+ * asks it once the link is stored.
+ */
+describe('likelyCoParent — the chosen parent’s one current partner', () => {
+	const graph = (over: Partial<CoParentGraph> = {}): CoParentGraph => ({
+		people: [
+			{ id: 'anna', birthDate: '1985-02-01' },
+			{ id: 'bert', birthDate: '1984-07-09' },
+			{ id: 'lio', birthDate: '2015-05-20' }
+		],
+		parentEdges: [],
+		partnerEdges: [{ a: 'anna', b: 'bert' }],
+		...over
+	});
+
+	it('offers the partner when the parent has exactly one that still holds', () => {
+		expect(likelyCoParent(graph(), 'anna', 'lio')).toBe('bert');
+	});
+
+	it('reads the partnership from either end', () => {
+		expect(likelyCoParent(graph({ partnerEdges: [{ a: 'bert', b: 'anna' }] }), 'anna', 'lio')).toBe('bert');
+	});
+
+	it('offers nobody when the parent has no partner', () => {
+		expect(likelyCoParent(graph({ partnerEdges: [] }), 'anna', 'lio')).toBeNull();
+	});
+
+	// The concept's own L3b: with two partners Stella has no basis to pick one.
+	it('offers nobody when the parent has several current partners', () => {
+		const partnerEdges = [
+			{ a: 'anna', b: 'bert' },
+			{ a: 'anna', b: 'carl' }
+		];
+		expect(likelyCoParent(graph({ partnerEdges }), 'anna', 'lio')).toBeNull();
+	});
+
+	it('does not count a partnership that is over', () => {
+		expect(likelyCoParent(graph({ partnerEdges: [{ a: 'anna', b: 'bert', former: true }] }), 'anna', 'lio')).toBeNull();
+		const partnerEdges = [
+			{ a: 'anna', b: 'carl', former: true },
+			{ a: 'anna', b: 'bert' }
+		];
+		expect(likelyCoParent(graph({ partnerEdges }), 'anna', 'lio')).toBe('bert');
+	});
+
+	it('counts partner and spouse links to the same person once', () => {
+		const partnerEdges = [
+			{ a: 'anna', b: 'bert' },
+			{ a: 'bert', b: 'anna' }
+		];
+		expect(likelyCoParent(graph({ partnerEdges }), 'anna', 'lio')).toBe('bert');
+	});
+
+	describe('the step-parent check: a partnership that began after the child was born', () => {
+		const since = (sinceDate: string | null) => graph({ partnerEdges: [{ a: 'anna', b: 'bert', sinceDate }] });
+
+		it('offers nobody when the partnership began after the birth', () => {
+			expect(likelyCoParent(since('2019-04-01'), 'anna', 'lio')).toBeNull();
+		});
+
+		it('offers the partner when it began before the birth, or on the day', () => {
+			expect(likelyCoParent(since('2010-08-14'), 'anna', 'lio')).toBe('bert');
+			expect(likelyCoParent(since('2015-05-20'), 'anna', 'lio')).toBe('bert');
+		});
+
+		it('offers the partner when either date is missing', () => {
+			expect(likelyCoParent(since(null), 'anna', 'lio')).toBe('bert');
+			const noBirth = graph({
+				people: [{ id: 'lio', birthDate: null }],
+				partnerEdges: [{ a: 'anna', b: 'bert', sinceDate: '2019-04-01' }]
+			});
+			expect(likelyCoParent(noBirth, 'anna', 'lio')).toBe('bert');
+		});
+
+		it('compares a partial date only as far as both dates go', () => {
+			// A later year is later, whatever the day.
+			expect(likelyCoParent(since('2016'), 'anna', 'lio')).toBeNull();
+			expect(likelyCoParent(since('2015-06'), 'anna', 'lio')).toBeNull();
+			// The same year, or the same month, cannot say which came first.
+			expect(likelyCoParent(since('2015'), 'anna', 'lio')).toBe('bert');
+			expect(likelyCoParent(since('2015-05'), 'anna', 'lio')).toBe('bert');
+		});
+
+		it('cannot tell from a day without a year', () => {
+			expect(likelyCoParent(since('--06-01'), 'anna', 'lio')).toBe('bert');
+		});
+	});
+
+	describe('a free parent slot', () => {
+		it('offers nobody when the child has two parents besides the chosen one', () => {
+			const parentEdges = [
+				{ parentId: 'carl', childId: 'lio' },
+				{ parentId: 'dora', childId: 'lio' }
+			];
+			expect(likelyCoParent(graph({ parentEdges }), 'anna', 'lio')).toBeNull();
+		});
+
+		// The chosen parent counts whether stored already (the engine) or only picked (the form).
+		it('counts the chosen parent as one of the two', () => {
+			const picked = graph({ parentEdges: [{ parentId: 'carl', childId: 'lio' }] });
+			expect(likelyCoParent(picked, 'anna', 'lio')).toBeNull();
+			const stored = graph({
+				parentEdges: [
+					{ parentId: 'anna', childId: 'lio' },
+					{ parentId: 'carl', childId: 'lio' }
+				]
+			});
+			expect(likelyCoParent(stored, 'anna', 'lio')).toBeNull();
+		});
+
+		it('offers the partner when the chosen parent is the only one on record', () => {
+			expect(likelyCoParent(graph({ parentEdges: [{ parentId: 'anna', childId: 'lio' }] }), 'anna', 'lio')).toBe('bert');
+		});
+	});
+
+	it('offers nobody when the partner already is a parent of the child', () => {
+		expect(likelyCoParent(graph({ parentEdges: [{ parentId: 'bert', childId: 'lio' }] }), 'anna', 'lio')).toBeNull();
+	});
+
+	// A partner recorded as the child's own child, or who is the child, is nobody's offer.
+	it('offers nobody the generation guard would refuse, nor the child themself', () => {
+		expect(likelyCoParent(graph({ parentEdges: [{ parentId: 'lio', childId: 'bert' }] }), 'anna', 'lio')).toBeNull();
+		expect(likelyCoParent(graph({ partnerEdges: [{ a: 'anna', b: 'lio' }] }), 'anna', 'lio')).toBeNull();
+	});
+});
+
+describe('L3 — a parent stored from the parent’s side offers their partner', () => {
+	const family = (over: Partial<KinshipGraph> = {}) =>
+		view({
+			people: [p('anna', 'Anna'), p('bert', 'Bert'), p('lio', 'Lio'), p('mia', 'Mia')],
+			parentEdges: [{ parentId: 'anna', childId: 'lio' }],
+			partnerEdges: [{ a: 'anna', b: 'bert' }],
+			...over
+		});
+	const storedFrom = (enteredFrom: string): Trigger => ({
+		kind: 'link-stored',
+		link: { kind: 'parent', fromId: 'anna', toId: 'lio' },
+		enteredFrom
+	});
+
+	it('offers the partner as the child’s other parent, as likely, with both facts in the reason', () => {
+		const found = L3(storedFrom('anna'), family());
+		expect(shape(found)).toEqual([['L3', 'parent', 'bert', 'lio']]);
+		expect(found[0]!.confidence).toBe('likely');
+		expect(textOf(found[0]!.reason(createTranslator('en')))).toBe(
+			'Bert and Anna are partners, and Anna is a parent of Lio.'
+		);
+		expect(textOf(found[0]!.reason(createTranslator('de')))).toBe(
+			'Bert und Anna sind ein Paar, und Anna ist ein Elternteil von Lio.'
+		);
+	});
+
+	// The form on the child's page offered the partner already (D4); asking twice is nagging.
+	it('stays quiet when the link was entered on the child’s page', () => {
+		expect(L3(storedFrom('lio'), family())).toEqual([]);
+	});
+
+	it('says nothing when the parent has no single current partner', () => {
+		expect(L3(storedFrom('anna'), family({ partnerEdges: [] }))).toEqual([]);
+	});
+
+	it('answers only a stored parent link, never a review', () => {
+		const v = family({ siblingEdges: [{ a: 'lio', b: 'mia' }] });
+		expect(L3({ kind: 'link-stored', link: { kind: 'sibling', fromId: 'lio', toId: 'mia' } }, v)).toEqual([]);
+		expect(L3(reviewed('lio'), v)).toEqual([]);
+		expect(L3(household(), v)).toEqual([]);
 	});
 });

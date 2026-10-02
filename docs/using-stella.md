@@ -291,6 +291,13 @@ the ones already on record. Somebody who cannot be linked that way is marked in 
 reason underneath, and nothing is saved until you remove them — Stella never saves the others
 and quietly leaves one out. One **Undo** on the toast takes the whole batch back.
 
+When you give somebody one parent, Stella often knows the other. Pick Markus under *Child of*
+and, if Markus has one partner, Stella offers her right under the field: **Also + Sandra
+Brunner-Keller**, *Markus Brunner's partner*. Tap it and she joins as a second chip; ignore it
+and nothing changes. Stella keeps quiet when the partner came along after the child was born
+(fill in the *Since* day of the partnership and the child's birthday, and it can tell), when
+there are several partners, or when the child already has two parents.
+
 One thing Stella will not let you write down: that two people are each other's parent, or each
 other's grandparent. A generation runs one way, and the relatives Stella works out for you are
 read off exactly those links — so pick the direction the wrong way round and it says so instead
@@ -344,6 +351,11 @@ is also this person's own.
 Adding a parent or a sibling usually implies more of them. Stella asks rather than assumes:
 say Vreni is Lena's parent and an **Also true?** panel offers her as a parent of Lena's
 brothers, one *Accept* at a time, each with the reason. Ignore them and nothing happens.
+Add Daniel as a parent of a new baby from Daniel's own page and the panel also asks whether
+Nadia, his wife, is the other parent — marked *likely*, because only you know. After saving
+several people at once the panel covers all of them in one list, and where a few rows belong
+together — two parents for the same child, or one parent for several children — **Add all**
+takes them in one go, with one **Undo** for the lot.
 
 That panel only appears in the moment you save something, though — and most links were
 entered long before. **Check relationships**, at the top of the Relationships card, asks the

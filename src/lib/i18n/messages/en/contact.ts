@@ -168,6 +168,22 @@ export const contact = {
 	'contact.relationships.addLinks': (p: { count: number }) => `Add ${p.count} links`,
 	'contact.relationships.linksSaved': (p: { count: number }) => `${p.count} links saved`,
 	'contact.relationships.undoLinksFailed': 'Could not take the links back. They are still on the page.',
+	/*
+	 * The likely second parent, offered under the person field for "Child of" (docs/concepts/
+	 * multi-pick-relationships.html D4, rule L3): one tap makes them a chip.
+	 */
+	'contact.relationships.secondParentAlso': 'Also',
+	'contact.relationships.secondParentAdd': (p: { name: string }) => `Add ${p.name} as the other parent`,
+	'contact.relationships.secondParentWhy': (p: { name: string }) => `${p.name}’s partner`,
+	/*
+	 * *Add all* on the *Also true?* block (D7): the claims one batch can store, said as the link
+	 * they become, and stored in one step with one *Undo*.
+	 */
+	'contact.relationships.addAllParentsOf': (p: { parents: string; child: string }) =>
+		`${p.parents} as parents of ${p.child}`,
+	'contact.relationships.addAllChildrenOf': (p: { parent: string; children: string }) =>
+		`${p.parent} as a parent of ${p.children}`,
+	'contact.relationships.addAll': (p: { count: number }) => `Add all ${p.count}`,
 	'contact.relationships.alsoTrue': 'Also true?',
 	'contact.relationships.parentProposal': (p: { parent: string; child: string }) =>
 		`${p.parent} is a parent of ${p.child}`,

@@ -1,3 +1,4 @@
+import { likelyCoParent } from '../suggestions/rules/links';
 import { MAX_PARENTS, type ExclusionFacts } from './exclusions';
 import { sinceDateFromBirth, type BirthDated, type KinChoice } from './since';
 import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from './type-keys';
@@ -130,4 +131,38 @@ export function sharedSince(pairs: readonly PairSince[]): string | null {
 /** Where *Use one date for all* starts: the first day any pair was given, or blank. */
 export function oneDateForAll(pairs: readonly PairSince[]): string {
 	return pairs.find((pair) => pair.sinceDate !== '')?.sinceDate ?? '';
+}
+
+/** The second parent the form offers (D4): who was picked, and whose partner is offered. */
+export interface SecondParentOffer {
+	parentId: string;
+	partnerId: string;
+}
+
+/**
+ * The likely second parent to offer under the field (D4), or null. Only for "Child of" with
+ * exactly one parent picked and not refused; who that is, and whether a slot is free, is rule
+ * L3's to say (`likelyCoParent`). `canOffer` is the field's own word: someone the picker could
+ * take — visible, and not ruled out by the exclusion rules. Offered, never picked: the
+ * household taps it or not (owner's decision, 2 October 2026).
+ */
+export function secondParentOffer(input: {
+	choice: CapChoice | null;
+	pickedIds: readonly string[];
+	child: BirthDated & { id: string };
+	facts: Pick<ExclusionFacts, 'parentEdges' | 'romanticPairs'>;
+	isRefused: (targetId: string) => boolean;
+	canOffer: (personId: string) => boolean;
+}): SecondParentOffer | null {
+	const { choice, pickedIds, child, facts } = input;
+	if (choice?.type.key !== PARENT_CHILD_TYPE_KEY || choice.side !== 'reverse') return null;
+	if (pickedIds.length !== 1) return null;
+	const [parentId] = pickedIds as [string];
+	if (input.isRefused(parentId)) return null;
+	const partnerId = likelyCoParent(
+		{ people: [child], parentEdges: facts.parentEdges, partnerEdges: facts.romanticPairs },
+		parentId,
+		child.id
+	);
+	return partnerId && input.canOffer(partnerId) ? { parentId, partnerId } : null;
 }

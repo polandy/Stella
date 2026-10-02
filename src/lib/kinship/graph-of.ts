@@ -15,6 +15,8 @@ export interface KinshipLinkRow {
 	toId: string;
 	key: string;
 	status: string;
+	/** The day the link began, where entered; kept for partner links only. */
+	sinceDate?: string | null;
 }
 
 /**
@@ -37,7 +39,8 @@ export function kinshipGraphOf(people: KinPerson[], rows: readonly KinshipLinkRo
 			partnerEdges.push({
 				a: row.fromId,
 				b: row.toId,
-				former: row.status === FORMER_RELATIONSHIP_STATUS
+				former: row.status === FORMER_RELATIONSHIP_STATUS,
+				sinceDate: row.sinceDate ?? null
 			});
 		}
 	}

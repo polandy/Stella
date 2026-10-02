@@ -21,7 +21,12 @@ export function loadKinshipGraph(
 	viewer: Viewer
 ): KinshipGraph {
 	const people: KinPerson[] = db
-		.select({ id: contact.id, displayName: contact.displayName, gender: contact.gender })
+		.select({
+			id: contact.id,
+			displayName: contact.displayName,
+			gender: contact.gender,
+			birthDate: contact.birthDate
+		})
 		.from(contact)
 		.where(contactVisibleTo(viewer))
 		.all();
@@ -33,7 +38,8 @@ export function loadKinshipGraph(
 			fromId: relationship.fromContactId,
 			toId: relationship.toContactId,
 			key: relationshipType.key,
-			status: relationship.status
+			status: relationship.status,
+			sinceDate: relationship.sinceDate
 		})
 		.from(relationship)
 		.innerJoin(relationshipType, eq(relationship.typeId, relationshipType.id))

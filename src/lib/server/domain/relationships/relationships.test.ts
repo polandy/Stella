@@ -348,7 +348,13 @@ describe('readKinship', () => {
 	 */
 	const viewer: Viewer = { id: 'u1', householdId: 'h1' };
 
-	function kinRepo(over: { siblingEdges?: KinshipGraph['siblingEdges']; extraPeople?: KinshipGraph['people'] } = {}) {
+	function kinRepo(
+		over: {
+			siblingEdges?: KinshipGraph['siblingEdges'];
+			partnerEdges?: KinshipGraph['partnerEdges'];
+			extraPeople?: KinshipGraph['people'];
+		} = {}
+	) {
 		const asked: Viewer[] = [];
 		const repo: Pick<RelationshipRepository, 'loadKinshipGraphVisibleTo'> = {
 			async loadKinshipGraphVisibleTo(v) {
@@ -365,7 +371,7 @@ describe('readKinship', () => {
 						{ parentId: 'bettina', childId: 'hans' }
 					],
 					siblingEdges: over.siblingEdges ?? [],
-					partnerEdges: [],
+					partnerEdges: over.partnerEdges ?? [],
 					storedPairs: []
 				};
 			}
@@ -401,7 +407,7 @@ describe('readKinship', () => {
 			siblingEdges: [{ a: 'hans', b: 'lisa' }],
 			extraPeople: [{ id: 'lisa', displayName: 'Lisa', gender: 'female' }]
 		});
-		const found = await readKinship(kinDeps(repo), viewer, 'hans', { a: 'bettina', b: 'hans' });
+		const found = await readKinship(kinDeps(repo), viewer, 'hans', [{ a: 'bettina', b: 'hans' }]);
 		expect(found.proposals).toMatchObject([
 			{
 				kind: 'link',
@@ -422,8 +428,55 @@ describe('readKinship', () => {
 
 	it('proposes nothing for a pair with no primary link the viewer can see', async () => {
 		const { repo } = kinRepo();
-		const found = await readKinship(kinDeps(repo), viewer, 'hans', { a: 'hans', b: 'nobody' });
+		const found = await readKinship(kinDeps(repo), viewer, 'hans', [{ a: 'hans', b: 'nobody' }]);
 		expect(found.proposals).toEqual([]);
+	});
+
+	/*
+	 * A batch stored together (docs/concepts/multi-pick-relationships.html D7): one list for all
+	 * of its links, each claim once — not the list of whichever link happened to come last.
+	 */
+	it('proposes across every pair of a batch at once, each claim once', async () => {
+		const { repo } = kinRepo({
+			siblingEdges: [
+				{ a: 'hans', b: 'lisa' },
+				{ a: 'hans', b: 'nina' }
+			],
+			extraPeople: [
+				{ id: 'lisa', displayName: 'Lisa', gender: 'female' },
+				{ id: 'nina', displayName: 'Nina', gender: 'female' }
+			]
+		});
+		const found = await readKinship(kinDeps(repo), viewer, 'hans', [
+			{ a: 'hans', b: 'lisa' },
+			{ a: 'hans', b: 'nina' }
+		]);
+		expect(found.proposals.map((s) => [s.fromId, s.toId])).toEqual([
+			['bettina', 'lisa'],
+			['bettina', 'nina']
+		]);
+	});
+
+	/*
+	 * L3 after a write (docs/concepts/relationship-suggestions.md §3.2). The page the link was
+	 * entered on decides: the child's page offered the partner in the form already (D4).
+	 */
+	describe('the likely second parent', () => {
+		const withPartner = () =>
+			kinRepo({
+				partnerEdges: [{ a: 'bettina', b: 'kurt' }],
+				extraPeople: [{ id: 'kurt', displayName: 'Kurt', gender: 'male' }]
+			}).repo;
+
+		it('offers the parent’s partner when the link was entered on the parent’s page', async () => {
+			const found = await readKinship(kinDeps(withPartner()), viewer, 'bettina', [{ a: 'bettina', b: 'hans' }]);
+			expect(found.proposals.map((s) => [s.ruleId, s.fromId, s.toId])).toEqual([['L3', 'kurt', 'hans']]);
+		});
+
+		it('stays quiet when it was entered on the child’s page', async () => {
+			const found = await readKinship(kinDeps(withPartner()), viewer, 'hans', [{ a: 'hans', b: 'bettina' }]);
+			expect(found.proposals).toEqual([]);
+		});
 	});
 });
 

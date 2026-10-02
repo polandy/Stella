@@ -82,6 +82,8 @@ export const kinship = {
 	'kinship.claim.sibling-in-law.female': (p: { from: string; to: string }) => `${p.to} is a sister-in-law of ${p.from}`,
 	'kinship.claim.sibling-in-law.neutral': (p: { from: string; to: string }) => `${p.to} is a sibling-in-law of ${p.from}`,
 	'kinship.reason.workedOutThrough': (p: { via: string }) => `Worked out through ${p.via}, not entered yet`,
+	'kinship.reason.partnerOfParent': (p: { partner: string; parent: string; child: string }) =>
+		`${p.partner} and ${p.parent} are partners, and ${p.parent} is a parent of ${p.child}.`,
 	'kinship.reason.parentThroughSibling': (p: { parent: string; via: string; child: string }) =>
 		`${p.parent} is a parent of ${p.via}, and ${p.via} and ${p.child} are siblings.`
 };

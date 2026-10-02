@@ -2,9 +2,9 @@ import { TranslatableError } from '../../../errors/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { KinshipGraph, Pair } from '../../../kinship/kinship';
 import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';
-import { evaluate } from '../../../suggestions/engine';
+import { evaluateAll } from '../../../suggestions/engine';
 import type { Dismissal } from '../../../suggestions/claims';
-import type { PrimaryLink } from '../../../suggestions/types';
+import type { PrimaryLink, Trigger } from '../../../suggestions/types';
 import { buildView } from '../../../suggestions/view';
 import { nameProposals, type ProposedLink, type SuggestionReviewSource } from './suggestion-review';
 import type { Viewer } from '../../access/visibility';
@@ -381,7 +381,7 @@ export function exclusionFactsFrom(
 		})),
 		romanticPairs: graph.partnerEdges
 			.filter((edge) => !edge.former)
-			.map((edge) => ({ a: edge.a, b: edge.b })),
+			.map((edge) => ({ a: edge.a, b: edge.b, sinceDate: edge.sinceDate ?? null })),
 		parentEdges: graph.parentEdges.map((edge) => ({
 			parentId: edge.parentId,
 			childId: edge.childId
@@ -493,8 +493,8 @@ export async function createRelationship(
 
 /**
  * Everything the person page shows about inferred kinship (docs/02 §2.4.1): the relatives
- * derived for `subjectId`, and — when a primary link has just been stored between
- * `proposeFor` — the links that follow from it and are not stored yet.
+ * derived for `subjectId`, and — when primary links have just been stored between the pairs of
+ * `proposeFor`, one or a whole batch — the links that follow from them and are not stored yet.
  *
  * One port call serves both, because both read the same graph. Visibility is settled by the
  * repository, so neither a derived label nor a proposal can name someone the viewer may not see.
@@ -510,7 +510,7 @@ export async function readKinship(
 	deps: SuggestionReviewSource,
 	viewer: Viewer,
 	subjectId: string,
-	proposeFor?: Pair | null
+	proposeFor: readonly Pair[] = []
 ): Promise<KinshipRead> {
 	const [graph, dismissals] = await Promise.all([
 		deps.relationships.loadKinshipGraphVisibleTo(viewer),
@@ -522,21 +522,27 @@ export async function readKinship(
 /**
  * `readKinship` over a graph and a dismissal log already read. The dismissals are only
  * consulted when `proposeFor` names a stored link, so a caller that has none may pass `[]`.
+ *
+ * Every pair is read as entered on `subjectId`'s page — the only page that names pairs after a
+ * write — which is what lets L3 stay quiet where the form already offered the second parent.
  */
 export function kinshipFrom(
 	graph: KinshipGraph,
 	dismissals: readonly Dismissal[],
 	subjectId: string,
-	proposeFor?: Pair | null
+	proposeFor: readonly Pair[] = []
 ): KinshipRead {
 	const derived = deriveKinship(graph, subjectId);
-	const added = proposeFor ? primaryLinkBetween(graph, proposeFor.a, proposeFor.b) : null;
-	if (!added) return { derived, proposals: [] };
+	const triggers = proposeFor.flatMap((pair): Trigger[] => {
+		const link = primaryLinkBetween(graph, pair.a, pair.b);
+		return link ? [{ kind: 'link-stored', link, enteredFrom: subjectId }] : [];
+	});
+	if (triggers.length === 0) return { derived, proposals: [] };
 
 	// A claim declined once is not offered again, however it is reached (§6.4) — including
 	// here, in the instant after the write, where it would otherwise slip past the log.
 	const view = buildView(graph, dismissals);
-	const proposals = nameProposals(evaluate({ kind: 'link-stored', link: added }, view), view.nameOf);
+	const proposals = nameProposals(evaluateAll(triggers, view), view.nameOf);
 	return { derived, proposals };
 }
 

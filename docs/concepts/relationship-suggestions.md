@@ -70,7 +70,7 @@ housekeeping. K1 reads the same mapping the profile's *Confirm* does (`src/lib/k
 claims.ts`), so both store a claim the same way; a directed claim (grandparent, aunt or uncle,
 parent-in-law) carries the elder at `fromId` and is filed under the younger person.
 
-### 3.2 The other parent — the gap this concept closes
+### 3.2 The other parent — the gap this concept closes — **L3 shipped**
 
 | id | Trigger | Condition | Proposal | Conf. |
 |---|---|---|---|---|
@@ -90,6 +90,30 @@ discriminator, and there are only two honest ones:
 
 L3b is stated as a rule so the silence is deliberate rather than an oversight: with several
 current partners Stella has no basis to pick one, and guessing wrong writes a false parent.
+
+**Shipped.** L3 is `likelyCoParent(graph, parentId, childId)` in
+`src/lib/suggestions/rules/links.ts`, pure and asked from two places:
+
+- **The relationship form** (`docs/concepts/multi-pick-relationships.html` D4): with one parent
+  picked for *Child of*, the result is offered under the field, one tap away and never
+  preselected. The parent counts whether stored or only picked, so the free-slot check reads
+  "the child's recorded parents plus this one".
+- **After a write**, as the engine's rule `L3` (`likely`, ranked after L1/L2): a parent link
+  stored from the **parent's** page offers that parent's partner on *Also true?*. This is the
+  mirror case of the form's offer — the form can only offer the second parent when the
+  *child's* page is open, because there the picked people are the parents; on the parent's
+  page the picked people are the children, and the partner is a third person the form has no
+  field for. The rule stays quiet when the link was entered on the child's page
+  (`Trigger.enteredFrom`), where the form has already asked. It answers writes only, never a
+  review: over a whole household it would offer every step-parent whose partnership carries
+  no date, which is most of them.
+
+Both discriminators are in from day one: the partnership's `since_date` against the child's
+`birth_date` (compared only as far as both partial dates go; a year-less day says nothing), and
+the parent count, which counts the chosen parent. L3b — several current partners, or only a
+former one — is the same function returning nobody. A partner who already is the child's parent,
+who is the child, or who is recorded as the child's own child is never offered; the form also
+asks the page's exclusion rules before it offers anyone.
 
 ### 3.3 Siblings of the new child
 
@@ -426,7 +450,7 @@ four primary keys precisely so inference stays sound.
 ## 8. Suggested order of work
 
 1. **Phrase-based reasons** (§7.3) — refactor, no new behaviour, unblocks everything.
-2. **L3 / L3b** — the other parent. The rule the household will notice.
+2. **L3 / L3b** — the other parent. The rule the household will notice. **Shipped** (§3.2).
 3. **F1 / F1b / F2 / F6** — surname and gender prefill on the add-person flow.
 4. **C1 / C5 / C6** — the consistency signals, which are cheap and prevent the graph the
    later rules would reason over from going bad.
@@ -439,8 +463,8 @@ after the user's sign-off — the e2e (docs/08 §8.4.1).
 
 ## 9. Open questions
 
-- Does L3 need the birth-date discriminator on day one, or is "one current partner" enough
-  and the step-parent case rare enough to let the household decline?
+- ~~Does L3 need the birth-date discriminator on day one?~~ Answered: yes, it shipped with it
+  (§3.2) — a missing date leaves the offer standing, so it costs nothing where dates are absent.
 - Should field suggestions also fire when **editing** an existing person (a surname changes —
   offer it to the children), or only at creation? Editing is where it gets genuinely useful
   and genuinely dangerous.
