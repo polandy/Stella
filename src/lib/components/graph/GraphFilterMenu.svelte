@@ -131,7 +131,7 @@
 				></span>
 				<span class="flex-1">{t(f.label)}</span>
 				<span
-					class="grid size-4 shrink-0 place-items-center rounded border-[1.5px] text-[10px] leading-none"
+					class="grid size-4 shrink-0 place-items-center rounded border-[1.5px] text-[10px] leading-none pointer-coarse:size-5 pointer-coarse:text-xs"
 					class:border-border={!active.has(f.key)}
 					style={active.has(f.key)
 						? 'background:var(--primary);border-color:var(--primary);color:var(--primary-fg)'
