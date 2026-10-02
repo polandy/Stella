@@ -206,10 +206,14 @@ can see a photo can pin or unpin it. Escape closes the view and the arrow keys w
 To give someone a new photo straight away, click the round picture at the top of their page and
 pick an image. Before anything is uploaded you choose the part that shows: drag the picture
 inside the round frame and pinch, scroll or use the slider to zoom, then **Use photo**. Only that
-square is kept as their photo.
+square is kept as their photo. When one of their circles has photos, clicking the round picture
+first asks where the new one comes from: **Choose a picture…** for a file, or one of those
+**group photos** — then you choose their face on it the same way, and zoom as far as the photo
+allows.
 
 Picking a new photo for someone who already had one never throws the old one away — it drops
-back into this grid, dated, and a small confirmation says so. Handy for someone whose face
+back into this grid, dated, and a small confirmation says so. That holds for a picture cut from a
+group photo too (see *Circles*). Handy for someone whose face
 changes over the years, a child especially: their old photos stay right here to look back on.
 
 **Mentioned in** is the last card, and it is the only one that is not really theirs: it lists
@@ -443,6 +447,21 @@ one group at a time. In the open photo anyone who can see it can caption it, cha
 or pin it as a favourite; making it private and removing it are for whoever added it. A photo
 whose role nobody in the circle has any more keeps that role and stays in the grid; its banner
 comes back with the role.
+
+A class photo already holds everybody's face. Open it and press **Use as profile picture for …**:
+pick the person — the circle's people come first, those in the photo's role at the top, and the
+search finds anyone else — then move and zoom until their face fills the round frame and press
+**Use photo**. Press **Next person** for the next face; whoever already wears a cut of this photo
+has a check mark. Photos of a circle are kept large enough for this (up to 4096 pixels), so even
+a face at the back of a class photo stays sharp. The cut is not kept on your phone while you are
+offline; it needs a connection.
+
+Nobody loses their picture. When someone gets another profile picture, the one cut from the
+group photo stays in their **Photos**, dated like the group photo and marked *From Class 1B*;
+their Photos tab also lists, under **On group photos**, every group photo they were ever cut
+from, with a tap into the circle. Removing a group photo that people wear, or making it private,
+first tells you how many wear it; they each keep their picture as a photo of their own (still
+shared with the household when the group photo turns private).
 
 Circles are also the answer to "who else was there?", which is usually the question you
 have when you are trying to remember someone's name. **Open in the graph** on a circle's page

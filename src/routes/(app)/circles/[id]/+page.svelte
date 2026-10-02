@@ -303,6 +303,9 @@
 		count={walk.current.ids.length}
 		circleName={circle.name}
 		viewerId={data.viewerId}
+		members={data.memberGroups.flatMap((g) => g.members)}
+		people={data.people}
+		cuts={data.cuts[walked.id]}
 		error={form && 'photoError' in form ? (form.photoError ?? null) : null}
 		{photoDate}
 		onclose={() => walk.close()}

@@ -9,6 +9,11 @@ import type { CropRect } from './crop';
  */
 
 const AVATAR_SIZE = 512;
+/**
+ * A profile picture cut from a group photo is rendered larger, so it stays sharp once it stands
+ * on its own as a photo in the person's gallery (docs/concepts/circle-photos.md §5.2).
+ */
+export const CUT_SIZE = 1024;
 const THUMB_SIZE = 128;
 const QUALITY = 0.85;
 
@@ -40,14 +45,14 @@ function toSquareJpeg(bitmap: ImageBitmap, size: number, sx: number, sy: number,
  * `crop` is in the picture's pixels *after* EXIF orientation — the same space the cropper's
  * `<img>` measures, since browsers orient an image element from its EXIF too.
  */
-export async function processAvatar(file: Blob, crop: CropRect): Promise<ProcessedAvatar> {
+export async function processAvatar(file: Blob, crop: CropRect, size = AVATAR_SIZE): Promise<ProcessedAvatar> {
 	const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
 	try {
 		const [image, thumb] = await Promise.all([
-			toSquareJpeg(bitmap, AVATAR_SIZE, crop.x, crop.y, crop.size),
+			toSquareJpeg(bitmap, size, crop.x, crop.y, crop.size),
 			toSquareJpeg(bitmap, THUMB_SIZE, crop.x, crop.y, crop.size)
 		]);
-		return { image, thumb, width: AVATAR_SIZE, height: AVATAR_SIZE };
+		return { image, thumb, width: size, height: size };
 	} finally {
 		bitmap.close();
 	}

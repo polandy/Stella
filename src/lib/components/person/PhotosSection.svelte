@@ -167,6 +167,31 @@
 		{:else}
 			<p class="text-sm text-fg-subtle">{t('contact.photos.none', { name: c.displayName })}</p>
 		{/if}
+		{#if data.groupPhotos.length > 0}
+			<!-- Every group photo their picture was cut from, now and before (circle-photos §5.2). -->
+			<div class="mt-4 flex flex-col gap-2" data-testid="on-group-photos">
+				<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle">{t('contact.photos.onGroupPhotos')}</h3>
+				<ul class="flex gap-2 overflow-x-auto pb-1">
+					{#each data.groupPhotos as g (g.id)}
+						<li class="w-28 shrink-0">
+							<a
+								href="/circles/{g.circleId}"
+								class="flex flex-col gap-1 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+							>
+								<img
+									src={thumbnailUrl(g.id)}
+									alt={t('contact.photos.groupPhotoOf', { circle: g.circleName })}
+									class="aspect-[4/3] w-full rounded-control bg-bg-sunken object-cover"
+									loading="lazy"
+								/>
+								<span class="truncate text-xs text-fg-muted">{g.circleName}</span>
+								<span class="truncate text-[0.6875rem] text-fg-subtle">{photoDate(g.createdAt)}</span>
+							</a>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 
 		{#snippet editor()}
 			<form onsubmit={uploadPhotos} class="flex flex-wrap items-end gap-3">

@@ -12,7 +12,8 @@ import {
 import { circlePhotoView, photoRoleOptions } from '$lib/server/domain/circles/circle-photo-view';
 import { listCirclePhotos } from '$lib/server/domain/circles/circle-photos';
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
-import { getCircleDeps, getCirclePhotoDeps, getContactDeps } from '$lib/server/services';
+import { listCircleCuts } from '$lib/server/domain/media/cuts';
+import { getCircleDeps, getCirclePhotoDeps, getContactDeps, getCutDeps } from '$lib/server/services';
 import { photoActions } from './actions/photos';
 import type { Actions, PageServerLoad } from './$types';
 import { say } from '$lib/server/i18n/say';
@@ -28,9 +29,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const circle = await getCircle(getCircleDeps(), viewer, params.id);
 	if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
-	const [members, photos] = await Promise.all([
+	const [members, photos, cuts] = await Promise.all([
 		listMembers(getCircleDeps(), viewer, params.id),
-		listCirclePhotos(getCirclePhotoDeps(), viewer, params.id)
+		listCirclePhotos(getCirclePhotoDeps(), viewer, params.id),
+		listCircleCuts(getCutDeps(), viewer, params.id)
 	]);
 	const roles = suggestRoles(members.map((m) => m.role));
 
@@ -46,6 +48,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			photos.map((p) => ({ ...p, roleOptions: photoRoleOptions(roles, p.role) })),
 			roles
 		),
+		// Who wears a profile picture cut from which photo (concept §5): marked in the person
+		// picker, and counted when Remove or Make private warns.
+		cuts,
 		// Who is looking: shared/private and Remove are only offered on their own photos.
 		viewerId: viewer.id,
 		// Who is in already, so the picker offers the rest of the shell's people.

@@ -38,7 +38,13 @@
 
 <!-- Hero: who this is, when you last spoke, and the two things you came to do -->
 <header class="flex flex-wrap items-start gap-4">
-	<AvatarUploader contactId={c.id} name={c.displayName} avatarPhotoId={c.avatarPhotoId} size={72} />
+	<AvatarUploader
+		contactId={c.id}
+		name={c.displayName}
+		avatarPhotoId={c.avatarPhotoId}
+		size={72}
+		groupPhotos={data.groupPhotosToCut}
+	/>
 	<div class="min-w-0 flex-1">
 		<!-- Name and description are edited where they are read (docs/02 §2.2). -->
 		<h1 class="tracking-tight text-fg">

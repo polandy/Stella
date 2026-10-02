@@ -199,6 +199,10 @@ export const contact: ContactMessages = {
 	'contact.photos.favourite': 'Favorit',
 	'contact.photos.pin': 'Als Favorit anheften',
 	'contact.photos.unpin': 'Favorit lösen',
+	// Profilbilder aus einem Gruppenfoto (docs/concepts/circle-photos.md §5.2).
+	'contact.photos.cutFrom': (p) => `Aus ${p.circle}`,
+	'contact.photos.onGroupPhotos': 'Auf Gruppenfotos',
+	'contact.photos.groupPhotoOf': (p) => `Gruppenfoto von ${p.circle}`,
 
 	'contact.mentions.in': 'in',
 	'contact.mentions.notes': 'Notizen',

@@ -9,9 +9,12 @@ import {
 	UnknownPhotoRoleError
 } from '$lib/server/domain/circles/circle-photos';
 import { getCircle } from '$lib/server/domain/circles/circles';
+import { InvalidAvatarError } from '$lib/server/domain/media/avatars';
+import { cutProfilePicture } from '$lib/server/domain/media/cuts';
 import { CaptionTooLongError } from '$lib/server/domain/media/gallery';
 import { say, translator } from '$lib/server/i18n/say';
-import { getCircleDeps, getCirclePhotoDeps } from '$lib/server/services';
+import { getCircleDeps, getCirclePhotoDeps, getCutDeps } from '$lib/server/services';
+import { readCutForm } from '$lib/server/http/cut-form';
 import type { Actions } from '../$types';
 
 /*
@@ -101,6 +104,25 @@ export const photoActions = {
 			return fail(403, { photoError: say(event.locals, 'errors.photo.onlyOwnerChange') });
 		}
 		return saved;
+	},
+
+	/**
+	 * Cut someone's profile picture out of the photo (concept §5.1). The lightbox sends the
+	 * square and its rendering, then offers the next person; Remove and Make private warn first.
+	 */
+	cutProfilePicture: async (event) => {
+		const { viewer } = await circleOf(event);
+		const input = await readCutForm(await event.request.formData());
+		if (!input) return fail(400, { photoError: say(event.locals, 'errors.photo.unreadable') });
+		try {
+			if (!(await cutProfilePicture(getCutDeps(), viewer, input))) {
+				return fail(404, { photoError: say(event.locals, 'errors.photo.notFound') });
+			}
+		} catch (err) {
+			if (err instanceof InvalidAvatarError) return fail(400, { photoError: err.phrase(translator(event.locals)) });
+			throw err;
+		}
+		return { cutFor: input.contactId };
 	},
 
 	removePhoto: async (event) => {
