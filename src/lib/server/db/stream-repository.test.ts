@@ -1,4 +1,4 @@
-import { lastNamesFacts } from '../../stream/notices';
+import { lastNamesFacts, renameFacts } from '../../stream/notices';
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
@@ -288,6 +288,34 @@ describe('recentNotices', () => {
 		const rows = await repo.recentNotices(asU2, EVERYONE);
 		// Facts, not prose: Home says the line in each reader's language.
 		expect(rows.map((r) => r.content)).toEqual([{ kind: 'lastNames', lastName: 'Brunner', count: 4 }]);
+	});
+
+	it('reports a rename as its facts, and a private person\u2019s rename to their creator only', async () => {
+		const rename = (id: string, visibility: 'shared' | 'private', at: number) =>
+			db.insert(schema.activityLog)
+				.values({
+					id,
+					householdId: H,
+					actorId: U1,
+					action: 'update',
+					entityType: 'contact_name',
+					entityId: `c-${id}`,
+					contactId: `c-${id}`,
+					visibility,
+					summary: renameFacts('Sandra Brunner-Keller', 'Sandra Jdjdh'),
+					createdAt: at
+				})
+				.run();
+		rename('open', 'shared', 600);
+		rename('hidden', 'private', 610);
+
+		const forOther = await repo.recentNotices(asU2, EVERYONE);
+		const forActor = await repo.recentNotices(asU1, EVERYONE);
+
+		expect(forOther.map((r) => r.content)).toEqual([
+			{ kind: 'rename', from: 'Sandra Brunner-Keller', to: 'Sandra Jdjdh', contactId: 'c-open' }
+		]);
+		expect(forActor.map((r) => r.id)).toEqual(['hidden', 'open']);
 	});
 
 	it('keeps a private person private, even in the record of their deletion', async () => {

@@ -232,12 +232,12 @@ export function getContacts(): ContactRepository & NameCandidateSource & NameRep
 
 /** Deps for changing name parts, one person or several (docs/concepts/surnames.md §7). */
 export function getNameDeps(): NameDeps {
-	return { names: getContacts(), clock: systemClock };
+	return { names: getContacts(), clock: systemClock, ids: ulidGenerator };
 }
 
 /** Deps for setting last names in one batch, with its log entry (docs/concepts/surnames.md §7). */
 export function getLastNameDeps(): LastNameDeps {
-	return { ...getNameDeps(), ids: ulidGenerator };
+	return getNameDeps();
 }
 
 /** Deps for reading what Stella proposes as last names (docs/concepts/surnames.md §4). */

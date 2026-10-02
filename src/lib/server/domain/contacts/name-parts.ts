@@ -1,6 +1,8 @@
 import type { Viewer } from '../../access/visibility';
 import type { Locale } from '../../../i18n/locales';
 import type { Clock } from '../../clock';
+import type { IdGenerator } from '../../id';
+import { renameFacts, RENAME_ENTITY } from '../../../stream/notices';
 import type { NewActivityEntry } from '../activity/activity';
 import { withNameEdit, type StoredName } from '../../../people/display-name';
 import { EmptyContactNameError, type Contact } from './contacts';
@@ -31,6 +33,8 @@ export interface NameRepository {
 export interface NameDeps {
 	names: NameRepository;
 	clock: Clock;
+	/** For the stream line a rename writes (docs/02 §2.11). */
+	ids: IdGenerator;
 }
 
 /** What the profile's name editor sends (§3.4): the three parts and *Shown as*. */
@@ -67,6 +71,25 @@ export async function editNameParts(
 	const replacedLastName = contact.lastName !== null && contact.lastName !== next.lastName;
 	const formerName = edit.keepFormerName && replacedLastName ? contact.lastName : contact.formerName;
 
-	await deps.names.writeNames([{ id, ...next, formerName, updatedAt: deps.clock.now() }], null);
+	const now = deps.clock.now();
+	const changed = (['displayName', 'firstName', 'lastName', 'nickname'] as const).some(
+		(key) => (contact[key] ?? null) !== (next[key] ?? null)
+	);
+	// One line on Home per save that changes the name, no more visible than the person is.
+	const audit: NewActivityEntry | null = changed
+		? {
+				id: deps.ids.next(),
+				householdId: viewer.householdId,
+				actorId: viewer.id,
+				action: 'update',
+				entityType: RENAME_ENTITY,
+				entityId: id,
+				contactId: id,
+				visibility: contact.visibility,
+				summary: renameFacts(contact.displayName, next.displayName),
+				createdAt: now
+			}
+		: null;
+	await deps.names.writeNames([{ id, ...next, formerName, updatedAt: now }], audit);
 	return true;
 }

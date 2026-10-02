@@ -581,6 +581,11 @@ still there, so Home says the line in each reader's language at read time (`noti
 `src/lib/stream/notices.ts`); rows stored as an English or German sentence before are still
 read. It is written in the same transaction as the names.
 
+**And for a name edited on a profile** (docs/02 §2.2): one row per save that changes a part or
+the shown name, `action = 'update'`, `entity_type = 'contact_name'`, `entity_id` and
+`contact_id` the person (so the line links to them), `visibility` the person's, and the facts
+`{"from":"…","to":"…"}` in `summary`, said per reader like the batch above.
+
 ### suggestion_dismissal  [M2]
 The claims the household has declined, so a suggestion answered once is not offered again
 (`docs/concepts/relationship-suggestions.md` §6.4).

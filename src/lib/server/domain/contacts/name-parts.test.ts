@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { Contact } from './contacts';
 import { editNameParts, type NameRepository, type NameWrite } from './name-parts';
 import { EmptyContactNameError } from './contacts';
+import { renameFacts } from '../../../stream/notices';
 import type { NewActivityEntry } from '../activity/activity';
 
 /*
@@ -46,7 +47,7 @@ function fakeNames(...visible: Contact[]) {
 			batches.push({ writes, audit });
 		}
 	};
-	return { deps: { names, clock: { now: () => NOW } }, batches };
+	return { deps: { names, clock: { now: () => NOW }, ids: { next: () => 'log-1' } }, batches };
 }
 
 describe('editNameParts', () => {
@@ -75,7 +76,18 @@ describe('editNameParts', () => {
 						updatedAt: NOW
 					}
 				],
-				audit: null
+				audit: {
+					id: 'log-1',
+					householdId: 'household-1',
+					actorId: 'user-1',
+					action: 'update',
+					entityType: 'contact_name',
+					entityId: 'thomas',
+					contactId: 'thomas',
+					visibility: 'shared',
+					summary: renameFacts('Thomas', 'Thomas „Tom“ Brunner'),
+					createdAt: NOW
+				}
 			}
 		]);
 	});
@@ -233,5 +245,42 @@ describe('editNameParts', () => {
 			}, 'de')
 		).rejects.toThrow(EmptyContactNameError);
 		expect(f.batches).toEqual([]);
+	});
+
+	/*
+	 * Home is told (docs/02 §2.11): one line per save that changes the name, no more visible than
+	 * the person.
+	 */
+	it('tells the household nothing when the save changed nothing', async () => {
+		const f = fakeNames({ ...thomas, displayName: 'Thomas Brunner', lastName: 'Brunner' });
+
+		await editNameParts(f.deps, viewer, 'thomas', {
+			firstName: 'Thomas',
+			lastName: 'Brunner',
+			nickname: null,
+			displayName: 'Thomas Brunner',
+			keepFormerName: false
+		}, 'de');
+
+		expect(f.batches).toHaveLength(1);
+		expect(f.batches[0]?.audit).toBeNull();
+	});
+
+	it('logs a change of a part even when the shown name stays, as privately as the person', async () => {
+		const f = fakeNames({ ...thomas, displayName: 'Opa Hans', visibility: 'private' });
+
+		await editNameParts(f.deps, viewer, 'thomas', {
+			firstName: 'Thomas',
+			lastName: 'Brunner',
+			nickname: null,
+			displayName: 'Opa Hans',
+			keepFormerName: false
+		}, 'de');
+
+		expect(f.batches[0]?.audit).toMatchObject({
+			visibility: 'private',
+			contactId: 'thomas',
+			summary: renameFacts('Opa Hans', 'Opa Hans')
+		});
 	});
 });

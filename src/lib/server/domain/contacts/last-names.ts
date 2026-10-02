@@ -65,9 +65,7 @@ export interface SurnameReviewDeps {
 	surnameDismissals: Pick<SurnameDismissalRepository, 'listForHousehold'>;
 }
 
-export interface LastNameDeps extends NameDeps {
-	ids: IdGenerator;
-}
+export type LastNameDeps = NameDeps;
 
 export interface SurnameDismissalDeps extends Pick<NameDeps, 'names' | 'clock'> {
 	surnameDismissals: SurnameDismissalRepository;
