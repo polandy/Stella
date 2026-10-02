@@ -97,3 +97,21 @@ export function menuMaxHeight(
 		: bounds.bottom - margin - pill.bottom - gap;
 	return Math.max(0, room);
 }
+
+/**
+ * Whether a tap outside an open menu landed within `margin` of its edge. Such a tap aimed at
+ * an item near the edge and missed by a thumb's width; closing the menu for it threw away the
+ * reader's place, so only a tap further out closes.
+ */
+export function nearMiss(
+	menu: { left: number; top: number; right: number; bottom: number },
+	tap: { x: number; y: number },
+	margin: number
+): boolean {
+	return (
+		tap.x >= menu.left - margin &&
+		tap.x <= menu.right + margin &&
+		tap.y >= menu.top - margin &&
+		tap.y <= menu.bottom + margin
+	);
+}

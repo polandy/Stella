@@ -5,8 +5,10 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { DENSITIES, type Density } from '$lib/graph/layout/density';
 	import { EDGE_LABEL_LIMIT } from '$lib/graph/layout/legibility';
+	import type { SavedView } from '$lib/graph/model/saved-views';
 	import type { FilterKey } from '$lib/graph/model/view-filters';
 	import type { ViewSwitches } from '$lib/graph/view-switches';
+	import GraphSavedViews from './GraphSavedViews.svelte';
 	import { MENU_ITEM } from './menu-item';
 
 	/*
@@ -25,6 +27,12 @@
 		labelsFit: boolean;
 		density: Density;
 		onChooseDensity: (density: Density) => void;
+		/** The views this device keeps, and the one the map shows now (docs/02 §2.7). */
+		savedViews: readonly SavedView[];
+		currentView: string | null;
+		onApplyView: (view: SavedView) => void;
+		onSaveView: (name: string) => void;
+		onDeleteView: (name: string) => void;
 	}
 	let {
 		active,
@@ -34,7 +42,12 @@
 		onSwitch,
 		labelsFit,
 		density,
-		onChooseDensity
+		onChooseDensity,
+		savedViews,
+		currentView,
+		onApplyView,
+		onSaveView,
+		onDeleteView
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -89,33 +102,41 @@
 			{filters.shown}/{filters.total}
 		</span>
 	{/snippet}
-	{#snippet children()}
-		{#each FILTERS as f (f.key)}
-			<button
-				type="button"
-				role="menuitemcheckbox"
-				aria-checked={active.has(f.key)}
-				onclick={() => onToggleFilter(f.key)}
-				class={MENU_ITEM}
-			>
-				<span
-					class="inline-block w-5 shrink-0 border-t-2"
-					style="border-color:{f.token};border-top-style:{f.line}"
-					aria-hidden="true"
-				></span>
-				<span class="flex-1">{t(f.label)}</span>
-				<span
-					class="grid size-4 shrink-0 place-items-center rounded border-[1.5px] text-[10px] leading-none"
-					class:border-border={!active.has(f.key)}
-					style={active.has(f.key)
-						? 'background:var(--primary);border-color:var(--primary);color:var(--primary-fg)'
-						: ''}
-					aria-hidden="true"
+	{#snippet children({ close })}
+		<!-- First, so a saved way of looking is the nearest tap on a phone. Showing one ends the
+		     choice, so the menu closes on the map it now shows. -->
+		<GraphSavedViews
+			views={savedViews}
+			current={currentView}
+			onApply={(view) => {
+				onApplyView(view);
+				close();
+			}}
+			onSave={onSaveView}
+			onDelete={onDeleteView}
+		/>
+		<div role="separator" class="mx-1 my-1 border-t border-border"></div>
+		<!-- Two to a row: a phone's thumb needs a 44px target, and six full-width rows that tall
+		     pushed the rest of the menu off the screen. On is told by border, tint and weight,
+		     not by colour alone. -->
+		<div class="grid w-max min-w-full grid-cols-2 gap-1 px-0.5 py-0.5">
+			{#each FILTERS as f (f.key)}
+				<button
+					type="button"
+					role="menuitemcheckbox"
+					aria-checked={active.has(f.key)}
+					onclick={() => onToggleFilter(f.key)}
+					class="flex min-h-9 items-center gap-2 rounded-lg border border-border px-2 text-left text-[13px] whitespace-nowrap text-fg-muted transition-colors hover:border-primary hover:text-fg aria-checked:border-primary aria-checked:bg-primary-soft aria-checked:font-semibold aria-checked:text-fg pointer-coarse:min-h-11"
 				>
-					{#if active.has(f.key)}✓{/if}
-				</span>
-			</button>
-		{/each}
+					<span
+						class="inline-block w-4 shrink-0 border-t-2"
+						style="border-color:{f.token};border-top-style:{f.line}"
+						aria-hidden="true"
+					></span>
+					{t(f.label)}
+				</button>
+			{/each}
+		</div>
 		<div role="separator" class="mx-1 my-1 border-t border-border"></div>
 		<button
 			type="button"

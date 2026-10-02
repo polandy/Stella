@@ -2,6 +2,7 @@ import {
 	Upload,
 	Archive,
 	Blend,
+	BookmarkPlus,
 	BookOpen,
 	CalendarDays,
 	Check,
@@ -77,6 +78,8 @@ export const ICONS = {
 	// Graph canvas to the whole screen and back.
 	enterFullscreen: Maximize,
 	exitFullscreen: Minimize,
+	// Keep the graph's Filter-menu state under a name (docs/02 §2.7).
+	saveView: BookmarkPlus,
 	more: Ellipsis,
 	pinned: Star,
 	archive: Archive,

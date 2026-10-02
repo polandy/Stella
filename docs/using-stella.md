@@ -602,6 +602,13 @@ when that is happening. Zoomed far out, names that would be too small to read ar
 until you zoom back in. *Spacing* at the bottom of the menu sets how far apart people stand —
 *Compact*, *Comfortable* or *Spacious* — and your browser remembers it.
 
+If you often look at the map the same way — only family, say, or circles grouped by role —
+set the menu up once and tap *Save this view…* at its top to give that setup a name. Next time
+one tap on the name brings it back; the cross beside it deletes it, and saving again under the
+same name updates it. Saved views live in this browser only, so your phone and your laptop
+each keep their own, and nobody else in the household sees them. They remember which lines
+are shown and the switches below them, not who is in the middle or how the map is arranged.
+
 Click a person to see who they are and jump to their page; the lines around them are named
 while they are selected, so you can read who is whose grandmother. A small **+3** on someone
 means three more people (or circles) would appear if you opened them up. Click again to pull in

@@ -4,6 +4,7 @@
 		menuMaxHeight,
 		menuOpensUpward,
 		menuShift,
+		nearMiss,
 		nextMenuIndex,
 		type Band,
 		type Span
@@ -13,7 +14,7 @@
 	 * A pill that opens a small menu below it (docs/05 §5.8) — the graph toolbar's Filter and
 	 * Arrange. The menu floats over the canvas and takes no room of its own. It follows the
 	 * menu-button pattern: the arrow keys move between items, Escape closes and hands focus
-	 * back to the pill, and a click anywhere else closes it. The items are the caller's, marked
+	 * back to the pill, and a click anywhere else closes it — bar a near miss just outside the edge. The items are the caller's, marked
 	 * `role="menuitemcheckbox"` or `"menuitemradio"`; the caller closes the menu after a choice
 	 * that ends it, and leaves it open for one of several toggles.
 	 */
@@ -127,8 +128,14 @@
 		all[next].focus();
 	}
 
+	/** How far outside the menu a tap still counts as a thumb that missed an item (docs/05 §5.8). */
+	const NEAR_MISS = 16;
+
 	function onWindowPointerdown(event: PointerEvent) {
-		if (open && root && !root.contains(event.target as Node)) close(false);
+		if (!open || !root || root.contains(event.target as Node)) return;
+		const tap = { x: event.clientX, y: event.clientY };
+		if (menu && nearMiss(menu.getBoundingClientRect(), tap, NEAR_MISS)) return;
+		close(false);
 	}
 </script>
 
