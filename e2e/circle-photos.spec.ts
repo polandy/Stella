@@ -151,7 +151,7 @@ test('a banner’s lightbox walks only that role’s photos, and the role chips 
 
 	// Opened from the filtered grid, the lightbox walks only what the grid shows.
 	await tiles(page).first().click();
-	await expect(lightbox(page)).toContainText('cox · 1 of 1');
+	await expect(lightbox(page)).toContainText(/cox ·\s*1 of 1/);
 	await expect(lightbox(page).getByRole('button', { name: 'Next photo' })).toHaveCount(0);
 	await lightbox(page).getByRole('button', { name: 'Close', exact: true }).click();
 	await expect(lightbox(page)).toBeHidden();
@@ -160,16 +160,16 @@ test('a banner’s lightbox walks only that role’s photos, and the role chips 
 
 	// The rowers' banner walks the two rower photos and comes round again, never to the others.
 	await roleGroup(page, 'rower').getByTestId('circle-banner').click();
-	await expect(lightbox(page)).toContainText('rower · 1 of 2');
+	await expect(lightbox(page)).toContainText(/rower ·\s*1 of 2/);
 	const first = await shownId(lightbox(page));
 	expect(rowerIds).toContain(first);
 	await lightbox(page).getByRole('button', { name: 'Next photo' }).click();
-	await expect(lightbox(page)).toContainText('rower · 2 of 2');
+	await expect(lightbox(page)).toContainText(/rower ·\s*2 of 2/);
 	const second = await shownId(lightbox(page));
 	expect(rowerIds).toContain(second);
 	expect(second).not.toBe(first);
 	await lightbox(page).getByRole('button', { name: 'Next photo' }).click();
-	await expect(lightbox(page)).toContainText('rower · 1 of 2');
+	await expect(lightbox(page)).toContainText(/rower ·\s*1 of 2/);
 	expect(await shownId(lightbox(page))).toBe(first);
 });
 
@@ -218,7 +218,7 @@ test('the other member may caption, re-role and pin a circle photo, but not hide
 
 		await tiles(nina).first().click();
 		const box = lightbox(nina);
-		await expect(box).toContainText('host · 1 of 1');
+		await expect(box).toContainText(/host ·\s*1 of 1/);
 		// The edits anyone may make are offered; the uploader's are not.
 		await expect(box.getByLabel('Caption')).toBeVisible();
 		await expect(box.getByTestId('circle-photo-owner')).toHaveCount(0);
