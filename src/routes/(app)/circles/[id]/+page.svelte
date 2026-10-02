@@ -23,6 +23,9 @@
 	import { accentDotStyle } from '$lib/design/tokens';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { newPersonHref } from '$lib/people/new-person';
+	import { reachability } from '$lib/pwa/reachability.svelte';
+	import { householdSpellings } from '$lib/suggestions/surname-groups';
+	import { useHeldNames } from '$lib/surnames/held-names.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { deferredRemoval } from '$lib/undo/deferred-removal';
 	import { removalKey } from '$lib/undo/keys';
@@ -103,6 +106,20 @@
 	const roleSaved = savedEnhance(removals, t('components.saved'), () => {
 		selectedIds = [];
 		bulkRole = '';
+	});
+	/*
+	 * *Set last name* for the chosen members (docs/concepts/surnames.md §3.2): *Family Brunner*
+	 * is the natural place to give the family its name. The last names come from the shell's
+	 * people, which carry them for every picker already.
+	 */
+	const heldNames = useHeldNames();
+	const lastNameOf = $derived(new Map(data.people.map((p) => [p.id, p.lastName])));
+	const lastNames = $derived({
+		chosen: chosenMembers.map((m) => ({ id: m.contactId, displayName: m.displayName, lastName: lastNameOf.get(m.contactId) ?? null })),
+		knownSurnames: [...householdSpellings(data.people.map((p) => p.lastName)).values()].sort((a, b) => a.localeCompare(b)),
+		held: heldNames.submit(),
+		disabled: !reachability.reachable,
+		onheld: () => (selectedIds = [])
 	});
 	// Each leaves through the same undo window as a single removal, so Undo works per person.
 	function removeChosen() {
@@ -347,5 +364,6 @@
 		bind:bulkRole
 		ontoggleeveryone={() => (selectedIds = toggleEveryone(selectedIds, allIds))}
 		onremove={removeChosen}
+		{lastNames}
 	/>
 {/if}

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { page } from '$app/state';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -27,7 +26,7 @@
 	const disabled = $derived(!reachability.reachable);
 	const offlineLine = $derived(disabled ? t('surnames.offline') : null);
 	const held = names.submit((batch: HeldBatch) => {
-		namesakes = [...namesakes, ...namesakesAfterNaming(page.data.people ?? [], batch.ids, batch.lastName)];
+		namesakes = [...namesakes, ...namesakesAfterNaming(data.people, batch.ids, batch.lastName)];
 	});
 	const left = $derived(
 		[...data.groups.flatMap((g) => g.rows.map((r) => r.person.id)), ...data.chooseOne.map((r) => r.person.id), ...data.none.map((p) => p.id)].filter(

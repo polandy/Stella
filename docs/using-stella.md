@@ -153,7 +153,10 @@ or the name they are shown by already says *Thomas Brunner* — it groups them u
 says why on each row, and **Apply** gives the ticked ones the name. A partner's or a child's
 name is offered unticked, since people do not always share it; two parents with different
 names make you pick. Anyone without a suggestion gets a field, and **Select…** gives several
-of them one name. *Not Brunner* in a row's menu tells Stella not to propose that name for that
+of them one name — and the People list has the same **Select**: tick anyone, then **Set last
+name**. Before anything is saved Stella says how many it will name, and anyone who already has
+a *different* last name is listed with a box to tick if you really mean to replace it; nobody's
+name is replaced unless you tick it. *Not Brunner* in a row's menu tells Stella not to propose that name for that
 person again — *Offer again* at the foot of the page takes it back. You can undo for eight
 seconds, and if the new name matches someone already in Stella, the page asks whether it is the
 same person and leads you to the merge.
@@ -446,7 +449,8 @@ every match at once. If you would rather the search empty itself after each pick
 To change the role of people already in the circle, press **Select** above the members, tick
 the people (or **all** beside a role heading), type the role in the bar at the bottom and
 press *Apply*. Leaving it empty takes the role away. The same bar removes the selected
-people from the circle.
+people from the circle, and **Set last name** gives them all one last name — the quickest way
+to name a family whose circle you already have.
 
 A circle's page shows its people grouped by role — all the players together, the coaches
 together — with anyone who has no role at the end.

@@ -4,7 +4,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { foldSurname } from '$lib/suggestions/rules/surnames';
+	import { planLastName } from '$lib/surnames/plan';
 
 	/*
 	 * *Set last name* for the people selected (docs/concepts/surnames.md §3.2): one field, with
@@ -37,9 +37,7 @@
 	let replace = $state<Record<string, boolean>>({});
 
 	const typed = $derived(name.trim());
-	const blank = (p: { lastName: string | null }) => !(p.lastName ?? '').trim();
-	const others = $derived(chosen.filter((p) => !blank(p) && foldSurname(p.lastName!) !== foldSurname(typed)));
-	const written = $derived([...chosen.filter(blank), ...others.filter((p) => replace[p.id])]);
+	const plan = $derived(planLastName(chosen, typed, replace));
 </script>
 
 <div class="flex w-full flex-col gap-2" data-testid="set-last-name">
@@ -72,17 +70,17 @@
 			class="flex flex-col gap-2"
 		>
 			<input type="hidden" name="lastName" value={typed} />
-			{#each written as p (p.id)}<input type="hidden" name="contactId" value={p.id} />{/each}
-			{#each others.filter((p) => replace[p.id]) as p (p.id)}<input type="hidden" name="replaceId" value={p.id} />{/each}
-			<p class="text-sm text-fg">{t('surnames.confirm', { name: typed, count: written.length })}</p>
-			{#each others as p (p.id)}
+			{#each plan.written as p (p.id)}<input type="hidden" name="contactId" value={p.id} />{/each}
+			{#each plan.replaceIds as id (id)}<input type="hidden" name="replaceId" value={id} />{/each}
+			<p class="text-sm text-fg">{t('surnames.confirm', { name: typed, count: plan.written.length })}</p>
+			{#each plan.different as p (p.id)}
 				<label class="flex items-center gap-2 text-sm text-fg-muted">
 					<input type="checkbox" class="size-5" bind:checked={replace[p.id]} />
 					{t('surnames.replace', { person: p.displayName, name: p.lastName ?? '' })}
 				</label>
 			{/each}
 			<div class="flex gap-2">
-				<Button variant="primary" size="sm" disabled={disabled || written.length === 0}>{t('surnames.set')}</Button>
+				<Button variant="primary" size="sm" disabled={disabled || plan.written.length === 0}>{t('surnames.set')}</Button>
 				<Button variant="ghost" size="sm" type="button" onclick={() => (confirming = false)}>{t('surnames.back')}</Button>
 			</div>
 		</form>

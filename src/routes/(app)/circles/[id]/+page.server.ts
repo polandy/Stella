@@ -16,6 +16,7 @@ import { listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { listCircleCuts } from '$lib/server/domain/media/cuts';
 import { getCircleDeps, getCirclePhotoDeps, getContactDeps, getCutDeps } from '$lib/server/services';
 import { photoActions } from './actions/photos';
+import { lastNameActions } from '$lib/server/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 
@@ -66,6 +67,7 @@ const PeopleAndRoleSchema = v.object({
 
 export const actions: Actions = {
 	...photoActions,
+	...lastNameActions,
 
 	addMembers: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');

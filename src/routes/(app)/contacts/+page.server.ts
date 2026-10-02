@@ -6,7 +6,8 @@ import {
 } from '$lib/server/domain/contacts/contacts';
 import { listContactsByTag, listTags } from '$lib/server/domain/tags/tags';
 import { getAttention, getContactDeps, getTagDeps } from '$lib/server/services';
-import type { PageServerLoad } from './$types';
+import { lastNameActions } from '$lib/server/last-names-actions';
+import type { Actions, PageServerLoad } from './$types';
 
 /*
  * People (docs/02 §2.2): every person the viewer may see, with the last day anything was
@@ -58,3 +59,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		today: new Date().toLocaleDateString('en-CA')
 	};
 };
+
+/* *Select* → *Set last name* (docs/concepts/surnames.md §3.2), the one batch write. */
+export const actions: Actions = { ...lastNameActions };
