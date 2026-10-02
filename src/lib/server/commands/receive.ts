@@ -1,6 +1,7 @@
 import { isQueueable, type Command, type CommandAnswer } from '../../commands/commands';
 import type { Translate } from '../../i18n/translate';
 import { dispatchCommand, type CommandActor, type CommandDeps } from '../domain/commands/dispatch';
+import { RelationshipsRefusedError } from '../domain/relationships/add-many';
 import { parseCommand } from './parse';
 
 /*
@@ -33,7 +34,18 @@ export async function answerFor(
 	try {
 		const outcome = await dispatchCommand(deps, actor, command);
 		if (outcome.status === 'applied') return { id: command.id, status: 'applied', result: outcome.result };
-		if (outcome.status === 'refused') return { id: command.id, status: 'refused', reason: outcome.reason(t) };
+		if (outcome.status === 'refused') {
+			const reason = outcome.reason(t);
+			// A batch of links names each refused person, so the form can mark their chips (§2.4).
+			if (outcome.error instanceof RelationshipsRefusedError) {
+				const refusals = outcome.error.refusals.map((refusal) => ({
+					targetId: refusal.targetId,
+					reason: refusal.reason(t)
+				}));
+				return { id: command.id, status: 'refused', reason, refusals };
+			}
+			return { id: command.id, status: 'refused', reason };
+		}
 		return { id: command.id, status: 'busy' };
 	} catch (err) {
 		console.error(`Command ${command.id} (${command.type}) failed:`, err);

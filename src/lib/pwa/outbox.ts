@@ -3,7 +3,8 @@ import {
 	type CommandAnswer,
 	type CommandPayloads,
 	type JsonCommand,
-	type PhotoCommandType
+	type PhotoCommandType,
+	type RefusedTarget
 } from '../commands/commands';
 
 /*
@@ -303,7 +304,7 @@ export function recover(items: readonly OutboxItem[]): OutboxItem[] {
  */
 export type Delivery =
 	| { status: 'applied'; result: unknown }
-	| { status: 'refused'; reason: string }
+	| { status: 'refused'; reason: string; refusals?: RefusedTarget[] }
 	| { status: 'kept' };
 
 /**
@@ -311,7 +312,10 @@ export type Delivery =
  * known yet — a "not now", or photos of it still on their way.
  */
 export function deliveryFor(answer: CommandAnswer, photosLeft: boolean): Delivery | null {
-	if (answer.status === 'refused') return { status: 'refused', reason: answer.reason };
+	if (answer.status === 'refused') {
+		const { reason, refusals } = answer;
+		return refusals ? { status: 'refused', reason, refusals } : { status: 'refused', reason };
+	}
 	if (answer.status === 'applied' && !photosLeft) return { status: 'applied', result: answer.result };
 	return null;
 }

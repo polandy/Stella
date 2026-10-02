@@ -2,6 +2,8 @@ import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '../../i18n/translate';
 import type { CommandDeps, CommandReceipt } from '../domain/commands/dispatch';
 import { MomentNeedsPersonError, type CapturedMoment } from '../domain/moments/moments';
+import { RelationshipsRefusedError } from '../domain/relationships/add-many';
+import { phrase } from '../../i18n/phrase';
 import { receiveQueued } from './receive';
 
 /*
@@ -68,7 +70,14 @@ function fakes() {
 			'tag.assign': async () => ({ tagId: 't' }),
 			'circle.join': async () => ({ circleId: 'c' }),
 			'relationship.add': async () => ({ relationshipId: 'r' }),
-			'relationship.addMany': async () => ({ relationshipIds: ['r1', 'r2'] }),
+			'relationship.addMany': async (_actor, payload) => {
+				if (payload.description === 'refuse otto') {
+					throw new RelationshipsRefusedError([
+						{ targetId: 'otto', targetName: 'Otto Meier', reason: phrase('errors.relationship.duplicate') }
+					]);
+				}
+				return { relationshipIds: ['r1', 'r2'] };
+			},
 			'contact.add': async () => ({ contactId: 'c' }),
 			'journal.write': async () => ({ entryId: 'e', anchorContactId: 'c', visibility: 'shared' as const }),
 			'field.add': async () => ({ fieldId: 'f' }),
@@ -108,6 +117,34 @@ describe('receiveQueued', () => {
 		});
 		expect(answers[1]).toMatchObject({ id: ids[1], status: 'applied' });
 		expect(f.bodies).toEqual(['after @Julia']);
+	});
+
+	it('names each refused person of a batch, so the form can mark them (docs/02 §2.4)', async () => {
+		const f = fakes();
+		const [answer] = await receiveQueued(f.deps, actor, t, [
+			{
+				id: ids[0],
+				type: 'relationship.addMany',
+				payload: {
+					contactId: 'anna',
+					typeChoice: 'forward:parent_child',
+					status: 'current',
+					description: 'refuse otto',
+					links: [
+						{ targetId: 'lio', sinceDate: null },
+						{ targetId: 'otto', sinceDate: null }
+					]
+				},
+				issuedAt: 500
+			}
+		]);
+
+		expect(answer).toEqual({
+			id: ids[0],
+			status: 'refused',
+			reason: 'Otto Meier: That relationship already exists.',
+			refusals: [{ targetId: 'otto', reason: 'That relationship already exists.' }]
+		});
 	});
 
 	it('refuses what it cannot read, naming it by its id when there is one', async () => {

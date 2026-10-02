@@ -289,6 +289,15 @@ describe('what a save someone is watching learns (online saves, concept §8 #10)
 		});
 	});
 
+	it('carries the people a refused batch names, for the form to mark', () => {
+		const refusals = [{ targetId: 'otto', reason: 'That relationship already exists.' }];
+		expect(deliveryFor({ id: 'a', status: 'refused', reason: 'Otto Meier: …', refusals }, false)).toEqual({
+			status: 'refused',
+			reason: 'Otto Meier: …',
+			refusals
+		});
+	});
+
 	it('learns nothing from a “not now”', () => {
 		expect(deliveryFor({ id: 'a', status: 'busy' }, false)).toBeNull();
 		expect(deliveryFor({ id: 'a', status: 'failed' }, false)).toBeNull();

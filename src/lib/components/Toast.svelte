@@ -62,9 +62,16 @@
 		</div>
 	{/each}
 	{#each removals.snapshot.notices as notice (notice.id)}
-		<div class="toast" data-testid="toast-notice">
-			<span class="px-2">{notice.text}</span>
-		</div>
+		{#if notice.undoable}
+			<div class="toast" data-testid="toast-undo">
+				<span class="pl-2">{notice.text}</span>
+				<Button variant="secondary" size="sm" onclick={() => removals.takeBack(notice.id)}>{t('common.undo')}</Button>
+			</div>
+		{:else}
+			<div class="toast" data-testid="toast-notice">
+				<span class="px-2">{notice.text}</span>
+			</div>
+		{/if}
 	{/each}
 </div>
 

@@ -19,7 +19,9 @@ export interface Removals {
 	flush(): Promise<void>;
 	/** Reactive — reading it inside `$derived` tracks the pending list. */
 	isPending(key: string): boolean;
-	notify(text: string): void;
+	notify(text: string, takeBack?: () => void): void;
+	/** *Undo* on a notice announcing something that can be taken back. */
+	takeBack(noticeId: number): void;
 	/** Stops the windows while the reader is at the toasts; `release` lets them run again. */
 	hold(): void;
 	release(): void;
@@ -47,6 +49,7 @@ export function provideRemovals(): Removals {
 		flush: store.flush,
 		isPending: (key) => snapshot.removals.some((removal) => removal.key === key),
 		notify: store.notify,
+		takeBack: store.takeBack,
 		hold: store.hold,
 		release: store.release
 	};

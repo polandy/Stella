@@ -26,10 +26,14 @@ export interface Removal {
 	commit: () => Promise<void> | void;
 }
 
-/** A plain message with no undo, e.g. "Saved" or the reason a removal failed. */
+/**
+ * A message, e.g. "Saved" or the reason a removal failed. `undoable` when it announces an
+ * addition that can be taken back — "2 links saved" — whose *Undo* runs `takeBack(id)`.
+ */
 export interface Notice {
 	id: number;
 	text: string;
+	undoable: boolean;
 }
 
 /** What a toast region renders: removals carry *Undo*, notices are read-only. */
@@ -46,8 +50,14 @@ export interface PendingRemovals {
 	/** Commits everything still pending — called when the page is left. */
 	flush(): Promise<void>;
 	isPending(key: string): boolean;
-	/** Shows a message for one window. */
-	notify(text: string): void;
+	/**
+	 * Shows a message for one window. With `takeBack`, the message carries *Undo*: the thing it
+	 * announces is already done, so nothing happens when the window closes, and pressing it
+	 * runs `takeBack` — which reports its own failure, since only it knows what went wrong.
+	 */
+	notify(text: string, takeBack?: () => void): void;
+	/** *Undo* on an undoable notice: drops it and runs its `takeBack`, once. Otherwise a no-op. */
+	takeBack(noticeId: number): void;
 	/**
 	 * Stops every window while the reader is at the toasts — hovering them or focused in them —
 	 * so Undo cannot run out under their hand (WCAG 2.2.1). A second hold is a no-op.
@@ -76,6 +86,7 @@ interface Pending {
 interface ShownNotice {
 	notice: Notice;
 	timer: unknown;
+	takeBack?: () => void;
 }
 
 /** Builds the store the app shell holds for one browser tab. */
@@ -147,11 +158,22 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 			for (const entry of entries) await perform(entry.removal);
 		},
 		isPending: (key) => pending.has(key),
-		notify(text) {
-			const shown: ShownNotice = { notice: { id: nextNoticeId++, text }, timer: undefined };
+		notify(text, takeBack) {
+			const shown: ShownNotice = {
+				notice: { id: nextNoticeId++, text, undoable: takeBack !== undefined },
+				timer: undefined,
+				takeBack
+			};
 			armNotice(shown);
 			notices.push(shown);
 			changed();
+		},
+		takeBack(noticeId) {
+			const shown = notices.find((candidate) => candidate.notice.id === noticeId);
+			if (!shown?.takeBack) return;
+			scheduler.clearTimeout(shown.timer);
+			dismissNotice(noticeId);
+			shown.takeBack();
 		},
 		hold() {
 			if (held) return;
