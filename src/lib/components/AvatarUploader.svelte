@@ -142,12 +142,15 @@
 	</button>
 	<input bind:this={input} onchange={onPick} type="file" accept="image/*" class="hidden" />
 	<FormError message={error} variant="inline" size="xs" />
-	<PhotoCropper file={picked} onconfirm={upload} oncancel={() => (picked = null)} />
+	<!-- One cropper for both: a picked file is uploaded, a group photo is cut from. -->
 	<PhotoCropper
-		file={fromGroup?.picture ?? null}
-		initial={fromGroup?.photo.crop ?? null}
-		onconfirm={cut}
-		oncancel={() => (fromGroup = null)}
+		file={picked ?? fromGroup?.picture ?? null}
+		initial={picked ? null : (fromGroup?.photo.crop ?? null)}
+		onconfirm={(crop) => (picked ? upload(crop) : cut(crop))}
+		oncancel={() => {
+			picked = null;
+			fromGroup = null;
+		}}
 	/>
 	{#if groupPhotos.length > 0}
 		<dialog
