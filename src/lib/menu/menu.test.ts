@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { filterSummary, menuMaxHeight, menuOpensUpward, menuShift, nextMenuIndex } from './menu';
+import { filterSummary, menuMaxHeight, menuOpensUpward, menuShift, nearMiss, nextMenuIndex } from './menu';
 
 /*
  * The decisions behind the graph toolbar's menus (docs/05 §5.8): what the Filter button says
@@ -121,5 +121,24 @@ describe('menuMaxHeight', () => {
 
 	it('never asks for less than nothing', () => {
 		expect(menuMaxHeight({ top: 970, bottom: 1000 }, false, map, MARGIN, GAP)).toBe(0);
+	});
+});
+
+describe('nearMiss', () => {
+	const menu = { left: 100, top: 50, right: 300, bottom: 400 };
+
+	it('a tap a thumb-width outside the edge was meant for the menu', () => {
+		expect(nearMiss(menu, { x: 310, y: 200 }, 16)).toBe(true);
+		expect(nearMiss(menu, { x: 90, y: 405 }, 16)).toBe(true);
+	});
+
+	it('a tap well away from the menu is a deliberate close', () => {
+		expect(nearMiss(menu, { x: 330, y: 200 }, 16)).toBe(false);
+		expect(nearMiss(menu, { x: 200, y: 20 }, 16)).toBe(false);
+	});
+
+	it('the margin edge itself still counts as near', () => {
+		expect(nearMiss(menu, { x: 316, y: 50 }, 16)).toBe(true);
+		expect(nearMiss(menu, { x: 317, y: 50 }, 16)).toBe(false);
 	});
 });
