@@ -27,6 +27,7 @@ const NamePartsSchema = v.object({
 	lastName: v.pipe(v.string(), v.trim()),
 	nickname: v.pipe(v.string(), v.trim()),
 	displayName: v.pipe(v.string(), v.trim()),
+	formerName: v.pipe(v.string(), v.trim()),
 	keepFormerName: v.boolean()
 });
 
@@ -63,6 +64,7 @@ export const profileActions = {
 			lastName: form.get('lastName') ?? '',
 			nickname: form.get('nickname') ?? '',
 			displayName: form.get('displayName') ?? '',
+			formerName: form.get('formerName') ?? '',
 			keepFormerName: form.get('keepFormerName') === 'on'
 		});
 		if (!parsed.success) return fail(400, { namePartsError: say(locals, 'errors.contact.namePartsInvalid') });

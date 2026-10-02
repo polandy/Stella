@@ -56,6 +56,8 @@
 	// svelte-ignore state_referenced_locally
 	let nickname = $state(name.nickname ?? '');
 	// svelte-ignore state_referenced_locally
+	let formerName = $state(name.formerName ?? '');
+	// svelte-ignore state_referenced_locally
 	let shownAs = $state(name.displayName);
 	// svelte-ignore state_referenced_locally
 	let following = $state(!shownNameChosen);
@@ -66,6 +68,7 @@
 		firstName = name.firstName ?? '';
 		lastName = name.lastName ?? '';
 		nickname = name.nickname ?? '';
+		formerName = name.formerName ?? '';
 		shownAs = name.displayName;
 		following = !shownNameChosen;
 		// Ticked while no former name is on record; replacing one is a decision, not a default.
@@ -76,6 +79,13 @@
 	/** While it follows, *Shown as* is what the server would make of these parts. */
 	function partsTyped() {
 		if (following) shownAs = withNameParts(name, { firstName, lastName, nickname }, i18n.locale).displayName;
+		keepTyped();
+	}
+
+	/** *Keep … as former name* shows what it will store, as the server will store it. */
+	function keepTyped() {
+		if (replacing && keepFormerName) formerName = name.lastName ?? '';
+		else if (formerName === name.lastName) formerName = name.formerName ?? '';
 	}
 
 	const replacing = $derived(name.lastName !== null && lastName.trim() !== '' && lastName.trim() !== name.lastName);
@@ -148,6 +158,11 @@
 				<input id="{uid}-nick" name="nickname" bind:value={nickname} oninput={partsTyped} autocomplete="off" class={FIELD} />
 			</label>
 		</div>
+		<!-- An earlier name finds them and is shown under the name, never in it (docs/02 §2.2). -->
+		<label class={LABEL} for="{uid}-former">
+			{t('contact.nameParts.formerName')}
+			<input id="{uid}-former" name="formerName" bind:value={formerName} autocomplete="off" class={FIELD} />
+		</label>
 		<label class={LABEL} for="{uid}-shown">
 			{t('contact.nameParts.shownAs')}
 			<input
@@ -166,7 +181,7 @@
 		</label>
 		{#if replacing}
 			<label class="flex items-center gap-2 text-sm text-fg pointer-coarse:min-h-11 pointer-coarse:gap-3">
-				<input type="checkbox" name="keepFormerName" class="size-5 shrink-0" bind:checked={keepFormerName} />
+				<input type="checkbox" name="keepFormerName" class="size-5 shrink-0" bind:checked={keepFormerName} onchange={keepTyped} />
 				{t('contact.nameParts.keepFormer', { name: name.lastName ?? '' })}
 			</label>
 		{/if}

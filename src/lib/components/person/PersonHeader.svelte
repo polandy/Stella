@@ -50,6 +50,10 @@
 	<div class="min-w-0 flex-1">
 		<!-- Name and description are edited where they are read (docs/02 §2.2). -->
 		<NameEditor name={c} shownNameChosen={data.shownNameChosen} error={form?.namePartsError ?? null} />
+		<!-- An earlier name, neutral on purpose: a maiden name and any other alike (docs/02 §2.2). -->
+		{#if c.formerName}
+			<p class="text-sm text-fg-muted" data-testid="former-name">{t('contact.formerly', { name: c.formerName })}</p>
+		{/if}
 		<!-- Stella's proposal for a missing last name, and passing a new one on. -->
 		<LastNameHelp {data} />
 		<p class="text-fg-muted">

@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
@@ -120,6 +121,19 @@ describe('ensureSearchIndex backfill', () => {
 		ensureSearchIndex(sqlite);
 
 		expect(indexed('n-3')).toContain('10:30 sharp');
+	});
+
+	it('finds a person by their former name, from the backfill and from the trigger', () => {
+		db.update(schema.contact).set({ formerName: 'Widmer' }).where(eq(schema.contact.id, 'c-sandra')).run();
+		ensureSearchIndex(sqlite);
+		db.insert(schema.contact)
+			.values({ id: 'c-later', householdId: H, createdBy: U, visibility: 'shared', displayName: 'Lea Abab', formerName: 'Widmer' })
+			.run();
+
+		const hits = sqlite
+			.query("SELECT contact_id FROM contact_fts WHERE contact_fts MATCH 'widmer*' ORDER BY contact_id")
+			.all() as { contact_id: string }[];
+		expect(hits.map((h) => h.contact_id)).toEqual(['c-later', 'c-sandra']);
 	});
 
 	it('backfills the contacts too, so people are findable after the upgrade', () => {

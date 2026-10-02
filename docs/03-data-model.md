@@ -191,7 +191,7 @@ The central person entity.
 | archived_at | int null | set = out of the browsing surfaces (§2.2); still readable by id |
 | created_at / updated_at | int | |
 
-FTS: `first_name, last_name, nickname, display_name, description, how_we_met` are
+FTS: `first_name, last_name, nickname, former_name, display_name, description, how_we_met` are
 indexed in an FTS5 table (see 3.5). Indexed on `(household_id, created_at)`: every read is
 scoped by household, and the Home stream reads the newest people first.
 

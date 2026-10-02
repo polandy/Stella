@@ -47,6 +47,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			firstName: c.firstName,
 			lastName: c.lastName,
 			nickname: c.nickname,
+			formerName: c.formerName,
 			description: c.description,
 			avatarPhotoId: c.avatarPhotoId,
 			visibility: c.visibility,

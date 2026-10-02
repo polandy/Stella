@@ -97,6 +97,8 @@ export interface ContactSummary {
 	firstName: string | null;
 	lastName: string | null;
 	nickname: string | null;
+	/** A maiden or other earlier name, which finds them too (docs/02 §2.2). */
+	formerName: string | null;
 	description: string | null;
 	/** Where and when they were met — with the description, what tells namesakes apart (docs/02 §2.2.3). */
 	metPlace: string | null;

@@ -13,6 +13,8 @@ export const contact = {
 	'contact.nameParts.shownAs': 'Shown as',
 	'contact.nameParts.shownAsFollows': 'Follows the name parts while you type.',
 	'contact.nameParts.shownAsChosen': 'Stays as typed. Empty it to follow the name parts again.',
+	'contact.formerly': (p: { name: string }) => `formerly ${p.name}`,
+	'contact.nameParts.formerName': 'Former name',
 	'contact.nameParts.keepFormer': (p: { name: string }) => `Keep “${p.name}” as former name`,
 	'contact.lastContact': 'Last contact',
 	'contact.noContactYet': 'No contact logged yet',

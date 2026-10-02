@@ -22,6 +22,7 @@ const person = (id: string, over: Partial<ContactSummary> = {}): ContactSummary 
 	firstName: 'Thomas',
 	lastName: null,
 	nickname: null,
+	formerName: null,
 	description: null,
 	metPlace: null,
 	metDate: null,

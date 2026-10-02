@@ -289,3 +289,8 @@ Each is a PR with its unit tests, UI and docs; the e2e follows the maintainer's 
    records no household language, so they follow the writing member's language („…“ German,
    “…” English). Names stored earlier were updated once, where they followed the old rule and a
    nickname was set; chosen names such as *Opa Kurt* were left as they are.
+9. **The former name is shown, edited and found (2026-10-02).** It stands under the name as
+   *formerly Widmer* / *früher Widmer* — neutral wording, since the field holds maiden and other
+   earlier names alike — is a fifth field of the name editor (filled by *Keep … as former name*
+   when that is ticked), never enters the shown name, and is searched: the full-text index (its
+   fingerprint rebuild, docs/03 §3.5, so no migration) and the client-side find-as-you-type.

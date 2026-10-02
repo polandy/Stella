@@ -59,6 +59,7 @@ describe('editNameParts', () => {
 			lastName: 'Brunner',
 			nickname: 'Tom',
 			displayName: 'Thomas',
+			formerName: null,
 			keepFormerName: false
 		}, 'de');
 
@@ -100,6 +101,7 @@ describe('editNameParts', () => {
 			lastName: 'Brunner',
 			nickname: null,
 			displayName: 'Onkel Tom',
+			formerName: null,
 			keepFormerName: false
 		}, 'de');
 
@@ -114,6 +116,7 @@ describe('editNameParts', () => {
 			lastName: 'Brunner',
 			nickname: null,
 			displayName: 'Thomas Meier',
+			formerName: null,
 			keepFormerName: true
 		}, 'de');
 
@@ -130,6 +133,7 @@ describe('editNameParts', () => {
 			lastName: 'Brunner',
 			nickname: null,
 			displayName: 'Thomas Meier',
+			formerName: 'Keller',
 			keepFormerName: false
 		}, 'de');
 		await editNameParts(unchanged.deps, viewer, 'thomas', {
@@ -137,6 +141,7 @@ describe('editNameParts', () => {
 			lastName: 'Meier',
 			nickname: null,
 			displayName: 'Thomas Meier',
+			formerName: 'Keller',
 			keepFormerName: true
 		}, 'de');
 
@@ -152,6 +157,7 @@ describe('editNameParts', () => {
 			lastName: '',
 			nickname: '',
 			displayName: 'Thomas',
+			formerName: null,
 			keepFormerName: false
 		}, 'de');
 
@@ -161,7 +167,7 @@ describe('editNameParts', () => {
 	it('writes nothing for a person the viewer may not see', async () => {
 		const hidden = fakeNames();
 		const visible = fakeNames(thomas);
-		const parts = { firstName: 'Thomas', lastName: 'Brunner', nickname: null, displayName: 'Thomas', keepFormerName: false };
+		const parts = { firstName: 'Thomas', lastName: 'Brunner', nickname: null, displayName: 'Thomas', formerName: null, keepFormerName: false };
 
 		const saved = await editNameParts(hidden.deps, viewer, 'thomas', parts, 'de');
 		await editNameParts(visible.deps, viewer, 'thomas', parts, 'de');
@@ -184,6 +190,7 @@ describe('editNameParts', () => {
 			lastName: 'Meier',
 			nickname: null,
 			displayName: 'Thomas Meier',
+			formerName: null,
 			keepFormerName: false
 		}, 'de');
 
@@ -198,6 +205,7 @@ describe('editNameParts', () => {
 			lastName: 'Brunner',
 			nickname: null,
 			displayName: '  Onkel Tom ',
+			formerName: null,
 			keepFormerName: false
 		}, 'de');
 
@@ -212,6 +220,7 @@ describe('editNameParts', () => {
 			lastName: 'Brunner',
 			nickname: null,
 			displayName: 'Opa Hans',
+			formerName: null,
 			keepFormerName: false
 		}, 'de');
 
@@ -226,6 +235,7 @@ describe('editNameParts', () => {
 			lastName: 'Brunner',
 			nickname: null,
 			displayName: '   ',
+			formerName: null,
 			keepFormerName: false
 		}, 'de');
 
@@ -241,6 +251,7 @@ describe('editNameParts', () => {
 				lastName: '',
 				nickname: null,
 				displayName: '',
+				formerName: null,
 				keepFormerName: false
 			}, 'de')
 		).rejects.toThrow(EmptyContactNameError);
@@ -259,6 +270,7 @@ describe('editNameParts', () => {
 			lastName: 'Brunner',
 			nickname: null,
 			displayName: 'Thomas Brunner',
+			formerName: null,
 			keepFormerName: false
 		}, 'de');
 
@@ -274,6 +286,7 @@ describe('editNameParts', () => {
 			lastName: 'Brunner',
 			nickname: null,
 			displayName: 'Opa Hans',
+			formerName: null,
 			keepFormerName: false
 		}, 'de');
 
@@ -282,5 +295,51 @@ describe('editNameParts', () => {
 			contactId: 'thomas',
 			summary: renameFacts('Opa Hans', 'Opa Hans')
 		});
+	});
+
+	/*
+	 * The former name is a part of its own (docs/02 §2.2): typed, cleared, or filled by *Keep …
+	 * as former name*, and never in the shown name.
+	 */
+	it('stores a typed former name, trimmed, and clears an emptied one', async () => {
+		const typed = fakeNames({ ...thomas, displayName: 'Franziska Abab', firstName: 'Franziska', lastName: 'Abab' });
+		const cleared = fakeNames({ ...thomas, displayName: 'Franziska Abab', firstName: 'Franziska', lastName: 'Abab', formerName: 'Widmer' });
+		const edit = { firstName: 'Franziska', lastName: 'Abab', nickname: null, displayName: 'Franziska Abab', keepFormerName: false };
+
+		await editNameParts(typed.deps, viewer, 'thomas', { ...edit, formerName: '  Widmer ' }, 'de');
+		await editNameParts(cleared.deps, viewer, 'thomas', { ...edit, formerName: '' }, 'de');
+
+		expect(typed.batches[0]?.writes[0]).toMatchObject({ formerName: 'Widmer', displayName: 'Franziska Abab' });
+		expect(cleared.batches[0]?.writes[0]?.formerName).toBeNull();
+	});
+
+	it('takes the replaced last name when asked to keep it, over what the field says', async () => {
+		const f = fakeNames({ ...thomas, displayName: 'Franziska Widmer', firstName: 'Franziska', lastName: 'Widmer' });
+
+		await editNameParts(f.deps, viewer, 'thomas', {
+			firstName: 'Franziska',
+			lastName: 'Abab',
+			nickname: null,
+			displayName: 'Franziska Widmer',
+			formerName: '',
+			keepFormerName: true
+		}, 'de');
+
+		expect(f.batches[0]?.writes[0]).toMatchObject({ formerName: 'Widmer', displayName: 'Franziska Abab' });
+	});
+
+	it('tells the household about a change of the former name alone', async () => {
+		const f = fakeNames({ ...thomas, displayName: 'Franziska Abab', firstName: 'Franziska', lastName: 'Abab' });
+
+		await editNameParts(f.deps, viewer, 'thomas', {
+			firstName: 'Franziska',
+			lastName: 'Abab',
+			nickname: null,
+			displayName: 'Franziska Abab',
+			formerName: 'Widmer',
+			keepFormerName: false
+		}, 'de');
+
+		expect(f.batches[0]?.audit?.summary).toBe(renameFacts('Franziska Abab', 'Franziska Abab'));
 	});
 });

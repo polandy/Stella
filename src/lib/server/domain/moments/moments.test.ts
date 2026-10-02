@@ -22,6 +22,7 @@ function summary(c: NewContact): ContactSummary {
 		firstName: c.firstName,
 		lastName: c.lastName,
 		nickname: c.nickname,
+		formerName: null,
 		description: c.description,
 		metPlace: c.metPlace ?? null,
 		metDate: c.metDate ?? null,

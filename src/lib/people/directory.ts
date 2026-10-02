@@ -11,6 +11,8 @@ export interface DirectoryPerson {
 	firstName: string | null;
 	lastName: string | null;
 	nickname: string | null;
+	/** A maiden or other earlier name: who someone was is still how some remember them. */
+	formerName?: string | null;
 	description: string | null;
 }
 
@@ -64,7 +66,7 @@ export function matchesQuery(person: DirectoryPerson, query: string): boolean {
 	const needle = fold(query.trim());
 	if (needle === '') return true;
 	const haystack = fold(
-		[person.displayName, person.firstName, person.lastName, person.nickname, person.description]
+		[person.displayName, person.firstName, person.lastName, person.nickname, person.formerName, person.description]
 			.filter((part): part is string => typeof part === 'string')
 			.join(' ')
 	);

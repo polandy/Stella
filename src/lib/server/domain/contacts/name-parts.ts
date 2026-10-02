@@ -44,6 +44,8 @@ export interface NamePartsEdit {
 	nickname: string | null;
 	/** *Shown as*; blank means follow the parts. */
 	displayName: string;
+	/** A maiden or other earlier name, as typed; blank takes it off. Never in the shown name. */
+	formerName: string | null;
 	/** Keep the last name being replaced as the former name (§6). */
 	keepFormerName: boolean;
 }
@@ -69,12 +71,13 @@ export async function editNameParts(
 	const next = withNameEdit(contact, edit, edit.displayName, locale);
 	if (next === null) throw new EmptyContactNameError();
 	const replacedLastName = contact.lastName !== null && contact.lastName !== next.lastName;
-	const formerName = edit.keepFormerName && replacedLastName ? contact.lastName : contact.formerName;
+	// Ticking *Keep … as former name* is the clearer statement, so it wins over the field.
+	const formerName = edit.keepFormerName && replacedLastName ? contact.lastName : edit.formerName?.trim() || null;
 
 	const now = deps.clock.now();
-	const changed = (['displayName', 'firstName', 'lastName', 'nickname'] as const).some(
-		(key) => (contact[key] ?? null) !== (next[key] ?? null)
-	);
+	const changed =
+		(['displayName', 'firstName', 'lastName', 'nickname'] as const).some((key) => (contact[key] ?? null) !== (next[key] ?? null)) ||
+		(contact.formerName ?? null) !== formerName;
 	// One line on Home per save that changes the name, no more visible than the person is.
 	const audit: NewActivityEntry | null = changed
 		? {

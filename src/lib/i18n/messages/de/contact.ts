@@ -13,6 +13,8 @@ export const contact: ContactMessages = {
 	'contact.nameParts.shownAs': 'Angezeigt als',
 	'contact.nameParts.shownAsFollows': 'Folgt den Namensteilen, während du tippst.',
 	'contact.nameParts.shownAsChosen': 'Bleibt wie getippt. Leer lassen, damit er wieder den Namensteilen folgt.',
+	'contact.formerly': (p) => `früher ${p.name}`,
+	'contact.nameParts.formerName': 'Früherer Name',
 	'contact.nameParts.keepFormer': (p) => `„${p.name}“ als früheren Namen behalten`,
 	'contact.lastContact': 'Letzter Kontakt',
 	'contact.noContactYet': 'Noch kein Kontakt festgehalten',

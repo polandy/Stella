@@ -41,6 +41,7 @@ const summaryColumns = {
 	firstName: contactTable.firstName,
 	lastName: contactTable.lastName,
 	nickname: contactTable.nickname,
+	formerName: contactTable.formerName,
 	description: contactTable.description,
 	metPlace: contactTable.metPlace,
 	metDate: contactTable.metDate,
