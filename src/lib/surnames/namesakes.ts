@@ -23,8 +23,17 @@ export interface NamesakeAfterNaming {
 const fold = (value: string) =>
 	value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
 
-/** The first name, or — as the write itself does — the first word of the shown name. */
-const firstOf = (person: Named) => (person.firstName ?? '').trim() || person.displayName.trim().split(/\s+/)[0] || '';
+/**
+ * The first name, or — as the write itself does (`withNameParts`) — the shown name when it is
+ * a single word. A multi-word shown name with no parts is left blank here too: the write never
+ * guesses a first name out of it, so neither does the namesake check.
+ */
+const firstOf = (person: Named) => {
+	const first = (person.firstName ?? '').trim();
+	if (first) return first;
+	const words = person.displayName.trim().split(/\s+/).filter(Boolean);
+	return words.length === 1 ? words[0]! : '';
+};
 
 export function namesakesAfterNaming(
 	people: readonly Named[],
@@ -38,6 +47,8 @@ export function namesakesAfterNaming(
 		.filter((p) => named.has(p.id))
 		.flatMap((p) => {
 			const first = firstOf(p);
+			// No first name is not a shared first name: without one, there is nothing to match on.
+			if (!first) return [];
 			const other = others.find((o) => fold(firstOf(o)) === fold(first));
 			return other ? [{ id: p.id, name: `${first} ${lastName.trim()}`, otherId: other.id, otherName: other.displayName }] : [];
 		});

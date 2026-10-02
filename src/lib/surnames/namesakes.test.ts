@@ -38,4 +38,27 @@ describe('namesakesAfterNaming', () => {
 	it('says nothing when nobody shares the new name', () => {
 		expect(namesakesAfterNaming(people, ['max'], 'Brunner')).toEqual([]);
 	});
+
+	it('does not guess a first name from a multi-word shown name with no parts', () => {
+		// The write itself (withNameParts) only takes the first word of the shown name as the
+		// first name when it is a single word — a chosen name like "Opa Hans" keeps no first
+		// name, so this must not invent "Opa" and claim a namesake that will not exist.
+		const opaHans = p('opa', 'Opa Hans', null, null);
+		const opaBrunner = p('other', 'Opa Brunner', 'Opa', 'Brunner');
+		expect(namesakesAfterNaming([opaHans, opaBrunner], ['opa'], 'Brunner')).toEqual([]);
+	});
+
+	it('never matches two people who both end up with no first name', () => {
+		// Both keep a blank first name after the write (§6); an empty string is not a shared
+		// first name, so two such people given the same last name are not a namesake pair.
+		const opaHans = p('opa', 'Opa Hans', null, null);
+		const tanteGabi = p('tante', 'Tante Gabi', null, null);
+		expect(namesakesAfterNaming([opaHans, tanteGabi], ['opa'], 'Brunner')).toEqual([]);
+	});
+
+	it('never matches on a blank first name against someone already carrying the surname', () => {
+		const opaHans = p('opa', 'Opa Hans', null, null);
+		const onkelFritz = p('onkel', 'Onkel Fritz', null, 'Brunner');
+		expect(namesakesAfterNaming([opaHans, onkelFritz], ['opa'], 'Brunner')).toEqual([]);
+	});
 });
