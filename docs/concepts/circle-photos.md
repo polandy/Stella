@@ -123,9 +123,14 @@ the household can **cut each person's profile picture out of the group photo**.
   person**; choosing again for the same person replaces it.
 - The framing is rendered at a size that stays sharp (1024 px rather than the avatar's 512),
   so it can later stand on its own as a photo (§5.4).
-- The person's **Photos** tab shows a row *From circle photos*: each group photo they were cut
-  from, with its circle's name, including those whose cut they no longer wear. Changing the
-  profile picture therefore never loses the earlier one, as with gallery photos today.
+- **Changing the profile picture** keeps the old cut, as with any avatar today: the cut the
+  person wore becomes **a photo of their own** in their gallery, dated like the group photo
+  and marked *from Class 1B*. Everything someone ever wore as a profile picture is therefore
+  in their gallery. Nothing is re-encoded: the framing row is turned into a gallery photo.
+- Such a photo remembers the group photo it was **cut from** (a reference, no copy). The person's
+  **Photos** tab shows a row *On group photos*: every circle photo the person was cut from,
+  the one they wear now and earlier ones, each with its circle's name and a tap into the
+  circle. A group photo that is gone, or that the viewer cannot see, is not listed.
 
 ### 5.3 Resolution
 
@@ -178,7 +183,9 @@ the household can **cut each person's profile picture out of the group photo**.
   view beside the full picture (up to 4096 px) and the thumbnail. Pure, test-first: the
   cropper's zoom limit from the picture's size, and which framings a removal or a switch to
   private must turn into photos first. The turning itself is one transaction: the framing row
-  becomes a gallery photo of its person and stays their avatar, then the group photo goes.
+  becomes a gallery photo of its person (and stays their avatar when it was worn), then the
+  group photo goes. The same turning runs when someone switches away from a cut. A
+  nullable `cut_from` on `photo` remembers the group photo for the *On group photos* row.
 - **Domain use-cases** with `deps` (repository, clock, idGenerator): add, set role, pin/unpin,
   caption, re-scope, remove, frame for a person. They reuse the gallery upload path for storage.
 - **UI.** The circle page gets the cover, role banners and the Photos section, reusing the
@@ -211,5 +218,6 @@ the household can **cut each person's profile picture out of the group photo**.
 | 16 | How is the cut stored? | As a framing of the circle photo (a reference, no copy) |
 | 17 | The group photo is removed? | Warn, then each cut becomes the person's own photo and stays worn |
 | 18 | The group photo turns private? | Warn, then the same as removing |
-| 19 | Visible on the person page? | Yes: *From circle photos* in the Photos tab |
+| 19 | Visible on the person page? | Yes: an *On group photos* row in the Photos tab |
+| 21 | The person gets another profile picture? | The old cut becomes their own gallery photo, as avatars do today |
 | 20 | Resolution? | Circle photos up to 4096 px; zoom limit follows the picture |
