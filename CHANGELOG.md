@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.0.20-rc.4](https://github.com/polandy/Stella/compare/v0.0.19-rc.4...v0.0.20-rc.4) (2026-10-02)
+
+
+### Features
+
+* **circles:** photos of a circle, by role ([#219](https://github.com/polandy/Stella/issues/219)) ([fe7514b](https://github.com/polandy/Stella/commit/fe7514b1433aa75287c859f973f38c66b0c89811))
+* **circles:** profile pictures cut from a group photo ([#220](https://github.com/polandy/Stella/issues/220)) ([7aaffd5](https://github.com/polandy/Stella/commit/7aaffd59df0ba781e60a99ee937ea12ab352e525))
+* **circles:** rename a role from its heading ([#222](https://github.com/polandy/Stella/issues/222)) ([d378a5c](https://github.com/polandy/Stella/commit/d378a5c8d390b88a2e6e1fdc87f92331909559b2))
+* **contacts:** last names for several people at once, with proposals ([#224](https://github.com/polandy/Stella/issues/224)) ([1478d26](https://github.com/polandy/Stella/commit/1478d264e5022f49073d63e2eceeeb37629744b0))
+* **graph:** keep a busy map legible, with a density choice and a "+N" expand hint ([#207](https://github.com/polandy/Stella/issues/207)) ([d1b913d](https://github.com/polandy/Stella/commit/d1b913d3cca17ecc0f3829287a95b2c9dfc538f8))
+* **graph:** saved graph filters ([#217](https://github.com/polandy/Stella/issues/217)) ([c0de788](https://github.com/polandy/Stella/commit/c0de788939e2272f548fbc1564792feb0b41cce0))
+* **graph:** walk the map from the keyboard ([#202](https://github.com/polandy/Stella/issues/202)) ([42afe03](https://github.com/polandy/Stella/commit/42afe0388c9a81fc11267e10bcbef32ff41ebb3c))
+* **home:** drop the Quiet lately band ([#213](https://github.com/polandy/Stella/issues/213)) ([2f23209](https://github.com/polandy/Stella/commit/2f2320997bc9a8a85fe067689d4f7c8b73a7bbdd))
+* **photos:** pin favourite photos to the front of a person's gallery ([#206](https://github.com/polandy/Stella/issues/206)) ([ce50cad](https://github.com/polandy/Stella/commit/ce50cad9d04f52cc3ba6a483556b86b382d42bd6))
+* **relationships:** add several links in one go (domain + command) ([#223](https://github.com/polandy/Stella/issues/223)) ([bdcfbf2](https://github.com/polandy/Stella/commit/bdcfbf2f48d248158516bc1f5271b4d2317dc37b))
+* **relationships:** fold imported Cousin of / Uncle/aunt of into the built-in types ([#194](https://github.com/polandy/Stella/issues/194)) ([4619a48](https://github.com/polandy/Stella/commit/4619a48262b743a288bae899b3f930413927e18e))
+* **relationships:** link several people in one go from the relationship form ([#225](https://github.com/polandy/Stella/issues/225)) ([b1b4386](https://github.com/polandy/Stella/commit/b1b43864193fb10fe4dbe797bca446dcd68ec40d))
+* **relationships:** offer the likely second parent, and Add all after a batch ([#227](https://github.com/polandy/Stella/issues/227)) ([85f9aa9](https://github.com/polandy/Stella/commit/85f9aa9aa3805486792e3785319fdc34670d1a02))
+* welcome new households and turn empty states into next steps ([#205](https://github.com/polandy/Stella/issues/205)) ([372a9c2](https://github.com/polandy/Stella/commit/372a9c24d0d1c82459d7bca947cb9b082c8a2997))
+
+
+### Bug Fixes
+
+* **a11y:** close the accessibility audit findings ([#203](https://github.com/polandy/Stella/issues/203)) ([aaf5fee](https://github.com/polandy/Stella/commit/aaf5fee75c76276d5ea08d06302585191d94b573))
+* **a11y:** name photo links, make overlays real dialogs, and lift contrast in Latte ([#201](https://github.com/polandy/Stella/issues/201)) ([579061c](https://github.com/polandy/Stella/commit/579061c0f72c1b8d03e98c471b191775e9f834e5))
+* **graph:** leave derived kinship lines the map leaves off out of role-group bundles ([#192](https://github.com/polandy/Stella/issues/192)) ([ee4741f](https://github.com/polandy/Stella/commit/ee4741f61c6cc6ff19a3ece6ae95aa6d18a6c09b)), closes [#189](https://github.com/polandy/Stella/issues/189)
+* **shell:** stop the phone's top bar bouncing at the bottom of a page ([#221](https://github.com/polandy/Stella/issues/221)) ([13ab57a](https://github.com/polandy/Stella/commit/13ab57af90f669abf727551258024ba5bf14e204))
+* **suggestions:** keep keyboard focus in the list after answering a suggestion ([#193](https://github.com/polandy/Stella/issues/193)) ([1515ba3](https://github.com/polandy/Stella/commit/1515ba36c7a905e728296f4917f1d9c37a153616)), closes [#127](https://github.com/polandy/Stella/issues/127)
+
+
+### Performance Improvements
+
+* read the person page's family once and stop re-reading the household per page ([#204](https://github.com/polandy/Stella/issues/204)) ([559b2ee](https://github.com/polandy/Stella/commit/559b2ee0a07f3ebe5572d56faf73c27084dca13a))
+* send each list of people once and back repeated lookups with indexes ([#199](https://github.com/polandy/Stella/issues/199)) ([80789f8](https://github.com/polandy/Stella/commit/80789f812d03604e29b6a8757dde44a048c08392))
+
 ## [0.0.19-rc.4](https://github.com/polandy/Stella/compare/v0.0.19-rc.3...v0.0.19-rc.4) (2026-09-30)
 
 
