@@ -12,6 +12,8 @@ import { groupBySurname, householdSpellings, type SurnameList } from '../../../s
 import type { Viewer } from '../../access/visibility';
 import type { IdGenerator } from '../../id';
 import type { KinshipGraphSource } from '../relationships/suggestion-review';
+import type { PassOnMap } from '../../../surnames/pass-on';
+import type { SurnameProposal } from '../../../suggestions/rules/surnames';
 import { withNameParts } from './display-name';
 import type { NameDeps, NameWrite } from './name-parts';
 
@@ -188,6 +190,47 @@ export async function reviewLastNames(deps: SurnameReviewDeps, viewer: Viewer): 
 				name: spellings.get(d.folded) ?? d.folded
 			}))
 	};
+}
+
+/** What a page needs to help with last names after a save, and on one person's profile. */
+export interface SurnameHelp {
+	/** For everyone the viewer may see: their children and siblings still without a last name (§3.3). */
+	passOn: PassOnMap;
+	/** What Stella proposes for `subjectId`, for the profile's chip (§3.4); none without a subject. */
+	proposal: SurnameProposal;
+}
+
+/**
+ * Read once per page: whom a saved name can be passed on to, and what Stella proposes for the
+ * person the page is about. Archived people are not offered a name, as they are not listed.
+ */
+export async function readSurnameHelp(
+	deps: SurnameReviewDeps,
+	viewer: Viewer,
+	subjectId: string | null
+): Promise<SurnameHelp> {
+	const [facts, graph, dismissed] = await Promise.all([
+		deps.surnames.loadSurnameFactsVisibleTo(viewer),
+		deps.relationships.loadKinshipGraphVisibleTo(viewer),
+		deps.surnameDismissals.listForHousehold(viewer)
+	]);
+	const view = buildSurnameView({ people: facts.people, graph, familyCircles: facts.familyCircles, dismissed });
+	const nameless = new Map(
+		facts.people.filter((p) => !p.archived && !(p.lastName ?? '').trim()).map((p) => [p.id, p])
+	);
+	const declined = new Map<string, string[]>();
+	for (const d of dismissed) declined.set(d.contactId, [...(declined.get(d.contactId) ?? []), d.folded]);
+
+	const passOn: Record<string, PassOnMap[string]> = {};
+	for (const person of facts.people) {
+		// One generation: children and siblings, never grandchildren in the same offer.
+		const kin = [...new Set([...view.childrenOf(person.id), ...view.siblingsOf(person.id)])]
+			.map((id) => nameless.get(id))
+			.filter((p) => p !== undefined)
+			.map((p) => ({ id: p.id, name: p.displayName, declined: declined.get(p.id) ?? [] }));
+		if (kin.length > 0) passOn[person.id] = kin;
+	}
+	return { passOn, proposal: subjectId ? proposeSurname(view, subjectId) : { kind: 'none' } };
 }
 
 /** What the Settings card says: how many have no last name, and for how many Stella has one. */

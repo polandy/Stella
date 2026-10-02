@@ -156,7 +156,11 @@ names make you pick. Anyone without a suggestion gets a field, and **Select…**
 of them one name — and the People list has the same **Select**: tick anyone, then **Set last
 name**. Before anything is saved Stella says how many it will name, and anyone who already has
 a *different* last name is listed with a box to tick if you really mean to replace it; nobody's
-name is replaced unless you tick it. *Not Brunner* in a row's menu tells Stella not to propose that name for that
+name is replaced unless you tick it. When someone gets their first last name, Stella offers
+it to their children and brothers and sisters who have none yet — *Brunner too?* — one
+generation at a time, so a daughter who married into another name simply ends the chain. On a
+person's page, a suggested name shows as a chip under their name (*Brunner?*): one tap gives it.
+*Not Brunner* in a row's menu tells Stella not to propose that name for that
 person again — *Offer again* at the foot of the page takes it back. You can undo for eight
 seconds, and if the new name matches someone already in Stella, the page asks whether it is the
 same person and leads you to the merge.

@@ -112,7 +112,7 @@
 	 * is the natural place to give the family its name. The last names come from the shell's
 	 * people, which carry them for every picker already.
 	 */
-	const heldNames = useHeldNames();
+	const heldNames = useHeldNames(() => data.passOn);
 	const lastNameOf = $derived(new Map(data.people.map((p) => [p.id, p.lastName])));
 	const lastNames = $derived({
 		chosen: chosenMembers.map((m) => ({ id: m.contactId, displayName: m.displayName, lastName: lastNameOf.get(m.contactId) ?? null })),

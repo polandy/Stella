@@ -8,6 +8,7 @@ import { recordActions } from './actions/record';
 import { relationshipActions } from './actions/relationships';
 import { storyActions } from './actions/story';
 import { tagActions } from './actions/tags';
+import { lastNameActions } from '$lib/server/last-names-actions';
 import type { Actions } from './$types';
 
 /*
@@ -27,5 +28,7 @@ export const actions = {
 	...storyActions,
 	...tagActions,
 	...photoActions,
-	...circleActions
+	...circleActions,
+	// The chip under the name and passing a name on (docs/concepts/surnames.md §3.3, §3.4).
+	...lastNameActions
 } satisfies Actions;

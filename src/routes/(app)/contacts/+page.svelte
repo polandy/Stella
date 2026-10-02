@@ -36,7 +36,7 @@
 	const everyoneChosen = $derived(found.length > 0 && chosen.length === found.length);
 	const knownSurnames = $derived([...householdSpellings(data.contacts.map((c) => c.lastName)).values()].sort((a, b) => a.localeCompare(b)));
 	const disabled = $derived(!reachability.reachable);
-	const names = useHeldNames();
+	const names = useHeldNames(() => data.passOn);
 	let namesakes = $state<NamesakeAfterNaming[]>([]);
 	const held = names.submit((batch) => {
 		namesakes = [...namesakes, ...namesakesAfterNaming(data.contacts, batch.ids, batch.lastName)];

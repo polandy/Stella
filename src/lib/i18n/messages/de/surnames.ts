@@ -49,4 +49,12 @@ export const surnames: SurnamesMessages = {
 	'surnames.replace': (p) => `${p.person} hat schon den Nachnamen ${p.name} — ersetzen`,
 	'surnames.count': (p) =>
 		`${p.missing === 1 ? '1 Person hat' : `${p.missing} Personen haben`} keinen Nachnamen · ${p.suggested} mit Vorschlag`,
+	'surnames.toast.passOn': (p) =>
+		`Nachname gespeichert. ${p.people} ${p.count === 1 ? 'hat' : 'haben'} noch keinen — auch ${p.name}?`,
+	'surnames.toast.yes': 'Ja',
+	'surnames.chip': (p) => `${p.name}?`,
+	'surnames.chipHint': (p) => `Nachnamen ${p.name} geben`,
+	'surnames.passOnPrompt': (p) =>
+		`${p.people} ${p.count === 1 ? 'hat' : 'haben'} noch keinen Nachnamen — auch ${p.name}?`,
+	'surnames.no': 'Nein',
 };

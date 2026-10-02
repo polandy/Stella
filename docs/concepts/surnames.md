@@ -1,7 +1,7 @@
 # Concept — Last names for several people at once, worked out where Stella can
 
-Status: **decided, not built.** Decided with the maintainer on 2026-10-02; the decisions are
-listed in §10. It builds on the field-suggestion catalogue of
+Status: **built** (docs/02 §2.2, §2.2.4). Decided with the maintainer on 2026-10-02; the
+decisions are listed in §10. It builds on the field-suggestion catalogue of
 `docs/concepts/relationship-suggestions.md` §4 (F1, F1b, F2, F3) and settles its open question
 on suggestions while *editing* (§9 there) for the last name only.
 

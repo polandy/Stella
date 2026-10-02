@@ -8,6 +8,10 @@ import {
 } from '$lib/server/domain/circles/circles';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { shownNameIsChosen } from '$lib/server/domain/contacts/display-name';
+import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
+import { textOf } from '$lib/i18n/linked';
+import type { SurnameOption, SurnameProposal } from '$lib/suggestions/rules/surnames';
+import type { Translate } from '$lib/i18n/translate';
 import { listImportantDates } from '$lib/server/domain/dates/important-dates';
 import { IMPORTANT_DATE_KINDS } from '$lib/dates/kinds';
 import { INTERACTION_KINDS, lastContactedOn } from '$lib/server/domain/interactions/interactions';
@@ -31,6 +35,7 @@ import {
 	getCutDeps,
 	getGalleryDeps,
 	getFamilyReadDeps,
+	getSurnameReviewDeps,
 	getPhotos,
 	getRelationshipTypes,
 	getStoryDeps,
@@ -101,6 +106,14 @@ export const load = (async ({ locals, params, url }) => {
 		contact,
 		// A shown name a member chose does not follow its parts; the name editor says so (§2.2).
 		shownNameChosen: shownNameIsChosen(contact),
+		/*
+		 * Last names (docs/concepts/surnames.md §3.3, §3.4): the proposal for this person, as
+		 * chips under the name, and whom a name given here is offered on to afterwards.
+		 */
+		lastNameHelp: {
+			chips: lastNameChips(read.surnameHelp.proposal, t),
+			passOn: read.surnameHelp.passOn
+		},
 		...birthdayOf(contact, read.dates),
 		dates: read.dates,
 		fields: read.fields.map(fieldView),
@@ -199,10 +212,22 @@ function readPersonPage(
 		 * slice could name the wrong relative. Only the person's own slice is sent to the browser.
 		 */
 		family: readFamilyOf(getFamilyReadDeps(), viewer, contactId, request),
+		surnameHelp: readSurnameHelp(getSurnameReviewDeps(), viewer, contactId),
 
 		// What the forms offer, and who wrote what.
 		nameOfAuthor: authorNames(getMemberDeps(), viewer.householdId),
 		relationshipTypes: getRelationshipTypes().listTypes(viewer),
 		circleRolesByName: listRoleSuggestionsByCircleName(getCircleDeps(), viewer)
 	});
+}
+
+/** The proposal as the hero's chips: one name, or each of several equally sure ones (§3.4). */
+function lastNameChips(proposal: SurnameProposal, t: Translate): { name: string; why: string }[] {
+	const chip = (option: SurnameOption) => ({
+		name: option.name,
+		why: option.reasons.map((reason) => textOf(reason(t))).join(' · ')
+	});
+	if (proposal.kind === 'one') return [chip(proposal)];
+	if (proposal.kind === 'choose') return proposal.options.map(chip);
+	return [];
 }

@@ -3,6 +3,7 @@ import * as v from 'valibot';
 import { segmentsOf, type LinkedPhrase } from '$lib/i18n/linked';
 import {
 	dismissLastName,
+	readSurnameHelp,
 	restoreLastName,
 	reviewLastNames,
 	type SurnameListPerson
@@ -23,7 +24,10 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) throw redirect(302, '/login');
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
-	const review = await reviewLastNames(getSurnameReviewDeps(), viewer);
+	const [review, help] = await Promise.all([
+		reviewLastNames(getSurnameReviewDeps(), viewer),
+		readSurnameHelp(getSurnameReviewDeps(), viewer, null)
+	]);
 	const t = translator(locals);
 	const said = (reasons: readonly LinkedPhrase[]) => reasons.map((reason) => segmentsOf(reason(t)));
 	const person = (id: string) => {
@@ -47,7 +51,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 		})),
 		none: review.list.none.map(person),
 		knownSurnames: review.knownSurnames,
-		declined: review.declined
+		declined: review.declined,
+		// Whom a name given here is offered on to (§3.3).
+		passOn: help.passOn
 	};
 };
 

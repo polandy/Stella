@@ -53,6 +53,15 @@ export const surnames = {
 	'surnames.replace': (p: { person: string; name: string }) => `${p.person} already has the last name ${p.name} — replace it`,
 	'surnames.count': (p: { missing: number; suggested: number }) =>
 		`${p.missing === 1 ? '1 person has' : `${p.missing} people have`} no last name · ${p.suggested} with a suggestion`,
+	'surnames.toast.passOn': (p: { people: string; count: number; name: string }) =>
+		`Last name saved. ${p.people} ${p.count === 1 ? 'has' : 'have'} none yet — ${p.name} too?`,
+	'surnames.toast.yes': 'Yes',
+	// The profile's chip (docs/concepts/surnames.md §3.4).
+	'surnames.chip': (p: { name: string }) => `${p.name}?`,
+	'surnames.chipHint': (p: { name: string }) => `Give the last name ${p.name}`,
+	'surnames.passOnPrompt': (p: { people: string; count: number; name: string }) =>
+		`${p.people} ${p.count === 1 ? 'has' : 'have'} no last name yet — ${p.name} too?`,
+	'surnames.no': 'No',
 };
 
 /** The key set every translation of this area has to provide. */

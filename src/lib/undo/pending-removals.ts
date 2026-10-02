@@ -17,6 +17,15 @@ export interface Scheduler {
 	clearTimeout(handle: unknown): void;
 }
 
+/**
+ * Something the toast offers beside Undo — *Brunner too? [Yes]* after a last name was saved
+ * (docs/concepts/surnames.md §3.3). Taken at most once.
+ */
+export interface Offer {
+	label: string;
+	accept: () => void;
+}
+
 /** One thing waiting to be removed. `commit` performs the real removal and rejects if it failed. */
 export interface Removal {
 	/** Identifies the item on screen, e.g. `journal:<id>`, so the list can hide it. */
@@ -24,6 +33,7 @@ export interface Removal {
 	/** What the toast says, e.g. "Removed entry". */
 	label: string;
 	commit: () => Promise<void> | void;
+	offer?: Offer;
 }
 
 /** A plain message with no undo, e.g. "Saved" or the reason a removal failed. */
@@ -43,6 +53,8 @@ export interface PendingRemovals {
 	remove(removal: Removal): void;
 	/** Takes a pending removal back; unknown keys are ignored. */
 	undo(key: string): void;
+	/** Takes the offer beside Undo, once; the window runs on. Unknown keys are ignored. */
+	accept(key: string): void;
 	/** Commits everything still pending — called when the page is left. */
 	flush(): Promise<void>;
 	isPending(key: string): boolean;
@@ -136,6 +148,14 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 			scheduler.clearTimeout(entry.timer);
 			pending.delete(key);
 			changed();
+		},
+		accept(key) {
+			const entry = pending.get(key);
+			const offer = entry?.removal.offer;
+			if (!entry || !offer) return;
+			entry.removal = { ...entry.removal, offer: undefined };
+			changed();
+			offer.accept();
 		},
 		async flush() {
 			// Everything leaves the list before the first request goes out, so a second flush

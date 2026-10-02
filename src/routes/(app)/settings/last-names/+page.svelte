@@ -20,7 +20,7 @@
 	 */
 	let { data }: { data: PageData } = $props();
 	const t = useTranslate();
-	const names = useHeldNames();
+	const names = useHeldNames(() => data.passOn);
 	let namesakes = $state<NamesakeAfterNaming[]>([]);
 
 	const disabled = $derived(!reachability.reachable);

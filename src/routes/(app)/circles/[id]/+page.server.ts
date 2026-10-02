@@ -14,7 +14,8 @@ import { listCirclePhotos } from '$lib/server/domain/circles/circle-photos';
 import { BlankRoleNameError, renameCircleRole } from '$lib/server/domain/circles/rename-role';
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { listCircleCuts } from '$lib/server/domain/media/cuts';
-import { getCircleDeps, getCirclePhotoDeps, getContactDeps, getCutDeps } from '$lib/server/services';
+import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
+import { getCircleDeps, getCirclePhotoDeps, getContactDeps, getCutDeps, getSurnameReviewDeps } from '$lib/server/services';
 import { photoActions } from './actions/photos';
 import { lastNameActions } from '$lib/server/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
@@ -31,10 +32,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const circle = await getCircle(getCircleDeps(), viewer, params.id);
 	if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
-	const [members, photos, cuts] = await Promise.all([
+	const [members, photos, cuts, surnameHelp] = await Promise.all([
 		listMembers(getCircleDeps(), viewer, params.id),
 		listCirclePhotos(getCirclePhotoDeps(), viewer, params.id),
-		listCircleCuts(getCutDeps(), viewer, params.id)
+		listCircleCuts(getCutDeps(), viewer, params.id),
+		readSurnameHelp(getSurnameReviewDeps(), viewer, null)
 	]);
 	const roles = suggestRoles(members.map((m) => m.role));
 
@@ -56,7 +58,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		// Who is looking: shared/private and Remove are only offered on their own photos.
 		viewerId: viewer.id,
 		// Who is in already, so the picker offers the rest of the shell's people.
-		memberIds: members.map((m) => m.contactId)
+		memberIds: members.map((m) => m.contactId),
+		// Whom a last name set here is offered on to (docs/concepts/surnames.md §3.3).
+		passOn: surnameHelp.passOn
 	};
 };
 

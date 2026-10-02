@@ -4,6 +4,7 @@ import type { NewActivityEntry } from '../activity/activity';
 import type { Contact } from './contacts';
 import {
 	countLastNames,
+	readSurnameHelp,
 	dismissLastName,
 	EmptyLastNameError,
 	LastNameWouldOverwriteError,
@@ -235,6 +236,53 @@ describe('reviewLastNames', () => {
 
 		expect(review.declined).toEqual([{ contactId: 'lea', personName: 'Lea', name: 'Brunner' }]);
 		expect(review.list.none).toEqual(['lea']);
+	});
+});
+
+describe('readSurnameHelp', () => {
+	const listed = (id: string, last: string | null, over: Partial<SurnameListPerson> = {}): SurnameListPerson => ({
+		id,
+		displayName: id,
+		firstName: id,
+		lastName: last,
+		nickname: null,
+		formerName: null,
+		avatarPhotoId: null,
+		isDeceased: false,
+		archived: false,
+		...over
+	});
+
+	it('offers a name to the nameless children and siblings, one generation only', async () => {
+		const f = fakeDeps(
+			[lea],
+			[listed('peter', 'Brunner'), listed('lea', null), listed('max', null), listed('sophie', 'Brunner'), listed('kid', null), listed('gone', null, { archived: true })],
+			{
+				parentEdges: [
+					{ parentId: 'peter', childId: 'lea' },
+					{ parentId: 'peter', childId: 'max' },
+					{ parentId: 'peter', childId: 'sophie' },
+					{ parentId: 'peter', childId: 'gone' },
+					{ parentId: 'lea', childId: 'kid' }
+				]
+			}
+		);
+		await dismissLastName(f.deps, viewer, 'lea', 'Weber');
+
+		const help = await readSurnameHelp(f.deps, viewer, 'lea');
+
+		expect(help.passOn['peter']?.map((k) => k.id).sort()).toEqual(['lea', 'max']);
+		expect(help.passOn['lea']).toEqual([
+			{ id: 'kid', name: 'kid', declined: [] },
+			{ id: 'max', name: 'max', declined: [] }
+		]);
+		expect(help.passOn['sophie']?.find((k) => k.id === 'lea')?.declined).toEqual(['weber']);
+		expect(help.proposal).toMatchObject({ kind: 'one', name: 'Brunner' });
+	});
+
+	it('proposes nothing without a subject', async () => {
+		const f = fakeDeps([], [listed('lea', null)]);
+		expect((await readSurnameHelp(f.deps, viewer, null)).proposal).toEqual({ kind: 'none' });
 	});
 });
 

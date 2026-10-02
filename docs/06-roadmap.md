@@ -135,6 +135,12 @@ Goal: sand the edges and add the nice-to-haves.
 - ~~**Tidy up people known by a first name only**~~ — shipped (§2.2.3): *Settings → Data
   quality* lists everyone with a first name and nothing else to tell them
   apart, each with a description field; merge and archive stay on their page.
+- ~~**Last names for several people at once**~~ — shipped (§2.2, §2.2.4): first name, last
+  name and nickname are editable on the profile; *Settings → Data quality → Last names* groups
+  everyone without one by what Stella proposes from parents, siblings, partners, the shown
+  name, children and family circles; *Select* on People and in a circle sets one name for
+  several; a saved name is offered on to children and siblings one generation at a time
+  (`docs/concepts/surnames.md`).
 - ~~**Adding to Stella while it is out of reach**~~ — shipped (§2.18): every adding form
   saves as a named command, idempotent by its id, through an outbox on the phone. Away from
   home it keeps what is added, photos included, editable or discardable until sent, and

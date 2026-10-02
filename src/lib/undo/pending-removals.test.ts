@@ -278,3 +278,27 @@ describe('holding the window open', () => {
 async function settled() {
 	for (let i = 0; i < 4; i++) await Promise.resolve();
 }
+
+/*
+ * An offer beside Undo (docs/concepts/surnames.md §3.3): *Lea and Max have none yet — Brunner
+ * too? [Yes]*. Taking it runs once and leaves the toast with Undo alone; the window itself is
+ * untouched, so the save it belongs to is still sent when it closes.
+ */
+describe('an offer beside Undo', () => {
+	it('runs once, leaves the toast, and keeps the window running', () => {
+		const timer = fakeScheduler();
+		const rec = commitRecorder();
+		const store = createPendingRemovals({ scheduler: timer.scheduler, onCommitFailed: () => {} });
+		let accepted = 0;
+		store.remove({ key: 'names:1', label: 'Saved', commit: rec.commit('names:1'), offer: { label: 'Yes', accept: () => accepted++ } });
+
+		store.accept('names:1');
+		store.accept('names:1');
+
+		expect(accepted).toBe(1);
+		expect(store.snapshot().removals[0]?.offer).toBeUndefined();
+		expect(store.isPending('names:1')).toBe(true);
+		timer.advance(UNDO_WINDOW_MS);
+		expect(rec.committed).toEqual(['names:1']);
+	});
+});
