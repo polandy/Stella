@@ -139,6 +139,31 @@ export const contact: ContactMessages = {
 	'contact.relationships.person': 'Person',
 	'contact.relationships.addSomeoneFirst':
 		'Lege zuerst eine weitere Person an, dann kannst du sie hier verknüpfen.',
+	'contact.relationships.parentsRoom': (p) =>
+		p.count >= 2 ? 'Bis zu zwei Eltern.' : 'Noch ein Elternteil: einer ist schon erfasst.',
+	'contact.relationships.parentsOnRecord':
+		'Zwei Eltern sind schon erfasst — mehr sind bei „Kind von“ nicht möglich.',
+	'contact.relationships.parentsFull': 'Zwei Eltern — mehr sind bei „Kind von“ nicht möglich.',
+	'contact.relationships.partnerFull': 'Eine Person — eine Partnerschaft ist zu zweit.',
+	'contact.relationships.capFullPlaceholder': 'Mehr geht bei diesem Typ nicht',
+	'contact.relationships.overCap': (p) =>
+		`„${p.type}“ nimmt ${p.max === 0 ? 'niemanden mehr' : p.max === 1 ? 'eine Person' : `${p.max} Personen`}. Entferne ${p.extra === 1 ? 'eine' : p.extra}, um hinzuzufügen.`,
+	'contact.relationships.chipRefused': 'lässt sich so nicht verknüpfen',
+	'contact.relationships.refusedSaid': (p) => `${p.name}: ${p.reason}`,
+	'contact.relationships.removeToAdd': (p) =>
+		p.count === 1
+			? 'Entferne die markierte Person, um die anderen hinzuzufügen.'
+			: 'Entferne die markierten Personen, um die anderen hinzuzufügen.',
+	'contact.relationships.sinceEach': 'Jeweils ab dem eigenen Geburtstag',
+	'contact.relationships.oneDateForAll': 'Ein Datum für alle',
+	'contact.relationships.datePerPerson': 'Ein Datum pro Person',
+	'contact.relationships.sinceFor': (p) => `Seit, für ${p.name}`,
+	'contact.relationships.howConnectForAll': (p) =>
+		`Wie sie zusammenhängen (optional · für alle ${p.count})`,
+	'contact.relationships.addLinks': (p) => `${p.count} Beziehungen hinzufügen`,
+	'contact.relationships.linksSaved': (p) => `${p.count} Beziehungen gespeichert`,
+	'contact.relationships.undoLinksFailed':
+		'Die Beziehungen ließen sich nicht zurücknehmen. Sie stehen noch auf der Seite.',
 	'contact.relationships.alsoTrue': 'Stimmt das auch?',
 	'contact.relationships.parentProposal': (p) => `${p.parent} ist ein Elternteil von ${p.child}`,
 	'contact.relationships.siblingProposal': (p) => `${p.one} und ${p.other} sind Geschwister`,

@@ -281,6 +281,16 @@ the way you are thinking it, instead of going to find the other person to put it
 other way. Kinds that read the same from both sides, like *Sibling of* or *Partner of*, are
 listed once, because there is nothing to choose.
 
+You can pick **several people at once**. Lio's parents are one go: choose *Child of*, pick Anna,
+pick Bert, and press **Add 2 links**. Three children of Anna are one go too — type the surname
+and the picker keeps listing the family, or take everyone it found with *Add all*. The kind,
+the status and the "how they connect" text go to everyone you picked; the since day is worked
+out for each pair, so three children each start on their own birthday (*Use one date for all*
+folds them into one). The kind decides how many people fit: one partner, and two parents minus
+the ones already on record. Somebody who cannot be linked that way is marked in red with the
+reason underneath, and nothing is saved until you remove them — Stella never saves the others
+and quietly leaves one out. One **Undo** on the toast takes the whole batch back.
+
 One thing Stella will not let you write down: that two people are each other's parent, or each
 other's grandparent. A generation runs one way, and the relatives Stella works out for you are
 read off exactly those links — so pick the direction the wrong way round and it says so instead

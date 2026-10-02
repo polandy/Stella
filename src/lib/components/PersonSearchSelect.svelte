@@ -59,6 +59,19 @@
 		suggestedDescription?: string;
 		/** Called with the person a pick lands on, for a form that reads more off them than the id. */
 		onPick?: (person: SelectablePerson) => void;
+		/**
+		 * With `multiple`: the most people the field takes, or null for no limit. At the limit the
+		 * search closes and says `fullPlaceholder`; chips beyond it stay, for the form to explain.
+		 */
+		max?: number | null;
+		/** What the closed search says once `max` is reached. */
+		fullPlaceholder?: string;
+		/** Chips to mark as refused — the form says why under the field (docs/02 §2.4). */
+		markedIds?: readonly string[];
+		/** Read out on a marked chip, after the name. */
+		markedLabel?: string;
+		/** The hints under the field, for the search to be described by. */
+		describedBy?: string;
 		id?: string;
 		required?: boolean;
 		placeholder?: string;
@@ -73,6 +86,11 @@
 		allowCreate = false,
 		suggestedDescription = '',
 		onPick,
+		max = null,
+		fullPlaceholder,
+		markedIds = [],
+		markedLabel = '',
+		describedBy,
 		id,
 		required = false,
 		placeholder,
@@ -117,6 +135,7 @@
 	const namesakes = $derived(tellApart(knownPeople, peopleContext()));
 	const askForSomethingToKnowThemBy = $derived(wantsSomethingToKnowThemBy(draft));
 	const chosen = $derived(selectedIds.map((pid) => byId.get(pid)).filter((p) => p !== undefined));
+	const full = $derived(multiple && max !== null && selectedIds.length >= max);
 	const pickable = $derived(
 		multiple ? knownPeople.filter((p) => !selectedIds.includes(p.id)) : knownPeople
 	);
@@ -142,10 +161,14 @@
 		return () => document.removeEventListener('pointerdown', closeOnOutside, true);
 	});
 
+	/** Whether the picks just made reached `max`; read straight off the ids, ahead of `full`. */
+	const atCap = () => multiple && max !== null && selectedIds.length >= max;
+
 	function choose(person: SelectablePerson) {
 		selectedIds = multiple ? [...selectedIds, person.id] : [person.id];
 		onPick?.(person);
-		query = queryAfterPick(query, multiple && keepSearch);
+		// At the cap the search closes; a kept search would stand in it, greyed out, saying nothing.
+		query = atCap() ? '' : queryAfterPick(query, multiple && keepSearch);
 		highlighted = 0;
 		open = multiple;
 		if (!multiple) input?.blur();
@@ -156,7 +179,7 @@
 		const everyone = matches;
 		selectedIds = [...selectedIds, ...everyone.map((p) => p.id)];
 		for (const person of everyone) onPick?.(person);
-		query = queryAfterPick(query, keepSearch);
+		query = atCap() ? '' : queryAfterPick(query, keepSearch);
 		highlighted = 0;
 		input?.focus();
 	}
@@ -223,6 +246,9 @@
 			addedHere = [...addedHere, person];
 			creating = false;
 			choose(person);
+			// The name typed was this person's; kept, it would offer creating them a second time.
+			query = '';
+			open = false;
 			removals.notify(t('components.personSearch.created', { name: person.displayName }));
 		} catch {
 			createError = t('errors.contact.couldNotCreate');
@@ -299,9 +325,17 @@
 	>
 		{#if multiple}
 			{#each chosen as person (person.id)}
-				<span class="inline-flex items-center gap-1 rounded-full bg-bg-sunken py-0.5 pl-2 pr-1 text-sm text-fg">
+				{@const marked = markedIds.includes(person.id)}
+				<span
+					class="inline-flex items-center gap-1 rounded-full py-0.5 pl-2 pr-1 text-sm text-fg {marked
+						? 'chip-marked'
+						: 'bg-bg-sunken'}"
+					data-marked={marked || undefined}
+					data-testid="person-search-chip"
+				>
 					<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={16} />
-					{person.displayName}
+					<span class={marked ? 'line-through decoration-danger' : ''}>{person.displayName}</span>
+					{#if marked && markedLabel}<span class="sr-only">({markedLabel})</span>{/if}
 					<!-- 24px square (WCAG 2.5.8); the negative margin keeps the chip its own height. -->
 					<button
 						type="button"
@@ -326,20 +360,26 @@
 				aria-controls={listboxId}
 				aria-activedescendant={activeOption}
 				aria-autocomplete="list"
+				aria-describedby={describedBy}
 				autocomplete="off"
+				disabled={full}
 				required={stillNeedsAPick(required, selectedIds.length)}
 				value={query || singlePicked?.displayName || ''}
-				placeholder={singlePicked ? '' : (placeholder ?? t('components.personSearch.placeholder'))}
+				placeholder={singlePicked
+					? ''
+					: full
+						? (fullPlaceholder ?? '')
+						: (placeholder ?? t('components.personSearch.placeholder'))}
 				oninput={(e) => {
 					query = e.currentTarget.value;
 					open = true;
 					highlighted = 0;
 					if (!multiple) selectedIds = [];
 				}}
-				onfocus={() => (open = true)}
+				onfocus={() => (open = !full)}
 				onkeydown={onKeydown}
 				onblur={() => setTimeout(closeIfFocusLeft, BLUR_CLOSE_MS)}
-				class="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none"
+				class="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none disabled:placeholder:italic disabled:placeholder:text-fg-subtle"
 			/>
 		</div>
 	</div>
@@ -453,9 +493,9 @@
 				</div>
 			</div>
 		</div>
-	{:else if open}
+	{:else if open && !full}
 		<div class={panelClass}>
-			{#if multiple && query.trim() !== '' && matches.length > 1}
+			{#if multiple && query.trim() !== '' && matches.length > 1 && (max === null || selectedIds.length + matches.length <= max)}
 				<div class="flex items-center justify-between gap-2 border-b border-border px-2.5 py-1.5 text-xs text-fg-muted">
 					<span>{t('components.personSearch.matches', { count: matches.length })}</span>
 					<button
@@ -547,3 +587,11 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	/* A refused person (docs/02 §2.4): tinted and outlined in the danger colour, never removed. */
+	.chip-marked {
+		background: color-mix(in srgb, var(--danger) 12%, var(--card));
+		outline: 1px solid color-mix(in srgb, var(--danger) 55%, transparent);
+	}
+</style>

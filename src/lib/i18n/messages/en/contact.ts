@@ -139,6 +139,35 @@ export const contact = {
 	'contact.relationships.typeLabel': 'Relationship',
 	'contact.relationships.person': 'Person',
 	'contact.relationships.addSomeoneFirst': 'Add another person first, then link them here.',
+	/*
+	 * Several people picked in the relationship form (docs/02 §2.4,
+	 * docs/concepts/multi-pick-relationships.html): how many the type takes, who is refused.
+	 */
+	'contact.relationships.parentsRoom': (p: { count: number }): string =>
+		p.count >= 2 ? 'Up to two parents.' : 'One more parent: one is on record already.',
+	'contact.relationships.parentsOnRecord': 'Two parents are on record already — that is the limit for Child of.',
+	'contact.relationships.parentsFull': 'Two parents — that is the limit for Child of.',
+	'contact.relationships.partnerFull': 'One person — a partnership is between two.',
+	'contact.relationships.capFullPlaceholder': 'No more for this type',
+	'contact.relationships.overCap': (p: { type: string; max: number; extra: number }) =>
+		`${p.type} takes ${p.max === 0 ? 'nobody more' : p.max === 1 ? 'one person' : `${p.max} people`}. Remove ${p.extra === 1 ? 'one' : p.extra} to add.`,
+	/** Read out on a marked chip; the reason itself stands under the field. */
+	'contact.relationships.chipRefused': 'cannot be linked this way',
+	/** A refusal the save brought back, already a whole sentence. */
+	'contact.relationships.refusedSaid': (p: { name: string; reason: string }) => `${p.name}: ${p.reason}`,
+	'contact.relationships.removeToAdd': (p: { count: number }): string =>
+		p.count === 1
+			? 'Remove the marked person to add the others.'
+			: 'Remove the marked people to add the others.',
+	'contact.relationships.sinceEach': 'Each from their own birthday',
+	'contact.relationships.oneDateForAll': 'Use one date for all',
+	'contact.relationships.datePerPerson': 'A date per person',
+	'contact.relationships.sinceFor': (p: { name: string }) => `Since, for ${p.name}`,
+	'contact.relationships.howConnectForAll': (p: { count: number }) =>
+		`How they connect (optional · for all ${p.count})`,
+	'contact.relationships.addLinks': (p: { count: number }) => `Add ${p.count} links`,
+	'contact.relationships.linksSaved': (p: { count: number }) => `${p.count} links saved`,
+	'contact.relationships.undoLinksFailed': 'Could not take the links back. They are still on the page.',
 	'contact.relationships.alsoTrue': 'Also true?',
 	'contact.relationships.parentProposal': (p: { parent: string; child: string }) =>
 		`${p.parent} is a parent of ${p.child}`,

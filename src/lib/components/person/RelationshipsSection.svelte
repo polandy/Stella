@@ -74,20 +74,35 @@
 	 */
 	const keptLinks = $derived(
 		outbox.mine.filter(
-			(item): item is KeptOf<'relationship.add'> =>
-				isKept(item, 'relationship.add') && item.command.payload.contactId === c.id
+			(item): item is KeptOf<'relationship.add'> | KeptOf<'relationship.addMany'> =>
+				(isKept(item, 'relationship.add') || isKept(item, 'relationship.addMany')) &&
+				item.command.payload.contactId === c.id
 		)
 	);
-	/** "Child of Bert Brunner", for a kept link. */
-	function keptLinkLabel(typeChoice: string, targetId: string): string {
+	/** Who a kept link or batch is with: one person, or everyone picked for it. */
+	const keptTargets = (item: (typeof keptLinks)[number]): string[] =>
+		item.command.type === 'relationship.addMany'
+			? item.command.payload.links.map((link) => link.targetId)
+			: [item.command.payload.targetId];
+	/** "Child of Anna Brunner and Bert Brunner", for a kept link or batch. */
+	function keptLinkLabel(typeChoice: string, targetIds: readonly string[]): string {
 		const option = relationshipChoices.find((o) => o.value === typeChoice);
-		const target = otherContacts.find((p) => p.id === targetId)?.displayName ?? '';
-		return option ? `${relationshipTypeLabel(t, option.type, option.side)} ${target}` : target;
+		const names = new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(
+			targetIds.map((id) => otherContacts.find((p) => p.id === id)?.displayName ?? '').filter(Boolean)
+		);
+		return option ? `${relationshipTypeLabel(t, option.type, option.side)} ${names}` : names;
 	}
 	/** Empty until the picker is touched, which means it stands on its first entry. */
 	let relationshipChoice = $state('');
-	/** Someone named through the picker itself is not in `otherContacts` yet (docs/02 §2.2.2). */
-	let pickedTarget = $state<SelectablePerson | undefined>();
+	/** People named through the picker itself are not in `otherContacts` yet (docs/02 §2.2.2). */
+	let pickedTargets = $state<SelectablePerson[]>([]);
+	/*
+	 * A refused batch names each refused person; the form marks them on their chips and says
+	 * why under the field, so the section's own error line would only repeat it.
+	 */
+	const refusedPeople = $derived(
+		form && 'refusals' in form && Array.isArray(form.refusals) ? form.refusals.length : 0
+	);
 	/*
 	 * What the household's own records rule out (docs/02 §2.4). The same pure rules the
 	 * use-case is guarded by, run over the facts the load sent: an entry that would be refused
@@ -127,7 +142,7 @@
 		title={t('contact.section.relationships')}
 		count={visibleRelationships.length}
 		addLabel={t('contact.relationships.add')}
-		error={form?.error ?? null}
+		error={refusedPeople > 0 ? null : (form?.error ?? null)}
 		actionGrid
 		bind:open={relateOpen}
 	>
@@ -166,7 +181,7 @@
 				{#each keptLinks as item (item.command.id)}
 					<li>
 						<KeptItem {item}>
-							<p class="mt-1 text-fg">{keptLinkLabel(item.command.payload.typeChoice, item.command.payload.targetId)}</p>
+							<p class="mt-1 text-fg">{keptLinkLabel(item.command.payload.typeChoice, keptTargets(item))}</p>
 						</KeptItem>
 					</li>
 				{/each}
@@ -216,6 +231,7 @@
 		{#snippet editor()}
 			<AddRelationshipForm
 				{data}
+				{form}
 				{otherContacts}
 				{relationshipChoices}
 				{exclusionOf}
@@ -224,7 +240,7 @@
 				{keptLinkLabel}
 				bind:relationshipTargetId
 				bind:relationshipChoice
-				bind:pickedTarget
+				bind:pickedTargets
 			/>
 		{/snippet}
 </Section>
