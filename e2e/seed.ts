@@ -82,7 +82,9 @@ export async function seedHousehold(
 	/** Types of the household's own that `links` may name, likewise the setting of a case. */
 	types: readonly SeedType[] = [],
 	/** Who has died, by full name, likewise the setting of a case. */
-	deceased: readonly string[] = []
+	deceased: readonly string[] = [],
+	/** Birthdays in ISO, by full name, likewise the setting of a case. */
+	births: Readonly<Record<string, string>> = {}
 ): Promise<void> {
 	const document = {
 		format: ARCHIVE_FORMAT,
@@ -96,7 +98,8 @@ export async function seedHousehold(
 				first_name: first,
 				last_name: rest.join(' '),
 				gender: genders[name] ?? null,
-				deceased: deceased.includes(name) ? true : null
+				deceased: deceased.includes(name) ? true : null,
+				birth_date: births[name] ?? null
 			};
 		}),
 		relationship_types: types.map((type) => ({
