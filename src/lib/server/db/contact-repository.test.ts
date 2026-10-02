@@ -487,3 +487,49 @@ describe('reading a few people by id', () => {
 		});
 	});
 });
+
+describe('writeNames', () => {
+	const write = (id: string, lastName: string) => ({
+		id,
+		displayName: `Lea ${lastName}`,
+		firstName: 'Lea',
+		lastName,
+		nickname: null,
+		formerName: null,
+		updatedAt: NOW + 1
+	});
+
+	it('writes every name of a batch and its log entry together', async () => {
+		await repo.insert(contactInput({ id: 'lea', displayName: 'Lea', firstName: 'Lea' }));
+		await repo.insert(contactInput({ id: 'max', displayName: 'Max', firstName: 'Max' }));
+		const audit: NewActivityEntry = {
+			id: 'log-1',
+			householdId: H1,
+			actorId: U1,
+			action: 'update',
+			entityType: 'last_name',
+			entityId: 'lea',
+			contactId: null,
+			visibility: 'shared',
+			summary: 'set the last name Brunner on 2 people',
+			createdAt: NOW + 1
+		};
+
+		await repo.writeNames([write('lea', 'Brunner'), { ...write('max', 'Brunner'), firstName: 'Max', displayName: 'Max Brunner' }], audit);
+
+		expect((await repo.findByIdVisibleTo(viewerU1, 'lea'))?.displayName).toBe('Lea Brunner');
+		expect((await repo.findByIdVisibleTo(viewerU1, 'max'))?.lastName).toBe('Brunner');
+		expect(db.select().from(schema.activityLog).all().map((row) => row.summary)).toEqual([
+			'set the last name Brunner on 2 people'
+		]);
+	});
+
+	it('keeps a former name it is given', async () => {
+		await repo.insert(contactInput({ id: 'lea', displayName: 'Lea Meier', firstName: 'Lea', lastName: 'Meier' }));
+
+		await repo.writeNames([{ ...write('lea', 'Brunner'), formerName: 'Meier' }], null);
+
+		expect(await repo.findByIdVisibleTo(viewerU1, 'lea')).toMatchObject({ lastName: 'Brunner', formerName: 'Meier' });
+		expect(db.select().from(schema.activityLog).all()).toEqual([]);
+	});
+});

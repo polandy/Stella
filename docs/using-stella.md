@@ -170,6 +170,14 @@ To change their **name or the line under it**, click the text itself: a field op
 value was, Enter saves it and Escape leaves it as it was. A name cannot be emptied, and Stella
 says so rather than quietly keeping the old one.
 
+The name is made of parts — **first name, last name and nickname** — and those can change long
+after someone was added: *Name parts* under the name opens the three fields (Enter saves,
+Escape leaves them), and someone without a surname also shows *Add last name*, which opens
+the same fields on the last name. The name shown follows the parts: *Thomas* becomes *Thomas
+Brunner* once he has a last name. A name somebody chose on purpose — *Opa Hans* — stays as it
+is, and the fields say so. Replacing a last name offers to keep the old one as their former
+name.
+
 **Notes** are for things that stay true — "allergic to hazelnuts", "always calls on
 Sundays". Moments are for things that happened. Notes can be pinned to the top, and have
 their own shared-or-private switch. You can name other people in a note with `@`, the same

@@ -6,6 +6,15 @@ export const contact = {
 	'contact.editDescription': 'Edit description',
 	'contact.descriptionPlaceholder': 'A line about them',
 	'contact.addDescription': 'Add a description',
+	// The parts the shown name is made of (docs/02 §2.2).
+	'contact.nameParts.open': 'Name parts',
+	'contact.nameParts.addLastName': 'Add last name',
+	'contact.nameParts.firstName': 'First name',
+	'contact.nameParts.lastName': 'Last name',
+	'contact.nameParts.nickname': 'Nickname',
+	'contact.nameParts.keepFormer': (p: { name: string }) => `Keep “${p.name}” as former name`,
+	'contact.nameParts.shownAs': (p: { name: string }) =>
+		`Shown as “${p.name}”, which stays as it is — tap the name to change it.`,
 	'contact.lastContact': 'Last contact',
 	'contact.noContactYet': 'No contact logged yet',
 	'contact.met': 'Met',

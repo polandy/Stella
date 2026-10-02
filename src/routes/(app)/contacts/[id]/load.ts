@@ -7,6 +7,7 @@ import {
 	listRoleSuggestionsByCircleName
 } from '$lib/server/domain/circles/circles';
 import { getContact } from '$lib/server/domain/contacts/contacts';
+import { shownNameIsChosen } from '$lib/server/domain/contacts/display-name';
 import { listImportantDates } from '$lib/server/domain/dates/important-dates';
 import { IMPORTANT_DATE_KINDS } from '$lib/dates/kinds';
 import { INTERACTION_KINDS, lastContactedOn } from '$lib/server/domain/interactions/interactions';
@@ -98,6 +99,8 @@ export const load = (async ({ locals, params, url }) => {
 	return {
 		// Who they are.
 		contact,
+		// A shown name a member chose does not follow its parts; the name editor says so (§2.2).
+		shownNameChosen: shownNameIsChosen(contact),
 		...birthdayOf(contact, read.dates),
 		dates: read.dates,
 		fields: read.fields.map(fieldView),

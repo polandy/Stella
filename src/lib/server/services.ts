@@ -65,6 +65,7 @@ import type { StoryDeps } from './domain/story/story';
 import type { AttentionRepository } from './domain/attention/last-touched';
 import type { ContactDeps, ContactRepository } from './domain/contacts/contacts';
 import type { NameCandidateSource, SuggestionDeps } from './domain/contacts/suggestions';
+import type { NameDeps, NameRepository } from './domain/contacts/name-parts';
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { JournalDeps, JournalRepository } from './domain/journal/journal';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
@@ -213,10 +214,15 @@ export function getCompleteLoginDeps(): CompleteLoginDeps {
 	};
 }
 
-let contactRepository: (ContactRepository & NameCandidateSource) | null = null;
+let contactRepository: (ContactRepository & NameCandidateSource & NameRepository) | null = null;
 
-export function getContacts(): ContactRepository & NameCandidateSource {
+export function getContacts(): ContactRepository & NameCandidateSource & NameRepository {
 	return (contactRepository ??= createDrizzleContactRepository(getDb()));
+}
+
+/** Deps for changing name parts, one person or several (docs/concepts/surnames.md §7). */
+export function getNameDeps(): NameDeps {
+	return { names: getContacts(), clock: systemClock };
 }
 
 export function getContactDeps(): ContactDeps {

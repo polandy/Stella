@@ -6,6 +6,7 @@
 export const errors = {
 	'errors.contact.birthDateFormat':
 		'A birth date must be YYYY-MM-DD, or --MM-DD when the year is unknown.',
+	'errors.contact.namePartsInvalid': 'The name parts could not be read. Please try again.',
 	'errors.contact.emptyName': 'A name cannot be empty.',
 	'errors.contact.invalidGender': 'Choose female, male or diverse.',
 	'errors.contact.needsSomethingToKnowThemBy':

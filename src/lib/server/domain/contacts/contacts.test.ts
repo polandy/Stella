@@ -256,6 +256,7 @@ const existing: Contact = {
 	firstName: 'Hans',
 	lastName: 'Müller',
 	nickname: null,
+	formerName: null,
 	description: 'Nachbar',
 	howWeMet: null,
 	metDate: null,

@@ -24,3 +24,60 @@ export function deriveDisplayName(parts: NameParts): string {
 
 	throw new Error('A contact needs at least a name or nickname.');
 }
+
+/** A person's name as stored: the parts, and the shown name that is never empty. */
+export interface StoredName {
+	displayName: string;
+	firstName: string | null;
+	lastName: string | null;
+	nickname: string | null;
+}
+
+/** The parts being changed; a part left out stays as it is, a blank one is taken off. */
+export type NamePartsChange = Partial<Pick<StoredName, 'firstName' | 'lastName' | 'nickname'>>;
+
+/** What the parts alone would show, or null when there are none. */
+function nameFromParts(parts: NameParts): string | null {
+	const fullName = [clean(parts.firstName), clean(parts.lastName)].filter(Boolean).join(' ');
+	return fullName || clean(parts.nickname) || null;
+}
+
+const orNull = (value: string | null): string | null => clean(value) || null;
+
+/**
+ * The name after its parts change (docs/concepts/surnames.md §6), the one rule every path that
+ * changes a part goes through — the profile and the bulk paths alike, so a shown name follows
+ * its parts the same way wherever they change.
+ *
+ * A shown name the old parts made is made again from the new ones; one a member chose (*Opa
+ * Hans*) is kept, because it was chosen. A person given a last name without ever having had a
+ * first name — typical of an import — gets the first word of the shown name as one in the same
+ * write, so there are parts to work from. Emptying every part leaves the shown name standing:
+ * it is never empty.
+ */
+export function withNameParts(current: StoredName, change: NamePartsChange): StoredName {
+	const pick = (key: keyof NamePartsChange) =>
+		change[key] === undefined ? orNull(current[key]) : orNull(change[key] ?? null);
+	let firstName = pick('firstName');
+	const lastName = pick('lastName');
+	const nickname = pick('nickname');
+
+	let before: NameParts = current;
+	if (!clean(current.firstName) && !firstName && lastName) {
+		firstName = clean(current.displayName).split(/\s+/)[0] || null;
+		before = { ...current, firstName };
+	}
+
+	const madeByParts = nameFromParts({ ...before, displayName: null }) === clean(current.displayName);
+	const displayName = (madeByParts && nameFromParts({ firstName, lastName, nickname })) || current.displayName;
+	return { displayName, firstName, lastName, nickname };
+}
+
+/**
+ * Whether a member chose the shown name rather than letting the parts make it — so a changed
+ * part will not reach it, and the editor says so instead of leaving anyone wondering (§6).
+ */
+export function shownNameIsChosen(name: StoredName): boolean {
+	const fromParts = nameFromParts({ ...name, displayName: null });
+	return fromParts !== null && fromParts !== clean(name.displayName);
+}

@@ -4,6 +4,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
+	import NamePartsEditor from './NamePartsEditor.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { PersonForm, PersonPageData } from './types';
@@ -30,6 +31,9 @@
 	const i18n = useI18n();
 	const t = i18n.t;
 	const c = $derived(data.contact);
+	/** Which field the name-parts editor opens on, or null while it is closed (§2.2). */
+	let namePartsFocus = $state<'firstName' | 'lastName' | null>(null);
+	const namePartsOpen = $derived(namePartsFocus !== null || Boolean(form?.namePartsError));
 	/** The day it happened, for the marker's tooltip. */
 	const archivedOn = $derived(
 		c.archivedAt === null ? null : dayLabel(i18n, new Date(c.archivedAt).toLocaleDateString('en-CA'))
@@ -58,6 +62,27 @@
 				heading
 			/>
 		</h1>
+		<!-- The parts the shown name is made of, which can change long after someone was added. -->
+		{#if namePartsOpen}
+			<NamePartsEditor
+				name={c}
+				shownNameChosen={data.shownNameChosen}
+				focus={namePartsFocus ?? 'firstName'}
+				error={form?.namePartsError ?? null}
+				onclose={() => (namePartsFocus = null)}
+			/>
+		{:else}
+			<div class="flex flex-wrap gap-x-3 text-xs">
+				{#if !c.lastName}
+					<button type="button" class="min-h-8 text-link hover:underline" onclick={() => (namePartsFocus = 'lastName')}>
+						{t('contact.nameParts.addLastName')}
+					</button>
+				{/if}
+				<button type="button" class="min-h-8 text-fg-subtle hover:text-fg hover:underline" onclick={() => (namePartsFocus = 'firstName')}>
+					{t('contact.nameParts.open')}
+				</button>
+			</div>
+		{/if}
 		<p class="text-fg-muted">
 			<InlineEdit
 				action="?/editProfile"

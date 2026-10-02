@@ -17,6 +17,7 @@ import type { NewActivityEntry } from '../domain/activity/activity';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import { mergeContacts } from './contact-merge';
 import type { NameCandidate, NameCandidateSource } from '../domain/contacts/suggestions';
+import type { NameRepository, NameWrite } from '../domain/contacts/name-parts';
 import { readGender, type Gender } from '../../people/gender';
 import type * as schema from './schema';
 import {
@@ -81,6 +82,7 @@ const contactColumns = {
 	firstName: contactTable.firstName,
 	lastName: contactTable.lastName,
 	nickname: contactTable.nickname,
+	formerName: contactTable.formerName,
 	description: contactTable.description,
 	howWeMet: contactTable.howWeMet,
 	metDate: contactTable.metDate,
@@ -96,7 +98,7 @@ const contactColumns = {
 
 export function createDrizzleContactRepository(
 	db: BunSQLiteDatabase<typeof schema>
-): ContactRepository & NameCandidateSource {
+): ContactRepository & NameCandidateSource & NameRepository {
 	return {
 		async insert(contact: NewContact) {
 			db.insert(contactTable).values(contact).run();
@@ -338,6 +340,17 @@ export function createDrizzleContactRepository(
 
 		async setGender(id: string, gender: Gender | null, updatedAt: number) {
 			db.update(contactTable).set({ gender, updatedAt }).where(eq(contactTable.id, id)).run();
+		},
+
+		async writeNames(writes: readonly NameWrite[], audit: NewActivityEntry | null) {
+			// One transaction: a batch of last names lands whole, with the line that tells the
+			// household about it, or not at all (docs/concepts/surnames.md §7).
+			db.transaction((tx) => {
+				for (const { id, ...name } of writes) {
+					tx.update(contactTable).set(name).where(eq(contactTable.id, id)).run();
+				}
+				if (audit) tx.insert(activityLog).values(audit).run();
+			});
 		}
 	};
 }

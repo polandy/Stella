@@ -65,6 +65,8 @@ export interface NewContact {
 
 /** Full contact as read back for a profile. */
 export interface Contact extends NewContact {
+	/** A maiden or earlier last name (docs/02 §2.2); kept when a last name changes on request. */
+	formerName: string | null;
 	avatarPhotoId: string | null;
 	isDeceased: boolean;
 	/** When the household put them out of the way, or null while they are in it. */
