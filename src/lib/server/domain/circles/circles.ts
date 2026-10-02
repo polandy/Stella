@@ -184,6 +184,18 @@ export interface CircleRoleUse {
 	role: string | null;
 }
 
+/**
+ * One role of a circle renamed: these memberships and these photos of the circle take `role`.
+ * The use-case has already chosen them (`rename-role.ts`); the adapter only writes.
+ */
+export interface RoleRename {
+	circleId: string;
+	contactIds: readonly string[];
+	photoIds: readonly string[];
+	role: string;
+	updatedAt: number;
+}
+
 // ── Ports ─────────────────────────────────────────────────────────────────
 
 export interface CircleRepository {
@@ -210,6 +222,12 @@ export interface CircleRepository {
 		role: string | null,
 		updatedAt: number
 	): Promise<void>;
+	/**
+	 * Rename a role across the circle's memberships **and** its photos in **one** transaction, so
+	 * a role never ends up half renamed — its people under the new name, its banner under the
+	 * old. Rows of other circles are never touched, whatever ids are passed.
+	 */
+	renameRole(change: RoleRename): Promise<void>;
 	listMembersVisibleTo(viewer: Viewer, circleId: string): Promise<MemberView[]>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ContactCircleView[]>;
 	/** Every visible membership's role, with the name of the circle it belongs to. */

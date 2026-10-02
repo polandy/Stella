@@ -31,6 +31,7 @@ export const circles = {
 	'circles.removeMember': (p: { name: string }) => `Remove ${p.name} from circle`,
 	'circles.removedFromCircle': 'Removed from the circle',
 	'circles.noRole': 'No role',
+	'circles.renameRole': (p: { role: string }) => `Rename the role ${p.role}`,
 	'circles.keepSearch': 'Keep the search after picking someone',
 	'circles.select': 'Select',
 	'circles.selectDone': 'Done selecting',

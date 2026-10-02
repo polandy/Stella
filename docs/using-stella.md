@@ -431,6 +431,11 @@ people from the circle.
 A circle's page shows its people grouped by role — all the players together, the coaches
 together — with anyone who has no role at the end.
 
+To rename a role, tap its heading (the name with the pencil), type the new name and press
+*Save*. Everyone in this circle with that role gets the new name, and so do the circle's photos
+of that role; other circles keep theirs. Fixing only the spelling ("teacher" → "Teacher") works
+the same way, and renaming a role to one the circle already has puts both groups together.
+
 A circle can have photos: the class photo of each school year, the team on the pitch, the
 teachers at the summer party. Press **Add photos** in the *Photos* card below the members and
 pick several at once; say who is in them — one of the circle's roles, or *No role* when the

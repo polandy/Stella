@@ -80,6 +80,7 @@ function fakeRepo(existing: Circle | null = null) {
 			fresh.forEach((m) => existingMembers.add(m.contactId));
 		},
 		removeMembership: async (cid, contactId) => void removed.push([cid, contactId]),
+		renameRole: async () => {},
 		setRoles: async (circleId, contactIds, role, at) =>
 			void roleChanges.push({ circleId, contactIds: [...contactIds], role, at }),
 		listMembersVisibleTo: async () => visibleMembers,

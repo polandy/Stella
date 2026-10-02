@@ -11,12 +11,13 @@ import {
 } from '$lib/server/domain/circles/circles';
 import { circlePhotoView, photoRoleOptions } from '$lib/server/domain/circles/circle-photo-view';
 import { listCirclePhotos } from '$lib/server/domain/circles/circle-photos';
+import { BlankRoleNameError, renameCircleRole } from '$lib/server/domain/circles/rename-role';
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { listCircleCuts } from '$lib/server/domain/media/cuts';
 import { getCircleDeps, getCirclePhotoDeps, getContactDeps, getCutDeps } from '$lib/server/services';
 import { photoActions } from './actions/photos';
 import type { Actions, PageServerLoad } from './$types';
-import { say } from '$lib/server/i18n/say';
+import { say, translator } from '$lib/server/i18n/say';
 
 /*
  * Circle detail (docs/02 §2.4.2): the circle, its visible members grouped by role, and a picker to
@@ -121,6 +122,35 @@ export const actions: Actions = {
 			parsed.output.contactIds,
 			parsed.output.role
 		);
+		throw redirect(303, `/circles/${params.id}`);
+	},
+
+	// Renames one role for everyone and every photo of this circle that has it (docs/02 §2.4.2).
+	renameRole: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const circle = await getCircle(getCircleDeps(), viewer, params.id);
+		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
+
+		const form = await request.formData();
+		const from = form.get('from');
+		const to = form.get('role');
+		if (typeof from !== 'string' || typeof to !== 'string') return fail(400, {});
+
+		try {
+			await renameCircleRole(
+				{ ...getCirclePhotoDeps(), circles: getCircleDeps().circles },
+				viewer,
+				{ circleId: params.id, from, to }
+			);
+		} catch (err) {
+			// Which heading failed, so only that one stays open with the message.
+			if (err instanceof BlankRoleNameError) {
+				return fail(400, { renameError: err.phrase(translator(locals)), renameFrom: from });
+			}
+			throw err;
+		}
 		throw redirect(303, `/circles/${params.id}`);
 	},
 

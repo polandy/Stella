@@ -34,6 +34,7 @@ export const circles: CirclesMessages = {
 	'circles.removeMember': (p) => `${p.name} aus dem Kreis entfernen`,
 	'circles.removedFromCircle': 'Aus dem Kreis entfernt',
 	'circles.noRole': 'Ohne Rolle',
+	'circles.renameRole': (p) => `Rolle ${p.role} umbenennen`,
 	'circles.keepSearch': 'Suche nach dem Auswählen behalten',
 	'circles.select': 'Auswählen',
 	'circles.selectDone': 'Auswahl beenden',

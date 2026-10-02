@@ -92,6 +92,7 @@ export const errors = {
 	'errors.journal.photoFailed': 'The entry was saved, but a photo could not be added.',
 	'errors.circle.needCircleName': 'Please name the circle.',
 	'errors.circle.choosePerson': 'Please choose a person.',
+	'errors.circle.roleNameBlank': 'Give the role a name — to take roles away, use Select.',
 	'errors.relationshipType.gone': 'That relationship type is gone.',
 	'errors.notFound': 'Not found',
 	'errors.notSignedIn': 'Not signed in',

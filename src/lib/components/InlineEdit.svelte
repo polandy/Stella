@@ -2,6 +2,7 @@
 	import FormError from '$lib/components/FormError.svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/Button.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
@@ -34,6 +35,13 @@
 		heading?: boolean;
 		/** Shown in place of an empty value, e.g. "Add a description"; defaults to *Add*. */
 		empty?: string;
+		/**
+		 * Show a pencil beside the value. For a value that does not look editable on its own — a
+		 * small heading — and on touch, where the tooltip that otherwise says so never appears.
+		 */
+		pencil?: boolean;
+		/** Classes for the value as read, when it is styled unlike the field it opens into. */
+		valueClass?: string;
 	}
 	let {
 		action,
@@ -44,7 +52,9 @@
 		placeholder = '',
 		error = null,
 		heading = false,
-		empty
+		empty,
+		pencil = false,
+		valueClass = ''
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -148,11 +158,15 @@
 		onclick={start}
 		title={label}
 		class="group/inline -mx-1 flex max-w-full items-center gap-1.5 rounded-control px-1 text-left transition-colors hover:bg-card-hover"
+		class:min-h-8={pencil}
 	>
 		{#if value}
-			<span class="truncate" class:text-2xl={heading} class:font-semibold={heading}>{value}</span>
+			<span class="truncate {valueClass}" class:text-2xl={heading} class:font-semibold={heading}>{value}</span>
 		{:else}
 			<span class="text-fg-subtle">{emptyLabel}</span>
+		{/if}
+		{#if pencil}
+			<Icon name="rename" size={14} class="text-fg-subtle" />
 		{/if}
 	</button>
 {/if}
