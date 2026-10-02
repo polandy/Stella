@@ -22,6 +22,7 @@ import { createDrizzleAttentionRepository } from './db/attention-repository';
 import { createDrizzleCircleRepository } from './db/circle-repository';
 import { createDrizzleCirclePhotoRepository } from './db/circle-photo-repository';
 import { createDrizzleContactRepository } from './db/contact-repository';
+import { createDrizzleCutRepository } from './db/cut-repository';
 import { createDrizzleStreamRepository } from './db/stream-repository';
 import { createDrizzleGraphRepository } from './db/graph-repository';
 import { createDrizzleJournalRepository } from './db/journal-repository';
@@ -107,6 +108,7 @@ import type { ApiImportDeps } from './domain/import/api/api-import';
 import type { ImportedPhotoDeps } from './domain/import/monica/photos';
 import type { InteractionDeps, InteractionRepository } from './domain/interactions/interactions';
 import type { AvatarDeps, MediaStore, MediaStreamSource, PhotoRepository } from './domain/media/avatars';
+import type { CutDeps, CutRepository } from './domain/media/cuts';
 import type { FramingDeps, FramingRepository } from './domain/media/framing';
 import type { GalleryDeps } from './domain/media/gallery';
 import type { GalleryUploadDeps } from './domain/media/gallery-upload';
@@ -618,6 +620,19 @@ export function getCirclePhotoDeps(): CirclePhotoDeps {
 	return {
 		circlePhotos: (circlePhotoRepository ??= createDrizzleCirclePhotoRepository(getDb())),
 		circles: getCircleDeps().circles,
+		media: getMediaStore(),
+		ids: ulidGenerator,
+		clock: systemClock
+	};
+}
+
+let cutRepository: CutRepository | null = null;
+
+/** Deps for profile pictures cut from a group photo (docs/concepts/circle-photos.md §5). */
+export function getCutDeps(): CutDeps {
+	return {
+		cuts: (cutRepository ??= createDrizzleCutRepository(getDb())),
+		contacts: getContacts(),
 		media: getMediaStore(),
 		ids: ulidGenerator,
 		clock: systemClock

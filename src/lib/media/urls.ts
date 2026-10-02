@@ -13,3 +13,11 @@ export function mediaUrl(photoId: string): string {
 export function thumbnailUrl(photoId: string): string {
 	return `${mediaUrl(photoId)}?thumb`;
 }
+
+/**
+ * The 1600 px view a group photo keeps beside its larger full picture (docs/02 §2.4.2) — what
+ * its grid and lightbox load. Any other photo answers with its full picture.
+ */
+export function viewUrl(photoId: string): string {
+	return `${mediaUrl(photoId)}?view`;
+}

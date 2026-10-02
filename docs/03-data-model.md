@@ -422,10 +422,12 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 | journal_entry_id | text fk → journal_entry.id null | set = belongs to that entry (§2.20), not the gallery |
 | circle_id | text null | set = belongs to that circle's photos (docs/02 §2.4.2), not to any person; no fk |
 | circle_role | text null | the circle role the photo shows, as picked; null = the circle as a whole |
-| framing_of | text null | set = the avatar framing of that gallery photo (docs/02 §2.14); no fk |
+| framing_of | text null | set = the avatar framing of that gallery photo, or a profile picture cut from that circle photo (docs/02 §2.14); no fk |
+| cut_from | text null | set = a photo of its own that was cut from that circle photo (docs/concepts/circle-photos.md §5.2); no fk |
 | crop_x / crop_y / crop_size | real null | a framing's square, in its photo's full-size pixels |
 | file_path | text | path within media volume (original, sanitized) |
 | thumb_path | text | generated thumbnail path |
+| view_path | text null | a circle photo's 1600 px view beside its larger full picture; null = the full picture is the view |
 | mime | text | |
 | width / height | int | |
 | size_bytes | int | |
@@ -457,9 +459,30 @@ stored as it was picked from the circle's roles and matched to the members' role
 members list's folding (trimmed, case-folded), so a role nobody has any more keeps its photos.
 `circle_id` carries no foreign key for the reason `journal_entry_id` has no cascade (below): the
 repository removes a circle's photos, and their files, with the circle. Nothing deletes a circle
-yet; the rule is for the day something does. The columns leave room for profile pictures cut
-from a group photo (docs/concepts/circle-photos.md §5): a framing of a circle photo and a
-`cut_from` are additions, not changes.
+yet; the rule is for the day something does: it turns the cuts of all the circle's photos
+(below) first, as removing one photo does.
+
+**A profile picture can be cut from a group photo** (docs/concepts/circle-photos.md §5). A
+*cut* is a framing of a circle photo with `contact_id` set to the person who wears it: one per
+photo **and person**, enforced by the partial unique index `photo_framing_person_idx` on
+(`framing_of`, `contact_id`) where `framing_of` is set. Like any framing it copies the circle
+photo's `created_by` and `visibility`, and follows a change of it to shared; it is rendered at
+1024 px. It is served like any photo of a person — where the person is visible and the cut is
+shared or the viewer's own (§3.7) — so the circle page names a wearer only to whoever may see
+them, and only counts the others. A cut is never deleted from under its person. Whatever takes it off them turns the row
+into a gallery photo of theirs in the same transaction: `framing_of` and the square are
+cleared, `created_at` and `taken_at` become the group photo's, and `cut_from` names the group
+photo — when they put on another picture (the cut becomes theirs, unworn), when the group photo
+is removed (still worn, `cut_from` cleared, as on every photo that named it), when it turns
+private (still worn, made shared), and when a merge leaves a record with a cut it does not wear.
+The decisions are pure (`src/lib/server/domain/media/cuts.ts`); the writes are
+`src/lib/server/db/cut-turning.ts`.
+
+**A circle photo keeps three files.** `file_path` is the full picture, up to 4096 px on its
+longest edge so faces can be cut from it, and only the cropper loads it; `view_path` the 1600 px
+view the strips and the lightbox load (`/media/<id>?view`); `thumb_path` the thumbnail, which
+the grid shows. A photo without a view — every person's
+and journal photo, and a circle photo no larger than the view — serves its full picture for it.
 
 **`journal_entry_id` carries no cascade.** It was added by migration `0002` as a plain
 `REFERENCES`, and adding one now would mean rebuilding `photo` — which cannot be dropped

@@ -8,8 +8,13 @@
  * leaves the picture and there is no blank border to upload.
  */
 
-/** Zooming further than this only shows the camera's noise at avatar size. */
-export const MAX_ZOOM = 6;
+/**
+ * The smallest square, in picture pixels, the cropper zooms down to. Below it the square holds
+ * less detail than the avatar is drawn with, so zooming further only shows the camera's noise
+ * (docs/concepts/circle-photos.md §5.3). A limit in pixels rather than a fixed factor is what
+ * lets a face in a 4096 px class photo fill the frame while a small picture barely zooms.
+ */
+const SMALLEST_SQUARE_PX = 256;
 
 export interface ImageSize {
 	width: number;
@@ -53,8 +58,13 @@ function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
 }
 
+/** How far `image` lets the cropper zoom: until the square is `SMALLEST_SQUARE_PX`, never below 1. */
+export function maxZoom(image: ImageSize): number {
+	return Math.max(1, Math.min(image.width, image.height) / SMALLEST_SQUARE_PX);
+}
+
 function withinPicture(image: ImageSize, crop: Crop): Crop {
-	const zoom = clamp(crop.zoom, 1, MAX_ZOOM);
+	const zoom = clamp(crop.zoom, 1, maxZoom(image));
 	const half = side(image, zoom) / 2;
 	return {
 		centerX: clamp(crop.centerX, half, image.width - half),
@@ -106,7 +116,7 @@ export function panBy(
  */
 export function zoomTo(image: ImageSize, crop: Crop, zoom: number, focus: WindowPoint = WINDOW_CENTRE): Crop {
 	const before = cropRect(image, crop);
-	const nextZoom = clamp(zoom, 1, MAX_ZOOM);
+	const nextZoom = clamp(zoom, 1, maxZoom(image));
 	const nextSide = side(image, nextZoom);
 	const pinnedX = before.x + focus.x * before.size;
 	const pinnedY = before.y + focus.y * before.size;

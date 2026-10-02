@@ -319,7 +319,9 @@ Both are built (26–32 below record what was decided on the way).
    moment has arrived. The online form action attaches photos through the same command, so a
    save whose answer was lost resends the very same photos without doubling any. A photo whose
    entry was deleted meanwhile is refused (*Could not send a photo*). No size cap beyond the
-   existing per-photo limits (§6.4).
+   existing per-photo limits (§6.4) — but a server whose request cap (`BODY_SIZE_LIMIT`,
+   docs/07) is below a 4096 px circle photo answers 413, and that photo is refused with the
+   reason, rather than retried for ever.
 7. **Every form for the additions of §4.1 now saves as a command, online too** — Home's
    composer, a person's note, call, tag, circle and relationship forms, and *Add person*. One path whether it comes
    from a form, a phone or a script; the price is that these actions now go through the

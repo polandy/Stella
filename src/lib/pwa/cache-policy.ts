@@ -67,8 +67,8 @@ export function keptAt(dateHeader: string | null): number | null {
 	return Number.isNaN(time) ? null : time;
 }
 
-/** The query a photo's thumbnail is asked for with (`thumbnailUrl`). */
-const THUMBNAIL_QUERY = '?thumb';
+/** The queries a photo's smaller sizes are asked for with (`thumbnailUrl`, `viewUrl`). */
+const PHOTO_SIZE_QUERIES: readonly string[] = ['?thumb', '?view'];
 
 /** Whether `path` is one of `NEVER_CACHED`, or something beneath it. */
 function isVolatile(path: string): boolean {
@@ -151,13 +151,13 @@ export function verdictFor(request: CacheableRequest): CacheVerdict {
 	if (isVolatile(url.pathname)) return 'skip';
 
 	// Pages and the media they are made of; a query string means a search or a filter, which
-	// is a question rather than a page somebody returns to. `?thumb` is not one: it names the
-	// size every avatar is drawn at.
+	// is a question rather than a page somebody returns to. `?thumb` and `?view` are not: they
+	// name the sizes every avatar and a group photo's lightbox are drawn at.
 	const isMedia = url.pathname.startsWith('/media/');
 	const isReReadable = request.isNavigation || isMedia;
 	if (!isReReadable) return 'skip';
-	const isThumbnail = isMedia && url.search === THUMBNAIL_QUERY;
-	if (url.search !== '' && url.pathname !== OFFLINE_FALLBACK_PATH && !isThumbnail) return 'skip';
+	const isPhotoSize = isMedia && PHOTO_SIZE_QUERIES.includes(url.search);
+	if (url.search !== '' && url.pathname !== OFFLINE_FALLBACK_PATH && !isPhotoSize) return 'skip';
 
 	return 'keep';
 }

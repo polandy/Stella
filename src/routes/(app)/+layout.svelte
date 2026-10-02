@@ -180,7 +180,7 @@
 	 * view and when the device joins a network — never on a timer. What Stella took is read back by reloading the page's data.
 	 */
 	onMount(() => {
-		void outbox.start(data.user.id, () => void invalidateAll()).catch(() => {
+		void outbox.start(data.user.id, () => void invalidateAll(), t('home.outbox.photoTooLarge')).catch(() => {
 			// No IndexedDB (a private window in some browsers): nothing can have been kept.
 		});
 		const onVisible = () => {

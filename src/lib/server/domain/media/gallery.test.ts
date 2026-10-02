@@ -33,6 +33,7 @@ const photo = (over: Partial<GalleryPhoto> = {}): GalleryPhoto => ({
 	isAvatar: false,
 	framing: null,
 	pinnedAt: null,
+	cutFrom: null,
 	...over
 });
 

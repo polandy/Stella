@@ -107,11 +107,11 @@ export function createDrizzleArchiveRepository(
 
 			const householdName = (tables.household[0]?.name as string | undefined) ?? 'household';
 
-			// Both renditions of every photo: the archive is only a backup if the thumbnails
-			// come back too, and re-deriving them on restore would need the image pipeline.
+			// Every rendition of every photo: the archive is only a backup if the thumbnails (and
+			// a group photo's view) come back too, and re-deriving them would need the image pipeline.
 			const paths = new Set<string>();
 			for (const row of tables.photo) {
-				for (const key of ['file_path', 'thumb_path']) {
+				for (const key of ['file_path', 'thumb_path', 'view_path']) {
 					const value = row[key];
 					if (typeof value === 'string' && value.length > 0) paths.add(value);
 				}

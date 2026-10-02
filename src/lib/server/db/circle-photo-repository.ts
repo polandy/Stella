@@ -8,6 +8,7 @@ import type {
 	CirclePhotoRepository,
 	StoredCirclePhoto
 } from '../domain/circles/circle-photos';
+import { turnCutsOfGroupPhotos } from './cut-turning';
 import type * as schema from './schema';
 import { circle, photo, user } from './schema';
 
@@ -44,6 +45,7 @@ export function createDrizzleCirclePhotoRepository(
 					visibility: p.visibility,
 					filePath: p.filePath,
 					thumbPath: p.thumbPath,
+					viewPath: p.viewPath,
 					mime: p.mime,
 					width: p.width,
 					height: p.height,
@@ -77,22 +79,31 @@ export function createDrizzleCirclePhotoRepository(
 		},
 
 		async setOwnVisibility(input) {
-			const updated = db
-				.update(photo)
-				.set({ visibility: input.visibility })
-				.where(ownPhoto(input))
-				.returning({ id: photo.id })
-				.all();
-			return updated.length > 0;
+			return db.transaction((tx) => {
+				const own = tx.select({ id: photo.id }).from(photo).where(ownPhoto(input)).get();
+				if (!own) return false;
+				// Nobody's face turns private with the group photo: the cuts become their own first (§5.4).
+				if (input.visibility === 'private') turnCutsOfGroupPhotos(tx, [own.id], 'groupPhotoPrivate');
+				tx.update(photo).set({ visibility: input.visibility }).where(eq(photo.id, own.id)).run();
+				// The cuts made while it was private follow it, as any framing follows its photo.
+				tx.update(photo).set({ visibility: input.visibility }).where(eq(photo.framingOf, own.id)).run();
+				return true;
+			});
 		},
 
 		async deleteOwn(input) {
-			const removed = db
-				.delete(photo)
-				.where(ownPhoto(input))
-				.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
-				.all();
-			return removed[0] ?? null;
+			return db.transaction((tx) => {
+				const own = tx.select({ id: photo.id }).from(photo).where(ownPhoto(input)).get();
+				if (!own) return null;
+				// Nobody's face goes with the group photo: the cuts become their own first (§5.4).
+				turnCutsOfGroupPhotos(tx, [own.id], 'groupPhotoRemoved');
+				const removed = tx
+					.delete(photo)
+					.where(eq(photo.id, own.id))
+					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath, viewPath: photo.viewPath })
+					.all();
+				return removed[0] ?? null;
+			});
 		},
 
 		async listCoverCandidates(viewer: Viewer): Promise<CirclePhoto[]> {

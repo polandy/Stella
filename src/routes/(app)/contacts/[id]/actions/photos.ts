@@ -13,11 +13,14 @@ import {
 	removeGalleryPhoto,
 	setGalleryPhotoVisibility
 } from '$lib/server/domain/media/gallery';
+import { cutProfilePicture } from '$lib/server/domain/media/cuts';
 import { frameAsAvatar } from '$lib/server/domain/media/framing';
+import { readCutForm } from '$lib/server/http/cut-form';
 import { contactSectionPath } from '$lib/contacts/sections';
 import {
 	getCommandDeps,
 	getContactDeps,
+	getCutDeps,
 	getFramingDeps,
 	getGalleryDeps
 } from '$lib/server/services';
@@ -179,6 +182,28 @@ export const photoActions = {
 			throw err;
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
+	},
+
+	/**
+	 * Cut this person's profile picture out of a photo of one of their circles
+	 * (docs/concepts/circle-photos.md §5.1). The browser sends the square and its rendering.
+	 */
+	cutFromGroupPhoto: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const form = await request.formData();
+		form.set('contactId', params.id);
+		const input = await readCutForm(form);
+		if (!input) return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
+		try {
+			if (!(await cutProfilePicture(getCutDeps(), viewer, input))) {
+				return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
+			}
+		} catch (err) {
+			if (err instanceof InvalidAvatarError) return fail(400, { photoError: err.phrase(translator(locals)) });
+			throw err;
+		}
+		throw redirect(303, `/contacts/${params.id}`);
 	},
 
 	/** Delete a gallery photo and its files. Only its uploader may. */

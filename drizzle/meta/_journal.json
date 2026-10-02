@@ -134,6 +134,13 @@
       "when": 1790919871689,
       "tag": "0018_fixed_xorn",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1790926177463,
+      "tag": "0019_volatile_wild_pack",
+      "breakpoints": true
     }
   ]
 }

@@ -3,8 +3,11 @@
 	import Button from '$lib/components/Button.svelte';
 	import FormError from '$lib/components/FormError.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import type { CandidatePerson } from '$lib/circles/cut-candidates';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { mediaUrl } from '$lib/media/urls';
+	import type { CropRect } from '$lib/image/crop';
+	import CutForPerson from './CutForPerson.svelte';
+	import { viewUrl } from '$lib/media/urls';
 	import type { CirclePagePhoto } from './types';
 
 	let {
@@ -13,6 +16,9 @@
 		count,
 		circleName,
 		viewerId,
+		members,
+		people,
+		cuts,
 		error,
 		photoDate,
 		onclose,
@@ -26,6 +32,12 @@
 		count: number;
 		circleName: string;
 		viewerId: string;
+		/** The circle's members, offered first when a profile picture is cut from the photo. */
+		members: readonly { contactId: string; role: string | null }[];
+		/** Everyone the viewer can see, for the picker's search. */
+		people: readonly CandidatePerson[];
+		/** Who wears a cut of this photo: how many in all, and the ones the viewer sees. */
+		cuts: { people: number; wearers: { contactId: string; crop: CropRect | null }[] } | undefined;
 		/** The last save's refusal, shown where it was made. */
 		error: string | null;
 		/** When a photo was added, in the viewer's language. */
@@ -40,6 +52,15 @@
 	const i18n = useI18n();
 	const t = i18n.t;
 	const mine = $derived(photo.createdBy === viewerId);
+	// Removing or making private a photo people wear asks first (concept §5.4); the cuts are
+	// turned into their own photos either way, so the question is about knowing, not losing.
+	const wornBy = $derived(cuts?.people ?? 0);
+	let confirming = $state<'remove' | 'private' | null>(null);
+	$effect(() => {
+		// Another photo walked to is another question.
+		void photo.id;
+		confirming = null;
+	});
 	const INPUT = 'rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg';
 	// Saves stay in the lightbox: the page's data reloads around it, the photo stays open.
 	const keepOpen = () => async ({ update }: { update: (o?: { reset?: boolean }) => Promise<void> }) =>
@@ -79,7 +100,7 @@
 		</div>
 
 		<img
-			src={mediaUrl(photo.id)}
+			src={viewUrl(photo.id)}
 			alt={photo.caption ?? t('circles.photos.of', { name: circleName })}
 			class="max-h-[60vh] w-full rounded-control bg-bg-sunken object-contain"
 		/>
@@ -128,24 +149,68 @@
 					{photo.pinnedAt === null ? t('contact.photos.pin') : t('contact.photos.unpin')}
 				</Button>
 			</form>
+
+			<!-- Anyone who sees the photo may cut a profile picture out of it (concept §5.1). -->
+			<CutForPerson
+				photoId={photo.id}
+				photoRole={photo.roleLabel}
+				{members}
+				{people}
+				wearers={cuts?.wearers ?? []}
+			/>
 		</div>
 
 		{#if mine}
 			<div class="flex flex-col gap-2 border-t border-dashed border-border pt-3" data-testid="circle-photo-owner">
 				<span class="text-xs text-fg-subtle">{t('circles.photos.ownerOnly')}</span>
-				<div class="flex flex-wrap items-center gap-2">
-					<form method="POST" action="?/setPhotoVisibility" use:enhance={keepOpen} class="contents">
-						<input type="hidden" name="photoId" value={photo.id} />
-						<input type="hidden" name="visibility" value={photo.visibility === 'private' ? 'shared' : 'private'} />
-						<Button variant="ghost" size="sm" icon={photo.visibility === 'private' ? 'shared' : 'private'}>
-							{photo.visibility === 'private' ? t('contact.photos.share') : t('contact.photos.makePrivate')}
-						</Button>
-					</form>
-					<form method="POST" action="?/removePhoto" use:enhance={keepOpen} class="ml-auto">
-						<input type="hidden" name="photoId" value={photo.id} />
-						<Button variant="danger" size="sm">{t('common.remove')}</Button>
-					</form>
-				</div>
+				{#if confirming}
+					<!-- The question before a photo people wear goes away or turns private (§5.4). -->
+					<div class="flex flex-col gap-2 rounded-control border border-border bg-bg-sunken p-3 text-sm" role="alert" data-testid="cut-warning">
+						<p class="font-medium text-fg">{t('circles.cut.wornBy', { count: wornBy })}</p>
+						<p class="text-fg-muted">{confirming === 'remove' ? t('circles.cut.removeKeeps') : t('circles.cut.privateKeeps')}</p>
+						<div class="flex flex-wrap items-center gap-2">
+							{#if confirming === 'remove'}
+								<form method="POST" action="?/removePhoto" use:enhance={keepOpen} class="contents">
+									<input type="hidden" name="photoId" value={photo.id} />
+									<Button variant="danger" size="sm">{t('circles.cut.removeAnyway')}</Button>
+								</form>
+							{:else}
+								<form method="POST" action="?/setPhotoVisibility" use:enhance={keepOpen} class="contents">
+									<input type="hidden" name="photoId" value={photo.id} />
+									<input type="hidden" name="visibility" value="private" />
+									<Button variant="secondary" size="sm" icon="private">{t('circles.cut.privateAnyway')}</Button>
+								</form>
+							{/if}
+							<Button variant="ghost" size="sm" type="button" onclick={() => (confirming = null)}>{t('common.cancel')}</Button>
+						</div>
+					</div>
+				{:else}
+					<div class="flex flex-wrap items-center gap-2">
+						{#if photo.visibility === 'shared' && wornBy > 0}
+							<Button variant="ghost" size="sm" icon="private" type="button" onclick={() => (confirming = 'private')}>
+								{t('contact.photos.makePrivate')}
+							</Button>
+						{:else}
+							<form method="POST" action="?/setPhotoVisibility" use:enhance={keepOpen} class="contents">
+								<input type="hidden" name="photoId" value={photo.id} />
+								<input type="hidden" name="visibility" value={photo.visibility === 'private' ? 'shared' : 'private'} />
+								<Button variant="ghost" size="sm" icon={photo.visibility === 'private' ? 'shared' : 'private'}>
+									{photo.visibility === 'private' ? t('contact.photos.share') : t('contact.photos.makePrivate')}
+								</Button>
+							</form>
+						{/if}
+						{#if wornBy > 0}
+							<Button variant="danger" size="sm" type="button" class="ml-auto" onclick={() => (confirming = 'remove')}>
+								{t('common.remove')}
+							</Button>
+						{:else}
+							<form method="POST" action="?/removePhoto" use:enhance={keepOpen} class="ml-auto">
+								<input type="hidden" name="photoId" value={photo.id} />
+								<Button variant="danger" size="sm">{t('common.remove')}</Button>
+							</form>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		{/if}
 	</div>

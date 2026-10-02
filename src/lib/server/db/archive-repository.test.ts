@@ -128,13 +128,13 @@ describe('readHousehold', () => {
 		db.insert(schema.photo)
 			.values([
 				{ id: 'p-1', householdId: H, contactId: 'c-mine', createdBy: U, filePath: 'p1.jpg', thumbPath: 't1.jpg', mime: 'image/jpeg' },
-				{ id: 'p-2', householdId: H, contactId: 'c-mine', createdBy: U, filePath: 'p2.jpg', thumbPath: 't1.jpg', mime: 'image/jpeg' },
+				{ id: 'p-2', householdId: H, contactId: 'c-mine', createdBy: U, filePath: 'p2.jpg', thumbPath: 't1.jpg', viewPath: 'v2.jpg', mime: 'image/jpeg' },
 				{ id: 'p-x', householdId: OTHER, contactId: 'c-theirs', createdBy: 'user-2', filePath: 'x.jpg', thumbPath: 'xt.jpg', mime: 'image/jpeg' }
 			])
 			.run();
 
 		// The shared thumbnail appears once; the other household's files not at all.
-		expect((await repo.readHousehold(H)).mediaPaths.sort()).toEqual(['p1.jpg', 'p2.jpg', 't1.jpg']);
+		expect((await repo.readHousehold(H)).mediaPaths.sort()).toEqual(['p1.jpg', 'p2.jpg', 't1.jpg', 'v2.jpg']);
 	});
 
 	it('gives an empty household an empty snapshot rather than failing', async () => {

@@ -5,7 +5,13 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { DeletedPhotoFiles, ImageMime, MediaStore } from '../media/avatars';
 import { CAPTION_MAX_LENGTH, CaptionTooLongError } from '../media/gallery';
-import { validateImageUpload, type ImageUpload } from '../media/journal-photos';
+import {
+	InvalidImageError,
+	JOURNAL_IMAGE_MAX_BYTES,
+	validateImageUpload,
+	type ImageUpload
+} from '../media/journal-photos';
+import { sniffImageMime } from '../media/avatars';
 import { leadPhoto, matchRoleOption, photoRoleOptions } from './circle-photo-view';
 import { suggestRoles, type CircleRepository } from './circles';
 
@@ -49,6 +55,8 @@ export interface StoredCirclePhoto {
 	visibility: Visibility;
 	filePath: string;
 	thumbPath: string;
+	/** The 1600 px view beside a larger full picture; null when the full picture is that small. */
+	viewPath: string | null;
 	mime: ImageMime;
 	width: number;
 	height: number;
@@ -78,8 +86,16 @@ export interface CirclePhotoRepository {
 		photoId: string;
 		visibility: Visibility;
 	}): Promise<boolean>;
-	/** Remove a photo of that circle the author added and return its files; null when not theirs. */
-	deleteOwn(input: { authorId: string; circleId: string; photoId: string }): Promise<DeletedPhotoFiles | null>;
+	/**
+	 * Remove a photo of that circle the author added and return its files; null when not theirs.
+	 * Profile pictures cut from it become their people's own photos first, in the same
+	 * transaction (concept §5.4) — as they do when it is made private (`setOwnVisibility`).
+	 */
+	deleteOwn(input: {
+		authorId: string;
+		circleId: string;
+		photoId: string;
+	}): Promise<(DeletedPhotoFiles & { viewPath: string | null }) | null>;
 	/** Every photo the viewer may see in every circle they may see — what covers are chosen from. */
 	listCoverCandidates(viewer: Viewer): Promise<CirclePhoto[]>;
 }
@@ -145,19 +161,44 @@ export async function prepareCirclePhotoUpload(
 }
 
 /**
+ * The cap on a circle photo's full picture. It is kept up to 4096 px on its longest edge so
+ * faces can be cut from it (concept §5.3) — a few megabytes as a JPEG, with room to spare for a
+ * detailed one. Its view and thumbnail keep the gallery's caps.
+ */
+export const CIRCLE_IMAGE_MAX_BYTES = 20_000_000;
+
+/** A circle photo as the browser sends it: the gallery's renditions, and a view beside a large one. */
+export interface CirclePhotoUpload extends ImageUpload {
+	/** The 1600 px view, sent when the full picture is larger than that; absent otherwise. */
+	view?: Uint8Array;
+}
+
+/** Validate a circle photo upload and return its true (sniffed) mime; throws InvalidImageError. */
+function validateCirclePhotoUpload(upload: CirclePhotoUpload): ImageMime {
+	const mime = validateImageUpload(upload, CIRCLE_IMAGE_MAX_BYTES);
+	if (upload.view === undefined) return mime;
+	if (upload.view.byteLength === 0) throw new InvalidImageError(phrase('errors.image.empty'));
+	if (upload.view.byteLength > JOURNAL_IMAGE_MAX_BYTES) throw new InvalidImageError(phrase('errors.image.tooLarge'));
+	if (sniffImageMime(upload.view) !== mime) throw new InvalidImageError(phrase('errors.image.formatMismatch'));
+	return mime;
+}
+
+/**
  * Validate and store one circle photo. The caller has already checked the circle and the role
- * (`prepareCirclePhotoUpload`). Uses the gallery's processing and caps (docs/02 §2.14).
+ * (`prepareCirclePhotoUpload`). Uses the gallery's processing, with a larger full picture and a
+ * 1600 px view beside it (concept §5.3).
  */
 export async function addCirclePhoto(
 	deps: Pick<CirclePhotoDeps, 'circlePhotos' | 'media' | 'ids' | 'clock'>,
 	uploader: { userId: string; householdId: string },
-	input: { circleId: string; role: string | null; visibility: Visibility; upload: ImageUpload }
+	input: { circleId: string; role: string | null; visibility: Visibility; upload: CirclePhotoUpload }
 ): Promise<string> {
-	const mime = validateImageUpload(input.upload);
+	const mime = validateCirclePhotoUpload(input.upload);
 	const id = deps.ids.next();
 	const ext = EXT[mime];
 
 	const filePath = await deps.media.put(`${id}.${ext}`, input.upload.image);
+	const viewPath = input.upload.view ? await deps.media.put(`${id}_view.${ext}`, input.upload.view) : null;
 	const thumbPath = await deps.media.put(`${id}_thumb.${ext}`, input.upload.thumb);
 
 	await deps.circlePhotos.insert({
@@ -169,6 +210,7 @@ export async function addCirclePhoto(
 		visibility: input.visibility,
 		filePath,
 		thumbPath,
+		viewPath,
 		mime,
 		width: input.upload.width,
 		height: input.upload.height,
@@ -253,6 +295,7 @@ export async function removeCirclePhoto(
 	if (!removed) return false;
 	await deps.media.delete(removed.filePath);
 	await deps.media.delete(removed.thumbPath);
+	if (removed.viewPath) await deps.media.delete(removed.viewPath);
 	return true;
 }
 

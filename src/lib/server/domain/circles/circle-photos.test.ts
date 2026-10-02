@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
 import { CaptionTooLongError, CAPTION_MAX_LENGTH } from '../media/gallery';
-import { InvalidImageError } from '../media/journal-photos';
+import { InvalidImageError, JOURNAL_IMAGE_MAX_BYTES } from '../media/journal-photos';
 import type { Circle, MemberView } from './circles';
 import {
 	addCirclePhoto,
@@ -102,7 +102,11 @@ function deps(
 		async deleteOwn(input) {
 			const found = photos.find((p) => p.id === input.photoId && p.circleId === input.circleId);
 			if (!found || found.createdBy !== input.authorId) return null;
-			return { filePath: `${input.photoId}.jpg`, thumbPath: `${input.photoId}_thumb.jpg` };
+			return {
+				filePath: `${input.photoId}.jpg`,
+				thumbPath: `${input.photoId}_thumb.jpg`,
+				viewPath: `${input.photoId}_view.jpg`
+			};
 		},
 		async listCoverCandidates() {
 			return photos;
@@ -193,6 +197,7 @@ describe('addCirclePhoto', () => {
 				visibility: 'shared',
 				filePath: 'new-photo.jpg',
 				thumbPath: 'new-photo_thumb.jpg',
+				viewPath: null,
 				mime: 'image/jpeg',
 				width: 1600,
 				height: 900,
@@ -207,6 +212,35 @@ describe('addCirclePhoto', () => {
 		const notImage = { ...upload, image: new Uint8Array([1, 2, 3]) };
 		await expect(
 			addCirclePhoto(d, { userId: 'u1', householdId: 'h1' }, { circleId: 'k1', role: null, visibility: 'shared', upload: notImage })
+		).rejects.toBeInstanceOf(InvalidImageError);
+		expect(inserted).toEqual([]);
+	});
+
+	// Concept §5.3: a group photo is kept up to 4096 px so faces can be cut from it; the grid
+	// and the lightbox load a 1600 px view instead, so only the cropper pays for the full one.
+	it('keeps a large picture whole beside its 1600 px view', async () => {
+		const { deps: d, inserted, files } = deps();
+		const large = { ...upload, width: 4096, height: 2304, view: JPEG };
+		await addCirclePhoto(d, { userId: 'u1', householdId: 'h1' }, { circleId: 'k1', role: null, visibility: 'shared', upload: large });
+		expect(Object.keys(files)).toEqual(['new-photo.jpg', 'new-photo_view.jpg', 'new-photo_thumb.jpg']);
+		expect(inserted[0]).toMatchObject({ filePath: 'new-photo.jpg', viewPath: 'new-photo_view.jpg', width: 4096, height: 2304 });
+	});
+
+	it('takes a full picture larger than a person’s photo may be', async () => {
+		const { deps: d, inserted } = deps();
+		const big = new Uint8Array(JOURNAL_IMAGE_MAX_BYTES + 1);
+		big.set(JPEG);
+		const large = { ...upload, image: big, width: 4096, height: 2304, view: JPEG };
+		await addCirclePhoto(d, { userId: 'u1', householdId: 'h1' }, { circleId: 'k1', role: null, visibility: 'shared', upload: large });
+		expect(inserted).toHaveLength(1);
+	});
+
+	it('refuses a view that is not the same kind of image', async () => {
+		const { deps: d, inserted } = deps();
+		const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0, 0, 0, 0]);
+		const mismatched = { ...upload, width: 4096, height: 2304, view: png };
+		await expect(
+			addCirclePhoto(d, { userId: 'u1', householdId: 'h1' }, { circleId: 'k1', role: null, visibility: 'shared', upload: mismatched })
 		).rejects.toBeInstanceOf(InvalidImageError);
 		expect(inserted).toEqual([]);
 	});
@@ -309,7 +343,7 @@ describe('removeCirclePhoto', () => {
 	it('lets the uploader remove it, files included', async () => {
 		const { deps: d, deletedFiles } = deps();
 		expect(await removeCirclePhoto(d, viewer, { circleId: 'k1', photoId: 'p1' })).toBe(true);
-		expect(deletedFiles).toEqual(['p1.jpg', 'p1_thumb.jpg']);
+		expect(deletedFiles).toEqual(['p1.jpg', 'p1_thumb.jpg', 'p1_view.jpg']);
 	});
 
 	it('is the uploader’s alone', async () => {

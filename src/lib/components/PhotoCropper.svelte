@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import {
-		MAX_ZOOM,
 		cropFromRect,
 		cropRect,
 		imagePlacement,
 		initialCrop,
 		keyStep,
+		maxZoom,
 		panBy,
 		pinch,
 		zoomTo,
@@ -190,7 +190,7 @@
 		<input
 			type="range"
 			min="1"
-			max={MAX_ZOOM}
+			max={image ? maxZoom(image) : 1}
 			step="0.01"
 			value={crop?.zoom ?? 1}
 			oninput={onSlide}

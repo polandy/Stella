@@ -76,7 +76,11 @@ function fullHousehold(): HouseholdSnapshot {
 				{ id: 'p-framing', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, framing_of: 'p-gallery', crop_x: 400, crop_y: 120.5, crop_size: 900, created_by: 'u-1', visibility: 'shared', file_path: 'p3.jpg', thumb_path: 't3.jpg', mime: 'image/jpeg', width: 512, height: 512, size_bytes: 40000, caption: null, taken_at: null, created_at: EXPORTED },
 				{ id: 'p-journal', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: 'j-1', created_by: 'u-1', visibility: 'private', file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', width: null, height: null, size_bytes: null, caption: null, taken_at: null, created_at: EXPORTED },
 				// The club's team photo (docs/02 §2.4.2): it belongs to the circle, not to anyone.
-				{ id: 'p-circle', household_id: 'h-1', contact_id: null, journal_entry_id: null, circle_id: 'ci-1', circle_role: 'coach', created_by: 'u-1', visibility: 'private', file_path: 'p4.jpg', thumb_path: 't4.jpg', mime: 'image/jpeg', width: 1600, height: 900, size_bytes: 300000, caption: 'season start', taken_at: null, pinned_at: EXPORTED, created_at: EXPORTED }
+				{ id: 'p-circle', household_id: 'h-1', contact_id: null, journal_entry_id: null, circle_id: 'ci-1', circle_role: 'coach', created_by: 'u-1', visibility: 'private', file_path: 'p4.jpg', thumb_path: 't4.jpg', view_path: 'v4.jpg', mime: 'image/jpeg', width: 4096, height: 2304, size_bytes: 300000, caption: 'season start', taken_at: null, pinned_at: EXPORTED, created_at: EXPORTED },
+				// Hans's profile picture, cut from the team photo (docs/concepts/circle-photos.md §5).
+				{ id: 'p-cut', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, framing_of: 'p-circle', crop_x: 1200, crop_y: 300, crop_size: 280, created_by: 'u-1', visibility: 'private', file_path: 'p5.jpg', thumb_path: 't5.jpg', mime: 'image/jpeg', width: 1024, height: 1024, size_bytes: 90000, caption: null, taken_at: null, created_at: EXPORTED },
+				// An earlier cut of it, now a photo of Rosa's own that remembers where it came from.
+				{ id: 'p-was-cut', household_id: 'h-1', contact_id: 'c-rosa', journal_entry_id: null, cut_from: 'p-circle', created_by: 'u-1', visibility: 'shared', file_path: 'p6.jpg', thumb_path: 't6.jpg', mime: 'image/jpeg', width: 1024, height: 1024, size_bytes: 90000, caption: null, taken_at: null, created_at: EXPORTED }
 			],
 			tag: [{ id: 'tg-1', household_id: 'h-1', name: 'Bern', color: 'blue', created_at: EXPORTED }],
 			contact_tag: [{ contact_id: 'c-hans', tag_id: 'tg-1' }],
@@ -147,7 +151,7 @@ describe('the round trip', () => {
 		journal_mention: ['journal_entry_id', 'contact_id'],
 		interaction: ['id', 'contact_id', 'visibility', 'kind', 'title', 'description', 'happened_at', 'created_at'],
 		interaction_participant: ['interaction_id', 'contact_id'],
-		photo: ['id', 'contact_id', 'journal_entry_id', 'circle_id', 'circle_role', 'framing_of', 'crop_x', 'crop_y', 'crop_size', 'visibility', 'file_path', 'thumb_path', 'mime', 'width', 'height', 'size_bytes', 'caption', 'taken_at', 'pinned_at', 'created_at'],
+		photo: ['id', 'contact_id', 'journal_entry_id', 'circle_id', 'circle_role', 'framing_of', 'cut_from', 'crop_x', 'crop_y', 'crop_size', 'visibility', 'file_path', 'thumb_path', 'view_path', 'mime', 'width', 'height', 'size_bytes', 'caption', 'taken_at', 'pinned_at', 'created_at'],
 		tag: ['id', 'name', 'color'],
 		contact_tag: ['contact_id', 'tag_id'],
 		circle: ['id', 'visibility', 'name', 'description', 'kind', 'color', 'parent_circle_id', 'start_date', 'end_date', 'archived_at', 'created_at'],
@@ -191,7 +195,9 @@ describe('the round trip', () => {
 	});
 
 	it('names every media file the photos need, once each', () => {
-		expect(planned().mediaPaths.sort()).toEqual(['p1.jpg', 'p2.jpg', 'p3.jpg', 'p4.jpg', 't1.jpg', 't2.jpg', 't3.jpg', 't4.jpg']);
+		expect(planned().mediaPaths.sort()).toEqual(
+			['p1.jpg', 'p2.jpg', 'p3.jpg', 'p4.jpg', 'p5.jpg', 'p6.jpg', 't1.jpg', 't2.jpg', 't3.jpg', 't4.jpg', 't5.jpg', 't6.jpg', 'v4.jpg'].sort()
+		);
 	});
 
 	it('has nothing to complain about when the archive is whole', () => {
@@ -318,8 +324,8 @@ describe('an archive that does not add up', () => {
 			target()
 		);
 		// Its framing goes with it: a square of a photo that is not there frames nothing.
-		expect(rowsOf(plan, 'photo').map((p) => p.id)).toEqual(['p-journal', 'p-circle']);
-		expect(plan.mediaPaths.sort()).toEqual(['p2.jpg', 'p4.jpg', 't2.jpg', 't4.jpg']);
+		expect(rowsOf(plan, 'photo').map((p) => p.id)).toEqual(['p-journal', 'p-cut', 'p-was-cut', 'p-circle']);
+		expect(plan.mediaPaths.sort()).toEqual(['p2.jpg', 'p4.jpg', 'p5.jpg', 'p6.jpg', 't2.jpg', 't4.jpg', 't5.jpg', 't6.jpg', 'v4.jpg']);
 		expect(plan.warnings).toContainEqual({ code: 'photoBadPath', file: '../../etc/passwd' });
 	});
 
@@ -329,10 +335,12 @@ describe('an archive that does not add up', () => {
 			archived(bent((s) => (s.tables.circle[0].name = ''))),
 			target()
 		);
-		// Positive control: the other photos still come through.
-		expect(rowsOf(plan, 'photo').map((p) => p.id).sort()).toEqual(['p-framing', 'p-gallery', 'p-journal']);
-		expect(plan.mediaPaths).not.toContain('p4.jpg');
-		expect(plan.mediaPaths).not.toContain('t4.jpg');
+		// Positive control: the other photos still come through. The profile picture cut from the
+		// team photo goes with it; a photo that was cut from it before stays, and forgets it.
+		expect(rowsOf(plan, 'photo').map((p) => p.id).sort()).toEqual(['p-framing', 'p-gallery', 'p-journal', 'p-was-cut']);
+		expect(rowsOf(plan, 'photo').find((p) => p.id === 'p-was-cut')).toMatchObject({ cut_from: null });
+		for (const file of ['p4.jpg', 't4.jpg', 'v4.jpg', 'p5.jpg', 't5.jpg']) expect(plan.mediaPaths).not.toContain(file);
+		expect(plan.mediaPaths).toContain('p6.jpg');
 		expect(plan.warnings).toContainEqual({ code: 'circleWithoutName' });
 	});
 

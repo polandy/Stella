@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql, type SQL } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo, circlePhotoVisibleTo } from '../access/query-scoping';
+import { childRecordVisibleTo, circlePhotoColumnsVisibleTo, circlePhotoVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
 	DeletedPhotoFiles,
@@ -9,9 +9,11 @@ import type {
 	JournalPhotoRef,
 	PhotoFile,
 	PhotoRepository,
+	PhotoVariant,
 	StoredPhoto
 } from '../domain/media/avatars';
 import type { FramingRepository, StoredFraming } from '../domain/media/framing';
+import { keepCutLeftBehind } from './cut-turning';
 import type * as schema from './schema';
 import { circle, contact, photo } from './schema';
 
@@ -69,19 +71,24 @@ export function createDrizzlePhotoRepository(
 		},
 
 		async setContactAvatar(contactId: string, photoId: string) {
-			db.update(contact).set({ avatarPhotoId: photoId }).where(eq(contact.id, contactId)).run();
+			db.transaction((tx) => {
+				// A profile picture cut from a group photo stays theirs as a photo (concept §5.2).
+				keepCutLeftBehind(tx, contactId, { framingOf: null });
+				tx.update(contact).set({ avatarPhotoId: photoId }).where(eq(contact.id, contactId)).run();
+			});
 		},
 
 		async getVisiblePhotoFile(
 			viewer: Viewer,
 			photoId: string,
-			variant: 'full' | 'thumb'
+			variant: PhotoVariant
 		): Promise<PhotoFile | null> {
 			const owner = { visibility: photo.visibility, createdBy: photo.createdBy };
 			const row = db
 				.select({
 					filePath: photo.filePath,
 					thumbPath: photo.thumbPath,
+					viewPath: photo.viewPath,
 					mime: photo.mime,
 					visibility: photo.visibility,
 					createdBy: photo.createdBy
@@ -100,7 +107,9 @@ export function createDrizzlePhotoRepository(
 				)
 				.get();
 			if (!row) return null;
-			return { path: variant === 'thumb' ? row.thumbPath : row.filePath, mime: row.mime };
+			// A photo stored before there was a view (or small enough not to need one) is its own view.
+			const path = { full: row.filePath, view: row.viewPath ?? row.filePath, thumb: row.thumbPath }[variant];
+			return { path, mime: row.mime };
 		},
 
 		async listJournalPhotos(viewer: Viewer, contactId: string): Promise<JournalPhotoRef[]> {
@@ -122,6 +131,8 @@ export function createDrizzlePhotoRepository(
 				.from(photo)
 				.innerJoin(contact, eq(photo.contactId, contact.id))
 				.leftJoin(framing, eq(framing.framingOf, photo.id))
+				.leftJoin(cutGroup, eq(cutGroup.id, photo.cutFrom))
+				.leftJoin(cutCircle, cutCircleVisible(viewer))
 				.where(and(eq(photo.contactId, contactId), isGalleryPhotoVisibleTo(viewer)))
 				.orderBy(desc(photo.createdAt))
 				.all()
@@ -138,6 +149,8 @@ export function createDrizzlePhotoRepository(
 				.from(photo)
 				.innerJoin(contact, eq(photo.contactId, contact.id))
 				.leftJoin(framing, eq(framing.framingOf, photo.id))
+				.leftJoin(cutGroup, eq(cutGroup.id, photo.cutFrom))
+				.leftJoin(cutCircle, cutCircleVisible(viewer))
 				.where(
 					and(eq(photo.id, photoId), eq(photo.contactId, contactId), isGalleryPhotoVisibleTo(viewer))
 				)
@@ -202,6 +215,8 @@ export function createDrizzlePhotoRepository(
 
 		async replaceFraming(f: StoredFraming): Promise<DeletedPhotoFiles[]> {
 			return db.transaction((tx) => {
+				// A profile picture cut from a group photo stays theirs as a photo (concept §5.2).
+				keepCutLeftBehind(tx, f.contactId, { framingOf: f.framingOf });
 				const replaced = tx
 					.delete(photo)
 					.where(eq(photo.framingOf, f.framingOf))
@@ -254,6 +269,18 @@ function isGalleryPhotoVisibleTo(viewer: Viewer) {
 /** A photo's framing, joined beside it; each photo has at most one. */
 const framing = alias(photo, 'framing');
 
+/** The group photo a gallery photo was cut from (concept §5.2), and its circle. */
+const cutGroup = alias(photo, 'cut_group');
+const cutCircle = alias(circle, 'cut_circle');
+
+/** The group photo's circle, joined only when the viewer may see that group photo. */
+function cutCircleVisible(viewer: Viewer) {
+	return and(
+		eq(cutCircle.id, cutGroup.circleId),
+		circlePhotoColumnsVisibleTo(viewer, cutCircle, { visibility: cutGroup.visibility, createdBy: cutGroup.createdBy })
+	);
+}
+
 const GALLERY_COLUMNS = {
 	id: photo.id,
 	contactId: photo.contactId,
@@ -267,7 +294,10 @@ const GALLERY_COLUMNS = {
 	cropX: framing.cropX,
 	cropY: framing.cropY,
 	cropSize: framing.cropSize,
-	pinnedAt: photo.pinnedAt
+	pinnedAt: photo.pinnedAt,
+	cutFromId: cutGroup.id,
+	cutCircleId: cutCircle.id,
+	cutCircleName: cutCircle.name
 };
 
 type GalleryRow = {
@@ -284,6 +314,9 @@ type GalleryRow = {
 	cropY: number | null;
 	cropSize: number | null;
 	pinnedAt: number | null;
+	cutFromId: string | null;
+	cutCircleId: string | null;
+	cutCircleName: string | null;
 };
 
 /** SQLite has no booleans; the avatar flag arrives as 0/1 and is mapped here, at the boundary. */
@@ -301,5 +334,9 @@ const toGalleryPhoto = (row: GalleryRow): GalleryPhoto => ({
 		row.cropX !== null && row.cropY !== null && row.cropSize !== null
 			? { x: row.cropX, y: row.cropY, size: row.cropSize }
 			: null,
-	pinnedAt: row.pinnedAt
+	pinnedAt: row.pinnedAt,
+	cutFrom:
+		row.cutFromId !== null && row.cutCircleId !== null && row.cutCircleName !== null
+			? { photoId: row.cutFromId, circleId: row.cutCircleId, circleName: row.cutCircleName }
+			: null
 });

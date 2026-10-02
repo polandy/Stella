@@ -12,6 +12,7 @@ import { IMPORTANT_DATE_KINDS } from '$lib/dates/kinds';
 import { INTERACTION_KINDS, lastContactedOn } from '$lib/server/domain/interactions/interactions';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
+import { listGroupPhotosOf, listGroupPhotosToCut } from '$lib/server/domain/media/cuts';
 import { listGallery } from '$lib/server/domain/media/gallery';
 import { contactSectionPath, sectionForLegacyTab } from '$lib/contacts/sections';
 import { personMap } from '$lib/graph/model/person-map';
@@ -26,6 +27,7 @@ import {
 	getImportantDateDeps,
 	getInteractionDeps,
 	getNoteDeps,
+	getCutDeps,
 	getGalleryDeps,
 	getFamilyReadDeps,
 	getPhotos,
@@ -113,6 +115,10 @@ export const load = (async ({ locals, params, url }) => {
 		mentionedIn: read.mentionedIn.map((reference) => mentionedInView(reference, ctx)),
 		// The person's photo gallery (docs/02 §2.14), favourites first, already visibility-scoped.
 		gallery: read.gallery,
+		// Every group photo they were cut from, now and before (docs/concepts/circle-photos.md §5.2).
+		groupPhotos: read.groupPhotos,
+		// Their circles' photos a profile picture can be cut from; none means choosing looks as before.
+		groupPhotosToCut: read.groupPhotosToCut,
 
 		// Who they belong with.
 		relationships: read.family.ties,
@@ -179,6 +185,8 @@ function readPersonPage(
 		notes: listNotesForContact(getNoteDeps(), viewer, contactId),
 		mentionedIn: listMentionedIn(getMentionedInDeps(), viewer, contactId),
 		gallery: listGallery(getGalleryDeps(), viewer, contactId),
+		groupPhotos: listGroupPhotosOf(getCutDeps(), viewer, contactId),
+		groupPhotosToCut: listGroupPhotosToCut(getCutDeps(), viewer, contactId),
 
 		/*
 		 * Their place in the family: their links, derived kin, proposals, the review, what the

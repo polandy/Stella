@@ -149,6 +149,50 @@ test.describe('signed in', () => {
 		await expect(page.getByTestId('outbox')).toHaveCount(0);
 	});
 
+	test('refuses a kept photo the server turns away as too large, instead of keeping it waiting', async ({
+		page,
+		context
+	}) => {
+		await addPerson(page, 'Grossa', 'Vogelsang');
+		await signIn(page);
+		await context.setOffline(true);
+		await mention(page, 'Grossa', /Grossa Vogelsang/);
+		await page.getByLabel('What happened?').pressSequentially('a photo over the request cap');
+		await page
+			.locator('input[type=file][accept="image/*"]')
+			.setInputFiles({ name: 'dot.png', mimeType: 'image/png', buffer: DOT_PNG });
+		await composerSave(page).click();
+		await expect(kept(page)).toContainText('1 photo');
+
+		// What adapter-node answers a body over BODY_SIZE_LIMIT with; the moment itself goes
+		// through to Stella as usual. The route answering is the signal the upload was tried.
+		const turnedAway = new Promise<void>((resolve) => {
+			void page.route('**/api/commands/photo', async (route) => {
+				await route.fulfill({ status: 413, body: 'Payload Too Large' });
+				resolve();
+			});
+		});
+		await context.setOffline(false);
+		await turnedAway;
+
+		await expect(kept(page)).toHaveAttribute('data-outbox-state', 'refused');
+		await expect(kept(page).getByText('Could not send a photo', { exact: true })).toBeVisible();
+		await expect(kept(page)).toContainText(
+			'Too large for this Stella server. Whoever runs it can raise BODY_SIZE_LIMIT.'
+		);
+		await expect(kept(page)).not.toContainText('Photos not sent yet');
+		await expect(kept(page)).not.toContainText('Not sent yet');
+
+		// Still refused, with its reason, when the app opens again, until it is discarded.
+		await page.reload();
+		await expect(kept(page)).toHaveAttribute('data-outbox-state', 'refused');
+		await expect(kept(page)).toContainText('Too large for this Stella server.');
+		await kept(page).getByRole('button', { name: 'Discard' }).click();
+		await kept(page).getByRole('button', { name: 'Discard for good' }).click();
+		await expect(page.getByTestId('outbox')).toHaveCount(0);
+		await page.unroute('**/api/commands/photo');
+	});
+
 	test('saves a moment with a photo online without keeping anything', async ({ page }) => {
 		await addPerson(page, 'Pixelia', 'Vogelsang');
 		await signIn(page);

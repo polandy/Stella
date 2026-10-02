@@ -131,6 +131,8 @@ export function buildArchiveDocument(
 			id: id(row),
 			file: text(row, 'file_path'),
 			thumb: text(row, 'thumb_path'),
+			// A group photo's 1600 px view beside its larger full picture (docs/02 §2.4.2).
+			view: text(row, 'view_path'),
 			mime: text(row, 'mime'),
 			width: num(row, 'width'),
 			height: num(row, 'height'),
@@ -140,6 +142,8 @@ export function buildArchiveDocument(
 			// Set on the square a photo is worn through as the avatar (docs/02 §2.14).
 			framing_of: text(row, 'framing_of'),
 			crop: framingCrop(row),
+			// The group photo a profile picture was cut from (docs/concepts/circle-photos.md §5.2).
+			cut_from: text(row, 'cut_from'),
 			// The circle role a circle's photo shows (docs/02 §2.4.2).
 			role: text(row, 'circle_role'),
 			// When the household made it one of the person's favourites (docs/02 §2.14).

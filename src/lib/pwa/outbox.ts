@@ -29,6 +29,22 @@ export const COMMAND_PATIENCE_MS = 10_000;
 export const PHOTO_PATIENCE_MS = 60_000;
 
 /**
+ * What a photo upload's response says. A 413 comes from the server in front of Stella, not
+ * Stella itself: the photo is over its request cap (`BODY_SIZE_LIMIT`, docs/07) and would be
+ * turned away on every try, so it is refused with `tooLarge` instead of waiting for ever.
+ * Anything else that is not Stella's answer may pass next time, so it waits (null).
+ */
+export function photoAnswer(
+	id: string,
+	httpStatus: number,
+	answer: CommandAnswer | null,
+	tooLarge: string
+): CommandAnswer | null {
+	if (httpStatus === 413) return { id, status: 'refused', reason: tooLarge };
+	return answer;
+}
+
+/**
  * Where an item stands. `pending` waits to be sent; `held` is open in the composer; `sending`
  * is in a request with no answer yet; `refused` came back with a reason the member can act on.
  */
@@ -40,6 +56,8 @@ export interface KeptPhoto {
 	id: string;
 	image: Blob;
 	thumb: Blob;
+	/** A large group photo's 1600 px view, sent beside its full picture (docs/02 §2.4.2). */
+	view?: Blob;
 	width: number;
 	height: number;
 }

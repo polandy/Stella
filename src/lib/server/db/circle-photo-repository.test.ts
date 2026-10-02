@@ -33,6 +33,7 @@ const stored = (over: Partial<StoredCirclePhoto> = {}): StoredCirclePhoto => ({
 	visibility: 'shared',
 	filePath: 'p1.jpg',
 	thumbPath: 'p1_thumb.jpg',
+	viewPath: 'p1_view.jpg',
 	mime: 'image/jpeg',
 	width: 1600,
 	height: 900,
@@ -129,7 +130,8 @@ describe('setOwnVisibility / deleteOwn', () => {
 		expect(await repo.deleteOwn({ authorId: U2, circleId: 'class', photoId: 'p1' })).toBeNull();
 		expect(await repo.deleteOwn({ authorId: U1, circleId: 'class', photoId: 'p1' })).toEqual({
 			filePath: 'p1.jpg',
-			thumbPath: 'p1_thumb.jpg'
+			thumbPath: 'p1_thumb.jpg',
+			viewPath: 'p1_view.jpg'
 		});
 		expect(db.select().from(schema.photo).where(eq(schema.photo.id, 'p1')).all()).toEqual([]);
 	});

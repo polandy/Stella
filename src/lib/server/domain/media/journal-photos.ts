@@ -36,10 +36,13 @@ export interface ImageUpload {
 	height: number;
 }
 
-/** Validate a journal image upload and return its true (sniffed) mime; throws InvalidImageError. */
-export function validateImageUpload(upload: ImageUpload): ImageMime {
+/**
+ * Validate a journal image upload and return its true (sniffed) mime; throws InvalidImageError.
+ * A circle photo's full picture is larger and passes its own cap (`../circles/circle-photos`).
+ */
+export function validateImageUpload(upload: ImageUpload, imageMaxBytes = JOURNAL_IMAGE_MAX_BYTES): ImageMime {
 	if (upload.image.byteLength === 0) throw new InvalidImageError(phrase('errors.image.empty'));
-	if (upload.image.byteLength > JOURNAL_IMAGE_MAX_BYTES) throw new InvalidImageError(phrase('errors.image.tooLarge'));
+	if (upload.image.byteLength > imageMaxBytes) throw new InvalidImageError(phrase('errors.image.tooLarge'));
 	if (upload.thumb.byteLength === 0) throw new InvalidImageError(phrase('errors.image.thumbEmpty'));
 	if (upload.thumb.byteLength > JOURNAL_THUMB_MAX_BYTES) throw new InvalidImageError(phrase('errors.image.thumbTooLarge'));
 

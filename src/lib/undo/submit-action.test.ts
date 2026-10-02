@@ -32,6 +32,13 @@ describe('submitAction', () => {
 		expect(new Headers(calls[0].init.headers).get('x-sveltekit-action')).toBe('true');
 	});
 
+	it('can send a body too large to outlive the page, which keepalive would refuse', async () => {
+		const { fetch, calls } = fakeFetch({ type: 'success', status: 200 });
+		await submitAction(fetch, '?/cut', new FormData(), { keepalive: false });
+		expect(calls[0].init.keepalive).toBe(false);
+		expect(new Headers(calls[0].init.headers).get('x-sveltekit-action')).toBe('true');
+	});
+
 	it('resolves on a success result too', async () => {
 		const { fetch } = fakeFetch({ type: 'success', status: 200 });
 		await expect(submitAction(fetch, '?/x', new FormData())).resolves.toBeUndefined();

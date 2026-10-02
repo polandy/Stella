@@ -30,6 +30,7 @@ export const home = {
 	'home.outbox.photosWaiting': 'Photos not sent yet',
 	'home.outbox.sendingPhotos': 'Sending photos…',
 	'home.outbox.photoRefused': 'Could not send a photo',
+	'home.outbox.photoTooLarge': 'Too large for this Stella server. Whoever runs it can raise BODY_SIZE_LIMIT.',
 	'home.outbox.photoCount': (p: { count: number }) => (p.count === 1 ? '1 photo' : `${p.count} photos`),
 	'home.outbox.noteOn': (p: { name: string }) => `· note on ${p.name}`,
 	'home.outbox.editOnPage': 'Edit',

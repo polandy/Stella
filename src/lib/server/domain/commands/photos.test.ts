@@ -185,6 +185,13 @@ describe('attachCirclePhoto', () => {
 		expect(await attachCirclePhoto(f.deps, actor, payload)).toBe('ph1');
 		expect(f.stored).toHaveLength(1);
 		expect(f.stored[0]).toMatchObject({ circleId: 'class-1b', circleRole: 'Student', visibility: 'private', createdBy: 'u1' });
+		expect(f.stored[0]?.viewPath).toBeNull();
+	});
+
+	it('keeps the 1600 px view a large group photo came with', async () => {
+		const f = circleFakes();
+		await attachCirclePhoto(f.deps, actor, { ...payload, width: 4096, view: payload.image });
+		expect(f.stored[0]).toMatchObject({ width: 4096, viewPath: '/media/ph1_view.jpg' });
 	});
 
 	it('refuses a photo for what is not this member’s applied circle upload, storing nothing', async () => {

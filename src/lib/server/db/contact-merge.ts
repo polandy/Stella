@@ -4,6 +4,7 @@ import type { NewActivityEntry } from '../domain/activity/activity';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import type { Viewer } from '../access/visibility';
 import { contactVisibleTo } from '../access/query-scoping';
+import { keepUnwornCuts } from './cut-turning';
 import type * as schema from './schema';
 import {
 	activityLog,
@@ -178,6 +179,8 @@ export function mergeContacts(
 		mergeJournal(tx, input.keepId, input.mergedId, input.updatedAt);
 		mergeRelationships(tx, input.keepId, input.mergedId);
 		mergeCircleMemberships(tx, input.keepId, input.mergedId);
+		// One cut per person and group photo: the merged record's cuts arrive as photos of their own.
+		keepUnwornCuts(tx, input.mergedId, { evenWorn: true });
 
 		for (const { table, column } of DEDUPED_BY_KEY) {
 			tx.run(
@@ -198,6 +201,8 @@ export function mergeContacts(
 			})
 			.where(eq(contact.id, input.keepId))
 			.run();
+		// A cut the survivor no longer wears after the merge stays theirs as a photo (concept §5.2).
+		keepUnwornCuts(tx, input.keepId);
 
 		// The merged record is empty by now; deleting it can take nothing with it.
 		tx.delete(contact).where(eq(contact.id, input.mergedId)).run();

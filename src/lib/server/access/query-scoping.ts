@@ -104,8 +104,17 @@ export function circlePhotoVisibleTo(
 	viewer: Viewer,
 	record: { visibility: AnyColumn; createdBy: AnyColumn }
 ): SQL {
+	return circlePhotoColumnsVisibleTo(viewer, circle, record);
+}
+
+/** `circlePhotoVisibleTo` over an aliased circle, for a query that already joins `circle` otherwise. */
+export function circlePhotoColumnsVisibleTo(
+	viewer: Viewer,
+	circleColumns: ContactColumns,
+	record: { visibility: AnyColumn; createdBy: AnyColumn }
+): SQL {
 	return and(
-		circleColumnsVisibleTo(viewer, circle),
+		circleColumnsVisibleTo(viewer, circleColumns),
 		or(eq(record.visibility, 'shared'), eq(record.createdBy, viewer.id))
 	)!;
 }
