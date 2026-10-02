@@ -50,9 +50,9 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('gives a new person both parents in one go, with one toast', async ({ page }) => {
-	const [mother, father] = ['Ilse Gerber-Wyss', 'Kurt Gerber'];
+	const [mother, father] = ['Ysolda Quarzenegg', 'Xaver Quarzenegg'];
 	await seedHousehold(page, [mother, father]);
-	await addPerson(page, 'Lio', 'Gerber');
+	await addPerson(page, 'Zita', 'Quarzenegg');
 
 	const form = await openRelationshipForm(page);
 	await chooseType(form, 'Child of');
@@ -76,9 +76,9 @@ test('gives a new person both parents in one go, with one toast', async ({ page 
 });
 
 test('takes both links of a batch back with one Undo', async ({ page }) => {
-	const [mother, father] = ['Hedi Zaugg-Moser', 'Bruno Zaugg'];
+	const [mother, father] = ['Philomena Brunnhofer', 'Eusebius Brunnhofer'];
 	await seedHousehold(page, [mother, father]);
-	await addPerson(page, 'Ronja', 'Zaugg');
+	await addPerson(page, 'Afra', 'Brunnhofer');
 
 	const form = await openRelationshipForm(page);
 	await chooseType(form, 'Child of');
@@ -90,16 +90,16 @@ test('takes both links of a batch back with one Undo', async ({ page }) => {
 
 	await page.getByTestId('toast-undo').getByRole('button', { name: 'Undo' }).click();
 	// The empty card is the positive signal that both links are gone, not just one.
-	await expect(page.getByText('Ronja Zaugg is not linked to anyone yet')).toBeVisible();
+	await expect(page.getByText('Afra Brunnhofer is not linked to anyone yet')).toBeVisible();
 	await expect(storedList(page)).toHaveCount(0);
 
 	await page.reload();
-	await expect(page.getByText('Ronja Zaugg is not linked to anyone yet')).toBeVisible();
+	await expect(page.getByText('Afra Brunnhofer is not linked to anyone yet')).toBeVisible();
 	await expect(storedList(page)).toHaveCount(0);
 });
 
 test('lets someone with one parent take only one more', async ({ page }) => {
-	const [child, mother, father, uncle] = ['Nele Frei', 'Ruth Frei', 'Paul Frei', 'Otto Imhof'];
+	const [child, mother, father, uncle] = ['Theodora Tellenbach', 'Kunigunde Tellenbach', 'Notker Tellenbach', 'Gallus Tellenbach'];
 	await seedHousehold(page, [child, mother, father, uncle], [{ from: mother, to: child, type: LINK.parentOf }]);
 	await openSeeded(page, child);
 
@@ -122,13 +122,13 @@ test('lets someone with one parent take only one more', async ({ page }) => {
 test('marks a person the rules refuse on their chip, and keeps Add off until they are removed', async ({
 	page
 }) => {
-	// Mira has two parents already, so a third cannot be added; Sven has none.
+	// Meinrad has two parents already, so a third cannot be added; Pirmin has none.
 	const [subject, mira, sven, mother, father] = [
-		'Corin Vogt',
-		'Mira Vogt',
-		'Sven Vogt',
-		'Alma Vogt',
-		'Beni Vogt'
+		'Hildegard Zwyssig',
+		'Meinrad Zwyssig',
+		'Pirmin Zwyssig',
+		'Odilia Zwyssig',
+		'Florin Zwyssig'
 	];
 	await seedHousehold(
 		page,
@@ -147,20 +147,20 @@ test('marks a person the rules refuse on their chip, and keeps Add off until the
 
 	await expect(chip(form, mira)).toHaveAttribute('data-marked', 'true');
 	await expect(chip(form, sven)).not.toHaveAttribute('data-marked');
-	await expect(hints(form)).toContainText('Mira Vogt already has 2 parents');
+	await expect(hints(form)).toContainText(`${mira} already has 2 parents`);
 	await expect(hints(form)).toContainText('Remove the marked person to add the others.');
 	await expect(form.getByRole('button', { name: 'Add 2 links' })).toBeDisabled();
 
-	await form.getByRole('button', { name: 'Remove Mira Vogt' }).click();
+	await form.getByRole('button', { name: `Remove ${mira}` }).click();
 	await expect(chip(form, mira)).toHaveCount(0);
 	await expect(form.getByRole('button', { name: 'Add', exact: true })).toBeEnabled();
 	await expect(hints(form)).toBeEmpty();
 });
 
 test('marks a person the save refuses, and stores nobody of the batch', async ({ page }) => {
-	// Ernst is already Felix's parent: "Felix is a parent of Ernst" is refused by the server,
+	// Cölestin is already Albin's parent: "Albin is a parent of Cölestin" is refused by the server,
 	// which the form's own rules do not know about.
-	const [subject, ernst, gina] = ['Felix Kuhn', 'Ernst Kuhn', 'Gina Kuhn'];
+	const [subject, ernst, gina] = ['Albin Gnehm', 'Cölestin Gnehm', 'Brigitta Gnehm'];
 	await seedHousehold(page, [subject, ernst, gina], [{ from: ernst, to: subject, type: LINK.parentOf }]);
 	await openSeeded(page, subject);
 
@@ -172,11 +172,11 @@ test('marks a person the save refuses, and stores nobody of the batch', async ({
 	await expect(add).toBeEnabled();
 	await add.click();
 
-	await expect(hints(form)).toContainText('Ernst Kuhn: These two are already linked the other way round');
+	await expect(hints(form)).toContainText(`${ernst}: These two are already linked the other way round`);
 	await expect(chip(form, ernst)).toHaveAttribute('data-marked', 'true');
 	await expect(chip(form, gina)).not.toHaveAttribute('data-marked');
 	await expect(add).toBeDisabled();
-	// The link on record is listed, and Gina — allowed on her own — was not stored either.
+	// The link on record is listed, and Brigitta — allowed on her own — was not stored either.
 	await expect(storedRow(page, ernst)).toContainText('Child of');
 	await expect(storedRow(page, gina)).toHaveCount(0);
 
@@ -186,7 +186,7 @@ test('marks a person the save refuses, and stores nobody of the batch', async ({
 });
 
 test('dates each pair from its own birthday when the birthdays differ', async ({ page }) => {
-	const [parent, lou, mats] = ['Hanna Rüegg', 'Lou Rüegg', 'Mats Rüegg'];
+	const [parent, lou, mats] = ['Niklaus Schwyzer', 'Ignaz Schwyzer', 'Odilia Schwyzer'];
 	await seedHousehold(page, [parent, lou, mats], [], {}, [], [], [], {
 		[lou]: '2012-04-03',
 		[mats]: '2015-09-21'
@@ -221,9 +221,9 @@ test('dates each pair from its own birthday when the birthdays differ', async ({
 });
 
 test('saves a single person exactly as before', async ({ page }) => {
-	const child = 'Tilda Aeschbacher';
+	const child = 'Kunigunde Ruosch';
 	await seedHousehold(page, [child]);
-	await addPerson(page, 'Reto', 'Aeschbacher');
+	await addPerson(page, 'Notker', 'Ruosch');
 
 	const form = await openRelationshipForm(page);
 	await chooseType(form, 'Parent of');
@@ -242,7 +242,7 @@ test.describe('on a phone', () => {
 	test.use({ viewport: PIXEL_9_PRO, hasTouch: true });
 
 	test('shows the chips and a date per pair within the screen', async ({ page }) => {
-		const [parent, kim, ole] = ['Vreni Lüthi-Gasser', 'Kim Lüthi', 'Ole Lüthi'];
+		const [parent, kim, ole] = ['Hildegard Nüesch', 'Xaver Nüesch', 'Ysolda Nüesch'];
 		await seedHousehold(page, [parent, kim, ole], [], {}, [], [], [], {
 			[kim]: '2010-02-14',
 			[ole]: '2013-11-30'
