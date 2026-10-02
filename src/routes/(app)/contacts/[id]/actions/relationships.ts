@@ -102,7 +102,7 @@ export const relationshipActions = {
 		if (command?.type !== 'relationship.add') {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
-		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale };
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(outcome?.status === 'refused' ? 409 : 400, {
@@ -150,7 +150,7 @@ export const relationshipActions = {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
 
-		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale };
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status === 'applied') return { relationshipIds: outcome.result.relationshipIds };
 		if (outcome?.status !== 'refused') {

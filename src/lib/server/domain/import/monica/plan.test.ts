@@ -15,6 +15,7 @@ const opts: ImportOptions = {
 	userId: 'u1',
 	visibility: 'shared',
 	now: NOW,
+	locale: 'en',
 	wording: englishWording
 };
 
@@ -100,7 +101,7 @@ describe('planMonicaImport — contacts', () => {
 			householdId: 'h1',
 			createdBy: 'u1',
 			visibility: 'shared',
-			displayName: 'Leonardo Li Wei Pollari',
+			displayName: 'Leonardo Li Wei “Leo” Pollari',
 			firstName: 'Leonardo Li Wei',
 			lastName: 'Pollari',
 			nickname: 'Leo',

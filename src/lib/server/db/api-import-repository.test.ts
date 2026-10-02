@@ -103,7 +103,7 @@ const kindergarten: ApiImportDocument = {
 };
 
 const run = (document: ApiImportDocument, dryRun = false) =>
-	importViaApi(deps, actor, document, { dryRun, wording });
+	importViaApi(deps, actor, document, { dryRun, wording, locale: 'en' });
 
 describe('the import API adapter', () => {
 	beforeEach(() => seedContact('c-carl', { displayName: 'Carl Muster' }));

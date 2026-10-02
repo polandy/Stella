@@ -146,6 +146,25 @@ People added before Stella asked, or brought in by an import, may still be just 
 field starts out with it, ready to keep or change. If one turns out to be someone already here, open them to
 merge, and if you will never meet them again, archive them.
 
+**Last names for a whole family.** People who came in as *Lea*, *Max* and *Sophie* can be given
+their surname together: **Settings → Data quality → Last names** lists everyone without one.
+Where Stella can tell — Lea is Peter Brunner's child, Sophie is in the *Family Brunner* circle,
+or the name they are shown by already says *Thomas Brunner* — it groups them under that name,
+says why on each row, and **Apply** gives the ticked ones the name. A partner's or a child's
+name is offered unticked, since people do not always share it; two parents with different
+names make you pick. Anyone without a suggestion gets a field, and **Select…** gives several
+of them one name — and the People list has the same **Select**: tick anyone, then **Set last
+name**. Before anything is saved Stella says how many it will name, and anyone who already has
+a *different* last name is listed with a box to tick if you really mean to replace it; nobody's
+name is replaced unless you tick it. When someone gets their first last name, Stella offers
+it to their children and brothers and sisters who have none yet — *Brunner too?* — one
+generation at a time, so a daughter who married into another name simply ends the chain. On a
+person's page, a suggested name shows as a chip under their name (*Brunner?*): one tap gives it.
+*Not Brunner* in a row's menu tells Stella not to propose that name for that
+person again — *Offer again* at the foot of the page takes it back. You can undo for eight
+seconds, and if the new name matches someone already in Stella, the page asks whether it is the
+same person and leads you to the merge.
+
 As soon as you type a surname, Stella checks whether that person might already be here.
 An **Already in Stella?** box lists people with the same or a similar surname — someone
 with exactly the same name comes first, in case you are about to add them twice. Each name
@@ -166,9 +185,20 @@ Every card, and every profile row, holds one **+ Add** button, and the form open
 the heading you pressed it from. Nothing is an open form until you ask for it, so the page reads
 as a person rather than as a stack of empty fields.
 
-To change their **name or the line under it**, click the text itself: a field opens where the
-value was, Enter saves it and Escape leaves it as it was. A name cannot be emptied, and Stella
-says so rather than quietly keeping the old one.
+To change the **line under the name**, tap it: a field opens where it was, Enter saves it and
+Escape leaves it as it was.
+
+To change the **name**, tap the name itself (it carries a small pencil). One editor opens with
+every part of it — **first name, last name, nickname** — and **Shown as**, the name Stella
+shows everywhere. While you type the parts, *Shown as* follows them: *Thomas* becomes *Thomas
+Brunner* once he has a last name, and *Thomas „Tom“ Brunner* once he has the nickname *Tom*
+(a nickname that is just the first name again is left out). If you would rather he were shown as *Onkel Tom*, type that
+into *Shown as* and it stays; empty it to let it follow the parts again. Replacing a last name
+offers to keep the old one as their former name. The former name has a field of its own in the
+same editor, shows under the name as *formerly Widmer*, and finds the person: searching
+*Widmer* finds Franziska Abab, in the search, ⌘K and the People list. A person cannot be left with no name at all,
+and Stella says so rather than quietly keeping the old one. When Stella can guess a missing
+last name, it shows it under the name as a chip — *Brunner?* — and one tap gives it.
 
 **Notes** are for things that stay true — "allergic to hazelnuts", "always calls on
 Sundays". Moments are for things that happened. Notes can be pinned to the top, and have
@@ -436,7 +466,8 @@ every match at once. If you would rather the search empty itself after each pick
 To change the role of people already in the circle, press **Select** above the members, tick
 the people (or **all** beside a role heading), type the role in the bar at the bottom and
 press *Apply*. Leaving it empty takes the role away. The same bar removes the selected
-people from the circle.
+people from the circle, and **Set last name** gives them all one last name — the quickest way
+to name a family whose circle you already have.
 
 A circle's page shows its people grouped by role — all the players together, the coaches
 together — with anyone who has no role at the end.

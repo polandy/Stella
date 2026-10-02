@@ -28,7 +28,7 @@ export const circleActions = {
 			issuedAt: systemClock.now()
 		});
 		if (command?.type !== 'circle.join') return fail(400, { circleError: say(locals, 'errors.circle.needName') });
-		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale };
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(400, {

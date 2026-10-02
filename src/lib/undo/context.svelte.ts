@@ -16,6 +16,8 @@ export interface Removals {
 	readonly snapshot: RemovalsSnapshot;
 	remove(removal: Removal): void;
 	undo(key: string): void;
+	/** Takes the offer a toast carries beside Undo (`Removal.offer`). */
+	accept(key: string): void;
 	flush(): Promise<void>;
 	/** Reactive — reading it inside `$derived` tracks the pending list. */
 	isPending(key: string): boolean;
@@ -46,6 +48,7 @@ export function provideRemovals(): Removals {
 		},
 		remove: store.remove,
 		undo: store.undo,
+		accept: store.accept,
 		flush: store.flush,
 		isPending: (key) => snapshot.removals.some((removal) => removal.key === key),
 		notify: store.notify,

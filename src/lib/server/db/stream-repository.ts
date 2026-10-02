@@ -1,3 +1,4 @@
+import { LAST_NAMES_ENTITY, noticeContentOf, RENAME_ENTITY } from '../../stream/notices';
 import { and, desc, eq, inArray, or } from 'drizzle-orm';
 import { alias, type SQLiteColumn } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
@@ -147,14 +148,21 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 					at: activityLog.createdAt,
 					actorId: user.id,
 					actorName: user.name,
-					summary: activityLog.summary
+					summary: activityLog.summary,
+					entityType: activityLog.entityType,
+					contactId: activityLog.contactId
 				})
 				.from(activityLog)
 				.innerJoin(user, eq(activityLog.actorId, user.id))
 				.where(
 					and(
 						eq(activityLog.householdId, viewer.householdId),
-						inArray(activityLog.action, ['delete', 'merge', 'export', 'import']),
+						or(
+							inArray(activityLog.action, ['delete', 'merge', 'export', 'import']),
+							// The one update the household is told about: a batch of last names
+							// changes how several people read at once (docs/concepts/surnames.md §7).
+							and(eq(activityLog.action, 'update'), inArray(activityLog.entityType, [LAST_NAMES_ENTITY, RENAME_ENTITY]))
+						),
 						or(eq(activityLog.visibility, 'shared'), eq(activityLog.actorId, viewer.id)),
 						byMember(activityLog.actorId, memberId)
 					)
@@ -166,7 +174,7 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				id: r.id,
 				at: r.at,
 				actor: { id: r.actorId, name: r.actorName },
-				summary: r.summary
+				content: noticeContentOf(r)
 			}));
 		},
 

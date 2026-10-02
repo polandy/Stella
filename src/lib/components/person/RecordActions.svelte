@@ -3,6 +3,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import { enhance } from '$app/forms';
+	import { page } from '$app/state';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
@@ -33,8 +34,14 @@
 	/** The second click that a deletion asks for; there is no undo after it. */
 	let confirmingDelete = $state(false);
 	/** Whether the merge picker is open; the survivor is always this page's person. */
-	let merging = $state(false);
-	let mergeTargetId = $state<string[]>([]);
+	/*
+	 * `?merge=<id>` arrives from *There is already a Lea Brunner — the same person?* after a
+	 * last name was given (docs/concepts/surnames.md §5): the picker opens with that person in it,
+	 * and the merge still waits for the admin's own click.
+	 */
+	const proposedMerge = page.url.searchParams.get('merge');
+	let merging = $state(proposedMerge !== null);
+	let mergeTargetId = $state<string[]>(proposedMerge ? [proposedMerge] : []);
 </script>
 
 <!--
@@ -67,7 +74,7 @@
 	which duplicate to fold in (docs/02 §2.2). The survivor is the page you are on.
 -->
 {#if data.isAdmin}
-	<div>
+	<div id="merge" class="scroll-mt-20">
 		<Button
 			type="button"
 			variant="ghost"

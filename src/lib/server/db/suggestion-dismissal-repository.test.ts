@@ -5,7 +5,10 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import type { NewDismissal } from '../domain/relationships/suggestion-review';
 import * as schema from './schema';
-import { createDrizzleSuggestionDismissalRepository } from './suggestion-dismissal-repository';
+import {
+	createDrizzleSuggestionDismissalRepository,
+	createDrizzleSurnameDismissalRepository
+} from './suggestion-dismissal-repository';
 
 /*
  * Integration spec for the Drizzle SuggestionDismissalRepository: one row per claim however
@@ -95,5 +98,39 @@ describe('the dismissal log', () => {
 		expect(await repo.restore(otherViewer, 'parent', 'steve wingkam')).toBe(true);
 		expect(await repo.listForHousehold(otherViewer)).toEqual([]);
 		expect(await repo.listForHousehold(viewer)).toHaveLength(1);
+	});
+});
+
+/*
+ * The household's *not this name* (docs/concepts/surnames.md §5) lives in the same log, under
+ * the relation `last_name`, keyed by the person and the folded name.
+ */
+describe('the last-name dismissals', () => {
+	const surnames = () => createDrizzleSurnameDismissalRepository(db);
+	const entry = { id: 's-1', householdId: H, contactId: 'lea', folded: 'van der berg', dismissedBy: U1, dismissedAt: 3_000 };
+
+	it('reads back a declined name, once however often it is declined', async () => {
+		await surnames().dismiss(entry);
+		await surnames().dismiss({ ...entry, id: 's-2' });
+		expect(await surnames().listForHousehold(viewer)).toEqual([{ contactId: 'lea', folded: 'van der berg' }]);
+	});
+
+	it('stays out of the relationship log, and keeps its rows out of it', async () => {
+		await repo.dismiss(dismissal());
+		await surnames().dismiss(entry);
+		expect((await repo.listForHousehold(viewer)).map((d) => d.relation)).toEqual(['parent']);
+		expect(await surnames().listForHousehold(viewer)).toHaveLength(1);
+	});
+
+	it('never crosses a household', async () => {
+		await surnames().dismiss(entry);
+		expect(await surnames().listForHousehold(otherViewer)).toEqual([]);
+		expect(await surnames().restore(otherViewer, 'lea', 'van der berg')).toBe(false);
+	});
+
+	it('takes a no back', async () => {
+		await surnames().dismiss(entry);
+		expect(await surnames().restore(viewer, 'lea', 'van der berg')).toBe(true);
+		expect(await surnames().listForHousehold(viewer)).toEqual([]);
 	});
 });

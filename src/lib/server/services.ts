@@ -48,7 +48,16 @@ import { createDrizzlePeopleStampReads } from './db/people-stamp-reads';
 import type { PeopleStampDeps } from './domain/contacts/people-stamp';
 import type { PersonContextDeps } from './domain/contacts/person-context';
 import { withNamesakeContext, type NamesakeContextDeps } from './domain/mentions/namesake-context';
-import { createDrizzleSuggestionDismissalRepository } from './db/suggestion-dismissal-repository';
+import {
+	createDrizzleSuggestionDismissalRepository,
+	createDrizzleSurnameDismissalRepository
+} from './db/suggestion-dismissal-repository';
+import { createDrizzleSurnameFacts } from './db/surname-facts';
+import type {
+	LastNameDeps,
+	SurnameDismissalDeps,
+	SurnameReviewDeps
+} from './domain/contacts/last-names';
 import { createDrizzleSearchRepository } from './db/search-repository';
 import { createDrizzleSessionRepository } from './db/session-repository';
 import type { MemberDeps, MemberRepository } from './domain/household/members';
@@ -65,6 +74,7 @@ import type { StoryDeps } from './domain/story/story';
 import type { AttentionRepository } from './domain/attention/last-touched';
 import type { ContactDeps, ContactRepository } from './domain/contacts/contacts';
 import type { NameCandidateSource, SuggestionDeps } from './domain/contacts/suggestions';
+import type { NameDeps, NameRepository } from './domain/contacts/name-parts';
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { JournalDeps, JournalRepository } from './domain/journal/journal';
 import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
@@ -214,10 +224,39 @@ export function getCompleteLoginDeps(): CompleteLoginDeps {
 	};
 }
 
-let contactRepository: (ContactRepository & NameCandidateSource) | null = null;
+let contactRepository: (ContactRepository & NameCandidateSource & NameRepository) | null = null;
 
-export function getContacts(): ContactRepository & NameCandidateSource {
+export function getContacts(): ContactRepository & NameCandidateSource & NameRepository {
 	return (contactRepository ??= createDrizzleContactRepository(getDb()));
+}
+
+/** Deps for changing name parts, one person or several (docs/concepts/surnames.md §7). */
+export function getNameDeps(): NameDeps {
+	return { names: getContacts(), clock: systemClock, ids: ulidGenerator };
+}
+
+/** Deps for setting last names in one batch, with its log entry (docs/concepts/surnames.md §7). */
+export function getLastNameDeps(): LastNameDeps {
+	return getNameDeps();
+}
+
+/** Deps for reading what Stella proposes as last names (docs/concepts/surnames.md §4). */
+export function getSurnameReviewDeps(): SurnameReviewDeps {
+	return {
+		surnames: createDrizzleSurnameFacts(getDb()),
+		relationships: getRelationships(),
+		surnameDismissals: createDrizzleSurnameDismissalRepository(getDb())
+	};
+}
+
+/** Deps for the household's *not this name* (docs/concepts/surnames.md §5). */
+export function getSurnameDismissalDeps(): SurnameDismissalDeps {
+	return {
+		names: getContacts(),
+		surnameDismissals: createDrizzleSurnameDismissalRepository(getDb()),
+		ids: ulidGenerator,
+		clock: systemClock
+	};
 }
 
 export function getContactDeps(): ContactDeps {
@@ -543,7 +582,7 @@ export function getCommandDeps(): CommandDeps {
 				...(await withNamesakeContext(getNamesakeContextDeps(), viewerOf(actor), () =>
 					captureMoment(
 						capture,
-						{ userId: actor.userId, householdId: actor.householdId, defaultVisibility: payload.visibility },
+						{ userId: actor.userId, householdId: actor.householdId, locale: actor.locale, defaultVisibility: payload.visibility },
 						payload
 					)
 				)),

@@ -13,7 +13,7 @@ import { receiveQueued } from './receive';
  */
 
 const t = createTranslator('en');
-const actor = { userId: 'u1', householdId: 'h1' };
+const actor = { userId: 'u1', householdId: 'h1', locale: 'en' as const };
 const captured: CapturedMoment = {
 	entryId: 'e1',
 	anchorContactId: 'julia',

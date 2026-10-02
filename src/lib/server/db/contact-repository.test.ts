@@ -487,3 +487,71 @@ describe('reading a few people by id', () => {
 		});
 	});
 });
+
+describe('writeNames', () => {
+	const write = (id: string, lastName: string) => ({
+		id,
+		displayName: `Lea ${lastName}`,
+		firstName: 'Lea',
+		lastName,
+		nickname: null,
+		formerName: null,
+		updatedAt: NOW + 1
+	});
+
+	it('writes every name of a batch and its log entry together', async () => {
+		await repo.insert(contactInput({ id: 'lea', displayName: 'Lea', firstName: 'Lea' }));
+		await repo.insert(contactInput({ id: 'max', displayName: 'Max', firstName: 'Max' }));
+		const audit: NewActivityEntry = {
+			id: 'log-1',
+			householdId: H1,
+			actorId: U1,
+			action: 'update',
+			entityType: 'last_name',
+			entityId: 'lea',
+			contactId: null,
+			visibility: 'shared',
+			summary: 'set the last name Brunner on 2 people',
+			createdAt: NOW + 1
+		};
+
+		await repo.writeNames([write('lea', 'Brunner'), { ...write('max', 'Brunner'), firstName: 'Max', displayName: 'Max Brunner' }], audit);
+
+		expect((await repo.findByIdVisibleTo(viewerU1, 'lea'))?.displayName).toBe('Lea Brunner');
+		expect((await repo.findByIdVisibleTo(viewerU1, 'max'))?.lastName).toBe('Brunner');
+		expect(db.select().from(schema.activityLog).all().map((row) => row.summary)).toEqual([
+			'set the last name Brunner on 2 people'
+		]);
+	});
+
+	it('keeps a former name it is given', async () => {
+		await repo.insert(contactInput({ id: 'lea', displayName: 'Lea Meier', firstName: 'Lea', lastName: 'Meier' }));
+
+		await repo.writeNames([{ ...write('lea', 'Brunner'), formerName: 'Meier' }], null);
+
+		expect(await repo.findByIdVisibleTo(viewerU1, 'lea')).toMatchObject({ lastName: 'Brunner', formerName: 'Meier' });
+		expect(db.select().from(schema.activityLog).all()).toEqual([]);
+	});
+});
+
+/*
+ * The owner's case from the preview (docs/concepts/surnames.md §6): Franziska — first name
+ * Franziska, no last name, shown as "Franziska" — given Widmer by a batch must read "Franziska
+ * Widmer". Driven through the real adapter and the use-case, the way the batch action runs it.
+ */
+describe('a batch over a first name alone', () => {
+	it('makes the shown name again from the new parts', async () => {
+		const { setLastNames } = await import('../domain/contacts/last-names');
+		await repo.insert(contactInput({ id: 'franziska', displayName: 'Franziska', firstName: 'Franziska' }));
+		const deps = { names: repo, clock: { now: () => NOW + 5 }, ids: { next: () => 'log-franziska' } };
+
+		const written = await setLastNames(deps, viewerU1, [{ contactId: 'franziska', lastName: 'Widmer', replace: false }], 'de');
+
+		expect(written).toBe(1);
+		expect(await repo.findByIdVisibleTo(viewerU1, 'franziska')).toMatchObject({
+			displayName: 'Franziska Widmer',
+			firstName: 'Franziska',
+			lastName: 'Widmer'
+		});
+	});
+});

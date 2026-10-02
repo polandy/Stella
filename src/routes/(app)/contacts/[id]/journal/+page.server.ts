@@ -139,7 +139,7 @@ export const actions: Actions = {
 
 		// Writing is an addition (§2.20) and a command (docs/04 §4.11.2): named by the form when it
 		// can, so a save whose answer was lost and is kept on the phone is recognised on arrival.
-		const author = { userId: viewer.id, householdId: viewer.householdId };
+		const author = { userId: viewer.id, householdId: viewer.householdId, locale: locals.locale };
 		const refusal = (outcome: Awaited<ReturnType<typeof dispatchCommand>> | null, otherwise: MessageKey) =>
 			fail(400, {
 				journalError: outcome?.status === 'refused' ? outcome.reason(translator(locals)) : say(locals, otherwise)
@@ -211,6 +211,7 @@ export const actions: Actions = {
 		const author = {
 			userId: locals.user.id,
 			householdId: locals.user.householdId,
+			locale: locals.locale,
 			defaultVisibility: 'shared' as const
 		};
 

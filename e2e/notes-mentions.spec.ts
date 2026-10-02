@@ -57,7 +57,7 @@ async function writeTheNote(page: Page): Promise<void> {
 /** Renames the person whose page is showing, through the heading's own inline editor. */
 async function rename(page: Page, from: string, to: string): Promise<void> {
 	await page.getByRole('button', { name: from }).click();
-	await page.getByRole('textbox', { name: 'Edit name' }).fill(to);
+	await page.getByRole('textbox', { name: 'Shown as' }).fill(to);
 	await page.getByRole('button', { name: 'Save' }).click();
 	await expect(page.getByRole('heading', { name: to })).toBeVisible();
 }

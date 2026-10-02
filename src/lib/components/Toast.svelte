@@ -58,6 +58,9 @@
 	{#each removals.snapshot.removals as removal (removal.key)}
 		<div class="toast" data-testid="toast-undo">
 			<span class="pl-2">{removal.label}</span>
+			{#if removal.offer}
+				<Button variant="primary" size="sm" onclick={() => removals.accept(removal.key)}>{removal.offer.label}</Button>
+			{/if}
 			<Button variant="secondary" size="sm" onclick={() => removals.undo(removal.key)}>{t('common.undo')}</Button>
 		</div>
 	{/each}

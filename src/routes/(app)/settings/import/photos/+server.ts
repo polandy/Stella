@@ -38,7 +38,8 @@ async function planFor(
 		householdId: user.householdId,
 		userId: user.id,
 		visibility,
-		wording: importWording(locals)
+		wording: importWording(locals),
+				locale: locals.locale
 	});
 }
 

@@ -10,7 +10,7 @@ import { MENTION_TOKEN_PREFIX } from '../../mentions/mentions';
  */
 
 const contactContent = (t: string) =>
-	`coalesce(${t}.display_name,'')||' '||coalesce(${t}.first_name,'')||' '||coalesce(${t}.last_name,'')||' '||coalesce(${t}.nickname,'')||' '||coalesce(${t}.description,'')||' '||coalesce(${t}.how_we_met,'')||' '||coalesce(${t}.met_place,'')`;
+	`coalesce(${t}.display_name,'')||' '||coalesce(${t}.first_name,'')||' '||coalesce(${t}.last_name,'')||' '||coalesce(${t}.nickname,'')||' '||coalesce(${t}.former_name,'')||' '||coalesce(${t}.description,'')||' '||coalesce(${t}.how_we_met,'')||' '||coalesce(${t}.met_place,'')`;
 
 /*
  * A body with its @-mention tokens cut out, as one SQL expression. The tokens are the wrong

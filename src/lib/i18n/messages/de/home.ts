@@ -65,6 +65,11 @@ export const home: HomeMessages = {
 	'home.stream.logged': 'hielt',
 	'home.stream.loggedWith': 'mit',
 	'home.stream.loggedAfter': 'fest',
+	'home.stream.lastNames': (p) =>
+		p.count === 1 ? `gab 1 Person den Nachnamen ${p.name}` : `gab ${p.count} Personen den Nachnamen ${p.name}`,
+	'home.stream.renamed': (p) => `benannte ${p.from} in`,
+	'home.stream.renamedAfter': 'um',
+	'home.stream.nameEdited': 'bearbeitete den Namen von',
 	'home.stream.linked': 'verknüpfte',
 	'home.stream.linkedAfter': '',
 	'home.stream.relationship': 'Beziehung',

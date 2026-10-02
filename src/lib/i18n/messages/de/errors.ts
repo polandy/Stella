@@ -4,6 +4,10 @@ import type { ErrorsMessages } from '../en/errors';
 export const errors: ErrorsMessages = {
 	'errors.contact.birthDateFormat':
 		'Ein Geburtsdatum muss JJJJ-MM-TT lauten — oder --MM-TT, wenn das Jahr unbekannt ist.',
+	'errors.contact.namePartsInvalid': 'Die Namensteile konnten nicht gelesen werden. Bitte nochmals versuchen.',
+	'errors.contact.emptyLastName': 'Ein Nachname darf nicht leer sein.',
+	'errors.contact.lastNameWouldOverwrite': (p) =>
+		`${p.name} hat schon einen anderen Nachnamen. Zum Ersetzen die Person ankreuzen.`,
 	'errors.contact.emptyName': 'Ein Name darf nicht leer sein.',
 	'errors.contact.invalidGender': 'Bitte weiblich, männlich oder divers wählen.',
 	'errors.contact.needsSomethingToKnowThemBy':

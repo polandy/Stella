@@ -1,3 +1,4 @@
+import { lastNamesFacts, renameFacts } from '../../stream/notices';
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
@@ -204,7 +205,7 @@ describe('recentNotices', () => {
 
 		const rows = await repo.recentNotices(asU2, EVERYONE);
 		expect(rows.map((r) => r.id)).toEqual(['newer', 'older']);
-		expect(rows[0]).toMatchObject({ actor: { id: U1, name: 'One' }, summary: 'removed Person newer' });
+		expect(rows[0]).toMatchObject({ actor: { id: U1, name: 'One' }, content: { kind: 'text', text: 'removed Person newer' } });
 	});
 
 	it('reports a merge too — a name stops existing either way', async () => {
@@ -232,7 +233,7 @@ describe('recentNotices', () => {
 			.run();
 
 		const rows = await repo.recentNotices(asU2, EVERYONE);
-		expect(rows.map((r) => r.summary)).toEqual(['exported the household archive (12 people)']);
+		expect(rows.map((r) => r.content)).toEqual([{ kind: 'text', text: 'exported the household archive (12 people)' }]);
 	});
 
 	it('reports an import, because a restore moves the household\u2019s data too', async () => {
@@ -252,8 +253,8 @@ describe('recentNotices', () => {
 			.run();
 
 		const rows = await repo.recentNotices(asU2, EVERYONE);
-		expect(rows.map((r) => r.summary)).toEqual([
-			'restored 12 people from an archive of Familie Brunner'
+		expect(rows.map((r) => r.content)).toEqual([
+			{ kind: 'text', text: 'restored 12 people from an archive of Familie Brunner' }
 		]);
 	});
 
@@ -265,6 +266,56 @@ describe('recentNotices', () => {
 		// positive control: the same insert with a logged action does come back.
 		logRemoval('gone', 110, U1, 'shared');
 		expect((await repo.recentNotices(asU2, EVERYONE)).map((r) => r.id)).toEqual(['gone']);
+	});
+
+	it('reports last names set for several people at once (docs/concepts/surnames.md §7)', async () => {
+		// An update, but the one the household is told about: a batch changes how people read.
+		db.insert(schema.activityLog)
+			.values({
+				id: 'named',
+				householdId: H,
+				actorId: U1,
+				action: 'update',
+				entityType: 'last_name',
+				entityId: 'c-1',
+				contactId: null,
+				visibility: 'shared',
+				summary: lastNamesFacts('Brunner', 4),
+				createdAt: 500
+			})
+			.run();
+
+		const rows = await repo.recentNotices(asU2, EVERYONE);
+		// Facts, not prose: Home says the line in each reader's language.
+		expect(rows.map((r) => r.content)).toEqual([{ kind: 'lastNames', lastName: 'Brunner', count: 4 }]);
+	});
+
+	it('reports a rename as its facts, and a private person\u2019s rename to their creator only', async () => {
+		const rename = (id: string, visibility: 'shared' | 'private', at: number) =>
+			db.insert(schema.activityLog)
+				.values({
+					id,
+					householdId: H,
+					actorId: U1,
+					action: 'update',
+					entityType: 'contact_name',
+					entityId: `c-${id}`,
+					contactId: `c-${id}`,
+					visibility,
+					summary: renameFacts('Sandra Brunner-Keller', 'Sandra Jdjdh'),
+					createdAt: at
+				})
+				.run();
+		rename('open', 'shared', 600);
+		rename('hidden', 'private', 610);
+
+		const forOther = await repo.recentNotices(asU2, EVERYONE);
+		const forActor = await repo.recentNotices(asU1, EVERYONE);
+
+		expect(forOther.map((r) => r.content)).toEqual([
+			{ kind: 'rename', from: 'Sandra Brunner-Keller', to: 'Sandra Jdjdh', contactId: 'c-open' }
+		]);
+		expect(forActor.map((r) => r.id)).toEqual(['hidden', 'open']);
 	});
 
 	it('keeps a private person private, even in the record of their deletion', async () => {

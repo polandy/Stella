@@ -1,3 +1,4 @@
+import type { Locale } from '../../../i18n/locales';
 import type { ContactAddPayload } from '../../../commands/commands';
 import { setSelfContact, type SelfContactStore } from '../household/self-contact';
 import { createContact, type ContactDeps } from './contacts';
@@ -17,6 +18,8 @@ export interface AddPersonDeps extends ContactDeps {
 export interface PersonAdder {
 	userId: string;
 	householdId: string;
+	/** Their language: a nickname in the shown name takes its quote marks (docs/02 §2.2). */
+	locale: Locale;
 }
 
 export async function addPerson(

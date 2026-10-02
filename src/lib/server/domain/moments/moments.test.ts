@@ -13,7 +13,7 @@ import { MomentNeedsPersonError, captureMoment, type CaptureMomentDeps } from '.
  * same rule the adapters implement (household + shared-or-own).
  */
 
-const author: JournalAuthor = { userId: 'u1', householdId: 'h1', defaultVisibility: 'shared' };
+const author: JournalAuthor & { locale: 'en' } = { userId: 'u1', householdId: 'h1', defaultVisibility: 'shared', locale: 'en' };
 
 function summary(c: NewContact): ContactSummary {
 	return {
@@ -22,6 +22,7 @@ function summary(c: NewContact): ContactSummary {
 		firstName: c.firstName,
 		lastName: c.lastName,
 		nickname: c.nickname,
+		formerName: null,
 		description: c.description,
 		metPlace: c.metPlace ?? null,
 		metDate: c.metDate ?? null,

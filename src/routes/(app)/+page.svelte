@@ -8,6 +8,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import MomentComposer from '$lib/components/MomentComposer.svelte';
 	import PersonFinder from '$lib/components/PersonFinder.svelte';
+	import StreamNotice from '$lib/components/StreamNotice.svelte';
 	import StreamCirclePhoto from '$lib/components/StreamCirclePhoto.svelte';
 	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
 	import { dayLabel as calendarDayLabel } from '$lib/dates/labels';
@@ -32,6 +33,8 @@
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	/** Whom a stream notice may link to: the people this reader can see. */
+	const peopleIds = $derived(new Set(data.people.map((p) => p.id)));
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -423,20 +426,12 @@
 							{:else if item.kind === 'circlePhoto'}
 								<StreamCirclePhoto {item} who={item.mine ? t('home.you') : item.actor.name} ago={ago(item.at)} />
 							{:else if item.kind === 'notice'}
-								<!--
-									The only item with nobody to link to: the person is gone, and the log
-									entry is all that is left of them (docs/02 §2.2).
-								-->
-								<span class="grid size-8 shrink-0 place-items-center rounded-full bg-bg-sunken text-fg-subtle" aria-hidden="true">
-									<Icon name="remove" size={14} />
-								</span>
-								<div class="min-w-0">
-									<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
-										<b class="font-semibold text-fg">{item.mine ? t('home.you') : item.actor.name}</b>
-										<span class="font-medium text-fg">{item.summary}</span>
-										<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago(item.at)}</span>
-									</div>
-								</div>
+								<StreamNotice
+									content={item.content}
+									who={item.mine ? t('home.you') : item.actor.name}
+									ago={ago(item.at)}
+									canOpen={(id) => peopleIds.has(id)}
+								/>
 							{:else}
 								<Avatar id={item.from.id} name={item.from.name} avatarPhotoId={item.from.avatarPhotoId} size={32} />
 								<div class="min-w-0">

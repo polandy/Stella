@@ -5,8 +5,10 @@ import {
 	listContacts
 } from '$lib/server/domain/contacts/contacts';
 import { listContactsByTag, listTags } from '$lib/server/domain/tags/tags';
-import { getAttention, getContactDeps, getTagDeps } from '$lib/server/services';
-import type { PageServerLoad } from './$types';
+import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
+import { getAttention, getContactDeps, getSurnameReviewDeps, getTagDeps } from '$lib/server/services';
+import { lastNameActions } from '$lib/server/last-names-actions';
+import type { Actions, PageServerLoad } from './$types';
 
 /*
  * People (docs/02 §2.2): every person the viewer may see, with the last day anything was
@@ -24,7 +26,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	// The archive's size is what the chip says — and a chip that leads to an empty room is
 	// worse than no chip — so it is counted either way; the list only when it is shown.
-	const [tags, archivedCount, contacts, touches] = await Promise.all([
+	const [tags, archivedCount, contacts, touches, surnameHelp] = await Promise.all([
 		listTags(getTagDeps(), locals.user.householdId),
 		countArchivedContacts(getContactDeps(), viewer),
 		showArchived
@@ -32,7 +34,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			: activeTag
 				? listContactsByTag(getTagDeps(), viewer, activeTag)
 				: listContacts(getContactDeps(), viewer),
-		getAttention().listLastTouchedVisibleTo(viewer)
+		getAttention().listLastTouchedVisibleTo(viewer),
+		readSurnameHelp(getSurnameReviewDeps(), viewer, null)
 	]);
 	const lastTouchedOn = new Map(touches.map((t) => [t.contactId, t.lastTouchedOn]));
 
@@ -44,6 +47,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			firstName: c.firstName,
 			lastName: c.lastName,
 			nickname: c.nickname,
+			formerName: c.formerName,
 			description: c.description,
 			avatarPhotoId: c.avatarPhotoId,
 			visibility: c.visibility,
@@ -55,6 +59,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// The archive is its own view; a tag left in the URL would otherwise make the header
 		// claim a filter that is not being applied.
 		activeTag: showArchived ? null : activeTag,
-		today: new Date().toLocaleDateString('en-CA')
+		today: new Date().toLocaleDateString('en-CA'),
+		// Whom a last name set here is offered on to (docs/concepts/surnames.md §3.3).
+		passOn: surnameHelp.passOn
 	};
 };
+
+/* *Select* → *Set last name* (docs/concepts/surnames.md §3.2), the one batch write. */
+export const actions: Actions = { ...lastNameActions };

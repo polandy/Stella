@@ -36,6 +36,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	const creator = {
 		userId: locals.user.id,
 		householdId: locals.user.householdId,
+		locale: locals.locale,
 		// New people are shared unless picked private (docs/02 §2.10).
 		defaultVisibility: 'shared' as const
 	};

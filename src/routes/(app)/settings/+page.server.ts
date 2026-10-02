@@ -5,7 +5,8 @@ import {
 	UnknownSelfContactError
 } from '$lib/server/domain/household/self-contact';
 import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/contacts';
-import { getContactDeps, getSelfContactDeps, getUpdateCheck } from '$lib/server/services';
+import { countLastNames } from '$lib/server/domain/contacts/last-names';
+import { getContactDeps, getSelfContactDeps, getSurnameReviewDeps, getUpdateCheck } from '$lib/server/services';
 import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -22,10 +23,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const check = getUpdateCheck();
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 	// How many are left to tidy up, so the card says whether opening it is worth it.
-	const firstNameOnlyCount = await countKnownByAFirstNameOnly(getContactDeps(), viewer);
+	const [firstNameOnlyCount, lastNames] = await Promise.all([
+		countKnownByAFirstNameOnly(getContactDeps(), viewer),
+		countLastNames(getSurnameReviewDeps(), viewer)
+	]);
 	return {
 		isAdmin: locals.user.role === 'admin',
 		firstNameOnlyCount,
+		lastNames,
 		version: APP_VERSION,
 		update: check?.status() ?? null
 	};

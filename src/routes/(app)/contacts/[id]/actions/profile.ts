@@ -9,13 +9,26 @@ import {
 	getContact
 } from '$lib/server/domain/contacts/contacts';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
-import { getAvatarDeps, getContactDeps } from '$lib/server/services';
+import { editNameParts } from '$lib/server/domain/contacts/name-parts';
+import { getAvatarDeps, getContactDeps, getNameDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
 const EditProfileSchema = v.object({
-	displayName: v.pipe(v.string(), v.trim(), v.minLength(1)),
 	description: v.optional(v.pipe(v.string(), v.trim()))
+});
+
+/**
+ * The three name parts and *Shown as*; each may be emptied (docs/concepts/surnames.md §3.4) —
+ * the use-case refuses only a name with nothing left in it.
+ */
+const NamePartsSchema = v.object({
+	firstName: v.pipe(v.string(), v.trim()),
+	lastName: v.pipe(v.string(), v.trim()),
+	nickname: v.pipe(v.string(), v.trim()),
+	displayName: v.pipe(v.string(), v.trim()),
+	formerName: v.pipe(v.string(), v.trim()),
+	keepFormerName: v.boolean()
 });
 
 /** One of the three, or empty for taking the gender off the record (docs/02 §2.2). */
@@ -23,30 +36,47 @@ const GenderSchema = v.union([v.picklist(GENDERS), v.literal('')]);
 
 /** The hero: name, description, face, and the gender on the profile card (docs/02 §2.2). */
 export const profileActions = {
-	/* The hero's name and description, edited in place (docs/02 §2.2). */
+	/* The hero's description, edited in place; the name has its own editor (docs/02 §2.2). */
 	editProfile: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
-		const parsed = v.safeParse(EditProfileSchema, {
-			displayName: form.get('displayName'),
-			description: form.get('description') || undefined
+		const parsed = v.safeParse(EditProfileSchema, { description: form.get('description') || undefined });
+		if (!parsed.success) throw error(400, say(locals, 'errors.contact.notFound'));
+
+		const saved = await editProfile(getContactDeps(), viewer, params.id, {
+			description: parsed.output.description ?? null
 		});
-		if (!parsed.success) return fail(400, { profileError: say(locals, 'errors.contact.emptyName') });
+		if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
+
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/* The whole name — parts and *Shown as* — from the one editor behind the name (docs/02 §2.2). */
+	editNameParts: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const parsed = v.safeParse(NamePartsSchema, {
+			firstName: form.get('firstName') ?? '',
+			lastName: form.get('lastName') ?? '',
+			nickname: form.get('nickname') ?? '',
+			displayName: form.get('displayName') ?? '',
+			formerName: form.get('formerName') ?? '',
+			keepFormerName: form.get('keepFormerName') === 'on'
+		});
+		if (!parsed.success) return fail(400, { namePartsError: say(locals, 'errors.contact.namePartsInvalid') });
 
 		try {
-			const saved = await editProfile(getContactDeps(), viewer, params.id, {
-				displayName: parsed.output.displayName,
-				description: parsed.output.description ?? null
-			});
+			const saved = await editNameParts(getNameDeps(), viewer, params.id, parsed.output, locals.locale);
 			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
 		} catch (err) {
 			if (err instanceof EmptyContactNameError)
-				return fail(400, { profileError: err.phrase(translator(locals)) });
+				return fail(400, { namePartsError: err.phrase(translator(locals)) });
 			throw err;
 		}
-
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 

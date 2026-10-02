@@ -48,7 +48,7 @@ export const dateActions = {
 			issuedAt: systemClock.now()
 		});
 		const outcome = command
-			? await dispatchCommand(getCommandDeps(), { userId: viewer.id, householdId: viewer.householdId }, command).catch(() => null)
+			? await dispatchCommand(getCommandDeps(), { userId: viewer.id, householdId: viewer.householdId, locale: locals.locale }, command).catch(() => null)
 			: null;
 		if (outcome?.status !== 'applied') {
 			return fail(400, {

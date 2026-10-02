@@ -26,6 +26,16 @@ const labels: PaletteLabels = {
 
 const people = [person('lena', 'Lena Brunner', { lastName: 'Brunner' }), person('oma', 'Oma'), person('markus', 'Markus Lang')];
 
+describe('a person found by their former name', () => {
+	it('says so on the row, and not when the shown name matched', () => {
+		const franziska = person('franziska', 'Franziska Abab', { lastName: 'Abab', formerName: 'Widmer' });
+		const rows = (q: string) => personSearchRows(q, [franziska], labels.searchEverything).filter((r) => r.kind === 'person');
+
+		expect(rows('widmer')).toMatchObject([{ id: 'franziska', formerly: 'Widmer' }]);
+		expect(rows('abab')).toMatchObject([{ id: 'franziska', formerly: null }]);
+	});
+});
+
 describe('paletteRows', () => {
 	it('leads with writing a moment on an empty query, so ⌘K then Enter is still the way to capture', () => {
 		const rows = paletteRows('', people, labels);

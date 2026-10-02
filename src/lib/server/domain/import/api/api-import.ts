@@ -1,3 +1,4 @@
+import type { Locale } from '../../../../i18n/locales';
 import type { Viewer, Visibility } from '../../../access/visibility';
 import type { Clock } from '../../../clock';
 import type { IdGenerator } from '../../../id';
@@ -24,7 +25,7 @@ import {
 /** What the household holds for one document — the context minus who is asking and when. */
 export type HouseholdReading = Omit<
 	ApiImportContext,
-	'householdId' | 'actorId' | 'defaultVisibility' | 'now'
+	'householdId' | 'actorId' | 'defaultVisibility' | 'now' | 'locale'
 >;
 
 /** How many rows of each kind were written (or, in a dry run, would be). */
@@ -75,6 +76,8 @@ export interface ApiImportWording {
 export interface ApiImportOptions {
 	dryRun: boolean;
 	wording: ApiImportWording;
+	/** The member's language: a nickname in a shown name takes its quote marks. */
+	locale: Locale;
 }
 
 export type ApiImportResult =
@@ -106,7 +109,8 @@ export async function importViaApi(
 		householdId: actor.householdId,
 		actorId: actor.userId,
 		defaultVisibility: actor.defaultVisibility,
-		now
+		now,
+		locale: options.locale
 	});
 	if (!planned.ok) return planned;
 	const { plan } = planned;

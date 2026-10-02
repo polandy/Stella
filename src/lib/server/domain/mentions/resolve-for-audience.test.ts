@@ -13,6 +13,7 @@ const person = (over: Partial<ContactSummary> & { id: string; displayName: strin
 	firstName: null,
 	lastName: null,
 	nickname: null,
+	formerName: null,
 	description: null,
 	metPlace: null,
 	metDate: null,
@@ -69,8 +70,8 @@ describe('resolveForAudience', () => {
 
 describe('audienceCandidates', () => {
 	const all: ContactSummary[] = [
-		{ id: 'a', displayName: 'A', firstName: null, lastName: null, nickname: null, description: null, metPlace: null, metDate: null, visibility: 'shared', avatarPhotoId: null, birthDate: null },
-		{ id: 'b', displayName: 'B', firstName: null, lastName: null, nickname: null, description: null, metPlace: null, metDate: null, visibility: 'private', avatarPhotoId: null, birthDate: null }
+		{ id: 'a', displayName: 'A', firstName: null, lastName: null, nickname: null, formerName: null, description: null, metPlace: null, metDate: null, visibility: 'shared', avatarPhotoId: null, birthDate: null },
+		{ id: 'b', displayName: 'B', firstName: null, lastName: null, nickname: null, formerName: null, description: null, metPlace: null, metDate: null, visibility: 'private', avatarPhotoId: null, birthDate: null }
 	];
 	it('limits a shared entry to household-visible people, a private one to everyone visible', () => {
 		expect(audienceCandidates(all, 'shared').map((c) => c.id)).toEqual(['a']);

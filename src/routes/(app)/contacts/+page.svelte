@@ -1,4 +1,6 @@
 <script lang="ts">
+	import FormerlyMark from '$lib/components/FormerlyMark.svelte';
+	import { foundByFormerName } from '$lib/people/former-name';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
@@ -8,6 +10,12 @@
 	import { accentChipStyle } from '$lib/design/tokens';
 	import { groupByLetter, matchesQuery } from '$lib/people/directory';
 	import { newPersonHref } from '$lib/people/new-person';
+	import LastNameSelectionBar from '$lib/components/surnames/LastNameSelectionBar.svelte';
+	import NamesakeHints from '$lib/components/surnames/NamesakeHints.svelte';
+	import { reachability } from '$lib/pwa/reachability.svelte';
+	import { householdSpellings } from '$lib/suggestions/surname-groups';
+	import { useHeldNames } from '$lib/surnames/held-names.svelte';
+	import { namesakesAfterNaming, type NamesakeAfterNaming } from '$lib/surnames/namesakes';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -19,11 +27,32 @@
 
 	const found = $derived(data.contacts.filter((c) => matchesQuery(c, query)));
 	const groups = $derived(groupByLetter(found));
+
+	/*
+	 * *Select* (docs/concepts/surnames.md §3.2): rows become ticks, and the bar gives the chosen
+	 * people one last name. Everyone means everyone the find field has left on the list.
+	 */
+	let selecting = $state(false);
+	let selected = $state<Record<string, boolean>>({});
+	const chosen = $derived(found.filter((c) => selected[c.id]));
+	const everyoneChosen = $derived(found.length > 0 && chosen.length === found.length);
+	const knownSurnames = $derived([...householdSpellings(data.contacts.map((c) => c.lastName)).values()].sort((a, b) => a.localeCompare(b)));
+	const disabled = $derived(!reachability.reachable);
+	const names = useHeldNames(() => data.passOn);
+	let namesakes = $state<NamesakeAfterNaming[]>([]);
+	const held = names.submit((batch) => {
+		namesakes = [...namesakes, ...namesakesAfterNaming(data.contacts, batch.ids, batch.lastName)];
+	});
+
+	function stopSelecting() {
+		selecting = false;
+		selected = {};
+	}
 </script>
 
 <svelte:head><title>{t('contacts.title')}</title></svelte:head>
 
-<main class="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-6 md:px-6 md:py-10">
+<main class="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-6 md:px-6 md:py-10" class:pb-36={selecting}>
 	<header>
 		<h1 class="text-2xl font-semibold text-fg">
 			{data.showArchived ? t('contacts.headingArchived') : t('contacts.heading')}
@@ -34,7 +63,14 @@
 					'contacts.archivedSuffix'
 				)}{/if}
 		</p>
+		{#if !data.showArchived && data.contacts.length > 0}
+			<Button size="sm" class="mt-2" aria-pressed={selecting} onclick={() => (selecting ? stopSelecting() : (selecting = true))}>
+				{selecting ? t('common.cancel') : t('surnames.select')}
+			</Button>
+		{/if}
 	</header>
+
+	<NamesakeHints hints={namesakes} />
 
 	<!-- Find as you type. Filtering runs on what is already loaded, so there is no round trip
 	     and no wait between the keystroke and the list. -->
@@ -137,15 +173,29 @@
 					<ul class="flex flex-col">
 						{#each group.people as contact (contact.id)}
 							{@const since = sinceLabel(i18n, contact.lastTouchedOn, data.today)}
-							<li>
+							<li class="flex items-center">
+								{#if selecting}
+									<input
+										type="checkbox"
+										class="ml-2.5 size-5 shrink-0"
+										aria-label={t('surnames.choose', { name: contact.displayName })}
+										bind:checked={selected[contact.id]}
+									/>
+								{/if}
+								<!-- While selecting, a tap on the row ticks it rather than leaving the list. -->
 								<a
 									href="/contacts/{contact.id}"
-									class="grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-app px-2.5 py-2 transition-colors hover:bg-card"
+									onclick={(event) => {
+										if (!selecting) return;
+										event.preventDefault();
+										selected[contact.id] = !selected[contact.id];
+									}}
+									class="grid min-w-0 flex-1 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-app px-2.5 py-2 transition-colors hover:bg-card"
 								>
 									<Avatar id={contact.id} name={contact.displayName} avatarPhotoId={contact.avatarPhotoId} size={36} />
 									<span class="min-w-0">
 										<span class="flex items-center gap-1.5">
-											<span class="truncate font-medium text-fg">{contact.displayName}</span>
+											<span class="truncate font-medium text-fg">{contact.displayName}<FormerlyMark name={foundByFormerName(contact, query)} /></span>
 											{#if contact.id === data.user.selfContactId}
 												<span
 													data-testid="self-marker"
@@ -183,3 +233,16 @@
 		</div>
 	{/if}
 </main>
+
+{#if selecting}
+	<LastNameSelectionBar
+		{chosen}
+		{everyoneChosen}
+		{knownSurnames}
+		{held}
+		{disabled}
+		offlineLine={disabled ? t('surnames.offline') : null}
+		ontoggleeveryone={() => (selected = Object.fromEntries(found.map((c) => [c.id, !everyoneChosen])))}
+		ondone={stopSelecting}
+	/>
+{/if}

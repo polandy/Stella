@@ -1,3 +1,4 @@
+import type { Locale } from '../../../i18n/locales';
 import type { Command, CommandPayloads, CommandType } from '../../../commands/commands';
 import { TranslatableError } from '../../../errors/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
@@ -21,6 +22,8 @@ import type { Visibility } from '../../access/visibility';
 export interface CommandActor {
 	userId: string;
 	householdId: string;
+	/** The member's language: names a command writes take its quote marks (docs/02 §2.2). */
+	locale: Locale;
 }
 
 /** What each command answers with when it is applied. */

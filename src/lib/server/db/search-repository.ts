@@ -21,7 +21,8 @@ export function createDrizzleSearchRepository(db: BunSQLiteDatabase<typeof schem
 					id: contact.id,
 					displayName: contact.displayName,
 					description: contact.description,
-					avatarPhotoId: contact.avatarPhotoId
+					avatarPhotoId: contact.avatarPhotoId,
+					formerName: contact.formerName
 				})
 				.from(contactFts)
 				.innerJoin(contact, eq(contactFts.contactId, contact.id))

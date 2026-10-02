@@ -1,7 +1,8 @@
+import type { Locale } from '../../../../i18n/locales';
 import type { Visibility } from '../../../access/visibility';
 import type { NewContactField } from '../../contact-fields/contact-fields';
 import type { BirthDatePrecision, NewContact } from '../../contacts/contacts';
-import { deriveDisplayName } from '../../contacts/display-name';
+import { deriveDisplayName } from '../../../../people/display-name';
 import type { NewInteraction } from '../../interactions/interactions';
 import type { NewNote } from '../../notes/notes';
 import type { RelationshipCategory } from '../../../../relationships/categories';
@@ -35,6 +36,8 @@ export interface ImportOptions {
 	 * written in the language of the member running the import (docs/02 §2.19).
 	 */
 	wording: ImportWording;
+	/** The importing member's language: a nickname in a shown name takes its quote marks. */
+	locale: Locale;
 }
 
 /** The handful of phrases the plan puts into imported records. */
@@ -220,7 +223,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 	const genders = new Map(exp.genders.map((g) => [g.id, g.type]));
 	const nameOf = (id: MonicaId): string | null => {
 		const c = exp.contacts.find((x) => x.id === id);
-		return c ? deriveDisplayName({ firstName: c.firstName, lastName: c.lastName, nickname: c.nickname }) : null;
+		return c ? deriveDisplayName({ firstName: c.firstName, lastName: c.lastName, nickname: c.nickname }, opts.locale) : null;
 	};
 
 	const contacts = live.map((c): ImportedContact => {
@@ -237,7 +240,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 			id: contactId(c.id),
 			householdId: opts.householdId,
 			...stamp,
-			displayName: deriveDisplayName({ firstName, lastName, nickname }),
+			displayName: deriveDisplayName({ firstName, lastName, nickname }, opts.locale),
 			firstName,
 			lastName,
 			nickname,

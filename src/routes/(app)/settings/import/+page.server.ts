@@ -85,7 +85,8 @@ export const actions: Actions = {
 				householdId: user.householdId,
 				userId: user.id,
 				visibility,
-				wording: importWording(locals)
+				wording: importWording(locals),
+				locale: locals.locale
 			});
 			await pruneStagedDumps(getConfig().importDir, STAGED_DUMP_MAX_AGE_MS);
 			const token = await stageDump(getConfig().importDir, text);
@@ -123,7 +124,8 @@ export const actions: Actions = {
 			householdId: user.householdId,
 			userId: user.id,
 			visibility: parsed.output.visibility,
-			wording: importWording(locals)
+			wording: importWording(locals),
+				locale: locals.locale
 		});
 		return {
 			step: 'photos' as const,

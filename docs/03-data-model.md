@@ -174,7 +174,7 @@ The central person entity.
 | nickname | text null | |
 | prefix / suffix | text null | e.g. Dr., Jr. |
 | former_name | text null | maiden/previous |
-| display_name | text | computed/entered; required, never empty |
+| display_name | text | computed/entered; required, never empty. Made from the parts it is *Thomas „Tom“ Brunner* — first name, nickname in quotes (left out when it is the first name again), last name; with no first name *Tom Brunner*. The quote marks are those of the writing member's language (`NICKNAME_QUOTES`, `src/lib/people/display-name.ts`), fixed when written. Names made before the nickname joined (first + last) still count as following their parts; migration `0020_nickname_in_shown_name` updated the ones with a nickname once, leaving chosen names alone |
 | gender | text null | `female` / `male` / `diverse`; anything else reads as not on record |
 | pronouns | text null | unused — kept so archives and migrations stay unchanged |
 | description | text null | one-liner |
@@ -191,7 +191,7 @@ The central person entity.
 | archived_at | int null | set = out of the browsing surfaces (§2.2); still readable by id |
 | created_at / updated_at | int | |
 
-FTS: `first_name, last_name, nickname, display_name, description, how_we_met` are
+FTS: `first_name, last_name, nickname, former_name, display_name, description, how_we_met` are
 indexed in an FTS5 table (see 3.5). Indexed on `(household_id, created_at)`: every read is
 scoped by household, and the Home stream reads the newest people first.
 
@@ -573,6 +573,19 @@ from the tables it happened to. `summary` is precomputed and `visibility` copied
 deleted record, since neither can be recovered afterwards; `entity_id` names a row that no
 longer exists, which is why it carries no foreign key.
 
+**And for last names given to several people at once** (`docs/concepts/surnames.md` §7): one
+row per batch, `action = 'update'`, `entity_type = 'last_name'`, `entity_id` the first person
+named, `contact_id` null, `visibility` private when any of them is. Its `summary` holds the
+**facts** as JSON (`{"lastName":"Brunner","count":4}`) rather than a sentence: the people are
+still there, so Home says the line in each reader's language at read time (`noticeContentOf`,
+`src/lib/stream/notices.ts`); rows stored as an English or German sentence before are still
+read. It is written in the same transaction as the names.
+
+**And for a name edited on a profile** (docs/02 §2.2): one row per save that changes a part or
+the shown name, `action = 'update'`, `entity_type = 'contact_name'`, `entity_id` and
+`contact_id` the person (so the line links to them), `visibility` the person's, and the facts
+`{"from":"…","to":"…"}` in `summary`, said per reader like the batch above.
+
 ### suggestion_dismissal  [M2]
 The claims the household has declined, so a suggestion answered once is not offered again
 (`docs/concepts/relationship-suggestions.md` §6.4).
@@ -581,8 +594,8 @@ The claims the household has declined, so a suggestion answered once is not offe
 |---|---|---|
 | id | text pk | |
 | household_id | text fk | the household decided, not the member who clicked |
-| relation | text | `'parent' \| 'sibling'` — what the claim would have stored |
-| pair_key | text | the two contact ids, sorted and space-separated |
+| relation | text | `'parent' \| 'sibling'` — what the claim would have stored — or `'last_name'` |
+| pair_key | text | the two contact ids, sorted and space-separated; for `last_name`, the contact id, a space and the folded surname |
 | dismissed_by | text fk → user.id | who answered, for the trail |
 | dismissed_at | int | |
 
@@ -596,6 +609,12 @@ before a row is ever written, and a deleted contact leaves a row that matches no
 
 A row constrains only what Stella **offers**. It never touches what the kinship engine derives
 or what a profile displays, and deleting it (*Ask again*) puts the suggestion back.
+
+**A declined last name** (*Not Brunner*, `docs/concepts/surnames.md` §5) shares the table
+rather than adding one: `relation = 'last_name'`, keyed by the person and the surname folded
+the §2.2.1 way, so *Brünner* and *brunner* are one answer and a different name can still be
+proposed. The column is text, so this needed no migration; the relationship log reads only
+the other relations, and the *Last names* page lists these with *Offer again*.
 
 ### command_receipt  [M3]
 A command id that has been claimed or applied (`docs/concepts/offline-capture.md` §3), so a

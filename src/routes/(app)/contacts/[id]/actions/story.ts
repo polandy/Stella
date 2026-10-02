@@ -60,7 +60,7 @@ export const storyActions = {
 		if (command?.type !== 'interaction.log') {
 			return fail(400, { interactionError: say(locals, 'errors.interaction.needKindAndDay') });
 		}
-		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale };
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(400, {
@@ -87,7 +87,7 @@ export const storyActions = {
 		const contact = await getContact(getContactDeps(), viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		const author = { userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: 'shared' as const };
+		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale, defaultVisibility: 'shared' as const };
 		const removed = await deleteInteraction(getInteractionDeps(), author, interactionId);
 		if (!removed) return fail(403, { interactionError: say(locals, 'errors.interaction.onlyLogger') });
 		throw redirect(303, `/contacts/${params.id}`);

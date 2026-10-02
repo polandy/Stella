@@ -42,7 +42,7 @@ export const POST: RequestHandler = async ({ locals, request, url }) => {
 		// A document that names no visibility is shared, like anything added in the app (§2.10).
 		{ userId: user.id, householdId: user.householdId, defaultVisibility: 'shared' },
 		reading.document,
-		{ dryRun, wording: apiImportWording(locals) }
+		{ dryRun, wording: apiImportWording(locals), locale: locals.locale }
 	);
 	if (!result.ok) return json({ problems: result.problems }, { status: 422 });
 	return json({ dryRun: result.dryRun, added: result.added, ...result.report });

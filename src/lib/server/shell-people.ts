@@ -34,6 +34,8 @@ export async function readShellPeople(user: AuthUser) {
 		firstName: p.firstName,
 		lastName: p.lastName,
 		nickname: p.nickname,
+		// Found by an earlier name too, in ⌘K and every picker (docs/02 §2.2).
+		formerName: p.formerName,
 		avatarPhotoId: p.avatarPhotoId,
 		// A shared text may only mention shared people (docs/02 §2.20.1).
 		visibility: p.visibility,

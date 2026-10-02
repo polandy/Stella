@@ -100,7 +100,7 @@ const document: ApiImportDocument = {
 describe('importViaApi', () => {
 	it('reads the household for exactly the ids the document names', async () => {
 		const { repository, calls } = fakeRepository();
-		await importViaApi(deps(repository), ACTOR, document, { dryRun: true, wording });
+		await importViaApi(deps(repository), ACTOR, document, { dryRun: true, wording, locale: 'en' });
 		expect(calls.read).toEqual([
 			{ contactIds: ['api~kindergarten~p~anna', 'api~kindergarten~p~bert'], circleIds: [] }
 		]);
@@ -108,7 +108,7 @@ describe('importViaApi', () => {
 
 	it('reports a dry run without writing anything', async () => {
 		const { repository, calls } = fakeRepository();
-		const result = await importViaApi(deps(repository), ACTOR, document, { dryRun: true, wording });
+		const result = await importViaApi(deps(repository), ACTOR, document, { dryRun: true, wording, locale: 'en' });
 		expect(calls.read).toHaveLength(1);
 		expect(calls.applied).toEqual([]);
 		expect(result).toMatchObject({
@@ -128,7 +128,8 @@ describe('importViaApi', () => {
 		});
 		const result = await importViaApi(deps(repository), ACTOR, document, {
 			dryRun: false,
-			wording
+			wording,
+			locale: 'en'
 		});
 		expect(calls.applied).toHaveLength(1);
 		expect(calls.applied[0].plan.contacts.map((c) => c.id)).toEqual([
@@ -160,7 +161,7 @@ describe('importViaApi', () => {
 			deps(repository),
 			ACTOR,
 			{ ...document, visibility: 'private' },
-			{ dryRun: false, wording }
+			{ dryRun: false, wording, locale: 'en' }
 		);
 		expect(calls.applied[0].audit?.visibility).toBe('private');
 	});
@@ -171,7 +172,7 @@ describe('importViaApi', () => {
 			deps(repository),
 			ACTOR,
 			{ ...document, people: [], relationships: [] },
-			{ dryRun: false, wording }
+			{ dryRun: false, wording, locale: 'en' }
 		);
 		expect(calls.applied).toEqual([{ plan: expect.anything(), audit: null }]);
 	});
@@ -182,7 +183,7 @@ describe('importViaApi', () => {
 			deps(repository),
 			ACTOR,
 			{ ...document, relationships: [{ from: 'anna', to: 'zora', type: 'parent_child' }] },
-			{ dryRun: false, wording }
+			{ dryRun: false, wording, locale: 'en' }
 		);
 		expect(calls.read).toHaveLength(1);
 		expect(calls.applied).toEqual([]);

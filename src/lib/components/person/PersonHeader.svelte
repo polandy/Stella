@@ -4,6 +4,8 @@
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
+	import LastNameHelp from './LastNameHelp.svelte';
+	import NameEditor from './NameEditor.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { PersonForm, PersonPageData } from './types';
@@ -47,23 +49,18 @@
 	/>
 	<div class="min-w-0 flex-1">
 		<!-- Name and description are edited where they are read (docs/02 §2.2). -->
-		<h1 class="tracking-tight text-fg">
-			<InlineEdit
-				action="?/editProfile"
-				name="displayName"
-				value={c.displayName}
-				extra={{ description: c.description ?? '' }}
-				label={t('contact.editName')}
-				error={form?.profileError ?? null}
-				heading
-			/>
-		</h1>
+		<NameEditor name={c} shownNameChosen={data.shownNameChosen} error={form?.namePartsError ?? null} />
+		<!-- An earlier name, neutral on purpose: a maiden name and any other alike (docs/02 §2.2). -->
+		{#if c.formerName}
+			<p class="text-sm text-fg-muted" data-testid="former-name">{t('contact.formerly', { name: c.formerName })}</p>
+		{/if}
+		<!-- Stella's proposal for a missing last name, and passing a new one on. -->
+		<LastNameHelp {data} />
 		<p class="text-fg-muted">
 			<InlineEdit
 				action="?/editProfile"
 				name="description"
 				value={c.description ?? ''}
-				extra={{ displayName: c.displayName }}
 				label={t('contact.editDescription')}
 				placeholder={t('contact.descriptionPlaceholder')}
 				empty={t('contact.addDescription')}

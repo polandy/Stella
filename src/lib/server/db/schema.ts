@@ -594,8 +594,12 @@ export const suggestionDismissal = sqliteTable(
 		householdId: text('household_id')
 			.notNull()
 			.references(() => household.id, { onDelete: 'cascade' }),
-		relation: text('relation').$type<Relation>().notNull(),
-		/** The two contact ids, sorted and space-separated, so either end names the same row. */
+		/** A relationship claim's relation, or `last_name` for a declined surname (docs/03 §3.9). */
+		relation: text('relation').$type<Relation | 'last_name'>().notNull(),
+		/**
+		 * The two contact ids, sorted and space-separated, so either end names the same row — or,
+		 * for `last_name`, the contact id and the folded surname.
+		 */
 		pairKey: text('pair_key').notNull(),
 		dismissedBy: text('dismissed_by')
 			.notNull()

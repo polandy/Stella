@@ -65,6 +65,10 @@ describe('matchesQuery', () => {
 		expect(matchesQuery(person({ description: 'Neighbour with the dog' }), 'dog')).toBe(true);
 	});
 
+	it('matches a former name, so a married name does not hide who someone was (docs/02 §2.2)', () => {
+		expect(matchesQuery(person({ displayName: 'Franziska Abab', lastName: 'Abab', formerName: 'Widmer' }), 'widmer')).toBe(true);
+	});
+
 	it('matches everyone on an empty query', () => {
 		expect(matchesQuery(person(), '')).toBe(true);
 		expect(matchesQuery(person(), '   ')).toBe(true);

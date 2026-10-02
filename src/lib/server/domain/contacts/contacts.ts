@@ -10,9 +10,10 @@ import {
 import { mergeProfiles, type MergeableProfile } from './merge-profile';
 import type { MediaStore } from '../media/avatars';
 import type { IdGenerator } from '../../id';
-import { deriveDisplayName } from './display-name';
+import { deriveDisplayName } from '../../../people/display-name';
 import { isKnownByMoreThanAFirstName } from '../../../people/new-person';
 import { isGender, type Gender } from '../../../people/gender';
+import type { Locale } from '../../../i18n/locales';
 import { isKnownByAFirstNameOnly } from '../../../people/namesakes';
 
 /*
@@ -24,6 +25,8 @@ export interface ContactCreator {
 	userId: string;
 	householdId: string;
 	defaultVisibility: Visibility;
+	/** The language the shown name is written in — its nickname's quote marks (docs/02 §2.2). */
+	locale: Locale;
 }
 
 /** Input accepted from quick-add or the full contact form; all fields optional but a name is required. */
@@ -65,6 +68,8 @@ export interface NewContact {
 
 /** Full contact as read back for a profile. */
 export interface Contact extends NewContact {
+	/** A maiden or earlier last name (docs/02 §2.2); kept when a last name changes on request. */
+	formerName: string | null;
 	avatarPhotoId: string | null;
 	isDeceased: boolean;
 	/** When the household put them out of the way, or null while they are in it. */
@@ -92,6 +97,8 @@ export interface ContactSummary {
 	firstName: string | null;
 	lastName: string | null;
 	nickname: string | null;
+	/** A maiden or other earlier name, which finds them too (docs/02 §2.2). */
+	formerName: string | null;
 	description: string | null;
 	/** Where and when they were met — with the description, what tells namesakes apart (docs/02 §2.2.3). */
 	metPlace: string | null;
@@ -252,7 +259,7 @@ export async function createContact(
 	creator: ContactCreator,
 	input: CreateContactInput
 ): Promise<string> {
-	const displayName = deriveDisplayName(input);
+	const displayName = deriveDisplayName(input, creator.locale);
 	if (!isKnownByMoreThanAFirstName(input)) throw new NeedsSomethingToKnowThemByError();
 	const { birthDate, birthDatePrecision } = parseBirthDate(input.birthDate);
 	const gender = checkedGender(input.gender);
@@ -283,24 +290,23 @@ export async function createContact(
 	return id;
 }
 
-/** Why a nameless contact is refused; the edge shows this to whoever typed the blank. */
-/** Thrown when an edit would leave a contact with no name at all. */
+/** Thrown when an edit would leave a contact with no name at all; the edge shows it to whoever typed the blank. */
 export class EmptyContactNameError extends TranslatableError {
 	constructor() {
 		super(phrase('errors.contact.emptyName'), 'EmptyContactNameError');
 	}
 }
 
-/** What the hero may change without opening a form (docs/02 §2.2). */
+/** What the hero's description edit sends (docs/02 §2.2); the name has its own editor. */
 export interface ProfileEdit {
-	displayName: string;
 	description: string | null;
 }
 
 /**
- * Rename a contact or reword their description, in place. Returns false when the contact is
- * not visible to the viewer, so a route answers 404 the same way it does for a missing one —
- * the visibility check is the read, exactly as everywhere else (docs/03 §3.7).
+ * Reword a contact's description, in place; the name is kept as stored — renaming goes through
+ * `editNameParts`, so there is one way to do it. Returns false when the contact is not visible
+ * to the viewer, so a route answers 404 the same way it does for a missing one — the visibility
+ * check is the read, exactly as everywhere else (docs/03 §3.7).
  */
 export async function editProfile(
 	deps: Pick<ContactDeps, 'contacts' | 'clock'>,
@@ -308,14 +314,11 @@ export async function editProfile(
 	id: string,
 	edit: ProfileEdit
 ): Promise<boolean> {
-	const displayName = (edit.displayName ?? '').trim();
-	if (displayName.length === 0) throw new EmptyContactNameError();
-
 	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
 	if (contact === null) return false;
 
 	await deps.contacts.updateProfile(id, {
-		displayName,
+		displayName: contact.displayName,
 		description: orNull(edit.description),
 		updatedAt: deps.clock.now()
 	});

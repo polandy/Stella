@@ -1,3 +1,4 @@
+import type { Locale } from '../../../i18n/locales';
 import type { Clock } from '../../clock';
 import type { Visibility } from '../../access/visibility';
 import {
@@ -38,6 +39,8 @@ export interface ImportRequest {
 	visibility: Visibility;
 	/** The words the plan writes into the imported records (docs/02 §2.19). */
 	wording: ImportWording;
+	/** The member's language: a nickname in a shown name takes its quote marks. */
+	locale: Locale;
 }
 
 /**
