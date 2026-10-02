@@ -5,7 +5,7 @@
  */
 
 /** Every kind of item the stream carries, in the order a tie on time reads them. */
-export const STREAM_KINDS = ['moment', 'interaction', 'relationship', 'person', 'notice'] as const;
+export const STREAM_KINDS = ['moment', 'interaction', 'relationship', 'person', 'circlePhoto', 'notice'] as const;
 
 /** One of `STREAM_KINDS`. */
 export type StreamKind = (typeof STREAM_KINDS)[number];

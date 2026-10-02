@@ -3,12 +3,14 @@ import { alias, type SQLiteColumn } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import {
 	childRecordVisibleTo,
+	circlePhotoVisibleTo,
 	contactBrowsableBy,
 	contactVisibleTo,
 	relationshipVisibleTo
 } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
+	CirclePhotoUploadRow,
 	InteractionRow,
 	MomentRow,
 	PersonRow,
@@ -21,6 +23,7 @@ import type {
 import type * as schema from './schema';
 import {
 	activityLog,
+	circle,
 	contact,
 	interaction,
 	interactionParticipant,
@@ -37,7 +40,8 @@ import {
  * central conditions (docs/03 §3.7): moments via `childRecordVisibleTo` (anchor contact visible
  * + shared-or-own entry), people via `contactVisibleTo`, relationships via
  * `relationshipVisibleTo` (both ends visible), interactions via `childRecordVisibleTo` on the
- * subject. A moment's mention chips and an interaction's participants are limited to people
+ * subject, circle photos via `circlePhotoVisibleTo` (circle visible + shared-or-own photo). A
+ * moment's mention chips and an interaction's participants are limited to people
  * the viewer may see, so neither ever widens access. A read narrowed to one member adds that
  * member as the author on top of the scope.
  */
@@ -163,6 +167,40 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				at: r.at,
 				actor: { id: r.actorId, name: r.actorName },
 				summary: r.summary
+			}));
+		},
+
+		async recentCirclePhotos(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<CirclePhotoUploadRow[]> {
+			const rows = db
+				.select({
+					id: photo.id,
+					at: photo.createdAt,
+					actorId: user.id,
+					actorName: user.name,
+					circleId: circle.id,
+					circleName: circle.name,
+					role: photo.circleRole,
+					visibility: photo.visibility
+				})
+				.from(photo)
+				.innerJoin(circle, eq(photo.circleId, circle.id))
+				.innerJoin(user, eq(photo.createdBy, user.id))
+				.where(
+					and(
+						circlePhotoVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy }),
+						byMember(photo.createdBy, memberId)
+					)
+				)
+				.orderBy(desc(photo.createdAt), desc(photo.id))
+				.limit(limit)
+				.all();
+			return rows.map((r) => ({
+				id: r.id,
+				at: r.at,
+				actor: { id: r.actorId, name: r.actorName },
+				circle: { id: r.circleId, name: r.circleName },
+				role: r.role,
+				visibility: r.visibility
 			}));
 		},
 
