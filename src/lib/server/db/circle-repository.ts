@@ -13,10 +13,11 @@ import {
 	type MemberPreview,
 	type MemberView,
 	type NewCircle,
-	type NewMembership
+	type NewMembership,
+	type RoleRename
 } from '../domain/circles/circles';
 import type * as schema from './schema';
-import { circle, circleMembership, contact } from './schema';
+import { circle, circleMembership, contact, photo } from './schema';
 
 /*
  * Drizzle adapter for the CircleRepository port (docs/08 §8.3). All reads are scoped centrally:
@@ -174,6 +175,30 @@ export function createDrizzleCircleRepository(
 				.set({ role, updatedAt })
 				.where(and(eq(circleMembership.circleId, circleId), inArray(circleMembership.contactId, [...contactIds])))
 				.run();
+		},
+
+		// The photos are `photo` rows of this circle (docs/03 §photo): a role lives on both
+		// tables, and one transaction keeps a role's people and its banner under one name.
+		async renameRole(change: RoleRename) {
+			db.transaction((tx) => {
+				if (change.contactIds.length > 0) {
+					tx.update(circleMembership)
+						.set({ role: change.role, updatedAt: change.updatedAt })
+						.where(
+							and(
+								eq(circleMembership.circleId, change.circleId),
+								inArray(circleMembership.contactId, [...change.contactIds])
+							)
+						)
+						.run();
+				}
+				if (change.photoIds.length > 0) {
+					tx.update(photo)
+						.set({ circleRole: change.role })
+						.where(and(eq(photo.circleId, change.circleId), inArray(photo.id, [...change.photoIds])))
+						.run();
+				}
+			});
 		},
 
 		async listMembersVisibleTo(viewer: Viewer, circleId: string): Promise<MemberView[]> {

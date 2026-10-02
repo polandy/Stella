@@ -94,6 +94,7 @@ export const errors: ErrorsMessages = {
 		'Der Eintrag wurde gespeichert, ein Foto ließ sich aber nicht hinzufügen.',
 	'errors.circle.needCircleName': 'Bitte gib dem Kreis einen Namen.',
 	'errors.circle.choosePerson': 'Bitte wähle eine Person.',
+	'errors.circle.roleNameBlank': 'Gib der Rolle einen Namen – Rollen entfernst du über Auswählen.',
 	'errors.relationshipType.gone': 'Diese Beziehungsart gibt es nicht mehr.',
 	'errors.notFound': 'Nicht gefunden',
 	'errors.notSignedIn': 'Nicht angemeldet',

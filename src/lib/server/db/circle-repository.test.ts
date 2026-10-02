@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
+import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
@@ -272,5 +273,43 @@ describe('addMemberships', () => {
 		).rejects.toThrow();
 
 		expect(await deps.circles.listMembersVisibleTo(viewerU1, id)).toEqual([]);
+	});
+});
+
+describe('renameRole', () => {
+	function seedPhoto(id: string, circleId: string, circleRole: string | null) {
+		db.insert(schema.photo)
+			.values({ id, householdId: H, circleId, circleRole, createdBy: U1, filePath: `${id}.jpg`, thumbPath: `${id}_t.jpg`, mime: 'image/jpeg' })
+			.run();
+	}
+	const photoRole = (id: string) =>
+		db.select({ role: schema.photo.circleRole }).from(schema.photo).where(eq(schema.photo.id, id)).get()?.role;
+
+	it('renames the chosen memberships and photos of this circle, and nothing of another', async () => {
+		seedContact('mara');
+		seedContact('jonas');
+		const klasse = await createCircle(deps, creatorU1, { name: 'Class 1b' });
+		const club = await createCircle(deps, creatorU1, { name: 'Club' });
+		await addMember(deps, creatorU1, klasse, 'mara', 'Teacher');
+		await addMember(deps, creatorU1, klasse, 'jonas', 'Pupil');
+		await addMember(deps, creatorU1, club, 'mara', 'Teacher');
+		seedPhoto('class-photo', klasse, 'Teacher');
+		seedPhoto('club-photo', club, 'Teacher');
+
+		// The ids name the club's photo and member too: the circle bounds the write, not the ids.
+		await deps.circles.renameRole({
+			circleId: klasse,
+			contactIds: ['mara'],
+			photoIds: ['class-photo', 'club-photo'],
+			role: 'Class teacher',
+			updatedAt: NOW + 1
+		});
+
+		const roles = async (circleId: string) =>
+			Object.fromEntries((await deps.circles.listMembersVisibleTo(viewerU1, circleId)).map((m) => [m.contactId, m.role]));
+		expect(await roles(klasse)).toEqual({ mara: 'Class teacher', jonas: 'Pupil' });
+		expect(photoRole('class-photo')).toBe('Class teacher');
+		expect(await roles(club)).toEqual({ mara: 'Teacher' });
+		expect(photoRole('club-photo')).toBe('Teacher');
 	});
 });

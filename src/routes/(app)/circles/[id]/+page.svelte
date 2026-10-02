@@ -12,6 +12,7 @@
 	import { PhotoWalk } from '$lib/components/circle/photo-walk.svelte';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
+	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import RemoveButton from '$lib/components/RemoveButton.svelte';
 	import Section from '$lib/components/Section.svelte';
@@ -143,6 +144,14 @@
 			// Not remembered, still applied for this visit.
 		}
 	}
+	// A role heading's look; the rename field it opens keeps body type to be legible while typing.
+	const ROLE_HEADING = 'text-xs font-medium uppercase tracking-wide text-fg-subtle';
+	// A failed rename belongs to the heading it was typed into, not to every role on the page.
+	// (The photo actions live in their own module, so `form` is a loose union: read it by `in`.)
+	function renameErrorFor(role: string): string | null {
+		if (!form || !('renameFrom' in form) || !('renameError' in form)) return null;
+		return form.renameFrom === role && typeof form.renameError === 'string' ? form.renameError : null;
+	}
 	const INPUT = 'rounded-md border border-border-input bg-bg px-3 py-2 text-fg';
 </script>
 
@@ -195,9 +204,24 @@
 					<section class="flex flex-col gap-2" data-testid="role-group">
 						{#if showRoles}
 							<div class="flex items-center gap-2">
-							<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle">
-								{group.role ?? t('circles.noRole')} · {group.members.length}
-							</h3>
+							{#if group.role !== null}
+								<!-- A role is renamed where it is read, for its people and its photos alike. -->
+								<h3 class="flex min-w-0 items-center gap-1">
+									<InlineEdit
+										action="?/renameRole"
+										name="role"
+										value={group.role}
+										extra={{ from: group.role }}
+										label={t('circles.renameRole', { role: group.role })}
+										error={renameErrorFor(group.role)}
+										valueClass={ROLE_HEADING}
+										pencil
+									/>
+									<span class={ROLE_HEADING}>· {group.members.length}</span>
+								</h3>
+							{:else}
+								<h3 class={ROLE_HEADING}>{t('circles.noRole')} · {group.members.length}</h3>
+							{/if}
 							{#if selecting}
 								<label class="flex items-center gap-1 text-xs text-primary">
 									<input

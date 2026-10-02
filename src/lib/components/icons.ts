@@ -24,6 +24,7 @@ import {
 	Mail,
 	MessageCircle,
 	Minimize,
+	Pencil,
 	Phone,
 	Plus,
 	Route,
@@ -68,6 +69,8 @@ export const ICONS = {
 	// Actions
 	add: Plus,
 	write: SquarePen,
+	// Change a name where it is read, e.g. a circle's role heading (docs/02 §2.4.2).
+	rename: Pencil,
 	journal: BookOpen,
 	explore: Waypoints,
 	// Two points and the way between them: "how are we connected?" (docs/02 §2.7). Its own
