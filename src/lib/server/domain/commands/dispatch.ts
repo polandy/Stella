@@ -46,6 +46,8 @@ export interface CommandResults {
 	'tag.assign': { tagId: string };
 	'circle.join': { circleId: string };
 	'relationship.add': { relationshipId: string };
+	/** One id per picked person, in the order they were picked. */
+	'relationship.addMany': { relationshipIds: string[] };
 	'contact.add': { contactId: string };
 }
 
@@ -95,8 +97,12 @@ export type CommandOutcome<T extends CommandType = CommandType> =
 			/** True when this was a resend of a command applied earlier. */
 			repeated: boolean;
 	  }
-	/** The member can act on this: correct the command and send it again. */
-	| { status: 'refused'; reason: Phrase }
+	/**
+	 * The member can act on this: correct the command and send it again. `error` is the
+	 * handler's own refusal, so an edge can read what it carries — which people a batch of
+	 * links was refused for — rather than parse the sentence; absent when the dispatcher refused.
+	 */
+	| { status: 'refused'; reason: Phrase; error?: TranslatableError }
 	/** Another run is applying this very command right now; ask again later. */
 	| { status: 'busy' };
 
@@ -143,7 +149,7 @@ export async function dispatchCommand<C extends Command>(
 		result = (await apply(deps.handlers, actor, command)) as CommandResults[C['type']];
 	} catch (err) {
 		await deps.receipts.release(command.id);
-		if (err instanceof TranslatableError) return { status: 'refused', reason: err.phrase };
+		if (err instanceof TranslatableError) return { status: 'refused', reason: err.phrase, error: err };
 		throw err;
 	}
 	await deps.receipts.complete(command.id, result, deps.clock.now());
@@ -170,6 +176,8 @@ function apply(
 		case 'circle.join':
 			return handlers[command.type](actor, command.payload);
 		case 'relationship.add':
+			return handlers[command.type](actor, command.payload);
+		case 'relationship.addMany':
 			return handlers[command.type](actor, command.payload);
 		case 'contact.add':
 			return handlers[command.type](actor, command.payload);

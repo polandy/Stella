@@ -211,6 +211,8 @@ export interface RelationshipRepository {
 		exceptId?: string
 	): Promise<boolean>;
 	insert(relationship: NewRelationship): Promise<void>;
+	/** Stores every one of them or, should any fail, none: one transaction (docs/02 §2.4). */
+	insertAll(relationships: readonly NewRelationship[]): Promise<void>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<RelationshipView[]>;
 	/** The stored link, or null when the viewer may not see it (or it is not there). */
 	findVisibleTo(viewer: Viewer, id: string): Promise<StoredRelationship | null>;
@@ -223,6 +225,11 @@ export interface RelationshipRepository {
 	): Promise<boolean>;
 	/** Deletes the link; false when the viewer may not see it. Nothing is written in that case. */
 	removeVisibleTo(viewer: Viewer, id: string): Promise<boolean>;
+	/**
+	 * Deletes all of them in one transaction — the undo of a batch added together. False, and
+	 * nothing deleted, when any one is not there or not visible to the viewer.
+	 */
+	removeAllVisibleTo(viewer: Viewer, ids: readonly string[]): Promise<boolean>;
 	/** The primary links the viewer may see, as the kinship engine wants them (docs/02 §2.4.1). */
 	loadKinshipGraphVisibleTo(viewer: Viewer): Promise<KinshipGraph>;
 }
@@ -230,6 +237,21 @@ export interface RelationshipRepository {
 export interface RelationshipDeps {
 	relationships: RelationshipRepository;
 	/** Only the type lookup: creating a link resolves its type, nothing more. */
+	types: Pick<RelationshipTypeRepository, 'getType'>;
+	ids: IdGenerator;
+	clock: Clock;
+}
+
+/**
+ * What creating one link reads and writes — narrower than `RelationshipDeps`, so a batch can
+ * put its own staging in front of the store and have every link judged against the links
+ * picked before it (`add-many.ts`).
+ */
+export interface CreateRelationshipDeps {
+	relationships: Pick<
+		RelationshipRepository,
+		'exists' | 'insert' | 'loadKinshipGraphVisibleTo' | 'listForContactVisibleTo'
+	>;
 	types: Pick<RelationshipTypeRepository, 'getType'>;
 	ids: IdGenerator;
 	clock: Clock;
@@ -385,7 +407,7 @@ export async function readExclusionFacts(
  * of Giulio* on Giulio's own page, where what he is is the godchild.
  */
 async function guardExclusions(
-	deps: RelationshipDeps,
+	deps: ExclusionSource,
 	viewer: Viewer,
 	endpoints: Endpoints,
 	type: RelationshipType,
@@ -414,7 +436,7 @@ async function guardExclusions(
  * contacts through the visibility scope).
  */
 export async function createRelationship(
-	deps: RelationshipDeps,
+	deps: CreateRelationshipDeps,
 	viewer: Viewer,
 	input: CreateRelationshipInput
 ): Promise<string> {
@@ -647,6 +669,19 @@ export async function editRelationship(
 		{ ...details, retype },
 		deps.clock.now()
 	);
+}
+
+/**
+ * Take back several links at once — the undo of a batch added together (docs/02 §2.4), so one
+ * *Undo* removes them all or, when any is gone or out of sight, none.
+ */
+export async function removeRelationships(
+	deps: RelationshipDeps,
+	viewer: Viewer,
+	relationshipIds: readonly string[]
+): Promise<boolean> {
+	if (relationshipIds.length === 0) return false;
+	return deps.relationships.removeAllVisibleTo(viewer, relationshipIds);
 }
 
 /** Take back a link that was entered wrong. False when the viewer may not see it. */

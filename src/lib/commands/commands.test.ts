@@ -33,6 +33,13 @@ describe('the command vocabulary', () => {
 		}
 	});
 
+	it('names linking several people in one go as one addition, kept like a single link', () => {
+		expect(isCommandType('relationship.addMany')).toBe(true);
+		expect(kindOf('relationship.addMany')).toBe('add');
+		expect(isQueueable('relationship.addMany')).toBe(true);
+		expect(photoCommandFor('relationship.addMany')).toBeNull();
+	});
+
 	it('recognises its own types and nothing else', () => {
 		expect(isCommandType('moment.capture')).toBe(true);
 		expect(isCommandType('contact.delete')).toBe(false);

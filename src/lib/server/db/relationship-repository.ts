@@ -1,4 +1,4 @@
-import { and, count, eq, isNull, ne, or, sql } from 'drizzle-orm';
+import { and, count, eq, inArray, isNull, ne, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { KinshipGraph } from '../../kinship/kinship';
@@ -93,7 +93,7 @@ const typeColumns = {
  * changed or deleted, and the answer is the same as for one that is not there.
  */
 function visibleToViewer(
-	db: BunSQLiteDatabase<typeof schema>,
+	db: Pick<BunSQLiteDatabase<typeof schema>, 'select'>,
 	viewer: Viewer,
 	id: string
 ): boolean {
@@ -108,6 +108,21 @@ function visibleToViewer(
 		.get();
 	return row !== undefined && row !== null;
 }
+
+/** A link as its row; the domain's `description` is the table's `note` (docs/03 §relationship). */
+const toRow = (rel: NewRelationship) => ({
+	id: rel.id,
+	householdId: rel.householdId,
+	fromContactId: rel.fromContactId,
+	toContactId: rel.toContactId,
+	typeId: rel.typeId,
+	note: rel.description,
+	sinceDate: rel.sinceDate,
+	status: rel.status,
+	createdBy: rel.createdBy,
+	createdAt: rel.createdAt,
+	updatedAt: rel.updatedAt
+});
 
 export function createDrizzleRelationshipRepository(
 	db: BunSQLiteDatabase<typeof schema>
@@ -246,22 +261,15 @@ export function createDrizzleRelationshipRepository(
 		},
 
 		async insert(rel: NewRelationship) {
-			// Domain `description` maps to the table's `note` column (docs/03 §relationship).
-			db.insert(relationship)
-				.values({
-					id: rel.id,
-					householdId: rel.householdId,
-					fromContactId: rel.fromContactId,
-					toContactId: rel.toContactId,
-					typeId: rel.typeId,
-					note: rel.description,
-					sinceDate: rel.sinceDate,
-					status: rel.status,
-					createdBy: rel.createdBy,
-					createdAt: rel.createdAt,
-					updatedAt: rel.updatedAt
-				})
-				.run();
+			db.insert(relationship).values(toRow(rel)).run();
+		},
+
+		async insertAll(rels: readonly NewRelationship[]) {
+			if (rels.length === 0) return;
+			// One statement in one transaction: a row refused by the database takes the others with it.
+			db.transaction((tx) => {
+				tx.insert(relationship).values(rels.map(toRow)).run();
+			});
 		},
 
 		async listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<RelationshipView[]> {
@@ -378,6 +386,15 @@ export function createDrizzleRelationshipRepository(
 			if (!visibleToViewer(db, viewer, id)) return false;
 			db.delete(relationship).where(eq(relationship.id, id)).run();
 			return true;
+		},
+
+		async removeAllVisibleTo(viewer: Viewer, ids: readonly string[]) {
+			return db.transaction((tx) => {
+				const unique = [...new Set(ids)];
+				if (!unique.every((id) => visibleToViewer(tx, viewer, id))) return false;
+				tx.delete(relationship).where(inArray(relationship.id, unique)).run();
+				return true;
+			});
 		},
 
 		async loadKinshipGraphVisibleTo(viewer: Viewer): Promise<KinshipGraph> {

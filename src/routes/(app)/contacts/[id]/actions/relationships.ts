@@ -14,6 +14,7 @@ import {
 	editRelationship,
 	InvalidRelationshipDetailsError,
 	removeRelationship,
+	removeRelationships,
 	RelationshipExcludedError
 } from '$lib/server/domain/relationships/relationships';
 import {
@@ -21,6 +22,7 @@ import {
 	declineClaim,
 	restoreClaim
 } from '$lib/server/relationships/suggestion-answers';
+import { RelationshipsRefusedError } from '$lib/server/domain/relationships/add-many';
 import { getCommandDeps, getRelationshipDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import { reviewPath } from '../review-path';
@@ -113,6 +115,71 @@ export const relationshipActions = {
 
 		// Come back with the new pair named, so its implied links can be offered.
 		throw redirect(303, proposeHref(params.id, parsed.output.targetId));
+	},
+
+	/**
+	 * Link several people in one go (docs/02 §2.4, docs/concepts/multi-pick-relationships.html
+	 * D6): the shared fields once, then `targetId` and `sinceDate` once per picked person, in
+	 * the same order. All or nothing; a refusal names each refused person so the form can mark
+	 * them. Applied, it answers the new ids, so one *Undo* can take the whole batch back
+	 * (`removeRelationships`).
+	 */
+	addRelationships: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+
+		const form = await request.formData();
+		const targetIds = form.getAll('targetId');
+		const sinceDates = form.getAll('sinceDate');
+		// A since field per person, even when blank; a form that lost the pairing is not guessed at.
+		if (sinceDates.length !== targetIds.length) {
+			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
+		}
+		const command = parseCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'relationship.addMany',
+			payload: {
+				contactId: params.id,
+				typeChoice: form.get('typeChoice'),
+				status: form.get('status') || null,
+				description: form.get('description'),
+				links: targetIds.map((targetId, index) => ({ targetId, sinceDate: sinceDates[index] }))
+			},
+			issuedAt: systemClock.now()
+		});
+		if (command?.type !== 'relationship.addMany') {
+			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
+		}
+
+		const author = { userId: locals.user.id, householdId: locals.user.householdId };
+		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
+		if (outcome?.status === 'applied') return { relationshipIds: outcome.result.relationshipIds };
+		if (outcome?.status !== 'refused') {
+			return fail(400, { error: say(locals, 'errors.relationship.couldNotAdd') });
+		}
+		const t = translator(locals);
+		const refusals =
+			outcome.error instanceof RelationshipsRefusedError
+				? outcome.error.refusals.map((refusal) => ({ targetId: refusal.targetId, reason: refusal.reason(t) }))
+				: [];
+		return fail(409, { error: outcome.reason(t), refusals });
+	},
+
+	/**
+	 * Take back a batch added together, in one step (docs/02 §2.4): every `relationshipId`
+	 * posted, or — when any is gone or out of sight — none.
+	 */
+	removeRelationships: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const ids = (await request.formData()).getAll('relationshipId');
+		if (ids.length === 0 || !ids.every((id): id is string => typeof id === 'string' && id !== '')) {
+			return fail(400, {});
+		}
+		if (!(await removeRelationships(getRelationshipDeps(), viewer, ids))) {
+			return fail(404, { error: say(locals, 'errors.relationship.notFound') });
+		}
+		throw redirect(303, contactSectionPath(params.id, 'relationships'));
 	},
 
 	/** Correct a link: its specifics, and its type where the tie was named wrongly (docs/02 §2.4). */

@@ -3,7 +3,7 @@ import { phrase } from '../../../i18n/phrase';
 import { decodeRelationshipChoice, endpointsForSide } from '../../../relationships/type-options';
 import type { ContactRepository } from '../contacts/contacts';
 import { requireVisibleContact } from '../contacts/require-visible';
-import { createRelationship, type RelationshipDeps } from './relationships';
+import { createRelationship, type CreateRelationshipDeps } from './relationships';
 
 /*
  * Linking two people from one of their pages (docs/02 §2.4), with the checks that used to live
@@ -20,7 +20,7 @@ export class UnknownRelationshipTypeError extends TranslatableError {
 	}
 }
 
-export interface AddCheckedDeps extends RelationshipDeps {
+export interface AddCheckedDeps extends CreateRelationshipDeps {
 	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
 }
 

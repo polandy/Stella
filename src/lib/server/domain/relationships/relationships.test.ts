@@ -16,6 +16,7 @@ import {
 	InvalidRelationshipDetailsError,
 	parseRelationshipDetails,
 	removeRelationship,
+	removeRelationships,
 	type RelationshipUpdate,
 	readKinship,
 	type NewRelationship,
@@ -166,6 +167,14 @@ function fakeRepo(opts: {
 		removeVisibleTo: async (_viewer, id) => {
 			if (opts.visible === false) return false;
 			removals.push(id);
+			return true;
+		},
+		insertAll: async () => {
+			throw new Error('a single link is never stored as a batch');
+		},
+		removeAllVisibleTo: async (_viewer, ids) => {
+			if (opts.visible === false) return false;
+			removals.push(...ids);
 			return true;
 		},
 		loadKinshipGraphVisibleTo: async () => opts.graph ?? emptyKinshipGraph()
@@ -768,6 +777,29 @@ describe('removeRelationship', () => {
 		expect(
 			await removeRelationship({ relationships: f.repo, types: f.types, ids: idGen('unused'), clock }, viewer, 'rel-x')
 		).toBe(false);
+		expect(f.removals).toEqual([]);
+	});
+});
+
+describe('removeRelationships', () => {
+	const viewer: Viewer = { id: 'u1', householdId: 'h1' };
+	const deps = (f: ReturnType<typeof fakeRepo>) => ({ relationships: f.repo, types: f.types, ids: idGen('unused'), clock });
+
+	it('takes back a whole batch in one step — the undo of links added together', async () => {
+		const f = fakeRepo({});
+		expect(await removeRelationships(deps(f), viewer, ['rel-1', 'rel-2'])).toBe(true);
+		expect(f.removals).toEqual(['rel-1', 'rel-2']);
+	});
+
+	it('reports false when the store will not remove them all, and nothing is taken', async () => {
+		const f = fakeRepo({ visible: false });
+		expect(await removeRelationships(deps(f), viewer, ['rel-1', 'rel-x'])).toBe(false);
+		expect(f.removals).toEqual([]);
+	});
+
+	it('reports false for an empty batch rather than claiming to have undone something', async () => {
+		const f = fakeRepo({});
+		expect(await removeRelationships(deps(f), viewer, [])).toBe(false);
 		expect(f.removals).toEqual([]);
 	});
 });
