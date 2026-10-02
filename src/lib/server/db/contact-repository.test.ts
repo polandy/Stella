@@ -533,3 +533,25 @@ describe('writeNames', () => {
 		expect(db.select().from(schema.activityLog).all()).toEqual([]);
 	});
 });
+
+/*
+ * The owner's case from the preview (docs/concepts/surnames.md §6): Franziska — first name
+ * Franziska, no last name, shown as "Franziska" — given Widmer by a batch must read "Franziska
+ * Widmer". Driven through the real adapter and the use-case, the way the batch action runs it.
+ */
+describe('a batch over a first name alone', () => {
+	it('makes the shown name again from the new parts', async () => {
+		const { setLastNames } = await import('../domain/contacts/last-names');
+		await repo.insert(contactInput({ id: 'franziska', displayName: 'Franziska', firstName: 'Franziska' }));
+		const deps = { names: repo, clock: { now: () => NOW + 5 }, ids: { next: () => 'log-franziska' } };
+
+		const written = await setLastNames(deps, viewerU1, [{ contactId: 'franziska', lastName: 'Widmer', replace: false }], 'de');
+
+		expect(written).toBe(1);
+		expect(await repo.findByIdVisibleTo(viewerU1, 'franziska')).toMatchObject({
+			displayName: 'Franziska Widmer',
+			firstName: 'Franziska',
+			lastName: 'Widmer'
+		});
+	});
+});
