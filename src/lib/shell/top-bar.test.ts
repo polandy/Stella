@@ -8,8 +8,13 @@ import { SHOWN_TOP_BAR, TOP_BAR_TRAVEL_PX, followScroll, type TopBarState } from
  */
 
 /** Feeds a run of scroll positions through, as the scroll events would. */
-function scrollThrough(positions: number[], barHeight = 60, from: TopBarState = SHOWN_TOP_BAR): TopBarState {
-	return positions.reduce((state, y) => followScroll(state, y, barHeight), from);
+function scrollThrough(
+	positions: number[],
+	barHeight = 60,
+	from: TopBarState = SHOWN_TOP_BAR,
+	maxY = 10_000
+): TopBarState {
+	return positions.reduce((state, y) => followScroll(state, y, barHeight, maxY), from);
 }
 
 describe('followScroll', () => {
@@ -52,5 +57,25 @@ describe('followScroll', () => {
 		const hidden = scrollThrough([200, 400]);
 		expect(scrollThrough([0], 60, hidden).hidden).toBe(false);
 		expect(scrollThrough([-30], 60, hidden).hidden).toBe(false);
+	});
+
+	it('does not bounce at the bottom when hiding it gives the page room and pulls the scroll back', () => {
+		// Hiding the bar makes the scroller 60 px taller, so a page scrolled to its end (1000)
+		// is clamped back to the new end (940). That pull is not the reader scrolling up.
+		const hiddenAtEnd = scrollThrough([900, 950, 1000], 60, SHOWN_TOP_BAR, 1000);
+		expect(hiddenAtEnd.hidden).toBe(true);
+
+		expect(scrollThrough([970, 940], 60, hiddenAtEnd, 940).hidden).toBe(true);
+	});
+
+	it('ignores the rubber-band overscroll past the bottom', () => {
+		const hiddenAtEnd = scrollThrough([900, 950, 1000], 60, SHOWN_TOP_BAR, 1000);
+		expect(scrollThrough([1040, 1000], 60, hiddenAtEnd, 1000).hidden).toBe(true);
+	});
+
+	it('comes back once the reader scrolls up out of the last bar’s height of the page', () => {
+		const hiddenAtEnd = scrollThrough([900, 950, 1000], 60, SHOWN_TOP_BAR, 1000);
+		expect(scrollThrough([960, 941], 60, hiddenAtEnd, 1000).hidden).toBe(true);
+		expect(scrollThrough([960, 939], 60, hiddenAtEnd, 1000).hidden).toBe(false);
 	});
 });

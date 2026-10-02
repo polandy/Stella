@@ -400,7 +400,8 @@
 			id="content"
 			tabindex="-1"
 			bind:this={scroller}
-			onscroll={(event) => (topBar = followScroll(topBar, event.currentTarget.scrollTop, topBarHeight))}
+			onscroll={({ currentTarget: page }) =>
+				(topBar = followScroll(topBar, page.scrollTop, topBarHeight, page.scrollHeight - page.clientHeight))}
 			class="flex-1 overflow-y-auto pb-16 md:pb-0"
 		>
 			{@render children()}
