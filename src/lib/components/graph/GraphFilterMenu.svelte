@@ -116,32 +116,27 @@
 			onDelete={onDeleteView}
 		/>
 		<div role="separator" class="mx-1 my-1 border-t border-border"></div>
-		{#each FILTERS as f (f.key)}
-			<button
-				type="button"
-				role="menuitemcheckbox"
-				aria-checked={active.has(f.key)}
-				onclick={() => onToggleFilter(f.key)}
-				class={MENU_ITEM}
-			>
-				<span
-					class="inline-block w-5 shrink-0 border-t-2"
-					style="border-color:{f.token};border-top-style:{f.line}"
-					aria-hidden="true"
-				></span>
-				<span class="flex-1">{t(f.label)}</span>
-				<span
-					class="grid size-4 shrink-0 place-items-center rounded border-[1.5px] text-[10px] leading-none pointer-coarse:size-5 pointer-coarse:text-xs"
-					class:border-border={!active.has(f.key)}
-					style={active.has(f.key)
-						? 'background:var(--primary);border-color:var(--primary);color:var(--primary-fg)'
-						: ''}
-					aria-hidden="true"
+		<!-- Two to a row: a phone's thumb needs a 44px target, and six full-width rows that tall
+		     pushed the rest of the menu off the screen. On is told by border, tint and weight,
+		     not by colour alone. -->
+		<div class="grid w-max min-w-full grid-cols-2 gap-1 px-0.5 py-0.5">
+			{#each FILTERS as f (f.key)}
+				<button
+					type="button"
+					role="menuitemcheckbox"
+					aria-checked={active.has(f.key)}
+					onclick={() => onToggleFilter(f.key)}
+					class="flex min-h-9 items-center gap-2 rounded-lg border border-border px-2 text-left text-[13px] whitespace-nowrap text-fg-muted transition-colors hover:border-primary hover:text-fg aria-checked:border-primary aria-checked:bg-primary-soft aria-checked:font-semibold aria-checked:text-fg pointer-coarse:min-h-11"
 				>
-					{#if active.has(f.key)}✓{/if}
-				</span>
-			</button>
-		{/each}
+					<span
+						class="inline-block w-4 shrink-0 border-t-2"
+						style="border-color:{f.token};border-top-style:{f.line}"
+						aria-hidden="true"
+					></span>
+					{t(f.label)}
+				</button>
+			{/each}
+		</div>
 		<div role="separator" class="mx-1 my-1 border-t border-border"></div>
 		<button
 			type="button"
