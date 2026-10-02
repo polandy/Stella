@@ -73,7 +73,9 @@ function fakes() {
 			'field.add': async () => ({ fieldId: 'f' }),
 			'date.add': async () => ({ dateId: 'd' }),
 			'gallery.add': async () => ({ contactId: 'c', visibility: 'shared' as const }),
-			'gallery.photo': async () => 'photo'
+			'gallery.photo': async () => 'photo',
+			'circleGallery.add': async () => ({ circleId: 'k', role: null, visibility: 'shared' as const }),
+			'circleGallery.photo': async () => 'photo'
 		}
 	};
 	return { deps, bodies };

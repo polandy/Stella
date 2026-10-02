@@ -127,6 +127,7 @@ export const errors = {
 	'errors.circle.needName': 'Please enter a circle name.',
 	'errors.circle.couldNotAdd': 'Could not add the circle.',
 	'errors.circle.notFound': 'Circle not found',
+	'errors.circlePhoto.unknownRole': 'Pick one of the circle’s roles, or no role.',
 	'errors.export.adminOnly': 'Only the household admin can export.',
 	'errors.story.badCursor': 'Malformed story cursor',
 	'errors.journal.couldNotSave': 'Could not save the entry.',

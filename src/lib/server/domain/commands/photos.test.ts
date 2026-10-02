@@ -3,10 +3,13 @@ import { createTranslator } from '../../../i18n/translate';
 import type { Contact } from '../contacts/contacts';
 import type { StoredPhoto } from '../media/avatars';
 import type { CommandReceipt } from './dispatch';
+import type { StoredCirclePhoto } from '../circles/circle-photos';
 import {
+	attachCirclePhoto,
 	attachGalleryPhoto,
 	attachMomentPhoto,
 	PhotoParentGoneError,
+	type CirclePhotoUploadDeps,
 	type GalleryPhotoDeps,
 	type MomentPhotoDeps
 } from './photos';
@@ -148,6 +151,53 @@ describe('attachGalleryPhoto', () => {
 	it('refuses a photo for a person the member can no longer see', async () => {
 		const f = galleryFakes(gallery, false);
 		await expect(attachGalleryPhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(PhotoParentGoneError);
+		expect(f.stored).toHaveLength(0);
+	});
+});
+
+const circleUpload: CommandReceipt = {
+	...moment,
+	type: 'circleGallery.add',
+	result: { circleId: 'class-1b', role: 'Student', visibility: 'private' }
+};
+
+function circleFakes(receipt: CommandReceipt | null = circleUpload, visible = true) {
+	const stored: StoredCirclePhoto[] = [];
+	const deps: CirclePhotoUploadDeps = {
+		receipts: { find: async (id) => (receipt && receipt.id === id ? receipt : null) },
+		circles: {
+			getVisibleTo: async (viewer, id) =>
+				visible && viewer.id === 'u1' && id === 'class-1b' ? ({ id } as never) : null
+		},
+		photos: {
+			circlePhotos: { insert: async (p: StoredCirclePhoto) => void stored.push(p) } as CirclePhotoUploadDeps['photos']['circlePhotos'],
+			media: { put: async (name: string) => `/media/${name}`, delete: async () => {} } as unknown as CirclePhotoUploadDeps['photos']['media'],
+			ids: { next: () => 'ph1' },
+			clock: { now: () => 5 }
+		}
+	};
+	return { deps, stored };
+}
+
+describe('attachCirclePhoto', () => {
+	it('puts the photo in the circle, with the upload’s role and visibility', async () => {
+		const f = circleFakes();
+		expect(await attachCirclePhoto(f.deps, actor, payload)).toBe('ph1');
+		expect(f.stored).toHaveLength(1);
+		expect(f.stored[0]).toMatchObject({ circleId: 'class-1b', circleRole: 'Student', visibility: 'private', createdBy: 'u1' });
+	});
+
+	it('refuses a photo for what is not this member’s applied circle upload, storing nothing', async () => {
+		for (const receipt of [null, { ...circleUpload, memberId: 'u2' }, gallery]) {
+			const f = circleFakes(receipt);
+			await expect(attachCirclePhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(PhotoParentGoneError);
+			expect(f.stored).toHaveLength(0);
+		}
+	});
+
+	it('refuses a photo for a circle the member can no longer see', async () => {
+		const f = circleFakes(circleUpload, false);
+		await expect(attachCirclePhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(PhotoParentGoneError);
 		expect(f.stored).toHaveLength(0);
 	});
 });

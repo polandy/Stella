@@ -154,6 +154,19 @@ const GalleryAdd = v.object({
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
 });
 
+// A role is picked, not typed; whether the circle has it is the use-case's to judge.
+const CircleGalleryAdd = v.object({
+	circleId: v.pipe(v.string(), v.minLength(1)),
+	role: v.optional(
+		v.pipe(
+			v.nullable(v.string()),
+			v.transform((role) => (role === null || role.trim() === '' ? null : role.trim()))
+		),
+		null
+	),
+	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
+});
+
 const envelope = {
 	id: v.pipe(v.string(), v.regex(ULID)),
 	issuedAt: v.pipe(v.number(), v.integer(), v.minValue(0))
@@ -170,7 +183,8 @@ const CommandSchema = v.variant('type', [
 	v.object({ ...envelope, type: v.literal('journal.write'), payload: JournalWrite }),
 	v.object({ ...envelope, type: v.literal('field.add'), payload: FieldAdd }),
 	v.object({ ...envelope, type: v.literal('date.add'), payload: DateAdd }),
-	v.object({ ...envelope, type: v.literal('gallery.add'), payload: GalleryAdd })
+	v.object({ ...envelope, type: v.literal('gallery.add'), payload: GalleryAdd }),
+	v.object({ ...envelope, type: v.literal('circleGallery.add'), payload: CircleGalleryAdd })
 ]);
 
 /** `raw` as a command, or null when it is not exactly one. */
@@ -181,7 +195,7 @@ export function parseCommand(raw: unknown): JsonCommand | null {
 
 const PhotoSchema = v.object({
 	...envelope,
-	type: v.picklist(['moment.photo', 'gallery.photo']),
+	type: v.picklist(['moment.photo', 'gallery.photo', 'circleGallery.photo']),
 	parentId: v.pipe(v.string(), v.regex(ULID)),
 	image: v.instance(Uint8Array),
 	thumb: v.instance(Uint8Array),

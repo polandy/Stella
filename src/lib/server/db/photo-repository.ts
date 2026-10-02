@@ -1,7 +1,7 @@
-import { and, asc, desc, eq, inArray, isNotNull, isNull, sql, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql, type SQL } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo } from '../access/query-scoping';
+import { childRecordVisibleTo, circlePhotoVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
 	DeletedPhotoFiles,
@@ -13,12 +13,13 @@ import type {
 } from '../domain/media/avatars';
 import type { FramingRepository, StoredFraming } from '../domain/media/framing';
 import type * as schema from './schema';
-import { contact, photo } from './schema';
+import { circle, contact, photo } from './schema';
 
 /*
  * Drizzle adapter for the PhotoRepository port (docs/08 §8.3). Serving a photo file is scoped
  * through the central `childRecordVisibleTo`: the photo's contact must be visible and a private
- * photo only to its author (docs/03 §3.7) — so private media is never served to others.
+ * photo only to its author (docs/03 §3.7) — so private media is never served to others. A
+ * circle's photo has no contact; it is served by `circlePhotoVisibleTo`, its circle's rule.
  */
 export function createDrizzlePhotoRepository(
 	db: BunSQLiteDatabase<typeof schema>
@@ -76,6 +77,7 @@ export function createDrizzlePhotoRepository(
 			photoId: string,
 			variant: 'full' | 'thumb'
 		): Promise<PhotoFile | null> {
+			const owner = { visibility: photo.visibility, createdBy: photo.createdBy };
 			const row = db
 				.select({
 					filePath: photo.filePath,
@@ -85,11 +87,15 @@ export function createDrizzlePhotoRepository(
 					createdBy: photo.createdBy
 				})
 				.from(photo)
-				.innerJoin(contact, eq(photo.contactId, contact.id))
+				.leftJoin(contact, eq(photo.contactId, contact.id))
+				.leftJoin(circle, eq(photo.circleId, circle.id))
 				.where(
 					and(
 						eq(photo.id, photoId),
-						childRecordVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy })
+						or(
+							and(isNotNull(photo.contactId), childRecordVisibleTo(viewer, owner)),
+							and(isNotNull(photo.circleId), circlePhotoVisibleTo(viewer, owner))
+						)
 					)
 				)
 				.get();
@@ -230,12 +236,12 @@ export function createDrizzlePhotoRepository(
 }
 
 /*
- * A gallery photo is one that belongs to no journal entry (docs/02 §2.14 vs §2.20) and is not
- * the framing of another photo. Reads are scoped through the central `childRecordVisibleTo`, so
- * a private photo reaches only its author.
+ * A gallery photo is one that belongs to no journal entry (docs/02 §2.14 vs §2.20), to no
+ * circle (§2.4.2), and is not the framing of another photo. Reads are scoped through the
+ * central `childRecordVisibleTo`, so a private photo reaches only its author.
  */
 function isGalleryPhoto() {
-	return and(isNull(photo.journalEntryId), isNull(photo.framingOf));
+	return and(isNull(photo.journalEntryId), isNull(photo.framingOf), isNull(photo.circleId));
 }
 
 function isGalleryPhotoVisibleTo(viewer: Viewer) {

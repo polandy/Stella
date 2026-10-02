@@ -1,4 +1,5 @@
 import { circleNameKey } from '../../../circles/name-key';
+import { roleKey } from '../../../circles/role-key';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -62,9 +63,9 @@ function foldByRole<T>(
 ): { label: string; items: T[] }[] {
 	const byKey = new Map<string, { items: T[]; spellings: Map<string, number> }>();
 	for (const item of items) {
+		const key = roleKey(roleOf(item));
+		if (key === null) continue;
 		const role = (roleOf(item) ?? '').trim();
-		if (role === '') continue;
-		const key = role.toLowerCase();
 		const entry = byKey.get(key) ?? { items: [] as T[], spellings: new Map<string, number>() };
 		entry.items.push(item);
 		entry.spellings.set(role, (entry.spellings.get(role) ?? 0) + 1);
@@ -106,7 +107,7 @@ export function groupMembersByRole<T extends { role: string | null }>(
 		role: g.label,
 		members: g.items
 	}));
-	const withoutRole = members.filter((m) => (m.role ?? '').trim() === '');
+	const withoutRole = members.filter((m) => roleKey(m.role) === null);
 	if (withoutRole.length > 0) groups.push({ role: null, members: withoutRole });
 	return groups;
 }

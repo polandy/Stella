@@ -28,7 +28,8 @@ const LOOKUPS: [string, string][] = [
 	['the people carrying a tag', "SELECT contact_id FROM contact_tag WHERE tag_id = 't'"],
 	['the touchpoints a person took part in', "SELECT interaction_id FROM interaction_participant WHERE contact_id = 'c'"],
 	['the links of one relationship type', "SELECT id FROM relationship WHERE type_id = 'r'"],
-	['the sessions of a member', "SELECT id FROM session WHERE user_id = 'u'"]
+	['the sessions of a member', "SELECT id FROM session WHERE user_id = 'u'"],
+	['the photos of a circle', "SELECT id FROM photo WHERE circle_id = 'c'"]
 ];
 
 describe('index-backed lookups', () => {

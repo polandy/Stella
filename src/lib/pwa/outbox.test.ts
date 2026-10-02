@@ -193,6 +193,22 @@ describe('photos kept with a moment', () => {
 		expect(takePhoto(delivered, 'u1')?.upload).toMatchObject({ parentId: 'g', type: 'gallery.photo' });
 	});
 
+	it('uploads a photo kept for a circle into that circle’s photos', () => {
+		const upload = queue([], {
+			command: {
+				id: 'k',
+				type: 'circleGallery.add',
+				payload: { circleId: 'class-1b', role: 'Student', visibility: 'shared' },
+				issuedAt: 1
+			},
+			memberId: 'u1',
+			savedAt: 1,
+			photos: [photo('p1')]
+		});
+		const delivered = settle(takeBatch(upload, 'u1', 10).items, [{ id: 'k', status: 'applied', result: {} }]);
+		expect(takePhoto(delivered, 'u1')?.upload).toMatchObject({ parentId: 'k', type: 'circleGallery.photo' });
+	});
+
 	it('does not upload a photo before its moment has arrived', () => {
 		expect(takePhoto(withPhotos('a', 'p1'), 'u1')).toBeNull();
 	});

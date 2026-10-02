@@ -20,6 +20,7 @@ import { createDrizzleApiImportRepository } from './db/api-import-repository';
 import { createDrizzleApiTokenRepository } from './db/api-token-repository';
 import { createDrizzleAttentionRepository } from './db/attention-repository';
 import { createDrizzleCircleRepository } from './db/circle-repository';
+import { createDrizzleCirclePhotoRepository } from './db/circle-photo-repository';
 import { createDrizzleContactRepository } from './db/contact-repository';
 import { createDrizzleStreamRepository } from './db/stream-repository';
 import { createDrizzleGraphRepository } from './db/graph-repository';
@@ -78,13 +79,18 @@ import type {
 import type { TagDeps, TagRepository } from './domain/tags/tags';
 import type { GraphRepository } from './db/graph-repository';
 import type { CircleDeps, CircleRepository } from './domain/circles/circles';
+import {
+	prepareCirclePhotoUpload,
+	type CirclePhotoDeps,
+	type CirclePhotoRepository
+} from './domain/circles/circle-photos';
 import type { StreamDeps, StreamRepository } from './domain/stream/stream';
 import { captureMoment, type CaptureMomentDeps } from './domain/moments/moments';
 import type { CommandActor, CommandDeps, CommandReceiptRepository } from './domain/commands/dispatch';
 import type { Viewer } from './access/visibility';
 import { createDrizzleCommandReceiptRepository } from './db/command-receipt-repository';
 import { createDrizzleEntryOwnership } from './db/entry-ownership';
-import { attachGalleryPhoto, attachMomentPhoto } from './domain/commands/photos';
+import { attachCirclePhoto, attachGalleryPhoto, attachMomentPhoto } from './domain/commands/photos';
 import { writeJournalEntry } from './domain/journal/write-entry';
 import { addContactField } from './domain/contact-fields/contact-fields';
 import { addImportantDate } from './domain/dates/important-dates';
@@ -584,7 +590,13 @@ export function getCommandDeps(): CommandDeps {
 				visibility: payload.visibility
 			})),
 			'gallery.photo': (actor, payload) =>
-				attachGalleryPhoto({ receipts, contacts: getContacts(), photos: getGalleryUploadDeps() }, actor, payload)
+				attachGalleryPhoto({ receipts, contacts: getContacts(), photos: getGalleryUploadDeps() }, actor, payload),
+			// Checks the circle and the role once; the photos following it land where it says.
+			'circleGallery.add': (actor, payload) => prepareCirclePhotoUpload(getCirclePhotoDeps(), viewerOf(actor), payload),
+			'circleGallery.photo': (actor, payload) => {
+				const photos = getCirclePhotoDeps();
+				return attachCirclePhoto({ receipts, circles: photos.circles, photos }, actor, payload);
+			}
 		}
 	};
 }
@@ -594,6 +606,19 @@ let circleRepository: CircleRepository | null = null;
 export function getCircleDeps(): CircleDeps {
 	return {
 		circles: (circleRepository ??= createDrizzleCircleRepository(getDb())),
+		ids: ulidGenerator,
+		clock: systemClock
+	};
+}
+
+let circlePhotoRepository: CirclePhotoRepository | null = null;
+
+/** Deps for a circle's photos (docs/02 §2.4.2). */
+export function getCirclePhotoDeps(): CirclePhotoDeps {
+	return {
+		circlePhotos: (circlePhotoRepository ??= createDrizzleCirclePhotoRepository(getDb())),
+		circles: getCircleDeps().circles,
+		media: getMediaStore(),
 		ids: ulidGenerator,
 		clock: systemClock
 	};

@@ -1,5 +1,5 @@
 import { and, eq, isNull, or, type AnyColumn, type SQL } from 'drizzle-orm';
-import { contact } from '../db/schema';
+import { circle, contact } from '../db/schema';
 import type { Viewer } from './visibility';
 
 /*
@@ -94,4 +94,18 @@ export function membershipVisibleTo(
 	contact: ContactColumns
 ): SQL {
 	return and(circleColumnsVisibleTo(viewer, circle), contactColumnsVisibleTo(viewer, contact))!;
+}
+
+/**
+ * Condition for a photo of a circle's gallery being visible: its circle must be visible (the
+ * query must join `circle`), and a private photo only to whoever added it.
+ */
+export function circlePhotoVisibleTo(
+	viewer: Viewer,
+	record: { visibility: AnyColumn; createdBy: AnyColumn }
+): SQL {
+	return and(
+		circleColumnsVisibleTo(viewer, circle),
+		or(eq(record.visibility, 'shared'), eq(record.createdBy, viewer.id))
+	)!;
 }

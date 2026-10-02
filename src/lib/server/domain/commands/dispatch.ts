@@ -37,6 +37,10 @@ export interface CommandResults {
 	'gallery.add': { contactId: string; visibility: Visibility };
 	/** The stored photo's id. */
 	'gallery.photo': string;
+	/** Where the photos following it go, with the role as the circle spells it. */
+	'circleGallery.add': { circleId: string; role: string | null; visibility: Visibility };
+	/** The stored photo's id. */
+	'circleGallery.photo': string;
 	'note.add': { noteId: string };
 	'interaction.log': { interactionId: string };
 	'tag.assign': { tagId: string };
@@ -178,6 +182,10 @@ function apply(
 		case 'gallery.add':
 			return handlers[command.type](actor, command.payload);
 		case 'gallery.photo':
+			return handlers[command.type](actor, command.payload);
+		case 'circleGallery.add':
+			return handlers[command.type](actor, command.payload);
+		case 'circleGallery.photo':
 			return handlers[command.type](actor, command.payload);
 	}
 }

@@ -85,3 +85,21 @@ export function canViewMembership(
 ): boolean {
 	return canViewCircle(viewer, membership.circle) && canViewContact(viewer, membership.contact);
 }
+
+/** A photo in a circle's gallery (docs/02 §2.4.2): it hangs off the circle, not a contact. */
+export interface CirclePhotoAccess {
+	/** `created_by` — who added the photo. */
+	ownerId: UserId;
+	visibility: Visibility;
+	circle: CircleAccess;
+}
+
+/**
+ * A circle photo is visible only when its circle is visible (a private circle's photos are
+ * private with it) and, additionally, a private photo only to whoever added it — the
+ * child-record rule with the circle in the contact's place.
+ */
+export function canViewCirclePhoto(viewer: Viewer, photo: CirclePhotoAccess): boolean {
+	if (!canViewCircle(viewer, photo.circle)) return false;
+	return photo.visibility === 'shared' || photo.ownerId === viewer.id;
+}

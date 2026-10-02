@@ -20,7 +20,15 @@ describe('the command vocabulary', () => {
 	});
 
 	it('names writing on the journal page, a field, a date and a gallery upload as additions', () => {
-		for (const type of ['journal.write', 'field.add', 'date.add', 'gallery.add', 'gallery.photo'] as const) {
+		for (const type of [
+			'journal.write',
+			'field.add',
+			'date.add',
+			'gallery.add',
+			'gallery.photo',
+			'circleGallery.add',
+			'circleGallery.photo'
+		] as const) {
 			expect(kindOf(type)).toBe('add');
 		}
 	});
@@ -41,6 +49,10 @@ describe('photoCommandFor', () => {
 
 	it('sends a photo kept for a gallery into that person’s gallery', () => {
 		expect(photoCommandFor('gallery.add')).toBe('gallery.photo');
+	});
+
+	it('sends a photo kept for a circle into that circle’s photos', () => {
+		expect(photoCommandFor('circleGallery.add')).toBe('circleGallery.photo');
 	});
 
 	it('names no photo command for what cannot carry photos', () => {
