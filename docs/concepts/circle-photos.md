@@ -108,7 +108,9 @@ the household can **cut each person's profile picture out of the group photo**.
   with the circle's members listed first (those in the photo's role ahead of the rest) and a
   search over everyone the actor can see. The cropper then opens on the full picture.
 - **From the person page**: choosing a photo for someone offers, next to their own gallery,
-  the photos of the circles they belong to. Picking one opens the same cropper.
+  the photos of the circles they belong to. Picking one opens the same cropper. The offer
+  appears only when at least one of their circles holds a photo the actor can see; otherwise
+  choosing a photo looks as it does today.
 - **One after another.** After a cut made from the lightbox, the dialog offers *Next person*,
   so a whole class gets its pictures in one sitting. People who already wear a cut of this
   photo are marked in the person list.
@@ -204,7 +206,7 @@ the household can **cut each person's profile picture out of the group photo**.
 | 11 | Overview card? | A flat strip on top, only when there is a cover |
 | 12 | Who may edit? | Anyone who sees it: caption, role, favourite. The uploader: shared/private, remove |
 | 13 | Nested circles? | A parent never shows its children's photos |
-| 14 | Profile picture from a group photo? | Yes: from the lightbox and from the person page |
+| 14 | Profile picture from a group photo? | Yes: from the lightbox, and from the person page when one of their circles has photos |
 | 15 | Several people from one photo? | Yes, one after another (*Next person*) |
 | 16 | How is the cut stored? | As a framing of the circle photo (a reference, no copy) |
 | 17 | The group photo is removed? | Warn, then each cut becomes the person's own photo and stays worn |
