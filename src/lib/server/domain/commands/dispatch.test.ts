@@ -21,7 +21,7 @@ import {
  */
 
 const t = createTranslator('en');
-const actor: CommandActor = { userId: 'u1', householdId: 'h1' };
+const actor: CommandActor = { userId: 'u1', householdId: 'h1', locale: 'en' };
 
 const captured: CapturedMoment = {
 	entryId: 'e1',
@@ -169,7 +169,7 @@ describe('dispatchCommand', () => {
 	it('refuses an id another member already used, without applying anything', async () => {
 		const f = fakes();
 		await dispatchCommand(f.deps, actor, moment());
-		const other = await dispatchCommand(f.deps, { userId: 'u2', householdId: 'h1' }, moment());
+		const other = await dispatchCommand(f.deps, { userId: 'u2', householdId: 'h1', locale: 'en' }, moment());
 
 		expect(other.status).toBe('refused');
 		if (other.status === 'refused') expect(other.reason(t)).toContain('already');

@@ -1,4 +1,5 @@
 import type { Viewer } from '../../access/visibility';
+import type { Locale } from '../../../i18n/locales';
 import type { Clock } from '../../clock';
 import type { NewActivityEntry } from '../activity/activity';
 import { withNameEdit, type StoredName } from '../../../people/display-name';
@@ -54,12 +55,14 @@ export async function editNameParts(
 	deps: NameDeps,
 	viewer: Viewer,
 	id: string,
-	edit: NamePartsEdit
+	edit: NamePartsEdit,
+	/** The editor's language: a nickname in the shown name takes its quote marks (docs/02 §2.2). */
+	locale: Locale
 ): Promise<boolean> {
 	const contact = await deps.names.findByIdVisibleTo(viewer, id);
 	if (contact === null) return false;
 
-	const next = withNameEdit(contact, edit, edit.displayName);
+	const next = withNameEdit(contact, edit, edit.displayName, locale);
 	if (next === null) throw new EmptyContactNameError();
 	const replacedLastName = contact.lastName !== null && contact.lastName !== next.lastName;
 	const formerName = edit.keepFormerName && replacedLastName ? contact.lastName : contact.formerName;

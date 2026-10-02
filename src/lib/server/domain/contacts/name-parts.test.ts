@@ -59,7 +59,7 @@ describe('editNameParts', () => {
 			nickname: 'Tom',
 			displayName: 'Thomas',
 			keepFormerName: false
-		});
+		}, 'de');
 
 		expect(saved).toBe(true);
 		expect(f.batches).toEqual([
@@ -67,7 +67,7 @@ describe('editNameParts', () => {
 				writes: [
 					{
 						id: 'thomas',
-						displayName: 'Thomas Brunner',
+						displayName: 'Thomas „Tom“ Brunner',
 						firstName: 'Thomas',
 						lastName: 'Brunner',
 						nickname: 'Tom',
@@ -89,7 +89,7 @@ describe('editNameParts', () => {
 			nickname: null,
 			displayName: 'Onkel Tom',
 			keepFormerName: false
-		});
+		}, 'de');
 
 		expect(f.batches[0]?.writes[0]?.displayName).toBe('Onkel Tom');
 	});
@@ -103,7 +103,7 @@ describe('editNameParts', () => {
 			nickname: null,
 			displayName: 'Thomas Meier',
 			keepFormerName: true
-		});
+		}, 'de');
 
 		expect(f.batches[0]?.writes[0]).toMatchObject({ lastName: 'Brunner', formerName: 'Meier' });
 	});
@@ -119,14 +119,14 @@ describe('editNameParts', () => {
 			nickname: null,
 			displayName: 'Thomas Meier',
 			keepFormerName: false
-		});
+		}, 'de');
 		await editNameParts(unchanged.deps, viewer, 'thomas', {
 			firstName: 'Tom',
 			lastName: 'Meier',
 			nickname: null,
 			displayName: 'Thomas Meier',
 			keepFormerName: true
-		});
+		}, 'de');
 
 		expect(notAsked.batches[0]?.writes[0]?.formerName).toBe('Keller');
 		expect(unchanged.batches[0]?.writes[0]?.formerName).toBe('Keller');
@@ -141,7 +141,7 @@ describe('editNameParts', () => {
 			nickname: '',
 			displayName: 'Thomas',
 			keepFormerName: false
-		});
+		}, 'de');
 
 		expect(f.batches[0]?.writes[0]).toMatchObject({ displayName: 'Thomas', firstName: null, lastName: null });
 	});
@@ -151,8 +151,8 @@ describe('editNameParts', () => {
 		const visible = fakeNames(thomas);
 		const parts = { firstName: 'Thomas', lastName: 'Brunner', nickname: null, displayName: 'Thomas', keepFormerName: false };
 
-		const saved = await editNameParts(hidden.deps, viewer, 'thomas', parts);
-		await editNameParts(visible.deps, viewer, 'thomas', parts);
+		const saved = await editNameParts(hidden.deps, viewer, 'thomas', parts, 'de');
+		await editNameParts(visible.deps, viewer, 'thomas', parts, 'de');
 
 		expect(saved).toBe(false);
 		expect(hidden.batches).toEqual([]);
@@ -173,7 +173,7 @@ describe('editNameParts', () => {
 			nickname: null,
 			displayName: 'Thomas Meier',
 			keepFormerName: false
-		});
+		}, 'de');
 
 		expect(f.batches[0]?.writes[0]?.displayName).toBe('Tom Meier');
 	});
@@ -187,7 +187,7 @@ describe('editNameParts', () => {
 			nickname: null,
 			displayName: '  Onkel Tom ',
 			keepFormerName: false
-		});
+		}, 'de');
 
 		expect(f.batches[0]?.writes[0]).toMatchObject({ displayName: 'Onkel Tom', lastName: 'Brunner' });
 	});
@@ -201,7 +201,7 @@ describe('editNameParts', () => {
 			nickname: null,
 			displayName: 'Opa Hans',
 			keepFormerName: false
-		});
+		}, 'de');
 
 		expect(f.batches[0]?.writes[0]?.displayName).toBe('Opa Hans');
 	});
@@ -215,7 +215,7 @@ describe('editNameParts', () => {
 			nickname: null,
 			displayName: '   ',
 			keepFormerName: false
-		});
+		}, 'de');
 
 		expect(f.batches[0]?.writes[0]?.displayName).toBe('Thomas Brunner');
 	});
@@ -230,7 +230,7 @@ describe('editNameParts', () => {
 				nickname: null,
 				displayName: '',
 				keepFormerName: false
-			})
+			}, 'de')
 		).rejects.toThrow(EmptyContactNameError);
 		expect(f.batches).toEqual([]);
 	});

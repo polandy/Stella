@@ -68,7 +68,7 @@ export const profileActions = {
 		if (!parsed.success) return fail(400, { namePartsError: say(locals, 'errors.contact.namePartsInvalid') });
 
 		try {
-			const saved = await editNameParts(getNameDeps(), viewer, params.id, parsed.output);
+			const saved = await editNameParts(getNameDeps(), viewer, params.id, parsed.output, locals.locale);
 			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
 		} catch (err) {
 			if (err instanceof EmptyContactNameError)

@@ -4,7 +4,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import FormError from '$lib/components/FormError.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { useI18n } from '$lib/i18n/context.svelte';
 	import { withNameParts } from '$lib/people/display-name';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { focusDestination } from '$lib/ui/focus-destination';
@@ -39,7 +39,8 @@
 		error?: string | null;
 	} = $props();
 
-	const t = useTranslate();
+	const i18n = useI18n();
+	const t = i18n.t;
 	const uid = $props.id();
 	let editing = $state(false);
 	const open = $derived(editing || error !== null);
@@ -74,7 +75,7 @@
 
 	/** While it follows, *Shown as* is what the server would make of these parts. */
 	function partsTyped() {
-		if (following) shownAs = withNameParts(name, { firstName, lastName, nickname }).displayName;
+		if (following) shownAs = withNameParts(name, { firstName, lastName, nickname }, i18n.locale).displayName;
 	}
 
 	const replacing = $derived(name.lastName !== null && lastName.trim() !== '' && lastName.trim() !== name.lastName);

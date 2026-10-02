@@ -13,6 +13,7 @@ import type { IdGenerator } from '../../id';
 import { deriveDisplayName } from '../../../people/display-name';
 import { isKnownByMoreThanAFirstName } from '../../../people/new-person';
 import { isGender, type Gender } from '../../../people/gender';
+import type { Locale } from '../../../i18n/locales';
 import { isKnownByAFirstNameOnly } from '../../../people/namesakes';
 
 /*
@@ -24,6 +25,8 @@ export interface ContactCreator {
 	userId: string;
 	householdId: string;
 	defaultVisibility: Visibility;
+	/** The language the shown name is written in — its nickname's quote marks (docs/02 §2.2). */
+	locale: Locale;
 }
 
 /** Input accepted from quick-add or the full contact form; all fields optional but a name is required. */
@@ -254,7 +257,7 @@ export async function createContact(
 	creator: ContactCreator,
 	input: CreateContactInput
 ): Promise<string> {
-	const displayName = deriveDisplayName(input);
+	const displayName = deriveDisplayName(input, creator.locale);
 	if (!isKnownByMoreThanAFirstName(input)) throw new NeedsSomethingToKnowThemByError();
 	const { birthDate, birthDatePrecision } = parseBirthDate(input.birthDate);
 	const gender = checkedGender(input.gender);

@@ -141,6 +141,13 @@
       "when": 1790926177463,
       "tag": "0019_volatile_wild_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1790967890799,
+      "tag": "0020_nickname_in_shown_name",
+      "breakpoints": true
     }
   ]
 }

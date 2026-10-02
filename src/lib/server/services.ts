@@ -582,7 +582,7 @@ export function getCommandDeps(): CommandDeps {
 				...(await withNamesakeContext(getNamesakeContextDeps(), viewerOf(actor), () =>
 					captureMoment(
 						capture,
-						{ userId: actor.userId, householdId: actor.householdId, defaultVisibility: payload.visibility },
+						{ userId: actor.userId, householdId: actor.householdId, locale: actor.locale, defaultVisibility: payload.visibility },
 						payload
 					)
 				)),

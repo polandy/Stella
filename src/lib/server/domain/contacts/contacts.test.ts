@@ -77,7 +77,8 @@ function fakeRepo() {
 const creator: ContactCreator = {
 	userId: 'user-1',
 	householdId: 'household-1',
-	defaultVisibility: 'shared'
+	defaultVisibility: 'shared',
+	locale: 'en'
 };
 
 const deps = (repo: ContactRepository) => ({ contacts: repo, ids: sequentialIds('contact-1'), clock });

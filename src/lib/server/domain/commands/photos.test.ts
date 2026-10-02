@@ -23,7 +23,7 @@ import {
  */
 
 const t = createTranslator('en');
-const actor = { userId: 'u1', householdId: 'h1' };
+const actor = { userId: 'u1', householdId: 'h1', locale: 'en' as const };
 // A 1×1 JPEG's magic bytes are enough for the upload check.
 const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0x10]);
 

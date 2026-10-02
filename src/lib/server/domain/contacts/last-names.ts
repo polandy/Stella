@@ -10,6 +10,7 @@ import {
 } from '../../../suggestions/rules/surnames';
 import { groupBySurname, householdSpellings, type SurnameList } from '../../../suggestions/surname-groups';
 import type { Viewer } from '../../access/visibility';
+import type { Locale } from '../../../i18n/locales';
 import type { IdGenerator } from '../../id';
 import type { KinshipGraphSource } from '../relationships/suggestion-review';
 import type { PassOnMap } from '../../../surnames/pass-on';
@@ -107,7 +108,9 @@ export async function setLastNames(
 	deps: LastNameDeps,
 	viewer: Viewer,
 	changes: readonly LastNameChange[],
-	wording: LastNamesWording
+	wording: LastNamesWording,
+	/** The giver's language: a nickname in a shown name made again takes its quote marks. */
+	locale: Locale
 ): Promise<number | null> {
 	const wanted = changes.map((change) => ({ ...change, lastName: change.lastName.trim() }));
 	if (wanted.some((change) => change.lastName === '')) throw new EmptyLastNameError();
@@ -126,7 +129,7 @@ export async function setLastNames(
 		// Bulk paths never touch the former name: only the profile offers to keep one (§6).
 		writes.push({
 			id: contact.id,
-			...withNameParts(contact, { lastName: change.lastName }),
+			...withNameParts(contact, { lastName: change.lastName }, locale),
 			formerName: contact.formerName,
 			updatedAt: now
 		});

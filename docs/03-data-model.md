@@ -174,7 +174,7 @@ The central person entity.
 | nickname | text null | |
 | prefix / suffix | text null | e.g. Dr., Jr. |
 | former_name | text null | maiden/previous |
-| display_name | text | computed/entered; required, never empty |
+| display_name | text | computed/entered; required, never empty. Made from the parts it is *Thomas „Tom“ Brunner* — first name, nickname in quotes (left out when it is the first name again), last name; with no first name *Tom Brunner*. The quote marks are those of the writing member's language (`NICKNAME_QUOTES`, `src/lib/people/display-name.ts`), fixed when written. Names made before the nickname joined (first + last) still count as following their parts; migration `0020_nickname_in_shown_name` updated the ones with a nickname once, leaving chosen names alone |
 | gender | text null | `female` / `male` / `diverse`; anything else reads as not on record |
 | pronouns | text null | unused — kept so archives and migrations stay unchanged |
 | description | text null | one-liner |

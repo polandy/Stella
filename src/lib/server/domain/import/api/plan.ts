@@ -1,3 +1,4 @@
+import type { Locale } from '../../../../i18n/locales';
 import type { Visibility } from '../../../access/visibility';
 import type { KinshipGraph } from '../../../../kinship/kinship';
 import {
@@ -81,6 +82,8 @@ export interface ApiImportContext {
 	actorId: string;
 	defaultVisibility: Visibility;
 	now: number;
+	/** The importing member's language: a nickname in a shown name takes its quote marks. */
+	locale: Locale;
 	/** Of the contact ids the document names or would create, those the member may see. */
 	people: ReadonlyMap<string, KnownPerson>;
 	/** Of those ids, the ones taken by a record the member may not see. */
@@ -268,7 +271,7 @@ function planPeople(
 			householdId: context.householdId,
 			createdBy: context.actorId,
 			visibility,
-			displayName: deriveDisplayName(entry),
+			displayName: deriveDisplayName(entry, context.locale),
 			firstName: orNull(entry.firstName),
 			lastName: orNull(entry.lastName),
 			nickname: orNull(entry.nickname),

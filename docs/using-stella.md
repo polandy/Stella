@@ -191,7 +191,8 @@ Escape leaves it as it was.
 To change the **name**, tap the name itself (it carries a small pencil). One editor opens with
 every part of it — **first name, last name, nickname** — and **Shown as**, the name Stella
 shows everywhere. While you type the parts, *Shown as* follows them: *Thomas* becomes *Thomas
-Brunner* once he has a last name. If you would rather he were shown as *Onkel Tom*, type that
+Brunner* once he has a last name, and *Thomas „Tom“ Brunner* once he has the nickname *Tom*
+(a nickname that is just the first name again is left out). If you would rather he were shown as *Onkel Tom*, type that
 into *Shown as* and it stays; empty it to let it follow the parts again. Replacing a last name
 offers to keep the old one as their former name. A person cannot be left with no name at all,
 and Stella says so rather than quietly keeping the old one. When Stella can guess a missing

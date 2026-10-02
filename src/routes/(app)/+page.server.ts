@@ -131,6 +131,7 @@ export const actions: Actions = {
 		const author = {
 			userId: locals.user.id,
 			householdId: locals.user.householdId,
+			locale: locals.locale,
 			defaultVisibility: 'shared' as const
 		};
 

@@ -44,7 +44,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	const t = translator(locals);
 	const named = typeof id === 'string' ? id : '';
 	const answer: CommandAnswer = command
-		? await answerFor(getCommandDeps(), { userId: user.id, householdId: user.householdId }, t, command)
+		? await answerFor(getCommandDeps(), { userId: user.id, householdId: user.householdId, locale: locals.locale }, t, command)
 		: { id: named, status: 'refused', reason: t('errors.command.malformed') };
 	return json({ answer });
 };

@@ -70,7 +70,8 @@ const plan = (): ImportPlan =>
 		userId: U1,
 		visibility: 'shared',
 		now: NOW,
-		wording: englishWording
+		wording: englishWording,
+		locale: 'en'
 	});
 
 beforeEach(() => {

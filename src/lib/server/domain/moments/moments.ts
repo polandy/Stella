@@ -1,3 +1,4 @@
+import type { Locale } from '../../../i18n/locales';
 import { TranslatableError } from '../../../errors/translatable';
 import { phrase } from '../../../i18n/phrase';
 import type { Visibility, Viewer } from '../../access/visibility';
@@ -65,7 +66,7 @@ export class MomentNeedsPersonError extends TranslatableError {
  */
 export async function captureMoment(
 	deps: CaptureMomentDeps,
-	author: JournalAuthor,
+	author: JournalAuthor & { locale: Locale },
 	input: CaptureMomentInput
 ): Promise<CapturedMoment> {
 	const body = input.body.trim();
@@ -81,7 +82,12 @@ export async function captureMoment(
 	const existingKeys = new Set(visible.map((c) => mentionKey(c.displayName)));
 
 	const createdContactIds: string[] = [];
-	const creator = { userId: author.userId, householdId: author.householdId, defaultVisibility: input.visibility };
+	const creator = {
+		userId: author.userId,
+		householdId: author.householdId,
+		defaultVisibility: input.visibility,
+		locale: author.locale
+	};
 	const contactDeps = { contacts: deps.contacts, ids: deps.ids, clock: deps.clock };
 
 	// A person named with what tells them apart is created by their placeholder, never by name:

@@ -61,7 +61,7 @@ export const photoActions = {
 		const visibility = v.parse(VisibilitySchema, form.get('visibility') || undefined);
 
 		// An upload is a command, and each photo one of its own following it (docs/04 §4.11.2).
-		const author = { userId: viewer.id, householdId: viewer.householdId };
+		const author = { userId: viewer.id, householdId: viewer.householdId, locale: locals.locale };
 		const refusal = (outcome: Awaited<ReturnType<typeof dispatchCommand>> | null) =>
 			fail(400, {
 				photoError:

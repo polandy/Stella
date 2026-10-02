@@ -105,7 +105,7 @@ describe('setLastNames', () => {
 		const written = await setLastNames(f.deps, viewer, [
 			{ contactId: 'lea', lastName: ' Brunner ', replace: false },
 			{ contactId: 'max', lastName: 'Brunner', replace: false }
-		], wording);
+		], wording, 'de');
 
 		expect(written).toBe(2);
 		expect(f.batches).toHaveLength(1);
@@ -128,7 +128,7 @@ describe('setLastNames', () => {
 		await setLastNames(f.deps, viewer, [
 			{ contactId: 'lea', lastName: 'Brunner', replace: false },
 			{ contactId: 'max', lastName: 'Brunner', replace: false }
-		], wording);
+		], wording, 'de');
 
 		expect(f.batches[0]?.audit?.visibility).toBe('private');
 	});
@@ -137,7 +137,7 @@ describe('setLastNames', () => {
 		const f = fakeDeps([lea]);
 
 		await expect(
-			setLastNames(f.deps, viewer, [{ contactId: 'lea', lastName: '  ', replace: false }], wording)
+			setLastNames(f.deps, viewer, [{ contactId: 'lea', lastName: '  ', replace: false }], wording, 'de')
 		).rejects.toThrow(EmptyLastNameError);
 		expect(f.batches).toEqual([]);
 	});
@@ -148,7 +148,7 @@ describe('setLastNames', () => {
 		const written = await setLastNames(f.deps, viewer, [
 			{ contactId: 'lea', lastName: 'Brunner', replace: false },
 			{ contactId: 'hidden', lastName: 'Brunner', replace: false }
-		], wording);
+		], wording, 'de');
 
 		expect(written).toBeNull();
 		expect(f.batches).toEqual([]);
@@ -160,9 +160,9 @@ describe('setLastNames', () => {
 		const asked = fakeDeps([anna]);
 
 		await expect(
-			setLastNames(refused.deps, viewer, [{ contactId: 'anna', lastName: 'Brunner', replace: false }], wording)
+			setLastNames(refused.deps, viewer, [{ contactId: 'anna', lastName: 'Brunner', replace: false }], wording, 'de')
 		).rejects.toThrow(LastNameWouldOverwriteError);
-		await setLastNames(asked.deps, viewer, [{ contactId: 'anna', lastName: 'Brunner', replace: true }], wording);
+		await setLastNames(asked.deps, viewer, [{ contactId: 'anna', lastName: 'Brunner', replace: true }], wording, 'de');
 
 		expect(refused.batches).toEqual([]);
 		expect(asked.batches[0]?.writes[0]).toMatchObject({ lastName: 'Brunner', formerName: null });
@@ -175,7 +175,7 @@ describe('setLastNames', () => {
 		const written = await setLastNames(f.deps, viewer, [
 			{ contactId: 'lea', lastName: 'Brunner', replace: false },
 			{ contactId: 'sophie', lastName: 'Brunner', replace: false }
-		], wording);
+		], wording, 'de');
 
 		expect(written).toBe(1);
 		expect(f.batches[0]?.writes.map((w) => w.id)).toEqual(['lea']);
@@ -186,7 +186,7 @@ describe('setLastNames', () => {
 		const sophie = contact('sophie', 'Sophie', 'Brunner');
 		const f = fakeDeps([sophie]);
 
-		expect(await setLastNames(f.deps, viewer, [{ contactId: 'sophie', lastName: 'Brunner', replace: false }], wording)).toBe(0);
+		expect(await setLastNames(f.deps, viewer, [{ contactId: 'sophie', lastName: 'Brunner', replace: false }], wording, 'de')).toBe(0);
 		expect(f.batches).toEqual([]);
 	});
 });

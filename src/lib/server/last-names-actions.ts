@@ -43,7 +43,8 @@ export const lastNameActions = {
 				viewer,
 				contactIds.map((contactId) => ({ contactId, lastName, replace: replace.has(contactId) })),
 				// The log line is written once, in the language of whoever gave the name.
-				(name, count) => say(locals, 'surnames.log', { name, count })
+				(name, count) => say(locals, 'surnames.log', { name, count }),
+				locals.locale
 			);
 			if (written === null) throw error(404, say(locals, 'errors.contact.notFound'));
 			return { lastNamesSet: written };

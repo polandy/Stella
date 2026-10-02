@@ -55,7 +55,8 @@ test('finds a person by the nickname given when they were added', async ({ page 
 	await page.getByText('More — nickname, birthday').click();
 	await page.getByLabel('Nickname').fill('Xeni');
 	await page.getByRole('button', { name: 'Add person' }).click();
-	await expect(page.getByRole('heading', { name: 'Xenia Quillford' })).toBeVisible();
+	// The nickname is part of the name it shapes (docs/02 §2.2).
+	await expect(page.getByRole('heading', { name: 'Xenia “Xeni” Quillford' })).toBeVisible();
 
 	await page.goto('/contacts');
 	const directory = page.getByTestId('people-directory');
@@ -63,7 +64,7 @@ test('finds a person by the nickname given when they were added', async ({ page 
 
 	await page.getByPlaceholder('Find someone…').fill('xeni');
 
-	await expect(directory.getByRole('link', { name: /Xenia Quillford/ })).toBeVisible();
+	await expect(directory.getByRole('link', { name: /Xenia “Xeni” Quillford/ })).toBeVisible();
 	await expect(directory.getByRole('link', { name: /Hans Brunner/ })).toHaveCount(0);
 
 	await page.getByPlaceholder('Find someone…').fill('nobody-by-this-name');

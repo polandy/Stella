@@ -1,6 +1,9 @@
+import { LOCALES, type Locale } from '../i18n/locales';
+
 /*
  * Derive a contact's display name — pure (docs/03 §contact: display_name is required and
- * never empty). Priority: explicit name → first+last → first → last → nickname.
+ * never empty). Priority: explicit name → what the parts make → error. The parts make
+ * *Thomas „Tom“ Brunner*: first name, the nickname in quotes, last name (docs/02 §2.2).
  *
  * Shared by the server and the profile's name editor, which shows *Shown as* following the
  * parts while they are typed by the very rule the server applies on save (docs/02 §2.2).
@@ -15,17 +18,71 @@ export interface NameParts {
 
 const clean = (value?: string | null): string => (value ?? '').trim();
 
-export function deriveDisplayName(parts: NameParts): string {
+/**
+ * The quote marks a nickname is set in, by the language the name is written in. The stored name
+ * is data, not interface copy: the pair is chosen once, when the name is written, and stays.
+ */
+export const NICKNAME_QUOTES: Readonly<Record<Locale, readonly [open: string, close: string]>> = {
+	en: ['“', '”'],
+	de: ['„', '“']
+};
+
+const fold = (value: string) => value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+
+/**
+ * What the parts make: *Thomas „Tom“ Brunner*. A nickname that is the first name again (ignoring
+ * case and accents) is left out; with no first name it stands in for one, unquoted (*Tom
+ * Brunner*); alone, it is the name. Null when there are no parts.
+ */
+function nameFromParts(parts: NameParts, locale: Locale): string | null {
+	const first = clean(parts.firstName);
+	const last = clean(parts.lastName);
+	let nickname = clean(parts.nickname);
+	if (nickname && fold(nickname) === fold(first)) nickname = '';
+	const [open, close] = NICKNAME_QUOTES[locale];
+	const words = first
+		? [first, nickname ? `${open}${nickname}${close}` : '', last]
+		: [nickname, last];
+	return words.filter(Boolean).join(' ') || null;
+}
+
+/** What the parts made before the nickname joined the name: first and last, else the nickname. */
+function nameFromPartsBefore(parts: NameParts): string | null {
+	const fullName = [clean(parts.firstName), clean(parts.lastName)].filter(Boolean).join(' ');
+	return fullName || clean(parts.nickname) || null;
+}
+
+/**
+ * Whether the shown name is one the parts make — by today's rule in either language's quote
+ * marks, or by the rule before the nickname joined it — so older rows and archives still count
+ * as following their parts rather than as names somebody chose.
+ */
+function followsParts(name: NameParts): boolean {
+	const shown = clean(name.displayName);
+	const made = [nameFromPartsBefore(name), ...LOCALES.map((locale) => nameFromParts(name, locale))];
+	return made.some((candidate) => candidate !== null && candidate === shown);
+}
+
+export function deriveDisplayName(parts: NameParts, locale: Locale): string {
 	const explicit = clean(parts.displayName);
 	if (explicit) return explicit;
 
-	const fullName = [clean(parts.firstName), clean(parts.lastName)].filter(Boolean).join(' ');
-	if (fullName) return fullName;
-
-	const nickname = clean(parts.nickname);
-	if (nickname) return nickname;
+	const fromParts = nameFromParts(parts, locale);
+	if (fromParts) return fromParts;
 
 	throw new Error('A contact needs at least a name or nickname.');
+}
+
+/**
+ * The one-off update of the names stored before the nickname joined them (docs/03 §contact):
+ * the new name for a row whose shown name the old rule made and whose nickname now shows, or
+ * null for a row to leave alone — a chosen name (*Opa Kurt*), no nickname, or a nickname that
+ * is the first name again. The migration applies this rule; its test holds the two together.
+ */
+export function nameWithNickname(row: StoredName, locale: Locale): string | null {
+	if (!clean(row.nickname) || clean(row.displayName) !== nameFromPartsBefore(row)) return null;
+	const next = nameFromParts(row, locale);
+	return next !== null && next !== clean(row.displayName) ? next : null;
 }
 
 /** A person's name as stored: the parts, and the shown name that is never empty. */
@@ -38,12 +95,6 @@ export interface StoredName {
 
 /** The parts being changed; a part left out stays as it is, a blank one is taken off. */
 export type NamePartsChange = Partial<Pick<StoredName, 'firstName' | 'lastName' | 'nickname'>>;
-
-/** What the parts alone would show, or null when there are none. */
-function nameFromParts(parts: NameParts): string | null {
-	const fullName = [clean(parts.firstName), clean(parts.lastName)].filter(Boolean).join(' ');
-	return fullName || clean(parts.nickname) || null;
-}
 
 const orNull = (value: string | null): string | null => clean(value) || null;
 
@@ -60,7 +111,7 @@ const orNull = (value: string | null): string | null => clean(value) || null;
  * first word is never guessed into the first name there — the person keeps no first name until
  * one is typed. Emptying every part leaves the shown name standing: it is never empty.
  */
-export function withNameParts(current: StoredName, change: NamePartsChange): StoredName {
+export function withNameParts(current: StoredName, change: NamePartsChange, locale: Locale): StoredName {
 	const pick = (key: keyof NamePartsChange) =>
 		change[key] === undefined ? orNull(current[key]) : orNull(change[key] ?? null);
 	let firstName = pick('firstName');
@@ -74,8 +125,9 @@ export function withNameParts(current: StoredName, change: NamePartsChange): Sto
 		before = { ...current, firstName };
 	}
 
-	const madeByParts = nameFromParts({ ...before, displayName: null }) === clean(current.displayName);
-	const displayName = (madeByParts && nameFromParts({ firstName, lastName, nickname })) || current.displayName;
+	const displayName =
+		(followsParts({ ...before, displayName: current.displayName }) && nameFromParts({ firstName, lastName, nickname }, locale)) ||
+		current.displayName;
 	return { displayName, firstName, lastName, nickname };
 }
 
@@ -84,8 +136,7 @@ export function withNameParts(current: StoredName, change: NamePartsChange): Sto
  * part will not reach it, and the editor says so instead of leaving anyone wondering (§6).
  */
 export function shownNameIsChosen(name: StoredName): boolean {
-	const fromParts = nameFromParts({ ...name, displayName: null });
-	return fromParts !== null && fromParts !== clean(name.displayName);
+	return nameFromPartsBefore(name) !== null && !followsParts(name);
 }
 
 /**
@@ -96,11 +147,16 @@ export function shownNameIsChosen(name: StoredName): boolean {
  * stored as typed; a blank one means *follow the parts*. Null when nothing names the person at
  * all — the caller refuses that, since the shown name is never empty.
  */
-export function withNameEdit(current: StoredName, change: NamePartsChange, shownName: string): StoredName | null {
-	const next = withNameParts(current, change);
+export function withNameEdit(
+	current: StoredName,
+	change: NamePartsChange,
+	shownName: string,
+	locale: Locale
+): StoredName | null {
+	const next = withNameParts(current, change, locale);
 	const typed = clean(shownName);
 	if (typed === '') {
-		const fromParts = nameFromParts(next);
+		const fromParts = nameFromParts(next, locale);
 		return fromParts === null ? null : { ...next, displayName: fromParts };
 	}
 	if (typed === clean(current.displayName) && !shownNameIsChosen(current)) return next;

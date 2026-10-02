@@ -34,6 +34,7 @@ function context(over: Partial<ApiImportContext> = {}): ApiImportContext {
 		actorId: ME,
 		defaultVisibility: 'shared',
 		now: NOW,
+	locale: 'en',
 		people: new Map(),
 		hiddenIds: new Set(),
 		circles: new Map(),

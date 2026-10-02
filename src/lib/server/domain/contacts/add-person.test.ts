@@ -10,7 +10,7 @@ import { NeedsSomethingToKnowThemByError, type Contact, type ContactRepository, 
  * account at it in the same step, so nobody has to find Settings afterwards to say who they are.
  */
 
-const actor = { userId: 'u1', householdId: 'h1' };
+const actor = { userId: 'u1', householdId: 'h1', locale: 'en' as const };
 
 const payload: ContactAddPayload = {
 	firstName: 'Andy',

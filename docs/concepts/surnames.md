@@ -192,8 +192,12 @@ easily wrong: *thomas.b@*, a work address; the import case is F9).
 still shows *Thomas*. The rule, the same for every path that changes a part (bulk or profile):
 
 - If the shown name is **what the parts made** — it equals `deriveDisplayName` of the old
-  first name, last name and nickname without an explicit name (*Thomas*) — it is **made
-  again** from the new parts (*Thomas Brunner*).
+  first name, last name and nickname without an explicit name (*Thomas*), by today's rule in
+  either language's quote marks or by the rule before the nickname joined (first + last) — it
+  is **made again** from the new parts (*Thomas Brunner*). The parts make *Thomas „Tom“
+  Brunner*: the nickname in quotes between first and last name, left out when it is the first
+  name again; with no first name *Tom Brunner*; alone, the nickname. The quote marks are the
+  writing member's language's (§10.8).
 - If the member **chose** a different shown name (*Opa Hans*, *Tante Gabi*), it is **kept**.
   The row says so (*shown as "Opa Hans"*) so nobody wonders why the directory did not change.
 - If a person has a shown name but **no first name** and that shown name is a **single word**
@@ -277,3 +281,10 @@ Each is a PR with its unit tests, UI and docs; the e2e follows the maintainer's 
    the server makes an untouched following name again from the parts. Only the proposal chip
    stays under the name. On a phone every target in this flow is at least 44 px tall with room
    between them.
+8. **The nickname is in the name it shapes (2026-10-02).** *Thomas „Tom“ Brunner* — first
+   name, nickname in quotes, last name; left out when it is the first name again (ignoring case
+   and accents); *Tom Brunner* with no first name; the nickname alone when that is all there
+   is. The stored name is data, so its quote marks are chosen when it is written: Stella
+   records no household language, so they follow the writing member's language („…“ German,
+   “…” English). Names stored earlier were updated once, where they followed the old rule and a
+   nickname was set; chosen names such as *Opa Kurt* were left as they are.
