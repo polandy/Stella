@@ -4,6 +4,7 @@ import { CONTACT_FIELD_KINDS } from '../../contact-fields/kinds';
 import { IMPORTANT_DATE_KINDS } from '../../dates/kinds';
 import { INTERACTION_KINDS } from '../../interactions/kinds';
 import { GENDERS } from '../../people/gender';
+import { CURRENT_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '../../relationships/status';
 import { TAG_COLORS } from '../domain/tags/tags';
 
 /*
@@ -105,6 +106,25 @@ const RelationshipAdd = v.object({
 	status: optionalText
 });
 
+// The shared fields once, then each picked person with the since day worked out for that pair.
+const RelationshipAddMany = v.object({
+	contactId: v.pipe(v.string(), v.minLength(1)),
+	typeChoice: v.pipe(v.string(), v.minLength(1)),
+	// A link that exists is current until someone ends it, so "not said" reads as current.
+	status: v.optional(
+		v.pipe(
+			v.nullable(v.picklist(RELATIONSHIP_STATUSES)),
+			v.transform((status) => status ?? CURRENT_RELATIONSHIP_STATUS)
+		),
+		CURRENT_RELATIONSHIP_STATUS
+	),
+	description: optionalText,
+	links: v.pipe(
+		v.array(v.object({ targetId: v.pipe(v.string(), v.minLength(1)), sinceDate: optionalText })),
+		v.minLength(1)
+	)
+});
+
 const ContactAdd = v.pipe(
 	v.object({
 		firstName: optionalText,
@@ -179,6 +199,7 @@ const CommandSchema = v.variant('type', [
 	v.object({ ...envelope, type: v.literal('tag.assign'), payload: TagAssign }),
 	v.object({ ...envelope, type: v.literal('circle.join'), payload: CircleJoin }),
 	v.object({ ...envelope, type: v.literal('relationship.add'), payload: RelationshipAdd }),
+	v.object({ ...envelope, type: v.literal('relationship.addMany'), payload: RelationshipAddMany }),
 	v.object({ ...envelope, type: v.literal('contact.add'), payload: ContactAdd }),
 	v.object({ ...envelope, type: v.literal('journal.write'), payload: JournalWrite }),
 	v.object({ ...envelope, type: v.literal('field.add'), payload: FieldAdd }),

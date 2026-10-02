@@ -117,6 +117,49 @@ describe('parseCommand, for a relationship', () => {
 	});
 });
 
+describe('parseCommand, for several links at once', () => {
+	const batch = {
+		id: ID,
+		type: 'relationship.addMany',
+		payload: {
+			contactId: 'lio',
+			typeChoice: 'reverse:parent_child',
+			status: 'current',
+			description: ' ',
+			links: [
+				{ targetId: 'anna', sinceDate: '2015-04-12' },
+				{ targetId: 'bert', sinceDate: '' }
+			]
+		},
+		issuedAt: 3
+	};
+
+	it('reads the shared fields once and a since day per link, empty meaning none', () => {
+		expect(parseCommand(batch)?.payload).toEqual({
+			contactId: 'lio',
+			typeChoice: 'reverse:parent_child',
+			status: 'current',
+			description: null,
+			links: [
+				{ targetId: 'anna', sinceDate: '2015-04-12' },
+				{ targetId: 'bert', sinceDate: null }
+			]
+		});
+	});
+
+	it('reads a missing status as current, the state every new link starts in', () => {
+		const { status: _status, ...rest } = batch.payload;
+		expect(parseCommand({ ...batch, payload: rest })?.payload).toMatchObject({ status: 'current' });
+		expect(parseCommand({ ...batch, payload: { ...rest, status: null } })?.payload).toMatchObject({ status: 'current' });
+	});
+
+	it('refuses a batch with nobody in it, a link without a person, or a status Stella does not know', () => {
+		expect(parseCommand({ ...batch, payload: { ...batch.payload, links: [] } })).toBeNull();
+		expect(parseCommand({ ...batch, payload: { ...batch.payload, links: [{ targetId: '', sinceDate: null }] } })).toBeNull();
+		expect(parseCommand({ ...batch, payload: { ...batch.payload, status: 'ex' } })).toBeNull();
+	});
+});
+
 describe('parseCommand, for a new person', () => {
 	const person = { id: ID, type: 'contact.add', payload: { firstName: ' Vesna ', lastName: '', birthDate: '1990-04-02' }, issuedAt: 3 };
 

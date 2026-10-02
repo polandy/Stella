@@ -34,6 +34,8 @@ export const errors = {
 		`${p.name} already has ${p.max} parents. Correct one of them instead of adding another.`,
 	'errors.relationship.noSuchDay': (p: { day: string }) => `${p.day} is not a day that exists.`,
 	'errors.relationship.currentOrFormer': 'A relationship is either current or former.',
+	/** One refused person of a batch, by name, before the reason (docs/02 §2.4). */
+	'errors.relationship.refusedFor': (p: { name: string; reason: string }) => `${p.name}: ${p.reason}`,
 
 	'errors.relationshipType.needsLabel': 'A relationship type needs a label.',
 	'errors.relationshipType.needsBothLabels':

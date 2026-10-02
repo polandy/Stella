@@ -68,6 +68,7 @@ function fakes() {
 			'tag.assign': async () => ({ tagId: 't' }),
 			'circle.join': async () => ({ circleId: 'c' }),
 			'relationship.add': async () => ({ relationshipId: 'r' }),
+			'relationship.addMany': async () => ({ relationshipIds: ['r1', 'r2'] }),
 			'contact.add': async () => ({ contactId: 'c' }),
 			'journal.write': async () => ({ entryId: 'e', anchorContactId: 'c', visibility: 'shared' as const }),
 			'field.add': async () => ({ fieldId: 'f' }),
