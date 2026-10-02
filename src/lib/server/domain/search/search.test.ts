@@ -14,7 +14,10 @@ function fakeRepo() {
 	const repo: SearchRepository = {
 		searchContacts: async (_v, q) => {
 			calls.push(`contacts:${q}`);
-			return [{ id: 'c1', displayName: 'Hans', description: null, avatarPhotoId: null }];
+			return [
+				{ id: 'c1', displayName: 'Hans', description: null, avatarPhotoId: null, formerName: null },
+				{ id: 'c2', displayName: 'Franziska Abab', description: null, avatarPhotoId: null, formerName: 'Widmer' }
+			];
 		},
 		searchNotes: async (_v, q) => {
 			calls.push(`notes:${q}`);
@@ -37,5 +40,14 @@ describe('search', () => {
 		const results = await search({ search: f.repo }, viewer, 'Hans');
 		expect(f.calls).toEqual(['contacts:hans*', 'notes:hans*']);
 		expect(results.contacts[0]?.displayName).toBe('Hans');
+	});
+
+	it('says who was found by their former name rather than the name they are shown by', async () => {
+		const f = fakeRepo();
+		const results = await search({ search: f.repo }, viewer, 'widmer');
+		expect(results.contacts.map((c) => [c.id, c.formerly])).toEqual([
+			['c1', null],
+			['c2', 'Widmer']
+		]);
 	});
 });

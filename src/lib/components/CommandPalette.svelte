@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FormerlyMark from '$lib/components/FormerlyMark.svelte';
 	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -126,11 +127,11 @@
 					{/if}
 					{#if row.kind === 'person' && row.distinction}
 						<span class="min-w-0">
-							<span class="block truncate">{row.label}</span>
+							<span class="block truncate">{row.label}<FormerlyMark name={row.formerly} /></span>
 							<NamesakeLine distinction={row.distinction} />
 						</span>
 					{:else}
-						<span class="truncate">{row.label}</span>
+						<span class="truncate">{row.label}{#if row.kind === 'person'}<FormerlyMark name={row.formerly} />{/if}</span>
 					{/if}
 					{#if row.kind !== 'person'}<span class="ml-auto text-xs text-fg-subtle">{row.kind === 'search' ? t('components.palette.kindSearch') : t('components.palette.kindAction')}</span>{/if}
 				</a>

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import FormerlyMark from '$lib/components/FormerlyMark.svelte';
+	import { foundByFormerName } from '$lib/people/former-name';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
@@ -193,7 +195,7 @@
 									<Avatar id={contact.id} name={contact.displayName} avatarPhotoId={contact.avatarPhotoId} size={36} />
 									<span class="min-w-0">
 										<span class="flex items-center gap-1.5">
-											<span class="truncate font-medium text-fg">{contact.displayName}</span>
+											<span class="truncate font-medium text-fg">{contact.displayName}<FormerlyMark name={foundByFormerName(contact, query)} /></span>
 											{#if contact.id === data.user.selfContactId}
 												<span
 													data-testid="self-marker"

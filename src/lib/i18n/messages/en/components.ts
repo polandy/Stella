@@ -1,6 +1,7 @@
 /* Copy that belongs to the design-system components themselves (docs/05). */
 
 export const components = {
+	'components.foundByFormerName': (p: { name: string }) => `(formerly ${p.name})`,
 	'components.saved': 'Saved',
 	'components.photo.add': 'Add a photo',
 	'components.photo.change': 'Change photo',

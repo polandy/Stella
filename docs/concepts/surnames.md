@@ -294,3 +294,6 @@ Each is a PR with its unit tests, UI and docs; the e2e follows the maintainer's 
    earlier names alike — is a fifth field of the name editor (filled by *Keep … as former name*
    when that is ticked), never enters the shown name, and is searched: the full-text index (its
    fingerprint rebuild, docs/03 §3.5, so no migration) and the client-side find-as-you-type.
+10. **A match on the former name says so (2026-10-02).** Finding *Franziska Abab* by typing
+    *Widmer* reads *Franziska Abab (formerly Widmer)* wherever people are found — unless the
+    shown name matched as well — decided by one pure function shared by browser and server.

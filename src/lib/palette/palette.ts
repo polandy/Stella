@@ -1,3 +1,4 @@
+import { foundByFormerName } from '$lib/people/former-name';
 import type { IconName } from '$lib/components/icons';
 import { matchesQuery, startsWithQuery } from '$lib/people/directory';
 import type { PersonContext } from '$lib/people/context';
@@ -23,6 +24,8 @@ export interface PalettePerson {
 	firstName: string | null;
 	lastName: string | null;
 	nickname: string | null;
+	/** An earlier name, which finds them too (docs/02 §2.2). */
+	formerName?: string | null;
 	avatarPhotoId: string | null;
 	description?: string | null;
 	metPlace?: string | null;
@@ -39,6 +42,8 @@ export type PaletteRow =
 			avatarPhotoId: string | null;
 			/** The second line, only when someone else in the household shares the name. */
 			distinction: Distinction | null;
+			/** The former name the query found them by, said after the name (docs/02 §2.9). */
+			formerly: string | null;
 			href: string;
 	  }
 	| { kind: 'search'; id: 'search'; label: string; icon: IconName; href: string };
@@ -114,6 +119,7 @@ export function personSearchRows(
 			label: p.displayName,
 			avatarPhotoId: p.avatarPhotoId,
 			distinction: namesakes.get(p.id) ?? null,
+			formerly: foundByFormerName(p, q),
 			href: `/contacts/${p.id}`
 		}));
 

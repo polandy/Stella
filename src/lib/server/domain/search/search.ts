@@ -1,3 +1,4 @@
+import { foundByFormerName } from '../../../people/former-name';
 import type { Viewer } from '../../access/visibility';
 import { toFtsQuery } from './query';
 
@@ -12,6 +13,13 @@ export interface ContactHit {
 	description: string | null;
 	/** So a result shows the person's face rather than their initials (docs/02 §2.9). */
 	avatarPhotoId: string | null;
+	/** An earlier name, which the index matches too (docs/02 §2.2). */
+	formerName: string | null;
+}
+
+/** A person found, and the former name the query found them by, if it was that (§2.9). */
+export interface FoundContact extends ContactHit {
+	formerly: string | null;
 }
 
 export interface NoteHit {
@@ -23,7 +31,7 @@ export interface NoteHit {
 }
 
 export interface SearchResults {
-	contacts: ContactHit[];
+	contacts: FoundContact[];
 	notes: NoteHit[];
 }
 
@@ -52,5 +60,5 @@ export async function search(
 		deps.search.searchContacts(viewer, ftsQuery, RESULT_LIMIT),
 		deps.search.searchNotes(viewer, ftsQuery, RESULT_LIMIT)
 	]);
-	return { contacts, notes };
+	return { contacts: contacts.map((hit) => ({ ...hit, formerly: foundByFormerName(hit, input) })), notes };
 }
