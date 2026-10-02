@@ -193,8 +193,11 @@ still shows *Thomas*. The rule, the same for every path that changes a part (bul
   again** from the new parts (*Thomas Brunner*).
 - If the member **chose** a different shown name (*Opa Hans*, *Tante Gabi*), it is **kept**.
   The row says so (*shown as "Opa Hans"*) so nobody wonders why the directory did not change.
-- If a person has a shown name but **no first name** (imports, F9), the first word of the shown
-  name becomes the first name in the same write, so the rule above has parts to work from.
+- If a person has a shown name but **no first name** and that shown name is a **single word**
+  (imports, F9: *Thomas*), it becomes the first name in the same write, so the rule above has
+  parts to work from. A shown name of several words with no parts at all is ambiguous — it may
+  be an untouched import or a chosen name like *Opa Hans* — so nothing is guessed there; the
+  first name stays empty until typed.
 - Changing an existing last name on the profile (§3.4) offers **Keep "Meier" as former name**,
   ticked when `former_name` is empty. Bulk paths never touch `former_name`.
 

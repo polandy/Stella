@@ -87,6 +87,18 @@ describe('withNameParts', () => {
 		});
 	});
 
+	it('does not guess a first name from a chosen multi-word shown name', () => {
+		// "Opa Hans" has no parts yet, so nothing marks it as chosen (shownNameIsChosen is false
+		// here too) — but picking "Opa" as the first name would be a worse guess than none.
+		const opa = { displayName: 'Opa Hans', firstName: null, lastName: null, nickname: null };
+		expect(withNameParts(opa, { lastName: 'Brunner' })).toEqual({
+			displayName: 'Opa Hans',
+			firstName: null,
+			lastName: 'Brunner',
+			nickname: null
+		});
+	});
+
 	it('keeps the shown name when every part is emptied', () => {
 		const tom = { displayName: 'Thomas Keller', firstName: 'Thomas', lastName: 'Keller', nickname: null };
 		expect(withNameParts(tom, { firstName: '', lastName: '', nickname: '' })).toEqual({

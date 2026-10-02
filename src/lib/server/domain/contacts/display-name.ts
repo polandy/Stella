@@ -51,9 +51,11 @@ const orNull = (value: string | null): string | null => clean(value) || null;
  *
  * A shown name the old parts made is made again from the new ones; one a member chose (*Opa
  * Hans*) is kept, because it was chosen. A person given a last name without ever having had a
- * first name — typical of an import — gets the first word of the shown name as one in the same
- * write, so there are parts to work from. Emptying every part leaves the shown name standing:
- * it is never empty.
+ * first name — typical of a single-word import (*Thomas*) — gets that one word as their first
+ * name in the same write, so there are parts to work from. A shown name of **several** words
+ * with no parts at all is ambiguous (*Opa Hans* is as plausible as an untouched import), so the
+ * first word is never guessed into the first name there — the person keeps no first name until
+ * one is typed. Emptying every part leaves the shown name standing: it is never empty.
  */
 export function withNameParts(current: StoredName, change: NamePartsChange): StoredName {
 	const pick = (key: keyof NamePartsChange) =>
@@ -63,8 +65,9 @@ export function withNameParts(current: StoredName, change: NamePartsChange): Sto
 	const nickname = pick('nickname');
 
 	let before: NameParts = current;
-	if (!clean(current.firstName) && !firstName && lastName) {
-		firstName = clean(current.displayName).split(/\s+/)[0] || null;
+	const shownWords = clean(current.displayName).split(/\s+/).filter(Boolean);
+	if (!clean(current.firstName) && !firstName && lastName && shownWords.length === 1) {
+		firstName = shownWords[0]!;
 		before = { ...current, firstName };
 	}
 
