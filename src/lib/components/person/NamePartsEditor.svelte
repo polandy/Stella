@@ -5,6 +5,7 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
+	import { reachability } from '$lib/pwa/reachability.svelte';
 
 	/*
 	 * First name, last name and nickname, edited in place under the shown name (docs/02 §2.2,
@@ -45,6 +46,8 @@
 	// svelte-ignore state_referenced_locally
 	let keepFormerName = $state(!name.formerName);
 	const replacing = $derived(name.lastName !== null && lastName.trim() !== '' && lastName.trim() !== name.lastName);
+	// Editing is not queued like adding (docs/02 §2.18), so Save waits for a connection.
+	const offline = $derived(!reachability.reachable);
 	const saved = savedEnhance(useRemovals(), t('components.saved'), () => onclose());
 
 	let form = $state<HTMLFormElement | null>(null);
@@ -97,8 +100,11 @@
 		<p class="text-xs text-fg-subtle">{t('contact.nameParts.shownAs', { name: name.displayName })}</p>
 	{/if}
 	<FormError message={error} variant="inline" size="xs" />
+	{#if offline}
+		<p class="text-xs text-fg-muted">{t('surnames.offline')}</p>
+	{/if}
 	<div class="flex gap-2">
-		<Button variant="primary" size="sm">{t('common.save')}</Button>
+		<Button variant="primary" size="sm" disabled={offline}>{t('common.save')}</Button>
 		<Button variant="ghost" size="sm" type="button" onclick={onclose}>{t('common.cancel')}</Button>
 	</div>
 </form>
