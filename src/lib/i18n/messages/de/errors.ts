@@ -27,6 +27,7 @@ export const errors: ErrorsMessages = {
 		`${p.name} hat bereits ${p.max} Elternteile. Ändere einen davon, statt einen weiteren anzulegen.`,
 	'errors.relationship.noSuchDay': (p) => `${p.day} ist kein Tag, den es gibt.`,
 	'errors.relationship.currentOrFormer': 'Eine Beziehung ist entweder aktuell oder ehemalig.',
+	'errors.relationship.refusedFor': (p) => `${p.name}: ${p.reason}`,
 
 	'errors.relationshipType.needsLabel': 'Eine Beziehungsart braucht eine Bezeichnung.',
 	'errors.relationshipType.needsBothLabels':

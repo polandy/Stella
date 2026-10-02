@@ -550,6 +550,66 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
  * `relationshipVisibleTo`, so a relationship touching someone the viewer cannot see is
  * indistinguishable from one that is not there — and neither writes anything in that case.
  */
+describe('insertAll (docs/02 §2.4, several people in one go)', () => {
+	const stored = () => db.select({ id: schema.relationship.id }).from(schema.relationship).all().map((r) => r.id);
+
+	it('stores every link of the batch', async () => {
+		seedContact('lio', 'Lio', 'shared');
+		seedContact('anna', 'Anna', 'shared');
+		seedContact('bert', 'Bert', 'shared');
+		await repo.insertAll([
+			{ ...newRelationship('rel-1', 'anna', 'lio', 'parent_child'), description: 'mum', sinceDate: '2015-04-12' },
+			newRelationship('rel-2', 'bert', 'lio', 'parent_child')
+		]);
+
+		expect(stored().sort()).toEqual(['rel-1', 'rel-2']);
+		expect(await repo.listForContactVisibleTo(viewerU1, 'anna')).toMatchObject([
+			{ id: 'rel-1', description: 'mum', sinceDate: '2015-04-12', label: 'Parent of' }
+		]);
+	});
+
+	it('stores none of them when the database refuses one', async () => {
+		seedContact('lio', 'Lio', 'shared');
+		seedContact('anna', 'Anna', 'shared');
+		await expect(
+			repo.insertAll([
+				newRelationship('rel-1', 'anna', 'lio', 'parent_child'),
+				// Nobody by this id: the foreign key refuses the row, and the batch with it.
+				newRelationship('rel-2', 'nobody', 'lio', 'parent_child')
+			])
+		).rejects.toThrow();
+		expect(stored()).toEqual([]);
+	});
+});
+
+describe('removeAllVisibleTo (the undo of a batch)', () => {
+	const stored = () => db.select({ id: schema.relationship.id }).from(schema.relationship).all().map((r) => r.id).sort();
+
+	beforeEach(async () => {
+		seedContact('hans', 'Hans', 'shared');
+		seedContact('bettina', 'Bettina', 'shared');
+		seedContact('secret', 'Secret', 'private', U2);
+		await repo.insert(newRelationship('rel-a', 'bettina', 'hans', 'parent_child'));
+		await repo.insert(newRelationship('rel-b', 'hans', 'bettina', 'friend'));
+		await repo.insert(newRelationship('rel-hidden', 'hans', 'secret', 'friend'));
+	});
+
+	it('removes every link named, in one step', async () => {
+		expect(await repo.removeAllVisibleTo(viewerU1, ['rel-a', 'rel-b'])).toBe(true);
+		expect(stored()).toEqual(['rel-hidden']);
+	});
+
+	it('removes none when one of them is out of the viewer’s sight', async () => {
+		expect(await repo.removeAllVisibleTo(viewerU1, ['rel-a', 'rel-hidden'])).toBe(false);
+		expect(stored()).toEqual(['rel-a', 'rel-b', 'rel-hidden']);
+	});
+
+	it('removes none when one of them is not there at all', async () => {
+		expect(await repo.removeAllVisibleTo(viewerU1, ['rel-a', 'no-such-link'])).toBe(false);
+		expect(stored()).toEqual(['rel-a', 'rel-b', 'rel-hidden']);
+	});
+});
+
 describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 	beforeEach(async () => {
 		seedContact('hans', 'Hans', 'shared');

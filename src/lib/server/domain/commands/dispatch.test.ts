@@ -51,6 +51,7 @@ function fakes(handler: () => Promise<CapturedMoment> = async () => captured) {
 	const receipts = new Map<string, CommandReceipt>();
 	let now = 1_000;
 	let applied = 0;
+	let linkBatches = 0;
 	const repo: CommandReceiptRepository = {
 		async find(id) {
 			return receipts.get(id) ?? null;
@@ -90,6 +91,10 @@ function fakes(handler: () => Promise<CapturedMoment> = async () => captured) {
 			'tag.assign': async () => ({ tagId: 't' }),
 			'circle.join': async () => ({ circleId: 'c' }),
 			'relationship.add': async () => ({ relationshipId: 'r' }),
+			'relationship.addMany': async () => {
+				linkBatches++;
+				return { relationshipIds: ['r1', 'r2'] };
+			},
 			'contact.add': async () => ({ contactId: 'c' }),
 			'journal.write': async () => ({ entryId: 'e', anchorContactId: 'c', visibility: 'shared' as const }),
 			'field.add': async () => ({ fieldId: 'f' }),
@@ -104,6 +109,7 @@ function fakes(handler: () => Promise<CapturedMoment> = async () => captured) {
 		deps,
 		receipts,
 		applied: () => applied,
+		linkBatches: () => linkBatches,
 		advance: (ms: number) => (now += ms)
 	};
 }
@@ -144,6 +150,8 @@ describe('dispatchCommand', () => {
 		expect(outcome.status).toBe('refused');
 		if (outcome.status === 'refused') expect(outcome.reason(t)).toContain('Mention at least one person');
 		expect(f.receipts.has('cmd1')).toBe(false);
+		// The refusal itself travels along, so an edge can react to its kind, not its wording.
+		if (outcome.status === 'refused') expect(outcome.error).toBeInstanceOf(Refused);
 
 		refuse = false;
 		expect(await dispatchCommand(f.deps, actor, moment())).toMatchObject({ status: 'applied', repeated: false });
@@ -205,5 +213,39 @@ describe('dispatchCommand', () => {
 		f.advance(CLAIM_STALE_AFTER_MS + 1);
 		expect(await dispatchCommand(f.deps, actor, moment())).toMatchObject({ status: 'applied', repeated: false });
 		expect(f.applied()).toBe(1);
+	});
+});
+
+describe('dispatchCommand, for several links at once', () => {
+	const links = (id = 'cmd2'): Command => ({
+		id,
+		type: 'relationship.addMany',
+		payload: {
+			contactId: 'lio',
+			typeChoice: 'reverse:parent_child',
+			status: 'current',
+			description: null,
+			links: [
+				{ targetId: 'anna', sinceDate: '2015-04-12' },
+				{ targetId: 'bert', sinceDate: null }
+			]
+		},
+		issuedAt: 600
+	});
+
+	it('applies the whole batch as one command, and a resend answers the same links without writing again', async () => {
+		const f = fakes();
+		expect(await dispatchCommand(f.deps, actor, links())).toEqual({
+			status: 'applied',
+			result: { relationshipIds: ['r1', 'r2'] },
+			repeated: false
+		});
+		expect(await dispatchCommand(f.deps, actor, links())).toEqual({
+			status: 'applied',
+			result: { relationshipIds: ['r1', 'r2'] },
+			repeated: true
+		});
+		expect(f.linkBatches()).toBe(1);
+		expect(f.receipts.get('cmd2')).toMatchObject({ type: 'relationship.addMany', status: 'applied' });
 	});
 });

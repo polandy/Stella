@@ -11,6 +11,7 @@ import type { ImportantDateKind } from '../dates/kinds';
 import type { InteractionKind } from '../interactions/kinds';
 import type { MentionAudience } from '../mentions/audience';
 import type { Gender } from '../people/gender';
+import type { RelationshipStatus } from '../relationships/status';
 
 /** What a command does to the household's data. Only an addition may wait on a device. */
 export type CommandKind = 'add' | 'change' | 'remove';
@@ -24,6 +25,7 @@ const KINDS = {
 	'tag.assign': 'add',
 	'circle.join': 'add',
 	'relationship.add': 'add',
+	'relationship.addMany': 'add',
 	'contact.add': 'add',
 	'journal.write': 'add',
 	'field.add': 'add',
@@ -131,6 +133,23 @@ export interface RelationshipAddPayload {
 	status: string | null;
 }
 
+/**
+ * One type of link between the person whose page it was entered on and several others at once
+ * (docs/02 §2.4, docs/concepts/multi-pick-relationships.html D6). The type, status and
+ * description are shared; each pair keeps its own since day. Applied all or nothing: one
+ * person refused, and none of the links is stored.
+ */
+export interface RelationshipAddManyPayload {
+	contactId: string;
+	/** Type *and* side, as the picker encodes them (`encodeRelationshipChoice`). */
+	typeChoice: string;
+	status: RelationshipStatus;
+	/** Copied onto each link; editable on its own row afterwards. */
+	description: string | null;
+	/** At least one; a since day the form worked out per pair, or null for none. */
+	links: { targetId: string; sinceDate: string | null }[];
+}
+
 /** A new person, as the *Add person* form hands them over (docs/02 §2.2). */
 export interface ContactAddPayload {
 	firstName: string | null;
@@ -211,6 +230,7 @@ export interface CommandPayloads {
 	'tag.assign': TagAssignPayload;
 	'circle.join': CircleJoinPayload;
 	'relationship.add': RelationshipAddPayload;
+	'relationship.addMany': RelationshipAddManyPayload;
 	'contact.add': ContactAddPayload;
 	'journal.write': JournalWritePayload;
 	'field.add': FieldAddPayload;
