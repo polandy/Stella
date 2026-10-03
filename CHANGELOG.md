@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.21](https://github.com/polandy/Stella/compare/v0.0.20-rc.4...v0.0.21) (2026-10-03)
+
+
+### Miscellaneous Chores
+
+* **release:** drop the release-candidate mechanism ([#228](https://github.com/polandy/Stella/issues/228)) ([30a2f5b](https://github.com/polandy/Stella/commit/30a2f5be07cd4d6e89ed7c26da79a794d4a94722))
+
 ## [0.0.20-rc.4](https://github.com/polandy/Stella/compare/v0.0.19-rc.4...v0.0.20-rc.4) (2026-10-02)
 
 
