@@ -44,7 +44,10 @@ export async function readShellPeople(user: AuthUser) {
 		// What tells two people of the same name apart in ⌘K and the pickers (docs/02 §2.2.3).
 		description: p.description,
 		metPlace: p.metPlace,
-		metDate: p.metDate
+		metDate: p.metDate,
+		// Found by and shown on its own line in ⌘K and every picker (docs/02 §2.2).
+		jobTitle: p.jobTitle,
+		company: p.company
 	}));
 	return { people, peopleContext, peopleStamp };
 }

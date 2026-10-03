@@ -9,6 +9,8 @@ import {
 	editProfile,
 	setGender,
 	InvalidGenderError,
+	setJob,
+	JobFieldTooLongError,
 	describeContact,
 	EmptyDescriptionError,
 	EmptyContactNameError,
@@ -61,6 +63,7 @@ function fakeRepo() {
 		listDistinguishableVisibleTo: async () => [],
 		updateProfile: async () => {},
 		setGender: async () => {},
+		setJob: async () => {},
 		setArchived: async () => {},
 		deleteVisibleTo: async () => null,
 		readForMerge: async () => null,
@@ -219,6 +222,7 @@ function editableRepo(contact: Contact | null) {
 	const patches: { id: string; patch: ProfilePatch }[] = [];
 	const archived: { id: string; archivedAt: number | null }[] = [];
 	const genders: { id: string; gender: string | null; updatedAt: number }[] = [];
+	const jobs: { id: string; job: { jobTitle: string | null; company: string | null }; updatedAt: number }[] = [];
 	const repo: ContactRepository = {
 		insert: async () => {},
 		findByIdVisibleTo: async () => contact,
@@ -236,6 +240,9 @@ function editableRepo(contact: Contact | null) {
 		setGender: async (id, gender, updatedAt) => {
 			genders.push({ id, gender, updatedAt });
 		},
+		setJob: async (id, job, updatedAt) => {
+			jobs.push({ id, job, updatedAt });
+		},
 		setArchived: async (id, archivedAt) => {
 			archived.push({ id, archivedAt });
 		},
@@ -243,7 +250,7 @@ function editableRepo(contact: Contact | null) {
 		readForMerge: async () => null,
 		mergeVisibleTo: async () => false
 	};
-	return { repo, patches, archived, genders };
+	return { repo, patches, archived, genders, jobs };
 }
 
 const viewer = { id: 'user-1', householdId: 'household-1' };
@@ -265,6 +272,8 @@ const existing: Contact = {
 	birthDate: null,
 	birthDatePrecision: 'full',
 	gender: null,
+	jobTitle: null,
+	company: null,
 	avatarPhotoId: null,
 	isDeceased: false,
 	archivedAt: null,
@@ -354,6 +363,73 @@ describe('setGender', () => {
 		expect(saved).toBe(false);
 		expect(hidden.genders).toEqual([]);
 		expect(visible.genders).toHaveLength(1);
+	});
+});
+
+/*
+ * A job title and company from the profile card (docs/02 §2.2): two free-text fields saved
+ * together, trimmed, a blank one taken off the record.
+ */
+describe('setJob', () => {
+	it('records both parts, trimmed, and stamps the change', async () => {
+		const f = editableRepo(existing);
+
+		const saved = await setJob(deps(f.repo), viewer, 'contact-1', {
+			jobTitle: '  Teacher ',
+			company: ' Primarschule Muri  '
+		});
+
+		expect(saved).toBe(true);
+		expect(f.jobs).toEqual([
+			{ id: 'contact-1', job: { jobTitle: 'Teacher', company: 'Primarschule Muri' }, updatedAt: NOW }
+		]);
+	});
+
+	it('takes an emptied part off the record rather than storing blanks', async () => {
+		const f = editableRepo({ ...existing, jobTitle: 'Teacher', company: 'Primarschule Muri' });
+
+		await setJob(deps(f.repo), viewer, 'contact-1', { jobTitle: 'Teacher', company: '   ' });
+		await setJob(deps(f.repo), viewer, 'contact-1', { jobTitle: null, company: null });
+
+		expect(f.jobs.map((j) => j.job)).toEqual([
+			{ jobTitle: 'Teacher', company: null },
+			{ jobTitle: null, company: null }
+		]);
+	});
+
+	it('takes 200 characters in each field, and refuses one more without writing anything', async () => {
+		const f = editableRepo(existing);
+
+		await setJob(deps(f.repo), viewer, 'contact-1', { jobTitle: 'x'.repeat(200), company: 'y'.repeat(200) });
+		await expect(
+			setJob(deps(f.repo), viewer, 'contact-1', { jobTitle: 'x'.repeat(201), company: null })
+		).rejects.toThrow(JobFieldTooLongError);
+		await expect(
+			setJob(deps(f.repo), viewer, 'contact-1', { jobTitle: null, company: 'y'.repeat(201) })
+		).rejects.toThrow(JobFieldTooLongError);
+
+		expect(f.jobs).toHaveLength(1);
+	});
+
+	it('counts the length after trimming, so surrounding spaces do not push it over', async () => {
+		const f = editableRepo(existing);
+
+		await setJob(deps(f.repo), viewer, 'contact-1', { jobTitle: `  ${'x'.repeat(200)}  `, company: null });
+
+		expect(f.jobs).toHaveLength(1);
+	});
+
+	it('writes nothing for a contact the viewer may not see', async () => {
+		const hidden = editableRepo(null);
+		const saved = await setJob(deps(hidden.repo), viewer, 'contact-1', { jobTitle: 'Teacher', company: null });
+
+		// positive control: the same call against a visible contact does write
+		const visible = editableRepo(existing);
+		await setJob(deps(visible.repo), viewer, 'contact-1', { jobTitle: 'Teacher', company: null });
+
+		expect(saved).toBe(false);
+		expect(hidden.jobs).toEqual([]);
+		expect(visible.jobs).toHaveLength(1);
 	});
 });
 
@@ -453,6 +529,7 @@ describe('deleteContact', () => {
 			listDistinguishableVisibleTo: async () => [],
 			updateProfile: async () => {},
 			setGender: async () => {},
+			setJob: async () => {},
 			setArchived: async () => {},
 			readForMerge: async () => null,
 		mergeVisibleTo: async () => false,
@@ -571,6 +648,7 @@ describe('mergeContacts', () => {
 			listDistinguishableVisibleTo: async () => [],
 			updateProfile: async () => {},
 			setGender: async () => {},
+			setJob: async () => {},
 			setArchived: async () => {},
 			deleteVisibleTo: async () => null,
 			readForMerge: async () => pair,

@@ -7,6 +7,8 @@
 	import LastNameHelp from './LastNameHelp.svelte';
 	import NameEditor from './NameEditor.svelte';
 	import { dayLabel } from '$lib/dates/labels';
+	import { jobErrorFor, jobShortForm } from '$lib/people/job';
+	import JobEdit from './JobEdit.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { PersonForm, PersonPageData } from './types';
 
@@ -32,6 +34,8 @@
 	const i18n = useI18n();
 	const t = i18n.t;
 	const c = $derived(data.contact);
+	/** "Teacher at Primarschule Muri", edited on the profile card's job row (docs/02 §2.2). */
+	const jobLine = $derived(jobShortForm(c, (parts) => t('contact.job.at', parts)));
 	/** The day it happened, for the marker's tooltip. */
 	const archivedOn = $derived(
 		c.archivedAt === null ? null : dayLabel(i18n, new Date(c.archivedAt).toLocaleDateString('en-CA'))
@@ -66,6 +70,25 @@
 				empty={t('contact.addDescription')}
 			/>
 		</p>
+		<!--
+			Edited where it is read, like the name and description (docs/02 §2.2): the line opens the
+			same job editor as the profile card's row. With nothing on record there is no line — the
+			profile card's *Job* row is the way in then. The profile wraps rather than cuts.
+		-->
+		{#if jobLine}
+			<JobEdit
+				jobTitle={c.jobTitle}
+				company={c.company}
+				place="header"
+				error={jobErrorFor('header', form)}
+				formClass="mt-1 rounded-control border border-primary bg-card p-3"
+				triggerTitle={t('contact.job.edit')}
+				triggerClass="-mx-1 mt-0.5 flex min-h-11 max-w-full items-center gap-1.5 rounded-control px-1 text-left text-sm text-fg transition-colors hover:bg-card-hover"
+			>
+				<Icon name="work" size={14} class="text-fg-subtle" />
+				<span class="min-w-0 [overflow-wrap:anywhere]" data-testid="person-job">{jobLine}</span>
+			</JobEdit>
+		{/if}
 
 		<div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-fg-subtle">
 			{#if data.lastContactedAt}

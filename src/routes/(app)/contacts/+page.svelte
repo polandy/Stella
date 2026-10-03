@@ -1,6 +1,9 @@
 <script lang="ts">
 	import FormerlyMark from '$lib/components/FormerlyMark.svelte';
 	import { foundByFormerName } from '$lib/people/former-name';
+	import FoundByJobMark from '$lib/components/FoundByJobMark.svelte';
+	import JobLine from '$lib/components/JobLine.svelte';
+	import { foundByJob } from '$lib/people/job';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
@@ -195,7 +198,7 @@
 									<Avatar id={contact.id} name={contact.displayName} avatarPhotoId={contact.avatarPhotoId} size={36} />
 									<span class="min-w-0">
 										<span class="flex items-center gap-1.5">
-											<span class="truncate font-medium text-fg">{contact.displayName}<FormerlyMark name={foundByFormerName(contact, query)} /></span>
+											<span class="truncate font-medium text-fg">{contact.displayName}<FormerlyMark name={foundByFormerName(contact, query)} /><FoundByJobMark found={foundByJob(contact, query)} /></span>
 											{#if contact.id === data.user.selfContactId}
 												<span
 													data-testid="self-marker"
@@ -212,6 +215,7 @@
 										{#if contact.description}
 											<span class="block truncate text-sm text-fg-muted">{contact.description}</span>
 										{/if}
+										<JobLine job={contact} />
 									</span>
 									<!-- The "last written about" read leaves archived people out, so claiming
 									     anything here would be claiming they were never written about. -->

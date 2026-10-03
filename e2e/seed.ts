@@ -84,7 +84,9 @@ export async function seedHousehold(
 	/** Who has died, by full name, likewise the setting of a case. */
 	deceased: readonly string[] = [],
 	/** Birthdays in ISO, by full name, likewise the setting of a case. */
-	births: Readonly<Record<string, string>> = {}
+	births: Readonly<Record<string, string>> = {},
+	/** Job title and company, by full name, likewise the setting of a case. */
+	jobs: Readonly<Record<string, { title?: string; company?: string }>> = {}
 ): Promise<void> {
 	const document = {
 		format: ARCHIVE_FORMAT,
@@ -99,7 +101,9 @@ export async function seedHousehold(
 				last_name: rest.join(' '),
 				gender: genders[name] ?? null,
 				deceased: deceased.includes(name) ? true : null,
-				birth_date: births[name] ?? null
+				birth_date: births[name] ?? null,
+				job_title: jobs[name]?.title ?? null,
+				company: jobs[name]?.company ?? null
 			};
 		}),
 		relationship_types: types.map((type) => ({

@@ -69,6 +69,11 @@ describe('matchesQuery', () => {
 		expect(matchesQuery(person({ displayName: 'Franziska Abab', lastName: 'Abab', formerName: 'Widmer' }), 'widmer')).toBe(true);
 	});
 
+	it('matches the job title and the company (docs/02 §2.2)', () => {
+		expect(matchesQuery(person({ jobTitle: 'Lehrerin', company: null }), 'lehr')).toBe(true);
+		expect(matchesQuery(person({ jobTitle: null, company: 'Roche Diagnostics' }), 'roche')).toBe(true);
+	});
+
 	it('matches everyone on an empty query', () => {
 		expect(matchesQuery(person(), '')).toBe(true);
 		expect(matchesQuery(person(), '   ')).toBe(true);

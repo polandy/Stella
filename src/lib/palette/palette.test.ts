@@ -36,6 +36,25 @@ describe('a person found by their former name', () => {
 	});
 });
 
+describe('a person found by their job (docs/02 §2.9)', () => {
+	const anna = person('anna', 'Anna Meier', { lastName: 'Meier', jobTitle: 'Lab technician', company: 'Roche' });
+	const rows = (q: string) => personSearchRows(q, [anna], labels.searchEverything).filter((r) => r.kind === 'person');
+
+	it('is found by the company, and the row says it was the job', () => {
+		expect(rows('roche')).toMatchObject([{ id: 'anna', foundByJob: true }]);
+	});
+
+	it('does not say so when the name matched', () => {
+		expect(rows('anna')).toMatchObject([{ id: 'anna', foundByJob: false }]);
+	});
+
+	it('carries the job for the row to show, or null when there is none', () => {
+		expect(rows('anna')).toMatchObject([{ job: { jobTitle: 'Lab technician', company: 'Roche' } }]);
+		const lena = person('lena', 'Lena Brunner');
+		expect(personSearchRows('lena', [lena], labels.searchEverything)[0]).toMatchObject({ job: null });
+	});
+});
+
 describe('paletteRows', () => {
 	it('leads with writing a moment on an empty query, so ⌘K then Enter is still the way to capture', () => {
 		const rows = paletteRows('', people, labels);

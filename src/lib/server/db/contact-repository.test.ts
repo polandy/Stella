@@ -234,6 +234,47 @@ describe('setting a gender', () => {
 	});
 });
 
+describe('setting a job', () => {
+	beforeEach(async () => {
+		await repo.insert(contactInput({ id: 'c-anna', displayName: 'Anna Keller' }));
+		await repo.insert(contactInput({ id: 'c-other', displayName: 'Other' }));
+	});
+
+	it('records both fields and stamps the change, then takes them off the record again', async () => {
+		await repo.setJob('c-anna', { jobTitle: 'Teacher', company: 'Primarschule Muri' }, 500);
+		expect(await repo.findByIdVisibleTo(viewerU1, 'c-anna')).toMatchObject({
+			jobTitle: 'Teacher',
+			company: 'Primarschule Muri',
+			updatedAt: 500
+		});
+
+		await repo.setJob('c-anna', { jobTitle: null, company: null }, 600);
+		expect(await repo.findByIdVisibleTo(viewerU1, 'c-anna')).toMatchObject({
+			jobTitle: null,
+			company: null,
+			updatedAt: 600
+		});
+	});
+
+	it('lists the job with the person, so the directory can show it and find by it', async () => {
+		await repo.setJob('c-anna', { jobTitle: 'Teacher', company: 'Primarschule Muri' }, 500);
+
+		const listed = await repo.listVisibleTo(viewerU1);
+
+		expect(listed.find((c) => c.id === 'c-anna')).toMatchObject({ jobTitle: 'Teacher', company: 'Primarschule Muri' });
+		expect(listed.find((c) => c.id === 'c-other')).toMatchObject({ jobTitle: null, company: null });
+	});
+
+	it('touches only the contact it names', async () => {
+		const before = await repo.findByIdVisibleTo(viewerU1, 'c-other');
+
+		await repo.setJob('c-anna', { jobTitle: 'Teacher', company: null }, 2);
+
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-anna'))?.jobTitle).toBe('Teacher');
+		expect(await repo.findByIdVisibleTo(viewerU1, 'c-other')).toEqual(before!);
+	});
+});
+
 describe('archiving', () => {
 	beforeEach(async () => {
 		await repo.insert(contactInput({ id: 'c-old', displayName: 'Old Neighbour' }));

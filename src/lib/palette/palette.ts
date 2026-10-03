@@ -1,4 +1,5 @@
 import { foundByFormerName } from '$lib/people/former-name';
+import { foundByJob, jobOf, type Job } from '$lib/people/job';
 import type { IconName } from '$lib/components/icons';
 import { matchesQuery, startsWithQuery } from '$lib/people/directory';
 import type { PersonContext } from '$lib/people/context';
@@ -30,6 +31,9 @@ export interface PalettePerson {
 	description?: string | null;
 	metPlace?: string | null;
 	metDate?: string | null;
+	/** What they do and where, which finds them too and is shown on its own line (docs/02 §2.2). */
+	jobTitle?: string | null;
+	company?: string | null;
 }
 
 /** One row of the palette; `href` is where Enter goes. */
@@ -44,6 +48,10 @@ export type PaletteRow =
 			distinction: Distinction | null;
 			/** The former name the query found them by, said after the name (docs/02 §2.9). */
 			formerly: string | null;
+			/** Their job, for its own line under the name, or null when none is on record. */
+			job: Job | null;
+			/** Only the job explains the match, so the row says *Job* (docs/02 §2.9). */
+			foundByJob: boolean;
 			href: string;
 	  }
 	| { kind: 'search'; id: 'search'; label: string; icon: IconName; href: string };
@@ -108,7 +116,7 @@ export function personSearchRows(
 
 	const namesakes = tellApart(people, contexts);
 	const rows: PaletteRow[] = people
-		// Matched by name only; the description is shown, not searched — full search reads it.
+		// Matched by name and job; the description is shown, not searched — full search reads it.
 		.map((p) => ({ ...p, description: null }))
 		.filter((p) => matchesQuery(p, q))
 		.sort((a, b) => Number(startsWithQuery(b, q)) - Number(startsWithQuery(a, q)))
@@ -120,6 +128,8 @@ export function personSearchRows(
 			avatarPhotoId: p.avatarPhotoId,
 			distinction: namesakes.get(p.id) ?? null,
 			formerly: foundByFormerName(p, q),
+			job: jobOf(p),
+			foundByJob: foundByJob(p, q),
 			href: `/contacts/${p.id}`
 		}));
 

@@ -25,6 +25,8 @@ const thomas: Contact = {
 	lastName: null,
 	nickname: null,
 	formerName: null,
+	jobTitle: null,
+	company: null,
 	description: null,
 	howWeMet: null,
 	metDate: null,

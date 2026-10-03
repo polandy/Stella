@@ -60,7 +60,7 @@ describe('findPeople', () => {
 		const search = {
 			searchContacts: async (_v: unknown, fts: string) => {
 				asked.push(fts);
-				return [{ id: 'c-1', displayName: 'Anna Muster', description: null, avatarPhotoId: 'photo-1', formerName: null }];
+				return [{ id: 'c-1', displayName: 'Anna Muster', description: null, avatarPhotoId: 'photo-1', formerName: null, jobTitle: null, company: null }];
 			},
 			searchNotes: async () => []
 		};

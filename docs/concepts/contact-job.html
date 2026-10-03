@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Beruf und Firma</title>
+<style>
+  /* ── Catppuccin tokens, straight from src/app.css (Latte / Mocha) ─────── */
+  :root, :root[data-theme='light'] {
+    --bg:#eff1f5; --bg-elevated:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff;
+    --border:#ccd0da; --border-soft:#dce0e8;
+    --fg:#4c4f69; --fg-muted:#6c6f85; --fg-subtle:#8c8fa1;
+    --primary:#8839ef; --primary-fg:#ffffff; --link:#1e66f5;
+    --green:#40a02b; --peach:#fe640b; --teal:#179299; --pink:#ea76cb; --yellow:#df8e1d;
+    --success:#40a02b; --warning:#df8e1d; --danger:#d20f39;
+    --shadow:0 1px 2px rgba(76,79,105,.06), 0 8px 24px rgba(76,79,105,.08);
+    --shadow-sm:0 1px 2px rgba(76,79,105,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+      --border:#313244; --border-soft:#26263a;
+      --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+      --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+      --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --pink:#f5c2e7; --yellow:#f9e2af;
+      --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+      --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg:#1e1e2e; --bg-elevated:#181825; --bg-sunken:#11111b; --card:#181825;
+    --border:#313244; --border-soft:#26263a;
+    --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --green:#a6e3a1; --peach:#fab387; --teal:#94e2d5; --pink:#f5c2e7; --yellow:#f9e2af;
+    --success:#a6e3a1; --warning:#f9e2af; --danger:#f38ba8;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  }
+  * { box-sizing:border-box; }
+  html { color-scheme: light dark; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing:antialiased; line-height:1.55; }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+  h1,h2,h3 { text-wrap:balance; margin:0; }
+  code { font-family:'JetBrains Mono', ui-monospace, monospace; font-size:.88em; background:var(--bg-sunken); padding:1px 6px; border-radius:5px; }
+  mark { background:color-mix(in srgb,var(--yellow) 35%,transparent); color:inherit; border-radius:3px; padding:0 1px; }
+
+  .wrap { max-width:1100px; margin:0 auto; padding-block:clamp(28px,5vw,64px) 96px; padding-inline:clamp(18px,4vw,40px); }
+  .doc-head { display:flex; flex-direction:column; gap:14px; margin-bottom:12px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); }
+  .doc-head h1 { font-size:clamp(28px,4.4vw,42px); font-weight:700; letter-spacing:-.02em; line-height:1.1; }
+  .doc-head p.lede { font-size:clamp(15px,1.7vw,18px); color:var(--fg-muted); max-width:64ch; margin:0; }
+
+  .toolbar { position:fixed; top:calc(16px + env(safe-area-inset-top, 0px)); right:16px; z-index:50; display:flex; gap:8px; }
+  .pill { display:inline-flex; align-items:center; gap:7px; cursor:pointer; background:var(--card); color:var(--fg-muted); border:1px solid var(--border); border-radius:999px; padding:7px 14px; font:inherit; font-size:13px; box-shadow:var(--shadow-sm); }
+
+  .eyebrow { font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-subtle); }
+  section.block { margin-top:56px; }
+  section.block > .eyebrow { margin-bottom:10px; display:block; }
+  section.block > h2 { font-size:clamp(20px,2.6vw,26px); font-weight:650; letter-spacing:-.01em; margin-bottom:8px; }
+  section.block > p.intro { color:var(--fg-muted); max-width:68ch; margin:0 0 22px; }
+
+  .switch { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:0 0 12px; }
+  .switch .lbl { font-size:12px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--fg-subtle); min-width:7.5rem; }
+  .chip { font-size:13px; padding:7px 13px; border-radius:999px; border:1px solid var(--border); color:var(--fg-muted); cursor:pointer; background:var(--card); font:inherit; }
+  .chip[aria-pressed='true'] { background:color-mix(in srgb,var(--primary) 16%,transparent); border-color:var(--primary); color:var(--fg); font-weight:600; }
+
+  .proto-shell { border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); background:var(--bg); }
+  .browserbar { display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--bg-elevated); border-bottom:1px solid var(--border); }
+  .dots { display:flex; gap:6px; } .dots i { width:11px; height:11px; border-radius:50%; display:block; }
+  .urlbar { flex:1; margin-left:8px; background:var(--bg); border:1px solid var(--border-soft); border-radius:8px; padding:5px 12px; font-size:12.5px; color:var(--fg-subtle); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .canvas { padding:24px; }
+  @media (max-width:520px) { .canvas { padding:16px 14px; } }
+
+  .ico { width:15px; height:15px; flex-shrink:0; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* Person page, simplified */
+  .p-head { display:flex; gap:16px; align-items:flex-start; margin-bottom:22px; }
+  .avatar { border-radius:50%; display:grid; place-items:center; font-weight:700; color:var(--fg); flex-shrink:0; }
+  .p-head .avatar { width:72px; height:72px; font-size:24px; }
+  .p-head .who { flex:1; min-width:0; }
+  .p-head h3 { font-size:24px; font-weight:700; letter-spacing:-.01em; }
+  .p-head .desc { color:var(--fg-muted); margin:2px 0 0; }
+  .p-head .work { display:flex; align-items:center; gap:6px; margin-top:6px; font-size:14px; color:var(--fg); }
+  .p-head .work .ico { color:var(--fg-subtle); }
+  .p-head .work.changed { animation:flash 1.2s ease-out; border-radius:6px; }
+  @keyframes flash { from { background:color-mix(in srgb,var(--primary) 20%,transparent); } to { background:transparent; } }
+
+  .p-grid { display:grid; gap:24px; grid-template-columns:minmax(0,1fr) 19rem; align-items:start; }
+  @media (max-width:860px) { .p-grid { grid-template-columns:1fr; } .p-side { order:-1; } }
+  .card { background:var(--card); border-radius:14px; box-shadow:var(--shadow-sm); padding:16px; }
+  .card h4 { font-size:14px; font-weight:600; margin:0 0 6px; }
+  .story .item { padding:12px 0; border-top:1px solid var(--border-soft); font-size:14px; color:var(--fg-muted); }
+  .story .item:first-of-type { border-top:0; }
+
+  .row { display:flex; align-items:center; gap:12px; min-height:44px; padding:6px; margin-inline:-6px; font-size:14px; border-bottom:1px solid var(--border-soft); cursor:text; border-radius:8px; }
+  .row:hover { background:var(--bg-sunken); }
+  .row .k { width:5.5rem; flex-shrink:0; color:var(--fg-subtle); }
+  .row .v { flex:1; min-width:0; color:var(--fg); overflow-wrap:anywhere; }
+  .row .v.empty { color:var(--fg-subtle); font-style:italic; }
+  .section-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; font-size:14px; border-bottom:1px solid var(--border-soft); }
+  .section-row:last-child { border-bottom:0; } .section-row small { color:var(--fg-subtle); }
+
+  .editor { margin:6px -6px 4px; padding:12px; border:1px solid var(--primary); border-radius:12px; background:color-mix(in srgb,var(--primary) 5%,var(--card)); display:flex; flex-direction:column; gap:10px; }
+  .editor label { display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:var(--fg-muted); }
+  .input { width:100%; font:inherit; font-size:16px; color:var(--fg); background:var(--card); border:1px solid var(--border); border-radius:9px; padding:8px 10px; min-height:44px; }
+  .input:focus { outline:2px solid var(--primary); outline-offset:0; border-color:transparent; }
+  .actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .btn { display:inline-flex; align-items:center; gap:7px; border-radius:9px; padding:8px 14px; min-height:40px; font:inherit; font-size:14px; font-weight:600; cursor:pointer; border:1px solid transparent; }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); }
+  .btn.ghost { background:var(--card); color:var(--fg-muted); border-color:var(--border); font-weight:500; }
+  .hint { font-size:12px; color:var(--fg-subtle); margin:0; }
+
+  /* People directory */
+  .finder { display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:4px 12px; box-shadow:var(--shadow-sm); margin-bottom:14px; }
+  .finder:focus-within { border-color:var(--primary); }
+  .finder .ico { color:var(--fg-subtle); }
+  .finder input { flex:1; min-width:0; border:0; background:transparent; font:inherit; font-size:16px; color:var(--fg); outline:none; min-height:40px; }
+  .people { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+  .person { display:grid; grid-template-columns:36px minmax(0,1fr) auto; gap:12px; align-items:center; padding:8px 10px; border-radius:12px; }
+  .person:hover { background:var(--card); }
+  .person .avatar { width:36px; height:36px; font-size:13px; }
+  .person .name { font-weight:500; color:var(--fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+  .person .sub { display:block; font-size:13.5px; color:var(--fg-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .person .sub.work { display:flex; align-items:center; gap:5px; }
+  .person .sub.work .ico { width:13px; height:13px; color:var(--fg-subtle); }
+  .person .sub.work span { overflow:hidden; text-overflow:ellipsis; }
+  .person .when { font-size:12px; color:var(--fg-subtle); white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .why { font-size:11px; font-weight:600; color:var(--primary); background:color-mix(in srgb,var(--primary) 12%,transparent); border-radius:999px; padding:1px 7px; margin-left:6px; vertical-align:1px; }
+  .none { color:var(--fg-subtle); font-size:14px; padding:12px 10px; }
+
+  /* Picker (link as relative) */
+  .picker { max-width:480px; }
+  .picker .finder { margin-bottom:6px; }
+  .picker .list { background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); padding:4px; }
+  .picker .person { border-radius:9px; }
+  .picker .person[aria-selected='true'] { background:color-mix(in srgb,var(--primary) 10%,transparent); }
+  .cap { font-size:13px; color:var(--fg-muted); margin-bottom:6px; display:block; }
+
+  .notes { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); }
+  .note { background:var(--card); border:1px solid var(--border-soft); border-radius:13px; padding:15px 16px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:8px; }
+  .note h3 { font-size:15px; font-weight:650; }
+  .note p { margin:0; font-size:13.5px; color:var(--fg-muted); }
+  .note .q { font-size:11px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; color:var(--warning); }
+  .note .d { font-size:11px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; color:var(--success); }
+</style>
+</head>
+<body>
+<!-- Briefcase, as a new `work` entry in src/lib/components/icons.ts would draw it. -->
+<svg width="0" height="0" style="position:absolute"><symbol id="i-work" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol></svg>
+
+<div class="toolbar">
+  <button class="pill" id="lang-btn" type="button">English</button>
+  <button class="pill" id="theme-btn" type="button">Theme</button>
+</div>
+
+<div class="wrap">
+  <header class="doc-head">
+    <span class="kicker" data-t="kicker"></span>
+    <h1 data-t="h1"></h1>
+    <p class="lede" data-t="lede"></p>
+  </header>
+
+  <section class="block">
+    <span class="eyebrow" data-t="proto"></span>
+    <h2 data-t="s1h"></h2>
+    <p class="intro" data-t="s1p"></p>
+    <div class="switch">
+      <span class="lbl" data-t="startFrom"></span>
+      <button class="chip" data-start="empty" aria-pressed="true" data-t="stEmpty"></button>
+      <button class="chip" data-start="both" aria-pressed="false" data-t="stBoth"></button>
+      <button class="chip" data-start="job" aria-pressed="false" data-t="stJob"></button>
+    </div>
+    <div class="proto-shell">
+      <div class="browserbar"><div class="dots"><i style="background:#ed8796"></i><i style="background:#eed49f"></i><i style="background:#a6da95"></i></div><div class="urlbar">stella.local/contacts/anna-keller</div></div>
+      <div class="canvas">
+        <div class="p-head">
+          <div class="avatar" style="background:color-mix(in srgb,var(--teal) 30%,var(--card))">AK</div>
+          <div class="who">
+            <h3>Anna Keller</h3>
+            <p class="desc" data-t="annaDesc"></p>
+            <div id="head-work"></div>
+          </div>
+        </div>
+        <div class="p-grid">
+          <div class="card story">
+            <h4 data-t="story"></h4>
+            <div class="item" data-t="story1"></div>
+            <div class="item" data-t="story2"></div>
+          </div>
+          <aside class="p-side">
+            <div class="card">
+              <h4 data-t="profile"></h4>
+              <div id="work-slot"></div>
+              <div class="section-row"><span data-t="contact"></span><small>2</small></div>
+              <div class="section-row"><span data-t="dates"></span><small>1</small></div>
+              <div class="section-row"><span data-t="circles"></span><small>1</small></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow" data-t="proto"></span>
+    <h2 data-t="s2h"></h2>
+    <p class="intro" data-t="s2p"></p>
+    <div class="switch">
+      <span class="lbl" data-t="tryQ"></span>
+      <button class="chip" data-q="" aria-pressed="true" data-t="qAll"></button>
+      <button class="chip" data-q="anna" aria-pressed="false">anna</button>
+      <button class="chip" data-q="lehr" aria-pressed="false">lehr</button>
+      <button class="chip" data-q="roche" aria-pressed="false">roche</button>
+    </div>
+    <div class="switch">
+      <span class="lbl" data-t="variant"></span>
+      <button class="chip" data-v="line" aria-pressed="true" data-t="vLine"></button>
+      <button class="chip" data-v="inline" aria-pressed="false" data-t="vInline"></button>
+    </div>
+    <div class="proto-shell">
+      <div class="browserbar"><div class="dots"><i style="background:#ed8796"></i><i style="background:#eed49f"></i><i style="background:#a6da95"></i></div><div class="urlbar">stella.local/contacts</div></div>
+      <div class="canvas">
+        <label class="finder"><svg class="ico"><use href="#i-search"/></svg><input id="dir-q" type="search" autocomplete="off"></label>
+        <ul class="people" id="dir"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow" data-t="proto"></span>
+    <h2 data-t="s3h"></h2>
+    <p class="intro" data-t="s3p"></p>
+    <div class="proto-shell">
+      <div class="browserbar"><div class="dots"><i style="background:#ed8796"></i><i style="background:#eed49f"></i><i style="background:#a6da95"></i></div><div class="urlbar">stella.local/contacts/lena-brunner</div></div>
+      <div class="canvas">
+        <div class="picker">
+          <span class="cap" data-t="pickCap"></span>
+          <label class="finder"><svg class="ico"><use href="#i-search"/></svg><input id="pick-q" type="search" value="Anna" autocomplete="off"></label>
+          <div class="list"><ul class="people" id="pick"></ul></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <span class="eyebrow" data-t="decEy"></span>
+    <h2 data-t="decH"></h2>
+    <div class="notes" id="notes"></div>
+  </section>
+</div>
+
+<script>
+  const COPY = {
+    de: {
+      langBtn: 'English', kicker: 'Konzept · Kontakte', h1: 'Beruf und Firma, auf dem Profil und in der Suche',
+      lede: 'Stella speichert schon jetzt für jede Person eine Berufsbezeichnung und eine Firma, aber nur der Monica-Import füllt sie, und angezeigt werden sie nirgends. Dieses Mockup macht beide zu Freitextfeldern auf der Profilkarte und zeigt sie in der Personensuche, wo sie gleichnamige Leute auseinanderhalten.',
+      proto: 'Prototyp',
+      s1h: 'Annas Profil', s1p: 'Tippe auf die Zeile Beruf in der Profilkarte. Beide Felder öffnen sich zusammen, weil man sie meist zusammen einträgt. Speichern übernimmt beide; ein leeres Feld löscht den Wert. Unter dem Namen erscheint die Kurzform, sobald etwas eingetragen ist.',
+      startFrom: 'Start mit', stEmpty: 'Nichts erfasst', stBoth: 'Beruf und Firma', stJob: 'Nur Beruf',
+      annaDesc: 'Lenas Klassenlehrerin, wohnt in Muri.',
+      story: 'Geschichte', story1: 'Elterngespräch im März, sehr zufrieden mit Lena.', story2: 'Hat uns das Schullager in Engelberg empfohlen.',
+      profile: 'Profil', contact: 'Kontaktdaten', dates: 'Daten', circles: 'Kreise',
+      work: 'Beruf', job: 'Berufsbezeichnung', company: 'Firma / Organisation', notSet: 'Nicht erfasst',
+      jobPh: 'z. B. Lehrerin', companyPh: 'z. B. Primarschule Muri',
+      save: 'Speichern', cancel: 'Abbrechen', keys: 'Enter speichert · Esc bricht ab',
+      at: (j, c) => j && c ? `${j} bei ${c}` : (j || c),
+      s2h: 'Die Personensuche', s2p: 'Das Personenverzeichnis filtert beim Tippen. Neu findet es auch über Beruf und Firma: „lehr“ findet beide Lehrerinnen, „roche“ alle bei Roche. Passt nur der Beruf und nicht der Name, sagt ein kleines Etikett warum. Wähle oben, wie die Zeile aussehen soll.',
+      tryQ: 'Probiere', qAll: 'Alle', variant: 'Darstellung', vLine: 'Eigene Zeile', vInline: 'Hinter der Beschreibung',
+      findPh: 'Personen finden …', none: 'Niemand passt.', byWork: 'Beruf', ago: (d) => d,
+      s3h: 'Jemanden auswählen', s3p: 'Dieselbe Zeile im Auswahlfeld, etwa beim Verknüpfen als Verwandte. Zwei Annas ohne Beschreibung sind dank Beruf sofort unterscheidbar.',
+      pickCap: 'Als verwandt verknüpfen — wer?',
+      decEy: 'Entscheidungen im Mockup', decH: 'Was das Design festlegt',
+      notes: [
+        ['d', 'Zwei Freitextfelder', 'Berufsbezeichnung und Firma bleiben getrennt und frei, ohne Auswahlliste. So passt „Lehrerin“ genauso wie „im Ruhestand“ oder „Gemeinderat“. Beide höchstens 200 Zeichen.'],
+        ['d', 'Zusammen bearbeitet', 'Eine Zeile Beruf öffnet beide Felder; ein Speichern, ein Undo. Steht nur eines, zeigt die Zeile nur das eine.'],
+        ['d', '„Lehrerin bei Primarschule Muri“', 'Die Kurzform heißt „Beruf bei Firma“ (EN: „Teacher at …“). Fehlt eines, steht das andere allein. Lange Texte werden in Listen mit … gekürzt, auf dem Profil umbrochen.'],
+        ['d', 'Die Suche findet auch über den Beruf', 'Verzeichnis, globale Suche und Befehlspalette vergleichen auch Beruf und Firma. Trifft nur das, steht ein Etikett „Beruf“ an der Zeile, damit der Treffer nicht rätselhaft wirkt.'],
+        ['q', 'Offen: Zeile oder Anhang?', 'Variante A gibt dem Beruf eine eigene zweite Zeile mit Aktenkoffer — klar, aber Listen werden höher, wenn auch eine Beschreibung da ist. Variante B hängt ihn mit „·“ an die Beschreibung — kompakt, aber auf dem Handy oft abgeschnitten.'],
+        ['q', 'Offen: auch beim Anlegen?', 'Vorschlag: nein. „Person hinzufügen“ bleibt schlank; Beruf und Firma stehen unter „Mehr“ oder werden später auf dem Profil ergänzt.'],
+      ],
+    },
+    en: {
+      langBtn: 'Deutsch', kicker: 'Concept · Contacts', h1: 'Job and company, on the profile and in search',
+      lede: 'Stella already stores a job title and a company for each person, but only the Monica import fills them, and nothing shows them. This mockup makes both free-text fields on the profile card and shows them in person search, where they tell namesakes apart.',
+      proto: 'Prototype',
+      s1h: 'Anna’s profile', s1p: 'Tap the Job row in the profile card. Both fields open together, because they are usually entered together. Save keeps both; an emptied field clears its value. The short form appears under the name as soon as anything is on record.',
+      startFrom: 'Start from', stEmpty: 'Nothing on record', stBoth: 'Job and company', stJob: 'Job only',
+      annaDesc: 'Lena’s class teacher, lives in Muri.',
+      story: 'Story', story1: 'Parents’ evening in March, very happy with Lena.', story2: 'Recommended the school camp in Engelberg.',
+      profile: 'Profile', contact: 'Contact details', dates: 'Dates', circles: 'Circles',
+      work: 'Job', job: 'Job title', company: 'Company / organisation', notSet: 'Not on record',
+      jobPh: 'e.g. Teacher', companyPh: 'e.g. Primarschule Muri',
+      save: 'Save', cancel: 'Cancel', keys: 'Enter saves · Esc cancels',
+      at: (j, c) => j && c ? `${j} at ${c}` : (j || c),
+      s2h: 'Person search', s2p: 'The People directory filters as you type. Now it also matches job and company: “lehr” finds both teachers, “roche” everyone at Roche. When only the job matched, not the name, a small tag says why. Choose above how the row should look.',
+      tryQ: 'Try', qAll: 'All', variant: 'Layout', vLine: 'Own line', vInline: 'After the description',
+      findPh: 'Find people …', none: 'Nobody matches.', byWork: 'Job',
+      s3h: 'Picking someone', s3p: 'The same row in the picker, e.g. when linking a relative. Two Annas with no description are told apart at once by their job.',
+      pickCap: 'Link as relative — who?',
+      decEy: 'Decisions in this mockup', decH: 'What the design settles',
+      notes: [
+        ['d', 'Two free-text fields', 'Job title and company stay separate and free, with no pick list, so “Teacher” fits as well as “retired” or “town councillor”. Each at most 200 characters.'],
+        ['d', 'Edited together', 'One Job row opens both fields; one save, one undo. When only one is set, the row shows just that one.'],
+        ['d', '“Teacher at Primarschule Muri”', 'The short form reads “job at company” (DE: „… bei …“). If one is missing the other stands alone. Lists truncate long text with …, the profile wraps it.'],
+        ['d', 'Search matches the job too', 'Directory, global search and the command palette also compare job and company. When only that matched, the row carries a “Job” tag so the hit is not a puzzle.'],
+        ['q', 'Open: own line or appended?', 'Option A gives the job its own second line with a briefcase — clear, but rows get taller when there is a description too. Option B appends it to the description with “·” — compact, but often cut off on a phone.'],
+        ['q', 'Open: on Add person too?', 'Proposal: no. “Add a person” stays lean; job and company sit under “More” or get added on the profile later.'],
+      ],
+    },
+  };
+
+  // Demo household. Job titles stay as typed — free text is not translated.
+  const PEOPLE = [
+    { n: 'Anna Keller', i: 'AK', hue: 'teal', d: { de: 'Lenas Klassenlehrerin', en: 'Lena’s class teacher' }, job: 'Lehrerin', co: 'Primarschule Muri', w: { de: 'vor 2 Wochen', en: '2 weeks ago' } },
+    { n: 'Anna Meier', i: 'AM', hue: 'pink', d: null, job: 'Laborantin', co: 'Roche', w: { de: 'vor 4 Monaten', en: '4 months ago' } },
+    { n: 'Beat Huber', i: 'BH', hue: 'yellow', d: { de: 'Nachbar, Haus Nr. 12', en: 'Neighbour, no. 12' }, job: 'Schreiner', co: null, w: { de: 'gestern', en: 'yesterday' } },
+    { n: 'Claudia Frei', i: 'CF', hue: 'peach', d: { de: 'Patin von Noah', en: 'Noah’s godmother' }, job: 'Projektleiterin Pharma-Logistik', co: 'Roche Diagnostics', w: { de: 'vor 3 Wochen', en: '3 weeks ago' } },
+    { n: 'Daniel Brunner', i: 'DB', hue: 'green', d: { de: 'Markus’ Bruder', en: 'Markus’ brother' }, job: null, co: null, w: { de: 'vor 5 Tagen', en: '5 days ago' } },
+    { n: 'Eva Lehmann', i: 'EL', hue: 'teal', d: null, job: 'Lehrerin', co: 'Musikschule Wohlen', w: { de: 'vor 1 Jahr', en: '1 year ago' } },
+    { n: 'Rosa Brunner-Aebi', i: 'RB', hue: 'pink', d: { de: 'Markus’ Mutter', en: 'Markus’ mother' }, job: 'im Ruhestand', co: null, w: { de: 'vor 3 Wochen', en: '3 weeks ago' } },
+  ];
+
+  const STARTS = { empty: { job: '', co: '' }, both: { job: 'Lehrerin', co: 'Primarschule Muri' }, job: { job: 'Lehrerin', co: '' } };
+  let lang = 'de', variant = 'line', editing = false, saved = { ...STARTS.empty };
+  const c = () => COPY[lang];
+  const esc = (s) => s.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  const icon = (id) => `<svg class="ico"><use href="#i-${id}"/></svg>`;
+  const hit = (text, q) => {
+    if (!q) return esc(text);
+    const at = text.toLowerCase().indexOf(q.toLowerCase());
+    return at < 0 ? esc(text) : esc(text.slice(0, at)) + '<mark>' + esc(text.slice(at, at + q.length)) + '</mark>' + esc(text.slice(at + q.length));
+  };
+
+  function renderStatic() {
+    document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = c()[el.dataset.t]; });
+    document.getElementById('lang-btn').textContent = c().langBtn;
+    document.getElementById('dir-q').placeholder = c().findPh;
+    document.getElementById('pick-q').placeholder = c().findPh;
+    document.documentElement.lang = lang;
+    document.getElementById('notes').innerHTML = c().notes.map(([k, h, p]) =>
+      `<div class="note"><span class="${k}">${k === 'd' ? (lang === 'de' ? 'Festgelegt' : 'Settled') : (lang === 'de' ? 'Zu entscheiden' : 'To decide')}</span><h3>${h}</h3><p>${p}</p></div>`).join('');
+  }
+
+  function renderHead(flash) {
+    const el = document.getElementById('head-work');
+    const line = c().at(saved.job, saved.co);
+    el.innerHTML = line ? `<div class="work${flash ? ' changed' : ''}">${icon('work')}<span>${esc(line)}</span></div>` : '';
+  }
+
+  function renderRow() {
+    const slot = document.getElementById('work-slot');
+    if (editing) return renderEditor(slot);
+    const line = c().at(saved.job, saved.co);
+    slot.innerHTML = `<div class="row" tabindex="0" role="button" id="work-row"><span class="k">${c().work}</span><span class="v ${line ? '' : 'empty'}">${line ? esc(line) : c().notSet}</span></div>`;
+    const row = document.getElementById('work-row');
+    const open = () => { editing = true; renderRow(); };
+    row.onclick = open;
+    row.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+  }
+
+  function renderEditor(slot) {
+    slot.innerHTML = `
+      <form class="editor" id="editor">
+        <label>${c().job}<input class="input" id="f-job" maxlength="200" placeholder="${c().jobPh}" value="${esc(saved.job)}"></label>
+        <label>${c().company}<input class="input" id="f-co" maxlength="200" placeholder="${c().companyPh}" value="${esc(saved.co)}"></label>
+        <div class="actions"><button class="btn primary" type="submit">${c().save}</button><button class="btn ghost" type="button" id="cancel">${c().cancel}</button></div>
+        <p class="hint">${c().keys}</p>
+      </form>`;
+    const form = document.getElementById('editor');
+    const cancel = () => { editing = false; renderRow(); };
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      saved = { job: document.getElementById('f-job').value.trim(), co: document.getElementById('f-co').value.trim() };
+      editing = false; renderRow(); renderHead(true);
+    };
+    form.onkeydown = (e) => { if (e.key === 'Escape') cancel(); };
+    document.getElementById('cancel').onclick = cancel;
+    document.getElementById('f-job').focus();
+  }
+
+  function personRow(p, q, opts = {}) {
+    const desc = p.d ? p.d[lang] : '';
+    const work = c().at(p.job, p.co) || '';
+    const lower = q.toLowerCase();
+    const byName = !q || p.n.toLowerCase().includes(lower) || desc.toLowerCase().includes(lower);
+    const tag = q && !byName ? `<span class="why">${c().byWork}</span>` : '';
+    let subs = '';
+    if (variant === 'line') {
+      if (desc) subs += `<span class="sub">${hit(desc, q)}</span>`;
+      if (work) subs += `<span class="sub work">${icon('work')}<span>${hit(work, q)}</span></span>`;
+    } else {
+      const parts = [desc, work].filter(Boolean);
+      if (parts.length) subs += `<span class="sub">${parts.map((t) => hit(t, q)).join(' · ')}</span>`;
+    }
+    return `<li class="person"${opts.selected ? ' aria-selected="true"' : ''}>
+      <span class="avatar" style="background:color-mix(in srgb,var(--${p.hue}) 30%,var(--card))">${p.i}</span>
+      <span style="min-width:0"><span class="name">${hit(p.n, q)}${tag}</span>${subs}</span>
+      ${opts.when === false ? '<span></span>' : `<span class="when">${p.w[lang]}</span>`}
+    </li>`;
+  }
+
+  const matches = (p, q) => {
+    if (!q) return true;
+    const hay = [p.n, p.d ? p.d[lang] : '', p.job || '', p.co || ''].join(' ').toLowerCase();
+    return hay.includes(q.toLowerCase());
+  };
+
+  function renderDir() {
+    const q = document.getElementById('dir-q').value.trim();
+    const found = PEOPLE.filter((p) => matches(p, q));
+    document.getElementById('dir').innerHTML = found.length ? found.map((p) => personRow(p, q)).join('') : `<li class="none">${c().none}</li>`;
+  }
+  function renderPick() {
+    const q = document.getElementById('pick-q').value.trim();
+    const found = PEOPLE.filter((p) => matches(p, q));
+    document.getElementById('pick').innerHTML = found.length ? found.map((p, ix) => personRow(p, q, { when: false, selected: ix === 0 })).join('') : `<li class="none">${c().none}</li>`;
+  }
+
+  const pressOnly = (sel, btn) => document.querySelectorAll(sel).forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+  document.querySelectorAll('[data-start]').forEach((b) => b.onclick = () => { pressOnly('[data-start]', b); saved = { ...STARTS[b.dataset.start] }; editing = false; renderRow(); renderHead(false); });
+  document.querySelectorAll('[data-q]').forEach((b) => b.onclick = () => { pressOnly('[data-q]', b); document.getElementById('dir-q').value = b.dataset.q; renderDir(); });
+  document.querySelectorAll('[data-v]').forEach((b) => b.onclick = () => { pressOnly('[data-v]', b); variant = b.dataset.v; renderDir(); renderPick(); });
+  document.getElementById('dir-q').oninput = () => { pressOnly('[data-q]', null); renderDir(); };
+  document.getElementById('pick-q').oninput = renderPick;
+  document.getElementById('lang-btn').onclick = () => { lang = lang === 'de' ? 'en' : 'de'; renderAll(); };
+  document.getElementById('theme-btn').onclick = () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark';
+  };
+  function renderAll() { renderStatic(); renderRow(); renderHead(false); renderDir(); renderPick(); }
+  renderAll();
+</script>
+</body>
+</html>

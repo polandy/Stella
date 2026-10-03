@@ -43,6 +43,17 @@ export const contact = {
 	'contact.gender.diverse': 'Diverse',
 	'contact.gender.hint': 'With female or male, relatives are named by gender, such as aunt or uncle; otherwise neutrally.',
 
+	// What they do and where (docs/02 §2.2): two free-text fields, one row, one short form.
+	'contact.job': 'Job',
+	'contact.job.edit': 'Edit job',
+	'contact.job.notRecorded': 'Not on record',
+	'contact.job.title': 'Job title',
+	'contact.job.company': 'Company / organisation',
+	'contact.job.titlePlaceholder': 'e.g. Teacher',
+	'contact.job.companyPlaceholder': 'e.g. Primarschule Muri',
+	'contact.job.keys': 'Enter saves · Esc cancels',
+	'contact.job.at': (p: { job: string; company: string }) => `${p.job} at ${p.company}`,
+
 	'contact.section.contact': 'Contact',
 	'contact.noFields': 'No phone, email, or address yet.',
 	'contact.removeField': (p: { what: string }) => `Remove ${p.what}`,

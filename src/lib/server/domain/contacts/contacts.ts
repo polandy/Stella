@@ -13,6 +13,7 @@ import type { IdGenerator } from '../../id';
 import { deriveDisplayName } from '../../../people/display-name';
 import { isKnownByMoreThanAFirstName } from '../../../people/new-person';
 import { isGender, type Gender } from '../../../people/gender';
+import { JOB_FIELD_MAX_LENGTH, type Job } from '../../../people/job';
 import type { Locale } from '../../../i18n/locales';
 import { isKnownByAFirstNameOnly } from '../../../people/namesakes';
 
@@ -70,6 +71,9 @@ export interface NewContact {
 export interface Contact extends NewContact {
 	/** A maiden or earlier last name (docs/02 §2.2); kept when a last name changes on request. */
 	formerName: string | null;
+	/** What they do and where, both free text (docs/02 §2.2). */
+	jobTitle: string | null;
+	company: string | null;
 	avatarPhotoId: string | null;
 	isDeceased: boolean;
 	/** When the household put them out of the way, or null while they are in it. */
@@ -110,6 +114,9 @@ export interface ContactSummary {
 	 * entry says who somebody is, and for a child that includes when they were born.
 	 */
 	birthDate: string | null;
+	/** What they do and where: shown on its own line, and found by (docs/02 §2.2). */
+	jobTitle: string | null;
+	company: string | null;
 }
 
 /** The fields the hero edits in place, already normalised. */
@@ -148,6 +155,8 @@ export interface ContactRepository {
 	updateProfile(id: string, patch: ProfilePatch): Promise<void>;
 	/** Record a gender, or none; the caller has already checked the contact is visible. */
 	setGender(id: string, gender: Gender | null, updatedAt: number): Promise<void>;
+	/** Write both job fields at once; the caller has already checked the contact is visible. */
+	setJob(id: string, job: Job, updatedAt: number): Promise<void>;
 	/** Stamp or clear `archived_at`; the caller has already checked the contact is visible. */
 	setArchived(id: string, archivedAt: number | null): Promise<void>;
 	/**
@@ -340,6 +349,39 @@ export async function setGender(
 	if (contact === null) return false;
 
 	await deps.contacts.setGender(id, checked, deps.clock.now());
+	return true;
+}
+
+/** Thrown when a job title or company is longer than Stella keeps (docs/02 §2.2). */
+export class JobFieldTooLongError extends TranslatableError {
+	constructor() {
+		super(phrase('errors.contact.jobFieldTooLong', { max: JOB_FIELD_MAX_LENGTH }), 'JobFieldTooLongError');
+	}
+}
+
+/** One job field trimmed, a blank one as null; longer than Stella keeps is refused, not cut. */
+function checkedJobField(value: string | null): string | null {
+	const trimmed = orNull(value);
+	if (trimmed !== null && trimmed.length > JOB_FIELD_MAX_LENGTH) throw new JobFieldTooLongError();
+	return trimmed;
+}
+
+/**
+ * Record what a person does and where, from the profile card's one editor (docs/02 §2.2): both
+ * fields at once, each trimmed, an emptied one taken off the record. Returns false when the
+ * contact is not visible to the viewer, like `editProfile`.
+ */
+export async function setJob(
+	deps: Pick<ContactDeps, 'contacts' | 'clock'>,
+	viewer: Viewer,
+	id: string,
+	job: Job
+): Promise<boolean> {
+	const checked: Job = { jobTitle: checkedJobField(job.jobTitle), company: checkedJobField(job.company) };
+	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
+	if (contact === null) return false;
+
+	await deps.contacts.setJob(id, checked, deps.clock.now());
 	return true;
 }
 

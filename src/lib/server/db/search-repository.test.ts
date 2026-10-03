@@ -70,6 +70,19 @@ describe('searchContacts', () => {
 		expect(secretina.avatarPhotoId).toBeNull();
 	});
 
+	it('matches the job title and the company, and carries them for the row (docs/02 §2.2)', async () => {
+		db.update(schema.contact)
+			.set({ jobTitle: 'Schreiner', company: 'Holzbau Keller' })
+			.where(eq(schema.contact.id, 'c-hans'))
+			.run();
+
+		const byTitle = await repo.searchContacts(viewerU1, toFtsQuery('schrein'), 20);
+		const byCompany = await repo.searchContacts(viewerU1, toFtsQuery('holzbau'), 20);
+
+		expect(byTitle.map((h) => h.id)).toEqual(['c-hans']);
+		expect(byCompany).toMatchObject([{ id: 'c-hans', jobTitle: 'Schreiner', company: 'Holzbau Keller' }]);
+	});
+
 	it('stops finding a contact once they are archived', async () => {
 		db.update(schema.contact)
 			.set({ archivedAt: 1_700_000_000_000 })
