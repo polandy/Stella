@@ -73,3 +73,20 @@ export function foundByJob(person: Searchable, query: string): boolean {
 	);
 	return words.some((word) => jobText.includes(word) && !otherText.includes(word));
 }
+
+/** Where a job is edited: under the name in the header, or the profile card's *Job* row. */
+export const JOB_EDITOR_PLACES = ['header', 'profile'] as const;
+export type JobEditorPlace = (typeof JOB_EDITOR_PLACES)[number];
+
+/**
+ * The error of the last job save for the editor at `place`, or null. Both editors post to the
+ * same action, so the result names the one that posted, and only that one reopens with it.
+ */
+export function jobErrorFor(
+	place: JobEditorPlace,
+	/** The page's last form result, whichever action produced it. */
+	result: Record<string, unknown> | null | undefined
+): string | null {
+	if (result?.jobErrorAt !== place) return null;
+	return typeof result.jobError === 'string' ? result.jobError : null;
+}

@@ -135,7 +135,7 @@ how Stella names relatives — *Aunt* or *Uncle* with female or male, *Aunt or u
 **Job** is the row below it: tap it to fill in a job title and a company or organisation, both
 optional and free text — *Teacher* at *Primarschule Muri*, or just *retired*. Enter saves,
 Esc cancels, and emptying a field takes it off the record. It then shows under the name as
-*Teacher at Primarschule Muri*, and on its own line under the person in the People list, the
+*Teacher at Primarschule Muri*; tap that line to change it right there. It also shows on its own line under the person in the People list, the
 search, ⌘K and wherever you pick someone — which helps tell two Annas apart. Searching for
 *teacher* or *Roche* finds them too; when only the job matched, a small *Job* tag says why.
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { foundByJob, jobOf, jobShortForm } from './job';
+import { foundByJob, jobErrorFor, jobOf, jobShortForm } from './job';
 
 /*
  * A person's job title and company (docs/02 §2.2): one short form wherever they are shown, and
@@ -78,5 +78,23 @@ describe('foundByJob', () => {
 	it('stays quiet without a job, or without a query', () => {
 		expect(foundByJob({ displayName: 'Daniel Brunner', jobTitle: null, company: null }, 'roche')).toBe(false);
 		expect(foundByJob(claudia, '  ')).toBe(false);
+	});
+});
+
+describe('jobErrorFor', () => {
+	/* Two editors post to the one action; a refusal reopens only the one that posted. */
+	const failedInHeader = { jobError: 'Too long', jobErrorAt: 'header' };
+
+	it('hands the error to the editor that posted', () => {
+		expect(jobErrorFor('header', failedInHeader)).toBe('Too long');
+	});
+
+	it('keeps it from the other one', () => {
+		expect(jobErrorFor('profile', failedInHeader)).toBeNull();
+	});
+
+	it('is null with no result, or a result about something else', () => {
+		expect(jobErrorFor('profile', null)).toBeNull();
+		expect(jobErrorFor('profile', { genderError: 'x' })).toBeNull();
 	});
 });

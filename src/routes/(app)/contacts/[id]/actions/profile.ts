@@ -1,6 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { GENDERS } from '$lib/people/gender';
+import { JOB_EDITOR_PLACES } from '$lib/people/job';
 import {
 	editProfile,
 	EmptyContactNameError,
@@ -36,8 +37,12 @@ const NamePartsSchema = v.object({
 /** One of the three, or empty for taking the gender off the record (docs/02 §2.2). */
 const GenderSchema = v.union([v.picklist(GENDERS), v.literal('')]);
 
-/** The job row's two fields; either may be emptied. Trimming and the length are the use-case's. */
+/**
+ * The job editor's two fields; either may be emptied. Trimming and the length are the
+ * use-case's. `place` says which of the two editors posted, so only it reopens on a refusal.
+ */
 const JobSchema = v.object({
+	place: v.picklist(JOB_EDITOR_PLACES),
 	jobTitle: v.string(),
 	company: v.string()
 });
@@ -113,14 +118,21 @@ export const profileActions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
-		const parsed = v.safeParse(JobSchema, { jobTitle: form.get('jobTitle') ?? '', company: form.get('company') ?? '' });
-		if (!parsed.success) return fail(400, { jobError: say(locals, 'errors.form.checkAndRetry') });
+		const parsed = v.safeParse(JobSchema, {
+			place: form.get('place') ?? 'profile',
+			jobTitle: form.get('jobTitle') ?? '',
+			company: form.get('company') ?? ''
+		});
+		if (!parsed.success)
+			return fail(400, { jobError: say(locals, 'errors.form.checkAndRetry'), jobErrorAt: 'profile' as const });
+		const { place, jobTitle, company } = parsed.output;
 
 		try {
-			const saved = await setJob(getContactDeps(), viewer, params.id, parsed.output);
+			const saved = await setJob(getContactDeps(), viewer, params.id, { jobTitle, company });
 			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
 		} catch (err) {
-			if (err instanceof JobFieldTooLongError) return fail(400, { jobError: err.phrase(translator(locals)) });
+			if (err instanceof JobFieldTooLongError)
+				return fail(400, { jobError: err.phrase(translator(locals)), jobErrorAt: place });
 			throw err;
 		}
 
