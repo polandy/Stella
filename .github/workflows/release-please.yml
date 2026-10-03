@@ -26,17 +26,6 @@ jobs:
           # back to GITHUB_TOKEN, so releasing never depends on it — docs/08 §8.9.
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
 
-      # A release candidate is cut with a `Release-As: X.Y.Z-rc.N` footer. release-please
-      # cannot flag it itself: its `prerelease` option would also flag every 0.x release,
-      # and GitHub's `releases/latest` (the About card's update check) skips pre-releases.
-      # Flagged here, a candidate is never offered as an update.
-      - name: Flag a release candidate as a pre-release
-        if: steps.release.outputs.release_created == 'true' && contains(steps.release.outputs.tag_name, '-')
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.release.outputs.tag_name }}
-        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --prerelease --latest=false
-
   # The image build is called from here rather than triggered by the release tag, so it runs
   # the same whichever token pushed the tag (one made with GITHUB_TOKEN starts no workflow).
   publish:
