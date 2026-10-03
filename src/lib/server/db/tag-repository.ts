@@ -112,7 +112,9 @@ export function createDrizzleTagRepository(db: BunSQLiteDatabase<typeof schema>)
 					metDate: contact.metDate,
 					visibility: contact.visibility,
 					avatarPhotoId: contact.avatarPhotoId,
-					birthDate: contact.birthDate
+					birthDate: contact.birthDate,
+					jobTitle: contact.jobTitle,
+					company: contact.company
 				})
 				.from(contactTag)
 				.innerJoin(contact, eq(contactTag.contactId, contact.id))

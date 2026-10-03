@@ -7,6 +7,7 @@
 	import LastNameHelp from './LastNameHelp.svelte';
 	import NameEditor from './NameEditor.svelte';
 	import { dayLabel } from '$lib/dates/labels';
+	import { jobShortForm } from '$lib/people/job';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { PersonForm, PersonPageData } from './types';
 
@@ -32,6 +33,8 @@
 	const i18n = useI18n();
 	const t = i18n.t;
 	const c = $derived(data.contact);
+	/** "Teacher at Primarschule Muri", edited on the profile card's job row (docs/02 §2.2). */
+	const jobLine = $derived(jobShortForm(c, (parts) => t('contact.job.at', parts)));
 	/** The day it happened, for the marker's tooltip. */
 	const archivedOn = $derived(
 		c.archivedAt === null ? null : dayLabel(i18n, new Date(c.archivedAt).toLocaleDateString('en-CA'))
@@ -66,6 +69,13 @@
 				empty={t('contact.addDescription')}
 			/>
 		</p>
+		<!-- Read here, edited on the profile card's job row; the profile wraps rather than cuts. -->
+		{#if jobLine}
+			<p class="mt-1 flex items-start gap-1.5 text-sm text-fg" data-testid="person-job">
+				<Icon name="work" size={14} class="mt-[3px] text-fg-subtle" />
+				<span class="min-w-0 [overflow-wrap:anywhere]">{jobLine}</span>
+			</p>
+		{/if}
 
 		<div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-fg-subtle">
 			{#if data.lastContactedAt}

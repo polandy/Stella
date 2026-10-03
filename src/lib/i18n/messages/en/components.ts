@@ -2,6 +2,9 @@
 
 export const components = {
 	'components.foundByFormerName': (p: { name: string }) => `(formerly ${p.name})`,
+	// A search row matched by the job alone says so (docs/02 §2.9).
+	'components.foundByJob': 'Job',
+	'components.foundByJobHint': 'Found by their job or company',
 	'components.saved': 'Saved',
 	'components.photo.add': 'Add a photo',
 	'components.photo.change': 'Change photo',

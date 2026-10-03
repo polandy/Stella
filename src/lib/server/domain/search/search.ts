@@ -1,4 +1,5 @@
 import { foundByFormerName } from '../../../people/former-name';
+import { foundByJob } from '../../../people/job';
 import type { Viewer } from '../../access/visibility';
 import { toFtsQuery } from './query';
 
@@ -15,11 +16,18 @@ export interface ContactHit {
 	avatarPhotoId: string | null;
 	/** An earlier name, which the index matches too (docs/02 §2.2). */
 	formerName: string | null;
+	/** What they do and where, which the index matches too and the row shows (docs/02 §2.2). */
+	jobTitle: string | null;
+	company: string | null;
 }
 
-/** A person found, and the former name the query found them by, if it was that (§2.9). */
+/**
+ * A person found, the former name the query found them by if it was that, and whether only
+ * their job explains the match (§2.9).
+ */
 export interface FoundContact extends ContactHit {
 	formerly: string | null;
+	foundByJob: boolean;
 }
 
 export interface NoteHit {
@@ -60,5 +68,12 @@ export async function search(
 		deps.search.searchContacts(viewer, ftsQuery, RESULT_LIMIT),
 		deps.search.searchNotes(viewer, ftsQuery, RESULT_LIMIT)
 	]);
-	return { contacts: contacts.map((hit) => ({ ...hit, formerly: foundByFormerName(hit, input) })), notes };
+	return {
+		contacts: contacts.map((hit) => ({
+			...hit,
+			formerly: foundByFormerName(hit, input),
+			foundByJob: foundByJob(hit, input)
+		})),
+		notes
+	};
 }

@@ -5,7 +5,9 @@ import {
 	editProfile,
 	EmptyContactNameError,
 	InvalidGenderError,
+	JobFieldTooLongError,
 	setGender,
+	setJob,
 	getContact
 } from '$lib/server/domain/contacts/contacts';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
@@ -34,7 +36,13 @@ const NamePartsSchema = v.object({
 /** One of the three, or empty for taking the gender off the record (docs/02 §2.2). */
 const GenderSchema = v.union([v.picklist(GENDERS), v.literal('')]);
 
-/** The hero: name, description, face, and the gender on the profile card (docs/02 §2.2). */
+/** The job row's two fields; either may be emptied. Trimming and the length are the use-case's. */
+const JobSchema = v.object({
+	jobTitle: v.string(),
+	company: v.string()
+});
+
+/** The hero: name, description, face, and the gender and job on the profile card (docs/02 §2.2). */
 export const profileActions = {
 	/* The hero's description, edited in place; the name has its own editor (docs/02 §2.2). */
 	editProfile: async ({ request, params, locals }) => {
@@ -93,6 +101,26 @@ export const profileActions = {
 			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
 		} catch (err) {
 			if (err instanceof InvalidGenderError) return fail(400, { genderError: err.phrase(translator(locals)) });
+			throw err;
+		}
+
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/* Job title and company from the profile's one job editor, saved together (docs/02 §2.2). */
+	setJob: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const parsed = v.safeParse(JobSchema, { jobTitle: form.get('jobTitle') ?? '', company: form.get('company') ?? '' });
+		if (!parsed.success) return fail(400, { jobError: say(locals, 'errors.form.checkAndRetry') });
+
+		try {
+			const saved = await setJob(getContactDeps(), viewer, params.id, parsed.output);
+			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
+		} catch (err) {
+			if (err instanceof JobFieldTooLongError) return fail(400, { jobError: err.phrase(translator(locals)) });
 			throw err;
 		}
 

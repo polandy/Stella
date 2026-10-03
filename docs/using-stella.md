@@ -132,6 +132,13 @@ description, phone, email, address, birthday — is optional and can be filled i
 *Diverse*, and it is saved. Tapping the chosen one again takes it off the record. It decides
 how Stella names relatives — *Aunt* or *Uncle* with female or male, *Aunt or uncle* otherwise.
 
+**Job** is the row below it: tap it to fill in a job title and a company or organisation, both
+optional and free text — *Teacher* at *Primarschule Muri*, or just *retired*. Enter saves,
+Esc cancels, and emptying a field takes it off the record. It then shows under the name as
+*Teacher at Primarschule Muri*, and on its own line under the person in the People list, the
+search, ⌘K and wherever you pick someone — which helps tell two Annas apart. Searching for
+*teacher* or *Roche* finds them too; when only the job matched, a small *Job* tag says why.
+
 If you only know a first name — the family you met at the mountain hut — Stella asks for a
 line to know them by, such as *SAC hut, Aug 2026* — a first name alone is not enough to add
 someone. It pays off: wherever you pick a person, and in the ⌘K search, two people with the same name show a

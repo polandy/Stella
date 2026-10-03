@@ -15,8 +15,9 @@ function fakeRepo() {
 		searchContacts: async (_v, q) => {
 			calls.push(`contacts:${q}`);
 			return [
-				{ id: 'c1', displayName: 'Hans', description: null, avatarPhotoId: null, formerName: null },
-				{ id: 'c2', displayName: 'Franziska Abab', description: null, avatarPhotoId: null, formerName: 'Widmer' }
+				{ id: 'c1', displayName: 'Hans', description: null, avatarPhotoId: null, formerName: null, jobTitle: null, company: null },
+				{ id: 'c2', displayName: 'Franziska Abab', description: null, avatarPhotoId: null, formerName: 'Widmer', jobTitle: null, company: null },
+				{ id: 'c3', displayName: 'Anna Meier', description: null, avatarPhotoId: null, formerName: null, jobTitle: 'Laborantin', company: 'Roche' }
 			];
 		},
 		searchNotes: async (_v, q) => {
@@ -47,7 +48,20 @@ describe('search', () => {
 		const results = await search({ search: f.repo }, viewer, 'widmer');
 		expect(results.contacts.map((c) => [c.id, c.formerly])).toEqual([
 			['c1', null],
-			['c2', 'Widmer']
+			['c2', 'Widmer'],
+			['c3', null]
 		]);
+	});
+
+	it('says who was found by their job rather than by a name or the description', async () => {
+		const f = fakeRepo();
+		const byCompany = await search({ search: f.repo }, viewer, 'roche');
+		const byName = await search({ search: f.repo }, viewer, 'anna');
+		expect(byCompany.contacts.map((c) => [c.id, c.foundByJob])).toEqual([
+			['c1', false],
+			['c2', false],
+			['c3', true]
+		]);
+		expect(byName.contacts.find((c) => c.id === 'c3')?.foundByJob).toBe(false);
 	});
 });

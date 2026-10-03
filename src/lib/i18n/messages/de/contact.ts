@@ -42,6 +42,16 @@ export const contact: ContactMessages = {
 	'contact.gender.diverse': 'Divers',
 	'contact.gender.hint': 'Bei weiblich oder männlich heißen Verwandte nach Geschlecht, etwa Tante oder Onkel; sonst neutral.',
 
+	'contact.job': 'Beruf',
+	'contact.job.edit': 'Beruf bearbeiten',
+	'contact.job.notRecorded': 'Nicht erfasst',
+	'contact.job.title': 'Berufsbezeichnung',
+	'contact.job.company': 'Firma / Organisation',
+	'contact.job.titlePlaceholder': 'z. B. Lehrerin',
+	'contact.job.companyPlaceholder': 'z. B. Primarschule Muri',
+	'contact.job.keys': 'Enter speichert · Esc bricht ab',
+	'contact.job.at': (p) => `${p.job} bei ${p.company}`,
+
 	'contact.section.contact': 'Kontaktdaten',
 	'contact.noFields': 'Noch keine Telefonnummer, E-Mail-Adresse oder Anschrift.',
 	'contact.removeField': (p) => `${p.what} entfernen`,

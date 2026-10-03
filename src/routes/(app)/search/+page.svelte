@@ -1,5 +1,7 @@
 <script lang="ts">
 	import FormerlyMark from '$lib/components/FormerlyMark.svelte';
+	import FoundByJobMark from '$lib/components/FoundByJobMark.svelte';
+	import JobLine from '$lib/components/JobLine.svelte';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
@@ -49,8 +51,14 @@
 							class="flex items-center gap-3 rounded-app px-3 py-2 transition-colors hover:bg-card hover:shadow-card"
 						>
 							<Avatar id={c.id} name={c.displayName} avatarPhotoId={c.avatarPhotoId} size={32} />
-							<span class="text-fg">{c.displayName}<FormerlyMark name={c.formerly} /></span>
-							{#if c.description}<span class="truncate text-sm text-fg-muted">· {c.description}</span>{/if}
+							<!-- The job gets its own line under the name and description (docs/02 §2.9). -->
+							<span class="flex min-w-0 flex-col">
+								<span class="flex min-w-0 items-center gap-1">
+									<span class="shrink-0 text-fg">{c.displayName}<FormerlyMark name={c.formerly} /><FoundByJobMark found={c.foundByJob} /></span>
+									{#if c.description}<span class="truncate text-sm text-fg-muted">· {c.description}</span>{/if}
+								</span>
+								<JobLine job={c} />
+							</span>
 						</a>
 					{/each}
 				</section>

@@ -183,8 +183,8 @@ The central person entity.
 | birth_date_precision | text | `'full' \| 'month_day' \| 'year' \| 'age'` |
 | is_deceased | int | 0/1 |
 | death_date | text null | |
-| job_title | text null | |
-| company | text null | |
+| job_title | text null | free text, trimmed, ≤ 200 chars (checked by the use-case `setJob`); indexed for search |
+| company | text null | free text, trimmed, ≤ 200 chars; indexed for search |
 | how_we_met | text null | free text |
 | met_date | text null | |
 | met_place | text null | |

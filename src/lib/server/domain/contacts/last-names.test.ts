@@ -36,6 +36,8 @@ function contact(id: string, first: string, last: string | null, over: Partial<C
 		lastName: last,
 		nickname: null,
 		formerName: null,
+		jobTitle: null,
+		company: null,
 		description: null,
 		howWeMet: null,
 		metDate: null,
