@@ -146,9 +146,7 @@ openssl rand -hex 32   # OIDC_CLIENT_SECRET (plaintext; Authelia stores its hash
 
 Releases are cut by release-please. When it publishes a release, the same workflow run
 calls `publish`, which builds the image and pushes it to `ghcr.io/polandy/stella` as
-`X.Y.Z`, `X.Y` and `latest`. A release candidate (`X.Y.Z-rc.N`) is pushed under its own
-tag only, so it never reaches an install that follows `latest` or `X.Y`; to try one, pin it
-explicitly (`docs/08` §8.9). The run's summary prints the line to pin. (The build is called
+`X.Y.Z`, `X.Y` and `latest`. The run's summary prints the line to pin. (The build is called
 from the release run rather than triggered by the tag, so it runs once whichever token
 release-please pushed the tag with.)
 
