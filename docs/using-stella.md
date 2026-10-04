@@ -267,8 +267,8 @@ private to another member). From then on the card ends with a line
 like *In Immich · 1,284 photos*. Anyone in the household can link or unlink a person, and the
 link is seen by everyone who can see that person. **Open in Immich** opens that person's page
 there in a new tab. It shows the photos only to whoever is signed into the Immich account
-Stella reads — usually the admin; anyone else lands on Immich's sign-in or an empty page. If Immich no longer has the person, the line says
-so and offers to unlink; if Immich does not answer, it says that, and the rest of the page is
+Stella reads — usually the admin; anyone else lands on Immich's sign-in or an empty page. If
+Immich no longer has the person, the line says so and offers to unlink; if Immich does not answer, it says that, and the rest of the page is
 unaffected. **Settings → Immich** says whether Stella is connected, and what is wrong if not.
 
 **Mentioned in** is the last card, and it is the only one that is not really theirs: it lists
