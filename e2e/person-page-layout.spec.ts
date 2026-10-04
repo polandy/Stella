@@ -3,14 +3,14 @@ import { fillDate, openPerson, signIn } from './app';
 
 /*
  * The landing view of a person's page (docs/05 §5.5). The page is one column of cards in a
- * fixed order — relationships, story, notes, photos, mentions — with no tabs to open: what a
- * reader came for is on the page when they arrive, and the profile they look things up in sits
- * quietly beside it. Written after the maintainer saw the reordered page live, on the family
- * instance itself (docs/08 §8.4.1).
+ * fixed order — the identity card, relationships, photos, then story and notes, then mentions —
+ * with no tabs to open: what a reader came for is on the page when they arrive. Written after
+ * the maintainer saw the reordered page live, on the family instance itself (docs/08 §8.4.1);
+ * the identity card's cases were updated for its redesign.
  */
 
-/** The cards of the main column, in the order the page stacks them. */
-const CARDS = ['relationships', 'story', 'notes', 'photos', 'mentions'] as const;
+/** The cards below the identity card, in the order the page stacks them. */
+const CARDS = ['relationships', 'photos', 'story', 'notes', 'mentions'] as const;
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
@@ -27,10 +27,13 @@ test('lands with every card on the page, relationships first and the map above i
 		await expect(page.locator(`#section-${card}`)).toBeVisible();
 	}
 
-	// The order is what this change is about: relationships lead, the story follows.
+	// The order is what this page is about: who she is, then her people, then her photos.
+	// Story and notes may stand side by side, so the order is read off their tops, not equal.
+	const identity = (await page.getByTestId('identity-card').boundingBox())!.y;
 	const tops = await Promise.all(
 		CARDS.map(async (card) => (await page.locator(`#section-${card}`).boundingBox())!.y)
 	);
+	expect(identity).toBeLessThan(tops[0]);
 	expect(tops).toEqual([...tops].sort((a, b) => a - b));
 
 	// Inside the relationships card, the map is read before the rows it summarises. It is
@@ -46,27 +49,25 @@ test('lands with every card on the page, relationships first and the map above i
 	await expect(page.getByRole('heading', { name: 'Activity' })).toBeVisible();
 });
 
-test('the profile card unfolds what it holds and folds away what it does not', async ({
+test('the identity card shows the rows it holds and folds the empty ones behind one button', async ({
 	page
 }) => {
 	await openPerson(page, /Lena Brunner/);
 
-	const profile = page.locator('section', { has: page.getByRole('heading', { name: 'Profile' }) });
-	const circles = profile.getByRole('button', { name: /^Circles/ });
-	const tags = profile.getByRole('button', { name: /^Tags/ });
+	const card = page.getByTestId('identity-card');
+	// She is in circles: they are stated among the facts, and their row is there to edit.
+	await expect(card.getByTestId('identity-facts')).toContainText('Klasse 5b');
+	await expect(card.locator('section[data-row="Circles"]')).toBeVisible();
 
-	// She is in circles, so that row is open and its content is on the page.
-	await expect(circles).toHaveAttribute('aria-expanded', 'true');
-	await expect(profile).toContainText('Klasse 5b');
+	// She has no tags, so that row waits behind the quiet button — and adding the first one
+	// is one press of it away.
+	const addMore = card.getByTestId('identity-add-more');
+	await expect(addMore).toBeVisible();
+	await expect(card.locator('section[data-row="Tags"]')).toHaveCount(0);
 
-	// She has no tags, so that row is folded — but adding the first one is still one click,
-	// because the row keeps its Add button while folded.
-	await expect(tags).toHaveAttribute('aria-expanded', 'false');
-	await expect(profile).not.toContainText('No tags yet.');
-
-	await tags.click();
-	await expect(tags).toHaveAttribute('aria-expanded', 'true');
-	await expect(profile).toContainText('No tags yet.');
+	await addMore.click();
+	await expect(card.locator('section[data-row="Tags"]')).toBeVisible();
+	await expect(addMore).toHaveCount(0);
 });
 
 test('logging a touchpoint comes back to the story card it was submitted from', async ({ page }) => {

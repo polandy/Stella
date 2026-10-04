@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { appReady, signIn } from './app';
+import { appReady, recordAction, signIn } from './app';
 
 /*
  * Naming a new person from inside a person picker (docs/02 §2.2.2). Written after the panel
@@ -168,7 +168,7 @@ test('does not offer to invent a person when choosing which duplicate to merge i
 }) => {
 	await addPerson(page, 'Ladina', 'Cadonau');
 
-	await page.getByRole('button', { name: 'Merge someone into this person' }).click();
+	await recordAction(page, 'Merge someone into this person');
 	const form = page.locator('form[action="?/merge"]');
 	const field = form.getByLabel('Who is the same person?');
 	await field.click();

@@ -23,7 +23,7 @@ export const contact = {
 	'contact.private': 'Private',
 	'contact.archived': 'Archived',
 	'contact.archivedOn': (p: { day: string }) => `Archived on ${p.day}`,
-	'contact.write': 'Write',
+	'contact.write': 'Write in journal',
 	'contact.logContact': 'Log contact',
 	'contact.egoGraphLabel': (p: { name: string }) => `Relationship network for ${p.name}`,
 	'contact.story.title': 'Activity',
@@ -33,7 +33,13 @@ export const contact = {
 	'contact.section.notes': 'Notes',
 	'contact.section.photos': 'Photos',
 	'contact.section.mentions': 'Mentioned in',
-	'contact.section.profile': 'Profile',
+	// The identity card at the top of the page (docs/05 §5.5): its facts, its quiet button, its ⋯ menu.
+	'contact.identity.addMore': 'Add phone, email, tags …',
+	'contact.facts.birthday': 'Birthday',
+	'contact.facts.born': 'Born',
+	'contact.facts.age': (p: { age: number }) => (p.age === 1 ? '1 year' : `${p.age} years`),
+	'contact.menu.label': 'More actions',
+	'contact.menu.archive': 'Archive',
 
 	'contact.gender': 'Gender',
 	'contact.gender.edit': 'Edit gender',

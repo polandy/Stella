@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { appReady, openPerson, signIn } from './app';
+import { appReady, identityRow, openPerson, signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
@@ -37,7 +37,8 @@ test('sets a gender with one tap, names relatives by it, and takes it back with 
 	await expect(page.getByTestId('derived-kin')).toContainText('Aunt or uncle');
 
 	await openPerson(page, new RegExp(AUNT));
-	const row = page.locator('[data-row="gender"]');
+	// Nothing on record, so the row waits behind the identity card's quiet button.
+	const row = await identityRow(page, page.locator('[data-row="gender"]'));
 	await expect(row).toContainText('Not on record');
 
 	await row.getByRole('button', { name: /^Gender/ }).click();
@@ -75,7 +76,7 @@ test('Escape closes the chips without changing anything', async ({ page }) => {
 	// A person of its own: the seed adds each name once, and the case above owns the family.
 	await seedHousehold(page, [LONER]);
 	await openPerson(page, new RegExp(LONER));
-	const row = page.locator('[data-row="gender"]');
+	const row = await identityRow(page, page.locator('[data-row="gender"]'));
 	const before = await row.innerText();
 
 	await row.getByRole('button', { name: /^Gender/ }).click();

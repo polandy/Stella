@@ -7,22 +7,28 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
+	import { tick } from 'svelte';
 	import type { PersonForm, PersonPageData } from './types';
 
-	// The record-keeping actions at the foot of the profile card (docs/02 §2.2, §2.1.3).
+	/*
+	 * The confirm step of the identity card's record-keeping actions (docs/02 §2.2). The ⋯ menu
+	 * only names them; what each one does to the record is said here, once it was asked for,
+	 * beside the button that does it — never as standing prose on the page.
+	 */
 	let {
 		data,
 		form,
 		otherContacts,
-		isSelf,
-		archived
+		archived,
+		panel = $bindable()
 	}: {
 		data: PersonPageData;
 		form: PersonForm;
 		/** Everyone visible but this person: whom a duplicate can be. */
 		otherContacts: PersonPageData['people'];
-		isSelf: boolean;
 		archived: boolean;
+		/** Which confirm step is open, if any; the menu opens one, Cancel closes it. */
+		panel: 'archive' | 'merge' | 'delete' | null;
 	} = $props();
 
 	const i18n = useI18n();
@@ -30,66 +36,67 @@
 	const c = $derived(data.contact);
 	const removals = useRemovals();
 
-	const savedArchive = savedEnhance(removals, t('components.saved'));
-	/** The second click that a deletion asks for; there is no undo after it. */
-	let confirmingDelete = $state(false);
-	/** Whether the merge picker is open; the survivor is always this page's person. */
+	const savedArchive = savedEnhance(removals, t('components.saved'), () => (panel = null));
 	/*
 	 * `?merge=<id>` arrives from *There is already a Lea Brunner — the same person?* after a
-	 * last name was given (docs/concepts/surnames.md §5): the picker opens with that person in it,
-	 * and the merge still waits for the admin's own click.
+	 * last name was given (docs/concepts/surnames.md §5): the card opens this step with that
+	 * person in it, and the merge still waits for the admin's own click.
 	 */
 	const proposedMerge = page.url.searchParams.get('merge');
-	let merging = $state(proposedMerge !== null);
 	let mergeTargetId = $state<string[]>(proposedMerge ? [proposedMerge] : []);
+
+	let box = $state<HTMLDivElement>();
+	/*
+	 * An opened step takes the cursor, so a keyboard reader lands where the menu sent them: in
+	 * the picker, on the step's own button — or, for the one that cannot be undone, on *Keep
+	 * them*, so a second Enter never deletes anybody.
+	 */
+	$effect(() => {
+		if (panel === null || !box) return;
+		const step = panel;
+		void tick().then(() => {
+			box?.scrollIntoView({ block: 'nearest' });
+			const buttons = [...(box?.querySelectorAll<HTMLElement>('button') ?? [])];
+			const target =
+				box?.querySelector<HTMLElement>('input:not([type="hidden"])') ?? (step === 'delete' ? buttons.at(-1) : buttons[0]);
+			target?.focus();
+		});
+	});
+
+	function onKeydown(event: KeyboardEvent) {
+		if (event.key !== 'Escape' || event.defaultPrevented) return;
+		event.preventDefault();
+		panel = null;
+	}
 </script>
 
-<!--
-	Rarely wanted, so it sits at the foot of the profile rather than beside Write:
-	archiving takes someone out of the lists, it does not undo them (docs/02 §2.2).
--->
-<!-- Which of these people you are (docs/02 §2.1.3); the same button lets go again. -->
-<form method="POST" action="?/setSelf">
-	<Button variant="ghost" size="sm" icon="self">
-		{isSelf ? t('contact.self.notMe') : t('contact.self.thisIsMe')}
-	</Button>
-	<p class="mt-1 text-xs text-fg-subtle">
-		{isSelf ? t('contact.self.isMeHint') : t('contact.self.hint')}
-	</p>
-</form>
-
-<form method="POST" action={archived ? '?/restore' : '?/archive'} use:enhance={savedArchive}>
-	{#if archived}
-		<Button variant="ghost" size="sm" icon="archive">{t('contact.archive.bringBack')}</Button>
-	{:else}
-		<Button variant="ghost" size="sm" icon="archive">{t('contact.archive.archive')}</Button>
-	{/if}
-	<p class="mt-1 text-xs text-fg-subtle">
-		{archived ? t('contact.archive.archivedHint') : t('contact.archive.hint')}
-	</p>
-</form>
-
-<!--
-	Merging ends a record too, so it lives with the other admin-only tool and asks
-	which duplicate to fold in (docs/02 §2.2). The survivor is the page you are on.
--->
-{#if data.isAdmin}
-	<div id="merge" class="scroll-mt-20">
-		<Button
-			type="button"
-			variant="ghost"
-			size="sm"
-			icon="people"
-			aria-expanded={merging}
-			onclick={() => (merging = !merging)}
-		>
-			{merging ? t('common.cancel') : t('contact.merge.open')}
-		</Button>
-		{#if merging}
-			<form method="POST" action="?/merge" class="mt-2 flex flex-col gap-2 rounded-app bg-bg-sunken p-3">
-				<p class="text-xs text-fg">
-					{t('contact.merge.explain', { name: c.displayName })}
+{#if panel !== null}
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+	<div
+		bind:this={box}
+		id={panel === 'merge' ? 'merge' : undefined}
+		role="group"
+		onkeydown={onKeydown}
+		class="flex scroll-mt-20 flex-col gap-2 rounded-app bg-bg-sunken p-3"
+		data-testid="record-confirm"
+	>
+		{#if panel === 'archive'}
+			<!-- Archiving takes someone out of the lists, it does not undo them (docs/02 §2.2). -->
+			<form method="POST" action={archived ? '?/restore' : '?/archive'} use:enhance={savedArchive} class="flex flex-col gap-2">
+				<p class="text-sm text-fg">
+					{archived ? t('contact.archive.archivedHint') : t('contact.archive.hint')}
 				</p>
+				<div class="flex flex-wrap gap-2">
+					<Button variant="primary" size="sm" icon="archive">
+						{archived ? t('contact.archive.bringBack') : t('contact.archive.archive')}
+					</Button>
+					<Button variant="ghost" size="sm" type="button" onclick={() => (panel = null)}>{t('common.cancel')}</Button>
+				</div>
+			</form>
+		{:else if panel === 'merge'}
+			<!-- Merging ends a record, so it asks which duplicate to fold in; the survivor is this page. -->
+			<form method="POST" action="?/merge" class="flex flex-col gap-2">
+				<p class="text-sm text-fg">{t('contact.merge.explain', { name: c.displayName })}</p>
 				<!-- The label names the field only: wrapped around the picker, it would also
 				     take in the chips' remove buttons and the list (docs/05 §5.7). -->
 				<div class="flex flex-col gap-1">
@@ -104,41 +111,18 @@
 					/>
 				</div>
 				<FormError message={form?.mergeError} variant="inline" size="xs" />
-				<div>
-					<Button variant="primary" size="sm">
-						{t('contact.merge.submit', { name: c.displayName })}
-					</Button>
+				<div class="flex flex-wrap gap-2">
+					<Button variant="primary" size="sm">{t('contact.merge.submit', { name: c.displayName })}</Button>
+					<Button variant="ghost" size="sm" type="button" onclick={() => (panel = null)}>{t('common.cancel')}</Button>
 				</div>
 			</form>
-		{/if}
-	</div>
-{/if}
-
-<!--
-	The irreversible one, so it asks twice and only an admin sees it (docs/02 §2.2).
-	No undo window: there would be nothing left to put back.
--->
-{#if data.isAdmin}
-	<div>
-		<Button
-			type="button"
-			variant="ghost"
-			size="sm"
-			icon="remove"
-			aria-expanded={confirmingDelete}
-			onclick={() => (confirmingDelete = !confirmingDelete)}
-		>
-			{confirmingDelete ? t('contact.delete.keep') : t('contact.delete.open')}
-		</Button>
-		{#if confirmingDelete}
-			<form method="POST" action="?/delete" class="mt-2 flex flex-col gap-2 rounded-app bg-bg-sunken p-3">
-				<p class="text-xs text-fg">
-					{t('contact.delete.explain', { name: c.displayName })}
-				</p>
-				<div>
-					<Button variant="danger" size="sm">
-						{t('contact.delete.submit', { name: c.displayName })}
-					</Button>
+		{:else}
+			<!-- The irreversible one: no undo window, there would be nothing left to put back. -->
+			<form method="POST" action="?/delete" class="flex flex-col gap-2">
+				<p class="text-sm text-fg">{t('contact.delete.explain', { name: c.displayName })}</p>
+				<div class="flex flex-wrap gap-2">
+					<Button variant="danger" size="sm">{t('contact.delete.submit', { name: c.displayName })}</Button>
+					<Button variant="ghost" size="sm" type="button" onclick={() => (panel = null)}>{t('contact.delete.keep')}</Button>
 				</div>
 			</form>
 		{/if}

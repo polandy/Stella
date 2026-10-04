@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { AUTH_STATE_PATH } from './auth-state';
-import { addPerson, mention, openPerson, signIn } from './app';
+import { addPerson, mention, openPerson, recordAction, signIn } from './app';
 
 /*
  * Keeping a moment for later (docs/02 §2.18, docs/concepts/offline-capture.md). Written after
@@ -262,7 +262,7 @@ test.describe('signed in', () => {
 		const other = await elsewhere.newPage();
 		await signIn(other);
 		await openPerson(other, /Refusa Wendt/);
-		await other.getByRole('button', { name: 'Delete for good' }).click();
+		await recordAction(other, 'Delete for good');
 		await other.getByRole('button', { name: 'Delete Refusa Wendt' }).click();
 		await expect(other.getByRole('heading', { name: 'People' })).toBeVisible();
 		await elsewhere.close();

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { appReady, openPerson, signIn } from './app';
+import { appReady, openPerson, recordAction, signIn } from './app';
 
 /*
  * Reading the household's archive back in (docs/02 §2.15). Written after the maintainer
@@ -85,7 +85,7 @@ test('takes an archive while the person, their note and their photo are still he
 
 test('brings back a person who was deleted, with what was written about them', async ({ page }) => {
 	await openPerson(page, new RegExp(WHO));
-	await page.getByRole('button', { name: 'Delete for good' }).click();
+	await recordAction(page, 'Delete for good');
 	await page.getByRole('button', { name: `Delete ${WHO}` }).click();
 	await expect(page.getByRole('link', { name: new RegExp(WHO) })).toHaveCount(0);
 

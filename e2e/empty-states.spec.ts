@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, appReady, signIn } from './app';
+import { addPerson, appReady, recordAction, signIn } from './app';
 
 /*
  * Empty screens as invitations, and adding yourself (docs/02 §2.1.3, §2.22.3, docs/05 §5.10).
@@ -97,6 +97,7 @@ test('People offers to add a name that matches nobody, but not from the archive'
 	// takes them back out, so the rest of the suite meets the archive it expects.
 	await addPerson(page, 'Tobiah', fennwick());
 	const archived = page.url();
+	await recordAction(page, 'Archive');
 	await page.getByRole('button', { name: 'Archive this person' }).click();
 	await expect(page.getByTestId('archived-marker')).toBeVisible();
 
@@ -114,6 +115,7 @@ test('People offers to add a name that matches nobody, but not from the archive'
 	await expect(page.getByRole('link', { name: `Add “${name}”` })).toHaveCount(0);
 
 	await page.goto(archived);
+	await recordAction(page, 'Bring back into the lists');
 	await page.getByRole('button', { name: 'Bring back into the lists' }).click();
 	await expect(page.getByTestId('archived-marker')).toHaveCount(0);
 });

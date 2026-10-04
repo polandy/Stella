@@ -11,6 +11,12 @@ import {
 
 /* The card vocabulary a link may name (docs/05 §5.5, docs/02 §2.20.1). */
 
+describe('CONTACT_SECTIONS', () => {
+	test('lists the cards in the order the page stacks them: relationships, then photos', () => {
+		expect([...CONTACT_SECTIONS]).toEqual(['relationships', 'photos', 'story', 'notes', 'mentions']);
+	});
+});
+
 describe('sectionAnchor', () => {
 	test('prefixes the id, so it cannot collide with an id the page uses for something else', () => {
 		expect(sectionAnchor('notes')).toBe('section-notes');

@@ -100,17 +100,18 @@ top that matches as you type — by any name, nickname or the description you ga
 the right of each row is when something was last written about that person.
 
 **Putting someone out of the way.** Not everyone in the list stays part of your life — the
-neighbour from two flats ago, the colleague from a job you left. At the foot of their page,
-*Archive this person* takes them out of the directory, out of the search, and out of Home's
+neighbour from two flats ago, the colleague from a job you left. On their page, the **⋯**
+button beside *Write in journal* has *Archive*; it says what that does and asks you to confirm.
+Archiving takes them out of the directory, out of the search, and out of Home's
 reminders, so they stop coming up. Nothing is deleted: their page, their story and their
 photos stay exactly as they were, anything you wrote that mentions them still says their
 name, and the family map still knows them — which matters,
 because Stella works out grandparents and cousins *through* people, and forgetting one would
 make it name the rest wrongly. The archived people live behind the **Archived** chip above
-the list, and the same button on their page brings them back.
+the list, and the same menu on their page brings them back (*Bring back into the lists*).
 
 **The same person twice.** Imports and quick adds leave duplicates: Hans Müller and Hansueli
-M. turn out to be one man. Open the page of the one you want to keep, and at the foot of it
+M. turn out to be one man. Open the page of the one you want to keep, and in its **⋯** menu
 *Merge someone into this person* asks a single question — who else is them. Everything of the
 other record comes across: their phone number, the notes, the photos, the birthday, who they
 are related to, the circles they were in. Where both records said something, the one you kept
@@ -120,7 +121,7 @@ it cannot be undone.
 
 **Removing someone for good.** Archiving is almost always what you want. If a person really
 should not be in Stella at all — someone added by mistake, or who asked to be removed — the
-household admin can delete them from the same place. That takes everything with them: notes,
+household admin can delete them from the same menu (*Delete for good*). That takes everything with them: notes,
 photos, dates, their journal and every link to them, and the picture files themselves. It
 asks twice, and there is no undo afterwards. So that nobody simply vanishes without the
 family knowing, the rest of the household sees *"… removed …"* in the stream on Home.
@@ -128,14 +129,16 @@ family knowing, the rest of the household sees *"… removed …"* in the stream
 **Adding someone** takes a name and nothing else. Everything beyond that — gender,
 description, phone, email, address, birthday — is optional and can be filled in whenever.
 
-**Gender** is a row at the top of the profile card: tap it, then *Female*, *Male* or
-*Diverse*, and it is saved. Tapping the chosen one again takes it off the record. It decides
+**Gender** is a row on the card at the top of their page: tap it, then *Female*, *Male* or
+*Diverse*, and it is saved. While nothing is on record it waits, with the other empty rows,
+behind **Add phone, email, tags …**. Tapping the chosen one again takes it off the record. It decides
 how Stella names relatives — *Aunt* or *Uncle* with female or male, *Aunt or uncle* otherwise.
 
-**Job** is the row below it: tap it to fill in a job title and a company or organisation, both
-optional and free text — *Teacher* at *Primarschule Muri*, or just *retired*. Enter saves,
-Esc cancels, and emptying a field takes it off the record. It then shows under the name as
-*Teacher at Primarschule Muri*; tap that line to change it right there. It also shows on its own line under the person in the People list, the
+**Job** is a row beside it (also behind *Add phone, email, tags …* while empty): tap it to
+fill in a job title and a company or organisation, both optional and free text — *Teacher* at
+*Primarschule Muri*, or just *retired*. Enter saves, Esc cancels, and emptying a field takes it
+off the record. It then shows among the facts at the top as *Teacher at Primarschule Muri*;
+tap it to change it right there. It also shows on its own line under the person in the People list, the
 search, ⌘K and wherever you pick someone — which helps tell two Annas apart. Searching for
 *teacher* or *Roche* finds them too; when only the job matched, a small *Job* tag says why.
 
@@ -179,16 +182,21 @@ opens that person's page. If the new person is a relative, pick **Link as relati
 adding, you land straight in their relationship editor with that relative already chosen,
 so "Quill is the child of Sandra" is one more click.
 
-**A person's page** reads top to bottom: **People** — the little map of who they are connected
-to, with the list of those links under it — then **Story**, **Notes**, **Photos** and
-**Mentioned in**, each its own card, all of them already on the page. Nothing is behind a tab,
-so nothing has to be found before it can be read; each card says how many things are in it.
+**A person's page** reads top to bottom. First comes **who they are**: their picture (tap it
+to change it), name and description, and a few facts — birthday and age, where they live, their
+job, when you were last in touch, the circles they are in. Under the facts are the details the
+record holds — phone and email, tags, dates, gender, how you met — each a row you can open and
+add to; the empty ones wait behind one quiet **Add phone, email, tags …** button rather than
+standing there as empty fields. The card has one button, **Write in journal**, and a **⋯**
+beside it for the rarer things: logging a contact, *This is me*, *How are we connected?*,
+archiving, merging and deleting.
 
-Who they *are* — details, dates, circles, tags, how you met — sits beside it in one quiet
-**Profile** card, as folded rows. A closed row still tells you what is in it, and opening one
-shows the rest. On a phone the two stack, the cards first and the profile underneath.
+Then **People** — the little map of who they are connected to, with the list of those links
+under it — then **Photos**, then the **Story** and the **Notes** side by side (one under the
+other on a phone), and **Mentioned in** last. Nothing is behind a tab, so nothing has to be
+found before it can be read; each card says how many things are in it.
 
-Every card, and every profile row, holds one **+ Add** button, and the form opens right under
+Every card, and every row on the top card, holds one **+ Add** button, and the form opens right under
 the heading you pressed it from. Nothing is an open form until you ask for it, so the page reads
 as a person rather than as a stack of empty fields.
 
@@ -220,7 +228,7 @@ to be two separate lists and you had to merge them in your head. Older entries l
 ask for them with *Show earlier*.
 
 **The journal** is the writing half of that story, one entry per day. A moment written on Home
-lands here; *Write* on the person's page opens the full journal, where an entry can carry
+lands here; *Write in journal* on the person's page opens the full journal, where an entry can carry
 photos. Writing on a day that already has your entry adds to it rather than replacing it; to
 change what is there, use *Edit* on the entry.
 
@@ -308,8 +316,8 @@ Two small mercies: people who have died are left out, and a 29 February annivers
 
 ## Keeping track of when you were last in touch
 
-When you have called Oma, met a friend for lunch or posted a parcel, press **Log contact** at
-the top of their page. Pick what it was (met in person, call, video call, message, letter,
+When you have called Oma, met a friend for lunch or posted a parcel, press **Log contact** in
+the header of their *Activity* card (it is also in the **⋯** menu at the top of the page). Pick what it was (met in person, call, video call, message, letter,
 gift, other), the day, and if you like a line about it. If other people were there, tick them
 too and the entry links to each of them. It lands on the story alongside the journal, marked
 with its own colour.
@@ -697,8 +705,8 @@ than screen by screen, so there is no corner of the app where it silently doesn'
 
 Stella keeps a record for everyone the household wants to remember, and one of them is
 probably you. Say so and the app stops guessing: **Settings → You** has a search field for
-picking your own entry, and the foot of any person's page has *This is me* for the same
-thing. If you are not in Stella yet, *Add yourself* there (or *Start with yourself* on the
+picking your own entry, and the **⋯** menu on any person's page has *This is me* for the
+same thing. If you are not in Stella yet, *Add yourself* there (or *Start with yourself* on the
 welcome card) adds your entry and marks it as you in one go. From then on the map opens around you rather than whoever happens to come first, and
 your row wears a small **You** in the list and on your page. The relationship form is not
 filled in for you — the person field starts empty and waits, because a name already sitting

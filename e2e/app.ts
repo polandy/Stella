@@ -66,15 +66,38 @@ export async function addPerson(page: Page, first: string, last: string): Promis
 }
 
 /**
- * A row of the person page's profile card, unfolded (docs/05 §5.5). A row holding nothing
- * arrives folded, so the content under test is only on the page once it has been opened.
+ * A row of the person page's identity card, on the card: an empty one waits behind the card's
+ * one quiet button (docs/05 §5.5), which is pressed when the row is not there yet.
+ */
+export async function identityRow(page: Page, row: Locator): Promise<Locator> {
+	const addMore = page.getByTestId('identity-add-more');
+	await expect(row.or(addMore).first()).toBeVisible();
+	if ((await row.count()) === 0) await addMore.click();
+	await expect(row).toBeVisible();
+	return row;
+}
+
+/**
+ * A row of the person page's identity card, unfolded (docs/05 §5.5). A row holding nothing
+ * waits behind the card's quiet button and arrives folded, so the content under test is only
+ * on the page once both have been opened.
  */
 export async function profileRow(page: Page, title: string): Promise<Locator> {
-	const row = page.locator(`section[data-row="${title}"]`);
+	const row = await identityRow(page, page.locator(`section[data-row="${title}"]`));
 	const toggle = row.getByRole('button', { name: new RegExp(`^${title}`) });
 	if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click();
 	await expect(toggle).toHaveAttribute('aria-expanded', 'true');
 	return row;
+}
+
+/**
+ * Picks an entry of the ⋯ menu on the person page's identity card (docs/05 §5.5) — where
+ * logging a touchpoint and the record-keeping actions live. Archiving, merging and deleting
+ * open a confirm step on the card; the caller presses its button.
+ */
+export async function recordAction(page: Page, name: string): Promise<void> {
+	await page.getByRole('button', { name: 'More actions' }).click();
+	await page.getByRole('menuitem', { name, exact: true }).click();
 }
 
 /** Adds a tag through the section's own form and waits for it to be on the page. */
