@@ -129,7 +129,7 @@
 	>
 		{#snippet action()}
 			{#if showImmich && data.immich}
-				<MenuButton label={t('immich.menu.label', { name: c.displayName })} align="end">
+				<MenuButton label={t('immich.menu.label')} align="end">
 					{#snippet trigger()}{t('immich.menu.trigger')}{/snippet}
 					{#snippet children({ close })}
 						{#if data.immich?.linked}

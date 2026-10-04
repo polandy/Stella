@@ -25,7 +25,9 @@ export const immich = {
 	'immich.settings.howToLink': 'Link a person from the menu of the Photos card on their page.',
 
 	// The person page's Photos card (§4.3).
-	'immich.menu.label': (p: { name: string }) => `Immich, for ${p.name}`,
+	// Without the person's name: the page heading already names them, and a second control
+	// carrying it would make "the button called Anna" ambiguous.
+	'immich.menu.label': 'Immich options',
 	'immich.menu.trigger': 'Immich',
 	'immich.menu.find': 'Find in Immich',
 	'immich.menu.unlink': 'Unlink from Immich',

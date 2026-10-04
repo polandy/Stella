@@ -25,7 +25,7 @@ export const immich: ImmichMessages = {
 		'Alle im Haushalt sehen die Fotos der Personen, die mit dieser Bibliothek verknüpft sind.',
 	'immich.settings.howToLink': 'Verknüpfe eine Person im Menü der Fotos-Karte auf ihrer Seite.',
 
-	'immich.menu.label': (p) => `Immich, für ${p.name}`,
+	'immich.menu.label': 'Immich-Optionen',
 	'immich.menu.trigger': 'Immich',
 	'immich.menu.find': 'In Immich suchen',
 	'immich.menu.unlink': 'Verknüpfung mit Immich lösen',
