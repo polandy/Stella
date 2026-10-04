@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.21](https://github.com/polandy/Stella/compare/v0.0.20-rc.4...v0.0.21) (2026-10-04)
+
+
+### Features
+
+* **contacts:** job title and company on the profile and in person search ([#230](https://github.com/polandy/Stella/issues/230)) ([b8c30c5](https://github.com/polandy/Stella/commit/b8c30c5a1400c2a4e608b78d7f1c7cc50d9480ad))
+* **immich:** connect to Immich and link a person to their Immich face ([#234](https://github.com/polandy/Stella/issues/234)) ([9e61142](https://github.com/polandy/Stella/commit/9e611422f71a44b435b1749079f18f0399a65742))
+* **photos:** date photos by the capture date in their EXIF ([#232](https://github.com/polandy/Stella/issues/232)) ([183c11d](https://github.com/polandy/Stella/commit/183c11da2cb9398334f333382138834a935fcbba))
+
+
+### Miscellaneous Chores
+
+* **release:** drop the release-candidate mechanism ([#228](https://github.com/polandy/Stella/issues/228)) ([30a2f5b](https://github.com/polandy/Stella/commit/30a2f5be07cd4d6e89ed7c26da79a794d4a94722))
+
 ## [0.0.20-rc.4](https://github.com/polandy/Stella/compare/v0.0.19-rc.4...v0.0.20-rc.4) (2026-10-02)
 
 
