@@ -264,7 +264,12 @@ faces Immich knows, searched by the person's name — change the search if Immic
 differently — and a tap on the right face links the two. Each face belongs to one person: one already linked
 to someone else is greyed out and says to whom (or just *someone else*, if that person is
 private to another member). From then on the card ends with a line
-like *In Immich · 1,284 photos*. Anyone in the household can link or unlink a person, and the
+like *In Immich · 1,284 photos* and a strip of their latest twelve photos, newest first;
+**Show more** at its end adds twelve more. Tap a photo to see it larger, with the arrows (or
+the arrow keys) to step through the strip and **Open in Immich** to go to that photo there.
+Anyone in the household sees the strip, whatever their own Immich account, because Stella
+fetches the photos; none of them is kept on your phone or computer, so offline the strip is
+not there. Anyone in the household can link or unlink a person, and the
 link is seen by everyone who can see that person. **Open in Immich** opens that person's page
 there in a new tab. It shows the photos only to whoever is signed into the Immich account
 Stella reads — usually the admin; anyone else lands on Immich's sign-in or an empty page. If

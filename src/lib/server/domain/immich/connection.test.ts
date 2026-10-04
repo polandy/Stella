@@ -63,12 +63,28 @@ describe('createImmichConnection', () => {
 		for (const [call, scope] of [
 			['owner', 'user.read'],
 			['listPeople', 'person.read'],
-			['personStatistics', 'person.statistics']
+			['personStatistics', 'person.statistics'],
+			['latestAssets', 'asset.read'],
+			['assetImage', 'asset.view']
 		] as const) {
 			const { gateway, connection } = connect();
 			gateway.failing = { [call]: 'forbidden' };
 			expect(await connection.status()).toEqual({ state: 'missingScope', scope });
 		}
+	});
+
+	it('checks the photo scopes on the first person’s newest photo, a thumbnail at most', async () => {
+		const { gateway, connection } = connect();
+		expect((await connection.status()).state).toBe('connected');
+		expect(gateway.calls).toEqual(['version', 'owner', 'listPeople', 'personStatistics', 'latestAssets', 'assetImage']);
+	});
+
+	it('cannot check whether photos may be viewed when the first person has none, and does not pretend to', async () => {
+		const { gateway, connection } = connect();
+		gateway.library.people[0].assets = 0;
+		expect((await connection.status()).state).toBe('connected');
+		expect(gateway.calls).toContain('latestAssets');
+		expect(gateway.calls).not.toContain('assetImage');
 	});
 
 	it('cannot check the statistics scope in an empty library, and does not pretend to', async () => {

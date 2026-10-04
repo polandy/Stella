@@ -1,6 +1,7 @@
 import {
 	isImmichId,
 	isServableImageType,
+	readAssetPage,
 	readOwner,
 	readPeoplePage,
 	readPerson,
@@ -10,6 +11,7 @@ import {
 	type ImmichFailure,
 	type ImmichGateway,
 	type ImmichImage,
+	type ImmichImageSize,
 	type ImmichOutcome
 } from '../domain/immich/gateway';
 import { readCapped } from '../http/read-capped';
@@ -31,8 +33,11 @@ const TIMEOUT_MS = 5_000;
 /** Most bytes read from a JSON answer — a 1000-person page is well under this. */
 const MAX_JSON_BYTES = 2 * 1024 * 1024;
 
-/** Most bytes read from a face thumbnail; Immich's are a few kilobytes. */
-const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+/**
+ * Most bytes read from an image. A face or a photo's thumbnail is a few kilobytes, a preview
+ * (1440 px) a few hundred; anything near this is not what was asked for.
+ */
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 export interface HttpImmichGatewayOptions {
 	/** How the server reaches Immich (`IMMICH_URL`), without a trailing slash. */
@@ -59,11 +64,18 @@ export function createHttpImmichGateway({
 	async function ask<T>(
 		path: string,
 		read: (response: Response) => Promise<T | null>,
-		byId = false
+		byId = false,
+		jsonBody?: unknown
 	): Promise<ImmichOutcome<T>> {
 		try {
 			const response = await fetch(`${baseUrl}${path}`, {
-				headers: { 'x-api-key': apiKey, accept: 'application/json' },
+				...(jsonBody === undefined
+					? { headers: { 'x-api-key': apiKey, accept: 'application/json' } }
+					: {
+							method: 'POST',
+							headers: { 'x-api-key': apiKey, accept: 'application/json', 'content-type': 'application/json' },
+							body: JSON.stringify(jsonBody)
+						}),
 				// A redirect is never Immich's answer to an API call: it is a gateway in front of it
 				// sending Stella to a login page. Seen as such, rather than followed to that page.
 				redirect: 'manual',
@@ -128,6 +140,26 @@ export function createHttpImmichGateway({
 			ask(`/api/search/person?${new URLSearchParams({ name, withHidden: 'false' })}`, json(readPersonList)),
 		person: (id) => aboutPerson(id, '', json(readPerson)),
 		personStatistics: (id) => aboutPerson(id, '/statistics', json(readStatistics)),
-		personThumbnail: (id) => aboutPerson(id, '/thumbnail', image)
+		personThumbnail: (id) => aboutPerson(id, '/thumbnail', image),
+		latestAssets: (personId, limit, cursor) => {
+			if (!isImmichId(personId)) return Promise.resolve(failed('notFound'));
+			// The v3.2 search form (concept §2, §9.5). Images in the timeline only: archived photos
+			// and the locked folder are never asked for (§5); the parser checks each answer again.
+			// A person Immich no longer has makes the search answer 400, like a call about them.
+			return ask('/api/search/metadata', json(readAssetPage), true, {
+				filter: {
+					personIds: { any: [personId] },
+					type: { eq: 'IMAGE' },
+					visibility: { eq: 'timeline' }
+				},
+				orderBy: { field: 'fileCreatedAt', direction: 'desc' },
+				size: limit,
+				...(cursor === null ? {} : { cursor })
+			});
+		},
+		assetImage: (assetId: string, size: ImmichImageSize) => {
+			if (!isImmichId(assetId)) return Promise.resolve(failed('notFound'));
+			return ask(`/api/assets/${assetId}/thumbnail?${new URLSearchParams({ size })}`, image, true);
+		}
 	};
 }

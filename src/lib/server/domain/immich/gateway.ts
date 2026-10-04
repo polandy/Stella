@@ -38,7 +38,24 @@ export interface ImmichStatistics {
 	assets: number;
 }
 
-/** An image Immich sent, read whole: a face thumbnail is a few kilobytes. */
+/** A photo in the library, as the glimpse needs it (concept §4.3). */
+export interface ImmichAsset {
+	id: string;
+	/** The day it was taken, where it was taken (`YYYY-MM-DD`), or null when Immich does not say. */
+	takenOn: string | null;
+}
+
+/** One page of a person's latest photos, and where the next page starts. */
+export interface ImmichAssetPage {
+	assets: ImmichAsset[];
+	/** Immich's opaque cursor for the next page, or null on the last one. */
+	nextCursor: string | null;
+}
+
+/** The two sizes Immich renders a photo at, and the only ones Stella asks for. */
+export type ImmichImageSize = 'thumbnail' | 'preview';
+
+/** An image Immich sent, read whole: a face thumbnail is a few kilobytes, a preview a few hundred. */
 export interface ImmichImage {
 	bytes: Uint8Array<ArrayBuffer>;
 	contentType: string;
@@ -57,7 +74,7 @@ export type ImmichFailure = 'unauthorized' | 'forbidden' | 'notFound' | 'unreach
 /** A call's answer, or the reason there is none. */
 export type ImmichOutcome<T> = { ok: true; value: T } | { ok: false; failure: ImmichFailure };
 
-/** The calls slice 1 needs (concept §8.1). Implemented at the edge; faked in tests. Never throws. */
+/** The calls Stella makes (concept §6, §8). Implemented at the edge; faked in tests. Never throws. */
 export interface ImmichGateway {
 	/** The server's version; needs no scope. */
 	version(): Promise<ImmichOutcome<ImmichVersion>>;
@@ -73,6 +90,13 @@ export interface ImmichGateway {
 	personStatistics(id: string): Promise<ImmichOutcome<ImmichStatistics>>;
 	/** One person's face (`person.read`). */
 	personThumbnail(id: string): Promise<ImmichOutcome<ImmichImage>>;
+	/**
+	 * A person's latest photos in the timeline, newest first (`asset.read`): `limit` of them,
+	 * from `cursor` on (null for the first page). Archived, locked and trashed photos never come.
+	 */
+	latestAssets(personId: string, limit: number, cursor: string | null): Promise<ImmichOutcome<ImmichAssetPage>>;
+	/** One photo, at one of the sizes Immich renders (`asset.view`). */
+	assetImage(assetId: string, size: ImmichImageSize): Promise<ImmichOutcome<ImmichImage>>;
 }
 
 /**
@@ -92,8 +116,8 @@ export function isServableImageType(contentType: string): boolean {
 	return SERVABLE_IMAGE_TYPES.has(contentType);
 }
 
-/** The read scopes the key needs in slice 1, named as Immich names them (concept §2). */
-export type ImmichScope = 'user.read' | 'person.read' | 'person.statistics';
+/** The read scopes the key needs, named as Immich names them (concept §2). */
+export type ImmichScope = 'user.read' | 'person.read' | 'person.statistics' | 'asset.read' | 'asset.view';
 
 type Payload = Record<string, unknown>;
 
@@ -161,4 +185,41 @@ export function readStatistics(payload: unknown): ImmichStatistics | null {
 	const body = objectOf(payload);
 	const assets = body ? count(body.assets) : null;
 	return assets === null ? null : { assets };
+}
+
+/** The longest cursor passed back to Immich; its own are far shorter. */
+const MAX_CURSOR_LENGTH = 512;
+
+/** Whether a value can be passed back to Immich as a page cursor: opaque, but bounded. */
+export function isAssetCursor(value: unknown): value is string {
+	return typeof value === 'string' && value !== '' && value.length <= MAX_CURSOR_LENGTH && !/[\u0000-\u001f]/.test(value);
+}
+
+const DAY = /^\d{4}-\d{2}-\d{2}/;
+
+/** The `YYYY-MM-DD` a timestamp starts with, or null when it does not start with one. */
+const dayOf = (value: unknown): string | null => (typeof value === 'string' && DAY.test(value) ? value.slice(0, 10) : null);
+
+/**
+ * One photo of a search page, or null when it is not one Stella may show. The search already
+ * asks for images in the timeline only; this reads each answer as if it had not, so a photo
+ * archived, locked away, hidden or trashed in Immich is never passed on (concept §5).
+ */
+function readAsset(payload: unknown): ImmichAsset | null {
+	const body = objectOf(payload);
+	if (!body || !isImmichId(body.id)) return null;
+	if (body.type !== 'IMAGE' || body.visibility !== 'timeline' || body.isTrashed === true) return null;
+	// `localDateTime` is the camera's wall clock, so the day is the one the photo was taken on
+	// where it was taken; `fileCreatedAt` is an instant, read as UTC.
+	return { id: body.id, takenOn: dayOf(body.localDateTime) ?? dayOf(body.fileCreatedAt) };
+}
+
+/** A page of `POST /api/search/metadata`, or null when the body is not one. */
+export function readAssetPage(payload: unknown): ImmichAssetPage | null {
+	const assets = objectOf(objectOf(payload)?.assets);
+	if (!assets || !Array.isArray(assets.items)) return null;
+	return {
+		assets: assets.items.map(readAsset).filter((asset): asset is ImmichAsset => asset !== null),
+		nextCursor: isAssetCursor(assets.nextCursor) ? assets.nextCursor : null
+	};
 }

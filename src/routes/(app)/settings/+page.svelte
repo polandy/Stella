@@ -23,7 +23,9 @@
 	const SCOPE_MESSAGE = {
 		'user.read': 'immich.settings.scope.user.read',
 		'person.read': 'immich.settings.scope.person.read',
-		'person.statistics': 'immich.settings.scope.person.statistics'
+		'person.statistics': 'immich.settings.scope.person.statistics',
+		'asset.read': 'immich.settings.scope.asset.read',
+		'asset.view': 'immich.settings.scope.asset.view'
 	} as const;
 
 	/* Who the member says they are (docs/02 §2.1.3) — the picker follows what is stored. */

@@ -1,6 +1,6 @@
 # Concept — A person's photos, from Immich
 
-Status: **slice 1 built** (*Connect + link*, docs/02 §2.24); slices 2–5 are not. The decisions taken with the maintainer on 2026-10-01 are
+Status: **slices 1–2 built** (*Connect + link*, *Glimpse*, docs/02 §2.24); slices 3–5 are not. The decisions taken with the maintainer on 2026-10-01 are
 listed in §9; one point (phone deep links) waits for a test on the device. Facts about Immich
 are taken from its OpenAPI spec at v3.2.4 (2026-09) and are cited in §10.
 
@@ -143,8 +143,9 @@ app installed and without: `https://my.immich.app/people/{id}` and `immich://peo
 - Immich down, key revoked, person deleted in Immich: the strip disappears and one line says
   "Immich didn't answer" or "This person is no longer in Immich — unlink?". The rest of the
   page never waits for Immich: the strip loads after the page, not in its `load`.
-- Offline (docs/concepts/offline-reading.md): the strip is not shown. Immich thumbnails are
-  not put in the service worker cache.
+- Offline (docs/concepts/offline-reading.md): the strip is not shown. Nothing from Immich is
+  kept on the device: the proxy answers `Cache-Control: private, no-store`, and the service
+  worker never keeps anything under `/media/immich` nor the strip's list (§9.10).
 
 ---
 
@@ -156,17 +157,20 @@ that safe:
 - **The link follows the contact.** Whoever can see a contact sees its Immich strip; a
   private contact's link and photos are seen only by those who see the contact (docs/02
   §2.10). The link is checked in the access layer like any child record.
-- **Faces are the exception, until slice 2.** The picker shows every member the library's named
-  faces (§9.4, §9.9), so the face route serves a face to any signed-in member without a
-  signature. It takes one Immich id and nothing else.
 - **Only the photos of linked people, never the library.** The proxy does not take a bare
-  asset id. Every image URL Stella hands out is **signed** (HMAC over contact id, asset id,
-  size and an expiry, about one day), and is issued only after the access layer has let the
-  viewer see that contact. Guessing or reusing ids from elsewhere gets nothing.
-- **Immich's own hiding is respected.** Only photos in the timeline are fetched: archived
-  photos and the locked folder are never asked for, and hidden people are never offered.
-  *(The exact filter name in the v3.2 search form is to be checked against the spec when
-  building.)*
+  asset id. Every image URL Stella hands out is **signed** (HMAC-SHA256 over the contact id,
+  the Immich person id, the asset id, the size and an expiry a day out), and is issued only
+  after the access layer has let the viewer see that contact. On every request the proxy checks
+  the signature and its expiry, then — through the access layer — that the viewer still sees
+  the contact, and that the contact is still linked to the person the photo was listed for.
+  Guessing or reusing ids from elsewhere gets nothing, and an unlink ends every URL issued
+  before it.
+- **Faces go through the same proxy** (§9.10). The picker's faces are signed for the contact
+  the picker was opened on, and served only while the viewer sees that contact.
+- **Immich's own hiding is respected.** Only photos in the timeline are fetched: the search
+  asks for `filter.visibility.eq = 'timeline'` (v3.2 form), so archived photos, the locked
+  folder and hidden assets are never asked for, and the parser drops any that come back anyway,
+  trashed ones too. Hidden people are never offered.
 - **The key never reaches a browser**, is never logged, and lives only in the environment,
   like the OIDC client secret.
 - Nothing from Immich is written into Stella except by *Use as photo*.
@@ -190,16 +194,21 @@ Following the GitHub release feed, the existing outbound-call pattern
   path must bypass the gateway. Otherwise a call carrying `x-api-key` is redirected to a
   login page.
 - **Port** `ImmichGateway` in `src/lib/server/domain/immich/`, narrow: `owner`, `version`,
-  `listNamedPeople`, `person`, `latestAssets(personIds, mode, limit)`, `thumbnail(assetId,
-  size)`, plus **pure parsers** for every untrusted payload.
+  `listPeople`, `searchPeople`, `person`, `personStatistics`, `personThumbnail`,
+  `latestAssets(personId, limit, cursor)` (slice 4 widens it to several people and a mode) and
+  `assetImage(assetId, size)`, plus **pure parsers** for every untrusted payload.
 - **Pure** matching in `src/lib/immich/match.ts` (name folding, likely/maybe) and a pure
   link builder (web, and later app links) — both test-first.
 - **Adapter** `src/lib/server/immich/http-gateway.ts`: injected `fetch`, a timeout, a capped
   body for JSON, 401/403/404 mapped to typed outcomes rather than throws.
-- **Proxy route** `src/routes/media/immich/+server.ts?u=<signed>`: signed-in member only,
-  verifies the signature and expiry, streams the bytes back with
-  `Cache-Control: private, max-age=86400` (never `immutable`: an Immich photo can be deleted
-  or archived). Only image content types pass.
+- **Proxy route** `src/routes/media/immich/[token]/+server.ts`: signed-in member only,
+  verifies the signature and expiry, the contact's visibility and its link, and sends the bytes
+  back with `Cache-Control: private, no-store` (§9.10). Only ordinary image content types pass,
+  never SVG. The token is `payload.mac`: the signed fields as base64url JSON, and an
+  HMAC-SHA256 over them with `SESSION_SECRET` (`domain/immich/signed-media.ts`).
+- **Strip route** `src/routes/(app)/contacts/[id]/immich/photos/+server.ts?cursor=`: a page of
+  twelve, newest first, each photo with a signed `thumbnail` and `preview` URL. Fetched by the
+  Photos card after the page, never in its `load`.
 - **Data model** (docs/03): one table,
   `immich_link(contact_id pk fk → contact, immich_person_id, linked_by, linked_at)`. Deleted
   with the contact, carried through a merge (docs/02 §2.2; two links on a merge keep the
@@ -255,6 +264,25 @@ Decided with the maintainer on 2026-10-04, while building slice 1:
    same words. A merge keeps the survivor's link.
 9. **The picker stays open to every member**, and so the face thumbnail route stays unsigned
    until slice 2 brings the signed proxy for photos (§5, docs/04 §4.9).
+
+Decided while building slice 2 (2026-10-04):
+
+10. **Faces move onto the signed proxy; the unsigned face route is gone.** One rule is easier to
+    keep than a rule and an exception: Stella serves no image from Immich without a signature it
+    issued, after the access layer let the viewer see a contact. The unsigned route took any
+    Immich person id from any signed-in member, so it also served the faces of people hidden in
+    Immich, which the picker never offers. Signing costs nothing the picker notices: its route
+    already answers each face, and now adds the face's URL, signed for the contact the picker is
+    for. The same proxy, the same checks, the same cache rule.
+11. **Nothing from Immich is cached, not even privately.** The proxy answers `private,
+    no-store` (§6 had planned `max-age=86400`): Immich may delete, archive or lock a photo away
+    at any moment, the household chose to keep nothing of Immich on a device (§4.5), and a
+    signed URL changes with every page anyway, so a cache would rarely be hit. A token works for
+    a day, as §5 planned — long enough for a page left open, and the proxy re-checks the viewer
+    and the link on every request regardless.
+12. **The strip shows photos only**, no videos: the viewer is a photo viewer, and a video's
+    still frame there would read as a photo. The count on the line stays Immich's own, videos
+    included.
 
 ---
 

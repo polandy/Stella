@@ -20,6 +20,7 @@
 	import { ulid } from 'ulid';
 	import ImmichFacePicker from './ImmichFacePicker.svelte';
 	import ImmichLine from './ImmichLine.svelte';
+	import ImmichStrip from './ImmichStrip.svelte';
 	import { INPUT } from './inputs';
 	import PhotoLightbox from './PhotoLightbox.svelte';
 	import type { PersonForm, PersonPageData } from './types';
@@ -93,8 +94,9 @@
 
 	/*
 	 * Immich (docs/concepts/immich.md §4.3): a quiet menu on the card — *Find in Immich*, or
-	 * *Unlink* once linked — and a line under the gallery. Neither exists without Immich, and
-	 * neither offline, where nothing from Immich is shown (§4.5).
+	 * *Unlink* once linked — and, for a linked person, a line and a strip of their latest photos
+	 * under the gallery. None of it exists without Immich, and none offline, where nothing from
+	 * Immich is shown (§4.5).
 	 */
 	let pickerOpen = $state(false);
 	const showImmich = $derived(data.immich !== null && reachability.reachable);
@@ -241,6 +243,9 @@
 
 		{#if showImmich}
 			<ImmichLine person={data.immichPerson} error={form?.immichError ?? null} />
+			{#if data.immich?.linked}
+				<ImmichStrip contactId={c.id} name={c.displayName} />
+			{/if}
 		{/if}
 
 		{#snippet editor()}

@@ -116,7 +116,8 @@ IMMICH_URL=                                   # empty: no Immich, and the featur
 IMMICH_PUBLIC_URL=                            # what "Open in Immich" links point at, e.g. https://immich.example.com;
                                               # empty: the same as IMMICH_URL
 IMMICH_API_KEY=                               # created in the admin's own Immich account, read scopes only:
-                                              # user.read, person.read, person.statistics. Never logged.
+                                              # user.read, person.read, person.statistics, asset.read,
+                                              # asset.view. Never logged.
 IMMICH_DEMO=false                             # true → an in-memory Immich for the demo household (needs SEED_DEMO=true;
                                               # the e2e server uses it). Never beside IMMICH_URL.
 

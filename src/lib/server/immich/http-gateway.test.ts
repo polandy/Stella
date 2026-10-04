@@ -4,12 +4,27 @@ import { createHttpImmichGateway } from './http-gateway';
 const BASE = 'http://immich-server:2283';
 const KEY = 'test-key-not-a-real-one';
 const ID = '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70';
+const ASSET = '00000000-4d5e-4f60-8a1b-2c3d4e5f6a70';
 
 /** A `fetch` that answers with what the test planted, recording each request. */
 function stub(answer: () => Response | Promise<Response>) {
-	const calls: { url: string; headers: Headers; signal: AbortSignal | null | undefined; redirect?: RequestRedirect }[] = [];
+	const calls: {
+		url: string;
+		method: string;
+		body: unknown;
+		headers: Headers;
+		signal: AbortSignal | null | undefined;
+		redirect?: RequestRedirect;
+	}[] = [];
 	const fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-		calls.push({ url: String(input), headers: new Headers(init?.headers), signal: init?.signal, redirect: init?.redirect });
+		calls.push({
+			url: String(input),
+			method: init?.method ?? 'GET',
+			body: typeof init?.body === 'string' ? JSON.parse(init.body) : undefined,
+			headers: new Headers(init?.headers),
+			signal: init?.signal,
+			redirect: init?.redirect
+		});
 		return answer();
 	}) as typeof globalThis.fetch;
 	const logged: string[] = [];
@@ -129,5 +144,76 @@ describe('createHttpImmichGateway', () => {
 			const { gateway } = stub(() => new Response('<svg onload="x()"/>', { headers: { 'content-type': type } }));
 			expect(await gateway.personThumbnail(ID)).toEqual({ ok: false, failure: 'unreachable' });
 		}
+	});
+
+	it('asks for a person’s latest photos in the timeline, newest first, a page at a time', async () => {
+		const { gateway, calls } = stub(() =>
+			json({
+				assets: {
+					items: [{ id: ASSET, type: 'IMAGE', visibility: 'timeline', localDateTime: '2026-08-14T18:30:00.000Z' }],
+					nextCursor: 'c2'
+				}
+			})
+		);
+		expect(await gateway.latestAssets(ID, 12, 'c1')).toEqual({
+			ok: true,
+			value: { assets: [{ id: ASSET, takenOn: '2026-08-14' }], nextCursor: 'c2' }
+		});
+		expect(calls[0].url).toBe(`${BASE}/api/search/metadata`);
+		expect(calls[0].method).toBe('POST');
+		expect(calls[0].headers.get('content-type')).toBe('application/json');
+		expect(calls[0].headers.get('x-api-key')).toBe(KEY);
+		expect(calls[0].body).toEqual({
+			filter: {
+				personIds: { any: [ID] },
+				type: { eq: 'IMAGE' },
+				visibility: { eq: 'timeline' }
+			},
+			orderBy: { field: 'fileCreatedAt', direction: 'desc' },
+			size: 12,
+			cursor: 'c1'
+		});
+	});
+
+	it('asks for the first page without a cursor', async () => {
+		const { gateway, calls } = stub(() => json({ assets: { items: [], nextCursor: null } }));
+		expect(await gateway.latestAssets(ID, 12, null)).toEqual({ ok: true, value: { assets: [], nextCursor: null } });
+		expect(calls[0].body).not.toHaveProperty('cursor');
+	});
+
+	it('reads a person Immich no longer has as not found, and a key without asset.read as forbidden', async () => {
+		expect(await stub(() => json({}, 400)).gateway.latestAssets(ID, 12, null)).toEqual({
+			ok: false,
+			failure: 'notFound'
+		});
+		expect(await stub(() => json({}, 403)).gateway.latestAssets(ID, 12, null)).toEqual({
+			ok: false,
+			failure: 'forbidden'
+		});
+	});
+
+	it('passes a photo on at the size asked for, with its image type', async () => {
+		const bytes = new Uint8Array([0x52, 0x49, 0x46, 0x46]);
+		for (const size of ['thumbnail', 'preview'] as const) {
+			const { gateway, calls } = stub(() => new Response(bytes, { headers: { 'content-type': 'image/webp' } }));
+			expect(await gateway.assetImage(ASSET, size)).toEqual({ ok: true, value: { bytes, contentType: 'image/webp' } });
+			expect(calls[0].url).toBe(`${BASE}/api/assets/${ASSET}/thumbnail?size=${size}`);
+		}
+	});
+
+	it('refuses a photo that is not an image, and reads a deleted one as not found', async () => {
+		const svg = stub(() => new Response('<svg/>', { headers: { 'content-type': 'image/svg+xml' } }));
+		expect(await svg.gateway.assetImage(ASSET, 'preview')).toEqual({ ok: false, failure: 'unreachable' });
+		expect(await stub(() => json({}, 400)).gateway.assetImage(ASSET, 'preview')).toEqual({
+			ok: false,
+			failure: 'notFound'
+		});
+	});
+
+	it('never asks Immich about a photo or a person whose id is not an Immich id', async () => {
+		const { gateway, calls } = stub(() => json({}));
+		expect(await gateway.assetImage('../users/me', 'preview')).toEqual({ ok: false, failure: 'notFound' });
+		expect(await gateway.latestAssets('../users/me', 12, null)).toEqual({ ok: false, failure: 'notFound' });
+		expect(calls).toHaveLength(0);
 	});
 });

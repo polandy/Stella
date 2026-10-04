@@ -10,6 +10,8 @@
  * session or a moment in time, and the lot is thrown away on sign-out.
  */
 
+import { IMMICH_MEDIA_PATH } from '../immich/media-url';
+
 /** Everything the policy needs to know about a request. */
 export interface CacheableRequest {
 	method: string;
@@ -46,9 +48,11 @@ const NEVER_CACHED = [
 	// describe work that is not happening.
 	'/settings/import',
 	'/settings/export',
-	// Faces from Immich: Immich owns them and may rename, merge or delete the person, and the
-	// device keeps no copy of anything from Immich (docs/concepts/immich.md §4.5).
-	'/media/immich'
+	// Faces and photos from Immich, through the signed proxy: Immich owns them and may delete,
+	// archive or lock one away, and the device keeps no copy of anything from Immich
+	// (docs/concepts/immich.md §4.5). The strip that lists them is a question with a query or
+	// none, and neither a page nor media, so it is never kept either.
+	IMMICH_MEDIA_PATH
 ];
 
 /**

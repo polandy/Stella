@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { answerFaceSearch } from '$lib/server/immich/routes';
-import { getContactDeps, getImmichLinkDeps } from '$lib/server/services';
+import { getContactDeps, getImmich, getImmichLinkDeps } from '$lib/server/services';
 import { say } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
@@ -12,9 +12,11 @@ import type { RequestHandler } from './$types';
  */
 export const GET: RequestHandler = async ({ locals, params, url }) => {
 	const viewer = locals.user ? { id: locals.user.id, householdId: locals.user.householdId } : null;
+	const linkDeps = getImmichLinkDeps();
+	const immich = getImmich();
 	const answer = await answerFaceSearch(
 		{
-			immich: getImmichLinkDeps(),
+			immich: linkDeps && immich ? { ...linkDeps, signer: immich.signer } : null,
 			isContactVisible: async (who, contactId) => (await getContact(getContactDeps(), who, contactId)) !== null,
 			say: (key) => say(locals, key)
 		},

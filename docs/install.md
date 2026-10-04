@@ -133,12 +133,14 @@ groups to create — is in [07 — Deployment §7.7](07-deployment.md#77-autheli
 
 If the household keeps its photos in [Immich](https://immich.app) 3.2 or newer, Stella can
 learn which Immich person each contact is: the person page then says how many photos Immich
-has of them, and takes you there in one tap. It is optional; without these values nothing of
+has of them, shows their latest, and takes you there in one tap. It is optional; without these values nothing of
 it appears.
 
 1. **Create a key in your own Immich account** — the admin's, not a shared one: *Account
    settings → API keys → New API key*. Give it only these read permissions: `user.read`,
-   `person.read` and `person.statistics`. Stella never writes to Immich.
+   `person.read`, `person.statistics`, `asset.read` and `asset.view`. Stella never writes to
+   Immich. A key made for an earlier Stella lacks the last two: Settings says so, and the
+   strip of photos stays away until the key has them.
 2. **Add three lines to `.env`:**
 
    ```
@@ -165,8 +167,9 @@ its `/api` path through without a login — otherwise every call Stella makes is
 page, and Settings says Immich did not answer.
 
 **What the key means.** It reads one library — yours. Everyone in the household can see how
-many photos of a linked person it holds, following who may see that person in Stella, and gets
-*Open in Immich*. That link shows the photos only to you, signed into your own Immich account;
+many photos of a linked person it holds and their latest photos, following who may see that
+person in Stella, and gets *Open in Immich*. Stella fetches those photos itself and keeps none
+of them, on the server or on anyone's device. That link shows the photos only to you, signed into your own Immich account;
 everyone else lands on Immich's sign-in or an empty page.
 
 ## Backups

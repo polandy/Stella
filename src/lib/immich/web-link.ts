@@ -10,3 +10,8 @@
 export function immichPersonUrl(publicUrl: string, personId: string): string {
 	return `${publicUrl.replace(/\/+$/, '')}/people/${encodeURIComponent(personId)}`;
 }
+
+/** One photo in Immich's web app, `{publicUrl}/photos/{assetId}`. */
+export function immichPhotoUrl(publicUrl: string, assetId: string): string {
+	return `${publicUrl.replace(/\/+$/, '')}/photos/${encodeURIComponent(assetId)}`;
+}

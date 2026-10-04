@@ -128,7 +128,9 @@ import { ulidGenerator } from './id';
 import { createDrizzleImmichLinkRepository } from './db/immich-link-repository';
 import { createImmichConnection, type ImmichConnection } from './domain/immich/connection';
 import type { ImmichGateway } from './domain/immich/gateway';
+import type { ImmichGlimpseDeps, ImmichMediaDeps } from './domain/immich/glimpse';
 import type { ImmichLinkDeps, ImmichLinkRepository } from './domain/immich/links';
+import { createImmichMediaSigner, type ImmichMediaSigner } from './domain/immich/signed-media';
 import { demoImmichLibrary } from './immich/demo-library';
 import { createFakeImmichGateway } from './immich/fake-gateway';
 import { createHttpImmichGateway } from './immich/http-gateway';
@@ -699,6 +701,8 @@ export interface Immich {
 	gateway: ImmichGateway;
 	connection: ImmichConnection;
 	publicUrl: string;
+	/** Signs every image URL the browser gets for Immich (docs/concepts/immich.md §5). */
+	signer: ImmichMediaSigner;
 }
 
 /*
@@ -718,18 +722,40 @@ export function getImmich(): Immich | null {
 	return (immich = {
 		gateway,
 		connection: createImmichConnection({ gateway, clock: systemClock }),
-		publicUrl: config.publicUrl
+		publicUrl: config.publicUrl,
+		// The session secret, which production refuses to start without; the signer keeps its own
+		// use of it apart from any other.
+		signer: createImmichMediaSigner({ secret: getConfig().sessionSecret, clock: systemClock })
 	});
 }
 
 let immichLinkRepository: ImmichLinkRepository | null = null;
+
+function getImmichLinks(): ImmichLinkRepository {
+	return (immichLinkRepository ??= createDrizzleImmichLinkRepository(getDb()));
+}
+
+/** Deps for the strip of a linked person's photos, or null without Immich. */
+export function getImmichGlimpseDeps(): ImmichGlimpseDeps | null {
+	const configured = getImmich();
+	if (!configured) return null;
+	const { gateway, signer, publicUrl } = configured;
+	return { links: getImmichLinks(), gateway, signer, publicUrl };
+}
+
+/** Deps for the signed proxy that serves every image from Immich, or null without Immich. */
+export function getImmichMediaDeps(): ImmichMediaDeps | null {
+	const configured = getImmich();
+	if (!configured) return null;
+	return { links: getImmichLinks(), contacts: getContacts(), gateway: configured.gateway, signer: configured.signer };
+}
 
 /** Deps for linking a contact to an Immich person, or null without Immich. */
 export function getImmichLinkDeps(): ImmichLinkDeps | null {
 	const configured = getImmich();
 	if (!configured) return null;
 	return {
-		links: (immichLinkRepository ??= createDrizzleImmichLinkRepository(getDb())),
+		links: getImmichLinks(),
 		contacts: getContacts(),
 		gateway: configured.gateway,
 		clock: systemClock,
