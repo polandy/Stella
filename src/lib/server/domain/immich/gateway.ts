@@ -75,6 +75,23 @@ export interface ImmichGateway {
 	personThumbnail(id: string): Promise<ImmichOutcome<ImmichImage>>;
 }
 
+/**
+ * The image types a face may be passed on as. SVG is not among them: it can carry script, and
+ * these bytes are served from Stella's own origin.
+ */
+const SERVABLE_IMAGE_TYPES: ReadonlySet<string> = new Set([
+	'image/jpeg',
+	'image/png',
+	'image/webp',
+	'image/avif',
+	'image/gif'
+]);
+
+/** Whether an image Immich sent may be served from Stella's origin as it is. */
+export function isServableImageType(contentType: string): boolean {
+	return SERVABLE_IMAGE_TYPES.has(contentType);
+}
+
 /** The read scopes the key needs in slice 1, named as Immich names them (concept §2). */
 export type ImmichScope = 'user.read' | 'person.read' | 'person.statistics';
 

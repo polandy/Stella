@@ -154,6 +154,9 @@ that safe:
 - **The link follows the contact.** Whoever can see a contact sees its Immich strip; a
   private contact's link and photos are seen only by those who see the contact (docs/02
   §2.10). The link is checked in the access layer like any child record.
+- **Faces are the exception, until slice 2.** The picker shows every member the library's named
+  faces (§9.4, §9.9), so the face route serves a face to any signed-in member without a
+  signature. It takes one Immich id and nothing else.
 - **Only the photos of linked people, never the library.** The proxy does not take a bare
   asset id. Every image URL Stella hands out is **signed** (HMAC over contact id, asset id,
   size and an expiry, about one day), and is issued only after the access layer has let the
@@ -240,6 +243,14 @@ Each slice is one PR with its UI, its docs (docs/02, docs/03, `using-stella.md`,
 6. **Phone deep links: test first** (§4.4), then choose between `my.immich.app` and
    `immich://`. Until then, the web link.
 7. **No writing back in the first version** (§7).
+
+Decided with the maintainer on 2026-10-04, while building slice 1:
+
+8. **One Immich person is one contact.** A face already linked elsewhere is refused, naming the
+   other person only to a member who may see them, and the picker greys such a face out with the
+   same words. A merge keeps the survivor's link.
+9. **The picker stays open to every member**, and so the face thumbnail route stays unsigned
+   until slice 2 brings the signed proxy for photos (§5, docs/04 §4.9).
 
 ---
 

@@ -1,5 +1,6 @@
 import {
 	isImmichId,
+	isServableImageType,
 	readOwner,
 	readPeoplePage,
 	readPerson,
@@ -32,12 +33,6 @@ const MAX_JSON_BYTES = 2 * 1024 * 1024;
 
 /** Most bytes read from a face thumbnail; Immich's are a few kilobytes. */
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
-
-/**
- * The image types a thumbnail may be passed on as. SVG is not among them: it can carry script,
- * and these bytes are served from Stella's own origin.
- */
-const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif']);
 
 export interface HttpImmichGatewayOptions {
 	/** How the server reaches Immich (`IMMICH_URL`), without a trailing slash. */
@@ -114,7 +109,7 @@ export function createHttpImmichGateway({
 
 	async function image(response: Response): Promise<ImmichImage | null> {
 		const contentType = (response.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase();
-		if (!IMAGE_TYPES.has(contentType)) return null;
+		if (!isServableImageType(contentType)) return null;
 		return { bytes: await readCapped(response, MAX_IMAGE_BYTES), contentType };
 	}
 
