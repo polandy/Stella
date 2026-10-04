@@ -130,7 +130,9 @@ The Photos section gains a row **below** Stella's own gallery, for a linked cont
 ### 4.4 On the phone
 
 Undecided until tested (§9.6). Until then, *Open in Immich* is the web link to the
-household's own domain, which opens in the browser. The test, on the Pixel 9 Pro, with the
+household's own domain, which opens in the browser. Behind a forward-auth gateway, that link
+passes the gateway's login first and then Immich's own sign-in. The key owner is usually
+signed into both already. The test, on the Pixel 9 Pro, with the
 app installed and without: `https://my.immich.app/people/{id}` and `immich://people?id=…`.
 
 ### 4.5 Loading and failure
@@ -175,6 +177,13 @@ Following the GitHub release feed, the existing outbound-call pattern
   `IMMICH_PUBLIC_URL` (what links point to; defaults to `IMMICH_URL`), `IMMICH_API_KEY`.
   Both URL and key, or neither; one without the other fails at start. docs/04's "no outbound
   calls except OIDC" line is updated, as the update check already broke it.
+- **Reaching Immich.** `IMMICH_URL` should be Immich's **internal** address when the two
+  containers share a network (e.g. `http://immich-server:2283`). The calls then skip the
+  reverse proxy, TLS, and any rate limiting or forward-auth in front of the public name. A
+  forward-auth gateway (Authelia and the like) in front of `IMMICH_PUBLIC_URL` does no harm,
+  because only browsers follow that URL. If `IMMICH_URL` has to be the public name, its `/api`
+  path must bypass the gateway. Otherwise a call carrying `x-api-key` is redirected to a
+  login page.
 - **Port** `ImmichGateway` in `src/lib/server/domain/immich/`, narrow: `owner`, `version`,
   `listNamedPeople`, `person`, `latestAssets(personIds, mode, limit)`, `thumbnail(assetId,
   size)`, plus **pure parsers** for every untrusted payload.
