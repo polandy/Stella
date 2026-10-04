@@ -52,8 +52,9 @@ Five facts shape the design:
    major. Stella uses the `filter`/`cursor` search form, which is v3.2+; it checks
    `GET /api/server/version` and says plainly when the server is older.
 5. **Deep links.** The web app has stable paths: `/people/{id}`, `/people/{id}/photos/{asset}`,
-   `/photos/{asset}`. They open only for someone **logged into the key owner's account**; in
-   anyone else's Immich they lead nowhere. The mobile apps open only
+   `/photos/{asset}`. They show the photos only to someone **logged into the key owner's
+   account**; anyone else lands on Immich's sign-in or an empty page. Stella still gives the
+   link to every member (§4.3), on purpose. The mobile apps open only
    `https://my.immich.app/people/{id}` (app link) or `immich://people?id=…`; a link to the
    household's own Immich domain stays in the browser.
 
@@ -114,10 +115,11 @@ The Photos section gains a row **below** Stella's own gallery, for a linked cont
 - Tapping a thumbnail opens a **small viewer in Stella**, the existing lightbox at Immich's
   `preview` size, with left/right through the strip. It works for everyone, whatever their
   own Immich account.
-- **Open in Immich** (on the heading and in the viewer) appears **only for the key owner** —
-  the one member for whom the link leads somewhere (fact 5). Stella knows who that is by
-  matching the email of `GET /api/users/me` to a Stella account; with no match the button is
-  shown to nobody.
+- **Open in Immich** (on the heading and in the viewer) appears for **every member who sees
+  the contact**, whenever Immich answered for that person. Stella compares no emails and does
+  not wait for the connection check. The link opens Immich as it is: someone not signed into
+  the key owner's account lands on Immich's sign-in or an empty page (fact 5). That is accepted
+  on purpose, over hiding the link from everyone but the key owner (decision 2026-10-04).
 - **"You and Julia"**: when the viewer's own contact (docs/02 §2.1.3) is linked too, a
   chip switches the strip to photos of both together (`personIds.all`). For a couple or a
   parent and child, *Together* also appears on the relationship row.
@@ -221,7 +223,7 @@ Following the GitHub release feed, the existing outbound-call pattern
 ## 8. Slices
 
 1. **Connect + link** — config, the status line, *Find in Immich* / *Unlink* on the person
-   page, the count, and *Open in Immich* for the key owner.
+   page, the count, and *Open in Immich* for every member.
 2. **Glimpse** — the signed proxy, the strip and the viewer.
 3. **Matching list** — the review of §4.2.
 4. **Together** — the *You and Julia* chip and the relationship-row chip.
@@ -236,7 +238,9 @@ Each slice is one PR with its UI, its docs (docs/02, docs/03, `using-stella.md`,
 
 1. **One household key**, set by the admin in the environment — not a key per member.
 2. **The key is the maintainer's own account**; the other members have their own Immich
-   accounts. Hence the viewer inside Stella, and *Open in Immich* only for the key owner.
+   accounts. Hence the viewer inside Stella. *Open in Immich* is shown to every member all the
+   same (revised 2026-10-04): it shows the photos only in the key owner's session, and the
+   others land on Immich's sign-in or an empty page.
 3. **Immich photos are shared with the household**, following the contact's visibility (§5).
 4. **Any member can link** a contact to an Immich person, like any other household data.
 5. **Immich 3.2 or newer.** Older servers get a clear message, and Stella keeps one code path.

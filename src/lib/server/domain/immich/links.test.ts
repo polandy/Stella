@@ -3,7 +3,6 @@ import type { Viewer } from '../../access/visibility';
 import type { NewActivityEntry } from '../activity/activity';
 import { ContactGoneError } from '../contacts/require-visible';
 import { createFakeImmichGateway } from '../../immich/fake-gateway';
-import { createImmichConnection } from './connection';
 import {
 	findImmichFaces,
 	IMMICH_LINK_ENTITY,
@@ -269,13 +268,12 @@ describe('unlinkFromImmich', () => {
 
 describe('readLinkedPerson', () => {
 	function linked(gateway = createFakeImmichGateway(testLibrary())) {
-		const connection = createImmichConnection({ gateway, clock: { now: () => NOW } });
-		return { gateway, deps: { gateway, connection, publicUrl: PUBLIC_URL } };
+		return { gateway, deps: { gateway, publicUrl: PUBLIC_URL } };
 	}
 
-	it('gives the key owner the count and the way into Immich', async () => {
+	it('gives the count and the way into Immich', async () => {
 		const { deps } = linked();
-		expect(await readLinkedPerson(deps, BERT_ID, 'anna@example.test')).toEqual({
+		expect(await readLinkedPerson(deps, BERT_ID)).toEqual({
 			state: 'linked',
 			name: 'Bert Example',
 			photoCount: 1284,
@@ -283,30 +281,31 @@ describe('readLinkedPerson', () => {
 		});
 	});
 
-	it('gives every other member the count, and no link that would lead nowhere', async () => {
-		const { deps } = linked();
-		const seen = await readLinkedPerson(deps, BERT_ID, 'bert@example.test');
-		expect(seen).toMatchObject({ state: 'linked', photoCount: 1284, openUrl: null });
+	it('keeps the way into Immich whenever the person answered, whatever the connection check says', async () => {
+		const { deps, gateway } = linked();
+		gateway.failing = { version: 'unreachable' };
+		const seen = await readLinkedPerson(deps, BERT_ID);
+		expect(seen).toMatchObject({ state: 'linked', openUrl: `${PUBLIC_URL}/people/${BERT_ID}` });
 	});
 
 	it('says when the person was deleted in Immich', async () => {
 		const { deps, gateway } = linked();
 		gateway.library.people = [];
-		expect(await readLinkedPerson(deps, BERT_ID, 'anna@example.test')).toEqual({ state: 'personGone' });
+		expect(await readLinkedPerson(deps, BERT_ID)).toEqual({ state: 'personGone' });
 	});
 
 	it('says when Immich did not answer, or no longer takes the key', async () => {
 		for (const failure of ['unreachable', 'unauthorized'] as const) {
 			const { deps, gateway } = linked();
 			gateway.failing = { person: failure };
-			expect(await readLinkedPerson(deps, BERT_ID, 'anna@example.test')).toEqual({ state: 'unreachable' });
+			expect(await readLinkedPerson(deps, BERT_ID)).toEqual({ state: 'unreachable' });
 		}
 	});
 
 	it('leaves the count out when the key may not read it, rather than failing the line', async () => {
 		const { deps, gateway } = linked();
 		gateway.failing = { personStatistics: 'forbidden' };
-		expect(await readLinkedPerson(deps, BERT_ID, 'bert@example.test')).toMatchObject({
+		expect(await readLinkedPerson(deps, BERT_ID)).toMatchObject({
 			state: 'linked',
 			photoCount: null
 		});

@@ -6,7 +6,7 @@
 
 	/*
 	 * The line under a linked person's gallery (docs/concepts/immich.md §4.3, §4.5): how many
-	 * photos Immich has of them and, for the key owner only, the way there. It fills in after the
+	 * photos Immich has of them and, for every member, the way there. It fills in after the
 	 * page — the answer is a promise — so a slow Immich never holds the page up, and a failure
 	 * is one quiet line rather than an error page. A person deleted in Immich offers the unlink.
 	 */
@@ -39,17 +39,15 @@
 								? t('immich.row.label')
 								: t('immich.row.photos', { count: seen.photoCount, shown: shownCount(seen.photoCount) })}
 						</span>
-						{#if seen.openUrl}
-							<a
-								href={seen.openUrl}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="inline-flex items-center gap-1 font-medium text-link hover:underline"
-								data-testid="immich-open"
-							>
-								{t('immich.row.open')}<Icon name="openElsewhere" size={13} />
-							</a>
-						{/if}
+						<a
+							href={seen.openUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-1 font-medium text-link hover:underline"
+							data-testid="immich-open"
+						>
+							{t('immich.row.open')}<Icon name="openElsewhere" size={13} />
+						</a>
 					{:else if seen.state === 'personGone'}
 						<span class="text-fg-muted">{t('immich.row.gone')}</span>
 						<form method="POST" action="?/unlinkImmich" class="contents">

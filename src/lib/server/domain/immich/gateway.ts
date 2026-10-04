@@ -123,7 +123,7 @@ export function readVersion(payload: unknown): ImmichVersion | null {
 	return { major, minor, patch };
 }
 
-/** The key's owner, or null without an email — the email is how Stella recognises them. */
+/** The key's owner, or null without an email — Settings names whose library Stella reads by it. */
 export function readOwner(payload: unknown): ImmichOwner | null {
 	const body = objectOf(payload);
 	if (!body || typeof body.email !== 'string' || body.email === '') return null;
