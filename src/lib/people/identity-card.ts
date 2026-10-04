@@ -94,6 +94,19 @@ export function addressLine(fields: readonly { kind: string; value: string }[]):
 		.join(', ');
 }
 
+/**
+ * Which confirm step a look at this person's page opens on its own: the merge step when a
+ * *same person?* link sent an admin here, otherwise none. Used both at mount and whenever the
+ * page keeps its identity card across a client-side navigation to somebody else's page — so an
+ * open step does not follow a reader from the person who opened it to the next (docs/05 §5.5).
+ */
+export function initialPanel(
+	mergeTargetId: string | null,
+	isAdmin: boolean
+): 'archive' | 'merge' | 'delete' | null {
+	return mergeTargetId !== null && isAdmin ? 'merge' : null;
+}
+
 /** An entry of the card's ⋯ menu, or the line between the two groups. */
 export type RecordMenuEntry =
 	| 'logContact'

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { addressLine, ageOn, birthdayFact, profileRows, recordMenu } from './identity-card';
+import { addressLine, ageOn, birthdayFact, initialPanel, profileRows, recordMenu } from './identity-card';
 
 /*
  * The identity card at the top of a person's page (docs/05 §5.5): which facts it states, which
@@ -146,5 +146,16 @@ describe('recordMenu', () => {
 	it('keeps merging and deleting for admins, and the path for a household with others in it', () => {
 		const menu = recordMenu({ ...viewer, isAdmin: false, canTracePath: false });
 		expect(menu).toEqual(['logContact', 'divider', 'thisIsMe', 'archive']);
+	});
+});
+
+describe('initialPanel', () => {
+	it('opens the merge step for an admin who followed a "same person?" link', () => {
+		expect(initialPanel('contact-2', true)).toBe('merge');
+	});
+
+	it('opens nothing without a merge target, or for a non-admin carrying one', () => {
+		expect(initialPanel(null, true)).toBeNull();
+		expect(initialPanel('contact-2', false)).toBeNull();
 	});
 });

@@ -11,7 +11,14 @@
 	import { accentDotStyle } from '$lib/design/tokens';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { addressLine, birthdayFact, profileRows, recordMenu, type ProfileRow } from '$lib/people/identity-card';
+	import {
+		addressLine,
+		birthdayFact,
+		initialPanel,
+		profileRows,
+		recordMenu,
+		type ProfileRow
+	} from '$lib/people/identity-card';
 	import { jobErrorFor, jobShortForm } from '$lib/people/job';
 	import { tick, untrack, type Snippet } from 'svelte';
 	import type { IconName } from '$lib/components/icons';
@@ -117,8 +124,19 @@
 	const menu = $derived(recordMenu({ isAdmin: data.isAdmin, archived, isSelf, canTracePath: otherContacts.length > 0 }));
 	/** The confirm step the menu opened; `?merge=` opens merging (docs/concepts/surnames.md §5). */
 	let panel = $state<'archive' | 'merge' | 'delete' | null>(
-		untrack(() => (page.url.searchParams.get('merge') !== null && data.isAdmin ? 'merge' : null))
+		untrack(() => initialPanel(page.url.searchParams.get('merge'), data.isAdmin))
 	);
+	/*
+	 * This component outlives any one person: following a link from their page to somebody
+	 * else's keeps it mounted, with only `data` changing underneath. Without this, a step left
+	 * open (Archive, Merge, Delete) would follow the reader to the next person's page too.
+	 */
+	let panelContactId = untrack(() => c.id);
+	$effect(() => {
+		if (c.id === panelContactId) return;
+		panelContactId = c.id;
+		panel = initialPanel(page.url.searchParams.get('merge'), data.isAdmin);
+	});
 
 	const ITEM_SHAPE =
 		'flex w-full items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm hover:bg-primary-soft focus-visible:bg-primary-soft';
