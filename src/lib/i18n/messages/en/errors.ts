@@ -12,6 +12,8 @@ export const errors = {
 		`${p.name} already has a different last name. Tick them to replace it.`,
 	'errors.contact.emptyName': 'A name cannot be empty.',
 	'errors.contact.invalidGender': 'Choose female, male or diverse.',
+	'errors.contact.jobFieldTooLong': (p: { max: number }) =>
+		`Keep the job title and the company to ${p.max} characters each.`,
 	'errors.contact.needsSomethingToKnowThemBy':
 		'Add a last name or a description, so this person can be told apart from others of the same name later.',
 	'errors.contact.emptyDescription': 'Write something to know them by.',

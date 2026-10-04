@@ -3,6 +3,8 @@ import type { ComponentsMessages } from '../en/components';
 /** German for `messages/en/components.ts`. */
 export const components: ComponentsMessages = {
 	'components.foundByFormerName': (p) => `(früher ${p.name})`,
+	'components.foundByJob': 'Beruf',
+	'components.foundByJobHint': 'Über Beruf oder Firma gefunden',
 	'components.saved': 'Gespeichert',
 	'components.photo.add': 'Foto hinzufügen',
 	'components.photo.change': 'Foto ändern',

@@ -14,6 +14,9 @@ export interface DirectoryPerson {
 	/** A maiden or other earlier name: who someone was is still how some remember them. */
 	formerName?: string | null;
 	description: string | null;
+	/** What they do and where: a teacher is often remembered as "the teacher" (docs/02 §2.2). */
+	jobTitle?: string | null;
+	company?: string | null;
 }
 
 /** The people under one letter heading. */
@@ -61,12 +64,21 @@ export function groupByLetter<T extends DirectoryPerson>(people: T[]): LetterGro
 	);
 }
 
-/** Whether a typed query finds this person, by any name they go by or how they are described. */
+/** Whether a typed query finds this person, by any name they go by, how they are described, or their job. */
 export function matchesQuery(person: DirectoryPerson, query: string): boolean {
 	const needle = fold(query.trim());
 	if (needle === '') return true;
 	const haystack = fold(
-		[person.displayName, person.firstName, person.lastName, person.nickname, person.formerName, person.description]
+		[
+			person.displayName,
+			person.firstName,
+			person.lastName,
+			person.nickname,
+			person.formerName,
+			person.description,
+			person.jobTitle,
+			person.company
+		]
 			.filter((part): part is string => typeof part === 'string')
 			.join(' ')
 	);

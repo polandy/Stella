@@ -1,5 +1,7 @@
 <script lang="ts">
 	import FormerlyMark from '$lib/components/FormerlyMark.svelte';
+	import FoundByJobMark from '$lib/components/FoundByJobMark.svelte';
+	import JobLine from '$lib/components/JobLine.svelte';
 	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -125,13 +127,14 @@
 					{:else}
 						<span class="grid size-6 place-items-center text-fg-subtle"><Icon name={row.icon} size={15} /></span>
 					{/if}
-					{#if row.kind === 'person' && row.distinction}
+					{#if row.kind === 'person' && (row.distinction || row.job)}
 						<span class="min-w-0">
-							<span class="block truncate">{row.label}<FormerlyMark name={row.formerly} /></span>
-							<NamesakeLine distinction={row.distinction} />
+							<span class="block truncate">{row.label}<FormerlyMark name={row.formerly} /><FoundByJobMark found={row.foundByJob} /></span>
+							{#if row.distinction}<NamesakeLine distinction={row.distinction} />{/if}
+							<JobLine job={row.job} small />
 						</span>
 					{:else}
-						<span class="truncate">{row.label}{#if row.kind === 'person'}<FormerlyMark name={row.formerly} />{/if}</span>
+						<span class="truncate">{row.label}{#if row.kind === 'person'}<FormerlyMark name={row.formerly} /><FoundByJobMark found={row.foundByJob} />{/if}</span>
 					{/if}
 					{#if row.kind !== 'person'}<span class="ml-auto text-xs text-fg-subtle">{row.kind === 'search' ? t('components.palette.kindSearch') : t('components.palette.kindAction')}</span>{/if}
 				</a>

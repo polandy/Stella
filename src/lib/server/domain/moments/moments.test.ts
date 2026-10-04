@@ -23,6 +23,8 @@ function summary(c: NewContact): ContactSummary {
 		lastName: c.lastName,
 		nickname: c.nickname,
 		formerName: null,
+		jobTitle: null,
+		company: null,
 		description: c.description,
 		metPlace: c.metPlace ?? null,
 		metDate: c.metDate ?? null,
@@ -66,6 +68,7 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 			// The moment capture never edits a profile; present because the port requires it.
 			async updateProfile() {},
 			async setGender() {},
+			async setJob() {},
 		async setArchived() {},
 		async listArchivedVisibleTo() {
 			return [];

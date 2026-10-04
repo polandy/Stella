@@ -4,6 +4,7 @@ import {
 	Blend,
 	BookmarkPlus,
 	BookOpen,
+	Briefcase,
 	CalendarDays,
 	Check,
 	ChevronLeft,
@@ -100,6 +101,8 @@ export const ICONS = {
 	self: UserRound,
 	// A step already taken, on the first-run card (docs/02 §2.22.3).
 	done: Check,
+	// What someone does and where (docs/02 §2.2).
+	work: Briefcase,
 	calendar: CalendarDays,
 	shared: UsersRound,
 	// Interaction kinds (docs/02 §2.6)

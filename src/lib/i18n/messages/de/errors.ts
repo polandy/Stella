@@ -10,6 +10,7 @@ export const errors: ErrorsMessages = {
 		`${p.name} hat schon einen anderen Nachnamen. Zum Ersetzen die Person ankreuzen.`,
 	'errors.contact.emptyName': 'Ein Name darf nicht leer sein.',
 	'errors.contact.invalidGender': 'Bitte weiblich, männlich oder divers wählen.',
+	'errors.contact.jobFieldTooLong': (p) => `Berufsbezeichnung und Firma höchstens je ${p.max} Zeichen.`,
 	'errors.contact.needsSomethingToKnowThemBy':
 		'Gib einen Nachnamen oder eine Beschreibung an, damit man die Person später von anderen mit demselben Namen unterscheiden kann.',
 	'errors.contact.emptyDescription': 'Schreib etwas, woran man die Person erkennt.',

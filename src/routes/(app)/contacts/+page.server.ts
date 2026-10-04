@@ -49,6 +49,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			nickname: c.nickname,
 			formerName: c.formerName,
 			description: c.description,
+			jobTitle: c.jobTitle,
+			company: c.company,
 			avatarPhotoId: c.avatarPhotoId,
 			visibility: c.visibility,
 			lastTouchedOn: lastTouchedOn.get(c.id) ?? null

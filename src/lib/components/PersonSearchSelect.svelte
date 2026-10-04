@@ -1,5 +1,8 @@
 <script lang="ts">
 	import FormerlyMark from '$lib/components/FormerlyMark.svelte';
+	import FoundByJobMark from '$lib/components/FoundByJobMark.svelte';
+	import JobLine from '$lib/components/JobLine.svelte';
+	import { foundByJob } from '$lib/people/job';
 	import { foundByFormerName } from '$lib/people/former-name';
 	import { tick } from 'svelte';
 	import Avatar from '$lib/components/Avatar.svelte';
@@ -548,8 +551,9 @@
 								>
 									<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={22} />
 									<span class="min-w-0">
-										<span class="block truncate">{person.displayName}<FormerlyMark name={foundByFormerName(person, query)} /></span>
+										<span class="block truncate">{person.displayName}<FormerlyMark name={foundByFormerName(person, query)} /><FoundByJobMark found={foundByJob(person, query)} /></span>
 										{#if namesakeLine}<NamesakeLine distinction={namesakeLine} />{/if}
+										<JobLine job={person} small />
 									</span>
 								</button>
 							</li>

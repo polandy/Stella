@@ -19,6 +19,7 @@ import { mergeContacts } from './contact-merge';
 import type { NameCandidate, NameCandidateSource } from '../domain/contacts/suggestions';
 import type { NameRepository, NameWrite } from '../domain/contacts/name-parts';
 import { readGender, type Gender } from '../../people/gender';
+import type { Job } from '../../people/job';
 import type * as schema from './schema';
 import {
 	activityLog,
@@ -47,7 +48,9 @@ const summaryColumns = {
 	metDate: contactTable.metDate,
 	visibility: contactTable.visibility,
 	avatarPhotoId: contactTable.avatarPhotoId,
-	birthDate: contactTable.birthDate
+	birthDate: contactTable.birthDate,
+	jobTitle: contactTable.jobTitle,
+	company: contactTable.company
 };
 
 /** The profile columns a merge combines (docs/02 §2.2) — every one that can be empty. */
@@ -91,6 +94,8 @@ const contactColumns = {
 	birthDate: contactTable.birthDate,
 	birthDatePrecision: contactTable.birthDatePrecision,
 	gender: contactTable.gender,
+	jobTitle: contactTable.jobTitle,
+	company: contactTable.company,
 	isDeceased: contactTable.isDeceased,
 	archivedAt: contactTable.archivedAt,
 	createdAt: contactTable.createdAt,
@@ -341,6 +346,10 @@ export function createDrizzleContactRepository(
 
 		async setGender(id: string, gender: Gender | null, updatedAt: number) {
 			db.update(contactTable).set({ gender, updatedAt }).where(eq(contactTable.id, id)).run();
+		},
+
+		async setJob(id: string, job: Job, updatedAt: number) {
+			db.update(contactTable).set({ ...job, updatedAt }).where(eq(contactTable.id, id)).run();
 		},
 
 		async writeNames(writes: readonly NameWrite[], audit: NewActivityEntry | null) {

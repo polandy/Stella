@@ -5,6 +5,8 @@
 	import CirclesRow from './CirclesRow.svelte';
 	import ContactFieldsRow from './ContactFieldsRow.svelte';
 	import ImportantDatesRow from './ImportantDatesRow.svelte';
+	import JobRow from './JobRow.svelte';
+	import { jobErrorFor } from '$lib/people/job';
 	import RecordActions from './RecordActions.svelte';
 	import TagsRow from './TagsRow.svelte';
 	import type { PersonForm, PersonPageData } from './types';
@@ -34,6 +36,7 @@
 <section class="flex flex-col rounded-app bg-card p-4 shadow-card">
 	<h2 class="mb-1 text-sm font-semibold text-fg">{t('contact.section.profile')}</h2>
 	<GenderRow gender={c.gender} error={form?.genderError ?? null} />
+	<JobRow jobTitle={c.jobTitle} company={c.company} error={jobErrorFor('profile', form)} />
 	<ContactFieldsRow {data} {form} />
 
 	<ImportantDatesRow {data} {form} />

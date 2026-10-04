@@ -35,7 +35,7 @@ function fakes() {
 		findByIdVisibleTo: async (viewer: Viewer, id: string) => {
 			const found = inserted.find((c) => c.id === id && c.householdId === viewer.householdId);
 			const contact: Contact | null = found
-				? { ...found, formerName: null, avatarPhotoId: null, isDeceased: false, archivedAt: null }
+				? { ...found, formerName: null, jobTitle: null, company: null, avatarPhotoId: null, isDeceased: false, archivedAt: null }
 				: null;
 			return contact;
 		},
@@ -49,6 +49,7 @@ function fakes() {
 		listDistinguishableVisibleTo: unused,
 		updateProfile: unused,
 		setGender: unused,
+		setJob: unused,
 		setArchived: unused,
 		deleteVisibleTo: unused,
 		readForMerge: unused,
