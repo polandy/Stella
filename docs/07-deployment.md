@@ -108,6 +108,18 @@ UPDATE_CHECK=true                             # Settings → About says when a n
 UPDATE_FEED_URL=                              # leave empty: Stella's own releases. A fork points this at its own
                                               # `releases/latest`; the e2e suite points it at a local stub
 
+# --- Immich (optional; docs/02 §2.24, install.md) ---
+IMMICH_URL=                                   # empty: no Immich, and the feature appears nowhere. Otherwise how the
+                                              # server reaches Immich — best its internal address on a shared
+                                              # network, e.g. http://immich-server:2283. Set together with the key;
+                                              # one without the other stops the server at start.
+IMMICH_PUBLIC_URL=                            # what "Open in Immich" links point at, e.g. https://immich.example.com;
+                                              # empty: the same as IMMICH_URL
+IMMICH_API_KEY=                               # created in the admin's own Immich account, read scopes only:
+                                              # user.read, person.read, person.statistics. Never logged.
+IMMICH_DEMO=false                             # true → an in-memory Immich for the demo household (needs SEED_DEMO=true;
+                                              # the e2e server uses it). Never beside IMMICH_URL.
+
 # --- Test phase (leave off for real use) ---
 SEED_DEMO=false                               # true → seed the Brunner demo dataset on startup (idempotent);
                                               # on a fresh DB also creates admin demo@stella.local / stella-demo-1234

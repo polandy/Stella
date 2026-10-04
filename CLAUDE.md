@@ -66,6 +66,8 @@ Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) �
 | `src/lib/stream/` | **pure** household-stream filter: kinds, the `?kind=`/`?by=` codec, what the chips show (test-first) |
 | `src/lib/pwa/` | **pure** install/offline policy: manifest, cache rules, icon geometry, reachability protocol, the outbox's states (test-first). `src/service-worker.ts`, `install.svelte.ts`, `reachability.svelte.ts`, `outbox.svelte.ts` and `outbox-store.ts` are the adapters — they hold browser APIs, never a decision |
 | `src/lib/commands/` | **pure** command vocabulary shared by phone and server; the dispatcher that applies a command once is `src/lib/server/domain/commands/`, the wire edge `src/lib/server/commands/` (`docs/04` §4.11.2) |
+| `src/lib/immich/` | **pure** Immich links the browser sees: the web deep link, the face-thumbnail URL (test-first) |
+| `src/lib/server/immich/` | Immich adapter: env config, `http-gateway.ts` (the only `fetch` to Immich; the key never leaves it), the face routes' answers (`routes.ts`), the demo/fake gateway; the port and use-cases live in `domain/immich/` |
 | `src/lib/graph/model/` | **pure** graph domain: `GraphModel`, `buildEgoNetwork`, `expandNode`, `findConnectionPath`, `applyFilters` (test-first) |
 | `src/lib/graph/layout/` | **pure** arrangements as positions: family tree, groups by circle; the density and legibility numbers the canvas is drawn at (test-first) |
 | `src/lib/graph/keyboard.ts` | **pure** keyboard walk over the map: which key steps to whom (test-first) |

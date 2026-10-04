@@ -5,6 +5,7 @@ import { loadCatalog } from '$lib/i18n/translate';
 import { clearSessionCookie, SESSION_COOKIE, setLocaleCookie } from '$lib/server/auth/cookies';
 import { resolveRequestIdentity } from '$lib/server/auth/request-identity';
 import { etagOf, isUnchanged, wantsEtag } from '$lib/server/http/etag';
+import { getConfig } from '$lib/server/config';
 import { getAccounts, getApiTokenDeps, getSessionDeps } from '$lib/server/services';
 
 /*
@@ -22,6 +23,9 @@ import { getAccounts, getApiTokenDeps, getSessionDeps } from '$lib/server/servic
  * `say()` translate synchronously from here on.
  */
 export const init: ServerInit = async () => {
+	// Read the configuration now, so a half-made one (Immich's URL without its key, say) stops
+	// the server at start rather than on the first page somebody opens.
+	getConfig();
 	await Promise.all(LOCALES.map((locale) => loadCatalog(locale)));
 };
 

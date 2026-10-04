@@ -45,7 +45,10 @@ const NEVER_CACHED = [
 	// The import and export screens report on a run: replayed from a cache they would
 	// describe work that is not happening.
 	'/settings/import',
-	'/settings/export'
+	'/settings/export',
+	// Faces from Immich: Immich owns them and may rename, merge or delete the person, and the
+	// device keeps no copy of anything from Immich (docs/concepts/immich.md §4.5).
+	'/media/immich'
 ];
 
 /**

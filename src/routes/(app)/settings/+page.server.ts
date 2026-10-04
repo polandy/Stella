@@ -6,13 +6,19 @@ import {
 } from '$lib/server/domain/household/self-contact';
 import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/contacts';
 import { countLastNames } from '$lib/server/domain/contacts/last-names';
-import { getContactDeps, getSelfContactDeps, getSurnameReviewDeps, getUpdateCheck } from '$lib/server/services';
+import {
+	getContactDeps,
+	getImmich,
+	getSelfContactDeps,
+	getSurnameReviewDeps,
+	getUpdateCheck
+} from '$lib/server/services';
 import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
 /**
  * Settings landing (docs/02 §2.17): the language, who you are, the data-quality checks, the
- * admin "Data" section and the "About" line.
+ * admin "Data" section, Immich when it is configured, and the "About" line.
  *
  * The release check is handed over as a promise on purpose (docs/02 §2.17.1): the page is
  * rendered and sent at once, and the line about a newer version fills itself in when GitHub
@@ -32,7 +38,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 		firstNameOnlyCount,
 		lastNames,
 		version: APP_VERSION,
-		update: check?.status() ?? null
+		update: check?.status() ?? null,
+		// Immich's line (docs/concepts/immich.md §4.1), streamed like the release check; null
+		// when this instance has no Immich, and then the section is not there at all.
+		immich: getImmich()?.connection.status() ?? null
 	};
 };
 

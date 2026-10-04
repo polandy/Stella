@@ -36,4 +36,5 @@ resolves by opening the matching file below).
 - [2.20 Personal journal (per-person diary)](features/2.20-personal-journal.md) **[M2]**
 - [2.22 Moments & the household stream](features/2.22-moments-household-stream.md) **[M2]**
 - [2.23 The story timeline](features/2.23-story-timeline.md) **[M2]**
+- [2.24 A person's photos, from Immich](features/2.24-immich.md) **[M3]** — optional
 - [2.21 Feature ↔ milestone summary](features/2.21-feature-milestone-summary.md)

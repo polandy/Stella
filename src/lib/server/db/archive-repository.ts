@@ -51,6 +51,8 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	{ table: 'photo', where: 't.household_id = ?' },
 	{ table: 'tag', where: 't.household_id = ?' },
 	{ table: 'contact_tag', where: viaContact() },
+	// Which Immich person a contact is; the photos themselves stay in Immich (docs/concepts/immich.md §6).
+	{ table: 'immich_link', where: viaContact() },
 	{ table: 'circle', where: 't.household_id = ?' },
 	{ table: 'circle_membership', where: `t.circle_id IN (SELECT id FROM circle WHERE household_id = ?)` },
 	{ table: 'activity_log', where: 't.household_id = ?' },

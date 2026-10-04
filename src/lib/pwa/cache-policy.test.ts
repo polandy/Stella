@@ -37,6 +37,10 @@ describe('what may be kept on the device', () => {
 		expect(verdictFor(asset('/media/abc'))).toBe('keep');
 	});
 
+	it('never keeps a face from Immich, which Immich may change or delete (docs/concepts/immich.md §4.5)', () => {
+		expect(verdictFor(asset('/media/immich/people/0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70/thumbnail'))).toBe('skip');
+	});
+
 	it('keeps a group photo’s 1600 px view, which its lightbox shows', () => {
 		expect(verdictFor(asset('/media/abc?view'))).toBe('keep');
 		expect(cacheKeyFor(asset('/media/abc?view'))).not.toBe(cacheKeyFor(asset('/media/abc')));

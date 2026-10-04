@@ -14,6 +14,7 @@ import {
 	DownloadCloud,
 	Download,
 	Ellipsis,
+	ExternalLink,
 	Gift,
 	Handshake,
 	House,
@@ -38,6 +39,7 @@ import {
 	UserRoundPen,
 	UsersRound,
 	Video,
+	Unlink,
 	Waypoints,
 	X
 } from '@lucide/svelte';
@@ -103,6 +105,10 @@ export const ICONS = {
 	done: Check,
 	// What someone does and where (docs/02 §2.2).
 	work: Briefcase,
+	// Leaving Stella for another app — *Open in Immich* (docs/concepts/immich.md §4.3).
+	openElsewhere: ExternalLink,
+	// Undoing a link to another app's record, not deleting anything.
+	unlink: Unlink,
 	calendar: CalendarDays,
 	shared: UsersRound,
 	// Interaction kinds (docs/02 §2.6)

@@ -13,6 +13,7 @@ import { contacts } from './contacts';
 import { dates } from './dates';
 import { errors } from './errors';
 import { home } from './home';
+import { immich } from './immich';
 import { importer } from './import';
 import { interactions } from './interactions';
 import { journal } from './journal';
@@ -37,6 +38,7 @@ export const de = {
 	...dates,
 	...errors,
 	...home,
+	...immich,
 	...importer,
 	...interactions,
 	...journal,

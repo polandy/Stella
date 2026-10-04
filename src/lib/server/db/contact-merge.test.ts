@@ -257,6 +257,30 @@ describe('what would collide', () => {
 	});
 });
 
+describe('the link to Immich', () => {
+	const PERSON_A = '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70';
+	const PERSON_B = '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81';
+	const linkOf = (contactId: string, immichPersonId: string) =>
+		db.insert(schema.immichLink).values({ contactId, immichPersonId, linkedBy: U1, linkedAt: 1 }).run();
+
+	it('carries the merged record’s link to a survivor that had none', () => {
+		linkOf('dup', PERSON_A);
+		expect(merge()).toBe(true);
+		expect(db.select().from(schema.immichLink).all()).toEqual([
+			{ contactId: 'keep', immichPersonId: PERSON_A, linkedBy: U1, linkedAt: 1 }
+		]);
+	});
+
+	it('keeps the survivor’s link when both records were linked (docs/concepts/immich.md §6)', () => {
+		linkOf('keep', PERSON_A);
+		linkOf('dup', PERSON_B);
+		expect(merge()).toBe(true);
+		expect(db.select().from(schema.immichLink).all().map((l) => [l.contactId, l.immichPersonId])).toEqual([
+			['keep', PERSON_A]
+		]);
+	});
+});
+
 describe('profile pictures cut from a group photo', () => {
 	// docs/concepts/circle-photos.md §5.2: one cut per person and photo, and a cut nobody wears
 	// any more is a photo of its own. Both records cut from one class photo would otherwise clash.

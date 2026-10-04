@@ -35,7 +35,9 @@ const DEDUPED_BY_KEY: readonly { table: string; column: string }[] = [
 	{ table: 'note_mention', column: 'contact_id' },
 	{ table: 'journal_mention', column: 'contact_id' },
 	{ table: 'interaction_participant', column: 'contact_id' },
-	{ table: 'contact_tag', column: 'contact_id' }
+	{ table: 'contact_tag', column: 'contact_id' },
+	// One Immich link per person: a survivor that has one keeps it (docs/concepts/immich.md §6).
+	{ table: 'immich_link', column: 'contact_id' }
 ];
 
 /** Tables that simply follow the contact, with nothing that could collide. */
