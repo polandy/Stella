@@ -261,7 +261,9 @@ changes over the years, a child especially: their old photos stay right here to 
 **Photos from Immich.** If your household's photos live in Immich and the admin has connected
 it (see *Installation*), the Photos card has a small **Immich** menu. **Find in Immich** shows the
 faces Immich knows, searched by the person's name — change the search if Immich spells them
-differently — and a tap on the right face links the two. From then on the card ends with a line
+differently — and a tap on the right face links the two. Each face belongs to one person: one already linked
+to someone else is greyed out and says to whom (or just *someone else*, if that person is
+private to another member). From then on the card ends with a line
 like *In Immich · 1,284 photos*. Anyone in the household can link or unlink a person, and the
 link is seen by everyone who can see that person. The admin whose Immich it is also gets
 **Open in Immich**, which opens that person's page there in a new tab; for everyone else that

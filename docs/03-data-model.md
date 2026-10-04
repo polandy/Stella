@@ -600,12 +600,14 @@ stay in Immich and nothing of them is stored here.
 | column | type | notes |
 |---|---|---|
 | contact_id | text pk fk → contact.id | cascade: deleted with the contact |
-| immich_person_id | text | Immich's UUID for the person; no FK, it lives in another program |
+| immich_person_id | text unique | Immich's UUID for the person; no FK, it lives in another program. One Immich person is one contact |
 | linked_by | text fk → user.id | the member who set it |
 | linked_at | int | |
 
 No visibility of its own: reads join `contact` and go through `contactVisibleTo` (§3.7), so the
-link is seen by exactly those who see the contact. A merge carries the merged record's link to
+link is seen by exactly those who see the contact. The unique index on `immich_person_id`
+(`immich_link_person_unique`) holds one person to one contact even when two links race; whoever
+holds a person is named to another member only through `canViewContact`. A merge carries the merged record's link to
 the survivor unless the survivor already has one (`update or ignore`, docs/02 §2.2). Export
 writes it under the person as `immich: { person, linked_by, linked_at }`; restore refuses an id
 that is not a UUID.

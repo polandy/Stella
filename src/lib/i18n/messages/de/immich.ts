@@ -3,6 +3,8 @@ import type { ImmichMessages } from '../en/immich';
 /** German for `messages/en/immich.ts`. */
 export const immich: ImmichMessages = {
 	'immich.error.personGone': 'Diese Person gibt es in Immich nicht mehr.',
+	'immich.error.linkedTo': (p) => `Dieses Gesicht ist schon mit ${p.name} verknüpft.`,
+	'immich.error.linkedElsewhere': 'Dieses Gesicht ist schon mit einer anderen Person in Stella verknüpft.',
 	'immich.error.unreachable': 'Immich hat nicht geantwortet. Versuch es gleich noch einmal.',
 	'immich.error.keyRejected': 'Immich hat Stellas Schlüssel abgelehnt. Ein Admin muss ihn prüfen.',
 	'immich.error.missingScope': (p) =>
@@ -43,5 +45,7 @@ export const immich: ImmichMessages = {
 	'immich.picker.none':
 		'Kein Gesicht in Immich hat diesen Namen. Versuch eine andere Schreibweise oder benenne das Gesicht zuerst in Immich.',
 	'immich.picker.hint': 'Wähle das Gesicht, das diese Person ist.',
+	'immich.picker.linkedTo': (p) => `Mit ${p.name} verknüpft`,
+	'immich.picker.linkedElsewhere': 'Mit jemand anderem verknüpft',
 	'immich.picker.link': (p) => `${p.immichName} mit ${p.name} verknüpfen`
 };

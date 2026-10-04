@@ -71,7 +71,7 @@ beforeEach(() => {
 
 describe('createDrizzleImmichLinkRepository', () => {
 	it('saves a link with its log line, and reads it back', async () => {
-		await repo.save(link('c-shared'), entry('a1', 'c-shared'));
+		expect(await repo.save(link('c-shared'), entry('a1', 'c-shared'))).toBe('saved');
 
 		expect(await repo.findForContactVisibleTo(asAnna, 'c-shared')).toEqual(link('c-shared'));
 		expect(db.select().from(schema.activityLog).all().map((row) => row.id)).toEqual(['a1']);
@@ -87,7 +87,7 @@ describe('createDrizzleImmichLinkRepository', () => {
 
 	it('shows a link only to those who see the contact', async () => {
 		await repo.save(link('c-shared'), entry('a1', 'c-shared'));
-		await repo.save(link('c-private'), entry('a2', 'c-private'));
+		await repo.save(link('c-private', OTHER_PERSON), entry('a2', 'c-private'));
 
 		expect(await repo.findForContactVisibleTo(asBert, 'c-shared')).not.toBeNull();
 		expect(await repo.findForContactVisibleTo(asAnna, 'c-private')).not.toBeNull();
@@ -103,6 +103,30 @@ describe('createDrizzleImmichLinkRepository', () => {
 
 		expect(await repo.remove('c-shared', entry('a3', 'c-shared'))).toBe(false);
 		expect(db.select().from(schema.activityLog).all().map((row) => row.id)).toEqual(['a1', 'a2']);
+	});
+
+	it('holds one Immich person to one contact: a second link is taken, and nothing is written', async () => {
+		await repo.save(link('c-shared'), entry('a1', 'c-shared'));
+
+		// What a second member's request meets when it passed the use-case's check a moment
+		// before the first one wrote: the index, not the check, has the last word.
+		expect(await repo.save(link('c-private'), entry('a2', 'c-private'))).toBe('taken');
+		expect(db.select().from(schema.immichLink).all().map((l) => l.contactId)).toEqual(['c-shared']);
+		expect(db.select().from(schema.activityLog).all().map((row) => row.id)).toEqual(['a1']);
+	});
+
+	it('says who holds a person, naming them only to a viewer who sees them', async () => {
+		await repo.save(link('c-private', PERSON), entry('a1', 'c-private'));
+		await repo.save(link('c-shared', OTHER_PERSON), entry('a2', 'c-shared'));
+
+		const forAnna = await repo.holdersOf(asAnna, [PERSON, OTHER_PERSON]);
+		expect(forAnna.get(PERSON)).toEqual({ contactId: 'c-private', name: 'Private' });
+		expect(forAnna.get(OTHER_PERSON)).toEqual({ contactId: 'c-shared', name: 'Carl' });
+
+		const forBert = await repo.holdersOf(asBert, [PERSON]);
+		expect(forBert.get(PERSON)).toEqual({ contactId: 'c-private', name: null });
+
+		expect((await repo.holdersOf(asAnna, [])).size).toBe(0);
 	});
 
 	it('goes with its contact', async () => {

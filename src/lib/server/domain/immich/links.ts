@@ -35,10 +35,25 @@ export interface ImmichLink {
 export interface ImmichLinkRepository {
 	/** The contact's link, or null when it has none or the contact is out of the viewer's reach. */
 	findForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ImmichLink | null>;
-	/** Sets the contact's link, replacing one it had, and writes `audit` with it. */
-	save(link: ImmichLink, audit: NewActivityEntry): Promise<void>;
+	/**
+	 * Who holds each of these Immich people, if anyone. `name` is the holder's shown name when
+	 * the viewer may see them, null when not — the holder's existence is all that may be said.
+	 */
+	holdersOf(viewer: Viewer, immichPersonIds: readonly string[]): Promise<Map<string, ImmichHolder>>;
+	/**
+	 * Sets the contact's link, replacing one it had, and writes `audit` with it. `taken` when
+	 * the Immich person is already another contact's — then nothing is written at all.
+	 */
+	save(link: ImmichLink, audit: NewActivityEntry): Promise<'saved' | 'taken'>;
 	/** Removes the contact's link and writes `audit`; false (and nothing written) when there was none. */
 	remove(contactId: string, audit: NewActivityEntry): Promise<boolean>;
+}
+
+/** The contact an Immich person is linked to; one person belongs to one contact. */
+export interface ImmichHolder {
+	contactId: string;
+	/** Their shown name, or null when the viewer may not see them. */
+	name: string | null;
 }
 
 /** The part of the contact repository linking needs: is the contact there, and how is it seen. */
@@ -59,9 +74,16 @@ export interface ImmichLinkDeps {
 
 /** A link Stella will not make, with the reason a member can act on. */
 export class ImmichLinkRefusedError extends TranslatableError {
-	constructor(failure: ImmichFailure) {
-		super(refusalPhrase(failure), 'ImmichLinkRefusedError');
+	constructor(reason: ImmichFailure | { linkedTo: ImmichHolder }) {
+		super(typeof reason === 'string' ? refusalPhrase(reason) : takenPhrase(reason.linkedTo), 'ImmichLinkRefusedError');
 	}
+}
+
+/** Already linked: the other contact is named only to someone who may see them. */
+function takenPhrase(holder: ImmichHolder) {
+	return holder.name === null
+		? phrase('immich.error.linkedElsewhere')
+		: phrase('immich.error.linkedTo', { name: holder.name });
 }
 
 function refusalPhrase(failure: ImmichFailure) {
@@ -101,9 +123,13 @@ function logEntry(
 }
 
 /**
- * Link a contact to an Immich person. The person is looked up first, so a stale picker cannot
- * link someone deleted in Immich since, and a hidden person — whom the picker never offers —
- * cannot be linked by a hand-made request either (concept §5).
+ * Link a contact to an Immich person. One Immich person is one contact (docs/concepts/immich.md §9.8): a
+ * person already linked elsewhere is refused, before Immich is asked anything. The person is
+ * then looked up, so a stale picker cannot link someone deleted in Immich since, and a hidden
+ * person — whom the picker never offers — cannot be linked by a hand-made request either (§5).
+ *
+ * Two members linking the same face at once both pass the first check; the table's unique
+ * index lets one write through, and the other gets the same refusal rather than an error.
  */
 export async function linkToImmich(
 	deps: ImmichLinkDeps,
@@ -114,16 +140,27 @@ export async function linkToImmich(
 	const contact = await deps.contacts.findByIdVisibleTo(viewerOf(actor), contactId);
 	if (!contact) throw new ContactGoneError();
 	if (!isImmichId(immichPersonId)) throw new ImmichLinkRefusedError('notFound');
+	const viewer = viewerOf(actor);
+	const holderOtherThanThem = async () => {
+		const holder = (await deps.links.holdersOf(viewer, [immichPersonId])).get(immichPersonId);
+		return holder && holder.contactId !== contactId ? holder : null;
+	};
+	const taken = await holderOtherThanThem();
+	if (taken) throw new ImmichLinkRefusedError({ linkedTo: taken });
 
 	const person = await deps.gateway.person(immichPersonId);
 	if (!person.ok) throw new ImmichLinkRefusedError(person.failure);
 	if (person.value.hidden) throw new ImmichLinkRefusedError('notFound');
 
 	const linkedAt = deps.clock.now();
-	await deps.links.save(
+	const saved = await deps.links.save(
 		{ contactId, immichPersonId, linkedBy: actor.userId, linkedAt },
 		logEntry(deps, actor, contactId, contact, `linked ${contact.displayName} to Immich`)
 	);
+	if (saved === 'taken') {
+		// Lost the race: whoever won holds the person now, and is named as above.
+		throw new ImmichLinkRefusedError({ linkedTo: (await holderOtherThanThem()) ?? { contactId: '', name: null } });
+	}
 }
 
 /** Remove a contact's link. Needs nothing from Immich, so it works while Immich is down. */
@@ -199,6 +236,8 @@ export async function readLinkedPerson(
 export interface ImmichFace {
 	id: string;
 	name: string;
+	/** Already another contact's: the picker shows it, but it cannot be picked. */
+	linkedTo: { name: string | null } | null;
 }
 
 export type FacesOutcome = { ok: true; faces: ImmichFace[] } | { ok: false; failure: ImmichFailure };
@@ -211,7 +250,8 @@ export type FacesOutcome = { ok: true; faces: ImmichFace[] } | { ok: false; fail
  * offered (§5).
  */
 export async function findImmichFaces(
-	deps: Pick<ImmichLinkDeps, 'gateway'>,
+	deps: Pick<ImmichLinkDeps, 'gateway' | 'links'>,
+	viewer: Viewer,
 	query: string
 ): Promise<FacesOutcome> {
 	const wanted = query.trim().replace(/\s+/g, ' ');
@@ -229,11 +269,16 @@ export async function findImmichFaces(
 		if (!found.ok) return found;
 	}
 
+	const shown = found.value.filter(offered).slice(0, FACE_LIMIT);
+	const holders = await deps.links.holdersOf(
+		viewer,
+		shown.map((person) => person.id)
+	);
 	return {
 		ok: true,
-		faces: found.value
-			.filter(offered)
-			.slice(0, FACE_LIMIT)
-			.map(({ id, name }) => ({ id, name }))
+		faces: shown.map(({ id, name }) => {
+			const holder = holders.get(id);
+			return { id, name, linkedTo: holder ? { name: holder.name } : null };
+		})
 	};
 }

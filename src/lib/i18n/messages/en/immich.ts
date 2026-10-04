@@ -3,6 +3,8 @@
 export const immich = {
 	// Why a link was refused, or a call failed (docs/concepts/immich.md §4.5).
 	'immich.error.personGone': 'This person is no longer in Immich.',
+	'immich.error.linkedTo': (p: { name: string }) => `This face is already linked to ${p.name}.`,
+	'immich.error.linkedElsewhere': 'This face is already linked to another person in Stella.',
 	'immich.error.unreachable': 'Immich didn’t answer. Try again in a moment.',
 	'immich.error.keyRejected': 'Immich refused Stella’s key. An admin needs to check it.',
 	'immich.error.missingScope': (p: { scope: string }) =>
@@ -46,6 +48,8 @@ export const immich = {
 	'immich.picker.searching': 'Searching Immich…',
 	'immich.picker.none': 'No face in Immich has this name. Try another spelling, or name the face in Immich first.',
 	'immich.picker.hint': 'Pick the face that is this person.',
+	'immich.picker.linkedTo': (p: { name: string }) => `Linked to ${p.name}`,
+	'immich.picker.linkedElsewhere': 'Linked to someone else',
 	'immich.picker.link': (p: { immichName: string; name: string }) => `Link ${p.immichName} to ${p.name}`
 };
 

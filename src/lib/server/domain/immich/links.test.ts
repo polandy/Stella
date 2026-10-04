@@ -33,15 +33,39 @@ function visibleContacts(): LinkVisibleContacts {
 	return { findByIdVisibleTo: async (_viewer, id) => known[id] ?? null };
 }
 
-/** Links held in memory, with every activity entry written beside them. */
+/** Names of the contacts the actor can see; a holder outside this list is someone they cannot. */
+const VISIBLE_NAMES: Record<string, string> = { 'c-bert': 'Bert Example', 'c-carl': 'Carl Example' };
+
+/**
+ * Links held in memory, with every activity entry written beside them. Like the table, one
+ * Immich person belongs to one contact; `raceWinner` plants a link that lands between the
+ * use-case's check and its write, the way a second member's request would.
+ */
 function memoryLinks() {
 	const rows = new Map<string, ImmichLink>();
 	const audit: NewActivityEntry[] = [];
+	const state = { raceWinner: null as ImmichLink | null };
+	const holderOf = (personId: string) => [...rows.values()].find((l) => l.immichPersonId === personId);
 	const links: ImmichLinkRepository = {
 		findForContactVisibleTo: async (_viewer, contactId) => rows.get(contactId) ?? null,
+		holdersOf: async (_viewer, personIds) => {
+			const holders = new Map<string, { contactId: string; name: string | null }>();
+			for (const personId of personIds) {
+				const held = holderOf(personId);
+				if (held) holders.set(personId, { contactId: held.contactId, name: VISIBLE_NAMES[held.contactId] ?? null });
+			}
+			return holders;
+		},
 		save: async (link, entry) => {
+			if (state.raceWinner) {
+				rows.set(state.raceWinner.contactId, state.raceWinner);
+				state.raceWinner = null;
+			}
+			const held = holderOf(link.immichPersonId);
+			if (held && held.contactId !== link.contactId) return 'taken';
 			rows.set(link.contactId, link);
 			audit.push(entry);
+			return 'saved';
 		},
 		remove: async (contactId, entry) => {
 			if (!rows.delete(contactId)) return false;
@@ -49,7 +73,7 @@ function memoryLinks() {
 			return true;
 		}
 	};
-	return { links, rows, audit };
+	return { links, rows, audit, state };
 }
 
 function setup() {
@@ -153,6 +177,58 @@ describe('linkToImmich', () => {
 	});
 });
 
+describe('one Immich person per contact', () => {
+	const held = (contactId: string, immichPersonId = BERT_ID): ImmichLink => ({
+		contactId,
+		immichPersonId,
+		linkedBy: 'u-other',
+		linkedAt: 1
+	});
+
+	it('refuses a person already linked to another contact, naming them when the actor sees them', async () => {
+		const { deps, rows, audit } = setup();
+		rows.set('c-carl', held('c-carl'));
+		const refusal = await linkToImmich(deps, actor, 'c-bert', BERT_ID).catch((e) => e);
+		expect(refusal).toBeInstanceOf(ImmichLinkRefusedError);
+		expect(refusal.message).toBe('This face is already linked to Carl Example.');
+		expect(rows.get('c-bert')).toBeUndefined();
+		expect(audit).toEqual([]);
+	});
+
+	it('names nobody when the other contact is one the actor cannot see', async () => {
+		const { deps, rows } = setup();
+		rows.set('c-someone-private', held('c-someone-private'));
+		const refusal = await linkToImmich(deps, actor, 'c-bert', BERT_ID).catch((e) => e);
+		expect(refusal).toBeInstanceOf(ImmichLinkRefusedError);
+		expect(refusal.message).toBe('This face is already linked to another person in Stella.');
+	});
+
+	it('refuses before asking Immich, so a taken face costs no call', async () => {
+		const { deps, rows, gateway } = setup();
+		rows.set('c-carl', held('c-carl'));
+		await linkToImmich(deps, actor, 'c-bert', BERT_ID).catch(() => null);
+		expect(gateway.calls).toEqual([]);
+	});
+
+	it('lets a contact be linked again to the person it already has', async () => {
+		const { deps, rows } = setup();
+		rows.set('c-bert', held('c-bert'));
+		await linkToImmich(deps, actor, 'c-bert', BERT_ID);
+		expect(rows.get('c-bert')?.linkedBy).toBe(ANNA_USER);
+	});
+
+	it('turns a link that won the race between check and write into the same refusal', async () => {
+		const { deps, rows, state, audit } = setup();
+		state.raceWinner = held('c-carl');
+		const refusal = await linkToImmich(deps, actor, 'c-bert', BERT_ID).catch((e) => e);
+		expect(refusal).toBeInstanceOf(ImmichLinkRefusedError);
+		expect(refusal.message).toBe('This face is already linked to Carl Example.');
+		expect(rows.get('c-carl')?.immichPersonId).toBe(BERT_ID);
+		expect(rows.get('c-bert')).toBeUndefined();
+		expect(audit).toEqual([]);
+	});
+});
+
 describe('unlinkFromImmich', () => {
 	it('removes the link and writes it to the log', async () => {
 		const { deps, rows, audit } = setup();
@@ -240,11 +316,11 @@ describe('readLinkedPerson', () => {
 describe('findImmichFaces', () => {
 	it('finds the faces whose name matches, never a hidden one', async () => {
 		const gateway = createFakeImmichGateway(testLibrary());
-		expect(await findImmichFaces({ gateway }, 'example')).toEqual({
+		expect(await findImmichFaces({ gateway, links: memoryLinks().links }, viewer, 'example')).toEqual({
 			ok: true,
 			faces: [
-				{ id: BERT_ID, name: 'Bert Example' },
-				{ id: CARL_ID, name: 'Carl Example' }
+				{ id: BERT_ID, name: 'Bert Example', linkedTo: null },
+				{ id: CARL_ID, name: 'Carl Example', linkedTo: null }
 			]
 		});
 	});
@@ -252,7 +328,7 @@ describe('findImmichFaces', () => {
 	it('lists the named faces when nothing is typed', async () => {
 		const gateway = createFakeImmichGateway(testLibrary());
 		gateway.library.people.push({ id: '0e4f5a6b-7c8d-4e90-9c4d-5e6f7a8b9ca3', name: '', hidden: false, assets: 2, color: '#000000' });
-		const found = await findImmichFaces({ gateway }, '  ');
+		const found = await findImmichFaces({ gateway, links: memoryLinks().links }, viewer, '  ');
 		expect(found.ok && found.faces.map((f) => f.name)).toEqual(['Bert Example', 'Carl Example']);
 		expect(gateway.calls).toEqual(['listPeople']);
 	});
@@ -260,14 +336,28 @@ describe('findImmichFaces', () => {
 	it('falls back to the first name when the full name finds nobody', async () => {
 		// Stella knows Bert as "Bert Example-Smith"; Immich only as "Bert Example".
 		const gateway = createFakeImmichGateway(testLibrary());
-		const found = await findImmichFaces({ gateway }, 'Bert Example-Smith');
-		expect(found).toEqual({ ok: true, faces: [{ id: BERT_ID, name: 'Bert Example' }] });
+		const found = await findImmichFaces({ gateway, links: memoryLinks().links }, viewer, 'Bert Example-Smith');
+		expect(found).toEqual({ ok: true, faces: [{ id: BERT_ID, name: 'Bert Example', linkedTo: null }] });
 		expect(gateway.calls).toEqual(['searchPeople', 'searchPeople']);
+	});
+
+	it('marks a face already linked to someone, naming them only when the viewer sees them', async () => {
+		const gateway = createFakeImmichGateway(testLibrary());
+		const { links, rows } = memoryLinks();
+		rows.set('c-carl', { contactId: 'c-carl', immichPersonId: BERT_ID, linkedBy: 'u', linkedAt: 1 });
+		rows.set('c-hidden', { contactId: 'c-hidden', immichPersonId: CARL_ID, linkedBy: 'u', linkedAt: 1 });
+		expect(await findImmichFaces({ gateway, links }, viewer, 'example')).toEqual({
+			ok: true,
+			faces: [
+				{ id: BERT_ID, name: 'Bert Example', linkedTo: { name: 'Carl Example' } },
+				{ id: CARL_ID, name: 'Carl Example', linkedTo: { name: null } }
+			]
+		});
 	});
 
 	it('passes a failure on, so the picker can say what went wrong', async () => {
 		const gateway = createFakeImmichGateway(testLibrary());
 		gateway.failing = { searchPeople: 'unreachable' };
-		expect(await findImmichFaces({ gateway }, 'bert')).toEqual({ ok: false, failure: 'unreachable' });
+		expect(await findImmichFaces({ gateway, links: memoryLinks().links }, viewer, 'bert')).toEqual({ ok: false, failure: 'unreachable' });
 	});
 });

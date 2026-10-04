@@ -11,7 +11,9 @@
 	 * come through Stella (`immichFaceUrl`), never from Immich directly.
 	 *
 	 * Opened by the Photos card's menu through `open`; a pick is a plain form post, so the page
-	 * reloads with the link and the dialog goes with it.
+	 * reloads with the link and the dialog goes with it. A face already linked to another person
+	 * stays in the grid — leaving it out would read as "Immich does not know them" — but cannot
+	 * be picked, and says whose it is when the member may see that person (docs/concepts/immich.md §9.8).
 	 */
 	interface Props {
 		contactId: string;
@@ -24,12 +26,19 @@
 	}
 	let { contactId, name, searchName, open = $bindable(false) }: Props = $props();
 
+	/** A face as the faces route sends it; `linkedTo` is set when another person has it already. */
+	interface Face {
+		id: string;
+		name: string;
+		linkedTo: { name: string | null } | null;
+	}
+
 	const i18n = useI18n();
 	const t = i18n.t;
 
 	let dialog: HTMLDialogElement | undefined = $state();
 	let query = $state('');
-	let faces = $state<{ id: string; name: string }[]>([]);
+	let faces = $state<Face[]>([]);
 	let error = $state<string | null>(null);
 	let searching = $state(false);
 	/** Searched at least once since opening, so "nobody" is only said after an answer. */
@@ -45,7 +54,7 @@
 		try {
 			const response = await fetch(`/contacts/${contactId}/immich/faces?q=${encodeURIComponent(query)}`);
 			if (!response.ok) throw new Error(`faces answered ${response.status}`);
-			const body = (await response.json()) as { faces: { id: string; name: string }[]; error: string | null };
+			const body = (await response.json()) as { faces: Face[]; error: string | null };
 			if (asked !== latest) return;
 			faces = body.faces;
 			error = body.error;
@@ -114,22 +123,34 @@
 				<ul class="grid grid-cols-3 gap-3 sm:grid-cols-4" data-testid="immich-faces">
 					{#each faces as face (face.id)}
 						<li>
-							<form method="POST" action="?/linkImmich">
-								<input type="hidden" name="immichPersonId" value={face.id} />
-								<button
-									type="submit"
-									aria-label={t('immich.picker.link', { immichName: face.name, name })}
-									class="flex w-full flex-col items-center gap-1.5 rounded-control p-1.5 text-center hover:bg-bg-sunken focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-								>
-									<img
-										src={immichFaceUrl(face.id)}
-										alt=""
-										class="aspect-square w-full rounded-full bg-bg-sunken object-cover"
-										loading="lazy"
-									/>
+							{#if face.linkedTo}
+								<div class="flex w-full flex-col items-center gap-1.5 p-1.5 text-center opacity-60" data-testid="immich-face-taken">
+									<img src={immichFaceUrl(face.id)} alt="" class="aspect-square w-full rounded-full bg-bg-sunken object-cover grayscale" loading="lazy" />
 									<span class="w-full truncate text-xs text-fg">{face.name}</span>
-								</button>
-							</form>
+									<span class="w-full text-[0.6875rem] leading-tight text-fg-muted">
+										{face.linkedTo.name === null
+											? t('immich.picker.linkedElsewhere')
+											: t('immich.picker.linkedTo', { name: face.linkedTo.name })}
+									</span>
+								</div>
+							{:else}
+								<form method="POST" action="?/linkImmich">
+									<input type="hidden" name="immichPersonId" value={face.id} />
+									<button
+										type="submit"
+										aria-label={t('immich.picker.link', { immichName: face.name, name })}
+										class="flex w-full flex-col items-center gap-1.5 rounded-control p-1.5 text-center hover:bg-bg-sunken focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+									>
+										<img
+											src={immichFaceUrl(face.id)}
+											alt=""
+											class="aspect-square w-full rounded-full bg-bg-sunken object-cover"
+											loading="lazy"
+										/>
+										<span class="w-full truncate text-xs text-fg">{face.name}</span>
+									</button>
+								</form>
+							{/if}
 						</li>
 					{/each}
 				</ul>

@@ -614,19 +614,26 @@ export const suggestionDismissal = sqliteTable(
 /*
  * Which person in the household's Immich library a contact is (docs/concepts/immich.md §6,
  * docs/03 §immich_link). One per contact; it has no visibility of its own and follows the
- * contact's (§5). Deleted with the contact, carried through a merge.
+ * contact's (§5). One Immich person belongs to one contact. Deleted with the contact, carried
+ * through a merge.
  */
-export const immichLink = sqliteTable('immich_link', {
-	contactId: text('contact_id')
-		.primaryKey()
-		.references(() => contact.id, { onDelete: 'cascade' }),
-	/** Immich's id for the person (a UUID). Not a foreign key: it lives in another program. */
-	immichPersonId: text('immich_person_id').notNull(),
-	linkedBy: text('linked_by')
-		.notNull()
-		.references(() => user.id),
-	linkedAt: integer('linked_at').notNull()
-});
+export const immichLink = sqliteTable(
+	'immich_link',
+	{
+		contactId: text('contact_id')
+			.primaryKey()
+			.references(() => contact.id, { onDelete: 'cascade' }),
+		/** Immich's id for the person (a UUID). Not a foreign key: it lives in another program. */
+		immichPersonId: text('immich_person_id').notNull(),
+		linkedBy: text('linked_by')
+			.notNull()
+			.references(() => user.id),
+		linkedAt: integer('linked_at').notNull()
+	},
+	// One Immich person is one contact (docs/concepts/immich.md §9.8). The index, not a read before the write,
+	// is what holds it when two members link the same face at once.
+	(t) => [uniqueIndex('immich_link_person_unique').on(t.immichPersonId)]
+);
 
 // ── Commands ──────────────────────────────────────────────────────────────
 
