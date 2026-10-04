@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'bun:test';
 import type { Clock } from '../../clock';
-import { createImmichMediaSigner, IMMICH_MEDIA_TTL_MS, type SignableImmichMedia } from './signed-media';
+import {
+	createImmichMediaSigner,
+	IMMICH_MEDIA_TTL_MS,
+	type SignableImmichMedia
+} from './signed-media';
 import { BERT_ID, CARL_ID } from './test-library';
 
 /*
@@ -46,6 +50,17 @@ describe('createImmichMediaSigner', () => {
 		});
 	});
 
+	it('reads back a token for a contact whose id is not a ULID, as an imported one is', async () => {
+		const clock = fakeClock();
+		const signer = createImmichMediaSigner({ secret: SECRET, clock });
+		for (const contactId of ['monica:contact:3', 'vcard:anna@example.org']) {
+			expect(await signer.verify(await signer.sign({ ...photo, contactId }))).toEqual({
+				ok: true,
+				media: { ...photo, contactId, expiresAt: clock.now() + IMMICH_MEDIA_TTL_MS }
+			});
+		}
+	});
+
 	it('keeps a token URL-safe, so it can travel as one path segment', async () => {
 		const signer = createImmichMediaSigner({ secret: SECRET, clock: fakeClock() });
 		expect(await signer.sign(photo)).toMatch(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
@@ -80,7 +95,10 @@ describe('createImmichMediaSigner', () => {
 		const clock = fakeClock();
 		const elsewhere = createImmichMediaSigner({ secret: 'another-secret', clock });
 		const here = createImmichMediaSigner({ secret: SECRET, clock });
-		expect(await here.verify(await elsewhere.sign(photo))).toEqual({ ok: false, reason: 'invalid' });
+		expect(await here.verify(await elsewhere.sign(photo))).toEqual({
+			ok: false,
+			reason: 'invalid'
+		});
 	});
 
 	it('refuses a signature over the same payload made without this use of the secret', async () => {
@@ -101,7 +119,15 @@ describe('createImmichMediaSigner', () => {
 	it('refuses anything that is not a token, without reading it', async () => {
 		const signer = createImmichMediaSigner({ secret: SECRET, clock: fakeClock() });
 		const token = await signer.sign(photo);
-		for (const raw of ['', '.', 'abc', `${token}.x`, token.replace('.', ''), `${'a'.repeat(5000)}.b`, '../x.y']) {
+		for (const raw of [
+			'',
+			'.',
+			'abc',
+			`${token}.x`,
+			token.replace('.', ''),
+			`${'a'.repeat(5000)}.b`,
+			'../x.y'
+		]) {
 			expect(await signer.verify(raw)).toEqual({ ok: false, reason: 'invalid' });
 		}
 	});

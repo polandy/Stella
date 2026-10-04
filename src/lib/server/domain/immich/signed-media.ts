@@ -35,8 +35,7 @@ export type SignableImmichMedia =
 export type SignedImmichMedia = SignableImmichMedia & { expiresAt: number };
 
 export type VerifiedImmichMedia =
-	| { ok: true; media: SignedImmichMedia }
-	| { ok: false; reason: 'invalid' | 'expired' };
+	{ ok: true; media: SignedImmichMedia } | { ok: false; reason: 'invalid' | 'expired' };
 
 export interface ImmichMediaSigner {
 	/** A token for `media`, valid for `IMMICH_MEDIA_TTL_MS` from now. */
@@ -62,8 +61,12 @@ const PURPOSE = 'stella.immich-media.v1.';
 
 const IMAGE_SIZES: ReadonlySet<string> = new Set<ImmichImageSize>(['thumbnail', 'preview']);
 
-/** Stella's contact ids are ULIDs; a bound on the shape, not a check that one exists. */
-const CONTACT_ID = /^[0-9A-Za-z_-]{1,64}$/;
+/**
+ * A bound on the contact id's length, not on its shape: an imported contact keeps its source's id
+ * (`monica:contact:3`), and the signature already vouches for whatever was signed. Whether the
+ * contact exists, and is the viewer's to see, is the access layer's question.
+ */
+const MAX_CONTACT_ID_LENGTH = 128;
 
 const encoder = new TextEncoder();
 
@@ -79,11 +82,19 @@ function readPayload(payload: string): SignedImmichMedia | null {
 	}
 	if (typeof body !== 'object' || body === null || Array.isArray(body)) return null;
 	const { k, c, p, a, s, e } = body as Record<string, unknown>;
-	if (typeof c !== 'string' || !CONTACT_ID.test(c) || !isImmichId(p)) return null;
+	if (typeof c !== 'string' || c.length === 0 || c.length > MAX_CONTACT_ID_LENGTH || !isImmichId(p))
+		return null;
 	if (typeof e !== 'number' || !Number.isSafeInteger(e)) return null;
 	if (k === 'f') return { kind: 'face', contactId: c, personId: p, expiresAt: e };
 	if (k !== 'p' || !isImmichId(a) || typeof s !== 'string' || !IMAGE_SIZES.has(s)) return null;
-	return { kind: 'photo', contactId: c, personId: p, assetId: a, size: s as ImmichImageSize, expiresAt: e };
+	return {
+		kind: 'photo',
+		contactId: c,
+		personId: p,
+		assetId: a,
+		size: s as ImmichImageSize,
+		expiresAt: e
+	};
 }
 
 /** The payload's JSON: short keys, because it travels in every image URL. */
@@ -91,16 +102,32 @@ function writePayload(media: SignedImmichMedia): string {
 	const fields =
 		media.kind === 'face'
 			? { k: 'f', c: media.contactId, p: media.personId, e: media.expiresAt }
-			: { k: 'p', c: media.contactId, p: media.personId, a: media.assetId, s: media.size, e: media.expiresAt };
+			: {
+					k: 'p',
+					c: media.contactId,
+					p: media.personId,
+					a: media.assetId,
+					s: media.size,
+					e: media.expiresAt
+				};
 	return toBase64Url(encoder.encode(JSON.stringify(fields)));
 }
 
-export function createImmichMediaSigner({ secret, clock }: { secret: string; clock: Clock }): ImmichMediaSigner {
+export function createImmichMediaSigner({
+	secret,
+	clock
+}: {
+	secret: string;
+	clock: Clock;
+}): ImmichMediaSigner {
 	// Imported once and reused; Web Crypto's verify compares in constant time.
-	const key = crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, [
-		'sign',
-		'verify'
-	]);
+	const key = crypto.subtle.importKey(
+		'raw',
+		encoder.encode(secret),
+		{ name: 'HMAC', hash: 'SHA-256' },
+		false,
+		['sign', 'verify']
+	);
 	const signed = (payload: string) => encoder.encode(PURPOSE + payload);
 
 	return {
@@ -117,7 +144,12 @@ export function createImmichMediaSigner({ secret, clock }: { secret: string; clo
 			if (parts.length !== 2 || !parts.every((part) => BASE64URL.test(part))) return invalid;
 			const [payload, mac] = parts;
 
-			const genuine = await crypto.subtle.verify('HMAC', await key, Buffer.from(mac, 'base64url'), signed(payload));
+			const genuine = await crypto.subtle.verify(
+				'HMAC',
+				await key,
+				Buffer.from(mac, 'base64url'),
+				signed(payload)
+			);
 			if (!genuine) return invalid;
 			const media = readPayload(payload);
 			if (!media) return invalid;
