@@ -122,7 +122,7 @@ test('a face linked to one person is shown taken, and cannot be picked, for anot
 	await expect(picker.getByRole('button', { name: `Link ${THOMAS.name} to Philippa Zwielicht` })).toHaveCount(0);
 });
 
-test('the other member sees the photo count without the way into Immich, and can unlink', async ({ page, browser }) => {
+test('the other member sees the photo count and the way into Immich too, and can unlink', async ({ page, browser }) => {
 	await addPerson(page, 'Severin', 'Halbmond');
 	await linkFace(page, 'Severin Halbmond', HANS.name);
 	await expect(page.getByRole('link', { name: 'Open in Immich' })).toBeVisible();
@@ -130,9 +130,12 @@ test('the other member sees the photo count without the way into Immich, and can
 	const nina = await signInAsNina(browser);
 	try {
 		await openPerson(nina, /Severin Halbmond/);
-		// The count has arrived, so the line is settled; only then does the missing link count.
+		// She is not the key owner, and still gets the same link into Immich (concept §4.3).
 		await expect(nina.getByText(HANS.countLine)).toBeVisible();
-		await expect(nina.getByRole('link', { name: 'Open in Immich' })).toHaveCount(0);
+		await expect(nina.getByRole('link', { name: 'Open in Immich' })).toHaveAttribute(
+			'href',
+			new RegExp(`/people/${HANS.id}$`)
+		);
 
 		await immichMenu(nina, 'Unlink from Immich');
 		// The unlink is a plain form post: the line going is the reloaded page, and its menu
