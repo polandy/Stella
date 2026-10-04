@@ -83,6 +83,21 @@ describe('createImmichMediaSigner', () => {
 		expect(await here.verify(await elsewhere.sign(photo))).toEqual({ ok: false, reason: 'invalid' });
 	});
 
+	it('refuses a signature over the same payload made without this use of the secret', async () => {
+		const signer = createImmichMediaSigner({ secret: SECRET, clock: fakeClock() });
+		const [payload] = (await signer.sign(photo)).split('.');
+		const key = await crypto.subtle.importKey(
+			'raw',
+			new TextEncoder().encode(SECRET),
+			{ name: 'HMAC', hash: 'SHA-256' },
+			false,
+			['sign']
+		);
+		const bare = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload));
+		const token = `${payload}.${Buffer.from(bare).toString('base64url')}`;
+		expect(await signer.verify(token)).toEqual({ ok: false, reason: 'invalid' });
+	});
+
 	it('refuses anything that is not a token, without reading it', async () => {
 		const signer = createImmichMediaSigner({ secret: SECRET, clock: fakeClock() });
 		const token = await signer.sign(photo);
