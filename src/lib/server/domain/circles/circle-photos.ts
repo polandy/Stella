@@ -9,6 +9,7 @@ import {
 	InvalidImageError,
 	JOURNAL_IMAGE_MAX_BYTES,
 	validateImageUpload,
+	validateTakenAt,
 	type ImageUpload
 } from '../media/journal-photos';
 import { sniffImageMime } from '../media/avatars';
@@ -40,6 +41,8 @@ export interface CirclePhoto {
 	createdByName: string;
 	width: number | null;
 	height: number | null;
+	/** When it was taken, as its EXIF said (`../../../image/taken-at`); null when unknown. */
+	takenAt: string | null;
 	createdAt: number;
 	/** When the household pinned it as a favourite (epoch ms); null when it is not one. */
 	pinnedAt: number | null;
@@ -61,6 +64,7 @@ export interface StoredCirclePhoto {
 	width: number;
 	height: number;
 	sizeBytes: number;
+	takenAt: string | null;
 	createdAt: number;
 }
 
@@ -194,6 +198,7 @@ export async function addCirclePhoto(
 	input: { circleId: string; role: string | null; visibility: Visibility; upload: CirclePhotoUpload }
 ): Promise<string> {
 	const mime = validateCirclePhotoUpload(input.upload);
+	const takenAt = validateTakenAt(input.upload, deps.clock.now());
 	const id = deps.ids.next();
 	const ext = EXT[mime];
 
@@ -215,6 +220,7 @@ export async function addCirclePhoto(
 		width: input.upload.width,
 		height: input.upload.height,
 		sizeBytes: input.upload.image.byteLength,
+		takenAt,
 		createdAt: deps.clock.now()
 	});
 	return id;

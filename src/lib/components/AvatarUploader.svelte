@@ -104,12 +104,13 @@
 		const hadPreviousPhoto = avatarPhotoId !== null;
 		busy = true;
 		try {
-			const { image, thumb, width, height } = await processAvatar(file, crop);
+			const { image, thumb, width, height, takenAt } = await processAvatar(file, crop);
 			const body = new FormData();
 			body.append('image', image, 'avatar.jpg');
 			body.append('thumb', thumb, 'thumb.jpg');
 			body.append('width', String(width));
 			body.append('height', String(height));
+			if (takenAt) body.append('takenAt', takenAt);
 
 			const res = await fetch(`/contacts/${contactId}?/setAvatar`, { method: 'POST', body });
 			if (!res.ok) throw new Error();

@@ -6,6 +6,7 @@
 	import type { CandidatePerson } from '$lib/circles/cut-candidates';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { CropRect } from '$lib/image/crop';
+	import type { Dated } from '$lib/image/taken-at';
 	import CutForPerson from './CutForPerson.svelte';
 	import { viewUrl } from '$lib/media/urls';
 	import type { CirclePagePhoto } from './types';
@@ -40,8 +41,8 @@
 		cuts: { people: number; wearers: { contactId: string; crop: CropRect | null }[] } | undefined;
 		/** The last save's refusal, shown where it was made. */
 		error: string | null;
-		/** When a photo was added, in the viewer's language. */
-		photoDate: (createdAt: number) => string;
+		/** When a photo was taken, else added, in the viewer's language. */
+		photoDate: (photo: Dated) => string;
 		onclose: () => void;
 		/** The arrow keys walk the photos. */
 		onkeydown: (event: KeyboardEvent) => void;
@@ -106,7 +107,12 @@
 		/>
 
 		<p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-subtle">
-			<span>{t('circles.photos.addedBy', { date: photoDate(photo.createdAt), name: photo.createdByName })}</span>
+			{#if photo.takenAt !== null}
+				<span>{t('contact.photos.takenOn', { date: photoDate(photo) })}</span>
+			{/if}
+			<span>
+				{t('circles.photos.addedBy', { date: photoDate({ takenAt: null, createdAt: photo.createdAt }), name: photo.createdByName })}
+			</span>
 			{#if photo.pinnedAt !== null}
 				<span class="inline-flex items-center gap-1 font-medium text-primary">
 					<Icon name="pinned" size={11} />{t('contact.photos.favourite')}

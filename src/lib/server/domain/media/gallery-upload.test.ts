@@ -64,8 +64,37 @@ describe('addGalleryPhoto', () => {
 			mime: 'image/jpeg',
 			width: 1600,
 			height: 1200,
+			takenAt: null,
 			createdAt: 7000
 		});
+	});
+
+	it('keeps the capture date the phone read out of the picture', async () => {
+		const d = deps();
+		d.clock = { now: () => Date.UTC(2026, 9, 4) };
+		await addGalleryPhoto(d, { userId: 'u1', householdId: 'h1' }, {
+			contactId: 'c1',
+			visibility: 'shared',
+			upload: { ...upload, takenAt: '2019-05-03T00:30:15+02:00' }
+		});
+		expect(d.stored[0]?.takenAt).toBe('2019-05-03T00:30:15+02:00');
+	});
+
+	it('refuses a capture date that cannot be real or does not read, storing nothing', async () => {
+		// Years ahead of the clock, before the first photograph, and EXIF's own shape.
+		for (const takenAt of ['2030-01-01T00:00:00', '1800-01-01T00:00:00', '2019:05:03 00:30:15']) {
+			const d = deps();
+			d.clock = { now: () => Date.UTC(2026, 9, 4) };
+			await expect(
+				addGalleryPhoto(d, { userId: 'u1', householdId: 'h1' }, {
+					contactId: 'c1',
+					visibility: 'shared',
+					upload: { ...upload, takenAt }
+				})
+			).rejects.toBeInstanceOf(InvalidImageError);
+			expect(d.stored).toEqual([]);
+			expect(d.puts).toEqual([]);
+		}
 	});
 
 	it('keeps a private photo private', async () => {

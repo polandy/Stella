@@ -61,7 +61,7 @@ function photoDeps(stored: StoredPhoto[]) {
 		photos: { insert: async (p: StoredPhoto) => void stored.push(p) } as MomentPhotoDeps['photos']['photos'],
 		media: { put: async (name: string) => `/media/${name}`, delete: async () => {} } as unknown as MomentPhotoDeps['photos']['media'],
 		ids: { next: () => 'ph1' },
-		clock: { now: () => 5 }
+		clock: { now: () => Date.UTC(2026, 9, 4) }
 	};
 }
 
@@ -89,6 +89,8 @@ function galleryFakes(receipt: CommandReceipt | null = gallery, visible = true) 
 }
 
 const payload = { parentId: 'm1', image: JPEG, thumb: JPEG, width: 4, height: 3 };
+/** A photo whose EXIF named the moment it was taken (docs/02 §2.14). */
+const TAKEN_AT = '2026-09-27T18:04:00+02:00';
 
 describe('attachMomentPhoto', () => {
 	it('puts the photo on the entry the moment went into, with the moment’s visibility', async () => {
@@ -96,6 +98,12 @@ describe('attachMomentPhoto', () => {
 		expect(await attachMomentPhoto(f.deps, actor, payload)).toBe('ph1');
 		expect(f.stored).toHaveLength(1);
 		expect(f.stored[0]).toMatchObject({ journalEntryId: 'e1', contactId: 'julia', visibility: 'private', createdBy: 'u1' });
+	});
+
+	it('keeps the capture date the photo came with', async () => {
+		const f = momentFakes();
+		await attachMomentPhoto(f.deps, actor, { ...payload, takenAt: TAKEN_AT });
+		expect(f.stored[0]?.takenAt).toBe(TAKEN_AT);
 	});
 
 	it('puts the photo on the entry written on the journal page, with that entry’s visibility', async () => {
@@ -133,6 +141,13 @@ describe('attachGalleryPhoto', () => {
 		expect(await attachGalleryPhoto(f.deps, actor, payload)).toBe('ph1');
 		expect(f.stored).toHaveLength(1);
 		expect(f.stored[0]).toMatchObject({ journalEntryId: null, contactId: 'julia', visibility: 'private', createdBy: 'u1' });
+		expect(f.stored[0]?.takenAt).toBeNull();
+	});
+
+	it('keeps the capture date the photo came with', async () => {
+		const f = galleryFakes();
+		await attachGalleryPhoto(f.deps, actor, { ...payload, takenAt: TAKEN_AT });
+		expect(f.stored[0]?.takenAt).toBe(TAKEN_AT);
 	});
 
 	it('refuses a photo for what is not this member’s applied gallery upload, storing nothing', async () => {
@@ -173,7 +188,7 @@ function circleFakes(receipt: CommandReceipt | null = circleUpload, visible = tr
 			circlePhotos: { insert: async (p: StoredCirclePhoto) => void stored.push(p) } as CirclePhotoUploadDeps['photos']['circlePhotos'],
 			media: { put: async (name: string) => `/media/${name}`, delete: async () => {} } as unknown as CirclePhotoUploadDeps['photos']['media'],
 			ids: { next: () => 'ph1' },
-			clock: { now: () => 5 }
+			clock: { now: () => Date.UTC(2026, 9, 4) }
 		}
 	};
 	return { deps, stored };
@@ -192,6 +207,12 @@ describe('attachCirclePhoto', () => {
 		const f = circleFakes();
 		await attachCirclePhoto(f.deps, actor, { ...payload, width: 4096, view: payload.image });
 		expect(f.stored[0]).toMatchObject({ width: 4096, viewPath: '/media/ph1_view.jpg' });
+	});
+
+	it('keeps the capture date the group photo came with', async () => {
+		const f = circleFakes();
+		await attachCirclePhoto(f.deps, actor, { ...payload, takenAt: TAKEN_AT });
+		expect(f.stored[0]?.takenAt).toBe(TAKEN_AT);
 	});
 
 	it('refuses a photo for what is not this member’s applied circle upload, storing nothing', async () => {

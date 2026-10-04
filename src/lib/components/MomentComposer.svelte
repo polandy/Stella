@@ -363,8 +363,8 @@
 	async function preparePhotos(): Promise<KeptPhoto[]> {
 		const photos: KeptPhoto[] = [];
 		for (const file of picked) {
-			const { image, thumb, width, height } = await processImage(file);
-			photos.push({ id: ulid(), image, thumb, width, height });
+			const { image, thumb, width, height, takenAt } = await processImage(file);
+			photos.push({ id: ulid(), image, thumb, width, height, takenAt });
 		}
 		return photos;
 	}

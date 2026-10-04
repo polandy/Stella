@@ -99,8 +99,21 @@ describe('attachJournalPhoto', () => {
 			mime: 'image/jpeg',
 			width: 1600,
 			height: 1200,
+			takenAt: null,
 			createdAt: 5000
 		});
+	});
+
+	it('keeps the capture date the phone read, and refuses one that cannot be real', async () => {
+		const d = deps();
+		d.clock = { now: () => Date.UTC(2026, 9, 4) };
+		const into = { contactId: 'c1', journalEntryId: 'j1', visibility: 'shared' as const };
+		await attachJournalPhoto(d, { userId: 'u1', householdId: 'h1' }, { ...into, upload: upload({ takenAt: '2026-09-27T18:04:00' }) });
+		expect(d.stored[0]?.takenAt).toBe('2026-09-27T18:04:00');
+		await expect(
+			attachJournalPhoto(d, { userId: 'u1', householdId: 'h1' }, { ...into, upload: upload({ takenAt: '2031-01-01T00:00:00' }) })
+		).rejects.toBeInstanceOf(InvalidImageError);
+		expect(d.stored).toHaveLength(1);
 	});
 
 	it('rejects an empty image', async () => {

@@ -69,7 +69,7 @@ export async function attachMomentPhoto(
 		contactId: entry.anchorContactId,
 		journalEntryId: entry.entryId,
 		visibility: entry.visibility,
-		upload: { image: payload.image, thumb: payload.thumb, width: payload.width, height: payload.height }
+		upload: { image: payload.image, thumb: payload.thumb, width: payload.width, height: payload.height, takenAt: payload.takenAt }
 	});
 }
 
@@ -92,7 +92,7 @@ export async function attachGalleryPhoto(
 	return addGalleryPhoto(deps.photos, actor, {
 		contactId: gallery.contactId,
 		visibility: gallery.visibility,
-		upload: { image: payload.image, thumb: payload.thumb, width: payload.width, height: payload.height }
+		upload: { image: payload.image, thumb: payload.thumb, width: payload.width, height: payload.height, takenAt: payload.takenAt }
 	});
 }
 
@@ -112,11 +112,11 @@ export async function attachCirclePhoto(
 	const viewer = { id: actor.userId, householdId: actor.householdId };
 	if (!(await deps.circles.getVisibleTo(viewer, upload.circleId))) throw new PhotoParentGoneError();
 
-	const { image, thumb, view, width, height } = payload;
+	const { image, thumb, view, width, height, takenAt } = payload;
 	return addCirclePhoto(deps.photos, actor, {
 		circleId: upload.circleId,
 		role: upload.role,
 		visibility: upload.visibility,
-		upload: view ? { image, thumb, view, width, height } : { image, thumb, width, height }
+		upload: view ? { image, thumb, view, width, height, takenAt } : { image, thumb, width, height, takenAt }
 	});
 }

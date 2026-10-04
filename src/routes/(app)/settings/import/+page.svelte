@@ -34,7 +34,7 @@
 	 * renditions with the staging token. The server decides whose photo it is.
 	 */
 	async function storePhoto(id: string, file: Blob, token: string): Promise<'stored' | 'already'> {
-		const { image, thumb, width, height } = await processImage(file);
+		const { image, thumb, width, height, takenAt } = await processImage(file);
 		const body = new FormData();
 		body.append('token', token);
 		body.append('photoId', id);
@@ -42,6 +42,8 @@
 		body.append('thumb', thumb, 'thumb.jpg');
 		body.append('width', String(width));
 		body.append('height', String(height));
+		// Monica kept the files as they were uploaded, so their EXIF still says when they were taken.
+		if (takenAt) body.append('takenAt', takenAt);
 		const res = await fetch('/settings/import/photos', { method: 'POST', body });
 		if (!res.ok) throw new Error(`The server refused this photo (${res.status}).`);
 		return ((await res.json()) as { status: 'stored' | 'already' }).status;

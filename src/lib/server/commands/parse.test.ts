@@ -317,6 +317,25 @@ describe('parsePhotoCommand', () => {
 		expect(parsePhotoCommand({ ...photo, type: 'circleGallery.photo', view: 'bytes' })).toBeNull();
 	});
 
+	it('reads the capture date a photo carries, and none is none', () => {
+		const parsed = parsePhotoCommand({ ...photo, type: 'gallery.photo', takenAt: '2019-05-03T00:30:15+02:00' });
+		expect(parsed?.payload).toEqual({
+			parentId: photo.parentId,
+			image: bytes,
+			thumb: bytes,
+			width: 1600,
+			height: 1200,
+			takenAt: '2019-05-03T00:30:15+02:00'
+		});
+		expect(parsePhotoCommand({ ...photo, takenAt: null })?.payload).not.toHaveProperty('takenAt');
+	});
+
+	it('refuses a capture date that is not one', () => {
+		for (const takenAt of ['', '2019:05:03 00:30:15', '2019-02-30T10:00:00', 'yesterday', 1_556_843_415_000]) {
+			expect(parsePhotoCommand({ ...photo, takenAt })).toBeNull();
+		}
+	});
+
 	it('refuses a photo of no known type, with no parent, no bytes or no size', () => {
 		expect(parsePhotoCommand({ ...photo, type: 'note.add' })).toBeNull();
 		expect(parsePhotoCommand({ ...photo, type: null })).toBeNull();

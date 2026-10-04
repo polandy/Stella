@@ -23,6 +23,7 @@ const member = (contactId: string, role: string | null): MemberView => ({
 });
 
 const photo = (id: string, role: string | null): CirclePhoto => ({
+	takenAt: null,
 	id,
 	circleId: 'class',
 	role,

@@ -227,9 +227,14 @@ change what is there, use *Edit* on the entry.
 **Photos** is the fourth tab: everything you have collected of that person in a grid — their
 favourites first, then the rest newest first, each one dated. *Add photos* takes several at once — each is shrunk in your browser
 before it is uploaded, which also strips the location and camera details the file was carrying,
-and you choose there whether they are shared with the household or only yours.
+and you choose there whether they are shared with the household or only yours. The one thing
+kept is **when the picture was taken**, if the camera wrote it down: a photo from 2019 that you
+upload today is dated 2019 and sits among that year's photos. A picture that does not say —
+a screenshot, most pictures sent through a messenger, many PNG and HEIC files — is dated by the
+day you added it, as before.
 
-Click one and it opens large, with the date next to its caption. From there you can give it a
+Click one and it opens large, with the date next to its caption — *Taken …* when the camera
+said when. From there you can give it a
 caption, make it the person's photo, switch it between shared and private, or remove it.
 *Use as photo* first lets you choose the part that shows, as below; the photo stays one photo in
 the gallery, and choosing again — *Change framing* on the one they wear — starts from the part
@@ -500,8 +505,9 @@ A circle can have photos: the class photo of each school year, the team on the p
 teachers at the summer party. Press **Add photos** in the *Photos* card below the members and
 pick several at once; say who is in them — one of the circle's roles, or *No role* when the
 photo shows everyone — and whether the household may see them. Like a person's photos they
-are shrunk in your browser first, so no location ever leaves your phone, and without a
-connection they wait on the device until Stella can take them.
+are shrunk in your browser first, so no location ever leaves your phone — only the day they
+were taken, when the camera recorded it, which also orders them — and without a connection
+they wait on the device until Stella can take them.
 
 A photo with no role becomes the circle's **cover**, the wide picture at the top of its page
 and on its card on the Circles page. A photo with a role sits as a banner above that role's

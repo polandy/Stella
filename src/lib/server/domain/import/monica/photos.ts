@@ -1,7 +1,7 @@
 import type { Visibility } from '../../../access/visibility';
 import type { Clock } from '../../../clock';
 import type { MediaStore, PhotoRepository } from '../../media/avatars';
-import { validateImageUpload, type ImageUpload } from '../../media/journal-photos';
+import { validateImageUpload, validateTakenAt, type ImageUpload } from '../../media/journal-photos';
 
 /*
  * Photos of a Monica import (docs/02 §2.16). The dump only names the files; their bytes are
@@ -36,6 +36,7 @@ export async function attachImportedPhoto(
 	input: AttachImportedPhotoInput
 ): Promise<'stored' | 'already'> {
 	const mime = validateImageUpload(input.upload);
+	const takenAt = validateTakenAt(input.upload, deps.clock.now());
 	if (await deps.photos.exists(input.photoId)) return 'already';
 	const ext = EXT[mime]!;
 	const filePath = await deps.media.put(`${input.photoId}.${ext}`, input.upload.image);
@@ -53,6 +54,7 @@ export async function attachImportedPhoto(
 		width: input.upload.width,
 		height: input.upload.height,
 		sizeBytes: input.upload.image.byteLength,
+		takenAt,
 		createdAt: deps.clock.now()
 	});
 	if (input.isAvatar) await deps.photos.setContactAvatar(input.contactId, input.photoId);

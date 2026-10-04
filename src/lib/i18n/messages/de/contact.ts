@@ -247,6 +247,7 @@ export const contact: ContactMessages = {
 	'contact.photos.share': 'Mit dem Haushalt teilen',
 	'contact.photos.makePrivate': 'Privat machen',
 	'contact.photos.favourite': 'Favorit',
+	'contact.photos.takenOn': (p) => `Aufgenommen am ${p.date}`,
 	'contact.photos.pin': 'Als Favorit anheften',
 	'contact.photos.unpin': 'Favorit lösen',
 	// Profilbilder aus einem Gruppenfoto (docs/concepts/circle-photos.md §5.2).

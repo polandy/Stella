@@ -25,6 +25,7 @@ let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzleCirclePhotoRepository>;
 
 const stored = (over: Partial<StoredCirclePhoto> = {}): StoredCirclePhoto => ({
+	takenAt: null,
 	id: 'p1',
 	householdId: H,
 	circleId: 'class',
@@ -81,6 +82,7 @@ describe('listVisible / findVisible', () => {
 			createdByName: 'One',
 			width: 1600,
 			height: 900,
+			takenAt: null,
 			createdAt: 10,
 			pinnedAt: null
 		});

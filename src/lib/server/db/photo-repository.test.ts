@@ -29,6 +29,7 @@ function seedContact(id: string, visibility: 'shared' | 'private' = 'shared', cr
 }
 
 const photo = (over: Partial<StoredPhoto> = {}): StoredPhoto => ({
+	takenAt: null,
 	id: 'p1',
 	householdId: H,
 	contactId: 'mara',
@@ -134,6 +135,22 @@ describe('the gallery (docs/02 §2.14)', () => {
 			framing: null,
 			pinnedAt: null
 		});
+	});
+
+	it('orders by the capture when known — offset and all — and hands the date back', async () => {
+		// Capture dates are whole seconds, so the photos above are moved to 100, 200 and 300 s.
+		for (const [id, seconds] of [['g-shared', 100], ['g-private', 200], ['g-u2', 300]] as const) {
+			db.update(schema.photo).set({ createdAt: seconds * 1000 }).where(eq(schema.photo.id, id)).run();
+		}
+		// Both added after everything else, but taken at 150 s and at 250 s. The second says
+		// 01:04:10 at +01:00, which is 250 s; read without its offset it would lead the list.
+		await repo.insert(photo({ id: 'taken-150s', createdAt: 900_000, takenAt: '1970-01-01T00:02:30' }));
+		await repo.insert(photo({ id: 'taken-250s', createdAt: 900_000, takenAt: '1970-01-01T01:04:10+01:00' }));
+
+		const listed = await repo.listGalleryPhotos(viewerU1, 'mara');
+		expect(listed.map((p) => p.id)).toEqual(['g-u2', 'taken-250s', 'g-private', 'taken-150s', 'g-shared']);
+		expect(listed.find((p) => p.id === 'taken-250s')?.takenAt).toBe('1970-01-01T01:04:10+01:00');
+		expect(listed.find((p) => p.id === 'g-u2')?.takenAt).toBeNull();
 	});
 
 	it('pins and unpins a gallery photo for everyone who sees it', async () => {

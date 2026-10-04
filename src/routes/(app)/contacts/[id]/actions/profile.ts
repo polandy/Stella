@@ -14,6 +14,7 @@ import {
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import { editNameParts } from '$lib/server/domain/contacts/name-parts';
 import { getAvatarDeps, getContactDeps, getNameDeps } from '$lib/server/services';
+import { takenAtField } from '$lib/server/http/taken-at-field';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -157,7 +158,8 @@ export const profileActions = {
 			image: new Uint8Array(await image.arrayBuffer()),
 			thumb: new Uint8Array(await thumb.arrayBuffer()),
 			width: Number(form.get('width')),
-			height: Number(form.get('height'))
+			height: Number(form.get('height')),
+			takenAt: takenAtField(form)
 		};
 
 		try {

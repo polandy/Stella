@@ -278,6 +278,7 @@ export const contact = {
 	'contact.photos.share': 'Share with the household',
 	'contact.photos.makePrivate': 'Make private',
 	'contact.photos.favourite': 'Favourite',
+	'contact.photos.takenOn': (p: { date: string }) => `Taken ${p.date}`,
 	'contact.photos.pin': 'Pin as favourite',
 	'contact.photos.unpin': 'Unpin favourite',
 	// Profile pictures cut from a group photo (docs/concepts/circle-photos.md §5.2).

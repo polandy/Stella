@@ -2,7 +2,7 @@ import type { Visibility } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { ImageMime, MediaStore, PhotoRepository } from './avatars';
-import { validateImageUpload, type ImageUpload } from './journal-photos';
+import { validateImageUpload, validateTakenAt, type ImageUpload } from './journal-photos';
 
 /*
  * Adding a photo to a person's gallery (docs/02 §2.14). The bytes are downscaled and
@@ -45,6 +45,7 @@ export async function addGalleryPhoto(
 	input: AddGalleryPhotoInput
 ): Promise<string> {
 	const mime = validateImageUpload(input.upload);
+	const takenAt = validateTakenAt(input.upload, deps.clock.now());
 	const id = deps.ids.next();
 	const ext = EXT[mime];
 
@@ -64,6 +65,7 @@ export async function addGalleryPhoto(
 		width: input.upload.width,
 		height: input.upload.height,
 		sizeBytes: input.upload.image.byteLength,
+		takenAt,
 		createdAt: deps.clock.now()
 	});
 	return id;

@@ -10,6 +10,7 @@ import { readStagedDump } from '$lib/server/import/staging';
 import { getImportDeps, getImportedPhotoDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 import { importWording } from '$lib/server/i18n/import-wording';
+import { takenAtField } from '$lib/server/http/taken-at-field';
 import { say, translator } from '$lib/server/i18n/say';
 
 /*
@@ -90,7 +91,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				image: new Uint8Array(await image.arrayBuffer()),
 				thumb: new Uint8Array(await thumb.arrayBuffer()),
 				width: Number(form.get('width')),
-				height: Number(form.get('height'))
+				height: Number(form.get('height')),
+				takenAt: takenAtField(form)
 			}
 		});
 		return json({ status });

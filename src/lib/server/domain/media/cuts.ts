@@ -118,6 +118,8 @@ export interface GroupPhotoOfPerson {
 	id: string;
 	circleId: string;
 	circleName: string;
+	/** When it was taken, as its EXIF said; null when unknown. Shown and ordered by when known. */
+	takenAt: string | null;
 	createdAt: number;
 }
 

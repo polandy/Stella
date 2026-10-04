@@ -22,6 +22,7 @@ const viewer: Viewer = { id: 'u1', householdId: 'h1' };
 const NOW = 5_000;
 
 const photo = (over: Partial<GalleryPhoto> = {}): GalleryPhoto => ({
+	takenAt: null,
 	id: 'p1',
 	contactId: 'c1',
 	caption: null,

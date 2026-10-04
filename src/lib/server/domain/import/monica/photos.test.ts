@@ -72,9 +72,16 @@ describe('attachImportedPhoto', () => {
 			mime: 'image/jpeg',
 			width: 800,
 			height: 600,
+			takenAt: null,
 			createdAt: NOW
 		});
 		expect(f.avatars).toEqual([]);
+	});
+
+	it('keeps the capture date read out of the picture Monica kept', async () => {
+		const f = fakes();
+		await attachImportedPhoto(f.deps, input({ upload: { image: JPEG, thumb: JPEG, width: 800, height: 600, takenAt: '2015-08-01T14:00:00' } }));
+		expect(f.stored[0]?.takenAt).toBe('2015-08-01T14:00:00');
 	});
 
 	it('makes the photo the avatar when Monica used it as one', async () => {

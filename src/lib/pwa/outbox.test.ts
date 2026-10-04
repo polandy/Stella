@@ -183,6 +183,13 @@ describe('photos kept with a moment', () => {
 		expect(settlePhoto(second.items, 'a', 'p2', { id: 'p2', status: 'applied', result: 'ph2' })).toEqual([]);
 	});
 
+	it('sends a kept photo with the capture date it was kept with', () => {
+		const dated = { ...photo('p1'), takenAt: '2026-09-27T18:04:00+02:00' };
+		const kept = queue([], { command: moment('a'), memberId: 'u1', savedAt: 1, photos: [dated] });
+		const delivered = settle(takeBatch(kept, 'u1', 10).items, [{ id: 'a', status: 'applied', result: {} }]);
+		expect(takePhoto(delivered, 'u1')?.upload.photo.takenAt).toBe('2026-09-27T18:04:00+02:00');
+	});
+
 	it('uploads a photo kept for a gallery into that gallery', () => {
 		const gallery = queue([], {
 			command: { id: 'g', type: 'gallery.add', payload: { contactId: 'julia', visibility: 'shared' }, issuedAt: 1 },
