@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.22](https://github.com/polandy/Stella/compare/v0.0.21...v0.0.22) (2026-10-04)
+
+
+### Features
+
+* **immich:** show Open in Immich to every member who sees a linked person ([ed68bbd](https://github.com/polandy/Stella/commit/ed68bbd18519325abab3a8578a9246b4c59e995a))
+
 ## [0.0.21](https://github.com/polandy/Stella/compare/v0.0.20-rc.4...v0.0.21) (2026-10-04)
 
 
