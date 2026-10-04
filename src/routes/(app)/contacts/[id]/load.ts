@@ -146,8 +146,7 @@ export const load = (async ({ locals, params, url }) => {
 		 * holds the page up (§4.5).
 		 */
 		immich: immich ? { linked: immichLink !== null } : null,
-		immichPerson:
-			immich && immichLink ? readLinkedPerson(immich, immichLink.immichPersonId, locals.user.email) : null,
+		immichPerson: immich && immichLink ? readLinkedPerson(immich, immichLink.immichPersonId) : null,
 		// Every group photo they were cut from, now and before (docs/concepts/circle-photos.md §5.2).
 		groupPhotos: read.groupPhotos,
 		// Their circles' photos a profile picture can be cut from; none means choosing looks as before.

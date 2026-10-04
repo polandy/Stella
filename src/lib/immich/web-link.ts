@@ -1,7 +1,8 @@
 /*
  * Links into Immich's web app (docs/concepts/immich.md §2 point 5). Pure: the base comes from
- * `IMMICH_PUBLIC_URL`, which may differ from the address the server calls Immich at. A link
- * opens only for someone signed into the key owner's account, so the caller decides who sees it.
+ * `IMMICH_PUBLIC_URL`, which may differ from the address the server calls Immich at. Every
+ * member who sees a linked person gets the link; it opens Immich as it is, so someone not
+ * signed into the key owner's account lands on Immich's sign-in or an empty page.
  * Phone app links wait for the device test (§4.4, §9.6).
  */
 

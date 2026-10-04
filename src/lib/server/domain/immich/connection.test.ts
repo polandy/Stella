@@ -4,7 +4,6 @@ import { createFakeImmichGateway } from '../../immich/fake-gateway';
 import {
 	createImmichConnection,
 	FAILURE_RETRY_MS,
-	isKeyOwner,
 	isSupportedVersion,
 	STATUS_INTERVAL_MS
 } from './connection';
@@ -107,23 +106,5 @@ describe('createImmichConnection', () => {
 		const { gateway, connection } = connect();
 		await Promise.all([connection.status(), connection.status()]);
 		expect(gateway.calls.filter((c) => c === 'version')).toHaveLength(1);
-	});
-});
-
-describe('isKeyOwner', () => {
-	const connected = {
-		state: 'connected' as const,
-		version: '3.2.4',
-		owner: { name: 'Anna', email: 'Anna@Example.test' }
-	};
-
-	it('recognises the key owner by email, whatever its case', () => {
-		expect(isKeyOwner(connected, 'anna@example.test')).toBe(true);
-		expect(isKeyOwner(connected, ' anna@example.test ')).toBe(true);
-	});
-
-	it('is nobody else, and nobody at all without a connection', () => {
-		expect(isKeyOwner(connected, 'bert@example.test')).toBe(false);
-		expect(isKeyOwner({ state: 'unreachable' }, 'anna@example.test')).toBe(false);
 	});
 });

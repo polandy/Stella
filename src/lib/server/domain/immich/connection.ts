@@ -3,9 +3,8 @@ import type { ImmichGateway, ImmichOwner, ImmichScope, ImmichVersion } from './g
 
 /*
  * "Is Stella connected to Immich, and to whose?" (docs/concepts/immich.md §4.1). Settings shows
- * the answer as one line to every member; the person page asks it to know who the key owner is
- * (§2 point 5). The answer is kept for a while, so opening pages does not turn into a round of
- * calls to Immich each time.
+ * the answer as one line to every member. The answer is kept for a while, so opening pages does
+ * not turn into a round of calls to Immich each time.
  */
 
 /** The oldest Immich Stella speaks to (decision §9.5): one code path, the v3.2 search form. */
@@ -42,17 +41,6 @@ export function isSupportedVersion(version: ImmichVersion): boolean {
 }
 
 const shown = ({ major, minor, patch }: ImmichVersion) => `${major}.${minor}.${patch}`;
-
-/**
- * Whether the viewer is the key's owner — the one member for whom a link into Immich's web app
- * leads anywhere (§2 point 5, §9.2). Recognised by the email of their Stella account; with no
- * connection, or no match, the answer is no, and *Open in Immich* is shown to nobody.
- */
-export function isKeyOwner(status: ImmichStatus, viewerEmail: string): boolean {
-	if (status.state !== 'connected') return false;
-	const fold = (email: string) => email.trim().toLowerCase();
-	return fold(status.owner.email) === fold(viewerEmail);
-}
 
 /** One round of asking: the version, then each scope the key needs, in the order they are used. */
 async function probe(gateway: ImmichGateway): Promise<ImmichStatus> {

@@ -6,7 +6,6 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { NewActivityEntry } from '../activity/activity';
 import { ContactGoneError } from '../contacts/require-visible';
-import { isKeyOwner, type ImmichConnection } from './connection';
 import { isImmichId, type ImmichFailure, type ImmichGateway, type ImmichPerson } from './gateway';
 
 /*
@@ -194,15 +193,18 @@ export type LinkedPersonView =
 			name: string;
 			/** How many photos they are in, or null when the key may not count them. */
 			photoCount: number | null;
-			/** Into Immich's web app — only for the key owner, for whom it leads somewhere. */
-			openUrl: string | null;
+			/**
+			 * Into Immich's web app, for every member who sees the contact (concept §2 point 5). It
+			 * opens Immich as it is; someone not signed into the key owner's account lands on
+			 * Immich's sign-in or an empty page, which the owner accepted.
+			 */
+			openUrl: string;
 	  }
 	| { state: 'personGone' }
 	| { state: 'unreachable' };
 
 export interface LinkedPersonDeps {
 	gateway: ImmichGateway;
-	connection: ImmichConnection;
 	/** Where links into Immich point (`IMMICH_PUBLIC_URL`). */
 	publicUrl: string;
 }
@@ -214,13 +216,11 @@ export interface LinkedPersonDeps {
  */
 export async function readLinkedPerson(
 	deps: LinkedPersonDeps,
-	immichPersonId: string,
-	viewerEmail: string
+	immichPersonId: string
 ): Promise<LinkedPersonView> {
-	const [person, statistics, status] = await Promise.all([
+	const [person, statistics] = await Promise.all([
 		deps.gateway.person(immichPersonId),
-		deps.gateway.personStatistics(immichPersonId),
-		deps.connection.status()
+		deps.gateway.personStatistics(immichPersonId)
 	]);
 	if (!person.ok) return { state: person.failure === 'notFound' ? 'personGone' : 'unreachable' };
 
@@ -228,7 +228,7 @@ export async function readLinkedPerson(
 		state: 'linked',
 		name: person.value.name,
 		photoCount: statistics.ok ? statistics.value.assets : null,
-		openUrl: isKeyOwner(status, viewerEmail) ? immichPersonUrl(deps.publicUrl, immichPersonId) : null
+		openUrl: immichPersonUrl(deps.publicUrl, immichPersonId)
 	};
 }
 

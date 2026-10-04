@@ -165,10 +165,9 @@ its `/api` path through without a login — otherwise every call Stella makes is
 page, and Settings says Immich did not answer.
 
 **What the key means.** It reads one library — yours. Everyone in the household can see how
-many photos of a linked person it holds, following who may see that person in Stella. *Open in
-Immich* is shown only to you, the key's owner: Stella recognises you by the email of your
-Stella account matching your Immich account's, and Immich's own links open only for someone
-signed into it.
+many photos of a linked person it holds, following who may see that person in Stella, and gets
+*Open in Immich*. That link shows the photos only to you, signed into your own Immich account;
+everyone else lands on Immich's sign-in or an empty page.
 
 ## Backups
 
