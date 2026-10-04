@@ -6,3 +6,5 @@ CREATE TABLE `immich_link` (
 	FOREIGN KEY (`contact_id`) REFERENCES `contact`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`linked_by`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
 );
+--> statement-breakpoint
+CREATE UNIQUE INDEX `immich_link_person_unique` ON `immich_link` (`immich_person_id`);

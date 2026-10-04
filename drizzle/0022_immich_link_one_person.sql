@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX `immich_link_person_unique` ON `immich_link` (`immich_person_id`);

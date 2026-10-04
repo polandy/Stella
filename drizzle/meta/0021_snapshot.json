@@ -1169,7 +1169,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "immich_link_person_unique": {
+          "name": "immich_link_person_unique",
+          "columns": [
+            "immich_person_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "immich_link_contact_id_contact_id_fk": {
           "name": "immich_link_contact_id_contact_id_fk",
