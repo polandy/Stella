@@ -30,6 +30,7 @@ let circlePhotos: ReturnType<typeof createDrizzleCirclePhotoRepository>;
 let photos: ReturnType<typeof createDrizzlePhotoRepository>;
 
 const groupPhoto = (over: Partial<StoredCirclePhoto> = {}): StoredCirclePhoto => ({
+	takenAt: null,
 	id: 'class-photo',
 	householdId: H,
 	circleId: 'class',
@@ -176,6 +177,7 @@ describe('switching away from a cut', () => {
 			width: 512,
 			height: 512,
 			sizeBytes: 1,
+			takenAt: null,
 			createdAt: 20_000
 		});
 		await photos.setContactAvatar('anna', 'upload');
@@ -202,6 +204,7 @@ describe('switching away from a cut', () => {
 			width: 1600,
 			height: 1200,
 			sizeBytes: 1,
+			takenAt: null,
 			createdAt: 20_000
 		});
 		await photos.replaceFraming(cutOf({ id: 'holiday-frame', framingOf: 'holiday', filePath: 'hf.jpg', thumbPath: 'hf_t.jpg' }));
@@ -250,6 +253,7 @@ describe('a group photo that people wear going away', () => {
 			width: 512,
 			height: 512,
 			sizeBytes: 1,
+			takenAt: null,
 			createdAt: 20_000
 		});
 		await photos.setContactAvatar('anna', 'upload');
@@ -306,9 +310,25 @@ describe('what the pages read', () => {
 		const ofAnna = (viewer: Viewer) => cuts.listGroupPhotosOf(viewer, 'anna');
 		expect((await ofAnna(u1)).map((p) => p.id)).toEqual(['private', 'team-photo', 'class-photo']);
 		expect(await ofAnna(u2)).toEqual([
-			{ id: 'team-photo', circleId: 'class', circleName: 'Circle class', createdAt: 3000 },
-			{ id: 'class-photo', circleId: 'class', circleName: 'Circle class', createdAt: 1000 }
+			{ id: 'team-photo', circleId: 'class', circleName: 'Circle class', takenAt: null, createdAt: 3000 },
+			{ id: 'class-photo', circleId: 'class', circleName: 'Circle class', takenAt: null, createdAt: 1000 }
 		]);
+	});
+
+	it('orders the group photos by when they were taken when their EXIF said so', async () => {
+		// Added after the class photo (at 1 s), but taken at the epoch itself.
+		await circlePhotos.insert(
+			groupPhoto({ id: 'old-scan', filePath: 'o.jpg', thumbPath: 'o_t.jpg', createdAt: 9000, takenAt: '1970-01-01T00:00:00Z' })
+		);
+		await cuts.replaceCut(cutOf());
+		await cuts.replaceCut(cutOf({ id: 'cut-scan', framingOf: 'old-scan', filePath: 'as.jpg', thumbPath: 'as_t.jpg' }));
+
+		const ofAnna = await cuts.listGroupPhotosOf(u2, 'anna');
+		expect(ofAnna.map((p) => [p.id, p.takenAt])).toEqual([
+			['class-photo', null],
+			['old-scan', '1970-01-01T00:00:00Z']
+		]);
+		expect((await cuts.listGroupPhotosToCut(u2, 'anna')).map((p) => p.id)).toEqual(['class-photo', 'old-scan']);
 	});
 
 	it('offers the photos of the person’s own circles to cut from, with the square they wear', async () => {
@@ -323,6 +343,7 @@ describe('what the pages read', () => {
 				id: 'class-photo',
 				circleId: 'class',
 				circleName: 'Circle class',
+				takenAt: null,
 				createdAt: 1000,
 				width: 4096,
 				height: 2731,

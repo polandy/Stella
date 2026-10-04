@@ -19,6 +19,7 @@
 	import { circleKindLabel } from '$lib/circles/labels';
 	import { roleKey } from '$lib/circles/role-key';
 	import { dayLabel } from '$lib/dates/labels';
+	import { photoDay, type Dated } from '$lib/image/taken-at';
 	import { allChosen, toggleEveryone, toggleGroup, toggleMember } from '$lib/circles/selection';
 	import { accentDotStyle } from '$lib/design/tokens';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -57,7 +58,7 @@
 	$effect(() => {
 		if (walk.current && !walked) walk.close();
 	});
-	const photoDate = (createdAt: number): string => dayLabel(i18n, new Date(createdAt).toISOString());
+	const photoDate = (photo: Dated): string => dayLabel(i18n, photoDay(photo));
 
 	// A member on their way out of the circle is off the grid while the undo window is open;
 	// a role whose last member is leaving goes with them.

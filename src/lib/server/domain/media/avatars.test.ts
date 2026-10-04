@@ -131,6 +131,20 @@ describe('setContactAvatar', () => {
 		expect(f.avatarSet).toEqual({ contactId: 'mara', photoId: 'photo-1' });
 	});
 
+	it('keeps the capture date of the picture, which lands in the gallery as a dated photo', async () => {
+		const f = fakeDeps();
+		await setContactAvatar(f.deps, { userId: 'u1', householdId: 'h1' }, 'mara', upload({ takenAt: '2023-06-01T10:00:00' }));
+		expect(f.inserted?.takenAt).toBe('2023-06-01T10:00:00');
+	});
+
+	it('refuses a capture date in the future, storing nothing', async () => {
+		const f = fakeDeps();
+		await expect(
+			setContactAvatar(f.deps, { userId: 'u1', householdId: 'h1' }, 'mara', upload({ takenAt: '2099-01-01T00:00:00' }))
+		).rejects.toThrow(InvalidAvatarError);
+		expect(f.store.size).toBe(0);
+	});
+
 	it('rejects an invalid upload before storing anything', async () => {
 		const f = fakeDeps();
 		await expect(

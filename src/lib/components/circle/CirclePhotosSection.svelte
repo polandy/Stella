@@ -8,6 +8,7 @@
 	import type { JsonCommand } from '$lib/commands/commands';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { processGroupPhoto } from '$lib/image/process-image';
+	import type { Dated } from '$lib/image/taken-at';
 	import { thumbnailUrl } from '$lib/media/urls';
 	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -29,7 +30,8 @@
 	}: {
 		data: CirclePageData;
 		error: string | null;
-		photoDate: (createdAt: number) => string;
+		/** When a photo was taken, else added, in the viewer's language. */
+		photoDate: (photo: Dated) => string;
 		onopen: OpenPhotos;
 	} = $props();
 
@@ -157,7 +159,7 @@
 							aria-hidden="true"
 						>
 							{#if p.roleLabel}<span class="truncate">{p.roleLabel}</span>{/if}
-							<span class="truncate">{photoDate(p.createdAt)}</span>
+							<span class="truncate">{photoDate(p)}</span>
 						</span>
 					</button>
 					{#if p.visibility === 'private'}

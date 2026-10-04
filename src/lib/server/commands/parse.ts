@@ -6,6 +6,7 @@ import { INTERACTION_KINDS } from '../../interactions/kinds';
 import { GENDERS } from '../../people/gender';
 import { CURRENT_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '../../relationships/status';
 import { TAG_COLORS } from '../domain/tags/tags';
+import { isTakenAt } from '../../image/taken-at';
 
 /*
  * Reading a command off the wire (docs/concepts/offline-capture.md §3). The edge's half of the
@@ -223,7 +224,11 @@ const PhotoSchema = v.object({
 	// A large circle photo's 1600 px view (docs/02 §2.4.2); every other photo is its own view.
 	view: v.nullish(v.instance(Uint8Array)),
 	width: v.pipe(v.number(), v.integer(), v.minValue(1)),
-	height: v.pipe(v.number(), v.integer(), v.minValue(1))
+	height: v.pipe(v.number(), v.integer(), v.minValue(1)),
+	// When the picture was taken, read from its EXIF on the phone (docs/02 §2.14). Most photos
+	// carry none, which is normal; one that is sent and does not read is refused. Whether it
+	// could be real is the use-case's to judge, against its clock.
+	takenAt: v.nullish(v.pipe(v.string(), v.check(isTakenAt)))
 });
 
 /**
@@ -237,13 +242,14 @@ export function parsePhotoCommand(raw: {
 	image: unknown;
 	thumb: unknown;
 	view?: unknown;
+	takenAt?: unknown;
 	width: unknown;
 	height: unknown;
 	issuedAt: unknown;
 }): Command | null {
 	const parsed = v.safeParse(PhotoSchema, raw);
 	if (!parsed.success) return null;
-	const { id, type, issuedAt, view, ...rest } = parsed.output;
-	const payload = view ? { ...rest, view } : rest;
+	const { id, type, issuedAt, view, takenAt, ...rest } = parsed.output;
+	const payload = { ...rest, ...(view ? { view } : {}), ...(takenAt ? { takenAt } : {}) };
 	return { id, type, payload, issuedAt };
 }

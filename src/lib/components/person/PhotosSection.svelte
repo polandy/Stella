@@ -9,6 +9,7 @@
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { processImage } from '$lib/image/process-image';
+	import { photoDay, type Dated } from '$lib/image/taken-at';
 	import { thumbnailUrl } from '$lib/media/urls';
 	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -39,8 +40,8 @@
 	let openPhoto = $state<number | null>(null);
 	const openedPhoto = $derived(openPhoto === null ? null : (data.gallery[openPhoto] ?? null));
 
-	/** When a gallery photo was added, in the viewer's language (docs/02 §2.14). */
-	const photoDate = (createdAt: number): string => dayLabel(i18n, new Date(createdAt).toISOString());
+	/** When a gallery photo was taken, else added, in the viewer's language (docs/02 §2.14). */
+	const photoDate = (photo: Dated): string => dayLabel(i18n, photoDay(photo));
 
 	/*
 	 * An upload is saved through the outbox like every addition (docs/concepts/offline-capture.md
@@ -150,7 +151,7 @@
 								class="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/65 to-transparent px-1.5 pb-1 pt-3 text-left text-[0.6875rem] font-medium text-white"
 								aria-hidden="true"
 							>
-								{photoDate(p.createdAt)}
+								{photoDate(p)}
 							</span>
 						</button>
 						{#if p.visibility === 'private'}
@@ -185,7 +186,7 @@
 									loading="lazy"
 								/>
 								<span class="truncate text-xs text-fg-muted">{g.circleName}</span>
-								<span class="truncate text-[0.6875rem] text-fg-subtle">{photoDate(g.createdAt)}</span>
+								<span class="truncate text-[0.6875rem] text-fg-subtle">{photoDate(g)}</span>
 							</a>
 						</li>
 					{/each}

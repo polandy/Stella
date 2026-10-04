@@ -3,7 +3,7 @@ import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Visibility } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import { sniffImageMime, type ImageMime, type MediaStore, type PhotoRepository } from './avatars';
+import { sniffImageMime, storedTakenAt, type ImageMime, type MediaStore, type PhotoRepository } from './avatars';
 
 /*
  * Journal photo domain (docs/02 §2.20). Like avatars (§2.14), images are downscaled and
@@ -34,6 +34,13 @@ export interface ImageUpload {
 	thumb: Uint8Array;
 	width: number;
 	height: number;
+	/** When the picture was taken, read from its EXIF in the browser; absent when it said nothing. */
+	takenAt?: string | null;
+}
+
+/** The upload's capture date as stored, or null; throws InvalidImageError when it cannot be real. */
+export function validateTakenAt(upload: Pick<ImageUpload, 'takenAt'>, nowMs: number): string | null {
+	return storedTakenAt(upload.takenAt, nowMs, (message) => new InvalidImageError(message));
 }
 
 /**
@@ -91,6 +98,7 @@ export async function attachJournalPhoto(
 	input: AttachJournalPhotoInput
 ): Promise<string> {
 	const mime = validateImageUpload(input.upload);
+	const takenAt = validateTakenAt(input.upload, deps.clock.now());
 	const id = deps.ids.next();
 	const ext = EXT[mime];
 
@@ -110,6 +118,7 @@ export async function attachJournalPhoto(
 		width: input.upload.width,
 		height: input.upload.height,
 		sizeBytes: input.upload.image.byteLength,
+		takenAt,
 		createdAt: deps.clock.now()
 	});
 	return id;

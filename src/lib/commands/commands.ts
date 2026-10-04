@@ -85,6 +85,8 @@ export interface PhotoPayload {
 	view?: Uint8Array;
 	width: number;
 	height: number;
+	/** When it was taken, as its EXIF said (`../image/taken-at`); absent when it said nothing. */
+	takenAt?: string;
 }
 
 /** A note on a person (docs/02 §2.5), as the person page's note form hands it over. */

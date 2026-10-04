@@ -30,7 +30,9 @@ const EXT: Record<ImageMime, string> = {
 };
 
 /** A framing as stored: a photo row that belongs to another photo and carries its square. */
-export interface StoredFraming extends StoredPhoto {
+// A framing carries no capture date: it is never listed, and a cut that becomes a photo of its
+// own takes its group photo's (`./cuts`).
+export interface StoredFraming extends Omit<StoredPhoto, 'takenAt'> {
 	framingOf: string;
 	crop: CropRect;
 }

@@ -61,6 +61,11 @@ export interface KeptPhoto {
 	view?: Blob;
 	width: number;
 	height: number;
+	/**
+	 * When it was taken, read from its EXIF before the re-encode dropped it (docs/02 §2.14), so a
+	 * photo kept for later still sorts where it belongs. Absent on photos kept by an older build.
+	 */
+	takenAt?: string | null;
 }
 
 /** One thing a member added while Stella could not be reached. */

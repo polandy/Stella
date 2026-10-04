@@ -11,12 +11,14 @@ interface Photo {
 	id: string;
 	role: string | null;
 	createdAt: number;
+	takenAt: string | null;
 	pinnedAt: number | null;
 }
 const photo = (id: string, over: Partial<Photo> = {}): Photo => ({
 	id,
 	role: null,
 	createdAt: 1,
+	takenAt: null,
 	pinnedAt: null,
 	...over
 });

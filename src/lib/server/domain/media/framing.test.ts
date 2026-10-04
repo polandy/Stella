@@ -16,6 +16,7 @@ const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
 const upload: AvatarUpload = { image: JPEG, thumb: JPEG, width: 512, height: 512 };
 
 const source = (over: Partial<GalleryPhoto> = {}): GalleryPhoto => ({
+	takenAt: null,
 	id: 'p1',
 	contactId: 'c1',
 	caption: null,

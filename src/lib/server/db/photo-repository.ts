@@ -14,6 +14,7 @@ import type {
 } from '../domain/media/avatars';
 import type { FramingRepository, StoredFraming } from '../domain/media/framing';
 import { keepCutLeftBehind } from './cut-turning';
+import { photoDatedAt } from './photo-dated-at';
 import type * as schema from './schema';
 import { circle, contact, photo } from './schema';
 
@@ -61,6 +62,7 @@ export function createDrizzlePhotoRepository(
 					width: p.width,
 					height: p.height,
 					sizeBytes: p.sizeBytes,
+					takenAt: p.takenAt,
 					createdAt: p.createdAt
 				})
 				.run();
@@ -134,7 +136,7 @@ export function createDrizzlePhotoRepository(
 				.leftJoin(cutGroup, eq(cutGroup.id, photo.cutFrom))
 				.leftJoin(cutCircle, cutCircleVisible(viewer))
 				.where(and(eq(photo.contactId, contactId), isGalleryPhotoVisibleTo(viewer)))
-				.orderBy(desc(photo.createdAt))
+				.orderBy(desc(photoDatedAt(photo)))
 				.all()
 				.map(toGalleryPhoto);
 		},
@@ -289,6 +291,7 @@ const GALLERY_COLUMNS = {
 	createdBy: photo.createdBy,
 	width: photo.width,
 	height: photo.height,
+	takenAt: photo.takenAt,
 	createdAt: photo.createdAt,
 	isAvatar: sql<number>`(${contact.avatarPhotoId} IN (${photo.id}, ${framing.id}))`,
 	cropX: framing.cropX,
@@ -308,6 +311,7 @@ type GalleryRow = {
 	createdBy: string;
 	width: number | null;
 	height: number | null;
+	takenAt: string | null;
 	createdAt: number;
 	isAvatar: number | null;
 	cropX: number | null;
@@ -328,6 +332,7 @@ const toGalleryPhoto = (row: GalleryRow): GalleryPhoto => ({
 	createdBy: row.createdBy,
 	width: row.width,
 	height: row.height,
+	takenAt: row.takenAt,
 	createdAt: row.createdAt,
 	isAvatar: row.isAvatar === 1,
 	framing:

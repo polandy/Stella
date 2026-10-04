@@ -52,6 +52,7 @@ const member = (contactId: string, role: string | null): MemberView => ({
 });
 
 const photo = (over: Partial<CirclePhoto> = {}): CirclePhoto => ({
+	takenAt: null,
 	id: 'p1',
 	circleId: 'k1',
 	role: null,
@@ -202,9 +203,18 @@ describe('addCirclePhoto', () => {
 				width: 1600,
 				height: 900,
 				sizeBytes: JPEG.byteLength,
+				takenAt: null,
 				createdAt: NOW
 			}
 		]);
+	});
+
+	it('keeps the capture date the phone read out of the group photo', async () => {
+		const { deps: d, inserted } = deps();
+		d.clock = { now: () => Date.UTC(2026, 9, 4) };
+		const dated = { ...upload, takenAt: '2024-09-12T09:15:00+02:00' };
+		await addCirclePhoto(d, { userId: 'u1', householdId: 'h1' }, { circleId: 'k1', role: null, visibility: 'shared', upload: dated });
+		expect(inserted[0]?.takenAt).toBe('2024-09-12T09:15:00+02:00');
 	});
 
 	it('refuses bytes that are not an image', async () => {

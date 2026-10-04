@@ -4,6 +4,7 @@ import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import { isPlausibleTakenAt, isTakenAt } from '../../../image/taken-at';
 
 /*
  * Avatar media domain (docs/02 §2.14, M1). Images are cropped/resized/EXIF-stripped in the
@@ -56,6 +57,23 @@ export interface AvatarUpload {
 	thumb: Uint8Array;
 	width: number;
 	height: number;
+	/** When the picture was taken, read from its EXIF in the browser; absent when it said nothing. */
+	takenAt?: string | null;
+}
+
+/**
+ * An upload's capture date as it is stored (docs/02 §2.14): null when the picture carried none,
+ * which is normal; refused through `refuse` when it does not read or cannot be real — the phone
+ * drops a date like that before sending, so one arriving was not sent by Stella's own pages.
+ */
+export function storedTakenAt(
+	takenAt: string | null | undefined,
+	nowMs: number,
+	refuse: (message: Phrase) => Error
+): string | null {
+	if (takenAt === undefined || takenAt === null) return null;
+	if (!isTakenAt(takenAt) || !isPlausibleTakenAt(takenAt, nowMs)) throw refuse(phrase('errors.image.takenAt'));
+	return takenAt;
 }
 
 /** Validate an avatar upload and return its true (sniffed) mime; throws InvalidAvatarError. */
@@ -90,6 +108,8 @@ export interface StoredPhoto {
 	width: number | null;
 	height: number | null;
 	sizeBytes: number | null;
+	/** When it was taken, as its EXIF said (`../../../image/taken-at`); null when unknown. */
+	takenAt: string | null;
 	createdAt: number;
 }
 
@@ -115,6 +135,8 @@ export interface GalleryPhoto {
 	createdBy: string;
 	width: number | null;
 	height: number | null;
+	/** When it was taken, as its EXIF said; null when unknown. Shown and ordered by when known. */
+	takenAt: string | null;
 	createdAt: number;
 	/** Whether this photo is the contact's current avatar, as it is or through its framing. */
 	isAvatar: boolean;
@@ -156,7 +178,7 @@ export interface PhotoRepository {
 		contactId: string,
 		entryIds: readonly string[]
 	): Promise<JournalPhotoRef[]>;
-	/** Gallery photos on a contact the viewer may see, newest first (docs/02 §2.14). */
+	/** Gallery photos on a contact the viewer may see, newest taken-or-added first (docs/02 §2.14). */
 	listGalleryPhotos(viewer: Viewer, contactId: string): Promise<GalleryPhoto[]>;
 	/** One gallery photo, only if it belongs to that contact and the viewer may see it. */
 	findVisibleGalleryPhoto(viewer: Viewer, contactId: string, photoId: string): Promise<GalleryPhoto | null>;
@@ -219,6 +241,7 @@ export async function setContactAvatar(
 	upload: AvatarUpload
 ): Promise<string> {
 	const mime = validateAvatarUpload(upload);
+	const takenAt = storedTakenAt(upload.takenAt, deps.clock.now(), (m) => new InvalidAvatarError(m));
 	const id = deps.ids.next();
 	const ext = EXT[mime];
 
@@ -238,6 +261,7 @@ export async function setContactAvatar(
 		width: upload.width,
 		height: upload.height,
 		sizeBytes: upload.image.byteLength,
+		takenAt,
 		createdAt: deps.clock.now()
 	});
 	await deps.photos.setContactAvatar(contactId, id);

@@ -3,6 +3,7 @@
 	import FrameAsAvatar from '$lib/components/FrameAsAvatar.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import type { Dated } from '$lib/image/taken-at';
 	import { mediaUrl } from '$lib/media/urls';
 	import { INPUT } from './inputs';
 	import type { PersonPageData } from './types';
@@ -17,8 +18,8 @@
 		data: PersonPageData;
 		/** The gallery photo being looked at, or null with the lightbox closed. */
 		openedPhoto: PersonPageData['gallery'][number] | null;
-		/** When a gallery photo was added, in the viewer's language (docs/02 §2.14). */
-		photoDate: (createdAt: number) => string;
+		/** When a gallery photo was taken, else added, in the viewer's language (docs/02 §2.14). */
+		photoDate: (photo: Dated) => string;
 		/** Closes the lightbox and hands focus back to the photo's thumbnail. */
 		closePhoto: () => void;
 		/** The arrow keys walk the grid. */
@@ -54,7 +55,11 @@
 			<div class="flex items-center justify-between gap-3">
 				<p class="truncate text-sm text-fg">
 					{openedPhoto.caption ?? t('contact.photos.noCaption')}
-					<span class="ml-2 text-xs text-fg-subtle">{photoDate(openedPhoto.createdAt)}</span>
+					<span class="ml-2 text-xs text-fg-subtle" data-testid="photo-date">
+						{openedPhoto.takenAt === null
+							? photoDate(openedPhoto)
+							: t('contact.photos.takenOn', { date: photoDate(openedPhoto) })}
+					</span>
 					{#if openedPhoto.pinnedAt !== null}
 						<span class="ml-2 inline-flex items-center gap-1 text-xs font-medium text-primary">
 							<Icon name="pinned" size={11} />{t('contact.photos.favourite')}

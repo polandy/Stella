@@ -13,6 +13,7 @@ import type {
 import type { DeletedPhotoFiles } from '../domain/media/avatars';
 import type { StoredFraming } from '../domain/media/framing';
 import { keepCutLeftBehind } from './cut-turning';
+import { photoDatedAt } from './photo-dated-at';
 import type * as schema from './schema';
 import { circle, circleMembership, contact, photo } from './schema';
 
@@ -115,7 +116,7 @@ export function createDrizzleCutRepository(db: BunSQLiteDatabase<typeof schema>)
 				.innerJoin(circle, eq(photo.circleId, circle.id))
 				.innerJoin(cut, cutFromIt)
 				.where(visibleGroupPhoto(viewer))
-				.orderBy(desc(photo.createdAt))
+				.orderBy(desc(photoDatedAt(photo)))
 				.all()
 				.map(groupPhotoOf);
 		},
@@ -139,7 +140,7 @@ export function createDrizzleCutRepository(db: BunSQLiteDatabase<typeof schema>)
 				.innerJoin(contact, eq(contact.id, circleMembership.contactId))
 				.leftJoin(cut, and(eq(cut.framingOf, photo.id), eq(cut.contactId, contactId)))
 				.where(and(visibleGroupPhoto(viewer), membershipVisibleTo(viewer, circle, contact)))
-				.orderBy(desc(photo.createdAt))
+				.orderBy(desc(photoDatedAt(photo)))
 				.all()
 				.map((row) => ({ ...groupPhotoOf(row), width: row.width, height: row.height, crop: cropOf(row) }));
 		}
@@ -153,14 +154,22 @@ const GROUP_PHOTO_COLUMNS = {
 	id: photo.id,
 	circleId: photo.circleId,
 	circleName: circle.name,
+	takenAt: photo.takenAt,
 	createdAt: photo.createdAt
 };
 
 // circleId is non-null here: every read joins the photo's circle.
-const groupPhotoOf = (row: { id: string; circleId: string | null; circleName: string; createdAt: number }) => ({
+const groupPhotoOf = (row: {
+	id: string;
+	circleId: string | null;
+	circleName: string;
+	takenAt: string | null;
+	createdAt: number;
+}) => ({
 	id: row.id,
 	circleId: row.circleId as string,
 	circleName: row.circleName,
+	takenAt: row.takenAt,
 	createdAt: row.createdAt
 });
 

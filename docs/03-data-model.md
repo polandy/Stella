@@ -432,7 +432,7 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 | width / height | int | |
 | size_bytes | int | |
 | caption | text null | |
-| taken_at | text null | from EXIF if kept |
+| taken_at | text null | when the picture was taken, read from its EXIF in the browser before the re-encode (docs/02 §2.14): `YYYY-MM-DDTHH:MM:SS` as the camera wrote it, plus its `±HH:MM`/`Z` offset when it wrote one; null = unknown. Shown and ordered by when set, else `created_at` |
 | pinned_at | int null | when the household pinned this gallery photo as a favourite (docs/02 §2.14); null = not one |
 | created_at | int | |
 

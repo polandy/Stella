@@ -88,6 +88,7 @@ export const errors = {
 	'errors.image.thumbTooLarge': 'The thumbnail is too large.',
 	'errors.image.unsupportedFormat': 'Unsupported image format.',
 	'errors.image.formatMismatch': 'Thumbnail format mismatch.',
+	'errors.image.takenAt': "The photo's capture date can't be right.",
 	'errors.image.cropOutside': 'The chosen square does not fit inside the photo.',
 	'errors.image.dimensions': 'Invalid image dimensions.',
 	'errors.image.couldNotStore': 'Could not store the photo.',

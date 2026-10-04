@@ -50,6 +50,7 @@ export function createDrizzleCirclePhotoRepository(
 					width: p.width,
 					height: p.height,
 					sizeBytes: p.sizeBytes,
+					takenAt: p.takenAt,
 					createdAt: p.createdAt
 				})
 				.run();
@@ -131,6 +132,7 @@ const COLUMNS = {
 	createdByName: user.name,
 	width: photo.width,
 	height: photo.height,
+	takenAt: photo.takenAt,
 	createdAt: photo.createdAt,
 	pinnedAt: photo.pinnedAt
 };

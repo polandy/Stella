@@ -10,8 +10,8 @@ import type { RequestHandler } from './$types';
 /*
  * `POST /api/commands/photo` (docs/concepts/offline-capture.md §4.2): one photo for a command a
  * phone already sent, as multipart — `id`, `type` (`moment.photo`, `gallery.photo` or
- * `circleGallery.photo`), `parentId`, `image`, `thumb`, `width`, `height`, and a large circle
- * photo's 1600 px `view`. The photo is a command of its own, so a resend after a lost answer is
+ * `circleGallery.photo`), `parentId`, `image`, `thumb`, `width`, `height`, a large circle
+ * photo's 1600 px `view`, and `takenAt` when the picture's EXIF said when it was taken. The photo is a command of its own, so a resend after a lost answer is
  * recognised, and it answers as `POST /api/commands` does for each of its commands. A multipart post from another site is refused by SvelteKit's own
  * origin check before it gets here.
  */
@@ -39,6 +39,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		view: await bytes('view'),
 		width: Number(form.get('width')),
 		height: Number(form.get('height')),
+		takenAt: form.get('takenAt'),
 		issuedAt: systemClock.now()
 	});
 	const t = translator(locals);
