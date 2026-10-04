@@ -125,6 +125,13 @@ import type { GalleryDeps } from './domain/media/gallery';
 import type { GalleryUploadDeps } from './domain/media/gallery-upload';
 import type { JournalPhotoDeps } from './domain/media/journal-photos';
 import { ulidGenerator } from './id';
+import { createDrizzleImmichLinkRepository } from './db/immich-link-repository';
+import { createImmichConnection, type ImmichConnection } from './domain/immich/connection';
+import type { ImmichGateway } from './domain/immich/gateway';
+import type { ImmichLinkDeps, ImmichLinkRepository } from './domain/immich/links';
+import { demoImmichLibrary } from './immich/demo-library';
+import { createFakeImmichGateway } from './immich/fake-gateway';
+import { createHttpImmichGateway } from './immich/http-gateway';
 
 /*
  * Composition root — the single place that wires concrete adapters (Drizzle repositories,
@@ -685,4 +692,47 @@ let attentionRepository: AttentionRepository | null = null;
 
 export function getAttention(): AttentionRepository {
 	return (attentionRepository ??= createDrizzleAttentionRepository(getDb()));
+}
+
+/** The household's Immich, once wired: how to ask it, whose it is, and where links point. */
+export interface Immich {
+	gateway: ImmichGateway;
+	connection: ImmichConnection;
+	publicUrl: string;
+}
+
+/*
+ * Immich, or null when this instance has none — the feature then appears nowhere
+ * (docs/concepts/immich.md §6). Built once, because the connection caches its status. The demo
+ * server gets the in-memory stand-in, so the feature can be tried without a real Immich.
+ */
+let immich: Immich | null | undefined;
+export function getImmich(): Immich | null {
+	if (immich !== undefined) return immich;
+	const config = getConfig().immich;
+	if (!config) return (immich = null);
+	const gateway =
+		config.mode === 'demo'
+			? createFakeImmichGateway(demoImmichLibrary())
+			: createHttpImmichGateway({ baseUrl: config.url, apiKey: config.apiKey });
+	return (immich = {
+		gateway,
+		connection: createImmichConnection({ gateway, clock: systemClock }),
+		publicUrl: config.publicUrl
+	});
+}
+
+let immichLinkRepository: ImmichLinkRepository | null = null;
+
+/** Deps for linking a contact to an Immich person, or null without Immich. */
+export function getImmichLinkDeps(): ImmichLinkDeps | null {
+	const configured = getImmich();
+	if (!configured) return null;
+	return {
+		links: (immichLinkRepository ??= createDrizzleImmichLinkRepository(getDb())),
+		contacts: getContacts(),
+		gateway: configured.gateway,
+		clock: systemClock,
+		ids: ulidGenerator
+	};
 }

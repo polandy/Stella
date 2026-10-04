@@ -1,3 +1,4 @@
+import { readCapped } from '../http/read-capped';
 import { readLatestRelease, type LatestRelease, type ReleaseFeed } from '../domain/release/feed';
 
 /*
@@ -27,35 +28,6 @@ export interface GitHubReleaseFeedOptions {
 	fetch?: typeof globalThis.fetch;
 }
 
-/** Reads a body up to `MAX_BYTES`, refusing anything longer instead of buffering it. */
-async function readCapped(response: Response): Promise<string> {
-	const body = response.body;
-	if (!body) return '';
-
-	const reader = body.getReader();
-	const chunks: Uint8Array[] = [];
-	let size = 0;
-	try {
-		for (;;) {
-			const { done, value } = await reader.read();
-			if (done) break;
-			size += value.byteLength;
-			if (size > MAX_BYTES) throw new Error(`release feed answered with more than ${MAX_BYTES} bytes`);
-			chunks.push(value);
-		}
-	} finally {
-		await reader.cancel().catch(() => {});
-	}
-
-	const joined = new Uint8Array(size);
-	let at = 0;
-	for (const chunk of chunks) {
-		joined.set(chunk, at);
-		at += chunk.byteLength;
-	}
-	return new TextDecoder().decode(joined);
-}
-
 /** The newest published release of Stella, read from GitHub. */
 export function createGitHubReleaseFeed({
 	version,
@@ -76,7 +48,7 @@ export function createGitHubReleaseFeed({
 			if (response.status === 404) return null;
 			if (!response.ok) throw new Error(`release feed answered ${response.status}`);
 
-			return readLatestRelease(JSON.parse(await readCapped(response)));
+			return readLatestRelease(JSON.parse(new TextDecoder().decode(await readCapped(response, MAX_BYTES))));
 		}
 	};
 }

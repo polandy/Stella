@@ -84,6 +84,7 @@ function fullHousehold(): HouseholdSnapshot {
 			],
 			tag: [{ id: 'tg-1', household_id: 'h-1', name: 'Bern', color: 'blue', created_at: EXPORTED }],
 			contact_tag: [{ contact_id: 'c-hans', tag_id: 'tg-1' }],
+			immich_link: [{ contact_id: 'c-hans', immich_person_id: '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70', linked_by: 'u-1', linked_at: EXPORTED }],
 			circle: [
 				{ id: 'ci-1', household_id: 'h-1', created_by: 'u-1', visibility: 'shared', name: 'FC Länggasse', description: 'the club', kind: 'club', color: 'green', parent_circle_id: null, start_date: '2019-08-01', end_date: null, archived_at: null, created_at: EXPORTED }
 			],
@@ -154,6 +155,7 @@ describe('the round trip', () => {
 		photo: ['id', 'contact_id', 'journal_entry_id', 'circle_id', 'circle_role', 'framing_of', 'cut_from', 'crop_x', 'crop_y', 'crop_size', 'visibility', 'file_path', 'thumb_path', 'view_path', 'mime', 'width', 'height', 'size_bytes', 'caption', 'taken_at', 'pinned_at', 'created_at'],
 		tag: ['id', 'name', 'color'],
 		contact_tag: ['contact_id', 'tag_id'],
+		immich_link: ['contact_id', 'immich_person_id', 'linked_by', 'linked_at'],
 		circle: ['id', 'visibility', 'name', 'description', 'kind', 'color', 'parent_circle_id', 'start_date', 'end_date', 'archived_at', 'created_at'],
 		circle_membership: ['id', 'circle_id', 'contact_id', 'role', 'start_date', 'end_date', 'note', 'created_at'],
 		relationship: ['id', 'from_contact_id', 'to_contact_id', 'type_id', 'note', 'since_date', 'status', 'created_at'],
@@ -305,6 +307,20 @@ describe('an archive that does not add up', () => {
 			target()
 		);
 		expect(rowsOf(plan, 'relationship')[0]).toMatchObject({ status: 'current' });
+	});
+
+	it('leaves out an Immich link that names no Immich person, and says so', () => {
+		const document = archived() as { people: { id: string; immich: { person: string } }[] };
+		const hans = document.people.find((p) => p.id === 'c-hans')!;
+		hans.immich.person = '../users/me';
+		const plan = planRestore(deps(), document, target());
+		expect(rowsOf(plan, 'immich_link')).toEqual([]);
+		expect(plan.warnings).toContainEqual({ code: 'immichLinkIncomplete' });
+	});
+
+	it('gives an Immich link set by a member this installation never had to the admin', () => {
+		const [link] = rowsOf(planned(), 'immich_link');
+		expect(link.linked_by).toBe('u-admin');
 	});
 
 	it('leaves out a mention of somebody the archive does not contain', () => {

@@ -125,6 +125,18 @@ export function buildArchiveDocument(
 	const participants = linksBy(t('interaction_participant'), 'interaction_id', 'contact_id');
 	const contactTags = linksBy(t('contact_tag'), 'contact_id', 'tag_id');
 	const circleMembers = groupBy(t('circle_membership'), 'circle_id');
+	// One per person at most: the table's key is the contact (docs/concepts/immich.md §6).
+	const immichLinks = new Map(t('immich_link').map((row) => [id(row, 'contact_id'), row]));
+	const immichOf = (person: string) => {
+		const link = immichLinks.get(person);
+		return link
+			? present({
+					person: text(link, 'immich_person_id'),
+					linked_by: text(link, 'linked_by'),
+					linked_at: moment(link, 'linked_at')
+				})
+			: null;
+	};
 
 	const photo = (row: Row) =>
 		present({
@@ -182,6 +194,8 @@ export function buildArchiveDocument(
 			archived_at: moment(c, 'archived_at'),
 			created_at: moment(c, 'created_at'),
 			tags: contactTags.get(person) ?? null,
+			// Which person in the household's Immich they are; the photos stay in Immich.
+			immich: immichOf(person),
 			fields: (fields.get(person) ?? []).map((f) =>
 				present({
 					id: id(f),

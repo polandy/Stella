@@ -25,6 +25,7 @@ import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import { readFamilyOf } from '$lib/server/domain/relationships/family';
 import { listTagsForContact, TAG_COLORS } from '$lib/server/domain/tags/tags';
+import { readImmichLink, readLinkedPerson } from '$lib/server/domain/immich/links';
 import {
 	getContactDeps,
 	getContactFieldDeps,
@@ -41,7 +42,9 @@ import {
 	getStoryDeps,
 	getTagDeps,
 	getMemberDeps,
-	getMentionedInDeps
+	getMentionedInDeps,
+	getImmich,
+	getImmichLinkDeps
 } from '$lib/server/services';
 import type { Viewer } from '$lib/server/access/visibility';
 import { say, translator } from '$lib/server/i18n/say';
@@ -84,6 +87,11 @@ export const load = (async ({ locals, params, url }) => {
 		reviewOpen,
 		proposeFor: parseProposePairs(proposeFor)
 	});
+	// Which Immich person they are, when this instance has Immich (docs/concepts/immich.md §4.3).
+	const immich = getImmich();
+	const immichLinkDeps = getImmichLinkDeps();
+	const immichLink = immichLinkDeps ? await readImmichLink(immichLinkDeps, viewer, params.id) : null;
+
 	// Only the photos of the entries on the story's first page; later pages bring their own.
 	const journalPhotos = await getPhotos().listJournalPhotosOfEntries(
 		viewer,
@@ -131,6 +139,15 @@ export const load = (async ({ locals, params, url }) => {
 		mentionedIn: read.mentionedIn.map((reference) => mentionedInView(reference, ctx)),
 		// The person's photo gallery (docs/02 §2.14), favourites first, already visibility-scoped.
 		gallery: read.gallery,
+		/*
+		 * Immich (docs/concepts/immich.md §4.3): null when this instance has none, so the menu and
+		 * the line never appear. What Immich says about a linked person is a promise on purpose —
+		 * the page is sent at once and the line fills itself in, so a slow or absent Immich never
+		 * holds the page up (§4.5).
+		 */
+		immich: immich ? { linked: immichLink !== null } : null,
+		immichPerson:
+			immich && immichLink ? readLinkedPerson(immich, immichLink.immichPersonId, locals.user.email) : null,
 		// Every group photo they were cut from, now and before (docs/concepts/circle-photos.md §5.2).
 		groupPhotos: read.groupPhotos,
 		// Their circles' photos a profile picture can be cut from; none means choosing looks as before.

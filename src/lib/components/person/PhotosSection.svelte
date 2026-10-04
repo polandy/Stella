@@ -2,6 +2,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import KeptItem from '$lib/components/KeptItem.svelte';
+	import MenuButton from '$lib/components/MenuButton.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import type { JsonCommand } from '$lib/commands/commands';
@@ -17,6 +18,8 @@
 	import { photoAfterKey } from '$lib/ui/photo-walk';
 	import { tick } from 'svelte';
 	import { ulid } from 'ulid';
+	import ImmichFacePicker from './ImmichFacePicker.svelte';
+	import ImmichLine from './ImmichLine.svelte';
 	import { INPUT } from './inputs';
 	import PhotoLightbox from './PhotoLightbox.svelte';
 	import type { PersonForm, PersonPageData } from './types';
@@ -88,6 +91,16 @@
 		}
 	}
 
+	/*
+	 * Immich (docs/concepts/immich.md §4.3): a quiet menu on the card — *Find in Immich*, or
+	 * *Unlink* once linked — and a line under the gallery. Neither exists without Immich, and
+	 * neither offline, where nothing from Immich is shown (§4.5).
+	 */
+	let pickerOpen = $state(false);
+	const showImmich = $derived(data.immich !== null && reachability.reachable);
+	/** The search the picker starts with: the name, without a nickname Immich would not know. */
+	const immichSearchName = $derived([c.firstName, c.lastName].filter(Boolean).join(' ') || c.displayName);
+
 	// The grid's buttons, so closing the photo hands focus back to the one now showing.
 	const thumbnails: HTMLButtonElement[] = $state([]);
 
@@ -114,6 +127,38 @@
 		addLabel={t('contact.photos.add')}
 		error={form?.photoError ?? uploadError}
 	>
+		{#snippet action()}
+			{#if showImmich && data.immich}
+				<MenuButton label={t('immich.menu.label', { name: c.displayName })} align="end">
+					{#snippet trigger()}{t('immich.menu.trigger')}{/snippet}
+					{#snippet children({ close })}
+						{#if data.immich?.linked}
+							<form method="POST" action="?/unlinkImmich" class="contents">
+								<button
+									type="submit"
+									role="menuitem"
+									class="flex items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm text-fg hover:bg-primary-soft focus-visible:bg-primary-soft"
+								>
+									<Icon name="unlink" size={14} />{t('immich.menu.unlink')}
+								</button>
+							</form>
+						{:else}
+							<button
+								type="button"
+								role="menuitem"
+								onclick={() => {
+									close();
+									pickerOpen = true;
+								}}
+								class="flex items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm text-fg hover:bg-primary-soft focus-visible:bg-primary-soft"
+							>
+								<Icon name="search" size={14} />{t('immich.menu.find')}
+							</button>
+						{/if}
+					{/snippet}
+				</MenuButton>
+			{/if}
+		{/snippet}
 		{#if keptGallery.length > 0}
 			<ul class="mb-3 flex flex-col gap-2" data-testid="kept-gallery">
 				{#each keptGallery as item (item.command.id)}
@@ -194,6 +239,10 @@
 			</div>
 		{/if}
 
+		{#if showImmich}
+			<ImmichLine person={data.immichPerson} error={form?.immichError ?? null} />
+		{/if}
+
 		{#snippet editor()}
 			<form onsubmit={uploadPhotos} class="flex flex-wrap items-end gap-3">
 				<label class="flex flex-1 flex-col gap-1 text-sm">
@@ -223,5 +272,9 @@
 			</form>
 		{/snippet}
 </Section>
+
+{#if showImmich}
+	<ImmichFacePicker contactId={c.id} name={c.displayName} searchName={immichSearchName} bind:open={pickerOpen} />
+{/if}
 
 <PhotoLightbox {data} {openedPhoto} {photoDate} {closePhoto} {onPhotoKeydown} />

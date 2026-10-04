@@ -19,6 +19,13 @@
 	const checkedAt = (at: number) =>
 		new Date(at).toLocaleString(i18n.intlLocale, { dateStyle: 'short', timeStyle: 'short' });
 
+	/* What the Immich line says about a key that lacks one of the scopes Stella reads with (§4.1). */
+	const SCOPE_MESSAGE = {
+		'user.read': 'immich.settings.scope.user.read',
+		'person.read': 'immich.settings.scope.person.read',
+		'person.statistics': 'immich.settings.scope.person.statistics'
+	} as const;
+
 	/* Who the member says they are (docs/02 §2.1.3) — the picker follows what is stored. */
 	let selfIds = $state<string[]>(
 		untrack(() => (data.user.selfContactId ? [data.user.selfContactId] : []))
@@ -190,6 +197,43 @@
 			<p class="text-sm text-fg-subtle">{t('settings.data.adminOnly')}</p>
 		{/if}
 	</section>
+
+	<!-- Every member sees the line; the admin also reads what the key means (docs/concepts/immich.md §4.1). -->
+	{#if data.immich}
+		<section class="flex flex-col gap-3" data-testid="immich-settings">
+			<h2 class="text-sm font-medium text-fg-muted">{t('immich.settings.heading')}</h2>
+			<div class="flex items-start gap-4 rounded-app bg-card p-4 shadow-card">
+				<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="photo" size={18} /></span>
+				<div class="flex min-w-0 flex-1 flex-col gap-1">
+					{#await data.immich}
+						<p class="text-sm text-fg-subtle">{t('immich.settings.checking')}</p>
+					{:then status}
+						{#if status.state === 'connected'}
+							<p class="font-medium text-fg" data-testid="immich-status">
+								{t('immich.settings.connected', { owner: status.owner.name || status.owner.email, version: status.version })}
+							</p>
+							<p class="text-sm text-fg-muted">{t('immich.settings.howToLink')}</p>
+						{:else}
+							<p class="font-medium text-danger" role="status" data-testid="immich-status">
+								{#if status.state === 'tooOld'}
+									{t('immich.settings.tooOld', { version: status.version })}
+								{:else if status.state === 'missingScope'}
+									{t(SCOPE_MESSAGE[status.scope])}
+								{:else if status.state === 'keyRejected'}
+									{t('immich.settings.keyRejected')}
+								{:else}
+									{t('immich.settings.unreachable')}
+								{/if}
+							</p>
+						{/if}
+					{/await}
+					{#if data.isAdmin}
+						<p class="text-sm text-fg-muted">{t('immich.settings.sharing')}</p>
+					{/if}
+				</div>
+			</div>
+		</section>
+	{/if}
 
 	<InstallCard />
 

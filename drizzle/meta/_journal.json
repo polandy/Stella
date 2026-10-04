@@ -148,6 +148,13 @@
       "when": 1790967890799,
       "tag": "0020_nickname_in_shown_name",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1791127410603,
+      "tag": "0021_immich_link",
+      "breakpoints": true
     }
   ]
 }

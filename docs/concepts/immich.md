@@ -1,6 +1,6 @@
 # Concept — A person's photos, from Immich
 
-Status: **decided, not built.** The decisions taken with the maintainer on 2026-10-01 are
+Status: **slice 1 built** (*Connect + link*, docs/02 §2.24); slices 2–5 are not. The decisions taken with the maintainer on 2026-10-01 are
 listed in §9; one point (phone deep links) waits for a test on the device. Facts about Immich
 are taken from its OpenAPI spec at v3.2.4 (2026-09) and are cited in §10.
 

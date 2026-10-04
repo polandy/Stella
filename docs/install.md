@@ -129,6 +129,47 @@ get back in with if the identity provider ever misbehaves.
 The full setup — hashing the client secret, the client block for Authelia's config, which
 groups to create — is in [07 — Deployment §7.7](07-deployment.md#77-authelia-oidc-client-configuration).
 
+## Showing people's photos from Immich
+
+If the household keeps its photos in [Immich](https://immich.app) 3.2 or newer, Stella can
+learn which Immich person each contact is: the person page then says how many photos Immich
+has of them, and takes you there in one tap. It is optional; without these values nothing of
+it appears.
+
+1. **Create a key in your own Immich account** — the admin's, not a shared one: *Account
+   settings → API keys → New API key*. Give it only these read permissions: `user.read`,
+   `person.read` and `person.statistics`. Stella never writes to Immich.
+2. **Add three lines to `.env`:**
+
+   ```
+   IMMICH_URL=http://immich-server:2283
+   IMMICH_PUBLIC_URL=https://immich.example.com
+   IMMICH_API_KEY=the-key-you-just-created
+   ```
+
+   - `IMMICH_URL` is how Stella's server reaches Immich. When both run as containers on the same
+     Docker network, use Immich's **internal** address, as above: the calls then skip your reverse
+     proxy, TLS and any login gateway in front of the public name.
+   - `IMMICH_PUBLIC_URL` is where *Open in Immich* links point — the address you open Immich at
+     in a browser. Leave it out and it is the same as `IMMICH_URL`.
+   - `IMMICH_URL` and `IMMICH_API_KEY` go together: with one but not the other, Stella refuses to
+     start and says so.
+3. Run `./deploy.sh` again, then open **Settings → Immich**. It says *Connected to …'s Immich*,
+   or exactly what is wrong — a key without one of the permissions, a key Immich refused, an
+   Immich older than 3.2, or no answer at all.
+
+**Behind a login gateway.** If Immich's public address sits behind forward-auth (Authelia and
+the like), that does no harm to `IMMICH_PUBLIC_URL`: only browsers follow it, and you are
+signed in there anyway. But if `IMMICH_URL` has to be that public address, the gateway must let
+its `/api` path through without a login — otherwise every call Stella makes is sent to the login
+page, and Settings says Immich did not answer.
+
+**What the key means.** It reads one library — yours. Everyone in the household can see how
+many photos of a linked person it holds, following who may see that person in Stella. *Open in
+Immich* is shown only to you, the key's owner: Stella recognises you by the email of your
+Stella account matching your Immich account's, and Immich's own links open only for someone
+signed into it.
+
 ## Backups
 
 Everything Stella knows lives in one place: the `/data` volume, holding the database file

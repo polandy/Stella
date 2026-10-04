@@ -44,6 +44,8 @@ export const archive: ArchiveMessages = {
 		p.count === 1 ? 'beschlagwortete Person' : 'beschlagwortete Menschen',
 	'archive.table.circle': (p) => (p.count === 1 ? 'Kreis' : 'Kreise'),
 	'archive.table.circle_membership': (p) => (p.count === 1 ? 'Kreismitglied' : 'Kreismitglieder'),
+	'archive.table.immich_link': (p) =>
+		p.count === 1 ? 'Verknüpfung mit Immich' : 'Verknüpfungen mit Immich',
 	'archive.table.activity_log': (p) => (p.count === 1 ? 'Protokolleintrag' : 'Protokolleinträge'),
 
 	'archive.mention.noteMentions': 'Notiz-Erwähnungen',
@@ -67,6 +69,8 @@ export const archive: ArchiveMessages = {
 	'archive.warning.tagWithoutName': 'Ein Schlagwort ohne Namen wurde ausgelassen.',
 	'archive.warning.tagsNotInList':
 		'Einige Schlagwörter an Menschen stehen nicht in der Schlagwortliste des Archivs und wurden ausgelassen.',
+	'archive.warning.immichLinkIncomplete':
+		'Eine Verknüpfung mit Immich ohne gültige Immich-Person wurde ausgelassen.',
 	'archive.warning.circleWithoutName': 'Ein Kreis ohne Namen wurde ausgelassen.',
 	'archive.warning.circleMissingParent': (p) =>
 		`„${p.name}“ lag in einem Kreis, den das Archiv nicht enthält; er wird für sich allein wiederhergestellt.`,

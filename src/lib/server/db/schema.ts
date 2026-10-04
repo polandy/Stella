@@ -609,6 +609,25 @@ export const suggestionDismissal = sqliteTable(
 	(t) => [unique('suggestion_dismissal_claim').on(t.householdId, t.relation, t.pairKey)]
 );
 
+// ── Immich ────────────────────────────────────────────────────────────────
+
+/*
+ * Which person in the household's Immich library a contact is (docs/concepts/immich.md §6,
+ * docs/03 §immich_link). One per contact; it has no visibility of its own and follows the
+ * contact's (§5). Deleted with the contact, carried through a merge.
+ */
+export const immichLink = sqliteTable('immich_link', {
+	contactId: text('contact_id')
+		.primaryKey()
+		.references(() => contact.id, { onDelete: 'cascade' }),
+	/** Immich's id for the person (a UUID). Not a foreign key: it lives in another program. */
+	immichPersonId: text('immich_person_id').notNull(),
+	linkedBy: text('linked_by')
+		.notNull()
+		.references(() => user.id),
+	linkedAt: integer('linked_at').notNull()
+});
+
 // ── Commands ──────────────────────────────────────────────────────────────
 
 /*

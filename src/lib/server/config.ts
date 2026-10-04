@@ -1,6 +1,7 @@
 import * as v from 'valibot';
 import { dirname, join } from 'node:path';
 import { env } from '$env/dynamic/private';
+import { readImmichConfig } from './immich/config';
 
 /**
  * Central, validated runtime configuration. Parsed once at startup.
@@ -47,6 +48,15 @@ const RawSchema = v.object({
 	// Which feed that asks. Empty means Stella's own releases; a fork points this at its
 	// own, and the e2e suite at a local stub (docs/07 §7.4).
 	UPDATE_FEED_URL: v.optional(v.string(), ''),
+
+	// A person's photos from Immich (docs/concepts/immich.md §6). URL and key together or not
+	// at all; without IMMICH_URL the feature appears nowhere. IMMICH_PUBLIC_URL is what links
+	// for the browser point at and defaults to IMMICH_URL. IMMICH_DEMO wires an in-memory
+	// stand-in for the demo/e2e server instead (SEED_DEMO only).
+	IMMICH_URL: v.optional(v.string(), ''),
+	IMMICH_PUBLIC_URL: v.optional(v.string(), ''),
+	IMMICH_API_KEY: v.optional(v.string(), ''),
+	IMMICH_DEMO: boolFrom(false),
 
 	OIDC_ISSUER: v.optional(v.string(), ''),
 	OIDC_CLIENT_ID: v.optional(v.string(), ''),
@@ -95,6 +105,7 @@ function build() {
 		debugPages: raw.DEBUG_PAGES,
 		updateCheck: raw.UPDATE_CHECK,
 		updateFeedUrl: raw.UPDATE_FEED_URL,
+		immich: readImmichConfig(raw),
 		auth: {
 			local: raw.AUTH_LOCAL_ENABLED,
 			oidc: raw.AUTH_OIDC_ENABLED

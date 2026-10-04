@@ -1,6 +1,7 @@
 import { circleActions } from './actions/circles';
 import { dateActions } from './actions/dates';
 import { fieldActions } from './actions/fields';
+import { immichActions } from './actions/immich';
 import { noteActions } from './actions/notes';
 import { photoActions } from './actions/photos';
 import { profileActions } from './actions/profile';
@@ -29,6 +30,8 @@ export const actions = {
 	...tagActions,
 	...photoActions,
 	...circleActions,
+	// Which Immich person they are (docs/concepts/immich.md §4.3).
+	...immichActions,
 	// The chip under the name and passing a name on (docs/concepts/surnames.md §3.3, §3.4).
 	...lastNameActions
 } satisfies Actions;

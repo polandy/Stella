@@ -52,6 +52,8 @@ export const archive = {
 	'archive.table.circle': (p: { count: number }): string => (p.count === 1 ? 'circle' : 'circles'),
 	'archive.table.circle_membership': (p: { count: number }): string =>
 		p.count === 1 ? 'circle member' : 'circle members',
+	'archive.table.immich_link': (p: { count: number }): string =>
+		p.count === 1 ? 'link to Immich' : 'links to Immich',
 	'archive.table.activity_log': (p: { count: number }): string =>
 		p.count === 1 ? 'log entry' : 'log entries',
 
@@ -73,6 +75,8 @@ export const archive = {
 	'archive.warning.tagWithoutName': 'A tag without a name was left out.',
 	'archive.warning.tagsNotInList':
 		'Some tags on people are not in the archive’s tag list and were left out.',
+	'archive.warning.immichLinkIncomplete':
+		'A link to Immich that named no Immich person was left out.',
 	'archive.warning.circleWithoutName': 'A circle without a name was left out.',
 	'archive.warning.circleMissingParent': (p: { name: string }) =>
 		`“${p.name}” sat inside a circle the archive does not contain; it is restored on its own.`,

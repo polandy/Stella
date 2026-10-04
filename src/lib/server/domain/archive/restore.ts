@@ -3,6 +3,7 @@ import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { isSafeMediaPath } from './archive';
+import { isImmichId } from '../immich/gateway';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from './document';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../relationships/status';
 
@@ -72,6 +73,7 @@ export type RestoreWarning =
 	| { code: 'touchpointIncomplete' }
 	| { code: 'tagWithoutName' }
 	| { code: 'tagsNotInList' }
+	| { code: 'immichLinkIncomplete' }
 	| { code: 'circleWithoutName' }
 	| { code: 'circleMissingParent'; name: string }
 	| { code: 'circleMemberMissing'; name: string }
@@ -234,6 +236,7 @@ export function planRestore(
 	const participants: Row[] = [];
 	const photos: Row[] = [];
 	const contactTags: Row[] = [];
+	const immichLinks: Row[] = [];
 	const mediaPaths = new Set<string>();
 
 	const people = records(document, 'people');
@@ -273,6 +276,25 @@ export function planRestore(
 			met_place: str(person, 'met_place'),
 			archived_at: ms(person, 'archived_at'),
 			...stamps(person)
+		});
+	}
+
+	// Which Immich person each of them is (docs/concepts/immich.md §6). The id travels into
+	// Immich's URL paths, so one that is not an Immich id is refused rather than restored.
+	for (const person of people) {
+		const contactId = str(person, 'id');
+		const link = record(person.immich);
+		if (contactId === null || !knownPeople.has(contactId) || link === null) continue;
+		const immichPersonId = str(link, 'person');
+		if (!isImmichId(immichPersonId)) {
+			warn({ code: 'immichLinkIncomplete' });
+			continue;
+		}
+		immichLinks.push({
+			contact_id: contactId,
+			immich_person_id: immichPersonId,
+			linked_by: author(link, 'linked_by'),
+			linked_at: ms(link, 'linked_at') ?? now
 		});
 	}
 
@@ -657,6 +679,7 @@ export function planRestore(
 			{ table: 'important_date', rows: importantDates },
 			{ table: 'tag', rows: tags },
 			{ table: 'contact_tag', rows: contactTags },
+			{ table: 'immich_link', rows: immichLinks },
 			{ table: 'note', rows: notes },
 			{ table: 'note_mention', rows: noteMentions },
 			{ table: 'journal_entry', rows: journalEntries },

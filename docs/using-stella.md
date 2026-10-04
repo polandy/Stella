@@ -258,6 +258,17 @@ back into this grid, dated, and a small confirmation says so. That holds for a p
 group photo too (see *Circles*). Handy for someone whose face
 changes over the years, a child especially: their old photos stay right here to look back on.
 
+**Photos from Immich.** If your household's photos live in Immich and the admin has connected
+it (see *Installation*), the Photos card has a small **Immich** menu. **Find in Immich** shows the
+faces Immich knows, searched by the person's name — change the search if Immich spells them
+differently — and a tap on the right face links the two. From then on the card ends with a line
+like *In Immich · 1,284 photos*. Anyone in the household can link or unlink a person, and the
+link is seen by everyone who can see that person. The admin whose Immich it is also gets
+**Open in Immich**, which opens that person's page there in a new tab; for everyone else that
+link would lead nowhere, so it is not shown. If Immich no longer has the person, the line says
+so and offers to unlink; if Immich does not answer, it says that, and the rest of the page is
+unaffected. **Settings → Immich** says whether Stella is connected, and what is wrong if not.
+
 **Mentioned in** is the last card, and it is the only one that is not really theirs: it lists
 what *other* people's notes and journal entries say about them. Write "hiked with `@Sandra`"
 in Beat's journal and it appears on Sandra's page as *in Beat Steiner's journal*, with the day
