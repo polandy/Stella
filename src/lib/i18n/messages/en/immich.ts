@@ -20,6 +20,8 @@ export const immich = {
 	'immich.settings.scope.user.read': 'The key cannot tell whose account it is — it needs user.read.',
 	'immich.settings.scope.person.read': 'The key cannot read people — it needs person.read.',
 	'immich.settings.scope.person.statistics': 'The key cannot count photos — it needs person.statistics.',
+	'immich.settings.scope.asset.read': 'The key cannot list photos — it needs asset.read.',
+	'immich.settings.scope.asset.view': 'The key cannot show photos — it needs asset.view.',
 	'immich.settings.tooOld': (p: { version: string }) =>
 		`This Immich is version ${p.version}. Stella needs Immich 3.2 or newer.`,
 	'immich.settings.sharing':
@@ -41,6 +43,17 @@ export const immich = {
 	'immich.row.gone': 'This person is no longer in Immich.',
 	'immich.row.unlinkQuestion': 'Unlink?',
 	'immich.row.open': 'Open in Immich',
+
+	// The strip of their latest photos, and the viewer it opens (§4.3).
+	'immich.strip.label': 'Latest photos in Immich',
+	'immich.strip.loading': 'Loading photos from Immich…',
+	'immich.strip.photo': (p: { date: string }) => `Photo from ${p.date}, in Immich`,
+	'immich.strip.undated': 'Photo in Immich',
+	'immich.strip.showMore': 'Show more',
+	'immich.viewer.dialog': 'Photo from Immich',
+	'immich.viewer.position': (p: { at: number; count: number }) => `${p.at} of ${p.count}`,
+	'immich.viewer.previous': 'Previous photo',
+	'immich.viewer.next': 'Next photo',
 
 	// The face picker (§4.3).
 	'immich.picker.title': (p: { name: string }) => `Find ${p.name} in Immich`,

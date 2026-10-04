@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import {
 	isImmichId,
+	readAssetPage,
 	readOwner,
 	readPeoplePage,
 	readPerson,
@@ -111,6 +112,67 @@ describe('readStatistics', () => {
 	it('refuses a count that is not one', () => {
 		for (const payload of [null, {}, { assets: '12' }, { assets: -1 }, { assets: 1.5 }]) {
 			expect(readStatistics(payload)).toBeNull();
+		}
+	});
+});
+
+describe('readAssetPage', () => {
+	const asset = (id: string, extra: Record<string, unknown> = {}) => ({
+		id,
+		type: 'IMAGE',
+		visibility: 'timeline',
+		isTrashed: false,
+		localDateTime: '2026-08-14T18:30:00.000Z',
+		fileCreatedAt: '2026-08-14T16:30:00.000Z',
+		...extra
+	});
+
+	it('reads the photos of a search page, with the day they were taken where they were taken', () => {
+		expect(readAssetPage({ assets: { items: [asset(ANNA), asset(BERT)], nextCursor: 'next-1' } })).toEqual({
+			assets: [
+				{ id: ANNA, takenOn: '2026-08-14' },
+				{ id: BERT, takenOn: '2026-08-14' }
+			],
+			nextCursor: 'next-1'
+		});
+	});
+
+	it('falls back to the file date, and to no date at all', () => {
+		const page = readAssetPage({
+			assets: {
+				items: [asset(ANNA, { localDateTime: null }), asset(BERT, { localDateTime: 'x', fileCreatedAt: 'y' })],
+				nextCursor: null
+			}
+		});
+		expect(page?.assets).toEqual([
+			{ id: ANNA, takenOn: '2026-08-14' },
+			{ id: BERT, takenOn: null }
+		]);
+		expect(page?.nextCursor).toBeNull();
+	});
+
+	it('never passes on what Immich hides: archived, locked, hidden or trashed photos, nor videos', () => {
+		const page = readAssetPage({
+			assets: {
+				items: [
+					asset(ANNA, { visibility: 'archive' }),
+					asset(ANNA, { visibility: 'locked' }),
+					asset(ANNA, { visibility: 'hidden' }),
+					asset(ANNA, { isTrashed: true }),
+					asset(ANNA, { type: 'VIDEO' }),
+					asset('../x'),
+					'nonsense',
+					asset(BERT)
+				],
+				nextCursor: ''
+			}
+		});
+		expect(page).toEqual({ assets: [{ id: BERT, takenOn: '2026-08-14' }], nextCursor: null });
+	});
+
+	it('refuses a body that is not a search page', () => {
+		for (const payload of [null, [], {}, { assets: [] }, { assets: { items: {} } }]) {
+			expect(readAssetPage(payload)).toBeNull();
 		}
 	});
 });

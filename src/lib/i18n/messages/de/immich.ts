@@ -21,6 +21,8 @@ export const immich: ImmichMessages = {
 	'immich.settings.scope.person.read': 'Der Schlüssel kann keine Personen lesen – er braucht person.read.',
 	'immich.settings.scope.person.statistics':
 		'Der Schlüssel kann keine Fotos zählen – er braucht person.statistics.',
+	'immich.settings.scope.asset.read': 'Der Schlüssel kann keine Fotos auflisten – er braucht asset.read.',
+	'immich.settings.scope.asset.view': 'Der Schlüssel kann keine Fotos zeigen – er braucht asset.view.',
 	'immich.settings.tooOld': (p) =>
 		`Dieses Immich hat Version ${p.version}. Stella braucht Immich 3.2 oder neuer.`,
 	'immich.settings.sharing':
@@ -38,6 +40,16 @@ export const immich: ImmichMessages = {
 	'immich.row.gone': 'Diese Person gibt es in Immich nicht mehr.',
 	'immich.row.unlinkQuestion': 'Verknüpfung lösen?',
 	'immich.row.open': 'In Immich öffnen',
+
+	'immich.strip.label': 'Neueste Fotos in Immich',
+	'immich.strip.loading': 'Lade Fotos aus Immich…',
+	'immich.strip.photo': (p) => `Foto vom ${p.date}, in Immich`,
+	'immich.strip.undated': 'Foto in Immich',
+	'immich.strip.showMore': 'Mehr zeigen',
+	'immich.viewer.dialog': 'Foto aus Immich',
+	'immich.viewer.position': (p) => `${p.at} von ${p.count}`,
+	'immich.viewer.previous': 'Vorheriges Foto',
+	'immich.viewer.next': 'Nächstes Foto',
 
 	'immich.picker.title': (p) => `${p.name} in Immich suchen`,
 	'immich.picker.search': 'Name in Immich',

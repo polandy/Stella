@@ -2,13 +2,13 @@
 	import Button from '$lib/components/Button.svelte';
 	import FormError from '$lib/components/FormError.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { immichFaceUrl } from '$lib/immich/face-url';
 
 	/*
 	 * *Find in Immich* (docs/concepts/immich.md §4.3): the faces in the household's Immich, searched
 	 * by the person's name, and one tap links the face that is them. The face does the work — you
 	 * recognise your aunt faster than you read her name — so faces lead and names follow. Faces
-	 * come through Stella (`immichFaceUrl`), never from Immich directly.
+	 * come through Stella's signed proxy, never from Immich directly: each arrives with a URL
+	 * signed for this person's picker (docs/concepts/immich.md §9.10).
 	 *
 	 * Opened by the Photos card's menu through `open`; a pick is a plain form post, so the page
 	 * reloads with the link and the dialog goes with it. A face already linked to another person
@@ -31,6 +31,8 @@
 		id: string;
 		name: string;
 		linkedTo: { name: string | null } | null;
+		/** The face's thumbnail, through Stella's signed proxy. */
+		faceUrl: string;
 	}
 
 	const i18n = useI18n();
@@ -125,7 +127,7 @@
 						<li>
 							{#if face.linkedTo}
 								<div class="flex w-full flex-col items-center gap-1.5 p-1.5 text-center opacity-60" data-testid="immich-face-taken">
-									<img src={immichFaceUrl(face.id)} alt="" class="aspect-square w-full rounded-full bg-bg-sunken object-cover grayscale" loading="lazy" />
+									<img src={face.faceUrl} alt="" class="aspect-square w-full rounded-full bg-bg-sunken object-cover grayscale" loading="lazy" />
 									<span class="w-full truncate text-xs text-fg">{face.name}</span>
 									<span class="w-full text-[0.6875rem] leading-tight text-fg-muted">
 										{face.linkedTo.name === null
@@ -142,7 +144,7 @@
 										class="flex w-full flex-col items-center gap-1.5 rounded-control p-1.5 text-center hover:bg-bg-sunken focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 									>
 										<img
-											src={immichFaceUrl(face.id)}
+											src={face.faceUrl}
 											alt=""
 											class="aspect-square w-full rounded-full bg-bg-sunken object-cover"
 											loading="lazy"

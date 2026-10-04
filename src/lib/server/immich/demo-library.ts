@@ -3,9 +3,10 @@ import type { FakeImmichLibrary, FakeImmichPerson } from './fake-gateway';
 
 /*
  * The demo household's Immich (`IMMICH_DEMO=true`): faces named like the people the demo seed
- * creates, so *Find in Immich* has someone to find. The key belongs to the demo admin, so they
- * see *Open in Immich* and the demo member does not (docs/concepts/immich.md §2 point 5). One
- * face is hidden and one unnamed, as in a real library; neither is ever offered.
+ * creates, so *Find in Immich* has someone to find, and each has as many photos as its count for
+ * the strip to show. The key belongs to the demo admin, as a household's key belongs to its
+ * admin (docs/concepts/immich.md §9.2). One face is hidden and one unnamed, as in a real
+ * library; neither is ever offered.
  */
 
 /** A face of the demo library: a fixed id, a name, a photo count and a tile colour. */
