@@ -3,7 +3,7 @@ import { appReady, identityRow, openPerson, signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
- * A person's gender, set from the profile card and while adding them (docs/02 §2.2). Written
+ * A person's gender, set from the identity card and while adding them (docs/02 §2.2). Written
  * after the owner tried it in the running app (docs/08 §8.4.1).
  *
  * The profile case brings its own family, which no other spec names: Olga is the sister of

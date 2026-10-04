@@ -120,6 +120,8 @@ test('keeps a tag and a circle offline as dashed chips and sends them when back 
 	const stored = (row: string, text: string) =>
 		page.locator(`section[data-row="${row}"] li:not([data-outbox-state])`, { hasText: text });
 	await expect(stored('Tags', 'offline-choir')).toBeVisible();
+	// Circles on record are stated among the identity card's facts, so their row starts folded.
+	await profileRow(page, 'Circles');
 	await expect(stored('Circles', 'Offline Walkers')).toBeVisible();
 	await expect(page.locator('li[data-outbox-state]')).toHaveCount(0);
 });

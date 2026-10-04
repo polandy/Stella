@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { signIn } from './app';
+import { profileRow, signIn } from './app';
 
 /*
  * The Monica import wizard (docs/02 §2.16, docs/monica-mapping.md). Written after a real
@@ -45,8 +45,9 @@ test('previews the dump, imports it, attaches the photos and shows the people in
 	await page.getByRole('link', { name: /Ottilie Vogelsang/ }).first().click();
 	await expect(page.getByRole('heading', { name: 'Ottilie Vogelsang' })).toBeVisible();
 	// The age-based birthday became an estimate, never a birthday.
-	await expect(page.getByText('around 2016')).toBeVisible();
-	await expect(page.getByText('estimated')).toBeVisible();
+	await expect(page.getByTestId('identity-facts')).toContainText('around 2016');
+	const dates = await profileRow(page, 'Dates');
+	await expect(dates.getByText('estimated')).toBeVisible();
 	// The mirrored Monica rows became one relationship, listed under the People tab.
 	await expect(page.getByRole('link', { name: 'Kaspar Vogelsang', exact: true })).toBeVisible();
 	await expect(page.getByText('Prefers the harbour walk in Tallinn.')).toBeVisible();
