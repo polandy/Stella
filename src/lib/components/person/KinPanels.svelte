@@ -238,6 +238,8 @@
 				<li class="flex min-w-0 items-center gap-0.5">
 					<a
 						href="/contacts/{kin.personId}"
+						aria-label={kin.displayName}
+						aria-describedby="kin-tile-{kin.personId}"
 						class="flex min-w-0 flex-1 items-center gap-2.5 rounded-control px-1 py-1 hover:bg-card-hover"
 					>
 						<span class="shrink-0 rounded-full border border-dashed border-border p-0.5 opacity-75" aria-hidden="true">
@@ -245,7 +247,7 @@
 						</span>
 						<span class="flex min-w-0 flex-col">
 							<span class="line-clamp-2 leading-tight break-words text-fg-muted">{kin.displayName}</span>
-							<span class="truncate text-xs text-fg-subtle" title={via ?? undefined}>
+							<span id="kin-tile-{kin.personId}" class="truncate text-xs text-fg-subtle" title={via ?? undefined}>
 								{kinshipLabel(t, kin)}{#if via}{' · '}{via}{/if}
 							</span>
 						</span>

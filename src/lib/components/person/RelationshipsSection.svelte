@@ -74,6 +74,18 @@
 		rows.filter((row) => !removals.isPending(removalKey(kind, row.id)));
 	const visibleRelationships = $derived(shown('relationship', data.relationships));
 	/*
+	 * A link added during the visit unfolds the card: somebody just entered must not land behind
+	 * *Show more*, where adding them would look like it did nothing. Counted per person, so
+	 * opening someone with more links is not mistaken for an addition.
+	 */
+	let seenLinks = { contactId: '', count: 0 };
+	$effect(() => {
+		const id = contactId;
+		const count = visibleRelationships.length;
+		if (seenLinks.contactId === id && count > seenLinks.count) expanded = true;
+		seenLinks = { contactId: id, count };
+	});
+	/*
 	 * Everybody a folded card leaves out, entered or worked out. Edit mode unfolds it: a row
 	 * that cannot be seen cannot be corrected.
 	 */

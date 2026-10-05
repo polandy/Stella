@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { editPeople, fillDate, openPerson, pickPerson, signIn } from './app';
+import { editPeople, fillDate, openPerson, pickPerson, signIn, unfoldPeople } from './app';
 
 /*
  * What a relationship carries beyond its type, and taking one back (docs/02 §2.4). Written
@@ -183,6 +183,8 @@ test('takes a link back with Undo, and the worked-out name returns with it', asy
 	await expect(toast).toContainText('Relationship removed');
 	await toast.getByRole('button', { name: 'Undo' }).click();
 	await page.reload();
+	// Hans has more links than a folded card shows, and the one added last is listed last.
+	await unfoldPeople(page);
 	await expect(enteredRow(page, 'Nadia Brunner-Rossi')).toHaveCount(1);
 
 	// Remove it for real: leaving the page sends it, and the worked-out name is back.

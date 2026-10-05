@@ -138,8 +138,11 @@
 					{#each group.rows as rel (rel.id)}
 						<li class="flex min-w-0 items-center gap-0.5">
 							<!-- The face and the name are one link, so the target is the whole tile. -->
+							<!-- Named by the person, described by the line under it: "Lena Brunner", "Daughter". -->
 							<a
 								href="/contacts/{rel.otherContactId}"
+								aria-label={rel.otherDisplayName}
+								aria-describedby="people-tile-{rel.id}"
 								class="flex min-w-0 flex-1 items-center gap-2.5 rounded-control px-1 py-1 hover:bg-card-hover"
 							>
 								<!-- The name follows, so the face is not read out a second time. -->
@@ -156,7 +159,7 @@
 										{rel.otherDisplayName}
 									</span>
 									<!-- Cut short, never wrapped: the role is what the line is for. -->
-									<span class="truncate text-xs text-fg-subtle" title={detailsOf(rel)}>
+									<span id="people-tile-{rel.id}" class="truncate text-xs text-fg-subtle" title={detailsOf(rel)}>
 										{detailsOf(rel)}
 									</span>
 								</span>

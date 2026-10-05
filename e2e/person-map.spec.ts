@@ -248,12 +248,13 @@ test.describe('when a relationship is entered', () => {
 		// Put the household back: take the link away and leave the page, which is what sends a
 		// pending removal, then read Lena fresh — the map no longer knows her either.
 		await openPerson(page, /Lena Brunner/);
+		// Edit mode unfolds the card, so a link listed past the fold is still found.
+		await editPeople(page);
 		const row = page
 			.getByTestId('relationship-list')
 			.locator('li')
 			.filter({ hasText: BETTINA_NAME });
 		if ((await row.count()) === 0) return;
-		await editPeople(page);
 		await row.getByRole('button', { name: `Remove the link to ${BETTINA_NAME}` }).click();
 		await expect(page.getByTestId('toast-undo')).toBeVisible();
 		await openPerson(page, /Noah Brunner/);
