@@ -31,7 +31,7 @@ export const immich = {
 
 	// Settings → Immich → Find your people: the matching list (§4.2).
 	'immich.match.title': 'Find your people',
-	'immich.match.blurb': 'Link the people in Stella to their faces in Immich, and add the ones only Immich knows.',
+	'immich.match.blurb': 'Link the people in Stella to their faces in Immich.',
 	'immich.match.intro':
 		'Faces named in Immich, next to the people in Stella with the same name. Link the ones that are the same person — the face tells you.',
 	'immich.match.asking': 'Asking Immich for its people…',

@@ -31,7 +31,7 @@ export const immich: ImmichMessages = {
 	'immich.settings.howToLink': 'Verknüpfe eine Person im Menü der Fotos-Karte auf ihrer Seite.',
 
 	'immich.match.title': 'Deine Leute finden',
-	'immich.match.blurb': 'Verknüpfe die Personen in Stella mit ihren Gesichtern in Immich und lege an, wen nur Immich kennt.',
+	'immich.match.blurb': 'Verknüpfe die Personen in Stella mit ihren Gesichtern in Immich.',
 	'immich.match.intro':
 		'In Immich benannte Gesichter, neben den Personen in Stella mit demselben Namen. Verknüpfe, wer dieselbe Person ist – das Gesicht sagt es dir.',
 	'immich.match.asking': 'Frage Immich nach seinen Personen…',
