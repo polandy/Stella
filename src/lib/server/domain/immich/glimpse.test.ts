@@ -7,12 +7,13 @@ import {
 	GLIMPSE_PAGE_SIZE,
 	openImmichMedia,
 	readImmichGlimpse,
+	readTogetherOffers,
 	type ImmichGlimpseDeps,
 	type ImmichMediaDeps
 } from './glimpse';
 import type { ImmichLink } from './links';
 import { createImmichMediaSigner, IMMICH_MEDIA_TTL_MS, type ImmichMediaSigner } from './signed-media';
-import { BERT_ID, CARL_ID, testLibrary } from './test-library';
+import { BERT_AND_CARL_ID, BERT_ID, CARL_ID, DORA_ID, testLibrary } from './test-library';
 
 /*
  * The glimpse of a linked person's photos (docs/concepts/immich.md §4.3, §5): the strip's signed
@@ -31,13 +32,15 @@ function fakeClock(): Clock & { advance(ms: number): void } {
 
 /**
  * The household as the viewer sees it: Bert is linked to his Immich person and visible, Carl is
- * visible and not linked, Dora is linked but private to someone else — out of the viewer's reach.
+ * visible and not linked, Dora is linked but private to someone else — out of the viewer's reach —
+ * and Cleo, visible, is linked to the Immich person Bert shares photos with.
  */
 function household() {
-	const visible = new Set(['c-bert', 'c-carl']);
+	const visible = new Set(['c-bert', 'c-carl', 'c-cleo']);
 	const links = new Map<string, ImmichLink>([
 		['c-bert', { contactId: 'c-bert', immichPersonId: BERT_ID, linkedBy: 'u-anna', linkedAt: NOW }],
-		['c-dora', { contactId: 'c-dora', immichPersonId: CARL_ID, linkedBy: 'u-bert', linkedAt: NOW }]
+		['c-dora', { contactId: 'c-dora', immichPersonId: DORA_ID, linkedBy: 'u-bert', linkedAt: NOW }],
+		['c-cleo', { contactId: 'c-cleo', immichPersonId: CARL_ID, linkedBy: 'u-anna', linkedAt: NOW }]
 	]);
 	return {
 		visible,
@@ -101,7 +104,7 @@ describe('readImmichGlimpse', () => {
 		const glimpse = await readImmichGlimpse(glimpseDeps, viewer, 'c-bert', null);
 		if (glimpse?.state !== 'photos') throw new Error(`no photos: ${JSON.stringify(glimpse)}`);
 		const [first] = glimpse.photos;
-		const listed = await gateway.latestAssets(BERT_ID, 1, null);
+		const listed = await gateway.latestAssets({ personIds: [BERT_ID], match: 'any' }, 1, null);
 		if (!listed.ok) throw new Error('the fake did not list');
 		const takenAt = listed.value.assets[0].takenAt;
 		expect(takenAt).not.toBeNull();
@@ -168,6 +171,71 @@ describe('readImmichGlimpse', () => {
 	});
 });
 
+describe('readImmichGlimpse together', () => {
+	it('gives the photos both are in, each signed for both of them', async () => {
+		const { glimpseDeps, signer, gateway } = setup();
+		const glimpse = await readImmichGlimpse(glimpseDeps, viewer, 'c-bert', null, 'c-cleo');
+		if (glimpse?.state !== 'photos') throw new Error(`no photos: ${JSON.stringify(glimpse)}`);
+
+		expect(glimpse.photos.map((photo) => photo.id)).toEqual(
+			Array.from({ length: GLIMPSE_PAGE_SIZE }, (_, index) => fakeAssetId(BERT_AND_CARL_ID, index))
+		);
+		expect(await signer.verify(tokenOf(glimpse.photos[0].previewUrl))).toMatchObject({
+			ok: true,
+			media: {
+				kind: 'photo',
+				contactId: 'c-bert',
+				personId: BERT_ID,
+				size: 'preview',
+				together: { contactId: 'c-cleo', personId: CARL_ID }
+			}
+		});
+		expect(gateway.calls).toEqual(['latestAssets']);
+
+		if (glimpse.nextCursor === null) throw new Error('no second page');
+		const more = await readImmichGlimpse(glimpseDeps, viewer, 'c-bert', glimpse.nextCursor, 'c-cleo');
+		expect(more).toMatchObject({ state: 'photos', nextCursor: null });
+	});
+
+	it('gives nothing when the other person is out of reach, not linked, or the same person, without asking Immich', async () => {
+		const { glimpseDeps, gateway } = setup();
+		for (const other of ['c-dora', 'c-carl', 'c-bert', 'c-nobody']) {
+			expect(await readImmichGlimpse(glimpseDeps, viewer, 'c-bert', null, other)).toBeNull();
+		}
+		// And the page's own person must be linked and seen too, whoever the other is.
+		expect(await readImmichGlimpse(glimpseDeps, viewer, 'c-carl', null, 'c-bert')).toBeNull();
+		expect(await readImmichGlimpse(glimpseDeps, viewer, 'c-dora', null, 'c-bert')).toBeNull();
+		expect(gateway.calls).toEqual([]);
+	});
+
+	it('says when either of them is gone from Immich', async () => {
+		const { glimpseDeps, gateway } = setup();
+		gateway.library.people = gateway.library.people.filter((person) => person.id !== CARL_ID);
+		expect(await readImmichGlimpse(glimpseDeps, viewer, 'c-bert', null, 'c-cleo')).toEqual({ state: 'personGone' });
+	});
+});
+
+describe('readTogetherOffers', () => {
+	it('keeps the people the viewer sees who are linked too, in the order asked', async () => {
+		const { glimpseDeps } = setup();
+		expect(await readTogetherOffers(glimpseDeps, viewer, 'c-bert', ['c-cleo', 'c-carl', 'c-dora', 'c-nobody'])).toEqual([
+			'c-cleo'
+		]);
+	});
+
+	it('offers nobody when the page’s own person is not linked or out of reach', async () => {
+		const { glimpseDeps } = setup();
+		expect(await readTogetherOffers(glimpseDeps, viewer, 'c-carl', ['c-cleo', 'c-bert'])).toEqual([]);
+		expect(await readTogetherOffers(glimpseDeps, viewer, 'c-dora', ['c-cleo'])).toEqual([]);
+	});
+
+	it('asks Immich nothing: what may be shown is Stella’s to say', async () => {
+		const { glimpseDeps, gateway } = setup();
+		await readTogetherOffers(glimpseDeps, viewer, 'c-bert', ['c-cleo']);
+		expect(gateway.calls).toEqual([]);
+	});
+});
+
 describe('openImmichMedia', () => {
 	async function photoToken(signer: ImmichMediaSigner, overrides: Partial<{ contactId: string; personId: string }> = {}) {
 		return signer.sign({
@@ -208,7 +276,7 @@ describe('openImmichMedia', () => {
 
 	it('refuses a token for a person the viewer cannot see, without asking Immich', async () => {
 		const { mediaDeps, signer, gateway } = setup();
-		const token = await photoToken(signer, { contactId: 'c-dora', personId: CARL_ID });
+		const token = await photoToken(signer, { contactId: 'c-dora', personId: DORA_ID });
 		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notVisible' });
 		expect(gateway.calls).toEqual([]);
 	});
@@ -225,6 +293,51 @@ describe('openImmichMedia', () => {
 		expect(await openImmichMedia(relinked.mediaDeps, viewer, old)).toEqual({ ok: false, refusal: 'notLinked' });
 
 		expect([...unlinked.gateway.calls, ...relinked.gateway.calls]).toEqual([]);
+	});
+
+	async function togetherToken(signer: ImmichMediaSigner) {
+		return signer.sign({
+			kind: 'photo',
+			contactId: 'c-bert',
+			personId: BERT_ID,
+			assetId: fakeAssetId(BERT_AND_CARL_ID, 0),
+			size: 'thumbnail',
+			together: { contactId: 'c-cleo', personId: CARL_ID }
+		});
+	}
+
+	it('serves a photo of two people together while the viewer sees both and both links hold', async () => {
+		const { mediaDeps, signer, gateway } = setup();
+		const outcome = await openImmichMedia(mediaDeps, viewer, await togetherToken(signer));
+		expect(outcome.ok).toBe(true);
+		expect(gateway.calls).toEqual(['assetImage']);
+	});
+
+	it('refuses a together photo once the other person is out of reach, without asking Immich', async () => {
+		const { mediaDeps, signer, gateway, home } = setup();
+		const token = await togetherToken(signer);
+		home.visible.delete('c-cleo');
+		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notVisible' });
+		expect(gateway.calls).toEqual([]);
+	});
+
+	it('refuses a together photo once either person was unlinked or relinked, without asking Immich', async () => {
+		const unlinked = setup();
+		const token = await togetherToken(unlinked.signer);
+		unlinked.home.links.delete('c-cleo');
+		expect(await openImmichMedia(unlinked.mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notLinked' });
+
+		const relinked = setup();
+		const old = await togetherToken(relinked.signer);
+		relinked.home.links.set('c-cleo', { contactId: 'c-cleo', immichPersonId: DORA_ID, linkedBy: 'u-anna', linkedAt: NOW });
+		expect(await openImmichMedia(relinked.mediaDeps, viewer, old)).toEqual({ ok: false, refusal: 'notLinked' });
+
+		const pageUnlinked = setup();
+		const third = await togetherToken(pageUnlinked.signer);
+		pageUnlinked.home.links.delete('c-bert');
+		expect(await openImmichMedia(pageUnlinked.mediaDeps, viewer, third)).toEqual({ ok: false, refusal: 'notLinked' });
+
+		expect([...unlinked.gateway.calls, ...relinked.gateway.calls, ...pageUnlinked.gateway.calls]).toEqual([]);
 	});
 
 	it('passes on that Immich did not answer, or no longer has the photo', async () => {

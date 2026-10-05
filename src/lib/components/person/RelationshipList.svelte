@@ -17,6 +17,8 @@
 	import { groupByExclusion } from '$lib/relationships/picker-groups';
 	import { otherEndRole, relationshipRoleLabel } from '$lib/relationships/roles';
 	import { FORMER_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '$lib/relationships/status';
+	import { offersTogether } from '$lib/immich/together';
+	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { isChoiceOfLink } from '$lib/relationships/type-options';
 	import { usePending } from '$lib/sync/context.svelte';
 	import { trackPending } from '$lib/sync/pending';
@@ -40,6 +42,7 @@
 		nameOfContact,
 		editing,
 		expanded,
+		showTogether,
 		relateOpen = $bindable()
 	}: {
 		data: PersonPageData;
@@ -55,6 +58,8 @@
 		expanded: boolean;
 		/** Whether the card's add form is open; the empty state offers to open it. */
 		relateOpen: boolean;
+		/** *Together*: the Photos card shows this person's photos with the one named. */
+		showTogether: (contactId: string) => void;
 	} = $props();
 
 	const i18n = useI18n();
@@ -107,6 +112,26 @@
 	// A fold never hides a row whose correction is open.
 	const groups = $derived(groupPeople(rows));
 	const folded = $derived(foldPeople(groups, expanded || editingRelationship !== null));
+
+	/*
+	 * *Together* (docs/02 §2.24.7): on the row of a partner, a spouse, a parent or a child who is in
+	 * Immich too, a quiet photo button that switches the Photos card's strip to the photos of the two
+	 * of them. Icon-only, like the row's edit buttons, so a phone's two columns keep the name; its
+	 * label says whose photos. Not offline, where nothing from Immich is shown, and not in edit mode.
+	 */
+	const togetherWith = $derived(new Set(data.immich?.togetherWith ?? []));
+	const offersTogetherOn = (rel: (typeof rows)[number]) =>
+		!editing && reachability.reachable && togetherWith.has(rel.otherContactId) && offersTogether(rel);
+	const firstNameOf = (contactId: string, fallback: string) =>
+		data.people.find((person) => person.id === contactId)?.firstName || fallback;
+	function togetherLabel(rel: (typeof rows)[number]): string {
+		const other = firstNameOf(rel.otherContactId, rel.otherDisplayName);
+		const own = c.firstName || c.displayName;
+		const selfId = data.user.selfContactId;
+		if (rel.otherContactId === selfId) return t('immich.together.rowLabelWithYou', { name: own });
+		if (c.id === selfId) return t('immich.together.rowLabelWithYou', { name: other });
+		return t('immich.together.rowLabelPair', { first: own, second: other });
+	}
 
 	/** What the line under a name says: the role first, then what else the link carries. */
 	const detailsOf = (rel: (typeof rows)[number]): string =>
@@ -165,6 +190,18 @@
 									</span>
 								</span>
 							</a>
+							{#if offersTogetherOn(rel)}
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									icon="photo"
+									label={togetherLabel(rel)}
+									title={t('immich.together.row')}
+									data-testid="immich-together-row"
+									onclick={() => showTogether(rel.otherContactId)}
+								/>
+							{/if}
 							{#if editing}
 								<span class="flex shrink-0 items-center">
 									<Button

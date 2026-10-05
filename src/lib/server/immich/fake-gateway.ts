@@ -19,6 +19,10 @@ import { solidPng } from './png';
  * A person's photos are not stored: there are `assets` of them, numbered newest first, and each
  * one's id, day and tile are worked out from its number (`fakeAssetId`). A photo is a tile in a
  * lighter or darker shade of the person's colour, so a strip of them reads as distinct pictures.
+ *
+ * Photos of people together (`together`) are numbered the same way under the group's own id.
+ * They come back only for a listing of everyone in them (`match: 'all'`), so one person's strip
+ * stays exactly their own count, and a test of it is not disturbed by whom they share photos with.
  */
 
 /** A person in the fake library, with the photo count their statistics report. */
@@ -28,10 +32,23 @@ export interface FakeImmichPerson extends ImmichPerson {
 	color: string;
 }
 
+/**
+ * Photos several people are in together, listed only when they are asked for together (concept
+ * §4.3). Their ids are worked out like a person's, from `id`, so it must not be a person's id.
+ */
+export interface FakeImmichGroupPhotos {
+	id: string;
+	personIds: string[];
+	assets: number;
+	color: string;
+}
+
 export interface FakeImmichLibrary {
 	version: ImmichVersion;
 	owner: ImmichOwner;
 	people: FakeImmichPerson[];
+	/** Photos people share; none when left out. */
+	together?: FakeImmichGroupPhotos[];
 }
 
 /** Which calls fail, and how; the test (or nobody, on the demo server) sets it. */
@@ -105,26 +122,34 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 				const person = found(id);
 				return person && { bytes: solidPng(FACE_SIZE, person.color), contentType: 'image/png' };
 			}, true),
-		latestAssets: (personId, limit, cursor) =>
+		latestAssets: ({ personIds, match }, limit, cursor) =>
 			answer('latestAssets', () => {
-				const person = found(personId);
-				if (!person) return null;
+				const people = personIds.map(found);
+				if (people.length === 0 || people.some((person) => person === null)) return null;
+				// Several people, all in each photo: the photos they share. Otherwise their own.
+				const sources: { id: string; assets: number }[] =
+					match === 'all' && personIds.length > 1
+						? (library.together ?? []).filter((group) => personIds.every((id) => group.personIds.includes(id)))
+						: (people as FakeImmichPerson[]);
+				// Newest first: the n-th photo of every source was taken on the same day.
+				const listed = sources
+					.flatMap((source) => Array.from({ length: source.assets }, (_, index) => ({ source: source.id, index })))
+					.sort((a, b) => a.index - b.index);
 				const from = cursor === null ? 0 : Number.parseInt(cursor, 10) || 0;
-				const to = Math.min(from + limit, person.assets);
-				const assets: ImmichAsset[] = [];
-				for (let index = from; index < to; index++) {
+				const to = Math.min(from + limit, listed.length);
+				const assets: ImmichAsset[] = listed.slice(from, to).map(({ source, index }) => {
 					const day = new Date(NEWEST_PHOTO_DAY - index * DAY_MS).toISOString().slice(0, 10);
 					// An afternoon on the camera's clock, as Immich's `localDateTime` gives it.
-					assets.push({ id: fakeAssetId(person.id, index), takenAt: `${day}T15:30:00` });
-				}
-				return { assets, nextCursor: to < person.assets ? String(to) : null };
+					return { id: fakeAssetId(source, index), takenAt: `${day}T15:30:00` };
+				});
+				return { assets, nextCursor: to < listed.length ? String(to) : null };
 			}, true),
 		assetImage: (assetId, size) =>
 			answer('assetImage', () => {
 				const index = Number.parseInt(assetId.slice(0, 8), 16);
-				const person = library.people.find((p) => p.id.slice(8) === assetId.slice(8));
-				if (!person || !(index < person.assets)) return null;
-				return { bytes: solidPng(PHOTO_SIZE[size], shade(person.color, index)), contentType: 'image/png' };
+				const owner = [...library.people, ...(library.together ?? [])].find((p) => p.id.slice(8) === assetId.slice(8));
+				if (!owner || !(index < owner.assets)) return null;
+				return { bytes: solidPng(PHOTO_SIZE[size], shade(owner.color, index)), contentType: 'image/png' };
 			}, true)
 	};
 

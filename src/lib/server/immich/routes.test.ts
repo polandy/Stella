@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../access/visibility';
 import type { ImmichGateway } from '../domain/immich/gateway';
 import type { ImmichLinkRepository } from '../domain/immich/links';
-import { BERT_ID, CARL_ID, testLibrary } from '../domain/immich/test-library';
+import { BERT_AND_CARL_ID, BERT_ID, CARL_ID, testLibrary } from '../domain/immich/test-library';
 import { faceUrlFor, GLIMPSE_PAGE_SIZE } from '../domain/immich/glimpse';
 import { createImmichMediaSigner } from '../domain/immich/signed-media';
 import { createFakeImmichGateway, fakeAssetId } from './fake-gateway';
@@ -152,6 +152,27 @@ describe('answerGlimpse', () => {
 			expect(await answerGlimpse(d, viewer, contactId, null)).toEqual({ status: 404, message: 'errors.notFound' });
 		}
 		expect(gateway.calls).toEqual([]);
+	});
+
+	it('answers the photos two linked people are in together, and 404 for a pair it may not show', async () => {
+		const { deps: d, gateway } = glimpseDeps();
+		expect(await answerGlimpse(d, viewer, 'c-bert', null, 'c-carl')).toEqual({ status: 404, message: 'errors.notFound' });
+		expect(gateway.calls).toEqual([]);
+
+		const bothLinked = {
+			...d,
+			links: {
+				findForContactVisibleTo: async (_viewer: Viewer, contactId: string) =>
+					contactId === 'c-bert' || contactId === 'c-carl'
+						? { contactId, immichPersonId: contactId === 'c-bert' ? BERT_ID : CARL_ID, linkedBy: 'u-anna', linkedAt: NOW }
+						: null
+			}
+		};
+		const answer = await answerGlimpse(bothLinked, viewer, 'c-bert', null, 'c-carl');
+		if (!(answer instanceof Response)) throw new Error(`refused with ${answer.status}`);
+		expect(answer.headers.get('cache-control')).toBe(IMMICH_MEDIA_CACHE_CONTROL);
+		const body = await answer.json();
+		expect(body.photos[0].id).toBe(fakeAssetId(BERT_AND_CARL_ID, 0));
 	});
 
 	it('answers 404 when this instance has no Immich', async () => {

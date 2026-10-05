@@ -5,7 +5,7 @@ import type { AvatarUpload, AvatarUploader } from '../media/avatars';
 import { fakeAssetId } from '../../immich/fake-gateway';
 import type { ImmichLink } from './links';
 import { createImmichMediaSigner, IMMICH_MEDIA_TTL_MS, type SignableImmichMedia } from './signed-media';
-import { BERT_ID, CARL_ID } from './test-library';
+import { BERT_AND_CARL_ID, BERT_ID, CARL_ID, DORA_ID } from './test-library';
 import { useImmichPhoto, type UseImmichPhotoDeps } from './use-as-photo';
 
 /*
@@ -32,11 +32,12 @@ function setup() {
 	let now = NOW;
 	const clock: Clock = { now: () => now };
 	const signer = createImmichMediaSigner({ secret: 'test-secret', clock });
-	// Bert is visible and linked; Dora is linked but out of the viewer's reach.
-	const visible = new Set(['c-bert']);
+	// Bert and Cleo are visible and linked; Dora is linked but out of the viewer's reach.
+	const visible = new Set(['c-bert', 'c-cleo']);
 	const links = new Map<string, ImmichLink>([
 		['c-bert', { contactId: 'c-bert', immichPersonId: BERT_ID, linkedBy: 'u-anna', linkedAt: NOW }],
-		['c-dora', { contactId: 'c-dora', immichPersonId: CARL_ID, linkedBy: 'u-bert', linkedAt: NOW }]
+		['c-cleo', { contactId: 'c-cleo', immichPersonId: CARL_ID, linkedBy: 'u-anna', linkedAt: NOW }],
+		['c-dora', { contactId: 'c-dora', immichPersonId: DORA_ID, linkedBy: 'u-bert', linkedAt: NOW }]
 	]);
 	const worn: { uploader: AvatarUploader; contactId: string; upload: AvatarUpload }[] = [];
 	const deps: UseImmichPhotoDeps = {
@@ -63,7 +64,7 @@ function setup() {
 			takenAt: TAKEN_AT,
 			...over
 		});
-	return { deps, worn, links, preview, advance: (ms: number) => void (now += ms) };
+	return { deps, worn, links, visible, preview, advance: (ms: number) => void (now += ms) };
 }
 
 describe('useImmichPhoto', () => {
@@ -79,6 +80,42 @@ describe('useImmichPhoto', () => {
 				upload: { ...square, takenAt: TAKEN_AT }
 			}
 		]);
+	});
+
+	it('takes a photo of them with someone else, from the together strip, on their own page', async () => {
+		const { deps, worn, preview } = setup();
+		const together = { contactId: 'c-cleo', personId: CARL_ID };
+		const token = await preview({ assetId: fakeAssetId(BERT_AND_CARL_ID, 0), together });
+		expect(await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })).toEqual({
+			ok: true,
+			photoId: 'photo-1'
+		});
+		// Not on the other person's page: the photo was listed for the page it was shown on.
+		expect(await useImmichPhoto(deps, viewer, { contactId: 'c-cleo', token, upload: square })).toEqual({
+			ok: false,
+			refusal: 'invalid'
+		});
+		expect(worn).toHaveLength(1);
+	});
+
+	it('refuses a together photo once the other person is out of reach or unlinked, storing nothing', async () => {
+		const gone = setup();
+		const together = { contactId: 'c-cleo', personId: CARL_ID };
+		const token = await gone.preview({ together });
+		gone.visible.delete('c-cleo');
+		expect(await useImmichPhoto(gone.deps, viewer, { contactId: 'c-bert', token, upload: square })).toEqual({
+			ok: false,
+			refusal: 'notVisible'
+		});
+
+		const unlinked = setup();
+		const other = await unlinked.preview({ together });
+		unlinked.links.delete('c-cleo');
+		expect(await useImmichPhoto(unlinked.deps, viewer, { contactId: 'c-bert', token: other, upload: square })).toEqual({
+			ok: false,
+			refusal: 'notLinked'
+		});
+		expect([...gone.worn, ...unlinked.worn]).toEqual([]);
 	});
 
 	it('stores it undated when Immich did not say when it was taken', async () => {
@@ -121,7 +158,7 @@ describe('useImmichPhoto', () => {
 
 	it('refuses a person the viewer cannot see, whatever the token says', async () => {
 		const { deps, worn, preview } = setup();
-		const token = await preview({ contactId: 'c-dora', personId: CARL_ID });
+		const token = await preview({ contactId: 'c-dora', personId: DORA_ID });
 		expect(await useImmichPhoto(deps, viewer, { contactId: 'c-dora', token, upload: square })).toEqual({
 			ok: false,
 			refusal: 'notVisible'

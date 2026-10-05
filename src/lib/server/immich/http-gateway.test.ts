@@ -5,6 +5,10 @@ const BASE = 'http://immich-server:2283';
 const KEY = 'test-key-not-a-real-one';
 const ID = '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70';
 const ASSET = '00000000-4d5e-4f60-8a1b-2c3d4e5f6a70';
+const OTHER = '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81';
+
+/** The photos of one person alone, as the strip asks for them. */
+const only = (personId: string) => ({ personIds: [personId], match: 'any' as const });
 
 /** A `fetch` that answers with what the test planted, recording each request. */
 function stub(answer: () => Response | Promise<Response>) {
@@ -155,7 +159,7 @@ describe('createHttpImmichGateway', () => {
 				}
 			})
 		);
-		expect(await gateway.latestAssets(ID, 12, 'c1')).toEqual({
+		expect(await gateway.latestAssets(only(ID), 12, 'c1')).toEqual({
 			ok: true,
 			value: { assets: [{ id: ASSET, takenAt: '2026-08-14T18:30:00' }], nextCursor: 'c2' }
 		});
@@ -175,18 +179,32 @@ describe('createHttpImmichGateway', () => {
 		});
 	});
 
+	it('asks for the photos two people are in together', async () => {
+		const { gateway, calls } = stub(() => json({ assets: { items: [], nextCursor: null } }));
+		await gateway.latestAssets({ personIds: [ID, OTHER], match: 'all' }, 12, null);
+		expect(calls[0].body).toEqual({
+			filter: {
+				personIds: { all: [ID, OTHER] },
+				type: { eq: 'IMAGE' },
+				visibility: { eq: 'timeline' }
+			},
+			orderBy: { field: 'fileCreatedAt', direction: 'desc' },
+			size: 12
+		});
+	});
+
 	it('asks for the first page without a cursor', async () => {
 		const { gateway, calls } = stub(() => json({ assets: { items: [], nextCursor: null } }));
-		expect(await gateway.latestAssets(ID, 12, null)).toEqual({ ok: true, value: { assets: [], nextCursor: null } });
+		expect(await gateway.latestAssets(only(ID), 12, null)).toEqual({ ok: true, value: { assets: [], nextCursor: null } });
 		expect(calls[0].body).not.toHaveProperty('cursor');
 	});
 
 	it('reads a person Immich no longer has as not found, and a key without asset.read as forbidden', async () => {
-		expect(await stub(() => json({}, 400)).gateway.latestAssets(ID, 12, null)).toEqual({
+		expect(await stub(() => json({}, 400)).gateway.latestAssets(only(ID), 12, null)).toEqual({
 			ok: false,
 			failure: 'notFound'
 		});
-		expect(await stub(() => json({}, 403)).gateway.latestAssets(ID, 12, null)).toEqual({
+		expect(await stub(() => json({}, 403)).gateway.latestAssets(only(ID), 12, null)).toEqual({
 			ok: false,
 			failure: 'forbidden'
 		});
@@ -213,7 +231,12 @@ describe('createHttpImmichGateway', () => {
 	it('never asks Immich about a photo or a person whose id is not an Immich id', async () => {
 		const { gateway, calls } = stub(() => json({}));
 		expect(await gateway.assetImage('../users/me', 'preview')).toEqual({ ok: false, failure: 'notFound' });
-		expect(await gateway.latestAssets('../users/me', 12, null)).toEqual({ ok: false, failure: 'notFound' });
+		expect(await gateway.latestAssets(only('../users/me'), 12, null)).toEqual({ ok: false, failure: 'notFound' });
+		expect(await gateway.latestAssets({ personIds: [ID, '../users/me'], match: 'all' }, 12, null)).toEqual({
+			ok: false,
+			failure: 'notFound'
+		});
+		expect(await gateway.latestAssets({ personIds: [], match: 'all' }, 12, null)).toEqual({ ok: false, failure: 'notFound' });
 		expect(calls).toHaveLength(0);
 	});
 });

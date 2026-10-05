@@ -14,6 +14,9 @@
 	 * page up, and every picture comes through Stella's signed proxy. A tap opens the photo in the
 	 * lightbox at Immich's preview size.
 	 *
+	 * With `together`, the same strip holds the photos the person is in with someone else (docs/02
+	 * §2.24.7); the viewer, *Use as photo* and *Open in Immich* work on them as on any other.
+	 *
 	 * Quiet on failure: the line above it already says when Immich did not answer or no longer has
 	 * the person, so the strip then simply is not there. Never shown offline — the Photos card
 	 * leaves it out — and nothing it shows is kept on the device.
@@ -24,8 +27,15 @@
 		name: string;
 		/** Whether the person wears a photo now, for *Use as photo* in the viewer. */
 		hasPhoto: boolean;
+		/**
+		 * The other person, for the photos of the two together (docs/02 §2.24.7), with what the
+		 * strip is then called; null for the person's own photos.
+		 */
+		together?: { contactId: string; label: string } | null;
 	}
-	let { contactId, name, hasPhoto }: Props = $props();
+	let { contactId, name, hasPhoto, together = null }: Props = $props();
+	// A primitive, so the strip asks again only when the pair changes, not when its label is rebuilt.
+	const togetherWith = $derived(together?.contactId ?? null);
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -36,7 +46,7 @@
 	let photos = $state<GlimpsePhoto[]>([]);
 	let nextCursor = $state<string | null>(null);
 	/** `loading` until the first page answers; `none` when there is nothing to show. */
-	let phase = $state<'loading' | 'shown' | 'none'>('loading');
+	let phase = $state<'loading' | 'shown' | 'none' | 'noneTogether'>('loading');
 	let loadingMore = $state(false);
 	let opened = $state<number | null>(null);
 	const openedPhoto = $derived(opened === null ? null : (photos[opened] ?? null));
@@ -44,21 +54,23 @@
 	const tiles: HTMLButtonElement[] = $state([]);
 
 	$effect(() => {
-		// Asked again for whoever the page shows now; an answer for the person before is dropped.
-		void contactId;
+		// Asked again for whoever the page shows now, and whichever pair; an answer for the one
+		// before is dropped.
+		const asked = { contactId, togetherWith };
 		let current = true;
 		phase = 'loading';
 		photos = [];
 		nextCursor = null;
 		opened = null;
-		void fetchGlimpse(contactId, null).then((page) => {
+		void fetchGlimpse(asked.contactId, null, asked.togetherWith).then((page) => {
 			if (!current) return;
 			if (page?.state === 'photos' && page.photos.length > 0) {
 				photos = page.photos;
 				nextCursor = page.nextCursor;
 				phase = 'shown';
 			} else {
-				phase = 'none';
+				// Two people with no photo together are said so; anything else the line above says.
+				phase = asked.togetherWith !== null && page?.state === 'photos' ? 'noneTogether' : 'none';
 			}
 		});
 		return () => {
@@ -69,10 +81,10 @@
 	async function showMore() {
 		if (nextCursor === null || loadingMore) return;
 		loadingMore = true;
-		const asked = contactId;
-		const page = await fetchGlimpse(contactId, nextCursor);
+		const asked = { contactId, togetherWith };
+		const page = await fetchGlimpse(asked.contactId, nextCursor, asked.togetherWith);
 		loadingMore = false;
-		if (asked !== contactId) return;
+		if (asked.contactId !== contactId || asked.togetherWith !== togetherWith) return;
 		if (page?.state === 'photos') {
 			photos = withPage(photos, page.photos);
 			nextCursor = page.nextCursor;
@@ -104,7 +116,9 @@
 		'flex size-20 shrink-0 overflow-hidden rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 </script>
 
-{#if phase !== 'none'}
+{#if phase === 'noneTogether'}
+	<p class="mt-2 text-sm text-fg-subtle" data-testid="immich-strip" data-phase={phase}>{t('immich.together.none')}</p>
+{:else if phase !== 'none'}
 	<div class="mt-2" data-testid="immich-strip" data-phase={phase}>
 		{#if phase === 'loading'}
 			<span class="sr-only" role="status">{t('immich.strip.loading')}</span>
@@ -114,7 +128,7 @@
 				{/each}
 			</ul>
 		{:else}
-			<ul class="flex gap-2 overflow-x-auto pb-1" aria-label={t('immich.strip.label')}>
+			<ul class="flex gap-2 overflow-x-auto pb-1" aria-label={together?.label ?? t('immich.strip.label')}>
 				{#each photos as photo, index (photo.id)}
 					<li class="shrink-0">
 						<button type="button" bind:this={tiles[index]} onclick={() => (opened = index)} class={TILE}>

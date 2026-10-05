@@ -40,12 +40,15 @@
 		data,
 		form,
 		otherContacts,
+		showTogether,
 		tracingPath = $bindable(false)
 	}: {
 		data: PersonPageData;
 		form: PersonForm;
 		/** Candidate targets for a new relationship: everyone visible but this person. */
 		otherContacts: PersonPageData['people'];
+		/** A row's *Together*: the Photos card shows this person's photos with the one named. */
+		showTogether: (contactId: string) => void;
 		/** Whether "How are we connected?" is asking who; the identity card's ⋯ menu opens it too. */
 		tracingPath?: boolean;
 	} = $props();
@@ -342,6 +345,7 @@
 							{nameOfContact}
 							{editing}
 							expanded={unfolded}
+							{showTogether}
 							bind:relateOpen
 						/>
 

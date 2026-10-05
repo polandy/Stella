@@ -1,6 +1,6 @@
 # Concept — A person's photos, from Immich
 
-Status: **slices 1, 2 and 5 built** (*Connect + link*, *Glimpse*, *Use as photo*, docs/02 §2.24); slices 3–4 are not. The decisions taken with the maintainer on 2026-10-01 are
+Status: **slices 1, 2, 4 and 5 built** (*Connect + link*, *Glimpse*, *Together*, *Use as photo*, docs/02 §2.24); slice 3 is not. The decisions taken with the maintainer on 2026-10-01 are
 listed in §9; one point (phone deep links) waits for a test on the device. Facts about Immich
 are taken from its OpenAPI spec at v3.2.4 (2026-09) and are cited in §10.
 
@@ -195,7 +195,8 @@ Following the GitHub release feed, the existing outbound-call pattern
   login page.
 - **Port** `ImmichGateway` in `src/lib/server/domain/immich/`, narrow: `owner`, `version`,
   `listPeople`, `searchPeople`, `person`, `personStatistics`, `personThumbnail`,
-  `latestAssets(personId, limit, cursor)` (slice 4 widens it to several people and a mode) and
+  `latestAssets(people, limit, cursor)` — several people and a mode, `any` or `all` (widened in
+  slice 4 for the together-view) — and
   `assetImage(assetId, size)`, plus **pure parsers** for every untrusted payload.
 - **Pure** matching in `src/lib/immich/match.ts` (name folding, likely/maybe) and a pure
   link builder (web, and later app links) — both test-first.
@@ -235,7 +236,8 @@ Following the GitHub release feed, the existing outbound-call pattern
    page, the count, and *Open in Immich* for every member.
 2. **Glimpse** — the signed proxy, the strip and the viewer.
 3. **Matching list** — the review of §4.2.
-4. **Together** — the *You and Julia* chip and the relationship-row chip.
+4. **Together** — the *You and Julia* chip and the relationship-row chip — built (docs/02
+   §2.24.7, decisions §9.17–20).
 5. **Use as photo** from the viewer, and *From Immich* in the picture's chooser — built (docs/02
    §2.24.6, decisions §9.13–16).
 
@@ -313,6 +315,26 @@ Decided with the maintainer on 2026-10-05, on reviewing slice 5:
     and a pick goes through the cropper and the same *Use as photo* path. An unlinked person's
     section offers *Find in Immich*, the face picker; after linking, the photos appear. Without
     Immich the tap behaves exactly as before.
+
+Decided while building slice 4 (2026-10-05):
+
+17. **Chips over the strip, not a second strip.** *You and Julia* is a chip beside *All photos*
+    above the one strip, which then holds the photos of both; the viewer, *Use as photo* and
+    *Open in Immich* work on it unchanged. A copy made from it goes to the person whose page it
+    is, never to the other one.
+18. **The relationship row's *Together* is an icon-only photo button**, like the row's edit
+    buttons: a text chip would squeeze the name out of a phone's two columns. Its label names the
+    pair and its tooltip says *Together*. It sits on a current partner, spouse, parent or child
+    who is linked too — not on a former tie — scrolls to the Photos card and adds a chip for that
+    pair, which stays while the page is open. On the member's own page, the pair reads *You and
+    Bert*; on the member's own row, it is *You and Julia*.
+19. **The server checks the people, not the tie.** `?with=` is served for any two people the
+    member sees who are both linked, and nothing else: either strip could be looked at already,
+    so the pair says nothing new, and which pairs are offered stays the page's choice.
+20. **A together photo's token names both people.** It carries the second contact and their
+    Immich person, and the proxy and *Use as photo* check both — seen, and still linked to the
+    person the photo was listed for — so an unlink of either ends it, as an unlink of one person
+    ends their own photos' URLs.
 
 ---
 

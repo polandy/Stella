@@ -60,6 +60,28 @@ describe('createImmichMediaSigner', () => {
 		expect(await signer.verify(token)).toEqual({ ok: false, reason: 'invalid' });
 	});
 
+	it('reads back a together photo, with the second person and their Immich person', async () => {
+		const clock = fakeClock();
+		const signer = createImmichMediaSigner({ secret: SECRET, clock });
+		const together = { ...photo, together: { contactId: 'monica:contact:9', personId: CARL_ID } };
+		expect(await signer.verify(await signer.sign(together))).toEqual({
+			ok: true,
+			media: { ...together, expiresAt: clock.now() + IMMICH_MEDIA_TTL_MS }
+		});
+	});
+
+	it('refuses a together photo whose second person is not one', async () => {
+		const clock = fakeClock();
+		const signer = createImmichMediaSigner({ secret: SECRET, clock });
+		for (const together of [
+			{ contactId: '', personId: CARL_ID },
+			{ contactId: 'x'.repeat(129), personId: CARL_ID },
+			{ contactId: 'c-carl', personId: '../users/me' }
+		]) {
+			expect(await signer.verify(await signer.sign({ ...photo, together }))).toEqual({ ok: false, reason: 'invalid' });
+		}
+	});
+
 	it('reads back a face token', async () => {
 		const clock = fakeClock();
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });

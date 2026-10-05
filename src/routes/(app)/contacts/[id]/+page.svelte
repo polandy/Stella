@@ -46,6 +46,26 @@
 		document.getElementById('path-target')?.focus();
 	}
 
+	/*
+	 * Photos of two people together, from Immich (docs/02 §2.24.7): the pair a relationship row's
+	 * *Together* asked for, and the pair the Photos card's strip shows. Both belong to this person,
+	 * so another person's page starts on their own photos again.
+	 */
+	let immichTogether = $state<{ askedByRow: string | null; shown: string | null }>({ askedByRow: null, shown: null });
+	// A primitive, so a reload of this same person's data (a save) is not read as a new person.
+	const contactId = $derived(c.id);
+	$effect(() => {
+		void contactId;
+		immichTogether = { askedByRow: null, shown: null };
+	});
+	async function showTogether(contactId: string) {
+		immichTogether = { askedByRow: contactId, shown: contactId };
+		await tick();
+		document.getElementById(sectionAnchor('photos'))?.scrollIntoView({ block: 'start' });
+		// The chip now pressed, so a keyboard or a screen reader lands where the photos changed.
+		document.querySelector<HTMLElement>('[data-testid="immich-together"] [aria-pressed="true"]')?.focus();
+	}
+
 	/** How this person came into the household's life, as one line, or null. */
 	const metLine = $derived.by(() => {
 		const parts = [c.howWeMet, c.metPlace, c.metDate].filter(Boolean);
@@ -66,9 +86,9 @@
 	<!-- Sticks under the top bar once the identity card has gone by (docs/05 §5.5). -->
 	<JumpBar {data} />
 
-	<RelationshipsSection {data} {form} {otherContacts} bind:tracingPath />
+	<RelationshipsSection {data} {form} {otherContacts} {showTogether} bind:tracingPath />
 
-	<PhotosSection {data} {form} />
+	<PhotosSection {data} {form} bind:together={immichTogether} />
 
 	<!-- What happened beside what was written down; stacked, story first, below `lg`. -->
 	<div class="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">

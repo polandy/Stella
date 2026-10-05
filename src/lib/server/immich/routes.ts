@@ -82,20 +82,22 @@ export async function answerImmichMedia(
 }
 
 /**
- * `GET /contacts/{id}/immich/photos?cursor=`: a page of the strip under a linked person's
- * gallery, with signed URLs. Only for a person the member can see and who is linked; a failure
- * in Immich is said in the body — the strip then quietly is not there — rather than failing the
+ * `GET /contacts/{id}/immich/photos?cursor=&with=`: a page of the strip under a linked person's
+ * gallery, with signed URLs — with `with`, of the photos they are in together with that other
+ * person (concept §4.3). Only for people the member can see and who are linked; a failure in
+ * Immich is said in the body — the strip then quietly is not there — rather than failing the
  * request.
  */
 export async function answerGlimpse(
 	deps: ImmichGlimpseDeps | null,
 	viewer: Viewer | null,
 	contactId: string,
-	cursor: string | null
+	cursor: string | null,
+	togetherWith: string | null = null
 ): Promise<Response | RouteRefusal> {
 	if (!viewer) return NOT_SIGNED_IN;
 	if (!deps) return NOT_FOUND;
-	const glimpse = await readImmichGlimpse(deps, viewer, contactId, cursor);
+	const glimpse = await readImmichGlimpse(deps, viewer, contactId, cursor, togetherWith);
 	if (!glimpse) return NOT_FOUND;
 	return Response.json(glimpse, { headers: { 'Cache-Control': IMMICH_MEDIA_CACHE_CONTROL } });
 }
