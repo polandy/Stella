@@ -18,12 +18,15 @@ import { expandMs, fadeMs, gapToTakeUp, glidePlan, revealFrame, standardEasing }
 type DeferredTransition = (options?: { direction?: 'in' | 'out' | 'both' }) => TransitionConfig;
 
 /*
- * A block on its way out takes the cursor with it, the way removing it used to: the block is
- * inert while it fades, but a focused element that turns inert keeps focus until the browser's
- * next frame, and code that asks "did the cursor fall to the page?" right after the change —
- * Section's hand-back to its button — would read the wrong answer.
+ * A block on its way out stops answering to the cursor at once, the way removing it used to:
+ * marking it `inert` drops it from the tab order and from clicks and pointer events, so a reader
+ * cannot tab into, or tap, a control that is already fading away. An element focused inside it
+ * keeps focus for a frame even once its ancestor turns inert, so it is blurred explicitly in the
+ * same instant — code that asks "did the cursor fall to the page?" right after the change —
+ * Section's hand-back to its button — would otherwise read the wrong answer.
  */
-function releaseFocus(node: HTMLElement) {
+function leave(node: HTMLElement) {
+	node.inert = true;
 	const active = document.activeElement;
 	if (active instanceof HTMLElement && node.contains(active)) active.blur();
 }
@@ -82,7 +85,7 @@ export function reveal(node: HTMLElement): DeferredTransition {
 	// Measured now, at rest: once it moves, the computed height is the animated one.
 	const box = measure(node);
 	return ({ direction } = {}) => {
-		if (direction === 'out') releaseFocus(node);
+		if (direction === 'out') leave(node);
 		return {
 			duration: expandMs(reduced),
 			easing: standardEasing,
@@ -111,7 +114,7 @@ export function reveal(node: HTMLElement): DeferredTransition {
 export function crossfade(node: HTMLElement): DeferredTransition {
 	const reduced = prefersReducedMotion.current;
 	return ({ direction } = {}) => {
-		if (direction === 'out') releaseFocus(node);
+		if (direction === 'out') leave(node);
 		return { duration: fadeMs(reduced), easing: standardEasing, css: (t) => `opacity: ${t}` };
 	};
 }
