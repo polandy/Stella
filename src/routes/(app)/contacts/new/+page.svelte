@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { reveal } from '$lib/motion/motion.svelte';
 	import FormError from '$lib/components/FormError.svelte';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
@@ -213,7 +214,7 @@
 					{/each}
 				</ul>
 				{#if relateTo !== null}
-					<p class="flex items-center gap-1.5 text-xs text-fg-muted">
+					<p transition:reveal class="flex items-center gap-1.5 text-xs text-fg-muted">
 						<Icon name="people" size={12} />{t('contacts.new.relativeHint')}
 					</p>
 				{/if}

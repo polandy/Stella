@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { reveal } from '$lib/motion/motion.svelte';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
@@ -190,7 +191,7 @@
 						</li>
 						{#if editingRelationship === rel.id}
 							<!-- Across the whole grid, under the tile it corrects. -->
-							<li class="col-span-full">
+							<li class="col-span-full" transition:reveal>
 								<form
 									method="POST"
 									action="?/editRelationship"

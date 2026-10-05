@@ -840,6 +840,10 @@ nobody else signing in on that phone sees them.
 Stella follows whatever your device is set to, and both themes are designed rather than
 inverted. There is nothing to configure.
 
+What opens and closes on a page — a folded row, a form under a card's heading, *Show more* on
+someone's people — slides open and shut rather than jumping, and you can press again halfway to
+turn it round. If your device is set to reduce motion, all of it simply switches instead.
+
 ## English or German
 
 Stella speaks both, and the whole of it — screens, buttons, dates, the messages a form gives

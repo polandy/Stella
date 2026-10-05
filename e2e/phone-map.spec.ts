@@ -14,7 +14,8 @@ import { appReady, signIn, unfoldPeople } from './app';
 const MARKUS = 'demo-c-markus';
 const PIXEL_9_PRO = { width: 412, height: 915 };
 
-test.use({ viewport: PIXEL_9_PRO, hasTouch: true });
+// The glide is what this spec is about, so it runs with motion (playwright.config.ts).
+test.use({ viewport: PIXEL_9_PRO, hasTouch: true, contextOptions: { reducedMotion: 'no-preference' } });
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);

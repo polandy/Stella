@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Swap from '$lib/components/Swap.svelte';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
@@ -422,7 +423,8 @@
 				class={INPUT}
 			/>
 		</label>
-		{#if perPair}
+		<!-- One date or one per person: the two glide into each other in place (docs/05 §5.11). -->
+		<Swap when={perPair} class={perPair ? 'w-full' : ''}>
 			<!-- The days differ (several children): one field per pair, each prefilled and clearable. -->
 			<fieldset class="flex w-full min-w-0 flex-col gap-1 text-sm">
 				<legend class="mb-1 text-fg-muted">
@@ -448,7 +450,7 @@
 					{t('contact.relationships.oneDateForAll')}
 				</button>
 			</fieldset>
-		{:else}
+			{#snippet otherwise()}
 			<div class="flex flex-col gap-1 text-sm">
 				<span class="text-fg-muted">{t('contact.relationships.sinceLabel')}</span>
 				<!-- Keyed: the field owns its segments once it is on screen, so a new
@@ -466,7 +468,8 @@
 					</button>
 				{/if}
 			</div>
-		{/if}
+			{/snippet}
+		</Swap>
 		<label class="flex flex-col gap-1 text-sm">
 			<span class="text-fg-muted">{t('contact.relationships.status')}</span>
 			<!-- A link being entered is one that holds, so `current` is preselected and

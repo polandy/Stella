@@ -52,6 +52,16 @@ const PWA_SPECS = /pwa-[^/]*\.spec\.ts$/;
  */
 const NO_SERVICE_WORKER = 'block' as const;
 
+/*
+ * The suite reads the app the way a reader who asked for less motion sees it: what opens and
+ * closes in place switches at once (docs/05 §5.11), exactly as it did before it glided. A spec
+ * waits on end states either way (docs/08 §8.4.2), but a disclosure caught mid-crossfade holds
+ * both alternatives for a fifth of a second, and a locator that finds two of something fails
+ * instead of retrying. A spec that is *about* the motion opts back in with
+ * `test.use({ contextOptions: { reducedMotion: 'no-preference' } })` — `e2e/phone-map.spec.ts` does.
+ */
+const LESS_MOTION = 'reduce' as const;
+
 export default defineConfig({
 	testDir: 'e2e',
 	// One app instance and one database are shared by the suite, so tests run in order.
@@ -61,7 +71,12 @@ export default defineConfig({
 	// On CI the `github` reporter also turns each failure into a check annotation, so a red
 	// run can be read as a short list (`scripts/ci-failures.sh`) instead of the full log.
 	reporter: process.env.CI ? [['list'], ['github']] : 'list',
-	use: { baseURL: BASE_URL, trace: 'retain-on-failure', serviceWorkers: NO_SERVICE_WORKER },
+	use: {
+		baseURL: BASE_URL,
+		trace: 'retain-on-failure',
+		serviceWorkers: NO_SERVICE_WORKER,
+		contextOptions: { reducedMotion: LESS_MOTION }
+	},
 	projects: [
 		// Signs in once; every spec below starts from the session it stores, which is a page
 		// load and a form post saved per test.

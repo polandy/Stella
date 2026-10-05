@@ -198,6 +198,14 @@ test may not race — not in `bun test`, not in Playwright.
   that exact case go red and its neighbours stay green. A case that survives is not a test,
   whatever its name says. `e2e` rebuilds on every run, so a production-side edit is picked up.
 
+**Motion is waited on, never timed.** What opens or closes in place glides (docs/05 §5.11), so
+for a moment it is half there — and two alternatives crossing over each other are *both* there,
+which a locator that finds one thing reports as an error rather than retrying. The suite
+therefore runs with `prefers-reduced-motion: reduce` (`playwright.config.ts`), where every
+disclosure switches at once. A spec about the motion itself opts back in
+(`test.use({ contextOptions: { reducedMotion: 'no-preference' } })`) and waits on the end state — the box's
+`data-motion="settled"`, the cursor where it lands, the element there or gone — never on 300 ms.
+
 **The wall clock is a dependency like any other.** Two clocks are in play whenever a test
 builds a date: the test's and the server's. They agree only because `TZ` is pinned — for the
 CI jobs and for the container `e2e/run.sh` starts — so do not unpin it. And a run that steps

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount, tick, type Component } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
+	import { prefersReducedMotion } from 'svelte/motion';
+	import { scrollBehavior } from '$lib/motion/motion';
 	import EgoGraph from '$lib/components/EgoGraph.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
@@ -63,14 +65,13 @@
 
 	/** Below `sm`: the preview stands in for the canvas (Tailwind's breakpoint, docs/05 §5.4). */
 	const phone = new MediaQuery('(width < 40rem)', false);
-	const reducedMotion = new MediaQuery('(prefers-reduced-motion: reduce)', false);
 	let mapState = $state(PHONE_MAP_AT_REST);
 	const view = $derived(mapState.view);
 	const layers = $derived(mapLayers(mapState));
 	function go(step: PhoneMapStep) {
 		mapState = phoneMapAfter(mapState, step);
 		// Without motion there is no glide to wait for: the height is where it goes at once.
-		if (reducedMotion.current && step !== 'drawn') mapState = phoneMapAfter(mapState, 'settled');
+		if (prefersReducedMotion.current && step !== 'drawn') mapState = phoneMapAfter(mapState, 'settled');
 		void handFocusOver();
 	}
 	/** *Enlarge map* was pressed and the cursor goes to *Shrink map* once the live map shows. */
@@ -94,7 +95,7 @@
 	 */
 	const ENLARGED_HEIGHT = 'h-[max(20rem,calc(100dvh-12.75rem))]';
 	let frame = $state<HTMLDivElement>();
-	const scrolling = (): ScrollBehavior => (reducedMotion.current ? 'auto' : 'smooth');
+	const scrolling = () => scrollBehavior(prefersReducedMotion.current);
 
 	/* The frame's height has arrived. Only its own height counts: the fades inside it end too,
 	   and a reversed glide cancels the first one without having arrived anywhere. */
@@ -167,7 +168,7 @@
 	-->
 	<div
 		bind:this={frame}
-		class="relative scroll-mt-2 overflow-hidden rounded-app border border-border bg-bg-sunken transition-[height] duration-300 ease-[cubic-bezier(0.2,0,0,1)] sm:hidden {layers.tall
+		class="relative scroll-mt-2 overflow-hidden rounded-app border border-border bg-bg-sunken transition-[height] duration-(--motion-expand) ease-standard sm:hidden {layers.tall
 			? ENLARGED_HEIGHT
 			: 'h-25'}"
 		style:contain={mapState.settled ? undefined : 'layout'}
@@ -176,7 +177,7 @@
 	>
 		{#if Explorer && layers.explorerMounted}
 			<div
-				class="absolute inset-x-0 top-0 transition-opacity duration-200 {ENLARGED_HEIGHT}"
+				class="absolute inset-x-0 top-0 transition-opacity duration-(--motion-fade) ease-standard {ENLARGED_HEIGHT}"
 				class:opacity-0={!layers.explorerShown}
 				class:pointer-events-none={!layers.explorerShown}
 				inert={!layers.tall}
@@ -202,7 +203,7 @@
 			middle of the frame while it grows, until the live map has drawn and takes over.
 		-->
 		<div
-			class="absolute inset-0 bg-bg-sunken transition-opacity duration-200"
+			class="absolute inset-0 bg-bg-sunken transition-opacity duration-(--motion-fade) ease-standard"
 			class:opacity-0={!layers.previewShown}
 			class:pointer-events-none={!layers.previewControlsShown}
 			inert={!layers.previewShown}
@@ -219,7 +220,7 @@
 				<span class="block h-22 w-full"><EgoGraph {centerName} {centerPhotoId} {nodes} thumbnail /></span>
 			</button>
 			<div
-				class="pointer-events-none absolute right-1 bottom-1 flex transition-opacity duration-200"
+				class="pointer-events-none absolute right-1 bottom-1 flex transition-opacity duration-(--motion-fade) ease-standard"
 				class:opacity-0={!layers.previewControlsShown}
 			>
 				<span class="grid size-11 place-items-center" class:invisible={!Explorer}>

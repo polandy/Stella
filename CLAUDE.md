@@ -63,6 +63,7 @@ Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) �
 | `src/lib/contacts/` | **pure** person-page vocabulary: the cards' anchors (`sections.ts`), the jump bar's links and which card is being read (`jump-bar.ts`, test-first) |
 | `src/lib/onboarding/` | **pure** first-run decisions: whether Home shows the welcome card, which steps it offers and which are done (`welcome.ts`, test-first) |
 | `src/lib/surnames/` | **pure** last-name batches on screen: which rows a held batch hides, who becomes a namesake (test-first); `held-names.svelte.ts` is the adapter to the undo window |
+| `src/lib/motion/` | **pure** expand/collapse motion (`motion.ts`: easing, reveal frames, when a height glides, test-first); `motion.svelte.ts` is the adapter — `transition:reveal`, `use:glide`, the cross-fade `Swap.svelte` builds on (`docs/05` §5.11) |
 | `src/lib/menu/` | **pure** toolbar-menu decisions: the Filter pill's count and highlight, arrow-key movement (test-first) |
 | `src/lib/stream/` | **pure** household-stream filter: kinds, the `?kind=`/`?by=` codec, what the chips show (test-first) |
 | `src/lib/pwa/` | **pure** install/offline policy: manifest, cache rules, icon geometry, reachability protocol, the outbox's states (test-first). `src/service-worker.ts`, `install.svelte.ts`, `reachability.svelte.ts`, `outbox.svelte.ts` and `outbox-store.ts` are the adapters — they hold browser APIs, never a decision |

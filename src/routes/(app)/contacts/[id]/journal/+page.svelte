@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Swap from '$lib/components/Swap.svelte';
+	import { reveal } from '$lib/motion/motion.svelte';
 	import FormError from '$lib/components/FormError.svelte';
 	import { deserialize, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
@@ -216,6 +218,7 @@
 
 	{#if showForm}
 		<form
+			transition:reveal
 			method="POST"
 			action="?/save"
 			enctype="multipart/form-data"
@@ -361,7 +364,8 @@
 									</div>
 								{/if}
 							</div>
-							{#if editingId === entry.id}
+							<!-- The entry and its editor glide into each other in place (docs/05 §5.11). -->
+							<Swap when={editingId === entry.id}>
 								<form
 									method="POST"
 									action="?/edit"
@@ -401,10 +405,11 @@
 										</Button>
 									</div>
 								</form>
-							{:else}
-								<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
-								<div class="note-body text-fg">{@html entry.bodyHtml}</div>
-							{/if}
+								{#snippet otherwise()}
+									<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
+									<div class="note-body text-fg">{@html entry.bodyHtml}</div>
+								{/snippet}
+							</Swap>
 
 							{#if entry.photos.length}
 								<div class="mt-3 flex flex-wrap gap-2">

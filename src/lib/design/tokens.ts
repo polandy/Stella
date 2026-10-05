@@ -93,3 +93,15 @@ export function categoryDiscFill(category: RelationshipCategory): string {
 export function accentDotStyle(accent: Accent): string {
 	return `background:${accentVar(accent)}`;
 }
+
+/**
+ * The one motion everything that opens or closes in place moves with (docs/05 §5.11): a height
+ * glides in `expandMs`, content fades in `fadeMs`, both on `easing` — quick to start, gentle to
+ * land. `app.css` publishes the same three values as `--motion-expand`, `--motion-fade` and
+ * `--ease-standard`; `src/lib/motion/motion.test.ts` holds the two halves together.
+ */
+export const MOTION = {
+	expandMs: 300,
+	fadeMs: 200,
+	easing: 'cubic-bezier(0.2, 0, 0, 1)'
+} as const;

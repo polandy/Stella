@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { glide, reveal } from '$lib/motion/motion.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { MediaQuery } from 'svelte/reactivity';
@@ -297,7 +298,7 @@
 <div class="flex min-w-0 flex-col gap-6 max-lg:order-3 lg:col-start-1 lg:row-start-3">
 	{#if data.welcome}<WelcomeCard steps={data.welcome} />{/if}
 	{#if data.linkSuggestion && !hintDismissed}
-		<div class="flex items-center gap-3 rounded-app border border-success/35 bg-success/10 px-4 py-2.5 text-sm text-fg" role="status">
+		<div transition:reveal class="flex items-center gap-3 rounded-app border border-success/35 bg-success/10 px-4 py-2.5 text-sm text-fg" role="status">
 			<div class="flex-1">
 				<b class="font-semibold">
 					{t('home.link.question', {
@@ -488,7 +489,8 @@
 			<h2 class="flex items-center gap-2 pb-2 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
 				<Icon name="calendar" size={13} />{t('home.comingUp')}
 			</h2>
-			<ul class="{RAIL_LIST}">
+			<!-- *Show all* opens the rest of the list in place (docs/05 §5.11). -->
+			<ul class="{RAIL_LIST}" use:glide={{ key: showAllUpcoming }}>
 				{#each data.upcoming as item, i (item.contactId + item.date + item.kind)}
 					<li class="{RAIL_ROW} {i >= RAIL_CAP && !showAllUpcoming ? RAIL_OVERFLOW : ''}">
 						<Avatar id={item.contactId} name={item.contactName} avatarPhotoId={item.avatarPhotoId} size={28} />
