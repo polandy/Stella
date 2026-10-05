@@ -70,6 +70,11 @@
 				<span class="pl-2">{notice.text}</span>
 				<Button variant="secondary" size="sm" onclick={() => removals.takeBack(notice.id)}>{t('common.undo')}</Button>
 			</div>
+		{:else if notice.link}
+			<div class="toast" data-testid="toast-notice">
+				<span class="pl-2">{notice.text}</span>
+				<Button variant="secondary" size="sm" href={notice.link.href}>{notice.link.label}</Button>
+			</div>
 		{:else}
 			<div class="toast" data-testid="toast-notice">
 				<span class="px-2">{notice.text}</span>

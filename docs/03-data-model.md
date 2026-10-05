@@ -43,6 +43,7 @@ circle    0───1 circle          (parent_circle_id, optional nesting)
 contact   *───* contact         (relationship, via from/to + type)
 contact   1───? immich_link     (which Immich person they are)  [M3]
 contact   1───* immich_ignore   (Immich faces they were said not to be)  [M3]
+household 1───* immich_name_ignore (Immich faces said to be nobody to add) [M3]
 
 relationship_type 1───* relationship
 interaction   *───* contact     (interaction_participant)
@@ -630,6 +631,24 @@ and go through `contactVisibleTo` (§3.7). Not written to the activity log — t
 record of who and when. A merge carries the merged record's pairs to the survivor (`update or
 ignore`: the survivor's own record of a pair wins). Export writes them under the person as
 `immich_ignored: [{ person, ignored_by, ignored_at }]`; restore refuses an id that is not a UUID.
+
+### immich_name_ignore  [M3]
+A face of *New from Immich* the household said is nobody to add (docs/02 §2.24.7,
+`docs/concepts/immich.md` §9.36). Unlike `immich_ignore` it names no contact — there is nobody to
+pair it with — so it belongs to the household.
+
+| column | type | notes |
+|---|---|---|
+| household_id | text fk → household.id | cascade: deleted with the household |
+| immich_person_id | text | Immich's UUID for the person; no FK, it lives in another program |
+| ignored_by | text fk → user.id | the member who ignored it — shown as *Ignored by … on …* |
+| ignored_at | int | |
+
+Primary key `(household_id, immich_person_id)`: a face is ignored once, and a second ignore keeps
+the first record. Every read and removal (*Propose again*) is held to the viewer's household; there
+is no contact visibility to check, so every member sees every row. Not written to the activity
+log. Like `suggestion_dismissal`, the backup reads the table but the archive document does not
+carry it yet: a restored household is offered those faces again.
 
 ### suggestion_dismissal  [M2]
 The claims the household has declined, so a suggestion answered once is not offered again

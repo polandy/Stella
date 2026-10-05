@@ -106,6 +106,14 @@ data like a relationship.
   after more faces are named in Immich.
 - The face does the real work here: you recognise your aunt faster than you read her name.
 
+**New from Immich** is the other way round, a second tab on the same page (built, §9.30–37):
+the faces Immich has named that are nobody in Stella yet, most photos first. *Assign…* first
+shows the people in Stella of a similar name, face beside face, and lets the member say *This is
+the person*; otherwise it adds a new person from the name — a leading *Opa* becomes the
+nickname — linked to the face and, by default, with the face as their photo. A face that is
+nobody to add is ignored for the household. Both tabs come from one reading of Immich, when the
+page is opened.
+
 ### 4.3 On the person page
 
 The Photos section gains a row **below** Stella's own gallery, for a linked contact:
@@ -224,7 +232,6 @@ Following the GitHub release feed, the existing outbound-call pattern
 - **Writing back** — Stella knows full names and birthdays Immich lacks; Immich shows ages
   on photos from them. One tap, *"Give Immich Julia's name and birthday"*, needs
   `person.update` on the key. It comes after reading has been lived with.
-- **Suggesting people** from Immich faces that are named but not in Stella yet.
 - **More than one library**: per-member keys, or Immich 3.3 person sharing, if photos in the
   other members' libraries turn out to be missed.
 
@@ -240,6 +247,8 @@ Following the GitHub release feed, the existing outbound-call pattern
    §2.24.8, decisions §9.26–29).
 5. **Use as photo** from the viewer, and *From Immich* in the picture's chooser — built (docs/02
    §2.24.6, decisions §9.13–16).
+6. **New from Immich** — named faces nobody in Stella holds, assigned to someone or added as a
+   new person — built (docs/02 §2.24.7, decisions §9.30–37). It was §7's *Suggesting people*.
 
 Each slice is one PR with its UI, its docs (docs/02, docs/03, `using-stella.md`,
 `install.md` for the variables) and its unit tests; e2e after sign-off.
@@ -363,6 +372,37 @@ Decided while building slice 4 (2026-10-05):
     Immich person, and the proxy and *Use as photo* check both — seen, and still linked to the
     person the photo was listed for — so an unlink of either ends it, as an unlink of one person
     ends their own photos' URLs.
+
+Decided with the owner on 2026-10-05 for slice 6, *New from Immich* (approved mockup:
+`docs/concepts/immich-names-to-stella.html`):
+
+30. **A second tab, not a second page.** *Find your people* gets two tabs, *Matching* first and
+    open, *New from Immich* second, each with its count. Both come from **one** reading of Immich
+    when the page is opened: no background job, no badge anywhere else. A face is in one tab at
+    most — one proposed on *Matching* is not new.
+31. **Most photos first**, a page of thirty at a time with *Show more*: Immich can name hundreds of
+    people, and the ones in most photos are the ones that matter. The counts of all of them are
+    asked of Immich, six at a time, on the one reading.
+32. **Assign… compares before it creates.** Same-named different people are real, so nothing is
+    decided before the member has seen the people of a similar name, face beside face — the new
+    face next to their photo or the face they are linked to — with circle and relationship lines
+    and *Open in Immich*. *This is the person* links; for someone linked to another face, it asks
+    first and then replaces that link. With nobody similar, *Assign…* opens the form, which offers
+    *Already in Stella? Find person*. The row's button says *Assign…*, not *Check*.
+33. **Similar is a given name in common**, never a last name alone; kin words and initials do not
+    count. At most five are shown, closest first.
+34. **The form is prefilled from Immich's name**: first word first name, rest last name; a leading
+    kin word (German and English) becomes the nickname; a trailing initial is dropped. A first name
+    alone asks for something to know them by, as everywhere (docs/02 §2.2.3).
+35. **Add and link, with the face as photo by default.** The new person is shared like anyone
+    added by hand. The photo goes through *Use as photo* (§9.13–16): the browser re-encodes the face
+    and the server takes a face token only while the person is linked to that face. After adding,
+    the toast says *… added* with **Open**, and the member stays in the list. No *Add all*.
+36. **Ignore is per Immich face**, for the household (`immich_name_ignore`, docs/03), with who and
+    when; held for the undo window, listed under *Ignored (n)* with *Propose again*. Link and create
+    have no undo, as on *Matching*.
+37. **Loading is visible**: the shell's activity indicator says *Asking Immich for its people…*,
+    and both tabs show skeleton rows shaped like the real ones until Immich has answered.
 
 ---
 

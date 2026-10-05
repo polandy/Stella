@@ -16,17 +16,26 @@ const CONTEXT_KEY = Symbol('pending-work');
 export interface Pending extends PendingSink {
 	/** Reactive — reading it inside `$derived` tracks whether anything is in flight. */
 	readonly busy: boolean;
+	/** Reactive — what the newest worded work is waiting for, or null for the generic words. */
+	readonly label: string | null;
 }
 
 /** Creates the store for this tab and puts it in context. Call once, from the app shell. */
 export function providePending(): Pending {
 	const store = createPendingWork({ scheduler: globalThis });
 	let busy = $state(store.busy());
-	store.subscribe(() => (busy = store.busy()));
+	let label = $state(store.label());
+	store.subscribe(() => {
+		busy = store.busy();
+		label = store.label();
+	});
 
 	const pending: Pending = {
 		get busy() {
 			return busy;
+		},
+		get label() {
+			return label;
 		},
 		begin: store.begin,
 		end: store.end

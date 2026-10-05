@@ -1,12 +1,27 @@
 import { error, fail, redirect } from '@sveltejs/kit';
+import * as v from 'valibot';
+import { TranslatableError } from '$lib/errors/translatable';
 import type { MessageKey } from '$lib/i18n/translate';
 import type { ImmichFailure } from '$lib/server/domain/immich/gateway';
+import { getContact } from '$lib/server/domain/contacts/contacts';
 import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
 import { authorNames } from '$lib/server/domain/household/members';
+import { addPersonFromImmich, assignNewcomer, WouldReplaceLinkError } from '$lib/server/domain/immich/add-from-immich';
+import { faceUrlFor } from '$lib/server/domain/immich/glimpse';
 import { ignoreMatch, proposeAgain } from '$lib/server/domain/immich/ignores';
 import { ImmichLinkRefusedError, linkMatches, type ConfirmedMatch } from '$lib/server/domain/immich/links';
 import { findImmichMatches } from '$lib/server/domain/immich/matching';
-import { getImmichIgnoreDeps, getImmichLinkDeps, getImmichMatchingDeps, getMemberDeps } from '$lib/server/services';
+import { ignoreNewcomer, proposeNewcomerAgain } from '$lib/server/domain/immich/name-ignores';
+import {
+	getAddFromImmichDeps,
+	getContactDeps,
+	getImmich,
+	getImmichIgnoreDeps,
+	getImmichLinkDeps,
+	getImmichMatchingDeps,
+	getImmichNameIgnoreDeps,
+	getMemberDeps
+} from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -18,6 +33,9 @@ import type { Actions, PageServerLoad } from './$types';
  * The list is handed over as a promise: the page opens at once, and the rows arrive when Immich
  * has listed its people. A link changes nothing else on the page, so linking does not ask Immich
  * for the whole list again — the screen takes the linked rows away itself.
+ *
+ * The second tab, *New from Immich*, comes from the same promise: the named faces nobody in
+ * Stella holds, each to be assigned to someone already here or added as a new person.
  */
 
 /** What the page says when Immich gave no list. */
@@ -37,16 +55,28 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (!deps) throw error(404, say(locals, 'errors.notFound'));
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 	const nameOfMember = authorNames(getMemberDeps(), viewer.householdId);
+	const day = { selfContactId: locals.user.selfContactId, today: new Date().toLocaleDateString('en-CA') };
 	return {
-		matches: Promise.all([findImmichMatches(deps, viewer), nameOfMember]).then(([outcome, nameOf]) =>
+		matches: Promise.all([findImmichMatches(deps, viewer, day), nameOfMember]).then(([outcome, nameOf]) =>
 			outcome.ok
 				? {
 						rows: outcome.rows,
 						// Who ignored each pair, by name — null for someone no longer a member.
 						ignored: outcome.ignored.map((pair) => ({ ...pair, ignoredByName: nameOf(pair.ignoredBy) })),
+						newcomers: outcome.newcomers,
+						ignoredNewcomers: outcome.ignoredNewcomers.map((face) => ({
+							...face,
+							ignoredByName: nameOf(face.ignoredBy)
+						})),
 						error: null
 					}
-				: { rows: [], ignored: [], error: say(locals, FAILURE_MESSAGE[outcome.failure]) }
+				: {
+						rows: [],
+						ignored: [],
+						newcomers: [],
+						ignoredNewcomers: [],
+						error: say(locals, FAILURE_MESSAGE[outcome.failure])
+					}
 		)
 	};
 };
@@ -89,6 +119,24 @@ function actorOf(locals: App.Locals) {
 	return { userId: locals.user.id, householdId: locals.user.householdId };
 }
 
+const optionalText = v.optional(v.pipe(v.string(), v.trim()), '');
+
+/** What *Add and link* posts: the face, and the name the member settled on. */
+const AddNewcomerSchema = v.object({
+	immichPersonId: v.pipe(v.string(), v.minLength(1)),
+	firstName: optionalText,
+	lastName: optionalText,
+	nickname: optionalText,
+	description: optionalText,
+	usePhoto: v.optional(v.string())
+});
+
+/** The Immich person a newcomer form is about, or null when it posted none. */
+function newcomerOf(form: FormData): string | null {
+	const personId = form.get('immichPersonId');
+	return typeof personId === 'string' && personId !== '' ? personId : null;
+}
+
 /** One contact and the faces of its row, as the Ignore and Propose again forms post them. */
 function rowOf(form: FormData): { contactId: string; personIds: string[] } | null {
 	const contactId = form.get('contactId');
@@ -127,5 +175,95 @@ export const actions: Actions = {
 		if (!row || row.personIds.length !== 1) return fail(400, { linked: [], refused: [], error: say(locals, 'errors.notFound') });
 		await proposeAgain(deps, { id: actor.userId, householdId: actor.householdId }, row.contactId, row.personIds[0]);
 		return { linked: [], refused: [], error: null };
+	},
+
+	/*
+	 * *This is the person* on *New from Immich*, from the comparison step or the person search:
+	 * the face goes to someone already in Stella. `replace` is posted only once the member
+	 * confirmed that it takes the place of the face they are linked to.
+	 */
+	assignNewcomer: async ({ request, locals }) => {
+		const actor = actorOf(locals);
+		const deps = getImmichLinkDeps();
+		if (!deps) throw error(404, say(locals, 'errors.notFound'));
+		const form = await request.formData();
+		const personId = newcomerOf(form);
+		const contactId = form.get('contactId');
+		if (!personId || typeof contactId !== 'string') throw error(400, say(locals, 'errors.form.checkAndRetry'));
+		try {
+			await assignNewcomer(deps, actor, contactId, personId, { replace: form.get('replace') === '1' });
+		} catch (err) {
+			if (err instanceof ContactGoneError || err instanceof ImmichLinkRefusedError)
+				return fail(400, {
+					newcomer: personId,
+					newcomerError: err.phrase(translator(locals)),
+					// Asked rather than refused: the member may confirm and post again.
+					wouldReplace: err instanceof WouldReplaceLinkError ? contactId : null
+				});
+			throw err;
+		}
+		const contact = await getContact(getContactDeps(), { id: actor.userId, householdId: actor.householdId }, contactId);
+		return { assigned: { personId, contactId, name: contact?.displayName ?? '' } };
+	},
+
+	/*
+	 * *Add and link*: a new person from the face, shared like anyone added by hand. With *Use the
+	 * face as photo*, the answer carries the face signed for the new person; the browser keeps it
+	 * as their photo through *Use as photo* (docs/02 §2.24.6), re-encoded like any new picture.
+	 */
+	addNewcomer: async ({ request, locals }) => {
+		const actor = actorOf(locals);
+		const deps = getAddFromImmichDeps();
+		const signer = getImmich()?.signer;
+		if (!deps || !signer) throw error(404, say(locals, 'errors.notFound'));
+		const parsed = v.safeParse(AddNewcomerSchema, Object.fromEntries(await request.formData()));
+		if (!parsed.success) throw error(400, say(locals, 'errors.form.checkAndRetry'));
+		const { immichPersonId, usePhoto, ...name } = parsed.output;
+		let contactId: string;
+		try {
+			contactId = await addPersonFromImmich(deps, { ...actor, locale: locals.locale }, immichPersonId, name);
+		} catch (err) {
+			// A first name with nothing to know them by (§2.2.3), or a face that cannot be linked.
+			if (err instanceof TranslatableError)
+				return fail(400, { newcomer: immichPersonId, newcomerError: err.phrase(translator(locals)), wouldReplace: null });
+			throw err;
+		}
+		const contact = await getContact(getContactDeps(), { id: actor.userId, householdId: actor.householdId }, contactId);
+		return {
+			added: {
+				personId: immichPersonId,
+				contactId,
+				name: contact?.displayName ?? '',
+				faceUrl: usePhoto ? await faceUrlFor(signer, contactId, immichPersonId) : null
+			}
+		};
+	},
+
+	/* Ignore a face of *New from Immich*, for the whole household (held for the undo window). */
+	ignoreNewcomer: async ({ request, locals }) => {
+		const actor = actorOf(locals);
+		const deps = getImmichNameIgnoreDeps();
+		if (!deps) throw error(404, say(locals, 'errors.notFound'));
+		const personId = newcomerOf(await request.formData());
+		if (!personId) throw error(400, say(locals, 'errors.form.checkAndRetry'));
+		try {
+			await ignoreNewcomer(deps, actor, personId);
+		} catch (err) {
+			if (err instanceof ImmichLinkRefusedError)
+				return fail(400, { newcomer: personId, newcomerError: err.phrase(translator(locals)), wouldReplace: null });
+			throw err;
+		}
+		return { ignoredNewcomer: personId };
+	},
+
+	/* Propose an ignored face again. Nothing to say when it already was. */
+	proposeNewcomerAgain: async ({ request, locals }) => {
+		const actor = actorOf(locals);
+		const deps = getImmichNameIgnoreDeps();
+		if (!deps) throw error(404, say(locals, 'errors.notFound'));
+		const personId = newcomerOf(await request.formData());
+		if (!personId) throw error(400, say(locals, 'errors.form.checkAndRetry'));
+		await proposeNewcomerAgain(deps, { id: actor.userId, householdId: actor.householdId }, personId);
+		return { proposedAgain: personId };
 	}
 };

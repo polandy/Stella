@@ -5,6 +5,7 @@ import { createFakeImmichGateway, fakeAssetId } from '../../immich/fake-gateway'
 import {
 	faceUrlFor,
 	GLIMPSE_PAGE_SIZE,
+	newcomerFaceUrl,
 	openImmichMedia,
 	readImmichGlimpse,
 	readTogetherOffers,
@@ -47,7 +48,13 @@ function household() {
 		links,
 		repository: {
 			findForContactVisibleTo: async (_viewer: Viewer, contactId: string) =>
-				visible.has(contactId) ? (links.get(contactId) ?? null) : null
+				visible.has(contactId) ? (links.get(contactId) ?? null) : null,
+			holdersOf: async (_viewer: Viewer, personIds: readonly string[]) =>
+				new Map(
+					[...links.values()]
+						.filter((link) => personIds.includes(link.immichPersonId))
+						.map((link) => [link.immichPersonId, { contactId: link.contactId, name: null }])
+				)
 		},
 		contacts: {
 			findByIdVisibleTo: async (_viewer: Viewer, id: string) =>
@@ -369,6 +376,30 @@ describe('openImmichMedia', () => {
 	it('refuses a face for a person the viewer cannot see, without asking Immich', async () => {
 		const { mediaDeps, signer, gateway } = setup();
 		const token = tokenOf(await faceUrlFor(signer, 'c-dora', BERT_ID));
+		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notVisible' });
+		expect(gateway.calls).toEqual([]);
+	});
+
+	it('serves the face of someone not in Stella yet to a member of the household it was signed for', async () => {
+		const { mediaDeps, signer, gateway, home } = setup();
+		home.links.delete('c-cleo');
+		const outcome = await openImmichMedia(mediaDeps, viewer, tokenOf(await newcomerFaceUrl(signer, 'h1', CARL_ID)));
+		expect(outcome.ok).toBe(true);
+		expect(gateway.calls).toEqual(['personThumbnail']);
+	});
+
+	it('refuses a newcomer face to another household, without asking Immich', async () => {
+		const { mediaDeps, signer, gateway, home } = setup();
+		home.links.delete('c-cleo');
+		const token = tokenOf(await newcomerFaceUrl(signer, 'h2', CARL_ID));
+		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notVisible' });
+		expect(gateway.calls).toEqual([]);
+	});
+
+	it('refuses a newcomer face once someone holds it, even someone the viewer cannot see', async () => {
+		const { mediaDeps, signer, gateway } = setup();
+		// Dora holds DORA_ID and is out of the viewer's reach: the face is hers to show, not a newcomer's.
+		const token = tokenOf(await newcomerFaceUrl(signer, 'h1', DORA_ID));
 		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notVisible' });
 		expect(gateway.calls).toEqual([]);
 	});

@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Immich-Namen → Stella (interaktives Mockup)</title>
+<style>
+  :root {
+    --bg:#eff1f5; --bg-sunken:#dce0e8; --card:#ffffff; --border:#ccd0da;
+    --fg:#4c4f69; --fg-muted:#6c6f85; --fg-subtle:#8c8fa1;
+    --primary:#8839ef; --primary-fg:#ffffff; --link:#1e66f5; --warn:#df8e1d;
+    --shadow:0 1px 2px rgba(76,79,105,.06), 0 8px 24px rgba(76,79,105,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#1e1e2e; --bg-sunken:#11111b; --card:#181825; --border:#313244;
+      --fg:#cdd6f4; --fg-muted:#a6adc8; --fg-subtle:#7f849c;
+      --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa; --warn:#f9e2af;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 28px rgba(0,0,0,.35);
+    }
+  }
+  * { box-sizing:border-box; }
+  html { color-scheme: light dark; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button { font:inherit; }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:8px; }
+  .wrap { max-width:720px; margin:0 auto; padding:clamp(20px,5vw,48px) clamp(16px,4vw,32px) 120px; }
+  .meta { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px; font-size:12px; color:var(--fg-subtle); }
+  .meta .kicker { font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); }
+  .reset { background:var(--card); color:var(--fg-muted); border:1px solid var(--border); border-radius:999px; padding:5px 12px; font-size:12px; cursor:pointer; }
+  .back { color:var(--link); font-size:13px; }
+  h1 { font-size:24px; font-weight:600; margin:2px 0 4px; }
+  .intro { color:var(--fg-muted); margin:0 0 14px; }
+  .seg { display:flex; gap:4px; background:var(--bg-sunken); border-radius:999px; padding:3px; margin:6px 0 18px; width:fit-content; max-width:100%; }
+  .seg button { border:0; background:transparent; padding:6px 14px; border-radius:999px; font-size:13px; color:var(--fg-muted); cursor:pointer; white-space:nowrap; }
+  .seg button[aria-selected="true"] { background:var(--card); color:var(--fg); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.1); }
+  .bar { margin-bottom:12px; font-size:13px; color:var(--fg-muted); }
+  ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
+  .row { background:var(--card); border-radius:14px; padding:12px; box-shadow:var(--shadow); animation:in .18s ease-out; }
+  @keyframes in { from { opacity:0; transform:translateY(-4px); } }
+  @media (prefers-reduced-motion: reduce) { .row, .step { animation:none; } }
+  .line { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  /* Stand-in for Immich's face thumbnail: a photo square, not initials — the real list shows the face. */
+  .face { width:56px; height:56px; border-radius:50%; flex:none; position:relative; overflow:hidden; }
+  .face svg { position:absolute; inset:0; width:100%; height:100%; }
+  .face.sm { width:44px; height:44px; }
+  .avatar { width:44px; height:44px; border-radius:50%; flex:none; display:grid; place-items:center; font-weight:600; color:#fff; font-size:15px; }
+  .grow { flex:1; min-width:140px; }
+  .name { font-weight:600; overflow:hidden; text-overflow:ellipsis; }
+  .sub { font-size:13px; color:var(--fg-muted); }
+  .btn { border:0; border-radius:10px; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer; background:transparent; color:var(--fg-muted); white-space:nowrap; }
+  .btn:hover { background:var(--bg-sunken); }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); }
+  .btn.primary:hover { filter:brightness(1.08); background:var(--primary); }
+  .btn.outline { border:1px solid var(--border); color:var(--fg); }
+  .actions { display:flex; gap:4px; flex:none; margin-left:auto; }
+  .step { margin-top:12px; padding-top:12px; border-top:1px solid var(--border); animation:in .18s ease-out; }
+  .step h3 { font-size:13px; font-weight:600; margin:0 0 8px; color:var(--fg-muted); }
+  .vs { display:flex; align-items:center; gap:8px; flex:none; }
+  .vs .face, .vs .avatar { width:64px; height:64px; font-size:20px; }
+  .vs .eq { color:var(--fg-subtle); font-size:16px; }
+  .immich-link { font-size:13px; color:var(--link); text-decoration:none; }
+  .search { width:100%; border:1px solid var(--border); background:var(--bg); border-radius:9px; padding:8px 10px; color:var(--fg); font:inherit; font-size:14px; margin-bottom:8px; }
+  .cand { display:flex; align-items:center; gap:12px; flex-wrap:wrap; border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:8px; }
+  .warn { font-size:12px; color:var(--warn); font-weight:600; }
+  .new-person { display:flex; justify-content:flex-end; gap:6px; margin-top:4px; }
+  .edit { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .edit label { font-size:12px; color:var(--fg-muted); display:flex; flex-direction:column; gap:4px; }
+  .edit input[type=text] { border:1px solid var(--border); background:var(--bg); border-radius:9px; padding:8px 10px; color:var(--fg); font:inherit; font-size:14px; min-width:0; }
+  .edit .full { grid-column:1/-1; }
+  .edit .check { flex-direction:row; align-items:center; gap:8px; font-size:13px; color:var(--fg); }
+  .edit .buttons { display:flex; justify-content:flex-end; gap:6px; flex-wrap:wrap; }
+  .edit .tip { font-size:12px; color:var(--fg-subtle); }
+  details { background:var(--card); border-radius:14px; padding:12px; box-shadow:var(--shadow); margin-top:16px; }
+  summary { cursor:pointer; font-size:14px; font-weight:600; color:var(--fg-muted); }
+  .ign { display:flex; align-items:center; gap:12px; margin-top:12px; flex-wrap:wrap; }
+  .empty { text-align:center; padding:36px 12px; color:var(--fg-muted); background:var(--card); border-radius:14px; box-shadow:var(--shadow); }
+  .empty strong { display:block; color:var(--fg); font-size:16px; margin-bottom:4px; }
+  .ok { font-size:13px; color:var(--fg-muted); margin:0 0 12px; }
+  .toasts { position:fixed; left:50%; bottom:20px; transform:translateX(-50%); display:flex; flex-direction:column; gap:8px; width:min(420px,calc(100vw - 32px)); z-index:10; }
+  .toast { display:flex; justify-content:space-between; align-items:center; gap:12px; background:var(--fg); color:var(--bg); border-radius:12px; padding:10px 14px; font-size:13px; box-shadow:var(--shadow); }
+  .toast button { border:0; border-radius:8px; padding:4px 12px; font-weight:600; cursor:pointer; background:var(--primary); color:var(--primary-fg); }
+  .c0{background:#ea76cb}.c1{background:#179299}.c2{background:#fe640b}.c3{background:#1e66f5}.c4{background:#8839ef}.c5{background:#df8e1d}
+  /* The app's ActivityIndicator: fixed under the top edge, takes no layout space (docs/05 §5.7). */
+  .pill { position:fixed; left:50%; top:12px; transform:translateX(-50%); display:flex; align-items:center; gap:10px; background:var(--card); color:var(--fg); border:1px solid var(--border); border-radius:999px; padding:8px 16px 8px 12px; font-size:14px; font-weight:500; box-shadow:var(--shadow); z-index:20; transition:opacity .18s, transform .26s; }
+  .pill[hidden] { display:flex; opacity:0; transform:translate(-50%,-12px); pointer-events:none; }
+  .spin { width:16px; height:16px; border-radius:50%; border:2px solid color-mix(in srgb, var(--primary) 25%, transparent); border-top-color:var(--primary); animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .skel { background:var(--card); border-radius:14px; padding:12px; box-shadow:var(--shadow); display:flex; align-items:center; gap:12px; }
+  .skel .b { background:var(--bg-sunken); border-radius:8px; animation:pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity:.45; } }
+  @media (prefers-reduced-motion: reduce) { .spin, .skel .b { animation:none; } }
+  .hint { margin-top:28px; font-size:13px; color:var(--fg-muted); border-top:1px solid var(--border); padding-top:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="meta"><span class="kicker">Konzept · Immich-Namen → Stella · klickbar</span><button class="reset" id="reset">Zurücksetzen</button></div>
+  <a class="back">‹ Einstellungen</a>
+  <h1>Finde deine Leute</h1>
+  <p class="intro" id="intro"></p>
+  <div class="seg" role="tablist">
+    <button role="tab" id="tab-match" aria-selected="true">Abgleich</button>
+    <button role="tab" id="tab-new" aria-selected="false">Neu aus Immich</button>
+  </div>
+  <div id="view"></div>
+  <p class="hint">Beim Öffnen, „Zurücksetzen“ und „Erneut suchen“ siehst du den Ladezustand: oben die Pille, in der Liste graue Platzhalter. Ausprobieren im Tab „Neu aus Immich“: <b>Zuordnen…</b> zeigt erst Stella-Personen mit ähnlichem Namen, Gesicht neben Gesicht. Dort entscheidest du „Ist diese Person“ (verknüpfen) oder „Neue Person anlegen“. Tom Weber ist schon mit einem anderen Gesicht verknüpft. Sandra hat keinen Treffer und geht direkt zum Anlegen. Dort findest du über „Doch schon in Stella? Person suchen“ zum Beispiel „Sanni“. Nach dem Anlegen hat der Toast „Öffnen“. Ignorieren hat Rückgängig. Die runden Bilder stehen für das echte Gesicht aus Immich. Nichts wird gespeichert.</p>
+</div>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<div aria-live="polite"><div class="pill" id="pill" hidden><span class="spin" aria-hidden="true"></span>Frage Immich nach seinen Personen…</div></div>
+
+<script>
+const COLORS = 6;
+const ME = 'Andy';
+// Stella people the "Zuordnen…" step compares against. `immich` = already linked to another Immich face.
+// `hue` = their photo (Stella avatar or that linked face); null = no photo yet, initials instead.
+const STELLA = {
+  s1: { name: 'Tom Weber', circle: 'Arbeit', rel: 'Kollege von Andy', immich: 'Tom W.', hue: 160 },
+  s2: { name: 'Manfred Pollari', circle: 'Familie', rel: 'Vater von Andy', immich: null, hue: 30 },
+  s3: { name: 'Lena Köhler-Brandt', circle: 'Freunde', rel: 'Freundin von Julia', immich: null, hue: null },
+  s4: { name: 'Jonas Bauer', circle: 'Nachbarschaft', rel: null, immich: null, hue: 120 },
+  s5: { name: 'Sanni Huber', circle: 'Freunde', rel: 'Freundin von Julia', immich: null, hue: 282 },
+  s6: { name: 'Gerda Pollari', circle: 'Familie', rel: 'Mutter von Andy', immich: null, hue: 15 },
+};
+const seed = () => ({
+  tab: 'match', open: null, step: null, linked: 0,
+  // Sorted by photo count, most first: the people that matter most come up first.
+  fresh: [
+    { id: 'n1', immich: 'Lena Köhler', photos: 212, hue: 330, cands: ['s3'] },
+    { id: 'n2', immich: 'Opa Manfred', photos: 87, hue: 30, cands: ['s2'] },
+    { id: 'n3', immich: 'Tom Weber', photos: 41, hue: 200, cands: ['s1'] },
+    { id: 'n4', immich: 'Sandra', photos: 19, hue: 280, cands: [] },
+    { id: 'n5', immich: 'Jonas B.', photos: 6, hue: 120, cands: ['s4'] },
+  ],
+  ignored: [
+    { id: 'i1', immich: 'Paketbote Schmidt', by: 'Andy', at: '05.10.2026', photos: 4, hue: 60, cands: [] },
+    { id: 'i2', immich: 'Frau aus dem Urlaub', by: 'Julia', at: '02.10.2026', photos: 2, hue: 170, cands: [] },
+  ],
+  match: [
+    { id: 'm1', stella: 'Julia Pollari', immich: 'Julia', photos: 1204, hue: 300 },
+    { id: 'm2', stella: 'Oma Gerda', immich: 'Gerda Pollari', photos: 310, hue: 15 },
+    { id: 'm3', stella: 'Max Weber', immich: 'Max', photos: 58, hue: 220 },
+  ],
+});
+let s = seed();
+const $ = (id) => document.getElementById(id);
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const initials = (n) => n.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+const color = (id) => 'c' + ([...id].reduce((a, c) => a + c.charCodeAt(0), 0) % COLORS);
+const face = (hue, small) => `<div class="face${small ? ' sm' : ''}" aria-hidden="true"><svg viewBox="0 0 56 56"><rect width="56" height="56" fill="hsl(${hue} 35% 62%)"/><circle cx="28" cy="22" r="10" fill="hsl(${hue} 30% 85%)"/><ellipse cx="28" cy="52" rx="18" ry="14" fill="hsl(${hue} 30% 85%)"/></svg></div>`;
+const avatar = (name, id) => `<div class="avatar ${color(id)}" aria-hidden="true">${esc(initials(name))}</div>`;
+
+// Kin words read as a nickname, not as a first name: "Opa Manfred" -> nickname "Opa", first "Manfred".
+const KIN = /^(opa|oma|tante|onkel|uroma|uropa|papa|mama|grosi|nonna|nonno)$/i;
+function split(full) {
+  let w = full.trim().split(/\s+/); let nick = '';
+  if (w.length > 1 && KIN.test(w[0])) { nick = w[0]; w = w.slice(1); }
+  if (w.length < 2) return { first: w[0] ?? '', last: '', nick };
+  return { first: w.slice(0, -1).join(' '), last: w[w.length - 1].replace(/\.$/, '').length > 1 ? w[w.length - 1] : '', nick };
+}
+
+function toast(text, undo, open) {
+  const el = document.createElement('div'); el.className = 'toast';
+  el.innerHTML = `<span>${esc(text)}</span>${undo ? '<button>Rückgängig</button>' : open ? '<button>Öffnen</button>' : ''}`;
+  const drop = () => el.remove();
+  if (undo) el.querySelector('button').onclick = () => { undo(); drop(); render(); };
+  if (open) el.querySelector('button').onclick = () => { drop(); alert(`Hier öffnet sich die Personenseite von ${open}.`); };
+  $('toasts').append(el); setTimeout(drop, 6000);
+}
+
+const immichLink = (r) => `<a class="immich-link" href="#" data-act="immich">In Immich ansehen · ${r.photos} Fotos ↗</a>`;
+
+// Face beside face: the faces decide, the name lines only support.
+const candidate = (r, cid) => {
+  const c = STELLA[cid];
+  return `<div class="cand" data-cand="${cid}">
+    <div class="vs">${face(r.hue)}<span class="eq" aria-hidden="true">↔</span>${c.hue === null ? avatar(c.name, cid) : face(c.hue)}</div>
+    <div class="grow"><div class="name">${esc(c.name)}</div>
+      <div class="sub">${esc(c.circle)}${c.rel ? ' · ' + esc(c.rel) : ''}</div>
+      ${c.immich ? `<div class="warn">Schon verknüpft mit dem Immich-Gesicht „${esc(c.immich)}“</div>` : ''}</div>
+    <button class="btn outline" data-act="same">Ist diese Person</button></div>`;
+};
+
+function compareStep(r) {
+  return `<div class="step"><h3>In Stella gibt es ${r.cands.length === 1 ? 'eine Person' : 'Personen'} mit ähnlichem Namen. Ist es dieselbe?</h3>
+    ${r.cands.map((cid) => candidate(r, cid)).join('')}
+    <div style="margin:4px 0 8px">${immichLink(r)}</div>
+    <div class="new-person"><button class="btn" data-act="close">Abbrechen</button><button class="btn primary" data-act="form">Nein, neue Person anlegen</button></div></div>`;
+}
+
+function searchStep(r) {
+  const q = (s.q ?? '').trim().toLowerCase();
+  const hits = q ? Object.keys(STELLA).filter((k) => STELLA[k].name.toLowerCase().includes(q)) : [];
+  return `<div class="step"><h3>Welche Person in Stella ist es?</h3>
+    <input class="search" id="q" type="search" placeholder="Name eingeben, z. B. Sanni" value="${esc(s.q ?? '')}" autocomplete="off">
+    <div id="hits">${hits.map((cid) => candidate(r, cid)).join('') || (q ? '<div class="sub" style="margin-bottom:8px">Niemand gefunden.</div>' : '')}</div>
+    <div class="new-person"><button class="btn" data-act="form">‹ Zurück zum Anlegen</button></div></div>`;
+}
+
+function formStep(r) {
+  const n = split(r.immich);
+  return `<form class="step edit" data-act="create">
+    <label>Vorname<input type="text" name="first" value="${esc(n.first)}" required></label>
+    <label>Nachname<input type="text" name="last" value="${esc(n.last)}" placeholder="optional"></label>
+    <label class="full">Spitzname<input type="text" name="nick" value="${esc(n.nick)}" placeholder="optional"></label>
+    ${n.nick ? `<div class="full tip">„${esc(n.nick)}“ als Spitzname vorgeschlagen.</div>` : ''}
+    <label class="full check"><input type="checkbox" name="photo" checked> Gesicht aus Immich als Foto übernehmen</label>
+    ${r.cands.length ? '' : `<div class="full" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><a class="immich-link" href="#" data-act="search">Doch schon in Stella? Person suchen</a>${immichLink(r)}</div>`}
+    <div class="full buttons">${r.cands.length ? '<button type="button" class="btn" data-act="back">‹ Zurück zum Vergleich</button>' : ''}<button type="button" class="btn" data-act="close">Abbrechen</button><button class="btn primary">Anlegen und verknüpfen</button></div>
+  </form>`;
+}
+
+function renderNew() {
+  const rows = s.fresh.map((r) => {
+    const open = s.open === r.id;
+    return `<li class="row" data-id="${r.id}">
+      <div class="line">${face(r.hue)}
+        <div class="grow"><div class="name">${esc(r.immich)}</div><div class="sub">In Immich · ${r.photos} Fotos</div></div>
+        ${open ? '' : `<div class="actions"><button class="btn primary" data-act="check">Zuordnen…</button><button class="btn" data-act="ignore" aria-label="Ignorieren: ${esc(r.immich)}">Ignorieren</button></div>`}
+      </div>
+      ${open ? ({ compare: compareStep, form: formStep, search: searchStep })[s.step](r) : ''}
+    </li>`;
+  }).join('');
+  const ign = s.ignored.length ? `<details ${s.ignOpen ? 'open' : ''} id="ign"><summary>Ignoriert (${s.ignored.length})</summary>${s.ignored.map((r) =>
+    `<div class="ign" data-id="${r.id}">${face(r.hue, true)}<div class="grow"><div class="name" style="font-size:14px">${esc(r.immich)}</div><div class="sub">Ignoriert von ${esc(r.by)} am ${esc(r.at)}</div></div><button class="btn" data-act="again">Wieder vorschlagen</button></div>`).join('')}</details>` : '';
+  const body = s.fresh.length
+    ? `<div class="bar">${s.fresh.length} ${s.fresh.length === 1 ? 'Name' : 'Namen'} aus Immich, die meisten Fotos zuerst</div><ul>${rows}</ul>`
+    : `<div class="empty"><strong>Alle benannten Gesichter sind in Stella.</strong>Benenne weitere Gesichter in Immich und such dann erneut.<div style="margin-top:14px"><button class="btn" data-act="reload">Erneut suchen</button></div></div>`;
+  return (s.linked ? `<p class="ok">${s.linked} ${s.linked === 1 ? 'Person angelegt oder verknüpft' : 'Personen angelegt oder verknüpft'}.</p>` : '') + body + ign;
+}
+
+function renderMatch() {
+  if (!s.match.length) return `<div class="empty"><strong>Das ist erst mal alles.</strong>Benenne mehr Gesichter in Immich, dann sieh noch einmal nach.</div>`;
+  return `<ul>${s.match.map((r) => `<li class="row" data-id="${r.id}"><div class="line">${face(r.hue)}
+    <div class="grow"><div class="name">${esc(r.stella)}</div><div class="sub">In Immich: ${esc(r.immich)} · ${r.photos} Fotos</div></div>
+    <div class="actions"><button class="btn primary" data-act="link">Verknüpfen</button><button class="btn" data-act="skipm">Ignorieren</button></div></div></li>`).join('')}</ul>`;
+}
+
+// Grey rows shaped like the real ones, so the page shows where the list will appear.
+const skeleton = () => `<ul aria-hidden="true">${[0, 1, 2, 3].map((i) => `<li class="skel"><div class="b" style="width:56px;height:56px;border-radius:50%"></div>
+  <div style="flex:1"><div class="b" style="height:14px;width:${55 - i * 7}%;margin-bottom:8px"></div><div class="b" style="height:11px;width:35%"></div></div>
+  <div class="b" style="width:72px;height:32px;border-radius:10px"></div></li>`).join('')}</ul>`;
+
+// Simulated round trip to Immich: both tabs come from the same answer.
+function load() {
+  s.loading = true; $('pill').hidden = false; render();
+  setTimeout(() => { s.loading = false; $('pill').hidden = true; render(); }, 2200);
+}
+
+function render() {
+  if (s.loading) {
+    $('tab-match').textContent = 'Abgleich'; $('tab-new').textContent = 'Neu aus Immich';
+    $('view').innerHTML = skeleton(); return;
+  }
+  $('tab-match').setAttribute('aria-selected', s.tab === 'match');
+  $('tab-new').setAttribute('aria-selected', s.tab === 'new');
+  $('tab-match').textContent = `Abgleich · ${s.match.length}`;
+  $('tab-new').textContent = `Neu aus Immich · ${s.fresh.length}`;
+  $('intro').textContent = s.tab === 'new'
+    ? 'Gesichter, die in Immich einen Namen haben, in Stella aber noch keine verknüpfte Person.'
+    : 'Personen in Stella neben Gesichtern in Immich mit gleichem Namen.';
+  const keep = $('ign')?.open; if (keep !== undefined) s.ignOpen = keep;
+  $('view').innerHTML = s.tab === 'new' ? renderNew() : renderMatch();
+  $('view').querySelector('.step input[type=text]')?.focus();
+}
+
+$('tab-match').onclick = () => { s.tab = 'match'; render(); };
+$('tab-new').onclick = () => { s.tab = 'new'; s.open = null; render(); };
+$('reset').onclick = () => { s = seed(); $('toasts').innerHTML = ''; load(); };
+
+const take = (id) => { const i = s.fresh.findIndex((r) => r.id === id); return [i, s.fresh.splice(i, 1)[0]]; };
+
+$('view').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]'); if (!b || b.tagName === 'FORM') return;
+  const id = b.closest('[data-id]')?.dataset.id; const act = b.dataset.act;
+  const r = s.fresh.find((x) => x.id === id);
+  if (act === 'check') { s.open = id; s.q = ''; s.step = r.cands.length ? 'compare' : 'form'; return render(); }
+  if (act === 'form') { s.step = 'form'; return render(); }
+  if (act === 'search') { e.preventDefault(); s.step = 'search'; s.q = ''; render(); return $('q').focus(); }
+  if (act === 'immich') { e.preventDefault(); return alert(`Hier öffnet sich Immich mit allen ${r.photos} Fotos von „${r.immich}“.`); }
+  if (act === 'back') { s.step = 'compare'; return render(); }
+  if (act === 'close') { s.open = null; return render(); }
+  if (act === 'same') {
+    const c = STELLA[b.closest('[data-cand]').dataset.cand];
+    if (c.immich && !confirm(`${c.name} ist schon mit „${c.immich}“ verknüpft. Trotzdem auch dieses Gesicht verknüpfen?`)) return;
+    take(id); s.open = null; s.linked += 1;
+    toast(`${r.immich} mit ${c.name} verknüpft`); return render();
+  }
+  if (act === 'ignore') {
+    const [i, row] = take(id);
+    s.ignored.unshift({ ...row, by: ME, at: '05.10.2026' }); s.ignOpen = true;
+    toast(`${row.immich} ignoriert`, () => { s.ignored = s.ignored.filter((x) => x.id !== id); s.fresh.splice(i, 0, row); });
+    return render();
+  }
+  if (act === 'again') {
+    const row = s.ignored.find((x) => x.id === id); s.ignored = s.ignored.filter((x) => x.id !== id);
+    s.fresh.push(row); s.fresh.sort((a, b) => b.photos - a.photos);
+    toast('Wieder vorgeschlagen', () => { s.fresh = s.fresh.filter((x) => x.id !== id); s.ignored.unshift(row); }); return render();
+  }
+  if (act === 'reload') { s.fresh = [{ id: 'n9', immich: 'Neue Person', photos: 3, hue: 250, cands: [] }]; s.linked = 0; return load(); }
+  if (act === 'link' || act === 'skipm') {
+    const i = s.match.findIndex((x) => x.id === id); const [m] = s.match.splice(i, 1);
+    if (act === 'link') toast(`${m.stella} verknüpft`);
+    else toast('Vorschlag ignoriert', () => s.match.splice(i, 0, m));
+    return render();
+  }
+});
+
+// Live search: update the hits only, so the field keeps focus while typing.
+$('view').addEventListener('input', (e) => {
+  if (e.target.id !== 'q') return;
+  s.q = e.target.value;
+  const r = s.fresh.find((x) => x.id === s.open);
+  const tmp = document.createElement('div'); tmp.innerHTML = searchStep(r);
+  $('hits').innerHTML = tmp.querySelector('#hits').innerHTML;
+});
+
+$('view').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const id = e.target.closest('[data-id]').dataset.id;
+  const f = new FormData(e.target);
+  const full = `${f.get('first')} ${f.get('last')}`.trim();
+  take(id); s.open = null; s.linked += 1;
+  toast(`${full} angelegt${f.get('photo') ? ' mit Foto' : ''}`, null, full);
+  render();
+});
+load();
+</script>
+</body>
+</html>

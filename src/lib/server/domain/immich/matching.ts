@@ -1,9 +1,13 @@
 import { matchImmichPeople, type MatchableContact, type MatchStrength } from '../../../immich/match';
+import { immichNewcomers } from '../../../immich/newcomers';
 import type { Viewer } from '../../access/visibility';
+import type { PersonContextReads } from '../contacts/person-context';
 import type { ImmichFailure, ImmichGateway, ImmichPerson } from './gateway';
 import { faceUrlFor } from './glimpse';
 import type { ImmichIgnoreRepository } from './ignores';
 import type { ImmichLinkRepository } from './links';
+import type { ImmichNameIgnoreRepository } from './name-ignores';
+import { newcomerRows, type IgnoredNewcomer, type NewcomerRow } from './newcomer-rows';
 import type { ImmichMediaSigner } from './signed-media';
 
 /*
@@ -12,6 +16,10 @@ import type { ImmichMediaSigner } from './signed-media';
  * `src/lib/immich/match.ts`. Any member may use it — a link is household data (§9.4) — and it
  * only ever lists contacts the access layer lets the viewer see. Linking itself is
  * `linkToImmich`, the same use-case the person page's picker calls, so every check holds here too.
+ *
+ * The same reading of Immich also gives the page's second tab, *New from Immich*: the named faces
+ * nobody in Stella holds and nobody is proposed (`newcomer-rows.ts`). One round trip for both, and
+ * only when the page is opened — nothing runs in the background.
  */
 
 /** Immich's largest page of people (`GET /api/people`, concept §2). */
@@ -26,18 +34,30 @@ const MAX_PEOPLE_PAGES = 100;
 /** How many photo counts are asked of Immich at once, so a long list does not flood it. */
 const COUNTS_AT_ONCE = 6;
 
-/** What the list reads of a contact: its names, and what its avatar needs. */
+/** What the list reads of a contact: its names, what its avatar needs, and what tells it apart. */
 export interface MatchingContact extends MatchableContact {
 	avatarPhotoId: string | null;
+	description: string | null;
 }
 
 export interface ImmichMatchingDeps {
 	gateway: Pick<ImmichGateway, 'listPeople' | 'personStatistics'>;
 	links: Pick<ImmichLinkRepository, 'holdersOf' | 'linkedContactIdsVisibleTo'>;
 	ignores: Pick<ImmichIgnoreRepository, 'listVisibleTo'>;
+	nameIgnores: Pick<ImmichNameIgnoreRepository, 'listForHousehold'>;
 	/** The contacts the viewer sees, through the access layer. */
 	contacts: { listVisibleTo(viewer: Viewer): Promise<MatchingContact[]> };
+	/** Circles and relationships, read through the access layer, for the comparison step. */
+	contextReads: PersonContextReads;
 	signer: ImmichMediaSigner;
+	/** Immich's address as the browser reaches it, for *Open in Immich*. */
+	publicUrl: string;
+}
+
+/** The viewer's own person and day, which word the relationship lines of the comparison step. */
+export interface MatchingDay {
+	selfContactId: string | null;
+	today: string;
 }
 
 /** A face proposed for a contact, ready for the screen. */
@@ -73,7 +93,14 @@ export interface IgnoredMatch {
 }
 
 export type MatchingOutcome =
-	| { ok: true; rows: MatchRow[]; ignored: IgnoredMatch[] }
+	| {
+			ok: true;
+			rows: MatchRow[];
+			ignored: IgnoredMatch[];
+			/** *New from Immich*, most photos first. */
+			newcomers: NewcomerRow[];
+			ignoredNewcomers: IgnoredNewcomer[];
+	  }
 	| { ok: false; failure: ImmichFailure };
 
 /** Every page of Immich's people; hidden ones are already left out by the gateway. */
@@ -104,25 +131,29 @@ async function eachLimited<T, R>(items: readonly T[], limit: number, work: (item
 	return results;
 }
 
-/** The rows of *Find your people* for this viewer, or why Immich gave none. */
-export async function findImmichMatches(deps: ImmichMatchingDeps, viewer: Viewer): Promise<MatchingOutcome> {
+/** Both tabs of *Find your people* for this viewer, or why Immich gave none. */
+export async function findImmichMatches(
+	deps: ImmichMatchingDeps,
+	viewer: Viewer,
+	day: MatchingDay
+): Promise<MatchingOutcome> {
 	const contacts = await deps.contacts.listVisibleTo(viewer);
-	// Nobody to match: Immich is not asked to list a library for nothing.
-	if (contacts.length === 0) return { ok: true, rows: [], ignored: [] };
 
 	const listed = await allPeople(deps.gateway);
 	if (!listed.ok) return listed;
 	const named = listed.value.filter((person) => !person.hidden && person.name !== '');
 
-	const [holders, linkedContactIds, ignores] = await Promise.all([
+	const [holders, linkedContactIds, ignores, nameIgnores] = await Promise.all([
 		// Unscoped on the Immich side: a face held by someone the viewer cannot see is taken all
-		// the same, and is simply not offered (concept §9.8).
+		// the same, and is simply not offered (concept §9.8). Unnamed faces are asked about too:
+		// the comparison step shows the face a similar person is linked to, named or not.
 		deps.links.holdersOf(
 			viewer,
-			named.map((person) => person.id)
+			listed.value.map((person) => person.id)
 		),
 		deps.links.linkedContactIdsVisibleTo(viewer),
-		deps.ignores.listVisibleTo(viewer)
+		deps.ignores.listVisibleTo(viewer),
+		deps.nameIgnores.listForHousehold(viewer)
 	]);
 
 	const matches = matchImmichPeople({
@@ -132,8 +163,14 @@ export async function findImmichMatches(deps: ImmichMatchingDeps, viewer: Viewer
 		linkedPersonIds: new Set(holders.keys()),
 		ignoredPairs: ignores.map(({ contactId, immichPersonId }) => ({ contactId, personId: immichPersonId }))
 	});
+	const newcomers = immichNewcomers({
+		people: named,
+		heldPersonIds: new Set(holders.keys()),
+		proposedPersonIds: new Set(matches.flatMap((m) => m.candidates.map((c) => c.personId))),
+		ignoredPersonIds: new Set(nameIgnores.map((ignore) => ignore.immichPersonId))
+	});
 
-	const personById = new Map(named.map((person) => [person.id, person]));
+	const personById = new Map(listed.value.map((person) => [person.id, person]));
 	const contactById = new Map(contacts.map((c) => [c.id, c]));
 	const shownContact = (id: string) => {
 		const { displayName, avatarPhotoId } = contactById.get(id)!;
@@ -149,16 +186,17 @@ export async function findImmichMatches(deps: ImmichMatchingDeps, viewer: Viewer
 				async ({ contactId, immichPersonId, ignoredBy, ignoredAt }): Promise<IgnoredMatch> => ({
 					contact: shownContact(contactId),
 					personId: immichPersonId,
-					immichName: personById.get(immichPersonId)?.name ?? null,
+					immichName: namedOrNull(personById.get(immichPersonId)),
 					faceUrl: await faceUrlFor(deps.signer, contactId, immichPersonId),
 					ignoredBy,
 					ignoredAt
 				})
 			)
 	);
-	if (matches.length === 0) return { ok: true, rows: [], ignored };
 
-	const shownPeople = [...new Set(matches.flatMap((m) => m.candidates.map((c) => c.personId)))];
+	const shownPeople = [
+		...new Set([...matches.flatMap((m) => m.candidates.map((c) => c.personId)), ...newcomers.map((n) => n.personId)])
+	];
 	const counts = new Map(
 		await eachLimited(shownPeople, COUNTS_AT_ONCE, async (id) => {
 			const statistics = await deps.gateway.personStatistics(id);
@@ -185,5 +223,18 @@ export async function findImmichMatches(deps: ImmichMatchingDeps, viewer: Viewer
 			};
 		})
 	);
-	return { ok: true, rows, ignored };
+
+	const newcomerTab = await newcomerRows(deps, viewer, day, {
+		newcomers,
+		counts,
+		contacts,
+		linkedContactIds,
+		holders,
+		personById,
+		nameIgnores
+	});
+	return { ok: true, rows, ignored, ...newcomerTab };
 }
+
+/** A face's name in Immich, or null when Immich no longer lists it named and shown. */
+const namedOrNull = (person: ImmichPerson | undefined) => (person && person.name !== '' ? person.name : null);

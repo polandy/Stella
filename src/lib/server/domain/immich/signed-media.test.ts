@@ -91,6 +91,16 @@ describe('createImmichMediaSigner', () => {
 		});
 	});
 
+	it('reads back the face of someone not in Stella yet, signed for the household', async () => {
+		const clock = fakeClock();
+		const signer = createImmichMediaSigner({ secret: SECRET, clock });
+		const newcomer: SignableImmichMedia = { kind: 'newcomer', householdId: 'h-1', personId: CARL_ID };
+		expect(await signer.verify(await signer.sign(newcomer))).toEqual({
+			ok: true,
+			media: { ...newcomer, expiresAt: clock.now() + IMMICH_MEDIA_TTL_MS }
+		});
+	});
+
 	it('reads back a token for a contact whose id is not a ULID, as an imported one is', async () => {
 		const clock = fakeClock();
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });

@@ -44,6 +44,14 @@ export interface Notice {
 	id: number;
 	text: string;
 	undoable: boolean;
+	/** Where what it announces can be opened — *Lena Köhler added · Open* — or null. */
+	link: NoticeLink | null;
+}
+
+/** A link a notice carries to what it announces. */
+export interface NoticeLink {
+	label: string;
+	href: string;
 }
 
 /** What a toast region renders: removals carry *Undo*, notices are read-only. */
@@ -68,6 +76,8 @@ export interface PendingRemovals {
 	 * runs `takeBack` — which reports its own failure, since only it knows what went wrong.
 	 */
 	notify(text: string, takeBack?: () => void): void;
+	/** Shows a message for one window with a link to what it announces, which was just made. */
+	notifyWithLink(text: string, link: NoticeLink): void;
 	/** *Undo* on an undoable notice: drops it and runs its `takeBack`, once. Otherwise a no-op. */
 	takeBack(noticeId: number): void;
 	/**
@@ -145,6 +155,12 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 		changed();
 	}
 
+	function show(shown: ShownNotice): void {
+		armNotice(shown);
+		notices.push(shown);
+		changed();
+	}
+
 	return {
 		remove(removal) {
 			if (pending.has(removal.key)) return;
@@ -179,14 +195,10 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 		},
 		isPending: (key) => pending.has(key),
 		notify(text, takeBack) {
-			const shown: ShownNotice = {
-				notice: { id: nextNoticeId++, text, undoable: takeBack !== undefined },
-				timer: undefined,
-				takeBack
-			};
-			armNotice(shown);
-			notices.push(shown);
-			changed();
+			show({ notice: { id: nextNoticeId++, text, undoable: takeBack !== undefined, link: null }, timer: undefined, takeBack });
+		},
+		notifyWithLink(text, link) {
+			show({ notice: { id: nextNoticeId++, text, undoable: false, link }, timer: undefined });
 		},
 		takeBack(noticeId) {
 			const shown = notices.find((candidate) => candidate.notice.id === noticeId);

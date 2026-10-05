@@ -44,7 +44,9 @@ function setup() {
 		signer,
 		links: {
 			findForContactVisibleTo: async (_viewer, contactId) =>
-				visible.has(contactId) ? (links.get(contactId) ?? null) : null
+				visible.has(contactId) ? (links.get(contactId) ?? null) : null,
+			// Only a newcomer's face asks who holds it, and *Use as photo* never takes one.
+			holdersOf: async () => new Map()
 		},
 		contacts: {
 			findByIdVisibleTo: async (_viewer, id) => (visible.has(id) ? { displayName: id, visibility: 'shared' } : null)
@@ -128,11 +130,13 @@ describe('useImmichPhoto', () => {
 	it('refuses anything but a preview token Stella signed for this very person', async () => {
 		const { deps, worn, preview } = setup();
 		const thumbnail = await preview({ size: 'thumbnail' });
-		const face = await deps.signer.sign({ kind: 'face', contactId: 'c-bert', personId: BERT_ID });
+		const faceOnCleosPage = await deps.signer.sign({ kind: 'face', contactId: 'c-bert', personId: BERT_ID });
+		const newcomer = await deps.signer.sign({ kind: 'newcomer', householdId: 'h1', personId: BERT_ID });
 		const forBertOnCarlsPage = await preview();
 		for (const [contactId, token] of [
 			['c-bert', thumbnail],
-			['c-bert', face],
+			['c-cleo', faceOnCleosPage],
+			['c-bert', newcomer],
 			['c-carl', forBertOnCarlsPage],
 			['c-bert', fakeAssetId(BERT_ID, 0)],
 			['c-bert', 'x.y']
@@ -142,6 +146,26 @@ describe('useImmichPhoto', () => {
 				refusal: 'invalid'
 			});
 		}
+		expect(worn).toEqual([]);
+	});
+
+	it('takes the face Immich shows of them, undated, for someone added from *New from Immich*', async () => {
+		const { deps, worn } = setup();
+		const token = await deps.signer.sign({ kind: 'face', contactId: 'c-bert', personId: BERT_ID });
+		expect(await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })).toEqual({
+			ok: true,
+			photoId: 'photo-1'
+		});
+		expect(worn.map((w) => [w.contactId, w.upload.takenAt])).toEqual([['c-bert', null]]);
+	});
+
+	it('refuses a face they are not linked to, as the matching list signs them for proposals', async () => {
+		const { deps, worn } = setup();
+		const token = await deps.signer.sign({ kind: 'face', contactId: 'c-bert', personId: CARL_ID });
+		expect(await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })).toEqual({
+			ok: false,
+			refusal: 'notLinked'
+		});
 		expect(worn).toEqual([]);
 	});
 

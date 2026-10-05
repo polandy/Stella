@@ -171,6 +171,18 @@ describe('createPendingRemovals', () => {
 		clock.advance(UNDO_WINDOW_MS);
 		expect(store.snapshot().notices).toEqual([]);
 	});
+
+	it('a notice can carry a link to what it announces, and has none otherwise', () => {
+		const { store } = setup();
+
+		store.notify('Saved');
+		store.notifyWithLink('Lena Köhler added', { label: 'Open', href: '/contacts/c-1' });
+
+		expect(store.snapshot().notices.map((n) => [n.text, n.undoable, n.link])).toEqual([
+			['Saved', false, null],
+			['Lena Köhler added', false, { label: 'Open', href: '/contacts/c-1' }]
+		]);
+	});
 });
 
 /*

@@ -7,7 +7,11 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import FormError from '$lib/components/FormError.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import NewFromImmich from '$lib/components/immich/NewFromImmich.svelte';
+	import SkeletonRows from '$lib/components/SkeletonRows.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { usePending } from '$lib/sync/context.svelte';
+	import { whilePending } from '$lib/sync/pending';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { deferredRemoval } from '$lib/undo/deferred-removal';
@@ -30,6 +34,11 @@
 	 * listed under *Ignored* at the end, where *Propose again* takes it back. Both are held for the
 	 * undo window like any removal (docs/02 §2.23), then sent, and the list is read afresh. While
 	 * it is read, the rows already on screen stay — the list does not flash back to "Asking".
+	 *
+	 * Two tabs, from the one reading of Immich: *Matching*, this list, first; *New from Immich*,
+	 * the named faces nobody in Stella holds (`NewFromImmich`). Each says how many rows it has.
+	 * While Immich is asked, the shell's activity indicator says so and both tabs show grey rows
+	 * where the list will be.
 	 */
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -46,7 +55,7 @@
 	type LinkResult = { linked: string[]; refused: { contactId: string; message: string }[]; error: string | null };
 
 	/** The action's answer when the page was posted without JavaScript. */
-	const posted = $derived(form as LinkResult | null);
+	const posted = $derived(form && 'linked' in form ? (form as LinkResult) : null);
 
 	const refusalFor = (contactId: string) =>
 		refusedHere[contactId] ?? posted?.refused.find((r) => r.contactId === contactId)?.message ?? null;
@@ -79,13 +88,41 @@
 	type Matches = Awaited<PageData['matches']>;
 	/** The last list read, shown while a fresh one is on its way. */
 	let latest = $state<Matches | null>(null);
+	const pending = usePending();
 	$effect(() => {
 		let current = true;
-		void data.matches.then((matches) => {
-			if (current) latest = matches;
-		});
+		const reading = data.matches;
+		// The shell's indicator says what is being waited for; a failure is the page's to show.
+		void whilePending(pending, () => reading, t('immich.match.asking')).then(
+			(matches) => {
+				if (current) latest = matches;
+			},
+			() => undefined
+		);
 		return () => (current = false);
 	});
+
+	type Tab = 'matching' | 'new';
+	const TABS: readonly Tab[] = ['matching', 'new'];
+	let tab = $state<Tab>('matching');
+	/** Faces of *New from Immich* assigned or added during this visit. */
+	let newcomersGone = $state<Record<string, true>>({});
+
+	const tabCount = (matches: Matches, which: Tab) =>
+		which === 'matching'
+			? shown(matches.rows).length
+			: matches.newcomers.filter(
+					(row) => !newcomersGone[row.personId] && !removals.isPending(removalKey('immich-newcomer-ignore', row.personId))
+				).length;
+
+	/** Left and right step between the tabs, as a tab list does (WAI-ARIA tabs pattern). */
+	function stepTab(event: KeyboardEvent) {
+		if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+		event.preventDefault();
+		const at = TABS.indexOf(tab) + (event.key === 'ArrowRight' ? 1 : -1);
+		tab = TABS[(at + TABS.length) % TABS.length];
+		document.getElementById(`immich-tab-${tab}`)?.focus();
+	}
 
 	const shown = <T extends { contact: { id: string } }>(rows: T[]) =>
 		rows.filter((row) => !gone[row.contact.id] && !removals.isPending(removalKey('immich-ignore', row.contact.id)));
@@ -104,26 +141,83 @@
 			<Icon name="forward" size={12} />{t('nav.settings')}
 		</a>
 		<h1 class="text-2xl font-semibold text-fg">{t('immich.match.title')}</h1>
-		<p class="text-fg-muted">{t('immich.match.intro')}</p>
+		<p class="text-fg-muted">{tab === 'matching' ? t('immich.match.intro') : t('immich.new.intro')}</p>
 	</header>
 
+	{@render tabs(latest)}
+
 	<FormError message={posted?.error} />
+	<!-- Without JavaScript, a refused *Assign…* comes back with the page. -->
+	<FormError message={form && 'newcomerError' in form ? form.newcomerError : null} />
 	{#if linkedHere > 0 || (posted?.linked.length ?? 0) > 0}
 		<p class="text-sm text-fg-muted" role="status" data-testid="immich-match-linked">
 			{t('immich.match.linked', { count: linkedHere || (posted?.linked.length ?? 0) })}
 		</p>
 	{/if}
 
-	{#await data.matches}
-		{#if latest}
-			{@render list(latest)}
-		{:else}
-			<p class="text-sm text-fg-subtle" role="status">{t('immich.match.asking')}</p>
-		{/if}
-	{:then matches}
-		{@render list(matches)}
-	{/await}
+	<div
+		role="tabpanel"
+		id="immich-panel"
+		aria-labelledby="immich-tab-{tab}"
+		class="flex flex-col gap-6"
+		data-testid="immich-panel"
+		data-tab={tab}
+	>
+		{#await data.matches}
+			{#if latest}
+				{@render panel(latest)}
+			{:else}
+				<SkeletonRows testid="immich-loading" />
+			{/if}
+		{:then matches}
+			{@render panel(matches)}
+		{/await}
+	</div>
 </main>
+
+{#snippet tabs(matches: Matches | null)}
+	<!-- Counts only once Immich has answered; until then the labels stand alone. -->
+	<div
+		role="tablist"
+		aria-label={t('immich.tabs.label')}
+		tabindex="-1"
+		class="flex w-fit max-w-full gap-1 rounded-full bg-bg-sunken p-1"
+		onkeydown={stepTab}
+	>
+		{#each TABS as which (which)}
+			{@const count = matches && !matches.error ? tabCount(matches, which) : null}
+			<button
+				type="button"
+				role="tab"
+				id="immich-tab-{which}"
+				aria-selected={tab === which}
+				aria-controls="immich-panel"
+				tabindex={tab === which ? 0 : -1}
+				onclick={() => (tab = which)}
+				class="whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-fg aria-selected:bg-card aria-selected:font-medium aria-selected:text-fg aria-selected:shadow-card"
+			>
+				{which === 'matching' ? t('immich.tabs.matching') : t('immich.tabs.new')}{#if count !== null}<span
+						class="tabular-nums">{` · ${shownCount(count)}`}</span
+					>{/if}
+			</button>
+		{/each}
+	</div>
+{/snippet}
+
+{#snippet panel(matches: Matches)}
+	{#if tab === 'matching'}
+		{@render list(matches)}
+	{:else if matches.error}
+		<FormError message={matches.error} />
+	{:else}
+		<NewFromImmich
+			newcomers={matches.newcomers}
+			ignored={matches.ignoredNewcomers}
+			people={data.people}
+			bind:gone={newcomersGone}
+		/>
+	{/if}
+{/snippet}
 
 {#snippet ignoreButton(row: { contact: { id: string; displayName: string }; candidates: { personId: string }[] })}
 	<form

@@ -42,6 +42,16 @@ export type SignableImmichMedia =
 			kind: 'face';
 			contactId: string;
 			personId: string;
+	  }
+	| {
+			/**
+			 * A face of *New from Immich* (docs/02 §2.24.7): someone Immich names whom no contact
+			 * holds, so there is no contact to sign for. Signed for the member's household instead,
+			 * and served only while nobody holds the face.
+			 */
+			kind: 'newcomer';
+			householdId: string;
+			personId: string;
 	  };
 
 /** The second person of a together photo. */
@@ -103,9 +113,12 @@ function readPayload(payload: string): SignedImmichMedia | null {
 		return null;
 	}
 	if (typeof body !== 'object' || body === null || Array.isArray(body)) return null;
-	const { k, c, p, a, s, e, t, w, q } = body as Record<string, unknown>;
-	if (!isSignedContactId(c) || !isImmichId(p)) return null;
+	const { k, c, h, p, a, s, e, t, w, q } = body as Record<string, unknown>;
+	if (!isImmichId(p)) return null;
 	if (typeof e !== 'number' || !Number.isSafeInteger(e)) return null;
+	// The one kind that names a household rather than a contact.
+	if (k === 'n') return isSignedContactId(h) ? { kind: 'newcomer', householdId: h, personId: p, expiresAt: e } : null;
+	if (!isSignedContactId(c)) return null;
 	if (k === 'f') return { kind: 'face', contactId: c, personId: p, expiresAt: e };
 	if (k !== 'p' || !isImmichId(a) || typeof s !== 'string' || !IMAGE_SIZES.has(s)) return null;
 	if (t !== undefined && (typeof t !== 'string' || !isTakenAt(t))) return null;
@@ -125,7 +138,9 @@ function readPayload(payload: string): SignedImmichMedia | null {
 /** The payload's JSON: short keys, because it travels in every image URL. */
 function writePayload(media: SignedImmichMedia): string {
 	const fields =
-		media.kind === 'face'
+		media.kind === 'newcomer'
+			? { k: 'n', h: media.householdId, p: media.personId, e: media.expiresAt }
+			: media.kind === 'face'
 			? { k: 'f', c: media.contactId, p: media.personId, e: media.expiresAt }
 			: {
 					k: 'p',

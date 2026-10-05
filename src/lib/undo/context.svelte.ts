@@ -1,5 +1,5 @@
 import { getContext, setContext } from 'svelte';
-import { createPendingRemovals, type Removal, type RemovalsSnapshot } from './pending-removals';
+import { createPendingRemovals, type NoticeLink, type Removal, type RemovalsSnapshot } from './pending-removals';
 import { useTranslate } from '$lib/i18n/context.svelte';
 
 /*
@@ -22,6 +22,8 @@ export interface Removals {
 	/** Reactive — reading it inside `$derived` tracks the pending list. */
 	isPending(key: string): boolean;
 	notify(text: string, takeBack?: () => void): void;
+	/** A message with a link to what it announces — *Lena Köhler added · Open*. */
+	notifyWithLink(text: string, link: NoticeLink): void;
 	/** *Undo* on a notice announcing something that can be taken back. */
 	takeBack(noticeId: number): void;
 	/** Stops the windows while the reader is at the toasts; `release` lets them run again. */
@@ -52,6 +54,7 @@ export function provideRemovals(): Removals {
 		flush: store.flush,
 		isPending: (key) => snapshot.removals.some((removal) => removal.key === key),
 		notify: store.notify,
+		notifyWithLink: store.notifyWithLink,
 		takeBack: store.takeBack,
 		hold: store.hold,
 		release: store.release
