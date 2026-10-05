@@ -112,6 +112,8 @@
 		 * the preview's own *Enlarge map* sits (docs/05 §5.5).
 		 */
 		onShrink?: () => void;
+		/** Told once the canvas has drawn itself, so a picture standing in for it can fade out. */
+		onReady?: () => void;
 	}
 	let {
 		graph,
@@ -122,7 +124,8 @@
 		tracePathTo = null,
 		startFullscreen = false,
 		onFullscreenExit,
-		onShrink
+		onShrink,
+		onReady
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -653,6 +656,7 @@
 		controller.setVisible(shown.nodes, shown.edges);
 		controller.highlightNeighborhood(selected);
 		ready = true;
+		onReady?.();
 
 		themeObserver = new MutationObserver(retheme);
 		themeObserver.observe(document.documentElement, {
