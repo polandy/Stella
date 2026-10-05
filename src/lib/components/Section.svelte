@@ -192,36 +192,41 @@
 {/snippet}
 
 {#if as === 'row'}
-	<!-- Named in the DOM, so a row can be addressed without guessing at nesting. -->
+	<!--
+		Named in the DOM, so a row can be addressed without guessing at nesting. Two columns — the line, then its actions — rather than one flex line: a list of rows can
+		make that a subgrid, so every row's actions start at one edge and their icons stand in a
+		column instead of following each label's length (docs/05 §5.5).
+	-->
 	<section
 		bind:this={card}
 		data-row={title}
-		class="scroll-mt-4 border-t border-border-subtle first:border-t-0"
+		class="grid scroll-mt-4 grid-cols-[minmax(0,1fr)_auto] content-start items-center gap-x-2 border-t border-border-subtle first:border-t-0"
 	>
-		<div class="flex items-center gap-2">
-			<button
-				type="button"
-				onclick={() => (unfolded = !shown)}
-				aria-expanded={shown}
-				class="flex min-w-0 flex-1 items-center gap-2 py-2 text-left text-sm text-fg"
-			>
-				<span class="text-fg-subtle transition-transform" class:rotate-90={shown}>
-					<Icon name="forward" size={13} />
-				</span>
-				<span class="font-medium">{title}</span>
-				{#if count !== undefined}<span class="text-fg-subtle">{count}</span>{/if}
-				{#if summary && !shown}
-					<span class="ml-auto min-w-0 truncate pl-2 text-xs text-fg-subtle">{summary}</span>
-				{/if}
-			</button>
-			<!-- The add button stays on a folded row: adding the first tag to a person who has
-			     none was one click before this card existed, and it stays one. -->
+		<button
+			type="button"
+			onclick={() => (unfolded = !shown)}
+			aria-expanded={shown}
+			class="flex min-w-0 items-center gap-2 py-2 text-left text-sm text-fg"
+		>
+			<span class="text-fg-subtle transition-transform" class:rotate-90={shown}>
+				<Icon name="forward" size={13} />
+			</span>
+			<span class="font-medium">{title}</span>
+			{#if count !== undefined}<span class="text-fg-subtle">{count}</span>{/if}
+			{#if summary && !shown}
+				<span class="ml-auto min-w-0 truncate pl-2 text-xs text-fg-subtle">{summary}</span>
+			{/if}
+		</button>
+		<!-- The add button stays on a folded row: adding the first tag to a person who has
+		     none was one click before this card existed, and it stays one. Left-aligned in its
+		     column, so the icon — not the end of the label — is what lines up. -->
+		<div class="flex items-center gap-2" data-row-actions>
 			{#if shown}{@render action?.()}{/if}
 			{@render disclosure()}
 		</div>
 
 		{#if shown}
-			<div class="pb-3 pl-5">{@render body()}</div>
+			<div class="col-span-full pb-3 pl-5">{@render body()}</div>
 		{/if}
 	</section>
 {:else}

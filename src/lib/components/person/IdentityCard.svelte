@@ -351,7 +351,7 @@
 			their rows start folded — they are here to add to and take away from.
 		-->
 		{#if rows.listed.length > 0 || metLine}
-			<div bind:this={rowList} class="identity-rows grid gap-x-8 md:grid-cols-2">
+			<div bind:this={rowList} class="identity-rows grid gap-x-8">
 				{#each rows.listed as row (row)}
 					<div data-identity-row={row} class="min-w-0">
 						{#if row === 'contact'}
@@ -404,5 +404,35 @@
 		.identity-rows > :global(:nth-child(2)) {
 			border-top-width: 0;
 		}
+	}
+
+	/*
+	 * Each row is a line and its actions (Section's `as="row"`). The rows share their columns
+	 * through subgrid, so the actions of every row in a column start at one edge and their "+"
+	 * icons stand one above the other, whatever each label's length — "Hinzufügen" over
+	 * "Beitreten" no longer leaves the two icons a few pixels apart. A row that is not a
+	 * Section (job, gender) spans the pair.
+	 */
+	.identity-rows {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	@media (width >= 48rem) {
+		.identity-rows {
+			grid-template-columns: repeat(2, minmax(0, 1fr) auto);
+		}
+	}
+	.identity-rows > :global(*) {
+		display: grid;
+		grid-column: span 2;
+		grid-template-columns: subgrid;
+		column-gap: 0.5rem;
+		/* A neighbour's open form makes the grid row tall; this row stays at its top. */
+		align-content: start;
+	}
+	.identity-rows > :global(*) > :global(*) {
+		grid-column: 1 / -1;
+	}
+	.identity-rows > :global(*) > :global(section[data-row]) {
+		grid-template-columns: subgrid;
 	}
 </style>
