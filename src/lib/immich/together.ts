@@ -2,7 +2,7 @@ import { otherEndRole, type RoleTerm } from '../relationships/roles';
 import { FORMER_RELATIONSHIP_STATUS } from '../relationships/status';
 
 /*
- * Photos of two people together, from Immich (docs/concepts/immich.md §4.3, docs/02 §2.24.7):
+ * Photos of two people together, from Immich (docs/concepts/immich.md §4.3, docs/02 §2.24.8):
  * *You and Julia* on the strip when the viewer's own person is linked too, and *Together* on a
  * relationship row for a couple or a parent and child. Pure, so which pairs are offered and
  * which view the strip shows are decided and tested without a page.

@@ -635,6 +635,29 @@ export const immichLink = sqliteTable(
 	(t) => [uniqueIndex('immich_link_person_unique').on(t.immichPersonId)]
 );
 
+/*
+ * A proposal of *Find your people* a member turned down: this contact is not that Immich person
+ * (docs/concepts/immich.md §9, docs/03 §immich_ignore). Household data like a link — no
+ * visibility of its own, seen by whoever sees the contact — kept with who said so and when, so
+ * the list can show it and anyone may take it back. Deleted with the contact, carried through a
+ * merge.
+ */
+export const immichIgnore = sqliteTable(
+	'immich_ignore',
+	{
+		contactId: text('contact_id')
+			.notNull()
+			.references(() => contact.id, { onDelete: 'cascade' }),
+		/** Immich's id for the person (a UUID). Not a foreign key: it lives in another program. */
+		immichPersonId: text('immich_person_id').notNull(),
+		ignoredBy: text('ignored_by')
+			.notNull()
+			.references(() => user.id),
+		ignoredAt: integer('ignored_at').notNull()
+	},
+	(t) => [primaryKey({ columns: [t.contactId, t.immichPersonId] })]
+);
+
 // ── Commands ──────────────────────────────────────────────────────────────
 
 /*

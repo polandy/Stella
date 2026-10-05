@@ -1,6 +1,6 @@
 # Concept — A person's photos, from Immich
 
-Status: **slices 1, 2, 4 and 5 built** (*Connect + link*, *Glimpse*, *Together*, *Use as photo*, docs/02 §2.24); slice 3 is not. The decisions taken with the maintainer on 2026-10-01 are
+Status: **all five slices built** (*Connect + link*, *Glimpse*, *Matching list*, *Together*, *Use as photo*, docs/02 §2.24). The decisions taken with the maintainer on 2026-10-01 are
 listed in §9; one point (phone deep links) waits for a test on the device. Facts about Immich
 are taken from its OpenAPI spec at v3.2.4 (2026-09) and are cited in §10.
 
@@ -235,9 +235,9 @@ Following the GitHub release feed, the existing outbound-call pattern
 1. **Connect + link** — config, the status line, *Find in Immich* / *Unlink* on the person
    page, the count, and *Open in Immich* for every member.
 2. **Glimpse** — the signed proxy, the strip and the viewer.
-3. **Matching list** — the review of §4.2.
+3. **Matching list** — the review of §4.2 — built (docs/02 §2.24.7, decisions §9.17–20).
 4. **Together** — the *You and Julia* chip and the relationship-row chip — built (docs/02
-   §2.24.7, decisions §9.17–20).
+   §2.24.8, decisions §9.26–29).
 5. **Use as photo** from the viewer, and *From Immich* in the picture's chooser — built (docs/02
    §2.24.6, decisions §9.13–16).
 
@@ -316,22 +316,50 @@ Decided with the maintainer on 2026-10-05, on reviewing slice 5:
     section offers *Find in Immich*, the face picker; after linking, the photos appear. Without
     Immich the tap behaves exactly as before.
 
+Decided while building slice 3 (2026-10-05):
+
+17. **What a maybe is, beyond §4.2.** Besides a first name or a nickname alone, a full name in
+    Immich for someone Stella knows by a first name only, and the first name with one half of a
+    double last name (*Sandra Brunner* for *Sandra Brunner-Keller*) are maybes; nickname plus
+    last name is a full name, so likely. A face somebody's full name agrees with is offered to
+    nobody else as a maybe, and a person with a likely match is not shown their maybes.
+18. **Ambiguity always asks.** Two faces with one name, or one face two people share a full name
+    with, is a maybe even when each name agrees in full: *Link all likely* never chooses.
+19. **The list only adds.** Linking from it never replaces a link made since the list was shown.
+20. **"Not now" is not stored.** A maybe can be put aside for the visit. The lasting no is
+    *Ignore* (21), added at the owner's request the same day.
+
+Decided with the owner on 2026-10-05, after trying slice 3:
+
+21. **Every row can be ignored, durably and traceably.** *Ignore* sits beside Link on likely and
+    maybe rows alike. It stores the pair (contact ↔ Immich person) with who ignored it and when, as
+    household data like a link (`immich_ignore`, docs/03): checked through the access layer, no
+    visibility of its own. An ignored pair is never proposed again. A maybe row with several faces
+    ignores only the faces it showed, for that contact.
+22. **Ignored pairs are shown, and can be taken back.** A folded *Ignored (n)* section ends the
+    list: face and avatar, both names, *Ignored by … on …*, and *Propose again*, which deletes the
+    record. Only pairs whose contact the viewer sees are listed.
+23. **A later link leaves the ignores alone.** They no longer matter for a linked contact.
+24. **Ignore and Propose again take the undo window** of every removal (docs/02 §2.23).
+25. **Not in the activity log.** The record itself says who and when; *Propose again* deletes it
+    without a trace, as dismissing a relationship suggestion does.
+
 Decided while building slice 4 (2026-10-05):
 
-17. **Chips over the strip, not a second strip.** *You and Julia* is a chip beside *All photos*
+26. **Chips over the strip, not a second strip.** *You and Julia* is a chip beside *All photos*
     above the one strip, which then holds the photos of both; the viewer, *Use as photo* and
     *Open in Immich* work on it unchanged. A copy made from it goes to the person whose page it
     is, never to the other one.
-18. **The relationship row's *Together* is an icon-only photo button**, like the row's edit
+27. **The relationship row's *Together* is an icon-only photo button**, like the row's edit
     buttons: a text chip would squeeze the name out of a phone's two columns. Its label names the
     pair and its tooltip says *Together*. It sits on a current partner, spouse, parent or child
     who is linked too — not on a former tie — scrolls to the Photos card and adds a chip for that
     pair, which stays while the page is open. On the member's own page, the pair reads *You and
     Bert*; on the member's own row, it is *You and Julia*.
-19. **The server checks the people, not the tie.** `?with=` is served for any two people the
+28. **The server checks the people, not the tie.** `?with=` is served for any two people the
     member sees who are both linked, and nothing else: either strip could be looked at already,
     so the pair says nothing new, and which pairs are offered stays the page's choice.
-20. **A together photo's token names both people.** It carries the second contact and their
+29. **A together photo's token names both people.** It carries the second contact and their
     Immich person, and the proxy and *Use as photo* check both — seen, and still linked to the
     person the photo was listed for — so an unlink of either ends it, as an unlink of one person
     ends their own photos' URLs.

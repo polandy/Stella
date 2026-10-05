@@ -114,7 +114,7 @@
 	const folded = $derived(foldPeople(groups, expanded || editingRelationship !== null));
 
 	/*
-	 * *Together* (docs/02 §2.24.7): on the row of a partner, a spouse, a parent or a child who is in
+	 * *Together* (docs/02 §2.24.8): on the row of a partner, a spouse, a parent or a child who is in
 	 * Immich too, a quiet photo button that switches the Photos card's strip to the photos of the two
 	 * of them. Icon-only, like the row's edit buttons, so a phone's two columns keep the name; its
 	 * label says whose photos. Not offline, where nothing from Immich is shown, and not in edit mode.

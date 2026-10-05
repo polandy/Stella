@@ -131,11 +131,14 @@ import type { GalleryDeps } from './domain/media/gallery';
 import type { GalleryUploadDeps } from './domain/media/gallery-upload';
 import type { JournalPhotoDeps } from './domain/media/journal-photos';
 import { ulidGenerator } from './id';
+import { createDrizzleImmichIgnoreRepository } from './db/immich-ignore-repository';
 import { createDrizzleImmichLinkRepository } from './db/immich-link-repository';
 import { createImmichConnection, type ImmichConnection } from './domain/immich/connection';
 import type { ImmichGateway } from './domain/immich/gateway';
 import type { ImmichGlimpseDeps, ImmichMediaDeps } from './domain/immich/glimpse';
+import type { ImmichIgnoreDeps, ImmichIgnoreRepository } from './domain/immich/ignores';
 import type { ImmichLinkDeps, ImmichLinkRepository } from './domain/immich/links';
+import type { ImmichMatchingDeps } from './domain/immich/matching';
 import type { UseImmichPhotoDeps } from './domain/immich/use-as-photo';
 import { createImmichMediaSigner, type ImmichMediaSigner } from './domain/immich/signed-media';
 import { demoImmichLibrary } from './immich/demo-library';
@@ -755,6 +758,31 @@ export function getImmichMediaDeps(): ImmichMediaDeps | null {
 	const configured = getImmich();
 	if (!configured) return null;
 	return { links: getImmichLinks(), contacts: getContacts(), gateway: configured.gateway, signer: configured.signer };
+}
+
+let immichIgnoreRepository: ImmichIgnoreRepository | null = null;
+
+function getImmichIgnores(): ImmichIgnoreRepository {
+	return (immichIgnoreRepository ??= createDrizzleImmichIgnoreRepository(getDb()));
+}
+
+/** Deps for *Find your people*, the matching list, or null without Immich. */
+export function getImmichMatchingDeps(): ImmichMatchingDeps | null {
+	const configured = getImmich();
+	if (!configured) return null;
+	return {
+		links: getImmichLinks(),
+		ignores: getImmichIgnores(),
+		contacts: getContacts(),
+		gateway: configured.gateway,
+		signer: configured.signer
+	};
+}
+
+/** Deps for ignoring a proposal of the matching list and taking it back, or null without Immich. */
+export function getImmichIgnoreDeps(): ImmichIgnoreDeps | null {
+	if (!getImmich()) return null;
+	return { ignores: getImmichIgnores(), contacts: getContacts(), clock: systemClock };
 }
 
 /**

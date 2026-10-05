@@ -77,6 +77,8 @@ export const archive = {
 		'Some tags on people are not in the archive’s tag list and were left out.',
 	'archive.warning.immichLinkIncomplete':
 		'A link to Immich that named no Immich person was left out.',
+	'archive.warning.immichIgnoreIncomplete':
+		'An ignored Immich proposal that named no Immich person was left out.',
 	'archive.warning.circleWithoutName': 'A circle without a name was left out.',
 	'archive.warning.circleMissingParent': (p: { name: string }) =>
 		`“${p.name}” sat inside a circle the archive does not contain; it is restored on its own.`,

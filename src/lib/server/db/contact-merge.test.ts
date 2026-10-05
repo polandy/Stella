@@ -281,6 +281,26 @@ describe('the link to Immich', () => {
 	});
 });
 
+describe('ignored Immich proposals', () => {
+	const PERSON_A = '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70';
+	const PERSON_B = '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81';
+	const ignore = (contactId: string, immichPersonId: string, ignoredAt: number) =>
+		db.insert(schema.immichIgnore).values({ contactId, immichPersonId, ignoredBy: U1, ignoredAt }).run();
+
+	it('carries the merged record’s ignored pairs, keeping the survivor’s own record of a pair', () => {
+		ignore('keep', PERSON_A, 1);
+		ignore('dup', PERSON_A, 2);
+		ignore('dup', PERSON_B, 3);
+		expect(merge()).toBe(true);
+		expect(
+			db.select().from(schema.immichIgnore).all().map((row) => [row.contactId, row.immichPersonId, row.ignoredAt])
+		).toEqual([
+			['keep', PERSON_A, 1],
+			['keep', PERSON_B, 3]
+		]);
+	});
+});
+
 describe('profile pictures cut from a group photo', () => {
 	// docs/concepts/circle-photos.md §5.2: one cut per person and photo, and a cut nobody wears
 	// any more is a photo of its own. Both records cut from one class photo would otherwise clash.

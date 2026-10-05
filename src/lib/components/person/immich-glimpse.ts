@@ -8,7 +8,7 @@ import type { ImmichGlimpse } from '$lib/immich/strip';
 export async function fetchGlimpse(
 	contactId: string,
 	cursor: string | null,
-	/** The other person, for the photos of the two together (§2.24.7). */
+	/** The other person, for the photos of the two together (§2.24.8). */
 	togetherWith: string | null = null
 ): Promise<ImmichGlimpse | null> {
 	const params = new URLSearchParams();

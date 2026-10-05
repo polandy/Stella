@@ -6,7 +6,8 @@ import type { FakeImmichGroupPhotos, FakeImmichLibrary, FakeImmichPerson } from 
  * creates, so *Find in Immich* has someone to find, and each has as many photos as its count for
  * the strip to show. The key belongs to the demo admin, as a household's key belongs to its
  * admin (docs/concepts/immich.md §9.2). One face is hidden and one unnamed, as in a real
- * library; neither is ever offered.
+ * library; neither is ever offered. Two share a name and one has a first name only, so the
+ * matching list has a maybe of each kind; Sandra's and Rosa's double names are only half there.
  */
 
 /** A face of the demo library: a fixed id, a name, a photo count and a tile colour. */
@@ -35,7 +36,12 @@ export function demoImmichLibrary(): FakeImmichLibrary {
 			face('d0000000-0000-4000-8000-000000000008', 'Thomas Widmer', 96, '#209fb5'),
 			face('d0000000-0000-4000-8000-000000000009', 'Mia Widmer', 1, '#fe640b'),
 			face('d0000000-0000-4000-8000-00000000000a', 'Corinne Keller', 154, '#7287fd', true),
-			face('d0000000-0000-4000-8000-00000000000b', '', 41, '#6c6f85')
+			face('d0000000-0000-4000-8000-00000000000b', '', 41, '#6c6f85'),
+			// For *Find your people*: two faces with one name, side by side, and one named by a first
+			// name alone — both asked about rather than linked in one tap.
+			face('d0000000-0000-4000-8000-00000000000c', 'Luca Widmer', 210, '#04a5e5'),
+			face('d0000000-0000-4000-8000-00000000000d', 'Luca Widmer', 3, '#e64553'),
+			face('d0000000-0000-4000-8000-00000000000e', 'Timo', 58, '#dd7878')
 		]
 	};
 }

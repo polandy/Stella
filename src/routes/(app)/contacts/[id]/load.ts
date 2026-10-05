@@ -160,7 +160,7 @@ export const load = (async ({ locals, params, url }) => {
 		 * the line never appear. What Immich says about a linked person is a promise on purpose —
 		 * the page is sent at once and the line fills itself in, so a slow or absent Immich never
 		 * holds the page up (§4.5). `togetherWith` is whom the strip and the relationship rows offer
-		 * photos together with (§4.3, docs/02 §2.24.7).
+		 * photos together with (§4.3, docs/02 §2.24.8).
 		 */
 		immich: immich ? { linked: immichLink !== null, togetherWith: immichTogether } : null,
 		immichPerson: immich && immichLink ? readLinkedPerson(immich, immichLink.immichPersonId) : null,

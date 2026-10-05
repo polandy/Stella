@@ -15,7 +15,7 @@
 	 * lightbox at Immich's preview size.
 	 *
 	 * With `together`, the same strip holds the photos the person is in with someone else (docs/02
-	 * §2.24.7); the viewer, *Use as photo* and *Open in Immich* work on them as on any other.
+	 * §2.24.8); the viewer, *Use as photo* and *Open in Immich* work on them as on any other.
 	 *
 	 * Quiet on failure: the line above it already says when Immich did not answer or no longer has
 	 * the person, so the strip then simply is not there. Never shown offline — the Photos card
@@ -28,7 +28,7 @@
 		/** Whether the person wears a photo now, for *Use as photo* in the viewer. */
 		hasPhoto: boolean;
 		/**
-		 * The other person, for the photos of the two together (docs/02 §2.24.7), with what the
+		 * The other person, for the photos of the two together (docs/02 §2.24.8), with what the
 		 * strip is then called; null for the person's own photos.
 		 */
 		together?: { contactId: string; label: string } | null;

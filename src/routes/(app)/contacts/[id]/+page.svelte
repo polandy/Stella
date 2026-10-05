@@ -47,7 +47,7 @@
 	}
 
 	/*
-	 * Photos of two people together, from Immich (docs/02 §2.24.7): the pair a relationship row's
+	 * Photos of two people together, from Immich (docs/02 §2.24.8): the pair a relationship row's
 	 * *Together* asked for, and the pair the Photos card's strip shows. Both belong to this person,
 	 * so another person's page starts on their own photos again.
 	 */

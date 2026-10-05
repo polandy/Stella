@@ -7,6 +7,7 @@ import {
 	findImmichFaces,
 	IMMICH_LINK_ENTITY,
 	ImmichLinkRefusedError,
+	linkMatches,
 	linkToImmich,
 	readLinkedPerson,
 	unlinkFromImmich,
@@ -47,6 +48,7 @@ function memoryLinks() {
 	const holderOf = (personId: string) => [...rows.values()].find((l) => l.immichPersonId === personId);
 	const links: ImmichLinkRepository = {
 		findForContactVisibleTo: async (_viewer, contactId) => rows.get(contactId) ?? null,
+		linkedContactIdsVisibleTo: async () => new Set(rows.keys()),
 		holdersOf: async (_viewer, personIds) => {
 			const holders = new Map<string, { contactId: string; name: string | null }>();
 			for (const personId of personIds) {
@@ -173,6 +175,58 @@ describe('linkToImmich', () => {
 			expect(refusal.message).toBe(message);
 			expect(rows.size).toBe(0);
 		}
+	});
+});
+
+describe('linkMatches', () => {
+	it('links every pair from the matching list, and counts them', async () => {
+		const { deps, rows } = setup();
+
+		const result = await linkMatches(deps, actor, [
+			{ contactId: 'c-bert', immichPersonId: BERT_ID },
+			{ contactId: 'c-carl', immichPersonId: CARL_ID }
+		]);
+
+		expect(result).toEqual({ linked: 2, refused: [] });
+		expect(rows.get('c-bert')?.immichPersonId).toBe(BERT_ID);
+		expect(rows.get('c-carl')?.immichPersonId).toBe(CARL_ID);
+	});
+
+	it('never replaces a link made since the list was shown', async () => {
+		const { deps, rows, audit } = setup();
+		rows.set('c-bert', { contactId: 'c-bert', immichPersonId: CARL_ID, linkedBy: 'u-other', linkedAt: 1 });
+
+		const result = await linkMatches(deps, actor, [{ contactId: 'c-bert', immichPersonId: BERT_ID }]);
+
+		expect(result.linked).toBe(0);
+		expect(result.refused.map((r) => r.error.message)).toEqual(['Bert Example is linked already.']);
+		expect(rows.get('c-bert')?.immichPersonId).toBe(CARL_ID);
+		expect(audit).toEqual([]);
+	});
+
+	it('goes on past a refusal, and says which', async () => {
+		const { deps, rows } = setup();
+
+		const result = await linkMatches(deps, actor, [
+			{ contactId: 'c-gone', immichPersonId: BERT_ID },
+			{ contactId: 'c-bert', immichPersonId: DORA_ID },
+			{ contactId: 'c-carl', immichPersonId: CARL_ID }
+		]);
+
+		expect(result.linked).toBe(1);
+		expect(result.refused.map((r) => r.contactId)).toEqual(['c-gone', 'c-bert']);
+		expect(rows.get('c-carl')?.immichPersonId).toBe(CARL_ID);
+	});
+
+	it('lets an unexpected error through rather than counting it as a refusal', async () => {
+		const { deps } = setup();
+		deps.links.save = async () => {
+			throw new Error('disk full');
+		};
+
+		await expect(linkMatches(deps, actor, [{ contactId: 'c-bert', immichPersonId: BERT_ID }])).rejects.toThrow(
+			'disk full'
+		);
 	});
 });
 

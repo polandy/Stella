@@ -21,6 +21,7 @@ const viewer: Viewer = { id: 'u-anna', householdId: 'h1' };
 /** No links held: the picker's marking is covered by the use-case's own tests. */
 const noLinks: ImmichLinkRepository = {
 	findForContactVisibleTo: async () => null,
+	linkedContactIdsVisibleTo: async () => new Set(),
 	holdersOf: async () => new Map(),
 	save: async () => 'saved',
 	remove: async () => false

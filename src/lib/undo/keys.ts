@@ -15,7 +15,11 @@ export const REMOVAL_KINDS = [
 	'relationship',
 	'relationship-type',
 	/* A suggestion answered on a review screen; its id is the claim's, never the rule's. */
-	'suggestion'
+	'suggestion',
+	/* A row of *Find your people* being ignored; its id is the contact's. */
+	'immich-ignore',
+	/* An ignored pair being proposed again; its id is `contact/person`. */
+	'immich-ignored'
 ] as const;
 
 export type RemovalKind = (typeof REMOVAL_KINDS)[number];

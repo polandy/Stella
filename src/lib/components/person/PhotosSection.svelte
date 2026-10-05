@@ -34,7 +34,7 @@
 	}: {
 		data: PersonPageData;
 		form: PersonForm;
-		/** Which pair a relationship row asked for, and which the strip shows (docs/02 §2.24.7). */
+		/** Which pair a relationship row asked for, and which the strip shows (docs/02 §2.24.8). */
 		together?: { askedByRow: string | null; shown: string | null };
 	} = $props();
 
@@ -114,7 +114,7 @@
 	const immichSearchName = $derived([c.firstName, c.lastName].filter(Boolean).join(' ') || c.displayName);
 
 	/*
-	 * Photos together (docs/02 §2.24.7): chips over the strip — *All photos*, *You and Julia* when
+	 * Photos together (docs/02 §2.24.8): chips over the strip — *All photos*, *You and Julia* when
 	 * the viewer's own person is linked too, and the pair a relationship row's *Together* asked for.
 	 * With only *All photos* there are no chips at all.
 	 */

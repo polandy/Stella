@@ -40,6 +40,7 @@ function fullHousehold(): HouseholdSnapshot {
 			tag: [{ id: 'tg-1', name: 'Bern', color: 'blue' }],
 			contact_tag: [{ contact_id: 'c-hans', tag_id: 'tg-1' }],
 			immich_link: [{ contact_id: 'c-hans', immich_person_id: '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70', linked_by: 'u-1', linked_at: NOW }],
+			immich_ignore: [{ contact_id: 'c-hans', immich_person_id: '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81', ignored_by: 'u-1', ignored_at: NOW }],
 			circle: [{ id: 'ci-1', name: 'FC Länggasse', kind: 'club', created_by: 'u-1', visibility: 'shared' }],
 			circle_membership: [{ id: 'cm-1', circle_id: 'ci-1', contact_id: 'c-hans', role: 'coach', start_date: '2019-06-01', end_date: null, created_by: 'u-1' }],
 			relationship: [
@@ -143,6 +144,13 @@ describe('a person', () => {
 			linked_at: new Date(NOW).toISOString()
 		});
 		expect(doc().people.find((p) => p.id === 'c-rosa')!.immich).toBeUndefined();
+	});
+
+	it('lists the Immich faces they were said not to be, and who said so', () => {
+		expect(hans().immich_ignored).toEqual([
+			{ person: '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81', ignored_by: 'u-1', ignored_at: new Date(NOW).toISOString() }
+		]);
+		expect(doc().people.find((p) => p.id === 'c-rosa')!.immich_ignored).toBeUndefined();
 	});
 
 	it('leaves out what is not there instead of writing nulls', () => {
