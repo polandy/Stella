@@ -197,6 +197,16 @@ Goal: sand the edges and add the nice-to-haves.
   them* together, and *Use as photo*. One read-only household key set by the admin; images
   go through a signed proxy and follow the contact's visibility. Built in five slices; the
   decisions are in `docs/concepts/immich.md` §9.
+- **Gift ideas and gifts given** — per person: ideas to give, what was given and when, so
+  the same present is not given twice. Shared by default, private per record (docs/02 §2.10).
+  A Monica import already lands gifts as notes (docs/monica-mapping.md); once this ships they
+  move to real gift records. Scope and data model are still to be written (docs/02, docs/03).
+- **Email and social sync** — bring in what already knows about people: Google Contacts as a
+  first source, then mail and social. Read-only import first, matched against existing people
+  through a review list rather than merged silently, every write through the domain
+  use-cases and access layer. Sources, matching rules and credentials handling are open.
+- **Native mobile apps** — beyond the PWA (§2.18), for what a PWA cannot do on a phone. Open:
+  which platforms, and whether a wrapper around the PWA is enough before a true native app.
 - ~~**Performance passes**~~ — shipped: each list of people is sent once, repeated lookups
   are backed by indexes, and the person page reads its family once instead of the household
   per page.
@@ -219,8 +229,8 @@ Goal: sand the edges and add the nice-to-haves.
 
 ## Explicitly later / maybe-never
 
-Google Contacts sync, native mobile apps, multi-tenant SaaS, AI enrichment,
-finance/gift/task modules, real-time collaborative editing. Revisit only if the core
+Multi-tenant SaaS, AI enrichment, finance/task modules, real-time collaborative
+editing. (Gifts, email/social sync and native apps moved up into M3.) Revisit only if the core
 stays simple. (See [01-vision-and-scope.md §1.6](01-vision-and-scope.md).)
 
 - **Local 2FA** (TOTP) for accounts without SSO, and opt-in email reminders — deprioritized:
