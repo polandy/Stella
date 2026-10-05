@@ -91,7 +91,6 @@ export const search: SearchMessages = {
 	'graph.aloneCircle.hint': 'Füge die Menschen hinzu, die diesen Kreis teilen, und die Karte wächst von dort aus.',
 	'graph.onPerson.label': (p) => `Die Menschen um ${p.name}`,
 	'graph.onPerson.loading': 'Karte wird gezeichnet…',
-	'graph.onPerson.view': 'Im Netz ansehen',
 	'graph.onPerson.enlarge': 'Karte vergrößern',
 	'graph.onPerson.shrink': 'Karte verkleinern',
 	'graph.fullscreen.enter': 'Vollbild',

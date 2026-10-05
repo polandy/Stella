@@ -21,11 +21,11 @@
 	 *
 	 * On a phone the map is a preview: a card-sized canvas there is too small to read and too
 	 * easy to pan by accident while scrolling past it, and it held the photos a screen away. The
-	 * preview offers two ways in (docs/05 §5.5): *Enlarge map* grows this same explorer inside
-	 * the card to about a screen's height, the reader still on the page, and *Shrink map* puts
-	 * the preview back; *View in the graph* opens it full screen, and leaving full screen brings
-	 * the preview back. Without full screen — or before the engine has arrived — that second one
-	 * is what it says, a link into the graph. `mapViewAfter` decides which view follows which.
+	 * preview offers two ways in, two icons in its corner (docs/05 §5.5): *Enlarge map* grows
+	 * this same explorer inside the card to about a screen's height, the reader still on the
+	 * page, and *Shrink map* in the map's own toolbar puts the preview back; *Full screen* opens
+	 * it full screen, and leaving full screen brings the preview back. Without full screen — or
+	 * before the engine has arrived — that second one is a plain link into the graph. `mapViewAfter` decides which view follows which.
 	 */
 	interface Props {
 		centerId: string;
@@ -57,6 +57,7 @@
 		fullGraphHref?: (nodeId: string) => string;
 		startFullscreen?: boolean;
 		onFullscreenExit?: () => void;
+		onShrink?: () => void;
 	}> | null>(null);
 
 	/** Below `sm`: the preview stands in for the canvas (Tailwind's breakpoint, docs/05 §5.4). */
@@ -64,7 +65,8 @@
 	let view = $state<PhoneMapView>('preview');
 	const go = (event: PhoneMapEvent) => (view = mapViewAfter(view, event));
 	let enlargeButton = $state<HTMLButtonElement>();
-	let shrinkButton = $state<HTMLButtonElement>();
+	/** The disc an icon on the preview sits on, so it reads over the drawing in either theme. */
+	const MAP_ICON_DISC = 'grid size-8 place-items-center rounded-full bg-card text-fg shadow-card';
 	let enlargedFrame = $state<HTMLDivElement>();
 
 	function openFullscreen(event: MouseEvent) {
@@ -81,7 +83,8 @@
 		go('enlarge');
 		await tick();
 		enlargedFrame?.scrollIntoView({ block: 'start' });
-		shrinkButton?.focus();
+		// The button is the explorer's own (its toolbar), so it is found rather than bound.
+		enlargedFrame?.querySelector<HTMLButtonElement>('[data-map-shrink]')?.focus();
 	}
 	async function shrink() {
 		go('shrink');
@@ -101,29 +104,19 @@
 {#if Explorer && (!phone.current || view !== 'preview')}
 	{#if phone.current && view === 'enlarged'}
 		<!--
-			Enlarged inside the card: about a screen's height less the top bar, the jump bar, the tab bar
-			and this row, so the whole map fits on one screen with a strip of page above and below it to
-			scroll by — the canvas takes a swipe as a pan, so it must never fill the screen.
+			Enlarged inside the card: about a screen's height less the top bar, the jump bar and the tab
+			bar, so the whole map fits on one screen with a strip of page below it to scroll by — the
+			canvas takes a swipe as a pan, so it must never fill the screen. *Shrink map* is in the
+			map's own toolbar, beside full screen.
 		-->
-		<div bind:this={enlargedFrame} class="flex scroll-mt-2 flex-col gap-2">
-			<div class="flex justify-end">
-				<button
-					bind:this={shrinkButton}
-					type="button"
-					onclick={shrink}
-					class="inline-flex items-center gap-1.5 rounded-full bg-bg-sunken px-2.5 py-1 text-xs font-medium text-fg hover:bg-card-hover"
-				>
-					<Icon name="shrinkMap" size={13} />{t('graph.onPerson.shrink')}
-				</button>
-			</div>
-			<div
-				class="h-[calc(100dvh-15rem)] min-h-80 overflow-hidden rounded-app border border-border"
-				role="group"
-				aria-label={t('graph.onPerson.label', { name: centerName })}
-				data-testid="person-map-enlarged"
-			>
-				<Explorer {graph} {centerId} compact maxRings={PERSON_MAP_RINGS} {fullGraphHref} />
-			</div>
+		<div
+			bind:this={enlargedFrame}
+			class="h-[calc(100dvh-12.75rem)] min-h-80 scroll-mt-2 overflow-hidden rounded-app border border-border"
+			role="group"
+			aria-label={t('graph.onPerson.label', { name: centerName })}
+			data-testid="person-map-enlarged"
+		>
+			<Explorer {graph} {centerId} compact maxRings={PERSON_MAP_RINGS} {fullGraphHref} onShrink={shrink} />
 		</div>
 	{:else}
 		<div
@@ -148,28 +141,33 @@
 		class="relative h-25 overflow-hidden rounded-app border border-border bg-bg-sunken sm:hidden"
 		data-testid="person-map-preview"
 	>
-		<!-- The whole picture is the way to enlarge it; until the engine is here there is nothing to enlarge. -->
+		<!--
+			The whole picture is the way to enlarge it, its icon in the corner beside full screen's;
+			until the engine is here there is nothing to enlarge. Each icon is a 44 px target around
+			a smaller disc, so the drawing keeps its room.
+		-->
 		<button
 			bind:this={enlargeButton}
 			type="button"
 			onclick={enlarge}
 			disabled={!Explorer}
+			aria-label={t('graph.onPerson.enlarge')}
+			title={t('graph.onPerson.enlarge')}
 			class="block size-full py-1.5 text-left"
 		>
 			<EgoGraph {centerName} {centerPhotoId} {nodes} thumbnail />
-			<span
-				class="absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-full bg-card px-2.5 py-1 text-xs font-medium text-fg shadow-card"
-				class:invisible={!Explorer}
-			>
-				<Icon name="enlargeMap" size={13} />{t('graph.onPerson.enlarge')}
+			<span class="absolute right-13 bottom-1 grid size-11 place-items-center" class:invisible={!Explorer}>
+				<span class={MAP_ICON_DISC}><Icon name="enlargeMap" size={15} /></span>
 			</span>
 		</button>
 		<a
 			href={fullGraphHref(centerId)}
 			onclick={openFullscreen}
-			class="absolute right-2 bottom-2 inline-flex items-center gap-1.5 rounded-full bg-card px-2.5 py-1 text-xs font-medium text-fg shadow-card"
+			aria-label={t('graph.fullscreen.enter')}
+			title={t('graph.fullscreen.enter')}
+			class="absolute right-1 bottom-1 grid size-11 place-items-center"
 		>
-			<Icon name="enterFullscreen" size={13} />{t('graph.onPerson.view')}
+			<span class={MAP_ICON_DISC}><Icon name="enterFullscreen" size={15} /></span>
 		</a>
 	</div>
 	<div class="max-sm:hidden">

@@ -93,9 +93,8 @@ export const search = {
 	'graph.aloneCircle.hint': 'Add the people who share this circle, and the map grows from there.',
 	'graph.onPerson.label': (p: { name: string }) => `The people around ${p.name}`,
 	'graph.onPerson.loading': 'Drawing the map…',
-	// The phone's small preview of a person's map, which opens it full screen (docs/05 §5.5).
-	'graph.onPerson.view': 'View in the graph',
-	// The same preview grown inside the People card, and back (docs/05 §5.5) — not full screen.
+	// A phone's small preview of a person's map, grown inside the People card and back
+	// (docs/05 §5.5) — not full screen, which is `graph.fullscreen.enter` on the same preview.
 	'graph.onPerson.enlarge': 'Enlarge map',
 	'graph.onPerson.shrink': 'Shrink map',
 	'graph.fullscreen.enter': 'Full screen',

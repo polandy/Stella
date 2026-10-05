@@ -106,6 +106,12 @@
 		startFullscreen?: boolean;
 		/** Told when full screen is left, so a preview can take the frame's place again. */
 		onFullscreenExit?: () => void;
+		/**
+		 * A phone's map enlarged inside a person's card asks to be a preview again. Given, the
+		 * toolbar carries a *Shrink map* icon just left of full screen — inside the map, where
+		 * the preview's own *Enlarge map* sits (docs/05 §5.5).
+		 */
+		onShrink?: () => void;
 	}
 	let {
 		graph,
@@ -115,7 +121,8 @@
 		fullGraphHref,
 		tracePathTo = null,
 		startFullscreen = false,
-		onFullscreenExit
+		onFullscreenExit,
+		onShrink
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -744,6 +751,18 @@
 			<!-- Full screen and the connection path start the second row on a phone. -->
 			<div class="basis-full sm:hidden" aria-hidden="true"></div>
 		{/if}
+		{#if onShrink}
+			<Button
+				variant="ghost"
+				size="sm"
+				icon="shrinkMap"
+				label={t('graph.onPerson.shrink')}
+				title={t('graph.onPerson.shrink')}
+				data-map-shrink
+				class="pointer-events-auto ml-auto"
+				onclick={onShrink}
+			/>
+		{/if}
 		{#if screen.available}
 			<Button
 				variant="ghost"
@@ -751,7 +770,8 @@
 				icon={screen.on ? 'exitFullscreen' : 'enterFullscreen'}
 				label={t(screen.on ? 'graph.fullscreen.exit' : 'graph.fullscreen.enter')}
 				aria-pressed={screen.on}
-				class="pointer-events-auto ml-auto"
+				title={t(screen.on ? 'graph.fullscreen.exit' : 'graph.fullscreen.enter')}
+				class="pointer-events-auto {onShrink ? '' : 'ml-auto'}"
 				onclick={screen.toggle}
 			/>
 		{/if}
