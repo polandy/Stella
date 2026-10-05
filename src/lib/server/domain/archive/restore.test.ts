@@ -85,6 +85,7 @@ function fullHousehold(): HouseholdSnapshot {
 			tag: [{ id: 'tg-1', household_id: 'h-1', name: 'Bern', color: 'blue', created_at: EXPORTED }],
 			contact_tag: [{ contact_id: 'c-hans', tag_id: 'tg-1' }],
 			immich_link: [{ contact_id: 'c-hans', immich_person_id: '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70', linked_by: 'u-1', linked_at: EXPORTED }],
+			immich_ignore: [{ contact_id: 'c-hans', immich_person_id: '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81', ignored_by: 'u-1', ignored_at: EXPORTED }],
 			circle: [
 				{ id: 'ci-1', household_id: 'h-1', created_by: 'u-1', visibility: 'shared', name: 'FC Länggasse', description: 'the club', kind: 'club', color: 'green', parent_circle_id: null, start_date: '2019-08-01', end_date: null, archived_at: null, created_at: EXPORTED }
 			],
@@ -156,6 +157,7 @@ describe('the round trip', () => {
 		tag: ['id', 'name', 'color'],
 		contact_tag: ['contact_id', 'tag_id'],
 		immich_link: ['contact_id', 'immich_person_id', 'linked_by', 'linked_at'],
+		immich_ignore: ['contact_id', 'immich_person_id', 'ignored_by', 'ignored_at'],
 		circle: ['id', 'visibility', 'name', 'description', 'kind', 'color', 'parent_circle_id', 'start_date', 'end_date', 'archived_at', 'created_at'],
 		circle_membership: ['id', 'circle_id', 'contact_id', 'role', 'start_date', 'end_date', 'note', 'created_at'],
 		relationship: ['id', 'from_contact_id', 'to_contact_id', 'type_id', 'note', 'since_date', 'status', 'created_at'],
@@ -316,6 +318,20 @@ describe('an archive that does not add up', () => {
 		const plan = planRestore(deps(), document, target());
 		expect(rowsOf(plan, 'immich_link')).toEqual([]);
 		expect(plan.warnings).toContainEqual({ code: 'immichLinkIncomplete' });
+	});
+
+	it('leaves out an ignored Immich proposal that names no Immich person, and says so', () => {
+		const document = archived() as { people: { id: string; immich_ignored: { person: string }[] }[] };
+		const hans = document.people.find((p) => p.id === 'c-hans')!;
+		hans.immich_ignored[0].person = '../users/me';
+		const plan = planRestore(deps(), document, target());
+		expect(rowsOf(plan, 'immich_ignore')).toEqual([]);
+		expect(plan.warnings).toContainEqual({ code: 'immichIgnoreIncomplete' });
+	});
+
+	it('gives an ignored Immich proposal by a member this installation never had to the admin', () => {
+		const [ignored] = rowsOf(planned(), 'immich_ignore');
+		expect(ignored.ignored_by).toBe('u-admin');
 	});
 
 	it('gives an Immich link set by a member this installation never had to the admin', () => {

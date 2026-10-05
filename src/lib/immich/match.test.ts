@@ -28,13 +28,14 @@ const none = new Set<string>();
 const match = (
 	contacts: MatchableContact[],
 	people: MatchableImmichPerson[],
-	linked: { contacts?: Set<string>; people?: Set<string> } = {}
+	linked: { contacts?: Set<string>; people?: Set<string>; ignored?: { contactId: string; personId: string }[] } = {}
 ) =>
 	matchImmichPeople({
 		contacts,
 		people,
 		linkedContactIds: linked.contacts ?? none,
-		linkedPersonIds: linked.people ?? none
+		linkedPersonIds: linked.people ?? none,
+		ignoredPairs: linked.ignored ?? []
 	});
 
 describe('foldName', () => {
@@ -164,6 +165,33 @@ describe('matchImmichPeople', () => {
 		const rows = match([contact('c1', 'Lena', 'Brunner'), contact('c2', 'Lena', null)], [person('p1', 'Lena Brunner')]);
 
 		expect(rows.map((row) => row.contactId)).toEqual(['c1']);
+	});
+
+	it('never proposes an ignored pair again', () => {
+		const rows = match([contact('c1', 'Lena', 'Brunner')], [person('p1', 'Lena Brunner')], {
+			ignored: [{ contactId: 'c1', personId: 'p1' }]
+		});
+
+		expect(rows).toEqual([]);
+	});
+
+	it('ignores a pair, not the face: it is still proposed for someone else', () => {
+		const rows = match(
+			[contact('c1', 'Lena', 'Brunner'), contact('c2', 'Lena', 'Brunner')],
+			[person('p1', 'Lena Brunner')],
+			{ ignored: [{ contactId: 'c1', personId: 'p1' }] }
+		);
+
+		// With c1's doubt gone, the face is c2's alone — a likely match again.
+		expect(rows).toEqual([{ contactId: 'c2', kind: 'likely', candidates: [{ personId: 'p1', strength: 'likely' }] }]);
+	});
+
+	it('shows the maybes of someone whose likely match was ignored', () => {
+		const rows = match([contact('c1', 'Lena', 'Brunner')], [person('p1', 'Lena Brunner'), person('p2', 'Lena')], {
+			ignored: [{ contactId: 'c1', personId: 'p1' }]
+		});
+
+		expect(rows).toEqual([{ contactId: 'c1', kind: 'maybe', candidates: [{ personId: 'p2', strength: 'maybe' }] }]);
 	});
 
 	it('lists the likely matches first, each part in name order', () => {

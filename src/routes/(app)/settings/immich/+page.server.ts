@@ -1,9 +1,12 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import type { MessageKey } from '$lib/i18n/translate';
 import type { ImmichFailure } from '$lib/server/domain/immich/gateway';
-import { linkMatches, type ConfirmedMatch } from '$lib/server/domain/immich/links';
+import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
+import { authorNames } from '$lib/server/domain/household/members';
+import { ignoreMatch, proposeAgain } from '$lib/server/domain/immich/ignores';
+import { ImmichLinkRefusedError, linkMatches, type ConfirmedMatch } from '$lib/server/domain/immich/links';
 import { findImmichMatches } from '$lib/server/domain/immich/matching';
-import { getImmichLinkDeps, getImmichMatchingDeps } from '$lib/server/services';
+import { getImmichIgnoreDeps, getImmichLinkDeps, getImmichMatchingDeps, getMemberDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -33,11 +36,17 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const deps = getImmichMatchingDeps();
 	if (!deps) throw error(404, say(locals, 'errors.notFound'));
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const nameOfMember = authorNames(getMemberDeps(), viewer.householdId);
 	return {
-		matches: findImmichMatches(deps, viewer).then((outcome) =>
+		matches: Promise.all([findImmichMatches(deps, viewer), nameOfMember]).then(([outcome, nameOf]) =>
 			outcome.ok
-				? { rows: outcome.rows, error: null }
-				: { rows: [], error: say(locals, FAILURE_MESSAGE[outcome.failure]) }
+				? {
+						rows: outcome.rows,
+						// Who ignored each pair, by name — null for someone no longer a member.
+						ignored: outcome.ignored.map((pair) => ({ ...pair, ignoredByName: nameOf(pair.ignoredBy) })),
+						error: null
+					}
+				: { rows: [], ignored: [], error: say(locals, FAILURE_MESSAGE[outcome.failure]) }
 		)
 	};
 };
@@ -74,4 +83,49 @@ const linking: Actions[string] = async ({ request, locals }) => {
 	};
 };
 
-export const actions: Actions = { link: linking, linkAll: linking };
+/** The actor of an action, or a redirect to sign in. */
+function actorOf(locals: App.Locals) {
+	if (!locals.user) throw redirect(302, '/login');
+	return { userId: locals.user.id, householdId: locals.user.householdId };
+}
+
+/** One contact and the faces of its row, as the Ignore and Propose again forms post them. */
+function rowOf(form: FormData): { contactId: string; personIds: string[] } | null {
+	const contactId = form.get('contactId');
+	const personIds = form.getAll('immichPersonId');
+	if (typeof contactId !== 'string' || !personIds.every((id) => typeof id === 'string')) return null;
+	return { contactId, personIds: personIds as string[] };
+}
+
+export const actions: Actions = {
+	link: linking,
+	linkAll: linking,
+
+	/* Ignore a row: the contact with every face the row showed (concept §9). */
+	ignore: async ({ request, locals }) => {
+		const actor = actorOf(locals);
+		const deps = getImmichIgnoreDeps();
+		if (!deps) throw error(404, say(locals, 'errors.notFound'));
+		const row = rowOf(await request.formData());
+		if (!row) return fail(400, { linked: [], refused: [], error: say(locals, 'errors.notFound') });
+		try {
+			await ignoreMatch(deps, actor, row.contactId, row.personIds);
+		} catch (err) {
+			if (err instanceof ContactGoneError || err instanceof ImmichLinkRefusedError)
+				return fail(400, { linked: [], refused: [], error: err.phrase(translator(locals)) });
+			throw err;
+		}
+		return { linked: [], refused: [], error: null };
+	},
+
+	/* Propose again: forget that a pair was ignored. Nothing to say when it already was. */
+	proposeAgain: async ({ request, locals }) => {
+		const actor = actorOf(locals);
+		const deps = getImmichIgnoreDeps();
+		if (!deps) throw error(404, say(locals, 'errors.notFound'));
+		const row = rowOf(await request.formData());
+		if (!row || row.personIds.length !== 1) return fail(400, { linked: [], refused: [], error: say(locals, 'errors.notFound') });
+		await proposeAgain(deps, { id: actor.userId, householdId: actor.householdId }, row.contactId, row.personIds[0]);
+		return { linked: [], refused: [], error: null };
+	}
+};

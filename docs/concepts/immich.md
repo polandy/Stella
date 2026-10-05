@@ -324,8 +324,23 @@ Decided while building slice 3 (2026-10-05):
 18. **Ambiguity always asks.** Two faces with one name, or one face two people share a full name
     with, is a maybe even when each name agrees in full: *Link all likely* never chooses.
 19. **The list only adds.** Linking from it never replaces a link made since the list was shown.
-20. **"Not now" is not stored.** A maybe can be put aside for the visit; there is no dismissal
-    log, because what is left unmatched is not a problem to solve (§4.2).
+20. **"Not now" is not stored.** A maybe can be put aside for the visit. The lasting no is
+    *Ignore* (21), added at the owner's request the same day.
+
+Decided with the owner on 2026-10-05, after trying slice 3:
+
+21. **Every row can be ignored, durably and traceably.** *Ignore* sits beside Link on likely and
+    maybe rows alike. It stores the pair (contact ↔ Immich person) with who ignored it and when, as
+    household data like a link (`immich_ignore`, docs/03): checked through the access layer, no
+    visibility of its own. An ignored pair is never proposed again. A maybe row with several faces
+    ignores only the faces it showed, for that contact.
+22. **Ignored pairs are shown, and can be taken back.** A folded *Ignored (n)* section ends the
+    list: face and avatar, both names, *Ignored by … on …*, and *Propose again*, which deletes the
+    record. Only pairs whose contact the viewer sees are listed.
+23. **A later link leaves the ignores alone.** They no longer matter for a linked contact.
+24. **Ignore and Propose again take the undo window** of every removal (docs/02 §2.23).
+25. **Not in the activity log.** The record itself says who and when; *Propose again* deletes it
+    without a trace, as dismissing a relationship suggestion does.
 
 ---
 

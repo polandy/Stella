@@ -313,9 +313,12 @@ don't matter: *Müller*, *Mueller* and *muller* are one name. When the full name
 takes one tap, and **Link all likely** at the top links every such row together. When only a
 first name or a nickname agrees, or two faces in Immich have the same name, the row asks
 instead: it shows each face it could be, and you tap the right one — or **Not now** to leave it
-for another visit. People already linked, and faces that are hidden or unnamed in Immich, are
-never listed. Once nothing is left the list simply ends; name more faces in Immich and look
-again.
+for another visit. When a proposal is simply wrong, **Ignore** it: that face is never proposed
+for that person again (on a row with several faces, all of them). The row goes at once, with
+*Undo* for a few seconds. Everything ignored is kept at the end of the list under **Ignored**,
+with who ignored it and when — open it and press **Propose again** to change your mind. People
+already linked, and faces that are hidden or unnamed in Immich, are never listed. Once nothing
+is left the list simply ends; name more faces in Immich and look again.
 
 **Mentioned in** is the last card, and it is the only one that is not really theirs: it lists
 what *other* people's notes and journal entries say about them. Write "hiked with `@Sandra`"

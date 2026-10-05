@@ -74,6 +74,7 @@ export type RestoreWarning =
 	| { code: 'tagWithoutName' }
 	| { code: 'tagsNotInList' }
 	| { code: 'immichLinkIncomplete' }
+	| { code: 'immichIgnoreIncomplete' }
 	| { code: 'circleWithoutName' }
 	| { code: 'circleMissingParent'; name: string }
 	| { code: 'circleMemberMissing'; name: string }
@@ -237,6 +238,7 @@ export function planRestore(
 	const photos: Row[] = [];
 	const contactTags: Row[] = [];
 	const immichLinks: Row[] = [];
+	const immichIgnores: Row[] = [];
 	const mediaPaths = new Set<string>();
 
 	const people = records(document, 'people');
@@ -657,6 +659,26 @@ export function planRestore(
 	// A profile picture cut from a group photo is such a framing too (concept §6). A photo that
 	// was cut from one before only remembers it, so it stays and forgets a group photo refused.
 	const photoIds = new Set(photos.filter((p) => p.framing_of === null).map((p) => p.id));
+	// The Immich faces each of them was said not to be (docs/concepts/immich.md §9), refused on
+	// the same terms as a link: the id travels into Immich's URL paths.
+	for (const person of people) {
+		const contactId = str(person, 'id');
+		if (contactId === null || !knownPeople.has(contactId)) continue;
+		for (const ignored of records(person, 'immich_ignored')) {
+			const immichPersonId = str(ignored, 'person');
+			if (!isImmichId(immichPersonId)) {
+				warn({ code: 'immichIgnoreIncomplete' });
+				continue;
+			}
+			immichIgnores.push({
+				contact_id: contactId,
+				immich_person_id: immichPersonId,
+				ignored_by: author(ignored, 'ignored_by'),
+				ignored_at: ms(ignored, 'ignored_at') ?? now
+			});
+		}
+	}
+
 	const keptPhotos = photos
 		.filter((p) => {
 			const framingOf = p.framing_of;
@@ -680,6 +702,7 @@ export function planRestore(
 			{ table: 'tag', rows: tags },
 			{ table: 'contact_tag', rows: contactTags },
 			{ table: 'immich_link', rows: immichLinks },
+			{ table: 'immich_ignore', rows: immichIgnores },
 			{ table: 'note', rows: notes },
 			{ table: 'note_mention', rows: noteMentions },
 			{ table: 'journal_entry', rows: journalEntries },

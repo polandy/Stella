@@ -2,6 +2,7 @@ import { matchImmichPeople, type MatchableContact, type MatchStrength } from '..
 import type { Viewer } from '../../access/visibility';
 import type { ImmichFailure, ImmichGateway, ImmichPerson } from './gateway';
 import { faceUrlFor } from './glimpse';
+import type { ImmichIgnoreRepository } from './ignores';
 import type { ImmichLinkRepository } from './links';
 import type { ImmichMediaSigner } from './signed-media';
 
@@ -33,6 +34,7 @@ export interface MatchingContact extends MatchableContact {
 export interface ImmichMatchingDeps {
 	gateway: Pick<ImmichGateway, 'listPeople' | 'personStatistics'>;
 	links: Pick<ImmichLinkRepository, 'holdersOf' | 'linkedContactIdsVisibleTo'>;
+	ignores: Pick<ImmichIgnoreRepository, 'listVisibleTo'>;
 	/** The contacts the viewer sees, through the access layer. */
 	contacts: { listVisibleTo(viewer: Viewer): Promise<MatchingContact[]> };
 	signer: ImmichMediaSigner;
@@ -58,7 +60,21 @@ export interface MatchRow {
 	candidates: MatchFace[];
 }
 
-export type MatchingOutcome = { ok: true; rows: MatchRow[] } | { ok: false; failure: ImmichFailure };
+/** A pair a member ignored, as the list's *Ignored* section shows it. */
+export interface IgnoredMatch {
+	contact: { id: string; displayName: string; avatarPhotoId: string | null };
+	personId: string;
+	/** The name in Immich, or null when Immich no longer lists the face as named and shown. */
+	immichName: string | null;
+	faceUrl: string;
+	/** The member who ignored it; the route puts a name to it. */
+	ignoredBy: string;
+	ignoredAt: number;
+}
+
+export type MatchingOutcome =
+	| { ok: true; rows: MatchRow[]; ignored: IgnoredMatch[] }
+	| { ok: false; failure: ImmichFailure };
 
 /** Every page of Immich's people; hidden ones are already left out by the gateway. */
 async function allPeople(
@@ -92,32 +108,56 @@ async function eachLimited<T, R>(items: readonly T[], limit: number, work: (item
 export async function findImmichMatches(deps: ImmichMatchingDeps, viewer: Viewer): Promise<MatchingOutcome> {
 	const contacts = await deps.contacts.listVisibleTo(viewer);
 	// Nobody to match: Immich is not asked to list a library for nothing.
-	if (contacts.length === 0) return { ok: true, rows: [] };
+	if (contacts.length === 0) return { ok: true, rows: [], ignored: [] };
 
 	const listed = await allPeople(deps.gateway);
 	if (!listed.ok) return listed;
 	const named = listed.value.filter((person) => !person.hidden && person.name !== '');
 
-	const [holders, linkedContactIds] = await Promise.all([
+	const [holders, linkedContactIds, ignores] = await Promise.all([
 		// Unscoped on the Immich side: a face held by someone the viewer cannot see is taken all
 		// the same, and is simply not offered (concept §9.8).
 		deps.links.holdersOf(
 			viewer,
 			named.map((person) => person.id)
 		),
-		deps.links.linkedContactIdsVisibleTo(viewer)
+		deps.links.linkedContactIdsVisibleTo(viewer),
+		deps.ignores.listVisibleTo(viewer)
 	]);
 
 	const matches = matchImmichPeople({
 		contacts,
 		people: named,
 		linkedContactIds,
-		linkedPersonIds: new Set(holders.keys())
+		linkedPersonIds: new Set(holders.keys()),
+		ignoredPairs: ignores.map(({ contactId, immichPersonId }) => ({ contactId, personId: immichPersonId }))
 	});
-	if (matches.length === 0) return { ok: true, rows: [] };
 
 	const personById = new Map(named.map((person) => [person.id, person]));
 	const contactById = new Map(contacts.map((c) => [c.id, c]));
+	const shownContact = (id: string) => {
+		const { displayName, avatarPhotoId } = contactById.get(id)!;
+		return { id, displayName, avatarPhotoId };
+	};
+
+	// Newest first. A pair whose contact is not in the list (archived, say) is left out with it.
+	const ignored = await Promise.all(
+		ignores
+			.filter((pair) => contactById.has(pair.contactId))
+			.sort((a, b) => b.ignoredAt - a.ignoredAt)
+			.map(
+				async ({ contactId, immichPersonId, ignoredBy, ignoredAt }): Promise<IgnoredMatch> => ({
+					contact: shownContact(contactId),
+					personId: immichPersonId,
+					immichName: personById.get(immichPersonId)?.name ?? null,
+					faceUrl: await faceUrlFor(deps.signer, contactId, immichPersonId),
+					ignoredBy,
+					ignoredAt
+				})
+			)
+	);
+	if (matches.length === 0) return { ok: true, rows: [], ignored };
+
 	const shownPeople = [...new Set(matches.flatMap((m) => m.candidates.map((c) => c.personId)))];
 	const counts = new Map(
 		await eachLimited(shownPeople, COUNTS_AT_ONCE, async (id) => {
@@ -128,9 +168,10 @@ export async function findImmichMatches(deps: ImmichMatchingDeps, viewer: Viewer
 
 	const rows = await Promise.all(
 		matches.map(async (match): Promise<MatchRow> => {
-			const { id, displayName, avatarPhotoId } = contactById.get(match.contactId)!;
+			const contact = shownContact(match.contactId);
+			const { id } = contact;
 			return {
-				contact: { id, displayName, avatarPhotoId },
+				contact,
 				kind: match.kind,
 				candidates: await Promise.all(
 					match.candidates.map(async ({ personId, strength }) => ({
@@ -144,5 +185,5 @@ export async function findImmichMatches(deps: ImmichMatchingDeps, viewer: Viewer
 			};
 		})
 	);
-	return { ok: true, rows };
+	return { ok: true, rows, ignored };
 }

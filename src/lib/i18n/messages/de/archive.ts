@@ -71,6 +71,8 @@ export const archive: ArchiveMessages = {
 		'Einige Schlagwörter an Menschen stehen nicht in der Schlagwortliste des Archivs und wurden ausgelassen.',
 	'archive.warning.immichLinkIncomplete':
 		'Eine Verknüpfung mit Immich ohne gültige Immich-Person wurde ausgelassen.',
+	'archive.warning.immichIgnoreIncomplete':
+		'Ein ignorierter Immich-Vorschlag ohne gültige Immich-Person wurde ausgelassen.',
 	'archive.warning.circleWithoutName': 'Ein Kreis ohne Namen wurde ausgelassen.',
 	'archive.warning.circleMissingParent': (p) =>
 		`„${p.name}“ lag in einem Kreis, den das Archiv nicht enthält; er wird für sich allein wiederhergestellt.`,

@@ -54,6 +54,11 @@ export interface MatchInput {
 	linkedContactIds: ReadonlySet<string>;
 	/** Immich people already linked to someone, whether or not the viewer sees them. */
 	linkedPersonIds: ReadonlySet<string>;
+	/**
+	 * Pairs a member said are not the same person. Never proposed again — but the face stays free
+	 * for anyone else, and the contact for any other face.
+	 */
+	ignoredPairs: readonly { contactId: string; personId: string }[];
 }
 
 /** Letters NFD does not take apart, written the way they are typed without them. */
@@ -117,6 +122,9 @@ function strengthOf(names: ReturnType<typeof namesOf>, immichName: string): Matc
 	return null;
 }
 
+/** One pair as a set key; ids hold no NUL, so the joint is unambiguous. */
+const pairKey = (contactId: string, personId: string) => `${contactId}\u0000${personId}`;
+
 /** The rows of *Find your people*, likely ones first, each part in the order of the names. */
 export function matchImmichPeople(input: MatchInput): ImmichMatch[] {
 	const people = input.people
@@ -124,11 +132,15 @@ export function matchImmichPeople(input: MatchInput): ImmichMatch[] {
 		.map((p) => ({ id: p.id, name: p.name, folded: foldName(p.name) }))
 		.filter((p) => p.folded !== '');
 	const contacts = input.contacts.filter((c) => !input.linkedContactIds.has(c.id));
+	const ignored = new Set(input.ignoredPairs.map((pair) => pairKey(pair.contactId, pair.personId)));
 
 	const found = contacts.map((contact) => {
 		const names = namesOf(contact);
 		const candidates: (MatchCandidate & { name: string })[] = [];
 		for (const p of people) {
+			// Dropped before anything is weighed: an ignored likely match leaves room for the
+			// contact's maybes, and stops making the face a doubt for anyone else.
+			if (ignored.has(pairKey(contact.id, p.id))) continue;
 			const strength = strengthOf(names, p.folded);
 			if (strength) candidates.push({ personId: p.id, strength, name: p.name });
 		}

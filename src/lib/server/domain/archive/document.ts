@@ -127,6 +127,20 @@ export function buildArchiveDocument(
 	const circleMembers = groupBy(t('circle_membership'), 'circle_id');
 	// One per person at most: the table's key is the contact (docs/concepts/immich.md §6).
 	const immichLinks = new Map(t('immich_link').map((row) => [id(row, 'contact_id'), row]));
+	// The Immich faces a member said this person is not (docs/concepts/immich.md §9), oldest first.
+	const immichIgnores = groupBy(t('immich_ignore'), 'contact_id');
+	const immichIgnoredOf = (person: string) => {
+		const rows = immichIgnores.get(person);
+		return rows
+			? rows.map((row) =>
+					present({
+						person: text(row, 'immich_person_id'),
+						ignored_by: text(row, 'ignored_by'),
+						ignored_at: moment(row, 'ignored_at')
+					})
+				)
+			: null;
+	};
 	const immichOf = (person: string) => {
 		const link = immichLinks.get(person);
 		return link
@@ -196,6 +210,8 @@ export function buildArchiveDocument(
 			tags: contactTags.get(person) ?? null,
 			// Which person in the household's Immich they are; the photos stay in Immich.
 			immich: immichOf(person),
+			// And the Immich faces they were said not to be, so a restore does not propose them again.
+			immich_ignored: immichIgnoredOf(person),
 			fields: (fields.get(person) ?? []).map((f) =>
 				present({
 					id: id(f),
