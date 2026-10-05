@@ -123,7 +123,7 @@ test('a row unfolds and folds in place, and the card above it holds still', asyn
 	await expect(datesBody(page)).not.toHaveAttribute('inert');
 	// Only what is below the row moved: the card's top and the line pressed stayed put.
 	expect((await boxOf(identityCard(page))).y).toBeCloseTo(cardBefore.y, 0);
-	expect((await boxOf(datesToggle(page))).y).toBeCloseTo(lineBefore.y + 8, 0);
+	expect((await boxOf(datesToggle(page))).y).toBeCloseTo(lineBefore.y, 0);
 	expect((await boxOf(datesRow(page))).height).toBeGreaterThan(rowBefore.height);
 
 	await datesToggle(page).click();
@@ -153,7 +153,7 @@ test('pressed again mid-way, a row turns round and lands folded, where it starte
 	// it had landed before the second press is the runner's timing, so only the end is read.
 	await expect.poll(async () => (await stepsOf(page, 'dates')).slice(-2)).toEqual(['inert', 'outroend']);
 	await expect(datesBody(page)).toHaveCount(0);
-	await expect(datesToggle(page)).toHaveAttribute('aria-expanded', 'true');
+	await expect(datesToggle(page)).toHaveAttribute('aria-expanded', 'false');
 	// No jump on landing: the row and the card are exactly as they were before the first press.
 	const rowAfter = await boxOf(datesRow(page));
 	expect(rowAfter.y).toBeCloseTo(rowBefore.y, 0);
@@ -185,7 +185,7 @@ test('Show more and Show fewer glide the People list between its two heights', a
 
 	await expect.poll(() => stepsOf(page, 'people')).toEqual(['moving', 'settled', 'moving', 'settled']);
 	await expect(showMore(page)).toBeVisible();
-	await expect(people).toHaveCount(folded + 1);
+	await expect(people).toHaveCount(folded);
 	expect((await boxOf(peopleRows(page))).height).toBeCloseTo(foldedHeight, 0);
 	await expect(peopleRows(page)).not.toHaveCSS('overflow', 'clip');
 });
@@ -210,7 +210,7 @@ test('the name glides into its editor and back, and the cursor goes where it alw
 	// then went.
 	await expect(nameLine).toBeFocused();
 	await expect.poll(() => stepsOf(page, 'name')).toEqual(['moving', 'settled', 'moving', 'settled']);
-	await expect.poll(() => stepsOf(page, 'name-editor')).toEqual(['introend', 'outroend']);
+	await expect.poll(() => stepsOf(page, 'name-editor')).toEqual(['introend', 'inert', 'outroend']);
 	await expect(page.locator(WATCHED['name-editor'])).toHaveCount(0);
 	await expect(page.getByTestId('name-editor')).toHaveCount(0);
 });
@@ -227,7 +227,7 @@ test.describe('with reduced motion', () => {
 		await showMore(page).click();
 
 		// The box was told it had arrived — once, and with no glide before it.
-		await expect.poll(() => stepsOf(page, 'people')).toEqual(['moving', 'settled']);
+		await expect.poll(() => stepsOf(page, 'people')).toEqual(['settled']);
 		await expect(showFewer(page)).toBeVisible();
 		expect(await people.count()).toBeGreaterThan(folded);
 	});
