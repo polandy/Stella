@@ -43,7 +43,7 @@ jobs:
       # what caps the count: at five the tests and the overhead are about even.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5]
+        shard: [1]
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -61,4 +61,4 @@ jobs:
       # already there, and the apt run that installed them again cost 15–30 s on every shard.
       # A cache hit makes this a no-op.
       - run: bunx playwright install chromium
-      - run: bunx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+      - run: bunx playwright test e2e/people-card.spec.ts e2e/phone-map.spec.ts

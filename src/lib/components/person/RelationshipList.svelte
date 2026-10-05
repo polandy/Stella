@@ -164,7 +164,7 @@
 									</span>
 								</span>
 							</a>
-							{#if editing}
+							{#if true}
 								<span class="flex shrink-0 items-center">
 									<Button
 										type="button"

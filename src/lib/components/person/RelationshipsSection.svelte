@@ -186,7 +186,6 @@
 	async function askHowConnected() {
 		tracingPath = true;
 		await tick();
-		document.getElementById('path-target')?.focus();
 	}
 
 	const MENU_ITEM =
@@ -329,7 +328,7 @@
 							type="button"
 							variant="ghost"
 							size="sm"
-							class="mt-2"
+							class="mt-2 {expanded ? 'min-w-[380px]' : ''}"
 							icon={expanded ? 'collapse' : 'expand'}
 							aria-expanded={expanded}
 							onclick={() => (expanded = !expanded)}

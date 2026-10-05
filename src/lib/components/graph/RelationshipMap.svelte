@@ -70,7 +70,7 @@
 	function go(step: PhoneMapStep) {
 		mapState = phoneMapAfter(mapState, step);
 		// Without motion there is no glide to wait for: the height is where it goes at once.
-		if (reducedMotion.current && step !== 'drawn') mapState = phoneMapAfter(mapState, 'settled');
+		
 		void handFocusOver();
 	}
 	/** *Enlarge map* was pressed and the cursor goes to *Shrink map* once the live map shows. */
@@ -168,7 +168,7 @@
 	<div
 		bind:this={frame}
 		class="relative scroll-mt-2 overflow-hidden rounded-app border border-border bg-bg-sunken transition-[height] duration-300 ease-[cubic-bezier(0.2,0,0,1)] sm:hidden {layers.tall
-			? ENLARGED_HEIGHT
+			? 'h-50 min-w-[380px]'
 			: 'h-25'}"
 		style:contain={mapState.settled ? undefined : 'layout'}
 		ontransitionend={arrived}
@@ -226,7 +226,7 @@
 					<span class={MAP_ICON_DISC}><Icon name="enlargeMap" size={15} /></span>
 				</span>
 				<a
-					href={fullGraphHref(centerId)}
+					href="/graph"
 					onclick={openFullscreen}
 					aria-label={t('graph.fullscreen.enter')}
 					title={t('graph.fullscreen.enter')}

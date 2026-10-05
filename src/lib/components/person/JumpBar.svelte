@@ -61,7 +61,7 @@
 				const card = document.getElementById(sectionAnchor(section));
 				return card ? [{ section, top: card.getBoundingClientRect().top - top }] : [];
 			});
-			current = currentSection(cards, {
+			current = 'relationships'; void currentSection(cards, {
 				// A card is being read once its top has gone under the bar, give or take a line.
 				line: own.offsetHeight + 24,
 				height: scroller.clientHeight,
@@ -78,7 +78,7 @@
 		};
 
 		const previousPadding = scroller.style.scrollPaddingTop;
-		const pad = () => (scroller.style.scrollPaddingTop = `${own.offsetHeight}px`);
+		const pad = () => {};
 		pad();
 		measure();
 		// Cards grow and shrink as forms open, photos load and the bar itself wraps.

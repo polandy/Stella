@@ -161,7 +161,7 @@
 			variant="ghost"
 			size="sm"
 			icon={expanded ? 'remove' : addIcon}
-			label={expanded ? t('common.cancel') : addLabel}
+			label={addLabel}
 			title={expanded ? t('common.cancel') : addLabel}
 			onclick={toggle}
 			aria-expanded={expanded}

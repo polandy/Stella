@@ -75,7 +75,7 @@ export const relationships = {
 	'relationships.role.partner.female': 'Partner',
 	'relationships.role.partner.neutral': 'Partner',
 	'relationships.role.spouse.male': 'Husband',
-	'relationships.role.spouse.female': 'Wife',
+	'relationships.role.spouse.female': 'Spouse',
 	'relationships.role.spouse.neutral': 'Spouse',
 	'relationships.role.friend.male': 'Friend',
 	'relationships.role.friend.female': 'Friend',

@@ -18,7 +18,7 @@ export type PeopleGroup = (typeof PEOPLE_GROUPS)[number];
  */
 export function peopleGroupOf(category: string): PeopleGroup {
 	if (category === 'romantic' || category === 'family') return 'family';
-	if (category === 'social' || category === 'professional') return category;
+	if (category === 'social') return category;
 	return 'other';
 }
 
