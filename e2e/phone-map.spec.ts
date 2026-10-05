@@ -116,7 +116,7 @@ test.describe('at 360px', () => {
 	test('nothing reaches past the screen with the card unfolded', async ({ page }) => {
 		await openMarkus(page);
 		await unfoldPeople(page);
-		await expect(page.getByTestId('relationship-list').getByRole('heading', { name: /^Other · / })).toBeVisible();
+		await expect(page.getByTestId('relationship-list').getByRole('heading', { name: /^Friends · / })).toBeVisible();
 		expect(await overflowsSideways(page)).toBe(false);
 	});
 

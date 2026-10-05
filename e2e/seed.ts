@@ -20,7 +20,13 @@ import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from '../src/lib/server/domain/archiv
  */
 
 /** The built-in relationship types the seed can write, by their stable id. */
-export const LINK = { siblingOf: 'sibling', parentOf: 'parent_child' } as const;
+export const LINK = {
+	siblingOf: 'sibling',
+	parentOf: 'parent_child',
+	friendOf: 'friend',
+	colleagueOf: 'colleague',
+	connectedTo: 'other'
+} as const;
 
 // A renamed built-in would otherwise surface as a restore warning and an empty review.
 for (const id of Object.values(LINK)) {

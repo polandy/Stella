@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, editPeople, fromPeopleMenu, signIn, unfoldPeople } from './app';
+import { LINK, personIdOf, seedHousehold } from './seed';
 
 /*
  * The person page's compact People card and its jump bar (docs/05 §5.5, docs/02 §2.4). Written
@@ -7,13 +8,12 @@ import { appReady, editPeople, fromPeopleMenu, signIn, unfoldPeople } from './ap
  *
  * Read-only against the demo household: forms are opened and cancelled, never sent, so the
  * seed's links stand as written. Markus Brunner has a wife, two parents, three children and a
- * brother (Family), two friends and a neighbour (Other), and worked-out in-laws, nephews and
- * nieces; Sandra Brunner-Keller adds two colleagues (Work). No other spec writes a link onto
- * either of them.
+ * brother (Family), two friends and a neighbour (Friends), and worked-out in-laws, nephews and
+ * nieces; no other spec writes a link onto him. The demo has no work or other tie on one
+ * person, so the case about all four groups seeds a household of its own.
  */
 
 const MARKUS = 'demo-c-markus';
-const SANDRA = 'demo-c-sandra';
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
@@ -66,8 +66,7 @@ test.describe('the compact list', () => {
 		await unfoldPeople(page);
 
 		// Everybody now, in their groups, and the button had counted exactly the ones it hid.
-		await expect(list(page).getByRole('heading', { name: /^Friends · 2$/ })).toBeVisible();
-		await expect(list(page).getByRole('heading', { name: /^Other · 1$/ })).toBeVisible();
+		await expect(list(page).getByRole('heading', { name: /^Friends · 3$/ })).toBeVisible();
 		await expect(tile(list(page), 'Thomas Widmer')).toHaveAccessibleDescription(/^Friend\b/);
 		await expect(tile(list(page), 'Kurt Lehmann')).toHaveAccessibleDescription(/^Neighbor\b/);
 		await expect(tile(list(page), 'Daniel Brunner')).toHaveAccessibleDescription(/^Brother\b/);
@@ -84,13 +83,30 @@ test.describe('the compact list', () => {
 	});
 
 	test('groups ties as Family, Friends, Work and Other', async ({ page }) => {
-		await openDemoPerson(page, SANDRA, 'Sandra Brunner-Keller');
-		await unfoldPeople(page);
+		const GRETA = 'Greta Gruppenfeld';
+		await seedHousehold(
+			page,
+			[GRETA, 'Hugo Gruppenfeld', 'Ida Kranzfeld', 'Jon Pultfeld', 'Kai Uferfeld'],
+			// Entered out of order: the card orders the groups, not the entry.
+			[
+				{ from: GRETA, to: 'Kai Uferfeld', type: LINK.connectedTo },
+				{ from: GRETA, to: 'Jon Pultfeld', type: LINK.colleagueOf },
+				{ from: GRETA, to: 'Ida Kranzfeld', type: LINK.friendOf },
+				{ from: GRETA, to: 'Hugo Gruppenfeld', type: LINK.siblingOf }
+			],
+			{ 'Hugo Gruppenfeld': 'male' }
+		);
+		await openDemoPerson(page, personIdOf(GRETA), GRETA);
 
-		const headings = list(page).getByRole('heading');
-		await expect(headings).toHaveText([/^Family · /, /^Friends · /, /^Work · /, /^Other · /]);
-		await expect(tile(list(page), 'Markus Brunner')).toHaveAccessibleDescription(/^Husband\b/);
-		await expect(tile(list(page), 'Reto Hofer')).toHaveAccessibleDescription(/^Colleague\b/);
+		// Four people fold nothing away, so every group is there.
+		await expect(list(page).getByRole('heading')).toHaveText([
+			'Family · 1',
+			'Friends · 1',
+			'Work · 1',
+			'Other · 1'
+		]);
+		await expect(tile(list(page), 'Hugo Gruppenfeld')).toHaveAccessibleDescription(/^Brother\b/);
+		await expect(tile(list(page), 'Jon Pultfeld')).toHaveAccessibleDescription(/^Colleague\b/);
 	});
 });
 
