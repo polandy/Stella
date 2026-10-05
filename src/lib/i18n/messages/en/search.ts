@@ -95,6 +95,9 @@ export const search = {
 	'graph.onPerson.loading': 'Drawing the map…',
 	// The phone's small preview of a person's map, which opens it full screen (docs/05 §5.5).
 	'graph.onPerson.view': 'View in the graph',
+	// The same preview grown inside the People card, and back (docs/05 §5.5) — not full screen.
+	'graph.onPerson.enlarge': 'Enlarge map',
+	'graph.onPerson.shrink': 'Shrink map',
 	'graph.fullscreen.enter': 'Full screen',
 	'graph.fullscreen.exit': 'Leave full screen'
 };
