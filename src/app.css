@@ -225,6 +225,12 @@
 	--edge-membership: var(--accent-lavender);
 	--edge-kinship: var(--fg-subtle);
 
+	/* Motion: one glide and one fade for everything that opens in place (docs/05 §5.11).
+	   Mirrored by `MOTION` in src/lib/design/tokens.ts. */
+	--motion-expand: 300ms;
+	--motion-fade: 200ms;
+	--ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
 	/* Shape */
 	--radius: 0.75rem;
 	--radius-control: 0.5rem;
@@ -265,6 +271,8 @@
 
 	--shadow-card: var(--shadow-card);
 	--shadow-pop: var(--shadow-pop);
+
+	--ease-standard: var(--ease-standard);
 
 	--font-sans: var(--font-sans);
 	--font-serif: var(--font-serif);

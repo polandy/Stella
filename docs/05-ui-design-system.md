@@ -14,3 +14,4 @@ like "docs/05 §5.8" resolves by opening the matching file below.
 - [5.7 Components (design-system inventory)](design/5.7-components.md)
 - [5.8 Relationship & context explorer styling](design/5.8-explorer-styling.md)
 - [5.9 Accessibility checklist](design/5.9-5.10-accessibility-and-iconography.md) / [5.10 Iconography & imagery](design/5.9-5.10-accessibility-and-iconography.md)
+- [5.11 Motion](design/5.11-motion.md)

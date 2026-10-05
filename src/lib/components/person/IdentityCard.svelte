@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { reveal } from '$lib/motion/motion.svelte';
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import FormError from '$lib/components/FormError.svelte';
@@ -147,7 +148,7 @@
 
 <!-- One fact of the grid: a small label over its value. -->
 {#snippet fact(label: string, icon: IconName, name: string, value: Snippet)}
-	<div class="flex min-w-0 flex-col gap-0.5 has-[form]:col-span-full" data-fact={name}>
+	<div class="flex min-w-0 flex-col gap-0.5 has-[[data-pane=on]:not([inert])_form]:col-span-full" data-fact={name}>
 		<dt class="flex items-center gap-1.5 text-xs text-fg-subtle"><Icon name={icon} size={12} />{label}</dt>
 		<dd class="min-w-0 text-sm text-fg [overflow-wrap:anywhere]">{@render value()}</dd>
 	</div>
@@ -351,9 +352,10 @@
 			their rows start folded — they are here to add to and take away from.
 		-->
 		{#if rows.listed.length > 0 || metLine}
-			<div bind:this={rowList} class="identity-rows grid gap-x-8">
+			<div bind:this={rowList} class="identity-rows grid gap-x-8" transition:reveal>
 				{#each rows.listed as row (row)}
-					<div data-identity-row={row} class="min-w-0">
+					<!-- Rows that *Add phone, email, tags …* brings unfold in place (docs/05 §5.11). -->
+					<div data-identity-row={row} class="min-w-0" transition:reveal>
 						{#if row === 'contact'}
 							<ContactFieldsRow {data} {form} />
 						{:else if row === 'tags'}
@@ -379,7 +381,7 @@
 			</div>
 		{/if}
 		{#if !current.revealed && rows.behindAddMore.length > 0}
-			<div class="-ml-2.5">
+			<div class="-ml-2.5" transition:reveal>
 				<Button variant="ghost" size="sm" icon="add" type="button" onclick={revealRows} data-testid="identity-add-more">
 					{t('contact.identity.addMore')}
 				</Button>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { reveal } from '$lib/motion/motion.svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -132,6 +133,8 @@
 						{/if}
 
 						{#if editing === type.id}
+							<!-- Both forms unfold under the row as one (docs/05 §5.11). -->
+							<div class="flex flex-col gap-1" transition:reveal>
 							<!-- The machine key stays as it was: it is what the type *is*, and rewriting it
 							     would make the row a different type to everything already stored. -->
 							<form
@@ -194,6 +197,7 @@
 								</div>
 								<p class="text-xs text-fg-subtle">{t('relationshipTypes.mergeHint')}</p>
 							</form>
+							</div>
 						{/if}
 					</li>
 				{/each}
@@ -237,7 +241,7 @@
 				</label>
 
 				{#if !addSymmetric}
-					<label class="flex flex-col gap-1">
+					<label class="flex flex-col gap-1" transition:reveal>
 						<span class="text-xs text-fg-muted">{t('relationshipTypes.fromOtherSide')}</span>
 						<input
 							name="reverseLabel"

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { reveal } from '$lib/motion/motion.svelte';
 	import FormError from '$lib/components/FormError.svelte';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
@@ -49,7 +50,7 @@
 	</header>
 
 	{#if showForm}
-		<form method="POST" action="?/create" class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card">
+		<form transition:reveal method="POST" action="?/create" class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card">
 			<FormError message={form?.error} id="circle-error" />
 
 			<label class="flex flex-col gap-1 text-sm">

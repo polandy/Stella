@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Swap from '$lib/components/Swap.svelte';
 	import FormError from '$lib/components/FormError.svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/Button.svelte';
@@ -39,7 +40,7 @@
 </script>
 
 <div class="border-t border-border-subtle first:border-t-0" data-row="gender">
-	{#if open}
+	<Swap when={open}>
 		<form method="POST" action="?/setGender" use:enhance={saved} class="flex flex-col gap-2 py-2">
 			<span class="text-sm font-medium text-fg">{t('contact.gender')}</span>
 			<div bind:this={chips} class="flex flex-wrap gap-1.5">
@@ -61,7 +62,7 @@
 				<Button variant="ghost" size="sm" type="button" onclick={() => (editing = false)}>{t('common.cancel')}</Button>
 			</div>
 		</form>
-	{:else}
+		{#snippet otherwise()}
 		<button
 			type="button"
 			onclick={() => (editing = true)}
@@ -75,5 +76,6 @@
 				<span class="ml-auto truncate text-fg-subtle">{t('contact.gender.notRecorded')}</span>
 			{/if}
 		</button>
-	{/if}
+		{/snippet}
+	</Swap>
 </div>

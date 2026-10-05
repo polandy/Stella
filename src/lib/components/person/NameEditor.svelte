@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Swap from '$lib/components/Swap.svelte';
 	import { enhance } from '$app/forms';
 	import { tick } from 'svelte';
 	import Button from '$lib/components/Button.svelte';
@@ -130,7 +131,8 @@
 	const LABEL = 'flex flex-col gap-1 text-xs text-fg-muted';
 </script>
 
-{#if open}
+<!-- The line and its editor glide into each other in place (docs/05 §5.11). -->
+<Swap when={open}>
 	<h1 class="text-2xl font-semibold leading-tight tracking-tight text-fg [overflow-wrap:anywhere] md:text-[2rem]">{name.displayName}</h1>
 	<!-- Escape from any of its fields lands here; the fields themselves stay plain inputs. -->
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -196,7 +198,7 @@
 			</Button>
 		</div>
 	</form>
-{:else}
+	{#snippet otherwise()}
 	<!--
 		The whole name line is the target, with a pencil that says so on touch too. Named by the
 		value itself, never by an `aria-label`: it sits inside the page's `h1`, and a label would
@@ -213,4 +215,5 @@
 			<span class="min-w-0 text-2xl font-semibold leading-tight [overflow-wrap:anywhere] md:text-[2rem]">{name.displayName}</span><Icon name="rename" size={16} class="text-fg-subtle" />
 		</button>
 	</h1>
-{/if}
+	{/snippet}
+</Swap>

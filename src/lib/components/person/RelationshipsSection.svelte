@@ -18,6 +18,9 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { tick, untrack } from 'svelte';
+	import { prefersReducedMotion } from 'svelte/motion';
+	import { glide, reveal } from '$lib/motion/motion.svelte';
+	import { scrollBehavior } from '$lib/motion/motion';
 	import AddRelationshipForm from './AddRelationshipForm.svelte';
 	import KinPanels from './KinPanels.svelte';
 	import PeopleMap from './PeopleMap.svelte';
@@ -189,6 +192,23 @@
 		document.getElementById('path-target')?.focus();
 	}
 
+	/*
+	 * *Show fewer* sits under the list it folds, so folding pulls it up the page; once the list
+	 * has glided shut the page follows it if it went past the top (docs/05 §5.11). Only when it
+	 * was the button pressed: *Done* in the header folds the list too, and must not move the page.
+	 */
+	let peopleColumn = $state<HTMLElement>();
+	let foldedFromToggle = false;
+	function toggleShowMore() {
+		foldedFromToggle = expanded;
+		expanded = !expanded;
+	}
+	function keepToggleInView() {
+		if (!foldedFromToggle) return;
+		foldedFromToggle = false;
+		peopleColumn?.querySelector('[data-people-toggle]')?.scrollIntoView({ block: 'nearest', behavior: scrollBehavior(prefersReducedMotion.current) });
+	}
+
 	const MENU_ITEM =
 		'flex w-full items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm text-fg hover:bg-primary-soft focus-visible:bg-primary-soft';
 	/** Nothing to correct on an empty card, so it offers no *Edit*. */
@@ -267,7 +287,7 @@
 			both ends to the explorer, which holds the whole graph (docs/05 §5.5).
 		-->
 		{#if tracingPath}
-			<div class="mb-3 flex flex-wrap items-end gap-3 rounded-control bg-bg-sunken p-3">
+			<div transition:reveal class="mb-3 flex flex-wrap items-end gap-3 rounded-control bg-bg-sunken p-3">
 				<label for="path-target" class="flex min-w-48 flex-1 flex-col gap-1 text-sm">
 					<span class="text-fg-muted">
 						{t('contact.relationships.howConnectedTo', { name: c.displayName })}
@@ -310,29 +330,34 @@
 				{#if visibleRelationships.length > 0}
 					<div class="min-w-0 @3xl:order-2"><PeopleMap {data} /></div>
 				{/if}
-				<div class="min-w-0">
-					<RelationshipList
-						{data}
-						{visibleRelationships}
-						{relationshipChoices}
-						{exclusionOf}
-						{nameOfContact}
-						{editing}
-						expanded={unfolded}
-						bind:relateOpen
-					/>
+				<div class="min-w-0" bind:this={peopleColumn}>
+					<!-- Unfolding and edit mode change the rows; the box glides between the two heights
+					     and *Show more* rides on its lower edge (docs/05 §5.11). -->
+					<div use:glide={{ key: `${unfolded}:${editing}`, onsettled: keepToggleInView }} data-testid="people-rows">
+						<RelationshipList
+							{data}
+							{visibleRelationships}
+							{relationshipChoices}
+							{exclusionOf}
+							{nameOfContact}
+							{editing}
+							expanded={unfolded}
+							bind:relateOpen
+						/>
 
-					<KinPanels {data} {editing} expanded={unfolded} />
+						<KinPanels {data} {editing} expanded={unfolded} />
+					</div>
 
 					{#if hiddenPeople > 0 || (expanded && !editing)}
 						<Button
+							data-people-toggle
 							type="button"
 							variant="ghost"
 							size="sm"
 							class="mt-2"
 							icon={expanded ? 'collapse' : 'expand'}
 							aria-expanded={expanded}
-							onclick={() => (expanded = !expanded)}
+							onclick={toggleShowMore}
 						>
 							{expanded
 								? t('contact.relationships.showFewer')

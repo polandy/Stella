@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Swap from '$lib/components/Swap.svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/Button.svelte';
 	import FormError from '$lib/components/FormError.svelte';
@@ -94,7 +95,8 @@
 	});
 </script>
 
-{#if open}
+<!-- The line and its editor glide into each other in place (docs/05 §5.11). -->
+<Swap when={open}>
 	<form
 		method="POST"
 		action="?/setJob"
@@ -142,8 +144,9 @@
 			<span class="text-xs text-fg-subtle">{t('contact.job.keys')}</span>
 		</div>
 	</form>
-{:else}
+	{#snippet otherwise()}
 	<button bind:this={trigger} type="button" onclick={start} title={triggerTitle} class={triggerClass}>
 		{@render children()}
 	</button>
-{/if}
+	{/snippet}
+</Swap>

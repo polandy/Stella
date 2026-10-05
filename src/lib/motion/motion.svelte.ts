@@ -1,0 +1,193 @@
+import type { ActionReturn } from 'svelte/action';
+import { prefersReducedMotion } from 'svelte/motion';
+import type { TransitionConfig } from 'svelte/transition';
+import { expandMs, fadeMs, gapToTakeUp, glidePlan, revealFrame, standardEasing } from './motion';
+
+/*
+ * The adapter between the motion rules (`motion.ts`, docs/05 §5.11) and the DOM. It holds the
+ * browser APIs — computed styles, the Web Animations API, a ResizeObserver — and decides
+ * nothing: every duration and every frame comes from the pure module.
+ *
+ * - `reveal`, a Svelte transition: one block appears or goes in place (`transition:reveal`).
+ * - `glide`, an action: a box whose content changes under it glides between the two heights.
+ * - `crossfade`, a Svelte transition: the two alternatives inside a gliding box fade over each
+ *   other (`Swap.svelte` pairs the two).
+ */
+
+// Svelte passes the direction to a deferred transition; its types leave the argument out.
+type DeferredTransition = (options?: { direction?: 'in' | 'out' | 'both' }) => TransitionConfig;
+
+/*
+ * A block on its way out takes the cursor with it, the way removing it used to: the block is
+ * inert while it fades, but a focused element that turns inert keeps focus until the browser's
+ * next frame, and code that asks "did the cursor fall to the page?" right after the change —
+ * Section's hand-back to its button — would read the wrong answer.
+ */
+function releaseFocus(node: HTMLElement) {
+	const active = document.activeElement;
+	if (active instanceof HTMLElement && node.contains(active)) active.blur();
+}
+
+/** The box the reveal grows from nothing to, measured once at rest so a reversal aims true. */
+interface Box {
+	height: number;
+	paddingTop: number;
+	paddingBottom: number;
+	marginTop: number;
+	marginBottom: number;
+	borderTop: number;
+	borderBottom: number;
+	/** The negative margins that cancel the parent's gap while the block is closed. */
+	closedMarginTop: number;
+	closedMarginBottom: number;
+}
+
+/** The row gap the parent puts beside this block, if it lays its children out in a column. */
+function parentRowGap(node: HTMLElement): number {
+	if (!node.parentElement) return 0;
+	const style = getComputedStyle(node.parentElement);
+	const column = style.display.includes('grid') || (style.display.includes('flex') && style.flexDirection.startsWith('column'));
+	return column ? parseFloat(style.rowGap) || 0 : 0;
+}
+
+function measure(node: HTMLElement): Box {
+	const style = getComputedStyle(node);
+	const px = (value: string) => parseFloat(value) || 0;
+	const closed = gapToTakeUp({
+		gap: parentRowGap(node),
+		siblingBefore: node.previousElementSibling !== null,
+		siblingAfter: node.nextElementSibling !== null
+	});
+	return {
+		closedMarginTop: closed.top,
+		closedMarginBottom: closed.bottom,
+		height: px(style.height),
+		paddingTop: px(style.paddingTop),
+		paddingBottom: px(style.paddingBottom),
+		marginTop: px(style.marginTop),
+		marginBottom: px(style.marginBottom),
+		borderTop: px(style.borderTopWidth),
+		borderBottom: px(style.borderBottomWidth)
+	};
+}
+
+/**
+ * One block appearing or going in place: its height grows from nothing while it fades in, and
+ * shrinks back while it fades out, so what is below it glides instead of jumping. Reverses from
+ * wherever it is when toggled mid-way. `overflow: clip` rather than `hidden` while it moves:
+ * a field focused inside the growing block must not scroll the block itself.
+ */
+export function reveal(node: HTMLElement): DeferredTransition {
+	const reduced = prefersReducedMotion.current;
+	// Measured now, at rest: once it moves, the computed height is the animated one.
+	const box = measure(node);
+	return ({ direction } = {}) => {
+		if (direction === 'out') releaseFocus(node);
+		return {
+			duration: expandMs(reduced),
+			easing: standardEasing,
+			css: (t) => {
+				const frame = revealFrame(t);
+				const of = (px: number) => `${px * frame.height}px`;
+				const margin = (open: number, closed: number) =>
+					`${open * frame.height + closed * (1 - frame.height)}px`;
+				return [
+					'overflow: clip',
+					`opacity: ${frame.opacity}`,
+					`height: ${of(box.height)}`,
+					`padding-top: ${of(box.paddingTop)}`,
+					`padding-bottom: ${of(box.paddingBottom)}`,
+					`margin-top: ${margin(box.marginTop, box.closedMarginTop)}`,
+					`margin-bottom: ${margin(box.marginBottom, box.closedMarginBottom)}`,
+					`border-top-width: ${of(box.borderTop)}`,
+					`border-bottom-width: ${of(box.borderBottom)}`
+				].join(';');
+			}
+		};
+	};
+}
+
+/** One of two alternatives fading in or out over the other, inside a gliding box. */
+export function crossfade(node: HTMLElement): DeferredTransition {
+	const reduced = prefersReducedMotion.current;
+	return ({ direction } = {}) => {
+		if (direction === 'out') releaseFocus(node);
+		return { duration: fadeMs(reduced), easing: standardEasing, css: (t) => `opacity: ${t}` };
+	};
+}
+
+export interface GlideOptions {
+	/** What the box shows; a change of it is what glides. Anything else that resizes it does not. */
+	key: unknown;
+	/** The height the box is going to, when its own natural height is not it (`Swap`). */
+	target?: () => number;
+	/** The glide has arrived — or there was none to make; `grew` says which way it went. */
+	onsettled?: (grew: boolean) => void;
+}
+
+/**
+ * A box whose content changes under it glides from the height on screen to the new one. Only a
+ * change of `key` glides: a window resized or a photo loading moves the box the way it always
+ * did. The box says where it is in `data-motion` — `moving` or `settled` — which is what a test
+ * waits on instead of a duration (docs/08 §8.4.2).
+ */
+export function glide(node: HTMLElement, options: GlideOptions): ActionReturn<GlideOptions> {
+	let key = options.key;
+	let current = options;
+	let running: Animation | null = null;
+	/*
+	 * The height last drawn. Kept by a ResizeObserver, which reports after layout and before the
+	 * next frame, so when the key changes it still holds the height the reader is looking at.
+	 */
+	let drawn = node.getBoundingClientRect().height;
+	const observer = new ResizeObserver(() => {
+		drawn = node.getBoundingClientRect().height;
+	});
+	observer.observe(node);
+	node.dataset.motion = 'settled';
+
+	function settle(grew: boolean) {
+		running = null;
+		node.style.overflow = '';
+		node.dataset.motion = 'settled';
+		current.onsettled?.(grew);
+	}
+
+	function start() {
+		// Mid-glide the box stands at the animated height; that is where the next one starts.
+		const from = running ? node.getBoundingClientRect().height : drawn;
+		running?.cancel();
+		running = null;
+		const to = current.target ? current.target() : node.getBoundingClientRect().height;
+		const plan = glidePlan({ from, to, reducedMotion: prefersReducedMotion.current });
+		if (!plan) {
+			settle(to > from);
+			return;
+		}
+		node.dataset.motion = 'moving';
+		node.style.overflow = 'clip';
+		const animation = node.animate(
+			[{ height: `${plan.from}px` }, { height: `${plan.to}px` }],
+			{ duration: plan.durationMs, easing: plan.easing }
+		);
+		running = animation;
+		animation.onfinish = () => {
+			if (running === animation) settle(plan.to > plan.from);
+		};
+	}
+
+	return {
+		update(next) {
+			current = next;
+			if (Object.is(next.key, key)) return;
+			key = next.key;
+			// After the content has changed — the update may run before the blocks inside the box
+			// have — and before the frame is drawn.
+			queueMicrotask(start);
+		},
+		destroy() {
+			observer.disconnect();
+			running?.cancel();
+		}
+	};
+}

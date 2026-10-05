@@ -8,6 +8,9 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
 	import { tick } from 'svelte';
+	import { prefersReducedMotion } from 'svelte/motion';
+	import { reveal } from '$lib/motion/motion.svelte';
+	import { scrollBehavior } from '$lib/motion/motion';
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
@@ -74,6 +77,8 @@
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
 		bind:this={box}
+		transition:reveal
+		onintroend={() => box?.scrollIntoView({ block: 'nearest', behavior: scrollBehavior(prefersReducedMotion.current) })}
 		id={panel === 'merge' ? 'merge' : undefined}
 		role="group"
 		onkeydown={onKeydown}

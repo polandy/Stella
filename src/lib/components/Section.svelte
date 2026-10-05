@@ -7,6 +7,9 @@
 	import { FIELD_SELECTOR, firstField } from './first-field';
 	import { focusLeftForm, owesFocusBack } from '$lib/ui/focus-return';
 	import { focusDestination } from '$lib/ui/focus-destination';
+	import { reveal } from '$lib/motion/motion.svelte';
+	import { scrollBehavior } from '$lib/motion/motion';
+	import { prefersReducedMotion } from 'svelte/motion';
 	import type { IconName } from './icons';
 
 	/*
@@ -141,6 +144,11 @@
 		});
 	});
 
+	/* Once the form has grown to its height, all of it is in view — the page glides there. */
+	function keepFormInView() {
+		form?.scrollIntoView({ block: 'nearest', behavior: scrollBehavior(prefersReducedMotion.current) });
+	}
+
 	/*
 	 * Escape closes the form and hands the cursor back to the button that opened it — unless a
 	 * control inside already used it to close a suggestion list of its own, or the form is only
@@ -192,6 +200,8 @@
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<div
 			bind:this={form}
+			transition:reveal
+			onintroend={keepFormInView}
 			role="group"
 			onkeydown={onKeydown}
 			onfocusin={() => (focusInForm = true)}
@@ -223,7 +233,7 @@
 			aria-expanded={shown}
 			class="flex min-w-0 items-center gap-2 py-2 text-left text-sm text-fg"
 		>
-			<span class="text-fg-subtle transition-transform" class:rotate-90={shown}>
+			<span class="text-fg-subtle transition-transform duration-(--motion-expand) ease-standard" class:rotate-90={shown}>
 				<Icon name="forward" size={13} />
 			</span>
 			<span class="font-medium">{title}</span>
@@ -241,7 +251,8 @@
 		</div>
 
 		{#if shown}
-			<div class="col-span-full pb-3 pl-5">{@render body()}</div>
+			<!-- Unfolds and folds in place (docs/05 §5.11); the line above it never moves. -->
+			<div class="col-span-full pb-3 pl-5" transition:reveal>{@render body()}</div>
 		{/if}
 	</section>
 {:else}
