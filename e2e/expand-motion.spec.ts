@@ -206,10 +206,11 @@ test('the name glides into its editor and back, and the cursor goes where it alw
 
 	await page.keyboard.press('Escape');
 
-	// Escape hands the cursor back to the name; the editor went inert and then went.
+	// Escape hands the cursor back to the name; the editor, faded in on opening, went inert and
+	// then went.
 	await expect(nameLine).toBeFocused();
 	await expect.poll(() => stepsOf(page, 'name')).toEqual(['moving', 'settled', 'moving', 'settled']);
-	await expect.poll(() => stepsOf(page, 'name-editor')).toEqual(['inert', 'outroend']);
+	await expect.poll(() => stepsOf(page, 'name-editor')).toEqual(['introend', 'inert', 'outroend']);
 	await expect(page.locator(WATCHED['name-editor'])).toHaveCount(0);
 	await expect(page.getByTestId('name-editor')).toHaveCount(0);
 });
