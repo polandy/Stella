@@ -236,7 +236,8 @@ Following the GitHub release feed, the existing outbound-call pattern
 2. **Glimpse** — the signed proxy, the strip and the viewer.
 3. **Matching list** — the review of §4.2.
 4. **Together** — the *You and Julia* chip and the relationship-row chip.
-5. **Use as photo** from the viewer — built (docs/02 §2.24.6, decisions §9.13–15).
+5. **Use as photo** from the viewer, and *From Immich* in the picture's chooser — built (docs/02
+   §2.24.6, decisions §9.13–16).
 
 Each slice is one PR with its UI, its docs (docs/02, docs/03, `using-stella.md`,
 `install.md` for the variables) and its unit tests; e2e after sign-off.
@@ -302,6 +303,16 @@ Decided while building slice 5 (2026-10-05):
     like an uploaded avatar, and the previous one drops back into the gallery with the same toast.
     There is no framing to change later: the original is Immich's, and Stella keeps only the
     square that was chosen.
+
+Decided with the maintainer on 2026-10-05, on reviewing slice 5:
+
+16. **Immich in the picture's chooser too.** Tapping the person's picture offers Immich beside a
+    file: with Immich configured the tap always opens the chooser (before, only when group photos
+    existed), with *Choose a picture…*, the group photos as before, and *From Immich*. A linked
+    person's section shows their latest Immich photos — the strip's signed list, the same tokens —
+    and a pick goes through the cropper and the same *Use as photo* path. An unlinked person's
+    section offers *Find in Immich*, the face picker; after linking, the photos appear. Without
+    Immich the tap behaves exactly as before.
 
 ---
 

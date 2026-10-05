@@ -1,7 +1,9 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
 	import FormError from '$lib/components/FormError.svelte';
+	import { invalidateAll } from '$app/navigation';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { submitAction } from '$lib/undo/submit-action';
 
 	/*
 	 * *Find in Immich* (docs/concepts/immich.md §4.3): the faces in the household's Immich, searched
@@ -11,7 +13,9 @@
 	 * signed for this person's picker (docs/concepts/immich.md §9.10).
 	 *
 	 * Opened by the Photos card's menu through `open`; a pick is a plain form post, so the page
-	 * reloads with the link and the dialog goes with it. A face already linked to another person
+	 * reloads with the link and the dialog goes with it. Opened from the picture's chooser
+	 * (docs/02 §2.24.6) it is given `onlinked` instead: the link is posted in place, the page's
+	 * data reloaded, and the chooser opens again on the person's Immich photos. A face already linked to another person
 	 * stays in the grid — leaving it out would read as "Immich does not know them" — but cannot
 	 * be picked, and says whose it is when the member may see that person (docs/concepts/immich.md §9.8).
 	 */
@@ -23,8 +27,10 @@
 		searchName: string;
 		/** Bindable: set to open the dialog; the dialog clears it when it closes. */
 		open?: boolean;
+		/** When given, a pick links in place and this follows, instead of the page navigating. */
+		onlinked?: () => void;
 	}
-	let { contactId, name, searchName, open = $bindable(false) }: Props = $props();
+	let { contactId, name, searchName, open = $bindable(false), onlinked }: Props = $props();
 
 	/** A face as the faces route sends it; `linkedTo` is set when another person has it already. */
 	interface Face {
@@ -86,6 +92,23 @@
 		void search();
 	}
 
+	/** A pick posted in place, for a caller that carries on from the link (`onlinked`). */
+	async function linkInPlace(event: SubmitEvent) {
+		if (!onlinked) return;
+		event.preventDefault();
+		const done = onlinked;
+		error = null;
+		try {
+			const body = new FormData(event.currentTarget as HTMLFormElement);
+			await submitAction(fetch, `/contacts/${encodeURIComponent(contactId)}?/linkImmich`, body, { keepalive: false });
+			dialog?.close();
+			await invalidateAll();
+			done();
+		} catch {
+			error = t('common.somethingWentWrong');
+		}
+	}
+
 	const INPUT = 'min-w-0 flex-1 rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg';
 </script>
 
@@ -136,7 +159,7 @@
 									</span>
 								</div>
 							{:else}
-								<form method="POST" action="?/linkImmich">
+								<form method="POST" action="?/linkImmich" onsubmit={linkInPlace}>
 									<input type="hidden" name="immichPersonId" value={face.id} />
 									<button
 										type="submit"

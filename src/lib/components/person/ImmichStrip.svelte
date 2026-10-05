@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { withPage, type GlimpsePhoto, type ImmichGlimpse } from '$lib/immich/strip';
+	import { withPage, type GlimpsePhoto } from '$lib/immich/strip';
 	import { photoAfterKey } from '$lib/ui/photo-walk';
 	import { tick } from 'svelte';
+	import { fetchGlimpse } from './immich-glimpse';
 	import ImmichPhotoViewer from './ImmichPhotoViewer.svelte';
 
 	/*
@@ -42,18 +43,6 @@
 	// The strip's buttons, so closing the viewer hands focus back to the photo now showing.
 	const tiles: HTMLButtonElement[] = $state([]);
 
-	/** One page of the strip; null when it could not be had, which the strip takes quietly (above). */
-	async function fetchPage(cursor: string | null): Promise<ImmichGlimpse | null> {
-		const query = cursor === null ? '' : `?${new URLSearchParams({ cursor })}`;
-		try {
-			const response = await fetch(`/contacts/${encodeURIComponent(contactId)}/immich/photos${query}`);
-			return response.ok ? ((await response.json()) as ImmichGlimpse) : null;
-		} catch {
-			// The network went away mid-request: the card is about to say Stella is offline.
-			return null;
-		}
-	}
-
 	$effect(() => {
 		// Asked again for whoever the page shows now; an answer for the person before is dropped.
 		void contactId;
@@ -62,7 +51,7 @@
 		photos = [];
 		nextCursor = null;
 		opened = null;
-		void fetchPage(null).then((page) => {
+		void fetchGlimpse(contactId, null).then((page) => {
 			if (!current) return;
 			if (page?.state === 'photos' && page.photos.length > 0) {
 				photos = page.photos;
@@ -81,7 +70,7 @@
 		if (nextCursor === null || loadingMore) return;
 		loadingMore = true;
 		const asked = contactId;
-		const page = await fetchPage(nextCursor);
+		const page = await fetchGlimpse(contactId, nextCursor);
 		loadingMore = false;
 		if (asked !== contactId) return;
 		if (page?.state === 'photos') {

@@ -293,7 +293,10 @@ like *In Immich · 1,284 photos* and a strip of their latest twelve photos, newe
 the arrow keys) to step through the strip and **Open in Immich** to go to that photo there.
 **Use as photo** there opens the same square cutter as a new photo: the square you pick becomes
 the person's photo in Stella, dated as Immich dates it — a copy, which stays even if the photo
-later goes from Immich. The photo they had before stays in their gallery.
+later goes from Immich. The photo they had before stays in their gallery. Tapping the person's
+picture at the top of their page offers the same: under **From Immich** pick one of their latest
+Immich photos — or, if they are not linked yet, **Find in Immich** first, and their photos
+appear.
 Anyone in the household sees the strip, whatever their own Immich account, because Stella
 fetches the photos; none of them is kept on your phone or computer, so offline the strip is
 not there. Anyone in the household can link or unlink a person, and the

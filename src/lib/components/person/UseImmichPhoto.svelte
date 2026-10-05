@@ -4,20 +4,16 @@
 	import PhotoCropper from '$lib/components/PhotoCropper.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { immichMediaToken } from '$lib/immich/media-url';
 	import type { CropRect } from '$lib/image/crop';
-	import { processAvatar } from '$lib/image/process-avatar';
 	import { loadFullPicture } from '$lib/image/send-cut';
+	import { sendImmichPhoto } from '$lib/image/send-immich-photo';
 	import { useRemovals } from '$lib/undo/context.svelte';
-	import { submitAction } from '$lib/undo/submit-action';
 
 	/*
 	 * *Use as photo* in the Immich viewer (docs/concepts/immich.md §4.3, docs/02 §2.24.6): the one
 	 * way a photo from Immich becomes Stella's. The preview the viewer shows is fetched again
-	 * through Stella's signed proxy, the cropper cuts a square of it, and the square is rendered
-	 * and re-encoded here as any new picture is (docs/02 §2.14) — so nothing but the pixels leaves
-	 * the browser. The server is told which preview it came from by its signed token, and dates the
-	 * copy by what Immich said. A deliberate copy, never a sync: nothing follows the photo after.
+	 * through Stella's signed proxy, the cropper cuts a square of it, and `sendImmichPhoto` keeps
+	 * it — as the picture's chooser does too. A deliberate copy, never a sync.
 	 */
 	interface Props {
 		contactId: string;
@@ -53,23 +49,11 @@
 	async function keep(crop: CropRect) {
 		const source = picture;
 		picture = null;
-		const token = immichMediaToken(previewUrl);
-		if (!source || token === null) return;
+		if (!source) return;
 		const hadPhoto = hasPhoto;
 		busy = true;
 		try {
-			// The capture date the browser might read out of the preview is left behind: the
-			// server dates the copy by what Immich said, signed into the token.
-			const { image, thumb, width, height } = await processAvatar(source, crop);
-			const body = new FormData();
-			body.append('token', token);
-			body.append('image', image, 'avatar.jpg');
-			body.append('thumb', thumb, 'thumb.jpg');
-			body.append('width', String(width));
-			body.append('height', String(height));
-			await submitAction(fetch, `/contacts/${encodeURIComponent(contactId)}?/useImmichPhoto`, body, {
-				keepalive: false
-			});
+			await sendImmichPhoto(contactId, previewUrl, source, crop);
 			await invalidateAll();
 			if (hadPhoto) removals.notify(t('components.photo.previousKept'));
 			ondone();
