@@ -4,7 +4,7 @@ import { immichPhotoUrl } from '../../../immich/web-link';
 import type { Viewer } from '../../access/visibility';
 import { isAssetCursor, type ImmichFailure, type ImmichGateway, type ImmichImage } from './gateway';
 import type { ImmichLinkRepository, LinkVisibleContacts } from './links';
-import type { ImmichMediaSigner } from './signed-media';
+import type { ImmichMediaSigner, SignedImmichMedia } from './signed-media';
 
 /*
  * A glimpse of a linked person's photos (docs/concepts/immich.md §4.3, §5): the strip under the
@@ -45,13 +45,16 @@ export async function readImmichGlimpse(
 	if (!page.ok) return { state: page.failure === 'notFound' ? 'personGone' : 'unreachable' };
 
 	const photos = await Promise.all(
-		page.value.assets.map(async ({ id, takenOn }): Promise<GlimpsePhoto> => {
-			const signed = (size: 'thumbnail' | 'preview') =>
-				deps.signer.sign({ kind: 'photo', contactId, personId: link.immichPersonId, assetId: id, size });
-			const [thumbnail, preview] = await Promise.all([signed('thumbnail'), signed('preview')]);
+		page.value.assets.map(async ({ id, takenAt }): Promise<GlimpsePhoto> => {
+			const photo = { kind: 'photo', contactId, personId: link.immichPersonId, assetId: id } as const;
+			const [thumbnail, preview] = await Promise.all([
+				deps.signer.sign({ ...photo, size: 'thumbnail' }),
+				// The preview is what *Use as photo* cuts from, so it carries the date the copy keeps.
+				deps.signer.sign({ ...photo, size: 'preview', ...(takenAt === null ? {} : { takenAt }) })
+			]);
 			return {
 				id,
-				takenOn,
+				takenOn: takenAt === null ? null : takenAt.slice(0, 10),
 				thumbnailUrl: immichMediaUrl(thumbnail),
 				previewUrl: immichMediaUrl(preview),
 				openUrl: immichPhotoUrl(deps.publicUrl, id)
@@ -71,7 +74,7 @@ export async function faceUrlFor(signer: ImmichMediaSigner, contactId: string, p
 }
 
 /** Why the proxy serves nothing: the token, the viewer, the link, or Immich. */
-export type ImmichMediaRefusal = 'invalid' | 'expired' | 'notVisible' | 'notLinked' | ImmichFailure;
+export type ImmichMediaRefusal = ImmichMediaAdmissionRefusal | ImmichFailure;
 
 export type ImmichMediaOutcome = { ok: true; image: ImmichImage } | { ok: false; refusal: ImmichMediaRefusal };
 
@@ -93,17 +96,37 @@ export async function openImmichMedia(
 	viewer: Viewer,
 	token: string
 ): Promise<ImmichMediaOutcome> {
+	const admitted = await admitImmichMedia(deps, viewer, token);
+	if (!admitted.ok) return admitted;
+	const { media } = admitted;
+	if (media.kind === 'face') return served(await deps.gateway.personThumbnail(media.personId));
+	return served(await deps.gateway.assetImage(media.assetId, media.size));
+}
+
+/** Why a token is turned away before Immich is asked anything. */
+export type ImmichMediaAdmissionRefusal = 'invalid' | 'expired' | 'notVisible' | 'notLinked';
+
+/**
+ * Whether a token still names something this viewer may have, asking Immich nothing: the
+ * signature and its expiry; whether the viewer sees the contact, through the access layer; and,
+ * for a photo, whether the contact is still linked to the person the photo was listed for. The
+ * proxy asks it before serving, *Use as photo* before keeping a copy.
+ */
+export async function admitImmichMedia(
+	deps: Pick<ImmichMediaDeps, 'links' | 'contacts' | 'signer'>,
+	viewer: Viewer,
+	token: string
+): Promise<{ ok: true; media: SignedImmichMedia } | { ok: false; refusal: ImmichMediaAdmissionRefusal }> {
 	const verified = await deps.signer.verify(token);
 	if (!verified.ok) return { ok: false, refusal: verified.reason };
 	const { media } = verified;
 
 	if (!(await deps.contacts.findByIdVisibleTo(viewer, media.contactId))) return { ok: false, refusal: 'notVisible' };
-
-	if (media.kind === 'face') return served(await deps.gateway.personThumbnail(media.personId));
+	if (media.kind === 'face') return { ok: true, media };
 
 	const link = await deps.links.findForContactVisibleTo(viewer, media.contactId);
 	if (link?.immichPersonId !== media.personId) return { ok: false, refusal: 'notLinked' };
-	return served(await deps.gateway.assetImage(media.assetId, media.size));
+	return { ok: true, media };
 }
 
 function served(

@@ -1,6 +1,6 @@
 /*
  * Which Immich person a contact probably is, by name (docs/concepts/immich.md §4.2). Pure: the
- * *Find your people* list (docs/02 §2.24.6) reads the household's contacts and Immich's named
+ * *Find your people* list (docs/02 §2.24.7) reads the household's contacts and Immich's named
  * people through the access layer and the gateway, and this decides what to propose.
  *
  * A name agreeing is a hint, not a proof — the face settles it. So the rules only decide how

@@ -6,7 +6,7 @@ import type { ImmichLinkRepository } from './links';
 import type { ImmichMediaSigner } from './signed-media';
 
 /*
- * *Settings → Immich → Find your people* (docs/concepts/immich.md §4.2, docs/02 §2.24.6): the
+ * *Settings → Immich → Find your people* (docs/concepts/immich.md §4.2, docs/02 §2.24.7): the
  * people the viewer sees, next to the faces Immich has named, matched by name in
  * `src/lib/immich/match.ts`. Any member may use it — a link is household data (§9.4) — and it
  * only ever lists contacts the access layer lets the viewer see. Linking itself is

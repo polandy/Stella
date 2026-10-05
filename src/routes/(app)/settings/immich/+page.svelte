@@ -11,7 +11,7 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * *Settings → Immich → Find your people* (docs/concepts/immich.md §4.2, docs/02 §2.24.6): a
+	 * *Settings → Immich → Find your people* (docs/concepts/immich.md §4.2, docs/02 §2.24.7): a
 	 * review list in the style of the relationship suggestions. Each row puts the Immich face next
 	 * to the Stella avatar — you recognise your aunt faster than you read her name. A likely row
 	 * links in one tap, and *Link all likely* takes every one of them; a maybe asks, showing every

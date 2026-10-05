@@ -8,7 +8,7 @@ import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * *Settings → Immich → Find your people* (docs/concepts/immich.md §4.2, docs/02 §2.24.6): every
+ * *Settings → Immich → Find your people* (docs/concepts/immich.md §4.2, docs/02 §2.24.7): every
  * person the viewer sees, next to the Immich face their name matches. Any member may use it — a
  * link is household data (§9.4). Without Immich it does not exist.
  *

@@ -157,7 +157,7 @@ describe('createHttpImmichGateway', () => {
 		);
 		expect(await gateway.latestAssets(ID, 12, 'c1')).toEqual({
 			ok: true,
-			value: { assets: [{ id: ASSET, takenOn: '2026-08-14' }], nextCursor: 'c2' }
+			value: { assets: [{ id: ASSET, takenAt: '2026-08-14T18:30:00' }], nextCursor: 'c2' }
 		});
 		expect(calls[0].url).toBe(`${BASE}/api/search/metadata`);
 		expect(calls[0].method).toBe('POST');

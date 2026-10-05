@@ -118,7 +118,13 @@ import type { ImportDeps, ImportRepository } from './domain/import/apply';
 import type { ApiImportDeps } from './domain/import/api/api-import';
 import type { ImportedPhotoDeps } from './domain/import/monica/photos';
 import type { InteractionDeps, InteractionRepository } from './domain/interactions/interactions';
-import type { AvatarDeps, MediaStore, MediaStreamSource, PhotoRepository } from './domain/media/avatars';
+import {
+	setContactAvatar,
+	type AvatarDeps,
+	type MediaStore,
+	type MediaStreamSource,
+	type PhotoRepository
+} from './domain/media/avatars';
 import type { CutDeps, CutRepository } from './domain/media/cuts';
 import type { FramingDeps, FramingRepository } from './domain/media/framing';
 import type { GalleryDeps } from './domain/media/gallery';
@@ -131,6 +137,7 @@ import type { ImmichGateway } from './domain/immich/gateway';
 import type { ImmichGlimpseDeps, ImmichMediaDeps } from './domain/immich/glimpse';
 import type { ImmichLinkDeps, ImmichLinkRepository } from './domain/immich/links';
 import type { ImmichMatchingDeps } from './domain/immich/matching';
+import type { UseImmichPhotoDeps } from './domain/immich/use-as-photo';
 import { createImmichMediaSigner, type ImmichMediaSigner } from './domain/immich/signed-media';
 import { demoImmichLibrary } from './immich/demo-library';
 import { createFakeImmichGateway } from './immich/fake-gateway';
@@ -756,6 +763,21 @@ export function getImmichMatchingDeps(): ImmichMatchingDeps | null {
 	const configured = getImmich();
 	if (!configured) return null;
 	return { links: getImmichLinks(), contacts: getContacts(), gateway: configured.gateway, signer: configured.signer };
+}
+
+/**
+ * Deps for keeping a photo from the Immich viewer as the person's own, or null without Immich:
+ * the proxy's checks, then the path every new avatar takes (docs/02 §2.14).
+ */
+export function getUseImmichPhotoDeps(): UseImmichPhotoDeps | null {
+	const configured = getImmich();
+	if (!configured) return null;
+	return {
+		links: getImmichLinks(),
+		contacts: getContacts(),
+		signer: configured.signer,
+		setAvatar: (uploader, contactId, upload) => setContactAvatar(getAvatarDeps(), uploader, contactId, upload)
+	};
 }
 
 /** Deps for linking a contact to an Immich person, or null without Immich. */

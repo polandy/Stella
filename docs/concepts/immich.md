@@ -1,6 +1,6 @@
 # Concept — A person's photos, from Immich
 
-Status: **slices 1–3 built** (*Connect + link*, *Glimpse*, *Matching list*, docs/02 §2.24); slices 4–5 are not. The decisions taken with the maintainer on 2026-10-01 are
+Status: **slices 1, 2, 3 and 5 built** (*Connect + link*, *Glimpse*, *Matching list*, *Use as photo*, docs/02 §2.24); slice 4 is not. The decisions taken with the maintainer on 2026-10-01 are
 listed in §9; one point (phone deep links) waits for a test on the device. Facts about Immich
 are taken from its OpenAPI spec at v3.2.4 (2026-09) and are cited in §10.
 
@@ -234,9 +234,10 @@ Following the GitHub release feed, the existing outbound-call pattern
 1. **Connect + link** — config, the status line, *Find in Immich* / *Unlink* on the person
    page, the count, and *Open in Immich* for every member.
 2. **Glimpse** — the signed proxy, the strip and the viewer.
-3. **Matching list** — the review of §4.2. *Built* (docs/02 §2.24.6).
+3. **Matching list** — the review of §4.2 — built (docs/02 §2.24.7, decisions §9.17–20).
 4. **Together** — the *You and Julia* chip and the relationship-row chip.
-5. **Use as photo** from the viewer.
+5. **Use as photo** from the viewer, and *From Immich* in the picture's chooser — built (docs/02
+   §2.24.6, decisions §9.13–16).
 
 Each slice is one PR with its UI, its docs (docs/02, docs/03, `using-stella.md`,
 `install.md` for the variables) and its unit tests; e2e after sign-off.
@@ -284,17 +285,46 @@ Decided while building slice 2 (2026-10-04):
     still frame there would read as a photo. The count on the line stays Immich's own, videos
     included.
 
+Decided while building slice 5 (2026-10-05):
+
+13. **The browser cuts, the server checks.** The square is cut from the preview in the browser,
+    through the cropper and the canvas re-encode every new picture takes (docs/02 §2.14), so the
+    server keeps needing no image library and no metadata of the preview reaches it. The server
+    takes the square only with the preview's signed token, for the person whose page it is, after
+    the proxy's own checks (signature, expiry, the access layer, the link) — and asks Immich
+    nothing then, so no asset id from a browser is ever fetched. It does not ask Immich again
+    whether the face is in the photo: the token already says Stella listed that photo for that
+    person.
+14. **The date comes from Immich, signed.** When the strip is listed, the preview's token carries
+    when Immich says the photo was taken (`localDateTime` as the camera's wall clock, else
+    `fileCreatedAt` in UTC). *Use as photo* dates the copy by that, never by a date a browser
+    sends or by what EXIF an Immich preview may or may not keep.
+15. **It is the avatar path, not a framing.** The copy is a new photo the person wears, at 512 px
+    like an uploaded avatar, and the previous one drops back into the gallery with the same toast.
+    There is no framing to change later: the original is Immich's, and Stella keeps only the
+    square that was chosen.
+
+Decided with the maintainer on 2026-10-05, on reviewing slice 5:
+
+16. **Immich in the picture's chooser too.** Tapping the person's picture offers Immich beside a
+    file: with Immich configured the tap always opens the chooser (before, only when group photos
+    existed), with *Choose a picture…*, the group photos as before, and *From Immich*. A linked
+    person's section shows their latest Immich photos — the strip's signed list, the same tokens —
+    and a pick goes through the cropper and the same *Use as photo* path. An unlinked person's
+    section offers *Find in Immich*, the face picker; after linking, the photos appear. Without
+    Immich the tap behaves exactly as before.
+
 Decided while building slice 3 (2026-10-05):
 
-13. **What a maybe is, beyond §4.2.** Besides a first name or a nickname alone, a full name in
+17. **What a maybe is, beyond §4.2.** Besides a first name or a nickname alone, a full name in
     Immich for someone Stella knows by a first name only, and the first name with one half of a
     double last name (*Sandra Brunner* for *Sandra Brunner-Keller*) are maybes; nickname plus
     last name is a full name, so likely. A face somebody's full name agrees with is offered to
     nobody else as a maybe, and a person with a likely match is not shown their maybes.
-14. **Ambiguity always asks.** Two faces with one name, or one face two people share a full name
+18. **Ambiguity always asks.** Two faces with one name, or one face two people share a full name
     with, is a maybe even when each name agrees in full: *Link all likely* never chooses.
-15. **The list only adds.** Linking from it never replaces a link made since the list was shown.
-16. **"Not now" is not stored.** A maybe can be put aside for the visit; there is no dismissal
+19. **The list only adds.** Linking from it never replaces a link made since the list was shown.
+20. **"Not now" is not stored.** A maybe can be put aside for the visit; there is no dismissal
     log, because what is left unmatched is not a problem to solve (§4.2).
 
 ---

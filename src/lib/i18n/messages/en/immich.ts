@@ -75,6 +75,8 @@ export const immich = {
 	'immich.viewer.position': (p: { at: number; count: number }) => `${p.at} of ${p.count}`,
 	'immich.viewer.previous': 'Previous photo',
 	'immich.viewer.next': 'Next photo',
+	'immich.viewer.use': 'Use as photo',
+	'immich.viewer.useFailed': 'Couldn’t keep this photo. Reload the page and try again.',
 
 	// The face picker (§4.3).
 	'immich.picker.title': (p: { name: string }) => `Find ${p.name} in Immich`,

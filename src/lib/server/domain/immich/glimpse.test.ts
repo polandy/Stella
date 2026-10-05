@@ -96,6 +96,22 @@ describe('readImmichGlimpse', () => {
 		expect(first.takenOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 	});
 
+	it('signs when a photo was taken into its preview, the picture *Use as photo* starts from', async () => {
+		const { glimpseDeps, signer, gateway } = setup();
+		const glimpse = await readImmichGlimpse(glimpseDeps, viewer, 'c-bert', null);
+		if (glimpse?.state !== 'photos') throw new Error(`no photos: ${JSON.stringify(glimpse)}`);
+		const [first] = glimpse.photos;
+		const listed = await gateway.latestAssets(BERT_ID, 1, null);
+		if (!listed.ok) throw new Error('the fake did not list');
+		const takenAt = listed.value.assets[0].takenAt;
+		expect(takenAt).not.toBeNull();
+
+		expect(await signer.verify(tokenOf(first.previewUrl))).toMatchObject({ ok: true, media: { takenAt } });
+		expect(first.takenOn).toBe(takenAt!.slice(0, 10));
+		const thumbnail = await signer.verify(tokenOf(first.thumbnailUrl));
+		expect(thumbnail.ok && 'takenAt' in thumbnail.media).toBe(false);
+	});
+
 	it('goes on from where the last page ended, and says when there is no more', async () => {
 		const { glimpseDeps } = setup();
 		// Carl has seven photos: one short page, and nothing after it.

@@ -41,6 +41,25 @@ describe('createImmichMediaSigner', () => {
 		});
 	});
 
+	it('reads back when a photo was taken, so *Use as photo* dates it by what Immich said', async () => {
+		const clock = fakeClock();
+		const signer = createImmichMediaSigner({ secret: SECRET, clock });
+		for (const takenAt of ['2019-05-03T14:22:01', '2019-05-03T12:22:01Z']) {
+			const preview = { ...photo, size: 'preview', takenAt } as const;
+			expect(await signer.verify(await signer.sign(preview))).toEqual({
+				ok: true,
+				media: { ...preview, expiresAt: clock.now() + IMMICH_MEDIA_TTL_MS }
+			});
+		}
+	});
+
+	it('refuses a signed capture date that does not read as one', async () => {
+		const clock = fakeClock();
+		const signer = createImmichMediaSigner({ secret: SECRET, clock });
+		const token = await signer.sign({ ...photo, takenAt: '2019-02-30T10:00:00' });
+		expect(await signer.verify(token)).toEqual({ ok: false, reason: 'invalid' });
+	});
+
 	it('reads back a face token', async () => {
 		const clock = fakeClock();
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });

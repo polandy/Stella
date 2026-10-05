@@ -7,7 +7,7 @@ import type { ImmichMediaSigner } from './signed-media';
 import { BERT_ID, CARL_ID, testLibrary } from './test-library';
 
 /*
- * *Find your people* (docs/concepts/immich.md §4.2, docs/02 §2.24.6): the household's people the
+ * *Find your people* (docs/concepts/immich.md §4.2, docs/02 §2.24.7): the household's people the
  * viewer sees, next to the faces Immich has named, with what the face and the count need.
  */
 
