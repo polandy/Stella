@@ -129,6 +129,15 @@ describe('createDrizzleImmichLinkRepository', () => {
 		expect((await repo.holdersOf(asAnna, [])).size).toBe(0);
 	});
 
+	it('lists the linked contacts a viewer sees, and only those', async () => {
+		await repo.save(link('c-shared', PERSON), entry('a1', 'c-shared'));
+		await repo.save(link('c-private', OTHER_PERSON), entry('a2', 'c-private'));
+
+		expect([...(await repo.linkedContactIdsVisibleTo(asAnna))].sort()).toEqual(['c-private', 'c-shared']);
+		expect([...(await repo.linkedContactIdsVisibleTo(asBert))]).toEqual(['c-shared']);
+		expect([...(await repo.linkedContactIdsVisibleTo(asDora))]).toEqual([]);
+	});
+
 	it('goes with its contact', async () => {
 		await repo.save(link('c-shared'), entry('a1', 'c-shared'));
 		db.delete(schema.contact).run();

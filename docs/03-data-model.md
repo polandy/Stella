@@ -42,6 +42,7 @@ contact   *───* circle          (circle_membership → derived shared-cont
 circle    0───1 circle          (parent_circle_id, optional nesting)
 contact   *───* contact         (relationship, via from/to + type)
 contact   1───? immich_link     (which Immich person they are)  [M3]
+contact   1───* immich_ignore   (Immich faces they were said not to be)  [M3]
 
 relationship_type 1───* relationship
 interaction   *───* contact     (interaction_participant)
@@ -611,6 +612,24 @@ holds a person is named to another member only through `canViewContact`. A merge
 the survivor unless the survivor already has one (`update or ignore`, docs/02 §2.2). Export
 writes it under the person as `immich: { person, linked_by, linked_at }`; restore refuses an id
 that is not a UUID.
+
+### immich_ignore  [M3]
+A proposal of *Find your people* a member turned down: this contact is not that Immich person
+(docs/02 §2.24.7, `docs/concepts/immich.md` §9.21). Household data like a link.
+
+| column | type | notes |
+|---|---|---|
+| contact_id | text fk → contact.id | cascade: deleted with the contact |
+| immich_person_id | text | Immich's UUID for the person; no FK |
+| ignored_by | text fk → user.id | the member who ignored it — shown as *Ignored by … on …* |
+| ignored_at | int | |
+
+Primary key `(contact_id, immich_person_id)`: a pair is ignored once, and a second ignore keeps
+the first record. No visibility of its own: reads and removals (*Propose again*) join `contact`
+and go through `contactVisibleTo` (§3.7). Not written to the activity log — the row is its own
+record of who and when. A merge carries the merged record's pairs to the survivor (`update or
+ignore`: the survivor's own record of a pair wins). Export writes them under the person as
+`immich_ignored: [{ person, ignored_by, ignored_at }]`; restore refuses an id that is not a UUID.
 
 ### suggestion_dismissal  [M2]
 The claims the household has declined, so a suggestion answered once is not offered again

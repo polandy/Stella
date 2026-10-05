@@ -4,6 +4,7 @@ export const immich = {
 	// Why a link was refused, or a call failed (docs/concepts/immich.md §4.5).
 	'immich.error.personGone': 'This person is no longer in Immich.',
 	'immich.error.linkedTo': (p: { name: string }) => `This face is already linked to ${p.name}.`,
+	'immich.error.contactLinked': (p: { name: string }) => `${p.name} is linked already.`,
 	'immich.error.linkedElsewhere': 'This face is already linked to another person in Stella.',
 	'immich.error.unreachable': 'Immich didn’t answer. Try again in a moment.',
 	'immich.error.keyRejected': 'Immich refused Stella’s key. An admin needs to check it.',
@@ -28,6 +29,36 @@ export const immich = {
 		'Everyone in the household can see the photos of the people linked from this library.',
 	'immich.settings.howToLink': 'Link a person from the menu of the Photos card on their page.',
 
+	// Settings → Immich → Find your people: the matching list (§4.2).
+	'immich.match.title': 'Find your people',
+	'immich.match.blurb': 'Link the people in Stella to their faces in Immich.',
+	'immich.match.intro':
+		'Faces named in Immich, next to the people in Stella with the same name. Link the ones that are the same person — the face tells you.',
+	'immich.match.asking': 'Asking Immich for its people…',
+	'immich.match.linkAll': (p: { count: number }) => `Link all likely (${p.count})`,
+	'immich.match.maybeOne': (p: { name: string }) => `Could this be ${p.name}?`,
+	'immich.match.maybeMany': (p: { name: string }) => `Which of these is ${p.name}?`,
+	'immich.match.link': 'Link',
+	'immich.match.face': (p: { name: string }) => `${p.name} in Immich`,
+	'immich.match.inImmich': (p: { name: string }) => `In Immich: ${p.name}`,
+	'immich.match.photos': (p: { count: number; shown: string }) => `${p.shown} ${p.count === 1 ? 'photo' : 'photos'}`,
+	'immich.match.skip': 'Not now',
+	'immich.match.skipLabel': (p: { name: string }) => `Not now: ${p.name}`,
+	'immich.match.linked': (p: { count: number }) =>
+		p.count === 1 ? '1 person linked.' : `${p.count} people linked.`,
+	'immich.match.ignore': 'Ignore',
+	'immich.match.ignoreLabel': (p: { name: string }) => `Ignore the proposal for ${p.name}`,
+	'immich.match.ignoredToast': 'Proposal ignored',
+	'immich.match.ignoredHeading': (p: { count: number }) => `Ignored (${p.count})`,
+	'immich.match.ignoredBy': (p: { name: string; date: string }) => `Ignored by ${p.name} on ${p.date}`,
+	'immich.match.formerMember': 'a former member',
+	'immich.match.unnamedFace': 'no longer named in Immich',
+	'immich.match.proposeAgain': 'Propose again',
+	'immich.match.proposeAgainLabel': (p: { name: string }) => `Propose again: ${p.name}`,
+	'immich.match.proposedAgainToast': 'Proposed again',
+	'immich.match.done': 'That’s everyone for now.',
+	'immich.match.doneHint': 'Name more faces in Immich, then look again.',
+	'immich.match.again': 'Look again',
 	// The person page's Photos card (§4.3).
 	// Without the person's name: the page heading already names them, and a second control
 	// carrying it would make "the button called Anna" ambiguous.

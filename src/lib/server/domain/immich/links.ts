@@ -34,6 +34,8 @@ export interface ImmichLink {
 export interface ImmichLinkRepository {
 	/** The contact's link, or null when it has none or the contact is out of the viewer's reach. */
 	findForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ImmichLink | null>;
+	/** The contacts the viewer sees that are linked already — *Find your people* skips them. */
+	linkedContactIdsVisibleTo(viewer: Viewer): Promise<Set<string>>;
 	/**
 	 * Who holds each of these Immich people, if anyone. `name` is the holder's shown name when
 	 * the viewer may see them, null when not — the holder's existence is all that may be said.
@@ -73,8 +75,15 @@ export interface ImmichLinkDeps {
 
 /** A link Stella will not make, with the reason a member can act on. */
 export class ImmichLinkRefusedError extends TranslatableError {
-	constructor(reason: ImmichFailure | { linkedTo: ImmichHolder }) {
-		super(typeof reason === 'string' ? refusalPhrase(reason) : takenPhrase(reason.linkedTo), 'ImmichLinkRefusedError');
+	constructor(reason: ImmichFailure | { linkedTo: ImmichHolder } | { alreadyLinked: string }) {
+		super(
+			typeof reason === 'string'
+				? refusalPhrase(reason)
+				: 'alreadyLinked' in reason
+					? phrase('immich.error.contactLinked', { name: reason.alreadyLinked })
+					: takenPhrase(reason.linkedTo),
+			'ImmichLinkRefusedError'
+		);
 	}
 }
 
@@ -160,6 +169,48 @@ export async function linkToImmich(
 		// Lost the race: whoever won holds the person now, and is named as above.
 		throw new ImmichLinkRefusedError({ linkedTo: (await holderOtherThanThem()) ?? { contactId: '', name: null } });
 	}
+}
+
+/** A pair *Find your people* proposed and a member confirmed. */
+export interface ConfirmedMatch {
+	contactId: string;
+	immichPersonId: string;
+}
+
+/** What linking from the list came to: how many were linked, and why the others were not. */
+export interface LinkMatchesResult {
+	linked: number;
+	refused: { contactId: string; error: ImmichLinkRefusedError | ContactGoneError }[];
+}
+
+/**
+ * Link pairs confirmed on *Find your people* (concept §4.2) — one row's Link, or *Link all
+ * likely*. Each goes through `linkToImmich`, so every check of the picker holds. Unlike the
+ * picker, the list only ever adds: a contact linked since the list was shown — by another member,
+ * in another tab — keeps that link, because the member confirmed a proposal made for an unlinked
+ * person, not a change of someone's face. A refusal does not stop the rest; anything else does.
+ */
+export async function linkMatches(
+	deps: ImmichLinkDeps,
+	actor: Actor,
+	pairs: readonly ConfirmedMatch[]
+): Promise<LinkMatchesResult> {
+	const result: LinkMatchesResult = { linked: 0, refused: [] };
+	for (const { contactId, immichPersonId } of pairs) {
+		try {
+			const current = await deps.links.findForContactVisibleTo(viewerOf(actor), contactId);
+			if (current && current.immichPersonId !== immichPersonId) {
+				const contact = await deps.contacts.findByIdVisibleTo(viewerOf(actor), contactId);
+				throw new ImmichLinkRefusedError({ alreadyLinked: contact?.displayName ?? '' });
+			}
+			if (!current) await linkToImmich(deps, actor, contactId, immichPersonId);
+			result.linked++;
+		} catch (error) {
+			if (!(error instanceof ImmichLinkRefusedError || error instanceof ContactGoneError)) throw error;
+			result.refused.push({ contactId, error });
+		}
+	}
+	return result;
 }
 
 /** Remove a contact's link. Needs nothing from Immich, so it works while Immich is down. */
