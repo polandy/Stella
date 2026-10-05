@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { appReady, mention, openPerson, signIn } from './app';
+import { appReady, mention, openPerson, recordAction, signIn } from './app';
 
 /*
  * Putting someone out of the way (docs/02 §2.2). Written after the flow was verified in the
@@ -32,12 +32,14 @@ async function openArchivedPerson(page: Page, name: string): Promise<void> {
 
 /** Archives the person whose page is open, and waits for their header to say so. */
 async function archiveOpenPerson(page: Page): Promise<void> {
+	await recordAction(page, 'Archive');
 	await page.getByRole('button', { name: 'Archive this person' }).click();
 	await expect(page.getByTestId('archived-marker')).toBeVisible();
 }
 
 /** Brings them back, so the rest of the suite meets the household it expects. */
 async function restoreOpenPerson(page: Page): Promise<void> {
+	await recordAction(page, 'Bring back into the lists');
 	await page.getByRole('button', { name: 'Bring back into the lists' }).click();
 	await expect(page.getByTestId('archived-marker')).toHaveCount(0);
 }

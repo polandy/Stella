@@ -19,7 +19,16 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	// The profile's dates (docs/02 §2.13): a row of the person page's profile card.
-	let { data, form }: { data: PersonPageData; form: PersonForm } = $props();
+	let {
+		data,
+		form,
+		folded = false
+	}: {
+		data: PersonPageData;
+		form: PersonForm;
+		/** Start folded even with something in it: the identity card's facts already state it. */
+		folded?: boolean;
+	} = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -42,6 +51,11 @@
 	/** A birthday from the profile counts: the row holds something even with no date rows. */
 	const hasDates = $derived(
 		visibleDates.length > 0 || data.derivedBirthday !== null || data.estimatedBirthYear !== null
+	);
+
+	/** What the row lists, a birthday from the profile included, so a folded row never says 0 over one. */
+	const dateCount = $derived(
+		visibleDates.length + (data.derivedBirthday !== null ? 1 : 0) + (data.estimatedBirthYear !== null ? 1 : 0)
 	);
 
 	// Saving through `enhance` keeps the page — and with it any open undo window — alive, so
@@ -96,7 +110,7 @@
 	);
 </script>
 
-	<Section as="row" title={t('contact.section.dates')} count={visibleDates.length} startOpen={hasDates} addLabel={t('common.add')} error={form?.dateError ?? null} bind:open={openSection.dates}>
+	<Section as="row" title={t('contact.section.dates')} count={dateCount} startOpen={!folded && hasDates} addLabel={t('common.add')} error={form?.dateError ?? null} bind:open={openSection.dates}>
 	{#if keptDates.length > 0}
 		<ul class="mb-2 flex flex-wrap gap-1.5" data-testid="kept-dates">
 			{#each keptDates as item (item.command.id)}
@@ -150,21 +164,25 @@
 	{/if}
 
 	{#snippet editor()}
-		<form method="POST" action="?/addDate" use:enhance={dateForm} class="flex flex-wrap items-end gap-2">
-			<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
+		<!-- One column with one left and one right edge: the date row spans it like the fields
+		     above and below, and the checkboxes share a line with the button that saves them. -->
+		<form method="POST" action="?/addDate" use:enhance={dateForm} class="grid gap-2">
+			<select name="kind" aria-label={t('contact.kind')} class="w-full {INPUT}">
 				{#each data.dateKinds as kind (kind)}
 					<option value={kind}>{kindLabel('dateKind', kind)}</option>
 				{/each}
 			</select>
-			<DateField name="date" required allowYearUnknown label={t('contact.day')} />
+			<DateField name="date" required allowYearUnknown stretch label={t('contact.day')} />
 			<input name="label" placeholder={t('contact.dateNameForCustom')} aria-label={t('contact.dateNameForCustom')} class="w-full {INPUT}" />
-			<label class="flex items-center gap-1.5 text-sm text-fg-muted">
-				<input type="checkbox" name="recursYearly" checked /> {t('contact.everyYear')}
-			</label>
-			<label class="flex items-center gap-1.5 text-sm text-fg-muted">
-				<input type="checkbox" name="remind" checked /> {t('contact.showOnHome')}
-			</label>
-			<Button variant="primary" size="sm" class="ml-auto">{t('common.add')}</Button>
+			<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+				<label class="flex items-center gap-1.5 text-sm text-fg-muted">
+					<input type="checkbox" name="recursYearly" checked /> {t('contact.everyYear')}
+				</label>
+				<label class="flex items-center gap-1.5 text-sm text-fg-muted">
+					<input type="checkbox" name="remind" checked /> {t('contact.showOnHome')}
+				</label>
+				<Button variant="primary" size="sm" class="ml-auto">{t('common.add')}</Button>
+			</div>
 		</form>
 	{/snippet}
 </Section>

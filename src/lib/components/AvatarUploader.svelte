@@ -26,8 +26,14 @@
 		size?: number;
 		/** Their circles' photos; with none, choosing a photo opens the file picker as it always did. */
 		groupPhotos?: readonly GroupPhotoChoice[];
+		/**
+		 * The person page's portrait (docs/05 §5.5): a square with rounded corners whose size
+		 * follows the screen — beside the name on a phone, a column of its own on a wide one —
+		 * instead of a round avatar of `size`.
+		 */
+		portrait?: boolean;
 	}
-	let { contactId, name, avatarPhotoId = null, size = 64, groupPhotos = [] }: Props = $props();
+	let { contactId, name, avatarPhotoId = null, size = 64, groupPhotos = [], portrait = false }: Props = $props();
 
 	const t = useTranslate();
 	const removals = useRemovals();
@@ -129,13 +135,17 @@
 		type="button"
 		onclick={choose}
 		disabled={busy}
-		class="group relative rounded-full outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)]"
+		class="group relative outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)]"
+		class:rounded-full={!portrait}
+		class:portrait
 		aria-label={avatarPhotoId ? t('components.photo.change') : t('components.photo.add')}
 		title={avatarPhotoId ? t('components.photo.change') : t('components.photo.add')}
 	>
-		<Avatar id={contactId} {name} {avatarPhotoId} {size} />
+		<Avatar id={contactId} {name} {avatarPhotoId} {size} fill={portrait} />
 		<span
-			class="absolute inset-0 grid place-items-center rounded-full bg-black/45 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100"
+			class="absolute inset-0 grid place-items-center bg-black/45 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 {portrait
+				? 'rounded-[inherit]'
+				: 'rounded-full'}"
 			class:opacity-100={busy}
 		>
 			{busy ? '…' : avatarPhotoId ? t('components.photo.changeShort') : t('components.photo.addShort')}
@@ -187,3 +197,22 @@
 		</dialog>
 	{/if}
 </div>
+
+<style>
+	/* 88px beside the name on a phone, 168px on its own column from `md` (docs/05 §5.5). */
+	.portrait {
+		display: block;
+		width: 88px;
+		height: 88px;
+		border-radius: 22px;
+		box-shadow: var(--shadow-card);
+		container-type: size;
+	}
+	@media (width >= 48rem) {
+		.portrait {
+			width: 168px;
+			height: 168px;
+			border-radius: 28px;
+		}
+	}
+</style>

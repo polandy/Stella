@@ -17,7 +17,16 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	// The circles someone belongs to (docs/02 §2.7): a row of the person page's profile card.
-	let { data, form }: { data: PersonPageData; form: PersonForm } = $props();
+	let {
+		data,
+		form,
+		folded = false
+	}: {
+		data: PersonPageData;
+		form: PersonForm;
+		/** Start folded even with something in it: the identity card's facts already state it. */
+		folded?: boolean;
+	} = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -90,7 +99,7 @@
 	);
 </script>
 
-	<Section as="row" title={t('contact.section.circles')} count={visibleCircles.length} summary={circleSummary} startOpen={visibleCircles.length > 0} addLabel={t('contact.join')} error={form?.circleError ?? null} bind:open={openSection.circles}>
+	<Section as="row" title={t('contact.section.circles')} count={visibleCircles.length} summary={folded ? undefined : circleSummary} startOpen={!folded && visibleCircles.length > 0} addLabel={t('contact.join')} error={form?.circleError ?? null} bind:open={openSection.circles}>
 	{#snippet action()}
 		<a href="/circles" class="text-xs text-link hover:underline">{t('contact.allCircles')}</a>
 	{/snippet}

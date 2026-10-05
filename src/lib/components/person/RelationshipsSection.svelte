@@ -28,12 +28,15 @@
 	let {
 		data,
 		form,
-		otherContacts
+		otherContacts,
+		tracingPath = $bindable(false)
 	}: {
 		data: PersonPageData;
 		form: PersonForm;
 		/** Candidate targets for a new relationship: everyone visible but this person. */
 		otherContacts: PersonPageData['people'];
+		/** Whether "How are we connected?" is asking who; the identity card's ⋯ menu opens it too. */
+		tracingPath?: boolean;
 	} = $props();
 
 	const i18n = useI18n();
@@ -133,7 +136,6 @@
 	 * holds two hops, the household holds the answer, and the app's own person picker is what
 	 * every other "which person?" question on this page uses.
 	 */
-	let tracingPath = $state(false);
 	let pathTargetId = $state<string[]>([]);
 	const pathTarget = $derived(pathTargetId[0] ?? null);
 </script>

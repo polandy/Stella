@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { addPerson, addTag, openPeople, openPerson, profileRow, signIn } from './app';
+import { addPerson, addTag, openPeople, openPerson, profileRow, recordAction, signIn } from './app';
 
 /*
  * A tag lives exactly as long as someone carries it (docs/02 §2.8). There is no screen to
@@ -51,7 +51,7 @@ async function reloadedTags(page: Page, who: string): Promise<Locator> {
 
 /** Deletes the open person for good, through the two steps the page asks for. */
 async function deleteForGood(page: Page, who: string): Promise<void> {
-	await page.getByRole('button', { name: 'Delete for good' }).click();
+	await recordAction(page, 'Delete for good');
 	await page.getByRole('button', { name: `Delete ${who}` }).click();
 	await expect(page.getByRole('heading', { name: 'People' })).toBeVisible();
 }

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openPerson, pickPerson, signIn } from './app';
+import { openPerson, pickPerson, recordAction, signIn } from './app';
 
 /*
  * Saying which of these people you are (docs/02 §2.1.3). Written after the screens were seen
@@ -110,14 +110,14 @@ test('says it, and takes it back, from the person’s own page', async ({ page }
 	await openPerson(page, new RegExp(ME));
 	await expect(page.getByTestId('self-marker')).toHaveCount(0);
 
-	await page.getByRole('button', { name: 'This is me' }).click();
+	await recordAction(page, 'This is me');
 	await expect(page.getByTestId('self-marker')).toHaveText('You');
 	// It was stored, not only shown: Settings answers with the same person.
 	await page.goto('/settings');
 	await expect(page.getByLabel('Which of these people is you')).toHaveValue(ME);
 
 	await openPerson(page, new RegExp(ME));
-	await page.getByRole('button', { name: 'This is not me' }).click();
+	await recordAction(page, 'This is not me');
 	await expect(page.getByTestId('self-marker')).toHaveCount(0);
 	await page.goto('/settings');
 	await expect(page.getByLabel('Which of these people is you')).toHaveValue('');

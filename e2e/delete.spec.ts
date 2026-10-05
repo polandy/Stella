@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, mention, openPerson, signIn } from './app';
+import { addPerson, mention, openPerson, recordAction, signIn } from './app';
 
 /*
  * Removing a person for good (docs/02 §2.2). Written after the flow was verified in the
@@ -13,7 +13,8 @@ import { addPerson, mention, openPerson, signIn } from './app';
 
 const WHO = 'Ophelia Trask';
 
-const deleteDisclosure = (page: Page) => page.getByRole('button', { name: 'Delete for good' });
+/** The first of the two steps: the ⋯ menu's entry, which only opens the confirm step. */
+const askToDelete = (page: Page) => recordAction(page, 'Delete for good');
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
@@ -22,7 +23,7 @@ test.beforeEach(async ({ page }) => {
 test('asks a second time, and the first click alone deletes nothing', async ({ page }) => {
 	await addPerson(page, 'Ophelia', 'Trask');
 
-	await deleteDisclosure(page).click();
+	await askToDelete(page);
 	await expect(page.getByRole('button', { name: `Delete ${WHO}` })).toBeVisible();
 
 	// Still there: the disclosure only says what would happen.
@@ -30,7 +31,7 @@ test('asks a second time, and the first click alone deletes nothing', async ({ p
 	await expect(page.getByRole('heading', { name: WHO })).toBeVisible();
 
 	// And it can be taken back without deleting anything.
-	await deleteDisclosure(page).click();
+	await askToDelete(page);
 	await page.getByRole('button', { name: 'Keep them' }).click();
 	await expect(page.getByRole('button', { name: `Delete ${WHO}` })).toHaveCount(0);
 	await expect(page.getByRole('heading', { name: WHO })).toBeVisible();
@@ -44,7 +45,7 @@ test('takes the person and everything written about them, and tells the househol
 	await expect(page.locator('article').first()).toContainText('walked the dog with');
 
 	await openPerson(page, new RegExp(WHO));
-	await deleteDisclosure(page).click();
+	await askToDelete(page);
 	await page.getByRole('button', { name: `Delete ${WHO}` }).click();
 
 	// Gone from the directory it lands on, and from the search.

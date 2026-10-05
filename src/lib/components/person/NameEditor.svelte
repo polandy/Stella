@@ -131,7 +131,7 @@
 </script>
 
 {#if open}
-	<h1 class="truncate text-2xl font-semibold tracking-tight text-fg">{name.displayName}</h1>
+	<h1 class="text-2xl font-semibold leading-tight tracking-tight text-fg [overflow-wrap:anywhere] md:text-[2rem]">{name.displayName}</h1>
 	<!-- Escape from any of its fields lands here; the fields themselves stay plain inputs. -->
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<form
@@ -210,7 +210,7 @@
 			title={t('contact.editName')}
 			class="-mx-1 flex w-full max-w-full items-center gap-2 rounded-control px-1 text-left transition-colors hover:bg-card-hover pointer-coarse:min-h-11"
 		>
-			<span class="truncate text-2xl font-semibold">{name.displayName}</span><Icon name="rename" size={16} class="text-fg-subtle" />
+			<span class="min-w-0 text-2xl font-semibold leading-tight [overflow-wrap:anywhere] md:text-[2rem]">{name.displayName}</span><Icon name="rename" size={16} class="text-fg-subtle" />
 		</button>
 	</h1>
 {/if}

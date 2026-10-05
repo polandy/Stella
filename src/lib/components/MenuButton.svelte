@@ -29,9 +29,15 @@
 		highlighted?: boolean;
 		/** Which edge of the pill the menu lines up with. */
 		align?: 'start' | 'end';
+		/**
+		 * `pill` is the small rounded toggle of a toolbar; `button` frames the trigger like a
+		 * secondary button and drops the chevron, for a ⋯ beside a screen's own actions — the
+		 * person page's identity card (docs/05 §5.5).
+		 */
+		look?: 'pill' | 'button';
 	}
 
-	let { label, trigger, children, highlighted = false, align = 'start' }: Props = $props();
+	let { label, trigger, children, highlighted = false, align = 'start', look = 'pill' }: Props = $props();
 
 	let open = $state(false);
 	let root = $state<HTMLDivElement>();
@@ -142,28 +148,44 @@
 <svelte:window onpointerdown={onWindowPointerdown} />
 
 <div bind:this={root} class="pointer-events-auto relative">
-	<button
-		bind:this={pill}
-		type="button"
-		aria-haspopup="menu"
-		aria-expanded={open}
-		aria-label={label}
-		onclick={() => (open ? close() : void show())}
-		onkeydown={onPillKeydown}
-		class="flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur transition-colors hover:text-fg"
-		class:border-border={!highlighted}
-		class:bg-card={!highlighted}
-		class:text-fg-muted={!highlighted}
-		class:border-transparent={highlighted}
-		style={highlighted
-			? 'background:color-mix(in srgb, var(--primary) 18%, var(--card)); color:var(--fg)'
-			: ''}
-	>
-		{@render trigger()}
-		<svg class="size-2.5 opacity-70" viewBox="0 0 10 10" aria-hidden="true">
-			<path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5" />
-		</svg>
-	</button>
+	{#if look === 'button'}
+		<button
+			bind:this={pill}
+			type="button"
+			aria-haspopup="menu"
+			aria-expanded={open}
+			aria-label={label}
+			title={label}
+			onclick={() => (open ? close() : void show())}
+			onkeydown={onPillKeydown}
+			class="grid size-9 place-items-center rounded-control border border-border bg-card text-fg shadow-card transition-colors hover:bg-card-hover"
+		>
+			{@render trigger()}
+		</button>
+	{:else}
+		<button
+			bind:this={pill}
+			type="button"
+			aria-haspopup="menu"
+			aria-expanded={open}
+			aria-label={label}
+			onclick={() => (open ? close() : void show())}
+			onkeydown={onPillKeydown}
+			class="flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur transition-colors hover:text-fg"
+			class:border-border={!highlighted}
+			class:bg-card={!highlighted}
+			class:text-fg-muted={!highlighted}
+			class:border-transparent={highlighted}
+			style={highlighted
+				? 'background:color-mix(in srgb, var(--primary) 18%, var(--card)); color:var(--fg)'
+				: ''}
+		>
+			{@render trigger()}
+			<svg class="size-2.5 opacity-70" viewBox="0 0 10 10" aria-hidden="true">
+				<path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+			</svg>
+		</button>
+	{/if}
 
 	{#if open}
 		<div
