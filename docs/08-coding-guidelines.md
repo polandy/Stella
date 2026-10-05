@@ -203,7 +203,7 @@ for a moment it is half there — and two alternatives crossing over each other 
 which a locator that finds one thing reports as an error rather than retrying. The suite
 therefore runs with `prefers-reduced-motion: reduce` (`playwright.config.ts`), where every
 disclosure switches at once. A spec about the motion itself opts back in
-(`test.use({ reducedMotion: 'no-preference' })`) and waits on the end state — the box's
+(`test.use({ contextOptions: { reducedMotion: 'no-preference' } })`) and waits on the end state — the box's
 `data-motion="settled"`, the cursor where it lands, the element there or gone — never on 300 ms.
 
 **The wall clock is a dependency like any other.** Two clocks are in play whenever a test
