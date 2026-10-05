@@ -55,6 +55,41 @@ export async function openPerson(page: Page, name: RegExp): Promise<void> {
 	await appReady(page);
 }
 
+/**
+ * Turns on the People card's edit mode (docs/05 §5.5), which puts *Edit*, remove and *Confirm*
+ * on every row. The toggle is a script control, so a press that lands before the page has
+ * hydrated is pressed again — but only while the card still says it is not editing.
+ */
+export async function editPeople(page: Page): Promise<void> {
+	const toggle = page.getByTestId('relationships-edit');
+	await expect(async () => {
+		if ((await toggle.textContent())?.trim() === 'Edit') await toggle.click();
+		await expect(toggle).toHaveText('Done', { timeout: 1000 });
+	}).toPass();
+}
+
+/** Unfolds the People card, whose list and worked-out relatives fold to a handful (docs/05 §5.5). */
+export async function unfoldPeople(page: Page): Promise<void> {
+	const card = page.locator('#section-relationships');
+	await card.getByRole('button', { name: /^Show \d+ more$/ }).click();
+	await expect(card.getByRole('button', { name: 'Show fewer' })).toBeVisible();
+}
+
+/** Chooses one of the People card's rarer actions from its ⋯ menu (docs/05 §5.5). */
+export async function fromPeopleMenu(page: Page, item: string): Promise<void> {
+	const trigger = page
+		.locator('#section-relationships')
+		.getByRole('button', { name: 'More for these relationships' });
+	const choice = page.getByRole('menuitem', { name: item });
+	// The ⋯ is a script control: a press before the page has hydrated opens nothing, so it is
+	// pressed again — but only while the menu is still closed.
+	await expect(async () => {
+		if ((await trigger.getAttribute('aria-expanded')) !== 'true') await trigger.click();
+		await expect(choice).toBeVisible({ timeout: 1000 });
+	}).toPass();
+	await choice.click();
+}
+
 /** Adds a person through the real form and lands on their page. */
 export async function addPerson(page: Page, first: string, last: string): Promise<void> {
 	await page.goto('/contacts/new');

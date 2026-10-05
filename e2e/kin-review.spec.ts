@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, openPerson, signIn } from './app';
+import { addPerson, fromPeopleMenu, openPerson, signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
@@ -78,7 +78,7 @@ async function openDeclined(page: Page) {
 /** Opens `other`'s page and presses the control that runs the rules. */
 async function review(page: Page, f: Family) {
 	await openPerson(page, new RegExp(f.other));
-	await page.getByRole('link', { name: 'Check relationships' }).click();
+	await fromPeopleMenu(page, 'Check relationships');
 	return page.getByTestId('kin-review');
 }
 
@@ -95,7 +95,7 @@ test('asks what stands around one person when told to, and survives a reload', a
 	await openPerson(page, new RegExp(f.other));
 	await expect(page.getByTestId('kin-review')).toHaveCount(0);
 
-	await page.getByRole('link', { name: 'Check relationships' }).click();
+	await fromPeopleMenu(page, 'Check relationships');
 	const panel = page.getByTestId('kin-review');
 	await expect(panel).toContainText(claimOf(f));
 	await expect(panel).toContainText(reasonOf(f));
@@ -159,7 +159,7 @@ test('accepting stores the link and stops offering it', async ({ page }) => {
 
 	// Leaving sends it: then it stands in the entered list and is no longer a question.
 	await openPerson(page, new RegExp(f.other));
-	await expect(page.locator('#section-relationships ul').first()).toContainText(f.parent);
+	await expect(page.getByTestId('relationship-list')).toContainText(f.parent);
 	await review(page, f);
 	await expect(page.getByTestId('kin-review').getByTestId('kin-suggestion')).toHaveCount(0);
 });
@@ -168,7 +168,7 @@ test('says so plainly when there is nothing to work out around someone', async (
 	// The control for the three above: the same button, a person with no family links, and the
 	// panel says nothing rather than finding something to fill itself with.
 	await add(page, 'Beat Odermatt');
-	await page.getByRole('link', { name: 'Check relationships' }).click();
+	await fromPeopleMenu(page, 'Check relationships');
 	const panel = page.getByTestId('kin-review');
 	await expect(panel).toContainText('Nothing open.');
 	await expect(panel.getByTestId('kin-suggestion')).toHaveCount(0);

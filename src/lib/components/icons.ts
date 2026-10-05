@@ -7,13 +7,16 @@ import {
 	Briefcase,
 	CalendarDays,
 	Check,
+	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
+	ChevronUp,
 	CircleDot,
 	CloudOff,
 	DownloadCloud,
 	Download,
 	Ellipsis,
+	Expand,
 	ExternalLink,
 	Gift,
 	Handshake,
@@ -32,6 +35,7 @@ import {
 	Route,
 	Search,
 	Settings,
+	Shrink,
 	SquarePen,
 	Star,
 	Users,
@@ -68,6 +72,9 @@ export const ICONS = {
 	export: Upload,
 	forward: ChevronRight,
 	back: ChevronLeft,
+	// Unfold a folded list and fold it again, e.g. a person's People card (docs/05 §5.5).
+	expand: ChevronDown,
+	collapse: ChevronUp,
 	signOut: LogOut,
 	// Actions
 	add: Plus,
@@ -84,6 +91,9 @@ export const ICONS = {
 	// Graph canvas to the whole screen and back.
 	enterFullscreen: Maximize,
 	exitFullscreen: Minimize,
+	// A phone's map preview grown inside its card and back (docs/05 §5.5) — not full screen.
+	enlargeMap: Expand,
+	shrinkMap: Shrink,
 	// Keep the graph's Filter-menu state under a name (docs/02 §2.7).
 	saveView: BookmarkPlus,
 	more: Ellipsis,

@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('lands with every card on the page, relationships first and the map above its list', async ({
+test('lands with every card on the page, relationships first and the map beside its list', async ({
 	page
 }) => {
 	await openPerson(page, /Lena Brunner/);
@@ -36,14 +36,17 @@ test('lands with every card on the page, relationships first and the map above i
 	expect(identity).toBeLessThan(tops[0]);
 	expect(tops).toEqual([...tops].sort((a, b) => a - b));
 
-	// Inside the relationships card, the map is read before the rows it summarises. It is
-	// drawn as plain SVG and replaced by the interactive canvas once the engine has loaded
-	// (docs/05 §5.8); this waits for the loaded one, since that is what a reader ends up with.
+	// Inside the relationships card on a wide screen, the map stands beside the rows it
+	// summarises (docs/05 §5.5). It is drawn as plain SVG and replaced by the interactive
+	// canvas once the engine has loaded (docs/05 §5.8); this waits for the loaded one, since
+	// that is what a reader ends up with.
 	const map = page.getByRole('group', { name: /The people around Lena Brunner/ });
 	await expect(map).toBeVisible();
 	await expect(map.locator('canvas').first()).toBeVisible();
-	const list = page.locator('#section-relationships ul').first();
-	expect((await map.boundingBox())!.y).toBeLessThan((await list.boundingBox())!.y);
+	const mapBox = (await map.boundingBox())!;
+	const listBox = (await page.getByTestId('relationship-list').boundingBox())!;
+	expect(mapBox.x).toBeGreaterThanOrEqual(listBox.x + listBox.width);
+	expect(mapBox.y).toBeLessThan(listBox.y + listBox.height);
 
 	// The story card carries its own name rather than borrowing a tab's.
 	await expect(page.getByRole('heading', { name: 'Activity' })).toBeVisible();

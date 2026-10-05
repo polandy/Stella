@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openPerson, pickPerson, signIn } from './app';
+import { editPeople, openPerson, pickPerson, signIn } from './app';
 import {
 	clickNode,
 	drawnNode,
@@ -67,12 +67,13 @@ test.describe('on a person’s page', () => {
 		await expect(map(page).getByRole('complementary')).toHaveCount(0);
 	});
 
-	test('the Filter menu stays on the small map of a phone, scrolling to its last item', async ({
+	test('the Filter menu stays on the small embedded map, scrolling to its last item', async ({
 		page
 	}) => {
-		// On a Pixel 9 Pro the menu is taller than the card-sized map, which cuts off whatever
-		// runs past it; the switches at its foot must still be reachable (docs/05 §5.8).
-		await page.setViewportSize({ width: 412, height: 915 });
+		// The menu is taller than the card-sized map, which cuts off whatever runs past it; the
+		// switches at its foot must still be reachable (docs/05 §5.8). A phone shows a preview
+		// instead of the map, so this is the narrowest window that still embeds it.
+		await page.setViewportSize({ width: 700, height: 915 });
 		await page.reload();
 		await expect(map(page).locator('canvas').first()).toBeVisible();
 
@@ -232,7 +233,7 @@ test.describe('when a relationship is entered', () => {
 		await form.getByRole('button', { name: 'Add', exact: true }).click();
 
 		// The list has her…
-		await expect(page.locator('#section-relationships ul').first()).toContainText(BETTINA_NAME);
+		await expect(page.getByTestId('relationship-list')).toContainText(BETTINA_NAME);
 		// …and so does the map: the renderer's own answer for where that node now is.
 		await expect.poll(() => stateOf(page, BETTINA)).toBe('drawn');
 		await settled(page);
@@ -247,9 +248,10 @@ test.describe('when a relationship is entered', () => {
 		// Put the household back: take the link away and leave the page, which is what sends a
 		// pending removal, then read Lena fresh — the map no longer knows her either.
 		await openPerson(page, /Lena Brunner/);
+		// Edit mode unfolds the card, so a link listed past the fold is still found.
+		await editPeople(page);
 		const row = page
-			.locator('#section-relationships ul')
-			.first()
+			.getByTestId('relationship-list')
 			.locator('li')
 			.filter({ hasText: BETTINA_NAME });
 		if ((await row.count()) === 0) return;
@@ -258,7 +260,7 @@ test.describe('when a relationship is entered', () => {
 		await openPerson(page, /Noah Brunner/);
 
 		await openPerson(page, /Lena Brunner/);
-		await expect(page.locator('#section-relationships ul').first()).not.toContainText(BETTINA_NAME);
+		await expect(page.getByTestId('relationship-list')).not.toContainText(BETTINA_NAME);
 		await expect(map(page).locator('canvas').first()).toBeVisible();
 		await settled(page);
 		expect(await stateOf(page, BETTINA)).toBe('absent');

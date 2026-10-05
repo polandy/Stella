@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import KinSuggestions from '$lib/components/KinSuggestions.svelte';
@@ -12,6 +13,7 @@
 	import { CURRENT_RELATIONSHIP_STATUS } from '$lib/relationships/status';
 	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
 	import { encodeRelationshipChoice } from '$lib/relationships/type-options';
+	import { derivedShownWhenFolded } from '$lib/relationships/people-groups';
 	import { addAllBatches, type AddAllBatch } from '$lib/suggestions/add-all';
 	import { claimEndpoints, confirmedClaimFor, directClaimFor } from '$lib/kinship/claims';
 	import { directClaimLabel, kinshipLabel } from '$lib/kinship/labels';
@@ -25,7 +27,17 @@
 	 * What the relationships card works out rather than holds (docs/02 §2.4.1): the links the
 	 * one just added implies, the on-demand review, and the kin derived from the entered links.
 	 */
-	let { data }: { data: PersonPageData } = $props();
+	let {
+		data,
+		editing,
+		expanded
+	}: {
+		data: PersonPageData;
+		/** The card's edit mode, which also puts *Confirm* on every worked-out relative. */
+		editing: boolean;
+		/** Unfolded by the card's *Show more*; folded, only the first worked-out relatives show. */
+		expanded: boolean;
+	} = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -33,6 +45,13 @@
 	const removals = useRemovals();
 	// The shell's one activity indicator, which every change to the graph reports to (docs/05 §5.7).
 	const graphPending = usePending();
+	const shownKin = $derived(
+		data.derivedKin.slice(0, derivedShownWhenFolded(data.derivedKin.length, expanded))
+	);
+	// A worked-out relative is often on the map too, wearing their face there.
+	const photoById = $derived(
+		new Map(data.graph.nodes.map((node) => [node.id, node.avatarPhotoId ?? null]))
+	);
 
 	/*
 	 * Confirming a worked-out relative re-reads the page where the reader is. The action ends in
@@ -189,12 +208,20 @@
 	nobody mistakes an inference for something the household wrote down.
 -->
 {#if data.derivedKin.length > 0}
-	<div class="mt-4 border-t border-border-subtle pt-3" data-testid="derived-kin">
-		<h3 class="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-fg-subtle">
+	<div class="@container mt-3 border-t border-border-subtle pt-2" data-testid="derived-kin">
+		<h3 class="mb-1 flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-fg-subtle uppercase">
 			<Icon name="explore" size={12} />{t('contact.relationships.derived')}
 		</h3>
-		<ul class="flex flex-col divide-y divide-border-subtle">
-			{#each data.derivedKin as kin (kin.personId)}
+		<!--
+			Laid out like the entered tiles, but quieter — a dashed ring round a faded face, the
+			name in the muted colour — so an inference never passes for something typed in.
+		-->
+		<ul
+			class="grid gap-x-3 {editing
+				? 'grid-cols-1 @md:grid-cols-2 @3xl:grid-cols-3'
+				: 'grid-cols-2 @lg:grid-cols-3 @3xl:grid-cols-4'}"
+		>
+			{#each shownKin as kin (kin.personId)}
 				<!--
 					Every row can become something entered. A step term is only as much as
 					Stella can see — the link runs through a partner and no direct one is on
@@ -204,56 +231,48 @@
 				{@const claim = directClaimFor(kin.term)}
 				{@const confirmed = confirmedClaimFor(kin.term)}
 				{@const stored = claim ?? confirmed}
-				<!--
-					Laid out like an entered row — the dot's column, the label's width, the
-					actions in the same place — so *Confirm* lines up under *Edit*.
-				-->
-				<li class="flex flex-col gap-0.5 py-2 text-sm">
-					<div class="flex items-center gap-3">
-						<span class="size-2 shrink-0" aria-hidden="true"></span>
-						<span class="w-24 shrink-0 truncate text-fg-muted">{kinshipLabel(t, kin)}</span>
-						<a href="/contacts/{kin.personId}" class="font-medium text-fg hover:underline">
-							{kin.displayName}
-						</a>
-						{#if stored}
-							{@const ends = claimEndpoints(stored, c.id, kin.personId)}
-							<form
-								method="POST"
-								action="?/addProposedRelationship"
-								use:enhance={confirmKin}
-								class="ml-auto flex shrink-0 items-center gap-1"
-							>
-								<input type="hidden" name="fromId" value={ends.fromId} />
-								<input type="hidden" name="toId" value={ends.toId} />
-								<input type="hidden" name="typeId" value={stored.typeKey} />
-								{#if claim}
-									<Button variant="ghost" size="sm">{directClaimLabel(t, claim)}</Button>
-								{:else}
-									<Button
-										variant="ghost"
-										size="sm"
-										title={t('contact.relationships.confirmKinLabel', {
-											name: kin.displayName,
-											term: kinshipLabel(t, kin)
-										})}
-									>
-										{t('contact.relationships.confirmKin')}
-									</Button>
-								{/if}
-								<!-- Holds the remove button's place, so the action ends where Edit does. -->
-								<span class="invisible" aria-hidden="true">
-									<Button type="button" variant="danger" size="sm" icon="remove" tabindex={-1} />
-								</span>
-							</form>
-						{/if}
-					</div>
-					<!-- Under the name, so a long "via" never pushes the action out of line. -->
-					{#if kin.via.length > 0}
-						<span class="truncate pl-32 text-fg-subtle">
-							{t('contact.relationships.via', {
-								people: kin.via.join(t('contact.relationships.viaAnd'))
-							})}
+				{@const via =
+					kin.via.length > 0
+						? t('contact.relationships.via', { people: kin.via.join(t('contact.relationships.viaAnd')) })
+						: null}
+				<li class="flex min-w-0 items-center gap-0.5">
+					<a
+						href="/contacts/{kin.personId}"
+						aria-label={kin.displayName}
+						aria-describedby="kin-tile-{kin.personId}"
+						class="flex min-w-0 flex-1 items-center gap-2.5 rounded-control px-1 py-1 hover:bg-card-hover"
+					>
+						<span class="shrink-0 rounded-full border border-dashed border-border p-0.5 opacity-75" aria-hidden="true">
+							<Avatar id={kin.personId} name={kin.displayName} avatarPhotoId={photoById.get(kin.personId) ?? null} size={30} />
 						</span>
+						<span class="flex min-w-0 flex-col">
+							<span class="line-clamp-2 leading-tight break-words text-fg-muted">{kin.displayName}</span>
+							<span id="kin-tile-{kin.personId}" class="truncate text-xs text-fg-subtle" title={via ?? undefined}>
+								{kinshipLabel(t, kin)}{#if via}{' · '}{via}{/if}
+							</span>
+						</span>
+					</a>
+					{#if editing && stored}
+						{@const ends = claimEndpoints(stored, c.id, kin.personId)}
+						<form method="POST" action="?/addProposedRelationship" use:enhance={confirmKin} class="shrink-0">
+							<input type="hidden" name="fromId" value={ends.fromId} />
+							<input type="hidden" name="toId" value={ends.toId} />
+							<input type="hidden" name="typeId" value={stored.typeKey} />
+							{#if claim}
+								<Button variant="ghost" size="sm">{directClaimLabel(t, claim)}</Button>
+							{:else}
+								<Button
+									variant="ghost"
+									size="sm"
+									title={t('contact.relationships.confirmKinLabel', {
+										name: kin.displayName,
+										term: kinshipLabel(t, kin)
+									})}
+								>
+									{t('contact.relationships.confirmKin')}
+								</Button>
+							{/if}
+						</form>
 					{/if}
 				</li>
 			{/each}

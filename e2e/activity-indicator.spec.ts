@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
-import { openPeople, openPerson, pickPerson, signIn } from './app';
+import { editPeople, openPeople, openPerson, pickPerson, signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 import { stateOf } from './graph-canvas';
 
@@ -45,7 +45,7 @@ async function holdSaves(page: Page): Promise<() => void> {
 }
 
 const enteredRow = (page: Page, otherName: string) =>
-	page.locator('#section-relationships ul').first().locator('li').filter({ hasText: otherName });
+	page.getByTestId('relationship-list').locator('li').filter({ hasText: otherName });
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
@@ -97,6 +97,7 @@ test('takes a removed link out of the map at once, before it is sent', async ({ 
 		if (request.method() === 'POST') posts.push(request.url());
 	});
 
+	await editPeople(page);
 	await enteredRow(page, DORA)
 		.getByRole('button', { name: `Remove the link to ${DORA}` })
 		.click();

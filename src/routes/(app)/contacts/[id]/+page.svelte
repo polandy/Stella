@@ -1,5 +1,6 @@
 <script lang="ts">
 	import IdentityCard from '$lib/components/person/IdentityCard.svelte';
+	import JumpBar from '$lib/components/person/JumpBar.svelte';
 	import MentionsSection from '$lib/components/person/MentionsSection.svelte';
 	import NotesSection from '$lib/components/person/NotesSection.svelte';
 	import PhotosSection from '$lib/components/person/PhotosSection.svelte';
@@ -61,6 +62,9 @@
 
 <main class="mx-auto flex w-full max-w-[66.25rem] flex-col gap-5 px-4 py-6 md:px-6 md:py-8">
 	<IdentityCard {data} {form} {otherContacts} {metLine} {isSelf} {archived} {logContact} {tracePath} />
+
+	<!-- Sticks under the top bar once the identity card has gone by (docs/05 §5.5). -->
+	<JumpBar {data} />
 
 	<RelationshipsSection {data} {form} {otherContacts} bind:tracingPath />
 

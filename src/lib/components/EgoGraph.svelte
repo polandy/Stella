@@ -21,8 +21,21 @@
 	let {
 		centerName,
 		centerPhotoId = null,
-		nodes
-	}: { centerName: string; centerPhotoId?: string | null; nodes: EgoNode[] } = $props();
+		nodes,
+		thumbnail = false
+	}: {
+		centerName: string;
+		centerPhotoId?: string | null;
+		nodes: EgoNode[];
+		/**
+		 * A picture of the map rather than the map: no names, no links, no frame of its own — the
+		 * phone's preview on a person's page, which is one button as a whole (docs/05 §5.5).
+		 */
+		thumbnail?: boolean;
+	} = $props();
+
+	// Clip ids are document-wide, and a page may hold the preview and the full drawing at once.
+	const uid = $props.id();
 
 	const t = useTranslate();
 
@@ -70,10 +83,12 @@
 
 <svg
 	class="ego"
+	class:thumbnail
 	viewBox="0 0 {W} {H}"
 	preserveAspectRatio="xMidYMid meet"
-	role="group"
-	aria-label={t('contact.egoGraphLabel', { name: centerName })}
+	role={thumbnail ? undefined : 'group'}
+	aria-hidden={thumbnail ? 'true' : undefined}
+	aria-label={thumbnail ? undefined : t('contact.egoGraphLabel', { name: centerName })}
 	style="font-size:{13 * fontScale}px"
 >
 	<!--
@@ -81,9 +96,9 @@
 		interactive map draws the same faces as circles (docs/05 §5.8).
 	-->
 	<defs>
-		<clipPath id="ego-clip-center"><circle cx={CX} cy={CY} r={CENTER_R} /></clipPath>
+		<clipPath id="{uid}-center"><circle cx={CX} cy={CY} r={CENTER_R} /></clipPath>
 		{#each placed as n (n.id)}
-			<clipPath id="ego-clip-{n.id}"><circle cx={n.x} cy={n.y} r={NODE_R} /></clipPath>
+			<clipPath id="{uid}-{n.id}"><circle cx={n.x} cy={n.y} r={NODE_R} /></clipPath>
 		{/each}
 	</defs>
 
@@ -103,7 +118,7 @@
 				width={CENTER_R * 2}
 				height={CENTER_R * 2}
 				preserveAspectRatio="xMidYMid slice"
-				clip-path="url(#ego-clip-center)"
+				clip-path="url(#{uid}-center)"
 			/>
 		{:else}
 			<text x={CX} y={CY} dy="0.35em" text-anchor="middle" fill="var(--primary-fg)" font-weight="700">
@@ -114,14 +129,8 @@
 
 	<!-- neighbours -->
 	{#each placed as n (n.id)}
-		<a href="/contacts/{n.id}" class="node" aria-label="{n.name} — {n.label}">
-			<text x={n.x} y={n.y - NODE_R - 7} text-anchor="middle" fill="var(--fg-subtle)" class="role">
-				{n.label}
-			</text>
-			<!-- The ring carries the category; the tint inside lets the initials read in --fg. -->
-			<circle cx={n.x} cy={n.y} r={NODE_R} fill={n.disc} stroke={n.color} stroke-width="2" />
-			<!-- Its own ring outside the disc, since a category can share the focus colour. -->
-			<circle class="focus" cx={n.x} cy={n.y} r={NODE_R + 5} fill="none" />
+		{#if thumbnail}
+			<circle cx={n.x} cy={n.y} r={NODE_R} fill={n.disc} stroke={n.color} stroke-width="3" />
 			{#if n.avatarPhotoId}
 				<image
 					href={thumbnailUrl(n.avatarPhotoId)}
@@ -130,17 +139,38 @@
 					width={NODE_R * 2}
 					height={NODE_R * 2}
 					preserveAspectRatio="xMidYMid slice"
-					clip-path="url(#ego-clip-{n.id})"
+					clip-path="url(#{uid}-{n.id})"
 				/>
-			{:else}
-				<text x={n.x} y={n.y} dy="0.35em" text-anchor="middle" fill="var(--fg)" font-weight="600">
-					{initials(n.name)}
-				</text>
 			{/if}
-			<text x={n.x} y={n.y + NODE_R + 15} text-anchor="middle" fill="var(--fg)" class="who">
-				{n.name}
-			</text>
-		</a>
+		{:else}
+			<a href="/contacts/{n.id}" class="node" aria-label="{n.name} — {n.label}">
+				<text x={n.x} y={n.y - NODE_R - 7} text-anchor="middle" fill="var(--fg-subtle)" class="role">
+					{n.label}
+				</text>
+				<!-- The ring carries the category; the tint inside lets the initials read in --fg. -->
+				<circle cx={n.x} cy={n.y} r={NODE_R} fill={n.disc} stroke={n.color} stroke-width="2" />
+				<!-- Its own ring outside the disc, since a category can share the focus colour. -->
+				<circle class="focus" cx={n.x} cy={n.y} r={NODE_R + 5} fill="none" />
+				{#if n.avatarPhotoId}
+					<image
+						href={thumbnailUrl(n.avatarPhotoId)}
+						x={n.x - NODE_R}
+						y={n.y - NODE_R}
+						width={NODE_R * 2}
+						height={NODE_R * 2}
+						preserveAspectRatio="xMidYMid slice"
+						clip-path="url(#{uid}-{n.id})"
+					/>
+				{:else}
+					<text x={n.x} y={n.y} dy="0.35em" text-anchor="middle" fill="var(--fg)" font-weight="600">
+						{initials(n.name)}
+					</text>
+				{/if}
+				<text x={n.x} y={n.y + NODE_R + 15} text-anchor="middle" fill="var(--fg)" class="who">
+					{n.name}
+				</text>
+			</a>
+		{/if}
 	{/each}
 </svg>
 
@@ -154,6 +184,12 @@
 		background:
 			radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 0) 0 0 / 22px 22px,
 			var(--card);
+	}
+	/* The preview fills the box its button gives it and wears that box's frame. */
+	.ego.thumbnail {
+		height: 100%;
+		border: 0;
+		background: none;
 	}
 	.node {
 		cursor: pointer;

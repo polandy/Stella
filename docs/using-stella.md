@@ -191,10 +191,26 @@ standing there as empty fields. The card has one button, **Write in journal**, a
 beside it for the rarer things: logging a contact, *This is me*, *How are we connected?*,
 archiving, merging and deleting.
 
-Then **People** — the little map of who they are connected to, with the list of those links
-under it — then **Photos**, then the **Story** and the **Notes** side by side (one under the
-other on a phone), and **Mentioned in** last. Nothing is behind a tab, so nothing has to be
-found before it can be read; each card says how many things are in it.
+Then **People** — everyone they are tied to, each as a face, a name and what they are to this
+person (*Wife*, *Son*, *Colleague*), grouped into family, friends, work and the rest. A long
+list shows the first few and a **Show … more** button. Beside the list on a wide screen is the
+little map of who they are connected to; on a phone it is a small preview instead, with two
+icons in its corner. Tap the preview or its **Enlarge map** icon and the map grows right there
+in the card, about a screen tall, with its Filter and Arrange buttons — drag inside it to move
+the map, swipe on the page below it to scroll on, and the **Shrink map** icon at the top of the
+map, beside full screen, folds it back. Or tap the **Full screen** icon and the map opens full
+screen; leaving full screen brings you back to the page. The relatives Stella worked out rather than you entering them follow under **Also
+related**, with a dashed ring and quieter text. The card's header holds **Edit**, **+** and a
+**⋯**: *Edit* puts a pencil (correct the link) and a cross (remove it) on every person, and
+*Confirm* on every worked-out relative, until you press *Done*; **+** adds a relationship; the
+**⋯** holds *How are we connected?*, *Check relationships* and *Open in the graph*.
+
+After People come **Photos**, the **Story** and the **Notes** side by side (one under the other
+on a phone), and **Mentioned in** last. Nothing is behind a tab, so nothing has to be found
+before it can be read; each card says how many things are in it. Under the top card runs a
+**jump bar** — *People · Photos · Activity · Notes*, with their counts — which stays at the top
+of the screen as you scroll, marks the card you are reading, and takes you to any of them with
+one tap.
 
 Every card, and every row on the top card, holds one **+ Add** button, and the form opens right under
 the heading you pressed it from. Nothing is an open form until you ask for it, so the page reads
@@ -426,7 +442,7 @@ together — two parents for the same child, or one parent for several children 
 takes them in one go, with one **Undo** for the lot.
 
 That panel only appears in the moment you save something, though — and most links were
-entered long before. **Check relationships**, at the top of the Relationships card, asks the
+entered long before. **Check relationships**, in the People card's **⋯** menu, asks the
 same questions about the person you are looking at, whenever you like: *Wing Kam is a parent
 of Steve*, years after you wrote down that Steve is Andy's brother. Each row has three
 answers. *Accept* stores the link. *Decline* tells Stella it is wrong, and it stops being

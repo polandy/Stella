@@ -64,15 +64,15 @@ test('gives a new person both parents in one go, with one toast', async ({ page 
 	await expect(hints(form)).toHaveText('Two parents — that is the limit for Child of.');
 
 	await form.getByRole('button', { name: 'Add 2 links' }).click();
-	await expect(storedRow(page, mother)).toContainText('Child of');
-	await expect(storedRow(page, father)).toContainText('Child of');
+	await expect(storedRow(page, mother)).toContainText(/Parent|Mother|Father/);
+	await expect(storedRow(page, father)).toContainText(/Parent|Mother|Father/);
 	// One toast for the batch, not one per link.
 	await expect(page.getByTestId('toast-undo')).toHaveText(/2 links saved/);
 	await expect(page.getByTestId('toast-undo')).toHaveCount(1);
 
 	await page.reload();
-	await expect(storedRow(page, mother)).toContainText('Child of');
-	await expect(storedRow(page, father)).toContainText('Child of');
+	await expect(storedRow(page, mother)).toContainText(/Parent|Mother|Father/);
+	await expect(storedRow(page, father)).toContainText(/Parent|Mother|Father/);
 });
 
 test('takes both links of a batch back with one Undo', async ({ page }) => {
@@ -177,11 +177,11 @@ test('marks a person the save refuses, and stores nobody of the batch', async ({
 	await expect(chip(form, gina)).not.toHaveAttribute('data-marked');
 	await expect(add).toBeDisabled();
 	// The link on record is listed, and Brigitta — allowed on her own — was not stored either.
-	await expect(storedRow(page, ernst)).toContainText('Child of');
+	await expect(storedRow(page, ernst)).toContainText(/Parent|Mother|Father/);
 	await expect(storedRow(page, gina)).toHaveCount(0);
 
 	await page.reload();
-	await expect(storedRow(page, ernst)).toContainText('Child of');
+	await expect(storedRow(page, ernst)).toContainText(/Parent|Mother|Father/);
 	await expect(storedList(page).locator('li')).toHaveCount(1);
 });
 
@@ -233,7 +233,7 @@ test('saves a single person exactly as before', async ({ page }) => {
 	await expect(form.getByText('How they connect (optional)')).toBeVisible();
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 
-	await expect(storedRow(page, child)).toContainText('Parent of');
+	await expect(storedRow(page, child)).toContainText(/Child|Daughter|Son/);
 	await expect(page.getByTestId('toast-notice')).toHaveText('Saved');
 	await expect(page.getByTestId('toast-undo')).toHaveCount(0);
 });

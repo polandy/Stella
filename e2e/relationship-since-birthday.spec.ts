@@ -108,8 +108,7 @@ test('dates the link from a child named in the picker itself, and saves that day
 	// Saved as offered, rather than dropped on the way to the server.
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 	const row = page
-		.locator('#section-relationships ul')
-		.first()
+		.getByTestId('relationship-list')
 		.locator('li')
 		.filter({ hasText: 'Yannik Amrein' });
 	await expect(row).toContainText('since 5 March 2021');
@@ -144,9 +143,8 @@ test('leaves the type picker standing on its first entry, which an untouched for
 
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 	const row = page
-		.locator('#section-relationships ul')
-		.first()
+		.getByTestId('relationship-list')
 		.locator('li')
 		.filter({ hasText: 'Tobias Hodel' });
-	await expect(row).toContainText('Parent of');
+	await expect(row).toContainText(/Child|Daughter|Son/);
 });

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import KeptItem from '$lib/components/KeptItem.svelte';
+	import MenuButton from '$lib/components/MenuButton.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { sectionAnchor } from '$lib/contacts/sections';
@@ -10,13 +12,15 @@
 	import { exclusionFor, type Exclusion } from '$lib/relationships/exclusions';
 	import type { RelationshipCategory } from '$lib/relationships/categories';
 	import { relationshipTypeLabel } from '$lib/relationships/labels';
+	import { derivedShownWhenFolded, hiddenWhenFolded } from '$lib/relationships/people-groups';
 	import { relationshipTypeOptions } from '$lib/relationships/type-options';
 	import type { SelectablePerson } from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import AddRelationshipForm from './AddRelationshipForm.svelte';
 	import KinPanels from './KinPanels.svelte';
+	import PeopleMap from './PeopleMap.svelte';
 	import RelationshipList from './RelationshipList.svelte';
 	import type { PersonForm, PersonPageData } from './types';
 
@@ -24,6 +28,10 @@
 	 * Who someone is connected to (docs/02 §2.4): the person page's first card. It holds the
 	 * add form's state, so what was being entered outlives closing the form, as it did when the
 	 * page held it; the map and list, the worked-out kin and the form itself are its children.
+	 *
+	 * Its header is three quiet controls (docs/05 §5.5): *Edit*, which puts the corrections on
+	 * every row at once, `+` for a new link, and a ⋯ for what is asked less often — how two
+	 * people are connected, the on-demand review, the whole graph.
 	 */
 	let {
 		data,
@@ -44,6 +52,19 @@
 	const c = $derived(data.contact);
 
 	let relateOpen = $state(untrack(() => data.relateTo) !== null);
+	/** The card's edit mode: *Edit* and remove on every row, *Confirm* on every worked-out one. */
+	let editing = $state(false);
+	/** The list and the worked-out relatives unfolded, by the card's one *Show more*. */
+	let expanded = $state(false);
+
+	// A link to someone else's page is the same route; their card opens quiet, like any other.
+	// A primitive, so a reload of this same person's data (a save) is not read as a new person.
+	const contactId = $derived(c.id);
+	$effect(() => {
+		void contactId;
+		editing = false;
+		expanded = false;
+	});
 
 	// A row on its way out (docs/02 §2.23) is gone from the list while its undo window is open,
 	// and back in it the moment Undo is pressed. The counts follow, so a section never says two
@@ -52,6 +73,28 @@
 	const shown = <T extends { id: string }>(kind: RemovalKind, rows: T[]) =>
 		rows.filter((row) => !removals.isPending(removalKey(kind, row.id)));
 	const visibleRelationships = $derived(shown('relationship', data.relationships));
+	/*
+	 * A link added during the visit unfolds the card: somebody just entered must not land behind
+	 * *Show more*, where adding them would look like it did nothing. Counted per person, so
+	 * opening someone with more links is not mistaken for an addition.
+	 */
+	let seenLinks = { contactId: '', count: 0 };
+	$effect(() => {
+		const id = contactId;
+		const count = visibleRelationships.length;
+		if (seenLinks.contactId === id && count > seenLinks.count) expanded = true;
+		seenLinks = { contactId: id, count };
+	});
+	/*
+	 * Everybody a folded card leaves out, entered or worked out. Edit mode unfolds it: a row
+	 * that cannot be seen cannot be corrected.
+	 */
+	const unfolded = $derived(expanded || editing);
+	const hiddenPeople = $derived(
+		hiddenWhenFolded(visibleRelationships.length, unfolded) +
+			data.derivedKin.length -
+			derivedShownWhenFolded(data.derivedKin.length, unfolded)
+	);
 
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
 	/*
@@ -138,6 +181,18 @@
 	 */
 	let pathTargetId = $state<string[]>([]);
 	const pathTarget = $derived(pathTargetId[0] ?? null);
+
+	/** Opens the picker and hands it the cursor — the question is the next thing to answer. */
+	async function askHowConnected() {
+		tracingPath = true;
+		await tick();
+		document.getElementById('path-target')?.focus();
+	}
+
+	const MENU_ITEM =
+		'flex w-full items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm text-fg hover:bg-primary-soft focus-visible:bg-primary-soft';
+	/** Nothing to correct on an empty card, so it offers no *Edit*. */
+	const editable = $derived(visibleRelationships.length > 0 || data.derivedKin.length > 0);
 </script>
 
 <Section
@@ -146,37 +201,53 @@
 		count={visibleRelationships.length}
 		addLabel={t('contact.relationships.add')}
 		error={refusedPeople > 0 && relateOpen ? null : (form?.error ?? null)}
-		actionGrid
+		iconAdd
 		bind:open={relateOpen}
 	>
 		{#snippet action()}
-			{#if otherContacts.length > 0}
+			{#if editable}
 				<Button
-					size="sm"
-					icon="connectionPath"
 					type="button"
-					aria-expanded={tracingPath}
-					onclick={() => (tracingPath = !tracingPath)}
+					variant="ghost"
+					size="sm"
+					icon={editing ? 'done' : 'rename'}
+					onclick={() => (editing = !editing)}
+					data-testid="relationships-edit"
 				>
-					{t('contact.relationships.howConnected')}
+					{editing ? t('contact.relationships.editModeDone') : t('contact.relationships.editMode')}
 				</Button>
 			{/if}
-			<!-- The way out of this person's two hops and into the household (docs/05 §5.5).
-			     A button, not a 12px text link: it is the second thing this card offers. -->
-			<Button size="sm" icon="graph" href="/graph?center={c.id}">
-				{t('graph.openInGraph')}
-			</Button>
-			<!--
-				The on-demand review (docs/concepts/relationship-suggestions.md §6.5). Quiet on
-				purpose: a ghost control, because asking what else might be true is never the
-				thing this card is for. Nothing runs until it is pressed. It follows the two framed
-				buttons, beside the other quiet one (Add), so on a phone the four make an even grid.
-			-->
-			<Button variant="ghost" size="sm" icon="search" href="/contacts/{c.id}?review#relationships">
-				{data.review.open
-					? t('contact.relationships.reviewAgain')
-					: t('contact.relationships.review')}
-			</Button>
+		{/snippet}
+		{#snippet menu()}
+			<MenuButton label={t('contact.relationships.menu')} align="end" look="button">
+				{#snippet trigger()}<Icon name="more" size={16} />{/snippet}
+				{#snippet children({ close })}
+					{#if otherContacts.length > 0}
+						<button
+							type="button"
+							role="menuitem"
+							class={MENU_ITEM}
+							onclick={() => (close(), askHowConnected())}
+						>
+							<Icon name="connectionPath" size={14} />{t('contact.relationships.howConnected')}
+						</button>
+					{/if}
+					<!--
+						The on-demand review (docs/concepts/relationship-suggestions.md §6.5): nothing
+						runs until it is chosen, and asking what else might be true is never what this
+						card is for — so it waits in the menu.
+					-->
+					<a role="menuitem" class={MENU_ITEM} href="/contacts/{c.id}?review#relationships">
+						<Icon name="search" size={14} />{data.review.open
+							? t('contact.relationships.reviewAgain')
+							: t('contact.relationships.review')}
+					</a>
+					<!-- The way out of this person's two hops and into the household. -->
+					<a role="menuitem" class={MENU_ITEM} href="/graph?center={c.id}">
+						<Icon name="graph" size={14} />{t('graph.openInGraph')}
+					</a>
+				{/snippet}
+			</MenuButton>
 		{/snippet}
 
 		{#if keptLinks.length > 0}
@@ -217,19 +288,60 @@
 				>
 					{t('contact.relationships.tracePath')}
 				</Button>
+				<Button type="button" variant="ghost" size="sm" onclick={() => (tracingPath = false)}>
+					{t('common.cancel')}
+				</Button>
 			</div>
 		{/if}
 
-		<RelationshipList
-			{data}
-			{visibleRelationships}
-			{relationshipChoices}
-			{exclusionOf}
-			{nameOfContact}
-			bind:relateOpen
-		/>
+		<!--
+			The map and the list. On a wide card the map stands beside the list (from a 48rem
+			card, measured on the card rather than the window — the sidebar takes its share);
+			narrower it comes first, as a shape before rows, and on a phone it is only a preview
+			that opens full screen (docs/05 §5.5).
+		-->
+		<div class="@container">
+			<div
+				class={[
+					'grid gap-4 @3xl:items-start',
+					visibleRelationships.length > 0 && '@3xl:grid-cols-[minmax(0,1fr)_20rem]'
+				]}
+			>
+				{#if visibleRelationships.length > 0}
+					<div class="min-w-0 @3xl:order-2"><PeopleMap {data} /></div>
+				{/if}
+				<div class="min-w-0">
+					<RelationshipList
+						{data}
+						{visibleRelationships}
+						{relationshipChoices}
+						{exclusionOf}
+						{nameOfContact}
+						{editing}
+						expanded={unfolded}
+						bind:relateOpen
+					/>
 
-		<KinPanels {data} />
+					<KinPanels {data} {editing} expanded={unfolded} />
+
+					{#if hiddenPeople > 0 || (expanded && !editing)}
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							class="mt-2"
+							icon={expanded ? 'collapse' : 'expand'}
+							aria-expanded={expanded}
+							onclick={() => (expanded = !expanded)}
+						>
+							{expanded
+								? t('contact.relationships.showFewer')
+								: t('contact.relationships.showMore', { count: hiddenPeople })}
+						</Button>
+					{/if}
+				</div>
+			</div>
+		</div>
 
 		{#snippet editor()}
 			<AddRelationshipForm

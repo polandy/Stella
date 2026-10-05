@@ -50,12 +50,14 @@
 		error?: string | null;
 		/** A second action for the header, e.g. a link elsewhere. */
 		action?: Snippet;
+		/** After the add button, last in the header: a ⋯ menu of the card's rarer actions. */
+		menu?: Snippet;
 		/**
-		 * On a phone, lay the header's actions out as a grid of even, equally framed buttons
-		 * without icons, two to a row. For a card offering several things besides its Add, whose
-		 * mixed framed and quiet buttons would otherwise wrap into ragged rows (docs/05 §5.5).
+		 * The disclosure as an icon alone, its label its accessible name and tooltip — for a card
+		 * whose header also holds a ⋯ menu and an *Edit*, where three worded buttons would wrap
+		 * on a phone (docs/05 §5.5).
 		 */
-		actionGrid?: boolean;
+		iconAdd?: boolean;
 		/** Bindable, so another control — a hero button, say — can open the form. */
 		open?: boolean;
 		children: Snippet;
@@ -73,7 +75,8 @@
 		addIcon = 'add',
 		error = null,
 		action,
-		actionGrid = false,
+		menu,
+		iconAdd = false,
 		open = $bindable(false),
 		children,
 		editor
@@ -152,7 +155,19 @@
 </script>
 
 {#snippet disclosure()}
-	{#if editor && addLabel}
+	{#if editor && addLabel && iconAdd}
+		<Button
+			type="button"
+			variant="ghost"
+			size="sm"
+			icon={expanded ? 'remove' : addIcon}
+			label={expanded ? t('common.cancel') : addLabel}
+			title={expanded ? t('common.cancel') : addLabel}
+			onclick={toggle}
+			aria-expanded={expanded}
+			data-section-toggle
+		/>
+	{:else if editor && addLabel}
 		<Button
 			type="button"
 			variant="ghost"
@@ -242,12 +257,10 @@
 			     two — and a row that cannot wrap pushes the last one off the card. On a phone
 			     they only wrap below the title, where rows read from the left edge, not ragged
 			     against the right one. -->
-			<div
-				class="flex flex-wrap items-center justify-end gap-2 max-sm:justify-start"
-				class:action-grid={actionGrid}
-			>
+			<div class="flex flex-wrap items-center justify-end gap-2 max-sm:justify-start">
 				{@render action?.()}
 				{@render disclosure()}
+				{@render menu?.()}
 			</div>
 		</header>
 
@@ -255,29 +268,3 @@
 	</section>
 {/if}
 
-<style>
-	/* Below Tailwind's `sm`: the card's actions as two even columns, each framed alike. */
-	@media (width < 40rem) {
-		.action-grid {
-			display: grid;
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			flex-basis: 100%;
-		}
-		.action-grid :global(.btn),
-		.action-grid :global(.btn:hover:not(:disabled)) {
-			width: 100%;
-			background: var(--card);
-			border-color: var(--border);
-			color: var(--fg);
-			font-weight: 600;
-			box-shadow: var(--shadow-card);
-		}
-		.action-grid :global(.btn:hover:not(:disabled)) {
-			background: var(--card-hover);
-		}
-		/* Half a phone's width holds the longest label only without its icon. */
-		.action-grid :global(.btn svg) {
-			display: none;
-		}
-	}
-</style>
