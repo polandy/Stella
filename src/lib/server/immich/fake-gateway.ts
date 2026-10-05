@@ -114,7 +114,8 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 				const assets: ImmichAsset[] = [];
 				for (let index = from; index < to; index++) {
 					const day = new Date(NEWEST_PHOTO_DAY - index * DAY_MS).toISOString().slice(0, 10);
-					assets.push({ id: fakeAssetId(person.id, index), takenOn: day });
+					// An afternoon on the camera's clock, as Immich's `localDateTime` gives it.
+					assets.push({ id: fakeAssetId(person.id, index), takenAt: `${day}T15:30:00` });
 				}
 				return { assets, nextCursor: to < person.assets ? String(to) : null };
 			}, true),

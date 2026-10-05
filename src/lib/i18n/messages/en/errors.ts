@@ -134,6 +134,7 @@ export const errors = {
 	'errors.photo.onlyOwnerRemove': 'Only the person who added a photo can remove it.',
 	'errors.photo.unreadable': 'Could not read that photo.',
 	'errors.photo.notFound': 'That photo could not be found.',
+	'errors.photo.fromImmichGone': 'This photo is no longer available from Immich. Reload the page and try again.',
 	'errors.circle.needName': 'Please enter a circle name.',
 	'errors.circle.couldNotAdd': 'Could not add the circle.',
 	'errors.circle.notFound': 'Circle not found',

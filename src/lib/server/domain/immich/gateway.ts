@@ -5,6 +5,8 @@
  * it — so it is read by a pure parser below and anything that is not what it claims is refused.
  */
 
+import { isTakenAt } from '../../../image/taken-at';
+
 /** A server version, as `GET /api/server/version` reports it. */
 export interface ImmichVersion {
 	major: number;
@@ -41,8 +43,12 @@ export interface ImmichStatistics {
 /** A photo in the library, as the glimpse needs it (concept §4.3). */
 export interface ImmichAsset {
 	id: string;
-	/** The day it was taken, where it was taken (`YYYY-MM-DD`), or null when Immich does not say. */
-	takenOn: string | null;
+	/**
+	 * When it was taken, in the shape Stella keeps a capture date in (`../../../image/taken-at`):
+	 * the camera's wall clock where it was taken, or an instant in UTC when Immich only knows the
+	 * file's; null when Immich does not say.
+	 */
+	takenAt: string | null;
 }
 
 /** One page of a person's latest photos, and where the next page starts. */
@@ -195,10 +201,24 @@ export function isAssetCursor(value: unknown): value is string {
 	return typeof value === 'string' && value !== '' && value.length <= MAX_CURSOR_LENGTH && !/[\u0000-\u001f]/.test(value);
 }
 
-const DAY = /^\d{4}-\d{2}-\d{2}/;
+/** The `YYYY-MM-DDTHH:MM:SS` an Immich timestamp starts with, or null when it does not read as one. */
+function secondsOf(value: unknown): string | null {
+	if (typeof value !== 'string') return null;
+	const seconds = value.slice(0, 19);
+	return isTakenAt(seconds) ? seconds : null;
+}
 
-/** The `YYYY-MM-DD` a timestamp starts with, or null when it does not start with one. */
-const dayOf = (value: unknown): string | null => (typeof value === 'string' && DAY.test(value) ? value.slice(0, 10) : null);
+/**
+ * When a photo was taken. `localDateTime` is the camera's wall clock, though Immich writes it with
+ * a `Z`: kept without one, so the day is the one the photo was taken on where it was taken, as
+ * Stella keeps an EXIF date (docs/02 §2.14). `fileCreatedAt` is a true instant, kept as UTC.
+ */
+function takenAtOf(body: Payload): string | null {
+	const local = secondsOf(body.localDateTime);
+	if (local !== null) return local;
+	const instant = secondsOf(body.fileCreatedAt);
+	return instant === null ? null : `${instant}Z`;
+}
 
 /**
  * One photo of a search page, or null when it is not one Stella may show. The search already
@@ -209,9 +229,7 @@ function readAsset(payload: unknown): ImmichAsset | null {
 	const body = objectOf(payload);
 	if (!body || !isImmichId(body.id)) return null;
 	if (body.type !== 'IMAGE' || body.visibility !== 'timeline' || body.isTrashed === true) return null;
-	// `localDateTime` is the camera's wall clock, so the day is the one the photo was taken on
-	// where it was taken; `fileCreatedAt` is an instant, read as UTC.
-	return { id: body.id, takenOn: dayOf(body.localDateTime) ?? dayOf(body.fileCreatedAt) };
+	return { id: body.id, takenAt: takenAtOf(body) };
 }
 
 /** A page of `POST /api/search/metadata`, or null when the body is not one. */

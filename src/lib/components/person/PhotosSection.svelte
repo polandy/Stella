@@ -244,7 +244,7 @@
 		{#if showImmich}
 			<ImmichLine person={data.immichPerson} error={form?.immichError ?? null} />
 			{#if data.immich?.linked}
-				<ImmichStrip contactId={c.id} name={c.displayName} />
+				<ImmichStrip contactId={c.id} name={c.displayName} hasPhoto={c.avatarPhotoId !== null} />
 			{/if}
 		{/if}
 

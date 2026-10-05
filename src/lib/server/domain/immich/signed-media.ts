@@ -1,4 +1,5 @@
 import type { Clock } from '../../clock';
+import { isTakenAt } from '../../../image/taken-at';
 import { isImmichId, type ImmichImageSize } from './gateway';
 
 /*
@@ -23,6 +24,12 @@ export type SignableImmichMedia =
 			personId: string;
 			assetId: string;
 			size: ImmichImageSize;
+			/**
+			 * When Immich says it was taken, signed into a preview so *Use as photo* dates the copy
+			 * by what Immich said rather than by what a browser sends (concept §4.3). Absent when
+			 * Immich does not say, and on a thumbnail, where nothing reads it.
+			 */
+			takenAt?: string;
 	  }
 	| {
 			/** A face the picker offers while linking `contactId`. */
@@ -81,18 +88,20 @@ function readPayload(payload: string): SignedImmichMedia | null {
 		return null;
 	}
 	if (typeof body !== 'object' || body === null || Array.isArray(body)) return null;
-	const { k, c, p, a, s, e } = body as Record<string, unknown>;
+	const { k, c, p, a, s, e, t } = body as Record<string, unknown>;
 	if (typeof c !== 'string' || c.length === 0 || c.length > MAX_CONTACT_ID_LENGTH || !isImmichId(p))
 		return null;
 	if (typeof e !== 'number' || !Number.isSafeInteger(e)) return null;
 	if (k === 'f') return { kind: 'face', contactId: c, personId: p, expiresAt: e };
 	if (k !== 'p' || !isImmichId(a) || typeof s !== 'string' || !IMAGE_SIZES.has(s)) return null;
+	if (t !== undefined && (typeof t !== 'string' || !isTakenAt(t))) return null;
 	return {
 		kind: 'photo',
 		contactId: c,
 		personId: p,
 		assetId: a,
 		size: s as ImmichImageSize,
+		...(t === undefined ? {} : { takenAt: t }),
 		expiresAt: e
 	};
 }
@@ -108,6 +117,7 @@ function writePayload(media: SignedImmichMedia): string {
 					p: media.personId,
 					a: media.assetId,
 					s: media.size,
+					t: media.takenAt,
 					e: media.expiresAt
 				};
 	return toBase64Url(encoder.encode(JSON.stringify(fields)));

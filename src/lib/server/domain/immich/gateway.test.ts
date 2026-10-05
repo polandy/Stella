@@ -12,6 +12,7 @@ import {
 
 const ANNA = '6f1c2a8e-3b4d-4e5f-8a9b-0c1d2e3f4a5b';
 const BERT = '7a2b3c4d-5e6f-4a1b-9c2d-3e4f5a6b7c8d';
+const CARL = '8b3c4d5e-6f7a-4b2c-8d3e-4f5a6b7c8d9e';
 
 describe('isImmichId', () => {
 	it('accepts the UUIDs Immich gives its people', () => {
@@ -127,26 +128,32 @@ describe('readAssetPage', () => {
 		...extra
 	});
 
-	it('reads the photos of a search page, with the day they were taken where they were taken', () => {
+	it('reads the photos of a search page, with when they were taken on the clock where they were taken', () => {
+		// Immich writes `localDateTime` with a `Z`, but it is the camera's wall clock, not UTC.
 		expect(readAssetPage({ assets: { items: [asset(ANNA), asset(BERT)], nextCursor: 'next-1' } })).toEqual({
 			assets: [
-				{ id: ANNA, takenOn: '2026-08-14' },
-				{ id: BERT, takenOn: '2026-08-14' }
+				{ id: ANNA, takenAt: '2026-08-14T18:30:00' },
+				{ id: BERT, takenAt: '2026-08-14T18:30:00' }
 			],
 			nextCursor: 'next-1'
 		});
 	});
 
-	it('falls back to the file date, and to no date at all', () => {
+	it('falls back to the file date, an instant in UTC, and to no date at all', () => {
 		const page = readAssetPage({
 			assets: {
-				items: [asset(ANNA, { localDateTime: null }), asset(BERT, { localDateTime: 'x', fileCreatedAt: 'y' })],
+				items: [
+					asset(ANNA, { localDateTime: null }),
+					asset(BERT, { localDateTime: 'x', fileCreatedAt: 'y' }),
+					asset(CARL, { localDateTime: '2026-02-30T10:00:00.000Z', fileCreatedAt: '2026-13-01T00:00:00Z' })
+				],
 				nextCursor: null
 			}
 		});
 		expect(page?.assets).toEqual([
-			{ id: ANNA, takenOn: '2026-08-14' },
-			{ id: BERT, takenOn: null }
+			{ id: ANNA, takenAt: '2026-08-14T16:30:00Z' },
+			{ id: BERT, takenAt: null },
+			{ id: CARL, takenAt: null }
 		]);
 		expect(page?.nextCursor).toBeNull();
 	});
@@ -167,7 +174,7 @@ describe('readAssetPage', () => {
 				nextCursor: ''
 			}
 		});
-		expect(page).toEqual({ assets: [{ id: BERT, takenOn: '2026-08-14' }], nextCursor: null });
+		expect(page).toEqual({ assets: [{ id: BERT, takenAt: '2026-08-14T18:30:00' }], nextCursor: null });
 	});
 
 	it('refuses a body that is not a search page', () => {

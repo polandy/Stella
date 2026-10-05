@@ -9,6 +9,7 @@
 	import MenuButton from '$lib/components/MenuButton.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { page } from '$app/state';
+	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { accentDotStyle } from '$lib/design/tokens';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -165,6 +166,8 @@
 			avatarPhotoId={c.avatarPhotoId}
 			portrait
 			groupPhotos={data.groupPhotosToCut}
+			immich={reachability.reachable ? data.immich : null}
+			immichSearchName={[c.firstName, c.lastName].filter(Boolean).join(' ') || c.displayName}
 		/>
 	</div>
 

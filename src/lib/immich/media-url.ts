@@ -12,3 +12,16 @@ export const IMMICH_MEDIA_PATH = '/media/immich';
 export function immichMediaUrl(token: string): string {
 	return `${IMMICH_MEDIA_PATH}/${encodeURIComponent(token)}`;
 }
+
+/** The token a URL from `immichMediaUrl` carries, or null when it is not one of the proxy's. */
+export function immichMediaToken(url: string): string | null {
+	const prefix = `${IMMICH_MEDIA_PATH}/`;
+	if (!url.startsWith(prefix)) return null;
+	const segment = url.slice(prefix.length);
+	if (segment === '' || segment.includes('/')) return null;
+	try {
+		return decodeURIComponent(segment);
+	} catch {
+		return null;
+	}
+}

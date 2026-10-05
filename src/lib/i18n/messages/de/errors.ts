@@ -134,6 +134,7 @@ export const errors: ErrorsMessages = {
 	'errors.photo.onlyOwnerRemove': 'Nur wer ein Foto hinzugefügt hat, kann es entfernen.',
 	'errors.photo.unreadable': 'Dieses Foto war nicht zu lesen.',
 	'errors.photo.notFound': 'Dieses Foto war nicht zu finden.',
+	'errors.photo.fromImmichGone': 'Dieses Foto ist aus Immich nicht mehr verfügbar. Lade die Seite neu und versuche es noch einmal.',
 	'errors.circle.needName': 'Bitte gib einen Namen für den Kreis ein.',
 	'errors.circle.couldNotAdd': 'Der Kreis konnte nicht hinzugefügt werden.',
 	'errors.circle.notFound': 'Kreis nicht gefunden',
