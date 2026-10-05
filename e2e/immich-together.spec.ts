@@ -300,13 +300,14 @@ test('Use as photo from the photos of both goes to the person whose page it is',
 	await viewer.getByRole('button', { name: 'Use as photo' }).click();
 	const cropper = page.getByRole('dialog', { name: 'Frame the photo' });
 	await cropper.getByRole('button', { name: 'Use photo' }).click();
-	await expect(viewer).toBeHidden();
 
+	// Stored first, then the viewer closes: a failure here says which of the two did not happen.
 	const worn = page
 		.getByTestId('avatar-uploader')
 		.getByRole('button', { name: /^(Add a photo|Change photo)$/ })
 		.locator('img');
 	await expect(worn).toHaveAttribute('src', /\/media\//);
+	await expect(viewer).toBeHidden();
 	const gallery = page.getByTestId('photo-grid');
 	await expect(gallery.locator('li img')).toHaveCount(1);
 	await gallery.getByRole('button').first().click();
