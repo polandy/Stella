@@ -28,14 +28,23 @@ export interface Scheduler {
 
 /** What a caller reports to; the sink side of the store, and all a form needs. */
 export interface PendingSink {
-	begin(): void;
-	end(): void;
+	/**
+	 * `label` says in a few words what the work is waiting for — *Asking Immich for its
+	 * people…* — when the generic *Updating…* would say too little; `end` names it again.
+	 */
+	begin(label?: string): void;
+	end(label?: string): void;
 }
 
 export interface PendingWork extends PendingSink {
 	/** Whether the app should be showing that it is working right now. */
 	busy(): boolean;
-	/** Called when `busy()` changes — never for a change that leaves it as it was. */
+	/**
+	 * What the newest worded work in flight is waiting for, or null to say the generic thing.
+	 * Kept while the indicator stays up for its minimum, so its words do not change on the way out.
+	 */
+	label(): string | null;
+	/** Called when `busy()` or, while shown, `label()` changes — never for a change that leaves both as they were. */
 	subscribe(listener: () => void): () => void;
 }
 
@@ -57,8 +66,19 @@ export function createPendingWork(deps: PendingWorkDeps): PendingWork {
 	let showTimer: unknown = null;
 	let holdTimer: unknown = null;
 
+	/** The words of the worded work in flight, oldest first. */
+	const labels: string[] = [];
+	let label: string | null = null;
+
 	const listeners = new Set<() => void>();
 	const announce = () => listeners.forEach((listener) => listener());
+
+	function relabel(): void {
+		const next = labels.at(-1) ?? (visible ? label : null);
+		if (next === label) return;
+		label = next;
+		if (visible) announce();
+	}
 
 	function show(): void {
 		showTimer = null;
@@ -76,20 +96,30 @@ export function createPendingWork(deps: PendingWorkDeps): PendingWork {
 	function hideIfDone(): void {
 		if (!visible || held || inFlight > 0) return;
 		visible = false;
+		label = null;
 		announce();
 	}
 
 	return {
-		begin() {
+		begin(words) {
 			inFlight += 1;
+			if (words !== undefined) {
+				labels.push(words);
+				relabel();
+			}
 			if (inFlight > 1 || visible) return;
 			showTimer = scheduler.setTimeout(show, showAfterMs);
 		},
-		end() {
+		end(words) {
 			// Fail loud: an unbalanced end would leave the count below idle, and from then on
 			// the indicator would stay hidden through work that really is in flight.
 			if (inFlight === 0) throw new Error('PendingWork.end() called while nothing was pending');
 			inFlight -= 1;
+			if (words !== undefined) {
+				const at = labels.lastIndexOf(words);
+				if (at >= 0) labels.splice(at, 1);
+				relabel();
+			}
 			if (inFlight > 0) return;
 			if (showTimer !== null) {
 				// Over before it was worth showing: nothing was drawn, so nothing has to go.
@@ -99,6 +129,7 @@ export function createPendingWork(deps: PendingWorkDeps): PendingWork {
 			hideIfDone();
 		},
 		busy: () => visible,
+		label: () => label,
 		subscribe(listener) {
 			listeners.add(listener);
 			return () => void listeners.delete(listener);

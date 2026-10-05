@@ -4,7 +4,8 @@ import { admitImmichMedia, type ImmichMediaAdmissionRefusal, type ImmichMediaDep
 
 /*
  * *Use as photo* from the Immich viewer (docs/concepts/immich.md §4.3, docs/02 §2.24.6): the one
- * way Immich content enters Stella, as a deliberate copy by a person, never a sync.
+ * way Immich content enters Stella, as a deliberate copy by a person, never a sync. A person
+ * added from *New from Immich* takes the face Immich shows of them the same way (§2.24.7).
  *
  * The browser cuts the square out of the preview the signed proxy served it, in the same cropper
  * and through the same canvas re-encode as any new picture (docs/02 §2.14) — so the server needs
@@ -46,15 +47,22 @@ export async function useImmichPhoto(
 	const admitted = await admitImmichMedia(deps, viewer, copy.token);
 	if (!admitted.ok) return admitted;
 	const { media } = admitted;
-	// Only the picture the viewer showed, and only on the page of the person it was listed for.
-	if (media.kind !== 'photo' || media.size !== 'preview' || media.contactId !== copy.contactId) {
+	if (media.kind === 'newcomer' || media.contactId !== copy.contactId) return { ok: false, refusal: 'invalid' };
+	if (media.kind === 'face') {
+		// The face Immich shows of them, as a person added from *New from Immich* starts with
+		// (docs/02 §2.24.7). A face token is also signed for a mere proposal, so it is taken only
+		// while they are linked to that very face. Immich does not date a face.
+		const link = await deps.links.findForContactVisibleTo(viewer, copy.contactId);
+		if (link?.immichPersonId !== media.personId) return { ok: false, refusal: 'notLinked' };
+	} else if (media.size !== 'preview') {
+		// Only the picture the viewer showed, and only on the page of the person it was listed for.
 		return { ok: false, refusal: 'invalid' };
 	}
 
 	const photoId = await deps.setAvatar(
 		{ userId: viewer.id, householdId: viewer.householdId },
 		copy.contactId,
-		{ ...copy.upload, takenAt: media.takenAt ?? null }
+		{ ...copy.upload, takenAt: media.kind === 'photo' ? (media.takenAt ?? null) : null }
 	);
 	return { ok: true, photoId };
 }

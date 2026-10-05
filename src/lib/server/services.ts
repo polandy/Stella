@@ -111,6 +111,7 @@ import { onVisibleContact } from './domain/contacts/require-visible';
 import { addRelationshipChecked } from './domain/relationships/add-checked';
 import { addRelationshipsOrRefuse } from './domain/relationships/add-many';
 import { addPerson } from './domain/contacts/add-person';
+import { createContact } from './domain/contacts/contacts';
 import { assignTagByName } from './domain/tags/tags';
 import { joinCircleByName } from './domain/circles/circles';
 import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
@@ -133,6 +134,9 @@ import type { JournalPhotoDeps } from './domain/media/journal-photos';
 import { ulidGenerator } from './id';
 import { createDrizzleImmichIgnoreRepository } from './db/immich-ignore-repository';
 import { createDrizzleImmichLinkRepository } from './db/immich-link-repository';
+import { createDrizzleImmichNameIgnoreRepository } from './db/immich-name-ignore-repository';
+import type { AddFromImmichDeps } from './domain/immich/add-from-immich';
+import type { ImmichNameIgnoreDeps, ImmichNameIgnoreRepository } from './domain/immich/name-ignores';
 import { createImmichConnection, type ImmichConnection } from './domain/immich/connection';
 import type { ImmichGateway } from './domain/immich/gateway';
 import type { ImmichGlimpseDeps, ImmichMediaDeps } from './domain/immich/glimpse';
@@ -766,16 +770,42 @@ function getImmichIgnores(): ImmichIgnoreRepository {
 	return (immichIgnoreRepository ??= createDrizzleImmichIgnoreRepository(getDb()));
 }
 
-/** Deps for *Find your people*, the matching list, or null without Immich. */
+let immichNameIgnoreRepository: ImmichNameIgnoreRepository | null = null;
+
+function getImmichNameIgnores(): ImmichNameIgnoreRepository {
+	return (immichNameIgnoreRepository ??= createDrizzleImmichNameIgnoreRepository(getDb()));
+}
+
+/** Deps for *Find your people* — both tabs, from one reading of Immich — or null without Immich. */
 export function getImmichMatchingDeps(): ImmichMatchingDeps | null {
 	const configured = getImmich();
 	if (!configured) return null;
 	return {
 		links: getImmichLinks(),
 		ignores: getImmichIgnores(),
+		nameIgnores: getImmichNameIgnores(),
 		contacts: getContacts(),
+		contextReads: getPersonContextDeps().contextReads,
 		gateway: configured.gateway,
-		signer: configured.signer
+		signer: configured.signer,
+		publicUrl: configured.publicUrl
+	};
+}
+
+/** Deps for ignoring a face of *New from Immich* and taking it back, or null without Immich. */
+export function getImmichNameIgnoreDeps(): ImmichNameIgnoreDeps | null {
+	if (!getImmich()) return null;
+	return { nameIgnores: getImmichNameIgnores(), clock: systemClock };
+}
+
+/** Deps for adding a person from an Immich face, or null without Immich. */
+export function getAddFromImmichDeps(): AddFromImmichDeps | null {
+	const linkDeps = getImmichLinkDeps();
+	if (!linkDeps) return null;
+	return {
+		...linkDeps,
+		addContact: (adder, input) =>
+			createContact(getContactDeps(), { ...adder, defaultVisibility: 'shared' }, input)
 	};
 }
 

@@ -264,7 +264,7 @@
 	reported through the pending-work store — a relationship save and the graph reload behind
 	it. It is fixed to the top of the window, so it never moves the page it reports on.
 -->
-<ActivityIndicator busy={pending.busy} label={t('common.updating')} />
+<ActivityIndicator busy={pending.busy} label={pending.label ?? t('common.updating')} />
 <CommandPalette people={data.people} bind:open={paletteOpen} />
 <Toast />
 

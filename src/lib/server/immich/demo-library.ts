@@ -8,6 +8,7 @@ import type { FakeImmichGroupPhotos, FakeImmichLibrary, FakeImmichPerson } from 
  * admin (docs/concepts/immich.md §9.2). One face is hidden and one unnamed, as in a real
  * library; neither is ever offered. Two share a name and one has a first name only, so the
  * matching list has a maybe of each kind; Sandra's and Rosa's double names are only half there.
+ * A few more are nobody in Stella yet, for *New from Immich*.
  */
 
 /** A face of the demo library: a fixed id, a name, a photo count and a tile colour. */
@@ -41,7 +42,13 @@ export function demoImmichLibrary(): FakeImmichLibrary {
 			// name alone — both asked about rather than linked in one tap.
 			face('d0000000-0000-4000-8000-00000000000c', 'Luca Widmer', 210, '#04a5e5'),
 			face('d0000000-0000-4000-8000-00000000000d', 'Luca Widmer', 3, '#e64553'),
-			face('d0000000-0000-4000-8000-00000000000e', 'Timo', 58, '#dd7878')
+			face('d0000000-0000-4000-8000-00000000000e', 'Timo', 58, '#dd7878'),
+			// For *New from Immich*: named faces nobody in Stella holds. Ursula and Thomas have
+			// namesakes in Stella to compare with first; Andrea and Pius go straight to the form.
+			face('d0000000-0000-4000-8000-00000000000f', 'Grosi Ursula', 420, '#40a02b'),
+			face('d0000000-0000-4000-8000-000000000010', 'Thomas W.', 12, '#df8e1d'),
+			face('d0000000-0000-4000-8000-000000000011', 'Andrea Meier', 77, '#8839ef'),
+			face('d0000000-0000-4000-8000-000000000012', 'Pius', 5, '#179299')
 		]
 	};
 }

@@ -9,8 +9,8 @@ function recorder(): { calls: string[]; sink: PendingSink } {
 	return {
 		calls,
 		sink: {
-			begin: () => void calls.push('begin'),
-			end: () => void calls.push('end')
+			begin: (label) => void calls.push(label === undefined ? 'begin' : `begin ${label}`),
+			end: (label) => void calls.push(label === undefined ? 'end' : `end ${label}`)
 		}
 	};
 }
@@ -106,6 +106,12 @@ describe('whilePending', () => {
 			})
 		).rejects.toThrow('nope');
 		expect(calls).toEqual(['begin', 'end']);
+	});
+
+	it('names the work at both ends when it is given words', async () => {
+		const { calls, sink } = recorder();
+		await whilePending(sink, async () => 'done', 'Asking Immich');
+		expect(calls).toEqual(['begin Asking Immich', 'end Asking Immich']);
 	});
 });
 

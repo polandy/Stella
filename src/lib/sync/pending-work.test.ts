@@ -136,6 +136,58 @@ describe('createPendingWork', () => {
 		expect(seen).toEqual([true]);
 	});
 
+	it('says nothing of its own for work that came without words', () => {
+		const clock = fakeClock();
+		const work = createPendingWork({ scheduler: clock });
+
+		work.begin();
+		clock.advance(SHOW_AFTER_MS);
+		expect(work.busy()).toBe(true);
+		expect(work.label()).toBeNull();
+	});
+
+	it('says what the newest worded work is waiting for, and the older words once it is over', () => {
+		const clock = fakeClock();
+		const work = createPendingWork({ scheduler: clock });
+
+		work.begin('Asking Immich');
+		work.begin('Saving');
+		clock.advance(SHOW_AFTER_MS);
+		expect(work.label()).toBe('Saving');
+
+		work.end('Saving');
+		expect(work.label()).toBe('Asking Immich');
+	});
+
+	it('keeps its words while it stays up for its minimum, and drops them once it is gone', () => {
+		const clock = fakeClock();
+		const work = createPendingWork({ scheduler: clock });
+
+		work.begin('Asking Immich');
+		clock.advance(SHOW_AFTER_MS);
+		work.end('Asking Immich');
+		expect(work.busy()).toBe(true);
+		expect(work.label()).toBe('Asking Immich');
+
+		clock.advance(MIN_VISIBLE_MS);
+		expect(work.busy()).toBe(false);
+		expect(work.label()).toBeNull();
+	});
+
+	it('tells its listeners when the words change while it is up', () => {
+		const clock = fakeClock();
+		const work = createPendingWork({ scheduler: clock });
+		const seen: (string | null)[] = [];
+		work.subscribe(() => seen.push(work.label()));
+
+		work.begin('Asking Immich');
+		clock.advance(SHOW_AFTER_MS);
+		work.begin('Saving');
+		work.end('Saving');
+
+		expect(seen).toEqual(['Asking Immich', 'Saving', 'Asking Immich']);
+	});
+
 	it('refuses to end work that never began, rather than counting below idle', () => {
 		const clock = fakeClock();
 		const work = createPendingWork({ scheduler: clock });

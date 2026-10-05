@@ -7,13 +7,13 @@ import type { PendingSink } from './pending-work';
  * navigation sets off.
  */
 
-/** Runs `work` while the sink counts it. The count ends even when the work fails. */
-export async function whilePending<T>(sink: PendingSink, work: () => Promise<T>): Promise<T> {
-	sink.begin();
+/** Runs `work` while the sink counts it, under `label` when given. The count ends even when the work fails. */
+export async function whilePending<T>(sink: PendingSink, work: () => Promise<T>, label?: string): Promise<T> {
+	sink.begin(label);
 	try {
 		return await work();
 	} finally {
-		sink.end();
+		sink.end(label);
 	}
 }
 

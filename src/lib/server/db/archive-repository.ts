@@ -55,6 +55,9 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	{ table: 'immich_link', where: viaContact() },
 	// The Immich faces a member said a contact is not; left out, a restore would propose them again.
 	{ table: 'immich_ignore', where: viaContact() },
+	// The Immich faces the household said are nobody to add (*New from Immich*); like the
+	// declined suggestions below, the table is read but the document does not carry it yet.
+	{ table: 'immich_name_ignore', where: 't.household_id = ?' },
 	{ table: 'circle', where: 't.household_id = ?' },
 	{ table: 'circle_membership', where: `t.circle_id IN (SELECT id FROM circle WHERE household_id = ?)` },
 	{ table: 'activity_log', where: 't.household_id = ?' },

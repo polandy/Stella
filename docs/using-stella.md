@@ -327,6 +327,24 @@ with who ignored it and when — open it and press **Propose again** to change y
 already linked, and faces that are hidden or unnamed in Immich, are never listed. Once nothing
 is left the list simply ends; name more faces in Immich and look again.
 
+The page has a second tab, **New from Immich**: the faces Immich has a name for that aren't
+anyone in Stella yet, the ones in most photos first (thirty at a time — **Show more** for the
+rest). Each tab shows how many it holds; while Stella asks Immich, a small pill at the top says
+so and grey rows stand where the list will be. Press **Assign…** on a face. If someone in Stella
+has a similar name — *Opa Manfred* and Manfred Pollari, *Jonas B.* and Jonas Bauer — you see
+them first, the Immich face next to theirs, with their circle and a relationship to tell them
+apart, and **Open in Immich** to look at more photos. Press **This is the person** if it is
+them; if they are already linked to another face, Stella asks before replacing it. Otherwise
+press **No, add a new person**: the form is filled in from Immich's name — *Opa* or *Aunt* in
+front goes into the nickname, an initial like *B.* is left out — and **Add and link** adds them
+(shared, like anyone you add) and links them to the face, with the face as their photo unless
+you untick it. When nobody in Stella has a similar name, Assign… opens the form straight away;
+if they are in Stella under another name after all, **Already in Stella? Find person** lets you
+pick them instead. The face then leaves the list, and a message says *… added* with **Open** to
+go to their page. A face that is nobody you want in Stella — the postman, a stranger in a holiday
+photo — can be **Ignore**d for the whole household, with *Undo* for a few seconds; ignored faces
+wait under **Ignored** at the end, with who ignored them and when, and **Propose again**.
+
 **Mentioned in** is the last card, and it is the only one that is not really theirs: it lists
 what *other* people's notes and journal entries say about them. Write "hiked with `@Sandra`"
 in Beat's journal and it appears on Sandra's page as *in Beat Steiner's journal*, with the day

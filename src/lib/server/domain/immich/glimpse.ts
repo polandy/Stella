@@ -119,13 +119,22 @@ export async function faceUrlFor(signer: ImmichMediaSigner, contactId: string, p
 	return immichMediaUrl(await signer.sign({ kind: 'face', contactId, personId }));
 }
 
+/**
+ * The signed URL of a face on *New from Immich* (docs/02 §2.24.7): someone Immich names whom
+ * no contact holds. There is no contact to sign for, so it is signed for the viewer's household;
+ * the proxy serves it only to a member of that household, and only while nobody holds the face.
+ */
+export async function newcomerFaceUrl(signer: ImmichMediaSigner, householdId: string, personId: string): Promise<string> {
+	return immichMediaUrl(await signer.sign({ kind: 'newcomer', householdId, personId }));
+}
+
 /** Why the proxy serves nothing: the token, the viewer, the link, or Immich. */
 export type ImmichMediaRefusal = ImmichMediaAdmissionRefusal | ImmichFailure;
 
 export type ImmichMediaOutcome = { ok: true; image: ImmichImage } | { ok: false; refusal: ImmichMediaRefusal };
 
 export interface ImmichMediaDeps {
-	links: Pick<ImmichLinkRepository, 'findForContactVisibleTo'>;
+	links: Pick<ImmichLinkRepository, 'findForContactVisibleTo' | 'holdersOf'>;
 	contacts: LinkVisibleContacts;
 	gateway: Pick<ImmichGateway, 'assetImage' | 'personThumbnail'>;
 	signer: ImmichMediaSigner;
@@ -145,7 +154,7 @@ export async function openImmichMedia(
 	const admitted = await admitImmichMedia(deps, viewer, token);
 	if (!admitted.ok) return admitted;
 	const { media } = admitted;
-	if (media.kind === 'face') return served(await deps.gateway.personThumbnail(media.personId));
+	if (media.kind !== 'photo') return served(await deps.gateway.personThumbnail(media.personId));
 	return served(await deps.gateway.assetImage(media.assetId, media.size));
 }
 
@@ -168,6 +177,13 @@ export async function admitImmichMedia(
 	if (!verified.ok) return { ok: false, refusal: verified.reason };
 	const { media } = verified;
 
+	if (media.kind === 'newcomer') {
+		// Not the viewer's household, or someone holds the face now — then it is that person's face,
+		// shown through them to whoever sees them, and no longer anybody's to add.
+		if (media.householdId !== viewer.householdId) return { ok: false, refusal: 'notVisible' };
+		const held = await deps.links.holdersOf(viewer, [media.personId]);
+		return held.size > 0 ? { ok: false, refusal: 'notVisible' } : { ok: true, media };
+	}
 	if (!(await deps.contacts.findByIdVisibleTo(viewer, media.contactId))) return { ok: false, refusal: 'notVisible' };
 	if (media.kind === 'face') return { ok: true, media };
 

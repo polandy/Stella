@@ -19,7 +19,11 @@ export const REMOVAL_KINDS = [
 	/* A row of *Find your people* being ignored; its id is the contact's. */
 	'immich-ignore',
 	/* An ignored pair being proposed again; its id is `contact/person`. */
-	'immich-ignored'
+	'immich-ignored',
+	/* A face of *New from Immich* being ignored; its id is the Immich person's. */
+	'immich-newcomer-ignore',
+	/* An ignored face of *New from Immich* being proposed again; its id is the Immich person's. */
+	'immich-newcomer-ignored'
 ] as const;
 
 export type RemovalKind = (typeof REMOVAL_KINDS)[number];

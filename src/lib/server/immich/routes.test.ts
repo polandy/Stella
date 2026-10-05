@@ -32,9 +32,11 @@ const clock = { now: () => NOW };
 const signer = createImmichMediaSigner({ secret: 'test-secret', clock });
 
 /** Bert is linked and visible; Carl is visible, not linked; nobody else is visible. */
-const bertLinked: Pick<ImmichLinkRepository, 'findForContactVisibleTo'> = {
+const bertLinked: Pick<ImmichLinkRepository, 'findForContactVisibleTo' | 'holdersOf'> = {
 	findForContactVisibleTo: async (_viewer, contactId) =>
-		contactId === 'c-bert' ? { contactId, immichPersonId: BERT_ID, linkedBy: 'u-anna', linkedAt: NOW } : null
+		contactId === 'c-bert' ? { contactId, immichPersonId: BERT_ID, linkedBy: 'u-anna', linkedAt: NOW } : null,
+	holdersOf: async (_viewer, personIds) =>
+		new Map(personIds.includes(BERT_ID) ? [[BERT_ID, { contactId: 'c-bert', name: 'c-bert' }]] : [])
 };
 const visibleContacts = {
 	findByIdVisibleTo: async (_viewer: Viewer, id: string) =>

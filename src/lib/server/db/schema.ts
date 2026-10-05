@@ -658,6 +658,27 @@ export const immichIgnore = sqliteTable(
 	(t) => [primaryKey({ columns: [t.contactId, t.immichPersonId] })]
 );
 
+/*
+ * A face of *New from Immich* the household said is nobody to add (docs/concepts/immich.md
+ * §9.36, docs/03 §immich_name_ignore). There is no contact to hang it on, so it belongs to the
+ * household: every member sees it and may take it back. Kept with who said so and when.
+ */
+export const immichNameIgnore = sqliteTable(
+	'immich_name_ignore',
+	{
+		householdId: text('household_id')
+			.notNull()
+			.references(() => household.id, { onDelete: 'cascade' }),
+		/** Immich's id for the person (a UUID). Not a foreign key: it lives in another program. */
+		immichPersonId: text('immich_person_id').notNull(),
+		ignoredBy: text('ignored_by')
+			.notNull()
+			.references(() => user.id),
+		ignoredAt: integer('ignored_at').notNull()
+	},
+	(t) => [primaryKey({ columns: [t.householdId, t.immichPersonId] })]
+);
+
 // ── Commands ──────────────────────────────────────────────────────────────
 
 /*
