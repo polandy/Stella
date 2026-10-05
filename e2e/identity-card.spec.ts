@@ -160,24 +160,81 @@ test('the story card’s own Log contact is a quiet button, and the only one on 
 });
 
 /*
- * What the owner saw on the phone after the first round: the rows' "+" icons followed each
- * label's length, and the add-a-date form ran ragged on its right. Geometry, so it is measured
- * on the rendered page rather than read off the classes.
+ * What the owner saw after the first round: the rows' "+" icons followed each label's length,
+ * and the add-a-date form ran ragged on its right. Geometry, so it is measured on the rendered
+ * page rather than read off the classes.
+ *
+ * The icons are read in German, where the owner saw them: "Hinzufügen" over "Beitreten" is a
+ * gap of several characters, where "Add" over "Join" is a pixel. The language is stored in the
+ * profile, which every spec shares, so each case hands the account back in English.
  */
+test.describe('in German, the rows’ add icons', () => {
+	test.beforeEach(async ({ page }) => {
+		await chooseLanguage(page, 'Deutsch', /^Einstellungen$/);
+	});
+	test.afterEach(async ({ page }) => {
+		await chooseLanguage(page, 'English', /^Settings$/);
+	});
+
+	test('stand one above the other in each column of rows on a wide screen', async ({ page }) => {
+		const columns = await addIconsByColumn(page);
+		expect(columns).toHaveLength(2);
+		for (const xs of columns) expectOneX(xs);
+	});
+
+	test.describe('on a narrow phone', () => {
+		test.use({ viewport: { width: 360, height: 800 }, hasTouch: true });
+
+		test('stand one above the other', async ({ page }) => {
+			const columns = await addIconsByColumn(page);
+			expect(columns).toHaveLength(1);
+			expectOneX(columns[0]);
+		});
+	});
+});
+
+/** Picks a language in Settings and waits for the page to answer in it. */
+async function chooseLanguage(page: Page, language: string, settled: RegExp): Promise<void> {
+	await page.goto('/settings');
+	await page.getByRole('button', { name: language }).click();
+	await expect(page.getByRole('heading', { name: settled })).toBeVisible();
+}
+
+/**
+ * Markus Brunner's rows, every one revealed — contact, tags and dates (*Hinzufügen*) and
+ * circles (*Beitreten*) — as the x of each row's add icon, grouped by the column the row
+ * stands in (its left edge names it).
+ */
+async function addIconsByColumn(page: Page): Promise<number[][]> {
+	await page.goto(`/contacts/${MARKUS}`);
+	await expect(page.getByRole('heading', { name: 'Markus Brunner', exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Suche', exact: true })).toBeEnabled();
+	const card = page.getByTestId('identity-card');
+	await card.getByTestId('identity-add-more').click();
+	await expect(card.getByRole('button', { name: 'Beitreten', exact: true })).toBeVisible();
+	await expect(card.getByRole('button', { name: 'Hinzufügen', exact: true })).toHaveCount(3);
+
+	const placed = await card
+		.locator('section[data-row]:has([data-section-toggle])')
+		.evaluateAll((rows) =>
+			rows.map((row) => ({
+				column: Math.round(row.getBoundingClientRect().x),
+				icon: row.querySelector('[data-section-toggle] svg')!.getBoundingClientRect().x
+			}))
+		);
+	const columns = new Map<number, number[]>();
+	for (const row of placed) columns.set(row.column, [...(columns.get(row.column) ?? []), row.icon]);
+	return [...columns.values()];
+}
+
+/** Two or more icons, all at one x. */
+function expectOneX(xs: number[]): void {
+	expect(xs.length).toBeGreaterThanOrEqual(2);
+	expect(Math.max(...xs) - Math.min(...xs)).toBeLessThan(1);
+}
+
 test.describe('on a narrow phone', () => {
 	test.use({ viewport: { width: 360, height: 800 }, hasTouch: true });
-
-	test('the rows’ add icons stand one above the other', async ({ page }) => {
-		await openDemoPerson(page, MARKUS, 'Markus Brunner');
-		await page.getByTestId('identity-add-more').click();
-		const toggles = page.getByTestId('identity-card').locator('section[data-row] [data-section-toggle]');
-		// Contact, tags, dates (Add) and circles (Join): labels of two lengths.
-		await expect(page.getByTestId('identity-card').getByRole('button', { name: 'Join' })).toBeVisible();
-		expect(await toggles.count()).toBeGreaterThanOrEqual(4);
-
-		const xs = await toggles.locator('svg').evaluateAll((icons) => icons.map((icon) => icon.getBoundingClientRect().x));
-		expect(Math.max(...xs) - Math.min(...xs)).toBeLessThan(1);
-	});
 
 	test('the add-a-date form keeps one left and one right edge, and nothing runs off the screen', async ({
 		page
@@ -206,34 +263,11 @@ test.describe('on a narrow phone', () => {
 			expect(Math.abs(right - (kindBox.x + kindBox.width))).toBeLessThan(1);
 		}
 
+		// Inside the screen, not merely clipped by a card that hides what spills over.
+		expect(kindBox.x + kindBox.width).toBeLessThanOrEqual(page.viewportSize()!.width);
 		const overflow = await page.evaluate(
 			() => document.documentElement.scrollWidth - document.documentElement.clientWidth
 		);
 		expect(overflow).toBe(0);
 	});
-});
-
-test('on a wide screen, the add icons of each column of rows stand one above the other', async ({ page }) => {
-	await openDemoPerson(page, MARKUS, 'Markus Brunner');
-	await page.getByTestId('identity-add-more').click();
-	const card = page.getByTestId('identity-card');
-	await expect(card.getByRole('button', { name: 'Join' })).toBeVisible();
-
-	// Each row's left edge names its column; within a column, the icons share one x.
-	const placed = await card
-		.locator('section[data-row]:has([data-section-toggle])')
-		.evaluateAll((rows) =>
-			rows.map((row) => ({
-				column: Math.round(row.getBoundingClientRect().x),
-				icon: row.querySelector('[data-section-toggle] svg')!.getBoundingClientRect().x
-			}))
-		);
-	const columns = new Map<number, typeof placed>();
-	for (const row of placed) columns.set(row.column, [...(columns.get(row.column) ?? []), row]);
-	expect(columns.size).toBe(2);
-	for (const rows of columns.values()) {
-		expect(rows.length).toBeGreaterThanOrEqual(2);
-		const xs = rows.map((row) => row.icon);
-		expect(Math.max(...xs) - Math.min(...xs)).toBeLessThan(1);
-	}
 });
