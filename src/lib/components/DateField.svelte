@@ -37,6 +37,12 @@
 		max?: string;
 		required?: boolean;
 		id?: string;
+		/**
+		 * Spread across the width the field is given: day and year stay compact and the month
+		 * takes the rest, so a form's date row ends where the fields above and below it end
+		 * and the month never shrinks to "Month…". Off, the field is only as wide as it needs.
+		 */
+		stretch?: boolean;
 		class?: string;
 	}
 	let {
@@ -47,6 +53,7 @@
 		max,
 		required = false,
 		id,
+		stretch = false,
 		class: className = ''
 	}: Props = $props();
 
@@ -98,6 +105,7 @@
 					aria-label={i18n.t('components.dateField.month')}
 					{required}
 					class="min-w-0 rounded-control border border-border-input bg-bg px-2 py-2 text-sm text-fg"
+					class:stretch
 				>
 					<option value="">{i18n.t('components.dateField.monthEmpty')}</option>
 					{#each months as monthName, index (monthName)}
@@ -141,3 +149,13 @@
 		<p class="mt-1 text-xs text-danger" role="alert">{problemText}</p>
 	{/if}
 </fieldset>
+
+<style>
+	/*
+	 * Grows into the row, but wraps onto a line of its own before it would be squeezed below a
+	 * month's name: a basis, not a width, so the wrap happens where the name stops fitting.
+	 */
+	.stretch {
+		flex: 1 1 9rem;
+	}
+</style>

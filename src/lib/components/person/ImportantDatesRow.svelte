@@ -164,21 +164,25 @@
 	{/if}
 
 	{#snippet editor()}
-		<form method="POST" action="?/addDate" use:enhance={dateForm} class="flex flex-wrap items-end gap-2">
-			<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
+		<!-- One column with one left and one right edge: the date row spans it like the fields
+		     above and below, and the checkboxes share a line with the button that saves them. -->
+		<form method="POST" action="?/addDate" use:enhance={dateForm} class="grid gap-2">
+			<select name="kind" aria-label={t('contact.kind')} class="w-full {INPUT}">
 				{#each data.dateKinds as kind (kind)}
 					<option value={kind}>{kindLabel('dateKind', kind)}</option>
 				{/each}
 			</select>
-			<DateField name="date" required allowYearUnknown label={t('contact.day')} />
+			<DateField name="date" required allowYearUnknown stretch label={t('contact.day')} />
 			<input name="label" placeholder={t('contact.dateNameForCustom')} aria-label={t('contact.dateNameForCustom')} class="w-full {INPUT}" />
-			<label class="flex items-center gap-1.5 text-sm text-fg-muted">
-				<input type="checkbox" name="recursYearly" checked /> {t('contact.everyYear')}
-			</label>
-			<label class="flex items-center gap-1.5 text-sm text-fg-muted">
-				<input type="checkbox" name="remind" checked /> {t('contact.showOnHome')}
-			</label>
-			<Button variant="primary" size="sm" class="ml-auto">{t('common.add')}</Button>
+			<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+				<label class="flex items-center gap-1.5 text-sm text-fg-muted">
+					<input type="checkbox" name="recursYearly" checked /> {t('contact.everyYear')}
+				</label>
+				<label class="flex items-center gap-1.5 text-sm text-fg-muted">
+					<input type="checkbox" name="remind" checked /> {t('contact.showOnHome')}
+				</label>
+				<Button variant="primary" size="sm" class="ml-auto">{t('common.add')}</Button>
+			</div>
 		</form>
 	{/snippet}
 </Section>
