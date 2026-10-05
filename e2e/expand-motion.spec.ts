@@ -53,7 +53,8 @@ interface MotionRecord {
  *   alone;
  * - `introend` / `outroend` — a reveal that has landed or gone, Svelte's own events, caught on
  *   the way down because they do not bubble;
- * - `inert` — a block or pane on its way out, which stops answering at once.
+ * - `inert` — a block or pane on its way out, which stops answering at once (noted when it
+ *   turns, not each time it is told).
  */
 async function recordMotion(page: Page): Promise<void> {
 	await page.evaluate((watched) => {
@@ -65,12 +66,18 @@ async function recordMotion(page: Page): Promise<void> {
 			if (name) log.push({ name, step });
 		};
 		new MutationObserver((mutations) => {
-			for (const { target, attributeName } of mutations) {
+			for (const { target, attributeName, oldValue } of mutations) {
 				if (!(target instanceof HTMLElement)) continue;
 				if (attributeName === 'data-motion') note(target, target.dataset.motion ?? '');
-				else if (attributeName === 'inert' && target.inert) note(target, 'inert');
+				// Svelte marks an outroing block inert as well as the primitive: the turn is noted once.
+				else if (attributeName === 'inert' && target.inert && oldValue === null) note(target, 'inert');
 			}
-		}).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-motion', 'inert'] });
+		}).observe(document.body, {
+			subtree: true,
+			attributes: true,
+			attributeOldValue: true,
+			attributeFilter: ['data-motion', 'inert']
+		});
 		for (const type of ['introend', 'outroend']) {
 			document.addEventListener(type, (event) => event.target instanceof Element && note(event.target, type), true);
 		}
@@ -104,6 +111,7 @@ test('a row unfolds and folds in place, and the card above it holds still', asyn
 	await expect(datesToggle(page)).toHaveAttribute('aria-expanded', 'false');
 	const cardBefore = await boxOf(identityCard(page));
 	const lineBefore = await boxOf(datesToggle(page));
+	const rowBefore = await boxOf(datesRow(page));
 	await recordMotion(page);
 
 	await datesToggle(page).click();
@@ -116,7 +124,7 @@ test('a row unfolds and folds in place, and the card above it holds still', asyn
 	// Only what is below the row moved: the card's top and the line pressed stayed put.
 	expect((await boxOf(identityCard(page))).y).toBeCloseTo(cardBefore.y, 0);
 	expect((await boxOf(datesToggle(page))).y).toBeCloseTo(lineBefore.y, 0);
-	expect((await boxOf(identityCard(page))).height).toBeGreaterThan(cardBefore.height);
+	expect((await boxOf(datesRow(page))).height).toBeGreaterThan(rowBefore.height);
 
 	await datesToggle(page).click();
 
@@ -127,6 +135,7 @@ test('a row unfolds and folds in place, and the card above it holds still', asyn
 	const cardAfter = await boxOf(identityCard(page));
 	expect(cardAfter.y).toBeCloseTo(cardBefore.y, 0);
 	expect(cardAfter.height).toBeCloseTo(cardBefore.height, 0);
+	expect((await boxOf(datesRow(page))).height).toBeCloseTo(rowBefore.height, 0);
 });
 
 test('pressed again mid-way, a row turns round and lands folded, where it started', async ({ page }) => {
@@ -191,7 +200,7 @@ test('the name glides into its editor and back, and the cursor goes where it alw
 	// The form takes the cursor at once; the line it replaced stopped answering as it went.
 	await expect(page.getByRole('textbox', { name: 'First name' })).toBeFocused();
 	await expect.poll(() => stepsOf(page, 'name')).toEqual(['moving', 'settled']);
-	await expect.poll(() => stepsOf(page, 'name-line')).toEqual(['inert']);
+	await expect.poll(() => stepsOf(page, 'name-line')).toEqual(['inert', 'outroend']);
 	await expect(page.locator(WATCHED['name-line'])).toHaveCount(0);
 	await expect(page.locator(WATCHED['name-editor'])).not.toHaveAttribute('inert');
 
@@ -200,7 +209,7 @@ test('the name glides into its editor and back, and the cursor goes where it alw
 	// Escape hands the cursor back to the name; the editor went inert and then went.
 	await expect(nameLine).toBeFocused();
 	await expect.poll(() => stepsOf(page, 'name')).toEqual(['moving', 'settled', 'moving', 'settled']);
-	await expect.poll(() => stepsOf(page, 'name-editor')).toEqual(['inert']);
+	await expect.poll(() => stepsOf(page, 'name-editor')).toEqual(['inert', 'outroend']);
 	await expect(page.locator(WATCHED['name-editor'])).toHaveCount(0);
 	await expect(page.getByTestId('name-editor')).toHaveCount(0);
 });
