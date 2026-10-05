@@ -47,6 +47,16 @@ export function createDrizzleImmichLinkRepository(
 			return row ?? null;
 		},
 
+		async linkedContactIdsVisibleTo(viewer: Viewer): Promise<Set<string>> {
+			const rows = db
+				.select({ contactId: immichLink.contactId })
+				.from(immichLink)
+				.innerJoin(contact, eq(immichLink.contactId, contact.id))
+				.where(contactVisibleTo(viewer))
+				.all();
+			return new Set(rows.map((row) => row.contactId));
+		},
+
 		async holdersOf(viewer: Viewer, immichPersonIds: readonly string[]): Promise<Map<string, ImmichHolder>> {
 			const holders = new Map<string, ImmichHolder>();
 			if (immichPersonIds.length === 0) return holders;

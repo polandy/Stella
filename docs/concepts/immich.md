@@ -1,6 +1,6 @@
 # Concept — A person's photos, from Immich
 
-Status: **slices 1–2 built** (*Connect + link*, *Glimpse*, docs/02 §2.24); slices 3–5 are not. The decisions taken with the maintainer on 2026-10-01 are
+Status: **slices 1–3 built** (*Connect + link*, *Glimpse*, *Matching list*, docs/02 §2.24); slices 4–5 are not. The decisions taken with the maintainer on 2026-10-01 are
 listed in §9; one point (phone deep links) waits for a test on the device. Facts about Immich
 are taken from its OpenAPI spec at v3.2.4 (2026-09) and are cited in §10.
 
@@ -234,7 +234,7 @@ Following the GitHub release feed, the existing outbound-call pattern
 1. **Connect + link** — config, the status line, *Find in Immich* / *Unlink* on the person
    page, the count, and *Open in Immich* for every member.
 2. **Glimpse** — the signed proxy, the strip and the viewer.
-3. **Matching list** — the review of §4.2.
+3. **Matching list** — the review of §4.2. *Built* (docs/02 §2.24.6).
 4. **Together** — the *You and Julia* chip and the relationship-row chip.
 5. **Use as photo** from the viewer.
 
@@ -283,6 +283,19 @@ Decided while building slice 2 (2026-10-04):
 12. **The strip shows photos only**, no videos: the viewer is a photo viewer, and a video's
     still frame there would read as a photo. The count on the line stays Immich's own, videos
     included.
+
+Decided while building slice 3 (2026-10-05):
+
+13. **What a maybe is, beyond §4.2.** Besides a first name or a nickname alone, a full name in
+    Immich for someone Stella knows by a first name only, and the first name with one half of a
+    double last name (*Sandra Brunner* for *Sandra Brunner-Keller*) are maybes; nickname plus
+    last name is a full name, so likely. A face somebody's full name agrees with is offered to
+    nobody else as a maybe, and a person with a likely match is not shown their maybes.
+14. **Ambiguity always asks.** Two faces with one name, or one face two people share a full name
+    with, is a maybe even when each name agrees in full: *Link all likely* never chooses.
+15. **The list only adds.** Linking from it never replaces a link made since the list was shown.
+16. **"Not now" is not stored.** A maybe can be put aside for the visit; there is no dismissal
+    log, because what is left unmatched is not a problem to solve (§4.2).
 
 ---
 

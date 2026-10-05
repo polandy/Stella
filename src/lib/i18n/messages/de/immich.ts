@@ -4,6 +4,7 @@ import type { ImmichMessages } from '../en/immich';
 export const immich: ImmichMessages = {
 	'immich.error.personGone': 'Diese Person gibt es in Immich nicht mehr.',
 	'immich.error.linkedTo': (p) => `Dieses Gesicht ist schon mit ${p.name} verknüpft.`,
+	'immich.error.contactLinked': (p) => `${p.name} ist schon verknüpft.`,
 	'immich.error.linkedElsewhere': 'Dieses Gesicht ist schon mit einer anderen Person in Stella verknüpft.',
 	'immich.error.unreachable': 'Immich hat nicht geantwortet. Versuch es gleich noch einmal.',
 	'immich.error.keyRejected': 'Immich hat Stellas Schlüssel abgelehnt. Ein Admin muss ihn prüfen.',
@@ -28,6 +29,25 @@ export const immich: ImmichMessages = {
 	'immich.settings.sharing':
 		'Alle im Haushalt sehen die Fotos der Personen, die mit dieser Bibliothek verknüpft sind.',
 	'immich.settings.howToLink': 'Verknüpfe eine Person im Menü der Fotos-Karte auf ihrer Seite.',
+
+	'immich.match.title': 'Deine Leute finden',
+	'immich.match.blurb': 'Verknüpfe die Personen in Stella mit ihren Gesichtern in Immich.',
+	'immich.match.intro':
+		'In Immich benannte Gesichter, neben den Personen in Stella mit demselben Namen. Verknüpfe, wer dieselbe Person ist – das Gesicht sagt es dir.',
+	'immich.match.asking': 'Frage Immich nach seinen Personen…',
+	'immich.match.linkAll': (p) => `Alle wahrscheinlichen verknüpfen (${p.count})`,
+	'immich.match.maybeOne': (p) => `Ist das ${p.name}?`,
+	'immich.match.maybeMany': (p) => `Wer davon ist ${p.name}?`,
+	'immich.match.link': 'Verknüpfen',
+	'immich.match.face': (p) => `${p.name} in Immich`,
+	'immich.match.inImmich': (p) => `In Immich: ${p.name}`,
+	'immich.match.photos': (p) => `${p.shown} ${p.count === 1 ? 'Foto' : 'Fotos'}`,
+	'immich.match.skip': 'Später',
+	'immich.match.skipLabel': (p) => `Später: ${p.name}`,
+	'immich.match.linked': (p) => (p.count === 1 ? '1 Person verknüpft.' : `${p.count} Personen verknüpft.`),
+	'immich.match.done': 'Das sind für jetzt alle.',
+	'immich.match.doneHint': 'Benenne weitere Gesichter in Immich und schau dann noch einmal.',
+	'immich.match.again': 'Nochmals suchen',
 
 	'immich.menu.label': 'Immich-Optionen',
 	'immich.menu.trigger': 'Immich',

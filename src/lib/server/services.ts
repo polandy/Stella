@@ -130,6 +130,7 @@ import { createImmichConnection, type ImmichConnection } from './domain/immich/c
 import type { ImmichGateway } from './domain/immich/gateway';
 import type { ImmichGlimpseDeps, ImmichMediaDeps } from './domain/immich/glimpse';
 import type { ImmichLinkDeps, ImmichLinkRepository } from './domain/immich/links';
+import type { ImmichMatchingDeps } from './domain/immich/matching';
 import { createImmichMediaSigner, type ImmichMediaSigner } from './domain/immich/signed-media';
 import { demoImmichLibrary } from './immich/demo-library';
 import { createFakeImmichGateway } from './immich/fake-gateway';
@@ -745,6 +746,13 @@ export function getImmichGlimpseDeps(): ImmichGlimpseDeps | null {
 
 /** Deps for the signed proxy that serves every image from Immich, or null without Immich. */
 export function getImmichMediaDeps(): ImmichMediaDeps | null {
+	const configured = getImmich();
+	if (!configured) return null;
+	return { links: getImmichLinks(), contacts: getContacts(), gateway: configured.gateway, signer: configured.signer };
+}
+
+/** Deps for *Find your people*, the matching list, or null without Immich. */
+export function getImmichMatchingDeps(): ImmichMatchingDeps | null {
 	const configured = getImmich();
 	if (!configured) return null;
 	return { links: getImmichLinks(), contacts: getContacts(), gateway: configured.gateway, signer: configured.signer };
