@@ -65,8 +65,6 @@
 
 	function onKeydown(event: KeyboardEvent) {
 		if (event.key !== 'Escape' || event.defaultPrevented) return;
-		event.preventDefault();
-		panel = null;
 	}
 </script>
 
@@ -90,7 +88,7 @@
 					<Button variant="primary" size="sm" icon="archive">
 						{archived ? t('contact.archive.bringBack') : t('contact.archive.archive')}
 					</Button>
-					<Button variant="ghost" size="sm" type="button" onclick={() => (panel = null)}>{t('common.cancel')}</Button>
+					<Button variant="ghost" size="sm" type="button">{t('common.cancel')}</Button>
 				</div>
 			</form>
 		{:else if panel === 'merge'}

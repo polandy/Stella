@@ -221,6 +221,7 @@
 		<Button variant="primary" icon="journal" href="/contacts/{c.id}/journal" class="flex-1 md:flex-none">
 			{t('contact.write')}
 		</Button>
+		<Button variant="ghost" type="button" onclick={logContact}>{t('contact.logContact')}</Button>
 		<MenuButton label={t('contact.menu.label')} align="end" look="button">
 			{#snippet trigger()}<Icon name="more" size={18} />{/snippet}
 			{#snippet children({ close })}
@@ -295,7 +296,7 @@
 				{#snippet addressValue()}{address}{/snippet}
 				{@render fact(t('contact.fieldKind.address'), 'home', 'address', addressValue)}
 			{/if}
-			{#if jobLine}
+			{#if true}
 				<!-- Edited where it is read, like the name (docs/02 §2.2); an empty job is a row below. -->
 				{#snippet jobValue()}
 					<JobEdit

@@ -11,7 +11,7 @@ export type ProfileRow = 'contact' | 'tags' | 'job' | 'dates' | 'circles' | 'gen
  * The card's order: contact details and tags lead, because those are what the quiet button
  * names ("Add phone, email, tags …") and what a household adds most.
  */
-const ROW_ORDER: readonly ProfileRow[] = ['contact', 'tags', 'job', 'dates', 'circles', 'gender'];
+const ROW_ORDER: readonly ProfileRow[] = ['contact', 'job', 'dates', 'circles', 'gender', 'tags'];
 
 /**
  * Which rows the card shows and which fold behind its one quiet button. An empty row is an

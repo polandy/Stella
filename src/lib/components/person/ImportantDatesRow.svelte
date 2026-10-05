@@ -166,7 +166,7 @@
 	{#snippet editor()}
 		<!-- One column with one left and one right edge: the date row spans it like the fields
 		     above and below, and the checkboxes share a line with the button that saves them. -->
-		<form method="POST" action="?/addDate" use:enhance={dateForm} class="grid gap-2">
+		<form method="POST" action="?/addDate" use:enhance={dateForm} class="grid min-w-[420px] gap-2">
 			<select name="kind" aria-label={t('contact.kind')} class="w-full {INPUT}">
 				{#each data.dateKinds as kind (kind)}
 					<option value={kind}>{kindLabel('dateKind', kind)}</option>

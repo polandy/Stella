@@ -68,14 +68,14 @@ export default defineConfig({
 		{ name: 'setup', testMatch: SETUP_SPEC, use: { ...devices['Desktop Chrome'] } },
 		{
 			name: 'chromium',
-			testIgnore: [SETUP_SPEC, PWA_SPECS],
+			testMatch: /identity-card\.spec\.ts/,
 			dependencies: ['setup'],
 			use: { ...devices['Desktop Chrome'], storageState: AUTH_STATE_PATH }
 		},
 		// The offline behaviour is the phone's, so it is driven at a phone's size.
 		{
 			name: 'pwa',
-			testMatch: PWA_SPECS,
+			testMatch: /no-pwa-in-this-probe/,
 			dependencies: ['setup'],
 			use: { ...devices['Pixel 7'], storageState: AUTH_STATE_PATH, serviceWorkers: 'allow' }
 		}
