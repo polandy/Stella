@@ -88,6 +88,21 @@ export const immich = {
 	'immich.viewer.use': 'Use as photo',
 	'immich.viewer.useFailed': 'Couldn’t keep this photo. Reload the page and try again.',
 
+	// Photos of two people together: the strip's chips and a relationship row's chip (§4.3).
+	'immich.together.label': 'Whose photos',
+	'immich.together.own': 'All photos',
+	'immich.together.withYou': (p: { name: string }) => `You and ${p.name}`,
+	'immich.together.pair': (p: { first: string; second: string }) => `${p.first} and ${p.second}`,
+	// Said of the pair as an object, so "you" is not capitalised mid-sentence.
+	'immich.together.stripWithYou': (p: { name: string }) => `Photos of you and ${p.name} together, in Immich`,
+	'immich.together.stripPair': (p: { first: string; second: string }) =>
+		`Photos of ${p.first} and ${p.second} together, in Immich`,
+	'immich.together.none': 'No photos of the two of them together in Immich yet.',
+	'immich.together.row': 'Together',
+	'immich.together.rowLabelWithYou': (p: { name: string }) => `Show photos of you and ${p.name} together`,
+	'immich.together.rowLabelPair': (p: { first: string; second: string }) =>
+		`Show photos of ${p.first} and ${p.second} together`,
+
 	// The face picker (§4.3).
 	'immich.picker.title': (p: { name: string }) => `Find ${p.name} in Immich`,
 	'immich.picker.search': 'Name in Immich',

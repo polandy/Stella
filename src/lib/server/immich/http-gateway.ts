@@ -141,14 +141,14 @@ export function createHttpImmichGateway({
 		person: (id) => aboutPerson(id, '', json(readPerson)),
 		personStatistics: (id) => aboutPerson(id, '/statistics', json(readStatistics)),
 		personThumbnail: (id) => aboutPerson(id, '/thumbnail', image),
-		latestAssets: (personId, limit, cursor) => {
-			if (!isImmichId(personId)) return Promise.resolve(failed('notFound'));
+		latestAssets: ({ personIds, match }, limit, cursor) => {
+			if (personIds.length === 0 || !personIds.every(isImmichId)) return Promise.resolve(failed('notFound'));
 			// The v3.2 search form (concept §2, §9.5). Images in the timeline only: archived photos
 			// and the locked folder are never asked for (§5); the parser checks each answer again.
 			// A person Immich no longer has makes the search answer 400, like a call about them.
 			return ask('/api/search/metadata', json(readAssetPage), true, {
 				filter: {
-					personIds: { any: [personId] },
+					personIds: { [match]: [...personIds] },
 					type: { eq: 'IMAGE' },
 					visibility: { eq: 'timeline' }
 				},

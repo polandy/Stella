@@ -83,6 +83,17 @@ export const immich: ImmichMessages = {
 	'immich.viewer.use': 'Als Foto verwenden',
 	'immich.viewer.useFailed': 'Das Foto konnte nicht übernommen werden. Lade die Seite neu und versuche es noch einmal.',
 
+	'immich.together.label': 'Wessen Fotos',
+	'immich.together.own': 'Alle Fotos',
+	'immich.together.withYou': (p) => `Du und ${p.name}`,
+	'immich.together.pair': (p) => `${p.first} und ${p.second}`,
+	'immich.together.stripWithYou': (p) => `Fotos von dir und ${p.name} zusammen, in Immich`,
+	'immich.together.stripPair': (p) => `Fotos von ${p.first} und ${p.second} zusammen, in Immich`,
+	'immich.together.none': 'In Immich gibt es noch keine Fotos von den beiden zusammen.',
+	'immich.together.row': 'Zusammen',
+	'immich.together.rowLabelWithYou': (p) => `Fotos von dir und ${p.name} zusammen zeigen`,
+	'immich.together.rowLabelPair': (p) => `Fotos von ${p.first} und ${p.second} zusammen zeigen`,
+
 	'immich.picker.title': (p) => `${p.name} in Immich suchen`,
 	'immich.picker.search': 'Name in Immich',
 	'immich.picker.searching': 'Suche in Immich…',

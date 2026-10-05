@@ -25,7 +25,9 @@ import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import { readFamilyOf } from '$lib/server/domain/relationships/family';
 import { listTagsForContact, TAG_COLORS } from '$lib/server/domain/tags/tags';
+import { readTogetherOffers } from '$lib/server/domain/immich/glimpse';
 import { readImmichLink, readLinkedPerson } from '$lib/server/domain/immich/links';
+import { togetherCandidates } from '$lib/immich/together';
 import {
 	getContactDeps,
 	getContactFieldDeps,
@@ -91,6 +93,20 @@ export const load = (async ({ locals, params, url }) => {
 	const immich = getImmich();
 	const immichLinkDeps = getImmichLinkDeps();
 	const immichLink = immichLinkDeps ? await readImmichLink(immichLinkDeps, viewer, params.id) : null;
+	// Whom photos together are offered with: the viewer's own person and the closest ties, when linked too.
+	const immichTogether =
+		immichLinkDeps && immichLink
+			? await readTogetherOffers(
+					immichLinkDeps,
+					viewer,
+					params.id,
+					togetherCandidates({
+						pageContactId: params.id,
+						selfContactId: locals.user.selfContactId,
+						ties: read.family.ties
+					})
+				)
+			: [];
 
 	// Only the photos of the entries on the story's first page; later pages bring their own.
 	const journalPhotos = await getPhotos().listJournalPhotosOfEntries(
@@ -143,9 +159,10 @@ export const load = (async ({ locals, params, url }) => {
 		 * Immich (docs/concepts/immich.md §4.3): null when this instance has none, so the menu and
 		 * the line never appear. What Immich says about a linked person is a promise on purpose —
 		 * the page is sent at once and the line fills itself in, so a slow or absent Immich never
-		 * holds the page up (§4.5).
+		 * holds the page up (§4.5). `togetherWith` is whom the strip and the relationship rows offer
+		 * photos together with (§4.3, docs/02 §2.24.8).
 		 */
-		immich: immich ? { linked: immichLink !== null } : null,
+		immich: immich ? { linked: immichLink !== null, togetherWith: immichTogether } : null,
 		immichPerson: immich && immichLink ? readLinkedPerson(immich, immichLink.immichPersonId) : null,
 		// Every group photo they were cut from, now and before (docs/concepts/circle-photos.md §5.2).
 		groupPhotos: read.groupPhotos,

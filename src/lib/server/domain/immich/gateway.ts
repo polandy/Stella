@@ -58,6 +58,15 @@ export interface ImmichAssetPage {
 	nextCursor: string | null;
 }
 
+/**
+ * Whose photos a listing asks for: the photos any of these people is in, or — the together-view
+ * of concept §4.3 — only those all of them are in (Immich's `personIds.any` / `personIds.all`).
+ */
+export interface ImmichPeopleFilter {
+	personIds: readonly string[];
+	match: 'any' | 'all';
+}
+
 /** The two sizes Immich renders a photo at, and the only ones Stella asks for. */
 export type ImmichImageSize = 'thumbnail' | 'preview';
 
@@ -97,10 +106,11 @@ export interface ImmichGateway {
 	/** One person's face (`person.read`). */
 	personThumbnail(id: string): Promise<ImmichOutcome<ImmichImage>>;
 	/**
-	 * A person's latest photos in the timeline, newest first (`asset.read`): `limit` of them,
-	 * from `cursor` on (null for the first page). Archived, locked and trashed photos never come.
+	 * The latest photos of some people in the timeline, newest first (`asset.read`): `limit` of
+	 * them, from `cursor` on (null for the first page). Archived, locked and trashed photos never
+	 * come. No people, or an id that is not Immich's, is `notFound` without asking.
 	 */
-	latestAssets(personId: string, limit: number, cursor: string | null): Promise<ImmichOutcome<ImmichAssetPage>>;
+	latestAssets(people: ImmichPeopleFilter, limit: number, cursor: string | null): Promise<ImmichOutcome<ImmichAssetPage>>;
 	/** One photo, at one of the sizes Immich renders (`asset.view`). */
 	assetImage(assetId: string, size: ImmichImageSize): Promise<ImmichOutcome<ImmichImage>>;
 }

@@ -30,6 +30,12 @@ export type SignableImmichMedia =
 			 * Immich does not say, and on a thumbnail, where nothing reads it.
 			 */
 			takenAt?: string;
+			/**
+			 * For a photo of two people together (concept §4.3, *You and Julia*): the other person
+			 * and the Immich person they were linked to when the photo was listed. The photo is then
+			 * served only while the viewer sees both and both links still hold.
+			 */
+			together?: ImmichCompanion;
 	  }
 	| {
 			/** A face the picker offers while linking `contactId`. */
@@ -37,6 +43,12 @@ export type SignableImmichMedia =
 			contactId: string;
 			personId: string;
 	  };
+
+/** The second person of a together photo. */
+export interface ImmichCompanion {
+	contactId: string;
+	personId: string;
+}
 
 /** What a token names, and until when it does. */
 export type SignedImmichMedia = SignableImmichMedia & { expiresAt: number };
@@ -75,6 +87,9 @@ const IMAGE_SIZES: ReadonlySet<string> = new Set<ImmichImageSize>(['thumbnail', 
  */
 const MAX_CONTACT_ID_LENGTH = 128;
 
+const isSignedContactId = (value: unknown): value is string =>
+	typeof value === 'string' && value.length > 0 && value.length <= MAX_CONTACT_ID_LENGTH;
+
 const encoder = new TextEncoder();
 
 const toBase64Url = (bytes: Uint8Array) => Buffer.from(bytes).toString('base64url');
@@ -88,13 +103,13 @@ function readPayload(payload: string): SignedImmichMedia | null {
 		return null;
 	}
 	if (typeof body !== 'object' || body === null || Array.isArray(body)) return null;
-	const { k, c, p, a, s, e, t } = body as Record<string, unknown>;
-	if (typeof c !== 'string' || c.length === 0 || c.length > MAX_CONTACT_ID_LENGTH || !isImmichId(p))
-		return null;
+	const { k, c, p, a, s, e, t, w, q } = body as Record<string, unknown>;
+	if (!isSignedContactId(c) || !isImmichId(p)) return null;
 	if (typeof e !== 'number' || !Number.isSafeInteger(e)) return null;
 	if (k === 'f') return { kind: 'face', contactId: c, personId: p, expiresAt: e };
 	if (k !== 'p' || !isImmichId(a) || typeof s !== 'string' || !IMAGE_SIZES.has(s)) return null;
 	if (t !== undefined && (typeof t !== 'string' || !isTakenAt(t))) return null;
+	if ((w !== undefined || q !== undefined) && (!isSignedContactId(w) || !isImmichId(q))) return null;
 	return {
 		kind: 'photo',
 		contactId: c,
@@ -102,6 +117,7 @@ function readPayload(payload: string): SignedImmichMedia | null {
 		assetId: a,
 		size: s as ImmichImageSize,
 		...(t === undefined ? {} : { takenAt: t }),
+		...(w === undefined ? {} : { together: { contactId: w as string, personId: q as string } }),
 		expiresAt: e
 	};
 }
@@ -118,6 +134,8 @@ function writePayload(media: SignedImmichMedia): string {
 					a: media.assetId,
 					s: media.size,
 					t: media.takenAt,
+					w: media.together?.contactId,
+					q: media.together?.personId,
 					e: media.expiresAt
 				};
 	return toBase64Url(encoder.encode(JSON.stringify(fields)));

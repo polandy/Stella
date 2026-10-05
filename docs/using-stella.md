@@ -297,6 +297,13 @@ later goes from Immich. The photo they had before stays in their gallery. Tappin
 picture at the top of their page offers the same: under **From Immich** pick one of their latest
 Immich photos — or, if they are not linked yet, **Find in Immich** first, and their photos
 appear.
+**Photos together.** Once you have said which person is you (*This is me*) and that person is
+linked to Immich too, the strip of anyone else who is linked gets small chips above it: **All
+photos** and **You and Julia** — the photos the two of you are in together. On the People card,
+the row of a partner, spouse, parent or child who is in Immich too has a small photo button,
+**Together**: it takes you down to the strip and shows the photos of those two together, with a
+chip of its own to come back to. Tapping a photo, **Use as photo** and **Open in Immich** work
+there as on any strip.
 Anyone in the household sees the strip, whatever their own Immich account, because Stella
 fetches the photos; none of them is kept on your phone or computer, so offline the strip is
 not there. Anyone in the household can link or unlink a person, and the

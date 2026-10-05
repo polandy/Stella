@@ -21,12 +21,22 @@
 	import ImmichFacePicker from './ImmichFacePicker.svelte';
 	import ImmichLine from './ImmichLine.svelte';
 	import ImmichStrip from './ImmichStrip.svelte';
+	import { stripViews, viewShown, type StripView } from '$lib/immich/together';
 	import { INPUT } from './inputs';
 	import PhotoLightbox from './PhotoLightbox.svelte';
 	import type { PersonForm, PersonPageData } from './types';
 
 	// What was taken (docs/02 §2.14): the person page's gallery card and its lightbox.
-	let { data, form }: { data: PersonPageData; form: PersonForm } = $props();
+	let {
+		data,
+		form,
+		together = $bindable({ askedByRow: null, shown: null })
+	}: {
+		data: PersonPageData;
+		form: PersonForm;
+		/** Which pair a relationship row asked for, and which the strip shows (docs/02 §2.24.8). */
+		together?: { askedByRow: string | null; shown: string | null };
+	} = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -102,6 +112,52 @@
 	const showImmich = $derived(data.immich !== null && reachability.reachable);
 	/** The search the picker starts with: the name, without a nickname Immich would not know. */
 	const immichSearchName = $derived([c.firstName, c.lastName].filter(Boolean).join(' ') || c.displayName);
+
+	/*
+	 * Photos together (docs/02 §2.24.8): chips over the strip — *All photos*, *You and Julia* when
+	 * the viewer's own person is linked too, and the pair a relationship row's *Together* asked for.
+	 * With only *All photos* there are no chips at all.
+	 */
+	const stripChoices = $derived(
+		data.immich?.linked
+			? stripViews({
+					pageContactId: c.id,
+					selfContactId: data.user.selfContactId,
+					togetherWith: data.immich.togetherWith,
+					askedByRow: together.askedByRow
+				})
+			: []
+	);
+	const stripShown = $derived(viewShown(stripChoices, together.shown));
+	const ownFirstName = $derived(c.firstName || c.displayName);
+	const firstNameOf = (contactId: string) => {
+		const person = data.people.find((candidate) => candidate.id === contactId);
+		return person?.firstName || person?.displayName || '';
+	};
+	/** Whether the pair is the viewer and someone, said *you* rather than by name. */
+	const withViewer = (view: StripView & { contactId: string }) =>
+		view.kind === 'withYou' || c.id === data.user.selfContactId;
+	/** The other one of a pair: the page's person, when the page is the viewer's own. */
+	const otherOf = (view: StripView & { contactId: string }) =>
+		view.kind === 'withYou' ? ownFirstName : firstNameOf(view.contactId);
+	function chipLabel(view: StripView): string {
+		if (view.kind === 'own') return t('immich.together.own');
+		if (withViewer(view)) return t('immich.together.withYou', { name: otherOf(view) });
+		return t('immich.together.pair', { first: ownFirstName, second: firstNameOf(view.contactId) });
+	}
+	const stripTogether = $derived.by(() => {
+		const view = stripShown;
+		if (view.kind === 'own') return null;
+		const label = withViewer(view)
+			? t('immich.together.stripWithYou', { name: otherOf(view) })
+			: t('immich.together.stripPair', { first: ownFirstName, second: firstNameOf(view.contactId) });
+		return { contactId: view.contactId, label };
+	});
+	const chooseView = (view: StripView) => {
+		together = { ...together, shown: view.kind === 'own' ? null : view.contactId };
+	};
+	const isShown = (view: StripView) =>
+		view.kind === stripShown.kind && (view.kind === 'own' || (stripShown.kind !== 'own' && view.contactId === stripShown.contactId));
 
 	// The grid's buttons, so closing the photo hands focus back to the one now showing.
 	const thumbnails: HTMLButtonElement[] = $state([]);
@@ -244,7 +300,31 @@
 		{#if showImmich}
 			<ImmichLine person={data.immichPerson} error={form?.immichError ?? null} />
 			{#if data.immich?.linked}
-				<ImmichStrip contactId={c.id} name={c.displayName} hasPhoto={c.avatarPhotoId !== null} />
+				{#if stripChoices.length > 1}
+					<div
+						class="mt-2 flex flex-wrap gap-1.5"
+						role="group"
+						aria-label={t('immich.together.label')}
+						data-testid="immich-together"
+					>
+						{#each stripChoices as view (view.kind === 'own' ? 'own' : view.contactId)}
+							<button
+								type="button"
+								aria-pressed={isShown(view)}
+								onclick={() => chooseView(view)}
+								class="rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-fg-muted transition-colors hover:border-primary hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-pressed:border-primary aria-pressed:bg-primary-soft aria-pressed:text-fg"
+							>
+								{chipLabel(view)}
+							</button>
+						{/each}
+					</div>
+				{/if}
+				<ImmichStrip
+					contactId={c.id}
+					name={c.displayName}
+					hasPhoto={c.avatarPhotoId !== null}
+					together={stripTogether}
+				/>
 			{/if}
 		{/if}
 
