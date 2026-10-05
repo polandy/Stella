@@ -240,7 +240,7 @@
 						href="/contacts/{kin.personId}"
 						class="flex min-w-0 flex-1 items-center gap-2.5 rounded-control px-1 py-1 hover:bg-card-hover"
 					>
-						<span class="shrink-0 rounded-full border border-dashed border-border p-0.5 opacity-75">
+						<span class="shrink-0 rounded-full border border-dashed border-border p-0.5 opacity-75" aria-hidden="true">
 							<Avatar id={kin.personId} name={kin.displayName} avatarPhotoId={photoById.get(kin.personId) ?? null} size={30} />
 						</span>
 						<span class="flex min-w-0 flex-col">

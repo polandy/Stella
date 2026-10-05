@@ -140,8 +140,8 @@ test.describe('the ⋯ menu', () => {
 
 		// Her father, from her relationships: the page keeps its identity card across the step.
 		await page
-			.locator('#section-relationships')
-			.getByRole('link', { name: 'Markus Brunner', exact: true })
+			.getByTestId('relationship-list')
+			.getByRole('link', { name: /^Markus Brunner\b/ })
 			.click();
 
 		await expect(page.getByRole('heading', { name: 'Markus Brunner', exact: true })).toBeVisible();

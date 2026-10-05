@@ -142,12 +142,15 @@
 								href="/contacts/{rel.otherContactId}"
 								class="flex min-w-0 flex-1 items-center gap-2.5 rounded-control px-1 py-1 hover:bg-card-hover"
 							>
-								<Avatar
-									id={rel.otherContactId}
-									name={rel.otherDisplayName}
-									avatarPhotoId={photoById.get(rel.otherContactId) ?? null}
-									size={36}
-								/>
+								<!-- The name follows, so the face is not read out a second time. -->
+								<span class="shrink-0" aria-hidden="true">
+									<Avatar
+										id={rel.otherContactId}
+										name={rel.otherDisplayName}
+										avatarPhotoId={photoById.get(rel.otherContactId) ?? null}
+										size={36}
+									/>
+								</span>
 								<span class="flex min-w-0 flex-col">
 									<span class="line-clamp-2 leading-tight font-medium break-words text-fg">
 										{rel.otherDisplayName}
