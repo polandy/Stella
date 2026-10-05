@@ -291,6 +291,9 @@ private to another member). From then on the card ends with a line
 like *In Immich · 1,284 photos* and a strip of their latest twelve photos, newest first;
 **Show more** at its end adds twelve more. Tap a photo to see it larger, with the arrows (or
 the arrow keys) to step through the strip and **Open in Immich** to go to that photo there.
+**Use as photo** there opens the same square cutter as a new photo: the square you pick becomes
+the person's photo in Stella, dated as Immich dates it — a copy, which stays even if the photo
+later goes from Immich. The photo they had before stays in their gallery.
 Anyone in the household sees the strip, whatever their own Immich account, because Stella
 fetches the photos; none of them is kept on your phone or computer, so offline the strip is
 not there. Anyone in the household can link or unlink a person, and the

@@ -21,8 +21,10 @@
 		contactId: string;
 		/** The person's name as the page shows it, for the pictures' descriptions. */
 		name: string;
+		/** Whether the person wears a photo now, for *Use as photo* in the viewer. */
+		hasPhoto: boolean;
 	}
-	let { contactId, name }: Props = $props();
+	let { contactId, name, hasPhoto }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -161,6 +163,8 @@
 		at={opened}
 		count={photos.length}
 		{name}
+		{contactId}
+		{hasPhoto}
 		onclose={close}
 		onstep={step}
 		onkeydown={(event) => step(event.key)}

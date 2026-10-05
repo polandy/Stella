@@ -5,13 +5,15 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { GlimpsePhoto } from '$lib/immich/strip';
 	import LightboxFrame from './LightboxFrame.svelte';
+	import UseImmichPhoto from './UseImmichPhoto.svelte';
 
 	/*
 	 * A photo from the Immich strip, in the person page's lightbox (docs/concepts/immich.md §4.3):
 	 * Immich's `preview` size, through Stella's signed proxy, so it works for every member whatever
 	 * their own Immich account. Left and right — the buttons or the arrow keys — walk the strip.
 	 * *Open in Immich* takes anyone to the photo there; only the key owner's session shows it
-	 * (concept §9.2). Nothing else: the photo stays Immich's.
+	 * (concept §9.2). *Use as photo* cuts a square of it into the person's own photo (docs/02
+	 * §2.24.6) — a copy a member makes on purpose; the photo itself stays Immich's.
 	 */
 	interface Props {
 		photo: GlimpsePhoto;
@@ -21,6 +23,9 @@
 		count: number;
 		/** The person whose photo it is, for the picture's description. */
 		name: string;
+		contactId: string;
+		/** Whether the person wears a photo now. */
+		hasPhoto: boolean;
 		/** Closes the viewer and hands focus back to the photo's tile. */
 		onclose: () => void;
 		/** One step through the strip, as the arrow key of that name would. */
@@ -28,7 +33,7 @@
 		/** The arrow keys walk the strip. */
 		onkeydown: (event: KeyboardEvent) => void;
 	}
-	let { photo, at, count, name, onclose, onstep, onkeydown }: Props = $props();
+	let { photo, at, count, name, contactId, hasPhoto, onclose, onstep, onkeydown }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -72,6 +77,7 @@
 			disabled={count < 2}
 			onclick={() => onstep('ArrowRight')}
 		/>
+		<UseImmichPhoto {contactId} previewUrl={photo.previewUrl} {hasPhoto} ondone={onclose} />
 		<a
 			href={photo.openUrl}
 			target="_blank"

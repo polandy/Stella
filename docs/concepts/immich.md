@@ -1,6 +1,6 @@
 # Concept — A person's photos, from Immich
 
-Status: **slices 1–2 built** (*Connect + link*, *Glimpse*, docs/02 §2.24); slices 3–5 are not. The decisions taken with the maintainer on 2026-10-01 are
+Status: **slices 1, 2 and 5 built** (*Connect + link*, *Glimpse*, *Use as photo*, docs/02 §2.24); slices 3–4 are not. The decisions taken with the maintainer on 2026-10-01 are
 listed in §9; one point (phone deep links) waits for a test on the device. Facts about Immich
 are taken from its OpenAPI spec at v3.2.4 (2026-09) and are cited in §10.
 
@@ -236,7 +236,7 @@ Following the GitHub release feed, the existing outbound-call pattern
 2. **Glimpse** — the signed proxy, the strip and the viewer.
 3. **Matching list** — the review of §4.2.
 4. **Together** — the *You and Julia* chip and the relationship-row chip.
-5. **Use as photo** from the viewer.
+5. **Use as photo** from the viewer — built (docs/02 §2.24.6, decisions §9.13–15).
 
 Each slice is one PR with its UI, its docs (docs/02, docs/03, `using-stella.md`,
 `install.md` for the variables) and its unit tests; e2e after sign-off.
@@ -283,6 +283,25 @@ Decided while building slice 2 (2026-10-04):
 12. **The strip shows photos only**, no videos: the viewer is a photo viewer, and a video's
     still frame there would read as a photo. The count on the line stays Immich's own, videos
     included.
+
+Decided while building slice 5 (2026-10-05):
+
+13. **The browser cuts, the server checks.** The square is cut from the preview in the browser,
+    through the cropper and the canvas re-encode every new picture takes (docs/02 §2.14), so the
+    server keeps needing no image library and no metadata of the preview reaches it. The server
+    takes the square only with the preview's signed token, for the person whose page it is, after
+    the proxy's own checks (signature, expiry, the access layer, the link) — and asks Immich
+    nothing then, so no asset id from a browser is ever fetched. It does not ask Immich again
+    whether the face is in the photo: the token already says Stella listed that photo for that
+    person.
+14. **The date comes from Immich, signed.** When the strip is listed, the preview's token carries
+    when Immich says the photo was taken (`localDateTime` as the camera's wall clock, else
+    `fileCreatedAt` in UTC). *Use as photo* dates the copy by that, never by a date a browser
+    sends or by what EXIF an Immich preview may or may not keep.
+15. **It is the avatar path, not a framing.** The copy is a new photo the person wears, at 512 px
+    like an uploaded avatar, and the previous one drops back into the gallery with the same toast.
+    There is no framing to change later: the original is Immich's, and Stella keeps only the
+    square that was chosen.
 
 ---
 

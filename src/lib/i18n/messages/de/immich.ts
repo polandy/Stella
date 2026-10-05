@@ -50,6 +50,8 @@ export const immich: ImmichMessages = {
 	'immich.viewer.position': (p) => `${p.at} von ${p.count}`,
 	'immich.viewer.previous': 'Vorheriges Foto',
 	'immich.viewer.next': 'Nächstes Foto',
+	'immich.viewer.use': 'Als Foto verwenden',
+	'immich.viewer.useFailed': 'Das Foto konnte nicht übernommen werden. Lade die Seite neu und versuche es noch einmal.',
 
 	'immich.picker.title': (p) => `${p.name} in Immich suchen`,
 	'immich.picker.search': 'Name in Immich',
