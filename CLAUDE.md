@@ -72,6 +72,7 @@ Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) �
 | `src/lib/graph/model/` | **pure** graph domain: `GraphModel`, `buildEgoNetwork`, `expandNode`, `findConnectionPath`, `applyFilters` (test-first) |
 | `src/lib/graph/layout/` | **pure** arrangements as positions: family tree, groups by circle; the density and legibility numbers the canvas is drawn at (test-first) |
 | `src/lib/graph/keyboard.ts` | **pure** keyboard walk over the map: which key steps to whom (test-first) |
+| `src/lib/graph/phone-map.ts` | **pure** view machine for a phone's map on a person's page: preview / enlarged / full screen, and which view follows which tap (test-first) |
 | `src/lib/graph/cytoscape/` | rendering adapter (Cytoscape confined here, lazy-loaded); no domain logic |
 | `src/routes/` | thin edges: `load` / form actions / `+server.ts`; a large page keeps its `load` and action groups in colocated plain modules (`contacts/[id]/load.ts`, `actions/*.ts`) |
 | `src/lib/components/` | UI components (design system): `Button`, `Icon` + the `icons.ts` registry, `Avatar`, `Section`, `EmptyState`, `CommandPalette`, `MenuButton`, `Toast` + `RemoveButton`, `InlineEdit`, …; `graph/` holds the map: `GraphExplorer` wires state to the canvas, its parts (`GraphCanvas`, `GraphFilterMenu`, `GraphArrangeMenu`, `GraphFindField`, `GraphNodePeek`/`GraphGroupPeek`, `GraphPathPrompt`) only render; `person/` holds the person page's cards, one component per section |
