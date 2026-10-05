@@ -98,6 +98,14 @@
 		 * somebody the page's own two hops do not reach (docs/05 §5.5).
 		 */
 		tracePathTo?: string | null;
+		/**
+		 * Open straight into full screen. A phone shows a person's map as a small preview, and
+		 * tapping it means "show me the map" (docs/05 §5.5) — the frame is mounted for that tap,
+		 * so it asks while the tap still counts as the reader's own gesture.
+		 */
+		startFullscreen?: boolean;
+		/** Told when full screen is left, so a preview can take the frame's place again. */
+		onFullscreenExit?: () => void;
 	}
 	let {
 		graph,
@@ -105,7 +113,9 @@
 		compact = false,
 		maxRings = Number.POSITIVE_INFINITY,
 		fullGraphHref,
-		tracePathTo = null
+		tracePathTo = null,
+		startFullscreen = false,
+		onFullscreenExit
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -574,8 +584,17 @@
 
 	const screen = frameFullscreen(() => frame);
 	const overlay = $derived(screen.on && screen.usesCss);
+	// Only a full screen that was entered can be left: the first `false` is the frame arriving.
+	let wasFullscreen = false;
+	$effect(() => {
+		const on = screen.on;
+		if (wasFullscreen && !on) onFullscreenExit?.();
+		wasFullscreen = on;
+	});
 
 	onMount(async () => {
+		// Before anything is awaited: a browser grants full screen only close to the tap.
+		if (startFullscreen) void screen.toggle();
 		// Build the initial ego view around the centre from the in-memory snapshot.
 		if (centerId) model = await buildEgoNetwork(source, centerId, 1);
 

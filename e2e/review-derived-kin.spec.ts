@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openPerson, signIn } from './app';
+import { fromPeopleMenu, openPerson, signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
@@ -40,7 +40,7 @@ const seedFamily = (page: Page, f: Family) =>
 
 async function review(page: Page, name: string) {
 	await openPerson(page, new RegExp(name));
-	await page.getByRole('link', { name: 'Check relationships' }).click();
+	await fromPeopleMenu(page, 'Check relationships');
 	return page.getByTestId('kin-review');
 }
 
@@ -86,8 +86,8 @@ test('accepting on one side enters it for both, and neither check asks again', a
 	// Leaving sends it. The uncle's page shows the entered link from his side …
 	await openPerson(page, new RegExp(f.uncle));
 	await expect(
-		page.locator('#section-relationships ul').first().locator('li').filter({ hasText: f.child })
-	).toContainText('Aunt / uncle of');
+		page.getByTestId('relationship-list').locator('li').filter({ hasText: f.child })
+	).toContainText(/Niece|Nephew/);
 
 	// … and his check no longer asks about the child, while still asking about his sister.
 	const his = await review(page, f.uncle);

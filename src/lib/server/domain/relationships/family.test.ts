@@ -140,6 +140,12 @@ describe('readFamilyOf', () => {
 		expect(d.asked).toEqual({ family: 1, ties: 1, dismissals: 1 });
 	});
 
+	it('says how each person at the far end of a tie is worded, for the card to name their role', async () => {
+		const read = await readFamilyOf(deps(), viewer, 'andy', { proposeFor: [], reviewOpen: false });
+		// Mia is on record as female, so the People card can call her his wife (docs/05 §5.5).
+		expect(read.tieWording).toEqual({ mia: 'female' });
+	});
+
 	it('leaves the dismissals unread when no proposal or review asks for them', async () => {
 		const d = deps();
 		const read = await readFamilyOf(d, viewer, 'andy', { proposeFor: [], reviewOpen: false });

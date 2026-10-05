@@ -156,6 +156,22 @@ export const contact = {
 		'Add family, a partner, friends or colleagues — the map of who they know draws itself from these.',
 	'contact.relationships.remove': (p: { name: string }) => `Remove the link to ${p.name}`,
 	'contact.relationships.removed': 'Relationship removed',
+	/*
+	 * The People card as a compact list (docs/05 §5.5): grouped by the kind of tie, folded to a
+	 * handful, its corrections behind one *Edit* for the whole card.
+	 */
+	'contact.relationships.group.family': 'Family',
+	'contact.relationships.group.social': 'Friends',
+	'contact.relationships.group.professional': 'Work',
+	'contact.relationships.group.other': 'Other',
+	'contact.relationships.showMore': (p: { count: number }) => `Show ${p.count} more`,
+	'contact.relationships.showFewer': 'Show fewer',
+	'contact.relationships.editMode': 'Edit',
+	'contact.relationships.editModeDone': 'Done',
+	'contact.relationships.editLink': (p: { name: string }) => `Edit the link to ${p.name}`,
+	'contact.relationships.menu': 'More for these relationships',
+	// The person page's jump bar (docs/05 §5.5).
+	'contact.jumpBar.label': 'Parts of this page',
 	'contact.relationships.since': (p: { day: string }) => `since ${p.day}`,
 	'contact.relationships.howConnect': 'How they connect',
 	'contact.relationships.howConnectOptional': 'How they connect (optional)',

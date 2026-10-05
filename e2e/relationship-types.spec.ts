@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { appReady, openPerson, pickPerson, signIn } from './app';
+import { appReady, editPeople, openPerson, pickPerson, signIn } from './app';
 import { seedHousehold } from './seed';
 
 /*
@@ -85,6 +85,7 @@ test('will not remove a type while links still use it', async ({ page }) => {
 
 	// Put Thomas back as he was; the button returns with the last link gone.
 	await openPerson(page, /Thomas Widmer/);
+	await editPeople(page);
 	await page
 		.locator('#section-relationships')
 		.getByRole('button', { name: 'Remove the link to Bettina Roth' })
@@ -191,7 +192,8 @@ test('merges a type of its own into another one, links and all', async ({ page }
 
 	await openPerson(page, /Rolf Amsler/);
 	const relationships = page.locator('#section-relationships');
-	await expect(relationships).toContainText('Friend of');
-	await expect(relationships).toContainText('Vera Amsler');
+	await expect(
+		page.getByTestId('relationship-list').locator('li').filter({ hasText: 'Vera Amsler' })
+	).toContainText('Friend');
 	await expect(relationships).not.toContainText('Hikes with');
 });

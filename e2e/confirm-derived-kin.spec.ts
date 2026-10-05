@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, openPerson, pickPerson, signIn } from './app';
+import { addPerson, editPeople, openPerson, pickPerson, signIn } from './app';
 
 /*
  * A worked-out relative can be confirmed, which stores it as an entered link (docs/02
@@ -25,7 +25,7 @@ async function addLink(page: Page, fields: { type: string; person: string }): Pr
 }
 
 const enteredRow = (page: Page, otherName: string) =>
-	page.locator('#section-relationships ul').first().locator('li').filter({ hasText: otherName });
+	page.getByTestId('relationship-list').locator('li').filter({ hasText: otherName });
 
 test('confirms a worked-out grandparent in place, storing it as an entered link', async ({
 	page
@@ -50,10 +50,12 @@ test('confirms a worked-out grandparent in place, storing it as an entered link'
 	// A full reload would drop this; its surviving the confirm is what "in place" means.
 	await page.evaluate(() => Object.assign(window, { stayedOnPage: true }));
 	const before = page.url();
+	// Confirming is a correction, so it is offered in the card's edit mode.
+	await editPeople(page);
 	await derivedRow.getByRole('button', { name: 'Confirm' }).click();
 
 	// Stored: it now reads like any entered link, and the worked-out row has gone.
-	await expect(enteredRow(page, fullName(GRANDPARENT))).toContainText('Grandchild of');
+	await expect(enteredRow(page, fullName(GRANDPARENT))).toContainText('Grandparent');
 	await expect(page.getByTestId('derived-kin')).toHaveCount(0);
 	expect(await page.evaluate(() => 'stayedOnPage' in window)).toBe(true);
 	expect(page.url()).toBe(before);

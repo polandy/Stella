@@ -107,11 +107,10 @@ test('people sent through the import API get a page and a circle', async ({ page
 	// The link, as the person page's own list of entered relationships reads it.
 	await expect(
 		page
-			.locator('#section-relationships ul')
-			.first()
+			.getByTestId('relationship-list')
 			.locator('li')
 			.filter({ hasText: 'Ada Okafor' })
-	).toContainText('Child of');
+	).toContainText(/Parent|Mother|Father/);
 
 	const again = await page.request.post('/api/v1/import', {
 		headers: bearer(token),

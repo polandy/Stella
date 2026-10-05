@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, openPerson, pickPerson, signIn } from './app';
+import { addPerson, editPeople, openPerson, pickPerson, signIn } from './app';
 
 /*
  * A partnership marked *former* stops carrying step-family (docs/02 §2.4, §2.4.1). Written
@@ -17,7 +17,7 @@ const EX = { first: 'Vera', last: 'Moser' };
 const fullName = (who: { first: string; last: string }) => `${who.first} ${who.last}`;
 
 const enteredRow = (page: Page, otherName: string) =>
-	page.locator('#section-relationships ul').first().locator('li').filter({ hasText: otherName });
+	page.getByTestId('relationship-list').locator('li').filter({ hasText: otherName });
 
 /** Fills the *Add relationship* form on the open person and submits it. */
 async function addLink(
@@ -52,6 +52,7 @@ test('stops naming an ex-partner a stepparent, without dropping the link', async
 
 	// Gian and Vera separate: the row says so, and the worked-out stepparent goes with it.
 	await openPerson(page, new RegExp(fullName(PARENT)));
+	await editPeople(page);
 	await enteredRow(page, fullName(EX)).getByRole('button', { name: 'Edit' }).click();
 	const editor = page.locator('form[action="?/editRelationship"]');
 	await editor.locator('select[name=status]').selectOption('former');

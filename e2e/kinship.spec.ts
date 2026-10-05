@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openPerson, pickPerson, signIn } from './app';
+import { openPerson, pickPerson, signIn, unfoldPeople } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
@@ -23,6 +23,8 @@ test.beforeEach(async ({ page }) => {
 
 test('names the relatives nobody entered, saying who each comes through', async ({ page }) => {
 	await openPeopleTab(page, /Lena Brunner/);
+	// Lena has more worked-out relatives than a folded card shows.
+	await unfoldPeople(page);
 	const derived = page.getByTestId('derived-kin');
 
 	// Lena's mother is Sandra Brunner-Keller, whose mother is Ursula: a grandmother nobody
@@ -40,7 +42,9 @@ test('names the relatives nobody entered, saying who each comes through', async 
 
 	// What the household entered keeps its own wording and is never inferred a second time:
 	// Hans is a stored grandparent, so he appears above and not among the derived.
-	await expect(page.locator('#section-relationships').getByText('Grandchild of').first()).toBeVisible();
+	await expect(
+		page.getByTestId('relationship-list').locator('li').filter({ hasText: 'Hans Brunner' })
+	).toContainText('Grandfather');
 	await expect(derived).not.toContainText('Hans Brunner');
 });
 

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openPerson, signIn } from './app';
+import { fromPeopleMenu, openPerson, signIn } from './app';
 
 /*
  * Out of a person's page into the household's graph, and back again (docs/02 §2.7,
@@ -17,10 +17,7 @@ test('carries the person into the graph and offers the way back to their page', 
 	await openPerson(page, /Lena Brunner/);
 	const id = new URL(page.url()).pathname.split('/').pop()!;
 
-	await page
-		.locator('#section-relationships')
-		.getByRole('link', { name: 'Open in the graph' })
-		.click();
+	await fromPeopleMenu(page, 'Open in the graph');
 
 	// She is the centre, which is what the link carried — the peek panel opens on her.
 	await expect(page).toHaveURL(`/graph?center=${id}`);

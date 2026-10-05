@@ -1,5 +1,5 @@
 import type { GraphModel } from '../../../graph/model/types';
-import type { KinshipGraph, Pair } from '../../../kinship/kinship';
+import { variantFor, type KinshipGraph, type KinVariant, type Pair } from '../../../kinship/kinship';
 import type { ExclusionFacts } from '../../../relationships/exclusions';
 import type { Viewer } from '../../access/visibility';
 import {
@@ -50,6 +50,12 @@ export interface FamilyRead {
 	graph: GraphModel;
 	/** The person's own links, from their side. */
 	ties: RelationshipView[];
+	/**
+	 * How each person at the far end of a tie is worded — gendered where their gender is on
+	 * record — so the People card can say *his wife* rather than *Spouse of* (docs/05 §5.5).
+	 * Keyed by contact id; read from the kinship graph already loaded, so it costs no query.
+	 */
+	tieWording: Record<string, KinVariant>;
 	kinship: KinshipRead;
 	reviewed: ProposedLink[];
 	exclusionFacts: ExclusionFacts;
@@ -71,10 +77,19 @@ export async function readFamilyOf(
 	return {
 		graph: family.graph,
 		ties,
+		tieWording: wordingOf(family.kinship, ties),
 		kinship: kinshipFrom(family.kinship, dismissals, subjectId, request.proposeFor),
 		reviewed: request.reviewOpen
 			? reviewPersonIn(family.kinship, dismissals, subjectId, { includeDismissed: true })
 			: [],
 		exclusionFacts: exclusionFactsFrom(family.kinship, ties)
 	};
+}
+
+/** The far ends of the ties, each with the wording its gender on record asks for. */
+function wordingOf(kinship: KinshipGraph, ties: readonly RelationshipView[]): Record<string, KinVariant> {
+	const people = new Map(kinship.people.map((person) => [person.id, person]));
+	const wording: Record<string, KinVariant> = {};
+	for (const tie of ties) wording[tie.otherContactId] = variantFor(people.get(tie.otherContactId) ?? {});
+	return wording;
 }

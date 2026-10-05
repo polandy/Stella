@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openPerson, pickPerson, signIn } from './app';
+import { fromPeopleMenu, openPerson, pickPerson, signIn } from './app';
 
 /*
  * "How are we connected?" asked from a person's card (docs/02 §2.7, docs/05 §5.5). The card
@@ -19,7 +19,7 @@ test('asks who from the card and arrives in the graph with the chain already tra
 	const id = new URL(page.url()).pathname.split('/').pop()!;
 	const card = page.locator('#section-relationships');
 
-	await card.getByRole('button', { name: 'How are we connected?' }).click();
+	await fromPeopleMenu(page, 'How are we connected?');
 	await pickPerson(card.getByLabel('Lena Brunner and…'), 'Vreni Zbinden');
 	await card.getByRole('link', { name: 'Trace it' }).click();
 
@@ -38,9 +38,9 @@ test('the question is not asked in the card that cannot answer it', async ({ pag
 	await openPerson(page, /Lena Brunner/);
 	const card = page.locator('#section-relationships');
 
-	// The card offers the question and the way into the graph, each with its own icon — but
-	// it never draws a path itself: the picker hands the question on.
-	await card.getByRole('button', { name: 'How are we connected?' }).click();
+	// The card's ⋯ offers the question and the way into the graph, each with its own icon —
+	// but it never draws a path itself: the picker hands the question on.
+	await fromPeopleMenu(page, 'How are we connected?');
 	await expect(card.getByRole('button', { name: 'Trace it' })).toBeDisabled();
 	await expect(card.getByRole('button', { name: 'Connection path' })).toHaveCount(0);
 });

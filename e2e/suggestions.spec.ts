@@ -69,6 +69,6 @@ test('link as relative creates the person and opens their relationship editor wi
 	// In the stored list, not just anywhere on the page: a suggestion's claim and its reason name
 	// the same person too, and every one of those names is a link now (docs/02 §2.4.1).
 	await expect(
-		page.locator('#section-relationships ul').first().getByRole('link', { name: 'Lena Brunner' })
+		page.getByTestId('relationship-list').getByRole('link', { name: 'Lena Brunner' })
 	).toBeVisible();
 });

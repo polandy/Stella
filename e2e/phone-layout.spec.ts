@@ -130,25 +130,24 @@ test('a tapped role group’s panel is the same strip', async ({ page }) => {
 	await expectBottomStrip(page, panel);
 });
 
-test('the relationships card lays its four actions out as an even grid', async ({ page }) => {
+test('the relationships card keeps its title and its three controls on one row', async ({ page }) => {
 	await page.goto(`/contacts/${LENA}`);
 	const header = page.locator('section[id*="relationships"] header').first();
-	const actions = await Promise.all(
+	const [title, edit, add, more] = await Promise.all(
 		[
-			header.getByRole('button', { name: 'How are we connected?' }),
-			header.getByRole('link', { name: 'Open in the graph' }),
-			header.getByRole('link', { name: 'Check relationships' }),
-			header.getByRole('button', { name: 'Add relationship' })
+			header.getByRole('heading', { name: 'People' }),
+			header.getByRole('button', { name: 'Edit' }),
+			header.getByRole('button', { name: 'Add relationship' }),
+			header.getByRole('button', { name: 'More for these relationships' })
 		].map(boxOf)
 	);
-	const [connected, graph, check, add] = actions;
 
-	// Two to a row, the columns lined up, every button as wide as the next.
-	expect(Math.abs(connected.y - graph.y)).toBeLessThan(2);
-	expect(Math.abs(check.y - add.y)).toBeLessThan(2);
-	expect(check.y).toBeGreaterThan(connected.y);
-	expect(Math.abs(connected.x - check.x)).toBeLessThan(2);
-	expect(Math.abs(graph.x - add.x)).toBeLessThan(2);
-	const widths = actions.map((b) => b.width);
-	expect(Math.max(...widths) - Math.min(...widths)).toBeLessThan(2);
+	// One row: the four would otherwise wrap into a grid of their own under the title.
+	for (const control of [edit, add, more]) {
+		expect(Math.abs(control.y + control.height / 2 - (title.y + title.height / 2))).toBeLessThan(4);
+	}
+	// In reading order, and the last one inside the screen.
+	expect(edit.x).toBeLessThan(add.x);
+	expect(add.x).toBeLessThan(more.x);
+	expect(more.x + more.width).toBeLessThanOrEqual(PIXEL_9_PRO.width);
 });

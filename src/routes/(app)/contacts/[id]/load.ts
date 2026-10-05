@@ -154,6 +154,8 @@ export const load = (async ({ locals, params, url }) => {
 
 		// Who they belong with.
 		relationships: read.family.ties,
+		// How each of them is worded, so the card can say *daughter* rather than *Child* (docs/05 §5.5).
+		tieWording: read.family.tieWording,
 		// Inferred, never stored (docs/02 §2.4.1); shown apart from the entered links.
 		derivedKin: read.family.kinship.derived,
 		// Links implied by the ones just added — one, or a whole batch — offered for a confirmation each.

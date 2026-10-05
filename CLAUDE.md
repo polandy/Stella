@@ -60,6 +60,7 @@ Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) �
 | `src/lib/suggestions/` | **pure** suggestion engine: rules say what follows, `engine.ts` applies the universal suppressions centrally, reasons are `Phrase`s (test-first) |
 | `src/lib/sync/` | **pure** pending-work counting behind the shell's activity indicator: `pending-work.ts` store, `trackPending` / `whilePending` / `reportNavigation` (test-first) |
 | `src/lib/shell/` | **pure** app-shell decisions: when a phone's top bar slides away on scroll (`top-bar.ts`, test-first) |
+| `src/lib/contacts/` | **pure** person-page vocabulary: the cards' anchors (`sections.ts`), the jump bar's links and which card is being read (`jump-bar.ts`, test-first) |
 | `src/lib/onboarding/` | **pure** first-run decisions: whether Home shows the welcome card, which steps it offers and which are done (`welcome.ts`, test-first) |
 | `src/lib/surnames/` | **pure** last-name batches on screen: which rows a held batch hides, who becomes a namesake (test-first); `held-names.svelte.ts` is the adapter to the undo window |
 | `src/lib/menu/` | **pure** toolbar-menu decisions: the Filter pill's count and highlight, arrow-key movement (test-first) |

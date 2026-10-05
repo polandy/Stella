@@ -7,8 +7,10 @@ import {
 	Briefcase,
 	CalendarDays,
 	Check,
+	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
+	ChevronUp,
 	CircleDot,
 	CloudOff,
 	DownloadCloud,
@@ -68,6 +70,9 @@ export const ICONS = {
 	export: Upload,
 	forward: ChevronRight,
 	back: ChevronLeft,
+	// Unfold a folded list and fold it again, e.g. a person's People card (docs/05 §5.5).
+	expand: ChevronDown,
+	collapse: ChevronUp,
 	signOut: LogOut,
 	// Actions
 	add: Plus,

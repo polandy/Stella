@@ -193,7 +193,7 @@ test('accepting on the household screen writes the link onto the person', async 
 
 	// Leaving sends it, and on the profile it is an entered link rather than a question.
 	await openPerson(page, new RegExp(f.other));
-	await expect(page.locator('#section-relationships ul').first()).toContainText(f.parent);
+	await expect(page.getByTestId('relationship-list')).toContainText(f.parent);
 });
 
 test('asks about a claim once, however many ways the rules reach it', async ({ page }) => {
@@ -358,7 +358,7 @@ test('sends an answer left alone when the page is left', async ({ page }) => {
 	// suite never waits out the window.
 	await openPerson(page, new RegExp(f.other));
 	await expect(page.getByTestId('toast-undo')).toHaveCount(0);
-	await expect(page.locator('#section-relationships ul').first()).toContainText(f.parent);
+	await expect(page.getByTestId('relationship-list')).toContainText(f.parent);
 
 	// And it is not a question any more.
 	await page.goto(reviewFor(f));

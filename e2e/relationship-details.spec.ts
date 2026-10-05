@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { fillDate, openPerson, pickPerson, signIn } from './app';
+import { editPeople, fillDate, openPerson, pickPerson, signIn } from './app';
 
 /*
  * What a relationship carries beyond its type, and taking one back (docs/02 §2.4). Written
@@ -19,7 +19,7 @@ async function openPeopleTab(page: Page, name: RegExp): Promise<void> {
  * panel: the derived relatives below it are rows too, and only the entered ones are editable.
  */
 const enteredRow = (page: Page, otherName: string) =>
-	page.locator('#section-relationships ul').first().locator('li').filter({ hasText: otherName });
+	page.getByTestId('relationship-list').locator('li').filter({ hasText: otherName });
 
 /** Fills the *Add relationship* form and submits it. */
 async function addLink(
@@ -91,12 +91,13 @@ test('offers only the two answers a link can hold, and stands on current', async
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 
 	const row = enteredRow(page, 'Corinne Keller');
-	await expect(row).toContainText('Knows');
+	await expect(row).toContainText('Acquainted');
 	// A current link wears no chip; the *former* one in the case above proves the chip shows.
 	await expect(row).not.toContainText('former');
 
 	// It survives a reload, and the row's own editor stands on the answer it holds.
 	await page.reload();
+	await editPeople(page);
 	await enteredRow(page, 'Corinne Keller').getByRole('button', { name: 'Edit' }).click();
 	const editStatus = page.locator('form[action="?/editRelationship"] select[name=status]');
 	await expect(editStatus.locator('option')).toHaveText(['current', 'former']);
@@ -108,11 +109,11 @@ test('enters a link from the other side: "child of" needs no detour via the othe
 	// The reverse side of an asymmetric type is on offer, so the sentence can be said the way
 	// round it is being read here (docs/02 §2.4).
 	await addLink(page, { type: 'Child of', person: 'Kurt Lehmann' });
-	await expect(enteredRow(page, 'Kurt Lehmann')).toContainText('Child of');
+	await expect(enteredRow(page, 'Kurt Lehmann')).toContainText('Father');
 
 	// One canonical row, not a second kind of link: from Kurt it reads as the forward side.
 	await openPeopleTab(page, /Kurt Lehmann/);
-	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Parent of');
+	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Daughter');
 });
 
 /*
@@ -123,7 +124,7 @@ test('enters a link from the other side: "child of" needs no detour via the othe
 test('refuses a generation claimed in both directions, and writes nothing', async ({ page }) => {
 	await openPeopleTab(page, /Nicole Frei/);
 	await addLink(page, { type: 'Parent of', person: 'Heidi Lehmann' });
-	await expect(enteredRow(page, 'Heidi Lehmann')).toContainText('Parent of');
+	await expect(enteredRow(page, 'Heidi Lehmann')).toContainText('Daughter');
 
 	// The same two people, the same type, the other way round: nobody is their own parent's
 	// parent, so this is turned away with the reason rather than stored.
@@ -134,8 +135,8 @@ test('refuses a generation claimed in both directions, and writes nothing', asyn
 	// entered. Reloading proves the server wrote nothing, not just that the page did not move.
 	await page.reload();
 	await expect(enteredRow(page, 'Heidi Lehmann')).toHaveCount(1);
-	await expect(enteredRow(page, 'Heidi Lehmann')).toContainText('Parent of');
-	await expect(enteredRow(page, 'Heidi Lehmann')).not.toContainText('Child of');
+	await expect(enteredRow(page, 'Heidi Lehmann')).toContainText('Daughter');
+	await expect(enteredRow(page, 'Heidi Lehmann')).not.toContainText('Mother');
 });
 
 test('corrects the specifics from the row, the type picker preset to the link', async ({ page }) => {
@@ -143,6 +144,7 @@ test('corrects the specifics from the row, the type picker preset to the link', 
 	await addLink(page, { type: 'Knows', person: 'Jan Steiner', how: HOW, since: '2019-06-01', status: 'former' });
 
 	const row = enteredRow(page, 'Jan Steiner');
+	await editPeople(page);
 	await row.getByRole('button', { name: 'Edit' }).click();
 
 	const editor = page.locator('form[action="?/editRelationship"]');
@@ -171,6 +173,7 @@ test('takes a link back with Undo, and the worked-out name returns with it', asy
 	await addLink(page, { type: 'Knows', person: 'Nadia Brunner-Rossi' });
 	await expect(page.getByTestId('derived-kin')).not.toContainText('Nadia Brunner-Rossi');
 
+	await editPeople(page);
 	await enteredRow(page, 'Nadia Brunner-Rossi')
 		.getByRole('button', { name: 'Remove the link to Nadia Brunner-Rossi' })
 		.click();
@@ -183,13 +186,14 @@ test('takes a link back with Undo, and the worked-out name returns with it', asy
 	await expect(enteredRow(page, 'Nadia Brunner-Rossi')).toHaveCount(1);
 
 	// Remove it for real: leaving the page sends it, and the worked-out name is back.
+	await editPeople(page);
 	await enteredRow(page, 'Nadia Brunner-Rossi')
 		.getByRole('button', { name: 'Remove the link to Nadia Brunner-Rossi' })
 		.click();
 	await expect(page.getByTestId('toast-undo')).toBeVisible();
 	await openPeopleTab(page, /Hans Brunner/);
 	await expect(page.getByTestId('derived-kin')).toContainText('Nadia Brunner-Rossi');
-	await expect(page.locator('#section-relationships ul').first()).not.toContainText('Nadia Brunner-Rossi');
+	await expect(page.getByTestId('relationship-list')).not.toContainText('Nadia Brunner-Rossi');
 });
 
 /*
@@ -199,6 +203,7 @@ test('takes a link back with Undo, and the worked-out name returns with it', asy
 
 /** Opens one row's editor and hands back the form inside it. */
 async function openEditor(page: Page, row: Locator): Promise<Locator> {
+	await editPeople(page);
 	await row.getByRole('button', { name: 'Edit' }).click();
 	return page.locator('form[action="?/editRelationship"]');
 }
@@ -223,13 +228,13 @@ test('changes the type from the row, keeping what the link said', async ({ page 
 
 	// The tie changed name; what was written about it did not.
 	const row = enteredRow(page, 'Reto Hofer');
-	await expect(row).toContainText('Spouse of');
+	await expect(row).toContainText('Husband');
 	await expect(row).toContainText(HOW);
 	await expect(row).toContainText('since 20 August 2011');
 
 	// Stored, not just shown.
 	await page.reload();
-	await expect(enteredRow(page, 'Reto Hofer')).toContainText('Spouse of');
+	await expect(enteredRow(page, 'Reto Hofer')).toContainText('Husband');
 
 	/*
 	 * The same row from the other end. A symmetric type is offered once, from its forward
@@ -239,7 +244,7 @@ test('changes the type from the row, keeping what the link said', async ({ page 
 	 * a save of the specifics alone retype the link.
 	 */
 	await openPeopleTab(page, /Reto Hofer/);
-	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Spouse of');
+	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Wife');
 	await expect(presetType(await openEditor(page, enteredRow(page, 'Bettina Roth')))).toHaveText(
 		'Spouse of'
 	);
@@ -261,12 +266,12 @@ test('turns a generation round from the row, rather than refusing it as its own 
 	// The guard that refuses a generation claimed both ways leaves the link itself out of the
 	// question, so the row turns round instead of being turned away.
 	await expect(page.locator('#section-relationships')).not.toContainText('already linked the other way round');
-	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Parent of');
+	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Daughter');
 
 	// One row, moved — not a second one: from Bettina it now reads as the other side.
 	await openPeopleTab(page, /Bettina Roth/);
 	await expect(enteredRow(page, 'Nicole Frei')).toHaveCount(1);
-	await expect(enteredRow(page, 'Nicole Frei')).toContainText('Child of');
+	await expect(enteredRow(page, 'Nicole Frei')).toContainText('Mother');
 });
 
 test('refuses a type that would duplicate a link already there, and writes nothing', async ({ page }) => {
@@ -277,7 +282,7 @@ test('refuses a type that would duplicate a link already there, and writes nothi
 	await addLink(page, { type: 'Neighbor of', person: 'Jan Steiner', how: 'two floors up' });
 
 	// Two rows now name Jan; the one being retyped is the neighbour link.
-	const neighbourRow = enteredRow(page, 'Jan Steiner').filter({ hasText: 'Neighbor of' });
+	const neighbourRow = enteredRow(page, 'Jan Steiner').filter({ hasText: 'Neighbor' });
 	const editor = await openEditor(page, neighbourRow);
 	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Knows' });
 	await editor.getByRole('button', { name: 'Save' }).click();
@@ -288,6 +293,6 @@ test('refuses a type that would duplicate a link already there, and writes nothi
 	await page.reload();
 	const rows = enteredRow(page, 'Jan Steiner');
 	await expect(rows).toHaveCount(2);
-	await expect(rows.filter({ hasText: 'Neighbor of' })).toContainText('two floors up');
-	await expect(rows.filter({ hasText: 'Knows' })).toHaveCount(1);
+	await expect(rows.filter({ hasText: 'Neighbor' })).toContainText('two floors up');
+	await expect(rows.filter({ hasText: 'Acquainted' })).toHaveCount(1);
 });
