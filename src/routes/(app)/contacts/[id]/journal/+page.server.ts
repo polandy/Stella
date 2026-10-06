@@ -1,4 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import {
 	getContact,
@@ -33,21 +34,11 @@ import { ulidGenerator } from '$lib/server/id';
 import type { Actions, PageServerLoad } from './$types';
 import { TranslatableError } from '$lib/errors/translatable';
 import { say, translator } from '$lib/server/i18n/say';
-import type { MessageKey } from '$lib/i18n/translate';
-
-/** Local calendar date as YYYY-MM-DD, for the compose form's default. */
-function today(): string {
-	return new Date().toLocaleDateString('en-CA'); // en-CA formats as ISO YYYY-MM-DD
-}
-
-/** Identity on a message key, so a typo in a validation message is a compile error. */
-function key(name: MessageKey): MessageKey {
-	return name;
-}
+import { messageKey, type MessageKey } from '$lib/i18n/translate';
+import { todayFor } from '$lib/dates/today';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
 
 	const contact = await getContact(getContactDeps(), viewer, params.id);
 	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
@@ -84,7 +75,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			displayName: contact.displayName,
 			avatarPhotoId: contact.avatarPhotoId
 		},
-		today: today(),
+		today: todayFor(systemClock),
 		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5, §2.20.1)
 		entries: entries.map((e) => ({
 			id: e.id,
@@ -94,15 +85,15 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			// the stored body for the edit form, which shows its tokens as handles and keeps whom
 			// each one names — including people the picker does not offer, such as the subject.
 			// Only an author edits an entry, so only their own carry it.
-			bodyForEdit: e.createdBy === locals.user!.id ? e.body : null,
+			bodyForEdit: e.createdBy === viewer.id ? e.body : null,
 			mentionNames: Object.fromEntries(
 				extractMentionIds(e.body).flatMap((id) =>
 					nameById.has(id) ? [[id, nameById.get(id)!]] : []
 				)
 			),
 			visibility: e.visibility,
-			mine: e.createdBy === locals.user!.id,
-			author: authorLabel(e.createdBy === locals.user!.id, nameOfAuthor(e.createdBy)),
+			mine: e.createdBy === viewer.id,
+			author: authorLabel(e.createdBy === viewer.id, nameOfAuthor(e.createdBy)),
 			photos: photosByEntry.get(e.id) ?? [],
 			updatedAt: e.updatedAt
 		}))
@@ -110,7 +101,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 };
 
 const SaveSchema = v.object({
-	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, key('errors.journal.badDay'))),
+	entryDate: v.pipe(
+		v.string(),
+		v.regex(/^\d{4}-\d{2}-\d{2}$/, messageKey('errors.journal.badDay'))
+	),
 	title: v.optional(v.pipe(v.string(), v.trim())),
 	body: v.pipe(v.string(), v.trim(), v.minLength(1)),
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
@@ -124,8 +118,7 @@ const EditSchema = v.object({
 
 export const actions: Actions = {
 	save: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		// The contact must be visible to journal about it.
 		const contact = await getContact(getContactDeps(), viewer, params.id);
@@ -198,8 +191,7 @@ export const actions: Actions = {
 	},
 
 	edit: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(EditSchema, {
@@ -220,14 +212,14 @@ export const actions: Actions = {
 		// does — editing never changes the day/visibility slot (docs/02 §2.20).
 		const entries = await listJournalForContact(getJournalDeps(), viewer, params.id);
 		const entry = entries.find((e) => e.id === parsed.output.id);
-		if (!entry || entry.createdBy !== locals.user.id) {
+		if (!entry || entry.createdBy !== viewer.id) {
 			return fail(404, { journalError: say(locals, 'errors.journal.editFailed') });
 		}
 
 		const contacts = await listContacts(getContactDeps(), viewer);
 		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
+			userId: viewer.id,
+			householdId: viewer.householdId,
 			locale: locals.locale,
 			defaultVisibility: 'shared' as const
 		};
@@ -266,7 +258,7 @@ export const actions: Actions = {
 	},
 
 	delete: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const id = form.get('id');
@@ -274,7 +266,7 @@ export const actions: Actions = {
 
 		await deleteJournalEntry(
 			getJournalDeps(),
-			{ userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: 'shared' },
+			{ userId: viewer.id, householdId: viewer.householdId, defaultVisibility: 'shared' },
 			id
 		);
 		throw redirect(303, `/contacts/${params.id}/journal`);

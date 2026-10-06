@@ -1,4 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { GENDERS } from '$lib/people/gender';
 import { JOB_EDITOR_PLACES } from '$lib/people/job';
@@ -51,8 +52,7 @@ const JobSchema = v.object({
 export const profileActions = {
 	/* The hero's description, edited in place; the name has its own editor (docs/02 §2.2). */
 	editProfile: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(EditProfileSchema, {
@@ -70,8 +70,7 @@ export const profileActions = {
 
 	/* The whole name — parts, *Shown as* and gender — from the one editor behind the name (docs/02 §2.2). */
 	editNameParts: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(NamePartsSchema, {
@@ -104,8 +103,7 @@ export const profileActions = {
 
 	/* Job title and company from the profile's one job editor, saved together (docs/02 §2.2). */
 	setJob: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(JobSchema, {
@@ -133,8 +131,7 @@ export const profileActions = {
 	},
 
 	setAvatar: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
@@ -157,7 +154,7 @@ export const profileActions = {
 		try {
 			await setContactAvatar(
 				getAvatarDeps(),
-				{ userId: locals.user.id, householdId: locals.user.householdId },
+				{ userId: viewer.id, householdId: viewer.householdId },
 				params.id,
 				upload
 			);

@@ -1,4 +1,5 @@
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
+import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import {
 	describeContact,
@@ -10,6 +11,8 @@ import { getAttention, getContactDeps, getPersonContextDeps } from '$lib/server/
 import { say, translator } from '$lib/server/i18n/say';
 import { isKnownByAFirstNameOnly, suggestedDescription } from '$lib/people/namesakes';
 import type { Actions, PageServerLoad } from './$types';
+import { systemClock } from '$lib/server/clock';
+import { todayFor } from '$lib/dates/today';
 
 /*
  * Tidying up the people known by a first name only (docs/02 §2.2.3): everyone the viewer may
@@ -20,19 +23,19 @@ import type { Actions, PageServerLoad } from './$types';
  */
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const user = requireUser(locals);
+	const viewer = requireViewer(locals);
 	const [everyone, touches] = await Promise.all([
 		listContacts(getContactDeps(), viewer),
 		getAttention().listLastTouchedVisibleTo(viewer)
 	]);
-	const today = new Date().toLocaleDateString('en-CA');
+	const today = todayFor(systemClock);
 	const firstNameOnly = everyone.filter(isKnownByAFirstNameOnly);
 	// Read here rather than taken from the shell, which holds it for namesakes only: a Thomas
 	// nobody else shares a name with still deserves a suggestion from his links.
 	const peopleContext = await contextOfPeople(getPersonContextDeps(), viewer, {
 		people: firstNameOnly,
-		selfContactId: locals.user.selfContactId,
+		selfContactId: user.selfContactId,
 		today
 	});
 	const t = translator(locals);
@@ -55,8 +58,7 @@ const DescribeSchema = v.object({
 
 export const actions: Actions = {
 	describe: async ({ request, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const parsed = v.safeParse(DescribeSchema, Object.fromEntries(await request.formData()));
 		if (!parsed.success) throw error(400, say(locals, 'errors.contact.emptyDescription'));
 

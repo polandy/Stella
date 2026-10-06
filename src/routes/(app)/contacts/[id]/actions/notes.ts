@@ -3,6 +3,7 @@ import { parseCommand } from '$lib/server/commands/parse';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { getCommandDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
@@ -17,7 +18,7 @@ const AddNoteSchema = v.object({
 /** The notes card (docs/02 §2.5). */
 export const noteActions = {
 	addNote: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(AddNoteSchema, {
@@ -41,8 +42,8 @@ export const noteActions = {
 			return fail(400, { noteError: say(locals, 'errors.command.malformed') });
 		}
 		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
+			userId: viewer.id,
+			householdId: viewer.householdId,
 			locale: locals.locale
 		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command);

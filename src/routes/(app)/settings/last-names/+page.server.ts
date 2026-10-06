@@ -1,4 +1,5 @@
-import { error, redirect } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { segmentsOf, type LinkedPhrase } from '$lib/i18n/linked';
 import {
@@ -22,8 +23,7 @@ import type { Actions, PageServerLoad } from './$types';
  */
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
 	const [review, help] = await Promise.all([
 		reviewLastNames(getSurnameReviewDeps(), viewer),
 		readSurnameHelp(getSurnameReviewDeps(), viewer, null)
@@ -72,8 +72,7 @@ export const actions: Actions = {
 
 	/* *Not this name* (§5): the household's answer, kept so it is not proposed again. */
 	dismissLastName: async ({ request, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const parsed = v.safeParse(AnswerSchema, Object.fromEntries(await request.formData()));
 		if (!parsed.success) throw error(400, say(locals, 'errors.contact.emptyLastName'));
 		const saved = await dismissLastName(
@@ -88,8 +87,7 @@ export const actions: Actions = {
 
 	/* Takes a *no* back, so the name is proposed again. */
 	restoreLastName: async ({ request, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const parsed = v.safeParse(AnswerSchema, Object.fromEntries(await request.formData()));
 		if (!parsed.success) throw error(400, say(locals, 'errors.contact.emptyLastName'));
 		await restoreLastName(

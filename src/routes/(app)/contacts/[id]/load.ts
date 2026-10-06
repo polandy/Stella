@@ -1,4 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
+import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
 import { parseProposePairs } from '$lib/contacts/propose';
 import { listContactFields } from '$lib/server/domain/contact-fields/contact-fields';
@@ -67,8 +68,8 @@ import { entryIdsOf, nameLookup, photosByEntry, STORY_PAGE_SIZE, toStoryItem } f
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, params, url }) => {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const user = requireUser(locals);
+	const viewer = requireViewer(locals);
 
 	/*
 	 * The page had tabs until its content became one column of cards (docs/05 §5.5). A
@@ -104,7 +105,7 @@ export const load = (async ({ locals, params, url }) => {
 					params.id,
 					togetherCandidates({
 						pageContactId: params.id,
-						selfContactId: locals.user.selfContactId,
+						selfContactId: user.selfContactId,
 						ties: read.family.ties
 					})
 				)
@@ -214,7 +215,7 @@ export const load = (async ({ locals, params, url }) => {
 		// Who is looking: the gallery only offers caption/remove on your own photos, and
 		// deleting a person for good is admin-only (docs/02 §2.2); archiving is for everyone.
 		viewerId: viewer.id,
-		isAdmin: locals.user.role === 'admin'
+		isAdmin: user.role === 'admin'
 	};
 }) satisfies PageServerLoad;
 

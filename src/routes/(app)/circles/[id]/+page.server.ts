@@ -1,4 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import {
 	addMembers,
@@ -32,8 +33,7 @@ import { say, translator } from '$lib/server/i18n/say';
  * add one or more other visible contacts at once. Both endpoints of a membership must be visible (§3.7).
  */
 export const load: PageServerLoad = async ({ locals, params }) => {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
 
 	const circle = await getCircle(getCircleDeps(), viewer, params.id);
 	if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
@@ -80,8 +80,7 @@ export const actions: Actions = {
 	...lastNameActions,
 
 	addMembers: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		// The circle must be visible to the actor before anything is added to it.
 		const circle = await getCircle(getCircleDeps(), viewer, params.id);
@@ -104,7 +103,7 @@ export const actions: Actions = {
 
 		await addMembers(
 			getCircleDeps(),
-			{ userId: locals.user.id },
+			{ userId: viewer.id },
 			params.id,
 			parsed.output.contactIds,
 			parsed.output.role
@@ -114,8 +113,7 @@ export const actions: Actions = {
 
 	// Re-roles several members at once; a blank role takes the role away (docs/02 §2.4.2).
 	setRole: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const circle = await getCircle(getCircleDeps(), viewer, params.id);
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
@@ -139,8 +137,7 @@ export const actions: Actions = {
 
 	// Renames one role for everyone and every photo of this circle that has it (docs/02 §2.4.2).
 	renameRole: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const circle = await getCircle(getCircleDeps(), viewer, params.id);
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
@@ -167,8 +164,7 @@ export const actions: Actions = {
 	},
 
 	removeMember: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const circle = await getCircle(getCircleDeps(), viewer, params.id);
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));

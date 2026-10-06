@@ -1,6 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { requireAdmin } from '$lib/server/auth/guards';
+import { requireAdmin, requireUser, requireViewer } from '$lib/server/auth/guards';
 import {
 	archiveContact,
 	deleteContact,
@@ -25,8 +25,8 @@ export const recordActions = {
 	 * deleting: it ends a record, and there is no way back.
 	 */
 	merge: async ({ request, params, locals }) => {
-		const user = requireAdmin(locals);
-		const viewer = { id: user.id, householdId: user.householdId };
+		requireAdmin(locals);
+		const viewer = requireViewer(locals);
 		const parsed = v.safeParse(
 			v.object({ mergedId: v.pipe(v.string(), v.minLength(1)) }),
 			Object.fromEntries(await request.formData())
@@ -46,7 +46,7 @@ export const recordActions = {
 	 */
 	delete: async ({ params, locals }) => {
 		const user = requireAdmin(locals);
-		const viewer = { id: user.id, householdId: user.householdId };
+		const viewer = requireViewer(locals);
 		const done = await deleteContact(getDeleteContactDeps(), viewer, params.id);
 		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		// Their tag assignments went with them by cascade, so a tag they were the last
@@ -61,8 +61,7 @@ export const recordActions = {
 	 * in the graph and the kinship Stella works out (docs/04 §4.9).
 	 */
 	archive: async ({ params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const done = await archiveContact(getContactDeps(), viewer, params.id);
 		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		throw redirect(303, `/contacts/${params.id}`);
@@ -73,9 +72,9 @@ export const recordActions = {
 	 * same button lets go of the link again, so a wrong pick is undone where it was made.
 	 */
 	setSelf: async ({ params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
-		const alreadyMe = locals.user.selfContactId === params.id;
+		const user = requireUser(locals);
+		const viewer = requireViewer(locals);
+		const alreadyMe = user.selfContactId === params.id;
 
 		try {
 			await setSelfContact(getSelfContactDeps(), viewer, alreadyMe ? null : params.id);
@@ -89,8 +88,7 @@ export const recordActions = {
 	},
 
 	restore: async ({ params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const done = await restoreContact(getContactDeps(), viewer, params.id);
 		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		throw redirect(303, `/contacts/${params.id}`);

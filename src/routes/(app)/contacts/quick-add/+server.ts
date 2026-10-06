@@ -1,4 +1,5 @@
-import { error, json, redirect } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import type { SelectablePerson } from '$lib/people/select';
 import { TranslatableError } from '$lib/errors/translatable';
@@ -27,15 +28,13 @@ const InlineCreateSchema = v.object({
 });
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-	if (!locals.user) throw redirect(302, '/login');
-
 	const parsed = v.safeParse(InlineCreateSchema, await request.json());
 	if (!parsed.success) throw error(400, say(locals, 'errors.form.checkAndRetry'));
 
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
 	const creator = {
-		userId: locals.user.id,
-		householdId: locals.user.householdId,
+		userId: viewer.id,
+		householdId: viewer.householdId,
 		locale: locals.locale,
 		// New people are shared unless picked private (docs/02 §2.10).
 		defaultVisibility: 'shared' as const

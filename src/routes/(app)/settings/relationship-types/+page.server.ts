@@ -1,7 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { RELATIONSHIP_CATEGORIES } from '$lib/relationships/categories';
-import { requireAdmin } from '$lib/server/auth/guards';
+import { requireAdmin, requireViewer } from '$lib/server/auth/guards';
 import {
 	BuiltInRelationshipTypeError,
 	InvalidRelationshipTypeError,
@@ -62,8 +62,8 @@ function messageOf(err: unknown, locals: App.Locals): string | null {
 }
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const user = requireAdmin(locals);
-	const viewer = { id: user.id, householdId: user.householdId };
+	requireAdmin(locals);
+	const viewer = requireViewer(locals);
 	const [types, usage] = await Promise.all([
 		getRelationshipTypes().listTypes(viewer),
 		getRelationshipTypes().countRelationshipsByType(viewer)

@@ -1,4 +1,5 @@
-import { error, fail, redirect, type RequestEvent } from '@sveltejs/kit';
+import { error, fail, type RequestEvent } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import {
 	captionCirclePhoto,
@@ -31,8 +32,7 @@ async function circleOf({
 	locals,
 	params
 }: Pick<RequestEvent, 'locals'> & { params: { id: string } }) {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
 	if (!(await getCircle(getCircleDeps(), viewer, params.id))) {
 		throw error(404, say(locals, 'errors.circle.notFound'));
 	}

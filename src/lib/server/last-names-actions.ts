@@ -1,4 +1,5 @@
-import { error, fail, redirect, type RequestEvent } from '@sveltejs/kit';
+import { error, fail, type RequestEvent } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import {
 	EmptyLastNameError,
@@ -24,8 +25,7 @@ const SetLastNamesSchema = v.object({
 
 export const lastNameActions = {
 	setLastNames: async ({ request, locals }: RequestEvent) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(SetLastNamesSchema, {
