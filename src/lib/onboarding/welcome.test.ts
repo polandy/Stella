@@ -28,12 +28,16 @@ describe('welcomeSteps', () => {
 	});
 
 	it('goes away as soon as there is somebody besides the member', () => {
-		expect(welcomeSteps({ ...newHousehold, peopleIds: ['me', 'anna'], selfContactId: 'me' })).toBeNull();
+		expect(
+			welcomeSteps({ ...newHousehold, peopleIds: ['me', 'anna'], selfContactId: 'me' })
+		).toBeNull();
 	});
 
 	it('goes away when the one person there is somebody else', () => {
 		// positive control: the same household with that person being the member still greets
-		expect(welcomeSteps({ ...newHousehold, peopleIds: ['anna'], selfContactId: 'anna' })).not.toBeNull();
+		expect(
+			welcomeSteps({ ...newHousehold, peopleIds: ['anna'], selfContactId: 'anna' })
+		).not.toBeNull();
 
 		expect(welcomeSteps({ ...newHousehold, peopleIds: ['anna'], selfContactId: null })).toBeNull();
 	});

@@ -43,20 +43,35 @@ function fakes(visibleIds = ['oma', 'lena', 'noah']) {
 				return visibleIds.filter((id) => ids.includes(id)).map((id) => ({ id, displayName: id }));
 			}
 		},
-		interactions: { insert: async (i: NewInteraction) => void logged.push(i) } as unknown as LogCheckedDeps['interactions'],
+		interactions: {
+			insert: async (i: NewInteraction) => void logged.push(i)
+		} as unknown as LogCheckedDeps['interactions'],
 		ids: { next: () => 'i1' },
 		clock: { now: () => 7 }
 	};
 	return { deps, logged, asked };
 }
 
-const call = { contactId: 'oma', kind: 'call' as const, happenedAt: '2026-09-27', title: 'Sunday call', description: null, visibility: 'shared' as const, participantIds: ['lena'] };
+const call = {
+	contactId: 'oma',
+	kind: 'call' as const,
+	happenedAt: '2026-09-27',
+	title: 'Sunday call',
+	description: null,
+	visibility: 'shared' as const,
+	participantIds: ['lena']
+};
 
 describe('logInteractionChecked', () => {
 	it('logs a call with the people who took part', async () => {
 		const f = fakes();
 		expect(await logInteractionChecked(f.deps, author, call)).toEqual({ interactionId: 'i1' });
-		expect(f.logged[0]).toMatchObject({ contactId: 'oma', kind: 'call', createdBy: 'u1', participantIds: ['lena'] });
+		expect(f.logged[0]).toMatchObject({
+			contactId: 'oma',
+			kind: 'call',
+			createdBy: 'u1',
+			participantIds: ['lena']
+		});
 		// Only the people named as taking part are looked up, never the whole household.
 		expect(f.asked).toEqual([['lena']]);
 	});
@@ -70,9 +85,13 @@ describe('logInteractionChecked', () => {
 
 	it('refuses a person the author cannot see, and a participant they cannot see, storing nothing', async () => {
 		const gone = fakes(['lena']);
-		await expect(logInteractionChecked(gone.deps, author, call)).rejects.toBeInstanceOf(ContactGoneError);
+		await expect(logInteractionChecked(gone.deps, author, call)).rejects.toBeInstanceOf(
+			ContactGoneError
+		);
 		const hidden = fakes(['oma']);
-		await expect(logInteractionChecked(hidden.deps, author, call)).rejects.toBeInstanceOf(InvalidInteractionError);
+		await expect(logInteractionChecked(hidden.deps, author, call)).rejects.toBeInstanceOf(
+			InvalidInteractionError
+		);
 		expect([...gone.logged, ...hidden.logged]).toHaveLength(0);
 	});
 });

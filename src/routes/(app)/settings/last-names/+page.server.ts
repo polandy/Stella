@@ -32,7 +32,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const said = (reasons: readonly LinkedPhrase[]) => reasons.map((reason) => segmentsOf(reason(t)));
 	const person = (id: string) => {
 		const p: SurnameListPerson = review.people[id]!;
-		return { id: p.id, displayName: p.displayName, avatarPhotoId: p.avatarPhotoId, isDeceased: p.isDeceased };
+		return {
+			id: p.id,
+			displayName: p.displayName,
+			avatarPhotoId: p.avatarPhotoId,
+			isDeceased: p.isDeceased
+		};
 	};
 
 	return {
@@ -71,7 +76,12 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		const parsed = v.safeParse(AnswerSchema, Object.fromEntries(await request.formData()));
 		if (!parsed.success) throw error(400, say(locals, 'errors.contact.emptyLastName'));
-		const saved = await dismissLastName(getSurnameDismissalDeps(), viewer, parsed.output.contactId, parsed.output.lastName);
+		const saved = await dismissLastName(
+			getSurnameDismissalDeps(),
+			viewer,
+			parsed.output.contactId,
+			parsed.output.lastName
+		);
 		if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
 		return { dismissed: parsed.output.contactId };
 	},
@@ -82,7 +92,12 @@ export const actions: Actions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		const parsed = v.safeParse(AnswerSchema, Object.fromEntries(await request.formData()));
 		if (!parsed.success) throw error(400, say(locals, 'errors.contact.emptyLastName'));
-		await restoreLastName(getSurnameDismissalDeps(), viewer, parsed.output.contactId, parsed.output.lastName);
+		await restoreLastName(
+			getSurnameDismissalDeps(),
+			viewer,
+			parsed.output.contactId,
+			parsed.output.lastName
+		);
 		return { restored: parsed.output.contactId };
 	}
 };

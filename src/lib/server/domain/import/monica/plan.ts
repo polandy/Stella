@@ -164,8 +164,6 @@ export interface ImportPlan {
 	report: ImportReport;
 }
 
-
-
 const orNull = (value: string | null | undefined): string | null => {
 	const trimmed = (value ?? '').trim();
 	return trimmed.length > 0 ? trimmed : null;
@@ -181,7 +179,8 @@ function birthDateOf(date: MonicaSpecialDate | undefined): {
 } {
 	if (!date) return { birthDate: null, birthDatePrecision: 'full' };
 	if (date.isAgeBased) return { birthDate: date.date.slice(0, 4), birthDatePrecision: 'age' };
-	if (date.isYearUnknown) return { birthDate: `--${date.date.slice(5)}`, birthDatePrecision: 'month_day' };
+	if (date.isYearUnknown)
+		return { birthDate: `--${date.date.slice(5)}`, birthDatePrecision: 'month_day' };
 	return { birthDate: date.date, birthDatePrecision: 'full' };
 }
 
@@ -212,7 +211,12 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 		else skipped.push({ what, count, why, ...(detail === undefined ? {} : { detail }) });
 	};
 	const wording = opts.wording;
-	const stamp = { createdBy: opts.userId, visibility: opts.visibility, createdAt: opts.now, updatedAt: opts.now };
+	const stamp = {
+		createdBy: opts.userId,
+		visibility: opts.visibility,
+		createdAt: opts.now,
+		updatedAt: opts.now
+	};
 
 	// ── Contacts ────────────────────────────────────────────────────────────
 	const live = exp.contacts.filter((c) => c.deletedAt === null);
@@ -223,7 +227,12 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 	const genders = new Map(exp.genders.map((g) => [g.id, g.type]));
 	const nameOf = (id: MonicaId): string | null => {
 		const c = exp.contacts.find((x) => x.id === id);
-		return c ? deriveDisplayName({ firstName: c.firstName, lastName: c.lastName, nickname: c.nickname }, opts.locale) : null;
+		return c
+			? deriveDisplayName(
+					{ firstName: c.firstName, lastName: c.lastName, nickname: c.nickname },
+					opts.locale
+				)
+			: null;
 	};
 
 	const contacts = live.map((c): ImportedContact => {
@@ -233,8 +242,10 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 		const birthday = birthDateOf(
 			c.birthdaySpecialDateId === null ? undefined : specialDates.get(c.birthdaySpecialDateId)
 		);
-		const death = c.deceasedSpecialDateId === null ? undefined : specialDates.get(c.deceasedSpecialDateId);
-		const met = c.firstMetSpecialDateId === null ? undefined : specialDates.get(c.firstMetSpecialDateId);
+		const death =
+			c.deceasedSpecialDateId === null ? undefined : specialDates.get(c.deceasedSpecialDateId);
+		const met =
+			c.firstMetSpecialDateId === null ? undefined : specialDates.get(c.firstMetSpecialDateId);
 		const genderType = c.genderId === null ? null : (genders.get(c.genderId) ?? null);
 		return {
 			id: contactId(c.id),
@@ -325,14 +336,28 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 			continue;
 		}
 		const type = fieldTypes.get(f.typeId);
-		const base = { id: `${prefix}:field:${f.id}`, contactId: contactId(f.contactId), sortOrder: sortOrder++, ...fieldStamp };
-		if (type?.type === 'email') contactFields.push({ ...base, kind: 'email', label: null, value: f.data });
-		else if (type?.type === 'phone') contactFields.push({ ...base, kind: 'phone', label: null, value: f.data });
+		const base = {
+			id: `${prefix}:field:${f.id}`,
+			contactId: contactId(f.contactId),
+			sortOrder: sortOrder++,
+			...fieldStamp
+		};
+		if (type?.type === 'email')
+			contactFields.push({ ...base, kind: 'email', label: null, value: f.data });
+		else if (type?.type === 'phone')
+			contactFields.push({ ...base, kind: 'phone', label: null, value: f.data });
 		// A vCard's URL already carries its scheme; only Monica's own types need one prefixed.
-		else if (type?.type === 'url') contactFields.push({ ...base, kind: 'url', label: null, value: f.data });
+		else if (type?.type === 'url')
+			contactFields.push({ ...base, kind: 'url', label: null, value: f.data });
 		else if (type?.protocol?.startsWith('http')) {
-			contactFields.push({ ...base, kind: 'url', label: type.name, value: `${type.protocol}${f.data}` });
-		} else contactFields.push({ ...base, kind: 'custom', label: type?.name ?? null, value: f.data });
+			contactFields.push({
+				...base,
+				kind: 'url',
+				label: type.name,
+				value: `${type.protocol}${f.data}`
+			});
+		} else
+			contactFields.push({ ...base, kind: 'custom', label: type?.name ?? null, value: f.data });
 	}
 	for (const a of exp.addresses) {
 		if (!liveIds.has(a.contactId)) {
@@ -340,7 +365,10 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 			continue;
 		}
 		const cityLine = orNull([a.postalCode, a.city].filter(Boolean).join(' '));
-		const value = [a.street, cityLine, a.province, a.country].map(orNull).filter(Boolean).join(', ');
+		const value = [a.street, cityLine, a.province, a.country]
+			.map(orNull)
+			.filter(Boolean)
+			.join(', ');
 		if (!value) {
 			skip('address', 'empty');
 			continue;
@@ -358,26 +386,52 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 
 	// ── Notes, plus the Monica modules Stella has no home for ───────────────
 	const notes: NewNote[] = [];
-	const noteFor = (id: string, monicaContactId: MonicaId, title: string | null, body: string, isPinned = false, what: SkippedKind = 'note') => {
+	const noteFor = (
+		id: string,
+		monicaContactId: MonicaId,
+		title: string | null,
+		body: string,
+		isPinned = false,
+		what: SkippedKind = 'note'
+	) => {
 		if (!liveIds.has(monicaContactId)) {
 			skip(what, 'belongsToDeletedContact');
 			return;
 		}
 		notes.push({ id, contactId: contactId(monicaContactId), ...stamp, title, body, isPinned });
 	};
-	for (const n of exp.notes) noteFor(`${prefix}:note:${n.id}`, n.contactId, null, n.body, n.isFavorited);
+	for (const n of exp.notes)
+		noteFor(`${prefix}:note:${n.id}`, n.contactId, null, n.body, n.isFavorited);
 	for (const g of exp.gifts) {
 		const meta = [g.status, g.date ? wording.day(g.date) : null].filter(Boolean).join(', ');
-		const lines = [`🎁 **${g.name}**${meta ? ` — ${meta}` : ''}`, orNull(g.comment), orNull(g.url)].filter(Boolean);
+		const lines = [
+			`🎁 **${g.name}**${meta ? ` — ${meta}` : ''}`,
+			orNull(g.comment),
+			orNull(g.url)
+		].filter(Boolean);
 		noteFor(`${prefix}:gift:${g.id}`, g.contactId, wording.gift, lines.join('\n\n'), false, 'gift');
 	}
 	for (const e of exp.lifeEvents) {
 		const head = `📅 **${e.name ?? (e.typeKey ? humanise(e.typeKey) : wording.lifeEvent)}**${e.typeKey && e.name ? ` (${humanise(e.typeKey)})` : ''}`;
 		const when = e.happenedAt ? ` — ${wording.day(e.happenedAt)}` : '';
-		noteFor(`${prefix}:lifeevent:${e.id}`, e.contactId, wording.lifeEvent, [head + when, orNull(e.note)].filter(Boolean).join('\n\n'), false, 'lifeEvent');
+		noteFor(
+			`${prefix}:lifeevent:${e.id}`,
+			e.contactId,
+			wording.lifeEvent,
+			[head + when, orNull(e.note)].filter(Boolean).join('\n\n'),
+			false,
+			'lifeEvent'
+		);
 	}
 	for (const p of exp.pets) {
-		noteFor(`${prefix}:pet:${p.id}`, p.contactId, wording.pet, `🐾 **${p.name ?? wording.pet}**${p.category ? `, ${p.category}` : ''}`, false, 'pet');
+		noteFor(
+			`${prefix}:pet:${p.id}`,
+			p.contactId,
+			wording.pet,
+			`🐾 **${p.name ?? wording.pet}**${p.category ? `, ${p.category}` : ''}`,
+			false,
+			'pet'
+		);
 	}
 
 	// ── Activities → interactions ───────────────────────────────────────────
@@ -392,7 +446,10 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 			continue;
 		}
 		const [subject, ...participants] = people;
-		const description = [orNull(a.description), a.typeKey ? wording.monicaActivity(humanise(a.typeKey)) : null]
+		const description = [
+			orNull(a.description),
+			a.typeKey ? wording.monicaActivity(humanise(a.typeKey)) : null
+		]
 			.filter(Boolean)
 			.join('\n\n');
 		interactions.push({
@@ -412,7 +469,14 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 	const contactTags: { contactId: string; tagId: string }[] = [];
 	for (const t of exp.tags) {
 		const tagId = `${prefix}:tag:${t.id}`;
-		tags.push({ id: tagId, householdId: opts.householdId, name: t.name, color: resolveTagColor(null), createdAt: opts.now, updatedAt: opts.now });
+		tags.push({
+			id: tagId,
+			householdId: opts.householdId,
+			name: t.name,
+			color: resolveTagColor(null),
+			createdAt: opts.now,
+			updatedAt: opts.now
+		});
 		for (const c of t.contactIds) {
 			if (liveIds.has(c)) contactTags.push({ contactId: contactId(c), tagId });
 		}
@@ -420,7 +484,9 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 
 	// ── Photos ──────────────────────────────────────────────────────────────
 	const avatarOf = new Map(
-		live.filter((c) => c.avatarSource === 'photo' && c.avatarPhotoId !== null).map((c) => [c.avatarPhotoId!, c.id])
+		live
+			.filter((c) => c.avatarSource === 'photo' && c.avatarPhotoId !== null)
+			.map((c) => [c.avatarPhotoId!, c.id])
 	);
 	const photos: ImportedPhoto[] = [];
 	for (const p of exp.photos) {
@@ -489,7 +555,6 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 		}
 	};
 }
-
 
 function isBuiltInSymmetric(key: string): boolean {
 	const type = BUILT_IN_RELATIONSHIP_TYPES.find((t) => t.id === key);

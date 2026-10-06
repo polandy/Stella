@@ -5,7 +5,10 @@
  */
 
 /** The body's bytes, or a refusal once it grows past `maxBytes`. */
-export async function readCapped(response: Response, maxBytes: number): Promise<Uint8Array<ArrayBuffer>> {
+export async function readCapped(
+	response: Response,
+	maxBytes: number
+): Promise<Uint8Array<ArrayBuffer>> {
 	const body = response.body;
 	if (!body) return new Uint8Array();
 

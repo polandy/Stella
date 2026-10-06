@@ -19,7 +19,9 @@ const PIXEL = readFileSync('e2e/fixtures/monica-photos/photos/ottilie-avatar.png
 
 /** Six letters no other attempt shares. */
 function runLetters(): string {
-	return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) => String.fromCharCode(97 + (byte % 26))).join('');
+	return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) =>
+		String.fromCharCode(97 + (byte % 26))
+	).join('');
 }
 
 /** A surname only this case uses. */
@@ -42,7 +44,9 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('a saved form brings the new person to ⌘K without a second freshness check', async ({ page }) => {
+test('a saved form brings the new person to ⌘K without a second freshness check', async ({
+	page
+}) => {
 	const stampRequests: string[] = [];
 	page.on('request', (request) => {
 		if (new URL(request.url()).pathname === STAMP_PATH) stampRequests.push(request.url());
@@ -54,7 +58,9 @@ test('a saved form brings the new person to ⌘K without a second freshness chec
 	await page.keyboard.press('Control+k');
 	await page.keyboard.type(first);
 	await expect(
-		page.getByRole('dialog', { name: 'Jump to' }).getByRole('option', { name: new RegExp(`^${first}`) })
+		page
+			.getByRole('dialog', { name: 'Jump to' })
+			.getByRole('option', { name: new RegExp(`^${first}`) })
 	).toHaveCount(1);
 	await page.keyboard.press('Escape');
 
@@ -166,7 +172,9 @@ test.describe('in German', () => {
 		await chooseLanguage(page, 'English', /^Settings$/);
 	});
 
-	test('a page loads in German, and the screens the browser draws itself never show English', async ({ page }) => {
+	test('a page loads in German, and the screens the browser draws itself never show English', async ({
+		page
+	}) => {
 		await page.goto('/settings');
 		await chooseLanguage(page, 'Deutsch', /^Einstellungen$/);
 
@@ -180,7 +188,11 @@ test.describe('in German', () => {
 					if (english.has(heading.textContent?.trim() ?? '')) flag.sawEnglish = true;
 				}
 			};
-			new MutationObserver(look).observe(document, { subtree: true, childList: true, characterData: true });
+			new MutationObserver(look).observe(document, {
+				subtree: true,
+				childList: true,
+				characterData: true
+			});
 		});
 		await page.goto('/');
 		await expect(page.getByRole('heading', { name: 'Was ist passiert?' })).toBeVisible();
@@ -188,7 +200,9 @@ test.describe('in German', () => {
 		// A screen the client draws by itself, not the server: it speaks German as well.
 		await page.getByRole('link', { name: 'Menschen' }).first().click();
 		await expect(page.getByRole('heading', { name: 'Menschen' })).toBeVisible();
-		expect(await page.evaluate(() => (window as unknown as { sawEnglish: boolean }).sawEnglish)).toBe(false);
+		expect(
+			await page.evaluate(() => (window as unknown as { sawEnglish: boolean }).sawEnglish)
+		).toBe(false);
 	});
 });
 
@@ -196,13 +210,17 @@ test('a full-size photo opens from the gallery', async ({ page }) => {
 	await addPerson(page, 'Isolde', quarzbach());
 	await page.getByRole('button', { name: 'Add photos' }).click();
 	const form = page.locator('#section-photos form');
-	await form.locator('input[name=files]').setInputFiles([{ name: 'quarz.png', mimeType: 'image/png', buffer: PIXEL }]);
+	await form
+		.locator('input[name=files]')
+		.setInputFiles([{ name: 'quarz.png', mimeType: 'image/png', buffer: PIXEL }]);
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 	await page.getByTestId('photo-grid').getByRole('button').first().click();
 
 	const full = page.getByTestId('photo-lightbox').locator('img').first();
 	await expect(full).toHaveAttribute('src', /^\/media\/[^?]+$/);
-	await expect.poll(() => full.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth)).toBeGreaterThan(0);
+	await expect
+		.poll(() => full.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth))
+		.toBeGreaterThan(0);
 
 	const answer = await page.request.get((await full.getAttribute('src'))!);
 	expect(answer.status()).toBe(200);

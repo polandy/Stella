@@ -21,9 +21,9 @@ let db: BunSQLiteDatabase<typeof schema>;
 
 /** Rows the index holds for a note, so a test can read the content the SQL assembled. */
 function indexed(noteId: string): string {
-	const row = sqlite
-		.query('SELECT content FROM note_fts WHERE note_id = ?')
-		.get(noteId) as { content: string } | null;
+	const row = sqlite.query('SELECT content FROM note_fts WHERE note_id = ?').get(noteId) as {
+		content: string;
+	} | null;
 	return row?.content ?? '';
 }
 
@@ -39,8 +39,20 @@ beforeEach(() => {
 	db.insert(schema.user).values({ id: U, householdId: H, email: 'u@x.test', name: 'One' }).run();
 	db.insert(schema.contact)
 		.values([
-			{ id: 'c-beat', householdId: H, createdBy: U, visibility: 'shared', displayName: 'Beat Steiner' },
-			{ id: 'c-sandra', householdId: H, createdBy: U, visibility: 'shared', displayName: 'Sandra Keller' }
+			{
+				id: 'c-beat',
+				householdId: H,
+				createdBy: U,
+				visibility: 'shared',
+				displayName: 'Beat Steiner'
+			},
+			{
+				id: 'c-sandra',
+				householdId: H,
+				createdBy: U,
+				visibility: 'shared',
+				displayName: 'Sandra Keller'
+			}
 		])
 		.run();
 	db.insert(schema.note)
@@ -81,11 +93,17 @@ describe('ensureSearchIndex backfill', () => {
 		expect(rows.c).toBe(1);
 	});
 
-	it('keeps an imported contact\'s source id out of the index, tokens and all', () => {
+	it("keeps an imported contact's source id out of the index, tokens and all", () => {
 		// An imported contact keeps its source id, whose ':' separators the FTS tokenizer would
 		// otherwise read as the searchable words "monica", "contact" and "9" (docs/02 §2.16).
 		db.insert(schema.contact)
-			.values({ id: 'monica:contact:9', householdId: H, createdBy: U, visibility: 'shared', displayName: 'Janosch Rohdewald' })
+			.values({
+				id: 'monica:contact:9',
+				householdId: H,
+				createdBy: U,
+				visibility: 'shared',
+				displayName: 'Janosch Rohdewald'
+			})
 			.run();
 		db.insert(schema.note)
 			.values({
@@ -114,7 +132,13 @@ describe('ensureSearchIndex backfill', () => {
 
 	it('leaves the rest of the body untouched while stripping a token', () => {
 		db.insert(schema.note)
-			.values({ id: 'n-3', contactId: 'c-beat', createdBy: U, visibility: 'shared', body: 'met @{contact:c-sandra} at 10:30 sharp' })
+			.values({
+				id: 'n-3',
+				contactId: 'c-beat',
+				createdBy: U,
+				visibility: 'shared',
+				body: 'met @{contact:c-sandra} at 10:30 sharp'
+			})
 			.run();
 		db.insert(schema.noteMention).values({ noteId: 'n-3', contactId: 'c-sandra' }).run();
 
@@ -124,14 +148,26 @@ describe('ensureSearchIndex backfill', () => {
 	});
 
 	it('finds a person by their former name, from the backfill and from the trigger', () => {
-		db.update(schema.contact).set({ formerName: 'Widmer' }).where(eq(schema.contact.id, 'c-sandra')).run();
+		db.update(schema.contact)
+			.set({ formerName: 'Widmer' })
+			.where(eq(schema.contact.id, 'c-sandra'))
+			.run();
 		ensureSearchIndex(sqlite);
 		db.insert(schema.contact)
-			.values({ id: 'c-later', householdId: H, createdBy: U, visibility: 'shared', displayName: 'Lea Abab', formerName: 'Widmer' })
+			.values({
+				id: 'c-later',
+				householdId: H,
+				createdBy: U,
+				visibility: 'shared',
+				displayName: 'Lea Abab',
+				formerName: 'Widmer'
+			})
 			.run();
 
 		const hits = sqlite
-			.query("SELECT contact_id FROM contact_fts WHERE contact_fts MATCH 'widmer*' ORDER BY contact_id")
+			.query(
+				"SELECT contact_id FROM contact_fts WHERE contact_fts MATCH 'widmer*' ORDER BY contact_id"
+			)
 			.all() as { contact_id: string }[];
 		expect(hits.map((h) => h.contact_id)).toEqual(['c-later', 'c-sandra']);
 	});
@@ -162,7 +198,9 @@ describe('ensureSearchIndex upgrade', () => {
 		sqlite.exec(`CREATE TRIGGER note_fts_ai AFTER INSERT ON note BEGIN
 			INSERT INTO note_fts(note_id, contact_id, content) VALUES (new.id, new.contact_id, coalesce(new.body,''));
 		END;`);
-		sqlite.exec("UPDATE note_fts SET content = 'walked home with @{contact:c-sandra}' WHERE note_id = 'n-1'");
+		sqlite.exec(
+			"UPDATE note_fts SET content = 'walked home with @{contact:c-sandra}' WHERE note_id = 'n-1'"
+		);
 	}
 
 	it('rebuilds index rows an older definition wrote', () => {
@@ -180,7 +218,13 @@ describe('ensureSearchIndex upgrade', () => {
 		ensureSearchIndex(sqlite);
 
 		db.insert(schema.note)
-			.values({ id: 'n-9', contactId: 'c-beat', createdBy: U, visibility: 'shared', body: 'saw @{contact:c-sandra}' })
+			.values({
+				id: 'n-9',
+				contactId: 'c-beat',
+				createdBy: U,
+				visibility: 'shared',
+				body: 'saw @{contact:c-sandra}'
+			})
 			.run();
 
 		expect(indexed('n-9')).not.toContain('@{contact:');

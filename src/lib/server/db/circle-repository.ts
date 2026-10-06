@@ -1,6 +1,10 @@
 import { and, count, eq, inArray, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { circleColumnsVisibleTo, contactColumnsVisibleTo, membershipVisibleTo } from '../access/query-scoping';
+import {
+	circleColumnsVisibleTo,
+	contactColumnsVisibleTo,
+	membershipVisibleTo
+} from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import {
 	CIRCLE_PREVIEW_SIZE,
@@ -80,7 +84,12 @@ export function createDrizzleCircleRepository(
 			const row = db
 				.select(circleCols)
 				.from(circle)
-				.where(and(sql`lower(${circle.name}) = ${name.toLowerCase()}`, circleColumnsVisibleTo(viewer, circle)))
+				.where(
+					and(
+						sql`lower(${circle.name}) = ${name.toLowerCase()}`,
+						circleColumnsVisibleTo(viewer, circle)
+					)
+				)
 				.get();
 			return row ? toCircle(row) : null;
 		},
@@ -98,10 +107,7 @@ export function createDrizzleCircleRepository(
 			const rows = db
 				.select({ ...circleCols, memberCount: count(contact.id) })
 				.from(circle)
-				.leftJoin(
-					circleMembership,
-					eq(circleMembership.circleId, circle.id)
-				)
+				.leftJoin(circleMembership, eq(circleMembership.circleId, circle.id))
 				.leftJoin(
 					contact,
 					and(eq(contact.id, circleMembership.contactId), contactColumnsVisibleTo(viewer, contact))
@@ -145,7 +151,12 @@ export function createDrizzleCircleRepository(
 					const existing = tx
 						.select({ id: circleMembership.id })
 						.from(circleMembership)
-						.where(and(eq(circleMembership.circleId, m.circleId), eq(circleMembership.contactId, m.contactId)))
+						.where(
+							and(
+								eq(circleMembership.circleId, m.circleId),
+								eq(circleMembership.contactId, m.contactId)
+							)
+						)
 						.get();
 					if (existing) continue;
 					tx.insert(circleMembership)
@@ -165,15 +176,27 @@ export function createDrizzleCircleRepository(
 
 		async removeMembership(circleId: string, contactId: string) {
 			db.delete(circleMembership)
-				.where(and(eq(circleMembership.circleId, circleId), eq(circleMembership.contactId, contactId)))
+				.where(
+					and(eq(circleMembership.circleId, circleId), eq(circleMembership.contactId, contactId))
+				)
 				.run();
 		},
 
-		async setRoles(circleId: string, contactIds: readonly string[], role: string | null, updatedAt: number) {
+		async setRoles(
+			circleId: string,
+			contactIds: readonly string[],
+			role: string | null,
+			updatedAt: number
+		) {
 			if (contactIds.length === 0) return;
 			db.update(circleMembership)
 				.set({ role, updatedAt })
-				.where(and(eq(circleMembership.circleId, circleId), inArray(circleMembership.contactId, [...contactIds])))
+				.where(
+					and(
+						eq(circleMembership.circleId, circleId),
+						inArray(circleMembership.contactId, [...contactIds])
+					)
+				)
 				.run();
 		},
 
@@ -195,7 +218,9 @@ export function createDrizzleCircleRepository(
 				if (change.photoIds.length > 0) {
 					tx.update(photo)
 						.set({ circleRole: change.role })
-						.where(and(eq(photo.circleId, change.circleId), inArray(photo.id, [...change.photoIds])))
+						.where(
+							and(eq(photo.circleId, change.circleId), inArray(photo.id, [...change.photoIds]))
+						)
 						.run();
 				}
 			});
@@ -213,7 +238,9 @@ export function createDrizzleCircleRepository(
 				.from(circleMembership)
 				.innerJoin(circle, eq(circleMembership.circleId, circle.id))
 				.innerJoin(contact, eq(circleMembership.contactId, contact.id))
-				.where(and(eq(circleMembership.circleId, circleId), membershipVisibleTo(viewer, circle, contact)))
+				.where(
+					and(eq(circleMembership.circleId, circleId), membershipVisibleTo(viewer, circle, contact))
+				)
 				.orderBy(contact.displayName)
 				.all();
 		},
@@ -231,7 +258,12 @@ export function createDrizzleCircleRepository(
 				.from(circleMembership)
 				.innerJoin(circle, eq(circleMembership.circleId, circle.id))
 				.innerJoin(contact, eq(circleMembership.contactId, contact.id))
-				.where(and(eq(circleMembership.contactId, contactId), membershipVisibleTo(viewer, circle, contact)))
+				.where(
+					and(
+						eq(circleMembership.contactId, contactId),
+						membershipVisibleTo(viewer, circle, contact)
+					)
+				)
 				.orderBy(circle.name)
 				.all();
 			return rows.map((r) => ({

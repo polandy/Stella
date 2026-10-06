@@ -28,7 +28,10 @@ export type ImmichGlimpse =
  * The strip once *Show more* brought the next page. A photo added in Immich between the two pages
  * pushes the last one of the first page onto the second; it is shown once, where it already is.
  */
-export function withPage(shown: readonly GlimpsePhoto[], page: readonly GlimpsePhoto[]): GlimpsePhoto[] {
+export function withPage(
+	shown: readonly GlimpsePhoto[],
+	page: readonly GlimpsePhoto[]
+): GlimpsePhoto[] {
 	const seen = new Set(shown.map((photo) => photo.id));
 	return [...shown, ...page.filter((photo) => !seen.has(photo.id))];
 }

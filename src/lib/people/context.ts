@@ -82,16 +82,14 @@ export function rankContext(
 				a.createdAt - b.createdAt
 		)
 		.slice(0, TIES_KEPT)
-		.map(
-			({ typeKey, side, label, otherId, otherName, otherIsViewer }): ContextTie => ({
-				typeKey,
-				side,
-				label,
-				otherId,
-				otherName,
-				otherIsViewer
-			})
-		);
+		.map(({ typeKey, side, label, otherId, otherName, otherIsViewer }): ContextTie => ({
+			typeKey,
+			side,
+			label,
+			otherId,
+			otherName,
+			otherIsViewer
+		}));
 
 	const current = memberships.filter((m) => !hasEnded(m.endDate, today));
 	// A circle whose sub-circle they are in too says less: *Class 9a* over *School Muri*.

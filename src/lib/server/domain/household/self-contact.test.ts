@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
-import {
-	setSelfContact,
-	UnknownSelfContactError,
-	type SelfContactDeps
-} from './self-contact';
+import { setSelfContact, UnknownSelfContactError, type SelfContactDeps } from './self-contact';
 
 /*
  * Choosing which person you are (docs/02 §2.1.3). The rules that matter: only a contact the

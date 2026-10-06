@@ -43,19 +43,32 @@
      says, so it does not sit as an empty panel over half a card-sized map. A phone has no
      room beside the map: there it is a strip along the bottom, clear of the toolbar. -->
 <aside
-	class="absolute right-3 top-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-3 max-sm:w-auto max-sm:max-h-[60%] max-sm:p-3"
+	class="absolute top-3 right-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-3 max-sm:max-h-[60%] max-sm:w-auto max-sm:p-3"
 	class:bottom-3={!compact}
 	class:w-64={!compact}
 	class:w-52={compact}
 	class:max-h-[calc(100%-1.5rem)]={compact}
 >
-	<Button variant="ghost" size="sm" icon="remove" label={t('common.close')} class="float-right" onclick={onClose} />
+	<Button
+		variant="ghost"
+		size="sm"
+		icon="remove"
+		label={t('common.close')}
+		class="float-right"
+		onclick={onClose}
+	/>
 	<!-- Stacked in the side panel; side by side in a phone's strip, which has height to spare
 	     for neither. -->
 	<div class="mb-4 max-sm:mb-3 max-sm:flex max-sm:items-center max-sm:gap-3">
 		{#if node.kind === 'person'}
 			<div class="mb-3 max-sm:mb-0 max-sm:shrink-0">
-				<Avatar id={node.id} name={node.label} avatarPhotoId={node.avatarPhotoId ?? null} size={56} deceased={node.deceased} />
+				<Avatar
+					id={node.id}
+					name={node.label}
+					avatarPhotoId={node.avatarPhotoId ?? null}
+					size={56}
+					deceased={node.deceased}
+				/>
 			</div>
 		{/if}
 		<div class="min-w-0">
@@ -83,15 +96,26 @@
 			</fieldset>
 		{/if}
 		{#if expandable}
-			<Button type="button" class="max-sm:flex-1" disabled={node.kind === 'circle' && roleOptions.length > 0 && chosenRoles.size === 0} onclick={() => onExpand(node.id)}>{t('graph.peek.expand')}</Button>
+			<Button
+				type="button"
+				class="max-sm:flex-1"
+				disabled={node.kind === 'circle' && roleOptions.length > 0 && chosenRoles.size === 0}
+				onclick={() => onExpand(node.id)}>{t('graph.peek.expand')}</Button
+			>
 		{:else if fullGraphHref && !withinReach}
 			<!-- The map ends here, so the honest offer is the one place that goes further. -->
-			<Button icon="graph" class="max-sm:flex-1" href={fullGraphHref(node.id)}>{t('graph.openInGraph')}</Button>
+			<Button icon="graph" class="max-sm:flex-1" href={fullGraphHref(node.id)}
+				>{t('graph.openInGraph')}</Button
+			>
 		{/if}
 		{#if node.kind === 'person'}
-			<Button variant="primary" class="max-sm:flex-1" href="/contacts/{node.id}">{t('graph.peek.openProfile')}</Button>
+			<Button variant="primary" class="max-sm:flex-1" href="/contacts/{node.id}"
+				>{t('graph.peek.openProfile')}</Button
+			>
 		{:else if node.kind === 'circle'}
-			<Button variant="primary" class="max-sm:flex-1" href="/circles/{node.id}">{t('graph.peek.openCircle')}</Button>
+			<Button variant="primary" class="max-sm:flex-1" href="/circles/{node.id}"
+				>{t('graph.peek.openCircle')}</Button
+			>
 		{/if}
 	</div>
 	<!-- The general tip is left out of a phone's strip; that the map ends here is not. -->

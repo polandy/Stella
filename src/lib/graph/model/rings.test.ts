@@ -84,7 +84,10 @@ describe('hasMoreAround', () => {
 		nodes: [person('ana'), person('ben'), person('cleo'), person('dev')],
 		edges: [link('ab', 'ana', 'ben'), link('bc', 'ben', 'cleo')]
 	};
-	const shown: GraphModel = { nodes: [person('ana'), person('ben')], edges: [link('ab', 'ana', 'ben')] };
+	const shown: GraphModel = {
+		nodes: [person('ana'), person('ben')],
+		edges: [link('ab', 'ana', 'ben')]
+	};
 
 	test('says yes while a node still has a link the map does not show', () => {
 		expect(hasMoreAround(graph, shown, 'ben')).toBe(true);
@@ -100,7 +103,10 @@ describe('hasMoreAround', () => {
 	});
 
 	test('ignores a link to somebody outside the reachable graph, as expanding would', () => {
-		const dangling: GraphModel = { nodes: graph.nodes, edges: [...graph.edges, link('ax', 'ana', 'hidden')] };
+		const dangling: GraphModel = {
+			nodes: graph.nodes,
+			edges: [...graph.edges, link('ax', 'ana', 'hidden')]
+		};
 		expect(hasMoreAround(dangling, shown, 'ana')).toBe(false);
 	});
 });

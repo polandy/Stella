@@ -71,7 +71,9 @@ test('dates a sibling link from the later birth, and suggests nothing outside th
 	// two people, retyped, leave the day to whoever is entering the link.
 	await form.locator('select[name=typeChoice]').selectOption({ label: 'Partner of' });
 	await expect(sinceValue(form)).toHaveValue('');
-	await expect(form.getByRole('group', { name: 'Since' }).getByLabel('Year', { exact: true })).toHaveValue('');
+	await expect(
+		form.getByRole('group', { name: 'Since' }).getByLabel('Year', { exact: true })
+	).toHaveValue('');
 });
 
 test('dates the link from a child named in the picker itself, and saves that day', async ({

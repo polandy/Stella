@@ -33,5 +33,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	}
 
 	const actor = { userId: user.id, householdId: user.householdId, locale: locals.locale };
-	return json({ answers: await receiveQueued(getCommandDeps(), actor, translator(locals), commands) });
+	return json({
+		answers: await receiveQueued(getCommandDeps(), actor, translator(locals), commands)
+	});
 };

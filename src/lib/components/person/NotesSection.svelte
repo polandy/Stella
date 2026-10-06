@@ -79,7 +79,12 @@
 		editingNote = null;
 		await outbox.revise(
 			item.command.id,
-			{ ...item.command.payload, body: noteBody.trim(), visibility: noteVisibility, isPinned: notePinned },
+			{
+				...item.command.payload,
+				body: noteBody.trim(),
+				visibility: noteVisibility,
+				isPinned: notePinned
+			},
 			ulid()
 		);
 		noteBody = '';
@@ -138,80 +143,85 @@
 </script>
 
 <Section
-		id={sectionAnchor('notes')}
-		title={t('contact.section.notes')}
-		count={data.notes.length}
-		addLabel={t('contact.notes.add')}
-		error={form?.noteError ?? null}
-		bind:open={openSection.note}
-	>
-		{#if keptNotes.length > 0}
-			<ul class="mb-3 flex flex-col gap-2" data-testid="kept-notes">
-				{#each keptNotes as item (item.command.id)}
-					<li>
-						<KeptItem {item} onEdit={() => editKeptNote(item)}>
-							<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...otherContacts, data.contact])}</p>
-						</KeptItem>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-		{#if data.notes.length > 0}
-			<ul class="flex flex-col gap-3">
-				{#each data.notes as note (note.id)}
-					<li class="rounded-control bg-bg-sunken p-3">
-						<div class="mb-1 flex items-center gap-2">
-							{#if note.isPinned}
-								<span class="inline-flex items-center gap-1 text-xs font-medium text-primary">
-									<Icon name="pinned" size={12} />{t('contact.notes.pinned')}
-								</span>
-							{/if}
-							{#if note.title}<span class="font-medium text-fg">{note.title}</span>{/if}
-							{#if note.visibility === 'private'}
-								<span class="ml-auto inline-flex items-center gap-1 text-xs text-fg-subtle">
-									<Icon name="private" size={11} />{t('common.privateInline')}
-								</span>
-							{/if}
-						</div>
-						<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
-						<div class="note-body text-fg">{@html note.bodyHtml}</div>
-					</li>
-				{/each}
-			</ul>
-		{:else}
-			<p class="text-sm text-fg-subtle">{t('contact.notes.none', { name: c.displayName })}</p>
-		{/if}
+	id={sectionAnchor('notes')}
+	title={t('contact.section.notes')}
+	count={data.notes.length}
+	addLabel={t('contact.notes.add')}
+	error={form?.noteError ?? null}
+	bind:open={openSection.note}
+>
+	{#if keptNotes.length > 0}
+		<ul class="mb-3 flex flex-col gap-2" data-testid="kept-notes">
+			{#each keptNotes as item (item.command.id)}
+				<li>
+					<KeptItem {item} onEdit={() => editKeptNote(item)}>
+						<p class="mt-1 whitespace-pre-line text-fg">
+							{asTyped(item.command.payload.body, [...otherContacts, data.contact])}
+						</p>
+					</KeptItem>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+	{#if data.notes.length > 0}
+		<ul class="flex flex-col gap-3">
+			{#each data.notes as note (note.id)}
+				<li class="rounded-control bg-bg-sunken p-3">
+					<div class="mb-1 flex items-center gap-2">
+						{#if note.isPinned}
+							<span class="inline-flex items-center gap-1 text-xs font-medium text-primary">
+								<Icon name="pinned" size={12} />{t('contact.notes.pinned')}
+							</span>
+						{/if}
+						{#if note.title}<span class="font-medium text-fg">{note.title}</span>{/if}
+						{#if note.visibility === 'private'}
+							<span class="ml-auto inline-flex items-center gap-1 text-xs text-fg-subtle">
+								<Icon name="private" size={11} />{t('common.privateInline')}
+							</span>
+						{/if}
+					</div>
+					<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
+					<div class="note-body text-fg">{@html note.bodyHtml}</div>
+				</li>
+			{/each}
+		</ul>
+	{:else}
+		<p class="text-sm text-fg-subtle">{t('contact.notes.none', { name: c.displayName })}</p>
+	{/if}
 
-		{#snippet editor()}
-			<form method="POST" action="?/addNote" use:enhance={noteForm} class="flex flex-col gap-3">
-				<MentionTextarea
-					bind:value={noteBody}
-					bind:unclear={noteUnclear}
-					name="body"
-					label={t('contact.notes.label')}
-					required
-					candidates={otherContacts}
-					visibility={noteVisibility}
-					placeholder={t('contact.notes.placeholder')}
-					class="{INPUT} w-full"
-				/>
-				<div class="flex flex-wrap items-center gap-4 text-sm">
+	{#snippet editor()}
+		<form method="POST" action="?/addNote" use:enhance={noteForm} class="flex flex-col gap-3">
+			<MentionTextarea
+				bind:value={noteBody}
+				bind:unclear={noteUnclear}
+				name="body"
+				label={t('contact.notes.label')}
+				required
+				candidates={otherContacts}
+				visibility={noteVisibility}
+				placeholder={t('contact.notes.placeholder')}
+				class="{INPUT} w-full"
+			/>
+			<div class="flex flex-wrap items-center gap-4 text-sm">
+				<label class="flex items-center gap-1.5">
+					<input type="checkbox" name="isPinned" bind:checked={notePinned} />
+					{t('contact.notes.pin')}
+				</label>
+				<fieldset class="flex flex-wrap items-center gap-4">
+					<legend class="sr-only">{t('common.visibility')}</legend>
 					<label class="flex items-center gap-1.5">
-						<input type="checkbox" name="isPinned" bind:checked={notePinned} /> {t('contact.notes.pin')}
+						<input type="radio" name="visibility" value="shared" bind:group={noteVisibility} />
+						{t('common.shared')}
 					</label>
-					<fieldset class="flex flex-wrap items-center gap-4">
-						<legend class="sr-only">{t('common.visibility')}</legend>
-						<label class="flex items-center gap-1.5">
-							<input type="radio" name="visibility" value="shared" bind:group={noteVisibility} />
-							{t('common.shared')}
-						</label>
-						<label class="flex items-center gap-1.5">
-							<input type="radio" name="visibility" value="private" bind:group={noteVisibility} />
-							{t('common.private')}
-						</label>
-					</fieldset>
-					<Button variant="primary" size="sm" class="ml-auto" disabled={noteUnclear}>{editingNote ? t('common.save') : t('contact.notes.add')}</Button>
-				</div>
-			</form>
-		{/snippet}
+					<label class="flex items-center gap-1.5">
+						<input type="radio" name="visibility" value="private" bind:group={noteVisibility} />
+						{t('common.private')}
+					</label>
+				</fieldset>
+				<Button variant="primary" size="sm" class="ml-auto" disabled={noteUnclear}
+					>{editingNote ? t('common.save') : t('contact.notes.add')}</Button
+				>
+			</div>
+		</form>
+	{/snippet}
 </Section>

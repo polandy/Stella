@@ -26,17 +26,45 @@ let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzleImportRepository>;
 
 function fixture(): SourceExport {
-	const contact = (id: number, first: string, extra: Partial<SourceExport['contacts'][0]> = {}) => ({
-		id, firstName: first, middleName: null, lastName: 'Test', nickname: null, genderId: null, description: null,
-		isPartial: false, isDead: false, deceasedSpecialDateId: null, birthdaySpecialDateId: null,
-		firstMetSpecialDateId: null, firstMetThroughContactId: null, firstMetWhere: null, firstMetAdditionalInfo: null,
-		job: null, company: null, avatarSource: 'default', avatarPhotoId: null, deletedAt: null, createdAt: null, ...extra
+	const contact = (
+		id: number,
+		first: string,
+		extra: Partial<SourceExport['contacts'][0]> = {}
+	) => ({
+		id,
+		firstName: first,
+		middleName: null,
+		lastName: 'Test',
+		nickname: null,
+		genderId: null,
+		description: null,
+		isPartial: false,
+		isDead: false,
+		deceasedSpecialDateId: null,
+		birthdaySpecialDateId: null,
+		firstMetSpecialDateId: null,
+		firstMetThroughContactId: null,
+		firstMetWhere: null,
+		firstMetAdditionalInfo: null,
+		job: null,
+		company: null,
+		avatarSource: 'default',
+		avatarPhotoId: null,
+		deletedAt: null,
+		createdAt: null,
+		...extra
 	});
 	return {
 		source: 'sql',
-		contacts: [contact(1, 'Ada', { job: 'Engineer', birthdaySpecialDateId: 5 }), contact(2, 'Bo'), contact(3, 'Cy')],
+		contacts: [
+			contact(1, 'Ada', { job: 'Engineer', birthdaySpecialDateId: 5 }),
+			contact(2, 'Bo'),
+			contact(3, 'Cy')
+		],
 		genders: [],
-		specialDates: [{ id: 5, contactId: 1, isAgeBased: true, isYearUnknown: false, date: '2016-01-01' }],
+		specialDates: [
+			{ id: 5, contactId: 1, isAgeBased: true, isYearUnknown: false, date: '2016-01-01' }
+		],
 		relationshipTypes: [
 			{ id: 8, name: 'parent', nameReverse: 'child' },
 			{ id: 9, name: 'child', nameReverse: 'parent' },
@@ -52,7 +80,17 @@ function fixture(): SourceExport {
 		contactFields: [{ id: 1, contactId: 1, typeId: 1, data: 'ada@x.test', createdAt: null }],
 		addresses: [],
 		notes: [{ id: 1, contactId: 1, body: 'hello', isFavorited: true, createdAt: null }],
-		activities: [{ id: 1, summary: 'Lunch', description: null, happenedAt: '2024-01-02', typeKey: null, contactIds: [1, 2], createdAt: null }],
+		activities: [
+			{
+				id: 1,
+				summary: 'Lunch',
+				description: null,
+				happenedAt: '2024-01-02',
+				typeKey: null,
+				contactIds: [1, 2],
+				createdAt: null
+			}
+		],
 		tags: [{ id: 1, name: 'Tennis', contactIds: [1, 2] }],
 		photos: [],
 		gifts: [],
@@ -91,14 +129,38 @@ describe('import repository', () => {
 	it('writes the whole plan and reports what it inserted', async () => {
 		const outcome = await repo.applyPlan(plan());
 		expect(outcome.inserted).toEqual({
-			contacts: 3, relationships: 2, relationshipTypes: 1, contactFields: 1, notes: 1, interactions: 1, tags: 1, photos: 0
+			contacts: 3,
+			relationships: 2,
+			relationshipTypes: 1,
+			contactFields: 1,
+			notes: 1,
+			interactions: 1,
+			tags: 1,
+			photos: 0
 		});
-		const ada = db.select().from(schema.contact).where(eq(schema.contact.id, 'monica:contact:1')).get()!;
-		expect(ada).toMatchObject({ displayName: 'Ada Test', jobTitle: 'Engineer', birthDate: '2016', birthDatePrecision: 'age' });
+		const ada = db
+			.select()
+			.from(schema.contact)
+			.where(eq(schema.contact.id, 'monica:contact:1'))
+			.get()!;
+		expect(ada).toMatchObject({
+			displayName: 'Ada Test',
+			jobTitle: 'Engineer',
+			birthDate: '2016',
+			birthDatePrecision: 'age'
+		});
 		expect(rows(schema.interactionParticipant)).toBe(1);
 		expect(rows(schema.contactTag)).toBe(2);
-		expect(db.select().from(schema.relationshipType).where(eq(schema.relationshipType.id, 'monica:reltype:best_friend')).get()).toMatchObject({
-			householdId: H, forwardLabel: 'Best friend of', symmetric: 1
+		expect(
+			db
+				.select()
+				.from(schema.relationshipType)
+				.where(eq(schema.relationshipType.id, 'monica:reltype:best_friend'))
+				.get()
+		).toMatchObject({
+			householdId: H,
+			forwardLabel: 'Best friend of',
+			symmetric: 1
 		});
 	});
 
@@ -106,14 +168,23 @@ describe('import repository', () => {
 		await repo.applyPlan(plan());
 		const again = await repo.applyPlan(plan());
 		expect(again.inserted).toEqual({
-			contacts: 0, relationships: 0, relationshipTypes: 0, contactFields: 0, notes: 0, interactions: 0, tags: 0, photos: 0
+			contacts: 0,
+			relationships: 0,
+			relationshipTypes: 0,
+			contactFields: 0,
+			notes: 0,
+			interactions: 0,
+			tags: 0,
+			photos: 0
 		});
 		expect(rows(schema.contact)).toBe(3);
 		expect(rows(schema.interactionParticipant)).toBe(1);
 	});
 
 	it('reuses a tag that already exists under the same name instead of duplicating it', async () => {
-		db.insert(schema.tag).values({ id: 'existing-tennis', householdId: H, name: 'Tennis', color: 'peach' }).run();
+		db.insert(schema.tag)
+			.values({ id: 'existing-tennis', householdId: H, name: 'Tennis', color: 'peach' })
+			.run();
 		const outcome = await repo.applyPlan(plan());
 		expect(outcome.inserted.tags).toBe(0);
 		expect(rows(schema.tag)).toBe(1);
@@ -124,7 +195,11 @@ describe('import repository', () => {
 
 	it('leaves nothing behind when the plan cannot be written', async () => {
 		const broken = plan();
-		broken.relationships.push({ ...broken.relationships[0]!, id: 'monica:relationship:999', toContactId: 'monica:contact:404' });
+		broken.relationships.push({
+			...broken.relationships[0]!,
+			id: 'monica:relationship:999',
+			toContactId: 'monica:contact:404'
+		});
 		await expect(repo.applyPlan(broken)).rejects.toThrow();
 		expect(rows(schema.contact)).toBe(0);
 		expect(rows(schema.relationshipType)).toBe(BUILT_IN_RELATIONSHIP_TYPES.length); // only the built-ins

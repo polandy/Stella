@@ -72,12 +72,14 @@ export async function editNameParts(
 	if (next === null) throw new EmptyContactNameError();
 	const replacedLastName = contact.lastName !== null && contact.lastName !== next.lastName;
 	// Ticking *Keep … as former name* is the clearer statement, so it wins over the field.
-	const formerName = edit.keepFormerName && replacedLastName ? contact.lastName : edit.formerName?.trim() || null;
+	const formerName =
+		edit.keepFormerName && replacedLastName ? contact.lastName : edit.formerName?.trim() || null;
 
 	const now = deps.clock.now();
 	const changed =
-		(['displayName', 'firstName', 'lastName', 'nickname'] as const).some((key) => (contact[key] ?? null) !== (next[key] ?? null)) ||
-		(contact.formerName ?? null) !== formerName;
+		(['displayName', 'firstName', 'lastName', 'nickname'] as const).some(
+			(key) => (contact[key] ?? null) !== (next[key] ?? null)
+		) || (contact.formerName ?? null) !== formerName;
 	// One line on Home per save that changes the name, no more visible than the person is.
 	const audit: NewActivityEntry | null = changed
 		? {

@@ -145,7 +145,9 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 	}
 
 	function armNotice(shown: ShownNotice) {
-		shown.timer = held ? undefined : scheduler.setTimeout(() => dismissNotice(shown.notice.id), windowMs);
+		shown.timer = held
+			? undefined
+			: scheduler.setTimeout(() => dismissNotice(shown.notice.id), windowMs);
 	}
 
 	function dismissNotice(id: number) {
@@ -195,7 +197,11 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 		},
 		isPending: (key) => pending.has(key),
 		notify(text, takeBack) {
-			show({ notice: { id: nextNoticeId++, text, undoable: takeBack !== undefined, link: null }, timer: undefined, takeBack });
+			show({
+				notice: { id: nextNoticeId++, text, undoable: takeBack !== undefined, link: null },
+				timer: undefined,
+				takeBack
+			});
 		},
 		notifyWithLink(text, link) {
 			show({ notice: { id: nextNoticeId++, text, undoable: false, link }, timer: undefined });

@@ -6,10 +6,18 @@ import type { ImmichFailure } from '$lib/server/domain/immich/gateway';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
 import { authorNames } from '$lib/server/domain/household/members';
-import { addPersonFromImmich, assignNewcomer, WouldReplaceLinkError } from '$lib/server/domain/immich/add-from-immich';
+import {
+	addPersonFromImmich,
+	assignNewcomer,
+	WouldReplaceLinkError
+} from '$lib/server/domain/immich/add-from-immich';
 import { faceUrlFor } from '$lib/server/domain/immich/glimpse';
 import { ignoreMatch, proposeAgain } from '$lib/server/domain/immich/ignores';
-import { ImmichLinkRefusedError, linkMatches, type ConfirmedMatch } from '$lib/server/domain/immich/links';
+import {
+	ImmichLinkRefusedError,
+	linkMatches,
+	type ConfirmedMatch
+} from '$lib/server/domain/immich/links';
 import { findImmichMatches } from '$lib/server/domain/immich/matching';
 import { ignoreNewcomer, proposeNewcomerAgain } from '$lib/server/domain/immich/name-ignores';
 import {
@@ -55,28 +63,35 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (!deps) throw error(404, say(locals, 'errors.notFound'));
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 	const nameOfMember = authorNames(getMemberDeps(), viewer.householdId);
-	const day = { selfContactId: locals.user.selfContactId, today: new Date().toLocaleDateString('en-CA') };
+	const day = {
+		selfContactId: locals.user.selfContactId,
+		today: new Date().toLocaleDateString('en-CA')
+	};
 	return {
-		matches: Promise.all([findImmichMatches(deps, viewer, day), nameOfMember]).then(([outcome, nameOf]) =>
-			outcome.ok
-				? {
-						rows: outcome.rows,
-						// Who ignored each pair, by name — null for someone no longer a member.
-						ignored: outcome.ignored.map((pair) => ({ ...pair, ignoredByName: nameOf(pair.ignoredBy) })),
-						newcomers: outcome.newcomers,
-						ignoredNewcomers: outcome.ignoredNewcomers.map((face) => ({
-							...face,
-							ignoredByName: nameOf(face.ignoredBy)
-						})),
-						error: null
-					}
-				: {
-						rows: [],
-						ignored: [],
-						newcomers: [],
-						ignoredNewcomers: [],
-						error: say(locals, FAILURE_MESSAGE[outcome.failure])
-					}
+		matches: Promise.all([findImmichMatches(deps, viewer, day), nameOfMember]).then(
+			([outcome, nameOf]) =>
+				outcome.ok
+					? {
+							rows: outcome.rows,
+							// Who ignored each pair, by name — null for someone no longer a member.
+							ignored: outcome.ignored.map((pair) => ({
+								...pair,
+								ignoredByName: nameOf(pair.ignoredBy)
+							})),
+							newcomers: outcome.newcomers,
+							ignoredNewcomers: outcome.ignoredNewcomers.map((face) => ({
+								...face,
+								ignoredByName: nameOf(face.ignoredBy)
+							})),
+							error: null
+						}
+					: {
+							rows: [],
+							ignored: [],
+							newcomers: [],
+							ignoredNewcomers: [],
+							error: say(locals, FAILURE_MESSAGE[outcome.failure])
+						}
 		)
 	};
 };
@@ -85,7 +100,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 function pairsOf(form: FormData): ConfirmedMatch[] | null {
 	const contactIds = form.getAll('contactId');
 	const personIds = form.getAll('immichPersonId');
-	if (contactIds.length === 0 || contactIds.length !== personIds.length || contactIds.length > MAX_PAIRS) return null;
+	if (
+		contactIds.length === 0 ||
+		contactIds.length !== personIds.length ||
+		contactIds.length > MAX_PAIRS
+	)
+		return null;
 	const pairs: ConfirmedMatch[] = [];
 	for (const [at, contactId] of contactIds.entries()) {
 		const immichPersonId = personIds[at];
@@ -103,7 +123,11 @@ const linking: Actions[string] = async ({ request, locals }) => {
 	const pairs = pairsOf(await request.formData());
 	if (!pairs) return fail(400, { linked: [], refused: [], error: say(locals, 'errors.notFound') });
 
-	const result = await linkMatches(deps, { userId: locals.user.id, householdId: locals.user.householdId }, pairs);
+	const result = await linkMatches(
+		deps,
+		{ userId: locals.user.id, householdId: locals.user.householdId },
+		pairs
+	);
 	const refusedIds = new Set(result.refused.map((r) => r.contactId));
 	const t = translator(locals);
 	return {
@@ -141,7 +165,8 @@ function newcomerOf(form: FormData): string | null {
 function rowOf(form: FormData): { contactId: string; personIds: string[] } | null {
 	const contactId = form.get('contactId');
 	const personIds = form.getAll('immichPersonId');
-	if (typeof contactId !== 'string' || !personIds.every((id) => typeof id === 'string')) return null;
+	if (typeof contactId !== 'string' || !personIds.every((id) => typeof id === 'string'))
+		return null;
 	return { contactId, personIds: personIds as string[] };
 }
 
@@ -172,8 +197,14 @@ export const actions: Actions = {
 		const deps = getImmichIgnoreDeps();
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 		const row = rowOf(await request.formData());
-		if (!row || row.personIds.length !== 1) return fail(400, { linked: [], refused: [], error: say(locals, 'errors.notFound') });
-		await proposeAgain(deps, { id: actor.userId, householdId: actor.householdId }, row.contactId, row.personIds[0]);
+		if (!row || row.personIds.length !== 1)
+			return fail(400, { linked: [], refused: [], error: say(locals, 'errors.notFound') });
+		await proposeAgain(
+			deps,
+			{ id: actor.userId, householdId: actor.householdId },
+			row.contactId,
+			row.personIds[0]
+		);
 		return { linked: [], refused: [], error: null };
 	},
 
@@ -189,9 +220,12 @@ export const actions: Actions = {
 		const form = await request.formData();
 		const personId = newcomerOf(form);
 		const contactId = form.get('contactId');
-		if (!personId || typeof contactId !== 'string') throw error(400, say(locals, 'errors.form.checkAndRetry'));
+		if (!personId || typeof contactId !== 'string')
+			throw error(400, say(locals, 'errors.form.checkAndRetry'));
 		try {
-			await assignNewcomer(deps, actor, contactId, personId, { replace: form.get('replace') === '1' });
+			await assignNewcomer(deps, actor, contactId, personId, {
+				replace: form.get('replace') === '1'
+			});
 		} catch (err) {
 			if (err instanceof ContactGoneError || err instanceof ImmichLinkRefusedError)
 				return fail(400, {
@@ -202,7 +236,11 @@ export const actions: Actions = {
 				});
 			throw err;
 		}
-		const contact = await getContact(getContactDeps(), { id: actor.userId, householdId: actor.householdId }, contactId);
+		const contact = await getContact(
+			getContactDeps(),
+			{ id: actor.userId, householdId: actor.householdId },
+			contactId
+		);
 		return { assigned: { personId, contactId, name: contact?.displayName ?? '' } };
 	},
 
@@ -221,14 +259,27 @@ export const actions: Actions = {
 		const { immichPersonId, usePhoto, ...name } = parsed.output;
 		let contactId: string;
 		try {
-			contactId = await addPersonFromImmich(deps, { ...actor, locale: locals.locale }, immichPersonId, name);
+			contactId = await addPersonFromImmich(
+				deps,
+				{ ...actor, locale: locals.locale },
+				immichPersonId,
+				name
+			);
 		} catch (err) {
 			// A first name with nothing to know them by (§2.2.3), or a face that cannot be linked.
 			if (err instanceof TranslatableError)
-				return fail(400, { newcomer: immichPersonId, newcomerError: err.phrase(translator(locals)), wouldReplace: null });
+				return fail(400, {
+					newcomer: immichPersonId,
+					newcomerError: err.phrase(translator(locals)),
+					wouldReplace: null
+				});
 			throw err;
 		}
-		const contact = await getContact(getContactDeps(), { id: actor.userId, householdId: actor.householdId }, contactId);
+		const contact = await getContact(
+			getContactDeps(),
+			{ id: actor.userId, householdId: actor.householdId },
+			contactId
+		);
 		return {
 			added: {
 				personId: immichPersonId,
@@ -250,7 +301,11 @@ export const actions: Actions = {
 			await ignoreNewcomer(deps, actor, personId);
 		} catch (err) {
 			if (err instanceof ImmichLinkRefusedError)
-				return fail(400, { newcomer: personId, newcomerError: err.phrase(translator(locals)), wouldReplace: null });
+				return fail(400, {
+					newcomer: personId,
+					newcomerError: err.phrase(translator(locals)),
+					wouldReplace: null
+				});
 			throw err;
 		}
 		return { ignoredNewcomer: personId };
@@ -263,7 +318,11 @@ export const actions: Actions = {
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 		const personId = newcomerOf(await request.formData());
 		if (!personId) throw error(400, say(locals, 'errors.form.checkAndRetry'));
-		await proposeNewcomerAgain(deps, { id: actor.userId, householdId: actor.householdId }, personId);
+		await proposeNewcomerAgain(
+			deps,
+			{ id: actor.userId, householdId: actor.householdId },
+			personId
+		);
 		return { proposedAgain: personId };
 	}
 };

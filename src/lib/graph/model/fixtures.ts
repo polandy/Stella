@@ -37,7 +37,14 @@ export const familyEdges: GraphEdge[] = [
 	{ id: 'r6', source: 'mara', target: 'sarah', kind: 'relationship', category: 'social' },
 	{ id: 'r7', source: 'mara', target: 'tobias', kind: 'relationship', category: 'professional' },
 	{ id: 'r8', source: 'tobias', target: 'elena', kind: 'relationship', category: 'professional' },
-	{ id: 'k1', source: 'mara', target: 'walter', kind: 'kinship', label: 'Grandfather', derived: true },
+	{
+		id: 'k1',
+		source: 'mara',
+		target: 'walter',
+		kind: 'kinship',
+		label: 'Grandfather',
+		derived: true
+	},
 	{ id: 'm1', source: 'kegel', target: 'mara', kind: 'membership' },
 	{ id: 'm2', source: 'kegel', target: 'sarah', kind: 'membership' },
 	{ id: 'm3', source: 'kegel', target: 'jonas', kind: 'membership' },

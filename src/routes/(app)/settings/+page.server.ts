@@ -1,9 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { say, translator } from '$lib/server/i18n/say';
-import {
-	setSelfContact,
-	UnknownSelfContactError
-} from '$lib/server/domain/household/self-contact';
+import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
 import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/contacts';
 import { countLastNames } from '$lib/server/domain/contacts/last-names';
 import {

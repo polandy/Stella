@@ -18,9 +18,11 @@ export const immich = {
 		`Connected to ${p.owner}’s Immich · ${p.version}`,
 	'immich.settings.unreachable': 'Immich didn’t answer. Stella tries again shortly.',
 	'immich.settings.keyRejected': 'Immich refused the key — it may have been deleted or mistyped.',
-	'immich.settings.scope.user.read': 'The key cannot tell whose account it is — it needs user.read.',
+	'immich.settings.scope.user.read':
+		'The key cannot tell whose account it is — it needs user.read.',
 	'immich.settings.scope.person.read': 'The key cannot read people — it needs person.read.',
-	'immich.settings.scope.person.statistics': 'The key cannot count photos — it needs person.statistics.',
+	'immich.settings.scope.person.statistics':
+		'The key cannot count photos — it needs person.statistics.',
 	'immich.settings.scope.asset.read': 'The key cannot list photos — it needs asset.read.',
 	'immich.settings.scope.asset.view': 'The key cannot show photos — it needs asset.view.',
 	'immich.settings.tooOld': (p: { version: string }) =>
@@ -41,7 +43,8 @@ export const immich = {
 	'immich.match.link': 'Link',
 	'immich.match.face': (p: { name: string }) => `${p.name} in Immich`,
 	'immich.match.inImmich': (p: { name: string }) => `In Immich: ${p.name}`,
-	'immich.match.photos': (p: { count: number; shown: string }) => `${p.shown} ${p.count === 1 ? 'photo' : 'photos'}`,
+	'immich.match.photos': (p: { count: number; shown: string }) =>
+		`${p.shown} ${p.count === 1 ? 'photo' : 'photos'}`,
 	'immich.match.skip': 'Not now',
 	'immich.match.skipLabel': (p: { name: string }) => `Not now: ${p.name}`,
 	'immich.match.linked': (p: { count: number }) =>
@@ -50,7 +53,8 @@ export const immich = {
 	'immich.match.ignoreLabel': (p: { name: string }) => `Ignore the proposal for ${p.name}`,
 	'immich.match.ignoredToast': 'Proposal ignored',
 	'immich.match.ignoredHeading': (p: { count: number }) => `Ignored (${p.count})`,
-	'immich.match.ignoredBy': (p: { name: string; date: string }) => `Ignored by ${p.name} on ${p.date}`,
+	'immich.match.ignoredBy': (p: { name: string; date: string }) =>
+		`Ignored by ${p.name} on ${p.date}`,
 	'immich.match.formerMember': 'a former member',
 	'immich.match.unnamedFace': 'no longer named in Immich',
 	'immich.match.proposeAgain': 'Propose again',
@@ -75,7 +79,8 @@ export const immich = {
 	'immich.new.openInImmich': 'Open in Immich',
 	'immich.new.theirPhoto': (p: { name: string }) => `${p.name} in Stella`,
 	'immich.new.thisIsThem': 'This is the person',
-	'immich.new.thisIsThemLabel': (p: { immichName: string; name: string }) => `${p.immichName} is ${p.name}`,
+	'immich.new.thisIsThemLabel': (p: { immichName: string; name: string }) =>
+		`${p.immichName} is ${p.name}`,
 	'immich.new.linkedTo': (p: { name: string }) => `Linked to “${p.name}” in Immich already`,
 	'immich.new.linkedToUnnamed': 'Linked to another face in Immich already',
 	'immich.new.replaceQuestion': (p: { name: string }) =>
@@ -90,7 +95,8 @@ export const immich = {
 	'immich.new.findPlaceholder': 'Search people in Stella',
 	'immich.new.added': (p: { name: string }) => `${p.name} added`,
 	'immich.new.open': 'Open',
-	'immich.new.assigned': (p: { immichName: string; name: string }) => `${p.immichName} linked to ${p.name}`,
+	'immich.new.assigned': (p: { immichName: string; name: string }) =>
+		`${p.immichName} linked to ${p.name}`,
 	'immich.new.photoFailed': 'The person was added, but the face could not be kept as their photo.',
 	'immich.new.done': 'Every named face is in Stella.',
 	'immich.new.showMore': (p: { count: number }) => `Show ${p.count} more`,
@@ -129,12 +135,14 @@ export const immich = {
 	'immich.together.withYou': (p: { name: string }) => `You and ${p.name}`,
 	'immich.together.pair': (p: { first: string; second: string }) => `${p.first} and ${p.second}`,
 	// Said of the pair as an object, so "you" is not capitalised mid-sentence.
-	'immich.together.stripWithYou': (p: { name: string }) => `Photos of you and ${p.name} together, in Immich`,
+	'immich.together.stripWithYou': (p: { name: string }) =>
+		`Photos of you and ${p.name} together, in Immich`,
 	'immich.together.stripPair': (p: { first: string; second: string }) =>
 		`Photos of ${p.first} and ${p.second} together, in Immich`,
 	'immich.together.none': 'No photos of the two of them together in Immich yet.',
 	'immich.together.row': 'Together',
-	'immich.together.rowLabelWithYou': (p: { name: string }) => `Show photos of you and ${p.name} together`,
+	'immich.together.rowLabelWithYou': (p: { name: string }) =>
+		`Show photos of you and ${p.name} together`,
 	'immich.together.rowLabelPair': (p: { first: string; second: string }) =>
 		`Show photos of ${p.first} and ${p.second} together`,
 
@@ -142,11 +150,13 @@ export const immich = {
 	'immich.picker.title': (p: { name: string }) => `Find ${p.name} in Immich`,
 	'immich.picker.search': 'Name in Immich',
 	'immich.picker.searching': 'Searching Immich…',
-	'immich.picker.none': 'No face in Immich has this name. Try another spelling, or name the face in Immich first.',
+	'immich.picker.none':
+		'No face in Immich has this name. Try another spelling, or name the face in Immich first.',
 	'immich.picker.hint': 'Pick the face that is this person.',
 	'immich.picker.linkedTo': (p: { name: string }) => `Linked to ${p.name}`,
 	'immich.picker.linkedElsewhere': 'Linked to someone else',
-	'immich.picker.link': (p: { immichName: string; name: string }) => `Link ${p.immichName} to ${p.name}`
+	'immich.picker.link': (p: { immichName: string; name: string }) =>
+		`Link ${p.immichName} to ${p.name}`
 };
 
 /** The key set every translation of this area has to provide. */

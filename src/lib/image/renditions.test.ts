@@ -35,6 +35,9 @@ describe('a group photo', () => {
 	});
 
 	it('is never enlarged', () => {
-		expect(groupPhotoRenditions({ width: 2400, height: 1800 }).full).toEqual({ width: 2400, height: 1800 });
+		expect(groupPhotoRenditions({ width: 2400, height: 1800 }).full).toEqual({
+			width: 2400,
+			height: 1800
+		});
 	});
 });

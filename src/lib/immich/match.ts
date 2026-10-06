@@ -62,7 +62,15 @@ export interface MatchInput {
 }
 
 /** Letters NFD does not take apart, written the way they are typed without them. */
-const UNDECOMPOSED: Record<string, string> = { ß: 'ss', æ: 'ae', œ: 'oe', ø: 'o', ł: 'l', đ: 'd', þ: 'th' };
+const UNDECOMPOSED: Record<string, string> = {
+	ß: 'ss',
+	æ: 'ae',
+	œ: 'oe',
+	ø: 'o',
+	ł: 'l',
+	đ: 'd',
+	þ: 'th'
+};
 
 /**
  * A name folded onto one spelling: case, accents and the German transliteration go, so that
@@ -97,14 +105,20 @@ function namesOf(contact: MatchableContact) {
 		fold(contact.displayName)
 	];
 	const full = new Set(
-		[shown, first && last ? `${first} ${last}` : '', nick && last ? `${nick} ${last}` : ''].filter(isFullName)
+		[shown, first && last ? `${first} ${last}` : '', nick && last ? `${nick} ${last}` : ''].filter(
+			isFullName
+		)
 	);
-	const single = new Set([first, nick, isOneWord(shown) ? shown : ''].filter((name) => name !== ''));
+	const single = new Set(
+		[first, nick, isOneWord(shown) ? shown : ''].filter((name) => name !== '')
+	);
 	// A double last name is often only half there on the other side: Stella's "Sandra
 	// Brunner-Keller" is "Sandra Brunner" in Immich. One half with the first name is a maybe.
 	const halves = last.includes(' ') ? last.split(' ') : [];
 	const partial = new Set(
-		[first, nick].filter((given) => given !== '').flatMap((given) => halves.map((half) => `${given} ${half}`))
+		[first, nick]
+			.filter((given) => given !== '')
+			.flatMap((given) => halves.map((half) => `${given} ${half}`))
 	);
 	return { full, single, partial, hasLastName: last !== '' };
 }
@@ -161,7 +175,8 @@ export function matchImmichPeople(input: MatchInput): ImmichMatch[] {
 		const kept = likely.length > 0 ? likely : candidates.filter((c) => !likelyFor.has(c.personId));
 		if (kept.length === 0) continue;
 		kept.sort((a, b) => compare(a.name, b.name) || a.personId.localeCompare(b.personId));
-		const sure = kept.length === 1 && kept[0].strength === 'likely' && likelyFor.get(kept[0].personId) === 1;
+		const sure =
+			kept.length === 1 && kept[0].strength === 'likely' && likelyFor.get(kept[0].personId) === 1;
 		rows.push({
 			contactId: contact.id,
 			displayName: contact.displayName,

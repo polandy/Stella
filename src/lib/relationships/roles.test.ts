@@ -16,7 +16,9 @@ describe('otherEndRole', () => {
 		expect(otherEndRole({ typeKey: 'parent_child', side: 'forward' })).toBe('child');
 		expect(otherEndRole({ typeKey: 'parent_child', side: 'reverse' })).toBe('parent');
 		expect(otherEndRole({ typeKey: 'grandparent_grandchild', side: 'forward' })).toBe('grandchild');
-		expect(otherEndRole({ typeKey: 'aunt_uncle_niece_nephew', side: 'reverse' })).toBe('aunt-uncle');
+		expect(otherEndRole({ typeKey: 'aunt_uncle_niece_nephew', side: 'reverse' })).toBe(
+			'aunt-uncle'
+		);
 		expect(otherEndRole({ typeKey: 'mentor_mentee', side: 'forward' })).toBe('mentee');
 	});
 
@@ -47,7 +49,9 @@ describe('relationshipRoleLabel', () => {
 	it('borrows the worked-out relatives’ words for the terms they share', () => {
 		const grandson = { typeKey: 'grandparent_grandchild', side: 'forward' as const, label: '' };
 		expect(relationshipRoleLabel(en, grandson, 'male')).toBe('Grandson');
-		expect(relationshipRoleLabel(de, { typeKey: 'sibling', label: '' }, 'female')).toBe('Schwester');
+		expect(relationshipRoleLabel(de, { typeKey: 'sibling', label: '' }, 'female')).toBe(
+			'Schwester'
+		);
 	});
 
 	it('says every built-in tie in both languages', () => {

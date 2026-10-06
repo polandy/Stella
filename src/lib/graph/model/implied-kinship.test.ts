@@ -60,7 +60,10 @@ describe('impliedKinshipEdgeIds', () => {
 
 	it('does not count a chain through a friend or a circle as family', () => {
 		const viaFriend: GraphModel = {
-			nodes: [...['andy', 'kim', 'frederick'].map(person), { id: 'club', kind: 'circle', label: 'Club' }],
+			nodes: [
+				...['andy', 'kim', 'frederick'].map(person),
+				{ id: 'club', kind: 'circle', label: 'Club' }
+			],
 			edges: [
 				{ ...link('friend', 'andy', 'kim', 'friend'), category: 'social' },
 				{ id: 'm1', source: 'club', target: 'kim', kind: 'membership' },

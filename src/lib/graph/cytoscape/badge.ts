@@ -36,5 +36,9 @@ export function expandBadge(count: number, colours: BadgeColours): Badge {
 		`<text x="${width / 2}" y="${HEIGHT / 2}" text-anchor="middle" dominant-baseline="central" ` +
 		`font-family="system-ui, sans-serif" font-size="${FONT_SIZE}" font-weight="600" fill="${colours.text}">${text}</text>` +
 		`</svg>`;
-	return { uri: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`, width, height: HEIGHT };
+	return {
+		uri: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+		width,
+		height: HEIGHT
+	};
 }

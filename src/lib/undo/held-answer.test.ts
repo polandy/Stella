@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'bun:test';
 import { heldAnswer, type Holder } from './held-answer';
 
+/** The enhance callback's argument; the tests build only the parts `heldAnswer` reads. */
+type EnhanceEvent = Parameters<ReturnType<typeof heldAnswer>>[0];
+
 /*
  * Answering a suggestion without leaving the page (docs/02 §2.4.1).
  *
@@ -55,8 +58,10 @@ describe('heldAnswer', () => {
 			relation: 'parent'
 		});
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the enhance event shape
-		heldAnswer({ holder, fetch }, { key: 'suggestion:parent|a b', label: 'Declined', ...noCallbacks() })(event as any);
+		heldAnswer(
+			{ holder, fetch },
+			{ key: 'suggestion:parent|a b', label: 'Declined', ...noCallbacks() }
+		)(event as unknown as EnhanceEvent);
 
 		expect(wasCancelled()).toBe(true);
 		// Held, not sent: the positive control is that the removal *was* recorded.
@@ -69,12 +74,17 @@ describe('heldAnswer', () => {
 		const { holder, held } = recordingHolder();
 		const { fetch, calls } = fakeFetch({ ok: true });
 		let committed = 0;
-		const { event } = submitEvent('/settings/relationships?review&after=k&/addProposedRelationship', {
-			toId: 'lisa'
-		});
+		const { event } = submitEvent(
+			'/settings/relationships?review&after=k&/addProposedRelationship',
+			{
+				toId: 'lisa'
+			}
+		);
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the enhance event shape
-		heldAnswer({ holder, fetch }, { key: 'k', label: 'Added', ...noCallbacks(), onCommitted: () => (committed += 1) })(event as any);
+		heldAnswer(
+			{ holder, fetch },
+			{ key: 'k', label: 'Added', ...noCallbacks(), onCommitted: () => (committed += 1) }
+		)(event as unknown as EnhanceEvent);
 		await held[0]!.commit();
 
 		expect(calls).toHaveLength(1);
@@ -94,8 +104,10 @@ describe('heldAnswer', () => {
 		let committed = 0;
 		const { event } = submitEvent('/x?/dismissSuggestion', {});
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the enhance event shape
-		heldAnswer({ holder, fetch }, { key: 'k', label: 'Declined', ...noCallbacks(), onCommitted: () => (committed += 1) })(event as any);
+		heldAnswer(
+			{ holder, fetch },
+			{ key: 'k', label: 'Declined', ...noCallbacks(), onCommitted: () => (committed += 1) }
+		)(event as unknown as EnhanceEvent);
 
 		await expect(held[0]!.commit()).rejects.toThrow();
 		expect(committed).toBe(0);
@@ -113,7 +125,8 @@ describe('heldAnswer', () => {
 		const { holder, held } = recordingHolder();
 		let release = () => {};
 		const inFlight = new Promise<Response>((resolve) => {
-			release = () => resolve({ ok: true, status: 200, json: async () => ({ type: 'success' }) } as Response);
+			release = () =>
+				resolve({ ok: true, status: 200, json: async () => ({ type: 'success' }) } as Response);
 		});
 		const order: string[] = [];
 		const { event } = submitEvent('/x?/dismissSuggestion', {});
@@ -127,8 +140,7 @@ describe('heldAnswer', () => {
 				onCommitted: () => void order.push('committed'),
 				onFailed: () => void order.push('failed')
 			}
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the enhance event shape
-		)(event as any);
+		)(event as unknown as EnhanceEvent);
 
 		const commit = held[0]!.commit();
 		// Nothing awaited yet: the mark is already set, so no observer can mistake this for an undo.
@@ -153,8 +165,7 @@ describe('heldAnswer', () => {
 				onCommitted: () => void order.push('committed'),
 				onFailed: () => void order.push('failed')
 			}
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the enhance event shape
-		)(event as any);
+		)(event as unknown as EnhanceEvent);
 
 		await expect(held[0]!.commit()).rejects.toThrow();
 		expect(order).toEqual(['sending', 'failed']);

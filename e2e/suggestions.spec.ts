@@ -12,7 +12,9 @@ test.beforeEach(async ({ page }) => {
 	await page.goto('/contacts/new');
 });
 
-test('shows nobody until a surname is typed, then the same and similar surnames with the reason', async ({ page }) => {
+test('shows nobody until a surname is typed, then the same and similar surnames with the reason', async ({
+	page
+}) => {
 	await page.getByLabel('First name').fill('Quill');
 	await page.getByLabel('First name').blur();
 	await expect(page.getByTestId('name-suggestions')).toHaveCount(0);
@@ -32,7 +34,10 @@ test('shows nobody until a surname is typed, then the same and similar surnames 
 	await page.getByLabel('Last name').blur();
 	await expect(box).toContainText('Same surname');
 	await expect(box).not.toContainText('Similar surname');
-	await expect(box.getByRole('link', { name: 'Lena Brunner' })).toHaveAttribute('href', /\/contacts\//);
+	await expect(box.getByRole('link', { name: 'Lena Brunner' })).toHaveAttribute(
+		'href',
+		/\/contacts\//
+	);
 });
 
 test('puts an exact full-name match first as the likely duplicate', async ({ page }) => {
@@ -45,12 +50,18 @@ test('puts an exact full-name match first as the likely duplicate', async ({ pag
 	await expect(rows.nth(1)).toContainText('Same surname');
 });
 
-test('link as relative creates the person and opens their relationship editor with the relative chosen', async ({ page }) => {
+test('link as relative creates the person and opens their relationship editor with the relative chosen', async ({
+	page
+}) => {
 	await page.getByLabel('First name').fill('Quill');
 	await page.getByLabel('Last name').fill('Brunner');
 	await page.getByLabel('Last name').blur();
 	const box = page.getByTestId('name-suggestions');
-	await box.getByRole('listitem').filter({ hasText: 'Lena Brunner' }).getByRole('radio', { name: 'Link as relative' }).check();
+	await box
+		.getByRole('listitem')
+		.filter({ hasText: 'Lena Brunner' })
+		.getByRole('radio', { name: 'Link as relative' })
+		.check();
 	await expect(box).toContainText('After adding, you land in the relationship editor');
 	await page.getByRole('button', { name: 'Add person' }).click();
 

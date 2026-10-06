@@ -41,7 +41,12 @@ describe('createDrizzleSessionRepository', () => {
 	});
 
 	it('round-trips the OIDC ID token kept for single logout', async () => {
-		await repo.create({ id: 'sess-1', userId: USER, expiresAt: 123456, oidcIdToken: 'id.token.jwt' });
+		await repo.create({
+			id: 'sess-1',
+			userId: USER,
+			expiresAt: 123456,
+			oidcIdToken: 'id.token.jwt'
+		});
 		expect((await repo.findById('sess-1'))?.oidcIdToken).toBe('id.token.jwt');
 	});
 

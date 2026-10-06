@@ -53,6 +53,8 @@ describe('findConnectionPath', () => {
 
 	it('carries the connecting nodes into the returned sub-model', async () => {
 		const path = await findConnectionPath(familySource(), 'mara', 'doris');
-		expect(new Set(path?.model.nodes.map((n) => n.id))).toEqual(new Set(['mara', 'kegel', 'doris']));
+		expect(new Set(path?.model.nodes.map((n) => n.id))).toEqual(
+			new Set(['mara', 'kegel', 'doris'])
+		);
 	});
 });

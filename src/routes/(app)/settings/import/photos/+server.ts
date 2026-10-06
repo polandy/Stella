@@ -40,7 +40,7 @@ async function planFor(
 		userId: user.id,
 		visibility,
 		wording: importWording(locals),
-				locale: locals.locale
+		locale: locals.locale
 	});
 }
 
@@ -52,7 +52,9 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 
 	// Nothing about a picture depends on the visibility the admin chose, so reading one asks
 	// for the household default rather than carrying a setting through the URL.
-	const planned = (await planFor(token, user, 'shared', locals)).photos.find((p) => p.id === photoId);
+	const planned = (await planFor(token, user, 'shared', locals)).photos.find(
+		(p) => p.id === photoId
+	);
 	if (!planned) throw error(404, say(locals, 'import.error.photoNotInImport'));
 	if (planned.dataUrl === null) {
 		throw error(409, say(locals, 'import.error.pictureNotCarried'));
@@ -71,7 +73,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	const image = form.get('image');
 	const thumb = form.get('thumb');
 	const visibility = form.get('visibility') === 'private' ? 'private' : 'shared';
-	if (typeof token !== 'string' || typeof photoId !== 'string' || !(image instanceof File) || !(thumb instanceof File)) {
+	if (
+		typeof token !== 'string' ||
+		typeof photoId !== 'string' ||
+		!(image instanceof File) ||
+		!(thumb instanceof File)
+	) {
 		throw error(400, say(locals, 'import.error.missingPhotoFields'));
 	}
 

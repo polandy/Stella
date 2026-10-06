@@ -115,23 +115,34 @@ export async function captureMoment(
 		if (!key || queued.has(key) || existingKeys.has(key) || !mentionedKeys.has(key)) continue;
 		queued.add(key);
 		createdContactIds.push(
-			await createContact(contactDeps, creator, { displayName: name.trim(), visibility: input.visibility })
+			await createContact(contactDeps, creator, {
+				displayName: name.trim(),
+				visibility: input.visibility
+			})
 		);
 	}
 
-	const resolved = resolveForAudience(await deps.contacts.listVisibleTo(viewer), input.visibility, written);
+	const resolved = resolveForAudience(
+		await deps.contacts.listVisibleTo(viewer),
+		input.visibility,
+		written
+	);
 	if (resolved.ids.length === 0) throw new MomentNeedsPersonError();
 
 	const [anchorContactId, ...mentionedContactIds] = resolved.ids;
 	// A moment is an addition (§2.20): a day slot that already holds an entry gets it appended.
-	const entryId = await addToJournalDay({ journal: deps.journal, ids: deps.ids, clock: deps.clock }, author, {
-		contactId: anchorContactId,
-		entryDate: input.entryDate,
-		visibility: input.visibility,
-		title: null,
-		body: resolved.body,
-		mentionIds: mentionedContactIds
-	});
+	const entryId = await addToJournalDay(
+		{ journal: deps.journal, ids: deps.ids, clock: deps.clock },
+		author,
+		{
+			contactId: anchorContactId,
+			entryDate: input.entryDate,
+			visibility: input.visibility,
+			title: null,
+			body: resolved.body,
+			mentionIds: mentionedContactIds
+		}
+	);
 
 	return {
 		entryId,

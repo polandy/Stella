@@ -84,13 +84,20 @@ function exifIfdTags(tiff: Uint8Array): Map<number, string> | null {
 	const u32 = (at: number) => view.getUint32(at, little);
 	if (u16(2) !== 42) return null;
 
-	const entries = (ifdAt: number): { tag: number; type: number; count: number; valueAt: number }[] | null => {
+	const entries = (
+		ifdAt: number
+	): { tag: number; type: number; count: number; valueAt: number }[] | null => {
 		if (ifdAt + 2 > tiff.length) return null;
 		const count = u16(ifdAt);
 		if (ifdAt + 2 + count * IFD_ENTRY_BYTES > tiff.length) return null;
 		return Array.from({ length: count }, (_, i) => {
 			const entryAt = ifdAt + 2 + i * IFD_ENTRY_BYTES;
-			return { tag: u16(entryAt), type: u16(entryAt + 2), count: u32(entryAt + 4), valueAt: entryAt + 8 };
+			return {
+				tag: u16(entryAt),
+				type: u16(entryAt + 2),
+				count: u32(entryAt + 4),
+				valueAt: entryAt + 8
+			};
 		});
 	};
 
@@ -113,7 +120,8 @@ function exifIfdTags(tiff: Uint8Array): Map<number, string> | null {
 
 /** `YYYY:MM:DD HH:MM:SS` and an optional `±HH:MM` as a capture date, or null when not one. */
 function dateWithOffset(dateTime: string | undefined, offset: string | undefined): string | null {
-	const match = dateTime === undefined ? null : /^(\d{4}):(\d{2}):(\d{2}) (\d{2}:\d{2}:\d{2})$/.exec(dateTime);
+	const match =
+		dateTime === undefined ? null : /^(\d{4}):(\d{2}):(\d{2}) (\d{2}:\d{2}:\d{2})$/.exec(dateTime);
 	if (!match) return null;
 	const local = `${match[1]}-${match[2]}-${match[3]}T${match[4]}`;
 	if (!isTakenAt(local)) return null;

@@ -5,7 +5,8 @@ export const immich: ImmichMessages = {
 	'immich.error.personGone': 'Diese Person gibt es in Immich nicht mehr.',
 	'immich.error.linkedTo': (p) => `Dieses Gesicht ist schon mit ${p.name} verknüpft.`,
 	'immich.error.contactLinked': (p) => `${p.name} ist schon verknüpft.`,
-	'immich.error.linkedElsewhere': 'Dieses Gesicht ist schon mit einer anderen Person in Stella verknüpft.',
+	'immich.error.linkedElsewhere':
+		'Dieses Gesicht ist schon mit einer anderen Person in Stella verknüpft.',
 	'immich.error.unreachable': 'Immich hat nicht geantwortet. Versuch es gleich noch einmal.',
 	'immich.error.keyRejected': 'Immich hat Stellas Schlüssel abgelehnt. Ein Admin muss ihn prüfen.',
 	'immich.error.missingScope': (p) =>
@@ -19,11 +20,14 @@ export const immich: ImmichMessages = {
 		'Immich hat den Schlüssel abgelehnt – vielleicht wurde er gelöscht oder falsch eingetragen.',
 	'immich.settings.scope.user.read':
 		'Der Schlüssel kann nicht sehen, wem das Konto gehört – er braucht user.read.',
-	'immich.settings.scope.person.read': 'Der Schlüssel kann keine Personen lesen – er braucht person.read.',
+	'immich.settings.scope.person.read':
+		'Der Schlüssel kann keine Personen lesen – er braucht person.read.',
 	'immich.settings.scope.person.statistics':
 		'Der Schlüssel kann keine Fotos zählen – er braucht person.statistics.',
-	'immich.settings.scope.asset.read': 'Der Schlüssel kann keine Fotos auflisten – er braucht asset.read.',
-	'immich.settings.scope.asset.view': 'Der Schlüssel kann keine Fotos zeigen – er braucht asset.view.',
+	'immich.settings.scope.asset.read':
+		'Der Schlüssel kann keine Fotos auflisten – er braucht asset.read.',
+	'immich.settings.scope.asset.view':
+		'Der Schlüssel kann keine Fotos zeigen – er braucht asset.view.',
 	'immich.settings.tooOld': (p) =>
 		`Dieses Immich hat Version ${p.version}. Stella braucht Immich 3.2 oder neuer.`,
 	'immich.settings.sharing':
@@ -44,7 +48,8 @@ export const immich: ImmichMessages = {
 	'immich.match.photos': (p) => `${p.shown} ${p.count === 1 ? 'Foto' : 'Fotos'}`,
 	'immich.match.skip': 'Später',
 	'immich.match.skipLabel': (p) => `Später: ${p.name}`,
-	'immich.match.linked': (p) => (p.count === 1 ? '1 Person verknüpft.' : `${p.count} Personen verknüpft.`),
+	'immich.match.linked': (p) =>
+		p.count === 1 ? '1 Person verknüpft.' : `${p.count} Personen verknüpft.`,
 	'immich.match.ignore': 'Ignorieren',
 	'immich.match.ignoreLabel': (p) => `Vorschlag für ${p.name} ignorieren`,
 	'immich.match.ignoredToast': 'Vorschlag ignoriert',
@@ -61,21 +66,25 @@ export const immich: ImmichMessages = {
 	'immich.tabs.label': 'Was durchsehen',
 	'immich.tabs.matching': 'Abgleich',
 	'immich.tabs.new': 'Neu aus Immich',
-	'immich.new.intro': 'Gesichter, die in Immich einen Namen haben, in Stella aber noch keine verknüpfte Person.',
-	'immich.new.summary': (p) => `${p.shown} ${p.count === 1 ? 'Name' : 'Namen'} aus Immich, die meisten Fotos zuerst`,
+	'immich.new.intro':
+		'Gesichter, die in Immich einen Namen haben, in Stella aber noch keine verknüpfte Person.',
+	'immich.new.summary': (p) =>
+		`${p.shown} ${p.count === 1 ? 'Name' : 'Namen'} aus Immich, die meisten Fotos zuerst`,
 	'immich.new.assign': 'Zuordnen…',
 	'immich.new.assignLabel': (p) => `${p.name} zuordnen`,
 	'immich.new.ignoreLabel': (p) => `${p.name} ignorieren`,
 	'immich.new.ignoredToast': (p) => `${p.name} ignoriert`,
 	'immich.new.compareOne': 'In Stella gibt es eine Person mit ähnlichem Namen. Ist es dieselbe?',
-	'immich.new.compareMany': 'In Stella gibt es Personen mit ähnlichem Namen. Ist eine davon dieselbe?',
+	'immich.new.compareMany':
+		'In Stella gibt es Personen mit ähnlichem Namen. Ist eine davon dieselbe?',
 	'immich.new.openInImmich': 'In Immich ansehen',
 	'immich.new.theirPhoto': (p) => `${p.name} in Stella`,
 	'immich.new.thisIsThem': 'Ist diese Person',
 	'immich.new.thisIsThemLabel': (p) => `${p.immichName} ist ${p.name}`,
 	'immich.new.linkedTo': (p) => `Schon verknüpft mit „${p.name}“ in Immich`,
 	'immich.new.linkedToUnnamed': 'Schon mit einem anderen Gesicht in Immich verknüpft',
-	'immich.new.replaceQuestion': (p) => `${p.name} ist schon mit einem anderen Gesicht verknüpft. Stattdessen dieses verknüpfen?`,
+	'immich.new.replaceQuestion': (p) =>
+		`${p.name} ist schon mit einem anderen Gesicht verknüpft. Stattdessen dieses verknüpfen?`,
 	'immich.new.replace': 'Stattdessen dieses verknüpfen',
 	'immich.new.createInstead': 'Nein, neue Person anlegen',
 	'immich.new.back': 'Zurück zum Vergleich',
@@ -87,7 +96,8 @@ export const immich: ImmichMessages = {
 	'immich.new.added': (p) => `${p.name} angelegt`,
 	'immich.new.open': 'Öffnen',
 	'immich.new.assigned': (p) => `${p.immichName} mit ${p.name} verknüpft`,
-	'immich.new.photoFailed': 'Die Person ist angelegt, aber das Gesicht konnte nicht als Foto übernommen werden.',
+	'immich.new.photoFailed':
+		'Die Person ist angelegt, aber das Gesicht konnte nicht als Foto übernommen werden.',
 	'immich.new.done': 'Alle benannten Gesichter sind in Stella.',
 	'immich.new.showMore': (p) => `${p.count} weitere zeigen`,
 
@@ -113,7 +123,8 @@ export const immich: ImmichMessages = {
 	'immich.viewer.previous': 'Vorheriges Foto',
 	'immich.viewer.next': 'Nächstes Foto',
 	'immich.viewer.use': 'Als Foto verwenden',
-	'immich.viewer.useFailed': 'Das Foto konnte nicht übernommen werden. Lade die Seite neu und versuche es noch einmal.',
+	'immich.viewer.useFailed':
+		'Das Foto konnte nicht übernommen werden. Lade die Seite neu und versuche es noch einmal.',
 
 	'immich.together.label': 'Wessen Fotos',
 	'immich.together.own': 'Alle Fotos',

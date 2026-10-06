@@ -133,8 +133,14 @@ const EXT: Record<ImageMime, string> = {
 };
 
 /** The circle's roles as its members carry them, most common first (the members list's order). */
-async function memberRoles(deps: Pick<CirclePhotoDeps, 'circles'>, viewer: Viewer, circleId: string) {
-	return suggestRoles((await deps.circles.listMembersVisibleTo(viewer, circleId)).map((m) => m.role));
+async function memberRoles(
+	deps: Pick<CirclePhotoDeps, 'circles'>,
+	viewer: Viewer,
+	circleId: string
+) {
+	return suggestRoles(
+		(await deps.circles.listMembersVisibleTo(viewer, circleId)).map((m) => m.role)
+	);
 }
 
 /** The circle's photos the viewer may see; the page lays them out (`circle-photo-view.ts`). */
@@ -157,8 +163,13 @@ export async function prepareCirclePhotoUpload(
 	input: { circleId: string; role: string | null; visibility: Visibility }
 ): Promise<{ circleId: string; role: string | null; visibility: Visibility }> {
 	if (!(await deps.circles.getVisibleTo(viewer, input.circleId))) throw new CircleGoneError();
-	const photoRoles = (await deps.circlePhotos.listVisible(viewer, input.circleId)).map((p) => p.role);
-	const options = suggestRoles([...(await memberRoles(deps, viewer, input.circleId)), ...photoRoles]);
+	const photoRoles = (await deps.circlePhotos.listVisible(viewer, input.circleId)).map(
+		(p) => p.role
+	);
+	const options = suggestRoles([
+		...(await memberRoles(deps, viewer, input.circleId)),
+		...photoRoles
+	]);
 	const match = matchRoleOption(input.role, options);
 	if (!match) throw new UnknownPhotoRoleError();
 	return { circleId: input.circleId, role: match.role, visibility: input.visibility };
@@ -182,8 +193,10 @@ function validateCirclePhotoUpload(upload: CirclePhotoUpload): ImageMime {
 	const mime = validateImageUpload(upload, CIRCLE_IMAGE_MAX_BYTES);
 	if (upload.view === undefined) return mime;
 	if (upload.view.byteLength === 0) throw new InvalidImageError(phrase('errors.image.empty'));
-	if (upload.view.byteLength > JOURNAL_IMAGE_MAX_BYTES) throw new InvalidImageError(phrase('errors.image.tooLarge'));
-	if (sniffImageMime(upload.view) !== mime) throw new InvalidImageError(phrase('errors.image.formatMismatch'));
+	if (upload.view.byteLength > JOURNAL_IMAGE_MAX_BYTES)
+		throw new InvalidImageError(phrase('errors.image.tooLarge'));
+	if (sniffImageMime(upload.view) !== mime)
+		throw new InvalidImageError(phrase('errors.image.formatMismatch'));
 	return mime;
 }
 
@@ -195,7 +208,12 @@ function validateCirclePhotoUpload(upload: CirclePhotoUpload): ImageMime {
 export async function addCirclePhoto(
 	deps: Pick<CirclePhotoDeps, 'circlePhotos' | 'media' | 'ids' | 'clock'>,
 	uploader: { userId: string; householdId: string },
-	input: { circleId: string; role: string | null; visibility: Visibility; upload: CirclePhotoUpload }
+	input: {
+		circleId: string;
+		role: string | null;
+		visibility: Visibility;
+		upload: CirclePhotoUpload;
+	}
 ): Promise<string> {
 	const mime = validateCirclePhotoUpload(input.upload);
 	const takenAt = validateTakenAt(input.upload, deps.clock.now());
@@ -203,7 +221,9 @@ export async function addCirclePhoto(
 	const ext = EXT[mime];
 
 	const filePath = await deps.media.put(`${id}.${ext}`, input.upload.image);
-	const viewPath = input.upload.view ? await deps.media.put(`${id}_view.${ext}`, input.upload.view) : null;
+	const viewPath = input.upload.view
+		? await deps.media.put(`${id}_view.${ext}`, input.upload.view)
+		: null;
 	const thumbPath = await deps.media.put(`${id}_thumb.${ext}`, input.upload.thumb);
 
 	await deps.circlePhotos.insert({

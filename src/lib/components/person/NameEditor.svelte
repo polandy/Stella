@@ -79,7 +79,8 @@
 
 	/** While it follows, *Shown as* is what the server would make of these parts. */
 	function partsTyped() {
-		if (following) shownAs = withNameParts(name, { firstName, lastName, nickname }, i18n.locale).displayName;
+		if (following)
+			shownAs = withNameParts(name, { firstName, lastName, nickname }, i18n.locale).displayName;
 		keepTyped();
 	}
 
@@ -89,7 +90,9 @@
 		else if (formerName === name.lastName) formerName = name.formerName ?? '';
 	}
 
-	const replacing = $derived(name.lastName !== null && lastName.trim() !== '' && lastName.trim() !== name.lastName);
+	const replacing = $derived(
+		name.lastName !== null && lastName.trim() !== '' && lastName.trim() !== name.lastName
+	);
 	// Editing is not queued like adding (docs/02 §2.18), so Save waits for a connection.
 	const offline = $derived(!reachability.reachable);
 	const saved = savedEnhance(useRemovals(), t('components.saved'), () => (editing = false));
@@ -133,7 +136,11 @@
 
 <!-- The line and its editor glide into each other in place (docs/05 §5.11). -->
 <Swap when={open}>
-	<h1 class="text-2xl font-semibold leading-tight tracking-tight text-fg [overflow-wrap:anywhere] md:text-[2rem]">{name.displayName}</h1>
+	<h1
+		class="text-2xl leading-tight font-semibold tracking-tight [overflow-wrap:anywhere] text-fg md:text-[2rem]"
+	>
+		{name.displayName}
+	</h1>
 	<!-- Escape from any of its fields lands here; the fields themselves stay plain inputs. -->
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<form
@@ -149,21 +156,49 @@
 		<div class="grid gap-2 sm:grid-cols-3 pointer-coarse:gap-3">
 			<label class={LABEL} for="{uid}-first">
 				{t('contact.nameParts.firstName')}
-				<input id="{uid}-first" bind:this={field} name="firstName" bind:value={firstName} oninput={partsTyped} autocomplete="off" class={FIELD} />
+				<input
+					id="{uid}-first"
+					bind:this={field}
+					name="firstName"
+					bind:value={firstName}
+					oninput={partsTyped}
+					autocomplete="off"
+					class={FIELD}
+				/>
 			</label>
 			<label class={LABEL} for="{uid}-last">
 				{t('contact.nameParts.lastName')}
-				<input id="{uid}-last" name="lastName" bind:value={lastName} oninput={partsTyped} autocomplete="off" class={FIELD} />
+				<input
+					id="{uid}-last"
+					name="lastName"
+					bind:value={lastName}
+					oninput={partsTyped}
+					autocomplete="off"
+					class={FIELD}
+				/>
 			</label>
 			<label class={LABEL} for="{uid}-nick">
 				{t('contact.nameParts.nickname')}
-				<input id="{uid}-nick" name="nickname" bind:value={nickname} oninput={partsTyped} autocomplete="off" class={FIELD} />
+				<input
+					id="{uid}-nick"
+					name="nickname"
+					bind:value={nickname}
+					oninput={partsTyped}
+					autocomplete="off"
+					class={FIELD}
+				/>
 			</label>
 		</div>
 		<!-- An earlier name finds them and is shown under the name, never in it (docs/02 §2.2). -->
 		<label class={LABEL} for="{uid}-former">
 			{t('contact.nameParts.formerName')}
-			<input id="{uid}-former" name="formerName" bind:value={formerName} autocomplete="off" class={FIELD} />
+			<input
+				id="{uid}-former"
+				name="formerName"
+				bind:value={formerName}
+				autocomplete="off"
+				class={FIELD}
+			/>
 		</label>
 		<label class={LABEL} for="{uid}-shown">
 			{t('contact.nameParts.shownAs')}
@@ -182,8 +217,16 @@
 			</span>
 		</label>
 		{#if replacing}
-			<label class="flex items-center gap-2 text-sm text-fg pointer-coarse:min-h-11 pointer-coarse:gap-3">
-				<input type="checkbox" name="keepFormerName" class="size-5 shrink-0" bind:checked={keepFormerName} onchange={keepTyped} />
+			<label
+				class="flex items-center gap-2 text-sm text-fg pointer-coarse:min-h-11 pointer-coarse:gap-3"
+			>
+				<input
+					type="checkbox"
+					name="keepFormerName"
+					class="size-5 shrink-0"
+					bind:checked={keepFormerName}
+					onchange={keepTyped}
+				/>
 				{t('contact.nameParts.keepFormer', { name: name.lastName ?? '' })}
 			</label>
 		{/if}
@@ -192,28 +235,42 @@
 			<p class="text-xs text-fg-muted">{t('surnames.offline')}</p>
 		{/if}
 		<div class="flex gap-2 pointer-coarse:gap-3">
-			<Button variant="primary" size="sm" class="pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:px-4" disabled={offline}>{t('common.save')}</Button>
-			<Button variant="ghost" size="sm" type="button" class="pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:px-4" onclick={() => (editing = false)}>
+			<Button
+				variant="primary"
+				size="sm"
+				class="pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:px-4"
+				disabled={offline}>{t('common.save')}</Button
+			>
+			<Button
+				variant="ghost"
+				size="sm"
+				type="button"
+				class="pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:px-4"
+				onclick={() => (editing = false)}
+			>
 				{t('common.cancel')}
 			</Button>
 		</div>
 	</form>
 	{#snippet otherwise()}
-	<!--
+		<!--
 		The whole name line is the target, with a pencil that says so on touch too. Named by the
 		value itself, never by an `aria-label`: it sits inside the page's `h1`, and a label would
 		replace the heading's accessible name.
 	-->
-	<h1 class="tracking-tight text-fg">
-		<button
-			bind:this={trigger}
-			type="button"
-			onclick={start}
-			title={t('contact.editName')}
-			class="-mx-1 flex w-full max-w-full items-center gap-2 rounded-control px-1 text-left transition-colors hover:bg-card-hover pointer-coarse:min-h-11"
-		>
-			<span class="min-w-0 text-2xl font-semibold leading-tight [overflow-wrap:anywhere] md:text-[2rem]">{name.displayName}</span><Icon name="rename" size={16} class="text-fg-subtle" />
-		</button>
-	</h1>
+		<h1 class="tracking-tight text-fg">
+			<button
+				bind:this={trigger}
+				type="button"
+				onclick={start}
+				title={t('contact.editName')}
+				class="-mx-1 flex w-full max-w-full items-center gap-2 rounded-control px-1 text-left transition-colors hover:bg-card-hover pointer-coarse:min-h-11"
+			>
+				<span
+					class="min-w-0 text-2xl leading-tight font-semibold [overflow-wrap:anywhere] md:text-[2rem]"
+					>{name.displayName}</span
+				><Icon name="rename" size={16} class="text-fg-subtle" />
+			</button>
+		</h1>
 	{/snippet}
 </Swap>

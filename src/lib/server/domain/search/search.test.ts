@@ -15,9 +15,33 @@ function fakeRepo() {
 		searchContacts: async (_v, q) => {
 			calls.push(`contacts:${q}`);
 			return [
-				{ id: 'c1', displayName: 'Hans', description: null, avatarPhotoId: null, formerName: null, jobTitle: null, company: null },
-				{ id: 'c2', displayName: 'Franziska Abab', description: null, avatarPhotoId: null, formerName: 'Widmer', jobTitle: null, company: null },
-				{ id: 'c3', displayName: 'Anna Meier', description: null, avatarPhotoId: null, formerName: null, jobTitle: 'Laborantin', company: 'Roche' }
+				{
+					id: 'c1',
+					displayName: 'Hans',
+					description: null,
+					avatarPhotoId: null,
+					formerName: null,
+					jobTitle: null,
+					company: null
+				},
+				{
+					id: 'c2',
+					displayName: 'Franziska Abab',
+					description: null,
+					avatarPhotoId: null,
+					formerName: 'Widmer',
+					jobTitle: null,
+					company: null
+				},
+				{
+					id: 'c3',
+					displayName: 'Anna Meier',
+					description: null,
+					avatarPhotoId: null,
+					formerName: null,
+					jobTitle: 'Laborantin',
+					company: 'Roche'
+				}
 			];
 		},
 		searchNotes: async (_v, q) => {

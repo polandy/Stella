@@ -7,7 +7,12 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { dismissesFullscreenOnDrag } from '$lib/ui/fullscreen';
-	import { PHONE_MAP_AT_REST, mapLayers, phoneMapAfter, type PhoneMapStep } from '$lib/graph/phone-map';
+	import {
+		PHONE_MAP_AT_REST,
+		mapLayers,
+		phoneMapAfter,
+		type PhoneMapStep
+	} from '$lib/graph/phone-map';
 	import { PERSON_MAP_RINGS } from '$lib/graph/model/person-map';
 	import type { GraphModel } from '$lib/graph/model/types';
 
@@ -71,7 +76,8 @@
 	function go(step: PhoneMapStep) {
 		mapState = phoneMapAfter(mapState, step);
 		// Without motion there is no glide to wait for: the height is where it goes at once.
-		if (prefersReducedMotion.current && step !== 'drawn') mapState = phoneMapAfter(mapState, 'settled');
+		if (prefersReducedMotion.current && step !== 'drawn')
+			mapState = phoneMapAfter(mapState, 'settled');
 		void handFocusOver();
 	}
 	/** *Enlarge map* was pressed and the cursor goes to *Shrink map* once the live map shows. */
@@ -217,7 +223,9 @@
 				title={t('graph.onPerson.enlarge')}
 				class="flex size-full items-center text-left"
 			>
-				<span class="block h-22 w-full"><EgoGraph {centerName} {centerPhotoId} {nodes} thumbnail /></span>
+				<span class="block h-22 w-full"
+					><EgoGraph {centerName} {centerPhotoId} {nodes} thumbnail /></span
+				>
 			</button>
 			<div
 				class="pointer-events-none absolute right-1 bottom-1 flex transition-opacity duration-(--motion-fade) ease-standard"

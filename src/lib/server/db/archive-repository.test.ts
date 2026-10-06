@@ -49,15 +49,40 @@ beforeEach(() => {
 		.run();
 	db.insert(schema.user)
 		.values([
-			{ id: U, householdId: H, email: 'u@x.test', name: 'One', passwordHash: 'argon2-secret', totpSecret: 'TOTPSECRET' },
+			{
+				id: U,
+				householdId: H,
+				email: 'u@x.test',
+				name: 'One',
+				passwordHash: 'argon2-secret',
+				totpSecret: 'TOTPSECRET'
+			},
 			{ id: 'user-2', householdId: OTHER, email: 'other@x.test', name: 'Two' }
 		])
 		.run();
 	db.insert(schema.contact)
 		.values([
-			{ id: 'c-mine', householdId: H, createdBy: U, visibility: 'shared', displayName: 'Hans Brunner' },
-			{ id: 'c-private', householdId: H, createdBy: U, visibility: 'private', displayName: 'Rosa Brunner' },
-			{ id: 'c-theirs', householdId: OTHER, createdBy: 'user-2', visibility: 'shared', displayName: 'Not Ours' }
+			{
+				id: 'c-mine',
+				householdId: H,
+				createdBy: U,
+				visibility: 'shared',
+				displayName: 'Hans Brunner'
+			},
+			{
+				id: 'c-private',
+				householdId: H,
+				createdBy: U,
+				visibility: 'private',
+				displayName: 'Rosa Brunner'
+			},
+			{
+				id: 'c-theirs',
+				householdId: OTHER,
+				createdBy: 'user-2',
+				visibility: 'shared',
+				displayName: 'Not Ours'
+			}
 		])
 		.run();
 	repo = createDrizzleArchiveRepository(db, sqlite);
@@ -81,7 +106,12 @@ describe('the table list', () => {
 
 	it('leaves out live logins, API tokens, identity-provider links and pending invites, and says so', () => {
 		// An invitation is a live token with a hash in it, not something a household remembers.
-		expect(Object.keys(EXCLUDED_TABLES).sort()).toEqual(['api_token', 'identity', 'invitation', 'session']);
+		expect(Object.keys(EXCLUDED_TABLES).sort()).toEqual([
+			'api_token',
+			'identity',
+			'invitation',
+			'session'
+		]);
 		for (const reason of Object.values(EXCLUDED_TABLES)) expect(reason.length).toBeGreaterThan(20);
 	});
 });
@@ -127,14 +157,44 @@ describe('readHousehold', () => {
 	it('lists both renditions of every photo, once each', async () => {
 		db.insert(schema.photo)
 			.values([
-				{ id: 'p-1', householdId: H, contactId: 'c-mine', createdBy: U, filePath: 'p1.jpg', thumbPath: 't1.jpg', mime: 'image/jpeg' },
-				{ id: 'p-2', householdId: H, contactId: 'c-mine', createdBy: U, filePath: 'p2.jpg', thumbPath: 't1.jpg', viewPath: 'v2.jpg', mime: 'image/jpeg' },
-				{ id: 'p-x', householdId: OTHER, contactId: 'c-theirs', createdBy: 'user-2', filePath: 'x.jpg', thumbPath: 'xt.jpg', mime: 'image/jpeg' }
+				{
+					id: 'p-1',
+					householdId: H,
+					contactId: 'c-mine',
+					createdBy: U,
+					filePath: 'p1.jpg',
+					thumbPath: 't1.jpg',
+					mime: 'image/jpeg'
+				},
+				{
+					id: 'p-2',
+					householdId: H,
+					contactId: 'c-mine',
+					createdBy: U,
+					filePath: 'p2.jpg',
+					thumbPath: 't1.jpg',
+					viewPath: 'v2.jpg',
+					mime: 'image/jpeg'
+				},
+				{
+					id: 'p-x',
+					householdId: OTHER,
+					contactId: 'c-theirs',
+					createdBy: 'user-2',
+					filePath: 'x.jpg',
+					thumbPath: 'xt.jpg',
+					mime: 'image/jpeg'
+				}
 			])
 			.run();
 
 		// The shared thumbnail appears once; the other household's files not at all.
-		expect((await repo.readHousehold(H)).mediaPaths.sort()).toEqual(['p1.jpg', 'p2.jpg', 't1.jpg', 'v2.jpg']);
+		expect((await repo.readHousehold(H)).mediaPaths.sort()).toEqual([
+			'p1.jpg',
+			'p2.jpg',
+			't1.jpg',
+			'v2.jpg'
+		]);
 	});
 
 	it('gives an empty household an empty snapshot rather than failing', async () => {
@@ -161,6 +221,9 @@ describe('recordExport', () => {
 		});
 		const rows = db.select().from(schema.activityLog).all();
 		expect(rows).toHaveLength(1);
-		expect(rows[0]).toMatchObject({ action: 'export', summary: 'exported the household archive (2 people)' });
+		expect(rows[0]).toMatchObject({
+			action: 'export',
+			summary: 'exported the household archive (2 people)'
+		});
 	});
 });

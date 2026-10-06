@@ -1,7 +1,12 @@
 import type { NoticeContent } from '../../../stream/notices';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { InteractionKind } from '../../../interactions/kinds';
-import { NO_FILTER, STREAM_KINDS, type StreamFilter, type StreamKind } from '../../../stream/filter';
+import {
+	NO_FILTER,
+	STREAM_KINDS,
+	type StreamFilter,
+	type StreamKind
+} from '../../../stream/filter';
 
 /*
  * Household stream (docs/02 §2.22.2): what the family did, newest first. It is a *query* over
@@ -210,16 +215,22 @@ export function assembleStream(
 	const items: StreamItem[] = [
 		...sources.moments.map((m): StreamItem => ({ kind: 'moment', mine: mine(m.actor), ...m })),
 		...sources.people.map((p): StreamItem => ({ kind: 'person', mine: mine(p.actor), ...p })),
-		...sources.relationships.map(
-			(r): StreamItem => ({ kind: 'relationship', mine: mine(r.actor), ...r })
-		),
-		...sources.interactions.map(
-			(i): StreamItem => ({ kind: 'interaction', mine: mine(i.actor), ...i })
-		),
+		...sources.relationships.map((r): StreamItem => ({
+			kind: 'relationship',
+			mine: mine(r.actor),
+			...r
+		})),
+		...sources.interactions.map((i): StreamItem => ({
+			kind: 'interaction',
+			mine: mine(i.actor),
+			...i
+		})),
 		...sources.notices.map((r): StreamItem => ({ kind: 'notice', mine: mine(r.actor), ...r })),
-		...groupCirclePhotos(sources.circlePhotos).map(
-			(c): StreamItem => ({ kind: 'circlePhoto', mine: mine(c.actor), ...c })
-		)
+		...groupCirclePhotos(sources.circlePhotos).map((c): StreamItem => ({
+			kind: 'circlePhoto',
+			mine: mine(c.actor),
+			...c
+		}))
 	];
 	const rank = (kind: StreamKind) => STREAM_KINDS.indexOf(kind);
 	items.sort((a, b) => b.at - a.at || rank(a.kind) - rank(b.kind) || a.id.localeCompare(b.id));

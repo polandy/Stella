@@ -18,9 +18,12 @@ describe('addAllBatches', () => {
 	});
 
 	it('gathers one parent offered for several children into one "parent of" batch', () => {
-		expect(addAllBatches([parent('bert', 'lio'), parent('bert', 'mia'), parent('bert', 'tom')], noParents)).toEqual([
-			{ subjectId: 'bert', side: 'forward', targetIds: ['lio', 'mia', 'tom'] }
-		]);
+		expect(
+			addAllBatches(
+				[parent('bert', 'lio'), parent('bert', 'mia'), parent('bert', 'tom')],
+				noParents
+			)
+		).toEqual([{ subjectId: 'bert', side: 'forward', targetIds: ['lio', 'mia', 'tom'] }]);
 	});
 
 	it('offers nothing for a claim that stands alone: its own Accept is the one step', () => {
@@ -28,7 +31,12 @@ describe('addAllBatches', () => {
 	});
 
 	it('groups by child first, and gives every claim to one batch at most', () => {
-		const claims = [parent('anna', 'mia'), parent('bert', 'mia'), parent('anna', 'tom'), parent('bert', 'tom')];
+		const claims = [
+			parent('anna', 'mia'),
+			parent('bert', 'mia'),
+			parent('anna', 'tom'),
+			parent('bert', 'tom')
+		];
 		expect(addAllBatches(claims, noParents)).toEqual([
 			{ subjectId: 'mia', side: 'reverse', targetIds: ['anna', 'bert'] },
 			{ subjectId: 'tom', side: 'reverse', targetIds: ['anna', 'bert'] }

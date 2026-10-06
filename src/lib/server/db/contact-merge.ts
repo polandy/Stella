@@ -123,9 +123,7 @@ function mergeRelationships(tx: Db, keepId: string, mergedId: string): void {
 		sql`update or ignore relationship set to_contact_id = ${keepId} where to_contact_id = ${mergedId}`
 	);
 	// The two were linked to each other: that link now points at one person, twice.
-	tx.delete(relationship)
-		.where(eq(relationship.fromContactId, relationship.toContactId))
-		.run();
+	tx.delete(relationship).where(eq(relationship.fromContactId, relationship.toContactId)).run();
 }
 
 /** Drop the merged record's membership of a circle the survivor is already in. */
@@ -139,9 +137,7 @@ function mergeCircleMemberships(tx: Db, keepId: string, mergedId: string): void 
 
 	for (const circleId of keepCircles) {
 		tx.delete(circleMembership)
-			.where(
-				and(eq(circleMembership.contactId, mergedId), eq(circleMembership.circleId, circleId))
-			)
+			.where(and(eq(circleMembership.contactId, mergedId), eq(circleMembership.circleId, circleId)))
 			.run();
 	}
 	tx.update(circleMembership)
@@ -172,10 +168,7 @@ export function mergeContacts(
 			.select({ id: contact.id })
 			.from(contact)
 			.where(
-				and(
-					sql`${contact.id} in (${input.keepId}, ${input.mergedId})`,
-					contactVisibleTo(viewer)
-				)
+				and(sql`${contact.id} in (${input.keepId}, ${input.mergedId})`, contactVisibleTo(viewer))
 			)
 			.all();
 		if (both.length !== 2) return false;

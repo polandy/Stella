@@ -54,10 +54,19 @@
 	 * the admin picked out of Monica's folder, or the export itself. Returning null means the
 	 * picture is not there, which is counted rather than failed.
 	 */
-	async function storeAll(pictureFor: (photo: { id: string; file: string }) => Promise<Blob | null>) {
+	async function storeAll(
+		pictureFor: (photo: { id: string; file: string }) => Promise<Blob | null>
+	) {
 		if (form?.step !== 'photos') return;
 		uploading = true;
-		const p: PhotoProgress = { total: form.photos.length, done: 0, stored: 0, already: 0, missing: 0, failed: 0 };
+		const p: PhotoProgress = {
+			total: form.photos.length,
+			done: 0,
+			stored: 0,
+			already: 0,
+			missing: 0,
+			failed: 0
+		};
 		progress = p;
 		for (const expected of form.photos) {
 			try {
@@ -121,10 +130,17 @@
 		<p class="text-fg-muted">{t('import.intro')}</p>
 	</header>
 
-	<ol class="flex gap-2 text-xs uppercase tracking-wide text-fg-subtle" aria-label={t('import.steps')}>
+	<ol
+		class="flex gap-2 text-xs tracking-wide text-fg-subtle uppercase"
+		aria-label={t('import.steps')}
+	>
 		{#each ['upload', 'preview', 'photos'] as name, i (name)}
 			<li class="flex items-center gap-2" aria-current={step === name ? 'step' : undefined}>
-				<span class="grid size-5 place-items-center rounded-full border border-border text-[11px]" class:bg-primary={step === name} class:text-primary-fg={step === name}>{i + 1}</span>
+				<span
+					class="grid size-5 place-items-center rounded-full border border-border text-[11px]"
+					class:bg-primary={step === name}
+					class:text-primary-fg={step === name}>{i + 1}</span
+				>
 				{name === 'photos'
 					? t('import.step.photos')
 					: name === 'upload'
@@ -135,15 +151,29 @@
 	</ol>
 
 	{#if step === 'upload'}
-		<form method="POST" action="?/preview" enctype="multipart/form-data" class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card">
+		<form
+			method="POST"
+			action="?/preview"
+			enctype="multipart/form-data"
+			class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card"
+		>
 			<FormError message={form?.step === 'upload' ? form.error : null} />
 			<label class="flex flex-col gap-1 text-sm text-fg-muted">
 				<span>{t('import.fileLabel')}</span>
-				<input type="file" name="dump" accept=".sql,.json,.vcf,.gz,.sql.gz,.json.gz,.vcf.gz,application/sql,application/json,text/vcard,application/gzip" required class={fieldClass} />
+				<input
+					type="file"
+					name="dump"
+					accept=".sql,.json,.vcf,.gz,.sql.gz,.json.gz,.vcf.gz,application/sql,application/json,text/vcard,application/gzip"
+					required
+					class={fieldClass}
+				/>
 			</label>
 			<p class="text-xs text-fg-subtle">
 				{t('import.fileHint.monica')}
-				<code>docker exec monica-db sh -c 'mariadb-dump -u"$MYSQL_USER" "$MYSQL_DATABASE"' | gzip &gt; monica.sql.gz</code>
+				<code
+					>docker exec monica-db sh -c 'mariadb-dump -u"$MYSQL_USER" "$MYSQL_DATABASE"' | gzip &gt;
+					monica.sql.gz</code
+				>
 			</p>
 			<fieldset class="flex flex-wrap items-center gap-4 text-sm">
 				<legend class="mb-1 text-fg-muted">{t('import.visibilityLegend')}</legend>
@@ -164,7 +194,7 @@
 			<dl class="grid grid-cols-2 gap-2 sm:grid-cols-4" data-testid="import-preview">
 				{#each Object.entries(form.report.counts) as [what, n] (what)}
 					<div class="rounded-app bg-card px-3 py-2 shadow-card">
-						<dt class="text-xs uppercase tracking-wide text-fg-subtle">{countLabel(what)}</dt>
+						<dt class="text-xs tracking-wide text-fg-subtle uppercase">{countLabel(what)}</dt>
 						<dd class="text-xl font-semibold text-fg">{n}</dd>
 					</div>
 				{/each}
@@ -172,7 +202,11 @@
 			{#if form.customTypes.length > 0}
 				<p class="text-sm text-fg-muted">
 					{t('import.newTypes')}
-					{#each form.customTypes as t, i (t.forwardLabel)}{i > 0 ? ', ' : ''}<span class="text-fg">{t.forwardLabel}{t.reverseLabel !== t.forwardLabel ? ` / ${t.reverseLabel}` : ''}</span>{/each}.
+					{#each form.customTypes as t, i (t.forwardLabel)}{i > 0 ? ', ' : ''}<span class="text-fg"
+							>{t.forwardLabel}{t.reverseLabel !== t.forwardLabel
+								? ` / ${t.reverseLabel}`
+								: ''}</span
+						>{/each}.
 				</p>
 			{/if}
 			{#if form.report.skipped.length > 0}
@@ -183,7 +217,9 @@
 							<li>
 								<span class="font-medium">{s.count} {thing(s.what, s.count)}</span>
 								<span class="text-fg-muted">
-									— {t(`import.why.${s.why}` as 'import.why.empty')}{s.detail ? ` (${s.detail})` : ''}
+									— {t(`import.why.${s.why}` as 'import.why.empty')}{s.detail
+										? ` (${s.detail})`
+										: ''}
 								</span>
 							</li>
 						{/each}
@@ -235,7 +271,16 @@
 					</Button>
 				{:else}
 					<p class="text-sm text-fg-muted">{t('import.photos.folder')}</p>
-					<input type="file" webkitdirectory multiple accept="image/*" onchange={onPhotosPicked} disabled={uploading} class={fieldClass} aria-label={t('import.photos.folderLabel')} />
+					<input
+						type="file"
+						webkitdirectory
+						multiple
+						accept="image/*"
+						onchange={onPhotosPicked}
+						disabled={uploading}
+						class={fieldClass}
+						aria-label={t('import.photos.folderLabel')}
+					/>
 				{/if}
 				{#if progress}
 					<div class="flex flex-col gap-1" data-testid="photo-progress">

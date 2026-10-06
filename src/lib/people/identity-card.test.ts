@@ -1,12 +1,26 @@
 import { describe, expect, it } from 'bun:test';
-import { addressLine, ageOn, birthdayFact, initialPanel, profileRows, recordMenu } from './identity-card';
+import {
+	addressLine,
+	ageOn,
+	birthdayFact,
+	initialPanel,
+	profileRows,
+	recordMenu
+} from './identity-card';
 
 /*
  * The identity card at the top of a person's page (docs/05 §5.5): which facts it states, which
  * editable rows it shows, which fold behind one quiet button, and what its ⋯ menu offers.
  */
 
-const nothing = { contact: false, tags: false, job: false, dates: false, circles: false, gender: false };
+const nothing = {
+	contact: false,
+	tags: false,
+	job: false,
+	dates: false,
+	circles: false,
+	gender: false
+};
 
 describe('profileRows', () => {
 	it('folds every empty row behind the one button, contact details and tags first', () => {
@@ -85,7 +99,9 @@ describe('birthdayFact', () => {
 	});
 
 	it('falls back to the profile birthday, with no age when it has no year', () => {
-		expect(birthdayFact({ derivedBirthday: '--05-20', estimatedBirthYear: null, dates: [] }, today)).toEqual({
+		expect(
+			birthdayFact({ derivedBirthday: '--05-20', estimatedBirthYear: null, dates: [] }, today)
+		).toEqual({
 			kind: 'day',
 			date: '--05-20',
 			age: null
@@ -93,14 +109,18 @@ describe('birthdayFact', () => {
 	});
 
 	it('says "around" for a year that is only estimated', () => {
-		expect(birthdayFact({ derivedBirthday: null, estimatedBirthYear: '1960', dates: [] }, today)).toEqual({
+		expect(
+			birthdayFact({ derivedBirthday: null, estimatedBirthYear: '1960', dates: [] }, today)
+		).toEqual({
 			kind: 'around',
 			year: '1960'
 		});
 	});
 
 	it('is null when nothing says when they were born', () => {
-		expect(birthdayFact({ derivedBirthday: null, estimatedBirthYear: null, dates: [] }, today)).toBeNull();
+		expect(
+			birthdayFact({ derivedBirthday: null, estimatedBirthYear: null, dates: [] }, today)
+		).toBeNull();
 	});
 });
 

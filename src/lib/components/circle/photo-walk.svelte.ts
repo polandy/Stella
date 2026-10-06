@@ -47,7 +47,9 @@ export class PhotoWalk {
 		if (!closing) return;
 		const fromGrid = closing.opener.hasAttribute('data-photo-tile');
 		void tick().then(() => {
-			const tile = document.querySelector<HTMLElement>(`[data-photo-tile="${closing.ids[closing.at]}"]`);
+			const tile = document.querySelector<HTMLElement>(
+				`[data-photo-tile="${closing.ids[closing.at]}"]`
+			);
 			(fromGrid && tile ? tile : closing.opener).focus();
 		});
 	}

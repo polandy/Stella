@@ -37,7 +37,9 @@ describe('shownOnCanvas', () => {
 				['a', 'group:c:r'],
 				['b', 'group:c:r']
 			]),
-			bundles: [{ id: 'bundle:1', source: 'c', target: 'group:c:r', kind: 'membership', edgeIds: [] }],
+			bundles: [
+				{ id: 'bundle:1', source: 'c', target: 'group:c:r', kind: 'membership', edgeIds: [] }
+			],
 			tucked: new Set()
 		};
 		const ids = shownOnCanvas(shown, new Set(), grouping);

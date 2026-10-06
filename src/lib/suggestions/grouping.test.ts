@@ -11,7 +11,13 @@ import type { Relation } from './types';
  * rather than of the screen — hence a pure function with its own suite.
  */
 
-const claim = (relation: Relation, fromId: string, toId: string, fromName: string, toName: string) => ({
+const claim = (
+	relation: Relation,
+	fromId: string,
+	toId: string,
+	fromName: string,
+	toName: string
+) => ({
 	relation,
 	fromId,
 	toId,

@@ -1,4 +1,4 @@
-import { AA_LARGE, ensureContrast, mixHex } from '../../design/color';
+import { AA_LARGE, ensureContrast } from '../../design/color';
 import { ACCENTS, categoryVar } from '../../design/tokens';
 import type { RelationshipCategory } from '../../relationships/categories';
 

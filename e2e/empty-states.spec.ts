@@ -15,7 +15,9 @@ import { addPerson, appReady, recordAction, signIn } from './app';
 
 /** Six letters no other attempt shares. */
 function runLetters(): string {
-	return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) => String.fromCharCode(97 + (byte % 26))).join('');
+	return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) =>
+		String.fromCharCode(97 + (byte % 26))
+	).join('');
 }
 
 /** A surname only this case uses, capitalised as a name typed by hand would be. */
@@ -82,7 +84,9 @@ test('Home shows no welcome card in a household that already has people', async 
 	await expect(page.getByText('Welcome to Stella')).toHaveCount(0);
 });
 
-test('a search that finds nobody offers to add them, with the name split into the form', async ({ page }) => {
+test('a search that finds nobody offers to add them, with the name split into the form', async ({
+	page
+}) => {
 	const last = fennwick();
 	await page.goto(`/search?q=${encodeURIComponent(`Mirella ${last}`)}`);
 	await expect(page.getByText(`No results for “Mirella ${last}”.`)).toBeVisible();
@@ -92,7 +96,9 @@ test('a search that finds nobody offers to add them, with the name split into th
 	await expect(page.getByLabel('Last name')).toHaveValue(last);
 });
 
-test('People offers to add a name that matches nobody, but not from the archive', async ({ page }) => {
+test('People offers to add a name that matches nobody, but not from the archive', async ({
+	page
+}) => {
 	// The archive view needs somebody in it to have a filter; this case brings its own and
 	// takes them back out, so the rest of the suite meets the archive it expects.
 	await addPerson(page, 'Tobiah', fennwick());
@@ -120,7 +126,9 @@ test('People offers to add a name that matches nobody, but not from the archive'
 	await expect(page.getByTestId('archived-marker')).toHaveCount(0);
 });
 
-test('Circles offers to create a circle a search did not find, with its name filled in', async ({ page }) => {
+test('Circles offers to create a circle a search did not find, with its name filled in', async ({
+	page
+}) => {
 	const name = `Fennwick choir ${runLetters()}`;
 	await page.goto('/circles');
 	await appReady(page);
@@ -169,7 +177,9 @@ test('a new person’s journal invites the first entry and opens the composer', 
 	await expect(page.getByRole('button', { name: 'Write the first moment' })).toHaveCount(0);
 });
 
-test('the map centred on someone with no links invites the first relationship', async ({ page }) => {
+test('the map centred on someone with no links invites the first relationship', async ({
+	page
+}) => {
 	const name = `Mirella ${fennwick()}`;
 	await addPerson(page, 'Mirella', name.split(' ')[1]);
 	const id = shownPersonId(page);

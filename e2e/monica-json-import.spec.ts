@@ -31,7 +31,9 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('imports a JSON export, stores the pictures it carries and shows the people', async ({ page }) => {
+test('imports a JSON export, stores the pictures it carries and shows the people', async ({
+	page
+}) => {
 	await previewExport(page);
 	const preview = page.getByTestId('import-preview');
 	await expect(preview.locator('div', { hasText: /^contacts/ })).toContainText('2');
@@ -52,7 +54,10 @@ test('imports a JSON export, stores the pictures it carries and shows the people
 	await page.getByRole('button', { name: 'Finish' }).click();
 	await expect(page).toHaveURL(/\/contacts$/);
 
-	await page.getByRole('link', { name: /Severin Hauenstein/ }).first().click();
+	await page
+		.getByRole('link', { name: /Severin Hauenstein/ })
+		.first()
+		.click();
 	await expect(page.getByRole('heading', { name: 'Severin Hauenstein' })).toBeVisible();
 	// The birthday was nested inside the person in the JSON, where the dump had a side table.
 	await expect(page.getByText('11 April 1979')).toBeVisible();

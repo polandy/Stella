@@ -88,7 +88,8 @@ export function stageRelationships(
 		},
 
 		async listForContactVisibleTo(viewer, contactId) {
-			if (!tiesOf.has(contactId)) tiesOf.set(contactId, store.listForContactVisibleTo(viewer, contactId));
+			if (!tiesOf.has(contactId))
+				tiesOf.set(contactId, store.listForContactVisibleTo(viewer, contactId));
 			const onRecord = (await tiesOf.get(contactId)) ?? [];
 			const stagedTies = await Promise.all(
 				staged

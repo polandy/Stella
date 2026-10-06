@@ -106,7 +106,9 @@ describe('applyFilters', () => {
 				{ id: 'mara', kind: 'person', label: 'Mara' },
 				{ id: 'jonas', kind: 'person', label: 'Jonas' }
 			],
-			edges: [{ id: 'r1', source: 'mara', target: 'jonas', kind: 'relationship', category: 'romantic' }]
+			edges: [
+				{ id: 'r1', source: 'mara', target: 'jonas', kind: 'relationship', category: 'romantic' }
+			]
 		};
 		const filtered = applyFilters(model, { categories: ['family'], keepNodeId: 'mara' });
 		expect(nodeIds(filtered)).toEqual(new Set(['mara']));

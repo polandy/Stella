@@ -111,7 +111,7 @@
 				<a
 					href="#{sectionAnchor(entry.section)}"
 					aria-current={current === entry.section ? 'location' : undefined}
-					class="flex h-8 min-w-0 items-center justify-center gap-1 rounded-full px-2 text-[0.8125rem] font-medium whitespace-nowrap text-fg-muted transition-colors hover:text-fg sm:px-3 aria-[current=location]:bg-card aria-[current=location]:text-fg aria-[current=location]:shadow-card"
+					class="flex h-8 min-w-0 items-center justify-center gap-1 rounded-full px-2 text-[0.8125rem] font-medium whitespace-nowrap text-fg-muted transition-colors hover:text-fg aria-[current=location]:bg-card aria-[current=location]:text-fg aria-[current=location]:shadow-card sm:px-3"
 				>
 					<span class="truncate">{t(TITLE[entry.section])}</span>
 					{#if entry.count !== null}

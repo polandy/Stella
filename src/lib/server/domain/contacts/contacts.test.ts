@@ -13,7 +13,6 @@ import {
 	JobFieldTooLongError,
 	describeContact,
 	EmptyDescriptionError,
-	EmptyContactNameError,
 	NeedsSomethingToKnowThemByError,
 	restoreContact,
 	deleteContact,
@@ -84,7 +83,11 @@ const creator: ContactCreator = {
 	locale: 'en'
 };
 
-const deps = (repo: ContactRepository) => ({ contacts: repo, ids: sequentialIds('contact-1'), clock });
+const deps = (repo: ContactRepository) => ({
+	contacts: repo,
+	ids: sequentialIds('contact-1'),
+	clock
+});
 
 describe('createContact', () => {
 	it('persists a contact with a derived name, default visibility, and timestamps', async () => {
@@ -112,13 +115,21 @@ describe('createContact', () => {
 
 	it('respects an explicit visibility over the creator default', async () => {
 		const f = fakeRepo();
-		await createContact(deps(f.repo), creator, { displayName: 'Secret Person', visibility: 'private' });
+		await createContact(deps(f.repo), creator, {
+			displayName: 'Secret Person',
+			visibility: 'private'
+		});
 		expect(f.inserted?.visibility).toBe('private');
 	});
 
 	it('normalises blank optional fields to null', async () => {
 		const f = fakeRepo();
-		await createContact(deps(f.repo), creator, { firstName: 'Hans', lastName: '  ', nickname: '', description: 'From the choir' });
+		await createContact(deps(f.repo), creator, {
+			firstName: 'Hans',
+			lastName: '  ',
+			nickname: '',
+			description: 'From the choir'
+		});
 		expect(f.inserted?.lastName).toBeNull();
 		expect(f.inserted?.nickname).toBeNull();
 	});
@@ -126,11 +137,15 @@ describe('createContact', () => {
 	it('refuses a first name alone, with no last name and nothing to know them by (docs/02 §2.2.3)', async () => {
 		const f = fakeRepo();
 		await expect(
-			createContact(deps(f.repo), creator, { firstName: 'Thomas', lastName: '  ', description: ' ' })
+			createContact(deps(f.repo), creator, {
+				firstName: 'Thomas',
+				lastName: '  ',
+				description: ' '
+			})
 		).rejects.toBeInstanceOf(NeedsSomethingToKnowThemByError);
-		await expect(createContact(deps(f.repo), creator, { displayName: 'Thomas' })).rejects.toBeInstanceOf(
-			NeedsSomethingToKnowThemByError
-		);
+		await expect(
+			createContact(deps(f.repo), creator, { displayName: 'Thomas' })
+		).rejects.toBeInstanceOf(NeedsSomethingToKnowThemByError);
 		expect(f.inserted).toBeNull();
 	});
 
@@ -148,7 +163,11 @@ describe('createContact', () => {
 
 	it('keeps the gender chosen while adding them, and none when none was chosen', async () => {
 		const chosen = fakeRepo();
-		await createContact(deps(chosen.repo), creator, { firstName: 'Jana', lastName: 'Aebi', gender: 'diverse' });
+		await createContact(deps(chosen.repo), creator, {
+			firstName: 'Jana',
+			lastName: 'Aebi',
+			gender: 'diverse'
+		});
 		const unchosen = fakeRepo();
 		await createContact(deps(unchosen.repo), creator, { firstName: 'Jana', lastName: 'Aebi' });
 
@@ -159,7 +178,11 @@ describe('createContact', () => {
 	it('refuses a gender that is not one of the three, and adds no one', async () => {
 		const f = fakeRepo();
 		await expect(
-			createContact(deps(f.repo), creator, { firstName: 'Jana', lastName: 'Aebi', gender: 'other' as never })
+			createContact(deps(f.repo), creator, {
+				firstName: 'Jana',
+				lastName: 'Aebi',
+				gender: 'other' as never
+			})
 		).rejects.toBeInstanceOf(InvalidGenderError);
 		expect(f.inserted).toBeNull();
 	});
@@ -173,21 +196,21 @@ describe('createContact', () => {
 describe('createContact birth dates', () => {
 	it('stores a full birth date and marks its precision', async () => {
 		const f = fakeRepo();
-		await createContact(
-			{ contacts: f.repo, ids: sequentialIds('c1'), clock },
-			creator,
-			{ firstName: 'Lena', lastName: 'Brunner', birthDate: '2015-05-20' }
-		);
+		await createContact({ contacts: f.repo, ids: sequentialIds('c1'), clock }, creator, {
+			firstName: 'Lena',
+			lastName: 'Brunner',
+			birthDate: '2015-05-20'
+		});
 		expect(f.inserted).toMatchObject({ birthDate: '2015-05-20', birthDatePrecision: 'full' });
 	});
 
 	it('accepts a birthday whose year is unknown', async () => {
 		const f = fakeRepo();
-		await createContact(
-			{ contacts: f.repo, ids: sequentialIds('c1'), clock },
-			creator,
-			{ firstName: 'Mia', lastName: 'Brunner', birthDate: '--03-11' }
-		);
+		await createContact({ contacts: f.repo, ids: sequentialIds('c1'), clock }, creator, {
+			firstName: 'Mia',
+			lastName: 'Brunner',
+			birthDate: '--03-11'
+		});
 		expect(f.inserted).toMatchObject({ birthDate: '--03-11', birthDatePrecision: 'month_day' });
 	});
 
@@ -222,7 +245,11 @@ function editableRepo(contact: Contact | null) {
 	const patches: { id: string; patch: ProfilePatch }[] = [];
 	const archived: { id: string; archivedAt: number | null }[] = [];
 	const genders: { id: string; gender: string | null; updatedAt: number }[] = [];
-	const jobs: { id: string; job: { jobTitle: string | null; company: string | null }; updatedAt: number }[] = [];
+	const jobs: {
+		id: string;
+		job: { jobTitle: string | null; company: string | null };
+		updatedAt: number;
+	}[] = [];
 	const repo: ContactRepository = {
 		insert: async () => {},
 		findByIdVisibleTo: async () => contact,
@@ -289,11 +316,16 @@ describe('editProfile', () => {
 	it('saves a trimmed description, keeps the name as stored, and stamps the change', async () => {
 		const f = editableRepo(existing);
 
-		const saved = await editProfile(deps(f.repo), viewer, 'contact-1', { description: '  Nachbar, links  ' });
+		const saved = await editProfile(deps(f.repo), viewer, 'contact-1', {
+			description: '  Nachbar, links  '
+		});
 
 		expect(saved).toBe(true);
 		expect(f.patches).toEqual([
-			{ id: 'contact-1', patch: { displayName: 'Hans Müller', description: 'Nachbar, links', updatedAt: NOW } }
+			{
+				id: 'contact-1',
+				patch: { displayName: 'Hans Müller', description: 'Nachbar, links', updatedAt: NOW }
+			}
 		]);
 	});
 
@@ -320,7 +352,6 @@ describe('editProfile', () => {
 	});
 });
 
-
 /*
  * Setting a gender from the profile (docs/02 §2.2): one tap on one of three, and a tap on the
  * chosen one again takes it off the record.
@@ -346,9 +377,9 @@ describe('setGender', () => {
 	it('refuses anything but the three, and writes nothing', async () => {
 		const f = editableRepo(existing);
 
-		await expect(setGender(deps(f.repo), viewer, 'contact-1', 'genderfluid' as never)).rejects.toThrow(
-			InvalidGenderError
-		);
+		await expect(
+			setGender(deps(f.repo), viewer, 'contact-1', 'genderfluid' as never)
+		).rejects.toThrow(InvalidGenderError);
 		expect(f.genders).toEqual([]);
 	});
 
@@ -381,7 +412,11 @@ describe('setJob', () => {
 
 		expect(saved).toBe(true);
 		expect(f.jobs).toEqual([
-			{ id: 'contact-1', job: { jobTitle: 'Teacher', company: 'Primarschule Muri' }, updatedAt: NOW }
+			{
+				id: 'contact-1',
+				job: { jobTitle: 'Teacher', company: 'Primarschule Muri' },
+				updatedAt: NOW
+			}
 		]);
 	});
 
@@ -400,7 +435,10 @@ describe('setJob', () => {
 	it('takes 200 characters in each field, and refuses one more without writing anything', async () => {
 		const f = editableRepo(existing);
 
-		await setJob(deps(f.repo), viewer, 'contact-1', { jobTitle: 'x'.repeat(200), company: 'y'.repeat(200) });
+		await setJob(deps(f.repo), viewer, 'contact-1', {
+			jobTitle: 'x'.repeat(200),
+			company: 'y'.repeat(200)
+		});
 		await expect(
 			setJob(deps(f.repo), viewer, 'contact-1', { jobTitle: 'x'.repeat(201), company: null })
 		).rejects.toThrow(JobFieldTooLongError);
@@ -414,14 +452,20 @@ describe('setJob', () => {
 	it('counts the length after trimming, so surrounding spaces do not push it over', async () => {
 		const f = editableRepo(existing);
 
-		await setJob(deps(f.repo), viewer, 'contact-1', { jobTitle: `  ${'x'.repeat(200)}  `, company: null });
+		await setJob(deps(f.repo), viewer, 'contact-1', {
+			jobTitle: `  ${'x'.repeat(200)}  `,
+			company: null
+		});
 
 		expect(f.jobs).toHaveLength(1);
 	});
 
 	it('writes nothing for a contact the viewer may not see', async () => {
 		const hidden = editableRepo(null);
-		const saved = await setJob(deps(hidden.repo), viewer, 'contact-1', { jobTitle: 'Teacher', company: null });
+		const saved = await setJob(deps(hidden.repo), viewer, 'contact-1', {
+			jobTitle: 'Teacher',
+			company: null
+		});
 
 		// positive control: the same call against a visible contact does write
 		const visible = editableRepo(existing);
@@ -438,7 +482,13 @@ describe('setJob', () => {
  * straight from the list, the name left as it is.
  */
 describe('describeContact', () => {
-	const thomas: Contact = { ...existing, displayName: 'Thomas', firstName: 'Thomas', lastName: null, description: null };
+	const thomas: Contact = {
+		...existing,
+		displayName: 'Thomas',
+		firstName: 'Thomas',
+		lastName: null,
+		description: null
+	};
 
 	it('saves a trimmed description and keeps the name they have', async () => {
 		const f = editableRepo(thomas);
@@ -447,14 +497,19 @@ describe('describeContact', () => {
 
 		expect(saved).toBe(true);
 		expect(f.patches).toEqual([
-			{ id: 'contact-1', patch: { displayName: 'Thomas', description: 'SAC hut, Aug 2026', updatedAt: NOW } }
+			{
+				id: 'contact-1',
+				patch: { displayName: 'Thomas', description: 'SAC hut, Aug 2026', updatedAt: NOW }
+			}
 		]);
 	});
 
 	it('refuses an empty description and writes nothing', async () => {
 		const f = editableRepo(thomas);
 
-		await expect(describeContact(deps(f.repo), viewer, 'contact-1', '   ')).rejects.toThrow(EmptyDescriptionError);
+		await expect(describeContact(deps(f.repo), viewer, 'contact-1', '   ')).rejects.toThrow(
+			EmptyDescriptionError
+		);
 		expect(f.patches).toEqual([]);
 	});
 
@@ -472,7 +527,6 @@ describe('describeContact', () => {
 		expect(visible.patches).toHaveLength(1);
 	});
 });
-
 
 /*
  * Archiving (docs/02 §2.2): the household puts someone out of the way without losing them.
@@ -507,7 +561,6 @@ describe('archiveContact / restoreContact', () => {
 	});
 });
 
-
 /*
  * Deleting a person for good (docs/02 §2.2). The row goes with everything hanging off it, so
  * the log entry is written in the same breath — once the contact is gone, nothing else can
@@ -532,8 +585,8 @@ describe('deleteContact', () => {
 			setJob: async () => {},
 			setArchived: async () => {},
 			readForMerge: async () => null,
-		mergeVisibleTo: async () => false,
-		deleteVisibleTo: async (_viewer, id, audit) => {
+			mergeVisibleTo: async () => false,
+			deleteVisibleTo: async (_viewer, id, audit) => {
 				if (found === null) return null;
 				deleted.push({ id, audit });
 				return media;
@@ -550,7 +603,12 @@ describe('deleteContact', () => {
 
 		expect(
 			await deleteContact(
-				{ contacts: f.repo, media: { delete: async (p: string) => void removedFiles.push(p) }, ids: sequentialIds('log-1'), clock },
+				{
+					contacts: f.repo,
+					media: { delete: async (p: string) => void removedFiles.push(p) },
+					ids: sequentialIds('log-1'),
+					clock
+				},
 				viewer,
 				'contact-1'
 			)
@@ -592,7 +650,12 @@ describe('deleteContact', () => {
 		const removedFiles: string[] = [];
 
 		await deleteContact(
-			{ contacts: f.repo, media: { delete: async (p: string) => void removedFiles.push(p) }, ids: sequentialIds('log-1'), clock },
+			{
+				contacts: f.repo,
+				media: { delete: async (p: string) => void removedFiles.push(p) },
+				ids: sequentialIds('log-1'),
+				clock
+			},
 			viewer,
 			'contact-1'
 		);
@@ -621,7 +684,6 @@ describe('deleteContact', () => {
 		expect(removedFiles).toEqual(['a.jpg', 'a-thumb.jpg']);
 	});
 });
-
 
 /*
  * Merging duplicates (docs/02 §2.2). The use-case decides what the log says and which record's
@@ -683,11 +745,22 @@ describe('mergeContacts', () => {
 	};
 
 	const pair: MergePair = {
-		keep: { displayName: 'Hans Müller', visibility: 'shared', profile: { ...blank, firstName: 'Hans' } },
-		mergedAway: { displayName: 'Hansueli M.', profile: { ...blank, lastName: 'Müller', jobTitle: 'Schreiner' } }
+		keep: {
+			displayName: 'Hans Müller',
+			visibility: 'shared',
+			profile: { ...blank, firstName: 'Hans' }
+		},
+		mergedAway: {
+			displayName: 'Hansueli M.',
+			profile: { ...blank, lastName: 'Müller', jobTitle: 'Schreiner' }
+		}
 	};
 
-	const deps = (repo: ContactRepository) => ({ contacts: repo, ids: sequentialIds('log-1'), clock });
+	const deps = (repo: ContactRepository) => ({
+		contacts: repo,
+		ids: sequentialIds('log-1'),
+		clock
+	});
 
 	it('hands the repository the combined profile and a log entry naming both', async () => {
 		const f = mergeableRepo(pair);
@@ -760,7 +833,9 @@ describe('countKnownByAFirstNameOnly', () => {
 		const f = fakeRepo();
 		f.repo.listDistinguishableVisibleTo = async () => rows;
 
-		expect(await countKnownByAFirstNameOnly({ contacts: f.repo }, { id: 'u', householdId: 'h' })).toBe(2);
+		expect(
+			await countKnownByAFirstNameOnly({ contacts: f.repo }, { id: 'u', householdId: 'h' })
+		).toBe(2);
 		expect(rows.filter(isKnownByAFirstNameOnly).map((r) => r.id)).toEqual(['anna', 'fritz']);
 	});
 });
@@ -789,8 +864,16 @@ describe('reading names for just the ids a page needs', () => {
 
 	it('asks the store for each person once, however often a page names them', async () => {
 		const f = recordingRepo();
-		const visible = await listContactNamesAmong({ contacts: f.repo }, viewer, ['anna', 'ben', 'anna']);
-		const browsable = await listBrowsableNamesAmong({ contacts: f.repo }, viewer, ['ben', 'ben', 'cleo']);
+		const visible = await listContactNamesAmong({ contacts: f.repo }, viewer, [
+			'anna',
+			'ben',
+			'anna'
+		]);
+		const browsable = await listBrowsableNamesAmong({ contacts: f.repo }, viewer, [
+			'ben',
+			'ben',
+			'cleo'
+		]);
 
 		expect(visible.map((c) => c.id)).toEqual(['anna', 'ben']);
 		expect(browsable.map((c) => c.id)).toEqual(['ben', 'cleo']);
@@ -822,10 +905,9 @@ describe('listPeopleEnoughForFirstRun', () => {
 			limits.push(limit);
 			return ['self', 'anna', 'ben'].slice(0, limit);
 		};
-		expect(await listPeopleEnoughForFirstRun({ contacts: f.repo }, { id: 'u', householdId: 'h' })).toEqual([
-			'self',
-			'anna'
-		]);
+		expect(
+			await listPeopleEnoughForFirstRun({ contacts: f.repo }, { id: 'u', householdId: 'h' })
+		).toEqual(['self', 'anna']);
 		expect(limits).toEqual([2]);
 	});
 });

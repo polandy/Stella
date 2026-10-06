@@ -116,8 +116,18 @@
 			<ul class="grid grid-cols-2 gap-2 sm:grid-cols-3">
 				{#each groupPhotos as photo (photo.id)}
 					<li>
-						<button type="button" onclick={() => then(() => ongroup(photo))} class={TILE} data-testid="avatar-group-photo">
-							<img src={thumbnailUrl(photo.id)} alt="" class="aspect-square w-full rounded-control bg-bg-sunken object-cover" loading="lazy" />
+						<button
+							type="button"
+							onclick={() => then(() => ongroup(photo))}
+							class={TILE}
+							data-testid="avatar-group-photo"
+						>
+							<img
+								src={thumbnailUrl(photo.id)}
+								alt=""
+								class="aspect-square w-full rounded-control bg-bg-sunken object-cover"
+								loading="lazy"
+							/>
 							<span class="truncate text-xs text-fg-muted">{photo.circleName}</span>
 						</button>
 					</li>
@@ -129,7 +139,13 @@
 			<h3 class={HEADING}>{t('components.photo.fromImmich')}</h3>
 			{#if immich === 'find'}
 				<p class="text-sm text-fg-muted">{t('components.photo.immichNotLinked', { name })}</p>
-				<Button variant="secondary" size="sm" icon="search" onclick={() => then(onfind)} class="self-start">
+				<Button
+					variant="secondary"
+					size="sm"
+					icon="search"
+					onclick={() => then(onfind)}
+					class="self-start"
+				>
 					{t('immich.menu.find')}
 				</Button>
 			{:else if immichPhase === 'loading'}

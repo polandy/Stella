@@ -37,7 +37,8 @@ const sameNameKey = (displayName: string) => displayName.trim().toLowerCase();
 const filled = (value: string | null | undefined) => value?.trim() || null;
 
 /** The year a stored meeting date starts with, when it starts with one. */
-const yearOf = (metDate: string | null | undefined) => /^\d{4}/.exec(metDate?.trim() ?? '')?.[0] ?? null;
+const yearOf = (metDate: string | null | undefined) =>
+	/^\d{4}/.exec(metDate?.trim() ?? '')?.[0] ?? null;
 
 function distinctionOf(person: Distinguishable): Distinction {
 	const description = filled(person.description);
@@ -98,7 +99,10 @@ export function tellApart(
 	for (const p of people) {
 		if (!isShared(p.displayName)) continue;
 		const typed = distinctionOf(p);
-		lines.set(p.id, typed.kind === 'nothing' ? (contextLineOf(contexts.get(p.id), isShared) ?? typed) : typed);
+		lines.set(
+			p.id,
+			typed.kind === 'nothing' ? (contextLineOf(contexts.get(p.id), isShared) ?? typed) : typed
+		);
 	}
 	return lines;
 }
@@ -148,7 +152,10 @@ export function describeDistinction(
 			return distinction.text;
 		case 'met':
 			if (distinction.place && distinction.year)
-				return t('components.namesake.metPlaceYear', { place: distinction.place, year: distinction.year });
+				return t('components.namesake.metPlaceYear', {
+					place: distinction.place,
+					year: distinction.year
+				});
 			if (distinction.place) return t('components.namesake.metPlace', { place: distinction.place });
 			return t('components.namesake.metYear', { year: distinction.year ?? '' });
 		case 'tie':

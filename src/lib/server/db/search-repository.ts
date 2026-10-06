@@ -13,7 +13,9 @@ import { contactFts, noteFts } from './search-schema';
  * appear in another member's results. Ranked by bm25 (best first).
  */
 
-export function createDrizzleSearchRepository(db: BunSQLiteDatabase<typeof schema>): SearchRepository {
+export function createDrizzleSearchRepository(
+	db: BunSQLiteDatabase<typeof schema>
+): SearchRepository {
 	return {
 		async searchContacts(viewer: Viewer, ftsQuery: string, limit: number) {
 			return db

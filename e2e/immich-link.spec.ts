@@ -54,7 +54,10 @@ async function signInAsNina(browser: Browser): Promise<Page> {
 }
 
 /** Opens the Photos card's Immich menu and picks one of its items. */
-async function immichMenu(page: Page, item: 'Find in Immich' | 'Unlink from Immich'): Promise<void> {
+async function immichMenu(
+	page: Page,
+	item: 'Find in Immich' | 'Unlink from Immich'
+): Promise<void> {
 	await page.getByRole('button', { name: 'Immich options' }).click();
 	await page.getByRole('menuitem', { name: item }).click();
 }
@@ -67,7 +70,9 @@ async function immichMenu(page: Page, item: 'Find in Immich' | 'Unlink from Immi
 async function searchFaces(page: Page, personName: string, faceName: string) {
 	await immichMenu(page, 'Find in Immich');
 	const picker = page.getByRole('dialog', { name: `Find ${personName} in Immich` });
-	await expect(picker.getByText('No face in Immich has this name.', { exact: false })).toBeVisible();
+	await expect(
+		picker.getByText('No face in Immich has this name.', { exact: false })
+	).toBeVisible();
 	await picker.getByRole('searchbox', { name: 'Name in Immich' }).fill(faceName);
 	await picker.getByRole('button', { name: 'Search' }).click();
 	return picker;
@@ -89,7 +94,9 @@ test('Settings tells every member which Immich Stella is connected to', async ({
 	await expect(page.getByText('Connected to Demo’s Immich · 3.2.4')).toBeVisible();
 });
 
-test('links a person to their face from the picker, and the key owner can open them in Immich', async ({ page }) => {
+test('links a person to their face from the picker, and the key owner can open them in Immich', async ({
+	page
+}) => {
 	await addPerson(page, 'Ilvana', 'Morgenfeld');
 	await linkFace(page, 'Ilvana Morgenfeld', ELIAS.name);
 
@@ -104,7 +111,9 @@ test('links a person to their face from the picker, and the key owner can open t
 	await expect(page.getByRole('menuitem', { name: 'Find in Immich' })).toHaveCount(0);
 });
 
-test('a face linked to one person is shown taken, and cannot be picked, for another', async ({ page }) => {
+test('a face linked to one person is shown taken, and cannot be picked, for another', async ({
+	page
+}) => {
 	await addPerson(page, 'Ottokar', 'Zwielicht');
 	await linkFace(page, 'Ottokar Zwielicht', THOMAS.name);
 	await expect(page.getByText(THOMAS.countLine)).toBeVisible();
@@ -114,15 +123,22 @@ test('a face linked to one person is shown taken, and cannot be picked, for anot
 
 	// The free face of the same search is offered — the answer that makes the taken one's
 	// missing button mean something.
-	await expect(picker.getByRole('button', { name: `Link ${MIA.name} to Philippa Zwielicht` })).toBeVisible();
+	await expect(
+		picker.getByRole('button', { name: `Link ${MIA.name} to Philippa Zwielicht` })
+	).toBeVisible();
 	const taken = picker.getByTestId('immich-face-taken');
 	await expect(taken).toHaveCount(1);
 	await expect(taken).toContainText(THOMAS.name);
 	await expect(taken).toContainText('Linked to Ottokar Zwielicht');
-	await expect(picker.getByRole('button', { name: `Link ${THOMAS.name} to Philippa Zwielicht` })).toHaveCount(0);
+	await expect(
+		picker.getByRole('button', { name: `Link ${THOMAS.name} to Philippa Zwielicht` })
+	).toHaveCount(0);
 });
 
-test('the other member sees the photo count and the way into Immich too, and can unlink', async ({ page, browser }) => {
+test('the other member sees the photo count and the way into Immich too, and can unlink', async ({
+	page,
+	browser
+}) => {
 	await addPerson(page, 'Severin', 'Halbmond');
 	await linkFace(page, 'Severin Halbmond', HANS.name);
 	await expect(page.getByRole('link', { name: 'Open in Immich' })).toBeVisible();

@@ -56,7 +56,10 @@ export interface CommandResults {
 
 /** The use-case behind each command. */
 export type CommandHandlers = {
-	[T in CommandType]: (actor: CommandActor, payload: CommandPayloads[T]) => Promise<CommandResults[T]>;
+	[T in CommandType]: (
+		actor: CommandActor,
+		payload: CommandPayloads[T]
+	) => Promise<CommandResults[T]>;
 };
 
 /** A claimed or applied command id. */
@@ -137,7 +140,11 @@ export async function dispatchCommand<C extends Command>(
 			return { status: 'refused', reason: phrase('errors.command.idTaken') };
 		}
 		if (existing.status === 'applied') {
-			return { status: 'applied', result: existing.result as CommandResults[C['type']], repeated: true };
+			return {
+				status: 'applied',
+				result: existing.result as CommandResults[C['type']],
+				repeated: true
+			};
 		}
 		// Pending: either another run is inside the handler, or one died there. A duplicate is
 		// visible and can be removed; a moment presumed saved but never written is gone.
@@ -152,7 +159,8 @@ export async function dispatchCommand<C extends Command>(
 		result = (await apply(deps.handlers, actor, command)) as CommandResults[C['type']];
 	} catch (err) {
 		await deps.receipts.release(command.id);
-		if (err instanceof TranslatableError) return { status: 'refused', reason: err.phrase, error: err };
+		if (err instanceof TranslatableError)
+			return { status: 'refused', reason: err.phrase, error: err };
 		throw err;
 	}
 	await deps.receipts.complete(command.id, result, deps.clock.now());

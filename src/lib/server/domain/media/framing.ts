@@ -40,7 +40,11 @@ export interface StoredFraming extends Omit<StoredPhoto, 'takenAt'> {
 /** What framing needs from storage; the Drizzle photo adapter implements it beside `PhotoRepository`. */
 export interface FramingRepository {
 	/** One gallery photo, only if it belongs to that contact and the viewer may see it. */
-	findVisibleGalleryPhoto(viewer: Viewer, contactId: string, photoId: string): Promise<GalleryPhoto | null>;
+	findVisibleGalleryPhoto(
+		viewer: Viewer,
+		contactId: string,
+		photoId: string
+	): Promise<GalleryPhoto | null>;
 	/**
 	 * In one transaction: drop the photo's previous framing, store this one and make it the
 	 * contact's avatar. Returns the files of the framing it replaced, so the bytes can go too.
@@ -67,7 +71,10 @@ export interface FrameAsAvatarInput {
 }
 
 /** A square that is a real square and lies inside the picture (when its size is on record). */
-export function assertCropInside(crop: CropRect, picture: { width: number | null; height: number | null }): void {
+export function assertCropInside(
+	crop: CropRect,
+	picture: { width: number | null; height: number | null }
+): void {
 	const numbers = [crop.x, crop.y, crop.size];
 	const inside =
 		numbers.every(Number.isFinite) &&
@@ -84,8 +91,16 @@ export function assertCropInside(crop: CropRect, picture: { width: number | null
  * see that photo on that contact — so a guessed id can neither borrow someone else's face nor
  * confirm that a private photo exists. Throws InvalidAvatarError for a bad square or bytes.
  */
-export async function frameAsAvatar(deps: FramingDeps, viewer: Viewer, input: FrameAsAvatarInput): Promise<boolean> {
-	const source = await deps.framings.findVisibleGalleryPhoto(viewer, input.contactId, input.photoId);
+export async function frameAsAvatar(
+	deps: FramingDeps,
+	viewer: Viewer,
+	input: FrameAsAvatarInput
+): Promise<boolean> {
+	const source = await deps.framings.findVisibleGalleryPhoto(
+		viewer,
+		input.contactId,
+		input.photoId
+	);
 	if (!source) return false;
 	assertCropInside(input.crop, source);
 	const mime = validateAvatarUpload(input.upload);

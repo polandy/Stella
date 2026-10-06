@@ -49,7 +49,11 @@ const ESCAPES: Record<string, string> = {
  * Read the tuples of one INSERT statement starting at `start` (just after `VALUES`).
  * Returns the tuples and the index just past the terminating `;`.
  */
-function readTuples(text: string, start: number, table: string): { tuples: SqlValue[][]; end: number } {
+function readTuples(
+	text: string,
+	start: number,
+	table: string
+): { tuples: SqlValue[][]; end: number } {
 	const tuples: SqlValue[][] = [];
 	let i = start;
 	const n = text.length;

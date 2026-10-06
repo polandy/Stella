@@ -40,14 +40,26 @@ beforeEach(() => {
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
 	db.insert(schema.household).values({ id: H, name: 'H' }).run();
-	db.insert(schema.user).values([
-		{ id: U1, householdId: H, email: 'u1@x.test', name: 'One' },
-		{ id: U2, householdId: H, email: 'u2@x.test', name: 'Two' }
-	]).run();
-	db.insert(schema.contact).values([
-		{ id: 'c-shared', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Shared', nickname: 'Sha', birthDate: BIRTH_DATE },
-		{ id: 'c-priv', householdId: H, createdBy: U1, visibility: 'private', displayName: 'Private' }
-	]).run();
+	db.insert(schema.user)
+		.values([
+			{ id: U1, householdId: H, email: 'u1@x.test', name: 'One' },
+			{ id: U2, householdId: H, email: 'u2@x.test', name: 'Two' }
+		])
+		.run();
+	db.insert(schema.contact)
+		.values([
+			{
+				id: 'c-shared',
+				householdId: H,
+				createdBy: U1,
+				visibility: 'shared',
+				displayName: 'Shared',
+				nickname: 'Sha',
+				birthDate: BIRTH_DATE
+			},
+			{ id: 'c-priv', householdId: H, createdBy: U1, visibility: 'private', displayName: 'Private' }
+		])
+		.run();
 	repo = createDrizzleTagRepository(db);
 });
 
@@ -81,11 +93,17 @@ describe('visibility scoping', () => {
 	});
 
 	it('carries the nickname on a tag-filtered list, so the directory filter still finds people by it', async () => {
-		expect((await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).find((c) => c.id === 'c-shared')?.nickname).toBe('Sha');
+		expect(
+			(await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).find((c) => c.id === 'c-shared')
+				?.nickname
+		).toBe('Sha');
 	});
 
 	it('carries the birth date there too, so a tag-filtered list is the same summary', async () => {
-		expect((await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).find((c) => c.id === 'c-shared')?.birthDate).toBe(BIRTH_DATE);
+		expect(
+			(await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).find((c) => c.id === 'c-shared')
+				?.birthDate
+		).toBe(BIRTH_DATE);
 	});
 
 	/*
@@ -154,9 +172,8 @@ describe('visibility scoping', () => {
 		expect((await repo.listContactsByTagVisibleTo(viewerU2, 't-fam')).map((c) => c.id)).toEqual([
 			'c-shared'
 		]);
-		expect((await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).map((c) => c.id).sort()).toEqual([
-			'c-priv',
-			'c-shared'
-		]);
+		expect(
+			(await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).map((c) => c.id).sort()
+		).toEqual(['c-priv', 'c-shared']);
 	});
 });

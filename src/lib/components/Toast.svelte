@@ -59,16 +59,22 @@
 		<div class="toast" data-testid="toast-undo">
 			<span class="pl-2">{removal.label}</span>
 			{#if removal.offer}
-				<Button variant="primary" size="sm" onclick={() => removals.accept(removal.key)}>{removal.offer.label}</Button>
+				<Button variant="primary" size="sm" onclick={() => removals.accept(removal.key)}
+					>{removal.offer.label}</Button
+				>
 			{/if}
-			<Button variant="secondary" size="sm" onclick={() => removals.undo(removal.key)}>{t('common.undo')}</Button>
+			<Button variant="secondary" size="sm" onclick={() => removals.undo(removal.key)}
+				>{t('common.undo')}</Button
+			>
 		</div>
 	{/each}
 	{#each removals.snapshot.notices as notice (notice.id)}
 		{#if notice.undoable}
 			<div class="toast" data-testid="toast-undo">
 				<span class="pl-2">{notice.text}</span>
-				<Button variant="secondary" size="sm" onclick={() => removals.takeBack(notice.id)}>{t('common.undo')}</Button>
+				<Button variant="secondary" size="sm" onclick={() => removals.takeBack(notice.id)}
+					>{t('common.undo')}</Button
+				>
 			</div>
 		{:else if notice.link}
 			<div class="toast" data-testid="toast-notice">

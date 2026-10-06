@@ -12,12 +12,14 @@ import { RELATIONS } from './types';
 describe('relations and the types they are stored as', () => {
 	it('stores every relation as a built-in type', () => {
 		const builtIn = new Set(BUILT_IN_RELATIONSHIP_TYPES.map((type) => type.key));
-		expect(RELATIONS.filter((relation) => !builtIn.has(TYPE_KEY_FOR_RELATION[relation]))).toEqual([]);
+		expect(RELATIONS.filter((relation) => !builtIn.has(TYPE_KEY_FOR_RELATION[relation]))).toEqual(
+			[]
+		);
 	});
 
 	it('reads each type back as the relation it was stored for', () => {
-		expect(RELATIONS.map((relation) => RELATION_FOR_TYPE_KEY[TYPE_KEY_FOR_RELATION[relation]])).toEqual([
-			...RELATIONS
-		]);
+		expect(
+			RELATIONS.map((relation) => RELATION_FOR_TYPE_KEY[TYPE_KEY_FOR_RELATION[relation]])
+		).toEqual([...RELATIONS]);
 	});
 });

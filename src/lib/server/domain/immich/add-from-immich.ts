@@ -55,7 +55,9 @@ export async function addPersonFromImmich(
 	name: NewcomerName
 ): Promise<string> {
 	if (!isImmichId(immichPersonId)) throw new ImmichLinkRefusedError('notFound');
-	const holder = (await deps.links.holdersOf(viewerOf(adder), [immichPersonId])).get(immichPersonId);
+	const holder = (await deps.links.holdersOf(viewerOf(adder), [immichPersonId])).get(
+		immichPersonId
+	);
 	if (holder) throw new ImmichLinkRefusedError({ linkedTo: holder });
 	const person = await deps.gateway.person(immichPersonId);
 	if (!person.ok) throw new ImmichLinkRefusedError(person.failure);

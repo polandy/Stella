@@ -31,7 +31,12 @@
 	const href = $derived(`/circles/${item.circle.id}#photos`);
 </script>
 
-<a {href} class="block size-8 overflow-hidden rounded-md bg-bg-sunken" tabindex="-1" aria-hidden="true">
+<a
+	{href}
+	class="block size-8 overflow-hidden rounded-md bg-bg-sunken"
+	tabindex="-1"
+	aria-hidden="true"
+>
 	<img src={thumbnailUrl(item.photoIds[0]!)} alt="" class="size-full object-cover" loading="lazy" />
 </a>
 <div class="min-w-0">
@@ -39,19 +44,33 @@
 		<b class="font-semibold text-fg">{who}</b>
 		<span>{t('home.stream.addedPhotoTo', { count })}</span>
 		<a {href} class="font-medium text-fg hover:underline">{item.circle.name}</a>
-		{#if t('home.stream.addedPhotoToAfter', { count })}<span>{t('home.stream.addedPhotoToAfter', { count })}</span>{/if}
-		{#if item.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('common.onlyYouSee')}><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
-		<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago}</span>
+		{#if t('home.stream.addedPhotoToAfter', { count })}<span
+				>{t('home.stream.addedPhotoToAfter', { count })}</span
+			>{/if}
+		{#if item.visibility === 'private'}<span
+				class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"
+				title={t('common.onlyYouSee')}
+				><Icon name="private" size={11} />{t('common.privateInline')}</span
+			>{/if}
+		<span class="ml-auto text-xs whitespace-nowrap text-fg-subtle">{ago}</span>
 	</div>
 	{#if item.role}<p class="mt-0.5 text-xs text-fg-subtle">{item.role}</p>{/if}
 	<div class="mt-2 flex gap-1.5">
 		{#each item.photoIds.slice(0, SHOWN) as photoId (photoId)}
-			<a {href} class="block overflow-hidden rounded-md border border-border" tabindex="-1" aria-hidden="true">
+			<a
+				{href}
+				class="block overflow-hidden rounded-md border border-border"
+				tabindex="-1"
+				aria-hidden="true"
+			>
 				<img src={thumbnailUrl(photoId)} alt="" loading="lazy" class="size-16 object-cover" />
 			</a>
 		{/each}
 		{#if count > SHOWN}
-			<span class="grid size-16 place-items-center rounded-md bg-bg-sunken text-sm font-semibold text-fg-muted">+{count - SHOWN}</span>
+			<span
+				class="grid size-16 place-items-center rounded-md bg-bg-sunken text-sm font-semibold text-fg-muted"
+				>+{count - SHOWN}</span
+			>
 		{/if}
 	</div>
 </div>

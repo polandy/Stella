@@ -11,7 +11,9 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('shows a circle as a card with the first faces and how many more there are', async ({ page }) => {
+test('shows a circle as a card with the first faces and how many more there are', async ({
+	page
+}) => {
 	await page.goto('/circles');
 	const card = page.getByTestId('circle-cards').getByRole('link', { name: /Familien-Freunde/ });
 
@@ -21,9 +23,14 @@ test('shows a circle as a card with the first faces and how many more there are'
 	await expect(card).toContainText('+2');
 });
 
-test('opens a circle, adds a member from the card’s own disclosure and shows them in the grid', async ({ page }) => {
+test('opens a circle, adds a member from the card’s own disclosure and shows them in the grid', async ({
+	page
+}) => {
 	await page.goto('/circles');
-	await page.getByTestId('circle-cards').getByRole('link', { name: /Musikschule/ }).click();
+	await page
+		.getByTestId('circle-cards')
+		.getByRole('link', { name: /Musikschule/ })
+		.click();
 	await expect(page.getByRole('heading', { name: /Musikschule/ })).toBeVisible();
 
 	const grid = page.getByTestId('member-grid');
@@ -40,9 +47,14 @@ test('opens a circle, adds a member from the card’s own disclosure and shows t
 	await expect(grid.getByText('Blockflöte')).toBeVisible();
 });
 
-test('narrows the person picker to matching names as you type, rather than listing everyone', async ({ page }) => {
+test('narrows the person picker to matching names as you type, rather than listing everyone', async ({
+	page
+}) => {
 	await page.goto('/circles');
-	await page.getByTestId('circle-cards').getByRole('link', { name: /Musikschule/ }).click();
+	await page
+		.getByTestId('circle-cards')
+		.getByRole('link', { name: /Musikschule/ })
+		.click();
 	await page.getByRole('button', { name: 'Add people' }).click();
 
 	const form = page.locator('form[action="?/addMembers"]');

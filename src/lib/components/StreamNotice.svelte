@@ -25,32 +25,44 @@
 	const icon = $derived(content.kind === 'text' ? 'remove' : 'rename');
 </script>
 
-<span class="grid size-8 shrink-0 place-items-center rounded-full bg-bg-sunken text-fg-subtle" aria-hidden="true">
+<span
+	class="grid size-8 shrink-0 place-items-center rounded-full bg-bg-sunken text-fg-subtle"
+	aria-hidden="true"
+>
 	<Icon name={icon} size={14} />
 </span>
 <div class="min-w-0">
-	<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted" data-testid="stream-notice">
+	<div
+		class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted"
+		data-testid="stream-notice"
+	>
 		<b class="font-semibold text-fg">{who}</b>
 		{#if content.kind === 'text'}
 			<span class="font-medium text-fg">{content.text}</span>
 		{:else if content.kind === 'lastNames'}
-			<span class="font-medium text-fg">{t('home.stream.lastNames', { name: content.lastName, count: content.count })}</span>
+			<span class="font-medium text-fg"
+				>{t('home.stream.lastNames', { name: content.lastName, count: content.count })}</span
+			>
 		{:else if content.from === content.to}
 			<span>{t('home.stream.nameEdited')}</span>
 			{#if content.contactId && canOpen(content.contactId)}
-				<a href="/contacts/{content.contactId}" class="font-medium text-fg hover:underline">{content.to}</a>
+				<a href="/contacts/{content.contactId}" class="font-medium text-fg hover:underline"
+					>{content.to}</a
+				>
 			{:else}
 				<span class="font-medium text-fg">{content.to}</span>
 			{/if}
 		{:else}
 			<span>{t('home.stream.renamed', { from: content.from })}</span>
 			{#if content.contactId && canOpen(content.contactId)}
-				<a href="/contacts/{content.contactId}" class="font-medium text-fg hover:underline">{content.to}</a>
+				<a href="/contacts/{content.contactId}" class="font-medium text-fg hover:underline"
+					>{content.to}</a
+				>
 			{:else}
 				<span class="font-medium text-fg">{content.to}</span>
 			{/if}
 			{#if t('home.stream.renamedAfter')}<span>{t('home.stream.renamedAfter')}</span>{/if}
 		{/if}
-		<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{ago}</span>
+		<span class="ml-auto text-xs whitespace-nowrap text-fg-subtle">{ago}</span>
 	</div>
 </div>

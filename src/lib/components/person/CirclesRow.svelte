@@ -37,7 +37,9 @@
 	// tags over one chip.
 	const removals = useRemovals();
 	const visibleCircles = $derived(
-		data.circles.filter((circle) => !removals.isPending(removalKey('membership', circle.membershipId)))
+		data.circles.filter(
+			(circle) => !removals.isPending(removalKey('membership', circle.membershipId))
+		)
 	);
 
 	/** What a folded profile row is worth reading for: the values themselves, not just a count. */
@@ -52,7 +54,9 @@
 	 * the roles that very circle already uses, matched on its name regardless of capitalisation.
 	 */
 	let joiningCircleName = $state('');
-	const joiningCircleRoles = $derived(data.circleRolesByName[circleNameKey(joiningCircleName)] ?? []);
+	const joiningCircleRoles = $derived(
+		data.circleRolesByName[circleNameKey(joiningCircleName)] ?? []
+	);
 	// The form is unmounted when the section closes, so the typed name would outlive its own
 	// input and a reopened editor would offer the previous circle's roles beside an empty field.
 	$effect(() => {
@@ -99,7 +103,16 @@
 	);
 </script>
 
-	<Section as="row" title={t('contact.section.circles')} count={visibleCircles.length} summary={folded ? undefined : circleSummary} startOpen={!folded && visibleCircles.length > 0} addLabel={t('contact.join')} error={form?.circleError ?? null} bind:open={openSection.circles}>
+<Section
+	as="row"
+	title={t('contact.section.circles')}
+	count={visibleCircles.length}
+	summary={folded ? undefined : circleSummary}
+	startOpen={!folded && visibleCircles.length > 0}
+	addLabel={t('contact.join')}
+	error={form?.circleError ?? null}
+	bind:open={openSection.circles}
+>
 	{#snippet action()}
 		<a href="/circles" class="text-xs text-link hover:underline">{t('contact.allCircles')}</a>
 	{/snippet}
@@ -107,11 +120,18 @@
 	{#if visibleCircles.length || keptCircles.length}
 		<ul class="flex flex-wrap gap-1.5">
 			{#each keptCircles as item (item.command.id)}
-				<KeptChip {item} label={item.command.payload.role ? `${item.command.payload.circleName} · ${item.command.payload.role}` : item.command.payload.circleName} />
+				<KeptChip
+					{item}
+					label={item.command.payload.role
+						? `${item.command.payload.circleName} · ${item.command.payload.role}`
+						: item.command.payload.circleName}
+				/>
 			{/each}
 			{#each visibleCircles as circle (circle.membershipId)}
-				<li class="min-w-0 max-w-full">
-					<span class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border py-1 pl-2.5 pr-1.5 text-sm">
+				<li class="max-w-full min-w-0">
+					<span
+						class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border py-1 pr-1.5 pl-2.5 text-sm"
+					>
 						<span class="size-2 shrink-0 rounded-full" style={accentDotStyle(circle.color)}></span>
 						<a
 							href="/circles/{circle.circleId}"
@@ -142,7 +162,12 @@
 	{/if}
 
 	{#snippet editor()}
-		<form method="POST" action="?/joinCircle" use:enhance={circleForm} class="flex flex-wrap items-end gap-2">
+		<form
+			method="POST"
+			action="?/joinCircle"
+			use:enhance={circleForm}
+			class="flex flex-wrap items-end gap-2"
+		>
 			<input
 				name="circleName"
 				list="circle-names"

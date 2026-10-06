@@ -107,12 +107,21 @@ describe('the dismissal log', () => {
  */
 describe('the last-name dismissals', () => {
 	const surnames = () => createDrizzleSurnameDismissalRepository(db);
-	const entry = { id: 's-1', householdId: H, contactId: 'lea', folded: 'van der berg', dismissedBy: U1, dismissedAt: 3_000 };
+	const entry = {
+		id: 's-1',
+		householdId: H,
+		contactId: 'lea',
+		folded: 'van der berg',
+		dismissedBy: U1,
+		dismissedAt: 3_000
+	};
 
 	it('reads back a declined name, once however often it is declined', async () => {
 		await surnames().dismiss(entry);
 		await surnames().dismiss({ ...entry, id: 's-2' });
-		expect(await surnames().listForHousehold(viewer)).toEqual([{ contactId: 'lea', folded: 'van der berg' }]);
+		expect(await surnames().listForHousehold(viewer)).toEqual([
+			{ contactId: 'lea', folded: 'van der berg' }
+		]);
 	});
 
 	it('stays out of the relationship log, and keeps its rows out of it', async () => {

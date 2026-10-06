@@ -11,7 +11,6 @@
 	 * a dropdown for.
 	 */
 
-
 	interface Props {
 		/** The form field this posts, exactly as a bare `<input name>` would. */
 		name: string;

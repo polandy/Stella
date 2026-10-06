@@ -38,7 +38,12 @@
 	let root: HTMLFormElement | undefined = $state();
 
 	const rows = $derived(
-		personSearchRows(query, people, (q) => t('components.palette.searchEverything', { query: q }), peopleContext())
+		personSearchRows(
+			query,
+			people,
+			(q) => t('components.palette.searchEverything', { query: q }),
+			peopleContext()
+		)
 	);
 	const showList = $derived(open && rows.length > 0);
 
@@ -50,7 +55,9 @@
 
 	function onKeydown(event: KeyboardEvent) {
 		// Home and End stay with the text cursor; only the arrows move through the rows.
-		const next = event.key.startsWith('Arrow') ? nextMenuIndex(highlighted, rows.length, event.key) : null;
+		const next = event.key.startsWith('Arrow')
+			? nextMenuIndex(highlighted, rows.length, event.key)
+			: null;
 		if (next !== null) {
 			event.preventDefault();
 			open = true;
@@ -74,8 +81,17 @@
 	}
 </script>
 
-<form bind:this={root} method="GET" action="/search" role="search" class="relative" data-testid="person-finder">
-	<label class="flex items-center gap-2.5 rounded-app bg-card px-3 py-2.5 text-fg-subtle shadow-card transition-shadow focus-within:text-fg focus-within:ring-2 focus-within:ring-primary/40">
+<form
+	bind:this={root}
+	method="GET"
+	action="/search"
+	role="search"
+	class="relative"
+	data-testid="person-finder"
+>
+	<label
+		class="flex items-center gap-2.5 rounded-app bg-card px-3 py-2.5 text-fg-subtle shadow-card transition-shadow focus-within:text-fg focus-within:ring-2 focus-within:ring-primary/40"
+	>
 		<Icon name="search" size={16} />
 		<input
 			name="q"
@@ -94,7 +110,9 @@
 			aria-expanded={showList}
 			aria-controls={LISTBOX_ID}
 			aria-autocomplete="list"
-			aria-activedescendant={showList && rows[highlighted] ? `person-finder-${rows[highlighted].kind}-${rows[highlighted].id}` : undefined}
+			aria-activedescendant={showList && rows[highlighted]
+				? `person-finder-${rows[highlighted].kind}-${rows[highlighted].id}`
+				: undefined}
 			autocomplete="off"
 			enterkeyhint="search"
 			class="min-w-0 flex-1 bg-transparent text-sm text-fg placeholder:text-fg-subtle"
@@ -102,7 +120,11 @@
 	</label>
 
 	{#if showList}
-		<ul id={LISTBOX_ID} role="listbox" class="absolute inset-x-0 top-full z-20 mt-1 max-h-[60vh] overflow-y-auto rounded-app border border-border bg-card p-1.5 shadow-pop">
+		<ul
+			id={LISTBOX_ID}
+			role="listbox"
+			class="absolute inset-x-0 top-full z-20 mt-1 max-h-[60vh] overflow-y-auto rounded-app border border-border bg-card p-1.5 shadow-pop"
+		>
 			{#each rows as row, i (row.kind + row.id)}
 				<!-- The link itself is the option: an option may not hold an interactive child. -->
 				<li role="none">
@@ -123,16 +145,26 @@
 						{#if row.kind === 'person'}
 							<Avatar id={row.id} name={row.label} avatarPhotoId={row.avatarPhotoId} size={24} />
 						{:else}
-							<span class="grid size-6 place-items-center text-fg-subtle"><Icon name={row.icon} size={15} /></span>
+							<span class="grid size-6 place-items-center text-fg-subtle"
+								><Icon name={row.icon} size={15} /></span
+							>
 						{/if}
 						{#if row.kind === 'person' && (row.distinction || row.job)}
 							<span class="min-w-0">
-								<span class="block truncate">{row.label}<FormerlyMark name={row.formerly} /><FoundByJobMark found={row.foundByJob} /></span>
+								<span class="block truncate"
+									>{row.label}<FormerlyMark name={row.formerly} /><FoundByJobMark
+										found={row.foundByJob}
+									/></span
+								>
 								{#if row.distinction}<NamesakeLine distinction={row.distinction} />{/if}
 								<JobLine job={row.job} small />
 							</span>
 						{:else}
-							<span class="truncate">{row.label}{#if row.kind === 'person'}<FormerlyMark name={row.formerly} /><FoundByJobMark found={row.foundByJob} />{/if}</span>
+							<span class="truncate"
+								>{row.label}{#if row.kind === 'person'}<FormerlyMark
+										name={row.formerly}
+									/><FoundByJobMark found={row.foundByJob} />{/if}</span
+							>
 						{/if}
 					</a>
 				</li>

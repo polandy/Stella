@@ -63,7 +63,11 @@ export function createDrizzleCirclePhotoRepository(
 				.map(toCirclePhoto);
 		},
 
-		async findVisible(viewer: Viewer, circleId: string, photoId: string): Promise<CirclePhoto | null> {
+		async findVisible(
+			viewer: Viewer,
+			circleId: string,
+			photoId: string
+		): Promise<CirclePhoto | null> {
 			const row = select()
 				.where(and(eq(photo.id, photoId), eq(photo.circleId, circleId), visibleTo(viewer)))
 				.get();
@@ -71,12 +75,16 @@ export function createDrizzleCirclePhotoRepository(
 		},
 
 		async describe(photoId: string, changes: CirclePhotoDescription) {
-			const set: { caption?: string | null; circleRole?: string | null; pinnedAt?: number | null } = {};
+			const set: { caption?: string | null; circleRole?: string | null; pinnedAt?: number | null } =
+				{};
 			if ('caption' in changes) set.caption = changes.caption ?? null;
 			if ('role' in changes) set.circleRole = changes.role ?? null;
 			if ('pinnedAt' in changes) set.pinnedAt = changes.pinnedAt ?? null;
 			if (Object.keys(set).length === 0) return;
-			db.update(photo).set(set).where(and(eq(photo.id, photoId), isNotNull(photo.circleId))).run();
+			db.update(photo)
+				.set(set)
+				.where(and(eq(photo.id, photoId), isNotNull(photo.circleId)))
+				.run();
 		},
 
 		async setOwnVisibility(input) {
@@ -84,10 +92,14 @@ export function createDrizzleCirclePhotoRepository(
 				const own = tx.select({ id: photo.id }).from(photo).where(ownPhoto(input)).get();
 				if (!own) return false;
 				// Nobody's face turns private with the group photo: the cuts become their own first (§5.4).
-				if (input.visibility === 'private') turnCutsOfGroupPhotos(tx, [own.id], 'groupPhotoPrivate');
+				if (input.visibility === 'private')
+					turnCutsOfGroupPhotos(tx, [own.id], 'groupPhotoPrivate');
 				tx.update(photo).set({ visibility: input.visibility }).where(eq(photo.id, own.id)).run();
 				// The cuts made while it was private follow it, as any framing follows its photo.
-				tx.update(photo).set({ visibility: input.visibility }).where(eq(photo.framingOf, own.id)).run();
+				tx.update(photo)
+					.set({ visibility: input.visibility })
+					.where(eq(photo.framingOf, own.id))
+					.run();
 				return true;
 			});
 		},
@@ -101,7 +113,11 @@ export function createDrizzleCirclePhotoRepository(
 				const removed = tx
 					.delete(photo)
 					.where(eq(photo.id, own.id))
-					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath, viewPath: photo.viewPath })
+					.returning({
+						filePath: photo.filePath,
+						thumbPath: photo.thumbPath,
+						viewPath: photo.viewPath
+					})
 					.all();
 				return removed[0] ?? null;
 			});
@@ -138,7 +154,9 @@ const COLUMNS = {
 };
 
 // circleId is non-null here: every read joins the photo's circle.
-const toCirclePhoto = (row: { circleId: string | null } & Omit<CirclePhoto, 'circleId'>): CirclePhoto => ({
+const toCirclePhoto = (
+	row: { circleId: string | null } & Omit<CirclePhoto, 'circleId'>
+): CirclePhoto => ({
 	...row,
 	circleId: row.circleId as string
 });

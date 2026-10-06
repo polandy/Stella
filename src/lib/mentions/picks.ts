@@ -26,9 +26,14 @@ const WHOLE_HANDLE = /^@\p{L}[\p{L}\p{N}]*$/u;
  * in length, and a pick it touches is let go — its name is no longer the one that was picked.
  * A name character typed straight onto the end of a handle changes the name too.
  */
-export function shiftPicks(before: string, after: string, picks: readonly MentionPick[]): MentionPick[] {
+export function shiftPicks(
+	before: string,
+	after: string,
+	picks: readonly MentionPick[]
+): MentionPick[] {
 	let prefix = 0;
-	while (prefix < before.length && prefix < after.length && before[prefix] === after[prefix]) prefix++;
+	while (prefix < before.length && prefix < after.length && before[prefix] === after[prefix])
+		prefix++;
 	let suffix = 0;
 	while (
 		suffix < before.length - prefix &&
@@ -43,7 +48,8 @@ export function shiftPicks(before: string, after: string, picks: readonly Mentio
 		const endsBefore =
 			pick.end < prefix || (pick.end === prefix && !NAME_CHAR.test(after[prefix] ?? ''));
 		if (endsBefore) return [pick];
-		if (pick.start >= changedUntil) return [{ ...pick, start: pick.start + delta, end: pick.end + delta }];
+		if (pick.start >= changedUntil)
+			return [{ ...pick, start: pick.start + delta, end: pick.end + delta }];
 		return [];
 	});
 }
@@ -111,7 +117,9 @@ export function isQueuedName(id: string): boolean {
  * The people a moment creates, as the picker lists them: under the placeholder id their mention
  * carries until Stella has them, so picking one writes that placeholder.
  */
-export function newPeopleAsCandidates(newPeople: readonly (string | MomentNewPerson)[]): MentionCandidate[] {
+export function newPeopleAsCandidates(
+	newPeople: readonly (string | MomentNewPerson)[]
+): MentionCandidate[] {
 	return newPeople.map((person) =>
 		typeof person === 'string'
 			? { id: QUEUED_NAME_PREFIX + person, displayName: person, firstName: null, lastName: null }

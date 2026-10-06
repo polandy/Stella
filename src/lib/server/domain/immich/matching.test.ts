@@ -4,7 +4,12 @@ import { createFakeImmichGateway } from '../../immich/fake-gateway';
 import type { ContextMembershipRow } from '../contacts/person-context';
 import type { ImmichIgnore } from './ignores';
 import type { ImmichHolder } from './links';
-import { findImmichMatches, PEOPLE_PAGE_SIZE, type ImmichMatchingDeps, type MatchingContact } from './matching';
+import {
+	findImmichMatches,
+	PEOPLE_PAGE_SIZE,
+	type ImmichMatchingDeps,
+	type MatchingContact
+} from './matching';
 import type { ImmichNameIgnore } from './name-ignores';
 import type { ImmichMediaSigner } from './signed-media';
 import { BERT_ID, CARL_ID, DORA_ID, testLibrary } from './test-library';
@@ -22,7 +27,8 @@ const MANFRED_ID = '0f5a6b7c-8d9e-4fa0-8d5e-6f7a8b9cadb4';
 const SANDRA_ID = '1a6b7c8d-9eaf-4ab0-9e6f-7a8b9cadbec5';
 const faceOf = (contactId: string, personId: string) =>
 	`/media/immich/${encodeURIComponent(`face~${contactId}~${personId}`)}`;
-const newcomerFace = (personId: string) => `/media/immich/${encodeURIComponent(`newcomer~h1~${personId}`)}`;
+const newcomerFace = (personId: string) =>
+	`/media/immich/${encodeURIComponent(`newcomer~h1~${personId}`)}`;
 
 const contact = (id: string, firstName: string, lastName: string | null): MatchingContact => ({
 	id,
@@ -43,7 +49,8 @@ const heldBertAndCarl: Record<string, ImmichHolder> = {
 const nothing = { ok: true as const, rows: [], ignored: [], newcomers: [], ignoredNewcomers: [] };
 
 const plainSigner: ImmichMediaSigner = {
-	sign: async (media) => `${media.kind}~${'contactId' in media ? media.contactId : media.householdId}~${media.personId}`,
+	sign: async (media) =>
+		`${media.kind}~${'contactId' in media ? media.contactId : media.householdId}~${media.personId}`,
 	verify: async () => ({ ok: false, reason: 'invalid' })
 };
 
@@ -128,7 +135,10 @@ describe('findImmichMatches', () => {
 	});
 
 	it('never offers a hidden face', async () => {
-		const { deps } = setup({ contacts: [contact('c-dora', 'Dora', 'Example')], holders: heldBertAndCarl });
+		const { deps } = setup({
+			contacts: [contact('c-dora', 'Dora', 'Example')],
+			holders: heldBertAndCarl
+		});
 
 		expect(await findImmichMatches(deps, viewer, day)).toEqual(nothing);
 	});
@@ -157,7 +167,11 @@ describe('findImmichMatches', () => {
 			color: '#000000'
 		}));
 		gateway.library.people.unshift(...filler);
-		gateway.library.people.push({ ...filler[0], id: 'e0000000-0000-4000-8000-000000000001', name: 'Xaver Last' });
+		gateway.library.people.push({
+			...filler[0],
+			id: 'e0000000-0000-4000-8000-000000000001',
+			name: 'Xaver Last'
+		});
 
 		const outcome = await findImmichMatches(deps, viewer, day);
 
@@ -178,7 +192,10 @@ describe('findImmichMatches', () => {
 		const { gateway, deps } = setup();
 		gateway.failing = { listPeople: 'unauthorized' };
 
-		expect(await findImmichMatches(deps, viewer, day)).toEqual({ ok: false, failure: 'unauthorized' });
+		expect(await findImmichMatches(deps, viewer, day)).toEqual({
+			ok: false,
+			failure: 'unauthorized'
+		});
 	});
 
 	it('offers every named face as new when the viewer sees nobody', async () => {
@@ -231,13 +248,17 @@ describe('findImmichMatches', () => {
 
 		const outcome = await findImmichMatches(deps, viewer, day);
 
-		expect(outcome.ok && outcome.ignored.map((row) => [row.personId, row.immichName])).toEqual([[DORA_ID, null]]);
+		expect(outcome.ok && outcome.ignored.map((row) => [row.personId, row.immichName])).toEqual([
+			[DORA_ID, null]
+		]);
 	});
 
 	it('leaves out an ignored pair whose contact is not listed to the viewer', async () => {
 		const { deps } = setup({
 			contacts: [contact('c-bert', 'Bert', 'Example')],
-			ignored: [{ contactId: 'c-archived', immichPersonId: CARL_ID, ignoredBy: 'u-anna', ignoredAt: 5 }]
+			ignored: [
+				{ contactId: 'c-archived', immichPersonId: CARL_ID, ignoredBy: 'u-anna', ignoredAt: 5 }
+			]
 		});
 
 		const outcome = await findImmichMatches(deps, viewer, day);
@@ -299,7 +320,9 @@ describe('findImmichMatches — new from Immich', () => {
 		});
 
 		const outcome = await findImmichMatches(deps, viewer, day);
-		const manfred = outcome.ok ? outcome.newcomers.find((row) => row.personId === MANFRED_ID) : null;
+		const manfred = outcome.ok
+			? outcome.newcomers.find((row) => row.personId === MANFRED_ID)
+			: null;
 
 		expect(manfred?.similar).toEqual([
 			{
@@ -315,11 +338,16 @@ describe('findImmichMatches — new from Immich', () => {
 		const { deps } = withNewcomers({
 			contacts: [contact('c-carl', 'Manfred', 'Example')],
 			linkedContacts: ['c-carl'],
-			holders: { [BERT_ID]: { contactId: 'c-x', name: null }, [CARL_ID]: { contactId: 'c-carl', name: 'Manfred Example' } }
+			holders: {
+				[BERT_ID]: { contactId: 'c-x', name: null },
+				[CARL_ID]: { contactId: 'c-carl', name: 'Manfred Example' }
+			}
 		});
 
 		const outcome = await findImmichMatches(deps, viewer, day);
-		const manfred = outcome.ok ? outcome.newcomers.find((row) => row.personId === MANFRED_ID) : null;
+		const manfred = outcome.ok
+			? outcome.newcomers.find((row) => row.personId === MANFRED_ID)
+			: null;
 
 		expect(manfred?.similar.map((person) => person.linkedFace)).toEqual([
 			{ name: 'Carl Example', faceUrl: faceOf('c-carl', CARL_ID) }
@@ -340,15 +368,29 @@ describe('findImmichMatches — new from Immich', () => {
 		expect(outcome.ok && outcome.newcomers.map((row) => row.personId)).toEqual([MANFRED_ID]);
 		expect(outcome.ok && outcome.ignoredNewcomers).toEqual([
 			// Hidden in Immich since: kept, without a name, so it can still be taken back.
-			{ personId: DORA_ID, immichName: null, faceUrl: newcomerFace(DORA_ID), ignoredBy: 'u-bert', ignoredAt: 9 },
-			{ personId: SANDRA_ID, immichName: 'Sandra', faceUrl: newcomerFace(SANDRA_ID), ignoredBy: 'u-anna', ignoredAt: 5 }
+			{
+				personId: DORA_ID,
+				immichName: null,
+				faceUrl: newcomerFace(DORA_ID),
+				ignoredBy: 'u-bert',
+				ignoredAt: 9
+			},
+			{
+				personId: SANDRA_ID,
+				immichName: 'Sandra',
+				faceUrl: newcomerFace(SANDRA_ID),
+				ignoredBy: 'u-anna',
+				ignoredAt: 5
+			}
 		]);
 	});
 
 	it('drops an ignored face from the list once someone holds it', async () => {
 		const { deps } = withNewcomers({
 			contacts: [],
-			ignoredNames: [{ householdId: 'h1', immichPersonId: BERT_ID, ignoredBy: 'u-anna', ignoredAt: 5 }]
+			ignoredNames: [
+				{ householdId: 'h1', immichPersonId: BERT_ID, ignoredBy: 'u-anna', ignoredAt: 5 }
+			]
 		});
 
 		const outcome = await findImmichMatches(deps, viewer, day);
@@ -361,7 +403,9 @@ describe('findImmichMatches — new from Immich', () => {
 
 		const outcome = await findImmichMatches(deps, viewer, day);
 
-		expect(outcome.ok && outcome.rows.map((row) => row.candidates[0].personId)).toEqual([SANDRA_ID]);
+		expect(outcome.ok && outcome.rows.map((row) => row.candidates[0].personId)).toEqual([
+			SANDRA_ID
+		]);
 		expect(outcome.ok && outcome.newcomers.map((row) => row.personId)).toEqual([MANFRED_ID]);
 	});
 });

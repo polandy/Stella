@@ -40,7 +40,8 @@ export const settings: SettingsMessages = {
 	'settings.quality.heading': 'Datenqualität',
 	'settings.firstNameOnly.pageTitle': 'Nur Vorname · Stella',
 	'settings.firstNameOnly.title': 'Nur mit Vornamen bekannt',
-	'settings.firstNameOnly.blurb': 'Alle, von denen nur der Vorname bekannt ist und sonst nichts, um sie zu unterscheiden.',
+	'settings.firstNameOnly.blurb':
+		'Alle, von denen nur der Vorname bekannt ist und sonst nichts, um sie zu unterscheiden.',
 	'settings.firstNameOnly.intro':
 		'Nur ein Vorname — kein Nachname, keine Beschreibung, kein Ort oder Datum des Kennenlernens. Ergänze, woran du sie jeweils erkennst. Zum Zusammenführen oder Archivieren öffne die Person.',
 	'settings.firstNameOnly.knowThemBy': (p) => `Woran erkennst du ${p.name}?`,
@@ -93,7 +94,8 @@ export const settings: SettingsMessages = {
 	'settings.about.unreachableSince': (p: { when: string }) => `Zuletzt geprüft: ${p.when}.`,
 	'settings.api.heading': 'API',
 	'settings.api.title': 'API-Tokens',
-	'settings.api.blurb': 'Lass ein Skript oder einen Assistenten Menschen für dich erfassen — etwa aus einer Klassenliste.',
+	'settings.api.blurb':
+		'Lass ein Skript oder einen Assistenten Menschen für dich erfassen — etwa aus einer Klassenliste.',
 	'settings.apiTokens.intro':
 		'Mit einem Token handelt ein Skript über Stellas API in deinem Namen: Es findet und erfasst genau das, was du könntest, und nicht mehr. Behandle es wie ein Passwort.',
 	'settings.apiTokens.create': 'Neues Token',

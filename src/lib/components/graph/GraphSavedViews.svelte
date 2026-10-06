@@ -92,7 +92,7 @@
 				role="menuitem"
 				aria-label={t('graph.views.delete', { name: view.name })}
 				onclick={() => void remove(view.name)}
-				class="grid size-9 shrink-0 pointer-coarse:size-11 place-items-center rounded-lg text-fg-subtle hover:bg-bg-sunken hover:text-fg focus:bg-bg-sunken"
+				class="grid size-9 shrink-0 place-items-center rounded-lg text-fg-subtle hover:bg-bg-sunken hover:text-fg focus:bg-bg-sunken pointer-coarse:size-11"
 			>
 				<Icon name="remove" size={14} />
 			</button>

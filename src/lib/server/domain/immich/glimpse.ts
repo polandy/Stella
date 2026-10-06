@@ -58,7 +58,8 @@ export async function readImmichGlimpse(
 		together = { contactId: togetherWith, personId: other.immichPersonId };
 	}
 	// A cursor comes back from the browser; one that is not Immich's ends the strip.
-	if (cursor !== null && !isAssetCursor(cursor)) return { state: 'photos', photos: [], nextCursor: null };
+	if (cursor !== null && !isAssetCursor(cursor))
+		return { state: 'photos', photos: [], nextCursor: null };
 
 	const people: ImmichPeopleFilter = together
 		? { personIds: [link.immichPersonId, together.personId], match: 'all' }
@@ -105,7 +106,9 @@ export async function readTogetherOffers(
 ): Promise<string[]> {
 	if (!(await deps.links.findForContactVisibleTo(viewer, contactId))) return [];
 	const linked = await Promise.all(
-		candidates.map(async (id) => (id !== contactId && (await deps.links.findForContactVisibleTo(viewer, id)) ? id : null))
+		candidates.map(async (id) =>
+			id !== contactId && (await deps.links.findForContactVisibleTo(viewer, id)) ? id : null
+		)
 	);
 	return linked.filter((id): id is string => id !== null);
 }
@@ -115,7 +118,11 @@ export async function readTogetherOffers(
  * same proxy as photos (concept §9.10): the picker's route has checked the viewer may see the
  * contact, and the proxy checks it again.
  */
-export async function faceUrlFor(signer: ImmichMediaSigner, contactId: string, personId: string): Promise<string> {
+export async function faceUrlFor(
+	signer: ImmichMediaSigner,
+	contactId: string,
+	personId: string
+): Promise<string> {
 	return immichMediaUrl(await signer.sign({ kind: 'face', contactId, personId }));
 }
 
@@ -124,14 +131,19 @@ export async function faceUrlFor(signer: ImmichMediaSigner, contactId: string, p
  * no contact holds. There is no contact to sign for, so it is signed for the viewer's household;
  * the proxy serves it only to a member of that household, and only while nobody holds the face.
  */
-export async function newcomerFaceUrl(signer: ImmichMediaSigner, householdId: string, personId: string): Promise<string> {
+export async function newcomerFaceUrl(
+	signer: ImmichMediaSigner,
+	householdId: string,
+	personId: string
+): Promise<string> {
 	return immichMediaUrl(await signer.sign({ kind: 'newcomer', householdId, personId }));
 }
 
 /** Why the proxy serves nothing: the token, the viewer, the link, or Immich. */
 export type ImmichMediaRefusal = ImmichMediaAdmissionRefusal | ImmichFailure;
 
-export type ImmichMediaOutcome = { ok: true; image: ImmichImage } | { ok: false; refusal: ImmichMediaRefusal };
+export type ImmichMediaOutcome =
+	{ ok: true; image: ImmichImage } | { ok: false; refusal: ImmichMediaRefusal };
 
 export interface ImmichMediaDeps {
 	links: Pick<ImmichLinkRepository, 'findForContactVisibleTo' | 'holdersOf'>;
@@ -172,7 +184,9 @@ export async function admitImmichMedia(
 	deps: Pick<ImmichMediaDeps, 'links' | 'contacts' | 'signer'>,
 	viewer: Viewer,
 	token: string
-): Promise<{ ok: true; media: SignedImmichMedia } | { ok: false; refusal: ImmichMediaAdmissionRefusal }> {
+): Promise<
+	{ ok: true; media: SignedImmichMedia } | { ok: false; refusal: ImmichMediaAdmissionRefusal }
+> {
 	const verified = await deps.signer.verify(token);
 	if (!verified.ok) return { ok: false, refusal: verified.reason };
 	const { media } = verified;
@@ -184,7 +198,8 @@ export async function admitImmichMedia(
 		const held = await deps.links.holdersOf(viewer, [media.personId]);
 		return held.size > 0 ? { ok: false, refusal: 'notVisible' } : { ok: true, media };
 	}
-	if (!(await deps.contacts.findByIdVisibleTo(viewer, media.contactId))) return { ok: false, refusal: 'notVisible' };
+	if (!(await deps.contacts.findByIdVisibleTo(viewer, media.contactId)))
+		return { ok: false, refusal: 'notVisible' };
 	if (media.kind === 'face') return { ok: true, media };
 
 	const { together } = media;

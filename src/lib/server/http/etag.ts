@@ -23,7 +23,12 @@ export function isUnchanged(ifNoneMatch: string | null, etag: string): boolean {
  * Whether a response gets a tag: a page's data, answered whole. Streamed data (promises in a
  * `load`) has no whole body to hash, and an error is not worth keeping.
  */
-export function wantsEtag(answer: { method: string; pathname: string; status: number; contentType: string | null }): boolean {
+export function wantsEtag(answer: {
+	method: string;
+	pathname: string;
+	status: number;
+	contentType: string | null;
+}): boolean {
 	return (
 		answer.method === 'GET' &&
 		answer.pathname.endsWith(DATA_SUFFIX) &&

@@ -107,7 +107,6 @@ const TERM_RANK: Record<KinTerm, number> = {
 /** Which wording a term takes for a person. */
 export type KinVariant = 'male' | 'female' | 'neutral';
 
-
 /** Half-sibling is only claimed when both sides have this many parents on record. */
 const PARENTS_FOR_HALF = 2;
 
@@ -208,7 +207,7 @@ class Inference {
 			best.set(personId, { term, via });
 		};
 
-				const parents = links.get(links.parents, subjectId);
+		const parents = links.get(links.parents, subjectId);
 		const children = links.get(links.children, subjectId);
 		const siblings = links.siblingsOf(subjectId);
 
@@ -298,7 +297,8 @@ class Inference {
 				};
 			})
 			.sort(
-				(x, y) => TERM_RANK[x.term] - TERM_RANK[y.term] || x.displayName.localeCompare(y.displayName)
+				(x, y) =>
+					TERM_RANK[x.term] - TERM_RANK[y.term] || x.displayName.localeCompare(y.displayName)
 			);
 	}
 }

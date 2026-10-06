@@ -79,7 +79,9 @@ describe('an archive read back by the system tar', () => {
 
 			await Bun.$`tar -xf ${path} -C ${dir}`.quiet();
 			expect(await Bun.file(join(dir, 'manifest.json')).text()).toBe('{"stella":1}');
-			expect(new Uint8Array(await Bun.file(join(dir, 'media/photo-1.jpg')).arrayBuffer())).toEqual(big);
+			expect(new Uint8Array(await Bun.file(join(dir, 'media/photo-1.jpg')).arrayBuffer())).toEqual(
+				big
+			);
 		} finally {
 			await rm(dir, { recursive: true, force: true });
 		}

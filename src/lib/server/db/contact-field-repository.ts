@@ -2,7 +2,10 @@ import { and, eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { contactVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import type { ContactFieldRepository, NewContactField } from '../domain/contact-fields/contact-fields';
+import type {
+	ContactFieldRepository,
+	NewContactField
+} from '../domain/contact-fields/contact-fields';
 import type * as schema from './schema';
 import { contact, contactField } from './schema';
 

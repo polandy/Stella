@@ -7,4 +7,5 @@
 export const REVIEW_PARAM = 'review';
 
 /** The person page with the review panel open, back at the relationships card. */
-export const reviewPath = (contactId: string) => `/contacts/${contactId}?${REVIEW_PARAM}#relationships`;
+export const reviewPath = (contactId: string) =>
+	`/contacts/${contactId}?${REVIEW_PARAM}#relationships`;

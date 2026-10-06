@@ -108,7 +108,11 @@ describe('importViaApi', () => {
 
 	it('reports a dry run without writing anything', async () => {
 		const { repository, calls } = fakeRepository();
-		const result = await importViaApi(deps(repository), ACTOR, document, { dryRun: true, wording, locale: 'en' });
+		const result = await importViaApi(deps(repository), ACTOR, document, {
+			dryRun: true,
+			wording,
+			locale: 'en'
+		});
 		expect(calls.read).toHaveLength(1);
 		expect(calls.applied).toEqual([]);
 		expect(result).toMatchObject({

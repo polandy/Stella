@@ -30,7 +30,9 @@ test.describe('on a phone', () => {
 		await expect(page).toHaveURL(`/contacts/${LENA}`);
 	});
 
-	test('moves through the rows with the arrow keys and opens the highlighted one', async ({ page }) => {
+	test('moves through the rows with the arrow keys and opens the highlighted one', async ({
+		page
+	}) => {
 		await finder(page).pressSequentially('brunner');
 		const options = page.getByRole('option');
 		await expect(options.first()).toHaveAttribute('aria-selected', 'true');
@@ -68,7 +70,9 @@ test.describe('on a phone', () => {
 		expect(searches).toEqual([]);
 	});
 
-	test('shows the logo where the one-word breadcrumb would be, centred on the top bar buttons', async ({ page }) => {
+	test('shows the logo where the one-word breadcrumb would be, centred on the top bar buttons', async ({
+		page
+	}) => {
 		const logo = page.getByRole('banner').getByRole('link', { name: 'Stella home' });
 		await expect(logo).toBeVisible();
 		await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toHaveCount(0);
@@ -88,11 +92,15 @@ test.describe('on a phone', () => {
 		await page.getByRole('link', { name: 'People' }).last().click();
 
 		await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('People');
-		await expect(page.getByRole('banner').getByRole('link', { name: 'Stella home' })).toHaveCount(0);
+		await expect(page.getByRole('banner').getByRole('link', { name: 'Stella home' })).toHaveCount(
+			0
+		);
 	});
 });
 
-test('keeps the composer at the top of Home on a desktop, with no person search', async ({ page }) => {
+test('keeps the composer at the top of Home on a desktop, with no person search', async ({
+	page
+}) => {
 	await signIn(page);
 
 	await expect(page.getByLabel('What happened?')).toBeVisible();

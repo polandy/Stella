@@ -24,7 +24,9 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('previews the dump, imports it, attaches the photos and shows the people in the app', async ({ page }) => {
+test('previews the dump, imports it, attaches the photos and shows the people in the app', async ({
+	page
+}) => {
 	await previewDump(page);
 	const preview = page.getByTestId('import-preview');
 	await expect(preview.locator('div', { hasText: /^contacts/ })).toContainText('2');
@@ -42,7 +44,10 @@ test('previews the dump, imports it, attaches the photos and shows the people in
 	await page.getByRole('button', { name: 'Finish' }).click();
 	await expect(page).toHaveURL(/\/contacts$/);
 
-	await page.getByRole('link', { name: /Ottilie Vogelsang/ }).first().click();
+	await page
+		.getByRole('link', { name: /Ottilie Vogelsang/ })
+		.first()
+		.click();
 	await expect(page.getByRole('heading', { name: 'Ottilie Vogelsang' })).toBeVisible();
 	// The age-based birthday became an estimate, never a birthday.
 	await expect(page.getByTestId('identity-facts')).toContainText('around 2016');
@@ -51,7 +56,10 @@ test('previews the dump, imports it, attaches the photos and shows the people in
 	// The mirrored Monica rows became one relationship, listed under the People tab.
 	await expect(page.getByRole('link', { name: 'Kaspar Vogelsang', exact: true })).toBeVisible();
 	await expect(page.getByText('Prefers the harbour walk in Tallinn.')).toBeVisible();
-	await expect(page.locator('img[alt="Ottilie Vogelsang"]')).toHaveAttribute('src', /monica:photo:1/);
+	await expect(page.locator('img[alt="Ottilie Vogelsang"]')).toHaveAttribute(
+		'src',
+		/monica:photo:1/
+	);
 });
 
 test('a second run of the same dump writes nothing twice', async ({ page }) => {

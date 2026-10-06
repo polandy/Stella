@@ -124,7 +124,10 @@
 	onkeydown={onCanvasKeydown}
 ></div>
 {#if keyboardOnCanvas}
-	<div class="pointer-events-none absolute inset-0 ring-2 ring-inset ring-focus-ring" aria-hidden="true"></div>
+	<div
+		class="pointer-events-none absolute inset-0 ring-2 ring-focus-ring ring-inset"
+		aria-hidden="true"
+	></div>
 {/if}
 <p id={hintId} class="sr-only">{t('graph.keyboard.hint')}</p>
 <p class="sr-only" aria-live="polite">{cursorLabel}</p>

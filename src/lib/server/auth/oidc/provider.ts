@@ -32,7 +32,9 @@ function toClaims(payload: JWTPayload): OidcClaims {
 		email: asString(payload.email),
 		emailVerified: payload.email_verified === true,
 		name: asString(payload.name) ?? asString(payload.preferred_username),
-		groups: Array.isArray(payload.groups) ? payload.groups.filter((g): g is string => typeof g === 'string') : []
+		groups: Array.isArray(payload.groups)
+			? payload.groups.filter((g): g is string => typeof g === 'string')
+			: []
 	};
 }
 

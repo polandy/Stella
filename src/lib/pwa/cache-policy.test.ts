@@ -90,7 +90,9 @@ describe('a page opened from inside the app', () => {
 	});
 
 	it('is kept under the page alone, whichever layouts that visit happened to reload', () => {
-		expect(cacheKeyFor(pageData('/settings', '001'))).toBe(cacheKeyFor(pageData('/settings', '111')));
+		expect(cacheKeyFor(pageData('/settings', '001'))).toBe(
+			cacheKeyFor(pageData('/settings', '111'))
+		);
 		expect(cacheKeyFor(pageData('/settings'))).not.toBe(cacheKeyFor(pageData('/circles')));
 	});
 
@@ -226,9 +228,7 @@ describe('signing out', () => {
 	it('is recognised without JavaScript, which is how the form actually posts', () => {
 		// The sign-out button is a plain form post, so there is no client-side hook to hang
 		// the purge on — the request passing through the worker is the only signal there is.
-		expect(endsTheSession({ ...asset('/logout'), method: 'POST', isNavigation: true })).toBe(
-			true
-		);
+		expect(endsTheSession({ ...asset('/logout'), method: 'POST', isNavigation: true })).toBe(true);
 	});
 
 	it('is not confused with merely looking at a page', () => {
@@ -254,6 +254,8 @@ describe('what stands in for a page that was never kept', () => {
 		expect(standInFor(page('/login?next=/'))).toBeNull();
 		expect(standInFor(asset('/media/abc?thumb'))).toBeNull();
 		expect(standInFor({ ...page('/?compose'), method: 'POST' })).toBeNull();
-		expect(standInFor({ ...page('/?compose'), url: 'https://elsewhere.example/?compose' })).toBeNull();
+		expect(
+			standInFor({ ...page('/?compose'), url: 'https://elsewhere.example/?compose' })
+		).toBeNull();
 	});
 });

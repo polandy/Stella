@@ -27,5 +27,7 @@ export async function sendImmichPhoto(
 	body.append('thumb', thumb, 'thumb.jpg');
 	body.append('width', String(width));
 	body.append('height', String(height));
-	await submitAction(fetch, `/contacts/${encodeURIComponent(contactId)}?/useImmichPhoto`, body, { keepalive: false });
+	await submitAction(fetch, `/contacts/${encodeURIComponent(contactId)}?/useImmichPhoto`, body, {
+		keepalive: false
+	});
 }

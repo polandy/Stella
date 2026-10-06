@@ -16,7 +16,14 @@
 		 */
 		fill?: boolean;
 	}
-	let { id, name, avatarPhotoId = null, size = 36, deceased = false, fill = false }: Props = $props();
+	let {
+		id,
+		name,
+		avatarPhotoId = null,
+		size = 36,
+		deceased = false,
+		fill = false
+	}: Props = $props();
 
 	const accent = $derived(avatarAccent(id));
 </script>
@@ -40,7 +47,9 @@
 		class:rounded-full={!fill}
 		class:fill
 		class:opacity-70={deceased}
-		style="{fill ? '' : `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.38)}px;`}{accentAvatarStyle(
+		style="{fill
+			? ''
+			: `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.38)}px;`}{accentAvatarStyle(
 			accent
 		)}"
 		aria-hidden="true"

@@ -5,7 +5,9 @@ import { SqlDumpError } from './monica/sql-dump';
 
 /* Which of Monica's two exports a file is, decided from the file itself (docs/02 §2.16). */
 
-const VCARD = ['BEGIN:VCARD', 'VERSION:4.0', 'UID:u1', 'FN:Severin Hauenstein', 'END:VCARD'].join('\r\n');
+const VCARD = ['BEGIN:VCARD', 'VERSION:4.0', 'UID:u1', 'FN:Severin Hauenstein', 'END:VCARD'].join(
+	'\r\n'
+);
 
 const JSON_EXPORT = JSON.stringify({
 	version: '1.0-preview.1',
@@ -25,7 +27,6 @@ const SQL_DUMP =
 	"INSERT INTO `contacts` VALUES (1,'Hans');\n" +
 	table('relationships') +
 	table('relationship_types');
-
 
 describe('detectImportFormat', () => {
 	test('calls a document that opens with a brace JSON, whatever comes before it', () => {

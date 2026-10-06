@@ -53,7 +53,10 @@ const homeTab = (page: Page) => page.locator('a[href="/"]:visible').last();
 /** Opens Lena Brunner's page the way a phone does: by tapping, never from the address bar. */
 async function tapToLena(page: Page): Promise<void> {
 	await peopleTab(page).click();
-	await page.getByRole('link', { name: /Lena Brunner/ }).first().click();
+	await page
+		.getByRole('link', { name: /Lena Brunner/ })
+		.first()
+		.click();
 	await expect(page.getByRole('heading', { name: 'Lena Brunner' })).toBeVisible();
 }
 
@@ -82,7 +85,9 @@ test('opens People and Circles offline without them ever having been read, and s
 	await page.locator('a[href="/circles"]:visible').first().click();
 	await expect(page.getByRole('heading', { name: 'Circles', level: 1 })).toBeVisible();
 	// The exact wording (today, yesterday, a date) is `copy-age.test.ts`'s; here, that it is said.
-	await expect(page.getByTestId('offline-banner')).toHaveText(/from this device, as of .*\d{2}:\d{2}/);
+	await expect(page.getByTestId('offline-banner')).toHaveText(
+		/from this device, as of .*\d{2}:\d{2}/
+	);
 
 	await peopleTab(page).click();
 	await expect(page.getByRole('heading', { name: 'People', level: 1 })).toBeVisible();

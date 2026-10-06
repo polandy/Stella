@@ -45,7 +45,12 @@ export interface JournalRepository {
 		visibility: Visibility;
 	}): Promise<JournalEntry | null>;
 	insert(entry: NewJournalEntry): Promise<void>;
-	updateBody(params: { id: string; title: string | null; body: string; updatedAt: number }): Promise<void>;
+	updateBody(params: {
+		id: string;
+		title: string | null;
+		body: string;
+		updatedAt: number;
+	}): Promise<void>;
 	/**
 	 * Edit the title/body of an entry the author owns; the day and visibility are part of an
 	 * entry's identity (docs/02 §2.20) and stay put here. Returns whether such an entry existed.
@@ -102,7 +107,10 @@ export interface JournalDeps {
 
 /** What writing into a day slot needs — the narrow part of `JournalDeps`. */
 export interface JournalDayDeps {
-	journal: Pick<JournalRepository, 'findDay' | 'insert' | 'updateBody' | 'replaceMentions' | 'listMentionedContactIds'>;
+	journal: Pick<
+		JournalRepository,
+		'findDay' | 'insert' | 'updateBody' | 'replaceMentions' | 'listMentionedContactIds'
+	>;
 	ids: IdGenerator;
 	clock: Clock;
 }

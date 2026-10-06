@@ -129,16 +129,31 @@ describe('fades and scrolling under reduced motion', () => {
 
 describe('gapToTakeUp', () => {
 	it('takes up the gap before a block that has a sibling above it', () => {
-		expect(gapToTakeUp({ gap: 24, siblingBefore: true, siblingAfter: true })).toEqual({ top: -24, bottom: 0 });
-		expect(gapToTakeUp({ gap: 24, siblingBefore: true, siblingAfter: false })).toEqual({ top: -24, bottom: 0 });
+		expect(gapToTakeUp({ gap: 24, siblingBefore: true, siblingAfter: true })).toEqual({
+			top: -24,
+			bottom: 0
+		});
+		expect(gapToTakeUp({ gap: 24, siblingBefore: true, siblingAfter: false })).toEqual({
+			top: -24,
+			bottom: 0
+		});
 	});
 
 	it('takes up the gap after a first block instead', () => {
-		expect(gapToTakeUp({ gap: 16, siblingBefore: false, siblingAfter: true })).toEqual({ top: 0, bottom: -16 });
+		expect(gapToTakeUp({ gap: 16, siblingBefore: false, siblingAfter: true })).toEqual({
+			top: 0,
+			bottom: -16
+		});
 	});
 
 	it('has nothing to take up for an only child or a parent without a gap', () => {
-		expect(gapToTakeUp({ gap: 16, siblingBefore: false, siblingAfter: false })).toEqual({ top: 0, bottom: 0 });
-		expect(gapToTakeUp({ gap: 0, siblingBefore: true, siblingAfter: true })).toEqual({ top: 0, bottom: 0 });
+		expect(gapToTakeUp({ gap: 16, siblingBefore: false, siblingAfter: false })).toEqual({
+			top: 0,
+			bottom: 0
+		});
+		expect(gapToTakeUp({ gap: 0, siblingBefore: true, siblingAfter: true })).toEqual({
+			top: 0,
+			bottom: 0
+		});
 	});
 });

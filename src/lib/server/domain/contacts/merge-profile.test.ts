@@ -81,8 +81,13 @@ describe('mergeProfiles', () => {
 	});
 
 	it('wears the other face only when the survivor has none', () => {
-		expect(mergeProfiles(profile({ avatarPhotoId: 'p-keep' }), profile({ avatarPhotoId: 'p-other' })).avatarPhotoId).toBe('p-keep');
-		expect(mergeProfiles(profile({}), profile({ avatarPhotoId: 'p-other' })).avatarPhotoId).toBe('p-other');
+		expect(
+			mergeProfiles(profile({ avatarPhotoId: 'p-keep' }), profile({ avatarPhotoId: 'p-other' }))
+				.avatarPhotoId
+		).toBe('p-keep');
+		expect(mergeProfiles(profile({}), profile({ avatarPhotoId: 'p-other' })).avatarPhotoId).toBe(
+			'p-other'
+		);
 	});
 
 	it('changes nothing when the record merged away says nothing at all', () => {

@@ -1,5 +1,10 @@
 import type { GraphModel } from '../../../graph/model/types';
-import { variantFor, type KinshipGraph, type KinVariant, type Pair } from '../../../kinship/kinship';
+import {
+	variantFor,
+	type KinshipGraph,
+	type KinVariant,
+	type Pair
+} from '../../../kinship/kinship';
 import type { ExclusionFacts } from '../../../relationships/exclusions';
 import type { Viewer } from '../../access/visibility';
 import {
@@ -87,9 +92,13 @@ export async function readFamilyOf(
 }
 
 /** The far ends of the ties, each with the wording its gender on record asks for. */
-function wordingOf(kinship: KinshipGraph, ties: readonly RelationshipView[]): Record<string, KinVariant> {
+function wordingOf(
+	kinship: KinshipGraph,
+	ties: readonly RelationshipView[]
+): Record<string, KinVariant> {
 	const people = new Map(kinship.people.map((person) => [person.id, person]));
 	const wording: Record<string, KinVariant> = {};
-	for (const tie of ties) wording[tie.otherContactId] = variantFor(people.get(tie.otherContactId) ?? {});
+	for (const tie of ties)
+		wording[tie.otherContactId] = variantFor(people.get(tie.otherContactId) ?? {});
 	return wording;
 }

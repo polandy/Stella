@@ -13,7 +13,9 @@ import { appReady, signIn } from './app';
 
 /** Six letters no other attempt shares, so a name made from them is this attempt's alone. */
 function runLetters(): string {
-	return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) => String.fromCharCode(97 + (byte % 26))).join('');
+	return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) =>
+		String.fromCharCode(97 + (byte % 26))
+	).join('');
 }
 
 /** The id of the person whose page is showing. */
@@ -24,7 +26,11 @@ function personId(page: Page): string {
 }
 
 /** Adds a person through *Add a person* and returns their id. */
-async function addPerson(page: Page, first: string, rest: { last?: string; description?: string }): Promise<string> {
+async function addPerson(
+	page: Page,
+	first: string,
+	rest: { last?: string; description?: string }
+): Promise<string> {
 	await page.goto('/contacts/new');
 	await appReady(page);
 	await page.getByLabel('First name').fill(first);
@@ -51,7 +57,9 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('says which namesake is which in the @-picker, and the moment goes to the one picked', async ({ page }) => {
+test('says which namesake is which in the @-picker, and the moment goes to the one picked', async ({
+	page
+}) => {
 	const { name, lake } = await twoNamesakes(page);
 	await page.goto('/');
 	await appReady(page);
@@ -91,7 +99,9 @@ async function pickTheHutWarden(page: Page, field: Locator, save: Locator, name:
 	await expect(save).toBeEnabled();
 }
 
-test('asks which one a typed namesake means in a note, keeping saving off until one is picked', async ({ page }) => {
+test('asks which one a typed namesake means in a note, keeping saving off until one is picked', async ({
+	page
+}) => {
 	const { name } = await twoNamesakes(page);
 	await addPerson(page, 'Anneliese', { last: `Gfeller${runLetters()}` });
 
@@ -106,7 +116,9 @@ test('asks which one a typed namesake means in a note, keeping saving off until 
 	await pickTheHutWarden(page, field, save, name);
 });
 
-test('asks which one a typed namesake means in a moment, keeping saving off until one is picked', async ({ page }) => {
+test('asks which one a typed namesake means in a moment, keeping saving off until one is picked', async ({
+	page
+}) => {
 	const { name } = await twoNamesakes(page);
 	const last = `Gfeller${runLetters()}`;
 	await addPerson(page, 'Anneliese', { last });
@@ -123,7 +135,9 @@ test('asks which one a typed namesake means in a moment, keeping saving off unti
 	await pickTheHutWarden(page, field, save, name);
 });
 
-test('asks which one a typed namesake means in a journal entry, new or edited', async ({ page }) => {
+test('asks which one a typed namesake means in a journal entry, new or edited', async ({
+	page
+}) => {
 	const { name, hut } = await twoNamesakes(page);
 	const subject = await addPerson(page, 'Anneliese', { last: `Gfeller${runLetters()}` });
 	await page.goto(`/contacts/${subject}/journal`);
@@ -174,7 +188,9 @@ test('keeps a namesake mentioned when a journal entry is edited and saved', asyn
 	await expect(chip).toBeVisible();
 });
 
-test('creates another namesake from a moment, only with something to know them by', async ({ page }) => {
+test('creates another namesake from a moment, only with something to know them by', async ({
+	page
+}) => {
 	const { name, hut, lake } = await twoNamesakes(page);
 	await page.goto('/');
 	await appReady(page);
@@ -204,7 +220,9 @@ test('creates another namesake from a moment, only with something to know them b
 	await expect(page.getByRole('main').getByText('Plays the alphorn')).toBeVisible();
 });
 
-test('describes someone new in the relationship form by the link being entered', async ({ page }) => {
+test('describes someone new in the relationship form by the link being entered', async ({
+	page
+}) => {
 	const last = `Gfeller${runLetters()}`;
 	await addPerson(page, 'Anneliese', { last });
 
@@ -220,7 +238,9 @@ test('describes someone new in the relationship form by the link being entered',
 	await expect(description).toHaveValue(`Friend of Anneliese ${last}`);
 
 	// Without a last name the description is what they are known by, so it cannot be emptied.
-	const add = page.getByTestId('person-search-create').getByRole('button', { name: 'Add & select' });
+	const add = page
+		.getByTestId('person-search-create')
+		.getByRole('button', { name: 'Add & select' });
 	await expect(add).toBeEnabled();
 	await description.fill('');
 	await expect(add).toBeDisabled();

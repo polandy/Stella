@@ -4,7 +4,15 @@
  */
 
 /** Every kind a contact field can have. */
-export const CONTACT_FIELD_KINDS = ['phone', 'email', 'address', 'url', 'social', 'date', 'custom'] as const;
+export const CONTACT_FIELD_KINDS = [
+	'phone',
+	'email',
+	'address',
+	'url',
+	'social',
+	'date',
+	'custom'
+] as const;
 
 /** One of `CONTACT_FIELD_KINDS`. */
 export type ContactFieldKind = (typeof CONTACT_FIELD_KINDS)[number];

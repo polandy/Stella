@@ -56,7 +56,7 @@ export async function findConnectionPath(
 	// Walk predecessors back from the target, then reverse into source → target order.
 	const nodeIds: string[] = [];
 	const edges: GraphEdge[] = [];
-	for (let cur = toId; cur !== fromId; ) {
+	for (let cur = toId; cur !== fromId;) {
 		const step = cameFrom.get(cur)!;
 		nodeIds.unshift(cur);
 		edges.unshift(step.edge);

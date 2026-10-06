@@ -4,7 +4,6 @@ import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { RELATIONS } from '$lib/suggestions/types';
 import { proposeHref } from '$lib/contacts/propose';
 import { decodeRelationshipChoice } from '$lib/relationships/type-options';
 import { contactSectionPath } from '$lib/contacts/sections';
@@ -28,16 +27,6 @@ import { say, translator } from '$lib/server/i18n/say';
 import { reviewPath } from '../review-path';
 import type { Actions } from '../$types';
 
-/** The claim a review form is answering: the relation and the two people. */
-async function parseAnswer(request: Request) {
-	const form = await request.formData();
-	return v.safeParse(AnswerSuggestionSchema, {
-		relation: form.get('relation'),
-		fromId: form.get('fromId'),
-		toId: form.get('toId')
-	});
-}
-
 /** The specifics of a link (docs/02 §2.4); the domain has the last word on what is real. */
 const RelationshipDetailsSchema = {
 	description: v.optional(v.pipe(v.string(), v.trim())),
@@ -57,21 +46,6 @@ const EditRelationshipSchema = v.object({
 	/** Type *and* direction, as `relationshipTypeOptions` encodes them; absent leaves the type. */
 	typeChoice: v.optional(v.pipe(v.string(), v.minLength(1))),
 	...RelationshipDetailsSchema
-});
-
-/** One claim a member is answering on the review panel (§6.4): the relation and the pair. */
-const AnswerSuggestionSchema = v.object({
-	relation: v.picklist(RELATIONS),
-	fromId: v.pipe(v.string(), v.minLength(1)),
-	toId: v.pipe(v.string(), v.minLength(1))
-});
-
-/** One confirmed propagation suggestion (docs/02 §2.4.1). */
-const AddProposedSchema = v.object({
-	fromId: v.pipe(v.string(), v.minLength(1)),
-	toId: v.pipe(v.string(), v.minLength(1)),
-	typeId: v.picklist(['parent_child', 'sibling']),
-	propose: v.optional(v.pipe(v.string(), v.trim()))
 });
 
 /** The relationships card: links, their corrections, and the answers to suggestions (docs/02 §2.4). */
@@ -102,7 +76,11 @@ export const relationshipActions = {
 		if (command?.type !== 'relationship.add') {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
-		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale };
+		const author = {
+			userId: locals.user.id,
+			householdId: locals.user.householdId,
+			locale: locals.locale
+		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(outcome?.status === 'refused' ? 409 : 400, {
@@ -150,7 +128,11 @@ export const relationshipActions = {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
 
-		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale };
+		const author = {
+			userId: locals.user.id,
+			householdId: locals.user.householdId,
+			locale: locals.locale
+		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status === 'applied') return { relationshipIds: outcome.result.relationshipIds };
 		if (outcome?.status !== 'refused') {
@@ -159,7 +141,10 @@ export const relationshipActions = {
 		const t = translator(locals);
 		const refusals =
 			outcome.error instanceof RelationshipsRefusedError
-				? outcome.error.refusals.map((refusal) => ({ targetId: refusal.targetId, reason: refusal.reason(t) }))
+				? outcome.error.refusals.map((refusal) => ({
+						targetId: refusal.targetId,
+						reason: refusal.reason(t)
+					}))
 				: [];
 		return fail(409, { error: outcome.reason(t), refusals });
 	},
@@ -195,7 +180,8 @@ export const relationshipActions = {
 			sinceDate: form.get('sinceDate') || undefined,
 			status: form.get('status') || undefined
 		});
-		if (!parsed.success) return fail(400, { error: say(locals, 'errors.relationship.couldNotSave') });
+		if (!parsed.success)
+			return fail(400, { error: say(locals, 'errors.relationship.couldNotSave') });
 
 		// A choice the picker did not write names no type and no side, so it cannot be stored.
 		const choice = parsed.output.typeChoice
@@ -290,5 +276,5 @@ export const relationshipActions = {
 		const refusal = await restoreClaim(locals, viewer, await request.formData());
 		if (refusal) return fail(refusal.status, { error: refusal.message });
 		throw redirect(303, reviewPath(params.id));
-	},
+	}
 } satisfies Actions;

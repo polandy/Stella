@@ -44,14 +44,24 @@ beforeEach(() => {
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
 	db.insert(schema.household).values({ id: H, name: 'H' }).run();
-	db.insert(schema.user).values([
-		{ id: U1, householdId: H, email: 'u1@x.test', name: 'One' },
-		{ id: U2, householdId: H, email: 'u2@x.test', name: 'Two' }
-	]).run();
-	db.insert(schema.contact).values([
-		{ id: 'c-shared', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Shared' },
-		{ id: 'c-priv', householdId: H, createdBy: U1, visibility: 'private', displayName: 'Private' }
-	]).run();
+	db.insert(schema.user)
+		.values([
+			{ id: U1, householdId: H, email: 'u1@x.test', name: 'One' },
+			{ id: U2, householdId: H, email: 'u2@x.test', name: 'Two' }
+		])
+		.run();
+	db.insert(schema.contact)
+		.values([
+			{
+				id: 'c-shared',
+				householdId: H,
+				createdBy: U1,
+				visibility: 'shared',
+				displayName: 'Shared'
+			},
+			{ id: 'c-priv', householdId: H, createdBy: U1, visibility: 'private', displayName: 'Private' }
+		])
+		.run();
 	repo = createDrizzleNoteRepository(db);
 });
 

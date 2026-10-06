@@ -32,7 +32,15 @@ const tick = () => ++clock;
 
 function person(id: string, visibility: 'shared' | 'private' = 'shared', createdBy = U1) {
 	db.insert(schema.contact)
-		.values({ id, householdId: H, createdBy, visibility, displayName: id, createdAt: tick(), updatedAt: clock })
+		.values({
+			id,
+			householdId: H,
+			createdBy,
+			visibility,
+			displayName: id,
+			createdAt: tick(),
+			updatedAt: clock
+		})
 		.run();
 }
 
@@ -53,24 +61,70 @@ beforeEach(() => {
 		.run();
 	db.insert(schema.relationshipType)
 		.values([
-			{ id: 'friend', householdId: null, key: 'friend', forwardLabel: 'Friend of', reverseLabel: 'Friend of', category: 'social', symmetric: 1 },
-			{ id: 'own', householdId: H, key: 'own', forwardLabel: 'Coach of', reverseLabel: 'Coached by', category: 'social' }
+			{
+				id: 'friend',
+				householdId: null,
+				key: 'friend',
+				forwardLabel: 'Friend of',
+				reverseLabel: 'Friend of',
+				category: 'social',
+				symmetric: 1
+			},
+			{
+				id: 'own',
+				householdId: H,
+				key: 'own',
+				forwardLabel: 'Coach of',
+				reverseLabel: 'Coached by',
+				category: 'social'
+			}
 		])
 		.run();
 	person('anna');
 	person('ben');
 	person('cleo');
 	db.insert(schema.photo)
-		.values({ id: 'p-anna', householdId: H, contactId: 'anna', createdBy: U1, filePath: 'a.jpg', thumbPath: 'a-t.jpg', mime: 'image/jpeg' })
+		.values({
+			id: 'p-anna',
+			householdId: H,
+			contactId: 'anna',
+			createdBy: U1,
+			filePath: 'a.jpg',
+			thumbPath: 'a-t.jpg',
+			mime: 'image/jpeg'
+		})
 		.run();
 	db.insert(schema.relationship)
-		.values({ id: 'r-ab', householdId: H, fromContactId: 'anna', toContactId: 'ben', typeId: 'friend', createdBy: U1, createdAt: tick(), updatedAt: clock })
+		.values({
+			id: 'r-ab',
+			householdId: H,
+			fromContactId: 'anna',
+			toContactId: 'ben',
+			typeId: 'friend',
+			createdBy: U1,
+			createdAt: tick(),
+			updatedAt: clock
+		})
 		.run();
 	db.insert(schema.circle)
-		.values({ id: 'choir', householdId: H, createdBy: U1, name: 'Choir', createdAt: tick(), updatedAt: clock })
+		.values({
+			id: 'choir',
+			householdId: H,
+			createdBy: U1,
+			name: 'Choir',
+			createdAt: tick(),
+			updatedAt: clock
+		})
 		.run();
 	db.insert(schema.circleMembership)
-		.values({ id: 'm-anna', circleId: 'choir', contactId: 'anna', createdBy: U1, createdAt: tick(), updatedAt: clock })
+		.values({
+			id: 'm-anna',
+			circleId: 'choir',
+			contactId: 'anna',
+			createdBy: U1,
+			createdAt: tick(),
+			updatedAt: clock
+		})
 		.run();
 });
 
@@ -83,53 +137,122 @@ describe('the people stamp', () => {
 		['a person added', () => person('dora')],
 		[
 			'a name edited',
-			() => createDrizzleContactRepository(db).updateProfile('ben', { displayName: 'Ben B.', description: null, updatedAt: tick() })
+			() =>
+				createDrizzleContactRepository(db).updateProfile('ben', {
+					displayName: 'Ben B.',
+					description: null,
+					updatedAt: tick()
+				})
 		],
 		[
 			'a description written',
-			() => createDrizzleContactRepository(db).updateProfile('ben', { displayName: 'ben', description: 'from school', updatedAt: tick() })
+			() =>
+				createDrizzleContactRepository(db).updateProfile('ben', {
+					displayName: 'ben',
+					description: 'from school',
+					updatedAt: tick()
+				})
 		],
 		['a person archived', () => createDrizzleContactRepository(db).setArchived('cleo', tick())],
 		[
 			'a person deleted',
-			() => createDrizzleContactRepository(db).deleteVisibleTo(andy, 'cleo', {
-				id: 'log-1',
-				householdId: H,
-				actorId: U1,
-				action: 'delete',
-				entityType: 'contact',
-				entityId: 'cleo',
-				contactId: null,
-				visibility: 'shared',
-				summary: 'removed cleo',
-				createdAt: tick()
-			})
+			() =>
+				createDrizzleContactRepository(db).deleteVisibleTo(andy, 'cleo', {
+					id: 'log-1',
+					householdId: H,
+					actorId: U1,
+					action: 'delete',
+					entityType: 'contact',
+					entityId: 'cleo',
+					contactId: null,
+					visibility: 'shared',
+					summary: 'removed cleo',
+					createdAt: tick()
+				})
 		],
-		['an avatar set, which does not touch updated_at', () => createDrizzlePhotoRepository(db).setContactAvatar('anna', 'p-anna')],
+		[
+			'an avatar set, which does not touch updated_at',
+			() => createDrizzlePhotoRepository(db).setContactAvatar('anna', 'p-anna')
+		],
 		[
 			'a link added',
 			() =>
-				createDrizzleRelationshipRepository(db).insert({ id: 'r-bc', householdId: H, fromContactId: 'ben', toContactId: 'cleo', typeId: 'friend', description: null, sinceDate: null, status: 'current', createdBy: U1, createdAt: tick(), updatedAt: clock })
+				createDrizzleRelationshipRepository(db).insert({
+					id: 'r-bc',
+					householdId: H,
+					fromContactId: 'ben',
+					toContactId: 'cleo',
+					typeId: 'friend',
+					description: null,
+					sinceDate: null,
+					status: 'current',
+					createdBy: U1,
+					createdAt: tick(),
+					updatedAt: clock
+				})
 		],
 		[
 			'a link ended',
-			() => createDrizzleRelationshipRepository(db).updateVisibleTo(andy, 'r-ab', { description: null, sinceDate: null, status: 'former', retype: null }, tick())
+			() =>
+				createDrizzleRelationshipRepository(db).updateVisibleTo(
+					andy,
+					'r-ab',
+					{ description: null, sinceDate: null, status: 'former', retype: null },
+					tick()
+				)
 		],
 		['a link removed', () => createDrizzleRelationshipRepository(db).removeVisibleTo(andy, 'r-ab')],
 		[
 			"a household type's label changed",
-			() => createDrizzleRelationshipRepository(db).updateTypeVisibleTo(andy, 'own', { forwardLabel: 'Trainer of', reverseLabel: 'Coached by', category: 'social', symmetric: false })
+			() =>
+				createDrizzleRelationshipRepository(db).updateTypeVisibleTo(andy, 'own', {
+					forwardLabel: 'Trainer of',
+					reverseLabel: 'Coached by',
+					category: 'social',
+					symmetric: false
+				})
 		],
 		[
 			'a circle added',
-			() => createDrizzleCircleRepository(db).insert({ id: 'school', householdId: H, createdBy: U1, visibility: 'shared', name: 'School', description: null, kind: 'school', color: 'blue', startDate: null, endDate: null, createdAt: tick(), updatedAt: clock })
+			() =>
+				createDrizzleCircleRepository(db).insert({
+					id: 'school',
+					householdId: H,
+					createdBy: U1,
+					visibility: 'shared',
+					name: 'School',
+					description: null,
+					kind: 'school',
+					color: 'blue',
+					startDate: null,
+					endDate: null,
+					createdAt: tick(),
+					updatedAt: clock
+				})
 		],
 		[
 			'someone joined a circle',
-			() => createDrizzleCircleRepository(db).addMemberships([{ id: 'm-ben', circleId: 'choir', contactId: 'ben', role: null, createdBy: U1, createdAt: tick(), updatedAt: clock }])
+			() =>
+				createDrizzleCircleRepository(db).addMemberships([
+					{
+						id: 'm-ben',
+						circleId: 'choir',
+						contactId: 'ben',
+						role: null,
+						createdBy: U1,
+						createdAt: tick(),
+						updatedAt: clock
+					}
+				])
 		],
-		['a role given', () => createDrizzleCircleRepository(db).setRoles('choir', ['anna'], 'Alto', tick())],
-		['someone left a circle', () => createDrizzleCircleRepository(db).removeMembership('choir', 'anna')]
+		[
+			'a role given',
+			() => createDrizzleCircleRepository(db).setRoles('choir', ['anna'], 'Alto', tick())
+		],
+		[
+			'someone left a circle',
+			() => createDrizzleCircleRepository(db).removeMembership('choir', 'anna')
+		]
 	];
 
 	for (const [what, write] of writes) {

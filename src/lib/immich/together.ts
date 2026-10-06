@@ -13,7 +13,12 @@ import { FORMER_RELATIONSHIP_STATUS } from '../relationships/status';
  */
 
 /** The ties a *Together* chip sits on: a couple, or a parent and a child, from either end. */
-const TOGETHER_ROLES: ReadonlySet<RoleTerm> = new Set<RoleTerm>(['spouse', 'partner', 'parent', 'child']);
+const TOGETHER_ROLES: ReadonlySet<RoleTerm> = new Set<RoleTerm>([
+	'spouse',
+	'partner',
+	'parent',
+	'child'
+]);
 
 /** A row of the People card, as far as *Together* needs it. */
 interface TogetherTie {

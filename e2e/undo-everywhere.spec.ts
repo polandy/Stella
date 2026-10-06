@@ -76,9 +76,14 @@ test('a removal left alone is sent when the page is left, and the tag is gone fo
 	await expect(await profileRow(page, 'Tags')).not.toContainText(TAG_LET_GO);
 });
 
-test('a member removed from a circle leaves the grid and comes back with Undo', async ({ page }) => {
+test('a member removed from a circle leaves the grid and comes back with Undo', async ({
+	page
+}) => {
 	await page.goto('/circles');
-	await page.getByTestId('circle-cards').getByRole('link', { name: /Turnverein/ }).click();
+	await page
+		.getByTestId('circle-cards')
+		.getByRole('link', { name: /Turnverein/ })
+		.click();
 	const members = page.getByTestId('member-grid');
 	const heading = section(page, 'Members');
 	await expect(members.getByRole('link', { name: 'Beat Steiner' })).toBeVisible();
@@ -95,5 +100,7 @@ test('a member removed from a circle leaves the grid and comes back with Undo', 
 	await expect(members.getByRole('link', { name: 'Beat Steiner' })).toBeVisible();
 	await expect(heading).toContainText('4');
 	await page.reload();
-	await expect(page.getByTestId('member-grid').getByRole('link', { name: 'Beat Steiner' })).toBeVisible();
+	await expect(
+		page.getByTestId('member-grid').getByRole('link', { name: 'Beat Steiner' })
+	).toBeVisible();
 });

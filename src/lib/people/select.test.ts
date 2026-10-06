@@ -4,7 +4,14 @@ import { filterPeople, queryAfterPick, stillNeedsAPick, type SelectablePerson } 
 function person(
 	overrides: Partial<SelectablePerson> & { id: string; displayName: string }
 ): SelectablePerson {
-	return { firstName: null, lastName: null, nickname: null, description: null, avatarPhotoId: null, ...overrides };
+	return {
+		firstName: null,
+		lastName: null,
+		nickname: null,
+		description: null,
+		avatarPhotoId: null,
+		...overrides
+	};
 }
 
 describe('filterPeople', () => {

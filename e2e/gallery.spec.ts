@@ -65,7 +65,9 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('adds photos, captions one, and keeps the caption on the picture it belongs to', async ({ page }) => {
+test('adds photos, captions one, and keeps the caption on the picture it belongs to', async ({
+	page
+}) => {
 	await openPhotos(page, PHOTOGRAPHED);
 	await expect(page.getByText(/^No photos of .+ yet\./)).toBeVisible();
 
@@ -84,7 +86,10 @@ test('adds photos, captions one, and keeps the caption on the picture it belongs
 	// it was written for, and only on that one.
 	await grid.getByRole('button').first().click();
 	await expect(page.getByTestId('photo-lightbox')).toContainText('At the lake');
-	await page.getByTestId('photo-lightbox').getByRole('button', { name: 'Close', exact: true }).click();
+	await page
+		.getByTestId('photo-lightbox')
+		.getByRole('button', { name: 'Close', exact: true })
+		.click();
 	await grid.getByRole('button').nth(1).click();
 	await expect(page.getByTestId('photo-lightbox')).toContainText('No caption');
 });
@@ -102,7 +107,9 @@ test('marks a private photo in the grid and lets its owner share it', async ({ p
 	await expect(grid.getByTitle('Private — only you can see this')).toHaveCount(0);
 });
 
-test('wears a gallery photo as the avatar, and gives it back when the photo is removed', async ({ page }) => {
+test('wears a gallery photo as the avatar, and gives it back when the photo is removed', async ({
+	page
+}) => {
 	await openPhotos(page, UNPHOTOGRAPHED);
 	await addPhotos(page, [file('portrait.png')]);
 	const grid = page.getByTestId('photo-grid');

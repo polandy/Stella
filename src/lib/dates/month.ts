@@ -37,7 +37,9 @@ export function shiftMonth(month: string, delta: number): string {
 export function monthGrid(month: string, weekStart: number): (string | null)[][] {
 	const [year, monthIndex] = month.split('-').map(Number);
 	const length = new Date(Date.UTC(year, monthIndex, 0)).getUTCDate();
-	const lead = (new Date(Date.UTC(year, monthIndex - 1, 1)).getUTCDay() - weekStart + DAYS_IN_WEEK) % DAYS_IN_WEEK;
+	const lead =
+		(new Date(Date.UTC(year, monthIndex - 1, 1)).getUTCDay() - weekStart + DAYS_IN_WEEK) %
+		DAYS_IN_WEEK;
 	const cells: (string | null)[] = [
 		...Array<null>(lead).fill(null),
 		...Array.from({ length }, (_, i) => `${month}-${pad(i + 1)}`)

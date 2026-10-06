@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { foldName, matchImmichPeople, type MatchableContact, type MatchableImmichPerson } from './match';
+import {
+	foldName,
+	matchImmichPeople,
+	type MatchableContact,
+	type MatchableImmichPerson
+} from './match';
 
 /*
  * Matching Stella's people to Immich's by name (docs/concepts/immich.md §4.2): a full name that
@@ -21,14 +26,22 @@ const contact = (
 	...extra
 });
 
-const person = (id: string, name: string, hidden = false): MatchableImmichPerson => ({ id, name, hidden });
+const person = (id: string, name: string, hidden = false): MatchableImmichPerson => ({
+	id,
+	name,
+	hidden
+});
 
 const none = new Set<string>();
 
 const match = (
 	contacts: MatchableContact[],
 	people: MatchableImmichPerson[],
-	linked: { contacts?: Set<string>; people?: Set<string>; ignored?: { contactId: string; personId: string }[] } = {}
+	linked: {
+		contacts?: Set<string>;
+		people?: Set<string>;
+		ignored?: { contactId: string; personId: string }[];
+	} = {}
 ) =>
 	matchImmichPeople({
 		contacts,
@@ -62,7 +75,9 @@ describe('matchImmichPeople', () => {
 	it('calls a full name that agrees after folding a likely match', () => {
 		const rows = match([contact('c1', 'Jürg', 'Müller')], [person('p1', 'Juerg Mueller')]);
 
-		expect(rows).toEqual([{ contactId: 'c1', kind: 'likely', candidates: [{ personId: 'p1', strength: 'likely' }] }]);
+		expect(rows).toEqual([
+			{ contactId: 'c1', kind: 'likely', candidates: [{ personId: 'p1', strength: 'likely' }] }
+		]);
 	});
 
 	it('reads the shown name as a full name too', () => {
@@ -77,17 +92,25 @@ describe('matchImmichPeople', () => {
 	it('calls a first name alone a maybe', () => {
 		const rows = match([contact('c1', 'Lena', 'Brunner')], [person('p1', 'Lena')]);
 
-		expect(rows).toEqual([{ contactId: 'c1', kind: 'maybe', candidates: [{ personId: 'p1', strength: 'maybe' }] }]);
+		expect(rows).toEqual([
+			{ contactId: 'c1', kind: 'maybe', candidates: [{ personId: 'p1', strength: 'maybe' }] }
+		]);
 	});
 
 	it('calls a nickname alone a maybe', () => {
-		const rows = match([contact('c1', 'Johannes', 'Brunner', { nickname: 'Hans' })], [person('p1', 'Hans')]);
+		const rows = match(
+			[contact('c1', 'Johannes', 'Brunner', { nickname: 'Hans' })],
+			[person('p1', 'Hans')]
+		);
 
 		expect(rows.map((row) => row.kind)).toEqual(['maybe']);
 	});
 
 	it('calls a nickname with the last name a likely match: it is a full name', () => {
-		const rows = match([contact('c1', 'Johannes', 'Brunner', { nickname: 'Hans' })], [person('p1', 'Hans Brunner')]);
+		const rows = match(
+			[contact('c1', 'Johannes', 'Brunner', { nickname: 'Hans' })],
+			[person('p1', 'Hans Brunner')]
+		);
 
 		expect(rows.map((row) => row.kind)).toEqual(['likely']);
 	});
@@ -99,7 +122,10 @@ describe('matchImmichPeople', () => {
 	});
 
 	it('calls one half of a double last name a maybe', () => {
-		const contacts = [contact('c1', 'Sandra', 'Brunner-Keller'), contact('c2', 'Rosa', 'Brunner Aebi')];
+		const contacts = [
+			contact('c1', 'Sandra', 'Brunner-Keller'),
+			contact('c2', 'Rosa', 'Brunner Aebi')
+		];
 		const rows = match(contacts, [person('p1', 'Sandra Brunner'), person('p2', 'Rosa Aebi')]);
 
 		expect(rows.map((row) => [row.contactId, row.kind])).toEqual([
@@ -117,7 +143,10 @@ describe('matchImmichPeople', () => {
 	});
 
 	it('skips unnamed and hidden people in Immich', () => {
-		const rows = match([contact('c1', 'Lena', 'Brunner')], [person('p1', ''), person('p2', 'Lena Brunner', true)]);
+		const rows = match(
+			[contact('c1', 'Lena', 'Brunner')],
+			[person('p1', ''), person('p2', 'Lena Brunner', true)]
+		);
 
 		expect(rows).toEqual([]);
 	});
@@ -132,7 +161,10 @@ describe('matchImmichPeople', () => {
 	});
 
 	it('shows two Immich people with the same name side by side, and asks', () => {
-		const rows = match([contact('c1', 'Lena', 'Brunner')], [person('p1', 'Lena Brunner'), person('p2', 'Lena Brunner')]);
+		const rows = match(
+			[contact('c1', 'Lena', 'Brunner')],
+			[person('p1', 'Lena Brunner'), person('p2', 'Lena Brunner')]
+		);
 
 		expect(rows).toEqual([
 			{
@@ -147,7 +179,10 @@ describe('matchImmichPeople', () => {
 	});
 
 	it('asks when one Immich person is the likely match of two people in Stella', () => {
-		const rows = match([contact('c1', 'Lena', 'Brunner'), contact('c2', 'Lena', 'Brunner')], [person('p1', 'Lena Brunner')]);
+		const rows = match(
+			[contact('c1', 'Lena', 'Brunner'), contact('c2', 'Lena', 'Brunner')],
+			[person('p1', 'Lena Brunner')]
+		);
 
 		expect(rows.map((row) => [row.contactId, row.kind])).toEqual([
 			['c1', 'maybe'],
@@ -156,13 +191,21 @@ describe('matchImmichPeople', () => {
 	});
 
 	it('drops the maybes of someone who has a likely match', () => {
-		const rows = match([contact('c1', 'Lena', 'Brunner')], [person('p1', 'Lena Brunner'), person('p2', 'Lena')]);
+		const rows = match(
+			[contact('c1', 'Lena', 'Brunner')],
+			[person('p1', 'Lena Brunner'), person('p2', 'Lena')]
+		);
 
-		expect(rows).toEqual([{ contactId: 'c1', kind: 'likely', candidates: [{ personId: 'p1', strength: 'likely' }] }]);
+		expect(rows).toEqual([
+			{ contactId: 'c1', kind: 'likely', candidates: [{ personId: 'p1', strength: 'likely' }] }
+		]);
 	});
 
 	it('offers a face that is someone’s likely match to nobody else as a maybe', () => {
-		const rows = match([contact('c1', 'Lena', 'Brunner'), contact('c2', 'Lena', null)], [person('p1', 'Lena Brunner')]);
+		const rows = match(
+			[contact('c1', 'Lena', 'Brunner'), contact('c2', 'Lena', null)],
+			[person('p1', 'Lena Brunner')]
+		);
 
 		expect(rows.map((row) => row.contactId)).toEqual(['c1']);
 	});
@@ -183,21 +226,39 @@ describe('matchImmichPeople', () => {
 		);
 
 		// With c1's doubt gone, the face is c2's alone — a likely match again.
-		expect(rows).toEqual([{ contactId: 'c2', kind: 'likely', candidates: [{ personId: 'p1', strength: 'likely' }] }]);
+		expect(rows).toEqual([
+			{ contactId: 'c2', kind: 'likely', candidates: [{ personId: 'p1', strength: 'likely' }] }
+		]);
 	});
 
 	it('shows the maybes of someone whose likely match was ignored', () => {
-		const rows = match([contact('c1', 'Lena', 'Brunner')], [person('p1', 'Lena Brunner'), person('p2', 'Lena')], {
-			ignored: [{ contactId: 'c1', personId: 'p1' }]
-		});
+		const rows = match(
+			[contact('c1', 'Lena', 'Brunner')],
+			[person('p1', 'Lena Brunner'), person('p2', 'Lena')],
+			{
+				ignored: [{ contactId: 'c1', personId: 'p1' }]
+			}
+		);
 
-		expect(rows).toEqual([{ contactId: 'c1', kind: 'maybe', candidates: [{ personId: 'p2', strength: 'maybe' }] }]);
+		expect(rows).toEqual([
+			{ contactId: 'c1', kind: 'maybe', candidates: [{ personId: 'p2', strength: 'maybe' }] }
+		]);
 	});
 
 	it('lists the likely matches first, each part in name order', () => {
 		const rows = match(
-			[contact('c1', 'Noah', 'Brunner'), contact('c2', 'Elias', 'Brunner'), contact('c3', 'Mia', 'Widmer'), contact('c4', 'Anna', 'Keller')],
-			[person('p1', 'Noah Brunner'), person('p2', 'Elias Brunner'), person('p3', 'Mia'), person('p4', 'Anna')]
+			[
+				contact('c1', 'Noah', 'Brunner'),
+				contact('c2', 'Elias', 'Brunner'),
+				contact('c3', 'Mia', 'Widmer'),
+				contact('c4', 'Anna', 'Keller')
+			],
+			[
+				person('p1', 'Noah Brunner'),
+				person('p2', 'Elias Brunner'),
+				person('p3', 'Mia'),
+				person('p4', 'Anna')
+			]
 		);
 
 		expect(rows.map((row) => row.contactId)).toEqual(['c2', 'c1', 'c4', 'c3']);

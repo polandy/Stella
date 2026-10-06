@@ -10,10 +10,12 @@ export const surnames: SurnamesMessages = {
 	'surnames.reason.parent': (p) => `Elternteil von ${p.child}`,
 	'surnames.reason.circle': (p) => `Im Kreis ${p.circle}`,
 
-
 	'surnames.toast.set': (p) =>
-		p.count === 1 ? `Nachname ${p.name} gesetzt` : `Nachname ${p.name} für ${p.count} Personen gesetzt`,
-	'surnames.toast.failed': 'Die Nachnamen konnten nicht gespeichert werden. Die Personen sind wieder in der Liste.',
+		p.count === 1
+			? `Nachname ${p.name} gesetzt`
+			: `Nachname ${p.name} für ${p.count} Personen gesetzt`,
+	'surnames.toast.failed':
+		'Die Nachnamen konnten nicht gespeichert werden. Die Personen sind wieder in der Liste.',
 	'surnames.offline': 'Nachnamen setzen geht nur mit Verbindung zu Stella.',
 	'surnames.namesake': (p) => `Es gibt schon eine Person namens ${p.name}`,
 	'surnames.namesakeAsk': 'Dieselbe Person?',
@@ -54,5 +56,5 @@ export const surnames: SurnamesMessages = {
 	'surnames.chipHint': (p) => `Nachnamen ${p.name} geben`,
 	'surnames.passOnPrompt': (p) =>
 		`${p.people} ${p.count === 1 ? 'hat' : 'haben'} noch keinen Nachnamen — auch ${p.name}?`,
-	'surnames.no': 'Nein',
+	'surnames.no': 'Nein'
 };

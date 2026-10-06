@@ -3,7 +3,13 @@ import type { Viewer, Visibility } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { ContactRepository } from '../contacts/contacts';
 import type { IdGenerator } from '../../id';
-import { validateAvatarUpload, type AvatarUpload, type DeletedPhotoFiles, type ImageMime, type MediaStore } from './avatars';
+import {
+	validateAvatarUpload,
+	type AvatarUpload,
+	type DeletedPhotoFiles,
+	type ImageMime,
+	type MediaStore
+} from './avatars';
 import { assertCropInside, type StoredFraming } from './framing';
 
 /*
@@ -41,7 +47,10 @@ export interface CutsToTurn {
 export function cutsToTurn(cuts: readonly Cut[], groupPhotoIds: readonly string[]): CutsToTurn {
 	const going = new Set(groupPhotoIds);
 	const turned = cuts.filter((cut) => going.has(cut.groupPhotoId));
-	return { cutIds: turned.map((cut) => cut.id), people: new Set(turned.map((cut) => cut.contactId)).size };
+	return {
+		cutIds: turned.map((cut) => cut.id),
+		people: new Set(turned.map((cut) => cut.contactId)).size
+	};
 }
 
 /** The picture a person wears now, as far as cuts are concerned. */
@@ -58,7 +67,10 @@ export interface WornPicture {
  * a photo of their own (concept §5.2) — or null. Cutting the same group photo again for them
  * replaces their cut rather than keeping the old square beside it.
  */
-export function cutLeftBehind(worn: WornPicture | null, next: { framingOf: string | null }): string | null {
+export function cutLeftBehind(
+	worn: WornPicture | null,
+	next: { framingOf: string | null }
+): string | null {
 	if (!worn?.isCut) return null;
 	return next.framingOf === worn.framingOf ? null : worn.id;
 }
@@ -180,7 +192,11 @@ const EXT: Record<ImageMime, string> = {
  * see both the photo and the person may. False when either is not visible to them — the same
  * answer whether or not it exists. Throws InvalidAvatarError for a bad square or bytes.
  */
-export async function cutProfilePicture(deps: CutDeps, viewer: Viewer, input: CutProfilePictureInput): Promise<boolean> {
+export async function cutProfilePicture(
+	deps: CutDeps,
+	viewer: Viewer,
+	input: CutProfilePictureInput
+): Promise<boolean> {
 	const [group, person] = await Promise.all([
 		deps.cuts.findVisibleGroupPhoto(viewer, input.photoId),
 		deps.contacts.findByIdVisibleTo(viewer, input.contactId)

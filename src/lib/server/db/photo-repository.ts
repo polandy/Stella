@@ -1,7 +1,11 @@
 import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql, type SQL } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo, circlePhotoColumnsVisibleTo, circlePhotoVisibleTo } from '../access/query-scoping';
+import {
+	childRecordVisibleTo,
+	circlePhotoColumnsVisibleTo,
+	circlePhotoVisibleTo
+} from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
 	DeletedPhotoFiles,
@@ -110,7 +114,9 @@ export function createDrizzlePhotoRepository(
 				.get();
 			if (!row) return null;
 			// A photo stored before there was a view (or small enough not to need one) is its own view.
-			const path = { full: row.filePath, view: row.viewPath ?? row.filePath, thumb: row.thumbPath }[variant];
+			const path = { full: row.filePath, view: row.viewPath ?? row.filePath, thumb: row.thumbPath }[
+				variant
+			];
 			return { path, mime: row.mime };
 		},
 
@@ -154,14 +160,21 @@ export function createDrizzlePhotoRepository(
 				.leftJoin(cutGroup, eq(cutGroup.id, photo.cutFrom))
 				.leftJoin(cutCircle, cutCircleVisible(viewer))
 				.where(
-					and(eq(photo.id, photoId), eq(photo.contactId, contactId), isGalleryPhotoVisibleTo(viewer))
+					and(
+						eq(photo.id, photoId),
+						eq(photo.contactId, contactId),
+						isGalleryPhotoVisibleTo(viewer)
+					)
 				)
 				.get();
 			return row ? toGalleryPhoto(row) : null;
 		},
 
 		async setGalleryPhotoPin(photoId: string, pinnedAt: number | null) {
-			db.update(photo).set({ pinnedAt }).where(and(eq(photo.id, photoId), isGalleryPhoto())).run();
+			db.update(photo)
+				.set({ pinnedAt })
+				.where(and(eq(photo.id, photoId), isGalleryPhoto()))
+				.run();
 		},
 
 		async updateOwnGalleryPhoto(input: {
@@ -178,12 +191,17 @@ export function createDrizzlePhotoRepository(
 				const updated = tx
 					.update(photo)
 					.set(changes)
-					.where(and(eq(photo.id, input.photoId), eq(photo.createdBy, input.authorId), isGalleryPhoto()))
+					.where(
+						and(eq(photo.id, input.photoId), eq(photo.createdBy, input.authorId), isGalleryPhoto())
+					)
 					.returning({ id: photo.id })
 					.all();
 				// A framing is seen by exactly who sees its photo (domain/media/framing.ts).
 				if (updated.length > 0 && changes.visibility) {
-					tx.update(photo).set({ visibility: changes.visibility }).where(eq(photo.framingOf, input.photoId)).run();
+					tx.update(photo)
+						.set({ visibility: changes.visibility })
+						.where(eq(photo.framingOf, input.photoId))
+						.run();
 				}
 				return updated.length > 0;
 			});
@@ -196,7 +214,9 @@ export function createDrizzlePhotoRepository(
 			return db.transaction((tx) => {
 				const removed = tx
 					.delete(photo)
-					.where(and(eq(photo.id, input.photoId), eq(photo.createdBy, input.authorId), isGalleryPhoto()))
+					.where(
+						and(eq(photo.id, input.photoId), eq(photo.createdBy, input.authorId), isGalleryPhoto())
+					)
 					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
 					.all();
 				if (removed.length === 0) return null;
@@ -209,9 +229,15 @@ export function createDrizzlePhotoRepository(
 				// pointing at bytes that no longer exist — the photo's own, or its framing's.
 				const worn = [input.photoId, ...framings.map((f) => f.id)];
 				for (const id of worn) {
-					tx.update(contact).set({ avatarPhotoId: null }).where(eq(contact.avatarPhotoId, id)).run();
+					tx.update(contact)
+						.set({ avatarPhotoId: null })
+						.where(eq(contact.avatarPhotoId, id))
+						.run();
 				}
-				return [...removed, ...framings.map(({ filePath, thumbPath }) => ({ filePath, thumbPath }))];
+				return [
+					...removed,
+					...framings.map(({ filePath, thumbPath }) => ({ filePath, thumbPath }))
+				];
 			});
 		},
 
@@ -279,7 +305,10 @@ const cutCircle = alias(circle, 'cut_circle');
 function cutCircleVisible(viewer: Viewer) {
 	return and(
 		eq(cutCircle.id, cutGroup.circleId),
-		circlePhotoColumnsVisibleTo(viewer, cutCircle, { visibility: cutGroup.visibility, createdBy: cutGroup.createdBy })
+		circlePhotoColumnsVisibleTo(viewer, cutCircle, {
+			visibility: cutGroup.visibility,
+			createdBy: cutGroup.createdBy
+		})
 	);
 }
 

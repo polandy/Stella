@@ -27,13 +27,20 @@ export const circleActions = {
 			payload: { contactId: params.id, circleName: name, role: form.get('role') ?? null },
 			issuedAt: systemClock.now()
 		});
-		if (command?.type !== 'circle.join') return fail(400, { circleError: say(locals, 'errors.circle.needName') });
-		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale };
+		if (command?.type !== 'circle.join')
+			return fail(400, { circleError: say(locals, 'errors.circle.needName') });
+		const author = {
+			userId: locals.user.id,
+			householdId: locals.user.householdId,
+			locale: locals.locale
+		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(400, {
 				circleError:
-					outcome?.status === 'refused' ? outcome.reason(translator(locals)) : say(locals, 'errors.circle.couldNotAdd')
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.circle.couldNotAdd')
 			});
 		}
 

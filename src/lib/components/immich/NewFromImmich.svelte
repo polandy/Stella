@@ -7,7 +7,11 @@
 	import { invalidateAll } from '$app/navigation';
 	import Button from '$lib/components/Button.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
-	import NewcomerRow, { type Added, type Assigned, type NewcomerView } from '$lib/components/immich/NewcomerRow.svelte';
+	import NewcomerRow, {
+		type Added,
+		type Assigned,
+		type NewcomerView
+	} from '$lib/components/immich/NewcomerRow.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { sendImmichFace } from '$lib/image/send-immich-face';
 	import { reveal } from '$lib/motion/motion.svelte';
@@ -46,15 +50,22 @@
 	const t = i18n.t;
 	const removals = useRemovals();
 	const shownCount = (count: number) => new Intl.NumberFormat(i18n.intlLocale).format(count);
-	const shownDate = (at: number) => new Intl.DateTimeFormat(i18n.intlLocale, { dateStyle: 'medium' }).format(at);
+	const shownDate = (at: number) =>
+		new Intl.DateTimeFormat(i18n.intlLocale, { dateStyle: 'medium' }).format(at);
 
 	let shownUpTo = $state(NEWCOMER_PAGE);
 
 	const rows = $derived(
-		newcomers.filter((row) => !gone[row.personId] && !removals.isPending(removalKey('immich-newcomer-ignore', row.personId)))
+		newcomers.filter(
+			(row) =>
+				!gone[row.personId] &&
+				!removals.isPending(removalKey('immich-newcomer-ignore', row.personId))
+		)
 	);
 	const stillIgnored = $derived(
-		ignored.filter((face) => !removals.isPending(removalKey('immich-newcomer-ignored', face.personId)))
+		ignored.filter(
+			(face) => !removals.isPending(removalKey('immich-newcomer-ignored', face.personId))
+		)
 	);
 
 	/** Holds an Ignore or a Propose again for the undo window, then posts the form it came from. */
@@ -63,7 +74,13 @@
 		const formEl = event.currentTarget as HTMLFormElement;
 		removals.remove(
 			deferredRemoval(
-				{ kind, id, label, action: formEl.getAttribute('action') ?? '', body: new FormData(formEl) },
+				{
+					kind,
+					id,
+					label,
+					action: formEl.getAttribute('action') ?? '',
+					body: new FormData(formEl)
+				},
 				{ fetch, reload: invalidateAll }
 			)
 		);
@@ -97,13 +114,21 @@
 		</Button>
 	</EmptyState>
 {:else}
-	<p class="text-sm text-fg-muted">{t('immich.new.summary', { count: rows.length, shown: shownCount(rows.length) })}</p>
+	<p class="text-sm text-fg-muted">
+		{t('immich.new.summary', { count: rows.length, shown: shownCount(rows.length) })}
+	</p>
 	<ul class="flex flex-col gap-3" data-testid="immich-newcomers">
 		{#each rows.slice(0, shownUpTo) as row (row.personId)}
 			<NewcomerRow
 				{row}
 				{people}
-				onIgnore={(event) => deferred(event, 'immich-newcomer-ignore', row.personId, t('immich.new.ignoredToast', { name: row.name }))}
+				onIgnore={(event) =>
+					deferred(
+						event,
+						'immich-newcomer-ignore',
+						row.personId,
+						t('immich.new.ignoredToast', { name: row.name })
+					)}
 				onAssigned={(answer) => assigned(answer, row.name)}
 				onAdded={added}
 			/>
@@ -149,7 +174,12 @@
 						method="POST"
 						action="?/proposeNewcomerAgain"
 						onsubmit={(event) =>
-							deferred(event, 'immich-newcomer-ignored', face.personId, t('immich.match.proposedAgainToast'))}
+							deferred(
+								event,
+								'immich-newcomer-ignored',
+								face.personId,
+								t('immich.match.proposedAgainToast')
+							)}
 					>
 						<input type="hidden" name="immichPersonId" value={face.personId} />
 						<Button variant="ghost" size="sm" label={t('immich.match.proposeAgainLabel', { name })}>

@@ -51,17 +51,26 @@ export function readImmichConfig(raw: RawImmichSettings): ImmichConfig | null {
 
 	if (raw.IMMICH_DEMO) {
 		if (!raw.SEED_DEMO) {
-			throw new Error('Configuration error: IMMICH_DEMO=true is for the demo household and needs SEED_DEMO=true.');
+			throw new Error(
+				'Configuration error: IMMICH_DEMO=true is for the demo household and needs SEED_DEMO=true.'
+			);
 		}
 		if (url || apiKey) {
-			throw new Error('Configuration error: IMMICH_DEMO=true cannot be combined with IMMICH_URL or IMMICH_API_KEY.');
+			throw new Error(
+				'Configuration error: IMMICH_DEMO=true cannot be combined with IMMICH_URL or IMMICH_API_KEY.'
+			);
 		}
-		return { mode: 'demo', publicUrl: publicUrl ? webAddress('IMMICH_PUBLIC_URL', publicUrl) : DEMO_PUBLIC_URL };
+		return {
+			mode: 'demo',
+			publicUrl: publicUrl ? webAddress('IMMICH_PUBLIC_URL', publicUrl) : DEMO_PUBLIC_URL
+		};
 	}
 
 	if (!url && !apiKey) return null;
 	if (!url || !apiKey) {
-		throw new Error('Configuration error: IMMICH_URL and IMMICH_API_KEY are set together or not at all.');
+		throw new Error(
+			'Configuration error: IMMICH_URL and IMMICH_API_KEY are set together or not at all.'
+		);
 	}
 	const base = webAddress('IMMICH_URL', url);
 	return {

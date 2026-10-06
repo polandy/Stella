@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import { ContactGoneError } from '../contacts/require-visible';
-import { ignoreMatch, proposeAgain, type ImmichIgnore, type ImmichIgnoreRepository } from './ignores';
+import {
+	ignoreMatch,
+	proposeAgain,
+	type ImmichIgnore,
+	type ImmichIgnoreRepository
+} from './ignores';
 import { ImmichLinkRefusedError, type LinkVisibleContacts } from './links';
 import { BERT_ID, CARL_ID } from './test-library';
 
@@ -26,10 +31,17 @@ function memoryIgnores(visible = new Set(['c-bert'])) {
 		listVisibleTo: async () => rows.filter((row) => visible.has(row.contactId)),
 		save: async (added) => {
 			for (const row of added)
-				if (!rows.some((r) => r.contactId === row.contactId && r.immichPersonId === row.immichPersonId)) rows.push(row);
+				if (
+					!rows.some(
+						(r) => r.contactId === row.contactId && r.immichPersonId === row.immichPersonId
+					)
+				)
+					rows.push(row);
 		},
 		remove: async (_viewer, contactId, personId) => {
-			const at = rows.findIndex((r) => visible.has(contactId) && r.contactId === contactId && r.immichPersonId === personId);
+			const at = rows.findIndex(
+				(r) => visible.has(contactId) && r.contactId === contactId && r.immichPersonId === personId
+			);
 			if (at < 0) return false;
 			rows.splice(at, 1);
 			return true;
@@ -58,17 +70,21 @@ describe('ignoreMatch', () => {
 	it('refuses a contact the member cannot see', async () => {
 		const { deps, rows } = setup();
 
-		await expect(ignoreMatch(deps, actor, 'c-private', [BERT_ID])).rejects.toBeInstanceOf(ContactGoneError);
+		await expect(ignoreMatch(deps, actor, 'c-private', [BERT_ID])).rejects.toBeInstanceOf(
+			ContactGoneError
+		);
 		expect(rows).toEqual([]);
 	});
 
 	it('refuses anything that is not an Immich id, and an empty row', async () => {
 		const { deps, rows } = setup();
 
-		await expect(ignoreMatch(deps, actor, 'c-bert', [BERT_ID, '../users/me'])).rejects.toBeInstanceOf(
+		await expect(
+			ignoreMatch(deps, actor, 'c-bert', [BERT_ID, '../users/me'])
+		).rejects.toBeInstanceOf(ImmichLinkRefusedError);
+		await expect(ignoreMatch(deps, actor, 'c-bert', [])).rejects.toBeInstanceOf(
 			ImmichLinkRefusedError
 		);
-		await expect(ignoreMatch(deps, actor, 'c-bert', [])).rejects.toBeInstanceOf(ImmichLinkRefusedError);
 		expect(rows).toEqual([]);
 	});
 });
@@ -84,9 +100,16 @@ describe('proposeAgain', () => {
 
 	it('takes nothing back for a contact the member cannot see', async () => {
 		const memory = memoryIgnores(new Set());
-		memory.rows.push({ contactId: 'c-private', immichPersonId: BERT_ID, ignoredBy: 'u-other', ignoredAt: 1 });
+		memory.rows.push({
+			contactId: 'c-private',
+			immichPersonId: BERT_ID,
+			ignoredBy: 'u-other',
+			ignoredAt: 1
+		});
 
-		expect(await proposeAgain({ ignores: memory.ignores }, viewer, 'c-private', BERT_ID)).toBe(false);
+		expect(await proposeAgain({ ignores: memory.ignores }, viewer, 'c-private', BERT_ID)).toBe(
+			false
+		);
 		expect(memory.rows).toHaveLength(1);
 	});
 });

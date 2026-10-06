@@ -23,7 +23,12 @@ const CONTACTS: MentionCandidate[] = [
 	{ id: 'sandra', firstName: 'Sandra', lastName: 'Brunner', displayName: 'Sandra Brunner' },
 	{ id: 'sabine-mueller', firstName: 'Sabine', lastName: 'Müller', displayName: 'Sabine Müller' },
 	// An imported contact keeps its source id, which carries ':' separators (docs/02 §2.16).
-	{ id: 'monica:contact:9', firstName: 'Janosch', lastName: 'Rohdewald', displayName: 'Janosch Rohdewald' }
+	{
+		id: 'monica:contact:9',
+		firstName: 'Janosch',
+		lastName: 'Rohdewald',
+		displayName: 'Janosch Rohdewald'
+	}
 ];
 
 describe('mentionKey', () => {
@@ -51,7 +56,12 @@ describe('resolveMentions', () => {
 
 	it('matches @FirstnameLastname even when the display name is a hyphenated/married form', () => {
 		const r = createHandleResolver([
-			{ id: 'sandra', firstName: 'Sandra', lastName: 'Brunner', displayName: 'Sandra Brunner-Keller' }
+			{
+				id: 'sandra',
+				firstName: 'Sandra',
+				lastName: 'Brunner',
+				displayName: 'Sandra Brunner-Keller'
+			}
 		]);
 		// first+last handle resolves…
 		expect(resolveMentions('@SandraBrunner', r).ids).toEqual(['sandra']);
@@ -92,7 +102,10 @@ describe('resolveMentions', () => {
 			{ id: 'thomas-lenk', firstName: 'Thomas', lastName: null, displayName: 'Thomas' },
 			{ id: 'sandra', firstName: 'Sandra', lastName: 'Brunner', displayName: 'Sandra Brunner' }
 		]);
-		const resolved = resolveMentions('@Thomas and @SandraBrunner, @thomas again, @Nobody', namesakes);
+		const resolved = resolveMentions(
+			'@Thomas and @SandraBrunner, @thomas again, @Nobody',
+			namesakes
+		);
 		expect(resolved.ids).toEqual(['sandra']);
 		expect(resolved.ambiguous).toEqual([{ handle: 'Thomas', ids: ['thomas-hut', 'thomas-lenk'] }]);
 	});
@@ -131,10 +144,9 @@ describe('resolveMentions', () => {
 
 describe('extractHandles', () => {
 	it('lists typed handles once each, in order, skipping tokens and escapes', () => {
-		expect(extractHandles('with @Julia and @Marco, @Julia again, @{contact:c1}, \\@literal')).toEqual([
-			'Julia',
-			'Marco'
-		]);
+		expect(
+			extractHandles('with @Julia and @Marco, @Julia again, @{contact:c1}, \\@literal')
+		).toEqual(['Julia', 'Marco']);
 	});
 
 	it('ignores e-mail-like text', () => {

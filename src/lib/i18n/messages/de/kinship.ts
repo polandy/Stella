@@ -53,7 +53,8 @@ export const kinship: KinshipMessages = {
 	'kinship.claim.grandparent.neutral': (p) => `${p.from} ist ein Großelternteil von ${p.to}`,
 	'kinship.claim.great-grandparent.male': (p) => `${p.from} ist ein Urgroßvater von ${p.to}`,
 	'kinship.claim.great-grandparent.female': (p) => `${p.from} ist eine Urgroßmutter von ${p.to}`,
-	'kinship.claim.great-grandparent.neutral': (p) => `${p.from} ist ein Urgroßelternteil von ${p.to}`,
+	'kinship.claim.great-grandparent.neutral': (p) =>
+		`${p.from} ist ein Urgroßelternteil von ${p.to}`,
 	'kinship.claim.aunt-uncle.male': (p) => `${p.from} ist ein Onkel von ${p.to}`,
 	'kinship.claim.aunt-uncle.female': (p) => `${p.from} ist eine Tante von ${p.to}`,
 	'kinship.claim.aunt-uncle.neutral': (p) => `${p.from} ist Tante oder Onkel von ${p.to}`,
@@ -68,7 +69,8 @@ export const kinship: KinshipMessages = {
 	'kinship.claim.cousin.neutral': (p) => `${p.to} ist Cousin oder Cousine von ${p.from}`,
 	'kinship.claim.sibling-in-law.male': (p) => `${p.to} ist ein Schwager von ${p.from}`,
 	'kinship.claim.sibling-in-law.female': (p) => `${p.to} ist eine Schwägerin von ${p.from}`,
-	'kinship.claim.sibling-in-law.neutral': (p) => `${p.to} ist Schwager oder Schwägerin von ${p.from}`,
+	'kinship.claim.sibling-in-law.neutral': (p) =>
+		`${p.to} ist Schwager oder Schwägerin von ${p.from}`,
 	'kinship.reason.workedOutThrough': (p) => `Hergeleitet über ${p.via}, noch nicht eingetragen`,
 	'kinship.reason.partnerOfParent': (p) =>
 		`${p.partner} und ${p.parent} sind ein Paar, und ${p.parent} ist ein Elternteil von ${p.child}.`,

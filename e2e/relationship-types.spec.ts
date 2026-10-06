@@ -103,7 +103,9 @@ test('refuses a label that already names a type, and writes nothing', async ({ p
 
 	await addType(page, { label: 'Friend of', category: 'social' });
 
-	await expect(page.getByText('A relationship type named like "Friend of" already exists.')).toBeVisible();
+	await expect(
+		page.getByText('A relationship type named like "Friend of" already exists.')
+	).toBeVisible();
 	await expect(page.getByTestId('custom-types').locator('li')).toHaveCount(before);
 });
 

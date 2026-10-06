@@ -29,7 +29,8 @@ export function passOnOffer(
 	const offered = new Map<string, string>();
 	for (const id of freshIds) {
 		for (const kin of map[id] ?? []) {
-			if (batch.has(kin.id) || namedThisVisit.has(kin.id) || kin.declined.includes(folded)) continue;
+			if (batch.has(kin.id) || namedThisVisit.has(kin.id) || kin.declined.includes(folded))
+				continue;
 			offered.set(kin.id, kin.name);
 		}
 	}

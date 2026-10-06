@@ -9,14 +9,18 @@ import { REPORT_REACHABILITY, isReachabilityReport, probeSays } from './reachabi
 
 describe('a reachability report', () => {
 	it('is recognised when the worker sends one', () => {
-		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: false, keptAt: 1 })).toBe(true);
-		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: true, keptAt: null })).toBe(true);
+		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: false, keptAt: 1 })).toBe(
+			true
+		);
+		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: true, keptAt: null })).toBe(
+			true
+		);
 	});
 
 	it('is rejected when it says the page was kept at something that is not a time', () => {
-		expect(isReachabilityReport({ type: REPORT_REACHABILITY, reachable: false, keptAt: 'yesterday' })).toBe(
-			false
-		);
+		expect(
+			isReachabilityReport({ type: REPORT_REACHABILITY, reachable: false, keptAt: 'yesterday' })
+		).toBe(false);
 	});
 
 	it('still counts from a worker older than the age of a copy, as a report of no known age', () => {
@@ -26,7 +30,9 @@ describe('a reachability report', () => {
 	});
 
 	it('is not confused with another message on the same channel', () => {
-		expect(isReachabilityReport({ type: 'workbox-broadcast', reachable: true, keptAt: null })).toBe(false);
+		expect(isReachabilityReport({ type: 'workbox-broadcast', reachable: true, keptAt: null })).toBe(
+			false
+		);
 		expect(isReachabilityReport('stella:reachability')).toBe(false);
 	});
 
@@ -58,12 +64,21 @@ describe('what a reachability check concludes', () => {
 	});
 
 	it('says out of reach when Stella answers with an error', () => {
-		expect(probeSays({ deviceOnline: true, answer: { ...stella, ok: false, body: null } })).toBe(false);
+		expect(probeSays({ deviceOnline: true, answer: { ...stella, ok: false, body: null } })).toBe(
+			false
+		);
 	});
 
 	it('does not take a login page of a foreign network for Stella', () => {
 		// A captive portal answers every address with its own page, and a 200 at that.
-		expect(probeSays({ deviceOnline: true, answer: { ...stella, body: '<html>Sign in to Wi-Fi</html>' } })).toBe(false);
-		expect(probeSays({ deviceOnline: true, answer: { ...stella, type: 'opaqueredirect', body: null } })).toBe(false);
+		expect(
+			probeSays({
+				deviceOnline: true,
+				answer: { ...stella, body: '<html>Sign in to Wi-Fi</html>' }
+			})
+		).toBe(false);
+		expect(
+			probeSays({ deviceOnline: true, answer: { ...stella, type: 'opaqueredirect', body: null } })
+		).toBe(false);
 	});
 });

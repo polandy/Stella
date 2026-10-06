@@ -16,7 +16,14 @@ const model: GraphModel = {
 		{ id: 'kegel', kind: 'circle', label: 'Kegelclub' }
 	],
 	edges: [
-		{ id: 'r1', source: 'mara', target: 'walter', kind: 'relationship', category: 'family', directed: true },
+		{
+			id: 'r1',
+			source: 'mara',
+			target: 'walter',
+			kind: 'relationship',
+			category: 'family',
+			directed: true
+		},
 		{ id: 'm1', source: 'kegel', target: 'mara', kind: 'membership' },
 		{ id: 'dangling', source: 'mara', target: 'ghost', kind: 'relationship', category: 'social' }
 	]
@@ -50,7 +57,11 @@ describe('toCytoscapeElements', () => {
 	});
 
 	it('encodes edge kind, category, and direction', () => {
-		expect(edge('r1')?.data).toMatchObject({ kind: 'relationship', category: 'family', directed: 1 });
+		expect(edge('r1')?.data).toMatchObject({
+			kind: 'relationship',
+			category: 'family',
+			directed: 1
+		});
 		expect(edge('m1')?.data).toMatchObject({ kind: 'membership', directed: 0 });
 	});
 

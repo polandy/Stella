@@ -7,7 +7,10 @@ import { groupBySurname, householdSpellings } from './surname-groups';
  * name proposed — the largest group first — then those who must choose, then the rest.
  */
 
-const one = (name: string, confidence: 'certain' | 'likely' | 'possible' = 'likely'): SurnameProposal => ({
+const one = (
+	name: string,
+	confidence: 'certain' | 'likely' | 'possible' = 'likely'
+): SurnameProposal => ({
 	kind: 'one',
 	name,
 	confidence,

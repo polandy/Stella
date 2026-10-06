@@ -114,7 +114,12 @@ export function panBy(
  * Zoom to `zoom`, keeping the part of the picture under `focus` (the fingers, the mouse, or
  * the window's centre) where it is on screen.
  */
-export function zoomTo(image: ImageSize, crop: Crop, zoom: number, focus: WindowPoint = WINDOW_CENTRE): Crop {
+export function zoomTo(
+	image: ImageSize,
+	crop: Crop,
+	zoom: number,
+	focus: WindowPoint = WINDOW_CENTRE
+): Crop {
 	const before = cropRect(image, crop);
 	const nextZoom = clamp(zoom, 1, maxZoom(image));
 	const nextSide = side(image, nextZoom);
@@ -154,9 +159,18 @@ export interface FingerPair {
  * Follow a two-finger gesture from `before` to `after`: zoom by how far the fingers spread,
  * around the point between them, and move with that point when it travels.
  */
-export function pinch(image: ImageSize, crop: Crop, before: FingerPair, after: FingerPair, windowPx: number): Crop {
+export function pinch(
+	image: ImageSize,
+	crop: Crop,
+	before: FingerPair,
+	after: FingerPair,
+	windowPx: number
+): Crop {
 	const spread = (pair: FingerPair) => Math.hypot(pair.a.x - pair.b.x, pair.a.y - pair.b.y);
-	const middle = (pair: FingerPair) => ({ x: (pair.a.x + pair.b.x) / 2, y: (pair.a.y + pair.b.y) / 2 });
+	const middle = (pair: FingerPair) => ({
+		x: (pair.a.x + pair.b.x) / 2,
+		y: (pair.a.y + pair.b.y) / 2
+	});
 	const from = middle(before);
 	const to = middle(after);
 	// Two fingers on one spot have no spread to scale by; only the move applies.

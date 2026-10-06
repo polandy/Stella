@@ -37,7 +37,12 @@ const result = { ...captured, visibility: 'shared' as const };
 const moment = (id = 'cmd1'): Command => ({
 	id,
 	type: 'moment.capture',
-	payload: { body: 'Coffee with @Julia', entryDate: '2026-09-27', visibility: 'shared', newPeople: [] },
+	payload: {
+		body: 'Coffee with @Julia',
+		entryDate: '2026-09-27',
+		visibility: 'shared',
+		newPeople: []
+	},
 	issuedAt: 500
 });
 
@@ -96,12 +101,20 @@ function fakes(handler: () => Promise<CapturedMoment> = async () => captured) {
 				return { relationshipIds: ['r1', 'r2'] };
 			},
 			'contact.add': async () => ({ contactId: 'c' }),
-			'journal.write': async () => ({ entryId: 'e', anchorContactId: 'c', visibility: 'shared' as const }),
+			'journal.write': async () => ({
+				entryId: 'e',
+				anchorContactId: 'c',
+				visibility: 'shared' as const
+			}),
 			'field.add': async () => ({ fieldId: 'f' }),
 			'date.add': async () => ({ dateId: 'd' }),
 			'gallery.add': async () => ({ contactId: 'c', visibility: 'shared' as const }),
 			'gallery.photo': async () => 'photo',
-			'circleGallery.add': async () => ({ circleId: 'k', role: null, visibility: 'shared' as const }),
+			'circleGallery.add': async () => ({
+				circleId: 'k',
+				role: null,
+				visibility: 'shared' as const
+			}),
 			'circleGallery.photo': async () => 'photo'
 		}
 	};
@@ -148,13 +161,17 @@ describe('dispatchCommand', () => {
 
 		const outcome = await dispatchCommand(f.deps, actor, moment());
 		expect(outcome.status).toBe('refused');
-		if (outcome.status === 'refused') expect(outcome.reason(t)).toContain('Mention at least one person');
+		if (outcome.status === 'refused')
+			expect(outcome.reason(t)).toContain('Mention at least one person');
 		expect(f.receipts.has('cmd1')).toBe(false);
 		// The refusal itself travels along, so an edge can react to its kind, not its wording.
 		if (outcome.status === 'refused') expect(outcome.error).toBeInstanceOf(Refused);
 
 		refuse = false;
-		expect(await dispatchCommand(f.deps, actor, moment())).toMatchObject({ status: 'applied', repeated: false });
+		expect(await dispatchCommand(f.deps, actor, moment())).toMatchObject({
+			status: 'applied',
+			repeated: false
+		});
 		expect(f.applied()).toBe(2);
 	});
 
@@ -169,7 +186,11 @@ describe('dispatchCommand', () => {
 	it('refuses an id another member already used, without applying anything', async () => {
 		const f = fakes();
 		await dispatchCommand(f.deps, actor, moment());
-		const other = await dispatchCommand(f.deps, { userId: 'u2', householdId: 'h1', locale: 'en' }, moment());
+		const other = await dispatchCommand(
+			f.deps,
+			{ userId: 'u2', householdId: 'h1', locale: 'en' },
+			moment()
+		);
 
 		expect(other.status).toBe('refused');
 		if (other.status === 'refused') expect(other.reason(t)).toContain('already');
@@ -211,7 +232,10 @@ describe('dispatchCommand', () => {
 
 		expect(await dispatchCommand(f.deps, actor, moment())).toEqual({ status: 'busy' });
 		f.advance(CLAIM_STALE_AFTER_MS + 1);
-		expect(await dispatchCommand(f.deps, actor, moment())).toMatchObject({ status: 'applied', repeated: false });
+		expect(await dispatchCommand(f.deps, actor, moment())).toMatchObject({
+			status: 'applied',
+			repeated: false
+		});
 		expect(f.applied()).toBe(1);
 	});
 });
@@ -246,6 +270,9 @@ describe('dispatchCommand, for several links at once', () => {
 			repeated: true
 		});
 		expect(f.linkBatches()).toBe(1);
-		expect(f.receipts.get('cmd2')).toMatchObject({ type: 'relationship.addMany', status: 'applied' });
+		expect(f.receipts.get('cmd2')).toMatchObject({
+			type: 'relationship.addMany',
+			status: 'applied'
+		});
 	});
 });

@@ -153,8 +153,7 @@ export async function exportHousehold(
 
 /** One thing the archive is made of: the document, or one image. */
 export type ArchivePlanEntry =
-	| { name: typeof DOCUMENT_ENTRY; kind: 'document' }
-	| { name: string; kind: 'media'; path: string };
+	{ name: typeof DOCUMENT_ENTRY; kind: 'document' } | { name: string; kind: 'media'; path: string };
 
 /**
  * Name every entry before a byte is written. The names come from the database, so one that the
@@ -164,7 +163,11 @@ export type ArchivePlanEntry =
 export function planArchive(mediaPaths: readonly string[]): ArchivePlanEntry[] {
 	return [
 		{ name: DOCUMENT_ENTRY, kind: 'document' },
-		...mediaPaths.map((path): ArchivePlanEntry => ({ name: mediaEntryName(path), kind: 'media', path }))
+		...mediaPaths.map((path): ArchivePlanEntry => ({
+			name: mediaEntryName(path),
+			kind: 'media',
+			path
+		}))
 	];
 }
 

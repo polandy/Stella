@@ -45,7 +45,10 @@ export interface CirclePhotoView<T> {
 }
 
 /** The photo that leads the photos of role `key` (null = no role), or null when it has none. */
-export function leadPhoto<T extends RoledPhoto>(photos: readonly T[], key: string | null): T | null {
+export function leadPhoto<T extends RoledPhoto>(
+	photos: readonly T[],
+	key: string | null
+): T | null {
 	return orderGallery(photos.filter((p) => roleKey(p.role) === key))[0] ?? null;
 }
 
@@ -66,7 +69,11 @@ export function circlePhotoView<T extends RoledPhoto>(
 
 	const placed: PlacedPhoto<T>[] = orderGallery(photos).map((p) => {
 		const key = roleKey(p.role);
-		return { ...p, roleKey: key, roleLabel: key === null ? null : (memberLabel.get(key) ?? p.role!.trim()) };
+		return {
+			...p,
+			roleKey: key,
+			roleLabel: key === null ? null : (memberLabel.get(key) ?? p.role!.trim())
+		};
 	});
 
 	const chipsByKey = new Map<string | null, RoleChip>();

@@ -13,7 +13,12 @@ import { MomentNeedsPersonError, captureMoment, type CaptureMomentDeps } from '.
  * same rule the adapters implement (household + shared-or-own).
  */
 
-const author: JournalAuthor & { locale: 'en' } = { userId: 'u1', householdId: 'h1', defaultVisibility: 'shared', locale: 'en' };
+const author: JournalAuthor & { locale: 'en' } = {
+	userId: 'u1',
+	householdId: 'h1',
+	defaultVisibility: 'shared',
+	locale: 'en'
+};
 
 function summary(c: NewContact): ContactSummary {
 	return {
@@ -69,37 +74,37 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 			async updateProfile() {},
 			async setGender() {},
 			async setJob() {},
-		async setArchived() {},
-		async listArchivedVisibleTo() {
-			return [];
-		},
-		async listNamesVisibleTo() {
-			return [];
-		},
-		async listNamesAmongVisibleTo() {
-			return [];
-		},
-		async listBrowsableNamesAmong() {
-			return [];
-		},
-		async listSomeBrowsableIdsVisibleTo() {
-			return [];
-		},
-		async countArchivedVisibleTo() {
-			return 0;
-		},
-		async listDistinguishableVisibleTo() {
-			return [];
-		},
-		async deleteVisibleTo() {
-			return null;
-		},
-		async readForMerge() {
-			return null;
-		},
-		async mergeVisibleTo() {
-			return false;
-		},
+			async setArchived() {},
+			async listArchivedVisibleTo() {
+				return [];
+			},
+			async listNamesVisibleTo() {
+				return [];
+			},
+			async listNamesAmongVisibleTo() {
+				return [];
+			},
+			async listBrowsableNamesAmong() {
+				return [];
+			},
+			async listSomeBrowsableIdsVisibleTo() {
+				return [];
+			},
+			async countArchivedVisibleTo() {
+				return 0;
+			},
+			async listDistinguishableVisibleTo() {
+				return [];
+			},
+			async deleteVisibleTo() {
+				return null;
+			},
+			async readForMerge() {
+				return null;
+			},
+			async mergeVisibleTo() {
+				return false;
+			},
 			async findByIdVisibleTo(v, id) {
 				const c = contacts.find((x) => x.id === id);
 				return c && visible(v, c) ? ({ ...c, avatarPhotoId: null } as Contact) : null;
@@ -176,7 +181,9 @@ describe('captureMoment', () => {
 		expect(result.linkSuggestion).toEqual(['julia', 'marco']);
 		expect(f.entries).toHaveLength(1);
 		expect(f.entries[0].contactId).toBe('julia');
-		expect(f.entries[0].body).toBe('Met @{contact:julia} at the lake, she is @{contact:marco}’s sister');
+		expect(f.entries[0].body).toBe(
+			'Met @{contact:julia} at the lake, she is @{contact:marco}’s sister'
+		);
 		expect(f.mentions.get(result.entryId)).toEqual(['marco']);
 	});
 
@@ -199,7 +206,11 @@ describe('captureMoment', () => {
 	it('refuses a bare first name an older build queued, saving nothing (docs/02 §2.2.3)', async () => {
 		const f = fakes([{ id: 'marco', displayName: 'Marco' }]);
 		await expect(
-			captureMoment(f.deps, author, { ...base, body: '@Julia is @Marco’s sister', newPeople: ['Julia'] })
+			captureMoment(f.deps, author, {
+				...base,
+				body: '@Julia is @Marco’s sister',
+				newPeople: ['Julia']
+			})
 		).rejects.toBeInstanceOf(NeedsSomethingToKnowThemByError);
 		expect(f.contacts).toHaveLength(1);
 		expect(f.entries).toHaveLength(0);
@@ -233,7 +244,11 @@ describe('captureMoment', () => {
 			{ id: 'thomas-lenk', displayName: 'Thomas', firstName: 'Thomas' }
 		]);
 		await expect(
-			captureMoment(f.deps, author, { ...base, body: 'Hut with @Thomas and @Julia', newPeople: ['Julia'] })
+			captureMoment(f.deps, author, {
+				...base,
+				body: 'Hut with @Thomas and @Julia',
+				newPeople: ['Julia']
+			})
 		).rejects.toBeInstanceOf(AmbiguousMentionError);
 		expect(f.contacts).toHaveLength(2);
 		expect(f.entries).toHaveLength(0);
@@ -252,9 +267,16 @@ describe('captureMoment', () => {
 
 		expect(result.createdContactIds).toHaveLength(1);
 		const created = f.contacts.find((c) => c.id === result.createdContactIds[0])!;
-		expect(created).toMatchObject({ displayName: 'Thomas', firstName: 'Thomas', description: 'Swims at the Marzili', visibility: 'shared' });
+		expect(created).toMatchObject({
+			displayName: 'Thomas',
+			firstName: 'Thomas',
+			description: 'Swims at the Marzili',
+			visibility: 'shared'
+		});
 		expect(result.anchorContactId).toBe(created.id);
-		expect(f.entries[0].body).toBe(`Met @{contact:${created.id}} at the lake, not @{contact:thomas-hut}`);
+		expect(f.entries[0].body).toBe(
+			`Met @{contact:${created.id}} at the lake, not @{contact:thomas-hut}`
+		);
 		expect(f.contacts.some((c) => c.firstName === 'Unused')).toBe(false);
 	});
 
@@ -263,7 +285,10 @@ describe('captureMoment', () => {
 			{ id: 'thomas-hut', displayName: 'Thomas', firstName: 'Thomas' },
 			{ id: 'thomas-lenk', displayName: 'Thomas', firstName: 'Thomas' }
 		]);
-		const result = await captureMoment(f.deps, author, { ...base, body: 'Coffee with @{contact:thomas-lenk}' });
+		const result = await captureMoment(f.deps, author, {
+			...base,
+			body: 'Coffee with @{contact:thomas-lenk}'
+		});
 		expect(result.anchorContactId).toBe('thomas-lenk');
 	});
 
@@ -298,7 +323,10 @@ describe('captureMoment', () => {
 		]);
 		const first = await captureMoment(f.deps, author, { ...base, body: 'Met @Julia with @Marco' });
 		f.entries[0].title = 'Lake day';
-		const second = await captureMoment(f.deps, author, { ...base, body: '@Julia called, @Lena says hi' });
+		const second = await captureMoment(f.deps, author, {
+			...base,
+			body: '@Julia called, @Lena says hi'
+		});
 
 		expect(second.entryId).toBe(first.entryId);
 		expect(f.entries).toHaveLength(1);
@@ -314,8 +342,16 @@ describe('captureMoment', () => {
 	it('keeps moments on other days or with another visibility in their own entries', async () => {
 		const f = fakes([{ id: 'julia', displayName: 'Julia' }]);
 		await captureMoment(f.deps, author, { ...base, body: 'Lunch with @Julia' });
-		await captureMoment(f.deps, author, { ...base, entryDate: '2026-09-04', body: 'Tea with @Julia' });
-		await captureMoment(f.deps, author, { ...base, visibility: 'private', body: 'Worried about @Julia' });
+		await captureMoment(f.deps, author, {
+			...base,
+			entryDate: '2026-09-04',
+			body: 'Tea with @Julia'
+		});
+		await captureMoment(f.deps, author, {
+			...base,
+			visibility: 'private',
+			body: 'Worried about @Julia'
+		});
 
 		expect(f.entries.map((e) => e.body)).toEqual([
 			'Lunch with @{contact:julia}',

@@ -1,5 +1,10 @@
 import { claimEndpoints, confirmedClaimFor } from '$lib/kinship/claims';
-import { deriveKinship, deriveKinshipForAll, variantFor, type DerivedKin } from '$lib/kinship/kinship';
+import {
+	deriveKinship,
+	deriveKinshipForAll,
+	variantFor,
+	type DerivedKin
+} from '$lib/kinship/kinship';
 import { RELATION_FOR_TYPE_KEY } from '$lib/relationships/type-keys';
 import { workedOutThrough } from '../reasons';
 import { isDirected, type LinkSuggestion, type Rule, type Trigger } from '../types';

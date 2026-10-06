@@ -25,7 +25,13 @@ import type { Relation } from './types';
  * asserted without a database, a viewer or a browser.
  */
 
-const claim = (relation: Relation, fromId: string, toId: string, fromName: string, toName: string): NamedClaim => ({
+const claim = (
+	relation: Relation,
+	fromId: string,
+	toId: string,
+	fromName: string,
+	toName: string
+): NamedClaim => ({
 	relation,
 	fromId,
 	toId,
@@ -117,7 +123,9 @@ describe('pageOf', () => {
 			let cursor: string | null = null;
 			// Bounded so a broken cursor fails the assertion instead of hanging the suite.
 			for (let guard = 0; guard <= items.length; guard += 1) {
-				const page: ReturnType<typeof pageOf<number>> = pageOf(items, keyOf, size, { after: cursor });
+				const page: ReturnType<typeof pageOf<number>> = pageOf(items, keyOf, size, {
+					after: cursor
+				});
 				seen.push(...page.items);
 				if (page.nextCursor === null) break;
 				cursor = page.nextCursor;
@@ -282,8 +290,11 @@ describe('the declined log', () => {
 
 	/* Fixed-width, so an older answer never sorts ahead of a newer one on string length alone. */
 	it('gives every answer a key of the same width', () => {
-		const widths = new Set([declined('a', 1).dismissed.at, declined('a', 1_700_000_000_000).dismissed.at]
-			.map((at) => declinedKey(declined('a', at)).split('|')[0]!.length));
+		const widths = new Set(
+			[declined('a', 1).dismissed.at, declined('a', 1_700_000_000_000).dismissed.at].map(
+				(at) => declinedKey(declined('a', at)).split('|')[0]!.length
+			)
+		);
 		expect(widths.size).toBe(1);
 	});
 });

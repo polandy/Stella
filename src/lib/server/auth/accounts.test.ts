@@ -38,7 +38,13 @@ function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) 
 		},
 		updateSelfContact: async () => {}
 	};
-	return { repo, localeWrites, get inserted() { return inserted; } };
+	return {
+		repo,
+		localeWrites,
+		get inserted() {
+			return inserted;
+		}
+	};
 }
 
 function sequentialIds(...values: string[]): IdGenerator {
@@ -129,7 +135,9 @@ describe('authenticateLocal', () => {
 
 	it('returns null for an unknown email', async () => {
 		const f = fakeRepo([{ user, passwordHash: 'hashed:right' }]);
-		expect(await authenticateLocal(deps(f.repo), { email: 'nobody@x.test', password: 'x' })).toBeNull();
+		expect(
+			await authenticateLocal(deps(f.repo), { email: 'nobody@x.test', password: 'x' })
+		).toBeNull();
 	});
 
 	it('returns null for an SSO-only user with no password', async () => {

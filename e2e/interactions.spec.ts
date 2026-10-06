@@ -33,7 +33,9 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('logs a call with a participant, shows it on the timeline and derives last contacted', async ({ page }) => {
+test('logs a call with a participant, shows it on the timeline and derives last contacted', async ({
+	page
+}) => {
 	await openPerson(page, /Lena Brunner/);
 	await expect(page.getByText('Nothing written down yet.')).toBeVisible();
 	await expect(page.getByTestId('last-contacted')).toContainText('No contact logged yet');
@@ -57,7 +59,9 @@ test('logs a call with a participant, shows it on the timeline and derives last 
 	await expect(page.getByTestId('last-contacted')).toContainText('1 September 2026');
 });
 
-test('orders the timeline most recent day first and last contacted follows the newest', async ({ page }) => {
+test('orders the timeline most recent day first and last contacted follows the newest', async ({
+	page
+}) => {
 	await openPerson(page, /Lena Brunner/);
 	const section = await openLogForm(page);
 
@@ -73,7 +77,9 @@ test('orders the timeline most recent day first and last contacted follows the n
 	await expect(page.getByTestId('last-contacted')).toContainText('1 September 2026');
 });
 
-test('shows the logged interaction in the household stream, linking to the person', async ({ page }) => {
+test('shows the logged interaction in the household stream, linking to the person', async ({
+	page
+}) => {
 	const item = page.locator('article', { hasText: TITLE }).first();
 	await expect(item).toContainText('You');
 	await expect(item).toContainText('logged');
@@ -97,11 +103,15 @@ test('refuses a day that does not exist and keeps the timeline unchanged', async
 	});
 	await section.getByRole('button', { name: 'Log interaction' }).click();
 
-	await expect(section.getByText('There is no such day in the calendar: 2026-02-30.')).toBeVisible();
+	await expect(
+		section.getByText('There is no such day in the calendar: 2026-02-30.')
+	).toBeVisible();
 	await expect(storyItems(page)).toHaveCount(before);
 });
 
-test('removes an own interaction and last contacted moves to the remaining one', async ({ page }) => {
+test('removes an own interaction and last contacted moves to the remaining one', async ({
+	page
+}) => {
 	await openPerson(page, /Lena Brunner/);
 	const newest = storyItems(page).first();
 	await expect(newest).toContainText(TITLE);
@@ -117,7 +127,9 @@ test('removes an own interaction and last contacted moves to the remaining one',
 	await expect(page.getByTestId('last-contacted')).toContainText('20 August 2026');
 });
 
-test('pages back through both sources with "Show earlier", showing every item once', async ({ page }) => {
+test('pages back through both sources with "Show earlier", showing every item once', async ({
+	page
+}) => {
 	await openPerson(page, /Hans Brunner/);
 
 	await expect(storyItems(page)).toHaveCount(STORY_PAGE_SIZE);

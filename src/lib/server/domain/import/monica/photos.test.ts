@@ -43,7 +43,14 @@ function fakes() {
 			files.delete(path);
 		}
 	};
-	return { photos, media, stored, avatars, files, deps: { photos, media, clock: { now: () => NOW } } };
+	return {
+		photos,
+		media,
+		stored,
+		avatars,
+		files,
+		deps: { photos, media, clock: { now: () => NOW } }
+	};
 }
 
 const input = (over: Partial<Parameters<typeof attachImportedPhoto>[1]> = {}) => ({
@@ -80,7 +87,18 @@ describe('attachImportedPhoto', () => {
 
 	it('keeps the capture date read out of the picture Monica kept', async () => {
 		const f = fakes();
-		await attachImportedPhoto(f.deps, input({ upload: { image: JPEG, thumb: JPEG, width: 800, height: 600, takenAt: '2015-08-01T14:00:00' } }));
+		await attachImportedPhoto(
+			f.deps,
+			input({
+				upload: {
+					image: JPEG,
+					thumb: JPEG,
+					width: 800,
+					height: 600,
+					takenAt: '2015-08-01T14:00:00'
+				}
+			})
+		);
 		expect(f.stored[0]?.takenAt).toBe('2015-08-01T14:00:00');
 	});
 
@@ -101,7 +119,10 @@ describe('attachImportedPhoto', () => {
 	it('refuses bytes that are not an image, writing nothing', async () => {
 		const f = fakes();
 		await expect(
-			attachImportedPhoto(f.deps, input({ upload: { image: new Uint8Array([1, 2, 3]), thumb: JPEG, width: 1, height: 1 } }))
+			attachImportedPhoto(
+				f.deps,
+				input({ upload: { image: new Uint8Array([1, 2, 3]), thumb: JPEG, width: 1, height: 1 } })
+			)
 		).rejects.toBeInstanceOf(InvalidImageError);
 		expect(f.files.size).toBe(0);
 		expect(f.stored).toHaveLength(0);

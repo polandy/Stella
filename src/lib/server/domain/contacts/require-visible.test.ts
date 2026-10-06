@@ -8,14 +8,17 @@ import { ContactGoneError, onVisibleContact, requireVisibleContact } from './req
  */
 
 const contacts = {
-	findByIdVisibleTo: async (_v: unknown, id: string) => (id === 'julia' ? ({ id } as Contact) : null)
+	findByIdVisibleTo: async (_v: unknown, id: string) =>
+		id === 'julia' ? ({ id } as Contact) : null
 };
 const author = { userId: 'u1', householdId: 'h1' };
 
 describe('requireVisibleContact', () => {
 	it('lets a visible person through and refuses anyone else', async () => {
 		await expect(requireVisibleContact(contacts, author, 'julia')).resolves.toBeUndefined();
-		await expect(requireVisibleContact(contacts, author, 'gone')).rejects.toBeInstanceOf(ContactGoneError);
+		await expect(requireVisibleContact(contacts, author, 'gone')).rejects.toBeInstanceOf(
+			ContactGoneError
+		);
 	});
 });
 
@@ -27,7 +30,9 @@ describe('onVisibleContact', () => {
 			return p.name;
 		});
 		expect(await tag(author, { contactId: 'julia', name: 'choir' })).toBe('choir');
-		await expect(tag(author, { contactId: 'gone', name: 'choir' })).rejects.toBeInstanceOf(ContactGoneError);
+		await expect(tag(author, { contactId: 'gone', name: 'choir' })).rejects.toBeInstanceOf(
+			ContactGoneError
+		);
 		expect(applied).toEqual(['julia:choir']);
 	});
 });

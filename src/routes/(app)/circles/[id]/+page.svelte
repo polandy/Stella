@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import CirclePhotoLightbox from '$lib/components/circle/CirclePhotoLightbox.svelte';
 	import CirclePhotosSection from '$lib/components/circle/CirclePhotosSection.svelte';
@@ -14,7 +13,6 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
-	import RemoveButton from '$lib/components/RemoveButton.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { circleKindLabel } from '$lib/circles/labels';
 	import { roleKey } from '$lib/circles/role-key';
@@ -50,7 +48,8 @@
 	 * the page keeps it open, and a photo that went away closes it.
 	 */
 	const photos = $derived(data.photos);
-	const ofRole = (key: string | null) => photos.photos.filter((p) => p.roleKey === key).map((p) => p.id);
+	const ofRole = (key: string | null) =>
+		photos.photos.filter((p) => p.roleKey === key).map((p) => p.id);
 	const walk = new PhotoWalk();
 	const walked = $derived(photos.photos.find((p) => p.id === walk.photoId) ?? null);
 	const openPhotos = walk.open.bind(walk);
@@ -116,8 +115,14 @@
 	const heldNames = useHeldNames(() => data.passOn);
 	const lastNameOf = $derived(new Map(data.people.map((p) => [p.id, p.lastName])));
 	const lastNames = $derived({
-		chosen: chosenMembers.map((m) => ({ id: m.contactId, displayName: m.displayName, lastName: lastNameOf.get(m.contactId) ?? null })),
-		knownSurnames: [...householdSpellings(data.people.map((p) => p.lastName)).values()].sort((a, b) => a.localeCompare(b)),
+		chosen: chosenMembers.map((m) => ({
+			id: m.contactId,
+			displayName: m.displayName,
+			lastName: lastNameOf.get(m.contactId) ?? null
+		})),
+		knownSurnames: [...householdSpellings(data.people.map((p) => p.lastName)).values()].sort(
+			(a, b) => a.localeCompare(b)
+		),
 		held: heldNames.submit(),
 		disabled: !reachability.reachable,
 		onheld: () => (selectedIds = [])
@@ -133,7 +138,10 @@
 					{
 						kind: 'membership',
 						id: m.membershipId,
-						label: count > 1 ? t('circles.removedManyFromCircle', { count }) : t('circles.removedFromCircle'),
+						label:
+							count > 1
+								? t('circles.removedManyFromCircle', { count })
+								: t('circles.removedFromCircle'),
 						action: '?/removeMember',
 						body
 					},
@@ -168,7 +176,9 @@
 	// (The photo actions live in their own module, so `form` is a loose union: read it by `in`.)
 	function renameErrorFor(role: string): string | null {
 		if (!form || !('renameFrom' in form) || !('renameError' in form)) return null;
-		return form.renameFrom === role && typeof form.renameError === 'string' ? form.renameError : null;
+		return form.renameFrom === role && typeof form.renameError === 'string'
+			? form.renameError
+			: null;
 	}
 	const INPUT = 'rounded-md border border-border-input bg-bg px-3 py-2 text-fg';
 </script>
@@ -187,19 +197,25 @@
 		/>
 	{/if}
 	<header class="flex items-center gap-4">
-		<span class="grid size-12 shrink-0 place-items-center rounded-full" style={accentDotStyle(circle.color)}>
+		<span
+			class="grid size-12 shrink-0 place-items-center rounded-full"
+			style={accentDotStyle(circle.color)}
+		>
 			<span class="size-4 rounded-full bg-card/70"></span>
 		</span>
 		<div class="min-w-0 flex-1">
 			<h1 class="truncate text-2xl font-semibold text-fg">{circle.name}</h1>
 			<p class="text-sm text-fg-muted">
 				<span>{circleKindLabel(t, circle.kind)}</span>
-				{#if circle.description} · {circle.description}{/if}
-				{#if circle.visibility === 'private'} · {t('circles.private')}{/if}
+				{#if circle.description}
+					· {circle.description}{/if}
+				{#if circle.visibility === 'private'}
+					· {t('circles.private')}{/if}
 			</p>
 		</div>
 		<!-- The circle is a node of the graph, so it opens there like a person does (docs/02 §2.7). -->
-		<Button size="sm" icon="graph" href="/graph?center={circle.id}">{t('graph.openInGraph')}</Button>
+		<Button size="sm" icon="graph" href="/graph?center={circle.id}">{t('graph.openInGraph')}</Button
+		>
 	</header>
 
 	<Section
@@ -211,7 +227,11 @@
 	>
 		{#snippet action()}
 			{#if visibleCount > 1}
-				<Button size="sm" aria-pressed={selecting} onclick={() => (selecting ? stopSelecting() : (selecting = true))}>
+				<Button
+					size="sm"
+					aria-pressed={selecting}
+					onclick={() => (selecting ? stopSelecting() : (selecting = true))}
+				>
 					{selecting ? t('circles.selectDone') : t('circles.select')}
 				</Button>
 			{/if}
@@ -222,36 +242,38 @@
 					<section class="flex flex-col gap-2" data-testid="role-group">
 						{#if showRoles}
 							<div class="flex items-center gap-2">
-							{#if group.role !== null}
-								<!-- A role is renamed where it is read, for its people and its photos alike. -->
-								<h3 class="flex min-w-0 items-center gap-1">
-									<InlineEdit
-										action="?/renameRole"
-										name="role"
-										value={group.role}
-										extra={{ from: group.role }}
-										label={t('circles.renameRole', { role: group.role })}
-										error={renameErrorFor(group.role)}
-										valueClass={ROLE_HEADING}
-										pencil
-									/>
-									<span class={ROLE_HEADING}>· {group.members.length}</span>
-								</h3>
-							{:else}
-								<h3 class={ROLE_HEADING}>{t('circles.noRole')} · {group.members.length}</h3>
-							{/if}
-							{#if selecting}
-								<label class="flex items-center gap-1 text-xs text-primary">
-									<input
-										type="checkbox"
-										checked={allChosen(idsOf(group), selectedIds)}
-										onchange={() => (selectedIds = toggleGroup(selectedIds, idsOf(group)))}
-										aria-label={t('circles.selectRole', { role: group.role ?? t('circles.noRole') })}
-										class="accent-primary"
-									/>
-									{t('circles.selectAll')}
-								</label>
-							{/if}
+								{#if group.role !== null}
+									<!-- A role is renamed where it is read, for its people and its photos alike. -->
+									<h3 class="flex min-w-0 items-center gap-1">
+										<InlineEdit
+											action="?/renameRole"
+											name="role"
+											value={group.role}
+											extra={{ from: group.role }}
+											label={t('circles.renameRole', { role: group.role })}
+											error={renameErrorFor(group.role)}
+											valueClass={ROLE_HEADING}
+											pencil
+										/>
+										<span class={ROLE_HEADING}>· {group.members.length}</span>
+									</h3>
+								{:else}
+									<h3 class={ROLE_HEADING}>{t('circles.noRole')} · {group.members.length}</h3>
+								{/if}
+								{#if selecting}
+									<label class="flex items-center gap-1 text-xs text-primary">
+										<input
+											type="checkbox"
+											checked={allChosen(idsOf(group), selectedIds)}
+											onchange={() => (selectedIds = toggleGroup(selectedIds, idsOf(group)))}
+											aria-label={t('circles.selectRole', {
+												role: group.role ?? t('circles.noRole')
+											})}
+											class="accent-primary"
+										/>
+										{t('circles.selectAll')}
+									</label>
+								{/if}
 							</div>
 						{/if}
 						<!-- The role's lead photo stands above its people (concept §3.1); No role has the cover. -->
@@ -287,7 +309,9 @@
 			>
 				<!-- The header's Add opens the same form; with nobody to add yet, people come first. -->
 				{#if candidates.length}
-					<Button variant="primary" icon="add" type="button" onclick={() => (addOpen = true)}>{t('circles.noMembers.add')}</Button>
+					<Button variant="primary" icon="add" type="button" onclick={() => (addOpen = true)}
+						>{t('circles.noMembers.add')}</Button
+					>
 				{:else}
 					<Button variant="primary" icon="add" href={newPersonHref()}>{t('nav.addPerson')}</Button>
 				{/if}
@@ -295,9 +319,19 @@
 		{/if}
 
 		{#snippet editor()}
-			<form method="POST" action="?/addMembers" use:enhance={saved} class="flex flex-wrap items-end gap-3">
+			<form
+				method="POST"
+				action="?/addMembers"
+				use:enhance={saved}
+				class="flex flex-wrap items-end gap-3"
+			>
 				<label class="flex basis-full items-center gap-2 text-sm text-fg-muted">
-					<input type="checkbox" bind:checked={keepSearch} onchange={rememberKeepSearch} class="accent-primary" />
+					<input
+						type="checkbox"
+						bind:checked={keepSearch}
+						onchange={rememberKeepSearch}
+						class="accent-primary"
+					/>
 					{t('circles.keepSearch')}
 				</label>
 				<!-- The label names the field only, not the chips and list around it. -->
@@ -335,7 +369,12 @@
 		{/snippet}
 	</Section>
 
-	<CirclePhotosSection {data} error={form && 'photoError' in form ? (form.photoError ?? null) : null} {photoDate} onopen={openPhotos} />
+	<CirclePhotosSection
+		{data}
+		error={form && 'photoError' in form ? (form.photoError ?? null) : null}
+		{photoDate}
+		onopen={openPhotos}
+	/>
 </main>
 
 {#if walk.current && walked}

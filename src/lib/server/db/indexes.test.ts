@@ -21,12 +21,20 @@ beforeAll(() => {
 
 /** SQLite's plan for `sql`, one step per line. */
 const planOf = (sql: string) =>
-	(sqlite.query(`EXPLAIN QUERY PLAN ${sql}`).all() as { detail: string }[]).map((step) => step.detail);
+	(sqlite.query(`EXPLAIN QUERY PLAN ${sql}`).all() as { detail: string }[]).map(
+		(step) => step.detail
+	);
 
 const LOOKUPS: [string, string][] = [
-	['the notes that mention a person (Mentioned in)', "SELECT note_id FROM note_mention WHERE contact_id = 'c'"],
+	[
+		'the notes that mention a person (Mentioned in)',
+		"SELECT note_id FROM note_mention WHERE contact_id = 'c'"
+	],
 	['the people carrying a tag', "SELECT contact_id FROM contact_tag WHERE tag_id = 't'"],
-	['the touchpoints a person took part in', "SELECT interaction_id FROM interaction_participant WHERE contact_id = 'c'"],
+	[
+		'the touchpoints a person took part in',
+		"SELECT interaction_id FROM interaction_participant WHERE contact_id = 'c'"
+	],
 	['the links of one relationship type', "SELECT id FROM relationship WHERE type_id = 'r'"],
 	['the sessions of a member', "SELECT id FROM session WHERE user_id = 'u'"],
 	['the photos of a circle', "SELECT id FROM photo WHERE circle_id = 'c'"]
@@ -64,7 +72,9 @@ describe('index-ordered pages', () => {
 const viewer = { id: 'u', householdId: 'h' };
 
 /** Every statement `read` sends, in order. */
-async function statementsOf(read: (db: ReturnType<typeof drizzle<typeof schema>>) => Promise<unknown>) {
+async function statementsOf(
+	read: (db: ReturnType<typeof drizzle<typeof schema>>) => Promise<unknown>
+) {
 	const sent: string[] = [];
 	const prepare = sqlite.prepare.bind(sqlite);
 	const watched = Object.create(sqlite) as Database;
@@ -105,7 +115,9 @@ describe("the Home stream's newest records", () => {
 	const recent = { limit: 40, memberId: null };
 
 	it('reads the newest people without sorting the household', async () => {
-		const plan = await planOfRead((db) => createDrizzleStreamRepository(db).recentPeople(viewer, recent));
+		const plan = await planOfRead((db) =>
+			createDrizzleStreamRepository(db).recentPeople(viewer, recent)
+		);
 		expect(plan[0]).toStartWith('SEARCH contact USING INDEX contact_household_created_idx');
 		expect(plan.filter((step) => step.includes('TEMP B-TREE'))).toEqual([]);
 	});

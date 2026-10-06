@@ -66,7 +66,14 @@
 </script>
 
 <!-- Never disabled: a disabled button drops focus, and the cropper hands focus back to it on close. -->
-<Button variant="secondary" size="sm" icon="photo" onclick={open} aria-busy={busy} data-testid="immich-use-as-photo">
+<Button
+	variant="secondary"
+	size="sm"
+	icon="photo"
+	onclick={open}
+	aria-busy={busy}
+	data-testid="immich-use-as-photo"
+>
 	{t('immich.viewer.use')}
 </Button>
 <FormError message={error} variant="inline" size="xs" />

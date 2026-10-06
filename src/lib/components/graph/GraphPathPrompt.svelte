@@ -17,9 +17,7 @@
 	const pathChain = $derived(path ? path.nodeIds.map(nameOf) : []);
 </script>
 
-<div
-	class="pointer-events-none absolute inset-x-0 top-16 flex justify-center"
->
+<div class="pointer-events-none absolute inset-x-0 top-16 flex justify-center">
 	<div
 		data-testid="path-prompt"
 		aria-live="polite"

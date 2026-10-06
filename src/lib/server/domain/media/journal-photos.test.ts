@@ -58,7 +58,7 @@ function deps() {
 			async setGalleryPhotoPin() {}
 		},
 		media: {
-			async put(key: string, bytes: Uint8Array) {
+			async put(key: string, _bytes: Uint8Array) {
 				puts.push(key);
 				return `/media-dir/${key}`;
 			},
@@ -108,10 +108,18 @@ describe('attachJournalPhoto', () => {
 		const d = deps();
 		d.clock = { now: () => Date.UTC(2026, 9, 4) };
 		const into = { contactId: 'c1', journalEntryId: 'j1', visibility: 'shared' as const };
-		await attachJournalPhoto(d, { userId: 'u1', householdId: 'h1' }, { ...into, upload: upload({ takenAt: '2026-09-27T18:04:00' }) });
+		await attachJournalPhoto(
+			d,
+			{ userId: 'u1', householdId: 'h1' },
+			{ ...into, upload: upload({ takenAt: '2026-09-27T18:04:00' }) }
+		);
 		expect(d.stored[0]?.takenAt).toBe('2026-09-27T18:04:00');
 		await expect(
-			attachJournalPhoto(d, { userId: 'u1', householdId: 'h1' }, { ...into, upload: upload({ takenAt: '2031-01-01T00:00:00' }) })
+			attachJournalPhoto(
+				d,
+				{ userId: 'u1', householdId: 'h1' },
+				{ ...into, upload: upload({ takenAt: '2031-01-01T00:00:00' }) }
+			)
 		).rejects.toBeInstanceOf(InvalidImageError);
 		expect(d.stored).toHaveLength(1);
 	});
@@ -119,24 +127,35 @@ describe('attachJournalPhoto', () => {
 	it('rejects an empty image', async () => {
 		const d = deps();
 		await expect(
-			attachJournalPhoto(d, { userId: 'u1', householdId: 'h1' }, {
-				contactId: 'c1',
-				journalEntryId: 'j1',
-				visibility: 'shared',
-				upload: upload({ image: new Uint8Array() })
-			})
+			attachJournalPhoto(
+				d,
+				{ userId: 'u1', householdId: 'h1' },
+				{
+					contactId: 'c1',
+					journalEntryId: 'j1',
+					visibility: 'shared',
+					upload: upload({ image: new Uint8Array() })
+				}
+			)
 		).rejects.toBeInstanceOf(InvalidImageError);
 	});
 
 	it('rejects bytes that are not a real image', async () => {
 		const d = deps();
 		await expect(
-			attachJournalPhoto(d, { userId: 'u1', householdId: 'h1' }, {
-				contactId: 'c1',
-				journalEntryId: 'j1',
-				visibility: 'shared',
-				upload: upload({ image: new Uint8Array([1, 2, 3, 4]), thumb: new Uint8Array([1, 2, 3, 4]) })
-			})
+			attachJournalPhoto(
+				d,
+				{ userId: 'u1', householdId: 'h1' },
+				{
+					contactId: 'c1',
+					journalEntryId: 'j1',
+					visibility: 'shared',
+					upload: upload({
+						image: new Uint8Array([1, 2, 3, 4]),
+						thumb: new Uint8Array([1, 2, 3, 4])
+					})
+				}
+			)
 		).rejects.toBeInstanceOf(InvalidImageError);
 	});
 });

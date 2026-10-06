@@ -15,7 +15,13 @@ import { BlankRoleNameError, renameCircleRole } from '$lib/server/domain/circles
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { listCircleCuts } from '$lib/server/domain/media/cuts';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
-import { getCircleDeps, getCirclePhotoDeps, getContactDeps, getCutDeps, getSurnameReviewDeps } from '$lib/server/services';
+import {
+	getCircleDeps,
+	getCirclePhotoDeps,
+	getContactDeps,
+	getCutDeps,
+	getSurnameReviewDeps
+} from '$lib/server/services';
 import { photoActions } from './actions/photos';
 import { lastNameActions } from '$lib/server/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';

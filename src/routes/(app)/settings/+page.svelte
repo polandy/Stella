@@ -70,8 +70,12 @@
 			<!-- With nobody to pick from, the picker would be a dead end: offer to add yourself. -->
 			{#if data.people.length === 0}
 				<div class="flex flex-wrap items-center gap-3" data-testid="self-nobody-yet">
-					<p class="min-w-0 flex-1 basis-56 text-sm text-fg-muted">{t('settings.self.nobodyYet')}</p>
-					<Button variant="primary" icon="self" href={newPersonHref({ self: true })}>{t('settings.self.addYourself')}</Button>
+					<p class="min-w-0 flex-1 basis-56 text-sm text-fg-muted">
+						{t('settings.self.nobodyYet')}
+					</p>
+					<Button variant="primary" icon="self" href={newPersonHref({ self: true })}
+						>{t('settings.self.addYourself')}</Button
+					>
 				</div>
 			{:else}
 				<form method="POST" action="?/setSelf" class="flex flex-wrap items-center gap-2">
@@ -88,7 +92,9 @@
 				{#if !data.user.selfContactId}
 					<p class="text-sm text-fg-muted">
 						{t('settings.self.notListed')}
-						<a href={newPersonHref({ self: true })} class="font-medium text-link hover:underline">{t('settings.self.addYourself')}</a>
+						<a href={newPersonHref({ self: true })} class="font-medium text-link hover:underline"
+							>{t('settings.self.addYourself')}</a
+						>
 					</p>
 				{/if}
 			{/if}
@@ -112,16 +118,28 @@
 	-->
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.quality.heading')}</h2>
-		<a href="/settings/relationships" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
-			<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="search" size={18} /></span>
+		<a
+			href="/settings/relationships"
+			class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
+		>
+			<span
+				class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+				aria-hidden="true"><Icon name="search" size={18} /></span
+			>
 			<span class="min-w-0 flex-1">
 				<span class="block font-medium text-fg">{t('settings.relationships.title')}</span>
 				<span class="block text-sm text-fg-muted">{t('settings.relationships.blurb')}</span>
 			</span>
 			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
 		</a>
-		<a href="/settings/last-names" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
-			<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="rename" size={18} /></span>
+		<a
+			href="/settings/last-names"
+			class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
+		>
+			<span
+				class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+				aria-hidden="true"><Icon name="rename" size={18} /></span
+			>
 			<span class="min-w-0 flex-1">
 				<span class="block font-medium text-fg">{t('surnames.page.title')}</span>
 				<span class="block text-sm text-fg-muted" data-testid="last-names-count">
@@ -130,14 +148,23 @@
 			</span>
 			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
 		</a>
-		<a href="/settings/first-name-only" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
-			<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="tidy" size={18} /></span>
+		<a
+			href="/settings/first-name-only"
+			class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
+		>
+			<span
+				class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+				aria-hidden="true"><Icon name="tidy" size={18} /></span
+			>
 			<span class="min-w-0 flex-1">
 				<span class="block font-medium text-fg">{t('settings.firstNameOnly.title')}</span>
 				<span class="block text-sm text-fg-muted">{t('settings.firstNameOnly.blurb')}</span>
 			</span>
 			{#if data.firstNameOnlyCount > 0}
-				<span class="rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium tabular-nums text-primary" data-testid="first-name-only-count">
+				<span
+					class="rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary tabular-nums"
+					data-testid="first-name-only-count"
+				>
 					{data.firstNameOnlyCount}
 				</span>
 			{/if}
@@ -148,8 +175,14 @@
 	<!-- Every member's, not only the admin's: a token acts as whoever made it (docs/02 §2.16.1). -->
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.api.heading')}</h2>
-		<a href="/settings/api-tokens" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
-			<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="apiToken" size={18} /></span>
+		<a
+			href="/settings/api-tokens"
+			class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
+		>
+			<span
+				class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+				aria-hidden="true"><Icon name="apiToken" size={18} /></span
+			>
 			<span class="min-w-0 flex-1">
 				<span class="block font-medium text-fg">{t('settings.api.title')}</span>
 				<span class="block text-sm text-fg-muted">{t('settings.api.blurb')}</span>
@@ -161,8 +194,14 @@
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.data.heading')}</h2>
 		{#if data.isAdmin}
-			<a href="/settings/import" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
-				<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="import" size={18} /></span>
+			<a
+				href="/settings/import"
+				class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
+			>
+				<span
+					class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+					aria-hidden="true"><Icon name="import" size={18} /></span
+				>
 				<span class="min-w-0 flex-1">
 					<span class="block font-medium text-fg">{t('settings.data.importPeople')}</span>
 					<span class="block text-sm text-fg-muted">{t('settings.data.importPeopleBlurb')}</span>
@@ -170,8 +209,14 @@
 				<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
 			</a>
 			<form method="POST" action="/settings/export" class="contents">
-				<button type="submit" class="flex w-full items-center gap-4 rounded-app bg-card p-4 text-left shadow-card transition-colors hover:bg-card-hover">
-					<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="export" size={18} /></span>
+				<button
+					type="submit"
+					class="flex w-full items-center gap-4 rounded-app bg-card p-4 text-left shadow-card transition-colors hover:bg-card-hover"
+				>
+					<span
+						class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+						aria-hidden="true"><Icon name="export" size={18} /></span
+					>
 					<span class="min-w-0 flex-1">
 						<span class="block font-medium text-fg">{t('settings.data.download')}</span>
 						<span class="block text-sm text-fg-muted">{t('settings.data.downloadBlurb')}</span>
@@ -179,19 +224,33 @@
 					<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
 				</button>
 			</form>
-			<a href="/settings/import/archive" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
-				<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="archive" size={18} /></span>
+			<a
+				href="/settings/import/archive"
+				class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
+			>
+				<span
+					class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+					aria-hidden="true"><Icon name="archive" size={18} /></span
+				>
 				<span class="min-w-0 flex-1">
 					<span class="block font-medium text-fg">{t('settings.data.restore')}</span>
 					<span class="block text-sm text-fg-muted">{t('settings.data.restoreBlurb')}</span>
 				</span>
 				<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
 			</a>
-			<a href="/settings/relationship-types" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
-				<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="people" size={18} /></span>
+			<a
+				href="/settings/relationship-types"
+				class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
+			>
+				<span
+					class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+					aria-hidden="true"><Icon name="people" size={18} /></span
+				>
 				<span class="min-w-0 flex-1">
 					<span class="block font-medium text-fg">{t('settings.data.relationshipTypes')}</span>
-					<span class="block text-sm text-fg-muted">{t('settings.data.relationshipTypesBlurb')}</span>
+					<span class="block text-sm text-fg-muted"
+						>{t('settings.data.relationshipTypesBlurb')}</span
+					>
 				</span>
 				<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
 			</a>
@@ -205,14 +264,20 @@
 		<section class="flex flex-col gap-3" data-testid="immich-settings">
 			<h2 class="text-sm font-medium text-fg-muted">{t('immich.settings.heading')}</h2>
 			<div class="flex items-start gap-4 rounded-app bg-card p-4 shadow-card">
-				<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="photo" size={18} /></span>
+				<span
+					class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+					aria-hidden="true"><Icon name="photo" size={18} /></span
+				>
 				<div class="flex min-w-0 flex-1 flex-col gap-1">
 					{#await data.immich}
 						<p class="text-sm text-fg-subtle">{t('immich.settings.checking')}</p>
 					{:then status}
 						{#if status.state === 'connected'}
 							<p class="font-medium text-fg" data-testid="immich-status">
-								{t('immich.settings.connected', { owner: status.owner.name || status.owner.email, version: status.version })}
+								{t('immich.settings.connected', {
+									owner: status.owner.name || status.owner.email,
+									version: status.version
+								})}
 							</p>
 							<p class="text-sm text-fg-muted">{t('immich.settings.howToLink')}</p>
 						{:else}
@@ -234,8 +299,14 @@
 					{/if}
 				</div>
 			</div>
-			<a href="/settings/immich" class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover">
-				<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="people" size={18} /></span>
+			<a
+				href="/settings/immich"
+				class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
+			>
+				<span
+					class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+					aria-hidden="true"><Icon name="people" size={18} /></span
+				>
 				<span class="min-w-0 flex-1">
 					<span class="block font-medium text-fg">{t('immich.match.title')}</span>
 					<span class="block text-sm text-fg-muted">{t('immich.match.blurb')}</span>
@@ -250,8 +321,14 @@
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.account.heading')}</h2>
 		<SignOutForm class="contents">
-			<button type="submit" class="flex w-full items-center gap-4 rounded-app bg-card p-4 text-left shadow-card transition-colors hover:bg-card-hover">
-				<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary" aria-hidden="true"><Icon name="signOut" size={18} /></span>
+			<button
+				type="submit"
+				class="flex w-full items-center gap-4 rounded-app bg-card p-4 text-left shadow-card transition-colors hover:bg-card-hover"
+			>
+				<span
+					class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+					aria-hidden="true"><Icon name="signOut" size={18} /></span
+				>
 				<span class="min-w-0 flex-1">
 					<span class="block font-medium text-fg">{t('nav.signOut')}</span>
 				</span>
@@ -273,7 +350,9 @@
 								class="rounded-control bg-primary-soft px-2 py-0.5 text-xs font-medium tracking-wide text-primary uppercase"
 								>{t('settings.about.badge')}</span
 							>
-							<span class="text-fg">{t('settings.about.available', { version: update.latest })}</span>
+							<span class="text-fg"
+								>{t('settings.about.available', { version: update.latest })}</span
+							>
 							{#if update.releaseUrl}
 								<a
 									class="text-link hover:underline"

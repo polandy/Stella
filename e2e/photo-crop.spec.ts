@@ -24,7 +24,9 @@ async function testCard(page: Page): Promise<Buffer> {
 			ctx.fillStyle = colour;
 			ctx.fillRect(third * 400, 0, 400, 800);
 		});
-		const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
+		const blob = await new Promise<Blob>((resolve) =>
+			canvas.toBlob((b) => resolve(b!), 'image/png')
+		);
 		return Array.from(new Uint8Array(await blob.arrayBuffer()));
 	});
 	return Buffer.from(bytes);
@@ -116,7 +118,9 @@ test('uploads nothing when the cropper is cancelled', async ({ page }) => {
 	await expect(avatar).toHaveAttribute('src', /\/media\//);
 });
 
-test('frames a gallery photo, keeps it one photo, and starts from the remembered square', async ({ page }) => {
+test('frames a gallery photo, keeps it one photo, and starts from the remembered square', async ({
+	page
+}) => {
 	await addPerson(page, 'Nora', 'Rahmen');
 	await page.getByRole('button', { name: 'Add photos' }).click();
 	const form = page.locator('#section-photos form');

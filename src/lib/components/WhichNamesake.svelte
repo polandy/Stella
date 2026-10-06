@@ -23,7 +23,9 @@
 				<span>{t('components.namesake.which', { handle, count: people.length })}</span>
 			</p>
 			<details class="pl-6">
-				<summary class="cursor-pointer text-xs text-fg-muted hover:text-fg">{t('components.namesake.whoIsWho')}</summary>
+				<summary class="cursor-pointer text-xs text-fg-muted hover:text-fg"
+					>{t('components.namesake.whoIsWho')}</summary
+				>
 				<ul class="mt-1 flex flex-col gap-1">
 					{#each people as { person, line } (person.id)}
 						<li class="min-w-0">

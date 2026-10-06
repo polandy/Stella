@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '../../../i18n/translate';
 import { kinshipGraphOf } from '../../../kinship/graph-of';
-import { encodeRelationshipChoice, type RelationshipSide } from '../../../relationships/type-options';
+import {
+	encodeRelationshipChoice,
+	type RelationshipSide
+} from '../../../relationships/type-options';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../relationships/status';
 import type { Contact } from '../contacts/contacts';
 import { BUILT_IN_RELATIONSHIP_TYPES } from './built-in-types';
@@ -74,7 +77,13 @@ function household(rows: StoredRow[] = [], hidden: string[] = []) {
 			insertAll: async (batch) => {
 				writes.push([...batch]);
 				for (const r of batch) {
-					stored.push({ id: r.id, from: r.fromContactId, to: r.toContactId, typeId: r.typeId, status: r.status });
+					stored.push({
+						id: r.id,
+						from: r.fromContactId,
+						to: r.toContactId,
+						typeId: r.typeId,
+						status: r.status
+					});
 				}
 			},
 			listForContactVisibleTo: async (_viewer, contactId): Promise<RelationshipView[]> =>
@@ -82,7 +91,11 @@ function household(rows: StoredRow[] = [], hidden: string[] = []) {
 					.filter((row) => row.from === contactId || row.to === contactId)
 					.map((row) => {
 						const type = typeOf(row.typeId);
-						const seen = describeRelationshipFor(contactId, { fromContactId: row.from, toContactId: row.to }, type);
+						const seen = describeRelationshipFor(
+							contactId,
+							{ fromContactId: row.from, toContactId: row.to },
+							type
+						);
 						return {
 							id: row.id,
 							otherContactId: seen.otherContactId,
@@ -129,7 +142,9 @@ function batch(
 		typeChoice: encodeRelationshipChoice(typeId, side),
 		status: CURRENT_RELATIONSHIP_STATUS,
 		description: null,
-		links: links.map((link) => (typeof link === 'string' ? { targetId: link, sinceDate: null } : link)),
+		links: links.map((link) =>
+			typeof link === 'string' ? { targetId: link, sinceDate: null } : link
+		),
 		...extra
 	};
 }
@@ -158,8 +173,22 @@ describe('addRelationships', () => {
 		});
 		expect(h.writes).toHaveLength(1);
 		expect(h.writes[0]).toMatchObject([
-			{ id: 'rel-1', fromContactId: 'anna', toContactId: 'lio', typeId: 'parent_child', sinceDate: '2015-04-12', createdBy: 'u1', householdId: 'h1' },
-			{ id: 'rel-2', fromContactId: 'bert', toContactId: 'lio', typeId: 'parent_child', sinceDate: null }
+			{
+				id: 'rel-1',
+				fromContactId: 'anna',
+				toContactId: 'lio',
+				typeId: 'parent_child',
+				sinceDate: '2015-04-12',
+				createdBy: 'u1',
+				householdId: 'h1'
+			},
+			{
+				id: 'rel-2',
+				fromContactId: 'bert',
+				toContactId: 'lio',
+				typeId: 'parent_child',
+				sinceDate: null
+			}
 		]);
 		expect(h.singleInserts()).toBe(0);
 	});
@@ -169,7 +198,10 @@ describe('addRelationships', () => {
 		await addRelationships(
 			h.deps,
 			author,
-			batch('anna', 'friend', 'forward', ['bert', 'carl'], { description: 'from the choir', status: 'former' })
+			batch('anna', 'friend', 'forward', ['bert', 'carl'], {
+				description: 'from the choir',
+				status: 'former'
+			})
 		);
 		expect(h.writes[0].map((r) => [r.description, r.status])).toEqual([
 			['from the choir', 'former'],
@@ -204,7 +236,11 @@ describe('addRelationships', () => {
 
 	it('refuses a second partner in the same batch: one partnership at a time', async () => {
 		const h = household();
-		const result = await addRelationships(h.deps, author, batch('lio', 'partner', 'forward', ['anna', 'bert']));
+		const result = await addRelationships(
+			h.deps,
+			author,
+			batch('lio', 'partner', 'forward', ['anna', 'bert'])
+		);
 
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
@@ -237,7 +273,11 @@ describe('addRelationships', () => {
 
 	it('refuses the same person picked twice as a duplicate of the first', async () => {
 		const h = household();
-		const result = await addRelationships(h.deps, author, batch('anna', 'friend', 'forward', ['bert', 'bert']));
+		const result = await addRelationships(
+			h.deps,
+			author,
+			batch('anna', 'friend', 'forward', ['bert', 'bert'])
+		);
 
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
@@ -249,7 +289,11 @@ describe('addRelationships', () => {
 
 	it('refuses someone the author cannot see, without saying who they are', async () => {
 		const h = household([], ['carl']);
-		const result = await addRelationships(h.deps, author, batch('anna', 'friend', 'forward', ['bert', 'carl']));
+		const result = await addRelationships(
+			h.deps,
+			author,
+			batch('anna', 'friend', 'forward', ['bert', 'carl'])
+		);
 
 		expect(result.ok).toBe(false);
 		if (result.ok) return;
@@ -259,7 +303,9 @@ describe('addRelationships', () => {
 
 	it('refuses a batch with nobody in it', async () => {
 		const h = household();
-		await expect(addRelationships(h.deps, author, batch('anna', 'friend', 'forward', []))).rejects.toThrow();
+		await expect(
+			addRelationships(h.deps, author, batch('anna', 'friend', 'forward', []))
+		).rejects.toThrow();
 		expect(h.writes).toHaveLength(0);
 	});
 });
@@ -274,9 +320,11 @@ describe('addRelationshipsOrRefuse', () => {
 
 	it('refuses as one error that still carries each refusal, and reads every name with its reason', async () => {
 		const h = household([{ id: 'old', from: 'otto', to: 'lio', typeId: 'parent_child' }]);
-		const refusal = await addRelationshipsOrRefuse(h.deps, author, childOf('anna', 'bert', 'carl')).catch(
-			(err: unknown) => err
-		);
+		const refusal = await addRelationshipsOrRefuse(
+			h.deps,
+			author,
+			childOf('anna', 'bert', 'carl')
+		).catch((err: unknown) => err);
 
 		expect(refusal).toBeInstanceOf(RelationshipsRefusedError);
 		if (!(refusal instanceof RelationshipsRefusedError)) return;

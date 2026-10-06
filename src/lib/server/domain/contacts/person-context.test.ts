@@ -16,7 +16,12 @@ import {
 const viewer: Viewer = { id: 'u-andy', householdId: 'h1' };
 const TODAY = '2026-09-29';
 
-const tieRow = (contactId: string, otherId: string, otherName: string, extra: Partial<ContextTieRow> = {}): ContextTieRow => ({
+const tieRow = (
+	contactId: string,
+	otherId: string,
+	otherName: string,
+	extra: Partial<ContextTieRow> = {}
+): ContextTieRow => ({
 	contactId,
 	typeKey: 'sibling',
 	side: 'forward',
@@ -30,7 +35,11 @@ const tieRow = (contactId: string, otherId: string, otherName: string, extra: Pa
 	...extra
 });
 
-const membershipRow = (contactId: string, name: string, role: string | null = null): ContextMembershipRow => ({
+const membershipRow = (
+	contactId: string,
+	name: string,
+	role: string | null = null
+): ContextMembershipRow => ({
 	contactId,
 	circleId: name.toLowerCase(),
 	parentCircleId: null,
@@ -57,7 +66,10 @@ function fakeReads(ties: ContextTieRow[], memberships: ContextMembershipRow[]) {
 
 describe('contextOfPeople', () => {
 	it('asks only about people with nothing typed to tell them apart, as the viewer', async () => {
-		const { reads, asked } = fakeReads([tieRow('t1', 's1', 'Sabine Keller'), tieRow('t2', 's1', 'Sabine Keller')], []);
+		const { reads, asked } = fakeReads(
+			[tieRow('t1', 's1', 'Sabine Keller'), tieRow('t2', 's1', 'Sabine Keller')],
+			[]
+		);
 		const context = await contextOfPeople({ contextReads: reads }, viewer, {
 			people: [
 				{ id: 't1', displayName: 'Thomas' },
@@ -72,9 +84,12 @@ describe('contextOfPeople', () => {
 		expect(context.t1?.ties.map((t) => t.otherName)).toEqual(['Sabine Keller']);
 	});
 
-	it('marks a link to the viewer\'s own person, and names each person\'s circle', async () => {
+	it("marks a link to the viewer's own person, and names each person's circle", async () => {
 		const { reads } = fakeReads(
-			[tieRow('t1', 'me', 'Andy Brunner'), tieRow('t1', 's1', 'Sabine Keller', { category: 'social' })],
+			[
+				tieRow('t1', 'me', 'Andy Brunner'),
+				tieRow('t1', 's1', 'Sabine Keller', { category: 'social' })
+			],
 			[membershipRow('t2', 'Turnverein', 'Coach')]
 		);
 		const context = await contextOfPeople({ contextReads: reads }, viewer, {

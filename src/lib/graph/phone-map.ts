@@ -89,7 +89,8 @@ export function mapLayers(state: PhoneMapState): MapLayers {
 		tall: enlarged,
 		// Mounted once the frame is tall — building the canvas mid-glide costs the glide its
 		// frames on a phone — and kept, drawn, under the picture until a shrink has arrived.
-		explorerMounted: (enlarged && (state.settled || state.drawn)) || (!state.settled && state.drawn),
+		explorerMounted:
+			(enlarged && (state.settled || state.drawn)) || (!state.settled && state.drawn),
 		explorerShown,
 		previewShown: !explorerShown,
 		previewControlsShown: state.view === 'preview'

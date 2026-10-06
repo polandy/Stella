@@ -7,7 +7,8 @@ export const dates = {
 	'dates.inDays': (p: { days: number }) => `in ${p.days} days`,
 	'dates.hasBirthday': 'has a birthday',
 	'dates.turns': (p: { age: number }) => `turns ${p.age}`,
-	'dates.namedAnniversary': (p: { label: string; years: number }) => `${p.label} · ${p.years} years`,
+	'dates.namedAnniversary': (p: { label: string; years: number }) =>
+		`${p.label} · ${p.years} years`,
 	'dates.hasAnniversary': 'has an anniversary',
 	'dates.yearsTogether': (p: { years: number }) => `${p.years} years together`,
 	'dates.somethingComingUp': 'has something coming up',

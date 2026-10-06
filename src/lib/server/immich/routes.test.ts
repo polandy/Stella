@@ -6,7 +6,12 @@ import { BERT_AND_CARL_ID, BERT_ID, CARL_ID, testLibrary } from '../domain/immic
 import { faceUrlFor, GLIMPSE_PAGE_SIZE } from '../domain/immich/glimpse';
 import { createImmichMediaSigner } from '../domain/immich/signed-media';
 import { createFakeImmichGateway, fakeAssetId } from './fake-gateway';
-import { answerFaceSearch, answerGlimpse, answerImmichMedia, IMMICH_MEDIA_CACHE_CONTROL } from './routes';
+import {
+	answerFaceSearch,
+	answerGlimpse,
+	answerImmichMedia,
+	IMMICH_MEDIA_CACHE_CONTROL
+} from './routes';
 
 /*
  * What the Immich routes answer — the signed proxy `/media/immich/{token}`, the strip's
@@ -34,7 +39,9 @@ const signer = createImmichMediaSigner({ secret: 'test-secret', clock });
 /** Bert is linked and visible; Carl is visible, not linked; nobody else is visible. */
 const bertLinked: Pick<ImmichLinkRepository, 'findForContactVisibleTo' | 'holdersOf'> = {
 	findForContactVisibleTo: async (_viewer, contactId) =>
-		contactId === 'c-bert' ? { contactId, immichPersonId: BERT_ID, linkedBy: 'u-anna', linkedAt: NOW } : null,
+		contactId === 'c-bert'
+			? { contactId, immichPersonId: BERT_ID, linkedBy: 'u-anna', linkedAt: NOW }
+			: null,
 	holdersOf: async (_viewer, personIds) =>
 		new Map(personIds.includes(BERT_ID) ? [[BERT_ID, { contactId: 'c-bert', name: 'c-bert' }]] : [])
 };
@@ -43,12 +50,22 @@ const visibleContacts = {
 		id === 'c-bert' || id === 'c-carl' ? { displayName: id, visibility: 'shared' as const } : null
 };
 
-function mediaDeps(gateway: Pick<ImmichGateway, 'assetImage' | 'personThumbnail'> = createFakeImmichGateway(testLibrary())) {
+function mediaDeps(
+	gateway: Pick<ImmichGateway, 'assetImage' | 'personThumbnail'> = createFakeImmichGateway(
+		testLibrary()
+	)
+) {
 	return { links: bertLinked, contacts: visibleContacts, gateway, signer };
 }
 
 const bertsPhoto = () =>
-	signer.sign({ kind: 'photo', contactId: 'c-bert', personId: BERT_ID, assetId: fakeAssetId(BERT_ID, 0), size: 'thumbnail' });
+	signer.sign({
+		kind: 'photo',
+		contactId: 'c-bert',
+		personId: BERT_ID,
+		assetId: fakeAssetId(BERT_ID, 0),
+		size: 'thumbnail'
+	});
 
 describe('answerImmichMedia', () => {
 	it('serves a signed photo with its image type, never kept by any cache and never sniffed', async () => {
@@ -84,7 +101,10 @@ describe('answerImmichMedia', () => {
 	it('answers 404 for a bare id, a tampered or expired token, an invisible or unlinked person — never asking Immich', async () => {
 		const gateway = createFakeImmichGateway(testLibrary());
 		const token = await bertsPhoto();
-		const expired = await createImmichMediaSigner({ secret: 'test-secret', clock: { now: () => NOW - 2 * 86_400_000 } }).sign({
+		const expired = await createImmichMediaSigner({
+			secret: 'test-secret',
+			clock: { now: () => NOW - 2 * 86_400_000 }
+		}).sign({
 			kind: 'photo',
 			contactId: 'c-bert',
 			personId: BERT_ID,
@@ -100,23 +120,33 @@ describe('answerImmichMedia', () => {
 			size: 'preview'
 		});
 		for (const raw of [BERT_ID, '..', '', `${token}x`, expired, invisible, unlinked]) {
-			expect(await answerImmichMedia(mediaDeps(gateway), viewer, raw)).toEqual({ status: 404, message: 'errors.notFound' });
+			expect(await answerImmichMedia(mediaDeps(gateway), viewer, raw)).toEqual({
+				status: 404,
+				message: 'errors.notFound'
+			});
 		}
 		expect(gateway.calls).toEqual([]);
 	});
 
 	it('answers 404 when this instance has no Immich', async () => {
-		expect(await answerImmichMedia(null, viewer, await bertsPhoto())).toEqual({ status: 404, message: 'errors.notFound' });
+		expect(await answerImmichMedia(null, viewer, await bertsPhoto())).toEqual({
+			status: 404,
+			message: 'errors.notFound'
+		});
 	});
 
 	it('answers 404 for a photo Immich no longer has, and 502 when Immich failed', async () => {
 		const gateway = createFakeImmichGateway(testLibrary());
 		gateway.library.people = [];
-		expect(await answerImmichMedia(mediaDeps(gateway), viewer, await bertsPhoto())).toMatchObject({ status: 404 });
+		expect(await answerImmichMedia(mediaDeps(gateway), viewer, await bertsPhoto())).toMatchObject({
+			status: 404
+		});
 
 		const down = createFakeImmichGateway(testLibrary());
 		down.failing = { assetImage: 'unreachable' };
-		expect(await answerImmichMedia(mediaDeps(down), viewer, await bertsPhoto())).toMatchObject({ status: 502 });
+		expect(await answerImmichMedia(mediaDeps(down), viewer, await bertsPhoto())).toMatchObject({
+			status: 502
+		});
 	});
 
 	it('never passes on bytes that are not an ordinary image, whatever the gateway let through', async () => {
@@ -126,7 +156,11 @@ describe('answerImmichMedia', () => {
 				value: { bytes: new TextEncoder().encode('<script>x()</script>'), contentType }
 			});
 			expect(
-				await answerImmichMedia(mediaDeps({ assetImage: bad, personThumbnail: bad }), viewer, await bertsPhoto())
+				await answerImmichMedia(
+					mediaDeps({ assetImage: bad, personThumbnail: bad }),
+					viewer,
+					await bertsPhoto()
+				)
 			).toEqual({ status: 502, message: 'errors.notFound' });
 		}
 	});
@@ -135,7 +169,10 @@ describe('answerImmichMedia', () => {
 describe('answerGlimpse', () => {
 	function glimpseDeps() {
 		const gateway = createFakeImmichGateway(testLibrary());
-		return { gateway, deps: { links: bertLinked, gateway, signer, publicUrl: 'https://immich.example.com' } };
+		return {
+			gateway,
+			deps: { links: bertLinked, gateway, signer, publicUrl: 'https://immich.example.com' }
+		};
 	}
 
 	it('answers the strip as JSON that no cache keeps', async () => {
@@ -150,16 +187,25 @@ describe('answerGlimpse', () => {
 
 	it('refuses a visitor who is not signed in, and a person not linked or not visible, without asking Immich', async () => {
 		const { deps: d, gateway } = glimpseDeps();
-		expect(await answerGlimpse(d, null, 'c-bert', null)).toEqual({ status: 401, message: 'errors.notSignedIn' });
+		expect(await answerGlimpse(d, null, 'c-bert', null)).toEqual({
+			status: 401,
+			message: 'errors.notSignedIn'
+		});
 		for (const contactId of ['c-carl', 'c-dora']) {
-			expect(await answerGlimpse(d, viewer, contactId, null)).toEqual({ status: 404, message: 'errors.notFound' });
+			expect(await answerGlimpse(d, viewer, contactId, null)).toEqual({
+				status: 404,
+				message: 'errors.notFound'
+			});
 		}
 		expect(gateway.calls).toEqual([]);
 	});
 
 	it('answers the photos two linked people are in together, and 404 for a pair it may not show', async () => {
 		const { deps: d, gateway } = glimpseDeps();
-		expect(await answerGlimpse(d, viewer, 'c-bert', null, 'c-carl')).toEqual({ status: 404, message: 'errors.notFound' });
+		expect(await answerGlimpse(d, viewer, 'c-bert', null, 'c-carl')).toEqual({
+			status: 404,
+			message: 'errors.notFound'
+		});
 		expect(gateway.calls).toEqual([]);
 
 		const bothLinked = {
@@ -167,7 +213,12 @@ describe('answerGlimpse', () => {
 			links: {
 				findForContactVisibleTo: async (_viewer: Viewer, contactId: string) =>
 					contactId === 'c-bert' || contactId === 'c-carl'
-						? { contactId, immichPersonId: contactId === 'c-bert' ? BERT_ID : CARL_ID, linkedBy: 'u-anna', linkedAt: NOW }
+						? {
+								contactId,
+								immichPersonId: contactId === 'c-bert' ? BERT_ID : CARL_ID,
+								linkedBy: 'u-anna',
+								linkedAt: NOW
+							}
 						: null
 			}
 		};
@@ -179,7 +230,10 @@ describe('answerGlimpse', () => {
 	});
 
 	it('answers 404 when this instance has no Immich', async () => {
-		expect(await answerGlimpse(null, viewer, 'c-bert', null)).toEqual({ status: 404, message: 'errors.notFound' });
+		expect(await answerGlimpse(null, viewer, 'c-bert', null)).toEqual({
+			status: 404,
+			message: 'errors.notFound'
+		});
 	});
 
 	it('says in the body that Immich did not answer, rather than failing the request', async () => {
@@ -214,8 +268,18 @@ describe('answerFaceSearch', () => {
 		const body: unknown = await answer.json();
 		expect(body).toEqual({
 			faces: [
-				{ id: BERT_ID, name: 'Bert Example', linkedTo: null, faceUrl: expect.stringMatching(/^\/media\/immich\//) },
-				{ id: CARL_ID, name: 'Carl Example', linkedTo: null, faceUrl: expect.stringMatching(/^\/media\/immich\//) }
+				{
+					id: BERT_ID,
+					name: 'Bert Example',
+					linkedTo: null,
+					faceUrl: expect.stringMatching(/^\/media\/immich\//)
+				},
+				{
+					id: CARL_ID,
+					name: 'Carl Example',
+					linkedTo: null,
+					faceUrl: expect.stringMatching(/^\/media\/immich\//)
+				}
 			],
 			error: null
 		});
@@ -229,20 +293,31 @@ describe('answerFaceSearch', () => {
 		for (const face of faces) {
 			expect(await signer.verify(face.faceUrl.split('/').at(-1) ?? '')).toEqual({
 				ok: true,
-				media: { kind: 'face', contactId: 'c-bert', personId: face.id, expiresAt: expect.any(Number) }
+				media: {
+					kind: 'face',
+					contactId: 'c-bert',
+					personId: face.id,
+					expiresAt: expect.any(Number)
+				}
 			});
 		}
 	});
 
 	it('refuses a visitor who is not signed in, without asking Immich', async () => {
 		const { deps: d, gateway } = deps();
-		expect(await answerFaceSearch(d, null, 'c-bert', 'x')).toEqual({ status: 401, message: 'errors.notSignedIn' });
+		expect(await answerFaceSearch(d, null, 'c-bert', 'x')).toEqual({
+			status: 401,
+			message: 'errors.notSignedIn'
+		});
 		expect(gateway.calls).toEqual([]);
 	});
 
 	it('answers 404 when this instance has no Immich', async () => {
 		const { deps: d } = deps({ immich: null });
-		expect(await answerFaceSearch(d, viewer, 'c-bert', 'x')).toEqual({ status: 404, message: 'errors.notFound' });
+		expect(await answerFaceSearch(d, viewer, 'c-bert', 'x')).toEqual({
+			status: 404,
+			message: 'errors.notFound'
+		});
 	});
 
 	it('answers 404 for a person the member cannot see, without asking Immich', async () => {

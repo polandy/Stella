@@ -54,9 +54,9 @@ export function immichNewcomers(input: NewcomerInput): ImmichNewcomer[] {
  * A face Immich would not count goes last; a tie is ordered by name, then by id, so the list
  * never reshuffles between two visits that saw the same library.
  */
-export function mostPhotosFirst<T extends { personId: string; name: string; photoCount: number | null }>(
-	rows: readonly T[]
-): T[] {
+export function mostPhotosFirst<
+	T extends { personId: string; name: string; photoCount: number | null }
+>(rows: readonly T[]): T[] {
 	const byName = new Intl.Collator(undefined, { sensitivity: 'base' }).compare;
 	return [...rows].sort(
 		(a, b) =>
@@ -75,11 +75,49 @@ export function mostPhotosFirst<T extends { personId: string; name: string; phot
 const KIN_WORDS = new Set(
 	[
 		// German, and the Swiss forms a family uses
-		'opa', 'oma', 'uropa', 'uroma', 'grossvater', 'grossmutter', 'grosi', 'grospi', 'neni',
-		'tante', 'onkel', 'gotti', 'götti', 'gotte', 'pate', 'patin', 'papa', 'mama', 'papi', 'mami', 'vati', 'mutti',
+		'opa',
+		'oma',
+		'uropa',
+		'uroma',
+		'grossvater',
+		'grossmutter',
+		'grosi',
+		'grospi',
+		'neni',
+		'tante',
+		'onkel',
+		'gotti',
+		'götti',
+		'gotte',
+		'pate',
+		'patin',
+		'papa',
+		'mama',
+		'papi',
+		'mami',
+		'vati',
+		'mutti',
 		// English
-		'grandpa', 'grandma', 'grandad', 'granddad', 'granny', 'grandfather', 'grandmother', 'nana',
-		'aunt', 'auntie', 'aunty', 'uncle', 'dad', 'daddy', 'mum', 'mom', 'mummy', 'mommy', 'godmother', 'godfather'
+		'grandpa',
+		'grandma',
+		'grandad',
+		'granddad',
+		'granny',
+		'grandfather',
+		'grandmother',
+		'nana',
+		'aunt',
+		'auntie',
+		'aunty',
+		'uncle',
+		'dad',
+		'daddy',
+		'mum',
+		'mom',
+		'mummy',
+		'mommy',
+		'godmother',
+		'godfather'
 	].map(foldName)
 );
 

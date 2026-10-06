@@ -12,7 +12,8 @@ export const search: SearchMessages = {
 	'search.notes': 'Notizen',
 	'search.noteOn': (p) => `zu ${p.name}`,
 	'graph.title': 'Netz · Stella',
-	'graph.hint': 'Klicken zum Fokussieren · noch einmal klicken zum Aufklappen · einen Verbindungsweg verfolgen',
+	'graph.hint':
+		'Klicken zum Fokussieren · noch einmal klicken zum Aufklappen · einen Verbindungsweg verfolgen',
 	'graph.empty.title': 'Noch nichts zu erkunden',
 	'graph.empty.hint':
 		'Die Karte zeichnet sich aus den Menschen und ihren Verbindungen. Lege jemanden an, um zu beginnen.',
@@ -44,7 +45,8 @@ export const search: SearchMessages = {
 	'graph.groupByRole.hint':
 		'Wer im Kreis dieselbe Rolle hat, steht als eine Gruppe beisammen — mit einer Linie zum Kreis',
 	'graph.innerLinks': 'Beziehungen in der Gruppe',
-	'graph.innerLinks.hint': 'Familie, Freundschaft und Beruf zwischen den Menschen einer Gruppe zeigen',
+	'graph.innerLinks.hint':
+		'Familie, Freundschaft und Beruf zwischen den Menschen einer Gruppe zeigen',
 	'graph.group.label': (p) => `${p.role} · ${p.count}`,
 	'graph.bundle.count': (p) => `${p.count} Verbindungen`,
 	'graph.arrange': 'Anordnen',
@@ -88,7 +90,8 @@ export const search: SearchMessages = {
 		'Füge einen Elternteil, eine Partnerin oder einen Partner, eine Freundin oder einen Kollegen hinzu, und die Karte wächst von dort aus.',
 	'graph.alone.add': 'Beziehung hinzufügen',
 	'graph.aloneCircle.title': (p) => `Noch niemand in ${p.name}`,
-	'graph.aloneCircle.hint': 'Füge die Menschen hinzu, die diesen Kreis teilen, und die Karte wächst von dort aus.',
+	'graph.aloneCircle.hint':
+		'Füge die Menschen hinzu, die diesen Kreis teilen, und die Karte wächst von dort aus.',
 	'graph.onPerson.label': (p) => `Die Menschen um ${p.name}`,
 	'graph.onPerson.loading': 'Karte wird gezeichnet…',
 	'graph.onPerson.enlarge': 'Karte vergrößern',

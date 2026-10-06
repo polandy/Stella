@@ -62,7 +62,12 @@ function fakeRepo(existing: Circle | null = null) {
 	const inserted: NewCircle[] = [];
 	const memberships: NewMembership[] = [];
 	const removed: Array<[string, string]> = [];
-	const roleChanges: Array<{ circleId: string; contactIds: string[]; role: string | null; at: number }> = [];
+	const roleChanges: Array<{
+		circleId: string;
+		contactIds: string[];
+		role: string | null;
+		at: number;
+	}> = [];
 	let exists = false;
 	// Per-contact membership, for picks that mix people already in the circle with new ones.
 	const existingMembers = new Set<string>();
@@ -128,15 +133,27 @@ describe('createCircle', () => {
 describe('joinCircleByName', () => {
 	it('reuses an existing circle of that name', async () => {
 		const existing: Circle = {
-			id: 'circle-existing', householdId: 'h1', createdBy: 'u1', visibility: 'shared',
-			name: 'Kegelclub', description: null, kind: 'club', color: 'blue', startDate: null, endDate: null
+			id: 'circle-existing',
+			householdId: 'h1',
+			createdBy: 'u1',
+			visibility: 'shared',
+			name: 'Kegelclub',
+			description: null,
+			kind: 'club',
+			color: 'blue',
+			startDate: null,
+			endDate: null
 		};
 		const f = fakeRepo(existing);
 		const deps: CircleDeps = { circles: f.repo, ids: idGen(['membership-1']), clock };
 		const id = await joinCircleByName(deps, creator, 'mara', 'Kegelclub', 'member');
 		expect(id).toBe('circle-existing');
 		expect(f.inserted).toHaveLength(0); // not re-created
-		expect(f.memberships[0]).toMatchObject({ circleId: 'circle-existing', contactId: 'mara', role: 'member' });
+		expect(f.memberships[0]).toMatchObject({
+			circleId: 'circle-existing',
+			contactId: 'mara',
+			role: 'member'
+		});
 	});
 
 	it('creates the circle when none exists', async () => {
@@ -324,9 +341,7 @@ describe('groupMembersByRole', () => {
 	});
 
 	it('puts the people without a role last, under no role', () => {
-		expect(
-			shape([member('anna', null), member('bert', '   '), member('carl', 'coach')])
-		).toEqual([
+		expect(shape([member('anna', null), member('bert', '   '), member('carl', 'coach')])).toEqual([
 			['coach', ['carl']],
 			[null, ['anna', 'bert']]
 		]);

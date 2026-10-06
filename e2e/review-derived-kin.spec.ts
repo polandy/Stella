@@ -70,9 +70,7 @@ test('offers a worked-out relative, named by gender and by whom it runs through'
 	).toHaveCount(1);
 });
 
-test('accepting on one side enters it for both, and neither check asks again', async ({
-	page
-}) => {
+test('accepting on one side enters it for both, and neither check asks again', async ({ page }) => {
 	const f = family('Caflisch', ['Jon', 'Anna', 'Curdin', 'Sep']);
 	await seedFamily(page, f);
 	const panel = await review(page, f.child);

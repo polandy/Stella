@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
-import type { Viewer } from '../access/visibility';
 import { importViaApi, type ApiImportDeps } from '../domain/import/api/api-import';
 import type { ApiImportDocument } from '../domain/import/api/document';
 import { createDrizzleApiImportRepository } from './api-import-repository';
@@ -19,7 +18,6 @@ const H = 'household-1';
 const OTHER_H = 'household-2';
 const U1 = 'user-1';
 const U2 = 'user-2';
-const viewer: Viewer = { id: U1, householdId: H };
 const actor = { userId: U1, householdId: H, defaultVisibility: 'shared' as const };
 const wording = {
 	imported: (people: number, source: string) => `imported ${people} from ${source}`

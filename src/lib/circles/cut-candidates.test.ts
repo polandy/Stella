@@ -46,7 +46,13 @@ describe('before anything is typed', () => {
 	});
 
 	it('marks the people who already wear a cut of this photo', () => {
-		const groups = cutCandidates({ members, people, photoRole: 'Student', wearing: ['cleo'], query: '' });
+		const groups = cutCandidates({
+			members,
+			people,
+			photoRole: 'Student',
+			wearing: ['cleo'],
+			query: ''
+		});
 		expect(groups.inRole.map((p) => [p.id, p.wearsCut])).toEqual([
 			['anna', false],
 			['cleo', true]
@@ -56,12 +62,24 @@ describe('before anything is typed', () => {
 
 describe('searching', () => {
 	it('narrows the members and finds anyone else the viewer can see', () => {
-		const groups = cutCandidates({ members, people, photoRole: 'Student', wearing: [], query: 'keller' });
+		const groups = cutCandidates({
+			members,
+			people,
+			photoRole: 'Student',
+			wearing: [],
+			query: 'keller'
+		});
 		expect(ids(groups.inRole)).toEqual(['anna', 'cleo']);
 		expect(groups.inCircle).toEqual([]);
 		expect(groups.others).toEqual([]);
 
-		const emil = cutCandidates({ members, people, photoRole: 'Student', wearing: [], query: 'emil' });
+		const emil = cutCandidates({
+			members,
+			people,
+			photoRole: 'Student',
+			wearing: [],
+			query: 'emil'
+		});
 		expect(ids(emil.others)).toEqual(['emil']);
 		expect([...emil.inRole, ...emil.inCircle]).toEqual([]);
 	});

@@ -32,7 +32,9 @@ export function createDrizzleTagRepository(db: BunSQLiteDatabase<typeof schema>)
 			const row = db
 				.select(tagColumns)
 				.from(tag)
-				.where(and(eq(tag.householdId, householdId), sql`lower(${tag.name}) = ${name.toLowerCase()}`))
+				.where(
+					and(eq(tag.householdId, householdId), sql`lower(${tag.name}) = ${name.toLowerCase()}`)
+				)
 				.get();
 			return row ? toTag(row) : null;
 		},

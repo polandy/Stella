@@ -109,7 +109,9 @@
 	 * already sitting there is read as an answer, not as an offer, and the one it used to
 	 * offer — your own person — is wrong at least as often as it is right.
 	 */
-	let relationshipTargetId = $state<string[]>(untrack(() => (data.relateTo ? [data.relateTo] : [])));
+	let relationshipTargetId = $state<string[]>(
+		untrack(() => (data.relateTo ? [data.relateTo] : []))
+	);
 	function closeRelate() {
 		relateOpen = false;
 		relationshipTargetId = [];
@@ -140,7 +142,9 @@
 	function keptLinkLabel(typeChoice: string, targetIds: readonly string[]): string {
 		const option = relationshipChoices.find((o) => o.value === typeChoice);
 		const names = new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(
-			targetIds.map((id) => otherContacts.find((p) => p.id === id)?.displayName ?? '').filter(Boolean)
+			targetIds
+				.map((id) => otherContacts.find((p) => p.id === id)?.displayName ?? '')
+				.filter(Boolean)
 		);
 		return option ? `${relationshipTypeLabel(t, option.type, option.side)} ${names}` : names;
 	}
@@ -209,7 +213,10 @@
 	function keepToggleInView() {
 		if (!foldedFromToggle) return;
 		foldedFromToggle = false;
-		peopleColumn?.querySelector('[data-people-toggle]')?.scrollIntoView({ block: 'nearest', behavior: scrollBehavior(prefersReducedMotion.current) });
+		peopleColumn?.querySelector('[data-people-toggle]')?.scrollIntoView({
+			block: 'nearest',
+			behavior: scrollBehavior(prefersReducedMotion.current)
+		});
 	}
 
 	const MENU_ITEM =
@@ -219,172 +226,180 @@
 </script>
 
 <Section
-		id={sectionAnchor('relationships')}
-		title={t('contact.section.relationships')}
-		count={visibleRelationships.length}
-		addLabel={t('contact.relationships.add')}
-		error={refusedPeople > 0 && relateOpen ? null : (form?.error ?? null)}
-		iconAdd
-		bind:open={relateOpen}
-	>
-		{#snippet action()}
-			{#if editable}
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					icon={editing ? 'done' : 'rename'}
-					onclick={() => (editing = !editing)}
-					data-testid="relationships-edit"
-				>
-					{editing ? t('contact.relationships.editModeDone') : t('contact.relationships.editMode')}
-				</Button>
-			{/if}
-		{/snippet}
-		{#snippet menu()}
-			<MenuButton label={t('contact.relationships.menu')} align="end" look="button">
-				{#snippet trigger()}<Icon name="more" size={16} />{/snippet}
-				{#snippet children({ close })}
-					{#if otherContacts.length > 0}
-						<button
-							type="button"
-							role="menuitem"
-							class={MENU_ITEM}
-							onclick={() => (close(), askHowConnected())}
-						>
-							<Icon name="connectionPath" size={14} />{t('contact.relationships.howConnected')}
-						</button>
-					{/if}
-					<!--
+	id={sectionAnchor('relationships')}
+	title={t('contact.section.relationships')}
+	count={visibleRelationships.length}
+	addLabel={t('contact.relationships.add')}
+	error={refusedPeople > 0 && relateOpen ? null : (form?.error ?? null)}
+	iconAdd
+	bind:open={relateOpen}
+>
+	{#snippet action()}
+		{#if editable}
+			<Button
+				type="button"
+				variant="ghost"
+				size="sm"
+				icon={editing ? 'done' : 'rename'}
+				onclick={() => (editing = !editing)}
+				data-testid="relationships-edit"
+			>
+				{editing ? t('contact.relationships.editModeDone') : t('contact.relationships.editMode')}
+			</Button>
+		{/if}
+	{/snippet}
+	{#snippet menu()}
+		<MenuButton label={t('contact.relationships.menu')} align="end" look="button">
+			{#snippet trigger()}<Icon name="more" size={16} />{/snippet}
+			{#snippet children({ close })}
+				{#if otherContacts.length > 0}
+					<button
+						type="button"
+						role="menuitem"
+						class={MENU_ITEM}
+						onclick={() => (close(), askHowConnected())}
+					>
+						<Icon name="connectionPath" size={14} />{t('contact.relationships.howConnected')}
+					</button>
+				{/if}
+				<!--
 						The on-demand review (docs/concepts/relationship-suggestions.md §6.5): nothing
 						runs until it is chosen, and asking what else might be true is never what this
 						card is for — so it waits in the menu.
 					-->
-					<a role="menuitem" class={MENU_ITEM} href="/contacts/{c.id}?review#relationships">
-						<Icon name="search" size={14} />{data.review.open
-							? t('contact.relationships.reviewAgain')
-							: t('contact.relationships.review')}
-					</a>
-					<!-- The way out of this person's two hops and into the household. -->
-					<a role="menuitem" class={MENU_ITEM} href="/graph?center={c.id}">
-						<Icon name="graph" size={14} />{t('graph.openInGraph')}
-					</a>
-				{/snippet}
-			</MenuButton>
-		{/snippet}
+				<a role="menuitem" class={MENU_ITEM} href="/contacts/{c.id}?review#relationships">
+					<Icon name="search" size={14} />{data.review.open
+						? t('contact.relationships.reviewAgain')
+						: t('contact.relationships.review')}
+				</a>
+				<!-- The way out of this person's two hops and into the household. -->
+				<a role="menuitem" class={MENU_ITEM} href="/graph?center={c.id}">
+					<Icon name="graph" size={14} />{t('graph.openInGraph')}
+				</a>
+			{/snippet}
+		</MenuButton>
+	{/snippet}
 
-		{#if keptLinks.length > 0}
-			<ul class="mb-3 flex flex-col gap-2" data-testid="kept-links">
-				{#each keptLinks as item (item.command.id)}
-					<li>
-						<KeptItem {item}>
-							<p class="mt-1 text-fg">{keptLinkLabel(item.command.payload.typeChoice, keptTargets(item))}</p>
-						</KeptItem>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-		<!--
+	{#if keptLinks.length > 0}
+		<ul class="mb-3 flex flex-col gap-2" data-testid="kept-links">
+			{#each keptLinks as item (item.command.id)}
+				<li>
+					<KeptItem {item}>
+						<p class="mt-1 text-fg">
+							{keptLinkLabel(item.command.payload.typeChoice, keptTargets(item))}
+						</p>
+					</KeptItem>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+	<!--
 			"How are we connected?" is a question this card cannot answer: it holds two hops
 			of the household and the chain usually runs further. So it asks who, and hands
 			both ends to the explorer, which holds the whole graph (docs/05 §5.5).
 		-->
-		{#if tracingPath}
-			<div transition:reveal class="mb-3 flex flex-wrap items-end gap-3 rounded-control bg-bg-sunken p-3">
-				<label for="path-target" class="flex min-w-48 flex-1 flex-col gap-1 text-sm">
-					<span class="text-fg-muted">
-						{t('contact.relationships.howConnectedTo', { name: c.displayName })}
-					</span>
-					<PersonSearchSelect
-						id="path-target"
-						people={otherContacts}
-						name="pathTarget"
-						bind:selectedIds={pathTargetId}
-					/>
-				</label>
-				<Button
-					variant="primary"
-					size="sm"
-					icon="connectionPath"
-					href={pathTarget ? `/graph?center=${c.id}&path=${pathTarget}` : undefined}
-					disabled={!pathTarget}
-				>
-					{t('contact.relationships.tracePath')}
-				</Button>
-				<Button type="button" variant="ghost" size="sm" onclick={() => (tracingPath = false)}>
-					{t('common.cancel')}
-				</Button>
-			</div>
-		{/if}
+	{#if tracingPath}
+		<div
+			transition:reveal
+			class="mb-3 flex flex-wrap items-end gap-3 rounded-control bg-bg-sunken p-3"
+		>
+			<label for="path-target" class="flex min-w-48 flex-1 flex-col gap-1 text-sm">
+				<span class="text-fg-muted">
+					{t('contact.relationships.howConnectedTo', { name: c.displayName })}
+				</span>
+				<PersonSearchSelect
+					id="path-target"
+					people={otherContacts}
+					name="pathTarget"
+					bind:selectedIds={pathTargetId}
+				/>
+			</label>
+			<Button
+				variant="primary"
+				size="sm"
+				icon="connectionPath"
+				href={pathTarget ? `/graph?center=${c.id}&path=${pathTarget}` : undefined}
+				disabled={!pathTarget}
+			>
+				{t('contact.relationships.tracePath')}
+			</Button>
+			<Button type="button" variant="ghost" size="sm" onclick={() => (tracingPath = false)}>
+				{t('common.cancel')}
+			</Button>
+		</div>
+	{/if}
 
-		<!--
+	<!--
 			The map and the list. On a wide card the map stands beside the list (from a 48rem
 			card, measured on the card rather than the window — the sidebar takes its share);
 			narrower it comes first, as a shape before rows, and on a phone it is only a preview
 			that opens full screen (docs/05 §5.5).
 		-->
-		<div class="@container">
-			<div
-				class={[
-					'grid gap-4 @3xl:items-start',
-					visibleRelationships.length > 0 && '@3xl:grid-cols-[minmax(0,1fr)_20rem]'
-				]}
-			>
-				{#if visibleRelationships.length > 0}
-					<div class="min-w-0 @3xl:order-2"><PeopleMap {data} /></div>
-				{/if}
-				<div class="min-w-0" bind:this={peopleColumn}>
-					<!-- Unfolding and edit mode change the rows; the box glides between the two heights
+	<div class="@container">
+		<div
+			class={[
+				'grid gap-4 @3xl:items-start',
+				visibleRelationships.length > 0 && '@3xl:grid-cols-[minmax(0,1fr)_20rem]'
+			]}
+		>
+			{#if visibleRelationships.length > 0}
+				<div class="min-w-0 @3xl:order-2"><PeopleMap {data} /></div>
+			{/if}
+			<div class="min-w-0" bind:this={peopleColumn}>
+				<!-- Unfolding and edit mode change the rows; the box glides between the two heights
 					     and *Show more* rides on its lower edge (docs/05 §5.11). -->
-					<div use:glide={{ key: `${unfolded}:${editing}`, onsettled: keepToggleInView }} data-testid="people-rows">
-						<RelationshipList
-							{data}
-							{visibleRelationships}
-							{relationshipChoices}
-							{exclusionOf}
-							{nameOfContact}
-							{editing}
-							expanded={unfolded}
-							{showTogether}
-							bind:relateOpen
-						/>
+				<div
+					use:glide={{ key: `${unfolded}:${editing}`, onsettled: keepToggleInView }}
+					data-testid="people-rows"
+				>
+					<RelationshipList
+						{data}
+						{visibleRelationships}
+						{relationshipChoices}
+						{exclusionOf}
+						{nameOfContact}
+						{editing}
+						expanded={unfolded}
+						{showTogether}
+						bind:relateOpen
+					/>
 
-						<KinPanels {data} {editing} expanded={unfolded} />
-					</div>
-
-					{#if hiddenPeople > 0 || (expanded && !editing)}
-						<Button
-							data-people-toggle
-							type="button"
-							variant="ghost"
-							size="sm"
-							class="mt-2"
-							icon={expanded ? 'collapse' : 'expand'}
-							aria-expanded={expanded}
-							onclick={toggleShowMore}
-						>
-							{expanded
-								? t('contact.relationships.showFewer')
-								: t('contact.relationships.showMore', { count: hiddenPeople })}
-						</Button>
-					{/if}
+					<KinPanels {data} {editing} expanded={unfolded} />
 				</div>
+
+				{#if hiddenPeople > 0 || (expanded && !editing)}
+					<Button
+						data-people-toggle
+						type="button"
+						variant="ghost"
+						size="sm"
+						class="mt-2"
+						icon={expanded ? 'collapse' : 'expand'}
+						aria-expanded={expanded}
+						onclick={toggleShowMore}
+					>
+						{expanded
+							? t('contact.relationships.showFewer')
+							: t('contact.relationships.showMore', { count: hiddenPeople })}
+					</Button>
+				{/if}
 			</div>
 		</div>
+	</div>
 
-		{#snippet editor()}
-			<AddRelationshipForm
-				{data}
-				{form}
-				{otherContacts}
-				{relationshipChoices}
-				{exclusionOf}
-				{nameOfContact}
-				{closeRelate}
-				{keptLinkLabel}
-				bind:relationshipTargetId
-				bind:relationshipChoice
-				bind:pickedTargets
-			/>
-		{/snippet}
+	{#snippet editor()}
+		<AddRelationshipForm
+			{data}
+			{form}
+			{otherContacts}
+			{relationshipChoices}
+			{exclusionOf}
+			{nameOfContact}
+			{closeRelate}
+			{keptLinkLabel}
+			bind:relationshipTargetId
+			bind:relationshipChoice
+			bind:pickedTargets
+		/>
+	{/snippet}
 </Section>

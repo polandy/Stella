@@ -39,7 +39,11 @@
 	let selected = $state<Record<string, boolean>>({});
 	const chosen = $derived(found.filter((c) => selected[c.id]));
 	const everyoneChosen = $derived(found.length > 0 && chosen.length === found.length);
-	const knownSurnames = $derived([...householdSpellings(data.contacts.map((c) => c.lastName)).values()].sort((a, b) => a.localeCompare(b)));
+	const knownSurnames = $derived(
+		[...householdSpellings(data.contacts.map((c) => c.lastName)).values()].sort((a, b) =>
+			a.localeCompare(b)
+		)
+	);
 	const disabled = $derived(!reachability.reachable);
 	const names = useHeldNames(() => data.passOn);
 	let namesakes = $state<NamesakeAfterNaming[]>([]);
@@ -55,7 +59,10 @@
 
 <svelte:head><title>{t('contacts.title')}</title></svelte:head>
 
-<main class="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-6 md:px-6 md:py-10" class:pb-36={selecting}>
+<main
+	class="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-6 md:px-6 md:py-10"
+	class:pb-36={selecting}
+>
 	<header>
 		<h1 class="text-2xl font-semibold text-fg">
 			{data.showArchived ? t('contacts.headingArchived') : t('contacts.heading')}
@@ -67,7 +74,12 @@
 				)}{/if}
 		</p>
 		{#if !data.showArchived && data.contacts.length > 0}
-			<Button size="sm" class="mt-2" aria-pressed={selecting} onclick={() => (selecting ? stopSelecting() : (selecting = true))}>
+			<Button
+				size="sm"
+				class="mt-2"
+				aria-pressed={selecting}
+				onclick={() => (selecting ? stopSelecting() : (selecting = true))}
+			>
 				{selecting ? t('common.cancel') : t('surnames.select')}
 			</Button>
 		{/if}
@@ -77,7 +89,9 @@
 
 	<!-- Find as you type. Filtering runs on what is already loaded, so there is no round trip
 	     and no wait between the keystroke and the list. -->
-	<label class="flex items-center gap-2 rounded-control border border-border-input bg-card px-3 py-2 shadow-card focus-within:border-primary">
+	<label
+		class="flex items-center gap-2 rounded-control border border-border-input bg-card px-3 py-2 shadow-card focus-within:border-primary"
+	>
 		<Icon name="search" size={15} />
 		<span class="sr-only">{t('contacts.find')}</span>
 		<input
@@ -94,7 +108,9 @@
 		matches, since the "Nobody matches" line below says so itself.
 	-->
 	<p class="sr-only" aria-live="polite" data-testid="people-match-count">
-		{query.trim() !== '' && found.length > 0 ? t('contacts.matchCount', { count: found.length }) : ''}
+		{query.trim() !== '' && found.length > 0
+			? t('contacts.matchCount', { count: found.length })
+			: ''}
 	</p>
 
 	{#if data.tags.length > 0 || data.archivedCount > 0}
@@ -158,19 +174,32 @@
 			{#if data.showArchived}
 				<EmptyState icon="search" title={t('contacts.noMatch', { query })} />
 			{:else}
-				<EmptyState icon="search" title={t('contacts.noMatch', { query })} hint={t('contacts.noMatchHint')}>
-					<Button variant="primary" icon="add" href={newPersonHref({ name: query })}>{t('contacts.addNamed', { name: query.trim() })}</Button>
+				<EmptyState
+					icon="search"
+					title={t('contacts.noMatch', { query })}
+					hint={t('contacts.noMatchHint')}
+				>
+					<Button variant="primary" icon="add" href={newPersonHref({ name: query })}
+						>{t('contacts.addNamed', { name: query.trim() })}</Button
+					>
 				</EmptyState>
 			{/if}
 		</div>
 	{:else}
 		<div class="flex flex-col gap-4" data-testid="people-directory">
 			{#if !data.showArchived}
-				<div class="flex justify-end px-2.5 text-[11px] font-medium text-fg-subtle" aria-hidden="true">{t('contacts.lastWrittenAbout')}</div>
+				<div
+					class="flex justify-end px-2.5 text-[11px] font-medium text-fg-subtle"
+					aria-hidden="true"
+				>
+					{t('contacts.lastWrittenAbout')}
+				</div>
 			{/if}
 			{#each groups as group (group.letter)}
 				<section>
-					<h2 class="sticky top-0 z-10 flex items-center gap-3 bg-bg py-1.5 text-xs font-semibold uppercase tracking-wider text-fg-muted">
+					<h2
+						class="sticky top-0 z-10 flex items-center gap-3 bg-bg py-1.5 text-xs font-semibold tracking-wider text-fg-muted uppercase"
+					>
 						{group.letter}<span class="h-px flex-1 bg-border"></span>
 					</h2>
 					<ul class="flex flex-col">
@@ -195,10 +224,19 @@
 									}}
 									class="grid min-w-0 flex-1 grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 rounded-app px-2.5 py-2 transition-colors hover:bg-card"
 								>
-									<Avatar id={contact.id} name={contact.displayName} avatarPhotoId={contact.avatarPhotoId} size={36} />
+									<Avatar
+										id={contact.id}
+										name={contact.displayName}
+										avatarPhotoId={contact.avatarPhotoId}
+										size={36}
+									/>
 									<span class="min-w-0">
 										<span class="flex items-center gap-1.5">
-											<span class="truncate font-medium text-fg">{contact.displayName}<FormerlyMark name={foundByFormerName(contact, query)} /><FoundByJobMark found={foundByJob(contact, query)} /></span>
+											<span class="truncate font-medium text-fg"
+												>{contact.displayName}<FormerlyMark
+													name={foundByFormerName(contact, query)}
+												/><FoundByJobMark found={foundByJob(contact, query)} /></span
+											>
 											{#if contact.id === data.user.selfContactId}
 												<span
 													data-testid="self-marker"
@@ -213,18 +251,24 @@
 											{/if}
 										</span>
 										{#if contact.description}
-											<span class="block truncate text-sm text-fg-muted">{contact.description}</span>
+											<span class="block truncate text-sm text-fg-muted">{contact.description}</span
+											>
 										{/if}
 										<JobLine job={contact} />
 									</span>
 									<!-- The "last written about" read leaves archived people out, so claiming
 									     anything here would be claiming they were never written about. -->
 									{#if data.showArchived}
-										<span class="whitespace-nowrap text-xs text-fg-subtle">{t('contacts.archived')}</span>
+										<span class="text-xs whitespace-nowrap text-fg-subtle"
+											>{t('contacts.archived')}</span
+										>
 									{:else}
-										<span class="whitespace-nowrap text-xs tabular-nums text-fg-subtle" title={since
+										<span
+											class="text-xs whitespace-nowrap text-fg-subtle tabular-nums"
+											title={since
 												? t('contacts.lastWrittenAboutOn', { date: contact.lastTouchedOn ?? '' })
-												: t('contacts.nothingWrittenYet')}>
+												: t('contacts.nothingWrittenYet')}
+										>
 											{since ?? '—'}
 										</span>
 									{/if}
@@ -246,7 +290,8 @@
 		{held}
 		{disabled}
 		offlineLine={disabled ? t('surnames.offline') : null}
-		ontoggleeveryone={() => (selected = Object.fromEntries(found.map((c) => [c.id, !everyoneChosen])))}
+		ontoggleeveryone={() =>
+			(selected = Object.fromEntries(found.map((c) => [c.id, !everyoneChosen])))}
 		ondone={stopSelecting}
 	/>
 {/if}

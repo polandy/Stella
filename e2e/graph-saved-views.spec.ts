@@ -23,9 +23,12 @@ async function openGraph(page: Page): Promise<void> {
 const chip = (menu: Locator, name: string) =>
 	menu.getByRole('menuitemcheckbox', { name, exact: true });
 /** The saved views' own group: the Spacing choice further down is radio items too. */
-const views = (menu: Locator) => menu.getByRole('group', { name: 'Saved views' }).getByRole('menuitemradio');
+const views = (menu: Locator) =>
+	menu.getByRole('group', { name: 'Saved views' }).getByRole('menuitemradio');
 const view = (menu: Locator, name: string) =>
-	menu.getByRole('group', { name: 'Saved views' }).getByRole('menuitemradio', { name, exact: true });
+	menu
+		.getByRole('group', { name: 'Saved views' })
+		.getByRole('menuitemradio', { name, exact: true });
 
 /** Names what the menu shows now through "Save this view…", and waits for the row. */
 async function saveView(menu: Locator, name: string): Promise<void> {
@@ -56,7 +59,9 @@ test('a view is saved, ticked while it matches, applied, replaced, deleted and k
 	// Applying it ends the choice: the menu closes on the map it now shows.
 	await view(menu, 'No family').click();
 	await expect(page.getByRole('menu', { name: /^Filter/ })).toHaveCount(0);
-	await expect(page.getByRole('button', { name: 'Filter: 5 of 6 kinds of line shown' })).toBeVisible();
+	await expect(
+		page.getByRole('button', { name: 'Filter: 5 of 6 kinds of line shown' })
+	).toBeVisible();
 	menu = await filterMenu(page);
 	await expect(chip(menu, 'Family')).toHaveAttribute('aria-checked', 'false');
 	await expect(view(menu, 'No family')).toHaveAttribute('aria-checked', 'true');
@@ -92,7 +97,9 @@ test('a view is saved, ticked while it matches, applied, replaced, deleted and k
 test.describe('on a phone', () => {
 	test.use({ viewport: PIXEL_9_PRO, hasTouch: true, isMobile: true });
 
-	test('a tap just outside the Filter menu leaves it open, one well outside closes it', async ({ page }) => {
+	test('a tap just outside the Filter menu leaves it open, one well outside closes it', async ({
+		page
+	}) => {
 		await openGraph(page);
 		const menu = await filterMenu(page);
 		const box = await menu.boundingBox();
@@ -100,7 +107,8 @@ test.describe('on a phone', () => {
 		const x = box.x + box.width / 2;
 		const below = box.y + box.height;
 		const viewport = page.viewportSize();
-		if (!viewport || below + 120 > viewport.height) throw new Error('no room below the Filter menu to tap');
+		if (!viewport || below + 120 > viewport.height)
+			throw new Error('no room below the Filter menu to tap');
 
 		// A thumb that missed the edge: the menu stays. Toggling a chip afterwards is the positive
 		// signal — taps are handled in order, so the near miss was handled before it. 12px out

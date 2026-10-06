@@ -11,7 +11,6 @@ export const surnames = {
 	'surnames.reason.parent': (p: { child: string }) => `Parent of ${p.child}`,
 	'surnames.reason.circle': (p: { circle: string }) => `In the circle ${p.circle}`,
 
-
 	// The undo toast of a batch, and its failure (docs/02 §2.23).
 	'surnames.toast.set': (p: { name: string; count: number }) =>
 		p.count === 1 ? `Last name ${p.name} set` : `Last name ${p.name} set for ${p.count} people`,
@@ -47,7 +46,8 @@ export const surnames = {
 	'surnames.set': 'Set',
 	'surnames.confirm': (p: { name: string; count: number }) =>
 		p.count === 1 ? `Set ${p.name} for 1 person.` : `Set ${p.name} for ${p.count} people.`,
-	'surnames.replace': (p: { person: string; name: string }) => `${p.person} already has the last name ${p.name} — replace it`,
+	'surnames.replace': (p: { person: string; name: string }) =>
+		`${p.person} already has the last name ${p.name} — replace it`,
 	'surnames.count': (p: { missing: number; suggested: number }) =>
 		`${p.missing === 1 ? '1 person has' : `${p.missing} people have`} no last name · ${p.suggested} with a suggestion`,
 	'surnames.toast.passOn': (p: { people: string; count: number; name: string }) =>
@@ -58,7 +58,7 @@ export const surnames = {
 	'surnames.chipHint': (p: { name: string }) => `Give the last name ${p.name}`,
 	'surnames.passOnPrompt': (p: { people: string; count: number; name: string }) =>
 		`${p.people} ${p.count === 1 ? 'has' : 'have'} no last name yet — ${p.name} too?`,
-	'surnames.no': 'No',
+	'surnames.no': 'No'
 };
 
 /** The key set every translation of this area has to provide. */

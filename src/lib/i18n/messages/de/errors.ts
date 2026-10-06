@@ -4,13 +4,15 @@ import type { ErrorsMessages } from '../en/errors';
 export const errors: ErrorsMessages = {
 	'errors.contact.birthDateFormat':
 		'Ein Geburtsdatum muss JJJJ-MM-TT lauten — oder --MM-TT, wenn das Jahr unbekannt ist.',
-	'errors.contact.namePartsInvalid': 'Die Namensteile konnten nicht gelesen werden. Bitte nochmals versuchen.',
+	'errors.contact.namePartsInvalid':
+		'Die Namensteile konnten nicht gelesen werden. Bitte nochmals versuchen.',
 	'errors.contact.emptyLastName': 'Ein Nachname darf nicht leer sein.',
 	'errors.contact.lastNameWouldOverwrite': (p) =>
 		`${p.name} hat schon einen anderen Nachnamen. Zum Ersetzen die Person ankreuzen.`,
 	'errors.contact.emptyName': 'Ein Name darf nicht leer sein.',
 	'errors.contact.invalidGender': 'Bitte weiblich, männlich oder divers wählen.',
-	'errors.contact.jobFieldTooLong': (p) => `Berufsbezeichnung und Firma höchstens je ${p.max} Zeichen.`,
+	'errors.contact.jobFieldTooLong': (p) =>
+		`Berufsbezeichnung und Firma höchstens je ${p.max} Zeichen.`,
 	'errors.contact.needsSomethingToKnowThemBy':
 		'Gib einen Nachnamen oder eine Beschreibung an, damit man die Person später von anderen mit demselben Namen unterscheiden kann.',
 	'errors.contact.emptyDescription': 'Schreib etwas, woran man die Person erkennt.',
@@ -134,7 +136,8 @@ export const errors: ErrorsMessages = {
 	'errors.photo.onlyOwnerRemove': 'Nur wer ein Foto hinzugefügt hat, kann es entfernen.',
 	'errors.photo.unreadable': 'Dieses Foto war nicht zu lesen.',
 	'errors.photo.notFound': 'Dieses Foto war nicht zu finden.',
-	'errors.photo.fromImmichGone': 'Dieses Foto ist aus Immich nicht mehr verfügbar. Lade die Seite neu und versuche es noch einmal.',
+	'errors.photo.fromImmichGone':
+		'Dieses Foto ist aus Immich nicht mehr verfügbar. Lade die Seite neu und versuche es noch einmal.',
 	'errors.circle.needName': 'Bitte gib einen Namen für den Kreis ein.',
 	'errors.circle.couldNotAdd': 'Der Kreis konnte nicht hinzugefügt werden.',
 	'errors.circle.notFound': 'Kreis nicht gefunden',
@@ -142,6 +145,7 @@ export const errors: ErrorsMessages = {
 	'errors.export.adminOnly': 'Nur die Haushalts-Administration kann exportieren.',
 	'errors.story.badCursor': 'Fehlerhafter Verlaufs-Cursor',
 	'errors.journal.couldNotSave': 'Der Moment konnte nicht gespeichert werden.',
-	'errors.apiToken.emptyName': 'Bitte gib dem Token einen Namen, damit du später weißt, wofür er ist.',
+	'errors.apiToken.emptyName':
+		'Bitte gib dem Token einen Namen, damit du später weißt, wofür er ist.',
 	'errors.journal.editFailed': 'Die Änderungen konnten nicht gespeichert werden.'
 };

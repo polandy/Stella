@@ -27,7 +27,8 @@ export const components: ComponentsMessages = {
 	'components.photo.fromFile': 'Bild auswählen…',
 	'components.photo.fromGroupPhoto': 'Aus einem Gruppenfoto',
 	'components.photo.fromImmich': 'Aus Immich',
-	'components.photo.immichNotLinked': (p) => `${p.name} ist noch mit keinem Gesicht in Immich verknüpft.`,
+	'components.photo.immichNotLinked': (p) =>
+		`${p.name} ist noch mit keinem Gesicht in Immich verknüpft.`,
 	'components.photo.immichNone': (p) => `Immich hat keine Fotos von ${p.name}.`,
 	'components.palette.jumpTo': 'Springen zu',
 	'components.palette.placeholder': 'Zu einer Person springen oder etwas tun…',
@@ -63,9 +64,11 @@ export const components: ComponentsMessages = {
 	'components.namesake.metYear': (p) => `Kennengelernt ${p.year}`,
 	'components.namesake.nothing': 'Noch nichts, woran man die Person erkennt',
 	'components.namesake.circleRole': (p) => `${p.circle} · ${p.role}`,
-	'components.namesake.which': (p) => `@${p.handle} passt auf ${p.count} Personen – wähle eine in der @-Liste.`,
+	'components.namesake.which': (p) =>
+		`@${p.handle} passt auf ${p.count} Personen – wähle eine in der @-Liste.`,
 	'components.namesake.whoIsWho': 'Wer ist wer?',
-	'components.namesake.nudge': (p) => `Ohne Nachnamen ist „${p.name}“ später schwer auseinanderzuhalten.`,
+	'components.namesake.nudge': (p) =>
+		`Ohne Nachnamen ist „${p.name}“ später schwer auseinanderzuhalten.`,
 	'components.namesake.nudgeAsk': 'Woran erkennst du die Person wieder?',
 	'components.namesake.placeholder': 'z. B. SAC-Hütte, Aug. 2026',
 	'components.calendar.label': 'Tag wählen',

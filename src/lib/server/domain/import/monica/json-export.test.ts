@@ -11,7 +11,10 @@ import { MonicaJsonError, readMonicaJsonExport } from './json-export';
 
 const GENDER = { uuid: 'g-1', properties: { name: 'Man', type: 'M' } };
 const FIELD_TYPE = { uuid: 'ft-1', properties: { name: 'Email', type: 'email', protocol: null } };
-const ACTIVITY_TYPE = { uuid: 'at-1', properties: { translation_key: 'activity_type_ate_at_restaurant', name: 'Ate at a restaurant' } };
+const ACTIVITY_TYPE = {
+	uuid: 'at-1',
+	properties: { translation_key: 'activity_type_ate_at_restaurant', name: 'Ate at a restaurant' }
+};
 
 /** One `{count, type, values}` bucket, the way a resource collection serialises. */
 const bucket = (type: string, values: unknown[]) => ({ count: values.length, type, values });
@@ -41,7 +44,11 @@ function document(account: Record<string, unknown>) {
 		account: {
 			uuid: 'a-1',
 			created_at: '2019-01-01T00:00:00.000000Z',
-			instance: { genders: [GENDER], contact_field_types: [FIELD_TYPE], activity_types: [ACTIVITY_TYPE] },
+			instance: {
+				genders: [GENDER],
+				contact_field_types: [FIELD_TYPE],
+				activity_types: [ACTIVITY_TYPE]
+			},
 			properties: {},
 			data: [],
 			...account
@@ -84,7 +91,12 @@ describe('readMonicaJsonExport', () => {
 				data: [
 					bucket('contact', [
 						contact({
-							birthdate: { uuid: 'sd-1', date: '1955-11-02T00:00:00.000000Z', is_age_based: false, is_year_unknown: false }
+							birthdate: {
+								uuid: 'sd-1',
+								date: '1955-11-02T00:00:00.000000Z',
+								is_age_based: false,
+								is_year_unknown: false
+							}
 						})
 					])
 				]
@@ -93,12 +105,20 @@ describe('readMonicaJsonExport', () => {
 
 		expect(exp.contacts[0].birthdaySpecialDateId).toBe('sd-1');
 		expect(exp.specialDates).toEqual([
-			{ id: 'sd-1', contactId: 'c-hans', isAgeBased: false, isYearUnknown: false, date: '1955-11-02' }
+			{
+				id: 'sd-1',
+				contactId: 'c-hans',
+				isAgeBased: false,
+				isYearUnknown: false,
+				date: '1955-11-02'
+			}
 		]);
 	});
 
 	test('reads a gender by the uuid the person points at', () => {
-		const exp = readMonicaJsonExport(document({ data: [bucket('contact', [contact({ gender: 'g-1' })])] }));
+		const exp = readMonicaJsonExport(
+			document({ data: [bucket('contact', [contact({ gender: 'g-1' })])] })
+		);
 
 		expect(exp.contacts[0].genderId).toBe('g-1');
 		expect(exp.genders).toEqual([{ id: 'g-1', type: 'M', name: 'Man' }]);
@@ -111,7 +131,11 @@ describe('readMonicaJsonExport', () => {
 					bucket('contact', [
 						contact({}, [
 							bucket('contact_field', [
-								{ uuid: 'cf-1', created_at: '2020-01-01T00:00:00.000000Z', properties: { data: 'hans@example.test', type: 'ft-1' } }
+								{
+									uuid: 'cf-1',
+									created_at: '2020-01-01T00:00:00.000000Z',
+									properties: { data: 'hans@example.test', type: 'ft-1' }
+								}
 							])
 						])
 					])
@@ -120,9 +144,17 @@ describe('readMonicaJsonExport', () => {
 		);
 
 		expect(exp.contactFields).toEqual([
-			{ id: 'cf-1', contactId: 'c-hans', typeId: 'ft-1', data: 'hans@example.test', createdAt: '2020-01-01T00:00:00.000000Z' }
+			{
+				id: 'cf-1',
+				contactId: 'c-hans',
+				typeId: 'ft-1',
+				data: 'hans@example.test',
+				createdAt: '2020-01-01T00:00:00.000000Z'
+			}
 		]);
-		expect(exp.contactFieldTypes).toEqual([{ id: 'ft-1', name: 'Email', type: 'email', protocol: null }]);
+		expect(exp.contactFieldTypes).toEqual([
+			{ id: 'ft-1', name: 'Email', type: 'email', protocol: null }
+		]);
 	});
 
 	test('reads notes off the person they belong to', () => {
@@ -132,7 +164,11 @@ describe('readMonicaJsonExport', () => {
 					bucket('contact', [
 						contact({}, [
 							bucket('note', [
-								{ uuid: 'n-1', created_at: '2021-05-05T00:00:00.000000Z', properties: { body: 'Allergic to hazelnuts', is_favorite: true } }
+								{
+									uuid: 'n-1',
+									created_at: '2021-05-05T00:00:00.000000Z',
+									properties: { body: 'Allergic to hazelnuts', is_favorite: true }
+								}
 							])
 						])
 					])
@@ -141,7 +177,13 @@ describe('readMonicaJsonExport', () => {
 		);
 
 		expect(exp.notes).toEqual([
-			{ id: 'n-1', contactId: 'c-hans', body: 'Allergic to hazelnuts', isFavorited: true, createdAt: '2021-05-05T00:00:00.000000Z' }
+			{
+				id: 'n-1',
+				contactId: 'c-hans',
+				body: 'Allergic to hazelnuts',
+				isFavorited: true,
+				createdAt: '2021-05-05T00:00:00.000000Z'
+			}
 		]);
 	});
 
@@ -151,17 +193,31 @@ describe('readMonicaJsonExport', () => {
 				data: [
 					bucket('contact', [contact(), contact({ first_name: 'Rosa' }, [], 'c-rosa')]),
 					bucket('relationship', [
-						{ uuid: 'r-1', created_at: null, properties: { type: 'spouse', contact_is: 'c-hans', of_contact: 'c-rosa' } },
-						{ uuid: 'r-2', created_at: null, properties: { type: 'spouse', contact_is: 'c-rosa', of_contact: 'c-hans' } }
+						{
+							uuid: 'r-1',
+							created_at: null,
+							properties: { type: 'spouse', contact_is: 'c-hans', of_contact: 'c-rosa' }
+						},
+						{
+							uuid: 'r-2',
+							created_at: null,
+							properties: { type: 'spouse', contact_is: 'c-rosa', of_contact: 'c-hans' }
+						}
 					])
 				]
 			})
 		);
 
 		// One type for the two links that share a name, keyed by the name itself.
-		expect(exp.relationshipTypes).toEqual([{ id: 'spouse', name: 'spouse', nameReverse: 'spouse' }]);
+		expect(exp.relationshipTypes).toEqual([
+			{ id: 'spouse', name: 'spouse', nameReverse: 'spouse' }
+		]);
 		expect(exp.relationships.map((r) => r.typeId)).toEqual(['spouse', 'spouse']);
-		expect(exp.relationships[0]).toMatchObject({ id: 'r-1', contactIs: 'c-hans', ofContact: 'c-rosa' });
+		expect(exp.relationships[0]).toMatchObject({
+			id: 'r-1',
+			contactIs: 'c-hans',
+			ofContact: 'c-rosa'
+		});
 	});
 
 	test('links an activity to the people whose own list names it', () => {
@@ -170,7 +226,16 @@ describe('readMonicaJsonExport', () => {
 				data: [
 					bucket('contact', [contact({}, [bucket('activity', ['ac-1'])])]),
 					bucket('activity', [
-						{ uuid: 'ac-1', created_at: null, properties: { summary: 'Lunch', description: null, happened_at: '2024-03-01T00:00:00.000000Z', type: 'at-1' } }
+						{
+							uuid: 'ac-1',
+							created_at: null,
+							properties: {
+								summary: 'Lunch',
+								description: null,
+								happened_at: '2024-03-01T00:00:00.000000Z',
+								type: 'at-1'
+							}
+						}
 					])
 				]
 			})
@@ -216,7 +281,12 @@ describe('readMonicaJsonExport', () => {
 						{
 							uuid: 'p-1',
 							created_at: null,
-							properties: { original_filename: 'hans.jpg', filesize: 1234, mime_type: 'image/jpeg', dataUrl: 'data:image/jpeg;base64,AAAA' }
+							properties: {
+								original_filename: 'hans.jpg',
+								filesize: 1234,
+								mime_type: 'image/jpeg',
+								dataUrl: 'data:image/jpeg;base64,AAAA'
+							}
 						}
 					])
 				]
@@ -242,15 +312,33 @@ describe('readMonicaJsonExport', () => {
 			document({
 				properties: {
 					journal_entries: [
-						{ uuid: 'j-1', created_at: '2024-02-02T00:00:00.000000Z', properties: { type: 'entry', title: 'A good day', post: 'We walked.', date: '2024-02-02' } },
-						{ uuid: 'j-2', created_at: null, properties: { type: 'day', rate: 3, day: 2, month: 2, year: 2024 } }
+						{
+							uuid: 'j-1',
+							created_at: '2024-02-02T00:00:00.000000Z',
+							properties: {
+								type: 'entry',
+								title: 'A good day',
+								post: 'We walked.',
+								date: '2024-02-02'
+							}
+						},
+						{
+							uuid: 'j-2',
+							created_at: null,
+							properties: { type: 'day', rate: 3, day: 2, month: 2, year: 2024 }
+						}
 					]
 				}
 			})
 		);
 
 		expect(exp.journalEntries).toEqual([
-			{ id: 'j-1', title: 'A good day', post: 'We walked.', createdAt: '2024-02-02T00:00:00.000000Z' }
+			{
+				id: 'j-1',
+				title: 'A good day',
+				post: 'We walked.',
+				createdAt: '2024-02-02T00:00:00.000000Z'
+			}
 		]);
 	});
 });

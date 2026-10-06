@@ -18,36 +18,181 @@ function fullHousehold(): HouseholdSnapshot {
 			household: [{ id: 'h-1', name: 'Familie Brunner' }],
 			user: [{ id: 'u-1', name: 'Markus', email: 'm@x.test', role: 'admin', created_at: NOW }],
 			relationship_type: [
-				{ id: 'rt-1', key: 'godparent', forward_label: 'Godparent of', reverse_label: 'Godchild of', category: 'family', symmetric: 0 }
+				{
+					id: 'rt-1',
+					key: 'godparent',
+					forward_label: 'Godparent of',
+					reverse_label: 'Godchild of',
+					category: 'family',
+					symmetric: 0
+				}
 			],
 			contact: [
-				{ id: 'c-hans', display_name: 'Hans Brunner', first_name: 'Hans', last_name: 'Brunner', created_by: 'u-1', visibility: 'shared', is_deceased: 0, created_at: NOW },
-				{ id: 'c-rosa', display_name: 'Rosa Brunner', first_name: 'Rosa', last_name: 'Brunner', created_by: 'u-1', visibility: 'private', is_deceased: 0, created_at: NOW }
+				{
+					id: 'c-hans',
+					display_name: 'Hans Brunner',
+					first_name: 'Hans',
+					last_name: 'Brunner',
+					created_by: 'u-1',
+					visibility: 'shared',
+					is_deceased: 0,
+					created_at: NOW
+				},
+				{
+					id: 'c-rosa',
+					display_name: 'Rosa Brunner',
+					first_name: 'Rosa',
+					last_name: 'Brunner',
+					created_by: 'u-1',
+					visibility: 'private',
+					is_deceased: 0,
+					created_at: NOW
+				}
 			],
-			contact_field: [{ id: 'f-1', contact_id: 'c-hans', kind: 'phone', label: 'mobile', value: '079' }],
-			important_date: [{ id: 'd-1', contact_id: 'c-hans', kind: 'anniversary', date: '1980-06-01', recurs_yearly: 1 }],
-			note: [{ id: 'n-1', contact_id: 'c-hans', title: 'Allergies', body: 'hazelnuts', is_pinned: 1, visibility: 'shared', created_by: 'u-1', created_at: NOW }],
+			contact_field: [
+				{ id: 'f-1', contact_id: 'c-hans', kind: 'phone', label: 'mobile', value: '079' }
+			],
+			important_date: [
+				{
+					id: 'd-1',
+					contact_id: 'c-hans',
+					kind: 'anniversary',
+					date: '1980-06-01',
+					recurs_yearly: 1
+				}
+			],
+			note: [
+				{
+					id: 'n-1',
+					contact_id: 'c-hans',
+					title: 'Allergies',
+					body: 'hazelnuts',
+					is_pinned: 1,
+					visibility: 'shared',
+					created_by: 'u-1',
+					created_at: NOW
+				}
+			],
 			note_mention: [{ note_id: 'n-1', contact_id: 'c-rosa' }],
-			journal_entry: [{ id: 'j-1', contact_id: 'c-hans', entry_date: '2026-07-12', body: 'hiked', visibility: 'private', created_by: 'u-1', created_at: NOW }],
+			journal_entry: [
+				{
+					id: 'j-1',
+					contact_id: 'c-hans',
+					entry_date: '2026-07-12',
+					body: 'hiked',
+					visibility: 'private',
+					created_by: 'u-1',
+					created_at: NOW
+				}
+			],
 			journal_mention: [{ journal_entry_id: 'j-1', contact_id: 'c-rosa' }],
-			interaction: [{ id: 'i-1', contact_id: 'c-hans', kind: 'call', happened_at: '2026-08-01', visibility: 'shared', created_by: 'u-1' }],
+			interaction: [
+				{
+					id: 'i-1',
+					contact_id: 'c-hans',
+					kind: 'call',
+					happened_at: '2026-08-01',
+					visibility: 'shared',
+					created_by: 'u-1'
+				}
+			],
 			interaction_participant: [{ interaction_id: 'i-1', contact_id: 'c-rosa' }],
 			photo: [
-				{ id: 'p-gallery', contact_id: 'c-hans', journal_entry_id: null, file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', visibility: 'shared', created_by: 'u-1', created_at: NOW },
-				{ id: 'p-journal', contact_id: 'c-hans', journal_entry_id: 'j-1', file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', visibility: 'private', created_by: 'u-1', created_at: NOW },
-				{ id: 'p-circle', contact_id: null, journal_entry_id: null, circle_id: 'ci-1', circle_role: 'coach', caption: 'Season start', pinned_at: NOW, file_path: 'p3.jpg', thumb_path: 't3.jpg', mime: 'image/jpeg', visibility: 'private', created_by: 'u-1', created_at: NOW }
+				{
+					id: 'p-gallery',
+					contact_id: 'c-hans',
+					journal_entry_id: null,
+					file_path: 'p1.jpg',
+					thumb_path: 't1.jpg',
+					mime: 'image/jpeg',
+					visibility: 'shared',
+					created_by: 'u-1',
+					created_at: NOW
+				},
+				{
+					id: 'p-journal',
+					contact_id: 'c-hans',
+					journal_entry_id: 'j-1',
+					file_path: 'p2.jpg',
+					thumb_path: 't2.jpg',
+					mime: 'image/jpeg',
+					visibility: 'private',
+					created_by: 'u-1',
+					created_at: NOW
+				},
+				{
+					id: 'p-circle',
+					contact_id: null,
+					journal_entry_id: null,
+					circle_id: 'ci-1',
+					circle_role: 'coach',
+					caption: 'Season start',
+					pinned_at: NOW,
+					file_path: 'p3.jpg',
+					thumb_path: 't3.jpg',
+					mime: 'image/jpeg',
+					visibility: 'private',
+					created_by: 'u-1',
+					created_at: NOW
+				}
 			],
 			tag: [{ id: 'tg-1', name: 'Bern', color: 'blue' }],
 			contact_tag: [{ contact_id: 'c-hans', tag_id: 'tg-1' }],
-			immich_link: [{ contact_id: 'c-hans', immich_person_id: '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70', linked_by: 'u-1', linked_at: NOW }],
-			immich_ignore: [{ contact_id: 'c-hans', immich_person_id: '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81', ignored_by: 'u-1', ignored_at: NOW }],
-			circle: [{ id: 'ci-1', name: 'FC Länggasse', kind: 'club', created_by: 'u-1', visibility: 'shared' }],
-			circle_membership: [{ id: 'cm-1', circle_id: 'ci-1', contact_id: 'c-hans', role: 'coach', start_date: '2019-06-01', end_date: null, created_by: 'u-1' }],
+			immich_link: [
+				{
+					contact_id: 'c-hans',
+					immich_person_id: '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70',
+					linked_by: 'u-1',
+					linked_at: NOW
+				}
+			],
+			immich_ignore: [
+				{
+					contact_id: 'c-hans',
+					immich_person_id: '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81',
+					ignored_by: 'u-1',
+					ignored_at: NOW
+				}
+			],
+			circle: [
+				{ id: 'ci-1', name: 'FC Länggasse', kind: 'club', created_by: 'u-1', visibility: 'shared' }
+			],
+			circle_membership: [
+				{
+					id: 'cm-1',
+					circle_id: 'ci-1',
+					contact_id: 'c-hans',
+					role: 'coach',
+					start_date: '2019-06-01',
+					end_date: null,
+					created_by: 'u-1'
+				}
+			],
 			relationship: [
-				{ id: 'r-1', from_contact_id: 'c-hans', to_contact_id: 'c-rosa', type_id: 'rt-1', note: 'married in Thun', since_date: '1980-06-01', status: 'current', created_by: 'u-1', created_at: NOW }
+				{
+					id: 'r-1',
+					from_contact_id: 'c-hans',
+					to_contact_id: 'c-rosa',
+					type_id: 'rt-1',
+					note: 'married in Thun',
+					since_date: '1980-06-01',
+					status: 'current',
+					created_by: 'u-1',
+					created_at: NOW
+				}
 			],
 			activity_log: [
-				{ id: 'a-1', action: 'delete', entity_type: 'contact', entity_id: 'gone', contact_id: null, actor_id: 'u-1', summary: 'removed Someone', visibility: 'shared', created_at: NOW }
+				{
+					id: 'a-1',
+					action: 'delete',
+					entity_type: 'contact',
+					entity_id: 'gone',
+					contact_id: null,
+					actor_id: 'u-1',
+					summary: 'removed Someone',
+					visibility: 'shared',
+					created_at: NOW
+				}
 			]
 		},
 		mediaPaths: ['p1.jpg', 't1.jpg', 'p2.jpg', 't2.jpg']
@@ -118,9 +263,11 @@ describe('a person', () => {
 	});
 
 	it('puts a circle photo with its circle, in nobody’s gallery', () => {
-		expect(doc().people.flatMap((p) => (p.photos as Record<string, unknown>[] | undefined) ?? []).map((p) => p.id)).not.toContain(
-			'p-circle'
-		);
+		expect(
+			doc()
+				.people.flatMap((p) => (p.photos as Record<string, unknown>[] | undefined) ?? [])
+				.map((p) => p.id)
+		).not.toContain('p-circle');
 		expect(doc().circles[0].photos).toEqual([
 			{
 				id: 'p-circle',
@@ -148,7 +295,11 @@ describe('a person', () => {
 
 	it('lists the Immich faces they were said not to be, and who said so', () => {
 		expect(hans().immich_ignored).toEqual([
-			{ person: '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81', ignored_by: 'u-1', ignored_at: new Date(NOW).toISOString() }
+			{
+				person: '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81',
+				ignored_by: 'u-1',
+				ignored_at: new Date(NOW).toISOString()
+			}
 		]);
 		expect(doc().people.find((p) => p.id === 'c-rosa')!.immich_ignored).toBeUndefined();
 	});
@@ -222,26 +373,102 @@ describe('what a restore would otherwise lose', () => {
 				}
 			],
 			contact_field: [
-				{ id: 'f-1', contact_id: 'c-1', kind: 'address', value: 'Bern', meta: '{"city":"Bern"}', sort_order: 3 }
+				{
+					id: 'f-1',
+					contact_id: 'c-1',
+					kind: 'address',
+					value: 'Bern',
+					meta: '{"city":"Bern"}',
+					sort_order: 3
+				}
 			],
 			important_date: [
-				{ id: 'd-1', contact_id: 'c-1', kind: 'birthday', date: '1980-06-01', recurs_yearly: 1, remind: 1 }
+				{
+					id: 'd-1',
+					contact_id: 'c-1',
+					kind: 'birthday',
+					date: '1980-06-01',
+					recurs_yearly: 1,
+					remind: 1
+				}
 			],
 			photo: [
-				{ id: 'p-1', contact_id: 'c-1', journal_entry_id: null, file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', width: 1600, height: 1200, size_bytes: 240000, created_by: 'u-1', visibility: 'shared' },
-				{ id: 'p-2', contact_id: 'c-1', journal_entry_id: null, framing_of: 'p-1', crop_x: 300, crop_y: 0.5, crop_size: 1200, file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', width: 512, height: 512, created_by: 'u-1', visibility: 'shared' }
+				{
+					id: 'p-1',
+					contact_id: 'c-1',
+					journal_entry_id: null,
+					file_path: 'p1.jpg',
+					thumb_path: 't1.jpg',
+					mime: 'image/jpeg',
+					width: 1600,
+					height: 1200,
+					size_bytes: 240000,
+					created_by: 'u-1',
+					visibility: 'shared'
+				},
+				{
+					id: 'p-2',
+					contact_id: 'c-1',
+					journal_entry_id: null,
+					framing_of: 'p-1',
+					crop_x: 300,
+					crop_y: 0.5,
+					crop_size: 1200,
+					file_path: 'p2.jpg',
+					thumb_path: 't2.jpg',
+					mime: 'image/jpeg',
+					width: 512,
+					height: 512,
+					created_by: 'u-1',
+					visibility: 'shared'
+				}
 			],
 			circle: [
-				{ id: 'ci-1', name: 'Klasse 5b', kind: 'class', color: 'green', parent_circle_id: 'ci-0', start_date: '2019-08-01', end_date: '2020-07-01', archived_at: NOW, created_by: 'u-1', visibility: 'shared' }
+				{
+					id: 'ci-1',
+					name: 'Klasse 5b',
+					kind: 'class',
+					color: 'green',
+					parent_circle_id: 'ci-0',
+					start_date: '2019-08-01',
+					end_date: '2020-07-01',
+					archived_at: NOW,
+					created_by: 'u-1',
+					visibility: 'shared'
+				}
 			],
 			circle_membership: [
-				{ id: 'cm-1', circle_id: 'ci-1', contact_id: 'c-1', role: 'pupil', start_date: '2019-08-01', end_date: '2020-07-01', note: 'sat at the back', created_by: 'u-1' }
+				{
+					id: 'cm-1',
+					circle_id: 'ci-1',
+					contact_id: 'c-1',
+					role: 'pupil',
+					start_date: '2019-08-01',
+					end_date: '2020-07-01',
+					note: 'sat at the back',
+					created_by: 'u-1'
+				}
 			],
 			relationship: [
-				{ id: 'r-1', from_contact_id: 'c-1', to_contact_id: 'c-1', type_id: 'rt-1', created_by: 'u-1', created_at: NOW }
+				{
+					id: 'r-1',
+					from_contact_id: 'c-1',
+					to_contact_id: 'c-1',
+					type_id: 'rt-1',
+					created_by: 'u-1',
+					created_at: NOW
+				}
 			],
 			relationship_type: [
-				{ id: 'rt-1', key: 'godparent', forward_label: 'Godparent of', reverse_label: 'Godchild of', category: 'family', symmetric: 0, sort_order: 100 }
+				{
+					id: 'rt-1',
+					key: 'godparent',
+					forward_label: 'Godparent of',
+					reverse_label: 'Godchild of',
+					category: 'family',
+					symmetric: 0,
+					sort_order: 100
+				}
 			]
 		},
 		mediaPaths: []
@@ -267,9 +494,11 @@ describe('what a restore would otherwise lose', () => {
 		expect(built().people[0].author).toBe('u-1');
 		expect(built().circles[0]).toMatchObject({ author: 'u-1' });
 		expect(built().relationships[0]).toMatchObject({ author: 'u-1' });
-		expect(
-			(built().circles[0].members as Record<string, unknown>[])[0]
-		).toMatchObject({ id: 'cm-1', author: 'u-1', note: 'sat at the back' });
+		expect((built().circles[0].members as Record<string, unknown>[])[0]).toMatchObject({
+			id: 'cm-1',
+			author: 'u-1',
+			note: 'sat at the back'
+		});
 		// The membership's own dates: read from start_date/end_date, the columns it really has.
 		expect((built().circles[0].members as Record<string, unknown>[])[0]).toMatchObject({
 			since: '2019-08-01',
@@ -296,7 +525,9 @@ describe('what a restore would otherwise lose', () => {
 		// The square a photo is worn through as the avatar, and which photo it frames (§2.14).
 		const framing = (person.photos as Record<string, unknown>[]).find((p) => p.id === 'p-2');
 		expect(framing).toMatchObject({ framing_of: 'p-1', crop: { x: 300, y: 0.5, size: 1200 } });
-		expect((person.photos as Record<string, unknown>[]).find((p) => p.id === 'p-1')).not.toHaveProperty('crop');
+		expect(
+			(person.photos as Record<string, unknown>[]).find((p) => p.id === 'p-1')
+		).not.toHaveProperty('crop');
 		expect(built().circles[0]).toMatchObject({
 			color: 'green',
 			parent: 'ci-0',
@@ -317,8 +548,20 @@ describe('two people with the same name', () => {
 		householdName: 'H',
 		tables: {
 			contact: [
-				{ id: 'c-peter-1', display_name: 'Peter Keller', first_name: 'Peter', last_name: 'Keller', visibility: 'shared' },
-				{ id: 'c-peter-2', display_name: 'Peter Keller', first_name: 'Peter', last_name: 'Keller', visibility: 'shared' }
+				{
+					id: 'c-peter-1',
+					display_name: 'Peter Keller',
+					first_name: 'Peter',
+					last_name: 'Keller',
+					visibility: 'shared'
+				},
+				{
+					id: 'c-peter-2',
+					display_name: 'Peter Keller',
+					first_name: 'Peter',
+					last_name: 'Keller',
+					visibility: 'shared'
+				}
 			],
 			contact_field: [{ id: 'f-1', contact_id: 'c-peter-1', kind: 'phone', value: '079' }],
 			relationship: [
@@ -348,7 +591,7 @@ describe('written out as YAML', () => {
 		expect(text).toContain('format: stella-archive');
 		// Block style, one thing per line: the file is meant to be read, not just parsed.
 		expect(text.split('\n').length).toBeGreaterThan(50);
-		expect(text).toMatch(/\n  - /);
+		expect(text).toMatch(/\n {2}- /);
 		expect(JSON.parse(JSON.stringify(Bun.YAML.parse(text)))).toEqual(
 			JSON.parse(JSON.stringify(original))
 		);

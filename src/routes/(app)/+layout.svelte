@@ -1,5 +1,13 @@
 <script lang="ts">
-	import { afterNavigate, beforeNavigate, goto, invalidate, invalidateAll, onNavigate, pushState } from '$app/navigation';
+	import {
+		afterNavigate,
+		beforeNavigate,
+		goto,
+		invalidate,
+		invalidateAll,
+		onNavigate,
+		pushState
+	} from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import Button from '$lib/components/Button.svelte';
 	import ActivityIndicator from '$lib/components/ActivityIndicator.svelte';
@@ -30,13 +38,29 @@
 
 	// Primary destinations. `match` decides the active state from the pathname; the label is
 	// a message key so the sidebar follows the viewer's language.
-	const nav: { href: string; label: MessageKey; icon: IconName; match: (p: string) => boolean }[] = [
-		{ href: '/', label: 'nav.home', icon: 'home', match: (p) => p === '/' },
-		{ href: '/contacts', label: 'nav.people', icon: 'people', match: (p) => p.startsWith('/contacts') },
-		{ href: '/circles', label: 'nav.circles', icon: 'circles', match: (p) => p.startsWith('/circles') },
-		{ href: '/graph', label: 'nav.graph', icon: 'graph', match: (p) => p.startsWith('/graph') },
-		{ href: '/settings', label: 'nav.settings', icon: 'settings', match: (p) => p.startsWith('/settings') }
-	];
+	const nav: { href: string; label: MessageKey; icon: IconName; match: (p: string) => boolean }[] =
+		[
+			{ href: '/', label: 'nav.home', icon: 'home', match: (p) => p === '/' },
+			{
+				href: '/contacts',
+				label: 'nav.people',
+				icon: 'people',
+				match: (p) => p.startsWith('/contacts')
+			},
+			{
+				href: '/circles',
+				label: 'nav.circles',
+				icon: 'circles',
+				match: (p) => p.startsWith('/circles')
+			},
+			{ href: '/graph', label: 'nav.graph', icon: 'graph', match: (p) => p.startsWith('/graph') },
+			{
+				href: '/settings',
+				label: 'nav.settings',
+				icon: 'settings',
+				match: (p) => p.startsWith('/settings')
+			}
+		];
 	const isActive = (item: (typeof nav)[number]) => item.match(page.url.pathname);
 	// The phone's tab bar has five places and the pencil takes the middle one; Settings is
 	// rarely opened and moves to the top bar there.
@@ -182,9 +206,11 @@
 	 * view and when the device joins a network — never on a timer. What Stella took is read back by reloading the page's data.
 	 */
 	onMount(() => {
-		void outbox.start(data.user.id, () => void invalidateAll(), t('home.outbox.photoTooLarge')).catch(() => {
-			// No IndexedDB (a private window in some browsers): nothing can have been kept.
-		});
+		void outbox
+			.start(data.user.id, () => void invalidateAll(), t('home.outbox.photoTooLarge'))
+			.catch(() => {
+				// No IndexedDB (a private window in some browsers): nothing can have been kept.
+			});
 		const onVisible = () => {
 			if (document.visibilityState !== 'visible') return;
 			void outbox.refresh().then(() => outbox.send());
@@ -275,7 +301,7 @@
 <!-- The first stop for a keyboard: past the sidebar and the top bar to the page itself. -->
 <a
 	href="#content"
-	class="sr-only z-50 rounded-control bg-card text-sm font-medium text-fg shadow-pop focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:px-3 focus:py-2"
+	class="sr-only z-50 rounded-control bg-card text-sm font-medium text-fg shadow-pop focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:px-3 focus:py-2"
 >
 	{t('nav.skipToContent')}
 </a>
@@ -306,15 +332,22 @@
 		<!-- Escape closes it like any other menu, and hands focus back to its summary. -->
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<details class="group relative" bind:this={accountMenu} onkeydown={closeAccountMenuOnEscape}>
-			<summary class="flex cursor-pointer list-none items-center gap-2.5 rounded-app bg-card p-2 shadow-card [&::-webkit-details-marker]:hidden">
+			<summary
+				class="flex cursor-pointer list-none items-center gap-2.5 rounded-app bg-card p-2 shadow-card [&::-webkit-details-marker]:hidden"
+			>
 				<span class="sr-only">{t('nav.accountMenu')}</span>
-				<span class="grid size-8 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-fg">{initials}</span>
+				<span
+					class="grid size-8 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-fg"
+					>{initials}</span
+				>
 				<span class="min-w-0 flex-1">
 					<span class="block truncate text-sm font-medium text-fg">{data.user.name}</span>
 					<span class="block truncate text-xs text-fg-subtle">{data.user.email}</span>
 				</span>
 			</summary>
-			<div class="absolute bottom-full left-0 mb-2 w-full rounded-app border border-border bg-card p-2 shadow-pop">
+			<div
+				class="absolute bottom-full left-0 mb-2 w-full rounded-app border border-border bg-card p-2 shadow-pop"
+			>
 				<div class="flex gap-1 rounded-control border border-border p-1">
 					{#each THEME_CHOICES as choice (choice.value)}
 						<button
@@ -330,7 +363,9 @@
 					{/each}
 				</div>
 				<SignOutForm class="mt-1">
-					<button class="w-full rounded-md px-3 py-2 text-left text-sm text-fg-muted transition-colors hover:bg-card-hover hover:text-fg">
+					<button
+						class="w-full rounded-md px-3 py-2 text-left text-sm text-fg-muted transition-colors hover:bg-card-hover hover:text-fg"
+					>
 						{t('nav.signOut')}
 					</button>
 				</SignOutForm>
@@ -356,9 +391,14 @@
 			<!-- On Home the trail would be "Home" alone, which the tab bar and sidebar already say;
 			     a phone, which has no sidebar, shows the logo there instead. -->
 			{#if crumbs.length <= 1}
-				<a href="/" class="flex items-center md:hidden" aria-label={t('nav.stellaHome')}><Logo size={26} wordmark /></a>
+				<a href="/" class="flex items-center md:hidden" aria-label={t('nav.stellaHome')}
+					><Logo size={26} wordmark /></a
+				>
 			{:else}
-				<nav aria-label={t('nav.breadcrumb')} class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">
+				<nav
+					aria-label={t('nav.breadcrumb')}
+					class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm"
+				>
 					{#each crumbs as crumb, i (i)}
 						{#if i > 0}<span class="text-fg-subtle/60" aria-hidden="true">/</span>{/if}
 						{#if crumb.href && i < crumbs.length - 1}
@@ -388,15 +428,29 @@
 					<!-- The same words as the button's name, so a voice command can say what it reads
 					     (WCAG 2.5.3); the name stays for widths where the words are hidden. -->
 					<span class="hidden lg:inline">{t('nav.search')}</span>
-					<kbd class="hidden rounded border border-border px-1 text-[10px] font-medium lg:inline">⌘K</kbd>
+					<kbd class="hidden rounded border border-border px-1 text-[10px] font-medium lg:inline"
+						>⌘K</kbd
+					>
 				</button>
 				<!-- Secondary, not primary: the one filled action on a screen is the page's own — the
 				     pencil on Home, *Write a moment* on a person (docs/05 §5.1, §5.4). -->
-				<Button variant="secondary" icon="addPerson" href="/contacts/new" label={t('nav.addPerson')}>
+				<Button
+					variant="secondary"
+					icon="addPerson"
+					href="/contacts/new"
+					label={t('nav.addPerson')}
+				>
 					<span class="hidden md:inline">{t('nav.addPerson')}</span>
 				</Button>
 				<!-- Wrapped: the button's own display rule would outrank a utility on the element. -->
-				<span class="md:hidden"><Button variant="ghost" icon="settings" href="/settings" label={t('nav.settings')} /></span>
+				<span class="md:hidden"
+					><Button
+						variant="ghost"
+						icon="settings"
+						href="/settings"
+						label={t('nav.settings')}
+					/></span
+				>
 			</div>
 		</header>
 
@@ -410,7 +464,12 @@
 			tabindex="-1"
 			bind:this={scroller}
 			onscroll={({ currentTarget: page }) =>
-				(topBar = followScroll(topBar, page.scrollTop, topBarHeight, page.scrollHeight - page.clientHeight))}
+				(topBar = followScroll(
+					topBar,
+					page.scrollTop,
+					topBarHeight,
+					page.scrollHeight - page.clientHeight
+				))}
 			class="flex-1 overflow-y-auto pb-16 md:pb-0"
 		>
 			{@render children()}
@@ -418,7 +477,10 @@
 	</div>
 
 	<!-- Bottom tab bar (mobile) -->
-	<nav aria-label={t('nav.main')} class="fixed inset-x-0 bottom-0 z-20 flex border-t border-border-subtle bg-card md:hidden">
+	<nav
+		aria-label={t('nav.main')}
+		class="fixed inset-x-0 bottom-0 z-20 flex border-t border-border-subtle bg-card md:hidden"
+	>
 		{#each tabBar.slice(0, 2) as item (item.href)}
 			<a href={item.href} aria-current={isActive(item) ? 'page' : undefined} class={TAB}>
 				{#if isActive(item)}<span class={TAB_MARK} aria-hidden="true"></span>{/if}
@@ -426,8 +488,15 @@
 				{t(item.label)}
 			</a>
 		{/each}
-		<a href="/?compose" onclick={openComposer} class="flex flex-1 flex-col items-center py-2.5" aria-label={t('nav.writeMoment')}>
-			<span class="-mt-4 grid size-11 place-items-center rounded-full bg-primary text-primary-fg shadow-pop">
+		<a
+			href="/?compose"
+			onclick={openComposer}
+			class="flex flex-1 flex-col items-center py-2.5"
+			aria-label={t('nav.writeMoment')}
+		>
+			<span
+				class="-mt-4 grid size-11 place-items-center rounded-full bg-primary text-primary-fg shadow-pop"
+			>
 				<Icon name="write" size={21} />
 			</span>
 		</a>

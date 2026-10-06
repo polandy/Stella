@@ -1,4 +1,8 @@
-import { matchImmichPeople, type MatchableContact, type MatchStrength } from '../../../immich/match';
+import {
+	matchImmichPeople,
+	type MatchableContact,
+	type MatchStrength
+} from '../../../immich/match';
 import { immichNewcomers } from '../../../immich/newcomers';
 import type { Viewer } from '../../access/visibility';
 import type { PersonContextReads } from '../contacts/person-context';
@@ -118,7 +122,11 @@ async function allPeople(
 }
 
 /** `work` over every item, at most `limit` at a time, the answers in the items' order. */
-async function eachLimited<T, R>(items: readonly T[], limit: number, work: (item: T) => Promise<R>): Promise<R[]> {
+async function eachLimited<T, R>(
+	items: readonly T[],
+	limit: number,
+	work: (item: T) => Promise<R>
+): Promise<R[]> {
 	const results: R[] = new Array(items.length);
 	let next = 0;
 	const worker = async () => {
@@ -161,7 +169,10 @@ export async function findImmichMatches(
 		people: named,
 		linkedContactIds,
 		linkedPersonIds: new Set(holders.keys()),
-		ignoredPairs: ignores.map(({ contactId, immichPersonId }) => ({ contactId, personId: immichPersonId }))
+		ignoredPairs: ignores.map(({ contactId, immichPersonId }) => ({
+			contactId,
+			personId: immichPersonId
+		}))
 	});
 	const newcomers = immichNewcomers({
 		people: named,
@@ -182,20 +193,21 @@ export async function findImmichMatches(
 		ignores
 			.filter((pair) => contactById.has(pair.contactId))
 			.sort((a, b) => b.ignoredAt - a.ignoredAt)
-			.map(
-				async ({ contactId, immichPersonId, ignoredBy, ignoredAt }): Promise<IgnoredMatch> => ({
-					contact: shownContact(contactId),
-					personId: immichPersonId,
-					immichName: namedOrNull(personById.get(immichPersonId)),
-					faceUrl: await faceUrlFor(deps.signer, contactId, immichPersonId),
-					ignoredBy,
-					ignoredAt
-				})
-			)
+			.map(async ({ contactId, immichPersonId, ignoredBy, ignoredAt }): Promise<IgnoredMatch> => ({
+				contact: shownContact(contactId),
+				personId: immichPersonId,
+				immichName: namedOrNull(personById.get(immichPersonId)),
+				faceUrl: await faceUrlFor(deps.signer, contactId, immichPersonId),
+				ignoredBy,
+				ignoredAt
+			}))
 	);
 
 	const shownPeople = [
-		...new Set([...matches.flatMap((m) => m.candidates.map((c) => c.personId)), ...newcomers.map((n) => n.personId)])
+		...new Set([
+			...matches.flatMap((m) => m.candidates.map((c) => c.personId)),
+			...newcomers.map((n) => n.personId)
+		])
 	];
 	const counts = new Map(
 		await eachLimited(shownPeople, COUNTS_AT_ONCE, async (id) => {
@@ -237,4 +249,5 @@ export async function findImmichMatches(
 }
 
 /** A face's name in Immich, or null when Immich no longer lists it named and shown. */
-const namedOrNull = (person: ImmichPerson | undefined) => (person && person.name !== '' ? person.name : null);
+const namedOrNull = (person: ImmichPerson | undefined) =>
+	person && person.name !== '' ? person.name : null;

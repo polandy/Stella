@@ -29,7 +29,10 @@ const TypeSchema = v.object({
 	symmetric: v.optional(v.literal('on'))
 });
 
-const WithIdSchema = v.object({ ...TypeSchema.entries, typeId: v.pipe(v.string(), v.minLength(1)) });
+const WithIdSchema = v.object({
+	...TypeSchema.entries,
+	typeId: v.pipe(v.string(), v.minLength(1))
+});
 
 const IdOnlySchema = v.object({ typeId: v.pipe(v.string(), v.minLength(1)) });
 

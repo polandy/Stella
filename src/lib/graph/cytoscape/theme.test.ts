@@ -227,8 +227,7 @@ describe('buildStylesheet', () => {
 	});
 
 	it('keeps the photo under the badge for a person who has both', () => {
-		const rule =
-			styles.find((s) => s.selector === `node.has-photo.${HAS_MORE_CLASS}`)?.style ?? {};
+		const rule = styles.find((s) => s.selector === `node.has-photo.${HAS_MORE_CLASS}`)?.style ?? {};
 		const image = rule['background-image'] as (ele: { data(key: string): unknown }) => string[];
 		const images = image({ data: (key) => ({ more: 2, photo: '/media/p?thumb' })[key] });
 		expect(images[0]).toBe('/media/p?thumb');
@@ -283,7 +282,10 @@ describe('buildStylesheet', () => {
 
 	it('draws a photo on a person who has one, clipped to the disc', () => {
 		const photo = styles.find((s) => s.selector === 'node.person.has-photo');
-		expect(photo?.style).toMatchObject({ 'background-image': 'data(photo)', 'background-fit': 'cover' });
+		expect(photo?.style).toMatchObject({
+			'background-image': 'data(photo)',
+			'background-fit': 'cover'
+		});
 	});
 
 	it('draws edges in their canvas-safe depth, not the raw token', () => {

@@ -118,7 +118,9 @@ export function createDrizzleContactRepository(
 				.get();
 			// SQLite has no boolean, and the column predates the three genders; the domain
 			// works with a boolean and with one of the three or nothing.
-			return row ? { ...row, isDeceased: row.isDeceased === 1, gender: readGender(row.gender) } : null;
+			return row
+				? { ...row, isDeceased: row.isDeceased === 1, gender: readGender(row.gender) }
+				: null;
 		},
 
 		async listVisibleTo(viewer: Viewer) {
@@ -146,7 +148,10 @@ export function createDrizzleContactRepository(
 				)
 				.where(
 					and(
-						or(eq(relationship.fromContactId, contactTable.id), eq(relationship.toContactId, contactTable.id)),
+						or(
+							eq(relationship.fromContactId, contactTable.id),
+							eq(relationship.toContactId, contactTable.id)
+						),
 						contactColumnsVisibleTo(viewer, other)
 					)
 				);
@@ -281,7 +286,12 @@ export function createDrizzleContactRepository(
 
 		async readForMerge(viewer: Viewer, keepId: string, mergedId: string) {
 			const rows = db
-				.select({ ...mergeableColumns, id: contactTable.id, displayName: contactTable.displayName, visibility: contactTable.visibility })
+				.select({
+					...mergeableColumns,
+					id: contactTable.id,
+					displayName: contactTable.displayName,
+					visibility: contactTable.visibility
+				})
 				.from(contactTable)
 				.where(and(inArray(contactTable.id, [keepId, mergedId]), contactVisibleTo(viewer)))
 				.all();
@@ -313,7 +323,11 @@ export function createDrizzleContactRepository(
 			});
 
 			return {
-				keep: { displayName: keep.displayName, visibility: keep.visibility, profile: profileOf(keep) },
+				keep: {
+					displayName: keep.displayName,
+					visibility: keep.visibility,
+					profile: profileOf(keep)
+				},
 				mergedAway: { displayName: mergedAway.displayName, profile: profileOf(mergedAway) }
 			};
 		},
@@ -349,7 +363,10 @@ export function createDrizzleContactRepository(
 		},
 
 		async setJob(id: string, job: Job, updatedAt: number) {
-			db.update(contactTable).set({ ...job, updatedAt }).where(eq(contactTable.id, id)).run();
+			db.update(contactTable)
+				.set({ ...job, updatedAt })
+				.where(eq(contactTable.id, id))
+				.run();
 		},
 
 		async writeNames(writes: readonly NameWrite[], audit: NewActivityEntry | null) {

@@ -33,7 +33,10 @@ function migrationsBefore(tag: string): string {
 	cpSync(MIGRATIONS, folder, { recursive: true });
 	const journalPath = join(folder, 'meta', '_journal.json');
 	const journal = JSON.parse(readFileSync(journalPath, 'utf8')) as Journal;
-	journal.entries = journal.entries.slice(0, journal.entries.findIndex((entry) => entry.tag === tag));
+	journal.entries = journal.entries.slice(
+		0,
+		journal.entries.findIndex((entry) => entry.tag === tag)
+	);
 	writeFileSync(journalPath, JSON.stringify(journal));
 	return folder;
 }
@@ -48,10 +51,31 @@ interface Row {
 }
 
 const ROWS: Row[] = [
-	{ id: 'tom', first: 'Thomas', last: 'Brunner', nick: 'Tom', shown: 'Thomas Brunner', by: 'de-member' },
-	{ id: 'leo', first: 'Leonardo', last: 'Pollari', nick: 'Leo', shown: 'Leonardo Pollari', by: 'unset-member' },
+	{
+		id: 'tom',
+		first: 'Thomas',
+		last: 'Brunner',
+		nick: 'Tom',
+		shown: 'Thomas Brunner',
+		by: 'de-member'
+	},
+	{
+		id: 'leo',
+		first: 'Leonardo',
+		last: 'Pollari',
+		nick: 'Leo',
+		shown: 'Leonardo Pollari',
+		by: 'unset-member'
+	},
 	{ id: 'kurt', first: 'Kurt', last: 'Lehmann', nick: 'Kurti', shown: 'Opa Kurt', by: 'de-member' },
-	{ id: 'same', first: 'Anna', last: 'Keller', nick: 'anna', shown: 'Anna Keller', by: 'de-member' },
+	{
+		id: 'same',
+		first: 'Anna',
+		last: 'Keller',
+		nick: 'anna',
+		shown: 'Anna Keller',
+		by: 'de-member'
+	},
 	{ id: 'plain', first: 'Lea', last: 'Brunner', nick: null, shown: 'Lea Brunner', by: 'de-member' },
 	{ id: 'nofirst', first: null, last: 'Huber', nick: 'Sepp', shown: 'Huber', by: 'de-member' },
 	{ id: 'nickonly', first: null, last: null, nick: 'Hansi', shown: 'Hansi', by: 'de-member' }
@@ -64,7 +88,9 @@ function householdBefore(memberLocale: 'de' | null): Database {
 	// A running installation has its search index and triggers before this migration runs.
 	ensureSearchIndex(sqlite);
 	sqlite.query('INSERT INTO household (id, name) VALUES (?, ?)').run(H, 'Home');
-	const member = sqlite.query('INSERT INTO user (id, household_id, email, name, locale_pref) VALUES (?, ?, ?, ?, ?)');
+	const member = sqlite.query(
+		'INSERT INTO user (id, household_id, email, name, locale_pref) VALUES (?, ?, ?, ?, ?)'
+	);
 	member.run('de-member', H, 'de@x.test', 'De', memberLocale);
 	member.run('unset-member', H, 'unset@x.test', 'Unset', null);
 	const person = sqlite.query(
@@ -76,7 +102,8 @@ function householdBefore(memberLocale: 'de' | null): Database {
 }
 
 const shownOf = (db: Database, id: string) =>
-	(db.query('SELECT display_name AS shown FROM contact WHERE id = ?').get(id) as { shown: string }).shown;
+	(db.query('SELECT display_name AS shown FROM contact WHERE id = ?').get(id) as { shown: string })
+		.shown;
 
 describe(`migration ${TAG}`, () => {
 	it('writes the nickname into names the old rule made, by the pure rule, and leaves the rest', () => {
@@ -86,7 +113,10 @@ describe(`migration ${TAG}`, () => {
 
 		for (const r of ROWS) {
 			const expected =
-				nameWithNickname({ displayName: r.shown, firstName: r.first, lastName: r.last, nickname: r.nick }, 'de') ?? r.shown;
+				nameWithNickname(
+					{ displayName: r.shown, firstName: r.first, lastName: r.last, nickname: r.nick },
+					'de'
+				) ?? r.shown;
 			expect([r.id, shownOf(db, r.id)]).toEqual([r.id, expected]);
 		}
 		// The two the household will notice, said outright.
@@ -113,7 +143,9 @@ describe(`migration ${TAG}`, () => {
 
 		migrate(drizzle(db), { migrationsFolder: MIGRATIONS });
 
-		const indexed = db.query("SELECT content FROM contact_fts WHERE contact_id = 'tom'").get() as { content: string };
+		const indexed = db.query("SELECT content FROM contact_fts WHERE contact_id = 'tom'").get() as {
+			content: string;
+		};
 		expect(indexed.content).toContain('Thomas „Tom“ Brunner');
 		db.close();
 	});

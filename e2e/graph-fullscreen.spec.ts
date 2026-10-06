@@ -79,7 +79,7 @@ test('touch full screen locks the page’s real scroll container, not document.b
 	// a check that went looking for `auto`/`scroll` after the very thing it is verifying.
 	const lockState = () =>
 		page.evaluate(() => {
-			let el: HTMLElement | null = document.querySelector('canvas');
+			const el: HTMLElement | null = document.querySelector('canvas');
 			for (let node = el?.parentElement ?? null; node; node = node.parentElement) {
 				if (node.scrollHeight > node.clientHeight) {
 					return {

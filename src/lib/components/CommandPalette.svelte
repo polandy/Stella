@@ -102,11 +102,14 @@
 			placeholder={t('components.palette.placeholder')}
 			aria-label={t('components.palette.jumpTo')}
 			aria-controls="palette-rows"
-			aria-activedescendant={rows[selected] ? `palette-${rows[selected].kind}-${rows[selected].id}` : undefined}
+			aria-activedescendant={rows[selected]
+				? `palette-${rows[selected].kind}-${rows[selected].id}`
+				: undefined}
 			autocomplete="off"
 			class="min-w-0 flex-1 bg-transparent text-[15px] text-fg placeholder:text-fg-subtle focus-visible:outline-none"
 		/>
-		<kbd class="rounded border border-border px-1.5 text-[10px] font-medium text-fg-subtle">esc</kbd>
+		<kbd class="rounded border border-border px-1.5 text-[10px] font-medium text-fg-subtle">esc</kbd
+		>
 	</div>
 	<ul id="palette-rows" role="listbox" class="max-h-[60vh] overflow-y-auto p-1.5">
 		{#each rows as row, i (row.kind + row.id)}
@@ -117,7 +120,10 @@
 					role="option"
 					aria-selected={i === selected}
 					href={row.href}
-					onclick={(e) => { e.preventDefault(); follow(row.href); }}
+					onclick={(e) => {
+						e.preventDefault();
+						follow(row.href);
+					}}
 					onpointerenter={() => (selected = i)}
 					tabindex="-1"
 					class="flex items-center gap-2.5 rounded-control px-2.5 py-2 text-sm text-fg aria-selected:bg-primary-soft"
@@ -125,22 +131,38 @@
 					{#if row.kind === 'person'}
 						<Avatar id={row.id} name={row.label} avatarPhotoId={row.avatarPhotoId} size={24} />
 					{:else}
-						<span class="grid size-6 place-items-center text-fg-subtle"><Icon name={row.icon} size={15} /></span>
+						<span class="grid size-6 place-items-center text-fg-subtle"
+							><Icon name={row.icon} size={15} /></span
+						>
 					{/if}
 					{#if row.kind === 'person' && (row.distinction || row.job)}
 						<span class="min-w-0">
-							<span class="block truncate">{row.label}<FormerlyMark name={row.formerly} /><FoundByJobMark found={row.foundByJob} /></span>
+							<span class="block truncate"
+								>{row.label}<FormerlyMark name={row.formerly} /><FoundByJobMark
+									found={row.foundByJob}
+								/></span
+							>
 							{#if row.distinction}<NamesakeLine distinction={row.distinction} />{/if}
 							<JobLine job={row.job} small />
 						</span>
 					{:else}
-						<span class="truncate">{row.label}{#if row.kind === 'person'}<FormerlyMark name={row.formerly} /><FoundByJobMark found={row.foundByJob} />{/if}</span>
+						<span class="truncate"
+							>{row.label}{#if row.kind === 'person'}<FormerlyMark
+									name={row.formerly}
+								/><FoundByJobMark found={row.foundByJob} />{/if}</span
+						>
 					{/if}
-					{#if row.kind !== 'person'}<span class="ml-auto text-xs text-fg-subtle">{row.kind === 'search' ? t('components.palette.kindSearch') : t('components.palette.kindAction')}</span>{/if}
+					{#if row.kind !== 'person'}<span class="ml-auto text-xs text-fg-subtle"
+							>{row.kind === 'search'
+								? t('components.palette.kindSearch')
+								: t('components.palette.kindAction')}</span
+						>{/if}
 				</a>
 			</li>
 		{:else}
-			<li role="presentation" class="px-2.5 py-4 text-center text-sm text-fg-muted">{t('components.palette.empty')}</li>
+			<li role="presentation" class="px-2.5 py-4 text-center text-sm text-fg-muted">
+				{t('components.palette.empty')}
+			</li>
 		{/each}
 	</ul>
 </dialog>

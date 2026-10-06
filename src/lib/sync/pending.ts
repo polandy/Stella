@@ -8,7 +8,11 @@ import type { PendingSink } from './pending-work';
  */
 
 /** Runs `work` while the sink counts it, under `label` when given. The count ends even when the work fails. */
-export async function whilePending<T>(sink: PendingSink, work: () => Promise<T>, label?: string): Promise<T> {
+export async function whilePending<T>(
+	sink: PendingSink,
+	work: () => Promise<T>,
+	label?: string
+): Promise<T> {
 	sink.begin(label);
 	try {
 		return await work();
@@ -51,7 +55,10 @@ export function trackPending(sink: PendingSink, inner: SubmitFunction): SubmitFu
  * cleanup is what ends the count: Svelte runs it before the effect runs again, which is exactly
  * when the navigation it was counting has finished or been replaced.
  */
-export function reportNavigation(sink: PendingSink, destination: unknown): (() => void) | undefined {
+export function reportNavigation(
+	sink: PendingSink,
+	destination: unknown
+): (() => void) | undefined {
 	if (!destination) return undefined;
 	sink.begin();
 	return () => sink.end();

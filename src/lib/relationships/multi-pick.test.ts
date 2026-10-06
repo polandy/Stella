@@ -74,7 +74,8 @@ describe('capState', () => {
 });
 
 describe('chipRefusals', () => {
-	const refusedFor = (ids: string[]) => (id: string) => (ids.includes(id) ? { reason: `no ${id}` } : null);
+	const refusedFor = (ids: string[]) => (id: string) =>
+		ids.includes(id) ? { reason: `no ${id}` } : null;
 
 	it('names each picked person the household rules out, in the order they were picked', () => {
 		expect(chipRefusals(['lio', 'otto', 'mia', 'tom'], refusedFor(['tom', 'otto']), [])).toEqual([
@@ -85,20 +86,24 @@ describe('chipRefusals', () => {
 
 	it('marks the people a refused save named', () => {
 		expect(
-			chipRefusals(['lio', 'otto'], refusedFor([]), [{ targetId: 'otto', reason: 'already Parent of Anna' }])
+			chipRefusals(['lio', 'otto'], refusedFor([]), [
+				{ targetId: 'otto', reason: 'already Parent of Anna' }
+			])
 		).toEqual([{ targetId: 'otto', reason: 'already Parent of Anna' }]);
 	});
 
 	it('forgets a refusal once its person is no longer picked', () => {
-		expect(chipRefusals(['lio'], refusedFor([]), [{ targetId: 'otto', reason: 'already Parent of Anna' }])).toEqual(
-			[]
-		);
+		expect(
+			chipRefusals(['lio'], refusedFor([]), [
+				{ targetId: 'otto', reason: 'already Parent of Anna' }
+			])
+		).toEqual([]);
 	});
 
 	it('prefers what the household rules out now over what an earlier save was told', () => {
-		expect(chipRefusals(['otto'], refusedFor(['otto']), [{ targetId: 'otto', reason: 'stale' }])).toEqual([
-			{ targetId: 'otto', exclusion: { reason: 'no otto' } }
-		]);
+		expect(
+			chipRefusals(['otto'], refusedFor(['otto']), [{ targetId: 'otto', reason: 'stale' }])
+		).toEqual([{ targetId: 'otto', exclusion: { reason: 'no otto' } }]);
 	});
 
 	it('is empty with nobody picked', () => {
@@ -122,7 +127,9 @@ describe('exclusionForEveryone', () => {
 	});
 
 	it('greys an entry out, with the first reason, when it is refused for everyone picked', () => {
-		expect(exclusionForEveryone(['otto', 'lio'], refusedFor(['otto', 'lio']))).toEqual({ reason: 'otto' });
+		expect(exclusionForEveryone(['otto', 'lio'], refusedFor(['otto', 'lio']))).toEqual({
+			reason: 'otto'
+		});
 	});
 });
 
@@ -172,7 +179,12 @@ describe('sharedSince', () => {
 	});
 
 	it('is blank when no pair gets a day', () => {
-		expect(sharedSince([{ targetId: 'a', sinceDate: '' }, { targetId: 'b', sinceDate: '' }])).toBe('');
+		expect(
+			sharedSince([
+				{ targetId: 'a', sinceDate: '' },
+				{ targetId: 'b', sinceDate: '' }
+			])
+		).toBe('');
 	});
 
 	it('is null when the days differ, so each pair keeps its own', () => {

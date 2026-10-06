@@ -64,7 +64,11 @@
 					return {
 						id,
 						type: 'tag.assign',
-						payload: { contactId: c.id, name, color: typeof color === 'string' && color ? color : null },
+						payload: {
+							contactId: c.id,
+							name,
+							color: typeof color === 'string' && color ? color : null
+						},
 						issuedAt: Date.now()
 					};
 				},
@@ -78,7 +82,16 @@
 	);
 </script>
 
-	<Section as="row" title={t('contact.section.tags')} count={visibleTags.length} summary={tagSummary} startOpen={visibleTags.length > 0} addLabel={t('common.add')} error={form?.tagError ?? null} bind:open={openSection.tags}>
+<Section
+	as="row"
+	title={t('contact.section.tags')}
+	count={visibleTags.length}
+	summary={tagSummary}
+	startOpen={visibleTags.length > 0}
+	addLabel={t('common.add')}
+	error={form?.tagError ?? null}
+	bind:open={openSection.tags}
+>
 	{#if visibleTags.length || keptTags.length}
 		<ul class="flex flex-wrap gap-1.5">
 			{#each keptTags as item (item.command.id)}
@@ -108,8 +121,19 @@
 	{/if}
 
 	{#snippet editor()}
-		<form method="POST" action="?/addTag" use:enhance={tagForm} class="flex flex-wrap items-end gap-2">
-			<input name="name" placeholder={t('contact.tagName')} aria-label={t('contact.tagName')} required class="min-w-32 flex-1 {INPUT}" />
+		<form
+			method="POST"
+			action="?/addTag"
+			use:enhance={tagForm}
+			class="flex flex-wrap items-end gap-2"
+		>
+			<input
+				name="name"
+				placeholder={t('contact.tagName')}
+				aria-label={t('contact.tagName')}
+				required
+				class="min-w-32 flex-1 {INPUT}"
+			/>
 			<select name="color" aria-label={t('contact.colour')} class={INPUT}>
 				{#each data.tagColors as color (color)}<option value={color}>{color}</option>{/each}
 			</select>

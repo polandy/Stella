@@ -33,7 +33,8 @@ export const lastNameActions = {
 			contactIds: form.getAll('contactId'),
 			replaceIds: form.getAll('replaceId')
 		});
-		if (!parsed.success) return fail(400, { lastNamesError: say(locals, 'errors.contact.emptyLastName') });
+		if (!parsed.success)
+			return fail(400, { lastNamesError: say(locals, 'errors.contact.emptyLastName') });
 
 		const { lastName, contactIds, replaceIds } = parsed.output;
 		const replace = new Set(replaceIds);

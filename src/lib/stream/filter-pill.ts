@@ -7,7 +7,8 @@ import type { StreamFilter, StreamKind } from './filter';
  */
 
 /** One axis the stream is narrowed on, in the order the sheet lists the groups. */
-export type NarrowedAxis = { axis: 'kind'; kind: StreamKind } | { axis: 'member'; memberId: string };
+export type NarrowedAxis =
+	{ axis: 'kind'; kind: StreamKind } | { axis: 'member'; memberId: string };
 
 /** The pill's state. */
 export interface FilterPill {

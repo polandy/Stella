@@ -23,7 +23,12 @@ const OTHER_PERSON = '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81';
 let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzleImmichNameIgnoreRepository>;
 
-const ignored = (householdId: string, immichPersonId = PERSON, ignoredBy = 'u-anna', ignoredAt = 5) => ({
+const ignored = (
+	householdId: string,
+	immichPersonId = PERSON,
+	ignoredBy = 'u-anna',
+	ignoredAt = 5
+) => ({
 	householdId,
 	immichPersonId,
 	ignoredBy,
@@ -35,7 +40,12 @@ beforeEach(() => {
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
-	db.insert(schema.household).values([{ id: H, name: 'H' }, { id: OTHER_H, name: 'Other' }]).run();
+	db.insert(schema.household)
+		.values([
+			{ id: H, name: 'H' },
+			{ id: OTHER_H, name: 'Other' }
+		])
+		.run();
 	db.insert(schema.user)
 		.values([
 			{ id: 'u-anna', householdId: H, email: 'anna@example.test', name: 'Anna' },
@@ -50,7 +60,10 @@ describe('ImmichNameIgnoreRepository', () => {
 	it('lists the household’s ignored names to every member, oldest first', async () => {
 		await repo.save(ignored(H, OTHER_PERSON, 'u-bert', 9));
 		await repo.save(ignored(H, PERSON, 'u-anna', 5));
-		expect(await repo.listForHousehold(asAnna)).toEqual([ignored(H, PERSON, 'u-anna', 5), ignored(H, OTHER_PERSON, 'u-bert', 9)]);
+		expect(await repo.listForHousehold(asAnna)).toEqual([
+			ignored(H, PERSON, 'u-anna', 5),
+			ignored(H, OTHER_PERSON, 'u-bert', 9)
+		]);
 		expect(await repo.listForHousehold(asBert)).toHaveLength(2);
 	});
 

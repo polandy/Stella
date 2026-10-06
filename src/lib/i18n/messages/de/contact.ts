@@ -12,7 +12,8 @@ export const contact: ContactMessages = {
 	'contact.nameParts.nickname': 'Spitzname',
 	'contact.nameParts.shownAs': 'Angezeigt als',
 	'contact.nameParts.shownAsFollows': 'Folgt den Namensteilen, während du tippst.',
-	'contact.nameParts.shownAsChosen': 'Bleibt wie getippt. Leer lassen, damit er wieder den Namensteilen folgt.',
+	'contact.nameParts.shownAsChosen':
+		'Bleibt wie getippt. Leer lassen, damit er wieder den Namensteilen folgt.',
 	'contact.formerly': (p) => `früher ${p.name}`,
 	'contact.nameParts.formerName': 'Früherer Name',
 	'contact.nameParts.keepFormer': (p) => `„${p.name}“ als früheren Namen behalten`,
@@ -45,7 +46,8 @@ export const contact: ContactMessages = {
 	'contact.gender.female': 'Weiblich',
 	'contact.gender.male': 'Männlich',
 	'contact.gender.diverse': 'Divers',
-	'contact.gender.hint': 'Bei weiblich oder männlich heißen Verwandte nach Geschlecht, etwa Tante oder Onkel; sonst neutral.',
+	'contact.gender.hint':
+		'Bei weiblich oder männlich heißen Verwandte nach Geschlecht, etwa Tante oder Onkel; sonst neutral.',
 
 	'contact.job': 'Beruf',
 	'contact.job.edit': 'Beruf bearbeiten',

@@ -113,6 +113,8 @@ describe('graphKeyAction', () => {
 	});
 
 	it('does nothing on an empty map', () => {
-		expect(graphKeyAction({ key: 'ArrowRight', cursor: null, positions: new Map(), start: null })).toBeNull();
+		expect(
+			graphKeyAction({ key: 'ArrowRight', cursor: null, positions: new Map(), start: null })
+		).toBeNull();
 	});
 });

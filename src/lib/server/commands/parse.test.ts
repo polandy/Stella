@@ -8,10 +8,20 @@ import { parseCommand, parsePhotoCommand } from './parse';
  */
 
 const ID = '01K6A5ZQ3V9W8X7Y6Z5A4B3C2D';
-const good: { id: string; type: 'moment.capture'; payload: { body: string; entryDate: string; visibility: 'private'; newPeople: string[] }; issuedAt: number } = {
+const good: {
+	id: string;
+	type: 'moment.capture';
+	payload: { body: string; entryDate: string; visibility: 'private'; newPeople: string[] };
+	issuedAt: number;
+} = {
 	id: ID,
 	type: 'moment.capture',
-	payload: { body: '  Coffee with @Julia  ', entryDate: '2026-09-27', visibility: 'private', newPeople: ['Vesna'] },
+	payload: {
+		body: '  Coffee with @Julia  ',
+		entryDate: '2026-09-27',
+		visibility: 'private',
+		newPeople: ['Vesna']
+	},
 	issuedAt: 1_700_000_000_000
 };
 
@@ -24,8 +34,16 @@ describe('parseCommand', () => {
 	});
 
 	it('defaults a moment to shared and to nobody new, as the form does', () => {
-		const parsed = parseCommand({ ...good, payload: { body: 'x @Julia', entryDate: '2026-09-27' } });
-		expect(parsed?.payload).toEqual({ body: 'x @Julia', entryDate: '2026-09-27', visibility: 'shared', newPeople: [] });
+		const parsed = parseCommand({
+			...good,
+			payload: { body: 'x @Julia', entryDate: '2026-09-27' }
+		});
+		expect(parsed?.payload).toEqual({
+			body: 'x @Julia',
+			entryDate: '2026-09-27',
+			visibility: 'shared',
+			newPeople: []
+		});
 	});
 
 	it('reads a person created with a moment, name and description with it', () => {
@@ -33,14 +51,22 @@ describe('parseCommand', () => {
 			...good,
 			payload: {
 				...good.payload,
-				newPeople: ['Vesna', { key: 'k1', firstName: ' Thomas ', lastName: '', description: ' Hut guide ' }]
+				newPeople: [
+					'Vesna',
+					{ key: 'k1', firstName: ' Thomas ', lastName: '', description: ' Hut guide ' }
+				]
 			}
 		});
 		expect(parsed?.payload).toMatchObject({
-			newPeople: ['Vesna', { key: 'k1', firstName: 'Thomas', lastName: null, description: 'Hut guide' }]
+			newPeople: [
+				'Vesna',
+				{ key: 'k1', firstName: 'Thomas', lastName: null, description: 'Hut guide' }
+			]
 		});
 		const nameless = { key: 'k1', firstName: '  ', lastName: null, description: null };
-		expect(parseCommand({ ...good, payload: { ...good.payload, newPeople: [nameless] } })).toBeNull();
+		expect(
+			parseCommand({ ...good, payload: { ...good.payload, newPeople: [nameless] } })
+		).toBeNull();
 	});
 
 	it('refuses what is not exactly a known command', () => {
@@ -49,16 +75,35 @@ describe('parseCommand', () => {
 		expect(parseCommand({ ...good, id: 'not-an-id' })).toBeNull();
 		expect(parseCommand({ ...good, issuedAt: 'yesterday' })).toBeNull();
 		expect(parseCommand({ ...good, payload: { ...good.payload, body: '   ' } })).toBeNull();
-		expect(parseCommand({ ...good, payload: { ...good.payload, entryDate: '27.09.2026' } })).toBeNull();
-		expect(parseCommand({ ...good, payload: { ...good.payload, visibility: 'public' } })).toBeNull();
+		expect(
+			parseCommand({ ...good, payload: { ...good.payload, entryDate: '27.09.2026' } })
+		).toBeNull();
+		expect(
+			parseCommand({ ...good, payload: { ...good.payload, visibility: 'public' } })
+		).toBeNull();
 	});
 });
 
 describe('parseCommand, for a note', () => {
-	const note = { id: ID, type: 'note.add', payload: { contactId: 'julia', body: ' moving to @Bern ', visibility: 'private', isPinned: true }, issuedAt: 3 };
+	const note = {
+		id: ID,
+		type: 'note.add',
+		payload: {
+			contactId: 'julia',
+			body: ' moving to @Bern ',
+			visibility: 'private',
+			isPinned: true
+		},
+		issuedAt: 3
+	};
 
 	it('reads a note on a person, trimming its text', () => {
-		expect(parseCommand(note)?.payload).toEqual({ contactId: 'julia', body: 'moving to @Bern', visibility: 'private', isPinned: true });
+		expect(parseCommand(note)?.payload).toEqual({
+			contactId: 'julia',
+			body: 'moving to @Bern',
+			visibility: 'private',
+			isPinned: true
+		});
 	});
 
 	it('refuses a note on nobody, or an empty one', () => {
@@ -68,7 +113,12 @@ describe('parseCommand, for a note', () => {
 });
 
 describe('parseCommand, for a call or visit', () => {
-	const call = { id: ID, type: 'interaction.log', payload: { contactId: 'oma', kind: 'call', happenedAt: '2026-09-27' }, issuedAt: 3 };
+	const call = {
+		id: ID,
+		type: 'interaction.log',
+		payload: { contactId: 'oma', kind: 'call', happenedAt: '2026-09-27' },
+		issuedAt: 3
+	};
 
 	it('reads a call, filling in what the form may leave out', () => {
 		expect(parseCommand(call)?.payload).toEqual({
@@ -84,27 +134,54 @@ describe('parseCommand, for a call or visit', () => {
 
 	it('refuses an unknown kind or a day that is not one', () => {
 		expect(parseCommand({ ...call, payload: { ...call.payload, kind: 'telegram' } })).toBeNull();
-		expect(parseCommand({ ...call, payload: { ...call.payload, happenedAt: 'Sunday' } })).toBeNull();
+		expect(
+			parseCommand({ ...call, payload: { ...call.payload, happenedAt: 'Sunday' } })
+		).toBeNull();
 	});
 });
 
 describe('parseCommand, for a tag or a circle', () => {
 	it('reads a tag by name, with or without a colour, and refuses a colour it does not know', () => {
-		const tag = { id: ID, type: 'tag.assign', payload: { contactId: 'julia', name: ' choir ' }, issuedAt: 3 };
+		const tag = {
+			id: ID,
+			type: 'tag.assign',
+			payload: { contactId: 'julia', name: ' choir ' },
+			issuedAt: 3
+		};
 		expect(parseCommand(tag)?.payload).toEqual({ contactId: 'julia', name: 'choir', color: null });
 		expect(parseCommand({ ...tag, payload: { ...tag.payload, color: 'plaid' } })).toBeNull();
 	});
 
 	it('reads a circle by name, an empty role meaning none', () => {
-		const join = { id: ID, type: 'circle.join', payload: { contactId: 'julia', circleName: 'Choir', role: ' ' }, issuedAt: 3 };
-		expect(parseCommand(join)?.payload).toEqual({ contactId: 'julia', circleName: 'Choir', role: null });
+		const join = {
+			id: ID,
+			type: 'circle.join',
+			payload: { contactId: 'julia', circleName: 'Choir', role: ' ' },
+			issuedAt: 3
+		};
+		expect(parseCommand(join)?.payload).toEqual({
+			contactId: 'julia',
+			circleName: 'Choir',
+			role: null
+		});
 		expect(parseCommand({ ...join, payload: { ...join.payload, circleName: '' } })).toBeNull();
 	});
 });
 
 describe('parseCommand, for a relationship', () => {
 	it('reads a link, empty specifics meaning none', () => {
-		const link = { id: ID, type: 'relationship.add', payload: { contactId: 'anna', targetId: 'bert', typeChoice: 'reverse:parent_child', description: ' ', sinceDate: '' }, issuedAt: 3 };
+		const link = {
+			id: ID,
+			type: 'relationship.add',
+			payload: {
+				contactId: 'anna',
+				targetId: 'bert',
+				typeChoice: 'reverse:parent_child',
+				description: ' ',
+				sinceDate: ''
+			},
+			issuedAt: 3
+		};
 		expect(parseCommand(link)?.payload).toEqual({
 			contactId: 'anna',
 			targetId: 'bert',
@@ -150,18 +227,30 @@ describe('parseCommand, for several links at once', () => {
 	it('reads a missing status as current, the state every new link starts in', () => {
 		const { status: _status, ...rest } = batch.payload;
 		expect(parseCommand({ ...batch, payload: rest })?.payload).toMatchObject({ status: 'current' });
-		expect(parseCommand({ ...batch, payload: { ...rest, status: null } })?.payload).toMatchObject({ status: 'current' });
+		expect(parseCommand({ ...batch, payload: { ...rest, status: null } })?.payload).toMatchObject({
+			status: 'current'
+		});
 	});
 
 	it('refuses a batch with nobody in it, a link without a person, or a status Stella does not know', () => {
 		expect(parseCommand({ ...batch, payload: { ...batch.payload, links: [] } })).toBeNull();
-		expect(parseCommand({ ...batch, payload: { ...batch.payload, links: [{ targetId: '', sinceDate: null }] } })).toBeNull();
+		expect(
+			parseCommand({
+				...batch,
+				payload: { ...batch.payload, links: [{ targetId: '', sinceDate: null }] }
+			})
+		).toBeNull();
 		expect(parseCommand({ ...batch, payload: { ...batch.payload, status: 'ex' } })).toBeNull();
 	});
 });
 
 describe('parseCommand, for a new person', () => {
-	const person = { id: ID, type: 'contact.add', payload: { firstName: ' Vesna ', lastName: '', birthDate: '1990-04-02' }, issuedAt: 3 };
+	const person = {
+		id: ID,
+		type: 'contact.add',
+		payload: { firstName: ' Vesna ', lastName: '', birthDate: '1990-04-02' },
+		issuedAt: 3
+	};
 
 	it('reads a new person, empty fields meaning none', () => {
 		expect(parseCommand(person)?.payload).toEqual({
@@ -179,7 +268,8 @@ describe('parseCommand, for a new person', () => {
 	});
 
 	it('reads that the member is adding themselves, and nothing but a yes as yes', () => {
-		const asked = (isSelf: unknown) => parseCommand({ ...person, payload: { ...person.payload, isSelf } });
+		const asked = (isSelf: unknown) =>
+			parseCommand({ ...person, payload: { ...person.payload, isSelf } });
 
 		expect(asked(true)?.payload).toMatchObject({ isSelf: true });
 		expect(asked(false)?.payload).toMatchObject({ isSelf: false });
@@ -187,7 +277,9 @@ describe('parseCommand, for a new person', () => {
 	});
 
 	it('reads the gender chosen for them, one of the three', () => {
-		expect(parseCommand({ ...person, payload: { ...person.payload, gender: 'diverse' } })?.payload).toMatchObject({
+		expect(
+			parseCommand({ ...person, payload: { ...person.payload, gender: 'diverse' } })?.payload
+		).toMatchObject({
 			gender: 'diverse'
 		});
 	});
@@ -202,25 +294,55 @@ describe('parseCommand, for a new person', () => {
 });
 
 describe('parseCommand, for a journal-page entry', () => {
-	const entry = { id: ID, type: 'journal.write', payload: { contactId: 'julia', entryDate: '2026-09-27', title: ' Lake ', body: ' Swam ' }, issuedAt: 3 };
+	const entry = {
+		id: ID,
+		type: 'journal.write',
+		payload: { contactId: 'julia', entryDate: '2026-09-27', title: ' Lake ', body: ' Swam ' },
+		issuedAt: 3
+	};
 
 	it('reads an entry, trimming it, an empty title meaning none and shared by default', () => {
-		expect(parseCommand(entry)?.payload).toEqual({ contactId: 'julia', entryDate: '2026-09-27', title: 'Lake', body: 'Swam', visibility: 'shared' });
-		expect(parseCommand({ ...entry, payload: { ...entry.payload, title: '  ' } })?.payload).toMatchObject({ title: null });
+		expect(parseCommand(entry)?.payload).toEqual({
+			contactId: 'julia',
+			entryDate: '2026-09-27',
+			title: 'Lake',
+			body: 'Swam',
+			visibility: 'shared'
+		});
+		expect(
+			parseCommand({ ...entry, payload: { ...entry.payload, title: '  ' } })?.payload
+		).toMatchObject({ title: null });
 	});
 
 	it('refuses an empty entry, or one on no day', () => {
 		expect(parseCommand({ ...entry, payload: { ...entry.payload, body: ' ' } })).toBeNull();
-		expect(parseCommand({ ...entry, payload: { ...entry.payload, entryDate: 'today' } })).toBeNull();
+		expect(
+			parseCommand({ ...entry, payload: { ...entry.payload, entryDate: 'today' } })
+		).toBeNull();
 	});
 });
 
 describe('parseCommand, for a field or a date', () => {
-	const field = { id: ID, type: 'field.add', payload: { contactId: 'julia', kind: 'phone', label: '', value: ' 079 123 ' }, issuedAt: 3 };
-	const date = { id: ID, type: 'date.add', payload: { contactId: 'julia', kind: 'anniversary', date: '--06-12' }, issuedAt: 3 };
+	const field = {
+		id: ID,
+		type: 'field.add',
+		payload: { contactId: 'julia', kind: 'phone', label: '', value: ' 079 123 ' },
+		issuedAt: 3
+	};
+	const date = {
+		id: ID,
+		type: 'date.add',
+		payload: { contactId: 'julia', kind: 'anniversary', date: '--06-12' },
+		issuedAt: 3
+	};
 
 	it('reads a field, trimming its value, an empty label meaning none', () => {
-		expect(parseCommand(field)?.payload).toEqual({ contactId: 'julia', kind: 'phone', label: null, value: '079 123' });
+		expect(parseCommand(field)?.payload).toEqual({
+			contactId: 'julia',
+			kind: 'phone',
+			label: null,
+			value: '079 123'
+		});
 	});
 
 	it('refuses a field of an unknown kind, or with no value', () => {
@@ -237,7 +359,10 @@ describe('parseCommand, for a field or a date', () => {
 			recursYearly: true,
 			remind: true
 		});
-		expect(parseCommand({ ...date, payload: { ...date.payload, recursYearly: false, remind: false } })?.payload).toMatchObject({
+		expect(
+			parseCommand({ ...date, payload: { ...date.payload, recursYearly: false, remind: false } })
+				?.payload
+		).toMatchObject({
 			recursYearly: false,
 			remind: false
 		});
@@ -262,15 +387,28 @@ describe('parseCommand, for a gallery upload', () => {
 });
 
 describe('parseCommand, for a circle photo upload', () => {
-	const upload = { id: ID, type: 'circleGallery.add', payload: { circleId: 'class-1b', role: 'Student' }, issuedAt: 3 };
+	const upload = {
+		id: ID,
+		type: 'circleGallery.add',
+		payload: { circleId: 'class-1b', role: 'Student' },
+		issuedAt: 3
+	};
 
 	it('reads the circle and the role the photos go to, shared by default', () => {
-		expect(parseCommand(upload)?.payload).toEqual({ circleId: 'class-1b', role: 'Student', visibility: 'shared' });
+		expect(parseCommand(upload)?.payload).toEqual({
+			circleId: 'class-1b',
+			role: 'Student',
+			visibility: 'shared'
+		});
 	});
 
 	it('reads a blank or missing role as no role', () => {
-		expect(parseCommand({ ...upload, payload: { circleId: 'k', role: '  ' } })?.payload).toMatchObject({ role: null });
-		expect(parseCommand({ ...upload, payload: { circleId: 'k' } })?.payload).toMatchObject({ role: null });
+		expect(
+			parseCommand({ ...upload, payload: { circleId: 'k', role: '  ' } })?.payload
+		).toMatchObject({ role: null });
+		expect(parseCommand({ ...upload, payload: { circleId: 'k' } })?.payload).toMatchObject({
+			role: null
+		});
 	});
 
 	it('refuses an upload for no circle', () => {
@@ -305,20 +443,35 @@ describe('parsePhotoCommand', () => {
 	});
 
 	it('reads a photo for a circle photo upload sent before it', () => {
-		expect(parsePhotoCommand({ ...photo, type: 'circleGallery.photo' })?.type).toBe('circleGallery.photo');
+		expect(parsePhotoCommand({ ...photo, type: 'circleGallery.photo' })?.type).toBe(
+			'circleGallery.photo'
+		);
 	});
 
 	it('reads the 1600 px view a large circle photo is sent with', () => {
 		const view = new Uint8Array([4, 5]);
 		const parsed = parsePhotoCommand({ ...photo, type: 'circleGallery.photo', width: 4096, view });
-		expect(parsed?.payload).toEqual({ parentId: photo.parentId, image: bytes, thumb: bytes, view, width: 4096, height: 1200 });
+		expect(parsed?.payload).toEqual({
+			parentId: photo.parentId,
+			image: bytes,
+			thumb: bytes,
+			view,
+			width: 4096,
+			height: 1200
+		});
 		// No view is no view, not an empty one.
-		expect(parsePhotoCommand({ ...photo, type: 'circleGallery.photo', view: null })?.payload).not.toHaveProperty('view');
+		expect(
+			parsePhotoCommand({ ...photo, type: 'circleGallery.photo', view: null })?.payload
+		).not.toHaveProperty('view');
 		expect(parsePhotoCommand({ ...photo, type: 'circleGallery.photo', view: 'bytes' })).toBeNull();
 	});
 
 	it('reads the capture date a photo carries, and none is none', () => {
-		const parsed = parsePhotoCommand({ ...photo, type: 'gallery.photo', takenAt: '2019-05-03T00:30:15+02:00' });
+		const parsed = parsePhotoCommand({
+			...photo,
+			type: 'gallery.photo',
+			takenAt: '2019-05-03T00:30:15+02:00'
+		});
 		expect(parsed?.payload).toEqual({
 			parentId: photo.parentId,
 			image: bytes,
@@ -331,7 +484,13 @@ describe('parsePhotoCommand', () => {
 	});
 
 	it('refuses a capture date that is not one', () => {
-		for (const takenAt of ['', '2019:05:03 00:30:15', '2019-02-30T10:00:00', 'yesterday', 1_556_843_415_000]) {
+		for (const takenAt of [
+			'',
+			'2019:05:03 00:30:15',
+			'2019-02-30T10:00:00',
+			'yesterday',
+			1_556_843_415_000
+		]) {
 			expect(parsePhotoCommand({ ...photo, takenAt })).toBeNull();
 		}
 	});

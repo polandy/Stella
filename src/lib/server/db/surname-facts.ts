@@ -1,6 +1,10 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { circleColumnsVisibleTo, contactVisibleTo, membershipVisibleTo } from '../access/query-scoping';
+import {
+	circleColumnsVisibleTo,
+	contactVisibleTo,
+	membershipVisibleTo
+} from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { SurnameFactsSource, SurnameListPerson } from '../domain/contacts/last-names';
 import type { FamilyCircle } from '../../suggestions/rules/surnames';
@@ -14,7 +18,9 @@ import { circle, circleMembership, contact } from './schema';
  * members. Scoped through the central conditions (docs/03 §3.7); a circle's name is carried for
  * the reason only and never read as a name.
  */
-export function createDrizzleSurnameFacts(db: BunSQLiteDatabase<typeof schema>): SurnameFactsSource {
+export function createDrizzleSurnameFacts(
+	db: BunSQLiteDatabase<typeof schema>
+): SurnameFactsSource {
 	return {
 		async loadSurnameFactsVisibleTo(viewer: Viewer) {
 			const people: SurnameListPerson[] = db
@@ -32,7 +38,11 @@ export function createDrizzleSurnameFacts(db: BunSQLiteDatabase<typeof schema>):
 				.from(contact)
 				.where(contactVisibleTo(viewer))
 				.all()
-				.map(({ isDeceased, archivedAt, ...p }) => ({ ...p, isDeceased: isDeceased === 1, archived: archivedAt !== null }));
+				.map(({ isDeceased, archivedAt, ...p }) => ({
+					...p,
+					isDeceased: isDeceased === 1,
+					archived: archivedAt !== null
+				}));
 
 			const memberships = db
 				.select({ circleId: circle.id, name: circle.name, contactId: circleMembership.contactId })

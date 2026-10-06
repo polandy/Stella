@@ -40,7 +40,16 @@ describe('exclusionFor — nothing on record', () => {
 
 describe('exclusionFor — one active romantic tie per person', () => {
 	const marriedToCarl = facts({
-		subjectTies: [{ relationshipId: 'r1', otherContactId: 'carl', category: 'romantic', typeKey: 'spouse', side: 'forward', label: 'Spouse of' }],
+		subjectTies: [
+			{
+				relationshipId: 'r1',
+				otherContactId: 'carl',
+				category: 'romantic',
+				typeKey: 'spouse',
+				side: 'forward',
+				label: 'Spouse of'
+			}
+		],
 		romanticPairs: [{ a: 'anna', b: 'carl' }]
 	});
 
@@ -82,7 +91,16 @@ describe('exclusionFor — one active romantic tie per person', () => {
 
 	it('frees the claim once the marriage is over — a former tie is not in the facts', () => {
 		const divorced = facts({
-			subjectTies: [{ relationshipId: 'r1', otherContactId: 'carl', category: 'romantic', typeKey: 'spouse', side: 'forward', label: 'Spouse of' }]
+			subjectTies: [
+				{
+					relationshipId: 'r1',
+					otherContactId: 'carl',
+					category: 'romantic',
+					typeKey: 'spouse',
+					side: 'forward',
+					label: 'Spouse of'
+				}
+			]
 		});
 		expect(
 			ask(divorced, { subjectId: 'anna', targetId: 'bert', type: spouse, side: 'forward' })
@@ -155,7 +173,11 @@ describe('exclusionFor — one romantic band per pair', () => {
 				}
 			]
 		});
-		for (const type of [sibling, parentChild, { key: 'godparent_of', category: 'family' } as const]) {
+		for (const type of [
+			sibling,
+			parentChild,
+			{ key: 'godparent_of', category: 'family' } as const
+		]) {
 			expect(
 				ask(mothers, { subjectId: 'anna', targetId: 'bert', type, side: 'forward' })
 			).toBeNull();
@@ -329,7 +351,7 @@ describe('exclusionFor — a godparent blocks no kinship', () => {
 		],
 		romanticPairs: [],
 		parentEdges: []
-		};
+	};
 
 	const askTheOther = (type: { key: string; category: 'family' | 'romantic' | 'professional' }) =>
 		exclusionFor(godchildOfTheOther, {

@@ -75,7 +75,11 @@ export const actions: Actions = {
 			issuedAt: systemClock.now()
 		});
 		if (command?.type !== 'contact.add') return fail(400, { error: t('errors.contact.needAName') });
-		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale };
+		const author = {
+			userId: locals.user.id,
+			householdId: locals.user.householdId,
+			locale: locals.locale
+		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(400, {
@@ -84,6 +88,9 @@ export const actions: Actions = {
 		}
 		const id = outcome.result.contactId;
 
-		throw redirect(303, relateTo ? `/contacts/${id}?relate=${encodeURIComponent(relateTo)}` : `/contacts/${id}`);
+		throw redirect(
+			303,
+			relateTo ? `/contacts/${id}?relate=${encodeURIComponent(relateTo)}` : `/contacts/${id}`
+		);
 	}
 };

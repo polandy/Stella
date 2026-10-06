@@ -28,7 +28,11 @@ export async function addPerson(
 	payload: ContactAddPayload
 ): Promise<{ contactId: string }> {
 	const { isSelf, ...person } = payload;
-	const contactId = await createContact(deps, { ...adder, defaultVisibility: person.visibility }, person);
+	const contactId = await createContact(
+		deps,
+		{ ...adder, defaultVisibility: person.visibility },
+		person
+	);
 	if (isSelf) {
 		// Through the same use-case as the Settings picker, so the rule that a member can only
 		// be a record they can see holds here too.

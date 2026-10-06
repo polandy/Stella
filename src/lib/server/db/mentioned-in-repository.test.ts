@@ -40,16 +40,38 @@ beforeEach(() => {
 		.run();
 	db.insert(schema.contact)
 		.values([
-			{ id: 'c-beat', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Beat Steiner' },
-			{ id: 'c-sandra', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Sandra Brunner' },
-			{ id: 'c-secret', householdId: H, createdBy: U2, visibility: 'private', displayName: 'Someone Private' }
+			{
+				id: 'c-beat',
+				householdId: H,
+				createdBy: U1,
+				visibility: 'shared',
+				displayName: 'Beat Steiner'
+			},
+			{
+				id: 'c-sandra',
+				householdId: H,
+				createdBy: U1,
+				visibility: 'shared',
+				displayName: 'Sandra Brunner'
+			},
+			{
+				id: 'c-secret',
+				householdId: H,
+				createdBy: U2,
+				visibility: 'private',
+				displayName: 'Someone Private'
+			}
 		])
 		.run();
 	repo = createDrizzleMentionedInRepository(db);
 });
 
 /** A note on `contactId` naming `mentions`, written by U1 unless said otherwise. */
-function note(id: string, over: Partial<typeof schema.note.$inferInsert> = {}, mentions = 'c-sandra') {
+function note(
+	id: string,
+	over: Partial<typeof schema.note.$inferInsert> = {},
+	mentions = 'c-sandra'
+) {
 	db.insert(schema.note)
 		.values({
 			id,
@@ -145,9 +167,9 @@ describe('createDrizzleMentionedInRepository', () => {
 		note('n-shared', { createdBy: U2 });
 
 		// The positive control: U2's other note, read the same way, does reach U1.
-		expect((await repo.listNoteMentionsOfVisibleTo(viewerU1, 'c-sandra')).map((m) => m.entryId)).toEqual([
-			'n-shared'
-		]);
+		expect(
+			(await repo.listNoteMentionsOfVisibleTo(viewerU1, 'c-sandra')).map((m) => m.entryId)
+		).toEqual(['n-shared']);
 		expect(
 			(await repo.listNoteMentionsOfVisibleTo(viewerU2, 'c-sandra')).map((m) => m.entryId).sort()
 		).toEqual(['n-private', 'n-shared']);
@@ -172,9 +194,9 @@ describe('createDrizzleMentionedInRepository', () => {
 		entry('j-open', { createdBy: U2 });
 
 		// The private *contact* is U2's, so the same rows are a positive control for U2.
-		expect((await repo.listNoteMentionsOfVisibleTo(viewerU1, 'c-sandra')).map((m) => m.entryId)).toEqual([
-			'n-open'
-		]);
+		expect(
+			(await repo.listNoteMentionsOfVisibleTo(viewerU1, 'c-sandra')).map((m) => m.entryId)
+		).toEqual(['n-open']);
 		expect(
 			(await repo.listJournalMentionsOfVisibleTo(viewerU1, 'c-sandra')).map((m) => m.entryId)
 		).toEqual(['j-open']);

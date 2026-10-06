@@ -13,7 +13,11 @@ import { say } from '$lib/server/i18n/say';
 export const GET: RequestHandler = async ({ locals, params, url }) => {
 	if (!locals.user) throw error(401, say(locals, 'errors.notSignedIn'));
 	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
-	const variant = url.searchParams.has('thumb') ? 'thumb' : url.searchParams.has('view') ? 'view' : 'full';
+	const variant = url.searchParams.has('thumb')
+		? 'thumb'
+		: url.searchParams.has('view')
+			? 'view'
+			: 'full';
 
 	const file = await getPhotos().getVisiblePhotoFile(viewer, params.id, variant);
 	if (!file) throw error(404, say(locals, 'errors.notFound'));
