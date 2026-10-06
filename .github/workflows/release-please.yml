@@ -8,9 +8,17 @@ permissions:
   contents: write
   pull-requests: write
 
+# Two pushes to main in quick succession must not race each other at the release PR; they
+# queue instead. Never cancelled: a run interrupted between creating the release and
+# publishing its image leaves a tag with nothing to pull.
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}

@@ -22,6 +22,8 @@ env:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    # A hung dev-smoke or check must not sit on the runner for GitHub's six-hour default.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -37,14 +39,22 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    # The slowest shard runs about three minutes; a shard still going at fifteen is stuck
+    # (a server that never came up, a browser that never answered), not slow.
+    timeout-minutes: 15
     strategy:
       # The suite is serial within a shard (one server, one database), so the only way to
       # spend less wall-clock time on it is to give each slice its own server. Each shard pays
-      # about a minute of fixed cost (runner, install, build) before its first test, which is
-      # what caps the count: at five the tests and the overhead are about even.
+      # about forty seconds of fixed cost (runner, install, the 25 s `vite build`) before its
+      # first test, and the run ends when the slowest shard does. Playwright splits by test
+      # count, not by duration, so the slow specs (`immich-together`, `pwa-offline`) land where
+      # they land; more shards shrink that imbalance too. Measured on 709 s of total test time:
+      # five shards leave the slowest at ~3:50, eight at ~2:30. Beyond that the overhead grows
+      # faster than the slowest shard shrinks. The repository is public, so the extra runner
+      # minutes are free.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
