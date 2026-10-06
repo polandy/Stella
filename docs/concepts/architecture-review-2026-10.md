@@ -462,20 +462,20 @@ makes the duplication safe rather than removing it (the SQL form is needed).
 Ordered so each step makes the next cheaper, and sized to the "at most two open feature PRs"
 rule. Each is one Conventional-Commit `refactor:`/`chore:`/`docs:` PR unless marked as a series.
 
-| # | Finding | Effort | Why now |
-|---|---|---|---|
-| 1 | AR-15 formatter + linter + import-boundary rules | S | Makes every later move mechanically checked; one `chore:` PR, then a format-only commit |
-| 2 | AR-05 stop swallowing dispatch errors; add `handleError` | S | Pure risk reduction; independent of everything |
-| 3 | AR-03 `requireViewer`, `todayFor(clock)`, `messageKey` | S | Removes 150 edit sites before AR-01 moves them again |
-| 4 | AR-07 glossary (docs/03 §3.0) + AR-18 regenerate §4.3 | S | Vocabulary before renames; cheapest high-leverage doc change |
-| 5 | AR-04 one schema per command, `fromFormData` | M | Shrinks every form action; prerequisite for AR-13 |
-| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | The central change; do after 3 and 5 so routes shrink while being touched |
-| 7 | AR-02 move shared actions under `routes/` taking deps | S | Falls out of 6 |
-| 8 | AR-08 split read models off the three widest ports + AR-14 shared fakes | M | Do together: the fakes are what makes the split pay |
-| 9 | AR-06 activity as a port; break `contacts ↔ relationships`; merge plan as data | M | Needs 8's narrower ports |
-| 10 | AR-11 `GraphExplorer` state → pure module; then `MomentComposer` | M ×2 | Independent of the server work; can run as the "second open PR" alongside 6–9 |
-| 11 | AR-10 lib taxonomy + AR-12 components split | M | Last of the moves: after the renames the final layout is known |
-| 12 | AR-09 `PartialDate`, `RelationshipPair`; AR-17 schema split; AR-19 parity test; AR-16 route tests | S–M | Opportunistic, when the area is touched anyway |
+| # | Finding | Effort | Status | Why now |
+|---|---|---|---|---|
+| 1 | AR-15 formatter + linter + import-boundary rules | S | ☐ | Makes every later move mechanically checked; one `chore:` PR, then a format-only commit |
+| 2 | AR-05 stop swallowing dispatch errors; add `handleError` | S | ☐ | Pure risk reduction; independent of everything |
+| 3 | AR-03 `requireViewer`, `todayFor(clock)`, `messageKey` | S | ☐ | Removes 150 edit sites before AR-01 moves them again |
+| 4 | AR-07 glossary (docs/03 §3.0) + AR-18 regenerate §4.3 | S | ☐ | Vocabulary before renames; cheapest high-leverage doc change |
+| 5 | AR-04 one schema per command, `fromFormData` | M | ☐ | Shrinks every form action; prerequisite for AR-13 |
+| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ☐ | The central change; do after 3 and 5 so routes shrink while being touched |
+| 7 | AR-02 move shared actions under `routes/` taking deps | S | ☐ | Falls out of 6 |
+| 8 | AR-08 split read models off the three widest ports + AR-14 shared fakes | M | ☐ | Do together: the fakes are what makes the split pay |
+| 9 | AR-06 activity as a port; break `contacts ↔ relationships`; merge plan as data | M | ☐ | Needs 8's narrower ports |
+| 10 | AR-11 `GraphExplorer` state → pure module; then `MomentComposer` | M ×2 | ☐ | Independent of the server work; can run as the "second open PR" alongside 6–9 |
+| 11 | AR-10 lib taxonomy + AR-12 components split | M | ☐ | Last of the moves: after the renames the final layout is known |
+| 12 | AR-09 `PartialDate`, `RelationshipPair`; AR-17 schema split; AR-19 parity test; AR-16 route tests | S–M | ☐ | Opportunistic, when the area is touched anyway |
 
 **Guardrails to add as you go** (each a `bun test` case over the source tree, so they run in
 CI without new tooling until AR-15 lands):
