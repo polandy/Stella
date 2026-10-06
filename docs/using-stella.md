@@ -34,7 +34,10 @@ visits, only relationships, only new people, or the notices — and **Who** — 
 or only what one other member did. They combine, so "Lena's moments" is two taps. The filter
 is part of the address, so a reload keeps it and *Back* takes it off again; *Everything* and
 *Everyone* show the whole stream. Filtering never shows anything you could not see anyway —
-someone else's private moments stay theirs.
+someone else's private moments stay theirs. On a phone the chips sit behind one **Filter**
+button above the stream: tap it and the same chips slide up from the bottom; the button
+shows how many filters are on and what they are, so a narrowed stream never looks like a
+quiet one. *Done*, or a tap outside, puts the chips away.
 
 Beside the stream sits a short list, **Coming up**: the next thirty days of birthdays and
 anniversaries. Each name offers one thing: *Write a moment*. The list disappears when it has
@@ -61,7 +64,8 @@ A few things worth knowing:
   over the stream. The top of a phone's Home is a search field for people instead: start
   typing a name and the people who match appear right under it; tap one to open their page.
   The last row, *Search everything*, also looks through notes. It works offline too, for
-  everyone Stella already showed you.
+  everyone Stella already showed you. Because that field is the search on Home, the top bar
+  there has no search button; every other page keeps it in the top bar.
 - **Two people with the same name?** The suggestion list says which is which (their
   description, or where and when you met), and the one you pick is the one it means, even
   though both read `@Thomas` in the text. A `@Thomas` typed without picking is not guessed:

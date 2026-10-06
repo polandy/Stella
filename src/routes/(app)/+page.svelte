@@ -31,6 +31,7 @@
 		streamFilterHref,
 		type StreamKind
 	} from '$lib/stream/filter';
+	import { filterPill } from '$lib/stream/filter-pill';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -86,6 +87,26 @@
 		notice: 'home.filter.kind.notice'
 	};
 	const filtered = $derived(isNarrowed(data.filter));
+	// The phone's pill: its count, highlight and the short summary beside it (docs/05 §5.5).
+	const pill = $derived(filterPill(data.filter));
+	const pillSummary = $derived(
+		pill.narrowedTo
+			.map((narrowed) =>
+				narrowed.axis === 'kind'
+					? t(KIND_LABEL[narrowed.kind])
+					: narrowed.memberId === data.user.id
+						? t('home.you')
+						: (data.members.find((member) => member.id === narrowed.memberId)?.name ?? '')
+			)
+			.join(' · ')
+	);
+	const FILTER_SHEET = 'stream-filter-sheet';
+	// Colour, border and weight come whole from one of the two looks, never a static utility
+	// beside a conditional one on the same property — stylesheet order would pick the winner.
+	const PILL =
+		'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors';
+	const PILL_OFF = 'border-border bg-card font-medium text-fg-muted hover:text-fg';
+	const PILL_ON = 'border-primary/45 bg-primary-soft font-semibold text-fg';
 	const CHIP_ROW = 'flex flex-wrap items-center gap-1';
 	const CHIP =
 		'rounded-full px-3 py-1 text-sm font-medium text-fg-muted transition-colors hover:text-fg aria-[current=true]:bg-primary-soft aria-[current=true]:font-semibold aria-[current=true]:text-fg';
@@ -322,27 +343,50 @@
 	{/if}
 
 	{#if days.length || filtered}
-		<nav class="flex flex-col gap-1.5" aria-label={t('home.filter.label')} data-testid="stream-filter" data-sveltekit-noscroll>
-			<div class={CHIP_ROW}>
-				<span class={CHIP_ROW_LABEL}>{t('home.filter.kind')}</span>
-				{@render chip(t('home.filter.kind.all'), { ...data.filter, kind: null }, data.filter.kind === null)}
-				{#each STREAM_KINDS as kind (kind)}
-					{@render chip(t(KIND_LABEL[kind]), { ...data.filter, kind }, data.filter.kind === kind)}
-				{/each}
-			</div>
-			{#if offersMemberChoice(data.members)}
-				<div class={CHIP_ROW}>
-					<span class={CHIP_ROW_LABEL}>{t('home.filter.member')}</span>
-					{@render chip(t('home.filter.member.all'), { ...data.filter, memberId: null }, data.filter.memberId === null)}
-					{#each data.members as member (member.id)}
-						{@render chip(
-							member.id === data.user.id ? t('home.you') : member.name,
-							{ ...data.filter, memberId: member.id },
-							data.filter.memberId === member.id
-						)}
-					{/each}
-				</div>
+		<!-- Below md the two rows would wrap to four lines and push the stream past the fold, so
+		     they fold into one pill and a sheet (docs/05 §5.5). The sheet is a native popover:
+		     the pill opens it, a tap outside, Escape or *Done* closes it, all without JavaScript,
+		     and the chips inside stay the same links. -->
+		<div class="flex min-w-0 items-center gap-2.5 md:hidden" data-testid="stream-filter-pill">
+			<button
+				type="button"
+				popovertarget={FILTER_SHEET}
+				aria-label={t('home.filter.pillLabel', { count: pill.count })}
+				class="{PILL} {pill.highlighted ? PILL_ON : PILL_OFF}"
+			>
+				<Icon name="filter" size={15} />
+				{t('home.filter.pill')}
+				{#if pill.count}
+					<span class="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-fg tabular-nums">{pill.count}</span>
+				{/if}
+			</button>
+			{#if pill.narrowedTo.length}
+				<span class="min-w-0 truncate text-[13px] text-fg-muted">{pillSummary}</span>
 			{/if}
+		</div>
+		<div
+			id={FILTER_SHEET}
+			popover="auto"
+			role="dialog"
+			aria-labelledby="{FILTER_SHEET}-title"
+			data-sveltekit-noscroll
+			class="inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none overflow-y-auto rounded-t-[20px] bg-bg px-4 pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-fg shadow-pop backdrop:bg-bg-sunken/70 backdrop:backdrop-blur-[3px] md:hidden"
+		>
+			<h2 id="{FILTER_SHEET}-title" class="mb-3 text-base font-semibold">{t('home.filter.label')}</h2>
+			<div class="flex flex-col gap-3">
+				{@render filterRows()}
+			</div>
+			<div class="mt-4 flex items-center justify-between">
+				{#if filtered}
+					<a href={streamFilterHref(NO_FILTER)} class="text-sm text-link hover:underline">{t('home.filter.clear')}</a>
+				{/if}
+				<Button variant="secondary" class="ml-auto" popovertarget={FILTER_SHEET} popovertargetaction="hide">
+					{t('home.filter.done')}
+				</Button>
+			</div>
+		</div>
+		<nav class="flex flex-col gap-1.5 max-md:hidden" aria-label={t('home.filter.label')} data-testid="stream-filter" data-sveltekit-noscroll>
+			{@render filterRows()}
 		</nav>
 	{/if}
 
@@ -462,6 +506,29 @@
 		<EmptyState icon="write" title={t('home.empty.title')} hint={t('home.empty.hint')} />
 	{/if}
 </div>
+
+{#snippet filterRows()}
+	<div class={CHIP_ROW}>
+		<span class={CHIP_ROW_LABEL}>{t('home.filter.kind')}</span>
+		{@render chip(t('home.filter.kind.all'), { ...data.filter, kind: null }, data.filter.kind === null)}
+		{#each STREAM_KINDS as kind (kind)}
+			{@render chip(t(KIND_LABEL[kind]), { ...data.filter, kind }, data.filter.kind === kind)}
+		{/each}
+	</div>
+	{#if offersMemberChoice(data.members)}
+		<div class={CHIP_ROW}>
+			<span class={CHIP_ROW_LABEL}>{t('home.filter.member')}</span>
+			{@render chip(t('home.filter.member.all'), { ...data.filter, memberId: null }, data.filter.memberId === null)}
+			{#each data.members as member (member.id)}
+				{@render chip(
+					member.id === data.user.id ? t('home.you') : member.name,
+					{ ...data.filter, memberId: member.id },
+					data.filter.memberId === member.id
+				)}
+			{/each}
+		</div>
+	{/if}
+{/snippet}
 
 {#snippet chip(label: string, target: typeof data.filter, current: boolean)}
 	<a href={streamFilterHref(target)} class={CHIP} aria-current={current ? 'true' : undefined}>{label}</a>

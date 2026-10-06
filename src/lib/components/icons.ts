@@ -23,6 +23,7 @@ import {
 	House,
 	Image,
 	KeyRound,
+	ListFilter,
 	Lock,
 	LogOut,
 	Maximize,
@@ -38,6 +39,7 @@ import {
 	Shrink,
 	SquarePen,
 	Star,
+	UserPlus,
 	Users,
 	UserRound,
 	UserRoundPen,
@@ -78,6 +80,10 @@ export const ICONS = {
 	signOut: LogOut,
 	// Actions
 	add: Plus,
+	// A person added to the household — the top bar's quiet *Add person* (docs/05 §5.4).
+	addPerson: UserPlus,
+	// The phone's Filter pill on Home (docs/05 §5.5).
+	filter: ListFilter,
 	write: SquarePen,
 	// Change a name where it is read, e.g. a circle's role heading (docs/02 §2.4.2).
 	rename: Pencil,

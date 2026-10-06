@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UX review, batch 1: A1 · B1 · B2 · C2 · C4 · C5 · C10 (interactive mockup)</title>
+<style>
+  /* Catppuccin tokens as src/app.css maps them: flavour → surfaces → semantic (Latte / Mocha). */
+  :root, :root[data-theme='latte'] {
+    --bg:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff; --card-hover:#f7f8fb;
+    --border:#ccd0da; --border-subtle:#e7e9f0;
+    --fg:#4c4f69; --fg-muted:#5c5f77; --fg-subtle:#6c6f85;
+    --primary:#853ae8; --primary-fg:#ffffff; --link:#2761d9;
+    --a-pink:#ea76cb; --a-teal:#179299; --a-peach:#fe640b; --a-blue:#1e66f5; --a-green:#40a02b; --a-sapphire:#209fb5;
+    --avatar-fg:#ffffff; --success:#40a02b;
+    --shadow-card:0 1px 2px rgba(76,79,105,.07), 0 2px 8px rgba(76,79,105,.06);
+    --shadow-pop:0 8px 28px rgba(76,79,105,.18);
+    --ann:#d20f39; --ann-fg:#ffffff; --page:#eff1f5;
+  }
+  :root[data-theme='mocha'] {
+    --bg:#181825; --bg-sunken:#11111b; --card:#232334; --card-hover:#2a2a3d;
+    --border:#313244; --border-subtle:#292939;
+    --fg:#cdd6f4; --fg-muted:#bac2de; --fg-subtle:#a6adc8;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --a-pink:#f5c2e7; --a-teal:#94e2d5; --a-peach:#fab387; --a-blue:#89b4fa; --a-green:#a6e3a1; --a-sapphire:#74c7ec;
+    --avatar-fg:#1e1e2e; --success:#a6e3a1;
+    --shadow-card:0 1px 2px rgba(0,0,0,.3); --shadow-pop:0 10px 30px rgba(0,0,0,.5);
+    --ann:#f38ba8; --ann-fg:#1e1e2e; --page:#1e1e2e;
+  }
+  :root { --primary-soft:color-mix(in srgb, var(--primary) 14%, transparent);
+    --sans:'Instrument Sans Variable','Instrument Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --serif:'Newsreader Variable','Newsreader',Georgia,'Times New Roman',serif; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--fg); font-family:var(--sans); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button { font:inherit; color:inherit; }
+  a { color:inherit; text-decoration:none; }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:8px; }
+  svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+
+  /* ── The document around the phone ─────────────────────────── */
+  .wrap { max-width:980px; margin:0 auto; padding:32px 20px 80px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); }
+  h1 { font-size:26px; font-weight:650; margin:4px 0 6px; letter-spacing:-.01em; }
+  .lede { color:var(--fg-muted); margin:0 0 18px; max-width:68ch; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; margin-bottom:22px; }
+  .seg { display:flex; gap:3px; background:var(--bg-sunken); border-radius:999px; padding:3px; }
+  .seg button { border:0; background:transparent; padding:6px 14px; border-radius:999px; font-size:13px; color:var(--fg-muted); cursor:pointer; white-space:nowrap; }
+  .seg button[aria-pressed='true'] { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .seg-label { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-subtle); margin-right:-8px; }
+  .stage { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+  .legend { flex:1; min-width:260px; max-width:420px; }
+  .legend h2 { font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); margin:0 0 10px; }
+  .legend ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
+  .legend li { display:flex; gap:10px; font-size:14px; color:var(--fg-muted); align-items:baseline; }
+  .legend li b { color:var(--fg); font-weight:600; }
+  .legend .ann { position:static; flex:none; display:inline-flex; }
+  .legend p { font-size:13px; color:var(--fg-subtle); margin:16px 0 0; }
+
+  /* ── The phone: Pixel 9 Pro, 412 × 915 CSS px ──────────────── */
+  .device { padding:10px; background:#0b0b12; border-radius:46px; box-shadow:0 20px 60px rgba(0,0,0,.25); flex:none; }
+  .screen { width:412px; height:915px; max-width:calc(100vw - 60px); border-radius:36px; overflow:hidden; position:relative; background:var(--bg); display:flex; flex-direction:column; }
+  .status { height:30px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:6px 26px 0; font-size:13px; font-weight:600; color:var(--fg); }
+  .status .cam { width:12px; height:12px; border-radius:50%; background:#0b0b12; }
+  .topbar { display:flex; align-items:center; gap:12px; padding:10px 16px; flex:none; }
+  .logo { display:flex; align-items:center; gap:6px; font-weight:700; font-size:17px; color:var(--fg); flex:none; }
+  .logo .mark { width:24px; height:24px; border-radius:7px; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; }
+  .logo .mark svg { width:14px; height:14px; fill:currentColor; stroke:none; }
+  .crumbs { display:flex; flex-wrap:wrap; align-items:center; gap:2px 6px; font-size:14px; min-width:0; }
+  .crumbs a { color:var(--fg-muted); } .crumbs .sep { color:var(--fg-subtle); opacity:.6; } .crumbs .here { font-weight:600; color:var(--fg); }
+  .backlink { display:inline-flex; align-items:center; gap:2px; font-size:14px; font-weight:500; color:var(--fg-muted); }
+  .tb-right { margin-left:auto; display:flex; align-items:center; gap:8px; flex:none; }
+  .ib { width:38px; height:38px; display:grid; place-items:center; border-radius:8px; border:0; background:transparent; color:var(--fg-muted); cursor:pointer; position:relative; }
+  .ib.card { background:var(--card); box-shadow:var(--shadow-card); color:var(--fg-subtle); }
+  .ib.fill { background:var(--primary); color:var(--primary-fg); }
+  .ib.ghost { border:1px solid var(--border); color:var(--fg-muted); }
+  .scroll { flex:1; overflow-y:auto; padding:6px 16px 96px; scrollbar-width:none; }
+  .scroll::-webkit-scrollbar { display:none; }
+  .tabbar { position:absolute; inset:auto 0 0 0; display:flex; border-top:1px solid var(--border-subtle); background:var(--card); padding-bottom:14px; z-index:5; }
+  .tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 0 4px; font-size:11px; font-weight:500; color:var(--fg-subtle); position:relative; }
+  .tab.on { color:var(--fg); font-weight:600; }
+  .tab.on::before { content:''; position:absolute; top:0; width:28px; height:3px; border-radius:0 0 3px 3px; background:var(--primary); }
+  .tab .fab { margin-top:-18px; width:46px; height:46px; border-radius:50%; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; box-shadow:var(--shadow-pop); }
+
+  /* Shared app pieces */
+  .avatar { border-radius:50%; display:grid; place-items:center; color:var(--avatar-fg); font-weight:600; flex:none; }
+  .label { font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); display:flex; align-items:center; gap:8px; }
+  .field { display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--fg-subtle); font-size:15px; margin:4px 0 20px; position:relative; }
+  .rail { display:flex; flex-direction:column; gap:12px; margin-bottom:18px; }
+  .rail-row { display:flex; gap:10px; align-items:flex-start; font-size:13px; color:var(--fg-muted); line-height:1.35; }
+  .rail-row b { color:var(--fg); } .rail-row small { display:block; font-size:12px; color:var(--fg-subtle); } .rail-row small a { color:var(--link); }
+  .chips { display:flex; flex-direction:column; gap:6px; margin-bottom:6px; }
+  .chip-row { display:flex; flex-wrap:wrap; align-items:center; gap:4px; }
+  .chip-row .lbl { font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-muted); margin-right:4px; }
+  .chip-row > [data-chips] { display:contents; }
+  .chip { border:0; background:transparent; border-radius:999px; padding:4px 12px; font-size:14px; font-weight:500; color:var(--fg-muted); cursor:pointer; }
+  .chip[aria-current='true'] { background:var(--primary-soft); color:var(--fg); font-weight:600; }
+  .filterbar { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+  .pill { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--card); border-radius:999px; padding:6px 12px; font-size:14px; font-weight:500; color:var(--fg-muted); cursor:pointer; position:relative; }
+  .pill svg.i { width:15px; height:15px; }
+  .pill.on { background:var(--primary-soft); border-color:color-mix(in srgb, var(--primary) 45%, transparent); color:var(--fg); font-weight:600; }
+  .pill .count { min-width:18px; height:18px; border-radius:999px; background:var(--primary); color:var(--primary-fg); font-size:11px; font-weight:700; display:grid; place-items:center; padding:0 5px; }
+  .filter-sum { font-size:13px; color:var(--fg-subtle); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .day { display:flex; align-items:center; gap:12px; padding:16px 0 6px; font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); }
+  .day::after { content:''; height:1px; flex:1; background:var(--border); }
+  .item { display:grid; grid-template-columns:32px 1fr; gap:12px; padding:10px; border-radius:14px; }
+  .item .head { display:flex; flex-wrap:wrap; align-items:baseline; gap:0 6px; font-size:13px; color:var(--fg-muted); }
+  .item .head b, .item .head a { color:var(--fg); } .item .head b { font-weight:600; } .item .head a { font-weight:500; }
+  .item .ago { margin-left:auto; font-size:12px; color:var(--fg-subtle); }
+  .item .body { margin-top:4px; font-family:var(--serif); font-size:16px; line-height:1.5; color:var(--fg); }
+  .item .plain { margin-top:2px; font-size:14px; color:var(--fg-muted); }
+  .badge-new { border-radius:4px; background:color-mix(in srgb, var(--success) 18%, transparent); padding:0 6px; font-size:10px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--fg); }
+  .nomatch { padding:24px 0; text-align:center; color:var(--fg-muted); font-size:14px; }
+
+  /* Bottom sheet (B1 after) */
+  .scrim { position:absolute; inset:0; background:color-mix(in srgb, var(--bg-sunken) 70%, transparent); backdrop-filter:blur(3px); z-index:10; }
+  .sheet { position:absolute; inset:auto 0 0 0; background:var(--bg); border-radius:20px 20px 0 0; box-shadow:var(--shadow-pop); padding:10px 16px 30px; z-index:11; animation:up .24s cubic-bezier(.2,.8,.2,1); }
+  @keyframes up { from { transform:translateY(40%); opacity:0; } }
+  @media (prefers-reduced-motion: reduce) { .sheet { animation:none; } }
+  .grab { width:40px; height:4px; border-radius:999px; background:var(--border); margin:0 auto 12px; }
+  .sheet h3 { font-size:16px; font-weight:600; margin:0 0 12px; }
+  .sheet .group { margin-bottom:14px; } .sheet .group .lbl { display:block; margin-bottom:6px; }
+  .sheet .foot { display:flex; justify-content:space-between; align-items:center; margin-top:6px; }
+  .btn { border:0; border-radius:8px; padding:8px 14px; font-size:14px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); }
+  .btn.outline { border:1px solid var(--border); background:var(--card); color:var(--fg); }
+  .btn.ghost { background:transparent; color:var(--fg-muted); }
+  .btn.sm { padding:5px 10px; font-size:13px; } .btn svg.i { width:15px; height:15px; }
+  .linkish { border:0; background:none; color:var(--link); font-size:14px; cursor:pointer; padding:0; }
+
+  /* Person page */
+  .idcard { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); padding:16px; display:grid; grid-template-columns:88px minmax(0,1fr); gap:16px; align-items:center; }
+  .portrait { width:88px; height:88px; border-radius:18px; font-size:30px; }
+  .pname { font-size:22px; font-weight:650; line-height:1.2; color:var(--fg); }
+  .desc { font-size:14px; color:var(--fg-muted); margin-top:2px; position:relative; }
+  .desc.truncate { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .desc.clamp { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .actions { grid-column:1 / -1; display:flex; gap:8px; }
+  .actions .btn.primary { flex:1; justify-content:center; padding:10px; }
+  .facts { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; margin:0; position:relative; }
+  .facts dt { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--fg-subtle); } .facts dt svg.i { width:12px; height:12px; }
+  .facts dd { margin:0; font-size:14px; color:var(--fg); } .facts .full { grid-column:1 / -1; }
+  .circle-chip { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:999px; padding:1px 10px; font-size:14px; }
+  .circle-chip i { width:8px; height:8px; border-radius:50%; background:var(--a-green); }
+  .quiet-add { grid-column:1 / -1; font-size:13px; color:var(--fg-subtle); }
+  .jump { display:flex; gap:16px; font-size:13px; color:var(--fg-muted); padding:14px 4px 10px; overflow-x:auto; white-space:nowrap; }
+  .card { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); padding:14px 16px; margin-bottom:12px; position:relative; }
+  .card-h { display:flex; align-items:center; gap:8px; }
+  .card-h h4 { margin:0; font-size:16px; font-weight:600; } .card-h .n { font-size:13px; color:var(--fg-subtle); } .card-h .btn { margin-left:auto; }
+  .card p { margin:8px 0 0; font-size:14px; color:var(--fg-muted); }
+  .dashed { border:1.5px dashed var(--border); border-radius:12px; padding:18px 14px; text-align:center; margin-top:10px; font-size:14px; color:var(--fg-muted); }
+  .dashed strong { display:block; color:var(--fg); font-weight:600; }
+  .rowline { display:flex; align-items:center; gap:10px; background:var(--card); border-radius:12px; box-shadow:var(--shadow-card); padding:8px 8px 8px 14px; margin-bottom:12px; position:relative; }
+  .rowline b { font-size:15px; font-weight:600; } .rowline .s { font-size:13px; color:var(--fg-subtle); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rel { display:flex; align-items:center; gap:10px; margin-top:10px; font-size:14px; } .rel small { color:var(--fg-subtle); font-size:13px; }
+
+  /* Before / After switching, and the annotation badges (After only). */
+  [data-mode='before'] .after-only, [data-mode='after'] .before-only { display:none !important; }
+  [data-screen='home'] .on-person, [data-screen='person'] .on-home { display:none !important; }
+  .ann { position:absolute; top:-8px; right:-8px; z-index:4; display:none; align-items:center; justify-content:center; height:18px; padding:0 6px; border-radius:999px; background:var(--ann); color:var(--ann-fg); font-size:10.5px; font-weight:700; letter-spacing:.02em; box-shadow:0 0 0 2px var(--bg); pointer-events:none; }
+  [data-mode='after'] .screen .ann { display:inline-flex; }
+  .rel-anchor { position:relative; }
+</style>
+</head>
+<body>
+<!-- Simple line icons, drawn once and reused (the app's own come from Icon.svelte). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></symbol>
+  <symbol id="i-circles" viewBox="0 0 24 24"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></symbol>
+  <symbol id="i-graph" viewBox="0 0 24 24"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.3 7 16.6 7M6.3 8.2l4.4 7.6M17.7 9.2l-4.4 6.6"/></symbol>
+  <symbol id="i-write" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+  <symbol id="i-add-person" viewBox="0 0 24 24"><circle cx="10" cy="8" r="4"/><path d="M3 20a7 7 0 0 1 14 0M19 8v6M16 11h6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+  <symbol id="i-journal" viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/></symbol>
+  <symbol id="i-cake" viewBox="0 0 24 24"><path d="M4 21v-8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8M3 21h18M4 15c2 1.5 3.5 1.5 5.3 0s3.5-1.5 5.3 0 3.5 1.5 5.4 0M12 11V7M12 4.5v.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2.5 2.8 6.2 6.7.7-5 4.5 1.4 6.6L12 17.1l-5.9 3.4 1.4-6.6-5-4.5 6.7-.7z"/></symbol>
+</svg>
+
+<div class="wrap">
+  <div class="kicker">UX review 2026-10 · batch 1 · clickable</div>
+  <h1>Quieter Home, lighter person page</h1>
+  <p class="lede">Seven proposals from <code>docs/concepts/ux-review-2026-10.md</code>, on a Pixel 9 Pro (412 × 915). Flip <b>Before / After</b> to compare; in After the red badges mark what changed. On Home, try the <b>Filter</b> pill. Nothing is saved.</p>
+
+  <div class="controls">
+    <span class="seg-label">Screen</span>
+    <div class="seg" data-ctl="screen"><button data-v="home">Home</button><button data-v="person">Person page</button></div>
+    <span class="seg-label">Version</span>
+    <div class="seg" data-ctl="mode"><button data-v="before">Before</button><button data-v="after">After</button></div>
+    <span class="seg-label">Theme</span>
+    <div class="seg" data-ctl="theme"><button data-v="latte">Latte</button><button data-v="mocha">Mocha</button></div>
+    <span class="seg-label on-person-ctl">Person</span>
+    <div class="seg on-person-ctl" data-ctl="who"><button data-v="kurt">Kurt Lehmann</button><button data-v="sandra">Sandra Brunner-Keller</button></div>
+  </div>
+
+  <div class="stage" id="stage" data-mode="before" data-screen="home">
+    <div class="device"><div class="screen" id="screen">
+      <div class="status"><span>9:41</span><span class="cam"></span><span>5G ▮</span></div>
+
+      <!-- ── Top bar ── -->
+      <header class="topbar">
+        <a class="logo"><span class="mark"><svg><use href="#i-star"/></svg></span>Stella</a>
+        <nav class="crumbs on-home"><span class="here">Home</span></nav>
+        <nav class="crumbs on-person before-only"><a>Home</a><span class="sep">/</span><a>People</a><span class="sep">/</span><span class="here" data-bind="name"></span></nav>
+        <a class="backlink on-person after-only rel-anchor"><svg class="i" style="width:16px;height:16px"><use href="#i-back"/></svg>People<span class="ann" style="right:-26px">C10</span></a>
+        <div class="tb-right">
+          <!-- B2: on Home the field below is the search; every other page keeps the icon. -->
+          <button class="ib card before-only" aria-label="Search"><svg class="i"><use href="#i-search"/></svg></button>
+          <button class="ib card after-only on-person" aria-label="Search"><svg class="i"><use href="#i-search"/></svg></button>
+          <button class="ib fill before-only" aria-label="Add person"><svg class="i"><use href="#i-plus"/></svg></button>
+          <button class="ib ghost after-only" aria-label="Add person"><svg class="i"><use href="#i-add-person"/></svg><span class="ann">A1</span></button>
+          <button class="ib" aria-label="Settings"><svg class="i"><use href="#i-settings"/></svg></button>
+        </div>
+      </header>
+
+      <div class="scroll" id="scroll">
+        <!-- ══ Screen 1: Home ══ -->
+        <section class="on-home">
+          <div class="field"><svg class="i"><use href="#i-search"/></svg>Find a person…<span class="ann after-only">B2</span></div>
+
+          <div class="label" style="margin-bottom:10px"><svg class="i" style="width:13px;height:13px"><use href="#i-calendar"/></svg>Coming up</div>
+          <div class="rail">
+            <div class="rail-row"><span class="avatar" style="width:28px;height:28px;font-size:11px;background:var(--a-pink)">MP</span><div><b>Mia Pollari</b> turns 8<small>In 3 days · <a>Write a moment</a></small></div></div>
+            <div class="rail-row"><span class="avatar" style="width:28px;height:28px;font-size:11px;background:var(--a-peach)">RP</span><div><b>Rosa Pollari</b> turns 84<small>Sunday, 18 October · <a>Write a moment</a></small></div></div>
+          </div>
+
+          <nav class="chips before-only" aria-label="Filter the stream">
+            <div class="chip-row"><span class="lbl">What</span><span data-chips="kind" class="chip-row"></span></div>
+            <div class="chip-row"><span class="lbl">Who</span><span data-chips="by" class="chip-row"></span></div>
+          </nav>
+          <div class="filterbar after-only">
+            <button class="pill" id="pill" aria-haspopup="dialog"><svg class="i"><use href="#i-filter"/></svg>Filter<span class="count" id="pill-count" hidden></span><span class="ann">B1</span></button>
+            <span class="filter-sum" id="filter-sum"></span>
+          </div>
+
+          <ol style="list-style:none;margin:0;padding:0" id="stream">
+            <li class="day" data-day="today">Today</li>
+            <li class="item" data-kind="moment" data-by="julia"><span class="avatar" style="width:32px;height:32px;font-size:12px;background:var(--a-pink)">MP</span><div><div class="head"><b>Julia</b><span>wrote in <a>Mia Pollari</a>’s journal</span><span class="ago">2h ago</span></div><div class="body">Mia lost her first tooth at breakfast and insisted on keeping it in a matchbox under her pillow.</div></div></li>
+            <li class="item" data-kind="interaction" data-by="andy"><span class="avatar" style="width:32px;height:32px;font-size:12px;background:var(--a-peach)">RP</span><div><div class="head"><b>You</b><span>called <a>Rosa Pollari</a></span><span class="ago">5h ago</span></div><div class="plain">25 min · She is planning the birthday lunch for the 18th and wants the plum cake again.</div></div></li>
+            <li class="day" data-day="yesterday">Yesterday</li>
+            <li class="item" data-kind="person" data-by="julia"><span class="avatar" style="width:32px;height:32px;font-size:12px;background:var(--a-teal)">KL</span><div><div class="head"><b>Julia</b><span>added</span><a>Kurt Lehmann</a><span class="badge-new">New person</span></div><div class="plain">Neighbour from number 14</div></div></li>
+            <li class="item" data-kind="relationship" data-by="andy"><span class="avatar" style="width:32px;height:32px;font-size:12px;background:var(--a-teal)">KL</span><div><div class="head"><b>You</b><span>noted that</span><a>Kurt Lehmann</a><span>is married to</span><a>Erika Lehmann</a></div></div></li>
+            <li class="day" data-day="sat">Saturday, 3 October</li>
+            <li class="item" data-kind="moment" data-by="andy"><span class="avatar" style="width:32px;height:32px;font-size:12px;background:var(--a-blue)">TW</span><div><div class="head"><b>You</b><span>wrote in <a>Tom Weber</a>’s journal</span></div><div class="body">Long walk along the Aare. Tom is thinking about leaving the agency and starting something of his own in spring.</div></div></li>
+            <li class="item" data-kind="circlePhoto" data-by="julia"><span class="avatar" style="width:32px;height:32px;font-size:12px;background:var(--a-green)">CL</span><div><div class="head"><b>Julia</b><span>added a photo to</span><a>Chess club</a></div><div class="plain">Autumn tournament, all twelve of them.</div></div></li>
+          </ol>
+          <p class="nomatch" id="nomatch" hidden>Nothing in the stream matches this filter yet. <button class="linkish" data-clear>Show everything</button></p>
+        </section>
+
+        <!-- ══ Screen 2: Person page (sparse) ══ -->
+        <section class="on-person">
+          <div class="idcard">
+            <span class="avatar portrait" style="background:var(--a-teal)" data-bind="initials"></span>
+            <div style="min-width:0">
+              <div class="pname" data-bind="name"></div>
+              <div class="desc truncate before-only" data-bind="desc"></div>
+              <div class="rel-anchor after-only"><div class="desc clamp" data-bind="desc"></div><span class="ann" style="top:auto;bottom:-14px;right:-4px">C4</span></div>
+            </div>
+            <div class="actions"><a class="btn primary"><svg class="i"><use href="#i-journal"/></svg>Write in journal</a><button class="btn outline" aria-label="More"><svg class="i"><use href="#i-more"/></svg></button></div>
+            <dl class="facts">
+              <div><dt><svg class="i"><use href="#i-cake"/></svg>Birthday</dt><dd data-bind="bday"></dd></div>
+              <div class="before-only"><dt><svg class="i"><use href="#i-clock"/></svg>Last contact</dt><dd style="color:var(--fg-subtle)">No contact logged yet</dd></div>
+              <div class="full"><dt><svg class="i"><use href="#i-circles"/></svg>Circles</dt><dd style="margin-top:4px"><span class="circle-chip"><i></i><span data-bind="circle"></span></span></dd></div>
+              <span class="ann after-only" style="top:-6px;right:0">C5</span>
+            </dl>
+            <div class="quiet-add">+ Add phone, email, tags …</div>
+          </div>
+
+          <nav class="jump"><a>People</a><a>Photos</a><a>Activity</a><a>Notes</a><a class="before-only">Mentioned in</a></nav>
+
+          <div class="card"><div class="card-h"><h4>People</h4><span class="n">1</span><button class="btn ghost sm"><svg class="i"><use href="#i-plus"/></svg>Link</button></div>
+            <div class="rel"><span class="avatar" style="width:32px;height:32px;font-size:12px;background:var(--a-sapphire)" data-bind="relinitials"></span><div><b style="font-weight:600" data-bind="relname"></b> <small data-bind="relword"></small></div></div></div>
+
+          <!-- Before: four full cards that each say "nothing" -->
+          <div class="before-only">
+            <div class="card"><div class="card-h"><h4>Photos</h4><span class="n">0</span><button class="btn outline sm"><svg class="i"><use href="#i-plus"/></svg>Add photos</button></div><p>No photos of <span data-bind="first"></span> yet. Add one, and it can become their picture.</p></div>
+            <div class="card"><div class="card-h"><h4>Activity</h4><button class="btn outline sm"><svg class="i"><use href="#i-plus"/></svg>Log contact</button></div>
+              <div class="dashed"><strong>Nothing written down yet.</strong>Log a call or a visit, or write what happened — it all lands here.</div></div>
+            <div class="card"><div class="card-h"><h4>Notes</h4><span class="n">0</span><button class="btn outline sm"><svg class="i"><use href="#i-plus"/></svg>Add note</button></div><p>Nothing noted about <span data-bind="first"></span> yet. Keep what you would hate to forget here — gift ideas, allergies, the dog’s name.</p></div>
+            <div class="card"><div class="card-h"><h4>Mentioned in</h4><span class="n">0</span></div><p>Nobody has mentioned <span data-bind="first"></span> anywhere else yet.</p></div>
+          </div>
+
+          <!-- After: compact one-liners, Activity keeps one sentence, Mentioned in is gone -->
+          <div class="after-only">
+            <div class="rowline"><b>Photos</b><span class="s">No photos yet.</span><button class="btn ghost sm"><svg class="i"><use href="#i-plus"/></svg>Add photos</button><span class="ann">C2</span></div>
+            <div class="card"><div class="card-h"><h4>Activity</h4><button class="btn outline sm"><svg class="i"><use href="#i-plus"/></svg>Log contact</button></div>
+              <div class="dashed">Nothing written down yet — calls, visits and moments land here.</div><span class="ann">C2</span></div>
+            <div class="rowline"><b>Notes</b><span class="s">Nothing noted yet.</span><button class="btn ghost sm"><svg class="i"><use href="#i-plus"/></svg>Add note</button><span class="ann">C2</span></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- The tab bar: the pencil is the one filled primary on the screen. -->
+      <nav class="tabbar">
+        <a class="tab" data-tab="home"><svg class="i"><use href="#i-home"/></svg>Home</a>
+        <a class="tab" data-tab="person"><svg class="i"><use href="#i-people"/></svg>People</a>
+        <a class="tab" aria-label="Write a moment"><span class="fab"><svg class="i" style="width:21px;height:21px"><use href="#i-write"/></svg></span></a>
+        <a class="tab"><svg class="i"><use href="#i-circles"/></svg>Circles</a>
+        <a class="tab"><svg class="i"><use href="#i-graph"/></svg>Graph</a>
+      </nav>
+
+      <!-- B1: the filter sheet -->
+      <div class="scrim" id="scrim" hidden></div>
+      <div class="sheet" id="sheet" role="dialog" aria-label="Filter the stream" hidden>
+        <div class="grab"></div>
+        <h3>Filter the stream</h3>
+        <div class="group"><div class="chip-row" style="margin-bottom:6px"><span class="lbl">What</span></div><div class="chip-row" data-chips="kind"></div></div>
+        <div class="group"><div class="chip-row" style="margin-bottom:6px"><span class="lbl">Who</span></div><div class="chip-row" data-chips="by"></div></div>
+        <div class="foot"><button class="linkish" data-clear>Show everything</button><button class="btn outline" id="done">Done</button></div>
+      </div>
+    </div></div>
+
+    <aside class="legend">
+      <h2>What changes</h2>
+      <ul>
+        <li><span class="ann">A1</span><span><b>Add person goes quiet.</b> An outlined icon button; the filled primary is left to the page’s own action (the pencil on Home, Write in journal on a person).</span></li>
+        <li class="on-home"><span class="ann">B1</span><span><b>One Filter pill.</b> Four lines of chips become a pill with the active count; What and Who open in a sheet.</span></li>
+        <li class="on-home"><span class="ann">B2</span><span><b>One search door on Home.</b> The field is the search; the top-bar icon stays on every other page.</span></li>
+        <li class="on-person"><span class="ann">C10</span><span><b>Back link, not a breadcrumb.</b> “‹ People” never wraps; the name is the card’s headline anyway.</span></li>
+        <li class="on-person"><span class="ann">C4</span><span><b>The description wraps to two lines</b> instead of being cut off with an ellipsis.</span></li>
+        <li class="on-person"><span class="ann">C5</span><span><b>No “Last contact” until there is one.</b> The facts hold only what the record has.</span></li>
+        <li class="on-person"><span class="ann">C2</span><span><b>Empty cards shrink.</b> Photos and Notes become one line each, Activity keeps one sentence, Mentioned in is not shown at zero.</span></li>
+      </ul>
+      <p class="on-home">The chips stay links (<code>?kind=</code>, <code>?by=</code>), so the URL contract and the no-JS path are unchanged; from <code>md</code> the rows stay as they are.</p>
+      <p class="on-person">Switch to <b>Sandra Brunner-Keller</b> to see the breadcrumb wrap in Before. The jump bar keeps Photos and Notes: that is where their add buttons are.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+const KINDS = [['all','Everything'],['moment','Moments'],['interaction','Calls & visits'],['relationship','Relationships'],['person','New people'],['circlePhoto','Circle photos'],['notice','Notices']];
+const WHO = [['all','Everyone'],['andy','Andy'],['julia','Julia']];
+const PEOPLE = {
+  kurt: { name:'Kurt Lehmann', first:'Kurt', initials:'KL', bday:'12 March 1958 · 68', circle:'Neighbours', relname:'Erika Lehmann', relinitials:'EL', relword:'Wife',
+    desc:'Neighbour from number 14, retired railway engineer, plays chess with Andy at the club on Thursdays' },
+  sandra: { name:'Sandra Brunner-Keller', first:'Sandra', initials:'SB', bday:'2 June 1984 · 42', circle:'Family', relname:'Lukas Keller', relinitials:'LK', relword:'Husband',
+    desc:'Julia’s cousin from Thun, physiotherapist and Mia’s godmother, always brings the plum cake' },
+};
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+const state = { screen:'home', mode:'before', theme: dark ? 'mocha' : 'latte', who:'kurt', kind:'all', by:'all', sheet:false };
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+function renderChips() {
+  for (const host of $$('[data-chips]')) {
+    const group = host.dataset.chips, list = group === 'kind' ? KINDS : WHO;
+    host.innerHTML = list.map(([v, l]) => `<button class="chip" data-group="${group}" data-v="${v}" aria-current="${state[group] === v}">${l}</button>`).join('');
+  }
+}
+
+function applyFilter() {
+  let shown = 0;
+  for (const li of $$('#stream .item')) {
+    const ok = (state.kind === 'all' || li.dataset.kind === state.kind) && (state.by === 'all' || li.dataset.by === state.by);
+    li.hidden = !ok; if (ok) shown++;
+  }
+  // A day heading shows only while one of its items does.
+  for (const day of $$('#stream .day')) {
+    let n = day.nextElementSibling, any = false;
+    while (n && !n.classList.contains('day')) { if (!n.hidden) any = true; n = n.nextElementSibling; }
+    day.hidden = !any;
+  }
+  $('#nomatch').hidden = shown > 0;
+  // The pill: count of narrowed groups, highlighted whenever the stream is narrowed.
+  const count = (state.kind !== 'all') + (state.by !== 'all');
+  $('#pill').classList.toggle('on', count > 0);
+  $('#pill-count').hidden = count === 0; $('#pill-count').textContent = count;
+  const label = (list, v) => list.find(([k]) => k === v)[1];
+  $('#filter-sum').textContent = [state.kind !== 'all' && label(KINDS, state.kind), state.by !== 'all' && label(WHO, state.by)].filter(Boolean).join(' · ');
+}
+
+function apply() {
+  document.documentElement.dataset.theme = state.theme;
+  const stage = $('#stage'); stage.dataset.mode = state.mode; stage.dataset.screen = state.screen;
+  for (const seg of $$('[data-ctl]')) for (const b of $$('button', seg)) b.setAttribute('aria-pressed', b.dataset.v === state[seg.dataset.ctl]);
+  for (const el of $$('.on-person-ctl')) el.style.display = state.screen === 'person' ? '' : 'none';
+  for (const t of $$('[data-tab]')) t.classList.toggle('on', t.dataset.tab === state.screen);
+  const p = PEOPLE[state.who];
+  for (const el of $$('[data-bind]')) el.textContent = p[el.dataset.bind];
+  const open = state.sheet && state.mode === 'after' && state.screen === 'home';
+  $('#sheet').hidden = $('#scrim').hidden = !open;
+  renderChips(); applyFilter();
+}
+
+document.addEventListener('click', (e) => {
+  const ctl = e.target.closest('[data-ctl] button');
+  if (ctl) { state[ctl.closest('[data-ctl]').dataset.ctl] = ctl.dataset.v; state.sheet = false; $('#scroll').scrollTop = 0; return apply(); }
+  const chip = e.target.closest('.chip');
+  if (chip) { state[chip.dataset.group] = chip.dataset.v; return apply(); }
+  if (e.target.closest('[data-clear]')) { state.kind = state.by = 'all'; return apply(); }
+  if (e.target.closest('#pill')) { state.sheet = true; return apply(); }
+  if (e.target.closest('#done') || e.target.closest('#scrim')) { state.sheet = false; return apply(); }
+  const tab = e.target.closest('[data-tab]');
+  if (tab) { state.screen = tab.dataset.tab; $('#scroll').scrollTop = 0; return apply(); }
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && state.sheet) { state.sheet = false; apply(); } });
+apply();
+</script>
+</body>
+</html>

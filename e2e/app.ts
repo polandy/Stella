@@ -29,9 +29,15 @@ export async function signIn(page: Page): Promise<void> {
 	await appReady(page);
 }
 
-/** Waits until the app shell is interactive, so a JavaScript-only control will answer. */
+/**
+ * Waits until the app shell is interactive, so a JavaScript-only control will answer. The top
+ * bar's search button is enabled once the shell has mounted; on a phone's Home it is hidden
+ * (the page's own field is the search there), so it is read whether shown or not.
+ */
 export async function appReady(page: Page): Promise<void> {
-	await expect(page.getByRole('button', { name: 'Search' })).toBeEnabled();
+	await expect(
+		page.getByTestId('top-bar').getByRole('button', { name: 'Search', includeHidden: true })
+	).toBeEnabled();
 }
 
 /**
