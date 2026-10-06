@@ -2,11 +2,11 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, signIn } from './app';
 
 /*
- * The one expand/collapse motion (docs/05 §5.11): a row unfolding and folding in place, turned
+ * The one expand/collapse motion (docs/05 §5.11): a row folding and unfolding in place, turned
  * round mid-way, the People card's list growing and shrinking, and a line gliding into its
  * editor and back. Written after the owner tried it in the running app (docs/08 §8.4.1).
  *
- * Read-only against the demo household: Markus Brunner's page, whose rows are only unfolded and
+ * Read-only against the demo household: Markus Brunner's page, whose rows are only folded and
  * whose name editor is only opened and escaped from (identity-card.spec.ts and
  * people-card.spec.ts read him the same way).
  *
@@ -30,8 +30,8 @@ test.beforeEach(async ({ page }) => {
 
 /** The elements the record follows, by a name the cases read it under. */
 const WATCHED = {
-	// The Dates row on the identity card starts folded; this is the body it unfolds.
-	dates: '[data-identity-row="dates"] > section[data-row] > div:not([data-row-actions])',
+	// The Contact row on the identity card starts unfolded; this is the body it folds away.
+	contact: '[data-identity-row="contact"] > section[data-row] > div:not([data-row-actions])',
 	// The People card's rows, which glide between their folded and unfolded heights.
 	people: '[data-testid="people-rows"]',
 	// The name line and its editor: a Swap box, and the two panes crossing over in it.
@@ -107,68 +107,70 @@ async function boxOf(locator: Locator) {
 }
 
 const identityCard = (page: Page) => page.getByTestId('identity-card');
-const datesRow = (page: Page) => page.locator('[data-identity-row="dates"] > section[data-row]');
-const datesToggle = (page: Page) => datesRow(page).getByRole('button', { name: /^Dates/ });
-const datesBody = (page: Page) => page.locator(WATCHED.dates);
+const contactRow = (page: Page) =>
+	page.locator('[data-identity-row="contact"] > section[data-row]');
+const contactToggle = (page: Page) => contactRow(page).getByRole('button', { name: /^Contact/ });
+const contactBody = (page: Page) => page.locator(WATCHED.contact);
 
 const peopleCard = (page: Page) => page.locator('#section-relationships');
 const peopleRows = (page: Page) => page.getByTestId('people-rows');
 const showMore = (page: Page) => peopleCard(page).getByRole('button', { name: /^Show \d+ more$/ });
 const showFewer = (page: Page) => peopleCard(page).getByRole('button', { name: 'Show fewer' });
 
-test('a row unfolds and folds in place, and the card above it holds still', async ({ page }) => {
-	await expect(datesToggle(page)).toHaveAttribute('aria-expanded', 'false');
+test('a row folds and unfolds in place, and the card above it holds still', async ({ page }) => {
+	await expect(contactToggle(page)).toHaveAttribute('aria-expanded', 'true');
+	await expect(contactBody(page)).toBeVisible();
 	const cardBefore = await boxOf(identityCard(page));
-	const lineBefore = await boxOf(datesToggle(page));
-	const rowBefore = await boxOf(datesRow(page));
+	const lineBefore = await boxOf(contactToggle(page));
+	const rowBefore = await boxOf(contactRow(page));
 	await recordMotion(page);
 
-	await datesToggle(page).click();
-
-	// Landed: the reveal has ended, and what it brought is there and answers.
-	await expect.poll(() => stepsOf(page, 'dates')).toEqual(['introend']);
-	await expect(datesToggle(page)).toHaveAttribute('aria-expanded', 'true');
-	await expect(datesBody(page)).toBeVisible();
-	await expect(datesBody(page)).not.toHaveAttribute('inert');
-	// Only what is below the row moved: the card's top and the line pressed stayed put.
-	expect((await boxOf(identityCard(page))).y).toBeCloseTo(cardBefore.y, 0);
-	expect((await boxOf(datesToggle(page))).y).toBeCloseTo(lineBefore.y, 0);
-	expect((await boxOf(datesRow(page))).height).toBeGreaterThan(rowBefore.height);
-
-	await datesToggle(page).click();
+	await contactToggle(page).click();
 
 	// Gone: inert from its first frame, removed once the reveal has run back.
-	await expect.poll(() => stepsOf(page, 'dates')).toEqual(['introend', 'inert', 'outroend']);
-	await expect(datesBody(page)).toHaveCount(0);
-	await expect(datesToggle(page)).toHaveAttribute('aria-expanded', 'false');
+	await expect.poll(() => stepsOf(page, 'contact')).toEqual(['inert', 'outroend']);
+	await expect(contactBody(page)).toHaveCount(0);
+	await expect(contactToggle(page)).toHaveAttribute('aria-expanded', 'false');
+	// Only what is below the row moved: the card's top and the line pressed stayed put.
+	expect((await boxOf(identityCard(page))).y).toBeCloseTo(cardBefore.y, 0);
+	expect((await boxOf(contactToggle(page))).y).toBeCloseTo(lineBefore.y, 0);
+	expect((await boxOf(contactRow(page))).height).toBeLessThan(rowBefore.height);
+
+	await contactToggle(page).click();
+
+	// Landed: the reveal has ended, and what it brought back is there and answers.
+	await expect.poll(() => stepsOf(page, 'contact')).toEqual(['inert', 'outroend', 'introend']);
+	await expect(contactToggle(page)).toHaveAttribute('aria-expanded', 'true');
+	await expect(contactBody(page)).toBeVisible();
+	await expect(contactBody(page)).not.toHaveAttribute('inert');
 	const cardAfter = await boxOf(identityCard(page));
 	expect(cardAfter.y).toBeCloseTo(cardBefore.y, 0);
 	expect(cardAfter.height).toBeCloseTo(cardBefore.height, 0);
-	expect((await boxOf(datesRow(page))).height).toBeCloseTo(rowBefore.height, 0);
+	expect((await boxOf(contactRow(page))).height).toBeCloseTo(rowBefore.height, 0);
 });
 
-test('pressed again mid-way, a row turns round and lands folded, where it started', async ({
+test('pressed again mid-way, a row turns round and lands unfolded, where it started', async ({
 	page
 }) => {
-	await expect(datesToggle(page)).toHaveAttribute('aria-expanded', 'false');
+	await expect(contactToggle(page)).toHaveAttribute('aria-expanded', 'true');
+	await expect(contactBody(page)).toBeVisible();
 	const cardBefore = await boxOf(identityCard(page));
-	const rowBefore = await boxOf(datesRow(page));
+	const rowBefore = await boxOf(contactRow(page));
 	await recordMotion(page);
 
-	await datesToggle(page).click();
-	// The body is on the page from the reveal's first frame; the second press follows at once.
-	await expect(datesBody(page)).toHaveCount(1);
-	await datesToggle(page).click();
+	await contactToggle(page).click();
+	// The body turns inert on the fold's first frame; the second press follows at once.
+	await expect.poll(() => stepsOf(page, 'contact')).toContain('inert');
+	await contactToggle(page).click();
 
-	// However far it had got, it ends folded: the reveal ran back and the body is gone. Whether
-	// it had landed before the second press is the runner's timing, so only the end is read.
-	await expect
-		.poll(async () => (await stepsOf(page, 'dates')).slice(-2))
-		.toEqual(['inert', 'outroend']);
-	await expect(datesBody(page)).toHaveCount(0);
-	await expect(datesToggle(page)).toHaveAttribute('aria-expanded', 'false');
+	// However far it had got, it ends unfolded: the reveal ran forward again and the body
+	// answers. Whether the fold had finished first is the runner's timing, so only the end is read.
+	await expect.poll(async () => (await stepsOf(page, 'contact')).slice(-1)).toEqual(['introend']);
+	await expect(contactBody(page)).toHaveCount(1);
+	await expect(contactBody(page)).not.toHaveAttribute('inert');
+	await expect(contactToggle(page)).toHaveAttribute('aria-expanded', 'true');
 	// No jump on landing: the row and the card are exactly as they were before the first press.
-	const rowAfter = await boxOf(datesRow(page));
+	const rowAfter = await boxOf(contactRow(page));
 	expect(rowAfter.y).toBeCloseTo(rowBefore.y, 0);
 	expect(rowAfter.height).toBeCloseTo(rowBefore.height, 0);
 	const cardAfter = await boxOf(identityCard(page));

@@ -133,16 +133,16 @@ family knowing, the rest of the household sees *"… removed …"* in the stream
 **Adding someone** takes a name and nothing else. Everything beyond that — gender,
 description, phone, email, address, birthday — is optional and can be filled in whenever.
 
-**Gender** is a row on the card at the top of their page: tap it, then *Female*, *Male* or
-*Diverse*, and it is saved. While nothing is on record it waits, with the other empty rows,
-behind **Add phone, email, tags …**. Tapping the chosen one again takes it off the record. It decides
-how Stella names relatives — *Aunt* or *Uncle* with female or male, *Aunt or uncle* otherwise.
+**Gender** is set with the name: tap the name (the pencil beside it), pick *Female*, *Male*,
+*Diverse* or *Not on record* below the name fields, and **Save**. It decides how Stella names
+relatives — *Aunt* or *Uncle* with female or male, *Aunt or uncle* otherwise.
 
-**Job** is a row beside it (also behind *Add phone, email, tags …* while empty): tap it to
-fill in a job title and a company or organisation, both optional and free text — *Teacher* at
-*Primarschule Muri*, or just *retired*. Enter saves, Esc cancels, and emptying a field takes it
-off the record. It then shows among the facts at the top as *Teacher at Primarschule Muri*;
-tap it to change it right there. It also shows on its own line under the person in the People list, the
+**Job** is one of the facts at the top of their page, *Teacher at Primarschule Muri*: tap it
+to change the job title and the company or organisation right there, both optional and free
+text — *Teacher* at *Primarschule Muri*, or just *retired*. Enter saves, Esc cancels, and
+emptying a field takes it off the record. With no job on record yet, the card's quiet button
+names it (*Add … job …*); press it and an empty *Job · + Add* box appears where the fact will
+stand. It also shows on its own line under the person in the People list, the
 search, ⌘K and wherever you pick someone — which helps tell two Annas apart. Searching for
 *teacher* or *Roche* finds them too; when only the job matched, a small *Job* tag says why.
 
@@ -187,13 +187,19 @@ adding, you land straight in their relationship editor with that relative alread
 so "Quill is the child of Sandra" is one more click.
 
 **A person's page** reads top to bottom. First comes **who they are**: their picture (tap it
-to change it), name and description, and a few facts — birthday and age, where they live, their
-job, when you were last in touch, the circles they are in. Under the facts are the details the
-record holds — phone and email, tags, dates, gender, how you met — each a row you can open and
-add to; the empty ones wait behind one quiet **Add phone, email, tags …** button rather than
-standing there as empty fields. The card has one button, **Write a moment**, and a **⋯**
-beside it for the rarer things: logging a contact, *This is me*, *How are we connected?*,
-archiving, merging and deleting.
+to change it), name and description, and a few facts — birthday and age, every other date
+(*Hochzeitstag · 13 June 2009 · 17 years*), where they live, their job, when you were last in
+touch (once there has been a contact), the circles they are in. **Tap a fact to change it,
+right where it is**: any date opens all their dates — remove one, or *Add a date*, then
+*Done*; the address opens its label and text to *Save*, *Remove address* or *Add another
+address*; the **+** after the circles lists their circles to change a role or *Leave*, and
+joins another. Under the facts are only the things that have no fact — phone and email, tags,
+how you met — each a row you can open and add to. Whatever the record does not hold yet waits
+behind one quiet button that says what it is, such as **Add address, phone, email …**; press
+it and the missing facts appear as dashed boxes (*Address · + Add*) and the empty rows below,
+ready to fill. The card has one button, **Write a moment**, and a **⋯** beside it for the
+rarer things: logging a contact, *This is me*, *How are we connected?*, archiving, merging and
+deleting.
 
 Then **People** — everyone they are tied to, each as a face, a name and what they are to this
 person (*Wife*, *Son*, *Colleague*), grouped into family, friends, work and the rest. A long
@@ -362,8 +368,9 @@ stays with whoever wrote it.
 **Birthdays come from the person's profile.** Put a birth date on someone and Stella works
 out the birthday itself — there is nothing else to set up, and the two can never drift apart.
 
-Anything a birth date cannot express goes in the **Dates** section of their page: a wedding
-anniversary, the day you met, the day the class trip leaves. Each one can repeat every year
+Anything a birth date cannot express goes among their **dates**: tap the birthday — or any
+date — at the top of their page and choose *Add a date*: a wedding anniversary, the day you met,
+the day the class trip leaves. Each one then stands at the top as a fact of its own. Each one can repeat every year
 or happen once, and each one has a switch for whether it should show up on Home. If the year
 is unknown, just leave the year box empty and Stella keeps the day without inventing a year.
 

@@ -11,6 +11,7 @@ export const common: CommonMessages = {
 	'common.edit': 'Bearbeiten',
 	'common.add': 'Hinzufügen',
 	'common.close': 'Schließen',
+	'common.done': 'Fertig',
 	'common.back': 'Zurück',
 	'common.open': 'Öffnen',
 	'common.search': 'Suchen',

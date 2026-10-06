@@ -119,6 +119,7 @@ export const errors: ErrorsMessages = {
 	'errors.note.empty': 'Bitte schreibe etwas, bevor du speicherst.',
 	'errors.note.couldNotSave': 'Die Notiz konnte nicht gespeichert werden.',
 	'errors.field.needKindAndValue': 'Bitte wähle eine Art und gib einen Wert ein.',
+	'errors.field.needValue': 'Schreib etwas hinein, oder entferne die Angabe.',
 	'errors.field.couldNotAdd': 'Die Angabe konnte nicht hinzugefügt werden.',
 	'errors.date.needKindAndDay': 'Bitte wähle eine Art und einen Tag.',
 	'errors.interaction.needKindAndDay': 'Bitte wähle, was passiert ist und an welchem Tag.',

@@ -132,6 +132,23 @@ export async function profileRow(page: Page, title: string): Promise<Locator> {
 }
 
 /**
+ * Opens the editor of one of the identity card's facts — the dates, the address or the circles
+ * — where it is read (docs/05 §5.5). A fact the record does not hold yet waits behind the
+ * card's quiet button as a slot, which is pressed when it is not there yet.
+ */
+export async function factEditor(
+	page: Page,
+	fact: 'dates' | 'address' | 'circles'
+): Promise<Locator> {
+	const opener = page.getByTestId('identity-facts').locator(`[data-edit="${fact}"]`).first();
+	await identityRow(page, opener);
+	await opener.click();
+	const editor = page.locator(`[data-fact-editor="${fact}"]`);
+	await expect(editor).toBeVisible();
+	return editor;
+}
+
+/**
  * Picks an entry of the ⋯ menu on the person page's identity card (docs/05 §5.5) — where
  * logging a touchpoint and the record-keeping actions live. Archiving, merging and deleting
  * open a confirm step on the card; the caller presses its button.

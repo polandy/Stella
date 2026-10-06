@@ -16,7 +16,10 @@
 	import { INPUT } from './inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
-	// The profile's ways to reach someone (docs/02 §2.2): a row of the person page's profile card.
+	/*
+	 * The profile's ways to reach someone (docs/02 §2.2): a row of the identity card. Addresses
+	 * are not among them — the card states where someone lives as a fact, edited there.
+	 */
 	let { data, form }: { data: PersonPageData; form: PersonForm } = $props();
 
 	const i18n = useI18n();
@@ -35,7 +38,13 @@
 	const removals = useRemovals();
 	const shown = <T extends { id: string }>(kind: RemovalKind, rows: T[]) =>
 		rows.filter((row) => !removals.isPending(removalKey(kind, row.id)));
-	const visibleFields = $derived(shown('field', data.fields));
+	const visibleFields = $derived(
+		shown(
+			'field',
+			data.fields.filter((field) => field.kind !== 'address')
+		)
+	);
+	const kinds = $derived(data.fieldKinds.filter((kind) => kind !== 'address'));
 
 	// Saving through `enhance` keeps the page — and with it any open undo window — alive, so
 	// each section closes itself here instead of on the reload a redirect used to cause.
@@ -55,7 +64,9 @@
 	const keptFields = $derived(
 		outbox.mine.filter(
 			(item): item is KeptOf<'field.add'> =>
-				isKept(item, 'field.add') && item.command.payload.contactId === c.id
+				isKept(item, 'field.add') &&
+				item.command.payload.contactId === c.id &&
+				item.command.payload.kind !== 'address'
 		)
 	);
 	const fieldForm = $derived(
@@ -140,7 +151,7 @@
 			class="flex flex-wrap items-end gap-2"
 		>
 			<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
-				{#each data.fieldKinds as kind (kind)}
+				{#each kinds as kind (kind)}
 					<option value={kind}>{kindLabel('fieldKind', kind)}</option>
 				{/each}
 			</select>

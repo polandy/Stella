@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, openPerson, pickPerson, profileRow, signIn } from './app';
+import { addPerson, factEditor, openPerson, pickPerson, profileRow, signIn } from './app';
 
 /*
  * What a person's page and *Add person* keep while Stella is out of reach (docs/02 §2.18).
@@ -105,12 +105,15 @@ test('keeps a tag and a circle offline as dashed chips and sends them when back 
 	await tags.getByRole('button', { name: 'Add', exact: true }).last().click();
 	await expect(tags.locator('li[data-outbox-state]')).toContainText('offline-choir');
 
-	const circles = await profileRow(page, 'Circles');
-	await circles.getByRole('button', { name: 'Join' }).click();
+	const circles = await factEditor(page, 'circles');
 	await circles.getByPlaceholder('Join or create a circle…').fill('Offline Walkers');
 	await circles.getByPlaceholder('role (optional)').fill('lead');
-	await circles.getByRole('button', { name: 'Add', exact: true }).last().click();
-	await expect(circles.locator('li[data-outbox-state]')).toContainText('Offline Walkers · lead');
+	await circles.getByRole('button', { name: 'Join', exact: true }).click();
+	// Kept, it stands among the circles' chips — dashed, until it is sent.
+	const circleChips = page.getByTestId('identity-facts').locator('[data-fact="circles"]');
+	await expect(circleChips.locator('li[data-outbox-state]')).toContainText(
+		'Offline Walkers · lead'
+	);
 
 	const sent = nextSending(page);
 	await context.setOffline(false);
@@ -120,9 +123,9 @@ test('keeps a tag and a circle offline as dashed chips and sends them when back 
 	const stored = (row: string, text: string) =>
 		page.locator(`section[data-row="${row}"] li:not([data-outbox-state])`, { hasText: text });
 	await expect(stored('Tags', 'offline-choir')).toBeVisible();
-	// Circles on record are stated among the identity card's facts, so their row starts folded.
-	await profileRow(page, 'Circles');
-	await expect(stored('Circles', 'Offline Walkers')).toBeVisible();
+	await expect(
+		circleChips.locator('li:not([data-outbox-state])', { hasText: 'Offline Walkers' })
+	).toBeVisible();
 	await expect(page.locator('li[data-outbox-state]')).toHaveCount(0);
 });
 

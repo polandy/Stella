@@ -45,6 +45,12 @@ export interface ContactFieldRepository {
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ContactField[]>;
 	/** Remove a field, scoped to its contact (the caller ensures the contact is visible). */
 	remove(contactId: string, fieldId: string): Promise<void>;
+	/** Rewrite a field's label and value, scoped to its contact (the caller checked it is visible). */
+	update(
+		contactId: string,
+		fieldId: string,
+		change: { label: string | null; value: string; updatedAt: number }
+	): Promise<void>;
 }
 
 export interface ContactFieldDeps {
@@ -94,6 +100,25 @@ export async function addContactField(
 		updatedAt: now
 	});
 	return id;
+}
+
+/**
+ * Rewrite a field where it is read — the identity card's address (docs/02 §2.2). The kind
+ * stays: a phone does not become an address by being edited. An empty value is refused, since
+ * taking a field off is removing it, which has its own undo. The caller must have verified the
+ * contact is visible.
+ */
+export async function editContactField(
+	deps: Pick<ContactFieldDeps, 'fields' | 'clock'>,
+	input: { contactId: string; fieldId: string; label: string | null; value: string }
+): Promise<void> {
+	const value = input.value.trim();
+	if (value.length === 0) throw new Error('A contact field needs a value.');
+	await deps.fields.update(input.contactId, input.fieldId, {
+		label: orNull(input.label),
+		value,
+		updatedAt: deps.clock.now()
+	});
 }
 
 /** List the fields of a contact the viewer may see. */

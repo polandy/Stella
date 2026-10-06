@@ -3,11 +3,18 @@ import { parseCommand } from '$lib/server/commands/parse';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
+import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
-import { removeMember } from '$lib/server/domain/circles/circles';
+import { removeMember, setMembersRole } from '$lib/server/domain/circles/circles';
 import { getCircleDeps, getCommandDeps, getContactDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
+
+/** One membership's role from the circles editor; blank takes the role away. */
+const RoleSchema = v.object({
+	circleId: v.pipe(v.string(), v.minLength(1)),
+	role: v.pipe(v.string(), v.trim())
+});
 
 /** The profile card's circles (docs/02 §2.7). */
 export const circleActions = {
@@ -44,6 +51,29 @@ export const circleActions = {
 			});
 		}
 
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/* Their role in one circle, changed where their circles are read (docs/02 §2.2). */
+	setCircleRole: async ({ request, params, locals }) => {
+		if (!locals.user) throw redirect(302, '/login');
+		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+
+		const form = await request.formData();
+		const parsed = v.safeParse(RoleSchema, {
+			circleId: form.get('circleId'),
+			role: form.get('role') ?? ''
+		});
+		if (!parsed.success) return fail(400, {});
+
+		// Only a member the viewer can see in that circle is re-roled; anyone else is left out.
+		await setMembersRole(
+			getCircleDeps(),
+			viewer,
+			parsed.output.circleId,
+			[params.id],
+			parsed.output.role
+		);
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 

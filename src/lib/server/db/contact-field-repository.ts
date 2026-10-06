@@ -47,6 +47,13 @@ export function createDrizzleContactFieldRepository(
 			db.delete(contactField)
 				.where(and(eq(contactField.id, fieldId), eq(contactField.contactId, contactId)))
 				.run();
+		},
+
+		async update(contactId, fieldId, change) {
+			db.update(contactField)
+				.set(change)
+				.where(and(eq(contactField.id, fieldId), eq(contactField.contactId, contactId)))
+				.run();
 		}
 	};
 }

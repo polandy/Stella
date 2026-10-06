@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, fillDate, profileRow, signIn } from './app';
+import { addPerson, factEditor, fillDate, profileRow, signIn } from './app';
 
 /*
  * The additions a person's page and their journal keep while Stella is out of reach, and what
@@ -61,8 +61,8 @@ test('keeps a contact detail and a date offline as dashed chips, and sends them 
 		'Phone · +41 79 555 01 23'
 	);
 
-	const dates = await profileRow(page, 'Dates');
-	await dates.getByRole('button', { name: 'Add' }).click();
+	// Nothing on record yet, so the dates' editor opens on its form.
+	const dates = await factEditor(page, 'dates');
 	await dates.getByLabel('Kind').selectOption({ label: 'Anniversary' });
 	await fillDate(dates, 'Day', '2011-06-18');
 	await dates.getByRole('button', { name: 'Add', exact: true }).last().click();
@@ -83,7 +83,7 @@ test('keeps a contact detail and a date offline as dashed chips, and sends them 
 	await expect(outbox).toHaveCount(0);
 	await page.goto(personPage);
 	await expect((await profileRow(page, 'Contact')).getByText('+41 79 555 01 23')).toBeVisible();
-	await expect((await profileRow(page, 'Dates')).getByText('Anniversary')).toBeVisible();
+	await expect(page.getByTestId('identity-facts')).toContainText('Anniversary');
 	await expect(page.locator('li[data-outbox-state]')).toHaveCount(0);
 });
 
@@ -150,8 +150,7 @@ test('shows why Stella refused a date, keeps what was typed, and saves it once n
 }) => {
 	await addPerson(page, 'Datina', 'Vogelsang');
 
-	const dates = await profileRow(page, 'Dates');
-	await dates.getByRole('button', { name: 'Add' }).click();
+	const dates = await factEditor(page, 'dates');
 	await dates.getByLabel('Kind').selectOption({ label: 'Custom' });
 	await fillDate(dates, 'Day', '2019-09-07');
 	await dates.getByRole('button', { name: 'Add', exact: true }).last().click();

@@ -1,9 +1,10 @@
-import { expect, test } from '@playwright/test';
-import { appReady, identityRow, openPerson, signIn } from './app';
+import { expect, test, type Locator, type Page } from '@playwright/test';
+import { appReady, openPerson, signIn } from './app';
+import { AUTH_STATE_PATH } from './auth-state';
 import { LINK, seedHousehold } from './seed';
 
 /*
- * A person's gender, set from the identity card and while adding them (docs/02 §2.2). Written
+ * A person's gender, set in the editor behind their name and while adding them (docs/02 §2.2). Written
  * after the owner tried it in the running app (docs/08 §8.4.1).
  *
  * The profile case brings its own family, which no other spec names: Olga is the sister of
@@ -21,7 +22,21 @@ test.beforeEach(async ({ page, javaScriptEnabled }) => {
 	if (javaScriptEnabled) await signIn(page);
 });
 
-test('sets a gender with one tap, names relatives by it, and takes it back with another', async ({
+/** Opens the editor behind the name, where the gender is set (docs/02 §2.2). */
+async function openNameEditor(page: Page): Promise<Locator> {
+	await page.getByTitle('Edit name').click();
+	const editor = page.getByTestId('name-editor');
+	await expect(editor.getByRole('group', { name: 'Gender' })).toBeVisible();
+	return editor;
+}
+
+/** Picks a gender in the open name editor; the radio itself is drawn as its label's chip. */
+async function pickGender(editor: Locator, gender: string): Promise<void> {
+	await editor.getByRole('group', { name: 'Gender' }).getByText(gender, { exact: true }).click();
+	await expect(editor.getByRole('radio', { name: gender, exact: true })).toBeChecked();
+}
+
+test('sets a gender in the name editor, names relatives by it, and takes it back', async ({
 	page
 }) => {
 	await seedHousehold(
@@ -39,19 +54,19 @@ test('sets a gender with one tap, names relatives by it, and takes it back with 
 	await expect(page.getByTestId('derived-kin')).toContainText('Aunt or uncle');
 
 	await openPerson(page, new RegExp(AUNT));
-	// Nothing on record, so the row waits behind the identity card's quiet button.
-	const row = await identityRow(page, page.locator('[data-row="gender"]'));
-	await expect(row).toContainText('Not on record');
+	let editor = await openNameEditor(page);
+	await expect(editor.getByRole('radio', { name: 'Not on record', exact: true })).toBeChecked();
 
-	await row.getByRole('button', { name: /^Gender/ }).click();
-	await row.getByRole('button', { name: 'Female', exact: true }).click();
+	await pickGender(editor, 'Female');
+	await editor.getByRole('button', { name: 'Save', exact: true }).click();
 	await expect(page.getByTestId('toast-notice')).toContainText('Saved');
-	await expect(row).toContainText('Female');
-	await expect(row.getByRole('button', { name: 'Male', exact: true })).toHaveCount(0);
+	await expect(editor).toHaveCount(0);
 
 	// Kept, and it is the relative's wording that changed.
 	await page.reload();
-	await expect(row).toContainText('Female');
+	editor = await openNameEditor(page);
+	await expect(editor.getByRole('radio', { name: 'Female', exact: true })).toBeChecked();
+	await page.keyboard.press('Escape');
 	await openPerson(page, new RegExp(CHILD));
 	const derived = page.getByTestId('derived-kin');
 	await expect(derived).toContainText(AUNT);
@@ -60,47 +75,46 @@ test('sets a gender with one tap, names relatives by it, and takes it back with 
 
 	// Diverse keeps the wording neutral, like nothing on record.
 	await openPerson(page, new RegExp(AUNT));
-	await row.getByRole('button', { name: /^Gender/ }).click();
-	await row.getByRole('button', { name: 'Diverse', exact: true }).click();
-	await expect(row).toContainText('Diverse');
+	editor = await openNameEditor(page);
+	await pickGender(editor, 'Diverse');
+	await editor.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(editor).toHaveCount(0);
 	await openPerson(page, new RegExp(CHILD));
 	await expect(page.getByTestId('derived-kin')).toContainText('Aunt or uncle');
 
-	// A tap on the chosen chip takes the gender off the record.
+	// *Not on record* takes the gender off the record.
 	await openPerson(page, new RegExp(AUNT));
-	await row.getByRole('button', { name: /^Gender/ }).click();
-	await expect(row.getByRole('button', { name: 'Diverse', exact: true })).toHaveAttribute(
-		'aria-pressed',
-		'true'
-	);
-	await row.getByRole('button', { name: 'Diverse', exact: true }).click();
-	await expect(row).toContainText('Not on record');
+	editor = await openNameEditor(page);
+	await expect(editor.getByRole('radio', { name: 'Diverse', exact: true })).toBeChecked();
+	await pickGender(editor, 'Not on record');
+	await editor.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(editor).toHaveCount(0);
+	editor = await openNameEditor(page);
+	await expect(editor.getByRole('radio', { name: 'Not on record', exact: true })).toBeChecked();
 });
 
-test('Escape closes the chips without changing anything', async ({ page }) => {
+test('Escape closes the name editor without changing the gender', async ({ page }) => {
 	// A person of its own: the seed adds each name once, and the case above owns the family.
 	await seedHousehold(page, [LONER]);
 	await openPerson(page, new RegExp(LONER));
-	const row = await identityRow(page, page.locator('[data-row="gender"]'));
-	const before = await row.innerText();
+	let editor = await openNameEditor(page);
 
-	await row.getByRole('button', { name: /^Gender/ }).click();
-	await expect(row.getByRole('button', { name: 'Female', exact: true })).toBeVisible();
+	await pickGender(editor, 'Female');
 	await page.keyboard.press('Escape');
+	await expect(editor).toHaveCount(0);
 
-	await expect(row.getByRole('button', { name: /^Gender/ })).toBeVisible();
-	await expect(row.getByRole('button', { name: 'Female', exact: true })).toHaveCount(0);
-	expect(await row.innerText()).toBe(before);
+	editor = await openNameEditor(page);
+	await expect(editor.getByRole('radio', { name: 'Not on record', exact: true })).toBeChecked();
 });
 
 /*
  * The form's own action, which is what saves a person when the page runs without JavaScript;
- * with it, the chips above go through the command outbox instead.
+ * with it, the form goes through the command outbox instead.
  */
 test.describe('without JavaScript', () => {
 	test.use({ javaScriptEnabled: false });
 
-	test('keeps the gender chosen while adding someone', async ({ page }) => {
+	test('keeps the gender chosen while adding someone', async ({ page, browser }) => {
 		await page.goto('/contacts/new');
 		await page.getByLabel('First name').fill('Leonie');
 		await page.getByLabel('Last name').fill('Zumstein');
@@ -109,7 +123,17 @@ test.describe('without JavaScript', () => {
 		await page.getByRole('button', { name: 'Add person' }).click();
 
 		await expect(page.getByRole('heading', { name: 'Leonie Zumstein' })).toBeVisible();
-		await expect(page.locator('[data-row="gender"]')).toContainText('Diverse');
+		// Read where it is edited, the name editor — which needs JavaScript to open.
+		const reader = await browser.newContext({
+			storageState: AUTH_STATE_PATH,
+			javaScriptEnabled: true
+		});
+		const readerPage = await reader.newPage();
+		await readerPage.goto(page.url());
+		await appReady(readerPage);
+		const editor = await openNameEditor(readerPage);
+		await expect(editor.getByRole('radio', { name: 'Diverse', exact: true })).toBeChecked();
+		await reader.close();
 	});
 });
 
@@ -132,5 +156,7 @@ test('asks for a gender while adding someone, and lets a second tap take the cho
 	await page.getByRole('button', { name: 'Add person' }).click();
 
 	await expect(page.getByRole('heading', { name: 'Nora Zumstein' })).toBeVisible();
-	await expect(page.locator('[data-row="gender"]')).toContainText('Female');
+	await appReady(page);
+	const editor = await openNameEditor(page);
+	await expect(editor.getByRole('radio', { name: 'Female', exact: true })).toBeChecked();
 });
