@@ -58,7 +58,7 @@ function deps() {
 			async setGalleryPhotoPin() {}
 		},
 		media: {
-			async put(key: string, bytes: Uint8Array) {
+			async put(key: string, _bytes: Uint8Array) {
 				puts.push(key);
 				return `/media-dir/${key}`;
 			},

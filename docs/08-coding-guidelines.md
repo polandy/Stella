@@ -51,7 +51,17 @@ rule and pragmatism genuinely conflict, favor readability and testability.
     multi-tenancy) without paying for them now.
 17. **Consistency.** Follow existing patterns in the codebase over personal preference.
 18. **Automated formatting & linting.** Formatting is not a code-review topic; a tool
-    decides it. (Prettier/ESLint to be wired in M0.)
+    decides it. Prettier (`.prettierrc`: tabs, single quotes, width 100, with the Svelte and
+    Tailwind plugins — the latter orders classes) formats; ESLint (`eslint.config.js`:
+    `typescript-eslint`, `eslint-plugin-svelte`) lints. `bun run format` rewrites,
+    `bun run lint` checks both and runs in CI. The lint also guards the architecture with
+    `no-restricted-imports`: no `$app` / `$env` / `@sveltejs/kit` under
+    `src/lib/server/{domain,access}` or a folder CLAUDE.md calls *pure*, and no
+    `$lib/server/services` outside `src/routes/` and `src/hooks.server.ts` (§8.3). A file
+    that breaks a boundary today is listed, with the reason, in the config's exception
+    lists — shrink them, never grow them without a reason. Markdown is not formatted. The
+    one-time reformat is listed in `.git-blame-ignore-revs`
+    (`git config blame.ignoreRevsFile .git-blame-ignore-revs`).
 19. **Security by default.** Least privilege, validate all external input, no secrets in
     code or logs, central access-control (§3.7) as the only authorization path.
 
@@ -243,7 +253,7 @@ A change is done when:
 - The behavior was driven by tests and all tests pass (`bun test`).
 - No test in the change leans on a sleep, a fixed wait or the calendar, and each one
   has been seen red for the right reason (§8.4.2).
-- Types check (`bun run check`) and formatting/lint pass.
+- Types check (`bun run check`) and formatting/lint pass (`bun run lint`).
 - Public surface is minimal and documented where non-obvious.
 - Access control is enforced through the central layer for any new data access.
 - Accessibility basics hold for any UI (keyboard, contrast, labels).

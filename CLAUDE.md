@@ -37,6 +37,8 @@ bun run dev        # dev server (http://localhost:5173)
 bun run test       # unit tests (`bun test src` — bare `bun test` also sweeps up e2e/)
 bun run test:e2e   # Playwright e2e (builds, serves, runs in the pinned container)
 bun run check      # svelte-check + types
+bun run lint       # prettier --check + eslint (incl. import-boundary rules)
+bun run format     # prettier --write
 bun run build      # production build   |  bun run start  → bun ./build/index.js
 bun run db:generate | db:migrate | db:push | db:studio
 scripts/ci-failures.sh <PR>   # only the failures of a PR's latest CI run

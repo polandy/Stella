@@ -12,6 +12,8 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"lint": "prettier --check . && eslint .",
+		"format": "prettier --write .",
 		"test": "bun test src",
 		"test:watch": "bun test src --watch",
 		"test:e2e": "./e2e/run.sh",
@@ -22,6 +24,7 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"devDependencies": {
+		"@eslint/js": "10.0.1",
 		"@fontsource-variable/instrument-sans": "5.3.0",
 		"@fontsource-variable/newsreader": "5.3.0",
 		"@playwright/test": "1.62.1",
@@ -33,10 +36,18 @@
 		"@types/cytoscape": "3.31.0",
 		"@types/markdown-it": "14.1.2",
 		"drizzle-kit": "0.31.10",
+		"eslint": "10.12.0",
+		"eslint-config-prettier": "10.1.8",
+		"eslint-plugin-svelte": "3.23.0",
+		"globals": "17.13.0",
+		"prettier": "3.9.9",
+		"prettier-plugin-svelte": "4.1.1",
+		"prettier-plugin-tailwindcss": "0.8.1",
 		"svelte": "5.56.4",
 		"svelte-check": "4.7.2",
 		"tailwindcss": "4.3.2",
 		"typescript": "6.0.3",
+		"typescript-eslint": "8.71.1",
 		"vite": "8.1.4"
 	},
 	"dependencies": {

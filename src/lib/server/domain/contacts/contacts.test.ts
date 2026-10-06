@@ -13,7 +13,6 @@ import {
 	JobFieldTooLongError,
 	describeContact,
 	EmptyDescriptionError,
-	EmptyContactNameError,
 	NeedsSomethingToKnowThemByError,
 	restoreContact,
 	deleteContact,

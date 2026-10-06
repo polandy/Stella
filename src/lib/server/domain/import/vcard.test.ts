@@ -34,7 +34,7 @@ describe('readVCard', () => {
 	});
 
 	it('unescapes the text a card escaped, and keeps a real comma out of the split', () => {
-		const exp = readVCard(card('UID:u1', 'FN:Severin', 'NOTE:First line\\nSecond\\, with a comma\; and a semicolon'));
+		const exp = readVCard(card('UID:u1', 'FN:Severin', 'NOTE:First line\\nSecond\\, with a comma; and a semicolon'));
 
 		expect(exp.notes[0]?.body).toBe('First line\nSecond, with a comma; and a semicolon');
 	});

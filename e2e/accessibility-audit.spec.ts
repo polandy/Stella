@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { UNDO_WINDOW_MS } from '../src/lib/undo/pending-removals';
-import { addPerson, addTag, appReady, openPerson, profileRow, signIn } from './app';
+import { addPerson, addTag, appReady, profileRow, signIn } from './app';
 
 /*
  * The keyboard and screen-reader promises of the accessibility audit (docs/05 §5.9, docs/02

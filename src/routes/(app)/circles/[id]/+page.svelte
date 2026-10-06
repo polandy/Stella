@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import CirclePhotoLightbox from '$lib/components/circle/CirclePhotoLightbox.svelte';
 	import CirclePhotosSection from '$lib/components/circle/CirclePhotosSection.svelte';
@@ -14,7 +13,6 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
-	import RemoveButton from '$lib/components/RemoveButton.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { circleKindLabel } from '$lib/circles/labels';
 	import { roleKey } from '$lib/circles/role-key';

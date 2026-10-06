@@ -28,6 +28,7 @@ jobs:
         with:
           bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
+      - run: bun run lint
       - run: bun run check
       - run: bun run test
       # The dev server runs in a third runtime — Vite's module runner under Bun — that

@@ -5,7 +5,6 @@ import {
 	deleteInteraction,
 	InvalidInteractionError,
 	logInteraction,
-	type Interaction,
 	type InteractionAuthor,
 	type InteractionRepository,
 	type NewInteraction
