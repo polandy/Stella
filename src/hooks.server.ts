@@ -1,10 +1,16 @@
-import type { Handle, ServerInit } from '@sveltejs/kit';
-import { LOCALE_COOKIE, LOCALES } from '$lib/i18n/locales';
+import type { Handle, HandleServerError, ServerInit } from '@sveltejs/kit';
+import { DEFAULT_LOCALE, LOCALE_COOKIE, LOCALES } from '$lib/i18n/locales';
 import { resolveLocale } from '$lib/i18n/resolve';
 import { loadCatalog } from '$lib/i18n/translate';
 import { clearSessionCookie, SESSION_COOKIE, setLocaleCookie } from '$lib/server/auth/cookies';
 import { resolveRequestIdentity } from '$lib/server/auth/request-identity';
 import { etagOf, isUnchanged, wantsEtag } from '$lib/server/http/etag';
+import {
+	describeUnexpectedError,
+	isUnexpected,
+	requestIdFrom
+} from '$lib/server/http/unexpected-error';
+import { createTranslator } from '$lib/i18n/translate';
 import { getConfig } from '$lib/server/config';
 import { getAccounts, getApiTokenDeps, getSessionDeps } from '$lib/server/services';
 
@@ -30,6 +36,10 @@ export const init: ServerInit = async () => {
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
+	// First, so even a failure while finding out who is asking is logged under an id.
+	event.locals.requestId = requestIdFrom(event.request.headers.get('x-request-id'), () =>
+		crypto.randomUUID()
+	);
 	const identity = await resolveRequestIdentity(
 		{
 			apiTokens: getApiTokenDeps(),
@@ -68,7 +78,32 @@ export const handle: Handle = async ({ event, resolve }) => {
 	answer.headers.set('X-Content-Type-Options', 'nosniff');
 	answer.headers.set('X-Frame-Options', 'DENY');
 	answer.headers.set('Referrer-Policy', 'same-origin');
+	answer.headers.set('X-Request-Id', event.locals.requestId);
 	return answer;
+};
+
+/**
+ * Every error nobody planned for ends here: a bug, a constraint violation, a full disk — and a
+ * command that broke, named by its type (`CommandFailedError`). Refusals the member can act on
+ * never get this far; their edge answers them (docs/04 §4.4). It is logged once, under the
+ * request's id, and the member is told only that it was ours, with the id to quote.
+ */
+export const handleError: HandleServerError = ({ error, event, status, message }) => {
+	if (!isUnexpected(status)) return { message };
+	const requestId = event.locals.requestId ?? crypto.randomUUID();
+	console.error(
+		describeUnexpectedError({
+			requestId,
+			status,
+			method: event.request.method,
+			path: event.url.pathname,
+			error
+		}),
+		error
+	);
+	// The language may not be settled yet when the failure came early in `handle`.
+	const t = createTranslator(event.locals.locale ?? DEFAULT_LOCALE);
+	return { message: t('errors.unexpected', { requestId }), requestId };
 };
 
 /**

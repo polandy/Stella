@@ -19,8 +19,12 @@ const user = (role: AuthUser['role']): AuthUser => ({
 	selfContactId: null
 });
 
-/** The guard only reads `user`; the language rides along on every request's locals. */
-const locals = (user: AuthUser | null): App.Locals => ({ user, locale: DEFAULT_LOCALE });
+/** The guard only reads `user`; the language and id ride along on every request's locals. */
+const locals = (user: AuthUser | null): App.Locals => ({
+	user,
+	locale: DEFAULT_LOCALE,
+	requestId: 'r1'
+});
 
 function thrownBy(locals: App.Locals): unknown {
 	try {

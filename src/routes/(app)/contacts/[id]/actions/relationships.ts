@@ -81,11 +81,11 @@ export const relationshipActions = {
 			householdId: locals.user.householdId,
 			locale: locals.locale
 		};
-		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
-		if (outcome?.status !== 'applied') {
-			return fail(outcome?.status === 'refused' ? 409 : 400, {
+		const outcome = await dispatchCommand(getCommandDeps(), author, command);
+		if (outcome.status !== 'applied') {
+			return fail(outcome.status === 'refused' ? 409 : 400, {
 				error:
-					outcome?.status === 'refused'
+					outcome.status === 'refused'
 						? outcome.reason(translator(locals))
 						: say(locals, 'errors.relationship.couldNotAdd')
 			});
@@ -133,9 +133,9 @@ export const relationshipActions = {
 			householdId: locals.user.householdId,
 			locale: locals.locale
 		};
-		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
-		if (outcome?.status === 'applied') return { relationshipIds: outcome.result.relationshipIds };
-		if (outcome?.status !== 'refused') {
+		const outcome = await dispatchCommand(getCommandDeps(), author, command);
+		if (outcome.status === 'applied') return { relationshipIds: outcome.result.relationshipIds };
+		if (outcome.status !== 'refused') {
 			return fail(400, { error: say(locals, 'errors.relationship.couldNotAdd') });
 		}
 		const t = translator(locals);

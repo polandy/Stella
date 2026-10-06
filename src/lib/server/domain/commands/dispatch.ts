@@ -113,13 +113,35 @@ export type CommandOutcome<T extends CommandType = CommandType> =
 	| { status: 'busy' };
 
 /**
+ * A command that broke for a reason that is ours, not the member's: a bug, a constraint the
+ * handler did not foresee, a full disk. Only a `TranslatableError` is a refusal; anything else
+ * leaves the dispatcher as this, named by the command it broke, so the edge that logs it
+ * (`hooks.server.ts`'s `handleError`, the outbox's `answerFor`) can say what the member was
+ * doing. The original error is the `cause`.
+ */
+export class CommandFailedError extends Error {
+	readonly commandType: CommandType;
+	readonly commandId: string;
+
+	constructor(command: Pick<Command, 'id' | 'type'>, cause: unknown) {
+		super(`Command ${command.id} (${command.type}) failed`, { cause });
+		this.name = 'CommandFailedError';
+		this.commandType = command.type;
+		this.commandId = command.id;
+	}
+}
+
+/**
  * How long a claim may stay pending before it is presumed abandoned — its run stopped
  * between claiming and completing. Far longer than any handler takes; a run cut short is a
  * crash, not a slow request.
  */
 export const CLAIM_STALE_AFTER_MS = 60_000;
 
-/** Apply `command` for `actor`, once. */
+/**
+ * Apply `command` for `actor`, once. A refusal the member can act on is an answer, never a
+ * throw; anything else is thrown as a `CommandFailedError`, and a caller does not catch it.
+ */
 export async function dispatchCommand<C extends Command>(
 	deps: CommandDeps,
 	actor: CommandActor,
@@ -161,7 +183,7 @@ export async function dispatchCommand<C extends Command>(
 		await deps.receipts.release(command.id);
 		if (err instanceof TranslatableError)
 			return { status: 'refused', reason: err.phrase, error: err };
-		throw err;
+		throw new CommandFailedError(command, err);
 	}
 	await deps.receipts.complete(command.id, result, deps.clock.now());
 	return { status: 'applied', result, repeated: false };

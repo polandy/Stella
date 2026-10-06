@@ -75,9 +75,7 @@ export const photoActions = {
 			payload: { contactId: params.id, visibility },
 			issuedAt: systemClock.now()
 		});
-		const added = upload
-			? await dispatchCommand(getCommandDeps(), author, upload).catch(() => null)
-			: null;
+		const added = upload ? await dispatchCommand(getCommandDeps(), author, upload) : null;
 		if (!upload || added?.status !== 'applied') return refusal(added);
 		for (const [index, image] of images.entries()) {
 			const photo = parsePhotoCommand({
@@ -90,9 +88,7 @@ export const photoActions = {
 				height: Number(heights[index]),
 				issuedAt: systemClock.now()
 			});
-			const stored = photo
-				? await dispatchCommand(getCommandDeps(), author, photo).catch(() => null)
-				: null;
+			const stored = photo ? await dispatchCommand(getCommandDeps(), author, photo) : null;
 			if (stored?.status !== 'applied') return refusal(stored);
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
