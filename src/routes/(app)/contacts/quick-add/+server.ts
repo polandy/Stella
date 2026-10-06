@@ -28,10 +28,13 @@ const InlineCreateSchema = v.object({
 });
 
 export const POST: RequestHandler = async ({ request, locals }) => {
+	// Before anything the request sent is read, so an anonymous caller is redirected rather
+	// than answered with a 400 for a body it was never going to be allowed to post anyway.
+	const viewer = requireViewer(locals);
+
 	const parsed = v.safeParse(InlineCreateSchema, await request.json());
 	if (!parsed.success) throw error(400, say(locals, 'errors.form.checkAndRetry'));
 
-	const viewer = requireViewer(locals);
 	const creator = {
 		userId: viewer.id,
 		householdId: viewer.householdId,

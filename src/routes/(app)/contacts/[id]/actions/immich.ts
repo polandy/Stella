@@ -64,6 +64,10 @@ export const immichActions = {
 	 * use-case checks the token, the viewer and the link before anything is stored.
 	 */
 	useImmichPhoto: async ({ request, params, locals }) => {
+		// Before Immich configuration or the upload itself is read, so an anonymous caller is
+		// redirected rather than answered as if the route were simply unconfigured, and never
+		// has their upload decoded at all.
+		const viewer = requireViewer(locals);
 		const deps = getUseImmichPhotoDeps();
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 
@@ -80,7 +84,6 @@ export const immichActions = {
 			width: Number(form.get('width')),
 			height: Number(form.get('height'))
 		};
-		const viewer = requireViewer(locals);
 		try {
 			const kept = await useImmichPhoto(deps, viewer, { contactId: params.id, token, upload });
 			// Every refusal reads the same: what changed — an unlink, a private person, a day gone
