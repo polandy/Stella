@@ -216,6 +216,16 @@ Goal: sand the edges and add the nice-to-haves.
   state names the next step instead of only saying nothing is there.
 - ~~**Accessibility audit**~~ — shipped (§2.19): photo links are named, overlays are real
   dialogs, contrast in Latte is lifted, and the audit's remaining findings are closed.
+- **Who may remove what** — *concept pending.* A note can today be neither edited nor
+  deleted, not even by its author (§2.5); a wrong or outdated note stays forever. Its
+  **author or an admin** should be able to delete it. Other records follow a mixed rule
+  today — journal entries, photos and touchpoints only by their author (§2.20, §2.14, §2.6),
+  relationships by anyone who sees them — so the concept settles one rule across record
+  kinds: which ones it covers (notes first; touchpoints, photos, journal entries,
+  relationships, dates, circles?), whether an admin may remove another member's *shared*
+  record (never a private one, §2.10), whether removal is undoable and leaves an audit entry,
+  whether editing a note belongs in the same step, and how the author learns their record
+  was removed.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
 
