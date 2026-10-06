@@ -22,13 +22,13 @@ PR updates its own row.
 
 | Item | Status | Decision | PR |
 |---|---|---|---|
-| A1 one primary per screen | PR | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | PR #255 |
+| A1 one primary per screen | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | merged #255, e2e #257 |
 | A2 §5.5 split per screen | open | | |
 | A3 one vocabulary | decided | *moment* for the written thing (*Write a moment* everywhere), *Activity* for the per-person timeline; docs' *Story* → *Activity*; `/journal` stays the reading page | |
 | A4 uppercase label roles | open | | |
 | A5 Mocha accent tints | open | | |
-| B1 filter pill on a phone | PR | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | PR #255 |
-| B2 two search entries | PR | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | PR #255 |
+| B1 filter pill on a phone | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | merged #255, e2e #257 |
+| B2 two search entries | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | merged #255, e2e #257 |
 | B3 mentions twice | decided | drop the avatar row for moments (inline chips keep their links); keep it for interactions | |
 | B4 age vs. day heading | open | | |
 | B5 composer pills | open | | |

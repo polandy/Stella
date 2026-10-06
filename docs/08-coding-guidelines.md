@@ -170,6 +170,9 @@ guess. Each user-facing change follows:
 2. **Hand off for manual verification** — the change is exercised in the running app (rebuild
    the container / drive the flow) and the outcome reported.
 3. **On the user's OK, add the Playwright e2e** for that flow (`e2e/*.spec.ts`), then run it.
+   The e2e goes into the **feature's own PR**, and that PR is merged only once it is in and
+   green — the OK is not the go-ahead to merge, so the change and the spec that locks it in
+   land together.
 
 Don't write the e2e in step 1: an unverified e2e can encode a wrong expectation and pass, giving
 false confidence. Steps 1–2 are never skipped; step 3 waits for sign-off.
