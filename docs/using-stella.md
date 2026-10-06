@@ -105,9 +105,9 @@ the right of each row is when something was last written about that person.
 
 **Putting someone out of the way.** Not everyone in the list stays part of your life — the
 neighbour from two flats ago, the colleague from a job you left. On their page, the **⋯**
-button beside *Write in journal* has *Archive*; it says what that does and asks you to confirm.
+button beside *Write a moment* has *Archive*; it says what that does and asks you to confirm.
 Archiving takes them out of the directory, out of the search, and out of Home's
-reminders, so they stop coming up. Nothing is deleted: their page, their story and their
+reminders, so they stop coming up. Nothing is deleted: their page, their activity and their
 photos stay exactly as they were, anything you wrote that mentions them still says their
 name, and the family map still knows them — which matters,
 because Stella works out grandparents and cousins *through* people, and forgetting one would
@@ -119,8 +119,8 @@ M. turn out to be one man. Open the page of the one you want to keep, and in its
 *Merge someone into this person* asks a single question — who else is them. Everything of the
 other record comes across: their phone number, the notes, the photos, the birthday, who they
 are related to, the circles they were in. Where both records said something, the one you kept
-wins; where yours was blank, theirs fills it in. Two journal entries about the same day end up
-as one entry with both texts, so nothing anybody wrote is lost. Only an admin can do it, and
+wins; where yours was blank, theirs fills it in. Two moments about the same day end up
+as one moment with both texts, so nothing anybody wrote is lost. Only an admin can do it, and
 it cannot be undone.
 
 **Removing someone for good.** Archiving is almost always what you want. If a person really
@@ -191,7 +191,7 @@ to change it), name and description, and a few facts — birthday and age, where
 job, when you were last in touch, the circles they are in. Under the facts are the details the
 record holds — phone and email, tags, dates, gender, how you met — each a row you can open and
 add to; the empty ones wait behind one quiet **Add phone, email, tags …** button rather than
-standing there as empty fields. The card has one button, **Write in journal**, and a **⋯**
+standing there as empty fields. The card has one button, **Write a moment**, and a **⋯**
 beside it for the rarer things: logging a contact, *This is me*, *How are we connected?*,
 archiving, merging and deleting.
 
@@ -209,7 +209,7 @@ related**, with a dashed ring and quieter text. The card's header holds **Edit**
 *Confirm* on every worked-out relative, until you press *Done*; **+** adds a relationship; the
 **⋯** holds *How are we connected?*, *Check relationships* and *Open in the graph*.
 
-After People come **Photos**, the **Story** and the **Notes** side by side (one under the other
+After People come **Photos**, **Activity** and the **Notes** side by side (one under the other
 on a phone), and **Mentioned in** last. Nothing is behind a tab, so nothing has to be found
 before it can be read; each card says how many things are in it. Under the top card runs a
 **jump bar** — *People · Photos · Activity · Notes*, with their counts — which stays at the top
@@ -242,15 +242,15 @@ way you do on Home: Stella suggests who you mean, the name becomes a link to the
 searching for that name finds the note. A shared note only offers people the whole household
 can see. The same picker is now in the journal too.
 
-**The story** is everything that has happened with this person in one list: the journal
-entries someone wrote and the times someone was in touch, newest first, day by day. They used
-to be two separate lists and you had to merge them in your head. Older entries load when you
-ask for them with *Show earlier*.
+**Activity** is everything that has happened with this person in one list: the moments
+someone wrote and the times someone was in touch, newest first, day by day. They used
+to be two separate lists and you had to merge them in your head. Older activity loads when you
+ask for it with *Show earlier*.
 
-**The journal** is the writing half of that story, one entry per day. A moment written on Home
-lands here; *Write in journal* on the person's page opens the full journal, where an entry can carry
-photos. Writing on a day that already has your entry adds to it rather than replacing it; to
-change what is there, use *Edit* on the entry.
+**The journal** holds the moments behind Activity, one per day and person. A moment written on Home
+lands here; *Write a moment* on the person's page opens the full journal, where a moment can carry
+photos. Writing on a day that already has your moment adds to it rather than replacing it; to
+change what is there, use *Edit moment*.
 
 **Photos** is the fourth tab: everything you have collected of that person in a grid — their
 favourites first, then the rest newest first, each one dated. *Add photos* takes several at once — each is shrunk in your browser
@@ -350,7 +350,7 @@ photo — can be **Ignore**d for the whole household, with *Undo* for a few seco
 wait under **Ignored** at the end, with who ignored them and when, and **Propose again**.
 
 **Mentioned in** is the last card, and it is the only one that is not really theirs: it lists
-what *other* people's notes and journal entries say about them. Write "hiked with `@Sandra`"
+what *other* people's notes and moments say about them. Write "hiked with `@Sandra`"
 in Beat's journal and it appears on Sandra's page as *in Beat Steiner's journal*, with the day
 and the first line of what was written. Click it and you land on Beat's page, where the entry
 lives — that is where it is edited, so nothing here can be changed by accident. The number on
@@ -384,15 +384,15 @@ Two small mercies: people who have died are left out, and a 29 February annivers
 When you have called Oma, met a friend for lunch or posted a parcel, press **Log contact** in
 the header of their *Activity* card (it is also in the **⋯** menu at the top of the page). Pick what it was (met in person, call, video call, message, letter,
 gift, other), the day, and if you like a line about it. If other people were there, tick them
-too and the entry links to each of them. It lands on the story alongside the journal, marked
+too and the entry links to each of them. It lands in Activity alongside the moments, marked
 with its own colour.
 
 The most recent of these shows up under the person's name as **Last contact**, so the answer
 to "when did we last speak?" is right there without scrolling. Logged interactions also appear
 on Home, so the rest of the household sees that you were in touch. As everywhere in Stella,
 an interaction marked *private* stays yours alone, and only the person who logged one — or
-wrote it — can remove it from the story. Each item says who wrote it, so in a household of
-several people you can see at a glance that Nina logged the call and you wrote the entry.
+wrote it — can remove it from Activity. Each item says who wrote it, so in a household of
+several people you can see at a glance that Nina logged the call and you wrote the moment.
 Removing asks no "are you sure?": the item disappears
 and a small **Undo** appears at the bottom of the screen for a few seconds, in case it was
 the wrong one. While your pointer rests on it, or you have tabbed to it, the clock stops — it

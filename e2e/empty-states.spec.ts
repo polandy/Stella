@@ -169,12 +169,12 @@ test('a new person’s journal invites the first entry and opens the composer', 
 	await page.getByRole('link', { name: 'Write' }).first().click();
 	await appReady(page);
 
-	await expect(page.getByText('No journal entries yet.')).toBeVisible();
-	await expect(page.getByRole('textbox', { name: 'Entry' })).toHaveCount(0);
-	await page.getByRole('button', { name: 'Write the first entry' }).click();
-	await expect(page.getByRole('textbox', { name: 'Entry' })).toBeVisible();
+	await expect(page.getByText('No moments yet.')).toBeVisible();
+	await expect(page.getByRole('textbox', { name: 'Moment', exact: true })).toHaveCount(0);
+	await page.getByRole('button', { name: 'Write the first moment' }).click();
+	await expect(page.getByRole('textbox', { name: 'Moment', exact: true })).toBeVisible();
 	// The form is open above it, so the invitation stops offering a second way in.
-	await expect(page.getByRole('button', { name: 'Write the first entry' })).toHaveCount(0);
+	await expect(page.getByRole('button', { name: 'Write the first moment' })).toHaveCount(0);
 });
 
 test('the map centred on someone with no links invites the first relationship', async ({

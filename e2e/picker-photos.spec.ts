@@ -98,8 +98,10 @@ test('shows the photo in a journal’s @-list', async ({ page }) => {
 	await page.goto(`${new URL(page.url()).pathname}/journal`);
 	await appReady(page);
 
-	await page.getByRole('button', { name: 'New entry' }).click();
-	await page.getByRole('textbox', { name: 'Entry' }).pressSequentially(`@${name.split(' ')[1]}`);
+	await page.getByRole('button', { name: 'Write a moment' }).click();
+	await page
+		.getByRole('textbox', { name: 'Moment', exact: true })
+		.pressSequentially(`@${name.split(' ')[1]}`);
 	await expect(photoIn(page.getByRole('option', { name }), src)).toBeVisible();
 });
 

@@ -24,7 +24,7 @@ PR updates its own row.
 |---|---|---|---|
 | A1 one primary per screen | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | merged #255, e2e #257 |
 | A2 §5.5 split per screen | open | | |
-| A3 one vocabulary | decided | *moment* for the written thing (*Write a moment* everywhere), *Activity* for the per-person timeline; docs' *Story* → *Activity*; `/journal` stays the reading page | |
+| A3 one vocabulary | done | *moment* for the written thing (*Write a moment* everywhere), *Activity* for the per-person timeline; docs' *Story* → *Activity*; `/journal` stays the reading page | #260 (e2e in the same PR) |
 | A4 uppercase label roles | open | | |
 | A5 Mocha accent tints | open | | |
 | B1 filter pill on a phone | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | merged #255, e2e #257 |

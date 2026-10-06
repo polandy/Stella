@@ -433,7 +433,7 @@
 					>
 				</button>
 				<!-- Secondary, not primary: the one filled action on a screen is the page's own — the
-				     pencil on Home, *Write in journal* on a person (docs/05 §5.1, §5.4). -->
+				     pencil on Home, *Write a moment* on a person (docs/05 §5.1, §5.4). -->
 				<Button
 					variant="secondary"
 					icon="addPerson"

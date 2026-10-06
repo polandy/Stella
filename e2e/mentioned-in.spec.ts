@@ -89,16 +89,16 @@ async function writeEntry(
 ): Promise<void> {
 	await page.getByRole('link', { name: 'Write' }).first().click();
 	await appReady(page);
-	await page.getByRole('button', { name: 'New entry' }).click();
+	await page.getByRole('button', { name: 'Write a moment' }).click();
 
-	const field = page.getByRole('textbox', { name: 'Entry' });
+	const field = page.getByRole('textbox', { name: 'Moment', exact: true });
 	await field.fill(`${text} mit `);
 	await field.pressSequentially('@Rosmarie');
 	await page.getByTestId('mention-picker').getByRole('option', { name: NAMED }).click();
 	if (visibility === 'private') {
 		await page.getByRole('radio', { name: /Private/ }).check();
 	}
-	await page.getByRole('button', { name: 'Save entry' }).click();
+	await page.getByRole('button', { name: 'Save moment' }).click();
 	await expect(page.getByText(text)).toBeVisible();
 }
 

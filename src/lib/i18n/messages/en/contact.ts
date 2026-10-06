@@ -23,7 +23,7 @@ export const contact = {
 	'contact.private': 'Private',
 	'contact.archived': 'Archived',
 	'contact.archivedOn': (p: { day: string }) => `Archived on ${p.day}`,
-	'contact.write': 'Write in journal',
+	'contact.write': 'Write a moment',
 	'contact.logContact': 'Log contact',
 	'contact.egoGraphLabel': (p: { name: string }) => `Relationship network for ${p.name}`,
 	'contact.story.title': 'Activity',
@@ -123,7 +123,7 @@ export const contact = {
 	'contact.self.badgeHint': 'The person you told Stella you are.',
 	'contact.archive.archive': 'Archive this person',
 	'contact.archive.archivedHint':
-		'They are out of the directory, the search and Home’s reminders — their page, their story and the family map are untouched.',
+		'They are out of the directory, the search and Home’s reminders — their page, their activity and the family map are untouched.',
 	'contact.archive.hint':
 		'Takes them out of the directory, the search and Home’s reminders. Nothing is deleted, and the family map keeps them.',
 

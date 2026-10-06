@@ -8,7 +8,7 @@
 	 * carries Undo for as long as the removal is held back; a notice is read-only and goes on
 	 * its own. A polite live region (no `status` role, which would make it the page's second
 	 * status and steal `getByRole('status')` from inline hints) so a screen reader hears
-	 * "Entry removed" without losing focus.
+	 * "Moment removed" without losing focus.
 	 *
 	 * The window stands still while the pointer is over a toast or focus is inside the region,
 	 * and starts over in full once both have left (WCAG 2.2.1; `hold`/`release` in

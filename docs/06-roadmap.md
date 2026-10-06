@@ -51,7 +51,7 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   stream records what happened in the family, not every edit to the database.
 - **Personal dashboard (Home):** the stream plus a rail with "Coming up" (§2.12); further
   panels (gifts given) as their base features land.
-- **Interactions timeline** + "last contacted", read as one **story timeline** per person
+- **Interactions timeline** + "last contacted", read as one **activity timeline** per person
   together with the journal (§2.23).
 - **Name-based suggestions:** duplicate/relative candidates on contact entry (pure ranker)
   — shipped in *Add a person* (§2.2.1).

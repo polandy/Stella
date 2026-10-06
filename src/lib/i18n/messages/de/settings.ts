@@ -14,7 +14,7 @@ export const settings: SettingsMessages = {
 	'settings.self.heading': 'Du',
 	'settings.self.label': 'Welche dieser Personen bist du',
 	'settings.self.hint':
-		'Sag Stella, welcher Eintrag du bist — dann weiss Stella, auf wessen Geschichte die Karte öffnet und welche Zeile du bist.',
+		'Sag Stella, welcher Eintrag du bist — dann weiss Stella, bei wem die Karte öffnet und welche Zeile du bist.',
 	'settings.self.placeholder': 'Dich selbst über den Namen suchen',
 	'settings.self.clear': 'Keine davon bin ich',
 	'settings.self.saved': 'Gespeichert.',
