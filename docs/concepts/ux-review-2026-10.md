@@ -34,7 +34,7 @@ PR updates its own row.
 | B5 composer pills | open | | |
 | B6 empty desktop rail | decided | the stream takes the width when *Coming up* is empty; no *Recently opened* band | |
 | B7 actor vs. subject avatar | open | | |
-| C1 identity card facts | mockup | facts are the only reading surface and edit in place (like the job); rows keep only Contact (no address), Tags, How we met — `identity-card-facts.html` | |
+| C1 identity card facts | mockup | facts are the only reading surface and edit in place (like the job); rows keep only Contact (no address), Tags, How we met — `identity-card-facts.html`; empty facts wait behind the quiet button (which names them) and appear as dashed slots; every date is its own fact, one dates editor; C3 and C5 ride along in the same PR | |
 | C2 empty cards | building | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | PR 2 (person page) |
 | C3 gender into name editor | open | | |
 | C4 description clamp | building | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | PR 2 (person page) |
