@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.23](https://github.com/polandy/Stella/compare/v0.0.22...v0.0.23) (2026-10-06)
+
+
+### Features
+
+* **contacts:** compact People card with an edit mode, and a jump bar ([#241](https://github.com/polandy/Stella/issues/241)) ([aca4be9](https://github.com/polandy/Stella/commit/aca4be976f2b7556901135a0611650b904ebb004))
+* **contacts:** identity card at the top of the person page ([#239](https://github.com/polandy/Stella/issues/239)) ([9ab835f](https://github.com/polandy/Stella/commit/9ab835f0051b4535eddcda1f734f96930e0219c1))
+* **immich:** add people from Immich names ([#252](https://github.com/polandy/Stella/issues/252)) ([dfaef79](https://github.com/polandy/Stella/commit/dfaef79b12d6e6c1843272bfa34026ad2f40548c))
+* **immich:** find your people — match contacts to Immich faces by name ([#246](https://github.com/polandy/Stella/issues/246)) ([ad08441](https://github.com/polandy/Stella/commit/ad084414d3fd6d4d01c652176f2354a360207f01))
+* **immich:** photos of two people together on the person page ([#249](https://github.com/polandy/Stella/issues/249)) ([a89701e](https://github.com/polandy/Stella/commit/a89701e162217b7f3a45d6b87f63428327082fd8))
+* **immich:** show a strip of a linked person's latest Immich photos ([#237](https://github.com/polandy/Stella/issues/237)) ([87ff8ae](https://github.com/polandy/Stella/commit/87ff8ae7a2f887c5665b9136c966e3812d2c91aa))
+* **immich:** use a photo from Immich as the person's photo ([#245](https://github.com/polandy/Stella/issues/245)) ([56b9eba](https://github.com/polandy/Stella/commit/56b9eba171ae1bfb21e8e5a782767fecbc3e1405))
+* **ui:** one expand/collapse motion everywhere ([#243](https://github.com/polandy/Stella/issues/243)) ([156402b](https://github.com/polandy/Stella/commit/156402b7436c749b56f70dd0997935b6096380ac))
+
 ## [0.0.22](https://github.com/polandy/Stella/compare/v0.0.21...v0.0.22) (2026-10-04)
 
 
