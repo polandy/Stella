@@ -64,7 +64,6 @@ export function createPendingWork(deps: PendingWorkDeps): PendingWork {
 	/** True between showing the indicator and its minimum being up; it may not be hidden yet. */
 	let held = false;
 	let showTimer: unknown = null;
-	let holdTimer: unknown = null;
 
 	/** The words of the worded work in flight, oldest first. */
 	const labels: string[] = [];
@@ -84,8 +83,7 @@ export function createPendingWork(deps: PendingWorkDeps): PendingWork {
 		showTimer = null;
 		visible = true;
 		held = true;
-		holdTimer = scheduler.setTimeout(() => {
-			holdTimer = null;
+		scheduler.setTimeout(() => {
 			held = false;
 			hideIfDone();
 		}, minVisibleMs);

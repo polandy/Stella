@@ -348,7 +348,7 @@ describe('written out as YAML', () => {
 		expect(text).toContain('format: stella-archive');
 		// Block style, one thing per line: the file is meant to be read, not just parsed.
 		expect(text.split('\n').length).toBeGreaterThan(50);
-		expect(text).toMatch(/\n  - /);
+		expect(text).toMatch(/\n {2}- /);
 		expect(JSON.parse(JSON.stringify(Bun.YAML.parse(text)))).toEqual(
 			JSON.parse(JSON.stringify(original))
 		);

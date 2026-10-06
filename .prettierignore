@@ -1,0 +1,19 @@
+# Prose is written by hand; a formatter would only reflow it.
+*.md
+docs/
+
+# Generated or tool-owned files.
+bun.lock
+drizzle/
+build/
+.svelte-kit/
+data/
+static/
+test-results/
+playwright-report/
+blob-report/
+CHANGELOG.md
+.release-please-manifest.json
+
+# Agent configuration, not application code.
+.claude/

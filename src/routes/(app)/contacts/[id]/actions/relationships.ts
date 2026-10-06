@@ -4,7 +4,6 @@ import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { RELATIONS } from '$lib/suggestions/types';
 import { proposeHref } from '$lib/contacts/propose';
 import { decodeRelationshipChoice } from '$lib/relationships/type-options';
 import { contactSectionPath } from '$lib/contacts/sections';
@@ -28,16 +27,6 @@ import { say, translator } from '$lib/server/i18n/say';
 import { reviewPath } from '../review-path';
 import type { Actions } from '../$types';
 
-/** The claim a review form is answering: the relation and the two people. */
-async function parseAnswer(request: Request) {
-	const form = await request.formData();
-	return v.safeParse(AnswerSuggestionSchema, {
-		relation: form.get('relation'),
-		fromId: form.get('fromId'),
-		toId: form.get('toId')
-	});
-}
-
 /** The specifics of a link (docs/02 §2.4); the domain has the last word on what is real. */
 const RelationshipDetailsSchema = {
 	description: v.optional(v.pipe(v.string(), v.trim())),
@@ -57,21 +46,6 @@ const EditRelationshipSchema = v.object({
 	/** Type *and* direction, as `relationshipTypeOptions` encodes them; absent leaves the type. */
 	typeChoice: v.optional(v.pipe(v.string(), v.minLength(1))),
 	...RelationshipDetailsSchema
-});
-
-/** One claim a member is answering on the review panel (§6.4): the relation and the pair. */
-const AnswerSuggestionSchema = v.object({
-	relation: v.picklist(RELATIONS),
-	fromId: v.pipe(v.string(), v.minLength(1)),
-	toId: v.pipe(v.string(), v.minLength(1))
-});
-
-/** One confirmed propagation suggestion (docs/02 §2.4.1). */
-const AddProposedSchema = v.object({
-	fromId: v.pipe(v.string(), v.minLength(1)),
-	toId: v.pipe(v.string(), v.minLength(1)),
-	typeId: v.picklist(['parent_child', 'sibling']),
-	propose: v.optional(v.pipe(v.string(), v.trim()))
 });
 
 /** The relationships card: links, their corrections, and the answers to suggestions (docs/02 §2.4). */

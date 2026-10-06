@@ -41,7 +41,7 @@ const states = (items: OutboxItem[]) => items.map((i) => [i.command.id, i.state]
 
 describe('queue and takeBatch', () => {
 	it('sends a member’s pending items in the order they were written, and marks them in flight', () => {
-		let items = add(add(add([], 'a'), 'b', 'u2'), 'c');
+		const items = add(add(add([], 'a'), 'b', 'u2'), 'c');
 		const { items: after, batch } = takeBatch(items, 'u1', 10);
 
 		expect(batch.map((c) => c.id)).toEqual(['a', 'c']);
