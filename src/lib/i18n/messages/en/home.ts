@@ -97,6 +97,10 @@ export const home = {
 	'home.filter.empty.title': 'Nothing here',
 	'home.filter.empty.hint': 'Nothing in the stream matches this filter yet.',
 	'home.filter.clear': 'Show everything',
+	'home.filter.pill': 'Filter',
+	'home.filter.pillLabel': (p: { count: number }) =>
+		p.count === 0 ? 'Filter the stream' : `Filter the stream, ${p.count} active`,
+	'home.filter.done': 'Done',
 	'home.today': 'Today',
 	'home.yesterday': 'Yesterday',
 	'home.justNow': 'just now',

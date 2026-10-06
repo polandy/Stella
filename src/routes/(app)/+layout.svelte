@@ -44,6 +44,8 @@
 
 	// Breadcrumbs derived from the route id + merged page data (contact/circle names).
 	type Crumb = { label: string; href?: string };
+	/** Home itself, where a phone's search is the field on the page rather than the top bar's. */
+	const onHome = $derived(page.route.id === '/(app)');
 	const crumbs = $derived.by((): Crumb[] => {
 		const id = page.route.id ?? '';
 		const d = page.data as { contact?: { displayName?: string }; circle?: { name?: string } };
@@ -369,11 +371,16 @@
 			{/if}
 
 			<div class="ml-auto flex items-center gap-2">
+				<!-- On a phone's Home the *Find a person* field under the bar is the search, so a second
+				     door to the same list would only have to be learned as the same (docs/05 §5.4).
+				     ⌘K still opens the palette there. -->
 				<button
 					type="button"
 					onclick={() => (paletteOpen = true)}
 					disabled={!paletteReady}
-					class="flex items-center gap-2 rounded-control bg-card px-3 py-2 text-sm text-fg-subtle shadow-card transition-colors hover:text-fg"
+					class="flex items-center gap-2 rounded-control bg-card px-3 py-2 text-sm text-fg-subtle shadow-card transition-colors hover:text-fg {onHome
+						? 'max-md:hidden'
+						: ''}"
 					aria-label={t('nav.search')}
 					aria-keyshortcuts="Meta+K Control+K"
 				>
@@ -383,8 +390,10 @@
 					<span class="hidden lg:inline">{t('nav.search')}</span>
 					<kbd class="hidden rounded border border-border px-1 text-[10px] font-medium lg:inline">⌘K</kbd>
 				</button>
-				<Button variant="primary" icon="add" href="/contacts/new" label={t('nav.addPerson')}>
-					<span class="hidden sm:inline">{t('nav.addPerson')}</span>
+				<!-- Secondary, not primary: the one filled action on a screen is the page's own — the
+				     pencil on Home, *Write in journal* on a person (docs/05 §5.1, §5.4). -->
+				<Button variant="secondary" icon="addPerson" href="/contacts/new" label={t('nav.addPerson')}>
+					<span class="hidden md:inline">{t('nav.addPerson')}</span>
 				</Button>
 				<!-- Wrapped: the button's own display rule would outrank a utility on the element. -->
 				<span class="md:hidden"><Button variant="ghost" icon="settings" href="/settings" label={t('nav.settings')} /></span>
