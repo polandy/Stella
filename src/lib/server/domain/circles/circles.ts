@@ -12,13 +12,34 @@ import type { IdGenerator } from '../../id';
  */
 
 export const CIRCLE_KINDS = [
-	'friends', 'family', 'school', 'class', 'course', 'club', 'team', 'work', 'neighborhood', 'other'
+	'friends',
+	'family',
+	'school',
+	'class',
+	'course',
+	'club',
+	'team',
+	'work',
+	'neighborhood',
+	'other'
 ] as const;
 export type CircleKind = (typeof CIRCLE_KINDS)[number];
 
 export const CIRCLE_COLORS = [
-	'rosewater', 'flamingo', 'pink', 'mauve', 'red', 'maroon', 'peach', 'yellow', 'green', 'teal',
-	'sky', 'sapphire', 'blue', 'lavender'
+	'rosewater',
+	'flamingo',
+	'pink',
+	'mauve',
+	'red',
+	'maroon',
+	'peach',
+	'yellow',
+	'green',
+	'teal',
+	'sky',
+	'sapphire',
+	'blue',
+	'lavender'
 ] as const;
 export type CircleColor = (typeof CIRCLE_COLORS)[number];
 

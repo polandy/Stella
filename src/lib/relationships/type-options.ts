@@ -69,7 +69,10 @@ export function relationshipTypeOptions<T extends SelectableType>(
 			value: encodeRelationshipChoice(type.id, 'forward')
 		};
 		if (type.symmetric) return [forward];
-		return [forward, { type, side: 'reverse', value: encodeRelationshipChoice(type.id, 'reverse') }];
+		return [
+			forward,
+			{ type, side: 'reverse', value: encodeRelationshipChoice(type.id, 'reverse') }
+		];
 	});
 }
 

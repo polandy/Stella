@@ -28,7 +28,13 @@ export interface ProcessedAvatar {
 	takenAt: string | null;
 }
 
-function toSquareJpeg(bitmap: ImageBitmap, size: number, sx: number, sy: number, crop: number): Promise<Blob> {
+function toSquareJpeg(
+	bitmap: ImageBitmap,
+	size: number,
+	sx: number,
+	sy: number,
+	crop: number
+): Promise<Blob> {
 	const canvas = document.createElement('canvas');
 	canvas.width = size;
 	canvas.height = size;
@@ -49,7 +55,11 @@ function toSquareJpeg(bitmap: ImageBitmap, size: number, sx: number, sy: number,
  * `crop` is in the picture's pixels *after* EXIF orientation — the same space the cropper's
  * `<img>` measures, since browsers orient an image element from its EXIF too.
  */
-export async function processAvatar(file: Blob, crop: CropRect, size = AVATAR_SIZE): Promise<ProcessedAvatar> {
+export async function processAvatar(
+	file: Blob,
+	crop: CropRect,
+	size = AVATAR_SIZE
+): Promise<ProcessedAvatar> {
 	const takenAt = await readCaptureDate(file);
 	const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
 	try {

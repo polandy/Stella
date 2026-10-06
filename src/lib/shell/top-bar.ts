@@ -27,7 +27,12 @@ export const SHOWN_TOP_BAR: TopBarState = { hidden: false, y: 0, travel: 0 };
  * away makes the page that much taller and pulls the scroll back, which would read as scrolling
  * up and bring it back, over and over.
  */
-export function followScroll(state: TopBarState, y: number, barHeight: number, maxY: number): TopBarState {
+export function followScroll(
+	state: TopBarState,
+	y: number,
+	barHeight: number,
+	maxY: number
+): TopBarState {
 	const step = y - state.y;
 	const sameDirection = Math.sign(step) === Math.sign(state.travel);
 	const travel = sameDirection ? state.travel + step : step;

@@ -4,7 +4,8 @@ import type { CirclesMessages } from '../en/circles';
 export const circles: CirclesMessages = {
 	'circles.title': 'Kreise · Stella',
 	'circles.heading': 'Kreise',
-	'circles.intro': 'Die Zusammenhänge, die Menschen teilen — eine Klasse, ein Verein, ein Team, ein Chor.',
+	'circles.intro':
+		'Die Zusammenhänge, die Menschen teilen — eine Klasse, ein Verein, ein Team, ein Chor.',
 	'circles.new': 'Neuer Kreis',
 	'circles.create': 'Kreis anlegen',
 	'circles.name': 'Name',
@@ -67,7 +68,11 @@ export const circles: CirclesMessages = {
 	'circles.photos.whoCanSee': 'Wer darf sie sehen?',
 	'circles.photos.adding': 'Wird hinzugefügt…',
 	'circles.photos.addCount': (p) =>
-		p.count === 0 ? 'Hinzufügen' : p.count === 1 ? '1 Foto hinzufügen' : `${p.count} Fotos hinzufügen`,
+		p.count === 0
+			? 'Hinzufügen'
+			: p.count === 1
+				? '1 Foto hinzufügen'
+				: `${p.count} Fotos hinzufügen`,
 	'circles.photos.uploadFailed': 'Diese Fotos konnten nicht hinzugefügt werden.',
 	'circles.photos.of': (p) => `Foto von ${p.name}`,
 	'circles.photos.ofRole': (p) => `Foto von ${p.name}: ${p.role}`,
@@ -118,5 +123,9 @@ export const circles: CirclesMessages = {
 	'circles.kind.neighborhood': 'Nachbarschaft',
 	'circles.kind.other': 'Sonstiges',
 	'circles.matchCount': (p: { count: number }) =>
-		p.count === 0 ? 'Keine Kreise gefunden' : p.count === 1 ? '1 Kreis gefunden' : `${p.count} Kreise gefunden`
+		p.count === 0
+			? 'Keine Kreise gefunden'
+			: p.count === 1
+				? '1 Kreis gefunden'
+				: `${p.count} Kreise gefunden`
 };

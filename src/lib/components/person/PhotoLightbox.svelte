@@ -79,7 +79,9 @@
 				class="inline-flex items-center gap-1 self-start text-xs text-primary underline-offset-2 hover:underline"
 				data-testid="photo-cut-from"
 			>
-				<Icon name="circles" size={12} />{t('contact.photos.cutFrom', { circle: openedPhoto.cutFrom.circleName })}
+				<Icon name="circles" size={12} />{t('contact.photos.cutFrom', {
+					circle: openedPhoto.cutFrom.circleName
+				})}
 			</a>
 		{/if}
 
@@ -94,7 +96,11 @@
 			<!-- Anyone who sees the photo may pin it: a favourite is the household's (docs/02 §2.14). -->
 			<form method="POST" action="?/pinPhoto" class="contents">
 				<input type="hidden" name="photoId" value={openedPhoto.id} />
-				<input type="hidden" name="pinned" value={openedPhoto.pinnedAt === null ? 'true' : 'false'} />
+				<input
+					type="hidden"
+					name="pinned"
+					value={openedPhoto.pinnedAt === null ? 'true' : 'false'}
+				/>
 				<Button variant="ghost" size="sm" icon="pinned" data-testid="photo-pin">
 					{openedPhoto.pinnedAt === null ? t('contact.photos.pin') : t('contact.photos.unpin')}
 				</Button>

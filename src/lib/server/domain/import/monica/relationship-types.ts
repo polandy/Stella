@@ -87,7 +87,11 @@ export const MONICA_RELATIONSHIP_TYPES: Readonly<Record<string, MappedRelationsh
 export function mapRelationshipType(name: string): MappedRelationshipType {
 	const known = MONICA_RELATIONSHIP_TYPES[name];
 	if (known) return known;
-	const key = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'other';
+	const key =
+		name
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '_')
+			.replace(/^_|_$/g, '') || 'other';
 	const label = name.charAt(0).toUpperCase() + name.slice(1);
 	return sym(key, label, 'other');
 }

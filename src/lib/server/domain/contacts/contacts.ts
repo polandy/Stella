@@ -355,7 +355,10 @@ export async function setGender(
 /** Thrown when a job title or company is longer than Stella keeps (docs/02 §2.2). */
 export class JobFieldTooLongError extends TranslatableError {
 	constructor() {
-		super(phrase('errors.contact.jobFieldTooLong', { max: JOB_FIELD_MAX_LENGTH }), 'JobFieldTooLongError');
+		super(
+			phrase('errors.contact.jobFieldTooLong', { max: JOB_FIELD_MAX_LENGTH }),
+			'JobFieldTooLongError'
+		);
 	}
 }
 
@@ -377,7 +380,10 @@ export async function setJob(
 	id: string,
 	job: Job
 ): Promise<boolean> {
-	const checked: Job = { jobTitle: checkedJobField(job.jobTitle), company: checkedJobField(job.company) };
+	const checked: Job = {
+		jobTitle: checkedJobField(job.jobTitle),
+		company: checkedJobField(job.company)
+	};
 	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
 	if (contact === null) return false;
 
@@ -476,7 +482,8 @@ export async function countKnownByAFirstNameOnly(
 	deps: Pick<ContactDeps, 'contacts'>,
 	viewer: Viewer
 ): Promise<number> {
-	return (await deps.contacts.listDistinguishableVisibleTo(viewer)).filter(isKnownByAFirstNameOnly).length;
+	return (await deps.contacts.listDistinguishableVisibleTo(viewer)).filter(isKnownByAFirstNameOnly)
+		.length;
 }
 
 /**

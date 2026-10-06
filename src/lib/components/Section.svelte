@@ -146,7 +146,10 @@
 
 	/* Once the form has grown to its height, all of it is in view — the page glides there. */
 	function keepFormInView() {
-		form?.scrollIntoView({ block: 'nearest', behavior: scrollBehavior(prefersReducedMotion.current) });
+		form?.scrollIntoView({
+			block: 'nearest',
+			behavior: scrollBehavior(prefersReducedMotion.current)
+		});
 	}
 
 	/*
@@ -233,7 +236,10 @@
 			aria-expanded={shown}
 			class="flex min-w-0 items-center gap-2 py-2 text-left text-sm text-fg"
 		>
-			<span class="text-fg-subtle transition-transform duration-(--motion-expand) ease-standard" class:rotate-90={shown}>
+			<span
+				class="text-fg-subtle transition-transform duration-(--motion-expand) ease-standard"
+				class:rotate-90={shown}
+			>
 				<Icon name="forward" size={13} />
 			</span>
 			<span class="font-medium">{title}</span>
@@ -278,4 +284,3 @@
 		{@render body()}
 	</section>
 {/if}
-

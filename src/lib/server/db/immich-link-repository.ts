@@ -57,7 +57,10 @@ export function createDrizzleImmichLinkRepository(
 			return new Set(rows.map((row) => row.contactId));
 		},
 
-		async holdersOf(viewer: Viewer, immichPersonIds: readonly string[]): Promise<Map<string, ImmichHolder>> {
+		async holdersOf(
+			viewer: Viewer,
+			immichPersonIds: readonly string[]
+		): Promise<Map<string, ImmichHolder>> {
 			const holders = new Map<string, ImmichHolder>();
 			if (immichPersonIds.length === 0) return holders;
 			// Read unscoped on purpose: a face held by a contact the viewer cannot see is still
@@ -78,7 +81,10 @@ export function createDrizzleImmichLinkRepository(
 				.all();
 			for (const row of rows) {
 				const visible = canViewContact(viewer, row);
-				holders.set(row.immichPersonId, { contactId: row.contactId, name: visible ? row.displayName : null });
+				holders.set(row.immichPersonId, {
+					contactId: row.contactId,
+					name: visible ? row.displayName : null
+				});
 			}
 			return holders;
 		},
@@ -90,7 +96,11 @@ export function createDrizzleImmichLinkRepository(
 						.values(link)
 						.onConflictDoUpdate({
 							target: immichLink.contactId,
-							set: { immichPersonId: link.immichPersonId, linkedBy: link.linkedBy, linkedAt: link.linkedAt }
+							set: {
+								immichPersonId: link.immichPersonId,
+								linkedBy: link.linkedBy,
+								linkedAt: link.linkedAt
+							}
 						})
 						.run();
 					tx.insert(activityLog).values(audit).run();

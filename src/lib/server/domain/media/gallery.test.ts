@@ -71,9 +71,12 @@ function deps(over: { photos?: GalleryPhoto[]; visible?: GalleryPhoto | null } =
 			// The photo's own files, then its framing's (docs/02 §2.14).
 			return [
 				{ filePath: `/m/${input.photoId}.jpg`, thumbPath: `/m/${input.photoId}_t.jpg` },
-				{ filePath: `/m/${input.photoId}-framing.jpg`, thumbPath: `/m/${input.photoId}-framing_t.jpg` }
+				{
+					filePath: `/m/${input.photoId}-framing.jpg`,
+					thumbPath: `/m/${input.photoId}-framing_t.jpg`
+				}
 			];
-		},
+		}
 	};
 	const removedFiles: string[] = [];
 	const d: GalleryDeps & {
@@ -114,7 +117,11 @@ describe('listGallery', () => {
 
 	it('shows the favourites first, then the rest newest first', async () => {
 		const d = deps({
-			photos: [photo({ id: 'new', createdAt: 3 }), photo({ id: 'old', createdAt: 1, pinnedAt: 9 }), photo({ id: 'mid', createdAt: 2 })]
+			photos: [
+				photo({ id: 'new', createdAt: 3 }),
+				photo({ id: 'old', createdAt: 1, pinnedAt: 9 }),
+				photo({ id: 'mid', createdAt: 2 })
+			]
 		});
 		expect((await listGallery(d, viewer, 'c1')).map((p) => p.id)).toEqual(['old', 'new', 'mid']);
 	});
@@ -125,38 +132,50 @@ describe('pinGalleryPhoto', () => {
 
 	it('pins a photo the viewer can see, at the time it was pinned', async () => {
 		const d = deps({ visible: photo() });
-		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(true);
+		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(
+			true
+		);
 		expect(d.calls).toEqual(['find u1 c1 p1']);
 		expect(d.pins).toEqual([{ photoId: 'p1', pinnedAt: NOW }]);
 	});
 
 	it('lets any member who sees the photo pin it, not only who added it — a pin is the household’s', async () => {
 		const d = deps({ visible: photo({ createdBy: 'u1' }) });
-		expect(await pinGalleryPhoto(d, someoneElse, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(true);
+		expect(
+			await pinGalleryPhoto(d, someoneElse, { contactId: 'c1', photoId: 'p1', pinned: true })
+		).toBe(true);
 		expect(d.pins).toEqual([{ photoId: 'p1', pinnedAt: NOW }]);
 	});
 
 	it('keeps the first pin’s time when a pinned photo is pinned again, so a replay changes nothing', async () => {
 		const d = deps({ visible: photo({ pinnedAt: 1_234 }) });
-		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(true);
+		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(
+			true
+		);
 		expect(d.pins).toEqual([]);
 	});
 
 	it('unpins a pinned photo', async () => {
 		const d = deps({ visible: photo({ pinnedAt: 1_234 }) });
-		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: false })).toBe(true);
+		expect(
+			await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: false })
+		).toBe(true);
 		expect(d.pins).toEqual([{ photoId: 'p1', pinnedAt: null }]);
 	});
 
 	it('writes nothing when unpinning a photo that is not pinned', async () => {
 		const d = deps({ visible: photo() });
-		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: false })).toBe(true);
+		expect(
+			await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: false })
+		).toBe(true);
 		expect(d.pins).toEqual([]);
 	});
 
 	it('refuses a photo the viewer cannot see, without saying whether it exists', async () => {
 		const d = deps({ visible: null });
-		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(false);
+		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(
+			false
+		);
 		expect(d.pins).toEqual([]);
 	});
 });
@@ -184,7 +203,9 @@ describe('captionGalleryPhoto', () => {
 
 	it('reports back when the photo is not the caller’s to change', async () => {
 		const d = deps();
-		expect(await captionGalleryPhoto(d, { id: 'u2', householdId: 'h1' }, 'p1', 'Mine now')).toBe(false);
+		expect(await captionGalleryPhoto(d, { id: 'u2', householdId: 'h1' }, 'p1', 'Mine now')).toBe(
+			false
+		);
 	});
 });
 
@@ -208,7 +229,12 @@ describe('removeGalleryPhoto', () => {
 		const d = deps();
 		expect(await removeGalleryPhoto(d, viewer, 'p1')).toBe(true);
 		expect(d.deleted).toEqual(['p1']);
-		expect(d.removedFiles).toEqual(['/m/p1.jpg', '/m/p1_t.jpg', '/m/p1-framing.jpg', '/m/p1-framing_t.jpg']);
+		expect(d.removedFiles).toEqual([
+			'/m/p1.jpg',
+			'/m/p1_t.jpg',
+			'/m/p1-framing.jpg',
+			'/m/p1-framing_t.jpg'
+		]);
 	});
 
 	it('touches no file when the row was not the caller’s to remove', async () => {

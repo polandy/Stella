@@ -67,10 +67,13 @@ export const archive = {
 		`A photo naming an unusable file path (“${p.file}”) was left out.`,
 	'archive.warning.pointedAtMissingPeople': (p: { what: string }) =>
 		`Some ${p.what} pointed at people the archive does not contain and were left out.`,
-	'archive.warning.contactFieldIncomplete': 'A contact detail without a kind or a value was left out.',
-	'archive.warning.importantDateIncomplete': 'An important date without a day or a kind was left out.',
+	'archive.warning.contactFieldIncomplete':
+		'A contact detail without a kind or a value was left out.',
+	'archive.warning.importantDateIncomplete':
+		'An important date without a day or a kind was left out.',
 	'archive.warning.noteWithoutText': 'A note with no text was left out.',
-	'archive.warning.journalEntryIncomplete': 'A journal entry without a day or any text was left out.',
+	'archive.warning.journalEntryIncomplete':
+		'A journal entry without a day or any text was left out.',
 	'archive.warning.touchpointIncomplete': 'A touchpoint without a kind or a date was left out.',
 	'archive.warning.tagWithoutName': 'A tag without a name was left out.',
 	'archive.warning.tagsNotInList':

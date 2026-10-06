@@ -98,8 +98,7 @@
 	</Section>
 
 	<p class="text-sm text-fg-subtle">
-		To see it on real work, throttle the network in the browser's dev tools and then add,
-		correct or remove a relationship — a local save takes 30–90 ms and stays under the delay on
-		purpose.
+		To see it on real work, throttle the network in the browser's dev tools and then add, correct or
+		remove a relationship — a local save takes 30–90 ms and stays under the delay on purpose.
 	</p>
 </main>

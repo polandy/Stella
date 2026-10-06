@@ -63,6 +63,9 @@ export function readPeopleStamp(user: AuthUser): Promise<string> {
 /** A short fingerprint of the markers the shell's people are read from (`peopleStampOf`). */
 async function stampFor(user: AuthUser, today: string): Promise<string> {
 	const viewer = { id: user.id, householdId: user.householdId };
-	const markers = await peopleStampOf(getPeopleStampDeps(), viewer, { selfContactId: user.selfContactId, today });
+	const markers = await peopleStampOf(getPeopleStampDeps(), viewer, {
+		selfContactId: user.selfContactId,
+		today
+	});
 	return Bun.hash(markers).toString(36);
 }

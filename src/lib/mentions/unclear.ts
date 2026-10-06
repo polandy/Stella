@@ -26,6 +26,9 @@ export function unclearHandles<P extends MentionCandidate & Distinguishable>(
 	return ambiguous.map(({ handle, ids }) => {
 		const people = audience.filter((p) => ids.includes(p.id));
 		const lines = tellApart(people, contexts);
-		return { handle, people: people.map((person) => ({ person, line: lines.get(person.id) ?? null })) };
+		return {
+			handle,
+			people: people.map((person) => ({ person, line: lines.get(person.id) ?? null }))
+		};
 	});
 }

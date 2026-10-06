@@ -6,7 +6,12 @@ import type { CircleRepository } from '../circles/circles';
 import type { ContactRepository } from '../contacts/contacts';
 import { addGalleryPhoto, type GalleryUploadDeps } from '../media/gallery-upload';
 import { attachJournalPhoto, type JournalPhotoDeps } from '../media/journal-photos';
-import type { CommandActor, CommandReceipt, CommandReceiptRepository, CommandResults } from './dispatch';
+import type {
+	CommandActor,
+	CommandReceipt,
+	CommandReceiptRepository,
+	CommandResults
+} from './dispatch';
 
 /*
  * A photo that follows the command it belongs to (docs/concepts/offline-capture.md §4.2). A
@@ -62,14 +67,24 @@ export async function attachMomentPhoto(
 	actor: CommandActor,
 	payload: PhotoPayload
 ): Promise<string> {
-	const entry = await appliedParent(deps.receipts, actor, payload.parentId, ['moment.capture', 'journal.write']);
-	if (!(await deps.entries.ownsEntry(actor.userId, entry.entryId))) throw new PhotoParentGoneError();
+	const entry = await appliedParent(deps.receipts, actor, payload.parentId, [
+		'moment.capture',
+		'journal.write'
+	]);
+	if (!(await deps.entries.ownsEntry(actor.userId, entry.entryId)))
+		throw new PhotoParentGoneError();
 
 	return attachJournalPhoto(deps.photos, actor, {
 		contactId: entry.anchorContactId,
 		journalEntryId: entry.entryId,
 		visibility: entry.visibility,
-		upload: { image: payload.image, thumb: payload.thumb, width: payload.width, height: payload.height, takenAt: payload.takenAt }
+		upload: {
+			image: payload.image,
+			thumb: payload.thumb,
+			width: payload.width,
+			height: payload.height,
+			takenAt: payload.takenAt
+		}
 	});
 }
 
@@ -87,12 +102,19 @@ export async function attachGalleryPhoto(
 ): Promise<string> {
 	const gallery = await appliedParent(deps.receipts, actor, payload.parentId, ['gallery.add']);
 	const viewer = { id: actor.userId, householdId: actor.householdId };
-	if (!(await deps.contacts.findByIdVisibleTo(viewer, gallery.contactId))) throw new PhotoParentGoneError();
+	if (!(await deps.contacts.findByIdVisibleTo(viewer, gallery.contactId)))
+		throw new PhotoParentGoneError();
 
 	return addGalleryPhoto(deps.photos, actor, {
 		contactId: gallery.contactId,
 		visibility: gallery.visibility,
-		upload: { image: payload.image, thumb: payload.thumb, width: payload.width, height: payload.height, takenAt: payload.takenAt }
+		upload: {
+			image: payload.image,
+			thumb: payload.thumb,
+			width: payload.width,
+			height: payload.height,
+			takenAt: payload.takenAt
+		}
 	});
 }
 
@@ -117,6 +139,8 @@ export async function attachCirclePhoto(
 		circleId: upload.circleId,
 		role: upload.role,
 		visibility: upload.visibility,
-		upload: view ? { image, thumb, view, width, height, takenAt } : { image, thumb, width, height, takenAt }
+		upload: view
+			? { image, thumb, view, width, height, takenAt }
+			: { image, thumb, width, height, takenAt }
 	});
 }

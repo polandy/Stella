@@ -11,7 +11,12 @@ import type { ContactSection } from './sections';
  */
 
 /** The cards the bar links, in the page's order. */
-export const JUMP_SECTIONS = ['relationships', 'photos', 'story', 'notes'] as const satisfies readonly ContactSection[];
+export const JUMP_SECTIONS = [
+	'relationships',
+	'photos',
+	'story',
+	'notes'
+] as const satisfies readonly ContactSection[];
 export type JumpSection = (typeof JUMP_SECTIONS)[number];
 
 /** The counts the cards carry in their own headers. The story is paged and has none. */

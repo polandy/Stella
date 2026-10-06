@@ -56,7 +56,10 @@ export function createDrizzleMentionedInRepository(
 			return rows.map((row) => ({ kind: 'note', ...row }));
 		},
 
-		async listJournalMentionsOfVisibleTo(viewer: Viewer, contactId: string): Promise<MentionedIn[]> {
+		async listJournalMentionsOfVisibleTo(
+			viewer: Viewer,
+			contactId: string
+		): Promise<MentionedIn[]> {
 			const rows = db
 				.select({
 					entryId: journalEntry.id,

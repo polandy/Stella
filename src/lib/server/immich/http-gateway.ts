@@ -49,7 +49,10 @@ export interface HttpImmichGatewayOptions {
 	log?: (message: string) => void;
 }
 
-const failed = (failure: ImmichFailure): { ok: false; failure: ImmichFailure } => ({ ok: false, failure });
+const failed = (failure: ImmichFailure): { ok: false; failure: ImmichFailure } => ({
+	ok: false,
+	failure
+});
 
 export function createHttpImmichGateway({
 	baseUrl,
@@ -73,7 +76,11 @@ export function createHttpImmichGateway({
 					? { headers: { 'x-api-key': apiKey, accept: 'application/json' } }
 					: {
 							method: 'POST',
-							headers: { 'x-api-key': apiKey, accept: 'application/json', 'content-type': 'application/json' },
+							headers: {
+								'x-api-key': apiKey,
+								accept: 'application/json',
+								'content-type': 'application/json'
+							},
 							body: JSON.stringify(jsonBody)
 						}),
 				// A redirect is never Immich's answer to an API call: it is a gateway in front of it
@@ -120,13 +127,20 @@ export function createHttpImmichGateway({
 		};
 
 	async function image(response: Response): Promise<ImmichImage | null> {
-		const contentType = (response.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase();
+		const contentType = (response.headers.get('content-type') ?? '')
+			.split(';')[0]
+			.trim()
+			.toLowerCase();
 		if (!isServableImageType(contentType)) return null;
 		return { bytes: await readCapped(response, MAX_IMAGE_BYTES), contentType };
 	}
 
 	/** A call about one person; an id that is not Immich's never leaves Stella. */
-	function aboutPerson<T>(id: string, suffix: string, read: (response: Response) => Promise<T | null>) {
+	function aboutPerson<T>(
+		id: string,
+		suffix: string,
+		read: (response: Response) => Promise<T | null>
+	) {
 		if (!isImmichId(id)) return Promise.resolve(failed('notFound'));
 		return ask(`/api/people/${id}${suffix}`, read, true);
 	}
@@ -135,14 +149,21 @@ export function createHttpImmichGateway({
 		version: () => ask('/api/server/version', json(readVersion)),
 		owner: () => ask('/api/users/me', json(readOwner)),
 		listPeople: (page, size) =>
-			ask(`/api/people?${new URLSearchParams({ page: String(page), size: String(size), withHidden: 'false' })}`, json(readPeoplePage)),
+			ask(
+				`/api/people?${new URLSearchParams({ page: String(page), size: String(size), withHidden: 'false' })}`,
+				json(readPeoplePage)
+			),
 		searchPeople: (name) =>
-			ask(`/api/search/person?${new URLSearchParams({ name, withHidden: 'false' })}`, json(readPersonList)),
+			ask(
+				`/api/search/person?${new URLSearchParams({ name, withHidden: 'false' })}`,
+				json(readPersonList)
+			),
 		person: (id) => aboutPerson(id, '', json(readPerson)),
 		personStatistics: (id) => aboutPerson(id, '/statistics', json(readStatistics)),
 		personThumbnail: (id) => aboutPerson(id, '/thumbnail', image),
 		latestAssets: ({ personIds, match }, limit, cursor) => {
-			if (personIds.length === 0 || !personIds.every(isImmichId)) return Promise.resolve(failed('notFound'));
+			if (personIds.length === 0 || !personIds.every(isImmichId))
+				return Promise.resolve(failed('notFound'));
 			// The v3.2 search form (concept §2, §9.5). Images in the timeline only: archived photos
 			// and the locked folder are never asked for (§5); the parser checks each answer again.
 			// A person Immich no longer has makes the search answer 400, like a call about them.

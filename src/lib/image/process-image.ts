@@ -1,5 +1,10 @@
 import { readExifCaptureDate } from './exif-date';
-import { groupPhotoRenditions, photoRenditions, type Renditions, type PixelSize } from './renditions';
+import {
+	groupPhotoRenditions,
+	photoRenditions,
+	type Renditions,
+	type PixelSize
+} from './renditions';
 import { isPlausibleTakenAt } from './taken-at';
 
 /*
@@ -57,7 +62,10 @@ function toJpeg(bitmap: ImageBitmap, size: PixelSize): Promise<Blob> {
 	});
 }
 
-async function render(file: Blob, sizes: (original: PixelSize) => Renditions): Promise<ProcessedImage> {
+async function render(
+	file: Blob,
+	sizes: (original: PixelSize) => Renditions
+): Promise<ProcessedImage> {
 	const takenAt = await readCaptureDate(file);
 	const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
 	try {

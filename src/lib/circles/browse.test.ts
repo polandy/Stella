@@ -30,20 +30,32 @@ describe('filterCircles', () => {
 	});
 
 	it('matches part of the name, whatever the case or the accents', () => {
-		expect(filterCircles(circles, { query: 'buhl', kind: ALL_KINDS }).map((c) => c.id)).toEqual(['c1', 'c4']);
+		expect(filterCircles(circles, { query: 'buhl', kind: ALL_KINDS }).map((c) => c.id)).toEqual([
+			'c1',
+			'c4'
+		]);
 	});
 
 	it('matches the description too, so "Thursdays" finds the club that meets then', () => {
-		expect(filterCircles(circles, { query: 'thursdays', kind: ALL_KINDS }).map((c) => c.id)).toEqual(['c1']);
+		expect(
+			filterCircles(circles, { query: 'thursdays', kind: ALL_KINDS }).map((c) => c.id)
+		).toEqual(['c1']);
 	});
 
 	it('narrows to one kind', () => {
-		expect(filterCircles(circles, { query: '', kind: 'club' }).map((c) => c.id)).toEqual(['c1', 'c3']);
+		expect(filterCircles(circles, { query: '', kind: 'club' }).map((c) => c.id)).toEqual([
+			'c1',
+			'c3'
+		]);
 	});
 
 	it('applies the kind and the query together', () => {
-		expect(filterCircles(circles, { query: 'buhl', kind: 'club' }).map((c) => c.id)).toEqual(['c1']);
-		expect(filterCircles(circles, { query: 'buhl', kind: 'neighbourhood' }).map((c) => c.id)).toEqual(['c4']);
+		expect(filterCircles(circles, { query: 'buhl', kind: 'club' }).map((c) => c.id)).toEqual([
+			'c1'
+		]);
+		expect(
+			filterCircles(circles, { query: 'buhl', kind: 'neighbourhood' }).map((c) => c.id)
+		).toEqual(['c4']);
 	});
 
 	it('finds nothing rather than everything when the query matches nobody', () => {
@@ -70,7 +82,9 @@ describe('kindChips', () => {
 	});
 
 	it('offers only All when the query matches nothing', () => {
-		expect(kindChips(circles, 'zzz', labels)).toEqual([{ kind: ALL_KINDS, label: 'All', count: 0 }]);
+		expect(kindChips(circles, 'zzz', labels)).toEqual([
+			{ kind: ALL_KINDS, label: 'All', count: 0 }
+		]);
 	});
 });
 

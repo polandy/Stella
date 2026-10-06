@@ -42,7 +42,11 @@ function fakeRepo() {
 	};
 }
 
-const creator: NoteCreator = { userId: 'user-1', householdId: 'household-1', defaultVisibility: 'shared' };
+const creator: NoteCreator = {
+	userId: 'user-1',
+	householdId: 'household-1',
+	defaultVisibility: 'shared'
+};
 const deps = (repo: NoteRepository) => ({ notes: repo, ids: idGen('note-1'), clock });
 
 describe('createNote', () => {
@@ -68,7 +72,9 @@ describe('createNote', () => {
 
 	it('rejects an empty body', async () => {
 		const f = fakeRepo();
-		await expect(createNote(deps(f.repo), creator, { contactId: 'c', body: '   ' })).rejects.toThrow();
+		await expect(
+			createNote(deps(f.repo), creator, { contactId: 'c', body: '   ' })
+		).rejects.toThrow();
 	});
 
 	it('respects an explicit visibility and pin', async () => {

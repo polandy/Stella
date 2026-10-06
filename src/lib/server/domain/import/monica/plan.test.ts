@@ -63,7 +63,12 @@ function emptyExport(): SourceExport {
 	};
 }
 
-const contact = (id: number, first: string, last: string | null, extra: Partial<SourceExport['contacts'][0]> = {}) => ({
+const contact = (
+	id: number,
+	first: string,
+	last: string | null,
+	extra: Partial<SourceExport['contacts'][0]> = {}
+) => ({
 	id,
 	firstName: first,
 	middleName: null,
@@ -92,7 +97,14 @@ describe('planMonicaImport — contacts', () => {
 	it('maps names, gender, job and description with a stable source id and the chosen visibility', () => {
 		const exp = emptyExport();
 		exp.contacts = [
-			contact(2, 'Leonardo', 'Pollari', { middleName: 'Li Wei', genderId: 2, job: 'Pilot', company: 'Swiss', description: 'neighbour', nickname: 'Leo' })
+			contact(2, 'Leonardo', 'Pollari', {
+				middleName: 'Li Wei',
+				genderId: 2,
+				job: 'Pilot',
+				company: 'Swiss',
+				description: 'neighbour',
+				nickname: 'Leo'
+			})
 		];
 		const plan = planMonicaImport(exp, opts);
 		expect(plan.contacts).toHaveLength(1);
@@ -116,10 +128,17 @@ describe('planMonicaImport — contacts', () => {
 
 	it('leaves deleted contacts out and says so', () => {
 		const exp = emptyExport();
-		exp.contacts = [contact(1, 'Sia', null), contact(2, 'Gone', null, { deletedAt: '2023-06-21 12:55:36' })];
+		exp.contacts = [
+			contact(1, 'Sia', null),
+			contact(2, 'Gone', null, { deletedAt: '2023-06-21 12:55:36' })
+		];
 		const plan = planMonicaImport(exp, opts);
 		expect(plan.contacts.map((c) => c.displayName)).toEqual(['Sia']);
-		expect(plan.report.skipped).toContainEqual({ what: 'contact', count: 1, why: 'deletedInMonica' });
+		expect(plan.report.skipped).toContainEqual({
+			what: 'contact',
+			count: 1,
+			why: 'deletedInMonica'
+		});
 	});
 
 	it('reads a full birthday, a year-less one, and an age-based estimate', () => {
@@ -144,7 +163,12 @@ describe('planMonicaImport — contacts', () => {
 		const exp = emptyExport();
 		exp.contacts = [
 			contact(1, 'Late', null, { isDead: true, deceasedSpecialDateId: 21 }),
-			contact(2, 'Met', null, { firstMetSpecialDateId: 22, firstMetWhere: 'Bern', firstMetAdditionalInfo: 'at a wedding', firstMetThroughContactId: 1 })
+			contact(2, 'Met', null, {
+				firstMetSpecialDateId: 22,
+				firstMetWhere: 'Bern',
+				firstMetAdditionalInfo: 'at a wedding',
+				firstMetThroughContactId: 1
+			})
 		];
 		exp.specialDates = [
 			{ id: 21, contactId: 1, isAgeBased: false, isYearUnknown: false, date: '2020-02-02' },
@@ -152,7 +176,11 @@ describe('planMonicaImport — contacts', () => {
 		];
 		const [late, met] = planMonicaImport(exp, opts).contacts;
 		expect(late).toMatchObject({ isDeceased: true, deathDate: '2020-02-02' });
-		expect(met).toMatchObject({ metDate: '2019-09-09', metPlace: 'Bern', howWeMet: 'at a wedding (through Late)' });
+		expect(met).toMatchObject({
+			metDate: '2019-09-09',
+			metPlace: 'Bern',
+			howWeMet: 'at a wedding (through Late)'
+		});
 	});
 });
 
@@ -213,14 +241,27 @@ describe('planMonicaImport — relationships', () => {
 			{ id: 6, typeId: 99, contactIs: 3, ofContact: 2, createdAt: null }
 		];
 		const plan = planMonicaImport(exp, opts);
-		expect(plan.relationshipTypes.map((t) => [t.id, t.forwardLabel, t.reverseLabel, t.category, t.symmetric])).toEqual([
+		expect(
+			plan.relationshipTypes.map((t) => [
+				t.id,
+				t.forwardLabel,
+				t.reverseLabel,
+				t.category,
+				t.symmetric
+			])
+		).toEqual([
 			['monica:reltype:best_friend', 'Best friend of', 'Best friend of', 'social', true],
 			['monica:reltype:godparent_godchild', 'Godparent of', 'Godchild of', 'family', false],
 			['monica:reltype:skipartner', 'Skipartner', 'Skipartner', 'other', true]
 		]);
 		expect(plan.relationshipTypes.every((t) => t.householdId === 'h1')).toBe(true);
-		const godparent = plan.relationships.find((r) => r.typeId === 'monica:reltype:godparent_godchild');
-		expect(godparent).toMatchObject({ fromContactId: 'monica:contact:1', toContactId: 'monica:contact:3' });
+		const godparent = plan.relationships.find(
+			(r) => r.typeId === 'monica:reltype:godparent_godchild'
+		);
+		expect(godparent).toMatchObject({
+			fromContactId: 'monica:contact:1',
+			toContactId: 'monica:contact:3'
+		});
 		expect(plan.report.warnings).toContainEqual({ code: 'customType', name: 'Skipartner' });
 	});
 
@@ -230,7 +271,11 @@ describe('planMonicaImport — relationships', () => {
 		exp.relationships = [{ id: 1, typeId: 10, contactIs: 1, ofContact: 2, createdAt: null }];
 		const plan = planMonicaImport(exp, opts);
 		expect(plan.relationships).toEqual([]);
-		expect(plan.report.skipped).toContainEqual({ what: 'relationship', count: 1, why: 'refersToDeletedContact' });
+		expect(plan.report.skipped).toContainEqual({
+			what: 'relationship',
+			count: 1,
+			why: 'refersToDeletedContact'
+		});
 	});
 });
 
@@ -245,7 +290,16 @@ describe('planMonicaImport — fields, notes, tags', () => {
 			{ id: 4, contactId: 9, typeId: 6, data: 'somewhere', createdAt: null }
 		];
 		exp.addresses = [
-			{ id: 1, contactId: 9, name: 'Home', street: '24 Schutzengelstrasse', city: 'Baar', province: null, postalCode: '6340', country: 'CH' }
+			{
+				id: 1,
+				contactId: 9,
+				name: 'Home',
+				street: '24 Schutzengelstrasse',
+				city: 'Baar',
+				province: null,
+				postalCode: '6340',
+				country: 'CH'
+			}
 		];
 		const fields = planMonicaImport(exp, opts).contactFields;
 		expect(fields.map((f) => [f.id, f.kind, f.label, f.value])).toEqual([
@@ -262,17 +316,48 @@ describe('planMonicaImport — fields, notes, tags', () => {
 		const exp = emptyExport();
 		exp.contacts = [contact(1, 'A', null)];
 		exp.notes = [{ id: 1, contactId: 1, body: 'Postkonto', isFavorited: true, createdAt: null }];
-		exp.gifts = [{ id: 1, contactId: 1, name: '3 Fragezeichen Buch', comment: 'loved it', url: null, status: 'offered', date: '2023-12-30' }];
-		exp.lifeEvents = [{ id: 1, contactId: 1, name: 'Kindergarten', note: null, typeKey: 'new_school', happenedAt: '2023-08-14' }];
+		exp.gifts = [
+			{
+				id: 1,
+				contactId: 1,
+				name: '3 Fragezeichen Buch',
+				comment: 'loved it',
+				url: null,
+				status: 'offered',
+				date: '2023-12-30'
+			}
+		];
+		exp.lifeEvents = [
+			{
+				id: 1,
+				contactId: 1,
+				name: 'Kindergarten',
+				note: null,
+				typeKey: 'new_school',
+				happenedAt: '2023-08-14'
+			}
+		];
 		exp.pets = [{ id: 1, contactId: 1, name: 'Elek', category: 'dog' }];
 		const notes = planMonicaImport(exp, opts).notes;
 		expect(notes.map((n) => [n.id, n.title, n.body, n.isPinned])).toEqual([
 			['monica:note:1', null, 'Postkonto', true],
-			['monica:gift:1', 'Gift', '🎁 **3 Fragezeichen Buch** — offered, 30 December 2023\n\nloved it', false],
-			['monica:lifeevent:1', 'Life event', '📅 **Kindergarten** (new school) — 14 August 2023', false],
+			[
+				'monica:gift:1',
+				'Gift',
+				'🎁 **3 Fragezeichen Buch** — offered, 30 December 2023\n\nloved it',
+				false
+			],
+			[
+				'monica:lifeevent:1',
+				'Life event',
+				'📅 **Kindergarten** (new school) — 14 August 2023',
+				false
+			],
 			['monica:pet:1', 'Pet', '🐾 **Elek**, dog', false]
 		]);
-		expect(notes.every((n) => n.contactId === 'monica:contact:1' && n.visibility === 'shared')).toBe(true);
+		expect(
+			notes.every((n) => n.contactId === 'monica:contact:1' && n.visibility === 'shared')
+		).toBe(true);
 	});
 
 	it('maps tags and their assignments', () => {
@@ -280,7 +365,16 @@ describe('planMonicaImport — fields, notes, tags', () => {
 		exp.contacts = [contact(1, 'A', null), contact(2, 'B', null)];
 		exp.tags = [{ id: 4, name: 'Kindergarten', contactIds: [1, 2] }];
 		const plan = planMonicaImport(exp, opts);
-		expect(plan.tags).toEqual([{ id: 'monica:tag:4', householdId: 'h1', name: 'Kindergarten', color: expect.any(String), createdAt: NOW, updatedAt: NOW }]);
+		expect(plan.tags).toEqual([
+			{
+				id: 'monica:tag:4',
+				householdId: 'h1',
+				name: 'Kindergarten',
+				color: expect.any(String),
+				createdAt: NOW,
+				updatedAt: NOW
+			}
+		]);
 		expect(plan.contactTags).toEqual([
 			{ contactId: 'monica:contact:1', tagId: 'monica:tag:4' },
 			{ contactId: 'monica:contact:2', tagId: 'monica:tag:4' }
@@ -293,8 +387,24 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 		const exp = emptyExport();
 		exp.contacts = [contact(1, 'A', null), contact(2, 'B', null), contact(3, 'C', null)];
 		exp.activities = [
-			{ id: 3, summary: 'Bier getrunken bei Schuum', description: 'good night', happenedAt: '2023-06-16', typeKey: 'ate_restaurant', contactIds: [1, 2, 3], createdAt: null },
-			{ id: 4, summary: 'nobody', description: null, happenedAt: '2023-06-17', typeKey: null, contactIds: [], createdAt: null }
+			{
+				id: 3,
+				summary: 'Bier getrunken bei Schuum',
+				description: 'good night',
+				happenedAt: '2023-06-16',
+				typeKey: 'ate_restaurant',
+				contactIds: [1, 2, 3],
+				createdAt: null
+			},
+			{
+				id: 4,
+				summary: 'nobody',
+				description: null,
+				happenedAt: '2023-06-17',
+				typeKey: null,
+				contactIds: [],
+				createdAt: null
+			}
 		];
 		const plan = planMonicaImport(exp, opts);
 		expect(plan.interactions).toHaveLength(1);
@@ -309,23 +419,55 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 			createdBy: 'u1',
 			visibility: 'shared'
 		});
-		expect(plan.report.skipped).toContainEqual({ what: 'activity', count: 1, why: 'linkedToNoPerson' });
+		expect(plan.report.skipped).toContainEqual({
+			what: 'activity',
+			count: 1,
+			why: 'linkedToNoPerson'
+		});
 	});
 
 	it('plans photos per contact and marks the one used as avatar', () => {
 		const exp = emptyExport();
 		exp.contacts = [contact(1, 'A', null, { avatarSource: 'photo', avatarPhotoId: 10 })];
 		exp.photos = [
-			{ id: 10, path: 'photos/a.jpg', mime: 'image/jpeg', sizeBytes: 100, contactId: 1, createdAt: null, dataUrl: null },
-			{ id: 11, path: 'photos/b.jpg', mime: 'image/jpeg', sizeBytes: 200, contactId: 1, createdAt: null, dataUrl: null },
-			{ id: 12, path: 'photos/orphan.jpg', mime: 'image/jpeg', sizeBytes: 5, contactId: null, createdAt: null, dataUrl: null }
+			{
+				id: 10,
+				path: 'photos/a.jpg',
+				mime: 'image/jpeg',
+				sizeBytes: 100,
+				contactId: 1,
+				createdAt: null,
+				dataUrl: null
+			},
+			{
+				id: 11,
+				path: 'photos/b.jpg',
+				mime: 'image/jpeg',
+				sizeBytes: 200,
+				contactId: 1,
+				createdAt: null,
+				dataUrl: null
+			},
+			{
+				id: 12,
+				path: 'photos/orphan.jpg',
+				mime: 'image/jpeg',
+				sizeBytes: 5,
+				contactId: null,
+				createdAt: null,
+				dataUrl: null
+			}
 		];
 		const plan = planMonicaImport(exp, opts);
 		expect(plan.photos.map((p) => [p.id, p.contactId, p.sourcePath, p.isAvatar])).toEqual([
 			['monica:photo:10', 'monica:contact:1', 'photos/a.jpg', true],
 			['monica:photo:11', 'monica:contact:1', 'photos/b.jpg', false]
 		]);
-		expect(plan.report.skipped).toContainEqual({ what: 'photo', count: 1, why: 'attachedToNoPerson' });
+		expect(plan.report.skipped).toContainEqual({
+			what: 'photo',
+			count: 1,
+			why: 'attachedToNoPerson'
+		});
 	});
 
 	it('reports free journal entries, derived reminders and extra users instead of losing them silently', () => {
@@ -339,7 +481,11 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 			why: 'notAttachedToPerson',
 			detail: 'Besuch Schuum'
 		});
-		expect(plan.report.skipped).toContainEqual({ what: 'reminder', count: 32, why: 'remindersDerived' });
+		expect(plan.report.skipped).toContainEqual({
+			what: 'reminder',
+			count: 32,
+			why: 'remindersDerived'
+		});
 		expect(plan.report.warnings).toContainEqual({ code: 'manyUsers', count: 2 });
 	});
 
@@ -361,7 +507,9 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 		expect(plan.contacts[0]?.id).toBe('vcard:contact:1');
 		expect(plan.notes[0]?.id).toBe('vcard:note:1');
 		// The positive control: the same records read from a dump keep Monica's own ids.
-		expect(planMonicaImport({ ...exp, source: 'sql' }, opts).contacts[0]?.id).toBe('monica:contact:1');
+		expect(planMonicaImport({ ...exp, source: 'sql' }, opts).contacts[0]?.id).toBe(
+			'monica:contact:1'
+		);
 	});
 
 	it('says out loud that a vCard carries people but not how they are connected', () => {
@@ -369,14 +517,21 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 
 		const message = { code: 'vcardPeopleOnly' as const };
 		expect(planMonicaImport(exp, opts).report.warnings).toContainEqual(message);
-		expect(planMonicaImport({ ...exp, source: 'sql' }, opts).report.warnings).not.toContainEqual(message);
+		expect(planMonicaImport({ ...exp, source: 'sql' }, opts).report.warnings).not.toContainEqual(
+			message
+		);
 	});
 
 	it('keeps a website as a link, without pasting a protocol in front of it', () => {
 		const exp = emptyExport();
 		exp.contacts = [contact(1, 'Ada', null)];
-		exp.contactFieldTypes = [...exp.contactFieldTypes, { id: 7, name: 'Website', type: 'url', protocol: null }];
-		exp.contactFields = [{ id: 1, contactId: 1, typeId: 7, data: 'https://ada.example', createdAt: null }];
+		exp.contactFieldTypes = [
+			...exp.contactFieldTypes,
+			{ id: 7, name: 'Website', type: 'url', protocol: null }
+		];
+		exp.contactFields = [
+			{ id: 1, contactId: 1, typeId: 7, data: 'https://ada.example', createdAt: null }
+		];
 
 		expect(planMonicaImport(exp, opts).contactFields[0]).toMatchObject({
 			kind: 'url',
@@ -394,6 +549,15 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 		];
 		exp.notes = [{ id: 1, contactId: 1, body: 'x', isFavorited: false, createdAt: null }];
 		const { counts } = planMonicaImport(exp, opts).report;
-		expect(counts).toEqual({ contacts: 2, relationships: 1, relationshipTypes: 0, contactFields: 0, notes: 1, interactions: 0, tags: 0, photos: 0 });
+		expect(counts).toEqual({
+			contacts: 2,
+			relationships: 1,
+			relationshipTypes: 0,
+			contactFields: 0,
+			notes: 1,
+			interactions: 0,
+			tags: 0,
+			photos: 0
+		});
 	});
 });

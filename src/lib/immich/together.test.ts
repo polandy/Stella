@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import { offersTogether, stripViews, togetherCandidates, viewShown } from './together';
 
-const tie = (typeKey: string, side: 'forward' | 'reverse' = 'forward', status: 'current' | 'former' = 'current') => ({
+const tie = (
+	typeKey: string,
+	side: 'forward' | 'reverse' = 'forward',
+	status: 'current' | 'former' = 'current'
+) => ({
 	otherContactId: `c-${typeKey}-${side}`,
 	typeKey,
 	side,
@@ -10,13 +14,25 @@ const tie = (typeKey: string, side: 'forward' | 'reverse' = 'forward', status: '
 
 describe('offersTogether', () => {
 	it('is offered for a couple and for a parent and child, from either end', () => {
-		for (const row of [tie('spouse'), tie('partner'), tie('parent_child'), tie('parent_child', 'reverse')]) {
+		for (const row of [
+			tie('spouse'),
+			tie('partner'),
+			tie('parent_child'),
+			tie('parent_child', 'reverse')
+		]) {
 			expect(offersTogether(row)).toBe(true);
 		}
 	});
 
 	it('is not offered for any other tie, nor for a household’s own type', () => {
-		for (const key of ['sibling', 'grandparent_grandchild', 'friend', 'colleague', 'cousin', 'godparent-own-type']) {
+		for (const key of [
+			'sibling',
+			'grandparent_grandchild',
+			'friend',
+			'colleague',
+			'cousin',
+			'godparent-own-type'
+		]) {
 			expect(offersTogether(tie(key))).toBe(false);
 		}
 	});
@@ -43,20 +59,31 @@ describe('togetherCandidates', () => {
 	});
 
 	it('never asks about the page’s own person, and leaves the viewer out when they have no person', () => {
-		expect(togetherCandidates({ pageContactId: 'c-me', selfContactId: 'c-me', ties: [] })).toEqual([]);
-		expect(togetherCandidates({ pageContactId: 'c-julia', selfContactId: null, ties: [] })).toEqual([]);
+		expect(togetherCandidates({ pageContactId: 'c-me', selfContactId: 'c-me', ties: [] })).toEqual(
+			[]
+		);
+		expect(togetherCandidates({ pageContactId: 'c-julia', selfContactId: null, ties: [] })).toEqual(
+			[]
+		);
 	});
 });
 
 describe('stripViews', () => {
-	const base = { pageContactId: 'c-julia', selfContactId: 'c-me', togetherWith: ['c-me', 'c-bert'] };
+	const base = {
+		pageContactId: 'c-julia',
+		selfContactId: 'c-me',
+		togetherWith: ['c-me', 'c-bert']
+	};
 
 	it('is the person’s own photos alone when nobody is linked to be seen with them', () => {
 		expect(stripViews({ ...base, togetherWith: [], askedByRow: null })).toEqual([{ kind: 'own' }]);
 	});
 
 	it('offers *You and Julia* when the viewer’s own person is linked', () => {
-		expect(stripViews({ ...base, askedByRow: null })).toEqual([{ kind: 'own' }, { kind: 'withYou', contactId: 'c-me' }]);
+		expect(stripViews({ ...base, askedByRow: null })).toEqual([
+			{ kind: 'own' },
+			{ kind: 'withYou', contactId: 'c-me' }
+		]);
 	});
 
 	it('adds the pair a relationship row asked for', () => {
@@ -68,14 +95,20 @@ describe('stripViews', () => {
 	});
 
 	it('reads a row naming the viewer as *You and Julia*, not as a third view', () => {
-		expect(stripViews({ ...base, askedByRow: 'c-me' })).toEqual([{ kind: 'own' }, { kind: 'withYou', contactId: 'c-me' }]);
+		expect(stripViews({ ...base, askedByRow: 'c-me' })).toEqual([
+			{ kind: 'own' },
+			{ kind: 'withYou', contactId: 'c-me' }
+		]);
 	});
 
 	it('offers nothing for someone not linked, and no *You and …* on the viewer’s own page', () => {
-		expect(stripViews({ ...base, askedByRow: 'c-tom' })).toEqual([{ kind: 'own' }, { kind: 'withYou', contactId: 'c-me' }]);
-		expect(stripViews({ ...base, pageContactId: 'c-me', togetherWith: ['c-bert'], askedByRow: null })).toEqual([
-			{ kind: 'own' }
+		expect(stripViews({ ...base, askedByRow: 'c-tom' })).toEqual([
+			{ kind: 'own' },
+			{ kind: 'withYou', contactId: 'c-me' }
 		]);
+		expect(
+			stripViews({ ...base, pageContactId: 'c-me', togetherWith: ['c-bert'], askedByRow: null })
+		).toEqual([{ kind: 'own' }]);
 	});
 });
 

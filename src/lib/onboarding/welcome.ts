@@ -39,7 +39,9 @@ export function welcomeSteps(household: HouseholdSoFar): WelcomeStep[] | null {
 	const othersThere = peopleIds.length - (hasAddedThemselves ? 1 : 0);
 	if (othersThere > 0) return null;
 
-	const steps: WelcomeStep[] = [{ id: 'self', href: newPersonHref({ self: true }), done: hasAddedThemselves }];
+	const steps: WelcomeStep[] = [
+		{ id: 'self', href: newPersonHref({ self: true }), done: hasAddedThemselves }
+	];
 	if (isAdmin) steps.push({ id: 'import', href: '/settings/import', done: false });
 	steps.push({ id: 'add', href: newPersonHref(), done: false });
 	return steps;

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { deriveDisplayName, nameWithNickname, shownNameIsChosen, withNameParts } from './display-name';
+import {
+	deriveDisplayName,
+	nameWithNickname,
+	shownNameIsChosen,
+	withNameParts
+} from './display-name';
 
 /*
  * Pure derivation of a contact's required, never-empty display name (docs/03 §contact).
@@ -58,7 +63,12 @@ describe('withNameParts', () => {
 	});
 
 	it('leaves the parts it is not given as they are', () => {
-		const tom = { displayName: 'Thomas Keller', firstName: 'Thomas', lastName: 'Keller', nickname: 'Tom' };
+		const tom = {
+			displayName: 'Thomas Keller',
+			firstName: 'Thomas',
+			lastName: 'Keller',
+			nickname: 'Tom'
+		};
 		expect(withNameParts(tom, { lastName: 'Brunner' }, 'en')).toEqual({
 			displayName: 'Thomas “Tom” Brunner',
 			firstName: 'Thomas',
@@ -68,8 +78,15 @@ describe('withNameParts', () => {
 	});
 
 	it('trims the parts and stores a blank one as none', () => {
-		const tom = { displayName: 'Thomas Keller', firstName: 'Thomas', lastName: 'Keller', nickname: null };
-		expect(withNameParts(tom, { firstName: '  Tom ', lastName: '   ', nickname: '' }, 'en')).toEqual({
+		const tom = {
+			displayName: 'Thomas Keller',
+			firstName: 'Thomas',
+			lastName: 'Keller',
+			nickname: null
+		};
+		expect(
+			withNameParts(tom, { firstName: '  Tom ', lastName: '   ', nickname: '' }, 'en')
+		).toEqual({
 			displayName: 'Tom',
 			firstName: 'Tom',
 			lastName: null,
@@ -100,7 +117,12 @@ describe('withNameParts', () => {
 	});
 
 	it('keeps the shown name when every part is emptied', () => {
-		const tom = { displayName: 'Thomas Keller', firstName: 'Thomas', lastName: 'Keller', nickname: null };
+		const tom = {
+			displayName: 'Thomas Keller',
+			firstName: 'Thomas',
+			lastName: 'Keller',
+			nickname: null
+		};
 		expect(withNameParts(tom, { firstName: '', lastName: '', nickname: '' }, 'en')).toEqual({
 			displayName: 'Thomas Keller',
 			firstName: null,
@@ -117,15 +139,31 @@ describe('withNameParts', () => {
 
 describe('shownNameIsChosen', () => {
 	it('is false while the parts make the shown name', () => {
-		expect(shownNameIsChosen({ displayName: 'Thomas Brunner', firstName: 'Thomas', lastName: 'Brunner', nickname: null })).toBe(false);
+		expect(
+			shownNameIsChosen({
+				displayName: 'Thomas Brunner',
+				firstName: 'Thomas',
+				lastName: 'Brunner',
+				nickname: null
+			})
+		).toBe(false);
 	});
 
 	it('is true for a shown name a member chose', () => {
-		expect(shownNameIsChosen({ displayName: 'Opa Hans', firstName: 'Hans', lastName: 'Brunner', nickname: null })).toBe(true);
+		expect(
+			shownNameIsChosen({
+				displayName: 'Opa Hans',
+				firstName: 'Hans',
+				lastName: 'Brunner',
+				nickname: null
+			})
+		).toBe(true);
 	});
 
 	it('is false with no parts at all, which the first parts given will make again', () => {
-		expect(shownNameIsChosen({ displayName: 'Thomas', firstName: null, lastName: null, nickname: null })).toBe(false);
+		expect(
+			shownNameIsChosen({ displayName: 'Thomas', firstName: null, lastName: null, nickname: null })
+		).toBe(false);
 	});
 });
 
@@ -142,7 +180,9 @@ describe('the nickname in the shown name', () => {
 	});
 
 	it('is left out when it is the first name again, ignoring case and accents', () => {
-		expect(deriveDisplayName({ firstName: 'René', lastName: 'Keller', nickname: 'rene' }, 'de')).toBe('René Keller');
+		expect(
+			deriveDisplayName({ firstName: 'René', lastName: 'Keller', nickname: 'rene' }, 'de')
+		).toBe('René Keller');
 	});
 
 	it('stands in for a missing first name, unquoted', () => {
@@ -155,13 +195,22 @@ describe('the nickname in the shown name', () => {
 	});
 
 	it('keeps a nickname-less name as before', () => {
-		expect(deriveDisplayName({ firstName: 'Thomas', lastName: 'Brunner' }, 'de')).toBe('Thomas Brunner');
+		expect(deriveDisplayName({ firstName: 'Thomas', lastName: 'Brunner' }, 'de')).toBe(
+			'Thomas Brunner'
+		);
 	});
 
 	it('follows the parts from a name made by the old rule, writing the new one', () => {
-		const old = { displayName: 'Thomas Brunner', firstName: 'Thomas', lastName: 'Brunner', nickname: 'Tom' };
+		const old = {
+			displayName: 'Thomas Brunner',
+			firstName: 'Thomas',
+			lastName: 'Brunner',
+			nickname: 'Tom'
+		};
 		expect(shownNameIsChosen(old)).toBe(false);
-		expect(withNameParts(old, { lastName: 'Keller' }, 'de').displayName).toBe('Thomas „Tom“ Keller');
+		expect(withNameParts(old, { lastName: 'Keller' }, 'de').displayName).toBe(
+			'Thomas „Tom“ Keller'
+		);
 	});
 
 	it('reads a name written in either language’s quote marks as following the parts', () => {
@@ -174,7 +223,12 @@ describe('the nickname in the shown name', () => {
 
 describe('nameWithNickname', () => {
 	it('gives the new name for a row the old rule made, and null for anything else', () => {
-		const row = { displayName: 'Thomas Brunner', firstName: 'Thomas', lastName: 'Brunner', nickname: 'Tom' };
+		const row = {
+			displayName: 'Thomas Brunner',
+			firstName: 'Thomas',
+			lastName: 'Brunner',
+			nickname: 'Tom'
+		};
 		expect(nameWithNickname(row, 'de')).toBe('Thomas „Tom“ Brunner');
 		expect(nameWithNickname({ ...row, displayName: 'Opa Kurt' }, 'de')).toBeNull();
 		expect(nameWithNickname({ ...row, nickname: null }, 'de')).toBeNull();

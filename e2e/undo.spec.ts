@@ -9,7 +9,9 @@ import { fillDate, openPerson, signIn } from './app';
 
 const TITLE = 'Quill call that was logged twice';
 
-test('a removed touchpoint comes back with Undo and is only sent when the page is left', async ({ page }) => {
+test('a removed touchpoint comes back with Undo and is only sent when the page is left', async ({
+	page
+}) => {
 	await signIn(page);
 	await openPerson(page, /Rosa Brunner/);
 
@@ -37,7 +39,10 @@ test('a removed touchpoint comes back with Undo and is only sent when the page i
 	await expect(page.getByTestId('story-timeline')).toContainText(TITLE);
 
 	// Remove again and leave through a link: the removal is sent before the next screen loads.
-	await page.locator('[data-story-item]', { hasText: TITLE }).getByRole('button', { name: 'Remove interaction' }).click();
+	await page
+		.locator('[data-story-item]', { hasText: TITLE })
+		.getByRole('button', { name: 'Remove interaction' })
+		.click();
 	await expect(page.getByTestId('toast-undo')).toBeVisible();
 	await openPerson(page, /Rosa Brunner/);
 	await expect(page.getByTestId('story-timeline')).not.toContainText(TITLE);

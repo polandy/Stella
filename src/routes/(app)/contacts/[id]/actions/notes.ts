@@ -40,7 +40,11 @@ export const noteActions = {
 		if (command?.type !== 'note.add') {
 			return fail(400, { noteError: say(locals, 'errors.command.malformed') });
 		}
-		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale };
+		const author = {
+			userId: locals.user.id,
+			householdId: locals.user.householdId,
+			locale: locals.locale
+		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(400, {
@@ -52,5 +56,5 @@ export const noteActions = {
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);
-	},
+	}
 } satisfies Actions;

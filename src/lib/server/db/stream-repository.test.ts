@@ -29,26 +29,70 @@ let repo: ReturnType<typeof createDrizzleStreamRepository>;
 
 type Vis = 'shared' | 'private';
 function seedContact(id: string, at: number, visibility: Vis = 'shared', createdBy = U1) {
-	db.insert(schema.contact).values({ id, householdId: H, createdBy, visibility, displayName: id, createdAt: at }).run();
+	db.insert(schema.contact)
+		.values({ id, householdId: H, createdBy, visibility, displayName: id, createdAt: at })
+		.run();
 }
 let day = 0;
 /** Each seeded entry gets its own day: the journal allows one entry per (contact, author, day, visibility). */
-function seedEntry(id: string, contactId: string, at: number, visibility: Vis = 'shared', createdBy = U1, mentions: string[] = []) {
+function seedEntry(
+	id: string,
+	contactId: string,
+	at: number,
+	visibility: Vis = 'shared',
+	createdBy = U1,
+	mentions: string[] = []
+) {
 	const entryDate = `2026-09-${String(++day).padStart(2, '0')}`;
 	db.insert(schema.journalEntry)
-		.values({ id, contactId, createdBy, visibility, entryDate, body: `moment ${id}`, createdAt: at, updatedAt: at })
+		.values({
+			id,
+			contactId,
+			createdBy,
+			visibility,
+			entryDate,
+			body: `moment ${id}`,
+			createdAt: at,
+			updatedAt: at
+		})
 		.run();
-	for (const m of mentions) db.insert(schema.journalMention).values({ journalEntryId: id, contactId: m }).run();
+	for (const m of mentions)
+		db.insert(schema.journalMention).values({ journalEntryId: id, contactId: m }).run();
 }
-function seedInteraction(id: string, contactId: string, at: number, visibility: Vis = 'shared', createdBy = U1, participants: string[] = []) {
+function seedInteraction(
+	id: string,
+	contactId: string,
+	at: number,
+	visibility: Vis = 'shared',
+	createdBy = U1,
+	participants: string[] = []
+) {
 	db.insert(schema.interaction)
-		.values({ id, contactId, createdBy, visibility, kind: 'call', happenedAt: '2026-09-03', title: `call ${id}`, createdAt: at })
+		.values({
+			id,
+			contactId,
+			createdBy,
+			visibility,
+			kind: 'call',
+			happenedAt: '2026-09-03',
+			title: `call ${id}`,
+			createdAt: at
+		})
 		.run();
-	for (const c of participants) db.insert(schema.interactionParticipant).values({ interactionId: id, contactId: c }).run();
+	for (const c of participants)
+		db.insert(schema.interactionParticipant).values({ interactionId: id, contactId: c }).run();
 }
 function seedRelationship(id: string, from: string, to: string, at: number, createdBy = U1) {
 	db.insert(schema.relationship)
-		.values({ id, householdId: H, fromContactId: from, toContactId: to, typeId: 'sister', createdBy, createdAt: at })
+		.values({
+			id,
+			householdId: H,
+			fromContactId: from,
+			toContactId: to,
+			typeId: 'sister',
+			createdBy,
+			createdAt: at
+		})
 		.run();
 }
 
@@ -66,7 +110,13 @@ beforeEach(() => {
 		])
 		.run();
 	db.insert(schema.relationshipType)
-		.values({ id: 'sister', key: 'sister', forwardLabel: 'sister', reverseLabel: 'sibling', category: 'family' })
+		.values({
+			id: 'sister',
+			key: 'sister',
+			forwardLabel: 'sister',
+			reverseLabel: 'sibling',
+			category: 'family'
+		})
 		.run();
 	repo = createDrizzleStreamRepository(db);
 });
@@ -79,7 +129,16 @@ describe('recentMoments', () => {
 		seedEntry('old', 'julia', 100);
 		seedEntry('new', 'julia', 300, 'shared', U1, ['marco', 'secret']);
 		db.insert(schema.photo)
-			.values({ id: 'ph1', householdId: H, contactId: 'julia', journalEntryId: 'new', createdBy: U1, filePath: 'a', thumbPath: 'b', mime: 'image/jpeg' })
+			.values({
+				id: 'ph1',
+				householdId: H,
+				contactId: 'julia',
+				journalEntryId: 'new',
+				createdBy: U1,
+				filePath: 'a',
+				thumbPath: 'b',
+				mime: 'image/jpeg'
+			})
 			.run();
 
 		const rows = await repo.recentMoments(asU2, EVERYONE);
@@ -95,7 +154,10 @@ describe('recentMoments', () => {
 		seedEntry('earlier-today', 'julia', 100);
 		seedEntry('in-between', 'julia', 300);
 		// A second moment the same day lands in the first entry (§2.22.1) and touches it at 400.
-		db.update(schema.journalEntry).set({ updatedAt: 400 }).where(eq(schema.journalEntry.id, 'earlier-today')).run();
+		db.update(schema.journalEntry)
+			.set({ updatedAt: 400 })
+			.where(eq(schema.journalEntry.id, 'earlier-today'))
+			.run();
 
 		const rows = await repo.recentMoments(asU1, EVERYONE);
 		expect(rows.map((r) => [r.id, r.at])).toEqual([
@@ -112,7 +174,11 @@ describe('recentMoments', () => {
 		seedEntry('shared', 'julia', 300);
 
 		expect((await repo.recentMoments(asU2, EVERYONE)).map((r) => r.id)).toEqual(['shared']);
-		expect((await repo.recentMoments(asU1, EVERYONE)).map((r) => r.id)).toEqual(['shared', 'on-secret', 'mine-private']);
+		expect((await repo.recentMoments(asU1, EVERYONE)).map((r) => r.id)).toEqual([
+			'shared',
+			'on-secret',
+			'mine-private'
+		]);
 	});
 });
 
@@ -144,7 +210,11 @@ describe('recentInteractions', () => {
 		seedInteraction('shared', 'oma', 300);
 
 		expect((await repo.recentInteractions(asU2, EVERYONE)).map((r) => r.id)).toEqual(['shared']);
-		expect((await repo.recentInteractions(asU1, EVERYONE)).map((r) => r.id)).toEqual(['shared', 'on-secret', 'mine-private']);
+		expect((await repo.recentInteractions(asU1, EVERYONE)).map((r) => r.id)).toEqual([
+			'shared',
+			'on-secret',
+			'mine-private'
+		]);
 	});
 });
 
@@ -205,7 +275,10 @@ describe('recentNotices', () => {
 
 		const rows = await repo.recentNotices(asU2, EVERYONE);
 		expect(rows.map((r) => r.id)).toEqual(['newer', 'older']);
-		expect(rows[0]).toMatchObject({ actor: { id: U1, name: 'One' }, content: { kind: 'text', text: 'removed Person newer' } });
+		expect(rows[0]).toMatchObject({
+			actor: { id: U1, name: 'One' },
+			content: { kind: 'text', text: 'removed Person newer' }
+		});
 	});
 
 	it('reports a merge too — a name stops existing either way', async () => {
@@ -233,7 +306,9 @@ describe('recentNotices', () => {
 			.run();
 
 		const rows = await repo.recentNotices(asU2, EVERYONE);
-		expect(rows.map((r) => r.content)).toEqual([{ kind: 'text', text: 'exported the household archive (12 people)' }]);
+		expect(rows.map((r) => r.content)).toEqual([
+			{ kind: 'text', text: 'exported the household archive (12 people)' }
+		]);
 	});
 
 	it('reports an import, because a restore moves the household\u2019s data too', async () => {
@@ -287,12 +362,15 @@ describe('recentNotices', () => {
 
 		const rows = await repo.recentNotices(asU2, EVERYONE);
 		// Facts, not prose: Home says the line in each reader's language.
-		expect(rows.map((r) => r.content)).toEqual([{ kind: 'lastNames', lastName: 'Brunner', count: 4 }]);
+		expect(rows.map((r) => r.content)).toEqual([
+			{ kind: 'lastNames', lastName: 'Brunner', count: 4 }
+		]);
 	});
 
 	it('reports a rename as its facts, and a private person\u2019s rename to their creator only', async () => {
 		const rename = (id: string, visibility: 'shared' | 'private', at: number) =>
-			db.insert(schema.activityLog)
+			db
+				.insert(schema.activityLog)
 				.values({
 					id,
 					householdId: H,
@@ -324,15 +402,22 @@ describe('recentNotices', () => {
 
 		expect((await repo.recentNotices(asU2, EVERYONE)).map((r) => r.id)).toEqual(['open']);
 		// positive control: the member who deleted them sees both.
-		expect((await repo.recentNotices(asU1, EVERYONE)).map((r) => r.id).sort()).toEqual(['open', 'secret']);
+		expect((await repo.recentNotices(asU1, EVERYONE)).map((r) => r.id).sort()).toEqual([
+			'open',
+			'secret'
+		]);
 	});
 
 	it('narrowed to one member, reports only what that member did', async () => {
 		logRemoval('by-one', 100, U1, 'shared');
 		logRemoval('by-two', 200, U2, 'shared');
 
-		expect((await repo.recentNotices(asU2, { limit: 10, memberId: U1 })).map((r) => r.id)).toEqual(['by-one']);
-		expect((await repo.recentNotices(asU2, { limit: 10, memberId: U2 })).map((r) => r.id)).toEqual(['by-two']);
+		expect((await repo.recentNotices(asU2, { limit: 10, memberId: U1 })).map((r) => r.id)).toEqual([
+			'by-one'
+		]);
+		expect((await repo.recentNotices(asU2, { limit: 10, memberId: U2 })).map((r) => r.id)).toEqual([
+			'by-two'
+		]);
 	});
 });
 
@@ -379,9 +464,27 @@ describe('narrowed to one member (docs/02 §2.22.2)', () => {
 });
 
 describe('recentCirclePhotos', () => {
-	function seedCirclePhoto(id: string, circleId: string, at: number, visibility: Vis = 'shared', createdBy = U1, role: string | null = null) {
+	function seedCirclePhoto(
+		id: string,
+		circleId: string,
+		at: number,
+		visibility: Vis = 'shared',
+		createdBy = U1,
+		role: string | null = null
+	) {
 		db.insert(schema.photo)
-			.values({ id, householdId: H, circleId, circleRole: role, createdBy, visibility, filePath: `${id}.jpg`, thumbPath: `${id}_t.jpg`, mime: 'image/jpeg', createdAt: at })
+			.values({
+				id,
+				householdId: H,
+				circleId,
+				circleRole: role,
+				createdBy,
+				visibility,
+				filePath: `${id}.jpg`,
+				thumbPath: `${id}_t.jpg`,
+				mime: 'image/jpeg',
+				createdAt: at
+			})
 			.run();
 	}
 
@@ -398,12 +501,37 @@ describe('recentCirclePhotos', () => {
 		seedCirclePhoto('theirs', 'class', 250, 'private', U1);
 		seedCirclePhoto('hidden', 'secret', 400);
 		expect(await repo.recentCirclePhotos(asU2, EVERYONE)).toEqual([
-			{ id: 'new', at: 300, actor: { id: U1, name: 'One' }, circle: { id: 'class', name: 'Class 1B' }, role: null, visibility: 'shared' },
-			{ id: 'mine', at: 200, actor: { id: U2, name: 'Two' }, circle: { id: 'class', name: 'Class 1B' }, role: null, visibility: 'private' },
-			{ id: 'old', at: 100, actor: { id: U1, name: 'One' }, circle: { id: 'class', name: 'Class 1B' }, role: 'Student', visibility: 'shared' }
+			{
+				id: 'new',
+				at: 300,
+				actor: { id: U1, name: 'One' },
+				circle: { id: 'class', name: 'Class 1B' },
+				role: null,
+				visibility: 'shared'
+			},
+			{
+				id: 'mine',
+				at: 200,
+				actor: { id: U2, name: 'Two' },
+				circle: { id: 'class', name: 'Class 1B' },
+				role: null,
+				visibility: 'private'
+			},
+			{
+				id: 'old',
+				at: 100,
+				actor: { id: U1, name: 'One' },
+				circle: { id: 'class', name: 'Class 1B' },
+				role: 'Student',
+				visibility: 'shared'
+			}
 		]);
-		expect((await repo.recentCirclePhotos(asU2, { limit: 10, memberId: U2 })).map((r) => r.id)).toEqual(['mine']);
-		expect((await repo.recentCirclePhotos(asU1, { limit: 2, memberId: null })).map((r) => r.id)).toEqual(['hidden', 'new']);
+		expect(
+			(await repo.recentCirclePhotos(asU2, { limit: 10, memberId: U2 })).map((r) => r.id)
+		).toEqual(['mine']);
+		expect(
+			(await repo.recentCirclePhotos(asU1, { limit: 2, memberId: null })).map((r) => r.id)
+		).toEqual(['hidden', 'new']);
 	});
 });
 
@@ -416,7 +544,11 @@ describe('recentRelationships', () => {
 		seedRelationship('r2', 'secret', 'marco', 200);
 		const rows = await repo.recentRelationships(asU2, EVERYONE);
 		expect(rows.map((r) => r.id)).toEqual(['r1']);
-		expect(rows[0]).toMatchObject({ from: { name: 'julia' }, to: { name: 'marco' }, label: 'sister' });
+		expect(rows[0]).toMatchObject({
+			from: { name: 'julia' },
+			to: { name: 'marco' },
+			label: 'sister'
+		});
 		expect((await repo.recentRelationships(asU1, EVERYONE)).map((r) => r.id)).toEqual(['r2', 'r1']);
 	});
 });
@@ -428,6 +560,11 @@ describe('buildStream over the adapter', () => {
 		seedRelationship('r1', 'julia', 'marco', 300);
 		seedEntry('m1', 'julia', 400);
 		const items = await buildStream({ stream: repo }, asU2);
-		expect(items.map((i) => `${i.kind}:${i.id}`)).toEqual(['moment:m1', 'relationship:r1', 'person:marco', 'person:julia']);
+		expect(items.map((i) => `${i.kind}:${i.id}`)).toEqual([
+			'moment:m1',
+			'relationship:r1',
+			'person:marco',
+			'person:julia'
+		]);
 	});
 });

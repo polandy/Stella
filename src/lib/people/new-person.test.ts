@@ -82,12 +82,16 @@ describe('capitalisedIfTypedLowercase', () => {
 describe('isKnownByMoreThanAFirstName', () => {
 	it('takes a last name, a description, or a whole name typed as one', () => {
 		expect(isKnownByMoreThanAFirstName({ firstName: 'Thomas', lastName: 'Widmer' })).toBe(true);
-		expect(isKnownByMoreThanAFirstName({ firstName: 'Thomas', description: 'Hut warden' })).toBe(true);
+		expect(isKnownByMoreThanAFirstName({ firstName: 'Thomas', description: 'Hut warden' })).toBe(
+			true
+		);
 		expect(isKnownByMoreThanAFirstName({ displayName: 'Thomas Widmer' })).toBe(true);
 	});
 
 	it('refuses a first name alone, however it is written', () => {
-		expect(isKnownByMoreThanAFirstName({ firstName: 'Thomas', lastName: ' ', description: ' ' })).toBe(false);
+		expect(
+			isKnownByMoreThanAFirstName({ firstName: 'Thomas', lastName: ' ', description: ' ' })
+		).toBe(false);
 		expect(isKnownByMoreThanAFirstName({ displayName: 'Thomas' })).toBe(false);
 		expect(isKnownByMoreThanAFirstName({})).toBe(false);
 	});
@@ -109,7 +113,8 @@ describe('newPersonHref', () => {
 });
 
 describe('readNewPersonRequest', () => {
-	const read = (href: string) => readNewPersonRequest(new URL(href, 'http://stella.test').searchParams);
+	const read = (href: string) =>
+		readNewPersonRequest(new URL(href, 'http://stella.test').searchParams);
 
 	it('reads what newPersonHref wrote', () => {
 		expect(read(newPersonHref({ name: 'Lukas van der Berg' }))).toEqual({

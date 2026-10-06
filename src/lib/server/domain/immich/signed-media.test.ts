@@ -78,7 +78,10 @@ describe('createImmichMediaSigner', () => {
 			{ contactId: 'x'.repeat(129), personId: CARL_ID },
 			{ contactId: 'c-carl', personId: '../users/me' }
 		]) {
-			expect(await signer.verify(await signer.sign({ ...photo, together }))).toEqual({ ok: false, reason: 'invalid' });
+			expect(await signer.verify(await signer.sign({ ...photo, together }))).toEqual({
+				ok: false,
+				reason: 'invalid'
+			});
 		}
 	});
 
@@ -94,7 +97,11 @@ describe('createImmichMediaSigner', () => {
 	it('reads back the face of someone not in Stella yet, signed for the household', async () => {
 		const clock = fakeClock();
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });
-		const newcomer: SignableImmichMedia = { kind: 'newcomer', householdId: 'h-1', personId: CARL_ID };
+		const newcomer: SignableImmichMedia = {
+			kind: 'newcomer',
+			householdId: 'h-1',
+			personId: CARL_ID
+		};
 		expect(await signer.verify(await signer.sign(newcomer))).toEqual({
 			ok: true,
 			media: { ...newcomer, expiresAt: clock.now() + IMMICH_MEDIA_TTL_MS }

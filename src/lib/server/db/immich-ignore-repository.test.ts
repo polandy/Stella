@@ -23,7 +23,12 @@ const OTHER_PERSON = '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81';
 let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzleImmichIgnoreRepository>;
 
-const ignored = (contactId: string, immichPersonId = PERSON, ignoredBy = 'u-anna', ignoredAt = 5) => ({
+const ignored = (
+	contactId: string,
+	immichPersonId = PERSON,
+	ignoredBy = 'u-anna',
+	ignoredAt = 5
+) => ({
 	contactId,
 	immichPersonId,
 	ignoredBy,
@@ -35,7 +40,12 @@ beforeEach(() => {
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
-	db.insert(schema.household).values([{ id: H, name: 'H' }, { id: OTHER_H, name: 'Other' }]).run();
+	db.insert(schema.household)
+		.values([
+			{ id: H, name: 'H' },
+			{ id: OTHER_H, name: 'Other' }
+		])
+		.run();
 	db.insert(schema.user)
 		.values([
 			{ id: 'u-anna', householdId: H, email: 'anna@example.test', name: 'Anna' },
@@ -45,8 +55,20 @@ beforeEach(() => {
 		.run();
 	db.insert(schema.contact)
 		.values([
-			{ id: 'c-shared', householdId: H, createdBy: 'u-anna', visibility: 'shared', displayName: 'Carl' },
-			{ id: 'c-private', householdId: H, createdBy: 'u-anna', visibility: 'private', displayName: 'Private' }
+			{
+				id: 'c-shared',
+				householdId: H,
+				createdBy: 'u-anna',
+				visibility: 'shared',
+				displayName: 'Carl'
+			},
+			{
+				id: 'c-private',
+				householdId: H,
+				createdBy: 'u-anna',
+				visibility: 'private',
+				displayName: 'Private'
+			}
 		])
 		.run();
 	repo = createDrizzleImmichIgnoreRepository(db);
@@ -57,7 +79,10 @@ describe('createDrizzleImmichIgnoreRepository', () => {
 		await repo.save([ignored('c-shared'), ignored('c-shared', OTHER_PERSON), ignored('c-private')]);
 
 		expect(await repo.listVisibleTo(asAnna)).toHaveLength(3);
-		expect(await repo.listVisibleTo(asBert)).toEqual([ignored('c-shared'), ignored('c-shared', OTHER_PERSON)]);
+		expect(await repo.listVisibleTo(asBert)).toEqual([
+			ignored('c-shared'),
+			ignored('c-shared', OTHER_PERSON)
+		]);
 		expect(await repo.listVisibleTo(asDora)).toEqual([]);
 	});
 

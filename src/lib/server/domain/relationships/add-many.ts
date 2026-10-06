@@ -35,8 +35,7 @@ export interface AddedRelationship {
 }
 
 export type AddRelationshipsResult =
-	| { ok: true; links: AddedRelationship[] }
-	| { ok: false; refusals: RelationshipRefusal[] };
+	{ ok: true; links: AddedRelationship[] } | { ok: false; refusals: RelationshipRefusal[] };
 
 /** A batch with nobody picked in it — there is no person to mark, so it is refused whole. */
 export class NobodyPickedError extends TranslatableError {
@@ -74,7 +73,11 @@ export async function addRelationships(
 		} catch (err) {
 			// A sentence for the member; anything else is ours and fails the whole batch loudly.
 			if (!(err instanceof TranslatableError)) throw err;
-			refusals.push({ targetId, targetName: await staging.nameOf(viewer, targetId), reason: err.phrase });
+			refusals.push({
+				targetId,
+				targetName: await staging.nameOf(viewer, targetId),
+				reason: err.phrase
+			});
 		}
 	}
 

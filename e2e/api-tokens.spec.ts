@@ -106,10 +106,7 @@ test('people sent through the import API get a page and a circle', async ({ page
 	await expect(page.getByText('Okafor Kindergarten').first()).toBeVisible();
 	// The link, as the person page's own list of entered relationships reads it.
 	await expect(
-		page
-			.getByTestId('relationship-list')
-			.locator('li')
-			.filter({ hasText: 'Ada Okafor' })
+		page.getByTestId('relationship-list').locator('li').filter({ hasText: 'Ada Okafor' })
 	).toContainText(/Parent|Mother|Father/);
 
 	const again = await page.request.post('/api/v1/import', {

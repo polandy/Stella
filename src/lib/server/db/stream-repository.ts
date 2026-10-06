@@ -54,7 +54,9 @@ function byMember(authorColumn: SQLiteColumn, memberId: string | null) {
 	return memberId === null ? undefined : eq(authorColumn, memberId);
 }
 
-export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schema>): StreamRepository {
+export function createDrizzleStreamRepository(
+	db: BunSQLiteDatabase<typeof schema>
+): StreamRepository {
 	return {
 		async recentMoments(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<MomentRow[]> {
 			const rows = db
@@ -161,7 +163,10 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 							inArray(activityLog.action, ['delete', 'merge', 'export', 'import']),
 							// The one update the household is told about: a batch of last names
 							// changes how several people read at once (docs/concepts/surnames.md §7).
-							and(eq(activityLog.action, 'update'), inArray(activityLog.entityType, [LAST_NAMES_ENTITY, RENAME_ENTITY]))
+							and(
+								eq(activityLog.action, 'update'),
+								inArray(activityLog.entityType, [LAST_NAMES_ENTITY, RENAME_ENTITY])
+							)
 						),
 						or(eq(activityLog.visibility, 'shared'), eq(activityLog.actorId, viewer.id)),
 						byMember(activityLog.actorId, memberId)
@@ -178,7 +183,10 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			}));
 		},
 
-		async recentCirclePhotos(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<CirclePhotoUploadRow[]> {
+		async recentCirclePhotos(
+			viewer: Viewer,
+			{ limit, memberId }: StreamQuery
+		): Promise<CirclePhotoUploadRow[]> {
 			const rows = db
 				.select({
 					id: photo.id,
@@ -195,7 +203,10 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 				.innerJoin(user, eq(photo.createdBy, user.id))
 				.where(
 					and(
-						circlePhotoVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy }),
+						circlePhotoVisibleTo(viewer, {
+							visibility: photo.visibility,
+							createdBy: photo.createdBy
+						}),
 						byMember(photo.createdBy, memberId)
 					)
 				)
@@ -240,7 +251,10 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			}));
 		},
 
-		async recentRelationships(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<RelationshipRow[]> {
+		async recentRelationships(
+			viewer: Viewer,
+			{ limit, memberId }: StreamQuery
+		): Promise<RelationshipRow[]> {
 			const fromC = alias(contact, 'from_c');
 			const toC = alias(contact, 'to_c');
 			const rows = db
@@ -290,7 +304,10 @@ export function createDrizzleStreamRepository(db: BunSQLiteDatabase<typeof schem
 			}));
 		},
 
-		async recentInteractions(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<InteractionRow[]> {
+		async recentInteractions(
+			viewer: Viewer,
+			{ limit, memberId }: StreamQuery
+		): Promise<InteractionRow[]> {
 			const rows = db
 				.select({
 					id: interaction.id,

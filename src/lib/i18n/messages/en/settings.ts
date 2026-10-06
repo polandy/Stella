@@ -17,7 +17,8 @@ export const settings = {
 	'settings.self.placeholder': 'Search for yourself by name',
 	'settings.self.clear': 'None of them is me',
 	'settings.self.saved': 'Saved.',
-	'settings.self.nobodyYet': 'Nobody is in Stella yet, so there is no one to pick. Add yourself and you are linked at once.',
+	'settings.self.nobodyYet':
+		'Nobody is in Stella yet, so there is no one to pick. Add yourself and you are linked at once.',
 	'settings.self.notListed': 'Not in the list yet?',
 	'settings.self.addYourself': 'Add yourself',
 	'settings.data.heading': 'Data',
@@ -33,7 +34,8 @@ export const settings = {
 	'settings.data.relationshipTypes': 'Relationship types',
 	'settings.data.relationshipTypesBlurb':
 		'Name the kinds of link your household records, beyond the ones Stella ships with.',
-	'settings.data.adminOnly': 'Importing, backups and the relationship types are for the household admin.',
+	'settings.data.adminOnly':
+		'Importing, backups and the relationship types are for the household admin.',
 	/*
 	 * The household-wide relationship review (docs/02 §2.4.1,
 	 * docs/concepts/relationship-suggestions.md §6.6) — for every member, not only the admin:
@@ -99,7 +101,8 @@ export const settings = {
 	'settings.about.available': (p: { version: string }) => `${p.version} is available`,
 	'settings.about.releaseNotes': 'Release notes',
 	'settings.about.current': 'This is the newest release.',
-	'settings.about.unreachable': 'GitHub could not be reached, so this may not be the newest release.',
+	'settings.about.unreachable':
+		'GitHub could not be reached, so this may not be the newest release.',
 	'settings.about.unreachableSince': (p: { when: string }) => `Last checked ${p.when}.`,
 	'settings.api.heading': 'API',
 	'settings.api.title': 'API tokens',

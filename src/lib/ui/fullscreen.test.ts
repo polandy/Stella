@@ -19,23 +19,37 @@ const WINDOWS =
 
 describe('dismissesFullscreenOnDrag', () => {
 	it('picks an iPhone and an iPad by their user agent', () => {
-		expect(dismissesFullscreenOnDrag({ userAgent: IPHONE, platform: 'iPhone', maxTouchPoints: 5 })).toBe(true);
-		expect(dismissesFullscreenOnDrag({ userAgent: IPAD, platform: 'iPad', maxTouchPoints: 5 })).toBe(true);
+		expect(
+			dismissesFullscreenOnDrag({ userAgent: IPHONE, platform: 'iPhone', maxTouchPoints: 5 })
+		).toBe(true);
+		expect(
+			dismissesFullscreenOnDrag({ userAgent: IPAD, platform: 'iPad', maxTouchPoints: 5 })
+		).toBe(true);
 	});
 
 	it('sees through iPadOS calling itself a Mac, by its touch points', () => {
-		expect(dismissesFullscreenOnDrag({ userAgent: IPADOS_AS_A_MAC, platform: 'MacIntel', maxTouchPoints: 5 })).toBe(
-			true
-		);
+		expect(
+			dismissesFullscreenOnDrag({
+				userAgent: IPADOS_AS_A_MAC,
+				platform: 'MacIntel',
+				maxTouchPoints: 5
+			})
+		).toBe(true);
 	});
 
 	it('leaves a real Mac, an Android phone and a touch laptop on the native Fullscreen API', () => {
-		expect(dismissesFullscreenOnDrag({ userAgent: IPADOS_AS_A_MAC, platform: 'MacIntel', maxTouchPoints: 0 })).toBe(
-			false
-		);
-		expect(dismissesFullscreenOnDrag({ userAgent: ANDROID, platform: 'Linux armv81', maxTouchPoints: 5 })).toBe(
-			false
-		);
-		expect(dismissesFullscreenOnDrag({ userAgent: WINDOWS, platform: 'Win32', maxTouchPoints: 10 })).toBe(false);
+		expect(
+			dismissesFullscreenOnDrag({
+				userAgent: IPADOS_AS_A_MAC,
+				platform: 'MacIntel',
+				maxTouchPoints: 0
+			})
+		).toBe(false);
+		expect(
+			dismissesFullscreenOnDrag({ userAgent: ANDROID, platform: 'Linux armv81', maxTouchPoints: 5 })
+		).toBe(false);
+		expect(
+			dismissesFullscreenOnDrag({ userAgent: WINDOWS, platform: 'Win32', maxTouchPoints: 10 })
+		).toBe(false);
 	});
 });

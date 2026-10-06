@@ -21,11 +21,7 @@ import type { RelationshipSide } from './type-options';
  */
 
 /** Why a type may not be claimed between two people. */
-export const EXCLUSION_REASONS = [
-	'alreadyRomantic',
-	'romanticTaken',
-	'parentsComplete'
-] as const;
+export const EXCLUSION_REASONS = ['alreadyRomantic', 'romanticTaken', 'parentsComplete'] as const;
 
 /** One of `EXCLUSION_REASONS`. */
 export type ExclusionReason = (typeof EXCLUSION_REASONS)[number];
@@ -188,7 +184,8 @@ export function exclusionFor(facts: ExclusionFacts, query: ExclusionQuery): Excl
 		// The pair being asked about is left out: flipping or re-stating this very link must
 		// not read as one more parent arriving.
 		const parents = facts.parentEdges.filter(
-			(edge) => edge.childId === child && !joins({ a: edge.parentId, b: edge.childId }, subjectId, targetId)
+			(edge) =>
+				edge.childId === child && !joins({ a: edge.parentId, b: edge.childId }, subjectId, targetId)
 		);
 		if (parents.length >= MAX_PARENTS) return { reason: 'parentsComplete', personId: child };
 	}

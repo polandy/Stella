@@ -33,7 +33,11 @@ async function newCircle(page: Page, name: string): Promise<void> {
 }
 
 /** Adds a person under a name of their own and puts them into a fresh circle under a role. */
-async function circleWithRoles(page: Page, circle: string, members: [first: string, last: string, role: string][]) {
+async function circleWithRoles(
+	page: Page,
+	circle: string,
+	members: [first: string, last: string, role: string][]
+) {
 	for (const [first, last] of members) await addPerson(page, first, last);
 	await newCircle(page, circle);
 	for (const [first, last, role] of members) {
@@ -42,7 +46,9 @@ async function circleWithRoles(page: Page, circle: string, members: [first: stri
 		await pickPerson(form.getByLabel('People'), `${first} ${last}`);
 		await form.getByLabel('Role (optional)').fill(role);
 		await form.getByRole('button', { name: 'Add', exact: true }).click();
-		await expect(page.getByTestId('member-grid').getByRole('link', { name: `${first} ${last}` })).toBeVisible();
+		await expect(
+			page.getByTestId('member-grid').getByRole('link', { name: `${first} ${last}` })
+		).toBeVisible();
 	}
 }
 
@@ -52,7 +58,9 @@ const lightbox = (page: Page) => page.getByTestId('circle-photo-lightbox');
 const cover = (page: Page) => page.getByTestId('circle-cover');
 /** The group of members under one role heading. */
 const roleGroup = (page: Page, role: string) =>
-	page.getByTestId('role-group').filter({ has: page.getByRole('heading', { name: new RegExp(`^${role} ·`) }) });
+	page
+		.getByTestId('role-group')
+		.filter({ has: page.getByRole('heading', { name: new RegExp(`^${role} ·`) }) });
 
 /** The ids of the tiles the grid shows, in its order. */
 const tileIds = (page: Page) => () =>
@@ -123,7 +131,9 @@ test('a photo with a role stands above that role’s people; one without is the 
 	await expect(card.getByTestId('circle-card-cover')).toBeVisible();
 });
 
-test('a banner’s lightbox walks only that role’s photos, and the role chips filter the grid', async ({ page }) => {
+test('a banner’s lightbox walks only that role’s photos, and the role chips filter the grid', async ({
+	page
+}) => {
 	await circleWithRoles(page, 'Quayside Rowing Eight', [
 		['Jonna', 'Imboden', 'rower'],
 		['Severin', 'Imboden', 'cox']
@@ -141,7 +151,10 @@ test('a banner’s lightbox walks only that role’s photos, and the role chips 
 	await expect(chips.getByRole('button', { name: /^rower/ })).toHaveText(/^rower\s*2$/);
 	await expect(chips.getByRole('button', { name: /^cox/ })).toHaveText(/^cox\s*1$/);
 	await chips.getByRole('button', { name: /^rower/ }).click();
-	await expect(chips.getByRole('button', { name: /^rower/ })).toHaveAttribute('aria-pressed', 'true');
+	await expect(chips.getByRole('button', { name: /^rower/ })).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
 	await expect(tiles(page)).toHaveCount(2);
 	const rowerIds = await tileIds(page)();
 	await chips.getByRole('button', { name: /^cox/ }).click();
@@ -173,7 +186,9 @@ test('a banner’s lightbox walks only that role’s photos, and the role chips 
 	expect(await shownId(lightbox(page))).toBe(first);
 });
 
-test('pinning an older photo without a role makes it the cover instead of the newest', async ({ page }) => {
+test('pinning an older photo without a role makes it the cover instead of the newest', async ({
+	page
+}) => {
 	await newCircle(page, 'Linden Court Neighbours');
 	await addCirclePhotos(page, files('street-party.png'));
 	await addCirclePhotos(page, files('courtyard.png'));
@@ -240,7 +255,10 @@ test('the other member may caption, re-role and pin a circle photo, but not hide
 		// Her stream has the shared upload, and only that: the private one stays its uploader's.
 		await nina.goto('/');
 		await appReady(nina);
-		await nina.getByRole('navigation', { name: 'Filter the stream' }).getByRole('link', { name: 'Circle photos' }).click();
+		await nina
+			.getByRole('navigation', { name: 'Filter the stream' })
+			.getByRole('link', { name: 'Circle photos' })
+			.click();
 		const items = nina.getByTestId('stream').locator('article').filter({ hasText: circle });
 		await expect(items).toHaveCount(1);
 		await expect(items).toContainText('added a photo to');
@@ -260,7 +278,9 @@ test('the other member may caption, re-role and pin a circle photo, but not hide
 	await expect(lightbox(page).getByRole('button', { name: 'Remove' })).toBeVisible();
 });
 
-test('the stream says who added how many photos to which circle, under the Circle photos chip', async ({ page }) => {
+test('the stream says who added how many photos to which circle, under the Circle photos chip', async ({
+	page
+}) => {
 	const circle = 'Marigold Allotments';
 	await newCircle(page, circle);
 	await addCirclePhotos(page, files('beans.png', 'shed.png', 'harvest.png'));
@@ -290,7 +310,10 @@ test('the stream says who added how many photos to which circle, under the Circl
  */
 
 /** A 1200×800 landscape in three bands, large enough for the cropper to frame a square of. */
-async function groupPicture(page: Page, name: string): Promise<{ name: string; mimeType: string; buffer: Buffer }> {
+async function groupPicture(
+	page: Page,
+	name: string
+): Promise<{ name: string; mimeType: string; buffer: Buffer }> {
 	const bytes = await page.evaluate(async () => {
 		const canvas = document.createElement('canvas');
 		canvas.width = 1200;
@@ -300,14 +323,17 @@ async function groupPicture(page: Page, name: string): Promise<{ name: string; m
 			ctx.fillStyle = colour;
 			ctx.fillRect(third * 400, 0, 400, 800);
 		});
-		const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
+		const blob = await new Promise<Blob>((resolve) =>
+			canvas.toBlob((b) => resolve(b!), 'image/png')
+		);
 		return Array.from(new Uint8Array(await blob.arrayBuffer()));
 	});
 	return { name, mimeType: 'image/png', buffer: Buffer.from(bytes) };
 }
 
 const cutDialog = (page: Page) => page.getByTestId('cut-dialog');
-const candidate = (page: Page, name: string) => cutDialog(page).getByTestId('cut-candidate').filter({ hasText: name });
+const candidate = (page: Page, name: string) =>
+	cutDialog(page).getByTestId('cut-candidate').filter({ hasText: name });
 const WEARS = 'Wears a cut of this photo';
 
 /** In an open cut dialog: picks the person, keeps the cropper's square and waits for the cut. */
@@ -318,7 +344,8 @@ async function cutFor(page: Page, name: string): Promise<void> {
 	// The square is rendered in the browser before it is posted, which a cold runner can take a
 	// while over: Stella's answer to the post is the signal the cut is done, not a guess at time.
 	const stored = page.waitForResponse(
-		(response) => response.url().includes('?/cutProfilePicture') && response.request().method() === 'POST'
+		(response) =>
+			response.url().includes('?/cutProfilePicture') && response.request().method() === 'POST'
 	);
 	await cropper.getByRole('button', { name: 'Use photo' }).click();
 	expect((await stored).ok()).toBe(true);
@@ -339,7 +366,10 @@ async function cutFromOnlyPhoto(page: Page, ...names: string[]): Promise<void> {
 
 /** The address of a member's page, read off the circle's member grid. */
 async function memberPage(page: Page, name: string): Promise<string> {
-	const href = await page.getByTestId('member-grid').getByRole('link', { name }).getAttribute('href');
+	const href = await page
+		.getByTestId('member-grid')
+		.getByRole('link', { name })
+		.getAttribute('href');
 	expect(href).toMatch(/^\/contacts\//);
 	return href!;
 }
@@ -353,7 +383,9 @@ async function wornPictureId(page: Page): Promise<string> {
 	const img = headerPicture(page);
 	await expect(img).toHaveAttribute('src', /^\/media\/[^?]+\?thumb$/);
 	// Decoding fails on a picture that does not load, so this is the picture really there.
-	expect(await img.evaluate(async (el: HTMLImageElement) => (await el.decode(), el.naturalWidth))).toBeGreaterThan(0);
+	expect(
+		await img.evaluate(async (el: HTMLImageElement) => (await el.decode(), el.naturalWidth))
+	).toBeGreaterThan(0);
 	return (await img.getAttribute('src'))!.match(/^\/media\/([^?]+)\?thumb$/)![1];
 }
 
@@ -361,7 +393,9 @@ const galleryIds = (page: Page) => () =>
 	page
 		.getByTestId('photo-grid')
 		.locator('img')
-		.evaluateAll((imgs) => imgs.map((img) => img.getAttribute('src')?.match(/^\/media\/([^?]+)\?thumb$/)?.[1]));
+		.evaluateAll((imgs) =>
+			imgs.map((img) => img.getAttribute('src')?.match(/^\/media\/([^?]+)\?thumb$/)?.[1])
+		);
 
 test('cuts a member’s profile picture from the lightbox, marks them as cut and offers the next person', async ({
 	page
@@ -396,7 +430,9 @@ test('cuts a member’s profile picture from the lightbox, marks them as cut and
 	await appReady(page);
 	await wornPictureId(page);
 	// What she wears is a framing of the group photo, not a photo in her gallery.
-	await expect(page.getByTestId('on-group-photos').getByRole('link', { name: circle })).toBeVisible();
+	await expect(
+		page.getByTestId('on-group-photos').getByRole('link', { name: circle })
+	).toBeVisible();
 	await expect(page.getByTestId('photo-grid')).toHaveCount(0);
 });
 
@@ -428,8 +464,13 @@ test('a new profile picture keeps the old cut as their own photo, from the circl
 	// The old cut is in the gallery now, as a photo of his own that says where it came from.
 	await expect.poll(galleryIds(page)).toContain(cut);
 	await page.locator(`[data-testid=photo-grid] img[src="/media/${cut}?thumb"]`).click();
-	await expect(page.getByTestId('photo-lightbox').getByTestId('photo-cut-from')).toHaveText(`From ${circle}`);
-	await page.getByTestId('photo-lightbox').getByRole('button', { name: 'Close', exact: true }).click();
+	await expect(page.getByTestId('photo-lightbox').getByTestId('photo-cut-from')).toHaveText(
+		`From ${circle}`
+	);
+	await page
+		.getByTestId('photo-lightbox')
+		.getByRole('button', { name: 'Close', exact: true })
+		.click();
 
 	// And the group photo it was cut from is listed under *On group photos*, into the circle.
 	const onGroupPhotos = page.getByTestId('on-group-photos');
@@ -443,7 +484,10 @@ for (const [action, confirm, keeps, family] of [
 	['Remove', 'Remove anyway', 'They keep it as a photo of their own.', 'Kälin'],
 	['Make private', 'Make private anyway', 'They keep it as a shared photo of their own.', 'Gisler']
 ] as const) {
-	test(`${action} on a group photo someone wears warns first, and they keep their picture`, async ({ page, browser }) => {
+	test(`${action} on a group photo someone wears warns first, and they keep their picture`, async ({
+		page,
+		browser
+	}) => {
 		const circle = `Cedar Row Quartet (${action})`;
 		await circleWithRoles(page, circle, [
 			['Aurelio', family, 'violin'],

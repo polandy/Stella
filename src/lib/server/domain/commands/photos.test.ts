@@ -58,8 +58,13 @@ const gallery: CommandReceipt = {
 
 function photoDeps(stored: StoredPhoto[]) {
 	return {
-		photos: { insert: async (p: StoredPhoto) => void stored.push(p) } as MomentPhotoDeps['photos']['photos'],
-		media: { put: async (name: string) => `/media/${name}`, delete: async () => {} } as unknown as MomentPhotoDeps['photos']['media'],
+		photos: {
+			insert: async (p: StoredPhoto) => void stored.push(p)
+		} as MomentPhotoDeps['photos']['photos'],
+		media: {
+			put: async (name: string) => `/media/${name}`,
+			delete: async () => {}
+		} as unknown as MomentPhotoDeps['photos']['media'],
 		ids: { next: () => 'ph1' },
 		clock: { now: () => Date.UTC(2026, 9, 4) }
 	};
@@ -97,7 +102,12 @@ describe('attachMomentPhoto', () => {
 		const f = momentFakes();
 		expect(await attachMomentPhoto(f.deps, actor, payload)).toBe('ph1');
 		expect(f.stored).toHaveLength(1);
-		expect(f.stored[0]).toMatchObject({ journalEntryId: 'e1', contactId: 'julia', visibility: 'private', createdBy: 'u1' });
+		expect(f.stored[0]).toMatchObject({
+			journalEntryId: 'e1',
+			contactId: 'julia',
+			visibility: 'private',
+			createdBy: 'u1'
+		});
 	});
 
 	it('keeps the capture date the photo came with', async () => {
@@ -109,7 +119,11 @@ describe('attachMomentPhoto', () => {
 	it('puts the photo on the entry written on the journal page, with that entry’s visibility', async () => {
 		const f = momentFakes(pageEntry);
 		expect(await attachMomentPhoto(f.deps, actor, payload)).toBe('ph1');
-		expect(f.stored[0]).toMatchObject({ journalEntryId: 'e1', contactId: 'julia', visibility: 'shared' });
+		expect(f.stored[0]).toMatchObject({
+			journalEntryId: 'e1',
+			contactId: 'julia',
+			visibility: 'shared'
+		});
 	});
 
 	it('refuses a photo for what is not this member’s applied entry, storing nothing', async () => {
@@ -130,7 +144,9 @@ describe('attachMomentPhoto', () => {
 
 	it('refuses a photo whose entry was removed in the meantime', async () => {
 		const f = momentFakes(moment, false);
-		await expect(attachMomentPhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(PhotoParentGoneError);
+		await expect(attachMomentPhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(
+			PhotoParentGoneError
+		);
 		expect(f.stored).toHaveLength(0);
 	});
 });
@@ -140,7 +156,12 @@ describe('attachGalleryPhoto', () => {
 		const f = galleryFakes();
 		expect(await attachGalleryPhoto(f.deps, actor, payload)).toBe('ph1');
 		expect(f.stored).toHaveLength(1);
-		expect(f.stored[0]).toMatchObject({ journalEntryId: null, contactId: 'julia', visibility: 'private', createdBy: 'u1' });
+		expect(f.stored[0]).toMatchObject({
+			journalEntryId: null,
+			contactId: 'julia',
+			visibility: 'private',
+			createdBy: 'u1'
+		});
 		expect(f.stored[0]?.takenAt).toBeNull();
 	});
 
@@ -158,14 +179,18 @@ describe('attachGalleryPhoto', () => {
 			moment
 		]) {
 			const f = galleryFakes(receipt);
-			await expect(attachGalleryPhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(PhotoParentGoneError);
+			await expect(attachGalleryPhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(
+				PhotoParentGoneError
+			);
 			expect(f.stored).toHaveLength(0);
 		}
 	});
 
 	it('refuses a photo for a person the member can no longer see', async () => {
 		const f = galleryFakes(gallery, false);
-		await expect(attachGalleryPhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(PhotoParentGoneError);
+		await expect(attachGalleryPhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(
+			PhotoParentGoneError
+		);
 		expect(f.stored).toHaveLength(0);
 	});
 });
@@ -185,8 +210,13 @@ function circleFakes(receipt: CommandReceipt | null = circleUpload, visible = tr
 				visible && viewer.id === 'u1' && id === 'class-1b' ? ({ id } as never) : null
 		},
 		photos: {
-			circlePhotos: { insert: async (p: StoredCirclePhoto) => void stored.push(p) } as CirclePhotoUploadDeps['photos']['circlePhotos'],
-			media: { put: async (name: string) => `/media/${name}`, delete: async () => {} } as unknown as CirclePhotoUploadDeps['photos']['media'],
+			circlePhotos: {
+				insert: async (p: StoredCirclePhoto) => void stored.push(p)
+			} as CirclePhotoUploadDeps['photos']['circlePhotos'],
+			media: {
+				put: async (name: string) => `/media/${name}`,
+				delete: async () => {}
+			} as unknown as CirclePhotoUploadDeps['photos']['media'],
 			ids: { next: () => 'ph1' },
 			clock: { now: () => Date.UTC(2026, 9, 4) }
 		}
@@ -199,7 +229,12 @@ describe('attachCirclePhoto', () => {
 		const f = circleFakes();
 		expect(await attachCirclePhoto(f.deps, actor, payload)).toBe('ph1');
 		expect(f.stored).toHaveLength(1);
-		expect(f.stored[0]).toMatchObject({ circleId: 'class-1b', circleRole: 'Student', visibility: 'private', createdBy: 'u1' });
+		expect(f.stored[0]).toMatchObject({
+			circleId: 'class-1b',
+			circleRole: 'Student',
+			visibility: 'private',
+			createdBy: 'u1'
+		});
 		expect(f.stored[0]?.viewPath).toBeNull();
 	});
 
@@ -218,14 +253,18 @@ describe('attachCirclePhoto', () => {
 	it('refuses a photo for what is not this member’s applied circle upload, storing nothing', async () => {
 		for (const receipt of [null, { ...circleUpload, memberId: 'u2' }, gallery]) {
 			const f = circleFakes(receipt);
-			await expect(attachCirclePhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(PhotoParentGoneError);
+			await expect(attachCirclePhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(
+				PhotoParentGoneError
+			);
 			expect(f.stored).toHaveLength(0);
 		}
 	});
 
 	it('refuses a photo for a circle the member can no longer see', async () => {
 		const f = circleFakes(circleUpload, false);
-		await expect(attachCirclePhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(PhotoParentGoneError);
+		await expect(attachCirclePhoto(f.deps, actor, payload)).rejects.toBeInstanceOf(
+			PhotoParentGoneError
+		);
 		expect(f.stored).toHaveLength(0);
 	});
 });

@@ -24,7 +24,9 @@ import {
  */
 
 /** Build the ImportRepository adapter over a Drizzle handle. */
-export function createDrizzleImportRepository(db: BunSQLiteDatabase<typeof schema>): ImportRepository {
+export function createDrizzleImportRepository(
+	db: BunSQLiteDatabase<typeof schema>
+): ImportRepository {
 	return {
 		async applyPlan(plan: ImportPlan): Promise<ImportOutcome> {
 			return db.transaction((tx) => {
@@ -33,7 +35,8 @@ export function createDrizzleImportRepository(db: BunSQLiteDatabase<typeof schem
 				let relationshipTypes = 0;
 				for (const t of plan.relationshipTypes) {
 					relationshipTypes += inserted(
-						tx.insert(relationshipType)
+						tx
+							.insert(relationshipType)
 							.values({ ...t, symmetric: t.symmetric ? 1 : 0, sortOrder: 100 })
 							.onConflictDoNothing()
 							.returning({ id: relationshipType.id })
@@ -44,7 +47,8 @@ export function createDrizzleImportRepository(db: BunSQLiteDatabase<typeof schem
 				let contacts = 0;
 				for (const c of plan.contacts) {
 					contacts += inserted(
-						tx.insert(contact)
+						tx
+							.insert(contact)
 							.values({ ...c, isDeceased: c.isDeceased ? 1 : 0 })
 							.onConflictDoNothing()
 							.returning({ id: contact.id })
@@ -54,13 +58,21 @@ export function createDrizzleImportRepository(db: BunSQLiteDatabase<typeof schem
 
 				let contactFields = 0;
 				for (const f of plan.contactFields) {
-					contactFields += inserted(tx.insert(contactField).values(f).onConflictDoNothing().returning({ id: contactField.id }).all());
+					contactFields += inserted(
+						tx
+							.insert(contactField)
+							.values(f)
+							.onConflictDoNothing()
+							.returning({ id: contactField.id })
+							.all()
+					);
 				}
 
 				let relationships = 0;
 				for (const r of plan.relationships) {
 					relationships += inserted(
-						tx.insert(relationship)
+						tx
+							.insert(relationship)
 							.values({
 								id: r.id,
 								householdId: r.householdId,
@@ -81,7 +93,8 @@ export function createDrizzleImportRepository(db: BunSQLiteDatabase<typeof schem
 				let notes = 0;
 				for (const n of plan.notes) {
 					notes += inserted(
-						tx.insert(note)
+						tx
+							.insert(note)
 							.values({ ...n, isPinned: n.isPinned ? 1 : 0 })
 							.onConflictDoNothing()
 							.returning({ id: note.id })
@@ -92,7 +105,14 @@ export function createDrizzleImportRepository(db: BunSQLiteDatabase<typeof schem
 				let interactions = 0;
 				for (const i of plan.interactions) {
 					const { participantIds, ...row } = i;
-					const wrote = inserted(tx.insert(interaction).values(row).onConflictDoNothing().returning({ id: interaction.id }).all());
+					const wrote = inserted(
+						tx
+							.insert(interaction)
+							.values(row)
+							.onConflictDoNothing()
+							.returning({ id: interaction.id })
+							.all()
+					);
 					interactions += wrote;
 					if (wrote > 0 && participantIds.length > 0) {
 						tx.insert(interactionParticipant)
@@ -114,12 +134,17 @@ export function createDrizzleImportRepository(db: BunSQLiteDatabase<typeof schem
 						tagIdByPlanId.set(t.id, existing.id);
 						continue;
 					}
-					tags += inserted(tx.insert(tag).values(t).onConflictDoNothing().returning({ id: tag.id }).all());
+					tags += inserted(
+						tx.insert(tag).values(t).onConflictDoNothing().returning({ id: tag.id }).all()
+					);
 					tagIdByPlanId.set(t.id, t.id);
 				}
 				for (const link of plan.contactTags) {
 					tx.insert(contactTag)
-						.values({ contactId: link.contactId, tagId: tagIdByPlanId.get(link.tagId) ?? link.tagId })
+						.values({
+							contactId: link.contactId,
+							tagId: tagIdByPlanId.get(link.tagId) ?? link.tagId
+						})
 						.onConflictDoNothing()
 						.run();
 				}

@@ -105,7 +105,11 @@ const SMALLEST_GLIDE_PX = 1;
  * height its content takes now (`to`). `null` when there is nothing to glide: no change worth
  * drawing, or a reader who asked for less motion, who gets the new height at once.
  */
-export function glidePlan(input: { from: number; to: number; reducedMotion: boolean }): GlidePlan | null {
+export function glidePlan(input: {
+	from: number;
+	to: number;
+	reducedMotion: boolean;
+}): GlidePlan | null {
 	if (input.reducedMotion || Math.abs(input.to - input.from) < SMALLEST_GLIDE_PX) return null;
 	return { from: input.from, to: input.to, durationMs: MOTION.expandMs, easing: MOTION.easing };
 }

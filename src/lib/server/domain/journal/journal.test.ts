@@ -30,7 +30,12 @@ function fakeRepo(seed: JournalEntry[] = []) {
 	const mentions = new Map<string, string[]>();
 	const repo = {
 		rows,
-		async findDay(p: { authorId: string; contactId: string; entryDate: string; visibility: string }) {
+		async findDay(p: {
+			authorId: string;
+			contactId: string;
+			entryDate: string;
+			visibility: string;
+		}) {
 			return (
 				rows.find(
 					(r) =>
@@ -75,7 +80,9 @@ function fakeRepo(seed: JournalEntry[] = []) {
 		) {
 			const sorted = rows
 				.filter((r) => r.contactId === contactId)
-				.sort((a, b) => (b.entryDate < a.entryDate ? -1 : b.entryDate > a.entryDate ? 1 : b.createdAt - a.createdAt));
+				.sort((a, b) =>
+					b.entryDate < a.entryDate ? -1 : b.entryDate > a.entryDate ? 1 : b.createdAt - a.createdAt
+				);
 			const after = opts.before
 				? sorted.filter(
 						(r) =>
@@ -162,8 +169,18 @@ describe('saveJournalEntry', () => {
 
 	it('keeps a private and a shared entry as separate slots for the same day', async () => {
 		const d = deps();
-		await saveJournalEntry(d, author, { contactId: 'c1', entryDate: '2026-07-11', body: 'shared moment', visibility: 'shared' });
-		await saveJournalEntry(d, author, { contactId: 'c1', entryDate: '2026-07-11', body: 'just for me', visibility: 'private' });
+		await saveJournalEntry(d, author, {
+			contactId: 'c1',
+			entryDate: '2026-07-11',
+			body: 'shared moment',
+			visibility: 'shared'
+		});
+		await saveJournalEntry(d, author, {
+			contactId: 'c1',
+			entryDate: '2026-07-11',
+			body: 'just for me',
+			visibility: 'private'
+		});
 		expect(d.repo.rows).toHaveLength(2);
 		expect(d.repo.rows.map((r) => r.visibility).sort()).toEqual(['private', 'shared']);
 	});
@@ -186,7 +203,17 @@ describe('saveJournalEntry', () => {
 describe('listJournalForContact', () => {
 	it('delegates to the visibility-scoped repository', async () => {
 		const repo = fakeRepo([
-			{ id: 'a', contactId: 'c1', createdBy: 'u1', visibility: 'shared', entryDate: '2026-07-10', title: null, body: 'x', createdAt: 1, updatedAt: 1 }
+			{
+				id: 'a',
+				contactId: 'c1',
+				createdBy: 'u1',
+				visibility: 'shared',
+				entryDate: '2026-07-10',
+				title: null,
+				body: 'x',
+				createdAt: 1,
+				updatedAt: 1
+			}
 		]);
 		const list = await listJournalForContact({ journal: repo }, viewer, 'c1');
 		expect(list).toHaveLength(1);
@@ -202,10 +229,24 @@ describe('editJournalEntry', () => {
 	it('updates the title and body of an owned entry', async () => {
 		const d = deps(
 			fakeRepo([
-				{ id: 'e1', contactId: 'c1', createdBy: 'u1', visibility: 'shared', entryDate: '2026-07-11', title: 'Old', body: 'draft', createdAt: 1, updatedAt: 1 }
+				{
+					id: 'e1',
+					contactId: 'c1',
+					createdBy: 'u1',
+					visibility: 'shared',
+					entryDate: '2026-07-11',
+					title: 'Old',
+					body: 'draft',
+					createdAt: 1,
+					updatedAt: 1
+				}
 			])
 		);
-		const ok = await editJournalEntry(d, author, { id: 'e1', title: 'New', body: 'expanded draft' });
+		const ok = await editJournalEntry(d, author, {
+			id: 'e1',
+			title: 'New',
+			body: 'expanded draft'
+		});
 		expect(ok).toBe(true);
 		expect(d.repo.rows[0]).toMatchObject({ title: 'New', body: 'expanded draft', updatedAt: 1000 });
 		// the slot itself is untouched
@@ -215,7 +256,17 @@ describe('editJournalEntry', () => {
 	it('returns false for an entry that is not the author’s own', async () => {
 		const d = deps(
 			fakeRepo([
-				{ id: 'e1', contactId: 'c1', createdBy: 'someone-else', visibility: 'shared', entryDate: '2026-07-11', title: null, body: 'draft', createdAt: 1, updatedAt: 1 }
+				{
+					id: 'e1',
+					contactId: 'c1',
+					createdBy: 'someone-else',
+					visibility: 'shared',
+					entryDate: '2026-07-11',
+					title: null,
+					body: 'draft',
+					createdAt: 1,
+					updatedAt: 1
+				}
 			])
 		);
 		expect(await editJournalEntry(d, author, { id: 'e1', body: 'hijacked' })).toBe(false);
@@ -225,13 +276,22 @@ describe('editJournalEntry', () => {
 	it('rejects an empty body', async () => {
 		const d = deps(
 			fakeRepo([
-				{ id: 'e1', contactId: 'c1', createdBy: 'u1', visibility: 'shared', entryDate: '2026-07-11', title: null, body: 'draft', createdAt: 1, updatedAt: 1 }
+				{
+					id: 'e1',
+					contactId: 'c1',
+					createdBy: 'u1',
+					visibility: 'shared',
+					entryDate: '2026-07-11',
+					title: null,
+					body: 'draft',
+					createdAt: 1,
+					updatedAt: 1
+				}
 			])
 		);
 		await expect(editJournalEntry(d, author, { id: 'e1', body: '   ' })).rejects.toThrow();
 	});
 });
-
 
 /*
  * Removing an entry takes the photos inside it (docs/02 §2.20). The rows go in the

@@ -105,7 +105,9 @@ test('does not index the mention token as the word “contact”', async ({ page
 	await expect(hitForOurNote(page)).toHaveCount(1);
 });
 
-test('follows a rename of the mentioned person, in the chip and in the search', async ({ page }) => {
+test('follows a rename of the mentioned person, in the chip and in the search', async ({
+	page
+}) => {
 	await openPerson(page, new RegExp(MENTIONED));
 	await rename(page, MENTIONED, RENAMED);
 
@@ -136,7 +138,9 @@ test('offers the same picker in the journal composer, which had none', async ({ 
 
 	const field = page.getByRole('textbox', { name: 'Entry' });
 	await field.pressSequentially('@Kurt');
-	await expect(page.getByTestId('mention-picker').getByRole('option', { name: MENTIONED })).toBeVisible();
+	await expect(
+		page.getByTestId('mention-picker').getByRole('option', { name: MENTIONED })
+	).toBeVisible();
 
 	// Nothing is written: the picker is dismissed and the entry never saved.
 	await page.keyboard.press('Escape');

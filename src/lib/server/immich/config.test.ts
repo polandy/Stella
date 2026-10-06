@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 import { DEMO_PUBLIC_URL, readImmichConfig } from './config';
 
-const none = { IMMICH_URL: '', IMMICH_PUBLIC_URL: '', IMMICH_API_KEY: '', IMMICH_DEMO: false, SEED_DEMO: false };
+const none = {
+	IMMICH_URL: '',
+	IMMICH_PUBLIC_URL: '',
+	IMMICH_API_KEY: '',
+	IMMICH_DEMO: false,
+	SEED_DEMO: false
+};
 const KEY = 'secret-key-0123456789';
 
 describe('readImmichConfig', () => {
@@ -10,7 +16,9 @@ describe('readImmichConfig', () => {
 	});
 
 	it('reads the URL and the key, links pointing at the same URL by default', () => {
-		expect(readImmichConfig({ ...none, IMMICH_URL: 'http://immich-server:2283/', IMMICH_API_KEY: KEY })).toEqual({
+		expect(
+			readImmichConfig({ ...none, IMMICH_URL: 'http://immich-server:2283/', IMMICH_API_KEY: KEY })
+		).toEqual({
 			mode: 'http',
 			url: 'http://immich-server:2283',
 			publicUrl: 'http://immich-server:2283',
@@ -32,7 +40,9 @@ describe('readImmichConfig', () => {
 		expect(() => readImmichConfig({ ...none, IMMICH_URL: 'http://immich-server:2283' })).toThrow(
 			/IMMICH_URL and IMMICH_API_KEY/
 		);
-		expect(() => readImmichConfig({ ...none, IMMICH_API_KEY: KEY })).toThrow(/IMMICH_URL and IMMICH_API_KEY/);
+		expect(() => readImmichConfig({ ...none, IMMICH_API_KEY: KEY })).toThrow(
+			/IMMICH_URL and IMMICH_API_KEY/
+		);
 	});
 
 	it('fails on a URL that is not a web address, and never repeats the key', () => {
@@ -47,7 +57,12 @@ describe('readImmichConfig', () => {
 			expect(message).not.toContain(KEY);
 		}
 		expect(() =>
-			readImmichConfig({ ...none, IMMICH_URL: 'http://immich-server:2283', IMMICH_PUBLIC_URL: 'javascript:alert(1)', IMMICH_API_KEY: KEY })
+			readImmichConfig({
+				...none,
+				IMMICH_URL: 'http://immich-server:2283',
+				IMMICH_PUBLIC_URL: 'javascript:alert(1)',
+				IMMICH_API_KEY: KEY
+			})
 		).toThrow(/IMMICH_PUBLIC_URL/);
 	});
 
@@ -61,7 +76,13 @@ describe('readImmichConfig', () => {
 	it('refuses the stand-in anywhere but a demo, and beside a real Immich', () => {
 		expect(() => readImmichConfig({ ...none, IMMICH_DEMO: true })).toThrow(/SEED_DEMO/);
 		expect(() =>
-			readImmichConfig({ ...none, IMMICH_DEMO: true, SEED_DEMO: true, IMMICH_URL: 'http://immich-server:2283', IMMICH_API_KEY: KEY })
+			readImmichConfig({
+				...none,
+				IMMICH_DEMO: true,
+				SEED_DEMO: true,
+				IMMICH_URL: 'http://immich-server:2283',
+				IMMICH_API_KEY: KEY
+			})
 		).toThrow(/IMMICH_DEMO/);
 	});
 });

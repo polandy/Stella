@@ -50,6 +50,15 @@ export function namesakesAfterNaming(
 			// No first name is not a shared first name: without one, there is nothing to match on.
 			if (!first) return [];
 			const other = others.find((o) => fold(firstOf(o)) === fold(first));
-			return other ? [{ id: p.id, name: `${first} ${lastName.trim()}`, otherId: other.id, otherName: other.displayName }] : [];
+			return other
+				? [
+						{
+							id: p.id,
+							name: `${first} ${lastName.trim()}`,
+							otherId: other.id,
+							otherName: other.displayName
+						}
+					]
+				: [];
 		});
 }

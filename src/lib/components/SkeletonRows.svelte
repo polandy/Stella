@@ -15,15 +15,21 @@
 <ul class="flex flex-col gap-3" aria-hidden="true" data-testid={testid}>
 	{#each Array.from({ length: count }, (_, at) => at) as at (at)}
 		<li class="flex items-center gap-3 rounded-app bg-card p-3 shadow-card">
-			<span class="size-12 shrink-0 animate-pulse rounded-full bg-bg-sunken motion-reduce:animate-none"></span>
+			<span
+				class="size-12 shrink-0 animate-pulse rounded-full bg-bg-sunken motion-reduce:animate-none"
+			></span>
 			<span class="flex min-w-0 flex-1 flex-col gap-2">
 				<span
 					class="h-3.5 animate-pulse rounded-control bg-bg-sunken motion-reduce:animate-none"
 					style:width={NAME_WIDTHS[at % NAME_WIDTHS.length]}
 				></span>
-				<span class="h-3 w-1/3 animate-pulse rounded-control bg-bg-sunken motion-reduce:animate-none"></span>
+				<span
+					class="h-3 w-1/3 animate-pulse rounded-control bg-bg-sunken motion-reduce:animate-none"
+				></span>
 			</span>
-			<span class="h-8 w-18 shrink-0 animate-pulse rounded-control bg-bg-sunken motion-reduce:animate-none"></span>
+			<span
+				class="h-8 w-18 shrink-0 animate-pulse rounded-control bg-bg-sunken motion-reduce:animate-none"
+			></span>
 		</li>
 	{/each}
 </ul>

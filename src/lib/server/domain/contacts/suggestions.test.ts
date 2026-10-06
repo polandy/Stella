@@ -7,7 +7,12 @@ import { rankNameCandidates, type NameCandidate } from './suggestions';
  * best first, each with the reason it was picked. Visibility is the caller's job (§2.10).
  */
 
-const person = (id: string, first: string | null, last: string | null, relationships = 0): NameCandidate => ({
+const person = (
+	id: string,
+	first: string | null,
+	last: string | null,
+	relationships = 0
+): NameCandidate => ({
 	id,
 	displayName: [first, last].filter(Boolean).join(' '),
 	firstName: first,
@@ -47,8 +52,12 @@ describe('rankNameCandidates', () => {
 	});
 
 	it('tolerates one typo in a surname of at least four letters, not in short ones', () => {
-		expect(rankNameCandidates({ lastName: 'Bruner' }, household).map((c) => c.id)).toEqual(['lena']);
-		expect(rankNameCandidates({ lastName: 'Brunnre' }, household).map((c) => c.id)).toEqual(['lena']);
+		expect(rankNameCandidates({ lastName: 'Bruner' }, household).map((c) => c.id)).toEqual([
+			'lena'
+		]);
+		expect(rankNameCandidates({ lastName: 'Brunnre' }, household).map((c) => c.id)).toEqual([
+			'lena'
+		]);
 		expect(rankNameCandidates({ lastName: 'Vogel' }, household)).toEqual([]);
 		expect(rankNameCandidates({ lastName: 'Mul' }, [person('x', 'A', 'Mur')])).toEqual([]);
 	});
@@ -65,7 +74,11 @@ describe('rankNameCandidates', () => {
 			person('b', 'Beat', 'Roth', 2),
 			person('a', 'Anna', 'Roth', 2)
 		];
-		expect(rankNameCandidates({ lastName: 'Roth' }, people).map((c) => c.id)).toEqual(['a', 'b', 'c']);
+		expect(rankNameCandidates({ lastName: 'Roth' }, people).map((c) => c.id)).toEqual([
+			'a',
+			'b',
+			'c'
+		]);
 	});
 
 	it('caps the list', () => {

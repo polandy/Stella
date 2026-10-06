@@ -40,7 +40,9 @@ describe('reviewHref', () => {
 
 describe('reviewLocationFrom', () => {
 	it('reads a place back out of a URL', () => {
-		const at = reviewLocationFrom(new URL(`http://x${reviewHref({ query: 'Roth', after: 'k' })}`).searchParams);
+		const at = reviewLocationFrom(
+			new URL(`http://x${reviewHref({ query: 'Roth', after: 'k' })}`).searchParams
+		);
 		expect(at).toEqual({ query: 'Roth', after: 'k', before: null, declined: false });
 	});
 

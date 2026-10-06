@@ -90,7 +90,10 @@ test('carries the private records too, marked as private', async ({ page }) => {
 	// Something private to find: without it the case would pass against an archive that
 	// silently drops private rows, which is the failure this is here to catch.
 	await page.getByRole('link', { name: 'People' }).first().click();
-	await page.getByRole('link', { name: /Bettina Roth/ }).first().click();
+	await page
+		.getByRole('link', { name: /Bettina Roth/ })
+		.first()
+		.click();
 	await appReady(page);
 	await page.getByRole('button', { name: 'Add note' }).click();
 	await page.getByRole('textbox', { name: 'Note' }).fill('Schlüssel liegt unter dem Stein.');

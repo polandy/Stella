@@ -15,17 +15,18 @@ function profileFrom(claims: OidcClaims): ProfilePatch {
 	};
 }
 
-export function planLogin(
-	claims: OidcClaims,
-	lookups: OidcLookups,
-	policy: OidcPolicy
-): LoginPlan {
+export function planLogin(claims: OidcClaims, lookups: OidcLookups, policy: OidcPolicy): LoginPlan {
 	const role = mapRole(claims.groups, policy.adminGroups);
 	const roleSync = policy.syncRoles ? role : null;
 	const profileSync = policy.syncProfile ? profileFrom(claims) : null;
 
 	if (lookups.existingUserId) {
-		return { action: 'use-existing', userId: lookups.existingUserId, role: roleSync, profile: profileSync };
+		return {
+			action: 'use-existing',
+			userId: lookups.existingUserId,
+			role: roleSync,
+			profile: profileSync
+		};
 	}
 
 	if (policy.linkByEmail && claims.emailVerified && lookups.userIdByEmail) {

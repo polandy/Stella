@@ -24,12 +24,12 @@
 		bind:value={query}
 		placeholder={t('graph.findPlaceholder')}
 		aria-label={t('graph.find')}
-		class="w-full sm:w-56 rounded-app border border-border-input bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur"
+		class="w-full rounded-app border border-border-input bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur sm:w-56"
 	/>
 	{#if suggestions.length}
 		<ul
 			data-testid="graph-suggestions"
-			class="absolute left-0 top-full mt-1 w-full overflow-hidden rounded-app border border-border bg-card shadow-pop"
+			class="absolute top-full left-0 mt-1 w-full overflow-hidden rounded-app border border-border bg-card shadow-pop"
 		>
 			{#each suggestions as c (c.id)}
 				<li>

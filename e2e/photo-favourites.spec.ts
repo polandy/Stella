@@ -24,7 +24,9 @@ async function addCaptionedPhoto(
 	const before = await grid.locator('img').count();
 	await page.getByRole('button', { name: 'Add photos' }).click();
 	const form = page.locator('#section-photos form');
-	await form.locator('input[name=files]').setInputFiles({ name: `${caption}.png`, mimeType: 'image/png', buffer: PIXEL });
+	await form
+		.locator('input[name=files]')
+		.setInputFiles({ name: `${caption}.png`, mimeType: 'image/png', buffer: PIXEL });
 	if (visibility === 'private') await form.getByText('Private', { exact: true }).click();
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 	await expect(grid.locator('img')).toHaveCount(before + 1);
@@ -42,7 +44,11 @@ async function addCaptionedPhoto(
 const shownOrder = (page: Page) => page.getByTestId('photo-grid').locator('li img');
 
 /** Opens a photo by its caption and presses the lightbox's pin toggle. */
-async function togglePin(page: Page, caption: string, action: 'Pin as favourite' | 'Unpin favourite'): Promise<void> {
+async function togglePin(
+	page: Page,
+	caption: string,
+	action: 'Pin as favourite' | 'Unpin favourite'
+): Promise<void> {
 	await page.getByTestId('photo-grid').getByRole('img', { name: caption, exact: true }).click();
 	const lightbox = page.getByTestId('photo-lightbox');
 	await expect(lightbox).toContainText(caption);
@@ -71,9 +77,11 @@ test('puts a pinned photo first with a star, the latest pin ahead, and an unpinn
 	page
 }) => {
 	await addPerson(page, 'Ottavia', 'Bernasconi');
-	for (const caption of ['Fav oldest', 'Fav middle', 'Fav newest']) await addCaptionedPhoto(page, caption);
+	for (const caption of ['Fav oldest', 'Fav middle', 'Fav newest'])
+		await addCaptionedPhoto(page, caption);
 	await expect(page.getByTestId('photo-grid').locator('li img')).toHaveCount(3);
-	const order = async () => shownOrder(page).evaluateAll((imgs) => imgs.map((img) => img.getAttribute('alt')));
+	const order = async () =>
+		shownOrder(page).evaluateAll((imgs) => imgs.map((img) => img.getAttribute('alt')));
 
 	// Newest first, and nobody starred.
 	await expect.poll(order).toEqual(['Fav newest', 'Fav middle', 'Fav oldest']);
@@ -126,7 +134,9 @@ test('shows the other member the same favourites first, lets them unpin, and hid
 		// shared tiles beside it are what make that absence mean something.
 		await expect.poll(order(nina)).toEqual(['Shared pin', 'Shared plain']);
 		await expect(nina.getByTestId('photo-favourite')).toHaveCount(1);
-		await expect(nina.getByTestId('photo-grid').getByRole('img', { name: 'Private pin' })).toHaveCount(0);
+		await expect(
+			nina.getByTestId('photo-grid').getByRole('img', { name: 'Private pin' })
+		).toHaveCount(0);
 
 		// She may unpin a photo she did not add; it is the household's pin, not the adder's.
 		await togglePin(nina, 'Shared pin', 'Unpin favourite');
@@ -185,7 +195,11 @@ function photoBlock(yaml: string, caption: string): string {
 	let start = at;
 	while (start > 0 && !/^\s*- /.test(lines[start])) start--;
 	let end = at + 1;
-	while (end < lines.length && !/^\s*- /.test(lines[end]) && lines[end].search(/\S/) >= lines[start].search(/\S/) + 2)
+	while (
+		end < lines.length &&
+		!/^\s*- /.test(lines[end]) &&
+		lines[end].search(/\S/) >= lines[start].search(/\S/) + 2
+	)
 		end++;
 	return lines.slice(start, end).join('\n');
 }

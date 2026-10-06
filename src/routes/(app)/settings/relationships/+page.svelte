@@ -77,7 +77,9 @@
 	soon as its answers are sent, and would drop focus a second time.
 -->
 
-<svelte:head><title>{t('common.pageTitle', { page: t('settings.relationships.title') })}</title></svelte:head>
+<svelte:head
+	><title>{t('common.pageTitle', { page: t('settings.relationships.title') })}</title></svelte:head
+>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10" data-kin-scope>
 	<header class="flex flex-col gap-1">

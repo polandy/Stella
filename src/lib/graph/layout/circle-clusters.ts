@@ -81,7 +81,10 @@ export function circleClustersLayout(
 	const groups: Group[] = bySize.map((circleId) => ({
 		circleId,
 		units: [
-			...(groupsBy.get(circleId) ?? []).map((g) => ({ ids: g.memberIds, ...groupBlock(g.memberIds, sizeOf) })),
+			...(groupsBy.get(circleId) ?? []).map((g) => ({
+				ids: g.memberIds,
+				...groupBlock(g.memberIds, sizeOf)
+			})),
 			...model.nodes
 				.filter((n) => home.get(n.id) === circleId && !grouped.has(n.id))
 				.map((n) => alone(n.id, sizeOf))

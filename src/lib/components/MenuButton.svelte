@@ -37,7 +37,14 @@
 		look?: 'pill' | 'button';
 	}
 
-	let { label, trigger, children, highlighted = false, align = 'start', look = 'pill' }: Props = $props();
+	let {
+		label,
+		trigger,
+		children,
+		highlighted = false,
+		align = 'start',
+		look = 'pill'
+	}: Props = $props();
 
 	let open = $state(false);
 	let root = $state<HTMLDivElement>();
@@ -86,8 +93,7 @@
 		return band;
 	}
 
-	const items = () =>
-		menu ? [...menu.querySelectorAll<HTMLElement>('[role^="menuitem"]')] : [];
+	const items = () => (menu ? [...menu.querySelectorAll<HTMLElement>('[role^="menuitem"]')] : []);
 
 	async function show(focus: 'first' | 'last' = 'first') {
 		shift = 0;
@@ -128,7 +134,11 @@
 			return;
 		}
 		const all = items();
-		const next = nextMenuIndex(all.indexOf(document.activeElement as HTMLElement), all.length, event.key);
+		const next = nextMenuIndex(
+			all.indexOf(document.activeElement as HTMLElement),
+			all.length,
+			event.key
+		);
 		if (next === null) return;
 		event.preventDefault();
 		all[next].focus();

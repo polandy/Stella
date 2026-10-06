@@ -1,7 +1,11 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { contactSectionPath } from '$lib/contacts/sections';
 import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
-import { ImmichLinkRefusedError, linkToImmich, unlinkFromImmich } from '$lib/server/domain/immich/links';
+import {
+	ImmichLinkRefusedError,
+	linkToImmich,
+	unlinkFromImmich
+} from '$lib/server/domain/immich/links';
 import { useImmichPhoto } from '$lib/server/domain/immich/use-as-photo';
 import { InvalidAvatarError } from '$lib/server/domain/media/avatars';
 import { getImmichLinkDeps, getUseImmichPhotoDeps } from '$lib/server/services';
@@ -29,7 +33,8 @@ export const immichActions = {
 			);
 		} catch (err) {
 			if (err instanceof ContactGoneError) throw error(404, say(locals, 'errors.contact.notFound'));
-			if (err instanceof ImmichLinkRefusedError) return fail(400, { immichError: err.phrase(translator(locals)) });
+			if (err instanceof ImmichLinkRefusedError)
+				return fail(400, { immichError: err.phrase(translator(locals)) });
 			throw err;
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
@@ -40,7 +45,11 @@ export const immichActions = {
 		const deps = getImmichLinkDeps();
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 		try {
-			await unlinkFromImmich(deps, { userId: locals.user.id, householdId: locals.user.householdId }, params.id);
+			await unlinkFromImmich(
+				deps,
+				{ userId: locals.user.id, householdId: locals.user.householdId },
+				params.id
+			);
 		} catch (err) {
 			if (err instanceof ContactGoneError) throw error(404, say(locals, 'errors.contact.notFound'));
 			throw err;
@@ -78,7 +87,8 @@ export const immichActions = {
 			// by — is not the proxy's to tell, and a reload shows the page as it is now.
 			if (!kept.ok) return fail(404, { photoError: say(locals, 'errors.photo.fromImmichGone') });
 		} catch (err) {
-			if (err instanceof InvalidAvatarError) return fail(400, { photoError: err.phrase(translator(locals)) });
+			if (err instanceof InvalidAvatarError)
+				return fail(400, { photoError: err.phrase(translator(locals)) });
 			throw err;
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));

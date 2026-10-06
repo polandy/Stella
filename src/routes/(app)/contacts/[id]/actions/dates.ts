@@ -48,7 +48,11 @@ export const dateActions = {
 			issuedAt: systemClock.now()
 		});
 		const outcome = command
-			? await dispatchCommand(getCommandDeps(), { userId: viewer.id, householdId: viewer.householdId, locale: locals.locale }, command).catch(() => null)
+			? await dispatchCommand(
+					getCommandDeps(),
+					{ userId: viewer.id, householdId: viewer.householdId, locale: locals.locale },
+					command
+				).catch(() => null)
 			: null;
 		if (outcome?.status !== 'applied') {
 			return fail(400, {
@@ -75,5 +79,5 @@ export const dateActions = {
 
 		await getImportantDates().remove(params.id, dateId);
 		throw redirect(303, `/contacts/${params.id}`);
-	},
+	}
 } satisfies Actions;

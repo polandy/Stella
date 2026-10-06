@@ -18,7 +18,10 @@ const ORIGIN = 'https://stella.example';
 describe('peopleToKeep', () => {
 	it('keeps the person page and the journal of everyone, each as its page data', () => {
 		expect(peopleToKeep([{ id: 'c1', avatarPhotoId: null }])).toEqual({
-			pages: ['/contacts/c1/__data.json?x-sveltekit-invalidated=001', '/contacts/c1/journal/__data.json?x-sveltekit-invalidated=001'],
+			pages: [
+				'/contacts/c1/__data.json?x-sveltekit-invalidated=001',
+				'/contacts/c1/journal/__data.json?x-sveltekit-invalidated=001'
+			],
 			avatars: []
 		});
 	});
@@ -94,7 +97,9 @@ describe('refreshDue', () => {
 
 describe('parseVisiblePeople', () => {
 	it('reads the list the server sends', () => {
-		expect(parseVisiblePeople({ people: [{ id: 'c1', avatarPhotoId: null }] })).toEqual([{ id: 'c1', avatarPhotoId: null }]);
+		expect(parseVisiblePeople({ people: [{ id: 'c1', avatarPhotoId: null }] })).toEqual([
+			{ id: 'c1', avatarPhotoId: null }
+		]);
 	});
 
 	it('refuses anything else, so a broken answer never prunes the device empty', () => {

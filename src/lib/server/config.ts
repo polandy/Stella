@@ -114,7 +114,8 @@ function build() {
 			issuer: raw.OIDC_ISSUER.replace(/\/$/, ''),
 			clientId: raw.OIDC_CLIENT_ID,
 			clientSecret: raw.OIDC_CLIENT_SECRET,
-			redirectUri: raw.OIDC_REDIRECT_URI || `${raw.STELLA_URL.replace(/\/$/, '')}/login/sso/callback`,
+			redirectUri:
+				raw.OIDC_REDIRECT_URI || `${raw.STELLA_URL.replace(/\/$/, '')}/login/sso/callback`,
 			scopes: raw.OIDC_SCOPES,
 			providerName: raw.OIDC_PROVIDER_NAME,
 			allowedGroups: raw.OIDC_ALLOWED_GROUPS,

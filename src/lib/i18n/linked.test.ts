@@ -82,11 +82,9 @@ describe('segmentsOf', () => {
 
 	/* A language may leave a person out of the sentence; they simply get no link. */
 	it('links only the people the sentence actually named', () => {
-		expect(segmentsOf({ people: { parent: otto, child: lisa }, say: (n) => `Through ${n.child}.` })).toEqual([
-			{ text: 'Through ' },
-			{ person: lisa },
-			{ text: '.' }
-		]);
+		expect(
+			segmentsOf({ people: { parent: otto, child: lisa }, say: (n) => `Through ${n.child}.` })
+		).toEqual([{ text: 'Through ' }, { person: lisa }, { text: '.' }]);
 	});
 });
 

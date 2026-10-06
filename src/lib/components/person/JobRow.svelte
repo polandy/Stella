@@ -31,7 +31,10 @@
 	>
 		<span class="shrink-0 font-medium text-fg">{t('contact.job')}</span>
 		{#if line}
-			<span class="ml-auto min-w-0 text-right text-fg-muted [overflow-wrap:anywhere]" data-testid="job-value">{line}</span>
+			<span
+				class="ml-auto min-w-0 text-right [overflow-wrap:anywhere] text-fg-muted"
+				data-testid="job-value">{line}</span
+			>
 		{:else}
 			<span class="ml-auto truncate text-fg-subtle">{t('contact.job.notRecorded')}</span>
 		{/if}

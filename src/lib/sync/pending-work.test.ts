@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import {
-	createPendingWork,
-	MIN_VISIBLE_MS,
-	SHOW_AFTER_MS,
-	type Scheduler
-} from './pending-work';
+import { createPendingWork, MIN_VISIBLE_MS, SHOW_AFTER_MS, type Scheduler } from './pending-work';
 
 /*
  * A clock the test moves by hand. Nothing here waits for a real timer, so these tests say what

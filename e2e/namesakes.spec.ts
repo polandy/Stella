@@ -15,7 +15,11 @@ const VRENI = 'demo-c-vreni';
 const PIXEL_9_PRO = { width: 412, height: 915 };
 
 /** Adds a first-name-only person through *Add a person* and waits for their page. */
-async function addFirstNameOnly(page: Page, first: string, fields: { description: string; where?: string }) {
+async function addFirstNameOnly(
+	page: Page,
+	first: string,
+	fields: { description: string; where?: string }
+) {
 	await page.goto('/contacts/new');
 	await appReady(page);
 	await page.getByLabel('First name').fill(first);
@@ -27,20 +31,26 @@ async function addFirstNameOnly(page: Page, first: string, fields: { description
 
 /** Six letters no other attempt shares, so a name made from them is this attempt's alone. */
 function runLetters(): string {
-	return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) => String.fromCharCode(97 + (byte % 26))).join('');
+	return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) =>
+		String.fromCharCode(97 + (byte % 26))
+	).join('');
 }
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('asks what to know a first-name-only person by, and lets go once there is a last name', async ({ page }) => {
+test('asks what to know a first-name-only person by, and lets go once there is a last name', async ({
+	page
+}) => {
 	await page.goto('/contacts/new');
 	await appReady(page);
 	const nudge = page.getByTestId('know-them-by');
 
 	await page.getByLabel('First name').fill('Gottfried');
-	await expect(nudge).toContainText('Without a last name, “Gottfried” is hard to tell apart later.');
+	await expect(nudge).toContainText(
+		'Without a last name, “Gottfried” is hard to tell apart later.'
+	);
 
 	// A first name alone is not enough to add someone: the form stops at the empty description.
 	await page.getByRole('button', { name: 'Add person' }).click();
@@ -63,7 +73,9 @@ test('asks what to know a first-name-only person by, and lets go once there is a
 	await expect(page.getByText('Met at the Gspaltenhornhütte')).toBeVisible();
 });
 
-test('says which one is which in ⌘K and in a person picker, and leaves a unique name alone', async ({ page }) => {
+test('says which one is which in ⌘K and in a person picker, and leaves a unique name alone', async ({
+	page
+}) => {
 	// One name per run: a retry, or a local rerun against the same database, would otherwise
 	// find the namesakes an earlier attempt left behind and count them too.
 	const name = `Leodegar${runLetters()}`;
@@ -98,7 +110,9 @@ test('says which one is which in ⌘K and in a person picker, and leaves a uniqu
 	await expect(options.getByTestId('namesake-line')).toHaveCount(0);
 });
 
-test('keeps the description in view in a picker’s create panel, nudging when there is no last name', async ({ page }) => {
+test('keeps the description in view in a picker’s create panel, nudging when there is no last name', async ({
+	page
+}) => {
 	await page.goto(`/contacts/${VRENI}`);
 	await appReady(page);
 	await page.getByRole('button', { name: 'Add relationship' }).click();
@@ -117,7 +131,9 @@ test('keeps the description in view in a picker’s create panel, nudging when t
 test.describe('on a phone', () => {
 	test.use({ viewport: PIXEL_9_PRO, hasTouch: true });
 
-	test('stacks "How we met" above "Where" rather than side by side at two heights', async ({ page }) => {
+	test('stacks "How we met" above "Where" rather than side by side at two heights', async ({
+		page
+	}) => {
 		// The label of "How we met" wraps on a phone, which dropped its field below its
 		// neighbour's. (The fields running past the card's right edge, fixed alongside, only
 		// shows on a real Android browser — headless Chromium lets the inputs shrink either way.)

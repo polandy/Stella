@@ -40,7 +40,9 @@
 								{reference.kind === 'note'
 									? t('contact.mentions.notes')
 									: t('contact.mentions.journal')}
-								{#if reference.author}· {t('contact.mentions.by', { author: reference.author })}{/if}
+								{#if reference.author}· {t('contact.mentions.by', {
+										author: reference.author
+									})}{/if}
 							</span>
 							{#if reference.visibility === 'private'}
 								<span class="ml-auto inline-flex items-center gap-1 text-xs text-fg-subtle">

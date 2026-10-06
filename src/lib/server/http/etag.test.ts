@@ -39,11 +39,23 @@ describe('isUnchanged', () => {
 
 describe('wantsEtag', () => {
 	it('tags a page’s data answered in full', () => {
-		expect(wantsEtag({ method: 'GET', pathname: '/contacts/abc/__data.json', status: 200, contentType: 'application/json' })).toBe(true);
+		expect(
+			wantsEtag({
+				method: 'GET',
+				pathname: '/contacts/abc/__data.json',
+				status: 200,
+				contentType: 'application/json'
+			})
+		).toBe(true);
 	});
 
 	it('leaves everything else alone: pages, other requests, errors and streamed data', () => {
-		const data = { method: 'GET', pathname: '/contacts/abc/__data.json', status: 200, contentType: 'application/json' };
+		const data = {
+			method: 'GET',
+			pathname: '/contacts/abc/__data.json',
+			status: 200,
+			contentType: 'application/json'
+		};
 		expect(wantsEtag({ ...data, pathname: '/contacts/abc' })).toBe(false);
 		expect(wantsEtag({ ...data, method: 'POST' })).toBe(false);
 		expect(wantsEtag({ ...data, status: 404 })).toBe(false);

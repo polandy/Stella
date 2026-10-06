@@ -50,13 +50,20 @@ export function useHeldNames(passOn: () => PassOnMap = () => ({})): HeldNames {
 		batches = takenBack(batches, removals.isPending);
 	});
 
-	const listOf = (names: string[]) => new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(names);
+	const listOf = (names: string[]) =>
+		new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(names);
 
 	/**
 	 * Hold one batch. `fresh` are those of `ids` who had no last name before — only they pass a
 	 * name on, since changing a name that was there offers nothing to anyone (§3.3).
 	 */
-	function hold(actionUrl: string, formData: FormData, ids: string[], fresh: string[], lastName: string) {
+	function hold(
+		actionUrl: string,
+		formData: FormData,
+		ids: string[],
+		fresh: string[],
+		lastName: string
+	) {
 		const key = `last-names:${++counter}`;
 		for (const id of ids) namedThisVisit.add(id);
 		const heirs = passOnOffer(passOn(), fresh, lastName, namedThisVisit);
@@ -64,7 +71,11 @@ export function useHeldNames(passOn: () => PassOnMap = () => ({})): HeldNames {
 		removals.remove({
 			key,
 			label: heirs.length
-				? t('surnames.toast.passOn', { people: listOf(heirs.map((h) => h.name)), count: heirs.length, name: lastName })
+				? t('surnames.toast.passOn', {
+						people: listOf(heirs.map((h) => h.name)),
+						count: heirs.length,
+						name: lastName
+					})
 				: t('surnames.toast.set', { name: lastName, count: ids.length }),
 			offer: heirs.length
 				? {

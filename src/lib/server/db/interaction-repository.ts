@@ -79,7 +79,10 @@ export function createDrizzleInteractionRepository(
 		});
 
 	/** Attach the participants the viewer is allowed to see to each row. */
-	function withParticipants(viewer: Viewer, rows: Omit<Interaction, 'participants'>[]): Interaction[] {
+	function withParticipants(
+		viewer: Viewer,
+		rows: Omit<Interaction, 'participants'>[]
+	): Interaction[] {
 		const participants = participantsVisibleTo(
 			viewer,
 			rows.map((r) => r.id)

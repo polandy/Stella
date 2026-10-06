@@ -16,7 +16,8 @@ export const importer = {
 	'import.step.photos': 'Import & photos',
 	'import.fileLabel':
 		'Monica export — JSON (.json) or database dump (.sql) — or a vCard (.vcf), plain or gzipped',
-	'import.fileHint.monica': 'In Monica: Settings → Export data gives you the JSON file, pictures included. A vCard comes from any address book — phone, mail client, Google Contacts — and carries the people only. For a dump instead, on a self-hosted Monica:',
+	'import.fileHint.monica':
+		'In Monica: Settings → Export data gives you the JSON file, pictures included. A vCard comes from any address book — phone, mail client, Google Contacts — and carries the people only. For a dump instead, on a self-hosted Monica:',
 	'import.visibilityLegend': 'Everything imported is',
 	'import.visibility.shared': 'Shared with the household',
 	'import.visibility.private': 'Private to me',
@@ -66,21 +67,26 @@ export const importer = {
 	'import.count.tags': 'tags',
 	'import.count.photos': 'photos',
 
-	'import.thing.contact': (p: { count: number }): string => (p.count === 1 ? 'contact' : 'contacts'),
+	'import.thing.contact': (p: { count: number }): string =>
+		p.count === 1 ? 'contact' : 'contacts',
 	'import.thing.relationship': (p: { count: number }): string =>
 		p.count === 1 ? 'relationship' : 'relationships',
 	'import.thing.contactField': (p: { count: number }): string =>
 		p.count === 1 ? 'contact field' : 'contact fields',
-	'import.thing.address': (p: { count: number }): string => (p.count === 1 ? 'address' : 'addresses'),
+	'import.thing.address': (p: { count: number }): string =>
+		p.count === 1 ? 'address' : 'addresses',
 	'import.thing.note': (p: { count: number }): string => (p.count === 1 ? 'note' : 'notes'),
 	'import.thing.gift': (p: { count: number }): string => (p.count === 1 ? 'gift' : 'gifts'),
-	'import.thing.lifeEvent': (p: { count: number }): string => (p.count === 1 ? 'life event' : 'life events'),
+	'import.thing.lifeEvent': (p: { count: number }): string =>
+		p.count === 1 ? 'life event' : 'life events',
 	'import.thing.pet': (p: { count: number }): string => (p.count === 1 ? 'pet' : 'pets'),
-	'import.thing.activity': (p: { count: number }): string => (p.count === 1 ? 'activity' : 'activities'),
+	'import.thing.activity': (p: { count: number }): string =>
+		p.count === 1 ? 'activity' : 'activities',
 	'import.thing.photo': (p: { count: number }): string => (p.count === 1 ? 'photo' : 'photos'),
 	'import.thing.journalEntry': (p: { count: number }): string =>
 		p.count === 1 ? 'journal entry' : 'journal entries',
-	'import.thing.reminder': (p: { count: number }): string => (p.count === 1 ? 'reminder' : 'reminders'),
+	'import.thing.reminder': (p: { count: number }): string =>
+		p.count === 1 ? 'reminder' : 'reminders',
 
 	'import.why.deletedInMonica': 'deleted in Monica',
 	'import.why.refersToDeletedContact': 'refers to a deleted contact',

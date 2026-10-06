@@ -58,11 +58,36 @@
 	// so a chip and the line it toggles can never drift apart.
 	// Each chip also draws its line style, so the chips are the legend (docs/05 §5.8).
 	const FILTERS = [
-		{ key: 'family', label: 'relationships.category.family', token: categoryVar('family'), line: 'solid' },
-		{ key: 'romantic', label: 'relationships.category.romantic', token: categoryVar('romantic'), line: 'solid' },
-		{ key: 'social', label: 'relationships.category.social', token: categoryVar('social'), line: 'solid' },
-		{ key: 'professional', label: 'relationships.category.professional', token: categoryVar('professional'), line: 'solid' },
-		{ key: 'circles', label: 'graph.filter.circles', token: 'var(--edge-membership)', line: 'dashed' },
+		{
+			key: 'family',
+			label: 'relationships.category.family',
+			token: categoryVar('family'),
+			line: 'solid'
+		},
+		{
+			key: 'romantic',
+			label: 'relationships.category.romantic',
+			token: categoryVar('romantic'),
+			line: 'solid'
+		},
+		{
+			key: 'social',
+			label: 'relationships.category.social',
+			token: categoryVar('social'),
+			line: 'solid'
+		},
+		{
+			key: 'professional',
+			label: 'relationships.category.professional',
+			token: categoryVar('professional'),
+			line: 'solid'
+		},
+		{
+			key: 'circles',
+			label: 'graph.filter.circles',
+			token: 'var(--edge-membership)',
+			line: 'dashed'
+		},
 		{ key: 'kinship', label: 'graph.filter.kinship', token: 'var(--edge-kinship)', line: 'dotted' }
 	] as const;
 
@@ -92,13 +117,10 @@
 <!-- The line kinds and their names live in one menu: it is the legend too, each kind
      drawn in its colour and line style, and the pill counts what is shown so a narrowed
      map is never mistaken for a sparse one (docs/05 §5.8). -->
-<MenuButton
-	label={t('graph.filter.summary', filters)}
-	highlighted={filters.narrowed}
->
+<MenuButton label={t('graph.filter.summary', filters)} highlighted={filters.narrowed}>
 	{#snippet trigger()}
 		{t('graph.filter')}
-		<span class="rounded-full bg-bg-sunken px-1.5 tabular-nums text-fg-muted">
+		<span class="rounded-full bg-bg-sunken px-1.5 text-fg-muted tabular-nums">
 			{filters.shown}/{filters.total}
 		</span>
 	{/snippet}

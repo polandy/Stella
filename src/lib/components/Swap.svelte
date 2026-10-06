@@ -22,8 +22,14 @@
 		onsettled?: (grew: boolean) => void;
 		'data-testid'?: string;
 	}
-	let { when, children, otherwise, class: className = '', onsettled, 'data-testid': testId }: Props =
-		$props();
+	let {
+		when,
+		children,
+		otherwise,
+		class: className = '',
+		onsettled,
+		'data-testid': testId
+	}: Props = $props();
 
 	let box: HTMLDivElement | undefined = $state();
 	/** The height of the alternative that is arriving — the leaving one is inert already. */

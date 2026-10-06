@@ -38,7 +38,9 @@ describe('groupByLetter', () => {
 	});
 
 	it('folds an accented initial onto its plain letter', () => {
-		const groups = groupByLetter([person({ displayName: 'Émile', firstName: null, lastName: 'Émile' })]);
+		const groups = groupByLetter([
+			person({ displayName: 'Émile', firstName: null, lastName: 'Émile' })
+		]);
 
 		expect(groups.map((g) => g.letter)).toEqual(['E']);
 	});
@@ -66,12 +68,19 @@ describe('matchesQuery', () => {
 	});
 
 	it('matches a former name, so a married name does not hide who someone was (docs/02 §2.2)', () => {
-		expect(matchesQuery(person({ displayName: 'Franziska Abab', lastName: 'Abab', formerName: 'Widmer' }), 'widmer')).toBe(true);
+		expect(
+			matchesQuery(
+				person({ displayName: 'Franziska Abab', lastName: 'Abab', formerName: 'Widmer' }),
+				'widmer'
+			)
+		).toBe(true);
 	});
 
 	it('matches the job title and the company (docs/02 §2.2)', () => {
 		expect(matchesQuery(person({ jobTitle: 'Lehrerin', company: null }), 'lehr')).toBe(true);
-		expect(matchesQuery(person({ jobTitle: null, company: 'Roche Diagnostics' }), 'roche')).toBe(true);
+		expect(matchesQuery(person({ jobTitle: null, company: 'Roche Diagnostics' }), 'roche')).toBe(
+			true
+		);
 	});
 
 	it('matches everyone on an empty query', () => {

@@ -20,7 +20,12 @@
 		splitTypedName,
 		wantsSomethingToKnowThemBy
 	} from '$lib/people/new-person';
-	import { filterPeople, queryAfterPick, stillNeedsAPick, type SelectablePerson } from '$lib/people/select';
+	import {
+		filterPeople,
+		queryAfterPick,
+		stillNeedsAPick,
+		type SelectablePerson
+	} from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { BLUR_CLOSE_MS } from '$lib/components/blur-close';
 
@@ -38,7 +43,6 @@
 
 	/** Where the inline create panel posts; the endpoint answers with the created person. */
 	const QUICK_ADD_ENDPOINT = '/contacts/quick-add';
-
 
 	const VISIBILITY_LEVELS = ['shared', 'private'] as const;
 	type Visibility = (typeof VISIBILITY_LEVELS)[number];
@@ -195,7 +199,14 @@
 
 	async function startCreate() {
 		const { firstName, lastName } = splitTypedName(query);
-		draft = { firstName, lastName, nickname: '', description: suggestedDescription, birthDate: '', visibility: 'shared' };
+		draft = {
+			firstName,
+			lastName,
+			nickname: '',
+			description: suggestedDescription,
+			birthDate: '',
+			visibility: 'shared'
+		};
 		offered = suggestedDescription;
 		createError = null;
 		creating = true;
@@ -332,13 +343,18 @@
 			{#each chosen as person (person.id)}
 				{@const marked = markedIds.includes(person.id)}
 				<span
-					class="inline-flex items-center gap-1 rounded-full py-0.5 pl-2 pr-1 text-sm text-fg {marked
+					class="inline-flex items-center gap-1 rounded-full py-0.5 pr-1 pl-2 text-sm text-fg {marked
 						? 'chip-marked'
 						: 'bg-bg-sunken'}"
 					data-marked={marked || undefined}
 					data-testid="person-search-chip"
 				>
-					<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={16} />
+					<Avatar
+						id={person.id}
+						name={person.displayName}
+						avatarPhotoId={person.avatarPhotoId}
+						size={16}
+					/>
 					<span class={marked ? 'line-through decoration-danger' : ''}>{person.displayName}</span>
 					{#if marked && markedLabel}<span class="sr-only">({markedLabel})</span>{/if}
 					<!-- 24px square (WCAG 2.5.8); the negative margin keeps the chip its own height. -->
@@ -384,7 +400,7 @@
 				onfocus={() => (open = !full)}
 				onkeydown={onKeydown}
 				onblur={() => setTimeout(closeIfFocusLeft, BLUR_CLOSE_MS)}
-				class="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none disabled:placeholder:italic disabled:placeholder:text-fg-subtle"
+				class="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none disabled:placeholder:text-fg-subtle disabled:placeholder:italic"
 			/>
 		</div>
 	</div>
@@ -501,7 +517,9 @@
 	{:else if open && !full}
 		<div class={panelClass}>
 			{#if multiple && query.trim() !== '' && matches.length > 1 && (max === null || selectedIds.length + matches.length <= max)}
-				<div class="flex items-center justify-between gap-2 border-b border-border px-2.5 py-1.5 text-xs text-fg-muted">
+				<div
+					class="flex items-center justify-between gap-2 border-b border-border px-2.5 py-1.5 text-xs text-fg-muted"
+				>
 					<span>{t('components.personSearch.matches', { count: matches.length })}</span>
 					<button
 						type="button"
@@ -523,14 +541,12 @@
 				screen reader, so the offer stays in view below however many match.
 			-->
 			<div id={listboxId} role="listbox">
-				<ul
-					role="none"
-					data-testid="person-search-listbox"
-					class="max-h-56 overflow-y-auto p-1"
-				>
+				<ul role="none" data-testid="person-search-listbox" class="max-h-56 overflow-y-auto p-1">
 					{#if matches.length === 0}
 						<!-- Not an option: a note that there are none, for the eye and for a reader alike. -->
-						<li role="presentation" class="px-2.5 py-1.5 text-sm text-fg-muted">{t('components.personSearch.empty')}</li>
+						<li role="presentation" class="px-2.5 py-1.5 text-sm text-fg-muted">
+							{t('components.personSearch.empty')}
+						</li>
 					{:else}
 						{#each matches as person, i (person.id)}
 							{@const namesakeLine = namesakes.get(person.id)}
@@ -549,9 +565,18 @@
 									onmouseenter={() => (highlighted = i)}
 									class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
 								>
-									<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={22} />
+									<Avatar
+										id={person.id}
+										name={person.displayName}
+										avatarPhotoId={person.avatarPhotoId}
+										size={22}
+									/>
 									<span class="min-w-0">
-										<span class="block truncate">{person.displayName}<FormerlyMark name={foundByFormerName(person, query)} /><FoundByJobMark found={foundByJob(person, query)} /></span>
+										<span class="block truncate"
+											>{person.displayName}<FormerlyMark
+												name={foundByFormerName(person, query)}
+											/><FoundByJobMark found={foundByJob(person, query)} /></span
+										>
 										{#if namesakeLine}<NamesakeLine distinction={namesakeLine} />{/if}
 										<JobLine job={person} small />
 									</span>
@@ -580,7 +605,9 @@
 							? 'bg-primary-soft'
 							: ''}"
 					>
-						<span class="mt-px grid size-[22px] shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+						<span
+							class="mt-px grid size-[22px] shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+						>
 							<Icon name="add" size={13} />
 						</span>
 						<!-- Wraps rather than truncates: the name is the whole point of the row. -->

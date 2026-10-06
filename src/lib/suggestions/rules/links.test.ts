@@ -181,7 +181,14 @@ describe('a household-wide pass runs the same rules over every link there is', (
 	/** Two families that share nobody: the Meiers, and the Freis two profiles away. */
 	const twoFamilies = () =>
 		view({
-			people: [p('bettina', 'Bettina'), p('hans', 'Hans'), p('lisa', 'Lisa'), p('walter', 'Walter'), p('jan', 'Jan'), p('nora', 'Nora')],
+			people: [
+				p('bettina', 'Bettina'),
+				p('hans', 'Hans'),
+				p('lisa', 'Lisa'),
+				p('walter', 'Walter'),
+				p('jan', 'Jan'),
+				p('nora', 'Nora')
+			],
 			parentEdges: [
 				{ parentId: 'bettina', childId: 'hans' },
 				{ parentId: 'walter', childId: 'jan' }
@@ -236,7 +243,9 @@ describe('likelyCoParent — the chosen parent’s one current partner', () => {
 	});
 
 	it('reads the partnership from either end', () => {
-		expect(likelyCoParent(graph({ partnerEdges: [{ a: 'bert', b: 'anna' }] }), 'anna', 'lio')).toBe('bert');
+		expect(likelyCoParent(graph({ partnerEdges: [{ a: 'bert', b: 'anna' }] }), 'anna', 'lio')).toBe(
+			'bert'
+		);
 	});
 
 	it('offers nobody when the parent has no partner', () => {
@@ -253,7 +262,13 @@ describe('likelyCoParent — the chosen parent’s one current partner', () => {
 	});
 
 	it('does not count a partnership that is over', () => {
-		expect(likelyCoParent(graph({ partnerEdges: [{ a: 'anna', b: 'bert', former: true }] }), 'anna', 'lio')).toBeNull();
+		expect(
+			likelyCoParent(
+				graph({ partnerEdges: [{ a: 'anna', b: 'bert', former: true }] }),
+				'anna',
+				'lio'
+			)
+		).toBeNull();
 		const partnerEdges = [
 			{ a: 'anna', b: 'carl', former: true },
 			{ a: 'anna', b: 'bert' }
@@ -270,7 +285,8 @@ describe('likelyCoParent — the chosen parent’s one current partner', () => {
 	});
 
 	describe('the step-parent check: a partnership that began after the child was born', () => {
-		const since = (sinceDate: string | null) => graph({ partnerEdges: [{ a: 'anna', b: 'bert', sinceDate }] });
+		const since = (sinceDate: string | null) =>
+			graph({ partnerEdges: [{ a: 'anna', b: 'bert', sinceDate }] });
 
 		it('offers nobody when the partnership began after the birth', () => {
 			expect(likelyCoParent(since('2019-04-01'), 'anna', 'lio')).toBeNull();
@@ -327,18 +343,30 @@ describe('likelyCoParent — the chosen parent’s one current partner', () => {
 		});
 
 		it('offers the partner when the chosen parent is the only one on record', () => {
-			expect(likelyCoParent(graph({ parentEdges: [{ parentId: 'anna', childId: 'lio' }] }), 'anna', 'lio')).toBe('bert');
+			expect(
+				likelyCoParent(
+					graph({ parentEdges: [{ parentId: 'anna', childId: 'lio' }] }),
+					'anna',
+					'lio'
+				)
+			).toBe('bert');
 		});
 	});
 
 	it('offers nobody when the partner already is a parent of the child', () => {
-		expect(likelyCoParent(graph({ parentEdges: [{ parentId: 'bert', childId: 'lio' }] }), 'anna', 'lio')).toBeNull();
+		expect(
+			likelyCoParent(graph({ parentEdges: [{ parentId: 'bert', childId: 'lio' }] }), 'anna', 'lio')
+		).toBeNull();
 	});
 
 	// A partner recorded as the child's own child, or who is the child, is nobody's offer.
 	it('offers nobody the generation guard would refuse, nor the child themself', () => {
-		expect(likelyCoParent(graph({ parentEdges: [{ parentId: 'lio', childId: 'bert' }] }), 'anna', 'lio')).toBeNull();
-		expect(likelyCoParent(graph({ partnerEdges: [{ a: 'anna', b: 'lio' }] }), 'anna', 'lio')).toBeNull();
+		expect(
+			likelyCoParent(graph({ parentEdges: [{ parentId: 'lio', childId: 'bert' }] }), 'anna', 'lio')
+		).toBeNull();
+		expect(
+			likelyCoParent(graph({ partnerEdges: [{ a: 'anna', b: 'lio' }] }), 'anna', 'lio')
+		).toBeNull();
 	});
 });
 
@@ -379,7 +407,9 @@ describe('L3 — a parent stored from the parent’s side offers their partner',
 
 	it('answers only a stored parent link, never a review', () => {
 		const v = family({ siblingEdges: [{ a: 'lio', b: 'mia' }] });
-		expect(L3({ kind: 'link-stored', link: { kind: 'sibling', fromId: 'lio', toId: 'mia' } }, v)).toEqual([]);
+		expect(
+			L3({ kind: 'link-stored', link: { kind: 'sibling', fromId: 'lio', toId: 'mia' } }, v)
+		).toEqual([]);
 		expect(L3(reviewed('lio'), v)).toEqual([]);
 		expect(L3(household(), v)).toEqual([]);
 	});

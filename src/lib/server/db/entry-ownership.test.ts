@@ -21,7 +21,9 @@ describe('entry ownership', () => {
 				{ id: 'u2', householdId: 'h', email: 'b@x.test', name: 'B' }
 			])
 			.run();
-		db.insert(schema.contact).values({ id: 'c', householdId: 'h', createdBy: 'u1', displayName: 'C' }).run();
+		db.insert(schema.contact)
+			.values({ id: 'c', householdId: 'h', createdBy: 'u1', displayName: 'C' })
+			.run();
 		db.insert(schema.journalEntry)
 			.values({ id: 'e1', contactId: 'c', createdBy: 'u1', entryDate: '2026-09-27', body: 'x' })
 			.run();

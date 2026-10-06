@@ -73,9 +73,7 @@
 	 * hand the form a `--MM-DD` the field has just called incomplete.
 	 */
 	const iso = $derived(problem === null ? partsToIso(parts) : '');
-	const problemText = $derived(
-		problem === null ? null : i18n.t(`components.dateField.${problem}`)
-	);
+	const problemText = $derived(problem === null ? null : i18n.t(`components.dateField.${problem}`));
 
 	/*
 	 * The segments are separate controls, so the browser cannot see that together they make an

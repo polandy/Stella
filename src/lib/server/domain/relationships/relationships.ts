@@ -126,7 +126,8 @@ export class InvalidRelationshipDetailsError extends TranslatableError {
 	}
 }
 
-const blankToNull = (value: string | null | undefined): string | null => (value ?? '').trim() || null;
+const blankToNull = (value: string | null | undefined): string | null =>
+	(value ?? '').trim() || null;
 
 /**
  * Normalise and check the details, so nothing unreal is ever stored. A since-day must be a
@@ -302,8 +303,7 @@ const PHRASE_FOR_REASON: Record<ExclusionReason, (e: Exclusion, nameOf: NameOf) 
 		const name = nameOf(exclusion.personId);
 		const tie = exclusion.tie;
 		if (!tie) return phrase('errors.relationship.alreadyRomantic', { name });
-		return (t) =>
-			t('errors.relationship.alreadyTied', { tie: relationshipRowLabel(t, tie), name });
+		return (t) => t('errors.relationship.alreadyTied', { tie: relationshipRowLabel(t, tie), name });
 	},
 	// Both people: which of the two is spoken for is the whole answer, and naming only the
 	// partner leaves the sentence to be read as being about whoever's page it arrives on.
@@ -338,7 +338,10 @@ interface ExclusionCheck {
 
 /** The two reads an exclusion check is made of. */
 type ExclusionSource = {
-	relationships: Pick<RelationshipRepository, 'loadKinshipGraphVisibleTo' | 'listForContactVisibleTo'>;
+	relationships: Pick<
+		RelationshipRepository,
+		'loadKinshipGraphVisibleTo' | 'listForContactVisibleTo'
+	>;
 };
 
 /**
@@ -355,7 +358,10 @@ async function loadExclusionCheck(
 		deps.relationships.listForContactVisibleTo(viewer, subjectId)
 	]);
 	const names = new Map(graph.people.map((person) => [person.id, person.displayName]));
-	return { facts: exclusionFactsFrom(graph, ties), nameOf: (contactId) => names.get(contactId) ?? '' };
+	return {
+		facts: exclusionFactsFrom(graph, ties),
+		nameOf: (contactId) => names.get(contactId) ?? ''
+	};
 }
 
 /**
@@ -659,13 +665,7 @@ export async function editRelationship(
 	if (input.typeChoice) {
 		const current = await deps.relationships.findVisibleTo(viewer, input.relationshipId);
 		if (!current) return false;
-		retype = await planRetype(
-			deps,
-			viewer,
-			current,
-			input.perspectiveContactId,
-			input.typeChoice
-		);
+		retype = await planRetype(deps, viewer, current, input.perspectiveContactId, input.typeChoice);
 		if (!retype) return false;
 	}
 

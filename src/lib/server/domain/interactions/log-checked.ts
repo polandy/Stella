@@ -30,7 +30,8 @@ export async function logInteractionChecked(
 	const viewer = { id: author.userId, householdId: author.householdId };
 	// Only the people named are looked up, in the same browsing scope the picker offers.
 	const named = [...new Set(input.participantIds)];
-	const found = named.length === 0 ? [] : await deps.contacts.listBrowsableNamesAmong(viewer, named);
+	const found =
+		named.length === 0 ? [] : await deps.contacts.listBrowsableNamesAmong(viewer, named);
 	if (found.length !== named.length) {
 		throw new InvalidInteractionError(phrase('errors.interaction.participantNotFound'));
 	}

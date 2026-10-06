@@ -42,7 +42,9 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('enters a link with how they connect, since when, and whether it still holds', async ({ page }) => {
+test('enters a link with how they connect, since when, and whether it still holds', async ({
+	page
+}) => {
 	await openPeopleTab(page, /Bettina Roth/);
 	await addLink(page, {
 		type: 'Knows',
@@ -104,7 +106,9 @@ test('offers only the two answers a link can hold, and stands on current', async
 	await expect(editStatus.locator('option:checked')).toHaveText('current');
 });
 
-test('enters a link from the other side: "child of" needs no detour via the other profile', async ({ page }) => {
+test('enters a link from the other side: "child of" needs no detour via the other profile', async ({
+	page
+}) => {
 	await openPeopleTab(page, /Bettina Roth/);
 	// The reverse side of an asymmetric type is on offer, so the sentence can be said the way
 	// round it is being read here (docs/02 §2.4).
@@ -129,7 +133,9 @@ test('refuses a generation claimed in both directions, and writes nothing', asyn
 	// The same two people, the same type, the other way round: nobody is their own parent's
 	// parent, so this is turned away with the reason rather than stored.
 	await addLink(page, { type: 'Child of', person: 'Heidi Lehmann' });
-	await expect(page.locator('#section-relationships')).toContainText('already linked the other way round');
+	await expect(page.locator('#section-relationships')).toContainText(
+		'already linked the other way round'
+	);
 
 	// The positive signal: exactly one row still names Heidi and it reads the way it was
 	// entered. Reloading proves the server wrote nothing, not just that the page did not move.
@@ -139,9 +145,17 @@ test('refuses a generation claimed in both directions, and writes nothing', asyn
 	await expect(enteredRow(page, 'Heidi Lehmann')).not.toContainText('Mother');
 });
 
-test('corrects the specifics from the row, the type picker preset to the link', async ({ page }) => {
+test('corrects the specifics from the row, the type picker preset to the link', async ({
+	page
+}) => {
 	await openPeopleTab(page, /Bettina Roth/);
-	await addLink(page, { type: 'Knows', person: 'Jan Steiner', how: HOW, since: '2019-06-01', status: 'former' });
+	await addLink(page, {
+		type: 'Knows',
+		person: 'Jan Steiner',
+		how: HOW,
+		since: '2019-06-01',
+		status: 'former'
+	});
 
 	const row = enteredRow(page, 'Jan Steiner');
 	await editPeople(page);
@@ -150,9 +164,7 @@ test('corrects the specifics from the row, the type picker preset to the link', 
 	const editor = page.locator('form[action="?/editRelationship"]');
 	// The type is on offer again, preset to what the link says today (docs/02 §2.4).
 	await expect(editor.locator('select[name=typeChoice]')).toHaveValue(/./);
-	await expect(
-		editor.locator('select[name=typeChoice] option:checked')
-	).toHaveText('Knows');
+	await expect(editor.locator('select[name=typeChoice] option:checked')).toHaveText('Knows');
 	await expect(editor.locator('input[name=description]')).toHaveValue(HOW);
 
 	await editor.locator('input[name=description]').fill('walked the Gurten every spring');
@@ -252,7 +264,9 @@ test('changes the type from the row, keeping what the link said', async ({ page 
 	);
 });
 
-test('turns a generation round from the row, rather than refusing it as its own contradiction', async ({ page }) => {
+test('turns a generation round from the row, rather than refusing it as its own contradiction', async ({
+	page
+}) => {
 	/*
 	 * Nicole and Bettina are linked by neither the seed nor any case above, so the only
 	 * generation between them is the one entered here — the wrong way round on purpose.
@@ -267,7 +281,9 @@ test('turns a generation round from the row, rather than refusing it as its own 
 
 	// The guard that refuses a generation claimed both ways leaves the link itself out of the
 	// question, so the row turns round instead of being turned away.
-	await expect(page.locator('#section-relationships')).not.toContainText('already linked the other way round');
+	await expect(page.locator('#section-relationships')).not.toContainText(
+		'already linked the other way round'
+	);
 	await expect(enteredRow(page, 'Bettina Roth')).toContainText('Daughter');
 
 	// One row, moved — not a second one: from Bettina it now reads as the other side.
@@ -276,7 +292,9 @@ test('turns a generation round from the row, rather than refusing it as its own 
 	await expect(enteredRow(page, 'Nicole Frei')).toContainText('Mother');
 });
 
-test('refuses a type that would duplicate a link already there, and writes nothing', async ({ page }) => {
+test('refuses a type that would duplicate a link already there, and writes nothing', async ({
+	page
+}) => {
 	// Nicole and Jan are linked by neither the seed nor any case above; both links here are
 	// entered by this case.
 	await openPeopleTab(page, /Nicole Frei/);
@@ -288,7 +306,9 @@ test('refuses a type that would duplicate a link already there, and writes nothi
 	const editor = await openEditor(page, neighbourRow);
 	await editor.locator('select[name=typeChoice]').selectOption({ label: 'Knows' });
 	await editor.getByRole('button', { name: 'Save' }).click();
-	await expect(page.locator('#section-relationships')).toContainText('That relationship already exists.');
+	await expect(page.locator('#section-relationships')).toContainText(
+		'That relationship already exists.'
+	);
 
 	// The positive signal: both links are still there, each reading as it was entered, and a
 	// reload proves the server wrote nothing rather than the page merely not moving.

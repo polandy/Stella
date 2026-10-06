@@ -58,7 +58,11 @@ describe('seedDemoData', () => {
 		// The only case that pays for a real hash: it is what makes the demo login work at all.
 		seedDemoData(db);
 
-		const admin = db.select().from(schema.user).all().find((u) => u.role === 'admin');
+		const admin = db
+			.select()
+			.from(schema.user)
+			.all()
+			.find((u) => u.role === 'admin');
 		const hash = admin!.passwordHash as string;
 		expect(hash.startsWith(ARGON2ID_PREFIX)).toBe(true);
 		expect(hash).not.toBe(DEMO_ADMIN_PASSWORD);
@@ -114,7 +118,13 @@ describe('seedDemoData', () => {
 		const dates = db.select().from(schema.importantDate).all();
 		expect(dates.length).toBeGreaterThan(0);
 		expect(dates.some((d) => d.kind === 'birthday')).toBe(false);
-		expect(db.select().from(schema.contact).all().every((c) => c.birthDate !== null)).toBe(true);
+		expect(
+			db
+				.select()
+				.from(schema.contact)
+				.all()
+				.every((c) => c.birthDate !== null)
+		).toBe(true);
 	});
 
 	it('clears the birthday rows an earlier seed version wrote', () => {
@@ -163,17 +173,33 @@ describe('seedDemoData', () => {
 		expect(entries.length).toBeGreaterThan(0);
 
 		// A stored mention is id-based, and points at somebody other than the entry's subject.
-		const bodies = db.select().from(schema.note).all().map((n) => n.body);
+		const bodies = db
+			.select()
+			.from(schema.note)
+			.all()
+			.map((n) => n.body);
 		expect(bodies.some((b) => b.includes('@{contact:demo-c-'))).toBe(true);
 		expect(bodies.some((b) => b.includes('@{person:'))).toBe(false);
-		const subjects = new Map(db.select().from(schema.note).all().map((n) => [n.id, n.contactId]));
+		const subjects = new Map(
+			db
+				.select()
+				.from(schema.note)
+				.all()
+				.map((n) => [n.id, n.contactId])
+		);
 		expect(notes.every((m) => subjects.get(m.noteId) !== m.contactId)).toBe(true);
 	});
 
 	it('attaches to an existing household and its admin instead of creating a demo one', () => {
 		db.insert(schema.household).values({ id: 'real-hh', name: 'Real' }).run();
 		db.insert(schema.user)
-			.values({ id: 'real-admin', householdId: 'real-hh', email: 'a@x.test', name: 'A', role: 'admin' })
+			.values({
+				id: 'real-admin',
+				householdId: 'real-hh',
+				email: 'a@x.test',
+				name: 'A',
+				role: 'admin'
+			})
 			.run();
 
 		const result = seed(db);
@@ -182,7 +208,11 @@ describe('seedDemoData', () => {
 		expect(result.householdId).toBe('real-hh');
 		expect(db.select().from(schema.household).all()).toHaveLength(1);
 		// Demo contacts belong to the real household and are authored by its admin.
-		const contacts = db.select().from(schema.contact).where(eq(schema.contact.householdId, 'real-hh')).all();
+		const contacts = db
+			.select()
+			.from(schema.contact)
+			.where(eq(schema.contact.householdId, 'real-hh'))
+			.all();
 		expect(contacts).toHaveLength(25);
 		expect(contacts.every((c) => c.createdBy === 'real-admin')).toBe(true);
 	});

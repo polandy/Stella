@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { authorNames, membersViewerFirst, type HouseholdMember, type MemberRepository } from './members';
+import {
+	authorNames,
+	membersViewerFirst,
+	type HouseholdMember,
+	type MemberRepository
+} from './members';
 
 /*
  * Who wrote what (docs/02 §2.23): the story names the member behind each item, so a household

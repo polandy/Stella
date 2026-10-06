@@ -22,7 +22,14 @@
 		/** Anything else lands on the paragraph, e.g. a `data-testid`. */
 		[attribute: string]: unknown;
 	}
-	let { message, id, variant = 'banner', size = 'sm', class: className = '', ...rest }: Props = $props();
+	let {
+		message,
+		id,
+		variant = 'banner',
+		size = 'sm',
+		class: className = '',
+		...rest
+	}: Props = $props();
 </script>
 
 {#if message}

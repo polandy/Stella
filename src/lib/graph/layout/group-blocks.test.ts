@@ -98,7 +98,14 @@ describe('packGroups', () => {
 			['d', { x: 330, y: 200 }],
 			['between', { x: 165, y: 100 }]
 		]);
-		const packed = packGroups(twoGroups, [['a', 'b'], ['c', 'd']], size);
+		const packed = packGroups(
+			twoGroups,
+			[
+				['a', 'b'],
+				['c', 'd']
+			],
+			size
+		);
 		const at = packed.get('between')!;
 
 		expect(covers(frameOf(packed, ['a', 'b']), at)).toBe(false);

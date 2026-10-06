@@ -17,7 +17,10 @@ export interface PeopleFreshnessDeps {
 export type Freshness = 'reloaded' | 'fresh' | 'unknown';
 
 /** Reload the shell's list when it no longer matches `known`, the stamp it was sent with. */
-export async function refreshPeopleIfChanged(deps: PeopleFreshnessDeps, known: string): Promise<Freshness> {
+export async function refreshPeopleIfChanged(
+	deps: PeopleFreshnessDeps,
+	known: string
+): Promise<Freshness> {
 	let current: string;
 	try {
 		current = await deps.fetchStamp();

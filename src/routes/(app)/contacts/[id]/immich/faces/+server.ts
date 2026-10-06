@@ -17,7 +17,8 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 	const answer = await answerFaceSearch(
 		{
 			immich: linkDeps && immich ? { ...linkDeps, signer: immich.signer } : null,
-			isContactVisible: async (who, contactId) => (await getContact(getContactDeps(), who, contactId)) !== null,
+			isContactVisible: async (who, contactId) =>
+				(await getContact(getContactDeps(), who, contactId)) !== null,
 			say: (key) => say(locals, key)
 		},
 		viewer,

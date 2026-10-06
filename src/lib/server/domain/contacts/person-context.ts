@@ -24,7 +24,10 @@ export interface PersonContextReads {
 	/** Every link of these people the viewer may see (both ends visible), from their end. */
 	listTiesOfVisibleTo(viewer: Viewer, contactIds: readonly string[]): Promise<ContextTieRow[]>;
 	/** Every membership of these people the viewer may see, in circles not archived. */
-	listMembershipsOfVisibleTo(viewer: Viewer, contactIds: readonly string[]): Promise<ContextMembershipRow[]>;
+	listMembershipsOfVisibleTo(
+		viewer: Viewer,
+		contactIds: readonly string[]
+	): Promise<ContextMembershipRow[]>;
 }
 
 export interface PersonContextDeps {
@@ -63,7 +66,10 @@ export async function contextOfPeople(
 	const context: Record<string, PersonContext> = {};
 	for (const id of ids) {
 		const ranked = rankContext(
-			(tiesOf.get(id) ?? []).map((t) => ({ ...t, otherIsViewer: t.otherId === input.selfContactId })),
+			(tiesOf.get(id) ?? []).map((t) => ({
+				...t,
+				otherIsViewer: t.otherId === input.selfContactId
+			})),
 			membershipsOf.get(id) ?? [],
 			input.today
 		);

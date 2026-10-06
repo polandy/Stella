@@ -73,7 +73,10 @@ export function groupBySurname(
 		else if (proposal.kind === 'choose') chooseOne.push({ personId, options: proposal.options });
 		else {
 			const folded = foldSurname(proposal.name);
-			const group = groups.get(folded) ?? { name: spellings.get(folded) ?? proposal.name, rows: [] };
+			const group = groups.get(folded) ?? {
+				name: spellings.get(folded) ?? proposal.name,
+				rows: []
+			};
 			group.rows.push({
 				personId,
 				confidence: proposal.confidence,
@@ -84,6 +87,8 @@ export function groupBySurname(
 			groups.set(folded, group);
 		}
 	}
-	const ordered = [...groups.values()].sort((a, b) => b.rows.length - a.rows.length || a.name.localeCompare(b.name));
+	const ordered = [...groups.values()].sort(
+		(a, b) => b.rows.length - a.rows.length || a.name.localeCompare(b.name)
+	);
 	return { groups: ordered, chooseOne, none };
 }

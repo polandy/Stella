@@ -230,8 +230,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 
 	// Pointing at a line, or at a person, names those lines (docs/05 §5.8): with the names of a
 	// busy map switched off, this is how one is read without selecting anybody.
-	const linesUnder = (e: EventObject) =>
-		e.target.isNode() ? e.target.connectedEdges() : e.target;
+	const linesUnder = (e: EventObject) => (e.target.isNode() ? e.target.connectedEdges() : e.target);
 	cy.on('mouseover', 'node, edge', (e) => linesUnder(e).addClass(HOVERED_CLASS));
 	cy.on('mouseout', 'node, edge', (e) => linesUnder(e).removeClass(HOVERED_CLASS));
 

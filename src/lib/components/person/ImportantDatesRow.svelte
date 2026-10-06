@@ -55,7 +55,9 @@
 
 	/** What the row lists, a birthday from the profile included, so a folded row never says 0 over one. */
 	const dateCount = $derived(
-		visibleDates.length + (data.derivedBirthday !== null ? 1 : 0) + (data.estimatedBirthYear !== null ? 1 : 0)
+		visibleDates.length +
+			(data.derivedBirthday !== null ? 1 : 0) +
+			(data.estimatedBirthYear !== null ? 1 : 0)
 	);
 
 	// Saving through `enhance` keeps the page — and with it any open undo window — alive, so
@@ -75,7 +77,8 @@
 	 */
 	const keptDates = $derived(
 		outbox.mine.filter(
-			(item): item is KeptOf<'date.add'> => isKept(item, 'date.add') && item.command.payload.contactId === c.id
+			(item): item is KeptOf<'date.add'> =>
+				isKept(item, 'date.add') && item.command.payload.contactId === c.id
 		)
 	);
 	const dateForm = $derived(
@@ -110,11 +113,22 @@
 	);
 </script>
 
-	<Section as="row" title={t('contact.section.dates')} count={dateCount} startOpen={!folded && hasDates} addLabel={t('common.add')} error={form?.dateError ?? null} bind:open={openSection.dates}>
+<Section
+	as="row"
+	title={t('contact.section.dates')}
+	count={dateCount}
+	startOpen={!folded && hasDates}
+	addLabel={t('common.add')}
+	error={form?.dateError ?? null}
+	bind:open={openSection.dates}
+>
 	{#if keptDates.length > 0}
 		<ul class="mb-2 flex flex-wrap gap-1.5" data-testid="kept-dates">
 			{#each keptDates as item (item.command.id)}
-				<KeptChip {item} label={`${item.command.payload.label ?? kindLabel('dateKind', item.command.payload.kind)} · ${dayLabel(i18n, item.command.payload.date)}`} />
+				<KeptChip
+					{item}
+					label={`${item.command.payload.label ?? kindLabel('dateKind', item.command.payload.kind)} · ${dayLabel(i18n, item.command.payload.date)}`}
+				/>
 			{/each}
 		</ul>
 	{/if}
@@ -173,13 +187,20 @@
 				{/each}
 			</select>
 			<DateField name="date" required allowYearUnknown stretch label={t('contact.day')} />
-			<input name="label" placeholder={t('contact.dateNameForCustom')} aria-label={t('contact.dateNameForCustom')} class="w-full {INPUT}" />
+			<input
+				name="label"
+				placeholder={t('contact.dateNameForCustom')}
+				aria-label={t('contact.dateNameForCustom')}
+				class="w-full {INPUT}"
+			/>
 			<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
 				<label class="flex items-center gap-1.5 text-sm text-fg-muted">
-					<input type="checkbox" name="recursYearly" checked /> {t('contact.everyYear')}
+					<input type="checkbox" name="recursYearly" checked />
+					{t('contact.everyYear')}
 				</label>
 				<label class="flex items-center gap-1.5 text-sm text-fg-muted">
-					<input type="checkbox" name="remind" checked /> {t('contact.showOnHome')}
+					<input type="checkbox" name="remind" checked />
+					{t('contact.showOnHome')}
 				</label>
 				<Button variant="primary" size="sm" class="ml-auto">{t('common.add')}</Button>
 			</div>

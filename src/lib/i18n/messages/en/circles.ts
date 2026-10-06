@@ -14,11 +14,13 @@ export const circles = {
 	'circles.find': 'Find a circle',
 	'circles.findPlaceholder': 'Find a circle…',
 	'circles.empty.title': 'No circles yet',
-	'circles.empty.hint': 'A circle is a context people share. Add the first one and put people in it.',
+	'circles.empty.hint':
+		'A circle is a context people share. Add the first one and put people in it.',
 	'circles.noMatch.title': 'No circle matches',
 	'circles.noMatch.hint': 'Try part of a name, or a word from a description — or start it now.',
 	'circles.noMatch.create': (p: { name: string }) => `Create “${p.name}”`,
-	'circles.memberCount': (p: { count: number }) => (p.count === 1 ? '1 member' : `${p.count} members`),
+	'circles.memberCount': (p: { count: number }) =>
+		p.count === 1 ? '1 member' : `${p.count} members`,
 	'circles.nobodyYet': 'Nobody in it yet',
 	'circles.private': 'private',
 	'circles.detail.title': (p: { name: string }) => `${p.name} · Circles · Stella`,
@@ -115,7 +117,11 @@ export const circles = {
 	'circles.kind.neighborhood': 'Neighbourhood',
 	'circles.kind.other': 'Other',
 	'circles.matchCount': (p: { count: number }) =>
-		p.count === 0 ? 'No circles found' : p.count === 1 ? '1 circle found' : `${p.count} circles found`
+		p.count === 0
+			? 'No circles found'
+			: p.count === 1
+				? '1 circle found'
+				: `${p.count} circles found`
 };
 
 /** The key set every translation of this area has to provide. */

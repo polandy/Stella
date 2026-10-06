@@ -173,7 +173,10 @@
 						// Back on the card naming the new pair, so what it implies is offered (§2.4.1).
 						// keepFocus: the closed form hands focus back to its button (Section), and a
 						// navigation's own focus reset would drop it on the page again.
-						await goto(proposeHref(c.id, [command.payload.targetId]), { noScroll: true, keepFocus: true });
+						await goto(proposeHref(c.id, [command.payload.targetId]), {
+							noScroll: true,
+							keepFocus: true
+						});
 					}
 				},
 				onKept: closeRelate
@@ -225,8 +228,13 @@
 	const refusalLine = (refusal: (typeof refusals)[number]) =>
 		'exclusion' in refusal
 			? // Every reason already names whoever it is about, so it reads without the chip's name.
-				t('relationships.blocked.group', { reason: exclusionLabel(t, refusal.exclusion, nameOfContact) })
-			: t('contact.relationships.refusedSaid', { name: nameOfPicked(refusal.targetId), reason: refusal.reason });
+				t('relationships.blocked.group', {
+					reason: exclusionLabel(t, refusal.exclusion, nameOfContact)
+				})
+			: t('contact.relationships.refusedSaid', {
+					name: nameOfPicked(refusal.targetId),
+					reason: refusal.reason
+				});
 	const canAdd = $derived(blockedChoice === null && refusals.length === 0 && capped.excess === 0);
 
 	/** The hint under the field: how many the type takes, once that is worth saying. */
@@ -279,7 +287,9 @@
 		chosen ? towardsSubject(t, chosen.type, chosen.side, c.displayName) : ''
 	);
 	const kinChoice = $derived(
-		chosen ? { category: chosen.type.category, symmetric: chosen.type.symmetric, side: chosen.side } : null
+		chosen
+			? { category: chosen.type.category, symmetric: chosen.type.symmetric, side: chosen.side }
+			: null
 	);
 	/** The since day per pair, from the birthday rule (D5). */
 	const sincePairs = $derived(sincePerPair(kinChoice, data.contact, pickedPeople));
@@ -341,10 +351,7 @@
 						</optgroup>
 					{:else}
 						{#each group.options as option (option.value)}
-							<option
-								value={option.value}
-								selected={option.value === relationshipChoice}
-							>
+							<option value={option.value} selected={option.value === relationshipChoice}>
 								{relationshipTypeLabel(t, option.type, option.side)}
 							</option>
 						{/each}
@@ -353,7 +360,9 @@
 			</select>
 		</label>
 		<div class="flex min-w-0 flex-[2_1_18rem] flex-col gap-1 text-sm">
-			<label for="relationship-target" class="text-fg-muted">{t('contact.relationships.person')}</label>
+			<label for="relationship-target" class="text-fg-muted"
+				>{t('contact.relationships.person')}</label
+			>
 			<PersonSearchSelect
 				id="relationship-target"
 				people={otherContacts}
@@ -367,20 +376,28 @@
 				describedBy={hasHints ? hintsId : undefined}
 				bind:selectedIds={relationshipTargetId}
 				onPick={(person) => {
-					if (!pickedTargets.some((known) => known.id === person.id)) pickedTargets = [...pickedTargets, person];
+					if (!pickedTargets.some((known) => known.id === person.id))
+						pickedTargets = [...pickedTargets, person];
 				}}
 				allowCreate
 				suggestedDescription={suggestedTargetDescription}
 			/>
 			<!-- One live region for every hint, so a refusal is heard the moment a pick causes it. -->
-			<div id={hintsId} aria-live="polite" class="flex flex-col gap-1 text-xs" data-testid="relationship-hints">
+			<div
+				id={hintsId}
+				aria-live="polite"
+				class="flex flex-col gap-1 text-xs"
+				data-testid="relationship-hints"
+			>
 				{#if capHint}<p class="text-fg-subtle">{capHint}</p>{/if}
 				{#if overCapLine}<p class="text-danger">{overCapLine}</p>{/if}
 				{#each refusals as refusal (refusal.targetId)}
 					<p class="text-danger">{refusalLine(refusal)}</p>
 				{/each}
 				{#if refusals.length > 0 && picked.length > refusals.length}
-					<p class="text-fg-muted">{t('contact.relationships.removeToAdd', { count: refusals.length })}</p>
+					<p class="text-fg-muted">
+						{t('contact.relationships.removeToAdd', { count: refusals.length })}
+					</p>
 				{/if}
 			</div>
 			<!-- Outside the live region: an offer is not news to interrupt with, only a choice. -->
@@ -392,8 +409,10 @@
 					<span>{t('contact.relationships.secondParentAlso')}</span>
 					<button
 						type="button"
-						class="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-primary bg-card py-0.5 pl-0.5 pr-2.5 text-fg hover:bg-primary-soft"
-						aria-label={t('contact.relationships.secondParentAdd', { name: coParent.partner.displayName })}
+						class="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-primary bg-card py-0.5 pr-2.5 pl-0.5 text-fg hover:bg-primary-soft"
+						aria-label={t('contact.relationships.secondParentAdd', {
+							name: coParent.partner.displayName
+						})}
 						onclick={() => (relationshipTargetId = [...relationshipTargetId, coParent.partner.id])}
 					>
 						<Avatar
@@ -451,23 +470,27 @@
 				</button>
 			</fieldset>
 			{#snippet otherwise()}
-			<div class="flex flex-col gap-1 text-sm">
-				<span class="text-fg-muted">{t('contact.relationships.sinceLabel')}</span>
-				<!-- Keyed: the field owns its segments once it is on screen, so a new
+				<div class="flex flex-col gap-1 text-sm">
+					<span class="text-fg-muted">{t('contact.relationships.sinceLabel')}</span>
+					<!-- Keyed: the field owns its segments once it is on screen, so a new
 					 suggestion arrives as a fresh field rather than as a silent overwrite. -->
-				{#key oneSince}
-					<DateField name="sinceDate" value={oneSince} label={t('contact.relationships.sinceLabel')} />
-				{/key}
-				{#if several && useOneDate && sameSince === null}
-					<button
-						type="button"
-						class="self-start rounded-control py-1 text-xs font-medium text-link hover:underline"
-						onclick={() => (useOneDate = false)}
-					>
-						{t('contact.relationships.datePerPerson')}
-					</button>
-				{/if}
-			</div>
+					{#key oneSince}
+						<DateField
+							name="sinceDate"
+							value={oneSince}
+							label={t('contact.relationships.sinceLabel')}
+						/>
+					{/key}
+					{#if several && useOneDate && sameSince === null}
+						<button
+							type="button"
+							class="self-start rounded-control py-1 text-xs font-medium text-link hover:underline"
+							onclick={() => (useOneDate = false)}
+						>
+							{t('contact.relationships.datePerPerson')}
+						</button>
+					{/if}
+				</div>
 			{/snippet}
 		</Swap>
 		<label class="flex flex-col gap-1 text-sm">

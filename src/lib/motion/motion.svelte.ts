@@ -49,7 +49,9 @@ interface Box {
 function parentRowGap(node: HTMLElement): number {
 	if (!node.parentElement) return 0;
 	const style = getComputedStyle(node.parentElement);
-	const column = style.display.includes('grid') || (style.display.includes('flex') && style.flexDirection.startsWith('column'));
+	const column =
+		style.display.includes('grid') ||
+		(style.display.includes('flex') && style.flexDirection.startsWith('column'));
 	return column ? parseFloat(style.rowGap) || 0 : 0;
 }
 
@@ -169,10 +171,10 @@ export function glide(node: HTMLElement, options: GlideOptions): ActionReturn<Gl
 		}
 		node.dataset.motion = 'moving';
 		node.style.overflow = 'clip';
-		const animation = node.animate(
-			[{ height: `${plan.from}px` }, { height: `${plan.to}px` }],
-			{ duration: plan.durationMs, easing: plan.easing }
-		);
+		const animation = node.animate([{ height: `${plan.from}px` }, { height: `${plan.to}px` }], {
+			duration: plan.durationMs,
+			easing: plan.easing
+		});
 		running = animation;
 		animation.onfinish = () => {
 			if (running === animation) settle(plan.to > plan.from);

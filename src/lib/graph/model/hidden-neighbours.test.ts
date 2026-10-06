@@ -30,7 +30,13 @@ describe('hiddenNeighbourCounts', () => {
 			nodes: graph.nodes,
 			edges: [
 				...graph.edges,
-				{ id: 'r9', source: 'peter', target: 'walter', kind: 'relationship', category: 'professional' }
+				{
+					id: 'r9',
+					source: 'peter',
+					target: 'walter',
+					kind: 'relationship',
+					category: 'professional'
+				}
 			]
 		};
 		const counts = hiddenNeighbourCounts(twice, pick(['mara', 'peter']));
@@ -64,7 +70,10 @@ describe('hiddenNeighbourCounts', () => {
 	it('ignores a line to somebody the graph does not hold', () => {
 		const withStray: GraphModel = {
 			nodes: graph.nodes,
-			edges: [...graph.edges, { id: 'x', source: 'walter', target: 'nobody', kind: 'relationship', category: 'family' }]
+			edges: [
+				...graph.edges,
+				{ id: 'x', source: 'walter', target: 'nobody', kind: 'relationship', category: 'family' }
+			]
 		};
 		const counts = hiddenNeighbourCounts(withStray, pick(['mara', 'peter', 'walter']));
 		expect(counts.has('walter')).toBe(false);

@@ -66,7 +66,10 @@ test('imports a vCard, stores the picture it carries and shows the people', asyn
 	await expect(page).toHaveURL(/\/contacts$/);
 
 	// Her card carries a nickname, which is part of the name it shapes (docs/02 §2.2).
-	await page.getByRole('link', { name: /Odile Margrit “Odi” Trachsel/ }).first().click();
+	await page
+		.getByRole('link', { name: /Odile Margrit “Odi” Trachsel/ })
+		.first()
+		.click();
 	await expect(page.getByRole('heading', { name: 'Odile Margrit “Odi” Trachsel' })).toBeVisible();
 	await expect(page.getByText('19 May 1984')).toBeVisible();
 	await expect(page.locator('section[data-row="Tags"]')).toContainText('Jodlerchoerli');
@@ -80,7 +83,10 @@ test('imports a vCard, stores the picture it carries and shows the people', asyn
 
 	// The second card is vCard 2.1: quoted-printable text and a birthday with no year.
 	await page.goto('/contacts');
-	await page.getByRole('link', { name: /Bruno Trachsel/ }).first().click();
+	await page
+		.getByRole('link', { name: /Bruno Trachsel/ })
+		.first()
+		.click();
 	await expect(page.getByText('3 September')).toBeVisible();
 	await expect(page.getByText('Fischt am liebsten früh am Morgen im Thunersee.')).toBeVisible();
 
@@ -109,8 +115,14 @@ test('says so when a card is opened and never closed, and writes nothing', async
 	await expect(page.getByTestId('import-preview')).toHaveCount(0);
 });
 
-test('refuses a card that names nobody rather than importing a nameless person', async ({ page }) => {
-	await uploadBroken(page, 'nameless.vcf', 'BEGIN:VCARD\r\nVERSION:4.0\r\nUID:u9\r\nNOTE:no name here\r\nEND:VCARD\r\n');
+test('refuses a card that names nobody rather than importing a nameless person', async ({
+	page
+}) => {
+	await uploadBroken(
+		page,
+		'nameless.vcf',
+		'BEGIN:VCARD\r\nVERSION:4.0\r\nUID:u9\r\nNOTE:no name here\r\nEND:VCARD\r\n'
+	);
 
 	await expect(page.getByText(/names nobody/)).toBeVisible();
 	await expect(page.getByTestId('import-preview')).toHaveCount(0);

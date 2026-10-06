@@ -17,8 +17,10 @@ const maxWeber = contact('c-max', 'Max', 'Weber');
 const gerda = contact('c-gerda', 'Gerda', 'Pollari', 'Oma', 'Oma Gerda');
 const fritz = contact('c-fritz', 'Fritz', 'Huber', 'Opa');
 
-const ids = (immichName: string, people = [manfred, jonas, lenaKB, lenaM, maxWeber, gerda, fritz]) =>
-	similarPeople(immichName, people);
+const ids = (
+	immichName: string,
+	people = [manfred, jonas, lenaKB, lenaM, maxWeber, gerda, fritz]
+) => similarPeople(immichName, people);
 
 describe('similarPeople', () => {
 	it('finds someone whose first name the Immich name carries, past a kin word', () => {
@@ -58,7 +60,9 @@ describe('similarPeople', () => {
 	});
 
 	it('offers a handful at most, the closest first, in a fixed order', () => {
-		const thomases = Array.from({ length: MAX_SIMILAR + 2 }, (_, at) => contact(`c-${at}`, 'Thomas', `Name${at}`));
+		const thomases = Array.from({ length: MAX_SIMILAR + 2 }, (_, at) =>
+			contact(`c-${at}`, 'Thomas', `Name${at}`)
+		);
 		const exact = contact('c-exact', 'Thomas', 'Widmer');
 		const found = ids('Thomas Widmer', [...thomases, exact]);
 		expect(found).toHaveLength(MAX_SIMILAR);

@@ -75,12 +75,31 @@
 		data-testid="pass-on"
 	>
 		<input type="hidden" name="lastName" value={passOn.lastName} />
-		{#each passOn.people as person (person.id)}<input type="hidden" name="contactId" value={person.id} />{/each}
+		{#each passOn.people as person (person.id)}<input
+				type="hidden"
+				name="contactId"
+				value={person.id}
+			/>{/each}
 		<span class="min-w-0 flex-1">
-			{t('surnames.passOnPrompt', { people: listOf(passOn.people), count: passOn.people.length, name: passOn.lastName })}
+			{t('surnames.passOnPrompt', {
+				people: listOf(passOn.people),
+				count: passOn.people.length,
+				name: passOn.lastName
+			})}
 		</span>
-		<Button variant="primary" size="sm" class="pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:px-4" {disabled}>{t('surnames.toast.yes')}</Button>
-		<Button variant="ghost" size="sm" type="button" class="pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:px-4" onclick={() => (passOn = null)}>
+		<Button
+			variant="primary"
+			size="sm"
+			class="pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:px-4"
+			{disabled}>{t('surnames.toast.yes')}</Button
+		>
+		<Button
+			variant="ghost"
+			size="sm"
+			type="button"
+			class="pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:px-4"
+			onclick={() => (passOn = null)}
+		>
 			{t('surnames.no')}
 		</Button>
 	</form>

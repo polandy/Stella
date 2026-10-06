@@ -57,7 +57,9 @@ test('the Filter menu is the legend, and the pill counts what is shown', async (
 	await expect(page.getByRole('button', { name: /^Filter/ })).toBeFocused();
 });
 
-test('opens the peek panel on the centred person with their face, name and a way to their page', async ({ page }) => {
+test('opens the peek panel on the centred person with their face, name and a way to their page', async ({
+	page
+}) => {
 	await page.goto('/graph?center=demo-c-hans');
 	await expect(page.locator('canvas').first()).toBeVisible();
 
@@ -95,7 +97,9 @@ test('expanding a person brings the connections of theirs the canvas did not hav
 	await settled(page);
 });
 
-test('expanding moves nobody already on the map, and arranging it freely re-arranges it', async ({ page }) => {
+test('expanding moves nobody already on the map, and arranging it freely re-arranges it', async ({
+	page
+}) => {
 	await page.goto('/graph?center=demo-c-hans');
 	await expect(page.locator('canvas').first()).toBeVisible();
 	await settled(page);
@@ -196,17 +200,24 @@ test('By circle stands Lena with one of her circles, the circles apart and nobod
 	expect(await overlappingNodes(page)).toEqual([]);
 });
 
-test('draws the relatives nobody entered, and the Kinship filter takes them away', async ({ page }) => {
+test('draws the relatives nobody entered, and the Kinship filter takes them away', async ({
+	page
+}) => {
 	// Lena's cousin Timo is tied to her by nothing stored: he is in her neighbourhood only
 	// because the cousin line is worked out, through the grandparents they share.
 	await page.goto('/graph?center=demo-c-lena');
 	await expect(page.locator('canvas').first()).toBeVisible();
 	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('drawn')).toPass();
 
-	const kinship = (await filterMenu(page)).getByRole('menuitemcheckbox', { name: 'Kinship', exact: true });
+	const kinship = (await filterMenu(page)).getByRole('menuitemcheckbox', {
+		name: 'Kinship',
+		exact: true
+	});
 	await kinship.click();
 	await expect(kinship).toHaveAttribute('aria-checked', 'false');
-	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('filtered-out')).toPass();
+	await expect(async () =>
+		expect(await stateOf(page, 'demo-c-timo')).toBe('filtered-out')
+	).toPass();
 	// Her father stays: he is there through an entered relationship, not a derived one.
 	expect(await stateOf(page, 'demo-c-markus')).toBe('drawn');
 
@@ -221,7 +232,9 @@ async function findPerson(page: Page, name: string) {
 	await expect(page.getByRole('complementary').getByText(name)).toBeVisible();
 }
 
-test('leaves a derived line off while the links it abbreviates are on the map', async ({ page }) => {
+test('leaves a derived line off while the links it abbreviates are on the map', async ({
+	page
+}) => {
 	// Markus and Daniel are brothers; Lena is Markus's daughter, so Daniel's niece, and Timo,
 	// Daniel's son, is Markus's nephew (docs/02 §2.7).
 	const niece = kinshipLineId('demo-c-daniel', 'demo-c-lena');
@@ -250,7 +263,9 @@ test('leaves a derived line off while the links it abbreviates are on the map', 
 	await findPerson(page, 'Daniel Brunner');
 	await expect(async () => expect(await lineStateOf(page, niece)).toBe('drawn')).toPass();
 	// One line per pair, named from whichever end the engine asked first.
-	expect(await highlightedLabels(page)).toEqual(expect.arrayContaining([expect.stringMatching(/^(Niece|Uncle)$/)]));
+	expect(await highlightedLabels(page)).toEqual(
+		expect.arrayContaining([expect.stringMatching(/^(Niece|Uncle)$/)])
+	);
 	// Markus's own nephew line came with him, and its chain runs through Daniel, already here.
 	expect(await lineStateOf(page, nephew)).toBe('filtered-out');
 
@@ -296,7 +311,9 @@ test('remembers the Labels and All kinship lines switches on this device', async
 	await expect(all()).toHaveAttribute('aria-checked', 'true');
 });
 
-test('a connection path answers with the people in between, not with the derived shortcut', async ({ page }) => {
+test('a connection path answers with the people in between, not with the derived shortcut', async ({
+	page
+}) => {
 	await page.goto('/graph?center=demo-c-lena');
 	await expect(page.locator('canvas').first()).toBeVisible();
 	await expect(async () => expect(await stateOf(page, 'demo-c-timo')).toBe('drawn')).toPass();
@@ -319,7 +336,9 @@ test('a connection path answers with the people in between, not with the derived
 	await expect(prompt).toHaveText('Lena Brunner → Hans Brunner → Timo Brunner');
 });
 
-test('names the lines around the selected person, and only while they are selected', async ({ page }) => {
+test('names the lines around the selected person, and only while they are selected', async ({
+	page
+}) => {
 	// The explorer opens with the centred person selected, so her lines carry their names at once.
 	await page.goto('/graph?center=demo-c-lena');
 	await expect(page.locator('canvas').first()).toBeVisible();

@@ -24,7 +24,11 @@ const captured: CapturedMoment = {
 
 const result = { ...captured, visibility: 'shared' as const };
 
-const ids = ['01K6A5ZQ3V9W8X7Y6Z5A4B3C21', '01K6A5ZQ3V9W8X7Y6Z5A4B3C22', '01K6A5ZQ3V9W8X7Y6Z5A4B3C23'];
+const ids = [
+	'01K6A5ZQ3V9W8X7Y6Z5A4B3C21',
+	'01K6A5ZQ3V9W8X7Y6Z5A4B3C22',
+	'01K6A5ZQ3V9W8X7Y6Z5A4B3C23'
+];
 const moment = (id: string, body = 'Coffee with @Julia') => ({
 	id,
 	type: 'moment.capture',
@@ -73,18 +77,30 @@ function fakes() {
 			'relationship.addMany': async (_actor, payload) => {
 				if (payload.description === 'refuse otto') {
 					throw new RelationshipsRefusedError([
-						{ targetId: 'otto', targetName: 'Otto Meier', reason: phrase('errors.relationship.duplicate') }
+						{
+							targetId: 'otto',
+							targetName: 'Otto Meier',
+							reason: phrase('errors.relationship.duplicate')
+						}
 					]);
 				}
 				return { relationshipIds: ['r1', 'r2'] };
 			},
 			'contact.add': async () => ({ contactId: 'c' }),
-			'journal.write': async () => ({ entryId: 'e', anchorContactId: 'c', visibility: 'shared' as const }),
+			'journal.write': async () => ({
+				entryId: 'e',
+				anchorContactId: 'c',
+				visibility: 'shared' as const
+			}),
 			'field.add': async () => ({ fieldId: 'f' }),
 			'date.add': async () => ({ dateId: 'd' }),
 			'gallery.add': async () => ({ contactId: 'c', visibility: 'shared' as const }),
 			'gallery.photo': async () => 'photo',
-			'circleGallery.add': async () => ({ circleId: 'k', role: null, visibility: 'shared' as const }),
+			'circleGallery.add': async () => ({
+				circleId: 'k',
+				role: null,
+				visibility: 'shared' as const
+			}),
 			'circleGallery.photo': async () => 'photo'
 		}
 	};
@@ -94,7 +110,10 @@ function fakes() {
 describe('receiveQueued', () => {
 	it('applies each command in the order sent and answers each', async () => {
 		const f = fakes();
-		const answers = await receiveQueued(f.deps, actor, t, [moment(ids[0], 'first @Julia'), moment(ids[1], 'second @Julia')]);
+		const answers = await receiveQueued(f.deps, actor, t, [
+			moment(ids[0], 'first @Julia'),
+			moment(ids[1], 'second @Julia')
+		]);
 
 		expect(answers).toEqual([
 			{ id: ids[0], status: 'applied', result },
@@ -162,7 +181,10 @@ describe('receiveQueued', () => {
 
 	it('answers failed for our own error, so the phone keeps the command and tries later', async () => {
 		const f = fakes();
-		const answers = await receiveQueued(f.deps, actor, t, [moment(ids[0], 'crash @Julia'), moment(ids[1])]);
+		const answers = await receiveQueued(f.deps, actor, t, [
+			moment(ids[0], 'crash @Julia'),
+			moment(ids[1])
+		]);
 
 		expect(answers).toEqual([
 			{ id: ids[0], status: 'failed' },

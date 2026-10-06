@@ -45,7 +45,9 @@ describe('validateAvatarUpload', () => {
 		expect(validateAvatarUpload(upload())).toBe('image/jpeg');
 	});
 	it('rejects an empty image', () => {
-		expect(() => validateAvatarUpload(upload({ image: new Uint8Array() }))).toThrow(InvalidAvatarError);
+		expect(() => validateAvatarUpload(upload({ image: new Uint8Array() }))).toThrow(
+			InvalidAvatarError
+		);
 	});
 	it('rejects an oversized image', () => {
 		const big = new Uint8Array(AVATAR_MAX_BYTES + 1);
@@ -53,7 +55,9 @@ describe('validateAvatarUpload', () => {
 		expect(() => validateAvatarUpload(upload({ image: big }))).toThrow(/too large/);
 	});
 	it('rejects bytes that are not a supported image', () => {
-		expect(() => validateAvatarUpload(upload({ image: new Uint8Array([1, 2, 3, 4]) }))).toThrow(/Unsupported/);
+		expect(() => validateAvatarUpload(upload({ image: new Uint8Array([1, 2, 3, 4]) }))).toThrow(
+			/Unsupported/
+		);
 	});
 	it('rejects a thumbnail of a different format', () => {
 		expect(() => validateAvatarUpload(upload({ thumb: PNG }))).toThrow(/mismatch/);
@@ -112,7 +116,12 @@ function fakeDeps() {
 describe('setContactAvatar', () => {
 	it('stores both files and records the photo as the contact avatar', async () => {
 		const f = fakeDeps();
-		const id = await setContactAvatar(f.deps, { userId: 'u1', householdId: 'h1' }, 'mara', upload());
+		const id = await setContactAvatar(
+			f.deps,
+			{ userId: 'u1', householdId: 'h1' },
+			'mara',
+			upload()
+		);
 
 		expect(id).toBe('photo-1');
 		expect([...f.store.keys()].sort()).toEqual(['photo-1.jpg', 'photo-1_thumb.jpg']);
@@ -133,14 +142,24 @@ describe('setContactAvatar', () => {
 
 	it('keeps the capture date of the picture, which lands in the gallery as a dated photo', async () => {
 		const f = fakeDeps();
-		await setContactAvatar(f.deps, { userId: 'u1', householdId: 'h1' }, 'mara', upload({ takenAt: '2023-06-01T10:00:00' }));
+		await setContactAvatar(
+			f.deps,
+			{ userId: 'u1', householdId: 'h1' },
+			'mara',
+			upload({ takenAt: '2023-06-01T10:00:00' })
+		);
 		expect(f.inserted?.takenAt).toBe('2023-06-01T10:00:00');
 	});
 
 	it('refuses a capture date in the future, storing nothing', async () => {
 		const f = fakeDeps();
 		await expect(
-			setContactAvatar(f.deps, { userId: 'u1', householdId: 'h1' }, 'mara', upload({ takenAt: '2099-01-01T00:00:00' }))
+			setContactAvatar(
+				f.deps,
+				{ userId: 'u1', householdId: 'h1' },
+				'mara',
+				upload({ takenAt: '2099-01-01T00:00:00' })
+			)
 		).rejects.toThrow(InvalidAvatarError);
 		expect(f.store.size).toBe(0);
 	});
@@ -148,7 +167,12 @@ describe('setContactAvatar', () => {
 	it('rejects an invalid upload before storing anything', async () => {
 		const f = fakeDeps();
 		await expect(
-			setContactAvatar(f.deps, { userId: 'u1', householdId: 'h1' }, 'mara', upload({ image: new Uint8Array([0, 0]) }))
+			setContactAvatar(
+				f.deps,
+				{ userId: 'u1', householdId: 'h1' },
+				'mara',
+				upload({ image: new Uint8Array([0, 0]) })
+			)
 		).rejects.toThrow(InvalidAvatarError);
 		expect(f.store.size).toBe(0);
 		expect(f.inserted).toBeNull();

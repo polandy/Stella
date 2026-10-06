@@ -14,9 +14,7 @@ import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ cookies }) => {
 	const token = cookies.get(SESSION_COOKIE);
-	const { oidcIdToken } = token
-		? await signOut(getSessionDeps(), token)
-		: { oidcIdToken: null };
+	const { oidcIdToken } = token ? await signOut(getSessionDeps(), token) : { oidcIdToken: null };
 	clearSessionCookie(cookies);
 
 	const providerLogout = await planRpLogout(getRpLogoutDeps(), oidcIdToken);

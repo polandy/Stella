@@ -117,12 +117,16 @@ function readPayload(payload: string): SignedImmichMedia | null {
 	if (!isImmichId(p)) return null;
 	if (typeof e !== 'number' || !Number.isSafeInteger(e)) return null;
 	// The one kind that names a household rather than a contact.
-	if (k === 'n') return isSignedContactId(h) ? { kind: 'newcomer', householdId: h, personId: p, expiresAt: e } : null;
+	if (k === 'n')
+		return isSignedContactId(h)
+			? { kind: 'newcomer', householdId: h, personId: p, expiresAt: e }
+			: null;
 	if (!isSignedContactId(c)) return null;
 	if (k === 'f') return { kind: 'face', contactId: c, personId: p, expiresAt: e };
 	if (k !== 'p' || !isImmichId(a) || typeof s !== 'string' || !IMAGE_SIZES.has(s)) return null;
 	if (t !== undefined && (typeof t !== 'string' || !isTakenAt(t))) return null;
-	if ((w !== undefined || q !== undefined) && (!isSignedContactId(w) || !isImmichId(q))) return null;
+	if ((w !== undefined || q !== undefined) && (!isSignedContactId(w) || !isImmichId(q)))
+		return null;
 	return {
 		kind: 'photo',
 		contactId: c,
@@ -141,18 +145,18 @@ function writePayload(media: SignedImmichMedia): string {
 		media.kind === 'newcomer'
 			? { k: 'n', h: media.householdId, p: media.personId, e: media.expiresAt }
 			: media.kind === 'face'
-			? { k: 'f', c: media.contactId, p: media.personId, e: media.expiresAt }
-			: {
-					k: 'p',
-					c: media.contactId,
-					p: media.personId,
-					a: media.assetId,
-					s: media.size,
-					t: media.takenAt,
-					w: media.together?.contactId,
-					q: media.together?.personId,
-					e: media.expiresAt
-				};
+				? { k: 'f', c: media.contactId, p: media.personId, e: media.expiresAt }
+				: {
+						k: 'p',
+						c: media.contactId,
+						p: media.personId,
+						a: media.assetId,
+						s: media.size,
+						t: media.takenAt,
+						w: media.together?.contactId,
+						q: media.together?.personId,
+						e: media.expiresAt
+					};
 	return toBase64Url(encoder.encode(JSON.stringify(fields)));
 }
 

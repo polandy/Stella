@@ -20,7 +20,14 @@
 		/** The label size of the form around it: small in the picker's panel, regular on a page. */
 		compact?: boolean;
 	}
-	let { firstName, label, value = $bindable(''), name, inputClass, compact = false }: Props = $props();
+	let {
+		firstName,
+		label,
+		value = $bindable(''),
+		name,
+		inputClass,
+		compact = false
+	}: Props = $props();
 	// Shown only while there is no last name, which is exactly when it is needed.
 
 	const t = useTranslate();
@@ -36,6 +43,14 @@
 	</p>
 	<label class="flex flex-col gap-1 text-fg-muted" class:text-xs={compact} class:text-sm={!compact}>
 		{label}
-		<input {name} bind:value required type="text" autocomplete="off" placeholder={t('components.namesake.placeholder')} class={inputClass} />
+		<input
+			{name}
+			bind:value
+			required
+			type="text"
+			autocomplete="off"
+			placeholder={t('components.namesake.placeholder')}
+			class={inputClass}
+		/>
 	</label>
 </div>

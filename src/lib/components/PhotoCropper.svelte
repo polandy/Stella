@@ -67,7 +67,9 @@
 		}
 	});
 
-	const placement = $derived(image && crop && windowPx > 0 ? imagePlacement(image, crop, windowPx) : null);
+	const placement = $derived(
+		image && crop && windowPx > 0 ? imagePlacement(image, crop, windowPx) : null
+	);
 
 	function onLoad(event: Event) {
 		const img = event.currentTarget as HTMLImageElement;
@@ -182,7 +184,9 @@
 				/>
 			{/if}
 			<!-- The round avatar the square will be worn as; the corners stay visible but dimmed. -->
-			<div class="pointer-events-none absolute inset-0 rounded-full shadow-[0_0_0_100vmax_color-mix(in_srgb,var(--bg-sunken)_70%,transparent)]"></div>
+			<div
+				class="pointer-events-none absolute inset-0 rounded-full shadow-[0_0_0_100vmax_color-mix(in_srgb,var(--bg-sunken)_70%,transparent)]"
+			></div>
 		</div>
 
 		<p id="cropper-hint" class="text-xs text-fg-muted">{t('components.cropper.hint')}</p>
@@ -201,7 +205,9 @@
 
 		<div class="flex justify-end gap-2">
 			<Button variant="ghost" onclick={oncancel}>{t('common.cancel')}</Button>
-			<Button variant="primary" onclick={confirm} disabled={!crop}>{t('components.cropper.use')}</Button>
+			<Button variant="primary" onclick={confirm} disabled={!crop}
+				>{t('components.cropper.use')}</Button
+			>
 		</div>
 	</div>
 </dialog>

@@ -58,7 +58,10 @@ describe('heldAnswer', () => {
 			relation: 'parent'
 		});
 
-		heldAnswer({ holder, fetch }, { key: 'suggestion:parent|a b', label: 'Declined', ...noCallbacks() })(event as unknown as EnhanceEvent);
+		heldAnswer(
+			{ holder, fetch },
+			{ key: 'suggestion:parent|a b', label: 'Declined', ...noCallbacks() }
+		)(event as unknown as EnhanceEvent);
 
 		expect(wasCancelled()).toBe(true);
 		// Held, not sent: the positive control is that the removal *was* recorded.
@@ -71,11 +74,17 @@ describe('heldAnswer', () => {
 		const { holder, held } = recordingHolder();
 		const { fetch, calls } = fakeFetch({ ok: true });
 		let committed = 0;
-		const { event } = submitEvent('/settings/relationships?review&after=k&/addProposedRelationship', {
-			toId: 'lisa'
-		});
+		const { event } = submitEvent(
+			'/settings/relationships?review&after=k&/addProposedRelationship',
+			{
+				toId: 'lisa'
+			}
+		);
 
-		heldAnswer({ holder, fetch }, { key: 'k', label: 'Added', ...noCallbacks(), onCommitted: () => (committed += 1) })(event as unknown as EnhanceEvent);
+		heldAnswer(
+			{ holder, fetch },
+			{ key: 'k', label: 'Added', ...noCallbacks(), onCommitted: () => (committed += 1) }
+		)(event as unknown as EnhanceEvent);
 		await held[0]!.commit();
 
 		expect(calls).toHaveLength(1);
@@ -95,7 +104,10 @@ describe('heldAnswer', () => {
 		let committed = 0;
 		const { event } = submitEvent('/x?/dismissSuggestion', {});
 
-		heldAnswer({ holder, fetch }, { key: 'k', label: 'Declined', ...noCallbacks(), onCommitted: () => (committed += 1) })(event as unknown as EnhanceEvent);
+		heldAnswer(
+			{ holder, fetch },
+			{ key: 'k', label: 'Declined', ...noCallbacks(), onCommitted: () => (committed += 1) }
+		)(event as unknown as EnhanceEvent);
 
 		await expect(held[0]!.commit()).rejects.toThrow();
 		expect(committed).toBe(0);
@@ -113,7 +125,8 @@ describe('heldAnswer', () => {
 		const { holder, held } = recordingHolder();
 		let release = () => {};
 		const inFlight = new Promise<Response>((resolve) => {
-			release = () => resolve({ ok: true, status: 200, json: async () => ({ type: 'success' }) } as Response);
+			release = () =>
+				resolve({ ok: true, status: 200, json: async () => ({ type: 'success' }) } as Response);
 		});
 		const order: string[] = [];
 		const { event } = submitEvent('/x?/dismissSuggestion', {});

@@ -46,8 +46,12 @@ test.describe('the facts', () => {
 	test('states the address and the job a record holds', async ({ page }) => {
 		await openDemoPerson(page, MARKUS, 'Markus Brunner');
 
-		await expect(facts(page).locator('[data-fact="address"]')).toContainText('Spitalackerstrasse 22, 3013 Bern');
-		await expect(facts(page).locator('[data-fact="job"]')).toContainText('Bauingenieur at Rytz + Partner AG');
+		await expect(facts(page).locator('[data-fact="address"]')).toContainText(
+			'Spitalackerstrasse 22, 3013 Bern'
+		);
+		await expect(facts(page).locator('[data-fact="job"]')).toContainText(
+			'Bauingenieur at Rytz + Partner AG'
+		);
 	});
 
 	test('leaves out the facts a record does not hold', async ({ page }) => {
@@ -61,7 +65,9 @@ test.describe('the facts', () => {
 	});
 });
 
-test('the quiet button reveals the empty rows in their places and hands them the cursor', async ({ page }) => {
+test('the quiet button reveals the empty rows in their places and hands them the cursor', async ({
+	page
+}) => {
 	await openDemoPerson(page, MARKUS, 'Markus Brunner');
 	const card = page.getByTestId('identity-card');
 
@@ -102,16 +108,22 @@ test.describe('the ⋯ menu', () => {
 
 		await recordAction(page, 'How are we connected?');
 
-		await expect(page.locator('#section-relationships').getByLabel('Lena Brunner and…')).toBeFocused();
+		await expect(
+			page.locator('#section-relationships').getByLabel('Lena Brunner and…')
+		).toBeFocused();
 	});
 
-	test('Archive says what it does before it does it, and Cancel archives nothing', async ({ page }) => {
+	test('Archive says what it does before it does it, and Cancel archives nothing', async ({
+		page
+	}) => {
 		await openDemoPerson(page, LENA, 'Lena Brunner');
 
 		await recordAction(page, 'Archive');
 
 		const step = confirmStep(page);
-		await expect(step).toContainText('Takes them out of the directory, the search and Home’s reminders.');
+		await expect(step).toContainText(
+			'Takes them out of the directory, the search and Home’s reminders.'
+		);
 		await expect(step.getByRole('button', { name: 'Archive this person' })).toBeFocused();
 
 		await step.getByRole('button', { name: 'Cancel' }).click();
@@ -133,7 +145,9 @@ test.describe('the ⋯ menu', () => {
 		await expect(step).toHaveCount(0);
 	});
 
-	test('an open confirm step stays with its person when a link leads to someone else', async ({ page }) => {
+	test('an open confirm step stays with its person when a link leads to someone else', async ({
+		page
+	}) => {
 		await openDemoPerson(page, LENA, 'Lena Brunner');
 		await recordAction(page, 'Archive');
 		await expect(confirmStep(page)).toBeVisible();
@@ -150,7 +164,9 @@ test.describe('the ⋯ menu', () => {
 	});
 });
 
-test('the story card’s own Log contact is a quiet button, and the only one on the page', async ({ page }) => {
+test('the story card’s own Log contact is a quiet button, and the only one on the page', async ({
+	page
+}) => {
 	await openDemoPerson(page, LENA, 'Lena Brunner');
 
 	const logContact = page.locator('#section-story').getByRole('button', { name: 'Log contact' });

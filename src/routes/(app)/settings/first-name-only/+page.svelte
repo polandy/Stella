@@ -31,11 +31,17 @@
 	</header>
 
 	{#if data.people.length === 0}
-		<EmptyState icon="tidy" title={t('settings.firstNameOnly.empty.title')} hint={t('settings.firstNameOnly.empty.hint')}>
+		<EmptyState
+			icon="tidy"
+			title={t('settings.firstNameOnly.empty.title')}
+			hint={t('settings.firstNameOnly.empty.hint')}
+		>
 			<Button href="/settings">{t('nav.settings')}</Button>
 		</EmptyState>
 	{:else}
-		<p class="text-sm text-fg-muted" role="status">{t('contacts.count', { count: data.people.length })}</p>
+		<p class="text-sm text-fg-muted" role="status">
+			{t('contacts.count', { count: data.people.length })}
+		</p>
 		<ul class="flex flex-col gap-1" data-testid="first-name-only">
 			{#each data.people as person (person.id)}
 				{@const since = sinceLabel(i18n, person.lastTouchedOn, data.today)}
@@ -43,18 +49,34 @@
 					class="grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-app px-2.5 py-2"
 					data-testid="first-name-only-row"
 				>
-					<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={36} />
-					<a href="/contacts/{person.id}" class="truncate font-medium text-fg hover:underline">{person.displayName}</a>
+					<Avatar
+						id={person.id}
+						name={person.displayName}
+						avatarPhotoId={person.avatarPhotoId}
+						size={36}
+					/>
+					<a href="/contacts/{person.id}" class="truncate font-medium text-fg hover:underline"
+						>{person.displayName}</a
+					>
 					<span
-						class="whitespace-nowrap text-xs tabular-nums text-fg-subtle"
-						title={since ? t('contacts.lastWrittenAboutOn', { date: person.lastTouchedOn ?? '' }) : t('contacts.nothingWrittenYet')}
+						class="text-xs whitespace-nowrap text-fg-subtle tabular-nums"
+						title={since
+							? t('contacts.lastWrittenAboutOn', { date: person.lastTouchedOn ?? '' })
+							: t('contacts.nothingWrittenYet')}
 					>
 						{since ?? '—'}
 					</span>
-					<form method="POST" action="?/describe" use:enhance class="col-span-2 col-start-2 flex gap-2">
+					<form
+						method="POST"
+						action="?/describe"
+						use:enhance
+						class="col-span-2 col-start-2 flex gap-2"
+					>
 						<input type="hidden" name="id" value={person.id} />
 						<label class="min-w-0 flex-1">
-							<span class="sr-only">{t('settings.firstNameOnly.knowThemBy', { name: person.displayName })}</span>
+							<span class="sr-only"
+								>{t('settings.firstNameOnly.knowThemBy', { name: person.displayName })}</span
+							>
 							<input
 								name="description"
 								type="text"
@@ -68,7 +90,9 @@
 						<Button type="submit" size="sm">{t('common.save')}</Button>
 					</form>
 					{#if form?.describedId === person.id}
-						<p class="col-span-2 col-start-2 text-sm text-danger" role="alert">{form.describeError}</p>
+						<p class="col-span-2 col-start-2 text-sm text-danger" role="alert">
+							{form.describeError}
+						</p>
 					{/if}
 				</li>
 			{/each}

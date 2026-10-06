@@ -110,7 +110,11 @@ export interface ImmichGateway {
 	 * them, from `cursor` on (null for the first page). Archived, locked and trashed photos never
 	 * come. No people, or an id that is not Immich's, is `notFound` without asking.
 	 */
-	latestAssets(people: ImmichPeopleFilter, limit: number, cursor: string | null): Promise<ImmichOutcome<ImmichAssetPage>>;
+	latestAssets(
+		people: ImmichPeopleFilter,
+		limit: number,
+		cursor: string | null
+	): Promise<ImmichOutcome<ImmichAssetPage>>;
 	/** One photo, at one of the sizes Immich renders (`asset.view`). */
 	assetImage(assetId: string, size: ImmichImageSize): Promise<ImmichOutcome<ImmichImage>>;
 }
@@ -133,7 +137,8 @@ export function isServableImageType(contentType: string): boolean {
 }
 
 /** The read scopes the key needs, named as Immich names them (concept §2). */
-export type ImmichScope = 'user.read' | 'person.read' | 'person.statistics' | 'asset.read' | 'asset.view';
+export type ImmichScope =
+	'user.read' | 'person.read' | 'person.statistics' | 'asset.read' | 'asset.view';
 
 type Payload = Record<string, unknown>;
 
@@ -208,7 +213,12 @@ const MAX_CURSOR_LENGTH = 512;
 
 /** Whether a value can be passed back to Immich as a page cursor: opaque, but bounded. */
 export function isAssetCursor(value: unknown): value is string {
-	return typeof value === 'string' && value !== '' && value.length <= MAX_CURSOR_LENGTH && !/[\u0000-\u001f]/.test(value);
+	return (
+		typeof value === 'string' &&
+		value !== '' &&
+		value.length <= MAX_CURSOR_LENGTH &&
+		!/[\u0000-\u001f]/.test(value)
+	);
 }
 
 /** The `YYYY-MM-DDTHH:MM:SS` an Immich timestamp starts with, or null when it does not read as one. */
@@ -238,7 +248,8 @@ function takenAtOf(body: Payload): string | null {
 function readAsset(payload: unknown): ImmichAsset | null {
 	const body = objectOf(payload);
 	if (!body || !isImmichId(body.id)) return null;
-	if (body.type !== 'IMAGE' || body.visibility !== 'timeline' || body.isTrashed === true) return null;
+	if (body.type !== 'IMAGE' || body.visibility !== 'timeline' || body.isTrashed === true)
+		return null;
 	return { id: body.id, takenAt: takenAtOf(body) };
 }
 

@@ -34,7 +34,9 @@ describe('unclearHandles', () => {
 	});
 
 	it('asks nothing about a picked namesake, a unique name or a name nobody has', () => {
-		expect(unclearHandles('with @{contact:thomas-hut}, @SandraBrunner and @Nobody', audience, contexts)).toEqual([]);
+		expect(
+			unclearHandles('with @{contact:thomas-hut}, @SandraBrunner and @Nobody', audience, contexts)
+		).toEqual([]);
 	});
 
 	it('asks nothing once only one of them is someone the text may name', () => {

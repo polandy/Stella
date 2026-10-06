@@ -199,7 +199,12 @@ describe('createRelationship', () => {
 		const id = await createRelationship(
 			{ relationships: f.repo, types: f.types, ids: idGen('rel-1'), clock },
 			{ id: 'user-1', householdId: 'household-1' },
-			{ fromContactId: 'hans', toContactId: 'bettina', typeId: 'parent_child', description: ' met at reunion ' }
+			{
+				fromContactId: 'hans',
+				toContactId: 'bettina',
+				typeId: 'parent_child',
+				description: ' met at reunion '
+			}
 		);
 		expect(id).toBe('rel-1');
 		expect(f.inserted).toMatchObject({
@@ -215,33 +220,45 @@ describe('createRelationship', () => {
 
 	it('stores symmetric relationships in canonical order', async () => {
 		const f = fakeRepo({ type: sibling });
-		await createRelationship({ relationships: f.repo, types: f.types, ids: idGen('rel-2'), clock }, { id: 'u', householdId: 'h' }, {
-			fromContactId: 'y',
-			toContactId: 'x',
-			typeId: 'sibling'
-		});
+		await createRelationship(
+			{ relationships: f.repo, types: f.types, ids: idGen('rel-2'), clock },
+			{ id: 'u', householdId: 'h' },
+			{
+				fromContactId: 'y',
+				toContactId: 'x',
+				typeId: 'sibling'
+			}
+		);
 		expect(f.inserted).toMatchObject({ fromContactId: 'x', toContactId: 'y' });
 	});
 
 	it('rejects an unknown type', async () => {
 		const f = fakeRepo({ type: null });
 		await expect(
-			createRelationship({ relationships: f.repo, types: f.types, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
-				fromContactId: 'a',
-				toContactId: 'b',
-				typeId: 'nope'
-			})
+			createRelationship(
+				{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
+				{ id: 'u', householdId: 'h' },
+				{
+					fromContactId: 'a',
+					toContactId: 'b',
+					typeId: 'nope'
+				}
+			)
 		).rejects.toThrow();
 	});
 
 	it('rejects a duplicate relationship', async () => {
 		const f = fakeRepo({ type: parentChild, exists: true });
 		await expect(
-			createRelationship({ relationships: f.repo, types: f.types, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
-				fromContactId: 'a',
-				toContactId: 'b',
-				typeId: 'parent_child'
-			})
+			createRelationship(
+				{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
+				{ id: 'u', householdId: 'h' },
+				{
+					fromContactId: 'a',
+					toContactId: 'b',
+					typeId: 'parent_child'
+				}
+			)
 		).rejects.toBeInstanceOf(DuplicateRelationshipError);
 	});
 
@@ -262,11 +279,15 @@ describe('createRelationship', () => {
 		it('is refused: A is already a parent of B, so B cannot be a parent of A', async () => {
 			const f = withStoredPair(parentChild, 'a', 'b');
 			await expect(
-				createRelationship({ relationships: f.repo, types: f.types, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
-					fromContactId: 'b',
-					toContactId: 'a',
-					typeId: 'parent_child'
-				})
+				createRelationship(
+					{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
+					{ id: 'u', householdId: 'h' },
+					{
+						fromContactId: 'b',
+						toContactId: 'a',
+						typeId: 'parent_child'
+					}
+				)
 			).rejects.toBeInstanceOf(ContradictoryRelationshipError);
 			expect(f.inserted).toBeNull();
 		});
@@ -274,11 +295,15 @@ describe('createRelationship', () => {
 		it('is refused for grandparents too', async () => {
 			const f = withStoredPair(grandparent, 'a', 'b');
 			await expect(
-				createRelationship({ relationships: f.repo, types: f.types, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
-					fromContactId: 'b',
-					toContactId: 'a',
-					typeId: 'grandparent_grandchild'
-				})
+				createRelationship(
+					{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
+					{ id: 'u', householdId: 'h' },
+					{
+						fromContactId: 'b',
+						toContactId: 'a',
+						typeId: 'grandparent_grandchild'
+					}
+				)
 			).rejects.toBeInstanceOf(ContradictoryRelationshipError);
 			expect(f.inserted).toBeNull();
 		});
@@ -286,11 +311,15 @@ describe('createRelationship', () => {
 		// The positive control: the same fake, the same stored pair, the direction that is fine.
 		it('leaves a third person alone — only the two ends of the stored link are refused', async () => {
 			const f = withStoredPair(parentChild, 'a', 'b');
-			await createRelationship({ relationships: f.repo, types: f.types, ids: idGen('rel-9'), clock }, { id: 'u', householdId: 'h' }, {
-				fromContactId: 'c',
-				toContactId: 'a',
-				typeId: 'parent_child'
-			});
+			await createRelationship(
+				{ relationships: f.repo, types: f.types, ids: idGen('rel-9'), clock },
+				{ id: 'u', householdId: 'h' },
+				{
+					fromContactId: 'c',
+					toContactId: 'a',
+					typeId: 'parent_child'
+				}
+			);
 			expect(f.inserted).toMatchObject({ id: 'rel-9', fromContactId: 'c', toContactId: 'a' });
 		});
 
@@ -300,11 +329,15 @@ describe('createRelationship', () => {
 		 */
 		it("does not touch a household's own asymmetric type", async () => {
 			const f = withStoredPair(landlord, 'a', 'b');
-			await createRelationship({ relationships: f.repo, types: f.types, ids: idGen('rel-8'), clock }, { id: 'u', householdId: 'h' }, {
-				fromContactId: 'b',
-				toContactId: 'a',
-				typeId: 'landlord_of'
-			});
+			await createRelationship(
+				{ relationships: f.repo, types: f.types, ids: idGen('rel-8'), clock },
+				{ id: 'u', householdId: 'h' },
+				{
+					fromContactId: 'b',
+					toContactId: 'a',
+					typeId: 'landlord_of'
+				}
+			);
 			expect(f.inserted).toMatchObject({ id: 'rel-8', fromContactId: 'b', toContactId: 'a' });
 		});
 	});
@@ -312,11 +345,15 @@ describe('createRelationship', () => {
 	it('rejects a self relationship', async () => {
 		const f = fakeRepo({ type: parentChild });
 		await expect(
-			createRelationship({ relationships: f.repo, types: f.types, ids: idGen('x'), clock }, { id: 'u', householdId: 'h' }, {
-				fromContactId: 'a',
-				toContactId: 'a',
-				typeId: 'parent_child'
-			})
+			createRelationship(
+				{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
+				{ id: 'u', householdId: 'h' },
+				{
+					fromContactId: 'a',
+					toContactId: 'a',
+					typeId: 'parent_child'
+				}
+			)
 		).rejects.toThrow();
 	});
 });
@@ -469,12 +506,18 @@ describe('readKinship', () => {
 			}).repo;
 
 		it('offers the parent’s partner when the link was entered on the parent’s page', async () => {
-			const found = await readKinship(kinDeps(withPartner()), viewer, 'bettina', [{ a: 'bettina', b: 'hans' }]);
-			expect(found.proposals.map((s) => [s.ruleId, s.fromId, s.toId])).toEqual([['L3', 'kurt', 'hans']]);
+			const found = await readKinship(kinDeps(withPartner()), viewer, 'bettina', [
+				{ a: 'bettina', b: 'hans' }
+			]);
+			expect(found.proposals.map((s) => [s.ruleId, s.fromId, s.toId])).toEqual([
+				['L3', 'kurt', 'hans']
+			]);
 		});
 
 		it('stays quiet when it was entered on the child’s page', async () => {
-			const found = await readKinship(kinDeps(withPartner()), viewer, 'hans', [{ a: 'hans', b: 'bettina' }]);
+			const found = await readKinship(kinDeps(withPartner()), viewer, 'hans', [
+				{ a: 'hans', b: 'bettina' }
+			]);
 			expect(found.proposals).toEqual([]);
 		});
 	});
@@ -552,14 +595,18 @@ describe('createRelationship with details', () => {
 	it('stores the specifics alongside the link', async () => {
 		const f = fakeRepo({ type: partner });
 
-		await createRelationship({ relationships: f.repo, types: f.types, ids: idGen('rel-2'), clock }, { id: 'u1', householdId: 'h1' }, {
-			fromContactId: 'a',
-			toContactId: 'b',
-			typeId: 'partner',
-			description: 'met at the ski course',
-			sinceDate: '2019-06-01',
-			status: 'former'
-		});
+		await createRelationship(
+			{ relationships: f.repo, types: f.types, ids: idGen('rel-2'), clock },
+			{ id: 'u1', householdId: 'h1' },
+			{
+				fromContactId: 'a',
+				toContactId: 'b',
+				typeId: 'partner',
+				description: 'met at the ski course',
+				sinceDate: '2019-06-01',
+				status: 'former'
+			}
+		);
 
 		expect(f.inserted).toMatchObject({
 			description: 'met at the ski course',
@@ -572,12 +619,16 @@ describe('createRelationship with details', () => {
 		const f = fakeRepo({ type: partner });
 
 		await expect(
-			createRelationship({ relationships: f.repo, types: f.types, ids: idGen('rel-3'), clock }, { id: 'u1', householdId: 'h1' }, {
-				fromContactId: 'a',
-				toContactId: 'b',
-				typeId: 'partner',
-				sinceDate: '2019-02-30'
-			})
+			createRelationship(
+				{ relationships: f.repo, types: f.types, ids: idGen('rel-3'), clock },
+				{ id: 'u1', householdId: 'h1' },
+				{
+					fromContactId: 'a',
+					toContactId: 'b',
+					typeId: 'partner',
+					sinceDate: '2019-02-30'
+				}
+			)
 		).rejects.toThrow(InvalidRelationshipDetailsError);
 		expect(f.inserted).toBeNull();
 	});
@@ -683,7 +734,12 @@ describe('editRelationship', () => {
 		it('flips the stored direction when the other side of the type is chosen', async () => {
 			const f = fakeRepo({
 				typesById,
-				stored: { id: 'rel-1', fromContactId: 'bettina', toContactId: 'hans', typeId: 'parent_child' }
+				stored: {
+					id: 'rel-1',
+					fromContactId: 'bettina',
+					toContactId: 'hans',
+					typeId: 'parent_child'
+				}
 			});
 
 			const written = await editRelationship(deps(f), viewer, {
@@ -708,7 +764,12 @@ describe('editRelationship', () => {
 			const asked: { from: string; to: string; exceptId?: string }[] = [];
 			const f = fakeRepo({
 				typesById,
-				stored: { id: 'rel-1', fromContactId: 'bettina', toContactId: 'hans', typeId: 'parent_child' },
+				stored: {
+					id: 'rel-1',
+					fromContactId: 'bettina',
+					toContactId: 'hans',
+					typeId: 'parent_child'
+				},
 				existsFor: (from, to, _typeId, exceptId) => {
 					asked.push({ from, to, exceptId });
 					// The stored row, seen by a guard that forgot to exclude it.
@@ -749,10 +810,7 @@ describe('editRelationship', () => {
 				stored: { id: 'rel-1', fromContactId: 'bettina', toContactId: 'hans', typeId: 'partner' },
 				// Hans is already stored as Bettina's parent by some other row.
 				existsFor: (from, to, typeId, exceptId) =>
-					from === 'hans' &&
-					to === 'bettina' &&
-					typeId === 'parent_child' &&
-					exceptId === 'rel-1'
+					from === 'hans' && to === 'bettina' && typeId === 'parent_child' && exceptId === 'rel-1'
 			});
 
 			await expect(
@@ -819,7 +877,11 @@ describe('removeRelationship', () => {
 		const f = fakeRepo({});
 
 		expect(
-			await removeRelationship({ relationships: f.repo, types: f.types, ids: idGen('unused'), clock }, viewer, 'rel-1')
+			await removeRelationship(
+				{ relationships: f.repo, types: f.types, ids: idGen('unused'), clock },
+				viewer,
+				'rel-1'
+			)
 		).toBe(true);
 		expect(f.removals).toEqual(['rel-1']);
 	});
@@ -828,7 +890,11 @@ describe('removeRelationship', () => {
 		const f = fakeRepo({ visible: false });
 
 		expect(
-			await removeRelationship({ relationships: f.repo, types: f.types, ids: idGen('unused'), clock }, viewer, 'rel-x')
+			await removeRelationship(
+				{ relationships: f.repo, types: f.types, ids: idGen('unused'), clock },
+				viewer,
+				'rel-x'
+			)
 		).toBe(false);
 		expect(f.removals).toEqual([]);
 	});
@@ -836,7 +902,12 @@ describe('removeRelationship', () => {
 
 describe('removeRelationships', () => {
 	const viewer: Viewer = { id: 'u1', householdId: 'h1' };
-	const deps = (f: ReturnType<typeof fakeRepo>) => ({ relationships: f.repo, types: f.types, ids: idGen('unused'), clock });
+	const deps = (f: ReturnType<typeof fakeRepo>) => ({
+		relationships: f.repo,
+		types: f.types,
+		ids: idGen('unused'),
+		clock
+	});
 
 	it('takes back a whole batch in one step — the undo of links added together', async () => {
 		const f = fakeRepo({});
@@ -958,7 +1029,7 @@ describe('createRelationship — what is already on record', () => {
 		expect(f.inserted).toMatchObject({ fromContactId: 'anna', toContactId: 'bert' });
 	});
 
-	it('stores a sibling link Stella already works out from shared parents — confirming it is the household\'s call', async () => {
+	it("stores a sibling link Stella already works out from shared parents — confirming it is the household's call", async () => {
 		const f = fakeRepo({
 			type: sibling,
 			graph: {
@@ -1073,7 +1144,11 @@ describe('editRelationship — what is already on record', () => {
 		editRelationship(
 			{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
 			{ id: 'u', householdId: 'h' },
-			{ relationshipId: 'r1', perspectiveContactId: 'anna', typeChoice: { typeId, side: 'forward' } }
+			{
+				relationshipId: 'r1',
+				perspectiveContactId: 'anna',
+				typeChoice: { typeId, side: 'forward' }
+			}
 		);
 
 	it('lets a partner be retyped to a spouse — that is an edit, not a second partnership', async () => {

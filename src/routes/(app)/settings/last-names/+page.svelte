@@ -29,9 +29,11 @@
 		namesakes = [...namesakes, ...namesakesAfterNaming(data.people, batch.ids, batch.lastName)];
 	});
 	const left = $derived(
-		[...data.groups.flatMap((g) => g.rows.map((r) => r.person.id)), ...data.chooseOne.map((r) => r.person.id), ...data.none.map((p) => p.id)].filter(
-			(id) => !names.hidden.has(id)
-		).length
+		[
+			...data.groups.flatMap((g) => g.rows.map((r) => r.person.id)),
+			...data.chooseOne.map((r) => r.person.id),
+			...data.none.map((p) => p.id)
+		].filter((id) => !names.hidden.has(id)).length
 	);
 </script>
 
@@ -50,7 +52,11 @@
 	{#if offlineLine}<p class="text-sm text-fg-subtle">{offlineLine}</p>{/if}
 
 	{#if left === 0}
-		<EmptyState icon="tidy" title={t('surnames.page.empty.title')} hint={t('surnames.page.empty.hint')}>
+		<EmptyState
+			icon="tidy"
+			title={t('surnames.page.empty.title')}
+			hint={t('surnames.page.empty.hint')}
+		>
 			<Button href="/settings">{t('nav.settings')}</Button>
 		</EmptyState>
 	{:else}
@@ -59,16 +65,27 @@
 			<LastNameGroup {group} hidden={names.hidden} {disabled} {held} />
 		{/each}
 		<LastNameChoices rows={data.chooseOne} hidden={names.hidden} {disabled} {held} />
-		<LastNameFields people={data.none} knownSurnames={data.knownSurnames} hidden={names.hidden} {disabled} {offlineLine} {held} />
+		<LastNameFields
+			people={data.none}
+			knownSurnames={data.knownSurnames}
+			hidden={names.hidden}
+			{disabled}
+			{offlineLine}
+			{held}
+		/>
 	{/if}
 
 	{#if data.declined.length > 0}
 		<details class="rounded-app bg-card p-3 shadow-card">
-			<summary class="cursor-pointer text-sm font-medium text-fg-muted">{t('surnames.declined', { count: data.declined.length })}</summary>
+			<summary class="cursor-pointer text-sm font-medium text-fg-muted"
+				>{t('surnames.declined', { count: data.declined.length })}</summary
+			>
 			<ul class="mt-2 flex flex-col gap-1">
 				{#each data.declined as answer (`${answer.contactId} ${answer.name}`)}
 					<li class="flex items-center gap-3 text-sm">
-						<span class="min-w-0 flex-1 text-fg">{t('surnames.declinedRow', { person: answer.personName, name: answer.name })}</span>
+						<span class="min-w-0 flex-1 text-fg"
+							>{t('surnames.declinedRow', { person: answer.personName, name: answer.name })}</span
+						>
 						<form method="POST" action="?/restoreLastName" use:enhance>
 							<input type="hidden" name="contactId" value={answer.contactId} />
 							<input type="hidden" name="lastName" value={answer.name} />

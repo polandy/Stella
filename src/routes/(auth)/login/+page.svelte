@@ -20,10 +20,13 @@
 <FormError message={data.ssoError} />
 
 {#if data.oidcEnabled}
-	<Button variant="primary" href="/login/sso" class="justify-center">{t('auth.signInWithSso')}</Button>
+	<Button variant="primary" href="/login/sso" class="justify-center"
+		>{t('auth.signInWithSso')}</Button
+	>
 	{#if data.localEnabled}
 		<div class="flex items-center gap-3 text-xs text-fg-subtle">
-			<span class="h-px flex-1 bg-border"></span>{t('auth.or')}<span class="h-px flex-1 bg-border"></span>
+			<span class="h-px flex-1 bg-border"></span>{t('auth.or')}<span class="h-px flex-1 bg-border"
+			></span>
 		</div>
 	{/if}
 {/if}
@@ -34,11 +37,27 @@
 
 		<label class="flex flex-col gap-1 text-sm">
 			<span class="text-fg-muted">{t('auth.email')}</span>
-			<input name="email" type="email" required autocomplete="email" class={INPUT} aria-invalid={form?.error ? 'true' : undefined} aria-describedby={form?.error ? 'sign-in-error' : undefined} />
+			<input
+				name="email"
+				type="email"
+				required
+				autocomplete="email"
+				class={INPUT}
+				aria-invalid={form?.error ? 'true' : undefined}
+				aria-describedby={form?.error ? 'sign-in-error' : undefined}
+			/>
 		</label>
 		<label class="flex flex-col gap-1 text-sm">
 			<span class="text-fg-muted">{t('auth.password')}</span>
-			<input name="password" type="password" required autocomplete="current-password" class={INPUT} aria-invalid={form?.error ? 'true' : undefined} aria-describedby={form?.error ? 'sign-in-error' : undefined} />
+			<input
+				name="password"
+				type="password"
+				required
+				autocomplete="current-password"
+				class={INPUT}
+				aria-invalid={form?.error ? 'true' : undefined}
+				aria-describedby={form?.error ? 'sign-in-error' : undefined}
+			/>
 		</label>
 
 		<Button variant="primary" class="mt-2 justify-center">{t('auth.signIn')}</Button>
@@ -49,9 +68,12 @@
 	<form method="POST" class="flex flex-col items-center gap-1">
 		<input type="hidden" name="email" value={data.demoLogin.email} />
 		<input type="hidden" name="password" value={data.demoLogin.password} />
-		<button class="rounded-app border border-dashed border-border px-4 py-2 text-sm font-medium text-fg-muted transition-colors hover:border-primary hover:text-fg">
+		<button
+			class="rounded-app border border-dashed border-border px-4 py-2 text-sm font-medium text-fg-muted transition-colors hover:border-primary hover:text-fg"
+		>
 			{t('auth.signInAsDemo')}
 		</button>
-		<span class="text-xs text-fg-subtle">{t('auth.demoHint', { email: data.demoLogin.email })}</span>
+		<span class="text-xs text-fg-subtle">{t('auth.demoHint', { email: data.demoLogin.email })}</span
+		>
 	</form>
 {/if}

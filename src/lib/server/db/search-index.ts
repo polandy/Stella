@@ -112,9 +112,9 @@ function fingerprint(): string {
 const META_TABLE = 'search_index_meta';
 
 function storedFingerprint(sqlite: Database): string | null {
-	const row = sqlite.query(`SELECT fingerprint AS f FROM ${META_TABLE} LIMIT 1`).get() as
-		| { f: string }
-		| null;
+	const row = sqlite.query(`SELECT fingerprint AS f FROM ${META_TABLE} LIMIT 1`).get() as {
+		f: string;
+	} | null;
 	return row?.f ?? null;
 }
 

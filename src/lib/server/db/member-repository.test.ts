@@ -20,15 +20,19 @@ beforeEach(() => {
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
-	db.insert(schema.household).values([
-		{ id: H, name: 'Ours' },
-		{ id: OTHER, name: 'Theirs' }
-	]).run();
-	db.insert(schema.user).values([
-		{ id: 'u1', householdId: H, email: 'u1@x.test', name: 'Markus Brunner' },
-		{ id: 'u2', householdId: H, email: 'u2@x.test', name: 'Lena Brunner' },
-		{ id: 'u9', householdId: OTHER, email: 'u9@x.test', name: 'Somebody Else' }
-	]).run();
+	db.insert(schema.household)
+		.values([
+			{ id: H, name: 'Ours' },
+			{ id: OTHER, name: 'Theirs' }
+		])
+		.run();
+	db.insert(schema.user)
+		.values([
+			{ id: 'u1', householdId: H, email: 'u1@x.test', name: 'Markus Brunner' },
+			{ id: 'u2', householdId: H, email: 'u2@x.test', name: 'Lena Brunner' },
+			{ id: 'u9', householdId: OTHER, email: 'u9@x.test', name: 'Somebody Else' }
+		])
+		.run();
 	repo = createDrizzleMemberRepository(db);
 });
 

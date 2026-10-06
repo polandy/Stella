@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'bun:test';
 import { createFakeImmichGateway } from '../../immich/fake-gateway';
 import type { CreateContactInput } from '../contacts/contacts';
-import { addPersonFromImmich, assignNewcomer, WouldReplaceLinkError, type AddFromImmichDeps } from './add-from-immich';
+import {
+	addPersonFromImmich,
+	assignNewcomer,
+	WouldReplaceLinkError,
+	type AddFromImmichDeps
+} from './add-from-immich';
 import { ImmichLinkRefusedError, type ImmichLink } from './links';
 import { BERT_ID, CARL_ID, DORA_ID, testLibrary } from './test-library';
 
@@ -18,15 +23,20 @@ const NOW = 1_700_000_000_000;
 function setup() {
 	const links = new Map<string, ImmichLink>();
 	const added: (CreateContactInput & { id: string })[] = [];
-	const names: Record<string, string> = { 'c-bert': 'Bert Example', 'c-lena': 'Lena Köhler-Brandt' };
-	const holderOf = (personId: string) => [...links.values()].find((l) => l.immichPersonId === personId);
+	const names: Record<string, string> = {
+		'c-bert': 'Bert Example',
+		'c-lena': 'Lena Köhler-Brandt'
+	};
+	const holderOf = (personId: string) =>
+		[...links.values()].find((l) => l.immichPersonId === personId);
 	const gateway = createFakeImmichGateway(testLibrary());
 	const deps: AddFromImmichDeps = {
 		gateway,
 		clock: { now: () => NOW },
 		ids: { next: () => 'log-1' },
 		contacts: {
-			findByIdVisibleTo: async (_viewer, id) => (names[id] ? { displayName: names[id], visibility: 'shared' } : null)
+			findByIdVisibleTo: async (_viewer, id) =>
+				names[id] ? { displayName: names[id], visibility: 'shared' } : null
 		},
 		links: {
 			findForContactVisibleTo: async (_viewer, contactId) => links.get(contactId) ?? null,
@@ -35,7 +45,9 @@ function setup() {
 				new Map(
 					personIds.flatMap((id) => {
 						const held = holderOf(id);
-						return held ? [[id, { contactId: held.contactId, name: names[held.contactId] ?? null }] as const] : [];
+						return held
+							? [[id, { contactId: held.contactId, name: names[held.contactId] ?? null }] as const]
+							: [];
 					})
 				),
 			save: async (link) => {
@@ -66,32 +78,57 @@ describe('addPersonFromImmich', () => {
 
 		expect(contactId).toBe('c-new-1');
 		expect(added).toEqual([
-			{ id: 'c-new-1', firstName: 'Lena', lastName: 'Köhler', nickname: '', description: '', visibility: 'shared' }
+			{
+				id: 'c-new-1',
+				firstName: 'Lena',
+				lastName: 'Köhler',
+				nickname: '',
+				description: '',
+				visibility: 'shared'
+			}
 		]);
-		expect(links.get('c-new-1')).toEqual({ contactId: 'c-new-1', immichPersonId: CARL_ID, linkedBy: 'u-anna', linkedAt: NOW });
+		expect(links.get('c-new-1')).toEqual({
+			contactId: 'c-new-1',
+			immichPersonId: CARL_ID,
+			linkedBy: 'u-anna',
+			linkedAt: NOW
+		});
 	});
 
 	it('adds nobody for a face someone holds by now', async () => {
 		const { deps, links, added } = setup();
-		links.set('c-bert', { contactId: 'c-bert', immichPersonId: CARL_ID, linkedBy: 'u-bert', linkedAt: 1 });
+		links.set('c-bert', {
+			contactId: 'c-bert',
+			immichPersonId: CARL_ID,
+			linkedBy: 'u-bert',
+			linkedAt: 1
+		});
 
-		await expect(addPersonFromImmich(deps, adder, CARL_ID, lena)).rejects.toBeInstanceOf(ImmichLinkRefusedError);
+		await expect(addPersonFromImmich(deps, adder, CARL_ID, lena)).rejects.toBeInstanceOf(
+			ImmichLinkRefusedError
+		);
 		expect(added).toEqual([]);
 	});
 
 	it('adds nobody for a face Immich hides or no longer has', async () => {
 		const { deps, added, gateway } = setup();
 
-		await expect(addPersonFromImmich(deps, adder, DORA_ID, lena)).rejects.toBeInstanceOf(ImmichLinkRefusedError);
+		await expect(addPersonFromImmich(deps, adder, DORA_ID, lena)).rejects.toBeInstanceOf(
+			ImmichLinkRefusedError
+		);
 		gateway.library.people.splice(0, 1);
-		await expect(addPersonFromImmich(deps, adder, BERT_ID, lena)).rejects.toBeInstanceOf(ImmichLinkRefusedError);
+		await expect(addPersonFromImmich(deps, adder, BERT_ID, lena)).rejects.toBeInstanceOf(
+			ImmichLinkRefusedError
+		);
 		expect(added).toEqual([]);
 	});
 
 	it('adds nobody for something that is not an Immich id, without asking Immich', async () => {
 		const { deps, added, gateway } = setup();
 
-		await expect(addPersonFromImmich(deps, adder, '../people', lena)).rejects.toBeInstanceOf(ImmichLinkRefusedError);
+		await expect(addPersonFromImmich(deps, adder, '../people', lena)).rejects.toBeInstanceOf(
+			ImmichLinkRefusedError
+		);
 		expect(added).toEqual([]);
 		expect(gateway.calls).toEqual([]);
 	});
@@ -108,11 +145,16 @@ describe('assignNewcomer', () => {
 
 	it('asks before replacing the face someone is linked to already, and replaces it once confirmed', async () => {
 		const { deps, links } = setup();
-		links.set('c-lena', { contactId: 'c-lena', immichPersonId: BERT_ID, linkedBy: 'u-bert', linkedAt: 1 });
+		links.set('c-lena', {
+			contactId: 'c-lena',
+			immichPersonId: BERT_ID,
+			linkedBy: 'u-bert',
+			linkedAt: 1
+		});
 
-		await expect(assignNewcomer(deps, actor, 'c-lena', CARL_ID, { replace: false })).rejects.toBeInstanceOf(
-			WouldReplaceLinkError
-		);
+		await expect(
+			assignNewcomer(deps, actor, 'c-lena', CARL_ID, { replace: false })
+		).rejects.toBeInstanceOf(WouldReplaceLinkError);
 		expect(links.get('c-lena')?.immichPersonId).toBe(BERT_ID);
 
 		await assignNewcomer(deps, actor, 'c-lena', CARL_ID, { replace: true });
@@ -121,9 +163,16 @@ describe('assignNewcomer', () => {
 
 	it('refuses a face someone else holds by now', async () => {
 		const { deps, links } = setup();
-		links.set('c-bert', { contactId: 'c-bert', immichPersonId: CARL_ID, linkedBy: 'u-bert', linkedAt: 1 });
+		links.set('c-bert', {
+			contactId: 'c-bert',
+			immichPersonId: CARL_ID,
+			linkedBy: 'u-bert',
+			linkedAt: 1
+		});
 
-		await expect(assignNewcomer(deps, actor, 'c-lena', CARL_ID, { replace: true })).rejects.toThrow('Bert Example');
+		await expect(assignNewcomer(deps, actor, 'c-lena', CARL_ID, { replace: true })).rejects.toThrow(
+			'Bert Example'
+		);
 		expect(links.has('c-lena')).toBe(false);
 	});
 });

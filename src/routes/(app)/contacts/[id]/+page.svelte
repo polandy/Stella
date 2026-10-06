@@ -51,7 +51,10 @@
 	 * *Together* asked for, and the pair the Photos card's strip shows. Both belong to this person,
 	 * so another person's page starts on their own photos again.
 	 */
-	let immichTogether = $state<{ askedByRow: string | null; shown: string | null }>({ askedByRow: null, shown: null });
+	let immichTogether = $state<{ askedByRow: string | null; shown: string | null }>({
+		askedByRow: null,
+		shown: null
+	});
 	// A primitive, so a reload of this same person's data (a save) is not read as a new person.
 	const contactId = $derived(c.id);
 	$effect(() => {
@@ -63,7 +66,9 @@
 		await tick();
 		document.getElementById(sectionAnchor('photos'))?.scrollIntoView({ block: 'start' });
 		// The chip now pressed, so a keyboard or a screen reader lands where the photos changed.
-		document.querySelector<HTMLElement>('[data-testid="immich-together"] [aria-pressed="true"]')?.focus();
+		document
+			.querySelector<HTMLElement>('[data-testid="immich-together"] [aria-pressed="true"]')
+			?.focus();
 	}
 
 	/** How this person came into the household's life, as one line, or null. */
@@ -81,7 +86,16 @@
 <svelte:head><title>{t('contact.title', { name: c.displayName })}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-[66.25rem] flex-col gap-5 px-4 py-6 md:px-6 md:py-8">
-	<IdentityCard {data} {form} {otherContacts} {metLine} {isSelf} {archived} {logContact} {tracePath} />
+	<IdentityCard
+		{data}
+		{form}
+		{otherContacts}
+		{metLine}
+		{isSelf}
+		{archived}
+		{logContact}
+		{tracePath}
+	/>
 
 	<!-- Sticks under the top bar once the identity card has gone by (docs/05 §5.5). -->
 	<JumpBar {data} />

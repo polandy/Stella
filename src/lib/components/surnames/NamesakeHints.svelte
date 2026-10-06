@@ -12,11 +12,18 @@
 </script>
 
 {#if hints.length > 0}
-	<ul class="flex flex-col gap-1 rounded-app bg-primary-soft p-3 text-sm text-fg" role="status" data-testid="namesake-hints">
+	<ul
+		class="flex flex-col gap-1 rounded-app bg-primary-soft p-3 text-sm text-fg"
+		role="status"
+		data-testid="namesake-hints"
+	>
 		{#each hints as hint (hint.id)}
 			<li>
 				{t('surnames.namesake', { name: hint.name })} —
-				<a href="/contacts/{hint.otherId}?merge={hint.id}#merge" class="font-medium text-link hover:underline">{t('surnames.namesakeAsk')}</a>
+				<a
+					href="/contacts/{hint.otherId}?merge={hint.id}#merge"
+					class="font-medium text-link hover:underline">{t('surnames.namesakeAsk')}</a
+				>
 			</li>
 		{/each}
 	</ul>

@@ -19,7 +19,10 @@ const tie = (otherName: string, extra: Partial<TieCandidate> = {}): TieCandidate
 	...extra
 });
 
-const membership = (name: string, extra: Partial<MembershipCandidate> = {}): MembershipCandidate => ({
+const membership = (
+	name: string,
+	extra: Partial<MembershipCandidate> = {}
+): MembershipCandidate => ({
 	circleId: name.toLowerCase(),
 	parentCircleId: null,
 	name,
@@ -29,13 +32,18 @@ const membership = (name: string, extra: Partial<MembershipCandidate> = {}): Mem
 	...extra
 });
 
-const namesOf = (ties: readonly { otherName: string }[] | undefined) => ties?.map((t) => t.otherName);
+const namesOf = (ties: readonly { otherName: string }[] | undefined) =>
+	ties?.map((t) => t.otherName);
 
 describe('rankContext', () => {
 	it('has nothing to say without a current link or a current circle', () => {
 		expect(rankContext([], [], TODAY)).toBeNull();
 		expect(
-			rankContext([tie('Urs', { status: 'former' })], [membership('Chor', { endDate: '2025-06-30' })], TODAY)
+			rankContext(
+				[tie('Urs', { status: 'former' })],
+				[membership('Chor', { endDate: '2025-06-30' })],
+				TODAY
+			)
 		).toBeNull();
 	});
 
@@ -56,7 +64,10 @@ describe('rankContext', () => {
 
 	it('leaves a former link out, whatever its category', () => {
 		const context = rankContext(
-			[tie('Urs', { category: 'family', status: 'former' }), tie('Reto', { category: 'professional' })],
+			[
+				tie('Urs', { category: 'family', status: 'former' }),
+				tie('Reto', { category: 'professional' })
+			],
 			[],
 			TODAY
 		);

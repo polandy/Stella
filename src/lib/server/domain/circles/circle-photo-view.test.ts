@@ -26,7 +26,11 @@ const ids = (photos: readonly { id: string }[]) => photos.map((p) => p.id);
 
 describe('leadPhoto', () => {
 	it('is the newest photo of that role when none is a favourite', () => {
-		const photos = [photo('old', { createdAt: 1 }), photo('new', { createdAt: 9 }), photo('other', { role: 'Student', createdAt: 20 })];
+		const photos = [
+			photo('old', { createdAt: 1 }),
+			photo('new', { createdAt: 9 }),
+			photo('other', { role: 'Student', createdAt: 20 })
+		];
 		expect(leadPhoto(photos, null)?.id).toBe('new');
 	});
 
@@ -90,7 +94,12 @@ describe('circlePhotoView', () => {
 	});
 
 	it('has no cover, no banners and no chips without photos', () => {
-		expect(circlePhotoView([], ['Student'])).toEqual({ photos: [], cover: null, banners: {}, chips: [] });
+		expect(circlePhotoView([], ['Student'])).toEqual({
+			photos: [],
+			cover: null,
+			banners: {},
+			chips: []
+		});
 	});
 });
 

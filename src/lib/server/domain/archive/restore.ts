@@ -207,8 +207,7 @@ export function planRestore(
 	const now = deps.clock.now();
 	const warnings: RestoreWarning[] = [];
 	const warn = (warning: RestoreWarning) => {
-		const same = (a: RestoreWarning, b: RestoreWarning) =>
-			JSON.stringify(a) === JSON.stringify(b);
+		const same = (a: RestoreWarning, b: RestoreWarning) => JSON.stringify(a) === JSON.stringify(b);
 		if (!warnings.some((existing) => same(existing, warning))) warnings.push(warning);
 	};
 
@@ -303,9 +302,7 @@ export function planRestore(
 	/** A photo, wherever it hangs: a person's gallery, a journal entry, or a circle. */
 	const addPhoto = (
 		row: Row,
-		owner:
-			| { contactId: string; journalEntryId: string | null }
-			| { circleId: string }
+		owner: { contactId: string; journalEntryId: string | null } | { circleId: string }
 	) => {
 		const file = str(row, 'file');
 		const thumb = str(row, 'thumb');
@@ -314,7 +311,11 @@ export function planRestore(
 			warn({ code: 'photoWithoutFile' });
 			return;
 		}
-		if (!isSafeMediaPath(file) || !isSafeMediaPath(thumb) || (view !== null && !isSafeMediaPath(view))) {
+		if (
+			!isSafeMediaPath(file) ||
+			!isSafeMediaPath(thumb) ||
+			(view !== null && !isSafeMediaPath(view))
+		) {
 			// A path out of the media directory is the one thing in an archive that could reach
 			// the rest of the disk. It is refused, not cleaned up.
 			warn({ code: 'photoBadPath', file });
@@ -448,7 +449,8 @@ export function planRestore(
 			for (const mentioned of knownOnly(ids(entry, 'mentions'), 'journalMentions')) {
 				journalMentions.push({ journal_entry_id: entryId, contact_id: mentioned });
 			}
-			for (const image of records(entry, 'photos')) addPhoto(image, { contactId, journalEntryId: entryId });
+			for (const image of records(entry, 'photos'))
+				addPhoto(image, { contactId, journalEntryId: entryId });
 		}
 
 		for (const touch of records(person, 'interactions')) {
@@ -475,7 +477,8 @@ export function planRestore(
 			}
 		}
 
-		for (const image of records(person, 'photos')) addPhoto(image, { contactId, journalEntryId: null });
+		for (const image of records(person, 'photos'))
+			addPhoto(image, { contactId, journalEntryId: null });
 	}
 
 	// ── Tags ──────────────────────────────────────────────────────────────
@@ -687,7 +690,9 @@ export function planRestore(
 			mediaPaths.delete(p.thumb_path as string);
 			return false;
 		})
-		.map((p) => (typeof p.cut_from === 'string' && !photoIds.has(p.cut_from) ? { ...p, cut_from: null } : p));
+		.map((p) =>
+			typeof p.cut_from === 'string' && !photoIds.has(p.cut_from) ? { ...p, cut_from: null } : p
+		);
 
 	return {
 		householdId: target.householdId,

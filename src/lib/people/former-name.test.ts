@@ -15,11 +15,15 @@ describe('foundByFormerName', () => {
 	});
 
 	it('folds case and accents as the rest of the matching does', () => {
-		expect(foundByFormerName({ displayName: 'Lea Abab', formerName: 'Müller' }, 'MULLER')).toBe('Müller');
+		expect(foundByFormerName({ displayName: 'Lea Abab', formerName: 'Müller' }, 'MULLER')).toBe(
+			'Müller'
+		);
 	});
 
 	it('says nothing when the shown name matches too', () => {
-		expect(foundByFormerName({ displayName: 'Anna Widmer-Abab', formerName: 'Widmer' }, 'widmer')).toBeNull();
+		expect(
+			foundByFormerName({ displayName: 'Anna Widmer-Abab', formerName: 'Widmer' }, 'widmer')
+		).toBeNull();
 		expect(foundByFormerName(franziska, 'franz')).toBeNull();
 	});
 

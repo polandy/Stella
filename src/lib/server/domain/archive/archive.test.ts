@@ -155,14 +155,16 @@ describe('archiveEntries', () => {
 			missing,
 			source: {
 				documentText: 'format: stella-archive\n',
-				read: async (path: string) =>
-					path in files ? utf8.encode(files[path]) : null,
+				read: async (path: string) => (path in files ? utf8.encode(files[path]) : null),
 				onMissing: (path: string) => missing.push(path)
 			}
 		};
 	}
 
-	async function collect(plan: ReturnType<typeof planArchive>, source: Parameters<typeof archiveEntries>[1]) {
+	async function collect(
+		plan: ReturnType<typeof planArchive>,
+		source: Parameters<typeof archiveEntries>[1]
+	) {
 		const out: { name: string; text: string }[] = [];
 		for await (const entry of archiveEntries(plan, source)) {
 			out.push({ name: entry.name, text: new TextDecoder().decode(entry.bytes) });

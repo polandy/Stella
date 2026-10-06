@@ -111,7 +111,11 @@ const orNull = (value: string | null): string | null => clean(value) || null;
  * first word is never guessed into the first name there — the person keeps no first name until
  * one is typed. Emptying every part leaves the shown name standing: it is never empty.
  */
-export function withNameParts(current: StoredName, change: NamePartsChange, locale: Locale): StoredName {
+export function withNameParts(
+	current: StoredName,
+	change: NamePartsChange,
+	locale: Locale
+): StoredName {
 	const pick = (key: keyof NamePartsChange) =>
 		change[key] === undefined ? orNull(current[key]) : orNull(change[key] ?? null);
 	let firstName = pick('firstName');
@@ -126,7 +130,8 @@ export function withNameParts(current: StoredName, change: NamePartsChange, loca
 	}
 
 	const displayName =
-		(followsParts({ ...before, displayName: current.displayName }) && nameFromParts({ firstName, lastName, nickname }, locale)) ||
+		(followsParts({ ...before, displayName: current.displayName }) &&
+			nameFromParts({ firstName, lastName, nickname }, locale)) ||
 		current.displayName;
 	return { displayName, firstName, lastName, nickname };
 }

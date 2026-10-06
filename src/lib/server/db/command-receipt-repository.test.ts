@@ -67,13 +67,20 @@ describe('command receipts', () => {
 		expect(await repo.reclaim('cmd1', 100, 500)).toBe(true);
 		// A second run that also saw it at 100 is too late: the claim is now dated 500.
 		expect(await repo.reclaim('cmd1', 100, 600)).toBe(false);
-		expect(await repo.claim(claim('cmd1', 'u1', 700))).toMatchObject({ status: 'pending', claimedAt: 500 });
+		expect(await repo.claim(claim('cmd1', 'u1', 700))).toMatchObject({
+			status: 'pending',
+			claimedAt: 500
+		});
 	});
 
 	it('finds a receipt by id, and nothing for an id never seen', async () => {
 		await repo.claim(claim());
 		await repo.complete('cmd1', { entryId: 'e1' }, 150);
-		expect(await repo.find('cmd1')).toMatchObject({ memberId: 'u1', status: 'applied', result: { entryId: 'e1' } });
+		expect(await repo.find('cmd1')).toMatchObject({
+			memberId: 'u1',
+			status: 'applied',
+			result: { entryId: 'e1' }
+		});
 		expect(await repo.find('nope')).toBeNull();
 	});
 

@@ -31,7 +31,10 @@ export interface SavedBatchContext {
 }
 
 /** "2 links saved · Undo", where *Undo* takes every link of the batch back in one step. */
-export function announceSavedBatch(context: SavedBatchContext, relationshipIds: readonly string[]): void {
+export function announceSavedBatch(
+	context: SavedBatchContext,
+	relationshipIds: readonly string[]
+): void {
 	const { contactId, removals, pending, t } = context;
 	removals.notify(t('contact.relationships.linksSaved', { count: relationshipIds.length }), () => {
 		const body = new FormData();

@@ -15,7 +15,11 @@ const MARKUS = 'demo-c-markus';
 const PIXEL_9_PRO = { width: 412, height: 915 };
 
 // The glide is what this spec is about, so it runs with motion (playwright.config.ts).
-test.use({ viewport: PIXEL_9_PRO, hasTouch: true, contextOptions: { reducedMotion: 'no-preference' } });
+test.use({
+	viewport: PIXEL_9_PRO,
+	hasTouch: true,
+	contextOptions: { reducedMotion: 'no-preference' }
+});
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
@@ -75,7 +79,9 @@ test('Enlarge grows the map in the card, and Shrink puts the preview back', asyn
 	await enlarge(page);
 	// The live map, in the People card, about a screen tall.
 	await expect(enlarged(page).locator('canvas').first()).toBeVisible();
-	await expect(page.locator('#section-relationships').getByTestId('person-map-enlarged')).toBeVisible();
+	await expect(
+		page.locator('#section-relationships').getByTestId('person-map-enlarged')
+	).toBeVisible();
 	await expect.poll(() => frameHeight(page)).toBeGreaterThan(before * 3);
 
 	await shrinkButton(page).click();
@@ -117,7 +123,9 @@ test.describe('at 360px', () => {
 	test('nothing reaches past the screen with the card unfolded', async ({ page }) => {
 		await openMarkus(page);
 		await unfoldPeople(page);
-		await expect(page.getByTestId('relationship-list').getByRole('heading', { name: /^Friends · / })).toBeVisible();
+		await expect(
+			page.getByTestId('relationship-list').getByRole('heading', { name: /^Friends · / })
+		).toBeVisible();
 		expect(await overflowsSideways(page)).toBe(false);
 	});
 

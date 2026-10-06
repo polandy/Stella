@@ -12,7 +12,9 @@ import { contact, immichIgnore } from './schema';
  * `contactVisibleTo`, like a link (docs/concepts/immich.md §5). A pair ignored twice keeps its
  * first record — who said so first, and when.
  */
-export function createDrizzleImmichIgnoreRepository(db: BunSQLiteDatabase<typeof schema>): ImmichIgnoreRepository {
+export function createDrizzleImmichIgnoreRepository(
+	db: BunSQLiteDatabase<typeof schema>
+): ImmichIgnoreRepository {
 	return {
 		async listVisibleTo(viewer: Viewer): Promise<ImmichIgnore[]> {
 			return db
@@ -31,11 +33,17 @@ export function createDrizzleImmichIgnoreRepository(db: BunSQLiteDatabase<typeof
 
 		async save(ignores: readonly ImmichIgnore[]): Promise<void> {
 			if (ignores.length === 0) return;
-			db.insert(immichIgnore).values([...ignores]).onConflictDoNothing().run();
+			db.insert(immichIgnore)
+				.values([...ignores])
+				.onConflictDoNothing()
+				.run();
 		},
 
 		async remove(viewer: Viewer, contactId: string, immichPersonId: string): Promise<boolean> {
-			const visible = db.select({ id: contact.id }).from(contact).where(and(eq(contact.id, contactId), contactVisibleTo(viewer)));
+			const visible = db
+				.select({ id: contact.id })
+				.from(contact)
+				.where(and(eq(contact.id, contactId), contactVisibleTo(viewer)));
 			const removed = db
 				.delete(immichIgnore)
 				.where(

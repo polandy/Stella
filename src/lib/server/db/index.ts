@@ -32,7 +32,9 @@ export function getDb(): BunSQLiteDatabase<typeof schema> {
 	if (instance) return instance;
 
 	const { Database } = requireAtRuntime('bun:sqlite') as typeof import('bun:sqlite');
-	const { drizzle } = requireAtRuntime('drizzle-orm/bun-sqlite') as typeof import('drizzle-orm/bun-sqlite');
+	const { drizzle } = requireAtRuntime(
+		'drizzle-orm/bun-sqlite'
+	) as typeof import('drizzle-orm/bun-sqlite');
 	const { migrate } = requireAtRuntime(
 		'drizzle-orm/bun-sqlite/migrator'
 	) as typeof import('drizzle-orm/bun-sqlite/migrator');

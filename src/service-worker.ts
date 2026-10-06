@@ -223,7 +223,9 @@ async function keepPeopleAhead(): Promise<void> {
 	const cache = await caches.open(CACHE);
 	const kept = (await cache.keys()).map((request) => request.url);
 	const visible = new Set(people.map((person) => person.id));
-	await Promise.all(keysToPrune(kept, worker.location.origin, visible).map((key) => cache.delete(key)));
+	await Promise.all(
+		keysToPrune(kept, worker.location.origin, visible).map((key) => cache.delete(key))
+	);
 
 	const { pages, avatars } = peopleToKeep(people);
 	for (const page of pages) {
@@ -245,7 +247,12 @@ async function keepPeopleAhead(): Promise<void> {
  */
 async function revalidate(cache: Cache, path: string): Promise<boolean> {
 	const url = new URL(path, worker.location.origin).href;
-	const key = cacheKeyFor({ method: 'GET', url, origin: worker.location.origin, isNavigation: false });
+	const key = cacheKeyFor({
+		method: 'GET',
+		url,
+		origin: worker.location.origin,
+		isNavigation: false
+	});
 	const held = await cache.match(key);
 	const etag = held?.headers.get('etag');
 	const response = await fetchAhead(path, etag ? { 'If-None-Match': etag } : {});
@@ -293,7 +300,9 @@ async function networkWithin(
 		onAnswer(response);
 		return response;
 	});
-	const answer = await Promise.race([network, silence(patienceFor({ reachable, hasCopy }))]).catch(() => null);
+	const answer = await Promise.race([network, silence(patienceFor({ reachable, hasCopy }))]).catch(
+		() => null
+	);
 	if (!answer) {
 		// Silence or failure alike: the network is not answering, whatever the device believes.
 		network.catch(() => {});
@@ -375,7 +384,9 @@ worker.addEventListener('fetch', (event) => {
 
 	// A page's data that is never kept — a filter, a search — still must not wait on silence.
 	if (isPageData(described)) {
-		event.respondWith(networkWithin(request, false).then((response) => response ?? Response.error()));
+		event.respondWith(
+			networkWithin(request, false).then((response) => response ?? Response.error())
+		);
 	}
 });
 

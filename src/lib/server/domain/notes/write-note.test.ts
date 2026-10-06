@@ -14,7 +14,11 @@ import { writeNote, type WriteNoteDeps } from './write-note';
  */
 
 const author = { userId: 'u1', householdId: 'h1' };
-const person = (id: string, visibility: 'shared' | 'private' = 'shared', createdBy = 'u2'): ContactSummary & { createdBy: string } => ({
+const person = (
+	id: string,
+	visibility: 'shared' | 'private' = 'shared',
+	createdBy = 'u2'
+): ContactSummary & { createdBy: string } => ({
 	id,
 	displayName: id[0].toUpperCase() + id.slice(1),
 	firstName: null,
@@ -35,7 +39,8 @@ const person = (id: string, visibility: 'shared' | 'private' = 'shared', created
 function fakes(people = [person('julia'), person('marco'), person('sam', 'private', 'u1')]) {
 	const notes: NewNote[] = [];
 	const mentions = new Map<string, string[]>();
-	const visible = (v: Viewer) => people.filter((p) => p.visibility === 'shared' || p.createdBy === v.id);
+	const visible = (v: Viewer) =>
+		people.filter((p) => p.visibility === 'shared' || p.createdBy === v.id);
 	const deps: WriteNoteDeps = {
 		contacts: {
 			async findByIdVisibleTo(v, id) {
@@ -68,18 +73,33 @@ describe('writeNote', () => {
 		});
 
 		expect(noteId).toBe('n1');
-		expect(f.notes[0]).toMatchObject({ contactId: 'julia', createdBy: 'u1', isPinned: true, visibility: 'shared' });
+		expect(f.notes[0]).toMatchObject({
+			contactId: 'julia',
+			createdBy: 'u1',
+			isPinned: true,
+			visibility: 'shared'
+		});
 		expect(f.notes[0].body).toBe('@{contact:julia} said @{contact:marco} is moving');
 		expect(f.mentions.get('n1')).toEqual(['marco']);
 	});
 
 	it('lets a shared note name only household-visible people; a private one anyone the author sees', async () => {
 		const shared = fakes();
-		await writeNote(shared.deps, author, { contactId: 'julia', body: 'with @Sam and @Marco', visibility: 'shared', isPinned: false });
+		await writeNote(shared.deps, author, {
+			contactId: 'julia',
+			body: 'with @Sam and @Marco',
+			visibility: 'shared',
+			isPinned: false
+		});
 		expect(shared.mentions.get('n1')).toEqual(['marco']);
 
 		const priv = fakes();
-		await writeNote(priv.deps, author, { contactId: 'julia', body: 'with @Sam and @Marco', visibility: 'private', isPinned: false });
+		await writeNote(priv.deps, author, {
+			contactId: 'julia',
+			body: 'with @Sam and @Marco',
+			visibility: 'private',
+			isPinned: false
+		});
 		expect(priv.mentions.get('n1')).toEqual(['sam', 'marco']);
 	});
 
@@ -87,21 +107,41 @@ describe('writeNote', () => {
 		const thomas = (id: string) => ({ ...person(id), displayName: 'Thomas' });
 		const f = fakes([person('julia'), thomas('thomas-hut'), thomas('thomas-lenk')]);
 		await expect(
-			writeNote(f.deps, author, { contactId: 'julia', body: 'with @Thomas', visibility: 'shared', isPinned: false })
+			writeNote(f.deps, author, {
+				contactId: 'julia',
+				body: 'with @Thomas',
+				visibility: 'shared',
+				isPinned: false
+			})
 		).rejects.toBeInstanceOf(AmbiguousMentionError);
 		expect(f.notes).toHaveLength(0);
 
-		await writeNote(f.deps, author, { contactId: 'julia', body: 'with @{contact:thomas-lenk}', visibility: 'shared', isPinned: false });
+		await writeNote(f.deps, author, {
+			contactId: 'julia',
+			body: 'with @{contact:thomas-lenk}',
+			visibility: 'shared',
+			isPinned: false
+		});
 		expect(f.mentions.get('n1')).toEqual(['thomas-lenk']);
 	});
 
 	it('refuses a note on someone the author cannot see (any more), storing nothing', async () => {
 		const f = fakes([person('julia'), person('hidden', 'private', 'u2')]);
 		await expect(
-			writeNote(f.deps, author, { contactId: 'hidden', body: 'x', visibility: 'shared', isPinned: false })
+			writeNote(f.deps, author, {
+				contactId: 'hidden',
+				body: 'x',
+				visibility: 'shared',
+				isPinned: false
+			})
 		).rejects.toBeInstanceOf(ContactGoneError);
 		await expect(
-			writeNote(f.deps, author, { contactId: 'deleted', body: 'x', visibility: 'shared', isPinned: false })
+			writeNote(f.deps, author, {
+				contactId: 'deleted',
+				body: 'x',
+				visibility: 'shared',
+				isPinned: false
+			})
 		).rejects.toBeInstanceOf(ContactGoneError);
 		expect(f.notes).toHaveLength(0);
 	});

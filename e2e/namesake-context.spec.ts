@@ -21,13 +21,17 @@ const VRENI = 'demo-c-vreni';
 
 /** Six letters no other attempt shares, so a name made from them is this attempt's alone. */
 function runLetters(): string {
-	return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) => String.fromCharCode(97 + (byte % 26))).join('');
+	return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) =>
+		String.fromCharCode(97 + (byte % 26))
+	).join('');
 }
 
 /** A command id no other attempt shares: a ULID's 26 Crockford base-32 characters. */
 function commandId(): string {
 	const alphabet = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-	return Array.from(crypto.getRandomValues(new Uint8Array(26)), (byte) => alphabet[byte % 32]).join('');
+	return Array.from(crypto.getRandomValues(new Uint8Array(26)), (byte) => alphabet[byte % 32]).join(
+		''
+	);
 }
 
 /** A first-name-only namesake linked as sibling of `sister`, and one added by hand with a description. */
@@ -45,7 +49,9 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('names a namesake by their relationship when a text sent later is refused for a typed @Name', async ({ page }) => {
+test('names a namesake by their relationship when a text sent later is refused for a typed @Name', async ({
+	page
+}) => {
 	const letters = runLetters();
 	const name = `Quirin${letters}`;
 	const sister = `Sabine${letters} Keller`;
@@ -57,9 +63,18 @@ test('names a namesake by their relationship when a text sent later is refused f
 	const body = `Called @${name}`;
 	const day = '2026-09-01';
 	const sent = [
-		{ type: 'note.add', payload: { contactId: VRENI, body, visibility: 'shared', isPinned: false } },
-		{ type: 'moment.capture', payload: { body, entryDate: day, visibility: 'shared', newPeople: [] } },
-		{ type: 'journal.write', payload: { contactId: VRENI, entryDate: day, title: null, body, visibility: 'shared' } }
+		{
+			type: 'note.add',
+			payload: { contactId: VRENI, body, visibility: 'shared', isPinned: false }
+		},
+		{
+			type: 'moment.capture',
+			payload: { body, entryDate: day, visibility: 'shared', newPeople: [] }
+		},
+		{
+			type: 'journal.write',
+			payload: { contactId: VRENI, entryDate: day, title: null, body, visibility: 'shared' }
+		}
 	];
 	const response = await page.request.post('/api/commands', {
 		data: { commands: sent.map((c) => ({ id: commandId(), issuedAt: Date.now(), ...c })) }
@@ -75,7 +90,9 @@ test('names a namesake by their relationship when a text sent later is refused f
 	}
 });
 
-test('says who a namesake is by their relationship, and offers it as their description', async ({ page }) => {
+test('says who a namesake is by their relationship, and offers it as their description', async ({
+	page
+}) => {
 	const letters = runLetters();
 	const name = `Quirin${letters}`;
 	const sister = `Sabine${letters} Keller`;
@@ -109,7 +126,9 @@ test('says who a namesake is by their relationship, and offers it as their descr
 	// The same line is waiting in the clean-up list, to keep as a description with one tap.
 	await page.goto('/settings/first-name-only');
 	await appReady(page);
-	const row = page.getByTestId('first-name-only-row').filter({ has: page.getByRole('link', { name, exact: true }) });
+	const row = page
+		.getByTestId('first-name-only-row')
+		.filter({ has: page.getByRole('link', { name, exact: true }) });
 	const field = row.getByRole('textbox', { name: `What will you know ${name} by?` });
 	await expect(field).toHaveValue(`Sibling of ${sister}`);
 	await row.getByRole('button', { name: 'Save' }).click();
@@ -121,7 +140,9 @@ test('says who a namesake is by their relationship, and offers it as their descr
 	await expect(found.filter({ hasText: `Sibling of ${sister}` })).toHaveCount(1);
 });
 
-test('offers a description from a link to someone whose first name nobody else has', async ({ page }) => {
+test('offers a description from a link to someone whose first name nobody else has', async ({
+	page
+}) => {
 	// The shell sends relationship context for namesakes only (docs/04 §4.8); the clean-up list
 	// reads its own, so a name that is unique still gets its suggestion.
 	const letters = runLetters();
@@ -131,14 +152,20 @@ test('offers a description from a link to someone whose first name nobody else h
 
 	await page.goto('/settings/first-name-only');
 	await appReady(page);
-	const row = page.getByTestId('first-name-only-row').filter({ has: page.getByRole('link', { name, exact: true }) });
-	await expect(row.getByRole('textbox', { name: `What will you know ${name} by?` })).toHaveValue(`Sibling of ${brother}`);
+	const row = page
+		.getByTestId('first-name-only-row')
+		.filter({ has: page.getByRole('link', { name, exact: true }) });
+	await expect(row.getByRole('textbox', { name: `What will you know ${name} by?` })).toHaveValue(
+		`Sibling of ${brother}`
+	);
 });
 
 test.describe('on a phone', () => {
 	test.use({ viewport: PIXEL_9_PRO });
 
-	test('says who a namesake is in the composer sheet, keeping the @-picker\'s list on screen', async ({ page }) => {
+	test("says who a namesake is in the composer sheet, keeping the @-picker's list on screen", async ({
+		page
+	}) => {
 		const letters = runLetters();
 		const name = `Quirin${letters}`;
 		await seedNamesakes(page, name, `Sabine${letters} Keller`);
@@ -154,7 +181,9 @@ test.describe('on a phone', () => {
 
 		const list = sheet.getByRole('listbox');
 		await expect(list.getByRole('option', { name: new RegExp(`^${name}`) })).toHaveCount(5);
-		await expect(list.getByRole('option').filter({ hasText: `Sibling of Sabine${letters} Keller` })).toHaveCount(1);
+		await expect(
+			list.getByRole('option').filter({ hasText: `Sibling of Sabine${letters} Keller` })
+		).toHaveCount(1);
 		const box = await list.boundingBox();
 		expect(box!.y).toBeGreaterThanOrEqual(0);
 		expect(box!.y + box!.height).toBeLessThanOrEqual(PIXEL_9_PRO.height);

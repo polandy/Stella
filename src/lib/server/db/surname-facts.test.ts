@@ -64,8 +64,15 @@ describe('loadSurnameFactsVisibleTo', () => {
 	it('reads every visible person, archived ones too, with what the rules need', async () => {
 		const { people } = await createDrizzleSurnameFacts(db).loadSurnameFactsVisibleTo(viewer);
 		expect(people.map((p) => p.id).sort()).toEqual(['oma', 'peter']);
-		expect(people.find((p) => p.id === 'oma')).toMatchObject({ archived: true, isDeceased: true, lastName: 'Huber' });
-		expect(people.find((p) => p.id === 'peter')).toMatchObject({ archived: false, formerName: 'Keller' });
+		expect(people.find((p) => p.id === 'oma')).toMatchObject({
+			archived: true,
+			isDeceased: true,
+			lastName: 'Huber'
+		});
+		expect(people.find((p) => p.id === 'peter')).toMatchObject({
+			archived: false,
+			formerName: 'Keller'
+		});
 	});
 
 	it('reads family circles only, with their visible members', async () => {

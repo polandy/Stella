@@ -28,7 +28,10 @@
 	let chips = $state<HTMLDivElement | null>(null);
 	// Focus the chosen chip, or the first, the moment the chips appear — so Escape reaches them.
 	$effect(() => {
-		if (open) (chips?.querySelector<HTMLElement>('[aria-pressed="true"]') ?? chips?.querySelector('button'))?.focus();
+		if (open)
+			(
+				chips?.querySelector<HTMLElement>('[aria-pressed="true"]') ?? chips?.querySelector('button')
+			)?.focus();
 	});
 
 	function onKeydown(event: KeyboardEvent) {
@@ -59,23 +62,25 @@
 			<p class="text-xs text-fg-subtle">{t('contact.gender.hint')}</p>
 			<FormError message={error} variant="inline" />
 			<div>
-				<Button variant="ghost" size="sm" type="button" onclick={() => (editing = false)}>{t('common.cancel')}</Button>
+				<Button variant="ghost" size="sm" type="button" onclick={() => (editing = false)}
+					>{t('common.cancel')}</Button
+				>
 			</div>
 		</form>
 		{#snippet otherwise()}
-		<button
-			type="button"
-			onclick={() => (editing = true)}
-			title={t('contact.gender.edit')}
-			class="-mx-1 flex w-[calc(100%+0.5rem)] items-center gap-2 rounded-control px-1 py-2 text-left text-sm transition-colors hover:bg-card-hover"
-		>
-			<span class="font-medium text-fg">{t('contact.gender')}</span>
-			{#if gender}
-				<span class="ml-auto truncate text-fg-muted">{t(`contact.gender.${gender}`)}</span>
-			{:else}
-				<span class="ml-auto truncate text-fg-subtle">{t('contact.gender.notRecorded')}</span>
-			{/if}
-		</button>
+			<button
+				type="button"
+				onclick={() => (editing = true)}
+				title={t('contact.gender.edit')}
+				class="-mx-1 flex w-[calc(100%+0.5rem)] items-center gap-2 rounded-control px-1 py-2 text-left text-sm transition-colors hover:bg-card-hover"
+			>
+				<span class="font-medium text-fg">{t('contact.gender')}</span>
+				{#if gender}
+					<span class="ml-auto truncate text-fg-muted">{t(`contact.gender.${gender}`)}</span>
+				{:else}
+					<span class="ml-auto truncate text-fg-subtle">{t('contact.gender.notRecorded')}</span>
+				{/if}
+			</button>
 		{/snippet}
 	</Swap>
 </div>

@@ -4,7 +4,10 @@ import type { Translate } from '$lib/i18n/translate';
 import { mentionSnippet } from '$lib/mentions/snippet';
 import { fieldHref, type ContactField } from '$lib/server/domain/contact-fields/contact-fields';
 import type { Contact } from '$lib/server/domain/contacts/contacts';
-import { overridesDerivedBirthday, type ImportantDate } from '$lib/server/domain/dates/important-dates';
+import {
+	overridesDerivedBirthday,
+	type ImportantDate
+} from '$lib/server/domain/dates/important-dates';
 import type { GraphModel } from '$lib/graph/model/types';
 import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
@@ -50,7 +53,9 @@ export function birthdayOf(
 
 /** The people in the visible graph by name — the visibility scope, archived people included. */
 export function peopleNamedIn(graph: GraphModel): { id: string; displayName: string }[] {
-	return graph.nodes.flatMap((node) => (node.kind === 'person' ? [{ id: node.id, displayName: node.label }] : []));
+	return graph.nodes.flatMap((node) =>
+		node.kind === 'person' ? [{ id: node.id, displayName: node.label }] : []
+	);
 }
 
 /**
@@ -118,6 +123,8 @@ export function declinedBy(
 	nameOfAuthor: PersonViewContext['nameOfAuthor']
 ): Record<string, string | null> {
 	return Object.fromEntries(
-		suggestions.flatMap(({ dismissed }) => (dismissed ? [[dismissed.by, nameOfAuthor(dismissed.by)]] : []))
+		suggestions.flatMap(({ dismissed }) =>
+			dismissed ? [[dismissed.by, nameOfAuthor(dismissed.by)]] : []
+		)
 	);
 }

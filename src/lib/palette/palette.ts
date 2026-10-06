@@ -70,11 +70,10 @@ export interface PaletteLabels {
 /** The label of an action row, by the field of `PaletteLabels` that words it. */
 type ActionLabel = Exclude<keyof PaletteLabels, 'searchEverything'>;
 
-const ACTIONS: readonly { id: string; label: ActionLabel; icon: IconName; href: string }[] =
-	[
-		{ id: 'write', label: 'write', icon: 'write', href: '/?compose' },
-		{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new' }
-	];
+const ACTIONS: readonly { id: string; label: ActionLabel; icon: IconName; href: string }[] = [
+	{ id: 'write', label: 'write', icon: 'write', href: '/?compose' },
+	{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new' }
+];
 
 /** The rows for a query, in the order they are shown. */
 export function paletteRows(
@@ -94,7 +93,9 @@ export function paletteRows(
 		}
 	}
 
-	rows.push(...personSearchRows(q, people, labels.searchEverything, contexts, { listAllWhenEmpty: true }));
+	rows.push(
+		...personSearchRows(q, people, labels.searchEverything, contexts, { listAllWhenEmpty: true })
+	);
 	return rows;
 }
 

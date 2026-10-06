@@ -47,7 +47,10 @@ describe('renderMarkdownWithMentions', () => {
 	});
 
 	it('renders a mention of an imported contact, whose id contains colons', () => {
-		const out = renderMarkdownWithMentions('@{contact:monica:contact:9} versucht anzurufen', nameOf);
+		const out = renderMarkdownWithMentions(
+			'@{contact:monica:contact:9} versucht anzurufen',
+			nameOf
+		);
 		expect(out).toContain('href="/contacts/monica:contact:9"');
 		expect(out).toContain('@Janosch Rohdewald');
 		// The bug this guards: the token reaching the screen as its own raw text.
@@ -59,11 +62,15 @@ describe('renderMarkdownWithMentions', () => {
 		expect(out).toContain('mention-unknown');
 		expect(out).not.toContain('href="/contacts/c-secret"');
 		// Positive control: the same call does link the person this viewer may see.
-		expect(renderMarkdownWithMentions('met @{contact:c-anna}', nameOf)).toContain('href="/contacts/c-anna"');
+		expect(renderMarkdownWithMentions('met @{contact:c-anna}', nameOf)).toContain(
+			'href="/contacts/c-anna"'
+		);
 	});
 
 	it('escapes a display name rather than letting it become markup', () => {
-		const out = renderMarkdownWithMentions('@{contact:c-x}', (id) => (id === 'c-x' ? '<img src=x onerror=1>' : null));
+		const out = renderMarkdownWithMentions('@{contact:c-x}', (id) =>
+			id === 'c-x' ? '<img src=x onerror=1>' : null
+		);
 		expect(out).not.toContain('<img');
 		expect(out).toContain('&lt;img');
 	});

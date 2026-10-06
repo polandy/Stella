@@ -31,7 +31,10 @@ const viewer = (page: Page) => page.getByTestId('immich-viewer');
 const galleryPhotos = (page: Page) => page.getByTestId('photo-grid').locator('li img');
 
 /** Opens the Photos card's Immich menu and picks one of its items. */
-async function immichMenu(page: Page, item: 'Find in Immich' | 'Unlink from Immich'): Promise<void> {
+async function immichMenu(
+	page: Page,
+	item: 'Find in Immich' | 'Unlink from Immich'
+): Promise<void> {
 	await page.getByRole('button', { name: 'Immich options' }).click();
 	await page.getByRole('menuitem', { name: item }).click();
 }
@@ -45,7 +48,9 @@ async function pickFace(page: Page, personName: string, faceName: string): Promi
 	const picker = page.getByRole('dialog', {
 		name: `Find ${personName} in Immich`
 	});
-	await expect(picker.getByText('No face in Immich has this name.', { exact: false })).toBeVisible();
+	await expect(
+		picker.getByText('No face in Immich has this name.', { exact: false })
+	).toBeVisible();
 	await picker.getByRole('searchbox', { name: 'Name in Immich' }).fill(faceName);
 	await picker.getByRole('button', { name: 'Search' }).click();
 	await picker.getByRole('button', { name: `Link ${faceName} to ${personName}` }).click();
@@ -89,7 +94,9 @@ async function cropFromViewer(page: Page): Promise<void> {
 async function expectOnlyGalleryPhotoTaken(page: Page, day: string): Promise<void> {
 	await expect(galleryPhotos(page)).toHaveCount(1);
 	await page.getByTestId('photo-grid').getByRole('button').first().click();
-	await expect(page.getByTestId('photo-lightbox').getByTestId('photo-date')).toHaveText(`Taken ${day}`);
+	await expect(page.getByTestId('photo-lightbox').getByTestId('photo-date')).toHaveText(
+		`Taken ${day}`
+	);
 }
 
 test('Use as photo in the viewer keeps the crop as their picture, dated by Immich; a cancel keeps nothing', async ({
@@ -141,7 +148,9 @@ test('Use as photo keeps the previous picture in the gallery and says so', async
 	await expect(galleryPhotos(page)).toHaveCount(2);
 });
 
-test('a person unlinked while the cropper is open is refused, and nothing is stored', async ({ page }) => {
+test('a person unlinked while the cropper is open is refused, and nothing is stored', async ({
+	page
+}) => {
 	await addPerson(page, 'Quilla', 'Fotomann');
 	await linkFace(page, 'Quilla Fotomann', 'Noah Brunner');
 	const personUrl = page.url();
@@ -162,7 +171,9 @@ test('a person unlinked while the cropper is open is refused, and nothing is sto
 	}
 
 	await cropper(page).getByRole('button', { name: 'Use photo' }).click();
-	await expect(viewer(page).getByText('Couldn’t keep this photo. Reload the page and try again.')).toBeVisible();
+	await expect(
+		viewer(page).getByText('Couldn’t keep this photo. Reload the page and try again.')
+	).toBeVisible();
 	await expect(worn(page)).toHaveCount(0);
 	// Read again from the server, so the gallery is what was stored rather than what was shown.
 	await page.reload();
@@ -192,12 +203,16 @@ test('the chooser offers a linked person’s latest Immich photos', async ({ pag
 	await expectOnlyGalleryPhotoTaken(page, day);
 });
 
-test('the chooser links an unlinked person in place and then shows their Immich photos', async ({ page }) => {
+test('the chooser links an unlinked person in place and then shows their Immich photos', async ({
+	page
+}) => {
 	await addPerson(page, 'Quiro', 'Fotomann');
 
 	await portrait(page).click();
 	const chooser = page.getByTestId('avatar-chooser');
-	await expect(chooser.getByText('Quiro Fotomann isn’t linked to a face in Immich yet.')).toBeVisible();
+	await expect(
+		chooser.getByText('Quiro Fotomann isn’t linked to a face in Immich yet.')
+	).toBeVisible();
 	await expect(chooser.getByTestId('avatar-immich-photos')).toHaveCount(0);
 	await chooser.getByRole('button', { name: 'Find in Immich' }).click();
 	await expect(chooser).toBeHidden();
@@ -207,5 +222,7 @@ test('the chooser links an unlinked person in place and then shows their Immich 
 	// Linked in place: the chooser comes back on its own, now with their latest twelve.
 	await expect(chooser).toBeVisible();
 	await expect(chooser.getByTestId('avatar-immich-photos').getByRole('button')).toHaveCount(12);
-	await expect(chooser.getByText('Quiro Fotomann isn’t linked to a face in Immich yet.')).toHaveCount(0);
+	await expect(
+		chooser.getByText('Quiro Fotomann isn’t linked to a face in Immich yet.')
+	).toHaveCount(0);
 });

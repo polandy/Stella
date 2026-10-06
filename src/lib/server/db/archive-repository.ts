@@ -42,11 +42,20 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	{ table: 'contact_field', where: viaContact() },
 	{ table: 'relationship', where: 't.household_id = ?' },
 	{ table: 'note', where: viaContact() },
-	{ table: 'note_mention', where: `t.note_id IN (SELECT n.id FROM note n JOIN contact c ON c.id = n.contact_id WHERE c.household_id = ?)` },
+	{
+		table: 'note_mention',
+		where: `t.note_id IN (SELECT n.id FROM note n JOIN contact c ON c.id = n.contact_id WHERE c.household_id = ?)`
+	},
 	{ table: 'journal_entry', where: viaContact() },
-	{ table: 'journal_mention', where: `t.journal_entry_id IN (SELECT j.id FROM journal_entry j JOIN contact c ON c.id = j.contact_id WHERE c.household_id = ?)` },
+	{
+		table: 'journal_mention',
+		where: `t.journal_entry_id IN (SELECT j.id FROM journal_entry j JOIN contact c ON c.id = j.contact_id WHERE c.household_id = ?)`
+	},
 	{ table: 'interaction', where: viaContact() },
-	{ table: 'interaction_participant', where: `t.interaction_id IN (SELECT i.id FROM interaction i JOIN contact c ON c.id = i.contact_id WHERE c.household_id = ?)` },
+	{
+		table: 'interaction_participant',
+		where: `t.interaction_id IN (SELECT i.id FROM interaction i JOIN contact c ON c.id = i.contact_id WHERE c.household_id = ?)`
+	},
 	{ table: 'important_date', where: viaContact() },
 	{ table: 'photo', where: 't.household_id = ?' },
 	{ table: 'tag', where: 't.household_id = ?' },
@@ -59,7 +68,10 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	// declined suggestions below, the table is read but the document does not carry it yet.
 	{ table: 'immich_name_ignore', where: 't.household_id = ?' },
 	{ table: 'circle', where: 't.household_id = ?' },
-	{ table: 'circle_membership', where: `t.circle_id IN (SELECT id FROM circle WHERE household_id = ?)` },
+	{
+		table: 'circle_membership',
+		where: `t.circle_id IN (SELECT id FROM circle WHERE household_id = ?)`
+	},
 	{ table: 'activity_log', where: 't.household_id = ?' },
 	// The claims the household declined. Left out, a restore would re-offer every suggestion
 	// they have already said no to (docs/concepts/relationship-suggestions.md §6.4).

@@ -18,7 +18,8 @@
 	const INPUT =
 		'rounded-control border border-border-input bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
 
-	const day = (at: number) => new Date(at).toLocaleDateString(i18n.intlLocale, { dateStyle: 'medium' });
+	const day = (at: number) =>
+		new Date(at).toLocaleDateString(i18n.intlLocale, { dateStyle: 'medium' });
 
 	/** The example request, against this very instance, so it can be pasted as it stands. */
 	const example = (token: string) =>
@@ -50,13 +51,17 @@
 			<h2 class="font-medium text-fg">{t('settings.apiTokens.createdHeading')}</h2>
 			<p class="text-sm text-fg-muted">{t('settings.apiTokens.createdHint')}</p>
 			<div class="flex flex-wrap items-center gap-2">
-				<code class="min-w-0 flex-1 break-all rounded-control bg-bg px-3 py-2 text-sm text-fg">{form.created.token}</code>
+				<code class="min-w-0 flex-1 rounded-control bg-bg px-3 py-2 text-sm break-all text-fg"
+					>{form.created.token}</code
+				>
 				<Button type="button" size="sm" onclick={() => form?.created && copy(form.created.token)}>
 					{copied ? t('settings.apiTokens.copied') : t('settings.apiTokens.copy')}
 				</Button>
 			</div>
 			<p class="text-sm text-fg-muted">{t('settings.apiTokens.usage')}</p>
-			<code class="break-all rounded-control bg-bg px-3 py-2 text-xs text-fg">{example(form.created.token)}</code>
+			<code class="rounded-control bg-bg px-3 py-2 text-xs break-all text-fg"
+				>{example(form.created.token)}</code
+			>
 		</section>
 	{/if}
 
@@ -108,7 +113,9 @@
 				<ul data-testid="api-tokens" class="flex flex-col divide-y divide-border-subtle">
 					{#each data.tokens as token (token.id)}
 						<li class="flex items-center gap-3 py-2 text-sm">
-							<span class="text-fg-subtle" aria-hidden="true"><Icon name="apiToken" size={16} /></span>
+							<span class="text-fg-subtle" aria-hidden="true"
+								><Icon name="apiToken" size={16} /></span
+							>
 							<span class="min-w-0 flex-1">
 								<span class="block font-medium text-fg">{token.name}</span>
 								<span class="block text-fg-subtle">

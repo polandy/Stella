@@ -145,9 +145,7 @@
 	// Picker state: the handle under the caret and the ranked suggestions for it.
 	let active = $state<ActiveHandle | null>(null);
 	let selected = $state(0);
-	const audience = $derived(
-		allowedForAudience(candidates, visibility)
-	);
+	const audience = $derived(allowedForAudience(candidates, visibility));
 	const created = $derived(newPeopleAsCandidates(newPeople));
 	const createdIds = $derived(new Set(created.map((c) => c.id)));
 	const known = $derived([...audience, ...created]);
@@ -177,18 +175,20 @@
 	} | null>(null);
 	let createFirstName: HTMLInputElement | undefined = $state();
 	const askForSomethingToKnowThemBy = $derived(
-		creating ? wantsSomethingToKnowThemBy({ firstName: creating.firstName, lastName: creating.lastName }) : false
+		creating
+			? wantsSomethingToKnowThemBy({ firstName: creating.firstName, lastName: creating.lastName })
+			: false
 	);
 
 	// The people the text currently references, for the "goes to …'s journal" line — read the
 	// way the server will: picks by id, anything typed by name, a namesake nobody picked as a
 	// question rather than a guess.
 	const resolved = $derived(resolveMentions(toStored(body, picks), createHandleResolver(known)));
-	const referenced = $derived(
-		resolved.ids.flatMap((id) => known.filter((c) => c.id === id))
-	);
+	const referenced = $derived(resolved.ids.flatMap((id) => known.filter((c) => c.id === id)));
 	const unclear = $derived(unclearHandles(toStored(body, picks), known, peopleContext()));
-	const canSave = $derived(body.trim().length > 0 && referenced.length > 0 && unclear.length === 0 && !saving);
+	const canSave = $derived(
+		body.trim().length > 0 && referenced.length > 0 && unclear.length === 0 && !saving
+	);
 
 	// Leaving the field closes the picker a moment later, so a click on a suggestion still
 	// lands. Coming back must cancel that: a navigation that returns focus to the page after a
@@ -288,7 +288,11 @@
 		const handle = handleFor(candidate);
 		const { at, caret } = creating;
 		creating = null;
-		await insert(handle, at, caret, { start: at.start, end: at.start + handle.length, id: candidate.id });
+		await insert(handle, at, caret, {
+			start: at.start,
+			end: at.start + handle.length,
+			id: candidate.id
+		});
 	}
 
 	function onCreateKeydown(event: KeyboardEvent) {
@@ -373,7 +377,12 @@
 	async function keepForLater(formEl: HTMLFormElement, photos: KeptPhoto[]) {
 		try {
 			await outbox.add(
-				{ id: commandId, type: 'moment.capture', payload: payloadFrom(formEl), issuedAt: Date.now() },
+				{
+					id: commandId,
+					type: 'moment.capture',
+					payload: payloadFrom(formEl),
+					issuedAt: Date.now()
+				},
 				photos
 			);
 			clear();
@@ -406,7 +415,12 @@
 			if (!reachability.reachable) return await keepForLater(formEl, photos);
 
 			const delivery = await outbox.submit(
-				{ id: commandId, type: 'moment.capture', payload: payloadFrom(formEl), issuedAt: Date.now() },
+				{
+					id: commandId,
+					type: 'moment.capture',
+					payload: payloadFrom(formEl),
+					issuedAt: Date.now()
+				},
 				photos
 			);
 			if (delivery.status === 'refused') {
@@ -474,7 +488,7 @@
 			aria-autocomplete="list"
 			aria-controls={listboxId}
 			aria-activedescendant={!creating && active && rows[selected] ? optionId(selected) : undefined}
-			aria-describedby={error ?? localError ? errorId : undefined}
+			aria-describedby={(error ?? localError) ? errorId : undefined}
 			onkeydown={onKeydown}
 			oninput={onInput}
 			onclick={refreshPicker}
@@ -539,8 +553,16 @@
 			{/if}
 			<div class="flex justify-end gap-2">
 				<!-- `type="button"`: inside the moment's form, these must never save it. -->
-				<Button type="button" variant="ghost" size="sm" onclick={cancelCreate}>{t('components.personSearch.cancel')}</Button>
-				<Button type="button" variant="primary" size="sm" disabled={!creating.firstName.trim() || !isKnownByMoreThanAFirstName(creating)} onclick={addCreated}>
+				<Button type="button" variant="ghost" size="sm" onclick={cancelCreate}
+					>{t('components.personSearch.cancel')}</Button
+				>
+				<Button
+					type="button"
+					variant="primary"
+					size="sm"
+					disabled={!creating.firstName.trim() || !isKnownByMoreThanAFirstName(creating)}
+					onclick={addCreated}
+				>
 					{t('composer.addPerson')}
 				</Button>
 			</div>
@@ -558,7 +580,13 @@
 				: 'top-16'}"
 		>
 			<!-- A caption for the eye; the listbox carries the same words as its name. -->
-			<li role="presentation" aria-hidden="true" class="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-fg-muted">{t('composer.people')}</li>
+			<li
+				role="presentation"
+				aria-hidden="true"
+				class="px-2.5 pt-1.5 pb-1 text-[11px] font-semibold tracking-wider text-fg-muted uppercase"
+			>
+				{t('composer.people')}
+			</li>
 			{#each rows as row, i (row.kind === 'person' ? row.person.id : 'create')}
 				<li role="none">
 					<!-- tabindex -1: the field keeps focus and points here with aria-activedescendant. -->
@@ -576,15 +604,31 @@
 						class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
 					>
 						{#if row.kind === 'person'}
-							<Avatar id={row.person.id} name={row.person.displayName} avatarPhotoId={row.person.avatarPhotoId} size={22} />
+							<Avatar
+								id={row.person.id}
+								name={row.person.displayName}
+								avatarPhotoId={row.person.avatarPhotoId}
+								size={22}
+							/>
 							<span class="min-w-0">
 								<span class="block truncate">{row.person.displayName}</span>
-								{#if namesakes.get(row.person.id)}<NamesakeLine distinction={namesakes.get(row.person.id)!} />{/if}
+								{#if namesakes.get(row.person.id)}<NamesakeLine
+										distinction={namesakes.get(row.person.id)!}
+									/>{/if}
 							</span>
-							{#if createdIds.has(row.person.id)}<span class="ml-auto text-xs text-fg-subtle">{t('composer.justCreated')}</span>{/if}
+							{#if createdIds.has(row.person.id)}<span class="ml-auto text-xs text-fg-subtle"
+									>{t('composer.justCreated')}</span
+								>{/if}
 						{:else}
-							<span class="grid size-[22px] place-items-center rounded-full border border-dashed border-success text-success-text" aria-hidden="true">+</span>
-							<span class="font-semibold text-success-text">{row.another ? t('composer.createAnother', { name: row.name }) : t('composer.create', { name: row.name })}</span>
+							<span
+								class="grid size-[22px] place-items-center rounded-full border border-dashed border-success text-success-text"
+								aria-hidden="true">+</span
+							>
+							<span class="font-semibold text-success-text"
+								>{row.another
+									? t('composer.createAnother', { name: row.name })
+									: t('composer.create', { name: row.name })}</span
+							>
 							<span class="ml-auto text-xs text-fg-subtle">{t('composer.newPerson')}</span>
 						{/if}
 					</button>
@@ -603,23 +647,36 @@
 			reader hears one control changing state rather than a label that swaps under it. The
 			visible word is the state, for the eye. Words on the tint in `--fg` (docs/05 §5.6).
 		-->
-		<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted has-checked:border-transparent has-checked:bg-primary-soft has-checked:font-semibold has-checked:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring">
-			<input type="checkbox" class="sr-only" aria-label={t('composer.shareWithHousehold')} checked={visibility === 'shared'} onchange={(e) => (visibility = (e.currentTarget as HTMLInputElement).checked ? 'shared' : 'private')} />
+		<label
+			class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted has-checked:border-transparent has-checked:bg-primary-soft has-checked:font-semibold has-checked:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
+		>
+			<input
+				type="checkbox"
+				class="sr-only"
+				aria-label={t('composer.shareWithHousehold')}
+				checked={visibility === 'shared'}
+				onchange={(e) =>
+					(visibility = (e.currentTarget as HTMLInputElement).checked ? 'shared' : 'private')}
+			/>
 			<Icon name={visibility === 'shared' ? 'shared' : 'private'} size={13} />
-			<span aria-hidden="true">{visibility === 'shared' ? t('common.shared') : t('common.private')}</span>
+			<span aria-hidden="true"
+				>{visibility === 'shared' ? t('common.shared') : t('common.private')}</span
+			>
 		</label>
 		<input type="hidden" name="visibility" value={visibility} />
 		{#key fresh}
-		{#if !editing}
-			<!-- `sr-only`, not `hidden`: a hidden input is out of the tab order, and the photo
+			{#if !editing}
+				<!-- `sr-only`, not `hidden`: a hidden input is out of the tab order, and the photo
 			     button with it (WCAG 2.1.1). The pill shows where focus is instead. -->
-			<label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring">
-				<Icon name="photo" size={13} />
-				{picked.length ? t('composer.photoCount', { count: picked.length }) : t('composer.photo')}
-				<input type="file" accept="image/*" multiple onchange={onFiles} class="sr-only" />
-			</label>
-		{/if}
-		<DayPill name="entryDate" value={kept?.entryDate ?? day} today={day} />
+				<label
+					class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
+				>
+					<Icon name="photo" size={13} />
+					{picked.length ? t('composer.photoCount', { count: picked.length }) : t('composer.photo')}
+					<input type="file" accept="image/*" multiple onchange={onFiles} class="sr-only" />
+				</label>
+			{/if}
+			<DayPill name="entryDate" value={kept?.entryDate ?? day} today={day} />
 		{/key}
 		<span class="text-xs text-fg-subtle" aria-live="polite">
 			{#if unclear.length}
@@ -636,13 +693,21 @@
 			{/if}
 		</span>
 		<div class="ml-auto flex items-center gap-2">
-		{#if editing}
-			<Button variant="ghost" type="button" onclick={() => onEditDone?.()}>{t('common.cancel')}</Button>
-		{/if}
-		<Button variant="primary" disabled={!canSave}>
-			{saving ? t('common.saving') : reachability.reachable ? t('common.save') : t('composer.saveForLater')}
-			<kbd class="rounded border border-primary-fg/40 px-1 text-[10px] font-medium opacity-75">⌘⏎</kbd>
-		</Button>
+			{#if editing}
+				<Button variant="ghost" type="button" onclick={() => onEditDone?.()}
+					>{t('common.cancel')}</Button
+				>
+			{/if}
+			<Button variant="primary" disabled={!canSave}>
+				{saving
+					? t('common.saving')
+					: reachability.reachable
+						? t('common.save')
+						: t('composer.saveForLater')}
+				<kbd class="rounded border border-primary-fg/40 px-1 text-[10px] font-medium opacity-75"
+					>⌘⏎</kbd
+				>
+			</Button>
 		</div>
 	</div>
 </form>

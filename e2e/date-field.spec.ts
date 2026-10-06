@@ -63,9 +63,10 @@ test.describe('read in German', () => {
 		);
 		expect(labels).toEqual(['Tag', 'Monat', 'Jahr']);
 		// The month is a named choice, and the names are German — not the browser's English.
-		await expect(birthday.getByLabel('Monat', { exact: true }).getByRole('option')).toContainText(
-			['Monat…', 'Januar']
-		);
+		await expect(birthday.getByLabel('Monat', { exact: true }).getByRole('option')).toContainText([
+			'Monat…',
+			'Januar'
+		]);
 	});
 });
 

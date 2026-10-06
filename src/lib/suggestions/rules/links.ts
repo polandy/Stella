@@ -141,7 +141,11 @@ function beganAfter(since: string | null | undefined, birth: string | null | und
  * parent is only picked (docs/concepts/multi-pick-relationships.html D4), which is why the
  * chosen parent counts whether or not their link is on record yet.
  */
-export function likelyCoParent(graph: CoParentGraph, parentId: string, childId: string): string | null {
+export function likelyCoParent(
+	graph: CoParentGraph,
+	parentId: string,
+	childId: string
+): string | null {
 	const current = graph.partnerEdges.filter((edge) => !edge.former);
 	const partners = new Set(
 		current.flatMap((edge) =>
@@ -188,6 +192,11 @@ export const L3: Rule = (trigger: Trigger, view: SuggestionView): LinkSuggestion
 	if (!partnerId) return [];
 	const who = (id: string) => ({ id, name: view.nameOf(id) });
 	return [
-		parentLink('L3', partnerId, childId, partnerOfParent(who(partnerId), who(parentId), who(childId)))
+		parentLink(
+			'L3',
+			partnerId,
+			childId,
+			partnerOfParent(who(partnerId), who(parentId), who(childId))
+		)
 	];
 };

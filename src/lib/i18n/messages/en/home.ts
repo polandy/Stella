@@ -30,8 +30,10 @@ export const home = {
 	'home.outbox.photosWaiting': 'Photos not sent yet',
 	'home.outbox.sendingPhotos': 'Sending photos…',
 	'home.outbox.photoRefused': 'Could not send a photo',
-	'home.outbox.photoTooLarge': 'Too large for this Stella server. Whoever runs it can raise BODY_SIZE_LIMIT.',
-	'home.outbox.photoCount': (p: { count: number }) => (p.count === 1 ? '1 photo' : `${p.count} photos`),
+	'home.outbox.photoTooLarge':
+		'Too large for this Stella server. Whoever runs it can raise BODY_SIZE_LIMIT.',
+	'home.outbox.photoCount': (p: { count: number }) =>
+		p.count === 1 ? '1 photo' : `${p.count} photos`,
 	'home.outbox.noteOn': (p: { name: string }) => `· note on ${p.name}`,
 	'home.outbox.editOnPage': 'Edit',
 	'home.outbox.discardNamed': (p: { name: string }) => `Discard “${p.name}”`,
@@ -74,14 +76,17 @@ export const home = {
 	'home.stream.loggedAfter': '',
 	// The activity log's lines about people still here, said in the reader's language (docs/02 §2.11).
 	'home.stream.lastNames': (p: { name: string; count: number }) =>
-		p.count === 1 ? `set the last name ${p.name} on 1 person` : `set the last name ${p.name} on ${p.count} people`,
+		p.count === 1
+			? `set the last name ${p.name} on 1 person`
+			: `set the last name ${p.name} on ${p.count} people`,
 	'home.stream.renamed': (p: { from: string }) => `renamed ${p.from} to`,
 	'home.stream.renamedAfter': '',
 	'home.stream.nameEdited': 'edited the name of',
 	'home.stream.linked': 'linked',
 	'home.stream.linkedAfter': '',
 	'home.stream.relationship': 'Relationship',
-	'home.stream.addedPhotoTo': (p: { count: number }) => (p.count === 1 ? 'added a photo to' : `added ${p.count} photos to`),
+	'home.stream.addedPhotoTo': (p: { count: number }) =>
+		p.count === 1 ? 'added a photo to' : `added ${p.count} photos to`,
 	'home.stream.addedPhotoToAfter': (_p: { count: number }) => '',
 	'home.filter.label': 'Filter the stream',
 	'home.filter.kind': 'What',
@@ -111,7 +116,8 @@ export const home = {
 
 	'composer.saveForLater': 'Save for later',
 	'composer.couldNotKeep': 'This device could not keep the moment. The text is still here.',
-	'composer.alreadySending': 'This moment is being sent right now and can no longer be edited here.',
+	'composer.alreadySending':
+		'This moment is being sent right now and can no longer be edited here.',
 	'composer.placeholder': 'Met someone? Type it here, mention people with @',
 	'composer.label': 'What happened?',
 	'composer.people': 'People',

@@ -65,9 +65,7 @@ describe('directClaimFor', () => {
 
 describe('confirmedClaimFor', () => {
 	it('stores every term that is not a step term as the relationship it names', () => {
-		expect(
-			Object.fromEntries(ALL_TERMS.map((term) => [term, confirmedClaimFor(term)]))
-		).toEqual({
+		expect(Object.fromEntries(ALL_TERMS.map((term) => [term, confirmedClaimFor(term)]))).toEqual({
 			sibling: { typeKey: SIBLING_TYPE_KEY, elder: null },
 			'half-sibling': { typeKey: HALF_SIBLING_TYPE_KEY, elder: null },
 			grandparent: { typeKey: GRANDPARENT_GRANDCHILD_TYPE_KEY, elder: 'relative' },
@@ -95,7 +93,8 @@ describe('confirmedClaimFor', () => {
 });
 
 describe('claimEndpoints', () => {
-	const ends = (term: KinTerm) => claimEndpoints(directClaimFor(term)!, 'subject-id', 'relative-id');
+	const ends = (term: KinTerm) =>
+		claimEndpoints(directClaimFor(term)!, 'subject-id', 'relative-id');
 
 	it('writes the subject as the parent when their step-child is really their own', () => {
 		expect(ends('step-child')).toEqual({ fromId: 'subject-id', toId: 'relative-id' });

@@ -63,7 +63,10 @@ async function open(page: Page, person: { id: string; name: string }): Promise<v
 }
 
 /** Opens the Photos card's Immich menu and picks one of its items. */
-async function immichMenu(page: Page, item: 'Find in Immich' | 'Unlink from Immich'): Promise<void> {
+async function immichMenu(
+	page: Page,
+	item: 'Find in Immich' | 'Unlink from Immich'
+): Promise<void> {
 	await page.getByRole('button', { name: 'Immich options' }).click();
 	await page.getByRole('menuitem', { name: item }).click();
 }
@@ -78,7 +81,9 @@ async function linkFace(page: Page, personName: string, faceName: string): Promi
 	await immichMenu(page, 'Find in Immich');
 	const picker = page.getByRole('dialog', { name: `Find ${personName} in Immich` });
 	const link = picker.getByRole('button', { name: `Link ${faceName} to ${personName}` });
-	await expect(picker.getByTestId('immich-faces').or(picker.getByTestId('immich-no-faces'))).toBeVisible();
+	await expect(
+		picker.getByTestId('immich-faces').or(picker.getByTestId('immich-no-faces'))
+	).toBeVisible();
 	if (!(await link.isVisible())) {
 		await picker.getByRole('searchbox', { name: 'Name in Immich' }).fill(faceName);
 		await picker.getByRole('button', { name: 'Search' }).click();
@@ -120,7 +125,8 @@ async function meAndSandraLinked(page: Page): Promise<void> {
 }
 
 const chips = (page: Page) => page.getByTestId('immich-together');
-const chip = (page: Page, label: string) => chips(page).getByRole('button', { name: label, exact: true });
+const chip = (page: Page, label: string) =>
+	chips(page).getByRole('button', { name: label, exact: true });
 
 /** The strip's list of photos, by the name that says whose photos they are. */
 const stripList = (page: Page, label: string) =>
@@ -176,7 +182,10 @@ test('You and Sandra: the chips switch her strip to the photos of both, with Sho
 	await withYou.click();
 	await expect(withYou).toHaveAttribute('aria-pressed', 'true');
 	await expect(all).toHaveAttribute('aria-pressed', 'false');
-	const together = await expectPhotosTogether(page, en['immich.together.stripWithYou']({ name: 'Sandra' }));
+	const together = await expectPhotosTogether(
+		page,
+		en['immich.together.stripWithYou']({ name: 'Sandra' })
+	);
 	await together.getByRole('button', { name: 'Show more' }).click();
 	await expect(tiles(together)).toHaveCount(24);
 
@@ -187,14 +196,18 @@ test('You and Sandra: the chips switch her strip to the photos of both, with Sho
 	// Markus's row — her husband, and the viewer — opens the same pair.
 	const markusRow = peopleRow(page, MARKUS.name);
 	const button = togetherButton(markusRow);
-	await expect(button).toHaveAccessibleName(en['immich.together.rowLabelWithYou']({ name: 'Sandra' }));
+	await expect(button).toHaveAccessibleName(
+		en['immich.together.rowLabelWithYou']({ name: 'Sandra' })
+	);
 	await expect(button).toHaveAttribute('title', en['immich.together.row']);
 	await button.click();
 	await expect(withYou).toHaveAttribute('aria-pressed', 'true');
 	await expectPhotosTogether(page, en['immich.together.stripWithYou']({ name: 'Sandra' }));
 });
 
-test('on your own page there is no You-and chip, and a row reads you and Sandra', async ({ page }) => {
+test('on your own page there is no You-and chip, and a row reads you and Sandra', async ({
+	page
+}) => {
 	await meAndSandraLinked(page);
 	await open(page, MARKUS);
 
@@ -203,15 +216,22 @@ test('on your own page there is no You-and chip, and a row reads you and Sandra'
 	await expect(chips(page)).toHaveCount(0);
 
 	const button = togetherButton(peopleRow(page, SANDRA.name));
-	await expect(button).toHaveAccessibleName(en['immich.together.rowLabelWithYou']({ name: 'Sandra' }));
+	await expect(button).toHaveAccessibleName(
+		en['immich.together.rowLabelWithYou']({ name: 'Sandra' })
+	);
 	await button.click();
-	await expect(chip(page, en['immich.together.withYou']({ name: 'Sandra' }))).toHaveAttribute('aria-pressed', 'true');
+	await expect(chip(page, en['immich.together.withYou']({ name: 'Sandra' }))).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
 	await expect(chip(page, en['immich.together.own'])).toHaveAttribute('aria-pressed', 'false');
 	await expect(chips(page).getByRole('button')).toHaveCount(2);
 	await expectPhotosTogether(page, en['immich.together.stripWithYou']({ name: 'Sandra' }));
 });
 
-test('Together on a child’s row scrolls to Photos and adds a chip for the pair, which stays', async ({ page }) => {
+test('Together on a child’s row scrolls to Photos and adds a chip for the pair, which stays', async ({
+	page
+}) => {
 	await meAndSandraLinked(page);
 	await openAndLink(page, LENA);
 	await open(page, SANDRA);
@@ -220,7 +240,9 @@ test('Together on a child’s row scrolls to Photos and adds a chip for the pair
 	await expect(photos).not.toBeInViewport();
 
 	const button = togetherButton(peopleRow(page, LENA.name));
-	await expect(button).toHaveAccessibleName(en['immich.together.rowLabelPair']({ first: 'Sandra', second: 'Lena' }));
+	await expect(button).toHaveAccessibleName(
+		en['immich.together.rowLabelPair']({ first: 'Sandra', second: 'Lena' })
+	);
 	await button.click();
 
 	await expect(photos).toBeInViewport();
@@ -232,7 +254,10 @@ test('Together on a child’s row scrolls to Photos and adds a chip for the pair
 		en['immich.together.withYou']({ name: 'Sandra' }),
 		en['immich.together.pair']({ first: 'Sandra', second: 'Lena' })
 	]);
-	await expectPhotosTogether(page, en['immich.together.stripPair']({ first: 'Sandra', second: 'Lena' }));
+	await expectPhotosTogether(
+		page,
+		en['immich.together.stripPair']({ first: 'Sandra', second: 'Lena' })
+	);
 
 	// All photos and back, one tap each: the pair's chip stays.
 	await chip(page, en['immich.together.own']).click();
@@ -240,10 +265,15 @@ test('Together on a child’s row scrolls to Photos and adds a chip for the pair
 	await expect(pair).toHaveAttribute('aria-pressed', 'false');
 	await pair.click();
 	await expect(pair).toHaveAttribute('aria-pressed', 'true');
-	await expectPhotosTogether(page, en['immich.together.stripPair']({ first: 'Sandra', second: 'Lena' }));
+	await expectPhotosTogether(
+		page,
+		en['immich.together.stripPair']({ first: 'Sandra', second: 'Lena' })
+	);
 });
 
-test('no Together on a sibling’s or a friend’s row, nor in the People card’s edit mode', async ({ page }) => {
+test('no Together on a sibling’s or a friend’s row, nor in the People card’s edit mode', async ({
+	page
+}) => {
 	for (const person of [SANDRA, NOAH, MIA, LENA]) await openAndLink(page, person);
 	// Lena's page, linked like the three: her mother, her brother and her best friend.
 	const mother = peopleRow(page, SANDRA.name);
@@ -268,10 +298,9 @@ test('a pair with no photo together says so', async ({ page }) => {
 	await openAndLink(page, THOMAS);
 
 	await togetherButton(peopleRow(page, MIA.name)).click();
-	await expect(chip(page, en['immich.together.pair']({ first: 'Thomas', second: 'Mia' }))).toHaveAttribute(
-		'aria-pressed',
-		'true'
-	);
+	await expect(
+		chip(page, en['immich.together.pair']({ first: 'Thomas', second: 'Mia' }))
+	).toHaveAttribute('aria-pressed', 'true');
 	await expect(page.getByTestId('immich-strip')).toHaveText(en['immich.together.none']);
 
 	// His own photos are still there, one tap away.
@@ -279,7 +308,9 @@ test('a pair with no photo together says so', async ({ page }) => {
 	await expect(tiles(stripList(page, en['immich.strip.label'])).first()).toBeVisible();
 });
 
-test('Use as photo from the photos of both goes to the person whose page it is', async ({ page }) => {
+test('Use as photo from the photos of both goes to the person whose page it is', async ({
+	page
+}) => {
 	await open(page, MARKUS);
 	await recordAction(page, 'This is me');
 	await linkFace(page, MARKUS.name, MARKUS.face);
@@ -288,9 +319,14 @@ test('Use as photo from the photos of both goes to the person whose page it is',
 	await linkFace(page, 'Quendolin Zusammen', SANDRA.face);
 
 	await chip(page, en['immich.together.withYou']({ name: 'Quendolin' })).click();
-	const list = await expectPhotosTogether(page, en['immich.together.stripWithYou']({ name: 'Quendolin' }));
+	const list = await expectPhotosTogether(
+		page,
+		en['immich.together.stripWithYou']({ name: 'Quendolin' })
+	);
 	const newest = list.getByRole('button').first();
-	const day = /^Photo from (.+), in Immich$/.exec((await newest.locator('img').getAttribute('alt')) ?? '')?.[1];
+	const day = /^Photo from (.+), in Immich$/.exec(
+		(await newest.locator('img').getAttribute('alt')) ?? ''
+	)?.[1];
 	if (!day) throw new Error('The strip’s photo has no day in its description.');
 	await newest.click();
 	const viewer = page.getByTestId('immich-viewer');
@@ -311,14 +347,19 @@ test('Use as photo from the photos of both goes to the person whose page it is',
 	const gallery = page.getByTestId('photo-grid');
 	await expect(gallery.locator('li img')).toHaveCount(1);
 	await gallery.getByRole('button').first().click();
-	await expect(page.getByTestId('photo-lightbox').getByTestId('photo-date')).toHaveText(`Taken ${day}`);
+	await expect(page.getByTestId('photo-lightbox').getByTestId('photo-date')).toHaveText(
+		`Taken ${day}`
+	);
 });
 
 test('a photo of both stops loading once one of them is unlinked', async ({ page }) => {
 	await meAndSandraLinked(page);
 	const ownSrc = await tiles(stripList(page, en['immich.strip.label'])).first().getAttribute('src');
 	await chip(page, en['immich.together.withYou']({ name: 'Sandra' })).click();
-	const list = await expectPhotosTogether(page, en['immich.together.stripWithYou']({ name: 'Sandra' }));
+	const list = await expectPhotosTogether(
+		page,
+		en['immich.together.stripWithYou']({ name: 'Sandra' })
+	);
 	const togetherSrc = await tiles(list).first().getAttribute('src');
 	expect((await page.request.get(togetherSrc!)).status()).toBe(200);
 
@@ -344,10 +385,14 @@ test('the chips and the row’s button speak German', async ({ page }) => {
 	const withYou = chip(page, de['immich.together.withYou']({ name: 'Sandra' }));
 	await expect(withYou).toBeVisible();
 	const button = togetherButton(peopleRow(page, MARKUS.name));
-	await expect(button).toHaveAccessibleName(de['immich.together.rowLabelWithYou']({ name: 'Sandra' }));
+	await expect(button).toHaveAccessibleName(
+		de['immich.together.rowLabelWithYou']({ name: 'Sandra' })
+	);
 	await expect(button).toHaveAttribute('title', de['immich.together.row']);
 	await withYou.click();
 	await expect(
-		page.getByTestId('immich-strip').getByRole('list', { name: de['immich.together.stripWithYou']({ name: 'Sandra' }) })
+		page
+			.getByTestId('immich-strip')
+			.getByRole('list', { name: de['immich.together.stripWithYou']({ name: 'Sandra' }) })
 	).toBeVisible();
 });

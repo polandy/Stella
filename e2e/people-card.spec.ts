@@ -194,15 +194,25 @@ test.describe('the jump bar', () => {
 
 	test('lands a jump with the card’s title in view below the bar', async ({ page }) => {
 		await openDemoPerson(page, MARKUS, 'Markus Brunner');
-		await expect(bar(page).getByRole('link')).toHaveText([/^People/, /^Photos/, /^Activity/, /^Notes/]);
+		await expect(bar(page).getByRole('link')).toHaveText([
+			/^People/,
+			/^Photos/,
+			/^Activity/,
+			/^Notes/
+		]);
 
-		await bar(page).getByRole('link', { name: /^Notes/ }).click();
+		await bar(page)
+			.getByRole('link', { name: /^Notes/ })
+			.click();
 		await expect(page).toHaveURL(/#section-notes$/);
 		const title = page.locator('#section-notes h2').first();
 		await expect(title).toBeInViewport();
 		// The bar sticks over the page, so the title must have stopped under it, not behind it.
 		await expect
-			.poll(async () => (await boxOf(title)).y - ((await boxOf(bar(page))).y + (await boxOf(bar(page))).height))
+			.poll(
+				async () =>
+					(await boxOf(title)).y - ((await boxOf(bar(page))).y + (await boxOf(bar(page))).height)
+			)
 			.toBeGreaterThanOrEqual(0);
 	});
 
@@ -213,7 +223,9 @@ test.describe('the jump bar', () => {
 		await page.locator('#section-photos').evaluate((el) => el.scrollIntoView({ block: 'start' }));
 		await expect(current).toHaveText(/^Photos/);
 
-		await page.locator('#section-relationships').evaluate((el) => el.scrollIntoView({ block: 'start' }));
+		await page
+			.locator('#section-relationships')
+			.evaluate((el) => el.scrollIntoView({ block: 'start' }));
 		await expect(current).toHaveText(/^People/);
 	});
 });

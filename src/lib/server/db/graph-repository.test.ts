@@ -28,8 +28,15 @@ const viewerU2: Viewer = { id: U2, householdId: H };
 let db: BunSQLiteDatabase<typeof schema>;
 let sqlite: Database;
 
-function seedContact(id: string, name: string, visibility: 'shared' | 'private' = 'shared', createdBy = U1) {
-	db.insert(schema.contact).values({ id, householdId: H, createdBy, visibility, displayName: name }).run();
+function seedContact(
+	id: string,
+	name: string,
+	visibility: 'shared' | 'private' = 'shared',
+	createdBy = U1
+) {
+	db.insert(schema.contact)
+		.values({ id, householdId: H, createdBy, visibility, displayName: name })
+		.run();
 }
 function rel(id: string, from: string, to: string, typeId: string) {
 	db.insert(schema.relationship)
@@ -65,7 +72,14 @@ describe('loadVisibleGraph', () => {
 		expect(graph.nodes.every((n) => n.kind === 'person')).toBe(true);
 
 		const child = graph.edges.find((e) => e.id === 'r-child');
-		expect(child).toMatchObject({ source: 'mara', target: 'lio', category: 'family', label: 'Parent of', typeKey: 'parent_child', directed: true });
+		expect(child).toMatchObject({
+			source: 'mara',
+			target: 'lio',
+			category: 'family',
+			label: 'Parent of',
+			typeKey: 'parent_child',
+			directed: true
+		});
 		const partner = graph.edges.find((e) => e.id === 'r-partner');
 		expect(partner).toMatchObject({ category: 'romantic', directed: false });
 	});
@@ -101,11 +115,23 @@ describe('loadVisibleGraph', () => {
 });
 
 describe('loadVisibleGraph — circles', () => {
-	function seedCircle(id: string, name: string, visibility: 'shared' | 'private' = 'shared', createdBy = U1) {
+	function seedCircle(
+		id: string,
+		name: string,
+		visibility: 'shared' | 'private' = 'shared',
+		createdBy = U1
+	) {
 		db.insert(schema.circle).values({ id, householdId: H, createdBy, visibility, name }).run();
 	}
-	function seedMembership(id: string, circleId: string, contactId: string, role: string | null = null) {
-		db.insert(schema.circleMembership).values({ id, circleId, contactId, role, createdBy: U1 }).run();
+	function seedMembership(
+		id: string,
+		circleId: string,
+		contactId: string,
+		role: string | null = null
+	) {
+		db.insert(schema.circleMembership)
+			.values({ id, circleId, contactId, role, createdBy: U1 })
+			.run();
 	}
 
 	it('includes visible circles as circle nodes and memberships as edges', async () => {
@@ -114,15 +140,28 @@ describe('loadVisibleGraph — circles', () => {
 		seedMembership('m-jonas', 'kegel', 'jonas');
 
 		const graph = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
-		expect(graph.nodes.find((n) => n.id === 'kegel')).toMatchObject({ kind: 'circle', label: 'Kegelclub' });
+		expect(graph.nodes.find((n) => n.id === 'kegel')).toMatchObject({
+			kind: 'circle',
+			label: 'Kegelclub'
+		});
 		const edge = graph.edges.find((e) => e.id === 'm-mara');
-		expect(edge).toMatchObject({ source: 'kegel', target: 'mara', kind: 'membership', label: 'captain' });
+		expect(edge).toMatchObject({
+			source: 'kegel',
+			target: 'mara',
+			kind: 'membership',
+			label: 'captain'
+		});
 
 		// two members reachable through the circle via co-membership
 		const source = inMemoryGraphSource(graph);
 		const path = await findConnectionPath(source, 'mara', 'jonas');
 		// mara↔jonas are also partners (direct); the point is the circle node exists and links both
-		expect(graph.edges.filter((e) => e.kind === 'membership').map((e) => e.id).sort()).toEqual(['m-jonas', 'm-mara']);
+		expect(
+			graph.edges
+				.filter((e) => e.kind === 'membership')
+				.map((e) => e.id)
+				.sort()
+		).toEqual(['m-jonas', 'm-mara']);
 		expect(path).not.toBeNull();
 	});
 
@@ -215,12 +254,21 @@ describe('loadVisibleGraphWithKinship', () => {
 		rel('r-aunt', 'rosa', 'nina', 'parent_child');
 		rel('r-hidden', 'rosa', 'hidden', 'parent_child');
 		rel('r-ex', 'jonas', 'ex', 'spouse');
-		db.update(schema.relationship).set({ status: 'former' }).where(eq(schema.relationship.id, 'r-ex')).run();
-		db.update(schema.contact).set({ archivedAt: 1_700_000_000_000 }).where(eq(schema.contact.id, 'rosa')).run();
+		db.update(schema.relationship)
+			.set({ status: 'former' })
+			.where(eq(schema.relationship.id, 'r-ex'))
+			.run();
+		db.update(schema.contact)
+			.set({ archivedAt: 1_700_000_000_000 })
+			.where(eq(schema.contact.id, 'rosa'))
+			.run();
 		db.update(schema.contact).set({ gender: 'female' }).where(eq(schema.contact.id, 'nina')).run();
 	});
 
-	for (const [who, viewer] of [['the owner of the private relative', viewerU1], ['another member', viewerU2]] as const) {
+	for (const [who, viewer] of [
+		['the owner of the private relative', viewerU1],
+		['another member', viewerU2]
+	] as const) {
 		it(`is the explorer's graph and the kinship engine's input at once, for ${who}`, async () => {
 			const both = await createDrizzleGraphRepository(db).loadVisibleGraphWithKinship(viewer);
 
@@ -237,7 +285,9 @@ describe('loadVisibleGraphWithKinship', () => {
 			return sqlite.prepare(sql);
 		}) as typeof sqlite.prepare;
 
-		await createDrizzleGraphRepository(drizzle(watched, { schema })).loadVisibleGraphWithKinship(viewerU1);
+		await createDrizzleGraphRepository(drizzle(watched, { schema })).loadVisibleGraphWithKinship(
+			viewerU1
+		);
 
 		// People, links, circles, memberships.
 		expect(sent).toHaveLength(4);
@@ -248,13 +298,24 @@ describe('loadVisibleGraphWithKinship', () => {
 	// the two places that select them (the other is `kinship-graph-read.ts`, covered in
 	// `relationship-repository.test.ts`). Both must carry the values, not just agree on `null`.
 	it('carries the birth dates and the day a partnership began', async () => {
-		db.update(schema.contact).set({ birthDate: '2015-05-20' }).where(eq(schema.contact.id, 'lio')).run();
-		db.update(schema.relationship).set({ sinceDate: '2009-06-13' }).where(eq(schema.relationship.id, 'r-partner')).run();
+		db.update(schema.contact)
+			.set({ birthDate: '2015-05-20' })
+			.where(eq(schema.contact.id, 'lio'))
+			.run();
+		db.update(schema.relationship)
+			.set({ sinceDate: '2009-06-13' })
+			.where(eq(schema.relationship.id, 'r-partner'))
+			.run();
 
 		const both = await createDrizzleGraphRepository(db).loadVisibleGraphWithKinship(viewerU1);
 		expect(both.kinship.people.find((p) => p.id === 'lio')?.birthDate).toBe('2015-05-20');
 		expect(both.kinship.people.find((p) => p.id === 'mara')?.birthDate).toBeNull();
-		expect(both.kinship.partnerEdges).toContainEqual({ a: 'mara', b: 'jonas', former: false, sinceDate: '2009-06-13' });
+		expect(both.kinship.partnerEdges).toContainEqual({
+			a: 'mara',
+			b: 'jonas',
+			former: false,
+			sinceDate: '2009-06-13'
+		});
 		expect(both.kinship).toEqual(loadKinshipGraph(db, viewerU1));
 	});
 });

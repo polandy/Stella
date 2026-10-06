@@ -4,7 +4,12 @@ import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
-import { addMember, createCircle, setMembersRole, type CircleDeps } from '../domain/circles/circles';
+import {
+	addMember,
+	createCircle,
+	setMembersRole,
+	type CircleDeps
+} from '../domain/circles/circles';
 import { createDrizzleCircleRepository } from './circle-repository';
 import * as schema from './schema';
 
@@ -26,7 +31,9 @@ const NOW = 1_700_000_000_000;
 let seq = 0;
 
 function seedContact(id: string, visibility: 'shared' | 'private' = 'shared', createdBy = U1) {
-	db.insert(schema.contact).values({ id, householdId: H, createdBy, visibility, displayName: id }).run();
+	db.insert(schema.contact)
+		.values({ id, householdId: H, createdBy, visibility, displayName: id })
+		.run();
 }
 
 beforeEach(() => {
@@ -85,7 +92,8 @@ describe('listVisibleTo member counts', () => {
 		for (const name of ['ann', 'bea', 'cem', 'dee', 'eve']) seedContact(name, 'shared');
 		seedContact('secret-c', 'private', U1);
 		const id = await createCircle(deps, creatorU1, { name: 'Choir' });
-		for (const name of ['eve', 'dee', 'cem', 'bea', 'ann', 'secret-c']) await addMember(deps, creatorU1, id, name);
+		for (const name of ['eve', 'dee', 'cem', 'bea', 'ann', 'secret-c'])
+			await addMember(deps, creatorU1, id, name);
 
 		const forU2 = (await deps.circles.listVisibleTo(viewerU2)).find((c) => c.id === id)!;
 		// Alphabetical, capped, and the private contact is not among them for U2 …
@@ -172,7 +180,11 @@ describe('memberships', () => {
 	});
 
 	it('hides a membership whose circle the viewer cannot see', async () => {
-		const id = await createCircle(deps, { ...creatorU1, defaultVisibility: 'private' }, { name: 'Secret Club' });
+		const id = await createCircle(
+			deps,
+			{ ...creatorU1, defaultVisibility: 'private' },
+			{ name: 'Secret Club' }
+		);
 		await addMember(deps, creatorU1, id, 'mara');
 		expect(await deps.circles.listForContactVisibleTo(viewerU2, 'mara')).toHaveLength(0);
 		expect(await deps.circles.listForContactVisibleTo(viewerU1, 'mara')).toHaveLength(1);
@@ -198,7 +210,11 @@ describe('role uses', () => {
 	});
 
 	it('leaves out roles from a circle the viewer cannot see', async () => {
-		const id = await createCircle(deps, { ...creatorU1, defaultVisibility: 'private' }, { name: 'Secret Club' });
+		const id = await createCircle(
+			deps,
+			{ ...creatorU1, defaultVisibility: 'private' },
+			{ name: 'Secret Club' }
+		);
 		await addMember(deps, creatorU1, id, 'mara', 'captain');
 		expect(await deps.circles.listRoleUsesVisibleTo(viewerU2)).toEqual([]);
 		expect(await deps.circles.listRoleUsesVisibleTo(viewerU1)).toEqual([
@@ -220,8 +236,24 @@ describe('addMemberships', () => {
 		seedContact('jonas');
 
 		await deps.circles.addMemberships([
-			{ id: 'm1', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW },
-			{ id: 'm2', circleId: id, contactId: 'jonas', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW }
+			{
+				id: 'm1',
+				circleId: id,
+				contactId: 'mara',
+				role: 'coach',
+				createdBy: U1,
+				createdAt: NOW,
+				updatedAt: NOW
+			},
+			{
+				id: 'm2',
+				circleId: id,
+				contactId: 'jonas',
+				role: 'coach',
+				createdBy: U1,
+				createdAt: NOW,
+				updatedAt: NOW
+			}
 		]);
 
 		const members = await deps.circles.listMembersVisibleTo(viewerU1, id);
@@ -236,8 +268,24 @@ describe('addMemberships', () => {
 		await addMember(deps, creatorU1, id, 'mara', 'captain');
 
 		await deps.circles.addMemberships([
-			{ id: 'm1', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW },
-			{ id: 'm2', circleId: id, contactId: 'jonas', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW }
+			{
+				id: 'm1',
+				circleId: id,
+				contactId: 'mara',
+				role: 'coach',
+				createdBy: U1,
+				createdAt: NOW,
+				updatedAt: NOW
+			},
+			{
+				id: 'm2',
+				circleId: id,
+				contactId: 'jonas',
+				role: 'coach',
+				createdBy: U1,
+				createdAt: NOW,
+				updatedAt: NOW
+			}
 		]);
 
 		// Only jonas is new — and jonas landing is the positive control for mara being skipped.
@@ -253,8 +301,24 @@ describe('addMemberships', () => {
 
 		// The skip runs per row inside the transaction, so it sees the row the batch just wrote.
 		await deps.circles.addMemberships([
-			{ id: 'm1', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW },
-			{ id: 'm2', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW }
+			{
+				id: 'm1',
+				circleId: id,
+				contactId: 'mara',
+				role: 'coach',
+				createdBy: U1,
+				createdAt: NOW,
+				updatedAt: NOW
+			},
+			{
+				id: 'm2',
+				circleId: id,
+				contactId: 'mara',
+				role: 'coach',
+				createdBy: U1,
+				createdAt: NOW,
+				updatedAt: NOW
+			}
 		]);
 
 		expect(await deps.circles.listMembersVisibleTo(viewerU1, id)).toHaveLength(1);
@@ -267,8 +331,24 @@ describe('addMemberships', () => {
 		// 'ghost' has no contact row, so the FK rejects it and the whole transaction rolls back.
 		expect(
 			deps.circles.addMemberships([
-				{ id: 'm1', circleId: id, contactId: 'mara', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW },
-				{ id: 'm2', circleId: id, contactId: 'ghost', role: 'coach', createdBy: U1, createdAt: NOW, updatedAt: NOW }
+				{
+					id: 'm1',
+					circleId: id,
+					contactId: 'mara',
+					role: 'coach',
+					createdBy: U1,
+					createdAt: NOW,
+					updatedAt: NOW
+				},
+				{
+					id: 'm2',
+					circleId: id,
+					contactId: 'ghost',
+					role: 'coach',
+					createdBy: U1,
+					createdAt: NOW,
+					updatedAt: NOW
+				}
 			])
 		).rejects.toThrow();
 
@@ -279,11 +359,24 @@ describe('addMemberships', () => {
 describe('renameRole', () => {
 	function seedPhoto(id: string, circleId: string, circleRole: string | null) {
 		db.insert(schema.photo)
-			.values({ id, householdId: H, circleId, circleRole, createdBy: U1, filePath: `${id}.jpg`, thumbPath: `${id}_t.jpg`, mime: 'image/jpeg' })
+			.values({
+				id,
+				householdId: H,
+				circleId,
+				circleRole,
+				createdBy: U1,
+				filePath: `${id}.jpg`,
+				thumbPath: `${id}_t.jpg`,
+				mime: 'image/jpeg'
+			})
 			.run();
 	}
 	const photoRole = (id: string) =>
-		db.select({ role: schema.photo.circleRole }).from(schema.photo).where(eq(schema.photo.id, id)).get()?.role;
+		db
+			.select({ role: schema.photo.circleRole })
+			.from(schema.photo)
+			.where(eq(schema.photo.id, id))
+			.get()?.role;
 
 	it('renames the chosen memberships and photos of this circle, and nothing of another', async () => {
 		seedContact('mara');
@@ -306,7 +399,12 @@ describe('renameRole', () => {
 		});
 
 		const roles = async (circleId: string) =>
-			Object.fromEntries((await deps.circles.listMembersVisibleTo(viewerU1, circleId)).map((m) => [m.contactId, m.role]));
+			Object.fromEntries(
+				(await deps.circles.listMembersVisibleTo(viewerU1, circleId)).map((m) => [
+					m.contactId,
+					m.role
+				])
+			);
 		expect(await roles(klasse)).toEqual({ mara: 'Class teacher', jonas: 'Pupil' });
 		expect(photoRole('class-photo')).toBe('Class teacher');
 		expect(await roles(club)).toEqual({ mara: 'Teacher' });

@@ -39,7 +39,9 @@ export function settle(batches: Batches, key: string, outcome: 'sent' | 'failed'
 
 /** Drops the batches the store no longer holds and that were never sent: Undo was pressed. */
 export function takenBack(batches: Batches, isPending: (key: string) => boolean): Batches {
-	const kept = Object.entries(batches).filter(([key, batch]) => batch.state !== 'held' || isPending(key));
+	const kept = Object.entries(batches).filter(
+		([key, batch]) => batch.state !== 'held' || isPending(key)
+	);
 	return kept.length === Object.keys(batches).length ? batches : Object.fromEntries(kept);
 }
 

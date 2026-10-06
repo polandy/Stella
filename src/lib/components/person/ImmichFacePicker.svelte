@@ -60,7 +60,9 @@
 		searching = true;
 		error = null;
 		try {
-			const response = await fetch(`/contacts/${contactId}/immich/faces?q=${encodeURIComponent(query)}`);
+			const response = await fetch(
+				`/contacts/${contactId}/immich/faces?q=${encodeURIComponent(query)}`
+			);
 			if (!response.ok) throw new Error(`faces answered ${response.status}`);
 			const body = (await response.json()) as { faces: Face[]; error: string | null };
 			if (asked !== latest) return;
@@ -100,7 +102,9 @@
 		error = null;
 		try {
 			const body = new FormData(event.currentTarget as HTMLFormElement);
-			await submitAction(fetch, `/contacts/${encodeURIComponent(contactId)}?/linkImmich`, body, { keepalive: false });
+			await submitAction(fetch, `/contacts/${encodeURIComponent(contactId)}?/linkImmich`, body, {
+				keepalive: false
+			});
 			dialog?.close();
 			await invalidateAll();
 			done();
@@ -109,7 +113,8 @@
 		}
 	}
 
-	const INPUT = 'min-w-0 flex-1 rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg';
+	const INPUT =
+		'min-w-0 flex-1 rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg';
 </script>
 
 <dialog
@@ -134,7 +139,9 @@
 				placeholder={t('immich.picker.search')}
 				class={INPUT}
 			/>
-			<Button type="submit" size="sm" icon="search" disabled={searching}>{t('common.search')}</Button>
+			<Button type="submit" size="sm" icon="search" disabled={searching}
+				>{t('common.search')}</Button
+			>
 		</form>
 
 		<FormError message={error} />
@@ -149,8 +156,16 @@
 					{#each faces as face (face.id)}
 						<li>
 							{#if face.linkedTo}
-								<div class="flex w-full flex-col items-center gap-1.5 p-1.5 text-center opacity-60" data-testid="immich-face-taken">
-									<img src={face.faceUrl} alt="" class="aspect-square w-full rounded-full bg-bg-sunken object-cover grayscale" loading="lazy" />
+								<div
+									class="flex w-full flex-col items-center gap-1.5 p-1.5 text-center opacity-60"
+									data-testid="immich-face-taken"
+								>
+									<img
+										src={face.faceUrl}
+										alt=""
+										class="aspect-square w-full rounded-full bg-bg-sunken object-cover grayscale"
+										loading="lazy"
+									/>
 									<span class="w-full truncate text-xs text-fg">{face.name}</span>
 									<span class="w-full text-[0.6875rem] leading-tight text-fg-muted">
 										{face.linkedTo.name === null
@@ -180,7 +195,9 @@
 					{/each}
 				</ul>
 			{:else if answered && !searching && !error}
-				<p class="text-sm text-fg-subtle" data-testid="immich-no-faces">{t('immich.picker.none')}</p>
+				<p class="text-sm text-fg-subtle" data-testid="immich-no-faces">
+					{t('immich.picker.none')}
+				</p>
 			{/if}
 		</div>
 	</div>

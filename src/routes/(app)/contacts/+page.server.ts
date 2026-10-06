@@ -6,7 +6,12 @@ import {
 } from '$lib/server/domain/contacts/contacts';
 import { listContactsByTag, listTags } from '$lib/server/domain/tags/tags';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
-import { getAttention, getContactDeps, getSurnameReviewDeps, getTagDeps } from '$lib/server/services';
+import {
+	getAttention,
+	getContactDeps,
+	getSurnameReviewDeps,
+	getTagDeps
+} from '$lib/server/services';
 import { lastNameActions } from '$lib/server/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
 

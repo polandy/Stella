@@ -17,7 +17,10 @@ describe('jobOf', () => {
 	});
 
 	it('turns a blank part into null', () => {
-		expect(jobOf({ jobTitle: 'Teacher', company: '   ' })).toEqual({ jobTitle: 'Teacher', company: null });
+		expect(jobOf({ jobTitle: 'Teacher', company: '   ' })).toEqual({
+			jobTitle: 'Teacher',
+			company: null
+		});
 	});
 
 	it('is null when neither part is on record', () => {
@@ -60,15 +63,20 @@ describe('foundByJob', () => {
 	});
 
 	it('folds case and accents as the rest of the matching does', () => {
-		expect(foundByJob({ displayName: 'Eva Lehmann', jobTitle: 'Lehrerin', company: 'Musikschule Wöhlen' }, 'WOHLEN')).toBe(
-			true
-		);
+		expect(
+			foundByJob(
+				{ displayName: 'Eva Lehmann', jobTitle: 'Lehrerin', company: 'Musikschule Wöhlen' },
+				'WOHLEN'
+			)
+		).toBe(true);
 	});
 
 	it('stays quiet when a name or the description explains the match', () => {
 		expect(foundByJob(claudia, 'claud')).toBe(false);
 		expect(foundByJob(claudia, 'godmother')).toBe(false);
-		expect(foundByJob({ displayName: 'Eva Lehmann', jobTitle: 'Lehrerin', company: null }, 'leh')).toBe(false);
+		expect(
+			foundByJob({ displayName: 'Eva Lehmann', jobTitle: 'Lehrerin', company: null }, 'leh')
+		).toBe(false);
 	});
 
 	it('reads each word of the query, so a name plus a job still says why', () => {
@@ -76,7 +84,9 @@ describe('foundByJob', () => {
 	});
 
 	it('stays quiet without a job, or without a query', () => {
-		expect(foundByJob({ displayName: 'Daniel Brunner', jobTitle: null, company: null }, 'roche')).toBe(false);
+		expect(
+			foundByJob({ displayName: 'Daniel Brunner', jobTitle: null, company: null }, 'roche')
+		).toBe(false);
 		expect(foundByJob(claudia, '  ')).toBe(false);
 	});
 });

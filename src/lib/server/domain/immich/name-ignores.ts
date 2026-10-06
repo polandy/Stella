@@ -38,7 +38,11 @@ export interface ImmichNameIgnoreDeps {
 type Actor = { userId: string; householdId: string };
 
 /** *Ignore* on a row of *New from Immich*. Needs nothing from Immich. */
-export async function ignoreNewcomer(deps: ImmichNameIgnoreDeps, actor: Actor, immichPersonId: string): Promise<void> {
+export async function ignoreNewcomer(
+	deps: ImmichNameIgnoreDeps,
+	actor: Actor,
+	immichPersonId: string
+): Promise<void> {
 	if (!isImmichId(immichPersonId)) throw new ImmichLinkRefusedError('notFound');
 	await deps.nameIgnores.save({
 		householdId: actor.householdId,

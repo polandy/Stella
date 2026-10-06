@@ -44,13 +44,23 @@
 			<h1 class="text-2xl font-semibold text-fg">{t('circles.heading')}</h1>
 			<p class="text-sm text-fg-muted">{t('circles.intro')}</p>
 		</div>
-		<Button variant={showForm ? 'secondary' : 'primary'} icon={showForm ? 'remove' : 'add'} type="button" onclick={() => (wantForm = !showForm)}>
+		<Button
+			variant={showForm ? 'secondary' : 'primary'}
+			icon={showForm ? 'remove' : 'add'}
+			type="button"
+			onclick={() => (wantForm = !showForm)}
+		>
 			{showForm ? t('common.cancel') : t('circles.new')}
 		</Button>
 	</header>
 
 	{#if showForm}
-		<form transition:reveal method="POST" action="?/create" class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card">
+		<form
+			transition:reveal
+			method="POST"
+			action="?/create"
+			class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card"
+		>
 			<FormError message={form?.error} id="circle-error" />
 
 			<label class="flex flex-col gap-1 text-sm">
@@ -62,19 +72,24 @@
 					required
 					aria-invalid={form?.error ? 'true' : undefined}
 					aria-describedby={form?.error ? 'circle-error' : undefined}
-					class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg" />
+					class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
+				/>
 			</label>
 
 			<div class="flex flex-wrap gap-4">
 				<label class="flex flex-1 flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.kindLabel')}</span>
 					<select name="kind" class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg">
-						{#each data.kinds as kind (kind)}<option value={kind}>{circleKindLabel(t, kind)}</option>{/each}
+						{#each data.kinds as kind (kind)}<option value={kind}>{circleKindLabel(t, kind)}</option
+							>{/each}
 					</select>
 				</label>
 				<label class="flex flex-[2] flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.descriptionLabel')}</span>
-					<input name="description" class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg" />
+					<input
+						name="description"
+						class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
+					/>
 				</label>
 			</div>
 
@@ -85,7 +100,13 @@
 				<div class="flex flex-wrap gap-2">
 					{#each data.colors as color (color)}
 						<label class="cursor-pointer" title={t(`components.colour.${color}`)}>
-							<input type="radio" name="color" value={color} checked={color === data.suggestedColor} class="peer sr-only" />
+							<input
+								type="radio"
+								name="color"
+								value={color}
+								checked={color === data.suggestedColor}
+								class="peer sr-only"
+							/>
 							<span
 								class="block size-7 rounded-full ring-offset-2 ring-offset-[var(--card)] transition-all peer-checked:ring-2 peer-checked:ring-[var(--fg)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-focus-ring hover:scale-110"
 								style={accentDotStyle(color)}
@@ -102,7 +123,9 @@
 	{/if}
 
 	{#if data.circles.length > 0}
-		<label class="flex items-center gap-2 rounded-control border border-border-input bg-card px-3 py-2 shadow-card focus-within:border-primary">
+		<label
+			class="flex items-center gap-2 rounded-control border border-border-input bg-card px-3 py-2 shadow-card focus-within:border-primary"
+		>
 			<Icon name="search" size={15} />
 			<span class="sr-only">{t('circles.find')}</span>
 			<input
@@ -115,7 +138,9 @@
 		</label>
 		<!-- Always in the page, so a screen reader is listening before the first keystroke. -->
 		<p class="sr-only" aria-live="polite" data-testid="circle-match-count">
-			{query.trim() !== '' || kind !== ALL_KINDS ? t('circles.matchCount', { count: shown.length }) : ''}
+			{query.trim() !== '' || kind !== ALL_KINDS
+				? t('circles.matchCount', { count: shown.length })
+				: ''}
 		</p>
 
 		{#if chips.length > 1}
@@ -125,7 +150,7 @@
 						type="button"
 						onclick={() => (chosenKind = chip.kind)}
 						aria-pressed={kind === chip.kind}
-						class="rounded-full px-3 py-1 text-sm font-medium transition-colors aria-pressed:bg-primary-soft aria-pressed:font-semibold aria-pressed:text-fg text-fg-muted hover:text-fg"
+						class="rounded-full px-3 py-1 text-sm font-medium text-fg-muted transition-colors hover:text-fg aria-pressed:bg-primary-soft aria-pressed:font-semibold aria-pressed:text-fg"
 					>
 						{chip.label}
 						<span class="text-xs text-fg-muted">{chip.count}</span>
@@ -169,17 +194,27 @@
 					>
 						{#if cover}
 							<!-- The cover as a flat strip, filled from the centre (docs/05 §5.5); decoration, the name says it. -->
-							<img src={thumbnailUrl(cover)} alt="" loading="lazy" class="h-20 w-full object-cover object-center" data-testid="circle-card-cover" />
+							<img
+								src={thumbnailUrl(cover)}
+								alt=""
+								loading="lazy"
+								class="h-20 w-full object-cover object-center"
+								data-testid="circle-card-cover"
+							/>
 						{/if}
 						<div class="flex flex-1 flex-col gap-3 p-4">
 							<div class="flex items-start gap-3">
-								<span class="mt-1.5 size-3 shrink-0 rounded-full" style={accentDotStyle(circle.color)}></span>
+								<span
+									class="mt-1.5 size-3 shrink-0 rounded-full"
+									style={accentDotStyle(circle.color)}
+								></span>
 								<span class="min-w-0 flex-1">
 									<span class="block truncate font-semibold text-fg">{circle.name}</span>
 									<span class="block text-xs text-fg-subtle">
 										<span>{circleKindLabel(t, circle.kind)}</span>
 										· {t('circles.memberCount', { count: circle.memberCount })}
-										{#if circle.visibility === 'private'} · {t('circles.private')}{/if}
+										{#if circle.visibility === 'private'}
+											· {t('circles.private')}{/if}
 									</span>
 								</span>
 							</div>
@@ -189,11 +224,18 @@
 							<div class="mt-auto flex items-center">
 								{#each circle.preview as member, i (member.contactId)}
 									<span class="rounded-full ring-2 ring-card" class:-ml-1={i > 0}>
-										<Avatar id={member.contactId} name={member.displayName} avatarPhotoId={member.avatarPhotoId} size={28} />
+										<Avatar
+											id={member.contactId}
+											name={member.displayName}
+											avatarPhotoId={member.avatarPhotoId}
+											size={28}
+										/>
 									</span>
 								{/each}
 								{#if circle.memberCount > circle.preview.length}
-									<span class="-ml-1 grid size-7 place-items-center rounded-full bg-bg-sunken text-[11px] font-semibold text-fg-muted ring-2 ring-card">
+									<span
+										class="-ml-1 grid size-7 place-items-center rounded-full bg-bg-sunken text-[11px] font-semibold text-fg-muted ring-2 ring-card"
+									>
 										+{circle.memberCount - circle.preview.length}
 									</span>
 								{/if}

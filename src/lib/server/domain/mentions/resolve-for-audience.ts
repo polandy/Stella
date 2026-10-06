@@ -27,7 +27,10 @@ type Candidate = MentionCandidate & Distinguishable;
  * household-visible contacts, a private entry anyone the author can see — so a mention never
  * widens access.
  */
-export function audienceCandidates(contacts: ContactSummary[], visibility: Visibility): Candidate[] {
+export function audienceCandidates(
+	contacts: ContactSummary[],
+	visibility: Visibility
+): Candidate[] {
 	return allowedForAudience(contacts, visibility).map((c) => ({
 		id: c.id,
 		firstName: c.firstName,
@@ -78,7 +81,11 @@ function ambiguityPhrase(
 					const line = lines.get(p.id);
 					return line ? `${p.displayName} (${describeDistinction(t, line)})` : p.displayName;
 				});
-				return t('errors.mention.ambiguous', { handle, count: people.length, people: named.join(', ') });
+				return t('errors.mention.ambiguous', {
+					handle,
+					count: people.length,
+					people: named.join(', ')
+				});
 			})
 			.join(' ');
 }
@@ -95,7 +102,8 @@ export function resolveForAudience(
 ): { body: string; ids: string[] } {
 	const candidates = audienceCandidates(contacts, visibility);
 	const resolved = resolveMentions(body, createHandleResolver(candidates));
-	if (resolved.ambiguous.length > 0) throw new AmbiguousMentionError(resolved.ambiguous, candidates);
+	if (resolved.ambiguous.length > 0)
+		throw new AmbiguousMentionError(resolved.ambiguous, candidates);
 	// A token names someone only if the audience may: one arriving for a person deleted since
 	// (a moment kept on a phone) or hidden from this audience links nobody.
 	const allowed = new Set(candidates.map((c) => c.id));

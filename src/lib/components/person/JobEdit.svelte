@@ -35,8 +35,16 @@
 		/** Classes of the open form, so it can sit in a card row or under a heading. */
 		formClass?: string;
 	}
-	let { jobTitle, company, place, error = null, triggerClass, triggerTitle, children, formClass = '' }: Props =
-		$props();
+	let {
+		jobTitle,
+		company,
+		place,
+		error = null,
+		triggerClass,
+		triggerTitle,
+		children,
+		formClass = ''
+	}: Props = $props();
 
 	const t = useTranslate();
 	const uid = $props.id();
@@ -145,8 +153,14 @@
 		</div>
 	</form>
 	{#snippet otherwise()}
-	<button bind:this={trigger} type="button" onclick={start} title={triggerTitle} class={triggerClass}>
-		{@render children()}
-	</button>
+		<button
+			bind:this={trigger}
+			type="button"
+			onclick={start}
+			title={triggerTitle}
+			class={triggerClass}
+		>
+			{@render children()}
+		</button>
 	{/snippet}
 </Swap>

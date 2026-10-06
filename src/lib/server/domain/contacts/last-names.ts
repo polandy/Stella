@@ -8,7 +8,11 @@ import {
 	type SurnameDismissal,
 	type SurnamePerson
 } from '../../../suggestions/rules/surnames';
-import { groupBySurname, householdSpellings, type SurnameList } from '../../../suggestions/surname-groups';
+import {
+	groupBySurname,
+	householdSpellings,
+	type SurnameList
+} from '../../../suggestions/surname-groups';
 import type { Viewer } from '../../access/visibility';
 import type { Locale } from '../../../i18n/locales';
 import type { IdGenerator } from '../../id';
@@ -110,7 +114,9 @@ export async function setLastNames(
 	const wanted = changes.map((change) => ({ ...change, lastName: change.lastName.trim() }));
 	if (wanted.some((change) => change.lastName === '')) throw new EmptyLastNameError();
 
-	const found = await Promise.all(wanted.map((change) => deps.names.findByIdVisibleTo(viewer, change.contactId)));
+	const found = await Promise.all(
+		wanted.map((change) => deps.names.findByIdVisibleTo(viewer, change.contactId))
+	);
 	if (found.some((contact) => contact === null)) return null;
 
 	const now = deps.clock.now();
@@ -162,13 +168,21 @@ export interface LastNamesReview {
 }
 
 /** Everyone the viewer may see without a last name, with what Stella proposes for each. */
-export async function reviewLastNames(deps: SurnameReviewDeps, viewer: Viewer): Promise<LastNamesReview> {
+export async function reviewLastNames(
+	deps: SurnameReviewDeps,
+	viewer: Viewer
+): Promise<LastNamesReview> {
 	const [facts, graph, dismissed] = await Promise.all([
 		deps.surnames.loadSurnameFactsVisibleTo(viewer),
 		deps.relationships.loadKinshipGraphVisibleTo(viewer),
 		deps.surnameDismissals.listForHousehold(viewer)
 	]);
-	const view = buildSurnameView({ people: facts.people, graph, familyCircles: facts.familyCircles, dismissed });
+	const view = buildSurnameView({
+		people: facts.people,
+		graph,
+		familyCircles: facts.familyCircles,
+		dismissed
+	});
 	const listed = facts.people
 		.filter((p) => !p.archived && !(p.lastName ?? '').trim())
 		.sort((a, b) => a.displayName.localeCompare(b.displayName));
@@ -213,12 +227,18 @@ export async function readSurnameHelp(
 		deps.relationships.loadKinshipGraphVisibleTo(viewer),
 		deps.surnameDismissals.listForHousehold(viewer)
 	]);
-	const view = buildSurnameView({ people: facts.people, graph, familyCircles: facts.familyCircles, dismissed });
+	const view = buildSurnameView({
+		people: facts.people,
+		graph,
+		familyCircles: facts.familyCircles,
+		dismissed
+	});
 	const nameless = new Map(
 		facts.people.filter((p) => !p.archived && !(p.lastName ?? '').trim()).map((p) => [p.id, p])
 	);
 	const declined = new Map<string, string[]>();
-	for (const d of dismissed) declined.set(d.contactId, [...(declined.get(d.contactId) ?? []), d.folded]);
+	for (const d of dismissed)
+		declined.set(d.contactId, [...(declined.get(d.contactId) ?? []), d.folded]);
 
 	const passOn: Record<string, PassOnMap[string]> = {};
 	for (const person of facts.people) {
@@ -238,7 +258,8 @@ export async function countLastNames(
 	viewer: Viewer
 ): Promise<{ missing: number; suggested: number }> {
 	const { list } = await reviewLastNames(deps, viewer);
-	const suggested = list.groups.reduce((sum, group) => sum + group.rows.length, 0) + list.chooseOne.length;
+	const suggested =
+		list.groups.reduce((sum, group) => sum + group.rows.length, 0) + list.chooseOne.length;
 	return { missing: suggested + list.none.length, suggested };
 }
 

@@ -183,12 +183,24 @@ function fromChildren(view: SurnameView, id: string): Finding[] {
 /** F11 — a family circle whose named members all share one name. The circle's name is never read. */
 function fromFamilyCircles(view: SurnameView, id: string): Finding[] {
 	return view.familyCirclesOf(id).flatMap((circle) => {
-		const name = sharedName(named(view, circle.memberIds.filter((m) => m !== id)));
+		const name = sharedName(
+			named(
+				view,
+				circle.memberIds.filter((m) => m !== id)
+			)
+		);
 		return name ? [{ name, confidence: 'likely' as const, reason: inCircle(circle.name) }] : [];
 	});
 }
 
-const RULES = [fromShownName, fromParents, fromSiblings, fromFamilyCircles, fromPartners, fromChildren];
+const RULES = [
+	fromShownName,
+	fromParents,
+	fromSiblings,
+	fromFamilyCircles,
+	fromPartners,
+	fromChildren
+];
 
 /**
  * What Stella proposes as `id`'s last name (§4). Findings for the same name (folded) merge, the
@@ -200,13 +212,20 @@ export function proposeSurname(view: SurnameView, id: string): SurnameProposal {
 	const person = view.person(id);
 	if (!person || clean(person.lastName) !== '') return { kind: 'none' };
 
-	const merged = new Map<string, { name: string; confidence: Confidence; reasons: LinkedPhrase[] }>();
+	const merged = new Map<
+		string,
+		{ name: string; confidence: Confidence; reasons: LinkedPhrase[] }
+	>();
 	for (const finding of RULES.flatMap((rule) => rule(view, id))) {
 		const folded = foldSurname(finding.name);
 		if (view.isDismissed(id, folded)) continue;
 		const known = merged.get(folded);
 		if (!known) {
-			merged.set(folded, { name: finding.name, confidence: finding.confidence, reasons: [finding.reason] });
+			merged.set(folded, {
+				name: finding.name,
+				confidence: finding.confidence,
+				reasons: [finding.reason]
+			});
 			continue;
 		}
 		known.reasons.push(finding.reason);

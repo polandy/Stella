@@ -84,12 +84,18 @@ describe('groupPeople', () => {
 
 describe('foldPeople', () => {
 	const family = Array.from({ length: 7 }, (_, i) => row(`f${i}`, 'family', 'child'));
-	const groups = groupPeople([...family, row('friend', 'social', 'friend'), row('work', 'professional', 'colleague')]);
+	const groups = groupPeople([
+		...family,
+		row('friend', 'social', 'friend'),
+		row('work', 'professional', 'colleague')
+	]);
 
 	it('shows the first few and says how many more there are', () => {
 		const folded = foldPeople(groups, false);
 		expect(folded.hidden).toBe(9 - SHOWN_WHEN_FOLDED);
-		expect(folded.groups.flatMap((g) => ids(g.rows))).toEqual(ids(family).slice(0, SHOWN_WHEN_FOLDED));
+		expect(folded.groups.flatMap((g) => ids(g.rows))).toEqual(
+			ids(family).slice(0, SHOWN_WHEN_FOLDED)
+		);
 		// The heading still counts the whole group, and a group with nobody left shown is dropped.
 		expect(folded.groups.map((g) => [g.group, g.total])).toEqual([['family', 7]]);
 	});

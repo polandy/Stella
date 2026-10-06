@@ -37,7 +37,11 @@ export const SUGGESTION_LIMIT = 5;
 /** Surnames shorter than this get no typo tolerance — one edit would match too much. */
 const FUZZY_MIN_LENGTH = 4;
 
-const REASON_RANK: Record<MatchReason, number> = { 'same-name': 0, 'same-surname': 1, 'similar-surname': 2 };
+const REASON_RANK: Record<MatchReason, number> = {
+	'same-name': 0,
+	'same-surname': 1,
+	'similar-surname': 2
+};
 
 /** Lower-case, diacritics stripped, whitespace collapsed. */
 function normalise(value: string | null | undefined): string {

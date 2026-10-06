@@ -102,7 +102,11 @@ export interface ListPlacement {
  * side has more room — the phone's composer sheet sits at the bottom, with the keyboard under
  * it — and never taller than that side, scrolling instead.
  */
-export function listPlacement(space: { above: number; below: number }, listHeight: number): ListPlacement {
-	if (listHeight <= space.below || space.below >= space.above) return { side: 'below', maxHeight: space.below };
+export function listPlacement(
+	space: { above: number; below: number },
+	listHeight: number
+): ListPlacement {
+	if (listHeight <= space.below || space.below >= space.above)
+		return { side: 'below', maxHeight: space.below };
 	return { side: 'above', maxHeight: space.above };
 }

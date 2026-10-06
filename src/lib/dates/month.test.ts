@@ -1,5 +1,15 @@
 import { describe, expect, test } from 'bun:test';
-import { addDays, firstDayOfWeek, inYear, yearsBack, monthGrid, monthOf, monthName, shiftMonth, weekdayNames } from './month';
+import {
+	addDays,
+	firstDayOfWeek,
+	inYear,
+	yearsBack,
+	monthGrid,
+	monthOf,
+	monthName,
+	shiftMonth,
+	weekdayNames
+} from './month';
 
 // The calendar behind the composer's *Another day…* (docs/05 §5.7).
 
@@ -7,7 +17,15 @@ describe('monthGrid', () => {
 	test('lays September 2026 out in Monday-first weeks, padding before the 1st', () => {
 		const weeks = monthGrid('2026-09', 1);
 		// 1 September 2026 is a Tuesday.
-		expect(weeks[0]).toEqual([null, '2026-09-01', '2026-09-02', '2026-09-03', '2026-09-04', '2026-09-05', '2026-09-06']);
+		expect(weeks[0]).toEqual([
+			null,
+			'2026-09-01',
+			'2026-09-02',
+			'2026-09-03',
+			'2026-09-04',
+			'2026-09-05',
+			'2026-09-06'
+		]);
 		expect(weeks[4]).toEqual(['2026-09-28', '2026-09-29', '2026-09-30', null, null, null, null]);
 	});
 
@@ -19,7 +37,15 @@ describe('monthGrid', () => {
 	});
 
 	test('starts the week on Sunday where the locale does', () => {
-		expect(monthGrid('2026-09', 0)[0]).toEqual([null, null, '2026-09-01', '2026-09-02', '2026-09-03', '2026-09-04', '2026-09-05']);
+		expect(monthGrid('2026-09', 0)[0]).toEqual([
+			null,
+			null,
+			'2026-09-01',
+			'2026-09-02',
+			'2026-09-03',
+			'2026-09-04',
+			'2026-09-05'
+		]);
 	});
 
 	test('knows February in a leap year', () => {

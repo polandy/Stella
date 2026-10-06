@@ -9,7 +9,9 @@ import type * as schema from './schema';
  * household and hands out nothing but id and name — the story needs a name for an author, not
  * an account.
  */
-export function createDrizzleMemberRepository(db: BunSQLiteDatabase<typeof schema>): MemberRepository {
+export function createDrizzleMemberRepository(
+	db: BunSQLiteDatabase<typeof schema>
+): MemberRepository {
 	return {
 		async listMembers(householdId: string) {
 			return db

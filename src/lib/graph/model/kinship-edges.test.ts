@@ -12,7 +12,11 @@ const person = (id: string, displayName: string, gender?: string) => ({ id, disp
 /** The example from docs/02 §2.4.1: Bettina parents Hans, Otto parents Bettina. */
 function threeGenerations(): KinshipGraph {
 	return {
-		people: [person('hans', 'Hans'), person('bettina', 'Bettina', 'female'), person('otto', 'Otto', 'male')],
+		people: [
+			person('hans', 'Hans'),
+			person('bettina', 'Bettina', 'female'),
+			person('otto', 'Otto', 'male')
+		],
 		parentEdges: [
 			{ parentId: 'bettina', childId: 'hans' },
 			{ parentId: 'otto', childId: 'bettina' }
@@ -50,7 +54,11 @@ describe('deriveKinshipEdges', () => {
 
 	it('leaves a symmetric term undirected', () => {
 		const siblings: KinshipGraph = {
-			people: [person('mother', 'Mother'), person('lisa', 'Lisa', 'female'), person('hans', 'Hans', 'male')],
+			people: [
+				person('mother', 'Mother'),
+				person('lisa', 'Lisa', 'female'),
+				person('hans', 'Hans', 'male')
+			],
 			parentEdges: [
 				{ parentId: 'mother', childId: 'lisa' },
 				{ parentId: 'mother', childId: 'hans' }

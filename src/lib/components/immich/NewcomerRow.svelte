@@ -116,14 +116,16 @@
 
 	const assigning: SubmitFunction = () => {
 		return async ({ result }) => {
-			if (result.type === 'success' && result.data) onAssigned((result.data as { assigned: Assigned }).assigned);
+			if (result.type === 'success' && result.data)
+				onAssigned((result.data as { assigned: Assigned }).assigned);
 			else if (result.type === 'failure') refused(result.data as Refusal | undefined);
 		};
 	};
 
 	const adding: SubmitFunction = () => {
 		return async ({ result }) => {
-			if (result.type === 'success' && result.data) onAdded((result.data as { added: Added }).added);
+			if (result.type === 'success' && result.data)
+				onAdded((result.data as { added: Added }).added);
 			else if (result.type === 'failure') refused(result.data as Refusal | undefined);
 		};
 	};
@@ -142,7 +144,11 @@
 		'rounded-control border border-border-input bg-card px-3 py-2 text-sm text-fg outline-none focus:ring-2 focus:ring-primary';
 </script>
 
-<li class="flex flex-col gap-3 rounded-app bg-card p-3 shadow-card" data-testid="immich-newcomer" transition:reveal>
+<li
+	class="flex flex-col gap-3 rounded-app bg-card p-3 shadow-card"
+	data-testid="immich-newcomer"
+	transition:reveal
+>
 	<div class="flex flex-wrap items-center gap-3">
 		<img
 			src={row.faceUrl}
@@ -189,7 +195,10 @@
 			<ul class="flex flex-col gap-2">
 				{#each row.similar as person (person.contact.id)}
 					{@const line = contextLine(person)}
-					<li class="flex flex-wrap items-center gap-3 rounded-app border border-border p-2.5" data-testid="immich-similar">
+					<li
+						class="flex flex-wrap items-center gap-3 rounded-app border border-border p-2.5"
+						data-testid="immich-similar"
+					>
 						<!-- Face beside face: the new one from Immich, then theirs. -->
 						<div class="flex shrink-0 items-center gap-1.5">
 							<img
@@ -208,24 +217,39 @@
 									class="size-16 rounded-full bg-bg-sunken object-cover"
 								/>
 							{:else}
-								<Avatar id={person.contact.id} name={person.contact.displayName} avatarPhotoId={person.contact.avatarPhotoId} size={64} />
+								<Avatar
+									id={person.contact.id}
+									name={person.contact.displayName}
+									avatarPhotoId={person.contact.avatarPhotoId}
+									size={64}
+								/>
 							{/if}
 						</div>
 						<div class="min-w-36 flex-1">
-							<a href="/contacts/{person.contact.id}" class="block truncate font-medium text-fg hover:underline">
+							<a
+								href="/contacts/{person.contact.id}"
+								class="block truncate font-medium text-fg hover:underline"
+							>
 								{person.contact.displayName}
 							</a>
 							{#if person.description}<p class="text-sm text-fg-muted">{person.description}</p>{/if}
 							{#if line}<p class="text-sm text-fg-muted">{line}</p>{/if}
 							{#if person.linkedFace}
-								<p class="mt-1 w-fit rounded-control bg-warning-soft px-1.5 py-0.5 text-xs font-medium text-fg">
+								<p
+									class="mt-1 w-fit rounded-control bg-warning-soft px-1.5 py-0.5 text-xs font-medium text-fg"
+								>
 									{person.linkedFace.name
 										? t('immich.new.linkedTo', { name: person.linkedFace.name })
 										: t('immich.new.linkedToUnnamed')}
 								</p>
 							{/if}
 						</div>
-						<form method="POST" action="?/assignNewcomer" use:enhance={assigning} class="ml-auto flex shrink-0 flex-wrap justify-end gap-1">
+						<form
+							method="POST"
+							action="?/assignNewcomer"
+							use:enhance={assigning}
+							class="ml-auto flex shrink-0 flex-wrap justify-end gap-1"
+						>
 							<input type="hidden" name="immichPersonId" value={row.personId} />
 							<input type="hidden" name="contactId" value={person.contact.id} />
 							{#if confirmingReplace === person.contact.id}
@@ -233,7 +257,12 @@
 									{t('immich.new.replaceQuestion', { name: person.contact.displayName })}
 								</p>
 								<input type="hidden" name="replace" value="1" />
-								<Button variant="ghost" size="sm" type="button" onclick={() => (confirmingReplace = null)}>
+								<Button
+									variant="ghost"
+									size="sm"
+									type="button"
+									onclick={() => (confirmingReplace = null)}
+								>
 									{t('common.cancel')}
 								</Button>
 								<Button variant="primary" size="sm">{t('immich.new.replace')}</Button>
@@ -242,7 +271,10 @@
 									variant="secondary"
 									size="sm"
 									type="button"
-									label={t('immich.new.thisIsThemLabel', { immichName: row.name, name: person.contact.displayName })}
+									label={t('immich.new.thisIsThemLabel', {
+										immichName: row.name,
+										name: person.contact.displayName
+									})}
 									onclick={() => (confirmingReplace = person.contact.id)}
 								>
 									{t('immich.new.thisIsThem')}
@@ -251,7 +283,10 @@
 								<Button
 									variant="secondary"
 									size="sm"
-									label={t('immich.new.thisIsThemLabel', { immichName: row.name, name: person.contact.displayName })}
+									label={t('immich.new.thisIsThemLabel', {
+										immichName: row.name,
+										name: person.contact.displayName
+									})}
 								>
 									{t('immich.new.thisIsThem')}
 								</Button>
@@ -263,8 +298,12 @@
 			{@render openInImmich()}
 			<FormError message={error} variant="inline" />
 			<div class="flex flex-wrap justify-end gap-1">
-				<Button variant="ghost" size="sm" type="button" onclick={() => open('closed')}>{t('common.cancel')}</Button>
-				<Button variant="primary" size="sm" type="button" onclick={() => open('create')}>{t('immich.new.createInstead')}</Button>
+				<Button variant="ghost" size="sm" type="button" onclick={() => open('closed')}
+					>{t('common.cancel')}</Button
+				>
+				<Button variant="primary" size="sm" type="button" onclick={() => open('create')}
+					>{t('immich.new.createInstead')}</Button
+				>
 			</div>
 		</div>
 	{:else if step === 'create'}
@@ -279,18 +318,39 @@
 			<label class="flex flex-col gap-1 text-sm text-fg-muted">
 				{t('contacts.new.firstName')}
 				<!-- svelte-ignore a11y_autofocus -- the form opened on the member's own tap, to be checked -->
-				<input name="firstName" bind:value={firstName} required autocomplete="off" autofocus class={fieldClass} />
+				<input
+					name="firstName"
+					bind:value={firstName}
+					required
+					autocomplete="off"
+					autofocus
+					class={fieldClass}
+				/>
 			</label>
 			<label class="flex flex-col gap-1 text-sm text-fg-muted">
 				{t('contacts.new.lastName')}
-				<input name="lastName" bind:value={lastName} autocomplete="off" placeholder={t('common.optional')} class={fieldClass} />
+				<input
+					name="lastName"
+					bind:value={lastName}
+					autocomplete="off"
+					placeholder={t('common.optional')}
+					class={fieldClass}
+				/>
 			</label>
 			<label class="flex flex-col gap-1 text-sm text-fg-muted sm:col-span-2">
 				{t('contacts.new.nickname')}
-				<input name="nickname" bind:value={nickname} autocomplete="off" placeholder={t('common.optional')} class={fieldClass} />
+				<input
+					name="nickname"
+					bind:value={nickname}
+					autocomplete="off"
+					placeholder={t('common.optional')}
+					class={fieldClass}
+				/>
 			</label>
 			{#if prefill.nickname && nickname === prefill.nickname}
-				<p class="text-xs text-fg-subtle sm:col-span-2">{t('immich.new.kinHint', { nickname: prefill.nickname })}</p>
+				<p class="text-xs text-fg-subtle sm:col-span-2">
+					{t('immich.new.kinHint', { nickname: prefill.nickname })}
+				</p>
 			{/if}
 			{#if askForSomethingToKnowThemBy}
 				<div class="sm:col-span-2">
@@ -304,22 +364,36 @@
 				</div>
 			{/if}
 			<label class="flex items-center gap-2 text-sm text-fg sm:col-span-2">
-				<input type="checkbox" name="usePhoto" value="1" bind:checked={usePhoto} class="size-4 accent-primary" />
+				<input
+					type="checkbox"
+					name="usePhoto"
+					value="1"
+					bind:checked={usePhoto}
+					class="size-4 accent-primary"
+				/>
 				{t('immich.new.usePhoto')}
 			</label>
 			<FormError message={error} variant="inline" />
 			<div class="flex flex-wrap items-center justify-end gap-1 sm:col-span-2">
 				{#if row.similar.length > 0}
-					<Button variant="ghost" size="sm" type="button" onclick={() => open('compare')}>{t('immich.new.back')}</Button>
+					<Button variant="ghost" size="sm" type="button" onclick={() => open('compare')}
+						>{t('immich.new.back')}</Button
+					>
 				{:else}
 					<span class="mr-auto flex flex-wrap items-center gap-x-4 gap-y-1">
-						<button type="button" class="text-sm text-link hover:underline" onclick={() => open('find')}>
+						<button
+							type="button"
+							class="text-sm text-link hover:underline"
+							onclick={() => open('find')}
+						>
 							{t('immich.new.findInStella')}
 						</button>
 						{@render openInImmich()}
 					</span>
 				{/if}
-				<Button variant="ghost" size="sm" type="button" onclick={() => open('closed')}>{t('common.cancel')}</Button>
+				<Button variant="ghost" size="sm" type="button" onclick={() => open('closed')}
+					>{t('common.cancel')}</Button
+				>
 				<Button variant="primary" size="sm">{t('immich.new.add')}</Button>
 			</div>
 		</form>
@@ -349,7 +423,9 @@
 			{/if}
 			<FormError message={error} variant="inline" />
 			<div class="flex flex-wrap justify-end gap-1">
-				<Button variant="ghost" size="sm" type="button" onclick={() => open('create')}>{t('common.cancel')}</Button>
+				<Button variant="ghost" size="sm" type="button" onclick={() => open('create')}
+					>{t('common.cancel')}</Button
+				>
 				<Button variant="primary" size="sm" disabled={pickedIds.length === 0}>
 					{confirmingReplace ? t('immich.new.replace') : t('immich.match.link')}
 				</Button>
@@ -359,7 +435,12 @@
 </li>
 
 {#snippet openInImmich()}
-	<a href={row.openUrl} target="_blank" rel="noopener noreferrer" class="flex w-fit items-center gap-1 text-sm text-link hover:underline">
+	<a
+		href={row.openUrl}
+		target="_blank"
+		rel="noopener noreferrer"
+		class="flex w-fit items-center gap-1 text-sm text-link hover:underline"
+	>
 		{t('immich.new.openInImmich')}<Icon name="openElsewhere" size={12} />
 	</a>
 {/snippet}

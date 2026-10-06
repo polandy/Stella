@@ -76,7 +76,11 @@ export const relationshipActions = {
 		if (command?.type !== 'relationship.add') {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
-		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale };
+		const author = {
+			userId: locals.user.id,
+			householdId: locals.user.householdId,
+			locale: locals.locale
+		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(outcome?.status === 'refused' ? 409 : 400, {
@@ -124,7 +128,11 @@ export const relationshipActions = {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
 
-		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale };
+		const author = {
+			userId: locals.user.id,
+			householdId: locals.user.householdId,
+			locale: locals.locale
+		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status === 'applied') return { relationshipIds: outcome.result.relationshipIds };
 		if (outcome?.status !== 'refused') {
@@ -133,7 +141,10 @@ export const relationshipActions = {
 		const t = translator(locals);
 		const refusals =
 			outcome.error instanceof RelationshipsRefusedError
-				? outcome.error.refusals.map((refusal) => ({ targetId: refusal.targetId, reason: refusal.reason(t) }))
+				? outcome.error.refusals.map((refusal) => ({
+						targetId: refusal.targetId,
+						reason: refusal.reason(t)
+					}))
 				: [];
 		return fail(409, { error: outcome.reason(t), refusals });
 	},
@@ -169,7 +180,8 @@ export const relationshipActions = {
 			sinceDate: form.get('sinceDate') || undefined,
 			status: form.get('status') || undefined
 		});
-		if (!parsed.success) return fail(400, { error: say(locals, 'errors.relationship.couldNotSave') });
+		if (!parsed.success)
+			return fail(400, { error: say(locals, 'errors.relationship.couldNotSave') });
 
 		// A choice the picker did not write names no type and no side, so it cannot be stored.
 		const choice = parsed.output.typeChoice
@@ -264,5 +276,5 @@ export const relationshipActions = {
 		const refusal = await restoreClaim(locals, viewer, await request.formData());
 		if (refusal) return fail(refusal.status, { error: refusal.message });
 		throw redirect(303, reviewPath(params.id));
-	},
+	}
 } satisfies Actions;

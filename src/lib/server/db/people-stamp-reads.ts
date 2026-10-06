@@ -22,7 +22,9 @@ import { circle, circleMembership, contact, relationship, relationshipType } fro
 const changesOf = (updatedAt: SQLWrapper) =>
 	sql<string>`count(*) || ':' || coalesce(max(${updatedAt}), '') || ':' || total(${updatedAt})`;
 
-export function createDrizzlePeopleStampReads(db: BunSQLiteDatabase<typeof schema>): PeopleStampReads {
+export function createDrizzlePeopleStampReads(
+	db: BunSQLiteDatabase<typeof schema>
+): PeopleStampReads {
 	return {
 		async markersVisibleTo(viewer: Viewer): Promise<string> {
 			// The people the shell lists. Setting an avatar does not stamp `updated_at`, so the
@@ -48,7 +50,9 @@ export function createDrizzlePeopleStampReads(db: BunSQLiteDatabase<typeof schem
 			// A household's own types can be relabelled, and the type table keeps no time.
 			const types = db
 				.select({
-					marker: sql<string | null>`group_concat(${relationshipType.id} || ':' || ${relationshipType.forwardLabel} || ':' || ${relationshipType.reverseLabel} || ':' || ${relationshipType.category} || ':' || ${relationshipType.sortOrder}, '|')`
+					marker: sql<
+						string | null
+					>`group_concat(${relationshipType.id} || ':' || ${relationshipType.forwardLabel} || ':' || ${relationshipType.reverseLabel} || ':' || ${relationshipType.category} || ':' || ${relationshipType.sortOrder}, '|')`
 				})
 				.from(relationshipType)
 				.where(eq(relationshipType.householdId, viewer.householdId));
@@ -56,7 +60,9 @@ export function createDrizzlePeopleStampReads(db: BunSQLiteDatabase<typeof schem
 			// A circle's name, dates, parent and archiving all reach the context line.
 			const circles = db
 				.select({
-					marker: sql<string | null>`group_concat(${circle.id} || ':' || ${circle.name} || ':' || coalesce(${circle.parentCircleId}, '') || ':' || coalesce(${circle.startDate}, '') || ':' || coalesce(${circle.endDate}, '') || ':' || coalesce(${circle.archivedAt}, '') || ':' || ${circle.updatedAt}, '|')`
+					marker: sql<
+						string | null
+					>`group_concat(${circle.id} || ':' || ${circle.name} || ':' || coalesce(${circle.parentCircleId}, '') || ':' || coalesce(${circle.startDate}, '') || ':' || coalesce(${circle.endDate}, '') || ':' || coalesce(${circle.archivedAt}, '') || ':' || ${circle.updatedAt}, '|')`
 				})
 				.from(circle)
 				.where(circleColumnsVisibleTo(viewer, circle));

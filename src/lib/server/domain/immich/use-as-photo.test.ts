@@ -4,7 +4,11 @@ import type { Clock } from '../../clock';
 import type { AvatarUpload, AvatarUploader } from '../media/avatars';
 import { fakeAssetId } from '../../immich/fake-gateway';
 import type { ImmichLink } from './links';
-import { createImmichMediaSigner, IMMICH_MEDIA_TTL_MS, type SignableImmichMedia } from './signed-media';
+import {
+	createImmichMediaSigner,
+	IMMICH_MEDIA_TTL_MS,
+	type SignableImmichMedia
+} from './signed-media';
 import { BERT_AND_CARL_ID, BERT_ID, CARL_ID, DORA_ID } from './test-library';
 import { useImmichPhoto, type UseImmichPhotoDeps } from './use-as-photo';
 
@@ -49,7 +53,8 @@ function setup() {
 			holdersOf: async () => new Map()
 		},
 		contacts: {
-			findByIdVisibleTo: async (_viewer, id) => (visible.has(id) ? { displayName: id, visibility: 'shared' } : null)
+			findByIdVisibleTo: async (_viewer, id) =>
+				visible.has(id) ? { displayName: id, visibility: 'shared' } : null
 		},
 		setAvatar: async (uploader, contactId, upload) => {
 			worn.push({ uploader, contactId, upload });
@@ -72,7 +77,11 @@ function setup() {
 describe('useImmichPhoto', () => {
 	it('stores the square as the person’s new photo, dated by when Immich says it was taken', async () => {
 		const { deps, worn, preview } = setup();
-		const outcome = await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token: await preview(), upload: square });
+		const outcome = await useImmichPhoto(deps, viewer, {
+			contactId: 'c-bert',
+			token: await preview(),
+			upload: square
+		});
 
 		expect(outcome).toEqual({ ok: true, photoId: 'photo-1' });
 		expect(worn).toEqual([
@@ -88,12 +97,16 @@ describe('useImmichPhoto', () => {
 		const { deps, worn, preview } = setup();
 		const together = { contactId: 'c-cleo', personId: CARL_ID };
 		const token = await preview({ assetId: fakeAssetId(BERT_AND_CARL_ID, 0), together });
-		expect(await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })).toEqual({
+		expect(
+			await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })
+		).toEqual({
 			ok: true,
 			photoId: 'photo-1'
 		});
 		// Not on the other person's page: the photo was listed for the page it was shown on.
-		expect(await useImmichPhoto(deps, viewer, { contactId: 'c-cleo', token, upload: square })).toEqual({
+		expect(
+			await useImmichPhoto(deps, viewer, { contactId: 'c-cleo', token, upload: square })
+		).toEqual({
 			ok: false,
 			refusal: 'invalid'
 		});
@@ -105,7 +118,9 @@ describe('useImmichPhoto', () => {
 		const together = { contactId: 'c-cleo', personId: CARL_ID };
 		const token = await gone.preview({ together });
 		gone.visible.delete('c-cleo');
-		expect(await useImmichPhoto(gone.deps, viewer, { contactId: 'c-bert', token, upload: square })).toEqual({
+		expect(
+			await useImmichPhoto(gone.deps, viewer, { contactId: 'c-bert', token, upload: square })
+		).toEqual({
 			ok: false,
 			refusal: 'notVisible'
 		});
@@ -113,7 +128,13 @@ describe('useImmichPhoto', () => {
 		const unlinked = setup();
 		const other = await unlinked.preview({ together });
 		unlinked.links.delete('c-cleo');
-		expect(await useImmichPhoto(unlinked.deps, viewer, { contactId: 'c-bert', token: other, upload: square })).toEqual({
+		expect(
+			await useImmichPhoto(unlinked.deps, viewer, {
+				contactId: 'c-bert',
+				token: other,
+				upload: square
+			})
+		).toEqual({
 			ok: false,
 			refusal: 'notLinked'
 		});
@@ -123,15 +144,25 @@ describe('useImmichPhoto', () => {
 	it('stores it undated when Immich did not say when it was taken', async () => {
 		const { deps, worn, preview } = setup();
 		const token = await preview({ takenAt: undefined });
-		expect(await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })).toMatchObject({ ok: true });
+		expect(
+			await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })
+		).toMatchObject({ ok: true });
 		expect(worn[0]?.upload.takenAt).toBeNull();
 	});
 
 	it('refuses anything but a preview token Stella signed for this very person', async () => {
 		const { deps, worn, preview } = setup();
 		const thumbnail = await preview({ size: 'thumbnail' });
-		const faceOnCleosPage = await deps.signer.sign({ kind: 'face', contactId: 'c-bert', personId: BERT_ID });
-		const newcomer = await deps.signer.sign({ kind: 'newcomer', householdId: 'h1', personId: BERT_ID });
+		const faceOnCleosPage = await deps.signer.sign({
+			kind: 'face',
+			contactId: 'c-bert',
+			personId: BERT_ID
+		});
+		const newcomer = await deps.signer.sign({
+			kind: 'newcomer',
+			householdId: 'h1',
+			personId: BERT_ID
+		});
 		const forBertOnCarlsPage = await preview();
 		for (const [contactId, token] of [
 			['c-bert', thumbnail],
@@ -152,7 +183,9 @@ describe('useImmichPhoto', () => {
 	it('takes the face Immich shows of them, undated, for someone added from *New from Immich*', async () => {
 		const { deps, worn } = setup();
 		const token = await deps.signer.sign({ kind: 'face', contactId: 'c-bert', personId: BERT_ID });
-		expect(await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })).toEqual({
+		expect(
+			await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })
+		).toEqual({
 			ok: true,
 			photoId: 'photo-1'
 		});
@@ -162,7 +195,9 @@ describe('useImmichPhoto', () => {
 	it('refuses a face they are not linked to, as the matching list signs them for proposals', async () => {
 		const { deps, worn } = setup();
 		const token = await deps.signer.sign({ kind: 'face', contactId: 'c-bert', personId: CARL_ID });
-		expect(await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })).toEqual({
+		expect(
+			await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })
+		).toEqual({
 			ok: false,
 			refusal: 'notLinked'
 		});
@@ -173,7 +208,9 @@ describe('useImmichPhoto', () => {
 		const { deps, worn, preview, advance } = setup();
 		const token = await preview();
 		advance(IMMICH_MEDIA_TTL_MS);
-		expect(await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })).toEqual({
+		expect(
+			await useImmichPhoto(deps, viewer, { contactId: 'c-bert', token, upload: square })
+		).toEqual({
 			ok: false,
 			refusal: 'expired'
 		});
@@ -183,7 +220,9 @@ describe('useImmichPhoto', () => {
 	it('refuses a person the viewer cannot see, whatever the token says', async () => {
 		const { deps, worn, preview } = setup();
 		const token = await preview({ contactId: 'c-dora', personId: DORA_ID });
-		expect(await useImmichPhoto(deps, viewer, { contactId: 'c-dora', token, upload: square })).toEqual({
+		expect(
+			await useImmichPhoto(deps, viewer, { contactId: 'c-dora', token, upload: square })
+		).toEqual({
 			ok: false,
 			refusal: 'notVisible'
 		});
@@ -194,15 +233,28 @@ describe('useImmichPhoto', () => {
 		const unlinked = setup();
 		const token = await unlinked.preview();
 		unlinked.links.delete('c-bert');
-		expect(await useImmichPhoto(unlinked.deps, viewer, { contactId: 'c-bert', token, upload: square })).toEqual({
+		expect(
+			await useImmichPhoto(unlinked.deps, viewer, { contactId: 'c-bert', token, upload: square })
+		).toEqual({
 			ok: false,
 			refusal: 'notLinked'
 		});
 
 		const relinked = setup();
 		const old = await relinked.preview();
-		relinked.links.set('c-bert', { contactId: 'c-bert', immichPersonId: CARL_ID, linkedBy: 'u-anna', linkedAt: NOW });
-		expect(await useImmichPhoto(relinked.deps, viewer, { contactId: 'c-bert', token: old, upload: square })).toEqual({
+		relinked.links.set('c-bert', {
+			contactId: 'c-bert',
+			immichPersonId: CARL_ID,
+			linkedBy: 'u-anna',
+			linkedAt: NOW
+		});
+		expect(
+			await useImmichPhoto(relinked.deps, viewer, {
+				contactId: 'c-bert',
+				token: old,
+				upload: square
+			})
+		).toEqual({
 			ok: false,
 			refusal: 'notLinked'
 		});

@@ -3,7 +3,13 @@ import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Visibility } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import { sniffImageMime, storedTakenAt, type ImageMime, type MediaStore, type PhotoRepository } from './avatars';
+import {
+	sniffImageMime,
+	storedTakenAt,
+	type ImageMime,
+	type MediaStore,
+	type PhotoRepository
+} from './avatars';
 
 /*
  * Journal photo domain (docs/02 §2.20). Like avatars (§2.14), images are downscaled and
@@ -39,7 +45,10 @@ export interface ImageUpload {
 }
 
 /** The upload's capture date as stored, or null; throws InvalidImageError when it cannot be real. */
-export function validateTakenAt(upload: Pick<ImageUpload, 'takenAt'>, nowMs: number): string | null {
+export function validateTakenAt(
+	upload: Pick<ImageUpload, 'takenAt'>,
+	nowMs: number
+): string | null {
 	return storedTakenAt(upload.takenAt, nowMs, (message) => new InvalidImageError(message));
 }
 
@@ -47,15 +56,21 @@ export function validateTakenAt(upload: Pick<ImageUpload, 'takenAt'>, nowMs: num
  * Validate a journal image upload and return its true (sniffed) mime; throws InvalidImageError.
  * A circle photo's full picture is larger and passes its own cap (`../circles/circle-photos`).
  */
-export function validateImageUpload(upload: ImageUpload, imageMaxBytes = JOURNAL_IMAGE_MAX_BYTES): ImageMime {
+export function validateImageUpload(
+	upload: ImageUpload,
+	imageMaxBytes = JOURNAL_IMAGE_MAX_BYTES
+): ImageMime {
 	if (upload.image.byteLength === 0) throw new InvalidImageError(phrase('errors.image.empty'));
-	if (upload.image.byteLength > imageMaxBytes) throw new InvalidImageError(phrase('errors.image.tooLarge'));
+	if (upload.image.byteLength > imageMaxBytes)
+		throw new InvalidImageError(phrase('errors.image.tooLarge'));
 	if (upload.thumb.byteLength === 0) throw new InvalidImageError(phrase('errors.image.thumbEmpty'));
-	if (upload.thumb.byteLength > JOURNAL_THUMB_MAX_BYTES) throw new InvalidImageError(phrase('errors.image.thumbTooLarge'));
+	if (upload.thumb.byteLength > JOURNAL_THUMB_MAX_BYTES)
+		throw new InvalidImageError(phrase('errors.image.thumbTooLarge'));
 
 	const mime = sniffImageMime(upload.image);
 	if (!mime) throw new InvalidImageError(phrase('errors.image.unsupportedFormat'));
-	if (sniffImageMime(upload.thumb) !== mime) throw new InvalidImageError(phrase('errors.image.formatMismatch'));
+	if (sniffImageMime(upload.thumb) !== mime)
+		throw new InvalidImageError(phrase('errors.image.formatMismatch'));
 	if (
 		!Number.isInteger(upload.width) ||
 		!Number.isInteger(upload.height) ||

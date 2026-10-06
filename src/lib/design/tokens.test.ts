@@ -79,7 +79,9 @@ describe('accent styles', () => {
 	});
 
 	it('fills an SVG initials disc with a tint of its category over the card, like an avatar', () => {
-		expect(categoryDiscFill('family')).toBe('color-mix(in srgb, var(--cat-family) 22%, var(--card))');
+		expect(categoryDiscFill('family')).toBe(
+			'color-mix(in srgb, var(--cat-family) 22%, var(--card))'
+		);
 	});
 
 	it('paints a dot in the flat accent, which carries no text', () => {

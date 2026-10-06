@@ -2,7 +2,11 @@ import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '../../../i18n/translate';
 import type { Viewer } from '../../access/visibility';
 import type { ContactSummary } from '../contacts/contacts';
-import type { ContextMembershipRow, ContextTieRow, PersonContextReads } from '../contacts/person-context';
+import type {
+	ContextMembershipRow,
+	ContextTieRow,
+	PersonContextReads
+} from '../contacts/person-context';
 import { withNamesakeContext, type NamesakeContextDeps } from './namesake-context';
 import { AmbiguousMentionError, resolveForAudience } from './resolve-for-audience';
 
@@ -90,7 +94,9 @@ function fakeDeps(memberships: ContextMembershipRow[] = [membership('Kirchenchor
 
 async function refusalOf(deps: NamesakeContextDeps, body: string): Promise<AmbiguousMentionError> {
 	try {
-		await withNamesakeContext(deps, viewer, async () => resolveForAudience(household, 'shared', body));
+		await withNamesakeContext(deps, viewer, async () =>
+			resolveForAudience(household, 'shared', body)
+		);
 	} catch (err) {
 		if (err instanceof AmbiguousMentionError) return err;
 		throw err;
@@ -117,10 +123,12 @@ describe('withNamesakeContext', () => {
 		expect(selfAsked).toEqual([viewer.id]);
 	});
 
-	it('leaves out a circle someone left before the author\'s today', async () => {
+	it("leaves out a circle someone left before the author's today", async () => {
 		const { deps } = fakeDeps([membership('Kirchenchor', '2026-09-28')]);
 		const refusal = await refusalOf(deps, 'with @Thomas');
-		expect(refusal.phrase(createTranslator('en'))).toContain('Thomas (Your sibling), Thomas (Nothing yet to tell them apart)');
+		expect(refusal.phrase(createTranslator('en'))).toContain(
+			'Thomas (Your sibling), Thomas (Nothing yet to tell them apart)'
+		);
 	});
 
 	it('reads nothing for a text it lets through', async () => {

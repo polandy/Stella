@@ -18,7 +18,9 @@ describe('mapRole', () => {
 
 describe('isAuthorized', () => {
 	it('allows any authenticated user when no gates are configured', () => {
-		expect(isAuthorized({ groups: [], email: 'a@x.test' }, { allowedGroups: [], allowedEmails: [] })).toBe(true);
+		expect(
+			isAuthorized({ groups: [], email: 'a@x.test' }, { allowedGroups: [], allowedEmails: [] })
+		).toBe(true);
 	});
 
 	it('enforces the allowed-groups gate', () => {
@@ -36,7 +38,11 @@ describe('isAuthorized', () => {
 
 	it('requires both gates when both are configured', () => {
 		const policy = { allowedGroups: ['stella-users'], allowedEmails: ['andy@example.test'] };
-		expect(isAuthorized({ groups: ['stella-users'], email: 'andy@example.test' }, policy)).toBe(true);
-		expect(isAuthorized({ groups: ['stella-users'], email: 'other@example.test' }, policy)).toBe(false);
+		expect(isAuthorized({ groups: ['stella-users'], email: 'andy@example.test' }, policy)).toBe(
+			true
+		);
+		expect(isAuthorized({ groups: ['stella-users'], email: 'other@example.test' }, policy)).toBe(
+			false
+		);
 	});
 });

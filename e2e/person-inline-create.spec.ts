@@ -108,7 +108,11 @@ test('names a stranger from the relationship picker and links them without leavi
 	await expect(page.getByTestId('relationship-list')).toContainText('Malia Buchser');
 
 	// And she is a real person with her own page, reachable from the link just written.
-	await page.locator('#section-relationships').getByRole('link', { name: 'Malia Buchser' }).first().click();
+	await page
+		.locator('#section-relationships')
+		.getByRole('link', { name: 'Malia Buchser' })
+		.first()
+		.click();
 	await expect(page.getByRole('heading', { name: 'Malia Buchser' })).toBeVisible();
 });
 

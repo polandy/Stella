@@ -26,7 +26,11 @@ describe('recentDays', () => {
 		const names = recentDays(en, TODAY).map((d) => d.name);
 		expect(names.slice(0, 3)).toEqual(['Today', 'Yesterday', 'Sunday']);
 		expect(names[6]).toBe('Wednesday');
-		expect(recentDays(de, TODAY).map((d) => d.name).slice(0, 3)).toEqual(['Heute', 'Gestern', 'Sonntag']);
+		expect(
+			recentDays(de, TODAY)
+				.map((d) => d.name)
+				.slice(0, 3)
+		).toEqual(['Heute', 'Gestern', 'Sonntag']);
 	});
 
 	test('gives each day its date beside the name', () => {
@@ -34,12 +38,11 @@ describe('recentDays', () => {
 	});
 
 	test('steps back across a month and a year boundary', () => {
-		expect(recentDays(en, '2027-01-02').map((d) => d.day).slice(0, 4)).toEqual([
-			'2027-01-02',
-			'2027-01-01',
-			'2026-12-31',
-			'2026-12-30'
-		]);
+		expect(
+			recentDays(en, '2027-01-02')
+				.map((d) => d.day)
+				.slice(0, 4)
+		).toEqual(['2027-01-02', '2027-01-01', '2026-12-31', '2026-12-30']);
 	});
 });
 

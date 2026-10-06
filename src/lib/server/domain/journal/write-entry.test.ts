@@ -41,7 +41,8 @@ function fakes(people = [person('julia'), person('marco'), person('sam', 'privat
 	let n = 0;
 	const entries: JournalEntry[] = [];
 	const mentions = new Map<string, string[]>();
-	const visible = (v: Viewer) => people.filter((p) => p.visibility === 'shared' || p.createdBy === v.id);
+	const visible = (v: Viewer) =>
+		people.filter((p) => p.visibility === 'shared' || p.createdBy === v.id);
 	const deps: WriteJournalEntryDeps = {
 		contacts: {
 			async findByIdVisibleTo(v, id) {

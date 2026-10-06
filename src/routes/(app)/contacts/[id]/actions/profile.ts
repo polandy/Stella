@@ -56,7 +56,9 @@ export const profileActions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const form = await request.formData();
-		const parsed = v.safeParse(EditProfileSchema, { description: form.get('description') || undefined });
+		const parsed = v.safeParse(EditProfileSchema, {
+			description: form.get('description') || undefined
+		});
 		if (!parsed.success) throw error(400, say(locals, 'errors.contact.notFound'));
 
 		const saved = await editProfile(getContactDeps(), viewer, params.id, {
@@ -81,10 +83,17 @@ export const profileActions = {
 			formerName: form.get('formerName') ?? '',
 			keepFormerName: form.get('keepFormerName') === 'on'
 		});
-		if (!parsed.success) return fail(400, { namePartsError: say(locals, 'errors.contact.namePartsInvalid') });
+		if (!parsed.success)
+			return fail(400, { namePartsError: say(locals, 'errors.contact.namePartsInvalid') });
 
 		try {
-			const saved = await editNameParts(getNameDeps(), viewer, params.id, parsed.output, locals.locale);
+			const saved = await editNameParts(
+				getNameDeps(),
+				viewer,
+				params.id,
+				parsed.output,
+				locals.locale
+			);
 			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
 		} catch (err) {
 			if (err instanceof EmptyContactNameError)
@@ -100,13 +109,15 @@ export const profileActions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 
 		const parsed = v.safeParse(GenderSchema, (await request.formData()).get('gender') ?? '');
-		if (!parsed.success) return fail(400, { genderError: say(locals, 'errors.contact.invalidGender') });
+		if (!parsed.success)
+			return fail(400, { genderError: say(locals, 'errors.contact.invalidGender') });
 
 		try {
 			const saved = await setGender(getContactDeps(), viewer, params.id, parsed.output || null);
 			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
 		} catch (err) {
-			if (err instanceof InvalidGenderError) return fail(400, { genderError: err.phrase(translator(locals)) });
+			if (err instanceof InvalidGenderError)
+				return fail(400, { genderError: err.phrase(translator(locals)) });
 			throw err;
 		}
 
@@ -125,7 +136,10 @@ export const profileActions = {
 			company: form.get('company') ?? ''
 		});
 		if (!parsed.success)
-			return fail(400, { jobError: say(locals, 'errors.form.checkAndRetry'), jobErrorAt: 'profile' as const });
+			return fail(400, {
+				jobError: say(locals, 'errors.form.checkAndRetry'),
+				jobErrorAt: 'profile' as const
+			});
 		const { place, jobTitle, company } = parsed.output;
 
 		try {
@@ -170,10 +184,11 @@ export const profileActions = {
 				upload
 			);
 		} catch (err) {
-			if (err instanceof InvalidAvatarError) return fail(400, { avatarError: err.phrase(translator(locals)) });
+			if (err instanceof InvalidAvatarError)
+				return fail(400, { avatarError: err.phrase(translator(locals)) });
 			return fail(400, { avatarError: say(locals, 'errors.image.couldNotSave') });
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);
-	},
+	}
 } satisfies Actions;

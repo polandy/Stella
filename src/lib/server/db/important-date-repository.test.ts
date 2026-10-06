@@ -160,8 +160,9 @@ describe('createDrizzleImportantDateRepository', () => {
 	it('drops both the birthday and the entered dates of an archived contact', async () => {
 		// Two queries feed this list, and archiving has to take the contact out of both.
 		await repo.insert(date({ id: 'd1', kind: 'anniversary', date: '2009-06-13' }));
-		expect((await repo.listSourcesVisibleTo(viewerU1)).filter((s) => s.contactId === 'c-shared'))
-			.toHaveLength(2);
+		expect(
+			(await repo.listSourcesVisibleTo(viewerU1)).filter((s) => s.contactId === 'c-shared')
+		).toHaveLength(2);
 
 		db.update(schema.contact)
 			.set({ archivedAt: 1_700_000_000_000 })

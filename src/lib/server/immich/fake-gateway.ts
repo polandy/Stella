@@ -103,7 +103,10 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 			answer('listPeople', () => {
 				const shown = library.people.filter((p) => !p.hidden);
 				const from = (page - 1) * size;
-				return { people: shown.slice(from, from + size).map(asPerson), hasNextPage: from + size < shown.length };
+				return {
+					people: shown.slice(from, from + size).map(asPerson),
+					hasNextPage: from + size < shown.length
+				};
 			}),
 		searchPeople: (name) =>
 			answer('searchPeople', () => {
@@ -113,44 +116,70 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 					.map(asPerson);
 			}),
 		person: (id) => answer('person', () => found(id), true),
-		personStatistics: (id) => answer('personStatistics', () => {
-			const person = found(id);
-			return person && { assets: person.assets };
-		}, true),
+		personStatistics: (id) =>
+			answer(
+				'personStatistics',
+				() => {
+					const person = found(id);
+					return person && { assets: person.assets };
+				},
+				true
+			),
 		personThumbnail: (id) =>
-			answer('personThumbnail', () => {
-				const person = found(id);
-				return person && { bytes: solidPng(FACE_SIZE, person.color), contentType: 'image/png' };
-			}, true),
+			answer(
+				'personThumbnail',
+				() => {
+					const person = found(id);
+					return person && { bytes: solidPng(FACE_SIZE, person.color), contentType: 'image/png' };
+				},
+				true
+			),
 		latestAssets: ({ personIds, match }, limit, cursor) =>
-			answer('latestAssets', () => {
-				const people = personIds.map(found);
-				if (people.length === 0 || people.some((person) => person === null)) return null;
-				// Several people, all in each photo: the photos they share. Otherwise their own.
-				const sources: { id: string; assets: number }[] =
-					match === 'all' && personIds.length > 1
-						? (library.together ?? []).filter((group) => personIds.every((id) => group.personIds.includes(id)))
-						: (people as FakeImmichPerson[]);
-				// Newest first: the n-th photo of every source was taken on the same day.
-				const listed = sources
-					.flatMap((source) => Array.from({ length: source.assets }, (_, index) => ({ source: source.id, index })))
-					.sort((a, b) => a.index - b.index);
-				const from = cursor === null ? 0 : Number.parseInt(cursor, 10) || 0;
-				const to = Math.min(from + limit, listed.length);
-				const assets: ImmichAsset[] = listed.slice(from, to).map(({ source, index }) => {
-					const day = new Date(NEWEST_PHOTO_DAY - index * DAY_MS).toISOString().slice(0, 10);
-					// An afternoon on the camera's clock, as Immich's `localDateTime` gives it.
-					return { id: fakeAssetId(source, index), takenAt: `${day}T15:30:00` };
-				});
-				return { assets, nextCursor: to < listed.length ? String(to) : null };
-			}, true),
+			answer(
+				'latestAssets',
+				() => {
+					const people = personIds.map(found);
+					if (people.length === 0 || people.some((person) => person === null)) return null;
+					// Several people, all in each photo: the photos they share. Otherwise their own.
+					const sources: { id: string; assets: number }[] =
+						match === 'all' && personIds.length > 1
+							? (library.together ?? []).filter((group) =>
+									personIds.every((id) => group.personIds.includes(id))
+								)
+							: (people as FakeImmichPerson[]);
+					// Newest first: the n-th photo of every source was taken on the same day.
+					const listed = sources
+						.flatMap((source) =>
+							Array.from({ length: source.assets }, (_, index) => ({ source: source.id, index }))
+						)
+						.sort((a, b) => a.index - b.index);
+					const from = cursor === null ? 0 : Number.parseInt(cursor, 10) || 0;
+					const to = Math.min(from + limit, listed.length);
+					const assets: ImmichAsset[] = listed.slice(from, to).map(({ source, index }) => {
+						const day = new Date(NEWEST_PHOTO_DAY - index * DAY_MS).toISOString().slice(0, 10);
+						// An afternoon on the camera's clock, as Immich's `localDateTime` gives it.
+						return { id: fakeAssetId(source, index), takenAt: `${day}T15:30:00` };
+					});
+					return { assets, nextCursor: to < listed.length ? String(to) : null };
+				},
+				true
+			),
 		assetImage: (assetId, size) =>
-			answer('assetImage', () => {
-				const index = Number.parseInt(assetId.slice(0, 8), 16);
-				const owner = [...library.people, ...(library.together ?? [])].find((p) => p.id.slice(8) === assetId.slice(8));
-				if (!owner || !(index < owner.assets)) return null;
-				return { bytes: solidPng(PHOTO_SIZE[size], shade(owner.color, index)), contentType: 'image/png' };
-			}, true)
+			answer(
+				'assetImage',
+				() => {
+					const index = Number.parseInt(assetId.slice(0, 8), 16);
+					const owner = [...library.people, ...(library.together ?? [])].find(
+						(p) => p.id.slice(8) === assetId.slice(8)
+					);
+					if (!owner || !(index < owner.assets)) return null;
+					return {
+						bytes: solidPng(PHOTO_SIZE[size], shade(owner.color, index)),
+						contentType: 'image/png'
+					};
+				},
+				true
+			)
 	};
 
 	function found(id: string): FakeImmichPerson | null {

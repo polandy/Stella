@@ -94,7 +94,7 @@
 	<ol class="flex flex-col" data-testid="story-timeline">
 		{#each days as group (group.day)}
 			<li>
-				<div class="flex items-center gap-3 pb-2 pt-5 first:pt-0">
+				<div class="flex items-center gap-3 pt-5 pb-2 first:pt-0">
 					<h3 class="text-xs font-semibold text-fg-subtle">{dayLabel(i18n, group.day)}</h3>
 					<span class="h-px flex-1 bg-border-subtle"></span>
 				</div>
@@ -102,16 +102,19 @@
 				<!-- One rail down the day, a dot per thing that happened on it. -->
 				<ol class="relative flex flex-col gap-4 border-l border-border-subtle pb-1 pl-4">
 					{#each group.items as item (item.kind + item.id)}
-						{@const kind = item.kind === 'interaction' ? KIND_PRESENTATION[item.interactionKind] : null}
+						{@const kind =
+							item.kind === 'interaction' ? KIND_PRESENTATION[item.interactionKind] : null}
 						<li data-story-item class="group/item relative">
 							<span
-								class="absolute -left-[1.3125rem] top-1.5 size-2.5 rounded-full ring-4 ring-card"
+								class="absolute top-1.5 -left-[1.3125rem] size-2.5 rounded-full ring-4 ring-card"
 								style="background:{kind ? kind.accent : 'var(--primary)'}"
 							></span>
 							<div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
 								{#if kind}
 									<span class="inline-flex items-center gap-1.5 font-semibold text-fg">
-										<span style="color:{kind.accent}"><Icon name={kind.icon} size={13} /></span>{t(kind.label)}
+										<span style="color:{kind.accent}"><Icon name={kind.icon} size={13} /></span>{t(
+											kind.label
+										)}
 									</span>
 								{:else}
 									<span class="inline-flex items-center gap-1.5 font-semibold text-primary">
@@ -165,7 +168,10 @@
 											>
 												<img
 													src="/media/{photoId}?thumb"
-													alt={t('components.photo.open', { n: index + 1, count: item.photos.length })}
+													alt={t('components.photo.open', {
+														n: index + 1,
+														count: item.photos.length
+													})}
 													loading="lazy"
 													class="size-20 object-cover"
 												/>
@@ -176,14 +182,14 @@
 							{:else}
 								{#if item.title}<p class="mt-0.5 font-medium text-fg">{item.title}</p>{/if}
 								{#if item.description}
-									<p class="mt-1 whitespace-pre-line text-sm text-fg-muted">{item.description}</p>
+									<p class="mt-1 text-sm whitespace-pre-line text-fg-muted">{item.description}</p>
 								{/if}
 								{#if item.participants.length}
 									<div class="mt-2 flex flex-wrap gap-1.5">
 										{#each item.participants as person (person.contactId)}
 											<a
 												href="/contacts/{person.contactId}"
-												class="inline-flex items-center gap-1.5 rounded-full bg-bg-sunken py-0.5 pl-1 pr-2.5 text-xs text-fg-muted transition-colors hover:text-fg"
+												class="inline-flex items-center gap-1.5 rounded-full bg-bg-sunken py-0.5 pr-2.5 pl-1 text-xs text-fg-muted transition-colors hover:text-fg"
 											>
 												<Avatar id={person.contactId} name={person.displayName} size={18} />
 												{person.displayName}

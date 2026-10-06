@@ -78,8 +78,7 @@ export const archive: ArchiveMessages = {
 		`„${p.name}“ lag in einem Kreis, den das Archiv nicht enthält; er wird für sich allein wiederhergestellt.`,
 	'archive.warning.circleMemberMissing': (p) =>
 		`Ein Mitglied von „${p.name}“ ist nicht im Archiv und wurde ausgelassen.`,
-	'archive.warning.relationshipTypeWithoutName':
-		'Eine Beziehungsart ohne Namen wurde ausgelassen.',
+	'archive.warning.relationshipTypeWithoutName': 'Eine Beziehungsart ohne Namen wurde ausgelassen.',
 	'archive.warning.relationshipMissingEnd':
 		'Eine Beziehung, der ein Ende fehlt, wurde ausgelassen.',
 	'archive.warning.relationshipsMissingPeople':
@@ -95,7 +94,8 @@ export const archive: ArchiveMessages = {
 		`Dieses Archiv enthält einen unbrauchbaren Dateinamen: „${p.name}“.`,
 	'archive.error.noDocument': (p) =>
 		`Dieses Archiv enthält kein ${p.document} und ist damit kein Stella-Archiv.`,
-	'archive.restoredSummary': (p) => `${p.people} aus einem Archiv von ${p.household} wiederhergestellt`,
+	'archive.restoredSummary': (p) =>
+		`${p.people} aus einem Archiv von ${p.household} wiederhergestellt`,
 	'archive.peopleCount': (p) => (p.count === 1 ? '1 Person' : `${p.count} Menschen`),
 
 	'archive.error.notAnArchive': 'Diese Datei enthält kein Stella-Archiv.',

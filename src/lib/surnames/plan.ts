@@ -26,7 +26,9 @@ export function planLastName<P extends Chosen>(
 	replace: Readonly<Record<string, boolean>>
 ): LastNamePlan<P> {
 	const blank = (p: P) => !(p.lastName ?? '').trim();
-	const different = chosen.filter((p) => !blank(p) && foldSurname(p.lastName!) !== foldSurname(lastName));
+	const different = chosen.filter(
+		(p) => !blank(p) && foldSurname(p.lastName!) !== foldSurname(lastName)
+	);
 	const replaced = different.filter((p) => replace[p.id]);
 	return {
 		written: [...chosen.filter(blank), ...replaced],

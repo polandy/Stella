@@ -61,7 +61,8 @@ async function groupingOnCanvas(page: Page) {
 							(e.data('source') === x && e.data('target') === y) ||
 							(e.data('source') === y && e.data('target') === x)
 					);
-			const shown = (edges: Collection) => edges.filter((e) => e.style('display') !== 'none').length;
+			const shown = (edges: Collection) =>
+				edges.filter((e) => e.style('display') !== 'none').length;
 			return {
 				frame: !cy.$id(group).empty(),
 				parents: { a: parentOf(a), b: parentOf(b), alone: parentOf(alone) },
@@ -120,16 +121,18 @@ test('stands a role’s people in one group, on one line to the circle, their li
 
 	await toggle(page, 'Group by role');
 
-	await expect.poll(() => groupingOnCanvas(page)).toEqual({
-		frame: true,
-		// A role held once — Beat, the one Leiter — stays an ordinary node.
-		parents: { a: AKTIVE, b: AKTIVE, alone: null },
-		circleToGroup: 1,
-		circleToMembers: 0,
-		inner: 1,
-		// The link out of the group still runs to Sandra, not to the frame.
-		outside: before.outside
-	});
+	await expect
+		.poll(() => groupingOnCanvas(page))
+		.toEqual({
+			frame: true,
+			// A role held once — Beat, the one Leiter — stays an ordinary node.
+			parents: { a: AKTIVE, b: AKTIVE, alone: null },
+			circleToGroup: 1,
+			circleToMembers: 0,
+			inner: 1,
+			// The link out of the group still runs to Sandra, not to the frame.
+			outside: before.outside
+		});
 });
 
 test('tucks the links within a group away when that switch is off', async ({ page }) => {
@@ -163,9 +166,11 @@ async function underFrames(page: Page): Promise<string[]> {
 		};
 		let el: HTMLElement | null = document.querySelector('canvas');
 		while (el && !('_cyreg' in el)) el = el.parentElement;
-		const cy = (el as unknown as { _cyreg: { cy: { nodes(): { toArray(): Node[] } } } })._cyreg
-			.cy;
-		const nodes = cy.nodes().toArray().filter((n) => n.visible());
+		const cy = (el as unknown as { _cyreg: { cy: { nodes(): { toArray(): Node[] } } } })._cyreg.cy;
+		const nodes = cy
+			.nodes()
+			.toArray()
+			.filter((n) => n.visible());
 		const box = (n: Node) => n.boundingBox({ includeLabels: true, includeOverlays: false });
 		const meet = (a: Box, b: Box) => a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2;
 		return nodes
@@ -207,11 +212,13 @@ test('a tapped group lists its people and can be shown individually', async ({ p
 
 	await peek.getByRole('button', { name: 'Show individually' }).click();
 
-	await expect.poll(() => groupingOnCanvas(page)).toMatchObject({
-		frame: false,
-		parents: { a: null, b: null },
-		circleToMembers: 2
-	});
+	await expect
+		.poll(() => groupingOnCanvas(page))
+		.toMatchObject({
+			frame: false,
+			parents: { a: null, b: null },
+			circleToMembers: 2
+		});
 	await expect(peek).toHaveCount(0);
 });
 
@@ -223,19 +230,23 @@ test('leaves the family tree ungrouped, and groups again on leaving it', async (
 	await arrangeBy(page, 'Tree');
 	await settled(page);
 
-	await expect.poll(() => groupingOnCanvas(page)).toMatchObject({
-		frame: false,
-		parents: { a: null, b: null },
-		circleToMembers: 2
-	});
+	await expect
+		.poll(() => groupingOnCanvas(page))
+		.toMatchObject({
+			frame: false,
+			parents: { a: null, b: null },
+			circleToMembers: 2
+		});
 
 	await arrangeBy(page, 'By circle');
 	await settled(page);
 
-	await expect.poll(async () => (await groupingOnCanvas(page)).parents).toMatchObject({
-		a: AKTIVE,
-		b: AKTIVE
-	});
+	await expect
+		.poll(async () => (await groupingOnCanvas(page)).parents)
+		.toMatchObject({
+			a: AKTIVE,
+			b: AKTIVE
+		});
 });
 
 test('remembers the switch on this device', async ({ page }) => {

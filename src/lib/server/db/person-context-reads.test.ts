@@ -21,17 +21,36 @@ const mia: Viewer = { id: MIA, householdId: H };
 let db: BunSQLiteDatabase<typeof schema>;
 
 function person(id: string, visibility: 'shared' | 'private' = 'shared', createdBy = ANDY) {
-	db.insert(schema.contact).values({ id, householdId: H, createdBy, visibility, displayName: id }).run();
+	db.insert(schema.contact)
+		.values({ id, householdId: H, createdBy, visibility, displayName: id })
+		.run();
 }
 
-function link(id: string, fromContactId: string, toContactId: string, typeId: string, status = 'current') {
+function link(
+	id: string,
+	fromContactId: string,
+	toContactId: string,
+	typeId: string,
+	status = 'current'
+) {
 	db.insert(schema.relationship)
-		.values({ id, householdId: H, fromContactId, toContactId, typeId, status, createdBy: ANDY, createdAt: 1 })
+		.values({
+			id,
+			householdId: H,
+			fromContactId,
+			toContactId,
+			typeId,
+			status,
+			createdBy: ANDY,
+			createdAt: 1
+		})
 		.run();
 }
 
 function circle(id: string, extra: Partial<typeof schema.circle.$inferInsert> = {}) {
-	db.insert(schema.circle).values({ id, householdId: H, createdBy: ANDY, name: id, ...extra }).run();
+	db.insert(schema.circle)
+		.values({ id, householdId: H, createdBy: ANDY, name: id, ...extra })
+		.run();
 }
 
 function member(circleId: string, contactId: string, role: string | null = null) {
@@ -66,7 +85,7 @@ beforeEach(() => {
 });
 
 describe('listTiesOfVisibleTo', () => {
-	it('reads each link from the listed person\'s end, former ones included for ranking', async () => {
+	it("reads each link from the listed person's end, former ones included for ranking", async () => {
 		person('thomas');
 		person('sabine');
 		person('lea');
@@ -90,11 +109,12 @@ describe('listTiesOfVisibleTo', () => {
 		link('r2', 'sabine', 'thomas', 'type-parent');
 
 		const reads = createDrizzlePersonContextReads(db);
-		expect((await reads.listTiesOfVisibleTo(mia, ['thomas'])).map((t) => t.otherName)).toEqual(['sabine']);
-		expect((await reads.listTiesOfVisibleTo(andy, ['thomas'])).map((t) => t.otherName).sort()).toEqual([
-			'nora',
+		expect((await reads.listTiesOfVisibleTo(mia, ['thomas'])).map((t) => t.otherName)).toEqual([
 			'sabine'
 		]);
+		expect(
+			(await reads.listTiesOfVisibleTo(andy, ['thomas'])).map((t) => t.otherName).sort()
+		).toEqual(['nora', 'sabine']);
 	});
 
 	it('reads nothing for nobody', async () => {
@@ -124,9 +144,8 @@ describe('listMembershipsOfVisibleTo', () => {
 				endDate: null
 			}
 		]);
-		expect((await reads.listMembershipsOfVisibleTo(mia, ['thomas'])).map((m) => m.name).sort()).toEqual([
-			'Class 9a',
-			'Turnverein'
-		]);
+		expect(
+			(await reads.listMembershipsOfVisibleTo(mia, ['thomas'])).map((m) => m.name).sort()
+		).toEqual(['Class 9a', 'Turnverein']);
 	});
 });

@@ -54,7 +54,8 @@
 	 */
 	const keptFields = $derived(
 		outbox.mine.filter(
-			(item): item is KeptOf<'field.add'> => isKept(item, 'field.add') && item.command.payload.contactId === c.id
+			(item): item is KeptOf<'field.add'> =>
+				isKept(item, 'field.add') && item.command.payload.contactId === c.id
 		)
 	);
 	const fieldForm = $derived(
@@ -67,7 +68,12 @@
 					return {
 						id,
 						type: 'field.add',
-						payload: { contactId: c.id, kind, label: String(form.get('label') ?? '').trim() || null, value },
+						payload: {
+							contactId: c.id,
+							kind,
+							label: String(form.get('label') ?? '').trim() || null,
+							value
+						},
 						issuedAt: Date.now()
 					};
 				},
@@ -81,11 +87,22 @@
 	);
 </script>
 
-	<Section as="row" title={t('contact.section.contact')} count={visibleFields.length} startOpen={visibleFields.length > 0} addLabel={t('common.add')} error={form?.fieldError ?? null} bind:open={openSection.contact}>
+<Section
+	as="row"
+	title={t('contact.section.contact')}
+	count={visibleFields.length}
+	startOpen={visibleFields.length > 0}
+	addLabel={t('common.add')}
+	error={form?.fieldError ?? null}
+	bind:open={openSection.contact}
+>
 	{#if keptFields.length > 0}
 		<ul class="mb-2 flex flex-wrap gap-1.5" data-testid="kept-fields">
 			{#each keptFields as item (item.command.id)}
-				<KeptChip {item} label={`${item.command.payload.label ?? kindLabel('fieldKind', item.command.payload.kind)} · ${item.command.payload.value}`} />
+				<KeptChip
+					{item}
+					label={`${item.command.payload.label ?? kindLabel('fieldKind', item.command.payload.kind)} · ${item.command.payload.value}`}
+				/>
 			{/each}
 		</ul>
 	{/if}
@@ -116,14 +133,30 @@
 	{/if}
 
 	{#snippet editor()}
-		<form method="POST" action="?/addField" use:enhance={fieldForm} class="flex flex-wrap items-end gap-2">
+		<form
+			method="POST"
+			action="?/addField"
+			use:enhance={fieldForm}
+			class="flex flex-wrap items-end gap-2"
+		>
 			<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
 				{#each data.fieldKinds as kind (kind)}
 					<option value={kind}>{kindLabel('fieldKind', kind)}</option>
 				{/each}
 			</select>
-			<input name="label" placeholder={t('contact.labelOptional')} aria-label={t('contact.labelOptional')} class="w-28 {INPUT}" />
-			<input name="value" placeholder={t('contact.value')} aria-label={t('contact.value')} required class="min-w-40 flex-1 {INPUT}" />
+			<input
+				name="label"
+				placeholder={t('contact.labelOptional')}
+				aria-label={t('contact.labelOptional')}
+				class="w-28 {INPUT}"
+			/>
+			<input
+				name="value"
+				placeholder={t('contact.value')}
+				aria-label={t('contact.value')}
+				required
+				class="min-w-40 flex-1 {INPUT}"
+			/>
 			<Button variant="primary" size="sm">{t('common.add')}</Button>
 		</form>
 	{/snippet}

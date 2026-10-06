@@ -95,7 +95,11 @@ export const actions: Actions = {
 				token,
 				visibility,
 				report: plan.report,
-				customTypes: plan.relationshipTypes.map((t) => ({ forwardLabel: t.forwardLabel, reverseLabel: t.reverseLabel, category: t.category }))
+				customTypes: plan.relationshipTypes.map((t) => ({
+					forwardLabel: t.forwardLabel,
+					reverseLabel: t.reverseLabel,
+					category: t.category
+				}))
 			};
 		} catch (err) {
 			if (isUnreadable(err))
@@ -107,7 +111,10 @@ export const actions: Actions = {
 	confirm: async ({ request, locals }) => {
 		const user = requireAdmin(locals);
 		const form = await request.formData();
-		const parsed = v.safeParse(StepSchema, { token: form.get('token'), visibility: form.get('visibility') || undefined });
+		const parsed = v.safeParse(StepSchema, {
+			token: form.get('token'),
+			visibility: form.get('visibility') || undefined
+		});
 		if (!parsed.success)
 			return fail(400, {
 				step: 'upload' as const,
@@ -125,7 +132,7 @@ export const actions: Actions = {
 			userId: user.id,
 			visibility: parsed.output.visibility,
 			wording: importWording(locals),
-				locale: locals.locale
+			locale: locals.locale
 		});
 		return {
 			step: 'photos' as const,

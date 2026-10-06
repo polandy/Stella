@@ -139,7 +139,8 @@ export function upcomingDates(
 		const daysUntil = Math.round((ms - todayMs) / DAY_MS);
 		if (daysUntil > horizonDays) continue;
 
-		const turning = day.year !== null && occurrenceYear > day.year ? occurrenceYear - day.year : null;
+		const turning =
+			day.year !== null && occurrenceYear > day.year ? occurrenceYear - day.year : null;
 		upcoming.push({
 			contactId: source.contactId,
 			contactName: source.contactName,

@@ -5,7 +5,11 @@
 	import FormError from '$lib/components/FormError.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import PhotoCropper from '$lib/components/PhotoCropper.svelte';
-	import { cutCandidates, type CandidatePerson, type CutCandidate } from '$lib/circles/cut-candidates';
+	import {
+		cutCandidates,
+		type CandidatePerson,
+		type CutCandidate
+	} from '$lib/circles/cut-candidates';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { CropRect } from '$lib/image/crop';
 	import { loadFullPicture, sendCut } from '$lib/image/send-cut';
@@ -45,7 +49,13 @@
 	let done = $state<string | null>(null);
 
 	const groups = $derived(
-		cutCandidates({ members, people: [...people], photoRole, wearing: wearers.map((w) => w.contactId), query })
+		cutCandidates({
+			members,
+			people: [...people],
+			photoRole,
+			wearing: wearers.map((w) => w.contactId),
+			query
+		})
 	);
 	const listed = $derived(groups.inRole.length + groups.inCircle.length + groups.others.length);
 
@@ -63,7 +73,8 @@
 		busy = true;
 		try {
 			// The full picture, loaded once however many people are cut from it in one sitting.
-			if (picture?.photoId !== photoId) picture = { photoId, blob: await loadFullPicture(mediaUrl(photoId)) };
+			if (picture?.photoId !== photoId)
+				picture = { photoId, blob: await loadFullPicture(mediaUrl(photoId)) };
 			cropping = true;
 		} catch {
 			error = t('components.photo.failed');
@@ -104,10 +115,18 @@
 			class="flex w-full items-center gap-3 rounded-control px-2 py-2 text-left text-sm hover:bg-bg-sunken focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60"
 			data-testid="cut-candidate"
 		>
-			<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={36} />
+			<Avatar
+				id={person.id}
+				name={person.displayName}
+				avatarPhotoId={person.avatarPhotoId}
+				size={36}
+			/>
 			<span class="min-w-0 flex-1 truncate">{person.displayName}</span>
 			{#if person.wearsCut}
-				<span class="inline-flex shrink-0 items-center gap-1 text-xs text-primary" title={t('circles.cut.wears')}>
+				<span
+					class="inline-flex shrink-0 items-center gap-1 text-xs text-primary"
+					title={t('circles.cut.wears')}
+				>
 					<Icon name="done" size={14} /><span class="sr-only">{t('circles.cut.wears')}</span>
 				</span>
 			{/if}
@@ -115,7 +134,9 @@
 	</li>
 {/snippet}
 
-<Button variant="secondary" size="sm" icon="self" onclick={open} data-testid="cut-open">{t('circles.cut.use')}</Button>
+<Button variant="secondary" size="sm" icon="self" onclick={open} data-testid="cut-open"
+	>{t('circles.cut.use')}</Button
+>
 
 <dialog
 	bind:this={dialog}
@@ -135,8 +156,12 @@
 				<Icon name="done" size={16} />{t('circles.cut.done', { name: done })}
 			</p>
 			<div class="flex flex-wrap gap-2">
-				<Button variant="primary" size="sm" onclick={() => (done = null)}>{t('circles.cut.next')}</Button>
-				<Button variant="ghost" size="sm" onclick={() => dialog?.close()}>{t('circles.cut.finish')}</Button>
+				<Button variant="primary" size="sm" onclick={() => (done = null)}
+					>{t('circles.cut.next')}</Button
+				>
+				<Button variant="ghost" size="sm" onclick={() => dialog?.close()}
+					>{t('circles.cut.finish')}</Button
+				>
 			</div>
 		{:else}
 			<p class="text-sm text-fg-muted">{t('circles.cut.whom')}</p>
@@ -151,21 +176,33 @@
 			{#if busy}<p class="text-xs text-fg-subtle" role="status">{t('circles.cut.loading')}</p>{/if}
 			<div class="-mx-2 flex-1 overflow-y-auto">
 				{#if groups.inRole.length > 0}
-					<h3 class="px-2 pt-1 text-xs font-medium uppercase tracking-wide text-fg-subtle">{photoRole}</h3>
-					<ul>{#each groups.inRole as person (person.id)}{@render personRow(person)}{/each}</ul>
+					<h3 class="px-2 pt-1 text-xs font-medium tracking-wide text-fg-subtle uppercase">
+						{photoRole}
+					</h3>
+					<ul>
+						{#each groups.inRole as person (person.id)}{@render personRow(person)}{/each}
+					</ul>
 				{/if}
 				{#if groups.inCircle.length > 0}
-					<h3 class="px-2 pt-2 text-xs font-medium uppercase tracking-wide text-fg-subtle">
+					<h3 class="px-2 pt-2 text-xs font-medium tracking-wide text-fg-subtle uppercase">
 						{groups.inRole.length > 0 ? t('circles.cut.restOfCircle') : t('circles.cut.inCircle')}
 					</h3>
-					<ul>{#each groups.inCircle as person (person.id)}{@render personRow(person)}{/each}</ul>
+					<ul>
+						{#each groups.inCircle as person (person.id)}{@render personRow(person)}{/each}
+					</ul>
 				{/if}
 				{#if groups.others.length > 0}
-					<h3 class="px-2 pt-2 text-xs font-medium uppercase tracking-wide text-fg-subtle">{t('circles.cut.everyone')}</h3>
-					<ul>{#each groups.others as person (person.id)}{@render personRow(person)}{/each}</ul>
+					<h3 class="px-2 pt-2 text-xs font-medium tracking-wide text-fg-subtle uppercase">
+						{t('circles.cut.everyone')}
+					</h3>
+					<ul>
+						{#each groups.others as person (person.id)}{@render personRow(person)}{/each}
+					</ul>
 				{/if}
 				{#if listed === 0}
-					<p class="px-2 text-sm text-fg-subtle">{query.trim() ? t('circles.cut.nobody') : t('circles.cut.searchHint')}</p>
+					<p class="px-2 text-sm text-fg-subtle">
+						{query.trim() ? t('circles.cut.nobody') : t('circles.cut.searchHint')}
+					</p>
 				{:else if query.trim() === ''}
 					<p class="px-2 pt-2 text-xs text-fg-subtle">{t('circles.cut.searchHint')}</p>
 				{/if}

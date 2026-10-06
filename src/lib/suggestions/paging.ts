@@ -153,7 +153,10 @@ export function orderedGroups<T extends NamedClaim>(claims: readonly T[]): Subje
 }
 
 /** One page of a review: the groups to render, and the totals that describe the household. */
-export interface ReviewPage<T extends NamedClaim> extends Omit<Page<FoldedGroup<T>>, 'items' | 'total'> {
+export interface ReviewPage<T extends NamedClaim> extends Omit<
+	Page<FoldedGroup<T>>,
+	'items' | 'total'
+> {
 	groups: FoldedGroup<T>[];
 	/** People with at least one open claim, household-wide. Never this page's count. */
 	people: number;

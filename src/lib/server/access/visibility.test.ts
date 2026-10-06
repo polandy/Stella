@@ -33,7 +33,10 @@ function contact(overrides: Partial<ContactAccess> = {}): ContactAccess {
 	};
 }
 
-function childOn(parent: ContactAccess, overrides: Partial<ChildRecordAccess> = {}): ChildRecordAccess {
+function childOn(
+	parent: ContactAccess,
+	overrides: Partial<ChildRecordAccess> = {}
+): ChildRecordAccess {
 	return {
 		ownerId: OWNER,
 		visibility: 'shared',
@@ -117,7 +120,13 @@ describe('canViewCirclePhoto', () => {
 	});
 
 	it('shows a shared photo of a shared circle to the whole household', () => {
-		expect(canViewCirclePhoto(viewerOther, { ownerId: OWNER, visibility: 'shared', circle: circle('shared') })).toBe(true);
+		expect(
+			canViewCirclePhoto(viewerOther, {
+				ownerId: OWNER,
+				visibility: 'shared',
+				circle: circle('shared')
+			})
+		).toBe(true);
 	});
 
 	it('shows a private photo only to whoever added it', () => {
@@ -127,13 +136,19 @@ describe('canViewCirclePhoto', () => {
 	});
 
 	it('hides every photo of a private circle from everyone but its owner', () => {
-		const photo = { ownerId: OTHER_MEMBER, visibility: 'shared' as const, circle: circle('private') };
+		const photo = {
+			ownerId: OTHER_MEMBER,
+			visibility: 'shared' as const,
+			circle: circle('private')
+		};
 		expect(canViewCirclePhoto(viewerOther, photo)).toBe(false);
 		expect(canViewCirclePhoto(viewerOwner, photo)).toBe(true);
 	});
 
 	it('never crosses households', () => {
 		const foreign = { householdId: OTHER_HOUSEHOLD, ownerId: OWNER, visibility: 'shared' as const };
-		expect(canViewCirclePhoto(viewerOwner, { ownerId: OWNER, visibility: 'shared', circle: foreign })).toBe(false);
+		expect(
+			canViewCirclePhoto(viewerOwner, { ownerId: OWNER, visibility: 'shared', circle: foreign })
+		).toBe(false);
 	});
 });

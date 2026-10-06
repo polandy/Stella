@@ -50,7 +50,12 @@
 		const band = view
 			? { top: view.offsetTop, bottom: view.offsetTop + view.height }
 			: { top: 0, bottom: window.innerHeight };
-		upward = menuOpensUpward(root.getBoundingClientRect(), calendar.offsetHeight, band, EDGE_MARGIN);
+		upward = menuOpensUpward(
+			root.getBoundingClientRect(),
+			calendar.offsetHeight,
+			band,
+			EDGE_MARGIN
+		);
 		shift = menuShift(
 			calendar.getBoundingClientRect(),
 			{ left: 0, right: document.documentElement.clientWidth },

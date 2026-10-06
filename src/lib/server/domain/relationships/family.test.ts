@@ -136,7 +136,10 @@ describe('readFamilyOf', () => {
 
 	it('reads the family, the ties and the dismissals once for all the cards', async () => {
 		const d = deps();
-		await readFamilyOf(d, viewer, 'andy', { proposeFor: [{ a: 'andy', b: 'steve' }], reviewOpen: true });
+		await readFamilyOf(d, viewer, 'andy', {
+			proposeFor: [{ a: 'andy', b: 'steve' }],
+			reviewOpen: true
+		});
 		expect(d.asked).toEqual({ family: 1, ties: 1, dismissals: 1 });
 	});
 

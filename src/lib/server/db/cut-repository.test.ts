@@ -68,11 +68,15 @@ const cutOf = (over: Partial<StoredFraming> = {}): StoredFraming => ({
 });
 
 function seedContact(id: string, visibility: 'shared' | 'private' = 'shared', createdBy = U1) {
-	db.insert(schema.contact).values({ id, householdId: H, createdBy, visibility, displayName: id }).run();
+	db.insert(schema.contact)
+		.values({ id, householdId: H, createdBy, visibility, displayName: id })
+		.run();
 }
 
 function seedCircle(id: string, members: string[], visibility: 'shared' | 'private' = 'shared') {
-	db.insert(schema.circle).values({ id, householdId: H, createdBy: U1, visibility, name: `Circle ${id}` }).run();
+	db.insert(schema.circle)
+		.values({ id, householdId: H, createdBy: U1, visibility, name: `Circle ${id}` })
+		.run();
 	for (const contactId of members) {
 		db.insert(schema.circleMembership)
 			.values({ id: `${id}-${contactId}`, circleId: id, contactId, createdBy: U1 })
@@ -81,8 +85,11 @@ function seedCircle(id: string, members: string[], visibility: 'shared' | 'priva
 }
 
 const avatarOf = (contactId: string) =>
-	db.select({ id: schema.contact.avatarPhotoId }).from(schema.contact).where(eq(schema.contact.id, contactId)).get()
-		?.id ?? null;
+	db
+		.select({ id: schema.contact.avatarPhotoId })
+		.from(schema.contact)
+		.where(eq(schema.contact.id, contactId))
+		.get()?.id ?? null;
 
 const row = (id: string) => db.select().from(schema.photo).where(eq(schema.photo.id, id)).get();
 
@@ -119,16 +126,26 @@ describe('cutting a picture for someone', () => {
 
 	it('cuts one group photo for several people, one cut each', async () => {
 		await cuts.replaceCut(cutOf());
-		await cuts.replaceCut(cutOf({ id: 'cut-ben', contactId: 'ben', filePath: 'b.jpg', thumbPath: 'b_t.jpg' }));
+		await cuts.replaceCut(
+			cutOf({ id: 'cut-ben', contactId: 'ben', filePath: 'b.jpg', thumbPath: 'b_t.jpg' })
+		);
 		expect(avatarOf('anna')).toBe('cut-anna');
 		expect(avatarOf('ben')).toBe('cut-ben');
-		expect((await cuts.listCutsOfCircle(u1, 'class')).map((c) => c.contactId).sort()).toEqual(['anna', 'ben']);
+		expect((await cuts.listCutsOfCircle(u1, 'class')).map((c) => c.contactId).sort()).toEqual([
+			'anna',
+			'ben'
+		]);
 	});
 
 	it('replaces the person’s earlier cut of the same photo and hands back its files', async () => {
 		await cuts.replaceCut(cutOf());
 		const replaced = await cuts.replaceCut(
-			cutOf({ id: 'cut-anna-2', crop: { x: 0, y: 0, size: 400 }, filePath: 'a2.jpg', thumbPath: 'a2_t.jpg' })
+			cutOf({
+				id: 'cut-anna-2',
+				crop: { x: 0, y: 0, size: 400 },
+				filePath: 'a2.jpg',
+				thumbPath: 'a2_t.jpg'
+			})
 		);
 		expect(replaced).toEqual([{ filePath: 'cut-anna.jpg', thumbPath: 'cut-anna_thumb.jpg' }]);
 		expect(row('cut-anna')).toBeUndefined();
@@ -137,7 +154,9 @@ describe('cutting a picture for someone', () => {
 	});
 
 	it('finds a group photo by id only when the viewer may see it', async () => {
-		await circlePhotos.insert(groupPhoto({ id: 'private-photo', visibility: 'private', createdBy: U1 }));
+		await circlePhotos.insert(
+			groupPhoto({ id: 'private-photo', visibility: 'private', createdBy: U1 })
+		);
 		expect(await cuts.findVisibleGroupPhoto(u2, 'class-photo')).toEqual({
 			id: 'class-photo',
 			circleId: 'class',
@@ -186,7 +205,11 @@ describe('switching away from a cut', () => {
 		expect(row('cut-anna')).toMatchObject(asOwnPhoto);
 		const gallery = await photos.listGalleryPhotos(u1, 'anna');
 		expect(gallery.map((p) => p.id)).toEqual(['upload', 'cut-anna']);
-		expect(gallery[1]!.cutFrom).toEqual({ photoId: 'class-photo', circleId: 'class', circleName: 'Circle class' });
+		expect(gallery[1]!.cutFrom).toEqual({
+			photoId: 'class-photo',
+			circleId: 'class',
+			circleName: 'Circle class'
+		});
 	});
 
 	it('keeps the cut when the person is framed from one of their gallery photos instead', async () => {
@@ -207,15 +230,31 @@ describe('switching away from a cut', () => {
 			takenAt: null,
 			createdAt: 20_000
 		});
-		await photos.replaceFraming(cutOf({ id: 'holiday-frame', framingOf: 'holiday', filePath: 'hf.jpg', thumbPath: 'hf_t.jpg' }));
+		await photos.replaceFraming(
+			cutOf({
+				id: 'holiday-frame',
+				framingOf: 'holiday',
+				filePath: 'hf.jpg',
+				thumbPath: 'hf_t.jpg'
+			})
+		);
 		expect(avatarOf('anna')).toBe('holiday-frame');
 		expect(row('cut-anna')).toMatchObject(asOwnPhoto);
 	});
 
 	it('keeps the cut when the person is cut from another group photo', async () => {
-		await circlePhotos.insert(groupPhoto({ id: 'team-photo', filePath: 't.jpg', thumbPath: 't_t.jpg', createdAt: 3000 }));
+		await circlePhotos.insert(
+			groupPhoto({ id: 'team-photo', filePath: 't.jpg', thumbPath: 't_t.jpg', createdAt: 3000 })
+		);
 		await cuts.replaceCut(cutOf());
-		await cuts.replaceCut(cutOf({ id: 'cut-anna-team', framingOf: 'team-photo', filePath: 'at.jpg', thumbPath: 'at_t.jpg' }));
+		await cuts.replaceCut(
+			cutOf({
+				id: 'cut-anna-team',
+				framingOf: 'team-photo',
+				filePath: 'at.jpg',
+				thumbPath: 'at_t.jpg'
+			})
+		);
 		expect(avatarOf('anna')).toBe('cut-anna-team');
 		expect(row('cut-anna')).toMatchObject(asOwnPhoto);
 	});
@@ -224,11 +263,21 @@ describe('switching away from a cut', () => {
 describe('a group photo that people wear going away', () => {
 	it('turns each cut into its person’s own photo, still worn, before the group photo is removed', async () => {
 		await cuts.replaceCut(cutOf());
-		await cuts.replaceCut(cutOf({ id: 'cut-ben', contactId: 'ben', filePath: 'b.jpg', thumbPath: 'b_t.jpg' }));
+		await cuts.replaceCut(
+			cutOf({ id: 'cut-ben', contactId: 'ben', filePath: 'b.jpg', thumbPath: 'b_t.jpg' })
+		);
 
-		const removed = await circlePhotos.deleteOwn({ authorId: U1, circleId: 'class', photoId: 'class-photo' });
+		const removed = await circlePhotos.deleteOwn({
+			authorId: U1,
+			circleId: 'class',
+			photoId: 'class-photo'
+		});
 
-		expect(removed).toEqual({ filePath: 'class.jpg', thumbPath: 'class_thumb.jpg', viewPath: 'class_view.jpg' });
+		expect(removed).toEqual({
+			filePath: 'class.jpg',
+			thumbPath: 'class_thumb.jpg',
+			viewPath: 'class_view.jpg'
+		});
 		expect(row('class-photo')).toBeUndefined();
 		expect(avatarOf('anna')).toBe('cut-anna');
 		expect(avatarOf('ben')).toBe('cut-ben');
@@ -263,7 +312,9 @@ describe('a group photo that people wear going away', () => {
 
 	it('turns no cut when someone else tries to remove the photo', async () => {
 		await cuts.replaceCut(cutOf());
-		expect(await circlePhotos.deleteOwn({ authorId: U2, circleId: 'class', photoId: 'class-photo' })).toBeNull();
+		expect(
+			await circlePhotos.deleteOwn({ authorId: U2, circleId: 'class', photoId: 'class-photo' })
+		).toBeNull();
 		expect(row('cut-anna')).toMatchObject({ framingOf: 'class-photo' });
 	});
 
@@ -271,11 +322,20 @@ describe('a group photo that people wear going away', () => {
 		await cuts.replaceCut(cutOf());
 
 		expect(
-			await circlePhotos.setOwnVisibility({ authorId: U1, circleId: 'class', photoId: 'class-photo', visibility: 'private' })
+			await circlePhotos.setOwnVisibility({
+				authorId: U1,
+				circleId: 'class',
+				photoId: 'class-photo',
+				visibility: 'private'
+			})
 		).toBe(true);
 
 		expect(row('class-photo')).toMatchObject({ visibility: 'private' });
-		expect(row('cut-anna')).toMatchObject({ framingOf: null, cutFrom: 'class-photo', visibility: 'shared' });
+		expect(row('cut-anna')).toMatchObject({
+			framingOf: null,
+			cutFrom: 'class-photo',
+			visibility: 'shared'
+		});
 		expect(avatarOf('anna')).toBe('cut-anna');
 		// The other member still sees the face, though no longer the group photo it came from.
 		const gallery = await photos.listGalleryPhotos(u2, 'anna');
@@ -283,9 +343,24 @@ describe('a group photo that people wear going away', () => {
 	});
 
 	it('lets the cuts of a private photo follow it when it is shared again', async () => {
-		await circlePhotos.insert(groupPhoto({ id: 'mine', visibility: 'private', createdBy: U2, filePath: 'm.jpg', thumbPath: 'm_t.jpg' }));
-		await cuts.replaceCut(cutOf({ id: 'cut-mine', framingOf: 'mine', createdBy: U2, visibility: 'private' }));
-		await circlePhotos.setOwnVisibility({ authorId: U2, circleId: 'class', photoId: 'mine', visibility: 'shared' });
+		await circlePhotos.insert(
+			groupPhoto({
+				id: 'mine',
+				visibility: 'private',
+				createdBy: U2,
+				filePath: 'm.jpg',
+				thumbPath: 'm_t.jpg'
+			})
+		);
+		await cuts.replaceCut(
+			cutOf({ id: 'cut-mine', framingOf: 'mine', createdBy: U2, visibility: 'private' })
+		);
+		await circlePhotos.setOwnVisibility({
+			authorId: U2,
+			circleId: 'class',
+			photoId: 'mine',
+			visibility: 'shared'
+		});
 		expect(row('cut-mine')).toMatchObject({ framingOf: 'mine', visibility: 'shared' });
 	});
 });
@@ -294,48 +369,107 @@ describe('what the pages read', () => {
 	it('names only the wearers the viewer can see, and counts the rest', async () => {
 		seedContact('secret', 'private', U1);
 		await cuts.replaceCut(cutOf());
-		await cuts.replaceCut(cutOf({ id: 'cut-secret', contactId: 'secret', filePath: 's.jpg', thumbPath: 's_t.jpg' }));
+		await cuts.replaceCut(
+			cutOf({ id: 'cut-secret', contactId: 'secret', filePath: 's.jpg', thumbPath: 's_t.jpg' })
+		);
 		const seen = await cuts.listCutsOfCircle(u2, 'class');
-		expect(seen.map((c) => c.contactId).sort((a, b) => String(a).localeCompare(String(b)))).toEqual(['anna', null]);
+		expect(seen.map((c) => c.contactId).sort((a, b) => String(a).localeCompare(String(b)))).toEqual(
+			['anna', null]
+		);
 		expect(seen.find((c) => c.contactId === null)?.crop).toBeNull();
 	});
 
 	it('lists the group photos a person was cut from, now and before, but not one the viewer cannot see', async () => {
-		await circlePhotos.insert(groupPhoto({ id: 'team-photo', filePath: 't.jpg', thumbPath: 't_t.jpg', createdAt: 3000 }));
-		await circlePhotos.insert(groupPhoto({ id: 'private', visibility: 'private', createdBy: U1, filePath: 'p.jpg', thumbPath: 'p_t.jpg', createdAt: 5000 }));
+		await circlePhotos.insert(
+			groupPhoto({ id: 'team-photo', filePath: 't.jpg', thumbPath: 't_t.jpg', createdAt: 3000 })
+		);
+		await circlePhotos.insert(
+			groupPhoto({
+				id: 'private',
+				visibility: 'private',
+				createdBy: U1,
+				filePath: 'p.jpg',
+				thumbPath: 'p_t.jpg',
+				createdAt: 5000
+			})
+		);
 		await cuts.replaceCut(cutOf());
-		await cuts.replaceCut(cutOf({ id: 'cut-team', framingOf: 'team-photo', filePath: 'at.jpg', thumbPath: 'at_t.jpg' }));
-		await cuts.replaceCut(cutOf({ id: 'cut-private', framingOf: 'private', visibility: 'private', filePath: 'ap.jpg', thumbPath: 'ap_t.jpg' }));
+		await cuts.replaceCut(
+			cutOf({ id: 'cut-team', framingOf: 'team-photo', filePath: 'at.jpg', thumbPath: 'at_t.jpg' })
+		);
+		await cuts.replaceCut(
+			cutOf({
+				id: 'cut-private',
+				framingOf: 'private',
+				visibility: 'private',
+				filePath: 'ap.jpg',
+				thumbPath: 'ap_t.jpg'
+			})
+		);
 
 		const ofAnna = (viewer: Viewer) => cuts.listGroupPhotosOf(viewer, 'anna');
 		expect((await ofAnna(u1)).map((p) => p.id)).toEqual(['private', 'team-photo', 'class-photo']);
 		expect(await ofAnna(u2)).toEqual([
-			{ id: 'team-photo', circleId: 'class', circleName: 'Circle class', takenAt: null, createdAt: 3000 },
-			{ id: 'class-photo', circleId: 'class', circleName: 'Circle class', takenAt: null, createdAt: 1000 }
+			{
+				id: 'team-photo',
+				circleId: 'class',
+				circleName: 'Circle class',
+				takenAt: null,
+				createdAt: 3000
+			},
+			{
+				id: 'class-photo',
+				circleId: 'class',
+				circleName: 'Circle class',
+				takenAt: null,
+				createdAt: 1000
+			}
 		]);
 	});
 
 	it('orders the group photos by when they were taken when their EXIF said so', async () => {
 		// Added after the class photo (at 1 s), but taken at the epoch itself.
 		await circlePhotos.insert(
-			groupPhoto({ id: 'old-scan', filePath: 'o.jpg', thumbPath: 'o_t.jpg', createdAt: 9000, takenAt: '1970-01-01T00:00:00Z' })
+			groupPhoto({
+				id: 'old-scan',
+				filePath: 'o.jpg',
+				thumbPath: 'o_t.jpg',
+				createdAt: 9000,
+				takenAt: '1970-01-01T00:00:00Z'
+			})
 		);
 		await cuts.replaceCut(cutOf());
-		await cuts.replaceCut(cutOf({ id: 'cut-scan', framingOf: 'old-scan', filePath: 'as.jpg', thumbPath: 'as_t.jpg' }));
+		await cuts.replaceCut(
+			cutOf({ id: 'cut-scan', framingOf: 'old-scan', filePath: 'as.jpg', thumbPath: 'as_t.jpg' })
+		);
 
 		const ofAnna = await cuts.listGroupPhotosOf(u2, 'anna');
 		expect(ofAnna.map((p) => [p.id, p.takenAt])).toEqual([
 			['class-photo', null],
 			['old-scan', '1970-01-01T00:00:00Z']
 		]);
-		expect((await cuts.listGroupPhotosToCut(u2, 'anna')).map((p) => p.id)).toEqual(['class-photo', 'old-scan']);
+		expect((await cuts.listGroupPhotosToCut(u2, 'anna')).map((p) => p.id)).toEqual([
+			'class-photo',
+			'old-scan'
+		]);
 	});
 
 	it('offers the photos of the person’s own circles to cut from, with the square they wear', async () => {
 		seedContact('cleo');
 		seedCircle('team', ['cleo']);
-		await circlePhotos.insert(groupPhoto({ id: 'team-photo', circleId: 'team', filePath: 't.jpg', thumbPath: 't_t.jpg' }));
-		await circlePhotos.insert(groupPhoto({ id: 'private', visibility: 'private', createdBy: U1, filePath: 'p.jpg', thumbPath: 'p_t.jpg', createdAt: 5000 }));
+		await circlePhotos.insert(
+			groupPhoto({ id: 'team-photo', circleId: 'team', filePath: 't.jpg', thumbPath: 't_t.jpg' })
+		);
+		await circlePhotos.insert(
+			groupPhoto({
+				id: 'private',
+				visibility: 'private',
+				createdBy: U1,
+				filePath: 'p.jpg',
+				thumbPath: 'p_t.jpg',
+				createdAt: 5000
+			})
+		);
 		await cuts.replaceCut(cutOf());
 
 		expect(await cuts.listGroupPhotosToCut(u2, 'anna')).toEqual([
@@ -358,9 +492,20 @@ describe('what the pages read', () => {
 	});
 
 	it('serves a circle photo’s 1600 px view, and the full picture where there is none', async () => {
-		await circlePhotos.insert(groupPhoto({ id: 'old', viewPath: null, filePath: 'old.jpg', thumbPath: 'old_t.jpg' }));
-		expect(await photos.getVisiblePhotoFile(u2, 'class-photo', 'view')).toEqual({ path: 'class_view.jpg', mime: 'image/jpeg' });
-		expect(await photos.getVisiblePhotoFile(u2, 'class-photo', 'full')).toEqual({ path: 'class.jpg', mime: 'image/jpeg' });
-		expect(await photos.getVisiblePhotoFile(u2, 'old', 'view')).toEqual({ path: 'old.jpg', mime: 'image/jpeg' });
+		await circlePhotos.insert(
+			groupPhoto({ id: 'old', viewPath: null, filePath: 'old.jpg', thumbPath: 'old_t.jpg' })
+		);
+		expect(await photos.getVisiblePhotoFile(u2, 'class-photo', 'view')).toEqual({
+			path: 'class_view.jpg',
+			mime: 'image/jpeg'
+		});
+		expect(await photos.getVisiblePhotoFile(u2, 'class-photo', 'full')).toEqual({
+			path: 'class.jpg',
+			mime: 'image/jpeg'
+		});
+		expect(await photos.getVisiblePhotoFile(u2, 'old', 'view')).toEqual({
+			path: 'old.jpg',
+			mime: 'image/jpeg'
+		});
 	});
 });

@@ -17,7 +17,9 @@ export type PersonPageData = PageData;
 export type PersonForm = ActionData;
 
 /** The relationship picker's entries: every type, read from each of its sides. */
-export type RelationshipChoices = RelationshipTypeOption<PersonPageData['relationshipTypes'][number]>[];
+export type RelationshipChoices = RelationshipTypeOption<
+	PersonPageData['relationshipTypes'][number]
+>[];
 
 /** What the household's records rule out for one picker entry and target, or null. */
 export type ExclusionOf = (

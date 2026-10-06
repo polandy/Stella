@@ -29,7 +29,9 @@
 </script>
 
 <li
-	class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed py-1 pl-2.5 pr-1.5 text-sm {refused ? 'border-danger text-danger' : 'border-fg-subtle text-fg-muted'}"
+	class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed py-1 pr-1.5 pl-2.5 text-sm {refused
+		? 'border-danger text-danger'
+		: 'border-fg-subtle text-fg-muted'}"
 	title={item.reason ?? t(STATUS[item.state])}
 	data-outbox-state={item.state}
 >

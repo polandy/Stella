@@ -34,4 +34,5 @@ function byPin(a: Orderable, b: Orderable): number {
 	return b.pinnedAt - a.pinnedAt;
 }
 
-const byIdDescending = (a: Orderable, b: Orderable): number => (a.id < b.id ? 1 : a.id > b.id ? -1 : 0);
+const byIdDescending = (a: Orderable, b: Orderable): number =>
+	a.id < b.id ? 1 : a.id > b.id ? -1 : 0;

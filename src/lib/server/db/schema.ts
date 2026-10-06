@@ -60,18 +60,22 @@ export const user = sqliteTable('user', {
 	updatedAt: integer('updated_at').notNull().default(now)
 });
 
-export const session = sqliteTable('session', {
-	id: text('id').primaryKey(), // hashed session token id
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
-	expiresAt: integer('expires_at').notNull(),
-	userAgent: text('user_agent'),
-	ip: text('ip'),
-	// ID token of the OIDC sign-in behind this session; the `id_token_hint` for single logout.
-	oidcIdToken: text('oidc_id_token'),
-	createdAt: integer('created_at').notNull().default(now)
-}, (t) => [index('session_user_idx').on(t.userId)]);
+export const session = sqliteTable(
+	'session',
+	{
+		id: text('id').primaryKey(), // hashed session token id
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		expiresAt: integer('expires_at').notNull(),
+		userAgent: text('user_agent'),
+		ip: text('ip'),
+		// ID token of the OIDC sign-in behind this session; the `id_token_hint` for single logout.
+		oidcIdToken: text('oidc_id_token'),
+		createdAt: integer('created_at').notNull().default(now)
+	},
+	(t) => [index('session_user_idx').on(t.userId)]
+);
 
 /*
  * A member's API token (docs/02 §2.16.1, docs/03 §3.2). Stored as the SHA-256 of the secret,
@@ -492,10 +496,7 @@ export const contactTag = sqliteTable(
 			.notNull()
 			.references(() => tag.id, { onDelete: 'cascade' })
 	},
-	(t) => [
-		primaryKey({ columns: [t.contactId, t.tagId] }),
-		index('contact_tag_tag_idx').on(t.tagId)
-	]
+	(t) => [primaryKey({ columns: [t.contactId, t.tagId] }), index('contact_tag_tag_idx').on(t.tagId)]
 );
 
 // ── Circles & shared contexts ─────────────────────────────────────────────
@@ -688,24 +689,21 @@ export const immichNameIgnore = sqliteTable(
  * Never replayed and nothing is derived from it; it holds ids, not content, and is kept for
  * good so a device offline for months still cannot send anything twice.
  */
-export const commandReceipt = sqliteTable(
-	'command_receipt',
-	{
-		id: text('id').primaryKey(),
-		householdId: text('household_id')
-			.notNull()
-			.references(() => household.id, { onDelete: 'cascade' }),
-		memberId: text('member_id')
-			.notNull()
-			.references(() => user.id, { onDelete: 'cascade' }),
-		type: text('type').notNull(),
-		status: text('status').$type<'pending' | 'applied'>().notNull(),
-		/** The handler's result as JSON, once applied. */
-		result: text('result'),
-		claimedAt: integer('claimed_at').notNull(),
-		completedAt: integer('completed_at')
-	}
-);
+export const commandReceipt = sqliteTable('command_receipt', {
+	id: text('id').primaryKey(),
+	householdId: text('household_id')
+		.notNull()
+		.references(() => household.id, { onDelete: 'cascade' }),
+	memberId: text('member_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	type: text('type').notNull(),
+	status: text('status').$type<'pending' | 'applied'>().notNull(),
+	/** The handler's result as JSON, once applied. */
+	result: text('result'),
+	claimedAt: integer('claimed_at').notNull(),
+	completedAt: integer('completed_at')
+});
 
 // ── Activity feed ─────────────────────────────────────────────────────────
 

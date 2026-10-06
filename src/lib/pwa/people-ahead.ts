@@ -31,10 +31,17 @@ const PAGE_ONLY = 'x-sveltekit-invalidated=001';
 const personPages = (id: string) => [`/contacts/${id}`, `/contacts/${id}/journal`];
 
 /** What to fetch and keep for `people`: their pages as page data, and their avatars. */
-export function peopleToKeep(people: readonly VisiblePerson[]): { pages: string[]; avatars: string[] } {
+export function peopleToKeep(people: readonly VisiblePerson[]): {
+	pages: string[];
+	avatars: string[];
+} {
 	return {
-		pages: people.flatMap(({ id }) => personPages(id).map((page) => `${page}/__data.json?${PAGE_ONLY}`)),
-		avatars: people.flatMap(({ avatarPhotoId }) => (avatarPhotoId ? [`/media/${avatarPhotoId}?thumb`] : []))
+		pages: people.flatMap(({ id }) =>
+			personPages(id).map((page) => `${page}/__data.json?${PAGE_ONLY}`)
+		),
+		avatars: people.flatMap(({ avatarPhotoId }) =>
+			avatarPhotoId ? [`/media/${avatarPhotoId}?thumb`] : []
+		)
 	};
 }
 
@@ -51,7 +58,11 @@ const NOT_A_PERSON = new Set(['new', 'quick-add', 'suggest', '__data.json']);
  * private by someone else, or gone in an archive import: none of them may stay readable.
  * Photos are left as they are kept today (when seen).
  */
-export function keysToPrune(keptKeys: readonly string[], origin: string, visibleIds: ReadonlySet<string>): string[] {
+export function keysToPrune(
+	keptKeys: readonly string[],
+	origin: string,
+	visibleIds: ReadonlySet<string>
+): string[] {
 	return keptKeys.filter((key) => {
 		const url = new URL(key);
 		if (url.origin !== origin) return false;
@@ -90,7 +101,10 @@ export function parseVisiblePeople(body: unknown): VisiblePerson[] | null {
 			typeof person === 'object' &&
 			person !== null &&
 			typeof (person as VisiblePerson).id === 'string' &&
-			((person as VisiblePerson).avatarPhotoId === null || typeof (person as VisiblePerson).avatarPhotoId === 'string')
+			((person as VisiblePerson).avatarPhotoId === null ||
+				typeof (person as VisiblePerson).avatarPhotoId === 'string')
 	);
-	return valid ? people.map(({ id, avatarPhotoId }: VisiblePerson) => ({ id, avatarPhotoId })) : null;
+	return valid
+		? people.map(({ id, avatarPhotoId }: VisiblePerson) => ({ id, avatarPhotoId }))
+		: null;
 }

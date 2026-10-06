@@ -90,7 +90,10 @@ const none = { moments: [], people: [], relationships: [], interactions: [], not
 describe('assembleStream, circle photos', () => {
 	it('reads one upload of several photos as one item, newest photo first', () => {
 		const items = assembleStream(
-			{ ...none, circlePhotos: [circlePhoto('c3', 300), circlePhoto('c2', 200), circlePhoto('c1', 100)] },
+			{
+				...none,
+				circlePhotos: [circlePhoto('c3', 300), circlePhoto('c2', 200), circlePhoto('c1', 100)]
+			},
 			'u1'
 		);
 		expect(items).toEqual([
@@ -110,12 +113,24 @@ describe('assembleStream, circle photos', () => {
 
 	it('keeps the role when every photo of the upload has it', () => {
 		const [item] = assembleStream(
-			{ ...none, circlePhotos: [circlePhoto('b', 2, { role: 'Student' }), circlePhoto('a', 1, { role: 'Student' })] },
+			{
+				...none,
+				circlePhotos: [
+					circlePhoto('b', 2, { role: 'Student' }),
+					circlePhoto('a', 1, { role: 'Student' })
+				]
+			},
 			'u1'
 		);
 		expect(item).toMatchObject({ kind: 'circlePhoto', role: 'Student', photoIds: ['b', 'a'] });
 		const [mixed] = assembleStream(
-			{ ...none, circlePhotos: [circlePhoto('b', 2, { role: 'Student' }), circlePhoto('a', 1, { role: 'Teacher' })] },
+			{
+				...none,
+				circlePhotos: [
+					circlePhoto('b', 2, { role: 'Student' }),
+					circlePhoto('a', 1, { role: 'Teacher' })
+				]
+			},
 			'u1'
 		);
 		expect(mixed).toMatchObject({ role: null, photoIds: ['b', 'a'] });
@@ -148,7 +163,14 @@ describe('assembleStream, circle photos', () => {
 describe('assembleStream', () => {
 	it('includes interactions and marks my own', () => {
 		const items = assembleStream(
-			{ moments: [], people: [], relationships: [], interactions: [touch('i1', 50, me), touch('i2', 60)], notices: [], circlePhotos: [] },
+			{
+				moments: [],
+				people: [],
+				relationships: [],
+				interactions: [touch('i1', 50, me), touch('i2', 60)],
+				notices: [],
+				circlePhotos: []
+			},
 			'u1'
 		);
 		expect(items.map((i) => [i.kind, i.id, i.mine])).toEqual([
@@ -159,7 +181,14 @@ describe('assembleStream', () => {
 
 	it('orders a tie moment → interaction → relationship → person → removal', () => {
 		const items = assembleStream(
-			{ moments: [moment('m', 100)], people: [person('p', 100)], relationships: [rel('r', 100)], interactions: [touch('i', 100)], notices: [removal('x', 100)], circlePhotos: [] },
+			{
+				moments: [moment('m', 100)],
+				people: [person('p', 100)],
+				relationships: [rel('r', 100)],
+				interactions: [touch('i', 100)],
+				notices: [removal('x', 100)],
+				circlePhotos: []
+			},
 			'u1'
 		);
 		expect(items.map((i) => i.id)).toEqual(['m', 'i', 'r', 'p', 'x']);
@@ -167,7 +196,14 @@ describe('assembleStream', () => {
 
 	it('merges all sources newest first and marks my own items', () => {
 		const items = assembleStream(
-			{ moments: [moment('m1', 300)], people: [person('c1', 100)], relationships: [rel('r1', 200)], interactions: [], notices: [], circlePhotos: [] },
+			{
+				moments: [moment('m1', 300)],
+				people: [person('c1', 100)],
+				relationships: [rel('r1', 200)],
+				interactions: [],
+				notices: [],
+				circlePhotos: []
+			},
 			'u1'
 		);
 		expect(items.map((i) => [i.kind, i.id, i.mine])).toEqual([
@@ -183,7 +219,9 @@ describe('assembleStream', () => {
 				moments: [moment('m', 100)],
 				people: [person('p2', 100), person('p1', 100)],
 				relationships: [rel('r', 100)],
-				interactions: [], notices: [], circlePhotos: []
+				interactions: [],
+				notices: [],
+				circlePhotos: []
 			},
 			'u1'
 		);
@@ -192,7 +230,14 @@ describe('assembleStream', () => {
 
 	it('cuts to the limit after merging', () => {
 		const items = assembleStream(
-			{ moments: [moment('m1', 5), moment('m2', 4)], people: [person('p', 3)], relationships: [], interactions: [], notices: [], circlePhotos: [] },
+			{
+				moments: [moment('m1', 5), moment('m2', 4)],
+				people: [person('p', 3)],
+				relationships: [],
+				interactions: [],
+				notices: [],
+				circlePhotos: []
+			},
 			'u1',
 			2
 		);

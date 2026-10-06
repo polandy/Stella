@@ -11,4 +11,5 @@ export type ImportSource = 'sql' | 'json' | 'vcard';
  * records and share one prefix; a vCard is a different source and must never be mistaken for
  * a re-run of a Monica import.
  */
-export const sourcePrefix = (source: ImportSource): string => (source === 'vcard' ? 'vcard' : 'monica');
+export const sourcePrefix = (source: ImportSource): string =>
+	source === 'vcard' ? 'vcard' : 'monica';

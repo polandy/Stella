@@ -56,7 +56,10 @@ let whenApplied: () => void = () => {};
 let photoTooLarge = '';
 
 /** Saves being watched, by command id: who to tell, and Stella's result once it applied. */
-const watchers = new Map<string, { tell: (delivery: Delivery) => void; applied: { result: unknown } | null }>();
+const watchers = new Map<
+	string,
+	{ tell: (delivery: Delivery) => void; applied: { result: unknown } | null }
+>();
 /** The watched ids, as state, so `mine` leaves them out. */
 let watched = $state<string[]>([]);
 
@@ -125,7 +128,11 @@ export const outbox = {
 	},
 
 	/** Keep `command` (and the photos that go with it) until it can be sent, then try at once. */
-	async add(command: JsonCommand, photos: KeptPhoto[] = [], about: string | null = null): Promise<void> {
+	async add(
+		command: JsonCommand,
+		photos: KeptPhoto[] = [],
+		about: string | null = null
+	): Promise<void> {
 		const member = memberId;
 		if (!member) throw new Error('The outbox was used before a member signed in.');
 		await apply((list) =>
@@ -139,11 +146,17 @@ export const outbox = {
 	 * kept first, so a save cut off half way is never lost; a refused one leaves the device, as
 	 * the form still holds what was typed.
 	 */
-	async submit(command: JsonCommand, photos: KeptPhoto[] = [], about: string | null = null): Promise<Delivery> {
+	async submit(
+		command: JsonCommand,
+		photos: KeptPhoto[] = [],
+		about: string | null = null
+	): Promise<Delivery> {
 		const member = memberId;
 		if (!member) throw new Error('The outbox was used before a member signed in.');
 		watched = [...watched, command.id];
-		await apply((list) => queue(list, { command, memberId: member, savedAt: Date.now(), photos, about }));
+		await apply((list) =>
+			queue(list, { command, memberId: member, savedAt: Date.now(), photos, about })
+		);
 		// Watched from here on only: a round ending while it was being queued must not report on it.
 		const delivery = new Promise<Delivery>((resolve) =>
 			watchers.set(command.id, { tell: resolve, applied: null })
@@ -281,8 +294,13 @@ async function sendPhotos(member: string): Promise<void> {
 		if (answer?.status === 'applied') whenApplied();
 		// A refused photo does not undo its entry, which Stella has: it stays kept, with the reason.
 		const watcher = watchers.get(next.parentId);
-		if (watcher && answer?.status === 'refused') tell(next.parentId, deliveryLeftOver(watcher.applied));
-		if (watcher && answer?.status === 'applied' && !items.some((i) => i.command.id === next.parentId)) {
+		if (watcher && answer?.status === 'refused')
+			tell(next.parentId, deliveryLeftOver(watcher.applied));
+		if (
+			watcher &&
+			answer?.status === 'applied' &&
+			!items.some((i) => i.command.id === next.parentId)
+		) {
 			tell(next.parentId, deliveryLeftOver(watcher.applied));
 		}
 		if (answer?.status !== 'applied') return;

@@ -66,9 +66,9 @@ describe('parseRelationshipTypeFields', () => {
 	});
 
 	it('rejects a label longer than the column is meant to hold', () => {
-		expect(() =>
-			parseRelationshipTypeFields({ ...fields, forwardLabel: 'x'.repeat(200) })
-		).toThrow(InvalidRelationshipTypeError);
+		expect(() => parseRelationshipTypeFields({ ...fields, forwardLabel: 'x'.repeat(200) })).toThrow(
+			InvalidRelationshipTypeError
+		);
 	});
 
 	it('rejects a category it does not know', () => {

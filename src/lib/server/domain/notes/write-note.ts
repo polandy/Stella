@@ -34,11 +34,20 @@ export async function writeNote(
 	await requireVisibleContact(deps.contacts, author, input.contactId);
 	const viewer = { id: author.userId, householdId: author.householdId };
 
-	const resolved = resolveForAudience(await deps.contacts.listVisibleTo(viewer), input.visibility, input.body);
+	const resolved = resolveForAudience(
+		await deps.contacts.listVisibleTo(viewer),
+		input.visibility,
+		input.body
+	);
 	const noteId = await createNote(
 		deps,
 		{ ...author, defaultVisibility: input.visibility },
-		{ contactId: input.contactId, body: resolved.body, visibility: input.visibility, isPinned: input.isPinned }
+		{
+			contactId: input.contactId,
+			body: resolved.body,
+			visibility: input.visibility,
+			isPinned: input.isPinned
+		}
 	);
 	await setNoteMentions(deps, noteId, mentionsOtherThan(resolved.ids, input.contactId));
 	return { noteId };

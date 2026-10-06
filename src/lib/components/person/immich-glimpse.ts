@@ -16,7 +16,9 @@ export async function fetchGlimpse(
 	if (togetherWith !== null) params.set('with', togetherWith);
 	const query = params.size === 0 ? '' : `?${params}`;
 	try {
-		const response = await fetch(`/contacts/${encodeURIComponent(contactId)}/immich/photos${query}`);
+		const response = await fetch(
+			`/contacts/${encodeURIComponent(contactId)}/immich/photos${query}`
+		);
 		return response.ok ? ((await response.json()) as ImmichGlimpse) : null;
 	} catch {
 		// The network went away mid-request: the page is about to say Stella is offline.

@@ -64,8 +64,10 @@
 	});
 	const INPUT = 'rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg';
 	// Saves stay in the lightbox: the page's data reloads around it, the photo stays open.
-	const keepOpen = () => async ({ update }: { update: (o?: { reset?: boolean }) => Promise<void> }) =>
-		update({ reset: false });
+	const keepOpen =
+		() =>
+		async ({ update }: { update: (o?: { reset?: boolean }) => Promise<void> }) =>
+			update({ reset: false });
 </script>
 
 <!--
@@ -89,12 +91,25 @@
 	<div class="flex flex-col gap-3 p-4">
 		<div class="flex items-center justify-between gap-3">
 			<p class="truncate text-sm text-fg-muted">
-				{#if photo.roleLabel}<span class="font-medium text-fg">{photo.roleLabel}</span> · {/if}{t('circles.photos.position', { at: at + 1, count })}
+				{#if photo.roleLabel}<span class="font-medium text-fg">{photo.roleLabel}</span> ·
+				{/if}{t('circles.photos.position', { at: at + 1, count })}
 			</p>
 			<div class="flex items-center gap-1">
 				{#if count > 1}
-					<Button variant="ghost" size="sm" icon="back" label={t('circles.photos.previous')} onclick={() => onstep(-1)} />
-					<Button variant="ghost" size="sm" icon="forward" label={t('circles.photos.next')} onclick={() => onstep(1)} />
+					<Button
+						variant="ghost"
+						size="sm"
+						icon="back"
+						label={t('circles.photos.previous')}
+						onclick={() => onstep(-1)}
+					/>
+					<Button
+						variant="ghost"
+						size="sm"
+						icon="forward"
+						label={t('circles.photos.next')}
+						onclick={() => onstep(1)}
+					/>
 				{/if}
 				<Button variant="ghost" size="sm" onclick={onclose}>{t('common.close')}</Button>
 			</div>
@@ -111,7 +126,10 @@
 				<span>{t('contact.photos.takenOn', { date: photoDate(photo) })}</span>
 			{/if}
 			<span>
-				{t('circles.photos.addedBy', { date: photoDate({ takenAt: null, createdAt: photo.createdAt }), name: photo.createdByName })}
+				{t('circles.photos.addedBy', {
+					date: photoDate({ takenAt: null, createdAt: photo.createdAt }),
+					name: photo.createdByName
+				})}
 			</span>
 			{#if photo.pinnedAt !== null}
 				<span class="inline-flex items-center gap-1 font-medium text-primary">
@@ -119,13 +137,20 @@
 				</span>
 			{/if}
 			{#if photo.visibility === 'private'}
-				<span class="inline-flex items-center gap-1"><Icon name="private" size={11} />{t('common.privateInline')}</span>
+				<span class="inline-flex items-center gap-1"
+					><Icon name="private" size={11} />{t('common.privateInline')}</span
+				>
 			{/if}
 		</p>
 
 		<FormError message={error} />
 
-		<form method="POST" action="?/captionPhoto" use:enhance={keepOpen} class="flex items-center gap-2">
+		<form
+			method="POST"
+			action="?/captionPhoto"
+			use:enhance={keepOpen}
+			class="flex items-center gap-2"
+		>
 			<input type="hidden" name="photoId" value={photo.id} />
 			<input
 				name="caption"
@@ -138,9 +163,16 @@
 		</form>
 
 		<div class="flex flex-wrap items-center gap-2">
-			<form method="POST" action="?/setPhotoRole" use:enhance={keepOpen} class="flex items-center gap-2">
+			<form
+				method="POST"
+				action="?/setPhotoRole"
+				use:enhance={keepOpen}
+				class="flex items-center gap-2"
+			>
 				<input type="hidden" name="photoId" value={photo.id} />
-				<label for="circle-photo-role" class="text-sm text-fg-muted">{t('circles.photos.role')}</label>
+				<label for="circle-photo-role" class="text-sm text-fg-muted"
+					>{t('circles.photos.role')}</label
+				>
 				<select id="circle-photo-role" name="role" value={photo.roleLabel ?? ''} class={INPUT}>
 					<option value="">{t('circles.noRole')}</option>
 					{#each photo.roleOptions as role (role)}<option value={role}>{role}</option>{/each}
@@ -167,13 +199,24 @@
 		</div>
 
 		{#if mine}
-			<div class="flex flex-col gap-2 border-t border-dashed border-border pt-3" data-testid="circle-photo-owner">
+			<div
+				class="flex flex-col gap-2 border-t border-dashed border-border pt-3"
+				data-testid="circle-photo-owner"
+			>
 				<span class="text-xs text-fg-subtle">{t('circles.photos.ownerOnly')}</span>
 				{#if confirming}
 					<!-- The question before a photo people wear goes away or turns private (§5.4). -->
-					<div class="flex flex-col gap-2 rounded-control border border-border bg-bg-sunken p-3 text-sm" role="alert" data-testid="cut-warning">
+					<div
+						class="flex flex-col gap-2 rounded-control border border-border bg-bg-sunken p-3 text-sm"
+						role="alert"
+						data-testid="cut-warning"
+					>
 						<p class="font-medium text-fg">{t('circles.cut.wornBy', { count: wornBy })}</p>
-						<p class="text-fg-muted">{confirming === 'remove' ? t('circles.cut.removeKeeps') : t('circles.cut.privateKeeps')}</p>
+						<p class="text-fg-muted">
+							{confirming === 'remove'
+								? t('circles.cut.removeKeeps')
+								: t('circles.cut.privateKeeps')}
+						</p>
 						<div class="flex flex-wrap items-center gap-2">
 							{#if confirming === 'remove'}
 								<form method="POST" action="?/removePhoto" use:enhance={keepOpen} class="contents">
@@ -181,32 +224,68 @@
 									<Button variant="danger" size="sm">{t('circles.cut.removeAnyway')}</Button>
 								</form>
 							{:else}
-								<form method="POST" action="?/setPhotoVisibility" use:enhance={keepOpen} class="contents">
+								<form
+									method="POST"
+									action="?/setPhotoVisibility"
+									use:enhance={keepOpen}
+									class="contents"
+								>
 									<input type="hidden" name="photoId" value={photo.id} />
 									<input type="hidden" name="visibility" value="private" />
-									<Button variant="secondary" size="sm" icon="private">{t('circles.cut.privateAnyway')}</Button>
+									<Button variant="secondary" size="sm" icon="private"
+										>{t('circles.cut.privateAnyway')}</Button
+									>
 								</form>
 							{/if}
-							<Button variant="ghost" size="sm" type="button" onclick={() => (confirming = null)}>{t('common.cancel')}</Button>
+							<Button variant="ghost" size="sm" type="button" onclick={() => (confirming = null)}
+								>{t('common.cancel')}</Button
+							>
 						</div>
 					</div>
 				{:else}
 					<div class="flex flex-wrap items-center gap-2">
 						{#if photo.visibility === 'shared' && wornBy > 0}
-							<Button variant="ghost" size="sm" icon="private" type="button" onclick={() => (confirming = 'private')}>
+							<Button
+								variant="ghost"
+								size="sm"
+								icon="private"
+								type="button"
+								onclick={() => (confirming = 'private')}
+							>
 								{t('contact.photos.makePrivate')}
 							</Button>
 						{:else}
-							<form method="POST" action="?/setPhotoVisibility" use:enhance={keepOpen} class="contents">
+							<form
+								method="POST"
+								action="?/setPhotoVisibility"
+								use:enhance={keepOpen}
+								class="contents"
+							>
 								<input type="hidden" name="photoId" value={photo.id} />
-								<input type="hidden" name="visibility" value={photo.visibility === 'private' ? 'shared' : 'private'} />
-								<Button variant="ghost" size="sm" icon={photo.visibility === 'private' ? 'shared' : 'private'}>
-									{photo.visibility === 'private' ? t('contact.photos.share') : t('contact.photos.makePrivate')}
+								<input
+									type="hidden"
+									name="visibility"
+									value={photo.visibility === 'private' ? 'shared' : 'private'}
+								/>
+								<Button
+									variant="ghost"
+									size="sm"
+									icon={photo.visibility === 'private' ? 'shared' : 'private'}
+								>
+									{photo.visibility === 'private'
+										? t('contact.photos.share')
+										: t('contact.photos.makePrivate')}
 								</Button>
 							</form>
 						{/if}
 						{#if wornBy > 0}
-							<Button variant="danger" size="sm" type="button" class="ml-auto" onclick={() => (confirming = 'remove')}>
+							<Button
+								variant="danger"
+								size="sm"
+								type="button"
+								class="ml-auto"
+								onclick={() => (confirming = 'remove')}
+							>
 								{t('common.remove')}
 							</Button>
 						{:else}

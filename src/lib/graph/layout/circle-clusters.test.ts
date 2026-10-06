@@ -114,12 +114,22 @@ describe('circleClustersLayout', () => {
 			const box = (ids: string[]) => {
 				const xs = ids.flatMap((id) => [layout.get(id)!.x - 55, layout.get(id)!.x + 55]);
 				const ys = ids.flatMap((id) => [layout.get(id)!.y - 35, layout.get(id)!.y + 35]);
-				return { x1: Math.min(...xs) - 16, x2: Math.max(...xs) + 16, y1: Math.min(...ys) - 40, y2: Math.max(...ys) + 16 };
+				return {
+					x1: Math.min(...xs) - 16,
+					x2: Math.max(...xs) + 16,
+					y1: Math.min(...ys) - 40,
+					y2: Math.max(...ys) + 16
+				};
 			};
 			const around = (id: string) => {
 				const at = layout.get(id)!;
 				const size = sizeOf(id);
-				return { x1: at.x - size.width / 2, x2: at.x + size.width / 2, y1: at.y - size.height / 2, y2: at.y + size.height / 2 };
+				return {
+					x1: at.x - size.width / 2,
+					x2: at.x + size.width / 2,
+					y1: at.y - size.height / 2,
+					y2: at.y + size.height / 2
+				};
 			};
 			const boxes = [
 				...grouping.groups.map((g) => box(g.memberIds)),
@@ -136,4 +146,3 @@ describe('circleClustersLayout', () => {
 		});
 	});
 });
-

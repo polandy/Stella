@@ -162,7 +162,9 @@
 	>
 		<!-- The pencil follows the value with no whitespace, which would join a heading's text. -->
 		{#if value}
-			<span class="truncate {valueClass}" class:text-2xl={heading} class:font-semibold={heading}>{value}</span>
+			<span class="truncate {valueClass}" class:text-2xl={heading} class:font-semibold={heading}
+				>{value}</span
+			>
 		{:else}
 			<span class="text-fg-subtle">{emptyLabel}</span>
 		{/if}{#if pencil}<Icon name="rename" size={14} class="text-fg-subtle" />{/if}

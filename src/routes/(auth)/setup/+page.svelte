@@ -33,7 +33,14 @@
 	</label>
 	<label class="flex flex-col gap-1 text-sm">
 		<span class="text-fg-muted">{t('auth.password')}</span>
-		<input name="password" type="password" required minlength="8" autocomplete="new-password" class={INPUT} />
+		<input
+			name="password"
+			type="password"
+			required
+			minlength="8"
+			autocomplete="new-password"
+			class={INPUT}
+		/>
 	</label>
 
 	<Button variant="primary" class="mt-2">{t('auth.setup.submit')}</Button>
