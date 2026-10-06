@@ -166,9 +166,7 @@ export const actions: Actions = {
 			payload: { contactId: params.id, ...parsed.output, title: parsed.output.title ?? null },
 			issuedAt: systemClock.now()
 		});
-		const written = command
-			? await dispatchCommand(getCommandDeps(), author, command).catch(() => null)
-			: null;
+		const written = command ? await dispatchCommand(getCommandDeps(), author, command) : null;
 		if (!command || written?.status !== 'applied')
 			return refusal(written, 'errors.journal.couldNotSave');
 
@@ -192,9 +190,7 @@ export const actions: Actions = {
 				height: Number(heights[i]),
 				issuedAt: systemClock.now()
 			});
-			const stored = photo
-				? await dispatchCommand(getCommandDeps(), author, photo).catch(() => null)
-				: null;
+			const stored = photo ? await dispatchCommand(getCommandDeps(), author, photo) : null;
 			if (stored?.status !== 'applied') return refusal(stored, 'errors.journal.photoFailed');
 		}
 

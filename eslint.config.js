@@ -118,6 +118,24 @@ export default ts.config(
 		}
 	},
 	{
+		// Tests may catch it: they assert what it throws.
+		files: ['src/**'],
+		ignores: ['**/*.test.ts'],
+		rules: {
+			// A command's refusal is already an answer; anything it throws is ours, and must reach
+			// `handleError` to be logged rather than turn into a form message (docs/04 §4.4).
+			'no-restricted-syntax': [
+				'error',
+				{
+					selector:
+						"CallExpression[callee.property.name='catch'][callee.object.callee.name='dispatchCommand']",
+					message:
+						'Do not catch dispatchCommand: refusals come back as its outcome, everything else must reach handleError (docs/08 §8.2 item 11).'
+				}
+			]
+		}
+	},
+	{
 		files: ['**/*.svelte'],
 		rules: {
 			// A `$bindable` prop is written for the parent, which this rule cannot see.

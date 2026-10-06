@@ -80,10 +80,10 @@ export const actions: Actions = {
 			householdId: locals.user.householdId,
 			locale: locals.locale
 		};
-		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
-		if (outcome?.status !== 'applied') {
+		const outcome = await dispatchCommand(getCommandDeps(), author, command);
+		if (outcome.status !== 'applied') {
 			return fail(400, {
-				error: outcome?.status === 'refused' ? outcome.reason(t) : t('errors.contact.needAName')
+				error: outcome.status === 'refused' ? outcome.reason(t) : t('errors.contact.needAName')
 			});
 		}
 		const id = outcome.result.contactId;

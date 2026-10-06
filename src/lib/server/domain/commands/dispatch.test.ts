@@ -6,6 +6,7 @@ import { createTranslator } from '../../../i18n/translate';
 import type { CapturedMoment } from '../moments/moments';
 import {
 	CLAIM_STALE_AFTER_MS,
+	CommandFailedError,
 	dispatchCommand,
 	type CommandActor,
 	type CommandDeps,
@@ -176,10 +177,16 @@ describe('dispatchCommand', () => {
 	});
 
 	it('releases the claim and rethrows an unexpected failure, which is ours rather than the member’s', async () => {
+		const diskFull = new Error('disk full');
 		const f = fakes(async () => {
-			throw new Error('disk full');
+			throw diskFull;
 		});
-		await expect(dispatchCommand(f.deps, actor, moment())).rejects.toThrow('disk full');
+		const thrown = await dispatchCommand(f.deps, actor, moment()).catch((err: unknown) => err);
+
+		// Named by the command it broke, so the log says what the member was doing.
+		expect(thrown).toBeInstanceOf(CommandFailedError);
+		expect(thrown).toMatchObject({ commandType: 'moment.capture', commandId: 'cmd1' });
+		expect((thrown as CommandFailedError).cause).toBe(diskFull);
 		expect(f.receipts.has('cmd1')).toBe(false);
 	});
 

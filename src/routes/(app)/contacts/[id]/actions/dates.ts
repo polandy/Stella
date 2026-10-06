@@ -52,7 +52,7 @@ export const dateActions = {
 					getCommandDeps(),
 					{ userId: viewer.id, householdId: viewer.householdId, locale: locals.locale },
 					command
-				).catch(() => null)
+				)
 			: null;
 		if (outcome?.status !== 'applied') {
 			return fail(400, {

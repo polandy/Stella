@@ -49,7 +49,8 @@ export async function answerFor(
 		}
 		return { id: command.id, status: 'busy' };
 	} catch (err) {
-		console.error(`Command ${command.id} (${command.type}) failed:`, err);
+		// A `CommandFailedError` names the command itself; its cause is what broke.
+		console.error(err);
 		return { id: command.id, status: 'failed' };
 	}
 }

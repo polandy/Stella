@@ -45,11 +45,11 @@ export const tagActions = {
 			householdId: locals.user.householdId,
 			locale: locals.locale
 		};
-		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
-		if (outcome?.status !== 'applied') {
+		const outcome = await dispatchCommand(getCommandDeps(), author, command);
+		if (outcome.status !== 'applied') {
 			return fail(400, {
 				tagError:
-					outcome?.status === 'refused'
+					outcome.status === 'refused'
 						? outcome.reason(translator(locals))
 						: say(locals, 'errors.tag.couldNotAdd')
 			});

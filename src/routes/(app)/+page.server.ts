@@ -167,17 +167,8 @@ export const actions: Actions = {
 			});
 		}
 
-		let outcome;
-		try {
-			outcome = await dispatchCommand(getCommandDeps(), author, command);
-		} catch {
-			// Anything the writer cannot act on is ours to fix, and says so in the reader's
-			// language rather than in a message meant for a log.
-			return fail(400, {
-				momentError: say(locals, 'errors.moment.couldNotSave'),
-				draft: parsed.output.body
-			});
-		}
+		// A refusal is answered here; anything else is ours, and `handleError` logs it.
+		const outcome = await dispatchCommand(getCommandDeps(), author, command);
 		if (outcome.status !== 'applied') {
 			const message =
 				outcome.status === 'refused'
@@ -209,9 +200,7 @@ export const actions: Actions = {
 				height: Number(heights[i]),
 				issuedAt: systemClock.now()
 			});
-			const attached = photo
-				? await dispatchCommand(getCommandDeps(), author, photo).catch(() => null)
-				: null;
+			const attached = photo ? await dispatchCommand(getCommandDeps(), author, photo) : null;
 			if (attached?.status !== 'applied') {
 				return fail(400, {
 					momentError: say(locals, 'errors.moment.photoFailed'),

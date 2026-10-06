@@ -147,5 +147,7 @@ export const errors: ErrorsMessages = {
 	'errors.journal.couldNotSave': 'Der Moment konnte nicht gespeichert werden.',
 	'errors.apiToken.emptyName':
 		'Bitte gib dem Token einen Namen, damit du später weißt, wofür er ist.',
-	'errors.journal.editFailed': 'Die Änderungen konnten nicht gespeichert werden.'
+	'errors.journal.editFailed': 'Die Änderungen konnten nicht gespeichert werden.',
+	'errors.unexpected': (p) =>
+		`Bei uns ist etwas schiefgegangen. Passiert es wieder, nenne diese Kennung: ${p.requestId}`
 };
