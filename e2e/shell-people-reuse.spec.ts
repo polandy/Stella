@@ -108,7 +108,9 @@ test('the journal lets the viewer edit their own entry, with its text, and not a
 	await mine.getByRole('button', { name: 'Edit moment' }).click();
 	// The article stops matching once its text is inside the field, so the page is asked; the
 	// composer for a new entry is closed, so this is the only field of that name.
-	await expect(page.getByRole('textbox', { name: 'Moment', exact: true })).toHaveValue(/1972 flood/);
+	await expect(page.getByRole('textbox', { name: 'Moment', exact: true })).toHaveValue(
+		/1972 flood/
+	);
 	await page.getByRole('button', { name: 'Cancel' }).click();
 });
 
