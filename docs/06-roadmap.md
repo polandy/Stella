@@ -226,6 +226,12 @@ Goal: sand the edges and add the nice-to-haves.
   record (never a private one, §2.10), whether removal is undoable and leaves an audit entry,
   whether editing a note belongs in the same step, and how the author learns their record
   was removed.
+- **Former relationships on the map** — *concept pending.* A link can be marked `former`
+  (docs/03 §3.3, e.g. an ex-partner), which already stops kinship derivation through it
+  (§2.4.1), but the relationship map (§2.7) still draws it like any current one. The concept
+  settles how a former link reads on the map (muted or dashed line, a label, hidden behind a
+  Filter switch?), whether layouts such as the family tree treat it differently, and
+  whether the person page and the pickers set it apart the same way.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
 
