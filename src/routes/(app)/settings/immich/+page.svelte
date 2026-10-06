@@ -52,13 +52,19 @@
 	let refusedHere = $state<Record<string, string>>({});
 	let linkedHere = $state(0);
 
-	type LinkResult = { linked: string[]; refused: { contactId: string; message: string }[]; error: string | null };
+	type LinkResult = {
+		linked: string[];
+		refused: { contactId: string; message: string }[];
+		error: string | null;
+	};
 
 	/** The action's answer when the page was posted without JavaScript. */
 	const posted = $derived(form && 'linked' in form ? (form as LinkResult) : null);
 
 	const refusalFor = (contactId: string) =>
-		refusedHere[contactId] ?? posted?.refused.find((r) => r.contactId === contactId)?.message ?? null;
+		refusedHere[contactId] ??
+		posted?.refused.find((r) => r.contactId === contactId)?.message ??
+		null;
 
 	const linking: SubmitFunction = () => {
 		return async ({ result }) => {
@@ -79,7 +85,13 @@
 		const formEl = event.currentTarget as HTMLFormElement;
 		removals.remove(
 			deferredRemoval(
-				{ kind, id, label, action: formEl.getAttribute('action') ?? '', body: new FormData(formEl) },
+				{
+					kind,
+					id,
+					label,
+					action: formEl.getAttribute('action') ?? '',
+					body: new FormData(formEl)
+				},
 				{ fetch, reload: invalidateAll }
 			)
 		);
@@ -112,7 +124,9 @@
 		which === 'matching'
 			? shown(matches.rows).length
 			: matches.newcomers.filter(
-					(row) => !newcomersGone[row.personId] && !removals.isPending(removalKey('immich-newcomer-ignore', row.personId))
+					(row) =>
+						!newcomersGone[row.personId] &&
+						!removals.isPending(removalKey('immich-newcomer-ignore', row.personId))
 				).length;
 
 	/** Left and right step between the tabs, as a tab list does (WAI-ARIA tabs pattern). */
@@ -125,10 +139,17 @@
 	}
 
 	const shown = <T extends { contact: { id: string } }>(rows: T[]) =>
-		rows.filter((row) => !gone[row.contact.id] && !removals.isPending(removalKey('immich-ignore', row.contact.id)));
+		rows.filter(
+			(row) =>
+				!gone[row.contact.id] && !removals.isPending(removalKey('immich-ignore', row.contact.id))
+		);
 	const stillIgnored = <T extends { contact: { id: string }; personId: string }>(pairs: T[]) =>
-		pairs.filter((pair) => !removals.isPending(removalKey('immich-ignored', pairId(pair.contact.id, pair.personId))));
-	const shownDate = (at: number) => new Intl.DateTimeFormat(i18n.intlLocale, { dateStyle: 'medium' }).format(at);
+		pairs.filter(
+			(pair) =>
+				!removals.isPending(removalKey('immich-ignored', pairId(pair.contact.id, pair.personId)))
+		);
+	const shownDate = (at: number) =>
+		new Intl.DateTimeFormat(i18n.intlLocale, { dateStyle: 'medium' }).format(at);
 	const photoLine = (count: number | null) =>
 		count === null ? null : t('immich.match.photos', { count, shown: shownCount(count) });
 </script>
@@ -141,7 +162,9 @@
 			<Icon name="forward" size={12} />{t('nav.settings')}
 		</a>
 		<h1 class="text-2xl font-semibold text-fg">{t('immich.match.title')}</h1>
-		<p class="text-fg-muted">{tab === 'matching' ? t('immich.match.intro') : t('immich.new.intro')}</p>
+		<p class="text-fg-muted">
+			{tab === 'matching' ? t('immich.match.intro') : t('immich.new.intro')}
+		</p>
 	</header>
 
 	{@render tabs(latest)}
@@ -194,10 +217,12 @@
 				aria-controls="immich-panel"
 				tabindex={tab === which ? 0 : -1}
 				onclick={() => (tab = which)}
-				class="whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-fg aria-selected:bg-card aria-selected:font-medium aria-selected:text-fg aria-selected:shadow-card"
+				class="rounded-full px-3.5 py-1.5 text-sm whitespace-nowrap text-fg-muted transition-colors hover:text-fg aria-selected:bg-card aria-selected:font-medium aria-selected:text-fg aria-selected:shadow-card"
 			>
-				{which === 'matching' ? t('immich.tabs.matching') : t('immich.tabs.new')}{#if count !== null}<span
-						class="tabular-nums">{` · ${shownCount(count)}`}</span
+				{which === 'matching'
+					? t('immich.tabs.matching')
+					: t('immich.tabs.new')}{#if count !== null}<span class="tabular-nums"
+						>{` · ${shownCount(count)}`}</span
 					>{/if}
 			</button>
 		{/each}
@@ -219,17 +244,25 @@
 	{/if}
 {/snippet}
 
-{#snippet ignoreButton(row: { contact: { id: string; displayName: string }; candidates: { personId: string }[] })}
+{#snippet ignoreButton(row: {
+	contact: { id: string; displayName: string };
+	candidates: { personId: string }[];
+})}
 	<form
 		method="POST"
 		action="?/ignore"
-		onsubmit={(event) => deferred(event, 'immich-ignore', row.contact.id, t('immich.match.ignoredToast'))}
+		onsubmit={(event) =>
+			deferred(event, 'immich-ignore', row.contact.id, t('immich.match.ignoredToast'))}
 	>
 		<input type="hidden" name="contactId" value={row.contact.id} />
 		{#each row.candidates as face (face.personId)}
 			<input type="hidden" name="immichPersonId" value={face.personId} />
 		{/each}
-		<Button variant="ghost" size="sm" label={t('immich.match.ignoreLabel', { name: row.contact.displayName })}>
+		<Button
+			variant="ghost"
+			size="sm"
+			label={t('immich.match.ignoreLabel', { name: row.contact.displayName })}
+		>
 			{t('immich.match.ignore')}
 		</Button>
 	</form>
@@ -278,9 +311,17 @@
 								class="size-12 shrink-0 rounded-full bg-bg-sunken object-cover"
 								loading="lazy"
 							/>
-							<Avatar id={row.contact.id} name={row.contact.displayName} avatarPhotoId={row.contact.avatarPhotoId} size={48} />
+							<Avatar
+								id={row.contact.id}
+								name={row.contact.displayName}
+								avatarPhotoId={row.contact.avatarPhotoId}
+								size={48}
+							/>
 							<div class="min-w-0 flex-1">
-								<a href="/contacts/{row.contact.id}" class="block truncate font-medium text-fg hover:underline">
+								<a
+									href="/contacts/{row.contact.id}"
+									class="block truncate font-medium text-fg hover:underline"
+								>
 									{row.contact.displayName}
 								</a>
 								<p class="truncate text-sm text-fg-muted">
@@ -294,7 +335,10 @@
 								<Button
 									variant="primary"
 									size="sm"
-									label={t('immich.picker.link', { immichName: face.name, name: row.contact.displayName })}
+									label={t('immich.picker.link', {
+										immichName: face.name,
+										name: row.contact.displayName
+									})}
 								>
 									{t('immich.match.link')}
 								</Button>
@@ -303,8 +347,16 @@
 						</div>
 					{:else}
 						<div class="flex items-center gap-3">
-							<Avatar id={row.contact.id} name={row.contact.displayName} avatarPhotoId={row.contact.avatarPhotoId} size={40} />
-							<a href="/contacts/{row.contact.id}" class="min-w-0 flex-1 font-medium text-fg hover:underline">
+							<Avatar
+								id={row.contact.id}
+								name={row.contact.displayName}
+								avatarPhotoId={row.contact.avatarPhotoId}
+								size={40}
+							/>
+							<a
+								href="/contacts/{row.contact.id}"
+								class="min-w-0 flex-1 font-medium text-fg hover:underline"
+							>
 								{row.candidates.length === 1
 									? t('immich.match.maybeOne', { name: row.contact.displayName })
 									: t('immich.match.maybeMany', { name: row.contact.displayName })}
@@ -329,7 +381,10 @@
 										<input type="hidden" name="immichPersonId" value={face.personId} />
 										<button
 											class="flex w-28 flex-col items-center gap-1 rounded-app border border-border p-2 text-center transition-colors hover:bg-card-hover"
-											aria-label={t('immich.picker.link', { immichName: face.name, name: row.contact.displayName })}
+											aria-label={t('immich.picker.link', {
+												immichName: face.name,
+												name: row.contact.displayName
+											})}
 										>
 											<img
 												src={face.faceUrl}
@@ -341,7 +396,9 @@
 											/>
 											<span class="w-full truncate text-sm text-fg">{face.name}</span>
 											{#if photoLine(face.photoCount)}
-												<span class="text-xs text-fg-muted tabular-nums">{photoLine(face.photoCount)}</span>
+												<span class="text-xs text-fg-muted tabular-nums"
+													>{photoLine(face.photoCount)}</span
+												>
 											{/if}
 											<span class="text-xs font-medium text-link">{t('immich.match.link')}</span>
 										</button>
@@ -373,11 +430,20 @@
 							class="size-10 shrink-0 rounded-full bg-bg-sunken object-cover"
 							loading="lazy"
 						/>
-						<Avatar id={pair.contact.id} name={pair.contact.displayName} avatarPhotoId={pair.contact.avatarPhotoId} size={40} />
+						<Avatar
+							id={pair.contact.id}
+							name={pair.contact.displayName}
+							avatarPhotoId={pair.contact.avatarPhotoId}
+							size={40}
+						/>
 						<div class="min-w-0 flex-1">
 							<p class="truncate text-sm text-fg">
-								<a href="/contacts/{pair.contact.id}" class="font-medium hover:underline">{pair.contact.displayName}</a>
-								· {pair.immichName ? t('immich.match.inImmich', { name: pair.immichName }) : t('immich.match.unnamedFace')}
+								<a href="/contacts/{pair.contact.id}" class="font-medium hover:underline"
+									>{pair.contact.displayName}</a
+								>
+								· {pair.immichName
+									? t('immich.match.inImmich', { name: pair.immichName })
+									: t('immich.match.unnamedFace')}
 							</p>
 							<p class="text-xs text-fg-muted">
 								{t('immich.match.ignoredBy', {
@@ -391,12 +457,21 @@
 							action="?/proposeAgain"
 							onsubmit={(event) => {
 								delete gone[pair.contact.id];
-								deferred(event, 'immich-ignored', pairId(pair.contact.id, pair.personId), t('immich.match.proposedAgainToast'));
+								deferred(
+									event,
+									'immich-ignored',
+									pairId(pair.contact.id, pair.personId),
+									t('immich.match.proposedAgainToast')
+								);
 							}}
 						>
 							<input type="hidden" name="contactId" value={pair.contact.id} />
 							<input type="hidden" name="immichPersonId" value={pair.personId} />
-							<Button variant="ghost" size="sm" label={t('immich.match.proposeAgainLabel', { name: pair.contact.displayName })}>
+							<Button
+								variant="ghost"
+								size="sm"
+								label={t('immich.match.proposeAgainLabel', { name: pair.contact.displayName })}
+							>
 								{t('immich.match.proposeAgain')}
 							</Button>
 						</form>

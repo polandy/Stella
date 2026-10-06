@@ -37,7 +37,8 @@ export const errors = {
 	'errors.relationship.noSuchDay': (p: { day: string }) => `${p.day} is not a day that exists.`,
 	'errors.relationship.currentOrFormer': 'A relationship is either current or former.',
 	/** One refused person of a batch, by name, before the reason (docs/02 §2.4). */
-	'errors.relationship.refusedFor': (p: { name: string; reason: string }) => `${p.name}: ${p.reason}`,
+	'errors.relationship.refusedFor': (p: { name: string; reason: string }) =>
+		`${p.name}: ${p.reason}`,
 
 	'errors.relationshipType.needsLabel': 'A relationship type needs a label.',
 	'errors.relationshipType.needsBothLabels':
@@ -50,7 +51,8 @@ export const errors = {
 		`"${p.label}" has no letters or digits to name it by.`,
 	'errors.relationshipType.taken': (p: { label: string }) =>
 		`A relationship type named like "${p.label}" already exists.`,
-	'errors.relationshipType.builtIn': 'The built-in relationship types cannot be changed or removed.',
+	'errors.relationshipType.builtIn':
+		'The built-in relationship types cannot be changed or removed.',
 	'errors.relationshipType.inUse': (p: { count: number }) =>
 		p.count === 1
 			? '1 relationship still uses this type. Change it first.'
@@ -61,7 +63,8 @@ export const errors = {
 
 	'errors.date.unknownKind': (p: { kind: string }) => `Unknown important date kind: ${p.kind}`,
 	'errors.date.format': 'A date must be YYYY-MM-DD, or --MM-DD without a year.',
-	'errors.date.noSuchDay': (p: { day: string }) => `There is no such day in the calendar: ${p.day}.`,
+	'errors.date.noSuchDay': (p: { day: string }) =>
+		`There is no such day in the calendar: ${p.day}.`,
 	'errors.date.needsLabel': 'Give the date a name so it means something later.',
 	'errors.date.couldNotAdd': 'Could not add the date.',
 
@@ -78,7 +81,8 @@ export const errors = {
 	'errors.command.malformed': 'Stella could not read what was sent. Save it again as new.',
 	'errors.command.notQueueable': 'Only additions can wait to be sent.',
 	'errors.command.photoParentGone': 'What this photo belongs to is no longer there to add it to.',
-	'errors.moment.needsPerson': 'Mention at least one person with @ so the moment has a place to go.',
+	'errors.moment.needsPerson':
+		'Mention at least one person with @ so the moment has a place to go.',
 	'errors.mention.ambiguous': (p: { handle: string; count: number; people: string }) =>
 		`@${p.handle} could be ${p.count} people: ${p.people}. Pick the one you mean from the list that opens when you type @.`,
 
@@ -134,7 +138,8 @@ export const errors = {
 	'errors.photo.onlyOwnerRemove': 'Only the person who added a photo can remove it.',
 	'errors.photo.unreadable': 'Could not read that photo.',
 	'errors.photo.notFound': 'That photo could not be found.',
-	'errors.photo.fromImmichGone': 'This photo is no longer available from Immich. Reload the page and try again.',
+	'errors.photo.fromImmichGone':
+		'This photo is no longer available from Immich. Reload the page and try again.',
 	'errors.circle.needName': 'Please enter a circle name.',
 	'errors.circle.couldNotAdd': 'Could not add the circle.',
 	'errors.circle.notFound': 'Circle not found',

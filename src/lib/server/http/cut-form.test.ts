@@ -5,7 +5,16 @@ import { readCutForm } from './cut-form';
 
 function form(over: Record<string, string | null> = {}) {
 	const f = new FormData();
-	const fields = { photoId: 'class', contactId: 'anna', cropX: '120.5', cropY: '40', cropSize: '300', width: '1024', height: '1024', ...over };
+	const fields = {
+		photoId: 'class',
+		contactId: 'anna',
+		cropX: '120.5',
+		cropY: '40',
+		cropSize: '300',
+		width: '1024',
+		height: '1024',
+		...over
+	};
 	for (const [key, value] of Object.entries(fields)) if (value !== null) f.set(key, value);
 	f.set('image', new File([new Uint8Array([1, 2])], 'a.jpg'));
 	f.set('thumb', new File([new Uint8Array([3])], 't.jpg'));
@@ -18,7 +27,12 @@ describe('readCutForm', () => {
 			photoId: 'class',
 			contactId: 'anna',
 			crop: { x: 120.5, y: 40, size: 300 },
-			upload: { image: new Uint8Array([1, 2]), thumb: new Uint8Array([3]), width: 1024, height: 1024 }
+			upload: {
+				image: new Uint8Array([1, 2]),
+				thumb: new Uint8Array([3]),
+				width: 1024,
+				height: 1024
+			}
 		});
 	});
 

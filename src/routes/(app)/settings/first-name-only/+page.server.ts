@@ -1,6 +1,10 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { describeContact, EmptyDescriptionError, listContacts } from '$lib/server/domain/contacts/contacts';
+import {
+	describeContact,
+	EmptyDescriptionError,
+	listContacts
+} from '$lib/server/domain/contacts/contacts';
 import { contextOfPeople } from '$lib/server/domain/contacts/person-context';
 import { getAttention, getContactDeps, getPersonContextDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
@@ -57,11 +61,19 @@ export const actions: Actions = {
 		if (!parsed.success) throw error(400, say(locals, 'errors.contact.emptyDescription'));
 
 		try {
-			const saved = await describeContact(getContactDeps(), viewer, parsed.output.id, parsed.output.description);
+			const saved = await describeContact(
+				getContactDeps(),
+				viewer,
+				parsed.output.id,
+				parsed.output.description
+			);
 			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
 		} catch (err) {
 			if (err instanceof EmptyDescriptionError)
-				return fail(400, { describeError: err.phrase(translator(locals)), describedId: parsed.output.id });
+				return fail(400, {
+					describeError: err.phrase(translator(locals)),
+					describedId: parsed.output.id
+				});
 			throw err;
 		}
 		// The reloaded list no longer has them.

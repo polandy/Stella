@@ -41,7 +41,11 @@ export function recentDays(lang: DateLanguage, today: string): RecentDay[] {
 			name:
 				relativeName(lang, back) ??
 				date.toLocaleDateString(lang.intlLocale, { weekday: 'long', timeZone: 'UTC' }),
-			date: date.toLocaleDateString(lang.intlLocale, { day: 'numeric', month: 'short', timeZone: 'UTC' })
+			date: date.toLocaleDateString(lang.intlLocale, {
+				day: 'numeric',
+				month: 'short',
+				timeZone: 'UTC'
+			})
 		};
 	});
 }

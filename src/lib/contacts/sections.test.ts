@@ -13,7 +13,13 @@ import {
 
 describe('CONTACT_SECTIONS', () => {
 	test('lists the cards in the order the page stacks them: relationships, then photos', () => {
-		expect([...CONTACT_SECTIONS]).toEqual(['relationships', 'photos', 'story', 'notes', 'mentions']);
+		expect([...CONTACT_SECTIONS]).toEqual([
+			'relationships',
+			'photos',
+			'story',
+			'notes',
+			'mentions'
+		]);
 	});
 });
 

@@ -157,7 +157,8 @@
 			const result = deserialize(await res.text());
 			// A refusal says why — a namesake to pick, say (docs/02 §2.2.3) — and keeps the text.
 			if (result.type === 'failure') {
-				editError = (result.data?.journalError as string | undefined) ?? t('journal.editSaveFailed');
+				editError =
+					(result.data?.journalError as string | undefined) ?? t('journal.editSaveFailed');
 				return;
 			}
 			if (result.type === 'error') throw new Error();
@@ -262,8 +263,11 @@
 			<div class="flex flex-wrap items-center gap-3">
 				<!-- `sr-only`, not `hidden`: a hidden input is out of the tab order, and the button
 				     with it (WCAG 2.1.1). The label shows where focus is instead. -->
-				<label class="inline-flex cursor-pointer items-center gap-2 rounded-app border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring">
-					<Icon name="photo" size={15} /> {t('journal.addPhotos')}
+				<label
+					class="inline-flex cursor-pointer items-center gap-2 rounded-app border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
+				>
+					<Icon name="photo" size={15} />
+					{t('journal.addPhotos')}
 					<input type="file" accept="image/*" multiple onchange={onFiles} class="sr-only" />
 				</label>
 				{#if picked.length}
@@ -300,8 +304,12 @@
 				<li>
 					<KeptItem {item}>
 						{#snippet meta()}<span>· {prettyDate(item.command.payload.entryDate)}</span>{/snippet}
-						{#if item.command.payload.title}<p class="mt-1 font-medium text-fg">{item.command.payload.title}</p>{/if}
-						<p class="mt-1 whitespace-pre-line text-fg">{asTyped(item.command.payload.body, [...candidates, data.contact])}</p>
+						{#if item.command.payload.title}<p class="mt-1 font-medium text-fg">
+								{item.command.payload.title}
+							</p>{/if}
+						<p class="mt-1 whitespace-pre-line text-fg">
+							{asTyped(item.command.payload.body, [...candidates, data.contact])}
+						</p>
 					</KeptItem>
 				</li>
 			{/each}
@@ -313,7 +321,7 @@
 			{#each days as day (day.date)}
 				<li class="flex flex-col gap-3">
 					<div class="flex items-center gap-3">
-						<h2 class="text-sm font-semibold uppercase tracking-wide text-fg-subtle">
+						<h2 class="text-sm font-semibold tracking-wide text-fg-subtle uppercase">
 							{prettyDate(day.date)}
 						</h2>
 						<span class="h-px flex-1 bg-border"></span>
@@ -436,10 +444,16 @@
 			{/each}
 		</ol>
 	{:else}
-		<EmptyState icon="journal" title={t('journal.empty.title')} hint={t('journal.empty.hint', { name: c.displayName })}>
+		<EmptyState
+			icon="journal"
+			title={t('journal.empty.title')}
+			hint={t('journal.empty.hint', { name: c.displayName })}
+		>
 			<!-- With the form already open above, a second way to open it would only distract. -->
 			{#if !showForm}
-				<Button variant="primary" icon="write" type="button" onclick={() => (composing = true)}>{t('journal.empty.write')}</Button>
+				<Button variant="primary" icon="write" type="button" onclick={() => (composing = true)}
+					>{t('journal.empty.write')}</Button
+				>
 			{/if}
 		</EmptyState>
 	{/if}

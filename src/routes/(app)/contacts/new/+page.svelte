@@ -79,7 +79,9 @@
 	let formElement: HTMLFormElement | undefined = $state();
 	const text = (data: FormData, name: string) => String(data.get(name) ?? '').trim() || null;
 	const nameOf = (data: FormData) =>
-		[text(data, 'firstName'), text(data, 'lastName')].filter(Boolean).join(' ') || text(data, 'nickname') || '';
+		[text(data, 'firstName'), text(data, 'lastName')].filter(Boolean).join(' ') ||
+		text(data, 'nickname') ||
+		'';
 	const personForm = keepable(
 		{
 			toCommand: (data, id) => {
@@ -139,13 +141,25 @@
 
 <main class="mx-auto flex w-full max-w-lg flex-col gap-6 px-6 py-10">
 	<header>
-		<h1 class="text-2xl font-semibold text-fg">{data.isSelf ? t('contacts.new.selfHeading') : t('contacts.new.heading')}</h1>
-		<p class="text-sm text-fg-muted">{data.isSelf ? t('contacts.new.selfIntro') : t('contacts.new.intro')}</p>
+		<h1 class="text-2xl font-semibold text-fg">
+			{data.isSelf ? t('contacts.new.selfHeading') : t('contacts.new.heading')}
+		</h1>
+		<p class="text-sm text-fg-muted">
+			{data.isSelf ? t('contacts.new.selfIntro') : t('contacts.new.intro')}
+		</p>
 	</header>
 
-	<form method="POST" use:enhance={personForm} bind:this={formElement} class="flex flex-col gap-4 rounded-app bg-card p-6 shadow-card">
+	<form
+		method="POST"
+		use:enhance={personForm}
+		bind:this={formElement}
+		class="flex flex-col gap-4 rounded-app bg-card p-6 shadow-card"
+	>
 		{#if keptName !== null}
-			<p class="flex items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-sm text-fg-muted" role="status">
+			<p
+				class="flex items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-sm text-fg-muted"
+				role="status"
+			>
 				<Icon name="offline" size={14} />{t('contacts.new.kept', { name: keptName })}
 			</p>
 		{/if}
@@ -167,7 +181,14 @@
 			</label>
 			<label class="{field} flex-1">
 				<span class="text-fg-muted">{t('contacts.new.lastName')}</span>
-				<input name="lastName" class={input} autocomplete="off" bind:value={lastName} oninput={onNameInput} onblur={loadSuggestions} />
+				<input
+					name="lastName"
+					class={input}
+					autocomplete="off"
+					bind:value={lastName}
+					oninput={onNameInput}
+					onblur={loadSuggestions}
+				/>
 			</label>
 		</div>
 
@@ -189,7 +210,7 @@
 							class="peer sr-only"
 						/>
 						<span
-							class="inline-block cursor-pointer rounded-full border border-border px-3 py-1 text-sm text-fg-muted transition-colors hover:border-primary hover:text-fg peer-checked:border-primary peer-checked:bg-primary-soft peer-checked:font-semibold peer-checked:text-fg peer-focus-visible:outline-2 peer-focus-visible:outline-primary"
+							class="inline-block cursor-pointer rounded-full border border-border px-3 py-1 text-sm text-fg-muted transition-colors peer-checked:border-primary peer-checked:bg-primary-soft peer-checked:font-semibold peer-checked:text-fg peer-focus-visible:outline-2 peer-focus-visible:outline-primary hover:border-primary hover:text-fg"
 						>
 							{t(`contact.gender.${option}`)}
 						</span>
@@ -199,12 +220,20 @@
 		</fieldset>
 
 		{#if suggestions.length > 0}
-			<section class="flex flex-col gap-2 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="name-suggestions" aria-live="polite">
-				<h2 class="text-xs font-medium uppercase tracking-wide text-fg-muted">{t('contacts.new.alreadyHere')}</h2>
+			<section
+				class="flex flex-col gap-2 rounded-md border border-border-subtle bg-bg-sunken p-3"
+				data-testid="name-suggestions"
+				aria-live="polite"
+			>
+				<h2 class="text-xs font-medium tracking-wide text-fg-muted uppercase">
+					{t('contacts.new.alreadyHere')}
+				</h2>
 				<ul class="flex flex-col gap-1.5">
 					{#each suggestions as s (s.id)}
 						<li class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-							<a href="/contacts/{s.id}" class="font-medium text-fg hover:underline">{s.displayName}</a>
+							<a href="/contacts/{s.id}" class="font-medium text-fg hover:underline"
+								>{s.displayName}</a
+							>
 							<span class="text-fg-muted">{t(REASON_LABEL[s.reason])}</span>
 							<label class="ml-auto flex items-center gap-1.5 text-fg-muted">
 								<input type="radio" name="relateTo" value={s.id} bind:group={relateTo} />
@@ -235,7 +264,12 @@
 					{t('contacts.new.description')}
 					<span class="text-fg-subtle">{t('contacts.new.descriptionHint')}</span>
 				</span>
-				<input name="description" class={input} bind:value={description} placeholder={t('contacts.new.descriptionPlaceholder')} />
+				<input
+					name="description"
+					class={input}
+					bind:value={description}
+					placeholder={t('contacts.new.descriptionPlaceholder')}
+				/>
 			</label>
 		{/if}
 
@@ -254,8 +288,12 @@
 
 		<!-- Rarely needed at the moment of adding someone; kept, but out of the way. -->
 		<details class="group rounded-md border border-border-subtle">
-			<summary class="cursor-pointer list-none px-3 py-2 text-sm text-fg-muted [&::-webkit-details-marker]:hidden">
-				<span class="inline-block transition-transform group-open:rotate-90" aria-hidden="true">›</span>
+			<summary
+				class="cursor-pointer list-none px-3 py-2 text-sm text-fg-muted [&::-webkit-details-marker]:hidden"
+			>
+				<span class="inline-block transition-transform group-open:rotate-90" aria-hidden="true"
+					>›</span
+				>
 				{t('contacts.new.more')}
 			</summary>
 			<div class="flex flex-col gap-4 border-t border-border-subtle p-3">
@@ -282,6 +320,8 @@
 			</label>
 		</fieldset>
 
-		<Button variant="primary" class="mt-2">{data.isSelf ? t('contacts.new.selfSubmit') : t('nav.addPerson')}</Button>
+		<Button variant="primary" class="mt-2"
+			>{data.isSelf ? t('contacts.new.selfSubmit') : t('nav.addPerson')}</Button
+		>
 	</form>
 </main>

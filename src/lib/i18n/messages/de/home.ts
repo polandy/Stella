@@ -4,8 +4,7 @@ import type { HomeMessages } from '../en/home';
 export const home: HomeMessages = {
 	'home.title': 'Start · Stella',
 	'home.heading': 'Was ist passiert?',
-	'home.intro':
-		'Schreib auf, was war – der ganze Haushalt sieht es, außer du hältst es privat.',
+	'home.intro': 'Schreib auf, was war – der ganze Haushalt sieht es, außer du hältst es privat.',
 	'home.you': 'Du',
 	'home.atAGlance': 'Auf einen Blick',
 	'home.comingUp': 'Kommt bald',
@@ -24,8 +23,10 @@ export const home: HomeMessages = {
 	'home.outbox.photosWaiting': 'Fotos noch nicht gesendet',
 	'home.outbox.sendingPhotos': 'Fotos werden gesendet…',
 	'home.outbox.photoRefused': 'Ein Foto konnte nicht gesendet werden',
-	'home.outbox.photoTooLarge': 'Zu groß für diesen Stella-Server. Wer ihn betreibt, kann BODY_SIZE_LIMIT erhöhen.',
-	'home.outbox.photoCount': (p: { count: number }) => (p.count === 1 ? '1 Foto' : `${p.count} Fotos`),
+	'home.outbox.photoTooLarge':
+		'Zu groß für diesen Stella-Server. Wer ihn betreibt, kann BODY_SIZE_LIMIT erhöhen.',
+	'home.outbox.photoCount': (p: { count: number }) =>
+		p.count === 1 ? '1 Foto' : `${p.count} Fotos`,
 	'home.outbox.noteOn': (p: { name: string }) => `· Notiz zu ${p.name}`,
 	'home.outbox.editOnPage': 'Bearbeiten',
 	'home.outbox.discardNamed': (p: { name: string }) => `„${p.name}“ verwerfen`,
@@ -46,7 +47,8 @@ export const home: HomeMessages = {
 	'home.welcome.self.hint':
 		'Lege deinen eigenen Eintrag an. Die Karte öffnet sich bei dir, und alle, die du hinzufügst, lassen sich mit dir verknüpfen.',
 	'home.welcome.import.title': 'Du kommst von Monica?',
-	'home.welcome.import.hint': 'Hol deine Menschen, Notizen und Beziehungen in einem Schritt herüber.',
+	'home.welcome.import.hint':
+		'Hol deine Menschen, Notizen und Beziehungen in einem Schritt herüber.',
 	'home.welcome.add.title': 'Jemanden hinzufügen',
 	'home.welcome.add.hint': 'Ein Name genügt; alles andere kann später kommen.',
 	'home.welcome.done': 'Erledigt',
@@ -66,7 +68,9 @@ export const home: HomeMessages = {
 	'home.stream.loggedWith': 'mit',
 	'home.stream.loggedAfter': 'fest',
 	'home.stream.lastNames': (p) =>
-		p.count === 1 ? `gab 1 Person den Nachnamen ${p.name}` : `gab ${p.count} Personen den Nachnamen ${p.name}`,
+		p.count === 1
+			? `gab 1 Person den Nachnamen ${p.name}`
+			: `gab ${p.count} Personen den Nachnamen ${p.name}`,
 	'home.stream.renamed': (p) => `benannte ${p.from} in`,
 	'home.stream.renamedAfter': 'um',
 	'home.stream.nameEdited': 'bearbeitete den Namen von',
@@ -74,7 +78,8 @@ export const home: HomeMessages = {
 	'home.stream.linkedAfter': '',
 	'home.stream.relationship': 'Beziehung',
 	'home.stream.addedPhotoTo': () => 'fügte',
-	'home.stream.addedPhotoToAfter': (p) => (p.count === 1 ? 'ein Foto hinzu' : `${p.count} Fotos hinzu`),
+	'home.stream.addedPhotoToAfter': (p) =>
+		p.count === 1 ? 'ein Foto hinzu' : `${p.count} Fotos hinzu`,
 	'home.filter.label': 'Verlauf filtern',
 	'home.filter.kind': 'Was',
 	'home.filter.member': 'Wer',
@@ -90,7 +95,8 @@ export const home: HomeMessages = {
 	'home.filter.empty.hint': 'Noch passt nichts im Verlauf zu diesem Filter.',
 	'home.filter.clear': 'Alles zeigen',
 	'home.filter.pill': 'Filter',
-	'home.filter.pillLabel': (p) => (p.count === 0 ? 'Filter für den Verlauf' : `Filter für den Verlauf, ${p.count} aktiv`),
+	'home.filter.pillLabel': (p) =>
+		p.count === 0 ? 'Filter für den Verlauf' : `Filter für den Verlauf, ${p.count} aktiv`,
 	'home.filter.done': 'Fertig',
 	'home.today': 'Heute',
 	'home.yesterday': 'Gestern',
@@ -102,7 +108,8 @@ export const home: HomeMessages = {
 
 	'composer.saveForLater': 'Für später speichern',
 	'composer.couldNotKeep': 'Dieses Gerät konnte den Moment nicht behalten. Der Text ist noch da.',
-	'composer.alreadySending': 'Dieser Moment wird gerade gesendet und kann hier nicht mehr bearbeitet werden.',
+	'composer.alreadySending':
+		'Dieser Moment wird gerade gesendet und kann hier nicht mehr bearbeitet werden.',
 	'composer.placeholder': 'Jemanden getroffen? Schreib es hier, erwähne Menschen mit @',
 	'composer.label': 'Was ist passiert?',
 	'composer.people': 'Menschen',

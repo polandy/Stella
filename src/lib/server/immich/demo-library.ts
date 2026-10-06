@@ -12,7 +12,13 @@ import type { FakeImmichGroupPhotos, FakeImmichLibrary, FakeImmichPerson } from 
  */
 
 /** A face of the demo library: a fixed id, a name, a photo count and a tile colour. */
-const face = (id: string, name: string, assets: number, color: string, hidden = false): FakeImmichPerson => ({
+const face = (
+	id: string,
+	name: string,
+	assets: number,
+	color: string,
+	hidden = false
+): FakeImmichPerson => ({
 	id,
 	name,
 	assets,
@@ -67,7 +73,12 @@ const ROSA = 'd0000000-0000-4000-8000-000000000007';
  * child, the grandparents. Ids under `e…-9000-…`, apart from every face's.
  */
 function demoTogether(): FakeImmichGroupPhotos[] {
-	const group = (n: number, personIds: string[], assets: number, color: string): FakeImmichGroupPhotos => ({
+	const group = (
+		n: number,
+		personIds: string[],
+		assets: number,
+		color: string
+	): FakeImmichGroupPhotos => ({
 		id: `e0000000-0000-4000-9000-${n.toString(16).padStart(12, '0')}`,
 		personIds,
 		assets,

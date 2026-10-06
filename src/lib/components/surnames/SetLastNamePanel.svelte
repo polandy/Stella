@@ -53,10 +53,18 @@
 				placement="above"
 				class="w-44 rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
 			/>
-			<Button variant="primary" size="sm" type="button" disabled={disabled || !typed || chosen.length === 0} onclick={() => (confirming = true)}>
+			<Button
+				variant="primary"
+				size="sm"
+				type="button"
+				disabled={disabled || !typed || chosen.length === 0}
+				onclick={() => (confirming = true)}
+			>
 				{t('surnames.next')}
 			</Button>
-			<Button variant="ghost" size="sm" type="button" onclick={oncancel}>{t('common.cancel')}</Button>
+			<Button variant="ghost" size="sm" type="button" onclick={oncancel}
+				>{t('common.cancel')}</Button
+			>
 		</div>
 	{:else}
 		<form
@@ -72,7 +80,9 @@
 			<input type="hidden" name="lastName" value={typed} />
 			{#each plan.written as p (p.id)}<input type="hidden" name="contactId" value={p.id} />{/each}
 			{#each plan.replaceIds as id (id)}<input type="hidden" name="replaceId" value={id} />{/each}
-			<p class="text-sm text-fg">{t('surnames.confirm', { name: typed, count: plan.written.length })}</p>
+			<p class="text-sm text-fg">
+				{t('surnames.confirm', { name: typed, count: plan.written.length })}
+			</p>
 			{#each plan.different as p (p.id)}
 				<label class="flex items-center gap-2 text-sm text-fg-muted">
 					<input type="checkbox" class="size-5" bind:checked={replace[p.id]} />
@@ -80,8 +90,12 @@
 				</label>
 			{/each}
 			<div class="flex gap-2">
-				<Button variant="primary" size="sm" disabled={disabled || plan.written.length === 0}>{t('surnames.set')}</Button>
-				<Button variant="ghost" size="sm" type="button" onclick={() => (confirming = false)}>{t('surnames.back')}</Button>
+				<Button variant="primary" size="sm" disabled={disabled || plan.written.length === 0}
+					>{t('surnames.set')}</Button
+				>
+				<Button variant="ghost" size="sm" type="button" onclick={() => (confirming = false)}
+					>{t('surnames.back')}</Button
+				>
 			</div>
 		</form>
 	{/if}

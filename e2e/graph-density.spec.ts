@@ -1,6 +1,14 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { openPerson, signIn } from './app';
-import { arrangement, clickNode, drawnNode, filterMenu, firstClickableNode, ringsOnCanvas, settled } from './graph-canvas';
+import {
+	arrangement,
+	clickNode,
+	drawnNode,
+	filterMenu,
+	firstClickableNode,
+	ringsOnCanvas,
+	settled
+} from './graph-canvas';
 import { LINK, personIdOf, seedHousehold } from './seed';
 
 /*
@@ -42,8 +50,9 @@ async function nodes(page: Page): Promise<NodeFacts[]> {
 		let el: HTMLElement | null = document.querySelector('canvas');
 		while (el && !('_cyreg' in el)) el = el.parentElement;
 		if (!el) return [];
-		const cy = (el as unknown as { _cyreg: { cy: { nodes(): { map<R>(fn: (n: Node) => R): R[] } } } })._cyreg
-			.cy;
+		const cy = (
+			el as unknown as { _cyreg: { cy: { nodes(): { map<R>(fn: (n: Node) => R): R[] } } } }
+		)._cyreg.cy;
 		return cy.nodes().map((n) => ({
 			id: n.id(),
 			label: String(n.data('label') ?? ''),
@@ -64,8 +73,9 @@ async function nodeStyle(page: Page, id: string, property: string): Promise<stri
 		([nodeId, name]) => {
 			let el: HTMLElement | null = document.querySelector('canvas');
 			while (el && !('_cyreg' in el)) el = el.parentElement;
-			const cy = (el as unknown as { _cyreg: { cy: { $id(id: string): { style(p: string): unknown } } } })
-				._cyreg.cy;
+			const cy = (
+				el as unknown as { _cyreg: { cy: { $id(id: string): { style(p: string): unknown } } } }
+			)._cyreg.cy;
 			return String(cy.$id(nodeId).style(name));
 		},
 		[id, property] as const
@@ -85,8 +95,9 @@ async function lines(page: Page) {
 		let el: HTMLElement | null = document.querySelector('canvas');
 		while (el && !('_cyreg' in el)) el = el.parentElement;
 		if (!el) return [];
-		const cy = (el as unknown as { _cyreg: { cy: { edges(): { map<R>(fn: (e: Edge) => R): R[] } } } })._cyreg
-			.cy;
+		const cy = (
+			el as unknown as { _cyreg: { cy: { edges(): { map<R>(fn: (e: Edge) => R): R[] } } } }
+		)._cyreg.cy;
 		return cy
 			.edges()
 			.map((e) => ({
@@ -110,8 +121,9 @@ async function ties(page: Page): Promise<{ source: string; target: string }[]> {
 		let el: HTMLElement | null = document.querySelector('canvas');
 		while (el && !('_cyreg' in el)) el = el.parentElement;
 		if (!el) return [];
-		const cy = (el as unknown as { _cyreg: { cy: { edges(): { map<R>(fn: (e: Edge) => R): R[] } } } })._cyreg
-			.cy;
+		const cy = (
+			el as unknown as { _cyreg: { cy: { edges(): { map<R>(fn: (e: Edge) => R): R[] } } } }
+		)._cyreg.cy;
 		return cy.edges().map((e) => ({ source: e.data('source'), target: e.data('target') }));
 	});
 }
@@ -126,7 +138,11 @@ async function openMap(page: Page, centre: string): Promise<void> {
 /** Selects a person through the search field and expands them from the peek panel. */
 async function expand(page: Page, person: NodeFacts): Promise<void> {
 	await page.getByLabel('Find a person').fill(person.label);
-	await page.getByTestId('graph-suggestions').getByRole('button', { name: person.label }).first().click();
+	await page
+		.getByTestId('graph-suggestions')
+		.getByRole('button', { name: person.label })
+		.first()
+		.click();
 	const peek = page.getByRole('complementary');
 	await expect(peek.getByText(person.label).first()).toBeVisible();
 	await peek.getByRole('button', { name: 'Expand connections' }).click();
@@ -149,7 +165,9 @@ test('a "+N" counts who an expand brings in, moves to the newcomers, and follows
 	const before = await nodes(page);
 	// Every badge is a count, and only a node with something behind it wears one.
 	for (const n of before) expect(n.badged, n.id).toBe(n.more > 0);
-	const hub = before.filter((n) => n.drawn && n.kind === 'person').sort((a, b) => b.more - a.more)[0];
+	const hub = before
+		.filter((n) => n.drawn && n.kind === 'person')
+		.sort((a, b) => b.more - a.more)[0];
 	expect(hub.more).toBeGreaterThan(0);
 
 	// The Family kind off: the count is taken under the filters, so the relatives an expand
@@ -188,7 +206,8 @@ test('on a person’s page nobody on the last ring wears a "+N", though the expl
 	const rings = await ringsOnCanvas(page, LENA);
 	const badgedNear = before.filter((n) => n.badged && rings.get(n.id) === 1).map((n) => n.id);
 	const near = await firstClickableNode(page, badgedNear);
-	if (!near) throw new Error(`Nobody one hop out with a "+N" was free to click: ${badgedNear.join(', ')}`);
+	if (!near)
+		throw new Error(`Nobody one hop out with a "+N" was free to click: ${badgedNear.join(', ')}`);
 	const person = before.find((n) => n.id === near)!;
 
 	await clickNode(page, near);
@@ -243,7 +262,9 @@ test('Spacing re-arranges Free at once, sets later newcomers at its step, and th
 	// further where that side is crowded (placement.ts). Spacious is 150; Comfortable's 116
 	// would put them at multiples of 58 instead.
 	const placed = await nodes(page);
-	const hub = placed.filter((n) => n.drawn && n.kind === 'person').sort((a, b) => b.more - a.more)[0];
+	const hub = placed
+		.filter((n) => n.drawn && n.kind === 'person')
+		.sort((a, b) => b.more - a.more)[0];
 	await expand(page, hub);
 	const at = await arrangement(page);
 	const known = new Set(placed.map((n) => n.id));
@@ -298,7 +319,9 @@ test('past 40 lines the names pause, the hint says so, and pointing or selecting
 	await expect(menu).toHaveCount(0);
 
 	// The person selected last has their own lines named; the rest are quiet.
-	await expect.poll(async () => (await lines(page)).filter((l) => l.highlighted).every((l) => l.named)).toBe(true);
+	await expect
+		.poll(async () => (await lines(page)).filter((l) => l.highlighted).every((l) => l.named))
+		.toBe(true);
 	const now = await lines(page);
 	expect(now.some((l) => l.highlighted)).toBe(true);
 	expect(now.filter((l) => !l.highlighted && !l.hovered).every((l) => !l.named)).toBe(true);
@@ -317,7 +340,9 @@ test('past 40 lines the names pause, the hint says so, and pointing or selecting
 		.toBe(true);
 });
 
-test('somebody who has died keeps full strength on the map, marked by a double ring', async ({ page }) => {
+test('somebody who has died keeps full strength on the map, marked by a double ring', async ({
+	page
+}) => {
 	const people = ['Aurelio Fontanella', 'Teodora Fontanella', 'Livio Fontanella'];
 	await seedHousehold(
 		page,
@@ -344,7 +369,10 @@ test('somebody who has died keeps full strength on the map, marked by a double r
 test('the keyboard cursor reads out how many more a node would open up', async ({ page }) => {
 	await openMap(page, HANS);
 	const canvas = page.getByRole('application');
-	const said = page.locator('[aria-live="polite"]').filter({ has: page.locator('xpath=self::p') }).first();
+	const said = page
+		.locator('[aria-live="polite"]')
+		.filter({ has: page.locator('xpath=self::p') })
+		.first();
 
 	// Arrive from the keyboard, which is what shows the cursor: a click would focus the canvas
 	// without one.
@@ -361,7 +389,11 @@ test('the keyboard cursor reads out how many more a node would open up', async (
 		if (under) {
 			// The announcement follows the cursor; wait for it to name who is under it now.
 			await expect(said).toContainText(under.label);
-			heard.set(under.id, { label: under.label, more: under.more, text: (await said.textContent()) ?? '' });
+			heard.set(under.id, {
+				label: under.label,
+				more: under.more,
+				text: (await said.textContent()) ?? ''
+			});
 		}
 		const values = [...heard.values()];
 		if (values.some((h) => h.more > 0) && values.some((h) => h.more === 0)) break;

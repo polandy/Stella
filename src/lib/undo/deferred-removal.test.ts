@@ -11,7 +11,12 @@ import type { PendingSink } from '../sync/pending-work';
  */
 
 /** Writes down everything both sides were told, in one list, so order can be asserted. */
-function trail(): { calls: string[]; sink: PendingSink; fetch: ActionFetch; reload: () => Promise<void> } {
+function trail(): {
+	calls: string[];
+	sink: PendingSink;
+	fetch: ActionFetch;
+	reload: () => Promise<void>;
+} {
 	const calls: string[] = [];
 	return {
 		calls,

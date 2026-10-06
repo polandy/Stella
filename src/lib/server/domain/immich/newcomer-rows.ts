@@ -81,17 +81,23 @@ export async function newcomerRows(
 	day: { selfContactId: string | null; today: string },
 	read: NewcomerReadings
 ): Promise<{ newcomers: NewcomerRow[]; ignoredNewcomers: IgnoredNewcomer[] }> {
-	const similarOf = new Map(read.newcomers.map((n) => [n.personId, similarPeople(n.name, read.contacts)]));
+	const similarOf = new Map(
+		read.newcomers.map((n) => [n.personId, similarPeople(n.name, read.contacts)])
+	);
 	const similarIds = [...new Set([...similarOf.values()].flat())];
 	// Every similar person's circle and links, whatever was typed about them: the step shows
 	// both, so only the id and name go in (`contextOfPeople` skips anyone described already).
 	const contextById = await contextOfPeople({ contextReads: deps.contextReads }, viewer, {
-		people: read.contacts.filter((c) => similarIds.includes(c.id)).map(({ id, displayName }) => ({ id, displayName })),
+		people: read.contacts
+			.filter((c) => similarIds.includes(c.id))
+			.map(({ id, displayName }) => ({ id, displayName })),
 		selfContactId: day.selfContactId,
 		today: day.today
 	});
 	const contactById = new Map(read.contacts.map((c) => [c.id, c]));
-	const faceOfContact = new Map([...read.holders].map(([personId, holder]) => [holder.contactId, personId]));
+	const faceOfContact = new Map(
+		[...read.holders].map(([personId, holder]) => [holder.contactId, personId])
+	);
 
 	const similarPerson = async (id: string): Promise<SimilarPerson> => {
 		const { displayName, avatarPhotoId, description } = contactById.get(id)!;
@@ -112,16 +118,14 @@ export async function newcomerRows(
 
 	const newcomers = mostPhotosFirst(
 		await Promise.all(
-			read.newcomers.map(
-				async ({ personId, name }): Promise<NewcomerRow> => ({
-					personId,
-					name,
-					photoCount: read.counts.get(personId) ?? null,
-					faceUrl: await newcomerFaceUrl(deps.signer, viewer.householdId, personId),
-					openUrl: immichPersonUrl(deps.publicUrl, personId),
-					similar: await Promise.all((similarOf.get(personId) ?? []).map(similarPerson))
-				})
-			)
+			read.newcomers.map(async ({ personId, name }): Promise<NewcomerRow> => ({
+				personId,
+				name,
+				photoCount: read.counts.get(personId) ?? null,
+				faceUrl: await newcomerFaceUrl(deps.signer, viewer.householdId, personId),
+				openUrl: immichPersonUrl(deps.publicUrl, personId),
+				similar: await Promise.all((similarOf.get(personId) ?? []).map(similarPerson))
+			}))
 		)
 	);
 

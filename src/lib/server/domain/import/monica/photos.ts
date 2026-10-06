@@ -28,7 +28,11 @@ export interface AttachImportedPhotoInput {
 	upload: ImageUpload;
 }
 
-const EXT: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+const EXT: Record<string, string> = {
+	'image/jpeg': 'jpg',
+	'image/png': 'png',
+	'image/webp': 'webp'
+};
 
 /** Store one imported photo; returns whether it was stored now or was already there. */
 export async function attachImportedPhoto(

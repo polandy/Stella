@@ -25,7 +25,10 @@ async function openPeople(page: Page): Promise<void> {
 async function openArchivedPerson(page: Page, name: string): Promise<void> {
 	await page.getByRole('link', { name: 'People' }).first().click();
 	await page.getByRole('link', { name: /^Archived \(\d+\)$/ }).click();
-	await page.getByRole('link', { name: new RegExp(name) }).first().click();
+	await page
+		.getByRole('link', { name: new RegExp(name) })
+		.first()
+		.click();
 	await expect(page.getByTestId('archived-marker')).toBeVisible();
 	await appReady(page);
 }
@@ -48,7 +51,9 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('takes an archived person out of the directory and the search, and back in again', async ({ page }) => {
+test('takes an archived person out of the directory and the search, and back in again', async ({
+	page
+}) => {
 	await openPerson(page, new RegExp(WHO));
 	await archiveOpenPerson(page);
 
@@ -69,7 +74,10 @@ test('takes an archived person out of the directory and the search, and back in 
 	await page.getByRole('link', { name: /^Archived \(\d+\)$/ }).click();
 	await expect(page.getByTestId('people-directory')).toContainText(WHO);
 
-	await page.getByRole('link', { name: new RegExp(WHO) }).first().click();
+	await page
+		.getByRole('link', { name: new RegExp(WHO) })
+		.first()
+		.click();
 	await restoreOpenPerson(page);
 
 	await openPeople(page);
@@ -104,7 +112,9 @@ test('keeps their name in something already written about them', async ({ page }
 	await page.getByRole('button', { name: /^Save/ }).click();
 	// `a.mention` is the chip *inside the sentence* — the footer lists her separately, from
 	// the mention row, and would keep saying her name even if the body broke.
-	await expect(page.locator('article').first().locator('a.mention', { hasText: WHO })).toHaveCount(1);
+	await expect(page.locator('article').first().locator('a.mention', { hasText: WHO })).toHaveCount(
+		1
+	);
 
 	await openPerson(page, new RegExp(WHO));
 	await archiveOpenPerson(page);

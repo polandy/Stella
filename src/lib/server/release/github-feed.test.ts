@@ -11,8 +11,7 @@ function stubFetch(response: Response) {
 	return { fetch, calls };
 }
 
-const body = (payload: unknown, init?: ResponseInit) =>
-	new Response(JSON.stringify(payload), init);
+const body = (payload: unknown, init?: ResponseInit) => new Response(JSON.stringify(payload), init);
 
 describe('createGitHubReleaseFeed', () => {
 	it('reads the newest release off GitHub, naming itself in the request', async () => {

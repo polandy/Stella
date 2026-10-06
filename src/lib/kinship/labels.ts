@@ -10,10 +10,7 @@ import type { KinTerm, KinVariant } from './kinship';
  */
 
 /** "Grandmother", "Großmutter" — the term in the viewer's language. */
-export function kinshipLabel(
-	t: Translate,
-	kin: { term: KinTerm; variant: KinVariant }
-): string {
+export function kinshipLabel(t: Translate, kin: { term: KinTerm; variant: KinVariant }): string {
 	const key = `kinship.term.${kin.term}.${kin.variant}`;
 	return hasMessage(key) ? t(key) : kin.term;
 }

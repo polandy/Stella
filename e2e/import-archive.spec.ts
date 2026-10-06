@@ -93,9 +93,11 @@ test('brings back a person who was deleted, with what was written about them', a
 	await page.getByRole('link', { name: 'Settings' }).first().click();
 	await page.getByRole('link', { name: 'Restore from an archive' }).click();
 	await expect(page.getByRole('heading', { name: 'Restore from an archive' })).toBeVisible();
-	await page
-		.locator('input[name=archive]')
-		.setInputFiles({ name: 'stella-household.tar', mimeType: 'application/x-tar', buffer: archive });
+	await page.locator('input[name=archive]').setInputFiles({
+		name: 'stella-household.tar',
+		mimeType: 'application/x-tar',
+		buffer: archive
+	});
 	await page.getByRole('button', { name: 'Restore' }).click();
 
 	// One person came back; everybody else was recognised as already here and left alone.

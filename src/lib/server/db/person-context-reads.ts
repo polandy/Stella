@@ -18,9 +18,14 @@ import { circle, circleMembership, contact, relationship, relationshipType } fro
  * ever handed to the browser.
  */
 
-export function createDrizzlePersonContextReads(db: BunSQLiteDatabase<typeof schema>): PersonContextReads {
+export function createDrizzlePersonContextReads(
+	db: BunSQLiteDatabase<typeof schema>
+): PersonContextReads {
 	return {
-		async listTiesOfVisibleTo(viewer: Viewer, contactIds: readonly string[]): Promise<ContextTieRow[]> {
+		async listTiesOfVisibleTo(
+			viewer: Viewer,
+			contactIds: readonly string[]
+		): Promise<ContextTieRow[]> {
 			if (contactIds.length === 0) return [];
 			const fromC = alias(contact, 'from_c');
 			const toC = alias(contact, 'to_c');
@@ -99,7 +104,9 @@ export function createDrizzlePersonContextReads(db: BunSQLiteDatabase<typeof sch
 					name: circle.name,
 					role: circleMembership.role,
 					// A membership that says nothing of its own dates holds for as long as the circle does.
-					startDate: sql<string | null>`coalesce(${circleMembership.startDate}, ${circle.startDate})`,
+					startDate: sql<
+						string | null
+					>`coalesce(${circleMembership.startDate}, ${circle.startDate})`,
 					endDate: sql<string | null>`coalesce(${circleMembership.endDate}, ${circle.endDate})`
 				})
 				.from(circleMembership)

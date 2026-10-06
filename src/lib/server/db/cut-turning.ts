@@ -80,12 +80,19 @@ function turnCuts(tx: Db, cutIds: readonly string[], reason: CutTurnReason): voi
  * Before these group photos are removed (or made private): turn every cut of them into its
  * person's own photo, still worn. Returns how many people that concerned.
  */
-export function turnCutsOfGroupPhotos(tx: Db, groupPhotoIds: readonly string[], reason: CutTurnReason): number {
+export function turnCutsOfGroupPhotos(
+	tx: Db,
+	groupPhotoIds: readonly string[],
+	reason: CutTurnReason
+): number {
 	const turning = cutsToTurn(cutsOf(tx, groupPhotoIds), groupPhotoIds);
 	turnCuts(tx, turning.cutIds, reason);
 	if (reason === 'groupPhotoRemoved') {
 		// Photos earlier cuts became still name the group photo; it is about to be gone.
-		tx.update(photo).set({ cutFrom: null }).where(inArray(photo.cutFrom, [...groupPhotoIds])).run();
+		tx.update(photo)
+			.set({ cutFrom: null })
+			.where(inArray(photo.cutFrom, [...groupPhotoIds]))
+			.run();
 	}
 	return turning.people;
 }
@@ -94,7 +101,11 @@ export function turnCutsOfGroupPhotos(tx: Db, groupPhotoIds: readonly string[], 
  * Before `contactId` puts on another picture: the cut they wore, if any, becomes their own
  * photo — unless the next picture is a new cut of the same group photo, which replaces it.
  */
-export function keepCutLeftBehind(tx: Db, contactId: string, next: { framingOf: string | null }): void {
+export function keepCutLeftBehind(
+	tx: Db,
+	contactId: string,
+	next: { framingOf: string | null }
+): void {
 	const worn = tx
 		.select({ id: photo.id, framingOf: photo.framingOf, circleId: framed.circleId })
 		.from(contact)
@@ -113,7 +124,11 @@ export function keepCutLeftBehind(tx: Db, contactId: string, next: { framingOf: 
  * Every cut `contactId` has but does not wear becomes their own photo — or every cut at all with
  * `evenWorn`, for a record about to be merged away, whose worn cut may clash with the survivor's.
  */
-export function keepUnwornCuts(tx: Db, contactId: string, options: { evenWorn?: boolean } = {}): void {
+export function keepUnwornCuts(
+	tx: Db,
+	contactId: string,
+	options: { evenWorn?: boolean } = {}
+): void {
 	const wearing = options.evenWorn
 		? undefined
 		: tx.select({ id: contact.avatarPhotoId }).from(contact).where(eq(contact.id, contactId)).get();

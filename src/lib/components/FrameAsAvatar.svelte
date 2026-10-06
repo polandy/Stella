@@ -62,7 +62,10 @@
 			body.append('thumb', thumb, 'thumb.jpg');
 			body.append('width', String(width));
 			body.append('height', String(height));
-			const res = await fetch(`/contacts/${contactId}?/framePhotoAsAvatar`, { method: 'POST', body });
+			const res = await fetch(`/contacts/${contactId}?/framePhotoAsAvatar`, {
+				method: 'POST',
+				body
+			});
 			if (!res.ok) throw new Error(`The framing was not saved (${res.status}).`);
 			await invalidateAll();
 		} catch {

@@ -41,16 +41,22 @@
 	const t = useTranslate();
 	// Each row's tick, seeded from the rule's confidence; a tick is this screen's own state.
 	// svelte-ignore state_referenced_locally
-	let ticked = $state<Record<string, boolean>>(Object.fromEntries(group.rows.map((r) => [r.person.id, r.preTicked])));
+	let ticked = $state<Record<string, boolean>>(
+		Object.fromEntries(group.rows.map((r) => [r.person.id, r.preTicked]))
+	);
 	const rows = $derived(group.rows.filter((r) => !hidden.has(r.person.id)));
 	const chosen = $derived(rows.filter((r) => ticked[r.person.id]).map((r) => r.person.id));
 </script>
 
 {#if rows.length > 0}
-	<section class="flex flex-col gap-2 rounded-app bg-card p-3 shadow-card" data-testid="last-name-group">
+	<section
+		class="flex flex-col gap-2 rounded-app bg-card p-3 shadow-card"
+		data-testid="last-name-group"
+	>
 		<header class="flex items-center gap-3">
 			<h2 class="min-w-0 flex-1 truncate text-lg font-semibold text-fg">
-				{group.name} <span class="text-sm font-normal tabular-nums text-fg-subtle">· {rows.length}</span>
+				{group.name}
+				<span class="text-sm font-normal text-fg-subtle tabular-nums">· {rows.length}</span>
 			</h2>
 			<form method="POST" action="?/setLastNames" use:enhance={held}>
 				<input type="hidden" name="lastName" value={group.name} />
@@ -64,22 +70,42 @@
 			{#each rows as row (row.person.id)}
 				<li class="flex items-start gap-3 rounded-app px-1 py-1.5">
 					<label class="flex min-w-0 flex-1 items-start gap-3">
-						<input type="checkbox" class="mt-2.5 size-5 shrink-0" bind:checked={ticked[row.person.id]} />
-						<Avatar id={row.person.id} name={row.person.displayName} avatarPhotoId={row.person.avatarPhotoId} size={32} />
+						<input
+							type="checkbox"
+							class="mt-2.5 size-5 shrink-0"
+							bind:checked={ticked[row.person.id]}
+						/>
+						<Avatar
+							id={row.person.id}
+							name={row.person.displayName}
+							avatarPhotoId={row.person.avatarPhotoId}
+							size={32}
+						/>
 						<span class="min-w-0 flex-1">
 							<span class="block truncate font-medium text-fg">
-								{row.person.displayName}{#if row.person.isDeceased}<span class="text-xs font-normal text-fg-subtle"> · {t('surnames.deceased')}</span>{/if}
+								{row.person.displayName}{#if row.person.isDeceased}<span
+										class="text-xs font-normal text-fg-subtle"
+									>
+										· {t('surnames.deceased')}</span
+									>{/if}
 							</span>
 							<span class="block text-xs text-fg-muted">
-								{#each row.reasons as reason, index}{#if index > 0}{' · '}{/if}<LinkedNames segments={reason} />{/each}
+								{#each row.reasons as reason, index}{#if index > 0}{' · '}{/if}<LinkedNames
+										segments={reason}
+									/>{/each}
 							</span>
 						</span>
 					</label>
 					<details class="relative shrink-0">
-						<summary class="grid size-8 cursor-pointer list-none place-items-center rounded-control text-fg-subtle hover:bg-card-hover" aria-label={t('surnames.rowMenu', { name: row.person.displayName })}>
+						<summary
+							class="grid size-8 cursor-pointer list-none place-items-center rounded-control text-fg-subtle hover:bg-card-hover"
+							aria-label={t('surnames.rowMenu', { name: row.person.displayName })}
+						>
 							<Icon name="more" size={16} />
 						</summary>
-						<div class="absolute right-0 z-10 mt-1 flex w-56 flex-col gap-1 rounded-app border border-border bg-card p-1.5 shadow-pop">
+						<div
+							class="absolute right-0 z-10 mt-1 flex w-56 flex-col gap-1 rounded-app border border-border bg-card p-1.5 shadow-pop"
+						>
 							{#each row.alternatives as alternative (alternative)}
 								<form method="POST" action="?/setLastNames" use:enhance={held}>
 									<input type="hidden" name="lastName" value={alternative} />

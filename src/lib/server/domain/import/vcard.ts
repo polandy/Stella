@@ -175,7 +175,11 @@ function parseLine(line: string): Property | null {
 	}
 	const value = line.slice(colon + 1);
 	const encoding = params.get('ENCODING')?.[0] ?? '';
-	return { name, params, raw: QUOTED_PRINTABLE.test(encoding) ? decodeQuotedPrintable(value) : value };
+	return {
+		name,
+		params,
+		raw: QUOTED_PRINTABLE.test(encoding) ? decodeQuotedPrintable(value) : value
+	};
 }
 
 /** Split the file into cards, rejecting anything that is not one. */
@@ -253,7 +257,15 @@ function readPhoto(property: Property, id: string, contactId: string): MonicaPho
 	if (value.startsWith('data:')) {
 		const mime = /^data:([^;,]+)/.exec(value)?.[1] ?? 'image/jpeg';
 		const payload = value.slice(value.indexOf(',') + 1);
-		return { id, path: `${id}.bin`, dataUrl: value, mime, sizeBytes: base64Size(payload), contactId, createdAt: null };
+		return {
+			id,
+			path: `${id}.bin`,
+			dataUrl: value,
+			mime,
+			sizeBytes: base64Size(payload),
+			contactId,
+			createdAt: null
+		};
 	}
 	const encoding = property.params.get('ENCODING')?.[0]?.toLowerCase();
 	if (encoding !== 'b' && encoding !== 'base64') return null; // a URI: the file is not in the card
@@ -316,7 +328,13 @@ export function readVCard(text: string): SourceExport {
 		let fieldIndex = 0;
 		const addField = (typeId: string, data: string | null) => {
 			if (data === null) return;
-			contactFields.push({ id: `${id}~${fieldIndex++}`, contactId: id, typeId, data, createdAt: null });
+			contactFields.push({
+				id: `${id}~${fieldIndex++}`,
+				contactId: id,
+				typeId,
+				data,
+				createdAt: null
+			});
 		};
 		for (const p of all('EMAIL')) addField('email', orNull(unescape(p.raw)));
 		for (const p of all('TEL')) addField('phone', orNull(unescape(p.raw)));
@@ -341,7 +359,14 @@ export function readVCard(text: string): SourceExport {
 		let noteIndex = 0;
 		for (const p of all('NOTE')) {
 			const body = orNull(unescape(p.raw));
-			if (body) notes.push({ id: `${id}~note${noteIndex++}`, contactId: id, body, isFavorited: false, createdAt: null });
+			if (body)
+				notes.push({
+					id: `${id}~note${noteIndex++}`,
+					contactId: id,
+					body,
+					isFavorited: false,
+					createdAt: null
+				});
 		}
 
 		for (const p of all('CATEGORIES')) {
@@ -362,7 +387,8 @@ export function readVCard(text: string): SourceExport {
 			avatarPhotoId ??= String(photo.id);
 		}
 
-		const genderCode = orNull(splitEscaped(first('GENDER')?.raw ?? '', ';')[0])?.toUpperCase() ?? null;
+		const genderCode =
+			orNull(splitEscaped(first('GENDER')?.raw ?? '', ';')[0])?.toUpperCase() ?? null;
 		const gender = genderCode !== null && GENDER_CODES.includes(genderCode) ? genderCode : null;
 		if (gender) genderCodes.add(gender);
 
@@ -399,7 +425,11 @@ export function readVCard(text: string): SourceExport {
 		name,
 		contactIds
 	}));
-	const genders: MonicaGender[] = [...genderCodes].map((code) => ({ id: code, type: code, name: code }));
+	const genders: MonicaGender[] = [...genderCodes].map((code) => ({
+		id: code,
+		type: code,
+		name: code
+	}));
 
 	return {
 		source: 'vcard',

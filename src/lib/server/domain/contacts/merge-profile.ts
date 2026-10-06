@@ -64,7 +64,10 @@ const FILL_IF_EMPTY = [
  * - **deceased is an OR, and the death date rides with it** — if either record says the person
  *   has died, the merged one does, and it keeps the day that was recorded with it.
  */
-export function mergeProfiles(keep: MergeableProfile, mergedAway: MergeableProfile): MergeableProfile {
+export function mergeProfiles(
+	keep: MergeableProfile,
+	mergedAway: MergeableProfile
+): MergeableProfile {
 	const merged = { ...keep };
 	for (const field of FILL_IF_EMPTY) {
 		merged[field] ??= mergedAway[field];

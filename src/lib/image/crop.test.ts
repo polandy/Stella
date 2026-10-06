@@ -93,11 +93,18 @@ describe('how far the picture lets you zoom', () => {
 
 	it('never goes below the whole short side, however small the picture', () => {
 		expect(maxZoom({ width: 200, height: 150 })).toBe(1);
-		expect(zoomTo({ width: 200, height: 150 }, initialCrop({ width: 200, height: 150 }), 4).zoom).toBe(1);
+		expect(
+			zoomTo({ width: 200, height: 150 }, initialCrop({ width: 200, height: 150 }), 4).zoom
+		).toBe(1);
 	});
 
 	it('pulls the square back inside the picture when zooming out near an edge', () => {
-		const inCorner = panBy(landscape, zoomTo(landscape, initialCrop(landscape), 4), { dx: -9999, dy: -9999 }, 300);
+		const inCorner = panBy(
+			landscape,
+			zoomTo(landscape, initialCrop(landscape), 4),
+			{ dx: -9999, dy: -9999 },
+			300
+		);
 		const zoomedOut = zoomTo(landscape, inCorner, 1);
 		expect(cropRect(landscape, zoomedOut)).toEqual({ x: 1000, y: 0, size: 3000 });
 	});
@@ -107,7 +114,12 @@ describe('drawing the picture behind the window', () => {
 	it('scales and shifts the picture so exactly the cropped square fills the window', () => {
 		const zoomed = zoomTo(landscape, initialCrop(landscape), 2);
 		// Crop {x:1250, y:750, size:1500} in a 300px window: a fifth of the picture's size.
-		expect(imagePlacement(landscape, zoomed, 300)).toEqual({ left: -250, top: -150, width: 800, height: 600 });
+		expect(imagePlacement(landscape, zoomed, 300)).toEqual({
+			left: -250,
+			top: -150,
+			width: 800,
+			height: 600
+		});
 	});
 });
 
@@ -139,7 +151,13 @@ describe('pinching with two fingers', () => {
 
 	it('ignores two fingers on the same spot rather than zooming by a division by zero', () => {
 		const same = { x: 150, y: 150 };
-		const pinched = pinch(landscape, initialCrop(landscape), { a: same, b: same }, { a: same, b: same }, 300);
+		const pinched = pinch(
+			landscape,
+			initialCrop(landscape),
+			{ a: same, b: same },
+			{ a: same, b: same },
+			300
+		);
 		expect(pinched).toEqual(initialCrop(landscape));
 	});
 });

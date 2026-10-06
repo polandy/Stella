@@ -18,7 +18,12 @@ import {
 
 const en = createTranslator('en');
 
-const person = (id: string, first: string | null, last: string | null, extra: Partial<SurnamePerson> = {}): SurnamePerson => ({
+const person = (
+	id: string,
+	first: string | null,
+	last: string | null,
+	extra: Partial<SurnamePerson> = {}
+): SurnamePerson => ({
 	id,
 	displayName: [first, last].filter(Boolean).join(' ') || id,
 	firstName: first,
@@ -28,7 +33,12 @@ const person = (id: string, first: string | null, last: string | null, extra: Pa
 	...extra
 });
 
-const noGraph: Omit<KinshipGraph, 'people'> = { parentEdges: [], siblingEdges: [], partnerEdges: [], storedPairs: [] };
+const noGraph: Omit<KinshipGraph, 'people'> = {
+	parentEdges: [],
+	siblingEdges: [],
+	partnerEdges: [],
+	storedPairs: []
+};
 
 function facts(
 	people: SurnamePerson[],
@@ -37,7 +47,11 @@ function facts(
 ): SurnameFacts {
 	return {
 		people,
-		graph: { ...noGraph, ...graph, people: people.map((p) => ({ id: p.id, displayName: p.displayName })) },
+		graph: {
+			...noGraph,
+			...graph,
+			people: people.map((p) => ({ id: p.id, displayName: p.displayName }))
+		},
 		familyCircles: more.familyCircles ?? [],
 		dismissed: more.dismissed ?? []
 	};
@@ -45,7 +59,8 @@ function facts(
 
 /** The proposal as plain values, its reasons said in English. */
 function said(proposal: SurnameProposal) {
-	const reasons = (list: readonly import('$lib/i18n/linked').LinkedPhrase[]) => list.map((r) => textOf(r(en)));
+	const reasons = (list: readonly import('$lib/i18n/linked').LinkedPhrase[]) =>
+		list.map((r) => textOf(r(en)));
 	switch (proposal.kind) {
 		case 'none':
 			return { kind: 'none' };
@@ -58,7 +73,10 @@ function said(proposal: SurnameProposal) {
 				alternatives: proposal.alternatives
 			};
 		case 'choose':
-			return { kind: 'choose', options: proposal.options.map((o) => ({ name: o.name, reasons: reasons(o.reasons) })) };
+			return {
+				kind: 'choose',
+				options: proposal.options.map((o) => ({ name: o.name, reasons: reasons(o.reasons) }))
+			};
 	}
 }
 
@@ -88,7 +106,9 @@ describe('F1 — a parent with a last name', () => {
 	});
 
 	it('offers nothing for someone who already has a last name', () => {
-		const f = facts([peter, person('anna', 'Anna', 'Meier')], { parentEdges: [{ parentId: 'peter', childId: 'anna' }] });
+		const f = facts([peter, person('anna', 'Anna', 'Meier')], {
+			parentEdges: [{ parentId: 'peter', childId: 'anna' }]
+		});
 		expect(propose(f, 'anna')).toEqual({ kind: 'none' });
 	});
 });
@@ -142,7 +162,9 @@ describe('F2 — siblings with a last name', () => {
 describe('F3 — a partner with a last name', () => {
 	it('proposes it as possible, naming the partner’s former name', () => {
 		const maria = person('maria', 'Maria', null);
-		const f = facts([{ ...peter, formerName: 'Keller' }, maria], { partnerEdges: [{ a: 'peter', b: 'maria' }] });
+		const f = facts([{ ...peter, formerName: 'Keller' }, maria], {
+			partnerEdges: [{ a: 'peter', b: 'maria' }]
+		});
 		expect(propose(f, 'maria')).toMatchObject({
 			kind: 'one',
 			name: 'Brunner',
@@ -183,14 +205,20 @@ describe('F9 — the shown name already holds a last name', () => {
 	it('wins over a likely name, which is kept as an alternative', () => {
 		const thomas = person('thomas', 'Thomas', null, { displayName: 'Thomas Weber' });
 		const f = facts([peter, thomas], { parentEdges: [{ parentId: 'peter', childId: 'thomas' }] });
-		expect(propose(f, 'thomas')).toMatchObject({ kind: 'one', name: 'Weber', alternatives: ['Brunner'] });
+		expect(propose(f, 'thomas')).toMatchObject({
+			kind: 'one',
+			name: 'Weber',
+			alternatives: ['Brunner']
+		});
 	});
 });
 
 describe('F10 — children who share a last name', () => {
 	it('proposes it as possible', () => {
 		const anna = person('anna', 'Anna', null);
-		const f = facts([anna, person('kid', 'Kid', 'Brunner')], { parentEdges: [{ parentId: 'anna', childId: 'kid' }] });
+		const f = facts([anna, person('kid', 'Kid', 'Brunner')], {
+			parentEdges: [{ parentId: 'anna', childId: 'kid' }]
+		});
 		expect(propose(f, 'anna')).toMatchObject({
 			kind: 'one',
 			name: 'Brunner',
@@ -203,7 +231,11 @@ describe('F10 — children who share a last name', () => {
 describe('F11 — a family circle whose named members share one name', () => {
 	it('proposes it, likely, reading the circle’s kind and never its name', () => {
 		const sophie = person('sophie', 'Sophie', null);
-		const f = facts([peter, sophie], {}, { familyCircles: [{ id: 'fam', name: 'Familie Brunner', memberIds: ['peter', 'sophie'] }] });
+		const f = facts(
+			[peter, sophie],
+			{},
+			{ familyCircles: [{ id: 'fam', name: 'Familie Brunner', memberIds: ['peter', 'sophie'] }] }
+		);
 		expect(propose(f, 'sophie')).toMatchObject({
 			kind: 'one',
 			name: 'Brunner',
@@ -214,9 +246,13 @@ describe('F11 — a family circle whose named members share one name', () => {
 
 	it('offers nothing when the named members disagree', () => {
 		const sophie = person('sophie', 'Sophie', null);
-		const f = facts([peter, person('w', 'W', 'Weber'), sophie], {}, {
-			familyCircles: [{ id: 'fam', name: 'Family', memberIds: ['peter', 'w', 'sophie'] }]
-		});
+		const f = facts(
+			[peter, person('w', 'W', 'Weber'), sophie],
+			{},
+			{
+				familyCircles: [{ id: 'fam', name: 'Family', memberIds: ['peter', 'w', 'sophie'] }]
+			}
+		);
 		expect(propose(f, 'sophie')).toEqual({ kind: 'none' });
 	});
 });
@@ -229,16 +265,28 @@ describe('combining', () => {
 			parentEdges: [{ parentId: 'mum', childId: 'maria' }],
 			partnerEdges: [{ a: 'peter', b: 'maria' }]
 		});
-		expect(propose(f, 'maria')).toMatchObject({ kind: 'one', name: 'Keller', alternatives: ['Brunner'] });
+		expect(propose(f, 'maria')).toMatchObject({
+			kind: 'one',
+			name: 'Keller',
+			alternatives: ['Brunner']
+		});
 	});
 
 	it('drops a name the household declined for this person, folded', () => {
-		const f = facts([peter, lea], { parentEdges: [{ parentId: 'peter', childId: 'lea' }] }, {
-			dismissed: [{ contactId: 'lea', folded: foldSurname('BRÜNNER') }]
-		});
-		const other = facts([peter, lea], { parentEdges: [{ parentId: 'peter', childId: 'lea' }] }, {
-			dismissed: [{ contactId: 'max', folded: foldSurname('Brunner') }]
-		});
+		const f = facts(
+			[peter, lea],
+			{ parentEdges: [{ parentId: 'peter', childId: 'lea' }] },
+			{
+				dismissed: [{ contactId: 'lea', folded: foldSurname('BRÜNNER') }]
+			}
+		);
+		const other = facts(
+			[peter, lea],
+			{ parentEdges: [{ parentId: 'peter', childId: 'lea' }] },
+			{
+				dismissed: [{ contactId: 'max', folded: foldSurname('Brunner') }]
+			}
+		);
 		expect(propose(f, 'lea')).toEqual({ kind: 'none' });
 		// positive control: a *no* about somebody else leaves Lea's proposal standing
 		expect(propose(other, 'lea')).toMatchObject({ kind: 'one', name: 'Brunner' });

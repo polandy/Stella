@@ -124,7 +124,9 @@
 				title: String(form.get('title') ?? '').trim() || null,
 				description: String(form.get('description') ?? '').trim() || null,
 				visibility: form.get('visibility') === 'private' ? 'private' : 'shared',
-				participantIds: form.getAll('participants').filter((p): p is string => typeof p === 'string')
+				participantIds: form
+					.getAll('participants')
+					.filter((p): p is string => typeof p === 'string')
 			},
 			issuedAt: Date.now()
 		};
@@ -151,84 +153,113 @@
 		const item = editingLog;
 		const command = logCommandFrom(input.formData, item.command.id);
 		editingLog = null;
-		if (command?.type === 'interaction.log') void outbox.revise(item.command.id, command.payload, ulid());
+		if (command?.type === 'interaction.log')
+			void outbox.revise(item.command.id, command.payload, ulid());
 		clearLog();
 		logOpen = false;
 	};
 </script>
 
 <Section
-		id={sectionAnchor('story')}
-		title={t('contact.story.title')}
-		addLabel={t('contact.logContact')}
-		addIcon="met"
-		bind:open={logOpen}
-		error={form?.interactionError ?? null}
-	>
-		{#if keptLogs.length > 0}
-			<ul class="mb-3 flex flex-col gap-2" data-testid="kept-logs">
-				{#each keptLogs as item (item.command.id)}
-					{@const kind = KIND_PRESENTATION[item.command.payload.kind]}
-					<li>
-						<KeptItem {item} onEdit={() => editKeptLog(item)}>
-							{#snippet meta()}
-								<span>· {t(kind.label)}</span>
-								<span class="ml-auto whitespace-nowrap text-xs text-fg-subtle">{dayLabel(i18n, item.command.payload.happenedAt)}</span>
-							{/snippet}
-							{#if item.command.payload.title}<p class="mt-1 text-fg">{item.command.payload.title}</p>{/if}
-							{#if item.command.payload.description}<p class="mt-1 text-sm text-fg-muted">{item.command.payload.description}</p>{/if}
-						</KeptItem>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-		<!-- Keyed on the story itself: the timeline owns its paged list, so a new touchpoint
+	id={sectionAnchor('story')}
+	title={t('contact.story.title')}
+	addLabel={t('contact.logContact')}
+	addIcon="met"
+	bind:open={logOpen}
+	error={form?.interactionError ?? null}
+>
+	{#if keptLogs.length > 0}
+		<ul class="mb-3 flex flex-col gap-2" data-testid="kept-logs">
+			{#each keptLogs as item (item.command.id)}
+				{@const kind = KIND_PRESENTATION[item.command.payload.kind]}
+				<li>
+					<KeptItem {item} onEdit={() => editKeptLog(item)}>
+						{#snippet meta()}
+							<span>· {t(kind.label)}</span>
+							<span class="ml-auto text-xs whitespace-nowrap text-fg-subtle"
+								>{dayLabel(i18n, item.command.payload.happenedAt)}</span
+							>
+						{/snippet}
+						{#if item.command.payload.title}<p class="mt-1 text-fg">
+								{item.command.payload.title}
+							</p>{/if}
+						{#if item.command.payload.description}<p class="mt-1 text-sm text-fg-muted">
+								{item.command.payload.description}
+							</p>{/if}
+					</KeptItem>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+	<!-- Keyed on the story itself: the timeline owns its paged list, so a new touchpoint
 		     reaches it as a fresh first page when the page's data is reloaded. -->
-		{#key data.story}
-			<StoryTimeline contactId={c.id} initial={data.story} />
-		{/key}
+	{#key data.story}
+		<StoryTimeline contactId={c.id} initial={data.story} />
+	{/key}
 
-		{#snippet editor()}
-			<form method="POST" action="?/logInteraction" use:enhance={logForm} class="flex flex-col gap-3">
-				<div class="flex flex-wrap items-end gap-2">
-					<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
-						{#each data.interactionKinds as kind (kind)}
-							<option value={kind} selected={kind === logKind}>{t(KIND_PRESENTATION[kind].label)}</option>
-						{/each}
-					</select>
-					{#key logFresh}<DateField name="happenedAt" value={logDay} required label={t('contact.day')} />{/key}
-					<input name="title" bind:value={logTitle} placeholder={t('contact.interaction.titlePlaceholder')} aria-label={t('contact.interaction.titlePlaceholder')} class="min-w-48 flex-1 {INPUT}" />
+	{#snippet editor()}
+		<form method="POST" action="?/logInteraction" use:enhance={logForm} class="flex flex-col gap-3">
+			<div class="flex flex-wrap items-end gap-2">
+				<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
+					{#each data.interactionKinds as kind (kind)}
+						<option value={kind} selected={kind === logKind}
+							>{t(KIND_PRESENTATION[kind].label)}</option
+						>
+					{/each}
+				</select>
+				{#key logFresh}<DateField
+						name="happenedAt"
+						value={logDay}
+						required
+						label={t('contact.day')}
+					/>{/key}
+				<input
+					name="title"
+					bind:value={logTitle}
+					placeholder={t('contact.interaction.titlePlaceholder')}
+					aria-label={t('contact.interaction.titlePlaceholder')}
+					class="min-w-48 flex-1 {INPUT}"
+				/>
+			</div>
+			<textarea
+				name="description"
+				bind:value={logDescription}
+				rows="2"
+				placeholder={t('contact.interaction.detailsPlaceholder')}
+				aria-label={t('contact.interaction.detailsPlaceholder')}
+				class={INPUT}></textarea>
+			{#if otherContacts.length > 0}
+				<!-- The label names the field only, not the chips and list around it. -->
+				<div class="flex flex-col gap-1 text-sm">
+					<label for="interaction-participants" class="text-fg-muted"
+						>{t('contact.interaction.whoElse')}</label
+					>
+					<PersonSearchSelect
+						id="interaction-participants"
+						people={otherContacts}
+						name="participants"
+						bind:selectedIds={participantIds}
+						multiple
+						allowCreate
+					/>
 				</div>
-				<textarea name="description" bind:value={logDescription} rows="2" placeholder={t('contact.interaction.detailsPlaceholder')} aria-label={t('contact.interaction.detailsPlaceholder')} class={INPUT}
-				></textarea>
-				{#if otherContacts.length > 0}
-					<!-- The label names the field only, not the chips and list around it. -->
-					<div class="flex flex-col gap-1 text-sm">
-						<label for="interaction-participants" class="text-fg-muted">{t('contact.interaction.whoElse')}</label>
-						<PersonSearchSelect
-							id="interaction-participants"
-							people={otherContacts}
-							name="participants"
-							bind:selectedIds={participantIds}
-							multiple
-							allowCreate
-						/>
-					</div>
-				{/if}
-				<div class="flex flex-wrap items-center gap-4 text-sm">
-					<fieldset class="flex flex-wrap items-center gap-4">
-						<legend class="sr-only">{t('common.visibility')}</legend>
-						<label class="flex items-center gap-1.5">
-							<input type="radio" name="visibility" value="shared" bind:group={logVisibility} /> {t('common.shared')}
-						</label>
-						<label class="flex items-center gap-1.5">
-							<input type="radio" name="visibility" value="private" bind:group={logVisibility} /> {t('common.private')}
-						</label>
-					</fieldset>
-					<Button variant="primary" size="sm" class="ml-auto">
-						{editingLog ? t('common.save') : t('contact.interaction.submit')}
-					</Button>
-				</div>
-			</form>
-		{/snippet}
+			{/if}
+			<div class="flex flex-wrap items-center gap-4 text-sm">
+				<fieldset class="flex flex-wrap items-center gap-4">
+					<legend class="sr-only">{t('common.visibility')}</legend>
+					<label class="flex items-center gap-1.5">
+						<input type="radio" name="visibility" value="shared" bind:group={logVisibility} />
+						{t('common.shared')}
+					</label>
+					<label class="flex items-center gap-1.5">
+						<input type="radio" name="visibility" value="private" bind:group={logVisibility} />
+						{t('common.private')}
+					</label>
+				</fieldset>
+				<Button variant="primary" size="sm" class="ml-auto">
+					{editingLog ? t('common.save') : t('contact.interaction.submit')}
+				</Button>
+			</div>
+		</form>
+	{/snippet}
 </Section>

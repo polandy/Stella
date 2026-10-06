@@ -24,6 +24,9 @@ export function toggleGroup(selected: readonly string[], groupIds: readonly stri
 }
 
 /** The bar's *Everyone* / *No one* button. */
-export function toggleEveryone(selected: readonly string[], everyoneIds: readonly string[]): string[] {
+export function toggleEveryone(
+	selected: readonly string[],
+	everyoneIds: readonly string[]
+): string[] {
 	return allChosen(everyoneIds, selected) ? [] : [...everyoneIds];
 }

@@ -32,14 +32,23 @@ export function sniffImageMime(bytes: Uint8Array): ImageMime | null {
 	}
 	if (
 		bytes.length >= 8 &&
-		bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47
+		bytes[0] === 0x89 &&
+		bytes[1] === 0x50 &&
+		bytes[2] === 0x4e &&
+		bytes[3] === 0x47
 	) {
 		return 'image/png';
 	}
 	if (
 		bytes.length >= 12 &&
-		bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 && // RIFF
-		bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50 // WEBP
+		bytes[0] === 0x52 &&
+		bytes[1] === 0x49 &&
+		bytes[2] === 0x46 &&
+		bytes[3] === 0x46 && // RIFF
+		bytes[8] === 0x57 &&
+		bytes[9] === 0x45 &&
+		bytes[10] === 0x42 &&
+		bytes[11] === 0x50 // WEBP
 	) {
 		return 'image/webp';
 	}
@@ -72,21 +81,31 @@ export function storedTakenAt(
 	refuse: (message: Phrase) => Error
 ): string | null {
 	if (takenAt === undefined || takenAt === null) return null;
-	if (!isTakenAt(takenAt) || !isPlausibleTakenAt(takenAt, nowMs)) throw refuse(phrase('errors.image.takenAt'));
+	if (!isTakenAt(takenAt) || !isPlausibleTakenAt(takenAt, nowMs))
+		throw refuse(phrase('errors.image.takenAt'));
 	return takenAt;
 }
 
 /** Validate an avatar upload and return its true (sniffed) mime; throws InvalidAvatarError. */
 export function validateAvatarUpload(upload: AvatarUpload): ImageMime {
 	if (upload.image.byteLength === 0) throw new InvalidAvatarError(phrase('errors.image.empty'));
-	if (upload.image.byteLength > AVATAR_MAX_BYTES) throw new InvalidAvatarError(phrase('errors.image.tooLarge'));
-	if (upload.thumb.byteLength === 0) throw new InvalidAvatarError(phrase('errors.image.thumbEmpty'));
-	if (upload.thumb.byteLength > THUMB_MAX_BYTES) throw new InvalidAvatarError(phrase('errors.image.thumbTooLarge'));
+	if (upload.image.byteLength > AVATAR_MAX_BYTES)
+		throw new InvalidAvatarError(phrase('errors.image.tooLarge'));
+	if (upload.thumb.byteLength === 0)
+		throw new InvalidAvatarError(phrase('errors.image.thumbEmpty'));
+	if (upload.thumb.byteLength > THUMB_MAX_BYTES)
+		throw new InvalidAvatarError(phrase('errors.image.thumbTooLarge'));
 
 	const mime = sniffImageMime(upload.image);
 	if (!mime) throw new InvalidAvatarError(phrase('errors.image.unsupportedFormat'));
-	if (sniffImageMime(upload.thumb) !== mime) throw new InvalidAvatarError(phrase('errors.image.formatMismatch'));
-	if (!Number.isInteger(upload.width) || !Number.isInteger(upload.height) || upload.width <= 0 || upload.height <= 0) {
+	if (sniffImageMime(upload.thumb) !== mime)
+		throw new InvalidAvatarError(phrase('errors.image.formatMismatch'));
+	if (
+		!Number.isInteger(upload.width) ||
+		!Number.isInteger(upload.height) ||
+		upload.width <= 0 ||
+		upload.height <= 0
+	) {
 		throw new InvalidAvatarError(phrase('errors.image.dimensions'));
 	}
 	return mime;
@@ -169,7 +188,11 @@ export interface PhotoRepository {
 	exists(id: string): Promise<boolean>;
 	setContactAvatar(contactId: string, photoId: string): Promise<void>;
 	/** A photo's file in one of its sizes, only if the viewer may see it (docs/03 §3.7). */
-	getVisiblePhotoFile(viewer: Viewer, photoId: string, variant: PhotoVariant): Promise<PhotoFile | null>;
+	getVisiblePhotoFile(
+		viewer: Viewer,
+		photoId: string,
+		variant: PhotoVariant
+	): Promise<PhotoFile | null>;
 	/** Journal photos on a contact the viewer may see, oldest first (docs/02 §2.20). */
 	listJournalPhotos(viewer: Viewer, contactId: string): Promise<JournalPhotoRef[]>;
 	/** `listJournalPhotos`, cut to these entries — the ones a story page shows. */
@@ -181,7 +204,11 @@ export interface PhotoRepository {
 	/** Gallery photos on a contact the viewer may see, newest taken-or-added first (docs/02 §2.14). */
 	listGalleryPhotos(viewer: Viewer, contactId: string): Promise<GalleryPhoto[]>;
 	/** One gallery photo, only if it belongs to that contact and the viewer may see it. */
-	findVisibleGalleryPhoto(viewer: Viewer, contactId: string, photoId: string): Promise<GalleryPhoto | null>;
+	findVisibleGalleryPhoto(
+		viewer: Viewer,
+		contactId: string,
+		photoId: string
+	): Promise<GalleryPhoto | null>;
 	/**
 	 * Pin a gallery photo as a favourite at `pinnedAt`, or unpin it with null. Unscoped: the
 	 * use-case has already found the photo visible to whoever asked (`./gallery`).
@@ -199,7 +226,10 @@ export interface PhotoRepository {
 	 * Clearing the avatar that pointed at either happens in the same transaction, so a deleted
 	 * photo can never leave a contact wearing a face that no longer exists.
 	 */
-	deleteOwnGalleryPhoto(input: { authorId: string; photoId: string }): Promise<DeletedPhotoFiles[] | null>;
+	deleteOwnGalleryPhoto(input: {
+		authorId: string;
+		photoId: string;
+	}): Promise<DeletedPhotoFiles[] | null>;
 }
 
 /** Byte storage under the media volume; paths returned are what the DB records. */

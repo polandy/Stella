@@ -50,17 +50,35 @@
 </script>
 
 <article
-	class="grid grid-cols-[32px_1fr] gap-3 rounded-app border border-dashed px-2.5 py-2.5 {refused ? 'border-danger/60 bg-danger/5' : 'border-border'}"
+	class="grid grid-cols-[32px_1fr] gap-3 rounded-app border border-dashed px-2.5 py-2.5 {refused
+		? 'border-danger/60 bg-danger/5'
+		: 'border-border'}"
 	data-outbox-state={item.state}
 >
-	<span class="grid size-8 place-items-center rounded-full border border-dashed {refused ? 'border-danger text-danger' : 'border-fg-subtle text-fg-subtle'}" aria-hidden="true">
+	<span
+		class="grid size-8 place-items-center rounded-full border border-dashed {refused
+			? 'border-danger text-danger'
+			: 'border-fg-subtle text-fg-subtle'}"
+		aria-hidden="true"
+	>
 		<Icon name="offline" size={14} />
 	</span>
 	<div class="min-w-0">
 		<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
-			<b class="font-semibold {refused ? 'text-danger' : 'text-fg'}">{t((item.delivered ? DELIVERED_LABEL : LABEL)[item.state])}</b>
-			{#if item.photos.length}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"><Icon name="photo" size={11} />{t('home.outbox.photoCount', { count: item.photos.length })}</span>{/if}
-			{#if 'visibility' in item.command.payload && item.command.payload.visibility === 'private'}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle" title={t('common.onlyYouSee')}><Icon name="private" size={11} />{t('common.privateInline')}</span>{/if}
+			<b class="font-semibold {refused ? 'text-danger' : 'text-fg'}"
+				>{t((item.delivered ? DELIVERED_LABEL : LABEL)[item.state])}</b
+			>
+			{#if item.photos.length}<span
+					class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"
+					><Icon name="photo" size={11} />{t('home.outbox.photoCount', {
+						count: item.photos.length
+					})}</span
+				>{/if}
+			{#if 'visibility' in item.command.payload && item.command.payload.visibility === 'private'}<span
+					class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"
+					title={t('common.onlyYouSee')}
+					><Icon name="private" size={11} />{t('common.privateInline')}</span
+				>{/if}
 			{@render meta?.()}
 		</div>
 		{@render children?.()}
@@ -69,13 +87,26 @@
 			<div class="mt-1.5 flex flex-wrap gap-1.5">
 				{#if confirming}
 					<span class="self-center text-xs text-fg-muted">{t('home.outbox.discardQuestion')}</span>
-					<Button variant="danger" size="sm" onclick={() => { confirming = false; void outbox.discard(item.command.id); }}>{t('home.outbox.discardConfirm')}</Button>
-					<Button variant="ghost" size="sm" onclick={() => (confirming = false)}>{t('common.cancel')}</Button>
+					<Button
+						variant="danger"
+						size="sm"
+						onclick={() => {
+							confirming = false;
+							void outbox.discard(item.command.id);
+						}}>{t('home.outbox.discardConfirm')}</Button
+					>
+					<Button variant="ghost" size="sm" onclick={() => (confirming = false)}
+						>{t('common.cancel')}</Button
+					>
 				{:else}
 					{#if editable}
-						<Button variant="secondary" size="sm" icon="write" href={editHref} onclick={onEdit}>{t('home.outbox.edit')}</Button>
+						<Button variant="secondary" size="sm" icon="write" href={editHref} onclick={onEdit}
+							>{t('home.outbox.edit')}</Button
+						>
 					{/if}
-					<Button variant="ghost" size="sm" icon="remove" onclick={() => (confirming = true)}>{t('home.outbox.discard')}</Button>
+					<Button variant="ghost" size="sm" icon="remove" onclick={() => (confirming = true)}
+						>{t('home.outbox.discard')}</Button
+					>
 				{/if}
 			</div>
 		{/if}

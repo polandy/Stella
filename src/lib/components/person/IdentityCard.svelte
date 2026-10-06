@@ -73,7 +73,11 @@
 	const today = new Date().toLocaleDateString('en-CA');
 	const birthday = $derived(
 		birthdayFact(
-			{ derivedBirthday: data.derivedBirthday, estimatedBirthYear: data.estimatedBirthYear, dates: data.dates },
+			{
+				derivedBirthday: data.derivedBirthday,
+				estimatedBirthYear: data.estimatedBirthYear,
+				dates: data.dates
+			},
 			today
 		)
 	);
@@ -82,7 +86,9 @@
 	const jobLine = $derived(jobShortForm(c, (parts) => t('contact.job.at', parts)));
 	/** The day it happened, for the marker's tooltip. */
 	const archivedOn = $derived(
-		c.archivedAt === null ? null : dayLabel(i18n, new Date(c.archivedAt).toLocaleDateString('en-CA'))
+		c.archivedAt === null
+			? null
+			: dayLabel(i18n, new Date(c.archivedAt).toLocaleDateString('en-CA'))
 	);
 
 	/*
@@ -112,7 +118,8 @@
 	// A row once listed stays listed for the visit, so emptying it does not make it vanish.
 	$effect(() => {
 		const added = rows.listed.filter((row) => !current.kept.includes(row));
-		if (added.length > 0 || visit.id !== c.id) visit = { ...current, kept: [...current.kept, ...added] };
+		if (added.length > 0 || visit.id !== c.id)
+			visit = { ...current, kept: [...current.kept, ...added] };
 	});
 	let rowList = $state<HTMLDivElement>();
 	async function revealRows() {
@@ -123,7 +130,9 @@
 		rowList?.querySelector<HTMLElement>(`[data-identity-row="${first}"] button`)?.focus();
 	}
 
-	const menu = $derived(recordMenu({ isAdmin: data.isAdmin, archived, isSelf, canTracePath: otherContacts.length > 0 }));
+	const menu = $derived(
+		recordMenu({ isAdmin: data.isAdmin, archived, isSelf, canTracePath: otherContacts.length > 0 })
+	);
 	/** The confirm step the menu opened; `?merge=` opens merging (docs/concepts/surnames.md §5). */
 	let panel = $state<'archive' | 'merge' | 'delete' | null>(
 		untrack(() => initialPanel(page.url.searchParams.get('merge'), data.isAdmin))
@@ -149,9 +158,14 @@
 
 <!-- One fact of the grid: a small label over its value. -->
 {#snippet fact(label: string, icon: IconName, name: string, value: Snippet)}
-	<div class="flex min-w-0 flex-col gap-0.5 has-[[data-pane=on]:not([inert])_form]:col-span-full" data-fact={name}>
-		<dt class="flex items-center gap-1.5 text-xs text-fg-subtle"><Icon name={icon} size={12} />{label}</dt>
-		<dd class="min-w-0 text-sm text-fg [overflow-wrap:anywhere]">{@render value()}</dd>
+	<div
+		class="flex min-w-0 flex-col gap-0.5 has-[[data-pane=on]:not([inert])_form]:col-span-full"
+		data-fact={name}
+	>
+		<dt class="flex items-center gap-1.5 text-xs text-fg-subtle">
+			<Icon name={icon} size={12} />{label}
+		</dt>
+		<dd class="min-w-0 text-sm [overflow-wrap:anywhere] text-fg">{@render value()}</dd>
 	</div>
 {/snippet}
 
@@ -173,10 +187,16 @@
 
 	<div class="min-w-0">
 		<!-- Name and description are edited where they are read (docs/02 §2.2). -->
-		<NameEditor name={c} shownNameChosen={data.shownNameChosen} error={form?.namePartsError ?? null} />
+		<NameEditor
+			name={c}
+			shownNameChosen={data.shownNameChosen}
+			error={form?.namePartsError ?? null}
+		/>
 		<!-- An earlier name, neutral on purpose: a maiden name and any other alike (docs/02 §2.2). -->
 		{#if c.formerName}
-			<p class="text-sm text-fg-muted" data-testid="former-name">{t('contact.formerly', { name: c.formerName })}</p>
+			<p class="text-sm text-fg-muted" data-testid="former-name">
+				{t('contact.formerly', { name: c.formerName })}
+			</p>
 		{/if}
 		<!-- Stella's proposal for a missing last name, and passing a new one on. -->
 		<LastNameHelp {data} />
@@ -222,7 +242,12 @@
 
 	<!-- The one thing to do here, and the rest behind ⋯ (docs/05 §5.5). -->
 	<div class="col-span-2 flex items-center gap-2 md:col-span-1" data-testid="identity-actions">
-		<Button variant="primary" icon="journal" href="/contacts/{c.id}/journal" class="flex-1 md:flex-none">
+		<Button
+			variant="primary"
+			icon="journal"
+			href="/contacts/{c.id}/journal"
+			class="flex-1 md:flex-none"
+		>
 			{t('contact.write')}
 		</Button>
 		<MenuButton label={t('contact.menu.label')} align="end" look="button">
@@ -232,7 +257,12 @@
 					{#if entry === 'divider'}
 						<hr class="my-1 border-border-subtle" />
 					{:else if entry === 'logContact'}
-						<button type="button" role="menuitem" class={ITEM} onclick={() => (close(), logContact())}>
+						<button
+							type="button"
+							role="menuitem"
+							class={ITEM}
+							onclick={() => (close(), logContact())}
+						>
 							<Icon name="met" size={14} />{t('contact.logContact')}
 						</button>
 					{:else if entry === 'thisIsMe' || entry === 'notMe'}
@@ -244,19 +274,38 @@
 								class={ITEM}
 								title={entry === 'notMe' ? t('contact.self.isMeHint') : t('contact.self.hint')}
 							>
-								<Icon name="self" size={14} />{entry === 'notMe' ? t('contact.self.notMe') : t('contact.self.thisIsMe')}
+								<Icon name="self" size={14} />{entry === 'notMe'
+									? t('contact.self.notMe')
+									: t('contact.self.thisIsMe')}
 							</button>
 						</form>
 					{:else if entry === 'tracePath'}
-						<button type="button" role="menuitem" class={ITEM} onclick={() => (close(), tracePath())}>
+						<button
+							type="button"
+							role="menuitem"
+							class={ITEM}
+							onclick={() => (close(), tracePath())}
+						>
 							<Icon name="connectionPath" size={14} />{t('contact.relationships.howConnected')}
 						</button>
 					{:else if entry === 'archive' || entry === 'restore'}
-						<button type="button" role="menuitem" class={ITEM} onclick={() => (close(), (panel = 'archive'))}>
-							<Icon name="archive" size={14} />{entry === 'restore' ? t('contact.archive.bringBack') : t('contact.menu.archive')}
+						<button
+							type="button"
+							role="menuitem"
+							class={ITEM}
+							onclick={() => (close(), (panel = 'archive'))}
+						>
+							<Icon name="archive" size={14} />{entry === 'restore'
+								? t('contact.archive.bringBack')
+								: t('contact.menu.archive')}
 						</button>
 					{:else if entry === 'merge'}
-						<button type="button" role="menuitem" class={ITEM} onclick={() => (close(), (panel = 'merge'))}>
+						<button
+							type="button"
+							role="menuitem"
+							class={ITEM}
+							onclick={() => (close(), (panel = 'merge'))}
+						>
 							<Icon name="people" size={14} />{t('contact.merge.open')}
 						</button>
 					{:else if entry === 'delete'}
@@ -283,7 +332,9 @@
 				{#snippet birthdayValue()}
 					{#if birthday?.kind === 'day'}
 						{dayLabel(i18n, birthday.date)}
-						{#if birthday.age !== null}<span class="text-fg-subtle"> · {t('contact.facts.age', { age: birthday.age })}</span>{/if}
+						{#if birthday.age !== null}<span class="text-fg-subtle">
+								· {t('contact.facts.age', { age: birthday.age })}</span
+							>{/if}
 					{:else if birthday?.kind === 'around'}
 						{t('contact.around', { year: birthday.year })}
 					{/if}
@@ -322,24 +373,31 @@
 						<time datetime={data.lastContactedAt}>{dayLabel(i18n, data.lastContactedAt)}</time>
 					</span>
 				{:else}
-					<span data-testid="last-contacted" class="text-fg-subtle">{t('contact.noContactYet')}</span>
+					<span data-testid="last-contacted" class="text-fg-subtle"
+						>{t('contact.noContactYet')}</span
+					>
 				{/if}
 			{/snippet}
 			{@render fact(t('contact.lastContact'), 'met', 'last-contact', lastContactValue)}
 			{#if data.circles.length > 0}
 				<div class="col-span-full flex min-w-0 flex-col gap-1" data-fact="circles">
-					<dt class="flex items-center gap-1.5 text-xs text-fg-subtle"><Icon name="circles" size={12} />{t('contact.section.circles')}</dt>
+					<dt class="flex items-center gap-1.5 text-xs text-fg-subtle">
+						<Icon name="circles" size={12} />{t('contact.section.circles')}
+					</dt>
 					<dd>
 						<ul class="flex flex-wrap gap-1.5">
 							{#each data.circles as circle (circle.membershipId)}
-								<li class="min-w-0 max-w-full">
+								<li class="max-w-full min-w-0">
 									<a
 										href="/circles/{circle.circleId}"
 										class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border px-2.5 py-0.5 text-sm text-fg transition-colors hover:bg-card-hover"
 									>
-										<span class="size-2 shrink-0 rounded-full" style={accentDotStyle(circle.color)}></span>
+										<span class="size-2 shrink-0 rounded-full" style={accentDotStyle(circle.color)}
+										></span>
 										<span class="truncate">{circle.name}</span>
-										{#if circle.role}<span class="shrink-0 text-xs text-fg-subtle">· {circle.role}</span>{/if}
+										{#if circle.role}<span class="shrink-0 text-xs text-fg-subtle"
+												>· {circle.role}</span
+											>{/if}
 									</a>
 								</li>
 							{/each}
@@ -364,7 +422,11 @@
 						{:else if row === 'tags'}
 							<TagsRow {data} {form} />
 						{:else if row === 'job'}
-							<JobRow jobTitle={c.jobTitle} company={c.company} error={jobErrorFor('profile', form)} />
+							<JobRow
+								jobTitle={c.jobTitle}
+								company={c.company}
+								error={jobErrorFor('profile', form)}
+							/>
 						{:else if row === 'dates'}
 							<ImportantDatesRow {data} {form} folded />
 						{:else if row === 'circles'}
@@ -385,7 +447,14 @@
 		{/if}
 		{#if !current.revealed && rows.behindAddMore.length > 0}
 			<div class="-ml-2.5" transition:reveal>
-				<Button variant="ghost" size="sm" icon="add" type="button" onclick={revealRows} data-testid="identity-add-more">
+				<Button
+					variant="ghost"
+					size="sm"
+					icon="add"
+					type="button"
+					onclick={revealRows}
+					data-testid="identity-add-more"
+				>
 					{t('contact.identity.addMore')}
 				</Button>
 			</div>

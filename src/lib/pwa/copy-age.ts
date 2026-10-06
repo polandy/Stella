@@ -15,7 +15,9 @@ function dayIn(time: number, timeZone: string): string {
 
 /** Whole days from the day of `then` to the day of `now`, in the viewer's zone. */
 function daysBack(then: number, now: number, timeZone: string): number {
-	return Math.round((Date.parse(dayIn(now, timeZone)) - Date.parse(dayIn(then, timeZone))) / DAY_MS);
+	return Math.round(
+		(Date.parse(dayIn(now, timeZone)) - Date.parse(dayIn(then, timeZone))) / DAY_MS
+	);
 }
 
 /** When the copy was kept: today, yesterday or a date, each with the time of day. */

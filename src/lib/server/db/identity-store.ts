@@ -4,7 +4,11 @@ import type { Role } from '../auth/accounts';
 import type { IdentityStore } from '../auth/oidc/login';
 import type { IdGenerator } from '../id';
 import type * as schema from './schema';
-import { household as householdTable, identity as identityTable, user as userTable } from './schema';
+import {
+	household as householdTable,
+	identity as identityTable,
+	user as userTable
+} from './schema';
 
 /*
  * Drizzle adapter for the OIDC IdentityStore port (docs/02 §2.1.2, docs/08 §8.3). Maps
@@ -28,13 +32,21 @@ export function createDrizzleIdentityStore(
 		},
 
 		async findUserIdByEmail(email) {
-			const row = db.select({ id: userTable.id }).from(userTable).where(eq(userTable.email, email)).get();
+			const row = db
+				.select({ id: userTable.id })
+				.from(userTable)
+				.where(eq(userTable.email, email))
+				.get();
 			return row?.id ?? null;
 		},
 
 		async provision({ issuer, subject, email, name, role }) {
 			return db.transaction((tx) => {
-				const existingHousehold = tx.select({ id: householdTable.id }).from(householdTable).limit(1).get();
+				const existingHousehold = tx
+					.select({ id: householdTable.id })
+					.from(householdTable)
+					.limit(1)
+					.get();
 
 				let householdId: string;
 				let effectiveRole: Role = role;

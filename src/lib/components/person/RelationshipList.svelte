@@ -121,7 +121,10 @@
 	 */
 	const togetherWith = $derived(new Set(data.immich?.togetherWith ?? []));
 	const offersTogetherOn = (rel: (typeof rows)[number]) =>
-		!editing && reachability.reachable && togetherWith.has(rel.otherContactId) && offersTogether(rel);
+		!editing &&
+		reachability.reachable &&
+		togetherWith.has(rel.otherContactId) &&
+		offersTogether(rel);
 	const firstNameOf = (contactId: string, fallback: string) =>
 		data.people.find((person) => person.id === contactId)?.firstName || fallback;
 	function togetherLabel(rel: (typeof rows)[number]): string {
@@ -139,7 +142,9 @@
 			rel.roleLabel,
 			rel.status === FORMER_RELATIONSHIP_STATUS ? relationshipStatusLabel(t, rel.status) : null,
 			rel.description,
-			rel.sinceDate ? t('contact.relationships.since', { day: dayLabel(i18n, rel.sinceDate) }) : null
+			rel.sinceDate
+				? t('contact.relationships.since', { day: dayLabel(i18n, rel.sinceDate) })
+				: null
 		]
 			.filter(Boolean)
 			.join(' · ');
@@ -185,7 +190,11 @@
 										{rel.otherDisplayName}
 									</span>
 									<!-- Cut short, never wrapped: the role is what the line is for. -->
-									<span id="people-tile-{rel.id}" class="truncate text-xs text-fg-subtle" title={detailsOf(rel)}>
+									<span
+										id="people-tile-{rel.id}"
+										class="truncate text-xs text-fg-subtle"
+										title={detailsOf(rel)}
+									>
 										{detailsOf(rel)}
 									</span>
 								</span>
@@ -237,11 +246,12 @@
 								>
 									<input type="hidden" name="relationshipId" value={rel.id} />
 									<label class="flex flex-col gap-1">
-										<span class="text-xs text-fg-muted">{t('contact.relationships.typeLabel')}</span>
+										<span class="text-xs text-fg-muted">{t('contact.relationships.typeLabel')}</span
+										>
 										<!-- Both sides again, so a partner who became a spouse — or a generation
 										     entered the wrong way round — is one pick, not a re-entry (docs/02 §2.4). -->
 										<select name="typeChoice" class={INPUT}>
-											{#each groupByExclusion(relationshipChoices, (option) => exclusionOf(option, rel.otherContactId, rel.id)) as choices (choices.options[0].value)}
+											{#each groupByExclusion( relationshipChoices, (option) => exclusionOf(option, rel.otherContactId, rel.id) ) as choices (choices.options[0].value)}
 												{#if choices.exclusion}
 													<optgroup
 														label={t('relationships.blocked.group', {
@@ -265,7 +275,9 @@
 										</select>
 									</label>
 									<label class="flex min-w-40 flex-1 flex-col gap-1">
-										<span class="text-xs text-fg-muted">{t('contact.relationships.howConnect')}</span>
+										<span class="text-xs text-fg-muted"
+											>{t('contact.relationships.howConnect')}</span
+										>
 										<input
 											name="description"
 											value={rel.description ?? ''}
@@ -274,7 +286,9 @@
 										/>
 									</label>
 									<label class="flex flex-col gap-1">
-										<span class="text-xs text-fg-muted">{t('contact.relationships.sinceLabel')}</span>
+										<span class="text-xs text-fg-muted"
+											>{t('contact.relationships.sinceLabel')}</span
+										>
 										<DateField
 											name="sinceDate"
 											value={rel.sinceDate ?? ''}
@@ -307,7 +321,6 @@
 				</ul>
 			</section>
 		{/each}
-
 	</div>
 {:else}
 	<!-- In place of the map: what it would show, and the step that starts it. -->
@@ -318,7 +331,13 @@
 		hint={t('contact.relationships.noneHint')}
 	>
 		{#if !relateOpen}
-			<Button variant="primary" size="sm" icon="add" type="button" onclick={() => (relateOpen = true)}>
+			<Button
+				variant="primary"
+				size="sm"
+				icon="add"
+				type="button"
+				onclick={() => (relateOpen = true)}
+			>
 				{t('contact.relationships.addFirst', { name: c.displayName })}
 			</Button>
 		{/if}

@@ -28,7 +28,10 @@ export function openingFilterKeys(compact: boolean): ReadonlySet<string> {
 }
 
 /** What `applyFilters` keeps for the kinds switched on in `active`, never dropping the centre. */
-export function graphFiltersFor(active: ReadonlySet<string>, centerId: string | null): GraphFilters {
+export function graphFiltersFor(
+	active: ReadonlySet<string>,
+	centerId: string | null
+): GraphFilters {
 	const categories = (['family', 'romantic', 'social', 'professional'] as const).filter((c) =>
 		active.has(c)
 	);

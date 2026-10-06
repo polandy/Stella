@@ -75,7 +75,9 @@ export const photoActions = {
 			payload: { contactId: params.id, visibility },
 			issuedAt: systemClock.now()
 		});
-		const added = upload ? await dispatchCommand(getCommandDeps(), author, upload).catch(() => null) : null;
+		const added = upload
+			? await dispatchCommand(getCommandDeps(), author, upload).catch(() => null)
+			: null;
 		if (!upload || added?.status !== 'applied') return refusal(added);
 		for (const [index, image] of images.entries()) {
 			const photo = parsePhotoCommand({
@@ -88,7 +90,9 @@ export const photoActions = {
 				height: Number(heights[index]),
 				issuedAt: systemClock.now()
 			});
-			const stored = photo ? await dispatchCommand(getCommandDeps(), author, photo).catch(() => null) : null;
+			const stored = photo
+				? await dispatchCommand(getCommandDeps(), author, photo).catch(() => null)
+				: null;
 			if (stored?.status !== 'applied') return refusal(stored);
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
@@ -109,7 +113,8 @@ export const photoActions = {
 				return fail(403, { photoError: say(locals, 'errors.photo.onlyOwnerCaption') });
 			}
 		} catch (err) {
-			if (err instanceof CaptionTooLongError) return fail(400, { photoError: err.phrase(translator(locals)) });
+			if (err instanceof CaptionTooLongError)
+				return fail(400, { photoError: err.phrase(translator(locals)) });
 			throw err;
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
@@ -143,9 +148,16 @@ export const photoActions = {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		const form = await request.formData();
-		const parsed = v.safeParse(PhotoPinSchema, { photoId: form.get('photoId'), pinned: form.get('pinned') });
+		const parsed = v.safeParse(PhotoPinSchema, {
+			photoId: form.get('photoId'),
+			pinned: form.get('pinned')
+		});
 		if (!parsed.success) return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
-		const input = { contactId: params.id, photoId: parsed.output.photoId, pinned: parsed.output.pinned === 'true' };
+		const input = {
+			contactId: params.id,
+			photoId: parsed.output.photoId,
+			pinned: parsed.output.pinned === 'true'
+		};
 		if (!(await pinGalleryPhoto(getGalleryDeps(), viewer, input))) {
 			return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
 		}
@@ -166,7 +178,11 @@ export const photoActions = {
 		if (typeof photoId !== 'string' || !(image instanceof File) || !(thumb instanceof File)) {
 			return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
 		}
-		const crop = { x: Number(form.get('cropX')), y: Number(form.get('cropY')), size: Number(form.get('cropSize')) };
+		const crop = {
+			x: Number(form.get('cropX')),
+			y: Number(form.get('cropY')),
+			size: Number(form.get('cropSize'))
+		};
 		const upload = {
 			image: new Uint8Array(await image.arrayBuffer()),
 			thumb: new Uint8Array(await thumb.arrayBuffer()),
@@ -174,11 +190,19 @@ export const photoActions = {
 			height: Number(form.get('height'))
 		};
 		try {
-			if (!(await frameAsAvatar(getFramingDeps(), viewer, { contactId: params.id, photoId, crop, upload }))) {
+			if (
+				!(await frameAsAvatar(getFramingDeps(), viewer, {
+					contactId: params.id,
+					photoId,
+					crop,
+					upload
+				}))
+			) {
 				return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
 			}
 		} catch (err) {
-			if (err instanceof InvalidAvatarError) return fail(400, { photoError: err.phrase(translator(locals)) });
+			if (err instanceof InvalidAvatarError)
+				return fail(400, { photoError: err.phrase(translator(locals)) });
 			throw err;
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
@@ -200,7 +224,8 @@ export const photoActions = {
 				return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
 			}
 		} catch (err) {
-			if (err instanceof InvalidAvatarError) return fail(400, { photoError: err.phrase(translator(locals)) });
+			if (err instanceof InvalidAvatarError)
+				return fail(400, { photoError: err.phrase(translator(locals)) });
 			throw err;
 		}
 		throw redirect(303, `/contacts/${params.id}`);
@@ -212,10 +237,11 @@ export const photoActions = {
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		const form = await request.formData();
 		const photoId = form.get('photoId');
-		if (typeof photoId !== 'string') return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
+		if (typeof photoId !== 'string')
+			return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
 		if (!(await removeGalleryPhoto(getGalleryDeps(), viewer, photoId))) {
 			return fail(403, { photoError: say(locals, 'errors.photo.onlyOwnerRemove') });
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
-	},
+	}
 } satisfies Actions;

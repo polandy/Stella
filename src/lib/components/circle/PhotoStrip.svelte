@@ -39,7 +39,7 @@
 	<img src={viewUrl(photoId)} alt="" class="size-full object-cover object-center" />
 	{#if count > 1}
 		<span
-			class="pointer-events-none absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white"
+			class="pointer-events-none absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white"
 			aria-hidden="true"
 		>
 			<Icon name="photo" size={12} />{count}

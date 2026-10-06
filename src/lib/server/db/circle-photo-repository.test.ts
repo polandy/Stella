@@ -122,8 +122,22 @@ describe('describe', () => {
 describe('setOwnVisibility / deleteOwn', () => {
 	it('lets only the uploader re-scope a photo', async () => {
 		await repo.insert(stored());
-		expect(await repo.setOwnVisibility({ authorId: U2, circleId: 'class', photoId: 'p1', visibility: 'private' })).toBe(false);
-		expect(await repo.setOwnVisibility({ authorId: U1, circleId: 'class', photoId: 'p1', visibility: 'private' })).toBe(true);
+		expect(
+			await repo.setOwnVisibility({
+				authorId: U2,
+				circleId: 'class',
+				photoId: 'p1',
+				visibility: 'private'
+			})
+		).toBe(false);
+		expect(
+			await repo.setOwnVisibility({
+				authorId: U1,
+				circleId: 'class',
+				photoId: 'p1',
+				visibility: 'private'
+			})
+		).toBe(true);
 		expect(await repo.listVisible(u2, 'class')).toEqual([]);
 	});
 
@@ -154,16 +168,26 @@ describe('beside the person photos', () => {
 		const photos = createDrizzlePhotoRepository(db);
 		seedCircle('secret', 'private', U1);
 		await repo.insert(stored({ id: 'open' }));
-		await repo.insert(stored({ id: 'hidden', circleId: 'secret', filePath: 'h.jpg', thumbPath: 'h_t.jpg' }));
-		expect(await photos.getVisiblePhotoFile(u2, 'open', 'thumb')).toEqual({ path: 'p1_thumb.jpg', mime: 'image/jpeg' });
+		await repo.insert(
+			stored({ id: 'hidden', circleId: 'secret', filePath: 'h.jpg', thumbPath: 'h_t.jpg' })
+		);
+		expect(await photos.getVisiblePhotoFile(u2, 'open', 'thumb')).toEqual({
+			path: 'p1_thumb.jpg',
+			mime: 'image/jpeg'
+		});
 		expect(await photos.getVisiblePhotoFile(u2, 'hidden', 'full')).toBeNull();
-		expect(await photos.getVisiblePhotoFile(u1, 'hidden', 'full')).toEqual({ path: 'h.jpg', mime: 'image/jpeg' });
+		expect(await photos.getVisiblePhotoFile(u1, 'hidden', 'full')).toEqual({
+			path: 'h.jpg',
+			mime: 'image/jpeg'
+		});
 	});
 
 	it('never lets the person gallery’s writes reach a circle photo', async () => {
 		const photos = createDrizzlePhotoRepository(db);
 		await repo.insert(stored());
-		expect(await photos.updateOwnGalleryPhoto({ authorId: U1, photoId: 'p1', caption: 'x' })).toBe(false);
+		expect(await photos.updateOwnGalleryPhoto({ authorId: U1, photoId: 'p1', caption: 'x' })).toBe(
+			false
+		);
 		expect(await photos.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'p1' })).toBeNull();
 		await photos.setGalleryPhotoPin('p1', 5);
 		const photo = await repo.findVisible(u1, 'class', 'p1');

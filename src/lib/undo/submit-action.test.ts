@@ -11,7 +11,10 @@ function fakeFetch(body: unknown, status = 200) {
 	const calls: { url: string; init: RequestInit }[] = [];
 	const fetch: ActionFetch = async (url, init) => {
 		calls.push({ url: String(url), init: init ?? {} });
-		return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
+		return new Response(JSON.stringify(body), {
+			status,
+			headers: { 'content-type': 'application/json' }
+		});
 	};
 	return { fetch, calls };
 }

@@ -72,11 +72,15 @@ describe('addGalleryPhoto', () => {
 	it('keeps the capture date the phone read out of the picture', async () => {
 		const d = deps();
 		d.clock = { now: () => Date.UTC(2026, 9, 4) };
-		await addGalleryPhoto(d, { userId: 'u1', householdId: 'h1' }, {
-			contactId: 'c1',
-			visibility: 'shared',
-			upload: { ...upload, takenAt: '2019-05-03T00:30:15+02:00' }
-		});
+		await addGalleryPhoto(
+			d,
+			{ userId: 'u1', householdId: 'h1' },
+			{
+				contactId: 'c1',
+				visibility: 'shared',
+				upload: { ...upload, takenAt: '2019-05-03T00:30:15+02:00' }
+			}
+		);
 		expect(d.stored[0]?.takenAt).toBe('2019-05-03T00:30:15+02:00');
 	});
 
@@ -86,11 +90,15 @@ describe('addGalleryPhoto', () => {
 			const d = deps();
 			d.clock = { now: () => Date.UTC(2026, 9, 4) };
 			await expect(
-				addGalleryPhoto(d, { userId: 'u1', householdId: 'h1' }, {
-					contactId: 'c1',
-					visibility: 'shared',
-					upload: { ...upload, takenAt }
-				})
+				addGalleryPhoto(
+					d,
+					{ userId: 'u1', householdId: 'h1' },
+					{
+						contactId: 'c1',
+						visibility: 'shared',
+						upload: { ...upload, takenAt }
+					}
+				)
 			).rejects.toBeInstanceOf(InvalidImageError);
 			expect(d.stored).toEqual([]);
 			expect(d.puts).toEqual([]);
@@ -99,22 +107,34 @@ describe('addGalleryPhoto', () => {
 
 	it('keeps a private photo private', async () => {
 		const d = deps();
-		await addGalleryPhoto(d, { userId: 'u1', householdId: 'h1' }, {
-			contactId: 'c1',
-			visibility: 'private',
-			upload
-		});
+		await addGalleryPhoto(
+			d,
+			{ userId: 'u1', householdId: 'h1' },
+			{
+				contactId: 'c1',
+				visibility: 'private',
+				upload
+			}
+		);
 		expect(d.stored[0]?.visibility).toBe('private');
 	});
 
 	it('stores nothing when the bytes are not a real image', async () => {
 		const d = deps();
 		await expect(
-			addGalleryPhoto(d, { userId: 'u1', householdId: 'h1' }, {
-				contactId: 'c1',
-				visibility: 'shared',
-				upload: { ...upload, image: new Uint8Array([1, 2, 3, 4]), thumb: new Uint8Array([1, 2, 3, 4]) }
-			})
+			addGalleryPhoto(
+				d,
+				{ userId: 'u1', householdId: 'h1' },
+				{
+					contactId: 'c1',
+					visibility: 'shared',
+					upload: {
+						...upload,
+						image: new Uint8Array([1, 2, 3, 4]),
+						thumb: new Uint8Array([1, 2, 3, 4])
+					}
+				}
+			)
 		).rejects.toBeInstanceOf(InvalidImageError);
 		expect(d.puts).toEqual([]);
 		expect(d.stored).toEqual([]);

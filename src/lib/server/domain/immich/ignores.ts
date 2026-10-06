@@ -58,7 +58,11 @@ export async function ignoreMatch(
 ): Promise<void> {
 	const viewer: Viewer = { id: actor.userId, householdId: actor.householdId };
 	if (!(await deps.contacts.findByIdVisibleTo(viewer, contactId))) throw new ContactGoneError();
-	if (immichPersonIds.length === 0 || immichPersonIds.length > MAX_FACES_PER_ROW || !immichPersonIds.every(isImmichId))
+	if (
+		immichPersonIds.length === 0 ||
+		immichPersonIds.length > MAX_FACES_PER_ROW ||
+		!immichPersonIds.every(isImmichId)
+	)
 		throw new ImmichLinkRefusedError('notFound');
 
 	const ignoredAt = deps.clock.now();

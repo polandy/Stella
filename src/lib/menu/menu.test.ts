@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { filterSummary, menuMaxHeight, menuOpensUpward, menuShift, nearMiss, nextMenuIndex } from './menu';
+import {
+	filterSummary,
+	menuMaxHeight,
+	menuOpensUpward,
+	menuShift,
+	nearMiss,
+	nextMenuIndex
+} from './menu';
 
 /*
  * The decisions behind the graph toolbar's menus (docs/05 §5.8): what the Filter button says

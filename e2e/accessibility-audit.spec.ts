@@ -191,7 +191,9 @@ test.describe('focus after a form closes', () => {
 		await page.getByRole('textbox', { name: 'Shown as' }).fill('Ottilie Brandenberger-Sutz');
 		await page.getByRole('button', { name: 'Save' }).click();
 		await expect(page.getByRole('heading', { name: 'Ottilie Brandenberger-Sutz' })).toBeVisible();
-		await expect(page.getByRole('button', { name: 'Ottilie Brandenberger-Sutz', exact: true })).toBeFocused();
+		await expect(
+			page.getByRole('button', { name: 'Ottilie Brandenberger-Sutz', exact: true })
+		).toBeFocused();
 
 		// Cancel.
 		await page.getByRole('button', { name: 'Add a description' }).click();
@@ -265,7 +267,8 @@ test('the undo toast waits while hovered or focused, and commits a full window a
 
 	const sent: string[] = [];
 	page.on('request', (request) => {
-		if (request.method() === 'POST' && request.url().includes('removeTag')) sent.push(request.url());
+		if (request.method() === 'POST' && request.url().includes('removeTag'))
+			sent.push(request.url());
 	});
 	const toast = page.getByTestId('toast-undo');
 
@@ -317,7 +320,9 @@ test.describe('form errors', () => {
 
 		await expect(page.getByRole('alert')).toHaveText('Please enter at least a name or nickname.');
 		await expect(firstName).toHaveAttribute('aria-invalid', 'true');
-		await expect(firstName).toHaveAccessibleDescription('Please enter at least a name or nickname.');
+		await expect(firstName).toHaveAccessibleDescription(
+			'Please enter at least a name or nickname.'
+		);
 	});
 
 	test.describe('signed out', () => {
@@ -409,7 +414,9 @@ test.describe('live match counts', () => {
 });
 
 test('Escape closes the desktop account menu and hands focus back to it', async ({ page }) => {
-	const menu = page.locator('details', { has: page.locator('summary', { hasText: 'Account menu' }) });
+	const menu = page.locator('details', {
+		has: page.locator('summary', { hasText: 'Account menu' })
+	});
 	const summary = menu.locator('summary');
 	await summary.click();
 	await expect(menu).toHaveAttribute('open', '');

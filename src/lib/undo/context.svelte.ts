@@ -1,5 +1,10 @@
 import { getContext, setContext } from 'svelte';
-import { createPendingRemovals, type NoticeLink, type Removal, type RemovalsSnapshot } from './pending-removals';
+import {
+	createPendingRemovals,
+	type NoticeLink,
+	type Removal,
+	type RemovalsSnapshot
+} from './pending-removals';
 import { useTranslate } from '$lib/i18n/context.svelte';
 
 /*

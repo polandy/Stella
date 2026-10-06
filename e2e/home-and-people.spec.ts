@@ -38,7 +38,9 @@ async function addBirthdaysSoon(page: Page, names: string[], firstInDays = 2): P
 	await page.goto('/');
 }
 
-test('holds only Coming up in the rail, with no band about who has gone quiet', async ({ page }) => {
+test('holds only Coming up in the rail, with no band about who has gone quiet', async ({
+	page
+}) => {
 	// A birthday this week, so the rail is there on any day the suite runs and its headings
 	// can be read; the removed *Quiet lately* band would have been the second one.
 	await addBirthdaysSoon(page, ['Mira Quadri']);
@@ -81,7 +83,10 @@ test('jumps to a person from anywhere with ⌘K, type, Enter', async ({ page }) 
 	await expect(palette).toBeVisible();
 
 	await page.keyboard.type('Vreni');
-	await expect(palette.getByRole('option', { name: /Vreni Zbinden/ })).toHaveAttribute('aria-selected', 'true');
+	await expect(palette.getByRole('option', { name: /Vreni Zbinden/ })).toHaveAttribute(
+		'aria-selected',
+		'true'
+	);
 	await page.keyboard.press('Enter');
 
 	await expect(page).toHaveURL(/\/contacts\/demo-c-vreni$/);
@@ -91,7 +96,9 @@ test('jumps to a person from anywhere with ⌘K, type, Enter', async ({ page }) 
 test.describe('on a phone', () => {
 	test.use({ viewport: { width: 390, height: 844 } });
 
-	test('lays the rail out as one vertical list, with nothing off the right edge', async ({ page }) => {
+	test('lays the rail out as one vertical list, with nothing off the right edge', async ({
+		page
+	}) => {
 		// The band used to be a strip of cards scrolling sideways, so most of it sat off the
 		// screen with nothing to say so (docs/05 §5.5). Enough people to fill the strip,
 		// because an empty band cannot overflow and would pass this without the fix.
@@ -109,7 +116,12 @@ test.describe('on a phone', () => {
 	});
 
 	test('stops a band after three people and shows the rest on request', async ({ page }) => {
-		await addBirthdaysSoon(page, ['Alina Nyffeler', 'Bela Ostwald', 'Cyril Pfister', 'Dora Reinhardt']);
+		await addBirthdaysSoon(page, [
+			'Alina Nyffeler',
+			'Bela Ostwald',
+			'Cyril Pfister',
+			'Dora Reinhardt'
+		]);
 		const comingUp = page.getByTestId('coming-up');
 		// `getByRole` skips what `display: none` hides, so the rows past the cap are counted
 		// through the DOM instead — the point of the test is that they are there but unseen.
@@ -141,7 +153,9 @@ test.describe('on a phone', () => {
 		// can empty a household's calendar deterministically.
 		await addBirthdaysSoon(page, ['Yannick Zwahlen'], 1);
 
-		await expect(page.getByTestId('coming-up').getByRole('link', { name: 'Yannick Zwahlen' })).toBeVisible();
+		await expect(
+			page.getByTestId('coming-up').getByRole('link', { name: 'Yannick Zwahlen' })
+		).toBeVisible();
 
 		const comingUp = await page.getByTestId('coming-up').boundingBox();
 		const stream = await page.getByTestId('stream').boundingBox();

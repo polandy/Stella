@@ -45,7 +45,8 @@ export class MonicaJsonError extends TranslatableError {
 
 type Json = Record<string, unknown>;
 
-const isObject = (v: unknown): v is Json => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isObject = (v: unknown): v is Json =>
+	typeof v === 'object' && v !== null && !Array.isArray(v);
 
 const obj = (v: unknown): Json => (isObject(v) ? v : {});
 const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
@@ -121,12 +122,14 @@ export function readMonicaJsonExport(parsed: unknown): SourceExport {
 		name: str(props(g).name) ?? ''
 	}));
 
-	const contactFieldTypes: MonicaContactFieldType[] = list(instance.contact_field_types).map((t) => ({
-		id: uuidOf(t, 'contact field type'),
-		name: str(props(t).name) ?? '',
-		type: str(props(t).type),
-		protocol: str(props(t).protocol)
-	}));
+	const contactFieldTypes: MonicaContactFieldType[] = list(instance.contact_field_types).map(
+		(t) => ({
+			id: uuidOf(t, 'contact field type'),
+			name: str(props(t).name) ?? '',
+			type: str(props(t).type),
+			protocol: str(props(t).protocol)
+		})
+	);
 
 	// An activity names its type by uuid; the mapping wants Monica's translation key.
 	const activityTypeKeys = new Map<MonicaId, string | null>(

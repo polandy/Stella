@@ -123,16 +123,16 @@ export async function logInteraction(
 	input: LogInteractionInput
 ): Promise<string> {
 	if (!INTERACTION_KINDS.includes(input.kind)) {
-		throw new InvalidInteractionError(phrase('errors.interaction.unknownKind', { kind: input.kind }));
+		throw new InvalidInteractionError(
+			phrase('errors.interaction.unknownKind', { kind: input.kind })
+		);
 	}
 	const happenedAt = input.happenedAt.trim();
 	if (!FULL_DATE_SHAPE.test(happenedAt)) {
 		throw new InvalidInteractionError(phrase('errors.interaction.dayFormat'));
 	}
 	if (!isRealCalendarDay(happenedAt)) {
-		throw new InvalidInteractionError(
-			phrase('errors.interaction.noSuchDay', { day: happenedAt })
-		);
+		throw new InvalidInteractionError(phrase('errors.interaction.noSuchDay', { day: happenedAt }));
 	}
 	const participantIds = [...new Set(input.participantIds ?? [])];
 	if (participantIds.includes(input.contactId)) {

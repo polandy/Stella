@@ -36,7 +36,11 @@
 	{#if hasQuery}
 		{#if total === 0}
 			<!-- Nobody found is usually somebody new: the query is already their name. -->
-			<EmptyState icon="search" title={t('search.noResults', { query: data.q })} hint={t('search.noResultsHint')}>
+			<EmptyState
+				icon="search"
+				title={t('search.noResults', { query: data.q })}
+				hint={t('search.noResultsHint')}
+			>
 				<Button variant="primary" icon="add" href={newPersonHref({ name: data.q })}>
 					{t('contacts.addNamed', { name: data.q })}
 				</Button>
@@ -54,8 +58,14 @@
 							<!-- The job gets its own line under the name and description (docs/02 §2.9). -->
 							<span class="flex min-w-0 flex-col">
 								<span class="flex min-w-0 items-center gap-1">
-									<span class="shrink-0 text-fg">{c.displayName}<FormerlyMark name={c.formerly} /><FoundByJobMark found={c.foundByJob} /></span>
-									{#if c.description}<span class="truncate text-sm text-fg-muted">· {c.description}</span>{/if}
+									<span class="shrink-0 text-fg"
+										>{c.displayName}<FormerlyMark name={c.formerly} /><FoundByJobMark
+											found={c.foundByJob}
+										/></span
+									>
+									{#if c.description}<span class="truncate text-sm text-fg-muted"
+											>· {c.description}</span
+										>{/if}
 								</span>
 								<JobLine job={c} />
 							</span>
@@ -73,7 +83,8 @@
 							class="flex flex-col rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
 						>
 							<span class="text-sm text-fg-muted">
-								{#if n.title}{n.title} · {/if}{t('search.noteOn', { name: n.contactName })}
+								{#if n.title}{n.title} ·
+								{/if}{t('search.noteOn', { name: n.contactName })}
 							</span>
 							<span class="truncate text-fg">{n.snippet}</span>
 						</a>

@@ -56,37 +56,40 @@ function deps(graph: KinshipGraph = family(), log: Dismissal[] = []) {
 	const written: NewDismissal[] = [];
 	const restored: [Viewer, string, string][] = [];
 	const rows = [...log];
-	const it: SuggestionReviewDeps & { asked: Viewer[]; written: NewDismissal[]; restored: typeof restored } =
-		{
-			relationships: {
-				async loadKinshipGraphVisibleTo(v) {
-					asked.push(v);
-					return graph;
-				}
+	const it: SuggestionReviewDeps & {
+		asked: Viewer[];
+		written: NewDismissal[];
+		restored: typeof restored;
+	} = {
+		relationships: {
+			async loadKinshipGraphVisibleTo(v) {
+				asked.push(v);
+				return graph;
+			}
+		},
+		dismissals: {
+			async listForHousehold(v) {
+				asked.push(v);
+				return rows;
 			},
-			dismissals: {
-				async listForHousehold(v) {
-					asked.push(v);
-					return rows;
-				},
-				async dismiss(entry) {
-					written.push(entry);
-					rows.push(entry);
-				},
-				async restore(v, relation, pair) {
-					restored.push([v, relation, pair]);
-					const at = rows.findIndex((r) => r.relation === relation && r.pairKey === pair);
-					if (at === -1) return false;
-					rows.splice(at, 1);
-					return true;
-				}
+			async dismiss(entry) {
+				written.push(entry);
+				rows.push(entry);
 			},
-			ids: { next: () => 'd1' },
-			clock: { now: () => 1_700_000_000_000 },
-			asked,
-			written,
-			restored
-		};
+			async restore(v, relation, pair) {
+				restored.push([v, relation, pair]);
+				const at = rows.findIndex((r) => r.relation === relation && r.pairKey === pair);
+				if (at === -1) return false;
+				rows.splice(at, 1);
+				return true;
+			}
+		},
+		ids: { next: () => 'd1' },
+		clock: { now: () => 1_700_000_000_000 },
+		asked,
+		written,
+		restored
+	};
 	return it;
 }
 
@@ -186,7 +189,9 @@ describe('reviewHousehold', () => {
 
 	it('offers the worked-out relatives of everyone too, each pair once', async () => {
 		// Andy and Linda share Wing Kam — siblings nobody entered, reached from both ends.
-		expect(workedOut(await reviewHousehold(deps(), viewer))).toEqual([['sibling', 'andy', 'linda']]);
+		expect(workedOut(await reviewHousehold(deps(), viewer))).toEqual([
+			['sibling', 'andy', 'linda']
+		]);
 	});
 
 	it('names the people, so the interface can phrase the claim', async () => {
@@ -200,9 +205,9 @@ describe('reviewHousehold', () => {
 	it('leaves out a claim the household declined, and lists it when asked', async () => {
 		const log = [declinedClaim()];
 		expect(shape(await reviewHousehold(deps(family(), log), viewer))).toEqual([]);
-		expect(shape(await reviewHousehold(deps(family(), log), viewer, { includeDismissed: true }))).toEqual([
-			['wingkam', 'steve', 42]
-		]);
+		expect(
+			shape(await reviewHousehold(deps(family(), log), viewer, { includeDismissed: true }))
+		).toEqual([['wingkam', 'steve', 42]]);
 	});
 
 	/*
@@ -226,7 +231,9 @@ describe('reviewHousehold', () => {
 describe('dismissSuggestion', () => {
 	it('records the no against the claim, keyed from either end', async () => {
 		const d = deps();
-		expect(await dismissSuggestion(d, viewer, { relation: 'parent', fromId: 'wingkam', toId: 'steve' })).toBe(true);
+		expect(
+			await dismissSuggestion(d, viewer, { relation: 'parent', fromId: 'wingkam', toId: 'steve' })
+		).toBe(true);
 		expect(d.written).toEqual([
 			{
 				id: 'd1',
@@ -252,7 +259,13 @@ describe('dismissSuggestion', () => {
 	 */
 	it('refuses a claim about someone outside the viewer’s graph, and writes nothing', async () => {
 		const d = deps();
-		expect(await dismissSuggestion(d, viewer, { relation: 'parent', fromId: 'wingkam', toId: 'stranger' })).toBe(false);
+		expect(
+			await dismissSuggestion(d, viewer, {
+				relation: 'parent',
+				fromId: 'wingkam',
+				toId: 'stranger'
+			})
+		).toBe(false);
 		expect(d.written).toEqual([]);
 	});
 });
@@ -268,7 +281,9 @@ describe('restoreSuggestion', () => {
 
 	it('reports nothing taken back when the claim was never declined', async () => {
 		const d = deps();
-		expect(await restoreSuggestion(d, viewer, { relation: 'sibling', fromId: 'a', toId: 'b' })).toBe(false);
+		expect(
+			await restoreSuggestion(d, viewer, { relation: 'sibling', fromId: 'a', toId: 'b' })
+		).toBe(false);
 	});
 
 	it('scopes the withdrawal to the viewer’s household, as the port is asked to', async () => {

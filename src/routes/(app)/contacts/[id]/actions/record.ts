@@ -14,10 +14,7 @@ import {
 	getSelfContactDeps,
 	getTagDeps
 } from '$lib/server/services';
-import {
-	setSelfContact,
-	UnknownSelfContactError
-} from '$lib/server/domain/household/self-contact';
+import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -97,5 +94,5 @@ export const recordActions = {
 		const done = await restoreContact(getContactDeps(), viewer, params.id);
 		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		throw redirect(303, `/contacts/${params.id}`);
-	},
+	}
 } satisfies Actions;

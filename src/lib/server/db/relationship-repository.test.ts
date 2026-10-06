@@ -46,8 +46,15 @@ function newRelationship(id: string, fromContactId: string, toContactId: string,
 	};
 }
 
-function seedContact(id: string, displayName: string, visibility: 'shared' | 'private', createdBy = U1) {
-	db.insert(schema.contact).values({ id, householdId: H, createdBy, visibility, displayName }).run();
+function seedContact(
+	id: string,
+	displayName: string,
+	visibility: 'shared' | 'private',
+	createdBy = U1
+) {
+	db.insert(schema.contact)
+		.values({ id, householdId: H, createdBy, visibility, displayName })
+		.run();
 }
 
 beforeEach(() => {
@@ -57,10 +64,12 @@ beforeEach(() => {
 	migrate(db, { migrationsFolder: './drizzle' });
 	seedRelationshipTypes(db);
 	db.insert(schema.household).values({ id: H, name: 'H' }).run();
-	db.insert(schema.user).values([
-		{ id: U1, householdId: H, email: 'u1@x.test', name: 'One' },
-		{ id: U2, householdId: H, email: 'u2@x.test', name: 'Two' }
-	]).run();
+	db.insert(schema.user)
+		.values([
+			{ id: U1, householdId: H, email: 'u1@x.test', name: 'One' },
+			{ id: U2, householdId: H, email: 'u2@x.test', name: 'Two' }
+		])
+		.run();
 	repo = createDrizzleRelationshipRepository(db);
 });
 
@@ -494,11 +503,23 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 		seedContact('hans', 'Hans', 'shared');
 		seedContact('kurt', 'Kurt', 'shared');
 		seedContact('secret', 'Secret', 'private', U2);
-		db.update(schema.contact).set({ gender: 'female' }).where(eq(schema.contact.id, 'bettina')).run();
+		db.update(schema.contact)
+			.set({ gender: 'female' })
+			.where(eq(schema.contact.id, 'bettina'))
+			.run();
 		const rel = (id: string, from: string, to: string, typeId: string) =>
 			repo.insert({
-				id, householdId: H, fromContactId: from, toContactId: to, typeId,
-				description: null, sinceDate: null, status: CURRENT_RELATIONSHIP_STATUS, createdBy: U1, createdAt: 1, updatedAt: 1
+				id,
+				householdId: H,
+				fromContactId: from,
+				toContactId: to,
+				typeId,
+				description: null,
+				sinceDate: null,
+				status: CURRENT_RELATIONSHIP_STATUS,
+				createdBy: U1,
+				createdAt: 1,
+				updatedAt: 1
 			});
 		await rel('r-1', 'otto', 'bettina', 'parent_child');
 		await rel('r-2', 'bettina', 'hans', 'parent_child');
@@ -515,7 +536,9 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 			{ parentId: 'otto', childId: 'bettina' },
 			{ parentId: 'bettina', childId: 'hans' }
 		]);
-		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt', former: false, sinceDate: null }]);
+		expect(graph.partnerEdges).toEqual([
+			{ a: 'bettina', b: 'kurt', former: false, sinceDate: null }
+		]);
 		// Every visible pair is a stored pair, so nothing already linked is re-derived.
 		expect(graph.storedPairs).toContainEqual({ a: 'otto', b: 'hans' });
 	});
@@ -529,20 +552,30 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 			.run();
 
 		const graph = await repo.loadKinshipGraphVisibleTo(viewerU1);
-		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt', former: true, sinceDate: null }]);
+		expect(graph.partnerEdges).toEqual([
+			{ a: 'bettina', b: 'kurt', former: true, sinceDate: null }
+		]);
 		expect(graph.storedPairs).toContainEqual({ a: 'bettina', b: 'kurt' });
 		expect(deriveKinship(graph, 'hans').map((k) => k.personId)).not.toContain('kurt');
 	});
 
 	// Rule L3 tells a step-parent by these two dates (docs/concepts/relationship-suggestions.md §3.2).
 	it('carries the birth dates and the day a partnership began', async () => {
-		db.update(schema.contact).set({ birthDate: '2015-05-20' }).where(eq(schema.contact.id, 'hans')).run();
-		db.update(schema.relationship).set({ sinceDate: '2009-06-13' }).where(eq(schema.relationship.id, 'r-3')).run();
+		db.update(schema.contact)
+			.set({ birthDate: '2015-05-20' })
+			.where(eq(schema.contact.id, 'hans'))
+			.run();
+		db.update(schema.relationship)
+			.set({ sinceDate: '2009-06-13' })
+			.where(eq(schema.relationship.id, 'r-3'))
+			.run();
 
 		const graph = await repo.loadKinshipGraphVisibleTo(viewerU1);
 		expect(graph.people.find((p) => p.id === 'hans')?.birthDate).toBe('2015-05-20');
 		expect(graph.people.find((p) => p.id === 'otto')?.birthDate).toBeNull();
-		expect(graph.partnerEdges).toEqual([{ a: 'bettina', b: 'kurt', former: false, sinceDate: '2009-06-13' }]);
+		expect(graph.partnerEdges).toEqual([
+			{ a: 'bettina', b: 'kurt', former: false, sinceDate: '2009-06-13' }
+		]);
 	});
 
 	it('hides a private person’s links from everyone but their author', async () => {
@@ -562,14 +595,23 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
  * indistinguishable from one that is not there — and neither writes anything in that case.
  */
 describe('insertAll (docs/02 §2.4, several people in one go)', () => {
-	const stored = () => db.select({ id: schema.relationship.id }).from(schema.relationship).all().map((r) => r.id);
+	const stored = () =>
+		db
+			.select({ id: schema.relationship.id })
+			.from(schema.relationship)
+			.all()
+			.map((r) => r.id);
 
 	it('stores every link of the batch', async () => {
 		seedContact('lio', 'Lio', 'shared');
 		seedContact('anna', 'Anna', 'shared');
 		seedContact('bert', 'Bert', 'shared');
 		await repo.insertAll([
-			{ ...newRelationship('rel-1', 'anna', 'lio', 'parent_child'), description: 'mum', sinceDate: '2015-04-12' },
+			{
+				...newRelationship('rel-1', 'anna', 'lio', 'parent_child'),
+				description: 'mum',
+				sinceDate: '2015-04-12'
+			},
 			newRelationship('rel-2', 'bert', 'lio', 'parent_child')
 		]);
 
@@ -594,7 +636,13 @@ describe('insertAll (docs/02 §2.4, several people in one go)', () => {
 });
 
 describe('removeAllVisibleTo (the undo of a batch)', () => {
-	const stored = () => db.select({ id: schema.relationship.id }).from(schema.relationship).all().map((r) => r.id).sort();
+	const stored = () =>
+		db
+			.select({ id: schema.relationship.id })
+			.from(schema.relationship)
+			.all()
+			.map((r) => r.id)
+			.sort();
 
 	beforeEach(async () => {
 		seedContact('hans', 'Hans', 'shared');
@@ -627,14 +675,30 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 		seedContact('bettina', 'Bettina', 'shared');
 		seedContact('secret', 'Secret', 'private', U2); // U2's own, invisible to U1
 		await repo.insert({
-			id: 'rel-open', householdId: H, fromContactId: 'bettina', toContactId: 'hans',
-			typeId: 'parent_child', description: null, sinceDate: null, status: CURRENT_RELATIONSHIP_STATUS,
-			createdBy: U1, createdAt: 0, updatedAt: 0
+			id: 'rel-open',
+			householdId: H,
+			fromContactId: 'bettina',
+			toContactId: 'hans',
+			typeId: 'parent_child',
+			description: null,
+			sinceDate: null,
+			status: CURRENT_RELATIONSHIP_STATUS,
+			createdBy: U1,
+			createdAt: 0,
+			updatedAt: 0
 		});
 		await repo.insert({
-			id: 'rel-hidden', householdId: H, fromContactId: 'hans', toContactId: 'secret',
-			typeId: 'friend', description: 'quiet', sinceDate: null, status: CURRENT_RELATIONSHIP_STATUS,
-			createdBy: U2, createdAt: 0, updatedAt: 0
+			id: 'rel-hidden',
+			householdId: H,
+			fromContactId: 'hans',
+			toContactId: 'secret',
+			typeId: 'friend',
+			description: 'quiet',
+			sinceDate: null,
+			status: CURRENT_RELATIONSHIP_STATUS,
+			createdBy: U2,
+			createdAt: 0,
+			updatedAt: 0
 		});
 	});
 
@@ -663,7 +727,12 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 	});
 
 	it('refuses to touch one whose other endpoint the viewer cannot see', async () => {
-		const patch = { description: 'changed', sinceDate: null, status: CURRENT_RELATIONSHIP_STATUS, retype: null };
+		const patch = {
+			description: 'changed',
+			sinceDate: null,
+			status: CURRENT_RELATIONSHIP_STATUS,
+			retype: null
+		};
 		expect(await repo.updateVisibleTo(viewerU1, 'rel-hidden', patch, 1)).toBe(false);
 		expect((await detailsOf('rel-hidden'))?.note).toBe('quiet');
 
@@ -728,7 +797,12 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 		await repo.updateVisibleTo(
 			viewerU1,
 			'rel-open',
-			{ description: 'unchanged type', sinceDate: null, status: CURRENT_RELATIONSHIP_STATUS, retype: null },
+			{
+				description: 'unchanged type',
+				sinceDate: null,
+				status: CURRENT_RELATIONSHIP_STATUS,
+				retype: null
+			},
 			1
 		);
 

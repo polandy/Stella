@@ -129,9 +129,7 @@ export async function completeOidcLogin(
 
 	const lookups = {
 		existingUserId: await deps.identities.findUserIdByIssuerSubject(claims.issuer, claims.subject),
-		userIdByEmail: claims.email
-			? await deps.identities.findUserIdByEmail(claims.email)
-			: null
+		userIdByEmail: claims.email ? await deps.identities.findUserIdByEmail(claims.email) : null
 	};
 
 	const plan = planLogin(claims, lookups, deps.policy);

@@ -72,8 +72,11 @@
 	let answered = $state<AnsweredClaims>({});
 	/** Batches sent while Stella was out of reach: kept on the device, so not offered again. */
 	let keptBatches = $state<string[]>([]);
-	const batchKey = (batch: AddAllBatch) => `${batch.side}:${batch.subjectId}:${batch.targetIds.join(',')}`;
-	const parentType = $derived(data.relationshipTypes.find((type) => type.key === PARENT_CHILD_TYPE_KEY) ?? null);
+	const batchKey = (batch: AddAllBatch) =>
+		`${batch.side}:${batch.subjectId}:${batch.targetIds.join(',')}`;
+	const parentType = $derived(
+		data.relationshipTypes.find((type) => type.key === PARENT_CHILD_TYPE_KEY) ?? null
+	);
 	const batches = $derived(
 		parentType
 			? addAllBatches(
@@ -122,11 +125,16 @@
 				errorKey: 'error',
 				pending: graphPending,
 				onApplied: (result) =>
-					announceSavedBatch({ contactId: c.id, removals, pending: graphPending, t }, relationshipIdsOf(result)),
+					announceSavedBatch(
+						{ contactId: c.id, removals, pending: graphPending, t },
+						relationshipIdsOf(result)
+					),
 				onKept: () => (keptBatches = [...keptBatches, batchKey(batch)])
 			},
 			// Every batch is a command, so the plain form post below is only the no-script path.
-			() => async ({ update }) => update()
+			() =>
+				async ({ update }) =>
+					update()
 		);
 </script>
 
@@ -135,14 +143,25 @@
 	Each is one confirmation of its own — Stella never writes them by itself.
 -->
 {#if data.proposals.length > 0}
-	<div class="mt-4 flex flex-col gap-2 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="kin-proposals" data-kin-scope>
+	<div
+		class="mt-4 flex flex-col gap-2 rounded-md border border-border-subtle bg-bg-sunken p-3"
+		data-testid="kin-proposals"
+		data-kin-scope
+	>
 		<!-- Where focus goes when the last claim here is answered (KinSuggestions). -->
-		<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle" data-kin-heading tabindex="-1">
+		<h3
+			class="text-xs font-medium tracking-wide text-fg-subtle uppercase"
+			data-kin-heading
+			tabindex="-1"
+		>
 			{t('contact.relationships.alsoTrue')}
 		</h3>
 		<KinSuggestions suggestions={data.proposals} propose={data.proposeFor} bind:answered />
 		{#if parentType && batches.length > 0}
-			<ul class="flex list-none flex-col gap-2 border-t border-dashed border-border pt-2" data-testid="kin-add-all">
+			<ul
+				class="flex list-none flex-col gap-2 border-t border-dashed border-border pt-2"
+				data-testid="kin-add-all"
+			>
 				{#each batches as batch (batchKey(batch))}
 					<li class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm">
 						<span class="min-w-0 text-fg-muted">{batchSentence(batch)}</span>
@@ -152,7 +171,11 @@
 							action="/contacts/{batch.subjectId}?/addRelationships"
 							use:enhance={addAll(batch, parentType.id)}
 						>
-							<input type="hidden" name="typeChoice" value={encodeRelationshipChoice(parentType.id, batch.side)} />
+							<input
+								type="hidden"
+								name="typeChoice"
+								value={encodeRelationshipChoice(parentType.id, batch.side)}
+							/>
 							<input type="hidden" name="status" value={CURRENT_RELATIONSHIP_STATUS} />
 							{#each batch.targetIds as targetId (targetId)}
 								<input type="hidden" name="targetId" value={targetId} />
@@ -177,10 +200,18 @@
 	ago. It runs nothing until it is pressed.
 -->
 {#if data.review.open}
-	<div class="mt-4 flex flex-col gap-3 rounded-md border border-border-subtle bg-bg-sunken p-3" data-testid="kin-review" data-kin-scope>
+	<div
+		class="mt-4 flex flex-col gap-3 rounded-md border border-border-subtle bg-bg-sunken p-3"
+		data-testid="kin-review"
+		data-kin-scope
+	>
 		<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 			<!-- Where focus goes when the last claim here is answered (KinSuggestions). -->
-			<h3 class="text-xs font-medium uppercase tracking-wide text-fg-subtle" data-kin-heading tabindex="-1">
+			<h3
+				class="text-xs font-medium tracking-wide text-fg-subtle uppercase"
+				data-kin-heading
+				tabindex="-1"
+			>
 				{t('contact.relationships.reviewHeading')}
 			</h3>
 			<span class="text-xs text-fg-subtle">
@@ -209,7 +240,9 @@
 -->
 {#if data.derivedKin.length > 0}
 	<div class="@container mt-3 border-t border-border-subtle pt-2" data-testid="derived-kin">
-		<h3 class="mb-1 flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-fg-subtle uppercase">
+		<h3
+			class="mb-1 flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-fg-subtle uppercase"
+		>
 			<Icon name="explore" size={12} />{t('contact.relationships.derived')}
 		</h3>
 		<!--
@@ -233,7 +266,9 @@
 				{@const stored = claim ?? confirmed}
 				{@const via =
 					kin.via.length > 0
-						? t('contact.relationships.via', { people: kin.via.join(t('contact.relationships.viaAnd')) })
+						? t('contact.relationships.via', {
+								people: kin.via.join(t('contact.relationships.viaAnd'))
+							})
 						: null}
 				<li class="flex min-w-0 items-center gap-0.5">
 					<a
@@ -242,19 +277,38 @@
 						aria-describedby="kin-tile-{kin.personId}"
 						class="flex min-w-0 flex-1 items-center gap-2.5 rounded-control px-1 py-1 hover:bg-card-hover"
 					>
-						<span class="shrink-0 rounded-full border border-dashed border-border p-0.5 opacity-75" aria-hidden="true">
-							<Avatar id={kin.personId} name={kin.displayName} avatarPhotoId={photoById.get(kin.personId) ?? null} size={30} />
+						<span
+							class="shrink-0 rounded-full border border-dashed border-border p-0.5 opacity-75"
+							aria-hidden="true"
+						>
+							<Avatar
+								id={kin.personId}
+								name={kin.displayName}
+								avatarPhotoId={photoById.get(kin.personId) ?? null}
+								size={30}
+							/>
 						</span>
 						<span class="flex min-w-0 flex-col">
-							<span class="line-clamp-2 leading-tight break-words text-fg-muted">{kin.displayName}</span>
-							<span id="kin-tile-{kin.personId}" class="truncate text-xs text-fg-subtle" title={via ?? undefined}>
+							<span class="line-clamp-2 leading-tight break-words text-fg-muted"
+								>{kin.displayName}</span
+							>
+							<span
+								id="kin-tile-{kin.personId}"
+								class="truncate text-xs text-fg-subtle"
+								title={via ?? undefined}
+							>
 								{kinshipLabel(t, kin)}{#if via}{' · '}{via}{/if}
 							</span>
 						</span>
 					</a>
 					{#if editing && stored}
 						{@const ends = claimEndpoints(stored, c.id, kin.personId)}
-						<form method="POST" action="?/addProposedRelationship" use:enhance={confirmKin} class="shrink-0">
+						<form
+							method="POST"
+							action="?/addProposedRelationship"
+							use:enhance={confirmKin}
+							class="shrink-0"
+						>
 							<input type="hidden" name="fromId" value={ends.fromId} />
 							<input type="hidden" name="toId" value={ends.toId} />
 							<input type="hidden" name="typeId" value={stored.typeKey} />

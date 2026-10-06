@@ -294,7 +294,7 @@
 				moved the page under the reader's next tap — the very thing the hold exists to stop.
 			-->
 			<span
-				class="col-start-2 row-start-1 flex shrink-0 items-center justify-self-end gap-1.5 max-[34rem]:col-start-1 max-[34rem]:row-auto max-[34rem]:justify-self-start"
+				class="col-start-2 row-start-1 flex shrink-0 items-center gap-1.5 justify-self-end max-[34rem]:col-start-1 max-[34rem]:row-auto max-[34rem]:justify-self-start"
 			>
 				<form
 					method="POST"
@@ -332,7 +332,9 @@
 					<Button variant="danger" size="sm">{t('contact.relationships.decline')}</Button>
 				</form>
 			</span>
-			<span class="col-span-full flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-fg-subtle">
+			<span
+				class="col-span-full flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-fg-subtle"
+			>
 				<!--
 					Confidence is a word rather than a colour bar: "certain" here means a logical
 					consequence of what the household entered, not a strong hunch. The word is in

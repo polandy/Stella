@@ -19,7 +19,8 @@ export const components = {
 	'components.frame.change': 'Change framing',
 	'components.cropper.title': 'Frame the photo',
 	'components.cropper.window': 'Photo to frame',
-	'components.cropper.hint': 'Drag to move, pinch or scroll to zoom. Arrow keys and + / − work too.',
+	'components.cropper.hint':
+		'Drag to move, pinch or scroll to zoom. Arrow keys and + / − work too.',
 	'components.cropper.zoom': 'Zoom',
 	'components.cropper.use': 'Use photo',
 	// Choosing a profile picture when the person's circles have photos (circle-photos §5.1).
@@ -27,7 +28,8 @@ export const components = {
 	'components.photo.fromFile': 'Choose a picture…',
 	'components.photo.fromGroupPhoto': 'From a group photo',
 	'components.photo.fromImmich': 'From Immich',
-	'components.photo.immichNotLinked': (p: { name: string }) => `${p.name} isn’t linked to a face in Immich yet.`,
+	'components.photo.immichNotLinked': (p: { name: string }) =>
+		`${p.name} isn’t linked to a face in Immich yet.`,
 	'components.photo.immichNone': (p: { name: string }) => `Immich has no photos of ${p.name}.`,
 	'components.palette.jumpTo': 'Jump to',
 	'components.palette.placeholder': 'Jump to a person, or do something…',
@@ -59,11 +61,13 @@ export const components = {
 	'components.personSearch.submitting': 'Adding…',
 	'components.personSearch.created': (p: { name: string }) => `${p.name} was added`,
 	'components.personSearch.description': 'Description',
-	'components.namesake.metPlaceYear': (p: { place: string; year: string }) => `Met: ${p.place} · ${p.year}`,
+	'components.namesake.metPlaceYear': (p: { place: string; year: string }) =>
+		`Met: ${p.place} · ${p.year}`,
 	'components.namesake.metPlace': (p: { place: string }) => `Met: ${p.place}`,
 	'components.namesake.metYear': (p: { year: string }) => `Met in ${p.year}`,
 	'components.namesake.nothing': 'Nothing yet to tell them apart',
-	'components.namesake.circleRole': (p: { circle: string; role: string }) => `${p.circle} · ${p.role}`,
+	'components.namesake.circleRole': (p: { circle: string; role: string }) =>
+		`${p.circle} · ${p.role}`,
 	'components.namesake.which': (p: { handle: string; count: number }) =>
 		`@${p.handle} could be ${p.count} people — pick one from the @ list.`,
 	'components.namesake.whoIsWho': 'Who is who?',

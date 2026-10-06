@@ -42,7 +42,10 @@ function stub(answer: () => Response | Promise<Response>) {
 }
 
 const json = (payload: unknown, status = 200) =>
-	new Response(JSON.stringify(payload), { status, headers: { 'content-type': 'application/json' } });
+	new Response(JSON.stringify(payload), {
+		status,
+		headers: { 'content-type': 'application/json' }
+	});
 
 describe('createHttpImmichGateway', () => {
 	it('asks with the key in its header, and a deadline', async () => {
@@ -55,7 +58,10 @@ describe('createHttpImmichGateway', () => {
 
 	it('reads the owner, the people and the count from their endpoints', async () => {
 		const { gateway, calls } = stub(() => json({ email: 'anna@example.test', name: 'Anna' }));
-		expect(await gateway.owner()).toEqual({ ok: true, value: { name: 'Anna', email: 'anna@example.test' } });
+		expect(await gateway.owner()).toEqual({
+			ok: true,
+			value: { name: 'Anna', email: 'anna@example.test' }
+		});
 
 		const people = stub(() => json({ people: [{ id: ID, name: 'Bert' }], hasNextPage: false }));
 		expect(await people.gateway.listPeople(2, 50)).toEqual({
@@ -80,14 +86,27 @@ describe('createHttpImmichGateway', () => {
 	});
 
 	it('maps a refused, an under-scoped and a missing answer to outcomes, not throws', async () => {
-		expect(await stub(() => json({}, 401)).gateway.owner()).toEqual({ ok: false, failure: 'unauthorized' });
-		expect(await stub(() => json({}, 403)).gateway.listPeople(1, 1)).toEqual({ ok: false, failure: 'forbidden' });
-		expect(await stub(() => json({}, 404)).gateway.person(ID)).toEqual({ ok: false, failure: 'notFound' });
+		expect(await stub(() => json({}, 401)).gateway.owner()).toEqual({
+			ok: false,
+			failure: 'unauthorized'
+		});
+		expect(await stub(() => json({}, 403)).gateway.listPeople(1, 1)).toEqual({
+			ok: false,
+			failure: 'forbidden'
+		});
+		expect(await stub(() => json({}, 404)).gateway.person(ID)).toEqual({
+			ok: false,
+			failure: 'notFound'
+		});
 	});
 
 	it('reads Immich’s 400 for a person it no longer has as not found', async () => {
 		// Immich's access check answers a deleted person's id with 400, not 404.
-		expect(await stub(() => json({ message: 'Not found or no person.read access' }, 400)).gateway.person(ID)).toEqual({
+		expect(
+			await stub(() => json({ message: 'Not found or no person.read access' }, 400)).gateway.person(
+				ID
+			)
+		).toEqual({
 			ok: false,
 			failure: 'notFound'
 		});
@@ -100,7 +119,9 @@ describe('createHttpImmichGateway', () => {
 		const gone = stub(() => Promise.reject(new TypeError('fetch failed')));
 		expect(await gone.gateway.owner()).toEqual({ ok: false, failure: 'unreachable' });
 
-		const slow = stub(() => Promise.reject(new DOMException('The operation timed out.', 'TimeoutError')));
+		const slow = stub(() =>
+			Promise.reject(new DOMException('The operation timed out.', 'TimeoutError'))
+		);
 		expect(await slow.gateway.person(ID)).toEqual({ ok: false, failure: 'unreachable' });
 
 		for (const { logged } of [down, gone, slow]) {
@@ -111,7 +132,8 @@ describe('createHttpImmichGateway', () => {
 
 	it('does not follow a gateway’s redirect to its login page, and says why in the log', async () => {
 		const { gateway, logged, calls } = stub(
-			() => new Response(null, { status: 302, headers: { location: 'https://auth.example.com/login' } })
+			() =>
+				new Response(null, { status: 302, headers: { location: 'https://auth.example.com/login' } })
 		);
 		expect(await gateway.owner()).toEqual({ ok: false, failure: 'unreachable' });
 		expect(logged[0]).toContain('forward-auth');
@@ -123,7 +145,10 @@ describe('createHttpImmichGateway', () => {
 		expect(await garbled.gateway.owner()).toEqual({ ok: false, failure: 'unreachable' });
 
 		const wrongShape = stub(() => json({ assets: 'many' }));
-		expect(await wrongShape.gateway.personStatistics(ID)).toEqual({ ok: false, failure: 'unreachable' });
+		expect(await wrongShape.gateway.personStatistics(ID)).toEqual({
+			ok: false,
+			failure: 'unreachable'
+		});
 
 		const huge = stub(() => new Response('x'.repeat(3 * 1024 * 1024)));
 		expect(await huge.gateway.searchPeople('a')).toEqual({ ok: false, failure: 'unreachable' });
@@ -131,21 +156,34 @@ describe('createHttpImmichGateway', () => {
 
 	it('never asks Immich about something that is not an Immich id', async () => {
 		const { gateway, calls } = stub(() => json({ assets: 1 }));
-		expect(await gateway.personStatistics('../users/me')).toEqual({ ok: false, failure: 'notFound' });
-		expect(await gateway.personThumbnail('../users/me')).toEqual({ ok: false, failure: 'notFound' });
+		expect(await gateway.personStatistics('../users/me')).toEqual({
+			ok: false,
+			failure: 'notFound'
+		});
+		expect(await gateway.personThumbnail('../users/me')).toEqual({
+			ok: false,
+			failure: 'notFound'
+		});
 		expect(calls).toHaveLength(0);
 	});
 
 	it('passes a face thumbnail on with its image type', async () => {
 		const bytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0]);
-		const { gateway, calls } = stub(() => new Response(bytes, { headers: { 'content-type': 'image/jpeg' } }));
-		expect(await gateway.personThumbnail(ID)).toEqual({ ok: true, value: { bytes, contentType: 'image/jpeg' } });
+		const { gateway, calls } = stub(
+			() => new Response(bytes, { headers: { 'content-type': 'image/jpeg' } })
+		);
+		expect(await gateway.personThumbnail(ID)).toEqual({
+			ok: true,
+			value: { bytes, contentType: 'image/jpeg' }
+		});
 		expect(calls[0].url).toBe(`${BASE}/api/people/${ID}/thumbnail`);
 	});
 
 	it('refuses a thumbnail that is not an image', async () => {
 		for (const type of ['text/html', 'image/svg+xml', '']) {
-			const { gateway } = stub(() => new Response('<svg onload="x()"/>', { headers: { 'content-type': type } }));
+			const { gateway } = stub(
+				() => new Response('<svg onload="x()"/>', { headers: { 'content-type': type } })
+			);
 			expect(await gateway.personThumbnail(ID)).toEqual({ ok: false, failure: 'unreachable' });
 		}
 	});
@@ -154,7 +192,14 @@ describe('createHttpImmichGateway', () => {
 		const { gateway, calls } = stub(() =>
 			json({
 				assets: {
-					items: [{ id: ASSET, type: 'IMAGE', visibility: 'timeline', localDateTime: '2026-08-14T18:30:00.000Z' }],
+					items: [
+						{
+							id: ASSET,
+							type: 'IMAGE',
+							visibility: 'timeline',
+							localDateTime: '2026-08-14T18:30:00.000Z'
+						}
+					],
 					nextCursor: 'c2'
 				}
 			})
@@ -195,7 +240,10 @@ describe('createHttpImmichGateway', () => {
 
 	it('asks for the first page without a cursor', async () => {
 		const { gateway, calls } = stub(() => json({ assets: { items: [], nextCursor: null } }));
-		expect(await gateway.latestAssets(only(ID), 12, null)).toEqual({ ok: true, value: { assets: [], nextCursor: null } });
+		expect(await gateway.latestAssets(only(ID), 12, null)).toEqual({
+			ok: true,
+			value: { assets: [], nextCursor: null }
+		});
 		expect(calls[0].body).not.toHaveProperty('cursor');
 	});
 
@@ -213,15 +261,25 @@ describe('createHttpImmichGateway', () => {
 	it('passes a photo on at the size asked for, with its image type', async () => {
 		const bytes = new Uint8Array([0x52, 0x49, 0x46, 0x46]);
 		for (const size of ['thumbnail', 'preview'] as const) {
-			const { gateway, calls } = stub(() => new Response(bytes, { headers: { 'content-type': 'image/webp' } }));
-			expect(await gateway.assetImage(ASSET, size)).toEqual({ ok: true, value: { bytes, contentType: 'image/webp' } });
+			const { gateway, calls } = stub(
+				() => new Response(bytes, { headers: { 'content-type': 'image/webp' } })
+			);
+			expect(await gateway.assetImage(ASSET, size)).toEqual({
+				ok: true,
+				value: { bytes, contentType: 'image/webp' }
+			});
 			expect(calls[0].url).toBe(`${BASE}/api/assets/${ASSET}/thumbnail?size=${size}`);
 		}
 	});
 
 	it('refuses a photo that is not an image, and reads a deleted one as not found', async () => {
-		const svg = stub(() => new Response('<svg/>', { headers: { 'content-type': 'image/svg+xml' } }));
-		expect(await svg.gateway.assetImage(ASSET, 'preview')).toEqual({ ok: false, failure: 'unreachable' });
+		const svg = stub(
+			() => new Response('<svg/>', { headers: { 'content-type': 'image/svg+xml' } })
+		);
+		expect(await svg.gateway.assetImage(ASSET, 'preview')).toEqual({
+			ok: false,
+			failure: 'unreachable'
+		});
 		expect(await stub(() => json({}, 400)).gateway.assetImage(ASSET, 'preview')).toEqual({
 			ok: false,
 			failure: 'notFound'
@@ -230,13 +288,24 @@ describe('createHttpImmichGateway', () => {
 
 	it('never asks Immich about a photo or a person whose id is not an Immich id', async () => {
 		const { gateway, calls } = stub(() => json({}));
-		expect(await gateway.assetImage('../users/me', 'preview')).toEqual({ ok: false, failure: 'notFound' });
-		expect(await gateway.latestAssets(only('../users/me'), 12, null)).toEqual({ ok: false, failure: 'notFound' });
-		expect(await gateway.latestAssets({ personIds: [ID, '../users/me'], match: 'all' }, 12, null)).toEqual({
+		expect(await gateway.assetImage('../users/me', 'preview')).toEqual({
 			ok: false,
 			failure: 'notFound'
 		});
-		expect(await gateway.latestAssets({ personIds: [], match: 'all' }, 12, null)).toEqual({ ok: false, failure: 'notFound' });
+		expect(await gateway.latestAssets(only('../users/me'), 12, null)).toEqual({
+			ok: false,
+			failure: 'notFound'
+		});
+		expect(
+			await gateway.latestAssets({ personIds: [ID, '../users/me'], match: 'all' }, 12, null)
+		).toEqual({
+			ok: false,
+			failure: 'notFound'
+		});
+		expect(await gateway.latestAssets({ personIds: [], match: 'all' }, 12, null)).toEqual({
+			ok: false,
+			failure: 'notFound'
+		});
 		expect(calls).toHaveLength(0);
 	});
 });

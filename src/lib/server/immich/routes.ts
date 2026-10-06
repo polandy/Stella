@@ -133,13 +133,18 @@ export async function answerFaceSearch(
 ): Promise<Response | RouteRefusal> {
 	if (!viewer) return NOT_SIGNED_IN;
 	if (!deps.immich) return NOT_FOUND;
-	if (!(await deps.isContactVisible(viewer, contactId))) return { status: 404, message: 'errors.contact.notFound' };
+	if (!(await deps.isContactVisible(viewer, contactId)))
+		return { status: 404, message: 'errors.contact.notFound' };
 
 	const found = await findImmichFaces(deps.immich, viewer, query);
-	if (!found.ok) return Response.json({ faces: [], error: deps.say(FAILURE_MESSAGE[found.failure]) });
+	if (!found.ok)
+		return Response.json({ faces: [], error: deps.say(FAILURE_MESSAGE[found.failure]) });
 	const { signer } = deps.immich;
 	const faces = await Promise.all(
-		found.faces.map(async (face) => ({ ...face, faceUrl: await faceUrlFor(signer, contactId, face.id) }))
+		found.faces.map(async (face) => ({
+			...face,
+			faceUrl: await faceUrlFor(signer, contactId, face.id)
+		}))
 	);
 	return Response.json({ faces, error: null });
 }

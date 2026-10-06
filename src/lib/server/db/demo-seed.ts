@@ -64,47 +64,238 @@ interface Person {
  */
 const PEOPLE: readonly Person[] = [
 	// ── Core household: the Brunners ──
-	{ key: 'markus', first: 'Markus', last: 'Brunner', gender: 'male', birth: '1983-03-14', job: 'Bauingenieur', company: 'Rytz + Partner AG', description: 'Familienvater, Vorstand im FC Länggasse.' },
-	{ key: 'sandra', first: 'Sandra', last: 'Brunner-Keller', gender: 'female', birth: '1985-07-02', job: 'Primarlehrerin', company: 'Schule Breitenrain', description: 'Singt im Frauenchor Bern.' },
-	{ key: 'lena', first: 'Lena', last: 'Brunner', gender: 'female', birth: '2015-05-20', description: '5. Klasse, spielt Klavier und turnt.' },
-	{ key: 'noah', first: 'Noah', last: 'Brunner', gender: 'male', birth: '2017-09-08', description: '3. Klasse, Torhüter bei den Junioren E.' },
-	{ key: 'elias', first: 'Elias', last: 'Brunner', gender: 'male', birth: '2020-01-30', description: 'Kindergarten Spitalacker.' },
+	{
+		key: 'markus',
+		first: 'Markus',
+		last: 'Brunner',
+		gender: 'male',
+		birth: '1983-03-14',
+		job: 'Bauingenieur',
+		company: 'Rytz + Partner AG',
+		description: 'Familienvater, Vorstand im FC Länggasse.'
+	},
+	{
+		key: 'sandra',
+		first: 'Sandra',
+		last: 'Brunner-Keller',
+		gender: 'female',
+		birth: '1985-07-02',
+		job: 'Primarlehrerin',
+		company: 'Schule Breitenrain',
+		description: 'Singt im Frauenchor Bern.'
+	},
+	{
+		key: 'lena',
+		first: 'Lena',
+		last: 'Brunner',
+		gender: 'female',
+		birth: '2015-05-20',
+		description: '5. Klasse, spielt Klavier und turnt.'
+	},
+	{
+		key: 'noah',
+		first: 'Noah',
+		last: 'Brunner',
+		gender: 'male',
+		birth: '2017-09-08',
+		description: '3. Klasse, Torhüter bei den Junioren E.'
+	},
+	{
+		key: 'elias',
+		first: 'Elias',
+		last: 'Brunner',
+		gender: 'male',
+		birth: '2020-01-30',
+		description: 'Kindergarten Spitalacker.'
+	},
 
 	// ── Grandparents ──
-	{ key: 'hans', first: 'Hans', last: 'Brunner', gender: 'male', birth: '1955-11-02', job: 'pensioniert', description: 'Markus’ Vater, ehemaliger Schreiner.' },
-	{ key: 'rosa', first: 'Rosa', last: 'Brunner-Aebi', gender: 'female', birth: '1957-04-19', job: 'pensioniert' },
-	{ key: 'peter', first: 'Peter', last: 'Keller', gender: 'male', birth: '1954-06-11', job: 'pensioniert', description: 'Sandras Vater, wohnt in Thun.' },
-	{ key: 'ursula', first: 'Ursula', last: 'Keller-Marti', gender: 'female', birth: '1956-08-23', job: 'pensioniert' },
+	{
+		key: 'hans',
+		first: 'Hans',
+		last: 'Brunner',
+		gender: 'male',
+		birth: '1955-11-02',
+		job: 'pensioniert',
+		description: 'Markus’ Vater, ehemaliger Schreiner.'
+	},
+	{
+		key: 'rosa',
+		first: 'Rosa',
+		last: 'Brunner-Aebi',
+		gender: 'female',
+		birth: '1957-04-19',
+		job: 'pensioniert'
+	},
+	{
+		key: 'peter',
+		first: 'Peter',
+		last: 'Keller',
+		gender: 'male',
+		birth: '1954-06-11',
+		job: 'pensioniert',
+		description: 'Sandras Vater, wohnt in Thun.'
+	},
+	{
+		key: 'ursula',
+		first: 'Ursula',
+		last: 'Keller-Marti',
+		gender: 'female',
+		birth: '1956-08-23',
+		job: 'pensioniert'
+	},
 
 	// ── Uncle's family (Brunner side) ──
-	{ key: 'daniel', first: 'Daniel', last: 'Brunner', gender: 'male', birth: '1985-12-01', job: 'Informatiker', company: 'Swisscom', description: 'Markus’ jüngerer Bruder, wohnt in Zürich.' },
-	{ key: 'nadia', first: 'Nadia', last: 'Brunner-Rossi', gender: 'female', birth: '1987-02-17', job: 'Physiotherapeutin' },
-	{ key: 'timo', first: 'Timo', last: 'Brunner', gender: 'male', birth: '2016-06-25', description: 'Cousin von Lena und Noah.' },
+	{
+		key: 'daniel',
+		first: 'Daniel',
+		last: 'Brunner',
+		gender: 'male',
+		birth: '1985-12-01',
+		job: 'Informatiker',
+		company: 'Swisscom',
+		description: 'Markus’ jüngerer Bruder, wohnt in Zürich.'
+	},
+	{
+		key: 'nadia',
+		first: 'Nadia',
+		last: 'Brunner-Rossi',
+		gender: 'female',
+		birth: '1987-02-17',
+		job: 'Physiotherapeutin'
+	},
+	{
+		key: 'timo',
+		first: 'Timo',
+		last: 'Brunner',
+		gender: 'male',
+		birth: '2016-06-25',
+		description: 'Cousin von Lena und Noah.'
+	},
 
 	// ── Aunt (Keller side) ──
-	{ key: 'corinne', first: 'Corinne', last: 'Keller', gender: 'female', birth: '1988-09-30', job: 'Grafikerin', description: 'Sandras Schwester, Gotti von Elias.' },
+	{
+		key: 'corinne',
+		first: 'Corinne',
+		last: 'Keller',
+		gender: 'female',
+		birth: '1988-09-30',
+		job: 'Grafikerin',
+		description: 'Sandras Schwester, Gotti von Elias.'
+	},
 
 	// ── Befriended family: the Widmers ──
-	{ key: 'thomas', first: 'Thomas', last: 'Widmer', gender: 'male', birth: '1982-04-05', job: 'Sekundarlehrer', description: 'Guter Freund von Markus, Juniorentrainer beim FC Länggasse.' },
-	{ key: 'franziska', first: 'Franziska', last: 'Widmer', gender: 'female', birth: '1984-10-12', job: 'Pflegefachfrau' },
-	{ key: 'mia', first: 'Mia', last: 'Widmer', gender: 'female', birth: '2015-03-11', description: 'Beste Freundin von Lena, gleiche Klasse.' },
-	{ key: 'luca', first: 'Luca', last: 'Widmer', gender: 'male', birth: '2017-11-22', description: 'Spielt mit Noah in den Junioren E.' },
+	{
+		key: 'thomas',
+		first: 'Thomas',
+		last: 'Widmer',
+		gender: 'male',
+		birth: '1982-04-05',
+		job: 'Sekundarlehrer',
+		description: 'Guter Freund von Markus, Juniorentrainer beim FC Länggasse.'
+	},
+	{
+		key: 'franziska',
+		first: 'Franziska',
+		last: 'Widmer',
+		gender: 'female',
+		birth: '1984-10-12',
+		job: 'Pflegefachfrau'
+	},
+	{
+		key: 'mia',
+		first: 'Mia',
+		last: 'Widmer',
+		gender: 'female',
+		birth: '2015-03-11',
+		description: 'Beste Freundin von Lena, gleiche Klasse.'
+	},
+	{
+		key: 'luca',
+		first: 'Luca',
+		last: 'Widmer',
+		gender: 'male',
+		birth: '2017-11-22',
+		description: 'Spielt mit Noah in den Junioren E.'
+	},
 
 	// ── Befriended family: the Steiners ──
-	{ key: 'beat', first: 'Beat', last: 'Steiner', gender: 'male', birth: '1980-01-19', job: 'Elektriker', description: 'Nachbar und Freund, im Turnverein aktiv.' },
-	{ key: 'jan', first: 'Jan', last: 'Steiner', gender: 'male', birth: '2017-07-14', description: 'Teamkollege von Noah.' },
+	{
+		key: 'beat',
+		first: 'Beat',
+		last: 'Steiner',
+		gender: 'male',
+		birth: '1980-01-19',
+		job: 'Elektriker',
+		description: 'Nachbar und Freund, im Turnverein aktiv.'
+	},
+	{
+		key: 'jan',
+		first: 'Jan',
+		last: 'Steiner',
+		gender: 'male',
+		birth: '2017-07-14',
+		description: 'Teamkollege von Noah.'
+	},
 
 	// ── Friends ──
-	{ key: 'nicole', first: 'Nicole', last: 'Frei', gender: 'female', birth: '1986-05-28', job: 'Journalistin', description: 'Freundin von Sandra aus dem Frauenchor.' },
+	{
+		key: 'nicole',
+		first: 'Nicole',
+		last: 'Frei',
+		gender: 'female',
+		birth: '1986-05-28',
+		job: 'Journalistin',
+		description: 'Freundin von Sandra aus dem Frauenchor.'
+	},
 
 	// ── Teachers & coaches ──
-	{ key: 'vreni', first: 'Vreni', last: 'Zbinden', gender: 'female', birth: '1972-02-08', job: 'Klassenlehrerin 5b', company: 'Schule Breitenrain' },
-	{ key: 'reto', first: 'Reto', last: 'Hofer', gender: 'male', birth: '1979-09-03', job: 'Klassenlehrer 3a', company: 'Schule Breitenrain' },
-	{ key: 'bettina', first: 'Bettina', last: 'Roth', gender: 'female', birth: '1990-12-15', job: 'Kindergärtnerin', company: 'Kindergarten Spitalacker' },
+	{
+		key: 'vreni',
+		first: 'Vreni',
+		last: 'Zbinden',
+		gender: 'female',
+		birth: '1972-02-08',
+		job: 'Klassenlehrerin 5b',
+		company: 'Schule Breitenrain'
+	},
+	{
+		key: 'reto',
+		first: 'Reto',
+		last: 'Hofer',
+		gender: 'male',
+		birth: '1979-09-03',
+		job: 'Klassenlehrer 3a',
+		company: 'Schule Breitenrain'
+	},
+	{
+		key: 'bettina',
+		first: 'Bettina',
+		last: 'Roth',
+		gender: 'female',
+		birth: '1990-12-15',
+		job: 'Kindergärtnerin',
+		company: 'Kindergarten Spitalacker'
+	},
 
 	// ── Neighbours ──
-	{ key: 'kurt', first: 'Kurt', last: 'Lehmann', gender: 'male', birth: '1963-03-27', job: 'Postbote', description: 'Nachbar an der Spitalackerstrasse.' },
-	{ key: 'heidi', first: 'Heidi', last: 'Lehmann', gender: 'female', birth: '1965-07-09', job: 'Coiffeuse' }
+	{
+		key: 'kurt',
+		first: 'Kurt',
+		last: 'Lehmann',
+		gender: 'male',
+		birth: '1963-03-27',
+		job: 'Postbote',
+		description: 'Nachbar an der Spitalackerstrasse.'
+	},
+	{
+		key: 'heidi',
+		first: 'Heidi',
+		last: 'Lehmann',
+		gender: 'female',
+		birth: '1965-07-09',
+		job: 'Coiffeuse'
+	}
 ];
 
 interface Rel {
@@ -207,16 +398,73 @@ interface Circle {
 }
 
 const CIRCLES: readonly Circle[] = [
-	{ key: 'schule', name: 'Schule Breitenrain', kind: 'school', color: 'blue', description: 'Primarschule im Breitenrain-Quartier, Bern.' },
-	{ key: 'klasse5b', name: 'Klasse 5b', kind: 'class', color: 'sky', parent: 'schule', start: '2024-08-19' },
-	{ key: 'klasse3a', name: 'Klasse 3a', kind: 'class', color: 'teal', parent: 'schule', start: '2024-08-19' },
-	{ key: 'kindergarten', name: 'Kindergarten Spitalacker', kind: 'school', color: 'green', start: '2025-08-18' },
-	{ key: 'fc', name: 'FC Länggasse Bern', kind: 'club', color: 'red', description: 'Quartier-Fussballverein.' },
-	{ key: 'fcJunioren', name: 'FC Länggasse — Junioren E', kind: 'team', color: 'peach', parent: 'fc', start: '2025-08-01' },
-	{ key: 'turnverein', name: 'Turnverein Länggasse', kind: 'club', color: 'yellow', description: 'Kinder- und Erwachsenenriege.' },
-	{ key: 'musikschule', name: 'Musikschule Konservatorium Bern', kind: 'course', color: 'mauve', description: 'Klavierunterricht.' },
+	{
+		key: 'schule',
+		name: 'Schule Breitenrain',
+		kind: 'school',
+		color: 'blue',
+		description: 'Primarschule im Breitenrain-Quartier, Bern.'
+	},
+	{
+		key: 'klasse5b',
+		name: 'Klasse 5b',
+		kind: 'class',
+		color: 'sky',
+		parent: 'schule',
+		start: '2024-08-19'
+	},
+	{
+		key: 'klasse3a',
+		name: 'Klasse 3a',
+		kind: 'class',
+		color: 'teal',
+		parent: 'schule',
+		start: '2024-08-19'
+	},
+	{
+		key: 'kindergarten',
+		name: 'Kindergarten Spitalacker',
+		kind: 'school',
+		color: 'green',
+		start: '2025-08-18'
+	},
+	{
+		key: 'fc',
+		name: 'FC Länggasse Bern',
+		kind: 'club',
+		color: 'red',
+		description: 'Quartier-Fussballverein.'
+	},
+	{
+		key: 'fcJunioren',
+		name: 'FC Länggasse — Junioren E',
+		kind: 'team',
+		color: 'peach',
+		parent: 'fc',
+		start: '2025-08-01'
+	},
+	{
+		key: 'turnverein',
+		name: 'Turnverein Länggasse',
+		kind: 'club',
+		color: 'yellow',
+		description: 'Kinder- und Erwachsenenriege.'
+	},
+	{
+		key: 'musikschule',
+		name: 'Musikschule Konservatorium Bern',
+		kind: 'course',
+		color: 'mauve',
+		description: 'Klavierunterricht.'
+	},
 	{ key: 'chor', name: 'Frauenchor Bern', kind: 'club', color: 'pink' },
-	{ key: 'freunde', name: 'Familien-Freunde', kind: 'friends', color: 'lavender', description: 'Befreundete Familien Widmer und Steiner.' },
+	{
+		key: 'freunde',
+		name: 'Familien-Freunde',
+		kind: 'friends',
+		color: 'lavender',
+		description: 'Befreundete Familien Widmer und Steiner.'
+	},
 	{ key: 'nachbarn', name: 'Nachbarschaft Spitalacker', kind: 'neighborhood', color: 'green' }
 ];
 
@@ -283,10 +531,20 @@ interface Field {
 const FIELDS: readonly Field[] = [
 	{ person: 'markus', kind: 'email', label: 'Privat', value: 'markus.brunner@bluewin.ch' },
 	{ person: 'markus', kind: 'phone', label: 'Mobil', value: '+41 79 214 55 03' },
-	{ person: 'markus', kind: 'address', label: 'Zuhause', value: 'Spitalackerstrasse 22, 3013 Bern' },
+	{
+		person: 'markus',
+		kind: 'address',
+		label: 'Zuhause',
+		value: 'Spitalackerstrasse 22, 3013 Bern'
+	},
 	{ person: 'sandra', kind: 'email', label: 'Privat', value: 'sandra.brunner@bluewin.ch' },
 	{ person: 'sandra', kind: 'phone', label: 'Mobil', value: '+41 78 655 12 88' },
-	{ person: 'sandra', kind: 'address', label: 'Zuhause', value: 'Spitalackerstrasse 22, 3013 Bern' },
+	{
+		person: 'sandra',
+		kind: 'address',
+		label: 'Zuhause',
+		value: 'Spitalackerstrasse 22, 3013 Bern'
+	},
 	{ person: 'thomas', kind: 'phone', label: 'Mobil', value: '+41 79 330 87 41' },
 	{ person: 'daniel', kind: 'address', label: 'Zuhause', value: 'Hofackerstrasse 7, 8032 Zürich' }
 ];
@@ -300,9 +558,22 @@ interface Note {
 }
 
 const NOTES: readonly Note[] = [
-	{ person: 'lena', title: 'Klavier-Vorspiel', body: 'Lena hat am Vorspiel der Musikschule *Für Elise* gespielt — hat super geklappt. Nächstes Ziel: ein vierhändiges Stück mit @{person:mia}.', pinned: true },
-	{ person: 'noah', title: 'Fussballsaison', body: 'Noah steht neu im Tor bei den Junioren E. Training jeweils Dienstag und Donnerstag, Heimspiele am Samstag auf dem Spitalacker.' },
-	{ person: 'thomas', title: 'Kennengelernt', body: 'Thomas und Markus kennen sich seit dem Zivildienst. Treffen sich regelmässig am FC-Training.' }
+	{
+		person: 'lena',
+		title: 'Klavier-Vorspiel',
+		body: 'Lena hat am Vorspiel der Musikschule *Für Elise* gespielt — hat super geklappt. Nächstes Ziel: ein vierhändiges Stück mit @{person:mia}.',
+		pinned: true
+	},
+	{
+		person: 'noah',
+		title: 'Fussballsaison',
+		body: 'Noah steht neu im Tor bei den Junioren E. Training jeweils Dienstag und Donnerstag, Heimspiele am Samstag auf dem Spitalacker.'
+	},
+	{
+		person: 'thomas',
+		title: 'Kennengelernt',
+		body: 'Thomas und Markus kennen sich seit dem Zivildienst. Treffen sich regelmässig am FC-Training.'
+	}
 ];
 
 interface ImportantDateSeed {
@@ -341,23 +612,66 @@ interface StorySeed {
 
 const STORY: readonly StorySeed[] = [
 	{ person: 'markus', daysAgo: 1, kind: 'call', text: 'Sunday call' },
-	{ person: 'markus', daysAgo: 2, text: 'Markus fixed the garden gate at last — with @{person:noah} holding the screws.' },
-	{ person: 'hans', daysAgo: 8, text: 'Opa Hans told the story about the 1972 flood again, this time with the photo of the bridge.' },
+	{
+		person: 'markus',
+		daysAgo: 2,
+		text: 'Markus fixed the garden gate at last — with @{person:noah} holding the screws.'
+	},
+	{
+		person: 'hans',
+		daysAgo: 8,
+		text: 'Opa Hans told the story about the 1972 flood again, this time with the photo of the bridge.'
+	},
 	{ person: 'hans', daysAgo: 30, kind: 'met', text: 'Lunch at the Bären' },
-	{ person: 'hans', daysAgo: 45, byMember: true, text: 'Hans sharpened every knife in the house and pretended it was nothing.' },
+	{
+		person: 'hans',
+		daysAgo: 45,
+		byMember: true,
+		text: 'Hans sharpened every knife in the house and pretended it was nothing.'
+	},
 	{ person: 'hans', daysAgo: 60, kind: 'call', text: 'Called about the roof' },
-	{ person: 'hans', daysAgo: 75, text: 'Hans found his old carpentry ledger from 1969. Every chair in the village is in it.' },
+	{
+		person: 'hans',
+		daysAgo: 75,
+		text: 'Hans found his old carpentry ledger from 1969. Every chair in the village is in it.'
+	},
 	{ person: 'hans', daysAgo: 90, kind: 'video', byMember: true, text: 'Video call with the kids' },
-	{ person: 'hans', daysAgo: 110, byMember: true, text: 'Hans and @{person:rosa} danced in the kitchen. Nobody was supposed to see.' },
+	{
+		person: 'hans',
+		daysAgo: 110,
+		byMember: true,
+		text: 'Hans and @{person:rosa} danced in the kitchen. Nobody was supposed to see.'
+	},
 	{ person: 'hans', daysAgo: 130, kind: 'gift', text: 'Brought him the biography he mentioned' },
-	{ person: 'hans', daysAgo: 150, text: 'Hans taught @{person:noah} how to whittle a whistle. It even works.' },
+	{
+		person: 'hans',
+		daysAgo: 150,
+		text: 'Hans taught @{person:noah} how to whittle a whistle. It even works.'
+	},
 	{ person: 'hans', daysAgo: 170, kind: 'letter', text: 'Postcard from the Engadin' },
-	{ person: 'hans', daysAgo: 190, text: 'Hans mended the sled runner the night before the first snow.' },
+	{
+		person: 'hans',
+		daysAgo: 190,
+		text: 'Hans mended the sled runner the night before the first snow.'
+	},
 	{ person: 'hans', daysAgo: 210, kind: 'met', text: 'Sunday roast at theirs' },
-	{ person: 'hans', daysAgo: 230, text: 'Hans told us he was once a very fast skater. Rosa confirmed it, grudgingly.' },
-	{ person: 'hans', daysAgo: 250, kind: 'message', text: 'Sent him the photos from the christening' },
+	{
+		person: 'hans',
+		daysAgo: 230,
+		text: 'Hans told us he was once a very fast skater. Rosa confirmed it, grudgingly.'
+	},
+	{
+		person: 'hans',
+		daysAgo: 250,
+		kind: 'message',
+		text: 'Sent him the photos from the christening'
+	},
 	{ person: 'nadia', daysAgo: 20, kind: 'met', text: 'Coffee in Bern' },
-	{ person: 'rosa', daysAgo: 100, text: 'Rosa sent the recipe for the plum cake. Written on the back of an envelope, of course.' },
+	{
+		person: 'rosa',
+		daysAgo: 100,
+		text: 'Rosa sent the recipe for the plum cake. Written on the back of an envelope, of course.'
+	},
 	{ person: 'peter', daysAgo: 95, kind: 'gift', text: 'Birthday wine' },
 	{ person: 'vreni', daysAgo: 200, text: 'Vreni turned 80. The whole choir came.' },
 	{ person: 'heidi', daysAgo: 240, kind: 'letter', text: 'Christmas card, late' },
@@ -371,11 +685,21 @@ const DAY_MS = 86_400_000;
  * opens on the story rather than on forty "You linked …" rows from the moment the seed ran.
  */
 const SEED_AGE_DAYS = 400;
-const dayBefore = (now: number, days: number) => new Date(now - days * DAY_MS).toISOString().slice(0, 10);
+const dayBefore = (now: number, days: number) =>
+	new Date(now - days * DAY_MS).toISOString().slice(0, 10);
 
 const cid = (key: string) => `demo-c-${key}`;
 const circleId = (key: string) => `demo-circle-${key}`;
-const SYMMETRIC_TYPES = new Set(['sibling', 'spouse', 'partner', 'friend', 'colleague', 'neighbor', 'acquaintance', 'knows']);
+const SYMMETRIC_TYPES = new Set([
+	'sibling',
+	'spouse',
+	'partner',
+	'friend',
+	'colleague',
+	'neighbor',
+	'acquaintance',
+	'knows'
+]);
 
 /*
  * Seed texts name people by their key (`@{person:lena}`); the stored form is the id-based

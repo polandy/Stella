@@ -25,7 +25,9 @@ let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzlePhotoRepository>;
 
 function seedContact(id: string, visibility: 'shared' | 'private' = 'shared', createdBy = U1) {
-	db.insert(schema.contact).values({ id, householdId: H, createdBy, visibility, displayName: id }).run();
+	db.insert(schema.contact)
+		.values({ id, householdId: H, createdBy, visibility, displayName: id })
+		.run();
 }
 
 const photo = (over: Partial<StoredPhoto> = {}): StoredPhoto => ({
@@ -79,8 +81,14 @@ describe('getVisiblePhotoFile', () => {
 	it('returns the full or thumb path with mime', async () => {
 		seedContact('mara');
 		await repo.insert(photo());
-		expect(await repo.getVisiblePhotoFile(viewerU1, 'p1', 'full')).toEqual({ path: 'p1.jpg', mime: 'image/jpeg' });
-		expect(await repo.getVisiblePhotoFile(viewerU1, 'p1', 'thumb')).toEqual({ path: 'p1_thumb.jpg', mime: 'image/jpeg' });
+		expect(await repo.getVisiblePhotoFile(viewerU1, 'p1', 'full')).toEqual({
+			path: 'p1.jpg',
+			mime: 'image/jpeg'
+		});
+		expect(await repo.getVisiblePhotoFile(viewerU1, 'p1', 'thumb')).toEqual({
+			path: 'p1_thumb.jpg',
+			mime: 'image/jpeg'
+		});
 	});
 
 	it('hides a photo whose contact the viewer cannot see', async () => {
@@ -139,24 +147,45 @@ describe('the gallery (docs/02 §2.14)', () => {
 
 	it('orders by the capture when known — offset and all — and hands the date back', async () => {
 		// Capture dates are whole seconds, so the photos above are moved to 100, 200 and 300 s.
-		for (const [id, seconds] of [['g-shared', 100], ['g-private', 200], ['g-u2', 300]] as const) {
-			db.update(schema.photo).set({ createdAt: seconds * 1000 }).where(eq(schema.photo.id, id)).run();
+		for (const [id, seconds] of [
+			['g-shared', 100],
+			['g-private', 200],
+			['g-u2', 300]
+		] as const) {
+			db.update(schema.photo)
+				.set({ createdAt: seconds * 1000 })
+				.where(eq(schema.photo.id, id))
+				.run();
 		}
 		// Both added after everything else, but taken at 150 s and at 250 s. The second says
 		// 01:04:10 at +01:00, which is 250 s; read without its offset it would lead the list.
-		await repo.insert(photo({ id: 'taken-150s', createdAt: 900_000, takenAt: '1970-01-01T00:02:30' }));
-		await repo.insert(photo({ id: 'taken-250s', createdAt: 900_000, takenAt: '1970-01-01T01:04:10+01:00' }));
+		await repo.insert(
+			photo({ id: 'taken-150s', createdAt: 900_000, takenAt: '1970-01-01T00:02:30' })
+		);
+		await repo.insert(
+			photo({ id: 'taken-250s', createdAt: 900_000, takenAt: '1970-01-01T01:04:10+01:00' })
+		);
 
 		const listed = await repo.listGalleryPhotos(viewerU1, 'mara');
-		expect(listed.map((p) => p.id)).toEqual(['g-u2', 'taken-250s', 'g-private', 'taken-150s', 'g-shared']);
+		expect(listed.map((p) => p.id)).toEqual([
+			'g-u2',
+			'taken-250s',
+			'g-private',
+			'taken-150s',
+			'g-shared'
+		]);
 		expect(listed.find((p) => p.id === 'taken-250s')?.takenAt).toBe('1970-01-01T01:04:10+01:00');
 		expect(listed.find((p) => p.id === 'g-u2')?.takenAt).toBeNull();
 	});
 
 	it('pins and unpins a gallery photo for everyone who sees it', async () => {
 		await repo.setGalleryPhotoPin('g-shared', 1_000);
-		expect((await repo.listGalleryPhotos(viewerU2, 'mara')).find((p) => p.id === 'g-shared')?.pinnedAt).toBe(1_000);
-		expect((await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'g-shared'))?.pinnedAt).toBe(1_000);
+		expect(
+			(await repo.listGalleryPhotos(viewerU2, 'mara')).find((p) => p.id === 'g-shared')?.pinnedAt
+		).toBe(1_000);
+		expect((await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'g-shared'))?.pinnedAt).toBe(
+			1_000
+		);
 		await repo.setGalleryPhotoPin('g-shared', null);
 		expect((await repo.findVisibleGalleryPhoto(viewerU2, 'mara', 'g-shared'))?.pinnedAt).toBeNull();
 	});
@@ -164,7 +193,8 @@ describe('the gallery (docs/02 §2.14)', () => {
 	it('pins nothing but a gallery photo', async () => {
 		await repo.setGalleryPhotoPin('in-journal', 1_000);
 		await repo.setGalleryPhotoPin('g-shared', 1_000);
-		const pinOf = (id: string) => db.select().from(schema.photo).where(eq(schema.photo.id, id)).get()?.pinnedAt;
+		const pinOf = (id: string) =>
+			db.select().from(schema.photo).where(eq(schema.photo.id, id)).get()?.pinnedAt;
 		expect(pinOf('in-journal')).toBeNull();
 		// Positive control: the same call does pin a gallery photo.
 		expect(pinOf('g-shared')).toBe(1_000);
@@ -172,19 +202,44 @@ describe('the gallery (docs/02 §2.14)', () => {
 
 	it('lets a member pin only a photo they can see, through the use-case and the real scoping', async () => {
 		const deps = { photos: repo, clock: { now: () => 2_000 } };
-		const pinOf = (id: string) => db.select().from(schema.photo).where(eq(schema.photo.id, id)).get()?.pinnedAt;
+		const pinOf = (id: string) =>
+			db.select().from(schema.photo).where(eq(schema.photo.id, id)).get()?.pinnedAt;
 		seedContact('otto');
 
 		// U1's private photo is invisible to U2, so U2 cannot pin it, whether or not it exists.
-		expect(await pinGalleryPhoto(deps, viewerU2, { contactId: 'mara', photoId: 'g-private', pinned: true })).toBe(false);
+		expect(
+			await pinGalleryPhoto(deps, viewerU2, {
+				contactId: 'mara',
+				photoId: 'g-private',
+				pinned: true
+			})
+		).toBe(false);
 		// Nor through another person's page.
-		expect(await pinGalleryPhoto(deps, viewerU1, { contactId: 'otto', photoId: 'g-shared', pinned: true })).toBe(false);
+		expect(
+			await pinGalleryPhoto(deps, viewerU1, {
+				contactId: 'otto',
+				photoId: 'g-shared',
+				pinned: true
+			})
+		).toBe(false);
 		expect(pinOf('g-private')).toBeNull();
 		expect(pinOf('g-shared')).toBeNull();
 
 		// Positive controls: U2 pins the shared photo U1 added, and U1 pins their own private one.
-		expect(await pinGalleryPhoto(deps, viewerU2, { contactId: 'mara', photoId: 'g-shared', pinned: true })).toBe(true);
-		expect(await pinGalleryPhoto(deps, viewerU1, { contactId: 'mara', photoId: 'g-private', pinned: true })).toBe(true);
+		expect(
+			await pinGalleryPhoto(deps, viewerU2, {
+				contactId: 'mara',
+				photoId: 'g-shared',
+				pinned: true
+			})
+		).toBe(true);
+		expect(
+			await pinGalleryPhoto(deps, viewerU1, {
+				contactId: 'mara',
+				photoId: 'g-private',
+				pinned: true
+			})
+		).toBe(true);
 		expect(pinOf('g-shared')).toBe(2_000);
 		expect(pinOf('g-private')).toBe(2_000);
 	});
@@ -201,7 +256,9 @@ describe('the gallery (docs/02 §2.14)', () => {
 	});
 
 	it('finds one gallery photo only for the right contact and viewer', async () => {
-		expect(await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'g-shared')).toMatchObject({ id: 'g-shared' });
+		expect(await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'g-shared')).toMatchObject({
+			id: 'g-shared'
+		});
 		seedContact('otto');
 		expect(await repo.findVisibleGalleryPhoto(viewerU1, 'otto', 'g-shared')).toBeNull();
 		expect(await repo.findVisibleGalleryPhoto(viewerU2, 'mara', 'g-private')).toBeNull();
@@ -209,9 +266,15 @@ describe('the gallery (docs/02 §2.14)', () => {
 	});
 
 	it('updates caption and visibility only on the author’s own photo', async () => {
-		expect(await repo.updateOwnGalleryPhoto({ authorId: U2, photoId: 'g-shared', caption: 'Mine' })).toBe(false);
-		expect(await repo.updateOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared', caption: 'Ours' })).toBe(true);
-		expect(await repo.updateOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared', visibility: 'private' })).toBe(true);
+		expect(
+			await repo.updateOwnGalleryPhoto({ authorId: U2, photoId: 'g-shared', caption: 'Mine' })
+		).toBe(false);
+		expect(
+			await repo.updateOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared', caption: 'Ours' })
+		).toBe(true);
+		expect(
+			await repo.updateOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared', visibility: 'private' })
+		).toBe(true);
 		const row = db.select().from(schema.photo).where(eq(schema.photo.id, 'g-shared')).get();
 		expect(row).toMatchObject({ caption: 'Ours', visibility: 'private' });
 	});
@@ -221,7 +284,9 @@ describe('the gallery (docs/02 §2.14)', () => {
 		expect(await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared' })).toEqual([
 			{ filePath: 'p1.jpg', thumbPath: 'p1_thumb.jpg' }
 		]);
-		expect(db.select().from(schema.photo).where(eq(schema.photo.id, 'g-shared')).get()).toBeUndefined();
+		expect(
+			db.select().from(schema.photo).where(eq(schema.photo.id, 'g-shared')).get()
+		).toBeUndefined();
 	});
 
 	it('takes the avatar off the contact when the photo it points at is deleted', async () => {
@@ -262,21 +327,36 @@ describe('framings (docs/02 §2.14)', () => {
 			isAvatar: true,
 			framing: { x: 100, y: 50, size: 300 }
 		});
-		expect(gallery.find((p) => p.id === 'g-private')).toMatchObject({ isAvatar: false, framing: null });
+		expect(gallery.find((p) => p.id === 'g-private')).toMatchObject({
+			isAvatar: false,
+			framing: null
+		});
 	});
 
 	it('serves the framing under its own id, to whoever may see its photo', async () => {
 		await repo.replaceFraming(framing());
-		expect(await repo.getVisiblePhotoFile(viewerU2, 'f1', 'thumb')).toEqual({ path: 'f1_thumb.jpg', mime: 'image/jpeg' });
+		expect(await repo.getVisiblePhotoFile(viewerU2, 'f1', 'thumb')).toEqual({
+			path: 'f1_thumb.jpg',
+			mime: 'image/jpeg'
+		});
 	});
 
 	it('replaces the earlier framing of the same photo and hands back its files', async () => {
 		await repo.replaceFraming(framing());
 		const replaced = await repo.replaceFraming(
-			framing({ id: 'f2', filePath: 'f2.jpg', thumbPath: 'f2_thumb.jpg', crop: { x: 0, y: 0, size: 512 } })
+			framing({
+				id: 'f2',
+				filePath: 'f2.jpg',
+				thumbPath: 'f2_thumb.jpg',
+				crop: { x: 0, y: 0, size: 512 }
+			})
 		);
 		expect(replaced).toEqual([{ filePath: 'f1.jpg', thumbPath: 'f1_thumb.jpg' }]);
-		const ids = db.select({ id: schema.photo.id }).from(schema.photo).all().map((r) => r.id);
+		const ids = db
+			.select({ id: schema.photo.id })
+			.from(schema.photo)
+			.all()
+			.map((r) => r.id);
 		expect(ids.sort()).toEqual(['f2', 'g-private', 'g-shared']);
 		const gallery = await repo.listGalleryPhotos(viewerU1, 'mara');
 		expect(gallery.find((p) => p.id === 'g-shared')?.framing).toEqual({ x: 0, y: 0, size: 512 });
@@ -296,10 +376,14 @@ describe('framings (docs/02 §2.14)', () => {
 	it('cannot be found, re-scoped or deleted as a gallery photo of its own', async () => {
 		await repo.replaceFraming(framing());
 		expect(await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'f1')).toBeNull();
-		expect(await repo.updateOwnGalleryPhoto({ authorId: U1, photoId: 'f1', caption: 'x' })).toBe(false);
+		expect(await repo.updateOwnGalleryPhoto({ authorId: U1, photoId: 'f1', caption: 'x' })).toBe(
+			false
+		);
 		expect(await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'f1' })).toBeNull();
 		// Positive control: the photo it frames is all of those things.
-		expect(await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'g-shared')).toMatchObject({ id: 'g-shared' });
+		expect(await repo.findVisibleGalleryPhoto(viewerU1, 'mara', 'g-shared')).toMatchObject({
+			id: 'g-shared'
+		});
 	});
 
 	it('follows its photo when the photo is made private', async () => {
@@ -337,7 +421,9 @@ describe('listJournalPhotosOfEntries', () => {
 		await repo.insert(photo({ id: 'b', journalEntryId: 'j1', createdAt: 1 }));
 		await repo.insert(photo({ id: 'c', journalEntryId: 'j2', createdAt: 2 }));
 		await repo.insert(photo({ id: 'd', journalEntryId: 'j3', createdAt: 4 }));
-		await repo.insert(photo({ id: 'e', journalEntryId: 'j2', visibility: 'private', createdAt: 5 }));
+		await repo.insert(
+			photo({ id: 'e', journalEntryId: 'j2', visibility: 'private', createdAt: 5 })
+		);
 		await repo.insert(photo({ id: 'g', journalEntryId: null }));
 	});
 
@@ -348,17 +434,12 @@ describe('listJournalPhotosOfEntries', () => {
 			expect(page).toEqual(all.filter((p) => p.journalEntryId !== 'j3'));
 		}
 		// Not vacuous: oldest first, and a private photo only for its author.
-		expect((await repo.listJournalPhotosOfEntries(viewerU1, 'mara', ['j1', 'j2'])).map((p) => p.id)).toEqual([
-			'b',
-			'c',
-			'a',
-			'e'
-		]);
-		expect((await repo.listJournalPhotosOfEntries(viewerU2, 'mara', ['j1', 'j2'])).map((p) => p.id)).toEqual([
-			'b',
-			'c',
-			'a'
-		]);
+		expect(
+			(await repo.listJournalPhotosOfEntries(viewerU1, 'mara', ['j1', 'j2'])).map((p) => p.id)
+		).toEqual(['b', 'c', 'a', 'e']);
+		expect(
+			(await repo.listJournalPhotosOfEntries(viewerU2, 'mara', ['j1', 'j2'])).map((p) => p.id)
+		).toEqual(['b', 'c', 'a']);
 	});
 
 	it('reads nothing for a page without entries', async () => {

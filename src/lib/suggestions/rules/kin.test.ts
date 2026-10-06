@@ -36,18 +36,16 @@ const claims = (found: LinkSuggestion[]) =>
 
 describe('K1', () => {
 	it("offers a person's worked-out relatives, the elder generation first", () => {
-		expect(claims(K1({ kind: 'person-reviewed', subjectId: 'nils' }, buildView(family)))).toEqual(
-			[{ relation: 'grandparent', fromId: 'otto', toId: 'nils' }]
-		);
+		expect(claims(K1({ kind: 'person-reviewed', subjectId: 'nils' }, buildView(family)))).toEqual([
+			{ relation: 'grandparent', fromId: 'otto', toId: 'nils' }
+		]);
 	});
 
 	it('offers the same claim from the other end, beside the in-law the partnership makes', () => {
-		expect(claims(K1({ kind: 'person-reviewed', subjectId: 'otto' }, buildView(family)))).toEqual(
-			[
-				{ relation: 'grandparent', fromId: 'otto', toId: 'nils' },
-				{ relation: 'parent-in-law', fromId: 'otto', toId: 'vera' }
-			]
-		);
+		expect(claims(K1({ kind: 'person-reviewed', subjectId: 'otto' }, buildView(family)))).toEqual([
+			{ relation: 'grandparent', fromId: 'otto', toId: 'nils' },
+			{ relation: 'parent-in-law', fromId: 'otto', toId: 'vera' }
+		]);
 	});
 
 	it('leaves the step terms out — they are corrected on the profile, not entered as they are', () => {
@@ -80,7 +78,10 @@ describe('K1', () => {
 	});
 
 	it('answers no write: a worked-out relative is asked about on a review only', () => {
-		const stored = { kind: 'link-stored', link: { kind: 'parent', fromId: 'rita', toId: 'nils' } } as const;
+		const stored = {
+			kind: 'link-stored',
+			link: { kind: 'parent', fromId: 'rita', toId: 'nils' }
+		} as const;
 		expect(K1(stored, buildView(family))).toEqual([]);
 	});
 

@@ -22,7 +22,12 @@
 </script>
 
 {#if line}
-	<span data-testid="job-line" class="flex min-w-0 items-center gap-1 text-fg-muted" class:text-xs={small} class:text-sm={!small}>
+	<span
+		data-testid="job-line"
+		class="flex min-w-0 items-center gap-1 text-fg-muted"
+		class:text-xs={small}
+		class:text-sm={!small}
+	>
 		<Icon name="work" size={small ? 11 : 13} class="text-fg-subtle" />
 		<span class="truncate">{line}</span>
 	</span>

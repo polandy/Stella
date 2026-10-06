@@ -92,7 +92,9 @@ export const load = (async ({ locals, params, url }) => {
 	// Which Immich person they are, when this instance has Immich (docs/concepts/immich.md §4.3).
 	const immich = getImmich();
 	const immichLinkDeps = getImmichLinkDeps();
-	const immichLink = immichLinkDeps ? await readImmichLink(immichLinkDeps, viewer, params.id) : null;
+	const immichLink = immichLinkDeps
+		? await readImmichLink(immichLinkDeps, viewer, params.id)
+		: null;
 	// Whom photos together are offered with: the viewer's own person and the closest ties, when linked too.
 	const immichTogether =
 		immichLinkDeps && immichLink

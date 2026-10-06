@@ -47,9 +47,9 @@ describe('relationshipTypeLabel', () => {
 
 describe('relationshipRowLabel', () => {
 	it('reads the side the row was stored from', () => {
-		expect(relationshipRowLabel(de, { typeKey: 'parent_child', side: 'reverse', label: 'Child of' })).toBe(
-			'Kind von'
-		);
+		expect(
+			relationshipRowLabel(de, { typeKey: 'parent_child', side: 'reverse', label: 'Child of' })
+		).toBe('Kind von');
 		expect(relationshipRowLabel(de, { typeKey: 'parent_child', label: 'Parent of' })).toBe(
 			'Elternteil von'
 		);

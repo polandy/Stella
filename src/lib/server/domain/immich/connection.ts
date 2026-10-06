@@ -72,11 +72,13 @@ async function probe(gateway: ImmichGateway): Promise<ImmichStatus> {
 		// The glimpse lists their photos and shows them: two scopes, and the second can only be
 		// tried on a photo that exists — their newest, at the smallest size there is.
 		const photos = await gateway.latestAssets({ personIds: [someone.id], match: 'any' }, 1, null);
-		if (!photos.ok && photos.failure === 'forbidden') return { state: 'missingScope', scope: 'asset.read' };
+		if (!photos.ok && photos.failure === 'forbidden')
+			return { state: 'missingScope', scope: 'asset.read' };
 		const newest = photos.ok ? photos.value.assets[0] : undefined;
 		if (newest) {
 			const image = await gateway.assetImage(newest.id, 'thumbnail');
-			if (!image.ok && image.failure === 'forbidden') return { state: 'missingScope', scope: 'asset.view' };
+			if (!image.ok && image.failure === 'forbidden')
+				return { state: 'missingScope', scope: 'asset.view' };
 		}
 	}
 

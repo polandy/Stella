@@ -43,7 +43,8 @@ const hints = (form: Locator) => form.getByTestId('relationship-hints');
 /** The stored links, not the card: the form's chips name the picked people until it closes. */
 const storedList = (page: Page) => page.getByTestId('relationship-list');
 
-const storedRow = (page: Page, name: string) => storedList(page).locator('li').filter({ hasText: name });
+const storedRow = (page: Page, name: string) =>
+	storedList(page).locator('li').filter({ hasText: name });
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
@@ -99,8 +100,17 @@ test('takes both links of a batch back with one Undo', async ({ page }) => {
 });
 
 test('lets someone with one parent take only one more', async ({ page }) => {
-	const [child, mother, father, uncle] = ['Theodora Tellenbach', 'Kunigunde Tellenbach', 'Notker Tellenbach', 'Gallus Tellenbach'];
-	await seedHousehold(page, [child, mother, father, uncle], [{ from: mother, to: child, type: LINK.parentOf }]);
+	const [child, mother, father, uncle] = [
+		'Theodora Tellenbach',
+		'Kunigunde Tellenbach',
+		'Notker Tellenbach',
+		'Gallus Tellenbach'
+	];
+	await seedHousehold(
+		page,
+		[child, mother, father, uncle],
+		[{ from: mother, to: child, type: LINK.parentOf }]
+	);
 	await openSeeded(page, child);
 
 	const form = await openRelationshipForm(page);
@@ -161,7 +171,11 @@ test('marks a person the save refuses, and stores nobody of the batch', async ({
 	// Cölestin is already Albin's parent: "Albin is a parent of Cölestin" is refused by the server,
 	// which the form's own rules do not know about.
 	const [subject, ernst, gina] = ['Albin Gnehm', 'Cölestin Gnehm', 'Brigitta Gnehm'];
-	await seedHousehold(page, [subject, ernst, gina], [{ from: ernst, to: subject, type: LINK.parentOf }]);
+	await seedHousehold(
+		page,
+		[subject, ernst, gina],
+		[{ from: ernst, to: subject, type: LINK.parentOf }]
+	);
 	await openSeeded(page, subject);
 
 	const form = await openRelationshipForm(page);
@@ -172,7 +186,9 @@ test('marks a person the save refuses, and stores nobody of the batch', async ({
 	await expect(add).toBeEnabled();
 	await add.click();
 
-	await expect(hints(form)).toContainText(`${ernst}: These two are already linked the other way round`);
+	await expect(hints(form)).toContainText(
+		`${ernst}: These two are already linked the other way round`
+	);
 	await expect(chip(form, ernst)).toHaveAttribute('data-marked', 'true');
 	await expect(chip(form, gina)).not.toHaveAttribute('data-marked');
 	await expect(add).toBeDisabled();
@@ -274,7 +290,9 @@ test.describe('on a phone', () => {
 		// Nothing pushes the page sideways.
 		await expect
 			.poll(() =>
-				page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)
+				page.evaluate(
+					() => document.documentElement.scrollWidth <= document.documentElement.clientWidth
+				)
 			)
 			.toBe(true);
 

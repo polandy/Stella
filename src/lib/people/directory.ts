@@ -60,7 +60,11 @@ export function groupByLetter<T extends DirectoryPerson>(people: T[]): LetterGro
 		else groups.push({ letter, people: [person] });
 	}
 	return groups.sort((a, b) =>
-		a.letter === OTHER_LETTER ? 1 : b.letter === OTHER_LETTER ? -1 : a.letter.localeCompare(b.letter)
+		a.letter === OTHER_LETTER
+			? 1
+			: b.letter === OTHER_LETTER
+				? -1
+				: a.letter.localeCompare(b.letter)
 	);
 }
 

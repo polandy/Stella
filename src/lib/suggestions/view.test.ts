@@ -145,7 +145,12 @@ describe('buildView', () => {
 
 	it('answers who declined a claim and when, and null while it stands', () => {
 		const view = buildView(graph(), [
-			{ relation: 'parent', pairKey: pairKey('bettina', 'lisa'), dismissedAt: 42, dismissedBy: 'u1' }
+			{
+				relation: 'parent',
+				pairKey: pairKey('bettina', 'lisa'),
+				dismissedAt: 42,
+				dismissedBy: 'u1'
+			}
 		]);
 		expect(view.answerTo('parent', 'lisa', 'bettina')).toEqual({ at: 42, by: 'u1' });
 		expect(view.answerTo('sibling', 'lisa', 'bettina')).toBeNull();

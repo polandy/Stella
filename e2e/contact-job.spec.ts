@@ -29,7 +29,9 @@ async function seedPeople(
 const factJob = (page: Page) => page.getByTestId('person-job');
 const factJobButton = (page: Page) => page.getByRole('button').filter({ has: factJob(page) });
 
-test('sets job and company from the row behind the quiet button, then edits them among the facts', async ({ page }) => {
+test('sets job and company from the row behind the quiet button, then edits them among the facts', async ({
+	page
+}) => {
 	const person = 'Mirja Quellbach';
 	await seedPeople(page, [person]);
 	await openPerson(page, new RegExp(person));
@@ -74,9 +76,13 @@ test('sets job and company from the row behind the quiet button, then edits them
 	await expect(factJob(page)).toHaveText('Uhrmacherin at Zahnradwerk Quellbach');
 });
 
-test('edits the job among the facts, and clearing both leaves only the row behind the quiet button', async ({ page }) => {
+test('edits the job among the facts, and clearing both leaves only the row behind the quiet button', async ({
+	page
+}) => {
 	const person = 'Linus Quellbach';
-	await seedPeople(page, [person], { [person]: { title: 'Glasbläser', company: 'Glashütte Quellbach' } });
+	await seedPeople(page, [person], {
+		[person]: { title: 'Glasbläser', company: 'Glashütte Quellbach' }
+	});
 	await openPerson(page, new RegExp(person));
 
 	await expect(factJob(page)).toHaveText('Glasbläser at Glashütte Quellbach');
@@ -104,9 +110,13 @@ test('edits the job among the facts, and clearing both leaves only the row behin
 	await expect(row).toContainText('Not on record');
 });
 
-test('the People list finds someone by their company, shows the job, and tags only a job hit', async ({ page }) => {
+test('the People list finds someone by their company, shows the job, and tags only a job hit', async ({
+	page
+}) => {
 	const person = 'Ronja Quellbach';
-	await seedPeople(page, [person], { [person]: { title: 'Mechanikerin', company: 'Seilbahn Tobelegg' } });
+	await seedPeople(page, [person], {
+		[person]: { title: 'Mechanikerin', company: 'Seilbahn Tobelegg' }
+	});
 	await openPeople(page);
 
 	const finder = page.getByPlaceholder('Find someone…');
@@ -125,7 +135,9 @@ test('the People list finds someone by their company, shows the job, and tags on
 
 test('global search finds someone by their job title', async ({ page }) => {
 	const person = 'Fabio Quellbach';
-	await seedPeople(page, [person], { [person]: { title: 'Orgelbauer', company: 'Pfeifenwerk Tobelegg' } });
+	await seedPeople(page, [person], {
+		[person]: { title: 'Orgelbauer', company: 'Pfeifenwerk Tobelegg' }
+	});
 
 	await page.goto('/search?q=orgelbauer');
 	const hit = page.locator('main').getByRole('link', { name: new RegExp(person) });
@@ -144,7 +156,9 @@ test('the person picker finds someone by their job', async ({ page }) => {
 	const field = form.getByLabel('Who else was there?');
 	await field.click();
 	await field.fill('hufschmied');
-	const option = page.getByTestId('person-search-listbox').getByRole('option', { name: new RegExp(person) });
+	const option = page
+		.getByTestId('person-search-listbox')
+		.getByRole('option', { name: new RegExp(person) });
 	await expect(option).toBeVisible();
 	await expect(option.getByTestId('job-line')).toHaveText('Hufschmiedin');
 	await expect(option.getByTestId('found-by-job')).toHaveText('Job');

@@ -16,7 +16,9 @@ describe('the propose pairs', () => {
 	});
 
 	it('reads back the pair it wrote', () => {
-		expect(parseProposePairs(proposeOf(proposeHref('anna', ['bert'])))).toEqual([{ a: 'anna', b: 'bert' }]);
+		expect(parseProposePairs(proposeOf(proposeHref('anna', ['bert'])))).toEqual([
+			{ a: 'anna', b: 'bert' }
+		]);
 	});
 
 	it('names every pair of a batch, and reads them back in order', () => {

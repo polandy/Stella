@@ -25,7 +25,12 @@ import { lastNamesFacts } from '../../../stream/notices';
 const NOW = 1_700_000_000_000;
 const viewer = { id: 'user-1', householdId: 'household-1' };
 
-function contact(id: string, first: string, last: string | null, over: Partial<Contact> = {}): Contact {
+function contact(
+	id: string,
+	first: string,
+	last: string | null,
+	over: Partial<Contact> = {}
+): Contact {
 	return {
 		id,
 		householdId: 'household-1',
@@ -54,8 +59,11 @@ function contact(id: string, first: string, last: string | null, over: Partial<C
 	};
 }
 
-
-function fakeDeps(visible: Contact[], people: SurnameListPerson[] = [], graph: Partial<KinshipGraph> = {}) {
+function fakeDeps(
+	visible: Contact[],
+	people: SurnameListPerson[] = [],
+	graph: Partial<KinshipGraph> = {}
+) {
 	const batches: { writes: readonly NameWrite[]; audit: NewActivityEntry | null }[] = [];
 	const dismissed: NewSurnameDismissal[] = [];
 	const restored: { contactId: string; folded: string }[] = [];
@@ -65,7 +73,8 @@ function fakeDeps(visible: Contact[], people: SurnameListPerson[] = [], graph: P
 		restored,
 		deps: {
 			names: {
-				findByIdVisibleTo: async (_v: unknown, id: string) => visible.find((c) => c.id === id) ?? null,
+				findByIdVisibleTo: async (_v: unknown, id: string) =>
+					visible.find((c) => c.id === id) ?? null,
 				writeNames: async (writes: readonly NameWrite[], audit: NewActivityEntry | null) => {
 					batches.push({ writes, audit });
 				}
@@ -82,7 +91,8 @@ function fakeDeps(visible: Contact[], people: SurnameListPerson[] = [], graph: P
 				})
 			},
 			surnameDismissals: {
-				listForHousehold: async () => dismissed.map(({ contactId, folded }) => ({ contactId, folded })),
+				listForHousehold: async () =>
+					dismissed.map(({ contactId, folded }) => ({ contactId, folded })),
 				dismiss: async (entry: NewSurnameDismissal) => {
 					dismissed.push(entry);
 				},
@@ -104,10 +114,15 @@ describe('setLastNames', () => {
 	it('writes every change in one batch with one log entry, the shown names following', async () => {
 		const f = fakeDeps([lea, max]);
 
-		const written = await setLastNames(f.deps, viewer, [
-			{ contactId: 'lea', lastName: ' Brunner ', replace: false },
-			{ contactId: 'max', lastName: 'Brunner', replace: false }
-		], 'de');
+		const written = await setLastNames(
+			f.deps,
+			viewer,
+			[
+				{ contactId: 'lea', lastName: ' Brunner ', replace: false },
+				{ contactId: 'max', lastName: 'Brunner', replace: false }
+			],
+			'de'
+		);
 
 		expect(written).toBe(2);
 		expect(f.batches).toHaveLength(1);
@@ -128,10 +143,15 @@ describe('setLastNames', () => {
 	it('logs a batch touching a private person as private', async () => {
 		const f = fakeDeps([lea, { ...max, visibility: 'private' }]);
 
-		await setLastNames(f.deps, viewer, [
-			{ contactId: 'lea', lastName: 'Brunner', replace: false },
-			{ contactId: 'max', lastName: 'Brunner', replace: false }
-		], 'de');
+		await setLastNames(
+			f.deps,
+			viewer,
+			[
+				{ contactId: 'lea', lastName: 'Brunner', replace: false },
+				{ contactId: 'max', lastName: 'Brunner', replace: false }
+			],
+			'de'
+		);
 
 		expect(f.batches[0]?.audit?.visibility).toBe('private');
 	});
@@ -148,10 +168,15 @@ describe('setLastNames', () => {
 	it('fails the whole batch when one person is not visible', async () => {
 		const f = fakeDeps([lea]);
 
-		const written = await setLastNames(f.deps, viewer, [
-			{ contactId: 'lea', lastName: 'Brunner', replace: false },
-			{ contactId: 'hidden', lastName: 'Brunner', replace: false }
-		], 'de');
+		const written = await setLastNames(
+			f.deps,
+			viewer,
+			[
+				{ contactId: 'lea', lastName: 'Brunner', replace: false },
+				{ contactId: 'hidden', lastName: 'Brunner', replace: false }
+			],
+			'de'
+		);
 
 		expect(written).toBeNull();
 		expect(f.batches).toEqual([]);
@@ -163,9 +188,19 @@ describe('setLastNames', () => {
 		const asked = fakeDeps([anna]);
 
 		await expect(
-			setLastNames(refused.deps, viewer, [{ contactId: 'anna', lastName: 'Brunner', replace: false }], 'de')
+			setLastNames(
+				refused.deps,
+				viewer,
+				[{ contactId: 'anna', lastName: 'Brunner', replace: false }],
+				'de'
+			)
 		).rejects.toThrow(LastNameWouldOverwriteError);
-		await setLastNames(asked.deps, viewer, [{ contactId: 'anna', lastName: 'Brunner', replace: true }], 'de');
+		await setLastNames(
+			asked.deps,
+			viewer,
+			[{ contactId: 'anna', lastName: 'Brunner', replace: true }],
+			'de'
+		);
 
 		expect(refused.batches).toEqual([]);
 		expect(asked.batches[0]?.writes[0]).toMatchObject({ lastName: 'Brunner', formerName: null });
@@ -175,10 +210,15 @@ describe('setLastNames', () => {
 		const sophie = contact('sophie', 'Sophie', 'Brünner');
 		const f = fakeDeps([lea, sophie]);
 
-		const written = await setLastNames(f.deps, viewer, [
-			{ contactId: 'lea', lastName: 'Brunner', replace: false },
-			{ contactId: 'sophie', lastName: 'Brunner', replace: false }
-		], 'de');
+		const written = await setLastNames(
+			f.deps,
+			viewer,
+			[
+				{ contactId: 'lea', lastName: 'Brunner', replace: false },
+				{ contactId: 'sophie', lastName: 'Brunner', replace: false }
+			],
+			'de'
+		);
 
 		expect(written).toBe(1);
 		expect(f.batches[0]?.writes.map((w) => w.id)).toEqual(['lea']);
@@ -189,13 +229,25 @@ describe('setLastNames', () => {
 		const sophie = contact('sophie', 'Sophie', 'Brunner');
 		const f = fakeDeps([sophie]);
 
-		expect(await setLastNames(f.deps, viewer, [{ contactId: 'sophie', lastName: 'Brunner', replace: false }], 'de')).toBe(0);
+		expect(
+			await setLastNames(
+				f.deps,
+				viewer,
+				[{ contactId: 'sophie', lastName: 'Brunner', replace: false }],
+				'de'
+			)
+		).toBe(0);
 		expect(f.batches).toEqual([]);
 	});
 });
 
 describe('reviewLastNames', () => {
-	const listed = (id: string, first: string, last: string | null, over: Partial<SurnameListPerson> = {}): SurnameListPerson => ({
+	const listed = (
+		id: string,
+		first: string,
+		last: string | null,
+		over: Partial<SurnameListPerson> = {}
+	): SurnameListPerson => ({
 		id,
 		displayName: last ? `${first} ${last}` : first,
 		firstName: first,
@@ -222,7 +274,9 @@ describe('reviewLastNames', () => {
 
 		const review = await reviewLastNames(f.deps, viewer);
 
-		expect(review.list.groups.map((g) => [g.name, g.rows.map((r) => r.personId)])).toEqual([['Brunner', ['lea']]]);
+		expect(review.list.groups.map((g) => [g.name, g.rows.map((r) => r.personId)])).toEqual([
+			['Brunner', ['lea']]
+		]);
 		expect(review.list.none).toEqual(['oma']);
 		expect(Object.keys(review.people).sort()).toEqual(['lea', 'oma']);
 		expect(review.knownSurnames).toEqual(['Brunner']);
@@ -243,7 +297,11 @@ describe('reviewLastNames', () => {
 });
 
 describe('readSurnameHelp', () => {
-	const listed = (id: string, last: string | null, over: Partial<SurnameListPerson> = {}): SurnameListPerson => ({
+	const listed = (
+		id: string,
+		last: string | null,
+		over: Partial<SurnameListPerson> = {}
+	): SurnameListPerson => ({
 		id,
 		displayName: id,
 		firstName: id,
@@ -259,7 +317,14 @@ describe('readSurnameHelp', () => {
 	it('offers a name to the nameless children and siblings, one generation only', async () => {
 		const f = fakeDeps(
 			[lea],
-			[listed('peter', 'Brunner'), listed('lea', null), listed('max', null), listed('sophie', 'Brunner'), listed('kid', null), listed('gone', null, { archived: true })],
+			[
+				listed('peter', 'Brunner'),
+				listed('lea', null),
+				listed('max', null),
+				listed('sophie', 'Brunner'),
+				listed('kid', null),
+				listed('gone', null, { archived: true })
+			],
 			{
 				parentEdges: [
 					{ parentId: 'peter', childId: 'lea' },
@@ -317,7 +382,14 @@ describe('dismissLastName / restoreLastName', () => {
 		expect(await dismissLastName(f.deps, viewer, 'lea', 'Brünner')).toBe(true);
 
 		expect(f.dismissed).toEqual([
-			{ id: 'id-1', householdId: 'household-1', contactId: 'lea', folded: 'brunner', dismissedBy: 'user-1', dismissedAt: NOW }
+			{
+				id: 'id-1',
+				householdId: 'household-1',
+				contactId: 'lea',
+				folded: 'brunner',
+				dismissedBy: 'user-1',
+				dismissedAt: NOW
+			}
 		]);
 	});
 

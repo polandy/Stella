@@ -46,57 +46,317 @@ function fullHousehold(): HouseholdSnapshot {
 			household: [{ id: 'h-1', name: 'Familie Brunner' }],
 			user: [{ id: 'u-1', name: 'Markus', email: 'm@x.test', role: 'admin', created_at: EXPORTED }],
 			relationship_type: [
-				{ id: 'rt-1', key: 'godparent', forward_label: 'Godparent of', reverse_label: 'Godchild of', category: 'family', symmetric: 0, sort_order: 100 }
+				{
+					id: 'rt-1',
+					key: 'godparent',
+					forward_label: 'Godparent of',
+					reverse_label: 'Godchild of',
+					category: 'family',
+					symmetric: 0,
+					sort_order: 100
+				}
 			],
 			contact: [
-				{ id: 'c-hans', household_id: 'h-1', created_by: 'u-1', visibility: 'shared', first_name: 'Hans', last_name: 'Brunner', nickname: 'Hausi', prefix: 'Dr.', suffix: 'jun.', former_name: 'Hans Meier', display_name: 'Hans Brunner', gender: 'male', pronouns: 'he/him', description: 'the neighbour', avatar_photo_id: 'p-gallery', birth_date: '1980-06-01', birth_date_precision: 'full', is_deceased: 0, death_date: null, job_title: 'Schreiner', company: 'Brunner AG', how_we_met: 'at the market', met_date: '2001-04-02', met_place: 'Bern', archived_at: null, created_at: EXPORTED },
-				{ id: 'c-rosa', household_id: 'h-1', created_by: 'u-1', visibility: 'private', first_name: 'Rosa', last_name: 'Brunner', display_name: 'Rosa Brunner', birth_date_precision: 'full', is_deceased: 0, created_at: EXPORTED }
+				{
+					id: 'c-hans',
+					household_id: 'h-1',
+					created_by: 'u-1',
+					visibility: 'shared',
+					first_name: 'Hans',
+					last_name: 'Brunner',
+					nickname: 'Hausi',
+					prefix: 'Dr.',
+					suffix: 'jun.',
+					former_name: 'Hans Meier',
+					display_name: 'Hans Brunner',
+					gender: 'male',
+					pronouns: 'he/him',
+					description: 'the neighbour',
+					avatar_photo_id: 'p-gallery',
+					birth_date: '1980-06-01',
+					birth_date_precision: 'full',
+					is_deceased: 0,
+					death_date: null,
+					job_title: 'Schreiner',
+					company: 'Brunner AG',
+					how_we_met: 'at the market',
+					met_date: '2001-04-02',
+					met_place: 'Bern',
+					archived_at: null,
+					created_at: EXPORTED
+				},
+				{
+					id: 'c-rosa',
+					household_id: 'h-1',
+					created_by: 'u-1',
+					visibility: 'private',
+					first_name: 'Rosa',
+					last_name: 'Brunner',
+					display_name: 'Rosa Brunner',
+					birth_date_precision: 'full',
+					is_deceased: 0,
+					created_at: EXPORTED
+				}
 			],
 			contact_field: [
-				{ id: 'f-1', contact_id: 'c-hans', kind: 'phone', label: 'mobile', value: '079', meta: '{"x":1}', sort_order: 2 }
+				{
+					id: 'f-1',
+					contact_id: 'c-hans',
+					kind: 'phone',
+					label: 'mobile',
+					value: '079',
+					meta: '{"x":1}',
+					sort_order: 2
+				}
 			],
 			important_date: [
-				{ id: 'd-1', contact_id: 'c-hans', kind: 'anniversary', label: 'wedding', date: '1980-06-01', recurs_yearly: 1, remind: 1 }
+				{
+					id: 'd-1',
+					contact_id: 'c-hans',
+					kind: 'anniversary',
+					label: 'wedding',
+					date: '1980-06-01',
+					recurs_yearly: 1,
+					remind: 1
+				}
 			],
 			note: [
-				{ id: 'n-1', contact_id: 'c-hans', created_by: 'u-1', visibility: 'shared', title: 'Allergies', body: 'hazelnuts', is_pinned: 1, created_at: EXPORTED }
+				{
+					id: 'n-1',
+					contact_id: 'c-hans',
+					created_by: 'u-1',
+					visibility: 'shared',
+					title: 'Allergies',
+					body: 'hazelnuts',
+					is_pinned: 1,
+					created_at: EXPORTED
+				}
 			],
 			note_mention: [{ note_id: 'n-1', contact_id: 'c-rosa' }],
 			journal_entry: [
-				{ id: 'j-1', contact_id: 'c-hans', created_by: 'u-1', visibility: 'private', entry_date: '2026-07-12', title: 'Hike', body: 'hiked', created_at: EXPORTED }
+				{
+					id: 'j-1',
+					contact_id: 'c-hans',
+					created_by: 'u-1',
+					visibility: 'private',
+					entry_date: '2026-07-12',
+					title: 'Hike',
+					body: 'hiked',
+					created_at: EXPORTED
+				}
 			],
 			journal_mention: [{ journal_entry_id: 'j-1', contact_id: 'c-rosa' }],
 			interaction: [
-				{ id: 'i-1', contact_id: 'c-hans', created_by: 'u-1', visibility: 'shared', kind: 'call', title: 'Sunday call', description: 'about the roof', happened_at: '2026-08-01', created_at: EXPORTED }
+				{
+					id: 'i-1',
+					contact_id: 'c-hans',
+					created_by: 'u-1',
+					visibility: 'shared',
+					kind: 'call',
+					title: 'Sunday call',
+					description: 'about the roof',
+					happened_at: '2026-08-01',
+					created_at: EXPORTED
+				}
 			],
 			interaction_participant: [{ interaction_id: 'i-1', contact_id: 'c-rosa' }],
 			photo: [
-				{ id: 'p-gallery', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, created_by: 'u-1', visibility: 'shared', file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', width: 1600, height: 1200, size_bytes: 240000, caption: 'at the lake', taken_at: '2026-06-01', pinned_at: EXPORTED, created_at: EXPORTED },
+				{
+					id: 'p-gallery',
+					household_id: 'h-1',
+					contact_id: 'c-hans',
+					journal_entry_id: null,
+					created_by: 'u-1',
+					visibility: 'shared',
+					file_path: 'p1.jpg',
+					thumb_path: 't1.jpg',
+					mime: 'image/jpeg',
+					width: 1600,
+					height: 1200,
+					size_bytes: 240000,
+					caption: 'at the lake',
+					taken_at: '2026-06-01',
+					pinned_at: EXPORTED,
+					created_at: EXPORTED
+				},
 				// The square Hans's lake photo is worn through (docs/02 §2.14): a photo row of its own.
-				{ id: 'p-framing', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, framing_of: 'p-gallery', crop_x: 400, crop_y: 120.5, crop_size: 900, created_by: 'u-1', visibility: 'shared', file_path: 'p3.jpg', thumb_path: 't3.jpg', mime: 'image/jpeg', width: 512, height: 512, size_bytes: 40000, caption: null, taken_at: null, created_at: EXPORTED },
-				{ id: 'p-journal', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: 'j-1', created_by: 'u-1', visibility: 'private', file_path: 'p2.jpg', thumb_path: 't2.jpg', mime: 'image/jpeg', width: null, height: null, size_bytes: null, caption: null, taken_at: null, created_at: EXPORTED },
+				{
+					id: 'p-framing',
+					household_id: 'h-1',
+					contact_id: 'c-hans',
+					journal_entry_id: null,
+					framing_of: 'p-gallery',
+					crop_x: 400,
+					crop_y: 120.5,
+					crop_size: 900,
+					created_by: 'u-1',
+					visibility: 'shared',
+					file_path: 'p3.jpg',
+					thumb_path: 't3.jpg',
+					mime: 'image/jpeg',
+					width: 512,
+					height: 512,
+					size_bytes: 40000,
+					caption: null,
+					taken_at: null,
+					created_at: EXPORTED
+				},
+				{
+					id: 'p-journal',
+					household_id: 'h-1',
+					contact_id: 'c-hans',
+					journal_entry_id: 'j-1',
+					created_by: 'u-1',
+					visibility: 'private',
+					file_path: 'p2.jpg',
+					thumb_path: 't2.jpg',
+					mime: 'image/jpeg',
+					width: null,
+					height: null,
+					size_bytes: null,
+					caption: null,
+					taken_at: null,
+					created_at: EXPORTED
+				},
 				// The club's team photo (docs/02 §2.4.2): it belongs to the circle, not to anyone.
-				{ id: 'p-circle', household_id: 'h-1', contact_id: null, journal_entry_id: null, circle_id: 'ci-1', circle_role: 'coach', created_by: 'u-1', visibility: 'private', file_path: 'p4.jpg', thumb_path: 't4.jpg', view_path: 'v4.jpg', mime: 'image/jpeg', width: 4096, height: 2304, size_bytes: 300000, caption: 'season start', taken_at: null, pinned_at: EXPORTED, created_at: EXPORTED },
+				{
+					id: 'p-circle',
+					household_id: 'h-1',
+					contact_id: null,
+					journal_entry_id: null,
+					circle_id: 'ci-1',
+					circle_role: 'coach',
+					created_by: 'u-1',
+					visibility: 'private',
+					file_path: 'p4.jpg',
+					thumb_path: 't4.jpg',
+					view_path: 'v4.jpg',
+					mime: 'image/jpeg',
+					width: 4096,
+					height: 2304,
+					size_bytes: 300000,
+					caption: 'season start',
+					taken_at: null,
+					pinned_at: EXPORTED,
+					created_at: EXPORTED
+				},
 				// Hans's profile picture, cut from the team photo (docs/concepts/circle-photos.md §5).
-				{ id: 'p-cut', household_id: 'h-1', contact_id: 'c-hans', journal_entry_id: null, framing_of: 'p-circle', crop_x: 1200, crop_y: 300, crop_size: 280, created_by: 'u-1', visibility: 'private', file_path: 'p5.jpg', thumb_path: 't5.jpg', mime: 'image/jpeg', width: 1024, height: 1024, size_bytes: 90000, caption: null, taken_at: null, created_at: EXPORTED },
+				{
+					id: 'p-cut',
+					household_id: 'h-1',
+					contact_id: 'c-hans',
+					journal_entry_id: null,
+					framing_of: 'p-circle',
+					crop_x: 1200,
+					crop_y: 300,
+					crop_size: 280,
+					created_by: 'u-1',
+					visibility: 'private',
+					file_path: 'p5.jpg',
+					thumb_path: 't5.jpg',
+					mime: 'image/jpeg',
+					width: 1024,
+					height: 1024,
+					size_bytes: 90000,
+					caption: null,
+					taken_at: null,
+					created_at: EXPORTED
+				},
 				// An earlier cut of it, now a photo of Rosa's own that remembers where it came from.
-				{ id: 'p-was-cut', household_id: 'h-1', contact_id: 'c-rosa', journal_entry_id: null, cut_from: 'p-circle', created_by: 'u-1', visibility: 'shared', file_path: 'p6.jpg', thumb_path: 't6.jpg', mime: 'image/jpeg', width: 1024, height: 1024, size_bytes: 90000, caption: null, taken_at: null, created_at: EXPORTED }
+				{
+					id: 'p-was-cut',
+					household_id: 'h-1',
+					contact_id: 'c-rosa',
+					journal_entry_id: null,
+					cut_from: 'p-circle',
+					created_by: 'u-1',
+					visibility: 'shared',
+					file_path: 'p6.jpg',
+					thumb_path: 't6.jpg',
+					mime: 'image/jpeg',
+					width: 1024,
+					height: 1024,
+					size_bytes: 90000,
+					caption: null,
+					taken_at: null,
+					created_at: EXPORTED
+				}
 			],
 			tag: [{ id: 'tg-1', household_id: 'h-1', name: 'Bern', color: 'blue', created_at: EXPORTED }],
 			contact_tag: [{ contact_id: 'c-hans', tag_id: 'tg-1' }],
-			immich_link: [{ contact_id: 'c-hans', immich_person_id: '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70', linked_by: 'u-1', linked_at: EXPORTED }],
-			immich_ignore: [{ contact_id: 'c-hans', immich_person_id: '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81', ignored_by: 'u-1', ignored_at: EXPORTED }],
+			immich_link: [
+				{
+					contact_id: 'c-hans',
+					immich_person_id: '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70',
+					linked_by: 'u-1',
+					linked_at: EXPORTED
+				}
+			],
+			immich_ignore: [
+				{
+					contact_id: 'c-hans',
+					immich_person_id: '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81',
+					ignored_by: 'u-1',
+					ignored_at: EXPORTED
+				}
+			],
 			circle: [
-				{ id: 'ci-1', household_id: 'h-1', created_by: 'u-1', visibility: 'shared', name: 'FC Länggasse', description: 'the club', kind: 'club', color: 'green', parent_circle_id: null, start_date: '2019-08-01', end_date: null, archived_at: null, created_at: EXPORTED }
+				{
+					id: 'ci-1',
+					household_id: 'h-1',
+					created_by: 'u-1',
+					visibility: 'shared',
+					name: 'FC Länggasse',
+					description: 'the club',
+					kind: 'club',
+					color: 'green',
+					parent_circle_id: null,
+					start_date: '2019-08-01',
+					end_date: null,
+					archived_at: null,
+					created_at: EXPORTED
+				}
 			],
 			circle_membership: [
-				{ id: 'cm-1', circle_id: 'ci-1', contact_id: 'c-hans', role: 'coach', start_date: '2019-08-01', end_date: null, note: 'took over from Peter', created_by: 'u-1', created_at: EXPORTED }
+				{
+					id: 'cm-1',
+					circle_id: 'ci-1',
+					contact_id: 'c-hans',
+					role: 'coach',
+					start_date: '2019-08-01',
+					end_date: null,
+					note: 'took over from Peter',
+					created_by: 'u-1',
+					created_at: EXPORTED
+				}
 			],
 			relationship: [
-				{ id: 'r-1', household_id: 'h-1', from_contact_id: 'c-hans', to_contact_id: 'c-rosa', type_id: 'rt-1', note: 'married in Thun', since_date: '1980-06-01', status: 'current', created_by: 'u-1', created_at: EXPORTED }
+				{
+					id: 'r-1',
+					household_id: 'h-1',
+					from_contact_id: 'c-hans',
+					to_contact_id: 'c-rosa',
+					type_id: 'rt-1',
+					note: 'married in Thun',
+					since_date: '1980-06-01',
+					status: 'current',
+					created_by: 'u-1',
+					created_at: EXPORTED
+				}
 			],
 			activity_log: [
-				{ id: 'a-1', household_id: 'h-1', actor_id: 'u-1', action: 'delete', entity_type: 'contact', entity_id: 'gone', contact_id: null, visibility: 'shared', summary: 'removed Someone', created_at: EXPORTED }
+				{
+					id: 'a-1',
+					household_id: 'h-1',
+					actor_id: 'u-1',
+					action: 'delete',
+					entity_type: 'contact',
+					entity_id: 'gone',
+					contact_id: null,
+					visibility: 'shared',
+					summary: 'removed Someone',
+					created_at: EXPORTED
+				}
 			]
 		},
 		mediaPaths: ['p1.jpg', 't1.jpg', 'p2.jpg', 't2.jpg']
@@ -144,32 +404,141 @@ describe('the round trip', () => {
 	 * forgotten in either direction shows up here rather than in a household's restore.
 	 */
 	const carried: Record<string, string[]> = {
-		contact: ['id', 'visibility', 'first_name', 'last_name', 'nickname', 'prefix', 'suffix', 'former_name', 'display_name', 'gender', 'pronouns', 'description', 'avatar_photo_id', 'birth_date', 'birth_date_precision', 'is_deceased', 'death_date', 'job_title', 'company', 'how_we_met', 'met_date', 'met_place', 'archived_at', 'created_at'],
+		contact: [
+			'id',
+			'visibility',
+			'first_name',
+			'last_name',
+			'nickname',
+			'prefix',
+			'suffix',
+			'former_name',
+			'display_name',
+			'gender',
+			'pronouns',
+			'description',
+			'avatar_photo_id',
+			'birth_date',
+			'birth_date_precision',
+			'is_deceased',
+			'death_date',
+			'job_title',
+			'company',
+			'how_we_met',
+			'met_date',
+			'met_place',
+			'archived_at',
+			'created_at'
+		],
 		contact_field: ['id', 'contact_id', 'kind', 'label', 'value', 'meta', 'sort_order'],
 		important_date: ['id', 'contact_id', 'kind', 'label', 'date', 'recurs_yearly', 'remind'],
 		note: ['id', 'contact_id', 'visibility', 'title', 'body', 'is_pinned', 'created_at'],
 		note_mention: ['note_id', 'contact_id'],
 		journal_entry: ['id', 'contact_id', 'visibility', 'entry_date', 'title', 'body', 'created_at'],
 		journal_mention: ['journal_entry_id', 'contact_id'],
-		interaction: ['id', 'contact_id', 'visibility', 'kind', 'title', 'description', 'happened_at', 'created_at'],
+		interaction: [
+			'id',
+			'contact_id',
+			'visibility',
+			'kind',
+			'title',
+			'description',
+			'happened_at',
+			'created_at'
+		],
 		interaction_participant: ['interaction_id', 'contact_id'],
-		photo: ['id', 'contact_id', 'journal_entry_id', 'circle_id', 'circle_role', 'framing_of', 'cut_from', 'crop_x', 'crop_y', 'crop_size', 'visibility', 'file_path', 'thumb_path', 'view_path', 'mime', 'width', 'height', 'size_bytes', 'caption', 'taken_at', 'pinned_at', 'created_at'],
+		photo: [
+			'id',
+			'contact_id',
+			'journal_entry_id',
+			'circle_id',
+			'circle_role',
+			'framing_of',
+			'cut_from',
+			'crop_x',
+			'crop_y',
+			'crop_size',
+			'visibility',
+			'file_path',
+			'thumb_path',
+			'view_path',
+			'mime',
+			'width',
+			'height',
+			'size_bytes',
+			'caption',
+			'taken_at',
+			'pinned_at',
+			'created_at'
+		],
 		tag: ['id', 'name', 'color'],
 		contact_tag: ['contact_id', 'tag_id'],
 		immich_link: ['contact_id', 'immich_person_id', 'linked_by', 'linked_at'],
 		immich_ignore: ['contact_id', 'immich_person_id', 'ignored_by', 'ignored_at'],
-		circle: ['id', 'visibility', 'name', 'description', 'kind', 'color', 'parent_circle_id', 'start_date', 'end_date', 'archived_at', 'created_at'],
-		circle_membership: ['id', 'circle_id', 'contact_id', 'role', 'start_date', 'end_date', 'note', 'created_at'],
-		relationship: ['id', 'from_contact_id', 'to_contact_id', 'type_id', 'note', 'since_date', 'status', 'created_at'],
-		relationship_type: ['id', 'key', 'forward_label', 'reverse_label', 'category', 'symmetric', 'sort_order'],
-		activity_log: ['id', 'actor_id', 'action', 'entity_type', 'entity_id', 'contact_id', 'visibility', 'summary', 'created_at']
+		circle: [
+			'id',
+			'visibility',
+			'name',
+			'description',
+			'kind',
+			'color',
+			'parent_circle_id',
+			'start_date',
+			'end_date',
+			'archived_at',
+			'created_at'
+		],
+		circle_membership: [
+			'id',
+			'circle_id',
+			'contact_id',
+			'role',
+			'start_date',
+			'end_date',
+			'note',
+			'created_at'
+		],
+		relationship: [
+			'id',
+			'from_contact_id',
+			'to_contact_id',
+			'type_id',
+			'note',
+			'since_date',
+			'status',
+			'created_at'
+		],
+		relationship_type: [
+			'id',
+			'key',
+			'forward_label',
+			'reverse_label',
+			'category',
+			'symmetric',
+			'sort_order'
+		],
+		activity_log: [
+			'id',
+			'actor_id',
+			'action',
+			'entity_type',
+			'entity_id',
+			'contact_id',
+			'visibility',
+			'summary',
+			'created_at'
+		]
 	};
 
 	for (const [table, columns] of Object.entries(carried)) {
 		it(`gives ${table} back column for column`, () => {
 			const snapshot = fullHousehold();
 			// The archive's members are members here too, so authorship is expected to survive.
-			const plan = planRestore(deps(), archived(snapshot), target({ memberIds: ['u-admin', 'u-1'] }));
+			const plan = planRestore(
+				deps(),
+				archived(snapshot),
+				target({ memberIds: ['u-admin', 'u-1'] })
+			);
 			const before = snapshot.tables[table];
 			const after = rowsOf(plan, table);
 			expect(after).toHaveLength(before.length);
@@ -200,7 +569,21 @@ describe('the round trip', () => {
 
 	it('names every media file the photos need, once each', () => {
 		expect(planned().mediaPaths.sort()).toEqual(
-			['p1.jpg', 'p2.jpg', 'p3.jpg', 'p4.jpg', 'p5.jpg', 'p6.jpg', 't1.jpg', 't2.jpg', 't3.jpg', 't4.jpg', 't5.jpg', 't6.jpg', 'v4.jpg'].sort()
+			[
+				'p1.jpg',
+				'p2.jpg',
+				'p3.jpg',
+				'p4.jpg',
+				'p5.jpg',
+				'p6.jpg',
+				't1.jpg',
+				't2.jpg',
+				't3.jpg',
+				't4.jpg',
+				't5.jpg',
+				't6.jpg',
+				'v4.jpg'
+			].sort()
 		);
 	});
 
@@ -321,7 +704,9 @@ describe('an archive that does not add up', () => {
 	});
 
 	it('leaves out an ignored Immich proposal that names no Immich person, and says so', () => {
-		const document = archived() as { people: { id: string; immich_ignored: { person: string }[] }[] };
+		const document = archived() as {
+			people: { id: string; immich_ignored: { person: string }[] }[];
+		};
 		const hans = document.people.find((p) => p.id === 'c-hans')!;
 		hans.immich_ignored[0].person = '../users/me';
 		const plan = planRestore(deps(), document, target());
@@ -356,8 +741,23 @@ describe('an archive that does not add up', () => {
 			target()
 		);
 		// Its framing goes with it: a square of a photo that is not there frames nothing.
-		expect(rowsOf(plan, 'photo').map((p) => p.id)).toEqual(['p-journal', 'p-cut', 'p-was-cut', 'p-circle']);
-		expect(plan.mediaPaths.sort()).toEqual(['p2.jpg', 'p4.jpg', 'p5.jpg', 'p6.jpg', 't2.jpg', 't4.jpg', 't5.jpg', 't6.jpg', 'v4.jpg']);
+		expect(rowsOf(plan, 'photo').map((p) => p.id)).toEqual([
+			'p-journal',
+			'p-cut',
+			'p-was-cut',
+			'p-circle'
+		]);
+		expect(plan.mediaPaths.sort()).toEqual([
+			'p2.jpg',
+			'p4.jpg',
+			'p5.jpg',
+			'p6.jpg',
+			't2.jpg',
+			't4.jpg',
+			't5.jpg',
+			't6.jpg',
+			'v4.jpg'
+		]);
 		expect(plan.warnings).toContainEqual({ code: 'photoBadPath', file: '../../etc/passwd' });
 	});
 
@@ -369,9 +769,16 @@ describe('an archive that does not add up', () => {
 		);
 		// Positive control: the other photos still come through. The profile picture cut from the
 		// team photo goes with it; a photo that was cut from it before stays, and forgets it.
-		expect(rowsOf(plan, 'photo').map((p) => p.id).sort()).toEqual(['p-framing', 'p-gallery', 'p-journal', 'p-was-cut']);
-		expect(rowsOf(plan, 'photo').find((p) => p.id === 'p-was-cut')).toMatchObject({ cut_from: null });
-		for (const file of ['p4.jpg', 't4.jpg', 'v4.jpg', 'p5.jpg', 't5.jpg']) expect(plan.mediaPaths).not.toContain(file);
+		expect(
+			rowsOf(plan, 'photo')
+				.map((p) => p.id)
+				.sort()
+		).toEqual(['p-framing', 'p-gallery', 'p-journal', 'p-was-cut']);
+		expect(rowsOf(plan, 'photo').find((p) => p.id === 'p-was-cut')).toMatchObject({
+			cut_from: null
+		});
+		for (const file of ['p4.jpg', 't4.jpg', 'v4.jpg', 'p5.jpg', 't5.jpg'])
+			expect(plan.mediaPaths).not.toContain(file);
 		expect(plan.mediaPaths).toContain('p6.jpg');
 		expect(plan.warnings).toContainEqual({ code: 'circleWithoutName' });
 	});
@@ -381,7 +788,14 @@ describe('an archive that does not add up', () => {
 			deps(),
 			archived(
 				bent((s) => {
-					s.tables.note.push({ id: 'n-empty', contact_id: 'c-hans', created_by: 'u-1', visibility: 'shared', body: '', created_at: EXPORTED });
+					s.tables.note.push({
+						id: 'n-empty',
+						contact_id: 'c-hans',
+						created_by: 'u-1',
+						visibility: 'shared',
+						body: '',
+						created_at: EXPORTED
+					});
 				})
 			),
 			target()

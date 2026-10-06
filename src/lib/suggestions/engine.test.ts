@@ -21,13 +21,13 @@ const p = (id: string, displayName = id) => ({ id, displayName, gender: null });
 function view(over: Partial<KinshipGraph> = {}, dismissals: Dismissal[] = []) {
 	return buildView(
 		{
-		people: [
-			p('bettina', 'Bettina'),
-			p('kurt', 'Kurt'),
-			p('hans', 'Hans'),
-			p('lisa', 'Lisa'),
-			p('nina', 'Nina')
-		],
+			people: [
+				p('bettina', 'Bettina'),
+				p('kurt', 'Kurt'),
+				p('hans', 'Hans'),
+				p('lisa', 'Lisa'),
+				p('nina', 'Nina')
+			],
 			parentEdges: [],
 			siblingEdges: [],
 			partnerEdges: [],
@@ -186,7 +186,10 @@ describe('evaluate', () => {
 
 		it('answers a different claim over the same pair', () => {
 			const v = view(
-				{ siblingEdges: [{ a: 'hans', b: 'lisa' }], parentEdges: [{ parentId: 'bettina', childId: 'hans' }] },
+				{
+					siblingEdges: [{ a: 'hans', b: 'lisa' }],
+					parentEdges: [{ parentId: 'bettina', childId: 'hans' }]
+				},
 				[
 					{
 						relation: 'sibling',
@@ -270,7 +273,6 @@ describe('evaluate', () => {
 				['L1', 'parent', 'bettina', 'nina']
 			]);
 		});
-
 	});
 
 	/*
@@ -345,7 +347,12 @@ describe('evaluate, over the whole household', () => {
 
 	it('leaves out what the household declined, and marks it when asked', () => {
 		const declined: Dismissal[] = [
-			{ relation: 'parent', pairKey: pairKey('bettina', 'lisa'), dismissedAt: 42, dismissedBy: 'u1' }
+			{
+				relation: 'parent',
+				pairKey: pairKey('bettina', 'lisa'),
+				dismissedAt: 42,
+				dismissedBy: 'u1'
+			}
 		];
 		const v = view(
 			{
@@ -406,9 +413,9 @@ describe('evaluate — worked-out relatives (K1)', () => {
 	it('offers the derived sibling too, which the link rules would never store', () => {
 		// Hans and Lisa share Bettina: siblings by derivation, and a K1 claim for that reason —
 		// stored from the reviewed end first, since a sibling link has no direction.
-		expect(shape({ kind: 'person-reviewed', subjectId: 'lisa' }, threeGenerations())).toContainEqual(
-			['K1', 'sibling', 'lisa', 'hans']
-		);
+		expect(
+			shape({ kind: 'person-reviewed', subjectId: 'lisa' }, threeGenerations())
+		).toContainEqual(['K1', 'sibling', 'lisa', 'hans']);
 	});
 
 	it('asks a household about a pair once, whichever end reaches it', () => {
@@ -445,7 +452,6 @@ describe('evaluate — worked-out relatives (K1)', () => {
 		]);
 	});
 });
-
 
 /*
  * L3 runs after a write and nowhere else (docs/concepts/relationship-suggestions.md §3.2): it is

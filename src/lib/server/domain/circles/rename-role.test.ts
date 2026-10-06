@@ -53,12 +53,27 @@ function fakes(members: MemberView[], photos: CirclePhoto[] = []) {
 describe('renameCircleRole', () => {
 	it('gives every member and photo of the role the new, trimmed name in one write', async () => {
 		const f = fakes(
-			[member('mara', 'Teacher'), member('jonas', 'teacher '), member('ida', 'Pupil'), member('eli', null)],
+			[
+				member('mara', 'Teacher'),
+				member('jonas', 'teacher '),
+				member('ida', 'Pupil'),
+				member('eli', null)
+			],
 			[photo('p1', 'TEACHER'), photo('p2', 'Pupil'), photo('p3', null)]
 		);
-		await renameCircleRole(f.deps, viewer, { circleId: 'class', from: 'Teacher', to: '  Class teacher ' });
+		await renameCircleRole(f.deps, viewer, {
+			circleId: 'class',
+			from: 'Teacher',
+			to: '  Class teacher '
+		});
 		expect(f.renames).toEqual([
-			{ circleId: 'class', contactIds: ['mara', 'jonas'], photoIds: ['p1'], role: 'Class teacher', updatedAt: NOW }
+			{
+				circleId: 'class',
+				contactIds: ['mara', 'jonas'],
+				photoIds: ['p1'],
+				role: 'Class teacher',
+				updatedAt: NOW
+			}
 		]);
 	});
 
@@ -74,12 +89,20 @@ describe('renameCircleRole', () => {
 			[photo('p1', 'trainer'), photo('p2', 'COACH')]
 		);
 		await renameCircleRole(f.deps, viewer, { circleId: 'class', from: 'Trainer', to: 'coach' });
-		expect(f.renames[0]).toMatchObject({ contactIds: ['mara', 'jonas'], photoIds: ['p1', 'p2'], role: 'coach' });
+		expect(f.renames[0]).toMatchObject({
+			contactIds: ['mara', 'jonas'],
+			photoIds: ['p1', 'p2'],
+			role: 'coach'
+		});
 	});
 
 	it('rejects a blank new name with a phrase, writing nothing', async () => {
 		const f = fakes([member('mara', 'Teacher')]);
-		const attempt = renameCircleRole(f.deps, viewer, { circleId: 'class', from: 'Teacher', to: '   ' });
+		const attempt = renameCircleRole(f.deps, viewer, {
+			circleId: 'class',
+			from: 'Teacher',
+			to: '   '
+		});
 		await expect(attempt).rejects.toBeInstanceOf(BlankRoleNameError);
 		await expect(attempt).rejects.toBeInstanceOf(TranslatableError);
 		expect(f.renames).toHaveLength(0);

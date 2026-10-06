@@ -416,7 +416,11 @@ describe('explorerFromCore', () => {
 		// Expanding a node brings its people in; the node itself stays, and its badge must go.
 		const cy = core();
 		const explorer = controller(cy);
-		const growing: CyElement = { group: 'nodes', data: { id: 'a', more: 2 }, classes: `person ${HAS_MORE_CLASS}` };
+		const growing: CyElement = {
+			group: 'nodes',
+			data: { id: 'a', more: 2 },
+			classes: `person ${HAS_MORE_CLASS}`
+		};
 		explorer.setGraph([growing, node('b')]);
 		expect(cy.$id('a').hasClass(HAS_MORE_CLASS)).toBe(true);
 
@@ -587,7 +591,7 @@ describe('explorerFromCore', () => {
 			expect(cy.$id('kids').data('label')).toBe('Kids · 3');
 		});
 
-		it('names a member\'s tucked-away lines when the member is selected, keeping the group lit', () => {
+		it("names a member's tucked-away lines when the member is selected, keeping the group lit", () => {
 			const cy = core();
 			const explorer = controller(cy);
 			explorer.setGraph([group('kids'), ...club, tucked('swim', 'lena'), tucked('swim', 'juri')]);
@@ -599,7 +603,7 @@ describe('explorerFromCore', () => {
 			expect(cy.$id('kids').hasClass('faded')).toBe(false);
 		});
 
-		it('keeps a circle\'s tucked-away lines tucked away when the circle is selected', () => {
+		it("keeps a circle's tucked-away lines tucked away when the circle is selected", () => {
 			const cy = core();
 			const explorer = controller(cy);
 			explorer.setGraph([group('kids'), ...club, tucked('swim', 'lena'), tucked('swim', 'juri')]);
@@ -610,7 +614,7 @@ describe('explorerFromCore', () => {
 			expect(cy.$id('lena').hasClass('faded')).toBe(false);
 		});
 
-		it('stands a group\'s members together when the map is arranged freely', () => {
+		it("stands a group's members together when the map is arranged freely", () => {
 			// Frames are sized from their members, so this core needs the sizes a style gives.
 			const cy = cytoscape({
 				headless: true,
@@ -637,7 +641,7 @@ describe('explorerFromCore', () => {
 			expect(spread).toBeLessThan(400);
 		});
 
-		it('frames the map with a group\'s name clear of the toolbar', () => {
+		it("frames the map with a group's name clear of the toolbar", () => {
 			const cy = cytoscape({
 				headless: true,
 				styleEnabled: true,
@@ -707,4 +711,3 @@ describe('explorerFromCore', () => {
 		});
 	});
 });
-

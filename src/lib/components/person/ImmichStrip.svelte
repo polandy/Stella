@@ -117,7 +117,9 @@
 </script>
 
 {#if phase === 'noneTogether'}
-	<p class="mt-2 text-sm text-fg-subtle" data-testid="immich-strip" data-phase={phase}>{t('immich.together.none')}</p>
+	<p class="mt-2 text-sm text-fg-subtle" data-testid="immich-strip" data-phase={phase}>
+		{t('immich.together.none')}
+	</p>
 {:else if phase !== 'none'}
 	<div class="mt-2" data-testid="immich-strip" data-phase={phase}>
 		{#if phase === 'loading'}
@@ -128,10 +130,18 @@
 				{/each}
 			</ul>
 		{:else}
-			<ul class="flex gap-2 overflow-x-auto pb-1" aria-label={together?.label ?? t('immich.strip.label')}>
+			<ul
+				class="flex gap-2 overflow-x-auto pb-1"
+				aria-label={together?.label ?? t('immich.strip.label')}
+			>
 				{#each photos as photo, index (photo.id)}
 					<li class="shrink-0">
-						<button type="button" bind:this={tiles[index]} onclick={() => (opened = index)} class={TILE}>
+						<button
+							type="button"
+							bind:this={tiles[index]}
+							onclick={() => (opened = index)}
+							class={TILE}
+						>
 							<img
 								src={photo.thumbnailUrl}
 								alt={describe(photo)}

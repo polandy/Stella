@@ -21,7 +21,16 @@ describe('isImmichId', () => {
 	});
 
 	it('refuses anything that could change the path it is put into', () => {
-		for (const raw of ['', '..', '../users/me', `${ANNA}/thumbnail`, `${ANNA}?x=1`, 'anna', 42, null]) {
+		for (const raw of [
+			'',
+			'..',
+			'../users/me',
+			`${ANNA}/thumbnail`,
+			`${ANNA}?x=1`,
+			'anna',
+			42,
+			null
+		]) {
 			expect(isImmichId(raw)).toBe(false);
 		}
 	});
@@ -33,7 +42,13 @@ describe('readVersion', () => {
 	});
 
 	it('refuses a body that is not one', () => {
-		for (const payload of [null, 'v3.2.4', { major: 3, minor: 2 }, { major: '3', minor: 2, patch: 4 }, { major: -1, minor: 0, patch: 0 }]) {
+		for (const payload of [
+			null,
+			'v3.2.4',
+			{ major: 3, minor: 2 },
+			{ major: '3', minor: 2, patch: 4 },
+			{ major: -1, minor: 0, patch: 0 }
+		]) {
 			expect(readVersion(payload)).toBeNull();
 		}
 	});
@@ -41,7 +56,9 @@ describe('readVersion', () => {
 
 describe('readOwner', () => {
 	it('reads who the key belongs to', () => {
-		expect(readOwner({ id: 'u1', name: 'Anna', email: 'anna@example.test', isAdmin: true })).toEqual({
+		expect(
+			readOwner({ id: 'u1', name: 'Anna', email: 'anna@example.test', isAdmin: true })
+		).toEqual({
 			name: 'Anna',
 			email: 'anna@example.test'
 		});
@@ -54,13 +71,18 @@ describe('readOwner', () => {
 	});
 
 	it('keeps an owner who never gave a name', () => {
-		expect(readOwner({ email: 'anna@example.test' })).toEqual({ name: '', email: 'anna@example.test' });
+		expect(readOwner({ email: 'anna@example.test' })).toEqual({
+			name: '',
+			email: 'anna@example.test'
+		});
 	});
 });
 
 describe('readPerson', () => {
 	it('reads a person, their name trimmed', () => {
-		expect(readPerson({ id: ANNA, name: ' Anna Example ', isHidden: false, thumbnailPath: '/x' })).toEqual({
+		expect(
+			readPerson({ id: ANNA, name: ' Anna Example ', isHidden: false, thumbnailPath: '/x' })
+		).toEqual({
 			id: ANNA,
 			name: 'Anna Example',
 			hidden: false
@@ -130,7 +152,9 @@ describe('readAssetPage', () => {
 
 	it('reads the photos of a search page, with when they were taken on the clock where they were taken', () => {
 		// Immich writes `localDateTime` with a `Z`, but it is the camera's wall clock, not UTC.
-		expect(readAssetPage({ assets: { items: [asset(ANNA), asset(BERT)], nextCursor: 'next-1' } })).toEqual({
+		expect(
+			readAssetPage({ assets: { items: [asset(ANNA), asset(BERT)], nextCursor: 'next-1' } })
+		).toEqual({
 			assets: [
 				{ id: ANNA, takenAt: '2026-08-14T18:30:00' },
 				{ id: BERT, takenAt: '2026-08-14T18:30:00' }
@@ -145,7 +169,10 @@ describe('readAssetPage', () => {
 				items: [
 					asset(ANNA, { localDateTime: null }),
 					asset(BERT, { localDateTime: 'x', fileCreatedAt: 'y' }),
-					asset(CARL, { localDateTime: '2026-02-30T10:00:00.000Z', fileCreatedAt: '2026-13-01T00:00:00Z' })
+					asset(CARL, {
+						localDateTime: '2026-02-30T10:00:00.000Z',
+						fileCreatedAt: '2026-13-01T00:00:00Z'
+					})
 				],
 				nextCursor: null
 			}
@@ -174,7 +201,10 @@ describe('readAssetPage', () => {
 				nextCursor: ''
 			}
 		});
-		expect(page).toEqual({ assets: [{ id: BERT, takenAt: '2026-08-14T18:30:00' }], nextCursor: null });
+		expect(page).toEqual({
+			assets: [{ id: BERT, takenAt: '2026-08-14T18:30:00' }],
+			nextCursor: null
+		});
 	});
 
 	it('refuses a body that is not a search page', () => {

@@ -17,8 +17,20 @@ function source() {
 		async listNameCandidatesVisibleTo(v) {
 			asked.push(v);
 			return [
-				{ id: 'a', displayName: 'Anna Roth', firstName: 'Anna', lastName: 'Roth', relationshipCount: 0 },
-				{ id: 'b', displayName: 'Beat Vogel', firstName: 'Beat', lastName: 'Vogel', relationshipCount: 0 }
+				{
+					id: 'a',
+					displayName: 'Anna Roth',
+					firstName: 'Anna',
+					lastName: 'Roth',
+					relationshipCount: 0
+				},
+				{
+					id: 'b',
+					displayName: 'Beat Vogel',
+					firstName: 'Beat',
+					lastName: 'Vogel',
+					relationshipCount: 0
+				}
 			];
 		}
 	};
@@ -35,7 +47,9 @@ describe('suggestNameCandidates', () => {
 
 	it('does not even ask the source without a surname', async () => {
 		const s = source();
-		expect(await suggestNameCandidates({ candidates: s }, viewer, { firstName: 'Anna' })).toEqual([]);
+		expect(await suggestNameCandidates({ candidates: s }, viewer, { firstName: 'Anna' })).toEqual(
+			[]
+		);
 		expect(s.asked).toEqual([]);
 	});
 });

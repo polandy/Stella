@@ -42,7 +42,9 @@
 	);
 </script>
 
-<svelte:head><title>{t('common.pageTitle', { page: t('archive.restore.title') })}</title></svelte:head>
+<svelte:head
+	><title>{t('common.pageTitle', { page: t('archive.restore.title') })}</title></svelte:head
+>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header class="flex flex-col gap-2">

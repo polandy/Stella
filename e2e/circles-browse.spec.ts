@@ -49,17 +49,25 @@ test('counts each kind after the query, so no chip leads to an empty page', asyn
 	await expect(cards.filter({ hasText: 'Musikschule' })).toHaveCount(0);
 });
 
-test('hands the pressed state back to All when the query filters that kind away', async ({ page }) => {
+test('hands the pressed state back to All when the query filters that kind away', async ({
+	page
+}) => {
 	const chips = page.getByTestId('circle-kinds');
 	const search = page.getByRole('searchbox', { name: 'Find a circle' });
 	await search.fill('kl');
 	await chips.getByRole('button', { name: /^class/i }).click();
-	await expect(chips.getByRole('button', { name: /^class/i })).toHaveAttribute('aria-pressed', 'true');
+	await expect(chips.getByRole('button', { name: /^class/i })).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
 
 	// "Frauenchor" is a club, so the chosen Class chip is gone; the row must not leave the
 	// page empty with nothing pressed.
 	await search.fill('frauenchor');
-	await expect(chips.getByRole('button', { name: /^all/i })).toHaveAttribute('aria-pressed', 'true');
+	await expect(chips.getByRole('button', { name: /^all/i })).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
 	await expect(page.getByTestId('circle-cards').getByRole('listitem')).toHaveCount(1);
 });
 

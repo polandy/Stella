@@ -21,7 +21,11 @@ test.beforeEach(async ({ page }) => {
 
 /** Follows the saved moment's "wrote in <name>'s journal" link, where each day is its own heading. */
 async function journalOf(page: Page, moment: string, name: string) {
-	await page.locator('article', { hasText: moment }).getByRole('link', { name, exact: true }).first().click();
+	await page
+		.locator('article', { hasText: moment })
+		.getByRole('link', { name, exact: true })
+		.first()
+		.click();
 	await page.waitForURL(/\/contacts\/[^/]+\/journal$/);
 	return page.getByRole('listitem').filter({ has: page.getByRole('heading', { level: 2 }) });
 }
@@ -29,7 +33,8 @@ async function journalOf(page: Page, moment: string, name: string) {
 /** The short date the pill's menu gives a day, e.g. "28 Sept" — a prefix of the journal's "28 September". */
 async function dateOffered(page: Page, name: RegExp): Promise<string> {
 	await dayPill(page).click();
-	const offered = (await page.getByRole('menuitemradio', { name }).locator('span').textContent()) ?? '';
+	const offered =
+		(await page.getByRole('menuitemradio', { name }).locator('span').textContent()) ?? '';
 	expect(offered).toMatch(/^\d+ \w+/);
 	return offered;
 }
@@ -44,7 +49,9 @@ test('files a moment under yesterday when it is picked from the day pill', async
 	await page.getByRole('menuitemradio', { name: /^Yesterday/ }).click();
 	await expect(dayPill(page)).toHaveAccessibleName('Day: Yesterday');
 	await composerSave(page).click();
-	await expect(page.locator('article', { hasText: 'in the rose garden, a day late' })).toBeVisible();
+	await expect(
+		page.locator('article', { hasText: 'in the rose garden, a day late' })
+	).toBeVisible();
 	// Back to today for the next moment.
 	await expect(dayPill(page)).toHaveAccessibleName('Day: Today');
 
@@ -88,13 +95,17 @@ test('keeps a moment on today unless another day is picked', async ({ page }) =>
 	await expect(page.locator('article', { hasText: 'baked the plum cake' })).toBeVisible();
 
 	const days = await journalOf(page, 'baked the plum cake', 'Lena Brunner');
-	await expect(days.filter({ hasText: 'baked the plum cake' }).getByRole('heading')).toContainText(today);
+	await expect(days.filter({ hasText: 'baked the plum cake' }).getByRole('heading')).toContainText(
+		today
+	);
 });
 
 test.describe('on a phone', () => {
 	test.use({ viewport: PIXEL_9_PRO });
 
-	test('opens the calendar above the pill and keeps its arrows in place from month to month', async ({ page }) => {
+	test('opens the calendar above the pill and keeps its arrows in place from month to month', async ({
+		page
+	}) => {
 		await page.goto('/');
 		await appReady(page);
 		await page.locator('nav').getByRole('link', { name: 'Write a moment' }).click();

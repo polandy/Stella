@@ -51,14 +51,28 @@ describe('birthdayOf', () => {
 
 	it('gives way to a birthday entered as a date of its own (docs/02 §2.13.2)', () => {
 		const dates = [{ kind: 'birthday' as const }];
-		expect(birthdayOf({ birthDate: '1980-04-12', birthDatePrecision: 'full' }, dates).derivedBirthday).toBeNull();
+		expect(
+			birthdayOf({ birthDate: '1980-04-12', birthDatePrecision: 'full' }, dates).derivedBirthday
+		).toBeNull();
 	});
 });
 
 describe('fieldView', () => {
 	it('carries a link for a field that can be followed, and none for one that cannot', () => {
-		const email = { id: 'f1', contactId: 'c1', kind: 'email' as const, label: null, value: 'a@b.ch' };
-		expect(fieldView(email)).toEqual({ id: 'f1', kind: 'email', label: null, value: 'a@b.ch', href: 'mailto:a@b.ch' });
+		const email = {
+			id: 'f1',
+			contactId: 'c1',
+			kind: 'email' as const,
+			label: null,
+			value: 'a@b.ch'
+		};
+		expect(fieldView(email)).toEqual({
+			id: 'f1',
+			kind: 'email',
+			label: null,
+			value: 'a@b.ch',
+			href: 'mailto:a@b.ch'
+		});
 	});
 });
 
@@ -107,7 +121,9 @@ describe('mentionedInView', () => {
 
 	it('links to where the entry is read on its own person: a note on Notes, an entry in the story', () => {
 		expect(mentionedInView(reference(), context()).href).toBe('/contacts/c-anna#section-story');
-		expect(mentionedInView(reference({ kind: 'note' }), context()).href).toBe('/contacts/c-anna#section-notes');
+		expect(mentionedInView(reference({ kind: 'note' }), context()).href).toBe(
+			'/contacts/c-anna#section-notes'
+		);
 	});
 
 	it('previews the body as plain text with the names the viewer may see', () => {
@@ -122,7 +138,10 @@ describe('declinedBy', () => {
 			{ dismissed: null },
 			{ dismissed: { by: 'user-gone', at: 2 } }
 		];
-		expect(declinedBy(suggestions, context().nameOfAuthor)).toEqual({ 'user-2': 'Hans Brunner', 'user-gone': null });
+		expect(declinedBy(suggestions, context().nameOfAuthor)).toEqual({
+			'user-2': 'Hans Brunner',
+			'user-gone': null
+		});
 	});
 });
 

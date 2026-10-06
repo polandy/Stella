@@ -73,7 +73,9 @@ test('the identity card shows the rows it holds and folds the empty ones behind 
 	await expect(addMore).toHaveCount(0);
 });
 
-test('logging a touchpoint comes back to the story card it was submitted from', async ({ page }) => {
+test('logging a touchpoint comes back to the story card it was submitted from', async ({
+	page
+}) => {
 	await openPerson(page, /Lena Brunner/);
 
 	const story = page.locator('#section-story');

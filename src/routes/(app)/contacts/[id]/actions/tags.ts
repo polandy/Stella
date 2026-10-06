@@ -31,16 +31,27 @@ export const tagActions = {
 		const command = parseCommand({
 			id: form.get('commandId') || ulidGenerator.next(),
 			type: 'tag.assign',
-			payload: { contactId: params.id, name: parsed.output.name, color: parsed.output.color ?? null },
+			payload: {
+				contactId: params.id,
+				name: parsed.output.name,
+				color: parsed.output.color ?? null
+			},
 			issuedAt: systemClock.now()
 		});
-		if (command?.type !== 'tag.assign') return fail(400, { tagError: say(locals, 'errors.tag.needName') });
-		const author = { userId: locals.user.id, householdId: locals.user.householdId, locale: locals.locale };
+		if (command?.type !== 'tag.assign')
+			return fail(400, { tagError: say(locals, 'errors.tag.needName') });
+		const author = {
+			userId: locals.user.id,
+			householdId: locals.user.householdId,
+			locale: locals.locale
+		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command).catch(() => null);
 		if (outcome?.status !== 'applied') {
 			return fail(400, {
 				tagError:
-					outcome?.status === 'refused' ? outcome.reason(translator(locals)) : say(locals, 'errors.tag.couldNotAdd')
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, 'errors.tag.couldNotAdd')
 			});
 		}
 
@@ -60,5 +71,5 @@ export const tagActions = {
 
 		await unassignTag(getTagDeps(), locals.user.householdId, params.id, tagId);
 		throw redirect(303, `/contacts/${params.id}`);
-	},
+	}
 } satisfies Actions;

@@ -2,10 +2,7 @@ import { and, eq, inArray, isNotNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { contactBrowsableBy, contactVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import type {
-	ImportantDateRepository,
-	NewImportantDate
-} from '../domain/dates/important-dates';
+import type { ImportantDateRepository, NewImportantDate } from '../domain/dates/important-dates';
 import type { UpcomingSource } from '../domain/dates/upcoming';
 import type * as schema from './schema';
 import { contact, importantDate } from './schema';
@@ -107,34 +104,30 @@ export function createDrizzleImportantDateRepository(
 				.all();
 
 			return [
-				...born.map(
-					(b): UpcomingSource => ({
-						contactId: b.contactId,
-						contactName: b.contactName,
-						avatarPhotoId: b.avatarPhotoId,
-						isDeceased: asBool(b.isDeceased),
-						kind: 'birthday',
-						label: null,
-						date: b.birthDate!,
-						recursYearly: true,
-						remind: true,
-						derived: true
-					})
-				),
-				...explicit.map(
-					(e): UpcomingSource => ({
-						contactId: e.contactId,
-						contactName: e.contactName,
-						avatarPhotoId: e.avatarPhotoId,
-						isDeceased: asBool(e.isDeceased),
-						kind: e.kind,
-						label: e.label,
-						date: e.date,
-						recursYearly: asBool(e.recursYearly),
-						remind: asBool(e.remind),
-						derived: false
-					})
-				)
+				...born.map((b): UpcomingSource => ({
+					contactId: b.contactId,
+					contactName: b.contactName,
+					avatarPhotoId: b.avatarPhotoId,
+					isDeceased: asBool(b.isDeceased),
+					kind: 'birthday',
+					label: null,
+					date: b.birthDate!,
+					recursYearly: true,
+					remind: true,
+					derived: true
+				})),
+				...explicit.map((e): UpcomingSource => ({
+					contactId: e.contactId,
+					contactName: e.contactName,
+					avatarPhotoId: e.avatarPhotoId,
+					isDeceased: asBool(e.isDeceased),
+					kind: e.kind,
+					label: e.label,
+					date: e.date,
+					recursYearly: asBool(e.recursYearly),
+					remind: asBool(e.remind),
+					derived: false
+				}))
 			];
 		}
 	};

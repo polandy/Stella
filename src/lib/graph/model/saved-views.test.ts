@@ -38,7 +38,10 @@ describe('saveView', () => {
 	});
 
 	it('keeps the filters in the order the menu lists them, whatever order they were switched on', () => {
-		const views = saveView([], 'Work', { active: new Set(['circles', 'professional']), switches: switches() });
+		const views = saveView([], 'Work', {
+			active: new Set(['circles', 'professional']),
+			switches: switches()
+		});
 
 		expect(views[0].filters).toEqual(['professional', 'circles']);
 	});
@@ -60,7 +63,11 @@ describe('saveView', () => {
 	});
 
 	it('replaces a view saved under the same name, in its place, ignoring case', () => {
-		const views = saveView(saveView(saveView([], 'Family', familyOnly), 'Work', work), 'family', work);
+		const views = saveView(
+			saveView(saveView([], 'Family', familyOnly), 'Work', work),
+			'family',
+			work
+		);
 
 		expect(views.map((v) => v.name)).toEqual(['family', 'Work']);
 		expect(views[0].filters).toEqual(['professional', 'circles']);
@@ -176,7 +183,9 @@ describe('parseSavedViews / serializeSavedViews', () => {
 	});
 
 	it('gives a switch an entry does not mention its default, so a later switch keeps old views', () => {
-		const stored = JSON.stringify([{ name: 'Family', filters: ['family'], switches: { groupRoles: true } }]);
+		const stored = JSON.stringify([
+			{ name: 'Family', filters: ['family'], switches: { groupRoles: true } }
+		]);
 
 		expect(parseSavedViews(stored)[0].switches).toEqual(switches({ groupRoles: true }));
 	});

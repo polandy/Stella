@@ -44,7 +44,9 @@
 	// whose last photo went away falls back to *All*.
 	let chosen = $state<string | null | undefined>(undefined);
 	const active = $derived(view.chips.some((c) => c.key === chosen) ? chosen : undefined);
-	const shown = $derived(active === undefined ? view.photos : view.photos.filter((p) => p.roleKey === active));
+	const shown = $derived(
+		active === undefined ? view.photos : view.photos.filter((p) => p.roleKey === active)
+	);
 
 	let open = $state(false);
 	let picked = $state<File[]>([]);
@@ -75,7 +77,8 @@
 		try {
 			const photos: KeptPhoto[] = [];
 			for (const file of picked) photos.push({ id: ulid(), ...(await processGroupPhoto(file)) });
-			const visibility = new FormData(formEl).get('visibility') === 'private' ? 'private' : 'shared';
+			const visibility =
+				new FormData(formEl).get('visibility') === 'private' ? 'private' : 'shared';
 			const command: JsonCommand = {
 				id: ulid(),
 				type: 'circleGallery.add',
@@ -103,7 +106,8 @@
 	}
 	const CHIP =
 		'rounded-full px-3 py-1 text-sm font-medium text-fg-muted transition-colors hover:text-fg aria-pressed:bg-primary-soft aria-pressed:font-semibold aria-pressed:text-fg';
-	const SEG = 'flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-bg px-3 py-1.5 text-sm has-checked:border-primary has-checked:bg-primary-soft has-checked:font-semibold has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary';
+	const SEG =
+		'flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-bg px-3 py-1.5 text-sm has-checked:border-primary has-checked:bg-primary-soft has-checked:font-semibold has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary';
 </script>
 
 <Section
@@ -120,13 +124,29 @@
 		</ul>
 	{/if}
 	{#if view.chips.length > 1}
-		<div class="mb-3 flex flex-wrap gap-1.5" role="group" aria-label={t('circles.photos.filter')} data-testid="circle-photo-chips">
-			<button type="button" class={CHIP} aria-pressed={active === undefined} onclick={() => choose(undefined)}>
+		<div
+			class="mb-3 flex flex-wrap gap-1.5"
+			role="group"
+			aria-label={t('circles.photos.filter')}
+			data-testid="circle-photo-chips"
+		>
+			<button
+				type="button"
+				class={CHIP}
+				aria-pressed={active === undefined}
+				onclick={() => choose(undefined)}
+			>
 				{t('circles.photos.all')} <span class="text-xs text-fg-muted">{view.photos.length}</span>
 			</button>
 			{#each view.chips as chip (chip.key)}
-				<button type="button" class={CHIP} aria-pressed={active === chip.key} onclick={() => choose(chip.key)}>
-					{chip.label ?? t('circles.noRole')} <span class="text-xs text-fg-muted">{chip.count}</span>
+				<button
+					type="button"
+					class={CHIP}
+					aria-pressed={active === chip.key}
+					onclick={() => choose(chip.key)}
+				>
+					{chip.label ?? t('circles.noRole')}
+					<span class="text-xs text-fg-muted">{chip.count}</span>
 				</button>
 			{/each}
 		</div>
@@ -138,24 +158,34 @@
 					<button
 						type="button"
 						data-photo-tile={p.id}
-						onclick={(event) => onopen(shown.map((s) => s.id), index, event.currentTarget)}
+						onclick={(event) =>
+							onopen(
+								shown.map((s) => s.id),
+								index,
+								event.currentTarget
+							)}
 						class="relative block w-full overflow-hidden rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 					>
 						<img
 							src={thumbnailUrl(p.id)}
-							alt={p.caption ?? (p.roleLabel ? t('circles.photos.ofRole', { name: circle.name, role: p.roleLabel }) : t('circles.photos.of', { name: circle.name }))}
+							alt={p.caption ??
+								(p.roleLabel
+									? t('circles.photos.ofRole', { name: circle.name, role: p.roleLabel })
+									: t('circles.photos.of', { name: circle.name }))}
 							class="aspect-square w-full object-cover"
 							loading="lazy"
 						/>
 						{#if p.pinnedAt !== null}
 							<!-- A star, not a tint: the pin reads without colour (docs/05 §5.10). -->
-							<span class="pointer-events-none absolute left-1 top-1 rounded-full bg-bg/80 p-1 text-primary">
+							<span
+								class="pointer-events-none absolute top-1 left-1 rounded-full bg-bg/80 p-1 text-primary"
+							>
 								<Icon name="pinned" size={11} />
 							</span>
 							<span class="sr-only">{t('contact.photos.favourite')}</span>
 						{/if}
 						<span
-							class="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-black/65 to-transparent px-1.5 pb-1 pt-3 text-left text-[0.6875rem] font-medium text-white"
+							class="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-black/65 to-transparent px-1.5 pt-3 pb-1 text-left text-[0.6875rem] font-medium text-white"
 							aria-hidden="true"
 						>
 							{#if p.roleLabel}<span class="truncate">{p.roleLabel}</span>{/if}
@@ -163,7 +193,10 @@
 						</span>
 					</button>
 					{#if p.visibility === 'private'}
-						<span class="absolute right-1 top-1 rounded-full bg-bg/80 p-1 text-fg-muted" title={t('contact.photos.privateHint')}>
+						<span
+							class="absolute top-1 right-1 rounded-full bg-bg/80 p-1 text-fg-muted"
+							title={t('contact.photos.privateHint')}
+						>
 							<Icon name="private" size={11} />
 						</span>
 					{/if}
@@ -190,25 +223,55 @@
 				<fieldset class="flex flex-col gap-2">
 					<legend class="mb-2 text-sm text-fg-muted">{t('circles.photos.whoIsIn')}</legend>
 					<div class="flex flex-wrap gap-1.5">
-						<label class={SEG}><input type="radio" name="role" value="" bind:group={uploadRole} class="sr-only" />{t('circles.noRole')}</label>
+						<label class={SEG}
+							><input
+								type="radio"
+								name="role"
+								value=""
+								bind:group={uploadRole}
+								class="sr-only"
+							/>{t('circles.noRole')}</label
+						>
 						{#each data.roleSuggestions as role (role)}
-							<label class={SEG}><input type="radio" name="role" value={role} bind:group={uploadRole} class="sr-only" />{role}</label>
+							<label class={SEG}
+								><input
+									type="radio"
+									name="role"
+									value={role}
+									bind:group={uploadRole}
+									class="sr-only"
+								/>{role}</label
+							>
 						{/each}
 					</div>
 					<p class="text-xs text-fg-subtle">
-						{uploadRole ? t('circles.photos.roleHint', { role: uploadRole }) : t('circles.photos.noRoleHint')}
+						{uploadRole
+							? t('circles.photos.roleHint', { role: uploadRole })
+							: t('circles.photos.noRoleHint')}
 					</p>
 				</fieldset>
 			{/if}
 			<fieldset class="flex flex-col gap-2">
 				<legend class="mb-2 text-sm text-fg-muted">{t('circles.photos.whoCanSee')}</legend>
 				<div class="flex flex-wrap gap-1.5">
-					<label class={SEG}><input type="radio" name="visibility" value="shared" checked class="sr-only" /><Icon name="shared" size={14} />{t('common.shared')}</label>
-					<label class={SEG}><input type="radio" name="visibility" value="private" class="sr-only" /><Icon name="private" size={14} />{t('common.private')}</label>
+					<label class={SEG}
+						><input type="radio" name="visibility" value="shared" checked class="sr-only" /><Icon
+							name="shared"
+							size={14}
+						/>{t('common.shared')}</label
+					>
+					<label class={SEG}
+						><input type="radio" name="visibility" value="private" class="sr-only" /><Icon
+							name="private"
+							size={14}
+						/>{t('common.private')}</label
+					>
 				</div>
 			</fieldset>
 			<Button variant="primary" size="sm" disabled={uploading} class="self-start">
-				{uploading ? t('circles.photos.adding') : t('circles.photos.addCount', { count: picked.length })}
+				{uploading
+					? t('circles.photos.adding')
+					: t('circles.photos.addCount', { count: picked.length })}
 			</Button>
 		</form>
 	{/snippet}

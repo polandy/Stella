@@ -50,7 +50,12 @@
 			timeZone: 'UTC'
 		});
 
-	const KEY_STEPS: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+	const KEY_STEPS: Record<string, number> = {
+		ArrowLeft: -1,
+		ArrowRight: 1,
+		ArrowUp: -7,
+		ArrowDown: 7
+	};
 
 	async function moveTo(day: string) {
 		focused = day > max ? max : day < `${firstMonth}-01` ? `${firstMonth}-01` : day;
@@ -73,14 +78,21 @@
 		else {
 			const target = `${shiftMonth(monthOf(focused), months)}${focused.slice(7)}`;
 			// The 31st has no match in a shorter month: land on that month's last day.
-			const inMonth = monthGrid(monthOf(target), weekStart).flat().filter((d) => d !== null);
+			const inMonth = monthGrid(monthOf(target), weekStart)
+				.flat()
+				.filter((d) => d !== null);
 			void moveTo(inMonth.includes(target) ? target : inMonth[inMonth.length - 1]);
 		}
 	}
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<div role="group" aria-label={i18n.t('components.calendar.label')} onkeydown={onKeydown} class="w-72">
+<div
+	role="group"
+	aria-label={i18n.t('components.calendar.label')}
+	onkeydown={onKeydown}
+	class="w-72"
+>
 	<!-- Fixed columns, so the arrows stay put however long the month's name is. -->
 	<div class="mb-1 grid grid-cols-[2rem_1fr_2rem] items-center gap-1">
 		<button
@@ -89,9 +101,12 @@
 			disabled={month <= firstMonth}
 			aria-label={i18n.t('components.calendar.previous')}
 			class="grid size-8 place-items-center rounded-control text-fg-muted hover:bg-primary-soft hover:text-fg disabled:opacity-30 disabled:hover:bg-transparent"
-		>‹</button>
+			>‹</button
+		>
 		<div class="flex items-center justify-center gap-1.5">
-			<span class="text-sm font-semibold text-fg" aria-live="polite">{monthName(month, i18n.intlLocale)}</span>
+			<span class="text-sm font-semibold text-fg" aria-live="polite"
+				>{monthName(month, i18n.intlLocale)}</span
+			>
 			<select
 				value={Number(month.slice(0, 4))}
 				onchange={(e) => (month = inYear(month, Number(e.currentTarget.value), lastMonth))}
@@ -109,7 +124,8 @@
 			disabled={month >= lastMonth}
 			aria-label={i18n.t('components.calendar.next')}
 			class="grid size-8 place-items-center rounded-control text-fg-muted hover:bg-primary-soft hover:text-fg disabled:opacity-30 disabled:hover:bg-transparent"
-		>›</button>
+			>›</button
+		>
 	</div>
 	<div bind:this={grid} class="grid grid-cols-7 gap-0.5 text-center">
 		{#each weekdayNames(i18n.intlLocale, weekStart) as name (name)}
@@ -128,10 +144,10 @@
 						aria-label={longDay(day)}
 						aria-pressed={day === value}
 						onclick={() => onpick(day)}
-						class="grid aspect-square place-items-center rounded-full text-sm tabular-nums text-fg hover:bg-primary-soft disabled:text-fg-subtle disabled:opacity-40 disabled:hover:bg-transparent aria-pressed:bg-primary aria-pressed:font-semibold aria-pressed:text-primary-fg"
+						class="grid aspect-square place-items-center rounded-full text-sm text-fg tabular-nums hover:bg-primary-soft disabled:text-fg-subtle disabled:opacity-40 disabled:hover:bg-transparent aria-pressed:bg-primary aria-pressed:font-semibold aria-pressed:text-primary-fg"
 						class:ring-1={day === max}
-						class:ring-primary={day === max}
-					>{Number(day.slice(8))}</button>
+						class:ring-primary={day === max}>{Number(day.slice(8))}</button
+					>
 				{/if}
 			{/each}
 		{/each}

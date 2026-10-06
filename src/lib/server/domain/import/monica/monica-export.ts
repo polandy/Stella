@@ -212,7 +212,8 @@ const num = (v: SqlValue | undefined): number | null =>
 const bool = (v: SqlValue | undefined): boolean => Number(v) === 1;
 const need = (row: SqlRow, col: string, table: string): SqlValue => {
 	const v = row[col];
-	if (v === undefined) throw new SqlDumpError(phrase('import.error.noSuchColumn', { table, column: col }));
+	if (v === undefined)
+		throw new SqlDumpError(phrase('import.error.noSuchColumn', { table, column: col }));
 	return v;
 };
 const dayOf = (v: SqlValue | undefined): string | null => {
@@ -254,37 +255,38 @@ export function readMonicaExport(dump: SqlDump): SourceExport {
 	}
 	const places = new Map(optional(dump, 'places').map((r) => [Number(r.id), r]));
 	const lifeEventTypes = new Map(
-		optional(dump, 'life_event_types').map((r) => [Number(r.id), str(r.default_life_event_type_key)])
+		optional(dump, 'life_event_types').map((r) => [
+			Number(r.id),
+			str(r.default_life_event_type_key)
+		])
 	);
 	const petCategories = new Map(
 		optional(dump, 'pet_categories').map((r) => [Number(r.id), str(r.name)])
 	);
 
-	const contacts = dump.rows('contacts').map(
-		(r): MonicaContact => ({
-			id: Number(need(r, 'id', 'contacts')),
-			firstName: str(r.first_name),
-			middleName: str(r.middle_name),
-			lastName: str(r.last_name),
-			nickname: str(r.nickname),
-			genderId: num(r.gender_id),
-			description: str(r.description),
-			isPartial: bool(r.is_partial),
-			isDead: bool(r.is_dead),
-			deceasedSpecialDateId: num(r.deceased_special_date_id),
-			birthdaySpecialDateId: num(r.birthday_special_date_id),
-			firstMetSpecialDateId: num(r.first_met_special_date_id),
-			firstMetThroughContactId: num(r.first_met_through_contact_id),
-			firstMetWhere: str(r.first_met_where),
-			firstMetAdditionalInfo: str(r.first_met_additional_info),
-			job: str(r.job),
-			company: str(r.company),
-			avatarSource: str(r.avatar_source),
-			avatarPhotoId: num(r.avatar_photo_id),
-			deletedAt: str(r.deleted_at),
-			createdAt: str(r.created_at)
-		})
-	);
+	const contacts = dump.rows('contacts').map((r): MonicaContact => ({
+		id: Number(need(r, 'id', 'contacts')),
+		firstName: str(r.first_name),
+		middleName: str(r.middle_name),
+		lastName: str(r.last_name),
+		nickname: str(r.nickname),
+		genderId: num(r.gender_id),
+		description: str(r.description),
+		isPartial: bool(r.is_partial),
+		isDead: bool(r.is_dead),
+		deceasedSpecialDateId: num(r.deceased_special_date_id),
+		birthdaySpecialDateId: num(r.birthday_special_date_id),
+		firstMetSpecialDateId: num(r.first_met_special_date_id),
+		firstMetThroughContactId: num(r.first_met_through_contact_id),
+		firstMetWhere: str(r.first_met_where),
+		firstMetAdditionalInfo: str(r.first_met_additional_info),
+		job: str(r.job),
+		company: str(r.company),
+		avatarSource: str(r.avatar_source),
+		avatarPhotoId: num(r.avatar_photo_id),
+		deletedAt: str(r.deleted_at),
+		createdAt: str(r.created_at)
+	}));
 
 	const derivedReminderIds = new Set<number>();
 	for (const r of dump.rows('contacts')) {
@@ -359,7 +361,10 @@ export function readMonicaExport(dump: SqlDump): SourceExport {
 			summary: str(r.summary),
 			description: str(r.description),
 			happenedAt: dayOf(r.happened_at) ?? '',
-			typeKey: r.activity_type_id === null ? null : (activityTypes.get(Number(r.activity_type_id)) ?? null),
+			typeKey:
+				r.activity_type_id === null
+					? null
+					: (activityTypes.get(Number(r.activity_type_id)) ?? null),
 			contactIds: activityContacts.get(Number(r.id)) ?? [],
 			createdAt: str(r.created_at)
 		})),

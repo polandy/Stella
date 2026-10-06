@@ -87,7 +87,10 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 		recordedAt: item.recordedAt,
 		visibility: interaction.visibility,
 		mine: interaction.createdBy === ctx.userId,
-		author: authorLabel(interaction.createdBy === ctx.userId, ctx.nameOfAuthor(interaction.createdBy)),
+		author: authorLabel(
+			interaction.createdBy === ctx.userId,
+			ctx.nameOfAuthor(interaction.createdBy)
+		),
 		interactionKind: interaction.kind,
 		title: interaction.title,
 		description: interaction.description,

@@ -100,9 +100,7 @@ export function splitArchive(entries: readonly ArchiveEntry[]): ArchiveFile {
 	}
 
 	if (documentText === null) {
-		throw new ArchiveFormatError(
-			phrase('archive.error.noDocument', { document: DOCUMENT_ENTRY })
-		);
+		throw new ArchiveFormatError(phrase('archive.error.noDocument', { document: DOCUMENT_ENTRY }));
 	}
 	return { documentText, media };
 }

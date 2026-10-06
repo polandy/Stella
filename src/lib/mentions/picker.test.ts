@@ -32,7 +32,10 @@ describe('suggest', () => {
 	it('offers creation for any typed name, as another one when somebody has it already', () => {
 		expect(suggest('Lena', people)).toMatchObject({ create: 'Lena', createsAnother: false });
 		// A second Julia Meier is a person like any other (docs/02 §2.2.3).
-		expect(suggest('JuliaMeier', people)).toMatchObject({ create: 'JuliaMeier', createsAnother: true });
+		expect(suggest('JuliaMeier', people)).toMatchObject({
+			create: 'JuliaMeier',
+			createsAnother: true
+		});
 		expect(suggest('mama', people)).toMatchObject({ create: 'mama', createsAnother: true });
 		expect(suggest('', people).create).toBeNull();
 	});
@@ -56,14 +59,23 @@ describe('handleFor / insertHandle', () => {
 /* The list must stay on screen, also in the phone's composer sheet at the bottom (docs/05). */
 describe('listPlacement', () => {
 	it('opens below the field when the list fits there', () => {
-		expect(listPlacement({ above: 600, below: 300 }, 250)).toEqual({ side: 'below', maxHeight: 300 });
+		expect(listPlacement({ above: 600, below: 300 }, 250)).toEqual({
+			side: 'below',
+			maxHeight: 300
+		});
 	});
 
 	it('opens above when it does not fit below and there is more room above', () => {
-		expect(listPlacement({ above: 600, below: 120 }, 250)).toEqual({ side: 'above', maxHeight: 600 });
+		expect(listPlacement({ above: 600, below: 120 }, 250)).toEqual({
+			side: 'above',
+			maxHeight: 600
+		});
 	});
 
 	it('stays below, scrolling, when below is still the roomier side', () => {
-		expect(listPlacement({ above: 100, below: 180 }, 250)).toEqual({ side: 'below', maxHeight: 180 });
+		expect(listPlacement({ above: 100, below: 180 }, 250)).toEqual({
+			side: 'below',
+			maxHeight: 180
+		});
 	});
 });

@@ -87,7 +87,10 @@ export function newPersonHref(request: NewPersonRequest = {}): string {
 }
 
 /** What a link made by {@link newPersonHref} asks of the form. */
-export function readNewPersonRequest(params: URLSearchParams): { name: TypedName; isSelf: boolean } {
+export function readNewPersonRequest(params: URLSearchParams): {
+	name: TypedName;
+	isSelf: boolean;
+} {
 	return {
 		name: splitTypedName(params.get('name') ?? ''),
 		// Only the exact value: claiming a record as yourself is not something to infer.

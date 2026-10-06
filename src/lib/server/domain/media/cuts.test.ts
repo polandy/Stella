@@ -21,7 +21,11 @@ import type { StoredFraming } from './framing';
  * photos of their own before something takes their group photo away, and how such a photo reads.
  */
 
-const cut = (id: string, contactId: string, groupPhotoId: string): Cut => ({ id, contactId, groupPhotoId });
+const cut = (id: string, contactId: string, groupPhotoId: string): Cut => ({
+	id,
+	contactId,
+	groupPhotoId
+});
 
 describe('which cuts a group photo takes with it', () => {
 	const cuts = [cut('f1', 'anna', 'class'), cut('f2', 'ben', 'class'), cut('f3', 'cleo', 'team')];
@@ -37,7 +41,10 @@ describe('which cuts a group photo takes with it', () => {
 	it('asks one combined question when a whole circle goes, counting each person once', () => {
 		// A person wears one picture; an older cut of another photo of theirs counts them again only once.
 		const withTwo = [...cuts, cut('f4', 'anna', 'team')];
-		expect(cutsToTurn(withTwo, ['class', 'team'])).toEqual({ cutIds: ['f1', 'f2', 'f3', 'f4'], people: 3 });
+		expect(cutsToTurn(withTwo, ['class', 'team'])).toEqual({
+			cutIds: ['f1', 'f2', 'f3', 'f4'],
+			people: 3
+		});
 	});
 });
 
@@ -57,7 +64,9 @@ describe('the cut a person stops wearing', () => {
 	});
 
 	it('is nothing when what they wore was not a cut', () => {
-		expect(cutLeftBehind({ id: 'p9', framingOf: 'gallery-photo', isCut: false }, { framingOf: null })).toBeNull();
+		expect(
+			cutLeftBehind({ id: 'p9', framingOf: 'gallery-photo', isCut: false }, { framingOf: null })
+		).toBeNull();
 		expect(cutLeftBehind(null, { framingOf: null })).toBeNull();
 	});
 });
@@ -105,7 +114,9 @@ const classPhoto: GroupPhoto = {
 	height: 2731
 };
 
-function cutDeps(options: { group?: GroupPhoto | null; personVisible?: boolean; rows?: CircleCutRow[] } = {}) {
+function cutDeps(
+	options: { group?: GroupPhoto | null; personVisible?: boolean; rows?: CircleCutRow[] } = {}
+) {
 	const stored: StoredFraming[] = [];
 	const put: string[] = [];
 	const deleted: string[] = [];
@@ -160,7 +171,9 @@ describe('cutting a profile picture out of a group photo', () => {
 
 	it('stores the square as a framing of the group photo that the person wears', async () => {
 		const { d, stored, put, deleted } = cutDeps();
-		expect(await cutProfilePicture(d, viewer, { photoId: 'class', contactId: 'anna', crop, upload })).toBe(true);
+		expect(
+			await cutProfilePicture(d, viewer, { photoId: 'class', contactId: 'anna', crop, upload })
+		).toBe(true);
 		expect(put).toEqual(['f9.jpg', 'f9_thumb.jpg']);
 		expect(stored).toEqual([
 			{
@@ -187,7 +200,9 @@ describe('cutting a profile picture out of a group photo', () => {
 
 	it('refuses a group photo the viewer cannot see, storing nothing', async () => {
 		const { d, stored, put, asked } = cutDeps({ group: null });
-		expect(await cutProfilePicture(d, viewer, { photoId: 'class', contactId: 'anna', crop, upload })).toBe(false);
+		expect(
+			await cutProfilePicture(d, viewer, { photoId: 'class', contactId: 'anna', crop, upload })
+		).toBe(false);
 		expect(asked).toContain('photo u2 class');
 		expect(stored).toEqual([]);
 		expect(put).toEqual([]);
@@ -195,7 +210,9 @@ describe('cutting a profile picture out of a group photo', () => {
 
 	it('refuses a person the viewer cannot see, storing nothing', async () => {
 		const { d, stored, put, asked } = cutDeps({ personVisible: false });
-		expect(await cutProfilePicture(d, viewer, { photoId: 'class', contactId: 'anna', crop, upload })).toBe(false);
+		expect(
+			await cutProfilePicture(d, viewer, { photoId: 'class', contactId: 'anna', crop, upload })
+		).toBe(false);
 		expect(asked).toContain('person u2 anna');
 		expect(stored).toEqual([]);
 		expect(put).toEqual([]);

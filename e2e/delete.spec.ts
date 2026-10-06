@@ -37,7 +37,9 @@ test('asks a second time, and the first click alone deletes nothing', async ({ p
 	await expect(page.getByRole('heading', { name: WHO })).toBeVisible();
 });
 
-test('takes the person and everything written about them, and tells the household', async ({ page }) => {
+test('takes the person and everything written about them, and tells the household', async ({
+	page
+}) => {
 	// A moment about them, so there is something of theirs in the stream to lose.
 	await page.getByLabel('What happened?').pressSequentially('walked the dog with ');
 	await mention(page, 'Ophelia', new RegExp(WHO));

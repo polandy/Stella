@@ -19,12 +19,20 @@ const NOW = 1_700_000_000_000;
 function setup() {
 	const rows: ImmichNameIgnore[] = [];
 	const nameIgnores: ImmichNameIgnoreRepository = {
-		listForHousehold: async (viewer) => rows.filter((row) => row.householdId === viewer.householdId),
+		listForHousehold: async (viewer) =>
+			rows.filter((row) => row.householdId === viewer.householdId),
 		save: async (row) => {
-			if (!rows.some((r) => r.householdId === row.householdId && r.immichPersonId === row.immichPersonId)) rows.push(row);
+			if (
+				!rows.some(
+					(r) => r.householdId === row.householdId && r.immichPersonId === row.immichPersonId
+				)
+			)
+				rows.push(row);
 		},
 		remove: async (viewer, personId) => {
-			const at = rows.findIndex((r) => r.householdId === viewer.householdId && r.immichPersonId === personId);
+			const at = rows.findIndex(
+				(r) => r.householdId === viewer.householdId && r.immichPersonId === personId
+			);
 			if (at < 0) return false;
 			rows.splice(at, 1);
 			return true;
@@ -37,12 +45,16 @@ describe('ignoreNewcomer', () => {
 	it('keeps the face for the household, with who ignored it and when', async () => {
 		const { deps, rows } = setup();
 		await ignoreNewcomer(deps, actor, BERT_ID);
-		expect(rows).toEqual([{ householdId: 'h1', immichPersonId: BERT_ID, ignoredBy: 'u-anna', ignoredAt: NOW }]);
+		expect(rows).toEqual([
+			{ householdId: 'h1', immichPersonId: BERT_ID, ignoredBy: 'u-anna', ignoredAt: NOW }
+		]);
 	});
 
 	it('refuses something that is not an Immich id, and keeps nothing', async () => {
 		const { deps, rows } = setup();
-		await expect(ignoreNewcomer(deps, actor, '../people')).rejects.toBeInstanceOf(ImmichLinkRefusedError);
+		await expect(ignoreNewcomer(deps, actor, '../people')).rejects.toBeInstanceOf(
+			ImmichLinkRefusedError
+		);
 		expect(rows).toEqual([]);
 	});
 });
@@ -53,8 +65,12 @@ describe('proposeNewcomerAgain', () => {
 		await ignoreNewcomer(deps, actor, BERT_ID);
 		await ignoreNewcomer(deps, actor, CARL_ID);
 
-		expect(await proposeNewcomerAgain(deps, { id: 'u-bert', householdId: 'h1' }, BERT_ID)).toBe(true);
+		expect(await proposeNewcomerAgain(deps, { id: 'u-bert', householdId: 'h1' }, BERT_ID)).toBe(
+			true
+		);
 		expect(rows.map((r) => r.immichPersonId)).toEqual([CARL_ID]);
-		expect(await proposeNewcomerAgain(deps, { id: 'u-bert', householdId: 'h1' }, BERT_ID)).toBe(false);
+		expect(await proposeNewcomerAgain(deps, { id: 'u-bert', householdId: 'h1' }, BERT_ID)).toBe(
+			false
+		);
 	});
 });

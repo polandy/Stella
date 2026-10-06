@@ -29,17 +29,30 @@
 </script>
 
 {#if shown.length > 0}
-	<section class="flex flex-col gap-2 rounded-app bg-card p-3 shadow-card" data-testid="last-name-choices">
+	<section
+		class="flex flex-col gap-2 rounded-app bg-card p-3 shadow-card"
+		data-testid="last-name-choices"
+	>
 		<h2 class="text-lg font-semibold text-fg">
-			{t('surnames.chooseOne')} <span class="text-sm font-normal tabular-nums text-fg-subtle">· {shown.length}</span>
+			{t('surnames.chooseOne')}
+			<span class="text-sm font-normal text-fg-subtle tabular-nums">· {shown.length}</span>
 		</h2>
 		<ul class="flex flex-col gap-2">
 			{#each shown as row (row.person.id)}
 				<li class="flex items-start gap-3 px-1 py-1.5">
-					<Avatar id={row.person.id} name={row.person.displayName} avatarPhotoId={row.person.avatarPhotoId} size={32} />
+					<Avatar
+						id={row.person.id}
+						name={row.person.displayName}
+						avatarPhotoId={row.person.avatarPhotoId}
+						size={32}
+					/>
 					<div class="min-w-0 flex-1">
-						<a href="/contacts/{row.person.id}" class="font-medium text-fg hover:underline">{row.person.displayName}</a>
-						{#if row.person.isDeceased}<span class="text-xs text-fg-subtle"> · {t('surnames.deceased')}</span>{/if}
+						<a href="/contacts/{row.person.id}" class="font-medium text-fg hover:underline"
+							>{row.person.displayName}</a
+						>
+						{#if row.person.isDeceased}<span class="text-xs text-fg-subtle">
+								· {t('surnames.deceased')}</span
+							>{/if}
 						<div class="mt-1 flex flex-wrap gap-2">
 							{#each row.options as option (option.name)}
 								<form method="POST" action="?/setLastNames" use:enhance={held}>
@@ -55,7 +68,9 @@
 							{/each}
 						</div>
 						<p class="mt-1 text-xs text-fg-muted">
-							{#each row.options.flatMap((o) => o.reasons) as reason, index}{#if index > 0}{' · '}{/if}<LinkedNames segments={reason} />{/each}
+							{#each row.options.flatMap((o) => o.reasons) as reason, index}{#if index > 0}{' · '}{/if}<LinkedNames
+									segments={reason}
+								/>{/each}
 						</p>
 					</div>
 				</li>

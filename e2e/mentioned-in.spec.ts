@@ -82,7 +82,11 @@ async function writeNote(page: Page, text: string): Promise<void> {
 }
 
 /** Writes a journal entry on the person whose page is showing, naming `NAMED`. */
-async function writeEntry(page: Page, text: string, visibility: 'shared' | 'private'): Promise<void> {
+async function writeEntry(
+	page: Page,
+	text: string,
+	visibility: 'shared' | 'private'
+): Promise<void> {
 	await page.getByRole('link', { name: 'Write' }).first().click();
 	await appReady(page);
 	await page.getByRole('button', { name: 'New entry' }).click();

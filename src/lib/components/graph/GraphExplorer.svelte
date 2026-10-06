@@ -39,13 +39,11 @@
 	} from '$lib/graph/model/role-groups';
 	import { shownOnCanvas } from '$lib/graph/model/shown-on-canvas';
 	import { graphFiltersFor, openingFilterKeys } from '$lib/graph/model/view-filters';
+	import { removeView, saveView, viewMatching, type SavedView } from '$lib/graph/model/saved-views';
 	import {
-		removeView,
-		saveView,
-		viewMatching,
-		type SavedView
-	} from '$lib/graph/model/saved-views';
-	import { savedViewsPreference, type SavedViewsPreference } from '$lib/graph/saved-views-preference';
+		savedViewsPreference,
+		type SavedViewsPreference
+	} from '$lib/graph/saved-views-preference';
 	import type { ArrangementKey } from '$lib/graph/layout/arrangements';
 	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
@@ -148,8 +146,7 @@
 	const pathSource = $derived(inMemoryGraphSource(withoutDerivedLinks(graph)));
 
 	const reducedMotion =
-		typeof window !== 'undefined' &&
-		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	let frame: HTMLDivElement;
 	let container = $state<HTMLDivElement>();
@@ -232,7 +229,9 @@
 	const groupingOn = $derived(switches.groupRoles && arrangedBy !== 'tree');
 	// Who is grouped depends only on the memberships shown; it decides whose links come along.
 	const grouped = $derived(
-		groupingOn ? new Set(groupByRole(visible, { innerLinks: switches.innerLinks, dissolved }).groupOf.keys()) : null
+		groupingOn
+			? new Set(groupByRole(visible, { innerLinks: switches.innerLinks, dissolved }).groupOf.keys())
+			: null
 	);
 	/*
 	 * The map as drawn: what was opened up, plus the links of grouped people to anyone else on
@@ -254,9 +253,13 @@
 	 * selection, so a bundle between two groups counts only the lines the map draws, and
 	 * selecting someone neither rebuilds the canvas nor moves anybody.
 	 */
-	const leftOff = $derived(switches.allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible));
+	const leftOff = $derived(
+		switches.allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible)
+	);
 	const grouping = $derived(
-		groupingOn ? groupByRole(drawnVisible, { innerLinks: switches.innerLinks, dissolved, leftOff }) : null
+		groupingOn
+			? groupByRole(drawnVisible, { innerLinks: switches.innerLinks, dissolved, leftOff })
+			: null
 	);
 	const groupLabel = (g: RoleGroup) =>
 		t('graph.group.label', { role: g.role ?? t('circles.noRole'), count: g.memberIds.length });
@@ -295,7 +298,7 @@
 		selected ? (grouping?.groups.find((g) => g.id === selected) ?? null) : null
 	);
 	const nameOf = (id: string) => model.nodes.find((n) => n.id === id)?.label ?? id;
-	const peekNode = $derived(selected ? model.nodes.find((n) => n.id === selected) ?? null : null);
+	const peekNode = $derived(selected ? (model.nodes.find((n) => n.id === selected) ?? null) : null);
 	// How far each node sits from the centre, so the embedded map stops where it promises to.
 	const rings = $derived(centerId ? ringsFrom(model, centerId) : new Map<string, number>());
 	// Inside the map's reach, and with something left to open — Expand on somebody whose every
@@ -467,8 +470,7 @@
 		// past its last ring the reader is sent to the explorer route instead (docs/02 §2.7).
 		if (centerId !== null && !canExpand(rings, id, maxRings)) return;
 		// Until the circle's roles have arrived there is nothing to narrow by: open it whole.
-		const roles =
-			peekCircleId === id && roleOptions.length > 0 ? new Set(chosenRoles) : undefined;
+		const roles = peekCircleId === id && roleOptions.length > 0 ? new Set(chosenRoles) : undefined;
 		model = await expandNode(source, model, id, roles);
 		if (roles) {
 			const all = new Set(roleOptions.map((o) => o.role));
@@ -702,15 +704,30 @@
 
 	<!-- Below the centre rather than over it, and out of the way while a peek panel is open. -->
 	{#if ready && lonelyCentre && !selected}
-		<div class="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center px-4" data-testid="graph-alone">
+		<div
+			class="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center px-4"
+			data-testid="graph-alone"
+		>
 			<div class="pointer-events-auto w-full max-w-sm rounded-app bg-card shadow-pop">
 				{#if lonelyCentre.kind === 'circle'}
-					<EmptyState icon="circles" title={t('graph.aloneCircle.title', { name: lonelyCentre.label })} hint={t('graph.aloneCircle.hint')}>
-						<Button variant="primary" icon="add" href="/circles/{lonelyCentre.id}">{t('circles.addPeople')}</Button>
+					<EmptyState
+						icon="circles"
+						title={t('graph.aloneCircle.title', { name: lonelyCentre.label })}
+						hint={t('graph.aloneCircle.hint')}
+					>
+						<Button variant="primary" icon="add" href="/circles/{lonelyCentre.id}"
+							>{t('circles.addPeople')}</Button
+						>
 					</EmptyState>
 				{:else}
-					<EmptyState icon="graph" title={t('graph.alone.title', { name: lonelyCentre.label })} hint={t('graph.alone.hint')}>
-						<Button variant="primary" icon="add" href={addRelationshipPath(lonelyCentre.id)}>{t('graph.alone.add')}</Button>
+					<EmptyState
+						icon="graph"
+						title={t('graph.alone.title', { name: lonelyCentre.label })}
+						hint={t('graph.alone.hint')}
+					>
+						<Button variant="primary" icon="add" href={addRelationshipPath(lonelyCentre.id)}
+							>{t('graph.alone.add')}</Button
+						>
 					</EmptyState>
 				{/if}
 			</div>

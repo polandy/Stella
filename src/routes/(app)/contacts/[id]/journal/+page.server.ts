@@ -1,6 +1,10 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { getContact, listContactNamesAmong, listContacts } from '$lib/server/domain/contacts/contacts';
+import {
+	getContact,
+	listContactNamesAmong,
+	listContacts
+} from '$lib/server/domain/contacts/contacts';
 import { authorNames } from '$lib/server/domain/household/members';
 import { authorLabel } from '$lib/story/author';
 import {
@@ -75,7 +79,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const nameOfAuthor = await authorNames(getMemberDeps(), viewer.householdId);
 
 	return {
-		contact: { id: contact.id, displayName: contact.displayName, avatarPhotoId: contact.avatarPhotoId },
+		contact: {
+			id: contact.id,
+			displayName: contact.displayName,
+			avatarPhotoId: contact.avatarPhotoId
+		},
 		today: today(),
 		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5, §2.20.1)
 		entries: entries.map((e) => ({
@@ -88,7 +96,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			// Only an author edits an entry, so only their own carry it.
 			bodyForEdit: e.createdBy === locals.user!.id ? e.body : null,
 			mentionNames: Object.fromEntries(
-				extractMentionIds(e.body).flatMap((id) => (nameById.has(id) ? [[id, nameById.get(id)!]] : []))
+				extractMentionIds(e.body).flatMap((id) =>
+					nameById.has(id) ? [[id, nameById.get(id)!]] : []
+				)
 			),
 			visibility: e.visibility,
 			mine: e.createdBy === locals.user!.id,
@@ -140,9 +150,15 @@ export const actions: Actions = {
 		// Writing is an addition (§2.20) and a command (docs/04 §4.11.2): named by the form when it
 		// can, so a save whose answer was lost and is kept on the phone is recognised on arrival.
 		const author = { userId: viewer.id, householdId: viewer.householdId, locale: locals.locale };
-		const refusal = (outcome: Awaited<ReturnType<typeof dispatchCommand>> | null, otherwise: MessageKey) =>
+		const refusal = (
+			outcome: Awaited<ReturnType<typeof dispatchCommand>> | null,
+			otherwise: MessageKey
+		) =>
 			fail(400, {
-				journalError: outcome?.status === 'refused' ? outcome.reason(translator(locals)) : say(locals, otherwise)
+				journalError:
+					outcome?.status === 'refused'
+						? outcome.reason(translator(locals))
+						: say(locals, otherwise)
 			});
 		const command = parseCommand({
 			id: form.get('commandId') || ulidGenerator.next(),
@@ -150,8 +166,11 @@ export const actions: Actions = {
 			payload: { contactId: params.id, ...parsed.output, title: parsed.output.title ?? null },
 			issuedAt: systemClock.now()
 		});
-		const written = command ? await dispatchCommand(getCommandDeps(), author, command).catch(() => null) : null;
-		if (!command || written?.status !== 'applied') return refusal(written, 'errors.journal.couldNotSave');
+		const written = command
+			? await dispatchCommand(getCommandDeps(), author, command).catch(() => null)
+			: null;
+		if (!command || written?.status !== 'applied')
+			return refusal(written, 'errors.journal.couldNotSave');
 
 		// Browser-processed photos (parallel image/thumb/width/height arrays) follow as commands of
 		// their own, landing on the entry with its visibility (§2.20).
@@ -173,7 +192,9 @@ export const actions: Actions = {
 				height: Number(heights[i]),
 				issuedAt: systemClock.now()
 			});
-			const stored = photo ? await dispatchCommand(getCommandDeps(), author, photo).catch(() => null) : null;
+			const stored = photo
+				? await dispatchCommand(getCommandDeps(), author, photo).catch(() => null)
+				: null;
 			if (stored?.status !== 'applied') return refusal(stored, 'errors.journal.photoFailed');
 		}
 

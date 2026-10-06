@@ -22,12 +22,7 @@
 		aria-label="Stella"
 		style="flex:none;overflow:visible"
 	>
-		<g
-			fill="none"
-			stroke="var(--accent-teal)"
-			stroke-width="3.6"
-			stroke-linecap="round"
-		>
+		<g fill="none" stroke="var(--accent-teal)" stroke-width="3.6" stroke-linecap="round">
 			<path d="M18,62 Q30,60 42,50" />
 			<path d="M42,50 Q54,44 66,60" />
 			<path d="M66,60 Q76,54 84,40" />
@@ -43,13 +38,17 @@
 	{#if showWord}
 		<span class="flex flex-col justify-center leading-none">
 			<span
-				style="font-size:{Math.round(size * 0.92)}px;font-weight:600;letter-spacing:-0.025em;color:var(--fg)"
-				>Stella</span
+				style="font-size:{Math.round(
+					size * 0.92
+				)}px;font-weight:600;letter-spacing:-0.025em;color:var(--fg)">Stella</span
 			>
 			{#if tagline}
 				<span
 					class="uppercase"
-					style="margin-top:{Math.round(size * 0.16)}px;font-size:{Math.max(9, Math.round(size * 0.24))}px;letter-spacing:0.24em;font-weight:600;color:var(--fg-muted)"
+					style="margin-top:{Math.round(size * 0.16)}px;font-size:{Math.max(
+						9,
+						Math.round(size * 0.24)
+					)}px;letter-spacing:0.24em;font-weight:600;color:var(--fg-muted)"
 					>Your people, connected</span
 				>
 			{/if}

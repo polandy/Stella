@@ -21,6 +21,8 @@ export function testLibrary(): FakeImmichLibrary {
 			{ id: CARL_ID, name: 'Carl Example', hidden: false, assets: 7, color: '#40a02b' },
 			{ id: DORA_ID, name: 'Dora Example', hidden: true, assets: 30, color: '#df8e1d' }
 		],
-		together: [{ id: BERT_AND_CARL_ID, personIds: [BERT_ID, CARL_ID], assets: 15, color: '#04a5e5' }]
+		together: [
+			{ id: BERT_AND_CARL_ID, personIds: [BERT_ID, CARL_ID], assets: 15, color: '#04a5e5' }
+		]
 	};
 }

@@ -18,7 +18,8 @@ export const contacts: ContactsMessages = {
 	'contacts.lastWrittenAboutOn': (p) => `Zuletzt beschrieben am ${p.date}`,
 	'contacts.nothingWrittenYet': 'Noch nichts geschrieben',
 	'contacts.noMatch': (p) => `Niemand passt zu „${p.query}“.`,
-	'contacts.noMatchHint': 'Prüfe die Schreibweise — oder füge die Person gleich hinzu, wenn sie neu ist.',
+	'contacts.noMatchHint':
+		'Prüfe die Schreibweise — oder füge die Person gleich hinzu, wenn sie neu ist.',
 	'contacts.addNamed': (p) => `„${p.name}“ hinzufügen`,
 	'contacts.emptyArchive.title': 'Nichts archiviert',
 	'contacts.emptyArchive.hint':

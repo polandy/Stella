@@ -48,7 +48,9 @@ export function createGitHubReleaseFeed({
 			if (response.status === 404) return null;
 			if (!response.ok) throw new Error(`release feed answered ${response.status}`);
 
-			return readLatestRelease(JSON.parse(new TextDecoder().decode(await readCapped(response, MAX_BYTES))));
+			return readLatestRelease(
+				JSON.parse(new TextDecoder().decode(await readCapped(response, MAX_BYTES)))
+			);
 		}
 	};
 }

@@ -2,7 +2,13 @@ import { describe, expect, it } from 'bun:test';
 import type { Locale } from './locales';
 import { de } from './messages/de';
 import { en } from './messages/en';
-import { createCatalogs, createTranslator, hasMessage, loadCatalog, type Messages } from './translate';
+import {
+	createCatalogs,
+	createTranslator,
+	hasMessage,
+	loadCatalog,
+	type Messages
+} from './translate';
 
 /*
  * The translator's own rules (docs/02 §2.19): a message missing from a translation falls

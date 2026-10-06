@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { focusLeftForm, neighbourAfterLeaving, owesFocusBack, type ListedRow } from './focus-return';
+import {
+	focusLeftForm,
+	neighbourAfterLeaving,
+	owesFocusBack,
+	type ListedRow
+} from './focus-return';
 
 /*
  * Where keyboard focus goes when the control holding it disappears (WCAG 2.4.3): a form that

@@ -57,7 +57,9 @@ test('keeps a contact detail and a date offline as dashed chips, and sends them 
 	await contact.getByLabel('Kind').selectOption({ label: 'Phone' });
 	await contact.getByPlaceholder('Value').fill('+41 79 555 01 23');
 	await contact.getByRole('button', { name: 'Add', exact: true }).last().click();
-	await expect(page.getByTestId('kept-fields').locator('li')).toContainText('Phone · +41 79 555 01 23');
+	await expect(page.getByTestId('kept-fields').locator('li')).toContainText(
+		'Phone · +41 79 555 01 23'
+	);
 
 	const dates = await profileRow(page, 'Dates');
 	await dates.getByRole('button', { name: 'Add' }).click();
@@ -109,7 +111,10 @@ test('keeps a journal entry offline above the timeline, and sends it with its ph
 	await expect(entry.locator('img')).toHaveCount(1);
 });
 
-test('keeps gallery photos offline, and adds them to the gallery when back', async ({ page, context }) => {
+test('keeps gallery photos offline, and adds them to the gallery when back', async ({
+	page,
+	context
+}) => {
 	await addPerson(page, 'Galeria', 'Vogelsang');
 	await context.setOffline(true);
 
@@ -140,7 +145,9 @@ test('adds a second journal entry written on the same day to the first', async (
 	await expect(days).toContainText('the morning at the lake');
 });
 
-test('shows why Stella refused a date, keeps what was typed, and saves it once named', async ({ page }) => {
+test('shows why Stella refused a date, keeps what was typed, and saves it once named', async ({
+	page
+}) => {
 	await addPerson(page, 'Datina', 'Vogelsang');
 
 	const dates = await profileRow(page, 'Dates');
@@ -150,7 +157,9 @@ test('shows why Stella refused a date, keeps what was typed, and saves it once n
 	await dates.getByRole('button', { name: 'Add', exact: true }).last().click();
 	await expect(dates).toContainText('Give the date a name so it means something later.');
 	await expect(dates.getByLabel('Kind')).toHaveValue('custom');
-	await expect(dates.getByRole('group', { name: 'Day' }).getByLabel('Year', { exact: true })).toHaveValue('2019');
+	await expect(
+		dates.getByRole('group', { name: 'Day' }).getByLabel('Year', { exact: true })
+	).toHaveValue('2019');
 	// A refusal is not kept for later.
 	await expect(page.getByTestId('kept-dates')).toHaveCount(0);
 

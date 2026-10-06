@@ -2,7 +2,11 @@ import type { SQLQueryBindings } from 'bun:sqlite';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { NewActivityEntry } from '../domain/activity/activity';
 import type { RestoreCounts, RestoreRepository } from '../domain/archive/import';
-import { ForeignHouseholdError, type RestorePlan, type RestoreTarget } from '../domain/archive/restore';
+import {
+	ForeignHouseholdError,
+	type RestorePlan,
+	type RestoreTarget
+} from '../domain/archive/restore';
 import { EXPORTED_TABLES } from './archive-repository';
 import type * as schema from './schema';
 import { activityLog } from './schema';
@@ -143,7 +147,9 @@ export function createDrizzleRestoreRepository(
 					const exists = new Map(
 						links.map((link) => [
 							link.column,
-							sqlite.query(`SELECT 1 FROM "${link.parent}" WHERE "${link.parentColumn}" = ? LIMIT 1`)
+							sqlite.query(
+								`SELECT 1 FROM "${link.parent}" WHERE "${link.parentColumn}" = ? LIMIT 1`
+							)
 						])
 					);
 					const writable = rows.filter((row) =>

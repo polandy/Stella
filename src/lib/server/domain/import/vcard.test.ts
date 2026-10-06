@@ -7,7 +7,8 @@ import { readVCard, VCardError } from './vcard';
  * format's own quirks: folded lines, escaped text, structured values and inline pictures.
  */
 
-const card = (...lines: string[]) => ['BEGIN:VCARD', 'VERSION:4.0', ...lines, 'END:VCARD'].join('\r\n');
+const card = (...lines: string[]) =>
+	['BEGIN:VCARD', 'VERSION:4.0', ...lines, 'END:VCARD'].join('\r\n');
 
 describe('readVCard', () => {
 	it('reads the name a card carries and derives nothing it was not given', () => {
@@ -27,14 +28,24 @@ describe('readVCard', () => {
 	it('joins a folded line back together before reading it', () => {
 		const exp = readVCard(
 			// Folding drops the one space it inserted, so a card may break mid-word (RFC 6350 §3.2).
-			['BEGIN:VCARD', 'VERSION:3.0', 'UID:u1', 'FN:Severin', 'NOTE:He keeps the Jassr', ' unde going', 'END:VCARD'].join('\r\n')
+			[
+				'BEGIN:VCARD',
+				'VERSION:3.0',
+				'UID:u1',
+				'FN:Severin',
+				'NOTE:He keeps the Jassr',
+				' unde going',
+				'END:VCARD'
+			].join('\r\n')
 		);
 
 		expect(exp.notes[0]?.body).toBe('He keeps the Jassrunde going');
 	});
 
 	it('unescapes the text a card escaped, and keeps a real comma out of the split', () => {
-		const exp = readVCard(card('UID:u1', 'FN:Severin', 'NOTE:First line\\nSecond\\, with a comma; and a semicolon'));
+		const exp = readVCard(
+			card('UID:u1', 'FN:Severin', 'NOTE:First line\\nSecond\\, with a comma; and a semicolon')
+		);
 
 		expect(exp.notes[0]?.body).toBe('First line\nSecond, with a comma; and a semicolon');
 	});
@@ -55,7 +66,10 @@ describe('readVCard', () => {
 
 	it('reads a full birthday, and a birthday whose year the card withholds', () => {
 		const exp = readVCard(
-			[card('UID:u1', 'FN:Severin', 'BDAY:19790411'), card('UID:u2', 'FN:Marlis', 'BDAY:--0407')].join('\r\n')
+			[
+				card('UID:u1', 'FN:Severin', 'BDAY:19790411'),
+				card('UID:u2', 'FN:Marlis', 'BDAY:--0407')
+			].join('\r\n')
 		);
 
 		const [severin, marlis] = exp.specialDates;
@@ -92,7 +106,9 @@ describe('readVCard', () => {
 	});
 
 	it('reads a structured address into its parts, the label coming from the card type', () => {
-		const exp = readVCard(card('UID:u1', 'FN:Severin', 'ADR;TYPE=home:;;Bahnhofstrasse 3;Bern;BE;3011;Switzerland'));
+		const exp = readVCard(
+			card('UID:u1', 'FN:Severin', 'ADR;TYPE=home:;;Bahnhofstrasse 3;Bern;BE;3011;Switzerland')
+		);
 
 		expect(exp.addresses[0]).toMatchObject({
 			contactId: 'u1',
@@ -106,7 +122,9 @@ describe('readVCard', () => {
 	});
 
 	it('reads the job and the company out of one ORG line and TITLE', () => {
-		const exp = readVCard(card('UID:u1', 'FN:Severin', 'ORG:Kantonsspital;Radiologie', 'TITLE:Oberarzt'));
+		const exp = readVCard(
+			card('UID:u1', 'FN:Severin', 'ORG:Kantonsspital;Radiologie', 'TITLE:Oberarzt')
+		);
 
 		expect(exp.contacts[0]).toMatchObject({ company: 'Kantonsspital', job: 'Oberarzt' });
 	});
@@ -146,17 +164,25 @@ describe('readVCard', () => {
 			dataUrl: 'data:image/jpeg;base64,AAECAw==',
 			sizeBytes: 4
 		});
-		expect(exp.contacts[0]).toMatchObject({ avatarSource: 'photo', avatarPhotoId: exp.photos[0]!.id });
+		expect(exp.contacts[0]).toMatchObject({
+			avatarSource: 'photo',
+			avatarPhotoId: exp.photos[0]!.id
+		});
 	});
 
 	it('reads a vCard 4 picture that is already a data URL', () => {
 		const exp = readVCard(card('UID:u1', 'FN:Severin', 'PHOTO:data:image/png;base64,AAECAw=='));
 
-		expect(exp.photos[0]).toMatchObject({ mime: 'image/png', dataUrl: 'data:image/png;base64,AAECAw==' });
+		expect(exp.photos[0]).toMatchObject({
+			mime: 'image/png',
+			dataUrl: 'data:image/png;base64,AAECAw=='
+		});
 	});
 
 	it('leaves out a picture the card only links to, since the file is not in it', () => {
-		const exp = readVCard(card('UID:u1', 'FN:Severin', 'PHOTO;VALUE=uri:https://example.ch/severin.jpg'));
+		const exp = readVCard(
+			card('UID:u1', 'FN:Severin', 'PHOTO;VALUE=uri:https://example.ch/severin.jpg')
+		);
 
 		expect(exp.photos).toHaveLength(0);
 	});
@@ -199,14 +225,18 @@ describe('readVCard', () => {
 	});
 
 	it('keeps a semicolon a parameter put in quotes out of the parameter split', () => {
-		const exp = readVCard(card('UID:u1', 'FN:Severin', 'ADR;TYPE="home;postal":;;Bahnhofstrasse 3;Bern;;3011;'));
+		const exp = readVCard(
+			card('UID:u1', 'FN:Severin', 'ADR;TYPE="home;postal":;;Bahnhofstrasse 3;Bern;;3011;')
+		);
 
 		expect(exp.addresses[0]).toMatchObject({ name: 'home;postal', street: 'Bahnhofstrasse 3' });
 	});
 
 	it('keys a card whose UID would not survive a URL by its contents instead', () => {
 		// The id ends up in /contacts/<id> and /media/<id>; a slash or hash there is not a name.
-		const exp = readVCard([card('UID:with/slash', 'FN:Severin'), card('UID:with#hash', 'FN:Marlis')].join('\r\n'));
+		const exp = readVCard(
+			[card('UID:with/slash', 'FN:Severin'), card('UID:with#hash', 'FN:Marlis')].join('\r\n')
+		);
 
 		const ids = exp.contacts.map((c) => String(c.id));
 		expect(ids.every((id) => /^[A-Za-z0-9._~:@+-]+$/.test(id))).toBe(true);
@@ -214,7 +244,9 @@ describe('readVCard', () => {
 	});
 
 	it('gives every id it mints a shape a URL can carry', () => {
-		const exp = readVCard(card('UID:u1', 'FN:Severin', 'NOTE:x', 'EMAIL:a@b.ch', 'PHOTO:data:image/png;base64,AAECAw=='));
+		const exp = readVCard(
+			card('UID:u1', 'FN:Severin', 'NOTE:x', 'EMAIL:a@b.ch', 'PHOTO:data:image/png;base64,AAECAw==')
+		);
 
 		const urlSafe = /^[A-Za-z0-9._~:@+-]+$/;
 		expect(String(exp.photos[0]!.id)).toMatch(urlSafe);

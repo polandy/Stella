@@ -59,14 +59,22 @@ export function addAllBatches(
 
 	for (const [childId, group] of groupBy(parentClaims, (claim) => claim.toId)) {
 		if (group.length < 2 || parentsOnRecord(childId) + group.length > MAX_PARENTS) continue;
-		batches.push({ subjectId: childId, side: 'reverse', targetIds: group.map((claim) => claim.fromId) });
+		batches.push({
+			subjectId: childId,
+			side: 'reverse',
+			targetIds: group.map((claim) => claim.fromId)
+		});
 		for (const claim of group) taken.add(claim);
 	}
 
 	const left = parentClaims.filter((claim) => !taken.has(claim));
 	for (const [parentId, group] of groupBy(left, (claim) => claim.fromId)) {
 		if (group.length < 2) continue;
-		batches.push({ subjectId: parentId, side: 'forward', targetIds: group.map((claim) => claim.toId) });
+		batches.push({
+			subjectId: parentId,
+			side: 'forward',
+			targetIds: group.map((claim) => claim.toId)
+		});
 	}
 	return batches;
 }

@@ -80,5 +80,7 @@ export function datedAt(photo: Dated): number {
  * known, else the moment it was added.
  */
 export function photoDay(photo: Dated): string {
-	return photo.takenAt === null ? new Date(photo.createdAt).toISOString() : photo.takenAt.slice(0, 10);
+	return photo.takenAt === null
+		? new Date(photo.createdAt).toISOString()
+		: photo.takenAt.slice(0, 10);
 }

@@ -83,7 +83,11 @@ describe('createPendingRemovals', () => {
 	it('undo within the window cancels the commit for good', async () => {
 		const { clock, store } = setup();
 		const { committed, commit } = commitRecorder();
-		store.remove({ key: 'interaction:b', label: 'Removed interaction', commit: commit('interaction:b') });
+		store.remove({
+			key: 'interaction:b',
+			label: 'Removed interaction',
+			commit: commit('interaction:b')
+		});
 
 		store.undo('interaction:b');
 
@@ -113,7 +117,11 @@ describe('createPendingRemovals', () => {
 		const { store } = setup();
 		const { committed, commit } = commitRecorder();
 		let release: () => void = () => {};
-		store.remove({ key: 'slow', label: 'Removed', commit: () => new Promise<void>((r) => (release = r)) });
+		store.remove({
+			key: 'slow',
+			label: 'Removed',
+			commit: () => new Promise<void>((r) => (release = r))
+		});
 		store.remove({ key: 'b', label: 'Removed', commit: commit('b') });
 
 		const first = store.flush();
@@ -353,7 +361,12 @@ describe('an offer beside Undo', () => {
 		const rec = commitRecorder();
 		const store = createPendingRemovals({ scheduler: timer.scheduler, onCommitFailed: () => {} });
 		let accepted = 0;
-		store.remove({ key: 'names:1', label: 'Saved', commit: rec.commit('names:1'), offer: { label: 'Yes', accept: () => accepted++ } });
+		store.remove({
+			key: 'names:1',
+			label: 'Saved',
+			commit: rec.commit('names:1'),
+			offer: { label: 'Yes', accept: () => accepted++ }
+		});
 
 		store.accept('names:1');
 		store.accept('names:1');

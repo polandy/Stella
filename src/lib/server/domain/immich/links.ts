@@ -167,7 +167,9 @@ export async function linkToImmich(
 	);
 	if (saved === 'taken') {
 		// Lost the race: whoever won holds the person now, and is named as above.
-		throw new ImmichLinkRefusedError({ linkedTo: (await holderOtherThanThem()) ?? { contactId: '', name: null } });
+		throw new ImmichLinkRefusedError({
+			linkedTo: (await holderOtherThanThem()) ?? { contactId: '', name: null }
+		});
 	}
 }
 
@@ -206,7 +208,8 @@ export async function linkMatches(
 			if (!current) await linkToImmich(deps, actor, contactId, immichPersonId);
 			result.linked++;
 		} catch (error) {
-			if (!(error instanceof ImmichLinkRefusedError || error instanceof ContactGoneError)) throw error;
+			if (!(error instanceof ImmichLinkRefusedError || error instanceof ContactGoneError))
+				throw error;
 			result.refused.push({ contactId, error });
 		}
 	}
@@ -291,7 +294,8 @@ export interface ImmichFace {
 	linkedTo: { name: string | null } | null;
 }
 
-export type FacesOutcome = { ok: true; faces: ImmichFace[] } | { ok: false; failure: ImmichFailure };
+export type FacesOutcome =
+	{ ok: true; faces: ImmichFace[] } | { ok: false; failure: ImmichFailure };
 
 /**
  * The faces the picker shows: those whose name matches what is typed, or the library's named
@@ -308,9 +312,9 @@ export async function findImmichFaces(
 	const wanted = query.trim().replace(/\s+/g, ' ');
 	let found = wanted
 		? await deps.gateway.searchPeople(wanted)
-		: await deps.gateway.listPeople(1, FACE_LIMIT).then((page) =>
-				page.ok ? { ok: true as const, value: page.value.people } : page
-			);
+		: await deps.gateway
+				.listPeople(1, FACE_LIMIT)
+				.then((page) => (page.ok ? { ok: true as const, value: page.value.people } : page));
 	if (!found.ok) return found;
 
 	const offered = (person: ImmichPerson) => !person.hidden && person.name !== '';

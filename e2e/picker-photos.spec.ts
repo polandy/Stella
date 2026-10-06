@@ -12,7 +12,9 @@ import { addPerson, appReady, pickPerson, signIn } from './app';
 
 /** Letters only, so the name stays one searchable, mentionable word. */
 function runLetters(): string {
-	return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) => String.fromCharCode(97 + (byte % 26))).join('');
+	return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) =>
+		String.fromCharCode(97 + (byte % 26))
+	).join('');
 }
 
 /** A small square PNG drawn in the browser, so no fixture file is needed. */
@@ -24,7 +26,9 @@ async function picture(page: Page): Promise<Buffer> {
 		const ctx = canvas.getContext('2d')!;
 		ctx.fillStyle = '#00aa00';
 		ctx.fillRect(0, 0, 200, 200);
-		const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
+		const blob = await new Promise<Blob>((resolve) =>
+			canvas.toBlob((b) => resolve(b!), 'image/png')
+		);
 		return Array.from(new Uint8Array(await blob.arrayBuffer()));
 	});
 	return Buffer.from(bytes);
@@ -61,7 +65,10 @@ test.beforeEach(async ({ page }) => {
 test('shows the photo in a circle’s person picker and in the chip it picks', async ({ page }) => {
 	const { name, src } = await personWithAPhoto(page);
 	await page.goto('/circles');
-	await page.getByTestId('circle-cards').getByRole('link', { name: /Musikschule/ }).click();
+	await page
+		.getByTestId('circle-cards')
+		.getByRole('link', { name: /Musikschule/ })
+		.click();
 	await page.getByRole('button', { name: 'Add people' }).click();
 	const form = page.locator('form[action="?/addMembers"]');
 	const field = form.getByLabel('People');

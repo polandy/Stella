@@ -13,7 +13,11 @@ import {
 	type ImmichMediaDeps
 } from './glimpse';
 import type { ImmichLink } from './links';
-import { createImmichMediaSigner, IMMICH_MEDIA_TTL_MS, type ImmichMediaSigner } from './signed-media';
+import {
+	createImmichMediaSigner,
+	IMMICH_MEDIA_TTL_MS,
+	type ImmichMediaSigner
+} from './signed-media';
 import { BERT_AND_CARL_ID, BERT_ID, CARL_ID, DORA_ID, testLibrary } from './test-library';
 
 /*
@@ -68,8 +72,18 @@ function setup() {
 	const gateway = createFakeImmichGateway(testLibrary());
 	const signer = createImmichMediaSigner({ secret: 'test-secret', clock });
 	const home = household();
-	const glimpseDeps: ImmichGlimpseDeps = { links: home.repository, gateway, signer, publicUrl: PUBLIC_URL };
-	const mediaDeps: ImmichMediaDeps = { links: home.repository, contacts: home.contacts, gateway, signer };
+	const glimpseDeps: ImmichGlimpseDeps = {
+		links: home.repository,
+		gateway,
+		signer,
+		publicUrl: PUBLIC_URL
+	};
+	const mediaDeps: ImmichMediaDeps = {
+		links: home.repository,
+		contacts: home.contacts,
+		gateway,
+		signer
+	};
 	return { clock, gateway, signer, home, glimpseDeps, mediaDeps };
 }
 
@@ -101,7 +115,10 @@ describe('readImmichGlimpse', () => {
 				expiresAt: NOW + IMMICH_MEDIA_TTL_MS
 			}
 		});
-		expect(await signer.verify(tokenOf(first.previewUrl))).toMatchObject({ ok: true, media: { size: 'preview' } });
+		expect(await signer.verify(tokenOf(first.previewUrl))).toMatchObject({
+			ok: true,
+			media: { size: 'preview' }
+		});
 		expect(first.openUrl).toBe(`${PUBLIC_URL}/photos/${first.id}`);
 		expect(first.takenOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 	});
@@ -116,7 +133,10 @@ describe('readImmichGlimpse', () => {
 		const takenAt = listed.value.assets[0].takenAt;
 		expect(takenAt).not.toBeNull();
 
-		expect(await signer.verify(tokenOf(first.previewUrl))).toMatchObject({ ok: true, media: { takenAt } });
+		expect(await signer.verify(tokenOf(first.previewUrl))).toMatchObject({
+			ok: true,
+			media: { takenAt }
+		});
 		expect(first.takenOn).toBe(takenAt!.slice(0, 10));
 		const thumbnail = await signer.verify(tokenOf(first.thumbnailUrl));
 		expect(thumbnail.ok && 'takenAt' in thumbnail.media).toBe(false);
@@ -126,7 +146,12 @@ describe('readImmichGlimpse', () => {
 		const { glimpseDeps } = setup();
 		// Carl has seven photos: one short page, and nothing after it.
 		glimpseDeps.links = {
-			findForContactVisibleTo: async () => ({ contactId: 'c-bert', immichPersonId: CARL_ID, linkedBy: 'u', linkedAt: NOW })
+			findForContactVisibleTo: async () => ({
+				contactId: 'c-bert',
+				immichPersonId: CARL_ID,
+				linkedBy: 'u',
+				linkedAt: NOW
+			})
 		};
 		const first = await readImmichGlimpse(glimpseDeps, viewer, 'c-bert', null);
 		expect(first).toMatchObject({ state: 'photos', nextCursor: null });
@@ -165,16 +190,24 @@ describe('readImmichGlimpse', () => {
 
 	it('says when the person is gone from Immich, and when Immich did not answer', async () => {
 		const gone = setup();
-		gone.gateway.library.people = gone.gateway.library.people.filter((person) => person.id !== BERT_ID);
-		expect(await readImmichGlimpse(gone.glimpseDeps, viewer, 'c-bert', null)).toEqual({ state: 'personGone' });
+		gone.gateway.library.people = gone.gateway.library.people.filter(
+			(person) => person.id !== BERT_ID
+		);
+		expect(await readImmichGlimpse(gone.glimpseDeps, viewer, 'c-bert', null)).toEqual({
+			state: 'personGone'
+		});
 
 		const down = setup();
 		down.gateway.failing = { latestAssets: 'unreachable' };
-		expect(await readImmichGlimpse(down.glimpseDeps, viewer, 'c-bert', null)).toEqual({ state: 'unreachable' });
+		expect(await readImmichGlimpse(down.glimpseDeps, viewer, 'c-bert', null)).toEqual({
+			state: 'unreachable'
+		});
 
 		const unscoped = setup();
 		unscoped.gateway.failing = { latestAssets: 'forbidden' };
-		expect(await readImmichGlimpse(unscoped.glimpseDeps, viewer, 'c-bert', null)).toEqual({ state: 'unreachable' });
+		expect(await readImmichGlimpse(unscoped.glimpseDeps, viewer, 'c-bert', null)).toEqual({
+			state: 'unreachable'
+		});
 	});
 });
 
@@ -200,7 +233,13 @@ describe('readImmichGlimpse together', () => {
 		expect(gateway.calls).toEqual(['latestAssets']);
 
 		if (glimpse.nextCursor === null) throw new Error('no second page');
-		const more = await readImmichGlimpse(glimpseDeps, viewer, 'c-bert', glimpse.nextCursor, 'c-cleo');
+		const more = await readImmichGlimpse(
+			glimpseDeps,
+			viewer,
+			'c-bert',
+			glimpse.nextCursor,
+			'c-cleo'
+		);
 		expect(more).toMatchObject({ state: 'photos', nextCursor: null });
 	});
 
@@ -218,21 +257,30 @@ describe('readImmichGlimpse together', () => {
 	it('says when either of them is gone from Immich', async () => {
 		const { glimpseDeps, gateway } = setup();
 		gateway.library.people = gateway.library.people.filter((person) => person.id !== CARL_ID);
-		expect(await readImmichGlimpse(glimpseDeps, viewer, 'c-bert', null, 'c-cleo')).toEqual({ state: 'personGone' });
+		expect(await readImmichGlimpse(glimpseDeps, viewer, 'c-bert', null, 'c-cleo')).toEqual({
+			state: 'personGone'
+		});
 	});
 });
 
 describe('readTogetherOffers', () => {
 	it('keeps the people the viewer sees who are linked too, in the order asked', async () => {
 		const { glimpseDeps } = setup();
-		expect(await readTogetherOffers(glimpseDeps, viewer, 'c-bert', ['c-cleo', 'c-carl', 'c-dora', 'c-nobody'])).toEqual([
-			'c-cleo'
-		]);
+		expect(
+			await readTogetherOffers(glimpseDeps, viewer, 'c-bert', [
+				'c-cleo',
+				'c-carl',
+				'c-dora',
+				'c-nobody'
+			])
+		).toEqual(['c-cleo']);
 	});
 
 	it('offers nobody when the page’s own person is not linked or out of reach', async () => {
 		const { glimpseDeps } = setup();
-		expect(await readTogetherOffers(glimpseDeps, viewer, 'c-carl', ['c-cleo', 'c-bert'])).toEqual([]);
+		expect(await readTogetherOffers(glimpseDeps, viewer, 'c-carl', ['c-cleo', 'c-bert'])).toEqual(
+			[]
+		);
 		expect(await readTogetherOffers(glimpseDeps, viewer, 'c-dora', ['c-cleo'])).toEqual([]);
 	});
 
@@ -244,7 +292,10 @@ describe('readTogetherOffers', () => {
 });
 
 describe('openImmichMedia', () => {
-	async function photoToken(signer: ImmichMediaSigner, overrides: Partial<{ contactId: string; personId: string }> = {}) {
+	async function photoToken(
+		signer: ImmichMediaSigner,
+		overrides: Partial<{ contactId: string; personId: string }> = {}
+	) {
 		return signer.sign({
 			kind: 'photo',
 			contactId: 'c-bert',
@@ -267,7 +318,10 @@ describe('openImmichMedia', () => {
 		const { mediaDeps, signer, gateway, clock } = setup();
 		const token = await photoToken(signer);
 		clock.advance(IMMICH_MEDIA_TTL_MS);
-		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'expired' });
+		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({
+			ok: false,
+			refusal: 'expired'
+		});
 		expect(gateway.calls).toEqual([]);
 	});
 
@@ -276,7 +330,10 @@ describe('openImmichMedia', () => {
 		const token = await photoToken(signer);
 		const tampered = token.slice(0, -2) + (token.endsWith('AA') ? 'BB' : 'AA');
 		for (const raw of [tampered, fakeAssetId(BERT_ID, 0), BERT_ID]) {
-			expect(await openImmichMedia(mediaDeps, viewer, raw)).toEqual({ ok: false, refusal: 'invalid' });
+			expect(await openImmichMedia(mediaDeps, viewer, raw)).toEqual({
+				ok: false,
+				refusal: 'invalid'
+			});
 		}
 		expect(gateway.calls).toEqual([]);
 	});
@@ -284,7 +341,10 @@ describe('openImmichMedia', () => {
 	it('refuses a token for a person the viewer cannot see, without asking Immich', async () => {
 		const { mediaDeps, signer, gateway } = setup();
 		const token = await photoToken(signer, { contactId: 'c-dora', personId: DORA_ID });
-		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notVisible' });
+		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({
+			ok: false,
+			refusal: 'notVisible'
+		});
 		expect(gateway.calls).toEqual([]);
 	});
 
@@ -292,12 +352,23 @@ describe('openImmichMedia', () => {
 		const unlinked = setup();
 		const token = await photoToken(unlinked.signer);
 		unlinked.home.links.delete('c-bert');
-		expect(await openImmichMedia(unlinked.mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notLinked' });
+		expect(await openImmichMedia(unlinked.mediaDeps, viewer, token)).toEqual({
+			ok: false,
+			refusal: 'notLinked'
+		});
 
 		const relinked = setup();
 		const old = await photoToken(relinked.signer);
-		relinked.home.links.set('c-bert', { contactId: 'c-bert', immichPersonId: CARL_ID, linkedBy: 'u-anna', linkedAt: NOW });
-		expect(await openImmichMedia(relinked.mediaDeps, viewer, old)).toEqual({ ok: false, refusal: 'notLinked' });
+		relinked.home.links.set('c-bert', {
+			contactId: 'c-bert',
+			immichPersonId: CARL_ID,
+			linkedBy: 'u-anna',
+			linkedAt: NOW
+		});
+		expect(await openImmichMedia(relinked.mediaDeps, viewer, old)).toEqual({
+			ok: false,
+			refusal: 'notLinked'
+		});
 
 		expect([...unlinked.gateway.calls, ...relinked.gateway.calls]).toEqual([]);
 	});
@@ -324,7 +395,10 @@ describe('openImmichMedia', () => {
 		const { mediaDeps, signer, gateway, home } = setup();
 		const token = await togetherToken(signer);
 		home.visible.delete('c-cleo');
-		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notVisible' });
+		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({
+			ok: false,
+			refusal: 'notVisible'
+		});
 		expect(gateway.calls).toEqual([]);
 	});
 
@@ -332,19 +406,37 @@ describe('openImmichMedia', () => {
 		const unlinked = setup();
 		const token = await togetherToken(unlinked.signer);
 		unlinked.home.links.delete('c-cleo');
-		expect(await openImmichMedia(unlinked.mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notLinked' });
+		expect(await openImmichMedia(unlinked.mediaDeps, viewer, token)).toEqual({
+			ok: false,
+			refusal: 'notLinked'
+		});
 
 		const relinked = setup();
 		const old = await togetherToken(relinked.signer);
-		relinked.home.links.set('c-cleo', { contactId: 'c-cleo', immichPersonId: DORA_ID, linkedBy: 'u-anna', linkedAt: NOW });
-		expect(await openImmichMedia(relinked.mediaDeps, viewer, old)).toEqual({ ok: false, refusal: 'notLinked' });
+		relinked.home.links.set('c-cleo', {
+			contactId: 'c-cleo',
+			immichPersonId: DORA_ID,
+			linkedBy: 'u-anna',
+			linkedAt: NOW
+		});
+		expect(await openImmichMedia(relinked.mediaDeps, viewer, old)).toEqual({
+			ok: false,
+			refusal: 'notLinked'
+		});
 
 		const pageUnlinked = setup();
 		const third = await togetherToken(pageUnlinked.signer);
 		pageUnlinked.home.links.delete('c-bert');
-		expect(await openImmichMedia(pageUnlinked.mediaDeps, viewer, third)).toEqual({ ok: false, refusal: 'notLinked' });
+		expect(await openImmichMedia(pageUnlinked.mediaDeps, viewer, third)).toEqual({
+			ok: false,
+			refusal: 'notLinked'
+		});
 
-		expect([...unlinked.gateway.calls, ...relinked.gateway.calls, ...pageUnlinked.gateway.calls]).toEqual([]);
+		expect([
+			...unlinked.gateway.calls,
+			...relinked.gateway.calls,
+			...pageUnlinked.gateway.calls
+		]).toEqual([]);
 	});
 
 	it('passes on that Immich did not answer, or no longer has the photo', async () => {
@@ -363,12 +455,19 @@ describe('openImmichMedia', () => {
 			assetId: fakeAssetId(BERT_ID, 999_999),
 			size: 'thumbnail'
 		});
-		expect(await openImmichMedia(gone.mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notFound' });
+		expect(await openImmichMedia(gone.mediaDeps, viewer, token)).toEqual({
+			ok: false,
+			refusal: 'notFound'
+		});
 	});
 
 	it('serves a face the picker was given for a person the viewer can see, linked or not', async () => {
 		const { mediaDeps, signer, gateway } = setup();
-		const outcome = await openImmichMedia(mediaDeps, viewer, tokenOf(await faceUrlFor(signer, 'c-carl', BERT_ID)));
+		const outcome = await openImmichMedia(
+			mediaDeps,
+			viewer,
+			tokenOf(await faceUrlFor(signer, 'c-carl', BERT_ID))
+		);
 		expect(outcome.ok).toBe(true);
 		expect(gateway.calls).toEqual(['personThumbnail']);
 	});
@@ -376,14 +475,21 @@ describe('openImmichMedia', () => {
 	it('refuses a face for a person the viewer cannot see, without asking Immich', async () => {
 		const { mediaDeps, signer, gateway } = setup();
 		const token = tokenOf(await faceUrlFor(signer, 'c-dora', BERT_ID));
-		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notVisible' });
+		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({
+			ok: false,
+			refusal: 'notVisible'
+		});
 		expect(gateway.calls).toEqual([]);
 	});
 
 	it('serves the face of someone not in Stella yet to a member of the household it was signed for', async () => {
 		const { mediaDeps, signer, gateway, home } = setup();
 		home.links.delete('c-cleo');
-		const outcome = await openImmichMedia(mediaDeps, viewer, tokenOf(await newcomerFaceUrl(signer, 'h1', CARL_ID)));
+		const outcome = await openImmichMedia(
+			mediaDeps,
+			viewer,
+			tokenOf(await newcomerFaceUrl(signer, 'h1', CARL_ID))
+		);
 		expect(outcome.ok).toBe(true);
 		expect(gateway.calls).toEqual(['personThumbnail']);
 	});
@@ -392,7 +498,10 @@ describe('openImmichMedia', () => {
 		const { mediaDeps, signer, gateway, home } = setup();
 		home.links.delete('c-cleo');
 		const token = tokenOf(await newcomerFaceUrl(signer, 'h2', CARL_ID));
-		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notVisible' });
+		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({
+			ok: false,
+			refusal: 'notVisible'
+		});
 		expect(gateway.calls).toEqual([]);
 	});
 
@@ -400,7 +509,10 @@ describe('openImmichMedia', () => {
 		const { mediaDeps, signer, gateway } = setup();
 		// Dora holds DORA_ID and is out of the viewer's reach: the face is hers to show, not a newcomer's.
 		const token = tokenOf(await newcomerFaceUrl(signer, 'h1', DORA_ID));
-		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({ ok: false, refusal: 'notVisible' });
+		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({
+			ok: false,
+			refusal: 'notVisible'
+		});
 		expect(gateway.calls).toEqual([]);
 	});
 });

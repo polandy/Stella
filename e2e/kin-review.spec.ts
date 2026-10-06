@@ -107,7 +107,9 @@ test('asks what stands around one person when told to, and survives a reload', a
 	await expect(page.getByTestId('kin-review')).toContainText(claimOf(f));
 });
 
-test('declining holds the no with who said it, and offering it again puts the claim back', async ({ page }) => {
+test('declining holds the no with who said it, and offering it again puts the claim back', async ({
+	page
+}) => {
 	const f = family('Greti', 'Timo', 'Nadja');
 	await aFamilyWithOneClaimStanding(page, f);
 	const panel = await review(page, f);

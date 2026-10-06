@@ -34,7 +34,7 @@ function context(over: Partial<ApiImportContext> = {}): ApiImportContext {
 		actorId: ME,
 		defaultVisibility: 'shared',
 		now: NOW,
-	locale: 'en',
+		locale: 'en',
 		people: new Map(),
 		hiddenIds: new Set(),
 		circles: new Map(),
@@ -465,7 +465,7 @@ describe('relationships', () => {
 		expect(planned(document, context({ people, graph: over })).relationships).toHaveLength(1);
 	});
 
-	it('stores a sibling link its shared parents already imply — confirming it is the household\'s call', () => {
+	it("stores a sibling link its shared parents already imply — confirming it is the household's call", () => {
 		expect(
 			planned(
 				doc({

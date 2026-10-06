@@ -60,7 +60,8 @@ async function recordMotion(page: Page): Promise<void> {
 	await page.evaluate((watched) => {
 		const log: MotionRecord['motionLog'] = [];
 		Object.assign(window, { motionLog: log });
-		const nameOf = (el: Element) => Object.entries(watched).find(([, selector]) => el.matches(selector))?.[0];
+		const nameOf = (el: Element) =>
+			Object.entries(watched).find(([, selector]) => el.matches(selector))?.[0];
 		const note = (el: Element, step: string) => {
 			const name = nameOf(el);
 			if (name) log.push({ name, step });
@@ -70,7 +71,8 @@ async function recordMotion(page: Page): Promise<void> {
 				if (!(target instanceof HTMLElement)) continue;
 				if (attributeName === 'data-motion') note(target, target.dataset.motion ?? '');
 				// Svelte marks an outroing block inert as well as the primitive: the turn is noted once.
-				else if (attributeName === 'inert' && target.inert && oldValue === null) note(target, 'inert');
+				else if (attributeName === 'inert' && target.inert && oldValue === null)
+					note(target, 'inert');
 			}
 		}).observe(document.body, {
 			subtree: true,
@@ -79,7 +81,11 @@ async function recordMotion(page: Page): Promise<void> {
 			attributeFilter: ['data-motion', 'inert']
 		});
 		for (const type of ['introend', 'outroend']) {
-			document.addEventListener(type, (event) => event.target instanceof Element && note(event.target, type), true);
+			document.addEventListener(
+				type,
+				(event) => event.target instanceof Element && note(event.target, type),
+				true
+			);
 		}
 	}, WATCHED);
 }
@@ -87,7 +93,10 @@ async function recordMotion(page: Page): Promise<void> {
 /** The steps recorded so far for one watched element, in order. */
 const stepsOf = (page: Page, name: Watched) =>
 	page.evaluate(
-		(name) => (window as unknown as MotionRecord).motionLog.filter((entry) => entry.name === name).map((entry) => entry.step),
+		(name) =>
+			(window as unknown as MotionRecord).motionLog
+				.filter((entry) => entry.name === name)
+				.map((entry) => entry.step),
 		name
 	);
 
@@ -138,7 +147,9 @@ test('a row unfolds and folds in place, and the card above it holds still', asyn
 	expect((await boxOf(datesRow(page))).height).toBeCloseTo(rowBefore.height, 0);
 });
 
-test('pressed again mid-way, a row turns round and lands folded, where it started', async ({ page }) => {
+test('pressed again mid-way, a row turns round and lands folded, where it started', async ({
+	page
+}) => {
 	await expect(datesToggle(page)).toHaveAttribute('aria-expanded', 'false');
 	const cardBefore = await boxOf(identityCard(page));
 	const rowBefore = await boxOf(datesRow(page));
@@ -151,7 +162,9 @@ test('pressed again mid-way, a row turns round and lands folded, where it starte
 
 	// However far it had got, it ends folded: the reveal ran back and the body is gone. Whether
 	// it had landed before the second press is the runner's timing, so only the end is read.
-	await expect.poll(async () => (await stepsOf(page, 'dates')).slice(-2)).toEqual(['inert', 'outroend']);
+	await expect
+		.poll(async () => (await stepsOf(page, 'dates')).slice(-2))
+		.toEqual(['inert', 'outroend']);
 	await expect(datesBody(page)).toHaveCount(0);
 	await expect(datesToggle(page)).toHaveAttribute('aria-expanded', 'false');
 	// No jump on landing: the row and the card are exactly as they were before the first press.
@@ -183,14 +196,18 @@ test('Show more and Show fewer glide the People list between its two heights', a
 
 	await showFewer(page).click();
 
-	await expect.poll(() => stepsOf(page, 'people')).toEqual(['moving', 'settled', 'moving', 'settled']);
+	await expect
+		.poll(() => stepsOf(page, 'people'))
+		.toEqual(['moving', 'settled', 'moving', 'settled']);
 	await expect(showMore(page)).toBeVisible();
 	await expect(people).toHaveCount(folded);
 	expect((await boxOf(peopleRows(page))).height).toBeCloseTo(foldedHeight, 0);
 	await expect(peopleRows(page)).not.toHaveCSS('overflow', 'clip');
 });
 
-test('the name glides into its editor and back, and the cursor goes where it always went', async ({ page }) => {
+test('the name glides into its editor and back, and the cursor goes where it always went', async ({
+	page
+}) => {
 	const nameLine = page.getByRole('button', { name: 'Markus Brunner', exact: true });
 	await expect(nameLine).toBeVisible();
 	await recordMotion(page);
@@ -209,7 +226,9 @@ test('the name glides into its editor and back, and the cursor goes where it alw
 	// Escape hands the cursor back to the name; the editor, faded in on opening, went inert and
 	// then went.
 	await expect(nameLine).toBeFocused();
-	await expect.poll(() => stepsOf(page, 'name')).toEqual(['moving', 'settled', 'moving', 'settled']);
+	await expect
+		.poll(() => stepsOf(page, 'name'))
+		.toEqual(['moving', 'settled', 'moving', 'settled']);
 	await expect.poll(() => stepsOf(page, 'name-editor')).toEqual(['introend', 'inert', 'outroend']);
 	await expect(page.locator(WATCHED['name-editor'])).toHaveCount(0);
 	await expect(page.getByTestId('name-editor')).toHaveCount(0);

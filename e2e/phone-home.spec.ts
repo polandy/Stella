@@ -16,11 +16,13 @@ const PIXEL_9_PRO = { width: 412, height: 915 };
 const NINA = 'Nina Brunner';
 
 const topBar = (page: Page) => page.getByTestId('top-bar');
-const addPerson = (page: Page) => page.getByRole('banner').getByRole('link', { name: 'Add person' });
+const addPerson = (page: Page) =>
+	page.getByRole('banner').getByRole('link', { name: 'Add person' });
 const searchButton = (page: Page) => topBar(page).getByRole('button', { name: 'Search' });
 const pill = (page: Page) => page.getByRole('button', { name: /^Filter the stream/ });
 const sheet = (page: Page) => page.getByRole('dialog', { name: 'Filter the stream' });
-const sheetChip = (page: Page, name: string) => sheet(page).getByRole('link', { name, exact: true });
+const sheetChip = (page: Page, name: string) =>
+	sheet(page).getByRole('link', { name, exact: true });
 const pillSummary = (page: Page) => page.getByTestId('stream-filter-pill').locator('span.truncate');
 const chipRows = (page: Page) => page.getByRole('navigation', { name: 'Filter the stream' });
 const streamItems = (page: Page) => page.getByTestId('stream').locator('article');
@@ -34,7 +36,9 @@ async function openSheet(page: Page): Promise<void> {
 test.describe('on a phone', () => {
 	test.use({ viewport: PIXEL_9_PRO, hasTouch: true });
 
-	test('keeps Add person as an icon in the top bar and leaves search to the page on Home', async ({ page }) => {
+	test('keeps Add person as an icon in the top bar and leaves search to the page on Home', async ({
+		page
+	}) => {
 		await signIn(page);
 
 		// The icon carries the name; the word itself is for wider screens.
@@ -43,7 +47,9 @@ test.describe('on a phone', () => {
 		// The page's own field is the search on Home — and the hidden button is still there (the
 		// shell has mounted, `signIn` waited for it), only not shown.
 		await expect(page.getByRole('combobox', { name: 'Find a person…' })).toBeVisible();
-		await expect(topBar(page).getByRole('button', { name: 'Search', includeHidden: true })).toBeEnabled();
+		await expect(
+			topBar(page).getByRole('button', { name: 'Search', includeHidden: true })
+		).toBeEnabled();
 		await expect(searchButton(page)).toBeHidden();
 
 		await page.getByRole('link', { name: 'People' }).last().click();
@@ -51,7 +57,9 @@ test.describe('on a phone', () => {
 		await expect(searchButton(page)).toBeVisible();
 	});
 
-	test('folds the chip rows into a Filter pill whose sheet narrows the stream', async ({ page }) => {
+	test('folds the chip rows into a Filter pill whose sheet narrows the stream', async ({
+		page
+	}) => {
 		await signIn(page);
 		await expect(pill(page)).toHaveAccessibleName('Filter the stream');
 		await expect(chipRows(page)).toBeHidden();
@@ -131,10 +139,9 @@ test('keeps the chip rows and a labelled Add person on a desktop', async ({ page
 	await signIn(page);
 
 	await expect(chipRows(page)).toBeVisible();
-	await expect(chipRows(page).getByRole('link', { name: 'Everything', exact: true })).toHaveAttribute(
-		'aria-current',
-		'true'
-	);
+	await expect(
+		chipRows(page).getByRole('link', { name: 'Everything', exact: true })
+	).toHaveAttribute('aria-current', 'true');
 	await expect(pill(page)).toBeHidden();
 	await expect(addPerson(page).getByText('Add person')).toBeVisible();
 	await expect(searchButton(page)).toBeVisible();

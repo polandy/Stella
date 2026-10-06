@@ -239,12 +239,7 @@ export function createDrizzleRelationshipRepository(
 			return new Map(rows.map((r) => [r.typeId, r.n]));
 		},
 
-		async exists(
-			fromContactId: string,
-			toContactId: string,
-			typeId: string,
-			exceptId?: string
-		) {
+		async exists(fromContactId: string, toContactId: string, typeId: string, exceptId?: string) {
 			const row = db
 				.select({ id: relationship.id })
 				.from(relationship)

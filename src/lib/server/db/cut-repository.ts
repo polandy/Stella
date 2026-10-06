@@ -1,7 +1,11 @@
 import { and, desc, eq, or, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { circlePhotoVisibleTo, contactVisibleTo, membershipVisibleTo } from '../access/query-scoping';
+import {
+	circlePhotoVisibleTo,
+	contactVisibleTo,
+	membershipVisibleTo
+} from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
 	CircleCutRow,
@@ -142,7 +146,12 @@ export function createDrizzleCutRepository(db: BunSQLiteDatabase<typeof schema>)
 				.where(and(visibleGroupPhoto(viewer), membershipVisibleTo(viewer, circle, contact)))
 				.orderBy(desc(photoDatedAt(photo)))
 				.all()
-				.map((row) => ({ ...groupPhotoOf(row), width: row.width, height: row.height, crop: cropOf(row) }));
+				.map((row) => ({
+					...groupPhotoOf(row),
+					width: row.width,
+					height: row.height,
+					crop: cropOf(row)
+				}));
 		}
 	};
 }

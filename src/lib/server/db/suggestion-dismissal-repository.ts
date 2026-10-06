@@ -99,7 +99,12 @@ export function createDrizzleSurnameDismissalRepository(
 			const rows = db
 				.select({ key: suggestionDismissal.pairKey })
 				.from(suggestionDismissal)
-				.where(and(eq(suggestionDismissal.householdId, viewer.householdId), eq(suggestionDismissal.relation, LAST_NAME)))
+				.where(
+					and(
+						eq(suggestionDismissal.householdId, viewer.householdId),
+						eq(suggestionDismissal.relation, LAST_NAME)
+					)
+				)
 				.all();
 			return rows.map(({ key }) => {
 				const at = key.indexOf(' ');

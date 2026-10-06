@@ -20,7 +20,13 @@ describe('immichMediaToken', () => {
 	});
 
 	it('finds no token in a URL that is not the proxy’s', () => {
-		for (const url of ['/media/photo-1', '/media/immich/', '/media/immich/a/b', 'https://immich.example/media/immich/x', '/media/immich/%E0']) {
+		for (const url of [
+			'/media/photo-1',
+			'/media/immich/',
+			'/media/immich/a/b',
+			'https://immich.example/media/immich/x',
+			'/media/immich/%E0'
+		]) {
 			expect(immichMediaToken(url)).toBeNull();
 		}
 	});

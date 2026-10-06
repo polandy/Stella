@@ -161,7 +161,10 @@ export const actions: Actions = {
 			issuedAt: systemClock.now()
 		});
 		if (command?.type !== 'moment.capture') {
-			return fail(400, { momentError: say(locals, 'errors.command.malformed'), draft: parsed.output.body });
+			return fail(400, {
+				momentError: say(locals, 'errors.command.malformed'),
+				draft: parsed.output.body
+			});
 		}
 
 		let outcome;
@@ -170,7 +173,10 @@ export const actions: Actions = {
 		} catch {
 			// Anything the writer cannot act on is ours to fix, and says so in the reader's
 			// language rather than in a message meant for a log.
-			return fail(400, { momentError: say(locals, 'errors.moment.couldNotSave'), draft: parsed.output.body });
+			return fail(400, {
+				momentError: say(locals, 'errors.moment.couldNotSave'),
+				draft: parsed.output.body
+			});
 		}
 		if (outcome.status !== 'applied') {
 			const message =

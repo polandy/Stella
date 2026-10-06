@@ -23,7 +23,9 @@ function jpegWithExif(exifTags: Tag[], order: Order = 'II'): Uint8Array {
 	const tiff: number[] = [];
 	const u16 = (n: number) => (little ? [n & 0xff, n >> 8] : [n >> 8, n & 0xff]);
 	const u32 = (n: number) =>
-		little ? [n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff, n >>> 24] : [n >>> 24, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
+		little
+			? [n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff, n >>> 24]
+			: [n >>> 24, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
 	// Header, then IFD0 at 8 with one entry: the pointer to the Exif IFD right after it.
 	const ifd0At = 8;
 	const exifIfdAt = ifd0At + 2 + 12 + 4;
@@ -35,7 +37,13 @@ function jpegWithExif(exifTags: Tag[], order: Order = 'II'): Uint8Array {
 	for (const { tag, value } of exifTags) {
 		const bytes = [...new TextEncoder().encode(value), 0];
 		if (bytes.length <= 4) {
-			tiff.push(...u16(tag), ...u16(2), ...u32(bytes.length), ...bytes, ...new Array(4 - bytes.length).fill(0));
+			tiff.push(
+				...u16(tag),
+				...u16(2),
+				...u32(bytes.length),
+				...bytes,
+				...new Array(4 - bytes.length).fill(0)
+			);
 		} else {
 			tiff.push(...u16(tag), ...u16(2), ...u32(bytes.length), ...u32(dataAt + data.length));
 			data.push(...bytes);
@@ -44,7 +52,17 @@ function jpegWithExif(exifTags: Tag[], order: Order = 'II'): Uint8Array {
 	tiff.push(...u32(0), ...data);
 	const payload = [...new TextEncoder().encode('Exif'), 0, 0, ...tiff];
 	const length = payload.length + 2;
-	return new Uint8Array([0xff, 0xd8, 0xff, 0xe1, length >> 8, length & 0xff, ...payload, 0xff, 0xd9]);
+	return new Uint8Array([
+		0xff,
+		0xd8,
+		0xff,
+		0xe1,
+		length >> 8,
+		length & 0xff,
+		...payload,
+		0xff,
+		0xd9
+	]);
 }
 
 const ORIGINAL = 0x9003;
@@ -67,9 +85,9 @@ describe('readExifCaptureDate', () => {
 
 	test('reads both byte orders', () => {
 		for (const order of ['II', 'MM'] as const) {
-			expect(readExifCaptureDate(jpegWithExif([{ tag: ORIGINAL, value: '2021:12:31 23:59:58' }], order))).toBe(
-				'2021-12-31T23:59:58'
-			);
+			expect(
+				readExifCaptureDate(jpegWithExif([{ tag: ORIGINAL, value: '2021:12:31 23:59:58' }], order))
+			).toBe('2021-12-31T23:59:58');
 		}
 	});
 
@@ -95,7 +113,13 @@ describe('readExifCaptureDate', () => {
 	});
 
 	test('a blank or impossible date is no date', () => {
-		for (const value of ['0000:00:00 00:00:00', '    :  :     :  :  ', '2021:02:30 10:00:00', '2021:13:01 10:00:00', '2021-05-01']) {
+		for (const value of [
+			'0000:00:00 00:00:00',
+			'    :  :     :  :  ',
+			'2021:02:30 10:00:00',
+			'2021:13:01 10:00:00',
+			'2021-05-01'
+		]) {
 			expect(readExifCaptureDate(jpegWithExif([{ tag: ORIGINAL, value }]))).toBeNull();
 		}
 	});

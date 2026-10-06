@@ -76,7 +76,14 @@ describe('createImmichConnection', () => {
 	it('checks the photo scopes on the first person’s newest photo, a thumbnail at most', async () => {
 		const { gateway, connection } = connect();
 		expect((await connection.status()).state).toBe('connected');
-		expect(gateway.calls).toEqual(['version', 'owner', 'listPeople', 'personStatistics', 'latestAssets', 'assetImage']);
+		expect(gateway.calls).toEqual([
+			'version',
+			'owner',
+			'listPeople',
+			'personStatistics',
+			'latestAssets',
+			'assetImage'
+		]);
 	});
 
 	it('cannot check whether photos may be viewed when the first person has none, and does not pretend to', async () => {

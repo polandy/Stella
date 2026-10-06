@@ -121,7 +121,9 @@ test.describe('on a person’s page', () => {
 		});
 
 		await clickNode(page, MARKUS);
-		await expect(map(page).getByRole('complementary').getByText('Markus Brunner', { exact: true })).toBeVisible();
+		await expect(
+			map(page).getByRole('complementary').getByText('Markus Brunner', { exact: true })
+		).toBeVisible();
 	});
 
 	test('a person at the edge of the map is offered the graph, not another hop', async ({
@@ -141,7 +143,10 @@ test.describe('on a person’s page', () => {
 			.filter(([id, hops]) => hops === 1 && id.startsWith('demo-c-'))
 			.map(([id]) => id);
 		const nearby = await firstClickableNode(page, oneHop);
-		expect(nearby, `nobody one hop out was clickable: ${JSON.stringify(await nodeOwners(page, oneHop))}`).not.toBeNull();
+		expect(
+			nearby,
+			`nobody one hop out was clickable: ${JSON.stringify(await nodeOwners(page, oneHop))}`
+		).not.toBeNull();
 
 		await clickNode(page, nearby!);
 		const peek = map(page).getByRole('complementary');
@@ -181,7 +186,10 @@ test.describe('on a person’s page', () => {
 			.filter(([id, hops]) => hops === 1 && id.startsWith('demo-c-'))
 			.map(([id]) => id);
 		const nearby = await firstClickableNode(page, oneHop);
-		expect(nearby, `nobody one hop out was clickable: ${JSON.stringify(await nodeOwners(page, oneHop))}`).not.toBeNull();
+		expect(
+			nearby,
+			`nobody one hop out was clickable: ${JSON.stringify(await nodeOwners(page, oneHop))}`
+		).not.toBeNull();
 
 		await clickNode(page, nearby!);
 		await expect(map(page).getByRole('complementary')).toBeVisible();

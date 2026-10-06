@@ -23,7 +23,8 @@ const LastNamesFacts = v.object({ lastName: v.string(), count: v.number() });
 const RenameFacts = v.object({ from: v.string(), to: v.string() });
 
 /** The facts of a last-names batch, as stored. */
-export const lastNamesFacts = (lastName: string, count: number): string => JSON.stringify({ lastName, count });
+export const lastNamesFacts = (lastName: string, count: number): string =>
+	JSON.stringify({ lastName, count });
 
 /** The facts of a rename, as stored. */
 export const renameFacts = (from: string, to: string): string => JSON.stringify({ from, to });
@@ -44,13 +45,22 @@ function parsed<T>(schema: v.GenericSchema<unknown, T>, text: string): T | null 
 }
 
 /** What a logged line says, from its entity type and stored summary. */
-export function noticeContentOf(row: { entityType: string; summary: string; contactId: string | null }): NoticeContent {
+export function noticeContentOf(row: {
+	entityType: string;
+	summary: string;
+	contactId: string | null;
+}): NoticeContent {
 	if (row.entityType === LAST_NAMES_ENTITY) {
 		const facts = parsed(LastNamesFacts, row.summary);
 		if (facts) return { kind: 'lastNames', ...facts };
 		for (const legacy of LEGACY_LAST_NAMES) {
 			const match = legacy.pattern.exec(row.summary);
-			if (match) return { kind: 'lastNames', lastName: match[legacy.name]!, count: Number(match[legacy.count]) };
+			if (match)
+				return {
+					kind: 'lastNames',
+					lastName: match[legacy.name]!,
+					count: Number(match[legacy.count])
+				};
 		}
 	}
 	if (row.entityType === RENAME_ENTITY) {

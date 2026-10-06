@@ -8,7 +8,10 @@
 	import { categoryDiscFill, categoryVar } from '$lib/design/tokens';
 	import { thumbnailUrl } from '$lib/media/urls';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { RELATIONSHIP_CATEGORIES, type RelationshipCategory } from '$lib/relationships/categories';
+	import {
+		RELATIONSHIP_CATEGORIES,
+		type RelationshipCategory
+	} from '$lib/relationships/categories';
 
 	interface EgoNode {
 		id: string;
@@ -121,7 +124,14 @@
 				clip-path="url(#{uid}-center)"
 			/>
 		{:else}
-			<text x={CX} y={CY} dy="0.35em" text-anchor="middle" fill="var(--primary-fg)" font-weight="700">
+			<text
+				x={CX}
+				y={CY}
+				dy="0.35em"
+				text-anchor="middle"
+				fill="var(--primary-fg)"
+				font-weight="700"
+			>
 				{initials(centerName)}
 			</text>
 		{/if}
@@ -144,7 +154,13 @@
 			{/if}
 		{:else}
 			<a href="/contacts/{n.id}" class="node" aria-label="{n.name} — {n.label}">
-				<text x={n.x} y={n.y - NODE_R - 7} text-anchor="middle" fill="var(--fg-subtle)" class="role">
+				<text
+					x={n.x}
+					y={n.y - NODE_R - 7}
+					text-anchor="middle"
+					fill="var(--fg-subtle)"
+					class="role"
+				>
 					{n.label}
 				</text>
 				<!-- The ring carries the category; the tint inside lets the initials read in --fg. -->

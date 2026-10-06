@@ -1,13 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { INTL_LOCALES } from '$lib/i18n/locales';
 import { createTranslator } from '$lib/i18n/translate';
-import {
-	dayLabel,
-	occasionLabel,
-	sinceLabel,
-	whenLabel,
-	type DateLanguage
-} from './labels';
+import { dayLabel, occasionLabel, sinceLabel, whenLabel, type DateLanguage } from './labels';
 
 /** The real catalogues, so a wording change has to be made in both places at once. */
 const en: DateLanguage = { t: createTranslator('en'), intlLocale: INTL_LOCALES.en };
@@ -36,7 +30,9 @@ describe('occasionLabel', () => {
 	});
 
 	test('says nothing about age when the year is unknown', () => {
-		expect(occasionLabel(en, { kind: 'birthday', label: null, turning: null })).toBe('has a birthday');
+		expect(occasionLabel(en, { kind: 'birthday', label: null, turning: null })).toBe(
+			'has a birthday'
+		);
 	});
 
 	test('prefers a named anniversary over a bare count', () => {
@@ -84,7 +80,7 @@ describe('sinceLabel', () => {
 });
 
 describe('in German', () => {
-	test('counts down and names the occasion in the viewer\'s language', () => {
+	test("counts down and names the occasion in the viewer's language", () => {
 		expect(whenLabel(de, 0, '2026-09-04')).toBe('heute');
 		expect(whenLabel(de, 4, '2026-09-08')).toBe('in 4 Tagen');
 		expect(occasionLabel(de, { kind: 'birthday', label: null, turning: 9 })).toBe('wird 9');

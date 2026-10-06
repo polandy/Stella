@@ -59,8 +59,15 @@ const audit: NewActivityEntry = {
 	createdAt: 1_700_000_000_000
 };
 
-function seedContact(id: string, displayName: string, visibility: 'shared' | 'private' = 'shared', createdBy = U1) {
-	db.insert(schema.contact).values({ id, householdId: H, createdBy, visibility, displayName }).run();
+function seedContact(
+	id: string,
+	displayName: string,
+	visibility: 'shared' | 'private' = 'shared',
+	createdBy = U1
+) {
+	db.insert(schema.contact)
+		.values({ id, householdId: H, createdBy, visibility, displayName })
+		.run();
 }
 
 const merge = (v: Viewer = viewer, keepId = 'keep', mergedId = 'dup') =>
@@ -85,11 +92,29 @@ beforeEach(() => {
 
 describe('what follows the person', () => {
 	it('brings their fields, notes, dates, photos and interactions across', () => {
-		db.insert(schema.contactField).values({ id: 'f1', contactId: 'dup', kind: 'phone', value: '079' }).run();
-		db.insert(schema.note).values({ id: 'n1', contactId: 'dup', createdBy: U1, body: 'a note' }).run();
-		db.insert(schema.importantDate).values({ id: 'd1', contactId: 'dup', kind: 'anniversary', date: '2009-06-13' }).run();
-		db.insert(schema.photo).values({ id: 'p1', householdId: H, contactId: 'dup', createdBy: U1, filePath: 'a.jpg', thumbPath: 'a-t.jpg', mime: 'image/jpeg' }).run();
-		db.insert(schema.interaction).values({ id: 'i1', contactId: 'dup', createdBy: U1, kind: 'call', happenedAt: '2026-01-01' }).run();
+		db.insert(schema.contactField)
+			.values({ id: 'f1', contactId: 'dup', kind: 'phone', value: '079' })
+			.run();
+		db.insert(schema.note)
+			.values({ id: 'n1', contactId: 'dup', createdBy: U1, body: 'a note' })
+			.run();
+		db.insert(schema.importantDate)
+			.values({ id: 'd1', contactId: 'dup', kind: 'anniversary', date: '2009-06-13' })
+			.run();
+		db.insert(schema.photo)
+			.values({
+				id: 'p1',
+				householdId: H,
+				contactId: 'dup',
+				createdBy: U1,
+				filePath: 'a.jpg',
+				thumbPath: 'a-t.jpg',
+				mime: 'image/jpeg'
+			})
+			.run();
+		db.insert(schema.interaction)
+			.values({ id: 'i1', contactId: 'dup', createdBy: U1, kind: 'call', happenedAt: '2026-01-01' })
+			.run();
 
 		expect(merge()).toBe(true);
 
@@ -99,7 +124,13 @@ describe('what follows the person', () => {
 		expect(db.select().from(schema.photo).all()[0].contactId).toBe('keep');
 		expect(db.select().from(schema.interaction).all()[0].contactId).toBe('keep');
 		// The duplicate is gone and the survivor wears the merged profile.
-		expect(db.select().from(schema.contact).all().map((c) => c.id)).toEqual(['keep']);
+		expect(
+			db
+				.select()
+				.from(schema.contact)
+				.all()
+				.map((c) => c.id)
+		).toEqual(['keep']);
 		expect(db.select().from(schema.contact).all()[0].description).toBe('the merged one');
 	});
 
@@ -110,7 +141,11 @@ describe('what follows the person', () => {
 		expect(merge()).toBe(true);
 
 		const byUser = new Map(
-			db.select().from(schema.user).all().map((u) => [u.id, u.selfContactId])
+			db
+				.select()
+				.from(schema.user)
+				.all()
+				.map((u) => [u.id, u.selfContactId])
 		);
 		expect(byUser.get(U1)).toBe('keep');
 		// positive control: the member already on the survivor is left where they were.
@@ -131,15 +166,19 @@ describe('what follows the person', () => {
 
 describe('what would collide', () => {
 	it('keeps a tag the survivor already had, and takes the one they did not', () => {
-		db.insert(schema.tag).values([
-			{ id: 't-both', householdId: H, name: 'Nachbarn', color: 'blue' },
-			{ id: 't-only', householdId: H, name: 'Chor', color: 'green' }
-		]).run();
-		db.insert(schema.contactTag).values([
-			{ contactId: 'keep', tagId: 't-both' },
-			{ contactId: 'dup', tagId: 't-both' },
-			{ contactId: 'dup', tagId: 't-only' }
-		]).run();
+		db.insert(schema.tag)
+			.values([
+				{ id: 't-both', householdId: H, name: 'Nachbarn', color: 'blue' },
+				{ id: 't-only', householdId: H, name: 'Chor', color: 'green' }
+			])
+			.run();
+		db.insert(schema.contactTag)
+			.values([
+				{ contactId: 'keep', tagId: 't-both' },
+				{ contactId: 'dup', tagId: 't-both' },
+				{ contactId: 'dup', tagId: 't-only' }
+			])
+			.run();
 
 		expect(merge()).toBe(true);
 
@@ -150,7 +189,14 @@ describe('what would collide', () => {
 
 	it('drops the link that ran between the two, which would now point at one person', () => {
 		db.insert(schema.relationship)
-			.values({ id: 'r-between', householdId: H, fromContactId: 'keep', toContactId: 'dup', typeId: 'friend', createdBy: U1 })
+			.values({
+				id: 'r-between',
+				householdId: H,
+				fromContactId: 'keep',
+				toContactId: 'dup',
+				typeId: 'friend',
+				createdBy: U1
+			})
 			.run();
 
 		expect(merge()).toBe(true);
@@ -162,8 +208,22 @@ describe('what would collide', () => {
 		seedContact('lena', 'Lena');
 		db.insert(schema.relationship)
 			.values([
-				{ id: 'r-keep', householdId: H, fromContactId: 'keep', toContactId: 'lena', typeId: 'parent_child', createdBy: U1 },
-				{ id: 'r-dup', householdId: H, fromContactId: 'dup', toContactId: 'lena', typeId: 'parent_child', createdBy: U1 }
+				{
+					id: 'r-keep',
+					householdId: H,
+					fromContactId: 'keep',
+					toContactId: 'lena',
+					typeId: 'parent_child',
+					createdBy: U1
+				},
+				{
+					id: 'r-dup',
+					householdId: H,
+					fromContactId: 'dup',
+					toContactId: 'lena',
+					typeId: 'parent_child',
+					createdBy: U1
+				}
 			])
 			.run();
 
@@ -178,7 +238,14 @@ describe('what would collide', () => {
 		// The positive control for the two above: nothing collides, so nothing is dropped.
 		seedContact('lena', 'Lena');
 		db.insert(schema.relationship)
-			.values({ id: 'r-dup', householdId: H, fromContactId: 'dup', toContactId: 'lena', typeId: 'friend', createdBy: U1 })
+			.values({
+				id: 'r-dup',
+				householdId: H,
+				fromContactId: 'dup',
+				toContactId: 'lena',
+				typeId: 'friend',
+				createdBy: U1
+			})
 			.run();
 
 		expect(merge()).toBe(true);
@@ -194,12 +261,34 @@ describe('what would collide', () => {
 		// but neither may what somebody wrote.
 		db.insert(schema.journalEntry)
 			.values([
-				{ id: 'j-keep', contactId: 'keep', createdBy: U1, visibility: 'shared', entryDate: '2026-05-01', body: 'saw him at the market' },
-				{ id: 'j-dup', contactId: 'dup', createdBy: U1, visibility: 'shared', entryDate: '2026-05-01', body: 'he was buying pears' }
+				{
+					id: 'j-keep',
+					contactId: 'keep',
+					createdBy: U1,
+					visibility: 'shared',
+					entryDate: '2026-05-01',
+					body: 'saw him at the market'
+				},
+				{
+					id: 'j-dup',
+					contactId: 'dup',
+					createdBy: U1,
+					visibility: 'shared',
+					entryDate: '2026-05-01',
+					body: 'he was buying pears'
+				}
 			])
 			.run();
 		db.insert(schema.photo)
-			.values({ id: 'p-j', householdId: H, journalEntryId: 'j-dup', createdBy: U1, filePath: 'j.jpg', thumbPath: 'j-t.jpg', mime: 'image/jpeg' })
+			.values({
+				id: 'p-j',
+				householdId: H,
+				journalEntryId: 'j-dup',
+				createdBy: U1,
+				filePath: 'j.jpg',
+				thumbPath: 'j-t.jpg',
+				mime: 'image/jpeg'
+			})
 			.run();
 
 		expect(merge()).toBe(true);
@@ -214,8 +303,22 @@ describe('what would collide', () => {
 	it('moves a journal entry whose day the survivor has nothing in', () => {
 		db.insert(schema.journalEntry)
 			.values([
-				{ id: 'j-keep', contactId: 'keep', createdBy: U1, visibility: 'shared', entryDate: '2026-05-01', body: 'one day' },
-				{ id: 'j-dup', contactId: 'dup', createdBy: U1, visibility: 'shared', entryDate: '2026-05-02', body: 'another day' }
+				{
+					id: 'j-keep',
+					contactId: 'keep',
+					createdBy: U1,
+					visibility: 'shared',
+					entryDate: '2026-05-01',
+					body: 'one day'
+				},
+				{
+					id: 'j-dup',
+					contactId: 'dup',
+					createdBy: U1,
+					visibility: 'shared',
+					entryDate: '2026-05-02',
+					body: 'another day'
+				}
 			])
 			.run();
 
@@ -227,15 +330,19 @@ describe('what would collide', () => {
 	});
 
 	it('leaves one membership where both records were in the same circle', () => {
-		db.insert(schema.circle).values([
-			{ id: 'c-both', householdId: H, name: 'Chor', kind: 'other', createdBy: U1 },
-			{ id: 'c-only', householdId: H, name: 'Turnverein', kind: 'other', createdBy: U1 }
-		]).run();
-		db.insert(schema.circleMembership).values([
-			{ id: 'm-keep', circleId: 'c-both', contactId: 'keep', createdBy: U1 },
-			{ id: 'm-dup', circleId: 'c-both', contactId: 'dup', createdBy: U1 },
-			{ id: 'm-other', circleId: 'c-only', contactId: 'dup', createdBy: U1 }
-		]).run();
+		db.insert(schema.circle)
+			.values([
+				{ id: 'c-both', householdId: H, name: 'Chor', kind: 'other', createdBy: U1 },
+				{ id: 'c-only', householdId: H, name: 'Turnverein', kind: 'other', createdBy: U1 }
+			])
+			.run();
+		db.insert(schema.circleMembership)
+			.values([
+				{ id: 'm-keep', circleId: 'c-both', contactId: 'keep', createdBy: U1 },
+				{ id: 'm-dup', circleId: 'c-both', contactId: 'dup', createdBy: U1 },
+				{ id: 'm-other', circleId: 'c-only', contactId: 'dup', createdBy: U1 }
+			])
+			.run();
 
 		expect(merge()).toBe(true);
 
@@ -245,15 +352,21 @@ describe('what would collide', () => {
 	});
 
 	it('keeps one mention where a note named both records', () => {
-		db.insert(schema.note).values({ id: 'n1', contactId: 'keep', createdBy: U1, body: 'about them' }).run();
-		db.insert(schema.noteMention).values([
-			{ noteId: 'n1', contactId: 'keep' },
-			{ noteId: 'n1', contactId: 'dup' }
-		]).run();
+		db.insert(schema.note)
+			.values({ id: 'n1', contactId: 'keep', createdBy: U1, body: 'about them' })
+			.run();
+		db.insert(schema.noteMention)
+			.values([
+				{ noteId: 'n1', contactId: 'keep' },
+				{ noteId: 'n1', contactId: 'dup' }
+			])
+			.run();
 
 		expect(merge()).toBe(true);
 
-		expect(db.select().from(schema.noteMention).all()).toEqual([{ noteId: 'n1', contactId: 'keep' }]);
+		expect(db.select().from(schema.noteMention).all()).toEqual([
+			{ noteId: 'n1', contactId: 'keep' }
+		]);
 	});
 });
 
@@ -261,7 +374,10 @@ describe('the link to Immich', () => {
 	const PERSON_A = '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70';
 	const PERSON_B = '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81';
 	const linkOf = (contactId: string, immichPersonId: string) =>
-		db.insert(schema.immichLink).values({ contactId, immichPersonId, linkedBy: U1, linkedAt: 1 }).run();
+		db
+			.insert(schema.immichLink)
+			.values({ contactId, immichPersonId, linkedBy: U1, linkedAt: 1 })
+			.run();
 
 	it('carries the merged record’s link to a survivor that had none', () => {
 		linkOf('dup', PERSON_A);
@@ -275,9 +391,13 @@ describe('the link to Immich', () => {
 		linkOf('keep', PERSON_A);
 		linkOf('dup', PERSON_B);
 		expect(merge()).toBe(true);
-		expect(db.select().from(schema.immichLink).all().map((l) => [l.contactId, l.immichPersonId])).toEqual([
-			['keep', PERSON_A]
-		]);
+		expect(
+			db
+				.select()
+				.from(schema.immichLink)
+				.all()
+				.map((l) => [l.contactId, l.immichPersonId])
+		).toEqual([['keep', PERSON_A]]);
 	});
 });
 
@@ -285,7 +405,10 @@ describe('ignored Immich proposals', () => {
 	const PERSON_A = '0b1e2a3c-4d5e-4f60-8a1b-2c3d4e5f6a70';
 	const PERSON_B = '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81';
 	const ignore = (contactId: string, immichPersonId: string, ignoredAt: number) =>
-		db.insert(schema.immichIgnore).values({ contactId, immichPersonId, ignoredBy: U1, ignoredAt }).run();
+		db
+			.insert(schema.immichIgnore)
+			.values({ contactId, immichPersonId, ignoredBy: U1, ignoredAt })
+			.run();
 
 	it('carries the merged record’s ignored pairs, keeping the survivor’s own record of a pair', () => {
 		ignore('keep', PERSON_A, 1);
@@ -293,7 +416,11 @@ describe('ignored Immich proposals', () => {
 		ignore('dup', PERSON_B, 3);
 		expect(merge()).toBe(true);
 		expect(
-			db.select().from(schema.immichIgnore).all().map((row) => [row.contactId, row.immichPersonId, row.ignoredAt])
+			db
+				.select()
+				.from(schema.immichIgnore)
+				.all()
+				.map((row) => [row.contactId, row.immichPersonId, row.ignoredAt])
 		).toEqual([
 			['keep', PERSON_A, 1],
 			['keep', PERSON_B, 3]
@@ -306,43 +433,93 @@ describe('profile pictures cut from a group photo', () => {
 	// any more is a photo of its own. Both records cut from one class photo would otherwise clash.
 	function seedCut(id: string, contactId: string) {
 		db.insert(schema.photo)
-			.values({ id, householdId: H, contactId, framingOf: 'class', cropX: 0, cropY: 0, cropSize: 300, createdBy: U1, filePath: `${id}.jpg`, thumbPath: `${id}_t.jpg`, mime: 'image/jpeg' })
+			.values({
+				id,
+				householdId: H,
+				contactId,
+				framingOf: 'class',
+				cropX: 0,
+				cropY: 0,
+				cropSize: 300,
+				createdBy: U1,
+				filePath: `${id}.jpg`,
+				thumbPath: `${id}_t.jpg`,
+				mime: 'image/jpeg'
+			})
 			.run();
-		db.update(schema.contact).set({ avatarPhotoId: id }).where(eq(schema.contact.id, contactId)).run();
+		db.update(schema.contact)
+			.set({ avatarPhotoId: id })
+			.where(eq(schema.contact.id, contactId))
+			.run();
 	}
 
 	beforeEach(() => {
-		db.insert(schema.circle).values({ id: 'k', householdId: H, createdBy: U1, name: 'Class' }).run();
+		db.insert(schema.circle)
+			.values({ id: 'k', householdId: H, createdBy: U1, name: 'Class' })
+			.run();
 		db.insert(schema.photo)
-			.values({ id: 'class', householdId: H, circleId: 'k', createdBy: U1, filePath: 'c.jpg', thumbPath: 'c_t.jpg', mime: 'image/jpeg', createdAt: 42 })
+			.values({
+				id: 'class',
+				householdId: H,
+				circleId: 'k',
+				createdBy: U1,
+				filePath: 'c.jpg',
+				thumbPath: 'c_t.jpg',
+				mime: 'image/jpeg',
+				createdAt: 42
+			})
 			.run();
 	});
 
-	const photoRow = (id: string) => db.select().from(schema.photo).where(eq(schema.photo.id, id)).get();
+	const photoRow = (id: string) =>
+		db.select().from(schema.photo).where(eq(schema.photo.id, id)).get();
 
 	it('keeps the survivor’s cut worn and turns the other record’s into a photo of their own', () => {
 		seedCut('cut-keep', 'keep');
 		seedCut('cut-dup', 'dup');
-		expect(mergeContacts(db, viewer, { keepId: 'keep', mergedId: 'dup', profile: { ...PROFILE, avatarPhotoId: 'cut-keep' }, audit, updatedAt: 999 })).toBe(true);
+		expect(
+			mergeContacts(db, viewer, {
+				keepId: 'keep',
+				mergedId: 'dup',
+				profile: { ...PROFILE, avatarPhotoId: 'cut-keep' },
+				audit,
+				updatedAt: 999
+			})
+		).toBe(true);
 		expect(photoRow('cut-keep')).toMatchObject({ contactId: 'keep', framingOf: 'class' });
-		expect(photoRow('cut-dup')).toMatchObject({ contactId: 'keep', framingOf: null, cutFrom: 'class', createdAt: 42 });
+		expect(photoRow('cut-dup')).toMatchObject({
+			contactId: 'keep',
+			framingOf: null,
+			cutFrom: 'class',
+			createdAt: 42
+		});
 	});
 
 	it('turns the survivor’s own cut into a photo when the merged record’s picture is kept', () => {
 		seedCut('cut-keep', 'keep');
 		seedCut('cut-dup', 'dup');
-		mergeContacts(db, viewer, { keepId: 'keep', mergedId: 'dup', profile: { ...PROFILE, avatarPhotoId: 'cut-dup' }, audit, updatedAt: 999 });
+		mergeContacts(db, viewer, {
+			keepId: 'keep',
+			mergedId: 'dup',
+			profile: { ...PROFILE, avatarPhotoId: 'cut-dup' },
+			audit,
+			updatedAt: 999
+		});
 		expect(photoRow('cut-keep')).toMatchObject({ framingOf: null, cutFrom: 'class' });
 		// The picture that is worn stays worn, now as a photo of their own.
 		expect(photoRow('cut-dup')).toMatchObject({ contactId: 'keep', framingOf: null });
-		expect(db.select().from(schema.contact).where(eq(schema.contact.id, 'keep')).get()?.avatarPhotoId).toBe('cut-dup');
+		expect(
+			db.select().from(schema.contact).where(eq(schema.contact.id, 'keep')).get()?.avatarPhotoId
+		).toBe('cut-dup');
 	});
 });
 
 describe('what it refuses', () => {
 	it('refuses a record the viewer cannot see, and changes nothing', () => {
 		seedContact('theirs', 'Theirs', 'private', U2);
-		db.insert(schema.contactField).values({ id: 'f1', contactId: 'theirs', kind: 'phone', value: '079' }).run();
+		db.insert(schema.contactField)
+			.values({ id: 'f1', contactId: 'theirs', kind: 'phone', value: '079' })
+			.run();
 
 		expect(merge(viewer, 'keep', 'theirs')).toBe(false);
 		expect(db.select().from(schema.contactField).all()[0].contactId).toBe('theirs');

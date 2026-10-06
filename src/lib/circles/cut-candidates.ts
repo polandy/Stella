@@ -37,7 +37,8 @@ export function cutCandidates(input: {
 	const byId = new Map(input.people.map((p) => [p.id, p]));
 	const wearing = new Set(input.wearing);
 	const mark = (p: CandidatePerson): CutCandidate => ({ ...p, wearsCut: wearing.has(p.id) });
-	const matching = (list: CandidatePerson[]) => new Set(filterPeople(input.query, list).map((p) => p.id));
+	const matching = (list: CandidatePerson[]) =>
+		new Set(filterPeople(input.query, list).map((p) => p.id));
 
 	const photoKey = roleKey(input.photoRole);
 	const memberIds = new Set(input.members.map((m) => m.contactId));
@@ -48,11 +49,16 @@ export function cutCandidates(input: {
 	});
 	const shownMembers = matching(members.map((m) => m.person));
 	const pick = (inRole: boolean) =>
-		members.filter((m) => m.inRole === inRole && shownMembers.has(m.person.id)).map((m) => mark(m.person));
+		members
+			.filter((m) => m.inRole === inRole && shownMembers.has(m.person.id))
+			.map((m) => mark(m.person));
 
 	const others =
 		input.query.trim() === ''
 			? []
-			: filterPeople(input.query, input.people.filter((p) => !memberIds.has(p.id))).map(mark);
+			: filterPeople(
+					input.query,
+					input.people.filter((p) => !memberIds.has(p.id))
+				).map(mark);
 	return { inRole: pick(true), inCircle: pick(false), others };
 }

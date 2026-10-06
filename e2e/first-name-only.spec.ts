@@ -14,7 +14,9 @@ const NAME = 'Theobald';
 const FIRST_DESCRIPTION = 'Met at the Blüemlisalp hut';
 const KNOWN_BY = 'Hut warden, Blüemlisalp, Aug 2026';
 
-test('lists someone known by a first name only, and a description takes them off the list', async ({ page }) => {
+test('lists someone known by a first name only, and a description takes them off the list', async ({
+	page
+}) => {
 	await signIn(page);
 
 	await page.goto('/contacts/new');
@@ -35,7 +37,9 @@ test('lists someone known by a first name only, and a description takes them off
 	await expect(card.getByTestId('first-name-only-count')).toBeVisible();
 	await card.click();
 
-	const row = page.getByTestId('first-name-only-row').filter({ has: page.getByRole('link', { name: NAME, exact: true }) });
+	const row = page
+		.getByTestId('first-name-only-row')
+		.filter({ has: page.getByRole('link', { name: NAME, exact: true }) });
 	await expect(row).toHaveCount(1);
 	await row.getByRole('textbox', { name: `What will you know ${NAME} by?` }).fill(KNOWN_BY);
 	await row.getByRole('button', { name: 'Save' }).click();
@@ -43,7 +47,10 @@ test('lists someone known by a first name only, and a description takes them off
 
 	// It is the person who changed, not just the list: their page says it, under the same name.
 	await page.goto('/contacts');
-	await page.getByRole('link', { name: new RegExp(NAME) }).first().click();
+	await page
+		.getByRole('link', { name: new RegExp(NAME) })
+		.first()
+		.click();
 	await expect(page.getByRole('heading', { name: NAME })).toBeVisible();
 	await expect(page.getByRole('button', { name: KNOWN_BY })).toBeVisible();
 });

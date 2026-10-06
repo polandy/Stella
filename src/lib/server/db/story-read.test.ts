@@ -66,7 +66,9 @@ beforeEach(() => {
 		])
 		.run();
 	db.insert(schema.contact)
-		.values([{ id: 'oma', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Oma' }])
+		.values([
+			{ id: 'oma', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Oma' }
+		])
 		.run();
 	sequence = 0;
 });
@@ -95,7 +97,11 @@ describe('story read', () => {
 
 		const page = await listStoryPage(storyDeps(), viewerU1, 'oma', { limit: 10 });
 
-		expect(shape(page)).toEqual(['journal:2026-08-05', 'interaction:2026-08-03', 'journal:2026-08-01']);
+		expect(shape(page)).toEqual([
+			'journal:2026-08-05',
+			'interaction:2026-08-03',
+			'journal:2026-08-01'
+		]);
 		expect(page.nextCursor).toBeNull();
 	});
 

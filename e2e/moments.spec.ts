@@ -18,8 +18,10 @@ test.beforeEach(async ({ page }) => {
 
 test('captures a moment on an existing person and shows it in the stream', async ({ page }) => {
 	await mention(page, 'Lena', /Lena Brunner/);
-	await page.getByLabel('What happened?').pressSequentially('played the piano piece all the way through');
-	await expect(page.getByText("Goes to Lena Brunner’s journal")).toBeVisible();
+	await page
+		.getByLabel('What happened?')
+		.pressSequentially('played the piano piece all the way through');
+	await expect(page.getByText('Goes to Lena Brunner’s journal')).toBeVisible();
 
 	await composerSave(page).click();
 
@@ -79,7 +81,9 @@ test('refuses to save a moment that mentions nobody', async ({ page }) => {
 	await expect(composerSave(page)).toBeDisabled();
 });
 
-test('adds a second moment about the same person that day to the first, keeping both', async ({ page }) => {
+test('adds a second moment about the same person that day to the first, keeping both', async ({
+	page
+}) => {
 	await mentionNew(page, 'Ulric');
 	await page.getByLabel('What happened?').pressSequentially('repotted the ferns');
 	await composerSave(page).click();

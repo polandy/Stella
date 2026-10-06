@@ -17,9 +17,20 @@ export async function readCutForm(form: FormData): Promise<CutProfilePictureInpu
 	const thumb = form.get('thumb');
 	if (!(image instanceof File) || !(thumb instanceof File)) return null;
 	const parsed = v.safeParse(
-		v.object({ photoId: Id, contactId: Id, cropX: Measure, cropY: Measure, cropSize: Measure, width: Measure, height: Measure }),
+		v.object({
+			photoId: Id,
+			contactId: Id,
+			cropX: Measure,
+			cropY: Measure,
+			cropSize: Measure,
+			width: Measure,
+			height: Measure
+		}),
 		Object.fromEntries(
-			['photoId', 'contactId', 'cropX', 'cropY', 'cropSize', 'width', 'height'].map((key) => [key, form.get(key)])
+			['photoId', 'contactId', 'cropX', 'cropY', 'cropSize', 'width', 'height'].map((key) => [
+				key,
+				form.get(key)
+			])
 		)
 	);
 	if (!parsed.success) return null;

@@ -72,5 +72,7 @@ export function probeSays(check: { deviceOnline: boolean; answer: ProbeAnswer | 
 	if (!deviceOnline || answer === null) return false;
 	if (!answer.ok || answer.type !== 'basic') return false;
 	const body = answer.body;
-	return typeof body === 'object' && body !== null && (body as Record<string, unknown>).status === 'ok';
+	return (
+		typeof body === 'object' && body !== null && (body as Record<string, unknown>).status === 'ok'
+	);
 }

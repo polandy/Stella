@@ -47,64 +47,167 @@ beforeAll(() => {
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
 
-	db.insert(schema.household).values([
-		{ id: H1, name: 'Household One' },
-		{ id: H2, name: 'Household Two' }
-	]).run();
+	db.insert(schema.household)
+		.values([
+			{ id: H1, name: 'Household One' },
+			{ id: H2, name: 'Household Two' }
+		])
+		.run();
 
-	db.insert(schema.user).values([
-		{ id: U1, householdId: H1, email: 'u1@example.test', name: 'Owner' },
-		{ id: U2, householdId: H1, email: 'u2@example.test', name: 'Member' },
-		{ id: U3, householdId: H2, email: 'u3@example.test', name: 'Foreign' }
-	]).run();
+	db.insert(schema.user)
+		.values([
+			{ id: U1, householdId: H1, email: 'u1@example.test', name: 'Owner' },
+			{ id: U2, householdId: H1, email: 'u2@example.test', name: 'Member' },
+			{ id: U3, householdId: H2, email: 'u3@example.test', name: 'Foreign' }
+		])
+		.run();
 
-	db.insert(schema.relationshipType).values({
-		id: 'rt-friend',
-		key: 'friend',
-		forwardLabel: 'Friend',
-		reverseLabel: 'Friend',
-		category: 'social',
-		symmetric: 1
-	}).run();
+	db.insert(schema.relationshipType)
+		.values({
+			id: 'rt-friend',
+			key: 'friend',
+			forwardLabel: 'Friend',
+			reverseLabel: 'Friend',
+			category: 'social',
+			symmetric: 1
+		})
+		.run();
 
 	// Contacts covering every visibility/household/owner combination.
-	db.insert(contact).values([
-		{ id: 'c-shared', householdId: H1, createdBy: U1, visibility: 'shared', displayName: 'Shared' },
-		{ id: 'c-priv-u1', householdId: H1, createdBy: U1, visibility: 'private', displayName: 'Private of U1' },
-		{ id: 'c-priv-u2', householdId: H1, createdBy: U2, visibility: 'private', displayName: 'Private of U2' },
-		{ id: 'c-foreign', householdId: H2, createdBy: U3, visibility: 'shared', displayName: 'Foreign' }
-	]).run();
+	db.insert(contact)
+		.values([
+			{
+				id: 'c-shared',
+				householdId: H1,
+				createdBy: U1,
+				visibility: 'shared',
+				displayName: 'Shared'
+			},
+			{
+				id: 'c-priv-u1',
+				householdId: H1,
+				createdBy: U1,
+				visibility: 'private',
+				displayName: 'Private of U1'
+			},
+			{
+				id: 'c-priv-u2',
+				householdId: H1,
+				createdBy: U2,
+				visibility: 'private',
+				displayName: 'Private of U2'
+			},
+			{
+				id: 'c-foreign',
+				householdId: H2,
+				createdBy: U3,
+				visibility: 'shared',
+				displayName: 'Foreign'
+			}
+		])
+		.run();
 
 	// Notes: shared/private children on a shared contact, plus a child on a private contact.
-	db.insert(note).values([
-		{ id: 'n-shared', contactId: 'c-shared', createdBy: U1, visibility: 'shared', body: 'shared note' },
-		{ id: 'n-priv-u1', contactId: 'c-shared', createdBy: U1, visibility: 'private', body: 'u1 private' },
-		{ id: 'n-priv-u2', contactId: 'c-shared', createdBy: U2, visibility: 'private', body: 'u2 private' },
-		{ id: 'n-on-priv', contactId: 'c-priv-u1', createdBy: U1, visibility: 'shared', body: 'on private contact' }
-	]).run();
+	db.insert(note)
+		.values([
+			{
+				id: 'n-shared',
+				contactId: 'c-shared',
+				createdBy: U1,
+				visibility: 'shared',
+				body: 'shared note'
+			},
+			{
+				id: 'n-priv-u1',
+				contactId: 'c-shared',
+				createdBy: U1,
+				visibility: 'private',
+				body: 'u1 private'
+			},
+			{
+				id: 'n-priv-u2',
+				contactId: 'c-shared',
+				createdBy: U2,
+				visibility: 'private',
+				body: 'u2 private'
+			},
+			{
+				id: 'n-on-priv',
+				contactId: 'c-priv-u1',
+				createdBy: U1,
+				visibility: 'shared',
+				body: 'on private contact'
+			}
+		])
+		.run();
 
 	// Circles of every visibility, each with a shared photo and a private one of each member.
-	db.insert(circle).values([
-		{ id: 'k-shared', householdId: H1, createdBy: U1, visibility: 'shared', name: 'Shared circle' },
-		{ id: 'k-priv-u1', householdId: H1, createdBy: U1, visibility: 'private', name: 'Private of U1' },
-		{ id: 'k-foreign', householdId: H2, createdBy: U3, visibility: 'shared', name: 'Foreign' }
-	]).run();
-	const circlePhoto = (id: string, circleId: string, householdId: string, createdBy: string, visibility: 'shared' | 'private') => ({
-		id, householdId, circleId, createdBy, visibility, filePath: `${id}.jpg`, thumbPath: `${id}_t.jpg`, mime: 'image/jpeg'
+	db.insert(circle)
+		.values([
+			{
+				id: 'k-shared',
+				householdId: H1,
+				createdBy: U1,
+				visibility: 'shared',
+				name: 'Shared circle'
+			},
+			{
+				id: 'k-priv-u1',
+				householdId: H1,
+				createdBy: U1,
+				visibility: 'private',
+				name: 'Private of U1'
+			},
+			{ id: 'k-foreign', householdId: H2, createdBy: U3, visibility: 'shared', name: 'Foreign' }
+		])
+		.run();
+	const circlePhoto = (
+		id: string,
+		circleId: string,
+		householdId: string,
+		createdBy: string,
+		visibility: 'shared' | 'private'
+	) => ({
+		id,
+		householdId,
+		circleId,
+		createdBy,
+		visibility,
+		filePath: `${id}.jpg`,
+		thumbPath: `${id}_t.jpg`,
+		mime: 'image/jpeg'
 	});
-	db.insert(photo).values([
-		circlePhoto('kp-shared', 'k-shared', H1, U1, 'shared'),
-		circlePhoto('kp-priv-u1', 'k-shared', H1, U1, 'private'),
-		circlePhoto('kp-priv-u2', 'k-shared', H1, U2, 'private'),
-		circlePhoto('kp-on-priv', 'k-priv-u1', H1, U2, 'shared'),
-		circlePhoto('kp-foreign', 'k-foreign', H2, U3, 'shared')
-	]).run();
+	db.insert(photo)
+		.values([
+			circlePhoto('kp-shared', 'k-shared', H1, U1, 'shared'),
+			circlePhoto('kp-priv-u1', 'k-shared', H1, U1, 'private'),
+			circlePhoto('kp-priv-u2', 'k-shared', H1, U2, 'private'),
+			circlePhoto('kp-on-priv', 'k-priv-u1', H1, U2, 'shared'),
+			circlePhoto('kp-foreign', 'k-foreign', H2, U3, 'shared')
+		])
+		.run();
 
 	// Relationships: one with both endpoints visible to U2, one with a hidden endpoint.
-	db.insert(relationship).values([
-		{ id: 'r-both-visible', householdId: H1, fromContactId: 'c-shared', toContactId: 'c-priv-u2', typeId: 'rt-friend', createdBy: U1 },
-		{ id: 'r-hidden-endpoint', householdId: H1, fromContactId: 'c-shared', toContactId: 'c-priv-u1', typeId: 'rt-friend', createdBy: U1 }
-	]).run();
+	db.insert(relationship)
+		.values([
+			{
+				id: 'r-both-visible',
+				householdId: H1,
+				fromContactId: 'c-shared',
+				toContactId: 'c-priv-u2',
+				typeId: 'rt-friend',
+				createdBy: U1
+			},
+			{
+				id: 'r-hidden-endpoint',
+				householdId: H1,
+				fromContactId: 'c-shared',
+				toContactId: 'c-priv-u1',
+				typeId: 'rt-friend',
+				createdBy: U1
+			}
+		])
+		.run();
 });
 
 /** Ids allowed by the pure contact predicate — the ground truth to match. */
@@ -189,7 +292,9 @@ describe('childRecordVisibleTo (notes joined to their contact)', () => {
 			.select({ id: note.id })
 			.from(note)
 			.innerJoin(contact, eq(note.contactId, contact.id))
-			.where(childRecordVisibleTo(viewer, { visibility: note.visibility, createdBy: note.createdBy }))
+			.where(
+				childRecordVisibleTo(viewer, { visibility: note.visibility, createdBy: note.createdBy })
+			)
 			.all()
 			.map((r) => r.id)
 			.sort();
@@ -254,8 +359,16 @@ describe('relationshipVisibleTo (both endpoints must be visible)', () => {
 			.all()
 			.filter((row) =>
 				canViewRelationship(viewer, {
-					from: { householdId: row.from.householdId, ownerId: row.from.createdBy, visibility: row.from.visibility },
-					to: { householdId: row.to.householdId, ownerId: row.to.createdBy, visibility: row.to.visibility }
+					from: {
+						householdId: row.from.householdId,
+						ownerId: row.from.createdBy,
+						visibility: row.from.visibility
+					},
+					to: {
+						householdId: row.to.householdId,
+						ownerId: row.to.createdBy,
+						visibility: row.to.visibility
+					}
 				})
 			)
 			.map((row) => row.id)
@@ -283,7 +396,9 @@ describe('circlePhotoVisibleTo (photos joined to their circle)', () => {
 			.select({ id: photo.id })
 			.from(photo)
 			.innerJoin(circle, eq(photo.circleId, circle.id))
-			.where(circlePhotoVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy }))
+			.where(
+				circlePhotoVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy })
+			)
 			.all()
 			.map((r) => r.id)
 			.sort();

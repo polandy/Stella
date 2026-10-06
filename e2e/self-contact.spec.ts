@@ -31,7 +31,13 @@ async function centredPersonId(page: Page): Promise<string | null> {
 		let el: HTMLElement | null = document.querySelector('canvas');
 		while (el && !('_cyreg' in el)) el = el.parentElement;
 		const cy = el
-			? (el as unknown as { _cyreg: { cy: { $: (s: string) => { map: (f: (n: { id(): string }) => string) => string[] } } } })._cyreg.cy
+			? (
+					el as unknown as {
+						_cyreg: {
+							cy: { $: (s: string) => { map: (f: (n: { id(): string }) => string) => string[] } };
+						};
+					}
+				)._cyreg.cy
 			: null;
 		return cy ? (cy.$('node.center').map((node) => node.id())[0] ?? null) : null;
 	});

@@ -8,7 +8,11 @@ import {
 	type RelationshipRepository,
 	type RelationshipType
 } from './relationships';
-import { addRelationshipChecked, UnknownRelationshipTypeError, type AddCheckedDeps } from './add-checked';
+import {
+	addRelationshipChecked,
+	UnknownRelationshipTypeError,
+	type AddCheckedDeps
+} from './add-checked';
 
 /*
  * Linking two people from one of their pages (docs/02 §2.4) as one use-case, so a link kept on
@@ -30,17 +34,27 @@ const parentChild: RelationshipType = {
 };
 const author = { userId: 'u1', householdId: 'h1' };
 
-function fakes(opts: { visible?: string[]; exists?: boolean; type?: RelationshipType | null } = {}) {
+function fakes(
+	opts: { visible?: string[]; exists?: boolean; type?: RelationshipType | null } = {}
+) {
 	const inserted: NewRelationship[] = [];
 	const visible = opts.visible ?? ['anna', 'bert'];
 	const relationships = {
 		exists: async () => opts.exists ?? false,
 		insert: async (r: NewRelationship) => void inserted.push(r),
 		listForContactVisibleTo: async () => [],
-		loadKinshipGraphVisibleTo: async () => ({ people: [], parentEdges: [], siblingEdges: [], partnerEdges: [], storedPairs: [] })
+		loadKinshipGraphVisibleTo: async () => ({
+			people: [],
+			parentEdges: [],
+			siblingEdges: [],
+			partnerEdges: [],
+			storedPairs: []
+		})
 	} as unknown as RelationshipRepository;
 	const deps: AddCheckedDeps = {
-		contacts: { findByIdVisibleTo: async (_v, id) => (visible.includes(id) ? ({ id } as Contact) : null) },
+		contacts: {
+			findByIdVisibleTo: async (_v, id) => (visible.includes(id) ? ({ id } as Contact) : null)
+		},
 		relationships,
 		types: { getType: async () => (opts.type === undefined ? parentChild : opts.type) },
 		ids: { next: () => 'rel-1' },
@@ -61,14 +75,26 @@ const link = (side: 'forward' | 'reverse' = 'reverse') => ({
 describe('addRelationshipChecked', () => {
 	it('stores the link the way round the page said it: "Anna is a child of Bert"', async () => {
 		const f = fakes();
-		expect(await addRelationshipChecked(f.deps, author, link('reverse'))).toEqual({ relationshipId: 'rel-1' });
-		expect(f.inserted[0]).toMatchObject({ fromContactId: 'bert', toContactId: 'anna', typeId: 'parent_child' });
+		expect(await addRelationshipChecked(f.deps, author, link('reverse'))).toEqual({
+			relationshipId: 'rel-1'
+		});
+		expect(f.inserted[0]).toMatchObject({
+			fromContactId: 'bert',
+			toContactId: 'anna',
+			typeId: 'parent_child'
+		});
 	});
 
 	it('refuses with a reason when either person, or the type, is gone', async () => {
-		await expect(addRelationshipChecked(fakes({ visible: ['anna'] }).deps, author, link())).rejects.toBeInstanceOf(ContactGoneError);
-		await expect(addRelationshipChecked(fakes({ visible: ['bert'] }).deps, author, link())).rejects.toBeInstanceOf(ContactGoneError);
-		await expect(addRelationshipChecked(fakes({ type: null }).deps, author, link())).rejects.toBeInstanceOf(UnknownRelationshipTypeError);
+		await expect(
+			addRelationshipChecked(fakes({ visible: ['anna'] }).deps, author, link())
+		).rejects.toBeInstanceOf(ContactGoneError);
+		await expect(
+			addRelationshipChecked(fakes({ visible: ['bert'] }).deps, author, link())
+		).rejects.toBeInstanceOf(ContactGoneError);
+		await expect(
+			addRelationshipChecked(fakes({ type: null }).deps, author, link())
+		).rejects.toBeInstanceOf(UnknownRelationshipTypeError);
 		await expect(
 			addRelationshipChecked(fakes().deps, author, { ...link(), typeChoice: 'garbage' })
 		).rejects.toBeInstanceOf(UnknownRelationshipTypeError);
@@ -76,7 +102,9 @@ describe('addRelationshipChecked', () => {
 
 	it('keeps the guardrails: a link that already exists is refused, not stored twice', async () => {
 		const f = fakes({ exists: true });
-		await expect(addRelationshipChecked(f.deps, author, link())).rejects.toBeInstanceOf(DuplicateRelationshipError);
+		await expect(addRelationshipChecked(f.deps, author, link())).rejects.toBeInstanceOf(
+			DuplicateRelationshipError
+		);
 		expect(f.inserted).toHaveLength(0);
 	});
 });

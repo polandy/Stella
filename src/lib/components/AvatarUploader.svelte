@@ -90,10 +90,18 @@
 	}
 
 	const chooseGroupPhoto = (photo: GroupPhotoChoice) =>
-		load(async () => ({ kind: 'group', photo, picture: await loadFullPicture(mediaUrl(photo.id)) }));
+		load(async () => ({
+			kind: 'group',
+			photo,
+			picture: await loadFullPicture(mediaUrl(photo.id))
+		}));
 
 	const chooseImmichPhoto = (photo: GlimpsePhoto) =>
-		load(async () => ({ kind: 'immich', previewUrl: photo.previewUrl, picture: await loadFullPicture(photo.previewUrl) }));
+		load(async () => ({
+			kind: 'immich',
+			previewUrl: photo.previewUrl,
+			picture: await loadFullPicture(photo.previewUrl)
+		}));
 
 	function onPick(event: Event) {
 		const file = (event.currentTarget as HTMLInputElement).files?.[0];
@@ -127,12 +135,18 @@
 		try {
 			if (chosen.kind === 'file') await upload(chosen.picture, crop);
 			else if (chosen.kind === 'group')
-				await sendCut(`/contacts/${contactId}?/cutFromGroupPhoto`, { photoId: chosen.photo.id }, chosen.picture, crop);
+				await sendCut(
+					`/contacts/${contactId}?/cutFromGroupPhoto`,
+					{ photoId: chosen.photo.id },
+					chosen.picture,
+					crop
+				);
 			else await sendImmichPhoto(contactId, chosen.previewUrl, chosen.picture, crop);
 			await invalidateAll();
 			if (hadPreviousPhoto) removals.notify(t('components.photo.previousKept'));
 		} catch {
-			error = chosen.kind === 'immich' ? t('immich.viewer.useFailed') : t('components.photo.failed');
+			error =
+				chosen.kind === 'immich' ? t('immich.viewer.useFailed') : t('components.photo.failed');
 		} finally {
 			busy = false;
 		}
@@ -157,7 +171,11 @@
 				: 'rounded-full'}"
 			class:opacity-100={busy}
 		>
-			{busy ? '…' : avatarPhotoId ? t('components.photo.changeShort') : t('components.photo.addShort')}
+			{busy
+				? '…'
+				: avatarPhotoId
+					? t('components.photo.changeShort')
+					: t('components.photo.addShort')}
 		</span>
 	</button>
 	<input bind:this={input} onchange={onPick} type="file" accept="image/*" class="hidden" />

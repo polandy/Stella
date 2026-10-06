@@ -16,7 +16,11 @@ export interface DeviceHints {
 }
 
 /** Whether a drag would dismiss native full screen here — true only on an iPhone or iPad. */
-export const dismissesFullscreenOnDrag = ({ userAgent, platform, maxTouchPoints }: DeviceHints): boolean =>
+export const dismissesFullscreenOnDrag = ({
+	userAgent,
+	platform,
+	maxTouchPoints
+}: DeviceHints): boolean =>
 	/iPad|iPhone|iPod/.test(userAgent) ||
 	// iPadOS reports itself as a Mac; a Mac never has touch points, so this only matches an iPad.
 	(platform === 'MacIntel' && maxTouchPoints > 1);

@@ -42,7 +42,11 @@ export async function writeJournalEntry(
 }> {
 	await requireVisibleContact(deps.contacts, author, input.contactId);
 	const viewer = { id: author.userId, householdId: author.householdId };
-	const resolved = resolveForAudience(await deps.contacts.listVisibleTo(viewer), input.visibility, input.body);
+	const resolved = resolveForAudience(
+		await deps.contacts.listVisibleTo(viewer),
+		input.visibility,
+		input.body
+	);
 	const entryId = await addToJournalDay(
 		deps,
 		{ ...author, defaultVisibility: input.visibility },

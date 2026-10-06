@@ -61,7 +61,8 @@
 			box?.scrollIntoView({ block: 'nearest' });
 			const buttons = [...(box?.querySelectorAll<HTMLElement>('button') ?? [])];
 			const target =
-				box?.querySelector<HTMLElement>('input:not([type="hidden"])') ?? (step === 'delete' ? buttons.at(-1) : buttons[0]);
+				box?.querySelector<HTMLElement>('input:not([type="hidden"])') ??
+				(step === 'delete' ? buttons.at(-1) : buttons[0]);
 			target?.focus();
 		});
 	});
@@ -78,7 +79,11 @@
 	<div
 		bind:this={box}
 		transition:reveal
-		onintroend={() => box?.scrollIntoView({ block: 'nearest', behavior: scrollBehavior(prefersReducedMotion.current) })}
+		onintroend={() =>
+			box?.scrollIntoView({
+				block: 'nearest',
+				behavior: scrollBehavior(prefersReducedMotion.current)
+			})}
 		id={panel === 'merge' ? 'merge' : undefined}
 		role="group"
 		onkeydown={onKeydown}
@@ -87,7 +92,12 @@
 	>
 		{#if panel === 'archive'}
 			<!-- Archiving takes someone out of the lists, it does not undo them (docs/02 §2.2). -->
-			<form method="POST" action={archived ? '?/restore' : '?/archive'} use:enhance={savedArchive} class="flex flex-col gap-2">
+			<form
+				method="POST"
+				action={archived ? '?/restore' : '?/archive'}
+				use:enhance={savedArchive}
+				class="flex flex-col gap-2"
+			>
 				<p class="text-sm text-fg">
 					{archived ? t('contact.archive.archivedHint') : t('contact.archive.hint')}
 				</p>
@@ -95,7 +105,9 @@
 					<Button variant="primary" size="sm" icon="archive">
 						{archived ? t('contact.archive.bringBack') : t('contact.archive.archive')}
 					</Button>
-					<Button variant="ghost" size="sm" type="button" onclick={() => (panel = null)}>{t('common.cancel')}</Button>
+					<Button variant="ghost" size="sm" type="button" onclick={() => (panel = null)}
+						>{t('common.cancel')}</Button
+					>
 				</div>
 			</form>
 		{:else if panel === 'merge'}
@@ -117,8 +129,12 @@
 				</div>
 				<FormError message={form?.mergeError} variant="inline" size="xs" />
 				<div class="flex flex-wrap gap-2">
-					<Button variant="primary" size="sm">{t('contact.merge.submit', { name: c.displayName })}</Button>
-					<Button variant="ghost" size="sm" type="button" onclick={() => (panel = null)}>{t('common.cancel')}</Button>
+					<Button variant="primary" size="sm"
+						>{t('contact.merge.submit', { name: c.displayName })}</Button
+					>
+					<Button variant="ghost" size="sm" type="button" onclick={() => (panel = null)}
+						>{t('common.cancel')}</Button
+					>
 				</div>
 			</form>
 		{:else}
@@ -126,8 +142,12 @@
 			<form method="POST" action="?/delete" class="flex flex-col gap-2">
 				<p class="text-sm text-fg">{t('contact.delete.explain', { name: c.displayName })}</p>
 				<div class="flex flex-wrap gap-2">
-					<Button variant="danger" size="sm">{t('contact.delete.submit', { name: c.displayName })}</Button>
-					<Button variant="ghost" size="sm" type="button" onclick={() => (panel = null)}>{t('contact.delete.keep')}</Button>
+					<Button variant="danger" size="sm"
+						>{t('contact.delete.submit', { name: c.displayName })}</Button
+					>
+					<Button variant="ghost" size="sm" type="button" onclick={() => (panel = null)}
+						>{t('contact.delete.keep')}</Button
+					>
 				</div>
 			</form>
 		{/if}

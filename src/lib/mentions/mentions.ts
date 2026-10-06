@@ -42,7 +42,10 @@ const TOKEN_OR_HANDLE = new RegExp(
 
 /** Normalise a name or typed handle to a comparison key: lowercase letters/numbers only. */
 export function mentionKey(name: string): string {
-	return name.normalize('NFC').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+	return name
+		.normalize('NFC')
+		.toLowerCase()
+		.replace(/[^\p{L}\p{N}]/gu, '');
 }
 
 export interface MentionCandidate {

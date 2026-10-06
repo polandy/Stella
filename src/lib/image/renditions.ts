@@ -28,7 +28,10 @@ const THUMB_EDGE = 480;
 /** `size` fitted within `edge` on its longest side, never enlarged. */
 function fit(size: PixelSize, edge: number): PixelSize {
 	const scale = Math.min(1, edge / Math.max(size.width, size.height));
-	return { width: Math.max(1, Math.round(size.width * scale)), height: Math.max(1, Math.round(size.height * scale)) };
+	return {
+		width: Math.max(1, Math.round(size.width * scale)),
+		height: Math.max(1, Math.round(size.height * scale))
+	};
 }
 
 /** A person's or journal photo: 1600 px and a thumbnail. */

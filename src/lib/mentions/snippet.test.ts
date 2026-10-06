@@ -27,9 +27,7 @@ describe('mentionSnippet', () => {
 	});
 
 	test('drops an image outright — a preview has no room for it', () => {
-		expect(mentionSnippet('Look: ![the summit](/media/a.jpg) lovely', names)).toBe(
-			'Look: lovely'
-		);
+		expect(mentionSnippet('Look: ![the summit](/media/a.jpg) lovely', names)).toBe('Look: lovely');
 	});
 
 	test('collapses a multi-line body onto one line', () => {

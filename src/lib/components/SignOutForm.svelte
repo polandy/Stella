@@ -39,12 +39,20 @@
 	{@render children()}
 </form>
 {#if asking}
-	<div transition:reveal role="alertdialog" aria-labelledby="sign-out-unsent" class="mt-2 flex flex-col gap-2 rounded-app border border-dashed border-border bg-card p-3 text-sm">
+	<div
+		transition:reveal
+		role="alertdialog"
+		aria-labelledby="sign-out-unsent"
+		class="mt-2 flex flex-col gap-2 rounded-app border border-dashed border-border bg-card p-3 text-sm"
+	>
 		<p id="sign-out-unsent" class="text-fg">{t('signOut.unsent', { count: outbox.mine.length })}</p>
 		<div class="flex flex-wrap gap-1.5">
-			<Button variant="primary" size="sm" onclick={() => form?.submit()}>{t('signOut.keep')}</Button>
+			<Button variant="primary" size="sm" onclick={() => form?.submit()}>{t('signOut.keep')}</Button
+			>
 			<Button variant="danger" size="sm" onclick={discardAndSignOut}>{t('signOut.discard')}</Button>
-			<Button variant="ghost" size="sm" onclick={() => (asking = false)}>{t('common.cancel')}</Button>
+			<Button variant="ghost" size="sm" onclick={() => (asking = false)}
+				>{t('common.cancel')}</Button
+			>
 		</div>
 	</div>
 {/if}

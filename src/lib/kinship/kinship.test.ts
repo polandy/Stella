@@ -19,7 +19,11 @@ import { directClaimFor } from './claims';
  *             └── Nina      (Peter's child ⇒ Hans's cousin)
  */
 
-const p = (id: string, gender?: 'male' | 'female') => ({ id, displayName: id, gender: gender ?? null });
+const p = (id: string, gender?: 'male' | 'female') => ({
+	id,
+	displayName: id,
+	gender: gender ?? null
+});
 
 function family(over: Partial<KinshipGraph> = {}): KinshipGraph {
 	return {
@@ -251,8 +255,18 @@ describe('kinshipLabel', () => {
 		const de = createTranslator('de');
 		const found = deriveKinship(family(), 'Hans');
 
-		expect(kinshipLabel(de, found.find((k) => k.personId === 'Otto')!)).toBe('Großvater');
-		expect(kinshipLabel(de, found.find((k) => k.personId === 'Rosa')!)).toBe('Großmutter');
+		expect(
+			kinshipLabel(
+				de,
+				found.find((k) => k.personId === 'Otto')!
+			)
+		).toBe('Großvater');
+		expect(
+			kinshipLabel(
+				de,
+				found.find((k) => k.personId === 'Rosa')!
+			)
+		).toBe('Großmutter');
 	});
 });
 

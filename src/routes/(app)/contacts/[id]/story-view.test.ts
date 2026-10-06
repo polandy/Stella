@@ -105,7 +105,12 @@ describe('toStoryItem, journal entries', () => {
 	it('attaches only the photos of that entry', () => {
 		const view = toStoryItem(
 			journalItem(),
-			context({ photosByEntry: new Map([['j1', ['p1', 'p2']], ['j2', ['p9']]]) })
+			context({
+				photosByEntry: new Map([
+					['j1', ['p1', 'p2']],
+					['j2', ['p9']]
+				])
+			})
 		);
 
 		if (view.kind !== 'journal') throw new Error('expected a journal item');
@@ -113,7 +118,10 @@ describe('toStoryItem, journal entries', () => {
 	});
 
 	it('offers no photos for an entry that has none', () => {
-		const view = toStoryItem(journalItem(), context({ photosByEntry: new Map([['other', ['p1']]]) }));
+		const view = toStoryItem(
+			journalItem(),
+			context({ photosByEntry: new Map([['other', ['p1']]]) })
+		);
 
 		if (view.kind !== 'journal') throw new Error('expected a journal item');
 		expect(view.photos).toEqual([]);
@@ -186,7 +194,9 @@ describe('toStoryItem, who may remove what', () => {
 	});
 
 	it('carries visibility through, so a private item can be marked as one', () => {
-		expect(toStoryItem(journalItem({ visibility: 'private' }), context()).visibility).toBe('private');
+		expect(toStoryItem(journalItem({ visibility: 'private' }), context()).visibility).toBe(
+			'private'
+		);
 		expect(toStoryItem(interactionItem({ visibility: 'private' }), context()).visibility).toBe(
 			'private'
 		);
@@ -220,7 +230,10 @@ describe('nameLookup', () => {
  */
 describe('what a story page needs looked up', () => {
 	const page = [
-		journalItem({ id: 'j1', body: 'With @{contact:anna} and @{contact:ben}, then @{contact:anna} again.' }),
+		journalItem({
+			id: 'j1',
+			body: 'With @{contact:anna} and @{contact:ben}, then @{contact:anna} again.'
+		}),
 		interactionItem({ id: 'i1', description: '@{contact:cleo} is not rendered as a mention here' }),
 		journalItem({ id: 'j2', body: 'Nobody named.' })
 	];

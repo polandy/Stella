@@ -44,7 +44,8 @@ export function profileRows(
 		shown,
 		behindAddMore,
 		listed: ROW_ORDER.filter(
-			(row) => shown.includes(row) || kept.includes(row) || (revealed && behindAddMore.includes(row))
+			(row) =>
+				shown.includes(row) || kept.includes(row) || (revealed && behindAddMore.includes(row))
 		)
 	};
 }
@@ -61,9 +62,7 @@ export function ageOn(birthDate: string, today: string): number | null {
 
 /** The birthday the card states: a day (with an age when the year is known), or a guessed year. */
 export type BirthdayFact =
-	| { kind: 'day'; date: string; age: number | null }
-	| { kind: 'around'; year: string }
-	| null;
+	{ kind: 'day'; date: string; age: number | null } | { kind: 'around'; year: string } | null;
 
 /**
  * A birthday entered among the dates wins over the profile's: the load already drops the
@@ -130,7 +129,11 @@ export function recordMenu(viewer: {
 	isSelf: boolean;
 	canTracePath: boolean;
 }): RecordMenuEntry[] {
-	const entries: RecordMenuEntry[] = ['logContact', 'divider', viewer.isSelf ? 'notMe' : 'thisIsMe'];
+	const entries: RecordMenuEntry[] = [
+		'logContact',
+		'divider',
+		viewer.isSelf ? 'notMe' : 'thisIsMe'
+	];
 	if (viewer.canTracePath) entries.push('tracePath');
 	entries.push(viewer.archived ? 'restore' : 'archive');
 	if (viewer.isAdmin) entries.push('merge', 'delete');

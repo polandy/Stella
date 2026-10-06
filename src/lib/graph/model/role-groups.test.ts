@@ -238,4 +238,3 @@ describe('linksOfGrouped', () => {
 		expect(ids.some((id) => id.startsWith('swim-'))).toBe(false);
 	});
 });
-

@@ -30,7 +30,9 @@ describe('copyAge', () => {
 	test('dates anything older, and adds the year only when it is another one', () => {
 		expect(copyAge(en, at('2026-09-20T08:00:00'), NOW, ZONE)).toBe('20 Sept 08:00');
 		expect(copyAge(de, at('2026-09-20T08:00:00'), NOW, ZONE)).toBe('20. Sept. 08:00');
-		expect(copyAge(en, Date.parse('2025-12-31T10:00:00+01:00'), NOW, ZONE)).toBe('31 Dec 2025 10:00');
+		expect(copyAge(en, Date.parse('2025-12-31T10:00:00+01:00'), NOW, ZONE)).toBe(
+			'31 Dec 2025 10:00'
+		);
 	});
 
 	test('treats a copy from a clock running ahead as from today, never as from the future', () => {

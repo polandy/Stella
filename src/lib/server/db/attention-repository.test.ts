@@ -39,14 +39,30 @@ beforeEach(() => {
 		.run();
 	db.insert(schema.contact)
 		.values([
-			{ id: 'oma', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Oma', createdAt: ms('2020-01-01') },
-			{ id: 'secret', householdId: H, createdBy: U1, visibility: 'private', displayName: 'Secret', createdAt: ms('2020-01-01') }
+			{
+				id: 'oma',
+				householdId: H,
+				createdBy: U1,
+				visibility: 'shared',
+				displayName: 'Oma',
+				createdAt: ms('2020-01-01')
+			},
+			{
+				id: 'secret',
+				householdId: H,
+				createdBy: U1,
+				visibility: 'private',
+				displayName: 'Secret',
+				createdAt: ms('2020-01-01')
+			}
 		])
 		.run();
 });
 
-const sources = (viewer: Viewer) => createDrizzleAttentionRepository(db).listLastTouchedVisibleTo(viewer);
-const byId = async (viewer: Viewer, id: string) => (await sources(viewer)).find((s) => s.contactId === id);
+const sources = (viewer: Viewer) =>
+	createDrizzleAttentionRepository(db).listLastTouchedVisibleTo(viewer);
+const byId = async (viewer: Viewer, id: string) =>
+	(await sources(viewer)).find((s) => s.contactId === id);
 
 describe('attention repository, last touched', () => {
 	it('leaves out someone who has been archived', async () => {
@@ -66,16 +82,37 @@ describe('attention repository, last touched', () => {
 
 	it('takes the latest day across journal entries and touchpoints, whichever is newer', async () => {
 		db.insert(schema.journalEntry)
-			.values({ id: 'j1', contactId: 'oma', createdBy: U1, visibility: 'shared', entryDate: '2026-08-01', body: 'x' })
+			.values({
+				id: 'j1',
+				contactId: 'oma',
+				createdBy: U1,
+				visibility: 'shared',
+				entryDate: '2026-08-01',
+				body: 'x'
+			})
 			.run();
 		db.insert(schema.interaction)
-			.values({ id: 'i1', contactId: 'oma', createdBy: U1, visibility: 'shared', kind: 'call', happenedAt: '2026-08-20' })
+			.values({
+				id: 'i1',
+				contactId: 'oma',
+				createdBy: U1,
+				visibility: 'shared',
+				kind: 'call',
+				happenedAt: '2026-08-20'
+			})
 			.run();
 
 		expect((await byId(viewerU1, 'oma'))!.lastTouchedOn).toBe('2026-08-20');
 
 		db.insert(schema.journalEntry)
-			.values({ id: 'j2', contactId: 'oma', createdBy: U1, visibility: 'shared', entryDate: '2026-09-01', body: 'y' })
+			.values({
+				id: 'j2',
+				contactId: 'oma',
+				createdBy: U1,
+				visibility: 'shared',
+				entryDate: '2026-09-01',
+				body: 'y'
+			})
 			.run();
 
 		expect((await byId(viewerU1, 'oma'))!.lastTouchedOn).toBe('2026-09-01');
@@ -83,7 +120,14 @@ describe('attention repository, last touched', () => {
 
 	it('does not let a private entry the viewer cannot see make a person look attended to', async () => {
 		db.insert(schema.journalEntry)
-			.values({ id: 'j1', contactId: 'oma', createdBy: U1, visibility: 'private', entryDate: '2026-09-01', body: 'x' })
+			.values({
+				id: 'j1',
+				contactId: 'oma',
+				createdBy: U1,
+				visibility: 'private',
+				entryDate: '2026-09-01',
+				body: 'x'
+			})
 			.run();
 
 		// The author sees their own private entry; the other household member does not.
@@ -95,5 +139,4 @@ describe('attention repository, last touched', () => {
 		expect((await sources(viewerU1)).map((s) => s.contactId).sort()).toEqual(['oma', 'secret']);
 		expect((await sources(viewerU2)).map((s) => s.contactId)).toEqual(['oma']);
 	});
-
 });

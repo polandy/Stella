@@ -54,16 +54,49 @@ function fillSource(db: BunSQLiteDatabase<typeof schema>): void {
 		.run();
 	db.insert(schema.contact)
 		.values([
-			{ id: 'c-hans', householdId: SOURCE_HOUSEHOLD, createdBy: SOURCE_USER, visibility: 'shared', displayName: 'Hans Brunner', firstName: 'Hans', lastName: 'Brunner', jobTitle: 'Schreiner', createdAt: EXPORTED },
-			{ id: 'c-rosa', householdId: SOURCE_HOUSEHOLD, createdBy: SOURCE_USER, visibility: 'private', displayName: 'Rosa Brunner', createdAt: EXPORTED }
+			{
+				id: 'c-hans',
+				householdId: SOURCE_HOUSEHOLD,
+				createdBy: SOURCE_USER,
+				visibility: 'shared',
+				displayName: 'Hans Brunner',
+				firstName: 'Hans',
+				lastName: 'Brunner',
+				jobTitle: 'Schreiner',
+				createdAt: EXPORTED
+			},
+			{
+				id: 'c-rosa',
+				householdId: SOURCE_HOUSEHOLD,
+				createdBy: SOURCE_USER,
+				visibility: 'private',
+				displayName: 'Rosa Brunner',
+				createdAt: EXPORTED
+			}
 		])
 		.run();
 	db.insert(schema.note)
-		.values({ id: 'n-1', contactId: 'c-hans', createdBy: SOURCE_USER, visibility: 'shared', title: 'Allergies', body: 'hazelnuts', createdAt: EXPORTED })
+		.values({
+			id: 'n-1',
+			contactId: 'c-hans',
+			createdBy: SOURCE_USER,
+			visibility: 'shared',
+			title: 'Allergies',
+			body: 'hazelnuts',
+			createdAt: EXPORTED
+		})
 		.run();
 	db.insert(schema.noteMention).values({ noteId: 'n-1', contactId: 'c-rosa' }).run();
 	db.insert(schema.journalEntry)
-		.values({ id: 'j-1', contactId: 'c-hans', createdBy: SOURCE_USER, visibility: 'shared', entryDate: '2026-07-12', body: 'hiked the Gurten', createdAt: EXPORTED })
+		.values({
+			id: 'j-1',
+			contactId: 'c-hans',
+			createdBy: SOURCE_USER,
+			visibility: 'shared',
+			entryDate: '2026-07-12',
+			body: 'hiked the Gurten',
+			createdAt: EXPORTED
+		})
 		.run();
 	db.insert(schema.journalMention).values({ journalEntryId: 'j-1', contactId: 'c-rosa' }).run();
 	db.insert(schema.tag)
@@ -71,10 +104,26 @@ function fillSource(db: BunSQLiteDatabase<typeof schema>): void {
 		.run();
 	db.insert(schema.contactTag).values({ contactId: 'c-hans', tagId: 'tg-1' }).run();
 	db.insert(schema.photo)
-		.values({ id: 'p-1', householdId: SOURCE_HOUSEHOLD, contactId: 'c-hans', createdBy: SOURCE_USER, filePath: 'p1.jpg', thumbPath: 't1.jpg', mime: 'image/jpeg' })
+		.values({
+			id: 'p-1',
+			householdId: SOURCE_HOUSEHOLD,
+			contactId: 'c-hans',
+			createdBy: SOURCE_USER,
+			filePath: 'p1.jpg',
+			thumbPath: 't1.jpg',
+			mime: 'image/jpeg'
+		})
 		.run();
 	db.insert(schema.relationship)
-		.values({ id: 'r-1', householdId: SOURCE_HOUSEHOLD, fromContactId: 'c-hans', toContactId: 'c-rosa', typeId: 'spouse', createdBy: SOURCE_USER, createdAt: EXPORTED })
+		.values({
+			id: 'r-1',
+			householdId: SOURCE_HOUSEHOLD,
+			fromContactId: 'c-hans',
+			toContactId: 'c-rosa',
+			typeId: 'spouse',
+			createdBy: SOURCE_USER,
+			createdAt: EXPORTED
+		})
 		.run();
 }
 
@@ -126,7 +175,10 @@ describe('readTarget', () => {
 			.insert(schema.user)
 			.values({ id: 'u-other', householdId: 'h-other', email: 'o@x.test', name: 'Otto' })
 			.run();
-		here.db.insert(schema.tag).values({ id: 'tg-other', householdId: 'h-other', name: 'Zürich' }).run();
+		here.db
+			.insert(schema.tag)
+			.values({ id: 'tg-other', householdId: 'h-other', name: 'Zürich' })
+			.run();
 
 		const target = await repo.readTarget(HERE);
 		// Positive control: the admin here is found, so the query is doing its job.
@@ -188,7 +240,13 @@ describe('applyRestore', () => {
 
 		await repo.applyRestore(await plan());
 
-		expect(here.db.select().from(schema.tag).all().map((t) => t.id)).toEqual(['tg-here']);
+		expect(
+			here.db
+				.select()
+				.from(schema.tag)
+				.all()
+				.map((t) => t.id)
+		).toEqual(['tg-here']);
 		expect(here.db.select().from(schema.contactTag).all()).toEqual([
 			{ contactId: 'c-hans', tagId: 'tg-here' }
 		]);
@@ -216,7 +274,14 @@ describe('applyRestore', () => {
 			.run();
 		here.db
 			.insert(schema.journalEntry)
-			.values({ id: 'j-ours', contactId: 'c-hans', createdBy: ADMIN, visibility: 'shared', entryDate: '2026-07-12', body: 'our own day' })
+			.values({
+				id: 'j-ours',
+				contactId: 'c-hans',
+				createdBy: ADMIN,
+				visibility: 'shared',
+				entryDate: '2026-07-12',
+				body: 'our own day'
+			})
 			.run();
 
 		const counts = await repo.applyRestore(await plan());
@@ -224,7 +289,13 @@ describe('applyRestore', () => {
 		expect(counts.journal_entry).toEqual({ added: 0, skipped: 1 });
 		expect(counts.journal_mention).toEqual({ added: 0, skipped: 1 });
 		// The day we already had is untouched, and the rest of the archive still arrived.
-		expect(here.db.select().from(schema.journalEntry).all().map((e) => e.id)).toEqual(['j-ours']);
+		expect(
+			here.db
+				.select()
+				.from(schema.journalEntry)
+				.all()
+				.map((e) => e.id)
+		).toEqual(['j-ours']);
 		expect(here.db.select().from(schema.note).all()).toHaveLength(1);
 		expect(here.db.select().from(schema.contact).all()).toHaveLength(2);
 	});
@@ -237,14 +308,23 @@ describe('applyRestore', () => {
 			.run();
 		here.db
 			.insert(schema.contact)
-			.values({ id: 'c-hans', householdId: 'h-other', createdBy: 'u-other', displayName: 'Hans Brunner' })
+			.values({
+				id: 'c-hans',
+				householdId: 'h-other',
+				createdBy: 'u-other',
+				displayName: 'Hans Brunner'
+			})
 			.run();
 
 		await expect(repo.applyRestore(await plan())).rejects.toThrow(ForeignHouseholdError);
 		// Nothing at all was written: not the second person, not the relationship type.
-		expect(here.db.select().from(schema.contact).all().map((c) => c.householdId)).toEqual([
-			'h-other'
-		]);
+		expect(
+			here.db
+				.select()
+				.from(schema.contact)
+				.all()
+				.map((c) => c.householdId)
+		).toEqual(['h-other']);
 		expect(here.db.select().from(schema.note).all()).toEqual([]);
 	});
 

@@ -46,9 +46,7 @@ async function expectBottomStrip(page: Page, panel: Locator) {
 	expect(strip.y).toBeGreaterThan(search.y + search.height);
 }
 
-test('the map’s search, Filter and Arrange share one row, By circle included', async ({
-	page
-}) => {
+test('the map’s search, Filter and Arrange share one row, By circle included', async ({ page }) => {
 	await page.goto(`/graph?center=${LENA}`);
 	await settled(page);
 	const arrange = page.getByRole('button', { name: /^Arrange:/ });
@@ -60,9 +58,11 @@ test('the map’s search, Filter and Arrange share one row, By circle included',
 			await settled(page);
 		}
 		const row = await Promise.all(
-			[page.getByLabel('Find a person'), page.getByRole('button', { name: /^Filter/ }), arrange].map(
-				boxOf
-			)
+			[
+				page.getByLabel('Find a person'),
+				page.getByRole('button', { name: /^Filter/ }),
+				arrange
+			].map(boxOf)
 		);
 		const middles = row.map((b) => b.y + b.height / 2);
 		expect(Math.max(...middles) - Math.min(...middles), `${choice}: not one row`).toBeLessThan(8);
@@ -130,7 +130,9 @@ test('a tapped role group’s panel is the same strip', async ({ page }) => {
 	await expectBottomStrip(page, panel);
 });
 
-test('the relationships card keeps its title and its three controls on one row', async ({ page }) => {
+test('the relationships card keeps its title and its three controls on one row', async ({
+	page
+}) => {
 	await page.goto(`/contacts/${LENA}`);
 	const header = page.locator('section[id*="relationships"] header').first();
 	const [title, edit, add, more] = await Promise.all(

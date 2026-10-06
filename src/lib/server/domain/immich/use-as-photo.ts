@@ -1,6 +1,10 @@
 import type { Viewer } from '../../access/visibility';
 import type { AvatarUpload, AvatarUploader } from '../media/avatars';
-import { admitImmichMedia, type ImmichMediaAdmissionRefusal, type ImmichMediaDeps } from './glimpse';
+import {
+	admitImmichMedia,
+	type ImmichMediaAdmissionRefusal,
+	type ImmichMediaDeps
+} from './glimpse';
 
 /*
  * *Use as photo* from the Immich viewer (docs/concepts/immich.md §4.3, docs/02 §2.24.6): the one
@@ -32,8 +36,7 @@ export interface ImmichPhotoCopy {
 }
 
 export type UseImmichPhotoOutcome =
-	| { ok: true; photoId: string }
-	| { ok: false; refusal: ImmichMediaAdmissionRefusal };
+	{ ok: true; photoId: string } | { ok: false; refusal: ImmichMediaAdmissionRefusal };
 
 /**
  * Keep the square as the person's new photo, dated as Immich dated the original. Throws the
@@ -47,7 +50,8 @@ export async function useImmichPhoto(
 	const admitted = await admitImmichMedia(deps, viewer, copy.token);
 	if (!admitted.ok) return admitted;
 	const { media } = admitted;
-	if (media.kind === 'newcomer' || media.contactId !== copy.contactId) return { ok: false, refusal: 'invalid' };
+	if (media.kind === 'newcomer' || media.contactId !== copy.contactId)
+		return { ok: false, refusal: 'invalid' };
 	if (media.kind === 'face') {
 		// The face Immich shows of them, as a person added from *New from Immich* starts with
 		// (docs/02 §2.24.7). A face token is also signed for a mere proposal, so it is taken only

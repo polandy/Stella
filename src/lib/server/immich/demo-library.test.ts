@@ -30,6 +30,8 @@ describe('solidPng', () => {
 		// IDAT: after the signature (8) and IHDR (25), the length (4) and type (4); then zlib's 2 header bytes.
 		const idatLength = new DataView(png.buffer, 33, 4).getUint32(0);
 		const deflated = png.slice(43, 41 + idatLength - 4);
-		expect([...Bun.inflateSync(deflated)]).toEqual([0, 16, 32, 48, 16, 32, 48, 0, 16, 32, 48, 16, 32, 48]);
+		expect([...Bun.inflateSync(deflated)]).toEqual([
+			0, 16, 32, 48, 16, 32, 48, 0, 16, 32, 48, 16, 32, 48
+		]);
 	});
 });

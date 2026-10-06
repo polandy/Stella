@@ -11,7 +11,12 @@ const HOUR = 3_600_000;
 
 describe('isTakenAt', () => {
 	test('accepts a wall-clock time, with or without an offset', () => {
-		for (const value of ['2019-05-03T00:30:15', '2019-05-03T00:30:15+02:00', '2019-05-03T00:30:15-09:30', '2019-05-03T00:30:15Z']) {
+		for (const value of [
+			'2019-05-03T00:30:15',
+			'2019-05-03T00:30:15+02:00',
+			'2019-05-03T00:30:15-09:30',
+			'2019-05-03T00:30:15Z'
+		]) {
 			expect(isTakenAt(value)).toBe(true);
 		}
 	});
@@ -68,7 +73,9 @@ describe('isPlausibleTakenAt', () => {
 
 describe('datedAt', () => {
 	test('the capture moment when known, else when it was added', () => {
-		expect(datedAt({ takenAt: '2019-05-03T00:30:15Z', createdAt: NOW })).toBe(Date.UTC(2019, 4, 3, 0, 30, 15));
+		expect(datedAt({ takenAt: '2019-05-03T00:30:15Z', createdAt: NOW })).toBe(
+			Date.UTC(2019, 4, 3, 0, 30, 15)
+		);
 		expect(datedAt({ takenAt: null, createdAt: NOW })).toBe(NOW);
 	});
 });
@@ -80,6 +87,8 @@ describe('photoDay', () => {
 	});
 
 	test('the day it was added when the capture date is unknown', () => {
-		expect(photoDay({ takenAt: null, createdAt: NOW + HOUR })).toBe(new Date(NOW + HOUR).toISOString());
+		expect(photoDay({ takenAt: null, createdAt: NOW + HOUR })).toBe(
+			new Date(NOW + HOUR).toISOString()
+		);
 	});
 });

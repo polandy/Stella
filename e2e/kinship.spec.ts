@@ -48,7 +48,9 @@ test('names the relatives nobody entered, saying who each comes through', async 
 	await expect(derived).not.toContainText('Hans Brunner');
 });
 
-test('says nothing it cannot back: no derived relatives for someone with no family links', async ({ page }) => {
+test('says nothing it cannot back: no derived relatives for someone with no family links', async ({
+	page
+}) => {
 	await openPeopleTab(page, /Beat Steiner/);
 	await expect(page.getByTestId('derived-kin')).toHaveCount(0);
 });

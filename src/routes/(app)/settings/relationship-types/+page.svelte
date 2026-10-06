@@ -52,7 +52,9 @@
 	);
 </script>
 
-<svelte:head><title>{t('common.pageTitle', { page: t('relationshipTypes.title') })}</title></svelte:head>
+<svelte:head
+	><title>{t('common.pageTitle', { page: t('relationshipTypes.title') })}</title></svelte:head
+>
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header class="flex flex-col gap-1">
@@ -135,68 +137,70 @@
 						{#if editing === type.id}
 							<!-- Both forms unfold under the row as one (docs/05 §5.11). -->
 							<div class="flex flex-col gap-1" transition:reveal>
-							<!-- The machine key stays as it was: it is what the type *is*, and rewriting it
+								<!-- The machine key stays as it was: it is what the type *is*, and rewriting it
 							     would make the row a different type to everything already stored. -->
-							<form
-								method="POST"
-								action="?/edit"
-								use:enhance={savedEdit}
-								class="flex flex-col gap-2 pl-5"
-							>
-								<input type="hidden" name="typeId" value={type.id} />
-								<div class="flex flex-wrap items-end gap-2">
-									<label class="flex flex-1 flex-col gap-1">
-										<span class="text-xs text-fg-muted">{t('relationshipTypes.label')}</span>
-										<input name="forwardLabel" value={type.forwardLabel} class={INPUT} required />
-									</label>
-									<label class="flex flex-col gap-1">
-										<span class="text-xs text-fg-muted">{t('relationshipTypes.category')}</span>
-										<select name="category" class={INPUT}>
-											{#each RELATIONSHIP_CATEGORIES as category (category)}
-												<option value={category} selected={category === type.category}>
-													{relationshipCategoryLabel(t, category)}
-												</option>
-											{/each}
-										</select>
-									</label>
-								</div>
-								{#if !type.symmetric}
-									<label class="flex flex-col gap-1">
-										<span class="text-xs text-fg-muted">{t('relationshipTypes.fromOtherSide')}</span>
-										<input name="reverseLabel" value={type.reverseLabel} class={INPUT} required />
-									</label>
-								{/if}
-								<!-- Symmetry decides how a link is stored, so it is fixed once the type exists. -->
-								{#if type.symmetric}
-									<input type="hidden" name="symmetric" value="on" />
-								{/if}
-								<div>
-									<Button variant="primary" size="sm">{t('common.save')}</Button>
-								</div>
-							</form>
+								<form
+									method="POST"
+									action="?/edit"
+									use:enhance={savedEdit}
+									class="flex flex-col gap-2 pl-5"
+								>
+									<input type="hidden" name="typeId" value={type.id} />
+									<div class="flex flex-wrap items-end gap-2">
+										<label class="flex flex-1 flex-col gap-1">
+											<span class="text-xs text-fg-muted">{t('relationshipTypes.label')}</span>
+											<input name="forwardLabel" value={type.forwardLabel} class={INPUT} required />
+										</label>
+										<label class="flex flex-col gap-1">
+											<span class="text-xs text-fg-muted">{t('relationshipTypes.category')}</span>
+											<select name="category" class={INPUT}>
+												{#each RELATIONSHIP_CATEGORIES as category (category)}
+													<option value={category} selected={category === type.category}>
+														{relationshipCategoryLabel(t, category)}
+													</option>
+												{/each}
+											</select>
+										</label>
+									</div>
+									{#if !type.symmetric}
+										<label class="flex flex-col gap-1">
+											<span class="text-xs text-fg-muted"
+												>{t('relationshipTypes.fromOtherSide')}</span
+											>
+											<input name="reverseLabel" value={type.reverseLabel} class={INPUT} required />
+										</label>
+									{/if}
+									<!-- Symmetry decides how a link is stored, so it is fixed once the type exists. -->
+									{#if type.symmetric}
+										<input type="hidden" name="symmetric" value="on" />
+									{/if}
+									<div>
+										<Button variant="primary" size="sm">{t('common.save')}</Button>
+									</div>
+								</form>
 
-							<form
-								method="POST"
-								action="?/merge"
-								use:enhance={savedMerge}
-								class="flex flex-col gap-2 border-t border-border-subtle pt-2 pl-5"
-							>
-								<input type="hidden" name="typeId" value={type.id} />
-								<div class="flex flex-wrap items-end gap-2">
-									<label class="flex flex-1 flex-col gap-1">
-										<span class="text-xs text-fg-muted">{t('relationshipTypes.mergeLabel')}</span>
-										<select name="intoId" class={INPUT} required>
-											{#each type.mergeTargets as target (target.id)}
-												<option value={target.id} selected={target.id === type.replacedBy}>
-													{relationshipTypeLabel(t, target)}
-												</option>
-											{/each}
-										</select>
-									</label>
-									<Button variant="secondary" size="sm">{t('relationshipTypes.merge')}</Button>
-								</div>
-								<p class="text-xs text-fg-subtle">{t('relationshipTypes.mergeHint')}</p>
-							</form>
+								<form
+									method="POST"
+									action="?/merge"
+									use:enhance={savedMerge}
+									class="flex flex-col gap-2 border-t border-border-subtle pt-2 pl-5"
+								>
+									<input type="hidden" name="typeId" value={type.id} />
+									<div class="flex flex-wrap items-end gap-2">
+										<label class="flex flex-1 flex-col gap-1">
+											<span class="text-xs text-fg-muted">{t('relationshipTypes.mergeLabel')}</span>
+											<select name="intoId" class={INPUT} required>
+												{#each type.mergeTargets as target (target.id)}
+													<option value={target.id} selected={target.id === type.replacedBy}>
+														{relationshipTypeLabel(t, target)}
+													</option>
+												{/each}
+											</select>
+										</label>
+										<Button variant="secondary" size="sm">{t('relationshipTypes.merge')}</Button>
+									</div>
+									<p class="text-xs text-fg-subtle">{t('relationshipTypes.mergeHint')}</p>
+								</form>
 							</div>
 						{/if}
 					</li>
@@ -268,9 +272,7 @@
 		>
 			{#each data.builtIn as type (type.id)}
 				<li class="flex items-center gap-3 py-2 text-sm">
-					<span
-						class="size-2 shrink-0 rounded-full"
-						style="background:{categoryVar(type.category)}"
+					<span class="size-2 shrink-0 rounded-full" style="background:{categoryVar(type.category)}"
 					></span>
 					<span class="text-fg">{relationshipTypeLabel(t, type)}</span>
 					{#if !type.symmetric}

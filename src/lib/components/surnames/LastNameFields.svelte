@@ -35,7 +35,9 @@
 	let selecting = $state(false);
 	let selected = $state<Record<string, boolean>>({});
 	let drafts = $state<Record<string, string>>({});
-	const chosen = $derived(shown.filter((p) => selected[p.id]).map((p) => ({ ...p, lastName: null })));
+	const chosen = $derived(
+		shown.filter((p) => selected[p.id]).map((p) => ({ ...p, lastName: null }))
+	);
 	const everyoneChosen = $derived(shown.length > 0 && chosen.length === shown.length);
 
 	function toggleEveryone() {
@@ -45,12 +47,22 @@
 </script>
 
 {#if shown.length > 0}
-	<section class="flex flex-col gap-2 rounded-app bg-card p-3 shadow-card" data-testid="last-name-fields" class:pb-24={selecting}>
+	<section
+		class="flex flex-col gap-2 rounded-app bg-card p-3 shadow-card"
+		data-testid="last-name-fields"
+		class:pb-24={selecting}
+	>
 		<header class="flex items-center gap-3">
 			<h2 class="min-w-0 flex-1 text-lg font-semibold text-fg">
-				{t('surnames.noSuggestion')} <span class="text-sm font-normal tabular-nums text-fg-subtle">· {shown.length}</span>
+				{t('surnames.noSuggestion')}
+				<span class="text-sm font-normal text-fg-subtle tabular-nums">· {shown.length}</span>
 			</h2>
-			<Button size="sm" type="button" aria-pressed={selecting} onclick={() => ((selecting = !selecting), (selected = {}))}>
+			<Button
+				size="sm"
+				type="button"
+				aria-pressed={selecting}
+				onclick={() => ((selecting = !selecting), (selected = {}))}
+			>
 				{selecting ? t('common.cancel') : t('surnames.select')}
 			</Button>
 		</header>
@@ -65,12 +77,29 @@
 							bind:checked={selected[person.id]}
 						/>
 					{/if}
-					<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={32} />
-					<a href="/contacts/{person.id}" class="min-w-0 flex-1 truncate font-medium text-fg hover:underline">
-						{person.displayName}{#if person.isDeceased}<span class="text-xs font-normal text-fg-subtle"> · {t('surnames.deceased')}</span>{/if}
+					<Avatar
+						id={person.id}
+						name={person.displayName}
+						avatarPhotoId={person.avatarPhotoId}
+						size={32}
+					/>
+					<a
+						href="/contacts/{person.id}"
+						class="min-w-0 flex-1 truncate font-medium text-fg hover:underline"
+					>
+						{person.displayName}{#if person.isDeceased}<span
+								class="text-xs font-normal text-fg-subtle"
+							>
+								· {t('surnames.deceased')}</span
+							>{/if}
 					</a>
 					{#if !selecting}
-						<form method="POST" action="?/setLastNames" use:enhance={held} class="flex w-full gap-2 sm:w-auto">
+						<form
+							method="POST"
+							action="?/setLastNames"
+							use:enhance={held}
+							class="flex w-full gap-2 sm:w-auto"
+						>
 							<input type="hidden" name="contactId" value={person.id} />
 							<Combobox
 								name="lastName"
@@ -79,7 +108,9 @@
 								placeholder={t('surnames.lastNamePlaceholder')}
 								class="min-w-0 flex-1 rounded-md border border-border-input bg-bg px-3 py-1.5 text-sm text-fg sm:w-44"
 							/>
-							<Button size="sm" disabled={disabled || !(drafts[person.id] ?? '').trim()}>{t('common.save')}</Button>
+							<Button size="sm" disabled={disabled || !(drafts[person.id] ?? '').trim()}
+								>{t('common.save')}</Button
+							>
 						</form>
 					{/if}
 				</li>

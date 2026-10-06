@@ -35,7 +35,7 @@
 			in:fly={{ y: -12, duration: enterMs, easing: cubicOut }}
 			out:fade={{ duration: leaveMs }}
 			data-testid="activity-indicator"
-			class="flex items-center gap-2.5 rounded-full bg-card/95 py-2 pl-3 pr-4 text-sm font-medium text-fg shadow-pop ring-1 ring-border-subtle backdrop-blur-sm"
+			class="flex items-center gap-2.5 rounded-full bg-card/95 py-2 pr-4 pl-3 text-sm font-medium text-fg shadow-pop ring-1 ring-border-subtle backdrop-blur-sm"
 		>
 			<span
 				aria-hidden="true"

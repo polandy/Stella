@@ -123,7 +123,10 @@ export type KeptOf<T extends JsonCommand['type']> = OutboxItem & {
 };
 
 /** Whether `item` holds a command of type `type`. */
-export function isKept<T extends JsonCommand['type']>(item: OutboxItem, type: T): item is KeptOf<T> {
+export function isKept<T extends JsonCommand['type']>(
+	item: OutboxItem,
+	type: T
+): item is KeptOf<T> {
 	return item.command.type === type;
 }
 
@@ -138,7 +141,12 @@ export function takeBatch(
 ): { items: OutboxItem[]; batch: JsonCommand[] } {
 	const batch: JsonCommand[] = [];
 	const next = items.map((item) => {
-		if (batch.length >= max || item.memberId !== memberId || item.state !== 'pending' || item.delivered) {
+		if (
+			batch.length >= max ||
+			item.memberId !== memberId ||
+			item.state !== 'pending' ||
+			item.delivered
+		) {
 			return item;
 		}
 		batch.push(item.command);
@@ -152,7 +160,10 @@ export function takeBatch(
  * send, stays as delivered; *refused* stays with its reason; *busy*, *failed* and anything
  * left unanswered go back to waiting.
  */
-export function settle(items: readonly OutboxItem[], answers: readonly CommandAnswer[]): OutboxItem[] {
+export function settle(
+	items: readonly OutboxItem[],
+	answers: readonly CommandAnswer[]
+): OutboxItem[] {
 	const byId = new Map(answers.map((a) => [a.id, a]));
 	const next: OutboxItem[] = [];
 	for (const item of items) {
@@ -321,7 +332,8 @@ export function deliveryFor(answer: CommandAnswer, photosLeft: boolean): Deliver
 		const { reason, refusals } = answer;
 		return refusals ? { status: 'refused', reason, refusals } : { status: 'refused', reason };
 	}
-	if (answer.status === 'applied' && !photosLeft) return { status: 'applied', result: answer.result };
+	if (answer.status === 'applied' && !photosLeft)
+		return { status: 'applied', result: answer.result };
 	return null;
 }
 

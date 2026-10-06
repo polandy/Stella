@@ -36,11 +36,18 @@ const utf8 = new TextEncoder();
 const snapshot: HouseholdSnapshot = {
 	householdName: 'Familie Brunner',
 	tables: {
-		contact: [
-			{ id: 'c-1', display_name: 'Hans Brunner', created_by: 'u-1', visibility: 'shared' }
-		],
+		contact: [{ id: 'c-1', display_name: 'Hans Brunner', created_by: 'u-1', visibility: 'shared' }],
 		photo: [
-			{ id: 'p-1', contact_id: 'c-1', journal_entry_id: null, file_path: 'p1.jpg', thumb_path: 't1.jpg', mime: 'image/jpeg', created_by: 'u-1', visibility: 'shared' }
+			{
+				id: 'p-1',
+				contact_id: 'c-1',
+				journal_entry_id: null,
+				file_path: 'p1.jpg',
+				thumb_path: 't1.jpg',
+				mime: 'image/jpeg',
+				created_by: 'u-1',
+				visibility: 'shared'
+			}
 		]
 	},
 	mediaPaths: ['p1.jpg', 't1.jpg']
@@ -139,7 +146,12 @@ describe('importing', () => {
 	it('tells the admin what was written and what was already here', async () => {
 		const restore = fakeRestore({ contact: { added: 3, skipped: 2 } });
 		const { store } = fakeMedia();
-		const report = await importArchive(depsWith(restore.repo, store), actor, archiveFile(), wording);
+		const report = await importArchive(
+			depsWith(restore.repo, store),
+			actor,
+			archiveFile(),
+			wording
+		);
 
 		expect(report.added.contact).toBe(3);
 		expect(report.skipped.contact).toBe(2);

@@ -4,7 +4,8 @@ export const search = {
 	'search.title': 'Search',
 	'search.placeholder': 'Search people and notes…',
 	'search.noResults': (p: { query: string }) => `No results for “${p.query}”.`,
-	'search.noResultsHint': 'Nobody by that name, and no note that says it. If they are new, add them.',
+	'search.noResultsHint':
+		'Nobody by that name, and no note that says it. If they are new, add them.',
 	'search.prompt': 'Type to search across people and notes.',
 	'search.people': 'People',
 	'search.notes': 'Notes',
@@ -40,7 +41,8 @@ export const search = {
 	'graph.allKinship': 'All kinship lines',
 	'graph.allKinship.hint': 'Also the ones the entered links already explain',
 	'graph.groupByRole': 'Group by role',
-	'graph.groupByRole.hint': 'Everyone with the same role in a circle stands in one group, on one line to the circle',
+	'graph.groupByRole.hint':
+		'Everyone with the same role in a circle stands in one group, on one line to the circle',
 	'graph.innerLinks': 'Links within groups',
 	'graph.innerLinks.hint': 'Show family, friends and colleagues among the people of a group',
 	'graph.group.label': (p: { role: string; count: number }) => `${p.role} · ${p.count}`,

@@ -2,7 +2,12 @@ import { describe, expect, it } from 'bun:test';
 import type { ContactAddPayload } from '../../../commands/commands';
 import type { Viewer } from '../../access/visibility';
 import { addPerson, type AddPersonDeps } from './add-person';
-import { NeedsSomethingToKnowThemByError, type Contact, type ContactRepository, type NewContact } from './contacts';
+import {
+	NeedsSomethingToKnowThemByError,
+	type Contact,
+	type ContactRepository,
+	type NewContact
+} from './contacts';
 
 /*
  * Adding a person from the *Add person* form (docs/02 §2.2), and adding yourself (§2.1.3):
@@ -35,7 +40,15 @@ function fakes() {
 		findByIdVisibleTo: async (viewer: Viewer, id: string) => {
 			const found = inserted.find((c) => c.id === id && c.householdId === viewer.householdId);
 			const contact: Contact | null = found
-				? { ...found, formerName: null, jobTitle: null, company: null, avatarPhotoId: null, isDeceased: false, archivedAt: null }
+				? {
+						...found,
+						formerName: null,
+						jobTitle: null,
+						company: null,
+						avatarPhotoId: null,
+						isDeceased: false,
+						archivedAt: null
+					}
 				: null;
 			return contact;
 		},
@@ -59,7 +72,9 @@ function fakes() {
 		contacts,
 		ids: { next: () => 'c-new' },
 		clock: { now: () => 1_700_000_000_000 },
-		accounts: { updateSelfContact: async (userId, contactId) => void selfWrites.push([userId, contactId]) }
+		accounts: {
+			updateSelfContact: async (userId, contactId) => void selfWrites.push([userId, contactId])
+		}
 	};
 	return { deps, inserted, selfWrites };
 }

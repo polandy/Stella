@@ -7,6 +7,9 @@ import type { SQLiteColumn } from 'drizzle-orm/sqlite-core';
  * the stored `YYYY-MM-DDTHH:MM:SS` with its `±HH:MM`/`Z` offset, and one without an offset as
  * UTC, exactly as `takenAtMs` does.
  */
-export function photoDatedAt(columns: { takenAt: SQLiteColumn; createdAt: SQLiteColumn }): SQL<number> {
+export function photoDatedAt(columns: {
+	takenAt: SQLiteColumn;
+	createdAt: SQLiteColumn;
+}): SQL<number> {
 	return sql<number>`coalesce(CAST(strftime('%s', ${columns.takenAt}) AS INTEGER) * 1000, ${columns.createdAt})`;
 }

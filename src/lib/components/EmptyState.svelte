@@ -24,8 +24,13 @@
 </script>
 
 {#if compact}
-	<div class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-app border border-dashed border-border px-4 py-3">
-		<span class="grid size-9 shrink-0 place-items-center rounded-full bg-bg-sunken text-fg-subtle" aria-hidden="true">
+	<div
+		class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-app border border-dashed border-border px-4 py-3"
+	>
+		<span
+			class="grid size-9 shrink-0 place-items-center rounded-full bg-bg-sunken text-fg-subtle"
+			aria-hidden="true"
+		>
 			<Icon name={icon} size={18} strokeWidth={1.5} />
 		</span>
 		<div class="min-w-0 flex-1 basis-48">
@@ -35,8 +40,13 @@
 		{#if children}<div class="shrink-0">{@render children()}</div>{/if}
 	</div>
 {:else}
-	<div class="flex flex-col items-center gap-2 rounded-app border border-dashed border-border px-6 py-10 text-center">
-		<span class="grid size-14 place-items-center rounded-full bg-bg-sunken text-fg-subtle" aria-hidden="true">
+	<div
+		class="flex flex-col items-center gap-2 rounded-app border border-dashed border-border px-6 py-10 text-center"
+	>
+		<span
+			class="grid size-14 place-items-center rounded-full bg-bg-sunken text-fg-subtle"
+			aria-hidden="true"
+		>
 			<Icon name={icon} size={26} strokeWidth={1.5} />
 		</span>
 		<p class="mt-1 font-medium text-fg">{title}</p>

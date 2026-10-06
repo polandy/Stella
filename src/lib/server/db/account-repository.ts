@@ -75,7 +75,9 @@ export function createDrizzleAccountRepository(
 
 		async insertHouseholdWithAdmin(data) {
 			db.transaction((tx) => {
-				tx.insert(householdTable).values({ id: data.household.id, name: data.household.name }).run();
+				tx.insert(householdTable)
+					.values({ id: data.household.id, name: data.household.name })
+					.run();
 				tx.insert(userTable)
 					.values({
 						id: data.user.id,

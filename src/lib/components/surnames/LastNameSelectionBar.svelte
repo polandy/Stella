@@ -39,7 +39,9 @@
 	class="pointer-events-none fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-20 flex justify-center px-4 md:bottom-[max(0.75rem,env(safe-area-inset-bottom))]"
 	data-testid="selection-bar"
 >
-	<div class="pointer-events-auto flex w-full max-w-4xl flex-wrap items-center gap-2 rounded-app border border-border bg-card p-2.5 shadow-pop">
+	<div
+		class="pointer-events-auto flex w-full max-w-4xl flex-wrap items-center gap-2 rounded-app border border-border bg-card p-2.5 shadow-pop"
+	>
 		{#if setting}
 			<SetLastNamePanel
 				{chosen}
@@ -53,13 +55,22 @@
 				}}
 			/>
 		{:else}
-			<strong class="px-1 text-sm tabular-nums text-fg" aria-live="polite">
-				{chosen.length ? t('circles.selectedCount', { count: chosen.length }) : t('circles.selectNone')}
+			<strong class="px-1 text-sm text-fg tabular-nums" aria-live="polite">
+				{chosen.length
+					? t('circles.selectedCount', { count: chosen.length })
+					: t('circles.selectNone')}
 			</strong>
 			<Button type="button" size="sm" onclick={ontoggleeveryone}>
 				{everyoneChosen ? t('circles.selectNoOne') : t('circles.selectEveryone')}
 			</Button>
-			<Button type="button" variant="primary" size="sm" class="ml-auto" disabled={disabled || chosen.length === 0} onclick={() => (setting = true)}>
+			<Button
+				type="button"
+				variant="primary"
+				size="sm"
+				class="ml-auto"
+				disabled={disabled || chosen.length === 0}
+				onclick={() => (setting = true)}
+			>
 				{t('surnames.setLastName')}
 			</Button>
 		{/if}

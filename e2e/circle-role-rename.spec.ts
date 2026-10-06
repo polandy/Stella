@@ -22,7 +22,9 @@ async function openSeededCircle(page: Page, circle: SeedCircle): Promise<void> {
 
 /** The role group headed `heading` exactly, e.g. `Teacher · 2`. */
 function roleGroup(page: Page, heading: string): Locator {
-	return page.getByTestId('role-group').filter({ has: page.getByRole('heading', { name: heading, exact: true }) });
+	return page
+		.getByTestId('role-group')
+		.filter({ has: page.getByRole('heading', { name: heading, exact: true }) });
 }
 
 /** Opens a role's heading as a field, types `to` and saves. */
@@ -93,7 +95,9 @@ test('a blank role name is refused and changes nothing', async ({ page }) => {
 
 	await rename(page, 'Alto', '   ');
 
-	await expect(page.getByText('Give the role a name — to take roles away, use Select.')).toBeVisible();
+	await expect(
+		page.getByText('Give the role a name — to take roles away, use Select.')
+	).toBeVisible();
 	// Read back what the server kept, not what the open field shows.
 	await page.reload();
 	const alto = roleGroup(page, 'Alto · 1');

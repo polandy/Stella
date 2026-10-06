@@ -52,7 +52,12 @@ beforeEach(() => {
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
-	db.insert(schema.household).values([{ id: H, name: 'H' }, { id: OTHER_H, name: 'Other' }]).run();
+	db.insert(schema.household)
+		.values([
+			{ id: H, name: 'H' },
+			{ id: OTHER_H, name: 'Other' }
+		])
+		.run();
 	db.insert(schema.user)
 		.values([
 			{ id: ANNA, householdId: H, email: 'anna@example.test', name: 'Anna' },
@@ -62,8 +67,20 @@ beforeEach(() => {
 		.run();
 	db.insert(schema.contact)
 		.values([
-			{ id: 'c-shared', householdId: H, createdBy: ANNA, visibility: 'shared', displayName: 'Carl' },
-			{ id: 'c-private', householdId: H, createdBy: ANNA, visibility: 'private', displayName: 'Private' }
+			{
+				id: 'c-shared',
+				householdId: H,
+				createdBy: ANNA,
+				visibility: 'shared',
+				displayName: 'Carl'
+			},
+			{
+				id: 'c-private',
+				householdId: H,
+				createdBy: ANNA,
+				visibility: 'private',
+				displayName: 'Private'
+			}
 		])
 		.run();
 	repo = createDrizzleImmichLinkRepository(db);
@@ -74,14 +91,22 @@ describe('createDrizzleImmichLinkRepository', () => {
 		expect(await repo.save(link('c-shared'), entry('a1', 'c-shared'))).toBe('saved');
 
 		expect(await repo.findForContactVisibleTo(asAnna, 'c-shared')).toEqual(link('c-shared'));
-		expect(db.select().from(schema.activityLog).all().map((row) => row.id)).toEqual(['a1']);
+		expect(
+			db
+				.select()
+				.from(schema.activityLog)
+				.all()
+				.map((row) => row.id)
+		).toEqual(['a1']);
 	});
 
 	it('replaces a contact’s link rather than adding a second', async () => {
 		await repo.save(link('c-shared'), entry('a1', 'c-shared'));
 		await repo.save(link('c-shared', OTHER_PERSON), entry('a2', 'c-shared'));
 
-		expect((await repo.findForContactVisibleTo(asAnna, 'c-shared'))?.immichPersonId).toBe(OTHER_PERSON);
+		expect((await repo.findForContactVisibleTo(asAnna, 'c-shared'))?.immichPersonId).toBe(
+			OTHER_PERSON
+		);
 		expect(db.select().from(schema.immichLink).all()).toHaveLength(1);
 	});
 
@@ -102,7 +127,13 @@ describe('createDrizzleImmichLinkRepository', () => {
 		expect(await repo.findForContactVisibleTo(asAnna, 'c-shared')).toBeNull();
 
 		expect(await repo.remove('c-shared', entry('a3', 'c-shared'))).toBe(false);
-		expect(db.select().from(schema.activityLog).all().map((row) => row.id)).toEqual(['a1', 'a2']);
+		expect(
+			db
+				.select()
+				.from(schema.activityLog)
+				.all()
+				.map((row) => row.id)
+		).toEqual(['a1', 'a2']);
 	});
 
 	it('holds one Immich person to one contact: a second link is taken, and nothing is written', async () => {
@@ -111,8 +142,20 @@ describe('createDrizzleImmichLinkRepository', () => {
 		// What a second member's request meets when it passed the use-case's check a moment
 		// before the first one wrote: the index, not the check, has the last word.
 		expect(await repo.save(link('c-private'), entry('a2', 'c-private'))).toBe('taken');
-		expect(db.select().from(schema.immichLink).all().map((l) => l.contactId)).toEqual(['c-shared']);
-		expect(db.select().from(schema.activityLog).all().map((row) => row.id)).toEqual(['a1']);
+		expect(
+			db
+				.select()
+				.from(schema.immichLink)
+				.all()
+				.map((l) => l.contactId)
+		).toEqual(['c-shared']);
+		expect(
+			db
+				.select()
+				.from(schema.activityLog)
+				.all()
+				.map((row) => row.id)
+		).toEqual(['a1']);
 	});
 
 	it('says who holds a person, naming them only to a viewer who sees them', async () => {
@@ -133,7 +176,10 @@ describe('createDrizzleImmichLinkRepository', () => {
 		await repo.save(link('c-shared', PERSON), entry('a1', 'c-shared'));
 		await repo.save(link('c-private', OTHER_PERSON), entry('a2', 'c-private'));
 
-		expect([...(await repo.linkedContactIdsVisibleTo(asAnna))].sort()).toEqual(['c-private', 'c-shared']);
+		expect([...(await repo.linkedContactIdsVisibleTo(asAnna))].sort()).toEqual([
+			'c-private',
+			'c-shared'
+		]);
 		expect([...(await repo.linkedContactIdsVisibleTo(asBert))]).toEqual(['c-shared']);
 		expect([...(await repo.linkedContactIdsVisibleTo(asDora))]).toEqual([]);
 	});

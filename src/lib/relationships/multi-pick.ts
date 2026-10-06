@@ -38,7 +38,10 @@ export function pickCap(choice: CapChoice | null, parentsAlreadyOnRecord: number
 }
 
 /** How many parents the household recorded for `childId`, as far as the viewer can see. */
-export function parentsOnRecord(facts: Pick<ExclusionFacts, 'parentEdges'>, childId: string): number {
+export function parentsOnRecord(
+	facts: Pick<ExclusionFacts, 'parentEdges'>,
+	childId: string
+): number {
 	return facts.parentEdges.filter((edge) => edge.childId === childId).length;
 }
 
@@ -47,7 +50,10 @@ export function parentsOnRecord(facts: Pick<ExclusionFacts, 'parentEdges'>, chil
  * `excess` counts the people a narrower type no longer takes — they stay on screen and keep
  * Add off until someone removes them, because nothing is dropped silently (D3).
  */
-export function capState(cap: number | null, pickedCount: number): { full: boolean; excess: number } {
+export function capState(
+	cap: number | null,
+	pickedCount: number
+): { full: boolean; excess: number } {
 	if (cap === null) return { full: false, excess: 0 };
 	return { full: pickedCount >= cap, excess: Math.max(0, pickedCount - cap) };
 }
@@ -59,7 +65,8 @@ export interface ServerRefusal {
 }
 
 /** Why one picked person cannot be linked this way: a rule the form knows, or the save's word. */
-export type ChipRefusal<E> = { targetId: string; exclusion: E } | { targetId: string; reason: string };
+export type ChipRefusal<E> =
+	{ targetId: string; exclusion: E } | { targetId: string; reason: string };
 
 /**
  * Every picked person who cannot be linked with the chosen type, in the order they were

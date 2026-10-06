@@ -174,7 +174,9 @@ test('declining on the household screen holds the no, and offering it again brin
 	await page.goto(reviewFor(f));
 	await expect(rowFor(page, f)).toHaveCount(0);
 
-	await (await openDeclined(page))
+	await (
+		await openDeclined(page)
+	)
 		.getByRole('listitem')
 		.filter({ hasText: claimOf(f) })
 		.getByRole('button', { name: 'Offer again' })

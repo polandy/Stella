@@ -21,7 +21,9 @@ test.beforeEach(async ({ page, javaScriptEnabled }) => {
 	if (javaScriptEnabled) await signIn(page);
 });
 
-test('sets a gender with one tap, names relatives by it, and takes it back with another', async ({ page }) => {
+test('sets a gender with one tap, names relatives by it, and takes it back with another', async ({
+	page
+}) => {
 	await seedHousehold(
 		page,
 		[AUNT, MOTHER, CHILD],
@@ -67,7 +69,10 @@ test('sets a gender with one tap, names relatives by it, and takes it back with 
 	// A tap on the chosen chip takes the gender off the record.
 	await openPerson(page, new RegExp(AUNT));
 	await row.getByRole('button', { name: /^Gender/ }).click();
-	await expect(row.getByRole('button', { name: 'Diverse', exact: true })).toHaveAttribute('aria-pressed', 'true');
+	await expect(row.getByRole('button', { name: 'Diverse', exact: true })).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
 	await row.getByRole('button', { name: 'Diverse', exact: true }).click();
 	await expect(row).toContainText('Not on record');
 });
@@ -108,7 +113,9 @@ test.describe('without JavaScript', () => {
 	});
 });
 
-test('asks for a gender while adding someone, and lets a second tap take the choice back', async ({ page }) => {
+test('asks for a gender while adding someone, and lets a second tap take the choice back', async ({
+	page
+}) => {
 	await page.goto('/contacts/new');
 	await appReady(page);
 	await page.getByLabel('First name').fill('Nora');

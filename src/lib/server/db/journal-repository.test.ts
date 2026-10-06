@@ -75,8 +75,16 @@ describe('journal repository + upsert', () => {
 	});
 
 	it('orders newest entry-date first', async () => {
-		await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: '2026-07-01', body: 'a' });
-		await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: '2026-07-11', body: 'b' });
+		await saveJournalEntry(deps(), author1, {
+			contactId: 'kid',
+			entryDate: '2026-07-01',
+			body: 'a'
+		});
+		await saveJournalEntry(deps(), author1, {
+			contactId: 'kid',
+			entryDate: '2026-07-11',
+			body: 'b'
+		});
 		const list = await listJournalForContact(deps(), viewerU1, 'kid');
 		expect(list.map((e) => e.entryDate)).toEqual(['2026-07-11', '2026-07-01']);
 	});
@@ -103,17 +111,35 @@ describe('journal repository + upsert', () => {
 	});
 
 	it('lets each member keep their own entry for the same day', async () => {
-		await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: '2026-07-11', body: 'from u1' });
-		await saveJournalEntry(deps(), author2, { contactId: 'kid', entryDate: '2026-07-11', body: 'from u2' });
+		await saveJournalEntry(deps(), author1, {
+			contactId: 'kid',
+			entryDate: '2026-07-11',
+			body: 'from u1'
+		});
+		await saveJournalEntry(deps(), author2, {
+			contactId: 'kid',
+			entryDate: '2026-07-11',
+			body: 'from u2'
+		});
 		const list = await listJournalForContact(deps(), viewerU1, 'kid');
 		expect(list).toHaveLength(2);
 	});
 
 	it('hides the whole journal when the parent contact is private to someone else', async () => {
 		db.insert(schema.contact)
-			.values({ id: 'secret', householdId: H, createdBy: U1, visibility: 'private', displayName: 'Secret' })
+			.values({
+				id: 'secret',
+				householdId: H,
+				createdBy: U1,
+				visibility: 'private',
+				displayName: 'Secret'
+			})
 			.run();
-		await saveJournalEntry(deps(), author1, { contactId: 'secret', entryDate: '2026-07-11', body: 'hidden' });
+		await saveJournalEntry(deps(), author1, {
+			contactId: 'secret',
+			entryDate: '2026-07-11',
+			body: 'hidden'
+		});
 
 		expect(await listJournalForContact(deps(), viewerU2, 'secret')).toHaveLength(0);
 		expect(await listJournalForContact(deps(), viewerU1, 'secret')).toHaveLength(1);
@@ -121,17 +147,27 @@ describe('journal repository + upsert', () => {
 
 	it('paginates newest-first via keyset cursor without gaps or repeats', async () => {
 		for (const d of ['2026-06-20', '2026-06-27', '2026-07-04', '2026-07-11', '2026-07-18']) {
-			await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: d, body: `entry ${d}` });
+			await saveJournalEntry(deps(), author1, {
+				contactId: 'kid',
+				entryDate: d,
+				body: `entry ${d}`
+			});
 		}
 
 		const page1 = await listJournalPage(deps(), viewerU1, 'kid', { limit: 2 });
 		expect(page1.entries.map((e) => e.entryDate)).toEqual(['2026-07-18', '2026-07-11']);
 		expect(page1.nextCursor).not.toBeNull();
 
-		const page2 = await listJournalPage(deps(), viewerU1, 'kid', { limit: 2, before: page1.nextCursor! });
+		const page2 = await listJournalPage(deps(), viewerU1, 'kid', {
+			limit: 2,
+			before: page1.nextCursor!
+		});
 		expect(page2.entries.map((e) => e.entryDate)).toEqual(['2026-07-04', '2026-06-27']);
 
-		const page3 = await listJournalPage(deps(), viewerU1, 'kid', { limit: 2, before: page2.nextCursor! });
+		const page3 = await listJournalPage(deps(), viewerU1, 'kid', {
+			limit: 2,
+			before: page2.nextCursor!
+		});
 		expect(page3.entries.map((e) => e.entryDate)).toEqual(['2026-06-20']);
 		expect(page3.nextCursor).toBeNull(); // reached the beginning
 	});
@@ -162,7 +198,11 @@ describe('journal repository + upsert', () => {
 			])
 			.run();
 		const repo = createDrizzleJournalRepository(db);
-		const id = await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: '2026-07-11', body: 'x' });
+		const id = await saveJournalEntry(deps(), author1, {
+			contactId: 'kid',
+			entryDate: '2026-07-11',
+			body: 'x'
+		});
 
 		await repo.replaceMentions(id, ['ada', 'bo']);
 		expect((await repo.listMentionedContactIds(id)).sort()).toEqual(['ada', 'bo']);
@@ -176,10 +216,20 @@ describe('journal repository + upsert', () => {
 
 	it('deleting an entry cascades its mention links away', async () => {
 		db.insert(schema.contact)
-			.values({ id: 'ada', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Ada' })
+			.values({
+				id: 'ada',
+				householdId: H,
+				createdBy: U1,
+				visibility: 'shared',
+				displayName: 'Ada'
+			})
 			.run();
 		const repo = createDrizzleJournalRepository(db);
-		const id = await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: '2026-07-11', body: 'x' });
+		const id = await saveJournalEntry(deps(), author1, {
+			contactId: 'kid',
+			entryDate: '2026-07-11',
+			body: 'x'
+		});
 		await repo.replaceMentions(id, ['ada']);
 
 		await repo.deleteOwn({ authorId: U1, id });
@@ -191,9 +241,21 @@ describe('journal repository + upsert', () => {
 		// `schema.ts` declares, so the database refuses the delete instead: the rows go
 		// explicitly, and their bytes come back so the caller can unlink them.
 		const repo = createDrizzleJournalRepository(db);
-		const id = await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: '2026-07-11', body: 'with a picture' });
+		const id = await saveJournalEntry(deps(), author1, {
+			contactId: 'kid',
+			entryDate: '2026-07-11',
+			body: 'with a picture'
+		});
 		db.insert(schema.photo)
-			.values({ id: 'p-1', householdId: H, journalEntryId: id, createdBy: U1, filePath: 'j.jpg', thumbPath: 'j-t.jpg', mime: 'image/jpeg' })
+			.values({
+				id: 'p-1',
+				householdId: H,
+				journalEntryId: id,
+				createdBy: U1,
+				filePath: 'j.jpg',
+				thumbPath: 'j-t.jpg',
+				mime: 'image/jpeg'
+			})
 			.run();
 
 		expect(await repo.deleteOwn({ authorId: U1, id })).toEqual([
@@ -204,7 +266,11 @@ describe('journal repository + upsert', () => {
 
 	it('deleteOwn removes only the author’s own entry', async () => {
 		const repo = createDrizzleJournalRepository(db);
-		const id = await saveJournalEntry(deps(), author1, { contactId: 'kid', entryDate: '2026-07-11', body: 'mine' });
+		const id = await saveJournalEntry(deps(), author1, {
+			contactId: 'kid',
+			entryDate: '2026-07-11',
+			body: 'mine'
+		});
 		expect(await repo.deleteOwn({ authorId: U2, id })).toBeNull(); // not U2's
 		expect(await repo.deleteOwn({ authorId: U1, id })).toEqual([]);
 		expect(await listJournalForContact(deps(), viewerU1, 'kid')).toHaveLength(0);
@@ -224,7 +290,13 @@ describe('journal repository + upsert', () => {
 		).toBe(false); // not U2's
 
 		expect(
-			await repo.updateOwn({ authorId: U1, id, title: 'New title', body: 'expanded', updatedAt: 2000 })
+			await repo.updateOwn({
+				authorId: U1,
+				id,
+				title: 'New title',
+				body: 'expanded',
+				updatedAt: 2000
+			})
 		).toBe(true);
 
 		const [entry] = await listJournalForContact(deps(), viewerU1, 'kid');

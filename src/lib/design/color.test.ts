@@ -1,14 +1,15 @@
 import { RELATIONSHIP_CATEGORIES } from '../relationships/categories';
 import { describe, expect, it } from 'bun:test';
-import { AA_LARGE, AA_TEXT, contrastRatio, ensureContrast, mixHex, relativeLuminance } from './color';
-import { resolveColor, tokensFor, type Theme } from './css-tokens';
 import {
-	ACCENTS,
-	AVATAR_ACCENTS,
-	AVATAR_TINT_PERCENT,
-	accentVar,
-	categoryVar
-} from './tokens';
+	AA_LARGE,
+	AA_TEXT,
+	contrastRatio,
+	ensureContrast,
+	mixHex,
+	relativeLuminance
+} from './color';
+import { resolveColor, tokensFor, type Theme } from './css-tokens';
+import { ACCENTS, AVATAR_ACCENTS, AVATAR_TINT_PERCENT, accentVar, categoryVar } from './tokens';
 import { INTERACTION_KINDS } from '../interactions/kinds';
 
 /*
@@ -106,7 +107,20 @@ describe('app.css declares every token the helpers build', () => {
 		});
 
 		it(`resolves the surface and text tokens to a colour in ${theme}`, () => {
-			const surfaces = ['--bg', '--bg-sunken', '--card', '--card-hover', '--border', '--border-input', '--fg', '--fg-muted', '--fg-subtle', '--primary', '--primary-fg', '--success-text'];
+			const surfaces = [
+				'--bg',
+				'--bg-sunken',
+				'--card',
+				'--card-hover',
+				'--border',
+				'--border-input',
+				'--fg',
+				'--fg-muted',
+				'--fg-subtle',
+				'--primary',
+				'--primary-fg',
+				'--success-text'
+			];
 			const unresolved = surfaces.filter((name) => resolveColor(tokens, name) === null);
 			expect(unresolved).toEqual([]);
 		});
@@ -115,7 +129,9 @@ describe('app.css declares every token the helpers build', () => {
 	it('keeps the two dark blocks identical, since CSS cannot share one', () => {
 		const explicit = tokensFor(css, 'dark');
 		const systemDark = tokensFor(css, 'system-dark');
-		const drift = [...explicit.keys()].filter((name) => explicit.get(name) !== systemDark.get(name));
+		const drift = [...explicit.keys()].filter(
+			(name) => explicit.get(name) !== systemDark.get(name)
+		);
 		expect(drift).toEqual([]);
 		expect([...systemDark.keys()].sort()).toEqual([...explicit.keys()].sort());
 	});
@@ -262,7 +278,9 @@ describe('text on the offline tint', () => {
 	const WARNING_SOFT_PERCENT = 18;
 
 	it('declares the tint the offline line is painted with', () => {
-		expect(css).toContain(`--warning-soft: color-mix(in srgb, var(--warning) ${WARNING_SOFT_PERCENT}%, transparent)`);
+		expect(css).toContain(
+			`--warning-soft: color-mix(in srgb, var(--warning) ${WARNING_SOFT_PERCENT}%, transparent)`
+		);
 	});
 
 	for (const theme of THEMES) {
@@ -293,8 +311,12 @@ describe('text on a state tint', () => {
 	const MENU_HIGHLIGHT_PERCENT = 18;
 
 	it('declares the tints those surfaces are painted with', () => {
-		expect(css).toContain(`--danger-soft: color-mix(in srgb, var(--danger) ${DANGER_SOFT_PERCENT}%, transparent)`);
-		expect(css).toContain(`--primary-soft: color-mix(in srgb, var(--primary) ${PRIMARY_SOFT_PERCENT}%, transparent)`);
+		expect(css).toContain(
+			`--danger-soft: color-mix(in srgb, var(--danger) ${DANGER_SOFT_PERCENT}%, transparent)`
+		);
+		expect(css).toContain(
+			`--primary-soft: color-mix(in srgb, var(--primary) ${PRIMARY_SOFT_PERCENT}%, transparent)`
+		);
 	});
 
 	const TINTS = [
@@ -327,7 +349,9 @@ describe('text on a state tint', () => {
 			if (success === null || primary === null || card === null) {
 				throw new Error(`--success-text, --primary or --card does not resolve in ${theme}`);
 			}
-			expect(contrastRatio(success, mixHex(primary, PRIMARY_SOFT_PERCENT, card))).toBeGreaterThanOrEqual(AA_TEXT);
+			expect(
+				contrastRatio(success, mixHex(primary, PRIMARY_SOFT_PERCENT, card))
+			).toBeGreaterThanOrEqual(AA_TEXT);
 		});
 	}
 });

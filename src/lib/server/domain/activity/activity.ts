@@ -8,13 +8,7 @@ import type { Visibility } from '../../access/visibility';
 
 /** What happened to the entity. Only `delete`, `merge`, `export` and `import` are written today. */
 export type ActivityAction =
-	| 'create'
-	| 'update'
-	| 'delete'
-	| 'archive'
-	| 'merge'
-	| 'export'
-	| 'import';
+	'create' | 'update' | 'delete' | 'archive' | 'merge' | 'export' | 'import';
 
 /** A log row as it is written. */
 export interface NewActivityEntry {

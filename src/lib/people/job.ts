@@ -42,7 +42,8 @@ export function jobShortForm(
 ): string | null {
 	const job = jobOf(person);
 	if (job === null) return null;
-	if (job.jobTitle !== null && job.company !== null) return at({ job: job.jobTitle, company: job.company });
+	if (job.jobTitle !== null && job.company !== null)
+		return at({ job: job.jobTitle, company: job.company });
 	return job.jobTitle ?? job.company;
 }
 
@@ -67,7 +68,14 @@ export function foundByJob(person: Searchable, query: string): boolean {
 	const words = fold(query).split(/\s+/).filter(Boolean);
 	const jobText = fold([job.jobTitle, job.company].filter(Boolean).join(' '));
 	const otherText = fold(
-		[person.displayName, person.firstName, person.lastName, person.nickname, person.formerName, person.description]
+		[
+			person.displayName,
+			person.firstName,
+			person.lastName,
+			person.nickname,
+			person.formerName,
+			person.description
+		]
 			.filter((part): part is string => typeof part === 'string')
 			.join(' ')
 	);

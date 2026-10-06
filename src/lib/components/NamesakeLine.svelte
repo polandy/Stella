@@ -14,4 +14,8 @@
 	const t = useTranslate();
 </script>
 
-<span data-testid="namesake-line" class="block truncate text-xs text-fg-subtle" class:italic={distinction.kind === 'nothing'}>{describeDistinction(t, distinction)}</span>
+<span
+	data-testid="namesake-line"
+	class="block truncate text-xs text-fg-subtle"
+	class:italic={distinction.kind === 'nothing'}>{describeDistinction(t, distinction)}</span
+>

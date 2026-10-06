@@ -4,7 +4,13 @@
 	import WhichNamesake from '$lib/components/WhichNamesake.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { allowedForAudience } from '$lib/mentions/audience';
-	import { activeHandle, handleFor, insertHandle, suggest, type ActiveHandle } from '$lib/mentions/picker';
+	import {
+		activeHandle,
+		handleFor,
+		insertHandle,
+		suggest,
+		type ActiveHandle
+	} from '$lib/mentions/picker';
 	import { shiftPicks, toEditable, toStored, type MentionPick } from '$lib/mentions/picks';
 	import { unclearHandles } from '$lib/mentions/unclear';
 	import { usePeopleContext } from '$lib/people/context.svelte';
@@ -112,9 +118,7 @@
 		value = handedOut;
 	}
 
-	const audience = $derived(
-		allowedForAudience(candidates, visibility)
-	);
+	const audience = $derived(allowedForAudience(candidates, visibility));
 	const people = $derived(active ? suggest(active.query, audience).people : []);
 	// The second line counts everyone the list could offer, not only what the query left.
 	const peopleContext = usePeopleContext();
@@ -132,7 +136,8 @@
 	 */
 	function onKeyup(event: KeyboardEvent) {
 		if (!event.key.startsWith('Arrow')) return;
-		if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && active && people.length > 0) return;
+		if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && active && people.length > 0)
+			return;
 		refreshPicker();
 	}
 
@@ -216,8 +221,7 @@
 		onclick={refreshPicker}
 		onkeyup={onKeyup}
 		onblur={() => setTimeout(closeIfFocusLeft, BLUR_CLOSE_MS)}
-		class={className}
-	></textarea>
+		class={className}></textarea>
 
 	{#if active && people.length > 0}
 		<!-- A textarea cannot take the combobox role, so it points at the list with
@@ -227,7 +231,7 @@
 			role="listbox"
 			aria-label={t('composer.people')}
 			data-testid="mention-picker"
-			class="absolute left-2 top-full z-10 -mt-1 w-[min(320px,calc(100%-1rem))] rounded-app border border-border bg-card p-1 shadow-pop"
+			class="absolute top-full left-2 z-10 -mt-1 w-[min(320px,calc(100%-1rem))] rounded-app border border-border bg-card p-1 shadow-pop"
 		>
 			{#each people as person, i (person.id)}
 				<!-- The li is only the list's own markup: a listbox may contain options, not items. -->
@@ -245,10 +249,17 @@
 						onmouseenter={() => (selected = i)}
 						class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
 					>
-						<Avatar id={person.id} name={person.displayName} avatarPhotoId={person.avatarPhotoId} size={22} />
+						<Avatar
+							id={person.id}
+							name={person.displayName}
+							avatarPhotoId={person.avatarPhotoId}
+							size={22}
+						/>
 						<span class="min-w-0">
 							<span class="block truncate">{person.displayName}</span>
-							{#if namesakes.get(person.id)}<NamesakeLine distinction={namesakes.get(person.id)!} />{/if}
+							{#if namesakes.get(person.id)}<NamesakeLine
+									distinction={namesakes.get(person.id)!}
+								/>{/if}
 						</span>
 					</button>
 				</li>

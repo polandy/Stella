@@ -77,7 +77,10 @@ import type { NameCandidateSource, SuggestionDeps } from './domain/contacts/sugg
 import type { NameDeps, NameRepository } from './domain/contacts/name-parts';
 import type { NoteDeps, NoteRepository } from './domain/notes/notes';
 import type { JournalDeps, JournalRepository } from './domain/journal/journal';
-import type { RelationshipDeps, RelationshipRepository } from './domain/relationships/relationships';
+import type {
+	RelationshipDeps,
+	RelationshipRepository
+} from './domain/relationships/relationships';
 import type {
 	SuggestionDismissalRepository,
 	SuggestionReviewDeps
@@ -97,7 +100,11 @@ import {
 } from './domain/circles/circle-photos';
 import type { StreamDeps, StreamRepository } from './domain/stream/stream';
 import { captureMoment, type CaptureMomentDeps } from './domain/moments/moments';
-import type { CommandActor, CommandDeps, CommandReceiptRepository } from './domain/commands/dispatch';
+import type {
+	CommandActor,
+	CommandDeps,
+	CommandReceiptRepository
+} from './domain/commands/dispatch';
 import type { Viewer } from './access/visibility';
 import { createDrizzleCommandReceiptRepository } from './db/command-receipt-repository';
 import { createDrizzleEntryOwnership } from './db/entry-ownership';
@@ -136,7 +143,10 @@ import { createDrizzleImmichIgnoreRepository } from './db/immich-ignore-reposito
 import { createDrizzleImmichLinkRepository } from './db/immich-link-repository';
 import { createDrizzleImmichNameIgnoreRepository } from './db/immich-name-ignore-repository';
 import type { AddFromImmichDeps } from './domain/immich/add-from-immich';
-import type { ImmichNameIgnoreDeps, ImmichNameIgnoreRepository } from './domain/immich/name-ignores';
+import type {
+	ImmichNameIgnoreDeps,
+	ImmichNameIgnoreRepository
+} from './domain/immich/name-ignores';
 import { createImmichConnection, type ImmichConnection } from './domain/immich/connection';
 import type { ImmichGateway } from './domain/immich/gateway';
 import type { ImmichGlimpseDeps, ImmichMediaDeps } from './domain/immich/glimpse';
@@ -177,12 +187,20 @@ export function getAccountDeps(): AccountDeps {
 
 /** API tokens (docs/02 §2.16.1): minted in Settings, read by the hook for `/api/v1/`. */
 export function getApiTokenDeps(): ApiTokenDeps {
-	return { tokens: createDrizzleApiTokenRepository(getDb()), clock: systemClock, ids: ulidGenerator };
+	return {
+		tokens: createDrizzleApiTokenRepository(getDb()),
+		clock: systemClock,
+		ids: ulidGenerator
+	};
 }
 
 /** The import API's use-case (docs/02 §2.16.1). */
 export function getApiImportDeps(): ApiImportDeps {
-	return { imports: createDrizzleApiImportRepository(getDb()), clock: systemClock, ids: ulidGenerator };
+	return {
+		imports: createDrizzleApiImportRepository(getDb()),
+		clock: systemClock,
+		ids: ulidGenerator
+	};
 }
 
 let oidcProvider: OidcProvider | null = null;
@@ -337,9 +355,7 @@ export function getSuggestionDeps(): SuggestionDeps {
 	return { candidates: getContacts() };
 }
 
-let relationshipRepository:
-	| (RelationshipRepository & RelationshipTypeRepository)
-	| null = null;
+let relationshipRepository: (RelationshipRepository & RelationshipTypeRepository) | null = null;
 
 function getRelationshipRepository(): RelationshipRepository & RelationshipTypeRepository {
 	return (relationshipRepository ??= createDrizzleRelationshipRepository(getDb()));
@@ -413,7 +429,6 @@ export function getJournal(): JournalRepository {
 export function getJournalDeps(): JournalDeps {
 	return { journal: getJournal(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
 }
-
 
 let contactFieldRepository: ContactFieldRepository | null = null;
 
@@ -564,7 +579,12 @@ export function getGalleryDeps(): GalleryDeps {
 
 /** Deps for wearing a gallery photo through a chosen square (docs/02 §2.14). */
 export function getFramingDeps(): FramingDeps {
-	return { framings: photoAdapter(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
+	return {
+		framings: photoAdapter(),
+		media: getMediaStore(),
+		ids: ulidGenerator,
+		clock: systemClock
+	};
 }
 
 export function getGalleryUploadDeps(): GalleryUploadDeps {
@@ -605,14 +625,25 @@ export function getCommandDeps(): CommandDeps {
 				...(await withNamesakeContext(getNamesakeContextDeps(), viewerOf(actor), () =>
 					captureMoment(
 						capture,
-						{ userId: actor.userId, householdId: actor.householdId, locale: actor.locale, defaultVisibility: payload.visibility },
+						{
+							userId: actor.userId,
+							householdId: actor.householdId,
+							locale: actor.locale,
+							defaultVisibility: payload.visibility
+						},
 						payload
 					)
 				)),
 				visibility: payload.visibility
 			}),
 			'tag.assign': onVisibleContact(getContacts(), async (actor, payload) => ({
-				tagId: await assignTagByName(getTagDeps(), actor.householdId, payload.contactId, payload.name, payload.color)
+				tagId: await assignTagByName(
+					getTagDeps(),
+					actor.householdId,
+					payload.contactId,
+					payload.name,
+					payload.color
+				)
 			})),
 			'circle.join': onVisibleContact(getContacts(), async (actor, payload) => ({
 				circleId: await joinCircleByName(
@@ -626,9 +657,17 @@ export function getCommandDeps(): CommandDeps {
 			'contact.add': (actor, payload) =>
 				addPerson({ ...getContactDeps(), accounts: getAccounts() }, actor, payload),
 			'relationship.add': (actor, payload) =>
-				addRelationshipChecked({ ...getRelationshipDeps(), contacts: getContacts() }, actor, payload),
+				addRelationshipChecked(
+					{ ...getRelationshipDeps(), contacts: getContacts() },
+					actor,
+					payload
+				),
 			'relationship.addMany': (actor, payload) =>
-				addRelationshipsOrRefuse({ ...getRelationshipDeps(), contacts: getContacts() }, actor, payload),
+				addRelationshipsOrRefuse(
+					{ ...getRelationshipDeps(), contacts: getContacts() },
+					actor,
+					payload
+				),
 			'interaction.log': (actor, payload) =>
 				logInteractionChecked({ ...getInteractionDeps(), contacts: getContacts() }, actor, payload),
 			'note.add': (actor, payload) =>
@@ -637,7 +676,11 @@ export function getCommandDeps(): CommandDeps {
 				),
 			'moment.photo': (actor, payload) =>
 				attachMomentPhoto(
-					{ receipts, entries: createDrizzleEntryOwnership(getDb()), photos: getJournalPhotoDeps() },
+					{
+						receipts,
+						entries: createDrizzleEntryOwnership(getDb()),
+						photos: getJournalPhotoDeps()
+					},
 					actor,
 					payload
 				),
@@ -657,9 +700,14 @@ export function getCommandDeps(): CommandDeps {
 				visibility: payload.visibility
 			})),
 			'gallery.photo': (actor, payload) =>
-				attachGalleryPhoto({ receipts, contacts: getContacts(), photos: getGalleryUploadDeps() }, actor, payload),
+				attachGalleryPhoto(
+					{ receipts, contacts: getContacts(), photos: getGalleryUploadDeps() },
+					actor,
+					payload
+				),
 			// Checks the circle and the role once; the photos following it land where it says.
-			'circleGallery.add': (actor, payload) => prepareCirclePhotoUpload(getCirclePhotoDeps(), viewerOf(actor), payload),
+			'circleGallery.add': (actor, payload) =>
+				prepareCirclePhotoUpload(getCirclePhotoDeps(), viewerOf(actor), payload),
 			'circleGallery.photo': (actor, payload) => {
 				const photos = getCirclePhotoDeps();
 				return attachCirclePhoto({ receipts, circles: photos.circles, photos }, actor, payload);
@@ -761,7 +809,12 @@ export function getImmichGlimpseDeps(): ImmichGlimpseDeps | null {
 export function getImmichMediaDeps(): ImmichMediaDeps | null {
 	const configured = getImmich();
 	if (!configured) return null;
-	return { links: getImmichLinks(), contacts: getContacts(), gateway: configured.gateway, signer: configured.signer };
+	return {
+		links: getImmichLinks(),
+		contacts: getContacts(),
+		gateway: configured.gateway,
+		signer: configured.signer
+	};
 }
 
 let immichIgnoreRepository: ImmichIgnoreRepository | null = null;
@@ -826,7 +879,8 @@ export function getUseImmichPhotoDeps(): UseImmichPhotoDeps | null {
 		links: getImmichLinks(),
 		contacts: getContacts(),
 		signer: configured.signer,
-		setAvatar: (uploader, contactId, upload) => setContactAvatar(getAvatarDeps(), uploader, contactId, upload)
+		setAvatar: (uploader, contactId, upload) =>
+			setContactAvatar(getAvatarDeps(), uploader, contactId, upload)
 	};
 }
 

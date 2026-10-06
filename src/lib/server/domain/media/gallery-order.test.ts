@@ -6,7 +6,12 @@ import { orderGallery } from './gallery-order';
  * first, the most recently pinned leading, then everything else newest first.
  */
 
-const photo = (id: string, createdAt: number, pinnedAt: number | null = null, takenAt: string | null = null) => ({
+const photo = (
+	id: string,
+	createdAt: number,
+	pinnedAt: number | null = null,
+	takenAt: string | null = null
+) => ({
 	id,
 	createdAt,
 	pinnedAt,
@@ -16,7 +21,11 @@ const ids = (photos: { id: string }[]) => photos.map((p) => p.id);
 
 describe('orderGallery', () => {
 	it('shows unpinned photos newest first', () => {
-		expect(ids(orderGallery([photo('old', 1), photo('new', 3), photo('mid', 2)]))).toEqual(['new', 'mid', 'old']);
+		expect(ids(orderGallery([photo('old', 1), photo('new', 3), photo('mid', 2)]))).toEqual([
+			'new',
+			'mid',
+			'old'
+		]);
 	});
 
 	it('dates a photo by when it was taken when its EXIF said so, else by when it was added', () => {
@@ -40,7 +49,13 @@ describe('orderGallery', () => {
 	});
 
 	it('breaks a tie by date, then by id, so the order never depends on the input', () => {
-		const tied = [photo('x', 5), photo('y', 5), photo('older', 4), photo('p', 1, 9), photo('q', 2, 9)];
+		const tied = [
+			photo('x', 5),
+			photo('y', 5),
+			photo('older', 4),
+			photo('p', 1, 9),
+			photo('q', 2, 9)
+		];
 		const expected = ['q', 'p', 'y', 'x', 'older'];
 		expect(ids(orderGallery(tied))).toEqual(expected);
 		expect(ids(orderGallery([...tied].reverse()))).toEqual(expected);

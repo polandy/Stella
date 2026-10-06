@@ -25,7 +25,10 @@
 </script>
 
 {#if person || error}
-	<div class="mt-4 flex flex-col gap-2 border-t border-border-subtle pt-3" data-testid="immich-line">
+	<div
+		class="mt-4 flex flex-col gap-2 border-t border-border-subtle pt-3"
+		data-testid="immich-line"
+	>
 		<FormError message={error} variant="inline" />
 		{#if person}
 			<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
@@ -37,7 +40,10 @@
 						<span class="text-fg" data-testid="immich-count">
 							{seen.photoCount === null
 								? t('immich.row.label')
-								: t('immich.row.photos', { count: seen.photoCount, shown: shownCount(seen.photoCount) })}
+								: t('immich.row.photos', {
+										count: seen.photoCount,
+										shown: shownCount(seen.photoCount)
+									})}
 						</span>
 						<a
 							href={seen.openUrl}
@@ -51,7 +57,9 @@
 					{:else if seen.state === 'personGone'}
 						<span class="text-fg-muted">{t('immich.row.gone')}</span>
 						<form method="POST" action="?/unlinkImmich" class="contents">
-							<button type="submit" class="font-medium text-link hover:underline">{t('immich.row.unlinkQuestion')}</button>
+							<button type="submit" class="font-medium text-link hover:underline"
+								>{t('immich.row.unlinkQuestion')}</button
+							>
 						</form>
 					{:else}
 						<span class="text-fg-muted">{t('immich.row.unreachable')}</span>
