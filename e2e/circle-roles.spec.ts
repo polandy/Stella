@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { addPerson, appReady, pickPerson, profileRow, signIn } from './app';
+import { addPerson, appReady, factEditor, pickPerson, signIn } from './app';
 
 /*
  * The roles a circle already uses are offered to whoever joins it next (docs/02 §2.4.2).
@@ -89,8 +89,7 @@ test('on a person’s page the roles follow the circle name typed, in any capita
 
 	// A third person, so the form offers circles they are not in yet.
 	await addPerson(page, 'Katia', 'Stucki');
-	const circles = await profileRow(page, 'Circles');
-	await circles.getByRole('button', { name: 'Join' }).click();
+	const circles = await factEditor(page, 'circles');
 	const name = circles.getByPlaceholder('Join or create a circle…');
 
 	await name.fill('Harbour Chess Club');

@@ -121,6 +121,7 @@ export const errors = {
 	'errors.note.empty': 'Please write something before saving.',
 	'errors.note.couldNotSave': 'Could not save the note.',
 	'errors.field.needKindAndValue': 'Please choose a type and enter a value.',
+	'errors.field.needValue': 'Write something, or remove it instead.',
 	'errors.field.couldNotAdd': 'Could not add the field.',
 	'errors.date.needKindAndDay': 'Please choose a kind and a day.',
 	'errors.interaction.needKindAndDay': 'Please choose what happened and on which day.',

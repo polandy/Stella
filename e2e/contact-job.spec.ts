@@ -4,7 +4,7 @@ import { seedHousehold } from './seed';
 
 /*
  * A person's job title and company (docs/02 §2.2, §2.9): edited where they are read — among
- * the identity card's facts, or in its *Job* row while nothing is on record — and found by in
+ * the identity card's facts, or in its dashed *Job* slot while nothing is on record — and found by in
  * the People list, the search and the person picker, with a *Job* tag when only the job
  * explains the hit. Written after the owner tried it on the phone (docs/08 §8.4.1).
  *
@@ -29,34 +29,32 @@ async function seedPeople(
 const factJob = (page: Page) => page.getByTestId('person-job');
 const factJobButton = (page: Page) => page.getByRole('button').filter({ has: factJob(page) });
 
-test('sets job and company from the row behind the quiet button, then edits them among the facts', async ({
+test('sets job and company from the slot behind the quiet button, then edits them among the facts', async ({
 	page
 }) => {
 	const person = 'Mirja Quellbach';
 	await seedPeople(page, [person]);
 	await openPerson(page, new RegExp(person));
 
-	// Nothing on record: the row waits behind the identity card's quiet button, and the facts
+	// Nothing on record: the slot waits behind the identity card's quiet button, and the facts
 	// state no job.
-	const row = await identityRow(page, page.locator('[data-row="job"]'));
-	await expect(row).toContainText('Not on record');
+	const slot = await identityRow(page, page.locator('[data-fact="job"][data-slot]'));
 	await expect(factJob(page)).toHaveCount(0);
 
-	await row.getByRole('button', { name: /^Job/ }).click();
-	const editor = row.getByTestId('job-editor');
+	await slot.getByRole('button', { name: 'Add job' }).click();
+	const editor = page.getByTestId('identity-facts').getByTestId('job-editor');
 	await editor.getByLabel('Job title').fill('Uhrmacherin');
 	await editor.getByLabel('Company / organisation').fill('Zahnradwerk Quellbach');
 	await editor.getByRole('button', { name: 'Save' }).click();
 
 	await expect(page.getByTestId('toast-notice')).toContainText('Saved');
+	// The slot became the fact, in the same place.
 	await expect(factJob(page)).toHaveText('Uhrmacherin at Zahnradwerk Quellbach');
-	// The row stays where it was for this visit rather than vanishing under the tap.
-	await expect(row).toContainText('Uhrmacherin at Zahnradwerk Quellbach');
+	await expect(page.locator('[data-fact="job"][data-slot]')).toHaveCount(0);
 
-	// Kept — and from now on stated among the facts, so the row is gone.
+	// Kept.
 	await page.reload();
 	await expect(factJob(page)).toHaveText('Uhrmacherin at Zahnradwerk Quellbach');
-	await expect(row).toHaveCount(0);
 
 	// Escape puts the fact back unchanged.
 	const factEditor = page.getByTestId('identity-facts').getByTestId('job-editor');
@@ -76,7 +74,7 @@ test('sets job and company from the row behind the quiet button, then edits them
 	await expect(factJob(page)).toHaveText('Uhrmacherin at Zahnradwerk Quellbach');
 });
 
-test('edits the job among the facts, and clearing both leaves only the row behind the quiet button', async ({
+test('edits the job among the facts, and clearing both leaves an empty slot in its place', async ({
 	page
 }) => {
 	const person = 'Linus Quellbach';
@@ -86,8 +84,8 @@ test('edits the job among the facts, and clearing both leaves only the row behin
 	await openPerson(page, new RegExp(person));
 
 	await expect(factJob(page)).toHaveText('Glasbläser at Glashütte Quellbach');
-	// On record, so it is a fact and not one of the editable rows.
-	await expect(page.locator('[data-row="job"]')).toHaveCount(0);
+	// On record, so it is a fact and not an empty slot.
+	await expect(page.locator('[data-fact="job"][data-slot]')).toHaveCount(0);
 	const factEditor = page.getByTestId('identity-facts').getByTestId('job-editor');
 
 	// It opens in place among the facts.
@@ -100,14 +98,15 @@ test('edits the job among the facts, and clearing both leaves only the row behin
 	await factEditor.getByRole('button', { name: 'Save' }).click();
 	await expect(factJob(page)).toHaveText('Glasbläser');
 
-	// Both emptied: off the record, no fact left to tap, and the row back behind the button.
+	// Both emptied: off the record, and for this visit an empty slot where the fact stood,
+	// rather than a gap under the tap that cleared it.
 	await factJobButton(page).click();
 	await factEditor.getByLabel('Job title').fill('');
 	await factEditor.getByLabel('Company / organisation').fill('');
 	await page.keyboard.press('Enter');
+	const slot = page.locator('[data-fact="job"][data-slot]');
+	await expect(slot.getByRole('button', { name: 'Add job' })).toBeVisible();
 	await expect(factJob(page)).toHaveCount(0);
-	const row = await identityRow(page, page.locator('[data-row="job"]'));
-	await expect(row).toContainText('Not on record');
 });
 
 test('the People list finds someone by their company, shows the job, and tags only a job hit', async ({

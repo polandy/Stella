@@ -17,7 +17,6 @@ export const contact = {
 	'contact.nameParts.formerName': 'Former name',
 	'contact.nameParts.keepFormer': (p: { name: string }) => `Keep “${p.name}” as former name`,
 	'contact.lastContact': 'Last contact',
-	'contact.noContactYet': 'No contact logged yet',
 	'contact.met': 'Met',
 	'contact.privateContact': 'Only you can see this contact',
 	'contact.private': 'Private',
@@ -34,7 +33,17 @@ export const contact = {
 	'contact.section.photos': 'Photos',
 	'contact.section.mentions': 'Mentioned in',
 	// The identity card at the top of the page (docs/05 §5.5): its facts, its quiet button, its ⋯ menu.
-	'contact.identity.addMore': 'Add phone, email, tags …',
+	// The quiet button names what is behind it: "Add address, phone, email …".
+	'contact.identity.addThings': (p: { things: string }) => `Add ${p.things}`,
+	'contact.identity.missing.address': 'address',
+	'contact.identity.missing.birthday': 'birthday',
+	'contact.identity.missing.job': 'job',
+	'contact.identity.missing.phone': 'phone',
+	'contact.identity.missing.email': 'email',
+	'contact.identity.missing.tags': 'tags',
+	'contact.identity.missing.circles': 'circles',
+	'contact.facts.editDates': 'Edit dates',
+	'contact.facts.editAddress': 'Edit address',
 	'contact.facts.birthday': 'Birthday',
 	'contact.facts.born': 'Born',
 	'contact.facts.age': (p: { age: number }) => (p.age === 1 ? '1 year' : `${p.age} years`),
@@ -42,7 +51,6 @@ export const contact = {
 	'contact.menu.archive': 'Archive',
 
 	'contact.gender': 'Gender',
-	'contact.gender.edit': 'Edit gender',
 	'contact.gender.notRecorded': 'Not on record',
 	'contact.gender.female': 'Female',
 	'contact.gender.male': 'Male',
@@ -53,7 +61,6 @@ export const contact = {
 	// What they do and where (docs/02 §2.2): two free-text fields, one row, one short form.
 	'contact.job': 'Job',
 	'contact.job.edit': 'Edit job',
-	'contact.job.notRecorded': 'Not on record',
 	'contact.job.title': 'Job title',
 	'contact.job.company': 'Company / organisation',
 	'contact.job.titlePlaceholder': 'e.g. Teacher',
@@ -62,7 +69,7 @@ export const contact = {
 	'contact.job.at': (p: { job: string; company: string }) => `${p.job} at ${p.company}`,
 
 	'contact.section.contact': 'Contact',
-	'contact.noFields': 'No phone, email, or address yet.',
+	'contact.noFields': 'No phone or email yet.',
 	'contact.removeField': (p: { what: string }) => `Remove ${p.what}`,
 	'contact.fieldRemoved': 'Contact detail removed',
 	'contact.kind': 'Kind',
@@ -76,8 +83,15 @@ export const contact = {
 	'contact.fieldKind.date': 'Date',
 	'contact.fieldKind.custom': 'Custom',
 
+	// Where they live: a fact of the identity card, edited where it is read (docs/02 §2.2).
+	'contact.address.placeholder': 'Street, postcode, town',
+	'contact.address.remove': 'Remove address',
+	'contact.address.removed': 'Address removed',
+	'contact.address.another': 'Add another address',
+
 	'contact.section.dates': 'Dates',
-	'contact.noDates': 'No birthday or anniversary yet.',
+	'contact.dates.add': 'Add a date',
+	'contact.dates.another': 'Another date',
 	'contact.born': 'born',
 	'contact.around': (p: { year: string | number }) => `around ${p.year}`,
 	'contact.estimated': 'estimated',
@@ -99,7 +113,8 @@ export const contact = {
 	'contact.section.circles': 'Circles',
 	'contact.join': 'Join',
 	'contact.allCircles': 'All circles',
-	'contact.noCircles': 'Not in any circle yet.',
+	'contact.circles.join': 'Join a circle',
+	'contact.circles.roleIn': (p: { name: string }) => `Role in ${p.name}`,
 	'contact.leaveCircle': (p: { name: string }) => `Leave ${p.name}`,
 	'contact.leftCircle': 'Left the circle',
 	'contact.joinOrCreate': 'Join or create a circle…',

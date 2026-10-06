@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { appReady, profileRow, recordAction, signIn } from './app';
+import { appReady, factEditor, recordAction, signIn } from './app';
 
 /*
  * The identity card at the top of a person's page and its ⋯ menu (docs/05 §5.5). Written after
@@ -7,8 +7,8 @@ import { appReady, profileRow, recordAction, signIn } from './app';
  *
  * Read-only against the demo household: the confirm steps are opened and closed, never
  * pressed (archive.spec.ts and delete.spec.ts own that), and the rows are revealed, not
- * filled. Markus Brunner's record holds an address and a job; his daughter Lena's holds
- * neither — the seed's, and no other spec writes either onto them.
+ * filled. Markus Brunner's record holds an address and a job but no tags; his daughter Lena's
+ * holds neither — the seed's, and no other spec writes either onto them.
  */
 
 const LENA = 'demo-c-lena';
@@ -59,32 +59,30 @@ test.describe('the facts', () => {
 
 		// The facts she has are there, so the grid has rendered before its gaps are read.
 		await expect(facts(page).locator('[data-fact="birthday"]')).toBeVisible();
-		await expect(facts(page).locator('[data-fact="last-contact"]')).toBeVisible();
+		await expect(facts(page).locator('[data-fact="circles"]')).toBeVisible();
 		await expect(facts(page).locator('[data-fact="address"]')).toHaveCount(0);
 		await expect(facts(page).locator('[data-fact="job"]')).toHaveCount(0);
 	});
 });
 
-test('the quiet button reveals the empty rows in their places and hands them the cursor', async ({
+test('the quiet button names what it holds, reveals it in its place and hands it the cursor', async ({
 	page
 }) => {
 	await openDemoPerson(page, MARKUS, 'Markus Brunner');
 	const card = page.getByTestId('identity-card');
 
-	// He has contact details and dates but no tags: the rows he holds are listed, the tags wait.
+	// He has contact details but no tags: the row he holds is listed, the tags wait.
 	await expect(card.locator('[data-identity-row="contact"]')).toBeVisible();
 	await expect(card.locator('[data-identity-row="tags"]')).toHaveCount(0);
 	const addMore = card.getByTestId('identity-add-more');
-	await expect(addMore).toHaveText('Add phone, email, tags …');
+	await expect(addMore).toHaveText('Add tags');
 
 	await addMore.click();
 
-	// Tags land between contact and dates, where the card's order puts them, not at the end.
+	// Tags land after contact, where the card's order puts them.
 	const tags = card.locator('[data-identity-row="tags"]');
 	await expect(tags).toBeVisible();
-	const order = await listedRows(page);
-	expect(order.indexOf('tags')).toBe(order.indexOf('contact') + 1);
-	expect(order.indexOf('dates')).toBe(order.indexOf('tags') + 1);
+	expect(await listedRows(page)).toEqual(['contact', 'tags']);
 	// The button is spent, and the cursor followed it to the first row that appeared.
 	await expect(addMore).toHaveCount(0);
 	await expect(tags.getByRole('button', { name: /^Tags/ })).toBeFocused();
@@ -180,8 +178,9 @@ test('the story card’s own Log contact is a quiet button, and the only one on 
  * and the add-a-date form ran ragged on its right. Geometry, so it is measured on the rendered
  * page rather than read off the classes.
  *
- * The icons are read in German, where the owner saw them: "Hinzufügen" over "Beitreten" is a
- * gap of several characters, where "Add" over "Join" is a pixel. The language is stored in the
+ * The icons are read in German, where the owner saw them: "Hinzufügen" over a shorter label is
+ * a gap of several characters. On a wide screen Markus's two rows stand side by side, one per
+ * column, so only a phone stacks them one above the other. The language is stored in the
  * profile, which every spec shares, so each case hands the account back in English.
  */
 test.describe('in German, the rows’ add icons', () => {
@@ -190,12 +189,6 @@ test.describe('in German, the rows’ add icons', () => {
 	});
 	test.afterEach(async ({ page }) => {
 		await chooseLanguage(page, 'English', /^Settings$/);
-	});
-
-	test('stand one above the other in each column of rows on a wide screen', async ({ page }) => {
-		const columns = await addIconsByColumn(page);
-		expect(columns).toHaveLength(2);
-		for (const xs of columns) expectOneX(xs);
 	});
 
 	test.describe('on a narrow phone', () => {
@@ -217,9 +210,8 @@ async function chooseLanguage(page: Page, language: string, settled: RegExp): Pr
 }
 
 /**
- * Markus Brunner's rows, every one revealed — contact, tags and dates (*Hinzufügen*) and
- * circles (*Beitreten*) — as the x of each row's add icon, grouped by the column the row
- * stands in (its left edge names it).
+ * Markus Brunner's rows, every one revealed — contact and tags, both *Hinzufügen* — as the x of
+ * each row's add icon, grouped by the column the row stands in (its left edge names it).
  */
 async function addIconsByColumn(page: Page): Promise<number[][]> {
 	await page.goto(`/contacts/${MARKUS}`);
@@ -227,8 +219,7 @@ async function addIconsByColumn(page: Page): Promise<number[][]> {
 	await expect(page.getByRole('button', { name: 'Suche', exact: true })).toBeEnabled();
 	const card = page.getByTestId('identity-card');
 	await card.getByTestId('identity-add-more').click();
-	await expect(card.getByRole('button', { name: 'Beitreten', exact: true })).toBeVisible();
-	await expect(card.getByRole('button', { name: 'Hinzufügen', exact: true })).toHaveCount(3);
+	await expect(card.getByRole('button', { name: 'Hinzufügen', exact: true })).toHaveCount(2);
 
 	const placed = await card
 		.locator('section[data-row]:has([data-section-toggle])')
@@ -256,8 +247,8 @@ test.describe('on a narrow phone', () => {
 		page
 	}) => {
 		await openDemoPerson(page, LENA, 'Lena Brunner');
-		const dates = await profileRow(page, 'Dates');
-		await dates.getByRole('button', { name: 'Add', exact: true }).click();
+		const dates = await factEditor(page, 'dates');
+		await dates.getByRole('button', { name: 'Add a date', exact: true }).click();
 
 		const kind = dates.getByLabel('Kind');
 		const day = dates.getByRole('group', { name: 'Day' });

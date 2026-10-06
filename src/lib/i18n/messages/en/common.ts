@@ -15,6 +15,7 @@ export const common = {
 	'common.edit': 'Edit',
 	'common.add': 'Add',
 	'common.close': 'Close',
+	'common.done': 'Done',
 	'common.back': 'Back',
 	'common.open': 'Open',
 	'common.search': 'Search',

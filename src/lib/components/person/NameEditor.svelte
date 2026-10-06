@@ -7,6 +7,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { withNameParts } from '$lib/people/display-name';
+	import { GENDERS, type Gender } from '$lib/people/gender';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { focusDestination } from '$lib/ui/focus-destination';
 	import { focusLeftForm, owesFocusBack } from '$lib/ui/focus-return';
@@ -16,7 +17,8 @@
 	/*
 	 * The person's name, edited where it is read (docs/02 §2.2, docs/concepts/surnames.md §3.4).
 	 * A tap on the name opens one editor for all of it: first name, last name, nickname and,
-	 * below them, *Shown as*. While the shown name follows the parts it changes as they are
+	 * below them, *Shown as* — and the gender, which is rarely looked up and exists so kinship
+	 * terms can say *aunt* or *son*, so it has no row of its own on the card. While the shown name follows the parts it changes as they are
 	 * typed; once the member types their own, it stays as typed. The server applies the same rule
 	 * (`withNameEdit`), so a form without JavaScript, or a stale one, ends up the same way.
 	 *
@@ -26,6 +28,7 @@
 	 */
 	let {
 		name,
+		gender,
 		shownNameChosen,
 		error = null
 	}: {
@@ -36,6 +39,7 @@
 			nickname: string | null;
 			formerName: string | null;
 		};
+		gender: Gender | null;
 		shownNameChosen: boolean;
 		error?: string | null;
 	} = $props();
@@ -64,6 +68,10 @@
 	let following = $state(!shownNameChosen);
 	// svelte-ignore state_referenced_locally
 	let keepFormerName = $state(!name.formerName);
+	/** The three, then none on record — last, as the choice that says nothing. */
+	const GENDER_CHOICES: readonly (Gender | '')[] = [...GENDERS, ''];
+	// svelte-ignore state_referenced_locally
+	let genderDraft = $state<Gender | ''>(gender ?? '');
 
 	function start() {
 		firstName = name.firstName ?? '';
@@ -74,6 +82,7 @@
 		following = !shownNameChosen;
 		// Ticked while no former name is on record; replacing one is a decision, not a default.
 		keepFormerName = !name.formerName;
+		genderDraft = gender ?? '';
 		editing = true;
 	}
 
@@ -230,6 +239,27 @@
 				{t('contact.nameParts.keepFormer', { name: name.lastName ?? '' })}
 			</label>
 		{/if}
+		<!-- Relatives are named by it (docs/02 §2.2); "not on record" names them neutrally. -->
+		<fieldset class="flex flex-col gap-1" aria-describedby="{uid}-gender-hint">
+			<legend class="mb-1 text-xs text-fg-muted">{t('contact.gender')}</legend>
+			<div class="flex flex-wrap gap-1.5 pointer-coarse:gap-2">
+				{#each GENDER_CHOICES as option (option)}
+					<label
+						class="inline-flex cursor-pointer items-center rounded-full border border-border px-3 py-1 text-sm text-fg-muted transition-colors hover:border-primary hover:text-fg has-checked:border-primary has-checked:bg-primary-soft has-checked:font-semibold has-checked:text-fg has-focus-visible:outline-2 has-focus-visible:outline-primary pointer-coarse:min-h-11"
+					>
+						<input
+							type="radio"
+							name="gender"
+							value={option}
+							bind:group={genderDraft}
+							class="sr-only"
+						/>
+						{option === '' ? t('contact.gender.notRecorded') : t(`contact.gender.${option}`)}
+					</label>
+				{/each}
+			</div>
+			<span id="{uid}-gender-hint" class="text-xs text-fg-subtle">{t('contact.gender.hint')}</span>
+		</fieldset>
 		<FormError message={error} variant="inline" size="xs" />
 		{#if offline}
 			<p class="text-xs text-fg-muted">{t('surnames.offline')}</p>

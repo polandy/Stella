@@ -24,7 +24,8 @@ const EditProfileSchema = v.object({
 
 /**
  * The three name parts and *Shown as*; each may be emptied (docs/concepts/surnames.md §3.4) —
- * the use-case refuses only a name with nothing left in it.
+ * the use-case refuses only a name with nothing left in it. The gender rides along: it is
+ * edited with the name (docs/02 §2.2), one of the three or empty for none on record.
  */
 const NamePartsSchema = v.object({
 	firstName: v.pipe(v.string(), v.trim()),
@@ -32,11 +33,9 @@ const NamePartsSchema = v.object({
 	nickname: v.pipe(v.string(), v.trim()),
 	displayName: v.pipe(v.string(), v.trim()),
 	formerName: v.pipe(v.string(), v.trim()),
-	keepFormerName: v.boolean()
+	keepFormerName: v.boolean(),
+	gender: v.optional(v.union([v.picklist(GENDERS), v.literal('')]))
 });
-
-/** One of the three, or empty for taking the gender off the record (docs/02 §2.2). */
-const GenderSchema = v.union([v.picklist(GENDERS), v.literal('')]);
 
 /**
  * The job editor's two fields; either may be emptied. Trimming and the length are the
@@ -48,7 +47,7 @@ const JobSchema = v.object({
 	company: v.string()
 });
 
-/** The hero: name, description, face, and the gender and job on the profile card (docs/02 §2.2). */
+/** The hero: name and gender, description, face, and the job among the facts (docs/02 §2.2). */
 export const profileActions = {
 	/* The hero's description, edited in place; the name has its own editor (docs/02 §2.2). */
 	editProfile: async ({ request, params, locals }) => {
@@ -69,7 +68,7 @@ export const profileActions = {
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
-	/* The whole name — parts and *Shown as* — from the one editor behind the name (docs/02 §2.2). */
+	/* The whole name — parts, *Shown as* and gender — from the one editor behind the name (docs/02 §2.2). */
 	editNameParts: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
 		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
@@ -81,46 +80,25 @@ export const profileActions = {
 			nickname: form.get('nickname') ?? '',
 			displayName: form.get('displayName') ?? '',
 			formerName: form.get('formerName') ?? '',
-			keepFormerName: form.get('keepFormerName') === 'on'
+			keepFormerName: form.get('keepFormerName') === 'on',
+			// Absent from a form older than the field: the gender is then left as it is.
+			gender: form.get('gender') ?? undefined
 		});
 		if (!parsed.success)
 			return fail(400, { namePartsError: say(locals, 'errors.contact.namePartsInvalid') });
 
+		const { gender, ...nameParts } = parsed.output;
 		try {
-			const saved = await editNameParts(
-				getNameDeps(),
-				viewer,
-				params.id,
-				parsed.output,
-				locals.locale
-			);
+			const saved = await editNameParts(getNameDeps(), viewer, params.id, nameParts, locals.locale);
 			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
+			// After the name, so a refused name leaves the gender as it was too.
+			if (gender !== undefined)
+				await setGender(getContactDeps(), viewer, params.id, gender || null);
 		} catch (err) {
-			if (err instanceof EmptyContactNameError)
+			if (err instanceof EmptyContactNameError || err instanceof InvalidGenderError)
 				return fail(400, { namePartsError: err.phrase(translator(locals)) });
 			throw err;
 		}
-		throw redirect(303, `/contacts/${params.id}`);
-	},
-
-	/* A gender from the profile's chips; an empty value takes it off the record (docs/02 §2.2). */
-	setGender: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
-
-		const parsed = v.safeParse(GenderSchema, (await request.formData()).get('gender') ?? '');
-		if (!parsed.success)
-			return fail(400, { genderError: say(locals, 'errors.contact.invalidGender') });
-
-		try {
-			const saved = await setGender(getContactDeps(), viewer, params.id, parsed.output || null);
-			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
-		} catch (err) {
-			if (err instanceof InvalidGenderError)
-				return fail(400, { genderError: err.phrase(translator(locals)) });
-			throw err;
-		}
-
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 

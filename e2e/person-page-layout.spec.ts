@@ -58,9 +58,9 @@ test('the identity card shows the rows it holds and folds the empty ones behind 
 	await openPerson(page, /Lena Brunner/);
 
 	const card = page.getByTestId('identity-card');
-	// She is in circles: they are stated among the facts, and their row is there to edit.
+	// She is in circles: they are stated among the facts, and edited there, behind their +.
 	await expect(card.getByTestId('identity-facts')).toContainText('Klasse 5b');
-	await expect(card.locator('section[data-row="Circles"]')).toBeVisible();
+	await expect(card.getByRole('button', { name: 'Join a circle' })).toBeVisible();
 
 	// She has no tags, so that row waits behind the quiet button — and adding the first one
 	// is one press of it away.
