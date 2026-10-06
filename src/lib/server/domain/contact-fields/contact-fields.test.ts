@@ -3,6 +3,7 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import {
 	addContactField,
+	editContactField,
 	fieldHref,
 	type ContactFieldRepository,
 	type NewContactField
@@ -45,18 +46,23 @@ const idGen = (v: string): IdGenerator => ({ next: () => v });
 
 function fakeRepo() {
 	let inserted: NewContactField | null = null;
+	const updates: unknown[] = [];
 	const repo: ContactFieldRepository = {
 		insert: async (f) => {
 			inserted = f;
 		},
 		listForContactVisibleTo: async () => [],
-		remove: async () => {}
+		remove: async () => {},
+		update: async (contactId, fieldId, change) => {
+			updates.push({ contactId, fieldId, ...change });
+		}
 	};
 	return {
 		repo,
 		get inserted() {
 			return inserted;
-		}
+		},
+		updates
 	};
 }
 
@@ -95,5 +101,34 @@ describe('addContactField', () => {
 			// @ts-expect-error testing runtime guard against an invalid kind
 			addContactField(deps(f.repo), { contactId: 'c', kind: 'telepathy', value: 'x' })
 		).rejects.toThrow();
+	});
+});
+
+describe('editContactField', () => {
+	it('rewrites the label and value, trimmed, a blank label as none', async () => {
+		const f = fakeRepo();
+		await editContactField(deps(f.repo), {
+			contactId: 'contact-1',
+			fieldId: 'field-1',
+			label: '   ',
+			value: '  Thunstrasse 12\n3074 Muri  '
+		});
+		expect(f.updates).toEqual([
+			{
+				contactId: 'contact-1',
+				fieldId: 'field-1',
+				label: null,
+				value: 'Thunstrasse 12\n3074 Muri',
+				updatedAt: NOW
+			}
+		]);
+	});
+
+	it('refuses an empty value: taking a field off is removing it', async () => {
+		const f = fakeRepo();
+		await expect(
+			editContactField(deps(f.repo), { contactId: 'c', fieldId: 'f', label: null, value: ' ' })
+		).rejects.toThrow();
+		expect(f.updates).toEqual([]);
 	});
 });

@@ -88,4 +88,19 @@ describe('createDrizzleContactFieldRepository', () => {
 		await repo.remove('c-priv', 'f-1'); // wrong contact
 		expect(await repo.listForContactVisibleTo(viewerU1, 'c-shared')).toHaveLength(1);
 	});
+
+	it('rewrites a field’s label and value in place, scoped to its contact', async () => {
+		await repo.insert(field({ id: 'f-1', kind: 'address', label: 'Home', value: 'Old 1' }));
+		await repo.update('c-shared', 'f-1', { label: null, value: 'New 2', updatedAt: 5 });
+		await repo.update('c-priv', 'f-1', { label: 'Wrong', value: 'Wrong', updatedAt: 9 });
+		const [rewritten] = await repo.listForContactVisibleTo(viewerU1, 'c-shared');
+		expect(rewritten).toMatchObject({
+			id: 'f-1',
+			kind: 'address',
+			label: null,
+			value: 'New 2',
+			createdAt: 0,
+			updatedAt: 5
+		});
+	});
 });
