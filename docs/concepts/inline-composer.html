@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>C6 — Write a moment without leaving the page (interactive mockup)</title>
+<style>
+  /* Catppuccin tokens as src/app.css maps them: flavour → surfaces → semantic (Latte / Mocha). */
+  :root, :root[data-theme='latte'] {
+    --bg:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff; --card-hover:#f4f5f9;
+    --border:#ccd0da; --border-subtle:#e7e9f0; --input:#e6e9ef;
+    --fg:#4c4f69; --fg-muted:#5c5f77; --fg-subtle:#6c6f85;
+    --primary:#853ae8; --primary-fg:#ffffff; --danger:#d20f39; --link:#1e66f5;
+    --a-pink:#ea76cb; --a-teal:#179299; --a-peach:#fe640b; --a-blue:#1e66f5; --a-green:#40a02b; --a-red:#d20f39;
+    --avatar-fg:#4c4f69; --av-pink:#f4dcdc; --av-blue:#d3e2fb; --av-teal:#cdeceb; --av-peach:#fbe2cf; --av-mauve:#e7dbfb;
+    --shadow-card:0 1px 2px rgba(76,79,105,.07), 0 2px 8px rgba(76,79,105,.06);
+    --page:#eff1f5; --kbd:#d5d8e0;
+  }
+  :root[data-theme='mocha'] {
+    --bg:#181825; --bg-sunken:#11111b; --card:#232334; --card-hover:#2a2a3d;
+    --border:#313244; --border-subtle:#292939; --input:#1e1e2e;
+    --fg:#cdd6f4; --fg-muted:#bac2de; --fg-subtle:#a6adc8;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --danger:#f38ba8; --link:#89b4fa;
+    --a-pink:#f5c2e7; --a-teal:#94e2d5; --a-peach:#fab387; --a-blue:#89b4fa; --a-green:#a6e3a1; --a-red:#f38ba8;
+    --avatar-fg:#cdd6f4; --av-pink:#45384a; --av-blue:#2f3a55; --av-teal:#2c4446; --av-peach:#4a3a33; --av-mauve:#3d3355;
+    --shadow-card:0 1px 2px rgba(0,0,0,.3);
+    --page:#1e1e2e; --kbd:#2b2b3c;
+  }
+  :root { --primary-soft:color-mix(in srgb, var(--primary) 14%, transparent);
+    --sans:'Instrument Sans Variable','Instrument Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --serif:'Newsreader Variable','Newsreader',Georgia,'Times New Roman',serif; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--fg); font-family:var(--sans); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button, input, select, textarea { font:inherit; color:inherit; }
+  a { color:inherit; text-decoration:none; }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:8px; }
+  svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+
+  /* ── The document around the frames ────────────────────────── */
+  .wrap { margin:0 auto; padding:28px 24px 80px; max-width:1560px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); }
+  h1 { font-size:26px; font-weight:650; margin:4px 0 6px; letter-spacing:-.01em; }
+  .lede { color:var(--fg-muted); margin:0 0 18px; max-width:84ch; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; margin-bottom:22px; }
+  .seg { display:flex; gap:3px; background:var(--bg-sunken); border-radius:999px; padding:3px; }
+  .seg button { border:0; background:transparent; padding:6px 14px; border-radius:999px; font-size:13px; color:var(--fg-muted); cursor:pointer; white-space:nowrap; }
+  .seg button[aria-pressed='true'] { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .seg-label { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-subtle); margin-right:-8px; }
+  .stage { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+  .legend { flex:1; min-width:280px; max-width:440px; }
+  .legend h2 { font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); margin:0 0 10px; }
+  .legend ol { padding-left:20px; margin:0; display:flex; flex-direction:column; gap:10px; font-size:14px; color:var(--fg-muted); }
+  .legend b { color:var(--fg); font-weight:600; }
+  .legend p { font-size:13px; color:var(--fg-subtle); margin:14px 0 0; }
+  .legend .q { margin-top:18px; padding:12px 14px; border-radius:12px; border:1px dashed var(--border); font-size:13px; color:var(--fg-muted); }
+  .legend .q b { display:block; margin-bottom:4px; }
+  .try { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 16px; }
+  .try button { border:1px solid var(--border); background:var(--card); border-radius:999px; padding:4px 12px; font-size:12px; cursor:pointer; color:var(--fg-muted); }
+
+  /* ── Phone: Pixel 9 Pro, 412 × 915 CSS px ──────────────────── */
+  .device { padding:10px; background:#0b0b12; border-radius:46px; box-shadow:0 20px 60px rgba(0,0,0,.25); flex:none; }
+  .screen { width:412px; height:915px; border-radius:36px; overflow:hidden; position:relative; background:var(--bg); display:flex; flex-direction:column; }
+  .status { height:30px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:6px 26px 0; font-size:13px; font-weight:600; }
+  .status .cam { width:12px; height:12px; border-radius:50%; background:#0b0b12; }
+  .ptop { display:flex; align-items:center; gap:10px; padding:8px 16px; flex:none; font-size:15px; color:var(--fg-muted); }
+  .ptop .here { color:var(--fg); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ptop .ib { width:40px; height:40px; display:grid; place-items:center; border-radius:10px; background:var(--card); box-shadow:var(--shadow-card); color:var(--fg-subtle); flex:none; }
+  .ptop .ib:first-of-type { margin-left:auto; }
+  .scroller { flex:1; overflow-y:auto; scrollbar-width:none; position:relative; }
+  .scroller::-webkit-scrollbar { display:none; }
+  .p .scroller { padding:6px 12px 110px; }
+  .tabbar { position:absolute; inset:auto 0 0 0; display:flex; align-items:flex-end; border-top:1px solid var(--border-subtle); background:var(--card); padding-bottom:14px; transition:transform .2s; }
+  .tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 0 4px; font-size:11px; font-weight:500; color:var(--fg-subtle); }
+  .tab.on { color:var(--primary); font-weight:600; }
+  .tab.pen { position:relative; }
+  .tab.pen span { width:52px; height:52px; border-radius:50%; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; margin-top:-26px; box-shadow:var(--shadow-card); }
+  /* The on-screen keyboard, as far as it matters here: it takes the lower ~40 % of the screen. */
+  .kbd { position:absolute; inset:auto 0 0 0; height:330px; background:var(--kbd); transform:translateY(100%); transition:transform .22s ease-out; display:grid; grid-template-rows:repeat(4,1fr); gap:8px; padding:12px 6px 34px; }
+  .kbd.on { transform:none; }
+  .kbd div { display:flex; gap:6px; justify-content:center; }
+  .kbd i { flex:1; max-width:34px; border-radius:6px; background:var(--card); opacity:.8; }
+  .kbd.on ~ .tabbar { transform:translateY(calc(100% + 40px)); }
+  .p .kbdhint { display:none; }
+
+  /* ── Desktop: a 1440 × 900 window, scaled to fit ───────────── */
+  .browser-fit { flex:none; width:var(--fit-w); height:var(--fit-h); }
+  .browser { width:1440px; height:900px; transform-origin:0 0; transform:scale(var(--fit)); border-radius:12px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.2); display:flex; flex-direction:column; background:var(--bg); position:relative; }
+  .chrome { height:36px; flex:none; background:var(--bg-sunken); display:flex; align-items:center; gap:7px; padding:0 14px; border-bottom:1px solid var(--border); }
+  .chrome i { width:11px; height:11px; border-radius:50%; background:var(--border); display:block; }
+  .chrome .url { margin-left:18px; font-size:12px; color:var(--fg-subtle); background:var(--card); padding:3px 14px; border-radius:6px; width:420px; }
+  .app { flex:1; display:flex; min-height:0; }
+  .side { width:240px; flex:none; background:var(--bg-sunken); padding:12px; display:flex; flex-direction:column; gap:4px; }
+  .logo { display:flex; align-items:center; gap:8px; font-weight:600; font-size:21px; padding:6px 10px 14px; }
+  .logo .mark { color:var(--primary); }
+  .side a { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; font-size:14px; color:var(--fg-muted); }
+  .side a.on { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .d .scroller { flex:1; }
+  .dhead { display:flex; align-items:center; gap:8px; padding:16px 24px 8px; font-size:14px; color:var(--fg-muted); }
+  .dhead .here { color:var(--fg); font-weight:600; }
+  .dhead .tools { margin-left:auto; display:flex; gap:8px; }
+  .dhead .tools span { display:inline-flex; align-items:center; gap:8px; background:var(--card); box-shadow:var(--shadow-card); padding:7px 14px; border-radius:10px; font-size:14px; }
+  .dpage { max-width:1060px; margin:0 auto; padding:20px 24px 60px; display:flex; flex-direction:column; gap:20px; }
+  .p .dpage { padding:0; gap:16px; }
+
+  /* ── Cards on the person page (as on main after #263) ──────── */
+  .card { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); padding:16px; }
+  .d .card { padding:16px 16px 18px; }
+  .idcard { display:grid; grid-template-columns:96px minmax(0,1fr); gap:14px 16px; align-items:center; padding:20px; }
+  .d .idcard { grid-template-columns:168px minmax(0,1fr) auto; column-gap:28px; row-gap:16px; padding:24px; align-items:start; }
+  .portrait { width:96px; height:96px; border-radius:20px; display:grid; place-items:center; font-size:34px; font-weight:600; color:var(--avatar-fg); box-shadow:var(--shadow-card); }
+  .d .portrait { width:168px; height:168px; border-radius:24px; font-size:60px; grid-row:span 2; }
+  .who h2 { margin:0; font-size:26px; font-weight:600; display:flex; align-items:center; gap:8px; line-height:1.2; }
+  .d .who h2 { font-size:32px; }
+  .who h2 svg { width:18px; height:18px; color:var(--fg-subtle); }
+  .who p { margin:4px 0 0; color:var(--fg-muted); font-size:15px; }
+  .d .who p { font-size:16px; }
+  .acts { grid-column:1 / -1; display:flex; gap:8px; }
+  .d .acts { grid-column:auto; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; border-radius:10px; padding:9px 16px; font-size:15px; font-weight:600; border:1px solid transparent; cursor:pointer; white-space:nowrap; background:transparent; }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); flex:1; }
+  .d .btn.primary { flex:none; padding:7px 14px; font-size:14px; }
+  .btn.square { background:var(--card); border-color:var(--border); color:var(--fg-muted); padding:9px 11px; }
+  .btn.sm { padding:5px 12px; font-size:13px; flex:none !important; }
+  .btn.sm.primary:disabled { opacity:.45; cursor:default; }
+  .btn.quiet { color:var(--fg-muted); padding:5px 8px; font-weight:500; font-size:14px; }
+  .btn.quiet:hover { background:var(--card-hover); }
+  .btn svg.i { width:16px; height:16px; }
+  .kbdhint { font-size:10px; border:1px solid color-mix(in srgb, currentColor 40%, transparent); border-radius:4px; padding:0 4px; margin-left:4px; font-weight:500; }
+  .facts { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; margin:0; }
+  .d .facts { grid-column:2 / -1; grid-template-columns:repeat(4, minmax(0,1fr)); }
+  .fact { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .fact .lab { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--fg-subtle); }
+  .fact .lab svg.i { width:12px; height:12px; }
+  .fact .val { font-size:15px; }
+  .fact .sub { color:var(--fg-subtle); }
+  .fact.full { grid-column:1 / -1; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; list-style:none; margin:4px 0 0; padding:0; }
+  .chip { display:inline-flex; align-items:center; gap:7px; padding:3px 11px; border:1px solid var(--border); border-radius:999px; font-size:14px; }
+  .chip .dot { width:7px; height:7px; border-radius:50%; }
+  .chip .role { color:var(--fg-subtle); font-size:12px; }
+  .quietrow { grid-column:1 / -1; }
+  .d .quietrow { grid-column:2 / -1; }
+  .jump { display:flex; gap:4px; padding:0 4px; font-size:14px; color:var(--fg-muted); }
+  .p .jump { justify-content:space-between; padding:0 12px; font-size:15px; }
+  .jump a { padding:6px 12px; }
+  .sechead { display:flex; align-items:center; gap:6px; min-height:34px; margin-bottom:6px; }
+  .sechead h3 { margin:0; font-size:15px; font-weight:600; }
+  .sechead .count { color:var(--fg-subtle); font-weight:400; margin-left:4px; }
+  .sechead .r { margin-left:auto; display:flex; align-items:center; gap:2px; }
+  .muted { color:var(--fg-muted); font-size:14px; margin:0; }
+  .peoplegrid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px 16px; }
+  .p .peoplegrid { grid-template-columns:1fr 1fr; }
+  .pp { display:flex; align-items:center; gap:10px; min-width:0; }
+  .pp b { font-weight:500; font-size:16px; display:block; line-height:1.2; }
+  .pp small { color:var(--fg-subtle); font-size:12px; }
+  .av { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; font-size:13px; font-weight:600; color:var(--avatar-fg); flex:none; }
+  .av.xs { width:22px; height:22px; font-size:9px; }
+  .peoplewrap { display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:16px; }
+  .p .peoplewrap { grid-template-columns:1fr; }
+  .map { border-radius:12px; background:var(--bg-sunken); min-height:220px; position:relative; }
+  .p .map { min-height:120px; order:-1; }
+  .map svg { position:absolute; inset:0; width:100%; height:100%; }
+  .grouplab { font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-subtle); margin:4px 0 8px; }
+  .twocol { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; align-items:start; }
+  .p .twocol { grid-template-columns:1fr; gap:16px; }
+
+  /* ── The Activity card: the timeline and, at its top, the inline composer ─ */
+  .opener { display:grid; grid-template-rows:0fr; transition:grid-template-rows .24s cubic-bezier(.2,.8,.2,1), opacity .2s; opacity:0; }
+  .opener.open { grid-template-rows:1fr; opacity:1; }
+  .opener > div { overflow:hidden; min-height:0; }
+  .composer { border:1px solid var(--primary); border-radius:14px; background:var(--card); margin:2px 0 14px; position:relative; box-shadow:0 0 0 3px var(--primary-soft); }
+  .anchor { display:flex; align-items:center; gap:8px; padding:10px 12px 0; font-size:13px; color:var(--fg-muted); }
+  .anchor .pill { display:inline-flex; align-items:center; gap:6px; padding:2px 10px 2px 3px; border-radius:999px; background:var(--primary-soft); color:var(--fg); font-weight:500; }
+  .composer textarea { display:block; width:100%; border:0; background:transparent; resize:none; padding:10px 14px 8px; min-height:84px; font-family:var(--serif); font-size:18px; line-height:1.45; outline:none; }
+  .p .composer textarea { min-height:96px; }
+  .composer textarea::placeholder { color:var(--fg-subtle); }
+  .cfoot { display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:8px 10px; border-top:1px solid var(--border-subtle); }
+  .cpill { display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:999px; background:var(--bg-sunken); border:0; font-size:13px; color:var(--fg-muted); cursor:pointer; }
+  .cpill.hot { background:var(--primary-soft); color:var(--primary); font-weight:600; }
+  .cpill svg.i { width:14px; height:14px; }
+  .chint { font-size:12px; color:var(--fg-subtle); margin-left:4px; }
+  .cfoot .end { margin-left:auto; display:flex; gap:4px; align-items:center; }
+  .daymenu, .picker { position:absolute; z-index:5; background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.15); padding:6px; min-width:220px; }
+  .daymenu button, .picker button { display:flex; width:100%; align-items:center; gap:10px; border:0; background:transparent; padding:6px 10px; border-radius:8px; text-align:left; font-size:14px; cursor:pointer; }
+  .daymenu button:hover, .picker button:hover, .picker button.on { background:var(--primary-soft); }
+  .daymenu button .s { margin-left:auto; color:var(--fg-subtle); font-size:12px; }
+  .picker .h { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); padding:4px 10px; }
+  .modeseg { display:flex; gap:3px; padding:8px 10px 0; }
+  .modeseg button { border:0; background:transparent; padding:4px 12px; border-radius:999px; font-size:13px; color:var(--fg-muted); cursor:pointer; display:inline-flex; gap:6px; align-items:center; }
+  .modeseg button[aria-pressed='true'] { background:var(--primary-soft); color:var(--primary); font-weight:600; }
+  .modeseg svg.i { width:14px; height:14px; }
+  .logform { display:flex; flex-direction:column; gap:10px; padding:12px; }
+  .logform .row { display:flex; gap:8px; flex-wrap:wrap; }
+  .input { border:1px solid var(--border); background:var(--input); border-radius:10px; padding:8px 12px; font-size:14px; }
+  .logform .grow { flex:1; min-width:160px; }
+  .tl { list-style:none; margin:0; padding:0; }
+  .dayh { display:flex; align-items:center; gap:10px; font-size:12px; font-weight:600; color:var(--fg-subtle); margin:6px 0 8px; }
+  .dayh::after { content:''; flex:1; height:1px; background:var(--border-subtle); }
+  .ent { position:relative; padding:0 0 14px 18px; margin-left:4px; border-left:1px solid var(--border-subtle); border-radius:0 10px 10px 0; transition:background 1.6s; }
+  .ent::before { content:''; position:absolute; left:-5px; top:6px; width:9px; height:9px; border-radius:50%; background:var(--dot); }
+  .ent.fresh { background:var(--primary-soft); transition:none; }
+  .ent .meta { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--fg-subtle); }
+  .ent .meta .k { display:inline-flex; align-items:center; gap:5px; font-weight:600; color:var(--kc); }
+  .ent .meta svg.i { width:14px; height:14px; }
+  .ent .title { margin:4px 0 0; font-size:16px; }
+  .ent .body { margin:4px 0 0; font-family:var(--serif); font-size:18px; line-height:1.5; }
+  .ent .body p { margin:0 0 6px; }
+  .mention { color:var(--link); background:color-mix(in srgb, var(--link) 12%, transparent); padding:0 4px; border-radius:5px; text-decoration:underline; text-underline-offset:2px; font-family:var(--sans); font-size:.9em; }
+  .empty { border:1px dashed var(--border); border-radius:12px; padding:28px 20px; text-align:center; }
+  .empty b { display:block; font-weight:500; font-size:17px; margin-bottom:4px; }
+  .empty span { color:var(--fg-muted); font-size:14px; }
+  .toast { position:absolute; left:50%; bottom:24px; transform:translate(-50%, 20px); opacity:0; transition:all .2s; background:var(--fg); color:var(--card); border-radius:12px; padding:10px 16px; font-size:14px; display:flex; gap:14px; align-items:center; z-index:9; pointer-events:none; white-space:nowrap; }
+  .toast.on { opacity:1; transform:translate(-50%, 0); pointer-events:auto; }
+  .p .toast { bottom:100px; }
+  .toast button { border:0; background:transparent; color:var(--primary); font-weight:600; cursor:pointer; filter:brightness(1.6); }
+  :root[data-theme='latte'] .toast button { filter:brightness(1.9) saturate(.6); }
+
+  /* The journal page, which stays (Open journal). */
+  .jpage { max-width:660px; margin:0 auto; padding:20px 24px 60px; }
+  .p .jpage { padding:6px 4px 60px; }
+  .jhead { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .jhead h2 { margin:0; font-size:24px; font-weight:600; }
+  .jhead p { margin:0; color:var(--fg-muted); font-size:14px; }
+  .jhead .btn { margin-left:auto; }
+  .jday { font-size:13px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--fg-subtle); margin:18px 0 8px; }
+  .jentry { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); padding:16px 20px; }
+  .jentry .by { font-size:12px; color:var(--fg-subtle); display:flex; gap:10px; }
+  .jentry .by span:last-child { margin-left:auto; display:flex; gap:10px; }
+  .jentry .by svg.i { width:15px; height:15px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8c-2-4-6-4-6-1s6 1 6 1Zm0 0c2-4 6-4 6-1s-6 1-6 1Z"/></symbol>
+  <symbol id="i-date" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z"/></symbol>
+  <symbol id="i-work" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></symbol>
+  <symbol id="i-met" viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 0 0 3-3M14 14l2.5 2.5a1 1 0 0 0 3-3l-3.9-3.9a2 2 0 0 0-2.8 0l-.9.9a1 1 0 0 1-3-3l2.8-2.8a3.5 3.5 0 0 1 4.9 0L21 7.3M3 7.3l2.5-2.4a3.5 3.5 0 0 1 4.6-.3M3 13l6 6"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></symbol>
+  <symbol id="i-circles" viewBox="0 0 24 24"><circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16Z"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></symbol>
+  <symbol id="i-write" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 9M22 21a7 7 0 0 0-4-6.3"/></symbol>
+  <symbol id="i-add-person" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></symbol>
+  <symbol id="i-house" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7M5 10v10h14V10"/></symbol>
+  <symbol id="i-graph" viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 6h10M6 8l5 8.5M18 8l-5 8.5"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 14H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-2.9l-.1-.1A2 2 0 1 1 7 4.2l.1.1A1.7 1.7 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2ZM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7Z"/></symbol>
+  <symbol id="i-shared" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 9M22 21a7 7 0 0 0-4-6.3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-photo" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 8"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M11 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-6M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z"/></symbol>
+</svg>
+
+<div class="wrap">
+  <div class="kicker">UX review · C6 · interactive mockup</div>
+  <h1><i>Write a moment</i> without leaving the page</h1>
+  <p class="lede">Today <b>Write a moment</b> on a person’s page goes to <code>/contacts/{id}/journal</code>, although the <b>Activity</b> card that shows the moment is on this very page. Here the button opens the moment composer <b>inline, at the top of the Activity card</b>: the page scrolls there, the field is focused, and the saved moment appears in the timeline. The journal page stays — <b>Open journal</b> in the card’s header. Everything below is clickable.</p>
+
+  <div class="controls">
+    <span class="seg-label">Device</span>
+    <div class="seg" data-ctl="device"><button data-v="desktop">Desktop 1440</button><button data-v="phone">Pixel 9 Pro</button></div>
+    <span class="seg-label">Theme</span>
+    <div class="seg" data-ctl="theme"><button data-v="latte">Latte</button><button data-v="mocha">Mocha</button></div>
+    <span class="seg-label">Person</span>
+    <div class="seg" data-ctl="who"><button data-v="markus">Markus Brunner</button><button data-v="kurt">Kurt Lehmann</button></div>
+    <span class="seg-label">Anchor</span>
+    <div class="seg" data-ctl="anchor"><button data-v="chip">Chip above the field</button><button data-v="none">No chip</button></div>
+    <span class="seg-label">Log contact</span>
+    <div class="seg" data-ctl="log"><button data-v="swap">Same spot, one at a time</button><button data-v="switch">One composer, two modes</button></div>
+  </div>
+
+  <div class="stage">
+    <div id="frame"></div>
+    <aside class="legend">
+      <h2>Try it</h2>
+      <div class="try">
+        <button data-demo="open">1 · Press Write a moment</button>
+        <button data-demo="type">2 · Type a line</button>
+        <button data-demo="save">3 · Save</button>
+        <button data-demo="cancel">Cancel instead</button>
+        <button data-demo="journal">Open journal</button>
+        <button data-demo="reset">Reset</button>
+      </div>
+      <h2>What changes</h2>
+      <ol>
+        <li><b>The button stays where it is</b> — the primary in the identity card. Pressed, the page glides to the Activity card, the composer unfolds at its top (the §5.11 reveal) and the cursor is in the field. On a phone the keyboard comes up and the composer sits just under the top bar, above it. Pressing it again while open only brings you back to the field.</li>
+        <li><b>The same composer as Home</b> — one serif field, <i>Shared</i>, the day pill (<i>Today</i>; a tap offers the last week), <i>Photo</i>, <i>Save</i> (<kbd>⌘↵</kbd>). What differs: the moment already belongs to this person, so no <code>@</code> is needed for them, and <code>@</code> offers everyone <i>else</i> — as on the journal page. The anchor shows as a chip above the field (switch <i>Anchor</i> to compare without it).</li>
+        <li><b>Save</b> folds the composer away and the moment appears at the top of the timeline under today, lit for a moment, with the usual <i>Saved</i> toast (for someone with nothing yet, like Kurt, the empty state steps aside while the composer is open). A second moment the same day joins today’s entry as a new paragraph (§2.20’s day slot) — try saving twice. While Stella is out of reach it is kept on the device and shows above the timeline, as kept logs already do.</li>
+        <li><b>Cancel</b> (or <kbd>Esc</kbd>) folds it away. If something was typed, the toast offers <i>Undo</i>, which reopens it with the text — nothing is lost to a stray tap.</li>
+        <li><b>Open journal</b> joins <i>Log contact</i> in the card’s header and leads to the journal page as it is: the long-form reading view, where a moment is edited or deleted.</li>
+        <li><b>Log contact</b> already opens in this spot today. Proposed: both forms share it, one at a time — opening one folds the other away, keeping what was typed. Switch <i>Log contact</i> to see the alternative: one composer with a <i>Moment · Contact</i> switch.</li>
+      </ol>
+      <p>Demo data as seeded: Markus has a call (5 Oct) and a moment (4 Oct); Kurt has nothing yet, so his card shows the empty state until the first save. “Today” is Wednesday 7 October 2026.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const ic = (n, s) => `<svg class="i"${s ? ` style="width:${s}px;height:${s}px"` : ''}><use href="#i-${n}"/></svg>`;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c]);
+
+const TODAY = '2026-10-07';
+const DAYS = [
+  ['2026-10-07', 'Today', 'Wed 7 Oct'], ['2026-10-06', 'Yesterday', 'Tue 6 Oct'], ['2026-10-05', 'Monday', '5 Oct'],
+  ['2026-10-04', 'Sunday', '4 Oct'], ['2026-10-03', 'Saturday', '3 Oct'], ['2026-10-02', 'Friday', '2 Oct'], ['2026-10-01', 'Thursday', '1 Oct'],
+];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const longDay = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };
+
+const OTHERS = [
+  ['Sandra', 'Brunner-Keller', 'SB', 'var(--av-blue)'], ['Noah', 'Brunner', 'NB', 'var(--av-peach)'], ['Lena', 'Brunner', 'LB', 'var(--av-peach)'],
+  ['Elias', 'Brunner', 'EB', 'var(--av-teal)'], ['Hans', 'Brunner', 'HB', 'var(--av-teal)'], ['Beat', 'Steiner', 'BS', 'var(--av-blue)'],
+  ['Heidi', 'Lehmann', 'HL', 'var(--av-pink)'], ['Markus', 'Brunner', 'MB', 'var(--av-pink)'], ['Kurt', 'Lehmann', 'KL', 'var(--av-teal)'],
+];
+const handle = (p) => `@${p[0]}${p[1]}`;
+
+const SEED = {
+  markus: {
+    id:'markus', first:'Markus', name:'Markus Brunner', initials:'MB', color:'var(--av-pink)', desc:'Familienvater, Vorstand im FC Länggasse.',
+    facts:[['gift','Birthday','14 March 1983',' · 43 years'],['date','Hochzeitstag','13 June 2009',' · 17 years'],['home','Address','Spitalackerstrasse 22, 3013 Bern',''],['work','Job','Bauingenieur at Rytz + Partner AG',''],['met','Last contact','5 October 2026','']],
+    circles:[['FC Länggasse Bern','Vorstand','var(--a-red)'],['Familien-Freunde','','var(--a-blue)'],['Nachbarschaft Spitalacker','','var(--a-green)']],
+    quiet:'Add tags, how we met …',
+    people:[['Sandra Brunner-Keller','Wife','SB','var(--av-blue)'],['Hans Brunner','Father','HB','var(--av-teal)'],['Rosa Brunner-Aebi','Mother','RB','var(--av-pink)'],['Lena Brunner','Daughter','LB','var(--av-peach)'],['Noah Brunner','Son','NB','var(--av-peach)'],['Elias Brunner','Son','EB','var(--av-teal)']],
+    entries:[
+      { id:'c1', day:'2026-10-05', kind:'call', title:'Sunday call', vis:'shared' },
+      { id:'m1', day:'2026-10-04', kind:'moment', paras:['Markus fixed the garden gate at last — with @NoahBrunner holding the screws.'], vis:'shared' },
+    ],
+  },
+  kurt: {
+    id:'kurt', first:'Kurt', name:'Kurt Lehmann', initials:'KL', color:'var(--av-teal)', desc:'Nachbar an der Spitalackerstrasse.',
+    facts:[['gift','Birthday','27 March 1963',' · 63 years'],['work','Job','Postbote','']],
+    circles:[['Nachbarschaft Spitalacker','','var(--a-green)']],
+    quiet:'Add address, phone, email …',
+    people:[['Heidi Lehmann','Wife','HL','var(--av-pink)'],['Markus Brunner','Neighbor','MB','var(--av-pink)'],['Beat Steiner','Neighbor','BS','var(--av-blue)']],
+    entries:[],
+  },
+};
+let data = structuredClone(SEED);
+
+const state = { device:'desktop', theme:'latte', who:'markus', anchor:'chip', log:'swap', view:'page',
+  open:null, text:'', vis:'shared', day:TODAY, dayMenu:false, logKind:'Met in person', logTitle:'', fresh:null, lastCancelled:null };
+
+// ── Rendering ────────────────────────────────────────────────────
+function idcard(p) {
+  return `<section class="card idcard">
+    <div class="portrait" style="background:${p.color}">${p.initials}</div>
+    <div class="who"><h2>${esc(p.name)} ${ic('pencil')}</h2><p>${esc(p.desc)}</p></div>
+    <div class="acts"><button class="btn primary" data-write>${ic('book')}Write a moment</button><button class="btn square" aria-label="More">${ic('more')}</button></div>
+    <dl class="facts">
+      ${p.facts.map(([i, l, v, s]) => `<div class="fact"><span class="lab">${ic(i)}${l}</span><span class="val">${esc(v)}<span class="sub">${s}</span></span></div>`).join('')}
+      <div class="fact full"><span class="lab">${ic('circles')}Circles</span><ul class="chips">${p.circles.map(([n, r, c]) => `<li><span class="chip"><span class="dot" style="background:${c}"></span>${esc(n)}${r ? `<span class="role">· ${r}</span>` : ''}</span></li>`).join('')}<li><span class="chip" style="border-style:dashed;padding:3px 8px">${ic('plus', 13)}</span></li></ul></div>
+    </dl>
+    <div class="quietrow"><button class="btn quiet">${ic('plus')}${p.quiet}</button></div>
+  </section>`;
+}
+function mapSvg(n) {
+  const pts = Array.from({ length:n }, (_, i) => { const a = (i / n) * Math.PI * 2 - Math.PI / 2; return [50 + Math.cos(a) * 34, 50 + Math.sin(a) * 34]; });
+  return `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">${pts.map(([x, y]) => `<line x1="50" y1="50" x2="${x}" y2="${y}" stroke="var(--border)" stroke-width=".6"/>`).join('')}
+    ${pts.map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="2.6" fill="none" stroke="${['var(--a-teal)','var(--a-peach)','var(--a-blue)'][i % 3]}" stroke-width=".8"/>`).join('')}<circle cx="50" cy="50" r="4" fill="var(--primary-soft)" stroke="var(--primary)" stroke-width=".8"/></svg>`;
+}
+function peopleCard(p) {
+  return `<section class="card"><div class="sechead"><h3>People<span class="count">${p.people.length}</span></h3><span class="r"><button class="btn quiet">${ic('pencil')}Edit</button><button class="btn quiet">${ic('plus')}</button></span></div>
+    <div class="peoplewrap"><div><div class="grouplab">${p.id === 'kurt' ? 'Family · 1 · Friends · 2' : 'Family · 6'}</div><div class="peoplegrid">${p.people.map(([n, r, i, c]) => `<div class="pp"><span class="av" style="background:${c}">${i}</span><span><b>${n}</b><small>${r}</small></span></div>`).join('')}</div></div>
+    <div class="map">${mapSvg(p.people.length + (p.id === 'markus' ? 10 : 0))}</div></div></section>`;
+}
+function photosCard(p) {
+  return `<section class="card"><div class="sechead"><h3>Photos<span class="count">0</span></h3><span class="r"><span class="chip" style="font-size:13px">Immich</span><button class="btn quiet">${ic('plus')}Add photos</button></span></div><p class="muted">No photos of ${p.name} yet. Add one, and it can become their picture.</p></section>`;
+}
+function notesCard(p) {
+  return `<section class="card"><div class="sechead"><h3>Notes<span class="count">0</span></h3><span class="r"><button class="btn quiet">${ic('plus')}Add note</button></span></div><p class="muted">Nothing noted about ${p.name} yet. Keep what you would hate to forget here — gift ideas, allergies, the dog’s name.</p></section>`;
+}
+function mentionsCard(p) {
+  return `<section class="card"><div class="sechead"><h3>Mentioned in<span class="count">0</span></h3></div><p class="muted">Nobody has mentioned ${p.name} anywhere else yet.</p></section>`;
+}
+
+function renderBody(text) {
+  return esc(text).replace(/@([A-ZÄÖÜ][\wäöü]+?)([A-ZÄÖÜ][\wäöü-]+)\b/g, (m, f, l) => `<a class="mention" href="#">@${f} ${l}</a>`);
+}
+const KIND = {
+  moment:{ label:'Moment', icon:'book', dot:'var(--primary)' },
+  call:{ label:'Call', icon:'phone', dot:'var(--a-blue)' },
+  'Met in person':{ label:'Met in person', icon:'met', dot:'var(--a-teal)' },
+  Call:{ label:'Call', icon:'phone', dot:'var(--a-blue)' },
+  Message:{ label:'Message', icon:'met', dot:'var(--a-peach)' },
+};
+function timeline(p) {
+  if (!p.entries.length) return `<div class="empty"><b>Nothing written down yet.</b><span>Log a call or a visit, or write what happened — it all lands here.</span></div>`;
+  const byDay = [];
+  for (const e of [...p.entries].sort((a, b) => b.day.localeCompare(a.day))) {
+    const last = byDay.at(-1);
+    if (last && last.day === e.day) last.items.push(e); else byDay.push({ day:e.day, items:[e] });
+  }
+  return `<div class="tl">${byDay.map((g) => `<div class="dayh">${g.day === TODAY ? 'Today · ' : ''}${longDay(g.day)}</div>
+    ${g.items.map((e) => { const k = KIND[e.kind]; return `<div class="ent${state.fresh === e.id ? ' fresh' : ''}" data-ent="${e.id}" style="--dot:${k.dot};--kc:${k.dot}">
+      <div class="meta"><span class="k">${ic(k.icon)}${k.label}</span>· you${e.vis === 'private' ? ` · ${ic('lock', 12)} private` : ''}</div>
+      ${e.title ? `<p class="title">${esc(e.title)}</p>` : ''}
+      ${e.paras ? `<div class="body">${e.paras.map((t) => `<p>${renderBody(t)}</p>`).join('')}</div>` : ''}
+    </div>`; }).join('')}`).join('')}</div>`;
+}
+
+function dayLabel() { return DAYS.find(([d]) => d === state.day)?.[1] ?? state.day; }
+function momentForm(p) {
+  const chip = state.anchor === 'chip';
+  return `${chip ? `<div class="anchor"><span class="pill"><span class="av xs" style="background:${p.color}">${p.initials}</span>${esc(p.name)}</span><span>· goes to ${esc(p.first)}’s journal</span></div>` : ''}
+    <textarea data-field rows="3" placeholder="What happened with ${esc(p.first)}?" aria-label="What happened with ${esc(p.first)}?">${esc(state.text)}</textarea>
+    <div class="cfoot">
+      <button class="cpill" data-vis>${ic(state.vis === 'shared' ? 'shared' : 'lock')}${state.vis === 'shared' ? 'Shared' : 'Private'}</button>
+      <button class="cpill${state.day !== TODAY ? ' hot' : ''}" data-daypill>${ic('sun')}${dayLabel()}</button>
+      <button class="cpill">${ic('photo')}Photo</button>
+      <span class="chint">${chip ? '@ mentions someone else' : `Goes to ${esc(p.first)}’s journal · @ mentions someone else`}</span>
+      <span class="end"><button class="btn quiet" data-cancel style="font-size:13px">Cancel</button><button class="btn sm primary" data-save ${state.text.trim() ? '' : 'disabled'}>Save<span class="kbdhint">⌘↵</span></button></span>
+    </div>
+    ${state.dayMenu ? `<div class="daymenu" style="left:80px;bottom:44px">${DAYS.map(([d, l, s]) => `<button data-day="${d}">${l}<span class="s">${s}</span></button>`).join('')}<button>Another day…</button></div>` : ''}
+    <div class="picker" hidden></div>`;
+}
+function logForm(p) {
+  return `<div class="logform">
+    <div class="row"><select class="input" data-logkind>${['Met in person','Call','Message'].map((k) => `<option${k === state.logKind ? ' selected' : ''}>${k}</option>`).join('')}</select>
+      <span class="input">7 October 2026</span>
+      <input class="input grow" data-logtitle placeholder="What happened? (optional)" value="${esc(state.logTitle)}" /></div>
+    <input class="input" placeholder="Who else was there?" />
+    <div class="row" style="align-items:center;font-size:14px"><label><input type="radio" checked /> Shared</label><label><input type="radio" /> Private</label>
+      <span style="margin-left:auto;display:flex;gap:4px"><button class="btn quiet" data-cancel style="font-size:13px">Cancel</button><button class="btn sm primary" data-logsave>Log interaction</button></span></div>
+  </div>`;
+}
+function composer(p) {
+  if (!state.open) return '';
+  const sw = state.log === 'switch';
+  const seg = sw ? `<div class="modeseg"><button data-mode="moment" aria-pressed="${state.open === 'moment'}">${ic('book')}Moment</button><button data-mode="log" aria-pressed="${state.open === 'log'}">${ic('met')}Contact</button></div>` : '';
+  return `<div class="composer">${seg}${state.open === 'moment' ? momentForm(p) : logForm(p)}</div>`;
+}
+function activityInner(p) {
+  return `<div class="sechead"><h3>Activity</h3><span class="r">
+      <button class="btn quiet" data-journal>${ic('book')}Open journal</button>
+      <button class="btn quiet" data-logopen>${ic('met')}Log contact</button></span></div>
+    <div class="opener${state.open ? ' open' : ''}"><div>${composer(p)}</div></div>
+    ${state.open && !p.entries.length ? "" : timeline(p)}`;
+}
+function personPage(p) {
+  return `${idcard(p)}
+    <nav class="jump"><a>People ${p.people.length}</a><a>Photos</a><a>Activity</a><a>Notes</a></nav>
+    ${peopleCard(p)}${photosCard(p)}
+    <div class="twocol"><section class="card" id="activity">${activityInner(p)}</section>${notesCard(p)}</div>
+    ${mentionsCard(p)}`;
+}
+function journalPage(p) {
+  const moments = p.entries.filter((e) => e.kind === 'moment').sort((a, b) => b.day.localeCompare(a.day));
+  return `<div class="jpage">
+    <div class="jhead"><span class="av" style="background:${p.color};width:46px;height:46px">${p.initials}</span><div><h2>Journal</h2><p>Moments in ${esc(p.name)}’s life, day by day.</p></div><button class="btn primary sm" style="flex:none">Write a moment</button></div>
+    ${moments.length ? moments.map((e) => `<div class="jday">${longDay(e.day)}</div><div class="jentry"><div class="by"><span>by you</span><span>${ic('edit')}${ic('x')}</span></div><div class="body" style="font-family:var(--serif);font-size:18px;margin-top:6px">${e.paras.map((t) => `<p style="margin:0 0 6px">${renderBody(t)}</p>`).join('')}</div></div>`).join('')
+      : `<div class="empty"><b>No moments yet.</b><span>Write the first one — it shows here and on ${esc(p.first)}’s page.</span></div>`}
+    <p style="margin-top:22px"><a href="#" data-back style="color:var(--link);font-size:14px">← Back to ${esc(p.name)}</a></p>
+  </div>`;
+}
+
+function render() {
+  document.documentElement.dataset.theme = state.theme;
+  for (const seg of document.querySelectorAll('[data-ctl]'))
+    for (const b of seg.children) b.setAttribute('aria-pressed', String(b.dataset.v === state[seg.dataset.ctl]));
+  const p = data[state.who];
+  const inner = state.view === 'journal' ? journalPage(p) : personPage(p);
+  const crumb = state.view === 'journal' ? `<span>People</span><span>/</span><span>${esc(p.name)}</span><span>/</span><span class="here">Journal</span>` : `<span>Home</span><span>/</span><span>People</span><span>/</span><span class="here">${esc(p.name)}</span>`;
+  const url = `stella.home/contacts/demo-c-${state.who}${state.view === 'journal' ? '/journal' : ''}`;
+  const frame = $('#frame');
+  if (state.device === 'phone') {
+    frame.className = '';
+    frame.innerHTML = `<div class="device"><div class="screen p">
+      <div class="status"><span>9:41</span><span class="cam"></span><span>5G ▮▮</span></div>
+      <div class="ptop">${state.view === 'journal' ? `<a href="#" data-back style="display:flex;align-items:center">${ic('back', 16)}</a><span class="here">Journal</span>` : `<span>People</span><span>/</span><span class="here">${esc(p.name)}</span>`}<span class="ib">${ic('search')}</span><span class="ib">${ic('add-person')}</span></div>
+      <div class="scroller"><div class="dpage">${inner}</div></div>
+      <div class="kbd${state.kbd ? ' on' : ''}">${[10, 9, 9, 5].map((n) => `<div>${'<i></i>'.repeat(n)}</div>`).join('')}</div>
+      <nav class="tabbar"><a class="tab">${ic('house')}Home</a><a class="tab on">${ic('people')}People</a><a class="tab pen"><span>${ic('write')}</span></a><a class="tab">${ic('circles')}Circles</a><a class="tab">${ic('graph')}Graph</a></nav>
+      <div class="toast"></div>
+    </div></div>`;
+  } else {
+    frame.className = 'browser-fit';
+    frame.innerHTML = `<div class="browser d"><div class="chrome"><i></i><i></i><i></i><span class="url">${url}</span></div>
+      <div class="app"><aside class="side"><div class="logo"><span class="mark">${ic('graph', 22)}</span>Stella</div>
+        <a>${ic('house')}Home</a><a class="on">${ic('people')}People</a><a>${ic('circles')}Circles</a><a>${ic('graph')}Graph</a><a>${ic('gear')}Settings</a></aside>
+        <div class="scroller"><div class="dhead">${crumb}<span class="tools"><span>${ic('search', 16)}Search</span><span>${ic('add-person', 16)}Add person</span></span></div>
+          <div class="dpage">${inner}</div></div></div>
+      <div class="toast"></div></div>`;
+    fit();
+  }
+}
+// Re-renders only the Activity card, so the page keeps its scroll and the field its focus.
+function renderActivity() {
+  const card = $('#activity');
+  if (card) card.innerHTML = activityInner(data[state.who]);
+}
+function fit() {
+  const frame = $('#frame');
+  if (state.device !== 'desktop') return;
+  const avail = Math.min(1440, document.querySelector('.wrap').clientWidth - (window.innerWidth >= 1900 ? 470 : 0));
+  const s = avail / 1440;
+  frame.style.setProperty('--fit', s); frame.style.setProperty('--fit-w', `${1440 * s}px`); frame.style.setProperty('--fit-h', `${900 * s}px`);
+}
+addEventListener('resize', fit);
+
+// ── Behaviour ────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg, undo) {
+  const t = $('.toast'); if (!t) return;
+  t.innerHTML = `<span>${msg}</span>${undo ? '<button data-undo>Undo</button>' : ''}`;
+  t.classList.add('on'); clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), 4000);
+}
+function scrollToActivity(smooth = true) {
+  const sc = $('.scroller'), card = $('#activity');
+  if (!sc || !card) return;
+  // The card's top, just under the top bar; the field is then above a phone's keyboard.
+  const top = card.getBoundingClientRect().top - sc.getBoundingClientRect().top;
+  const scale = state.device === 'desktop' ? (parseFloat(getComputedStyle($('#frame')).getPropertyValue('--fit')) || 1) : 1;
+  sc.scrollTo({ top: sc.scrollTop + top / scale - 12, behavior: smooth ? 'smooth' : 'instant' });
+}
+function focusField() { const f = $('[data-field]'); if (f) { f.focus({ preventScroll:true }); f.setSelectionRange(f.value.length, f.value.length); } }
+function setKbd(on) { state.kbd = on && state.device === 'phone'; const k = $('.kbd'); if (k) k.classList.toggle('on', state.kbd); }
+function open(which, smooth = true) {
+  if (state.view !== 'page') { state.view = 'page'; render(); }
+  state.open = which; state.dayMenu = false;
+  renderActivity(); scrollToActivity(smooth);
+  if (which === 'moment') { focusField(); setKbd(true); } else { setKbd(false); }
+}
+function close() { state.open = null; state.dayMenu = false; renderActivity(); setKbd(false); }
+function save() {
+  const text = state.text.trim(); if (!text) return;
+  const p = data[state.who];
+  // The day slot (docs/02 §2.20): same author, day and audience → a new paragraph, not a new entry.
+  const slot = p.entries.find((e) => e.kind === 'moment' && e.day === state.day && e.vis === state.vis);
+  let id;
+  if (slot) { slot.paras.push(text); id = slot.id; } else { id = `n${Date.now()}`; p.entries.push({ id, day:state.day, kind:'moment', paras:[text], vis:state.vis }); }
+  state.text = ''; state.vis = 'shared'; state.day = TODAY; state.fresh = id;
+  close();
+  requestAnimationFrame(() => { const e = $(`[data-ent="${id}"]`); if (e) requestAnimationFrame(() => e.classList.remove('fresh')); state.fresh = null; });
+  toast(slot ? 'Saved — added to today’s moment' : 'Saved');
+}
+function cancel() {
+  const typed = state.open === 'moment' ? state.text : state.logTitle;
+  state.lastCancelled = typed.trim() ? { which:state.open, text:typed } : null;
+  if (state.open === 'moment') state.text = ''; else state.logTitle = '';
+  close();
+  if (state.lastCancelled) toast(state.open === 'log' ? 'Log discarded' : 'Moment discarded', true);
+}
+
+function updatePicker(field) {
+  const picker = $('.picker'); if (!picker) return;
+  const before = field.value.slice(0, field.selectionStart);
+  const m = /(^|\s)@([\wäöü-]*)$/i.exec(before);
+  if (!m) { picker.hidden = true; return; }
+  const q = m[2].toLowerCase();
+  const p = data[state.who];
+  // Everyone but the anchor: naming them here would be the entry's own subject, not a mention.
+  const list = OTHERS.filter((o) => `${o[0]} ${o[1]}` !== p.name && (`${o[0]}${o[1]}`.toLowerCase().startsWith(q) || o[1].toLowerCase().startsWith(q))).slice(0, 5);
+  picker.innerHTML = `<div class="h">People</div>${list.map((o, i) => `<button class="${i ? '' : 'on'}" data-pick="${handle(o)}"><span class="av xs" style="background:${o[3]}">${o[2]}</span>${o[0]} ${o[1]}</button>`).join('')}<button style="color:var(--a-green)">${ic('plus', 14)}Create “${esc(m[2] || '…')}”<span style="margin-left:auto;font-size:12px;color:var(--fg-subtle)">new person</span></button>`;
+  picker.style.left = '14px'; picker.style.top = `${(state.anchor === 'chip' ? 34 : 0) + 64}px`;
+  picker.hidden = false;
+}
+
+document.addEventListener('input', (ev) => {
+  const t = ev.target;
+  if (t.matches('[data-field]')) {
+    state.text = t.value;
+    const s = $('[data-save]'); if (s) s.disabled = !state.text.trim();
+    updatePicker(t);
+  } else if (t.matches('[data-logtitle]')) state.logTitle = t.value;
+  else if (t.matches('[data-logkind]')) state.logKind = t.value;
+});
+document.addEventListener('change', (ev) => { if (ev.target.matches('[data-logkind]')) state.logKind = ev.target.value; });
+document.addEventListener('keydown', (ev) => {
+  if (!ev.target.matches('[data-field]')) return;
+  if (ev.key === 'Enter' && (ev.metaKey || ev.ctrlKey)) { ev.preventDefault(); save(); }
+  if (ev.key === 'Escape') { ev.preventDefault(); cancel(); }
+});
+document.addEventListener('focusin', (ev) => { if (ev.target.matches('[data-field], .logform input')) setKbd(true); });
+
+document.addEventListener('click', (ev) => {
+  const t = ev.target.closest('button, a');
+  if (!t) return;
+  if (t.tagName === 'A') ev.preventDefault();
+  const seg = t.closest('[data-ctl]');
+  if (seg) {
+    state[seg.dataset.ctl] = t.dataset.v;
+    if (['who', 'device'].includes(seg.dataset.ctl)) { state.open = null; state.view = 'page'; state.kbd = false; state.text = ''; }
+    const wasOpen = state.open; render();
+    if (wasOpen) { scrollToActivity(false); if (wasOpen === 'moment') focusField(); }
+    return;
+  }
+  if (t.dataset.demo) return demo(t.dataset.demo);
+  if ('write' in t.dataset) return open('moment');
+  if ('logopen' in t.dataset) {
+    // Same spot, one at a time: Log contact folds the composer away, keeping its text for later.
+    return state.open === 'log' ? close() : open('log');
+  }
+  if (t.dataset.mode) { state.open = t.dataset.mode; renderActivity(); if (state.open === 'moment') focusField(); return; }
+  if ('cancel' in t.dataset) return cancel();
+  if ('save' in t.dataset) return save();
+  if ('logsave' in t.dataset) {
+    const p = data[state.who], id = `l${Date.now()}`;
+    p.entries.push({ id, day:TODAY, kind:state.logKind, title:state.logTitle || null, vis:'shared' });
+    state.logTitle = ''; state.fresh = id; close();
+    requestAnimationFrame(() => requestAnimationFrame(() => { const e = $(`[data-ent="${id}"]`); if (e) e.classList.remove('fresh'); state.fresh = null; }));
+    return toast('Saved');
+  }
+  if ('undo' in t.dataset && state.lastCancelled) {
+    const c = state.lastCancelled; state.lastCancelled = null; $('.toast').classList.remove('on');
+    if (c.which === 'moment') state.text = c.text; else state.logTitle = c.text;
+    return open(c.which);
+  }
+  if ('vis' in t.dataset) { state.vis = state.vis === 'shared' ? 'private' : 'shared'; renderActivity(); return focusField(); }
+  if ('daypill' in t.dataset) { state.dayMenu = !state.dayMenu; return renderActivity(); }
+  if (t.dataset.day) { state.day = t.dataset.day; state.dayMenu = false; renderActivity(); return focusField(); }
+  if (t.dataset.pick) {
+    const f = $('[data-field]'); const before = f.value.slice(0, f.selectionStart).replace(/@[\wäöü-]*$/i, `${t.dataset.pick} `);
+    state.text = before + f.value.slice(f.selectionStart); f.value = state.text; $('.picker').hidden = true;
+    f.focus(); f.setSelectionRange(before.length, before.length); return;
+  }
+  if ('journal' in t.dataset) { state.view = 'journal'; state.open = null; state.kbd = false; render(); return; }
+  if ('back' in t.dataset) { state.view = 'page'; render(); scrollToActivity(false); return; }
+});
+
+// The "Try it" buttons, which also drive the screenshots.
+function demo(step) {
+  const p = data[state.who];
+  if (step === 'reset') { data = structuredClone(SEED); Object.assign(state, { open:null, text:'', view:'page', kbd:false, day:TODAY, vis:'shared' }); render(); return; }
+  if (step === 'open') return open('moment');
+  if (step === 'type') {
+    if (!state.open) open('moment', false);
+    state.text = p.id === 'kurt' ? 'Kurt brought the parcel up himself and stayed for a coffee — @HeidiLehmann sends her love.' : 'Coffee after training — he’s taking @NoahBrunner to the U-12 tournament in Thun on Saturday.';
+    const f = $('[data-field]'); f.value = state.text; f.focus({ preventScroll:true }); $('[data-save]').disabled = false; return;
+  }
+  if (step === 'save') { if (!state.text) demo('type'); return save(); }
+  if (step === 'cancel') { if (!state.text) demo('type'); return cancel(); }
+  if (step === 'journal') { state.view = 'journal'; state.open = null; state.kbd = false; return render(); }
+}
+
+render();
+</script>
+</body>
+</html>
