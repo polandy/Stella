@@ -189,7 +189,7 @@ handing the owner the prompt for the next row.
 
 | # | Finding | Effort | Status | Why now |
 |---|---|---|---|---|
-| 1 | TE-05 `CLAUDE.md` to ≈ 4 KB; prune `MEMORY.md` | S | ☐ | Every later session pays less from the first turn |
+| 1 | TE-05 `CLAUDE.md` to ≈ 4 KB; prune `MEMORY.md` | S | ☑ | Every later session pays less from the first turn |
 | 2 | TE-01 session budget, hand-off, Edit-over-Write in `docs/08` §8.10 + both agents | S | ☐ | Bounds the largest cost before anything else changes |
 | 3 | TE-03 docs-only PRs skip review; split the review skill | M | ☐ | Cuts the second-largest recurring cost |
 | 4 | TE-02 model by tier (`model: inherit`, Agent `model` param) | S | ☐ | Needs the tier wording from row 3 |
