@@ -464,7 +464,7 @@ rule. Each is one Conventional-Commit `refactor:`/`chore:`/`docs:` PR unless mar
 
 | # | Finding | Effort | Status | Why now |
 |---|---|---|---|---|
-| 1 | AR-15 formatter + linter + import-boundary rules | S | ☐ | Makes every later move mechanically checked; one `chore:` PR, then a format-only commit |
+| 1 | AR-15 formatter + linter + import-boundary rules | S | ☑ #259 | Makes every later move mechanically checked; one `chore:` PR, then a format-only commit |
 | 2 | AR-05 stop swallowing dispatch errors; add `handleError` | S | ☐ | Pure risk reduction; independent of everything |
 | 3 | AR-03 `requireViewer`, `todayFor(clock)`, `messageKey` | S | ☐ | Removes 150 edit sites before AR-01 moves them again |
 | 4 | AR-07 glossary (docs/03 §3.0) + AR-18 regenerate §4.3 | S | ☐ | Vocabulary before renames; cheapest high-leverage doc change |
