@@ -32,12 +32,12 @@ const dot = (name: string) => ({ name, mimeType: 'image/png', buffer: DOT_PNG })
 async function openJournal(page: Page): Promise<void> {
 	await page.getByRole('link', { name: 'Write' }).first().click();
 	await expect(page.getByRole('heading', { name: 'Journal' })).toBeVisible();
-	await page.getByRole('button', { name: 'New entry' }).click();
+	await page.getByRole('button', { name: 'Write a moment' }).click();
 }
 
 async function writeEntry(page: Page, body: string): Promise<void> {
-	await page.getByRole('textbox', { name: 'Entry' }).fill(body);
-	await page.getByRole('button', { name: 'Save entry' }).click();
+	await page.getByRole('textbox', { name: 'Moment', exact: true }).fill(body);
+	await page.getByRole('button', { name: 'Save moment' }).click();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -99,7 +99,7 @@ test('keeps a journal entry offline above the timeline, and sends it with its ph
 	const kept = page.getByTestId('kept-entries').locator('li');
 	await expect(kept).toContainText('a kept entry from the mountain hut');
 	await expect(kept).toContainText('Not sent yet');
-	await expect(page.getByRole('button', { name: 'Save entry' })).toHaveCount(0);
+	await expect(page.getByRole('button', { name: 'Save moment' })).toHaveCount(0);
 
 	await context.setOffline(false);
 	await expect(page.getByTestId('kept-entries')).toHaveCount(0);
@@ -133,7 +133,7 @@ test('adds a second journal entry written on the same day to the first', async (
 	await expect(days).toHaveCount(1);
 	await expect(days).toContainText('the morning at the lake');
 
-	await page.getByRole('button', { name: 'New entry' }).click();
+	await page.getByRole('button', { name: 'Write a moment' }).click();
 	await writeEntry(page, 'the evening by the fire');
 	await expect(days).toContainText('the evening by the fire');
 	await expect(days).toHaveCount(1);

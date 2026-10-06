@@ -132,9 +132,9 @@ test('offers the same picker in the journal composer, which had none', async ({ 
 	await page.getByRole('link', { name: 'Write' }).first().click();
 	await appReady(page);
 	// The composer sits behind a button, so the journal opens as a list rather than a form.
-	await page.getByRole('button', { name: 'New entry' }).click();
+	await page.getByRole('button', { name: 'Write a moment' }).click();
 
-	const field = page.getByRole('textbox', { name: 'Entry' });
+	const field = page.getByRole('textbox', { name: 'Moment', exact: true });
 	await field.pressSequentially('@Kurt');
 	await expect(page.getByTestId('mention-picker').getByRole('option', { name: MENTIONED })).toBeVisible();
 

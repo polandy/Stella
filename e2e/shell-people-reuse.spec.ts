@@ -75,8 +75,8 @@ test("the journal's @-picker offers the household but not the person the journal
 
 	await page.getByRole('link', { name: 'Write' }).first().click();
 	await appReady(page);
-	await page.getByRole('button', { name: 'New entry' }).click();
-	await page.getByRole('textbox', { name: 'Entry' }).pressSequentially(`@${surname}`);
+	await page.getByRole('button', { name: 'Write a moment' }).click();
+	await page.getByRole('textbox', { name: 'Moment', exact: true }).pressSequentially(`@${surname}`);
 
 	const picker = page.getByTestId('mention-picker');
 	await expect(picker.getByRole('option', { name: `Lorenz ${surname}` })).toBeVisible();
@@ -94,15 +94,15 @@ test('the journal lets the viewer edit their own entry, with its text, and not a
 
 	const mine = page.locator('article', { hasText: '1972 flood' });
 	const hers = page.locator('article', { hasText: 'sharpened every knife' });
-	await expect(mine.getByRole('button', { name: 'Edit entry' })).toHaveCount(1);
+	await expect(mine.getByRole('button', { name: 'Edit moment' })).toHaveCount(1);
 	await expect(hers).toBeVisible();
-	await expect(hers.getByRole('button', { name: 'Edit entry' })).toHaveCount(0);
+	await expect(hers.getByRole('button', { name: 'Edit moment' })).toHaveCount(0);
 
 	// The editor opens on the entry as it was written, not on an empty field. Nothing is saved.
-	await mine.getByRole('button', { name: 'Edit entry' }).click();
+	await mine.getByRole('button', { name: 'Edit moment' }).click();
 	// The article stops matching once its text is inside the field, so the page is asked; the
 	// composer for a new entry is closed, so this is the only field of that name.
-	await expect(page.getByRole('textbox', { name: 'Entry' })).toHaveValue(/1972 flood/);
+	await expect(page.getByRole('textbox', { name: 'Moment', exact: true })).toHaveValue(/1972 flood/);
 	await page.getByRole('button', { name: 'Cancel' }).click();
 });
 

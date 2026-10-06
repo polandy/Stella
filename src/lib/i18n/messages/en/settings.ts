@@ -13,7 +13,7 @@ export const settings = {
 	'settings.self.heading': 'You',
 	'settings.self.label': 'Which of these people is you',
 	'settings.self.hint':
-		'Point Stella at your own record and it knows whose story the map opens on, and which row is you.',
+		'Point Stella at your own record and it knows who the map opens on, and which row is you.',
 	'settings.self.placeholder': 'Search for yourself by name',
 	'settings.self.clear': 'None of them is me',
 	'settings.self.saved': 'Saved.',

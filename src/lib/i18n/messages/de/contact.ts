@@ -23,7 +23,7 @@ export const contact: ContactMessages = {
 	'contact.private': 'Privat',
 	'contact.archived': 'Archiviert',
 	'contact.archivedOn': (p) => `Archiviert am ${p.day}`,
-	'contact.write': 'Tagebuch schreiben',
+	'contact.write': 'Moment festhalten',
 	'contact.logContact': 'Kontakt festhalten',
 	'contact.egoGraphLabel': (p) => `Beziehungsnetz von ${p.name}`,
 	'contact.story.title': 'Aktivität',

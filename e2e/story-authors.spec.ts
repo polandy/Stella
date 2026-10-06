@@ -32,8 +32,8 @@ test('offers to remove only the items the viewer wrote', async ({ page }) => {
 	const mine = page.locator('[data-story-item]', { hasText: MY_ENTRY });
 	const hers = page.locator('[data-story-item]', { hasText: NINA_ENTRY });
 
-	await expect(mine.getByRole('button', { name: 'Remove entry' })).toHaveCount(1);
-	await expect(hers.getByRole('button', { name: 'Remove entry' })).toHaveCount(0);
+	await expect(mine.getByRole('button', { name: 'Remove moment' })).toHaveCount(1);
+	await expect(hers.getByRole('button', { name: 'Remove moment' })).toHaveCount(0);
 });
 
 test('says the same on the journal page, where there is no kind beside it', async ({ page }) => {

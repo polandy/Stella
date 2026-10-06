@@ -98,7 +98,7 @@ export const errors: ErrorsMessages = {
 		'Der Moment wurde gespeichert, ein Foto ließ sich aber nicht hinzufügen.',
 	'errors.journal.badDay': 'Bitte wähle ein gültiges Datum.',
 	'errors.journal.photoFailed':
-		'Der Eintrag wurde gespeichert, ein Foto ließ sich aber nicht hinzufügen.',
+		'Der Moment wurde gespeichert, ein Foto ließ sich aber nicht hinzufügen.',
 	'errors.circle.needCircleName': 'Bitte gib dem Kreis einen Namen.',
 	'errors.circle.choosePerson': 'Bitte wähle eine Person.',
 	'errors.circle.roleNameBlank': 'Gib der Rolle einen Namen – Rollen entfernst du über Auswählen.',
@@ -141,7 +141,7 @@ export const errors: ErrorsMessages = {
 	'errors.circlePhoto.unknownRole': 'Wähle eine der Rollen des Kreises oder keine Rolle.',
 	'errors.export.adminOnly': 'Nur die Haushalts-Administration kann exportieren.',
 	'errors.story.badCursor': 'Fehlerhafter Verlaufs-Cursor',
-	'errors.journal.couldNotSave': 'Der Eintrag konnte nicht gespeichert werden.',
+	'errors.journal.couldNotSave': 'Der Moment konnte nicht gespeichert werden.',
 	'errors.apiToken.emptyName': 'Bitte gib dem Token einen Namen, damit du später weißt, wofür er ist.',
 	'errors.journal.editFailed': 'Die Änderungen konnten nicht gespeichert werden.'
 };

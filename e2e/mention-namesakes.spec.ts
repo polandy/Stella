@@ -129,9 +129,9 @@ test('asks which one a typed namesake means in a journal entry, new or edited', 
 	await page.goto(`/contacts/${subject}/journal`);
 	await appReady(page);
 
-	await page.getByRole('button', { name: 'New entry' }).click();
-	const field = page.getByRole('textbox', { name: 'Entry' });
-	const save = page.getByRole('button', { name: 'Save entry' });
+	await page.getByRole('button', { name: 'Write a moment' }).click();
+	const field = page.getByRole('textbox', { name: 'Moment', exact: true });
+	const save = page.getByRole('button', { name: 'Save moment' });
 	await field.pressSequentially(`Walked with @${name}`);
 	await field.press('Escape');
 	await expectAsked(page, save, name);
@@ -139,8 +139,8 @@ test('asks which one a typed namesake means in a journal entry, new or edited', 
 	await save.click();
 	await expect(page.locator(`a.mention[href="/contacts/${hut}"]`)).toBeVisible();
 
-	await page.getByRole('button', { name: 'Edit entry' }).click();
-	const editing = page.getByRole('textbox', { name: 'Entry' });
+	await page.getByRole('button', { name: 'Edit moment' }).click();
+	const editing = page.getByRole('textbox', { name: 'Moment', exact: true });
 	const saveChanges = page.getByRole('button', { name: 'Save changes' });
 	await expect(saveChanges).toBeEnabled();
 	await editing.press('End');
@@ -155,17 +155,17 @@ test('keeps a namesake mentioned when a journal entry is edited and saved', asyn
 	await page.goto(`/contacts/${subject}/journal`);
 	await appReady(page);
 
-	await page.getByRole('button', { name: 'New entry' }).click();
-	const field = page.getByRole('textbox', { name: 'Entry' });
+	await page.getByRole('button', { name: 'Write a moment' }).click();
+	const field = page.getByRole('textbox', { name: 'Moment', exact: true });
 	await field.pressSequentially(`Walked with @${name}`);
 	await page.getByTestId('mention-picker').getByRole('option').filter({ hasText: HUT }).click();
-	await page.getByRole('button', { name: 'Save entry' }).click();
+	await page.getByRole('button', { name: 'Save moment' }).click();
 	const chip = page.locator(`a.mention[href="/contacts/${hut}"]`);
 	await expect(chip).toBeVisible();
 
 	// Editing shows the handle again; saving must not lose whom it names.
-	await page.getByRole('button', { name: 'Edit entry' }).click();
-	const editing = page.getByRole('textbox', { name: 'Entry' });
+	await page.getByRole('button', { name: 'Edit moment' }).click();
+	const editing = page.getByRole('textbox', { name: 'Moment', exact: true });
 	await expect(editing).toHaveValue(`Walked with @${name}`);
 	await editing.press('End');
 	await editing.pressSequentially(' again');
