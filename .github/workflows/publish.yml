@@ -29,6 +29,9 @@ env:
 jobs:
   image:
     runs-on: ubuntu-latest
+    # A cold build (no layer cache) finishes in a few minutes; a registry push that hangs
+    # must not hold the runner longer than that.
+    timeout-minutes: 20
     permissions:
       contents: read
       packages: write
