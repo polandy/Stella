@@ -76,8 +76,12 @@ test.describe('on a phone', () => {
 		// Measured, not read from the classes: an inline link sat 3px above the buttons' middle.
 		const middle = async (box: { y: number; height: number } | null) => box!.y + box!.height / 2;
 		const mark = await middle(await logo.getByRole('img', { name: 'Stella' }).boundingBox());
-		const search = await middle(await page.getByRole('button', { name: 'Search' }).boundingBox());
-		expect(Math.abs(mark - search)).toBeLessThanOrEqual(0.5);
+		// The search button is not on a phone's Home (the field is the search), so the logo is
+		// measured against *Add person*, the button beside it.
+		const button = await middle(
+			await page.getByRole('banner').getByRole('link', { name: 'Add person' }).boundingBox()
+		);
+		expect(Math.abs(mark - button)).toBeLessThanOrEqual(0.5);
 	});
 
 	test('keeps the breadcrumb, not the logo, everywhere but Home', async ({ page }) => {

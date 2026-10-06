@@ -91,7 +91,8 @@ test.describe('on a phone', () => {
 		await scrollBy(page, -60);
 		await expect(topBar(page)).toHaveAttribute('data-hidden', 'false');
 		expect(await settledBottom(topBar(page))).toBeGreaterThan(0);
-		await expect(page.getByRole('button', { name: 'Search' })).toBeInViewport();
+		// Home on a phone has no search button (its field is the search); *Add person* is there.
+		await expect(page.getByRole('banner').getByRole('link', { name: 'Add person' })).toBeInViewport();
 	});
 
 	test('keeps the top bar still at the bottom of a page, and brings it back on the way out', async ({ page }) => {
