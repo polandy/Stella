@@ -65,6 +65,12 @@
 		children: Snippet;
 		/** The form revealed by the disclosure button. */
 		editor?: Snippet;
+		/**
+		 * What a card that holds nothing says, in one sentence. Given, the card stands as one
+		 * line — its title, this sentence, its actions — and its body is not drawn, until its
+		 * form is opened (docs/05 §5.5). Cards only.
+		 */
+		empty?: string;
 	}
 	let {
 		title,
@@ -81,11 +87,18 @@
 		iconAdd = false,
 		open = $bindable(false),
 		children,
-		editor
+		editor,
+		empty
 	}: Props = $props();
 
 	const t = useTranslate();
 	const expanded = $derived(open || error !== null);
+	/*
+	 * An empty card as one line. The header stays the same element when the form opens, so the
+	 * add button the reader pressed is the Cancel that closes it again — focus never falls off
+	 * a button that went away.
+	 */
+	const line = $derived(empty !== undefined && !expanded);
 	/*
 	 * A row keeps its content folded away as well as its form; the card shows its content
 	 * always. An open form pulls the row open with it, so a failed validation is never
@@ -200,7 +213,8 @@
 {/snippet}
 
 <!--
-	The form sits above the content, so it is where the button that opened it is. `svelte-ignore`:
+	The form sits above the content, so it is where the button that opened it is — and is set off
+	from it only where there is content: an empty card's form is all the card holds. `svelte-ignore`:
 	the handler is on a plain box because Escape has to reach it from whichever field holds the
 	cursor, and the form's own controls stay reachable by keyboard as they were.
 -->
@@ -215,7 +229,7 @@
 			onkeydown={onKeydown}
 			onfocusin={() => (focusInForm = true)}
 			onfocusout={onFocusOut}
-			class="mb-3 border-b border-border-subtle pb-3"
+			class={empty === undefined ? 'mb-3 border-b border-border-subtle pb-3' : undefined}
 		>
 			<FormError message={error} class="mb-3" />
 			{@render editor()}
@@ -277,26 +291,39 @@
 		bind:this={card}
 		tabindex={id ? -1 : undefined}
 		aria-labelledby={id && title ? `${id}-title` : undefined}
-		class="scroll-mt-4 rounded-app bg-card p-4 shadow-card"
+		data-empty-line={line || undefined}
+		class="scroll-mt-4 rounded-app bg-card shadow-card {line ? 'py-2 pr-2 pl-4' : 'p-4'}"
 	>
-		<header class="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+		<!-- As one line it does not wrap: the sentence gives way, cut short, so the add button
+		     stays beside the title on a phone. -->
+		<header class="flex items-center gap-x-2 gap-y-1 {line ? 'flex-nowrap' : 'mb-3 flex-wrap'}">
 			{#if title}
-				<h2 id={id ? `${id}-title` : undefined} class="text-sm font-semibold text-fg">{title}</h2>
-				{#if count !== undefined}<span class="text-sm text-fg-subtle">{count}</span>{/if}
+				<h2 id={id ? `${id}-title` : undefined} class="shrink-0 text-sm font-semibold text-fg">
+					{title}
+				</h2>
+				{#if count !== undefined && !line}<span class="text-sm text-fg-subtle">{count}</span>{/if}
 			{/if}
-			<span class="flex-1"></span>
+			{#if line}
+				<p class="min-w-0 flex-1 truncate pl-1 text-sm text-fg-subtle">{empty}</p>
+			{:else}
+				<span class="flex-1"></span>
+			{/if}
 			<!-- The actions wrap among themselves and stay together on the right: a card may
 			     offer more than one thing besides its own Add — the relationships card offers
 			     two — and a row that cannot wrap pushes the last one off the card. On a phone
 			     they only wrap below the title, where rows read from the left edge, not ragged
 			     against the right one. -->
-			<div class="flex flex-wrap items-center justify-end gap-2 max-sm:justify-start">
+			<div
+				class="flex flex-wrap items-center justify-end gap-2 max-sm:justify-start {line
+					? 'shrink-0'
+					: ''}"
+			>
 				{@render action?.()}
 				{@render disclosure()}
 				{@render menu?.()}
 			</div>
 		</header>
 
-		{@render body()}
+		{#if !line}{@render body()}{/if}
 	</section>
 {/if}

@@ -19,7 +19,9 @@ test.beforeEach(async ({ page }) => {
 test('lands with every card on the page, relationships first and the map above its list', async ({
 	page
 }) => {
-	await openPerson(page, /Lena Brunner/);
+	// Noah: others' stories name him, so *Mentioned in* is on the page too — at zero it is not
+	// (docs/05 §5.5).
+	await openPerson(page, /Noah Brunner/);
 
 	// Nothing waits behind a click any more, so there is no tablist left to click.
 	await expect(page.getByRole('tab')).toHaveCount(0);
@@ -27,7 +29,7 @@ test('lands with every card on the page, relationships first and the map above i
 		await expect(page.locator(`#section-${card}`)).toBeVisible();
 	}
 
-	// The order is what this page is about: who she is, then her people, then her photos.
+	// The order is what this page is about: who he is, then his people, then his photos.
 	// Story and notes may stand side by side, so the order is read off their tops, not equal.
 	const identity = (await page.getByTestId('identity-card').boundingBox())!.y;
 	const tops = await Promise.all(

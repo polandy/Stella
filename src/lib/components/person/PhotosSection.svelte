@@ -6,6 +6,7 @@
 	import Section from '$lib/components/Section.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import type { JsonCommand } from '$lib/commands/commands';
+	import { cardShape } from '$lib/contacts/empty-cards';
 	import { sectionAnchor } from '$lib/contacts/sections';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -189,6 +190,17 @@
 		// After the dialog has gone: until then the grid is inert and cannot take focus.
 		if (at !== null) void tick().then(() => thumbnails[at]?.focus());
 	}
+
+	/*
+	 * No photo, none waiting to be sent, no group photo and no Immich line under them: the card
+	 * is one line (docs/05 §5.5). The Immich menu stays in that line, beside the add button.
+	 */
+	const holdsSomething = $derived(
+		data.gallery.length > 0 ||
+			keptGallery.length > 0 ||
+			data.groupPhotos.length > 0 ||
+			(showImmich && (data.immich?.linked === true || Boolean(form?.immichError)))
+	);
 </script>
 
 <Section
@@ -196,6 +208,7 @@
 	title={t('contact.section.photos')}
 	count={data.gallery.length}
 	addLabel={t('contact.photos.add')}
+	empty={cardShape('photos', holdsSomething) === 'line' ? t('contact.photos.none') : undefined}
 	error={form?.photoError ?? uploadError}
 >
 	{#snippet action()}
@@ -281,8 +294,6 @@
 				</li>
 			{/each}
 		</ul>
-	{:else}
-		<p class="text-sm text-fg-subtle">{t('contact.photos.none', { name: c.displayName })}</p>
 	{/if}
 	{#if data.groupPhotos.length > 0}
 		<!-- Every group photo their picture was cut from, now and before (docs/02 §2.14). -->

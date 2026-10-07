@@ -7,6 +7,7 @@ import {
 	markedSection,
 	scrollsThePage
 } from './jump-bar';
+import { cardShape } from './empty-cards';
 
 /*
  * The person page's jump bar (docs/05 §5.5): one link per card worth jumping to, with the
@@ -129,5 +130,11 @@ describe('barVisible', () => {
 	it('follows the bar’s height when its links wrap onto a second row', () => {
 		expect(barVisible({ cardBottom: 80, barHeight: BAR })).toBe(false);
 		expect(barVisible({ cardBottom: 80, barHeight: 2 * BAR })).toBe(true);
+	});
+});
+
+describe('the cards the bar links', () => {
+	it('stand on the page even when they hold nothing, so no link points at a missing card', () => {
+		for (const section of JUMP_SECTIONS) expect(cardShape(section, false)).not.toBe('absent');
 	});
 });

@@ -259,16 +259,14 @@ export const contact: ContactMessages = {
 	'contact.relationships.viaAnd': ' und ',
 
 	'contact.notes.add': 'Notiz hinzufügen',
-	'contact.notes.none': (p) =>
-		`Noch nichts über ${p.name} notiert. Halte hier fest, was du nicht vergessen willst — Geschenkideen, Allergien, den Namen des Hundes.`,
+	'contact.notes.none': 'Noch nichts notiert.',
 	'contact.notes.pinned': 'angeheftet',
 	'contact.notes.label': 'Notiz',
 	'contact.notes.placeholder': 'Notiz schreiben… (Markdown, @ zum Erwähnen)',
 	'contact.notes.pin': 'Anheften',
 
 	'contact.photos.add': 'Fotos hinzufügen',
-	'contact.photos.none': (p) =>
-		`Noch keine Fotos von ${p.name}. Füge eines hinzu, dann kann es zum Profilbild werden.`,
+	'contact.photos.none': 'Noch keine Fotos.',
 	'contact.photos.of': (p) => `Foto von ${p.name}`,
 	'contact.photos.privateHint': 'Privat — das siehst nur du',
 	'contact.photos.pictures': 'Bilder',
@@ -292,6 +290,5 @@ export const contact: ContactMessages = {
 	'contact.mentions.in': 'in',
 	'contact.mentions.notes': 'Notizen',
 	'contact.mentions.journal': 'Tagebuch',
-	'contact.mentions.by': (p) => `von ${p.author}`,
-	'contact.mentions.none': (p) => `${p.name} wurde anderswo noch nirgends erwähnt.`
+	'contact.mentions.by': (p) => `von ${p.author}`
 };

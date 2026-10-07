@@ -5,6 +5,7 @@
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { enhance } from '$app/forms';
+	import { cardShape } from '$lib/contacts/empty-cards';
 	import { sectionAnchor } from '$lib/contacts/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { asTyped } from '$lib/mentions/picks';
@@ -32,7 +33,6 @@
 
 	const i18n = useI18n();
 	const t = i18n.t;
-	const c = $derived(data.contact);
 	const removals = useRemovals();
 
 	// Saving through `enhance` keeps the page — and with it any open undo window — alive, so
@@ -140,6 +140,8 @@
 		input.cancel();
 		void saveKeptNote(editingNote);
 	};
+	// Nothing noted and nothing waiting to be sent: the card is one line (docs/05 §5.5).
+	const holdsSomething = $derived(data.notes.length > 0 || keptNotes.length > 0);
 </script>
 
 <Section
@@ -147,6 +149,7 @@
 	title={t('contact.section.notes')}
 	count={data.notes.length}
 	addLabel={t('contact.notes.add')}
+	empty={cardShape('notes', holdsSomething) === 'line' ? t('contact.notes.none') : undefined}
 	error={form?.noteError ?? null}
 	bind:open={openSection.note}
 >
@@ -185,8 +188,6 @@
 				</li>
 			{/each}
 		</ul>
-	{:else}
-		<p class="text-sm text-fg-subtle">{t('contact.notes.none', { name: c.displayName })}</p>
 	{/if}
 
 	{#snippet editor()}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import { cardShape } from '$lib/contacts/empty-cards';
 	import { sectionAnchor } from '$lib/contacts/sections';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -10,20 +11,21 @@
 
 	const i18n = useI18n();
 	const t = i18n.t;
-	const c = $derived(data.contact);
+	const shape = $derived(cardShape('mentions', data.mentionedIn.length > 0));
 </script>
 
 <!--
 	Where somebody else names this person (docs/02 §2.20.1). Read-only: each item links
 	to the person whose note or journal it is, because that is where it is written and
-	edited. The list is already scoped to what this viewer may see.
+	edited. The list is already scoped to what this viewer may see. Nobody mentioning the
+	person leaves the card off the page (docs/05 §5.5).
 -->
-<Section
-	id={sectionAnchor('mentions')}
-	title={t('contact.section.mentions')}
-	count={data.mentionedIn.length}
->
-	{#if data.mentionedIn.length > 0}
+{#if shape !== 'absent'}
+	<Section
+		id={sectionAnchor('mentions')}
+		title={t('contact.section.mentions')}
+		count={data.mentionedIn.length}
+	>
 		<ul class="flex flex-col gap-2" data-testid="mentioned-in">
 			{#each data.mentionedIn as reference (reference.kind + reference.entryId)}
 				<li>
@@ -66,9 +68,5 @@
 				</li>
 			{/each}
 		</ul>
-	{:else}
-		<p class="text-sm text-fg-subtle">
-			{t('contact.mentions.none', { name: c.displayName })}
-		</p>
-	{/if}
-</Section>
+	</Section>
+{/if}
