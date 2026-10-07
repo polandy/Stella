@@ -16,7 +16,6 @@ import { BlankRoleNameError, renameCircleRole } from '$lib/server/domain/circles
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { listCircleCuts } from '$lib/server/domain/media/cuts';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
-import { getCircleDeps, getCirclePhotoDeps, getCutDeps } from '$lib/server/services';
 import { photoActions } from './actions/photos';
 import { lastNameActions } from '$lib/server/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
@@ -29,13 +28,13 @@ import { say, translator } from '$lib/server/i18n/say';
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const viewer = requireViewer(locals);
 
-	const circle = await getCircle(getCircleDeps(), viewer, params.id);
+	const circle = await getCircle(locals.services.circles.circleDeps, viewer, params.id);
 	if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 	const [members, photos, cuts, surnameHelp] = await Promise.all([
-		listMembers(getCircleDeps(), viewer, params.id),
-		listCirclePhotos(getCirclePhotoDeps(), viewer, params.id),
-		listCircleCuts(getCutDeps(), viewer, params.id),
+		listMembers(locals.services.circles.circleDeps, viewer, params.id),
+		listCirclePhotos(locals.services.circles.circlePhotoDeps, viewer, params.id),
+		listCircleCuts(locals.services.circles.cutDeps, viewer, params.id),
 		readSurnameHelp(locals.services.people.surnameReviewDeps, viewer, null)
 	]);
 	const roles = suggestRoles(members.map((m) => m.role));
@@ -77,7 +76,7 @@ export const actions: Actions = {
 		const viewer = requireViewer(locals);
 
 		// The circle must be visible to the actor before anything is added to it.
-		const circle = await getCircle(getCircleDeps(), viewer, params.id);
+		const circle = await getCircle(locals.services.circles.circleDeps, viewer, params.id);
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 		const form = await request.formData();
@@ -98,7 +97,7 @@ export const actions: Actions = {
 		}
 
 		await addMembers(
-			getCircleDeps(),
+			locals.services.circles.circleDeps,
 			{ userId: viewer.id },
 			params.id,
 			parsed.output.contactIds,
@@ -111,7 +110,7 @@ export const actions: Actions = {
 	setRole: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		const circle = await getCircle(getCircleDeps(), viewer, params.id);
+		const circle = await getCircle(locals.services.circles.circleDeps, viewer, params.id);
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 		const form = await request.formData();
@@ -122,7 +121,7 @@ export const actions: Actions = {
 		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
 
 		await setMembersRole(
-			getCircleDeps(),
+			locals.services.circles.circleDeps,
 			viewer,
 			params.id,
 			parsed.output.contactIds,
@@ -135,7 +134,7 @@ export const actions: Actions = {
 	renameRole: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		const circle = await getCircle(getCircleDeps(), viewer, params.id);
+		const circle = await getCircle(locals.services.circles.circleDeps, viewer, params.id);
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 		const form = await request.formData();
@@ -144,11 +143,11 @@ export const actions: Actions = {
 		if (typeof from !== 'string' || typeof to !== 'string') return fail(400, {});
 
 		try {
-			await renameCircleRole(
-				{ ...getCirclePhotoDeps(), circles: getCircleDeps().circles },
-				viewer,
-				{ circleId: params.id, from, to }
-			);
+			await renameCircleRole(locals.services.circles.renameRoleDeps, viewer, {
+				circleId: params.id,
+				from,
+				to
+			});
 		} catch (err) {
 			// Which heading failed, so only that one stays open with the message.
 			if (err instanceof BlankRoleNameError) {
@@ -162,14 +161,14 @@ export const actions: Actions = {
 	removeMember: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		const circle = await getCircle(getCircleDeps(), viewer, params.id);
+		const circle = await getCircle(locals.services.circles.circleDeps, viewer, params.id);
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 		const form = await request.formData();
 		const contactId = form.get('contactId');
 		if (typeof contactId !== 'string') return fail(400, {});
 
-		await removeMember(getCircleDeps(), params.id, contactId);
+		await removeMember(locals.services.circles.circleDeps, params.id, contactId);
 		throw redirect(303, `/circles/${params.id}`);
 	}
 };

@@ -9,7 +9,6 @@ import {
 	suggestCircleColor
 } from '$lib/server/domain/circles/circles';
 import { listCircleCovers } from '$lib/server/domain/circles/circle-photos';
-import { getCircleDeps, getCirclePhotoDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say } from '$lib/server/i18n/say';
 
@@ -21,8 +20,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const viewer = requireViewer(locals);
 
 	const [circles, covers] = await Promise.all([
-		listCircles(getCircleDeps(), viewer),
-		listCircleCovers(getCirclePhotoDeps(), viewer)
+		listCircles(locals.services.circles.circleDeps, viewer),
+		listCircleCovers(locals.services.circles.circlePhotoDeps, viewer)
 	]);
 	const usedColors = circles.map((c) => c.color);
 
@@ -57,7 +56,7 @@ export const actions: Actions = {
 		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.needCircleName') });
 
 		const id = await createCircle(
-			getCircleDeps(),
+			locals.services.circles.circleDeps,
 			{ userId: viewer.id, householdId: viewer.householdId, defaultVisibility: 'shared' },
 			parsed.output
 		);

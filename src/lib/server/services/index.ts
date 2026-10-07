@@ -4,9 +4,6 @@ import { systemClock } from '../clock';
 import { getConfig } from '../config';
 import { getDb, getSqlite } from '../db';
 import { createDrizzleAttentionRepository } from '../db/attention-repository';
-import { createDrizzleCircleRepository } from '../db/circle-repository';
-import { createDrizzleCirclePhotoRepository } from '../db/circle-photo-repository';
-import { createDrizzleCutRepository } from '../db/cut-repository';
 import { createDrizzleStreamRepository } from '../db/stream-repository';
 import { createDrizzleJournalRepository } from '../db/journal-repository';
 import { createDrizzleContactFieldRepository } from '../db/contact-field-repository';
@@ -40,12 +37,7 @@ import type { AttentionRepository } from '../domain/attention/last-touched';
 import type { NoteDeps, NoteRepository } from '../domain/notes/notes';
 import type { JournalDeps, JournalRepository } from '../domain/journal/journal';
 import type { TagDeps, TagRepository } from '../domain/tags/tags';
-import type { CircleDeps, CircleRepository } from '../domain/circles/circles';
-import {
-	prepareCirclePhotoUpload,
-	type CirclePhotoDeps,
-	type CirclePhotoRepository
-} from '../domain/circles/circle-photos';
+import { prepareCirclePhotoUpload } from '../domain/circles/circle-photos';
 import type { StreamDeps, StreamRepository } from '../domain/stream/stream';
 import { captureMoment, type CaptureMomentDeps } from '../domain/moments/moments';
 import type {
@@ -84,7 +76,6 @@ import {
 	type MediaStreamSource,
 	type PhotoRepository
 } from '../domain/media/avatars';
-import type { CutDeps, CutRepository } from '../domain/media/cuts';
 import type { FramingDeps, FramingRepository } from '../domain/media/framing';
 import type { GalleryDeps } from '../domain/media/gallery';
 import type { GalleryUploadDeps } from '../domain/media/gallery-upload';
@@ -134,8 +125,8 @@ export function getServices(): AppServices {
 		db: getDb(),
 		clock: systemClock,
 		ids: ulidGenerator,
-		// Not grouped yet (AR-01): its factory below hands the people context the same lazily
-		// built instance it hands everyone else.
+		// Not grouped yet (AR-01): its factory below hands the people and circles contexts the
+		// same lazily built instance it hands everyone else.
 		media: getMediaStore()
 	}));
 }
@@ -394,7 +385,7 @@ export function getCommandDeps(): CommandDeps {
 			})),
 			'circle.join': onVisibleContact(people().contacts, async (actor, payload) => ({
 				circleId: await joinCircleByName(
-					getCircleDeps(),
+					getServices().circles.circleDeps,
 					{ ...actor, defaultVisibility: 'shared' },
 					payload.contactId,
 					payload.circleName,
@@ -462,48 +453,12 @@ export function getCommandDeps(): CommandDeps {
 				),
 			// Checks the circle and the role once; the photos following it land where it says.
 			'circleGallery.add': (actor, payload) =>
-				prepareCirclePhotoUpload(getCirclePhotoDeps(), viewerOf(actor), payload),
+				prepareCirclePhotoUpload(getServices().circles.circlePhotoDeps, viewerOf(actor), payload),
 			'circleGallery.photo': (actor, payload) => {
-				const photos = getCirclePhotoDeps();
-				return attachCirclePhoto({ receipts, circles: photos.circles, photos }, actor, payload);
+				const { circles, circlePhotoDeps } = getServices().circles;
+				return attachCirclePhoto({ receipts, circles, photos: circlePhotoDeps }, actor, payload);
 			}
 		}
-	};
-}
-
-let circleRepository: CircleRepository | null = null;
-
-export function getCircleDeps(): CircleDeps {
-	return {
-		circles: (circleRepository ??= createDrizzleCircleRepository(getDb())),
-		ids: ulidGenerator,
-		clock: systemClock
-	};
-}
-
-let circlePhotoRepository: CirclePhotoRepository | null = null;
-
-/** Deps for a circle's photos (docs/02 §2.4.2). */
-export function getCirclePhotoDeps(): CirclePhotoDeps {
-	return {
-		circlePhotos: (circlePhotoRepository ??= createDrizzleCirclePhotoRepository(getDb())),
-		circles: getCircleDeps().circles,
-		media: getMediaStore(),
-		ids: ulidGenerator,
-		clock: systemClock
-	};
-}
-
-let cutRepository: CutRepository | null = null;
-
-/** Deps for profile pictures cut from a group photo (docs/02 §2.14). */
-export function getCutDeps(): CutDeps {
-	return {
-		cuts: (cutRepository ??= createDrizzleCutRepository(getDb())),
-		contacts: people().contacts,
-		media: getMediaStore(),
-		ids: ulidGenerator,
-		clock: systemClock
 	};
 }
 

@@ -181,7 +181,7 @@ describe('createServices', () => {
 			db,
 			clock,
 			ids,
-			media: { delete: async () => {} }
+			media: { put: async (key) => key, read: async () => null, delete: async () => {} }
 		});
 		expect(services.people.surnameReviewDeps.relationships).toBe(
 			services.relationships.relationships

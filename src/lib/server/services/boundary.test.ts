@@ -84,7 +84,11 @@ describe('the composition root', () => {
 			'SuggestionDismissals',
 			'SuggestionReviewDeps',
 			'FamilyReadDeps',
-			'GraphRepository'
+			'GraphRepository',
+			// The circles context (AR-01, fourth slice): read `locals.services.circles`.
+			'CircleDeps',
+			'CirclePhotoDeps',
+			'CutDeps'
 		];
 		const retired = new RegExp(`\\bget(?:${factories.join('|')})\\b`);
 		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);

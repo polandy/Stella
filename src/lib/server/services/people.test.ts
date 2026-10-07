@@ -168,7 +168,8 @@ describe('createServices', () => {
 			db,
 			clock,
 			ids,
-			media
+			// The circles context stores photos, so the graph needs the whole store.
+			media: { ...media, put: async (key) => key, read: async () => null }
 		});
 		expect(services.people.selfContactDeps.accounts).toBe(services.auth.accounts);
 	});
