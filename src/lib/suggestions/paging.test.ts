@@ -17,7 +17,7 @@ import type { Relation } from './types';
 
 /*
  * Paging and folding a household-wide review
- * (docs/concepts/relationship-review-at-scale.html, docs/04 §4.9).
+ * (docs/04 ADR-010).
  *
  * The engine computes everything — that is the no-cap decision — so the screen is what has to
  * stay finite. Nothing here drops a claim: the page limits what is *rendered*, and every total

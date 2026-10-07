@@ -181,7 +181,7 @@ export const load = (async ({ locals, params, url }) => {
 		proposals: withReasonsSaid(read.family.kinship.proposals, t),
 		proposeFor,
 		/*
-		 * The on-demand review (docs/concepts/relationship-suggestions.md §6.5): what stands
+		 * The on-demand review (docs/02 §2.4.1): what stands
 		 * around this person right now, asked for rather than raised by a write. Closed, it
 		 * costs nothing — no rule runs until somebody presses the control.
 		 */

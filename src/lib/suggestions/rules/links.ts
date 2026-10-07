@@ -5,7 +5,7 @@ import type { LinkSuggestion, PrimaryLink, Rule, RuleId, Trigger } from '../type
 import type { SuggestionView } from '../view';
 
 /*
- * The link rules (docs/concepts/relationship-suggestions.md §3, L1, L2 and L3).
+ * The link rules (docs/02 §2.4.1, L1, L2 and L3).
  *
  * Adding one primary link usually implies others: a mother added to one child is the mother
  * of that child's siblings too. Stella works those out and **offers** them — one confirmation

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { claimKey, indexDismissals, pairKey, type Dismissal } from './claims';
 
 /*
- * The dismissal log as the engine reads it (docs/concepts/relationship-suggestions.md §6.4).
+ * The dismissal log as the engine reads it (docs/04 ADR-117).
  * Keyed by the claim — the relation and the unordered pair — because the household declines
  * a claim, not the rule that happened to surface it.
  */

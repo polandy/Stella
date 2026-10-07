@@ -37,8 +37,7 @@ export const settings = {
 	'settings.data.adminOnly':
 		'Importing, backups and the relationship types are for the household admin.',
 	/*
-	 * The household-wide relationship review (docs/02 §2.4.1,
-	 * docs/concepts/relationship-suggestions.md §6.6) — for every member, not only the admin:
+	 * The household-wide relationship review (docs/02 §2.4.1) — for every member, not only the admin:
 	 * the dismissal log belongs to the household and any member may answer or take one back.
 	 */
 	'settings.quality.heading': 'Data quality',
@@ -65,7 +64,7 @@ export const settings = {
 	'settings.relationships.nothing':
 		'Nothing open. Stella finds nothing across your household that is not on record already.',
 	/*
-	 * The folds (docs/concepts/relationship-review-at-scale.html). Each one names the number it
+	 * The folds (docs/04 ADR-010). Each one names the number it
 	 * is holding back — "22 more for Bettina Meier", not "show more" — because a number the
 	 * reader can check is the difference between folding a list and quietly truncating it.
 	 */

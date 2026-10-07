@@ -273,7 +273,7 @@ export const contact = {
 	'contact.relationships.accept': 'Accept',
 	'contact.relationships.decline': 'Decline',
 	/*
-	 * The on-demand review (docs/concepts/relationship-suggestions.md §6.5) — the one place a
+	 * The on-demand review (docs/02 §2.4.1) — the one place a
 	 * member can ask what follows from links entered long ago, rather than being told in the
 	 * instant after a write.
 	 */

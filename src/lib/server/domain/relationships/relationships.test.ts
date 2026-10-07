@@ -495,7 +495,7 @@ describe('readKinship', () => {
 	});
 
 	/*
-	 * L3 after a write (docs/concepts/relationship-suggestions.md §3.2). The page the link was
+	 * L3 after a write (docs/02 §2.4.1). The page the link was
 	 * entered on decides: the child's page offered the partner in the form already (D4).
 	 */
 	describe('the likely second parent', () => {

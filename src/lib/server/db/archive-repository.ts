@@ -74,7 +74,7 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	},
 	{ table: 'activity_log', where: 't.household_id = ?' },
 	// The claims the household declined. Left out, a restore would re-offer every suggestion
-	// they have already said no to (docs/concepts/relationship-suggestions.md §6.4).
+	// they have already said no to (docs/04 ADR-117).
 	{ table: 'suggestion_dismissal', where: 't.household_id = ?' },
 	// Which commands were applied. Left out, a phone still holding unsent items could send
 	// them twice to a household restored onto a new server (docs/03 §3.3).

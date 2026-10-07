@@ -24,8 +24,8 @@
 	import { heldAnswer } from '$lib/undo/held-answer';
 
 	/*
-	 * The rows of a suggestion block (docs/02 §2.4.1, docs/concepts/relationship-suggestions.md
-	 * §6.5). One component for both places a suggestion appears — the *Also true?* block in the
+	 * The rows of a suggestion block (docs/02 §2.4.1). One component for both places a
+	 * suggestion appears — the *Also true?* block in the
 	 * instant after a link is stored, and the review panel a member opens themselves — because
 	 * they are the same claim asking the same question, and a household should not have to learn
 	 * it twice.
@@ -83,8 +83,7 @@
 		nameOfMember?: (id: string) => string | null;
 		/**
 		 * Whether the declined drawer starts open. A page whose whole purpose *is* the log
-		 * (docs/concepts/relationship-review-at-scale.html, fold 3) would otherwise open on a
-		 * closed disclosure with nothing else on it.
+		 * (docs/05 §5.5) would otherwise open on a closed disclosure with nothing else on it.
 		 */
 		declinedOpen?: boolean;
 		/**

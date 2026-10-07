@@ -1,5 +1,5 @@
 /*
- * The household review's address (docs/concepts/relationship-review-at-scale.html).
+ * The household review's address (docs/04 ADR-010).
  *
  * Every fold in that screen is a link, not a script: the pager, the search and the declined log
  * each have their own URL, so the review works with JavaScript off, survives a reload, and can

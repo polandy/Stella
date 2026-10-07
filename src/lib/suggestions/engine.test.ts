@@ -8,7 +8,7 @@ import type { Suggestion, Trigger } from './types';
 import { buildView } from './view';
 
 /*
- * The engine (docs/concepts/relationship-suggestions.md §6): it selects the rules that answer
+ * The engine (docs/02 §2.4.1, docs/04 ADR-055): it selects the rules that answer
  * the trigger, applies the universal suppressions to all of their output at once, and orders
  * what is left deterministically.
  *
@@ -155,7 +155,7 @@ describe('evaluate', () => {
 	});
 
 	/*
-	 * The dismissal log (docs/concepts/relationship-suggestions.md §6.4). A *no* that is not
+	 * The dismissal log (docs/04 ADR-117). A *no* that is not
 	 * remembered is re-asked on the next run, which the on-demand review would make unbearable.
 	 */
 	describe('dismissal', () => {
@@ -232,7 +232,7 @@ describe('evaluate', () => {
 	});
 
 	/*
-	 * The on-demand review (docs/concepts/relationship-suggestions.md §6.5): the same rules,
+	 * The on-demand review (docs/02 §2.4.1): the same rules,
 	 * pointed at a person instead of at a write, so a claim outlives the moment it was raised.
 	 */
 	describe('a person-scoped review', () => {
@@ -321,7 +321,7 @@ describe('evaluate', () => {
 });
 
 /*
- * The household pass (docs/concepts/relationship-suggestions.md §6.6). The suppressions and
+ * The household pass (docs/02 §2.4.1). The suppressions and
  * the one-row-per-claim rule matter more here than anywhere else: a household run reaches the
  * same claim from both ends of every sibling group, so without them the list would carry each
  * question two or three times.
@@ -454,7 +454,7 @@ describe('evaluate — worked-out relatives (K1)', () => {
 });
 
 /*
- * L3 runs after a write and nowhere else (docs/concepts/relationship-suggestions.md §3.2): it is
+ * L3 runs after a write and nowhere else (docs/02 §2.4.1): it is
  * a guess, and over a whole household it would offer every undated step-parent.
  */
 describe('evaluate — the likely second parent (L3)', () => {

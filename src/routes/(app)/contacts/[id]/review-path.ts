@@ -1,5 +1,5 @@
 /*
- * The on-demand review (docs/concepts/relationship-suggestions.md §6.5) hangs on the URL
+ * The on-demand review (docs/02 §2.4.1) hangs on the URL
  * rather than on component state: pressing *Check suggestions* is a page the household can
  * reload, come back to, and keep after confirming one of the rows. What was declined comes
  * with it, behind a disclosure — so a *no* is never out of reach and costs no second request.

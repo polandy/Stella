@@ -1,7 +1,7 @@
 import { isDirected, type Relation } from './types';
 
 /*
- * Who a claim is about (docs/concepts/relationship-suggestions.md §6.6).
+ * Who a claim is about (docs/02 §2.4.1).
  *
  * A household-wide pass answers about everyone at once, and an undifferentiated list of forty
  * sentences is not help. Grouped by the person each claim is about, it reads as a page per
