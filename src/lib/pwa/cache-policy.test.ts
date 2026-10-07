@@ -177,7 +177,7 @@ describe('what must never be kept', () => {
 
 describe('what is kept before it is read', () => {
 	it('is every place a phone starts from, so a fresh update is not an empty app on the train', () => {
-		// docs/concepts/offline-reading.md §4.1: Home, People, Circles and Settings.
+		// docs/02 §2.18, *What a device keeps*: Home, People, Circles and Settings.
 		expect([...KEPT_AHEAD].sort()).toEqual(['/', '/circles', '/contacts', '/settings']);
 	});
 
