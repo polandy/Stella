@@ -41,8 +41,8 @@ PR updates its own row.
 | C5 last contact only when set | building | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | PR 2 (person page) |
 | C6 inline composer | done | `inline-composer.html`; journal page stays as the reading/editing surface behind *Open journal*; the anchor shows as a chip above the field; *Log contact* shares the spot, one form at a time; the tab bar pencil stays Home's sheet; at the sign-off every card form and the jump bar were made to glide the same way, scrolling only the shell | merged #274 (e2e in the same PR) |
 | C7 jump bar at rest | decided | (b): render only once sticky — fades in when the identity card's bottom passes the top | |
-| C8 desktop map preview | PR | mockup approved 2026-10-07 — `people-card.html` | #284 |
-| C9 fold order | PR | mockup approved 2026-10-07 — `people-card.html` | #284 |
+| C8 desktop map preview | done | mockup approved 2026-10-07 — `people-card.html`; preview strip with first names on every width, enlarges in place, the phone's corner icons; list at full width (four columns from `md`); phone map unchanged | merged #284 (e2e in the same PR) |
+| C9 fold order | done | mockup approved 2026-10-07 — `people-card.html`; folded shows the first six entered, worked-out wholly behind *Show more*; a tappable collapsed line names each wholly hidden group, worked-out last; *Show N more* everywhere | merged #284 (e2e in the same PR) |
 | C10 phone breadcrumb | building | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | PR 2 (person page) |
 | C11 Immich label | open | | |
 | C12 edit affordance on touch | open | | |
