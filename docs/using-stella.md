@@ -263,9 +263,18 @@ someone wrote and the times someone was in touch, newest first, day by day. They
 to be two separate lists and you had to merge them in your head. Older activity loads when you
 ask for it with *Show earlier*.
 
+**Write a moment** on a person's page does not take you away: the page glides down to their
+*Activity* card and the writing field opens at its top, with the cursor in it. A chip above the
+field shows whose moment it is (*Markus Brunner · goes to Markus's journal*), so you do not need
+to mention them with `@`; `@` is for anyone else who was there. *Save* (or ⌘/Ctrl+Enter) puts the
+moment at the top of Activity. *Cancel* or Esc closes the field; if you had typed something, the
+message at the bottom offers *Undo* to get it back. *Log contact* opens in the same spot — one
+of the two at a time, and whatever you typed in the other waits for you. Without a connection
+the moment is kept on your device and shown above Activity until it can be sent.
+
 **The journal** holds the moments behind Activity, one per day and person. A moment written on Home
-lands here; *Write a moment* on the person's page opens the full journal, where a moment can carry
-photos. Writing on a day that already has your moment adds to it rather than replacing it; to
+or on the person's page lands here; *Open journal* in the Activity card's header opens the full
+journal, where moments are read at length and edited. Writing on a day that already has your moment adds to it rather than replacing it; to
 change what is there, use *Edit moment*.
 
 ### Photos

@@ -55,6 +55,12 @@ export interface MomentCapturePayload {
 	 * older build queued, found in the body by its `@Handle`.
 	 */
 	newPeople: (string | MomentNewPerson)[];
+	/**
+	 * The person whose page the moment was written on (docs/02 §2.20): it lands in their journal
+	 * without an `@`. Absent, the first person mentioned is the anchor; a phone that queued the
+	 * moment before the field existed sends none.
+	 */
+	anchorId?: string;
 }
 
 /** A person named for the first time in a moment, with what tells them apart (docs/02 §2.2.3). */

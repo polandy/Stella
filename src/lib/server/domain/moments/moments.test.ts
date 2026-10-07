@@ -4,6 +4,7 @@ import type { Contact, ContactSummary, NewContact } from '../contacts/contacts';
 import type { JournalAuthor, JournalEntry, NewJournalEntry } from '../journal/journal';
 import { NeedsSomethingToKnowThemByError } from '../contacts/contacts';
 import { AmbiguousMentionError } from '../mentions/resolve-for-audience';
+import { ContactGoneError } from '../contacts/require-visible';
 import { MomentNeedsPersonError, captureMoment, type CaptureMomentDeps } from './moments';
 
 /*
@@ -365,5 +366,83 @@ describe('captureMoment', () => {
 		const result = await captureMoment(f.deps, author, { ...base, body: 'Coffee with @Marco' });
 		expect(result.linkSuggestion).toBeNull();
 		expect(f.mentions.get(result.entryId)).toEqual([]);
+	});
+});
+
+/*
+ * A moment written on a person's own page (docs/02 §2.22.1): it belongs to that person without
+ * an `@`, and anyone it does name is a mention beside them.
+ */
+describe('captureMoment with an anchor', () => {
+	const people = [
+		{ id: 'markus', displayName: 'Markus Brunner', firstName: 'Markus', lastName: 'Brunner' },
+		{ id: 'noah', displayName: 'Noah Brunner', firstName: 'Noah', lastName: 'Brunner' }
+	];
+
+	it('lands in the anchor’s journal with no mention at all', async () => {
+		const f = fakes(people);
+		const result = await captureMoment(f.deps, author, {
+			...base,
+			body: 'Coffee after training',
+			anchorId: 'markus'
+		});
+
+		expect(result.anchorContactId).toBe('markus');
+		expect(result.mentionedContactIds).toEqual([]);
+		expect(f.entries[0].contactId).toBe('markus');
+		expect(f.mentions.get(result.entryId)).toEqual([]);
+	});
+
+	it('keeps everyone named as a mention, even when they are named first', async () => {
+		const f = fakes(people);
+		const result = await captureMoment(f.deps, author, {
+			...base,
+			body: '@NoahBrunner had his tournament, @MarkusBrunner drove',
+			anchorId: 'markus'
+		});
+
+		expect(result.anchorContactId).toBe('markus');
+		// The anchor named in the text is the entry's subject, not a reference to itself.
+		expect(result.mentionedContactIds).toEqual(['noah']);
+		expect(f.entries[0].contactId).toBe('markus');
+		expect(f.mentions.get(result.entryId)).toEqual(['noah']);
+	});
+
+	it('creates a person queued with it and mentions them beside the anchor', async () => {
+		const f = fakes(people);
+		const result = await captureMoment(f.deps, author, {
+			...base,
+			body: 'Met @{contact:new:k1} at training',
+			anchorId: 'markus',
+			newPeople: [{ key: 'k1', firstName: 'Lea', lastName: 'Graf', description: null }]
+		});
+
+		expect(result.createdContactIds).toHaveLength(1);
+		expect(result.anchorContactId).toBe('markus');
+		expect(result.mentionedContactIds).toEqual(result.createdContactIds);
+	});
+
+	it('refuses an anchor the author cannot see, creating nobody', async () => {
+		const f = fakes([...people, { id: 'hidden', displayName: 'Hidden', visibility: 'private' }]);
+		await expect(
+			captureMoment(f.deps, author, {
+				...base,
+				body: 'Met @{contact:new:k1}',
+				anchorId: 'hidden',
+				newPeople: [{ key: 'k1', firstName: 'Lea', lastName: 'Graf', description: null }]
+			})
+		).rejects.toBeInstanceOf(ContactGoneError);
+		expect(f.contacts).toHaveLength(3);
+		expect(f.entries).toHaveLength(0);
+	});
+
+	it('joins the anchor’s day slot like any other addition (§2.20)', async () => {
+		const f = fakes(people);
+		await captureMoment(f.deps, author, { ...base, body: 'Morning run', anchorId: 'markus' });
+		await captureMoment(f.deps, author, { ...base, body: 'Evening call', anchorId: 'markus' });
+
+		expect(f.entries).toHaveLength(1);
+		expect(f.entries[0].body).toContain('Morning run');
+		expect(f.entries[0].body).toContain('Evening call');
 	});
 });

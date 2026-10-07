@@ -31,10 +31,14 @@
 	const t = i18n.t;
 	const c = $derived(data.contact);
 
-	// The menu's "Log contact" opens the story card's form; the card owns the state.
-	let logOpen = $state(false);
+	// The identity card's *Write a moment* and the menu's *Log contact* open the story card's
+	// forms; the card owns their state.
+	let story: StorySection | undefined = $state();
 	function logContact() {
-		logOpen = true;
+		story?.logContact();
+	}
+	function writeMoment() {
+		void story?.writeMoment();
 	}
 
 	// The menu's "How are we connected?" asks on the relationships card, which holds the picker.
@@ -94,6 +98,7 @@
 		{isSelf}
 		{archived}
 		{logContact}
+		{writeMoment}
 		{tracePath}
 	/>
 
@@ -106,7 +111,7 @@
 
 	<!-- What happened beside what was written down; stacked, story first, below `lg`. -->
 	<div class="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
-		<StorySection {data} {form} {otherContacts} bind:logOpen />
+		<StorySection bind:this={story} {data} {form} {otherContacts} />
 		<NotesSection {data} {form} {otherContacts} />
 	</div>
 
