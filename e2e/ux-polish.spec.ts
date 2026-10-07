@@ -176,7 +176,8 @@ test.describe('a long description', () => {
 		const field = page.getByRole('textbox', { name: 'Edit description' });
 		await field.fill(text);
 		await field.press('Enter');
-		const value = trigger.locator('span', { hasText: text.trim() });
+		// The clamped box itself: the pencil's room is an inner span inside it (docs/05 §5.7).
+		const value = trigger.locator(':scope > span', { hasText: text.trim() });
 		await expect(value).toBeVisible();
 		return value;
 	}

@@ -4,6 +4,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import FormError from '$lib/components/FormError.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '$lib/components/edit-pencil';
 	import InlineEdit from '$lib/components/InlineEdit.svelte';
 	import MenuButton from '$lib/components/MenuButton.svelte';
 	import Section from '$lib/components/Section.svelte';
@@ -274,15 +275,18 @@
 		<dd class="min-w-0 text-sm [overflow-wrap:anywhere] text-fg">
 			{#if edit}
 				<!-- The pencil says where to edit, on touch too (docs/05 §5.7). -->
+				<!-- Text flow, not flex: the pencil follows the value's last word on its last line and
+				     never wraps onto a line alone (docs/05 §5.7, edit-pencil.ts). -->
 				<button
 					type="button"
-					class="flex max-w-full items-start gap-1 text-left after:absolute after:inset-0 after:rounded-control"
+					class="block max-w-full text-left after:absolute after:inset-0 after:rounded-control"
 					title={edit.what}
 					data-edit={edit.key}
 					onclick={edit.open}
 				>
-					<span class="min-w-0"><span class="sr-only">{edit.what}: </span>{@render value()}</span
-					><Icon name="rename" size={12} class="edit-pencil mt-1" />
+					<span class="sr-only">{edit.what}: </span><span class={VALUE_WITH_PENCIL}
+						><Icon name="rename" size={12} class={PENCIL_AT_VALUE_END} />{@render value()}</span
+					>
 				</button>
 			{:else}
 				{@render value()}
@@ -550,9 +554,9 @@
 						)}
 					{:else}
 						{#snippet addressValue()}
-							{#each addresses as address (address.id)}
-								<span class="block">{address.line}</span>
-							{/each}
+							<!-- Lines broken inline rather than as blocks, so the pencil can follow the last. -->
+							{#each addresses as address, i (address.id)}{#if i > 0}<br
+									/>{/if}{address.line}{/each}
 						{/snippet}
 						{@render fact(t('contact.fieldKind.address'), 'home', 'address', addressValue, {
 							what: t('contact.facts.editAddress'),
@@ -580,7 +584,7 @@
 								error={jobErrorFor(entry.slot ? 'profile' : 'header', form)}
 								formClass="mt-1 rounded-control border border-primary bg-card p-3"
 								triggerTitle={t('contact.job.edit')}
-								triggerClass="flex max-w-full items-start gap-1 text-left after:absolute after:inset-0 after:rounded-control"
+								triggerClass="block max-w-full text-left after:absolute after:inset-0 after:rounded-control"
 							>
 								{#if entry.slot}
 									<span class="sr-only"
@@ -592,9 +596,12 @@
 									>
 								{:else}
 									<span class="sr-only">{t('contact.job.edit')}: </span><span
-										class="min-w-0 [overflow-wrap:anywhere]"
-										data-testid="person-job">{jobLine}</span
-									><Icon name="rename" size={12} class="edit-pencil mt-1" />
+										class={VALUE_WITH_PENCIL}
+										><Icon name="rename" size={12} class={PENCIL_AT_VALUE_END} /><span
+											class="[overflow-wrap:anywhere]"
+											data-testid="person-job">{jobLine}</span
+										></span
+									>
 								{/if}
 							</JobEdit>
 						</dd>

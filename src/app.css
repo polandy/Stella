@@ -394,8 +394,9 @@ body {
 	opacity: 0;
 	transition: opacity var(--motion-fade) var(--ease-standard);
 }
-:hover > .edit-pencil,
-:focus-visible > .edit-pencil {
+/* Descendant, not child: inside a clamped value the pencil sits in the value's own span. */
+button:hover .edit-pencil,
+button:focus-visible .edit-pencil {
 	opacity: 0.9;
 }
 @media (pointer: coarse) {
