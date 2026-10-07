@@ -24,7 +24,8 @@ already made — do not reopen them.
 
 1. Worktree **outside** `.claude/`:
    `git fetch origin main && git worktree add -b <branch> ../Stella-<slug> origin/main`, then
-   `bun install --frozen-lockfile` in it. Stack on another branch only when the brief says so.
+   `bun install --frozen-lockfile` in it — and again after any `package.json` change on main,
+   or the format hook has no Prettier to run. Stack on another branch only when the brief says so.
 2. Test-first (`docs/08` §8.4): see each new test fail once, then make it pass. No test may race.
 3. The PR is complete: domain/access change, the UI that exposes it, the matching `docs/`
    sections, `docs/using-stella.md` when a user can see it, en **and** de copy.
