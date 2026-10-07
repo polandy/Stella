@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { fromPeopleMenu, openPerson, signIn } from './app';
+import { fromPeopleMenu, openPerson, signIn, unfoldPeople } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
@@ -113,5 +113,7 @@ test('declining stops both checks asking, and the profile still names the relati
 	await expect(row(his, f.parent)).toHaveCount(1);
 	await expect(row(his, f.child)).toHaveCount(0);
 	// A no to entering it is not a no to the fact: it still follows from the links on record.
+	// Two worked out and one entered fold the card, and the worked-out ones wait behind it.
+	await unfoldPeople(page);
 	await expect(page.getByTestId('derived-kin')).toContainText(f.child);
 });

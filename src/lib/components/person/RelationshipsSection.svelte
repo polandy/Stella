@@ -12,14 +12,20 @@
 	import { exclusionFor, type Exclusion } from '$lib/relationships/exclusions';
 	import type { RelationshipCategory } from '$lib/relationships/categories';
 	import { relationshipTypeLabel } from '$lib/relationships/labels';
-	import { derivedShownWhenFolded, hiddenWhenFolded } from '$lib/relationships/people-groups';
+	import {
+		foldPeople,
+		groupPeople,
+		WORKED_OUT,
+		type HiddenGroup
+	} from '$lib/relationships/people-groups';
+	import { otherEndRole } from '$lib/relationships/roles';
 	import { relationshipTypeOptions } from '$lib/relationships/type-options';
 	import type { SelectablePerson } from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { tick, untrack } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
-	import { glide, reveal, showOpenedForm } from '$lib/motion/motion.svelte';
+	import { glide, reveal, scrollToShow, showOpenedForm } from '$lib/motion/motion.svelte';
 	import { scrollBehavior } from '$lib/motion/motion';
 	import AddRelationshipForm from './AddRelationshipForm.svelte';
 	import KinPanels from './KinPanels.svelte';
@@ -92,15 +98,22 @@
 		seenLinks = { contactId: id, count };
 	});
 	/*
-	 * Everybody a folded card leaves out, entered or worked out. Edit mode unfolds it: a row
-	 * that cannot be seen cannot be corrected.
+	 * What the fold leaves out, entered or worked out, and the groups it hides whole — the same
+	 * pure fold the list cuts its rows by (docs/05 §5.5). Edit mode unfolds it: a row that cannot
+	 * be seen cannot be corrected.
 	 */
 	const unfolded = $derived(expanded || editing);
-	const hiddenPeople = $derived(
-		hiddenWhenFolded(visibleRelationships.length, unfolded) +
-			data.derivedKin.length -
-			derivedShownWhenFolded(data.derivedKin.length, unfolded)
+	const fold = $derived(
+		foldPeople(
+			groupPeople(visibleRelationships.map((rel) => ({ ...rel, role: otherEndRole(rel) }))),
+			data.derivedKin.length,
+			unfolded
+		)
 	);
+	const hiddenGroupLabel = (hidden: HiddenGroup) =>
+		hidden.group === WORKED_OUT
+			? t('contact.relationships.derivedShort')
+			: t(`contact.relationships.group.${hidden.group}`);
 
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
 	/*
@@ -211,7 +224,40 @@
 		foldedFromToggle = expanded;
 		expanded = !expanded;
 	}
-	function keepToggleInView() {
+	/*
+	 * A group on the fold's collapsed line unfolds the whole card — the one *Show more* state,
+	 * no fold per group — and once the glide has settled the page brings that group into view
+	 * (only the shell scrolls, docs/05 §5.11), with a brief tint to say where it landed and the
+	 * cursor on its heading, since the button that was pressed is gone with the fold.
+	 */
+	let landOnGroup: HiddenGroup['group'] | null = null;
+	function showGroup(group: HiddenGroup['group']) {
+		landOnGroup = group;
+		expanded = true;
+	}
+	function settled() {
+		if (landOnGroup !== null) {
+			const target = peopleColumn?.querySelector<HTMLElement>(
+				`[data-people-group="${landOnGroup}"]`
+			);
+			landOnGroup = null;
+			if (!target) return;
+			scrollToShow(target, 'start');
+			target.querySelector<HTMLElement>('h3')?.focus({ preventScroll: true });
+			if (!prefersReducedMotion.current) {
+				// The token itself, read off the page: a keyframe holds a colour, not a reference.
+				const tint = getComputedStyle(target).getPropertyValue('--primary-soft');
+				target.animate(
+					[
+						{ backgroundColor: tint },
+						{ backgroundColor: tint, offset: 0.4 },
+						{ backgroundColor: 'transparent' }
+					],
+					{ duration: LANDING_TINT_MS, easing: 'ease-out' }
+				);
+			}
+			return;
+		}
 		if (!foldedFromToggle) return;
 		foldedFromToggle = false;
 		peopleColumn?.querySelector('[data-people-toggle]')?.scrollIntoView({
@@ -219,6 +265,8 @@
 			behavior: scrollBehavior(prefersReducedMotion.current)
 		});
 	}
+	/** How long the tint on a group just landed on takes to fade. */
+	const LANDING_TINT_MS = 1200;
 
 	const MENU_ITEM =
 		'flex w-full items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm text-fg hover:bg-primary-soft focus-visible:bg-primary-soft';
@@ -331,60 +379,83 @@
 	{/if}
 
 	<!--
-			The map and the list. On a wide card the map stands beside the list (from a 48rem
-			card, measured on the card rather than the window — the sidebar takes its share);
-			narrower it comes first, as a shape before rows, and on a phone it is only a preview
-			that opens full screen (docs/05 §5.5).
+			The map and the list (docs/05 §5.5). The map is a preview across the card's top on
+			every width — a strip with first names on a wide card, a small ring on a phone — that
+			enlarges in place; the list takes the card's whole width beneath it.
 		-->
-	<div class="@container">
-		<div
-			class={[
-				'grid gap-4 @3xl:items-start',
-				visibleRelationships.length > 0 && '@3xl:grid-cols-[minmax(0,1fr)_20rem]'
-			]}
-		>
-			{#if visibleRelationships.length > 0}
-				<div class="min-w-0 @3xl:order-2"><PeopleMap {data} /></div>
-			{/if}
-			<div class="min-w-0" bind:this={peopleColumn}>
-				<!-- Unfolding and edit mode change the rows; the box glides between the two heights
-					     and *Show more* rides on its lower edge (docs/05 §5.11). -->
-				<div
-					use:glide={{ key: `${unfolded}:${editing}`, onsettled: keepToggleInView }}
-					data-testid="people-rows"
-				>
-					<RelationshipList
-						{data}
-						{visibleRelationships}
-						{relationshipChoices}
-						{exclusionOf}
-						{nameOfContact}
-						{editing}
-						expanded={unfolded}
-						{showTogether}
-						bind:relateOpen
-					/>
+	<div class="flex flex-col gap-4">
+		{#if visibleRelationships.length > 0}
+			<PeopleMap {data} />
+		{/if}
+		<div class="min-w-0" bind:this={peopleColumn}>
+			<!-- Unfolding and edit mode change the rows; the box glides between the two heights
+				     and *Show more* rides on its lower edge (docs/05 §5.11). -->
+			<div
+				use:glide={{ key: `${unfolded}:${editing}`, onsettled: settled }}
+				data-testid="people-rows"
+			>
+				<RelationshipList
+					{data}
+					{visibleRelationships}
+					{relationshipChoices}
+					{exclusionOf}
+					{nameOfContact}
+					{editing}
+					expanded={unfolded}
+					{showTogether}
+					bind:relateOpen
+				/>
 
-					<KinPanels {data} {editing} expanded={unfolded} />
-				</div>
+				<KinPanels {data} {editing} kinShown={fold.workedOutShown} />
 
-				{#if hiddenPeople > 0 || (expanded && !editing)}
-					<Button
-						data-people-toggle
-						type="button"
-						variant="ghost"
-						size="sm"
-						class="mt-2"
-						icon={expanded ? 'collapse' : 'expand'}
-						aria-expanded={expanded}
-						onclick={toggleShowMore}
+				<!--
+					What the fold hides, by group: every group folded away whole with its count, the
+					worked-out block last — a group partly shown is counted by its own heading. Each
+					one unfolds the card and lands on that group.
+				-->
+				{#if fold.hiddenGroups.length > 0}
+					<ul
+						class="mt-1 flex list-none flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] font-semibold tracking-wide text-fg-subtle uppercase"
+						aria-label={t('contact.relationships.foldedAway')}
+						data-testid="people-folded-groups"
 					>
-						{expanded
-							? t('contact.relationships.showFewer')
-							: t('contact.relationships.showMore', { count: hiddenPeople })}
-					</Button>
+						{#each fold.hiddenGroups as hidden, index (hidden.group)}
+							<li class="flex items-center gap-1">
+								{#if index > 0}<span class="text-border" aria-hidden="true">·</span>{/if}
+								<button
+									type="button"
+									class="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-2 py-1 tracking-wide uppercase hover:border-solid hover:bg-card-hover hover:text-fg"
+									aria-label={t('contact.relationships.showGroup', {
+										group: hiddenGroupLabel(hidden),
+										count: hidden.count
+									})}
+									onclick={() => showGroup(hidden.group)}
+								>
+									{#if hidden.group === WORKED_OUT}<Icon name="explore" size={12} />{/if}
+									{hiddenGroupLabel(hidden)} · {hidden.count}
+								</button>
+							</li>
+						{/each}
+					</ul>
 				{/if}
 			</div>
+
+			{#if fold.hidden > 0 || (expanded && !editing)}
+				<Button
+					data-people-toggle
+					type="button"
+					variant="ghost"
+					size="sm"
+					class="mt-2"
+					icon={expanded ? 'collapse' : 'expand'}
+					aria-expanded={expanded}
+					onclick={toggleShowMore}
+				>
+					{expanded
+						? t('contact.relationships.showFewer')
+						: t('contact.relationships.showMore', { count: fold.hidden })}
+				</Button>
+			{/if}
 		</div>
 	</div>
 

@@ -211,10 +211,14 @@ deleting.
 
 Then **People** — everyone they are tied to, each as a face, a name and what they are to this
 person (*Wife*, *Son*, *Colleague*), grouped into family, friends, work and the rest. A long
-list shows the first few and a **Show … more** button. Beside the list on a wide screen is the
-little map of who they are connected to; on a phone it is a small preview instead, with two
-icons in its corner. Tap the preview or its **Enlarge map** icon and the map grows right there
-in the card, about a screen tall, with its Filter and Arrange buttons — drag inside it to move
+list shows the first few people you entered and a **Show … more** button; the relatives Stella
+worked out wait behind it too. A line under the folded list says what is hidden, group by
+group — *Friends · 3 · Work · 2 · Also related · 5* — and tapping one of them opens the whole
+list and takes you to that group. Across the top of the card is a little picture of who they
+are connected to: on a wide screen a strip with everyone's first name, on a phone a small
+preview without names, each with two icons in its corner. Tap the picture or its **Enlarge
+map** icon and the map grows right there in the card — about a screen tall on a phone — with
+its Filter and Arrange buttons — drag inside it to move
 the map, swipe on the page below it to scroll on, and the **Shrink map** icon at the top of the
 map, beside full screen, folds it back. Or tap the **Full screen** icon and the map opens full
 screen; leaving full screen brings you back to the page. The relatives Stella worked out rather than you entering them follow under **Also

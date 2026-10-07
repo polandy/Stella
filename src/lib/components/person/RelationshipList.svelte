@@ -111,7 +111,9 @@
 
 	// A fold never hides a row whose correction is open.
 	const groups = $derived(groupPeople(rows));
-	const folded = $derived(foldPeople(groups, expanded || editingRelationship !== null));
+	const folded = $derived(
+		foldPeople(groups, data.derivedKin.length, expanded || editingRelationship !== null)
+	);
 
 	/*
 	 * *Together* (docs/02 §2.24.8): on the row of a partner, a spouse, a parent or a child who is in
@@ -153,10 +155,16 @@
 {#if visibleRelationships.length > 0}
 	<div class="@container flex flex-col gap-3" data-testid="relationship-list">
 		{#each folded.groups as group (group.group)}
-			<section class="flex flex-col gap-1" aria-labelledby="people-group-{group.group}">
+			<section
+				class="flex flex-col gap-1 rounded-control"
+				aria-labelledby="people-group-{group.group}"
+				data-people-group={group.group}
+			>
+				<!-- Where the fold's collapsed line hands the cursor once it has unfolded the card. -->
 				<h3
 					id="people-group-{group.group}"
 					class="text-[11px] font-semibold tracking-wide text-fg-subtle uppercase"
+					tabindex="-1"
 				>
 					{t(`contact.relationships.group.${group.group}`)} · {group.total}
 				</h3>

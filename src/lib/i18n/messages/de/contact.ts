@@ -26,7 +26,6 @@ export const contact: ContactMessages = {
 	'contact.write': 'Moment festhalten',
 	'contact.logContact': 'Kontakt festhalten',
 	'contact.openJournal': 'Tagebuch öffnen',
-	'contact.egoGraphLabel': (p) => `Beziehungsnetz von ${p.name}`,
 	'contact.story.title': 'Aktivität',
 
 	'contact.section.relationships': 'Menschen',
@@ -174,6 +173,9 @@ export const contact: ContactMessages = {
 	'contact.relationships.group.other': 'Weitere',
 	'contact.relationships.showMore': (p) => `${p.count} weitere zeigen`,
 	'contact.relationships.showFewer': 'Weniger zeigen',
+	'contact.relationships.foldedAway': 'Eingeklappt',
+	'contact.relationships.showGroup': (p) => `${p.group} · ${p.count} zeigen`,
+	'contact.relationships.derivedShort': 'Ebenfalls verwandt',
 	'contact.relationships.editMode': 'Bearbeiten',
 	'contact.relationships.editModeDone': 'Fertig',
 	'contact.relationships.editLink': (p) => `Verbindung zu ${p.name} bearbeiten`,

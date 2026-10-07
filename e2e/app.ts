@@ -81,6 +81,22 @@ export async function unfoldPeople(page: Page): Promise<void> {
 	await expect(card.getByRole('button', { name: 'Show fewer' })).toBeVisible();
 }
 
+/**
+ * Enlarges the People card's map: the card shows a preview on every width and the live map is
+ * one *Enlarge map* away (docs/05 §5.5). Done once the live map shows and holds the cursor.
+ */
+export async function enlargeMap(page: Page): Promise<void> {
+	const enlarge = page
+		.getByTestId('person-map-preview')
+		.getByRole('button', { name: 'Enlarge map' });
+	// Disabled until the explorer's code has arrived: there is nothing to enlarge before.
+	await expect(enlarge).toBeEnabled();
+	await enlarge.click();
+	await expect(
+		page.getByTestId('person-map-enlarged').getByRole('button', { name: 'Shrink map' })
+	).toBeFocused();
+}
+
 /** Chooses one of the People card's rarer actions from its ⋯ menu (docs/05 §5.5). */
 export async function fromPeopleMenu(page: Page, item: string): Promise<void> {
 	const trigger = page

@@ -11,7 +11,7 @@ import {
 } from './phone-map';
 
 /*
- * The map on a person's page on a phone (docs/05 §5.5): a preview, the map enlarged inside the
+ * The map on a person's page, on every width (docs/05 §5.5): a preview, the map enlarged inside the
  * card, or the map full screen. Leaving full screen goes back to where the reader came from.
  */
 

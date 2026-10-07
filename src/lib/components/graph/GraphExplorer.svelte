@@ -373,7 +373,7 @@
 
 	/*
 	 * Follow a new snapshot. A person's page re-runs its load after every save (a relationship
-	 * added, retyped or removed), so the map beside the list shows the same links the list
+	 * added, retyped or removed), so the map above the list shows the same links the list
 	 * does — without a reload, and keeping whatever the reader had expanded (docs/05 §5.5).
 	 */
 	$effect(() => {

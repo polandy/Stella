@@ -88,42 +88,70 @@ export function groupPeople<T extends Groupable>(rows: readonly T[]): PeopleGrou
 /** How many people a folded card shows (two rows of three, three of two on a phone). */
 export const SHOWN_WHEN_FOLDED = 6;
 
+/** The worked-out relatives (docs/02 §2.4.1) as one more group on the fold's collapsed line. */
+export const WORKED_OUT = 'derived';
+
+/** A group the fold hides whole, and how many people are in it. */
+export interface HiddenGroup {
+	group: PeopleGroup | typeof WORKED_OUT;
+	count: number;
+}
+
+export interface FoldedPeople<T> {
+	/** The entered people shown, in their groups; a group nobody is left shown in is dropped. */
+	groups: PeopleGroupRows<T>[];
+	/** How many worked-out relatives are shown: all of them, or none while the card folds. */
+	workedOutShown: number;
+	/** Everybody folded away, entered or worked out: what *Show N more* counts. */
+	hidden: number;
+	/** The groups folded away whole, worked-out block last: the fold's collapsed line. */
+	hiddenGroups: HiddenGroup[];
+}
+
 /**
- * The groups as the card shows them: everybody when `expanded`, else the first
- * `SHOWN_WHEN_FOLDED` in group order and how many are folded away. A card folds only when that
- * hides two or more — a *Show all* button takes the room of the one person it would hide.
+ * Whether a card of `entered` people and `workedOut` relatives folds. It folds only when that
+ * hides two or more — a *Show more* button takes the room of the one person it would hide.
+ */
+function folds(entered: number, workedOut: number, expanded: boolean): boolean {
+	return !expanded && Math.max(0, entered - SHOWN_WHEN_FOLDED) + workedOut >= 2;
+}
+
+/**
+ * The card as it shows its people (docs/05 §5.5): everybody when `expanded`, else the first
+ * `SHOWN_WHEN_FOLDED` entered people in group order. The worked-out relatives take no folded
+ * place — the household's own entries come first, and an inference never pushes one of them
+ * behind the fold — so a folding card hides them all, and says which groups it hid whole.
  */
 export function foldPeople<T>(
 	groups: readonly PeopleGroupRows<T>[],
+	workedOut: number,
 	expanded: boolean
-): { groups: PeopleGroupRows<T>[]; hidden: number } {
-	const everybody = groups.reduce((sum, group) => sum + group.rows.length, 0);
-	const hidden = hiddenWhenFolded(everybody, expanded);
-	if (hidden === 0) return { groups: [...groups], hidden };
+): FoldedPeople<T> {
+	const entered = groups.reduce((sum, group) => sum + group.rows.length, 0);
+	if (!folds(entered, workedOut, expanded)) {
+		return { groups: [...groups], workedOutShown: workedOut, hidden: 0, hiddenGroups: [] };
+	}
 	let room = SHOWN_WHEN_FOLDED;
 	const shown: PeopleGroupRows<T>[] = [];
+	const hiddenGroups: HiddenGroup[] = [];
 	for (const group of groups) {
-		if (room === 0) break;
+		if (room === 0) {
+			hiddenGroups.push({ group: group.group, count: group.total });
+			continue;
+		}
 		shown.push({ ...group, rows: group.rows.slice(0, room) });
 		room -= Math.min(room, group.rows.length);
 	}
-	return { groups: shown, hidden };
+	if (workedOut > 0) hiddenGroups.push({ group: WORKED_OUT, count: workedOut });
+	return {
+		groups: shown,
+		workedOutShown: 0,
+		hidden: Math.max(0, entered - SHOWN_WHEN_FOLDED) + workedOut,
+		hiddenGroups
+	};
 }
 
-/** How many of `count` entered ties a card folds away — `foldPeople`'s count, without the rows. */
-export function hiddenWhenFolded(count: number, expanded: boolean): number {
-	return expanded || count - SHOWN_WHEN_FOLDED < 2 ? 0 : count - SHOWN_WHEN_FOLDED;
-}
-
-/** How many worked-out relatives a folded card shows: one row of two on a phone. */
-const DERIVED_WHEN_FOLDED = 2;
-
-/**
- * How many of the worked-out relatives (docs/02 §2.4.1) the card shows. They fold with the
- * card's own *Show more*: a family's in-laws and cousins otherwise outnumber the people entered.
- * Like the entered ones, they fold only when that hides two or more.
- */
-export function derivedShownWhenFolded(count: number, expanded: boolean): number {
-	if (expanded || count - DERIVED_WHEN_FOLDED < 2) return count;
-	return DERIVED_WHEN_FOLDED;
+/** How many of the worked-out relatives the card shows — `foldPeople`'s count, without the rows. */
+export function workedOutShown(entered: number, workedOut: number, expanded: boolean): number {
+	return folds(entered, workedOut, expanded) ? 0 : workedOut;
 }
