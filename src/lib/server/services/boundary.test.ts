@@ -21,11 +21,7 @@ const INSIDE_SERVICES = 'src/lib/server/services/';
  * Shared edge code that still lives under lib/server and imports the registry. AR-02 moves it
  * under routes/; until then the list may only shrink.
  */
-const EDGE_HELPERS = [
-	'src/lib/server/last-names-actions.ts',
-	'src/lib/server/relationships/suggestion-answers.ts',
-	'src/lib/server/shell-people.ts'
-];
+const EDGE_HELPERS = ['src/lib/server/relationships/suggestion-answers.ts'];
 
 const isEdge = (path: string) =>
 	path.startsWith('src/routes/') || path === 'src/hooks.server.ts' || EDGE_HELPERS.includes(path);
@@ -51,9 +47,35 @@ describe('the composition root', () => {
 	});
 
 	it('has no factory left for a context already in AppServices', () => {
-		// The auth context (AR-01, first slice): read `locals.services.auth` instead.
-		const retired =
-			/\bget(?:Accounts|Sessions|SessionDeps|AccountDeps|ApiTokenDeps|ApiImportDeps|OidcProvider|Identities|OidcPolicy|AuthorizationRequestDeps|RpLogoutDeps|CompleteLoginDeps)\b/;
+		const factories = [
+			// The auth context (AR-01, first slice): read `locals.services.auth` instead.
+			'Accounts',
+			'Sessions',
+			'SessionDeps',
+			'AccountDeps',
+			'ApiTokenDeps',
+			'ApiImportDeps',
+			'OidcProvider',
+			'Identities',
+			'OidcPolicy',
+			'AuthorizationRequestDeps',
+			'RpLogoutDeps',
+			'CompleteLoginDeps',
+			// The people context (AR-01, second slice): read `locals.services.people` instead.
+			'Contacts',
+			'ContactDeps',
+			'DeleteContactDeps',
+			'NameDeps',
+			'LastNameDeps',
+			'SurnameReviewDeps',
+			'SurnameDismissalDeps',
+			'PersonContextDeps',
+			'NamesakeContextDeps',
+			'PeopleStampDeps',
+			'SelfContactDeps',
+			'SuggestionDeps'
+		];
+		const retired = new RegExp(`\\bget(?:${factories.join('|')})\\b`);
 		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);
 	});
 });

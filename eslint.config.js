@@ -59,7 +59,6 @@ const frameworkExceptions = [
 ];
 const servicesExceptions = [
 	// Shared form actions living under lib/server; AR-02 moves them under routes/.
-	'src/lib/server/shell-people.ts',
 	'src/lib/server/last-names-actions.ts',
 	'src/lib/server/relationships/suggestion-answers.ts'
 ];

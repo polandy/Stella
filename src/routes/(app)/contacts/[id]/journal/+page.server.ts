@@ -18,14 +18,7 @@ import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { extractMentionIds, mentionsOtherThan } from '$lib/mentions/mentions';
 import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
 import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
-import {
-	getCommandDeps,
-	getContactDeps,
-	getJournalDeps,
-	getPhotos,
-	getMemberDeps,
-	getNamesakeContextDeps
-} from '$lib/server/services';
+import { getCommandDeps, getJournalDeps, getPhotos, getMemberDeps } from '$lib/server/services';
 import { parsePhotoCommand, readCommand } from '$lib/server/commands/parse';
 import { fromFormData } from '$lib/commands/form-data';
 import { JournalWriteSchema } from '$lib/commands/payloads';
@@ -42,7 +35,7 @@ import { todayFor } from '$lib/dates/today';
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const viewer = requireViewer(locals);
 
-	const contact = await getContact(getContactDeps(), viewer, params.id);
+	const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
 
 	const [entries, journalPhotos] = await Promise.all([
@@ -51,7 +44,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	]);
 	// Names for the people the entries mention, not for the whole household.
 	const contactNames = await listContactNamesAmong(
-		getContactDeps(),
+		locals.services.people.contactDeps,
 		viewer,
 		entries.flatMap((e) => extractMentionIds(e.body))
 	);
@@ -113,7 +106,7 @@ export const actions: Actions = {
 		const viewer = requireViewer(locals);
 
 		// The contact must be visible to journal about it.
-		const contact = await getContact(getContactDeps(), viewer, params.id);
+		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		// Writing is an addition (§2.20) and a command (docs/04 §4.11.2): named by the form when it
@@ -202,7 +195,7 @@ export const actions: Actions = {
 			return fail(404, { journalError: say(locals, 'errors.journal.editFailed') });
 		}
 
-		const contacts = await listContacts(getContactDeps(), viewer);
+		const contacts = await listContacts(locals.services.people.contactDeps, viewer);
 		const author = {
 			userId: viewer.id,
 			householdId: viewer.householdId,
@@ -214,8 +207,10 @@ export const actions: Actions = {
 		let resolved: { body: string; ids: string[] };
 		try {
 			// A handle that could be several people is asked about, not dropped (docs/02 §2.2.3).
-			resolved = await withNamesakeContext(getNamesakeContextDeps(), viewer, async () =>
-				resolveForAudience(contacts, entry.visibility, parsed.output.body)
+			resolved = await withNamesakeContext(
+				locals.services.people.namesakeContextDeps,
+				viewer,
+				async () => resolveForAudience(contacts, entry.visibility, parsed.output.body)
 			);
 			ok = await editJournalEntry(getJournalDeps(), author, {
 				id: parsed.output.id,

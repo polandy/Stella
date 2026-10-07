@@ -9,12 +9,7 @@ import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { editContactField } from '$lib/server/domain/contact-fields/contact-fields';
 import { getContact } from '$lib/server/domain/contacts/contacts';
-import {
-	getCommandDeps,
-	getContactDeps,
-	getContactFieldDeps,
-	getContactFields
-} from '$lib/server/services';
+import { getCommandDeps, getContactFieldDeps, getContactFields } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -41,7 +36,7 @@ export const fieldActions = {
 			return fail(400, { fieldError: say(locals, 'errors.field.needKindAndValue') });
 		}
 
-		const contact = await getContact(getContactDeps(), viewer, params.id);
+		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const outcome = reading.ok
@@ -78,7 +73,7 @@ export const fieldActions = {
 		});
 		if (!parsed.success) return fail(400, { fieldError: say(locals, 'errors.field.needValue') });
 
-		const contact = await getContact(getContactDeps(), viewer, params.id);
+		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		await editContactField(getContactFieldDeps(), {
@@ -97,7 +92,7 @@ export const fieldActions = {
 		const fieldId = form.get('fieldId');
 		if (typeof fieldId !== 'string') return fail(400, {});
 
-		const contact = await getContact(getContactDeps(), viewer, params.id);
+		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		await getContactFields().remove(params.id, fieldId);

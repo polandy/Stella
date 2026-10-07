@@ -5,7 +5,6 @@ import type { SelectablePerson } from '$lib/people/select';
 import { TranslatableError } from '$lib/errors/translatable';
 import { createContact, getContact } from '$lib/server/domain/contacts/contacts';
 import { say, translator } from '$lib/server/i18n/say';
-import { getContactDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 /*
@@ -45,7 +44,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	let id: string;
 	try {
-		id = await createContact(getContactDeps(), creator, parsed.output);
+		id = await createContact(locals.services.people.contactDeps, creator, parsed.output);
 	} catch (err) {
 		throw error(
 			400,
@@ -58,7 +57,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	// Read back through the same visibility-scoped path every other read takes, rather than
 	// echoing the input: what the picker shows must be what the person actually is.
-	const created = await getContact(getContactDeps(), viewer, id);
+	const created = await getContact(locals.services.people.contactDeps, viewer, id);
 	if (created === null) throw error(500, say(locals, 'errors.contact.couldNotCreate'));
 
 	const person: SelectablePerson = {

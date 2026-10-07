@@ -20,13 +20,7 @@ import { cutProfilePicture } from '$lib/server/domain/media/cuts';
 import { frameAsAvatar } from '$lib/server/domain/media/framing';
 import { readCutForm } from '$lib/server/http/cut-form';
 import { contactSectionPath } from '$lib/contacts/sections';
-import {
-	getCommandDeps,
-	getContactDeps,
-	getCutDeps,
-	getFramingDeps,
-	getGalleryDeps
-} from '$lib/server/services';
+import { getCommandDeps, getCutDeps, getFramingDeps, getGalleryDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -46,7 +40,7 @@ export const photoActions = {
 	/** Add one or more photos to the gallery (docs/02 §2.14). */
 	addGalleryPhotos: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
-		const contact = await getContact(getContactDeps(), viewer, params.id);
+		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const form = await request.formData();

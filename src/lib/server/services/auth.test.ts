@@ -6,6 +6,7 @@ import { registerFirstAdmin } from '../auth/accounts';
 import { createSession, validateSessionToken } from '../auth/session';
 import { SIGNED_OUT_PATH } from '../auth/oidc/logout';
 import type { Clock } from '../clock';
+import { createDrizzleRelationshipRepository } from '../db/relationship-repository';
 import * as schema from '../db/schema';
 import type { IdGenerator } from '../id';
 import { createAuthServices, type AuthConfig } from './auth';
@@ -122,7 +123,14 @@ describe('createAuthServices', () => {
 
 describe('createServices', () => {
 	it('groups the auth context under `auth`', async () => {
-		const services = createServices({ config, db, clock, ids });
+		const services = createServices({
+			config,
+			db,
+			clock,
+			ids,
+			relationships: createDrizzleRelationshipRepository(db),
+			media: { delete: async () => {} }
+		});
 		expect(await services.auth.accounts.countUsers()).toBe(0);
 	});
 });

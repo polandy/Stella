@@ -21,5 +21,5 @@ export const load: LayoutServerLoad = async ({ locals, depends }) => {
 		throw redirect(302, hasUsers ? '/login' : '/setup');
 	}
 	depends(PEOPLE_DEPENDENCY);
-	return { user: locals.user, ...(await readShellPeople(locals.user)) };
+	return { user: locals.user, ...(await readShellPeople(locals.services.people, locals.user)) };
 };

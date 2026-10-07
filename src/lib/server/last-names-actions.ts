@@ -7,7 +7,6 @@ import {
 	setLastNames
 } from './domain/contacts/last-names';
 import { say, translator } from './i18n/say';
-import { getLastNameDeps } from './services';
 
 /*
  * The one form action behind every path that gives several people a last name
@@ -40,7 +39,7 @@ export const lastNameActions = {
 		const replace = new Set(replaceIds);
 		try {
 			const written = await setLastNames(
-				getLastNameDeps(),
+				locals.services.people.lastNameDeps,
 				viewer,
 				contactIds.map((contactId) => ({ contactId, lastName, replace: replace.has(contactId) })),
 				locals.locale

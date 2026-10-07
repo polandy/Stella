@@ -14,7 +14,7 @@ import {
 } from '$lib/server/domain/contacts/contacts';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import { editNameParts } from '$lib/server/domain/contacts/name-parts';
-import { getAvatarDeps, getContactDeps, getNameDeps } from '$lib/server/services';
+import { getAvatarDeps } from '$lib/server/services';
 import { takenAtField } from '$lib/server/http/taken-at-field';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
@@ -60,7 +60,7 @@ export const profileActions = {
 		});
 		if (!parsed.success) throw error(400, say(locals, 'errors.contact.notFound'));
 
-		const saved = await editProfile(getContactDeps(), viewer, params.id, {
+		const saved = await editProfile(locals.services.people.contactDeps, viewer, params.id, {
 			description: parsed.output.description ?? null
 		});
 		if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
@@ -88,11 +88,17 @@ export const profileActions = {
 
 		const { gender, ...nameParts } = parsed.output;
 		try {
-			const saved = await editNameParts(getNameDeps(), viewer, params.id, nameParts, locals.locale);
+			const saved = await editNameParts(
+				locals.services.people.nameDeps,
+				viewer,
+				params.id,
+				nameParts,
+				locals.locale
+			);
 			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
 			// After the name, so a refused name leaves the gender as it was too.
 			if (gender !== undefined)
-				await setGender(getContactDeps(), viewer, params.id, gender || null);
+				await setGender(locals.services.people.contactDeps, viewer, params.id, gender || null);
 		} catch (err) {
 			if (err instanceof EmptyContactNameError || err instanceof InvalidGenderError)
 				return fail(400, { namePartsError: err.phrase(translator(locals)) });
@@ -119,7 +125,10 @@ export const profileActions = {
 		const { place, jobTitle, company } = parsed.output;
 
 		try {
-			const saved = await setJob(getContactDeps(), viewer, params.id, { jobTitle, company });
+			const saved = await setJob(locals.services.people.contactDeps, viewer, params.id, {
+				jobTitle,
+				company
+			});
 			if (!saved) throw error(404, say(locals, 'errors.contact.notFound'));
 		} catch (err) {
 			if (err instanceof JobFieldTooLongError)
@@ -133,7 +142,7 @@ export const profileActions = {
 	setAvatar: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		const contact = await getContact(getContactDeps(), viewer, params.id);
+		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const form = await request.formData();

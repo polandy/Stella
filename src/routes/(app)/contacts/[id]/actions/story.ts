@@ -10,12 +10,7 @@ import { getContact } from '$lib/server/domain/contacts/contacts';
 import { deleteInteraction } from '$lib/server/domain/interactions/interactions';
 import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
 import { contactSectionPath } from '$lib/contacts/sections';
-import {
-	getCommandDeps,
-	getContactDeps,
-	getInteractionDeps,
-	getJournalDeps
-} from '$lib/server/services';
+import { getCommandDeps, getInteractionDeps, getJournalDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -69,7 +64,7 @@ export const storyActions = {
 		const interactionId = form.get('id');
 		if (typeof interactionId !== 'string') return fail(400, {});
 
-		const contact = await getContact(getContactDeps(), viewer, params.id);
+		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const author = {
@@ -95,7 +90,7 @@ export const storyActions = {
 		const id = form.get('id');
 		if (typeof id !== 'string') return fail(400, {});
 
-		const contact = await getContact(getContactDeps(), viewer, params.id);
+		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const author = {

@@ -3,7 +3,7 @@ import { requireViewer } from '$lib/server/auth/guards';
 import { getContact, listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
-import { getContactDeps, getMemberDeps, getPhotos, getStoryDeps } from '$lib/server/services';
+import { getMemberDeps, getPhotos, getStoryDeps } from '$lib/server/services';
 import { parseStoryCursor } from '$lib/story/cursor';
 import {
 	entryIdsOf,
@@ -29,7 +29,7 @@ import { say } from '$lib/server/i18n/say';
 export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const viewer = requireViewer(locals);
 
-	const contact = await getContact(getContactDeps(), viewer, params.id);
+	const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
 
 	const body: unknown = await request.json().catch(() => null);
@@ -44,7 +44,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	// Only what this page shows: its entries' photos and the people its entries mention.
 	const [photos, names, nameOfAuthor] = await Promise.all([
 		getPhotos().listJournalPhotosOfEntries(viewer, params.id, entryIdsOf(page.items)),
-		listContactNamesAmong(getContactDeps(), viewer, mentionIdsOf(page.items)),
+		listContactNamesAmong(locals.services.people.contactDeps, viewer, mentionIdsOf(page.items)),
 		authorNames(getMemberDeps(), viewer.householdId)
 	]);
 	const context = {

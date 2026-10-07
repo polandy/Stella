@@ -10,7 +10,7 @@ import {
 	dismissSuggestion,
 	restoreSuggestion
 } from '$lib/server/domain/relationships/suggestion-review';
-import { getContactDeps, getRelationshipDeps, getSuggestionReviewDeps } from '$lib/server/services';
+import { getRelationshipDeps, getSuggestionReviewDeps } from '$lib/server/services';
 import { say } from '$lib/server/i18n/say';
 import { RELATIONS } from '$lib/suggestions/types';
 
@@ -73,8 +73,8 @@ export async function acceptClaim(
 	if (!parsed.success) return refused(say(locals, 'errors.relationship.badSuggestion'));
 
 	const [from, to] = await Promise.all([
-		getContact(getContactDeps(), viewer, parsed.output.fromId),
-		getContact(getContactDeps(), viewer, parsed.output.toId)
+		getContact(locals.services.people.contactDeps, viewer, parsed.output.fromId),
+		getContact(locals.services.people.contactDeps, viewer, parsed.output.toId)
 	]);
 	if (!from || !to) return refused(say(locals, 'errors.person.notFound'));
 
