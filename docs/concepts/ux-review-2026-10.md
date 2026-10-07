@@ -30,8 +30,8 @@ PR updates its own row.
 | B1 filter pill on a phone | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | merged #255, e2e #257 |
 | B2 two search entries | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | merged #255, e2e #257 |
 | B3 mentions twice | mockup | drop the avatar row for moments (inline chips keep their links); keep it for interactions — shown in `ux-polish.html` | |
-| B4 age vs. day heading | mockup | `ux-polish.html` | |
-| B5 composer pills | mockup | `ux-polish.html` | |
+| B4 age vs. day heading | mockup | `ux-polish.html`; time of day (locale format) under *Today* and *Yesterday*, nothing for older days, full date and time in the tooltip | |
+| B5 composer pills | mockup | `ux-polish.html`; sharing a switch (`role="switch"`, label is the state with its icon), *Photo* an icon button with a count badge, the day the one pill with a chevron; no `⌘⏎` hint on a coarse pointer | |
 | B6 empty desktop rail | decided | the stream takes the width when *Coming up* is empty; no *Recently opened* band | |
 | B7 actor vs. subject avatar | open | | |
 | C1 identity card facts | done | facts are the only reading surface and edit in place (like the job); rows keep only Contact (no address), Tags, How we met; empty facts wait behind the quiet button (which names them) and appear as dashed slots; every date is its own fact, one dates editor; C3 and C5 ride along in the same PR | merged #263 (e2e in the same PR) |
@@ -45,7 +45,7 @@ PR updates its own row.
 | C9 fold order | done | mockup approved 2026-10-07 — `people-card.html`; folded shows the first six entered, worked-out wholly behind *Show more*; a tappable collapsed line names each wholly hidden group, worked-out last; *Show N more* everywhere | merged #284 (e2e in the same PR) |
 | C10 phone breadcrumb | mockup | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html`; folded into the polish PR (owner 2026-10-07), shown in `ux-polish.html` | |
 | C11 Immich label | open | | |
-| C12 edit affordance on touch | mockup | `ux-polish.html` | |
+| C12 edit affordance on touch | mockup | `ux-polish.html`; a faint pencil after every value that edits in place — always on a coarse pointer, on hover elsewhere; one rule in §5.7 | |
 
 What is *not* proposed, because it was decided before: "haven't seen" nudges or a "see more
 often" mark (most people are reference records), a default-visibility setting (shared by
