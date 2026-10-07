@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { createTranslator, type MessageKey } from '$lib/i18n/translate';
+import { createTranslator, messageKey, type MessageKey } from '$lib/i18n/translate';
 import { registerFirstAdmin } from '$lib/server/auth/accounts';
 import { setSessionCookie } from '$lib/server/auth/cookies';
 import { createSession } from '$lib/server/auth/session';
@@ -17,16 +17,15 @@ import type { Actions, PageServerLoad } from './$types';
  * visitor's language, so the schema stays a single, language-free description of the form.
  */
 const SetupSchema = v.object({
-	householdName: v.pipe(v.string(), v.trim(), v.minLength(1, key('auth.setup.needHousehold'))),
-	name: v.pipe(v.string(), v.trim(), v.minLength(1, key('auth.setup.needName'))),
-	email: v.pipe(v.string(), v.trim(), v.email(key('auth.setup.needEmail'))),
-	password: v.pipe(v.string(), v.minLength(8, key('auth.setup.needPassword')))
+	householdName: v.pipe(
+		v.string(),
+		v.trim(),
+		v.minLength(1, messageKey('auth.setup.needHousehold'))
+	),
+	name: v.pipe(v.string(), v.trim(), v.minLength(1, messageKey('auth.setup.needName'))),
+	email: v.pipe(v.string(), v.trim(), v.email(messageKey('auth.setup.needEmail'))),
+	password: v.pipe(v.string(), v.minLength(8, messageKey('auth.setup.needPassword')))
 });
-
-/** Identity on a message key, so a typo in a validation message is a compile error. */
-function key(name: MessageKey): MessageKey {
-	return name;
-}
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) throw redirect(302, '/');

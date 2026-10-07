@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import {
 	countArchivedContacts,
 	listArchivedContacts,
@@ -14,6 +14,8 @@ import {
 } from '$lib/server/services';
 import { lastNameActions } from '$lib/server/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
+import { systemClock } from '$lib/server/clock';
+import { todayFor } from '$lib/dates/today';
 
 /*
  * People (docs/02 §2.2): every person the viewer may see, with the last day anything was
@@ -22,8 +24,7 @@ import type { Actions, PageServerLoad } from './$types';
  */
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
 	const activeTag = url.searchParams.get('tag');
 	// `?archived` is its own view: the tag chips filter the household's people, and the
 	// archived ones are by definition not among them.
@@ -32,7 +33,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// The archive's size is what the chip says — and a chip that leads to an empty room is
 	// worse than no chip — so it is counted either way; the list only when it is shown.
 	const [tags, archivedCount, contacts, touches, surnameHelp] = await Promise.all([
-		listTags(getTagDeps(), locals.user.householdId),
+		listTags(getTagDeps(), viewer.householdId),
 		countArchivedContacts(getContactDeps(), viewer),
 		showArchived
 			? listArchivedContacts(getContactDeps(), viewer)
@@ -66,7 +67,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// The archive is its own view; a tag left in the URL would otherwise make the header
 		// claim a filter that is not being applied.
 		activeTag: showArchived ? null : activeTag,
-		today: new Date().toLocaleDateString('en-CA'),
+		today: todayFor(systemClock),
 		// Whom a last name set here is offered on to (docs/02 §2.2.4.5).
 		passOn: surnameHelp.passOn
 	};

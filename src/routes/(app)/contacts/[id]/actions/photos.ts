@@ -3,6 +3,7 @@ import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { InvalidAvatarError } from '$lib/server/domain/media/avatars';
@@ -45,8 +46,7 @@ const PhotoPinSchema = v.object({
 export const photoActions = {
 	/** Add one or more photos to the gallery (docs/02 §2.14). */
 	addGalleryPhotos: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const contact = await getContact(getContactDeps(), viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
@@ -96,8 +96,7 @@ export const photoActions = {
 
 	/** Caption a gallery photo; blank clears it. Only its uploader may. */
 	captionPhoto: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const form = await request.formData();
 		const photoId = form.get('photoId');
 		const caption = form.get('caption');
@@ -118,8 +117,7 @@ export const photoActions = {
 
 	/** Move a gallery photo between shared and private. Only its uploader may. */
 	setPhotoVisibility: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const form = await request.formData();
 		const parsed = v.safeParse(PhotoVisibilitySchema, {
 			photoId: form.get('photoId'),
@@ -141,8 +139,7 @@ export const photoActions = {
 
 	/** Pin a gallery photo as one of the person's favourites, or unpin it. Anyone who sees it may. */
 	pinPhoto: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const form = await request.formData();
 		const parsed = v.safeParse(PhotoPinSchema, {
 			photoId: form.get('photoId'),
@@ -165,8 +162,7 @@ export const photoActions = {
 	 * (docs/02 §2.14). The browser sends the square and its rendering, as for a new avatar.
 	 */
 	framePhotoAsAvatar: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const form = await request.formData();
 		const photoId = form.get('photoId');
 		const image = form.get('image');
@@ -209,8 +205,7 @@ export const photoActions = {
 	 * (docs/02 §2.14). The browser sends the square and its rendering.
 	 */
 	cutFromGroupPhoto: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const form = await request.formData();
 		form.set('contactId', params.id);
 		const input = await readCutForm(form);
@@ -229,8 +224,7 @@ export const photoActions = {
 
 	/** Delete a gallery photo and its files. Only its uploader may. */
 	removePhoto: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const form = await request.formData();
 		const photoId = form.get('photoId');
 		if (typeof photoId !== 'string')

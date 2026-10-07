@@ -3,6 +3,7 @@ import { parseCommand } from '$lib/server/commands/parse';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
 import { editContactField } from '$lib/server/domain/contact-fields/contact-fields';
@@ -32,8 +33,7 @@ const EditFieldSchema = v.object({
 /** The profile card's ways to reach someone (docs/02 §2.2). */
 export const fieldActions = {
 	addField: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(AddFieldSchema, {
@@ -78,8 +78,7 @@ export const fieldActions = {
 	 * editor's Save waits for a connection, as the name's does.
 	 */
 	editField: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(EditFieldSchema, {
@@ -102,8 +101,7 @@ export const fieldActions = {
 	},
 
 	removeField: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const fieldId = form.get('fieldId');

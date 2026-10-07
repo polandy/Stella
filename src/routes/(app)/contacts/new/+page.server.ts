@@ -1,4 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { createTranslator } from '$lib/i18n/translate';
 import { parseCommand } from '$lib/server/commands/parse';
@@ -37,13 +38,13 @@ const QuickAddSchema = v.object({
 });
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	if (!locals.user) throw redirect(302, '/login');
+	requireViewer(locals);
 	return readNewPersonRequest(url.searchParams);
 };
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(QuickAddSchema, {
@@ -76,8 +77,8 @@ export const actions: Actions = {
 		});
 		if (command?.type !== 'contact.add') return fail(400, { error: t('errors.contact.needAName') });
 		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
+			userId: viewer.id,
+			householdId: viewer.householdId,
 			locale: locals.locale
 		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command);

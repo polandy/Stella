@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import { getGraphRepository } from '$lib/server/services';
 import { chooseCenter, chosenPathTarget, wayBackTo } from './center';
 import type { PageServerLoad } from './$types';
@@ -11,15 +11,11 @@ import type { PageServerLoad } from './$types';
  * person (docs/02 §2.1.3), and to the first visible one while they have not said who that is.
  */
 export const load: PageServerLoad = async ({ locals, url }) => {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const user = requireUser(locals);
+	const viewer = requireViewer(locals);
 
 	const graph = await getGraphRepository().loadVisibleGraph(viewer);
-	const center = chooseCenter(
-		graph.nodes,
-		url.searchParams.get('center'),
-		locals.user.selfContactId
-	);
+	const center = chooseCenter(graph.nodes, url.searchParams.get('center'), user.selfContactId);
 
 	/*
 	 * A profile links here with its own person, and a circle's page with the circle itself

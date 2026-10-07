@@ -120,3 +120,11 @@ export const createTranslator = catalogs.createTranslator;
 export function hasMessage(name: string): name is MessageKey {
 	return Object.hasOwn(en, name);
 }
+
+/**
+ * Identity on a message key, so a validation message that carries a key (a Valibot schema's
+ * message, translated at the edge) is checked by the compiler: a typo does not build.
+ */
+export function messageKey(name: MessageKey): MessageKey {
+	return name;
+}

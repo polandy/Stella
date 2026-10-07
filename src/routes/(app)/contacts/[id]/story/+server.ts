@@ -1,4 +1,5 @@
-import { error, json, redirect } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import { getContact, listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
@@ -26,8 +27,7 @@ import { say } from '$lib/server/i18n/say';
  */
 
 export const POST: RequestHandler = async ({ locals, params, request }) => {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
 
 	const contact = await getContact(getContactDeps(), viewer, params.id);
 	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
@@ -48,7 +48,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		authorNames(getMemberDeps(), viewer.householdId)
 	]);
 	const context = {
-		userId: locals.user.id,
+		userId: viewer.id,
 		photosByEntry: photosByEntry(photos),
 		nameOf: nameLookup(names),
 		nameOfAuthor

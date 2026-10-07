@@ -1,4 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import {
 	CIRCLE_COLORS,
@@ -17,8 +18,7 @@ import { say } from '$lib/server/i18n/say';
  * cover photos, plus a create form whose colour palette pre-selects a still-unused Catppuccin accent.
  */
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
 
 	const [circles, covers] = await Promise.all([
 		listCircles(getCircleDeps(), viewer),
@@ -45,7 +45,7 @@ const CreateSchema = v.object({
 
 export const actions: Actions = {
 	create: async ({ request, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(CreateSchema, {
@@ -58,7 +58,7 @@ export const actions: Actions = {
 
 		const id = await createCircle(
 			getCircleDeps(),
-			{ userId: locals.user.id, householdId: locals.user.householdId, defaultVisibility: 'shared' },
+			{ userId: viewer.id, householdId: viewer.householdId, defaultVisibility: 'shared' },
 			parsed.output
 		);
 		throw redirect(303, `/circles/${id}`);

@@ -3,6 +3,7 @@ import { parseCommand } from '$lib/server/commands/parse';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { proposeHref } from '$lib/contacts/propose';
 import { decodeRelationshipChoice } from '$lib/relationships/type-options';
@@ -51,7 +52,7 @@ const EditRelationshipSchema = v.object({
 /** The relationships card: links, their corrections, and the answers to suggestions (docs/02 §2.4). */
 export const relationshipActions = {
 	addRelationship: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(AddRelationshipSchema, {
@@ -77,8 +78,8 @@ export const relationshipActions = {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
 		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
+			userId: viewer.id,
+			householdId: viewer.householdId,
 			locale: locals.locale
 		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command);
@@ -103,7 +104,7 @@ export const relationshipActions = {
 	 * (`removeRelationships`).
 	 */
 	addRelationships: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const targetIds = form.getAll('targetId');
@@ -129,8 +130,8 @@ export const relationshipActions = {
 		}
 
 		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
+			userId: viewer.id,
+			householdId: viewer.householdId,
 			locale: locals.locale
 		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command);
@@ -154,8 +155,7 @@ export const relationshipActions = {
 	 * posted, or — when any is gone or out of sight — none.
 	 */
 	removeRelationships: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const ids = (await request.formData()).getAll('relationshipId');
 		if (ids.length === 0 || !ids.every((id): id is string => typeof id === 'string' && id !== '')) {
@@ -169,8 +169,7 @@ export const relationshipActions = {
 
 	/** Correct a link: its specifics, and its type where the tie was named wrongly (docs/02 §2.4). */
 	editRelationship: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(EditRelationshipSchema, {
@@ -223,8 +222,7 @@ export const relationshipActions = {
 
 	/** Take back a link that was entered wrong (docs/02 §2.4). Undo is the page's own. */
 	removeRelationship: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const relationshipId = form.get('relationshipId');
@@ -241,8 +239,7 @@ export const relationshipActions = {
 	 * the viewer, and the pair is carried on so the remaining suggestions stay on screen.
 	 */
 	addProposedRelationship: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const refusal = await acceptClaim(locals, viewer, form);
@@ -260,8 +257,7 @@ export const relationshipActions = {
 	 * holds for every member — and `restoreSuggestion` takes it back.
 	 */
 	dismissSuggestion: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const refusal = await declineClaim(locals, viewer, await request.formData());
 		if (refusal) return fail(refusal.status, { error: refusal.message });
@@ -270,8 +266,7 @@ export const relationshipActions = {
 
 	/** Take a *no* back, so the claim is offered again on the next review (§6.5). */
 	restoreSuggestion: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const refusal = await restoreClaim(locals, viewer, await request.formData());
 		if (refusal) return fail(refusal.status, { error: refusal.message });

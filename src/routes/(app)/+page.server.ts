@@ -1,4 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
+import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import {
 	listBrowsableNamesAmong,
@@ -27,6 +28,8 @@ import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
 import { LINK_PARAM, linkHintHref } from '$lib/stream/link-hint';
 import { welcomeSteps } from '$lib/onboarding/welcome';
+import { messageKey } from '$lib/i18n/translate';
+import { todayFor } from '$lib/dates/today';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
@@ -37,18 +40,9 @@ import { welcomeSteps } from '$lib/onboarding/welcome';
 /** Query param that opens the composer pre-filled with one person's handle: `?about=<id>`. */
 const ABOUT_PARAM = 'about';
 
-function today(): string {
-	return new Date().toLocaleDateString('en-CA'); // ISO YYYY-MM-DD
-}
-
-/** Identity on a message key, so a typo in a validation message is a compile error. */
-function key(name: MessageKey): MessageKey {
-	return name;
-}
-
 export const load: PageServerLoad = async ({ locals, url }) => {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const user = requireUser(locals);
+	const viewer = requireViewer(locals);
 
 	// The filter names a member, so it can only be read once the household's members are known.
 	const members = await membersViewerFirst(getMemberDeps(), viewer);
@@ -90,7 +84,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const about = onList.find((c) => c.id === aboutId);
 
 	// One reading of the clock, so the composer's day and the horizon cannot straddle midnight.
-	const day = today();
+	const day = todayFor(systemClock);
 	const upcoming = upcomingDates(dateSources, day);
 
 	return {
@@ -105,8 +99,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// The first-run card (docs/02 §2.22.3), or null once the household has begun.
 		welcome: welcomeSteps({
 			peopleIds: firstPeople,
-			selfContactId: locals.user.selfContactId,
-			isAdmin: locals.user.role === 'admin'
+			selfContactId: user.selfContactId,
+			isAdmin: user.role === 'admin'
 		}),
 		filter,
 		members,
@@ -119,18 +113,18 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 const CaptureSchema = v.object({
-	body: v.pipe(v.string(), v.trim(), v.minLength(1, key('errors.moment.needText'))),
-	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, key('errors.moment.badDay'))),
+	body: v.pipe(v.string(), v.trim(), v.minLength(1, messageKey('errors.moment.needText'))),
+	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, messageKey('errors.moment.badDay'))),
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
 	newPeople: v.array(v.pipe(v.string(), v.trim(), v.minLength(1)))
 });
 
 export const actions: Actions = {
 	capture: async ({ request, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		const viewer = requireViewer(locals);
 		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
+			userId: viewer.id,
+			householdId: viewer.householdId,
 			locale: locals.locale,
 			defaultVisibility: 'shared' as const
 		};

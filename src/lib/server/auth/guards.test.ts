@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { isHttpError, isRedirect } from '@sveltejs/kit';
 import { DEFAULT_LOCALE } from '../../i18n/locales';
-import { requireAdmin } from './guards';
+import { requireAdmin, requireUser, requireViewer } from './guards';
 import type { AuthUser } from './accounts';
 
 /*
@@ -26,9 +26,12 @@ const locals = (user: AuthUser | null): App.Locals => ({
 	requestId: 'r1'
 });
 
-function thrownBy(locals: App.Locals): unknown {
+function thrownBy(
+	locals: App.Locals,
+	guard: (locals: App.Locals) => unknown = requireAdmin
+): unknown {
 	try {
-		requireAdmin(locals);
+		guard(locals);
 	} catch (e) {
 		return e;
 	}
@@ -50,5 +53,29 @@ describe('requireAdmin', () => {
 		const e = thrownBy(locals(user('member')));
 		expect(isHttpError(e)).toBe(true);
 		expect(e).toMatchObject({ status: 403 });
+	});
+});
+
+describe('requireViewer', () => {
+	it('returns only the identity an access decision needs', () => {
+		expect(requireViewer(locals(user('member')))).toEqual({ id: 'u1', householdId: 'h1' });
+	});
+
+	it('sends an anonymous visitor to the login page', () => {
+		const e = thrownBy(locals(null), requireViewer);
+		expect(isRedirect(e)).toBe(true);
+		expect(e).toMatchObject({ status: 302, location: '/login' });
+	});
+});
+
+describe('requireUser', () => {
+	it('returns the whole signed-in account, whatever its role', () => {
+		expect(requireUser(locals(user('member')))).toMatchObject({ id: 'u1', role: 'member' });
+	});
+
+	it('sends an anonymous visitor to the login page', () => {
+		const e = thrownBy(locals(null), requireUser);
+		expect(isRedirect(e)).toBe(true);
+		expect(e).toMatchObject({ status: 302, location: '/login' });
 	});
 });
