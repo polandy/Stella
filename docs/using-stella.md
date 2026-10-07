@@ -99,9 +99,13 @@ behalf. If it isn't the moment for that, dismiss it; nothing is lost.
 
 ## People
 
+### The list
+
 **The list** is everyone you may see, grouped by surname, with a *Find someone* field at the
 top that matches as you type — by any name, nickname or the description you gave them. On
 the right of each row is when something was last written about that person.
+
+### Archiving, merging, removing
 
 **Putting someone out of the way.** Not everyone in the list stays part of your life — the
 neighbour from two flats ago, the colleague from a job you left. On their page, the **⋯**
@@ -129,6 +133,8 @@ household admin can delete them from the same menu (*Delete for good*). That tak
 photos, dates, their journal and every link to them, and the picture files themselves. It
 asks twice, and there is no undo afterwards. So that nobody simply vanishes without the
 family knowing, the rest of the household sees *"… removed …"* in the stream on Home.
+
+### Adding someone
 
 **Adding someone** takes a name and nothing else. Everything beyond that — gender,
 description, phone, email, address, birthday — is optional and can be filled in whenever.
@@ -186,6 +192,8 @@ opens that person's page. If the new person is a relative, pick **Link as relati
 adding, you land straight in their relationship editor with that relative already chosen,
 so "Quill is the child of Sandra" is one more click.
 
+### A person's page
+
 **A person's page** reads top to bottom. First comes **who they are**: their picture (tap it
 to change it), name and description, and a few facts — birthday and age, every other date
 (*Hochzeitstag · 13 June 2009 · 17 years*), where they live, their job, when you were last in
@@ -241,6 +249,8 @@ same editor, shows under the name as *formerly Widmer*, and finds the person: se
 and Stella says so rather than quietly keeping the old one. When Stella can guess a missing
 last name, it shows it under the name as a chip — *Brunner?* — and one tap gives it.
 
+### Notes, Activity and the journal
+
 **Notes** are for things that stay true — "allergic to hazelnuts", "always calls on
 Sundays". Moments are for things that happened. Notes can be pinned to the top, and have
 their own shared-or-private switch. You can name other people in a note with `@`, the same
@@ -257,6 +267,8 @@ ask for it with *Show earlier*.
 lands here; *Write a moment* on the person's page opens the full journal, where a moment can carry
 photos. Writing on a day that already has your moment adds to it rather than replacing it; to
 change what is there, use *Edit moment*.
+
+### Photos
 
 **Photos** is the fourth tab: everything you have collected of that person in a grid — their
 favourites first, then the rest newest first, each one dated. *Add photos* takes several at once — each is shrunk in your browser
@@ -292,6 +304,8 @@ back into this grid, dated, and a small confirmation says so. That holds for a p
 group photo too (see *Circles*). Handy for someone whose face
 changes over the years, a child especially: their old photos stay right here to look back on.
 
+### Photos from Immich
+
 **Photos from Immich.** If your household's photos live in Immich and the admin has connected
 it (see *Installation*), the Photos card has a small **Immich** menu. **Find in Immich** shows the
 faces Immich knows, searched by the person's name — change the search if Immich spells them
@@ -307,6 +321,9 @@ later goes from Immich. The photo they had before stays in their gallery. Tappin
 picture at the top of their page offers the same: under **From Immich** pick one of their latest
 Immich photos — or, if they are not linked yet, **Find in Immich** first, and their photos
 appear.
+
+### Photos together
+
 **Photos together.** Once you have said which person is you (*This is me*) and that person is
 linked to Immich too, the strip of anyone else who is linked gets small chips above it: **All
 photos** and **You and Julia** — the photos the two of you are in together. On the People card,
@@ -354,6 +371,8 @@ pick them instead. The face then leaves the list, and a message says *… added*
 go to their page. A face that is nobody you want in Stella — the postman, a stranger in a holiday
 photo — can be **Ignore**d for the whole household, with *Undo* for a few seconds; ignored faces
 wait under **Ignored** at the end, with who ignored them and when, and **Propose again**.
+
+### Mentioned in
 
 **Mentioned in** is the last card, and it is the only one that is not really theirs: it lists
 what *other* people's notes and moments say about them. Write "hiked with `@Sandra`"
@@ -415,6 +434,8 @@ Say once that Lena is Markus's child, and Stella knows the other half of it too 
 is Lena's parent. Relationships have a direction and a label, and the reverse reads
 correctly without you entering it twice.
 
+### Entering a link
+
 Say it from whichever page you are on. The picker offers a directed kind from both ends —
 *Parent of* **and** *Child of*, *Mentor of* **and** *Mentee of* — so you write the sentence
 the way you are thinking it, instead of going to find the other person to put it round the
@@ -438,6 +459,8 @@ and nothing changes. Stella keeps quiet when the partner came along after the ch
 (fill in the *Since* day of the partnership and the child's birthday, and it can tell), when
 there are several partners, or when the child already has two parents.
 
+### What cannot hold
+
 One thing Stella will not let you write down: that two people are each other's parent, or each
 other's grandparent. A generation runs one way, and the relatives Stella works out for you are
 read off exactly those links — so pick the direction the wrong way round and it says so instead
@@ -455,6 +478,8 @@ too, so write down both — Stella takes two kinship links about the same two pe
 facts, not as a contradiction. If a
 marriage or a partnership has ended, set it to **former** on the row: it stays on both
 profiles, and the next one can then be entered as usual.
+
+### How they connect
 
 A link can say more than its label. **How they connect** is yours to write — "met through
 Peter at the ski course" — and there is a **since** day if it helps; both are optional. The
@@ -475,6 +500,8 @@ whole day, not a day-and-month or a guessed year.
 of* you picked the wrong way round — is one pick and not a re-entry; what you wrote about the
 link stays with it. Entered someone as the wrong thing altogether? *Remove* takes the link
 back, and Stella offers Undo for a moment in case that was hasty.
+
+### Worked out, and suggested
 
 From the few links you enter, Stella works out the rest and shows them under **Also
 related · worked out, not entered**: grandparents, aunts and uncles, cousins, in-laws,
@@ -515,6 +542,8 @@ Declining is not final and is not private: it holds for everyone in the househol
 was declined stays one click away under **N declined suggestions**, with who said no and when,
 and *Offer again* to put it back.
 
+### Checking the whole household
+
 Going profile by profile only reaches the people you think to open, and most households have
 never opened most of theirs. **Settings → Data quality → Check relationships** asks the same question about
 everyone at once: it lists what follows from every link on record, grouped by the person each
@@ -542,6 +571,8 @@ narrows the list to one family when you have somebody in mind, and answering a s
 leaves you exactly where you were rather than back at the top. Once the household has turned
 down more than a handful, the declined ones move from the drawer at the foot of the list onto a
 page of their own — still with *Offer again* on every row.
+
+### A small map on every profile
 
 Every profile shows the person at the centre of their own small constellation. **Explore
 connections** opens the bigger picture, where you can follow the web outward from one
