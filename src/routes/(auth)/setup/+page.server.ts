@@ -4,7 +4,6 @@ import { createTranslator, messageKey, type MessageKey } from '$lib/i18n/transla
 import { registerFirstAdmin } from '$lib/server/auth/accounts';
 import { setSessionCookie } from '$lib/server/auth/cookies';
 import { createSession } from '$lib/server/auth/session';
-import { getAccountDeps, getAccounts, getSessionDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
@@ -29,7 +28,7 @@ const SetupSchema = v.object({
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) throw redirect(302, '/');
-	if ((await getAccounts().countUsers()) > 0) throw redirect(302, '/login');
+	if ((await locals.services.auth.accounts.countUsers()) > 0) throw redirect(302, '/login');
 };
 
 export const actions: Actions = {
@@ -49,16 +48,16 @@ export const actions: Actions = {
 			return fail(400, { error: t(issue ?? 'auth.setup.invalidInput') });
 		}
 
-		if ((await getAccounts().countUsers()) > 0) {
+		if ((await locals.services.auth.accounts.countUsers()) > 0) {
 			return fail(409, { error: t('auth.setup.alreadyDone') });
 		}
 
 		// The language the form was read in becomes the admin's stored preference.
-		const user = await registerFirstAdmin(getAccountDeps(), {
+		const user = await registerFirstAdmin(locals.services.auth.accountDeps, {
 			...parsed.output,
 			locale: locals.locale
 		});
-		const { token, session } = await createSession(getSessionDeps(), user.id);
+		const { token, session } = await createSession(locals.services.auth.sessionDeps, user.id);
 		setSessionCookie(cookies, token, session.expiresAt);
 		throw redirect(303, '/');
 	}

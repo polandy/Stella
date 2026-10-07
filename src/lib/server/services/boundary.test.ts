@@ -1,0 +1,59 @@
+import { describe, expect, it } from 'bun:test';
+import { Glob } from 'bun';
+import { readFileSync } from 'node:fs';
+
+/*
+ * AR-01's guardrail (docs/concepts/architecture-review-2026-10.md §6): the composition root is
+ * handed to the edge as `locals.services`, not pulled from a registry. The `eslint` rule in
+ * `eslint.config.js` says the same for imports; this one runs under `bun test` and also pins
+ * what each slice of AR-01 has already moved.
+ */
+
+const SOURCE = new Glob('src/**/*.{ts,svelte}');
+const files = [...SOURCE.scanSync('.')].filter((path) => !path.endsWith('.test.ts')).sort();
+const source = (path: string) => readFileSync(path, 'utf8');
+
+const SERVICES_IMPORT =
+	/(?:from\s+|import\s*\(\s*)['"](?:\$lib\/server\/|(?:\.\.?\/)+(?:[\w-]+\/)*)services(?:\/index)?(?:\.[jt]s)?['"]/;
+const INSIDE_SERVICES = 'src/lib/server/services/';
+
+/*
+ * Shared edge code that still lives under lib/server and imports the registry. AR-02 moves it
+ * under routes/; until then the list may only shrink.
+ */
+const EDGE_HELPERS = [
+	'src/lib/server/last-names-actions.ts',
+	'src/lib/server/relationships/suggestion-answers.ts',
+	'src/lib/server/shell-people.ts'
+];
+
+const isEdge = (path: string) =>
+	path.startsWith('src/routes/') || path === 'src/hooks.server.ts' || EDGE_HELPERS.includes(path);
+
+describe('the composition root', () => {
+	it('is imported only by the edge and the listed edge helpers', () => {
+		const importers = files.filter(
+			(path) => !path.startsWith(INSIDE_SERVICES) && SERVICES_IMPORT.test(source(path))
+		);
+		expect(importers.filter((path) => !isEdge(path))).toEqual([]);
+	});
+
+	it('keeps the edge-helper allow-list to files that still need it', () => {
+		const stale = EDGE_HELPERS.filter((path) => !SERVICES_IMPORT.test(source(path)));
+		expect(stale).toEqual([]);
+	});
+
+	it('is built only by hooks.server.ts, which hands it on as locals.services', () => {
+		const builders = files.filter(
+			(path) => !path.startsWith(INSIDE_SERVICES) && /\bgetServices\b/.test(source(path))
+		);
+		expect(builders).toEqual(['src/hooks.server.ts']);
+	});
+
+	it('has no factory left for a context already in AppServices', () => {
+		// The auth context (AR-01, first slice): read `locals.services.auth` instead.
+		const retired =
+			/\bget(?:Accounts|Sessions|SessionDeps|AccountDeps|ApiTokenDeps|ApiImportDeps|OidcProvider|Identities|OidcPolicy|AuthorizationRequestDeps|RpLogoutDeps|CompleteLoginDeps)\b/;
+		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);
+	});
+});

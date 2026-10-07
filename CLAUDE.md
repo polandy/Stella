@@ -33,7 +33,7 @@ Bun · SvelteKit (Svelte 5, runes) · SQLite WAL + Drizzle · Tailwind v4 + Catp
 
 | Path | Responsibility |
 |---|---|
-| `src/lib/server/services.ts` | the composition root — the only module wiring adapters into `deps`; only routes, hooks and the few shared edge helpers beside it import it |
+| `src/lib/server/services/` | the composition root — the only module wiring adapters into `deps`; builds `AppServices` once per process, handed to routes as `locals.services`; only routes, hooks and the few shared edge helpers beside it import it |
 | `src/lib/server/config.ts` | env parsing (Valibot) — the only `$env` reader |
 | `src/lib/server/db/` | Drizzle schema (`docs/03`), `bun:sqlite` client, one adapter per port |
 | `src/lib/server/access/` | **central** ACL / visibility (`docs/03` §3.7) — the *only* authz path |

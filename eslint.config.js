@@ -14,7 +14,7 @@ const frameworkImports = [
 	}
 ];
 
-// `services.ts` wires concretes to use-cases; only the SvelteKit edge may reach for it, or a
+// `services/` wires concretes to use-cases; only the SvelteKit edge may reach for it, or a
 // use-case would end up depending on a concrete DB again (docs/08 §8.3).
 const servicesImports = [
 	{

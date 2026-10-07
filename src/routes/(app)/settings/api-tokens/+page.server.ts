@@ -12,7 +12,6 @@ import {
 	type ApiTokenLifetime
 } from '$lib/server/auth/api-tokens';
 import { say, translator } from '$lib/server/i18n/say';
-import { getApiTokenDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
@@ -37,7 +36,7 @@ function requireMember(locals: App.Locals) {
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireMember(locals);
-	const deps = getApiTokenDeps();
+	const deps = locals.services.auth.apiTokenDeps;
 	const now = deps.clock.now();
 	const tokens = (await listApiTokens(deps, user.id)).map((token) => ({
 		...token,
@@ -57,7 +56,7 @@ export const actions: Actions = {
 		const parsed = v.safeParse(CreateSchema, Object.fromEntries(await request.formData()));
 		if (!parsed.success) return fail(400, { error: say(locals, 'errors.form.checkAndRetry') });
 		try {
-			const { token } = await issueApiToken(getApiTokenDeps(), user.id, {
+			const { token } = await issueApiToken(locals.services.auth.apiTokenDeps, user.id, {
 				name: parsed.output.name,
 				lifetimeDays: parsed.output.lifetimeDays as ApiTokenLifetime
 			});
@@ -74,7 +73,11 @@ export const actions: Actions = {
 		const user = requireMember(locals);
 		const parsed = v.safeParse(RevokeSchema, Object.fromEntries(await request.formData()));
 		if (!parsed.success) return fail(400, { error: say(locals, 'errors.form.checkAndRetry') });
-		const revoked = await revokeApiToken(getApiTokenDeps(), user.id, parsed.output.tokenId);
+		const revoked = await revokeApiToken(
+			locals.services.auth.apiTokenDeps,
+			user.id,
+			parsed.output.tokenId
+		);
 		if (!revoked) return fail(404, { error: say(locals, 'settings.apiTokens.notFound') });
 		return { revoked: say(locals, 'settings.apiTokens.revoked') };
 	}

@@ -103,10 +103,16 @@ Layering and single responsibility:
    They never import a singleton or concrete infrastructure.
 3. **Adapters** implement ports over real infrastructure (Drizzle/`bun:sqlite`, system
    clock, ULID).
-4. **Composition root** — `src/lib/server/services.ts` — is the **only** place that
-   constructs concretes and wires them into use-cases' `deps` (`getContactDeps()`, …). Only
-   edge code imports it: the SvelteKit edge itself (`routes/`, `hooks.server.ts`) and the few
-   shared edge helpers named beside it in the tree (docs/04 §4.3).
+4. **Composition root** — `src/lib/server/services/` — is the **only** place that
+   constructs concretes and wires them into use-cases' `deps`. It builds one typed
+   `AppServices` per process, grouped by bounded context, and `hooks.server.ts` **hands** it
+   to the edge as `locals.services`: a route reads `locals.services.auth.sessionDeps` rather
+   than pulling from a registry, so a test can hand it an `AppServices` over fakes. In a
+   group, a repository the edge reads directly sits under its plural noun (`accounts`), a
+   use-case's deps under its type's name (`sessionDeps: SessionDeps`). Contexts not grouped
+   yet keep their `get*()` factories (`getContactDeps()`, …) until they move in. Only edge
+   code imports the module: the SvelteKit edge itself (`routes/`, `hooks.server.ts`) and
+   the few shared edge helpers named beside it in the tree (docs/04 §4.3).
 
 ```ts
 // domain/contacts/contact-repository.ts — the DOMAIN owns this port
@@ -120,11 +126,13 @@ export async function createContact(
 	deps: { contacts: ContactRepository; clock: Clock; ids: IdGenerator }
 ): Promise<ContactId> { /* … */ }
 
-// src/lib/server/services.ts (composition root) — the only place wiring concretes
-export const getContactDeps = () => ({ contacts: drizzleContactRepo(getDb()), clock, ids });
+// src/lib/server/services/people.ts (composition root) — the only place wiring concretes
+export const createPeopleServices = ({ db, clock, ids }: PeopleWiring) => ({
+	contactDeps: { contacts: drizzleContactRepo(db), clock, ids }
+});
 
-// src/routes/… (the edge) — asks the root for the deps, never builds one
-const id = await createContact(input, getContactDeps());
+// src/routes/… (the edge) — is handed the wired graph, never builds one
+const id = await createContact(input, locals.services.people.contactDeps);
 ```
 
 **Rules of thumb:** inject DI **only** for side-effect collaborators (I/O, time,
