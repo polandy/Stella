@@ -101,8 +101,10 @@ Layering and single responsibility:
    They never import a singleton or concrete infrastructure.
 3. **Adapters** implement ports over real infrastructure (Drizzle/`bun:sqlite`, system
    clock, ULID).
-4. **Composition root** — the SvelteKit edge (`routes/`, `hooks.server.ts`) — is the
-   **only** place that constructs concretes and wires them into use-cases.
+4. **Composition root** — `src/lib/server/services.ts` — is the **only** place that
+   constructs concretes and wires them into use-cases' `deps` (`getContactDeps()`, …). Only
+   edge code imports it: the SvelteKit edge itself (`routes/`, `hooks.server.ts`) and the few
+   shared edge helpers named beside it in the tree (docs/04 §4.3).
 
 ```ts
 // domain/contacts/contact-repository.ts — the DOMAIN owns this port
@@ -116,13 +118,16 @@ export async function createContact(
 	deps: { contacts: ContactRepository; clock: Clock; ids: IdGenerator }
 ): Promise<ContactId> { /* … */ }
 
-// src/routes/… (composition root) — the only place wiring concretes
-const id = await createContact(input, { contacts: drizzleContactRepo(db), clock, ids });
+// src/lib/server/services.ts (composition root) — the only place wiring concretes
+export const getContactDeps = () => ({ contacts: drizzleContactRepo(getDb()), clock, ids });
+
+// src/routes/… (the edge) — asks the root for the deps, never builds one
+const id = await createContact(input, getContactDeps());
 ```
 
 **Rules of thumb:** inject DI **only** for side-effect collaborators (I/O, time,
 randomness/ids), never for plain values; always inject **narrow, domain-owned ports**;
-assemble concretes **only at the edge**.
+assemble concretes **only in the composition root**.
 
 ## 8.4 The TDD loop in practice
 
