@@ -1,109 +1,63 @@
 # Stella (repo: ross)
 
-Self-hosted, family **personal CRM** — a lean, intuitive alternative to Monica.
-The `docs/` suite is the **source of truth**; this file is only a router — keep it short.
+Self-hosted, family **personal CRM** — a lean, intuitive alternative to Monica. The `docs/`
+suite is the **source of truth**; this file only routes, and every coding agent shares it
+(`GEMINI.md` imports it — don't fork the rules per tool).
 
-> Efficiency contract: open **only** the doc/source file your task touches (map below).
-> `02`, `04` and `05` are split one file per section — open the index (e.g. `docs/02-features.md`),
-> find the `§` you need, then open only that section file. Don't re-read the whole tree.
-> Keep CLAUDE.md and docs free of duplication.
+> Open **only** the doc/source file your task touches. `02`, `04` and `05` are split one file
+> per section: open the index (e.g. `docs/02-features.md`), find the `§`, open that file.
+> A concept under `docs/concepts/` whose status says *built* is history — read the feature
+> doc instead. Keep this file and the docs free of duplication.
 
-> Agent-agnostic: this file is the shared instruction set for every coding agent working on
-> this repo (Claude Code, GitHub Copilot CLI, Gemini CLI, …). Copilot reads it directly;
-> `GEMINI.md` imports it so Gemini CLI does too — don't fork the rules per tool.
+## Golden rules — full text `docs/08-coding-guidelines.md`, read once
 
-## Golden rules — full text: `docs/08-coding-guidelines.md` (read once, then follow)
-
-- **Test-first**: failing test → minimal impl → refactor. Run `bun run test`.
-- **No test may race**: no sleeps, no fixed waits, no wall-clock dependence; a negative
-  assertion needs a positive signal, and every test is seen red once. (`docs/08` §8.4.2)
-- **Delivery loop**: implement (+ unit/integration tests) → user verifies in the app →
-  **on their OK**, add the Playwright **e2e** (`e2e/*.spec.ts`). Never write the e2e before
-  sign-off. (`docs/08` §8.4.1)
-- **Framework-agnostic domain**: business logic in `src/lib/server/{domain,access}`,
-  plain TS, no SvelteKit/`$env`/`$app` imports. SvelteKit only at the edges (routes/hooks).
-- **Ports & Adapters + DI**: domain owns narrow interfaces (ports); use-cases take a
-  `deps` arg (repository / `clock` / `idGenerator`) — never a singleton or concrete DB.
-  Pure logic takes no deps. Only the SvelteKit edge wires concretes. (`docs/08` §8.3)
-- **Working agreement**: worktree → PR → `/pr-review` verdict → wait for the go-ahead;
-  a feature PR includes UI + docs; English throughout. (`docs/08` §8.10)
-- **Minimal exposure & minimal deps**: export as little as possible; prefer Bun/Web APIs.
-- **Strict TS (no `any`), fail loud, descriptive names, comments explain _why_.**
+- **Test-first**, `bun run test`; no test may race — no sleeps, no wall clock (§8.4, §8.4.2).
+- **Delivery loop**: implement + tests → owner verifies → **on their OK** the e2e (§8.4.1).
+- **Framework-agnostic domain**: `src/lib/server/{domain,access}` is plain TS, no `$env`/`$app` (§8.1).
+- **Ports & Adapters + DI**: use-cases take `deps`, never a singleton; pure logic takes none (§8.3).
+- **Working agreement**: worktree beside the checkout → PR with UI + docs → `/pr-review` → wait
+  for the go-ahead; at most two feature PRs open; English throughout (§8.10).
+- **Minimal exposure and deps, strict TS (no `any`), fail loud, names say what, comments say why** (§8.1–8.2).
 
 ## Commands
 
-```
-bun run dev        # dev server (http://localhost:5173)
-bun run test       # unit tests (`bun test src` — bare `bun test` also sweeps up e2e/)
-bun run test:e2e   # Playwright e2e (builds, serves, runs in the pinned container)
-bun run check      # svelte-check + types
-bun run lint       # prettier --check + eslint (incl. import-boundary rules)
-bun run format     # prettier --write
-bun run build      # production build   |  bun run start  → bun ./build/index.js
-bun run db:generate | db:migrate | db:push | db:studio
-scripts/ci-failures.sh <PR>   # only the failures of a PR's latest CI run
-```
+`bun run test` (unit: `bun test src`) · `bun run test:e2e` (Playwright — CI runs it, agents
+don't) · `scripts/ci-failures.sh <PR>` (only the failures of a red run). The rest is in `package.json`.
 
-## Stack — full: `docs/04-architecture.md`
+## Stack — `docs/04-architecture.md`
 
-Bun · SvelteKit (Svelte 5, runes) · SQLite WAL + Drizzle (`bun:sqlite`) · Tailwind v4 +
-Catppuccin tokens · `adapter-node` run under Bun · `Bun.password` (Argon2id) · OIDC/Authelia SSO.
+Bun · SvelteKit (Svelte 5, runes) · SQLite WAL + Drizzle · Tailwind v4 + Catppuccin tokens ·
+`adapter-node` under Bun · Argon2id passwords · OIDC/Authelia SSO.
 
-## Code map — touch only what you need
+## Code map — one clause per folder; detail in `docs/04` §4.3
 
 | Path | Responsibility |
 |---|---|
-| `src/lib/server/config.ts` | env parsing/validation (Valibot) — the only `$env` reader |
-| `src/lib/server/db/schema.ts` | Drizzle schema (impl of `docs/03`) |
-| `src/lib/server/db/index.ts` | `bun:sqlite` client + pragmas |
+| `src/lib/server/config.ts` | env parsing (Valibot) — the only `$env` reader |
+| `src/lib/server/db/` | Drizzle schema (`docs/03`) + `bun:sqlite` client |
 | `src/lib/server/access/` | **central** ACL / visibility (`docs/03` §3.7) — the *only* authz path |
-| `src/lib/server/domain/` | use-cases (contacts, relationships, notes, journal, story, attention, circles, feed…) — test-first |
-| `src/lib/server/auth/` | sessions, password, OIDC relying-party |
-| `src/lib/suggestions/` | **pure** suggestion engine: rules say what follows, `engine.ts` applies the universal suppressions centrally, reasons are `Phrase`s (test-first) |
-| `src/lib/sync/` | **pure** pending-work counting behind the shell's activity indicator: `pending-work.ts` store, `trackPending` / `whilePending` / `reportNavigation` (test-first) |
-| `src/lib/shell/` | **pure** app-shell decisions: when a phone's top bar slides away on scroll (`top-bar.ts`, test-first) |
-| `src/lib/contacts/` | **pure** person-page vocabulary: the cards' anchors (`sections.ts`), the jump bar's links and which card is being read (`jump-bar.ts`, test-first) |
-| `src/lib/onboarding/` | **pure** first-run decisions: whether Home shows the welcome card, which steps it offers and which are done (`welcome.ts`, test-first) |
-| `src/lib/surnames/` | **pure** last-name batches on screen: which rows a held batch hides, who becomes a namesake (test-first); `held-names.svelte.ts` is the adapter to the undo window |
-| `src/lib/motion/` | **pure** expand/collapse motion (`motion.ts`: easing, reveal frames, when a height glides, test-first); `motion.svelte.ts` is the adapter — `transition:reveal`, `use:glide`, the cross-fade `Swap.svelte` builds on (`docs/05` §5.11) |
-| `src/lib/menu/` | **pure** toolbar-menu decisions: the Filter pill's count and highlight, arrow-key movement (test-first) |
-| `src/lib/stream/` | **pure** household-stream filter: kinds, the `?kind=`/`?by=` codec, what the chips show (test-first) |
-| `src/lib/pwa/` | **pure** install/offline policy: manifest, cache rules, icon geometry, reachability protocol, the outbox's states (test-first). `src/service-worker.ts`, `install.svelte.ts`, `reachability.svelte.ts`, `outbox.svelte.ts` and `outbox-store.ts` are the adapters — they hold browser APIs, never a decision |
-| `src/lib/commands/` | **pure** command vocabulary shared by phone and server; the dispatcher that applies a command once is `src/lib/server/domain/commands/`, the wire edge `src/lib/server/commands/` (`docs/04` §4.11.2) |
-| `src/lib/immich/` | **pure** Immich links the browser sees: the web deep link, the face-thumbnail URL, the name matcher for *Find your people* (`match.ts`), which ties offer *Together* and which chips show (`together.ts`), both test-first |
-| `src/lib/server/immich/` | Immich adapter: env config, `http-gateway.ts` (the only `fetch` to Immich; the key never leaves it), the face routes' answers (`routes.ts`), the demo/fake gateway; the port and use-cases live in `domain/immich/` |
-| `src/lib/graph/model/` | **pure** graph domain: `GraphModel`, `buildEgoNetwork`, `expandNode`, `findConnectionPath`, `applyFilters` (test-first) |
-| `src/lib/graph/layout/` | **pure** arrangements as positions: family tree, groups by circle; the density and legibility numbers the canvas is drawn at (test-first) |
-| `src/lib/graph/keyboard.ts` | **pure** keyboard walk over the map: which key steps to whom (test-first) |
-| `src/lib/graph/phone-map.ts` | **pure** view machine for a phone's map on a person's page: preview / enlarged / full screen, and which view follows which tap (test-first) |
-| `src/lib/graph/cytoscape/` | rendering adapter (Cytoscape confined here, lazy-loaded); no domain logic |
-| `src/routes/` | thin edges: `load` / form actions / `+server.ts`; a large page keeps its `load` and action groups in colocated plain modules (`contacts/[id]/load.ts`, `actions/*.ts`) |
-| `src/lib/components/` | UI components (design system): `Button`, `Icon` + the `icons.ts` registry, `Avatar`, `Section`, `EmptyState`, `CommandPalette`, `MenuButton`, `Toast` + `RemoveButton`, `InlineEdit`, …; `graph/` holds the map: `GraphExplorer` wires state to the canvas, its parts (`GraphCanvas`, `GraphFilterMenu`, `GraphArrangeMenu`, `GraphFindField`, `GraphNodePeek`/`GraphGroupPeek`, `GraphPathPrompt`) only render; `person/` holds the person page's cards, one component per section |
-| `src/lib/i18n/` | languages, message catalogues (`messages/en`, `messages/de`), translator, Svelte context — **all UI copy lives here** (`docs/02` §2.19) |
-| `src/lib/design/tokens.ts` | the token table in TS — the only place that builds a colour token string |
-| `src/app.css` | the three token layers: Catppuccin flavour → surfaces → semantic (Latte/Mocha) |
+| `src/lib/server/domain/` | use-cases, test-first; `commands/` applies a command once |
+| `src/lib/server/{auth,immich,commands}/` | sessions + OIDC; the Immich gateway; the command wire edge |
+| `src/lib/{commands,contacts,immich,kinship,menu,motion,onboarding,pwa,shell,stream,suggestions,surnames,sync}/` | **pure** decisions, test-first; a `*.svelte.ts` beside one is its browser adapter |
+| `src/lib/graph/` | pure `model/`, `layout/`, `keyboard.ts`, `phone-map.ts`; `cytoscape/` renders, no logic |
+| `src/routes/` | thin edges: `load` / form actions / `+server.ts`; big pages colocate `load.ts` + `actions/` |
+| `src/lib/components/` | design system; `graph/` the map, `person/` the person page's cards |
+| `src/lib/i18n/` | languages, catalogues `en` + `de`, translator — **all UI copy** (`docs/02` §2.19) |
+| `src/lib/design/tokens.ts`, `src/app.css` | the token table and its three layers — the only places that build a colour token |
 
 ## Docs index — open the single relevant one
 
-`01` vision · `02` features ([index](docs/02-features.md), sections in `docs/features/`) ·
-`03` data-model · `04` architecture ([index](docs/04-architecture.md), sections in `docs/architecture/`) ·
-`05` ui-design-system ([index](docs/05-ui-design-system.md), sections in `docs/design/`) ·
-`06` roadmap · `07` deployment · `08` coding-guidelines
-
-User-facing docs (keep in sync when behaviour changes): `install.md` · `using-stella.md`.
-Screenshots in `docs/images/` are regenerated by hand against a demo-seeded build.
+`01` vision · `02` features · `03` data-model · `04` architecture · `05` ui-design-system ·
+`06` roadmap · `07` deployment · `08` coding-guidelines. User docs `install.md` and
+`using-stella.md` stay in sync with behaviour.
 
 ## Non-negotiables
 
-- **English and German are both fully supported.** No user-visible string is written in a
-  component or a route: components use `t()` from `useI18n()`, routes use `say(locals, …)`,
-  domain errors carry a `Phrase`. German is typed against English, so both stay complete.
-- UI uses **semantic tokens** (`--fg`, `--bg`, `--primary`, `--accent-*`, `--cat-*`, …), never
-  raw `--ctp-*` or hex; inline styles come from `src/lib/design/tokens.ts`. Icons come from
-  `Icon.svelte` — no emoji in the interface.
-- All data access flows through `src/lib/server/access/`; never query the DB from routes/components.
-- When you change the model or a behavior, update the matching `docs/` file in the same change.
-- **Dependencies are exact-pinned** (no `^`/`~`); `bun add` saves exact; commit `bun.lock`;
-  CI/Docker install `--frozen-lockfile`. (`docs/08` §8.8)
-- **Conventional Commits** (`feat`/`fix`/`docs`/…); releases are automated by release-please
-  from the commit history — pick the type by user-facing impact. (`docs/08` §8.9)
+- **English and German both complete.** No user-visible string in a component or route:
+  `t()` from `useI18n()`, `say(locals, …)`, domain errors carry a `Phrase` (`docs/08` §8.7).
+- **Semantic tokens** (`--fg`, `--primary`, `--accent-*`, …), never `--ctp-*` or hex; icons
+  from `Icon.svelte`, no emoji (`docs/05` §5.2.2, §5.9).
+- All data access flows through `src/lib/server/access/`; never query the DB from routes or components.
+- A model or behaviour change updates the matching `docs/` file in the same change.
+- **Exact-pinned dependencies**, `bun.lock` committed, installs `--frozen-lockfile` (§8.8);
+  **Conventional Commits**, releases by release-please (§8.9).
