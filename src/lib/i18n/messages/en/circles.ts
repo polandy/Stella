@@ -81,7 +81,7 @@ export const circles = {
 	'circles.photos.ownerOnly': 'Only you can do this, because you added it:',
 	'circles.photos.previous': 'Previous photo',
 	'circles.photos.next': 'Next photo',
-	// A profile picture cut from a group photo (docs/concepts/circle-photos.md §5).
+	// A profile picture cut from a group photo (docs/02 §2.14).
 	'circles.cut.use': 'Use as profile picture for …',
 	'circles.cut.dialog': 'Use as profile picture',
 	'circles.cut.whom': 'Whose profile picture is on this photo?',

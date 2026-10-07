@@ -73,7 +73,7 @@
 			class="max-h-[65vh] w-full rounded-control bg-bg-sunken object-contain"
 		/>
 		{#if openedPhoto.cutFrom}
-			<!-- A profile picture cut from a group photo, kept as a photo of their own (circle-photos §5.2). -->
+			<!-- A profile picture cut from a group photo, kept as a photo of their own (docs/02 §2.14). -->
 			<a
 				href="/circles/{openedPhoto.cutFrom.circleId}"
 				class="inline-flex items-center gap-1 self-start text-xs text-primary underline-offset-2 hover:underline"

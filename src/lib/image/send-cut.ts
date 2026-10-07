@@ -3,7 +3,7 @@ import type { CropRect } from './crop';
 import { CUT_SIZE, processAvatar } from './process-avatar';
 
 /*
- * Sending a profile picture cut from a group photo (docs/concepts/circle-photos.md §5): the
+ * Sending a profile picture cut from a group photo (docs/02 §2.14): the
  * square is rendered in the browser at 1024 px, as any avatar is rendered, and posted with the
  * square itself to the form action that stores it. The circle page's lightbox and the person
  * page share this; each names its own action. A cut is a change, not an addition, so it is

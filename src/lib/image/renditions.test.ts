@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { groupPhotoRenditions, photoRenditions } from './renditions';
 
 /*
- * The sizes a picture is stored at (docs/02 §2.14, docs/concepts/circle-photos.md §5.3). A
+ * The sizes a picture is stored at (docs/02 §2.14). A
  * person's photo is kept at 1600 px; a group photo at up to 4096 px so a face can be cut from
  * it, with a 1600 px view beside it for the grid and the lightbox. Nothing is ever enlarged.
  */

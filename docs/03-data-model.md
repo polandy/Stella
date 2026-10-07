@@ -426,7 +426,7 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 | circle_id | text null | set = belongs to that circle's photos (docs/02 §2.4.2), not to any person; no fk |
 | circle_role | text null | the circle role the photo shows, as picked; null = the circle as a whole |
 | framing_of | text null | set = the avatar framing of that gallery photo, or a profile picture cut from that circle photo (docs/02 §2.14); no fk |
-| cut_from | text null | set = a photo of its own that was cut from that circle photo (docs/concepts/circle-photos.md §5.2); no fk |
+| cut_from | text null | set = a photo of its own that was cut from that circle photo (docs/02 §2.14); no fk |
 | crop_x / crop_y / crop_size | real null | a framing's square, in its photo's full-size pixels |
 | file_path | text | path within media volume (original, sanitized) |
 | thumb_path | text | generated thumbnail path |
@@ -463,9 +463,9 @@ members list's folding (trimmed, case-folded), so a role nobody has any more kee
 `circle_id` carries no foreign key for the reason `journal_entry_id` has no cascade (below): the
 repository removes a circle's photos, and their files, with the circle. Nothing deletes a circle
 yet; the rule is for the day something does: it turns the cuts of all the circle's photos
-(below) first, as removing one photo does.
+(below) first, as removing one photo does. Archiving a circle keeps its photos.
 
-**A profile picture can be cut from a group photo** (docs/concepts/circle-photos.md §5). A
+**A profile picture can be cut from a group photo** (docs/02 §2.14, ADR-116). A
 *cut* is a framing of a circle photo with `contact_id` set to the person who wears it: one per
 photo **and person**, enforced by the partial unique index `photo_framing_person_idx` on
 (`framing_of`, `contact_id`) where `framing_of` is set. Like any framing it copies the circle

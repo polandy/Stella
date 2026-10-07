@@ -22,11 +22,11 @@ import type * as schema from './schema';
 import { circle, circleMembership, contact, photo } from './schema';
 
 /*
- * Drizzle adapter for profile pictures cut from a group photo (docs/concepts/circle-photos.md
- * §5, docs/08 §8.3). A cut is a `photo` row with `framing_of` on a circle photo and `contact_id`
- * on the person who wears it. Group photos are read through the central `circlePhotoVisibleTo`
- * and people through `contactVisibleTo` (docs/03 §3.7): a cut is counted on its photo for
- * everyone who sees the photo, but only named for whoever may see the person.
+ * Drizzle adapter for profile pictures cut from a group photo (docs/02 §2.14, docs/08 §8.3). A cut
+ * is a `photo` row with `framing_of` on a circle photo and `contact_id` on the person who wears it.
+ * Group photos are read through the central `circlePhotoVisibleTo` and people through
+ * `contactVisibleTo` (docs/03 §3.7): a cut is counted on its photo for everyone who sees the photo,
+ * but only named for whoever may see the person.
  */
 export function createDrizzleCutRepository(db: BunSQLiteDatabase<typeof schema>): CutRepository {
 	const visibleGroupPhoto = (viewer: Viewer) =>

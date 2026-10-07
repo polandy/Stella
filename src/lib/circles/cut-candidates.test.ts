@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { cutCandidates, type CandidatePerson } from './cut-candidates';
 
 /*
- * Whom a group photo's profile picture is cut for (docs/concepts/circle-photos.md §5.1): the
+ * Whom a group photo's profile picture is cut for (docs/02 §2.4.2): the
  * circle's members first, those in the photo's role ahead of the rest, and a search over
  * everyone the viewer can see. People already wearing a cut of this photo are marked.
  */

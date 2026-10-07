@@ -17,7 +17,7 @@ import { leadPhoto, matchRoleOption, photoRoleOptions } from './circle-photo-vie
 import { suggestRoles, type CircleRepository } from './circles';
 
 /*
- * The photos of a circle (docs/02 §2.4.2, docs/concepts/circle-photos.md). A circle photo is a
+ * The photos of a circle (docs/02 §2.4.2). A circle photo is a
  * photo like a person's (docs/02 §2.14) — processed in the browser, shared or private, captioned,
  * pinned — that belongs to one circle and to nobody's gallery, and may carry one of the
  * circle's roles.

@@ -17,7 +17,7 @@
 
 	/*
 	 * Cutting profile pictures out of a group photo, one person after another
-	 * (docs/concepts/circle-photos.md §5.1). The lightbox's *Use as profile picture for …* opens a
+	 * (docs/02 §2.4.2). The lightbox's *Use as profile picture for …* opens a
 	 * person picker — the circle's members first, those in the photo's role ahead, a search over
 	 * everyone else — and a pick opens the cropper on the full picture, loaded once for the
 	 * sitting. After a cut the dialog says so and offers the next person; people already wearing

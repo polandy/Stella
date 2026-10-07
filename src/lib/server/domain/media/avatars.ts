@@ -165,7 +165,7 @@ export interface GalleryPhoto {
 	pinnedAt: number | null;
 	/**
 	 * The group photo this one was cut from, once a profile picture of its own
-	 * (docs/concepts/circle-photos.md §5.2); null when it was not, or the viewer cannot see it.
+	 * (docs/02 §2.14); null when it was not, or the viewer cannot see it.
 	 */
 	cutFrom: { photoId: string; circleId: string; circleName: string } | null;
 }

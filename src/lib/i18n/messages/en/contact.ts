@@ -324,7 +324,7 @@ export const contact = {
 	'contact.photos.takenOn': (p: { date: string }) => `Taken ${p.date}`,
 	'contact.photos.pin': 'Pin as favourite',
 	'contact.photos.unpin': 'Unpin favourite',
-	// Profile pictures cut from a group photo (docs/concepts/circle-photos.md §5.2).
+	// Profile pictures cut from a group photo (docs/02 §2.14).
 	'contact.photos.cutFrom': (p: { circle: string }) => `From ${p.circle}`,
 	'contact.photos.onGroupPhotos': 'On group photos',
 	'contact.photos.groupPhotoOf': (p: { circle: string }) => `Group photo of ${p.circle}`,
