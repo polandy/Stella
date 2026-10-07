@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>C8 + C9 — the People card: map preview on every width, a fold that says what it hides (interactive mockup)</title>
+<style>
+  /* Catppuccin tokens as src/app.css maps them: flavour → surfaces → semantic (Latte / Mocha). */
+  :root, :root[data-theme='latte'] {
+    --bg:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff; --card-hover:#f4f5f9;
+    --border:#ccd0da; --border-subtle:#e7e9f0;
+    --fg:#4c4f69; --fg-muted:#5c5f77; --fg-subtle:#6c6f85;
+    --primary:#853ae8; --primary-fg:#ffffff; --link:#1e66f5;
+    --c-romantic:#ea76cb; --c-family:#40a02b; --c-social:#1e66f5; --c-professional:#fe640b; --c-other:#179299;
+    --avatar-fg:#4c4f69; --av-pink:#f4dcdc; --av-blue:#d3e2fb; --av-teal:#cdeceb; --av-peach:#fbe2cf; --av-mauve:#e7dbfb; --av-sky:#cfeefa;
+    --shadow-card:0 1px 2px rgba(76,79,105,.07), 0 2px 8px rgba(76,79,105,.06);
+    --page:#eff1f5; --map-line:#bcc0cc;
+  }
+  :root[data-theme='mocha'] {
+    --bg:#181825; --bg-sunken:#11111b; --card:#232334; --card-hover:#2a2a3d;
+    --border:#313244; --border-subtle:#292939;
+    --fg:#cdd6f4; --fg-muted:#bac2de; --fg-subtle:#a6adc8;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --c-romantic:#f5c2e7; --c-family:#a6e3a1; --c-social:#89b4fa; --c-professional:#fab387; --c-other:#94e2d5;
+    --avatar-fg:#cdd6f4; --av-pink:#45384a; --av-blue:#2f3a55; --av-teal:#2c4446; --av-peach:#4a3a33; --av-mauve:#3d3355; --av-sky:#2b4252;
+    --shadow-card:0 1px 2px rgba(0,0,0,.3);
+    --page:#1e1e2e; --map-line:#45475a;
+  }
+  :root { --primary-soft:color-mix(in srgb, var(--primary) 14%, transparent);
+    --sans:'Instrument Sans Variable','Instrument Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --ease:cubic-bezier(.2,0,0,1); --expand:260ms; --fade:160ms; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--fg); font-family:var(--sans); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button { font:inherit; color:inherit; }
+  a { color:inherit; text-decoration:none; }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:8px; }
+  svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+
+  /* ── The document around the frames ────────────────────────── */
+  .wrap { margin:0 auto; padding:28px 24px 80px; max-width:1640px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); }
+  h1 { font-size:26px; font-weight:650; margin:4px 0 6px; letter-spacing:-.01em; }
+  .lede { color:var(--fg-muted); margin:0 0 18px; max-width:92ch; }
+  .controls { display:flex; flex-wrap:wrap; gap:12px 18px; align-items:center; margin-bottom:10px; }
+  .ctl { display:flex; align-items:center; gap:8px; }
+  .seg { display:flex; gap:3px; background:var(--bg-sunken); border-radius:999px; padding:3px; }
+  .seg button { border:0; background:transparent; padding:5px 12px; border-radius:999px; font-size:13px; color:var(--fg-muted); cursor:pointer; white-space:nowrap; }
+  .seg button[aria-pressed='true'] { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .seg button .rec { color:var(--primary); font-weight:700; margin-left:3px; }
+  .seg-label { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-subtle); }
+  .ctl.off { opacity:.4; pointer-events:none; }
+  .note { font-size:12px; color:var(--fg-subtle); margin:0 0 22px; }
+  .stage { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+  .legend { flex:1 1 100%; columns:2 420px; column-gap:40px; }
+  .legend ol, .legend .q { break-inside:avoid; }
+  .legend h2 { font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); margin:0 0 10px; }
+  .legend ol { padding-left:20px; margin:0 0 18px; display:flex; flex-direction:column; gap:9px; font-size:14px; color:var(--fg-muted); }
+  .legend b { color:var(--fg); font-weight:600; }
+  .legend .q { margin-top:12px; padding:12px 14px; border-radius:12px; border:1px dashed var(--border); font-size:13px; color:var(--fg-muted); }
+  .legend .q b { display:block; margin-bottom:4px; }
+
+  /* ── Desktop: a 1440 × 900 window, scaled to fit ───────────── */
+  .browser-fit { flex:none; width:var(--fit-w); height:var(--fit-h); }
+  .browser { width:1440px; height:900px; transform-origin:0 0; transform:scale(var(--fit)); border-radius:12px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.2); display:flex; flex-direction:column; background:var(--bg); }
+  .chrome { height:36px; flex:none; background:var(--bg-sunken); display:flex; align-items:center; gap:7px; padding:0 14px; border-bottom:1px solid var(--border); }
+  .chrome i { width:11px; height:11px; border-radius:50%; background:var(--border); display:block; }
+  .chrome .url { margin-left:18px; font-size:12px; color:var(--fg-subtle); background:var(--card); padding:3px 14px; border-radius:6px; width:420px; }
+  .app { flex:1; display:flex; min-height:0; }
+  .side { width:240px; flex:none; background:var(--bg-sunken); padding:12px; display:flex; flex-direction:column; gap:4px; }
+  .logo { display:flex; align-items:center; gap:8px; font-weight:600; font-size:21px; padding:6px 10px 14px; }
+  .logo .mark { color:var(--primary); }
+  .side a { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; font-size:14px; color:var(--fg-muted); }
+  .side a.on { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .dmain { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .dhead { display:flex; align-items:center; gap:8px; padding:16px 24px 8px; font-size:14px; color:var(--fg-muted); }
+  .dhead .here { color:var(--fg); font-weight:600; }
+  .scroller { flex:1; overflow-y:auto; scrollbar-width:none; position:relative; }
+  .scroller::-webkit-scrollbar { display:none; }
+  .dpage { max-width:1060px; margin:0 auto; padding:12px 24px 60px; display:flex; flex-direction:column; gap:20px; }
+
+  /* ── Phone: Pixel 9 Pro, 412 × 915 CSS px ──────────────────── */
+  .device { padding:10px; background:#0b0b12; border-radius:46px; box-shadow:0 20px 60px rgba(0,0,0,.25); flex:none; }
+  .screen { width:412px; height:915px; border-radius:36px; overflow:hidden; position:relative; background:var(--bg); display:flex; flex-direction:column; }
+  .status { height:30px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:6px 26px 0; font-size:13px; font-weight:600; }
+  .status .cam { width:12px; height:12px; border-radius:50%; background:#0b0b12; }
+  .ptop { display:flex; align-items:center; gap:6px; padding:8px 16px; flex:none; font-size:15px; color:var(--fg-muted); white-space:nowrap; }
+  .ptop .here { color:var(--fg); font-weight:600; overflow:hidden; text-overflow:ellipsis; }
+  .ppage { padding:6px 12px 110px; display:flex; flex-direction:column; gap:12px; }
+  .tabbar { position:absolute; inset:auto 0 0 0; display:flex; align-items:flex-end; border-top:1px solid var(--border-subtle); background:var(--card); padding-bottom:14px; }
+  .tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 0 4px; font-size:11px; font-weight:500; color:var(--fg-subtle); }
+  .tab.on { color:var(--primary); font-weight:600; }
+  .tab.pen span { width:52px; height:52px; border-radius:50%; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; margin-top:-26px; box-shadow:var(--shadow-card); }
+
+  /* ── Cards ─────────────────────────────────────────────────── */
+  .card { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); padding:16px; }
+  .idcard { display:flex; gap:16px; align-items:center; }
+  .idcard h2 { margin:0; font-size:24px; font-weight:650; letter-spacing:-.01em; }
+  .p .idcard h2 { font-size:20px; }
+  .idcard p { margin:2px 0 0; color:var(--fg-muted); font-size:14px; }
+  .idcard .ghost { font-size:12px; color:var(--fg-subtle); margin-top:6px; }
+  .sechead { display:flex; align-items:center; gap:6px; min-height:34px; margin-bottom:8px; }
+  .sechead h3 { margin:0; font-size:15px; font-weight:600; }
+  .sechead .count { color:var(--fg-subtle); font-weight:400; margin-left:4px; }
+  .sechead .r { margin-left:auto; display:flex; align-items:center; gap:2px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; border-radius:10px; padding:5px 8px; font-size:14px; font-weight:500; border:1px solid transparent; cursor:pointer; white-space:nowrap; background:transparent; color:var(--fg-muted); }
+  .btn:hover { background:var(--card-hover); }
+  .btn.square { border-color:var(--border); padding:6px 9px; }
+  .btn svg.i { width:16px; height:16px; }
+  .btn.on { background:var(--primary-soft); color:var(--primary); }
+  .av { border-radius:50%; display:grid; place-items:center; font-weight:600; color:var(--avatar-fg); flex:none; }
+
+  /* The map: the preview strip (C8), the column (alternative and today) and the phone's preview. */
+  .mapframe { position:relative; overflow:hidden; border:1px solid var(--border); border-radius:14px; background:var(--bg-sunken); transition:height var(--expand) var(--ease); }
+  .mapframe svg.draw { position:absolute; inset:0; width:100%; height:100%; transition:opacity var(--fade) var(--ease); }
+  .mapframe .live { position:absolute; inset:0; opacity:0; transition:opacity var(--fade) var(--ease); pointer-events:none; }
+  .mapframe.big .live { opacity:1; pointer-events:auto; transition-delay:var(--expand); }
+  .mapframe.big svg.draw.preview { opacity:0; }
+  .mapframe .corner { position:absolute; right:4px; bottom:4px; display:flex; transition:opacity var(--fade); }
+  .mapframe.big .corner { opacity:0; pointer-events:none; }
+  .disc { width:44px; height:44px; display:grid; place-items:center; border:0; background:transparent; cursor:pointer; padding:0; }
+  .disc span { width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:var(--card); color:var(--fg-muted); box-shadow:var(--shadow-card); }
+  .disc:hover span { color:var(--fg); }
+  .disc svg.i { width:15px; height:15px; }
+  .pill { position:absolute; right:10px; bottom:10px; display:flex; gap:6px; }
+  .pill button { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--card); color:var(--fg-muted); border-radius:999px; padding:4px 12px; font-size:13px; cursor:pointer; box-shadow:var(--shadow-card); }
+  .pill button.icon { padding:4px 8px; }
+  .mapframe.big .pill { opacity:0; pointer-events:none; }
+  .toolbar { position:absolute; top:10px; left:10px; right:10px; display:flex; gap:8px; align-items:center; }
+  .toolbar span { white-space:nowrap; display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--card); border-radius:999px; padding:3px 11px; font-size:13px; color:var(--fg-muted); }
+  .toolbar span b { font-weight:600; background:var(--bg-sunken); border-radius:999px; padding:0 6px; font-size:12px; }
+  .toolbar .sp { flex:1; }
+  .toolbar button { border:0; background:transparent; color:var(--fg-muted); cursor:pointer; display:grid; place-items:center; width:30px; height:30px; border-radius:8px; }
+  .toolbar button:hover { background:var(--card-hover); }
+  .mapbtn { width:100%; height:100%; border:0; padding:0; background:transparent; cursor:zoom-in; display:block; }
+  svg.draw text { font-family:var(--sans); fill:var(--fg-muted); }
+
+  /* The list. */
+  .people { display:flex; flex-direction:column; gap:12px; }
+  .group h4 { margin:0 0 4px; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-subtle); display:flex; align-items:center; gap:6px; }
+  .group.derived { border-top:1px solid var(--border-subtle); padding-top:10px; }
+  .group.flash { animation:flash 1.2s var(--ease); border-radius:10px; }
+  @keyframes flash { 0%,40% { background:var(--primary-soft); } 100% { background:transparent; } }
+  .tiles { display:grid; column-gap:12px; list-style:none; margin:0; padding:0; }
+  .tile { display:flex; align-items:center; gap:10px; padding:4px; border-radius:10px; min-width:0; }
+  .tile:hover { background:var(--card-hover); }
+  .tile .nm { display:flex; flex-direction:column; min-width:0; }
+  .tile .nm b { font-weight:500; line-height:1.2; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .tile .nm small { font-size:12px; color:var(--fg-subtle); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .derived .tile .av { outline:1.5px dashed var(--border); outline-offset:2px; }
+  .derived .tile .nm b { color:var(--fg-muted); }
+  .rowsbox { transition:height var(--expand) var(--ease); overflow:hidden; }
+  /* The collapsed line (C9): what the fold hides, by group. */
+  .hiddenline { display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; margin-top:2px; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-subtle); }
+  .hiddenline .h { display:inline-flex; align-items:center; gap:5px; padding:4px 8px; border-radius:999px; border:1px dashed var(--border); background:transparent; font:inherit; letter-spacing:inherit; text-transform:inherit; color:inherit; }
+  .hiddenline button.h { cursor:pointer; }
+  .hiddenline button.h:hover { background:var(--card-hover); color:var(--fg); border-style:solid; }
+  .hiddenline span.h { border-color:transparent; padding:4px 2px; }
+  .hiddenline .dot { color:var(--border); }
+  .hiddenline svg.i { width:12px; height:12px; }
+  .toggle { margin-top:6px; }
+  .fs-toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:var(--fg); color:var(--card); padding:8px 16px; border-radius:10px; font-size:13px; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .fs-toast.on { opacity:1; }
+
+  /* ?frame=desktop|phone renders one frame alone, at its own size — for the PNGs. */
+  body.solo .wrap { padding:0; max-width:none; }
+  body.solo .wrap > :not(.stage), body.solo .legend { display:none; }
+  body.solo .stage { gap:0; }
+  body.solo .browser { border-radius:0; box-shadow:none; }
+  body.solo .device { border-radius:0; padding:0; background:var(--page); box-shadow:none; }
+  body.solo .screen { border-radius:0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">UX review · C8 + C9 · mockup</div>
+  <h1>The People card: one map pattern on every width, a fold that says what it hides</h1>
+  <p class="lede">
+    <b>C8</b> — the phone's preview-and-enlarge map on desktop too: a short strip across the card's top that grows in place,
+    and the list gets the full card width (four columns). The alternative keeps today's column and draws names in it.
+    <b>C9</b> — the fold shows the entered groups first; the worked-out relatives wait entirely behind <i>Show more</i>,
+    and a collapsed line names every group the fold hides (<i>Friends · 3 · Work · 2</i>). Everything is clickable:
+    the map icons, <i>Show more</i>, and the groups on the collapsed line. <span style="color:var(--primary)">★</span> marks the recommendation.
+  </p>
+  <div class="controls" id="controls"></div>
+  <p class="note">Data is the demo seed (`SEED_DEMO`). Markus: 10 entered + 5 worked out. Sandra: 12 entered in three groups + 3 worked out. Daniel: 5 entered + 4 worked out — the case where only worked-out people are left behind the fold. Kurt: 3 entered — nothing folds, nothing changes but the strip. The identity card is abbreviated.</p>
+  <div class="stage">
+    <div class="browser-fit" id="dfit"><div class="browser d" id="desk"></div></div>
+    <div class="device"><div class="screen p" id="phone"></div></div>
+    <aside class="legend">
+      <h2>What changes</h2>
+      <ol>
+        <li><b>Desktop map → strip.</b> A 7.5 rem strip across the card's top, under the header: the household in a wide fan with first names (wide enough to label, unlike the 20 rem column). The two icons in its corner are the phone's: <i>Enlarge map</i> grows the strip in place to 24 rem and cross-fades to the live explorer (filter, arrange, shrink, full screen); <i>Full screen</i> opens it full screen. Same view machine as the phone (<code>phone-map.ts</code>), now on every width.</li>
+        <li><b>List at full width.</b> Four columns on a card from 48 rem (two on a phone, three in between) — <i>Sandra Brunner-Keller</i> no longer wraps.</li>
+        <li><b>Phone: map unchanged.</b> Its 100 px preview already is the pattern.</li>
+        <li><b>Fold order.</b> Folded, the card shows the first six <i>entered</i> people in group order; the worked-out relatives no longer take two of the folded places — they sit entirely behind <i>Show more</i>. Unfolded, nothing changes.</li>
+        <li><b>The collapsed line.</b> Under the folded tiles, one line names every group the fold hides with its count, the worked-out block last: <i>Friends · 3 · Also related · 5</i>. A group that is partly shown (Family · 7 with six tiles) is not repeated — its heading already counts it. German: <i>Freunde · 3 · Arbeit · 2 · Auch verwandt · 5</i>.</li>
+        <li><b>Rules stay pure</b> in <code>people-groups.ts</code> (<code>foldPeople</code> returns the hidden groups; the derived count folds with the entered one) — test-first.</li>
+      </ol>
+      <h2>Open questions</h2>
+      <div class="q"><b>1 · Map on desktop</b>Preview strip ★ (one pattern everywhere, list at full width) vs. labelled map in today's column (names in 20 rem crowd; list stays at three columns).</div>
+      <div class="q"><b>2 · Where the enlarge control sits</b>Corner icons on the strip ★ (the phone's, same place, same tooltips) · a labelled pill <i>Enlarge map</i> in the strip's corner · a map button in the card header beside <i>Edit</i>. In every variant a click on the strip itself enlarges too.</div>
+      <div class="q"><b>3 · <i>Show more</i> when only worked-out people are left</b> (Daniel)<i>Show 4 more</i> ★ (one wording; the collapsed line just above says who) · <i>Show 4 worked out</i> · keep two worked-out tiles shown when all entered ones fit (today's rule for that case).</div>
+      <div class="q"><b>4 · Is the collapsed line tappable?</b>Yes ★ — a tap on <i>Friends · 3</i> unfolds the whole card (the one <i>Show more</i> state, no per-group fold) and lands on that group with a brief highlight · No, it is a plain line and only <i>Show more</i> unfolds.</div>
+    </aside>
+  </div>
+</div>
+<div class="fs-toast" id="toast"></div>
+
+<script>
+const P = (name, role, cat, via) => ({ name, role, cat, via });
+const PEOPLE = {
+  markus: { id:'markus', name:'Markus Brunner', desc:'Familienvater, Vorstand im FC Längenfeld', av:'av-mauve',
+    entered:[P('Sandra Brunner-Keller','Wife','romantic'),P('Hans Brunner','Father','family'),P('Rosa Brunner-Aebi','Mother','family'),P('Lena Brunner','Daughter','family'),P('Noah Brunner','Son','family'),P('Elias Brunner','Son','family'),P('Daniel Brunner','Brother','family'),P('Thomas Widmer','Friend','social'),P('Beat Steiner','Friend','social'),P('Kurt Lehmann','Neighbor','social')],
+    derived:[P('Timo Brunner','Nephew',null,'Daniel Brunner'),P('Peter Keller','Father-in-law',null,'Sandra Brunner-Keller'),P('Ursula Keller-Marti','Mother-in-law',null,'Sandra Brunner-Keller'),P('Corinne Keller','Sister-in-law',null,'Sandra Brunner-Keller'),P('Nadia Brunner-Rossi','Sister-in-law',null,'Daniel Brunner')] },
+  sandra: { id:'sandra', name:'Sandra Brunner-Keller', desc:'Primarlehrerin in Längenfeld', av:'av-blue',
+    entered:[P('Markus Brunner','Husband','romantic'),P('Peter Keller','Father','family'),P('Ursula Keller-Marti','Mother','family'),P('Lena Brunner','Daughter','family'),P('Noah Brunner','Son','family'),P('Elias Brunner','Son','family'),P('Corinne Keller','Sister','family'),P('Franziska Widmer','Friend','social'),P('Nicole Frei','Friend','social'),P('Heidi Lehmann','Neighbor','social'),P('Vreni Zbinden','Colleague','professional'),P('Reto Hofer','Colleague','professional')],
+    derived:[P('Hans Brunner','Father-in-law',null,'Markus Brunner'),P('Rosa Brunner-Aebi','Mother-in-law',null,'Markus Brunner'),P('Daniel Brunner','Brother-in-law',null,'Markus Brunner')] },
+  daniel: { id:'daniel', name:'Daniel Brunner', desc:'Markus’ younger brother, lives in Thun', av:'av-teal',
+    entered:[P('Nadia Brunner-Rossi','Wife','romantic'),P('Hans Brunner','Father','family'),P('Rosa Brunner-Aebi','Mother','family'),P('Timo Brunner','Son','family'),P('Markus Brunner','Brother','family')],
+    derived:[P('Elias Brunner','Nephew',null,'Markus Brunner'),P('Lena Brunner','Niece',null,'Markus Brunner'),P('Noah Brunner','Nephew',null,'Markus Brunner'),P('Sandra Brunner-Keller','Sister-in-law',null,'Markus Brunner')] },
+  kurt: { id:'kurt', name:'Kurt Lehmann', desc:'Neighbour across the road', av:'av-peach',
+    entered:[P('Heidi Lehmann','Wife','romantic'),P('Markus Brunner','Neighbor','social'),P('Beat Steiner','Neighbor','social')], derived:[] },
+};
+const GROUPS = [['family','Family'],['social','Friends'],['professional','Work'],['other','Other']];
+const groupOf = (cat) => (cat === 'romantic' || cat === 'family') ? 'family' : (cat === 'social' || cat === 'professional') ? cat : 'other';
+const AVS = ['av-pink','av-blue','av-teal','av-peach','av-mauve','av-sky'];
+const avOf = (name) => AVS[[...name].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % AVS.length];
+const initials = (name) => name.split(/[\s-]+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('');
+const first = (name) => name.split(' ')[0];
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+const ICON = {
+  pencil:'<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+  down:'<path d="m6 9 6 6 6-6"/>', up:'<path d="m6 15 6-6 6 6"/>',
+  enlarge:'<path d="M14 4h6v6M10 20H4v-6M20 4l-6 6M4 20l6-6"/>', shrink:'<path d="M4 14h6v6M20 10h-6V4M14 10l6-6M10 14l-6 6"/>',
+  full:'<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>', map:'<circle cx="12" cy="12" r="2.5"/><circle cx="5" cy="6" r="1.8"/><circle cx="19" cy="6" r="1.8"/><circle cx="6" cy="19" r="1.8"/><circle cx="18" cy="18" r="1.8"/><path d="m6.5 7 3.6 3.4M17.5 7l-3.6 3.4M7.4 17.7l2.8-3.8M16.6 16.7l-2.7-2.9"/>',
+  derived:'<circle cx="6" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 6h4a4 4 0 0 1 4 4v6" stroke-dasharray="2 2.6"/>',
+  home:'<path d="M4 11 12 4l8 7v9H4z"/>', people:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.5-3.4 3-5.4 6-5.4s5.5 2 6 5.4"/><path d="M16 4.8a3.2 3.2 0 0 1 0 6.3M18 14.8c1.7.7 2.8 2.4 3 5.2"/>',
+  circles:'<circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/>', graph:'<circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><path d="m7 11 10-5M7 13l10 5"/>',
+  write:'<path d="M12 20h8"/><path d="M15.5 4.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>', filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+};
+const ic = (n, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
+
+/* ── State, from the URL so every PNG is a link ─────────────── */
+const q = new URLSearchParams(location.search);
+const S = {
+  theme: q.get('theme') || 'latte', who: q.get('person') || 'markus',
+  map: q.get('map') || 'strip', control: q.get('control') || 'corner',
+  fold: q.get('fold') || 'new', onlyDerived: q.get('only') || 'more', tappable: q.get('tap') || 'yes',
+  expanded: { desk: q.get('open') === '1', phone: q.get('open') === '1' },
+  big: { desk: q.get('big') === '1', phone: q.get('big') === '1' },
+};
+const CONTROLS = [
+  ['theme','Theme',[['latte','Latte'],['mocha','Mocha']]],
+  ['who','Person',[['markus','Markus (rich)'],['sandra','Sandra (3 groups)'],['daniel','Daniel (only worked out left)'],['kurt','Kurt (sparse)']]],
+  ['map','C8 map',[['strip','Preview strip',1],['column','Labelled column'],['today','Today']]],
+  ['control','Enlarge control',[['corner','Corner icons',1],['pill','Labelled pill'],['header','Header button']]],
+  ['fold','C9 fold',[['new','Entered first + line',1],['today','Today']]],
+  ['onlyDerived','Only worked out left',[['more','Show 4 more',1],['worked','Show 4 worked out'],['keep2','Keep two shown']]],
+  ['tappable','Line tappable',[['yes','Yes',1],['no','No']]],
+];
+
+/* ── The fold, as people-groups.ts would rule it ───────────── */
+const FOLDED = 6, DERIVED_FOLDED = 2;
+function fold(p, expanded) {
+  const groups = GROUPS.map(([key, label]) => ({ key, label, rows: p.entered.filter(r => groupOf(r.cat) === key) })).filter(g => g.rows.length);
+  const E = p.entered.length, D = p.derived.length;
+  const all = { groups: groups.map(g => ({ ...g, shown: g.rows })), derived: p.derived, hidden: 0, hiddenGroups: [], onlyDerived: false };
+  if (expanded) return all;
+  const enteredHidden = E - FOLDED >= 2 ? E - FOLDED : 0;
+  const cut = (room) => groups.map(g => { const shown = g.rows.slice(0, Math.max(0, room)); room -= shown.length; return { ...g, shown }; });
+  if (S.fold === 'today') {
+    const dShown = D - DERIVED_FOLDED >= 2 ? DERIVED_FOLDED : D;
+    const gs = cut(enteredHidden ? FOLDED : E).filter(g => g.shown.length);
+    return { groups: gs, derived: p.derived.slice(0, dShown), hidden: enteredHidden + D - dShown, hiddenGroups: [], onlyDerived: false };
+  }
+  // Entered first; the worked-out ones wait entirely behind Show more (unless the owner keeps two).
+  let dShown = 0;
+  if (S.onlyDerived === 'keep2' && enteredHidden === 0) dShown = D - DERIVED_FOLDED >= 2 ? DERIVED_FOLDED : D;
+  if (enteredHidden + D - dShown < 2) return all;
+  const gs = cut(enteredHidden ? FOLDED : E);
+  const hiddenGroups = gs.filter(g => g.shown.length === 0).map(g => ({ key: g.key, label: g.label, count: g.rows.length }));
+  if (D - dShown > 0 && dShown === 0) hiddenGroups.push({ key: 'derived', label: 'Also related', count: D, derived: true });
+  return { groups: gs.filter(g => g.shown.length), derived: p.derived.slice(0, dShown), hidden: enteredHidden + D - dShown, hiddenGroups, onlyDerived: enteredHidden === 0 };
+}
+
+/* ── Drawings ──────────────────────────────────────────────── */
+const COLOR = { romantic:'var(--c-romantic)', family:'var(--c-family)', social:'var(--c-social)', professional:'var(--c-professional)', other:'var(--c-other)' };
+const node = (x, y, r, fill, stroke, dashed) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.6"${dashed ? ' stroke-dasharray="3 2.5"' : ''}/>`;
+const line = (x1, y1, x2, y2, c) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="1.3"/>`;
+const centre = (p, x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="var(--primary)"/><text x="${x}" y="${y + 3.5}" text-anchor="middle" font-size="${Math.max(8, r * .6)}" font-weight="700" style="fill:var(--primary-fg)">${initials(p.name)}</text>`;
+const tint = (cat) => `color-mix(in srgb, ${COLOR[cat]} 28%, var(--card))`;
+
+// The phone's thumbnail as today: a ring, no names.
+function ringThumb(p, w, h) {
+  const cx = w / 2, cy = h / 2, R = Math.min(h / 2 - 14, 46);
+  let s = '';
+  p.entered.forEach((r, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / p.entered.length; const x = cx + R * Math.cos(a), y = cy + R * Math.sin(a); s += line(cx, cy, x, y, 'var(--map-line)') + node(x, y, 7.5, tint(r.cat), COLOR[r.cat]); });
+  return `<svg class="draw preview" viewBox="0 0 ${w} ${h}">${s}${centre(p, cx, cy, 10)}</svg>`;
+}
+// The desktop strip: a wide fan, first names under the faces — the width makes them legible.
+function stripFan(p, w, h) {
+  const cx = w / 2, cy = h / 2, n = p.entered.length, left = Math.ceil(n / 2);
+  let s = '';
+  p.entered.forEach((r, i) => {
+    const side = i < left ? -1 : 1, k = i < left ? i : i - left, per = i < left ? left : n - left;
+    const col = Math.floor(k / 2), row = k % 2, cols = Math.ceil(per / 2);
+    const x = cx + side * (84 + col * 96 + (row ? 48 : 0)), y = cy + (row ? 22 : -22);
+    s = line(cx, cy, x, y, 'var(--map-line)') + s;
+    s += node(x, y, 9, tint(r.cat), COLOR[r.cat]) + `<text x="${x}" y="${row ? y + 24 : y - 15}" text-anchor="middle" font-size="11">${esc(first(r.name))}</text>`;
+  });
+  return `<svg class="draw preview" viewBox="0 0 ${w} ${h}">${s}${centre(p, cx, cy, 14)}</svg>`;
+}
+// The live explorer, enlarged (or the column): two rings, entered and worked out, optionally named.
+function liveMap(p, w, h, labels, fontSize = 11) {
+  const cx = w / 2, cy = h / 2 + 14, R = Math.min(w, h - 40) * .27;
+  const stretch = Math.min(1.9, Math.max(1, (w / 2 - 60) / (R * 1.7)));
+  const at = (a, k) => [cx + R * k * stretch * Math.cos(a), cy + R * k * Math.sin(a)];
+  const angle = {}, pos = {};
+  let s = '';
+  p.entered.forEach((r, i) => { angle[r.name] = -Math.PI / 2 + i * 2 * Math.PI / p.entered.length; pos[r.name] = at(angle[r.name], 1); });
+  // Worked-out relatives sit outside the one they are worked out through, fanned when several share them.
+  const byVia = {};
+  p.derived.forEach((r) => (byVia[r.via] = byVia[r.via] || []).push(r));
+  Object.entries(byVia).forEach(([via, rs]) => rs.forEach((r, i) => {
+    const [vx, vy] = pos[via] || [cx, cy];
+    const a = (angle[via] ?? 0) + (i - (rs.length - 1) / 2) * .36;
+    const [x, y] = at(a, 1.62);
+    s += line(vx, vy, x, y, 'var(--map-line)') + node(x, y, 7, 'var(--card)', 'var(--fg-subtle)', true);
+    if (labels) s += `<text x="${x}" y="${y + 18}" text-anchor="middle" font-size="${fontSize}" style="fill:var(--fg-subtle)">${esc(first(r.name))}</text>`;
+  }));
+  p.entered.forEach((r) => { const [x, y] = pos[r.name]; s = line(cx, cy, x, y, COLOR[r.cat]) + s; s += node(x, y, 9, tint(r.cat), COLOR[r.cat]); if (labels) s += `<text x="${x}" y="${y + 21}" text-anchor="middle" font-size="${fontSize}">${esc(first(r.name))}</text>`; });
+  return `<svg class="draw" viewBox="0 0 ${w} ${h}">${s}${centre(p, cx, cy, 15)}</svg>`;
+}
+const toolbar = (shrink) => `<div class="toolbar"><span>${ic('filter')}Filter <b>5/6</b></span><span>Arrange: Free ${ic('down')}</span><i class="sp"></i>${shrink ? `<button data-act="shrink" title="Shrink map" aria-label="Shrink map">${ic('shrink')}</button>` : ''}<button data-act="full" title="Full screen" aria-label="Full screen">${ic('full')}</button></div>`;
+
+/* ── The card ──────────────────────────────────────────────── */
+function tile(r, derived) {
+  const role = derived ? `${r.role} · via ${r.via}` : r.role;
+  return `<li><a class="tile" href="#"><span class="av ${''}" style="width:36px;height:36px;font-size:12px;background:var(--${avOf(r.name)})">${initials(r.name)}</span><span class="nm"><b>${esc(r.name)}</b><small title="${esc(role)}">${esc(role)}</small></span></a></li>`;
+}
+function list(p, f, cols) {
+  const grid = `grid-template-columns:repeat(${cols},minmax(0,1fr))`;
+  let s = '<div class="people">';
+  for (const g of f.groups) s += `<section class="group" data-group="${g.key}"><h4>${g.label} · ${g.rows.length}</h4><ul class="tiles" style="${grid}">${g.shown.map(r => tile(r)).join('')}</ul></section>`;
+  if (f.derived.length) s += `<section class="group derived" data-group="derived"><h4>${ic('derived')}Also related · worked out, not entered</h4><ul class="tiles" style="${grid}">${f.derived.map(r => tile(r, true)).join('')}</ul></section>`;
+  s += '</div>';
+  if (f.hiddenGroups.length) {
+    const tap = S.tappable === 'yes';
+    s += `<div class="hiddenline" aria-label="Folded away">${f.hiddenGroups.map((g, i) => (i ? '<span class="dot">·</span>' : '') +
+      (tap ? `<button class="h" data-act="open-group" data-group="${g.key}" title="Show ${g.label}">` : '<span class="h">') +
+      (g.derived ? ic('derived') : '') + `${g.label} · ${g.count}` + (tap ? '</button>' : '</span>')).join('')}</div>`;
+  }
+  return s;
+}
+function toggleLabel(f, expanded) {
+  if (expanded) return `${ic('up')}Show fewer`;
+  if (S.fold === 'new' && f.onlyDerived && S.onlyDerived === 'worked') return `${ic('down')}Show ${f.hidden} worked out`;
+  return `${ic('down')}Show ${f.hidden} more`;
+}
+function mapBlock(p, where) {
+  const big = S.big[where];
+  if (where === 'phone') {
+    return `<div class="mapframe${big ? ' big' : ''}" style="height:${big ? 352 : 100}px;margin-bottom:12px">
+      <button class="mapbtn" data-act="enlarge" aria-label="Enlarge map">${ringThumb(p, 388, 100)}</button>
+      <div class="live">${liveMap(p, 388, 352, true, 10)}${toolbar(true)}</div>
+      <div class="corner"><button class="disc" data-act="enlarge" title="Enlarge map" aria-label="Enlarge map"><span>${ic('enlarge')}</span></button><button class="disc" data-act="full" title="Full screen" aria-label="Full screen"><span>${ic('full')}</span></button></div></div>`;
+  }
+  const W = 1010;
+  const controls = S.control === 'corner'
+    ? `<div class="corner"><button class="disc" data-act="enlarge" title="Enlarge map" aria-label="Enlarge map"><span>${ic('enlarge')}</span></button><button class="disc" data-act="full" title="Full screen" aria-label="Full screen"><span>${ic('full')}</span></button></div>`
+    : S.control === 'pill'
+      ? `<div class="pill"><button data-act="enlarge">${ic('enlarge')}Enlarge map</button><button class="icon" data-act="full" title="Full screen" aria-label="Full screen">${ic('full')}</button></div>`
+      : '';
+  return `<div class="mapframe${big ? ' big' : ''}" style="height:${big ? 384 : 120}px;margin-bottom:14px">
+    <button class="mapbtn" data-act="enlarge" aria-label="Enlarge map">${stripFan(p, W, 120)}</button>
+    <div class="live">${liveMap(p, W, 384, true)}${toolbar(true)}</div>${controls}</div>`;
+}
+function card(p, where) {
+  const expanded = S.expanded[where];
+  const f = fold(p, expanded);
+  const desk = where === 'desk';
+  const header = desk && S.map === 'strip' && S.control === 'header'
+    ? `<button class="btn${S.big.desk ? ' on' : ''}" data-act="${S.big.desk ? 'shrink' : 'enlarge'}" aria-pressed="${S.big.desk}">${ic('map')}Map</button>` : '';
+  let body;
+  const toggle = (f.hidden > 0 || expanded) ? `<button class="btn toggle" data-act="fold">${toggleLabel(f, expanded)}</button>` : '';
+  if (!desk) {
+    body = mapBlock(p, 'phone') + `<div class="rowsbox" data-rows>${list(p, f, 2)}</div>${toggle}`;
+  } else if (S.map === 'strip') {
+    body = mapBlock(p, 'desk') + `<div class="rowsbox" data-rows>${list(p, f, 4)}</div>${toggle}`;
+  } else {
+    const map = S.map === 'column'
+      ? `<div class="mapframe" style="height:384px">${liveMap(p, 320, 384, true, 10)}${toolbar(false)}</div>`
+      : `<div class="mapframe" style="height:384px">${liveMap(p, 320, 384, false)}${toolbar(false)}</div>`;
+    body = `<div style="display:grid;grid-template-columns:minmax(0,1fr) 20rem;gap:16px;align-items:start"><div><div class="rowsbox" data-rows>${list(p, f, 3)}</div>${toggle}</div>${map}</div>`;
+  }
+  return `<section class="card" id="people-${where}"><div class="sechead"><h3>People<span class="count">${p.entered.length}</span></h3><span class="r">${header}<button class="btn">${ic('pencil')}Edit</button><button class="btn" aria-label="Add">${ic('plus')}</button><button class="btn square" aria-label="More">${ic('more')}</button></span></div>${body}</section>`;
+}
+const idcard = (p, big) => `<section class="card idcard"><span class="av" style="width:${big ? 96 : 72}px;height:${big ? 96 : 72}px;font-size:${big ? 30 : 24}px;background:var(--${p.av})">${initials(p.name)}</span><div><h2>${esc(p.name)}</h2><p>${esc(p.desc)}</p><div class="ghost">identity card abbreviated</div></div></section>`;
+
+function renderDesk(p) {
+  const nav = [['home','Home'],['people','People',1],['circles','Circles'],['graph','Graph']];
+  return `<div class="chrome"><i></i><i></i><i></i><span class="url">stella.home/contacts/demo-c-${p.id}</span></div>
+  <div class="app"><nav class="side"><div class="logo"><span class="mark">✶</span>Stella</div>${nav.map(([i, l, on]) => `<a class="${on ? 'on' : ''}">${ic(i)}${l}</a>`).join('')}</nav>
+  <div class="dmain"><div class="dhead">Home <span>/</span> People <span>/</span> <span class="here">${esc(p.name)}</span></div>
+  <div class="scroller" data-scroller><div class="dpage">${idcard(p, true)}${card(p, 'desk')}<section class="card" style="height:220px"><div class="sechead"><h3>Photos</h3></div></section></div></div></div></div>`;
+}
+function renderPhone(p) {
+  return `<div class="status"><span>9:41</span><span class="cam"></span><span>5G ▮▮▮</span></div>
+  <div class="ptop">Home <span>/</span> People <span>/</span> <span class="here">${esc(p.name)}</span></div>
+  <div class="scroller" data-scroller><div class="ppage">${idcard(p, false)}${card(p, 'phone')}<section class="card" style="height:200px"><div class="sechead"><h3>Photos</h3></div></section></div></div>
+  <nav class="tabbar"><a class="tab">${ic('home')}Home</a><a class="tab on">${ic('people')}People</a><a class="tab pen"><span>${ic('write')}</span></a><a class="tab">${ic('circles')}Circles</a><a class="tab">${ic('graph')}Graph</a></nav>`;
+}
+
+/* ── Rendering and the glide between heights ────────────────── */
+function renderControls() {
+  document.getElementById('controls').innerHTML = CONTROLS.map(([key, label, opts]) => {
+    const off = (key === 'control' && S.map !== 'strip') || ((key === 'onlyDerived' || key === 'tappable') && S.fold !== 'new');
+    return `<div class="ctl${off ? ' off' : ''}"><span class="seg-label">${label}</span><div class="seg">${opts.map(([v, l, rec]) => `<button data-key="${key}" data-val="${v}" aria-pressed="${S[key] === v}">${l}${rec ? '<span class="rec">★</span>' : ''}</button>`).join('')}</div></div>`;
+  }).join('');
+}
+function render(keepScroll = true) {
+  document.documentElement.dataset.theme = S.theme;
+  const p = PEOPLE[S.who];
+  const scrolls = [...document.querySelectorAll('[data-scroller]')].map(s => s.scrollTop);
+  document.getElementById('desk').innerHTML = renderDesk(p);
+  document.getElementById('phone').innerHTML = renderPhone(p);
+  const now = [...document.querySelectorAll('[data-scroller]')];
+  if (keepScroll && scrolls.length) now.forEach((s, i) => (s.scrollTop = scrolls[i] ?? 0));
+  else { // the phone opens on the People card, the way a jump-bar tap would leave it
+    const ph = document.querySelector('#phone [data-scroller]'), c = document.getElementById('people-phone');
+    ph.scrollTop = c.offsetTop - 8;
+  }
+  renderControls();
+}
+/** Re-render one card and glide its rows box (docs/05 §5.11) from the old height to the new. */
+function glideRows(where, change, then) {
+  const before = document.querySelector(`#people-${where} [data-rows]`);
+  const h0 = before ? before.getBoundingClientRect().height : 0;
+  change(); render();
+  const box = document.querySelector(`#people-${where} [data-rows]`);
+  if (!box) return then && then();
+  const scale = where === 'desk' ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit')) || 1 : 1;
+  const h1 = box.getBoundingClientRect().height;
+  box.style.height = (h0 / scale) + 'px';
+  requestAnimationFrame(() => { box.style.height = (h1 / scale) + 'px'; });
+  box.addEventListener('transitionend', () => { box.style.height = ''; then && then(); }, { once: true });
+}
+function setBig(where, big) {
+  S.big[where] = big;
+  const frame = document.querySelector(`#people-${where} .mapframe`);
+  if (!frame || S.map !== 'strip' && where === 'desk') return render();
+  frame.classList.toggle('big', big);
+  frame.style.height = (where === 'desk' ? (big ? 384 : 120) : (big ? 352 : 100)) + 'px';
+  const hb = document.querySelector(`#people-${where} [data-act="enlarge"].btn, #people-${where} [data-act="shrink"].btn`);
+  if (hb) { hb.classList.toggle('on', big); hb.dataset.act = big ? 'shrink' : 'enlarge'; }
+}
+let toastTimer;
+function toast(text) { const t = document.getElementById('toast'); t.textContent = text; t.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 1600); }
+
+document.addEventListener('click', (e) => {
+  const seg = e.target.closest('[data-key]');
+  if (seg) { S[seg.dataset.key] = seg.dataset.val; S.expanded = { desk:false, phone:false }; S.big = { desk:false, phone:false }; render(seg.dataset.key !== 'who'); return; }
+  const act = e.target.closest('[data-act]');
+  if (!act) { if (e.target.closest('a.tile')) e.preventDefault(); return; }
+  e.preventDefault();
+  const where = act.closest('#phone') ? 'phone' : 'desk';
+  switch (act.dataset.act) {
+    case 'enlarge': return setBig(where, true);
+    case 'shrink': return setBig(where, false);
+    case 'full': return toast('Opens the map full screen — unchanged');
+    case 'fold': return glideRows(where, () => (S.expanded[where] = !S.expanded[where]));
+    case 'open-group': {
+      const key = act.dataset.group;
+      return glideRows(where, () => (S.expanded[where] = true), () => {
+        const g = document.querySelector(`#people-${where} [data-group="${key}"]`);
+        if (!g) return;
+        g.scrollIntoView({ block:'nearest', behavior:'smooth' });
+        g.classList.add('flash'); setTimeout(() => g.classList.remove('flash'), 1300);
+      });
+    }
+  }
+});
+
+/* The desktop frame scales to the room beside the phone. */
+function fit() {
+  const solo = q.get('frame');
+  if (solo) { document.body.classList.add('solo'); document.querySelector(solo === 'phone' ? '.browser-fit' : '.device').style.display = 'none'; }
+  const room = solo ? 1440 : Math.min(1440, Math.max(560, document.querySelector('.wrap').clientWidth - 48 - 432 - 32));
+  const k = room / 1440;
+  const root = document.documentElement.style;
+  root.setProperty('--fit', k); root.setProperty('--fit-w', 1440 * k + 'px'); root.setProperty('--fit-h', 900 * k + 'px');
+}
+addEventListener('resize', fit);
+fit(); render(false);
+if (q.get('scroll')) document.querySelector(`#${q.get('frame') === 'phone' ? 'phone' : 'desk'} [data-scroller]`).scrollTop = +q.get('scroll');
+</script>
+</body>
+</html>
