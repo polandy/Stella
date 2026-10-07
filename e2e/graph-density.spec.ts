@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { openPerson, signIn } from './app';
+import { enlargeMap, openPerson, signIn } from './app';
 import {
 	arrangement,
 	clickNode,
@@ -196,6 +196,7 @@ test('on a person’s page nobody on the last ring wears a "+N", though the expl
 	page
 }) => {
 	await openPerson(page, /Lena Brunner/);
+	await enlargeMap(page);
 	const map = page.getByRole('group', { name: 'The people around Lena Brunner' });
 	await expect(map.locator('canvas').first()).toBeVisible();
 	await map.scrollIntoViewIfNeeded();

@@ -175,10 +175,13 @@
 	<!--
 		One frame on every width: the preview and, once enlarged, the live map under it; its
 		height glides between the two and the layers cross-fade (`mapLayers`, docs/05 §5.5).
+		Its border lies outside its height (`box-content`), so the live map, mounted at that same
+		height, fills it exactly: a frame overflowing by its border would pass for the page's
+		scroller, and full screen on touch would lock it instead of the page.
 	-->
 	<div
 		bind:this={frame}
-		class="relative scroll-mt-2 overflow-hidden rounded-app border border-border bg-bg-sunken transition-[height] duration-(--motion-expand) ease-standard {layers.tall
+		class="relative box-content scroll-mt-2 overflow-hidden rounded-app border border-border bg-bg-sunken transition-[height] duration-(--motion-expand) ease-standard {layers.tall
 			? ENLARGED_HEIGHT
 			: PREVIEW_HEIGHT}"
 		style:contain={mapState.settled ? undefined : 'layout'}
