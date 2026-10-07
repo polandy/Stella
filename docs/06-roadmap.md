@@ -117,6 +117,10 @@ Goal: sand the edges and add the nice-to-haves.
   A Monica import already lands gifts as notes (docs/monica-mapping.md); once this ships they
   move to real gift records. Ideas, gifts given and gifts received per person; the moment
   kind *Gift* folds into them. Decided in `docs/concepts/gifts.md` (mockup alongside).
+- **Welcome animation** — on a cold start, once per session, the logo's constellation comes
+  together (centre node, threads, nodes, then *Stella*) in about 1.2 s and fades into the app.
+  It is skippable, and reduced motion shows the still mark instead. Proposed in
+  `docs/concepts/welcome-animation.md` (mockup alongside).
 - **Email and social sync** — bring in what already knows about people: Google Contacts as a
   first source, then mail and social. Read-only import first, matched against existing people
   through a review list rather than merged silently, every write through the domain
